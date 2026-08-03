@@ -795,8 +795,8 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         <g transform="translate(550, 150)">
           <rect x="-60" y="-80" width="120" height="160" rx="8" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
           <rect x="-55" y="-75" width="110" height="25" rx="4" fill="#1e293b" />
-          <text x="0" y="-58" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">{controller.model}</text>
-          <text x="0" y="-45" textAnchor="middle" fill="#64748b" fontSize="8">{controller.brand}</text>
+          <text x="0" y="-58" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">GENSET CONTROLLER</text>
+          <text x="0" y="-45" textAnchor="middle" fill="#64748b" fontSize="8">generic topology</text>
           {/* Pins */}
           <circle cx="-60" cy="-30" r="4" fill="#1e293b" stroke="#ef4444" strokeWidth="2" />
           <text x="-50" y="-27" fill="#ef4444" fontSize="8">B+</text>
@@ -917,7 +917,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(150, 180)">
           <rect x="-50" y="-70" width="100" height="140" rx="6" fill="#0f172a" stroke="#06b6d4" strokeWidth="2" />
-          <text x="0" y="-50" textAnchor="middle" fill="#06b6d4" fontSize="9" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-50" textAnchor="middle" fill="#06b6d4" fontSize="9" fontWeight="bold">GENSET CONTROLLER</text>
           <circle cx="50" cy="-20" r="4" fill="#1e293b" stroke="#a855f7" strokeWidth="2" />
           <text x="40" y="-17" textAnchor="end" fill="#a855f7" fontSize="7">START</text>
           <circle cx="50" cy="10" r="4" fill="#1e293b" stroke="#f97316" strokeWidth="2" />
@@ -1048,7 +1048,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(100, 200)">
           <rect x="-40" y="-60" width="80" height="120" rx="6" fill="#0f172a" stroke="#06b6d4" strokeWidth="2" />
-          <text x="0" y="-42" textAnchor="middle" fill="#06b6d4" fontSize="9" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-42" textAnchor="middle" fill="#06b6d4" fontSize="9" fontWeight="bold">GENSET CONTROLLER</text>
           <circle cx="40" cy="-20" r="4" fill="#1e293b" stroke="#f97316" strokeWidth="2" />
           <text x="30" y="-17" textAnchor="end" fill="#f97316" fontSize="7">FUEL</text>
           <circle cx="40" cy="10" r="4" fill="#1e293b" stroke="#22c55e" strokeWidth="2" />
@@ -1172,7 +1172,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(350, 200)">
           <rect x="-80" y="-100" width="160" height="200" rx="8" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
-          <text x="0" y="-80" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-80" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">GENSET CONTROLLER</text>
           {/* Left side pins - Analog inputs */}
           <circle cx="-80" cy="-50" r="4" fill="#1e293b" stroke="#eab308" strokeWidth="2" />
           <text x="-70" y="-47" fill="#eab308" fontSize="7">OIL-P</text>
@@ -1351,7 +1351,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(500, 200)">
           <rect x="-70" y="-120" width="140" height="240" rx="8" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
-          <text x="0" y="-100" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-100" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">GENSET CONTROLLER</text>
           {/* Voltage inputs */}
           <text x="-60" y="-75" fill="#94a3b8" fontSize="7">VOLTAGE</text>
           <circle cx="-70" cy="-55" r="4" fill="#ef4444" />
@@ -1433,7 +1433,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(300, 200)">
           <rect x="-80" y="-90" width="160" height="180" rx="8" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
-          <text x="0" y="-70" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-70" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">GENSET CONTROLLER</text>
           {/* CAN */}
           <text x="-70" y="-45" fill="#22c55e" fontSize="8">CAN BUS</text>
           <circle cx="-80" cy="-25" r="4" fill="#22c55e" />
@@ -1590,7 +1590,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(400, 200)">
           <rect x="-70" y="-100" width="140" height="200" rx="8" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
-          <text x="0" y="-80" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-80" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">GENSET CONTROLLER</text>
           {/* Protection inputs */}
           <circle cx="-70" cy="-50" r="4" fill="#ef4444" />
           <text x="-60" y="-47" fill="#ef4444" fontSize="7">E-STOP</text>
@@ -3361,23 +3361,60 @@ function DetailedSchematicView({
 
   return (
     <div className="space-y-4">
-      {!hasVerifiedPinout && (
-        <div
-          className="border border-amber-500/40 bg-amber-500/10 rounded-xl p-4"
-          role="status"
-        >
-          <p className="text-sm text-amber-200">
-            <span className="font-bold">⚠ Generic circuit schematic.</span>{' '}
-            Verified pinout for{' '}
-            <span className="font-bold">
-              {controller.brand} {controller.model}
-            </span>{' '}
-            is not yet loaded — terminal numbers shown are illustrative.{' '}
-            {WIRING_UNAVAILABLE_MESSAGE}
-          </p>
-          <ControllerSourceBlock controllerId={controller.id} />
-        </div>
-      )}
+      {/*
+        WHY THIS BANNER IS NOW ALWAYS SHOWN (owner report, 2026-08-03)
+        --------------------------------------------------------------
+        Every controller rendered what looked like its OWN schematic: the seven
+        drawings in DETAILED_SCHEMATICS are keyed by CIRCUIT, not by controller,
+        and each one stamped {controller.model} inside the SVG. So selecting a
+        SmartGen HGM6120 produced a diagram identical to the DSE 7320's with a
+        different name on the box — the owner's words: "all the controllers are
+        copying the same number and the schematic diagrams look the same".
+
+        The topology itself is legitimately shared. Battery -> controller ->
+        starter -> alternator, and the symbols B+, B-, PE, D+, are the same on
+        every genset controller; that is standard practice and not a defect. The
+        defect was presenting a generic drawing as model-specific.
+
+        Fixed two ways: the SVG box is now labelled "GENSET CONTROLLER" rather
+        than the selected model, and this note appears for EVERY controller —
+        including the four with verified pinouts, because the DRAWING is generic
+        for them too. Only the terminal numbers are model-specific, and those
+        live in the Pinout tab where they are registry-gated.
+      */}
+      <div
+        className={`border rounded-xl p-4 ${
+          hasVerifiedPinout
+            ? 'border-cyan-500/40 bg-cyan-500/10'
+            : 'border-amber-500/40 bg-amber-500/10'
+        }`}
+        role="status"
+      >
+        <p className={`text-sm ${hasVerifiedPinout ? 'text-cyan-100' : 'text-amber-200'}`}>
+          <span className="font-bold">
+            {hasVerifiedPinout ? 'ℹ Generic circuit topology.' : '⚠ Generic circuit topology.'}
+          </span>{' '}
+          This diagram shows how the circuit is wired in principle and is the same for every genset
+          controller — it is <span className="font-bold">not</span> a terminal drawing for{' '}
+          <span className="font-bold">
+            {controller.brand} {controller.model}
+          </span>
+          .{' '}
+          {hasVerifiedPinout ? (
+            <>
+              Its verified terminal numbers are in the{' '}
+              <span className="font-bold">Pinout</span> tab, taken from the manufacturer
+              documentation.
+            </>
+          ) : (
+            <>
+              A verified pinout for this model is not yet loaded, so no terminal numbers are shown.{' '}
+              {WIRING_UNAVAILABLE_MESSAGE}
+            </>
+          )}
+        </p>
+        <ControllerSourceBlock controllerId={controller.id} />
+      </div>
       {/* Schematic SVG */}
       <div className="relative bg-slate-950 rounded-xl border border-slate-800 overflow-hidden">
         {/* Grid Background */}
