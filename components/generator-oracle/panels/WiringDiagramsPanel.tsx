@@ -1040,6 +1040,91 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
   //
   // Wire COLOUR is "Not specified by OEM".
   /*
+   * Woodward DTSC-200 — terminal assignment tables 5-2 through 5-20 of the
+   * DTSC-200 Installation Manual (41 pages), read page by page via ManualsLib
+   * page-level rendering. Woodward's own document server was tried first and
+   * returned 404 on the published path, so the mirror is named honestly.
+   *
+   * This is an AUTOMATIC TRANSFER SWITCH controller, not a genset controller.
+   * It has no fuel, crank or charge terminals; it measures two supplies and
+   * commands contactors. That is why the map looks nothing like the easYgen
+   * entries from the same manufacturer.
+   *
+   * ⚠ RELAY / DISCRETE OUTPUTS (terminals 31-49) ARE WITHHELD. Table 5-18 came
+   * back internally inconsistent on every attempt: relay R1's terminals were
+   * reported out of order (32, 33, 31), R2 was given a single terminal where
+   * every other relay has two or three, and R9 was listed with no terminals at
+   * all. Contactor command outputs on a transfer switch are about as
+   * consequential as wiring gets, so nothing from that table is published.
+   * Everything else below read cleanly and consistently.
+   *
+   * TERMINAL 9 is not covered by any of the assignment tables read (5-2 to
+   * 5-20) and is therefore absent rather than invented.
+   *
+   * ⚠ DUAL-RANGE VOLTAGE INPUTS, same idea as the easYgen-2000 but at DIFFERENT
+   * voltages — 100 V and 400 V here, not 120 V and 480 V. Each phase has two
+   * terminals; the LOWER number is the 100 V range and the higher is 400 V,
+   * confirmed on a second targeted read. Woodward require the 100 V terminals
+   * when the configured secondary is 50-130 V and the 400 V terminals when it
+   * is 131-480 V. Do not wire both.
+   *
+   * PHASES RUN DESCENDING against terminal number on both sources (N, L3, L2,
+   * L1) and on the current inputs (L3, L2, L1). Reproduced as printed.
+   *
+   * TERMINAL 10 IS A SHARED RETURN — all three load CT (l) legs land on it, the
+   * same arrangement as terminal 4 on the easYgen-2000.
+   *
+   * The manual labels the two supplies only as Source 1 and Source 2. Which
+   * physical supply lands on which is an installation decision, so the terminal
+   * names here keep Woodward's neutral wording.
+   */
+  'woodward-dtsc200': [
+    { pin: '1', name: 'Power Supply Positive', function: 'Controller supply positive, 15 W.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '12/24 V DC (8 to 40 V DC)', circuit: 'power', current: '-' },
+    { pin: '2', name: 'Power Supply 0 V', function: 'Reference potential (supply negative).', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '0 V DC', circuit: 'power', current: '-' },
+    { pin: '3', name: 'CAN-H', function: 'FlexCAN interface, high line.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '4', name: 'CAN-L', function: 'FlexCAN interface, low line. The manual shows a screen connection in the shielding diagram but assigns it no terminal number.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '5', name: 'RS-485-A (TxD-)', function: 'RS-485 Modbus transmit pair, A leg. Half or full duplex is set by parameter 3173.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '6', name: 'RS-485-B (TxD+)', function: 'RS-485 Modbus transmit pair, B leg.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '7', name: "RS-485-A' (RxD-)", function: 'RS-485 receive pair, A leg. Used in full-duplex configuration.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '8', name: "RS-485-B' (RxD+)", function: 'RS-485 receive pair, B leg. 120 ohm terminating resistors go at the ends of the bus.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '10', name: 'Load Current — common (l)', function: 'SHARED RETURN. All three load CT secondary (l) legs land on this one terminal; only the (k) legs have their own terminals at 11, 12 and 13.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '11', name: 'Load Current L3 (k)', function: 'Load current transformer phase L3, terminal s1 (k). Note the phases run descending across 11-13.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '12', name: 'Load Current L2 (k)', function: 'Load current transformer phase L2, terminal s1 (k).', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '13', name: 'Load Current L1 (k)', function: 'Load current transformer phase L1, terminal s1 (k).', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '14', name: 'Earth Ground', function: 'Protective earth ground connection.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'protection', current: '-' },
+    { pin: '15', name: 'Source 1 Voltage — phase N (100 V range)', function: 'Source 1 neutral, 100 V input. Use this set only when the configured secondary is 50-130 V. Never wire both ranges.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '100 V AC', circuit: 'mains', current: '-' },
+    { pin: '16', name: 'Source 1 Voltage — phase N (400 V range)', function: 'Source 1 neutral, 400 V input. Use this set only when the configured secondary is 131-480 V.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '400 V AC', circuit: 'mains', current: '-' },
+    { pin: '17', name: 'Source 1 Voltage — phase L3 (100 V range)', function: 'Source 1 phase L3, 100 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '100 V AC', circuit: 'mains', current: '-' },
+    { pin: '18', name: 'Source 1 Voltage — phase L3 (400 V range)', function: 'Source 1 phase L3, 400 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '400 V AC', circuit: 'mains', current: '-' },
+    { pin: '19', name: 'Source 1 Voltage — phase L2 (100 V range)', function: 'Source 1 phase L2, 100 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '100 V AC', circuit: 'mains', current: '-' },
+    { pin: '20', name: 'Source 1 Voltage — phase L2 (400 V range)', function: 'Source 1 phase L2, 400 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '400 V AC', circuit: 'mains', current: '-' },
+    { pin: '21', name: 'Source 1 Voltage — phase L1 (100 V range)', function: 'Source 1 phase L1, 100 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '100 V AC', circuit: 'mains', current: '-' },
+    { pin: '22', name: 'Source 1 Voltage — phase L1 (400 V range)', function: 'Source 1 phase L1, 400 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '400 V AC', circuit: 'mains', current: '-' },
+    { pin: '23', name: 'Source 2 Voltage — phase N (100 V range)', function: 'Source 2 neutral, 100 V input. Same dual-range rule as Source 1.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '100 V AC', circuit: 'generator', current: '-' },
+    { pin: '24', name: 'Source 2 Voltage — phase N (400 V range)', function: 'Source 2 neutral, 400 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '400 V AC', circuit: 'generator', current: '-' },
+    { pin: '25', name: 'Source 2 Voltage — phase L3 (100 V range)', function: 'Source 2 phase L3, 100 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '100 V AC', circuit: 'generator', current: '-' },
+    { pin: '26', name: 'Source 2 Voltage — phase L3 (400 V range)', function: 'Source 2 phase L3, 400 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '400 V AC', circuit: 'generator', current: '-' },
+    { pin: '27', name: 'Source 2 Voltage — phase L2 (100 V range)', function: 'Source 2 phase L2, 100 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '100 V AC', circuit: 'generator', current: '-' },
+    { pin: '28', name: 'Source 2 Voltage — phase L2 (400 V range)', function: 'Source 2 phase L2, 400 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '400 V AC', circuit: 'generator', current: '-' },
+    { pin: '29', name: 'Source 2 Voltage — phase L1 (100 V range)', function: 'Source 2 phase L1, 100 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '100 V AC', circuit: 'generator', current: '-' },
+    { pin: '30', name: 'Source 2 Voltage — phase L1 (400 V range)', function: 'Source 2 phase L1, 400 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '400 V AC', circuit: 'generator', current: '-' },
+    // Terminals 31-49 are the relay / discrete outputs. WITHHELD — see the
+    // block comment above and the registry coverage note.
+    { pin: '50', name: 'Discrete Inputs — common ground', function: 'Common ground for discrete inputs DI 1 to DI 12. The inputs are electrically isolated and accept a bipolar connection, but Woodward require ALL of them to use the same polarity because they share this ground.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '51', name: 'Discrete Input DI 1', function: 'Alarm / control input. Fixed normally closed type.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '52', name: 'Discrete Input DI 2', function: 'Alarm / control input. Fixed normally closed type.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '53', name: 'Discrete Input DI 3', function: 'Alarm / control input. Fixed normally closed type.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '54', name: 'Discrete Input DI 4', function: 'Alarm / control input. Fixed normally closed type.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '55', name: 'Discrete Input DI 5', function: 'Alarm / control input. Normally closed by default and switchable in software.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '56', name: 'Discrete Input DI 6', function: 'Alarm / control input. Switchable in software.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '57', name: 'Discrete Input DI 7', function: 'Alarm / control input. Switchable in software.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '58', name: 'Discrete Input DI 8', function: 'Alarm / control input. Switchable in software.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '59', name: 'Discrete Input DI 9', function: 'Alarm / control input. Switchable in software.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '60', name: 'Discrete Input DI 10', function: 'Alarm / control input. Switchable in software.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '61', name: 'Discrete Input DI 11', function: 'Alarm / control input. Switchable in software.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '62', name: 'Discrete Input DI 12', function: 'Alarm / control input. Switchable in software.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+  ],
+  /*
    * Woodward easYgen-2000 Series — terminal assignment tables 6-2 through 6-46
    * of Manual 37426B, "easYgen-2000 Series Installation", Software Version
    * 1.xxxx. Text-extractable, read table by table.

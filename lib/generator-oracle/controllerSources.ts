@@ -397,7 +397,33 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
       },
     ],
   },
-  'woodward-dtsc200': unsupported('Woodward DTSC-200', ['Woodward Manuals']),
+  'woodward-dtsc200': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'partial',
+    coverageNote:
+      'THE RELAY / DISCRETE OUTPUTS (terminals 31-49) ARE NOT PUBLISHED HERE. Table 5-18 came back internally ' +
+      'inconsistent on every read: relay R1\'s terminals were reported out of order (32, 33, 31), R2 was given a ' +
+      'single terminal where every other relay has two or three, and R9 was listed with no terminals at all. On a ' +
+      'transfer switch those outputs command the contactors, so nothing from that table is shipped — confirm them ' +
+      'against the manual before wiring. Terminal 9 is also absent: it appears in none of the assignment tables ' +
+      'read. Everything else (supply, earth, CAN, RS-485, load current, both voltage sources and all twelve ' +
+      'discrete inputs) read cleanly and consistently and is published. NOTE ALSO that this is an automatic ' +
+      'transfer switch controller, not a genset controller: it has no fuel, crank or charge terminals, which is ' +
+      'why it looks nothing like the easYgen entries from the same manufacturer.',
+    sources: [
+      {
+        title: 'Woodward DTSC-200 Installation Manual — terminal assignment tables 5-2 to 5-20',
+        documentType: 'OEM installation manual',
+        publisher: 'Woodward',
+        url: 'https://www.woodward.com',
+        accessedVia:
+          "Page-level HTML rendering on ManualsLib (manualslib.com), pages 14-32 of the 41-page installation manual. Woodward's own document server (wss.woodward.com) was tried first on the published manual path and returned 404, so the mirror is named rather than the provenance overstated as an OEM download.",
+        notes:
+          'Terminal numbers, voltage ranges and cable sizes are facts read from the manufacturer tables; each description is our own wording. DUAL-RANGE VOLTAGE INPUTS: every phase on both sources has two terminals, and the LOWER number is the 100 V range with the higher being 400 V — that mapping was confirmed by a second targeted read rather than assumed from the easYgen convention, which uses different voltages (120 V / 480 V). Woodward require the 100 V terminals when the configured secondary is 50-130 V and the 400 V terminals when it is 131-480 V, and warn against wiring both. PHASES RUN DESCENDING against terminal number on both voltage sources (N, L3, L2, L1) and on the load current inputs (L3, L2, L1); reproduced as printed. TERMINAL 10 IS A SHARED RETURN carrying all three load CT (l) legs, the same arrangement as terminal 4 on the easYgen-2000. Discrete inputs DI 1 to DI 4 are fixed normally closed; DI 5 is normally closed but switchable; DI 6 to DI 12 are switchable in software. The manual labels the two supplies only as Source 1 and Source 2 — which physical supply lands on which is an installation decision, so the terminal names keep that neutral wording.',
+      },
+    ],
+  },
 
   // SmartGen
   'smartgen-hgm6120': {
