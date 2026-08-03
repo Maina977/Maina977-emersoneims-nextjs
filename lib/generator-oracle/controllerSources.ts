@@ -452,7 +452,32 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
       },
     ],
   },
-  'datakom-d700': unsupported('Datakom D-700', ['Datakom Documents']),
+  'datakom-d700': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'partial',
+    coverageNote:
+      'This map is for the D-700 MK3 (Firmware V-16.8) and must NOT be used for the earlier D-700. ' +
+      'Both revisions were obtained from Datakom: the base D-700 (Rev_03, Firmware V-5.8) specifies TWELVE digital ' +
+      'inputs and SEVEN analog sender inputs, while this MK3 table lists five analog senders — so the two do not ' +
+      'share a terminal layout. The base revision\'s own numbered table is published only as a page image and could ' +
+      'not be read, so it is not covered here. Check the revision on the controller label before wiring. ' +
+      'Separately, the gaps are the manufacturer\'s and not missing data: terminals 32-43 are not listed, the AC ' +
+      'terminals run in gapped odd/even sequences, and there is no "Digital Input 11" — terminal 23 is Digital ' +
+      'Input 10 and terminal 24 is labelled Digital Input 12 in Datakom\'s own table.',
+    sources: [
+      {
+        title: 'Datakom D-700 MK3 User Manual, Firmware V-16.8 — section 8, Terminal Description',
+        documentType: 'OEM operator manual',
+        publisher: 'Datakom',
+        url: 'https://datakom.com.tr/upload/Files/700_MK3_USER.pdf',
+        accessedVia:
+          "Downloaded directly from Datakom's own site (datakom.com.tr) — no mirror involved. This PDF is text-extractable, so the terminal table was read from the document itself, unlike the D-500 whose table had to be read through ManualsLib.",
+        notes:
+          'Terminal numbers, voltage and current ratings are facts read from the manufacturer table; each description is our own wording. Datakom print NO cable sizes, so every gauge is recorded as "not stated by OEM" rather than inferred from the current rating. THE OPTIONAL DC PLUG-IN MODULE IS DELIBERATELY EXCLUDED: the same manual documents a plug-in module whose terminals are numbered 01-06 (I-, I+, *, V-, V2+, V1+), which would collide head-on with the main block\'s terminals 1-6 (battery supply and the crank/fuel outputs) if merged. It is a separate connector and is not part of this pinout. Phase order is reproduced as printed rather than tidied: generator phases descend against terminal number (63 = L1, 61 = L2, 59 = L3) and so do mains phases (66 = L3, 68 = L2, 70 = L1). Datakom state the CAN 120 ohm terminating resistors are internal and instruct that no external resistors be fitted.',
+      },
+    ],
+  },
   'datakom-dkg309': unsupported('Datakom DKG-309', ['Datakom Documents']),
   'datakom-dkg517': unsupported('Datakom DKG-517', ['Datakom Documents']),
 

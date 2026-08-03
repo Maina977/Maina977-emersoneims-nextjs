@@ -1040,6 +1040,94 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
   //
   // Wire COLOUR is "Not specified by OEM".
   /*
+   * Datakom D-700 MK3 — section 8 "TERMINAL DESCRIPTION" of the D-700 MK3 User
+   * Manual, Firmware V-16.8, downloaded from DATAKOM'S OWN SITE
+   * (datakom.com.tr/upload/Files/700_MK3_USER.pdf). Text-extractable, read
+   * directly from the document.
+   *
+   * ⚠ MK3-SCOPED. The base D-700 (Rev_03, Firmware V-5.8) was also pulled from
+   * Datakom's site and its specification section states 12 digital inputs and
+   * SEVEN analog sender inputs, whereas this MK3 table lists five analog
+   * senders (26-30). The two revisions therefore do NOT share a terminal
+   * layout, and the base D-700's own numbered table is published only as a page
+   * image, so it could not be read. Registry records completeness: 'partial' so
+   * the panel raises the amber banner naming the revision.
+   *
+   * TERMINAL NUMBERING JUMPS: the table runs 1-31 and resumes at 44. Terminals
+   * 32-43 are not listed. The AC section is also sparse by design — generator
+   * phases sit on 63/61/59 and mains phases on 66/68/70, both odd/even runs
+   * with gaps, and both in DESCENDING phase order relative to terminal number.
+   * Reproduced exactly as printed rather than tidied into ascending order.
+   *
+   * "DIGITAL INPUT 11" IS NOT A TRANSCRIPTION LOSS. Terminal 23 is Digital
+   * Input 10 and terminal 24 is labelled Digital Input 12 in Datakom's own
+   * table. The label is carried through as printed.
+   *
+   * THE DC PLUG-IN MODULE IS DELIBERATELY EXCLUDED. The same manual documents an
+   * optional DC plug-in module whose own terminals are numbered 01-06 (I-, I+,
+   * *, V-, V2+, V1+). Merging those into this list would collide head-on with
+   * the main block's terminals 1-6 — battery and crank/fuel outputs — which is
+   * exactly the kind of silent overlap that produces a dangerous diagram. They
+   * belong to a separate connector and are not part of this pinout.
+   *
+   * Datakom give NO cable sizes, so every gauge is recorded as not stated.
+   */
+  'datakom-d700': [
+    { pin: '1', name: 'Battery Positive 1', function: 'Positive terminal of the DC supply.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '+12 or 24 V DC', circuit: 'power', current: '-' },
+    { pin: '2', name: 'Battery Positive 2', function: 'Second positive supply terminal.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '+12 or 24 V DC', circuit: 'power', current: '-' },
+    { pin: '3', name: 'Battery Negative', function: 'DC supply negative connection.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0 V DC', circuit: 'power', current: '-' },
+    { pin: '4', name: 'Digital Output 1 — factory CRANK', function: 'Programmable output, selectable from a list. Factory set as the crank output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'starting', current: '1 A protected semiconductor output' },
+    { pin: '5', name: 'Digital Output 2 — factory FUEL', function: 'Programmable output. Factory set as the fuel output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'fuel', current: '1 A protected semiconductor output' },
+    { pin: '6', name: 'Digital Output 3 — factory ALARM', function: 'Programmable output. Factory set as the alarm output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'auxiliary', current: '1 A protected semiconductor output' },
+    { pin: '7', name: 'Digital Output 4 — factory PREHEAT', function: 'Programmable output. Factory set as the preheat output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'auxiliary', current: '1 A protected semiconductor output' },
+    { pin: '8', name: 'Digital Output 5 — factory STOP', function: 'Programmable output. Factory set as the stop output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'auxiliary', current: '1 A protected semiconductor output' },
+    { pin: '9', name: 'Digital Output 6 — factory IDLE SPEED', function: 'Programmable output. Factory set as the idle speed output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'auxiliary', current: '1 A protected semiconductor output' },
+    { pin: '10', name: 'Digital Output 7 — factory MAINS CONTACTOR', function: 'Programmable output. Factory set to drive the mains contactor.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'mains', current: '1 A protected semiconductor output' },
+    { pin: '11', name: 'Digital Output 8 — factory GENSET CONTACTOR', function: 'Programmable output. Factory set to drive the genset contactor.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'generator', current: '1 A protected semiconductor output' },
+    { pin: '12', name: 'Charge 1', function: 'Charge alternator terminal. Supplies excitation current and measures the charge alternator voltage. Acts as both input and output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'charging', current: '-' },
+    { pin: '13', name: 'Charge 2', function: 'Second charge alternator terminal, paired with terminal 12.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'charging', current: '-' },
+    { pin: '14', name: 'Digital Input 1 — factory LOW OIL PRESSURE', function: 'Programmable input. Factory set as the low oil pressure switch.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '15', name: 'Digital Input 2 — factory HIGH TEMP', function: 'Programmable input. Factory set as the high temperature switch.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '16', name: 'Digital Input 3 — factory EMERGENCY STOP', function: 'Programmable input. Factory set as the emergency stop input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'protection', current: '-' },
+    { pin: '17', name: 'Digital Input 4 — factory SPARE 1', function: 'Programmable input. Factory set as spare input 1.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '18', name: 'Digital Input 5 — factory SPARE 2', function: 'Programmable input. Factory set as spare input 2.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '19', name: 'Digital Input 6 — factory SPARE 3', function: 'Programmable input. Factory set as spare input 3.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '20', name: 'Digital Input 7 — factory SPARE 4', function: 'Programmable input. Factory set as spare input 4.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '21', name: 'Digital Input 8 — factory SPARE 5', function: 'Programmable input. Factory set as spare input 5.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '22', name: 'Digital Input 9 — factory SPARE 6', function: 'Programmable input. Factory set as spare input 6.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '23', name: 'Digital Input 10 — factory SPARE 7', function: 'Programmable input. Factory set as spare input 7.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '24', name: 'Digital Input 12 — low coolant level', function: 'Purpose-built low coolant level detection. Datakom drive this terminal with a low-amplitude pure sine waveform so the detector electrode does not wear. Labelled Digital Input 12 in the manufacturer table — there is no Digital Input 11.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '25', name: 'Sender Ground', function: 'Ground reference for the analogue senders. Datakom specify bonding this to the engine body, close to the senders.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '26', name: 'Analog Sender 1 — Oil Pressure', function: 'Oil pressure sender input. Datakom warn against connecting the sender to any other device.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '27', name: 'Analog Sender 2 — Coolant Temperature', function: 'Coolant temperature sender input. Not to be shared with other devices.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '28', name: 'Analog Sender 3 — Fuel Level', function: 'Fuel level sender input. Not to be shared with other devices.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '29', name: 'Analog Sender 4 — Oil Temperature', function: 'Oil temperature sender input. Not to be shared with other devices.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '30', name: 'Analog Sender 5 — Canopy Temperature', function: 'Canopy temperature sender input. Not to be shared with other devices.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '31', name: 'Sender Supply +5 V', function: 'Supply output for active-type senders. Protected by an internal electronic fuse against overload and short circuit.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '+5 V DC', circuit: 'metering', current: '50 mA maximum' },
+    // Terminals 32-43 are not listed in the manufacturer's table.
+    { pin: '44', name: 'MPU -', function: 'Magnetic pickup input, negative leg. Datakom recommend twisted pair or coaxial cable.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0.5 to 30 V AC', circuit: 'metering', current: '-' },
+    { pin: '45', name: 'MPU +', function: 'Magnetic pickup input, positive leg.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0.5 to 30 V AC', circuit: 'metering', current: '-' },
+    { pin: '46', name: 'GND', function: 'Ground reference associated with the magnetic pickup and CAN terminals.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '47', name: 'CANBUS-L', function: 'J1939 port of an electronic engine, low line. The 120 ohm terminating resistors are INSIDE the unit — Datakom instruct that no external resistors be fitted.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '48', name: 'CANBUS-H', function: 'J1939 port of an electronic engine, high line. Terminating resistors are internal.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '49', name: 'GEN I-GND+', function: 'Earth current transformer input, positive.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC' },
+    { pin: '50', name: 'GEN I-GND-', function: 'Earth current transformer input, negative.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC' },
+    { pin: '51', name: 'GEN I3+', function: 'Generator current transformer phase 3, positive. Correct polarity is critical and CTs must not be shared with other instruments.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '52', name: 'GEN I3-', function: 'Generator current transformer phase 3, negative.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '53', name: 'GEN I2+', function: 'Generator current transformer phase 2, positive.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '54', name: 'GEN I2-', function: 'Generator current transformer phase 2, negative.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '55', name: 'GEN I1+', function: 'Generator current transformer phase 1, positive.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '56', name: 'GEN I1-', function: 'Generator current transformer phase 1, negative.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '57', name: 'Generator Neutral', function: 'Neutral reference for the generator phase inputs.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '59', name: 'GEN-L3', function: 'Generator phase L3 voltage input. Generator phases run DESCENDING against terminal number (63 = L1, 61 = L2, 59 = L3), as printed.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '61', name: 'GEN-L2', function: 'Generator phase L2 voltage input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '63', name: 'GEN-L1', function: 'Generator phase L1 voltage input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '64', name: 'Mains Neutral', function: 'Neutral reference for the mains phase inputs.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+    { pin: '66', name: 'MAINS-L3', function: 'Mains phase L3 voltage input. Mains phases also run descending against terminal number (66 = L3, 68 = L2, 70 = L1).', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+    { pin: '68', name: 'MAINS-L2', function: 'Mains phase L2 voltage input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+    { pin: '70', name: 'MAINS-L1', function: 'Mains phase L1 voltage input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+  ],
+  /*
    * Datakom D-500 — Terminal Description table, pages 48-50 of the Datakom
    * D-500 User Manual, read via page-level HTML rendering on ManualsLib.
    *
