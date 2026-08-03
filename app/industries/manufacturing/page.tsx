@@ -166,14 +166,14 @@ export default function ManufacturingIndustriesPage() {
           <div className="grid md:grid-cols-2 gap-8">
             {[
               {
-                factory: 'Nairobi Steel Works',
+                factory: 'Steel works (Nairobi)',
                 issue: 'Grid outages causing production stops (KES 200K/hour loss), monthly equipment damage',
                 solution: '250 kVA generator + solar canopy + predictive maintenance SLA',
                 result: '99.7% uptime, KES 60M annual production protected, 50% fuel savings',
                 investment: 'KES 3.2M',
               },
               {
-                factory: 'East African Beverages',
+                factory: 'Beverage plant (Nairobi)',
                 issue: 'Refrigeration failures destroying product batches (KES 500K-1M per incident)',
                 solution: 'Dedicated UPS for cold-chain + 150 kVA backup + temperature monitoring',
                 result: 'Zero product loss in 18 months, KES 12M+ damage prevention',

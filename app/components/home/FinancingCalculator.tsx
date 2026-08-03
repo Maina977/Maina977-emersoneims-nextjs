@@ -7,7 +7,9 @@ export default function FinancingCalculator() {
   const [price, setPrice] = useState(1050000);
   const [months, setMonths] = useState(24);
 
-  // Realistic Kenya interest rates: KCB ~13%, Equity ~14%, Safaricom ~15%
+  // Indicative Kenya market rates by lender type. Named lenders removed 2026-08-03 —
+  // we do not publish other companies' names, and we hold no financing partnership
+  // with any of them. These are market averages a buyer should confirm themselves.
   const interestRate = 0.14;
   const monthlyRate = interestRate / 12;
 
@@ -27,9 +29,9 @@ export default function FinancingCalculator() {
   ];
 
   const banks = [
-    { name: 'KCB Bank', rate: '13%', time: '12-48 months', logo: '🏦' },
-    { name: 'Equity Bank', rate: '14%', time: '12-48 months', logo: '🏦' },
-    { name: 'Safaricom Money', rate: '15%', time: '6-36 months', logo: '📱' },
+    { name: 'Commercial bank loan', rate: '13%', time: '12-48 months', logo: '🏦' },
+    { name: 'Asset finance', rate: '14%', time: '12-48 months', logo: '🏦' },
+    { name: 'Mobile money credit', rate: '15%', time: '6-36 months', logo: '📱' },
   ];
 
   return (
@@ -55,7 +57,7 @@ export default function FinancingCalculator() {
             </span>
           </h2>
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-            Finance your generator through KCB Bank, Equity Bank, or Safaricom Money. Flexible terms, fast approval, same-day dispatch.
+            Finance your generator through a commercial bank, asset finance or mobile money credit. Flexible terms, fast approval, same-day dispatch.
           </p>
         </motion.div>
 
@@ -137,7 +139,7 @@ export default function FinancingCalculator() {
 
               <div className="mt-6 pt-6 border-t border-white/10">
                 <p className="text-sm text-gray-300">
-                  <span className="text-cyan-300 font-semibold">Interest Rate:</span> 14% per annum (Equity Bank average)
+                  <span className="text-cyan-300 font-semibold">Interest Rate:</span> 14% per annum (market average)
                 </p>
                 <p className="text-sm text-gray-300 mt-2">
                   <span className="text-cyan-300 font-semibold">Approval Time:</span> 24–48 hours · Deployment same-day

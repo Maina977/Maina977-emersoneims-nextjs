@@ -228,7 +228,7 @@ export const INDUSTRIES: Industry[] = [
     heroSubtitle: 'Zero-interruption power systems for hospitals - because a 10-second delay can mean the difference between life and death.',
     description: 'Medical-grade power solutions for hospitals, clinics, laboratories, and healthcare facilities. We specialize in critical power systems that meet international healthcare standards with zero transfer time.',
     marketSize: '9,458+ hospitals and clinics in Kenya',
-    marketDescription: 'Kenya\'s healthcare sector faces unique challenges: unreliable grid power, remote locations, and equipment that simply cannot tolerate interruptions. From Kenyatta National Hospital to rural health centers, every facility needs uninterrupted power.',
+    marketDescription: 'Kenya\'s healthcare sector faces unique challenges: unreliable grid power, remote locations, and equipment that simply cannot tolerate interruptions. From national referral hospitals to rural health centres, every facility needs uninterrupted power.',
     painPoints: [
       {
         title: 'Life Support Equipment Failure',
@@ -494,7 +494,7 @@ export const INDUSTRIES: Industry[] = [
     heroSubtitle: 'Mission-critical power systems for banks, SACCOs, and fintech companies. Zero tolerance for downtime.',
     description: 'Enterprise-grade power solutions for banks, microfinance institutions, SACCOs, insurance companies, and fintech startups. We understand that every second of downtime costs money and customer trust.',
     marketSize: 'All 43 banks + 180+ SACCOs + 500+ MFIs',
-    marketDescription: 'Kenya leads Africa in mobile money and digital banking. From Equity Bank branches to M-Pesa agents, the financial sector demands 99.99% uptime. Central Bank of Kenya regulations require documented backup power systems.',
+    marketDescription: 'Kenya leads Africa in mobile money and digital banking. From bank branches to mobile-money agents, the financial sector demands 99.99% uptime. Central Bank of Kenya regulations require documented backup power systems.',
     painPoints: [
       {
         title: 'ATM Downtime Losses',

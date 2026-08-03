@@ -1,5 +1,31 @@
 'use client';
 
+/**
+ * ⚠️ DEAD CODE — NOT RENDERED, AND MUST NOT BE RE-ENABLED AS IT STANDS.
+ *
+ * app/page.tsx imports SocialProofWidget from '@/components/home/...', which is
+ * a 3-line stub returning an empty div. THIS file is not imported by anything.
+ *
+ * Every testimonial below is FABRICATED: five invented individuals, invented
+ * job titles, and invented metrics ("99.8% uptime SLA met", "45% cost
+ * reduction", "94% accuracy to forecast"), each flagged `verified: true`. None
+ * of it has a signed release or any evidence behind it.
+ *
+ * That directly violates the publication policy in data/caseStudies.ts, which
+ * publishes a client only with written consent AND source-document evidence.
+ * It is the reason /case-studies shows an honest empty state rather than
+ * invented success stories.
+ *
+ * 2026-08-03: the named organisations were removed on the owner's instruction
+ * that we do not put other companies' names on our site — they read
+ * "Kenyatta National Hospital", "Equity Bank", "Nairobi Steel Works",
+ * "Bigot Flowers" and "Safaricom". Removing the names does NOT make the
+ * testimonials true.
+ *
+ * Before this component is ever used: replace every entry with a real,
+ * released client quote, or delete the file.
+ */
+
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
@@ -7,7 +33,7 @@ export default function SocialProofWidget() {
   const testimonials = [
     {
       name: 'Dr. James Kipchoge',
-      role: 'Hospital Director, Kenyatta National Hospital',
+      role: 'Hospital Director, Nairobi referral hospital',
       location: 'Nairobi',
       service: 'Generator Emergency Repair + UPS Systems',
       quote: 'When our main generator failed during a critical surgery, EmersonEIMS had a replacement running in 2 hours. Their 24/7 support saved lives.',
@@ -17,7 +43,7 @@ export default function SocialProofWidget() {
     },
     {
       name: 'Sarah Mwangi',
-      role: 'Operations Manager, Equity Bank',
+      role: 'Operations Manager, commercial bank',
       location: 'Kisumu',
       service: 'Solar + UPS + Generator Integration',
       quote: 'They designed a hybrid system that reduced our power costs by 45%. The AI sizing was spot-on — no guesswork, just engineering precision.',
@@ -27,7 +53,7 @@ export default function SocialProofWidget() {
     },
     {
       name: 'Peter Kariuki',
-      role: 'Manufacturing Director, Nairobi Steel Works',
+      role: 'Manufacturing Director, steel fabrication plant',
       location: 'Nairobi',
       service: 'Generator Maintenance + Preventive SLA',
       quote: 'We went from reactive repairs (KES 300K/year) to preventive maintenance (KES 120K/year). Their predictive maintenance caught 3 major issues before failure.',
@@ -37,7 +63,7 @@ export default function SocialProofWidget() {
     },
     {
       name: 'Grace Njoroge',
-      role: 'Farm Manager, Bigot Flowers',
+      role: 'Farm Manager, flower export farm',
       location: 'Naivasha',
       service: 'Solar System + Motor Rewinding',
       quote: 'EmersonEIMS sized our solar perfectly for Kenya\'s climate. Even in cloudy season, we hit 94% of forecast. No surprises, just science.',
@@ -47,7 +73,7 @@ export default function SocialProofWidget() {
     },
     {
       name: 'Mohamed Hassan',
-      role: 'Telecom Infrastructure Manager, Safaricom',
+      role: 'Telecom Infrastructure Manager, mobile network operator',
       location: 'Mombasa',
       service: 'Tower Generator + ATS + Monitoring',
       quote: 'Their ATS changeover system improved our tower uptime from 98.2% to 99.7%. That\'s millions in prevented data loss.',

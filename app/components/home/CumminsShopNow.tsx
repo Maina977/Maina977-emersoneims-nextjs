@@ -80,7 +80,7 @@ export default function CumminsShopNow() {
             </span>
           </h2>
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-            5 popular Cummins & VOLTKA models in stock across Kenya. Flexible financing from KCB, Equity, Safaricom Money. Same-day delivery to Nairobi, nationwide within 48 hours.
+            5 popular Cummins & VOLTKA models in stock across Kenya. Flexible financing through Kenyan banks and mobile money. Same-day delivery to Nairobi, nationwide within 48 hours.
           </p>
         </motion.div>
 
