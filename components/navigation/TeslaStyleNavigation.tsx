@@ -135,7 +135,7 @@ const MEGA_MENUS = {
           { href: '/generators/maintenance', label: 'Maintenance', icon: '🛠️', desc: 'Preventive & repair' },
           { href: '/generators/workshop-services', label: 'Workshop Repairs & Fabrication', icon: '🏭', desc: 'Rebuilds & custom steel' },
           { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'OEM & aftermarket' },
-          { href: '/generator-parts', label: 'Parts Catalog', icon: '📦', desc: '1,560+ SKUs' },
+          { href: '/generators/spare-parts', label: 'Parts Catalog', icon: '📦', desc: '1,560+ SKUs' },
           { href: '/generators/systems', label: 'Systems Guide', icon: '📚', desc: 'Educational hub' },
         ],
       },
@@ -160,7 +160,7 @@ const MEGA_MENUS = {
         title: 'Systems & Design',
         items: [
           { href: '/solar', label: 'Solar Overview', icon: '☀️', desc: 'Complete solutions' },
-          { href: '/solutions/solar', label: 'Commercial Solar', icon: '🏢', desc: 'Business & industrial' },
+          { href: '/solar', label: 'Commercial Solar', icon: '🏢', desc: 'Business & industrial' },
           { href: '/solar-genius-pro/design-studio', label: 'AI Design Studio', icon: '🎨', desc: 'Leaflet map · real irradiance', badge: 'NEW' },
           { href: '/solutions/solar-sizing', label: 'System Sizing', icon: '📐', desc: 'Right-size every kWh' },
         ],
@@ -178,10 +178,10 @@ const MEGA_MENUS = {
       {
         title: 'Service & Coverage',
         items: [
-          { href: '/resources/solar-ups-hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace + simulators' },
+          { href: '/hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace + simulators' },
           { href: '/hub/ups-lab', label: 'UPS Lab', icon: '🔋', desc: 'Battery + load tests' },
           { href: '/maintenance-hub/solar', label: 'Solar Maintenance Hub', icon: '🛠️', desc: 'Diagnostics & repair' },
-          { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Nationwide service' },
+          { href: '/kenya', label: '47 Counties', icon: '📍', desc: 'Nationwide service' },
           { href: '/booking', label: 'Book a Site Visit', icon: '📅', desc: 'Schedule today' },
         ],
       },
@@ -285,7 +285,7 @@ const MEGA_MENUS = {
         // Hub pages now live as a first-class section in the Resources mega.
         title: 'Solar / UPS Hub',
         items: [
-          { href: '/resources/solar-ups-hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace overview' },
+          { href: '/hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace overview' },
           { href: '/hub/simulator', label: 'UPS Simulator', icon: '🧪', desc: 'Sizing & runtime' },
           { href: '/hub/ups-lab', label: 'UPS Lab', icon: '🔋', desc: 'Battery + load tests' },
           { href: '/hub/verifier', label: 'Spec Verifier', icon: '✅', desc: 'Verify nameplate vs spec' },
@@ -316,7 +316,7 @@ const MEGA_MENUS = {
         title: 'Showcase',
         items: [
           { href: '/case-studies', label: 'Case Studies', icon: '📊', desc: 'Real outcomes' },
-          { href: '/case-study/hospital-blackout', label: 'Hospital Blackout', icon: '🏥', desc: 'Featured case' },
+          { href: '/case-studies', label: 'Case Studies', icon: '🏥', desc: 'Verified client projects' },
           { href: '/gallery', label: 'Gallery', icon: '🖼️', desc: 'Project photos' },
           { href: '/innovations', label: 'Innovations', icon: '💡', desc: 'R&D & breakthroughs' },
           { href: '/industries', label: 'Industries', icon: '🏭', desc: 'Sectors served' },
@@ -325,7 +325,7 @@ const MEGA_MENUS = {
       {
         title: 'Coverage & Marketplace',
         items: [
-          { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Kenya nationwide' },
+          { href: '/kenya', label: '47 Counties', icon: '📍', desc: 'Kenya nationwide' },
           { href: '/locations', label: 'Service Locations', icon: '🗺️', desc: 'Branch finder' },
           { href: '/marketplace', label: 'Partner Marketplace', icon: '🤝', desc: '50+ vetted partners', badge: 'NEW' },
           { href: '/kenya', label: 'Kenya Hub', icon: '🇰🇪', desc: 'Country-wide' },

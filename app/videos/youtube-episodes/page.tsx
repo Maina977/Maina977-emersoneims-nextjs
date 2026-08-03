@@ -4,6 +4,14 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'YouTube Episodes | EmersonEIMS Power Infrastructure Channel',
   description: 'Technical deep dives on backup power systems. Real installations, honest solutions. New episodes Tuesday & Thursday.',
+  /*
+   * Explicit self-canonical. The middleware matcher excludes `videos` — that
+   * exclusion was written for the /videos PUBLIC asset folder, but it also
+   * catches this ROUTE, so `x-pathname` is never set and app/layout.tsx cannot
+   * derive a canonical. It used to fall back to the homepage; that fallback now
+   * emits nothing, which is safer but still leaves these pages uncanonicalised.
+   */
+  alternates: { canonical: 'https://www.emersoneims.com/videos/youtube-episodes' },
 };
 
 export default function YouTubeEpisodesPage() {

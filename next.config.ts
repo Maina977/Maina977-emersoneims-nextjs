@@ -493,6 +493,36 @@ const nextConfig: NextConfig = {
         destination: '/case-studies',
         permanent: true,
       },
+      /*
+       * /case-study/:path* -> /case-studies
+       *
+       * The navbar linked /case-study/hospital-blackout (singular) under
+       * RESOURCES as "Featured case". No such route has ever existed, so it fell
+       * through to the catch-all and answered HTTP 200 with the title "Page Not
+       * Found" — a soft-404 the site pointed at from its own navigation.
+       * Audited live 2026-08-03. The nav now points at /case-studies; this
+       * redirect catches any inbound or already-indexed /case-study/* URL rather
+       * than 404ing it.
+       */
+      {
+        source: '/case-study/:path*',
+        destination: '/case-studies',
+        permanent: true,
+      },
+      /*
+       * /resources/solar-ups-hub -> /hub
+       *
+       * app/resources/solar-ups-hub/page.tsx calls redirect('/hub') and declares
+       * canonical '/hub' — it was always meant to be an alias. But like
+       * /generators/case-studies before it, the redirect never fired: it served
+       * HTTP 200 with 428 words of its own and no <h1>. A config redirect runs
+       * before routing and cannot be defeated by static optimisation.
+       */
+      {
+        source: '/resources/solar-ups-hub',
+        destination: '/hub',
+        permanent: true,
+      },
       // Fix solution/solutions duplicate
       {
         source: '/solution',

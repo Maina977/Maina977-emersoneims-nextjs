@@ -3,6 +3,9 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Field Trials & Performance Testing | EmersonEIMS',
   description: 'Real-world backup power system testing under load conditions. Kadence facility case study with performance data.',
+  // Explicit self-canonical — /videos/* bypasses middleware, so x-pathname is
+  // never set and the root layout cannot derive one. See the sibling index page.
+  alternates: { canonical: 'https://www.emersoneims.com/videos/youtube-episodes/field-trials' },
 };
 
 export default function FieldTrialsEpisodePage() {
