@@ -336,7 +336,22 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
       "DSE 8610 MKII Operator's Manual, pages 48-56, via ManualsLib page-level rendering",
     ],
   ),
-  'dse-8660': unsupported('DSE 8660 MKII', ['Deep Sea Electronics document depot']),
+  // Investigated 2026-08-03 and failed the SAME WAY as the DSE 8610 MKII above.
+  // Two failures with an identical signature on the same manual family is a
+  // pattern, not bad luck: the D+ and W/L rows of the DC output table render as
+  // if they were rows in the terminal-number column, which shifts every output
+  // that follows. Any future attempt on a DSE 8600-series manual should expect
+  // this and get a clean copy of the printed table rather than re-reading the
+  // same mirror.
+  'dse-8660': conflictingReads(
+    'DSE 8660 MKII',
+    "The DSE8660 MKII Operator's Manual (146 pages) was located and its connection-description subsections identified: DC supply and DC outputs on page 40, MSC and DSEnet on 41, mains and bus voltage sensing on 42, mains current transformers on 43, bus/load current transformer on 44, digital inputs on 45, RS485 on 46, RS232 on 47. Note this is a MAINS controller, so it has no fuel, crank, charge or engine-sensor terminals at all.",
+    'Page 40 was read twice with the DC output rows targeted directly, and the two readings were offset by exactly one terminal: the first placed DC outputs E through J on terminals 6-11, the second placed the same six outputs on 7-12. An off-by-one across every DC output is the most dangerous single error this data could carry. The cause is visible in both reads — the "D+" and "W/L" labels appear in the leftmost Pin No column without being terminal numbers, displacing the rows beneath them.',
+    [
+      'Deep Sea Electronics document depot',
+      "DSE 8660 MKII Operator's Manual, pages 40-48, via ManualsLib page-level rendering",
+    ],
+  ),
 
   // ComAp
   // ───────────────────────────────────────────────────────────────────────
@@ -634,8 +649,28 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
       'RGK800 Installation Manual, "Terminal Position" (page 6)',
     ],
   ),
-  'lovato-rgk900': unsupported('Lovato RGK900', ['Lovato Electric documentation portal']),
-  'lovato-atl800': unsupported('Lovato ATL800', ['Lovato Electric documentation portal']),
+  // Investigated 2026-08-03. Both confirmed individually rather than assumed
+  // from the RGK800 result, and both came back the same way: Lovato document
+  // terminals as labelled drawings across this whole range. That is now a
+  // verified house pattern for Lovato, but it was checked model by model.
+  'lovato-rgk900': diagramOnlyLayout(
+    'Lovato RGK900',
+    'The RGK900 instruction manual (83 pages) was opened and its "Terminals Arrangement" section, page 79, presents the layout as a labelled drawing covering the RGK900 and RGK900MC.',
+    'Terminals run 1 to 75 and are grouped visually — mains/bus, AVR, governor, battery, current inputs, expansion slot, CAN and RS485 — but the manual gives no accompanying list of individual terminal numbers against their functions.',
+    [
+      'Lovato Electric documentation portal',
+      'RGK900 Instruction Manual, "Terminals Arrangement" (page 79)',
+    ],
+  ),
+  'lovato-atl800': diagramOnlyLayout(
+    'Lovato ATL800',
+    'The ATL800 instruction manual (31 pages) was opened and its "Terminal Arrangement" section, page 28, presents the layout as a labelled drawing.',
+    'Group labels are legible — LINE 1, LINE 2, AC SUPPLY, BATTERY, OUT 7, and an RS485 block with A, B, SG and TR pins — but the individual terminal numbers are not readable against their functions.',
+    [
+      'Lovato Electric documentation portal',
+      'ATL800 Instruction Manual, "Terminal Arrangement" (page 28)',
+    ],
+  ),
 
   // ───────────────────────────────────────────────────────────────────────
   // Siemens — REAL Siemens products, but none of them is a genset controller.
