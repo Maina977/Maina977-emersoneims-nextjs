@@ -370,7 +370,33 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
   ]),
 
   // Woodward
-  'woodward-easygen2000': unsupported('Woodward easYgen-2000', ['Woodward Manuals']),
+  'woodward-easygen2000': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'partial',
+    coverageNote:
+      'All 83 terminals in the manufacturer\'s assignment tables are published, but SOME EXIST ONLY ON CERTAIN ' +
+      'MODELS IN THE SERIES and each is flagged in its own description: the MPU speed input (56, 57) is fitted only ' +
+      'to the easYgen-2200P1 and easYgen-2500P1, while analog outputs AO02-AO04 (60-66), CAN bus 2 (93-96) and ' +
+      'RS-485 (102-105) are easYgen-2500P1 only. TWO FURTHER CAUTIONS. First, every voltage phase has TWO terminals ' +
+      '— a 120 V input and a 480 V input (generator 14-21, mains/busbar 22-29) — and Woodward warn that wiring both ' +
+      'sets at once makes the unit measure incorrectly; which set is valid follows the configured PT secondary ' +
+      'rating (parameter 1800 generator, 1803 mains). Second, terminals 8 and 9 are dual-purpose, serving the mains ' +
+      'current transformer in one application and the ground/earth current transformer in another. Gaps in the ' +
+      'numbering (no 55, no 67-79, nothing between 96 and 102) are Woodward\'s, not missing data.',
+    sources: [
+      {
+        title: 'Woodward Manual 37426B — easYgen-2000 Series Installation, Software Version 1.xxxx',
+        documentType: 'OEM installation manual',
+        publisher: 'Woodward',
+        url: 'https://www.woodward.com',
+        accessedVia:
+          'PDF copy served by DSF Technologies (dsf-technologies.com), a Woodward distributor. Woodward publish this manual themselves but the copy actually read came from the distributor mirror, so the mirror is named rather than the provenance overstated. The PDF is text-extractable, so terminal assignment tables 6-2 through 6-46 were read table by table from the document.',
+        notes:
+          'Terminal numbers, cable sizes and ratings are facts read from the manufacturer tables; each description is our own wording. THE RS-232 CONNECTOR IS DELIBERATELY EXCLUDED: table 6-43 assigns pins 1-9 of a 9-pin D-sub (RxD, TxD, RTS, CTS and so on), and those are D-sub PIN numbers, not terminal-block numbers — merging them would collide head-on with terminals 1-9, the analog output and the generator current transformers. Same trap as the Datakom D-700 plug-in module. TERMINAL 4 IS A SHARED RETURN: all three generator CT (l) legs land on it, so it is listed once as the common rather than repeated per phase. Discrete inputs DI01-DI06 are pre-assigned but reconfigurable, whereas DI07 and DI08 are FIXED to reply MCB open and reply GCB open — that distinction is recorded because it is exactly what a technician needs to know before planning a rewire. DO NOT read this pinout against the easYgen-3000 entry in this registry: on the 3000 the starter is R3 at terminal 32 and the fuel solenoid R4 at 33 commoned on 35, whereas here the starter is R03 on 34/35 and the fuel solenoid R04 on 36/37, each with its own common.',
+      },
+    ],
+  },
   'woodward-dtsc200': unsupported('Woodward DTSC-200', ['Woodward Manuals']),
 
   // SmartGen

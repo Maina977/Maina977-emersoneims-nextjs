@@ -1040,6 +1040,131 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
   //
   // Wire COLOUR is "Not specified by OEM".
   /*
+   * Woodward easYgen-2000 Series — terminal assignment tables 6-2 through 6-46
+   * of Manual 37426B, "easYgen-2000 Series Installation", Software Version
+   * 1.xxxx. Text-extractable, read table by table.
+   *
+   * 83 terminals. Woodward number in blocks with real gaps — there is no 55, no
+   * 67-79, and nothing between 96 and 102 in the assignment tables. Those are
+   * not omissions here.
+   *
+   * ⚠ THE RS-232 CONNECTOR IS DELIBERATELY EXCLUDED. Table 6-43 assigns pins
+   * 1-9 of a 9-pin D-sub (RxD, TxD, RTS, CTS...). Those are D-sub PIN numbers,
+   * not terminal-block numbers, and merging them would collide head-on with
+   * terminals 1-9 — the analog output and the generator current transformers.
+   * Same trap as the Datakom D-700's plug-in module, caught the same way.
+   *
+   * ⚠ DUAL-RANGE VOLTAGE INPUTS. Every voltage phase has TWO terminals, one for
+   * the 120 V range and one for the 480 V range (generator 14-21, mains/busbar
+   * 22-29). Woodward warn: do NOT use both sets at once, or the unit will not
+   * measure correctly. Which set is valid depends on the configured PT
+   * secondary rating (parameter 1800 for generator, 1803 for mains).
+   *
+   * ⚠ TERMINALS 8 AND 9 ARE DUAL-PURPOSE — mains current transformer on one
+   * application (table 6-25) and ground/earth current transformer on another
+   * (table 6-27). Both readings are carried in the name.
+   *
+   * TERMINAL 4 IS SHARED. All three generator CT return legs (l) land on
+   * terminal 4; only the (k) legs get their own terminals at 5, 6 and 7. It is
+   * listed once, as the common, rather than three times.
+   *
+   * MODEL-SPECIFIC TERMINALS are flagged in each description: the MPU input
+   * (56, 57) exists only on the easYgen-2200P1 and 2500P1, and analog outputs
+   * AO02-AO04, CAN bus 2 and RS-485 only on the easYgen-2500P1.
+   *
+   * Do NOT read this against the already-verified easYgen-3000 entry. On the
+   * 3000 the starter is R3 at terminal 32 and the fuel solenoid R4 at 33, all
+   * commoned on 35. Here the starter is R03 on 34/35 and the fuel solenoid R04
+   * on 36/37, each with its own common. Same manufacturer, different machine.
+   *
+   * Wire COLOUR is not specified by Woodward.
+   */
+  'woodward-easygen2000': [
+    { pin: '1', name: 'Analog Output AO01 — current signal', function: 'Bias signal output to the speed/power controller, current mode (IA).', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '2', name: 'Analog Output AO01 — voltage / PWM signal', function: 'Bias signal output, voltage mode (VA) or PWM mode.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '3', name: 'Analog Output AO01 — GND', function: 'Common return for analog output AO01.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '4', name: 'Generator Current — common (l)', function: 'SHARED RETURN. All three generator CT secondary (l) legs land on this one terminal; only the (k) legs have their own terminals at 5, 6 and 7.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '5', name: 'Generator Current L1 (k)', function: 'Generator current transformer phase L1, terminal 1 (k).', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '6', name: 'Generator Current L2 (k)', function: 'Generator current transformer phase L2, terminal 1 (k).', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '7', name: 'Generator Current L3 (k)', function: 'Generator current transformer phase L3, terminal 1 (k).', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '8', name: 'Mains Current / Ground Current (l)', function: 'DUAL PURPOSE. Mains current transformer terminal 2 (l) in the mains-current application, or ground/earth current transformer terminal 2 (l) in the ground-current application.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '9', name: 'Mains Current / Ground Current (k)', function: 'DUAL PURPOSE. Mains current transformer terminal 1 (k), or ground/earth current transformer terminal 1 (k).', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '10', name: 'Analog Input Ground', function: 'Common ground for analog inputs AI01-AI03, connected with 0 V DC.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '0 V DC', circuit: 'metering', current: '-' },
+    { pin: '11', name: 'Analog Input AI01', function: 'Analogue sender input 1.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '12', name: 'Analog Input AI02', function: 'Analogue sender input 2.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '13', name: 'Analog Input AI03', function: 'Analogue sender input 3.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '14', name: 'Generator Voltage L1/Va — 120 V range', function: 'Generator phase L1 sensing, 120 V input. Use this set only when the configured PT secondary rating is 50-130 V. Never wire both ranges at once.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '120 V AC (0-150 V AC max)', circuit: 'generator', current: '-' },
+    { pin: '15', name: 'Generator Voltage L1/Va — 480 V range', function: 'Generator phase L1 sensing, 480 V input. Use this set only when the configured PT secondary rating is 131-480 V.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '480 V AC (0-600 V AC max)', circuit: 'generator', current: '-' },
+    { pin: '16', name: 'Generator Voltage L2/Vb — 120 V range', function: 'Generator phase L2 sensing, 120 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '120 V AC', circuit: 'generator', current: '-' },
+    { pin: '17', name: 'Generator Voltage L2/Vb — 480 V range', function: 'Generator phase L2 sensing, 480 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '480 V AC', circuit: 'generator', current: '-' },
+    { pin: '18', name: 'Generator Voltage L3/Vc — 120 V range', function: 'Generator phase L3 sensing, 120 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '120 V AC', circuit: 'generator', current: '-' },
+    { pin: '19', name: 'Generator Voltage L3/Vc — 480 V range', function: 'Generator phase L3 sensing, 480 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '480 V AC', circuit: 'generator', current: '-' },
+    { pin: '20', name: 'Generator Voltage N/Vcom — 120 V range', function: 'Generator neutral reference, 120 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '120 V AC', circuit: 'generator', current: '-' },
+    { pin: '21', name: 'Generator Voltage N/Vcom — 480 V range', function: 'Generator neutral reference, 480 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '480 V AC', circuit: 'generator', current: '-' },
+    { pin: '22', name: 'Mains / Busbar Voltage L1/Va — 120 V range', function: 'Mains or busbar phase L1 sensing, 120 V input. Which role these terminals serve depends on the application; the same block is labelled Mains (Busbar) in one wiring case and Busbar (Mains) in the other.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '120 V AC (0-150 V AC max)', circuit: 'mains', current: '-' },
+    { pin: '23', name: 'Mains / Busbar Voltage L1/Va — 480 V range', function: 'Mains or busbar phase L1 sensing, 480 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '480 V AC (0-600 V AC max)', circuit: 'mains', current: '-' },
+    { pin: '24', name: 'Mains / Busbar Voltage L2/Vb — 120 V range', function: 'Mains or busbar phase L2 sensing, 120 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '120 V AC', circuit: 'mains', current: '-' },
+    { pin: '25', name: 'Mains / Busbar Voltage L2/Vb — 480 V range', function: 'Mains or busbar phase L2 sensing, 480 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '480 V AC', circuit: 'mains', current: '-' },
+    { pin: '26', name: 'Mains / Busbar Voltage L3/Vc — 120 V range', function: 'Mains or busbar phase L3 sensing, 120 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '120 V AC', circuit: 'mains', current: '-' },
+    { pin: '27', name: 'Mains / Busbar Voltage L3/Vc — 480 V range', function: 'Mains or busbar phase L3 sensing, 480 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '480 V AC', circuit: 'mains', current: '-' },
+    { pin: '28', name: 'Mains / Busbar Voltage N/Vcom — 120 V range', function: 'Mains or busbar neutral reference, 120 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '120 V AC', circuit: 'mains', current: '-' },
+    { pin: '29', name: 'Mains / Busbar Voltage N/Vcom — 480 V range', function: 'Mains or busbar neutral reference, 480 V input.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '480 V AC', circuit: 'mains', current: '-' },
+    { pin: '30', name: 'Relay R01 — common', function: 'Common pole of relay output R01.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '31', name: 'Relay R01 — N.O. (Ready for operation)', function: 'Normally open contact of R01. Fixed function: ready for operation.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '32', name: 'Relay R02 — common', function: 'Common pole of relay output R02.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '33', name: 'Relay R02 — N.O. (preconfigured Horn)', function: 'Normally open contact of R02. Preconfigured to horn, switchable in software via the LogicsManager.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '34', name: 'Relay R03 — common', function: 'Common pole of relay output R03.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'starting', current: '2 A' },
+    { pin: '35', name: 'Relay R03 — N.O. (preconfigured Starter)', function: 'Normally open contact of R03. Preconfigured to the starter, switchable in software.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'starting', current: '2 A' },
+    { pin: '36', name: 'Relay R04 — common', function: 'Common pole of relay output R04.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'fuel', current: '2 A' },
+    { pin: '37', name: 'Relay R04 — N.O. (preconfigured Fuel solenoid / gas valve)', function: 'Normally open contact of R04. Preconfigured to the fuel solenoid or gas valve, switchable in software.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'fuel', current: '2 A' },
+    { pin: '38', name: 'Relay R05 — common', function: 'Common pole of relay output R05. This relay is a Form C changeover, the only one on the unit.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '39', name: 'Relay R05 — A, normally open', function: 'Normally open contact of R05. Command open MCB, or free via the LogicsManager.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '40', name: 'Relay R05 — B, normally closed', function: 'Normally closed contact of R05.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '41', name: 'Relay R06 — common', function: 'Common pole of relay output R06.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '42', name: 'Relay R06 — N.O. (Command close GCB)', function: 'Normally open contact of R06. Command close GCB, or free via the LogicsManager.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '43', name: 'Discrete Inputs — common ground', function: 'Common ground for discrete inputs DI01-DI08.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '44', name: 'DI01 — pre-assigned Emergency stop', function: 'Discrete input, pre-assigned to emergency stop. May be configured normally open or normally closed.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'protection', current: '-' },
+    { pin: '45', name: 'DI02 — pre-assigned Start in AUTO', function: 'Discrete input, pre-assigned to start in AUTO.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '46', name: 'DI03 — pre-assigned Low oil pressure', function: 'Discrete input, pre-assigned to low oil pressure.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '47', name: 'DI04 — pre-assigned Coolant temperature', function: 'Discrete input, pre-assigned to coolant temperature.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '48', name: 'DI05 — pre-assigned External alarm acknowledgement', function: 'Discrete input, pre-assigned to external alarm acknowledgement.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '49', name: 'DI06 — pre-assigned Enable MCB', function: 'Discrete input, pre-assigned to enable MCB.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '50', name: 'DI07 — FIXED to Reply MCB open', function: 'Discrete input with a FIXED function — reply MCB open. Unlike DI01-DI06 this one is not reassignable.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '51', name: 'DI08 — FIXED to Reply GCB open', function: 'Discrete input with a FIXED function — reply GCB open. Not reassignable.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '52', name: 'Auxiliary Excitation D+', function: 'Charging alternator D+. Acts as an OUTPUT that pre-excites the charging alternator during engine start-up only; in normal running it acts as an INPUT monitoring charge voltage.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '8 to 40 V DC', circuit: 'charging', current: '-' },
+    { pin: '53', name: 'Power Supply Positive (B+)', function: 'Supply positive, and the B+ reference for the charging alternator circuit. Woodward specify a slow-acting protective device in this line — a 6 A NEOZED D01 fuse or a 6 A type C miniature circuit breaker.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '12/24 V DC nominal (8 to 40.0 V DC)', circuit: 'power', current: '-' },
+    { pin: '54', name: 'Power Supply 0 V', function: 'Supply negative.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '0 V DC', circuit: 'power', current: '-' },
+    { pin: '56', name: 'MPU Input — inductive / switching', function: 'Magnetic pickup speed input. Fitted on the easYgen-2200P1 and easYgen-2500P1 ONLY.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '57', name: 'MPU Input — GND', function: 'Magnetic pickup ground. easYgen-2200P1 and 2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '58', name: 'CAN Bus 1 — CAN-L', function: 'CAN bus 1 low line. Present across the easYgen-2000 Series.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '59', name: 'CAN Bus 1 — CAN-H', function: 'CAN bus 1 high line.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '60', name: 'Analog Output AO02 — current signal', function: 'Bias signal output 2, current mode. easYgen-2500P1 ONLY.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '61', name: 'Analog Output AO02 — voltage / PWM signal', function: 'Bias signal output 2, voltage or PWM mode. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '62', name: 'Analog Output AO02 — GND', function: 'Common return for AO02. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '63', name: 'Analog Output AO03 — GND', function: 'Common return for AO03. easYgen-2500P1 only. Note the GND sits on the LOWER terminal number for AO03 and AO04, the reverse of AO01 and AO02.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '64', name: 'Analog Output AO03 — current signal', function: 'Bias signal output 3, current mode. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '65', name: 'Analog Output AO04 — GND', function: 'Common return for AO04. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '66', name: 'Analog Output AO04 — current signal', function: 'Bias signal output 4, current mode. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '80', name: 'Relay R07 — common', function: 'Common pole of relay output R07.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '81', name: 'Relay R07 — N.O. (Command close MCB)', function: 'Normally open contact of R07. Command close MCB, or free via the LogicsManager.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '82', name: 'Relay R08 — common', function: 'Common pole of relay output R08.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '83', name: 'Relay R08 — N.O. (Command open GCB)', function: 'Normally open contact of R08. Command open GCB, or free via the LogicsManager.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '84', name: 'Relay R09 — common', function: 'Common pole of relay output R09.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '85', name: 'Relay R09 — N.O. (LogicsManager)', function: 'Normally open contact of R09. Freely programmable through the LogicsManager.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '86', name: 'Relay R10 — common', function: 'Common pole of relay output R10.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '87', name: 'Relay R10 — N.O. (LogicsManager)', function: 'Normally open contact of R10. Freely programmable.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '88', name: 'Relay R11 — common', function: 'Common pole of relay output R11.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '89', name: 'Relay R11 — N.O. (LogicsManager)', function: 'Normally open contact of R11. Freely programmable.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Max. 250 V AC/DC', circuit: 'auxiliary', current: '2 A' },
+    { pin: '93', name: 'CAN Bus 2 — CAN-L', function: 'Second CAN bus, low line. easYgen-2500P1 ONLY.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '94', name: 'CAN Bus 2 — CAN-H', function: 'Second CAN bus, high line. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '95', name: 'CAN Bus 2 — GND', function: 'Second CAN bus ground. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '96', name: 'CAN Bus 2 — Shield', function: 'Second CAN bus screen. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '102', name: 'RS-485-B (TxD-)', function: 'RS-485 half-duplex with Modbus. easYgen-2500P1 ONLY.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '103', name: 'RS-485-A (TxD+)', function: 'RS-485 data line A. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '104', name: 'RS-485 GND', function: 'RS-485 ground. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '105', name: 'RS-485 Shield', function: 'RS-485 screen. easYgen-2500P1 only.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+  ],
+  /*
    * Datakom DKG-309 — "INPUTS AND OUTPUTS" terminal table of the DKG-309 User
    * Manual V-29 (23.08.2013), downloaded from DATAKOM'S OWN SITE
    * (datakom.com.tr/upload/Files/309_USER.pdf). Text-extractable, read directly.
