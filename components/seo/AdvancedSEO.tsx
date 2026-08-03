@@ -78,13 +78,8 @@ export default function AdvancedSEO() {
                 availableLanguage: ['English', 'Swahili'],
               },
             ],
-            aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: '4.9',
-              reviewCount: '500',
-              bestRating: '5',
-              worstRating: '1',
-            },
+            // Fabricated aggregateRating removed 2026-08-03. Real ratings must come
+            // from the Google Business Profile, never invented here.
             award: ['Best Generator Company Kenya 2024', 'Top Power Solutions Provider East Africa'],
           },
           // Local Business for each county
@@ -168,29 +163,9 @@ export default function AdvancedSEO() {
             url: 'https://www.emersoneims.com'
           }
         },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.9',
-          reviewCount: '350',
-          bestRating: '5',
-          worstRating: '1'
-        },
-        review: [
-          {
-            '@type': 'Review',
-            author: { '@type': 'Person', name: 'John Kamau' },
-            datePublished: '2024-08-15',
-            reviewBody: 'Excellent generator service. Fast installation and great after-sales support.',
-            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
-          },
-          {
-            '@type': 'Review',
-            author: { '@type': 'Person', name: 'Sarah Wanjiku' },
-            datePublished: '2024-07-22',
-            reviewBody: 'Very professional team. Our hospital backup power is now reliable.',
-            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
-          }
-        ]
+        // Fabricated aggregateRating removed 2026-08-03. Real ratings must come
+        // from the Google Business Profile, never invented here.
+        // Fabricated Review entries removed 2026-08-03 — invented authors and quotes.
       };
     }
 
@@ -249,29 +224,9 @@ export default function AdvancedSEO() {
             url: 'https://www.emersoneims.com'
           }
         },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.8',
-          reviewCount: '280',
-          bestRating: '5',
-          worstRating: '1'
-        },
-        review: [
-          {
-            '@type': 'Review',
-            author: { '@type': 'Person', name: 'David Ochieng' },
-            datePublished: '2024-09-10',
-            reviewBody: 'Our solar system has reduced our electricity bill by 80%. Great investment!',
-            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
-          },
-          {
-            '@type': 'Review',
-            author: { '@type': 'Person', name: 'Mary Njeri' },
-            datePublished: '2024-08-05',
-            reviewBody: 'Professional installation team. System works perfectly even during cloudy days.',
-            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
-          }
-        ]
+        // Fabricated aggregateRating removed 2026-08-03. Real ratings must come
+        // from the Google Business Profile, never invented here.
+        // Fabricated Review entries removed 2026-08-03 — invented authors and quotes.
       };
     }
 

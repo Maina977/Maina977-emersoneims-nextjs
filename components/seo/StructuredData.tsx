@@ -871,12 +871,8 @@ export function BrandSchema({
     description: description,
     logo: `https://www.emersoneims.com/images/brands/${brandName.toLowerCase().replace(/\s+/g, '-')}.png`,
     slogan: `Reliable ${brandName} Generators for Every Application`,
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '150',
-      bestRating: '5'
-    },
+    // Fabricated aggregateRating removed 2026-08-03. Real ratings must come
+    // from the Google Business Profile, never invented here.
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': location
@@ -932,12 +928,8 @@ export function BrandProductSchema({
         }
       }
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '87',
-      bestRating: '5'
-    },
+    // Fabricated aggregateRating removed 2026-08-03. Real ratings must come
+    // from the Google Business Profile, never invented here.
     additionalProperty: features?.map(feature => ({
       '@type': 'PropertyValue',
       name: 'Feature',
@@ -1005,12 +997,8 @@ export function SectorSchema({
         }
       }))
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '125',
-      bestRating: '5'
-    }
+    // Fabricated aggregateRating removed 2026-08-03. Real ratings must come
+    // from the Google Business Profile, never invented here.
   };
 
   return <StructuredData data={schema} />;
@@ -1063,12 +1051,8 @@ export function InternationalServiceSchema({
       }))
     },
     priceRange: 'USD 500 - USD 500,000',
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.7',
-      reviewCount: '45',
-      bestRating: '5'
-    }
+    // Fabricated aggregateRating removed 2026-08-03. Real ratings must come
+    // from the Google Business Profile, never invented here.
   };
 
   return <StructuredData data={schema} />;
