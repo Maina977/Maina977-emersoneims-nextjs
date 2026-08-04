@@ -52,16 +52,39 @@ const GeneratorSizingCalculator = dynamic(() => import('@/components/calculators
 
 // SALES BOOSTING COMPONENTS - MAXIMIZE CONVERSIONS
 const GeneratorSalesBooster = dynamic(() => import('@/components/generators/GeneratorSalesBooster'), { ssr: false });
-const GeneratorPriceList = dynamic(() => import('@/components/generators/GeneratorPriceList'), { ssr: false });
+/*
+ * SERVER-RENDERED ON PURPOSE — do not add `ssr: false` back.
+ *
+ * This component holds the real price table: 20 capacities from 10 kVA to
+ * 2000 kVA with a figure against each, built from the single source of truth in
+ * lib/brands/cumminsData.ts. Its own header comment reads "People search
+ * 'generator price Kenya' - give them prices!" — and it was then loaded with
+ * ssr:false, so not one of those prices ever appeared in the server response.
+ * Google never saw them. The live page showed only 6 hardcoded KES figures
+ * while 20 real ones sat behind a client-only chunk.
+ *
+ * "Generator prices Kenya" is the highest commercial-intent query this business
+ * can rank for, and the answer was already written and deliberately hidden.
+ *
+ * Safe to server-render: the component uses useState only — no window,
+ * document, localStorage or observers. It still code-splits; dropping ssr:false
+ * changes only whether the markup is in the HTML.
+ */
+const GeneratorPriceList = dynamic(() => import('@/components/generators/GeneratorPriceList'));
 const SizingCalculatorNew = dynamic(() => import('@/components/generators/GeneratorSizingCalculator'), { ssr: false });
 
 // EDUCATIONAL CONTENT - KNOWLEDGE CENTER
 const GeneratorEducationPanel = dynamic(() => import('@/components/generators/GeneratorEducationPanel'), { ssr: false });
 const CinematicImageGallery = dynamic(() => import('@/components/ui/CinematicImageGallery'), { ssr: false });
-const CumminsBanner = dynamic(() => import('@/components/brands/CumminsBanner'), { ssr: false });
+// Server-rendered: carries brand copy and pricing (showPricing) directly under
+// the hero. Verified free of browser-only APIs.
+const CumminsBanner = dynamic(() => import('@/components/brands/CumminsBanner'));
 
 // CONVERSION CTA HUB - Direct Action Buttons
-const ConversionCTAHub = dynamic(() => import('@/components/generators/ConversionCTAHub'), { ssr: false });
+// Server-rendered: this is a block of conversion links. Client-only rendering
+// made them invisible to the crawler, so they carried no internal-link value
+// and did not exist for anyone whose JS failed.
+const ConversionCTAHub = dynamic(() => import('@/components/generators/ConversionCTAHub'));
 
 // AI DIAGNOSTIC COMPONENTS
 const AIVisualDiagnostic = dynamic(() => import('@/components/generator-oracle/AIVisualDiagnostic'), { ssr: false });

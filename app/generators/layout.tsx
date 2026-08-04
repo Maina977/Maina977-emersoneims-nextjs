@@ -10,7 +10,13 @@ export const metadata: Metadata = {
    * as keyword stuffing. Keep this field to ~45 characters.
    */
   title: "Diesel Generators | Cummins & VOLTKA 10-2000kVA",
-  description: "Diesel generators in Kenya from 10kVA to 2000kVA, supplied with a 3-year warranty and one year of free servicing. Independent specialists — supply, installation, servicing and genuine parts, with a mobile workshop covering all 47 counties. Call +254768860665",
+  /*
+   * KEEP THIS UNDER ~155 CHARACTERS.
+   * The previous version ran to 260 and Google cut it mid-sentence, which
+   * wasted the part that actually sells: the warranty and the price range.
+   * Lead with the numbers a buyer is searching for.
+   */
+  description: "Diesel generators in Kenya, 10kVA-2000kVA, from KES 350,000. 3-year warranty + 1 year free servicing. Installed and serviced in all 47 counties.",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: 'Cummins & Voltka Generators Kenya | 10-2000kVA | EmersonEIMS',
