@@ -2283,7 +2283,7 @@ export default function GeneratorPage() {
             animate={{ scale: 1 }}
             transition={{ delay: 0.1, duration: 0.7 }}
           >
-            Cummins &amp; VOLTKA Diesel Generators
+            VOLTKA Cummins Diesel Generators
           </motion.h1>
           <motion.p
             className="mt-4 max-w-3xl text-white/90 text-xl md:text-2xl font-light"

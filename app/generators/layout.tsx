@@ -9,7 +9,15 @@ export const metadata: Metadata = {
    * with the brand twice, which Google truncates at roughly 60 and which reads
    * as keyword stuffing. Keep this field to ~45 characters.
    */
-  title: "Diesel Generators | Cummins & VOLTKA 10-2000kVA",
+  /*
+   * "VOLTKA Cummins", not "Cummins & VOLTKA".
+   * They are not two competing brands. Per lib/brands/cumminsData.ts the
+   * relationship is brandName: 'Cummins', supplier: 'Voltka' — Cummins sets
+   * supplied through Voltka, sold and serviced by EmersonEIMS. The ampersand
+   * implied a choice between two makes and split the keyword; the real
+   * flagship line is named VOLTKA Cummins (VKS 44 through VKS 275).
+   */
+  title: "VOLTKA Cummins Generators | 10-2000kVA",
   /*
    * KEEP THIS UNDER ~155 CHARACTERS.
    * The previous version ran to 260 and Google cut it mid-sentence, which
