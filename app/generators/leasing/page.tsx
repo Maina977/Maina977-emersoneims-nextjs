@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react';
+import { formatKES } from '@/lib/format/currency';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import ServiceCTASection from '@/components/cta/ServiceCTASection';
@@ -266,7 +267,7 @@ export default function GeneratorLeasingPage() {
                   >
                     <td className="p-4 font-semibold text-amber-400">{gen.kva} kVA</td>
                     <td className="p-4">{gen.brand}</td>
-                    <td className="p-4 text-emerald-400">KES {gen.monthlyFrom.toLocaleString()}/mo</td>
+                    <td className="p-4 text-emerald-400">KES {formatKES(gen.monthlyFrom)}/mo</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded text-xs ${gen.available > 5 ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
                         {gen.available} units

@@ -16,6 +16,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { formatKES } from '@/lib/format/currency';
 import Link from 'next/link';
 
 interface Part {
@@ -539,7 +540,7 @@ export default function SparePartsPage() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div>
                   <h2 className="text-3xl font-bold text-white mb-2">
-                    🔍 Found <span className="text-amber-400">{filteredParts.length.toLocaleString()}</span> spare parts
+                    🔍 Found <span className="text-amber-400">{formatKES(filteredParts.length)}</span> spare parts
                   </h2>
                   {searchQuery && (
                     <p className="text-gray-400">
@@ -571,12 +572,12 @@ export default function SparePartsPage() {
                   )}
                   {minPrice > 0 && (
                     <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full">
-                      Price ≥ KES {minPrice.toLocaleString()} ✕
+                      Price ≥ KES {formatKES(minPrice)} ✕
                     </span>
                   )}
                   {maxPrice < 1000000 && (
                     <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full">
-                      Price ≤ KES {maxPrice.toLocaleString()} ✕
+                      Price ≤ KES {formatKES(maxPrice)} ✕
                     </span>
                   )}
                   {minRating > 0 && (
@@ -636,7 +637,7 @@ export default function SparePartsPage() {
                       <div>
                         <p className="text-sm text-gray-500">Price</p>
                         <p className="text-xl font-bold text-amber-400">
-                          KES {(part.price || 0).toLocaleString()}
+                          KES {formatKES(part.price || 0)}
                         </p>
                       </div>
                       <div className="text-right">
@@ -664,7 +665,7 @@ export default function SparePartsPage() {
             {/* Load More Indicator */}
             <div className="text-center mt-12 pt-8 border-t border-slate-800">
               <p className="text-gray-400 text-sm mb-4">
-                Showing all {filteredParts.length} matching parts from {parts.length.toLocaleString()} in inventory
+                Showing all {filteredParts.length} matching parts from {formatKES(parts.length)} in inventory
               </p>
               <p className="text-amber-400 text-sm font-semibold">
                 🚚 Same-day delivery available in Nairobi | 📦 Nationwide shipping

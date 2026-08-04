@@ -15,6 +15,7 @@ import {
  */
 
 import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
+import { formatKESRange } from '@/lib/format/currency';
 
 interface GeneratorListing {
   brand: string;
@@ -206,9 +207,16 @@ export default function GeneratorPriceList() {
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <div className="text-white font-medium">
-                              {model.priceRange.min === model.priceRange.max
-                                ? `KES ${model.priceRange.min.toLocaleString()}`
-                                : `KES ${model.priceRange.min.toLocaleString()} - ${model.priceRange.max.toLocaleString()}`}
+                              {/*
+                                Locale-independent on purpose. This component is
+                                server-rendered so Google can see the prices, and
+                                a bare toLocaleString() would emit "600,000" on
+                                the server and "600.000" in a browser using dot
+                                separators — a hydration mismatch that makes the
+                                whole price table flicker or disappear.
+                                See lib/format/currency.ts.
+                              */}
+                              {formatKESRange(model.priceRange.min, model.priceRange.max)}
                             </div>
                           </div>
                           <a
