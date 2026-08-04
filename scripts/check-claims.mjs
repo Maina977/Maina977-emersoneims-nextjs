@@ -125,6 +125,28 @@ const RULES = [
 const isComment = (l) => /^\s*(\/\/|\*|\/\*)/.test(l);
 
 /**
+ * Reviewed exceptions — content that trips a rule but is verified correct.
+ *
+ * Keep this list SHORT and justified. A guard that reports known-good lines
+ * every run teaches people to ignore it, which is how the dealer claim survived
+ * two cleanups in the first place.
+ */
+const ALLOWED = [
+  {
+    file: 'lib/data/blog-articles.ts',
+    match: '- Factory-trained technicians',
+    // Sits in a buying guide under "Where to Buy in Kenya" -> "Authorized
+    // Dealers (Recommended)" -> "Pros". It describes what a reader gets from an
+    // authorised dealer. It is not a claim about EmersonEIMS, and rewording it
+    // would make the advice wrong.
+    why: 'editorial: pros of buying from an authorised dealer, not a claim about us',
+  },
+];
+
+const isAllowed = (rel, line) =>
+  ALLOWED.some((a) => rel === a.file && line.trim() === a.match);
+
+/**
  * Lines that mention an authorised dealer WITHOUT claiming to be one.
  *
  * All of these are real examples from this codebase that the first draft of
@@ -170,7 +192,7 @@ for (const file of files) {
   const isDead = DEAD.some((d) => d.test(rel));
 
   lines.forEach((line, i) => {
-    if (isComment(line) || isNotAClaimAboutUs(line)) return;
+    if (isComment(line) || isNotAClaimAboutUs(line) || isAllowed(rel, line)) return;
     for (const rule of RULES) {
       if (!rule.re.test(line)) continue;
       const hit = { rel, line: i + 1, rule: rule.id, why: rule.why, text: line.trim().slice(0, 110) };

@@ -270,7 +270,7 @@ export default function CumminsGuidesPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6">Need Expert Technical Support?</h2>
           <p className="text-lg text-gray-200 mb-10">
-            Our factory-trained technicians can help diagnose and resolve any Cummins generator issue.
+            Our technicians can help diagnose and resolve any Cummins generator issue.
           </p>
           <Link
             href="/contact?type=technical-support"

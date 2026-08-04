@@ -94,7 +94,7 @@ export default function CumminsSpecsPage() {
               <p className="text-gray-300 mb-4">Our nationwide service coverage provides:</p>
               <ul className="space-y-2 text-gray-300">
                 <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> OEM spare parts availability</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Factory-trained technicians</li>
+                <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Specialist technicians</li>
                 <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Preventive maintenance programs</li>
                 <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Emergency breakdown support</li>
               </ul>

@@ -247,7 +247,7 @@ export default function GeneratorServicesPage() {
               { icon: '⚡', title: '24/7 Support', desc: 'Emergency response anytime' },
               { icon: '✓', title: 'All Brands', desc: 'Cummins, Perkins, CAT, Volvo, FG Wilson' },
               { icon: '🛡️', title: 'Warranty', desc: 'All work guaranteed' },
-              { icon: '👨‍🔧', title: 'Certified', desc: 'Factory-trained technicians' },
+              { icon: '👨‍🔧', title: 'Specialist', desc: 'Technicians experienced on every major brand' },
               { icon: '📍', title: '47 Counties', desc: 'Nationwide coverage' },
               { icon: '💰', title: 'Best Rates', desc: 'Competitive pricing' },
               { icon: '📊', title: 'Reports', desc: 'Detailed service documentation' }

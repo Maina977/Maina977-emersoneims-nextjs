@@ -3099,7 +3099,7 @@ While cheaper alternatives exist, genuine parts:
 ### Why Choose Us?
 - **Transparent pricing** - No hidden costs
 - **Genuine parts** - Full warranty
-- **Certified technicians** - Factory trained
+- **Specialist technicians** - Experienced across all major brands
 - **All 47 counties** - Kenya-wide coverage
 - **24/7 emergency** - 2-hour response in Nairobi
 

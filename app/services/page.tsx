@@ -348,7 +348,7 @@ export default function ServicesPage() {
                 step: '02',
                 title: 'Install & commission',
                 problem: 'Cheap installs cost more in 3 years than they save on day one.',
-                action: 'Cummins/Voltka generators, IEC-grade panels, ATS, earthing, SPDs, full commissioning records. Factory-trained installation.',
+                action: 'Cummins/Voltka generators, IEC-grade panels, ATS, earthing, SPDs, full commissioning records. Specialist installation.',
                 outcome: '3-year warranty, 1-year free service and a complete documentation pack.',
               },
               {

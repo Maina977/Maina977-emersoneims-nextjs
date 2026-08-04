@@ -783,7 +783,7 @@ export default function GeneratorMaintenancePage() {
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center mb-4">Generator Brands We Service</h2>
           <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-            Factory-trained technicians for all major generator brands. Genuine parts and manufacturer-approved service procedures.
+            Specialist technicians for all major generator brands. Genuine parts and manufacturer-specification service procedures.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             {generatorBrands.map((brand, i) => (
@@ -914,7 +914,7 @@ export default function GeneratorMaintenancePage() {
             </p>
             <h3 className="text-white text-xl font-bold mt-6">Why Choose EmersonEIMS for Generator Maintenance?</h3>
             <ul className="list-disc pl-6 space-y-1">
-              <li>Factory-trained and certified technicians</li>
+              <li>Experienced multi-brand technicians</li>
               <li>Genuine OEM parts for all brands</li>
               <li>24/7 emergency response nationwide</li>
               <li>Comprehensive service documentation</li>

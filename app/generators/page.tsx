@@ -2767,6 +2767,38 @@ export default function GeneratorPage() {
         </div>
       </section>
 
+      {/*
+        Mid-page conversion band, placed immediately after the model grid.
+
+        This is the peak-intent moment on the page: the visitor has just looked
+        at the range and is holding a rough kVA figure in their head. Every
+        other CTA on this page sends them to /contact — off the page and out of
+        the story — so this one points at the on-page #quote form instead. The
+        /contact links elsewhere are left alone because several carry useful
+        intent parameters (?subject=leasing, ?generator=VOLTKA) that the form
+        does not.
+      */}
+      <section className="py-12 bg-gradient-to-r from-amber-950/30 via-black to-amber-950/30 border-y border-amber-500/20">
+        <div className="eims-shell py-0">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-display text-brand-gold mb-2">
+                Not sure which size you need?
+              </h2>
+              <p className="text-white/75 max-w-2xl">
+                Send us the equipment you need to run. We will work out the correct kVA and
+                come back with a written price — and if a smaller set does the job, we will
+                tell you that instead.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+              <a href="#quote" className="cta-button-primary whitespace-nowrap">Get a Quote {'→'}</a>
+              <a href="tel:+254768860665" className="cta-button-secondary whitespace-nowrap">Call an Engineer</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Spare Parts Section */}
       <section className="py-16 bg-black">
         <div className="eims-shell py-0">

@@ -92,7 +92,7 @@ export default function CompetitivePositioningPage() {
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Team Expertise</td>
-                  <td className="p-4 text-emerald-400">Factory trained ✓</td>
+                  <td className="p-4 text-emerald-400">Brand specialists ✓</td>
                   <td className="p-4 text-gray-400">Some certified</td>
                   <td className="p-4 text-gray-400">Basic training</td>
                   <td className="p-4 text-gray-400">Not disclosed</td>

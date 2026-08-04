@@ -345,7 +345,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
     description: 'Professional generator repair and maintenance services in Kenya. 24/7 emergency response, scheduled maintenance contracts, and annual servicing packages for all generator brands.',
     longDescription: `Don't let generator problems disrupt your business. EmersonEIMS provides fast, professional generator repair services across Kenya with 24/7 emergency response.
 
-Our factory-trained technicians service ALL generator brands including Cummins, Perkins, Caterpillar, FG Wilson, SDMO, John Deere, Volvo Penta, and more. From minor adjustments to complete engine overhauls, we have the expertise and genuine parts to get your generator running reliably.
+Our technicians service ALL generator brands including Cummins, Perkins, Caterpillar, FG Wilson, SDMO, John Deere, Volvo Penta, and more. From minor adjustments to complete engine overhauls, we have the expertise and genuine parts to get your generator running reliably.
 
 EMERGENCY REPAIRS: Power out? Our emergency team is on standby 24/7 with fully-equipped service vehicles ready to respond anywhere in Kenya within hours.
 
@@ -391,7 +391,7 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
       },
       {
         title: 'Certified Technicians',
-        description: 'Factory-trained technicians with extensive experience on all generator types.',
+        description: 'Specialist technicians with extensive experience on all generator types.',
         icon: '👨‍🔧'
       },
       {
@@ -1394,7 +1394,7 @@ OUR AC SERVICES:
 - AC replacement and upgrades
 - Commercial HVAC solutions
 
-We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier, and Midea. Our technicians are factory-trained and use proper equipment for quality installations.`,
+We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier, and Midea. Our technicians are experienced and use proper equipment for quality installations.`,
 
     icon: '❄️',
     heroImage: '/images/ac-installation.png',

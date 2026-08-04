@@ -224,7 +224,7 @@ export default function BuyingGuidesPage() {
             <ul className="grid md:grid-cols-3 gap-4 text-sm">
               <li className="flex items-start gap-2">
                 <span className="text-cyan-400">✓</span>
-                <span>Complete inspection by factory-trained technician</span>
+                <span>Complete inspection by a specialist technician</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-cyan-400">✓</span>

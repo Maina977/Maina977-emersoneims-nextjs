@@ -871,14 +871,14 @@ export const B2B_PROFILES = {
     eyebrow: 'Brands We Supply & Service',
     headline: 'The brands serious Kenyan sites trust — supplied, installed and maintained.',
     subtitle:
-      'Cummins, Voltka and other tier-one OEMs — supplied, installed and maintained by EmersonEIMS with genuine parts and factory-trained engineers.',
+      'Cummins, Voltka and other tier-one OEMs — supplied, installed and maintained by EmersonEIMS with genuine parts and specialist engineers.',
     whoFor: ['Facility managers', 'EPC & MEP contractors', 'Hospitals & critical sites', 'Manufacturing & agribusiness', 'Banks & financial', 'Government & NGOs'],
     pso: [
       { problem: 'Grey-market kit voids warranty and fails inspection.', solution: 'Traceably sourced equipment and genuine parts, so the manufacturer warranty stands.', outcome: 'Defensible warranty, longer asset life.' },
       { problem: 'Multi-brand sites need one accountable partner.', solution: 'EmersonEIMS service desk covers all listed brands.', outcome: 'One contract, one SLA, one escalation path.' },
       { problem: 'No clear way to compare brand options.', solution: 'Brand-by-brand engineering guidance from the team.', outcome: 'Right brand for the application, not the spreadsheet.' },
     ],
-    trust: ['Traceably sourced equipment', 'Genuine parts only', 'Factory-trained engineers', 'Multi-brand service contracts'],
+    trust: ['Traceably sourced equipment', 'Genuine parts only', 'Specialist multi-brand engineers', 'Multi-brand service contracts'],
     ctas: [
       { label: 'Request a Brand Quote', href: '/contact?topic=brand-quote', variant: 'primary' },
       { label: 'Book a Site Audit', href: '/booking?service=site-audit', variant: 'secondary' },

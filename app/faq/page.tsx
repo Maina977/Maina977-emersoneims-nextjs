@@ -25,7 +25,7 @@ const FAQ_DATA = [
     id: 'gen-3',
     category: 'Generators',
     question: 'What brands of generators do you supply?',
-    answer: 'We specialize in Cummins and Voltka generators. We also supply and service Caterpillar, FG Wilson, Perkins, Kohler, SDMO, MTU, Deutz, Volvo Penta, and other major brands from 20kVA to 2000kVA. Factory-trained technicians, genuine parts, full support.',
+    answer: 'We specialize in Cummins and Voltka generators. We also supply and service Caterpillar, FG Wilson, Perkins, Kohler, SDMO, MTU, Deutz, Volvo Penta, and other major brands from 20kVA to 2000kVA. Specialist technicians, genuine parts, full support.',
     tags: ['brands', 'cummins', 'caterpillar', 'kohler']
   },
   {
