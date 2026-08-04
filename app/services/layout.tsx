@@ -7,7 +7,7 @@ import Script from 'next/script';
  */
 
 export const metadata: Metadata = {
-  title: 'Services | Generators, Solar, Electrical, HVAC | EmersonEIMS Kenya',
+  title: 'Services | Generators, Solar, Electrical, HVAC',
   description: 'Complete power solutions in Kenya: Cummins generators with 3-year warranty, solar installation, ATS changeovers, distribution boards, UPS, motor rewinding, AC, borehole pumps. Call +254768860665',
   keywords: [
     // Generator Keywords
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://www.emersoneims.com/services',
     siteName: 'EmersonEIMS',
-    title: 'Professional Power Solutions | EmersonEIMS Kenya',
+    title: 'Professional Power Solutions',
     description: 'Complete power solutions: Cummins generators (3-year warranty), solar, electrical, HVAC. Professional installation and maintenance. 24/7 support.',
     images: [
       {
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Power Solutions Kenya | EmersonEIMS',
+    title: 'Power Solutions Kenya',
     description: 'Generators, solar, electrical, HVAC solutions with 3-year warranty. Professional service across Kenya.',
     images: ['/images/services-og.jpg'],
     creator: '@EmersonEIMS',

@@ -28,11 +28,11 @@ const SERVICES = [
 ];
 
 export const metadata: Metadata = {
-  title: `Generator, Solar & Electrical Services in ${COUNTY_DATA.name} County | Emerson EiMS Kenya`,
+  title: `Generator, Solar & Electrical Services in ${COUNTY_DATA.name} County`,
   description: `Professional generator installation, solar power, UPS, and electrical services in ${COUNTY_DATA.name} County. Covering all ${COUNTY_DATA.constituencies.length} constituencies. 24/7 emergency service. Call +254768860665`,
   keywords: `generator ${COUNTY_DATA.name}, solar installation ${COUNTY_DATA.name}, generator repair ${COUNTY_DATA.name}, ups ${COUNTY_DATA.name}, electrician ${COUNTY_DATA.name}, generator service ${COUNTY_DATA.name} county, solar company ${COUNTY_DATA.name}, generator maintenance ${COUNTY_DATA.name}, power solutions ${COUNTY_DATA.name}, ${COUNTY_DATA.constituencies.join(', ')}, generator installation ${COUNTY_DATA.name} kenya, best generator company ${COUNTY_DATA.name}, emergency generator repair ${COUNTY_DATA.name}`,
   openGraph: {
-    title: `Generator & Solar Services in ${COUNTY_DATA.name} County | Emerson EiMS`,
+    title: `Generator & Solar Services in ${COUNTY_DATA.name} County`,
     description: `Professional power solutions in ${COUNTY_DATA.name} County. All ${COUNTY_DATA.constituencies.length} constituencies covered. 24/7 Emergency Service.`,
     url: `https://www.emersoneims.com/counties/nairobi`,
     siteName: 'Emerson EiMS',

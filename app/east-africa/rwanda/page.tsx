@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import EastAfricaCityLinks from '@/components/east-africa/EastAfricaCityLinks';
 
 export const metadata: Metadata = {
-  title: 'Power Solutions Rwanda | Kigali Tech Hub | EmersonEIMS',
+  title: 'Power Solutions Rwanda | Kigali Tech Hub',
   description: 'Reliable generator and power solutions across Rwanda. Kigali datacenters, tech infrastructure, government services. 24/7 support in RWF. Call +250788123456.',
   alternates: {
     canonical: 'https://www.emersoneims.com/east-africa/rwanda',

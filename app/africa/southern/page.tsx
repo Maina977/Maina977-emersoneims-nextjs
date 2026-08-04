@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Power Solutions Southern Africa | Mining • Manufacturing • Utilities | South Africa Hub | EmersonEIMS',
+  title: 'Power Solutions Southern Africa | Mining • Manufacturing • Utilities | South Africa Hub',
   description: 'Reliable power across Southern Africa. South Africa mining powerhouse, Botswana diamonds, Zimbabwe gold. Industrial generators, UPS, remote monitoring. Call +27118876543.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/southern',

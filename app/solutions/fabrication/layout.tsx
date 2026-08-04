@@ -4,12 +4,12 @@ import type { ReactNode } from 'react';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Steel Fabrication & Sound-Attenuated Canopies Kenya | EmersonEIMS',
+  title: 'Steel Fabrication & Sound-Attenuated Canopies Kenya',
   description:
     'Custom steel fabrication, generator canopies, sound-attenuated enclosures, fuel tanks and skids — designed and welded in Nairobi by EmersonEIMS.',
   alternates: { canonical: `${SITE}/solutions/fabrication` },
   openGraph: {
-    title: 'Fabrication & Canopies Kenya | EmersonEIMS',
+    title: 'Fabrication & Canopies Kenya',
     description: 'Custom enclosures, canopies, fuel tanks and steelwork.',
     url: `${SITE}/solutions/fabrication`,
     siteName: 'EmersonEIMS',

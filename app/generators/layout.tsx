@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   description: "Diesel generators in Kenya, 10kVA-2000kVA, from KES 350,000. 3-year warranty + 1 year free servicing. Installed and serviced in all 47 counties.",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
-    title: 'Cummins & Voltka Generators Kenya | 10-2000kVA | EmersonEIMS',
+    title: 'Cummins & Voltka Generators Kenya | 10-2000kVA',
     description: 'Cummins generator sales & maintenance specialist. NEW generators with warranty + 1 year free maintenance. Serving all 47 counties. Expert installation & support.',
     type: 'website',
     url: 'https://www.emersoneims.com/generators',
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Cummins Generators Kenya | EmersonEIMS',
+    title: 'Cummins Generators Kenya',
     description: 'Buy NEW Cummins generators in Kenya. 10kVA-2000kVA. 1 year free service.',
   },
   /*

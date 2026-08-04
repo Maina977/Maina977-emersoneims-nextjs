@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'East Africa Power Solutions | Kenya • Tanzania • Uganda • Rwanda | EmersonEIMS',
+  title: 'East Africa Power Solutions | Kenya • Tanzania • Uganda • Rwanda',
   description: 'Regional power infrastructure across East Africa. Generators, UPS, solar, ATS for hospitals, factories, telecoms, and government. Kenya HQ, expanding across the region. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/east-africa',

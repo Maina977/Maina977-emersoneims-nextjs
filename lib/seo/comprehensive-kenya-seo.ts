@@ -451,19 +451,19 @@ export const PAGE_META = {
     description: "Kenya's Best Generator Company. 3-YEAR WARRANTY on all generators. Cummins, Perkins, FG Wilson authorized. Solar, UPS, Motor Rewinding. Serving 9,458+ hospitals, 16,245+ hotels. 24/7 Emergency Service. Call +254768860665"
   },
   generators: {
-    title: "Generator Sales & Installation Kenya | 3-Year Warranty | EmersonEIMS",
+    title: "Generator Sales & Installation Kenya | 3-Year Warranty",
     description: "Buy generators in Kenya with 3-YEAR WARRANTY. Cummins, Perkins, FG Wilson, Caterpillar. 10kVA-2000kVA. Sales, installation, maintenance. 47 counties coverage. Serving 9,458+ hospitals. Call +254768860665"
   },
   solar: {
-    title: "Solar Installation Kenya | All 47 Counties | 25-Year Warranty | EmersonEIMS",
+    title: "Solar Installation Kenya | All 47 Counties | 25-Year Warranty",
     description: "Best solar company in Kenya. Grid-tie, off-grid, hybrid systems. 25-year panel warranty. Serving all 47 counties, 16,245+ hotels, 93,988+ schools. Free written quotation. Call +254768860665"
   },
   maintenanceHub: {
-    title: "Maintenance Hub | 6,700+ Fault Codes | 47 Counties | EmersonEIMS",
+    title: "Maintenance Hub | 6,700+ Fault Codes | 47 Counties",
     description: "Kenya's most comprehensive maintenance guide. 6,700+ verified fault codes, 9 service categories, all 47 counties. Generator, solar, motor, AC, borehole, electrical services. 3-year warranty."
   },
   services: {
-    title: "9 Power Solutions Services | 3-Year Warranty | 47 Counties | EmersonEIMS",
+    title: "9 Power Solutions Services | 3-Year Warranty | 47 Counties",
     description: "Complete power solutions: Generators, Solar, UPS, Motor Rewinding, Borehole, AC, Electrical, Welding, Plumbing. 3-year generator warranty. Serving 9,458+ hospitals, 16,245+ hotels. 47 counties."
   }
 };

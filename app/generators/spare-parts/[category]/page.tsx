@@ -103,13 +103,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { category } = await params;
   const cat = getCategory(category);
-  if (!cat) return { title: 'Page Not Found | EmersonEIMS', robots: { index: false, follow: false } };
+  if (!cat) return { title: 'Page Not Found', robots: { index: false, follow: false } };
 
   const count = cat.parts?.length ?? 0;
   const brands = [...new Set((cat.parts ?? []).map((p) => p.brand).filter(Boolean))].slice(0, 6);
 
   return {
-    title: `${cat.name} — Generator Spare Parts Kenya | EmersonEIMS`,
+    title: `${cat.name} — Generator Spare Parts Kenya`,
     description: `${count} ${cat.name.toLowerCase()} for diesel generators in Kenya${
       brands.length ? ` — ${brands.join(', ')}` : ''
     }. Part numbers, engine compatibility and quotations. Dispatched nationwide from Nairobi.`,

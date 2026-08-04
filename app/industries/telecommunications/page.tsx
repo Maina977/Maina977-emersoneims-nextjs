@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Telecom Tower Power Solutions | Cell Site Backup Generators | EmersonEIMS Kenya',
+  title: 'Telecom Tower Power Solutions | Cell Site Backup Generators',
   description: '99.7% uptime for mobile network towers across Kenya. Automatic failover generators, battery backup UPS, remote monitoring, SLA guarantees. Prevents millions in network outages.',
   alternates: {
     canonical: 'https://www.emersoneims.com/industries/telecommunications',

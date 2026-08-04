@@ -48,8 +48,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const countyName = county?.name || '';
 
   return {
-    title: `Generator & Solar Services in ${locationName}${!isCounty && countyName ? `, ${countyName}` : ''} | EmersonEIMS`,
-    description: `Professional generator installation, solar power, UPS systems, and electrical services in ${locationName}, Kenya. 3-Year Warranty. 24/7 Emergency Service. Serving ${locationName} and surrounding areas. Call +254768860665.`,
+    // No "| EmersonEIMS" here — the root layout appends "| EmersonEIMS Kenya",
+    // so adding it again shipped the brand twice and ate the characters Google
+    // actually displays. The description was also 220+ characters, cut off well
+    // before the phone number; it now leads with the offer and fits.
+    title: `Generator & Solar Services in ${locationName}${!isCounty && countyName ? `, ${countyName}` : ''}`,
+    description: `Generators, solar, UPS and electrical services in ${locationName}. 3-year warranty, 24/7 emergency response, engineers on site. Call +254768860665.`,
     keywords: [
       `generator company ${locationName}`,
       `solar installation ${locationName}`,

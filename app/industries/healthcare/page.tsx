@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Healthcare Power Solutions | Hospitals & Clinics | EmersonEIMS Kenya',
+  title: 'Healthcare Power Solutions | Hospitals & Clinics',
   description: 'Reliable power for hospitals, clinics, and medical facilities across Kenya. Emergency backup generators, UPS systems, solar integration, 24/7 support. Zero downtime, NEMA compliance.',
   alternates: {
     canonical: 'https://www.emersoneims.com/industries/healthcare',

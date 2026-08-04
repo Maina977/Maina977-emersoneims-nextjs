@@ -8,7 +8,7 @@ import Script from 'next/script';
  */
 
 export const metadata: Metadata = {
-  title: 'Solar Solution School | 10 AI Engines | World\'s Most Advanced Solar Platform | EmersonEIMS',
+  title: 'Solar Solution School | 10 AI Engines | World\'s Most Advanced Solar Platform',
   description: 'Comprehensive solar design platform with 10 AI engines with 10 AI engines. 3D AI modeling, voice commands, neural optimization, 25-year predictions. Covers 15 African countries. Enterprise integrations with Salesforce & DocuSign. Free AI-powered solar design.',
   authors: [{ name: 'EmersonEIMS' }],
   creator: 'EmersonEIMS',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     locale: 'en_KE',
     url: 'https://www.emersoneims.com/solar',
     siteName: 'EmersonEIMS',
-    title: 'Solar Solution School | 10 AI Engines | EmersonEIMS',
+    title: 'Solar Solution School | 10 AI Engines',
     description: 'Leading solar design platform. 10 AI engines: 3D Design, Voice Control, Neural Optimizer, Permit Generator, Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, Grid Analyzer. 15 African countries.',
     images: [
       {
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Solar Solution School | 10 AI Engines | EmersonEIMS',
+    title: 'Solar Solution School | 10 AI Engines',
     description: 'World\'s most advanced solar AI. 10 engines, 15 countries, voice control, 3D design. Free.',
     images: ['/images/solar-ai-platform-og.jpg'],
     creator: '@EmersonEiMS',

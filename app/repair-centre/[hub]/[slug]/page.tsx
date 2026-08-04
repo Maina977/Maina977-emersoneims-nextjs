@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = a.directAnswer.slice(0, 300);
 
   return {
-    title: `${a.header.title} | EmersonEIMS`,
+    title: `${a.header.title}`,
     description,
     keywords: [a.header.equipmentCategory, a.header.title, 'fault diagnosis', 'repair guide', 'Kenya'],
     alternates: { canonical: url },

@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const service = getServiceBySlug(serviceSlug);
 
   if (!service) {
-    return { title: 'Service Not Found | EmersonEIMS' };
+    return { title: 'Service Not Found' };
   }
 
   return {

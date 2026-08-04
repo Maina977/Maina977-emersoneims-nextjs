@@ -54,7 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
      * location, so nothing unreal can ever be indexed.
      */
     return {
-      title: 'Page Not Found | EmersonEIMS',
+      title: 'Page Not Found',
       robots: { index: false, follow: false },
     };
   }

@@ -8,7 +8,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/hub`;
 
 export const metadata: Metadata = {
-  title: 'Solar & UPS Intelligence Hub — Sizing, Verification & Compatibility | EmersonEIMS',
+  title: 'Solar & UPS Intelligence Hub — Sizing, Verification & Compatibility',
   description:
     'Solar & UPS Intelligence Hub: smart sizing simulator, quotation audit, product intelligence, safety & diagnostics and a curated case library — built and maintained by EmersonEIMS engineers in Kenya.',
   keywords: [
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
    * x-pathname header.
    */
   openGraph: {
-    title: 'Solar & UPS Intelligence Hub | EmersonEIMS',
+    title: 'Solar & UPS Intelligence Hub',
     description:
       'Smart sizing, quotation audit, product intelligence and a curated case library for Kenya solar & UPS.',
     url: URL,

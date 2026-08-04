@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Terms of Service | Emerson EiMS',
+  title: 'Terms of Service',
   description: 'Terms of service for Emerson EiMS digital services.',
 };
 

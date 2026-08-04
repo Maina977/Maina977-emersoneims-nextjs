@@ -6,12 +6,12 @@ import FlagshipProductSchema from '@/components/seo/FlagshipProductSchema';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Equipment Diagnostics & Calculators | EmersonEIMS',
+  title: 'Equipment Diagnostics & Calculators',
   description:
     'Multi-service equipment diagnostics: generators, solar, high voltage, motors, AC, UPS, borehole pumps, fabrication, and incinerators. Q&A, sizing calculators, and quick-fix guidance. Kenya: +254 768 860 665.',
   alternates: { canonical: `${siteUrl}/diagnostics` },
   openGraph: {
-    title: 'Equipment Diagnostics & Calculators | EmersonEIMS',
+    title: 'Equipment Diagnostics & Calculators',
     description:
       'Interactive diagnostics and calculators for generators, solar, high voltage, motors, and more. EmersonEIMS — Reliable Power. Without Limits.',
     url: `${siteUrl}/diagnostics`,

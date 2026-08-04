@@ -8,7 +8,7 @@ import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata = {
-  title: "Cummins Generators — Powering Kenya | EmersonEIMS",
+  title: "Cummins Generators — Powering Kenya",
   description: "From 20kVA to 2000kVA, verified specs, Hollywood‑grade visuals, and engineering mastery.",
 };
 

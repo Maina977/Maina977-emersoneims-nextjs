@@ -6,7 +6,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/solar-design-studio`;
 
 export const metadata: Metadata = {
-  title: 'Solar Design Studio — 3D AI Solar Layout, Sizing & BOQ | EmersonEIMS',
+  title: 'Solar Design Studio — 3D AI Solar Layout, Sizing & BOQ',
   description:
     'Browser-based solar design studio: roof analysis, panel layout, string sizing, shading, irradiance and BOQ. Powered by EmersonEIMS Solar Genius Pro for installers across Kenya and East Africa.',
   keywords: [
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: URL },
   openGraph: {
-    title: 'Solar Design Studio — 3D Layout, Sizing & BOQ | EmersonEIMS',
+    title: 'Solar Design Studio — 3D Layout, Sizing & BOQ',
     description: '3D solar layout, sizing and BOQ in your browser. Built for Kenya & East Africa installers.',
     url: URL,
     siteName: 'EmersonEIMS',

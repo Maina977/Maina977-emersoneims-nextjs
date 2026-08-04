@@ -6,7 +6,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/generator-oracle`;
 
 export const metadata: Metadata = {
-  title: 'Generator Oracle — Generator Fault Diagnostic Intelligence | EmersonEIMS',
+  title: 'Generator Oracle — Generator Fault Diagnostic Intelligence',
   description:
     'Generator Oracle is the EmersonEIMS generator fault & controller diagnostic intelligence tool. 6,700+ verified fault codes plus range-based coverage of 450,000+ controller code numbers, for DeepSea (DSE), ComAp, Woodward, SmartGen and CAT PowerWizard — with reset pathways and direct escalation to Kenya engineers. Free to use.',
   keywords: [
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   applicationName: 'Generator Oracle',
   alternates: { canonical: URL },
   openGraph: {
-    title: 'Generator Oracle — Generator Diagnostic Intelligence | EmersonEIMS',
+    title: 'Generator Oracle — Generator Diagnostic Intelligence',
     description:
       '6,700+ verified fault codes, plus range-based coverage of 450,000+ controller code numbers, for DSE, ComAp, Woodward, SmartGen and PowerWizard. Built and maintained by Kenya generator engineers. Free to use.',
     url: URL,

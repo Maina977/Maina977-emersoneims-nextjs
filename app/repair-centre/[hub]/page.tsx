@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: hub.intro.slice(0, 300),
     alternates: { canonical: `https://www.emersoneims.com/repair-centre/${hub.slug}` },
     openGraph: {
-      title: `${hub.title} | EmersonEIMS`,
+      title: `${hub.title}`,
       description: hub.intro.slice(0, 300),
       url: `https://www.emersoneims.com/repair-centre/${hub.slug}`,
       type: 'website',

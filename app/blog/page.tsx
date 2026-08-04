@@ -21,7 +21,7 @@ import { BLOG_ARTICLES } from '@/lib/data/blog-articles';
  */
 
 export const metadata: Metadata = {
-  title: 'Blog | Power Infrastructure Insights | EmersonEIMS Africa',
+  title: 'Blog | Power Infrastructure Insights',
   description:
     'Expert insights on generators, solar, backup power and electrical infrastructure in Kenya — buying guides, running costs, maintenance and safety, written by working engineers.',
   alternates: {

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Solar Sizing Calculator Kenya | Panel, Battery, Inverter Sizing | EmersonEIMS",
+  title: "Solar Sizing Calculator Kenya | Panel, Battery, Inverter Sizing",
   description: "Free solar sizing calculator for Kenya. Calculate panel size, battery capacity, inverter rating. Load analysis for homes, offices, farms. Kenya PSH data by region. Design examples included. Call +254 768 860 665.",
   keywords: "solar sizing Kenya, solar calculator Kenya, solar panel size calculator, battery sizing calculator, solar system design Kenya, off-grid solar sizing, hybrid solar sizing Kenya, solar load calculation, solar for home Kenya, solar for office Kenya",
   openGraph: {
-    title: "Solar Sizing Calculator Kenya | Free Design Tool | EmersonEIMS",
+    title: "Solar Sizing Calculator Kenya | Free Design Tool",
     description: "Calculate exact solar panel, battery, and inverter sizes for your Kenya location. Includes PSH data and design examples.",
     url: "https://www.emersoneims.com/solutions/solar-sizing",
     siteName: "EmersonEIMS",

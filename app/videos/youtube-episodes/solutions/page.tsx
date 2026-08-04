@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Solutions: Complete Power Integration | EmersonEIMS',
+  title: 'Solutions: Complete Power Integration',
   description: 'Comprehensive backup power system design, installation, testing, and ongoing maintenance. Real installation walkthrough.',
   // Explicit self-canonical — /videos/* bypasses middleware, so x-pathname is
   // never set and the root layout cannot derive one. See the sibling index page.

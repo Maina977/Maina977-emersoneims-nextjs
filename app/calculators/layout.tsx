@@ -5,12 +5,12 @@ import type { ReactNode } from 'react';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Free Generator, Solar, UPS & Borehole Calculators Kenya | EmersonEIMS',
+  title: 'Free Generator, Solar, UPS & Borehole Calculators Kenya',
   description:
     'Free professional calculators: generator kVA sizing, solar system sizing, UPS load & runtime, battery bank, ROI, fuel consumption, payback. Built by EmersonEIMS engineers for Kenya conditions.',
   alternates: { canonical: `${SITE}/calculators` },
   openGraph: {
-    title: 'Power Calculators — Generators, Solar, UPS, Borehole | EmersonEIMS',
+    title: 'Power Calculators — Generators, Solar, UPS, Borehole',
     description: 'Free engineering calculators for power systems in Kenya.',
     url: `${SITE}/calculators`,
     siteName: 'EmersonEIMS',

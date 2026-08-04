@@ -7,7 +7,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/ai-tools`;
 
 export const metadata: Metadata = {
-  title: 'AI Engineering Tools — Generator Oracle, Solar Genius, AquaScan Pro | EmersonEIMS',
+  title: 'AI Engineering Tools — Generator Oracle, Solar Genius, AquaScan Pro',
   description:
     'Free AI tools for power, solar and water engineering: Generator Oracle (controller fault diagnosis), Solar Genius Pro (commercial solar engineering), AquaScan Pro (borehole intelligence) and Building Suite Pro. All in-browser, no signup.',
   keywords: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
    * x-pathname header.
    */
   openGraph: {
-    title: 'AI Engineering Tools — Generator Oracle, Solar Genius, AquaScan Pro | EmersonEIMS',
+    title: 'AI Engineering Tools — Generator Oracle, Solar Genius, AquaScan Pro',
     description:
       'Free AI engineering tools in your browser: generator diagnostics, solar design, borehole analysis, BIM/QS.',
     url: URL,

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { GeneratorDiagnosticFlowchart } from '@/components/visualizations/DiagnosticTools';
 
 export const metadata: Metadata = {
-  title: 'Borehole Drilling: Complete Technical Guide | Hydrogeology, Aquifer Testing | EmersonEIMS',
+  title: 'Borehole Drilling: Complete Technical Guide | Hydrogeology, Aquifer Testing',
   description: 'Professional borehole engineering guide: hydrogeology, transmissivity, aquifer testing, drilling methods, yield assessment, water quality, 30+ error codes, troubleshooting, maintenance for Kenya aquifers.',
   keywords: [
     'borehole drilling Kenya', 'water well drilling', 'aquifer testing', 'transmissivity',

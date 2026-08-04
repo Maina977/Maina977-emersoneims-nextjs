@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Air Conditioning: Complete Technical Guide | Split, Central, VRF | EmersonEIMS',
+  title: 'Air Conditioning: Complete Technical Guide | Split, Central, VRF',
   description: 'Professional AC engineering guide: refrigeration, SEER/EER, 45°C climate derating, 30+ error codes, troubleshooting, maintenance for split, central, VRF systems Kenya.',
   keywords: [
     'air conditioning Kenya', 'AC installation', 'split AC', 'central air', 'VRF',

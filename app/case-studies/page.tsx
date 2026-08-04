@@ -11,7 +11,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Case Studies — Real Power Solutions Across Kenya | EmersonEIMS',
+  title: 'Case Studies — Real Power Solutions Across Kenya',
   description: 'Verified power generation projects with measurable ROI: St. Austin Academy (50kVA Perkins), Bigot Flowers (cold-chain export), NTSA (critical infrastructure), Greenheart Kilifi (real estate), Kivukoni School (coastal). SLA-backed solutions, client testimonials, financial impact analysis.',
   keywords: 'generator case studies Kenya, real projects, verified results, power solutions, Cummins installation, Perkins generators, commercial power systems',
   openGraph: {

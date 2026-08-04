@@ -4,12 +4,12 @@ import type { ReactNode } from 'react';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Generator Troubleshooting Wizard Kenya | Step-by-Step Fault Diagnosis | EmersonEIMS',
+  title: 'Generator Troubleshooting Wizard Kenya | Step-by-Step Fault Diagnosis',
   description:
     'Free interactive generator troubleshooting wizard. Diagnose starting failures, alarms, AVR, ATS, fuel, charging and load faults in minutes. Backed by EmersonEIMS field engineers — call +254 768 860 665 for on-site repair across Kenya.',
   alternates: { canonical: `${SITE}/troubleshooting` },
   openGraph: {
-    title: 'Generator Troubleshooting Wizard | EmersonEIMS',
+    title: 'Generator Troubleshooting Wizard',
     description: 'Step-by-step generator fault diagnosis. Free interactive tool by EmersonEIMS Kenya.',
     url: `${SITE}/troubleshooting`,
     siteName: 'EmersonEIMS',
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Generator Troubleshooting Wizard | EmersonEIMS',
+    title: 'Generator Troubleshooting Wizard',
     description: 'Free step-by-step diagnostic tool for generators. Kenya-wide field support.',
   },
   robots: { index: true, follow: true },

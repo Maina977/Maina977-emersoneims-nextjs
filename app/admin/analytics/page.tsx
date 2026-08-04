@@ -4,7 +4,7 @@ import LiveAnalyticsDashboard from '@/components/LiveAnalyticsDashboard';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Live Analytics | EmersonEIMS Admin',
+  title: 'Live Analytics',
   description: 'Real-time visitor analytics dashboard',
   robots: 'noindex, nofollow', // Don't index admin pages
 };

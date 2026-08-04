@@ -7,7 +7,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/aquascan-pro-v3`;
 
 export const metadata: Metadata = {
-  title: 'AquaScan Pro — Borehole, Hydrogeology & Water Intelligence | EmersonEIMS',
+  title: 'AquaScan Pro — Borehole, Hydrogeology & Water Intelligence',
   description:
     'AquaScan Pro is the EmersonEIMS borehole and water intelligence platform: satellite indices, GLDAS, NASA POWER, water quality and audit-grade reports — used by drillers, NGOs and county projects across Kenya.',
   keywords: [
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
    * x-pathname header.
    */
   openGraph: {
-    title: 'AquaScan Pro — Borehole & Water Intelligence | EmersonEIMS',
+    title: 'AquaScan Pro — Borehole & Water Intelligence',
     description:
       'Audit-grade borehole, hydrogeology and water-quality intelligence with full data provenance — for drillers, NGOs and counties in Kenya.',
     url: URL,

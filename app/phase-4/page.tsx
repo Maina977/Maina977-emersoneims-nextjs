@@ -8,7 +8,7 @@ import { Metadata } from 'next';
 // internal use.
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
-  title: 'Phase 4: Market Leader Transformation | EmersonEIMS',
+  title: 'Phase 4: Market Leader Transformation',
   description: 'Phase 4 infrastructure: YouTube channel, podcast series, partner marketplace, certification program, mobile strategy. Building Africa\'s leading backup power ecosystem.',
 };
 

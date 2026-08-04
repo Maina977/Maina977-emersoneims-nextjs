@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Customer Success Stories | Verified Outcomes | EmersonEIMS',
+  title: 'Customer Success Stories | Verified Outcomes',
   description: 'Real customer success stories across healthcare, manufacturing, telecom, agriculture. Verified outcomes, ROI metrics, and transformation stories.',
 };
 

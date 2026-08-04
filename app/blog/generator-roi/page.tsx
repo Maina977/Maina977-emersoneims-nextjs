@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Backup Power ROI: When Does It Make Financial Sense? | EmersonEIMS',
+  title: 'Backup Power ROI: When Does It Make Financial Sense?',
   description: 'Calculate your backup power ROI. Real numbers, transparent methodology, honest assessment.',
 };
 

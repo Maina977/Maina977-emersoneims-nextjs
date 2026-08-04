@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Phase 5: Service Market Leadership | EmersonEIMS',
+  title: 'Phase 5: Service Market Leadership',
   description: 'Phase 5 expansion: Complete service mastery across 15 core offerings. Industry-specific solutions, advanced case studies, and real-world integration.',
 };
 

@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${article.title} | Emerson EiMS Blog`,
+    title: `${article.title}`,
     description: article.description,
     keywords: article.tags.join(', '),
     authors: [{ name: article.author }],

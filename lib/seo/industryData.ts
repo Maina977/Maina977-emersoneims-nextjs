@@ -1319,17 +1319,17 @@ export function generateIndustrySEO(slug: string) {
   if (!industry) return null;
 
   return {
-    title: `${industry.name} Generator & Power Solutions Kenya | EmersonEIMS`,
+    title: `${industry.name} Generator & Power Solutions Kenya`,
     description: `${industry.heroSubtitle} Serving ${industry.marketSize}. ${industry.description.slice(0, 120)}... Call +254768860665.`,
     keywords: industry.keywords,
     openGraph: {
-      title: `${industry.name} Power Solutions | EmersonEIMS Kenya`,
+      title: `${industry.name} Power Solutions`,
       description: industry.heroSubtitle,
       type: 'website' as const,
     },
     twitter: {
       card: 'summary_large_image' as const,
-      title: `${industry.name} Generator Solutions | EmersonEIMS`,
+      title: `${industry.name} Generator Solutions`,
       description: industry.heroSubtitle,
     }
   };

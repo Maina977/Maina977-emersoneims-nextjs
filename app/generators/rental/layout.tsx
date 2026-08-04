@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Rental Kenya | Daily, Weekly, Monthly | 7.5kVA to 2MVA | EmersonEIMS',
+  title: 'Generator Rental Kenya | Daily, Weekly, Monthly | 7.5kVA to 2MVA',
   description: 'Generator rental services across all 47 Kenya counties. Rent generators from 7.5kVA to 2MVA for events, construction, emergencies. Same-day delivery in Nairobi. Silent generators for weddings, concerts, corporate events. 24/7 support.',
   keywords: [
     // Primary Rental Keywords
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Generator Rental Kenya | EmersonEIMS',
+    title: 'Generator Rental Kenya',
     description: 'Rent generators 7.5kVA-2MVA. Events, construction, emergencies. All 47 counties.',
   },
   alternates: {

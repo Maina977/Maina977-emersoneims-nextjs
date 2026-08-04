@@ -5,7 +5,7 @@ import { SolarInverterTemperatureDerating } from '@/components/visualizations/Pe
 import { EfficiencyGauge } from '@/components/visualizations/DiagnosticTools';
 
 export const metadata: Metadata = {
-  title: 'Solar Inverters: Complete Technical Guide | MPPT, Hybrid, Grid-Tie | EmersonEIMS',
+  title: 'Solar Inverters: Complete Technical Guide | MPPT, Hybrid, Grid-Tie',
   description: 'Professional solar inverter engineering guide: 30+ error codes, MPPT algorithms, temperature management, grid-tie vs hybrid, troubleshooting procedures, maintenance schedules, safety standards. Real specifications and calculations for Kenya climate.',
   keywords: [
     'solar inverter', 'MPPT inverter', 'hybrid inverter', 'grid-tie inverter',

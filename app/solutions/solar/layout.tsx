@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Solar Solutions Kenya | Installation, Maintenance, Troubleshooting | EmersonEIMS",
+  title: "Solar Solutions Kenya | Installation, Maintenance, Troubleshooting",
   description: "Complete solar solutions in Kenya. Installation guides, maintenance schedules, inverter fault codes (SMA, Fronius, Huawei, Growatt), battery diagnostics. KPLC net metering experts. Call +254 768 860 665.",
   keywords: "solar installation Kenya, solar panels Kenya, solar inverter fault codes, SMA error codes, Fronius fault codes, solar maintenance Kenya, solar troubleshooting, KPLC net metering, hybrid solar Kenya, off-grid solar Kenya, solar battery Kenya",
   openGraph: {
-    title: "Solar Solutions Kenya | Installation, Maintenance & Repairs | EmersonEIMS",
+    title: "Solar Solutions Kenya | Installation, Maintenance & Repairs",
     description: "A Practical Solar Resource for Kenya. Installation guides, inverter troubleshooting, maintenance schedules.",
     url: "https://www.emersoneims.com/solutions/solar",
     siteName: "EmersonEIMS",

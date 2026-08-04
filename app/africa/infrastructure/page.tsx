@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Infrastructure Power Solutions | Construction • Dams • Ports • Telecom | 24/7 Support | EmersonEIMS Africa',
+  title: 'Infrastructure Power Solutions | Construction • Dams • Ports • Telecom | 24/7 Support',
   description: 'Construction site generators, infrastructure project power systems. Roads, dams, ports, airports, railways, telecom towers. Temporary to permanent solutions. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/infrastructure',

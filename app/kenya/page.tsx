@@ -4,7 +4,7 @@ import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
 
 export const metadata: Metadata = {
-  title: 'Generator Services Across Kenya | All 47 Counties | Emerson EiMS',
+  title: 'Generator Services Across Kenya | All 47 Counties',
   description: 'Professional generator installation, repair, maintenance, and rental services across all 47 counties in Kenya. Find generator companies, diesel generators, spare parts, and 24/7 emergency support in your area. Call +254768860665',
   keywords: [
     'generator services kenya',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     ...KENYA_LOCATIONS.map(c => `generator repair ${c.name}`),
   ].join(', '),
   openGraph: {
-    title: 'Generator Services Across All 47 Kenya Counties | Emerson EiMS',
+    title: 'Generator Services Across All 47 Kenya Counties',
     description: 'Find professional generator services in your county. Installation, repair, maintenance, rentals across Kenya.',
     type: 'website',
     locale: 'en_KE',

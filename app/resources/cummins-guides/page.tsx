@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Cummins Generator Technical Guides | Fault Codes & Maintenance | EmersonEIMS',
+  title: 'Cummins Generator Technical Guides | Fault Codes & Maintenance',
   description: 'Comprehensive Cummins technical library: fault codes, maintenance schedules, troubleshooting guides, filter specifications, fuel consumption data.',
   alternates: {
     canonical: 'https://www.emersoneims.com/resources/cummins-guides',

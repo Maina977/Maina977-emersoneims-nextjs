@@ -27,12 +27,12 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export const metadata: Metadata = {
-  title: 'Sectors We Power | Generator & Backup Power Solutions by Industry | EmersonEIMS',
+  title: 'Sectors We Power | Generator & Backup Power Solutions by Industry',
   description:
     'Backup power, solar and electrical engineering for hospitals, schools, banks, hotels, factories, farms and more across Kenya. Sector-specific load profiles, constraints and solutions.',
   alternates: { canonical: `${BASE}/sectors` },
   openGraph: {
-    title: 'Sectors We Power | EmersonEIMS',
+    title: 'Sectors We Power',
     description:
       'Backup power and electrical engineering by sector — hospitals, schools, banks, hotels, factories, farms and more across Kenya.',
     url: `${BASE}/sectors`,

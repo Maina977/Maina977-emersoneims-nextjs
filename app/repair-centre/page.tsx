@@ -4,7 +4,7 @@ import { REPAIR_HUBS, REPAIR_ARTICLES, getArticlesForHub } from '@/lib/repair-ce
 import RepairCentreMap from '@/components/repair-centre/RepairCentreMap';
 
 export const metadata: Metadata = {
-  title: 'Repair Centre | Generator, Inverter & UPS Fault Diagnosis | EmersonEIMS',
+  title: 'Repair Centre | Generator, Inverter & UPS Fault Diagnosis',
   description:
     'Technical fault diagnosis and repair guidance for diesel generators, inverters, UPS systems and generator controllers. Ranked causes, ordered diagnostic steps with expected readings, and the safety constraints stated rather than assumed.',
   keywords: [

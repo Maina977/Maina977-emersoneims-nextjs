@@ -7,7 +7,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/solar-genius-pro`;
 
 export const metadata: Metadata = {
-  title: 'Solar Genius Pro — Commercial Solar Design & Engineering Intelligence | EmersonEIMS',
+  title: 'Solar Genius Pro — Commercial Solar Design & Engineering Intelligence',
   description:
     'Solar Genius Pro is the EmersonEIMS commercial solar design and engineering intelligence tool: load profiling, hybrid sizing, financials, EPRA-aware compliance and proposal-ready outputs.',
   keywords: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
    * x-pathname header.
    */
   openGraph: {
-    title: 'Solar Genius Pro — Commercial Solar Engineering Intelligence | EmersonEIMS',
+    title: 'Solar Genius Pro — Commercial Solar Engineering Intelligence',
     description:
       'Load profiling, hybrid sizing, financials and EPRA-aware compliance for serious commercial solar projects.',
     url: URL,
