@@ -33,9 +33,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Fault Code Not Found' };
   }
 
+  /*
+   * TITLE AND DESCRIPTION TUNED FROM REAL SEARCH CONSOLE DATA (July 2026).
+   *
+   * The fault pages are the site's best RANKERS and its worst CONVERTERS:
+   *     /faults/spn-100   1,233 impressions   3 clicks   0.2% CTR   position 7.6
+   *     /faults/spn-190     855 impressions   7 clicks   0.8% CTR   position 6.1
+   *     /faults/spn-157     379 impressions   4 clicks   1.1% CTR   position 8.0
+   * 17 fault pages pulled 2,977 impressions and 21 clicks — 0.71% CTR while
+   * sitting on page one. Ranking is not the problem.
+   *
+   * TWO CAUSES, BOTH FIXED HERE.
+   *
+   * 1. The old title ANSWERED THE QUERY COMPLETELY.
+   *    "Cummins SPN-100 - Engine Oil Pressure Low" tells a technician searching
+   *    "spn 100 fmi 2" exactly what they wanted to know, in the search result.
+   *    They have no reason to click. The title now names the fault AND promises
+   *    what the SERP cannot deliver — the causes and the fix.
+   *
+   * 2. It was 80 characters. Google truncates near 60, so "| Generator Oracle |
+   *    EmersonEIMS Kenya" was cut off — three wasted words on every listing.
+   *    "Generator Oracle" is an internal product name and means nothing to
+   *    someone searching a fault code, so it is dropped. The root layout still
+   *    appends "| EmersonEIMS Kenya" for the brand.
+   *
+   * The description was 244 characters, also truncated mid-sentence, and ended
+   * in an ellipsis followed by boilerplate. It now leads with the answer and
+   * states the action, inside the limit.
+   */
   return {
-    title: `${fault.brand} ${fault.code} - ${fault.title} | Generator Oracle`,
-    description: `${fault.brand} fault code ${fault.code}: ${fault.title}. ${fault.description.slice(0, 150)}... Get step-by-step repair instructions.`,
+    title: `${fault.brand} ${fault.code}: ${fault.title} — Causes & Fix`,
+    description: `${fault.brand} ${fault.code} means ${fault.title}. Likely causes, how to diagnose it, and the steps to clear the fault. Generator support across Kenya.`,
     keywords: fault.searchKeywords?.join(', '),
     openGraph: {
       title: `${fault.brand} ${fault.code} - ${fault.title}`,
