@@ -258,7 +258,12 @@ export function LocalBusinessWithAreasSchema() {
       streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: 'Nairobi',
       addressRegion: 'Nairobi County',
-      postalCode: '00100',
+      // 00521, confirmed by the owner 2026-08-04. This was 00100 — the general
+      // Nairobi GPO code, not the Embakasi premises. Three different postal
+      // codes were live across the site's schema (00519, 00521, 00100); Google
+      // matches the address across site, Business Profile and directories, so
+      // the disagreement was weakening all of them.
+      postalCode: '00521',
       addressCountry: 'KE'
     },
     geo: {

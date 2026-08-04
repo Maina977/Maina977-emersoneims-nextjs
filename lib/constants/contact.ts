@@ -39,19 +39,30 @@ export const CONTACT = {
    * Aligned here. Nothing was invented; this is the address the codebase already
    * treats as authoritative.
    *
-   * Postal code 00519 comes from that same verified schema block. Note
-   * lib/seo/seoConfig.ts separately carries a P.O. Box (387-00521) — that is a
-   * postal box, not the physical location, and the two are not interchangeable
-   * for LocalBusiness schema.
+   * POSTAL CODE — 00521, CONFIRMED BY THE OWNER 2026-08-04.
+   *
+   * This field previously read 00519, taken from a schema block that looked
+   * authoritative. It was wrong. The rest of the site had it right: 00521
+   * appears in lib/seo/seoConfig.ts, components/seo/StructuredData.tsx,
+   * LocationServiceSchema.tsx, SEOHead.tsx and app/generators/layout.tsx.
+   *
+   * An earlier note here reasoned that 387-00521 in seoConfig was "a P.O. Box,
+   * not the physical location, and the two are not interchangeable". The box
+   * number 387 is indeed separate, but 00521 is the postal code for both. That
+   * inference produced a second, wrong code and split the site's NAP.
+   *
+   * NAP consistency (Name, Address, Phone) is a direct local-ranking signal:
+   * Google matches the address across the site, the Business Profile and
+   * directories, and disagreement weakens all of them. One code, everywhere.
    */
   ADDRESS: {
     street: 'Embakasi, off Airport North Road',
     landmark: 'Near KEMSA Head Office, behind Coca-Cola, close to Pride Centre',
     city: 'Nairobi',
     region: 'Nairobi',
-    postalCode: '00519',
+    postalCode: '00521',
     country: 'Kenya',
-    full: 'Embakasi, off Airport North Road, Nairobi 00519, Kenya'
+    full: 'Embakasi, off Airport North Road, Nairobi 00521, Kenya'
   },
 
   // Business hours

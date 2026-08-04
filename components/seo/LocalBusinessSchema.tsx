@@ -42,7 +42,10 @@ export default function LocalBusinessSchema({
       "streetAddress": address?.streetAddress || "Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi",
       "addressLocality": address?.addressLocality || "Nairobi",
       "addressRegion": address?.addressRegion || "Nairobi",
-      "postalCode": address?.postalCode || "00519",
+      // 00521, confirmed by the owner 2026-08-04. This default read 00519,
+      // which appeared nowhere else in the site's schema. See
+      // lib/constants/contact.ts for why the wrong code existed.
+      "postalCode": address?.postalCode || "00521",
       "addressCountry": address?.addressCountry || "KE"
     },
     "openingHoursSpecification": [
