@@ -113,12 +113,20 @@ export default function HeroVideo() {
               From industrial generators to advanced solar grids.
             </p>
 
+            {/*
+              These two anchors used to be #assessment and #technical, and
+              NEITHER ID EXISTS — /contact defines only #contact-form. Both
+              homepage hero CTAs therefore landed at the top of the contact page
+              and scrolled nowhere. The intent each button carried is preserved
+              in a ?topic= parameter, matching the pattern already used by
+              /contact?topic=generator-quote elsewhere.
+            */}
             <div className="cta-group">
-              <Link href="/contact#assessment" className="btn-primary group">
+              <Link href="/contact?topic=site-assessment#contact-form" className="btn-primary group">
                 <span className="relative z-10">REQUEST SITE ASSESSMENT</span>
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
               </Link>
-              <Link href="/contact#technical" className="btn-secondary group">
+              <Link href="/contact?topic=technical#contact-form" className="btn-secondary group">
                 <span className="relative z-10">SPEAK TO TECHNICAL TEAM</span>
                 <span className="arrow group-hover:translate-x-1 transition-transform inline-block ml-2">→</span>
               </Link>

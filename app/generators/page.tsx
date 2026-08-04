@@ -1638,7 +1638,10 @@ const FAQSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-slate-900 to-black">
+    // id="cummins-faq" is the target of /generators#cummins-faq, linked from
+    // app/generators/cummins/page.tsx. It did not exist, so that link scrolled
+    // nowhere — the same defect class as the "New Generators" navbar item.
+    <section id="cummins-faq" className="py-20 bg-gradient-to-b from-slate-900 to-black scroll-mt-28">
       <div className="max-w-4xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

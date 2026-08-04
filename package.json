@@ -50,6 +50,7 @@
     "test:all": "npm run test:run && npm run test:e2e",
     "verify:tools": "node scripts/verifyToolStack.mjs",
     "check:claims": "node scripts/check-claims.mjs",
+    "check:anchors": "node scripts/check-anchors.mjs",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
