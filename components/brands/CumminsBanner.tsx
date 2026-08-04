@@ -46,8 +46,8 @@ export default function CumminsBanner({
         <div className="relative max-w-7xl mx-auto px-4">
           {/* Main 3D Container */}
           <motion.div
-            initial={{ opacity: 0, y: 50, rotateX: 10 }}
-            whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+            initial={{ y: 50, rotateX: 10 }}
+            whileInView={{ y: 0, rotateX: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="relative"
@@ -81,8 +81,8 @@ export default function CumminsBanner({
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                   {/* Left Content */}
                   <motion.div
-                    initial={{ opacity: 0, x: -30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
+                    initial={{ x: -30 }}
+                    whileInView={{ x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.2 }}
                     className="text-center lg:text-left"
@@ -181,8 +181,8 @@ export default function CumminsBanner({
 
                   {/* Right Content - 3D Feature Cards */}
                   <motion.div
-                    initial={{ opacity: 0, x: 30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
+                    initial={{ x: 30 }}
+                    whileInView={{ x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.4 }}
                     className="grid grid-cols-2 gap-4"
@@ -195,8 +195,8 @@ export default function CumminsBanner({
                     ].map((item, i) => (
                       <motion.div
                         key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                        initial={{ y: 20 }}
+                        whileInView={{ y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.5 + i * 0.1 }}
                         whileHover={{
@@ -245,8 +245,8 @@ export default function CumminsBanner({
                 {/* Pricing Preview - Sci-Fi Grid */}
                 {showPricing && (
                   <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ y: 30 }}
+                    whileInView={{ y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.6 }}
                     className="mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"

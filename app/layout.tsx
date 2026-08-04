@@ -483,6 +483,25 @@ export default async function RootLayout({
         <link rel="alternate" hrefLang="x-default" href={`${siteUrl}`} />
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning lang={locale}>
+        {/*
+          NO-JS SAFETY NET.
+
+          framer-motion writes its `initial` state into the server-rendered
+          markup, so any element with initial={{ opacity: 0 }} ships as
+          style="opacity:0" and stays invisible until hydration. On /generators
+          alone that was 127 elements out of 1,380 — if the bundle fails to load
+          on a poor connection, most of the page is blank with no error and no
+          clue why.
+
+          This costs nothing when JavaScript works (a <noscript> block is inert)
+          and turns a blank page into a readable one when it does not. It is a
+          floor, not a fix: the real remedy is fewer elements starting hidden,
+          which is why the hero and the banner directly beneath it no longer
+          animate opacity at all.
+        */}
+        <noscript>
+          <style>{`[style*="opacity:0"],[style*="opacity: 0"]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
         {/* World-class font and resource preloading (client-only) */}
         <PerformanceBoot />
         <ScreenReaderAnnouncerProvider>
