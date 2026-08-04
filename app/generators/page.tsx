@@ -4,8 +4,25 @@ import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import HeroCinematicFX from '@/components/home/HeroCinematicFX';
+/*
+ * NO framer-motion, NO GSAP/three.js on this page — deliberately.
+ *
+ * This is the page that markets the business. It previously shipped 72
+ * motion-wrapped elements whose `initial={{ opacity: 0 }}` was written into the
+ * server HTML, so the content stayed invisible until a 486 KB bundle had
+ * downloaded, parsed and executed — roughly 3-4.5s on Nairobi 4G, longer on 3G,
+ * and permanently blank if the bundle failed. A first-time visitor met a mostly
+ * empty page.
+ *
+ * The owner's call, and the right one: on a commercial page, working beats
+ * beautiful. The visual design is untouched — colours, gradients, layout,
+ * spacing and CSS hover states all remain. What went is the JavaScript-driven
+ * motion and the cinematic FX layer.
+ *
+ * If motion is ever wanted back here, use CSS animations with
+ * animation-fill-mode so the content is visible by default and animates without
+ * blocking on JS. Do not reintroduce `initial={{ opacity: 0 }}` on this page.
+ */
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PERFORMANCE OPTIMIZED IMPORTS
@@ -260,10 +277,10 @@ const GeneratorBibleHub = () => {
   return (
     <section id="bible-hub" className="py-16 bg-gradient-to-b from-black via-slate-900/50 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
@@ -276,19 +293,19 @@ const GeneratorBibleHub = () => {
             Everything you need - from sales to service, spare parts to AI diagnostics.
             Your complete generator resource in Kenya.
           </p>
-        </motion.div>
+        </div>
 
         {/* Quick Navigation Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {GENERATOR_HUB_SECTIONS.map((section, index) => (
-            <motion.a
+            <a
               key={section.id}
               href={section.href}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
-              whileHover={{ scale: 1.03, y: -5 }}
+              
+              
+              
+              
+              
               className={`relative group p-5 rounded-2xl bg-gradient-to-br from-${section.color}-500/10 to-${section.color}-600/5 border border-${section.color}-500/20 hover:border-${section.color}-500/50 transition-all`}
             >
               {section.badge && (
@@ -299,7 +316,7 @@ const GeneratorBibleHub = () => {
               <div className="text-3xl mb-3">{section.icon}</div>
               <h3 className="text-white font-semibold mb-1">{section.title}</h3>
               <p className="text-gray-400 text-xs">{section.description}</p>
-            </motion.a>
+            </a>
           ))}
         </div>
       </div>
@@ -314,10 +331,10 @@ const GeneratorSystemsHub = () => {
   return (
     <section id="generator-systems" className="py-20 bg-gradient-to-b from-black via-slate-900 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm mb-4">
@@ -330,17 +347,17 @@ const GeneratorSystemsHub = () => {
             Understand every component of your generator. From engine to automation,
             learn how each system works and how to maintain it.
           </p>
-        </motion.div>
+        </div>
 
         {/* Systems Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {GENERATOR_SYSTEMS.map((system, index) => (
-            <motion.div
+            <div
               key={system.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
+              
+              
+              
+              
               className={`group cursor-pointer rounded-2xl p-5 border transition-all ${
                 activeSystem === system.id
                   ? `bg-${system.color}-500/20 border-${system.color}-500/50`
@@ -350,21 +367,21 @@ const GeneratorSystemsHub = () => {
             >
               <div className="flex items-start justify-between mb-3">
                 <span className="text-3xl">{system.icon}</span>
-                <motion.span
-                  animate={{ rotate: activeSystem === system.id ? 180 : 0 }}
+                <span
+                  
                   className="text-gray-400"
                 >
                   ▼
-                </motion.span>
+                </span>
               </div>
               <h3 className="text-white font-semibold mb-1">{system.name}</h3>
               <p className="text-gray-400 text-sm mb-3">{system.description}</p>
 
               {activeSystem === system.id && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
+                <div
+                  
+                  
+                  
                   className="border-t border-slate-700 pt-3 mt-3 space-y-3"
                 >
                   <div>
@@ -391,9 +408,9 @@ const GeneratorSystemsHub = () => {
                       ))}
                     </ul>
                   </div>
-                </motion.div>
+                </div>
               )}
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -424,10 +441,10 @@ const GeneratorLeasingSection = () => {
   return (
     <section id="leasing" className="py-20 bg-gradient-to-b from-black via-emerald-900/10 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-sm mb-4">
@@ -440,22 +457,22 @@ const GeneratorLeasingSection = () => {
             Don't want to buy? Lease a generator with maintenance included.
             Flexible terms from 6 months to lease-to-own options.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-4 gap-4 mb-8">
           {leasingPlans.map((plan, index) => (
-            <motion.div
+            <div
               key={plan.duration}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-2xl p-6 border border-emerald-500/20"
             >
               <h3 className="text-2xl font-bold text-white mb-2">{plan.duration}</h3>
               <div className="text-3xl font-bold text-emerald-400 mb-2">{plan.discount} OFF</div>
               <p className="text-gray-400 text-sm">Ideal for: {plan.ideal}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -503,10 +520,10 @@ const AIVisualDiagnosticSection = () => {
   return (
     <section id="ai-diagnostic" className="py-20 bg-gradient-to-b from-black via-pink-900/10 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-pink-500/10 border border-pink-500/20 rounded-full text-pink-400 text-sm mb-4">
@@ -524,7 +541,7 @@ const AIVisualDiagnosticSection = () => {
             candidate parts and likely faults to accelerate triage. Always
             verify against the equipment and the OEM manual before action.
           </p>
-        </motion.div>
+        </div>
 
         {/* Feature Cards */}
         <div className="grid md:grid-cols-4 gap-4 mb-8">
@@ -534,44 +551,44 @@ const AIVisualDiagnosticSection = () => {
             { icon: '🔮', title: 'Failure Prediction', desc: 'Time to failure estimate' },
             { icon: '💰', title: 'Parts & Pricing', desc: 'Availability & cost' },
           ].map((feature, index) => (
-            <motion.div
+            <div
               key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className="bg-slate-900/50 rounded-xl p-4 border border-slate-800 text-center"
             >
               <div className="text-3xl mb-2">{feature.icon}</div>
               <h3 className="text-white font-semibold text-sm">{feature.title}</h3>
               <p className="text-gray-400 text-xs">{feature.desc}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Toggle Diagnostic Tool */}
         <div className="text-center mb-8">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
+            
+            
             onClick={() => setShowDiagnostic(!showDiagnostic)}
             className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30"
           >
             <span className="text-2xl">🤖</span>
             <span>{showDiagnostic ? 'Hide Diagnostic Tool' : 'Open AI Visual Diagnostic'}</span>
-          </motion.button>
+          </button>
         </div>
 
         {/* AI Diagnostic Component */}
         {showDiagnostic && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+          <div
+            
+            
+            
             className="bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden"
           >
             <AIVisualDiagnostic />
-          </motion.div>
+          </div>
         )}
 
         {/* Alternative: Full Page Link */}
@@ -607,10 +624,10 @@ const TransparentPricing = () => {
   return (
     <section id="pricing" className="py-20 bg-gradient-to-b from-black via-amber-900/10 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
@@ -622,13 +639,13 @@ const TransparentPricing = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             No hidden costs. Prices include delivery, installation, ATS, commissioning, and 1-year free service.
           </p>
-        </motion.div>
+        </div>
 
         {/* VOLTKA house-brand value band — anchored to real EmersonEIMS pricing */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="mb-10 p-6 md:p-8 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-orange-500/5 text-center"
         >
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full mb-3">
@@ -649,16 +666,16 @@ const TransparentPricing = () => {
           >
             Get my VOLTKA quote
           </a>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {priceRanges.map((range, index) => (
-            <motion.div
+            <div
               key={range.kva}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className={`relative p-6 rounded-2xl border transition-all ${
                 range.popular
                   ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/10 border-amber-500/50'
@@ -685,7 +702,7 @@ const TransparentPricing = () => {
               >
                 Get Exact Quote
               </a>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -739,10 +756,10 @@ const BeforeAfterGallery = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-black via-slate-900 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm mb-4">
@@ -754,16 +771,16 @@ const BeforeAfterGallery = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             See the real impact of reliable power on our clients' operations
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           {projects.map((project, index) => (
-            <motion.div
+            <div
               key={project.client}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className="bg-slate-900/50 rounded-2xl overflow-hidden border border-slate-800"
             >
               {/* Project Image — real installation photography */}
@@ -801,7 +818,7 @@ const BeforeAfterGallery = () => {
                   </a>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
@@ -846,10 +863,10 @@ const VideoTestimonials = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-slate-900 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-full text-red-400 text-sm mb-4">
@@ -861,16 +878,16 @@ const VideoTestimonials = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             Real stories from real businesses about their power transformation
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {videos.map((video, index) => (
-            <motion.div
+            <div
               key={video.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className="group cursor-pointer"
               onClick={() => setActiveVideo(video.id)}
             >
@@ -900,7 +917,7 @@ const VideoTestimonials = () => {
               <h3 className="text-white font-semibold mb-1">{video.title}</h3>
               <p className="text-amber-400 text-sm mb-1">{video.client}</p>
               <p className="text-gray-400 text-sm italic">"{video.quote}"</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -926,10 +943,10 @@ const BrandComparisonTable = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-black to-slate-900">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-4">
@@ -941,7 +958,7 @@ const BrandComparisonTable = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             We service all brands. Here's how they compare:
           </p>
-        </motion.div>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-white">
@@ -958,12 +975,12 @@ const BrandComparisonTable = () => {
             </thead>
             <tbody>
               {brands.map((brand, index) => (
-                <motion.tr
+                <tr
                   key={brand.name}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
+                  
+                  
+                  
+                  
                   className="border-b border-gray-800 hover:bg-slate-900/50"
                 >
                   <td className="p-4 font-semibold text-white">{brand.name}</td>
@@ -973,7 +990,7 @@ const BrandComparisonTable = () => {
                   <td className="p-4">{brand.parts}</td>
                   <td className="p-4 text-amber-400">{brand.price}</td>
                   <td className="p-4 text-gray-300">{brand.best}</td>
-                </motion.tr>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -1006,10 +1023,10 @@ const FinancingCalculator = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-slate-900 to-black">
       <div className="max-w-4xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-sm mb-4">
@@ -1021,7 +1038,7 @@ const FinancingCalculator = () => {
           <p className="text-xl text-gray-400">
             Calculate your monthly payments. No interest on 3-month plans!
           </p>
-        </motion.div>
+        </div>
 
         <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-800">
           <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -1120,10 +1137,10 @@ const DownloadsSection = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-black to-slate-900">
       <div className="max-w-5xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm mb-4">
@@ -1135,17 +1152,17 @@ const DownloadsSection = () => {
           <p className="text-xl text-gray-400">
             Download detailed information for your planning
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {downloads.map((doc, index) => (
-            <motion.a
+            <a
               key={doc.name}
               href="/contact?download=brochure"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
+              
+              
+              
+              
               className="flex items-center gap-4 p-4 bg-slate-900/50 rounded-xl border border-slate-800 hover:border-blue-500/50 transition-all group"
             >
               <span className="text-3xl">{doc.icon}</span>
@@ -1154,7 +1171,7 @@ const DownloadsSection = () => {
                 <p className="text-gray-500 text-sm">{doc.type} • {doc.size}</p>
               </div>
               <span className="text-blue-400 group-hover:translate-x-1 transition-transform">↓</span>
-            </motion.a>
+            </a>
           ))}
         </div>
 
@@ -1181,10 +1198,10 @@ const LiveStatisticsCounter = () => {
   return (
     <section className="py-16 bg-gradient-to-r from-amber-500/10 via-black to-amber-500/10 border-y border-amber-500/20">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-sm mb-4">
@@ -1197,7 +1214,7 @@ const LiveStatisticsCounter = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-white">
             Kenya's Most Trusted Generator Partner
           </h2>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {[
@@ -1208,27 +1225,24 @@ const LiveStatisticsCounter = () => {
             { value: stats.uptimeAchieved, label: 'Client Uptime', suffix: '%', icon: '✅' },
             { value: stats.partsInStock, label: 'Parts in Stock', suffix: '+', icon: '🔧' },
           ].map((stat, index) => (
-            <motion.div
+            <div
               key={stat.label}
-              initial={{ opacity: 0, scale: 0.5 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className="text-center p-4 rounded-xl bg-black/50 border border-amber-500/20"
             >
               <span className="text-2xl block mb-2">{stat.icon}</span>
-              <motion.span
+              <span
                 className="text-3xl md:text-4xl font-bold text-amber-400 block"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
               >
                 {typeof stat.value === 'number' && stat.value % 1 !== 0
                   ? stat.value.toFixed(1)
                   : stat.value}{stat.suffix}
-              </motion.span>
+              </span>
               <span className="text-gray-400 text-sm">{stat.label}</span>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
@@ -1308,10 +1322,10 @@ const ClientTestimonials = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-black via-slate-900/50 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
@@ -1323,17 +1337,17 @@ const ClientTestimonials = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             From hospitals to hotels, factories to data centers - see why industry leaders choose EmersonEIMS
           </p>
-        </motion.div>
+        </div>
 
         {/* Testimonial Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {testimonials.map((testimonial, index) => (
-            <motion.div
+            <div
               key={testimonial.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className={`p-6 rounded-2xl border transition-all ${
                 index === currentIndex
                   ? 'bg-amber-500/10 border-amber-500/50 scale-105'
@@ -1373,7 +1387,7 @@ const ClientTestimonials = () => {
                   <span>{testimonial.location}, Kenya</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -1458,10 +1472,10 @@ const WhyChooseUs = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-black to-slate-900">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -1470,17 +1484,17 @@ const WhyChooseUs = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             We don't just sell generators. We deliver reliability, peace of mind, and a partnership that lasts.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reasons.map((reason, index) => (
-            <motion.div
+            <div
               key={reason.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.03, y: -5 }}
+              
+              
+              
+              
+              
               className="relative group p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-black border border-slate-800 hover:border-amber-500/50 transition-all"
             >
               {/* Highlight Badge */}
@@ -1491,7 +1505,7 @@ const WhyChooseUs = () => {
               <span className="text-4xl block mb-4">{reason.icon}</span>
               <h3 className="text-xl font-bold text-white mb-2">{reason.title}</h3>
               <p className="text-gray-400 text-sm">{reason.description}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
@@ -1504,10 +1518,7 @@ const GuaranteeSection = () => {
   return (
     <section className="py-20 bg-gradient-to-r from-emerald-500/10 via-black to-emerald-500/10 border-y border-emerald-500/20">
       <div className="max-w-5xl mx-auto px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
+        <div
         >
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
             <span className="text-5xl">🛡️</span>
@@ -1542,7 +1553,7 @@ const GuaranteeSection = () => {
           <p className="text-gray-400 text-sm italic">
             "If your generator doesn't perform as promised, we'll fix it or replace it. Period." — John Emerson, Founder
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -1570,10 +1581,10 @@ const UrgencySection = () => {
   return (
     <section className="py-12 bg-gradient-to-r from-red-500/20 via-black to-red-500/20 border-y border-red-500/30">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="flex flex-col lg:flex-row items-center justify-between gap-6"
         >
           <div className="text-center lg:text-left">
@@ -1607,15 +1618,15 @@ const UrgencySection = () => {
             ))}
           </div>
 
-          <motion.a
+          <a
             href="/contact?promo=march-sale"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            
+            
             className="px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/30"
           >
             Claim This Offer →
-          </motion.a>
-        </motion.div>
+          </a>
+        </div>
       </div>
     </section>
   );
@@ -1666,10 +1677,10 @@ const FAQSection = () => {
     // nowhere — the same defect class as the "New Generators" navbar item.
     <section id="cummins-faq" className="py-20 bg-gradient-to-b from-slate-900 to-black scroll-mt-28">
       <div className="max-w-4xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -1678,16 +1689,16 @@ const FAQSection = () => {
           <p className="text-xl text-gray-400">
             Everything you need to know before buying
           </p>
-        </motion.div>
+        </div>
 
         <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
+              
+              
+              
+              
               className="border border-slate-800 rounded-xl overflow-hidden"
             >
               <button
@@ -1695,24 +1706,24 @@ const FAQSection = () => {
                 className="w-full p-5 text-left flex items-center justify-between bg-slate-900/50 hover:bg-slate-900 transition-colors"
               >
                 <span className="text-white font-semibold pr-4">{faq.question}</span>
-                <motion.span
-                  animate={{ rotate: openFaq === index ? 180 : 0 }}
+                <span
+                  
                   className="text-amber-400 text-xl flex-shrink-0"
                 >
                   ▼
-                </motion.span>
+                </span>
               </button>
               {openFaq === index && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
+                <div
+                  
+                  
+                  
                   className="p-5 bg-black/50 border-t border-slate-800"
                 >
                   <p className="text-gray-300">{faq.answer}</p>
-                </motion.div>
+                </div>
               )}
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -1750,16 +1761,16 @@ const FloatingWhatsApp = () => {
   if (!isVisible) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0, y: 100 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
+    <div
+      
+      
       className="fixed bottom-6 right-6 z-50"
     >
       {/* Message Bubble */}
       {showMessage && (
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+        <div
+          
+          
           className="absolute bottom-16 right-0 mb-2 p-3 bg-white rounded-xl shadow-xl max-w-[200px]"
         >
           <button
@@ -1771,23 +1782,23 @@ const FloatingWhatsApp = () => {
           <p className="text-gray-800 text-sm">
             👋 Need help choosing a generator? Chat with our expert now!
           </p>
-        </motion.div>
+        </div>
       )}
 
       {/* WhatsApp Button */}
-      <motion.a
+      <a
         href="https://wa.me/254768860665?text=Hi,%20I'm%20interested%20in%20buying%20a%20generator"
         target="_blank"
         rel="noopener noreferrer"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        
+        
         className="flex items-center justify-center w-16 h-16 bg-green-500 rounded-full shadow-lg shadow-green-500/50"
       >
         <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
-      </motion.a>
-    </motion.div>
+      </a>
+    </div>
   );
 };
 
@@ -1803,10 +1814,7 @@ const FinalCTA = () => {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
         >
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
             Stop Losing Money to Power Outages
@@ -1817,22 +1825,22 @@ const FinalCTA = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-            <motion.a
+            <a
               href="/contact?action=quote"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              
+              
               className="px-10 py-5 bg-black text-white font-bold text-lg rounded-xl shadow-2xl hover:bg-gray-900 transition-all"
             >
               Get Free Quote Now →
-            </motion.a>
-            <motion.a
+            </a>
+            <a
               href="tel:+254768860665"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              
+              
               className="px-10 py-5 bg-white/20 backdrop-blur text-white font-bold text-lg rounded-xl border-2 border-white/50 hover:bg-white/30 transition-all"
             >
               📞 Call +254 768 860 665
-            </motion.a>
+            </a>
           </div>
 
           <div className="flex flex-wrap justify-center gap-6 text-white/80 text-sm">
@@ -1840,7 +1848,7 @@ const FinalCTA = () => {
             <span className="flex items-center gap-2">✅ No Obligation Quote</span>
             <span className="flex items-center gap-2">✅ Response Within 2 Hours</span>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -1917,9 +1925,9 @@ const AbstractFloatingShapes = lazy(() => import('@/components/webgl/AbstractFlo
 const VideoHero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+    <div
+      
+      
       className="relative w-full h-[60vh] mb-12 rounded-2xl overflow-hidden"
     >
       <CinematicVideo
@@ -1935,16 +1943,16 @@ const VideoHero = () => {
         className="w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-[5]" />
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: videoLoaded ? 1 : 0, y: videoLoaded ? 0 : 20 }}
-        transition={{ delay: 0.5 }}
+      <div
+        
+        
+        
         className="absolute bottom-0 left-0 right-0 p-8 text-white z-10"
       >
         <h2 className="text-4xl font-bold mb-4">Generator Excellence</h2>
         <p className="text-xl text-gray-300">From installation to maintenance, we deliver power reliability</p>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 
@@ -1955,7 +1963,7 @@ const Generator3DViewer = ({ generator }: { generator: typeof cumminsGenerators[
 
   return (
     <div className="relative">
-      <motion.div
+      <div
         className="relative h-64 bg-gradient-to-br from-gray-900 to-black rounded-xl border border-gray-800 overflow-hidden cursor-grab active:cursor-grabbing"
         onMouseMove={(e) => {
           if (isViewing) {
@@ -1978,7 +1986,7 @@ const Generator3DViewer = ({ generator }: { generator: typeof cumminsGenerators[
         <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm p-3 rounded-lg">
           <p className="text-white text-sm text-center">Drag to rotate {'\u2022'} Click for AR view</p>
         </div>
-      </motion.div>
+      </div>
       <button
         onClick={() => {
           if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
@@ -2023,10 +2031,7 @@ const GeneratorComparison = () => {
       </div>
 
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
+        <div
         >
           <div className="grid md:grid-cols-3 gap-4 mb-6">
             {cumminsGenerators.slice(0, 6).map((gen) => (
@@ -2083,7 +2088,7 @@ const GeneratorComparison = () => {
               </table>
             </div>
           )}
-        </motion.div>
+        </div>
       )}
     </div>
   );
@@ -2136,10 +2141,7 @@ const GeneratorHeroSlides = () => {
 
 export default function GeneratorPage() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { isLite } = usePerformanceTier();
-  const { scrollYProgress } = useScroll({ target: containerRef });
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
+  const { isLite } = usePerformanceTier();
 
   // GSAP ScrollTrigger animations - loaded dynamically
   useEffect(() => {
@@ -2217,9 +2219,8 @@ export default function GeneratorPage() {
       {/* UFO background removed — off-brand for an industrial sales page.
           The hero gets a professional amber ember field instead (below). */}
       {/* Enhanced Hero Video - Hollywood Cinematic Grade */}
-      <motion.section
+      <section
         className="relative w-full h-screen overflow-hidden bg-black"
-        style={{ opacity: heroOpacity, scale: heroScale }}
       >
         {/* Cinematic auto-rotating big-image background (replaced the
             unreliable hero video — same Hollywood grade, much sharper). */}
@@ -2243,13 +2244,8 @@ export default function GeneratorPage() {
           />
 
           {/* Anamorphic Lens Flare */}
-          <motion.div
+          <div
             className="absolute top-1/3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none z-[3]"
-            animate={{
-              opacity: [0.2, 0.6, 0.2],
-              scaleX: [0.8, 1.2, 0.8],
-            }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           />
         </div>
 
@@ -2257,68 +2253,41 @@ export default function GeneratorPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 pointer-events-none z-[5]" />
 
         {/* Awwwards ambient layer — GSAP parallax + lazy Three.js amber embers */}
-        <HeroCinematicFX />
 
-        <motion.div
+        <div
           className="relative z-10 eims-shell flex flex-col items-center justify-center h-full text-center"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
         >
-          {/*
-            NO `opacity: 0` IN `initial` ON THE H1 AND SUB-HEADLINE.
-            framer-motion writes the initial state into the server-rendered
-            markup, so `initial={{ opacity: 0 }}` shipped this page's H1 as
-            style="opacity:0" \u2014 invisible until JavaScript ran, and invisible
-            for good if it failed. On the single most important element on a
-            commercial page that is not a risk worth taking for an animation.
-            The entrance is kept, driven by scale/position only, so the text is
-            legible from the first paint. 118 elements on this page still open
-            at opacity:0; these are the ones that carry the ranking and the
-            first impression.
-          */}
-          <motion.h1
+          <h1
             className="text-5xl md:text-7xl font-display text-brand-gold drop-shadow-glow mb-6"
-            initial={{ scale: 0.96 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.7 }}
           >
             VOLTKA Cummins Diesel Generators
-          </motion.h1>
-          <motion.p
+          </h1>
+          <p
             className="mt-4 max-w-3xl text-white/90 text-xl md:text-2xl font-light"
-            initial={{ y: 14 }}
-            animate={{ y: 0 }}
-            transition={{ delay: 0.25, duration: 0.7 }}
           >
             10kVA to 2000kVA, sized to your actual load rather than a catalogue guess.
             <br />
             <span className="text-[#fbbf24]">
               3-year warranty {'\u2022'} 1 year free servicing {'\u2022'} mobile workshop in all 47 counties
             </span>
-          </motion.p>
-          <motion.div
+          </p>
+          <div
             className="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6"
-            initial={{ y: 14 }}
-            animate={{ y: 0 }}
-            transition={{ delay: 0.4, duration: 0.7 }}
           >
             <a href="#quote" className="cta-button-primary">Get a Quote {'\u2192'}</a>
             <a href="#new-generators" className="cta-button-secondary">See the Range {'\u2192'}</a>
             <a href="#comparison" className="cta-button-secondary">Compare Sets {'\u2192'}</a>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
-        <motion.div
+        <div
           className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
         >
           <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
             <div className="w-1 h-3 bg-white/50 rounded-full mt-2" />
           </div>
-        </motion.div>
-      </motion.section>
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
           QUOTE CAPTURE — the page's only form.
@@ -2430,10 +2399,10 @@ export default function GeneratorPage() {
       ════════════════════════════════════════════════════════════════ */}
       <section className="py-20 bg-gradient-to-b from-black via-gray-900/30 to-black">
         <div className="eims-shell">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
+            
+            
+            
             className="text-center mb-12"
           >
             <span className="text-amber-500 text-sm font-medium uppercase tracking-wider">
@@ -2445,7 +2414,7 @@ export default function GeneratorPage() {
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
               From installation to maintenance, see our professional work across Kenya
             </p>
-          </motion.div>
+          </div>
 
           <CinematicImageGallery
             images={generatorGalleryImages}
@@ -2461,11 +2430,11 @@ export default function GeneratorPage() {
       ════════════════════════════════════════════════════════════════ */}
       <section className="py-24 bg-gradient-to-b from-black via-gray-900/50 to-black">
         <div className="eims-shell">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+          <div
+            
+            
+            
+            
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -2474,17 +2443,16 @@ export default function GeneratorPage() {
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
               Every Cummins generator backed by comprehensive coverage and lifetime support
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Main Product Warranty */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
+            <div
+              
+              
+              
+              
               className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-8 rounded-2xl border border-amber-500/30 backdrop-blur-sm"
-              whileHover={{ scale: 1.02, boxShadow: '0 20px 40px rgba(251, 191, 36, 0.3)' }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30">
@@ -2505,42 +2473,41 @@ export default function GeneratorPage() {
                   'Free maintenance for first 6 months',
                   '24/7 emergency breakdown support'
                 ].map((item, i) => (
-                  <motion.li
+                  <li
                     key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
+                    
+                    
+                    
+                    
                     className="flex items-start gap-2 text-gray-300"
                   >
                     <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     <span className="text-sm leading-relaxed">{item}</span>
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.8 }}
+              <div
+                
+                
+                
+                
                 className="mt-6 pt-6 border-t border-white/10"
               >
                 <p className="text-xs text-gray-400 text-center">
                   ✓ Backed by EmersonEIMS Quality Guarantee
                 </p>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
 
             {/* Service Guarantee */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
+            <div
+              
+              
+              
+              
               className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 p-8 rounded-2xl border border-blue-500/30 backdrop-blur-sm"
-              whileHover={{ scale: 1.02, boxShadow: '0 20px 40px rgba(59, 130, 246, 0.3)' }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
@@ -2560,41 +2527,41 @@ export default function GeneratorPage() {
                   'Performance optimization checks',
                   'Load bank testing'
                 ].map((item, i) => (
-                  <motion.li
+                  <li
                     key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.5 + i * 0.1 }}
+                    
+                    
+                    
+                    
                     className="flex items-start gap-2 text-gray-300"
                   >
                     <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     <span className="text-sm leading-relaxed">{item}</span>
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.9 }}
+              <div
+                
+                
+                
+                
                 className="mt-6 pt-6 border-t border-white/10"
               >
                 <p className="text-xs text-center text-gray-400">
                   📞 24/7 Support: <span className="text-blue-400">+254 768 860 665</span>
                 </p>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           </div>
 
           {/* Warranty Terms Summary */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.6 }}
+          <div
+            
+            
+            
+            
             className="mt-12 max-w-4xl mx-auto"
           >
             <div className="bg-gradient-to-r from-gray-900 to-black p-6 rounded-xl border border-gray-800">
@@ -2622,7 +2589,7 @@ export default function GeneratorPage() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -2675,11 +2642,11 @@ export default function GeneratorPage() {
           />
           <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {cumminsGenerators.slice(0, 3).map((gen) => (
-              <motion.div
+              <div
                 key={gen.model}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                
+                
+                
                 className="bg-gradient-to-br from-gray-900 to-black rounded-xl border border-gray-800 p-6"
               >
                 <h3 className="text-2xl font-bold text-[#fbbf24] mb-4 font-display">{gen.model}</h3>
@@ -2689,7 +2656,7 @@ export default function GeneratorPage() {
                   <p className="text-white"><span className="text-gray-400">Phase:</span> {gen.phase}</p>
                   <p className="text-white"><span className="text-gray-400">Engine:</span> {gen.engine}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -2749,12 +2716,12 @@ export default function GeneratorPage() {
           
           <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {cumminsGenerators.slice(0, 8).map((gen, index) => (
-              <motion.div
+              <div
                 key={gen.model}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                
+                
+                
+                
                 className="group bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-gray-700 hover:border-brand-gold transition-all hover:shadow-2xl hover:shadow-amber-500/20"
               >
                 <div className="relative h-48 mb-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden">
@@ -2787,7 +2754,7 @@ export default function GeneratorPage() {
                     {'\uD83D\uDCF1'}
                   </button>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -2834,11 +2801,8 @@ export default function GeneratorPage() {
             centered
           />
           
-          <motion.div
+          <div
             className="mt-12"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
           >
             <OptimizedImage
               src="https://www.emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp"
@@ -2847,7 +2811,7 @@ export default function GeneratorPage() {
               height={1080}
               className="w-full rounded-xl border border-amber-500/20"
             />
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -2882,12 +2846,12 @@ export default function GeneratorPage() {
           
           <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {generatorServices.slice(0, 6).map((service: string, index: number) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                
+                
+                
+                
                 className="group bg-gradient-to-br from-black to-gray-900 rounded-xl p-6 border border-gray-800 hover:border-[#fbbf24] transition-all hover:shadow-xl hover:shadow-[#fbbf24]/20"
               >
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -2895,7 +2859,7 @@ export default function GeneratorPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{service}</h3>
                 <p className="text-gray-400 text-sm">Professional service with 24/7 support</p>
-              </motion.div>
+              </div>
             ))}
           </div>
           
@@ -2917,10 +2881,10 @@ export default function GeneratorPage() {
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            <div
+              
+              
+              
               className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm mb-6"
             >
               <span className="relative flex h-2 w-2">
@@ -2928,7 +2892,7 @@ export default function GeneratorPage() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
               </span>
               NEW: AI-Powered Tools
-            </motion.div>
+            </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
               Generator Maintenance Hub
             </h2>
@@ -2948,12 +2912,12 @@ export default function GeneratorPage() {
               { icon: '📐', title: 'Interactive Diagrams', desc: 'Click any part on the generator to see details', color: 'pink' },
               { icon: '💰', title: 'Cost Tracker', desc: 'Track repairs, calculate ROI, know when to replace', color: 'red' },
             ].map((feature, index) => (
-              <motion.div
+              <div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                
+                
+                
+                
                 className="group bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-800 hover:border-cyan-500/50 transition-all hover:shadow-xl hover:shadow-cyan-500/10"
               >
                 <div className="text-4xl mb-4">{feature.icon}</div>
@@ -2961,38 +2925,38 @@ export default function GeneratorPage() {
                   {feature.title}
                 </h3>
                 <p className="text-slate-400 text-sm">{feature.desc}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <motion.a
+            <a
               href="/generators/maintenance-companion"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              
+              
+              
+              
+              
               className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all"
             >
               <span className="text-2xl">🤖</span>
               <span>Open Maintenance Hub</span>
               <span className="text-xl">→</span>
-            </motion.a>
-            <motion.a
+            </a>
+            <a
               href="/generator-oracle"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              
+              
+              
+              
+              
+              
               className="inline-flex items-center gap-3 px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-700 hover:border-amber-500/50 transition-all"
             >
               <span className="text-2xl">🔍</span>
               <span>Lookup Fault Code</span>
-            </motion.a>
+            </a>
           </div>
 
           {/* Trust Indicators */}
