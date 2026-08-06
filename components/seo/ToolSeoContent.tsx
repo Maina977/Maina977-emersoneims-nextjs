@@ -61,13 +61,24 @@ const TOOLS: Record<string, ToolCopy> = {
     capabilities: [
       'Load profiling and array/inverter/battery sizing with irradiance data for your county',
       'Grid-tie, hybrid and off-grid designs, including solar water pumping for boreholes',
-      'Cost estimates at current Kenya market prices with payback and bill-offset projections',
+      /*
+       * DATED, not "current". The panel, battery and inverter prices this tool
+       * quotes live in components/solar/SolarBibleCalculator.tsx and were last
+       * changed in March 2026 (git log on that file). Solar prices move, so
+       * describing five-month-old figures as "current Kenya market prices"
+       * claims a currency we do not maintain.
+       *
+       * AquaScan already gets this right — it says "July 2026 Kenya market
+       * rates" and marks every estimate. Same standard here. When the price
+       * table is refreshed, update this month with it.
+       */
+      'Cost estimates at March 2026 Kenya market rates, with payback and bill-offset projections',
       'Exportable design summaries an installer can quote against',
     ],
     coverage: 'Designs are calibrated for Kenyan irradiance and tariffs and used across East Africa; EmersonEIMS installs and maintains solar plants regionally.',
     faqs: [
       { q: 'How many solar panels do I need in Kenya?', a: 'It depends on daily consumption: a typical home using 10 kWh/day needs roughly a 3 kW array with storage. SolarGenius Pro sizes it precisely from your actual appliances or KPLC bill.' },
-      { q: 'What does a solar system cost in Kenya?', a: 'Residential hybrid systems commonly run KSh 150k–1.5M depending on size and storage. The tool prices your specific design at current market rates rather than a generic bracket.' },
+      { q: 'What does a solar system cost in Kenya?', a: 'Residential hybrid systems commonly run KSh 150k–1.5M depending on size and storage. The tool prices your specific design against a March 2026 component price list rather than a generic bracket — treat it as indicative and confirm before purchase.' },
       { q: 'Can solar run a borehole pump?', a: 'Yes — solar pumping is often the cheapest lifetime option. The tool sizes the array from pump power, head and daily water demand, and pairs with AquaScan Pro for new boreholes.' },
     ],
   },
