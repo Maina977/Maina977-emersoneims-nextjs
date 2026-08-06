@@ -79,6 +79,11 @@ export default function QuickInquiryForm({
           // enquiry looks the same in the inbox and there is no way to know
           // which service page is actually earning its keep.
           source,
+          // Always empty from a real person — the early return above guarantees
+          // it. Sent anyway so /api/contact can apply the SAME check server
+          // side, which is the one that matters: a bot posting straight to the
+          // endpoint never loads this component and never sees the honeypot.
+          company_website: botTrap,
         }),
       });
 

@@ -8,6 +8,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getPostgresPool } from '@/lib/db';
+// In-memory LRU limiter. Throttles bursts per serverless instance — see the
+// note in POST about what that does and does not guarantee.
+import { limiter } from '@/lib/rate-limiter';
 import { timingSafeEqual } from 'crypto';
 import nodemailer from 'nodemailer';
 
@@ -116,6 +119,13 @@ interface ContactFormData {
   service?: string;
   source?: string; // Which page the form was submitted from
   location?: string; // For location-specific pages
+  /**
+   * Honeypot. A real submission always sends this empty — the field is hidden
+   * from sight, from screen readers and from the keyboard, so only an automated
+   * client fills it. Declared here rather than reached via a cast so the check
+   * in POST is type-safe.
+   */
+  company_website?: string;
 }
 
 /**
@@ -149,6 +159,43 @@ function clientGeoFromHeaders(request: NextRequest): {
 export async function POST(request: NextRequest) {
   try {
     const body: ContactFormData = await request.json();
+
+    /*
+     * SERVER-SIDE BOT DEFENCE.
+     *
+     * Two of the last nine leads to reach the database were bot spam. A
+     * honeypot was added to the form component, but that check runs in the
+     * BROWSER — and a bot that posts straight to this endpoint never loads the
+     * form, never sees the honeypot, and sails past it. Client-side spam
+     * protection stops the polite bots and none of the others, so the same two
+     * checks have to exist here.
+     *
+     * 1. HONEYPOT. `company_website` is a field no human can see, tab into or
+     *    hear via a screen reader. Anything in it is not a person.
+     *
+     * 2. RATE LIMIT. Six submissions per minute per IP. A buyer sends one,
+     *    perhaps two if they mistype something. Anything beyond that is
+     *    automated. Uses the LRU limiter already in lib/rate-limiter.ts.
+     *    Note the honest limitation: that cache is per serverless instance,
+     *    so it throttles a burst rather than guaranteeing a global ceiling.
+     *    It is a speed bump, not a wall — but a bot hammering one instance is
+     *    exactly the common case.
+     *
+     * BOTH FAIL SILENTLY, returning the same success shape a real submission
+     * gets. Telling a bot it was caught tells whoever wrote it what to change.
+     */
+    const honeypot = body.company_website;
+    if (typeof honeypot === 'string' && honeypot.trim() !== '') {
+      return NextResponse.json({ success: true, message: 'Thank you for your enquiry' });
+    }
+
+    const clientIp =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
+    if (clientIp !== 'unknown' && !limiter.check(6, `contact:${clientIp}`).success) {
+      return NextResponse.json({ success: true, message: 'Thank you for your enquiry' });
+    }
 
     // Validate required fields
     if (!body.name || !body.email || !body.message) {
