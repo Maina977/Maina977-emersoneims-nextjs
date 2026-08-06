@@ -7,9 +7,16 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/ai-tools`;
 
 export const metadata: Metadata = {
-  title: 'AI Engineering Tools — Generator Oracle, Solar Genius, AquaScan Pro',
+  /*
+   * The old title listed four product names, none of which anyone searches, and
+   * ran to 89 characters so Google cut it anyway. This leads with what the tools
+   * DO and that they are free. "No signup" earns its place: it removes the
+   * single most common reason people bounce off a free tool.
+   * See app/generator-oracle/layout.tsx for the Search Console evidence.
+   */
+  title: 'Free Engineering Calculators — No Signup',
   description:
-    'Free AI tools for power, solar and water engineering: Generator Oracle (controller fault diagnosis), Solar Genius Pro (commercial solar engineering), AquaScan Pro (borehole intelligence) and Building Suite Pro. All in-browser, no signup.',
+    'Free browser tools for Kenyan engineers: generator fault code lookup, solar system sizing, borehole depth and yield estimates, and building take-offs. No signup.',
   keywords: [
     'AI engineering tools Kenya',
     'Generator Oracle',

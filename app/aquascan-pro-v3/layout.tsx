@@ -7,9 +7,18 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/aquascan-pro-v3`;
 
 export const metadata: Metadata = {
-  title: 'AquaScan Pro — Borehole, Hydrogeology & Water Intelligence',
+  /*
+   * Job first, product name second — see app/generator-oracle/layout.tsx for the
+   * evidence. "Hydrogeology intelligence" is not a search anyone performs;
+   * "borehole survey", "borehole depth" and "how deep to drill" are.
+   * Product name and page design untouched.
+   */
+  title: 'Borehole Survey & Depth Estimator — Free',
   description:
-    'AquaScan Pro is the EmersonEIMS borehole and water intelligence platform: satellite indices, GLDAS, NASA POWER, water quality and audit-grade reports — used by drillers, NGOs and county projects across Kenya.',
+    // The question a landowner actually asks before drilling: is there water,
+    // how deep, and what will it cost. Data sources stay because they are what
+    // make the answer credible.
+    'Check any site in Kenya before you drill, free. Likely depth, yield and drilling cost, from satellite, NASA POWER and GLDAS data — with water-quality screening.',
   keywords: [
     'borehole analysis Kenya',
     'borehole intelligence',

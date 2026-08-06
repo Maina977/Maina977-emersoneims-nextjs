@@ -6,9 +6,32 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/generator-oracle`;
 
 export const metadata: Metadata = {
-  title: 'Generator Oracle — Generator Fault Diagnostic Intelligence',
+  /*
+   * LEAD WITH THE JOB, NOT THE PRODUCT NAME.
+   *
+   * Search Console, July 2026: every AI tool combined drew 50 impressions out of
+   * 20,211 site-wide — 0.25%, and one click. Yet this page ranks at POSITION 6.0.
+   * It is not failing to rank; it is ranking for "Generator Oracle", which only
+   * someone who already knows the product would type.
+   *
+   * The old title read "Generator Oracle — Generator Fault Diagnostic
+   * Intelligence". Nobody searches "diagnostic intelligence". They search
+   * "generator fault codes" and "generator diagnostics" — both of which appear
+   * in our own query data with impressions we are not capturing properly.
+   *
+   * So the job goes first, the product name second (it still earns brand recall
+   * for returning users), and "free" is stated because it is true and it is the
+   * strongest single word available in a search result.
+   *
+   * The product name and the page design are untouched.
+   */
+  title: 'Generator Fault Codes & Diagnosis — Free Tool',
   description:
-    'Generator Oracle is the EmersonEIMS generator fault & controller diagnostic intelligence tool. 6,700+ verified fault codes plus range-based coverage of 450,000+ controller code numbers, for DeepSea (DSE), ComAp, Woodward, SmartGen and CAT PowerWizard — with reset pathways and direct escalation to Kenya engineers. Free to use.',
+    // Under ~155 characters so Google shows all of it. Leads with what the
+    // searcher gets and the fact it costs nothing; the brand names that make it
+    // credible (DSE, ComAp, SmartGen) stay, the marketing word "intelligence"
+    // goes. Full detail still lives in the page body.
+    'Look up any generator fault code free. 6,700+ verified codes for DeepSea (DSE), ComAp, Woodward, SmartGen and CAT, with reset steps and Kenya engineer support.',
   keywords: [
     'generator diagnostics Kenya',
     'generator fault codes',

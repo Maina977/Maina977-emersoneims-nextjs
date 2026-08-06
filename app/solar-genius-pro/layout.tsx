@@ -7,9 +7,23 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/solar-genius-pro`;
 
 export const metadata: Metadata = {
-  title: 'Solar Genius Pro — Commercial Solar Design & Engineering Intelligence',
+  /*
+   * Job first, product name second. See app/generator-oracle/layout.tsx for the
+   * full reasoning and the Search Console evidence behind it.
+   *
+   * This page ranks at POSITION 3.8 — top four — and drew 12 impressions with
+   * zero clicks, because "Solar Genius Pro" is a phrase only someone who already
+   * knows the product would type. Meanwhile our own query data shows real people
+   * searching "solar system size calculator", "solar system sizing calculator"
+   * and "solar panel inverter size calculator" — the exact job this tool does.
+   *
+   * Product name and page design untouched.
+   */
+  title: 'Solar System Size Calculator — Free',
   description:
-    'Solar Genius Pro is the EmersonEIMS commercial solar design and engineering intelligence tool: load profiling, hybrid sizing, financials, EPRA-aware compliance and proposal-ready outputs.',
+    // Answers the searcher's actual question — how big a system do I need, and
+    // what will it cost — instead of describing the product's feature list.
+    'Work out what size solar system you need, free. Panel and battery sizing, payback and running costs at Kenya prices, with EPRA-aware output you can quote from.',
   keywords: [
     'commercial solar design Kenya',
     'solar sizing tool',
