@@ -144,7 +144,11 @@ export default async function SiteDirectoryPage() {
     { href: '/generator-oracle', label: 'Generator Oracle' },
     { href: '/solar-genius-pro', label: 'Solar Genius Pro' },
     { href: '/aquascan-pro-v3', label: 'AquaScan Pro' },
-    { href: '/pro-building-suite', label: 'Pro Building Suite' },
+    // Points at /solutions/building, the canonical URL that actually renders.
+    // /pro-building-suite is a redirect stub whose redirect does not fire — it
+    // returns HTTP 200 with 162 words of CSS and no content, so this link sent
+    // visitors to a blank page. The stub is left in place for old bookmarks.
+    { href: '/solutions/building', label: 'Pro Building Suite' },
     { href: '/eims-pro', label: 'EIMS Pro Workspace' },
     { href: '/diagnostics', label: 'Diagnostics Hub' },
     { href: '/troubleshooting', label: 'Troubleshooting Wizard' },

@@ -180,8 +180,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/eims-pro`,                              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
     { url: `${BASE_URL}/ai-tools`,                              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
     { url: `${BASE_URL}/ai-tools/capabilities`,                 lastModified: currentDate, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/pro-building-suite`,                    lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/all-tools`,                             lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+    /*
+     * /pro-building-suite AND /all-tools ARE DELIBERATELY NOT LISTED HERE.
+     *
+     * Both are redirect stubs carrying robots:{index:false}. Submitting a
+     * noindex page in a sitemap — /pro-building-suite was here at priority 0.9,
+     * higher than most real pages — asks Google to crawl something we have
+     * simultaneously told it to ignore. It spends crawl budget and returns
+     * nothing, which is part of why Building Suite Pro recorded ZERO
+     * impressions in the July 2026 Search Console export.
+     *
+     * Worse, the redirect on /pro-building-suite does not actually fire: the
+     * live URL returns HTTP 200 and renders 162 words of critical CSS and no
+     * content. Anyone reaching it — including from /site-directory — got a
+     * blank page.
+     *
+     * The canonical Building Suite URL is /solutions/building, which is
+     * indexable, renders content, and is already listed below at priority 0.8.
+     * Raised to 0.9 to inherit the weight this entry was carrying.
+     *
+     * Nothing is deleted: both stub routes still exist and still serve, so old
+     * links and bookmarks are unaffected. They are simply no longer advertised
+     * to Google as destinations.
+     */
 
     // Service pages
     // The /solutions/* slugs that 308 redirect in next.config.ts (solar, ups,
@@ -194,7 +215,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/services`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/solutions`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/solutions/incinerators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/solutions/building`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    // Canonical Building Suite URL. Raised 0.8 -> 0.9 to carry the weight the
+    // removed /pro-building-suite stub entry was holding; see the note above.
+    { url: `${BASE_URL}/solutions/building`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/solutions/fabrication`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions/high-voltage`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions/diesel-automation`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },

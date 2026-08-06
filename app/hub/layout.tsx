@@ -8,7 +8,17 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/hub`;
 
 export const metadata: Metadata = {
-  title: 'Solar & UPS Intelligence Hub — Sizing, Verification & Compatibility',
+  /*
+   * "Intelligence Hub" is not a search anyone performs. This page sits at
+   * POSITION 34.7 — page four — with 7 impressions and no clicks, and its
+   * sub-pages fare little better (/hub/ups-lab 11 impressions at 10.6,
+   * /hub/product-intelligence 11 at 19.3, both zero clicks).
+   *
+   * The words people actually type are "UPS sizing", "inverter battery
+   * calculator" and "how long will my UPS last". Job first, as with the other
+   * tools; the "Hub" branding survives in the page itself.
+   */
+  title: 'UPS & Inverter Sizing Calculator — Free',
   description:
     'Solar & UPS Intelligence Hub: smart sizing simulator, quotation audit, product intelligence, safety & diagnostics and a curated case library — built and maintained by EmersonEIMS engineers in Kenya.',
   keywords: [
