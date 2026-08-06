@@ -255,7 +255,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
      */
     { url: `${BASE_URL}/east-africa`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/marketplace`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.85 },
-    { url: `${BASE_URL}/all-tools`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+    /*
+     * /all-tools REMOVED 2026-08-06, reversing the 2026-07-31 addition above.
+     *
+     * That addition was right about the symptom — the page is published and
+     * reachable — but the page carries robots:{index:false} and is a redirect
+     * stub returning 162 words of CSS with no content. Listing a noindex page in
+     * the sitemap asks Google to crawl what we have told it to ignore, and it
+     * was the second such entry (the first, /pro-building-suite at priority 0.9,
+     * is removed above).
+     *
+     * The engineering tools index that SHOULD carry this traffic is /ai-tools,
+     * which is indexable, renders content and is already listed. Nothing is
+     * deleted: /all-tools still exists and still serves.
+     */
     { url: `${BASE_URL}/site-directory`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.6 },
     // /why-emersoneims was published, live and reachable from NOTHING — not one
     // internal link and not in the sitemap. That is how a page built around
