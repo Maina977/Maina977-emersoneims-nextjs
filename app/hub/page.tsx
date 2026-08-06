@@ -13,10 +13,22 @@ import { HUB_HERO_PHOTO, HUB_TOOL_PHOTOS } from '@/components/hub/hub-photos';
 import { StatusBar } from '@/components/charts/dataviz';
 import LazyLockedChart from '@/components/charts/LazyLockedChart';
 
+/*
+ * This title, NOT the one in app/hub/layout.tsx, is what /hub actually serves.
+ * The layout title was retitled on 2026-08-06 and the live page kept showing
+ * "Solar & UPS Intelligence Hub" anyway — page metadata overrides layout
+ * metadata for the page itself, so the layout edit only ever reached the
+ * sub-pages. Both now say the same thing; edit them together.
+ *
+ * "Intelligence Hub" is not a search anyone performs. Position 34.7 — page
+ * four — with 7 impressions and zero clicks. The words people type are "UPS
+ * sizing", "inverter battery calculator", "how long will my UPS last". The
+ * "Hub" branding is untouched everywhere it is visible on the page itself.
+ */
 export const metadata = {
-  title: 'Solar & UPS Intelligence Hub',
+  title: 'UPS & Inverter Sizing Calculator — Free',
   description:
-    'Solar & UPS Intelligence Hub — sizing, audit, product intelligence, diagnostics, solar/UPS and the case library, in one workspace.',
+    'Free UPS and inverter sizing calculator for Kenya: work out kVA, battery runtime and derating, audit a supplier quotation, and compare products — built by EmersonEIMS engineers.',
 };
 
 /* ---------- Local content ---------- */
