@@ -3,7 +3,14 @@ import { HubShell } from '@/components/hub/HubShell';
 import SimulatorClient from '@/components/hub/SimulatorClient';
 
 export const metadata = {
-  title: 'Smart Sizing Simulator — Solar & UPS Intelligence Hub',
+  /*
+   * Dropped the ' — Solar & UPS Intelligence Hub' suffix. It spent ~30
+   * characters of every search result repeating branding nobody types —
+   * /hub ranked at position 34.7 for exactly that phrase. The root
+   * template supplies ' | EmersonEIMS Kenya' instead, which at least
+   * names the company. Visible Hub branding on the page is untouched.
+   */
+  title: 'Smart Sizing Simulator',
   description:
     'Generator, fuel and UPS sizing with site derate, runtime and load profile.',
 };

@@ -3,7 +3,14 @@ import { HubShell } from '@/components/hub/HubShell';
 import VerifierClient from '@/components/hub/VerifierClient';
 
 export const metadata = {
-  title: 'Combination Verifier — Solar & UPS Intelligence Hub',
+  /*
+   * Dropped the ' — Solar & UPS Intelligence Hub' suffix. It spent ~30
+   * characters of every search result repeating branding nobody types —
+   * /hub ranked at position 34.7 for exactly that phrase. The root
+   * template supplies ' | EmersonEIMS Kenya' instead, which at least
+   * names the company. Visible Hub branding on the page is untouched.
+   */
+  title: 'Combination Verifier',
   description:
     'Quote + Load + Combination Verifier. Check whether a vendor proposal will actually power your appliances, expose missing items and risks, and compare 10-year cost against a cheaper-but-safe and a premium alternative.',
 };

@@ -3,7 +3,14 @@ import { HubShell } from '@/components/hub/HubShell';
 import AuthenticityClient from '@/components/hub/AuthenticityClient';
 
 export const metadata = {
-  title: 'Authenticity Verification — Solar & UPS Intelligence Hub',
+  /*
+   * Dropped the ' — Solar & UPS Intelligence Hub' suffix. It spent ~30
+   * characters of every search result repeating branding nobody types —
+   * /hub ranked at position 34.7 for exactly that phrase. The root
+   * template supplies ' | EmersonEIMS Kenya' instead, which at least
+   * names the company. Visible Hub branding on the page is untouched.
+   */
+  title: 'Authenticity Verification',
   description:
     'Verify the brand and model on your invoice match the unit delivered: serial portals, BIS/CE markings, seal photos, weight checks, and field-verification cautions by brand.',
 };

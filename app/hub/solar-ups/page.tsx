@@ -3,7 +3,14 @@ import { HubShell } from '@/components/hub/HubShell';
 import SolarUpsClient from '@/components/hub/SolarUpsClient';
 
 export const metadata = {
-  title: 'Solar & UPS — Solar & UPS Intelligence Hub',
+  /*
+   * Dropped the ' — Solar & UPS Intelligence Hub' suffix. It spent ~30
+   * characters of every search result repeating branding nobody types —
+   * /hub ranked at position 34.7 for exactly that phrase. The root
+   * template supplies ' | EmersonEIMS Kenya' instead, which at least
+   * names the company. Visible Hub branding on the page is untouched.
+   */
+  title: 'Solar & UPS System Comparison',
   description:
     'Solar PV section and UPS section: sizing, instruments, topology guidance.',
 };

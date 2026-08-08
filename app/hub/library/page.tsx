@@ -3,7 +3,14 @@ import { HubShell } from '@/components/hub/HubShell';
 import LibraryClient from '@/components/hub/LibraryClient';
 
 export const metadata = {
-  title: 'Library — Solar & UPS Intelligence Hub',
+  /*
+   * Dropped the ' — Solar & UPS Intelligence Hub' suffix. It spent ~30
+   * characters of every search result repeating branding nobody types —
+   * /hub ranked at position 34.7 for exactly that phrase. The root
+   * template supplies ' | EmersonEIMS Kenya' instead, which at least
+   * names the company. Visible Hub branding on the page is untouched.
+   */
+  title: 'Solar & UPS Case Library',
   description:
     'Documentation, training tracks and customer case studies in one indexed library.',
 };

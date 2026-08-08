@@ -18,7 +18,17 @@ export const metadata: Metadata = {
    * calculator" and "how long will my UPS last". Job first, as with the other
    * tools; the "Hub" branding survives in the page itself.
    */
-  title: 'UPS & Inverter Sizing Calculator — Free',
+  /*
+   * Object form, not a bare string. A segment whose `title` is a plain string
+   * leaves its DESCENDANTS with no template to inherit, so the root layout's
+   * "%s | EmersonEIMS Kenya" stopped applying and all 17 /hub/* pages rendered
+   * with no brand at all. `default` titles this page; `template` is what the
+   * children inherit.
+   */
+  title: {
+    default: 'UPS & Inverter Sizing Calculator — Free',
+    template: '%s | EmersonEIMS Kenya',
+  },
   description:
     'Solar & UPS Intelligence Hub: smart sizing simulator, quotation audit, product intelligence, safety & diagnostics and a curated case library — built and maintained by EmersonEIMS engineers in Kenya.',
   keywords: [

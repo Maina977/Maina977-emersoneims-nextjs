@@ -3,7 +3,14 @@ import { HubShell } from '@/components/hub/HubShell';
 import LearnClient from '@/components/hub/LearnClient';
 
 export const metadata = {
-  title: 'Learning Mode — Solar & UPS Intelligence Hub',
+  /*
+   * Dropped the ' — Solar & UPS Intelligence Hub' suffix. It spent ~30
+   * characters of every search result repeating branding nobody types —
+   * /hub ranked at position 34.7 for exactly that phrase. The root
+   * template supplies ' | EmersonEIMS Kenya' instead, which at least
+   * names the company. Visible Hub branding on the page is untouched.
+   */
+  title: 'Solar & UPS Learning Mode',
   description:
     'Short structured lessons. Client track teaches how to buy and own safely; Pro track teaches sizing, commissioning and acceptance. Switch tracks via the Client/Pro toggle in the header.',
 };

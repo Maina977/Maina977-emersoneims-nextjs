@@ -14,7 +14,22 @@ export const metadata: Metadata = {
    * total and truncated in every search result. It also said "Kenya" twice
    * once the suffix landed. Shortened to lead with the job.
    */
-  title: 'Industrial Maintenance Services',
+  /*
+   * Declared as an object, NOT a bare string, and that distinction matters.
+   *
+   * A segment whose `title` is a plain string gives its DESCENDANTS no
+   * template to inherit, so the root layout's "%s | EmersonEIMS Kenya" stopped
+   * being applied below this point: the ten child pages rendered their titles
+   * with no brand at all. Caught by reading the live HTML after deploying —
+   * the build was green and the titles were "correct", just unbranded.
+   *
+   * `default` titles this segment (and is itself resolved against the root
+   * template); `template` is what the children below inherit.
+   */
+  title: {
+    default: 'Industrial Maintenance Services',
+    template: '%s | EmersonEIMS Kenya',
+  },
   description: 'Your one-stop maintenance solution in Kenya. Generator diagnostics, solar maintenance, pump repair, motor rewinding, AC service, electrical work. 24/7 professional support across Nairobi, Mombasa, Kisumu.',
   keywords: [
     // Main keywords
