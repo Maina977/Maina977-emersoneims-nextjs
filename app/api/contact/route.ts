@@ -238,12 +238,21 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent');
     const referer = request.headers.get('referer');
 
+    /*
+     * Classify BEFORE storing. A flagged submission is still written — with
+     * status 'spam' rather than 'new' — so nothing is lost and the call can be
+     * reviewed or reversed in the database. Only the notification fan-out is
+     * skipped, because noise in the inbox is what stops the inbox being read.
+     */
+    const leadStatus = classifySubmission(body);
+
     // Store lead in database
     const leadId = await storeLead({
       ...body,
       ip: forwardedFor || 'unknown',
       userAgent: userAgent || 'unknown',
       referer: referer || 'direct',
+      status: leadStatus,
     });
 
     // Server-side geo from edge headers — attached to the durable Sheet lead.
@@ -251,20 +260,58 @@ export async function POST(request: NextRequest) {
 
     // Fire every configured delivery channel and record which actually worked.
     // We run them in parallel so a slow provider can't delay the response.
-    const [smtpOk, emailOk, smsOk, whatsappOk, callMeBotOk, webhookOk, formSubmitOk, erpOk, sheetOk] = await Promise.all([
-      sendSmtpNotification(body, leadId),
-      sendEmailNotification(body, leadId),
-      body.phone ? sendSMSNotification(body) : Promise.resolve(false),
-      sendWhatsAppNotification(body),
-      sendCallMeBotWhatsApp(body, leadId),
-      sendWebhookNotification(body, leadId),
-      sendFormSubmitNotification(body, leadId),
-      sendErpQuoteRequest(body),
-      sendSheetLead(body, geo, leadId),
-    ]);
+    const notify = leadStatus === 'new';
+    const [smtpOk, emailOk, smsOk, whatsappOk, callMeBotOk, webhookOk, formSubmitOk, erpOk, sheetOk] = notify
+      ? await Promise.all([
+          sendSmtpNotification(body, leadId),
+          sendEmailNotification(body, leadId),
+          body.phone ? sendSMSNotification(body) : Promise.resolve(false),
+          sendWhatsAppNotification(body),
+          sendCallMeBotWhatsApp(body, leadId),
+          sendWebhookNotification(body, leadId),
+          sendFormSubmitNotification(body, leadId),
+          sendErpQuoteRequest(body),
+          sendSheetLead(body, geo, leadId),
+        ])
+      : [false, false, false, false, false, false, false, false, false];
 
     const dbStored = leadId > 0;
-    const delivered = dbStored || smtpOk || emailOk || smsOk || whatsappOk || callMeBotOk || webhookOk || formSubmitOk || erpOk || sheetOk;
+    const notified = smtpOk || emailOk || smsOk || whatsappOk || callMeBotOk || webhookOk || formSubmitOk || erpOk || sheetOk;
+    const delivered = dbStored || notified;
+
+    /*
+     * THE GAP THIS CLOSES.
+     *
+     * `delivered` is true as soon as the row hits Postgres, so the loud
+     * "LEAD NOT DELIVERED" alarm below could only ever fire when the database
+     * ALSO failed. That means the worst realistic failure was completely
+     * silent: every notification channel breaking — expired SMTP password,
+     * revoked key, ERP endpoint moved — while rows kept landing in a table
+     * nobody opens. The site would keep answering "we'll contact you within
+     * 2 hours" and no one would know.
+     *
+     * That is not hypothetical here. A read of this table found three months
+     * of leads sitting in it, and there was no way to tell from the outside
+     * whether a single notification about them had ever been sent.
+     *
+     * Stored-but-unnotified is now its own alarm, distinct from total failure.
+     */
+    if (dbStored && !notified && leadStatus === 'new') {
+      console.error(
+        '🚨 LEAD STORED BUT NOBODY WAS TOLD — every notification channel failed. ' +
+        'The lead is safe in the database (id ' + leadId + ') but no email, SMS, ' +
+        'WhatsApp, webhook, ERP or Sheet delivery succeeded. Check SMTP_* credentials ' +
+        'first. Lead:',
+        { leadId, name: body.name, email: body.email, phone: body.phone, service: body.service }
+      );
+    }
+
+    if (leadStatus !== 'new') {
+      console.warn(
+        `⚠️ Submission ${leadId} classified as "${leadStatus}" — stored for review, notifications skipped.`,
+        { name: body.name, email: body.email }
+      );
+    }
 
     // The browser ALWAYS gets a working WhatsApp deep link so a visitor can
     // reach us directly even if no server channel is configured.
@@ -303,7 +350,51 @@ export async function POST(request: NextRequest) {
 }
 
 // Store lead in database
-async function storeLead(data: ContactFormData & { ip: string; userAgent: string; referer: string }): Promise<number> {
+/**
+ * Classify a submission BEFORE it is treated as a sales lead.
+ *
+ * WHY THIS EXISTS. A read of the leads table on 2026-08-08 found 11 rows in
+ * three months, of which two were obvious bot submissions with names like
+ * "jpdjCBdpSHGHnLRwniEONjzr", one was a newsletter signup, one was my own
+ * delivery test, and one real enquiry had been submitted twice. So roughly
+ * four genuine leads were buried among noise, and every one of those rows had
+ * triggered the full notification fan-out. Noise that reaches the inbox
+ * trains you to stop reading the inbox.
+ *
+ * NOTHING IS EVER DISCARDED. A flagged row is still written to the database
+ * with a status of 'spam' or 'duplicate', so it can be reviewed and reversed.
+ * The only thing suppressed is the notification. Deleting a lead because a
+ * heuristic disliked it would be far worse than an unread email.
+ *
+ * The rules are deliberately conservative, because a false positive costs a
+ * customer and a false negative only costs an email:
+ *   - Random-string names: no space at all, 15+ characters, several case
+ *     flips and almost no vowels. That is a generated token, not a person.
+ *     "Salome Githehu" and "jason" are untouched — a space or a short name
+ *     exits immediately.
+ *   - Link-stuffed messages: three or more URLs in an enquiry.
+ * Kenyan names are diverse, so nothing here tests for a name "looking right";
+ * it tests only for shapes a human keyboard does not produce.
+ */
+function classifySubmission(body: ContactFormData): 'new' | 'spam' {
+  const name = (body.name || '').trim();
+
+  if (!name.includes(' ') && name.length >= 15) {
+    const letters = name.replace(/[^a-z]/gi, '');
+    if (letters.length >= 12) {
+      const vowels = (letters.match(/[aeiou]/gi) || []).length / letters.length;
+      const caseFlips = (name.match(/[a-z][A-Z]/g) || []).length;
+      if (vowels < 0.35 && caseFlips >= 3) return 'spam';
+    }
+  }
+
+  const links = ((body.message || '').match(/https?:\/\//gi) || []).length;
+  if (links >= 3) return 'spam';
+
+  return 'new';
+}
+
+async function storeLead(data: ContactFormData & { ip: string; userAgent: string; referer: string; status?: string }): Promise<number> {
   try {
     const pool = await getPostgresPool();
     if (!pool) {
@@ -344,7 +435,7 @@ async function storeLead(data: ContactFormData & { ip: string; userAgent: string
         name, email, phone, company, message, service,
         source, location, ip_address, user_agent, referer,
         status, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'new', NOW())
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
       RETURNING id
     `, [
       data.name,
@@ -357,7 +448,8 @@ async function storeLead(data: ContactFormData & { ip: string; userAgent: string
       data.location || null,
       data.ip,
       data.userAgent,
-      data.referer
+      data.referer,
+      data.status || 'new'
     ]);
 
     const id = result.rows[0]?.id;
