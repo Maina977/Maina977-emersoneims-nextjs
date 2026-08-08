@@ -477,6 +477,86 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       /*
+       * ═══════════════════════════════════════════════════════════════
+       * BUILDING SUITE PRO FEATURE SLUGS -> /solutions/building
+       * ═══════════════════════════════════════════════════════════════
+       *
+       * Every slug in lib/buildingSuitePro/featureRoutes.ts (BSP_FEATURES,
+       * canonical slugs AND aliases) is listed here. Two separate defects,
+       * one cause, one fix.
+       *
+       * DEFECT 1 — twelve URLs told Google two opposite things at once.
+       * /pro-building-suite, /all-tools, /alltools, /qs, /safety, /curation,
+       * /interior, /mep-clash, /high-rise, /healthcare, /collab and
+       * /pro-console each served HTTP 200 carrying BOTH
+       *     <meta name="robots" content="noindex, follow">
+       *     <link rel="canonical" href=".../solutions/building">
+       * The canonical says "fold me into that page"; the noindex says "drop
+       * me". Google resolves conflicting directives toward the most
+       * restrictive one and can carry a noindex across a canonical to the
+       * target — so twelve pages were quietly voting to de-index
+       * /solutions/building, the page we actually want ranking. Search
+       * Console flagged one of these as "Excluded by 'noindex' tag" with
+       * user-declared canonical /solutions/building, which is this exact
+       * fingerprint.
+       *
+       * These pages were ALWAYS meant to be redirects — their own source
+       * comments say "kept as a permanent redirect". They called redirect()
+       * from the page component and it never produced a 3xx in production:
+       * identical to the /generators/case-studies bug documented below.
+       *
+       * DEFECT 2 — ten slugs the registry promises did not exist at all:
+       * /boq, /quantity-surveying, /mep, /clash, /highrise, /collaboration,
+       * /proconsole, /engineering-pro, /engineering, /structural, /reports
+       * all returned 404. featureRoutes.ts claims "the matching /slug page
+       * will exist automatically because app/(building)/(bsp-feature-routes)/
+       * builds them dynamically" — that directory does not exist. /boq and
+       * /quantity-surveying are the highest commercial-intent terms this
+       * tool has, and both were dead.
+       *
+       * A config redirect runs before routing and cannot be defeated by
+       * static optimisation, so it fixes both at once: no page is served,
+       * so there is no meta tag left to contradict anything, and the dead
+       * slugs resolve instead of 404ing.
+       *
+       * The ?mode= query is real, not decorative: ProBuildingSuiteClient
+       * reads it on iframe load and calls the wizard's setMode() to open
+       * the right tab (verified in the client, not assumed).
+       *
+       * NOTHING IS DELETED. Every app/<slug>/page.tsx stays on disk; the
+       * redirect simply takes precedence. scripts/check-bsp-routes.mjs
+       * fails the build if a registry slug ever loses its redirect again —
+       * this list has drifted from the registry twice already.
+       *
+       * /console is deliberately NOT in this list. It canonicalises to
+       * /eims-pro-console.html, not to /solutions/building, so it is not
+       * part of this conflict, and the wizard iframes it with hash
+       * fragments at runtime.
+       */
+      { source: '/pro-building-suite', destination: '/solutions/building', permanent: true },
+      { source: '/qs', destination: '/solutions/building?mode=qsPro', permanent: true },
+      { source: '/quantity-surveying', destination: '/solutions/building?mode=qsPro', permanent: true },
+      { source: '/boq', destination: '/solutions/building?mode=qsPro', permanent: true },
+      { source: '/safety', destination: '/solutions/building?mode=safety', permanent: true },
+      { source: '/curation', destination: '/solutions/building?mode=curation', permanent: true },
+      { source: '/interior', destination: '/solutions/building?mode=interior', permanent: true },
+      { source: '/mep-clash', destination: '/solutions/building?mode=mepClash', permanent: true },
+      { source: '/mep', destination: '/solutions/building?mode=mepClash', permanent: true },
+      { source: '/clash', destination: '/solutions/building?mode=mepClash', permanent: true },
+      { source: '/high-rise', destination: '/solutions/building?mode=highrise', permanent: true },
+      { source: '/highrise', destination: '/solutions/building?mode=highrise', permanent: true },
+      { source: '/healthcare', destination: '/solutions/building?mode=healthcare', permanent: true },
+      { source: '/collab', destination: '/solutions/building?mode=collab', permanent: true },
+      { source: '/collaboration', destination: '/solutions/building?mode=collab', permanent: true },
+      { source: '/alltools', destination: '/solutions/building?mode=proConsole', permanent: true },
+      { source: '/all-tools', destination: '/solutions/building?mode=proConsole', permanent: true },
+      { source: '/pro-console', destination: '/solutions/building?mode=proConsole', permanent: true },
+      { source: '/proconsole', destination: '/solutions/building?mode=proConsole', permanent: true },
+      { source: '/engineering-pro', destination: '/solutions/building?mode=engineeringPro', permanent: true },
+      { source: '/engineering', destination: '/solutions/building?mode=engineeringPro', permanent: true },
+      { source: '/structural', destination: '/solutions/building?mode=engineeringPro', permanent: true },
+      { source: '/reports', destination: '/solutions/building?mode=reports', permanent: true },
+      /*
        * /generators/case-studies -> /case-studies
        *
        * app/generators/case-studies/page.tsx called permanentRedirect() but
