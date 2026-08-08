@@ -5,6 +5,7 @@ import { KENYA_LOCATIONS, getCountyBySlug } from '@/lib/data/kenya-locations';
 import CountyPowerContent from '@/components/seo/CountyPowerContent';
 import CountySiteConditions from '@/components/seo/CountySiteConditions';
 import LocationEnquiry from '@/components/seo/LocationEnquiry';
+import LocationProof from '@/components/seo/LocationProof';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
 import { CORE_SERVICE_SLUGS, isPriorityCounty } from '@/lib/seo/kenyaIndexable';
 
@@ -184,6 +185,9 @@ export default async function CountyPage({ params }: Props) {
           On-page enquiry. Before this, every /kenya/* page rendered zero forms
           — a visitor ready to buy had to leave for /contact first.
         */}
+        {/* Named client proof BEFORE the form — trust, then the ask. */}
+        <LocationProof countySlug={county.slug} locationName={`${county.name} County`} />
+
         <LocationEnquiry
           locationName={`${county.name} County`}
           source={`kenya-${county.slug}`}

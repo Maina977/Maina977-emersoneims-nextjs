@@ -25,6 +25,7 @@ import LocationServiceSchema from '@/components/seo/LocationServiceSchema';
 import CountySiteConditions from '@/components/seo/CountySiteConditions';
 import ConstituencySiteConditions from '@/components/seo/ConstituencySiteConditions';
 import LocationEnquiry from '@/components/seo/LocationEnquiry';
+import LocationProof from '@/components/seo/LocationProof';
 
 type Props = {
   params: Promise<{ county: string; slug: string[] }>;
@@ -274,6 +275,8 @@ function CountyServicePage({
           population={county.population}
         />
 
+        <LocationProof countySlug={county.slug} locationName={county.name} />
+
         <LocationEnquiry
           locationName={county.name}
           serviceName={service.shortName}
@@ -487,6 +490,8 @@ function ConstituencyPage({
           constituencyName={constituency.name}
         />
 
+        <LocationProof countySlug={county.slug} locationName={constituency.name} />
+
         <LocationEnquiry
           locationName={constituency.name}
           source={`kenya-${county.slug}-${constituency.slug}`}
@@ -626,6 +631,8 @@ function ConstituencyServicePage({
           constituencyName={constituency.name}
           serviceName={service.shortName}
         />
+
+        <LocationProof countySlug={county.slug} locationName={constituency.name} />
 
         <LocationEnquiry
           locationName={constituency.name}
