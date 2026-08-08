@@ -372,6 +372,37 @@ export default function CountySiteConditions({
             growth. Worth confirming on paper rather than assuming.
           </p>
         )}
+        {aBand === 'high' && (
+          <p>
+            <strong>Between 1,500 and 2,000&nbsp;m.</strong> This is the band
+            where most of Kenya&apos;s commercial load sits, and where the
+            derate is large enough to matter but familiar enough to be assumed
+            rather than checked. The common failure is a set specified from a
+            coastal price list and installed here unchanged — it works, until
+            the day the load steps up and the margin that was supposed to absorb
+            it was already spent on elevation.
+          </p>
+        )}
+        {aBand === 'sea-level' && (
+          <p>
+            <strong>At sea level.</strong> Barometric pressure here is what the
+            rating plate assumes, so you get the full published output — the
+            only place in the sizing conversation where nothing is taken away.
+            Spend the attention you would have spent on altitude on the
+            foundation, the exhaust route and the ventilation path instead;
+            those are what limit installations at {fmt(c.elevationM)}&nbsp;m.
+          </p>
+        )}
+        {aBand === 'low' && (
+          <p>
+            <strong>Below 1,000&nbsp;m.</strong> Elevation costs you only about{' '}
+            {altDerate}% here, which is usually inside the margin a sensible
+            specification already carries. The practical consequence is that
+            altitude should not be allowed to dominate the discussion — at{' '}
+            {fmt(c.elevationM)}&nbsp;m the air is still dense, and it is
+            temperature and air cleanliness that will decide how this set ages.
+          </p>
+        )}
 
         {/* Thermal-band advice, banded on measured design ambient. */}
         {tBand === 'extreme' && (
@@ -382,6 +413,28 @@ export default function CountySiteConditions({
             high-ambient cooling packs, generous enclosure free area and shaded
             intake are the difference between a machine that holds load and one
             that shuts down on high coolant temperature in the afternoon.
+          </p>
+        )}
+        {tBand === 'hot' && (
+          <p>
+            <strong>Hot, but manageable.</strong> A design ambient between 31 and
+            36&nbsp;°C is hard on a set without being exotic: standard cooling
+            packages will usually cope, provided the installation does not fight
+            them. Most of the trouble we are called to at this temperature is
+            not the generator — it is the room. Recirculated hot discharge air,
+            an undersized louvre, or a set boxed into a corner will take a
+            correctly specified machine and derate it anyway.
+          </p>
+        )}
+        {tBand === 'warm' && (
+          <p>
+            <strong>Moderately warm.</strong> At {c.p95MaxC}&nbsp;°C design
+            ambient the thermal penalty is modest — roughly {tempDerate}% — and
+            standard radiator packages have margin in hand. What deserves
+            attention instead is the gap between the {c.meanMaxC}&nbsp;°C typical
+            day and the {c.absMaxC}&nbsp;°C peak: an installation sized for the
+            average will be the one that trips on the hottest afternoon of the
+            year, which is usually also the afternoon you most needed it.
           </p>
         )}
         {tBand === 'temperate' && (
@@ -406,6 +459,28 @@ export default function CountySiteConditions({
             single set — it is synchronising, load-shedding priority and how
             gracefully the installation degrades when one machine is out for
             service.
+          </p>
+        )}
+        {sBand === 'large' && (
+          <p>
+            <strong>Load profile.</strong> With over a million residents,{' '}
+            {countyName} carries a real mix — commercial premises, institutions
+            and light industry — and the sets we are asked about here are
+            usually replacements rather than first installations. That changes
+            the question: the existing cable, transfer switch and foundation
+            usually constrain the answer more than the load calculation does,
+            and surveying what is already there is worth more than a catalogue.
+          </p>
+        )}
+        {sBand === 'mid' && (
+          <p>
+            <strong>Load profile.</strong> {countyName} sits in the middle band
+            for population, where demand is concentrated in a handful of towns
+            rather than spread evenly. In practice that means standby duty for
+            institutions and commercial premises, where the machine sits idle
+            for weeks and then has to start and take load without argument —
+            which makes exercise regime and battery condition matter more than
+            peak-output arguments.
           </p>
         )}
         {sBand === 'small' && (
