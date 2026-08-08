@@ -771,7 +771,7 @@ export const KENYA_LOCATIONS: County[] = [
   {
     name: 'Nyeri',
     slug: 'nyeri',
-    code: '036',
+    code: '019',
     region: 'Central',
     population: 759164,
     constituencies: [
@@ -839,7 +839,7 @@ export const KENYA_LOCATIONS: County[] = [
   {
     name: 'Nyandarua',
     slug: 'nyandarua',
-    code: '019',
+    code: '018',
     region: 'Central',
     population: 638289,
     constituencies: [
@@ -1864,7 +1864,7 @@ export const KENYA_LOCATIONS: County[] = [
   {
     name: 'Bomet',
     slug: 'bomet',
-    code: '037',
+    code: '036',
     region: 'Rift Valley',
     population: 875689,
     constituencies: [

@@ -219,7 +219,7 @@ export function countyExposure(
  * Great-circle distance in km from the Embakasi workshop. This is straight-line
  * separation, not road distance, and is labelled as such wherever it is shown.
  */
-export function distanceFromHqKm(c: CountySiteConditions): number {
+export function distanceFromHqKm(c: { lat: number; lon: number }): number {
   const R = 6371;
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLat = toRad(c.lat - HQ_LOCATION.lat);
@@ -231,7 +231,7 @@ export function distanceFromHqKm(c: CountySiteConditions): number {
 }
 
 /** Compass bearing from the Embakasi workshop, as a cardinal word. */
-export function bearingFromHq(c: CountySiteConditions): string {
+export function bearingFromHq(c: { lat: number; lon: number }): string {
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLon = toRad(c.lon - HQ_LOCATION.lon);
   const y = Math.sin(dLon) * Math.cos(toRad(c.lat));

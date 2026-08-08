@@ -23,6 +23,7 @@ import {
 } from '@/lib/seo/kenyaIndexable';
 import LocationServiceSchema from '@/components/seo/LocationServiceSchema';
 import CountySiteConditions from '@/components/seo/CountySiteConditions';
+import ConstituencySiteConditions from '@/components/seo/ConstituencySiteConditions';
 
 type Props = {
   params: Promise<{ county: string; slug: string[] }>;
@@ -472,6 +473,13 @@ function ConstituencyPage({
           </div>
         </div>
 
+        <ConstituencySiteConditions
+          countySlug={county.slug}
+          countyName={county.name}
+          constituencySlug={constituency.slug}
+          constituencyName={constituency.name}
+        />
+
         {/* Services Grid */}
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
@@ -592,6 +600,20 @@ function ConstituencyServicePage({
             </a>
           </div>
         </div>
+
+        {/*
+          Per-constituency engineering. Renders only for the 119 constituencies
+          whose altitude and temperature could be VERIFIED; the rest render
+          nothing and keep consolidating to their county+service page rather
+          than showing an invented figure.
+        */}
+        <ConstituencySiteConditions
+          countySlug={county.slug}
+          countyName={county.name}
+          constituencySlug={constituency.slug}
+          constituencyName={constituency.name}
+          serviceName={service.shortName}
+        />
 
         {/* Service Features */}
         <div className="mb-16">

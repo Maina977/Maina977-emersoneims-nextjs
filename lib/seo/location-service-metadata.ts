@@ -5,6 +5,7 @@
 
 import { Metadata } from 'next';
 import { SEOService, generateServiceKeywords } from '@/lib/data/seo-services';
+import { hasConstituencyData } from '@/lib/data/kenya-constituency-conditions';
 
 interface LocationData {
   name: string;
@@ -79,8 +80,33 @@ export function generateLocationServiceMetadata(
    * altitude), so the consolidated target is a page that has something the
    * duplicates did not.
    */
+  /*
+   * REVISED 2026-08-08 (same day): consolidate only where we have nothing
+   * unique to say.
+   *
+   * The blanket consolidation below was correct while every constituency page
+   * was the same template with a place name swapped in. It is no longer
+   * correct for the 119 constituencies that now carry their own VERIFIED
+   * altitude and measured 2025 temperature, plus an altitude ranking against
+   * their own county that is true of exactly one page. Those pages have
+   * something their siblings cannot repeat, so canonicalising them away would
+   * suppress content that deserves to rank on its own.
+   *
+   * The rule is the honest one in both directions: a page earns a
+   * self-canonical by having unique substance, and forfeits it by not having
+   * any. Constituencies we could not confirm — mostly directional divisions
+   * like "Kajiado North", which are not settlements and for which inventing a
+   * figure was refused — keep consolidating to their county+service page.
+   *
+   * This is also self-correcting. If Google disagrees and consolidates the
+   * differentiated pages anyway, nothing is lost: we simply do not rank for
+   * them, which is exactly where a canonical pointing away would have left us.
+   * The asymmetry favours letting genuinely distinct pages compete.
+   */
   const consolidateToCounty =
-    location.type === 'constituency' && !!parent?.county;
+    location.type === 'constituency' &&
+    !!parent?.county &&
+    !hasConstituencyData(parent.county.slug, location.slug);
   const canonicalPath = consolidateToCounty
     ? `/kenya/${parent!.county!.slug}/${service.slug}`
     : selfPath;
