@@ -22,6 +22,7 @@ import {
   isPriorityCounty,
 } from '@/lib/seo/kenyaIndexable';
 import LocationServiceSchema from '@/components/seo/LocationServiceSchema';
+import CountySiteConditions from '@/components/seo/CountySiteConditions';
 
 type Props = {
   params: Promise<{ county: string; slug: string[] }>;
@@ -250,6 +251,26 @@ function CountyServicePage({
             </a>
           </div>
         </div>
+
+        {/*
+          Per-county engineering on the COUNTY+SERVICE page.
+
+          These 423 pages are now the canonical targets for the ~870
+          constituency+service pages that consolidate into them, so they are
+          where the traffic is meant to land — and until this was added they
+          carried no differentiation at all: the same template with a place
+          name and a service name swapped in. Every figure comes from sourced
+          per-county altitude and measured 2025 temperature; the section
+          renders nothing for a county with no sourced record.
+        */}
+        <CountySiteConditions
+          countySlug={county.slug}
+          countyName={county.name}
+          region={county.region}
+          serviceName={service.shortName}
+          serviceSlug={service.slug}
+          population={county.population}
+        />
 
         {/* Service Features */}
         <div className="mb-16">

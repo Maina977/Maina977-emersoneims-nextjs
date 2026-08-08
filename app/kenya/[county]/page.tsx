@@ -176,6 +176,7 @@ export default async function CountyPage({ params }: Props) {
           countySlug={county.slug}
           countyName={county.name}
           region={county.region}
+          population={county.population}
         />
 
         {/* Services Grid */}
