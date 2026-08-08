@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { KENYA_LOCATIONS, getCountyBySlug } from '@/lib/data/kenya-locations';
 import CountyPowerContent from '@/components/seo/CountyPowerContent';
+import CountySiteConditions from '@/components/seo/CountySiteConditions';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
 import { CORE_SERVICE_SLUGS, isPriorityCounty } from '@/lib/seo/kenyaIndexable';
 
@@ -159,6 +160,23 @@ export default async function CountyPage({ params }: Props) {
             </a>
           </div>
         </div>
+
+        {/*
+          Per-county engineering. This is the section that makes the 47 county
+          pages genuinely different from one another rather than the same page
+          with a place name swapped in — measured at 98% identical vocabulary
+          before this was added, which is why Google was consolidating
+          unrelated counties onto a single canonical.
+
+          Every figure comes from a sourced elevation (see
+          lib/data/kenya-county-conditions.ts). Renders nothing for a county
+          with no sourced record.
+        */}
+        <CountySiteConditions
+          countySlug={county.slug}
+          countyName={county.name}
+          region={county.region}
+        />
 
         {/* Services Grid */}
         <div className="mb-16">

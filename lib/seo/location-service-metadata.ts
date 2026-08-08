@@ -44,7 +44,46 @@ export function generateLocationServiceMetadata(
   if (segs.length === 0 || segs[segs.length - 1] !== location.slug) {
     segs.push(location.slug);
   }
-  const canonicalPath = `/kenya/${segs.join('/')}/${service.slug}`;
+  const selfPath = `/kenya/${segs.join('/')}/${service.slug}`;
+
+  /*
+   * CONSOLIDATION (2026-08-08): a constituency+service page canonicalises UP
+   * to the county+service page for the same service.
+   *
+   * This is not undoing the July fix above. That fix repaired a canonical
+   * that pointed at a URL which 404s; self-canonicalising was the correct
+   * repair for a broken value, not a decision that these pages should each
+   * compete on their own. This is that decision, and it is deliberate.
+   *
+   * WHY. The constituency pages were measured at 98% identical vocabulary to
+   * one another and to the county page — four distinct words separated the
+   * Nairobi page from the Mombasa one, because the template substitutes a
+   * place name and changes nothing else, FAQs included. Google had already
+   * reached that conclusion on its own: it consolidated a Turkana URL onto a
+   * Mombasa ward, i.e. it judged pages in different counties interchangeable.
+   * Asking it to index 870 more of them was arguing with a verdict it had
+   * already reached on the evidence.
+   *
+   * Pointing them at the COUNTY+SERVICE page rather than the bare county page
+   * preserves the service intent: someone searching "generator repair
+   * Westlands" is best served by the Nairobi generator-repairs page, not by a
+   * generic Nairobi landing page.
+   *
+   * NOTHING IS DELETED and nothing is redirected. Every constituency URL
+   * still serves HTTP 200, still renders, still carries index/follow, and is
+   * still reachable and linked. The canonical is a consolidation signal, not
+   * a removal — visitors and internal links are entirely unaffected.
+   *
+   * The county pages now carry genuinely differentiated engineering
+   * (components/seo/CountySiteConditions.tsx, driven by sourced per-county
+   * altitude), so the consolidated target is a page that has something the
+   * duplicates did not.
+   */
+  const consolidateToCounty =
+    location.type === 'constituency' && !!parent?.county;
+  const canonicalPath = consolidateToCounty
+    ? `/kenya/${parent!.county!.slug}/${service.slug}`
+    : selfPath;
 
   const canonicalUrl = `https://www.emersoneims.com${canonicalPath}`;
 
