@@ -8,7 +8,13 @@ import Script from 'next/script';
  */
 
 export const metadata: Metadata = {
-  title: 'Maintenance Hub | Complete Industrial Maintenance Services Kenya',
+  /*
+   * Was 'Maintenance Hub | Complete Industrial Maintenance Services Kenya' —
+   * 63 chars before the root layout appends ' | EmersonEIMS Kenya', so 83 in
+   * total and truncated in every search result. It also said "Kenya" twice
+   * once the suffix landed. Shortened to lead with the job.
+   */
+  title: 'Industrial Maintenance Services',
   description: 'Your one-stop maintenance solution in Kenya. Generator diagnostics, solar maintenance, pump repair, motor rewinding, AC service, electrical work. 24/7 professional support across Nairobi, Mombasa, Kisumu.',
   keywords: [
     // Main keywords

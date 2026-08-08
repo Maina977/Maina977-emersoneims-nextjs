@@ -161,8 +161,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // so Search Console stops reporting them as 404s during validation.
     { url: `${BASE_URL}/generator-oracle`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
     { url: `${BASE_URL}/diagnostics`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/faults`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/troubleshooting`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+    /*
+     * /faults and /troubleshooting were listed TWICE — here at priority 0.85
+     * and again below at 0.9. A duplicated <loc> makes a sitemap ambiguous
+     * about a URL's own importance and is a validation warning. The later,
+     * higher-priority entries are the ones kept, so neither page loses
+     * standing; only the contradiction is removed.
+     */
     { url: `${BASE_URL}/technical-bible`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
 
     // AI Products / Intelligence Suite (HIGH PRIORITY for discoverability)

@@ -45,7 +45,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Building2',
     category: 'generators',
     metaTemplate: {
-      title: 'Generator Companies in {location} | Best Generator Dealers Kenya',
+      title: 'Generator Companies in {location}',
       description: 'Find the best generator companies in {location}. Professional diesel generator suppliers, installation & maintenance. 24/7 service. Call +254768860665',
       h1: 'Generator Companies in {location}'
     },
@@ -82,7 +82,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Zap',
     category: 'generators',
     metaTemplate: {
-      title: 'Generators in {location} | Buy Diesel Generators Kenya',
+      title: 'Generators in {location}',
       description: 'Premium generators in {location}. 10kVA to 2000kVA diesel generators. Cummins, Perkins, CAT. Installation & warranty. Call +254768860665',
       h1: 'Generators in {location}'
     },
@@ -119,7 +119,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Wrench',
     category: 'generators',
     metaTemplate: {
-      title: 'Generator Repairs in {location} | 24/7 Emergency Service',
+      title: 'Generator Repairs in {location}',
       description: 'Professional generator repairs in {location}. Expert technicians, fast response. All brands serviced. 24/7 emergency. Call +254768860665',
       h1: 'Generator Repairs in {location}'
     },
@@ -156,7 +156,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Calendar',
     category: 'generators',
     metaTemplate: {
-      title: 'Generator Lease & Rental in {location} | Flexible Terms',
+      title: 'Generator Lease & Rental in {location}',
       description: 'Generator lease and rental services in {location}. Daily, weekly, monthly options. 10kVA to 1000kVA. Call +254768860665',
       h1: 'Generator Lease in {location}'
     },
@@ -193,7 +193,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Settings',
     category: 'generators',
     metaTemplate: {
-      title: 'Generator Maintenance in {location} | Preventive Service Plans',
+      title: 'Generator Maintenance in {location}',
       description: 'Professional generator maintenance in {location}. Scheduled servicing, oil changes, filter replacement. AMC contracts. Call +254768860665',
       h1: 'Generator Maintenance in {location}'
     },
@@ -230,7 +230,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Package',
     category: 'generators',
     metaTemplate: {
-      title: 'Generator Spare Parts in {location} | Genuine Parts Kenya',
+      title: 'Generator Spare Parts in {location}',
       description: 'Genuine generator spare parts in {location}. Filters, belts, batteries, injectors. Cummins, Perkins, CAT parts. Call +254768860665',
       h1: 'Generator Spare Parts in {location}'
     },
@@ -267,7 +267,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Building2',
     category: 'generators',
     metaTemplate: {
-      title: 'Generator Maintenance Companies in {location} | Best Service Providers Kenya',
+      title: 'Generator Maintenance Companies in {location}',
       description: 'Top generator maintenance companies in {location}. Professional preventive maintenance, AMC contracts, 24/7 service. Certified technicians. Call +254768860665',
       h1: 'Generator Maintenance Companies in {location}'
     },
@@ -304,7 +304,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Wrench',
     category: 'generators',
     metaTemplate: {
-      title: 'Generator Engine Overhaul in {location} | Engine Rebuild Services Kenya',
+      title: 'Generator Engine Overhaul in {location}',
       description: 'Professional generator engine overhaul in {location}. Complete engine rebuild, top overhaul, reconditioning. Extend generator life. Call +254768860665',
       h1: 'Generator Engine Overhaul in {location}'
     },
@@ -341,7 +341,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Box',
     category: 'generators',
     metaTemplate: {
-      title: 'Generator Canopies in {location} | Soundproof Enclosures Kenya',
+      title: 'Generator Canopies in {location}',
       description: 'Generator canopies in {location}. Soundproof enclosures, acoustic canopies, weather protection. Custom sizes. Quality steel construction. Call +254768860665',
       h1: 'Generator Canopies in {location}'
     },
@@ -378,7 +378,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'ToggleRight',
     category: 'generators',
     metaTemplate: {
-      title: 'Generator Changeover in {location} | Changeover Switch Installation Kenya',
+      title: 'Generator Changeover in {location}',
       description: 'Generator changeover installation in {location}. Manual & automatic changeover switches. Safe power transfer. Professional installation. Call +254768860665',
       h1: 'Generator Changeover in {location}'
     },
@@ -415,7 +415,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Activity',
     category: 'generators',
     metaTemplate: {
-      title: 'Generator Power Factor Correction in {location} | PFC Systems Kenya',
+      title: 'Generator Power Factor Correction in {location}',
       description: 'Generator power factor correction in {location}. Capacitor banks, PFC panels, power quality improvement. Reduce electricity costs. Call +254768860665',
       h1: 'Generator Power Factor Correction in {location}'
     },
@@ -452,7 +452,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Wrench',
     category: 'generators',
     metaTemplate: {
-      title: 'Repairs in {location} | Professional Equipment Repair Services Kenya',
+      title: 'Repairs in {location}',
       description: 'Professional repairs in {location}. Generator, motor, pump, electrical equipment repairs. Fast turnaround. All brands serviced. Call +254768860665',
       h1: 'Repairs in {location}'
     },
@@ -489,7 +489,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Settings',
     category: 'generators',
     metaTemplate: {
-      title: 'Maintenance in {location} | Professional Maintenance Services Kenya',
+      title: 'Maintenance in {location}',
       description: 'Professional maintenance in {location}. Generator, motor, pump maintenance. Preventive maintenance, AMC contracts. Keep equipment running. Call +254768860665',
       h1: 'Maintenance in {location}'
     },
@@ -526,7 +526,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Package',
     category: 'generators',
     metaTemplate: {
-      title: 'Spare Parts in {location} | Genuine Equipment Parts Kenya',
+      title: 'Spare Parts in {location}',
       description: 'Genuine spare parts in {location}. Generator, motor, pump parts. All major brands. Fast delivery. Competitive prices. Call +254768860665',
       h1: 'Spare Parts in {location}'
     },
@@ -573,7 +573,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Sun',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Companies in {location} | Solar Energy Provider Kenya',
+      title: 'Solar Companies in {location}',
       description: 'Best solar companies in {location}. Professional solar installation, panels, batteries & inverters. KPLC net metering experts. Call +254768860665',
       h1: 'Solar Companies in {location}'
     },
@@ -614,7 +614,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Users',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Experts in {location} | Certified Solar Consultants Kenya',
+      title: 'Solar Experts in {location}',
       description: 'Certified solar experts in {location}. Professional solar design, sizing & installation. Expert advice on solar systems. Call +254768860665',
       h1: 'Solar Experts in {location}'
     },
@@ -656,7 +656,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'LayoutGrid',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Panels in {location} | Best Solar Panels Kenya 2024',
+      title: 'Solar Panels in {location}',
       description: 'High-efficiency solar panels in {location}. Monocrystalline & polycrystalline. 25-year warranty. Best prices. Free delivery. Call +254768860665',
       h1: 'Solar Panels in {location}'
     },
@@ -698,7 +698,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Battery',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Batteries in {location} | Solar Battery Storage Kenya',
+      title: 'Solar Batteries in {location}',
       description: 'Solar batteries in {location}. Lithium & gel batteries for solar systems. Long lifespan, warranty included. Best prices. Call +254768860665',
       h1: 'Solar Batteries in {location}'
     },
@@ -740,7 +740,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Activity',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Inverters in {location} | Hybrid & Off-Grid Inverters',
+      title: 'Solar Inverters in {location}',
       description: 'Solar inverters in {location}. Hybrid, off-grid & grid-tie inverters. Top brands: Growatt, Deye, Victron. Installation included. Call +254768860665',
       h1: 'Solar Inverters in {location}'
     },
@@ -781,7 +781,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'HardHat',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Technicians in {location} | Certified Solar Installers',
+      title: 'Solar Technicians in {location}',
       description: 'Certified solar technicians in {location}. Professional solar panel installation & repairs. Licensed electricians. Call +254768860665',
       h1: 'Solar Technicians in {location}'
     },
@@ -822,7 +822,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Tractor',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar for Farms in {location} | Agricultural Solar Solutions',
+      title: 'Solar for Farms in {location}',
       description: 'Solar for farms in {location}. Solar irrigation, water pumps, poultry & dairy farms. Reduce farming costs. Free quotation. Call +254768860665',
       h1: 'Solar for Farms in {location}'
     },
@@ -863,7 +863,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Hotel',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar for Hotels in {location} | Hospitality Solar Solutions',
+      title: 'Solar for Hotels in {location}',
       description: 'Solar for hotels in {location}. Reduce hotel electricity bills by 70%. Solar water heating, power systems. Book a site survey. Call +254768860665',
       h1: 'Solar for Hotels in {location}'
     },
@@ -904,7 +904,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Heart',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar for Hospitals in {location} | Healthcare Solar Solutions',
+      title: 'Solar for Hospitals in {location}',
       description: 'Solar for hospitals in {location}. Reliable power for medical equipment. Battery backup included. Zero downtime systems. Call +254768860665',
       h1: 'Solar for Hospitals in {location}'
     },
@@ -945,7 +945,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Factory',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar for Industries in {location} | Industrial Solar Kenya',
+      title: 'Solar for Industries in {location}',
       description: 'Industrial solar in {location}. Large-scale solar for factories & warehouses. Cut electricity costs 70%. Net metering. Call +254768860665',
       h1: 'Solar for Industries in {location}'
     },
@@ -986,7 +986,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Home',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar for Homes in {location} | Residential Solar Kenya',
+      title: 'Solar for Homes in {location}',
       description: 'Solar for homes in {location}. Complete home solar systems. Reduce bills by 90%. Battery backup included. Free quote. Call +254768860665',
       h1: 'Solar for Homes in {location}'
     },
@@ -1027,7 +1027,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Tool',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Maintenance in {location} | Solar Panel Cleaning & Service',
+      title: 'Solar Maintenance in {location}',
       description: 'Solar maintenance in {location}. Panel cleaning, inverter service, battery checks. Keep your solar efficient. AMC available. Call +254768860665',
       h1: 'Solar Maintenance in {location}'
     },
@@ -1068,7 +1068,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Wrench',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Repairs in {location} | Solar Panel & Inverter Repairs',
+      title: 'Solar Repairs in {location}',
       description: 'Solar repairs in {location}. Inverter repairs, panel issues, battery problems. Fast response. All brands serviced. Call +254768860665',
       h1: 'Solar Repairs in {location}'
     },
@@ -1109,7 +1109,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Package',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Spares in {location} | Solar Parts & Components Kenya',
+      title: 'Solar Spares in {location}',
       description: 'Solar spares in {location}. MC4 connectors, solar cables, mounting brackets, charge controllers. Fast delivery. Call +254768860665',
       h1: 'Solar Spares in {location}'
     },
@@ -1150,7 +1150,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Sun',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Installation in {location} | Professional Solar Installers',
+      title: 'Solar Installation in {location}',
       description: 'Professional solar installation in {location}. Certified installers, quality products. Residential & commercial. Free quote. Call +254768860665',
       h1: 'Solar Installation in {location}'
     },
@@ -1196,7 +1196,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Building2',
     category: 'motors',
     metaTemplate: {
-      title: 'Motor Rewinding Companies in {location} | Best Motor Repairs Kenya',
+      title: 'Motor Rewinding Companies in {location}',
       description: 'Top motor rewinding companies in {location}. Expert electric motor repairs, pump motors, industrial motors. Fast turnaround. Call +254768860665',
       h1: 'Motor Rewinding Companies in {location}'
     },
@@ -1237,7 +1237,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'RotateCw',
     category: 'motors',
     metaTemplate: {
-      title: 'Motor Rewinding in {location} | Electric Motor Rewind Kenya',
+      title: 'Motor Rewinding in {location}',
       description: 'Professional motor rewinding in {location}. All motor types, quality copper wire. Fast turnaround, warranty. Call +254768860665',
       h1: 'Motor Rewinding in {location}'
     },
@@ -1278,7 +1278,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Wrench',
     category: 'motors',
     metaTemplate: {
-      title: 'Motor Repairs in {location} | Electric Motor Repair Service',
+      title: 'Motor Repairs in {location}',
       description: 'Motor repairs in {location}. Bearing replacement, shaft repair, rewinding. All motor types. Fast turnaround. Call +254768860665',
       h1: 'Motor Repairs in {location}'
     },
@@ -1319,7 +1319,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Droplet',
     category: 'motors',
     metaTemplate: {
-      title: 'Pump Motors in {location} | Pump Motor Repairs & Rewinding',
+      title: 'Pump Motors in {location}',
       description: 'Pump motor services in {location}. Submersible, borehole, centrifugal pump motors. Repair & rewinding. Call +254768860665',
       h1: 'Pump Motors in {location}'
     },
@@ -1360,7 +1360,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Factory',
     category: 'motors',
     metaTemplate: {
-      title: 'Industrial Motors in {location} | Heavy Duty Motor Repairs',
+      title: 'Industrial Motors in {location}',
       description: 'Industrial motor services in {location}. Large motor rewinding, repairs, VFD installation. Factory motor specialists. Call +254768860665',
       h1: 'Industrial Motors in {location}'
     },
@@ -1401,7 +1401,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Settings',
     category: 'motors',
     metaTemplate: {
-      title: 'Motor Maintenance in {location} | Preventive Motor Service',
+      title: 'Motor Maintenance in {location}',
       description: 'Motor maintenance in {location}. Preventive servicing, bearing checks, insulation testing. Extend motor life. Call +254768860665',
       h1: 'Motor Maintenance in {location}'
     },
@@ -1442,7 +1442,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Package',
     category: 'motors',
     metaTemplate: {
-      title: 'Motor Spares in {location} | Electric Motor Parts Kenya',
+      title: 'Motor Spares in {location}',
       description: 'Motor spares in {location}. Bearings, capacitors, fans, brushes. All motor brands. Fast delivery. Call +254768860665',
       h1: 'Motor Spares in {location}'
     },
@@ -1488,7 +1488,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Battery',
     category: 'ups',
     metaTemplate: {
-      title: 'UPS Systems in {location} | Power Backup Solutions Kenya',
+      title: 'UPS Systems in {location}',
       description: 'UPS systems in {location}. Online, line-interactive UPS. Data center & office solutions. Installation & maintenance. Call +254768860665',
       h1: 'UPS Systems in {location}'
     },
@@ -1529,7 +1529,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Plug',
     category: 'electrical',
     metaTemplate: {
-      title: 'Electrical Services in {location} | Licensed Electricians Kenya',
+      title: 'Electrical Services in {location}',
       description: 'Professional electrical services in {location}. Industrial & commercial installation. Licensed contractors. Call +254768860665',
       h1: 'Electrical Services in {location}'
     },
@@ -1571,7 +1571,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Building2',
     category: 'ac',
     metaTemplate: {
-      title: 'AC Companies in {location} | Best Air Conditioning Companies Kenya',
+      title: 'AC Companies in {location}',
       description: 'Top AC companies in {location}. Professional air conditioning installation, repair & maintenance. All brands. Free quotes. Call +254768860665',
       h1: 'AC Companies in {location}'
     },
@@ -1592,7 +1592,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Snowflake',
     category: 'ac',
     metaTemplate: {
-      title: 'AC Installation in {location} | Air Conditioning Installation Kenya',
+      title: 'AC Installation in {location}',
       description: 'Professional AC installation in {location}. Split, cassette & central AC. All brands. Quality workmanship. Warranty included. Call +254768860665',
       h1: 'AC Installation in {location}'
     },
@@ -1613,7 +1613,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Wrench',
     category: 'ac',
     metaTemplate: {
-      title: 'AC Repair in {location} | Air Conditioning Repair Service Kenya',
+      title: 'AC Repair in {location}',
       description: 'AC repair in {location}. AC not cooling? Leaking? Making noise? Fast repairs. All brands serviced. 24/7 emergency. Call +254768860665',
       h1: 'AC Repair in {location}'
     },
@@ -1634,7 +1634,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Settings',
     category: 'ac',
     metaTemplate: {
-      title: 'AC Maintenance in {location} | Air Conditioning Service Kenya',
+      title: 'AC Maintenance in {location}',
       description: 'AC maintenance in {location}. Regular servicing extends AC life. Filter cleaning, gas check, full service. AMC available. Call +254768860665',
       h1: 'AC Maintenance in {location}'
     },
@@ -1655,7 +1655,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Wind',
     category: 'ac',
     metaTemplate: {
-      title: 'AC Gas Refill in {location} | AC Refrigerant Recharge Kenya',
+      title: 'AC Gas Refill in {location}',
       description: 'AC gas refill in {location}. R410A, R22, R32 refrigerant. Professional service. Leak detection included. Fair prices. Call +254768860665',
       h1: 'AC Gas Refill in {location}'
     },
@@ -1681,7 +1681,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Drill',
     category: 'borehole',
     metaTemplate: {
-      title: 'Borehole Drilling in {location} | Borehole Drilling Companies Kenya',
+      title: 'Borehole Drilling in {location}',
       description: 'Borehole drilling in {location}. Professional drilling services. Survey, drilling & pump installation. Competitive rates. Call +254768860665',
       h1: 'Borehole Drilling in {location}'
     },
@@ -1702,7 +1702,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Droplet',
     category: 'borehole',
     metaTemplate: {
-      title: 'Borehole Pumps in {location} | Submersible Pump Installation Kenya',
+      title: 'Borehole Pumps in {location}',
       description: 'Borehole pumps in {location}. Submersible pump installation, repair & maintenance. Grundfos, Pedrollo, DAB pumps. Call +254768860665',
       h1: 'Borehole Pumps in {location}'
     },
@@ -1723,7 +1723,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Wrench',
     category: 'borehole',
     metaTemplate: {
-      title: 'Water Pump Repair in {location} | Borehole Pump Repair Kenya',
+      title: 'Water Pump Repair in {location}',
       description: 'Water pump repair in {location}. Submersible, centrifugal & booster pump repairs. Motor rewinding. Fast service. Call +254768860665',
       h1: 'Water Pump Repair in {location}'
     },
@@ -1749,7 +1749,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Cpu',
     category: 'automation',
     metaTemplate: {
-      title: 'Control Panels in {location} | Electrical Control Panel Fabrication',
+      title: 'Control Panels in {location}',
       description: 'Control panels in {location}. Custom design & fabrication. Motor control, PLC panels, automation. Quality workmanship. Call +254768860665',
       h1: 'Control Panels in {location}'
     },
@@ -1770,7 +1770,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Code',
     category: 'automation',
     metaTemplate: {
-      title: 'PLC Programming in {location} | Industrial Automation Kenya',
+      title: 'PLC Programming in {location}',
       description: 'PLC programming in {location}. Siemens, Allen Bradley, Mitsubishi. Industrial automation, SCADA, HMI. Expert programmers. Call +254768860665',
       h1: 'PLC Programming in {location}'
     },
@@ -1791,7 +1791,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Cog',
     category: 'automation',
     metaTemplate: {
-      title: 'Automation Services in {location} | Industrial Automation Kenya',
+      title: 'Automation Services in {location}',
       description: 'Automation services in {location}. Industrial, process & building automation. PLC, SCADA, VFD. Complete solutions. Call +254768860665',
       h1: 'Automation Services in {location}'
     },
@@ -1817,7 +1817,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Flame',
     category: 'incinerators',
     metaTemplate: {
-      title: 'Incinerators in {location} | Medical & Industrial Incinerators Kenya',
+      title: 'Incinerators in {location}',
       description: 'Incinerators in {location}. Medical, hospital & industrial incinerators. NEMA compliant. Installation & maintenance. Call +254768860665',
       h1: 'Incinerators in {location}'
     },
@@ -1838,7 +1838,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Tool',
     category: 'incinerators',
     metaTemplate: {
-      title: 'Incinerator Installation in {location} | Professional Setup Kenya',
+      title: 'Incinerator Installation in {location}',
       description: 'Incinerator installation in {location}. Professional setup, commissioning & training. NEMA compliance. Warranty included. Call +254768860665',
       h1: 'Incinerator Installation in {location}'
     },
@@ -1859,7 +1859,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Settings',
     category: 'incinerators',
     metaTemplate: {
-      title: 'Incinerator Maintenance in {location} | Repair & Service Kenya',
+      title: 'Incinerator Maintenance in {location}',
       description: 'Incinerator maintenance in {location}. Regular servicing, repairs, spare parts. Keep your incinerator efficient. AMC available. Call +254768860665',
       h1: 'Incinerator Maintenance in {location}'
     },
@@ -1885,7 +1885,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'BatteryCharging',
     category: 'ups',
     metaTemplate: {
-      title: 'Power Backup in {location} | Backup Power Solutions Kenya',
+      title: 'Power Backup in {location}',
       description: 'Power backup solutions in {location}. Generators, UPS, solar, inverters. Never lose power again. Free quotation. Call +254768860665',
       h1: 'Power Backup in {location}'
     },
@@ -1906,7 +1906,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'ToggleRight',
     category: 'generators',
     metaTemplate: {
-      title: 'Automatic Transfer Switch in {location} | ATS Installation Kenya',
+      title: 'Automatic Transfer Switch in {location}',
       description: 'Automatic transfer switch (ATS) in {location}. Seamless power changeover. Generator & mains integration. Professional installation. Call +254768860665',
       h1: 'Automatic Transfer Switch in {location}'
     },
@@ -1927,7 +1927,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Zap',
     category: 'ups',
     metaTemplate: {
-      title: 'Inverter Systems in {location} | Home & Office Inverters Kenya',
+      title: 'Inverter Systems in {location}',
       description: 'Inverter systems in {location}. Home & office power backup. Quality inverters & batteries. Installation included. Call +254768860665',
       h1: 'Inverter Systems in {location}'
     },

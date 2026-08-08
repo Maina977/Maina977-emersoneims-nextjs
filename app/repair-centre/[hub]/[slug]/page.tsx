@@ -30,8 +30,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const url = `https://www.emersoneims.com/repair-centre/${a.hub}/${a.slug}`;
   const description = a.directAnswer.slice(0, 300);
 
+  /*
+   * Article headlines are written for the page, not for a search result:
+   * "ATS Contactor, Motor Operator and Interlock Faults — When the Switch
+   * Itself Fails" is 80 characters before the root layout appends
+   * " | EmersonEIMS Kenya", so every one of these 76 pages was truncated in
+   * the SERP — and truncated mid-subtitle, where the useful words are not.
+   *
+   * The em-dash separates topic from subtitle in this collection, so the part
+   * before it IS the searchable topic. The full headline stays exactly as it
+   * is on the page and in the H1; only the <title> is shortened. Titles with
+   * no em-dash are left untouched rather than cut at an arbitrary width.
+   */
+  const seoTitle = a.header.title.split('—')[0].trim() || a.header.title;
+
   return {
-    title: `${a.header.title}`,
+    title: seoTitle,
     description,
     keywords: [a.header.equipmentCategory, a.header.title, 'fault diagnosis', 'repair guide', 'Kenya'],
     alternates: { canonical: url },
