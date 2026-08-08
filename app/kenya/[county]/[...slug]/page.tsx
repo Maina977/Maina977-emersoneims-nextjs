@@ -24,6 +24,7 @@ import {
 import LocationServiceSchema from '@/components/seo/LocationServiceSchema';
 import CountySiteConditions from '@/components/seo/CountySiteConditions';
 import ConstituencySiteConditions from '@/components/seo/ConstituencySiteConditions';
+import LocationEnquiry from '@/components/seo/LocationEnquiry';
 
 type Props = {
   params: Promise<{ county: string; slug: string[] }>;
@@ -273,6 +274,12 @@ function CountyServicePage({
           population={county.population}
         />
 
+        <LocationEnquiry
+          locationName={county.name}
+          serviceName={service.shortName}
+          source={`kenya-${county.slug}-${service.slug}`}
+        />
+
         {/* Service Features */}
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
@@ -480,6 +487,11 @@ function ConstituencyPage({
           constituencyName={constituency.name}
         />
 
+        <LocationEnquiry
+          locationName={constituency.name}
+          source={`kenya-${county.slug}-${constituency.slug}`}
+        />
+
         {/* Services Grid */}
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
@@ -613,6 +625,12 @@ function ConstituencyServicePage({
           constituencySlug={constituency.slug}
           constituencyName={constituency.name}
           serviceName={service.shortName}
+        />
+
+        <LocationEnquiry
+          locationName={constituency.name}
+          serviceName={service.shortName}
+          source={`kenya-${county.slug}-${constituency.slug}-${service.slug}`}
         />
 
         {/* Service Features */}
