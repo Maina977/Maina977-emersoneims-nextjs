@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchPlantCodes, getStats } from '@/lib/plant-oracle/coverage';
+import { decodeJ1939 } from '@/lib/plant-oracle/j1939';
 
 /**
  * Plant & Equipment Oracle search.
@@ -17,6 +18,29 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const sp = req.nextUrl.searchParams;
+    /*
+     * J1939 decode path. Composed on demand from the two verified tables —
+     * nothing is pre-generated, so we can never hand back a combination we
+     * have not actually been asked about as though it were catalogued.
+     *
+     * This is how John Deere, JCB, Komatsu and Doosan are served without a
+     * manufacturer table: they all speak the same SAE standard.
+     */
+    const spnRaw = sp.get('spn');
+    const fmiRaw = sp.get('fmi');
+    if (spnRaw !== null && fmiRaw !== null) {
+      const decoded = decodeJ1939(Number(spnRaw), Number(fmiRaw));
+      return NextResponse.json({
+        ok: true,
+        mode: 'j1939',
+        decoded,
+        provenance:
+          'SAE J1939 standard tables. FMI values cross-checked across two independent references; ' +
+          'SPN names triangulated from a published OEM J1939 fault table and shape-validated, with 8 ' +
+          'confirmed against independent sources. Manufacturer-proprietary SPNs are deliberately excluded.',
+      });
+    }
+
     const q = (sp.get('q') ?? '').slice(0, 120);
     const brand = (sp.get('brand') ?? '').slice(0, 60) || undefined;
     const limit = Number(sp.get('limit') ?? 40);

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import PlantOracleSearch from '@/components/plant-oracle/PlantOracleSearch';
 import { getCoverage, getStats, DECLARED_GAPS } from '@/lib/plant-oracle/coverage';
+import { getJ1939Stats } from '@/lib/plant-oracle/j1939';
 
 /**
  * Plant & Equipment Oracle.
@@ -28,6 +29,7 @@ export default function PlantEquipmentOraclePage() {
   const coverage = getCoverage();
   const stats = getStats();
   const brands = coverage.map((c) => c.brand);
+  const j = getJ1939Stats();
 
   return (
     <div className="eims-section min-h-screen pt-24 pb-12">
@@ -58,8 +60,10 @@ export default function PlantEquipmentOraclePage() {
           <p className="text-gray-500 max-w-3xl">
             {fmt(stats.codes)} verified codes across{' '}
             {stats.brands} engine brands and {stats.families} engine families.
-            Every one is checked. We publish no invented codes and no invented
-            fixes.
+            Every one is checked. Plus a SAE J1939 decoder — {j.spns} verified
+            SPNs and all {j.fmis} defined FMIs — which reads John Deere, JCB,
+            Komatsu, Doosan and Volvo engines from the standard. We publish no
+            invented codes and no invented fixes.
           </p>
         </div>
 
@@ -133,19 +137,29 @@ export default function PlantEquipmentOraclePage() {
 
           <div className="rounded-xl border border-white/10 bg-white/5 p-6">
             <h3 className="text-lg font-semibold text-white mb-2">
-              What we do <em>not</em> have yet
+              No manufacturer table for these — but they still decode
             </h3>
             <p className="text-gray-400 mb-3">
-              We hold no verified codes for these, and we would rather say so than
-              return a plausible guess:
+              We hold no maker-specific fault table for:
             </p>
-            <p className="text-gray-300 mb-3">{DECLARED_GAPS.join(' · ')}</p>
+            <p className="text-gray-300 mb-4">{DECLARED_GAPS.join(' · ')}</p>
+            <p className="text-gray-300 mb-3">
+              That does not leave you stuck. All of them speak{' '}
+              <strong>SAE J1939</strong>, where a fault is an SPN saying which
+              parameter is at fault and an FMI saying how it failed — and both
+              mean the same thing on a John Deere as on a Cummins. We hold{' '}
+              {j.spns} verified SPNs and all {j.fmis} defined FMIs, so the
+              decoder above reads those machines from the standard rather than
+              guessing at them.
+            </p>
             <p className="text-sm text-gray-500">
-              Many machines from these makers run engines we <em>do</em> cover —
-              Perkins, Cummins, Deutz and Weichai are fitted across a great deal
-              of plant. Check the engine plate before assuming we cannot help.
-              If you have the workshop manual for a machine on this list, send it
-              and we will add it properly.
+              Two honest limits. Manufacturer-proprietary SPNs sit outside the
+              standard ranges, differ between makers, and are not included — the
+              decoder says so rather than offering a near match. And many of
+              these machines run engines we cover outright (Perkins, Cummins,
+              Deutz, Weichai), so check the engine plate first. If you have the
+              workshop manual for anything on this list, send it and we will add
+              it properly.
             </p>
           </div>
         </section>

@@ -25,6 +25,10 @@ interface Hit {
 }
 
 export default function PlantOracleSearch({ brands }: { brands: string[] }) {
+  const [spn, setSpn] = useState('');
+  const [fmi, setFmi] = useState('');
+  const [decoded, setDecoded] = useState<{ ok: boolean; reading?: string; note?: string; spn?: { name: string }; fmi?: { plain: string } } | null>(null);
+  const [decoding, setDecoding] = useState(false);
   const [q, setQ] = useState('');
   const [brand, setBrand] = useState('');
   const [hits, setHits] = useState<Hit[] | null>(null);
@@ -50,6 +54,21 @@ export default function PlantOracleSearch({ brands }: { brands: string[] }) {
       setLoading(false);
     }
   }, [q, brand]);
+
+  const decode = useCallback(async () => {
+    if (!spn.trim() || !fmi.trim()) return;
+    setDecoding(true);
+    setDecoded(null);
+    try {
+      const r = await fetch(`/api/plant-oracle/search?spn=${encodeURIComponent(spn.trim())}&fmi=${encodeURIComponent(fmi.trim())}`);
+      const j = await r.json();
+      setDecoded(j.decoded ?? null);
+    } catch {
+      setDecoded({ ok: false, note: 'Could not decode just now. Call +254 768 860 665 and read us the code.' });
+    } finally {
+      setDecoding(false);
+    }
+  }, [spn, fmi]);
 
   return (
     <div className="rounded-2xl border border-amber-500/20 bg-white/5 p-6 md:p-8">
@@ -138,6 +157,56 @@ export default function PlantOracleSearch({ brands }: { brands: string[] }) {
           )}
         </div>
       )}
+
+      {/* ---- J1939 decoder: how John Deere, JCB, Komatsu and Doosan are served ---- */}
+      <div className="mt-8 pt-8 border-t border-white/10">
+        <h3 className="text-lg font-semibold text-white mb-1">
+          Machine showing an SPN and FMI instead?
+        </h3>
+        <p className="text-sm text-gray-400 mb-4">
+          J1939 is an SAE standard, so an SPN/FMI pair means the same thing on a
+          John Deere, JCB, Komatsu, Doosan or Volvo as on any other engine — even
+          though we hold no manufacturer table for those makes.
+        </p>
+        <form
+          onSubmit={(e) => { e.preventDefault(); decode(); }}
+          className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]"
+        >
+          <label className="sr-only" htmlFor="j-spn">SPN</label>
+          <input
+            id="j-spn" inputMode="numeric" value={spn}
+            onChange={(e) => setSpn(e.target.value)}
+            placeholder="SPN, e.g. 100"
+            className="w-full rounded-lg bg-black/30 border border-white/15 px-4 py-3 text-white placeholder:text-gray-500 focus:border-amber-400 focus:outline-none"
+          />
+          <label className="sr-only" htmlFor="j-fmi">FMI</label>
+          <input
+            id="j-fmi" inputMode="numeric" value={fmi}
+            onChange={(e) => setFmi(e.target.value)}
+            placeholder="FMI, e.g. 3"
+            className="w-full rounded-lg bg-black/30 border border-white/15 px-4 py-3 text-white placeholder:text-gray-500 focus:border-amber-400 focus:outline-none"
+          />
+          <button
+            type="submit" disabled={decoding}
+            className="rounded-lg border border-amber-400/60 px-6 py-3 font-bold text-amber-300 hover:bg-amber-400/10 disabled:opacity-60"
+          >
+            {decoding ? 'Decoding…' : 'Decode'}
+          </button>
+        </form>
+
+        {decoded && (
+          <div className="mt-4 rounded-lg border border-white/10 bg-black/20 p-5">
+            {decoded.ok ? (
+              <>
+                <p className="text-white font-semibold mb-2">{decoded.reading}</p>
+                {decoded.fmi?.plain && <p className="text-sm text-gray-400">{decoded.fmi.plain}</p>}
+              </>
+            ) : (
+              <p className="text-gray-300">{decoded.note}</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
