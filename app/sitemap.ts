@@ -183,6 +183,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/solar-genius-pro-futuristic`,           lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
     { url: `${BASE_URL}/solar-design-studio`,                   lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
     { url: `${BASE_URL}/eims-pro`,                              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
+    // Plant & Equipment Oracle — sibling to Generator Oracle, built on the
+    // same 2,155 VERIFIED codes but framed for excavators, loaders and
+    // compressors. Self-canonical, server-rendered, real body content.
+    { url: `${BASE_URL}/plant-equipment-oracle`,               lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
     { url: `${BASE_URL}/ai-tools`,                              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
     { url: `${BASE_URL}/ai-tools/capabilities`,                 lastModified: currentDate, changeFrequency: 'monthly', priority: 0.7 },
     /*
