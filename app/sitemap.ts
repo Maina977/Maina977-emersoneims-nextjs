@@ -372,18 +372,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  // Add curated location + service combinations (HIGH-INTENT keywords).
-  // Sourced from the same indexed registry the page uses for
-  // generateStaticParams — sitemap stays in lockstep with what's
-  // actually rendered + indexable. Anything outside this list 404s.
-  for (const { location, service } of getIndexedServiceLocationPaths()) {
-    urls.push({
-      url: `${BASE_URL}/locations/${location}/${service}`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    });
-  }
+  /*
+   * /locations/<town>/<service> REMOVED FROM THE SITEMAP, 2026-08-29.
+   * The pages are untouched and still serve — this only stops submitting them.
+   *
+   * WHY. Search Console returned "Crawled - currently not indexed" for this
+   * tier. That status is not an error to validate away; it is Google saying it
+   * fetched the pages, understood them, and judged them not worth index space.
+   * Measured on the live site the same day, /locations/thika and
+   * /locations/eldoret shared 64% of their 8-word sequences — Google was right.
+   *
+   * 208 URLs of the 224 in this section were the town+service tier, and
+   * together with the constituency tier they made 81% of everything we asked
+   * Google to index. Crawl budget is finite on a site with this authority, and
+   * every fetch spent re-reading a near-duplicate is one not spent on a page
+   * that can rank. The 15 town landing pages stay listed.
+   *
+   * NOTHING IS DELETED. Every URL still returns 200, still renders, still
+   * carries index/follow and stays internally linked, so both visitors and
+   * crawlers following links reach them exactly as before. Re-listing them is
+   * a one-line change if the content is ever genuinely differentiated.
+   *
+   * for (const { location, service } of getIndexedServiceLocationPaths()) { ... }
+   */
 
   // Sector landing pages live at /industries/<slug> and are already
   // emitted earlier in this sitemap (see the `industries` loop). The
