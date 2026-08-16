@@ -2,6 +2,7 @@ import {
   VERIFIED_FAULT_CODES,
   type VerifiedFaultCode,
 } from '@/lib/data/verifiedFaultCodes';
+import { OEM_FAULT_CODES, searchOemCodes } from '@/lib/plant-oracle/oemFaultCodes';
 
 /**
  * PLANT & EQUIPMENT ORACLE — coverage and search over VERIFIED data only.
@@ -15,8 +16,11 @@ import {
  * removed from this database once already, and rebuilding that is not on the
  * table.
  *
- * So this tool reads the 2,155 curated records and nothing else. Smaller
- * number, entirely defensible.
+ * So this tool reads curated records only — never the expanded ranges. Two
+ * sets feed it: the 2,155 engine-brand records in verifiedFaultCodes.ts, and
+ * the 315 machine-maker records in oemFaultCodes.ts (John Deere, JCB, Komatsu,
+ * Volvo CE, Hyundai) sourced and rewritten on 2026-08-16. Smaller number than
+ * the headline figure elsewhere on the site, entirely defensible.
  *
  * WHAT MAKES THIS A *PLANT* TOOL RATHER THAN A GENERATOR ONE.
  * The codes are keyed to ENGINE families — Perkins 1100, Cummins QSB, Cat C9,
@@ -32,9 +36,10 @@ import {
  * the field and is always correct for the machine in front of them.
  *
  * DECLARED GAPS ARE PART OF THE PRODUCT. Brands with no records say so. A
- * tool that admits John Deere is missing is more trustworthy than one that
- * quietly returns nothing, and it tells the owner exactly which manual to
- * source next.
+ * tool that admits Kubota is missing is more trustworthy than one that quietly
+ * returns nothing, and it tells the owner exactly which manual to source next.
+ * John Deere, JCB, Komatsu, Volvo CE and Hyundai came off that list on
+ * 2026-08-16 because real tables were sourced, not because the claim softened.
  */
 
 export interface BrandCoverage {
@@ -46,6 +51,17 @@ export interface BrandCoverage {
 /** Brands we hold verified records for, largest first. */
 export function getCoverage(): BrandCoverage[] {
   const map = new Map<string, { codes: number; families: Set<string> }>();
+  /*
+   * Machine-maker codes sourced separately (John Deere, JCB, Komatsu, Volvo
+   * CE, Hyundai) sit alongside the engine-brand set. A technician does not
+   * care which file a code came from, so coverage is reported as one list.
+   */
+  for (const r of OEM_FAULT_CODES) {
+    const e = map.get(r.brand) ?? { codes: 0, families: new Set<string>() };
+    e.codes += 1;
+    if (r.family) e.families.add(r.family);
+    map.set(r.brand, e);
+  }
   for (const r of VERIFIED_FAULT_CODES) {
     const e = map.get(r.brand) ?? { codes: 0, families: new Set<string>() };
     e.codes += 1;
@@ -69,11 +85,8 @@ export function getCoverage(): BrandCoverage[] {
  * own job cards — before it can appear in results. Until then the tool says so.
  */
 export const DECLARED_GAPS: readonly string[] = [
-  'John Deere',
-  'JCB',
-  'Komatsu',
-  'Hyundai',
-  'Volvo CE',
+  // John Deere, JCB, Komatsu, Volvo CE and Hyundai were on this list until
+  // 2026-08-16 and now have sourced tables in oemFaultCodes.ts. These remain.
   'Kubota',
   'Yanmar',
   'Sany',
@@ -101,6 +114,22 @@ export function searchPlantCodes(
   if (!q && !opts.brand) return [];
 
   const brandFilter = opts.brand?.toLowerCase();
+
+  /*
+   * OEM machine-maker codes are searched first and surfaced above the engine
+   * set. Someone who types a Komatsu CA code wants the Komatsu answer, not a
+   * Perkins code that happens to share digits.
+   */
+  const oem: SearchHit[] = searchOemCodes(query, { brand: opts.brand, limit }).map((r) => ({
+    code: r.code,
+    brand: r.brand,
+    model: r.family,
+    description: r.description,
+    causes: [],
+    remedies: [],
+    matchedOn: 'code' as const,
+  }));
+
   const exact: SearchHit[] = [];
   const prefix: SearchHit[] = [];
   const text: SearchHit[] = [];
@@ -120,7 +149,7 @@ export function searchPlantCodes(
     else if (r.brand.toLowerCase().includes(q)) text.push({ ...r, matchedOn: 'brand' });
   }
 
-  return [...exact, ...prefix, ...text].slice(0, limit);
+  return [...oem, ...exact, ...prefix, ...text].slice(0, limit);
 }
 
 /** Headline figures, computed rather than asserted. */
@@ -128,13 +157,19 @@ export function getStats() {
   const brands = new Set<string>();
   const families = new Set<string>();
   let withRemedy = 0;
+  for (const r of OEM_FAULT_CODES) {
+    brands.add(r.brand);
+    if (r.family) families.add(`${r.brand} ${r.family}`);
+  }
   for (const r of VERIFIED_FAULT_CODES) {
     brands.add(r.brand);
     if (r.model) families.add(`${r.brand} ${r.model}`);
     if (r.remedies.length > 0) withRemedy += 1;
   }
   return {
-    codes: VERIFIED_FAULT_CODES.length,
+    codes: VERIFIED_FAULT_CODES.length + OEM_FAULT_CODES.length,
+    engineCodes: VERIFIED_FAULT_CODES.length,
+    oemCodes: OEM_FAULT_CODES.length,
     brands: brands.size,
     families: families.size,
     withRemedy,
