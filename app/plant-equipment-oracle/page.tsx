@@ -2,6 +2,7 @@ import Link from 'next/link';
 import PlantOracleSearch from '@/components/plant-oracle/PlantOracleSearch';
 import { getCoverage, getStats, DECLARED_GAPS } from '@/lib/plant-oracle/coverage';
 import { getJ1939Stats } from '@/lib/plant-oracle/j1939';
+import { getSpaceCoverage, CODE_SPACES } from '@/lib/plant-oracle/codeSpaces';
 
 /**
  * Plant & Equipment Oracle.
@@ -30,6 +31,7 @@ export default function PlantEquipmentOraclePage() {
   const stats = getStats();
   const brands = coverage.map((c) => c.brand);
   const j = getJ1939Stats();
+  const sp = getSpaceCoverage();
 
   return (
     <div className="eims-section min-h-screen pt-24 pb-12">
@@ -162,6 +164,62 @@ export default function PlantEquipmentOraclePage() {
               it properly.
             </p>
           </div>
+        </section>
+
+        {/* ---------- published code spaces ---------- */}
+        <section className="mb-16" aria-labelledby="spaces-heading">
+          <h2 id="spaces-heading" className="text-2xl md:text-3xl font-bold mb-4">
+            Codes we do not hold, that we can still read
+          </h2>
+          <div className="max-w-3xl space-y-4 text-gray-300 mb-6">
+            <p>
+              A curated entry is the best answer, but it is not the only useful
+              one. Fault codes are not random — they sit in published,
+              structured spaces, and the shape of a code tells you which system
+              raised it and often what kind of fault it is.
+            </p>
+            <p>
+              Type a code we hold no record for and the tool will still say what
+              it recognises. <strong>P0217</strong> is not in our Kubota table,
+              but it is an SAE J2012 powertrain code in the fuel-and-air-metering
+              group, and that is published fact rather than guesswork.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto mb-6">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/15">
+                  <th className="py-2 pr-4 text-sm uppercase tracking-wider text-gray-500 font-semibold">Code space</th>
+                  <th className="py-2 pr-4 text-sm uppercase tracking-wider text-gray-500 font-semibold">Used by</th>
+                  <th className="py-2 text-sm uppercase tracking-wider text-gray-500 font-semibold text-right">Numbers</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CODE_SPACES.map((c) => (
+                  <tr key={c.label} className="border-b border-white/5">
+                    <td className="py-3 pr-4 font-semibold text-white">{c.label}</td>
+                    <td className="py-3 pr-4 text-sm text-gray-400">{c.brands.join(', ')}</td>
+                    <td className="py-3 text-right font-mono text-amber-300">
+                      {c.size === null ? 'unbounded' : fmt(c.size)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-sm text-gray-500 max-w-3xl">
+            {fmt(sp.numbersCovered)} code numbers sit inside the{' '}
+            {sp.boundedSpaces} spaces whose bounds are published.{' '}
+            <strong className="text-gray-400">
+              This is structural coverage, not a count of faults we hold
+            </strong>{' '}
+            — nothing is pre-generated into records, and a classification is
+            always shown separately from a verified answer. The other{' '}
+            {sp.unboundedSpaces} spaces have no published bound, so no number is
+            claimed for them rather than one being estimated.
+          </p>
         </section>
 
         {/* ---------- CTA ---------- */}

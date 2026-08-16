@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchPlantCodes, getStats } from '@/lib/plant-oracle/coverage';
 import { decodeJ1939 } from '@/lib/plant-oracle/j1939';
+import { classifyCode, getSpaceCoverage } from '@/lib/plant-oracle/codeSpaces';
 
 /**
  * Plant & Equipment Oracle search.
@@ -51,12 +52,25 @@ export async function GET(req: NextRequest) {
 
     const results = searchPlantCodes(q, { brand, limit });
     const stats = getStats();
+
+    /*
+     * No curated record? Say what the code's SHAPE tells us rather than
+     * nothing. P0217 may be absent from our Kubota table, but it is still an
+     * SAE J2012 powertrain code in the fuel-and-air-metering group, and that
+     * is a published fact worth handing over.
+     *
+     * Returned in its own field, never mixed into `results`, so a structural
+     * classification can never be mistaken for a verified answer.
+     */
+    const classification = results.length === 0 && q ? classifyCode(q) : null;
     return NextResponse.json({
       ok: true,
       query: q,
       brand: brand ?? null,
       count: results.length,
       results,
+      classification,
+      coverage: getSpaceCoverage(),
       /*
        * Sent with every response so the interface can never present a result
        * as more authoritative than it is. Anything without a verified record

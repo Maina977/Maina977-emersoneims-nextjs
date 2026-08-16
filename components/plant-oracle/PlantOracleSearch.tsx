@@ -32,6 +32,9 @@ export default function PlantOracleSearch({ brands }: { brands: string[] }) {
   const [q, setQ] = useState('');
   const [brand, setBrand] = useState('');
   const [hits, setHits] = useState<Hit[] | null>(null);
+  const [classification, setClassification] = useState<
+    { label: string; brands: string[]; meaning: string; detail?: string } | null
+  >(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
 
@@ -47,9 +50,11 @@ export default function PlantOracleSearch({ brands }: { brands: string[] }) {
       const j = await r.json();
       if (!j.ok) throw new Error(j.error || 'search failed');
       setHits(j.results as Hit[]);
+      setClassification(j.classification ?? null);
     } catch {
       setErr('Search could not run just now. Try again, or call +254 768 860 665 and describe the fault.');
       setHits(null);
+      setClassification(null);
     } finally {
       setLoading(false);
     }
@@ -109,6 +114,27 @@ export default function PlantOracleSearch({ brands }: { brands: string[] }) {
         <div className="mt-6">
           {hits.length === 0 ? (
             <div className="rounded-lg border border-white/10 bg-black/20 p-5">
+              {/*
+                A structural classification is shown ABOVE the "we don't hold
+                it" message and visually separated, because it is a different
+                kind of statement: what the code's shape proves, not what our
+                table says. It must never read as a verified answer.
+              */}
+              {classification && (
+                <div className="mb-4 rounded-md border border-amber-400/30 bg-amber-400/5 p-4">
+                  <p className="text-xs uppercase tracking-wider text-amber-300/80 mb-1">
+                    Recognised format — not a verified entry
+                  </p>
+                  <p className="text-white font-semibold mb-1">{classification.label}</p>
+                  <p className="text-sm text-gray-300 mb-2">{classification.meaning}</p>
+                  {classification.detail && (
+                    <p className="text-sm text-amber-200/90">{classification.detail}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">
+                    Used by {classification.brands.join(', ')}.
+                  </p>
+                </div>
+              )}
               <p className="text-white font-semibold mb-2">No verified record for that.</p>
               <p className="text-gray-400">
                 We hold 2,155 checked fault codes across 11 engine brands, and this
