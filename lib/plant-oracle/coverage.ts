@@ -18,8 +18,9 @@ import { OEM_FAULT_CODES, searchOemCodes } from '@/lib/plant-oracle/oemFaultCode
  *
  * So this tool reads curated records only — never the expanded ranges. Two
  * sets feed it: the 2,155 engine-brand records in verifiedFaultCodes.ts, and
- * the 315 machine-maker records in oemFaultCodes.ts (John Deere, JCB, Komatsu,
- * Volvo CE, Hyundai) sourced and rewritten on 2026-08-16. Smaller number than
+ * the 1,768 machine-maker records in oemFaultCodes.ts (Bobcat, Kubota, John
+ * Deere, Volvo CE, Komatsu, JCB, Hitachi, Hyundai) sourced and rewritten on
+ * 2026-08-16. Smaller number than
  * the headline figure elsewhere on the site, entirely defensible.
  *
  * WHAT MAKES THIS A *PLANT* TOOL RATHER THAN A GENERATOR ONE.
@@ -36,10 +37,10 @@ import { OEM_FAULT_CODES, searchOemCodes } from '@/lib/plant-oracle/oemFaultCode
  * the field and is always correct for the machine in front of them.
  *
  * DECLARED GAPS ARE PART OF THE PRODUCT. Brands with no records say so. A
- * tool that admits Kubota is missing is more trustworthy than one that quietly
+ * tool that admits Yanmar is missing is more trustworthy than one that quietly
  * returns nothing, and it tells the owner exactly which manual to source next.
- * John Deere, JCB, Komatsu, Volvo CE and Hyundai came off that list on
- * 2026-08-16 because real tables were sourced, not because the claim softened.
+ * Eight brands came off that list on 2026-08-16 because real tables were
+ * sourced, not because the claim softened.
  */
 
 export interface BrandCoverage {
@@ -52,8 +53,8 @@ export interface BrandCoverage {
 export function getCoverage(): BrandCoverage[] {
   const map = new Map<string, { codes: number; families: Set<string> }>();
   /*
-   * Machine-maker codes sourced separately (John Deere, JCB, Komatsu, Volvo
-   * CE, Hyundai) sit alongside the engine-brand set. A technician does not
+   * Machine-maker codes sourced separately (Bobcat, Kubota, John Deere,
+   * Volvo CE, Komatsu, JCB, Hitachi, Hyundai) sit alongside the engine set. A technician does not
    * care which file a code came from, so coverage is reported as one list.
    */
   for (const r of OEM_FAULT_CODES) {
@@ -85,9 +86,9 @@ export function getCoverage(): BrandCoverage[] {
  * own job cards — before it can appear in results. Until then the tool says so.
  */
 export const DECLARED_GAPS: readonly string[] = [
-  // John Deere, JCB, Komatsu, Volvo CE and Hyundai were on this list until
-  // 2026-08-16 and now have sourced tables in oemFaultCodes.ts. These remain.
-  'Kubota',
+  // John Deere, JCB, Komatsu, Volvo CE, Hyundai, Kubota, Hitachi and Bobcat
+  // were on this list until 2026-08-16 and now have sourced tables in
+  // oemFaultCodes.ts. These remain genuinely uncovered.
   'Yanmar',
   'Sany',
   'XCMG',
