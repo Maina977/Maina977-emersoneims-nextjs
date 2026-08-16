@@ -99,12 +99,23 @@ export const SPN_TABLE: readonly SpnRecord[] = [
   { spn: 91, name: "Accelerator Pedal Position 1", source: "web-verified" },
   { spn: 94, name: "Engine Fuel Delivery Pressure", source: "web-verified" },
   { spn: 97, name: "Water In Fuel Indicator", source: "oem-table" },
+  /*
+   * SPN 98 and 110 were independently verified but did not appear in the
+   * OEM table the other names were triangulated from, so the anchor pass —
+   * which only iterated over PARSED rows — never inserted them. Caught by
+   * live-testing the decoder: SPN 110 is engine coolant temperature, one of
+   * the most common codes on any machine, and it was returning "no record".
+   * An anchor is verified on its own evidence; it does not need the parse to
+   * have seen it too.
+   */
+  { spn: 98, name: "Engine Oil Level", source: "web-verified" },
   { spn: 100, name: "Engine Oil Pressure", source: "web-verified" },
   { spn: 101, name: "Engine Crankcase Pressure", source: "oem-table" },
   { spn: 102, name: "Engine Intake Manifold #1 Pressure", source: "web-verified" },
   { spn: 103, name: "Engine Turbocharger 1 Speed", source: "oem-table" },
   { spn: 105, name: "Engine Intake Manifold 1 Temperature", source: "web-verified" },
   { spn: 107, name: "Engine Air Filter 1 Differential Pressure", source: "oem-table" },
+  { spn: 110, name: "Engine Coolant Temperature", source: "web-verified" },
   { spn: 157, name: "Engine Injector Metering Rail 1 Pressure", source: "oem-table" },
   { spn: 168, name: "Battery Potential / Power Input 1", source: "oem-table" },
   { spn: 171, name: "Ambient Air Temperature", source: "oem-table" },
