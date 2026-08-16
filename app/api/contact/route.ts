@@ -244,7 +244,10 @@ export async function POST(request: NextRequest) {
      * reviewed or reversed in the database. Only the notification fan-out is
      * skipped, because noise in the inbox is what stops the inbox being read.
      */
-    const leadStatus = classifySubmission(body);
+    const classified = classifySubmission(body);
+    const duplicate =
+      classified === 'new' && (await isRecentDuplicate(body.email, body.message));
+    const leadStatus: string = duplicate ? 'duplicate' : classified;
 
     // Store lead in database
     const leadId = await storeLead({
@@ -376,6 +379,45 @@ export async function POST(request: NextRequest) {
  * Kenyan names are diverse, so nothing here tests for a name "looking right";
  * it tests only for shapes a human keyboard does not produce.
  */
+/**
+ * Has this exact enquiry just been sent?
+ *
+ * FOUND IN THE DATA, not imagined. Leads 22, 23 and 24 are the same person
+ * sending the same message at 05:44:17, 05:44:47 and 05:45:20 — three
+ * submissions in 63 seconds, three notifications, one actual enquiry. The
+ * rate limiter did not catch it because three is under its six-per-minute
+ * ceiling, and it should not have: a person resending because they were not
+ * sure it worked is not abuse.
+ *
+ * Matched on email plus message rather than IP, because the same office can
+ * hold several genuine enquirers behind one address, and the same person on
+ * mobile data can change IP between attempts.
+ *
+ * Ten minutes is deliberately short. Someone who writes again an hour later
+ * usually means it — that is a follow-up, not a double-click.
+ *
+ * Fails OPEN: any database error returns false, so the lead is treated as new
+ * and still reaches you. Losing a real enquiry to a de-duplication check would
+ * be far worse than a repeated email.
+ */
+async function isRecentDuplicate(email: string, message: string): Promise<boolean> {
+  try {
+    const pool = await getPostgresPool();
+    if (!pool) return false;
+    const res = await pool.query(
+      `SELECT 1 FROM leads
+        WHERE email = $1 AND message = $2
+          AND created_at > NOW() - INTERVAL '10 minutes'
+        LIMIT 1`,
+      [email, message]
+    );
+    // The project's pool type exposes only `rows`, not `rowCount`.
+    return res.rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 function classifySubmission(body: ContactFormData): 'new' | 'spam' {
   const name = (body.name || '').trim();
 
