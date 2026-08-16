@@ -1252,7 +1252,7 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diagnosis: 'Use Our Diagnostic Suite for Detailed Analysis',
           severity: 'medium',
           causes: ['Error code indicates specific fault'],
-          solutions: ['Go to our Diagnostic Suite', 'Enter your error code for detailed causes and solutions', 'Our database has 9,000+ codes for all major brands'],
+          solutions: ['Go to our Diagnostic Suite', 'Enter your error code for detailed causes and solutions', 'Our database covers all major controller brands'],
           diyPossible: true,
           estimatedCost: 'Depends on fault',
           timeToFix: 'Depends on fault',

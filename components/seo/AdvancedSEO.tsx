@@ -309,7 +309,7 @@ export default function AdvancedSEO() {
             name: 'How do I diagnose generator problems?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'EmersonEIMS offers Kenya\'s generator diagnostics built on 2,250+ verified fault codes covering 11 major brands. Our AI-powered diagnostic suite instantly identifies issues and provides step-by-step solutions in 12 languages.',
+              text: 'EmersonEIMS offers Kenya\'s generator diagnostics built on manufacturer-curated fault codes covering 11 major brands. Our AI-powered diagnostic suite instantly identifies issues and provides step-by-step solutions in 12 languages.',
             },
           },
           {

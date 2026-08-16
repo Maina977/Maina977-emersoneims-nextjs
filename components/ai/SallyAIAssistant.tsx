@@ -11,7 +11,7 @@ import Image from 'next/image';
  * A comprehensive AI assistant with detailed knowledge of all EmersonEIMS services.
  * Provides accurate, helpful information about:
  * - 9 Core Services
- * - 2,250+ verified fault codes
+ * - manufacturer-curated fault codes
  * - 1,560+ Spare Parts Catalog
  * - Pricing Guidance
  * - Technical Support
@@ -58,7 +58,7 @@ const SERVICE_KNOWLEDGE = {
       'Control panel upgrades',
       'Generator rentals (short & long term)',
     ],
-    errorCodes: '2,250+ verified fault codes across 11 generator brands',
+    errorCodes: 'manufacturer-curated fault codes across 11 generator brands',
     responseTime: 'Within 2 hours in Nairobi, same-day across Kenya',
     warranty: '12-month warranty on all repairs',
   },
@@ -427,7 +427,7 @@ export default function SallyAIAssistant() {
       );
     } else if (lowerQuestion.includes('error') || lowerQuestion.includes('fault') || lowerQuestion.includes('code')) {
       sendSallyMessage(
-        `${name}, we have 2,250+ verified fault codes across 11 generator brands.\n\n` +
+        `${name}, we have manufacturer-curated fault codes across 11 generator brands.\n\n` +
         `**Supported Brands:**\n` +
         `Cummins, Caterpillar, Perkins, DeepSea, PowerCommand, Volvo, MTU, Deutz, Kohler, Generac, and more.\n\n` +
         `**What you can do:**\n` +

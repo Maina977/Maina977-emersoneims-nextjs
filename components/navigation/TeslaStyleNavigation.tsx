@@ -146,7 +146,7 @@ const MEGA_MENUS = {
           { href: '/maintenance-hub/generators', label: 'Maintenance Hub', icon: '🏭', desc: 'Engine room HQ' },
           { href: '/generators/maintenance-companion', label: 'Repair Companion', icon: '🤖', desc: 'AI step-by-step' },
           { href: '/generator-problems', label: 'Common Problems', icon: '⚠️', desc: 'Diagnose & resolve' },
-          { href: '/faults', label: 'Fault Code Library', icon: '📖', desc: '6,700+ codes' },
+          { href: '/faults', label: 'Fault Code Library', icon: '📖', desc: 'Curated codes' },
         ],
       },
     ],
@@ -203,7 +203,7 @@ const MEGA_MENUS = {
       {
         title: 'Flagship AI Tools',
         items: [
-          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '6,700+ verified fault codes', badge: 'AI' },
+          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: 'manufacturer-curated fault codes', badge: 'AI' },
           { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI engines · <3 min quotes', badge: '#1' },
           { href: '/aquascan-pro-v3', label: 'AquaScan Pro™', icon: '💧', desc: '26 AI engines · NASA + Google Earth', badge: '#1' },
         ],

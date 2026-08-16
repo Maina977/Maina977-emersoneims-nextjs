@@ -2369,7 +2369,7 @@ For controller codes (DSE, ComAp, SmartGen), explain how to navigate and clear t
           </h3>
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold animate-pulse">
-              6,700+ CODES
+              FAULT CODES
             </span>
           </div>
         </div>

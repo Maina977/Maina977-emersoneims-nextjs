@@ -33,7 +33,7 @@ interface PurchaseOverlayProps {
 const FEATURES = [
   {
     icon: '🔍',
-    title: '6,700+ Fault-Code References',
+    title: 'Curated Fault-Code References',
     desc: 'Manufacturer-curated entries plus structural template coverage across all major code ranges',
   },
   {
@@ -279,7 +279,7 @@ export default function PurchaseOverlay({
                 <p className="text-amber-400 font-medium mb-4">~ USD $154 | Annual Subscription</p>
 
                 <ul className="space-y-2 mb-6">
-                  {['Full access to all 6,700+ verified fault codes', 'Unlimited searches & diagnoses', 'Offline mobile app access', 'All future updates included'].map(item => (
+                  {['Full access to all manufacturer-curated fault codes', 'Unlimited searches & diagnoses', 'Offline mobile app access', 'All future updates included'].map(item => (
                     <li key={item} className="flex items-center gap-2 text-slate-300 text-sm">
                       <span className="text-green-400">✓</span>
                       {item}

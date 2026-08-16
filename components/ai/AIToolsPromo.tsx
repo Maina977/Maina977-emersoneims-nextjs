@@ -13,7 +13,7 @@ const TOOLS: { href: string; name: string; tag: string; blurb: string }[] = [
     href: '/generator-oracle',
     name: 'Generator Oracle',
     tag: 'AI generator diagnostics',
-    blurb: 'Search 6,700+ verified fault codes, read interactive wiring diagrams, and run AI-guided troubleshooting for Cummins, Perkins, FG Wilson and every major controller (DSE, ComAp, PowerWizard).',
+    blurb: 'Search manufacturer-curated fault codes, read interactive wiring diagrams, and run AI-guided troubleshooting for Cummins, Perkins, FG Wilson and every major controller (DSE, ComAp, PowerWizard).',
   },
   {
     href: '/solar-genius-pro',

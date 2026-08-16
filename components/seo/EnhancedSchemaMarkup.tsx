@@ -334,7 +334,7 @@ export function DiagnosticToolSchema() {
     name: 'Generator Oracle',
     applicationCategory: 'UtilitiesApplication',
     operatingSystem: 'Web Browser',
-    description: 'Advanced generator diagnostic tool with 50,000+ fault codes, AI-powered troubleshooting, and ECM programming capabilities. The most comprehensive generator diagnostic platform in Africa.',
+    description: 'Advanced generator diagnostic tool with manufacturer-curated fault codes, AI-powered troubleshooting, and ECM programming capabilities. The most comprehensive generator diagnostic platform in Africa.',
     offers: {
       '@type': 'Offer',
       price: '0',
@@ -352,7 +352,7 @@ export function DiagnosticToolSchema() {
       name: 'EmersonEIMS'
     },
     featureList: [
-      '50,000+ fault codes from 17+ manufacturers',
+      'Manufacturer-curated fault codes across major controller brands',
       'AI-powered diagnostic assistant',
       'ECM programming guides',
       'Real-time monitoring simulation',

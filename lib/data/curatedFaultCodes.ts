@@ -239,7 +239,7 @@ const j1939Codes: CuratedFaultCode[] = J1939_FAULT_CODES.map(c => ({
  * 3,029 distinct codes. Every other controller family multiplies the same way —
  * DeepSea showed 630 rows for 63 real codes.
  *
- * That inflation is where the site's "6,700+ verified fault codes" headline
+ * That inflation is where the site's "manufacturer-curated fault codes" headline
  * came from. This file's own header already refuses generateExtendedCodes() in
  * controllerFaultCodes.ts on exactly these grounds, then included the identical
  * pattern from the VODIA file. The refusal is now applied consistently.

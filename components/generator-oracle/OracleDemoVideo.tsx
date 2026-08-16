@@ -23,7 +23,7 @@ const DEMO_SCENES = [
   {
     id: 'search',
     title: 'INSTANT FAULT LOOKUP',
-    subtitle: '6,700+ verified fault codes at your fingertips',
+    subtitle: 'manufacturer-curated fault codes at your fingertips',
     duration: 4000,
   },
   {

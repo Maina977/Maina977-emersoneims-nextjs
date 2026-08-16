@@ -9,7 +9,7 @@ const capabilities = [
   { name: '24/7 Emergency Support', icon: '🚨', description: '<2hr Response Nairobi' },
   { name: 'All 47 Counties', icon: '🗺️', description: 'Kenya-Wide Coverage' },
   { name: 'Factory-Certified', icon: '🏅', description: 'Authorized Service' },
-  { name: 'Diagnostic Database', icon: '🔬', description: '6,700+ Error Codes' },
+  { name: 'Diagnostic Database', icon: '🔬', description: 'curated error codes' },
   { name: 'Remote Monitoring', icon: '📡', description: 'IoT Integration' },
 ];
 

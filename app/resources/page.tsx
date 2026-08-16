@@ -15,7 +15,7 @@ const RESOURCE_CATEGORIES = [
       { href: '/guides/emergency-response', title: 'Emergency Response Guide', desc: 'What to do when your generator fails', type: 'Guide' },
       { href: '/generator-oracle', title: 'Generator Oracle', desc: 'AI-powered fault code diagnosis', type: 'Tool' },
       { href: '/troubleshooting', title: 'Troubleshooting Wizard', desc: 'Interactive problem solver', type: 'Tool' },
-      { href: '/faults', title: 'Fault Code Lookup', desc: 'Search 250,000+ error codes', type: 'Database' },
+      { href: '/faults', title: 'Fault Code Lookup', desc: 'Search generator error codes', type: 'Database' },
     ],
   },
   {

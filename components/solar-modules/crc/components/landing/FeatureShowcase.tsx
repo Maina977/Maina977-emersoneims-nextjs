@@ -43,7 +43,7 @@ export const FeatureShowcase = () => {
       id: '4',
       icon: '🔧',
       title: 'Repair Database',
-      description: '1,200+ fault codes with solutions',
+      description: 'Solar fault codes with solutions',
       color: '#dc3545'
     },
     {

@@ -30,7 +30,7 @@ const COMPARISON_POINTS = [
   },
   {
     feature: 'Diagnostic Capability',
-    emersonEIMS: '6,700+ error codes with step-by-step guides',
+    emersonEIMS: 'curated error codes with step-by-step guides',
     industry: 'Basic diagnostics only',
     advantage: true,
   },

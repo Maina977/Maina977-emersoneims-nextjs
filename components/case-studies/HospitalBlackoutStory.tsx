@@ -395,7 +395,7 @@ export default function HospitalBlackoutStory() {
               Your Emergency Could Be Next
             </h3>
             <p className="text-xl text-gray-400 mb-8">
-              24/7 emergency response. 6,700+ error codes. 12-minute average diagnosis.
+              24/7 emergency response. curated error codes. 12-minute average diagnosis.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

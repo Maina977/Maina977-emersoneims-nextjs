@@ -14,7 +14,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Plant & Machinery Fault Codes — Free',
   description:
-    'Look up diesel engine fault codes for excavators, loaders, rollers and compressors in Kenya: Perkins, Cummins, Caterpillar, Deutz, Doosan, Weichai and more. 2,155 verified codes, free, no signup.',
+    'Look up diesel engine fault codes for excavators, loaders, rollers and compressors in Kenya: Perkins, Cummins, Caterpillar, Deutz, Doosan, Weichai and more. Manufacturer-curated codes, free, no signup.',
   keywords: [
     'plant equipment fault codes Kenya',
     'excavator fault codes',

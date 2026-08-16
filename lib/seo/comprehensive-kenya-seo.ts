@@ -459,8 +459,8 @@ export const PAGE_META = {
     description: "Best solar company in Kenya. Grid-tie, off-grid, hybrid systems. 25-year panel warranty. Serving all 47 counties, 16,245+ hotels, 93,988+ schools. Free written quotation. Call +254768860665"
   },
   maintenanceHub: {
-    title: "Maintenance Hub | 6,700+ Fault Codes | 47 Counties",
-    description: "Kenya's most comprehensive maintenance guide. 6,700+ verified fault codes, 9 service categories, all 47 counties. Generator, solar, motor, AC, borehole, electrical services. 3-year warranty."
+    title: "Maintenance Hub | Curated Fault Codes | 47 Counties",
+    description: "Kenya's most comprehensive maintenance guide. manufacturer-curated fault codes, 9 service categories, all 47 counties. Generator, solar, motor, AC, borehole, electrical services. 3-year warranty."
   },
   services: {
     title: "9 Power Solutions Services | 3-Year Warranty | 47 Counties",

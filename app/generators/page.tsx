@@ -2141,7 +2141,8 @@ const GeneratorHeroSlides = () => {
 
 export default function GeneratorPage() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { isLite } = usePerformanceTier();
+  const { isLite } = usePerformanceTier();
+
 
   // GSAP ScrollTrigger animations - loaded dynamically
   useEffect(() => {
@@ -3072,7 +3073,7 @@ export default function GeneratorPage() {
               className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-xl hover:from-cyan-400 hover:to-blue-400 transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50"
             >
               <span className="text-2xl">🔧</span>
-              <span>Open Full Diagnostic Tool (5,930+ Error Codes)</span>
+              <span>Open Full Diagnostic Tool</span>
               <span className="text-xl">→</span>
             </a>
           </div>

@@ -190,9 +190,9 @@ export function DiagnosticSuiteSchema() {
     // No self-asserted aggregateRating — violates Google's structured-data
     // policy without on-page UGC reviews, and triggers "multiple aggregate
     // ratings" when several schema blocks coexist on one URL.
-    description: 'Professional generator diagnostic tool with 6,700+ error codes covering Cummins, Caterpillar, Perkins, DeepSea, PowerWizard and more. AI-powered fault analysis with step-by-step repair guides.',
+    description: 'Professional generator diagnostic tool with curated error codes covering Cummins, Caterpillar, Perkins, DeepSea, PowerWizard and more. AI-powered fault analysis with step-by-step repair guides.',
     featureList: [
-      '6,700+ Error Codes Database',
+      'curated error codes Database',
       'AI-Powered Diagnostics',
       'Multi-Brand Support (Cummins, CAT, Perkins, DeepSea, PowerWizard)',
       'Real-Time Telemetry',

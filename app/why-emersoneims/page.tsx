@@ -41,13 +41,13 @@ import { CONTACT } from '@/lib/constants/contact';
  * If a number here cannot be proven from the site itself, it does not belong.
  */
 
-const FAULT_CODE_COUNT = '6,700+';
+const FAULT_CODE_COUNT = 'curated';
 const FAULT_CODE_BRANDS = 79;
 
 export const metadata: Metadata = {
   title: 'Why EmersonEIMS | Engineering You Can Check Before You Buy | Kenya',
   description:
-    'We publish our engineering: 60 free diagnosis guides, 6,700+ fault code references across 79 brands, and free tools for engineers. One team for generators, solar, UPS, HVAC, boreholes and motors across all 47 counties.',
+    'We publish our engineering: 60 free diagnosis guides, curated fault code references across 79 brands, and free tools for engineers. One team for generators, solar, UPS, HVAC, boreholes and motors across all 47 counties.',
   alternates: {
     canonical: 'https://www.emersoneims.com/why-emersoneims',
   },
