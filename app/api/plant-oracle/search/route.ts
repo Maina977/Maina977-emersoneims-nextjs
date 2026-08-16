@@ -50,6 +50,7 @@ export async function GET(req: NextRequest) {
     }
 
     const results = searchPlantCodes(q, { brand, limit });
+    const stats = getStats();
     return NextResponse.json({
       ok: true,
       query: q,
@@ -61,7 +62,15 @@ export async function GET(req: NextRequest) {
        * as more authoritative than it is. Anything without a verified record
        * simply is not in here to return.
        */
-      provenance: 'EmersonEIMS verified reference data — 2,155 curated records across 11 engine brands. Not transcribed from any manufacturer manual. For official documentation refer to the manufacturer service manual for the specific engine.',
+      /*
+       * Counts come from getStats(), never a literal — the same rule the
+       * generator side now enforces via scripts/check-code-counts.mjs.
+       */
+      provenance:
+        `EmersonEIMS curated reference data — ${stats.codes} records ` +
+        `(${stats.engineCodes} engine-brand, ${stats.oemCodes} machine-maker) across ${stats.brands} brands. ` +
+        'Descriptions are written in our own words; nothing is transcribed from a manufacturer service manual. ' +
+        'For official documentation refer to the manufacturer service manual for the specific machine.',
     });
   } catch (e) {
     return NextResponse.json(
