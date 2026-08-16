@@ -24,7 +24,16 @@ interface Hit {
   remedies: string[];
 }
 
-export default function PlantOracleSearch({ brands }: { brands: string[] }) {
+export default function PlantOracleSearch({
+  brands,
+  totalCodes,
+  totalBrands,
+}: {
+  brands: string[];
+  /** Passed from the server page, counted from the data. Never a literal. */
+  totalCodes: number;
+  totalBrands: number;
+}) {
   const [spn, setSpn] = useState('');
   const [fmi, setFmi] = useState('');
   const [decoded, setDecoded] = useState<{ ok: boolean; reading?: string; note?: string; spn?: { name: string }; fmi?: { plain: string } } | null>(null);
@@ -137,10 +146,18 @@ export default function PlantOracleSearch({ brands }: { brands: string[] }) {
               )}
               <p className="text-white font-semibold mb-2">No verified record for that.</p>
               <p className="text-gray-400">
-                We hold 2,155 checked fault codes across 11 engine brands, and this
-                is not one of them — so rather than show you the closest guess, we
-                are telling you we do not have it. Read the engine data plate and
-                try the engine brand and code together, or call{' '}
+                {/*
+                  These figures are PASSED IN, counted from the data. They were
+                  hardcoded as "2,155 across 11 engine brands" and went stale the
+                  moment the database grew to 3,923 across 19 — shown to a
+                  customer at the exact moment they had searched and found
+                  nothing, which is the worst possible time to be wrong.
+                */}
+                We hold {totalCodes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}{' '}
+                checked fault codes across {totalBrands} brands, and this is not
+                one of them — so rather than show you the closest guess, we are
+                telling you we do not have it. Read the engine data plate and
+                try the brand and code together, or call{' '}
                 <a href="tel:+254768860665" className="text-amber-300">+254&nbsp;768&nbsp;860&nbsp;665</a>{' '}
                 and describe what the machine is doing.
               </p>

@@ -60,17 +60,18 @@ export default function PlantEquipmentOraclePage() {
             power them power gensets, and the codes are the same.
           </p>
           <p className="text-gray-500 max-w-3xl">
-            {fmt(stats.codes)} verified codes across{' '}
-            {stats.brands} engine brands and {stats.families} engine families.
+            {fmt(stats.codes)} curated codes across {stats.brands} brands —
+            {fmt(stats.engineCodes)} engine-brand and {fmt(stats.oemCodes)}{' '}
+            machine-maker.
             Every one is checked. Plus a SAE J1939 decoder — {j.spns} verified
-            SPNs and all {j.fmis} defined FMIs — which reads John Deere, JCB,
-            Komatsu, Doosan and Volvo engines from the standard. We publish no
-            invented codes and no invented fixes.
+            SPNs and all {j.fmis} defined FMIs — so a machine we hold no table for still
+            decodes from the standard. We publish no invented codes and no
+            invented fixes.
           </p>
         </div>
 
         <div className="mb-16">
-          <PlantOracleSearch brands={brands} />
+          <PlantOracleSearch brands={brands} totalCodes={stats.codes} totalBrands={stats.brands} />
         </div>
 
         {/* ---------- engine plate guidance ---------- */}

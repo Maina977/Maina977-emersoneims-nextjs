@@ -171,7 +171,7 @@ const MEGA_MENUS = {
           { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '🧠', desc: '56 AI engines · <3 min quotes', badge: '#1' },
           { href: '/solar-genius-pro/solar-dashboard', label: 'Site & System Dashboard', icon: '📡', desc: 'NASA + OSM live data', badge: 'NEW' },
           { href: '/solar-genius-pro/calculator-advanced', label: 'Solar System Calculator', icon: '⚡', desc: 'Size, cost & payback', badge: 'NEW' },
-          { href: '/solar-genius-pro/fault-codes', label: 'Fault Codes AI', icon: '🔍', desc: '1,200+ inverter codes', badge: 'NEW' },
+          { href: '/solar-genius-pro/fault-codes', label: 'Fault Codes AI', icon: '🔍', desc: 'Inverter fault codes', badge: 'NEW' },
           { href: '/calculators', label: 'Power Calculators', icon: '🧮', desc: 'ROI, load, payback' },
         ],
       },

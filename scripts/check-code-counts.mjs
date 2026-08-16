@@ -25,12 +25,44 @@ const ROOTS = ['app', 'components', 'lib'];
 
 /** A digit-group followed by fault/code wording, in either order. */
 const PATTERNS = [
-  /\b\d{1,3},\d{3}\+?\s*(?:\+\s*)?(?:verified\s+)?(?:fault[- ]?code|fault codes|error codes|codes\b)/i,
-  /\b(?:over|access|search)\s+\d{1,3},\d{3}\b[^.]{0,40}\b(?:fault|code)/i,
+  /*
+   * Any adjective may sit between the number and the noun. The first version
+   * of this allowed only "verified", so "2,155 CHECKED fault codes across 11
+   * engine brands" shipped to customers and this gate reported PASS. Up to
+   * four intervening words are now tolerated, and the "N across M brands"
+   * shape is matched in its own right.
+   */
+  /\b\d{1,3},\d{3}\+?(?:\s+\w+){0,4}\s+(?:fault[- ]?codes?|error codes?|codes)\b/i,
+  /\b(?:over|access|search|hold)\s+\d{1,3},\d{3}\b[^.]{0,40}\b(?:fault|code)/i,
+  /\b\d{1,3},\d{3}\b[^.]{0,40}\bacross\s+\d{1,3}\s+(?:engine\s+)?brands?\b/i,
 ];
 
-/** Explanatory comments about the historical figure are allowed. */
-const isComment = (line) => /^\s*(\*|\/\/|\/\*)/.test(line);
+/**
+ * Explanatory comments about historical figures are allowed — that is where a
+ * superseded number SHOULD live. Judged with block state, not per line: the
+ * first version tested only whether a line STARTED with a marker, so the
+ * middle of a multi-line comment counted as shipped text.
+ */
+function commentMask(lines) {
+  const mask = new Array(lines.length).fill(false);
+  let inBlock = false;
+  lines.forEach((line, i) => {
+    const trimmed = line.trim();
+    if (inBlock) {
+      mask[i] = true;
+      if (/\*\//.test(line)) inBlock = false;
+      return;
+    }
+    if (/^\s*\/\//.test(line)) { mask[i] = true; return; }
+    // opens a block (/* or JSX {/*) and does not close it on the same line
+    if (/(^|\{)\s*\/\*/.test(line)) {
+      mask[i] = true;
+      if (!/\*\/\s*\}?\s*$/.test(trimmed) && !/\*\//.test(line)) inBlock = true;
+      return;
+    }
+  });
+  return mask;
+}
 
 /** Dead mirrors are not shipped; skip them. */
 const SKIP = [/[\\/]building[\\/]/, /[\\/]_archive[\\/]/, /node_modules/];
@@ -49,8 +81,9 @@ for (const root of ROOTS) {
   if (!fs.existsSync(root)) continue;
   for (const file of walk(root)) {
     const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+    const inComment = commentMask(lines);
     lines.forEach((line, i) => {
-      if (isComment(line)) return;
+      if (inComment[i]) return;
       if (/KES|Ksh|price|cost|budget|warranty|year|kVA|kW/i.test(line)) return; // money/specs, not counts
       // a bare mention of 'code' in prose without a digit-group adjacent is fine
       if (!/\d{1,3},\d{3}/.test(line)) return;

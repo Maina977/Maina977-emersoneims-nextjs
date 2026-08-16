@@ -218,7 +218,7 @@ export default function SallyAIAssistant() {
       const timer = setTimeout(() => {
         setIsOpen(true);
         sendSallyMessage(
-          "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 2,250+ verified generator fault codes, and 1,560+ spare parts.\n\nWhat's your name?",
+          "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, our curated generator fault-code database, and our spare-parts catalogue.\n\nWhat's your name?",
           []
         );
         localStorage.setItem('sally_seen', 'true');
@@ -556,7 +556,7 @@ export default function SallyAIAssistant() {
                   setConversationStep(1);
                 } else {
                   sendSallyMessage(
-                    "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 2,250+ verified generator fault codes, and 1,560+ spare parts.\n\nWhat's your name?",
+                    "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, our curated generator fault-code database, and our spare-parts catalogue.\n\nWhat's your name?",
                     []
                   );
                 }
