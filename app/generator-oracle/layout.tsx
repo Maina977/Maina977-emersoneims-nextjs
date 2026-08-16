@@ -1,3 +1,19 @@
+/*
+ * NO HARDCODED CODE COUNTS IN THIS FILE.
+ *
+ * The metadata and product schema carried "6,700+ verified fault codes" while
+ * the index's own health endpoint counted 54,192 verified out of 451,593 total.
+ * The literal had gone stale and nothing in the markup revealed which figure
+ * was true. Unlike the on-page stats, metadata cannot read the index at request
+ * time, so ANY number written here will drift again.
+ *
+ * The claims are therefore qualitative and permanently true: manufacturer-
+ * curated codes plus range-based coverage, named controller brands, free, no
+ * signup. Nothing about search performance depended on the digits.
+ *
+ * Live counts belong on the page, fetched from /api/generator-oracle/health,
+ * where they cannot go out of date.
+ */
 import type { Metadata, Viewport } from 'next';
 import ToolSeoContent from '@/components/seo/ToolSeoContent';
 import FlagshipProductSchema from '@/components/seo/FlagshipProductSchema';
@@ -31,7 +47,7 @@ export const metadata: Metadata = {
     // searcher gets and the fact it costs nothing; the brand names that make it
     // credible (DSE, ComAp, SmartGen) stay, the marketing word "intelligence"
     // goes. Full detail still lives in the page body.
-    'Look up any generator fault code free. 6,700+ verified codes for DeepSea (DSE), ComAp, Woodward, SmartGen and CAT, with reset steps and Kenya engineer support.',
+    'Look up any generator fault code free. DeepSea (DSE), ComAp, Woodward, SmartGen, CAT PowerWizard and Datakom codes, with reset steps and Kenya engineer support.',
   keywords: [
     'generator diagnostics Kenya',
     'generator fault codes',
@@ -54,7 +70,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Generator Oracle — Generator Diagnostic Intelligence',
     description:
-      '6,700+ verified fault codes, plus range-based coverage of 450,000+ controller code numbers, for DSE, ComAp, Woodward, SmartGen and PowerWizard. Built and maintained by Kenya generator engineers. Free to use.',
+      'Manufacturer-curated fault codes, plus range-based coverage of every controller code number, for DSE, ComAp, Woodward, SmartGen and PowerWizard. Built and maintained by Kenya generator engineers. Free to use.',
     url: URL,
     type: 'website',
     locale: 'en_KE',
@@ -64,7 +80,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Generator Oracle — Generator Diagnostic Intelligence',
-    description: '6,700+ verified codes + 450,000+ code-number coverage. Reset pathways. Engineer escalation. Free.',
+    description: 'Curated fault codes plus full code-number coverage. Reset pathways. Engineer escalation. Free.',
     images: [`${SITE}/og-image.jpg`],
     site: '@EmersonEIMS',
     creator: '@EmersonEIMS',
@@ -87,7 +103,7 @@ export default function GeneratorOracleLayout({ children }: { children: React.Re
       <FlagshipProductSchema
         name="Generator Oracle"
         url={URL}
-        description="Generator fault & controller diagnostic intelligence: 6,700+ verified fault codes plus 450,000+ code-number coverage for DSE, ComAp, Woodward, SmartGen and PowerWizard, with reset pathways and Kenya engineer escalation."
+        description="Generator fault & controller diagnostic intelligence: manufacturer-curated fault codes plus range-based code-number coverage for DSE, ComAp, Woodward, SmartGen and PowerWizard, with reset pathways and Kenya engineer escalation."
         category="Generator Diagnostics"
         applicationCategory="EngineeringApplication"
         keywords={['Generator Diagnostics', 'Fault Codes', 'DSE', 'ComAp', 'Woodward', 'SmartGen', 'PowerWizard', 'Cummins', 'Voltka']}
