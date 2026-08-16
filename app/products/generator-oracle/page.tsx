@@ -431,7 +431,7 @@ export default function GeneratorOracleProductPage() {
             >
               <div className="text-4xl mb-4">📊</div>
               <h3 className="text-xl font-bold mb-2 group-hover:text-amber-400 transition-colors">Fault Code Database</h3>
-              <p className="text-gray-400 mb-4">manufacturer-curated fault codes with detailed explanations and repair guides.</p>
+              <p className="text-gray-400 mb-4">Manufacturer-curated fault codes with detailed explanations and repair guides.</p>
               <span className="text-amber-400 font-medium">Browse Codes →</span>
             </Link>
 

@@ -41,7 +41,8 @@ import { CONTACT } from '@/lib/constants/contact';
  * If a number here cannot be proven from the site itself, it does not belong.
  */
 
-const FAULT_CODE_COUNT = 'curated';
+/* Renamed from FAULT_CODE_COUNT: it no longer holds a count. */
+const FAULT_CODE_QUALIFIER = 'curated';
 const FAULT_CODE_BRANDS = 79;
 
 export const metadata: Metadata = {
@@ -69,7 +70,7 @@ const REASONS = [
     title: 'We say what we do not know',
     body:
       'Our guides teach diagnosis by comparison and measurement, and they defer every torque figure, test voltage and acceptance window to the manufacturer data for your exact machine. A guide that invents a number is worse than no guide.',
-    proof: `${FAULT_CODE_COUNT} fault code references across ${FAULT_CODE_BRANDS} brands`,
+    proof: `${FAULT_CODE_QUALIFIER} fault code references across ${FAULT_CODE_BRANDS} brands`,
     href: '/faults',
     cta: 'Search a fault code',
   },
@@ -174,7 +175,7 @@ export default function WhyEmersonEIMS() {
             <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
               Anyone can call themselves the best. So instead of asking you to take our word for it,
               we put our engineering where you can read it — {REPAIR_ARTICLES.length} diagnosis
-              guides, {FAULT_CODE_COUNT} fault code references and four free tools. Use them without
+              guides, {FAULT_CODE_QUALIFIER} fault code references and four free tools. Use them without
               speaking to us. If the work is good, you will know where to find us.
             </p>
           </div>

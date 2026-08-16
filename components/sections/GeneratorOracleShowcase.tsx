@@ -71,7 +71,13 @@ const ADVANCED_FEATURES = [
 
 // Core Features
 const CORE_FEATURES = [
-  { icon: '🔍', stat: 'curated', label: 'Fault Codes', desc: 'Comprehensive database' },
+  /*
+   * stat is filled from the live health response at render time. It briefly
+   * held the literal string 'curated' after a bulk count removal, which put a
+   * word in a tile sitting beside '10', '100%' and '7+'. A dash until the
+   * fetch lands is honest; a word in a number slot is just broken.
+   */
+  { icon: '🔍', stat: null, label: 'Fault Codes', desc: 'Comprehensive database' },
   { icon: '⚡', stat: '10', label: 'Controller Brands', desc: 'Wide compatibility' },
   { icon: '🔄', stat: '100%', label: 'Reset Pathways', desc: 'Step-by-step guides' },
   { icon: '📴', stat: '100%', label: 'Offline Ready', desc: 'No internet required' },
@@ -198,8 +204,8 @@ export default function GeneratorOracleShowcase() {
         { value: `${health.totals.brands}`, label: 'Major brands', color: '#8b5cf6' },
       ]
     : [
-        { value: 'curated', label: 'Fault-code references', color: '#06b6d4' },
-        { value: 'Verified', label: 'Manufacturer-curated', color: '#22c55e' },
+        { value: '—', label: 'Fault-code references', color: '#06b6d4' },
+        { value: '—', label: 'Manufacturer-curated', color: '#22c55e' },
         { value: '80+', label: 'Controller models', color: '#f59e0b' },
         { value: '10', label: 'Major brands', color: '#8b5cf6' },
       ];
@@ -442,7 +448,17 @@ export default function GeneratorOracleShowcase() {
               className="text-center p-4 bg-slate-900/50 rounded-xl border border-slate-800 hover:border-cyan-500/50 transition-colors"
             >
               <span className="text-2xl mb-2 block">{feature.icon}</span>
-              <div className="text-xl font-black text-cyan-400">{feature.stat}</div>
+              {/*
+                A null stat means "fill from live health" — currently only the
+                fault-code tile. Renders a dash until the fetch resolves rather
+                than a placeholder that could go stale.
+              */}
+              <div className="text-xl font-black text-cyan-400">
+                {feature.stat ??
+                  (health.status === 'connected' && health.totals
+                    ? `${health.totals.verifiedCodes.toLocaleString('en-US')}`
+                    : '—')}
+              </div>
               <div className="text-white text-sm font-medium">{feature.label}</div>
               <div className="text-slate-500 text-xs">{feature.desc}</div>
             </motion.div>
