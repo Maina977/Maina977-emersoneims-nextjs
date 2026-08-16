@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import DMCAProtection from '@/components/security/DMCAProtection';
 import GeneratorOracleSEO from '@/components/seo/GeneratorOracleSEO';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
@@ -54,7 +54,29 @@ export default function GeneratorOraclePage() {
   );
 }
 
+/** Deterministic thousands separator — never toLocaleString() (hydration). */
+function fmtNum(n: number): string {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+interface OracleTotals {
+  faultCodes: number;
+  verifiedCodes: number;
+  brands: number;
+}
+
 function LoadingFallback() {
+  const [stats, setStats] = useState<OracleTotals | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/generator-oracle/health')
+      .then((r) => r.json())
+      .then((j) => { if (alive && j?.totals) setStats(j.totals as OracleTotals); })
+      .catch(() => { /* leave the figures blank rather than guess */ });
+    return () => { alive = false; };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
   {/* B2B Commercial Band */}
@@ -90,23 +112,33 @@ function LoadingFallback() {
         <div className="mt-6 flex justify-center gap-6 text-sm">
           <div className="text-center">
             {/*
-              Was a bare "450,000+ Fault-Code References", which read as verified
-              data. That figure is Tier 2 range-based coverage — every code
-              number in each controller's published ranges, each entry titled
-              "meaning not verified" and carrying verified:false. The verified
-              count is a separate, much smaller number. Both are shown so neither
-              is mistaken for the other.
+              COUNTS COME FROM THE INDEX, NOT FROM A LITERAL.
+              These were hardcoded, and the verified figure had gone stale: the
+              page claimed "6,700+" while /api/generator-oracle/health — which
+              counts `verified === true` across the loaded index — reported
+              54,192. Neither of us could say which was right, and that is the
+              problem with writing a number into markup. It is now read from the
+              same endpoint the tool itself uses, so the page states whatever the
+              data actually holds and cannot drift again.
+
+              Until the fetch resolves the figures are simply absent rather than
+              approximated — a placeholder number is how the stale one got here.
+
+              The two counts stay separate on purpose. "Verified" are
+              manufacturer-curated entries; "code numbers covered" is range-based
+              structural coverage where entries carry verified:false. Collapsing
+              them into one headline is what would overstate the database.
             */}
-            <div className="text-amber-400 font-bold">6,700+</div>
+            <div className="text-amber-400 font-bold">{stats ? fmtNum(stats.verifiedCodes) : '—'}</div>
             <div className="text-slate-500">Verified Fault Codes</div>
           </div>
           <div className="text-center">
-            <div className="text-amber-400 font-bold">450,000+</div>
+            <div className="text-amber-400 font-bold">{stats ? fmtNum(stats.faultCodes) : '—'}</div>
             <div className="text-slate-500">Code Numbers Covered</div>
           </div>
           <div className="text-center">
-            <div className="text-amber-400 font-bold">10</div>
-            <div className="text-slate-500">Compatible Types</div>
+            <div className="text-amber-400 font-bold">{stats ? stats.brands : '—'}</div>
+            <div className="text-slate-500">Controller Brands</div>
           </div>
           <div className="text-center">
             <div className="text-amber-400 font-bold">100%</div>
