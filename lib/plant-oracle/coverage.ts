@@ -18,9 +18,9 @@ import { OEM_FAULT_CODES, searchOemCodes } from '@/lib/plant-oracle/oemFaultCode
  *
  * So this tool reads curated records only — never the expanded ranges. Two
  * sets feed it: the 2,155 engine-brand records in verifiedFaultCodes.ts, and
- * the 1,827 machine-maker records in oemFaultCodes.ts (Bobcat, Kubota, John
- * Deere, Volvo CE, Komatsu, SANY, JCB, Hitachi, Hyundai) sourced and rewritten
- * on 2026-08-16/17. Smaller number than
+ * the 1,831 machine-maker records in oemFaultCodes.ts (Bobcat, Kubota, John
+ * Deere, Volvo CE, Komatsu, SANY, JCB, Hitachi, Hyundai, LiuGong) sourced and
+ * rewritten on 2026-08-16/17. Smaller number than
  * the headline figure elsewhere on the site, entirely defensible.
  *
  * WHAT MAKES THIS A *PLANT* TOOL RATHER THAN A GENERATOR ONE.
@@ -112,11 +112,12 @@ export const DECLARED_GAPS: readonly string[] = [
    * already served by the decoder rather than needing records of its own.
    * Listing it as missing would understate what the tool can actually do.
    *
-   * XCMG was attempted on 2026-08-17 and no usable public table was found —
-   * left declared rather than padded out with guesses.
+   * XCMG, Lonking and Shantui were attempted on 2026-08-17 and no usable public
+   * table was found for any of them — every promising source was a Scribd or
+   * PDFCoffee mirror returning 403. Left declared rather than padded out with
+   * guesses. Each needs an owner-supplied workshop manual.
    */
   'XCMG',
-  'LiuGong',
   'Lonking',
   'Shantui',
 ] as const;
