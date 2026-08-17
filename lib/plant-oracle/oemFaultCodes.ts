@@ -11,14 +11,14 @@
  * Fault code numbers are industry-standard identifiers, reproduced for
  * identification only. Every description here has been REWRITTEN in our own
  * words and normalised into one house style: sentence case, consistent
- * vocabulary for the same physical condition across every brand, no
+ * vocabulary for the same physical condition across all five brands, no
  * manufacturer prose carried across. Nothing is transcribed from a
  * manufacturer service manual.
  *
  * This database is NOT affiliated with, endorsed by, or officially associated
- * with Bobcat, Kubota, John Deere, Volvo, Komatsu, JCB, Hitachi, Hyundai or
- * any other manufacturer. All brand names, model numbers and trademarks belong
- * to their respective owners.
+ * with Bobcat, Kubota, John Deere, Volvo, Komatsu, SANY, JCB, Hitachi, Hyundai or any
+ * other manufacturer. All
+ * brand names, model numbers and trademarks belong to their respective owners.
  * For official documentation always use the manufacturer's service manual for
  * the specific machine.
  *
@@ -37,6 +37,8 @@
  *   Hitachi     11301-3     — ZAXIS controller code with its FMI suffix.
  *   Bobcat      A8005 /     — alphanumeric controller codes, and SPN-FMI pairs
  *               3251-03       where the fault originates in the engine ECM.
+ *   SANY        P013 H010   — P for engine, H for hydraulics, E for electrical
+ *               E003          and controller. The prefix says which system.
  *
  * WHAT IS NOT HERE. This is not a complete manufacturer table for any of these
  * makes — no such thing is publicly available, and the counts below are what
@@ -490,6 +492,65 @@ export const OEM_FAULT_CODES: readonly OemFaultCode[] = [
   { brand: "Hitachi", family: "ZAXIS ZX-3 / MC controller", code: "CA689", description: "Crankshaft speed sensor, no signal" },
   { brand: "Hitachi", family: "ZAXIS ZX-3 / MC controller", code: "E10", description: "Controller main power supply interrupted" },
   { brand: "Hitachi", family: "ZAXIS ZX-3 / MC controller", code: "W01", description: "Engine coolant temperature high" },
+  { brand: "SANY", family: "SY series excavators", code: "P001", description: "Camshaft position sensor, no signal" },
+  { brand: "SANY", family: "SY series excavators", code: "P003", description: "Rail pressure too high" },
+  { brand: "SANY", family: "SY series excavators", code: "P005", description: "Boost pressure sensor fault" },
+  { brand: "SANY", family: "SY series excavators", code: "P008", description: "Injector calibration code mismatch" },
+  { brand: "SANY", family: "SY series excavators", code: "P009", description: "Coolant overheating" },
+  { brand: "SANY", family: "SY series excavators", code: "P013", description: "Engine oil pressure too low" },
+  { brand: "SANY", family: "SY series excavators", code: "P020", description: "Crankshaft position sensor, no signal" },
+  { brand: "SANY", family: "SY series excavators", code: "P021", description: "Crankshaft position sensor, incorrect pulse count" },
+  { brand: "SANY", family: "SY series excavators", code: "P025", description: "Rail pressure too low" },
+  { brand: "SANY", family: "SY series excavators", code: "P031", description: "Main relay stuck closed" },
+  { brand: "SANY", family: "SY series excavators", code: "P032", description: "Main relay circuit open" },
+  { brand: "SANY", family: "SY series excavators", code: "P033", description: "Boost pressure sensor fault" },
+  { brand: "SANY", family: "SY series excavators", code: "P088", description: "Engine overspeed" },
+  { brand: "SANY", family: "SY series excavators", code: "P100", description: "ECU supply voltage too low" },
+  { brand: "SANY", family: "SY series excavators", code: "P101", description: "Engine oil pressure too low" },
+  { brand: "SANY", family: "SY series excavators", code: "P102", description: "Engine overspeed" },
+  { brand: "SANY", family: "SY series excavators", code: "P103", description: "ECU supply voltage too high" },
+  { brand: "SANY", family: "SY series excavators", code: "P191", description: "Water in fuel or fuel filter restricted" },
+  { brand: "SANY", family: "SY series excavators", code: "P192", description: "Water in fuel or fuel filter restricted" },
+  { brand: "SANY", family: "SY series excavators", code: "P301", description: "Coolant overheating" },
+  { brand: "SANY", family: "SY series excavators", code: "H001", description: "Bucket pilot pressure abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H002", description: "Boom pilot pressure abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H006", description: "Boom pilot pressure abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H007", description: "Left travel pilot pressure abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H008", description: "Right travel pilot pressure abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H009", description: "Swing pilot pressure abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H010", description: "Hydraulic oil temperature too high" },
+  { brand: "SANY", family: "SY series excavators", code: "H011", description: "Front pump pressure abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H012", description: "Rear pump pressure abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H013", description: "Hydraulic oil temperature sensor abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H014", description: "Hydraulic oil level too low" },
+  { brand: "SANY", family: "SY series excavators", code: "H015", description: "Front pump proportional valve current abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H016", description: "Rear pump proportional valve current abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H017", description: "Boom priority valve 1 fault" },
+  { brand: "SANY", family: "SY series excavators", code: "H018", description: "Boom priority valve 2 fault" },
+  { brand: "SANY", family: "SY series excavators", code: "H019", description: "Travel speed solenoid current abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "H024", description: "Travel speed solenoid overcurrent" },
+  { brand: "SANY", family: "SY series excavators", code: "H025", description: "Travel speed solenoid undercurrent" },
+  { brand: "SANY", family: "SY series excavators", code: "H033", description: "Swing priority valve fault" },
+  { brand: "SANY", family: "SY series excavators", code: "H036", description: "Bucket confluence valve fault" },
+  { brand: "SANY", family: "SY series excavators", code: "H076", description: "Boom regeneration valve fault" },
+  { brand: "SANY", family: "SY series excavators", code: "H077", description: "Boom return oil valve fault" },
+  { brand: "SANY", family: "SY series excavators", code: "H078", description: "Travel line valve fault" },
+  { brand: "SANY", family: "SY series excavators", code: "E001", description: "Supply voltage too low" },
+  { brand: "SANY", family: "SY series excavators", code: "E002", description: "Supply voltage too high" },
+  { brand: "SANY", family: "SY series excavators", code: "E003", description: "CAN bus communication error" },
+  { brand: "SANY", family: "SY series excavators", code: "E004", description: "Fuel control dial abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "E005", description: "Display communication error" },
+  { brand: "SANY", family: "SY series excavators", code: "E006", description: "Controller failure" },
+  { brand: "SANY", family: "SY series excavators", code: "E007", description: "Controller temperature abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "E008", description: "Sensor supply abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "E015", description: "Supply voltage abnormal, above 36 V" },
+  { brand: "SANY", family: "SY series excavators", code: "E111", description: "Controller memory fault" },
+  { brand: "SANY", family: "SY series excavators", code: "E118", description: "Display communication error" },
+  { brand: "SANY", family: "SY series excavators", code: "E213", description: "Throttle motor operating abnormally" },
+  { brand: "SANY", family: "SY series excavators", code: "E214", description: "Throttle motor range error" },
+  { brand: "SANY", family: "SY series excavators", code: "E320", description: "Front pump outlet pressure sensor feedback abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "E321", description: "Rear pump outlet pressure sensor feedback abnormal" },
+  { brand: "SANY", family: "SY series excavators", code: "E541", description: "Engine speed abnormal, below 100 rpm" },
   { brand: "Bobcat", family: "Loaders & excavators", code: "3251-03", description: "EGR Temperature Sensor fault" },
   { brand: "Bobcat", family: "Loaders & excavators", code: "3251-04", description: "EGR Temperature Sensor fault" },
   { brand: "Bobcat", family: "Loaders & excavators", code: "3252-00", description: "Exhaust Temperature – High" },

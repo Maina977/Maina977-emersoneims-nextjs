@@ -14,8 +14,8 @@
  *
  * WHAT THIS IS EMPHATICALLY NOT
  * These spaces are NOT counted as fault codes we hold, and nothing here is
- * pre-generated into records. There is no expansion of P0000..P3999 into four
- * thousand rows — that is the template expansion that produced the ~451,000
+ * pre-generated into records. There is no expansion of P0000..P3FFF into its
+ * 16,384 rows — that is the template expansion that produced the ~451,000
  * figure on the generator side, and it is the thing that had to be undone
  * before. A space is matched at lookup time and reported as classification,
  * clearly separated from a verified answer.
@@ -68,7 +68,7 @@ export const CODE_SPACES: readonly CodeSpace[] = [
       'A standardised powertrain diagnostic code. The first digit after P shows who defined it — 0 and 2 are SAE-defined, 1 and 3 are manufacturer-defined — and the next two digits identify the system group.',
   },
   {
-    brands: ['John Deere', 'Bobcat'],
+    brands: ['John Deere', 'Bobcat', 'Yanmar'],
     label: 'J1939 SPN.FMI pair',
     test: /^0*\d{1,6}[.\-]\d{1,2}$/,
     size: 524288,
@@ -106,6 +106,14 @@ export const CODE_SPACES: readonly CodeSpace[] = [
     size: null,
     meaning:
       'A Hitachi controller code with its failure-mode suffix after the dash. The five-digit body identifies the monitored circuit.',
+  },
+  {
+    brands: ['SANY'],
+    label: 'SANY system-prefixed code',
+    test: /^[PHE]\d{3}$/i,
+    size: null,
+    meaning:
+      'A SANY code whose prefix names the system that raised it — P for the engine, H for hydraulics, E for electrical and controller faults. That alone narrows where to look before any lookup.',
   },
   {
     brands: ['Bobcat'],
@@ -146,6 +154,13 @@ export function classifyCode(code: string): SpaceMatch | null {
       else detail = `This code is ${defined}.`;
     }
 
+    if (s.label.startsWith('SANY')) {
+      const sys = c[0].toUpperCase();
+      const named =
+        sys === 'P' ? 'engine' : sys === 'H' ? 'hydraulics' : 'electrical or controller';
+      detail = `Prefix ${sys} — the fault was raised by the ${named} system.`;
+    }
+
     if (s.label.startsWith('J1939')) {
       const [spnRaw, fmiRaw] = c.split(/[.\-]/);
       const spn = Number(spnRaw);
@@ -163,10 +178,10 @@ export function classifyCode(code: string): SpaceMatch | null {
 /**
  * Size of the published spaces we can structurally classify.
  *
- * Reported SEPARATELY from the curated count and never added to it. Two
- * unbounded spaces (Volvo, Hitachi, Bobcat) contribute nothing to this figure
- * because their bounds are not published, and guessing at them to inflate the
- * number is exactly what this file exists to avoid.
+ * Reported SEPARATELY from the curated count and never added to it. The
+ * unbounded spaces (Volvo, Hitachi, Bobcat, SANY) contribute nothing to this
+ * figure because their bounds are not published, and guessing at them to
+ * inflate the number is exactly what this file exists to avoid.
  */
 export function getSpaceCoverage() {
   const bounded = CODE_SPACES.filter((s) => s.size !== null);

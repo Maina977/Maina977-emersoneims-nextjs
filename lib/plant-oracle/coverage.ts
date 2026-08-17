@@ -18,9 +18,9 @@ import { OEM_FAULT_CODES, searchOemCodes } from '@/lib/plant-oracle/oemFaultCode
  *
  * So this tool reads curated records only — never the expanded ranges. Two
  * sets feed it: the 2,155 engine-brand records in verifiedFaultCodes.ts, and
- * the 1,768 machine-maker records in oemFaultCodes.ts (Bobcat, Kubota, John
- * Deere, Volvo CE, Komatsu, JCB, Hitachi, Hyundai) sourced and rewritten on
- * 2026-08-16. Smaller number than
+ * the 1,827 machine-maker records in oemFaultCodes.ts (Bobcat, Kubota, John
+ * Deere, Volvo CE, Komatsu, SANY, JCB, Hitachi, Hyundai) sourced and rewritten
+ * on 2026-08-16/17. Smaller number than
  * the headline figure elsewhere on the site, entirely defensible.
  *
  * WHAT MAKES THIS A *PLANT* TOOL RATHER THAN A GENERATOR ONE.
@@ -103,11 +103,18 @@ export function getCoverage(): BrandCoverage[] {
  * own job cards — before it can appear in results. Until then the tool says so.
  */
 export const DECLARED_GAPS: readonly string[] = [
-  // John Deere, JCB, Komatsu, Volvo CE, Hyundai, Kubota, Hitachi and Bobcat
-  // were on this list until 2026-08-16 and now have sourced tables in
-  // oemFaultCodes.ts. These remain genuinely uncovered.
-  'Yanmar',
-  'Sany',
+  /*
+   * Nine brands came off this list once real tables were sourced. These are
+   * the ones still genuinely uncovered.
+   *
+   * YANMAR IS DELIBERATELY NOT LISTED AS A GAP, and does not have a table
+   * either: Yanmar reports faults as standard J1939 SPN/FMI pairs, so it is
+   * already served by the decoder rather than needing records of its own.
+   * Listing it as missing would understate what the tool can actually do.
+   *
+   * XCMG was attempted on 2026-08-17 and no usable public table was found —
+   * left declared rather than padded out with guesses.
+   */
   'XCMG',
   'LiuGong',
   'Lonking',
