@@ -62,7 +62,19 @@ export async function GET(req: NextRequest) {
      * Returned in its own field, never mixed into `results`, so a structural
      * classification can never be mistaken for a verified answer.
      */
-    const classification = results.length === 0 && q ? classifyCode(q) : null;
+    /*
+     * Classify when there is no EXACT match, not only when there is nothing at
+     * all. Searching a SANY "H999" prefix-matched a Bobcat "H9999" and returned
+     * it as the sole result — a real code, but not the one asked for, and with
+     * no hint that H999 is a SANY hydraulics code. One result was enough to
+     * suppress the classification that would have helped most.
+     *
+     * Comparison ignores punctuation and case for the same reason search does:
+     * monitors and manuals write the same code several ways.
+     */
+    const norm = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const hasExact = q ? results.some((r) => norm(r.code) === norm(q)) : false;
+    const classification = q && !hasExact ? classifyCode(q) : null;
     return NextResponse.json({
       ok: true,
       query: q,

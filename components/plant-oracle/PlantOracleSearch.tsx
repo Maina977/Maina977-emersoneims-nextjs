@@ -121,6 +121,23 @@ export default function PlantOracleSearch({
 
       {hits !== null && !err && (
         <div className="mt-6">
+          {/*
+            Shown above ANY result set that lacks an exact match, not only when
+            there are none. A near-miss result is more misleading than an empty
+            one: it looks like an answer.
+          */}
+          {classification && hits.length > 0 && (
+            <div className="mb-4 rounded-md border border-amber-400/30 bg-amber-400/5 p-4">
+              <p className="text-xs uppercase tracking-wider text-amber-300/80 mb-1">
+                No exact match — closest results below
+              </p>
+              <p className="text-white font-semibold mb-1">{classification.label}</p>
+              <p className="text-sm text-gray-300 mb-2">{classification.meaning}</p>
+              {classification.detail && (
+                <p className="text-sm text-amber-200/90">{classification.detail}</p>
+              )}
+            </div>
+          )}
           {hits.length === 0 ? (
             <div className="rounded-lg border border-white/10 bg-black/20 p-5">
               {/*
