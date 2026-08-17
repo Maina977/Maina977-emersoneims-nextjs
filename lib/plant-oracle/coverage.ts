@@ -47,6 +47,16 @@ export interface BrandCoverage {
   brand: string;
   codes: number;
   families: string[];
+  /**
+   * Whether the codes are keyed to an ENGINE or to a MACHINE.
+   *
+   * Not cosmetic — it tells the technician where to look. An engine-brand row
+   * is found from the engine data plate; a machine-maker row is found from the
+   * badge on the bodywork. Merging both under one "Engine brand" heading, as
+   * this table did after the OEM sets were added, told half the readers to go
+   * to the wrong place.
+   */
+  kind: 'engine' | 'machine';
 }
 
 /** Brands we hold verified records for, largest first. */
@@ -57,23 +67,30 @@ export function getCoverage(): BrandCoverage[] {
    * Volvo CE, Komatsu, JCB, Hitachi, Hyundai) sit alongside the engine set. A technician does not
    * care which file a code came from, so coverage is reported as one list.
    */
+  const kinds = new Map<string, 'engine' | 'machine'>();
+
   for (const r of OEM_FAULT_CODES) {
     const e = map.get(r.brand) ?? { codes: 0, families: new Set<string>() };
     e.codes += 1;
     if (r.family) e.families.add(r.family);
     map.set(r.brand, e);
+    kinds.set(r.brand, 'machine');
   }
   for (const r of VERIFIED_FAULT_CODES) {
     const e = map.get(r.brand) ?? { codes: 0, families: new Set<string>() };
     e.codes += 1;
     if (r.model) e.families.add(r.model);
     map.set(r.brand, e);
+    // An engine brand that ALSO has machine-maker records keeps 'machine',
+    // because that is the surface a reader will recognise it by.
+    if (!kinds.has(r.brand)) kinds.set(r.brand, 'engine');
   }
   return [...map.entries()]
     .map(([brand, v]) => ({
       brand,
       codes: v.codes,
       families: [...v.families].sort(),
+      kind: kinds.get(brand) ?? 'engine',
     }))
     .sort((a, b) => b.codes - a.codes);
 }

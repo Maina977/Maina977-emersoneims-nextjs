@@ -114,22 +114,37 @@ export default function PlantEquipmentOraclePage() {
           </h2>
           <p className="text-gray-400 max-w-3xl mb-6">
             Most fault-code sites imply they cover everything and return nothing.
-            Here is the real list, with counts.
+            Here is the real list, with counts — and where to read the name you
+            should search. Engine-brand codes are found from the data plate on
+            the engine; machine-maker codes are found from the badge on the
+            bodywork.
           </p>
 
           <div className="overflow-x-auto mb-8">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/15">
-                  <th className="py-2 pr-4 text-sm uppercase tracking-wider text-gray-500 font-semibold">Engine brand</th>
+                  <th className="py-2 pr-4 text-sm uppercase tracking-wider text-gray-500 font-semibold">Brand</th>
+                  <th className="py-2 pr-4 text-sm uppercase tracking-wider text-gray-500 font-semibold">Look it up by</th>
                   <th className="py-2 pr-4 text-sm uppercase tracking-wider text-gray-500 font-semibold text-right">Codes</th>
-                  <th className="py-2 text-sm uppercase tracking-wider text-gray-500 font-semibold">Engine families</th>
+                  <th className="py-2 text-sm uppercase tracking-wider text-gray-500 font-semibold">Families covered</th>
                 </tr>
               </thead>
               <tbody>
                 {coverage.map((c) => (
                   <tr key={c.brand} className="border-b border-white/5">
                     <td className="py-3 pr-4 font-semibold text-white whitespace-nowrap">{c.brand}</td>
+                    <td className="py-3 pr-4 text-sm whitespace-nowrap">
+                      <span
+                        className={
+                          c.kind === 'engine'
+                            ? 'text-cyan-300/90'
+                            : 'text-amber-300/90'
+                        }
+                      >
+                        {c.kind === 'engine' ? 'Engine plate' : 'Machine badge'}
+                      </span>
+                    </td>
                     <td className="py-3 pr-4 text-right font-mono text-amber-300">{c.codes}</td>
                     <td className="py-3 text-sm text-gray-400">{c.families.join(', ')}</td>
                   </tr>
@@ -147,10 +162,14 @@ export default function PlantEquipmentOraclePage() {
             </p>
             <p className="text-gray-300 mb-4">{DECLARED_GAPS.join(' · ')}</p>
             <p className="text-gray-300 mb-3">
-              That does not leave you stuck. All of them speak{' '}
-              <strong>SAE J1939</strong>, where a fault is an SPN saying which
+              That does not always leave you stuck. Where the machine has an
+              electronically controlled engine, it will almost certainly speak{' '}
+              <strong>SAE J1939</strong>, in which a fault is an SPN saying which
               parameter is at fault and an FMI saying how it failed — and both
-              mean the same thing on a John Deere as on a Cummins. We hold{' '}
+              mean the same thing on a John Deere as on a Cummins. Smaller and
+              older machines from these makers are often mechanically governed
+              with no diagnostic bus at all, and will show no code to decode.
+              We hold{' '}
               {j.spns} verified SPNs and all {j.fmis} defined FMIs, so the
               decoder above reads those machines from the standard rather than
               guessing at them.
