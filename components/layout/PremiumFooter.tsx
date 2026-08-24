@@ -71,6 +71,7 @@ const FOOTER_LINKS = {
     { label: 'EIMS PRO Workspace', href: '/eims-pro' },
     { label: 'AquaScan Pro™', href: '/aquascan-pro-v3' },
     { label: 'Generator Oracle™', href: '/generator-oracle' },
+    { label: 'Plant & Equipment Oracle', href: '/plant-equipment-oracle' },
     { label: 'Diagnostics Hub', href: '/diagnostics' },
     { label: 'Troubleshooting Wizard', href: '/troubleshooting' },
   ],
