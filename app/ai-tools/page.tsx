@@ -131,6 +131,28 @@ export default function AIToolsPage() {
       isPrimary: true,
     },
     {
+      title: 'Plant & Equipment Oracle',
+      subtitle: 'Excavator, Loader & Machine Fault Codes',
+      description:
+        'Fault codes for plant and heavy equipment — the engines that power excavators, loaders and rollers are the ones we already hold, plus sourced tables for the machine makers themselves.',
+      features: [
+        'Machine-maker tables: Bobcat, Kubota, John Deere, Volvo CE, Komatsu, SANY and more',
+        'Engine-brand codes: Perkins, Cummins, Caterpillar, Deutz',
+        'SAE J1939 decoder for any machine we hold no table for',
+        'Unknown codes classified by their published code space',
+        'Gaps declared openly — no invented codes, no invented fixes',
+      ],
+      stats: [
+        { label: 'Curated codes', value: 'Verified' },
+        { label: 'Brands', value: '21' },
+        { label: 'Cost', value: 'Free' },
+      ],
+      icon: <Wrench className="w-8 h-8 text-white" />,
+      href: '/plant-equipment-oracle',
+      gradient: 'from-cyan-600 via-teal-600 to-emerald-600',
+      badge: 'NEW',
+    },
+    {
       title: 'Generator Oracle',
       subtitle: 'AI-Powered Diagnostic System',
       description: 'Generator diagnostic platform with manufacturer-curated fault codes, interactive wiring diagrams, and AI-powered troubleshooting.',
