@@ -13,6 +13,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 import { AnalogClock, AnalogCalendar, WeatherWidget } from '@/components/ui/AnalogWidgets';
 import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
@@ -2158,6 +2159,25 @@ export default function SolarBible() {
               Call +254 768 860 665
             </a>
           </div>
+          {/*
+            Survey request form, added 2026-08-25.
+            This page ran 2,200 lines and closed with WhatsApp and a phone
+            number only. Both require the visitor to switch app or speak to
+            someone, and a solar buyer researching at 11pm will do neither —
+            they leave. The two buttons stay; this gives the quiet majority a
+            way to ask without a conversation.
+          */}
+          <div className="mx-auto mt-10 max-w-xl rounded-2xl bg-black/30 p-6 text-left backdrop-blur-sm">
+            <p className="mb-5 text-sm font-semibold uppercase tracking-wider text-amber-100">
+              Or have us call you back
+            </p>
+            <QuickInquiryForm
+              service="Solar Installation"
+              ctaLabel="Request my site survey"
+              source="solar-hub"
+            />
+          </div>
+
           <p className="text-amber-200 text-sm mt-6">
             M-Pesa Payment: 0768860665 | Mon-Sat 8AM-6PM
           </p>

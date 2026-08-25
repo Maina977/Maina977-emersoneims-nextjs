@@ -11,6 +11,7 @@ import { getEngineIndex } from '@/lib/parts/engineIndex';
 import { REPAIR_HUBS, REPAIR_ARTICLES } from '@/lib/repair-centre';
 import { FAULT_CODES } from '@/lib/data/faultCodes';
 import { getAllIndustries } from '@/lib/seo/industryData';
+import { PRICE_GUIDES } from '@/lib/pricing/publishedPrices';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -101,6 +102,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/contact`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${BASE_URL}/privacy`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/terms`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.4 },
+    /*
+     * Pricing. /pricing has existed for a long time and was never listed here,
+     * which is part of why price intent found nothing: of 1,385 sitemap URLs,
+     * three targeted price or cost, all blog posts. Priority is high because
+     * these are the closest-to-purchase pages on the site.
+     */
+    { url: `${BASE_URL}/pricing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
+    ...PRICE_GUIDES.map((g) => ({
+      url: `${BASE_URL}/pricing/${g.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.95,
+    })),
     // Repair Centre — hub, equipment categories and published diagnosis guides
     { url: `${BASE_URL}/repair-centre`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     ...REPAIR_HUBS.map((h) => ({

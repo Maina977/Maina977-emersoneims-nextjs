@@ -1,9 +1,20 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { PRICE_GUIDES } from '@/lib/pricing/publishedPrices';
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 
 export const metadata: Metadata = {
-  title: 'EmersonEIMS Service Pricing | Transparent Costs in KES | Kenya',
-  description: 'Clear, transparent pricing for all services. No hidden fees. Installation, maintenance, emergency response. Get quotes today.',
+  /*
+   * Title rewritten 2026-08-25. The previous one was
+   *   "EmersonEIMS Service Pricing | Transparent Costs in KES | Kenya"
+   * and the root layout appends "| EmersonEIMS Kenya", so the served title ran
+   * 82 characters and carried the brand three times over — well past what a
+   * SERP displays, with the useful words at the truncated end. This one leads
+   * with the words a buyer searches and lets the template supply the brand once.
+   */
+  title: 'Service Prices & Costs in Kenya (2026)',
+  description:
+    'What our work costs in Kenya: generator installation and servicing, solar, UPS, borehole pumps, motor rewinding and incinerators — published ranges in KES, no hidden fees.',
   alternates: {
     canonical: 'https://www.emersoneims.com/pricing',
   },
@@ -150,6 +161,45 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/*
+        Detailed price guides.
+        Added 2026-08-25. This page prices the WORK — installation, servicing,
+        call-outs. It has never priced the EQUIPMENT, and "how much is a 30 kVA
+        generator" is the question buyers actually type. The guides below carry
+        the per-unit figures already published on the service pages, on URLs a
+        price search can reach. Nothing on this page was changed to add them.
+      */}
+      <section className="py-20 px-4 bg-black border-t border-emerald-500/10">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold mb-4 text-center">Equipment price guides</h2>
+          <p className="text-gray-400 text-center max-w-3xl mx-auto mb-12">
+            The figures above price our work. These guides price the equipment itself — what a
+            generator, a solar system, a borehole pump or a UPS costs to buy, size by size.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {PRICE_GUIDES.map((g) => (
+              <Link
+                key={g.slug}
+                href={`/pricing/${g.slug}`}
+                className="group p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg hover:border-emerald-500/50 transition-colors"
+              >
+                <h3 className="text-xl font-bold text-emerald-400 mb-3 group-hover:text-emerald-300">
+                  {g.h1.charAt(0).toUpperCase() + g.h1.slice(1)}
+                </h3>
+                <p className="text-gray-300 text-sm mb-4">{g.description}</p>
+                <p className="text-emerald-400 font-bold text-sm">
+                  From {g.rows[0].price.replace(/^KES\s?/, 'KES ')}
+                  <span className="ml-2 font-normal text-gray-500">
+                    · {g.rows.length} price points
+                  </span>
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Important Notes */}
       <section className="py-20 px-4 bg-slate-900/30">
         <div className="max-w-4xl mx-auto">
@@ -290,6 +340,22 @@ export default function PricingPage() {
           <p className="text-lg text-gray-300 mb-10">
             Contact us with your specific needs. We'll provide an honest estimate within 24 hours.
           </p>
+
+          {/*
+            Quote form, added 2026-08-25.
+            The section promised "an honest estimate within 24 hours" and then
+            offered a phone number and a link to go and find a form elsewhere.
+            This is the page price searches land on; asking someone who has just
+            read a price table to navigate away and retype their requirement is
+            where the enquiry is lost. Both existing buttons are untouched.
+          */}
+          <div className="max-w-xl mx-auto mb-10 text-left">
+            <QuickInquiryForm
+              service="Quotation Request"
+              ctaLabel="Get my estimate"
+              source="pricing-index"
+            />
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a

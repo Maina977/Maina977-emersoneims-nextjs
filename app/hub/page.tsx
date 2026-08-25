@@ -1,5 +1,6 @@
 import * as React from 'react';
 import Link from 'next/link';
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 import {
   HubShell,
   SectionHeading,
@@ -299,6 +300,37 @@ export default function HubLandingPage() {
               </li>
             </ul>
           </div>
+        </Card>
+      </section>
+
+      {/*
+        Enquiry, added 2026-08-25.
+        The hub demonstrated the tooling and then stopped — no form and no
+        number anywhere on the page. Someone who has just read a sample load
+        profile and recognised their own site is ready to talk; sending them
+        away to find /contact loses most of them.
+      */}
+      <section aria-labelledby="hub-enquiry" className="mb-12">
+        <Card>
+          <SectionHeading
+            eyebrow="Talk to an engineer"
+            title="Want this running on your own site?"
+            caption="Tell us the load and the location — we reply with what it would take"
+          />
+          <div className="mt-6 max-w-xl">
+            <QuickInquiryForm
+              service="Power Systems Consultation"
+              ctaLabel="Request a consultation"
+              source="hub"
+            />
+          </div>
+          <p className="mt-5 text-xs text-ink-secondary">
+            Or call{' '}
+            <a href="tel:+254768860665" className="font-semibold underline">
+              +254 768 860 665
+            </a>
+            . Embakasi workshop · engineers across all 47 counties.
+          </p>
         </Card>
       </section>
     </HubShell>

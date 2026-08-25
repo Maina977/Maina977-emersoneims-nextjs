@@ -12,6 +12,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 import {
   ALL_COMPREHENSIVE_FAULTS,
   searchComprehensiveFaults,
@@ -996,6 +997,36 @@ export default function GeneratorOracle() {
             {stats.totalFaultCodes}+ Fault Codes | {stats.totalRootCauses}+ Root Causes | {stats.totalDiagnosticSteps}+ Diagnostic Steps | 8+ Generator Brands
           </p>
         </motion.div>
+        {/*
+          Callout request, added 2026-08-25.
+          Someone reading this page has a generator that is not working right
+          now. That is the highest-intent visitor on the site, and until today
+          the page gave them nothing to do about it — no form, no number, only
+          a fault-code list. Placed after the results so it meets them at the
+          point where they have found their code and want an engineer.
+        */}
+        <section className="mt-16 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-slate-900 to-black p-7 sm:p-10">
+          <h2 className="text-2xl font-bold text-white">Still showing the fault?</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">
+            Codes tell you what the controller sees, not always what is wrong. If the fault
+            persists after the checks above, send us the code and the make — an engineer will
+            tell you what it usually means on that machine before anyone is dispatched.
+          </p>
+          <div className="mt-7 max-w-xl">
+            <QuickInquiryForm
+              service="Generator Repair"
+              ctaLabel="Request an engineer"
+              source="maintenance-hub-generators"
+            />
+          </div>
+          <p className="mt-6 text-sm text-slate-400">
+            Breakdown that cannot wait? Call{' '}
+            <a href="tel:+254768860665" className="font-semibold text-amber-400 hover:underline">
+              +254 768 860 665
+            </a>{' '}
+            — mobile workshop covers all 47 counties.
+          </p>
+        </section>
       </div>
 
       {/* Fault detail modal */}

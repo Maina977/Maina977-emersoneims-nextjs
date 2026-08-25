@@ -19,6 +19,10 @@ const FOOTER_LINKS = {
   company: [
     { label: 'About Us', href: '/about-us' },
     { label: 'All Services', href: '/services' },
+    // Pricing (added 2026-08-25). /pricing had existed for a long time with no
+    // crawlable inbound link and no sitemap entry, so the one part of the site
+    // that answers "what does it cost" was effectively unreachable.
+    { label: 'Prices & Costs', href: '/pricing' },
     { label: 'Book a Service', href: '/booking' },
     { label: 'Project Gallery', href: '/gallery' },
     { label: 'Case Studies', href: '/case-studies' },

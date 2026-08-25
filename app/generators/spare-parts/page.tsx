@@ -18,6 +18,7 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { formatKES } from '@/lib/format/currency';
 import Link from 'next/link';
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 
 interface Part {
   id?: string;
@@ -680,6 +681,23 @@ export default function SparePartsPage() {
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Can't find what you need?</h2>
           <p className="text-gray-300 mb-6">Call us or WhatsApp for custom parts, bulk orders, or technical support</p>
+
+          {/*
+            Parts enquiry form, added 2026-08-25.
+            This page carried 15,000+ parts and three outbound buttons but no
+            way to ask from the page itself — a visitor who did not want to
+            phone had to navigate to /contact and retype what they were looking
+            at. Every step between wanting to ask and asking loses people. The
+            three buttons below are untouched; this adds the fourth option.
+          */}
+          <div className="max-w-xl mx-auto mb-10 text-left">
+            <QuickInquiryForm
+              service="Generator Spare Parts"
+              ctaLabel="Ask about this part"
+              source="spare-parts"
+            />
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="tel:+254768860665"

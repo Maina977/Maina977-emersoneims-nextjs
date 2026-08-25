@@ -703,6 +703,48 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // 0e-price. HARD 404 for unknown /pricing/[slug].
+  //
+  //     Same Next-16 quirk as guards 0a-0f, confirmed again for this route on
+  //     2026-08-25 against a local production build: /pricing/does-not-exist-zzz
+  //     rendered the 404 page but answered HTTP 200. notFound() is called in
+  //     BOTH generateMetadata and the component and neither sets the status, so
+  //     the guard has to live here.
+  //
+  //     This matters more than usual for pricing. Adding 'pricing' to
+  //     ROUTE_SEGMENTS below (required, or every real /pricing/* page hard-404s)
+  //     also stops the catch-all guard from covering the segment — so without
+  //     this block the site would answer 200 to any /pricing/<anything> a
+  //     crawler invented, on the very URLs we are trying to rank.
+  //
+  //     Inlined by hand for the same reason as the other guards: a '@/lib'
+  //     import has been proven to fail open in this edge runtime. Keep in sync
+  //     with PRICE_GUIDES in lib/pricing/publishedPrices.ts.
+  {
+    if (pathname.startsWith('/pricing/') && pathname !== '/pricing/') {
+      const OK_PRICE_GUIDES = new Set([
+        'generator-prices-kenya',
+        'solar-installation-cost-kenya',
+        'borehole-cost-kenya',
+        'ups-price-kenya',
+      ]);
+      let slug = pathname.slice('/pricing/'.length).replace(/\/$/, '');
+      try { slug = decodeURIComponent(slug); } catch { /* keep raw */ }
+      // Only one level deep is ever valid; /pricing/a/b is not a page.
+      if (slug.includes('/') || !OK_PRICE_GUIDES.has(slug)) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: {
+            'X-Robots-Tag': 'noindex, follow',
+            'Content-Type': 'text/plain',
+            'X-Loc-Guard': '404-pricing',
+          },
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // 0f. HARD 404 for unknown /repair-centre/[hub] and /repair-centre/[hub]/[slug].
   //
   //     Verified live 2026-07-27: /repair-centre/nonsense-hub and
@@ -945,7 +987,7 @@ export function middleware(request: NextRequest) {
       //     segment with no children would let /that/anything fall through to
       //     [country]/[city] and soft-404 at HTTP 200, which is the defect this
       //     whole block exists to prevent.
-      const ROUTE_SEGMENTS = new Set(['about-us','repair-centre','admin','africa','ai-tools','all-tools','alltools','analytics','api','aquascan-pro','aquascan-pro-v3','blog','booking','brands','calculators','careers','case-studies','case-study','collab','components','console','contact','counties','curation','dashboard','data','diagnostics','east-africa','eims-pro','fabrication','faq','faults','gallery','generator','generator-oracle','generator-parts','generator-problems','generator-services','generators','guides','healthcare','high-rise','hub','industries','industry-solutions','innovations','interior','kenya','knowledge-base','lib','locations','maintenance-hub','marketplace','mep-clash','podcasts','privacy','pro-building-suite','pro-console','products','qs','resources','safety','sectors','service','services','solar','solar-design-studio','solar-genius-pro','solar-genius-pro-futuristic','solar-genius-pro-tools','solution','solutions','specs','styles','swoosh-preview','swoosh-x','technical-bible','terms','tools','troubleshooting']);
+      const ROUTE_SEGMENTS = new Set(['about-us','repair-centre','admin','africa','ai-tools','all-tools','alltools','analytics','api','aquascan-pro','aquascan-pro-v3','blog','booking','brands','calculators','careers','case-studies','case-study','collab','components','console','contact','counties','curation','dashboard','data','diagnostics','east-africa','eims-pro','fabrication','faq','faults','gallery','generator','generator-oracle','generator-parts','generator-problems','generator-services','generators','guides','healthcare','high-rise','hub','industries','industry-solutions','innovations','interior','kenya','knowledge-base','lib','locations','maintenance-hub','marketplace','mep-clash','podcasts','pricing','privacy','pro-building-suite','pro-console','products','qs','resources','safety','sectors','service','services','solar','solar-design-studio','solar-genius-pro','solar-genius-pro-futuristic','solar-genius-pro-tools','solution','solutions','specs','styles','swoosh-preview','swoosh-x','technical-bible','terms','tools','troubleshooting']);
       const EA_COUNTRIES = new Set(['uganda','tanzania','rwanda','south-sudan','drc','ethiopia','djibouti','eritrea','somaliland']);
       const first = seg[0].toLowerCase();
       if (!ROUTE_SEGMENTS.has(first) && !EA_COUNTRIES.has(first)) {
