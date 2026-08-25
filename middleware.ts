@@ -978,6 +978,57 @@ export function middleware(request: NextRequest) {
   //     runtime fails open (proven when the /locations guard silently did
   //     nothing), so these must be kept in sync by hand with the app directory
   //     and lib/data/east-africa-locations.ts.
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 0i. HARD 404 for a KNOWN segment with an UNKNOWN child.
+  //
+  //     The catch-all block immediately below checks only that the FIRST
+  //     segment is real. Once it is, /generators/anything falls through to a
+  //     route that renders the 404 page at HTTP 200 — a soft-404. Scanned live
+  //     on 2026-08-25: 40 of 53 top-level segments answered 200 to an invented
+  //     child URL, including /generators, /solar, /hub and /maintenance-hub.
+  //     That is an unbounded supply of success-returning URLs that do not
+  //     exist, which is exactly what makes Google discount a site's crawl
+  //     budget and report "crawled - currently not indexed".
+  //
+  //     Only segments whose first-level children are entirely STATIC are
+  //     listed. scripts/segment-children.mjs derives them from the app/
+  //     directory and refuses any segment holding a dynamic child (aquascan-pro
+  //     was excluded on exactly that basis), because listing one would 404 real
+  //     slugs — and a guard that over-blocks is worse than the soft-404 it
+  //     replaces. scripts/check-segment-guard.mjs re-derives on every build and
+  //     fails if this literal drifts from the filesystem.
+  //
+  //     Deeper paths are intentionally NOT checked here: /generators/spare-parts
+  //     is allowed, so /generators/spare-parts/<category> passes through to its
+  //     dynamic route. Guarding that level needs the category list and is a
+  //     smaller surface; this block removes the bulk of it.
+  //
+  //     Inlined, like every other guard, because a cross-module '@/lib' import
+  //     has been proven to fail open in this edge runtime.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    const segsFor0i = pathname.split('/').filter(Boolean);
+    if (segsFor0i.length >= 2 && !pathname.startsWith('/api/')) {
+      const SEG_CHILDREN: Record<string, string[]> = {'about-us':['team'],'africa':['agro-industrial','infrastructure','mining','oil-gas','southern','utilities','western'],'ai-tools':['capabilities'],'all-tools':[],'analytics':[],'booking':[],'calculators':[],'careers':[],'case-studies':[],'diagnostics':[],'east-africa':['rwanda','tanzania','uganda'],'eims-pro':[],'fabrication':[],'faq':[],'gallery':[],'generator':['controls','service'],'generator-oracle':['purchase','tools'],'generator-parts':[],'generator-services':[],'generators':['caterpillar','cummins','installation','leasing','maintenance','maintenance-companion','perkins','rental','spare-parts','systems','used','volvo-penta','workshop-services'],'guides':['emergency-response'],'healthcare':[],'high-rise':[],'hub':['abuse','authenticity','diagnostics','doc-pack','installation','learn','library','lifecycle','maintenance','power-quality','product-intelligence','quote-audit','safety','simulator','solar-ups','ups-lab','verifier'],'industry-solutions':['healthcare','manufacturing','telecom'],'innovations':[],'knowledge-base':[],'maintenance-hub':['borehole','electrical','fabrication','general','generators','hvac','incinerators','motors','solar','welding'],'marketplace':['checkout','orders','partners','parts','returns'],'podcasts':['episodes'],'products':['generator-oracle'],'resources':['buying-guides','cummins-guides','solar-ups-hub'],'safety':[],'service':['generators'],'solar':[],'specs':['used'],'technical-bible':[],'tools':['aquascan-pro','generator-oracle','pro-building-suite','solar-genius-pro'],'troubleshooting':[]};
+      const parent = segsFor0i[0].toLowerCase();
+      const allowedKids = SEG_CHILDREN[parent];
+      if (allowedKids) {
+        let child = segsFor0i[1];
+        try { child = decodeURIComponent(child); } catch { /* keep raw */ }
+        if (!allowedKids.includes(child.toLowerCase())) {
+          return new NextResponse('Not Found', {
+            status: 404,
+            headers: {
+              'X-Robots-Tag': 'noindex, follow',
+              'Content-Type': 'text/plain',
+              'X-Loc-Guard': '404-segment-child',
+            },
+          });
+        }
+      }
+    }
+  }
+
   {
     const seg = pathname.split('/').filter(Boolean);
     if (seg.length === 2 && !pathname.startsWith('/api/')) {
