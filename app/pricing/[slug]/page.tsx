@@ -21,6 +21,7 @@
  */
 
 import type { Metadata } from 'next';
+import { Fragment } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
@@ -145,13 +146,38 @@ export default async function PricingGuidePage({ params }: Props) {
         <h1 className="eims-title">{guide.h1}</h1>
         <p className="mt-6 max-w-3xl text-lg leading-relaxed text-white/70">{guide.intro}</p>
 
-        <p className="mt-4 max-w-3xl text-sm text-white/50">
-          Every figure below is already published on{' '}
-          <Link href={guide.source} className="text-amber-400 underline underline-offset-4">
-            {guide.sourceLabel}
-          </Link>
-          . We put it here so it can be found by the question you actually asked.
-        </p>
+        {guide.sourceIsInternal ? (
+          /*
+            Say plainly where an internal schedule came from. Claiming it was
+            "already published" would be false for the borehole drilling rates —
+            they come off our own trade catalogue, not a public page — and a
+            price page that misstates its own provenance has no business asking
+            anyone to trust its numbers.
+          */
+          <p className="mt-4 max-w-3xl text-sm text-white/50">
+            These are our own schedule rates, published here for the first time. Related work is
+            covered on{' '}
+            <Link href={guide.source} className="text-amber-400 underline underline-offset-4">
+              {guide.sourceLabel}
+            </Link>
+            .
+          </p>
+        ) : (
+          <p className="mt-4 max-w-3xl text-sm text-white/50">
+            Every figure below is already published on{' '}
+            <Link href={guide.source} className="text-amber-400 underline underline-offset-4">
+              {guide.sourceLabel}
+            </Link>
+            . We put it here so it can be found by the question you actually asked.
+          </p>
+        )}
+
+        {guide.howToRead && (
+          <p className="mt-6 max-w-3xl rounded-2xl border border-amber-400/25 bg-amber-400/5 p-5 text-sm leading-relaxed text-white/70">
+            <span className="font-semibold text-amber-300">How to read this. </span>
+            {guide.howToRead}
+          </p>
+        )}
 
         {/* The table. Scrolls in its own container so the page body never does. */}
         <div className="eims-card mt-12 overflow-x-auto">
@@ -165,20 +191,44 @@ export default async function PricingGuidePage({ params }: Props) {
               </tr>
             </thead>
             <tbody>
-              {guide.rows.map((row) => (
-                <tr key={row.item} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
-                  <th scope="row" className="px-5 py-4 font-medium text-white">
-                    {row.item}
-                    {row.popular && (
-                      <span className="ml-2 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] uppercase tracking-wider text-amber-300">
-                        Common choice
-                      </span>
+              {guide.rows.map((row, i) => {
+                // A group heading is emitted the first time a group appears, so
+                // a multi-stage schedule reads as stages rather than one long
+                // undifferentiated list.
+                const newGroup = row.group && row.group !== guide.rows[i - 1]?.group;
+                return (
+                  <Fragment key={`${row.group ?? ''}-${row.item}`}>
+                    {newGroup && (
+                      <tr className="bg-white/[0.04]">
+                        <th
+                          scope="colgroup"
+                          colSpan={3}
+                          className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-amber-300"
+                        >
+                          {row.group}
+                        </th>
+                      </tr>
                     )}
-                  </th>
-                  <td className="whitespace-nowrap px-5 py-4 font-semibold text-amber-300">{row.price}</td>
-                  <td className="px-5 py-4 text-white/60">{row.note ?? '—'}</td>
-                </tr>
-              ))}
+                    <tr className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
+                      <th scope="row" className="px-5 py-4 font-medium text-white">
+                        {row.item}
+                        {row.popular && (
+                          <span className="ml-2 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] uppercase tracking-wider text-amber-300">
+                            Common choice
+                          </span>
+                        )}
+                      </th>
+                      <td className="whitespace-nowrap px-5 py-4 font-semibold text-amber-300">
+                        {row.price}
+                        {row.unit && (
+                          <span className="ml-1 text-xs font-normal text-white/40">{row.unit}</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4 text-white/60">{row.note ?? '—'}</td>
+                    </tr>
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

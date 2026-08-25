@@ -727,6 +727,10 @@ export function middleware(request: NextRequest) {
         'solar-installation-cost-kenya',
         'borehole-cost-kenya',
         'ups-price-kenya',
+        'borehole-drilling-cost-kenya',
+        'generator-service-cost-kenya',
+        'motor-rewinding-cost-kenya',
+        'incinerator-price-kenya',
       ]);
       let slug = pathname.slice('/pricing/'.length).replace(/\/$/, '');
       try { slug = decodeURIComponent(slug); } catch { /* keep raw */ }

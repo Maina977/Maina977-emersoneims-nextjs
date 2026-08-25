@@ -171,10 +171,11 @@ export default function PricingPage() {
       */}
       <section className="py-20 px-4 bg-black border-t border-emerald-500/10">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold mb-4 text-center">Equipment price guides</h2>
+          <h2 className="text-3xl font-bold mb-4 text-center">Detailed price guides</h2>
           <p className="text-gray-400 text-center max-w-3xl mx-auto mb-12">
-            The figures above price our work. These guides price the equipment itself — what a
-            generator, a solar system, a borehole pump or a UPS costs to buy, size by size.
+            The table above is the summary. These go line by line — what a generator costs by kVA,
+            what a borehole costs per drilled metre, what a rewind costs by horsepower, and in each
+            case what moves the price and what the figure leaves out.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -189,7 +190,12 @@ export default function PricingPage() {
                 </h3>
                 <p className="text-gray-300 text-sm mb-4">{g.description}</p>
                 <p className="text-emerald-400 font-bold text-sm">
-                  From {g.rows[0].price.replace(/^KES\s?/, 'KES ')}
+                  {/*
+                    cardNote, not rows[0]. The drilling guide opens with a
+                    KES 65,000 survey line, and "From KES 65,000" beside
+                    "borehole drilling" reads as the price of a borehole.
+                  */}
+                  {g.cardNote ?? `From ${g.rows[0].price}`}
                   <span className="ml-2 font-normal text-gray-500">
                     · {g.rows.length} price points
                   </span>
