@@ -50,6 +50,87 @@ export function kwFromKva(kva: number): number {
   return Math.round(kva * 0.8);
 }
 
+/**
+ * Real photography for the product pages.
+ *
+ * A design review on 2026-08-26 measured one image per product page — a
+ * generator seller with no generator photographs. These files already existed
+ * in public/images/voltka, unused on the commercial pages.
+ *
+ * CAPTIONS ARE THE OWNER'S OWN, lifted from app/brands/page.tsx and
+ * app/about-us/page.tsx so nothing is re-described here. Each caption states
+ * what the photograph actually SHOWS — a canopy, an engine, a delivery — and
+ * never claims the machine pictured is the size of the page it sits on. VKS44
+ * and VKS165 are VOLTKA model names, not kVA ratings, and treating them as
+ * ratings would be a fabricated specification.
+ *
+ * The set is chosen by size band so the pages differ from one another, which
+ * also stops them reading as one template with a number swapped.
+ */
+export interface ProductPhoto {
+  src: string;
+  alt: string;
+  caption: string;
+}
+
+const CANOPY: ProductPhoto = {
+  src: '/images/voltka/cat-canopy-studio.webp',
+  alt: 'Sound-attenuated generator canopy, studio photograph',
+  caption: 'Sound-attenuated canopy — the standard enclosure where noise matters',
+};
+const ENGINE: ProductPhoto = {
+  src: '/images/voltka/cummins-engine-detail.webp',
+  alt: 'Cummins diesel engine detail',
+  caption: 'Cummins engine detail — the block, not a stock illustration',
+};
+const CONTROLLER: ProductPhoto = {
+  src: '/images/voltka/smartgen-controller-detail.webp',
+  alt: 'SmartGen generator controller panel',
+  caption: 'Controller panel — auto-start, protection and monitoring',
+};
+const VKS44: ProductPhoto = {
+  src: '/images/voltka/voltka-vks44-hero-profile.webp',
+  alt: 'VOLTKA VKS44 Cummins-powered generator',
+  caption: 'VOLTKA VKS44 — Cummins powered, from our Nairobi fleet',
+};
+const OPEN_FRAME: ProductPhoto = {
+  src: '/images/voltka/cat-open-frame.webp',
+  alt: 'Open-frame diesel generator set',
+  caption: 'Open frame — cheaper than a canopy, and only right indoors or in a plant room',
+};
+const CRANE: ProductPhoto = {
+  src: '/images/voltka/voltka-vks44-crane-side.webp',
+  alt: 'Generator being lifted by crane for delivery',
+  caption: 'Delivered nationwide — crane dispatch and offloading',
+};
+const STOCK: ProductPhoto = {
+  src: '/images/voltka/voltka-vks165-stock-forklift.webp',
+  alt: 'VOLTKA VKS165 generator in stock, moved by forklift',
+  caption: 'Ready stock, Nairobi — VOLTKA VKS165',
+};
+const FLEET: ProductPhoto = {
+  src: '/images/voltka/voltka-warehouse-fleet.webp',
+  alt: 'Generator fleet in the Nairobi warehouse',
+  caption: 'Generator fleet — Nairobi warehouse',
+};
+const ATS: ProductPhoto = {
+  src: '/images/voltka/ats-changeover-panel-4k.webp',
+  alt: 'ATS changeover panel installation',
+  caption: 'ATS changeover panel — what makes the set start on its own',
+};
+
+/**
+ * Photographs for a size, by band. Illustrative of what we supply and install;
+ * the exact machine is confirmed on the quotation, which each page says.
+ */
+export function photosForSize(kva: number): ProductPhoto[] {
+  if (kva <= 20) return [OPEN_FRAME, CONTROLLER, ATS];
+  if (kva <= 60) return [CANOPY, VKS44, ENGINE];
+  if (kva <= 150) return [VKS44, CANOPY, ATS];
+  if (kva <= 300) return [STOCK, ENGINE, CRANE];
+  return [FLEET, CRANE, ENGINE];
+}
+
 export const GENERATOR_SIZES: readonly GeneratorSize[] = [
   {
     slug: '10-kva', kva: 10, phase: 'single', priceRange: 'KES 280,000 – 350,000',

@@ -16,6 +16,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 import {
@@ -23,6 +24,7 @@ import {
   getGeneratorSize,
   kwFromKva,
   nextSizeUp,
+  photosForSize,
   type GeneratorSize,
 } from '@/lib/products/generatorSizes';
 import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
@@ -115,6 +117,7 @@ export default async function GeneratorSizePage({ params }: Props) {
 
   const kw = kwFromKva(g.kva);
   const bigger = nextSizeUp(g);
+  const photos = photosForSize(g.kva);
   const others = GENERATOR_SIZES.filter((x) => x.slug !== g.slug);
 
   return (
@@ -149,6 +152,41 @@ export default async function GeneratorSizePage({ params }: Props) {
           </Link>
           .
         </p>
+
+        {/*
+          Real photography, added 2026-08-26.
+          A design review measured one image per product page — a generator
+          seller showing no generators. These files already existed in the repo,
+          unused on commercial pages. Captions say what each photograph SHOWS
+          and never claim the machine pictured is this page's size; the note
+          below the strip states that plainly, because an implied specification
+          is still a specification.
+        */}
+        <section className="mt-12">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {photos.map((p) => (
+              <figure key={p.src} className="eims-card overflow-hidden">
+                <div className="relative aspect-[4/3] bg-black/40">
+                  <Image
+                    src={p.src}
+                    alt={p.alt}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                    className="object-cover"
+                  />
+                </div>
+                <figcaption className="px-4 py-3 text-xs leading-relaxed text-white/60">
+                  {p.caption}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-white/40">
+            Photographs of equipment we supply and install. They illustrate build, enclosure and
+            delivery rather than this exact rating — the machine offered is confirmed on your
+            quotation.
+          </p>
+        </section>
 
         {/* The specification we can actually stand behind */}
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
