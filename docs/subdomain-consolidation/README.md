@@ -1,72 +1,118 @@
-# Stopping power.emersoneims.com competing with www.emersoneims.com
+# Removing power.emersoneims.com
 
-## What the problem actually is
+**Decision (owner, 2026-08-26): remove it. It is not needed and it is competing
+with www.emersoneims.com.**
 
-Measured on 2026-08-26:
+This document is the removal plan. It exists because *how* it is removed changes
+whether the domain's accumulated value comes back to www or is thrown away.
 
-| | www.emersoneims.com | power.emersoneims.com |
+---
+
+## Do not just delete it
+
+Deleting the Netlify site or dropping the DNS record removes the competition —
+and destroys everything those URLs have earned. Redirecting removes the
+competition **just as completely** and hands the value to www instead.
+
+| | Delete outright | 301 redirect, then delete |
 |---|---|---|
-| URLs in sitemap | 1,407 | 1,157 |
-| robots.txt | crawlable | `Allow: /` — fully crawlable |
-| canonical | self | **self** |
-| Sells | Cummins generators, solar, UPS, Kenya | **the same** |
-| Hosting | Vercel | Netlify (`emersoneims-power.netlify.app`) |
+| Stops competing with www | yes | yes |
+| Existing backlinks | wasted — point at nothing | passed to www |
+| Anyone with a bookmark | dead page | lands on the right page |
+| Ranking signals | discarded | transferred |
+| Effort | same | same |
 
-Two sites, one market, same keywords, each telling Google it is the canonical
-version. Google must choose one for every query, and any backlink either site
-earns counts for that site alone. The subdomain even carries
-`/blog/generator-price-kenya`, competing head-on with `/pricing/generator-prices-kenya`.
+**Redirect first, delete later. Removal happens either way.**
 
-This is almost certainly costing more ranking than any on-page work gains.
+---
 
-## What the subdomain is
+## What is actually there (measured 2026-08-26)
 
-A flat `.html` doorway grid:
+| | |
+|---|---|
+| URLs in its sitemap | 1,157 |
+| Actually returning 200 | **~471 (41%)** — these are what compete |
+| Already returning 404 | **~686 (59%)** — advertised in its own sitemap |
+| Hosting | Netlify (`emersoneims-power.netlify.app`) |
+| robots.txt | `Allow: /` — fully crawlable |
+| canonical | self-referential, so it competes rather than defers |
+| Links to www | yes (`/hub`, `/generator-oracle`, `/aquascan-pro-v3`) |
+| Linked from www | **no** — checked across six page types |
 
-- **20 service families × 55 towns = ~1,100 pages** — `generator-sales-bomet.html`,
-  `borehole-pumps-eldoret.html`, `motor-rewinding-kisumu.html` and so on
-- **~54 blog articles** — genuine content, some of it useful
-- a handful of index and one-off pages
+It is a flat `.html` doorway grid — 20 service families across 55 towns — plus
+about 54 blog articles. It also carries `/blog/generator-price-kenya`, competing
+head-on with our own `/pricing/generator-prices-kenya`.
 
-The service×town pages are the same doorway pattern that damaged the main site
-and had to be undone there. They should not be preserved as they are.
+Two things follow from the 59% that already 404. First, less value is at stake
+than 1,157 URLs suggested — much of it is already lost. Second, the site is
+publishing a sitemap of broken URLs, which is its own quality problem.
 
-## Two ways to fix it — pick one
+**Redirecting is still worth doing**, because an external backlink pointing at a
+404 is wasted, and a redirect rescues it. That is free value with no downside.
 
-### Option A (recommended): move the subdomain onto Vercel
+---
 
-The redirect map is **already implemented and tested** in `middleware.ts`
-(guard `0-HOST`). It is inert — it only fires for `power.emersoneims.com` — so
-it is already deployed and waiting.
+## The removal, in order
 
-To activate:
+### Step 1 — put the redirects live (do this first)
 
-1. In the Vercel project, add `power.emersoneims.com` as a domain.
-2. Update the DNS record for `power` to the value Vercel gives you
-   (it currently CNAMEs to `emersoneims-power.netlify.app`).
-3. Wait for the certificate to issue.
-4. Verify: `curl -sI https://power.emersoneims.com/generator-sales-bomet.html`
-   should return `301` to `https://www.emersoneims.com/generators` with the
-   header `X-Loc-Guard: subdomain-consolidation`.
+**Option A — recommended. Move the hostname onto Vercel.**
 
-**Why this is better:** the map lives in this repo, so it is version-controlled,
-reviewable, and testable from here. No dependency on access to the Netlify site
-or whoever set it up.
+The map is already implemented, tested and deployed in `middleware.ts` (guard
+`0-HOST`). It is inert until DNS points here.
 
-### Option B: keep it on Netlify
+1. Vercel project → Settings → Domains → add `power.emersoneims.com`
+2. Change the `power` DNS record from `emersoneims-power.netlify.app` to the
+   value Vercel provides
+3. Wait for the certificate to issue
+4. Verify:
+   ```bash
+   curl -sI https://power.emersoneims.com/generator-sales-bomet.html
+   # expect: 301 -> https://www.emersoneims.com/generators
+   #         x-loc-guard: subdomain-consolidation
+   ```
 
-Copy `_redirects` from this folder to the **publish root** of the Netlify site
-(next to `index.html`) and redeploy. Same map, Netlify syntax.
+This needs no access to the Netlify site or to whoever built it. DNS is enough.
 
-If you do not have access to that site's source, Option A avoids the problem
-entirely — DNS is under your control regardless.
+**Option B — keep it on Netlify.** Copy `_redirects` from this folder to that
+site's publish root and redeploy. Identical map, Netlify syntax.
 
-## What the map does
+### Step 2 — confirm nothing is left competing
 
-1,157 URLs were tested against it. **1,156 land on a specific, topical page**;
-only the homepage falls back to the homepage. All 28 destinations were verified
-to return HTTP 200 on www — no redirect lands on a 404 and none chains through
-another redirect.
+```bash
+node docs/subdomain-consolidation/verify-redirects.mjs      # samples 120
+SAMPLE=0 node docs/subdomain-consolidation/verify-redirects.mjs   # all 1,157
+```
+
+It walks the subdomain's sitemap and fails if any URL still answers directly or
+redirects somewhere broken. **Exit code 0 is the gate for Step 4.**
+
+### Step 3 — tell Google, then wait
+
+- Keep the subdomain's Search Console property. Watch its indexed count fall.
+- Do **not** use the Removals tool: that hides URLs temporarily without passing
+  any signal, and it works against the redirect.
+- Allow **6–12 months**. Google must recrawl every URL to see the redirect, and
+  consolidation is gradual. This is the slow part and it cannot be rushed.
+
+### Step 4 — delete it for good
+
+Only once Step 2 passes clean and the subdomain's indexed count in Search
+Console has fallen to near zero:
+
+1. Delete the Netlify site (or unlink the custom domain)
+2. Remove the `power` DNS record
+3. Remove guard `0-HOST` from `middleware.ts` and delete this folder
+
+Deleting earlier discards whatever had not yet transferred.
+
+---
+
+## The redirect map
+
+1,157 URLs were tested against it: **1,156 resolve to a specific topical page**,
+and only the homepage falls back to the homepage. All 28 destinations were
+verified live to return HTTP 200 — nothing redirects into a 404, nothing chains.
 
 | Subdomain pattern | Destination |
 |---|---|
@@ -89,36 +135,24 @@ another redirect.
 | `/commercial-solar-*` | `/solar` |
 | `/solar-sizing-*` | `/solutions/solar-sizing` |
 | `/blog/generator-price*` | `/pricing/generator-prices-kenya` |
-| `/blog/*` (rest) | `/blog` |
+| `/blog/*` (remainder) | `/blog` |
 
-### Two deliberate decisions
+### Two deliberate choices
 
 **The town is dropped.** `generator-sales-bomet.html` goes to `/generators`, not
-to a Bomet page. www already has a real, differentiated `/kenya` structure;
-pointing 55 near-identical doorway pages into it would import the duplication
-this consolidation is removing.
+to a Bomet page. www already has a real, differentiated `/kenya` structure, and
+feeding 55 near-identical doorway pages into it would import the duplication
+this removal exists to eliminate.
 
-**Nothing redirects to the homepage wholesale.** Google reads "everything → `/`"
+**Nothing redirects wholesale to the homepage.** Google reads "everything → `/`"
 as a soft 404 — the destination does not answer what the URL promised — which
-discards the authority the consolidation exists to preserve.
+discards the value the redirect is there to capture.
 
-## Worth doing afterwards
+---
 
-The ~54 blog articles are real content. Right now the unmatched ones land on
-`/blog`, which preserves far less than a genuine one-to-one move. Migrating the
-good ones to `www.emersoneims.com/blog/...` and pointing each rule at its
-migrated URL would recover more. That is a content job, not a redirect job.
+## Worth salvaging first
 
-## How to confirm it worked
-
-After activation, and again a few weeks later:
-
-```bash
-# every family should 301 to a real page
-curl -sI https://power.emersoneims.com/generator-sales-bomet.html | head -3
-curl -sI https://power.emersoneims.com/blog/generator-price-kenya  | head -3
-```
-
-In Search Console, the subdomain property should show its indexed count falling
-as www absorbs the queries. That takes weeks, not days — Google has to recrawl
-1,157 URLs to see the redirects.
+The ~54 blog articles are genuine content. Right now the unmatched ones land on
+`/blog`, which preserves far less than a real one-to-one move. If any are worth
+keeping, copy them to `www.emersoneims.com/blog/...` **before** Step 4 and point
+their rules at the migrated URLs. That is a content decision, not a redirect one.
