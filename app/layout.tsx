@@ -522,8 +522,24 @@ export default async function RootLayout({
         {/* WCAG 2.1 AAA: Multiple Skip Links */}
         <SkipToContent />
         
-        {/* Keyboard Shortcuts Reference for Screen Readers */}
-        <KeyboardShortcutsHelper />
+        {/*
+          KeyboardShortcutsHelper MOVED TO THE END OF THE DOCUMENT (2026-08-26).
+
+          It renders an sr-only <h2>Keyboard Shortcuts</h2>. Mounted here, at
+          the top of <body>, that was the FIRST heading in the document on every
+          page — before the H1. A design audit picked it up on both / and
+          /generators as heading number one.
+
+          Two costs, both real. Google reads sr-only text: the first topic it
+          saw on every page was a list of keyboard keys. And screen-reader users
+          navigating by heading landed on shortcuts before they reached what the
+          page is about.
+
+          It is NOT removed — it is genuinely useful and it stays exactly as
+          written. It now mounts after the footer, where a help reference
+          belongs, so the H1 is the first heading and the note is still
+          reachable by heading navigation and by its role="note" landmark.
+        */}
         
         {/* Global Structured Data for SEO - Rich Snippets */}
         <OrganizationSchema />
@@ -552,6 +568,11 @@ export default async function RootLayout({
         <div id="contact-section">
           <PremiumFooter />
         </div>
+
+        {/* Keyboard shortcuts reference for screen readers — see the note where
+            this used to mount, at the top of <body>. Placed after the content so
+            it is not the document's first heading. */}
+        <KeyboardShortcutsHelper />
         
         {/* ═══════════════════════════════════════════════════════════════════
             NON-CRITICAL: Client-side components loaded after page is interactive

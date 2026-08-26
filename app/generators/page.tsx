@@ -3046,15 +3046,27 @@ export default function GeneratorPage() {
         </div>
       </section>
 
-      {/* Generator Price List - Transparent Pricing */}
+      {/*
+        Generator price list.
+
+        HEADING DIFFERENTIATED 2026-08-26. This section and the capacity-band
+        section far above it were both titled "Generator Prices Kenya 2026" —
+        the same H2 twice on one page. Google reads that as the page covering
+        one topic twice and cannot tell which block to surface; a reader
+        scrolling past assumes they have looped back.
+
+        NOTHING WAS REMOVED. The two blocks are genuinely different — that one
+        gives price BANDS by capacity, this one is the itemised list by model —
+        so they now say which is which. The #prices anchor is unchanged.
+      */}
       <section id="prices" className="py-20 bg-gradient-to-br from-black via-amber-900/10 to-black">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">
-              Generator Prices Kenya 2026
+              Full price list — by model and capacity
             </h2>
             <p className="text-xl text-white/70">
-              Transparent pricing - Cummins, Perkins, FG Wilson
+              Every size we supply, with the figure we quote from — Cummins, Perkins, FG Wilson
             </p>
           </div>
           <GeneratorPriceList />
