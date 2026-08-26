@@ -635,13 +635,36 @@ export function middleware(request: NextRequest) {
        * lowercased. Regenerate it rather than editing by hand.
        */
       let invalid = false;
-      if (!KENYA_COUNTIES.has(county)) {
+      const countyIsReal = KENYA_COUNTIES.has(county);
+      if (!countyIsReal) {
         invalid = true;                                   // unknown county → definitely invalid
       } else {
         const key = `${county}/${rest.join('/')}`.toLowerCase();
         if (!OK_KENYA_PATHS.has(key)) invalid = true;
       }
       if (invalid) {
+        /*
+         * REDIRECT RATHER THAN 404 WHEN THE COUNTY IS REAL.
+         *
+         * An external audit on 2026-08-26 found Google still surfacing removed
+         * pages such as /kenya/nakuru/new-nakuru-town-west-village and
+         * .../upper-funyula-estate. Those belonged to the FABRICATED village
+         * tier and were correctly deleted — but they had been indexed, so a
+         * hard 404 throws away both the click and the accumulated authority,
+         * and grows the "Not found (404)" report in Search Console.
+         *
+         * The county page above them is real and substantial, so send the
+         * visitor there instead. 308 keeps it permanent and method-safe. A
+         * bogus COUNTY still 404s: we redirect because the PLACE exists, not
+         * merely because a URL was requested — the same rule the /locations
+         * guard already applies for the same reason.
+         */
+        if (countyIsReal) {
+          return NextResponse.redirect(new URL(`/kenya/${county}`, request.url), {
+            status: 308,
+            headers: { 'X-Loc-Guard': 'kenya-redirect-to-county' },
+          });
+        }
         return new NextResponse('Not Found', {
           status: 404,
           headers: { 'X-Robots-Tag': 'noindex, follow', 'Content-Type': 'text/plain', 'X-Loc-Guard': 'kenya-404' },
@@ -696,6 +719,35 @@ export function middleware(request: NextRequest) {
             'X-Robots-Tag': 'noindex, follow',
             'Content-Type': 'text/plain',
             'X-Loc-Guard': 'parts-cat-404',
+          },
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 0e-size. HARD 404 for unknown /generators/sizes/[size].
+  //
+  //     Guard 0i checks only the FIRST child of a segment, so it clears
+  //     /generators/sizes and stops there. Without this block
+  //     /generators/sizes/999-kva would render the 404 page at HTTP 200 —
+  //     the soft-404 pattern, on the product URLs we are trying to rank.
+  //
+  //     Kept in sync with GENERATOR_SIZES by scripts/check-size-routes.mjs.
+  //     Inlined because a cross-module @/lib import fails open in this runtime.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    if (pathname.startsWith('/generators/sizes/') && pathname !== '/generators/sizes/') {
+      const OK_GEN_SIZES = new Set(['10-kva','15-kva','20-kva','30-kva','50-kva','60-kva','80-kva','100-kva','150-kva','200-kva','250-kva','300-kva','500-kva']);
+      let sizeSlug = pathname.slice('/generators/sizes/'.length).replace(/\/$/, '');
+      try { sizeSlug = decodeURIComponent(sizeSlug); } catch { /* keep raw */ }
+      if (sizeSlug.includes('/') || !OK_GEN_SIZES.has(sizeSlug.toLowerCase())) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: {
+            'X-Robots-Tag': 'noindex, follow',
+            'Content-Type': 'text/plain',
+            'X-Loc-Guard': '404-generator-size',
           },
         });
       }
@@ -1009,7 +1061,7 @@ export function middleware(request: NextRequest) {
   {
     const segsFor0i = pathname.split('/').filter(Boolean);
     if (segsFor0i.length >= 2 && !pathname.startsWith('/api/')) {
-      const SEG_CHILDREN: Record<string, string[]> = {'about-us':['team'],'africa':['agro-industrial','infrastructure','mining','oil-gas','southern','utilities','western'],'ai-tools':['capabilities'],'all-tools':[],'analytics':[],'booking':[],'calculators':[],'careers':[],'case-studies':[],'diagnostics':[],'east-africa':['rwanda','tanzania','uganda'],'eims-pro':[],'fabrication':[],'faq':[],'gallery':[],'generator':['controls','service'],'generator-oracle':['purchase','tools'],'generator-parts':[],'generator-services':[],'generators':['caterpillar','cummins','installation','leasing','maintenance','maintenance-companion','perkins','rental','spare-parts','systems','used','volvo-penta','workshop-services'],'guides':['emergency-response'],'healthcare':[],'high-rise':[],'hub':['abuse','authenticity','diagnostics','doc-pack','installation','learn','library','lifecycle','maintenance','power-quality','product-intelligence','quote-audit','safety','simulator','solar-ups','ups-lab','verifier'],'industry-solutions':['healthcare','manufacturing','telecom'],'innovations':[],'knowledge-base':[],'maintenance-hub':['borehole','electrical','fabrication','general','generators','hvac','incinerators','motors','solar','welding'],'marketplace':['checkout','orders','partners','parts','returns'],'podcasts':['episodes'],'products':['generator-oracle'],'resources':['buying-guides','cummins-guides','solar-ups-hub'],'safety':[],'service':['generators'],'solar':[],'specs':['used'],'technical-bible':[],'tools':['aquascan-pro','generator-oracle','pro-building-suite','solar-genius-pro'],'troubleshooting':[]};
+      const SEG_CHILDREN: Record<string, string[]> = {'about-us':['team'],'africa':['agro-industrial','infrastructure','mining','oil-gas','southern','utilities','western'],'ai-tools':['capabilities'],'all-tools':[],'analytics':[],'booking':[],'calculators':[],'careers':[],'case-studies':[],'diagnostics':[],'east-africa':['rwanda','tanzania','uganda'],'eims-pro':[],'fabrication':[],'faq':[],'gallery':[],'generator':['controls','service'],'generator-oracle':['purchase','tools'],'generator-parts':[],'generator-services':[],'generators':['caterpillar','cummins','installation','leasing','maintenance','maintenance-companion','perkins','rental','sizes','spare-parts','systems','used','volvo-penta','workshop-services'],'guides':['emergency-response'],'healthcare':[],'high-rise':[],'hub':['abuse','authenticity','diagnostics','doc-pack','installation','learn','library','lifecycle','maintenance','power-quality','product-intelligence','quote-audit','safety','simulator','solar-ups','ups-lab','verifier'],'industry-solutions':['healthcare','manufacturing','telecom'],'innovations':[],'knowledge-base':[],'maintenance-hub':['borehole','electrical','fabrication','general','generators','hvac','incinerators','motors','solar','welding'],'marketplace':['checkout','orders','partners','parts','returns'],'podcasts':['episodes'],'products':['generator-oracle'],'resources':['buying-guides','cummins-guides','solar-ups-hub'],'safety':[],'service':['generators'],'solar':[],'specs':['used'],'technical-bible':[],'tools':['aquascan-pro','generator-oracle','pro-building-suite','solar-genius-pro'],'troubleshooting':[]};
       const parent = segsFor0i[0].toLowerCase();
       const allowedKids = SEG_CHILDREN[parent];
       if (allowedKids) {

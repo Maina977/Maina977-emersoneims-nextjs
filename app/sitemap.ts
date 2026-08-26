@@ -12,6 +12,7 @@ import { REPAIR_HUBS, REPAIR_ARTICLES } from '@/lib/repair-centre';
 import { FAULT_CODES } from '@/lib/data/faultCodes';
 import { getAllIndustries } from '@/lib/seo/industryData';
 import { PRICE_GUIDES } from '@/lib/pricing/publishedPrices';
+import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -154,6 +155,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     // Generator pages
     { url: `${BASE_URL}/generators`, lastModified: currentDate, changeFrequency: 'daily', priority: 1.0 },
+    /*
+     * Per-size generator pages. An external audit on 2026-08-26 found the site
+     * had no product-level URLs while every ranking competitor publishes one
+     * page per set with a size and a price. Highest priority after the
+     * category page: these are the closest-to-purchase pages on the site.
+     */
+    ...GENERATOR_SIZES.map((g) => ({
+      url: `${BASE_URL}/generators/sizes/${g.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.95,
+    })),
     { url: `${BASE_URL}/generators/spare-parts`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
     // Workshop Repairs & Fabrication — added 2026-07-21 (owner brief).
     { url: `${BASE_URL}/generators/workshop-services`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },

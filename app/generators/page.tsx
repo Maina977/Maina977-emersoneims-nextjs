@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
+import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 /*
@@ -704,6 +705,33 @@ const TransparentPricing = () => {
               </a>
             </div>
           ))}
+        </div>
+
+        {/*
+          Per-size pages, added 2026-08-26.
+          An external audit found the site had no product-level URLs while every
+          ranking competitor publishes one page per set. Buyers search "30 kva
+          generator price in kenya", not "generator range". These links are the
+          internal path to those pages — the sitemap gives discovery, links pass
+          authority.
+        */}
+        <div className="mb-10">
+          <h3 className="text-center text-lg font-semibold text-white mb-2">Price by exact size</h3>
+          <p className="text-center text-gray-400 text-sm mb-6">
+            What each size costs, what it runs, and how site altitude changes the answer.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl mx-auto">
+            {GENERATOR_SIZES.map((g) => (
+              <a
+                key={g.slug}
+                href={`/generators/sizes/${g.slug}`}
+                className="block rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-center transition hover:border-amber-400/40"
+              >
+                <span className="block font-bold text-white">{g.kva} kVA</span>
+                <span className="mt-1 block text-[11px] text-gray-400">{g.priceRange.replace('KES ', '')}</span>
+              </a>
+            ))}
+          </div>
         </div>
 
         <div className="text-center text-gray-400 text-sm">
