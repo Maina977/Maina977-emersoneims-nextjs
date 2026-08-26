@@ -21,7 +21,7 @@ const IndustriesExperience = dynamic(
 );
 
 export const metadata: Metadata = {
-  title: 'Industries We Serve | Generator & Power Solutions for Every Sector',
+  title: 'Generators & Solar by Industry',
   description: 'Generators, solar and UPS for Kenyan hotels, hospitals, schools, banks and factories. 2-year warranty, 24/7 emergency response. Call +254768860665.',
   openGraph: {
     title: 'Industries We Serve',
