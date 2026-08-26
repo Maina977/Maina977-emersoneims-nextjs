@@ -263,7 +263,7 @@ export default function GeneratorPriceList() {
         {/* Trust signals */}
         <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs text-gray-400">
           <span className="flex items-center gap-1">
-            <Shield className="w-3 h-3 text-green-500" /> 3-Year Warranty
+            <Shield className="w-3 h-3 text-green-500" /> 2-Year Warranty
           </span>
           <span className="flex items-center gap-1">
             <Truck className="w-3 h-3 text-blue-500" /> Free Delivery

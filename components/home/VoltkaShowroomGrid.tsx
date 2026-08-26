@@ -77,7 +77,7 @@ const CARDS = [
     alt: 'Genuine Cummins diesel engine and controller inside an open VOLTKA super silent canopy',
     kicker: 'Genuine Cummins Inside',
     title: 'The Engine Sells Itself.',
-    copy: 'Genuine Cummins blocks, Fleetguard filtration, 3-year warranty. Inspect before you buy.',
+    copy: 'Genuine Cummins blocks, Fleetguard filtration, 2-year warranty. Inspect before you buy.',
     href: '/generators',
     cta: 'Explore the Range',
     light: false,

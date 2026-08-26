@@ -960,12 +960,12 @@ const VideoTestimonials = () => {
 // 📊 BRAND COMPARISON TABLE
 const BrandComparisonTable = () => {
   const brands = [
-    { name: 'Cummins', origin: 'USA', warranty: '3 Years', fuelEff: '⭐⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$$$', best: 'Reliability & support' },
+    { name: 'Cummins', origin: 'USA', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$$$', best: 'Reliability & support' },
     { name: 'Perkins', origin: 'UK', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$$', best: 'Value for money' },
     { name: 'Caterpillar', origin: 'USA', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐', price: '$$$$$', best: 'Heavy industrial' },
     { name: 'FG Wilson', origin: 'UK', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐', price: '$$$', best: 'Commercial use' },
     { name: 'Atlas Copco', origin: 'Sweden', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐⭐', parts: '⭐⭐⭐', price: '$$$$', best: 'Quiet operation' },
-    { name: 'Voltka', origin: 'China/Cummins', warranty: '3 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$', best: 'Budget + quality' },
+    { name: 'Voltka', origin: 'China/Cummins', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$', best: 'Budget + quality' },
   ];
 
   return (
@@ -1491,7 +1491,7 @@ const WhyChooseUs = () => {
     },
     {
       icon: '🛡️',
-      title: '3-Year Warranty',
+      title: '2-Year Warranty',
       description: 'Industry-leading coverage on all new generators. Includes parts, labor, and emergency service.',
       highlight: 'PEACE OF MIND'
     },
@@ -1667,7 +1667,7 @@ const FAQSection = () => {
   const faqs = [
     {
       question: 'Why should I buy from EmersonEIMS instead of importing directly?',
-      answer: 'While importing may seem cheaper, you lose warranty coverage, local support, and spare parts availability. Our all-inclusive pricing includes delivery, installation, commissioning, 1-year free service, and 3-year warranty. Most importers spend 30% more in the first year on issues we prevent.'
+      answer: 'While importing may seem cheaper, you lose warranty coverage, local support, and spare parts availability. Our all-inclusive pricing includes delivery, installation, commissioning, 1-year free service, and 2-year warranty. Most importers spend 30% more in the first year on issues we prevent.'
     },
     {
       question: 'What brands do you carry?',
@@ -1695,7 +1695,7 @@ const FAQSection = () => {
     },
     {
       question: 'What\'s included in the price?',
-      answer: 'Our quoted prices include: Generator unit, delivery anywhere in Kenya, professional installation, ATS (automatic transfer switch), commissioning and testing, operator training, 1-year free maintenance, and 3-year warranty. No hidden costs.'
+      answer: 'Our quoted prices include: Generator unit, delivery anywhere in Kenya, professional installation, ATS (automatic transfer switch), commissioning and testing, operator training, 1-year free maintenance, and 2-year warranty. No hidden costs.'
     },
   ];
 
@@ -2308,7 +2308,7 @@ export default function GeneratorPage() {
             10kVA to 2000kVA, sized to your actual load rather than a catalogue guess.
             <br />
             <span className="text-[#fbbf24]">
-              3-year warranty {'\u2022'} 1 year free servicing {'\u2022'} mobile workshop in all 47 counties
+              2-year warranty {'\u2022'} 1 year free servicing {'\u2022'} mobile workshop in all 47 counties
             </span>
           </p>
           <div
@@ -2363,7 +2363,7 @@ export default function GeneratorPage() {
               <ul className="space-y-3 text-white/75">
                 <li className="flex gap-3">
                   <span className="text-brand-gold font-bold">✓</span>
-                  <span>3-year warranty and one year of free servicing on new sets</span>
+                  <span>2-year warranty and one year of free servicing on new sets</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-brand-gold font-bold">✓</span>
@@ -2691,10 +2691,27 @@ export default function GeneratorPage() {
               >
                 <h3 className="text-2xl font-bold text-[#fbbf24] mb-4 font-display">{gen.model}</h3>
                 <GeneratorSpecCard generator={gen} />
+                {/*
+                  ENGINE IS RENDERED ONLY WHERE THE SPEC IS VERIFIED.
+                  See the provenance note in app/lib/data/cumminsgenerators.ts:
+                  from 300 kVA upward the engine column claims 36-56 kW per
+                  litre, roughly double what any diesel achieves, and one
+                  alternator frame is repeated from 100 kVA to 2000 kVA. Model,
+                  kVA and phase are fine and still shown.
+                */}
                 <div className="mt-4 space-y-2">
                   <p className="text-white"><span className="text-gray-400">Power:</span> {gen.kva} kVA</p>
                   <p className="text-white"><span className="text-gray-400">Phase:</span> {gen.phase}</p>
-                  <p className="text-white"><span className="text-gray-400">Engine:</span> {gen.engine}</p>
+                  {gen.specsVerified ? (
+                    <>
+                      <p className="text-white"><span className="text-gray-400">Engine:</span> {gen.engine}</p>
+                      <p className="text-white"><span className="text-gray-400">Alternator:</span> {gen.alternator}</p>
+                    </>
+                  ) : (
+                    <p className="text-gray-400">
+                      <span className="text-gray-400">Engine &amp; alternator:</span> confirmed on quotation
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -2750,7 +2767,7 @@ export default function GeneratorPage() {
         <div className="eims-shell py-0">
           <SectionLead
             title="New Generators — Cummins & VOLTKA"
-            subtitle="From compact 20kVA to industrial 2000kVA, supplied with a 3-year warranty and one year of free servicing"
+            subtitle="From compact 20kVA to industrial 2000kVA, supplied with a 2-year warranty and one year of free servicing"
             centered
           />
           
@@ -2764,17 +2781,39 @@ export default function GeneratorPage() {
                 
                 className="group bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-gray-700 hover:border-brand-gold transition-all hover:shadow-2xl hover:shadow-amber-500/20"
               >
-                <div className="relative h-48 mb-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-50 group-hover:opacity-100 transition-opacity">
-                    {'\u26A1'}
-                  </div>
+                {/*
+                  This was a \u26A1 emoji at text-5xl standing in for the product
+                  photograph on every card. A generator catalogue where the
+                  product image is an emoji does not read as a company that has
+                  the machines. Real photographs exist in this repo and are used
+                  here, picked by rating so the cards are not identical.
+                */}
+                <div className="relative h-48 mb-4 bg-black/40 rounded-lg overflow-hidden">
+                  <Image
+                    src={
+                      gen.kva >= 500
+                        ? '/images/voltka/voltka-warehouse-fleet.webp'
+                        : gen.kva >= 150
+                          ? '/images/voltka/voltka-vks165-stock-forklift.webp'
+                          : gen.kva >= 50
+                            ? '/images/voltka/voltka-vks44-hero-profile.webp'
+                            : '/images/voltka/cat-canopy-studio.webp'
+                    }
+                    alt={`${gen.model} \u2014 ${gen.kva} kVA diesel generator`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                   <div className="absolute bottom-2 right-2 px-2 py-1 bg-amber-500 text-black text-xs font-bold rounded">
                     {gen.kva} kVA
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-brand-gold mb-2">{gen.model}</h3>
                 <p className="text-white/80 text-sm mb-1">{gen.phase} Phase</p>
-                <p className="text-white/60 text-xs mb-4">{gen.engine}</p>
+                {/* Engine only where verified \u2014 see cumminsgenerators.ts provenance note. */}
+                <p className="text-white/60 text-xs mb-4">
+                  {gen.specsVerified ? gen.engine : 'Engine confirmed on quotation'}
+                </p>
                 {/*
                   VIEW DETAILS WAS A 404 ON EVERY CARD (fixed 2026-08-26).
 
@@ -3066,7 +3105,7 @@ export default function GeneratorPage() {
               Hot Generator Deals
             </h2>
             <p className="text-xl text-white/70">
-              Limited stock - Best prices in Kenya with 3-Year Warranty
+              Limited stock - Best prices in Kenya with 2-Year Warranty
             </p>
           </div>
           <div className="grid lg:grid-cols-2 gap-8">

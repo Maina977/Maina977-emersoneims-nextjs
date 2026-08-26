@@ -8,7 +8,7 @@ import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'Services | Generators, Solar, Electrical, HVAC',
-  description: 'Complete power solutions in Kenya: Cummins generators with 3-year warranty, solar installation, ATS changeovers, distribution boards, UPS, motor rewinding, AC, borehole pumps. Call +254768860665',
+  description: 'Complete power solutions in Kenya: Cummins generators with 2-year warranty, solar installation, ATS changeovers, distribution boards, UPS, motor rewinding, AC, borehole pumps. Call +254768860665',
   keywords: [
     // Generator Keywords
     'generator services Kenya',
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     url: 'https://www.emersoneims.com/services',
     siteName: 'EmersonEIMS',
     title: 'Professional Power Solutions',
-    description: 'Complete power solutions: Cummins generators (3-year warranty), solar, electrical, HVAC. Professional installation and maintenance. 24/7 support.',
+    description: 'Complete power solutions: Cummins generators (2-year warranty), solar, electrical, HVAC. Professional installation and maintenance. 24/7 support.',
     images: [
       {
         url: '/images/services-og.jpg',
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Power Solutions Kenya',
-    description: 'Generators, solar, electrical, HVAC solutions with 3-year warranty. Professional service across Kenya.',
+    description: 'Generators, solar, electrical, HVAC solutions with 2-year warranty. Professional service across Kenya.',
     images: ['/images/services-og.jpg'],
     creator: '@EmersonEIMS',
   },
@@ -143,7 +143,7 @@ const structuredData = {
             '@type': 'OfferCatalog',
             name: 'Generator Services',
             itemListElement: [
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cummins Generator Sales', description: '10kVA-2000kVA with 3-year warranty' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cummins Generator Sales', description: '10kVA-2000kVA with 2-year warranty' } },
               { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Generator Repairs', description: '24/7 emergency repair service' } },
               { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Generator Maintenance', description: 'AMC and preventive maintenance' } },
             ],

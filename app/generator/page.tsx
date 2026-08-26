@@ -110,7 +110,11 @@ export default function GeneratorPage() {
               <div key={gen.model} className="bg-gray-900/50 rounded-lg p-6 border border-gray-700 hover:border-brand-gold transition-colors">
                 <h3 className="text-xl font-bold text-brand-gold">{gen.model}</h3>
                 <p className="text-white/80 mt-2">{gen.kva} kVA • {gen.phase}</p>
-                <p className="text-white/60 text-sm mt-2">{gen.engine}</p>
+                {/* Engine shown only where verified — see the provenance note in
+                    app/lib/data/cumminsgenerators.ts. */}
+                <p className="text-white/60 text-sm mt-2">
+                  {gen.specsVerified ? gen.engine : 'Engine confirmed on quotation'}
+                </p>
                 <a href="/generator/models" className="inline-block mt-4 text-brand-gold hover:text-yellow-400">
                   View Details →
                 </a>

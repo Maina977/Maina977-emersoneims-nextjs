@@ -86,7 +86,7 @@ export async function generateMetadata(): Promise<Metadata> {
     default: "EmersonEIMS | B2B Power & Engineering Partner for Industry, Healthcare & Telecom in Kenya",
     template: "%s | EmersonEIMS Kenya"
   },
-  description: "EmersonEIMS is a B2B power-engineering partner for manufacturers, hospitals, telecom, commercial property and construction in Kenya \u2014 Cummins generators, generator repairs, ATS / changeover panels, distribution boards, solar PV, UPS systems, motor rewinding, air-conditioning, borehole pumps, hospital incinerators and steel fabrication \u2014 backed by a 3-year warranty, SLA maintenance and 24/7 emergency response across all 47 counties. Call +254768860665.",
+  description: "EmersonEIMS is a B2B power-engineering partner for manufacturers, hospitals, telecom, commercial property and construction in Kenya \u2014 Cummins generators, generator repairs, ATS / changeover panels, distribution boards, solar PV, UPS systems, motor rewinding, air-conditioning, borehole pumps, hospital incinerators and steel fabrication \u2014 backed by a 2-year warranty, SLA maintenance and 24/7 emergency response across all 47 counties. Call +254768860665.",
   // NOTE: Keywords meta tag removed - Google has ignored this tag since 2009
   // SEO is achieved through quality content, proper H1-H6 structure, and semantic HTML
   authors: [{ name: "EmersonEIMS" }],
@@ -103,7 +103,7 @@ export async function generateMetadata(): Promise<Metadata> {
     url: siteUrl,
     siteName: "EmersonEIMS",
     title: "EmersonEIMS | B2B Power & Engineering Partner for Kenyan Industry",
-    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes and incinerators for manufacturing, healthcare, telecom and commercial property in Kenya. 3-year warranty, SLA maintenance, 24/7 emergency. Call +254768860665.",
+    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes and incinerators for manufacturing, healthcare, telecom and commercial property in Kenya. 2-year warranty, SLA maintenance, 24/7 emergency. Call +254768860665.",
     images: [
       {
         url: `${siteUrl}/og-image.jpg`,
@@ -125,7 +125,7 @@ export async function generateMetadata(): Promise<Metadata> {
   },
   twitter: {
     card: "summary_large_image",
-    title: "EmersonEIMS | B2B Power & Engineering Partner Kenya | 3-Year Warranty",
+    title: "EmersonEIMS | B2B Power & Engineering Partner Kenya | 2-Year Warranty",
     description: "B2B power & engineering for industry, healthcare, telecom & construction in Kenya. Generators, solar, UPS, HVAC, boreholes, incinerators. SLA maintenance + 24/7 emergency. Call +254768860665.",
     images: [`${siteUrl}/og-image.jpg`],
     creator: "@EmersonEIMS",
@@ -182,7 +182,7 @@ export default async function RootLayout({
     "url": siteUrl,
     "logo": `${siteUrl}/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png`,
     "image": `${siteUrl}/og-image.jpg`,
-    "description": "EmersonEIMS — B2B power & engineering partner in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 3-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties.",
+    "description": "EmersonEIMS — B2B power & engineering partner in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 2-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties.",
     "telephone": "+254768860665",
     "email": "info@emersoneims.com",
     "address": {

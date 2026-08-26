@@ -263,7 +263,7 @@ export const SERVICE_DIAGNOSTICS: Record<string, ServiceDiagnostics> = {
     calculatorKey: 'generators',
     calculatorTitle: 'Generator Sizing Calculator',
     formula: 'Generator kVA = (Load × Safety Factor) / Power Factor',
-    subServices: ['Sales', 'Installation', '3-Year Warranty', 'Spare Parts', 'Service Contracts'],
+    subServices: ['Sales', 'Installation', '2-Year Warranty', 'Spare Parts', 'Service Contracts'],
     qaPairs: GEN_QA,
     gauges: GEN_GAUGES,
     deepLinks: GEN_DEEP_LINKS,

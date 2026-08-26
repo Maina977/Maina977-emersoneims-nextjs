@@ -24,7 +24,7 @@ export const metadata: Metadata = {
    * wasted the part that actually sells: the warranty and the price range.
    * Lead with the numbers a buyer is searching for.
    */
-  description: "Diesel generators in Kenya, 10kVA-2000kVA, from KES 350,000. 3-year warranty + 1 year free servicing. Installed and serviced in all 47 counties.",
+  description: "Diesel generators in Kenya, 10kVA-2000kVA, from KES 350,000. 2-year warranty + 1 year free servicing. Installed and serviced in all 47 counties.",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: 'Cummins & Voltka Generators Kenya | 10-2000kVA',
@@ -131,7 +131,7 @@ const jsonLd = {
         '@type': 'Organization',
         name: 'Voltka',
       },
-      description: 'Cummins & Voltka diesel generators in Kenya. 10KVA to 2000KVA with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation. Multi-brand specialist.',
+      description: 'Cummins & Voltka diesel generators in Kenya. 10KVA to 2000KVA with 2-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation. Multi-brand specialist.',
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'KES',
@@ -140,7 +140,7 @@ const jsonLd = {
         availability: 'https://schema.org/InStock',
         seller: { '@id': 'https://www.emersoneims.com/#organization' },
         offerCount: '50',
-        warranty: '3 Years Comprehensive Warranty + 1 Year Free Service',
+        warranty: '2 Years Comprehensive Warranty + 1 Year Free Service',
       },
       // No self-asserted aggregateRating — violates Google's structured-data
       // policy without on-page UGC reviews, and triggered "Review has multiple

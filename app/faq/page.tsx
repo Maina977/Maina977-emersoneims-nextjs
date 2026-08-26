@@ -171,7 +171,7 @@ const FAQ_DATA = [
     id: 'srv-5',
     category: 'Services',
     question: 'What warranty do you provide?',
-    answer: 'Warranty varies by product: Generators 1-3 years or 2000 hours (3 years standard at EmersonEIMS), Solar panels 25 years performance warranty, Inverters 5-10 years, UPS systems 2-3 years. All warranties are manufacturer-backed, with support through our maintenance programs.',
+    answer: 'Warranty varies by product: Generators 1-3 years or 2000 hours (2 years standard at EmersonEIMS), Solar panels 25 years performance warranty, Inverters 5-10 years, UPS systems 2-3 years. All warranties are manufacturer-backed, with support through our maintenance programs.',
     tags: ['warranty', 'guarantee', 'coverage']
   },
 

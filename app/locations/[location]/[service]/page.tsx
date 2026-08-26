@@ -120,7 +120,7 @@ export default async function ServiceLocationPage({ params }: Props) {
 
           <p className="text-xl text-slate-300 max-w-3xl mb-8">
             {service.description} Professional {service.shortName.toLowerCase()} services in {locationName}
-            {!isCounty && county ? `, ${county.name} County` : ''}, Kenya. 3-Year Warranty. 24/7 Emergency Support.
+            {!isCounty && county ? `, ${county.name} County` : ''}, Kenya. 2-Year Warranty. 24/7 Emergency Support.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -178,7 +178,7 @@ export default async function ServiceLocationPage({ params }: Props) {
                 <li className="flex items-start gap-3">
                   <span className="text-cyan-400 text-xl">✓</span>
                   <div>
-                    <strong className="text-white">3-Year Warranty</strong>
+                    <strong className="text-white">2-Year Warranty</strong>
                     <p className="text-slate-400 text-sm">Industry-leading warranty on all installations and services</p>
                   </div>
                 </li>
@@ -287,7 +287,7 @@ export default async function ServiceLocationPage({ params }: Props) {
             Looking for professional {service.name.toLowerCase()} in {locationName}? EmersonEIMS is your trusted
             local partner for all {service.shortName.toLowerCase()} needs. We have been serving {locationName}
             {!isCounty && county ? ` and the greater ${county.name} County area` : ''} with reliable, high-quality
-            power solutions backed by our industry-leading 3-Year Warranty.
+            power solutions backed by our industry-leading 2-Year Warranty.
           </p>
 
           {serviceContent.seoContent.map((section, idx) => (

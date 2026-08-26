@@ -27,7 +27,7 @@ const badges: Badge[] = [
   {
     id: '3-year-warranty',
     icon: '🛡️',
-    title: '3-Year Warranty',
+    title: '2-Year Warranty',
     subtitle: 'Generator Warranty Available',
     color: 'from-amber-500 to-orange-500',
   },
@@ -306,7 +306,7 @@ export function TrustStrip({ className = '' }: { className?: string }) {
   return (
     <div className={`flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm ${className}`}>
       <span className="flex items-center gap-1 text-slate-400">
-        <span className="text-green-500">✓</span> 3-Year Warranty
+        <span className="text-green-500">✓</span> 2-Year Warranty
       </span>
       <span className="flex items-center gap-1 text-slate-400">
         <span className="text-green-500">✓</span> 24/7 Support

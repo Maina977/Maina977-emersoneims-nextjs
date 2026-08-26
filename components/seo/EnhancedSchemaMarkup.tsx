@@ -250,7 +250,7 @@ export function LocalBusinessWithAreasSchema() {
     url: 'https://www.emersoneims.com',
     logo: 'https://www.emersoneims.com/images/logo-tagline.png',
     image: 'https://www.emersoneims.com/og-image.jpg',
-    description: 'Kenya\'s #1 Generator & Solar Company. 3-Year Warranty. 9 Services across 47 Counties.',
+    description: 'Kenya\'s #1 Generator & Solar Company. 2-Year Warranty. 9 Services across 47 Counties.',
     telephone: '+254768860665',
     email: 'info@emersoneims.com',
     address: {
@@ -402,7 +402,7 @@ export function FAQSchemaGenerator({
 export const GENERATOR_FAQS = [
   {
     question: 'How much does a generator cost in Kenya?',
-    answer: 'Generator prices in Kenya range from KES 150,000 for a 10kVA generator to KES 50,000,000+ for large industrial generators (2000kVA). EmersonEIMS offers competitive pricing with 3-year warranty on all generators.'
+    answer: 'Generator prices in Kenya range from KES 150,000 for a 10kVA generator to KES 50,000,000+ for large industrial generators (2000kVA). EmersonEIMS offers competitive pricing with 2-year warranty on all generators.'
   },
   {
     question: 'Which generator brand is best in Kenya?',

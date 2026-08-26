@@ -79,7 +79,7 @@ export default function IndustriesPage() {
             ],
             trust: [
               'Trusted by 16,000+ hotels, 9,000+ hospitals, 93,000+ schools',
-              '3-year warranty, 24/7 support',
+              '2-year warranty, 24/7 support',
               'SLA-backed service, audit-ready records',
             ],
             ctas: [

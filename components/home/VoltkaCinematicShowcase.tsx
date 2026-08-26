@@ -47,7 +47,7 @@ const ALL_SLIDES = [
     alt: 'VOLTKA VKS 165 and VKS 188 generators in stock with forklift at EmersonEIMS warehouse',
     kicker: 'INDUSTRIAL RANGE',
     title: 'VKS 165 · VKS 188 · VKS 275',
-    sub: 'Three-phase industrial sets with 3-year warranty, 1 year free service.',
+    sub: 'Three-phase industrial sets with 2-year warranty, 1 year free service.',
   },
   {
     src: '/images/voltka/voltka-vks44-crane-lift.webp',

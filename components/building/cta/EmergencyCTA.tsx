@@ -297,7 +297,7 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> KEBS Certified</span>
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> ERC Compliant</span>
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> ISO 9001:2015</span>
-          <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> 3-Year Warranty</span>
+          <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> 2-Year Warranty</span>
         </motion.div>
       </div>
     </section>

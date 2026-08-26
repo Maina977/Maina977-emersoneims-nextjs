@@ -129,6 +129,30 @@ const RULES = [
     re: /factory[-\s]?trained/i,
     why: 'No training certificates are on file to support this.',
   },
+  {
+    id: 'three-year-warranty',
+    /*
+     * BLOCKING, because this one is settled fact rather than judgement.
+     *
+     * The owner confirmed on 2026-08-26 that the generator warranty is TWO
+     * years. The site was publishing THREE in 193 places — page titles, meta
+     * descriptions, JSON-LD, the dedicated /warranty page, and the
+     * generateMetadata of roughly 1,474 location pages. That reached Google
+     * results as a commercial promise the business does not make.
+     *
+     * It is blocking because a false warranty term is not a marketing
+     * overstatement, it is an offer. If the warranty genuinely changes to three
+     * years, delete this rule in the same commit that updates the copy — and
+     * not before.
+     *
+     * The pattern deliberately does NOT match "1-3 years" (third-party
+     * manufacturer ranges), "2-3 years", "25-year" (solar performance), or
+     * "3-year workmanship" — those are different cover and were left alone.
+     */
+    severity: 'error',
+    re: /(?<![1-2]\s?[-–]\s?)\b3[\s-]?years?\b(?=[^\n]{0,40}warrant)|warrant[^\n]{0,40}(?<![1-2]\s?[-–]\s?)\b3[\s-]?years?\b/i,
+    why: 'The generator warranty is 2 years (owner-confirmed 2026-08-26). Three was published site-wide and corrected.',
+  },
 ];
 
 /** A line that is a comment is documentation ABOUT the rule, not a claim. */
@@ -151,10 +175,59 @@ const ALLOWED = [
     // would make the advice wrong.
     why: 'editorial: pros of buying from an authorised dealer, not a claim about us',
   },
+  {
+    file: 'components/conversion/TrustBadges.tsx',
+    contains: "id: '3-year-warranty'",
+    // An internal React key, not customer-facing copy. The badge's own title
+    // was corrected to "2-Year Warranty" in the same pass. Renaming the id
+    // risks breaking anything that references it, for no reader benefit.
+    why: 'internal identifier; the displayed title already says 2-Year Warranty',
+  },
+  {
+    file: 'components/solar/SolarProductsShop.tsx',
+    contains: 'bat-ritar-200gel',
+    // A Ritar battery product line. Battery warranty is set by the battery
+    // manufacturer and is unrelated to the EmersonEIMS generator warranty.
+    why: 'third-party battery product warranty, not our generator cover',
+  },
+  {
+    file: 'app/solar/page.tsx',
+    contains: "'Full Installation', '3 Year Warranty'",
+    // Solar package contents. The owner corrected the GENERATOR warranty to two
+    // years on 2026-08-26 and said nothing about solar, so this is left as
+    // published rather than changed on an assumption. Confirm separately.
+    why: 'solar package warranty — owner corrected the generator term only',
+  },
+  {
+    file: 'app/solar/page.tsx',
+    contains: "'Monitoring System', '3 Year Warranty'",
+    why: 'solar package warranty — owner corrected the generator term only',
+  },
+  {
+    file: 'components/seo/ToolSeoContent.tsx',
+    contains: '3-year workmanship w',
+    // Workmanship cover on an installation is a different undertaking from the
+    // product warranty on the machine. Not corrected without confirmation.
+    why: 'installation workmanship cover, distinct from the product warranty',
+  },
 ];
 
 const isAllowed = (rel, line) =>
-  ALLOWED.some((a) => rel === a.file && line.trim() === a.match);
+  ALLOWED.some(
+    (a) =>
+      rel === a.file &&
+      /*
+       * `match` is an EXACT trimmed line — precise, and the right default.
+       * `contains` is a substring, added 2026-08-26 for lines that are simply
+       * too long to quote safely: one product row here runs 321 characters, and
+       * an exact copy of it would break on the next unrelated edit to that row,
+       * silently re-blocking the build. Prefer `match`; reach for `contains`
+       * only when the line is unwieldy, and keep the fragment distinctive.
+       */
+      (a.match !== undefined
+        ? line.trim() === a.match
+        : a.contains !== undefined && line.includes(a.contains))
+  );
 
 /**
  * Lines that mention an authorised dealer WITHOUT claiming to be one.

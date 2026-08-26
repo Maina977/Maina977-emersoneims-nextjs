@@ -59,11 +59,11 @@ const RING_GALLERY_ITEMS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.emersoneims.com'),
-  title: "EmersonEIMS | B2B Generators, Solar & Engineering Partner — Kenya | 3-Year Warranty",
-  description: "EmersonEIMS — B2B power & engineering for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators. Cummins, Perkins & FG Wilson specialist. 3-year warranty, SLA-backed maintenance, 24/7 emergency response across 47 counties. Call +254768860665.",
+  title: "EmersonEIMS | B2B Generators, Solar & Engineering Partner — Kenya | 2-Year Warranty",
+  description: "EmersonEIMS — B2B power & engineering for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators. Cummins, Perkins & FG Wilson specialist. 2-year warranty, SLA-backed maintenance, 24/7 emergency response across 47 counties. Call +254768860665.",
   openGraph: {
     title: "EmersonEIMS | B2B Power & Engineering Partner — Kenya",
-    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. 3-year warranty, SLA maintenance, 24/7 emergency. Cummins, Perkins & FG Wilson specialist. AI-assisted diagnostic and design tools.",
+    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. 2-year warranty, SLA maintenance, 24/7 emergency. Cummins, Perkins & FG Wilson specialist. AI-assisted diagnostic and design tools.",
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
     type: 'website',
     locale: 'en_KE',
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'EmersonEIMS | B2B Power & Engineering — Kenya',
-    description: 'Generators, solar, UPS, HVAC, boreholes, incinerators. Cummins specialist. 3-year warranty, SLA maintenance, 24/7 emergency response. Call +254768860665',
+    description: 'Generators, solar, UPS, HVAC, boreholes, incinerators. Cummins specialist. 2-year warranty, SLA maintenance, 24/7 emergency response. Call +254768860665',
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
   },
   alternates: {
@@ -225,7 +225,7 @@ function StaticHeroFallback() {
                 the homepage's existing length. */}
             <span className="flex items-center justify-center gap-1">✓ Mobile Workshop · 47 Counties</span>
             <span className="flex items-center justify-center gap-1">✓ 24/7 Emergency Response</span>
-            <span className="flex items-center justify-center gap-1">✓ 3-Year Warranty</span>
+            <span className="flex items-center justify-center gap-1">✓ 2-Year Warranty</span>
             <span className="flex items-center justify-center gap-1">✓ SLA Maintenance</span>
           </div>
         </div>
@@ -250,7 +250,7 @@ function StaticStatsSection() {
   const stats = [
     { num: '47', label: 'Counties Covered', icon: '🌍' },
     { num: '24/7', label: 'Emergency Response', icon: '🚨' },
-    { num: '3-Year', label: 'Warranty', icon: '🛡️' },
+    { num: '2-Year', label: 'Warranty', icon: '🛡️' },
     { num: '20–2000', label: 'kVA Range Installed', icon: '⚡' },
   ];
 
@@ -289,7 +289,7 @@ function StaticFeaturesSection() {
           Powering East Africa's critical infrastructure across
           manufacturing, healthcare, telecom and commercial property.
           From <span className="text-amber-400">20kVA</span> commercial systems to <span className="text-amber-400">2000kVA</span> industrial installations,
-          backed by a <span className="text-white font-semibold">3-year warranty</span> and SLA-bound maintenance.
+          backed by a <span className="text-white font-semibold">2-year warranty</span> and SLA-bound maintenance.
         </p>
       </div>
     </section>
@@ -364,7 +364,7 @@ function AITechnologyShowcase() {
     { number: '11', label: 'AI Engines', icon: '🤖' },
     { number: '47', label: 'Counties Covered', icon: '🌍' },
     { number: '24/7', label: 'Emergency Response', icon: '🚨' },
-    { number: '3-Year', label: 'Warranty', icon: '🛡️' },
+    { number: '2-Year', label: 'Warranty', icon: '🛡️' },
   ];
 
   return (
@@ -566,7 +566,7 @@ export default function HomePage() {
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: 'EmersonEIMS',
-            description: "B2B power-engineering partner for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 3-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties. Includes engineering intelligence tools (Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro).",
+            description: "B2B power-engineering partner for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 2-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties. Includes engineering intelligence tools (Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro).",
             url: 'https://www.emersoneims.com',
             logo: 'https://www.emersoneims.com/logo.png',
             image: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
@@ -649,7 +649,7 @@ export default function HomePage() {
                   itemOffered: {
                     '@type': 'Service',
                     name: 'Generator Sales & Installation',
-                    description: 'CUMMINS generators 10-2000KVA with 3-year warranty',
+                    description: 'CUMMINS generators 10-2000KVA with 2-year warranty',
                     provider: { '@type': 'Organization', name: 'EmersonEIMS' }
                   }
                 },

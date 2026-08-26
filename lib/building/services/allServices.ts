@@ -120,24 +120,24 @@ export const BUSINESS_CONTACT = {
 
 export const ALL_SERVICES: Service[] = [
   // ═══════════════════════════════════════════════════════════════════════════
-  // 1. CUMMINS GENERATORS (3-YEAR WARRANTY)
+  // 1. CUMMINS GENERATORS (2-YEAR WARRANTY)
   // ═══════════════════════════════════════════════════════════════════════════
   {
     id: 'cummins-generators',
     slug: 'cummins-generators',
     name: 'Cummins Generators',
     shortName: 'Cummins Generators',
-    tagline: 'Premium Power with Industry-Leading 3-Year Warranty',
+    tagline: 'Premium Power with Industry-Leading 2-Year Warranty',
     // CLAIM POLICY — read before editing this block.
     // EmersonEIMS SELLS AND SERVICES these brands but is NOT an authorised
     // dealer, and there is no evidence behind any factory-training claim. Both
     // used to appear here. The replacements below are all things we can stand
     // behind: what we supply, what we do, where we reach, and what we warrant.
     // See app/why-emersoneims/page.tsx for the full policy.
-    description: 'Cummins generator supply, installation and maintenance in Kenya. 10kVA to 2000kVA diesel generators, backed by a 3-year warranty and one year of free servicing.',
+    description: 'Cummins generator supply, installation and maintenance in Kenya. 10kVA to 2000kVA diesel generators, backed by a 2-year warranty and one year of free servicing.',
     longDescription: `EmersonEIMS supplies, installs and maintains Cummins generators across Kenya. We are an independent power engineering firm — we are not tied to a single manufacturer, so the set we recommend is the one that fits your load, your fuel budget and your site, not the one we are obliged to move.
 
-Our Cummins range runs from compact 10kVA units for small businesses and homes up to 2000kVA industrial sets for factories, hospitals and data centres. Every generator we supply carries a 3-year warranty and one year of free servicing.
+Our Cummins range runs from compact 10kVA units for small businesses and homes up to 2000kVA industrial sets for factories, hospitals and data centres. Every generator we supply carries a 2-year warranty and one year of free servicing.
 
 Support does not stop at the gate. Our mobile workshop reaches all 47 counties, so a set in Kisumu, Eldoret or Mombasa is serviced to the same standard as one in Nairobi — and we hold genuine spare parts rather than sourcing them after your set has already stopped.
 
@@ -151,8 +151,8 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
       '/images/generator-installation.png'
     ],
 
-    metaTitle: 'Cummins Generators Kenya | 3-Year Warranty | 10kVA-2000kVA | EmersonEIMS',
-    metaDescription: 'Cummins generators in Kenya, 10kVA to 2000kVA, with a 3-year warranty and one year free servicing. Supply, installation and maintenance in all 47 counties. Call +254768860665',
+    metaTitle: 'Cummins Generators Kenya | 2-Year Warranty | 10kVA-2000kVA | EmersonEIMS',
+    metaDescription: 'Cummins generators in Kenya, 10kVA to 2000kVA, with a 2-year warranty and one year free servicing. Supply, installation and maintenance in all 47 counties. Call +254768860665',
     keywords: [
       'Cummins generators Kenya',
       'Cummins generator dealer Kenya',
@@ -166,7 +166,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
 
     benefits: [
       {
-        title: '3-YEAR WARRANTY',
+        title: '2-YEAR WARRANTY',
         description: 'Industry-leading warranty coverage on all Cummins generators. Complete peace of mind for your investment.',
         icon: '🛡️'
       },
@@ -237,7 +237,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
         features: [
           'Perfect for small offices & shops',
           'Single-phase or three-phase options',
-          '3-Year Warranty included',
+          '2-Year Warranty included',
           'Professional installation',
           'Basic ATS included'
         ]
@@ -249,7 +249,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
         features: [
           'Ideal for factories & hotels',
           'Sound attenuated canopy',
-          '3-Year Warranty included',
+          '2-Year Warranty included',
           'Automatic Transfer Switch',
           'Remote monitoring option',
           'Extended fuel tank'
@@ -263,7 +263,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
         features: [
           'For hospitals, data centers, large industries',
           'Premium sound attenuation',
-          '3-Year Warranty included',
+          '2-Year Warranty included',
           'Fully automatic operation',
           'Remote monitoring & control',
           'Parallel operation ready',
@@ -275,15 +275,15 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
     faqs: [
       {
         question: 'Why should I choose Cummins generators over other brands?',
-        answer: 'Cummins is the world leader in diesel engine technology with over 100 years of experience. Their generators offer superior fuel efficiency (up to 15% better), longer engine life (20,000+ hours), and the best parts availability in Kenya. Plus, we back every Cummins generator with an industry-leading 3-YEAR WARRANTY.'
+        answer: 'Cummins is the world leader in diesel engine technology with over 100 years of experience. Their generators offer superior fuel efficiency (up to 15% better), longer engine life (20,000+ hours), and the best parts availability in Kenya. Plus, we back every Cummins generator with an industry-leading 2-YEAR WARRANTY.'
       },
       {
         question: 'What size Cummins generator do I need?',
         answer: 'Generator sizing depends on your total load and startup requirements. As a guide: Small office (10-20kVA), Medium business (30-100kVA), Hotel/Factory (150-500kVA), Hospital/Data Center (500-2000kVA). We provide FREE site surveys to calculate your exact requirements.'
       },
       {
-        question: 'What is included in the 3-Year Warranty?',
-        answer: 'Our 3-Year Warranty covers all manufacturing defects in the engine, alternator, control panel, and canopy. It includes parts and labor for covered repairs. Terms and conditions apply - contact us for full details.'
+        question: 'What is included in the 2-Year Warranty?',
+        answer: 'Our 2-Year Warranty covers all manufacturing defects in the engine, alternator, control panel, and canopy. It includes parts and labor for covered repairs. Terms and conditions apply - contact us for full details.'
       },
       {
         question: 'How long does generator installation take?',
@@ -303,14 +303,14 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
     testimonials: [],
 
     stats: [
-      { label: 'Warranty', value: '3 Years' },
+      { label: 'Warranty', value: '2 Years' },
       { label: 'Emergency Response', value: 'Available 24/7' },
       { label: 'Service Coverage', value: 'Nationwide Kenya' },
       { label: 'Consultation', value: 'Free' }
     ],
 
     warranties: [
-      '3-Year Comprehensive Warranty',
+      '2-Year Comprehensive Warranty',
       'Engine warranty by Cummins',
       'Alternator warranty',
       'Parts availability guarantee'
@@ -2245,7 +2245,7 @@ export const SERVICE_CATEGORIES = [
 
 // Trust badges for display - only verifiable claims
 export const TRUST_BADGES = [
-  { title: '3-Year Warranty', description: 'Generator warranty available', icon: '🛡️' },
+  { title: '2-Year Warranty', description: 'Generator warranty available', icon: '🛡️' },
   { title: '24/7 Support', description: 'Round-the-clock emergency service', icon: '📞' },
   { title: 'Nationwide Service', description: 'Serving all of Kenya', icon: '🇰🇪' },
   { title: 'Free Consultation', description: 'No obligation site assessment', icon: '💬' },

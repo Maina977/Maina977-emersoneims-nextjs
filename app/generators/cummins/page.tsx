@@ -160,7 +160,7 @@ export default function CumminsPage() {
             <div className="p-6 border border-slate-700 rounded-lg">
               <h3 className="text-xl font-bold text-cyan-400 mb-4">Support & Warranty</h3>
               <ul className="space-y-2 text-gray-300">
-                <li>• 3-year comprehensive warranty</li>
+                <li>• 2-year comprehensive warranty</li>
                 <li>• Specialist Cummins technicians</li>
                 <li>• Genuine spare parts</li>
                 <li>• Remote diagnostic support</li>

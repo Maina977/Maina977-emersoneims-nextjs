@@ -10,7 +10,7 @@ export default function WarrantyPage() {
     generators: {
       standard: {
         title: 'Standard Warranty',
-        duration: '3 Years',
+        duration: '2 Years',
         coverage: ['Engine defects', 'Alternator defects', 'Controller faults', 'Manufacturing defects', 'Factory parts replacement'],
         conditions: ['Professional installation by EmersonEIMS', 'Regular maintenance per schedule', 'Original batteries', 'Genuine spare parts only'],
         exclusions: ['User damage or misuse', 'Unauthorized repairs', 'Fuel contamination', 'Acts of nature', 'Normal wear and tear'],

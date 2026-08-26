@@ -244,7 +244,7 @@ export default function TradeInCalculator() {
                 <ul className="space-y-2 text-sm text-gray-300">
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
-                    <span>New 3-year warranty</span>
+                    <span>New 2-year warranty</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>

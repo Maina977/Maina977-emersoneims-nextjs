@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: { canonical: `https://www.emersoneims.com/generators/sizes/${g.slug}` },
     openGraph: {
       title: `${g.kva} kVA Generator Price in Kenya (2026)`,
-      description: `${g.priceRange} — ${g.suits}. Supply, installation and 3-year warranty.`,
+      description: `${g.priceRange} — ${g.suits}. Supply, installation and 2-year warranty.`,
       type: 'website',
       url: `https://www.emersoneims.com/generators/sizes/${g.slug}`,
     },

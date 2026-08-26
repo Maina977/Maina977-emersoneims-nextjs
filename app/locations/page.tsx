@@ -11,7 +11,7 @@ import { COUNTIES, SERVICES, TOTAL_LOCATIONS, TOTAL_SERVICE_PAGES, getServicePat
 
 export const metadata: Metadata = {
   title: 'Service Locations | Generator & Solar Services Across Kenya',
-  description: 'EmersonEIMS provides generator, solar, UPS, and electrical services across all 47 counties in Kenya. Find our services in Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, and more. 24/7 support. 3-Year Warranty.',
+  description: 'EmersonEIMS provides generator, solar, UPS, and electrical services across all 47 counties in Kenya. Find our services in Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, and more. 24/7 support. 2-Year Warranty.',
   keywords: [
     'generator company Kenya',
     'solar installation Kenya',
@@ -209,7 +209,7 @@ export default function LocationsPage() {
             needs, so diagnosis, repair and commissioning happen where your plant is rather
             than requiring it to be moved. We understand that power reliability is critical
             for your business, which is why we offer 24/7 emergency support and back all our
-            work with a comprehensive 3-Year Warranty.
+            work with a comprehensive 2-Year Warranty.
           </p>
           <p>
             Contact us today to discuss your power needs. Our experts will assess your requirements

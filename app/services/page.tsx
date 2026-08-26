@@ -224,7 +224,7 @@ export default function ServicesPage() {
                 <span className="text-white font-medium"> hospitals, manufacturers, telecom operators, commercial property and construction</span>.
                 We design, install and maintain generators, solar, UPS, motor
                 systems, HVAC, boreholes and incinerators &mdash; backed by our{' '}
-                <span className="text-amber-400 font-semibold">3-year warranty</span>,
+                <span className="text-amber-400 font-semibold">2-year warranty</span>,
                 an SLA-backed maintenance team and 24/7 emergency response
                 across all 47 counties.
               </p>
@@ -349,7 +349,7 @@ export default function ServicesPage() {
                 title: 'Install & commission',
                 problem: 'Cheap installs cost more in 3 years than they save on day one.',
                 action: 'Cummins/Voltka generators, IEC-grade panels, ATS, earthing, SPDs, full commissioning records. Specialist installation.',
-                outcome: '3-year warranty, 1-year free service and a complete documentation pack.',
+                outcome: '2-year warranty, 1-year free service and a complete documentation pack.',
               },
               {
                 step: '03',
@@ -465,7 +465,7 @@ export default function ServicesPage() {
         );
       })}
 
-      {/* ── Featured: Cummins 3-Year Warranty ──────────────────────── */}
+      {/* ── Featured: Cummins 2-Year Warranty ──────────────────────── */}
       <section className="px-4 py-14 bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-y border-amber-500/20">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
           <div>
@@ -474,7 +474,7 @@ export default function ServicesPage() {
             </span>
             <h2 className="text-3xl font-bold mb-3">
               Cummins Generators with{' '}
-              <span className="text-amber-400">3-Year Warranty</span>
+              <span className="text-amber-400">2-Year Warranty</span>
             </h2>
             <p className="text-slate-300 mb-5">
               Cummins specialist. Premium 10 kVA – 2000 kVA generators,

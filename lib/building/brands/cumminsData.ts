@@ -18,7 +18,7 @@ export const CUMMINS_BRAND_INFO = {
   },
   warranty: {
     years: 3,
-    description: '3 Years Comprehensive Warranty'
+    description: '2 Years Comprehensive Warranty'
   },
   freeService: {
     years: 1,
@@ -27,13 +27,13 @@ export const CUMMINS_BRAND_INFO = {
   taglines: [
     'Cummins Sales & Service Across Kenya',
     'Powered by Voltka - Trusted Worldwide',
-    '3 Years Warranty + 1 Year Free Service',
+    '2 Years Warranty + 1 Year Free Service',
     '10KVA to 2000KVA - All Power Needs Covered',
     'Genuine Cummins Parts & Expert Service'
   ],
   benefits: [
     {
-      title: '3 Years Warranty',
+      title: '2 Years Warranty',
       description: 'Industry-leading comprehensive warranty on all Cummins generators',
       icon: 'shield'
     },
@@ -81,7 +81,7 @@ export const CUMMINS_BRAND_INFO = {
     'industrial generators Kenya',
     'diesel generators Kenya',
     'Cummins warranty Kenya',
-    'generator 3 year warranty',
+    'generator 2 Years warranty',
     'Voltka Kenya dealer'
   ],
   models: [
@@ -145,7 +145,7 @@ export const CUMMINS_FAQ = [
   },
   {
     question: "What warranty do Cummins generators come with?",
-    answer: "All Cummins generators from EmersonEIMS come with a comprehensive 3-year warranty covering parts and labor, plus 1 year of free service and maintenance included."
+    answer: "All Cummins generators from EmersonEIMS come with a comprehensive 2-year warranty covering parts and labor, plus 1 year of free service and maintenance included."
   },
   {
     question: "What sizes of Cummins generators are available?",

@@ -35,7 +35,7 @@ const RingGallery = dynamic(() => import('@/components/home/RingGallery'), {
 // Rotating cylindrical showcase of the brands/models we sell (distinct set)
 const BRANDS_RING = [
   { src: '/images/desktop/generators/cummins-teal-canopy.jpg', title: 'Cummins — Super Silent', subtitle: 'Supplied & serviced · 10–2000 kVA' },
-  { src: '/images/voltka/voltka-vks44-hero-profile.webp', title: 'VOLTKA VKS Series', subtitle: 'Cummins-powered, 3-year warranty' },
+  { src: '/images/voltka/voltka-vks44-hero-profile.webp', title: 'VOLTKA VKS Series', subtitle: 'Cummins-powered, 2-year warranty' },
   { src: '/images/enhanced/BIGOT CATERPILLAR 30KVA-4K-CINEMATIC.jpg', title: 'Caterpillar', subtitle: 'Heavy-duty industrial power' },
   { src: '/images/enhanced/FG-WILSON-GENERATOR-4K-CINEMATIC.jpg', title: 'FG Wilson · Perkins', subtitle: 'Commercial workhorses' },
   { src: '/images/enhanced/NTSA- ATLAS COPCO GENERATOR-4K-CINEMATIC.jpg', title: 'Atlas Copco', subtitle: 'Quiet, efficient standby' },
