@@ -555,6 +555,46 @@ export function middleware(request: NextRequest) {
     ''
   ).toLowerCase().split(':')[0];
 
+  /*
+   * APEX -> WWW. One canonical hostname, enforced rather than suggested.
+   *
+   * Measured 2026-08-26: https://emersoneims.com/ served the FULL site at
+   * HTTP 200 — /, /generators, /pricing, /kenya/nairobi all rendered. Every
+   * page did declare canonical https://www.emersoneims.com/..., which is why
+   * this was not doing visible harm, but a canonical is a hint Google may
+   * disregard while a 301 is definitive. Two hostnames serving identical
+   * content also doubles the crawl cost of the whole site for nothing.
+   *
+   * The path and query ARE preserved here, unlike the subdomain block below:
+   * the apex serves the same application, so every path has an exact www
+   * equivalent. Redirecting to the bare homepage would throw that away.
+   *
+   * Runs before the subdomain rule purely for readability; the two hostnames
+   * are mutually exclusive.
+   */
+  if (requestHost === 'emersoneims.com' && !pathname.startsWith('/api/')) {
+    /*
+     * /api/ IS DELIBERATELY EXEMPT — this nearly broke payments.
+     *
+     * lib/payments/mpesaService.ts falls back to
+     * https://emersoneims.com/api/payments/callback when MPESA_CALLBACK_URL is
+     * unset, and M-Pesa POSTs to it. A 301 on a POST is permitted to become a
+     * GET and drop the body, and third-party webhook senders frequently do not
+     * follow redirects at all — so redirecting this host would silently lose
+     * payment callbacks. Search engines never index /api/, so exempting it
+     * costs nothing in the SEO this redirect exists for.
+     *
+     * The fallback URLs themselves have also been corrected to www, but the
+     * exemption stays: an integration configured with the apex years ago must
+     * keep working regardless of what our defaults say today.
+     */
+    const target = new URL(request.nextUrl.pathname + request.nextUrl.search, 'https://www.emersoneims.com');
+    return NextResponse.redirect(target, {
+      status: 301,
+      headers: { 'X-Loc-Guard': 'apex-to-www' },
+    });
+  }
+
   if (requestHost === 'power.emersoneims.com') {
     const WWW = 'https://www.emersoneims.com';
 
