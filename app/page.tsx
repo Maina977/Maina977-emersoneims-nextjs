@@ -568,7 +568,7 @@ export default function HomePage() {
             name: 'EmersonEIMS',
             description: "B2B power-engineering partner for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 2-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties. Includes engineering intelligence tools (Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro).",
             url: 'https://www.emersoneims.com',
-            logo: 'https://www.emersoneims.com/logo.png',
+            logo: 'https://www.emersoneims.com/emerson-eims-logo.png',
             image: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
             // foundingDate, numberOfEmployees, slogan and alternateName removed
             // 2026-05-09: data-policy.md — do not assert facts that cannot be

@@ -143,7 +143,7 @@ const structuredData = {
       name: 'Emerson Industrial Maintenance Services',
       alternateName: 'Emerson EiMS',
       url: 'https://www.emersoneims.com',
-      logo: 'https://www.emersoneims.com/logo.png',
+      logo: 'https://www.emersoneims.com/emerson-eims-logo.png',
       description: 'Complete industrial maintenance services in Kenya including generator diagnostics, solar maintenance, pump repair, motor rewinding, and electrical services.',
       telephone: '+254782914717',
       email: 'info@emersoneims.com',

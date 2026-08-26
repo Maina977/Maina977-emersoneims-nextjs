@@ -596,6 +596,29 @@ input, textarea, [contenteditable="true"] {
     @apply rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm;
   }
 
+  /*
+   * Footer navigation link.
+   *
+   * WHY THIS IS A CLASS AND NOT A UTILITY STRING.
+   * PremiumFooter renders ~110 links and each one carried the same 206-character
+   * utility list. Measured on the homepage 2026-08-26: that single string
+   * appeared 84 times in the React Server Component payload — about 17 KB —
+   * and again in the rendered markup, so roughly 30 KB of a 400 KB page was one
+   * repeated string. Every visitor downloaded it 168 times.
+   *
+   * The styling is unchanged, byte for byte. Expressing it once here means it
+   * ships once in the stylesheet, which is cached, instead of on every element
+   * in HTML, which is not. It is also now editable in one place rather than
+   * eleven.
+   */
+  .eims-footer-link {
+    @apply text-gray-400 text-sm transition-colors rounded-sm
+           hover:text-white
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2
+           focus-visible:ring-offset-black;
+  }
+
   .eims-card-hover {
     @apply transition-transform duration-300 hover:-translate-y-1;
   }

@@ -34,7 +34,7 @@ const FOOTER_LINKS = {
   // Sourced from lib/services/allServices.ts (canonical /services/<slug>) plus
   // /solutions/<slug> deep-dive pages. Keep groups <= 8 entries for scannability.
   servicesPower: [
-    { label: 'Cummins Generators (3-yr warranty)', href: '/services/cummins-generators' },
+    { label: 'Cummins Generators (2-yr warranty)', href: '/services/cummins-generators' },
     { label: 'Generator Repairs & Maintenance', href: '/services/generator-repairs' },
     { label: 'ATS / Changeovers', href: '/services/ats-changeover' },
     { label: 'Generator Sales', href: '/generators' },
@@ -200,7 +200,7 @@ export default function PremiumFooter() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                        className="eims-footer-link"
                       >
                         {link.label}
                       </Link>
@@ -226,7 +226,7 @@ export default function PremiumFooter() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                        className="eims-footer-link"
                       >
                         {link.label}
                       </Link>
@@ -286,7 +286,7 @@ export default function PremiumFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                      className="eims-footer-link"
                     >
                       {link.label}
                     </Link>
@@ -310,7 +310,7 @@ export default function PremiumFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                      className="eims-footer-link"
                     >
                       {link.label}
                     </Link>

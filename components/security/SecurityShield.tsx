@@ -206,30 +206,31 @@ export const AntiScrapingMeta: React.FC = () => {
   
   return (
     <>
-      {/* JSON-LD Copyright & Organization Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Organization',
-            'name': 'EmersonEIMS',
-            'legalName': 'EmersonEIMS',
-            'url': 'https://www.emersoneims.com',
-            'logo': 'https://www.emersoneims.com/images/logo.png',
+      {/*
+        THE SECOND Organization JSON-LD BLOCK WAS REMOVED HERE (2026-08-26).
 
-            'copyrightHolder': {
-              '@type': 'Organization',
-              'name': 'EmersonEIMS'
-            },
-            'copyrightYear': currentYear,
-            'sameAs': [
-              'https://www.linkedin.com/company/emersoneims',
-              'https://twitter.com/emersoneims'
-            ]
-          })
-        }}
-      />
+        AntiScrapingMeta renders on every page from app/layout.tsx, and it was
+        emitting a full Organization entity alongside the real one from
+        components/seo/StructuredData.tsx. Measured on the homepage: two
+        Organization blocks, and they disagreed.
+
+          this one          name "EmersonEIMS",  logo /images/logo.png
+          StructuredData    name "Emerson EiMS", logo /logo.png
+
+        Both logo paths 404'd, and the names differ. Google has to resolve one
+        entity from that; a second, thinner, conflicting Organization is not
+        extra signal, it is ambiguity about who the business is — which is the
+        one thing structured data exists to remove.
+
+        NOTHING OF VALUE WAS LOST. The surviving Organization already carries
+        name, legalName, url, logo, description, address, geo, contactPoint and
+        all four sameAs profiles — including the LinkedIn and Twitter URLs this
+        block listed. Only copyrightYear was unique, and copyright year is not
+        something Google consumes from Organization markup.
+
+        The noarchive directive below is deliberate anti-scraping policy and is
+        untouched.
+      */}
       
       {/* No-archive directives */}
       <meta name="robots" content="noarchive" />

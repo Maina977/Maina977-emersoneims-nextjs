@@ -238,7 +238,7 @@ const MEGA_MENUS = {
         title: 'Generators & Power',
         items: [
           { href: '/services', label: 'All Services', icon: '💡', desc: 'Browse everything' },
-          { href: '/services/cummins-generators', label: 'Cummins Generators', icon: '⚡', desc: 'Sales · 3-Yr warranty', badge: '3-YR' },
+          { href: '/services/cummins-generators', label: 'Cummins Generators', icon: '⚡', desc: 'Sales · 2-Yr warranty', badge: '2-YR' },
           { href: '/services/generator-repairs', label: 'Generator Repairs', icon: '🔧', desc: 'Service & overhaul' },
           { href: '/services/ats-changeover', label: 'ATS / Changeover', icon: '🔁', desc: 'Auto transfer switches' },
         ],

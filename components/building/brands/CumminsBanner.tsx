@@ -410,7 +410,7 @@ export default function CumminsBanner({
         </div>
         <div>
           <p className="text-white font-bold">CUMMINS by VOLTKA</p>
-          <p className="text-gray-400 text-sm">3 Yrs Warranty + 1 Yr Free Service</p>
+          <p className="text-gray-400 text-sm">2 Yrs Warranty + 1 Yr Free Service</p>
         </div>
       </div>
       <motion.div whileHover={{ scale: 1.05 }}>
@@ -447,7 +447,7 @@ export function CumminsBadge() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,255,0.1),transparent_70%)]" />
           <div className="relative text-center">
             <p className="text-amber-400 font-bold text-sm">CUMMINS</p>
-            <p className="text-cyan-400 text-[10px]">3Yr Warranty</p>
+            <p className="text-cyan-400 text-[10px]">2Yr Warranty</p>
           </div>
         </Link>
       </motion.div>

@@ -29,7 +29,7 @@ export function OrganizationSchema() {
     name: 'Emerson EiMS',
     alternateName: 'EmersonEIMS',
     url: 'https://www.emersoneims.com',
-    logo: 'https://www.emersoneims.com/logo.png',
+    logo: 'https://www.emersoneims.com/emerson-eims-logo.png',
     description: 'Leading power and energy solutions provider in Kenya and East Africa. Generators, Solar, UPS, Electrical Services.',
     foundingDate: '2010',
     address: {
@@ -91,7 +91,7 @@ export function LocalBusinessSchema({ county }: { county?: string }) {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: county ? `Emerson EiMS ${county}` : 'Emerson EiMS',
-    image: 'https://www.emersoneims.com/logo.png',
+    image: 'https://www.emersoneims.com/emerson-eims-logo.png',
     priceRange: 'KES 50,000 - KES 10,000,000',
     address: {
       '@type': 'PostalAddress',
@@ -348,7 +348,7 @@ export function VideoSchema({
       name: 'EmersonEIMS',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://www.emersoneims.com/logo.png'
+        url: 'https://www.emersoneims.com/emerson-eims-logo.png'
       }
     }
   };
@@ -390,7 +390,7 @@ export function ArticleSchema({
       name: 'EmersonEIMS',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://www.emersoneims.com/logo.png',
+        url: 'https://www.emersoneims.com/emerson-eims-logo.png',
         width: 200,
         height: 60
       }
@@ -423,7 +423,7 @@ export function WebSiteSchema() {
     publisher: {
       '@type': 'Organization',
       name: 'EmersonEIMS',
-      logo: 'https://www.emersoneims.com/logo.png'
+      logo: 'https://www.emersoneims.com/emerson-eims-logo.png'
     }
   };
 

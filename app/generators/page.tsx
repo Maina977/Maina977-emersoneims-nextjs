@@ -2248,7 +2248,7 @@ export default function GeneratorPage() {
             publisher: {
               '@type': 'Organization',
               name: 'Emerson EiMS',
-              logo: { '@type': 'ImageObject', url: 'https://www.emersoneims.com/logo.png' }
+              logo: { '@type': 'ImageObject', url: 'https://www.emersoneims.com/emerson-eims-logo.png' }
             }
           })
         }}

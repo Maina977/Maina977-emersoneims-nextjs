@@ -226,7 +226,7 @@ export default async function BlogArticlePage({ params }: Props) {
               name: 'Emerson EiMS',
               logo: {
                 '@type': 'ImageObject',
-                url: 'https://www.emersoneims.com/logo.png'
+                url: 'https://www.emersoneims.com/emerson-eims-logo.png'
               }
             },
             datePublished: article.date,

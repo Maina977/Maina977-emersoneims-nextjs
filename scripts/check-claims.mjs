@@ -150,7 +150,16 @@ const RULES = [
      * "3-year workmanship" — those are different cover and were left alone.
      */
     severity: 'error',
-    re: /(?<![1-2]\s?[-–]\s?)\b3[\s-]?years?\b(?=[^\n]{0,40}warrant)|warrant[^\n]{0,40}(?<![1-2]\s?[-–]\s?)\b3[\s-]?years?\b/i,
+    /*
+     * ABBREVIATIONS ARE INCLUDED, and they were the gap. The first version of
+     * this rule matched "3 year" and "3 Years" only, and four live claims
+     * survived the correction sweep because they were written short:
+     *   PremiumFooter    "Cummins Generators (3-yr warranty)"  — on EVERY page
+     *   CumminsBanner    "3 Yrs Warranty + 1 Yr Free Service"
+     *   CumminsBanner    "3Yr Warranty"
+     * "yr", "yrs" and the no-space form are all matched now.
+     */
+    re: /(?<![1-2]\s?[-–]\s?)\b3\s*[-–]?\s*(?:years?|yrs?)\b(?=[^\n]{0,40}warrant)|warrant[^\n]{0,40}(?<![1-2]\s?[-–]\s?)\b3\s*[-–]?\s*(?:years?|yrs?)\b/i,
     why: 'The generator warranty is 2 years (owner-confirmed 2026-08-26). Three was published site-wide and corrected.',
   },
 ];
@@ -202,6 +211,27 @@ const ALLOWED = [
     file: 'app/solar/page.tsx',
     contains: "'Monitoring System', '3 Year Warranty'",
     why: 'solar package warranty — owner corrected the generator term only',
+  },
+  {
+    file: 'components/hub/ProductIntelligenceClient.tsx',
+    contains: "sku: 'CYB-OL3000'",
+    // A CyberPower UPS catalogue row. It trips the rule only because
+    // `ratingValue: 3` sits within 40 characters of the word "warranty" — the
+    // warranty text on this row is a third-party manufacturer's, and the 3 is a
+    // star rating. Not our cover, and not a duration.
+    why: 'third-party UPS catalogue row; the 3 is a star rating, not a warranty term',
+  },
+  {
+    file: 'components/hub/ProductIntelligenceClient.tsx',
+    contains: "sku: 'APC-SMT3K'",
+    why: 'third-party UPS catalogue row; the 3 is a star rating, not a warranty term',
+  },
+  {
+    file: 'lib/services/serviceBibles.ts',
+    contains: "name: 'Huawei'",
+    // A Huawei UPS capability description. The nearby digits are model numbers
+    // (UPS5000-S / UPS2000-G), not a warranty duration of ours.
+    why: 'third-party UPS model numbers near the word warranty, not our cover',
   },
   {
     file: 'components/seo/ToolSeoContent.tsx',

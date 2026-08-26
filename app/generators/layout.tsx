@@ -78,7 +78,7 @@ const jsonLd = {
       url: 'https://www.emersoneims.com',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://www.emersoneims.com/logo.png',
+        url: 'https://www.emersoneims.com/emerson-eims-logo.png',
       },
       contactPoint: [
         {
@@ -150,7 +150,7 @@ const jsonLd = {
       '@type': 'LocalBusiness',
       '@id': 'https://www.emersoneims.com/#localbusiness',
       name: 'EmersonEIMS - Generator Sales & Services',
-      image: 'https://www.emersoneims.com/logo.png',
+      image: 'https://www.emersoneims.com/emerson-eims-logo.png',
       telephone: '+254768860665',
       email: 'info@emersoneims.com',
       address: {
