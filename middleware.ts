@@ -912,6 +912,36 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // 0e-plant. HARD 404 for unknown /faults/plant/[brand].
+  //
+  //     The two-segment slug guard further down checks /faults/<slug> against
+  //     OK_FAULTS and fires only when seg.length === 2, so a three-segment
+  //     /faults/plant/<anything> sails past it. Without this block an invented
+  //     brand would render the 404 page at HTTP 200 — the soft-404 pattern,
+  //     on reference pages built specifically to be indexed.
+  //
+  //     Kept in sync with BRAND_GROUPS by scripts/check-plant-routes.mjs.
+  //     Inlined because a cross-module @/lib import fails open in this runtime.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    if (pathname.startsWith('/faults/plant/') && pathname !== '/faults/plant/') {
+      const OK_PLANT_BRANDS = new Set(['bobcat-loaders-excavators','kubota-v-series-cr-tier-4','john-deere-powertech-tier-3-4','volvo-ce-ec-series-e-ecu-and-v-ecu','komatsu-pc-8-series-engine-ca-codes','sany-sy-series-excavators','jcb-dieselmax-tier-4']);
+      let brandSlug = pathname.slice('/faults/plant/'.length).replace(/\/$/, '');
+      try { brandSlug = decodeURIComponent(brandSlug); } catch { /* keep raw */ }
+      if (brandSlug.includes('/') || !OK_PLANT_BRANDS.has(brandSlug.toLowerCase())) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: {
+            'X-Robots-Tag': 'noindex, follow',
+            'Content-Type': 'text/plain',
+            'X-Loc-Guard': '404-plant-brand',
+          },
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // 0e-price. HARD 404 for unknown /pricing/[slug].
   //
   //     Same Next-16 quirk as guards 0a-0f, confirmed again for this route on
@@ -1305,7 +1335,7 @@ export function middleware(request: NextRequest) {
   {
     const seg = pathname.split('/').filter(Boolean);
     if (seg.length === 2 && !pathname.startsWith('/api/')) {
-      const OK_FAULTS = new Set(['comap-a001','comap-a015','comap-a020','comap-a030','comap-a040','comap-a050','comap-a060','dse-e020','dse-e040','dse-e070','dse-e090','dse-e100','dse-e110','dse-e120','dse-e125','dse-e130','dse-e140','perkins-100','perkins-110','perkins-111','perkins-115','perkins-190','perkins-2387','perkins-94','spn-100','spn-102','spn-105','spn-110','spn-111','spn-115','spn-1514','spn-157','spn-190','spn-3556','spn-639','spn-94']);
+      const OK_FAULTS = new Set(['plant','comap-a001','comap-a015','comap-a020','comap-a030','comap-a040','comap-a050','comap-a060','dse-e020','dse-e040','dse-e070','dse-e090','dse-e100','dse-e110','dse-e120','dse-e125','dse-e130','dse-e140','perkins-100','perkins-110','perkins-111','perkins-115','perkins-190','perkins-2387','perkins-94','spn-100','spn-102','spn-105','spn-110','spn-111','spn-115','spn-1514','spn-157','spn-190','spn-3556','spn-639','spn-94']);
       const OK_BRANDS = new Set(['caterpillar','cummins','doosan','gesan','himoinsa','honda','iveco','john-deere','leyland','lister-petter','man','olympian','perkins','sdmo','volvo','volvo-penta','weichai']);
       const OK_SECTORS = new Set(['apartments','banks','churches','consulates','embassies','farms','flower-farms','homes','hospitals','hotels','industries','masai-mara','ngo-offices','ngos','private-colleges','private-hospitals','private-offices','private-schools','private-universities','quarries','ranches','real-estates','restaurants','schools','supermarkets','tourist-destinations','tourist-hotels']);
       const OK_INDUSTRIES = new Set(['banks-financial','churches-religious','commercial-property','flower-farms','government-ngos','healthcare','hospitals-healthcare','hotels-hospitality','manufacturing','manufacturing-industries','real-estate-construction','schools-universities','telecommunications']);

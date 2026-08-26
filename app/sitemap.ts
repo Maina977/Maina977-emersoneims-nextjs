@@ -13,6 +13,7 @@ import { FAULT_CODES } from '@/lib/data/faultCodes';
 import { getAllIndustries } from '@/lib/seo/industryData';
 import { PRICE_GUIDES } from '@/lib/pricing/publishedPrices';
 import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
+import { BRAND_GROUPS } from '@/lib/plant-oracle/brandGroups';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -110,6 +111,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
      * these are the closest-to-purchase pages on the site.
      */
     { url: `${BASE_URL}/pricing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
+    /*
+     * Plant fault-code references. 1,799 OEM codes were reachable only through
+     * a client-side search box, so Google could see none of them. Seven
+     * substantial reference pages make the whole set crawlable without
+     * creating a thin page per code.
+     */
+    { url: `${BASE_URL}/faults/plant`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.8 },
+    ...BRAND_GROUPS.map((g) => ({
+      url: `${BASE_URL}/faults/plant/${g.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    })),
     ...PRICE_GUIDES.map((g) => ({
       url: `${BASE_URL}/pricing/${g.slug}`,
       lastModified: currentDate,
