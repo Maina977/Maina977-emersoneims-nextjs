@@ -1985,48 +1985,59 @@ const VideoHero = () => {
 };
 
 // 3D Generator Viewer Component
-const Generator3DViewer = ({ generator }: { generator: typeof cumminsGenerators[0] }) => {
-  const [isViewing, setIsViewing] = useState(false);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+/**
+ * Generator specification card.
+ *
+ * WHAT THIS REPLACED, and why (2026-08-26).
+ * It was billed as an "Interactive 3D Generator Viewer" with "AR preview
+ * capability". It was neither. It rendered a lightning-bolt EMOJI at text-6xl
+ * inside a CSS perspective transform, captioned "Drag to rotate / Click for AR
+ * view", above a "View in AR" button that opened /ar/generator/<model> - a
+ * route that does not exist in this application; on desktop it raised a
+ * browser alert() instead.
+ *
+ * Three problems, the first being the serious one:
+ *   1. CREDIBILITY. Someone weighing a KES 2,000,000 purchase clicked "3D
+ *      viewer", dragged, and watched an emoji spin. That damages trust at
+ *      exactly the moment it is being formed.
+ *   2. MOBILE. Interaction was onMouseMove/onMouseDown only, so on a phone -
+ *      where most of this audience is - "Drag to rotate" did nothing at all.
+ *   3. A DEAD LINK. The AR button sent iOS users to a 404.
+ *
+ * It now shows a real photograph of equipment we supply, above the
+ * specification that was already in the card. Nothing is claimed that the
+ * component does not do.
+ */
+const GeneratorSpecCard = ({ generator }: { generator: typeof cumminsGenerators[0] }) => {
+  /*
+   * generator.image is deliberately NOT used. Those URLs point at
+   * /wp-content/uploads/ on the old WordPress site; checked 2026-08-26, two
+   * return 403 and one is unreachable, so rendering them would show broken
+   * images. The photographs below are real files in this repository.
+   */
+  const photo =
+    generator.kva >= 500
+      ? '/images/voltka/voltka-warehouse-fleet.webp'
+      : generator.kva >= 150
+        ? '/images/voltka/voltka-vks165-stock-forklift.webp'
+        : generator.kva >= 50
+          ? '/images/voltka/voltka-vks44-hero-profile.webp'
+          : '/images/voltka/cat-canopy-studio.webp';
 
   return (
     <div className="relative">
-      <div
-        className="relative h-64 bg-gradient-to-br from-gray-900 to-black rounded-xl border border-gray-800 overflow-hidden cursor-grab active:cursor-grabbing"
-        onMouseMove={(e) => {
-          if (isViewing) {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width - 0.5) * 360;
-            const y = ((e.clientY - rect.top) / rect.height - 0.5) * 360;
-            setRotation({ x: y, y: x });
-          }
-        }}
-        onMouseDown={() => setIsViewing(true)}
-        onMouseUp={() => setIsViewing(false)}
-        onMouseLeave={() => setIsViewing(false)}
-        style={{
-          transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-        }}
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-6xl">⚡</div>
-        </div>
-        <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm p-3 rounded-lg">
-          <p className="text-white text-sm text-center">Drag to rotate {'\u2022'} Click for AR view</p>
-        </div>
+      <div className="relative h-64 overflow-hidden rounded-xl border border-gray-800 bg-black/40">
+        <Image
+          src={photo}
+          alt={`${generator.model} - ${generator.kva} kVA diesel generator`}
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover"
+        />
       </div>
-      <button
-        onClick={() => {
-          if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-            window.open(`/ar/generator/${generator.model}`, '_blank');
-          } else {
-            alert('AR preview available on mobile devices. Scan QR code for AR experience.');
-          }
-        }}
-        className="mt-4 w-full cta-button-primary"
-      >
-        📱 View in AR
-      </button>
+      <p className="mt-3 text-xs text-gray-500">
+        Photograph of equipment we supply. The set offered is confirmed on your quotation.
+      </p>
     </div>
   );
 };
@@ -2665,8 +2676,8 @@ export default function GeneratorPage() {
       <section id="3d-viewer" className="py-20 bg-gradient-to-b from-black to-gray-900">
         <div className="eims-shell py-0">
           <SectionLead
-            title="Interactive 3D Generator Viewer"
-            subtitle="Explore generators in 3D with AR preview capability"
+            title="Cummins generator specifications"
+            subtitle="Engine, alternator and rating for the sets we supply"
             centered
           />
           <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -2679,7 +2690,7 @@ export default function GeneratorPage() {
                 className="bg-gradient-to-br from-gray-900 to-black rounded-xl border border-gray-800 p-6"
               >
                 <h3 className="text-2xl font-bold text-[#fbbf24] mb-4 font-display">{gen.model}</h3>
-                <Generator3DViewer generator={gen} />
+                <GeneratorSpecCard generator={gen} />
                 <div className="mt-4 space-y-2">
                   <p className="text-white"><span className="text-gray-400">Power:</span> {gen.kva} kVA</p>
                   <p className="text-white"><span className="text-gray-400">Phase:</span> {gen.phase}</p>
@@ -2764,24 +2775,43 @@ export default function GeneratorPage() {
                 <h3 className="text-xl font-bold text-brand-gold mb-2">{gen.model}</h3>
                 <p className="text-white/80 text-sm mb-1">{gen.phase} Phase</p>
                 <p className="text-white/60 text-xs mb-4">{gen.engine}</p>
+                {/*
+                  VIEW DETAILS WAS A 404 ON EVERY CARD (fixed 2026-08-26).
+
+                  It linked to /generators/<model-slug> \u2014 /generators/cummins-c20d5
+                  and the rest. Verified live: all of them returned 404. The
+                  primary call to action on every product card sent the buyer
+                  nowhere, which is as expensive as a defect gets on a page whose
+                  job is to sell.
+
+                  It now points at the per-size page, which exists and returns
+                  200 for every size we publish. Sizes above our published range
+                  (750 kVA and up) have no page of their own, so those go to the
+                  full price list rather than to another dead URL.
+
+                  The "AR preview" button beside it is REMOVED, not relinked: it
+                  opened /ar/generator/<model>, a route that does not exist in
+                  this application, and on any non-iOS device it did nothing at
+                  all \u2014 no else branch. A button that silently does nothing is
+                  worse than no button.
+                */}
                 <div className="flex gap-2">
                   <a
-                    href={`/generators/${gen.model.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={
+                      GENERATOR_SIZES.some((s) => s.kva === gen.kva)
+                        ? `/generators/sizes/${gen.kva}-kva`
+                        : '/pricing/generator-prices-kenya'
+                    }
                     className="flex-1 text-center px-4 py-2 bg-amber-500 text-black font-semibold rounded-lg hover:bg-amber-600 transition-all text-sm"
                   >
                     View Details
                   </a>
-                  <button
-                    onClick={() => {
-                      if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-                        window.open(`/ar/generator/${gen.model}`, '_blank');
-                      }
-                    }}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-sm"
-                    title="AR Preview (Mobile)"
+                  <a
+                    href="/contact"
+                    className="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 transition-all text-sm"
                   >
-                    {'\uD83D\uDCF1'}
-                  </button>
+                    Get Quote
+                  </a>
                 </div>
               </div>
             ))}
