@@ -15,6 +15,7 @@ import {
 } from '@/lib/data/east-africa-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
 import LocalBusinessSchema from '@/components/seo/LocalBusinessSchema';
+import CitySiteConditions from '@/components/seo/CitySiteConditions';
 
 type Props = {
   params: Promise<{ country: string; city: string }>;
@@ -232,6 +233,17 @@ export default async function InternationalCityPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/*
+        Per-city site conditions.
+        Added 2026-08-26. These pages measured 89% eight-word shingle overlap —
+        the same ~590 words with the city name swapped, which is the doorway
+        pattern Google consolidates. This section is the one part that is
+        genuinely different per city, because altitude and ambient temperature
+        genuinely differ and genuinely change what should be installed.
+        Renders null for the four cities with no sourced record.
+      */}
+      <CitySiteConditions slug={city.slug} />
 
       {/* Services Grid */}
       <section className="py-12 border-t border-white/5">
