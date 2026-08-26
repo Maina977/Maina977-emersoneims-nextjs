@@ -22,7 +22,7 @@ const IndustriesExperience = dynamic(
 
 export const metadata: Metadata = {
   title: 'Industries We Serve | Generator & Power Solutions for Every Sector',
-  description: 'Specialized generator and power solutions for hotels, hospitals, schools, banks, factories, flower farms, real estate, churches, and government. Serving 16,245+ hotels, 9,458+ hospitals, 93,988+ schools across Kenya. Call +254768860665.',
+  description: 'Generators, solar and UPS for Kenyan hotels, hospitals, schools, banks and factories. 2-year warranty, 24/7 emergency response. Call +254768860665.',
   openGraph: {
     title: 'Industries We Serve',
     description: 'Specialized power solutions for every industry in Kenya. Hotels, hospitals, schools, banks, manufacturing, and more.',

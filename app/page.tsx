@@ -59,8 +59,14 @@ const RING_GALLERY_ITEMS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.emersoneims.com'),
-  title: "EmersonEIMS | B2B Generators, Solar & Engineering Partner — Kenya | 2-Year Warranty",
-  description: "EmersonEIMS — B2B power & engineering for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators. Cummins, Perkins & FG Wilson specialist. 2-year warranty, SLA-backed maintenance, 24/7 emergency response across 47 counties. Call +254768860665.",
+  /*
+   * 58 characters. The previous title ran 83 against roughly 60 rendered, so
+   * "| 2-Year Warranty" was written and never shown. It also opened with the
+   * brand — redundant for anyone who searched the brand, and irrelevant to
+   * anyone who did not. This leads with what is sold and where.
+   */
+  title: "Generators, Solar & UPS in Kenya | EmersonEIMS",
+  description: "Generators, solar, UPS, motors, boreholes and incinerators for Kenyan industry, healthcare and telecom. 2-year warranty. Call +254768860665.",
   openGraph: {
     title: "EmersonEIMS | B2B Power & Engineering Partner — Kenya",
     description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. 2-year warranty, SLA maintenance, 24/7 emergency. Cummins, Perkins & FG Wilson specialist. AI-assisted diagnostic and design tools.",

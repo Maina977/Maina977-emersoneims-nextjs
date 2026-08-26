@@ -34,8 +34,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'County Not Found' };
   }
 
-  const title = `Generators, Solar & Power Services in ${county.name} County`;
-  const description = `Professional generator installation, repair, maintenance & rental in ${county.name} County, Kenya. Serving ${county.constituencies.length} constituencies including ${county.constituencies.slice(0, 3).map(c => c.name).join(', ')}. Population: ${county.population.toLocaleString()}+. 24/7 emergency support. Call +254768860665`;
+  /*
+   * WRITTEN TO FIT A SEARCH RESULT, not to fill a field.
+   *
+   * Measured on the live site 2026-08-26: the previous title ran 72 characters
+   * and the description 239. Google renders roughly 60 and 158. On /kenya/nairobi
+   * the part that fell off the end was "Call +254768860665" — the phone number
+   * was written into every one of these 990 pages and displayed on none of them.
+   * The constituency list and population count were also past the cut, so they
+   * cost bytes on 990 URLs and were never read.
+   *
+   * The title now leaves room for the "| EmersonEIMS Kenya" the root layout
+   * appends (20 characters), which is what pushed it over in the first place.
+   */
+  const title = `Generators & Solar in ${county.name} County`;
+  const description = `Generator installation, repair and maintenance in ${county.name} County. Solar, UPS and boreholes too. 24/7 emergency response — call +254768860665.`;
 
   return {
     title,
