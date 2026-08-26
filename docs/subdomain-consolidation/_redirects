@@ -1,0 +1,91 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# power.emersoneims.com  ->  www.emersoneims.com
+#
+# Place this file at the PUBLISH ROOT of the Netlify site that serves
+# power.emersoneims.com (alongside index.html), then redeploy.
+#
+# WHY
+# The subdomain serves 1,157 crawlable, self-canonical URLs selling the same
+# generators, in the same market, as www. Google must choose between the two
+# for every query, and every backlink either site earns is split. Consolidating
+# hands all of that authority to one domain.
+#
+# WHY PAGE-TO-PAGE AND NOT A BLANKET REDIRECT TO THE HOMEPAGE
+# Google treats "everything -> /" as a soft 404: the destination does not answer
+# what the URL promised, so the authority being consolidated is discarded
+# instead. Every rule below lands on a page about the same subject.
+#
+# 301! is a FORCED permanent redirect. The "!" matters: without it Netlify
+# serves an existing file in preference to the rule, and every one of these
+# paths has a real .html file behind it.
+#
+# ORDER IS SIGNIFICANT — Netlify takes the FIRST match. Specific paths first.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ── Blog: the genuinely useful content ─────────────────────────────────────
+# These are real articles, not doorway pages. The ones with a direct equivalent
+# on www go to it; the rest go to the blog index rather than the homepage.
+# BETTER STILL: migrate the articles to www/blog first and point each rule at
+# its migrated URL. Redirecting to an index preserves far less than a genuine
+# one-to-one move.
+/blog/generator-price-kenya            https://www.emersoneims.com/pricing/generator-prices-kenya   301!
+/blog/generator-price-*                https://www.emersoneims.com/pricing/generator-prices-kenya   301!
+/blog/100kva-vs-*                      https://www.emersoneims.com/pricing/generator-prices-kenya   301!
+/blog/second-hand-generators-kenya     https://www.emersoneims.com/generators/used                  301!
+/blog/cummins-generator-kenya          https://www.emersoneims.com/services/cummins-generators      301!
+/blog/generator-maintenance-kenya      https://www.emersoneims.com/pricing/generator-service-cost-kenya 301!
+/blog/generator-overhaul*              https://www.emersoneims.com/generators/workshop-services     301!
+/blog/generator-hire-*                 https://www.emersoneims.com/generators/rental                301!
+/blog/generator-sizing-kenya           https://www.emersoneims.com/hub                              301!
+/blog/solar-installation-*             https://www.emersoneims.com/pricing/solar-installation-cost-kenya 301!
+/blog/solar-*                          https://www.emersoneims.com/services/solar-energy            301!
+/blog/borehole-pump-kenya              https://www.emersoneims.com/pricing/borehole-cost-kenya      301!
+/blog/ups-*                            https://www.emersoneims.com/pricing/ups-price-kenya          301!
+/blog/automatic-transfer-switch-kenya  https://www.emersoneims.com/solutions/diesel-automation      301!
+/blog/fuel-filters-*                   https://www.emersoneims.com/generators/spare-parts           301!
+/blog/index*                           https://www.emersoneims.com/blog                             301!
+/blog/*                                https://www.emersoneims.com/blog                             301!
+/updates/*                             https://www.emersoneims.com/blog                             301!
+
+# ── The doorway grid: 20 services x 55 towns ───────────────────────────────
+# Each family lands on the www page that covers that service nationally. The
+# town in the source URL is dropped deliberately: www already has a real,
+# differentiated location structure under /kenya, and pointing 55 near-identical
+# doorway pages into it would import the duplication this consolidation removes.
+/generator-sales-*             https://www.emersoneims.com/generators                        301!
+/generator-repair-*            https://www.emersoneims.com/services/generator-repairs        301!
+/generator-installation-*      https://www.emersoneims.com/generators/installation           301!
+/generator-hire-*              https://www.emersoneims.com/generators/rental                 301!
+/generator-spare-parts-*       https://www.emersoneims.com/generators/spare-parts            301!
+/engine-overhaul-*             https://www.emersoneims.com/generators/workshop-services      301!
+/amf-ats-installation-*        https://www.emersoneims.com/solutions/diesel-automation       301!
+/diesel-automation-*           https://www.emersoneims.com/solutions/diesel-automation       301!
+/distribution-boards-*         https://www.emersoneims.com/services/distribution-boards      301!
+/hv-systems-*                  https://www.emersoneims.com/solutions/high-voltage            301!
+/motor-rewinding-*             https://www.emersoneims.com/services/motor-rewinding          301!
+/motors-drives-*               https://www.emersoneims.com/services/motor-rewinding          301!
+/steel-fabrication-*           https://www.emersoneims.com/solutions/fabrication             301!
+/hospital-incinerators-*       https://www.emersoneims.com/services/hospital-incinerators    301!
+/hvac-installation-*           https://www.emersoneims.com/services/ac-installation          301!
+/borehole-pumps-*              https://www.emersoneims.com/services/borehole-pumps           301!
+/ups-systems-*                 https://www.emersoneims.com/services/ups-systems              301!
+/solar-installation-*          https://www.emersoneims.com/services/solar-energy             301!
+/commercial-solar-*            https://www.emersoneims.com/solar                             301!
+/solar-sizing-*                https://www.emersoneims.com/solutions/solar-sizing            301!
+
+# ── One-offs ───────────────────────────────────────────────────────────────
+/sizing.html                   https://www.emersoneims.com/solutions/solar-sizing            301!
+/sitemap.xml                   https://www.emersoneims.com/sitemap.xml                       301!
+
+# ── robots.txt stays local so crawlers can still read it ───────────────────
+/robots.txt                    /robots.txt                                                   200
+
+# ── Homepage, then everything else ─────────────────────────────────────────
+# ORDER MATTERS: the bare "/" rule must come BEFORE the catch-all or it is
+# unreachable — Netlify takes the first match.
+#
+# The catch-all deliberately does NOT carry :splat. www has no equivalent of
+# /some-old-page.html, so preserving the path would redirect straight into a
+# 404 — worse than the homepage, which at least answers.
+/                              https://www.emersoneims.com/                                  301!
+/*                             https://www.emersoneims.com/                                  301

@@ -509,6 +509,123 @@ export function middleware(request: NextRequest) {
   const hostname = request.nextUrl.hostname;
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // 0-HOST. CONSOLIDATE power.emersoneims.com INTO www.emersoneims.com.
+  //
+  //     THE PROBLEM THIS SOLVES
+  //     Measured 2026-08-26: power.emersoneims.com served 1,157 crawlable,
+  //     self-canonical URLs selling the same generators in the same market as
+  //     www — including /blog/generator-price-kenya, competing directly with
+  //     our own /pricing/generator-prices-kenya. Google has to pick one of the
+  //     two for every query, and every backlink either site earns is split
+  //     between them. Consolidating hands all of it to one domain.
+  //
+  //     The subdomain is a flat .html doorway grid: 20 service families across
+  //     55 towns, plus ~54 genuine blog articles. Each family maps to the www
+  //     page that covers that service nationally.
+  //
+  //     PAGE-TO-PAGE, NOT A BLANKET REDIRECT. Sending everything to the www
+  //     homepage is read by Google as a soft 404 — the destination does not
+  //     answer what the URL promised — which discards the very authority the
+  //     consolidation exists to preserve. The town is dropped deliberately:
+  //     www already has a real, differentiated /kenya structure, and pointing
+  //     55 near-identical doorway pages into it would import the duplication
+  //     we are removing.
+  //
+  //     INERT UNTIL DNS POINTS HERE. This only fires for that hostname, so it
+  //     costs nothing while the subdomain is still served from Netlify. The
+  //     moment power.emersoneims.com is added to this Vercel project and its
+  //     DNS re-pointed, the consolidation goes live and is testable from here.
+  //     docs/subdomain-consolidation/_redirects carries the same map for
+  //     Netlify if the site stays there instead.
+  // ─────────────────────────────────────────────────────────────────────────────
+  /*
+   * Read the HOST HEADER, not request.nextUrl.hostname.
+   *
+   * Verified locally on 2026-08-26: with `Host: power.emersoneims.com` sent to
+   * a production build, request.nextUrl.hostname still reported `localhost`,
+   * so a check against it never fired and the whole block was a silent no-op
+   * that would have looked deployed and done nothing. x-forwarded-host is what
+   * Vercel populates behind its proxy; `host` is the fallback. Port stripped
+   * because a local host header can carry one.
+   */
+  const requestHost = (
+    request.headers.get('x-forwarded-host') ||
+    request.headers.get('host') ||
+    hostname ||
+    ''
+  ).toLowerCase().split(':')[0];
+
+  if (requestHost === 'power.emersoneims.com') {
+    const WWW = 'https://www.emersoneims.com';
+
+    /** Longest matching prefix wins, so generator-spare-parts beats generator-. */
+    const SUBDOMAIN_MAP: [string, string][] = [
+      // Blog — real articles. Direct equivalents first.
+      ['/blog/generator-price', '/pricing/generator-prices-kenya'],
+      ['/blog/100kva-vs', '/pricing/generator-prices-kenya'],
+      ['/blog/second-hand-generators', '/generators/used'],
+      ['/blog/cummins-generator', '/services/cummins-generators'],
+      ['/blog/generator-maintenance', '/pricing/generator-service-cost-kenya'],
+      ['/blog/generator-overhaul', '/generators/workshop-services'],
+      ['/blog/generator-hire', '/generators/rental'],
+      ['/blog/generator-sizing', '/hub'],
+      ['/blog/solar-installation', '/pricing/solar-installation-cost-kenya'],
+      ['/blog/solar', '/services/solar-energy'],
+      ['/blog/borehole-pump', '/pricing/borehole-cost-kenya'],
+      ['/blog/ups', '/pricing/ups-price-kenya'],
+      ['/blog/automatic-transfer-switch', '/solutions/diesel-automation'],
+      ['/blog/fuel-filters', '/generators/spare-parts'],
+      ['/blog', '/blog'],
+      ['/updates', '/blog'],
+
+      // The doorway grid: 20 service families across 55 towns.
+      ['/generator-spare-parts-', '/generators/spare-parts'],
+      ['/generator-installation-', '/generators/installation'],
+      ['/generator-repair-', '/services/generator-repairs'],
+      ['/generator-sales-', '/generators'],
+      ['/generator-hire-', '/generators/rental'],
+      ['/engine-overhaul-', '/generators/workshop-services'],
+      ['/amf-ats-installation-', '/solutions/diesel-automation'],
+      ['/diesel-automation-', '/solutions/diesel-automation'],
+      ['/distribution-boards-', '/services/distribution-boards'],
+      ['/hv-systems-', '/solutions/high-voltage'],
+      ['/motor-rewinding-', '/services/motor-rewinding'],
+      ['/motors-drives-', '/services/motor-rewinding'],
+      ['/steel-fabrication-', '/solutions/fabrication'],
+      ['/hospital-incinerators-', '/services/hospital-incinerators'],
+      ['/hvac-installation-', '/services/ac-installation'],
+      ['/borehole-pumps-', '/services/borehole-pumps'],
+      ['/ups-systems-', '/services/ups-systems'],
+      ['/solar-installation-', '/services/solar-energy'],
+      ['/commercial-solar-', '/solar'],
+      ['/solar-sizing-', '/solutions/solar-sizing'],
+
+      // One-offs.
+      ['/sizing.html', '/solutions/solar-sizing'],
+      ['/sitemap.xml', '/sitemap.xml'],
+    ];
+
+    const lower = pathname.toLowerCase();
+    let target = '/';
+    let longest = 0;
+    for (const [prefix, dest] of SUBDOMAIN_MAP) {
+      if (lower.startsWith(prefix) && prefix.length > longest) {
+        longest = prefix.length;
+        target = dest;
+      }
+    }
+    /*
+     * Unmatched paths fall to the www homepage WITHOUT carrying the old path.
+     * www has no /some-old-page.html, so preserving it would redirect straight
+     * into a 404 — worse than a homepage, which at least answers.
+     */
+    return NextResponse.redirect(new URL(target, WWW), {
+      status: 301,
+      headers: { 'X-Loc-Guard': 'subdomain-consolidation' },
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // ─────────────────────────────────────────────────────────────────────────────
   // 0a-pre. HARD 404 for a single-segment /locations/<slug> that is not a real
   //     place. Verified 2026-08-17: /locations/zzz999 returned HTTP 200 with two
