@@ -10,6 +10,7 @@ import {
 } from '@/components/hub/HubShell';
 import { HUB_TOOLS } from '@/components/hub/hub-tools';
 import HubPhoto from '@/components/hub/HubPhoto';
+import { hubPhotoExists } from '@/components/hub/hub-photo-availability';
 import { HUB_HERO_PHOTO, HUB_TOOL_PHOTOS } from '@/components/hub/hub-photos';
 import { StatusBar } from '@/components/charts/dataviz';
 import LazyLockedChart from '@/components/charts/LazyLockedChart';
@@ -96,6 +97,7 @@ export default function HubLandingPage() {
         </h2>
         <HubPhoto
           photo={HUB_HERO_PHOTO}
+          available={hubPhotoExists(HUB_HERO_PHOTO.src)}
           aspect="aspect-[16/6]"
           rounded="rounded-2xl"
           priority
@@ -193,6 +195,7 @@ export default function HubLandingPage() {
                 {photo && (
                   <HubPhoto
                     photo={photo}
+                    available={hubPhotoExists(photo.src)}
                     aspect="aspect-[16/9]"
                     rounded="rounded-md"
                     hideCaption
