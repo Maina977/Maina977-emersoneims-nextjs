@@ -197,15 +197,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
      */
     { url: `${BASE_URL}/technical-bible`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
 
-    // AI Products / Intelligence Suite (HIGH PRIORITY for discoverability)
+    /*
+     * AI Products / Intelligence Suite.
+     *
+     * THE TOOL SUB-ROUTES ARE DELIBERATELY NOT LISTED (removed 2026-08-26).
+     * Measured as Googlebot: /aquascan-pro-v3 and its /reports and /compare
+     * sub-routes shared 99% of their 8-word sequences, and
+     * /solar-genius-pro/calculator-advanced was 99% identical to its parent.
+     * They are client-rendered application shells — the interactive tool is
+     * assembled after hydration, so what a crawler receives is the same frame
+     * every time, with no distinct content behind it.
+     *
+     * Submitting them asks Google to index eight copies of one page and choose
+     * between them. The parent tool page is the one that should rank; the
+     * sub-routes are states of the app, not documents.
+     *
+     * NOTHING IS DELETED. Every sub-route still returns 200, still renders,
+     * still carries index/follow and stays internally linked, so a visitor or a
+     * crawler following a link reaches it exactly as before. It simply stops
+     * being advertised as a page worth indexing in its own right.
+     */
     { url: `${BASE_URL}/aquascan-pro-v3`,                       lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
-    { url: `${BASE_URL}/aquascan-pro-v3/reports`,               lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7  },
-    { url: `${BASE_URL}/aquascan-pro-v3/compare`,               lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7  },
     { url: `${BASE_URL}/solar-genius-pro`,                      lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
-    { url: `${BASE_URL}/solar-genius-pro/solar-dashboard`,      lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
-    { url: `${BASE_URL}/solar-genius-pro/design-studio`,        lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
-    { url: `${BASE_URL}/solar-genius-pro/calculator-advanced`,  lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
-    { url: `${BASE_URL}/solar-genius-pro/fault-codes`,          lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
     { url: `${BASE_URL}/solar-genius-pro-tools`,                lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${BASE_URL}/solar-genius-pro-futuristic`,           lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
     { url: `${BASE_URL}/solar-design-studio`,                   lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
