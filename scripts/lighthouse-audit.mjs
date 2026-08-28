@@ -64,6 +64,12 @@ const PAGES = [
 
 const CATEGORIES = ['performance', 'accessibility', 'best-practices', 'seo'];
 
+/** Real Chrome strings — see the note on --chrome-flags below. */
+const UA_DESKTOP =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
+const UA_MOBILE =
+  'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36';
+
 const argv = process.argv.slice(2);
 const has = (f) => argv.includes(f);
 const valueOf = (f, d) => {
@@ -94,26 +100,51 @@ function audit(url) {
     '--output=json',
     `--output-path=${outFile}`,
     '--quiet',
-    '--chrome-flags=--headless=new --no-sandbox --disable-gpu',
+    /*
+     * The user-agent override is load-bearing, not cosmetic. This site's
+     * middleware refuses obvious headless/bot agents with a 403, and Chrome
+     * announces itself as "HeadlessChrome" by default. Without this every page
+     * would audit an Access Denied page and report a meaningless score —
+     * probably a flatteringly high one, since an error page is small and fast.
+     */
+    `--chrome-flags=--headless=new --no-sandbox --disable-gpu --user-agent="${desktop ? UA_DESKTOP : UA_MOBILE}"`,
     `--only-categories=${CATEGORIES.join(',')}`,
-    // The site's middleware refuses obvious headless user-agents, so Lighthouse
-    // must present itself as a real Chrome or every page audits as a 403.
     '--form-factor=' + (desktop ? 'desktop' : 'mobile'),
   ];
   if (desktop) args.push('--preset=desktop');
 
+  /*
+   * A non-zero exit does NOT mean the audit failed.
+   *
+   * Lighthouse writes the report and THEN tears down its temporary Chrome
+   * profile. On Windows that teardown regularly throws
+   *   EPERM ... rm '\\?\C:\Users\...\AppData\Local\Temp\lighthouse.NNNNNNNN'
+   * because a Chrome process still holds the directory. The exit code is 1
+   * while an entirely valid 842KB report sits on disk. Treating that as a
+   * failure discarded a complete audit and — combined with the old summary
+   * logic — reported a perfect score for having measured nothing.
+   *
+   * So the output FILE is the source of truth, not the exit code.
+   */
+  let launchError = null;
   try {
     execFileSync('npx', args, {
       stdio: ['ignore', 'ignore', 'pipe'],
       timeout: 240000,
       shell: process.platform === 'win32',
     });
+  } catch (err) {
+    launchError = err.stderr ? String(err.stderr).slice(-300) : err.message;
+  }
+
+  try {
     const report = JSON.parse(fs.readFileSync(outFile, 'utf8'));
     fs.unlinkSync(outFile);
+    if (launchError && !report.categories) throw new Error('report incomplete');
     return report;
-  } catch (err) {
-    const stderr = err.stderr ? String(err.stderr).slice(-300) : err.message;
-    console.log(`    ! lighthouse failed: ${stderr.replace(/\s+/g, ' ').trim()}`);
+  } catch {
+    const why = (launchError || 'no report was written').replace(/\s+/g, ' ').trim();
+    console.log(`    ! lighthouse produced no usable report: ${why}`);
     try { fs.unlinkSync(outFile); } catch { /* nothing to clean up */ }
     return null;
   }
@@ -164,8 +195,28 @@ for (const { label, scores, report } of rows) {
 }
 
 console.log('');
+
+/*
+ * A RUN THAT MEASURED NOTHING IS A FAILURE, NOT A PASS.
+ *
+ * `worst` starts at 100 and is only lowered by a page that actually returned
+ * scores. So when every audit failed, this printed "Lowest score across all
+ * pages and categories: 100" — a perfect result produced by measuring nothing
+ * at all. That is the worst possible failure mode for an auditing tool: it is
+ * exactly the flattering false positive this script exists to prevent, and it
+ * was reported on the first real run.
+ */
+if (rows.length === 0) {
+  console.log(`FAIL — ${targets.length} page(s) attempted, 0 audited. No scores were measured.`);
+  console.log('Nothing here is a result. Check that lighthouse is installed and that the');
+  console.log('site is not refusing the request (this one 403s headless user-agents).');
+  process.exit(1);
+}
+if (rows.length < targets.length) {
+  console.log(`WARNING — only ${rows.length} of ${targets.length} page(s) audited; the rest failed.`);
+}
 if (minScore > 0 && worst < minScore) {
   console.log(`FAIL — lowest score ${worst} is below the --min ${minScore} threshold.`);
   process.exit(1);
 }
-console.log(`Lowest score across all pages and categories: ${worst}`);
+console.log(`Lowest score across ${rows.length} audited page(s) and all categories: ${worst}`);

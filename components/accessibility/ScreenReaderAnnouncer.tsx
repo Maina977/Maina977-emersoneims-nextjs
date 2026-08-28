@@ -118,8 +118,14 @@ export function ScreenReaderAnnouncerProvider({ children }: { children: React.Re
         </div>
         
         {/* Progress indicator for loading states */}
+        {/* aria-label is required, not decorative. role="progressbar" makes
+            this a widget, and a widget with no accessible name is announced as
+            an anonymous "progress bar" — Lighthouse scored it 0 under "ARIA
+            progressbar elements do not have accessible names". aria-valuetext
+            describes the VALUE; it does not name the element. */}
         <div
           role="progressbar"
+          aria-label="Page loading status"
           aria-valuetext="Loading in progress"
           id="global-loading-status"
         />

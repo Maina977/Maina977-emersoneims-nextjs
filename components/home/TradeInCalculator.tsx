@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { formatKES } from '@/lib/format/currency';
 
 export default function TradeInCalculator() {
   const [brand, setBrand] = useState('Cummins');
@@ -107,10 +108,17 @@ export default function TradeInCalculator() {
 
             {/* Brand */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-300 mb-3">
+              {/* htmlFor/id: the label was adjacent but not associated, so the
+                  control had no programmatic name and Lighthouse reported
+                  "Form elements do not have associated labels" / "Select
+                  elements do not have associated label elements". A sighted
+                  user saw a label; a screen reader announced an unnamed combo
+                  box. */}
+              <label htmlFor="tradein-brand" className="block text-sm font-semibold text-gray-300 mb-3">
                 Generator Brand
               </label>
               <select
+                id="tradein-brand"
                 value={brand}
                 onChange={(e) => {
                   setBrand(e.target.value);
@@ -126,10 +134,11 @@ export default function TradeInCalculator() {
 
             {/* Model */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-300 mb-3">
+              <label htmlFor="tradein-model" className="block text-sm font-semibold text-gray-300 mb-3">
                 Model
               </label>
               <select
+                id="tradein-model"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white font-semibold hover:border-purple-500/50 focus:border-purple-500 transition-all"
@@ -142,10 +151,17 @@ export default function TradeInCalculator() {
 
             {/* Operating Hours */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-300 mb-3">
-                Operating Hours: {hours.toLocaleString()}
+              {/* formatKES, not toLocaleString(): this is a client component,
+                  so a locale-aware formatter can render "5,000" on the server
+                  and "5.000" in the browser, which React reports as a
+                  hydration mismatch. formatKES is byte-identical on every
+                  runtime. (It formats plain numbers too — the name refers to
+                  where it is mostly used, not to a currency prefix.) */}
+              <label htmlFor="tradein-hours" className="block text-sm font-semibold text-gray-300 mb-3">
+                Operating Hours: {formatKES(hours)}
               </label>
               <input
+                id="tradein-hours"
                 type="range"
                 min="100"
                 max="30000"
@@ -188,9 +204,9 @@ export default function TradeInCalculator() {
               <p className="text-sm text-gray-400 mb-2">Estimated Trade-In Value</p>
               <div className="flex items-baseline gap-3 mb-4">
                 <span className="text-4xl font-bold text-purple-400">
-                  KES {finalValue.toLocaleString('en-KE', { maximumFractionDigits: 0 })}
+                  KES {formatKES(finalValue)}
                 </span>
-                <span className="text-sm text-gray-400">(USD ${(finalValue / 13300).toLocaleString('en-US', { maximumFractionDigits: 0 })})</span>
+                <span className="text-sm text-gray-400">(USD ${formatKES((finalValue / 13300))})</span>
               </div>
               <p className="text-xs text-gray-500">
                 Based on condition, hours, and current market rates
@@ -212,7 +228,7 @@ export default function TradeInCalculator() {
                 <div>
                   <p className="text-sm text-gray-400 mb-2">New VOLTKA VKS44 (44 kVA)</p>
                   <div className="text-3xl font-bold text-white">
-                    KES {newGeneratorPrice.toLocaleString('en-KE', { maximumFractionDigits: 0 })}
+                    KES {formatKES(newGeneratorPrice)}
                   </div>
                 </div>
 
@@ -221,7 +237,7 @@ export default function TradeInCalculator() {
                 <div>
                   <p className="text-sm text-gray-400 mb-2">Your Trade-In Credit</p>
                   <div className="text-2xl font-bold text-green-400">
-                    -KES {finalValue.toLocaleString('en-KE', { maximumFractionDigits: 0 })}
+                    -KES {formatKES(finalValue)}
                   </div>
                 </div>
 
@@ -230,10 +246,10 @@ export default function TradeInCalculator() {
                 <div className="bg-black/60 rounded-lg p-4">
                   <p className="text-sm text-gray-400 mb-2">Amount to Finance</p>
                   <div className="text-3xl font-bold text-cyan-400">
-                    KES {financingGap.toLocaleString('en-KE', { maximumFractionDigits: 0 })}
+                    KES {formatKES(financingGap)}
                   </div>
                   <p className="text-xs text-gray-400 mt-2">
-                    At 14% interest, 24 months = KES {((financingGap * 0.14 / 12 * Math.pow(1.14 / 12 + 1, 24)) / (Math.pow(1.14 / 12 + 1, 24) - 1)).toLocaleString('en-KE', { maximumFractionDigits: 0 })}/month
+                    At 14% interest, 24 months = KES {formatKES((financingGap * 0.14 / 12 * Math.pow(1.14 / 12 + 1, 24)) / (Math.pow(1.14 / 12 + 1, 24) - 1))}/month
                   </p>
                 </div>
               </div>
