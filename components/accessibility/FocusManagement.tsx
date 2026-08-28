@@ -146,10 +146,19 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
+/*
+ * The label below is deliberately NOT an <h2>. This block is visually hidden
+ * and flushes with the layout shell, so in the streamed HTML it lands ahead of
+ * the page's own headings — every heading-outline tool (and every crawler
+ * reading source order) reported "Keyboard Shortcuts" as the first h2 on every
+ * page of the site. The region is already announced to screen readers by
+ * role="note" + aria-label, so the heading carried no accessibility weight it
+ * does not still have. A <p> keeps the label and stays out of the outline.
+ */
 export function KeyboardShortcutsHelper() {
   return (
     <div className="sr-only" role="note" aria-label="Keyboard shortcuts">
-      <h2>Keyboard Shortcuts</h2>
+      <p>Keyboard Shortcuts</p>
       <ul>
         <li>Alt + A: Open accessibility settings</li>
         <li>Tab: Navigate to next element</li>

@@ -164,19 +164,25 @@ function StaticHeroFallback() {
           {/* Badge - Apple-style pill */}
           <div className="inline-flex items-center gap-2 mb-6 sm:mb-8 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 backdrop-blur-sm">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-xs sm:text-sm text-amber-300 tracking-wider uppercase font-medium">AI-Powered Energy & Engineering · East Africa</span>
+            <span className="text-xs sm:text-sm text-amber-300 tracking-wider uppercase font-medium">Generator Sales, Installation & 24/7 Repair · All 47 Counties</span>
           </div>
 
           {/* Hero Title - Apple-style display typography */}
-          {/* H1 (audit 2026-07-20, owner-approved): was "POWER & BUILD /
-              REDEFINED BY AI". That wording carried no service word and no
-              place name, so the single strongest on-page ranking signal on the
-              site earned nothing for "generator", "solar" or "Kenya". The AI
-              identity and the two-line cinematic cadence are retained — the
-              first line now names what we actually sell. */}
+          {/* H1 — revised twice, each time for the same reason.
+              2026-07-20: was "POWER & BUILD / REDEFINED BY AI", which named no
+              service and no place, so the strongest on-page signal on the site
+              earned nothing. Line one was changed to name the products.
+              2026-08-27: line two still said "POWER, REDEFINED BY AI". That is
+              the amber line — the largest, brightest text on the page — and it
+              described a technology rather than a business. A visitor landing
+              cold could read the biggest words here and still not know we sell,
+              install and repair machines. It now states the three things we do
+              and the territory we cover, which is also what people search for.
+              The two-line cinematic cadence and the amber emphasis are kept:
+              this is an enhancement in the page's own language, not a rebuild. */}
           <h1 className="apple-display mb-6 sm:mb-8">
             <span className="block text-white">GENERATORS · SOLAR · UPS</span>
-            <span className="block text-amber-500">POWER, REDEFINED BY AI</span>
+            <span className="block text-amber-500">SOLD, INSTALLED, SERVICED — KENYA-WIDE</span>
           </h1>
 
           {/* Subtitle - Apple-style subheadline.
@@ -787,11 +793,17 @@ export default function HomePage() {
           of old generator. Positioned after financing so buyers can see: new price →
           financing cost → trade-in credit = final cost. */}
       <TradeInCalculator />
-      {/* SERVICES LEADERSHIP MATRIX — visual proof that we're #1 across 30+
-          services (8 market leader, 5 strong competitor, 5+ emerging). Shows
-          competitive ratings (80-99) and market positioning. Positioned after
-          finance to anchor the claim "we're not just a generator company, we're
-          a complete power solutions company." */}
+      {/* WHAT WE SUPPLY — the route from the homepage into the commercial pages.
+          The component name is unchanged only to keep this import stable; what
+          it renders is no longer a "leadership matrix". The ratings and #1
+          rankings it once showed were invented and were removed earlier, but
+          that left an empty div rendering blank black here. It is now a
+          six-line router to /generators, /solar, /services/ups-systems,
+          /repair-centre, /maintenance-hub and /pricing — all verified 200 with
+          no redirect hop — because analytics showed 277 homepage visitors
+          against 18 who reached /generators. Placed after the finance
+          calculators, where a visitor who has kept scrolling is deciding what
+          they need. */}
       <ServicesLeadershipMatrix />
       {/* AI ADVANTAGE SECTION — showcases our 4 flagship AI tools as
           competitive differentiators. Positioned after leadership matrix so
