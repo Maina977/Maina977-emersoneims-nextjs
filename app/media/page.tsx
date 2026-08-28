@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Africa Power Infrastructure Media | YouTube • Podcast • Content',
+  title: 'Africa Power Infrastructure Media',
   description: 'Technical education on backup power systems. YouTube channel with real installations. Weekly podcast on African power infrastructure. Educational resources for mining, healthcare, telecom, utilities.',
   alternates: {
     canonical: 'https://www.emersoneims.com/media',

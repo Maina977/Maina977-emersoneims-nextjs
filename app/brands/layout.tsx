@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Multi-Brand Generator & Engineering Services | Cummins · Perkins · FG Wilson · ABB',
+  title: 'Multi-Brand Generator & Engineering Services',
   description:
     'EmersonEIMS supplies and maintains Cummins, Perkins, FG Wilson, ABB, Schneider Electric, Caterpillar generators and equipment across Kenya. Specialist sales, maintenance, genuine parts & technical support.',
   alternates: { canonical: `${siteUrl}/brands` },

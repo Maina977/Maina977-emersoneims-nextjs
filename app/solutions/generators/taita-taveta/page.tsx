@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Taita Taveta | 14-Hour Response',
+  title: 'Generator Service in Taita Taveta',
   description: 'Backup power solutions in Taita Taveta. Installation, emergency repair, maintenance.',
 };
 

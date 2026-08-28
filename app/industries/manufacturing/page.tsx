@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Manufacturing Power Solutions | Industrial Generators',
+  title: 'Manufacturing Power Solutions',
   description: 'Reliable industrial power for factories and manufacturing plants across Kenya. Generator sizing, load analysis, preventive maintenance, emergency backup. 60% cost savings typical.',
   alternates: {
     canonical: 'https://www.emersoneims.com/industries/manufacturing',

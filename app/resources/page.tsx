@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Learning Resources & Guides | Generator, Solar & Power Education',
+  title: 'Learning Resources & Guides',
   description: 'Complete resource library for generators, solar systems, and power solutions. Guides, calculators, FAQs, case studies, and educational content. Learn everything about power systems in Kenya.',
 };
 

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Kilifi | 10-Hour Response',
+  title: 'Generator Service in Kilifi',
   description: 'Backup power solutions in Kilifi. Installation, emergency repair, maintenance.',
 };
 

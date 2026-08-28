@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Generator Emergency Response Guide | What To Do When Power Fails',
+  title: 'Generator Emergency Response Guide',
   description: 'Step-by-step emergency response guide when your generator fails. Quick troubleshooting checklist, who to call, and what information to have ready. 24/7 emergency support in Kenya.',
 };
 

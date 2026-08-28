@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Telecom Power Solutions | EmersonEIMS Kenya | Network Uptime 99.9%',
+  title: 'Telecom Power Solutions',
   description: 'Backup power for telecom towers, data centers, and network facilities. Guaranteed uptime, redundant systems, 24/7 monitoring.',
 };
 

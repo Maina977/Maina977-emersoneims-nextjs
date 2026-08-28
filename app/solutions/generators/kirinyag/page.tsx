@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Kirinyaga | 8-Hour Response',
+  title: 'Generator Service in Kirinyaga',
   description: 'Backup power solutions in Kirinyaga. Installation, emergency repair, maintenance.',
 };
 

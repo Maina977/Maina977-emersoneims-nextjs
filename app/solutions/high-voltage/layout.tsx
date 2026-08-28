@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'High-Voltage Engineering Kenya | Transformers, Switchgear, RMU',
+  title: 'High-Voltage Engineering Kenya',
   description:
     'High-voltage engineering services in Kenya — transformer testing, RMU, MV switchgear, cable termination and substation commissioning by EmersonEIMS qualified HV engineers.',
   alternates: { canonical: `${SITE}/solutions/high-voltage` },

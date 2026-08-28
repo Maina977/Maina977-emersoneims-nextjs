@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Borehole Pump Solutions Kenya | Installation, VFD, Maintenance",
+  title: "Borehole Pump Solutions Kenya",
   description: "Complete borehole pump solutions in Kenya. Submersible pump installation, VFD systems for energy savings, pump sizing, maintenance. Grundfos, Pedrollo, Dayliff specialists. Call +254 768 860 665.",
   keywords: "borehole pump Kenya, submersible pump Kenya, borehole drilling Kenya, VFD pump Kenya, water pump installation, Grundfos Kenya, borehole maintenance, pump repair Nairobi, solar borehole pump, well pump Kenya",
   openGraph: {

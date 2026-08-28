@@ -5,7 +5,7 @@ import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata: Metadata = {
-  title: 'Generator Problems & Solutions | Free Diagnostic Guide',
+  title: 'Generator Problems & Solutions',
   description: 'Complete guide to diagnosing generator problems. Expert solutions for starting issues, overheating, low oil pressure, voltage fluctuations, and exhaust smoke. Free troubleshooting help.',
   keywords: 'generator problems, generator troubleshooting, generator won\'t start, generator overheating, generator repair Kenya',
   openGraph: {

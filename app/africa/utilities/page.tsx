@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Utilities Power Infrastructure | Water Treatment • Substations • Renewable Integration',
+  title: 'Utilities Power Infrastructure',
   description: 'Government utility power systems across Africa. Water treatment plants, grid substations, renewable energy integration. 99.5% SLA for essential services. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/utilities',

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Why EmersonEIMS Leads | Competitive Positioning | Market Leader Kenya',
+  title: 'Why EmersonEIMS Leads',
   description: 'Honest competitive analysis: Why EmersonEIMS leads the backup power market. Response time, pricing transparency, service breadth, guarantees, and proven outcomes.',
 };
 

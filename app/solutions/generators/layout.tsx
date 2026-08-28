@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generator Solutions Kenya | Installation, Repairs, Maintenance",
+  title: "Generator Solutions Kenya",
   description: "Complete generator solutions in Kenya. Expert installation, maintenance schedules, fault diagnosis, and 24/7 emergency repairs. Cummins, Perkins, CAT specialists. Serving Nairobi, Mombasa, Kisumu & all 47 counties. Call +254 768 860 665.",
   keywords: "generator installation Kenya, generator repair Kenya, generator maintenance Kenya, generator service Nairobi, Cummins generator Kenya, Perkins generator Kenya, CAT generator Kenya, diesel generator Kenya, standby generator Kenya, generator fault codes, generator troubleshooting, AMF panel Kenya, ATS installation Kenya, generator parts Kenya",
   openGraph: {

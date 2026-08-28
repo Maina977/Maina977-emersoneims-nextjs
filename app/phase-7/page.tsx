@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Phase 7: Video-Centric Leadership | EmersonEIMS Real Stories',
+  title: 'Phase 7: Video-Centric Leadership',
   description: 'Phase 7: Real video content, verified customer testimonials, live case studies, and performance metrics showcasing market leadership across all services.',
 };
 

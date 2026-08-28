@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'EmersonEIMS Team | Expert Engineers & Technicians | Kenya',
+  title: 'Team | Expert Engineers & Technicians | Kenya',
   description: 'Meet the team behind EmersonEIMS. 11+ years of expertise. Certified technicians across Kenya. Real credentials, real experience.',
   alternates: {
     canonical: 'https://www.emersoneims.com/team',

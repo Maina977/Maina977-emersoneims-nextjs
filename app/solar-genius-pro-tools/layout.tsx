@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Solar Genius Pro Tools | Sizing, ROI, Inverter & Battery Calculators',
+  title: 'Solar Genius Pro Tools',
   description:
     'Solar Genius Pro toolkit — sizing, ROI, inverter selection, battery bank, string voltage, payback and tariff calculators. Engineering-grade tools for Kenyan installers and facility managers.',
   alternates: { canonical: `${SITE}/solar-genius-pro-tools` },

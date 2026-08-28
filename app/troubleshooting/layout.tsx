@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Generator Troubleshooting Wizard Kenya | Step-by-Step Fault Diagnosis',
+  title: 'Generator Troubleshooting Wizard Kenya',
   description:
     'Free interactive generator troubleshooting wizard. Diagnose starting failures, alarms, AVR, ATS, fuel, charging and load faults in minutes. Backed by EmersonEIMS field engineers — call +254 768 860 665 for on-site repair across Kenya.',
   alternates: { canonical: `${SITE}/troubleshooting` },

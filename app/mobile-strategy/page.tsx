@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Mobile Strategy | EmersonEIMS Field Operations',
+  title: 'Mobile Strategy | Field Operations',
   description: 'Mobile-first backup power solutions and field service platform. Real-time monitoring, emergency dispatch, and technician coordination across 47 counties.',
 };
 

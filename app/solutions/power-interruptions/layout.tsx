@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Power Quality Solutions Kenya | Surge Protection, Voltage Stabilizers",
+  title: "Power Quality Solutions Kenya",
   description: "Complete power quality solutions in Kenya. Surge protection (SPD Type 1, 2, 3), voltage stabilizers, AVR, power conditioners. Protect equipment from Kenya Power fluctuations. Call +254 768 860 665.",
   keywords: "surge protector Kenya, voltage stabilizer Kenya, AVR Kenya, power quality Kenya, SPD Kenya, lightning protection Kenya, voltage regulator Nairobi, power conditioner Kenya, brownout protection, power surge protection",
   openGraph: {

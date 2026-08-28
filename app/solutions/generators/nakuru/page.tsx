@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Nakuru | 10-Hour Response',
+  title: 'Generator Service in Nakuru',
   description: 'Backup power solutions in Nakuru. Installation, emergency repair, maintenance. Rift Valley power specialists.',
 };
 

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Why Choose EmersonEIMS | Kenya Power Solutions',
+  title: 'Why Choose EmersonEIMS',
   description: 'Why 100+ companies choose EmersonEIMS. 47-county coverage, 15 services, 4 AI tools, fastest response times, transparent pricing.',
 };
 

@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Reliable Energy Systems | Verified Partner | EmersonEIMS Marketplace',
+  title: 'Reliable Energy Systems | Verified Partner',
   description: 'Silver tier partner specializing in healthcare & utilities backup power. 4.2 rating, 12-hour response time. Kenya, Rwanda coverage.',
 };
 

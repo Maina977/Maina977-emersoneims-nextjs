@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Backup Power Certification Program | EmersonEIMS Professional Training',
+  title: 'Backup Power Certification Program',
   description: 'Industry-standard certification for technicians and engineers. Learn real skills, get certified, advance your career. 3-7 day intensive programs.',
   alternates: {
     canonical: 'https://www.emersoneims.com/certification',

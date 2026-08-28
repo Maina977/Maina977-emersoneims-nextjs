@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Eldoret | 12-Hour Response',
+  title: 'Generator Service in Eldoret',
   description: 'Backup power solutions in Eldoret. Installation, emergency repair, maintenance. Western Kenya power specialists.',
 };
 

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Manufacturing Power Solutions | EmersonEIMS Kenya | Production Continuity',
+  title: 'Manufacturing Power Solutions',
   description: 'Backup power for factories and manufacturing. Production loss prevention, load management, energy cost optimization. Complete industrial solutions.',
 };
 

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Kakamega | 14-Hour Response',
+  title: 'Generator Service in Kakamega',
   description: 'Backup power solutions in Kakamega. Installation, emergency repair, maintenance. Western Kenya coverage.',
 };
 

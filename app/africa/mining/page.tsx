@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Mining Power Solutions Africa | Gold • Diamonds • Cobalt | 99.5% Uptime SLA',
+  title: 'Mining Power Solutions Africa',
   description: 'Industrial power for African mining operations. Gold, diamonds, cobalt, lithium extraction. Generators, UPS, solar, remote monitoring. 99.5% SLA. KES 50M-500M per site. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/mining',

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Buying Guide | Sizing, Brands, Maintenance',
+  title: 'Generator Buying Guide',
   description: 'Complete generator buying guide: how to size a generator, brand comparison, new vs used, generator selection worksheet, ROI calculator.',
   alternates: {
     canonical: 'https://www.emersoneims.com/resources/buying-guides',

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Kericho | 14-Hour Response',
+  title: 'Generator Service in Kericho',
   description: 'Backup power solutions in Kericho. Installation, emergency repair, maintenance. Tea country power specialists.',
 };
 

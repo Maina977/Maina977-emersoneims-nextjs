@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Maintenance AI Companion | Oracle Heavy Plant & Equipment',
+  title: 'Generator Maintenance AI Companion',
   description: 'Your complete AI-powered generator maintenance companion. Repair guides, parts catalog, predictive failure analysis, efficiency calculator, and financial dashboard. The ultimate fusion of repair manual, parts manual, and AI diagnostics.',
   keywords: [
     'generator maintenance',

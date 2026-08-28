@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'East Africa Industrial | Verified Partner | EmersonEIMS Marketplace',
+  title: 'East Africa Industrial | Verified Partner',
   description: 'Silver tier partner specializing in manufacturing & oil/gas backup power. 4.4 rating, 8-hour response time. Tanzania, Uganda coverage.',
 };
 

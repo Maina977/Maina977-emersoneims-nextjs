@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Power Solutions West Africa | Nigeria • Ghana • Oil & Gas • Cocoa',
+  title: 'Power Solutions West Africa',
   description: 'Industrial power across West Africa. Nigeria oil & gas hub, Ghana gold & cocoa, Ivory Coast agro-exports. KES 150B+ sector value. 24/7 regional support. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/western',

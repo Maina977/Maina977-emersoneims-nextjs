@@ -66,7 +66,7 @@ export const metadata: Metadata = {
    * brand — redundant for anyone who searched the brand, and irrelevant to
    * anyone who did not. This leads with what is sold and where.
    */
-  title: "Generators, Solar & UPS in Kenya | EmersonEIMS",
+  title: "Generators, Solar & UPS in Kenya",
   description: "Generators, solar, UPS, motors, boreholes and incinerators for Kenyan industry, healthcare and telecom. 2-year warranty. Call +254768860665.",
   openGraph: {
     title: "EmersonEIMS | B2B Power & Engineering Partner — Kenya",
@@ -150,7 +150,17 @@ function StaticHeroFallback() {
         </video>
         {/* Lighter grade than before (70/40 → 55/25): keeps text legible while
             letting the 4K-graded footage read bright and cinematic. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/90" />
+        {/* Scrim over the hero video.
+            The middle stop was black/25, and the H1 sits exactly there. That
+            was survivable while the video showed a night city, but the footage
+            also runs through a bright sunset, and amber type over lit orange
+            cloud came out close to unreadable — screenshotted at 1440x900 to
+            confirm. Because the background is video, contrast cannot be judged
+            from one frame: the scrim has to hold for the BRIGHTEST frame, not
+            the average one. Raised to /50 through the middle, which keeps the
+            footage clearly visible while the headline stays legible
+            throughout. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/50 to-black/90" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(251,191,36,0.22),transparent_60%)]" />
       </div>
 
@@ -192,7 +202,12 @@ function StaticHeroFallback() {
               "SOLD & SERVICED IN KENYA" is 24 characters, carries the
               commercial verbs and the place name, and restores the fold.
               Anything longer must be measured in a browser before it ships. */}
-          <h1 className="apple-display mb-6 sm:mb-8">
+          {/* text-balance: without it the browser fills each line greedily and
+              broke line one as "GENERATORS · SOLAR ·" / "UPS", stranding one
+              word under a dangling separator. Balancing distributes the words
+              evenly across the lines instead, which is what the two-line
+              cadence was designed around. */}
+          <h1 className="apple-display mb-6 sm:mb-8 text-balance">
             <span className="block text-white">GENERATORS · SOLAR · UPS</span>
             <span className="block text-amber-500">SOLD &amp; SERVICED IN KENYA</span>
           </h1>

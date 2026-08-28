@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Africa Power Infrastructure | Mining • Oil & Gas • Utilities • EmersonEIMS',
+  title: 'Africa Power Infrastructure',
   description: 'Powering Africa\'s growth. Mining operations, oil & gas exploration, utility backup systems, infrastructure development. 10+ countries, 99.5%+ uptime guaranteed. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa',

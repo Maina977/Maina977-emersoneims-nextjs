@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Our Team | EmersonEIMS Engineers & Technicians',
+  title: 'Our Team | Engineers & Technicians',
   description: 'Meet the engineers and technicians behind EmersonEIMS — specialists in Cummins, Perkins and multi-brand generators.',
   alternates: {
     canonical: 'https://www.emersoneims.com/about-us/team',

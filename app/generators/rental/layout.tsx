@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Rental Kenya | Daily, Weekly, Monthly | 7.5kVA to 2MVA',
+  title: 'Generator Rental Kenya',
   description: 'Generator rental services across all 47 Kenya counties. Rent generators from 7.5kVA to 2MVA for events, construction, emergencies. Same-day delivery in Nairobi. Silent generators for weddings, concerts, corporate events. 24/7 support.',
   keywords: [
     // Primary Rental Keywords

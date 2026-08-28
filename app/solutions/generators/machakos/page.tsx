@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Machakos | 10-Hour Response',
+  title: 'Generator Service in Machakos',
   description: 'Backup power in Machakos. Installation, repair, maintenance. Eastern Kenya coverage.',
 };
 

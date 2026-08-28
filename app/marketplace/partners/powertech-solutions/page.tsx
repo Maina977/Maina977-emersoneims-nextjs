@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'PowerTech Solutions | Verified Partner | EmersonEIMS Marketplace',
+  title: 'PowerTech Solutions | Verified Partner',
   description: 'Gold tier partner specializing in mining operations backup power. 4.8 rating, 2-hour response time. Kenya, Tanzania, Uganda coverage.',
 };
 

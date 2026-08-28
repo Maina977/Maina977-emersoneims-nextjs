@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "UPS Solutions Kenya | Installation, Battery Replacement, Sizing",
+  title: "UPS Solutions Kenya",
   description: "Complete UPS solutions in Kenya. Installation guides, battery replacement, sizing calculator, troubleshooting. APC, Eaton, Vertiv specialists. Online, Line-Interactive UPS. Call +254 768 860 665.",
   keywords: "UPS Kenya, UPS installation Kenya, UPS battery replacement, UPS sizing Kenya, APC UPS Kenya, Eaton UPS Kenya, Vertiv UPS Kenya, online UPS Kenya, data center UPS, UPS repair Nairobi, UPS maintenance Kenya, backup power Kenya",
   openGraph: {

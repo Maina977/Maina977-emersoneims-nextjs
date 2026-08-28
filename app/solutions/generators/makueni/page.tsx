@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Makueni | 12-Hour Response',
+  title: 'Generator Service in Makueni',
   description: 'Backup power solutions in Makueni. Installation, emergency repair, maintenance.',
 };
 

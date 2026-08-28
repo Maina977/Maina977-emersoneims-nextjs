@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Generator, Solar & UPS FAQ Kenya | Sizing, Cost, Maintenance',
+  title: 'Generator, Solar & UPS FAQ Kenya',
   description:
     'Answers to the most common questions about generators, solar, UPS, motor rewinding, boreholes and incinerators in Kenya. Sizing, pricing, warranty, maintenance, NEMA compliance and more.',
   alternates: { canonical: `${SITE}/faq` },

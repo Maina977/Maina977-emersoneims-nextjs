@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Kajiado | 8-Hour Response',
+  title: 'Generator Service in Kajiado',
   description: 'Backup power solutions in Kajiado. Installation, emergency repair, maintenance. Growing commercial hub.',
 };
 

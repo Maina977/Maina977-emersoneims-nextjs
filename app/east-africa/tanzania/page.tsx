@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import EastAfricaCityLinks from '@/components/east-africa/EastAfricaCityLinks';
 
 export const metadata: Metadata = {
-  title: 'Power Solutions Tanzania | Dar es Salaam • Arusha • Mbeya',
+  title: 'Power Solutions Tanzania',
   description: 'Reliable generator and power solutions across Tanzania. Dar es Salaam industrial parks, Arusha hospitals, Mbeya mining operations. 24/7 support in TZS. Call +255754411722.',
   alternates: {
     canonical: 'https://www.emersoneims.com/east-africa/tanzania',

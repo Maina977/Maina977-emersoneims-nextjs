@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Pro Building Suite | HVAC & Electrical Load Calculator',
+  title: 'Pro Building Suite',
   description: 'Building load calculation tool for HVAC, electrical systems, backup power design. Accurate sizing for Kenya commercial buildings.',
 };
 

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Mombasa | 8-Hour Emergency Response',
+  title: 'Generator Service in Mombasa',
   description: 'Backup power solutions in Mombasa. Installation, emergency repair, maintenance. Coastal facility expertise. 24/7 support.',
 };
 

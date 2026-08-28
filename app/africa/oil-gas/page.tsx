@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Oil & Gas Power Infrastructure | Exploration • Production • Processing | 99.7% SLA',
+  title: 'Oil & Gas Power Infrastructure',
   description: 'Enterprise power solutions for African oil & gas operations. Exploration rigs, production platforms, processing plants, export terminals. KES 100M-1B per project. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/oil-gas',

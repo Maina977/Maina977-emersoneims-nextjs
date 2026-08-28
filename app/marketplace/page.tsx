@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'EmersonEIMS Partner Marketplace | Vetted Backup Power Providers | Africa',
+  title: 'Partner Marketplace',
   description: 'Connect with verified backup power providers. All partners audited for quality, certifications verified, customer reviews real. No commission inflation, no hidden costs.',
   alternates: {
     canonical: 'https://www.emersoneims.com/marketplace',

@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Careers | EmersonEIMS — Power & Engineering Jobs in Kenya',
+  title: 'Careers | Power & Engineering Jobs in Kenya',
   description: 'Build your engineering career at EmersonEIMS: generators, solar, UPS, high-voltage, motors, HVAC and fabrication across Kenya. Field technicians, electrical engineers, solar specialists and operations roles. Apply today.',
   alternates: { canonical: 'https://www.emersoneims.com/careers' },
 };

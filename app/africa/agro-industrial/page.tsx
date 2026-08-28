@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Agro-Industrial Power Solutions | Coffee • Cocoa • Tea • Grain | KES 200B+ Export',
+  title: 'Agro-Industrial Power Solutions',
   description: 'Power solutions for African agricultural processing and export. Coffee mills, cocoa processing, tea factories, grain storage. 50-200M contracts. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/agro-industrial',
