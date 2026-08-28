@@ -52,6 +52,18 @@ export default function RecentWorkSection() {
                   <h3 className="mt-3 text-xl font-semibold leading-snug text-white lg:text-2xl">
                     {project.title}
                   </h3>
+                  {/*
+                    The client name is what turns this from a photograph into a
+                    reference. Rendered only when the field is set, so removing
+                    consent is a one-line data change and the case study still
+                    stands on its images.
+                  */}
+                  {project.client && (
+                    <p className="mt-3 text-sm text-white/70">
+                      Client:{' '}
+                      <span className="font-semibold text-white">{project.client}</span>
+                    </p>
+                  )}
                   <p className="mt-4 text-sm leading-relaxed text-white/65">
                     {project.summary}
                   </p>

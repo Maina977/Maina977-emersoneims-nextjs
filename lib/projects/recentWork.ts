@@ -17,10 +17,17 @@
  *   - The month, from the camera date stamps and file dates (August 2026).
  *   - The location and scope, from the owner.
  *
- * NO CLIENT IS NAMED. "A mining operation in Migori" and "a yacht in Kilifi" is
- * what we can say without permission to use a customer's name. Naming them
- * would be stronger; publishing a name we were not given permission for would
- * be worse than the gain.
+ * CLIENTS ARE NAMED ON THE OWNER'S INSTRUCTION (2026-08-26): John Muhindi for
+ * the Migori installation, Bart Arbman for the Kilifi genverter. A named client
+ * is materially stronger evidence than "a mining operation in Migori" — it is
+ * checkable, and checkable is the whole point of a case study.
+ *
+ * One standing caution, recorded here because it outlives this commit: OWNER
+ * PERMISSION IS NOT CLIENT CONSENT. Both of these read as individuals rather
+ * than companies, and a private customer who finds their name on a public site
+ * without being asked can be justifiably annoyed. If either objects, remove the
+ * `client` field — the case study still stands on the photographs, which is how
+ * it shipped originally.
  *
  * NO OUTCOME IS CLAIMED beyond what the photographs show. The Kilifi board is
  * shown with its heat damage — the repair result is not asserted here because
@@ -39,6 +46,11 @@ export interface RecentProject {
   slug: string;
   /** Short label for the card. */
   title: string;
+  /**
+   * Client name, published on the owner's instruction. Optional: a project
+   * without consent to be named still stands on its photographs.
+   */
+  client?: string;
   /** Where, at the level of detail we can publish. */
   location: string;
   /** When, to the month. */
@@ -57,6 +69,7 @@ export const RECENT_PROJECTS: readonly RecentProject[] = [
   {
     slug: 'migori-mining-330kva',
     title: '330 kVA VOLTKA Cummins — supplied, delivered and installed',
+    client: 'John Muhindi',
     location: 'Mining operation, Migori County',
     period: 'August 2026',
     service: 'Generator sales & installation',
@@ -95,6 +108,7 @@ export const RECENT_PROJECTS: readonly RecentProject[] = [
   {
     slug: 'kilifi-yacht-genverter',
     title: 'Marine genverter — board-level diagnosis and repair',
+    client: 'Bart Arbman',
     location: 'Yacht, Kilifi',
     period: 'August 2026',
     service: 'Inverter & electronics repair',
