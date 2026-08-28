@@ -1515,7 +1515,7 @@ export default function GeneratorOracleModule() {
           </header>
 
           {/* ==================== MAIN CONTENT ==================== */}
-          <main className="flex-1 p-4 lg:p-6">
+          <div className="flex-1 p-4 lg:p-6">
             <div className="max-w-[1920px] mx-auto pb-10">
               <ErrorBoundary fallbackTitle="Panel Error" onReset={() => setActiveScreen('command')}>
               <AnimatePresence mode="wait">
@@ -2301,7 +2301,7 @@ export default function GeneratorOracleModule() {
               </AnimatePresence>
               </ErrorBoundary>
             </div>
-          </main>
+          </div>
 
           {/* ==================== PREMIUM FOOTER ==================== */}
           <footer className="flex-shrink-0 bg-slate-950/90 backdrop-blur-2xl border-t border-cyan-500/20 py-3 px-4 lg:px-6">

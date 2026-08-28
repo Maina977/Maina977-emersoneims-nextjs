@@ -41,24 +41,46 @@ import path from 'node:path';
 
 const APPLY = process.argv.includes('--apply');
 const ROOT = path.join(process.cwd(), 'app');
+const COMPONENTS = path.join(process.cwd(), 'components');
+const ROOT_LAYOUT = path.join(ROOT, 'layout.tsx');
 
-/** Every page.tsx under app/, excluding build mirrors and archives. */
-function pageFiles(dir, out = []) {
+/*
+ * Directories that must never be rewritten:
+ *   _archive        dead mirrors, kept for reference and not shipped
+ *   external        vendored third-party sources
+ *   node_modules    obvious
+ * and any *-backup / *-old file, which is a snapshot rather than live code.
+ *
+ * components/building IS included. Those are the (building) route group's own
+ * components, and that group renders under the same root layout, so a <main>
+ * in there is a duplicate landmark exactly as it is anywhere else. They are
+ * each transformed in place — never copied from their non-building twin, which
+ * are genuinely different files.
+ */
+const SKIP_DIRS = new Set(['node_modules', '_archive', 'external', '.next']);
+const isBackup = (name) => /(-old-backup|-backup|-old)\.tsx$/i.test(name);
+
+/**
+ * Page and layout files under app/, plus every component. The root layout is
+ * the one file that SHOULD own a <main>.
+ */
+function collect(dir, out = [], componentsMode = false) {
+  if (!fs.existsSync(dir)) return out;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === 'node_modules' || entry.name === '_archive') continue;
-      pageFiles(full, out);
-    } else if (entry.name === 'page.tsx' || entry.name === 'layout.tsx') {
-      // The root layout is the one file that SHOULD keep its <main>.
-      if (full === path.join(ROOT, 'layout.tsx')) continue;
-      out.push(full);
+      if (SKIP_DIRS.has(entry.name)) continue;
+      collect(full, out, componentsMode);
+    } else if (entry.name.endsWith('.tsx')) {
+      if (isBackup(entry.name)) continue;
+      if (full === ROOT_LAYOUT) continue;
+      if (componentsMode || entry.name === 'page.tsx' || entry.name === 'layout.tsx') out.push(full);
     }
   }
   return out;
 }
 
-const files = pageFiles(ROOT);
+const files = [...collect(ROOT), ...collect(COMPONENTS, [], true)];
 const changed = [];
 const skipped = [];
 
@@ -80,9 +102,25 @@ for (const file of files) {
     continue;
   }
 
-  // Only the tag name changes. The attribute list is captured and replayed.
+  /*
+   * The tag name changes, and two attributes go with it.
+   *
+   * role="main" makes ANY element a main landmark, so leaving it on would
+   * defeat the whole exercise — <div role="main"> is exactly as duplicated as
+   * <main>. id="main-content" is the root layout's own anchor (the skip link
+   * targets it), and two elements sharing an id is invalid HTML besides.
+   * Everything else — className, style, aria-label, data-* — is captured and
+   * replayed untouched.
+   */
+  const stripLandmarkAttrs = (attrs) =>
+    (attrs ?? '')
+      .replace(/\srole=(["'])main\1/gi, '')
+      .replace(/\sid=(["'])main-content\1/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/\s+$/, '');
+
   const next = src
-    .replace(/<main(\s[^>]*)?>/g, (_m, attrs) => `<div${attrs ?? ''}>`)
+    .replace(/<main(\s[^>]*)?>/g, (_m, attrs) => `<div${stripLandmarkAttrs(attrs)}>`)
     .replace(/<\/main>/g, '</div>');
 
   if (next === src) { skipped.push({ file, opens: opens.length, closes: closes.length, note: 'no-op' }); continue; }
@@ -94,7 +132,7 @@ for (const file of files) {
 
 const rel = (f) => path.relative(process.cwd(), f).replace(/\\/g, '/');
 
-console.log(`\nscanned ${files.length} page/layout files under app/`);
+console.log(`\nscanned ${files.length} files under app/ and components/`);
 console.log(`${APPLY ? 'REWROTE' : 'WOULD REWRITE'} ${changed.length} file(s)\n`);
 for (const c of changed.slice(0, 12)) {
   console.log(`  ${rel(c.file)}:${c.openLine}`);

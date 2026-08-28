@@ -295,9 +295,9 @@ function HubShellInner({
         />
       </header>
 
-      <main id="hub-main" className={`mx-auto ${mainWidth} overflow-x-clip ${mainPad}`}>
+      <div id="hub-main" className={`mx-auto ${mainWidth} overflow-x-clip ${mainPad}`}>
         {children}
-      </main>
+      </div>
 
       <footer
         className="mt-8"

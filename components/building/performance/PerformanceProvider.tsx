@@ -189,9 +189,9 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
     return (
       <>
         <LazySciFiHeader />
-        <main className="pt-20" id="main-content" role="main">
+        <div className="pt-20">
           {children}
-        </main>
+        </div>
         <LazySciFiFooter />
       </>
     );
@@ -230,9 +230,9 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
       <LazySiteSearchWrapper />
       <LazySciFiHeader />
 
-      <main className="pt-20" id="main-content" role="main">
+      <div className="pt-20">
         {children}
-      </main>
+      </div>
 
       <LazySciFiFooter />
 

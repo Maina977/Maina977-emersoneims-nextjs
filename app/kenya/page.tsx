@@ -58,7 +58,13 @@ export default function KenyaPage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Organization',
-            name: 'Emerson EiMS Kenya',
+            /* Same @id as the LocalBusiness node in app/layout.tsx, so the two
+               resolve to ONE company in the graph instead of two unlinked ones.
+               The name is aligned for the same reason — this node called itself
+               "Emerson EiMS Kenya" while the site-wide node said "EmersonEIMS",
+               and nothing connected them. */
+            '@id': 'https://www.emersoneims.com/#organization',
+            name: 'EmersonEIMS',
             description: 'Generator services across all 47 counties in Kenya',
             url: 'https://www.emersoneims.com/kenya',
             areaServed: KENYA_LOCATIONS.map(county => ({

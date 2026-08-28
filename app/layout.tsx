@@ -172,6 +172,26 @@ export default async function RootLayout({
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
+    /*
+     * THE CANONICAL ENTITY ANCHOR.
+     *
+     * This node had no @id, which caused two separate problems.
+     *
+     * 1. A DANGLING REFERENCE. The OfferCatalog below already points its
+     *    provider at `${siteUrl}/#organization` — but nothing declared that
+     *    @id, so every Offer referenced a company node that did not exist.
+     * 2. TWO COMPANIES INSTEAD OF ONE. Page-level Organization nodes (e.g.
+     *    app/kenya/page.tsx) also had no @id and used a different name —
+     *    "Emerson EiMS Kenya" against this node's "EmersonEIMS". A 400-page
+     *    audit found 114 URLs each carrying two unlinked Organization or
+     *    LocalBusiness entities, so a crawler had no way to know they were the
+     *    same business, and the trust signals split between them.
+     *
+     * An @id is how schema.org expresses identity. Every other node that
+     * describes this company must reuse this exact string so the graph
+     * resolves to one entity rather than several.
+     */
+    "@id": `${siteUrl}/#organization`,
     // NAP consistency with the Google Business Profile matters for local
     // ranking: Google associates a site with a listing partly by matching name,
     // address and phone. The listing is registered as "EMERSON INDUSTRIAL

@@ -605,6 +605,10 @@ export default function HomePage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Organization',
+            /* Same @id as the LocalBusiness node in app/layout.tsx so the graph
+               resolves to one company. Without it the homepage published two
+               unlinked entities describing the same business. */
+            '@id': 'https://www.emersoneims.com/#organization',
             name: 'EmersonEIMS',
             description: "B2B power-engineering partner for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 2-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties. Includes engineering intelligence tools (Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro).",
             url: 'https://www.emersoneims.com',

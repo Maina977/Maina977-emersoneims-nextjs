@@ -347,7 +347,7 @@ export default function SimulatorClient() {
       </header>
 
       {/* MAIN PANEL: Simulator focus, premium grouping */}
-      <main className="grid gap-6 px-6 py-6 lg:grid-cols-[1.2fr_0.9fr] xl:grid-cols-[1.2fr_0.7fr]">
+      <div className="grid gap-6 px-6 py-6 lg:grid-cols-[1.2fr_0.9fr] xl:grid-cols-[1.2fr_0.7fr]">
         {/* Left: Topology + Inputs + Harmonics */}
         <section className="space-y-6">
           <CockpitPanel
@@ -534,7 +534,7 @@ export default function SimulatorClient() {
             </div>
           </CockpitPanel>
         </section>
-      </main>
+      </div>
       <div className="px-6 pb-6">
         <HubConnectStrip active="/hub/simulator" />
       </div>

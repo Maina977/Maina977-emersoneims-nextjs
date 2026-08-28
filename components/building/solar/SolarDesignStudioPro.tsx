@@ -731,7 +731,7 @@ export default function SolarDesignStudioPro() {
         </aside>
 
         {/* Main Canvas */}
-        <main className="flex-1 p-6">
+        <div className="flex-1 p-6">
           {(activeTab === 'design' || activeTab === 'shading') && (
             <div className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
@@ -1027,7 +1027,7 @@ EARTHING:
               </div>
             </div>
           )}
-        </main>
+        </div>
 
         {/* Right Sidebar - Stats */}
         <aside className="w-72 bg-slate-800/50 border-l border-slate-700 p-4 min-h-[calc(100vh-140px)]">

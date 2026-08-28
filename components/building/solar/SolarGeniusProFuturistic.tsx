@@ -666,7 +666,7 @@ export default function SolarGeniusProFuturistic() {
       </header>
 
       {/* Main Content */}
-      <main style={{ position: 'relative', zIndex: 10, padding: '40px' }}>
+      <div style={{ position: 'relative', zIndex: 10, padding: '40px' }}>
         {/* Hero Section with Solar World */}
         <section
           style={{
@@ -1065,7 +1065,7 @@ export default function SolarGeniusProFuturistic() {
             onClick={() => {}}
           />
         </section>
-      </main>
+      </div>
 
       {/* Upload Modal */}
       {showUploadModal && (
