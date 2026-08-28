@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export default function CountyCoverageMap() {
@@ -107,11 +106,7 @@ export default function CountyCoverageMap() {
     <section className="py-20 px-4 bg-gradient-to-b from-slate-900/30 to-black border-t border-white/10 content-auto">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+        <div
           className="text-center mb-16"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 text-sm font-medium mb-6">
@@ -128,17 +123,17 @@ export default function CountyCoverageMap() {
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">
             Mobile workshop + field teams + emergency response network. Same-day delivery to Nairobi. 48-hour nationwide. 24/7 emergency support everywhere.
           </p>
-        </motion.div>
+        </div>
 
         {/* Coverage Regions */}
         <div className="space-y-8">
           {countyGroups.map((group, groupIdx) => (
-            <motion.div
+            <div
               key={groupIdx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: groupIdx * 0.1 }}
+             
+             
+             
+             
               className="bg-gradient-to-r from-slate-900/50 to-slate-800/50 border border-white/10 rounded-lg overflow-hidden"
             >
               {/* Region Header */}
@@ -162,9 +157,13 @@ export default function CountyCoverageMap() {
               <div className="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {group.counties.map((county, idx) => (
                   <Link key={idx} href={`/kenya/${county.name.toLowerCase().replace(/\s+/g, '-')}`}>
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className={`group p-4 bg-gradient-to-br ${getStatusColor(county.status)} rounded-lg cursor-pointer hover:shadow-lg hover:shadow-cyan-500/20 transition-all`}
+                    {/* whileHover={{ scale: 1.05 }} replaced by Tailwind's
+                        hover:scale-105 — identical effect, but CSS transforms
+                        run on the compositor with no JavaScript, and this was
+                        the last framer-motion node on the homepage. With it
+                        gone the library leaves the homepage bundle entirely. */}
+                    <div
+                      className={`group p-4 transition-transform duration-200 hover:scale-105 bg-gradient-to-br ${getStatusColor(county.status)} rounded-lg cursor-pointer hover:shadow-lg hover:shadow-cyan-500/20 transition-all`}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-bold text-white text-sm">{county.name}</h4>
@@ -187,20 +186,16 @@ export default function CountyCoverageMap() {
                       <div className="mt-3 pt-3 border-t border-white/20 text-xs text-white/60 group-hover:text-white transition-colors">
                         → View services
                       </div>
-                    </motion.div>
+                    </div>
                   </Link>
                 ))}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Coverage Promise */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.5 }}
+        <div
           className="mt-16 p-8 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 border border-blue-500/30 rounded-lg"
         >
           <div className="grid md:grid-cols-3 gap-8">
@@ -223,7 +218,7 @@ export default function CountyCoverageMap() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

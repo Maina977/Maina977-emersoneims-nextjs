@@ -94,7 +94,7 @@ export default function RepairCentrePage() {
                   <p className="text-slate-400 text-sm leading-relaxed mb-4">{hub.intro}</p>
                   <ul className="flex flex-wrap gap-2">
                     {hub.scope.slice(0, 5).map(s => (
-                      <li key={s} className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">{s}</li>
+                      <li key={s} className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">{s}</li>
                     ))}
                   </ul>
                 </Link>

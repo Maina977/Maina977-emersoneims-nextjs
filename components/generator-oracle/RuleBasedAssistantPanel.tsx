@@ -191,7 +191,7 @@ export default function RuleBasedAssistantPanel({
           <div className="flex-1">
             <h2 className="text-lg font-bold text-emerald-200">{header.title}</h2>
             <p className="text-sm text-slate-300 mt-1 leading-relaxed">{header.subtitle}</p>
-            <p className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-300">
+            <p className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-300">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               Deterministic engineering guidance · No generative AI
             </p>
@@ -347,13 +347,13 @@ export default function RuleBasedAssistantPanel({
                       </span>
                       {r.code} — {r.title}
                     </div>
-                    <div className="text-[11px] uppercase tracking-wide opacity-80">
+                    <div className="text-xs uppercase tracking-wide opacity-80">
                       score {r.score.toFixed(2)} · {r.severity}
                     </div>
                   </div>
                   <p className="text-xs text-slate-300 mt-1 leading-relaxed">{r.description}</p>
                   {r.matchedTerms.length > 0 && (
-                    <p className="text-[11px] mt-1 text-slate-400">
+                    <p className="text-xs mt-1 text-slate-400">
                       Matched: {r.matchedTerms.join(', ')}
                     </p>
                   )}
@@ -410,7 +410,7 @@ export default function RuleBasedAssistantPanel({
       )}
 
       {/* Footer disclaimer */}
-      <p className="mt-6 text-[11px] text-slate-500 leading-relaxed">
+      <p className="mt-6 text-xs text-slate-500 leading-relaxed">
         This assistant returns documented engineering data only. It does not generate or
         infer diagnoses. Always verify findings against the OEM service manual and the
         physical unit before acting. Generative AI surfaces (Expert Chat, Visual Diagnose,

@@ -433,7 +433,7 @@ function CompControl({
           {label}
         </div>
         <div
-          className="mt-0.5 text-[11px]"
+          className="mt-0.5 text-xs"
           style={{ color: 'var(--cockpit-ink-unit)', fontFamily: 'ui-monospace, monospace' }}
         >
           {onToggle ? toggleLabel : `${value} unit${value === 1 ? '' : 's'}${per ? ` · ${per}` : ''}`}

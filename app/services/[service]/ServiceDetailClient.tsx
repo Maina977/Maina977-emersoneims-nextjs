@@ -820,7 +820,7 @@ export default function ServiceDetailClient({
                     </span>
                     <span className="text-slate-100 text-sm font-semibold leading-snug">{feature}</span>
                   </div>
-                  <div className="text-[11px] uppercase tracking-wider text-cyan-400 font-bold flex items-center gap-1 mt-auto">
+                  <div className="text-xs uppercase tracking-wider text-cyan-400 font-bold flex items-center gap-1 mt-auto">
                     {sectionLabel} <span className="transition-transform group-hover:translate-x-1">→</span>
                   </div>
                 </a>
@@ -858,7 +858,7 @@ export default function ServiceDetailClient({
                   {useCase && (
                     <p className="text-slate-400 text-xs leading-relaxed flex-1">Typical project: {useCase}</p>
                   )}
-                  <div className="mt-4 text-[11px] uppercase tracking-wider text-emerald-400 font-bold flex items-center gap-1">
+                  <div className="mt-4 text-xs uppercase tracking-wider text-emerald-400 font-bold flex items-center gap-1">
                     💬 WhatsApp us <span className="transition-transform group-hover:translate-x-1">→</span>
                   </div>
                 </a>

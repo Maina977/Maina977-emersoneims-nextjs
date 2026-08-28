@@ -141,7 +141,7 @@ export default function BlogPage() {
                     href={`/blog/${a.slug}`}
                     className="group block h-full rounded-xl border border-slate-700 bg-slate-900/50 p-6 hover:border-cyan-500/60 transition-colors"
                   >
-                    <p className="text-[11px] uppercase tracking-widest text-cyan-400 mb-2">
+                    <p className="text-xs uppercase tracking-widest text-cyan-400 mb-2">
                       {a.category}
                     </p>
                     <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug mb-2">

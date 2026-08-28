@@ -185,7 +185,7 @@ export default function ServiceBiblePanel({ bible, contactPhoneDisplay, contactW
                   <p className="text-sm text-slate-300 mb-3">{b.capability}</p>
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {b.bestFor.map((u, j) => (
-                      <span key={j} className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                      <span key={j} className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
                         {u}
                       </span>
                     ))}

@@ -512,7 +512,7 @@ export default function VerifierClient() {
         />
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">
               Combination Verifier · result <SampleBadge />
             </div>
             <h2 className="mt-1 text-2xl font-bold tracking-tight md:text-3xl">
@@ -562,7 +562,7 @@ export default function VerifierClient() {
                   />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">{a.label}</div>
-                    <div className="text-[11px] text-ink-muted">
+                    <div className="text-xs text-ink-muted">
                       {formatValue(a.watts, { unit: 'W' })} · {formatValue(a.hoursPerDay, { unit: 'h/day' })}
                       {a.critical ? ' · critical' : ''}
                     </div>
@@ -761,7 +761,7 @@ export default function VerifierClient() {
                 <ProLine label="PV array"        v={sys.panelKwp}                       u="kWp" />
                 <ProLine label="PV daily"        v={result.pvDailyKwh}                  u="kWh" />
               </ul>
-              <p className="mt-2 text-[11px] text-ink-muted">
+              <p className="mt-2 text-xs text-ink-muted">
                 Constants: η<sub>inv</sub>={INVERTER_EFFICIENCY}, derate={SYSTEM_DERATE}, DoD={BATTERY_DOD_PCT} %,
                 solar peak hours={SOLAR_DAYTIME_HOURS}.
               </p>

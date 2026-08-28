@@ -220,7 +220,7 @@ export default function LiveFaultLookup({ className = '', compact = false }: Pro
                   </div>
                   <div className="text-sm text-white font-medium mt-2 line-clamp-1">{r.title}</div>
                   <div className="text-xs text-slate-400 mt-1 line-clamp-2">{r.description}</div>
-                  <div className="text-[11px] text-slate-500 mt-2">
+                  <div className="text-xs text-slate-500 mt-2">
                     {r.category} · {r.subcategory}
                   </div>
                 </li>

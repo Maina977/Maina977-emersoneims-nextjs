@@ -560,7 +560,7 @@ export default function SparePartsModule() {
                   <div className="relative px-4 pt-4 pb-3 border-b border-gray-800/60 bg-gradient-to-br from-gray-800/40 to-gray-900/40">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-[11px] uppercase tracking-wider text-cyan-400 font-semibold">{part.brand}</p>
+                        <p className="text-xs uppercase tracking-wider text-cyan-400 font-semibold">{part.brand}</p>
                         <p className="text-base font-mono text-white truncate" title={part.partNo}>{part.partNo}</p>
                       </div>
                       {/* Quick Actions */}

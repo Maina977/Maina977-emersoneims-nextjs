@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 export default function AIAdvantageHero() {
   const aiTools = [
@@ -45,12 +44,7 @@ export default function AIAdvantageHero() {
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Section header */}
         <div className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="reveal">
             <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10">
               <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
               {/* Was "Only AI-Powered Platform in Africa" — an exclusivity
@@ -82,19 +76,13 @@ export default function AIAdvantageHero() {
               across generators, solar, UPS and boreholes — the same tools our
               own engineers use on site.
             </p>
-          </motion.div>
+          </div>
         </div>
 
         {/* AI Tools Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {aiTools.map((tool, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: idx * 0.1 }}
-            >
+            <div className="reveal" key={idx}>
               <Link href={tool.link}>
                 <div className={`group relative p-6 rounded-lg border border-gray-700 hover:border-cyan-500/50 bg-gradient-to-br from-gray-900/40 to-gray-950/40 backdrop-blur-sm hover:bg-gradient-to-br hover:from-gray-800/60 hover:to-gray-900/60 transition-all duration-300 cursor-pointer h-full`}>
                   {/* Gradient background on hover */}
@@ -113,18 +101,12 @@ export default function AIAdvantageHero() {
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Why This Matters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="bg-gradient-to-r from-cyan-900/20 to-blue-900/20 border border-cyan-500/30 rounded-lg p-8 md:p-10"
-        >
+        <div className="bg-gradient-to-r from-cyan-900/20 to-blue-900/20 border border-cyan-500/30 rounded-lg p-8 md:p-10 reveal">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <h4 className="text-cyan-400 font-bold mb-2">Better Diagnostics</h4>
@@ -150,16 +132,10 @@ export default function AIAdvantageHero() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Competitive Positioning */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-16 pt-12 border-t border-gray-700"
-        >
+        <div className="mt-16 pt-12 border-t border-gray-700 reveal">
           {/*
             REWRITTEN 2026-08-03 (owner instruction). These three cards were
             headed "vs Jua Energy (Solar-Only)", "vs Fenix (Battery-Focused)" and
@@ -204,16 +180,10 @@ export default function AIAdvantageHero() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-16 text-center"
-        >
+        <div className="mt-16 text-center reveal">
           <p className="text-gray-400 mb-6">
             Ready to experience intelligence-powered power solutions?
           </p>
@@ -231,7 +201,7 @@ export default function AIAdvantageHero() {
               Get AI System Design
             </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

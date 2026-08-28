@@ -4569,7 +4569,7 @@ function DisplayContent({
             {/* Diagnosis */}
             <div className="p-1.5 bg-current/10 rounded">
               <div className="font-bold text-[9px] opacity-70">DIAGNOSIS:</div>
-              <div className="font-medium text-[11px]">{aiSolution.diagnosis}</div>
+              <div className="font-medium text-xs">{aiSolution.diagnosis}</div>
             </div>
 
             {/* Repair Info Bar */}
@@ -4728,7 +4728,7 @@ function DisplayContent({
                   <span>Labor:</span>
                   <span>${aiSolution.costBreakdown.labor.min}-${aiSolution.costBreakdown.labor.max}</span>
                 </div>
-                <div className="flex justify-between text-[11px] font-bold border-t border-current/30 pt-0.5 mt-0.5">
+                <div className="flex justify-between text-xs font-bold border-t border-current/30 pt-0.5 mt-0.5">
                   <span>TOTAL:</span>
                   <span className="text-green-400">${aiSolution.costBreakdown.total.min}-${aiSolution.costBreakdown.total.max} USD</span>
                 </div>

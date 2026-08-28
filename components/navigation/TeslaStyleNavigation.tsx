@@ -604,7 +604,7 @@ export default function TeslaStyleNavigation({
                     onMouseLeave={handleMegaLeave}
                   >
                     <button
-                      className={`relative px-3 xl:px-4 py-2 text-[11px] xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap rounded-md ${
+                      className={`relative px-3 xl:px-4 py-2 text-xs xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap rounded-md ${
                         activeMega === item.key
                           ? 'text-white'
                           : (item as { featured?: boolean }).featured
@@ -640,7 +640,7 @@ export default function TeslaStyleNavigation({
                   <Link
                     href={item.href!}
                     prefetch={prefetchForHref(item.href!)}
-                    className="px-3 xl:px-4 py-2 text-[11px] xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 whitespace-nowrap rounded-md text-white/75 hover:text-white"
+                    className="px-3 xl:px-4 py-2 text-xs xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 whitespace-nowrap rounded-md text-white/75 hover:text-white"
                   >
                     {item.label}
                   </Link>
@@ -661,7 +661,7 @@ export default function TeslaStyleNavigation({
                     aria-haspopup="true"
                     aria-expanded={overflowOpen}
                     onClick={() => setOverflowOpen(v => !v)}
-                    className={`relative px-3 xl:px-4 py-2 text-[11px] xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap rounded-md ${overflowOpen ? 'text-white' : 'text-white/75 hover:text-white'}`}
+                    className={`relative px-3 xl:px-4 py-2 text-xs xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap rounded-md ${overflowOpen ? 'text-white' : 'text-white/75 hover:text-white'}`}
                   >
                     More
                     <svg className={`w-3 h-3 transition-transform duration-200 ${overflowOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -732,7 +732,7 @@ export default function TeslaStyleNavigation({
                 <Link
                   href="/contact"
                   prefetch={prefetchForHref('/contact')}
-                  className="px-4 py-2 text-[11px] xl:text-[12px] font-bold tracking-[0.08em] uppercase rounded-md bg-amber-500 text-black hover:bg-amber-400 transition-colors duration-200 whitespace-nowrap"
+                  className="px-4 py-2 text-xs xl:text-[12px] font-bold tracking-[0.08em] uppercase rounded-md bg-amber-500 text-black hover:bg-amber-400 transition-colors duration-200 whitespace-nowrap"
                 >
                   Get Quote
                 </Link>

@@ -30,7 +30,7 @@ export default function B2BSiteStrip() {
       aria-label="B2B commercial positioning"
       className="w-full bg-slate-950 border-b border-amber-500/20 text-slate-200"
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-1.5 flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-1 text-[11px] sm:text-xs">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-1.5 flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-1 text-xs sm:text-xs">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 text-amber-200 border border-amber-500/30 px-2 py-0.5 font-semibold uppercase tracking-wider">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" aria-hidden="true" />

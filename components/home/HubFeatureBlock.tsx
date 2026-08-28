@@ -138,7 +138,7 @@ export function HubFeatureBlock() {
                   >
                     <span
                       aria-hidden
-                      className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-[11px] font-bold tabular-nums text-black"
+                      className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-xs font-bold tabular-nums text-black"
                     >
                       {i + 1}
                     </span>
@@ -146,7 +146,7 @@ export function HubFeatureBlock() {
                       <span className="block text-sm font-semibold text-white">
                         {t.label}
                       </span>
-                      <span className="block text-[11px] text-gray-400">
+                      <span className="block text-xs text-gray-400">
                         {t.short}
                       </span>
                     </span>

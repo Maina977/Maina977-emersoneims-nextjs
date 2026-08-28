@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { formatKES } from '@/lib/format/currency';
 
 export default function TradeInCalculator() {
@@ -72,13 +71,7 @@ export default function TradeInCalculator() {
     <section className="py-20 px-4 bg-gradient-to-b from-slate-900/50 to-black border-t border-white/10 content-auto">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16 reveal">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-sm font-medium mb-6">
             <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
             Trade-In Appraisal
@@ -93,17 +86,11 @@ export default function TradeInCalculator() {
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">
             Upgrade your old generator to a new Cummins or FG Wilson. We buy your existing unit and credit the value toward your purchase. No hassle, fair pricing.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Calculator */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-purple-500/20 rounded-2xl p-8"
-          >
+          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-purple-500/20 rounded-2xl p-8 reveal">
             <h3 className="text-2xl font-bold text-white mb-8">Get Trade-In Value</h3>
 
             {/* Brand */}
@@ -212,15 +199,10 @@ export default function TradeInCalculator() {
                 Based on condition, hours, and current market rates
               </p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Upgrade Path */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="reveal">
             <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/30 rounded-2xl p-8 mb-6">
               <h3 className="text-2xl font-bold text-white mb-6">Upgrade to New Generator</h3>
 
@@ -291,17 +273,11 @@ export default function TradeInCalculator() {
                 Instant valuation · No obligation · Free pickup
               </p>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Process */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-16 pt-12 border-t border-white/10"
-        >
+        <div className="mt-16 pt-12 border-t border-white/10 reveal">
           <h3 className="text-2xl font-bold text-white text-center mb-12">Simple Trade-In Process</h3>
           <div className="grid md:grid-cols-4 gap-6">
             {[
@@ -319,7 +295,7 @@ export default function TradeInCalculator() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

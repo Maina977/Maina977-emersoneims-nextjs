@@ -59,7 +59,7 @@ export function StatusLight({
       </span>
       <span className="min-w-0">
         <span
-          className="block truncate text-[11px] font-medium leading-tight"
+          className="block truncate text-xs font-medium leading-tight"
           style={{ color: 'var(--cockpit-ink)' }}
         >
           {label}

@@ -277,7 +277,7 @@ export default function SpiralGallery({
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(0,0,0,0.85)_100%)]" />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 pt-20 md:pt-24 text-center px-4">
-          <p className="text-[11px] md:text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">{eyebrow}</p>
+          <p className="text-xs md:text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">{eyebrow}</p>
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-none">
             {heading}
           </h2>

@@ -82,7 +82,7 @@ function AudienceToggle() {
           boxShadow: active ? '0 6px 18px -8px rgba(0,113,227,0.65), inset 0 0 0 1px rgba(255,255,255,0.08)' : 'none',
         }}
       >
-        <span className="text-[11px] font-bold uppercase tracking-[0.16em] leading-none">{label}</span>
+        <span className="text-xs font-bold uppercase tracking-[0.16em] leading-none">{label}</span>
         <span className="mt-0.5 text-[9.5px] font-medium tracking-wide leading-none opacity-80">{sub}</span>
       </button>
     );
@@ -133,13 +133,13 @@ export function ProOnly({
         ENG
       </span>
       <div className="flex-1">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted">Engineer-only section</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted">Engineer-only section</div>
         <p className="mt-0.5">{note}</p>
       </div>
       <button
         type="button"
         onClick={() => setAudience('pro')}
-        className="shrink-0 self-center rounded-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white shadow transition-transform hover:scale-[1.03]"
+        className="shrink-0 self-center rounded-md px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow transition-transform hover:scale-[1.03]"
         style={{ background: 'linear-gradient(135deg, #0071e3 0%, #003a73 100%)' }}
       >
         Switch to Engineer
@@ -211,7 +211,7 @@ function HubShellInner({
           <Link href="/hub" className="group flex items-center gap-3 shrink-0">
             <span
               aria-hidden
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[11px] font-bold tracking-tight text-white"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-xs font-bold tracking-tight text-white"
               style={{
                 background: 'linear-gradient(135deg, #0071e3 0%, #003a73 100%)',
                 boxShadow: '0 6px 16px -6px rgba(0,113,227,0.6), inset 0 0 0 1px rgba(255,255,255,0.10)',
@@ -326,7 +326,7 @@ export function SectionHeading({
   return (
     <header className="mb-4">
       {eyebrow ? (
-        <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
+        <div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">
           {eyebrow}
         </div>
       ) : null}
@@ -433,7 +433,7 @@ export function HubConnectStrip({
       />
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--cockpit-ink-muted)' }}>
+          <div className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--cockpit-ink-muted)' }}>
             One platform · {others.length + 1} tools
           </div>
           <h3 className="mt-0.5 text-base font-semibold tracking-tight md:text-lg" style={{ color: 'var(--cockpit-ink)' }}>
@@ -459,7 +459,7 @@ export function HubConnectStrip({
               <span className="mt-0.5 text-sm font-semibold tracking-tight" style={{ color: 'var(--cockpit-ink)' }}>
                 {t.label}
               </span>
-              <span className="mt-1 text-[11px] font-semibold tracking-wide" style={{ color: '#4cd2ee' }}>
+              <span className="mt-1 text-xs font-semibold tracking-wide" style={{ color: '#4cd2ee' }}>
                 Open →
               </span>
             </Link>
@@ -555,7 +555,7 @@ export function CompactGovernanceLine() {
   );
   return (
     <div
-      className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"
       style={{ color: 'rgba(230,237,247,0.55)' }}
       aria-label="Hub governance"
     >
@@ -597,7 +597,7 @@ export function Breadcrumbs({ active }: { active: string }) {
   if (moduleLabel) items.push({ label: moduleLabel });
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-1.5 text-[11px]" style={{ color: 'rgba(230,237,247,0.55)' }}>
+    <nav aria-label="Breadcrumb" className="mb-1.5 text-xs" style={{ color: 'rgba(230,237,247,0.55)' }}>
       <ol className="flex flex-wrap items-center gap-1">
         {items.map((it, i) => {
           const isLast = i === items.length - 1;

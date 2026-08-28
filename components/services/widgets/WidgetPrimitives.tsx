@@ -209,7 +209,7 @@ export function Knob({
       {description && <p className="text-slate-400 text-xs mt-3 leading-relaxed">{description}</p>}
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {zones.map((z, i) => (
-          <div key={i} className="flex items-center gap-2 text-[11px] text-slate-300">
+          <div key={i} className="flex items-center gap-2 text-xs text-slate-300">
             <span
               className={`inline-block w-2.5 h-2.5 rounded-full ${
                 z.color === 'emerald-500'
@@ -278,7 +278,7 @@ export function BarChart({ title, data, source }: BarChartProps) {
                   />
                 )}
               </div>
-              {d.note && <p className="text-[11px] text-slate-400 mt-1">{d.note}</p>}
+              {d.note && <p className="text-xs text-slate-400 mt-1">{d.note}</p>}
             </div>
           );
         })}
@@ -385,7 +385,7 @@ export function LineChart({ title, xLabel, yLabel, unit, series, source }: LineC
       </div>
       <div className="flex flex-wrap gap-3 mt-2">
         {series.map((s, i) => (
-          <div key={i} className="flex items-center gap-1.5 text-[11px] text-slate-300">
+          <div key={i} className="flex items-center gap-1.5 text-xs text-slate-300">
             <span className="w-3 h-1 rounded" style={{ background: s.color }} />
             <span>{s.name}</span>
           </div>
@@ -411,7 +411,7 @@ export function SpecTable({ title, rows, source }: SpecTableProps) {
               <td className="py-2 text-slate-400 align-top w-1/2">{r.label}</td>
               <td className="py-2 text-slate-100 font-mono font-semibold align-top">
                 {r.value}
-                {r.note && <span className="block text-[11px] text-slate-500 font-sans font-normal mt-0.5">{r.note}</span>}
+                {r.note && <span className="block text-xs text-slate-500 font-sans font-normal mt-0.5">{r.note}</span>}
               </td>
             </tr>
           ))}
@@ -468,7 +468,7 @@ export function Diagram({ title, svg, hotspots, source }: DiagramProps) {
               </span>
               <span className="font-semibold text-slate-100">{h.label}</span>
             </div>
-            <p className="text-slate-400 text-[11px] leading-relaxed pl-7">{h.detail}</p>
+            <p className="text-slate-400 text-xs leading-relaxed pl-7">{h.detail}</p>
           </div>
         ))}
       </div>

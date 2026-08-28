@@ -96,7 +96,7 @@ export default function TeslaSlideGallery({
 
       {/* Caption — Tesla-style centered top */}
       <div className="absolute inset-x-0 top-0 pt-16 md:pt-20 px-4 text-center z-10">
-        {eyebrow && <p className="text-[11px] md:text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">{eyebrow}</p>}
+        {eyebrow && <p className="text-xs md:text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">{eyebrow}</p>}
         <div key={index} className="tesla-cap">
           <h2 className="text-3xl md:text-6xl font-bold text-white leading-tight drop-shadow-lg">{active?.title}</h2>
           {active?.subtitle && <p className="mt-3 text-base md:text-xl text-gray-200 max-w-2xl mx-auto">{active.subtitle}</p>}

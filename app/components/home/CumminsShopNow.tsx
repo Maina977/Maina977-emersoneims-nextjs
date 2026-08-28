@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
 
 /*
@@ -82,16 +81,13 @@ export default function CumminsShopNow() {
     <section className="py-20 px-4 bg-black border-t border-white/10">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16 reveal">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium mb-6">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            Real Pricing | Real Stock | Real Financing
+            {/* "Real Stock" contradicted the "Ask for availability" badge on
+                every card below it, and "Real Financing" implied a facility we
+                do not provide. */}
+            Published pricing · confirmed on quotation
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Cummins Generators
@@ -109,23 +105,12 @@ export default function CumminsShopNow() {
             our generators page. Financing is arranged through your own bank or
             asset financier.
           </p>
-        </motion.div>
+        </div>
 
         {/* Product Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
           {models.map((gen, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: idx * 0.1 }}
-              className={`relative rounded-2xl border transition-all duration-300 overflow-hidden group ${
-                gen.popular
-                  ? 'border-amber-500 bg-gradient-to-b from-amber-500/10 to-black'
-                  : 'border-white/20 bg-white/5 hover:border-amber-500/50 hover:bg-white/10'
-              }`}
-            >
+            <div key={idx} className={`relative rounded-2xl border transition-all duration-300 overflow-hidden group ${ gen.popular ? 'border-amber-500 bg-gradient-to-b from-amber-500/10 to-black' : 'border-white/20 bg-white/5 hover:border-amber-500/50 hover:bg-white/10' } reveal`}>
               {gen.popular && (
                 <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-bold rounded-bl-lg">
                   POPULAR
@@ -201,18 +186,12 @@ export default function CumminsShopNow() {
                   </Link>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Bottom CTA Strip */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="bg-gradient-to-r from-slate-900/30 via-amber-900/20 to-slate-900/30 border border-amber-500/20 rounded-2xl p-8 md:p-12"
-        >
+        <div className="bg-gradient-to-r from-slate-900/30 via-amber-900/20 to-slate-900/30 border border-amber-500/20 rounded-2xl p-8 md:p-12 reveal">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-amber-400 mb-2">48 Hours</div>
@@ -254,7 +233,7 @@ export default function CumminsShopNow() {
               </a>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

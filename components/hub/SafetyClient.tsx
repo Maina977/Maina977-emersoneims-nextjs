@@ -189,10 +189,10 @@ export default function SafetyClient() {
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
               <tr className="border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                <th className="py-2 pr-3 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-muted">Class</th>
-                <th className="py-2 pr-3 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-muted">Fuel</th>
-                <th className="py-2 pr-3 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-muted">Use</th>
-                <th className="py-2 pr-3 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-muted">Avoid</th>
+                <th className="py-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-muted">Class</th>
+                <th className="py-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-muted">Fuel</th>
+                <th className="py-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-muted">Use</th>
+                <th className="py-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-muted">Avoid</th>
               </tr>
             </thead>
             <tbody className="text-ink-secondary">

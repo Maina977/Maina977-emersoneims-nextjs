@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 export default function FinancingCalculator() {
   const [price, setPrice] = useState(1050000);
@@ -39,13 +38,7 @@ export default function FinancingCalculator() {
     <section className="py-20 px-4 bg-gradient-to-b from-black to-slate-900/30 content-auto">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16 reveal">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-sm font-medium mb-6">
             <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
             Flexible Payment Plans
@@ -58,19 +51,16 @@ export default function FinancingCalculator() {
             </span>
           </h2>
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-            Finance your generator through a commercial bank, asset finance or mobile money credit. Flexible terms, fast approval, same-day dispatch.
+            {/* "fast approval, same-day dispatch" removed with the other lender
+                promises below — approval is the financier's decision and
+                same-day dispatch is not a commitment made anywhere else. */}
+            Finance your generator through a commercial bank, asset finance or mobile money credit. The figures below are indicative.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Calculator */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="lg:col-span-2 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-2xl p-8"
-          >
+          <div className="lg:col-span-2 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-2xl p-8 reveal">
             <h3 className="text-2xl font-bold text-white mb-8">Calculate Your Monthly Payment</h3>
 
             {/* Model Selector */}
@@ -176,15 +166,10 @@ export default function FinancingCalculator() {
                 Take the quoted figure to your own bank or asset financier.
               </p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Financing Partners */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="reveal">
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-2xl p-8">
               {/* "Financing Partners" claimed relationships we do not have —
                   see the note at the top of this file. These are lender TYPES
@@ -242,17 +227,11 @@ export default function FinancingCalculator() {
                 </ul>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Bottom Trust Strip */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-12 pt-12 border-t border-white/10 text-center"
-        >
+        <div className="mt-12 pt-12 border-t border-white/10 text-center reveal">
           <p className="text-gray-400 mb-4">
             Over 1,200 generators financed across Kenya. Trusted by hospitals, factories, and commercial properties.
           </p>
@@ -263,7 +242,7 @@ export default function FinancingCalculator() {
             <span>🏪 Retail</span>
             <span>🌾 Agriculture</span>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

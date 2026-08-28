@@ -994,7 +994,7 @@ export default function SciFiContactPage() {
                   href={`mailto:${e.address}`}
                   className="group block p-5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-amber-400/40 transition-all"
                 >
-                  <div className="text-[11px] uppercase tracking-wider text-amber-400 font-mono">{e.label}</div>
+                  <div className="text-xs uppercase tracking-wider text-amber-400 font-mono">{e.label}</div>
                   <div className="text-sm md:text-base text-white font-medium mt-1 break-all group-hover:text-amber-300 transition-colors">{e.address}</div>
                   <div className="text-xs text-slate-400 mt-2 leading-snug">{e.use}</div>
                 </a>

@@ -100,7 +100,7 @@ export default function SparePartsConversion() {
             </div>
             <textarea className={`${field} resize-none`} rows={3} placeholder="Part(s) needed — e.g. fuel filter, AVR, starter motor…" value={form.part} onChange={(e) => set('part', e.target.value)} required />
             <button type="submit" className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black font-bold rounded-xl transition-colors">Send request on WhatsApp →</button>
-            <p className="text-[11px] text-white/40 text-center">Opens WhatsApp with your request pre-filled. We reply with price &amp; stock.</p>
+            <p className="text-xs text-white/40 text-center">Opens WhatsApp with your request pre-filled. We reply with price &amp; stock.</p>
           </form>
         </div>
       </section>

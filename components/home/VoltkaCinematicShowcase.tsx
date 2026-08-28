@@ -12,7 +12,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 /**
  * Every VOLTKA showcase frame we hold. NOTHING IS DELETED HERE — the homepage
@@ -204,12 +203,7 @@ export default function VoltkaCinematicShowcase() {
 
       {/* Headline — top center, Tesla typography */}
       <div className="absolute top-0 left-0 right-0 pt-14 sm:pt-[8vh] px-4 text-center pointer-events-none">
-        <motion.div
-          key={slide.title}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.55, ease: 'easeOut' }}
-        >
+        <div className="reveal" key={slide.title}>
           <p className="text-[10px] sm:text-xs font-medium tracking-[0.3em] text-amber-300 uppercase mb-3">
             {slide.kicker}
           </p>
@@ -219,7 +213,7 @@ export default function VoltkaCinematicShowcase() {
           <p className="mt-2.5 text-sm sm:text-base text-white/85 font-light max-w-xl mx-auto">
             {slide.sub}
           </p>
-        </motion.div>
+        </div>
       </div>
 
       {/* Twin CTAs — Tesla proportions: 264px, slim, 4px radius */}

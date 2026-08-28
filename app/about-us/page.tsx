@@ -206,7 +206,7 @@ function AboutHero({ reducedMotion }: { reducedMotion: boolean }) {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.55)_100%)]" />
 
       <div className="relative z-10 eims-shell w-full pb-20 md:pb-28">
-        <p className="hero-fade text-[11px] md:text-xs tracking-[0.45em] uppercase text-amber-400 mb-5">
+        <p className="hero-fade text-xs md:text-xs tracking-[0.45em] uppercase text-amber-400 mb-5">
           Est. 2013 — Nairobi, Kenya
         </p>
         <h1 className="text-[13vw] md:text-[7.5vw] font-bold leading-[0.95] text-white">
@@ -314,7 +314,7 @@ function MissionVisionValues() {
     <section className="py-28 bg-black">
       <div className="eims-shell py-0">
         <Reveal className="mb-16">
-          <p className="text-[11px] tracking-[0.4em] uppercase text-amber-400/90 mb-3">What Drives Us</p>
+          <p className="text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">What Drives Us</p>
           <h2 className="text-4xl md:text-6xl font-bold text-white">Mission. Vision. Values.</h2>
         </Reveal>
 
@@ -358,7 +358,7 @@ function GeneratorBrands() {
       <div className="eims-shell py-0">
         <Reveal className="mb-16 md:flex md:items-end md:justify-between">
           <div>
-            <p className="text-[11px] tracking-[0.4em] uppercase text-amber-400/90 mb-3">Every Major Manufacturer</p>
+            <p className="text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">Every Major Manufacturer</p>
             <h2 className="text-4xl md:text-6xl font-bold text-white max-w-3xl">
               Generator Brands We Sell &amp; Service
             </h2>
@@ -449,7 +449,7 @@ function CompanyTimeline({ reducedMotion }: { reducedMotion: boolean }) {
     <section className="py-28 bg-black">
       <div className="eims-shell py-0">
         <Reveal className="mb-20 text-center">
-          <p className="text-[11px] tracking-[0.4em] uppercase text-amber-400/90 mb-3">2013 — Today</p>
+          <p className="text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">2013 — Today</p>
           <h2 className="text-4xl md:text-6xl font-bold text-white">Our Journey</h2>
           <p className="mt-5 text-lg md:text-xl text-gray-400 max-w-3xl mx-auto">
             Over a decade of powering Kenya with innovative energy solutions
@@ -490,7 +490,7 @@ function VideoShowcase() {
     <section className="py-28 bg-gradient-to-b from-black via-gray-950 to-black">
       <div className="eims-shell py-0">
         <Reveal className="text-center mb-14">
-          <p className="text-[11px] tracking-[0.4em] uppercase text-amber-400/90 mb-3">On Site</p>
+          <p className="text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">On Site</p>
           <h2 className="text-4xl md:text-6xl font-bold text-white">See Our Work in Action</h2>
           <p className="mt-5 text-lg md:text-xl text-gray-400 max-w-3xl mx-auto">
             Real projects, real results. Watch how we deliver power solutions across Kenya.

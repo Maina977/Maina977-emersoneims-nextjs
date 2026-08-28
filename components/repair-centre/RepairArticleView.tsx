@@ -46,7 +46,7 @@ function CauseBlock({ label, items, weight }: { label: string; items: string[]; 
     <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-5">
       <div className="flex items-center gap-3 mb-3">
         <h3 className="text-lg font-bold text-white">{label}</h3>
-        <span className="text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-full border border-slate-600 text-slate-400">{weight}</span>
+        <span className="text-xs uppercase tracking-wider px-2 py-0.5 rounded-full border border-slate-600 text-slate-400">{weight}</span>
       </div>
       <Bullets items={items} />
     </div>
@@ -284,7 +284,7 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
             <div key={i} className="rounded-xl border border-slate-700 bg-slate-900/50 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <h3 className="text-lg font-bold text-white">{r.title}</h3>
-                <span className="text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-full border border-slate-600 text-slate-400">
+                <span className="text-xs uppercase tracking-wider px-2 py-0.5 rounded-full border border-slate-600 text-slate-400">
                   {r.level.replace(/-/g, ' ')}
                 </span>
               </div>

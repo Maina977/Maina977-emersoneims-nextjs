@@ -112,7 +112,7 @@ export default function AbuseClient() {
               >
                 <div className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-80">{x.asset}</div>
                 <div className="mt-0.5 text-sm font-semibold tracking-tight">{x.title}</div>
-                <div className="mt-1 text-[11px] opacity-90">{x.caption}</div>
+                <div className="mt-1 text-xs opacity-90">{x.caption}</div>
               </button>
             );
           })}

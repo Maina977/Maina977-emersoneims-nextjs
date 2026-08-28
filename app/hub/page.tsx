@@ -130,7 +130,7 @@ export default function HubLandingPage() {
           />
           <div className="grid items-stretch gap-6 md:grid-cols-[1fr_280px]">
             <div className="flex min-w-0 flex-col">
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">
                 Step 1 · Sizing
                 <span className="status-chip status-chip--info">Recommended start</span>
                 <span
@@ -204,7 +204,7 @@ export default function HubLandingPage() {
                   />
                 )}
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">
                     Step {i + 2}
                   </span>
                   <span className="rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ background: 'rgba(0,113,227,0.08)', color: '#0071e3' }}>{t.meta}</span>
@@ -285,7 +285,7 @@ export default function HubLandingPage() {
             className="mt-5 border-t pt-4"
             style={{ borderColor: 'var(--color-border-subtle)' }}
           >
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
+            <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">
               Today&rsquo;s findings · sample
             </div>
             <ul className="space-y-1.5 text-xs text-ink-secondary">

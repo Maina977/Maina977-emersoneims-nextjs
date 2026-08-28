@@ -130,7 +130,7 @@ function ControllerSourceBlock({ controllerId }: { controllerId: string }) {
       <p className="text-slate-300 leading-relaxed">{entry.reason}</p>
       {entry.searchedSources.length > 0 && (
         <div className="mt-2">
-          <div className="text-[11px] uppercase tracking-wide text-slate-500">Sources searched</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">Sources searched</div>
           <ul className="list-disc pl-5 text-slate-400">
             {entry.searchedSources.map((s) => (
               <li key={s}>{s}</li>
