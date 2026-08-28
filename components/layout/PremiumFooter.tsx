@@ -242,9 +242,13 @@ export default function PremiumFooter() {
           
           {/* Brand Column */}
           <div className="lg:col-span-4 space-y-8">
+            {/* No aria-label. The wordmark below is real text — "EMERSON" and
+                "EiMS" — so it already names the link. The override read
+                "Emerson EiMS home", which did not contain the rendered text as
+                a substring, and WCAG 2.5.3 requires that it does. Letting the
+                content supply the name is both correct and self-maintaining. */}
             <Link
               href="/"
-              aria-label="Emerson EiMS home"
               className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
             >
               <div className="flex items-center gap-3">
@@ -334,9 +338,21 @@ export default function PremiumFooter() {
                   <ul className="space-y-2">
                     {TEAM_EMAILS.map((entry) => (
                       <li key={entry.address}>
+                        {/* No aria-label. The two spans below already read as
+                            "General Inquiries info@emersoneims.com", which is
+                            exactly what a screen reader should announce. The
+                            aria-label here said "General Inquiries \u2014 info@..."
+                            and that em-dash meant the visible text was NOT a
+                            substring of the accessible name, which is the WCAG
+                            2.5.3 failure Lighthouse reported as "Elements with
+                            visible text labels do not have matching accessible
+                            names". It also breaks voice control: someone saying
+                            "click General Inquiries info at emersoneims dot
+                            com" would not match the announced name. Deleting a
+                            redundant override is the fix; the content already
+                            names the link. */}
                         <a
                           href={`mailto:${entry.address}`}
-                          aria-label={`${entry.label} \u2014 ${entry.address}`}
                           className="block hover:text-brand-gold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
                         >
                           <span className="block text-xs text-gray-400 uppercase tracking-wider">
@@ -393,7 +409,11 @@ export default function PremiumFooter() {
               </Link>
             ))}
           </div>
-          <div className="text-xs text-gray-600 font-mono">
+          {/* gray-600 (#4b5563) on black measured 2.77:1, against the 4.5:1
+              minimum for text this size — it was effectively invisible to
+              anyone with reduced contrast sensitivity. gray-400 (#9ca3af)
+              measures about 7.5:1 and keeps the same quiet, recessive look. */}
+          <div className="text-xs text-gray-400 font-mono">
             ENGINEERED IN NAIROBI, KENYA
           </div>
         </div>

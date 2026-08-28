@@ -447,7 +447,20 @@ export default async function RootLayout({
           /* Hero opt-in: pages add the hero-full class to first section to fill viewport */
           main#main-content>section.hero-full:first-child{min-height:100vh}
           /* Compensate fixed navbar so non-hero pages do not sit under it */
-          main#main-content{padding-top:64px}
+          /* min-height reserves the page. Without it the whole site's
+             Cumulative Layout Shift was 0.62 — against a 0.10 "good"
+             threshold — from ONE shift, measured on the live homepage under
+             Lighthouse conditions (4x CPU, slow 4G):
+                 FOOTER  y 310 -> 0   h 534 -> 0   at 4957ms
+             The cause is streaming SSR. The layout shell (nav and footer)
+             flushes to the browser before the page's children stream in, so
+             the footer paints 310px down a nearly empty viewport and is then
+             shoved below the fold when the content arrives. Reserving a
+             viewport of height means the footer starts off-screen, so the
+             later reflow moves something the user was never shown and costs
+             no CLS. 100svh (not vh) so mobile browser chrome does not make
+             the reservation taller than the actual visible area. */
+          main#main-content{padding-top:64px;min-height:100svh}
           @media(min-width:1024px){nav#main-navigation{min-height:72px}main#main-content{padding-top:72px}}
           /* Pages that own a full-viewport hero opt out of the offset */
           main#main-content:has(>section.hero-full:first-child){padding-top:0}

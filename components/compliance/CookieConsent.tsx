@@ -110,7 +110,10 @@ export default function CookieConsent() {
             <button
               onClick={acceptCookies}
               className="flex-1 md:flex-none px-3 py-2 md:px-6 md:py-2.5 bg-gradient-to-r from-amber-500 to-cyan-500 text-black font-semibold rounded-lg hover:opacity-90 transition-opacity text-xs md:text-sm whitespace-nowrap"
-              aria-label="Accept cookies"
+              // Must CONTAIN the visible text "Accept All" (WCAG 2.5.3), or
+              // voice control cannot target the button by what it says.
+              // "Accept cookies" did not contain it.
+              aria-label="Accept All cookies"
             >
               Accept All
             </button>
