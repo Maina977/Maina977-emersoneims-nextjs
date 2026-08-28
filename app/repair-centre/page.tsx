@@ -4,7 +4,10 @@ import { REPAIR_HUBS, REPAIR_ARTICLES, getArticlesForHub } from '@/lib/repair-ce
 import RepairCentreMap from '@/components/repair-centre/RepairCentreMap';
 
 export const metadata: Metadata = {
-  title: 'Repair Centre | Generator, Inverter & UPS Fault Diagnosis',
+  /* 41 chars. The layout template appends " | EmersonEIMS Kenya" (20), so this
+     rendered at 81 against roughly 65 shown in results — "Fault Diagnosis" and
+     the brand were both written and never seen. */
+  title: 'Generator, Inverter & UPS Repair Centre',
   description:
     'Technical fault diagnosis and repair guidance for diesel generators, inverters, UPS systems and generator controllers. Ranked causes, ordered diagnostic steps with expected readings, and the safety constraints stated rather than assumed.',
   keywords: [

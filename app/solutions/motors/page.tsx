@@ -27,7 +27,7 @@ const MOTOR_TABS = [
 // 10+ DETAILED EDUCATIONAL PARAGRAPHS
 const MOTOR_FUNDAMENTALS = [
   {
-    title: "Understanding Electric Motors: The Backbone of Modern Industry",
+    title: "Electric Motors | Rewinding & Repair",
     content: `Electric motors are electromagnetic machines that convert electrical energy into mechanical motion, serving as the fundamental drivers of nearly all industrial, commercial, and domestic equipment. In Kenya and East Africa, motors power critical infrastructure including water pumping systems, manufacturing equipment, HVAC systems, mining operations, agricultural processing facilities, and countless other applications. The reliability and efficiency of these motors directly impacts operational productivity, energy costs, and facility safety. Motors are classified into several main types: AC induction motors (most common in industry), DC motors (for precise speed control), synchronous motors (for large industrial loads), and specialty motors (servo motors, stepper motors, linear motors). Each type has specific advantages, applications, and failure modes that require different diagnostic and repair approaches. Understanding motor fundamentals is essential for any technician or facility manager responsible for equipment maintenance and operations.`,
   },
   {

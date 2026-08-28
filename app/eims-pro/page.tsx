@@ -8,7 +8,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/eims-pro`;
 
 export const metadata: Metadata = {
-  title: 'EIMS PRO — Building Intelligence & Construction Engineering Workspace',
+  title: 'EIMS PRO | Building Intelligence',
   description:
     'EIMS PRO (Building Suite Pro) is the EmersonEIMS construction engineering workspace: phases, reports, BIM, costing and AI assist for serious building projects across Kenya & East Africa.',
   keywords: [

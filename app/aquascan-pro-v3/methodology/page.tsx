@@ -7,7 +7,7 @@ const URL = `${SITE}/aquascan-pro-v3/methodology`;
 export const revalidate = 600;
 
 export const metadata: Metadata = {
-  title: 'AquaScan Pro Methodology & Validation — How Every Report Is Built and Verified',
+  title: 'AquaScan Pro Methodology & Validation',
   description:
     'Full transparency on AquaScan Pro: the data sources, hydrogeological physics, 19-check consistency validator, three-score readiness architecture, scientific references, known limitations and the public validation ledger. No invented data — ever.',
   alternates: { canonical: URL },

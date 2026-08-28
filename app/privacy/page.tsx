@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Privacy Policy | EmersonEIMS - GDPR Compliant Data Protection',
+  title: 'Privacy Policy',
   description: 'Learn how EmersonEIMS collects, uses, and protects your personal information. GDPR, CCPA, and Kenya Data Protection Act compliant privacy policy.',
   robots: 'index, follow',
 };

@@ -46,7 +46,7 @@ const FAULT_CODE_QUALIFIER = 'curated';
 const FAULT_CODE_BRANDS = 79;
 
 export const metadata: Metadata = {
-  title: 'Why EmersonEIMS | Engineering You Can Check Before You Buy | Kenya',
+  title: 'Why EmersonEIMS | Engineering You Can Check',
   description:
     'We publish our engineering: 60 free diagnosis guides, curated fault code references across 79 brands, and free tools for engineers. One team for generators, solar, UPS, HVAC, boreholes and motors across all 47 counties.',
   alternates: {

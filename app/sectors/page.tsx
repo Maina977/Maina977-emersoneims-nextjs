@@ -27,7 +27,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export const metadata: Metadata = {
-  title: 'Sectors We Power | Generator & Backup Power Solutions by Industry',
+  title: 'Backup Power by Industry Sector',
   description:
     'Backup power, solar and electrical engineering for hospitals, schools, banks, hotels, factories, farms and more across Kenya. Sector-specific load profiles, constraints and solutions.',
   alternates: { canonical: `${BASE}/sectors` },
