@@ -116,10 +116,10 @@ export default function CountyCoverageMap() {
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 text-sm font-medium mb-6">
             <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-            Nationwide Coverage Guarantee
+            Nationwide Coverage
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Present in All
+            Serving All
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-500">
               47 Kenya Counties

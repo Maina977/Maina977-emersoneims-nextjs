@@ -129,7 +129,12 @@ export default function AIAdvantageHero() {
             <div>
               <h4 className="text-cyan-400 font-bold mb-2">Optimized Performance</h4>
               <p className="text-gray-300 text-sm">
-                Real-time intelligence cuts fuel costs by 20-40% through automated load balancing and efficiency tuning
+                {/* "cuts fuel costs by 20-40%" removed: we have published no
+                    measurement behind it, and it is the same unevidenced kind
+                    of figure as the "40-60% more efficient" line struck from
+                    the block below. What the tools actually do is describable
+                    without inventing a percentage. */}
+                Load profiling and efficiency tuning, so the set runs at the load it was sized for rather than idling rich
               </p>
             </div>
           </div>

@@ -25,14 +25,49 @@ const RingGallery = dynamic(() => import('@/components/home/RingGallery'), {
 });
 import HomeEngineeringAuthority from '@/components/home/HomeEngineeringAuthority';
 import AIToolsPromo from '@/components/ai/AIToolsPromo';
-import AIAdvantageHero from '@/components/home/AIAdvantageHero';
+/*
+ * FIVE HOMEPAGE SECTIONS WERE RENDERING NOTHING.
+ *
+ * components/home/{CumminsShopNow,FinancingCalculator,AIAdvantageHero,
+ * SocialProofWidget,CountyCoverageMap}.tsx are each three lines long:
+ *     return <div className="py-20 px-4 bg-black" />;
+ * They were created as empty placeholders in 8211b03 ("Resolve Vercel build
+ * errors ... missing components") to satisfy these imports and get a failing
+ * build through, and were never filled in. Nothing was deleted — but the
+ * homepage has been shipping roughly 800px of blank black in its most valuable
+ * region ever since, and the real implementations sat unimported in
+ * app/components/home/.
+ *
+ * Three are wired below. Two are deliberately NOT, and must not be wired
+ * without the owner deciding:
+ *
+ *   SocialProofWidget — contains four FABRICATED testimonials attributed to
+ *     invented named individuals ("Dr. James Kipchoge", "Sarah Mwangi", ...),
+ *     each flagged `verified: true`, with invented metrics ("99.8% uptime SLA
+ *     met", "45% cost reduction") and a named hospital director saying our
+ *     service "saved lives". The owner's position is explicit: reviews are
+ *     earned through work actually done. This must never ship.
+ *
+ *   CumminsShopNow — three problems: a "3 Years" warranty against the
+ *     owner-confirmed two years; a 62 kVA set at KES 1,580,000 when the
+ *     published 60 kVA range is 1,100,000–1,350,000 (1.58M is an 80 kVA
+ *     price); and hardcoded stock counts (7/5/4/3) presented as live
+ *     availability. Each needs a real figure from the owner, not a guess.
+ *
+ * The three below load via next/dynamic so their client JS is split out of the
+ * entry bundle — measured script evaluation on this page is already 8.8s under
+ * Lighthouse's 4x CPU throttle, so adding three client components eagerly
+ * would trade one defect for another. ssr stays on (default), so the markup is
+ * still server-rendered and crawlable.
+ */
+const AIAdvantageHero = dynamic(() => import('@/app/components/home/AIAdvantageHero'));
+const FinancingCalculatorReal = dynamic(() => import('@/app/components/home/FinancingCalculator'));
+const CountyCoverageMapReal = dynamic(() => import('@/app/components/home/CountyCoverageMap'));
 import CumminsShopNow from '@/components/home/CumminsShopNow';
-import FinancingCalculator from '@/components/home/FinancingCalculator';
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
 import TradeInCalculator from '@/components/home/TradeInCalculator';
 import SocialProofWidget from '@/components/home/SocialProofWidget';
 import RecentWorkSection from '@/components/home/RecentWorkSection';
-import CountyCoverageMap from '@/components/home/CountyCoverageMap';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
 // 3D ring showcase — sister piece to the About page spiral gallery.
@@ -819,7 +854,7 @@ export default function HomePage() {
       {/* FINANCING CALCULATOR — shows payment options and financing partners
           (KCB, Equity, Safaricom Money). Positioned after shop section so buyers
           who see pricing can immediately calculate their monthly payment and apply. */}
-      <FinancingCalculator />
+      <FinancingCalculatorReal />
       {/* TRADE-IN CALCULATOR — removes upgrade barrier by showing trade-in value
           of old generator. Positioned after financing so buyers can see: new price →
           financing cost → trade-in credit = final cost. */}
@@ -864,7 +899,7 @@ export default function HomePage() {
       {/* COUNTY COVERAGE MAP — visual proof of nationwide presence across all 47 counties.
           Shows delivery times and emergency response times per region. Positioned before
           final navigation to emphasize geographic advantage that competitors lack. */}
-      <CountyCoverageMap />
+      <CountyCoverageMapReal />
       <SolutionsBySector />
       <StaticFeaturesSection />
       {/* Auto-rotating 3D ring of real project photography — images "go
