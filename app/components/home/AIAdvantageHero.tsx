@@ -36,7 +36,7 @@ export default function AIAdvantageHero() {
   ];
 
   return (
-    <section className="relative py-20 px-4 bg-gradient-to-b from-black via-slate-950 to-black overflow-hidden">
+    <section className="relative py-20 px-4 bg-gradient-to-b from-black via-slate-950 to-black overflow-hidden content-auto">
       {/* Background animated grid */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(99,255,218,.2)_25%,rgba(99,255,218,.2)_50%,transparent_50%,transparent_75%,rgba(99,255,218,.2)_75%,rgba(99,255,218,.2))] bg-[length:40px_40px]" />
@@ -53,8 +53,14 @@ export default function AIAdvantageHero() {
           >
             <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10">
               <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+              {/* Was "Only AI-Powered Platform in Africa" — an exclusivity
+                  claim across an entire continent that we cannot evidence and
+                  that one counter-example disproves. Same family as the "#1",
+                  "Market Leader" and "World's Most Advanced" claims removed
+                  elsewhere on this site. What is checkable is that the tools
+                  exist and are free to use, which the section then shows. */}
               <span className="text-xs sm:text-sm text-cyan-300 tracking-wider uppercase font-medium">
-                Only AI-Powered Platform in Africa
+                Four AI tools · free to use
               </span>
             </div>
 
@@ -65,10 +71,16 @@ export default function AIAdvantageHero() {
               </span>
             </h2>
 
+            {/* Opened "While competitors sell generators, we engineer
+                intelligence into them." That is a disparaging comparison
+                against an unnamed trade — the same move as the "vs Jua Energy"
+                cards struck from this file in August, just without the names.
+                The owner's standing rule is that we never position against
+                other companies. Describing our own work is enough. */}
             <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-              While competitors sell generators, we engineer intelligence into them.
-              Our AI suite diagnoses issues, designs optimal systems, and optimizes performance
-              in real-time — across generators, solar, UPS, and boreholes.
+              Our AI suite diagnoses faults, sizes systems and tunes performance
+              across generators, solar, UPS and boreholes — the same tools our
+              own engineers use on site.
             </p>
           </motion.div>
         </div>

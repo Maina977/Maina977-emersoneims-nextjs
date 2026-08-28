@@ -235,7 +235,7 @@ const SOLAR_PRICING = [
     priceFrom: 950000,
     priceTo: 1400000,
     ideal: 'Large homes, multiple ACs',
-    includes: ['20× 500W Panels', '10kW Hybrid Inverter', '10kWh Lithium Bank', 'Full Installation', '3 Year Warranty'],
+    includes: ['20× 500W Panels', '10kW Hybrid Inverter', '10kWh Lithium Bank', 'Full Installation', '2 Year Warranty'],
     savings: '30,000-45,000/month'
   },
   {
@@ -244,7 +244,7 @@ const SOLAR_PRICING = [
     priceFrom: 1800000,
     priceTo: 2500000,
     ideal: 'Shops, small factories',
-    includes: ['40× 500W Panels', '20kW Inverter', '20kWh Storage', 'Monitoring System', '3 Year Warranty'],
+    includes: ['40× 500W Panels', '20kW Inverter', '20kWh Storage', 'Monitoring System', '2 Year Warranty'],
     savings: '60,000-85,000/month'
   },
   {

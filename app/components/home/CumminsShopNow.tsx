@@ -180,7 +180,9 @@ export default function CumminsShopNow() {
               <p className="text-gray-300">Delivery to Nairobi · nationwide within 48–72 hours</p>
             </div>
             <div className="text-center border-l border-r border-white/10">
-              <div className="text-3xl font-bold text-amber-400 mb-2">3 Years</div>
+              {/* Owner confirmed 2026-08-29: the universal warranty period is
+                  two years. This said three. */}
+              <div className="text-3xl font-bold text-amber-400 mb-2">2 Years</div>
               <p className="text-gray-300">Full warranty · free maintenance first 12 months</p>
             </div>
             <div className="text-center">

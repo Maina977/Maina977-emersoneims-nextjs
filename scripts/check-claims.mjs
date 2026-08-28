@@ -199,19 +199,15 @@ const ALLOWED = [
     // manufacturer and is unrelated to the EmersonEIMS generator warranty.
     why: 'third-party battery product warranty, not our generator cover',
   },
-  {
-    file: 'app/solar/page.tsx',
-    contains: "'Full Installation', '3 Year Warranty'",
-    // Solar package contents. The owner corrected the GENERATOR warranty to two
-    // years on 2026-08-26 and said nothing about solar, so this is left as
-    // published rather than changed on an assumption. Confirm separately.
-    why: 'solar package warranty — owner corrected the generator term only',
-  },
-  {
-    file: 'app/solar/page.tsx',
-    contains: "'Monitoring System', '3 Year Warranty'",
-    why: 'solar package warranty — owner corrected the generator term only',
-  },
+  /*
+   * REMOVED 2026-08-29. Two entries here exempted the solar packages on
+   * app/solar/page.tsx, on the reasoning that the owner's 2026-08-26
+   * correction named the GENERATOR warranty and said nothing about solar.
+   * That caution was right at the time and wrong now: the owner has since
+   * stated that the universal warranty period is two years. Both packages
+   * were corrected to "2 Year Warranty", so the exemptions would only serve
+   * to hide a future regression.
+   */
   {
     file: 'components/hub/ProductIntelligenceClient.tsx',
     contains: "sku: 'CYB-OL3000'",
@@ -233,13 +229,13 @@ const ALLOWED = [
     // (UPS5000-S / UPS2000-G), not a warranty duration of ours.
     why: 'third-party UPS model numbers near the word warranty, not our cover',
   },
-  {
-    file: 'components/seo/ToolSeoContent.tsx',
-    contains: '3-year workmanship w',
-    // Workmanship cover on an installation is a different undertaking from the
-    // product warranty on the machine. Not corrected without confirmation.
-    why: 'installation workmanship cover, distinct from the product warranty',
-  },
+  /*
+   * REMOVED 2026-08-29, same reason as the solar entries above. This exempted
+   * "3-year workmanship warranty" on the grounds that workmanship cover is a
+   * different undertaking from the product warranty. The owner has since said
+   * the universal warranty period is two years, which settles it; the text now
+   * reads "2-year workmanship warranty".
+   */
 ];
 
 const isAllowed = (rel, line) =>

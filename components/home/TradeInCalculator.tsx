@@ -69,7 +69,7 @@ export default function TradeInCalculator() {
   const financingGap = newGeneratorPrice - finalValue;
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-slate-900/50 to-black border-t border-white/10">
+    <section className="py-20 px-4 bg-gradient-to-b from-slate-900/50 to-black border-t border-white/10 content-auto">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div

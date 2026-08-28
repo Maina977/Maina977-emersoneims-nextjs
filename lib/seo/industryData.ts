@@ -1143,7 +1143,7 @@ export const INDUSTRIES: Industry[] = [
       { label: 'Churches Served', value: '200+' },
       { label: 'Payment Plans', value: 'Available' },
       { label: 'Refurbished Units', value: 'In Stock' },
-      { label: 'Warranty', value: '2-3 Years' }
+      { label: 'Warranty', value: '2 Years' }
     ]
   },
 

@@ -68,7 +68,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'What warranty do you offer on generators?',
-        answer: 'We offer manufacturer warranties ranging from 1-3 years depending on the brand, plus extended warranty options.'
+        answer: 'We offer a 2-year warranty on new generators, plus extended warranty options.'
       }
     ]
   },

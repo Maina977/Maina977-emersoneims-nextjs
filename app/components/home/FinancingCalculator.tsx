@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 export default function FinancingCalculator() {
@@ -35,7 +36,7 @@ export default function FinancingCalculator() {
   ];
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-black to-slate-900/30">
+    <section className="py-20 px-4 bg-gradient-to-b from-black to-slate-900/30 content-auto">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -97,10 +98,14 @@ export default function FinancingCalculator() {
 
             {/* Loan Term Slider */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-300 mb-3">
+              {/* htmlFor/id: the label sat next to the slider but was not
+                  associated with it, so the control had no programmatic name
+                  and a screen reader announced an unlabelled slider. */}
+              <label htmlFor="finance-term" className="block text-sm font-semibold text-gray-300 mb-3">
                 Loan Term: {months} months ({Math.round(months / 12)} years)
               </label>
               <input
+                id="finance-term"
                 type="range"
                 min="12"
                 max="60"
@@ -141,19 +146,34 @@ export default function FinancingCalculator() {
                 <p className="text-sm text-gray-300">
                   <span className="text-cyan-300 font-semibold">Interest Rate:</span> 14% per annum (market average)
                 </p>
+                {/* Was "Approval Time: 24–48 hours · Deployment same-day".
+                    We are not the lender — this file's own note records that we
+                    hold no financing partnership — so we cannot state anyone
+                    else's approval time, and "same-day deployment" is not a
+                    commitment made anywhere else on this site. What we can
+                    truthfully say is that the figures here are indicative. */}
                 <p className="text-sm text-gray-300 mt-2">
-                  <span className="text-cyan-300 font-semibold">Approval Time:</span> 24–48 hours · Deployment same-day
+                  <span className="text-cyan-300 font-semibold">Note:</span> an indicative estimate only — your lender sets the final rate, term and approval.
                 </p>
               </div>
             </div>
 
             {/* CTA */}
             <div className="space-y-3">
-              <button className="w-full px-6 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg hover:scale-105 transition-all">
-                Get Financing Pre-Approval
-              </button>
+              {/* Was "Get Financing Pre-Approval" / "30-second application".
+                  We are not a lender and arrange no credit, so we cannot
+                  pre-approve anything and there is no application to submit.
+                  The honest action is the one we can actually perform: quote
+                  the machine, so the buyer can take a real figure to their own
+                  bank. */}
+              <Link
+                href="/contact?type=quote"
+                className="block w-full px-6 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg text-center hover:scale-105 transition-all"
+              >
+                Get a written quotation
+              </Link>
               <p className="text-xs text-gray-400 text-center">
-                No obligation · 30-second application
+                Take the quoted figure to your own bank or asset financier.
               </p>
             </div>
           </motion.div>
@@ -166,7 +186,10 @@ export default function FinancingCalculator() {
             transition={{ duration: 0.6 }}
           >
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-2xl p-8">
-              <h3 className="text-xl font-bold text-white mb-6">Financing Partners</h3>
+              {/* "Financing Partners" claimed relationships we do not have —
+                  see the note at the top of this file. These are lender TYPES
+                  with indicative market rates, not partners of ours. */}
+              <h3 className="text-xl font-bold text-white mb-6">Ways buyers finance</h3>
 
               <div className="space-y-4 mb-8">
                 {banks.map((bank, idx) => (
@@ -191,23 +214,30 @@ export default function FinancingCalculator() {
 
               {/* Benefits Card */}
               <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 border border-green-500/20 rounded-xl p-6">
-                <h4 className="text-green-400 font-bold mb-4">✓ Financing Benefits</h4>
+                {/* This list promised terms set by lenders we have no
+                    relationship with: "Zero down payment available" and
+                    "24–48 hour approval" are a financier's decision, not ours,
+                    and we cannot commit anyone else to them. "Free delivery &
+                    installation" appears nowhere else on this site, so it
+                    would have been a new and unbacked promise made in passing.
+                    What remains is what we control and already publish. */}
+                <h4 className="text-green-400 font-bold mb-4">✓ What we supply</h4>
                 <ul className="space-y-2 text-sm text-gray-300">
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
-                    <span>Zero down payment available</span>
+                    <span>A written quotation you can take to any lender</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
-                    <span>24–48 hour approval</span>
+                    <span>2-year warranty on new generators</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
-                    <span>2-year warranty included</span>
+                    <span>Installation and commissioning, with the changeover panel</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
-                    <span>Free delivery & installation</span>
+                    <span>Servicing in all 47 counties from our mobile workshop</span>
                   </li>
                 </ul>
               </div>

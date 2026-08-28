@@ -120,7 +120,10 @@ export default function CookieConsent() {
             <button
               onClick={declineCookies}
               className="flex-1 md:flex-none px-3 py-2 md:px-6 md:py-2.5 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors text-xs md:text-sm whitespace-nowrap"
-              aria-label="Allow only essential cookies"
+              // Must contain the visible text "Essential Only" (WCAG 2.5.3).
+              // "Allow only essential cookies" did not, so voice control could
+              // not activate the button by the words printed on it.
+              aria-label="Essential Only cookies"
             >
               Essential Only
             </button>
