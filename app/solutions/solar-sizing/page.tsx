@@ -267,7 +267,7 @@ export default function SolarSizingHub() {
   const [expandedBattery, setExpandedBattery] = useState<string | null>(null);
 
   return (
-    <main className="bg-black min-h-screen">
+    <div className="bg-black min-h-screen">
       <B2BCommercialBand profile={B2B_PROFILES.solarSizing} />
       <CinematicHeroImage
         src="/images/3 (1).png"
@@ -805,6 +805,6 @@ export default function SolarSizingHub() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

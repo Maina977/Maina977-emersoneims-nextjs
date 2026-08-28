@@ -251,7 +251,7 @@ export default function SparePartsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-slate-900 to-black border-b border-amber-500/30 py-12">
         <div className="max-w-7xl mx-auto px-6">
@@ -720,6 +720,6 @@ export default function SparePartsPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

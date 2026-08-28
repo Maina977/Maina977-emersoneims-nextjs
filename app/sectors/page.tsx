@@ -72,7 +72,7 @@ export default function SectorsIndexPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
       />
 
-      <main className="min-h-screen bg-slate-950">
+      <div className="min-h-screen bg-slate-950">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
           <nav aria-label="Breadcrumb" className="text-sm text-slate-400 mb-6">
             <ol className="flex flex-wrap items-center gap-2">
@@ -134,7 +134,7 @@ export default function SectorsIndexPage() {
             </Link>
           </section>
         </div>
-      </main>
+      </div>
     </>
   );
 }

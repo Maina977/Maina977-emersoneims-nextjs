@@ -551,7 +551,7 @@ export default function AboutUsPage() {
         </Suspense>
       )}
 
-      <main className="eims-section min-h-screen relative bg-black">
+      <div className="eims-section min-h-screen relative bg-black">
         {/* VideoObject Schema for SEO (preserved) */}
         <script
           type="application/ld+json"
@@ -653,7 +653,7 @@ export default function AboutUsPage() {
             </Reveal>
           </div>
         </section>
-      </main>
+      </div>
     </ErrorBoundary>
   );
 }

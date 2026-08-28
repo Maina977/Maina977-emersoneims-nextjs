@@ -1053,7 +1053,7 @@ const HighVoltagePage = () => {
   }
 
   return (
-    <main className="min-h-screen bg-black text-gray-100">
+    <div className="min-h-screen bg-black text-gray-100">
       <B2BCommercialBand profile={B2B_PROFILES.highVoltage} />
       {/* Hero Section */}
       <section ref={heroRef} className="relative h-[70vh] min-h-[600px] overflow-hidden">
@@ -2411,7 +2411,7 @@ const HighVoltagePage = () => {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }
 

@@ -10,7 +10,7 @@ const OptimizedImage = dynamic(() => import('@/components/media/OptimizedImage')
 
 export default function PerkinsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="relative py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-10 items-center">
@@ -118,6 +118,6 @@ export default function PerkinsPage() {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

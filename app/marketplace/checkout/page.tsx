@@ -148,7 +148,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black">
       {/* Header */}
       <div className="bg-gradient-to-r from-slate-900 to-black border-b border-amber-500/20 py-6">
         <div className="max-w-5xl mx-auto px-6">
@@ -425,6 +425,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

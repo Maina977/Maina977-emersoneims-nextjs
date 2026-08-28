@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function ContactPage() {
   return (
-    <main>
+    <div>
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.contact} />
 
@@ -30,6 +30,6 @@ export default function ContactPage() {
           <CTAForm />
         </div>
       </section>
-    </main>
+    </div>
   );
 }

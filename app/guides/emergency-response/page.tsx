@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function EmergencyResponseGuide() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
       {/* Emergency Banner */}
       <div className="bg-red-600 text-white py-4 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
@@ -260,6 +260,6 @@ export default function EmergencyResponseGuide() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

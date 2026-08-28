@@ -22,7 +22,7 @@ export default function PlantFaultsIndex() {
   const total = totalCodesCovered();
 
   return (
-    <main className="eims-section">
+    <div className="eims-section">
       <div className="eims-shell">
         <nav aria-label="Breadcrumb" className="text-xs text-white/50">
           <Link href="/" className="hover:text-amber-400">Home</Link>
@@ -75,6 +75,6 @@ export default function PlantFaultsIndex() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

@@ -102,7 +102,7 @@ export default function GeneratorPartsPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.generatorParts} />
 
@@ -340,6 +340,6 @@ export default function GeneratorPartsPage() {
           </motion.div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -815,7 +815,7 @@ export default function SciFiContactPage() {
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   return (
-    <main className="bg-black min-h-screen overflow-hidden">
+    <div className="bg-black min-h-screen overflow-hidden">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center">
         {/* Animated Background */}
@@ -1185,6 +1185,6 @@ export default function SciFiContactPage() {
           </motion.div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

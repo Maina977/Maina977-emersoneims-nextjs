@@ -80,7 +80,7 @@ export default async function EnginePartsPage({
     );
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -217,6 +217,6 @@ export default async function EnginePartsPage({
       </div>
 
       <PartsDeliveryNationwide />
-    </main>
+    </div>
   );
 }

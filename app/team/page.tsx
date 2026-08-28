@@ -128,7 +128,7 @@ export default function TeamPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -384,6 +384,6 @@ export default function TeamPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

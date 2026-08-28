@@ -63,7 +63,7 @@ export default function DieselAutomationHub() {
   const [expandedFault, setExpandedFault] = useState<string | null>(null);
 
   return (
-    <main className="bg-black min-h-screen">
+    <div className="bg-black min-h-screen">
       <B2BCommercialBand profile={B2B_PROFILES.dieselAutomation} />
       <SectionLead
         title="Diesel Automation Solutions"
@@ -250,6 +250,6 @@ export default function DieselAutomationHub() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

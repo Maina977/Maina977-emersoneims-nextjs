@@ -99,7 +99,7 @@ export default async function RepairHubPage({ params }: Props) {
     <>
       <script id={`hub-ld-${hub.slug}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      <main className="min-h-screen bg-slate-950">
+      <div className="min-h-screen bg-slate-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
           <nav aria-label="Breadcrumb" className="text-sm text-slate-400 mb-6">
             <ol className="flex flex-wrap items-center gap-2">
@@ -271,7 +271,7 @@ export default async function RepairHubPage({ params }: Props) {
             </>
           )}
         </div>
-      </main>
+      </div>
     </>
   );
 }

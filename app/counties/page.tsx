@@ -37,7 +37,7 @@ export default function CountiesPage() {
   const regions = Object.keys(countiesByRegion).sort();
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <OrganizationSchema />
       <BreadcrumbSchema items={[
         { name: 'Home', url: 'https://www.emersoneims.com' },
@@ -250,6 +250,6 @@ export default function CountiesPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

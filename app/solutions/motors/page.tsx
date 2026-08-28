@@ -116,7 +116,7 @@ export default function MotorsPage() {
   const [expandedError, setExpandedError] = useState<string | null>(null);
 
   return (
-    <main className="bg-black min-h-screen text-white">
+    <div className="bg-black min-h-screen text-white">
       <B2BCommercialBand profile={B2B_PROFILES.motors} />
       <SectionLead
         title="Electric Motor Services & Rewinding"
@@ -371,6 +371,6 @@ export default function MotorsPage() {
       <section className="mx-auto max-w-7xl px-6 py-16">
         <UnifiedCTA />
       </section>
-    </main>
+    </div>
   );
 }

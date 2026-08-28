@@ -57,7 +57,7 @@ export default function PartsMarketplace() {
   const cartCount = Array.from(cart.values()).reduce((a, b) => a + b, 0);
 
   return (
-    <main className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black">
       <div className="bg-gradient-to-r from-slate-900 to-black border-b border-amber-500/20 py-6 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between mb-6">
@@ -264,6 +264,6 @@ export default function PartsMarketplace() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

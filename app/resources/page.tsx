@@ -92,7 +92,7 @@ const colorClasses: Record<string, { border: string; bg: string; text: string }>
 
 export default function ResourcesPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
       <div className="max-w-7xl mx-auto px-6 py-20">
         {/* Header */}
         <div className="text-center mb-16">
@@ -209,6 +209,6 @@ export default function ResourcesPage() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

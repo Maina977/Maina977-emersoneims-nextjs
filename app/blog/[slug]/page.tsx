@@ -205,7 +205,7 @@ export default async function BlogArticlePage({ params }: Props) {
   const relatedArticles = getRelatedArticles(slug, 3);
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Schema.org Article JSON-LD */}
       <script
         type="application/ld+json"
@@ -476,7 +476,7 @@ export default async function BlogArticlePage({ params }: Props) {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 

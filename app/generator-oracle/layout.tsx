@@ -99,7 +99,7 @@ export const viewport: Viewport = {
 
 export default function GeneratorOracleLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       <FlagshipProductSchema
         name="Generator Oracle"
         url={URL}
@@ -112,6 +112,6 @@ export default function GeneratorOracleLayout({ children }: { children: React.Re
       />
       {children}
       <ToolSeoContent tool="generator-oracle" />
-    </main>
+    </div>
   );
 }

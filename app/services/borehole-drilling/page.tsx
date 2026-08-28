@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function BoreholeDrillingPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* HERO */}
       <section className="bg-gradient-to-r from-emerald-900/30 to-teal-900/20 border-b border-emerald-600/30 py-20 px-6">
         <div className="max-w-7xl mx-auto">
@@ -155,6 +155,6 @@ export default function BoreholeDrillingPage() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

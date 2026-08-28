@@ -107,9 +107,9 @@ export default async function RepairArticlePage({ params }: Props) {
   return (
     <>
       <script id={`article-ld-${article.slug}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
-      <main className="min-h-screen bg-slate-950">
+      <div className="min-h-screen bg-slate-950">
         <RepairArticleView article={article} />
-      </main>
+      </div>
     </>
   );
 }

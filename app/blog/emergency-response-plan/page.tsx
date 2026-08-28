@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function EmergencyPlanBlogPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <article className="max-w-3xl mx-auto px-4 py-20">
         <header className="mb-12">
           <Link href="/blog" className="text-red-400 hover:text-red-300 text-sm inline-block mb-4">
@@ -147,6 +147,6 @@ export default function EmergencyPlanBlogPage() {
           </div>
         </div>
       </article>
-    </main>
+    </div>
   );
 }

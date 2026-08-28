@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 
 export default function SolarInvertersPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* HERO */}
       <section className="bg-gradient-to-r from-amber-900/30 to-yellow-900/20 border-b border-amber-600/30 py-20 px-6">
         <div className="max-w-7xl mx-auto">
@@ -275,6 +275,6 @@ export default function SolarInvertersPage() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

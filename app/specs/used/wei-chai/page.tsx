@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function WeiChaiSpecsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="eims-shell py-16">
         <SectionLead
           title="Wei Chai Used Generators"
@@ -113,6 +113,6 @@ export default function WeiChaiSpecsPage() {
           </a>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

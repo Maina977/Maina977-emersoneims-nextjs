@@ -2230,7 +2230,7 @@ export default function GeneratorPage() {
   }, []);
 
   return (
-    <main ref={containerRef} className="eims-section min-h-screen relative">
+    <div ref={containerRef} className="eims-section min-h-screen relative">
       {/* VideoObject Schema - Fixes Google Search Console video indexing */}
       <script
         type="application/ld+json"
@@ -3235,7 +3235,7 @@ export default function GeneratorPage() {
       />
 
       <FloatingWhatsApp />
-    </main>
+    </div>
   );
 }
 

@@ -47,7 +47,7 @@ const REFERENCES: string[] = [
 
 export default function AquaScanMethodologyPage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-200">
+    <div className="min-h-screen bg-slate-950 text-slate-200">
       <div className="mx-auto max-w-4xl px-6 py-16">
         {/* ── HERO ── */}
         <p className="text-sm font-semibold uppercase tracking-widest text-cyan-400">AquaScan Pro — Transparency Charter</p>
@@ -241,6 +241,6 @@ export default function AquaScanMethodologyPage() {
           EmersonEIMS · AquaScan Pro Transparency Charter · This page is updated whenever the methodology changes.
         </p>
       </div>
-    </main>
+    </div>
   );
 }

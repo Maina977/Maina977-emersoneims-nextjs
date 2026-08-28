@@ -96,7 +96,7 @@ export default function GeneratorLeasingPage() {
   const [selectedKva, setSelectedKva] = useState<string | null>(null);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-slate-900 to-black">
+    <div className="min-h-screen bg-gradient-to-b from-black via-slate-900 to-black">
       {/* Hero Section */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-blue-500/10" />
@@ -349,6 +349,6 @@ export default function GeneratorLeasingPage() {
           ← Back to Generators Bible
         </Link>
       </div>
-    </main>
+    </div>
   );
 }

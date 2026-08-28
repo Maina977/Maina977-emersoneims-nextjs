@@ -278,7 +278,7 @@ export default async function SiteDirectoryPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
       />
 
-      <main className="min-h-screen bg-slate-950 text-white">
+      <div className="min-h-screen bg-slate-950 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
           <nav aria-label="Breadcrumb" className="text-sm text-slate-400 mb-6">
             <ol className="flex items-center gap-2">
@@ -351,7 +351,7 @@ export default async function SiteDirectoryPage() {
 
           <Group title="Legal" links={legalLinks} />
         </div>
-      </main>
+      </div>
     </>
   );
 }

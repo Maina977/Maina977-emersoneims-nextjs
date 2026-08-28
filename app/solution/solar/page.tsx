@@ -63,7 +63,7 @@ export default function SolarSolutionPage() {
 
   return (
     <ErrorBoundary>
-      <main ref={containerRef} className="eims-section min-h-screen relative">
+      <div ref={containerRef} className="eims-section min-h-screen relative">
         {/* Holographic Laser Overlay */}
         {!isLite && <HolographicLaser intensity="high" color="#fbbf24" />}
         
@@ -166,7 +166,7 @@ export default function SolarSolutionPage() {
             </div>
           </div>
         </section>
-      </main>
+      </div>
     </ErrorBoundary>
   );
 }

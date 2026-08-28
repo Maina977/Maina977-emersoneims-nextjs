@@ -404,7 +404,7 @@ export default function UsedGeneratorsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black">
       {/* Cinematic Hero Section with Hollywood Color Grading */}
       <section ref={heroRef} className="relative h-[85vh] min-h-[600px] overflow-hidden">
         {/* Background Image with Cinematic Scale */}
@@ -713,7 +713,7 @@ export default function UsedGeneratorsPage() {
           </div>
         </motion.div>
       </div>
-    </main>
+    </div>
   );
 }
 

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function EastAfricaIndustrialPartnerPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-start justify-between mb-6">
@@ -238,6 +238,6 @@ export default function EastAfricaIndustrialPartnerPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

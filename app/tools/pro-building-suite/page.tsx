@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function ProBuildingSuitePage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">Pro Building Suite</h1>
@@ -185,6 +185,6 @@ export default function ProBuildingSuitePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function PerkinsSpecsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="eims-shell py-16">
         <SectionLead
           title="Perkins Used Generators"
@@ -112,6 +112,6 @@ export default function PerkinsSpecsPage() {
           </a>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

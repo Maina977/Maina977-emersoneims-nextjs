@@ -77,7 +77,7 @@ export default function WorkshopServicesPage() {
   const byDivision = (d: string) => WORKSHOP_SERVICES.filter((s) => s.division === d);
 
   return (
-    <main className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-slate-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -584,6 +584,6 @@ export default function WorkshopServicesPage() {
         backgroundColor="from-orange-900/50 to-amber-900/50"
         icon="🏭"
       />
-    </main>
+    </div>
   );
 }

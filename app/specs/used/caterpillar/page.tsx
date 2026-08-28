@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function CaterpillarSpecsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="eims-shell py-16">
         <SectionLead
           title="Caterpillar Used Generators"
@@ -114,6 +114,6 @@ export default function CaterpillarSpecsPage() {
           </a>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

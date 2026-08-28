@@ -129,7 +129,7 @@ export default async function PlantFaultCodesPage({ params }: Props) {
   const others = BRAND_GROUPS.filter((x) => x.slug !== g.slug);
 
   return (
-    <main className="eims-section">
+    <div className="eims-section">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(g)) }}
@@ -276,6 +276,6 @@ export default async function PlantFaultCodesPage({ params }: Props) {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

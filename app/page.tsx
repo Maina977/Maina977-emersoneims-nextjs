@@ -176,13 +176,25 @@ function StaticHeroFallback() {
               the amber line — the largest, brightest text on the page — and it
               described a technology rather than a business. A visitor landing
               cold could read the biggest words here and still not know we sell,
-              install and repair machines. It now states the three things we do
-              and the territory we cover, which is also what people search for.
-              The two-line cinematic cadence and the amber emphasis are kept:
-              this is an enhancement in the page's own language, not a rebuild. */}
+              install and repair machines.
+
+              LENGTH IS A DESIGN CONSTRAINT HERE, NOT A PREFERENCE. The first
+              replacement read "SOLD, INSTALLED, SERVICED — KENYA-WIDE" (38
+              chars) and was shipped without anyone looking at the rendered
+              page. Measured afterwards in a real browser it wrapped to FOUR
+              lines at 390px and broke mid-word as "KENYA-/WIDE" at 1440px,
+              making the H1 252px tall on a phone and 420px on desktop, which
+              pushed the subtitle and both call-to-action buttons below the
+              fold on every screen size.
+
+              The rule: line two must be about as long as line one (24 chars),
+              so each wraps to two lines and the block stays a tidy rectangle.
+              "SOLD & SERVICED IN KENYA" is 24 characters, carries the
+              commercial verbs and the place name, and restores the fold.
+              Anything longer must be measured in a browser before it ships. */}
           <h1 className="apple-display mb-6 sm:mb-8">
             <span className="block text-white">GENERATORS · SOLAR · UPS</span>
-            <span className="block text-amber-500">SOLD, INSTALLED, SERVICED — KENYA-WIDE</span>
+            <span className="block text-amber-500">SOLD &amp; SERVICED IN KENYA</span>
           </h1>
 
           {/* Subtitle - Apple-style subheadline.
@@ -570,7 +582,7 @@ function StaticCountiesSection() {
 
 export default function HomePage() {
   return (
-    <main className="bg-black">
+    <div className="bg-black">
       {/* Structured Data for SEO - Organization */}
       <script
         type="application/ld+json"
@@ -864,7 +876,7 @@ export default function HomePage() {
 
       {/* CLIENT INTERACTIVE SECTIONS - Load after static content */}
       <HomePageClient />
-    </main>
+    </div>
   );
 }
 // Force rebuild - Sun Jul 26 18:54:11 EAST 2026

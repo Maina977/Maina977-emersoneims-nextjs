@@ -143,7 +143,7 @@ export default async function SparePartsCategoryPage({
     );
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       {/* Breadcrumbs + ItemList schema (directive §10) */}
       <script
         type="application/ld+json"
@@ -341,6 +341,6 @@ export default async function SparePartsCategoryPage({
       </div>
 
       <PartsDeliveryNationwide />
-    </main>
+    </div>
   );
 }

@@ -425,7 +425,7 @@ export default function HVACBible() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
           {/* Overview Section */}
           {activeSection === 'overview' && (
@@ -963,7 +963,7 @@ export default function HVACBible() {
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
+      </div>
 
       {/* Repair Manual Modal */}
       <AnimatePresence>

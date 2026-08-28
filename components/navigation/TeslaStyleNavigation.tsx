@@ -439,6 +439,25 @@ export default function TeslaStyleNavigation({
       const rowWidth = row.clientWidth;
       const tailWidth = tailRef.current?.offsetWidth ?? 0;
       const MORE_WIDTH = 92; // width reserved for the MORE control
+
+      // THE GAP IS PART OF THE WIDTH. The row is `flex gap-1 xl:gap-2`, so with
+      // n items on the bar the browser also lays out (n-1) gaps. Summing only
+      // offsetWidth understated the real content width by roughly 80px at
+      // eleven items, so one item too many was kept on the bar.
+      //
+      // That mattered more than it sounds. The row is `justify-end`, and when a
+      // flex row overflows with justify-content:flex-end the excess spills out
+      // of the START edge — leftwards, straight over the logo. Measured on the
+      // live site: at 1440px the HOME button rendered at x=44 while its own
+      // parent began at x=122, sitting on top of a logo occupying x=32..98.
+      //
+      // It also could not be caught by the existing measurement, because
+      // leftward overflow does not register in scrollWidth: the row reported
+      // scrollWidth === clientWidth while visibly overlapping the logo. Hence
+      // this is fixed by counting the gap rather than by watching for overflow.
+      const rowStyle = getComputedStyle(row);
+      const gap = parseFloat(rowStyle.columnGap || rowStyle.gap || '0') || 0;
+
       let used = 0;
       let fit = 0;
       for (let i = 0; i < NAV_ITEMS.length; i++) {
@@ -447,10 +466,13 @@ export default function TeslaStyleNavigation({
         // free — doing so inflated the count until the bar overflowed and pushed
         // MORE itself out of reach. Bail and let the next frame measure instead.
         if (!w) return;
-        // Reserve room for MORE only while items still remain after this one.
-        const reserve = i < NAV_ITEMS.length - 1 ? MORE_WIDTH : 0;
-        if (used + w + tailWidth + reserve > rowWidth) break;
-        used += w;
+        // Reserve room for MORE, and for the gap before it, only while items
+        // still remain after this one.
+        const reserve = i < NAV_ITEMS.length - 1 ? MORE_WIDTH + gap : 0;
+        // Every item after the first is preceded by a gap.
+        const candidate = used + (fit > 0 ? gap : 0) + w;
+        if (candidate + tailWidth + reserve > rowWidth) break;
+        used = candidate;
         fit++;
       }
       setVisibleCount(prev => (prev === fit ? prev : fit));

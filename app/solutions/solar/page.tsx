@@ -435,7 +435,7 @@ export default function SolarSolutionHub() {
   const [expandedInverter, setExpandedInverter] = useState<string | null>(null);
 
   return (
-    <main className="bg-black min-h-screen">
+    <div className="bg-black min-h-screen">
       <B2BCommercialBand profile={B2B_PROFILES.solutionsSolar} />
       <CinematicHeroImage
         src="/images/1 (1).png"
@@ -981,6 +981,6 @@ export default function SolarSolutionHub() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

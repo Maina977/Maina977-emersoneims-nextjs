@@ -14,7 +14,9 @@ import PremiumFooter from '@/components/layout/PremiumFooter';
 import B2BSiteStrip from '@/components/b2b/B2BSiteStrip';
 import { OrganizationSchema, WebSiteSchema, DiagnosticSuiteSchema } from '@/components/seo/StructuredData';
 import AutoBreadcrumb from '@/components/seo/AutoBreadcrumb';
-import FAQSchema from '@/components/seo/FAQSchema';
+// FAQSchema is intentionally not imported — see the note where it used to be
+// rendered, below. The component file is still there if it is ever wanted on a
+// page that actually displays its questions.
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import { ScreenReaderAnnouncerProvider } from '@/components/accessibility/ScreenReaderAnnouncer';
 import { KeyboardShortcutsHelper } from '@/components/accessibility/FocusManagement';
@@ -319,8 +321,31 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
 
-        {/* FAQ Schema for Rich Snippets */}
-        <FAQSchema />
+        {/* FAQPage schema is deliberately NOT emitted here any more.
+            (Component kept at components/seo/FAQSchema.tsx — nothing deleted;
+            restoring it is re-adding this one line.)
+
+            It was mounted in the root layout, so all ~3,400 pages carried the
+            same ten Q&As. Three problems, in order of seriousness:
+
+            1. POLICY. Google requires FAQPage content to be visible on the page
+               that declares it. This markup was visible on none of them, which
+               is the kind of thing that earns a structured-data manual action.
+               Since 2023 Google also stopped showing FAQ rich results for
+               commercial sites, so the upside being risked for was ~zero.
+            2. DUPLICATE ENTITY. /faq builds its own FAQPage from FAQ_DATA and
+               renders every question and answer visibly, which is correct and
+               compliant. The layout copy put a second, different FAQPage on
+               that same URL.
+            3. CONTRADICTORY PRICE. One answer read "a 10kVA home backup
+               generator installation starts from KES 350,000" while the
+               homepage now shows "Generators from KES 280,000" from
+               GENERATOR_SIZES. Two starting prices on one page, and the one a
+               crawler could quote was the wrong one.
+
+            Same class of defect as the canonical-inheritance trap: a tag set in
+            a layout is inherited by every child page, so a layout is the last
+            place page-specific structured data belongs. */}
         
         {/* ═══════════════════════════════════════════════════════════════════
             ENTERPRISE SECURITY META TAGS

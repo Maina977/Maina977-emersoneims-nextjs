@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function Phase7Page() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl font-bold mb-6">Phase 7: Video-Centric Market Leadership</h1>
@@ -310,6 +310,6 @@ export default function Phase7Page() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

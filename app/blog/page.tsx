@@ -72,7 +72,7 @@ export default function BlogPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
       />
 
-      <main className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-black text-white">
         <section className="relative py-16 px-4 bg-gradient-to-b from-slate-900 to-black">
           <div className="max-w-6xl mx-auto">
             <h1 className="text-4xl md:text-5xl font-bold mb-5">
@@ -185,7 +185,7 @@ export default function BlogPage() {
             </div>
           </div>
         </section>
-      </main>
+      </div>
     </>
   );
 }

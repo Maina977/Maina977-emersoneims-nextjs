@@ -73,7 +73,7 @@ const urgencyStyles = {
 
 export default function GeneratorProblemsPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.generatorProblems} />
 
@@ -253,6 +253,6 @@ export default function GeneratorProblemsPage() {
           }),
         }}
       />
-    </main>
+    </div>
   );
 }

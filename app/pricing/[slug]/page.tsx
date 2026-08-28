@@ -126,7 +126,7 @@ export default async function PricingGuidePage({ params }: Props) {
   const others = PRICE_GUIDES.filter((g) => g.slug !== guide.slug);
 
   return (
-    <main className="eims-section">
+    <div className="eims-section">
       <script
         type="application/ld+json"
         // Inline, server-rendered. next/script injects after hydration and the
@@ -313,6 +313,6 @@ export default async function PricingGuidePage({ params }: Props) {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

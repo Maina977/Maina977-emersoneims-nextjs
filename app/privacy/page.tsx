@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <main className="eims-section min-h-screen">
+    <div className="eims-section min-h-screen">
       <div className="eims-shell py-24">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">Privacy Policy</h1>
@@ -52,6 +52,6 @@ export default function PrivacyPage() {
         </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

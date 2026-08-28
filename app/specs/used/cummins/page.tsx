@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function CumminsSpecsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="eims-shell py-16">
         <SectionLead
           title="Cummins Used Generators"
@@ -120,6 +120,6 @@ export default function CumminsSpecsPage() {
           </a>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

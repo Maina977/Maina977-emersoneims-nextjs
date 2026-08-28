@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 
 export default function NairobiCountyPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <OrganizationSchema />
       <LocalBusinessSchema county={COUNTY_DATA.name} />
       <BreadcrumbSchema items={[
@@ -339,6 +339,6 @@ export default function NairobiCountyPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

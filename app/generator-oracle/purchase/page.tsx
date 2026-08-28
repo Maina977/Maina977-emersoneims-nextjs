@@ -59,7 +59,7 @@ export default function PurchasePage() {
   // Re-enable the paid purchase flow via NEXT_PUBLIC_AI_TOOLS_PAID=true.
   if (AI_TOOLS_FREE) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
         <div className="max-w-lg w-full bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
           <div className="text-6xl mb-4">🎉</div>
           <h1 className="text-3xl font-bold text-white mb-3">It&apos;s Free!</h1>
@@ -84,7 +84,7 @@ export default function PurchasePage() {
             </a>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 

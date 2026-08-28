@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 export default function ReturnPolicyPage() {
   return (
-    <main className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black">
       {/* Hero */}
       <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 border-b border-green-500/20 py-12">
         <div className="max-w-4xl mx-auto px-6 text-center">
@@ -240,6 +240,6 @@ export default function ReturnPolicyPage() {
           ))}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -14,7 +14,7 @@ export const metadata = {
 
 export default function GeneratorPage() {
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.generatorMain} />
 
@@ -462,6 +462,6 @@ export default function GeneratorPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

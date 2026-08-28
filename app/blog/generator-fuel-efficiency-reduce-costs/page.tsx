@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function GeneratorFuelEfficiencyBlogPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <article className="max-w-3xl mx-auto px-4 py-20">
         <header className="mb-12">
           <div className="mb-4">
@@ -173,6 +173,6 @@ export default function GeneratorFuelEfficiencyBlogPage() {
           </div>
         </div>
       </article>
-    </main>
+    </div>
   );
 }

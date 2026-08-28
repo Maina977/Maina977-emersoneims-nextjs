@@ -48,7 +48,7 @@ export default function RepairCentrePage() {
     <>
       <script id="repair-centre-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      <main className="min-h-screen bg-slate-950">
+      <div className="min-h-screen bg-slate-950">
         <section className="border-b border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
             <p className="text-xs uppercase tracking-[0.2em] text-cyan-400 font-semibold mb-3">Technical Reference</p>
@@ -139,7 +139,7 @@ export default function RepairCentrePage() {
             </div>
           </div>
         </section>
-      </main>
+      </div>
     </>
   );
 }

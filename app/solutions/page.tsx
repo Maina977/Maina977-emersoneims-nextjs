@@ -22,7 +22,7 @@ const SOLUTIONS_LINKS = [
 
 export default function SolutionsHome() {
   return (
-    <main className="bg-black min-h-screen">
+    <div className="bg-black min-h-screen">
       {/* VideoObject Schema for SEO */}
       <script
         type="application/ld+json"
@@ -272,6 +272,6 @@ export default function SolutionsHome() {
 
       {/* ENGINEERING REFERENCE — the delivery methodology */}
       <SolutionsEngineeringDeepDive />
-    </main>
+    </div>
   );
 }

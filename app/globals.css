@@ -66,6 +66,34 @@ html {
   text-rendering: optimizeLegibility;
 }
 
+/*
+ * The page's ground colour. This is a dark site, but html and body both
+ * computed to rgba(0,0,0,0) — fully transparent — so anywhere no element
+ * painted, the browser filled in its own default WHITE.
+ *
+ * That was not theoretical. Measured on the live homepage at 1440x900:
+ * main#main-content carries padding-top:72px to clear the fixed navbar, and
+ * with nothing painting behind it there was a 72px WHITE BAND across the full
+ * width, between the B2B strip and the hero, on a black page.
+ *
+ * There is already a rule meant to drop that padding on pages with a
+ * full-viewport hero:
+ *     main#main-content:has(>section.hero-full:first-child){padding-top:0}
+ * It does not match, because the hero is not a DIRECT child — pages render
+ * their own wrapper between main and the hero, so the selector misses and the
+ * padding stays. Rather than chase that selector through every page shape, the
+ * background is painted here: then the offset is invisible whether the rule
+ * matches or not.
+ *
+ * This also removes two related artefacts for free: the white flash before
+ * first paint, and the white rubber-band area when overscrolling past the top
+ * or bottom on iOS and Android.
+ */
+html,
+body {
+  background-color: #000;
+}
+
 /* Reduce paint operations */
 * {
   box-sizing: border-box;

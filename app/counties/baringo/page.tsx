@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 
 export default function BaringoCountyPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <OrganizationSchema />
       <LocalBusinessSchema county={COUNTY_DATA.name} />
       <BreadcrumbSchema items={[
@@ -229,6 +229,6 @@ export default function BaringoCountyPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

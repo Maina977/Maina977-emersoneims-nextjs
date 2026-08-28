@@ -119,7 +119,7 @@ export default function FabricationPage() {
   const textY = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.fabricationMain} />
 
@@ -487,6 +487,6 @@ export default function FabricationPage() {
           </motion.div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

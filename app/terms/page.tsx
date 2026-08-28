@@ -5,7 +5,7 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <main className="eims-section min-h-screen">
+    <div className="eims-section min-h-screen">
       <div className="eims-shell py-24">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">Terms of Service</h1>
@@ -50,6 +50,6 @@ export default function TermsPage() {
         </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

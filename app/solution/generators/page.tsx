@@ -63,7 +63,7 @@ export default function GeneratorsSolutionPage() {
 
   return (
     <ErrorBoundary>
-      <main ref={containerRef} className="eims-section min-h-screen relative">
+      <div ref={containerRef} className="eims-section min-h-screen relative">
         {/* Holographic Laser Overlay */}
         {!isLite && <HolographicLaser intensity="high" color="#fbbf24" />}
         
@@ -210,7 +210,7 @@ export default function GeneratorsSolutionPage() {
             </div>
           </div>
         </section>
-      </main>
+      </div>
     </ErrorBoundary>
   );
 }

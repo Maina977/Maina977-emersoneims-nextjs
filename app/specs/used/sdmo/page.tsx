@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function SDMOSpecsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="eims-shell py-16">
         <SectionLead
           title="SDMO Used Generators"
@@ -112,6 +112,6 @@ export default function SDMOSpecsPage() {
           </a>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

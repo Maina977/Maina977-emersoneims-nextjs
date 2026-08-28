@@ -731,7 +731,7 @@ export default function KnowledgeBasePage() {
 
   if (selectedArticle) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
         {/* Article View */}
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <button
@@ -809,12 +809,12 @@ export default function KnowledgeBasePage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
       {/* Hero */}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent" />
@@ -962,6 +962,6 @@ export default function KnowledgeBasePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

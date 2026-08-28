@@ -29,7 +29,7 @@ export default function CumminsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero Section */}
       <section className="relative py-20 px-4">
         <div className="max-w-6xl mx-auto">
@@ -236,6 +236,6 @@ export default function CumminsPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -159,7 +159,7 @@ export default function WhyEmersonEIMS() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
       />
 
-      <main className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-black text-white">
         {/* Hero */}
         <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
           <div className="max-w-4xl mx-auto text-center">
@@ -310,7 +310,7 @@ export default function WhyEmersonEIMS() {
             </p>
           </div>
         </section>
-      </main>
+      </div>
     </>
   );
 }

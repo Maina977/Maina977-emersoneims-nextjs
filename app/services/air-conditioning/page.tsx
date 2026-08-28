@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function AirConditioningPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="bg-gradient-to-r from-cyan-900/30 to-blue-900/20 border-b border-cyan-600/30 py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-6xl font-bold mb-6">
@@ -153,6 +153,6 @@ export default function AirConditioningPage() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

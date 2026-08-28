@@ -440,7 +440,7 @@ export default function UniversalDiagnosticPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {/* Service Selector - 9 Services Grid */}
         <section className="mb-8">
           <h2 className="text-lg font-bold text-cyan-400 mb-4">SELECT SERVICE</h2>
@@ -643,7 +643,7 @@ export default function UniversalDiagnosticPage() {
             </Link>
           </div>
         </section>
-      </main>
+      </div>
 
       {/* HUD Corners */}
       <div className="hidden sm:block fixed top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-cyan-500/30 pointer-events-none" />

@@ -124,7 +124,7 @@ const serviceAreas = [
 
 export default function GeneratorServicesPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.generatorServices} />
 
@@ -429,6 +429,6 @@ export default function GeneratorServicesPage() {
           </motion.div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

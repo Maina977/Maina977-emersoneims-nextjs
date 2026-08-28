@@ -448,7 +448,7 @@ export default function IncineratorsPage() {
   const textY = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
   return (
-    <main className="bg-black min-h-screen">
+    <div className="bg-black min-h-screen">
       <B2BCommercialBand profile={B2B_PROFILES.incinerators} />
       {/* Hero Section */}
       <section ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden">
@@ -843,6 +843,6 @@ export default function IncineratorsPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

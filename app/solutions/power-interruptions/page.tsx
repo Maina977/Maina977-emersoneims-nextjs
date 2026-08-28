@@ -50,7 +50,7 @@ export default function PowerInterruptionsHub() {
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null);
 
   return (
-    <main className="bg-black min-h-screen">
+    <div className="bg-black min-h-screen">
       <B2BCommercialBand profile={B2B_PROFILES.powerInterruptions} />
       <CinematicHeroImage
         src="/images/generator-canopy-fabrication.png"
@@ -239,6 +239,6 @@ export default function PowerInterruptionsHub() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
