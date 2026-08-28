@@ -31,6 +31,7 @@ import FinancingCalculator from '@/components/home/FinancingCalculator';
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
 import TradeInCalculator from '@/components/home/TradeInCalculator';
 import SocialProofWidget from '@/components/home/SocialProofWidget';
+import RecentWorkSection from '@/components/home/RecentWorkSection';
 import CountyCoverageMap from '@/components/home/CountyCoverageMap';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
@@ -801,6 +802,22 @@ export default function HomePage() {
           asking for a decision. 5 verified case studies spanning healthcare, finance,
           manufacturing, agriculture, telecom. */}
       <SocialProofWidget />
+      {/*
+        RECENT WORK — photographed proof, added 2026-08-26.
+
+        Placed immediately after the testimonials so a claim and its evidence
+        sit together. Everything above this point on the page asserts capability;
+        nothing showed it. A buyer weighing a KES 2,000,000 machine discounts
+        adjectives, but a changeover panel wired at U/V/W/N and a burnt
+        interface board on a bench read as real.
+
+        Server-rendered deliberately: proof a crawler cannot see never reaches
+        anyone searching. Source of truth is lib/projects/recentWork.ts, where
+        every fact is either visible in the photograph or was stated by the
+        owner — no client is named, and no outcome is claimed beyond what the
+        images show.
+      */}
+      <RecentWorkSection />
       {/* COUNTY COVERAGE MAP — visual proof of nationwide presence across all 47 counties.
           Shows delivery times and emergency response times per region. Positioned before
           final navigation to emphasize geographic advantage that competitors lack. */}
