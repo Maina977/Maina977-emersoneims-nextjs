@@ -38,32 +38,35 @@ import AIToolsPromo from '@/components/ai/AIToolsPromo';
  * region ever since, and the real implementations sat unimported in
  * app/components/home/.
  *
- * Three are wired below. Two are deliberately NOT, and must not be wired
- * without the owner deciding:
+ * Four are wired below. ONE is deliberately not, and must never be:
  *
  *   SocialProofWidget — contains four FABRICATED testimonials attributed to
  *     invented named individuals ("Dr. James Kipchoge", "Sarah Mwangi", ...),
  *     each flagged `verified: true`, with invented metrics ("99.8% uptime SLA
  *     met", "45% cost reduction") and a named hospital director saying our
  *     service "saved lives". The owner's position is explicit: reviews are
- *     earned through work actually done. This must never ship.
+ *     earned through work actually done. Real testimonials would be welcome
+ *     here; these are not testimonials, they are fiction.
  *
- *   CumminsShopNow — three problems: a "3 Years" warranty against the
- *     owner-confirmed two years; a 62 kVA set at KES 1,580,000 when the
- *     published 60 kVA range is 1,100,000–1,350,000 (1.58M is an 80 kVA
- *     price); and hardcoded stock counts (7/5/4/3) presented as live
- *     availability. Each needs a real figure from the owner, not a guess.
+ * CumminsShopNow WAS held back for three reasons, all now resolved: the
+ * "3 Years" warranty is corrected to the owner-confirmed two years; the
+ * hardcoded stock counts (7/5/4/3), which no inventory system produced and
+ * which would be wrong the first time a set sold, now read "Ask for
+ * availability"; and the prices — a 62 kVA at KES 1,580,000 against a
+ * published 60 kVA range of 1,100,000–1,350,000 — are no longer written in
+ * that file at all. Each card now reads its band from GENERATOR_SIZES, the
+ * same source /generators renders, so the two cannot drift apart.
  *
- * The three below load via next/dynamic so their client JS is split out of the
+ * The four below load via next/dynamic so their client JS is split out of the
  * entry bundle — measured script evaluation on this page is already 8.8s under
  * Lighthouse's 4x CPU throttle, so adding three client components eagerly
  * would trade one defect for another. ssr stays on (default), so the markup is
  * still server-rendered and crawlable.
  */
 const AIAdvantageHero = dynamic(() => import('@/app/components/home/AIAdvantageHero'));
+const CumminsShopNowReal = dynamic(() => import('@/app/components/home/CumminsShopNow'));
 const FinancingCalculatorReal = dynamic(() => import('@/app/components/home/FinancingCalculator'));
 const CountyCoverageMapReal = dynamic(() => import('@/app/components/home/CountyCoverageMap'));
-import CumminsShopNow from '@/components/home/CumminsShopNow';
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
 import TradeInCalculator from '@/components/home/TradeInCalculator';
 import SocialProofWidget from '@/components/home/SocialProofWidget';
@@ -850,7 +853,7 @@ export default function HomePage() {
           for top 5 Cummins models. This is the PRIMARY CONVERSION POINT where
           online browsers become paying customers. Positioned immediately after
           product showcase to capture buying intent. */}
-      <CumminsShopNow />
+      <CumminsShopNowReal />
       {/* FINANCING CALCULATOR — shows payment options and financing partners
           (KCB, Equity, Safaricom Money). Positioned after shop section so buyers
           who see pricing can immediately calculate their monthly payment and apply. */}

@@ -1552,34 +1552,61 @@ const GuaranteeSection = () => {
             <span className="text-5xl">🛡️</span>
           </div>
 
+          {/*
+            REWRITTEN 2026-08-29. The section is kept — its design, its slot and
+            its purpose are unchanged — but every promise in it is now one the
+            site can stand behind. What was here, and why each item went:
+
+              "Iron-Clad Guarantee" / "one of the strongest guarantees
+                available in Kenya" — a comparative superlative about the
+                Kenyan market that nothing evidences.
+              "30-Day Money-Back Guarantee — full refund, no questions asked"
+                — a binding refund undertaking that appears nowhere else on
+                this site and was never confirmed as a real policy. A refund
+                promise is contractual; publishing one we have not agreed is
+                the most exposed thing on this page.
+              "Lifetime Technical Support ... forever" — an unlimited,
+                perpetual commitment with no stated boundary.
+              "If your generator doesn't perform as promised, we'll fix it or
+                replace it. Period." — John Emerson, Founder — an invented
+                quotation attributed to an invented person. "John Emerson"
+                appears nowhere else in this codebase; the business is
+                EmersonEIMS and no such founder is named anywhere on the site.
+
+            The three cards below are each backed elsewhere: the two-year
+            warranty is owner-confirmed and now published site-wide, 24/7
+            emergency response is stated across the site, and the
+            all-47-counties mobile workshop is the owner's own description of
+            the capability.
+          */}
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Our <span className="text-emerald-400">Iron-Clad</span> Guarantee
+            What you get <span className="text-emerald-400">in writing</span>
           </h2>
 
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            We're so confident in our generators and service that we offer one of the strongest guarantees available in Kenya:
+            Every set we supply is quoted, installed and commissioned on these terms:
           </p>
 
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <div className="p-6 rounded-xl bg-black/50 border border-emerald-500/30">
-              <h3 className="text-2xl font-bold text-emerald-400 mb-2">30-Day</h3>
-              <p className="text-white font-semibold">Money-Back Guarantee</p>
-              <p className="text-gray-400 text-sm mt-2">Not satisfied? Full refund, no questions asked</p>
-            </div>
-            <div className="p-6 rounded-xl bg-black/50 border border-emerald-500/30">
-              <h3 className="text-2xl font-bold text-emerald-400 mb-2">3-Year</h3>
+              <h3 className="text-2xl font-bold text-emerald-400 mb-2">2-Year</h3>
               <p className="text-white font-semibold">Comprehensive Warranty</p>
-              <p className="text-gray-400 text-sm mt-2">Parts, labor, and emergency service included</p>
+              <p className="text-gray-400 text-sm mt-2">Engine, alternator and control system</p>
             </div>
             <div className="p-6 rounded-xl bg-black/50 border border-emerald-500/30">
-              <h3 className="text-2xl font-bold text-emerald-400 mb-2">Lifetime</h3>
-              <p className="text-white font-semibold">Technical Support</p>
-              <p className="text-gray-400 text-sm mt-2">Phone, WhatsApp, and email support forever</p>
+              <h3 className="text-2xl font-bold text-emerald-400 mb-2">24/7</h3>
+              <p className="text-white font-semibold">Emergency Response</p>
+              <p className="text-gray-400 text-sm mt-2">Breakdowns attended day or night</p>
+            </div>
+            <div className="p-6 rounded-xl bg-black/50 border border-emerald-500/30">
+              <h3 className="text-2xl font-bold text-emerald-400 mb-2">47</h3>
+              <p className="text-white font-semibold">Counties Served</p>
+              <p className="text-gray-400 text-sm mt-2">Mobile workshop travels to your site</p>
             </div>
           </div>
 
-          <p className="text-gray-400 text-sm italic">
-            "If your generator doesn't perform as promised, we'll fix it or replace it. Period." — John Emerson, Founder
+          <p className="text-gray-400 text-sm">
+            Commissioning includes the changeover panel, wired and tested on load.
           </p>
         </div>
       </div>
@@ -1587,25 +1614,27 @@ const GuaranteeSection = () => {
   );
 };
 
-// URGENCY & SCARCITY SECTION
+/*
+ * WAS AN "URGENCY & SCARCITY" BAND WITH A FAKE COUNTDOWN. Removed 2026-08-29.
+ *
+ * The timer started at 3d 14h 27m 45s, counted down, and on reaching zero this
+ * line reset it to exactly 3d 14h 27m 45s again:
+ *     if (days < 0) { days = 3; hours = 14; minutes = 27; seconds = 45; }
+ * So the "Limited Time Offer" never expired and never had expired — every
+ * visitor, on every visit, saw the same deadline about to run out. A deadline
+ * that cannot pass is a fabricated one, and presenting it to buyers is
+ * misleading advertising regardless of whether a discount exists behind it.
+ *
+ * It also advertised "March Sale: 15% OFF All Generators" — in August — plus
+ * "FREE installation (worth KES 50,000)", an offer stated nowhere else on this
+ * site, and a CTA to /contact?promo=march-sale.
+ *
+ * The band is kept, because a prominent call to action in this position is
+ * legitimate and the page is built around it. What it says is now true: no
+ * countdown, no expiring discount, no invented saving. If a real promotion is
+ * running, put its genuine end date here — a real deadline needs no invention.
+ */
 const UrgencySection = () => {
-  const [timeLeft, setTimeLeft] = useState({ days: 3, hours: 14, minutes: 27, seconds: 45 });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        let { days, hours, minutes, seconds } = prev;
-        seconds--;
-        if (seconds < 0) { seconds = 59; minutes--; }
-        if (minutes < 0) { minutes = 59; hours--; }
-        if (hours < 0) { hours = 23; days--; }
-        if (days < 0) { days = 3; hours = 14; minutes = 27; seconds = 45; }
-        return { days, hours, minutes, seconds };
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <section className="py-12 bg-gradient-to-r from-red-500/20 via-black to-red-500/20 border-y border-red-500/30">
       <div className="max-w-7xl mx-auto px-6">
@@ -1621,38 +1650,26 @@ const UrgencySection = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
               </span>
-              <span className="text-red-400 font-bold uppercase tracking-wider text-sm">Limited Time Offer</span>
+              <span className="text-red-400 font-bold uppercase tracking-wider text-sm">24/7 Emergency Line</span>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold text-white">
-              March Sale: <span className="text-red-400">15% OFF</span> All Generators
+              Generator down? <span className="text-red-400">Call now</span>
             </h3>
-            <p className="text-gray-400">Plus FREE installation (worth KES 50,000) on orders above 100kVA</p>
-          </div>
-
-          {/* Countdown Timer */}
-          <div className="flex items-center gap-3">
-            {[
-              { value: timeLeft.days, label: 'DAYS' },
-              { value: timeLeft.hours, label: 'HRS' },
-              { value: timeLeft.minutes, label: 'MIN' },
-              { value: timeLeft.seconds, label: 'SEC' },
-            ].map((unit, index) => (
-              <div key={unit.label} className="text-center">
-                <div className="w-16 h-16 rounded-lg bg-red-500/20 border border-red-500/50 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">{String(unit.value).padStart(2, '0')}</span>
-                </div>
-                <span className="text-xs text-gray-500 mt-1 block">{unit.label}</span>
-              </div>
-            ))}
+            <p className="text-gray-400">Breakdowns attended day or night, in all 47 counties.</p>
           </div>
 
           <a
-            href="/contact?promo=march-sale"
-            
-            
+            href="tel:+254768860665"
+            className="text-2xl md:text-3xl font-bold text-white hover:text-red-300 transition-colors"
+          >
+            +254 768 860 665
+          </a>
+
+          <a
+            href="/contact?type=emergency"
             className="px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/30"
           >
-            Claim This Offer →
+            Request a callout &rarr;
           </a>
         </div>
       </div>

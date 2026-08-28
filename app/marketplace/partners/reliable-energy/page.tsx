@@ -1,6 +1,26 @@
 import { Metadata } from 'next';
 
+/*
+ * NOINDEX, 2026-08-29. This page publishes fabricated trust signals.
+ *
+ * It presents a named third-party company as a "Verified Partner" with a star
+ * rating, a review count, a quoted customer testimonial, a tiered status and a
+ * response-time SLA — none of which came from any collected data — and it makes
+ * a money-back guarantee on that company's behalf ("full refund, no questions
+ * asked"). Nothing in this repository evidences that these partners exist, that
+ * anyone reviewed them, or that any such refund undertaking was agreed.
+ *
+ * Publishing invented review data is a Google structured-data and spam policy
+ * violation as well as misleading advertising, so the page is removed from the
+ * index while the owner decides whether these partners are real. The page is
+ * NOT deleted — that is the owner's call, and the standing instruction is that
+ * nothing is removed without consent.
+ *
+ * TO RESTORE: delete the robots block below, once the partner, the rating and
+ * the guarantee can each be evidenced.
+ */
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: 'Reliable Energy Systems | Verified Partner',
   description: 'Silver tier partner specializing in healthcare & utilities backup power. 4.2 rating, 12-hour response time. Kenya, Rwanda coverage.',
 };

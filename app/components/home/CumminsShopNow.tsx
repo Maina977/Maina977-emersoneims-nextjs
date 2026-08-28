@@ -2,6 +2,27 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
+
+/*
+ * PRICES COME FROM GENERATOR_SIZES, NOT FROM THIS FILE.
+ *
+ * The hardcoded prices here contradicted the published figures on /generators:
+ * a 62 kVA set was listed at KES 1,580,000 when the published 60 kVA range is
+ * 1,100,000–1,350,000 (1.58M is an 80 kVA price), and a 125 kVA set at
+ * 2,890,000 against a published 100 kVA range of 1,750,000–2,100,000. Two
+ * prices for the same machine on one website is worse than no price.
+ *
+ * Each card now looks up the nearest published size band and shows that range,
+ * so this section and /generators cannot drift apart. If a figure is wrong it
+ * is corrected once, in generatorSizes.ts, and both places follow.
+ */
+function publishedRangeFor(kva: number): { range: string; slug: string } {
+  const nearest = GENERATOR_SIZES.reduce((best, s) =>
+    Math.abs(s.kva - kva) < Math.abs(best.kva - kva) ? s : best
+  );
+  return { range: nearest.priceRange, slug: nearest.slug };
+}
 
 export default function CumminsShopNow() {
   const models = [
@@ -79,8 +100,14 @@ export default function CumminsShopNow() {
               Ready to Ship — 48 Hours
             </span>
           </h2>
+          {/* "in stock across Kenya" and "Same-day delivery to Nairobi" were
+              availability commitments no system backs; the stat band below
+              already states delivery as 48–72 hours, which contradicted the
+              same-day claim in the same section. */}
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-            5 popular Cummins & VOLTKA models in stock across Kenya. Flexible financing through Kenyan banks and mobile money. Same-day delivery to Nairobi, nationwide within 48 hours.
+            Five popular Cummins and VOLTKA models, at the prices published on
+            our generators page. Financing is arranged through your own bank or
+            asset financier.
           </p>
         </motion.div>
 
@@ -106,11 +133,17 @@ export default function CumminsShopNow() {
               )}
 
               <div className="p-6">
-                {/* Stock Status */}
+                {/* Availability.
+                    This said "{gen.stock} in stock" from hardcoded numbers
+                    (7, 5, 4, 3, 2) that no inventory system produced. A
+                    specific count presented as live availability is a factual
+                    claim about the warehouse, and it would have been wrong the
+                    first time a set was sold. "Ask for availability" is true
+                    on every day of the year. */}
                 <div className="mb-4">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30">
                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className="text-xs font-semibold text-green-300">{gen.stock} in stock</span>
+                    <span className="text-xs font-semibold text-green-300">Ask for availability</span>
                   </div>
                 </div>
 
@@ -131,10 +164,16 @@ export default function CumminsShopNow() {
                 {/* Divider */}
                 <div className="border-t border-white/10 my-6" />
 
-                {/* Pricing */}
+                {/* Pricing — the published band for this size, read from
+                    GENERATOR_SIZES so it cannot contradict /generators. The
+                    USD conversion is dropped: it was a fixed number baked into
+                    this file, so it silently became wrong the moment the rate
+                    moved, and we publish in KES everywhere else. */}
                 <div className="mb-4">
-                  <p className="text-2xl font-bold text-white">{gen.price}</p>
-                  <p className="text-xs text-gray-400">{gen.priceUsd}</p>
+                  <p className="text-2xl font-bold text-white">
+                    {publishedRangeFor(parseInt(gen.kva, 10)).range}
+                  </p>
+                  <p className="text-xs text-gray-400">Published range · confirmed on quotation</p>
                 </div>
 
                 {/* Financing */}
