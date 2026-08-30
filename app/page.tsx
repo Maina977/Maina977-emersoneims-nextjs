@@ -169,11 +169,18 @@ function StaticHeroFallback() {
           style={{ aspectRatio: '16/9', width: '100%', height: '100%' }}
           sizes="100vw"
         />
-        {/* Hero video — TABLET+ ONLY (md↑, ≥768px). Most phones in
-            landscape are 700-900px wide, so we now gate at `md:` instead of
-            `sm:` to keep the 18 MB video off every phone, including
-            landscape. Image stays as poster + fallback for phones, slow
-            connections and SEO. */}
+        {/* Hero video — TABLET+ ONLY (md↑, ≥768px).
+            THE GATE IS ON THE <source>, NOT ONLY THE CLASS. `hidden md:block`
+            and preload="none" were both already here and neither stopped the
+            download: autoPlay overrides preload, and display:none does not
+            prevent a video from fetching. Measured on the live homepage under
+            Lighthouse mobile throttling, this file was pulled anyway —
+            3,700KB over 10,551ms — which saturated the connection and starved
+            the hero image. LCP was 7.6s of which 6,655ms (87%) was Render
+            Delay, while the image's own load time was ~0.
+            A media attribute on <source> is the fix: below 768px NO source
+            matches, so the element has nothing to fetch and the poster stands
+            in. No JavaScript, and desktop is unchanged. */}
         <video
           className="absolute inset-0 w-full h-full object-cover hidden md:block [filter:brightness(1.14)_contrast(1.07)_saturate(1.15)]"
           autoPlay
@@ -184,7 +191,7 @@ function StaticHeroFallback() {
           poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
           aria-hidden="true"
         >
-          <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" />
+          <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" media="(min-width: 768px)" />
         </video>
         {/* Lighter grade than before (70/40 → 55/25): keeps text legible while
             letting the 4K-graded footage read bright and cinematic. */}
