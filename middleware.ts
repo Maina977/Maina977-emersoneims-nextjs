@@ -1580,6 +1580,22 @@ export function middleware(request: NextRequest) {
   // 🚀 WORLD'S #1 FASTEST - PERFORMANCE HEADERS
   // ═══════════════════════════════════════════════════════════════════════════
 
+  /*
+   * NOT preloading the hero here, deliberately — it was tried and reverted.
+   *
+   * The homepage LCP element is the hero photograph, and this header only
+   * hints the logo, so preloading the hero looks like an obvious win. It is
+   * not, for three measured reasons:
+   *   1. The browser requests it through Next's optimiser at w=828 on a 390px
+   *      phone, not the 1080 a hand-written hint would guess.
+   *   2. That URL carries a &dpl=<deployment hash> that changes on every
+   *      deploy, so a hardcoded preload can never match it — and a preload
+   *      that does not match byte-for-byte downloads the image a SECOND time.
+   *   3. This Link header is set on EVERY response (see below), so a homepage
+   *      hero hint would be pushed on all ~3,400 pages that never show it.
+   * The Image component already carries priority + fetchPriority="high", which
+   * is the supported way to do this and adapts to the real srcset.
+   */
   const linkHints = [
     '</images/logo-tagline.png>; rel=preload; as=image',
     '<https://fonts.googleapis.com>; rel=preconnect',

@@ -179,8 +179,17 @@ function StaticHeroFallback() {
             the hero image. LCP was 7.6s of which 6,655ms (87%) was Render
             Delay, while the image's own load time was ~0.
             A media attribute on <source> is the fix: below 768px NO source
-            matches, so the element has nothing to fetch and the poster stands
-            in. No JavaScript, and desktop is unchanged. */}
+            matches, so the element has nothing to fetch. No JavaScript, and
+            desktop is unchanged.
+
+            THE poster ATTRIBUTE IS ALSO GONE. It named the RAW original of the
+            same photograph the <Image> above already renders, and a poster
+            downloads even when the video is display:none — measured on mobile
+            as a second 39KB fetch of a picture the optimiser was serving at
+            35KB a few bytes away, competing with the LCP image on a throttled
+            connection. The Image sits directly behind the video, so before
+            playback it is exactly what the viewer sees. The poster was drawing
+            the same picture twice. */}
         <video
           className="absolute inset-0 w-full h-full object-cover hidden md:block [filter:brightness(1.14)_contrast(1.07)_saturate(1.15)]"
           autoPlay
@@ -188,7 +197,6 @@ function StaticHeroFallback() {
           loop
           playsInline
           preload="none"
-          poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
           aria-hidden="true"
         >
           <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" media="(min-width: 768px)" />

@@ -241,10 +241,34 @@ export const AntiScrapingMeta: React.FC = () => {
       <meta name="author" content="EmersonEIMS" />
       <meta name="owner" content="EmersonEIMS" />
       
-      {/* Prevent caching of sensitive content */}
-      <meta httpEquiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
-      <meta httpEquiv="Pragma" content="no-cache" />
-      <meta httpEquiv="Expires" content="0" />
+      {/*
+        THE THREE NO-CACHE METAS WERE REMOVED (2026-08-29).
+
+            <meta httpEquiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+            <meta httpEquiv="Pragma" content="no-cache" />
+            <meta httpEquiv="Expires" content="0" />
+
+        AntiScrapingMeta is imported by app/layout.tsx, so these rendered on
+        EVERY page of the site and told every visitor's browser never to store
+        anything. Repeat visits re-downloaded the full document — 440KB of HTML
+        on the homepage — instead of revalidating a cached copy.
+
+        They also contradicted the cache policy this project deliberately tuned
+        in vercel.json, which sets the homepage to
+            public, max-age=0, s-maxage=60, stale-while-revalidate=300
+        so the edge can serve instantly while revalidating in the background.
+        One line of markup was overriding that everywhere.
+
+        And they bought nothing in exchange. A scraper issues an HTTP request
+        and reads the bytes; it does not consult Cache-Control, Pragma or
+        Expires. These directives are only ever obeyed by the well-behaved
+        clients we WANT to cache — real customers' browsers and the CDN.
+
+        The copyright, author and owner metas above are kept: they cost
+        nothing. `noarchive` is also kept — that one is a deliberate
+        content-protection choice about Google showing a cached copy, and it is
+        the owner's call rather than a performance defect.
+      */}
     </>
   );
 };
