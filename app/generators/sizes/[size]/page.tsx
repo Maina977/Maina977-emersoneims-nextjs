@@ -60,18 +60,79 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * BreadcrumbList + FAQPage only — deliberately NOT Product/Offer.
+ * Pull the two figures out of a published range like
+ * "KES 1,750,000 – 2,100,000". Returns null rather than guessing if the string
+ * is not that shape, so a malformed entry omits the offer instead of
+ * publishing an invented price.
+ */
+function priceBounds(priceRange: string): { low: number; high: number } | null {
+  const nums = [...priceRange.matchAll(/([\d,]{4,})/g)].map((m) => Number(m[1].replace(/,/g, '')));
+  const valid = nums.filter((n) => Number.isFinite(n) && n > 0);
+  if (valid.length < 2) return null;
+  const low = Math.min(...valid);
+  const high = Math.max(...valid);
+  return high > low ? { low, high } : null;
+}
+
+/**
+ * BreadcrumbList + FAQPage + Product/AggregateOffer.
  *
- * Product markup requires a specific product with a specific price. What we can
- * honestly publish is a size class with a range, across brands and
- * configurations. Search Console has flagged this site for over-claimed Product
- * markup before; describing the page as what it is stays eligible and stays true.
+ * PRODUCT MARKUP WAS PREVIOUSLY OMITTED HERE, and the reasoning was sound as
+ * far as it went: Product/Offer wants a specific product at a specific price,
+ * while what we can honestly publish is a size class spanning brands and
+ * configurations. Search Console has flagged this site for over-claimed
+ * Product markup before.
+ *
+ * AggregateOffer is the schema.org type built for exactly that situation — a
+ * lowPrice/highPrice band rather than one number — so the page can be
+ * identified as a purchasable product without asserting a price it does not
+ * have. Without it these pages were unidentifiable as products to Google and
+ * to AI assistants, despite carrying real published prices in the body text.
+ *
+ * WHAT IS DELIBERATELY ABSENT, and must stay absent:
+ *   - `availability`: we publish no live stock, and the shop section was
+ *     changed to "Ask for availability" for that reason. InStock here would
+ *     be a warehouse claim nothing backs.
+ *   - `brand`: these sizes span Cummins, Perkins, FG Wilson and others. Naming
+ *     one would be false for the rest.
+ *   - `aggregateRating` / `review`: we hold no verified review corpus.
+ *     Fabricated review markup is a manual-action offence, and this project
+ *     has already had to refuse invented testimonials once.
+ * The prices come from GENERATOR_SIZES, the same source the visible page
+ * renders, so the markup and the text cannot disagree.
  */
 function jsonLd(g: GeneratorSize) {
   const url = `https://www.emersoneims.com/generators/sizes/${g.slug}`;
+  const bounds = priceBounds(g.priceRange);
   return {
     '@context': 'https://schema.org',
     '@graph': [
+      {
+        '@type': 'Product',
+        '@id': `${url}#product`,
+        name: `${g.kva} kVA Diesel Generator`,
+        // `suits` is stored capitalised and without a full stop ("Shops, small
+        // offices and homes"), so it is lowercased and punctuated here rather
+        // than dropped mid-sentence.
+        description: `${g.kva} kVA (${kwFromKva(g.kva)} kW at 0.8 power factor), ${g.phase}-phase diesel generator for ${g.suits.charAt(0).toLowerCase()}${g.suits.slice(1)}. Supplied, installed and commissioned in Kenya with a 2-year warranty.`,
+        category: 'Diesel generator',
+        url,
+        // A price BAND, not a single figure: these sizes span several brands
+        // and enclosure options. Omitted entirely if the published range
+        // cannot be parsed, rather than shipping a guessed number.
+        ...(bounds
+          ? {
+              offers: {
+                '@type': 'AggregateOffer',
+                priceCurrency: 'KES',
+                lowPrice: bounds.low,
+                highPrice: bounds.high,
+                seller: { '@id': 'https://www.emersoneims.com/#organization' },
+                areaServed: { '@type': 'Country', name: 'Kenya' },
+              },
+            }
+          : {}),
+      },
       {
         '@type': 'BreadcrumbList',
         itemListElement: [

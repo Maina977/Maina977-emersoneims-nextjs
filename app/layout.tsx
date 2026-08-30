@@ -110,7 +110,23 @@ export async function generateMetadata(): Promise<Metadata> {
     default: "EmersonEIMS | B2B Power & Engineering Partner for Industry, Healthcare & Telecom in Kenya",
     template: "%s | EmersonEIMS Kenya"
   },
-  description: "EmersonEIMS is a B2B power-engineering partner for manufacturers, hospitals, telecom, commercial property and construction in Kenya \u2014 Cummins generators, generator repairs, ATS / changeover panels, distribution boards, solar PV, UPS systems, motor rewinding, air-conditioning, borehole pumps, hospital incinerators and steel fabrication \u2014 backed by a 2-year warranty, SLA maintenance and 24/7 emergency response across all 47 counties. Call +254768860665.",
+  /*
+   * 465 characters became 152.
+   *
+   * This is the site-wide fallback description \u2014 it appears in search results
+   * for any page that does not set its own, so it is the most-served piece of
+   * ad copy on the site. It listed nineteen services in one breath. Google
+   * renders roughly 155 characters, so everything from "distribution boards"
+   * onward was written, shipped and never read by anyone, and the part that
+   * WAS visible was a keyword list rather than a reason to click.
+   *
+   * What replaces it leads with the three things people actually search for,
+   * then the two facts that decide a B2B purchase: the price floor and the
+   * warranty. Every figure is verifiable elsewhere on this site \u2014 the opening
+   * price is the lowest in GENERATOR_SIZES, and the warranty is the
+   * owner-confirmed two years.
+   */
+  description: "Generators, solar and UPS for Kenyan industry \u2014 supplied, installed and serviced in all 47 counties. From KES 280,000, 2-year warranty. 24/7 callout.",
   // NOTE: Keywords meta tag removed - Google has ignored this tag since 2009
   // SEO is achieved through quality content, proper H1-H6 structure, and semantic HTML
   authors: [{ name: "EmersonEIMS" }],

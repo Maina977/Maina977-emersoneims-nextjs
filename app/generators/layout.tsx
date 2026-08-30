@@ -28,7 +28,16 @@ export const metadata: Metadata = {
    * wasted the part that actually sells: the warranty and the price range.
    * Lead with the numbers a buyer is searching for.
    */
-  description: "Diesel generators in Kenya, 10kVA-2000kVA, from KES 350,000. 2-year warranty + 1 year free servicing. Installed and serviced in all 47 counties.",
+  /*
+   * "from KES 350,000" corrected to 280,000. GENERATOR_SIZES — the source this
+   * site renders its price tables from — opens at "KES 280,000 – 350,000" for
+   * the 10 kVA set, so the old figure quoted the TOP of the entry band as the
+   * starting price. It also disagreed with the homepage, which reads its
+   * opening price from the same data and shows 280,000: two different entry
+   * prices for the same range on one website. Overstating the floor by 70,000
+   * loses the click before the buyer ever sees the page.
+   */
+  description: "Diesel generators in Kenya, 10kVA-2000kVA, from KES 280,000. 2-year warranty + 1 year free servicing. Installed and serviced in all 47 counties.",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: 'Cummins & Voltka Generators Kenya | 10-2000kVA',

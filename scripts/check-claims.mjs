@@ -50,8 +50,18 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = process.cwd();
-const SCAN = ['app', 'components', 'lib'];
-const EXT = /\.(ts|tsx)$/;
+/*
+ * `public` is scanned because public/llms.txt is the file AI assistants read to
+ * learn what this business sells — and it shipped "a 3-year installation
+ * warranty" against the owner-confirmed two years, while this guard reported
+ * PASS. The guard only looked at .ts/.tsx under app/components/lib, so the
+ * single most quotable document on the site was outside its reach. A claim is a
+ * claim whatever file it lives in, and a plain-text one aimed at language
+ * models is more likely to be repeated verbatim to a customer than anything in
+ * a component.
+ */
+const SCAN = ['app', 'components', 'lib', 'public'];
+const EXT = /\.(ts|tsx|txt|md|json)$/;
 
 // Paths whose contents are not shipped: dead mirrors and archives. They are
 // still reported, but as warnings, because a revived mirror brings the claim

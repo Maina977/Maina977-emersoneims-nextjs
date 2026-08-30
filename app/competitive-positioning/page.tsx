@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   // on the root layout reading headers() — that call forced the whole site
   // to render dynamically and disabled browser caching everywhere.
   alternates: { canonical: 'https://www.emersoneims.com/competitive-positioning' },
-  title: 'Why EmersonEIMS Leads',
+  title: 'Our Service Commitments',
   description: 'Honest competitive analysis: Why EmersonEIMS leads the backup power market. Response time, pricing transparency, service breadth, guarantees, and proven outcomes.',
 };
 
@@ -15,16 +15,16 @@ export default function CompetitivePositioningPage() {
     <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-5xl font-bold mb-6">Why EmersonEIMS Leads</h1>
+          <h1 className="text-5xl font-bold mb-6">Our Service Commitments</h1>
           <p className="text-xl text-gray-300">
-            Honest competitive analysis across response time, pricing, service breadth, guarantees, and verified outcomes.
+            What we commit to on response time, pricing, service breadth and guarantees — each one checkable elsewhere on this site.
           </p>
         </div>
       </section>
 
       <section className="py-20 px-4 bg-slate-900/30">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold mb-12">Competitive Comparison Matrix</h2>
+          <h2 className="text-3xl font-bold mb-12">What We Commit To</h2>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -32,81 +32,48 @@ export default function CompetitivePositioningPage() {
                 <tr className="border-b border-slate-700">
                   <th className="text-left p-4 font-bold text-white">Criteria</th>
                   <th className="text-left p-4 font-bold text-emerald-400">EmersonEIMS</th>
-                  <th className="text-left p-4 font-bold text-gray-400">Competitor A</th>
-                  <th className="text-left p-4 font-bold text-gray-400">Competitor B</th>
-                  <th className="text-left p-4 font-bold text-gray-400">Competitor C</th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Urban Response Time</td>
                   <td className="p-4 text-emerald-400">4 hours ✓</td>
-                  <td className="p-4 text-gray-400">12-24 hours</td>
-                  <td className="p-4 text-gray-400">24-48 hours</td>
-                  <td className="p-4 text-gray-400">Next day</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Service Coverage</td>
                   <td className="p-4 text-emerald-400">All 15 services ✓</td>
-                  <td className="p-4 text-gray-400">5-7 services</td>
-                  <td className="p-4 text-gray-400">3-4 services</td>
-                  <td className="p-4 text-gray-400">2-3 services</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Geographic Coverage</td>
                   <td className="p-4 text-emerald-400">47 counties ✓</td>
-                  <td className="p-4 text-gray-400">3-5 cities</td>
-                  <td className="p-4 text-gray-400">2-3 cities</td>
-                  <td className="p-4 text-gray-400">1 city</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Pricing Transparency</td>
-                  <td className="p-4 text-emerald-400">Fixed pricing ✓</td>
-                  <td className="p-4 text-gray-400">Quote required</td>
-                  <td className="p-4 text-gray-400">Hidden fees</td>
-                  <td className="p-4 text-gray-400">Vague pricing</td>
+                  <td className="p-4 text-emerald-400">Published price ranges ✓</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Service Guarantees</td>
                   <td className="p-4 text-emerald-400">Written SLA ✓</td>
-                  <td className="p-4 text-gray-400">Verbal promise</td>
-                  <td className="p-4 text-gray-400">None stated</td>
-                  <td className="p-4 text-gray-400">None stated</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Emergency Capability</td>
-                  <td className="p-4 text-emerald-400">24/7 verified ✓</td>
-                  <td className="p-4 text-gray-400">Business hours</td>
-                  <td className="p-4 text-gray-400">Limited hours</td>
-                  <td className="p-4 text-gray-400">Call center only</td>
+                  <td className="p-4 text-emerald-400">24/7 emergency callout ✓</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Case Studies Available</td>
                   <td className="p-4 text-emerald-400">15+ documented ✓</td>
-                  <td className="p-4 text-gray-400">3-5 mentioned</td>
-                  <td className="p-4 text-gray-400">1-2 vague</td>
-                  <td className="p-4 text-gray-400">None visible</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Customer Retention</td>
                   <td className="p-4 text-emerald-400">5+ year contracts ✓</td>
-                  <td className="p-4 text-gray-400">1-2 year typical</td>
-                  <td className="p-4 text-gray-400">Project basis</td>
-                  <td className="p-4 text-gray-400">Not disclosed</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Team Expertise</td>
                   <td className="p-4 text-emerald-400">Brand specialists ✓</td>
-                  <td className="p-4 text-gray-400">Some certified</td>
-                  <td className="p-4 text-gray-400">Basic training</td>
-                  <td className="p-4 text-gray-400">Not disclosed</td>
                 </tr>
                 <tr className="hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">One-Stop Solution</td>
                   <td className="p-4 text-emerald-400">Yes ✓</td>
-                  <td className="p-4 text-gray-400">Partial</td>
-                  <td className="p-4 text-gray-400">No</td>
-                  <td className="p-4 text-gray-400">No</td>
                 </tr>
               </tbody>
             </table>
@@ -220,7 +187,7 @@ export default function CompetitivePositioningPage() {
             </div>
 
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
-              <h3 className="text-xl font-bold text-emerald-400 mb-4">Why EmersonEIMS Still Leads</h3>
+              <h3 className="text-xl font-bold text-emerald-400 mb-4">What We Hold Ourselves To</h3>
               <ul className="space-y-2 text-gray-300 text-sm">
                 <li className="flex gap-3">
                   <span className="text-emerald-400">→</span>
