@@ -71,6 +71,7 @@ import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix
 import TradeInCalculator from '@/components/home/TradeInCalculator';
 import SocialProofWidget from '@/components/home/SocialProofWidget';
 import RecentWorkSection from '@/components/home/RecentWorkSection';
+import ClientTestimonials from '@/components/home/ClientTestimonials';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
 // 3D ring showcase — sister piece to the About page spiral gallery.
@@ -914,6 +915,16 @@ export default function HomePage() {
         images show.
       */}
       <RecentWorkSection />
+      {/* Eight named client testimonials, SERVER-RENDERED so they are actually
+          crawlable. They already existed in TestimonialsSection, but that is a
+          client carousel behind LazyOnVisible: checked against the live
+          homepage as Googlebot, not one of the eight names appeared in the
+          HTML, and even mounted the carousel shows one at a time. The
+          business's strongest trust signal was invisible to Google and to the
+          AI assistants that now answer "who should I buy a generator from in
+          Kenya". Placed directly after the photographed projects so a claim and
+          the client who made it sit together. */}
+      <ClientTestimonials />
       {/* COUNTY COVERAGE MAP — visual proof of nationwide presence across all 47 counties.
           Shows delivery times and emergency response times per region. Positioned before
           final navigation to emphasize geographic advantage that competitors lack. */}
