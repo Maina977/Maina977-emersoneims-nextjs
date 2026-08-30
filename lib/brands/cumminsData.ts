@@ -129,12 +129,28 @@ export const CUMMINS_BRAND_INFO = {
       "lowPrice": "350000",
       "highPrice": "22000000",
       "offerCount": "20"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "127"
     }
+    /*
+     * A fabricated aggregateRating was removed here (2026-08-29):
+     *     "aggregateRating": { "ratingValue": "4.9", "reviewCount": "127" }
+     *
+     * No 127 reviews exist. Nothing on this site collects, stores or displays
+     * a review corpus, and no source was ever cited for the 4.9. Review
+     * markup that is not backed by reviews visible on the page is a direct
+     * breach of Google's structured-data policy and draws a manual action
+     * against the whole domain, not one page.
+     *
+     * It was dormant rather than live — the pages importing CUMMINS_BRAND_INFO
+     * read .warranty, .supplier and .powerRange, never .structuredData, and
+     * checking the live HTML as Googlebot confirmed no aggregateRating was
+     * being served. It is deleted anyway, because it sat one render away from
+     * shipping and anyone wiring this object up would have published it
+     * without knowing.
+     *
+     * If genuine reviews are ever collected, this can return — with the
+     * reviews themselves rendered on the page, which is what the policy
+     * actually requires.
+     */
   }
 };
 

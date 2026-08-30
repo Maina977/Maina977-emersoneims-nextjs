@@ -140,6 +140,57 @@ const RULES = [
     why: 'No training certificates are on file to support this.',
   },
   {
+    id: 'fabricated-review-schema',
+    /*
+     * BLOCKING. aggregateRating / reviewCount / ratingValue in structured data
+     * assert that real people left real reviews. Nothing on this site collects,
+     * stores or displays a review corpus, so any such markup here is invented.
+     *
+     * Google's structured-data policy requires the reviews to be visible on the
+     * page that declares them, and breaching it draws a manual action against
+     * the whole domain rather than the one page. This is the same family as the
+     * four invented testimonials still sitting unmounted in SocialProofWidget,
+     * attributed to named individuals and flagged verified:true.
+     *
+     * Found in lib/brands/cumminsData.ts as
+     *     "aggregateRating": { "ratingValue": "4.9", "reviewCount": "127" }
+     * — dormant, because the pages importing that object read .warranty and
+     * .supplier rather than .structuredData, but one render away from shipping.
+     *
+     * If genuine reviews are ever collected AND rendered on the page, delete
+     * this rule in the same commit that adds them — not before.
+     */
+    severity: 'error',
+    /*
+     * A NUMERIC LITERAL is what makes this a claim.
+     *
+     * The first version matched the property name anywhere and flagged things
+     * that assert nothing: `ratingValue: number;` (a TypeScript type) and
+     * `ratingValue: review.ratingValue` (a generic component passing data it
+     * was handed). Those components are fine — they publish whatever real
+     * reviews they are given, and they are given none today.
+     *
+     * What is never acceptable is a rating written directly into the source,
+     * because there is no way for a hardcoded 4.9 to have come from customers.
+     * So the pattern requires a digit on the right-hand side.
+     */
+    /*
+     * `ratingValue` ALONE IS NOT A SIGNAL — it is overloaded on this site.
+     * components/hub/ProductIntelligenceClient.tsx carries
+     *     { sku: 'CUM-C250D5', ratingValue: 250, ratingUnit: ... }
+     * where 250 is the set's kVA rating, not a review score. Flagging that
+     * would be exactly the cry-wolf failure this guard exists to avoid: once a
+     * rule reports things that are plainly fine, the real findings get
+     * discounted with them.
+     *
+     * `reviewCount` and the AggregateRating @type have no second meaning. A
+     * literal count of reviews, or a declared AggregateRating node, is a review
+     * claim and nothing else.
+     */
+    re: /["']?reviewCount["']?\s*:\s*["']?\d|["']@type["']\s*:\s*["']AggregateRating["']/i,
+    why: 'A hardcoded rating or review count. No review corpus exists on this site, so any literal figure here is invented; Google requires the reviews to be visible on the page and treats fabricated markup as a site-wide manual action.',
+  },
+  {
     id: 'three-year-warranty',
     /*
      * BLOCKING, because this one is settled fact rather than judgement.
@@ -185,6 +236,33 @@ const isComment = (l) => /^\s*(\/\/|\*|\/\*)/.test(l);
  * two cleanups in the first place.
  */
 const ALLOWED = [
+  {
+    file: 'components/seo/EnhancedSchemaMarkup.tsx',
+    contains: "'@type': 'AggregateRating',",
+    // This is the CONDITIONAL emitter — `...(rating && reviewCount && {...})`.
+    // It publishes a rating only when one is passed in, which is exactly the
+    // right shape for real review data and emits nothing today because nothing
+    // passes any. The two HARDCODED blocks in this same file (4.8/347 and
+    // 4.9/1247) were invented and have been removed; this one is the mechanism,
+    // not a claim.
+    why: 'data-driven emitter, not a hardcoded rating — emits only when real review data is supplied',
+  },
+  {
+    file: 'lib/solar/marketIntelligence.ts',
+    contains: 'reviewCount:',
+    /*
+     * An internal market-intelligence dataset of SOLAR SUPPLIER scores
+     * (overall/quality/delivery/pricing/support plus a review count). Nothing
+     * imports or renders it — verified — so none of it reaches a page or a
+     * crawler, and it is not schema.org review markup about EmersonEIMS.
+     *
+     * It is allowed rather than deleted because it is third-party research
+     * data the owner may have sourced, not a claim this site publishes. FLAGGED
+     * FOR THE OWNER regardless: if these supplier scores were estimated rather
+     * than measured, they should not be rendered anywhere without a source.
+     */
+    why: 'unrendered internal supplier dataset, not published review markup — flagged for owner review',
+  },
   {
     file: 'lib/data/blog-articles.ts',
     match: '- Factory-trained technicians',

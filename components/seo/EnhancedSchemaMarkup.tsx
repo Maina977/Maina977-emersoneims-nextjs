@@ -287,12 +287,12 @@ export function LocalBusinessWithAreasSchema() {
         }
       }))
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: 4.8,
-      reviewCount: 347,
-      bestRating: 5
-    },
+    // Fabricated aggregateRating removed 2026-08-29: no review corpus
+    // exists on this site, so a hardcoded 4.8/347 and 4.9/1247 were invented.
+    // Review markup unbacked by reviews visible on the page breaches Google's
+    // structured-data policy and risks a site-wide manual action. The
+    // conditional block at the top of this file is KEPT — it only emits a
+    // rating when one is passed in, which is the correct shape for real data.
     priceRange: 'KES 50,000 - KES 50,000,000',
     openingHoursSpecification: [
       {
@@ -341,12 +341,12 @@ export function DiagnosticToolSchema() {
       priceCurrency: 'KES',
       description: 'Free diagnostic tool for generator technicians'
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: 4.9,
-      reviewCount: 1247,
-      bestRating: 5
-    },
+    // Fabricated aggregateRating removed 2026-08-29: no review corpus
+    // exists on this site, so a hardcoded 4.8/347 and 4.9/1247 were invented.
+    // Review markup unbacked by reviews visible on the page breaches Google's
+    // structured-data policy and risks a site-wide manual action. The
+    // conditional block at the top of this file is KEPT — it only emits a
+    // rating when one is passed in, which is the correct shape for real data.
     author: {
       '@type': 'Organization',
       name: 'EmersonEIMS'
