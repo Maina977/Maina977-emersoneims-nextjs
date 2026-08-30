@@ -211,7 +211,7 @@ export default function GeneratorProblemsPage() {
               system failures), and electrical issues like unstable voltage output.
             </p>
             <p>
-              Our diagnostic guides are based on 12+ years of experience servicing
+              Our diagnostic guides are based on 15 years' experience servicing
               generators across all 47 counties in Kenya. Each guide includes possible
               causes ranked by likelihood, step-by-step check procedures, required tools,
               and estimated repair costs.

@@ -701,9 +701,7 @@ export default function HomePage() {
               { '@type': 'GeoCircle', geoMidpoint: { '@type': 'GeoCoordinates', latitude: -1.286389, longitude: 36.817223 }, geoRadius: '2000 km' }
             ],
             sameAs: [
-              'https://www.facebook.com/emersoneims',
-              'https://www.linkedin.com/company/emersoneims',
-              'https://twitter.com/emersoneims'
+              'https://x.com/eimsemerson'
             ],
             hasOfferCatalog: {
               '@type': 'OfferCatalog',

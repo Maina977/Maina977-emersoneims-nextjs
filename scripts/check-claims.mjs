@@ -188,7 +188,15 @@ const RULES = [
      * no-start faults", a list item, or a CSS/array index.
      */
     severity: 'error',
-    re: /(?:#\s?1|\bNo\.?\s?1\b)\s*(?:in\s+)?(?:Power|Generator|Solar|UPS|Provider|Company|Choice|Supplier|Diagnostic|Platform|Service)|(?:Kenya|Africa|East Africa|Nairobi)['’]s\s*(?:#\s?1|\bNo\.?\s?1\b)/i,
+    /*
+     * The optional qualifier between the rank and the noun is load-bearing.
+     * The first version required them adjacent, and
+     *     "EmersonEIMS is Kenya's #1 rated generator company"
+     * slipped through on the word "rated" — found later by a manual sweep,
+     * not by this guard. Now `rated`, `ranked`, `trusted`, `leading` and
+     * `best` may sit between, which is how these claims are usually written.
+     */
+    re: /(?:#\s?1|\bNo\.?\s?1\b)[\s-]*(?:in\s+)?(?:rated|ranked|trusted|leading|best|choice\s+for)?[\s-]*(?:Power|Generator|Solar|UPS|Provider|Company|Choice|Supplier|Diagnostic|Platform|Service)|(?:Kenya|Africa|East Africa|Nairobi)['’]s\s*(?:#\s?1|\bNo\.?\s?1\b)/i,
     why: 'A market-position claim with no ranking or study behind it. Name what we do, not where we supposedly rank.',
   },
   {

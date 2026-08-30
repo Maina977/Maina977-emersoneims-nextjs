@@ -322,7 +322,18 @@ export function generateStructuredData(type: 'Organization' | 'LocalBusiness' | 
       description: 'Leading power and energy solutions provider in Kenya and East Africa',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'P.O. Box 387-00521, Old North Airport Road',
+        /*
+         * A PO Box is the wrong value for schema streetAddress, and actively
+         * wrong for a Google Business Profile — Google requires a physical
+         * location it can verify and rejects PO Boxes outright. This also
+         * spelled the road differently from every other address on the site
+         * ("Old North Airport Road" against "Airport North Road"), which is a
+         * NAP mismatch: Google corroborates a listing by comparing name,
+         * address and phone across the site, and five different street strings
+         * were being published. The postcode 00521 is preserved in the
+         * postalCode field where it belongs.
+         */
+        streetAddress: 'Embakasi, off Airport North Road',
         addressLocality: 'Nairobi',
         addressRegion: 'Nairobi County',
         postalCode: '00521',
@@ -337,7 +348,7 @@ export function generateStructuredData(type: 'Organization' | 'LocalBusiness' | 
       }],
       sameAs: [
         'https://www.facebook.com/emersoneims',
-        'https://twitter.com/emersoneims',
+        'https://x.com/eimsemerson',
         'https://www.linkedin.com/company/emersoneims'
       ],
       ...data

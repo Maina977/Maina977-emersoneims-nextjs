@@ -270,6 +270,27 @@ export default async function RootLayout({
     "email": "info@emersoneims.com",
     "address": {
       "@type": "PostalAddress",
+      /*
+       * streetAddress and postalCode were MISSING here, so the site-wide
+       * LocalBusiness node — the primary one Google reads — published
+       * "streetAddress: undefined, postalCode: undefined".
+       *
+       * That matters beyond tidiness. Google corroborates a Business Profile
+       * against the website's address: name, address and phone have to agree
+       * across both. An incomplete address on the canonical node weakens that
+       * match, which is exactly the signal a local listing depends on.
+       *
+       * The values are not invented. They are what the site already tells
+       * humans on /contact ("Embakasi, off Airport North Road, Nairobi (Near
+       * KEMSA Head Office)") and what two other schema blocks already publish
+       * identically — app/generators/layout.tsx and components/common/
+       * SEOHead.tsx both carry this street and this postcode. This node was
+       * the outlier. 00521 is the owner-confirmed postcode; an earlier session
+       * once inferred 00519 and split the NAP across three codes, so it is
+       * stated here explicitly rather than left to be guessed again.
+       */
+      "streetAddress": "Embakasi, off Airport North Road",
+      "postalCode": "00521",
       "addressCountry": "KE",
       "addressLocality": "Nairobi",
       "addressRegion": "Nairobi County"
@@ -279,18 +300,24 @@ export default async function RootLayout({
       "latitude": -1.3200,
       "longitude": 36.8900
     },
+    /*
+     * HOURS MATCH THE GOOGLE BUSINESS PROFILE EXACTLY (owner-supplied
+     * 2026-08-29). They did not before: this schema published Mon–Fri
+     * 08:00–18:00 and Sat 09:00–16:00, while the verified listing says
+     * Mon–Sat 08:00–17:00 with Sunday closed.
+     *
+     * Google cross-checks a listing against the site's structured data, and
+     * conflicting hours are one of the things that weakens that match — and
+     * worse, sends a customer to a closed workshop at 17:30 on a Tuesday
+     * because the website told them it was open. If the real hours change,
+     * change them in the Business Profile and here in the same sitting.
+     */
     "openingHoursSpecification": [
       {
         "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         "opens": "08:00",
-        "closes": "18:00"
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": "Saturday",
-        "opens": "09:00",
-        "closes": "16:00"
+        "closes": "17:00"
       }
     ],
     "priceRange": "$$$",
@@ -301,11 +328,33 @@ export default async function RootLayout({
     // user-generated reviews. We will reintroduce this only when reviews
     // are sourced from a verifiable third party (Google Business Profile,
     // Trustpilot) and rendered on the page itself.
+    /*
+     * sameAs is how Google reconciles this business with its other profiles,
+     * so every entry has to resolve to a real one. The three that were here
+     * did not — checked 2026-08-29:
+     *     facebook.com/EmersonEIMS            HTTP 400
+     *     linkedin.com/company/emersoneims    HTTP 404
+     *     twitter.com/EmersonEIMS             a DIFFERENT handle from the real
+     *                                         account, which is @eimsemerson
+     * Pointing sameAs at profiles that do not exist gives Google nothing to
+     * corroborate and asserts a presence the business does not have.
+     *
+     * The one below is the account listed on the verified Google Business
+     * Profile. Add Facebook and LinkedIn back when those pages actually
+     * exist — and put the same URLs in the Business Profile at the same time,
+     * so the two agree.
+     */
     "sameAs": [
-      "https://www.facebook.com/EmersonEIMS",
-      "https://twitter.com/EmersonEIMS",
-      "https://www.linkedin.com/company/emersoneims"
+      "https://x.com/eimsemerson"
     ],
+    /*
+     * From the verified Google Business Profile: opening date 1 March 2011.
+     * Publishing it lets Google reconcile the listing with the site instead of
+     * inferring an age, and it settles a figure the site could not previously
+     * agree on — "12+ years", "15 years", "15+ years" and "18 years" were all
+     * in circulation. Fifteen years as of 2026 is the one that is true.
+     */
+    "foundingDate": "2011-03-01",
     "contactPoint": [
       {
         "@type": "ContactPoint",

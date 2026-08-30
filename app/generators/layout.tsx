@@ -117,9 +117,7 @@ const jsonLd = {
         addressCountry: 'KE',
       },
       sameAs: [
-        'https://www.facebook.com/emersoneims',
-        'https://twitter.com/emersoneims',
-        'https://www.linkedin.com/company/emersoneims',
+        'https://x.com/eimsemerson',
       ],
     },
     {
@@ -185,7 +183,7 @@ const jsonLd = {
           '@type': 'OpeningHoursSpecification',
           dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
           opens: '08:00',
-          closes: '18:00',
+          closes: '17:00',
         },
         {
           '@type': 'OpeningHoursSpecification',

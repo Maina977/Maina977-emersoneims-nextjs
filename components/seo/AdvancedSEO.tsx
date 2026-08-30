@@ -50,16 +50,14 @@ export default function AdvancedSEO() {
             numberOfEmployees: '50+',
             slogan: 'Reliable Power. Without Limits.',
             sameAs: [
-              'https://www.facebook.com/EmersonEIMS',
-              'https://twitter.com/EmersonEIMS',
-              'https://www.linkedin.com/company/emersoneims',
+              'https://x.com/eimsemerson',
               'https://www.instagram.com/emersoneims',
               'https://www.youtube.com/@emersoneims',
             ],
             contactPoint: [
               {
                 '@type': 'ContactPoint',
-                telephone: '+254-768-860665',
+                telephone: '+254768860665',
                 contactType: 'Sales',
                 areaServed: 'KE',
                 availableLanguage: ['English', 'Swahili'],
@@ -72,7 +70,7 @@ export default function AdvancedSEO() {
               },
               {
                 '@type': 'ContactPoint',
-                telephone: '+254-782-914717',
+                telephone: '+254782914717',
                 contactType: 'Technical Support',
                 areaServed: 'KE',
                 availableLanguage: ['English', 'Swahili'],
@@ -175,7 +173,7 @@ export default function AdvancedSEO() {
         '@context': 'https://schema.org',
         '@type': 'LocalBusiness',
         name: 'EmersonEIMS - Power Solutions Kenya',
-        telephone: '+254-768-860665',
+        telephone: '+254768860665',
         email: 'info@emersoneims.com',
         address: {
           '@type': 'PostalAddress',
@@ -325,7 +323,7 @@ export default function AdvancedSEO() {
             name: 'Do you offer 24/7 emergency generator repairs?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! EmersonEIMS provides 24/7 emergency generator repair services across all 47 Kenyan counties. We have certified technicians on standby. Call +254-768-860665 for immediate assistance.',
+              text: 'Yes! EmersonEIMS provides 24/7 emergency generator repair services across all 47 Kenyan counties. We have certified technicians on standby. Call +254768860665 for immediate assistance.',
             },
           },
           {
@@ -341,7 +339,11 @@ export default function AdvancedSEO() {
             name: 'Which is the best generator company in Kenya?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'EmersonEIMS is Kenya\'s #1 rated generator company with 12+ years experience, 500+ completed projects, and coverage in all 47 counties. We sell and service Cummins, Perkins and FG Wilson generators, with 24/7 support.',
+              // "Kenya's #1 rated" removed — nothing rates us. "12+ years"
+              // corrected to 15: the verified Google Business Profile gives the
+              // opening date as 1 March 2011, and the same site said 15 years
+              // elsewhere, so this understated it AND disagreed with itself.
+              text: 'EmersonEIMS is a Kenyan generator company with 15 years\' experience, 500+ completed projects, and coverage in all 47 counties. We sell and service Cummins, Perkins and FG Wilson generators, with 24/7 support.',
             },
           },
           {

@@ -9,9 +9,19 @@ import { TEAM_EMAILS } from '@/lib/contact/emails';
  * is the first entry and is rendered visibly. Phones are rendered inline below.
  */
 
+/*
+ * LinkedIn removed 2026-08-29: linkedin.com/company/emersoneims returns HTTP
+ * 404 — the page does not exist, so the link sent visitors to an error and
+ * told Google the business had a presence it does not have. Restore it with
+ * the real URL if a company page is created.
+ *
+ * The X account is the one on the verified Google Business Profile. Facebook is
+ * kept as-is: it is a profile.php URL rather than a guessed vanity name, which
+ * is what a real page without a custom handle looks like, and Facebook answers
+ * 400 to every automated request so it cannot be checked from here either way.
+ */
 const SOCIAL_LINKS = [
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/emersoneims' },
-  { label: 'Twitter', href: 'https://twitter.com/emersoneims' },
+  { label: 'X', href: 'https://x.com/eimsemerson' },
   { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=100089864898337' },
 ] as const;
 

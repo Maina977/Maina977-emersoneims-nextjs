@@ -45,7 +45,7 @@ export default function ComprehensiveKenyaSEO() {
     "openingHours": ["Mo-Fr 08:00-18:00", "Sa 08:00-16:00"],
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Nairobi, Kenya",
+      "streetAddress": "Embakasi, off Airport North Road",
       "addressLocality": "Nairobi",
       "addressRegion": "Nairobi County",
       "addressCountry": "KE"

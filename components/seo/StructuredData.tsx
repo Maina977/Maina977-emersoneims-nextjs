@@ -30,11 +30,14 @@ export function OrganizationSchema() {
     alternateName: 'EmersonEIMS',
     url: 'https://www.emersoneims.com',
     logo: 'https://www.emersoneims.com/emerson-eims-logo.png',
-    description: 'Leading power and energy solutions provider in Kenya and East Africa. Generators, Solar, UPS, Electrical Services.',
-    foundingDate: '2010',
+    // "Leading" is a market-position claim with nothing behind it.
+    description: 'Power and energy solutions in Kenya and East Africa. Generators, Solar, UPS, Electrical Services.',
+    // 2010 contradicted the verified Google Business Profile, which gives the
+    // opening date as 1 March 2011. Google reads both; they must agree.
+    foundingDate: '2011-03-01',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi',
+      streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: 'Nairobi',
       addressRegion: 'Nairobi County',
       postalCode: '00521',
@@ -63,11 +66,23 @@ export function OrganizationSchema() {
         availableLanguage: ['en', 'sw']
       }
     ],
+    /*
+     * sameAs must list profiles that actually exist — it is how Google
+     * reconciles this business with its other identities, and a dead URL gives
+     * it nothing to match.
+     *
+     * x.com/eimsemerson is the account on the verified Google Business Profile.
+     * The vanity URLs previously listed here (facebook.com/emersoneims,
+     * linkedin.com/company/emersoneims, instagram.com/emersoneims) were guesses
+     * at the brand name; LinkedIn returns 404 for that path. Facebook is not
+     * decidable from a script — it answers 400 to any automated request
+     * regardless — so no conclusion is drawn about it here. The footer carries
+     * a Facebook profile.php URL that appears to be the real page; if the owner
+     * confirms it, add it here AND to the Business Profile at the same time so
+     * the two corroborate.
+     */
     sameAs: [
-      'https://www.facebook.com/emersoneims',
-      'https://twitter.com/emersoneims',
-      'https://www.linkedin.com/company/emersoneims',
-      'https://www.instagram.com/emersoneims'
+      'https://x.com/eimsemerson'
     ],
     geo: {
       '@type': 'GeoCoordinates',
@@ -99,7 +114,7 @@ export function LocalBusinessSchema({ county }: { county?: string }) {
     priceRange: 'KES 50,000 - KES 10,000,000',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi',
+      streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: county || 'Nairobi',
       addressRegion: county ? `${county} County` : 'Nairobi County',
       addressCountry: 'KE'
@@ -445,7 +460,7 @@ export function ProfessionalServiceSchema({
     priceRange: priceRange || 'KES 5,000 - KES 10,000,000',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi',
+      streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: 'Nairobi',
       addressRegion: 'Nairobi County',
       addressCountry: 'KE'
@@ -603,7 +618,7 @@ export function ComprehensiveLocalBusinessSchema({
     paymentAccepted: 'Cash, M-Pesa, Bank Transfer, Credit Card, Cheque',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi',
+      streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: county,
       addressRegion: `${county} County`,
       addressCountry: 'KE'
@@ -622,13 +637,13 @@ export function ComprehensiveLocalBusinessSchema({
         '@type': 'OpeningHoursSpecification',
         dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
         opens: '08:00',
-        closes: '18:00'
+        closes: '17:00'
       },
       {
         '@type': 'OpeningHoursSpecification',
         dayOfWeek: 'Saturday',
-        opens: '09:00',
-        closes: '16:00'
+        opens: '08:00',
+        closes: '17:00'
       },
       {
         '@type': 'OpeningHoursSpecification',
@@ -653,7 +668,7 @@ export function ComprehensiveLocalBusinessSchema({
     // No self-asserted aggregateRating — see note in DiagnosticSuiteSchema.
     sameAs: [
       'https://www.facebook.com/emersoneims',
-      'https://twitter.com/emersoneims',
+      'https://x.com/eimsemerson',
       'https://www.linkedin.com/company/emersoneims',
       'https://www.instagram.com/emersoneims'
     ]
@@ -776,7 +791,9 @@ export function AboutPageSchema() {
     '@context': 'https://schema.org',
     '@type': 'AboutPage',
     name: 'About EmersonEIMS',
-    description: 'Learn about EmersonEIMS - Kenya\'s leading power solutions company with 12+ years experience in generators, solar, UPS, and electrical services.',
+    // "Kenya's leading" is a market-position claim with nothing behind it, and
+    // "12+ years" understated the verified 1 March 2011 opening date.
+    description: 'Learn about EmersonEIMS - a Kenyan power solutions company with 15 years\' experience in generators, solar, UPS, and electrical services.',
     url: 'https://www.emersoneims.com/about-us',
     mainEntity: {
       '@type': 'Organization',

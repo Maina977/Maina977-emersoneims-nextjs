@@ -99,7 +99,7 @@ const structuredData = {
       email: 'info@emersoneims.com',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'Industrial Area',
+        streetAddress: 'Embakasi, off Airport North Road',
         addressLocality: 'Nairobi',
         addressCountry: 'KE',
       },
@@ -113,13 +113,13 @@ const structuredData = {
           '@type': 'OpeningHoursSpecification',
           dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
           opens: '08:00',
-          closes: '18:00',
+          closes: '17:00',
         },
         {
           '@type': 'OpeningHoursSpecification',
           dayOfWeek: 'Saturday',
-          opens: '09:00',
-          closes: '16:00',
+          opens: '08:00',
+          closes: '17:00',
         },
         {
           '@type': 'OpeningHoursSpecification',

@@ -39,7 +39,7 @@ export default function LocalBusinessSchema({
       // Correct location (2026-07-18): Embakasi, off Airport North Road —
       // near KEMSA Head Office, behind Coca-Cola, close to Pride Centre.
       // NOT Industrial Area / Commercial Street (that was wrong).
-      "streetAddress": address?.streetAddress || "Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi",
+      "streetAddress": address?.streetAddress || "Embakasi, off Airport North Road",
       "addressLocality": address?.addressLocality || "Nairobi",
       "addressRegion": address?.addressRegion || "Nairobi",
       // 00521, confirmed by the owner 2026-08-04. This default read 00519,
@@ -64,7 +64,7 @@ export default function LocalBusinessSchema({
     ],
     "sameAs": [
       "https://www.facebook.com/emersoneims",
-      "https://twitter.com/emersoneims",
+      "https://x.com/eimsemerson",
       "https://www.linkedin.com/company/emersoneims"
     ]
   };
