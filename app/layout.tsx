@@ -14,7 +14,8 @@ import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import B2BSiteStrip from '@/components/b2b/B2BSiteStrip';
 import { OrganizationSchema, WebSiteSchema, DiagnosticSuiteSchema } from '@/components/seo/StructuredData';
-import AutoBreadcrumb from '@/components/seo/AutoBreadcrumb';
+// AutoBreadcrumb is intentionally not imported — see the note at its former
+// mount point below. The component file itself is unchanged.
 // FAQSchema is intentionally not imported — see the note where it used to be
 // rendered, below. The component file is still there if it is ever wanted on a
 // page that actually displays its questions.
@@ -24,7 +25,10 @@ import { KeyboardShortcutsHelper } from '@/components/accessibility/FocusManagem
 import { AntiScrapingMeta } from '@/components/security/SecurityShield';
 import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, getLocale } from 'next-intl/server';
+// getMessages / getLocale are deliberately NOT imported: both are
+// request-scoped and forced every page in the app to render dynamically.
+import { defaultLocale } from '@/i18n';
+import enMessages from '@/messages/en.json';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import WebVitalsReporter from '@/components/analytics/WebVitalsReporter';
 import { ALL_SERVICES } from '@/lib/services/allServices';
@@ -184,9 +188,32 @@ export default async function RootLayout({
 }) {
   const isDev = process.env.NODE_ENV !== 'production';
 
-  // Get locale and messages dynamically from cookie
-  const locale = await getLocale();
-  const messages = await getMessages();
+  /*
+   * Locale and messages are supplied as CONSTANTS, not fetched per request.
+   *
+   * getLocale() and getMessages() are next-intl's request-scoped server APIs.
+   * Calling either one marks this render dynamic — and because this is the
+   * ROOT layout, that made all ~3,400 pages dynamic, which is what produced
+   *     Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+   * on every URL and stopped any browser from ever caching a page.
+   *
+   * Removing the cookie read from i18n.ts was necessary but not sufficient:
+   * these two calls kept the request scope alive on their own. The build route
+   * table still showed the homepage as dynamic afterwards.
+   *
+   * There is nothing left for them to resolve. The switcher that used to set
+   * NEXT_LOCALE was removed from the nav on 2026-07-31 and the translation
+   * hooks in SciFiHeader are commented out, so every visitor already received
+   * the default locale. Passing it directly is what was happening in practice,
+   * now stated honestly and cheaply.
+   *
+   * NextIntlClientProvider still wraps the tree below, so useTranslations()
+   * keeps working for any component that wants it. Restoring real multilingual
+   * support means locale-prefixed routes (/sw/...) with generateStaticParams,
+   * which keeps pages static — not reinstating a request-scoped read here.
+   */
+  const locale = defaultLocale;
+  const messages = enMessages;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -621,10 +648,33 @@ export default async function RootLayout({
         <OrganizationSchema />
         <WebSiteSchema />
         <DiagnosticSuiteSchema />
-        {/* Per-page BreadcrumbList JSON-LD, derived from the request path
-            (set by middleware as `x-pathname`). Lifts SERP CTR by replacing
-            the long URL with a clean Home > Section > Page trail. */}
-        <AutoBreadcrumb />
+        {/* AutoBreadcrumb IS NOT MOUNTED (2026-08-29). The component file is
+            untouched at components/seo/AutoBreadcrumb.tsx — only this mount is
+            removed — but it must not be restored as written, because it was
+            costing the entire site and delivering nothing.
+
+            IT PRODUCED NO BREADCRUMBS. Its intent was a BreadcrumbList JSON-LD
+            on every deep page, to replace the long URL in search results with
+            a Home > Section > Page trail. It returns that schema inside a
+            next/script <Script> tag, which injects client-side, so a crawler
+            never sees it. Verified against the live site as Googlebot on
+            /repair-centre/ups/ups-bypass-fault and /generators/sizes/100-kva:
+            no BreadcrumbList on either — the exact "JSON-LD via next/script is
+            invisible" trap this project has hit before.
+
+            AND IT FORCED THE WHOLE SITE DYNAMIC. It reads the path via
+            headers(), and a request API called from the ROOT layout opts every
+            page into dynamic rendering. That is what produced
+                Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+            on all ~3,400 URLs, so no visitor's browser ever cached a page and
+            repeat visits re-downloaded 440KB of HTML. This mount was the last
+            of three such triggers, after i18n.ts's cookies() read and the
+            layout's own getLocale()/getMessages().
+
+            TO BRING BREADCRUMBS BACK PROPERLY: render the JSON-LD as a plain
+            <script type="application/ld+json"> so it is in the server HTML,
+            and pass the path in from each route rather than reading headers()
+            here — otherwise the schema costs every page its cacheability. */}
 
         <nav id="main-navigation" aria-label="Main navigation">
           <TeslaStyleNavigation />
