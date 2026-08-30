@@ -319,7 +319,7 @@ export function generateServiceSchema() {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "EmersonEIMS",
-    "description": "Kenya's #1 Power Solutions Provider. 2-Year Generator Warranty. Serving 47 counties, 9,458+ hospitals, 16,245+ hotels, 93,988+ schools.",
+    "description": "Power Solutions Provider in Kenya. 2-Year Generator Warranty. Serving 47 counties, 9,458+ hospitals, 16,245+ hotels, 93,988+ schools.",
     "url": "https://www.emersoneims.com",
     "telephone": ["+254768860665", "+254782914717"],
     "email": "info@emersoneims.com",

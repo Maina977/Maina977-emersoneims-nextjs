@@ -2,7 +2,7 @@
 
 /**
  * SOLAR DESIGN STUDIO - Interactive Solar Design Platform
- * Better Than Aurora Solar
+ * Interactive solar design and sizing
  */
 
 import dynamic from 'next/dynamic';

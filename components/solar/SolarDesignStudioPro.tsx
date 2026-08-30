@@ -415,7 +415,7 @@ export default function SolarDesignStudioPro() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Solar Design Studio Pro</h1>
-              <p className="text-slate-400 text-sm">Better Than Aurora - Interactive Design Platform</p>
+              <p className="text-slate-400 text-sm">Interactive Solar Design Platform</p>
             </div>
           </div>
 

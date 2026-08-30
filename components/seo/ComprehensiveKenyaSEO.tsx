@@ -33,7 +33,7 @@ export default function ComprehensiveKenyaSEO() {
     "@type": "ProfessionalService",
     "name": "EmersonEIMS",
     "alternateName": ["EmersonEIMS", "EmersonEIMS", "EmersonEIMS Kenya"],
-    "description": `Kenya's #1 Power Solutions Provider with 2-YEAR WARRANTY on generators. Serving ${KENYA_STATS.counties} counties, ${KENYA_STATS.hospitals.toLocaleString()}+ hospitals, ${KENYA_STATS.hotels.toLocaleString()}+ hotels, ${KENYA_STATS.schools.toLocaleString()}+ schools.`,
+    "description": `Power Solutions Provider in Kenya with 2-YEAR WARRANTY on generators. Serving ${KENYA_STATS.counties} counties, ${KENYA_STATS.hospitals.toLocaleString()}+ hospitals, ${KENYA_STATS.hotels.toLocaleString()}+ hotels, ${KENYA_STATS.schools.toLocaleString()}+ schools.`,
     "url": "https://www.emersoneims.com",
     "logo": "https://www.emersoneims.com/images/logo-tagline.png",
     "image": "https://www.emersoneims.com/og-image.jpg",
@@ -185,7 +185,7 @@ export default function ComprehensiveKenyaSEO() {
     "name": "EmersonEIMS",
     "alternateName": "EmersonEIMS",
     "url": "https://www.emersoneims.com",
-    "description": `Kenya's #1 Power Solutions Provider. 2-Year Generator Warranty. ${KENYA_STATS.counties} Counties. ${KENYA_STATS.hospitals.toLocaleString()}+ Hospitals. ${KENYA_STATS.hotels.toLocaleString()}+ Hotels.`,
+    "description": `Power Solutions Provider in Kenya. 2-Year Generator Warranty. ${KENYA_STATS.counties} Counties. ${KENYA_STATS.hospitals.toLocaleString()}+ Hospitals. ${KENYA_STATS.hotels.toLocaleString()}+ Hotels.`,
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
@@ -264,7 +264,7 @@ export default function ComprehensiveKenyaSEO() {
 
       {/* Hidden SEO Content for Crawlers */}
       <div className="sr-only" aria-hidden="true">
-        <h2>EmersonEIMS - Kenya's #1 Power Solutions Provider</h2>
+        <h2>EmersonEIMS - Power Solutions Provider in Kenya</h2>
         <p>2-YEAR WARRANTY on all generator installations</p>
         <p>Serving all 47 Kenya counties</p>
         <p>

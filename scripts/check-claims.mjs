@@ -140,6 +140,58 @@ const RULES = [
     why: 'No training certificates are on file to support this.',
   },
   {
+    id: 'named-competitor-comparison',
+    /*
+     * BLOCKING. The owner's standing rule is that we never use another
+     * company's name to promote ourselves.
+     *
+     * A Googlebot crawl on 2026-08-29 found this being broken in two ways at
+     * once. components/solar/SolarGeniusPro.tsx rendered
+     *     WORLD'S #1 SOLAR AI - MORE ADVANCED THAN AURORA
+     * naming Aurora Solar, a real company, and asserting superiority over it.
+     * And app/ai-tools/capabilities/page.tsx published a comparison table
+     * assigning invented accuracy percentages to SIXTEEN named products —
+     * AutoCAD, Revit, PVsyst, Aurora Solar, CAT ET, ComAp Tools and others —
+     * benchmarked against our own claimed 97.8-99.8%. Unsourced performance
+     * data about named commercial products is a factual assertion about other
+     * companies' software, not marketing.
+     *
+     * THE RULE MATCHES THE COMPARISON, NOT THE BRAND. This site legitimately
+     * documents DSE, ComAp, Cummins and Caterpillar controllers — it services
+     * them, and "DSE 7320 fault codes" is real, valuable content. Banning the
+     * names would gut the fault-code library. So the pattern requires a
+     * comparative construction ("better than", "more advanced than",
+     * "outperforms", "beats") immediately followed by a capitalised name.
+     */
+    severity: 'error',
+    re: /\b(?:better|more advanced|more accurate|faster|superior)\s+than\s+(?:the\s+)?[A-Z][A-Za-z]{2,}|\b(?:outperforms|beats|outclasses)\s+[A-Z][A-Za-z]{2,}/,
+    why: 'A superiority claim against a named company. We never use another company name to promote ourselves, and the comparison is not evidenced.',
+  },
+  {
+    id: 'number-one-claim',
+    /*
+     * BLOCKING. "#1" is a claim about market position, and no ranking, market
+     * -share study or citation exists for it anywhere in this project.
+     *
+     * This class has been "fixed" before and came back. A credibility audit on
+     * 2026-07-18 replaced one instance in app/locations/[location]/page.tsx and
+     * left eleven behind, which a Googlebot crawl on 2026-08-29 found still
+     * rendering on live pages — "EmersonEIMS - Kenya's #1 Power Solutions
+     * Provider" among them. It is the same family as the fabricated "#1 Across
+     * 30+ Services" matrix, the "Market Leadership Proven" badge and the "Why
+     * EmersonEIMS Leads" headings, all removed separately. A rule is the only
+     * thing that stops it returning a third time.
+     *
+     * The pattern is deliberately narrow: it wants a rank ASSERTION, so it
+     * requires #1 or "No.1" adjacent to a superlative noun or a possessive
+     * place name. It does not match ordinary uses like "the number 1 cause of
+     * no-start faults", a list item, or a CSS/array index.
+     */
+    severity: 'error',
+    re: /(?:#\s?1|\bNo\.?\s?1\b)\s*(?:in\s+)?(?:Power|Generator|Solar|UPS|Provider|Company|Choice|Supplier|Diagnostic|Platform|Service)|(?:Kenya|Africa|East Africa|Nairobi)['’]s\s*(?:#\s?1|\bNo\.?\s?1\b)/i,
+    why: 'A market-position claim with no ranking or study behind it. Name what we do, not where we supposedly rank.',
+  },
+  {
     id: 'fabricated-review-schema',
     /*
      * BLOCKING. aggregateRating / reviewCount / ratingValue in structured data

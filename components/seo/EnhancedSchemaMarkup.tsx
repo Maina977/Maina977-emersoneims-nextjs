@@ -250,7 +250,7 @@ export function LocalBusinessWithAreasSchema() {
     url: 'https://www.emersoneims.com',
     logo: 'https://www.emersoneims.com/images/logo-tagline.png',
     image: 'https://www.emersoneims.com/og-image.jpg',
-    description: 'Kenya\'s #1 Generator & Solar Company. 2-Year Warranty. 9 Services across 47 Counties.',
+    description: 'Kenya\'s Generator & Solar Company. 2-Year Warranty. 9 Services across 47 Counties.',
     telephone: '+254768860665',
     email: 'info@emersoneims.com',
     address: {
