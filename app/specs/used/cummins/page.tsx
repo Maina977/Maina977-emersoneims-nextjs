@@ -4,6 +4,10 @@ import OptimizedImage from "@/components/media/OptimizedImage";
 import { SectionLead } from "@/components/generators";
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/specs/used/cummins' },
   title: "Used Cummins Generator Specifications",
   description: "Detailed specifications for pre-owned Cummins generators (50–2000 kVA) including running hours, fuel consumption, and service details.",
 };

@@ -8,6 +8,10 @@ import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/generator' },
   title: "Cummins Generators — Powering Kenya",
   description: "From 20kVA to 2000kVA, verified specs, Hollywood‑grade visuals, and engineering mastery.",
 };

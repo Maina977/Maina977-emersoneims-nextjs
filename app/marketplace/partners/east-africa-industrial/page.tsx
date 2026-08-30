@@ -20,6 +20,10 @@ import { Metadata } from 'next';
  * the guarantee can each be evidenced.
  */
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/marketplace/partners/east-africa-industrial' },
   robots: { index: false, follow: false },
   title: 'East Africa Industrial | Verified Partner',
   description: 'Silver tier partner specializing in manufacturing & oil/gas backup power. 4.4 rating, 8-hour response time. Tanzania, Uganda coverage.',

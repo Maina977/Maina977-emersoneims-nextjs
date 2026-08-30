@@ -5,6 +5,10 @@ import { SolarInverterTemperatureDerating } from '@/components/visualizations/Pe
 import { EfficiencyGauge } from '@/components/visualizations/DiagnosticTools';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/services/solar-inverters' },
   title: 'Solar Inverters: Complete Technical Guide',
   description: 'Professional solar inverter engineering guide: 30+ error codes, MPPT algorithms, temperature management, grid-tie vs hybrid, troubleshooting procedures, maintenance schedules, safety standards. Real specifications and calculations for Kenya climate.',
   keywords: [

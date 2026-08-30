@@ -7,6 +7,10 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/ai-tools`;
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/ai-tools' },
   /*
    * The old title listed four product names, none of which anyone searches, and
    * ran to 89 characters so Google cut it anyway. This leads with what the tools

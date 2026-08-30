@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+// `headers` is deliberately NOT imported. Calling it in this root layout opted
+// every page into dynamic rendering — see the note in generateMetadata below.
 import PerformanceBoot from "@/components/performance/PerformanceBoot";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -71,16 +72,33 @@ export async function generateMetadata(): Promise<Metadata> {
   // exactly what happens on a STATICALLY PRERENDERED route — headers() has no
   // request to read at build time. /generators/case-studies hit this and
   // shipped canonical=<homepage>, re-creating the very bug described above on
-  // that page. An absent header now yields NO canonical rather than a wrong
-  // one: Google treating a URL as its own canonical is far less damaging than
-  // being told it duplicates the homepage. Any statically prerendered page must
+  // that page. An absent header yielded NO canonical rather than a wrong one:
+  // Google treating a URL as its own canonical is far less damaging than being
+  // told it duplicates the homepage. Any statically prerendered page must
   // declare its own alternates.canonical.
-  const pathname = (await headers()).get("x-pathname");
-  const canonical = !pathname
-    ? undefined
-    : pathname === "/"
-      ? siteUrl
-      : `${siteUrl}${pathname}`;
+  //
+  // THE headers() CALL IS NOW GONE (2026-08-29), and the condition above is
+  // satisfied instead: scripts/add-canonicals.mjs gave 117 static routes their
+  // own self-referential canonical, joining the 147 that already had one.
+  //
+  // WHY IT HAD TO GO. Reading headers() in the ROOT layout opts every page on
+  // the site into dynamic rendering. The visible cost was the response header
+  //     Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+  // on every URL — Next's default for a dynamically rendered route. That tells
+  // every visitor's browser never to store a page, so repeat visits
+  // re-downloaded the entire document (440KB of HTML on the homepage) instead
+  // of revalidating a cached copy, and it silently overrode the policy this
+  // project deliberately tuned in vercel.json
+  //     public, max-age=0, s-maxage=60, stale-while-revalidate=300
+  // which exists so the edge can answer instantly and refresh behind the user.
+  //
+  // With this removed the site prerenders and `export const revalidate = 3600`
+  // above governs freshness, as originally intended.
+  //
+  // IF YOU ADD A ROUTE: give it its own alternates.canonical. Do not restore
+  // headers() here to cover it — that trades one page's canonical for every
+  // page's cacheability.
+  const canonical: string | undefined = undefined;
 
   return {
   metadataBase: new URL(siteUrl),

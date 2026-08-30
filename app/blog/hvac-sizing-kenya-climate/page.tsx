@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/blog/hvac-sizing-kenya-climate' },
   title: 'HVAC Sizing for Kenya Climate: Don\'t Buy the Wrong AC Unit',
   description: 'Correct AC sizing for Kenya heat. Why oversized/undersized units fail. Cooling load calculation for different regions.',
 };

@@ -2,6 +2,10 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/guides/emergency-response' },
   title: 'Generator Emergency Response Guide',
   description: 'Step-by-step emergency response guide when your generator fails. Quick troubleshooting checklist, who to call, and what information to have ready. 24/7 emergency support in Kenya.',
 };

@@ -8,6 +8,10 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/hub`;
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/hub' },
   /*
    * "Intelligence Hub" is not a search anyone performs. This page sits at
    * POSITION 34.7 — page four — with 7 impressions and no clicks, and its

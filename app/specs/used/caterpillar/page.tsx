@@ -3,6 +3,10 @@ import OptimizedImage from "@/components/media/OptimizedImage";
 import { SectionLead } from "@/components/generators";
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/specs/used/caterpillar' },
   title: "Used Caterpillar Generator Specifications",
   description: "Industrial-grade Caterpillar generators (100–2000 kVA) for heavy-duty mining and manufacturing with 3,000–12,000 running hours and comprehensive inspection.",
 };

@@ -7,6 +7,10 @@ import { Metadata } from 'next';
 // that explicit rather than incidental. The page stays reachable by URL for
 // internal use.
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/phase-4' },
   robots: { index: false, follow: false },
   title: 'Phase 4: Market Leader Transformation',
   description: 'Phase 4 infrastructure: YouTube channel, podcast series, partner marketplace, certification program, mobile strategy. Building Africa\'s leading backup power ecosystem.',

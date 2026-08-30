@@ -4,6 +4,10 @@ import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/solutions/contact' },
   title: "Talk to an expert — EmersonEIMS solutions",
   description: "Get in touch with our engineering team for diesel generators, solar, controls, and power systems advice.",
   keywords: ["contact", "expert", "engineering support", "EmersonEIMS"],

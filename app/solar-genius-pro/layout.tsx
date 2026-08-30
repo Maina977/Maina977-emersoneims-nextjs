@@ -7,6 +7,10 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/solar-genius-pro`;
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/solar-genius-pro' },
   /*
    * Job first, product name second. See app/generator-oracle/layout.tsx for the
    * full reasoning and the Search Console evidence behind it.

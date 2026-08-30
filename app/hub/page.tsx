@@ -28,6 +28,10 @@ import LazyLockedChart from '@/components/charts/LazyLockedChart';
  * "Hub" branding is untouched everywhere it is visible on the page itself.
  */
 export const metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/hub' },
   title: 'UPS & Inverter Sizing Calculator — Free',
   description:
     'Free UPS and inverter sizing calculator for Kenya: work out kVA, battery runtime and derating, audit a supplier quotation, and compare products — built by EmersonEIMS engineers.',

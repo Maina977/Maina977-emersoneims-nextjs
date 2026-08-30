@@ -15,6 +15,10 @@ import type { Metadata } from 'next';
  * site before. The root layout emits a correct self-referential canonical.
  */
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/maintenance-hub/general' },
   title: 'Industrial Maintenance Services A-Z',
   description:
     'An A-Z of industrial maintenance in Kenya: what each service covers, how often it is needed, and how to tell planned maintenance from a real fault.',

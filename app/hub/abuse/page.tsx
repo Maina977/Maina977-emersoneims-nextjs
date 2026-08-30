@@ -3,6 +3,10 @@ import { HubShell } from '@/components/hub/HubShell';
 import AbuseClient from '@/components/hub/AbuseClient';
 
 export const metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/hub/abuse' },
   /*
    * Dropped the ' — Solar & UPS Intelligence Hub' suffix. It spent ~30
    * characters of every search result repeating branding nobody types —

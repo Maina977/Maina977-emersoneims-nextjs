@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/blog/generator-fuel-efficiency-reduce-costs' },
   title: 'Generator Fuel Efficiency: 5 Ways to Reduce Operating Costs',
   description: 'Lower generator fuel consumption. Load sizing, regular maintenance, proper operation. Save 20-40% on fuel bills.',
 };

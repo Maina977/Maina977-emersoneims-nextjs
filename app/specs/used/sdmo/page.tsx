@@ -3,6 +3,10 @@ import OptimizedImage from "@/components/media/OptimizedImage";
 import { SectionLead } from "@/components/generators";
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/specs/used/sdmo' },
   title: "Used SDMO Generator Specifications",
   description: "SDMO Kohler Power generators (30–1200 kVA) with French engineering, 2,000–8,000 running hours, ideal for farming and remote operations.",
 };

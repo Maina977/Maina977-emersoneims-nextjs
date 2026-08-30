@@ -5,6 +5,10 @@ import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/generator-problems' },
   title: 'Generator Problems & Solutions',
   description: 'Complete guide to diagnosing generator problems. Expert solutions for starting issues, overheating, low oil pressure, voltage fluctuations, and exhaust smoke. Free troubleshooting help.',
   keywords: 'generator problems, generator troubleshooting, generator won\'t start, generator overheating, generator repair Kenya',

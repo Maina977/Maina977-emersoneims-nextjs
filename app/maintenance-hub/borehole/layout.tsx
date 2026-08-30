@@ -15,6 +15,10 @@ import type { Metadata } from 'next';
  * site before. The root layout emits a correct self-referential canonical.
  */
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/maintenance-hub/borehole' },
   title: 'Borehole Drilling & Pump Installation',
   description:
     'Complete guide to borehole drilling, pump selection and water system maintenance in Kenya — siting, depth, yield, pump sizing and servicing intervals.',

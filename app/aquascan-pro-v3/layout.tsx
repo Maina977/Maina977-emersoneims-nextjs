@@ -7,6 +7,10 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/aquascan-pro-v3`;
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/aquascan-pro-v3' },
   /*
    * Job first, product name second — see app/generator-oracle/layout.tsx for the
    * evidence. "Hydrogeology intelligence" is not a search anyone performs;

@@ -3,6 +3,10 @@ import Link from 'next/link';
 import { GeneratorDiagnosticFlowchart } from '@/components/visualizations/DiagnosticTools';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/services/borehole-drilling' },
   title: 'Borehole Drilling: Complete Technical Guide',
   description: 'Professional borehole engineering guide: hydrogeology, transmissivity, aquifer testing, drilling methods, yield assessment, water quality, 30+ error codes, troubleshooting, maintenance for Kenya aquifers.',
   keywords: [
