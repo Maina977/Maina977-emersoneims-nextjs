@@ -220,10 +220,17 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      {/* The FAQPage schema built above is NOT emitted (2026-08-29).
+          /generator-oracle was serving TWO FAQPage entities: this one, and the
+          one in ToolSeoContent. Two FAQPage nodes on a single URL is invalid,
+          and this was the wrong one to keep — Google requires the questions to
+          be visible on the page that declares them, and this component renders
+          no FAQ at all, only markup. ToolSeoContent renders a real
+          "Frequently asked questions" section with its six Q&As on the page,
+          so its schema is the compliant one and it stays.
+          Same violation as the site-wide FAQSchema removed from app/layout.tsx
+          earlier. The faqSchema object is left in place, unused, so the
+          questions are not lost if a visible FAQ is ever added here. */}
       {pageType === 'guide' && (
         <script
           type="application/ld+json"
