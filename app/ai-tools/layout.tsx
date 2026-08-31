@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import ToolSeoContent from '@/components/seo/ToolSeoContent';
 import type { ReactNode } from 'react';
-import Script from 'next/script';
+// next/script is deliberately NOT imported. Its <Script> injects tags
+// client-side, so JSON-LD written that way never reaches a crawler — verified
+// as Googlebot: ten service pages emitted no Service schema at all. Structured
+// data must use a plain <script> so it lands in the server HTML.
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/ai-tools`;
@@ -148,20 +151,9 @@ const TOOL_SOFTWARE_SCHEMAS = [
 export default function AIToolsLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <Script
-        id="ai-tools-itemlist"
-        type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(ITEM_LIST_SCHEMA) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ITEM_LIST_SCHEMA) }}/>
       {TOOL_SOFTWARE_SCHEMAS.map((schema, i) => (
-        <Script
-          key={schema.name}
-          id={`ai-tools-softwareapp-${i}`}
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
+        <script key={schema.name} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       ))}
       {children}
       <ToolSeoContent tool="ai-tools" />

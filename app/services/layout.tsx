@@ -1,5 +1,8 @@
 import { Metadata } from 'next';
-import Script from 'next/script';
+// next/script is deliberately NOT imported. Its <Script> injects tags
+// client-side, so JSON-LD written that way never reaches a crawler — verified
+// as Googlebot: ten service pages emitted no Service schema at all. Structured
+// data must use a plain <script> so it lands in the server HTML.
 
 /**
  * Services Section Layout - SEO Metadata
@@ -209,11 +212,7 @@ export default function ServicesLayout({
 }) {
   return (
     <>
-      <Script
-        id="services-structured-data"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}/>
       {children}
     </>
   );

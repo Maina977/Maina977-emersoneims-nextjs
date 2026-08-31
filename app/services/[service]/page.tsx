@@ -174,8 +174,23 @@ export default async function ServiceDetailPage({ params }: Props) {
 
   return (
     <>
-      <Script
-        id={`service-structured-data-${service.slug}`}
+      {/* A PLAIN <script>, NOT next/script.
+          This block was rendered with <Script> from next/script, which injects
+          the tag client-side after hydration — so the Service schema never
+          reached a crawler. Checked as Googlebot across all ten service pages
+          on 2026-08-29: every one emitted LocalBusiness (inherited from the
+          root layout, which uses a plain tag) and NOT ONE emitted Service.
+
+          The consequence is that /services/ac-installation read to Google and
+          to AI assistants as "a page on a local business's website" rather
+          than "air conditioning installation, provided in Kenya" — the
+          schema was written, correct, and invisible.
+
+          Same defect as the BreadcrumbList that AutoBreadcrumb emitted through
+          next/script and the eight client testimonials locked in a carousel.
+          Structured data has to be in the server HTML; next/script cannot put
+          it there. */}
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />

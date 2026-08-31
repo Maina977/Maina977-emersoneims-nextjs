@@ -1,6 +1,9 @@
 import { Metadata } from 'next';
 import ToolSeoContent from '@/components/seo/ToolSeoContent';
-import Script from 'next/script';
+// next/script is deliberately NOT imported. Its <Script> injects tags
+// client-side, so JSON-LD written that way never reaches a crawler — verified
+// as Googlebot: ten service pages emitted no Service schema at all. Structured
+// data must use a plain <script> so it lands in the server HTML.
 
 /**
  * Maintenance Hub - Main SEO Layout
@@ -242,11 +245,7 @@ export default function MaintenanceHubLayout({
 }) {
   return (
     <>
-      <Script
-        id="maintenance-hub-structured-data"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}/>
       {children}
       <ToolSeoContent tool="maintenance-hub" />
     </>
