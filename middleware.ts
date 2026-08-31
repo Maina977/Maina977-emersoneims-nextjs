@@ -970,6 +970,14 @@ export function middleware(request: NextRequest) {
         'generator-service-cost-kenya',
         'motor-rewinding-cost-kenya',
         'incinerator-price-kenya',
+        // Added 2026-08-29 with the guides themselves. Both were built by the
+        // route (page count 3,410 -> 3,412) and both still answered 404 in
+        // production, because this allowlist is the authority and did not know
+        // them yet. That is this guard working exactly as designed — but it is
+        // also the failure mode to watch: ADD THE SLUG HERE IN THE SAME COMMIT
+        // as the guide, or the page ships invisible.
+        'air-conditioning-cost-kenya',
+        'electrical-repair-cost-kenya',
       ]);
       let slug = pathname.slice('/pricing/'.length).replace(/\/$/, '');
       try { slug = decodeURIComponent(slug); } catch { /* keep raw */ }

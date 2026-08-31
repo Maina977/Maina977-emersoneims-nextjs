@@ -125,6 +125,41 @@ try {
   }
 } catch { /* not fatal */ }
 
+/*
+ * The middleware's price-guide allowlist must know every guide.
+ *
+ * middleware.ts hard-404s any /pricing/<slug> it does not recognise, because
+ * Next 16 renders the 404 page at HTTP 200 and the guard has to live at the
+ * edge. The allowlist is inlined by hand — a '@/lib' import has been proven to
+ * fail open in that runtime — so it can silently fall behind the data.
+ *
+ * It did, on 2026-08-29: two new guides built correctly (page count 3,410 ->
+ * 3,412) and both answered 404 in production because this list had not been
+ * updated in the same commit. Nothing in the build catches that; the pages are
+ * real and the guard is right to refuse what it does not know. Only a
+ * cross-check does.
+ */
+try {
+  const mw = readFileSync('middleware.ts', 'utf8');
+  const guides = readFileSync('lib/pricing/publishedPrices.ts', 'utf8');
+
+  const listed = new Set(
+    [...(/const OK_PRICE_GUIDES = new Set\(\[([\s\S]*?)\]\)/.exec(mw)?.[1] ?? '')
+      .matchAll(/'([a-z0-9-]+)'/g)].map((m) => m[1])
+  );
+  const defined = [...guides.matchAll(/slug:\s*'([a-z0-9-]+-(?:cost|price|prices)-kenya)'/g)].map((m) => m[1]);
+
+  const missing = defined.filter((s) => !listed.has(s));
+  if (missing.length) {
+    problems.push(
+      'middleware.ts OK_PRICE_GUIDES is missing ' + missing.length + ' guide slug(s), so those pages will 404 in production:\n' +
+      missing.map((s) => '     /pricing/' + s).join('\n')
+    );
+  } else if (defined.length) {
+    notes.push(`price-guide allowlist covers all ${defined.length} guides`);
+  }
+} catch { /* not fatal — the check is advisory if either file moves */ }
+
 if (problems.length) {
   console.error('PREFLIGHT FAILED — do not push:\n');
   problems.forEach((p, i) => console.error(`  ${i + 1}. ${p}\n`));
