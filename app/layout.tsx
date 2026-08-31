@@ -517,8 +517,13 @@ export default async function RootLayout({
         <meta property="og:postal-code" content="" />
         <meta property="og:country-name" content="Kenya" />
 
-        {/* LinkedIn-specific meta tags */}
-        <meta property="og:see_also" content="https://www.linkedin.com/company/emersoneims" />
+        {/* og:see_also removed 2026-08-29. It pointed every page on the site at
+            linkedin.com/company/emersoneims, which returns HTTP 404 — sending
+            anyone who followed it, and any crawler resolving it, to nothing.
+            This was the last live reference after the sameAs arrays were
+            cleaned; a verification pass against the production HTML caught it
+            still serving. Restore it when a real LinkedIn page exists, and add
+            the same URL to the Google Business Profile at the same time. */}
 
         {/* Author & Publisher */}
         <meta name="author" content="EmersonEIMS" />

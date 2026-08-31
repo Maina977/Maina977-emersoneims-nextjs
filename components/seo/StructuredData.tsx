@@ -668,9 +668,12 @@ export function ComprehensiveLocalBusinessSchema({
     // No self-asserted aggregateRating — see note in DiagnosticSuiteSchema.
     sameAs: [
       'https://www.facebook.com/emersoneims',
-      'https://x.com/eimsemerson',
-      'https://www.linkedin.com/company/emersoneims',
-      'https://www.instagram.com/emersoneims'
+      // linkedin.com/company/emersoneims and instagram.com/emersoneims removed
+      // 2026-08-29. The file's own note above already recorded these as
+      // guessed vanity URLs rather than confirmed accounts; LinkedIn returns
+      // HTTP 404. Only the account named on the verified Google Business
+      // Profile remains.
+      'https://x.com/eimsemerson'
     ]
   };
 

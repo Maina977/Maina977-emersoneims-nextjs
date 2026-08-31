@@ -10,6 +10,7 @@ import sparePartsDb from '@/app/data/spare-parts-database-COMPLETE.json';
 import { getEngineIndex } from '@/lib/parts/engineIndex';
 import { REPAIR_HUBS, REPAIR_ARTICLES } from '@/lib/repair-centre';
 import { FAULT_CODES } from '@/lib/data/faultCodes';
+import { ENGINE_BRAND_GROUPS } from '@/lib/faults/engineBrandGroups';
 import { getAllIndustries } from '@/lib/seo/industryData';
 import { PRICE_GUIDES } from '@/lib/pricing/publishedPrices';
 import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
@@ -395,6 +396,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
    * Deriving the list makes that impossible, and publishes every real code page
    * instead of an arbitrary 12. Never hand-add a slug here.
    */
+  /*
+   * Engine fault-code brand pages. 2,127 verified codes across ten generator
+   * makers that previously had no URL at all — see lib/faults/engineBrandGroups.ts
+   * for why these are per-BRAND rather than per-code. Derived from the same
+   * registry the route builds its generateStaticParams from, so this list can
+   * never advertise a URL that 404s.
+   */
+  for (const g of ENGINE_BRAND_GROUPS) {
+    urls.push({
+      url: `${BASE_URL}/faults/engine/${g.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    });
+  }
+
   for (const fault of FAULT_CODES) {
     urls.push({
       url: `${BASE_URL}/faults/${fault.code.toLowerCase()}`,

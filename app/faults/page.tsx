@@ -6,6 +6,14 @@ import { motion } from 'framer-motion';
 import { FAULT_CODES } from '@/lib/data/faultCodes';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+/* Crawlable index of the brand reference pages.
+   Imported into a 'use client' file it joins the client bundle — but it is
+   static markup with no state, and App Router server-renders client components
+   on first paint, so the links ARE in the initial HTML. That is the whole
+   point: the reference pages carrying ~3,900 codes had no internal link from
+   the hub that owns them, because this page's own codes sit behind a
+   client-side search box that Google never operates. See the component. */
+import FaultReferenceIndex from '@/components/faults/FaultReferenceIndex';
 
 /**
  * Fault Code Database Hub
@@ -67,6 +75,8 @@ export default function FaultCodesPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.faults} />
+
+      <FaultReferenceIndex />
 
       {/* Hero Section */}
       <section className="relative py-20 px-4 overflow-hidden">

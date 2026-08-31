@@ -81,8 +81,8 @@ export function LocationServiceSchema({
     // ratings" when several schema blocks coexist on one URL.
     sameAs: [
       'https://www.facebook.com/emersoneims',
-      'https://x.com/eimsemerson',
-      'https://www.linkedin.com/company/emersoneims'
+      // linkedin.com/company/emersoneims removed 2026-08-29: returns HTTP 404.
+      'https://x.com/eimsemerson'
     ]
   };
 
