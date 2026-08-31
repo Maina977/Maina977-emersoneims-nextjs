@@ -631,7 +631,23 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
 
         {/* HIGHEST PRIORITY: Preload critical resources */}
-        <link rel="preload" href="/images/logo-tagline.png" as="image" type="image/png" fetchPriority="high" />
+        {/* The logo preload was removed (2026-08-29), and so was a second,
+            duplicate one in the middleware Link header.
+
+            Both fetched the RAW /images/logo-tagline.png at fetchPriority
+            high. The navbar renders that logo through next/image, which
+            requests an optimised /_next/image URL instead — so the preload
+            never matched what the page actually used, and every visitor
+            downloaded the file TWICE: once as a high-priority preload nothing
+            consumed, once optimised for display.
+
+            The raw file was 98KB — the largest single asset on the homepage,
+            seven times the hero photograph — for a logo displayed 44px tall.
+            It was competing for bandwidth with the LCP image on exactly the
+            connection where that matters.
+
+            The source is now 13KB at 360x240, which is still 2x the rendered
+            height, and next/image handles delivery. */}
 
         {/* PERF: removed blanket <link rel="prefetch"> for /generators, /generator-oracle,
             /contact and /solar. They were forcing every user to download four extra HTML

@@ -1606,7 +1606,19 @@ export function middleware(request: NextRequest) {
    * is the supported way to do this and adapts to the real srcset.
    */
   const linkHints = [
-    '</images/logo-tagline.png>; rel=preload; as=image',
+    /*
+     * The logo preload that lived here is gone (2026-08-29). It pointed at the
+     * RAW /images/logo-tagline.png while the navbar renders that logo through
+     * next/image, which requests an optimised /_next/image URL — so the hint
+     * never matched the request the page made, and every visitor on every page
+     * downloaded the file twice. The raw asset was 98KB for a logo displayed
+     * 44px tall, the largest single asset on the homepage, competing with the
+     * LCP image for bandwidth. The source is now 13KB and next/image handles
+     * delivery. A duplicate <link rel="preload"> in app/layout.tsx went with it.
+     *
+     * The preconnects below stay: they cost nothing and genuinely save a round
+     * trip on the font fetch.
+     */
     '<https://fonts.googleapis.com>; rel=preconnect',
     '<https://fonts.gstatic.com>; rel=preconnect; crossorigin',
   ];
