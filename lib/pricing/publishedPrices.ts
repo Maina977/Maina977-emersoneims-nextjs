@@ -487,6 +487,112 @@ export const PRICE_GUIDES: readonly PriceGuide[] = [
   },
 
   {
+    /*
+     * AIR CONDITIONING. Added 2026-08-29 to close a measured gap: "Air
+     * conditioning contractor" is one of the nine categories on the verified
+     * Google Business Profile, and there was no price page to back it — so
+     * "AC installation cost Nairobi" found competitors.
+     *
+     * Every figure is read off /solutions/ac, where the full system table has
+     * been published all along. Nothing here is researched, estimated or
+     * imported from the ERP; this is the same restatement job the other guides
+     * do — the numbers existed on a page that answers "what do you do" rather
+     * than "what does it cost".
+     */
+    slug: 'air-conditioning-cost-kenya',
+    cardNote: 'Split AC from KES 35,000',
+    title: 'Air Conditioning Cost in Kenya (2026)',
+    h1: 'Air conditioning prices in Kenya',
+    description:
+      'What air conditioning costs in Kenya in 2026 — split, cassette, ducted, VRF and chiller systems by capacity, plus installation, and what drives the price.',
+    service: 'Air Conditioning',
+    source: '/solutions/ac',
+    sourceLabel: 'our air conditioning page',
+    intro:
+      'AC is priced by cooling capacity, not by room. A unit sized by guesswork either short-cycles and never dehumidifies, or runs flat out and fails early — so the figures below are grouped by BTU and tonnage, which is what an engineer actually specifies against.',
+    rows: [
+      { item: 'Wall-mounted split, 9,000–36,000 BTU (0.75–3 ton)', price: 'KES 35,000 – 180,000', note: 'Offices, shops, homes', popular: true },
+      { item: 'Installation of a split unit', price: 'KES 15,000 – 25,000', note: 'Mounting, piping, commissioning' },
+      { item: 'Cassette, ceiling-mounted, 18,000–60,000 BTU (1.5–5 ton)', price: 'KES 120,000 – 450,000', note: 'Open-plan floors' },
+      { item: 'Floor-standing / console, 24,000–60,000 BTU (2–5 ton)', price: 'KES 150,000 – 400,000', note: 'No ceiling work needed' },
+      { item: 'Ducted split system, 36,000–120,000+ BTU (3–10+ ton)', price: 'KES 300,000 – 1,500,000+', note: 'Concealed distribution' },
+      { item: 'VRF / VRV multi-split, 5–200+ tons', price: 'KES 1,500,000 – 50,000,000+', note: 'Whole-building, zoned' },
+      { item: 'Air-cooled chiller, 20–500+ tons', price: 'KES 5,000,000 – 100,000,000+', note: 'Industrial and campus loads' },
+    ],
+    drivers: [
+      'Cooling load, not floor area. Glazing, orientation, occupancy and equipment heat decide the tonnage; two rooms of identical size can differ by a full ton.',
+      'Pipe run between indoor and outdoor units — long runs need larger line sets and more refrigerant, and above a limit an inline trap or oil return.',
+      'Inverter versus fixed speed. An inverter unit costs more to buy and less to run, and the payback depends on how many hours a day it actually runs.',
+      'Ceiling access and builder’s work for cassette and ducted systems, which is often the difference between two otherwise identical quotes.',
+      'Whether the electrical supply can carry it. A large split or a VRF outdoor unit may need a dedicated circuit, and that is electrical work, not AC work.',
+    ],
+    excludes: [
+      'Electrical supply to the unit, isolators and any distribution board work',
+      'Builder’s work — coring, ceiling openings, plinths and making good',
+      'Condensate drainage runs beyond the immediate unit',
+      VAT_NOTE,
+    ],
+    related: [
+      { label: 'Air conditioning systems in detail', href: '/solutions/ac' },
+      { label: 'HVAC maintenance', href: '/maintenance-hub/hvac' },
+      { label: 'All service pricing', href: '/pricing' },
+    ],
+  },
+
+  {
+    /*
+     * ELECTRICAL FAULT-FINDING AND REPAIR. Added 2026-08-29 alongside the AC
+     * guide, and for the same reason: "Electrical engineer" and "Electrical
+     * repair shop" are both categories on the verified Business Profile with
+     * no price page behind them.
+     *
+     * Figures are read off /maintenance-hub/electrical, which publishes a
+     * fault schedule with a cost band and a time estimate against each fault
+     * code. The bands below are those entries; the monthly figures are the
+     * maintenance plans on the same page.
+     */
+    slug: 'electrical-repair-cost-kenya',
+    cardNote: 'Fault-finding from KES 2,000',
+    title: 'Electrical Repair Cost in Kenya (2026)',
+    h1: 'Electrical fault-finding and repair costs in Kenya',
+    description:
+      'What electrical fault-finding and repair costs in Kenya in 2026 — earth faults, overcurrent, bonding and distribution board work, with time estimates.',
+    service: 'Electrical Repair',
+    source: '/maintenance-hub/electrical',
+    sourceLabel: 'our electrical maintenance page',
+    intro:
+      'Electrical faults are priced by what it takes to find them, not by the part that finally gets replaced. A loose bond and a failed cable can present identically at the board; the difference is hours of testing. The bands below carry the time estimate for that reason.',
+    rows: [
+      { item: 'Missing earth continuity', price: 'KES 2,000 – 20,000', note: '1–4 hours · critical', popular: true },
+      { item: 'Earth fault — insulation breakdown', price: 'KES 5,000 – 50,000', note: '2–8 hours' },
+      { item: 'Bonding missing or inadequate', price: 'KES 5,000 – 30,000', note: '2–6 hours' },
+      { item: 'High earth resistance', price: 'KES 15,000 – 80,000', note: '4–16 hours' },
+      { item: 'Earth fault loop impedance high', price: 'KES 10,000 – 100,000', note: '4–24 hours' },
+      { item: 'Maintenance plan — small premises', price: 'KES 2,500 / month', note: 'Scheduled inspection' },
+      { item: 'Maintenance plan — commercial', price: 'KES 4,500 / month', note: 'Scheduled inspection and testing' },
+      { item: 'Maintenance plan — industrial', price: 'KES 15,000 / month', note: 'Full schedule with reporting' },
+    ],
+    drivers: [
+      'How long the fault takes to locate. Loop impedance and insulation testing across a large installation is measured in hours, and that is most of the cost on the wider bands.',
+      'Whether the installation can be shut down. Live-working restrictions and out-of-hours access both extend the job.',
+      'Age and documentation of the installation. An undocumented board has to be traced circuit by circuit before anything can be corrected.',
+      'What the test reveals. A single loose termination is an hour; a degraded submain is a replacement.',
+      'Access — ceiling voids, risers and plant rooms all add time before any testing starts.',
+    ],
+    excludes: [
+      'Replacement cable, boards, breakers and accessories, quoted once the fault is identified',
+      'Builder’s work, chasing and making good',
+      'Utility-side work and anything beyond the point of supply',
+      VAT_NOTE,
+    ],
+    related: [
+      { label: 'Electrical maintenance in detail', href: '/maintenance-hub/electrical' },
+      { label: 'Controls and switchgear', href: '/solutions/controls' },
+      { label: 'All service pricing', href: '/pricing' },
+    ],
+  },
+
+  {
     slug: 'incinerator-price-kenya',
     cardNote: 'Installation from KES 300,000',
     title: 'Incinerator Price in Kenya (2026)',

@@ -301,6 +301,29 @@ export default async function RootLayout({
       "longitude": 36.8900
     },
     /*
+     * hasMap and areaServed were both absent. They are two of the signals
+     * Google reads when deciding whether a business belongs in a local pack or
+     * a Maps result, and their absence is invisible on the page — the site
+     * looked complete while telling Google less than it could.
+     *
+     * hasMap uses the coordinates already declared above rather than a
+     * place-ID URL, because a place ID is not something to guess: a wrong one
+     * points Google at a different business. This form is derived from data we
+     * already publish and is correct by construction.
+     *
+     * areaServed states Kenya. The Business Profile currently lists five towns
+     * (Ruiru, Nairobi, Mlolongo, Tatu City, Athi River), which under-claims
+     * what the owner has confirmed and what this site says throughout — the
+     * mobile workshop reaches all 47 counties. The listing's service area
+     * should be widened to match; until it is, the two disagree, and this is
+     * the side that reflects the business.
+     */
+    "hasMap": "https://www.google.com/maps/search/?api=1&query=-1.3200,36.8900",
+    "areaServed": {
+      "@type": "Country",
+      "name": "Kenya"
+    },
+    /*
      * HOURS MATCH THE GOOGLE BUSINESS PROFILE EXACTLY (owner-supplied
      * 2026-08-29). They did not before: this schema published Mon–Fri
      * 08:00–18:00 and Sat 09:00–16:00, while the verified listing says
