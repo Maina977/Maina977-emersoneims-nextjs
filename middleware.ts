@@ -978,6 +978,7 @@ export function middleware(request: NextRequest) {
         // as the guide, or the page ships invisible.
         'air-conditioning-cost-kenya',
         'electrical-repair-cost-kenya',
+        'ats-changeover-price-kenya',
       ]);
       let slug = pathname.slice('/pricing/'.length).replace(/\/$/, '');
       try { slug = decodeURIComponent(slug); } catch { /* keep raw */ }

@@ -15,6 +15,7 @@
 import Link from 'next/link';
 import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
 import MobileWorkshopBand from '@/components/trust/MobileWorkshopBand';
+import CapabilitiesIndex from '@/components/services/CapabilitiesIndex';
 import dynamic from 'next/dynamic';
 import {
   ALL_SERVICES,
@@ -567,6 +568,14 @@ export default function ServicesPage() {
       />
 
       <MobileWorkshopBand />
+
+      {/* Full capability index. The ten service cards above are the headline
+          disciplines; this names the work inside them in the words a buyer
+          searches — injector pumps, radiators, turbochargers, fuel automation,
+          exhaust fabrication — each linking to the page that already covers
+          it. Server-rendered, because an index a crawler cannot read indexes
+          nothing. */}
+      <CapabilitiesIndex />
     </div>
   );
 }

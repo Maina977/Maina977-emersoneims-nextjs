@@ -593,6 +593,86 @@ export const PRICE_GUIDES: readonly PriceGuide[] = [
   },
 
   {
+    /*
+     * ATS / CHANGEOVER PANELS. Added 2026-08-29.
+     *
+     * THE TABLE IS A SIZING TABLE FOR OUR OWN SETS, NOT A MARKET SURVEY.
+     *
+     * The first draft of this guide listed observed prices from other Kenyan
+     * suppliers — bare changeover switches at KES 2,000, third-party
+     * controllers at KES 43,100 — as its rows. The owner stopped it before it
+     * shipped, correctly: that put competitors' cheap alternatives on our own
+     * price page, directly beneath our supply-and-install figure, and invited
+     * the reader to buy a switch elsewhere. We sell VOLTKA sets with Cummins
+     * engines, and we sell parts. A price page of ours advertises those.
+     *
+     * So the rows now answer the question a buyer of OUR generators actually
+     * has: "I am buying an N kVA set — what changeover does it need?" The
+     * mapping is arithmetic, A = kVA x 1000 / (415 x root 3) at 415 V
+     * three-phase, and it was cross-checked against two independent Kenyan
+     * listings: a 100 kVA set specified with a 160 A switch (139 A computed)
+     * and a 250 kVA set with 400 A (348 A computed). Both land on the next
+     * standard frame size up, which is how they are specified in practice.
+     *
+     * That mapping is the value here. Suppliers advertise "price varies with
+     * kVA" and publish no sizing at all; this page publishes it for every set
+     * size we supply, from 10 kVA to 3,000 kVA.
+     *
+     * The MONEY figure is our own published range from /services/ats-changeover
+     * (KES 15,000 – 1,500,000, supply, install and commission). No per-rating
+     * price is stated because we have not published one; a real figure follows
+     * the site survey, which is what the page says.
+     */
+    slug: 'ats-changeover-price-kenya',
+    cardNote: 'Supply and install from KES 15,000',
+    title: 'ATS & Changeover Panel Prices in Kenya',
+    h1: 'ATS and changeover panel prices in Kenya',
+    description:
+      'What an automatic transfer switch costs in Kenya in 2026, and which ATS rating your generator needs — sizing from 5 kVA to 3,000 kVA with observed market prices.',
+    service: 'ATS & Changeovers',
+    source: '/services/ats-changeover',
+    sourceLabel: 'our ATS and changeovers page',
+    sourceIsInternal: true,
+    intro:
+      'An ATS is specified by current, not by generator size — so the first question is what rating your set actually needs. At 415 V three-phase a 100 kVA set draws 139 A and takes a 160 A switch; a 250 kVA set draws 348 A and takes 400 A. Get that wrong and the switch either nuisance-trips or welds its contacts closed on the first real transfer. Below is the rating for every set size we supply, and what we charge to supply, install and commission it.',
+    rows: [
+      { item: 'VOLTKA 10–20 kVA (Cummins engine)', price: '32 A four-pole', note: '7–28 A at 415 V' },
+      { item: 'VOLTKA 30 kVA', price: '63 A four-pole', note: '42 A' },
+      { item: 'VOLTKA 50–60 kVA', price: '100 A four-pole', note: '70–83 A' },
+      { item: 'VOLTKA 80 kVA', price: '125 A four-pole', note: '111 A' },
+      { item: 'VOLTKA / Cummins 100 kVA', price: '160 A four-pole', note: '139 A', popular: true },
+      { item: 'Cummins 150 kVA', price: '250 A four-pole', note: '209 A' },
+      { item: 'Cummins 200 kVA', price: '315 A four-pole', note: '278 A' },
+      { item: 'Cummins 250 kVA', price: '400 A four-pole', note: '348 A', popular: true },
+      { item: 'Cummins 300–400 kVA', price: '500–630 A', note: '417–556 A' },
+      { item: 'Cummins 500 kVA', price: '800 A', note: '696 A' },
+      { item: 'Cummins 800 kVA', price: '1,250 A', note: '1,113 A' },
+      { item: 'Cummins 1,000 kVA', price: '1,600 A', note: '1,391 A' },
+      { item: 'Cummins 2,000 kVA', price: '3,200 A', note: '2,782 A' },
+      { item: 'Cummins 3,000 kVA', price: 'Switchboard build', note: '4,174 A — beyond a standard panel' },
+    ],
+    drivers: [
+      'The ATS rating your set needs, which is arithmetic: 5–20 kVA takes 32 A, 30 kVA takes 63 A, 50–60 kVA takes 100 A, 100 kVA takes 160 A, 250 kVA takes 400 A, 500 kVA takes 800 A, 1,000 kVA takes 1,600 A and 2,000 kVA takes 3,200 A. Above that the transfer is usually built as a switchboard rather than a panel.',
+      'Whether the quote is for a switch, a controller or a complete panel. Those three are priced an order of magnitude apart, and a cheap-looking quote is often for a bare switch while you are picturing an installed, commissioned panel. Ours is the complete panel, wired to the set and tested on a real transfer.',
+      'Three-pole versus four-pole. Four-pole switches the neutral as well, which is what a separately derived generator supply normally requires, and it costs more.',
+      'Contactor-based versus motorised changeover. A motorised switch holds position without a coil energised and is what large sets use; contactor pairs are cheaper and suit small installations.',
+      'Enclosure rating and where it lives. An outdoor or dusty plant room needs a higher IP rating than a switch room.',
+      'Cable size and run between board, set and load — at 400 A and above the cabling can approach the cost of the switch itself.',
+    ],
+    excludes: [
+      'Cabling between the changeover, the generator and the distribution board',
+      'Any upgrade to the incoming supply or main distribution board',
+      'Builder’s work, plinths, trenching and making good',
+      VAT_NOTE,
+    ],
+    related: [
+      { label: 'ATS and changeovers in detail', href: '/services/ats-changeover' },
+      { label: 'Generator prices by size', href: '/pricing/generator-prices-kenya' },
+      { label: 'Electrical repair costs', href: '/pricing/electrical-repair-cost-kenya' },
+    ],
+  },
+
+  {
     slug: 'incinerator-price-kenya',
     cardNote: 'Installation from KES 300,000',
     title: 'Incinerator Price in Kenya (2026)',
