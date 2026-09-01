@@ -241,12 +241,12 @@ export default function PricingPage() {
           </div>
 
           <div className="mt-12 p-8 bg-gradient-to-r from-emerald-900/30 to-cyan-900/30 border border-emerald-500/20 rounded-lg">
-            <h3 className="text-2xl font-bold text-emerald-400 mb-4">Money-Back Guarantee</h3>
+            <h3 className="text-2xl font-bold text-emerald-400 mb-4">Quotation Accuracy</h3>
             <p className="text-gray-300 mb-4">
-              If your final cost exceeds the quote by more than 10%, we'll absorb the overage. No disputes, no excuses.
+              Any variation to a quoted price is agreed with you in writing before the work proceeds. You are not billed for a change you did not approve.
             </p>
             <p className="text-gray-400 text-sm">
-              This guarantee applies to all installations and major service work. Emergency repairs may have rush fees.
+              This applies to installations and major service work. Emergency call-outs are quoted separately.
             </p>
           </div>
         </div>

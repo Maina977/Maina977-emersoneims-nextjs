@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { formatKES } from '@/lib/format/currency';
 import { monthlyRepayment } from '@/lib/finance/annuity';
+import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
 
 export default function TradeInCalculator() {
   const [brand, setBrand] = useState('Cummins');
@@ -65,7 +66,29 @@ export default function TradeInCalculator() {
   const depreciation = (depreciationHours * 0.1) + (extraHours * 0.05);
   const finalValue = Math.max(value * (1 - depreciation / 100), value * 0.3);
 
-  const newGeneratorPrice = 1050000; // VKS44 price
+  /*
+   * THE NEW-SET PRICE IS READ FROM GENERATOR_SIZES, NOT WRITTEN HERE.
+   *
+   * This was `const newGeneratorPrice = 1050000; // VKS44 price` — a hard-coded
+   * figure. The VKS44 card on this same homepage reads its price from
+   * GENERATOR_SIZES and renders "KES 950,000 - 1,150,000, published range".
+   * 1,050,000 is the midpoint of that range, so the two agreed by coincidence
+   * on the day it was typed and would silently disagree the first time the
+   * published range moved — on one page, in two places, to the same buyer.
+   *
+   * There is no 44 kVA entry in GENERATOR_SIZES, so the nearest rating is used,
+   * which is the same rule the VKS44 card applies (nearest is 50 kVA). The LOW
+   * bound is taken rather than the midpoint: this drives a financing
+   * illustration, and quoting the bottom of the published range is the figure
+   * we can actually honour.
+   */
+  const nearestSize = GENERATOR_SIZES.reduce((best, s) =>
+    Math.abs(s.kva - 44) < Math.abs(best.kva - 44) ? s : best
+  );
+  // 'KES 950,000 - 1,150,000' -> 950000. Falls back to 0 if the format changes,
+  // which makes the section render a zero rather than a wrong number.
+  const newGeneratorPrice =
+    Number((nearestSize.priceRange.match(/[\d,]{6,}/) || ['0'])[0].replace(/,/g, '')) || 0;
   const financingGap = newGeneratorPrice - finalValue;
 
   /*

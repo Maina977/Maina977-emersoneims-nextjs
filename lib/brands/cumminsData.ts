@@ -22,12 +22,12 @@ export const CUMMINS_BRAND_INFO = {
   },
   freeService: {
     years: 1,
-    description: '1 Year Free Service & Maintenance'
+    description: 'Service package, terms confirmed in your quotation'
   },
   taglines: [
     'Cummins Sales & Service Across Kenya',
     'Powered by Voltka - Trusted Worldwide',
-    '2 Years Warranty + 1 Year Free Service',
+    '2 Years Warranty on new sets + service package',
     '10KVA to 2000KVA - All Power Needs Covered',
     'Genuine Cummins Parts & Expert Service'
   ],
@@ -38,8 +38,8 @@ export const CUMMINS_BRAND_INFO = {
       icon: 'shield'
     },
     {
-      title: '1 Year Free Service',
-      description: 'Complimentary maintenance and service for the first year',
+      title: 'Service Package',
+      description: 'Scheduled maintenance included. The period is confirmed in your written quotation',
       icon: 'wrench'
     },
     {
@@ -168,8 +168,8 @@ export const CUMMINS_FAQ = [
     answer: "We stock Cummins generators ranging from 10KVA for small offices to 2000KVA for utility-scale power plants. Popular sizes include 20KVA, 50KVA, 100KVA, 250KVA, 500KVA, and 1000KVA."
   },
   {
-    question: "What is included in the 1 year free service?",
-    answer: "The free service includes scheduled maintenance visits, oil changes, filter replacements, system inspections, and priority technical support for the first 12 months after purchase."
+    question: "What is included in the service package?",
+    answer: "The service package covers scheduled maintenance visits, oil and filter changes, system inspections and technical support. The period it runs for is stated in your written quotation, because it depends on the set supplied and the site it runs on."
   },
   {
     question: "Do you provide installation services?",

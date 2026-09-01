@@ -109,7 +109,7 @@ export default function NavigationBar({
         { label: 'Rental', href: '/generators/rental', description: 'Short & long term rental', icon: '📅' },
         { label: 'Spare Parts', href: '/generators/spare-parts', description: '2,000+ OEM & aftermarket', icon: '🔧' },
         { label: 'Maintenance & Service', href: '/generators/maintenance', description: 'Service & repair', icon: '🔩' },
-        { label: 'Installation', href: '/generators/installation', description: 'Professional 8-phase installation', icon: '🏗️' },
+        { label: 'Installation', href: '/generators/installation', description: 'Professional eight-stage installation', icon: '🏗️' },
         { label: 'Generator Systems Guide', href: '/generators/systems', description: 'Educational hub for all systems', icon: '📚' },
       ]
     },

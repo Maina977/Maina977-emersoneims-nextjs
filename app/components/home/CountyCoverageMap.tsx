@@ -214,7 +214,7 @@ export default function CountyCoverageMap() {
             <div>
               <h4 className="text-cyan-400 font-bold mb-2">📞 Field Teams</h4>
               <p className="text-sm text-gray-300">
-                Technicians stationed across regions. Quick response times. No long wait for parts. Preventive maintenance visits on schedule.
+                Mobile field teams dispatched from our Embakasi workshop. Preventive maintenance visits on schedule, with parts carried to site.
               </p>
             </div>
           </div>

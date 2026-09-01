@@ -288,7 +288,7 @@ function StaticHeroFallback() {
               href="/contact?type=emergency"
               className="w-full sm:w-auto px-6 sm:px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold text-base sm:text-lg rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-amber-500/25 tap-scale touch-target"
             >
-              Emergency Power in 48 Hours
+              Request Emergency Power
             </Link>
             <a
               href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20need%20help%20with%20generator%2Fsolar%20services"

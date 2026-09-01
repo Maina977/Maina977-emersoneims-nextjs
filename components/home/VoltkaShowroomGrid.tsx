@@ -44,7 +44,7 @@ export function VoltkaBillboard() {
               href="/contact?type=emergency"
               className="w-full sm:w-auto px-10 py-3 rounded-full bg-white text-black text-sm font-semibold text-center hover:bg-white/90 transition-colors duration-200 tap-scale touch-target"
             >
-              Emergency Power in 48 Hours
+              Request Emergency Power
             </Link>
             <a
               href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20need%20emergency%20generator%20delivery"

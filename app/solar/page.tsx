@@ -418,8 +418,8 @@ const SOLAR_GUARANTEES = [
     icon: '✅'
   },
   {
-    title: 'Money-Back Guarantee',
-    description: '30-day satisfaction guarantee on all equipment purchases',
+    title: 'Workmanship Guarantee',
+    description: 'Installation faults are put right at our cost. Equipment warranties follow the manufacturer terms stated in your quotation',
     icon: '🔙'
   },
 ];
@@ -726,7 +726,7 @@ export default function SolarBible() {
     { id: 'quotation', label: 'Get AI Quote', icon: '🤖', badge: 'INSTANT' },
 
     // TIER 2: AI & Design Tools (World's Most Advanced)
-    { id: 'ai-center', label: 'AI Control Center', icon: '🤖', badge: 'WORLD #1' },
+    { id: 'ai-center', label: 'AI Control Center', icon: '🤖', badge: 'AI TOOLS' },
     { id: 'workflow', label: '8-Step Project', icon: '🚀', badge: 'PRO' },
     { id: 'design3d', label: '3D Design Studio', icon: '🏗️', badge: 'PRO' },
     { id: 'webgl3d', label: 'True 3D Viewer', icon: '🎮', badge: 'NEW!' },

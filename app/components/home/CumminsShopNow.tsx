@@ -176,7 +176,7 @@ export default function CumminsShopNow() {
                         : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
                     }`}
                   >
-                    Buy Now
+                    Request Quotation
                   </Link>
                   <Link
                     href={`/generators/cummins?model=${gen.model}`}

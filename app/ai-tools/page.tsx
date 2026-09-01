@@ -357,7 +357,7 @@ export default function AIToolsPage() {
                 { icon: <Cpu className="w-8 h-8" />, title: '75+ AI Engines', desc: 'Powered by advanced artificial intelligence for unmatched accuracy and speed' },
                 { icon: <Globe className="w-8 h-8" />, title: '195+ Countries', desc: 'Global coverage with real-time pricing and local regulations support' },
                 { icon: <Clock className="w-8 h-8" />, title: '<3 Minutes', desc: 'Complete professional reports generated in under 3 minutes' },
-                { icon: <TrendingUp className="w-8 h-8" />, title: '99.8% Accuracy', desc: 'Industry-leading precision backed by AI verification systems' },
+                { icon: <TrendingUp className="w-8 h-8" />, title: 'Curated Data', desc: 'Fault codes taken from manufacturer references, not generated' },
                 { icon: <Layers className="w-8 h-8" />, title: 'All-in-One', desc: 'Architecture, Engineering, and Quantity Surveying in a single platform' },
                 { icon: <Shield className="w-8 h-8" />, title: 'Enterprise Ready', desc: 'Professional-grade tools trusted by engineers and architects worldwide' },
               ].map((item, idx) => (

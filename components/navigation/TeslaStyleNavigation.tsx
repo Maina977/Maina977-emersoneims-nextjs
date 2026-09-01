@@ -131,7 +131,7 @@ const MEGA_MENUS = {
       {
         title: 'Service & Parts',
         items: [
-          { href: '/generators/installation', label: 'Installation', icon: '🔧', desc: '8-phase setup' },
+          { href: '/generators/installation', label: 'Installation', icon: '🔧', desc: 'Eight-stage setup' },
           { href: '/generators/maintenance', label: 'Maintenance', icon: '🛠️', desc: 'Preventive & repair' },
           { href: '/generators/workshop-services', label: 'Workshop Repairs & Fabrication', icon: '🏭', desc: 'Rebuilds & custom steel' },
           { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'OEM & aftermarket' },

@@ -805,7 +805,7 @@ export default function GeneratorMaintenancePage() {
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center mb-4">Generator Service in All 47 Counties</h2>
           <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-            No matter where you are in Kenya, our mobile service teams reach you. Dedicated technicians stationed across all regions.
+            No matter where you are in Kenya, our mobile service teams reach you, travelling from our Embakasi workshop in Nairobi.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {counties.map((county, i) => (
@@ -904,7 +904,7 @@ export default function GeneratorMaintenancePage() {
           <h2 className="text-2xl font-bold mb-6">About EmersonEIMS Generator Maintenance Services</h2>
           <div className="prose prose-invert prose-orange max-w-none text-gray-400 space-y-4">
             <p>
-              EmersonEIMS is Kenya&apos;s leading provider of generator maintenance, repair, and engine overhaul services. With certified technicians stationed across all 47 counties, we deliver professional generator servicing for residential, commercial, and industrial applications.
+              EmersonEIMS provides generator maintenance, repair and engine overhaul services across Kenya. Our mobile workshop reaches all 47 counties from our base in Embakasi, Nairobi, servicing residential, commercial and industrial installations.
             </p>
             <p>
               Our comprehensive maintenance programs cover all major generator brands including Cummins, Caterpillar, Perkins, FG Wilson, Kohler, MTU, Deutz, Volvo Penta, John Deere, Mitsubishi, Sdmo, Aksa, Kipor, Himoinsa, Atlas Copco, Doosan, Yanmar, Lister Petter, Lombardini, and Iveco generators.

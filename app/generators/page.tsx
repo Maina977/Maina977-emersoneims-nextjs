@@ -2608,8 +2608,8 @@ export default function GeneratorPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-white">6-Month Service</h3>
-                  <p className="text-sm text-gray-400">Complimentary Maintenance</p>
+                  <h3 className="text-2xl font-bold text-white">Service Package</h3>
+                  <p className="text-sm text-gray-400">Terms confirmed in your quotation</p>
                 </div>
               </div>
               <ul className="space-y-3">
