@@ -1719,7 +1719,7 @@ const FAQSection = () => {
   const faqs = [
     {
       question: 'Why should I buy from EmersonEIMS instead of importing directly?',
-      answer: 'While importing may seem cheaper, you lose warranty coverage, local support, and spare parts availability. Our all-inclusive pricing includes delivery, installation, commissioning, 1-year free service, and 2-year warranty. Most importers spend 30% more in the first year on issues we prevent.'
+      answer: 'Importing can look cheaper on the invoice, but you carry the warranty, the commissioning and the spare-parts risk yourself. Our pricing includes delivery, installation and commissioning, new sets carry a 2-year warranty, and service-package terms are set out in your quotation.'
     },
     {
       question: 'What brands do you carry?',
@@ -3161,7 +3161,7 @@ export default function GeneratorPage() {
               Hot Generator Deals
             </h2>
             <p className="text-xl text-white/70">
-              Limited stock - Best prices in Kenya with 2-Year Warranty
+              Sized to your measured load, with a 2-year warranty on new sets
             </p>
           </div>
           <div className="grid lg:grid-cols-2 gap-8">

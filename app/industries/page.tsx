@@ -22,7 +22,7 @@ const IndustriesExperience = dynamic(
 
 export const metadata: Metadata = {
   title: 'Generators & Solar by Industry',
-  description: 'Generators, solar and UPS for Kenyan hotels, hospitals, schools, banks and factories. 2-year warranty, 24/7 emergency response. Call +254768860665.',
+  description: 'Generators, solar and UPS for Kenyan hotels, hospitals, schools, banks and factories. Warranty terms in writing, 24/7 emergency response. Call +254768860665.',
   openGraph: {
     title: 'Industries We Serve',
     description: 'Specialized power solutions for every industry in Kenya. Hotels, hospitals, schools, banks, manufacturing, and more.',
@@ -78,8 +78,8 @@ export default function IndustriesPage() {
               { problem: 'No single partner for all your sites.', solution: 'Nationwide coverage, one contract, one SLA.', outcome: 'Simplified management, predictable cost, 24/7 support.' },
             ],
             trust: [
-              'Trusted by 16,000+ hotels, 9,000+ hospitals, 93,000+ schools',
-              '2-year warranty, 24/7 support',
+              'Hospitality, healthcare, education, banking and manufacturing sites',
+              'Warranty terms in writing, 24/7 support',
               'SLA-backed service, audit-ready records',
             ],
             ctas: [

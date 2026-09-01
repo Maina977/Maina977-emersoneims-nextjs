@@ -226,7 +226,7 @@ export default function TanzaniaPage() {
             {[
               {
                 service: 'Generator Sales & Installation',
-                details: 'Cummins, Perkins, FG Wilson — 20 kVA to 2000 kVA. Same-day delivery in Dar. Professional installation with 2-year warranty.',
+                details: 'Cummins, Perkins, FG Wilson — 20 kVA to 2000 kVA. Delivery scheduled on confirmation. Professional installation, with new sets carrying a 2-year warranty.',
               },
               {
                 service: 'UPS & Battery Backup Systems',
