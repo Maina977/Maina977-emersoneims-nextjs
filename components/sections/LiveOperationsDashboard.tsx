@@ -165,7 +165,7 @@ export default function LiveOperationsDashboard() {
             <div className="flex items-center gap-2">
               <span className="text-green-500">👷</span>
               <span className="text-white font-semibold">{COMPANY_STATS.techniciansOnTeam}+</span>
-              <span className="text-gray-500 text-sm">Certified Technicians</span>
+              <span className="text-gray-500 text-sm">Field Technicians</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-amber-500">🌍</span>

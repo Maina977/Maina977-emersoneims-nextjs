@@ -152,7 +152,7 @@ export default function WebsiteStatsCounter() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-cyan-400">👷</span>
-                  <span className="text-sm text-white/80">Certified Technicians</span>
+                  <span className="text-sm text-white/80">Field Technicians</span>
                 </div>
                 <span className="text-lg font-bold text-cyan-400">{VERIFIED_STATS.certifiedTechnicians}+</span>
               </div>

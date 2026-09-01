@@ -449,7 +449,27 @@ export default async function RootLayout({
           "@type": "Service",
           "@id": `${siteUrl}/services/${svc.slug}#service`,
           "name": svc.name,
-          "description": svc.description,
+          /*
+           * NO description HERE, DELIBERATELY (2026-09-01).
+           *
+           * This catalogue is emitted on EVERY page, so `svc.description` was
+           * carrying each service's full marketing copy site-wide — including
+           * "backed by a 2-year warranty" onto /contact, /faults, /kenya and
+           * every other page with no generator content on it. A live scan
+           * found the warranty text on 25 of 26 pages and this was the source
+           * of nearly all of them.
+           *
+           * The claim itself is fine and is kept: it is scoped to new Cummins
+           * generators and is owner-confirmed. What was wrong is WHERE it was
+           * asserted. Structured data has to describe the page it is on, and
+           * on /contact this was schema-only text that appeared nowhere in the
+           * visible content.
+           *
+           * The catalogue keeps what is true site-wide — the service exists,
+           * its name, and the URL where it is described in full. Each
+           * /services/<slug> page carries its own Service schema WITH the
+           * description, alongside the visible copy that matches it.
+           */
           "url": `${siteUrl}/services/${svc.slug}`,
           "provider": {
             "@type": "LocalBusiness",

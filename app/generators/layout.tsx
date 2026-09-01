@@ -37,7 +37,7 @@ export const metadata: Metadata = {
    * prices for the same range on one website. Overstating the floor by 70,000
    * loses the click before the buyer ever sees the page.
    */
-  description: "Diesel generators in Kenya, 10kVA-2000kVA, from KES 280,000. 2-year warranty + 1 year free servicing. Installed and serviced in all 47 counties.",
+  description: "Diesel generators in Kenya, 10kVA-2000kVA, from KES 280,000. 2-year warranty on new sets. Installed and serviced in all 47 counties.",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: 'Cummins & Voltka Generators Kenya | 10-2000kVA',

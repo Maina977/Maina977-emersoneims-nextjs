@@ -211,7 +211,7 @@ export default function ServiceDiagnosticsPanel({
             <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 border border-cyan-500/30 rounded-lg p-4">
               <h3 className="text-lg font-bold text-cyan-400 mb-2">Need Expert Help?</h3>
               <p className="text-slate-400 text-sm mb-3">
-                Certified technicians available 24/7 for {serviceShortName.toLowerCase()}.
+                Experienced technicians available 24/7 for {serviceShortName.toLowerCase()}.
               </p>
               <div className="space-y-2">
                 <a

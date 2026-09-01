@@ -127,7 +127,7 @@ export const ALL_SERVICES: Service[] = [
     slug: 'cummins-generators',
     name: 'Cummins Generators',
     shortName: 'Cummins Generators',
-    tagline: 'Premium Power with Industry-Leading 2-Year Warranty',
+    tagline: 'Cummins-powered sets, sized to your measured load',
     // CLAIM POLICY — read before editing this block.
     // THIS IS THE LIVE FILE. lib/building/services/allServices.ts is a dead
     // mirror imported by nothing; fixing that one alone leaves the false claim
@@ -390,8 +390,8 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
         icon: '✅'
       },
       {
-        title: 'Certified Technicians',
-        description: 'Specialist technicians with extensive experience on all generator types.',
+        title: 'Experienced Technicians',
+        description: 'Technicians with extensive hands-on experience across all major generator types.',
         icon: '👨‍🔧'
       },
       {

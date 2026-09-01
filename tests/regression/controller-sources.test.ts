@@ -52,18 +52,43 @@ const ALL_CONTROLLER_IDS = [
   'vodia-vodia5', 'vodia-vodia6', 'vodia-ecu',
 ];
 
-const EXPECTED_VERIFIED_IDS = new Set([
-  'dse-7320',
-  'comap-inteligen',
-  'smartgen-hgm9320',
-  'woodward-easygen3000',
-]);
+/*
+ * DERIVED FROM THE REGISTRY, NOT FROZEN — changed 2026-09-01.
+ *
+ * This was a hard-coded set of four ids. The registry has since grown to
+ * seventeen verified controllers, all with real OEM citations, so the equality
+ * assertion below had been failing for some time. A regression test that is
+ * permanently red guards nothing, and worse: every other check in this file
+ * that iterated the frozen four was silently NOT checking the thirteen newer
+ * entries. Their citations and completeness flags were unguarded.
+ *
+ * Deriving the set fixes both. It is not circular, because the assertions that
+ * matter are structural and are stated below against real invariants:
+ *   - anything SHIPPING PIN DATA must be verified (the check the header block
+ *     says was missing when CAT PowerWizard shipped 21 invented pins);
+ *   - every verified entry must carry a publisher, a title and, where a URL is
+ *     given, an OEM domain;
+ *   - every verified entry must declare completeness.
+ * Those now apply to all seventeen, and to the eighteenth when it is added.
+ */
+const VERIFIED_IDS = new Set(
+  Object.entries(CONTROLLER_SOURCES)
+    .filter(([, e]) => e.status === 'verified')
+    .map(([id]) => id),
+);
 
 const OEM_DOMAINS = [
   'deepseaelectronics.com',
   'comap-control.com',
   'smartgen.com.cn',
+  // SmartGen publishes on BOTH smartgen.com.cn and smartgen.cn. Only the
+  // first was listed, so the three HGM manuals cited from smartgen.cn failed
+  // the OEM-domain check once this test started covering every verified entry
+  // rather than a frozen four. Both are the manufacturer's own property; the
+  // citations name the exact manual, the table read and the terminal range.
+  'smartgen.cn',
   'woodward.com',
+  'datakom.com.tr',
 ];
 
 describe('controllerSources registry', () => {
@@ -80,15 +105,22 @@ describe('controllerSources registry', () => {
     }
   });
 
-  it('verified entries match the controllers that ship pinout data today', () => {
-    const verified = Object.entries(CONTROLLER_SOURCES)
-      .filter(([, e]) => e.status === 'verified')
-      .map(([id]) => id);
-    expect(new Set(verified)).toEqual(EXPECTED_VERIFIED_IDS);
+  /*
+   * A "every controller that ships pinout data is verified" test was added
+   * here and then removed: that exact invariant is already asserted further
+   * down ("every controller shipping pin data is verified in the registry"),
+   * where shippedPinControllerIds() is actually in scope. One check, in the
+   * place that can see the data.
+   */
+  it('has at least the four controllers whose pin maps were rebuilt from OEM tables', () => {
+    // Guards against the registry being emptied or a rebuild being reverted.
+    for (const id of ['dse-7320', 'comap-inteligen', 'smartgen-hgm9320', 'woodward-easygen3000']) {
+      expect(VERIFIED_IDS.has(id), `${id} lost its verified status`).toBe(true);
+    }
   });
 
   it('verified entries carry at least one OEM source with publisher + title', () => {
-    for (const id of EXPECTED_VERIFIED_IDS) {
+    for (const id of VERIFIED_IDS) {
       const e = getControllerSource(id) as VerifiedControllerSource;
       expect(e.status).toBe('verified');
       expect(e.sources.length).toBeGreaterThan(0);
@@ -113,8 +145,7 @@ describe('controllerSources registry', () => {
 
   it('isControllerVerified agrees with the registry status', () => {
     for (const id of ALL_CONTROLLER_IDS) {
-      const expected = EXPECTED_VERIFIED_IDS.has(id);
-      expect(isControllerVerified(id), `${id} verified mismatch`).toBe(expected);
+      expect(isControllerVerified(id), `${id} verified mismatch`).toBe(VERIFIED_IDS.has(id));
     }
   });
 });
@@ -186,7 +217,7 @@ describe('pin data may never outrun its provenance', () => {
   });
 
   it('every verified entry declares its completeness', () => {
-    for (const id of EXPECTED_VERIFIED_IDS) {
+    for (const id of VERIFIED_IDS) {
       const e = getControllerSource(id) as VerifiedControllerSource;
       expect(['complete', 'partial'], `${id} completeness missing/invalid`).toContain(
         e.completeness,

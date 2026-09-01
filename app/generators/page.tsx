@@ -2360,7 +2360,7 @@ export default function GeneratorPage() {
             10kVA to 2000kVA, sized to your actual load rather than a catalogue guess.
             <br />
             <span className="text-[#fbbf24]">
-              2-year warranty {'\u2022'} 1 year free servicing {'\u2022'} mobile workshop in all 47 counties
+              2-year warranty on new sets {'\u2022'} service package confirmed in your quotation {'\u2022'} mobile workshop in all 47 counties
             </span>
           </p>
           <div
@@ -2415,7 +2415,7 @@ export default function GeneratorPage() {
               <ul className="space-y-3 text-white/75">
                 <li className="flex gap-3">
                   <span className="text-brand-gold font-bold">✓</span>
-                  <span>2-year warranty and one year of free servicing on new sets</span>
+                  <span>2-year warranty on new sets, with service-package terms confirmed in your quotation</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-brand-gold font-bold">✓</span>
@@ -2823,7 +2823,7 @@ export default function GeneratorPage() {
         <div className="eims-shell py-0">
           <SectionLead
             title="New Generators — Cummins & VOLTKA"
-            subtitle="From compact 20kVA to industrial 2000kVA, supplied with a 2-year warranty and one year of free servicing"
+            subtitle="From compact 20kVA to industrial 2000kVA, supplied with a 2-year warranty on new sets"
             centered
           />
           
