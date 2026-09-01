@@ -11,7 +11,7 @@ import { COUNTIES, SERVICES, TOTAL_LOCATIONS, TOTAL_SERVICE_PAGES, getServicePat
 
 export const metadata: Metadata = {
   title: 'Service Locations | Generator & Solar Services Across Kenya',
-  description: 'EmersonEIMS provides generator, solar, UPS, and electrical services across all 47 counties in Kenya. Find our services in Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, and more. 24/7 support. 2-Year Warranty.',
+  description: 'Generator, solar, UPS and electrical services across all 47 Kenyan counties, from Nairobi and Mombasa to Kisumu, Nakuru and Eldoret. 24/7 support.',
   keywords: [
     'generator company Kenya',
     'solar installation Kenya',

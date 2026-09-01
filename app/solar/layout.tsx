@@ -9,7 +9,7 @@ import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'Solar Solution School | 10 AI Engines',
-  description: 'Comprehensive solar design platform with 10 AI engines with 10 AI engines. 3D AI modeling, voice commands, neural optimization, 25-year predictions. Covers 15 African countries. Enterprise integrations with Salesforce & DocuSign. Free AI-powered solar design.',
+  description: 'Commercial and industrial solar in Kenya: design, supply, installation and maintenance, with free 3D system modelling and load sizing before you commit.',
   authors: [{ name: 'EmersonEIMS' }],
   creator: 'EmersonEIMS',
   publisher: 'EmersonEIMS',

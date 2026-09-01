@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Generator Maintenance & Overhaul Kenya',
-  description: 'Expert generator maintenance, engine overhaul, repair & servicing across all 47 Kenya counties. Certified technicians for Cummins, Caterpillar, Perkins, FG Wilson, Kohler, MTU, Deutz generators. 24/7 emergency service. Call +254 768 860 665.',
+  description: 'Generator maintenance, engine overhaul and repair across all 47 counties. Cummins, Caterpillar, Perkins, FG Wilson and more. Call +254 768 860 665.',
   keywords: [
     'generator maintenance Kenya', 'generator repair Kenya', 'generator servicing Kenya',
     'engine overhaul Kenya', 'generator engine rebuild', 'diesel generator maintenance',

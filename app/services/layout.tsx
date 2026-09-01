@@ -11,7 +11,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Services | Generators, Solar, Electrical, HVAC',
-  description: 'Complete power solutions in Kenya: Cummins generators with 2-year warranty, solar installation, ATS changeovers, distribution boards, UPS, motor rewinding, AC, borehole pumps. Call +254768860665',
+  description: 'Power solutions in Kenya: generators, solar, ATS changeovers, distribution boards, UPS, motor rewinding, AC and borehole pumps. Call +254768860665',
   keywords: [
     // Generator Keywords
     'generator services Kenya',
