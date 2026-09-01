@@ -157,7 +157,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
     ],
 
     metaTitle: 'Cummins Generators Kenya | 10kVA-2000kVA | EmersonEIMS',
-    metaDescription: 'Cummins generators in Kenya, 10kVA to 2000kVA, with a 2-year warranty and one year free servicing. Supply, installation and maintenance in all 47 counties. Call +254768860665',
+    metaDescription: 'Cummins generators in Kenya, 10kVA to 2000kVA, with a 2-year warranty on new sets. Supply, installation and maintenance in all 47 counties. Call +254768860665',
     keywords: [
       'Cummins generators Kenya',
       'Cummins generator dealer Kenya',
@@ -1713,7 +1713,7 @@ WE PROVIDE:
           'Line-interactive technology',
           'AVR included',
           '5-15 minutes backup',
-          '2-year warranty'
+          'Warranty per manufacturer terms'
         ]
       },
       {

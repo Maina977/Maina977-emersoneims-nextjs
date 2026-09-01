@@ -722,7 +722,7 @@ export default function GeneratorMaintenancePage() {
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center mb-4">Generator Service Packages</h2>
           <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-            Comprehensive maintenance programs designed to maximize generator lifespan and reliability. All packages include genuine parts and certified technicians.
+            Comprehensive maintenance programs designed to maximize generator lifespan and reliability. All packages include genuine parts and experienced technicians.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {servicePackages.map((pkg, i) => (

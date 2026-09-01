@@ -92,7 +92,7 @@ export default function AboutCapabilityDeepDive() {
           emissions (for incineration) designed to meet NEMA limits.
         </p>
         <p>
-          Behind it sits a commitment we are comfortable putting in writing: a 2-year warranty, SLA-backed maintenance, and 24/7
+          Behind it sits a commitment we are comfortable putting in writing: a two-year warranty on new generator sets, SLA-backed maintenance, and 24/7
           emergency response. Accountability is the whole point — when something matters enough to engineer properly, it matters
           enough to stand behind. That is the company we have built, and the one we intend to keep being.
         </p>

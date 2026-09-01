@@ -745,7 +745,7 @@ export default function GeneratorInstallationPage() {
             </h2>
             <p className="text-white/70 max-w-2xl mx-auto">
               Click on each stage to learn more about what's involved. Every step is documented 
-              and executed by certified technicians.
+              and executed by experienced technicians.
             </p>
           </div>
           
