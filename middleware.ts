@@ -531,12 +531,32 @@ export function middleware(request: NextRequest) {
   //     55 near-identical doorway pages into it would import the duplication
   //     we are removing.
   //
-  //     INERT UNTIL DNS POINTS HERE. This only fires for that hostname, so it
-  //     costs nothing while the subdomain is still served from Netlify. The
-  //     moment power.emersoneims.com is added to this Vercel project and its
-  //     DNS re-pointed, the consolidation goes live and is testable from here.
-  //     docs/subdomain-consolidation/_redirects carries the same map for
-  //     Netlify if the site stays there instead.
+  //     LIVE SINCE ~2026-08-25. This block is no longer inert — the note that
+  //     used to sit here ("still served from Netlify") is stale and cost a
+  //     later audit an hour chasing a Netlify deployment that does not exist.
+  //
+  //     Verified 2026-08-31: DNS has a `power` A record -> 76.76.21.21 (added
+  //     6 days earlier), power.emersoneims.com is attached to THIS Vercel
+  //     project with NO domain-level redirect, and the 301s below are what
+  //     answer. Confirmed page-to-page in production:
+  //       /blog/generator-price-kenya  -> /pricing/generator-prices-kenya
+  //       /generator-repair-nairobi    -> /services/generator-repairs
+  //       /generator-sales-nakuru      -> /generators
+  //
+  //     TESTING NOTE. Probe the FLAT legacy shapes above, not www-style paths.
+  //     /generators and /contact never existed on the subdomain, so they fall
+  //     through to the WWW root default by design — testing those makes a
+  //     working map look like a blanket redirect to the homepage. That
+  //     misreading was published once already.
+  //
+  //     DO NOT REMOVE THE SUBDOMAIN YET. A wildcard `* ALIAS` record is live on
+  //     emersoneims.com, so deleting the `power` A record would not stop the
+  //     host resolving — the wildcard catches it and serves 404 instead of
+  //     these 301s, hard-404ing every legacy URL and backlink and discarding
+  //     the authority this map exists to transfer.
+  //
+  //     docs/subdomain-consolidation/_redirects carries the same map in Netlify
+  //     format. It is now a historical fallback, not the deployment path.
   // ─────────────────────────────────────────────────────────────────────────────
   /*
    * Read the HOST HEADER, not request.nextUrl.hostname.
