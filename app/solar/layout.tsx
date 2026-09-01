@@ -141,7 +141,7 @@ const structuredData = {
           name: 'Is Solar Solution School free to use?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes, Solar Solution School is free to use. All 10 AI engines, 3D design tools, voice control, and calculators are available at no cost. Enterprise integrations with Salesforce, DocuSign, and QuickBooks are also included.',
+            text: 'Yes. The design engines, 3D layout tools and calculators are free to use, with no account required.',
           },
         },
         {
