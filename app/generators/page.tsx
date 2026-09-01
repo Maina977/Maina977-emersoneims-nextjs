@@ -638,7 +638,7 @@ const TransparentPricing = () => {
             Generator Prices in Kenya 2026
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            No hidden costs. Prices include delivery, installation, ATS, commissioning, and 1-year free service.
+            No hidden costs. Prices include delivery, installation, ATS and commissioning. Service-package terms are confirmed in your quotation.
           </p>
         </div>
 

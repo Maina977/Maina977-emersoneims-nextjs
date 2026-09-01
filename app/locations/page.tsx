@@ -209,7 +209,7 @@ export default function LocationsPage() {
             needs, so diagnosis, repair and commissioning happen where your plant is rather
             than requiring it to be moved. We understand that power reliability is critical
             for your business, which is why we offer 24/7 emergency support and back all our
-            work with a comprehensive 2-Year Warranty.
+            work with warranty terms set out in your written quotation.
           </p>
           <p>
             Contact us today to discuss your power needs. Our experts will assess your requirements

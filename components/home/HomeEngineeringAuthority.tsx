@@ -89,7 +89,7 @@ export default function HomeEngineeringAuthority() {
           or <Link href="/about-us" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">who we are</Link>.
         </p>
         <p>
-          Behind it all is a commitment that turns a sale into a partnership: a 2-year warranty, SLA-backed maintenance, locally
+          Behind it all is a commitment that turns a sale into a partnership: a 2-year warranty on new generator sets, SLA-backed maintenance, locally
           held fast-moving spares, and 24/7 emergency response across the country. Power you can document is power you can depend
           on — and that is the only kind worth installing.
         </p>

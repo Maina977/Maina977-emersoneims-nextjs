@@ -224,8 +224,8 @@ export default function ServicesPage() {
                 EmersonEiMS is an engineering solutions partner for
                 <span className="text-white font-medium"> hospitals, manufacturers, telecom operators, commercial property and construction</span>.
                 We design, install and maintain generators, solar, UPS, motor
-                systems, HVAC, boreholes and incinerators &mdash; backed by our{' '}
-                <span className="text-amber-400 font-semibold">2-year warranty</span>,
+                systems, HVAC, boreholes and incinerators &mdash; backed by{' '}
+                <span className="text-amber-400 font-semibold">warranty terms set out in your quotation</span>,
                 an SLA-backed maintenance team and 24/7 emergency response
                 across all 47 counties.
               </p>
@@ -350,7 +350,7 @@ export default function ServicesPage() {
                 title: 'Install & commission',
                 problem: 'Cheap installs cost more in 3 years than they save on day one.',
                 action: 'Cummins/Voltka generators, IEC-grade panels, ATS, earthing, SPDs, full commissioning records. Specialist installation.',
-                outcome: '2-year warranty, 1-year free service and a complete documentation pack.',
+                outcome: 'Warranty and service-package terms in writing, with a complete documentation pack.',
               },
               {
                 step: '03',

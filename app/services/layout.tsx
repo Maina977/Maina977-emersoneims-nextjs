@@ -78,7 +78,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Power Solutions Kenya',
-    description: 'Generators, solar, electrical, HVAC solutions with 2-year warranty. Professional service across Kenya.',
+    description: 'Generators, solar, electrical and HVAC solutions, installed and maintained. Professional service across Kenya.',
     images: ['/images/services-og.jpg'],
     creator: '@EmersonEIMS',
   },
