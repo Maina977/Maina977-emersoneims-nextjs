@@ -39,8 +39,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     founded: 1919,
     keywords: ['cummins generators', 'cummins generator', 'cummins genset', 'cummins power', 'cummins diesel generator', 'cummins kenya', 'cummins dealer', 'cummins parts'],
     metaTemplate: {
-      title: 'Cummins Generators in {location} | Authorized Cummins Dealer Kenya',
-      description: 'Cummins generators in {location}. Authorized dealer for Cummins diesel generators. Sales, installation, service & genuine parts. Call +254768860665',
+      title: 'Cummins Generators in {location} | Supply, Service & Parts',
+      description: 'Cummins generators in {location}. Supply, installation, servicing and genuine spare parts, with a mobile workshop covering all 47 counties. Call +254768860665',
       h1: 'Cummins Generators in {location}'
     },
     powerRange: '7.5kVA - 3500kVA',
@@ -56,7 +56,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     faqs: [
       {
         question: 'Where can I buy Cummins generators in {location}?',
-        answer: 'EmersonEIMS is an authorized Cummins dealer in {location}. We supply new Cummins generators from 7.5kVA to 3500kVA with warranty and support.'
+        answer: 'EmersonEIMS supplies new Cummins generators in {location}, from 7.5kVA to 3500kVA, with warranty and ongoing support. We are an independent power engineering firm, so we size the set to your load rather than to a sales quota.'
       },
       {
         question: 'How much do Cummins generators cost in {location}?',

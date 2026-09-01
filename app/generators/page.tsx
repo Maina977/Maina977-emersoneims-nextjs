@@ -158,7 +158,7 @@ const GENERATOR_HUB_SECTIONS = [
     icon: '🏗️',
     href: '/generators/installation',
     color: 'purple',
-    description: 'Professional 8-phase installation'
+    description: 'Professional eight-stage installation and commissioning'
   },
   // Workshop Repairs & Fabrication — added 2026-07-21 (owner brief). Placed
   // alongside the existing service cards; nothing was removed or reordered.
@@ -1467,15 +1467,30 @@ const WhyChooseUs = () => {
     },
     {
       icon: '⚡',
-      title: '24/7 Emergency Support',
-      description: 'Technicians stationed across all 47 counties. Nairobi emergency response mobilization within business hours. Remote site coordination via phone/WhatsApp.',
-      highlight: '24/7 SUPPORT'
+      title: 'Nationwide Emergency Support',
+      /*
+       * "Technicians stationed across all 47 counties" was removed 2026-08-31.
+       * The nationwide reach is real — the mobile workshop does travel to all
+       * 47 counties — but "stationed" asserts staff permanently based in each
+       * one, which would mean 47 depots we do not have. The true version is
+       * stronger anyway, because it is the one we can honour on the phone.
+       */
+      description: 'Nationwide mobile service, coordinated from our Embakasi workshop in Nairobi. Response is mobilised during business hours, with remote site coordination by phone and WhatsApp.',
+      highlight: 'NATIONWIDE'
     },
+    /*
+     * A "Price Match Guarantee — found a lower price? We'll match it and give
+     * you 5% extra discount. No questions asked." card stood here. Nothing
+     * defines who approves a match, what proof is required, which products
+     * qualify or who authorises 5% off a quoted price, so it was a binding
+     * commercial undertaking with no terms behind it and no way to honour it
+     * consistently. Replaced with the part that is real and checkable.
+     */
     {
       icon: '💰',
-      title: 'Price Match Guarantee',
-      description: 'Found a lower price? We\'ll match it and give you 5% extra discount. No questions asked.',
-      highlight: 'BEST PRICE'
+      title: 'Priced Against the Load',
+      description: 'We size the set to your measured load before quoting, so you are not paying for kVA you will never draw. The quotation itemises the set, ATS, cabling, installation and commissioning separately.',
+      highlight: 'NO OVERSIZING'
     },
     {
       icon: '🔧',
@@ -1485,9 +1500,18 @@ const WhyChooseUs = () => {
     },
     {
       icon: '📦',
-      title: 'Same-Day Parts Delivery',
-      description: '2,000+ parts in stock in our Nairobi warehouse. Most parts delivered within 4 hours.',
-      highlight: 'FAST DELIVERY'
+      /*
+       * Was: "2,000+ parts in stock in our Nairobi warehouse. Most parts
+       * delivered within 4 hours." Both halves were unevidenced. No inventory
+       * system in this repository produces a stock count, so "2,000+ in stock"
+       * would be wrong the first time a shelf emptied; and no delivery matrix
+       * defines a four-hour window, which cannot hold for an up-country site
+       * regardless. The parts CATALOGUE is real and searchable on this site —
+       * that is what is claimed now, with availability confirmed per order.
+       */
+      title: 'Parts Sourced and Supplied',
+      description: 'Filters, belts, sensors, AVRs, controllers, starters, alternators, and fuel and cooling components. Availability and delivery time are confirmed against your engine and serial number when you order.',
+      highlight: 'PARTS SUPPLY'
     },
     {
       icon: '🛡️',
@@ -1588,10 +1612,21 @@ const GuaranteeSection = () => {
           </p>
 
           <div className="grid md:grid-cols-3 gap-6 mb-8">
+            {/*
+              The two-year term is KEPT here and is owner-confirmed, but it is
+              now SCOPED. This card sits under "every set we supply", i.e. new
+              sets, which is what that confirmation covered. The same figure was
+              additionally published as a blanket site-wide badge — homepage
+              trust strip, metadata and JSON-LD — where it also covered used and
+              refurbished equipment and repairs, for which it cannot hold. Those
+              blanket instances were removed 2026-08-31; see
+              lib/commercial/policy.ts. The qualifier below is what was missing,
+              not the number.
+            */}
             <div className="p-6 rounded-xl bg-black/50 border border-emerald-500/30">
               <h3 className="text-2xl font-bold text-emerald-400 mb-2">2-Year</h3>
-              <p className="text-white font-semibold">Comprehensive Warranty</p>
-              <p className="text-gray-400 text-sm mt-2">Engine, alternator and control system</p>
+              <p className="text-white font-semibold">Warranty on New Sets</p>
+              <p className="text-gray-400 text-sm mt-2">Engine, alternator and control system. Used and refurbished sets carry different terms, stated in your quotation.</p>
             </div>
             <div className="p-6 rounded-xl bg-black/50 border border-emerald-500/30">
               <h3 className="text-2xl font-bold text-emerald-400 mb-2">24/7</h3>
@@ -2681,9 +2716,13 @@ export default function GeneratorPage() {
           </div>
         )}
         <div className="relative z-10 eims-shell py-0">
+          {/* "Gravity-Defying Technology" described a decorative WebGL
+              animation, not anything about the generators. Nothing here
+              defies gravity and no such technology is sold. Retitled to
+              what the section actually is. */}
           <SectionLead
-            title="Gravity-Defying Technology"
-            subtitle="Experience our cutting-edge generator technology in 3D"
+            title="Explore the Range in 3D"
+            subtitle="Rotate and inspect our generator sets from any angle"
             centered
           />
         </div>

@@ -77,7 +77,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Generator Installation Kenya',
-    description: 'Professional generator installation services. 8-phase process. All brands. 47 counties.',
+    description: 'Professional generator installation services. Eight-stage process. All brands. 47 counties.',
   },
   alternates: {
     canonical: 'https://www.emersoneims.com/generators/installation',
@@ -120,7 +120,7 @@ const jsonLd = {
       '@type': 'HowTo',
       '@id': 'https://www.emersoneims.com/generators/installation/#howto',
       name: 'Generator Installation Process',
-      description: 'Our 8-phase professional generator installation process',
+      description: 'Our eight-stage professional generator installation and commissioning process',
       totalTime: 'P14D',
       step: [
         { '@type': 'HowToStep', position: 1, name: 'Site Assessment', text: 'Complete evaluation of your site for optimal generator placement' },

@@ -561,28 +561,32 @@ function FloatingWhatsApp() {
 }
 
 // ==================== URGENCY BANNER COMPONENT ====================
+/*
+ * FAKE URGENCY REMOVED, 2026-08-31.
+ *
+ * This rendered "SOLAR SAVINGS WEEK - 15% OFF All Systems!" above a live
+ * countdown, and a "Claim Offer" button that opened WhatsApp pre-filled with
+ * "I want the 15% Solar Savings Week discount!".
+ *
+ * The countdown was not counting down to anything. endDate was computed as
+ * `new Date()` plus seven days INSIDE the effect, so it was re-derived on
+ * every mount: every visitor saw a fresh 6d 23h 59m, the week never ended, and
+ * the same "week" had been running for as long as the page had been live. A
+ * customer arriving through that button had been told they were owed 15% off
+ * by a deadline that did not exist.
+ *
+ * No start date, end date, eligible-product list, written terms or approved
+ * source exists for this discount anywhere in the repository, so per the
+ * standing rule it is not advertised at all rather than restated with
+ * different numbers.
+ *
+ * The bar itself is kept, because the WhatsApp route off it is real and
+ * converts — it now says what is actually true and offers the same contact.
+ * A genuine promotion belongs behind a component that renders only when real
+ * dates, terms and eligible products are supplied, and renders nothing
+ * otherwise.
+ */
 function UrgencyBanner() {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-  useEffect(() => {
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 7);
-
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = endDate.getTime() - now;
-
-      setTimeLeft({
-        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((distance % (1000 * 60)) / 1000),
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <motion.div
       initial={{ y: -100, opacity: 0 }}
@@ -590,26 +594,14 @@ function UrgencyBanner() {
       className="bg-gradient-to-r from-amber-600 via-orange-500 to-red-500 text-white py-3 px-4"
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-4 text-center">
-        <span className="font-bold text-lg">☀️ SOLAR SAVINGS WEEK - 15% OFF All Systems!</span>
-        <div className="flex items-center gap-2">
-          <div className="bg-white/20 rounded px-2 py-1">
-            <span className="font-bold">{timeLeft.days}</span>d
-          </div>
-          <div className="bg-white/20 rounded px-2 py-1">
-            <span className="font-bold">{timeLeft.hours}</span>h
-          </div>
-          <div className="bg-white/20 rounded px-2 py-1">
-            <span className="font-bold">{timeLeft.minutes}</span>m
-          </div>
-          <div className="bg-white/20 rounded px-2 py-1">
-            <span className="font-bold">{timeLeft.seconds}</span>s
-          </div>
-        </div>
+        <span className="font-bold text-lg">
+          ☀️ Free solar site survey and system sizing across Kenya
+        </span>
         <a
-          href="https://wa.me/254768860665?text=I%20want%20the%2015%25%20Solar%20Savings%20Week%20discount!"
+          href="https://wa.me/254768860665?text=I%20would%20like%20a%20solar%20site%20survey%20and%20quotation"
           className="bg-white text-orange-600 px-4 py-2 rounded-full font-bold hover:bg-amber-100 transition-all"
         >
-          Claim Offer
+          Talk to a Solar Engineer
         </a>
       </div>
     </motion.div>

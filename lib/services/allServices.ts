@@ -156,7 +156,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
       '/images/generator-installation.png'
     ],
 
-    metaTitle: 'Cummins Generators Kenya | 2-Year Warranty | 10kVA-2000kVA | EmersonEIMS',
+    metaTitle: 'Cummins Generators Kenya | 10kVA-2000kVA | EmersonEIMS',
     metaDescription: 'Cummins generators in Kenya, 10kVA to 2000kVA, with a 2-year warranty and one year free servicing. Supply, installation and maintenance in all 47 counties. Call +254768860665',
     keywords: [
       'Cummins generators Kenya',
@@ -359,7 +359,7 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
       '/images/spare-parts.png'
     ],
 
-    metaTitle: 'Generator Repair Kenya | 24/7 Emergency Service | All Brands | EmersonEIMS',
+    metaTitle: 'Generator Repair Kenya | All Brands, 24/7 | EmersonEIMS',
     metaDescription: 'Professional generator repair services in Kenya. 24/7 emergency response, all brands serviced. Cummins, Perkins, CAT experts. Annual maintenance contracts. Call +254768860665',
     keywords: [
       'generator repair Kenya',
@@ -578,7 +578,7 @@ MANUAL CHANGEOVER: Cost-effective solution for applications where brief manual i
       '/images/changeover-installation.png'
     ],
 
-    metaTitle: 'Automatic Transfer Switch Kenya | ATS Installation | Changeover Switches | EmersonEIMS',
+    metaTitle: 'Automatic Transfer Switch (ATS) Kenya | EmersonEIMS',
     metaDescription: 'Automatic Transfer Switch (ATS) installation in Kenya. Seamless generator changeover. Manual & automatic options. 40A-4000A. Professional installation. Call +254768860665',
     keywords: [
       'automatic transfer switch Kenya',
@@ -782,7 +782,7 @@ SERVICES INCLUDE:
       '/images/panel-fabrication.png'
     ],
 
-    metaTitle: 'Distribution Boards Kenya | Panel Fabrication | MCC | EmersonEIMS',
+    metaTitle: 'Distribution Boards & Panel Fabrication | EmersonEIMS',
     metaDescription: 'Distribution board design, fabrication & installation in Kenya. Main DB, sub-boards, motor control centers. KEBS certified. Quality components. Call +254768860665',
     keywords: [
       'distribution board Kenya',
@@ -991,7 +991,7 @@ SITE SURVEY: Our solar experts will analyze your energy consumption, roof space,
       '/images/solar-panels.png'
     ],
 
-    metaTitle: 'Solar Installation Kenya | Solar Panels | Solar Companies Nairobi | EmersonEIMS',
+    metaTitle: 'Solar Installation Kenya | Panels & Systems | EmersonEIMS',
     metaDescription: 'Solar installation in Kenya. Residential & commercial solar panels. Grid-tied, off-grid, hybrid systems. Free written quotation. Cut bills by 80%. Call +254768860665',
     keywords: [
       'solar installation Kenya',
@@ -1199,7 +1199,7 @@ QUALITY ASSURANCE: Every rewound motor undergoes comprehensive testing including
       '/images/motor-testing.png'
     ],
 
-    metaTitle: 'Motor Rewinding Kenya | Electric Motor Repair Nairobi | EmersonEIMS',
+    metaTitle: 'Motor Rewinding & Electric Motor Repair | EmersonEIMS',
     metaDescription: 'Professional motor rewinding in Kenya. All motor sizes 0.5HP-500HP. Single-phase, three-phase, DC motors. Fast turnaround. Quality testing. Call +254768860665',
     keywords: [
       'motor rewinding Kenya',
@@ -1404,7 +1404,7 @@ We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier
       '/images/commercial-hvac.png'
     ],
 
-    metaTitle: 'AC Installation Kenya | Air Conditioning Repair Nairobi | EmersonEIMS',
+    metaTitle: 'Air Conditioning Installation & Repair | EmersonEIMS',
     metaDescription: 'AC installation & repair in Kenya. Split AC, cassette, ducted systems. All brands serviced. Professional installation, maintenance contracts. Call +254768860665',
     keywords: [
       'AC installation Kenya',
@@ -1623,7 +1623,7 @@ WE PROVIDE:
       '/images/ups-batteries.png'
     ],
 
-    metaTitle: 'UPS Systems Kenya | UPS Installation Nairobi | Battery Backup | EmersonEIMS',
+    metaTitle: 'UPS Systems & Battery Backup Kenya | EmersonEIMS',
     metaDescription: 'UPS systems in Kenya. Sales, installation, maintenance. APC, Eaton, Vertiv. 600VA to 500kVA. Battery replacement. Protect critical equipment. Call +254768860665',
     keywords: [
       'UPS Kenya',
@@ -1829,7 +1829,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
       '/images/pump-installation.png'
     ],
 
-    metaTitle: 'Borehole Pump Kenya | Pump Installation & Repair Nairobi | EmersonEIMS',
+    metaTitle: 'Borehole Pump Installation & Repair | EmersonEIMS',
     metaDescription: 'Borehole pump services in Kenya. Submersible pump installation, repair, solar pumps. Grundfos, Pedrollo, DAB. Professional service. Call +254768860665',
     keywords: [
       'borehole pump Kenya',
@@ -2039,7 +2039,7 @@ WE PROVIDE:
       '/images/incinerator-installation.png'
     ],
 
-    metaTitle: 'Hospital Incinerators Kenya | Medical Waste Incinerator | NEMA Compliant | EmersonEIMS',
+    metaTitle: 'Hospital Incinerators Kenya | Medical Waste | EmersonEIMS',
     metaDescription: 'Hospital incinerators in Kenya. Medical waste disposal systems. NEMA compliant. Installation, maintenance, compliance support. Professional service. Call +254768860665',
     keywords: [
       'hospital incinerator Kenya',

@@ -318,7 +318,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
      *                   for why it exists — the mega-menu nav renders no hrefs)
      */
     { url: `${BASE_URL}/east-africa`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/marketplace`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.85 },
+    /*
+     * /marketplace REMOVED 2026-08-31, reversing the 2026-07-31 addition above.
+     *
+     * That addition was correct that the page was published and reachable, but
+     * the page was advertising a partner network that does not exist: three
+     * invented companies, a star rating and review count for each, and a
+     * "Showing 3 of 47 verified partners" line. It is now noindex until real
+     * partners can be listed (see the header of app/marketplace/page.tsx), and
+     * a sitemap must only offer URLs we are asking Google to index.
+     *
+     * RESTORE this entry when the robots block on that page comes off.
+     */
     /*
      * /all-tools REMOVED 2026-08-06, reversing the 2026-07-31 addition above.
      *

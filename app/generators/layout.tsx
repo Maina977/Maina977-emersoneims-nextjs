@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Cummins Generators Kenya',
-    description: 'Buy NEW Cummins generators in Kenya. 10kVA-2000kVA. 1 year free service.',
+    description: 'Buy NEW Cummins generators in Kenya, 10kVA-2000kVA. Supplied, installed and commissioned.',
   },
   /*
    * NO `alternates.canonical` HERE — a layout's metadata is inherited by every
@@ -142,16 +142,24 @@ const jsonLd = {
         '@type': 'Organization',
         name: 'Voltka',
       },
-      description: 'Cummins & Voltka diesel generators in Kenya. 10KVA to 2000KVA with 2-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation. Multi-brand specialist.',
+      description: 'Cummins & Voltka diesel generators in Kenya, 10KVA to 2000KVA, supplied, installed and commissioned. Genuine parts, expert installation. Multi-brand specialist.',
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'KES',
         lowPrice: '500000',
         highPrice: '48000000',
-        availability: 'https://schema.org/InStock',
+        /*
+         * availability: InStock was REMOVED 2026-08-31. It asserted to Google
+         * that every set across a KES 500,000-48,000,000 range was in stock,
+         * on a site with no inventory system to derive that from. Structured
+         * data must match what we can actually honour on the phone.
+         */
         seller: { '@id': 'https://www.emersoneims.com/#organization' },
         offerCount: '50',
-        warranty: '2 Years Comprehensive Warranty + 1 Year Free Service',
+        // Warranty duration removed from structured data 2026-08-31: no
+        // approved schedule exists, and the term differs for new, used and
+        // refurbished sets. See lib/commercial/policy.ts.
+        warranty: 'Warranty terms are confirmed in the written quotation',
       },
       // No self-asserted aggregateRating — violates Google's structured-data
       // policy without on-page UGC reviews, and triggered "Review has multiple

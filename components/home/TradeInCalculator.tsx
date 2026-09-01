@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { formatKES } from '@/lib/format/currency';
+import { monthlyRepayment } from '@/lib/finance/annuity';
 
 export default function TradeInCalculator() {
   const [brand, setBrand] = useState('Cummins');
@@ -66,6 +67,37 @@ export default function TradeInCalculator() {
 
   const newGeneratorPrice = 1050000; // VKS44 price
   const financingGap = newGeneratorPrice - finalValue;
+
+  /*
+   * MONTHLY REPAYMENT — REWRITTEN 2026-08-31. The previous expression was:
+   *
+   *   (gap * 0.14 / 12 * Math.pow(1.14 / 12 + 1, 24)) / (Math.pow(1.14 / 12 + 1, 24) - 1)
+   *
+   * It used TWO DIFFERENT RATES in one formula. The leading coefficient used
+   * 0.14/12, the correct monthly rate. The compounding base used 1.14/12 + 1,
+   * which is 1.095 — a 9.5% MONTHLY rate, because it divides (1 + annual) by
+   * 12 instead of dividing the annual rate alone.
+   *
+   * The effect was not cosmetic. On a KES 996,000 balance it returned
+   * KES 13,104/month, and 13,104 x 24 = KES 314,496 — under a third of the
+   * sum borrowed, before any interest. The correct payment is KES 47,821.
+   * The page understated the monthly cost of a generator by roughly 3.6x, to
+   * buyers deciding whether they could afford one.
+   *
+   * Below is the standard reducing-balance annuity, with the rate and term
+   * named rather than repeated as literals, so the two can no longer drift
+   * apart. INDICATIVE_ANNUAL_RATE is an illustration, not a quoted rate: no
+   * lender, product or approved rate is evidenced anywhere in this repository,
+   * which is why the figure is labelled as an illustration on the page and is
+   * not presented as an offer of credit from EmersonEIMS.
+   */
+  const INDICATIVE_ANNUAL_RATE = 0.14;
+  const FINANCE_TERM_MONTHS = 24;
+  const repayment = monthlyRepayment({
+    principal: financingGap,
+    annualRate: INDICATIVE_ANNUAL_RATE,
+    months: FINANCE_TERM_MONTHS,
+  });
 
   return (
     <section className="py-20 px-4 bg-gradient-to-b from-slate-900/50 to-black border-t border-white/10 content-auto">
@@ -193,7 +225,16 @@ export default function TradeInCalculator() {
                 <span className="text-4xl font-bold text-purple-400">
                   KES {formatKES(finalValue)}
                 </span>
-                <span className="text-sm text-gray-400">(USD ${formatKES((finalValue / 13300))})</span>
+                {/*
+                  A USD figure stood here, computed as finalValue / 13300. The
+                  KES/USD rate is around 129, so the divisor was out by a factor
+                  of roughly 100 and a KES 54,000 trade-in displayed as "USD $4".
+                  There is no exchange-rate source in this repository, and the
+                  brief forbids hard-coding one, so the conversion is removed
+                  rather than replaced with another fixed number that would be
+                  wrong the day it changed. The appraisal is quoted in KES,
+                  which is the currency the transaction settles in.
+                */}
               </div>
               <p className="text-xs text-gray-500">
                 Based on condition, hours, and current market rates
@@ -231,7 +272,14 @@ export default function TradeInCalculator() {
                     KES {formatKES(financingGap)}
                   </div>
                   <p className="text-xs text-gray-400 mt-2">
-                    At 14% interest, 24 months = KES {formatKES((financingGap * 0.14 / 12 * Math.pow(1.14 / 12 + 1, 24)) / (Math.pow(1.14 / 12 + 1, 24) - 1))}/month
+                    Illustration only: {FINANCE_TERM_MONTHS} months on a reducing balance at{' '}
+                    {(INDICATIVE_ANNUAL_RATE * 100).toFixed(0)}% a year is about KES{' '}
+                    {formatKES(Math.round(repayment))}/month.
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    This is not an offer of credit and not a quotation. EmersonEIMS does not lend —
+                    financing is arranged with your own bank or asset financier, and your actual
+                    rate, term and repayment come from them.
                   </p>
                 </div>
               </div>

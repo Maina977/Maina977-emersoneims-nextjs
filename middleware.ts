@@ -1394,7 +1394,28 @@ export function middleware(request: NextRequest) {
     const crawlerResponse = NextResponse.next({
       request: { headers: crawlerRequestHeaders },
     });
-    crawlerResponse.headers.set('X-Robots-Tag', 'index, follow');
+    /*
+     * NO X-Robots-Tag IS SET HERE, DELIBERATELY.
+     *
+     * This previously emitted `X-Robots-Tag: index, follow` on every crawled
+     * page. That was redundant and actively harmful:
+     *
+     *   - Redundant, because "index, follow" is already the default. A page
+     *     with no robots directive is indexed and followed anyway, so the
+     *     header bought nothing.
+     *
+     *   - Harmful, because it contradicted every page that deliberately opts
+     *     OUT. A page exporting `robots: { index: false }` in its metadata was
+     *     served with a page-level "noindex, nofollow" meta tag AND an HTTP
+     *     header saying "index, follow" — two directives in direct conflict.
+     *     Google resolves such conflicts by taking the most restrictive rule,
+     *     so noindex most likely still won, but correctness should not depend
+     *     on a tie-break we do not control when the conflict is avoidable.
+     *
+     * Pages that must not be indexed declare it themselves (the fabricated
+     * marketplace partner profiles and the Building Suite stubs both do).
+     * Staying silent here lets that page-level intent stand unopposed.
+     */
     crawlerResponse.headers.set('X-Crawler-Bypass', '1');
     // Allow CDN to cache HTML for crawlers (matches /kenya/* + general SEO).
     crawlerResponse.headers.set(

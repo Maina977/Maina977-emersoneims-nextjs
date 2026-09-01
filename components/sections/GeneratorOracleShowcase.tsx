@@ -21,9 +21,18 @@ import LiveFaultLookup from '@/components/generator-oracle/LiveFaultLookup';
 const ADVANCED_FEATURES = [
   {
     icon: '🤖',
-    title: 'AI Predictive Failure',
-    description: 'Predicts component failures before they happen',
-    stats: 'Hours-to-failure prediction',
+    /*
+     * WAS: 'AI Predictive Failure' / 'Predicts component failures before
+     * they happen' / 'Hours-to-failure prediction'. Nothing in this
+     * repository predicts a time-to-failure, nothing has been validated
+     * against field outcomes, and the ECM panels run in acknowledged
+     * simulation mode. Presenting a demonstration as a live prediction is
+     * the first thing an engineer would test us on. Replaced with what the
+     * tool genuinely does.
+     */
+    title: 'Fault Code Diagnosis',
+    description: 'Matches symptoms and codes against a curated fault-code database',
+    stats: 'Cause and remedy per code',
     color: '#06b6d4',
     benefit: 'Reduce unexpected downtime',
   },

@@ -419,7 +419,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="text-xs text-gray-500 text-center">
-                30-day money-back guarantee on all parts
+                Returns and warranty terms are confirmed on your invoice
               </div>
             </div>
           </div>

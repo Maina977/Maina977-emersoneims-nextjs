@@ -69,6 +69,7 @@ const FinancingCalculatorReal = dynamic(() => import('@/app/components/home/Fina
 const CountyCoverageMapReal = dynamic(() => import('@/app/components/home/CountyCoverageMap'));
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
 import TradeInCalculator from '@/components/home/TradeInCalculator';
+import { COMMERCIAL_POLICY } from '@/lib/commercial/policy';
 import SocialProofWidget from '@/components/home/SocialProofWidget';
 import RecentWorkSection from '@/components/home/RecentWorkSection';
 import ClientTestimonials from '@/components/home/ClientTestimonials';
@@ -106,10 +107,10 @@ export const metadata: Metadata = {
    * anyone who did not. This leads with what is sold and where.
    */
   title: "Generators, Solar & UPS in Kenya",
-  description: "Generators, solar, UPS, motors, boreholes and incinerators for Kenyan industry, healthcare and telecom. 2-year warranty. Call +254768860665.",
+  description: "Generators, solar, UPS, motors, boreholes and incinerators for Kenyan industry, healthcare and telecom. Nationwide service. Call +254768860665.",
   openGraph: {
     title: "EmersonEIMS | B2B Power & Engineering Partner — Kenya",
-    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. 2-year warranty, SLA maintenance, 24/7 emergency. Cummins, Perkins & FG Wilson specialist. AI-assisted diagnostic and design tools.",
+    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. SLA maintenance, 24/7 emergency response, nationwide mobile workshop. Cummins, Perkins & FG Wilson specialist. AI-assisted diagnostic and design tools.",
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
     type: 'website',
     locale: 'en_KE',
@@ -119,7 +120,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'EmersonEIMS | B2B Power & Engineering — Kenya',
-    description: 'Generators, solar, UPS, HVAC, boreholes, incinerators. Cummins specialist. 2-year warranty, SLA maintenance, 24/7 emergency response. Call +254768860665',
+    description: 'Generators, solar, UPS, HVAC, boreholes, incinerators. Cummins specialist. SLA maintenance, 24/7 emergency response, nationwide mobile workshop. Call +254768860665',
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
   },
   alternates: {
@@ -319,7 +320,11 @@ function StaticHeroFallback() {
                 the homepage's existing length. */}
             <span className="flex items-center justify-center gap-1">✓ Mobile Workshop · 47 Counties</span>
             <span className="flex items-center justify-center gap-1">✓ 24/7 Emergency Response</span>
-            <span className="flex items-center justify-center gap-1">✓ 2-Year Warranty</span>
+            {/* "2-Year Warranty" stood here as a site-wide promise applied to
+                new, used and refurbished sets alike, with no approved schedule
+                behind it. See lib/commercial/policy.ts for why the mechanism is
+                stated instead of a duration. */}
+            <span className="flex items-center justify-center gap-1">✓ {COMMERCIAL_POLICY.warrantyShort}</span>
             <span className="flex items-center justify-center gap-1">✓ SLA Maintenance</span>
           </div>
         </div>
@@ -383,7 +388,7 @@ function StaticFeaturesSection() {
           Powering East Africa's critical infrastructure across
           manufacturing, healthcare, telecom and commercial property.
           From <span className="text-amber-400">20kVA</span> commercial systems to <span className="text-amber-400">2000kVA</span> industrial installations,
-          backed by a <span className="text-white font-semibold">2-year warranty</span> and SLA-bound maintenance.
+          installed, commissioned and backed by SLA-bound maintenance.
         </p>
       </div>
     </section>
@@ -428,7 +433,13 @@ function AITechnologyShowcase() {
       icon: '☀️',
       gradient: 'from-blue-500 to-cyan-500',
       link: '/solar',
-      badge: 'WORLD #1'
+      /*
+       * badge was 'WORLD #1'. No independent ranking, award or review body
+       * has placed this tool first at anything, so the claim could not be
+       * substantiated if asked. Replaced with a fact about the tool that is
+       * checkable on the page it links to.
+       */
+      badge: '15 AFRICAN MARKETS'
     },
     {
       id: 'building-suite-pro',
@@ -477,7 +488,11 @@ function AITechnologyShowcase() {
             </span>
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Industry-leading AI technology built for Africa. From generator diagnostics to solar design, we&apos;re redefining what&apos;s possible.
+            {/* "Industry-leading" and "redefining what is possible" are unmeasurable
+                superlatives. Replaced with what the tools actually do, which is more
+                persuasive to an engineer and is verifiable by using them. */}
+            Engineering tools built for African conditions — generator fault diagnosis,
+            solar design and load sizing, free to use on this site.
           </p>
         </div>
 
@@ -664,7 +679,7 @@ export default function HomePage() {
                unlinked entities describing the same business. */
             '@id': 'https://www.emersoneims.com/#organization',
             name: 'EmersonEIMS',
-            description: "B2B power-engineering partner for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 2-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties. Includes engineering intelligence tools (Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro).",
+            description: "B2B power-engineering partner for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators, with SLA-backed maintenance and 24/7 emergency response, reaching all 47 counties by mobile workshop. Includes engineering intelligence tools (Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro).",
             url: 'https://www.emersoneims.com',
             logo: 'https://www.emersoneims.com/emerson-eims-logo.png',
             image: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
@@ -745,7 +760,7 @@ export default function HomePage() {
                   itemOffered: {
                     '@type': 'Service',
                     name: 'Generator Sales & Installation',
-                    description: 'CUMMINS generators 10-2000KVA with 2-year warranty',
+                    description: 'CUMMINS generators 10-2000KVA, supplied, installed and commissioned',
                     provider: { '@type': 'Organization', name: 'EmersonEIMS' }
                   }
                 },
