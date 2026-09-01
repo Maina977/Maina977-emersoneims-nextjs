@@ -146,7 +146,7 @@ export default function CumminsBanner({
                         <div className="p-2 bg-blue-500/20 rounded-xl">
                           <Wrench className="w-6 h-6 text-blue-400" />
                         </div>
-                        <span className="text-white font-bold">Service Package Included</span>
+                        <span className="text-white font-bold">1 Year Free Servicing</span>
                       </motion.div>
                     </div>
 
@@ -189,7 +189,7 @@ export default function CumminsBanner({
                   >
                     {[
                       { icon: <Shield className="w-8 h-8" />, title: '2 Years Warranty', desc: 'Comprehensive coverage', color: 'green', glow: 'rgba(34, 197, 94, 0.3)' },
-                      { icon: <Wrench className="w-8 h-8" />, title: 'Service Package', desc: 'Terms confirmed in your quotation', color: 'blue', glow: 'rgba(59, 130, 246, 0.3)' },
+                      { icon: <Wrench className="w-8 h-8" />, title: '1 Year Free Servicing', desc: 'Complimentary maintenance on new sets', color: 'blue', glow: 'rgba(59, 130, 246, 0.3)' },
                       { icon: <Award className="w-8 h-8" />, title: 'Sales & Service', desc: 'Cummins generator sales and service', color: 'amber', glow: 'rgba(245, 158, 11, 0.3)' },
                       { icon: <Zap className="w-8 h-8" />, title: '10-2000KVA', desc: 'All power needs', color: 'cyan', glow: 'rgba(0, 255, 255, 0.3)' },
                     ].map((item, i) => (
@@ -367,7 +367,7 @@ export default function CumminsBanner({
             {[
               { text: 'Sales & Service', icon: <CheckCircle className="w-4 h-4" /> },
               { text: '2 Years Warranty', icon: <CheckCircle className="w-4 h-4" /> },
-              { text: 'Service Package Included', icon: <CheckCircle className="w-4 h-4" /> },
+              { text: '1 Year Free Servicing', icon: <CheckCircle className="w-4 h-4" /> },
               { text: '10-2000KVA Range', icon: <CheckCircle className="w-4 h-4" /> },
             ].map((item, i) => (
               <motion.div

@@ -638,7 +638,7 @@ const TransparentPricing = () => {
             Generator Prices in Kenya 2026
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            No hidden costs. Prices include delivery, installation, ATS and commissioning. Service-package terms are confirmed in your quotation.
+            No hidden costs. Prices include delivery, installation, ATS and commissioning, and new sets carry 1 year of free servicing.
           </p>
         </div>
 
@@ -2360,7 +2360,7 @@ export default function GeneratorPage() {
             10kVA to 2000kVA, sized to your actual load rather than a catalogue guess.
             <br />
             <span className="text-[#fbbf24]">
-              2-year warranty on new sets {'\u2022'} service package confirmed in your quotation {'\u2022'} mobile workshop in all 47 counties
+              2-year warranty on new sets {'\u2022'} 1 year free servicing {'\u2022'} mobile workshop in all 47 counties
             </span>
           </p>
           <div
@@ -2415,7 +2415,7 @@ export default function GeneratorPage() {
               <ul className="space-y-3 text-white/75">
                 <li className="flex gap-3">
                   <span className="text-brand-gold font-bold">✓</span>
-                  <span>2-year warranty on new sets, with service-package terms confirmed in your quotation</span>
+                  <span>2-year warranty and 1 year free servicing on new sets</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-brand-gold font-bold">✓</span>
@@ -2608,8 +2608,8 @@ export default function GeneratorPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-white">Service Package</h3>
-                  <p className="text-sm text-gray-400">Terms confirmed in your quotation</p>
+                  <h3 className="text-2xl font-bold text-white">1 Year Free Servicing</h3>
+                  <p className="text-sm text-gray-400">Complimentary maintenance on new sets</p>
                 </div>
               </div>
               <ul className="space-y-3">

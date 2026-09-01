@@ -139,10 +139,10 @@ export const ALL_SERVICES: Service[] = [
     // claim. Both used to appear here, and this block feeds the Service schema
     // rendered on /generators — so it was asserting the claim to Google as
     // structured data. See app/why-emersoneims/page.tsx for the full policy.
-    description: 'Cummins generator supply, installation and maintenance in Kenya. 10kVA to 2000kVA diesel generators, backed by a 2-year warranty, with service-package terms confirmed in your quotation.',
+    description: 'Cummins generator supply, installation and maintenance in Kenya. 10kVA to 2000kVA diesel generators, backed by a 2-year warranty and 1 year of free servicing on new sets.',
     longDescription: `EmersonEIMS supplies, installs and maintains Cummins generators across Kenya. We are an independent power engineering firm — we are not tied to a single manufacturer, so the set we recommend is the one that fits your load, your fuel budget and your site, not the one we are obliged to move.
 
-Our Cummins range runs from compact 10kVA units for small businesses and homes up to 2000kVA industrial sets for factories, hospitals and data centres. Every new generator we supply carries a 2-year warranty. Service-package terms are confirmed in your written quotation.
+Our Cummins range runs from compact 10kVA units for small businesses and homes up to 2000kVA industrial sets for factories, hospitals and data centres. Every new generator we supply carries a 2-year warranty and one year of free servicing. Terms are set out in your written quotation.
 
 Support does not stop at the gate. Our mobile workshop reaches all 47 counties, so a set in Kisumu, Eldoret or Mombasa is serviced to the same standard as one in Nairobi — and we hold genuine spare parts rather than sourcing them after your set has already stopped.
 
@@ -157,7 +157,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
     ],
 
     metaTitle: 'Cummins Generators Kenya | 10kVA-2000kVA | EmersonEIMS',
-    metaDescription: 'Cummins generators in Kenya, 10kVA to 2000kVA, with a 2-year warranty on new sets. Supply, installation and maintenance in all 47 counties. Call +254768860665',
+    metaDescription: 'Cummins generators in Kenya, 10kVA to 2000kVA. New sets carry a 2-year warranty and 1 year free servicing. Supply, installation and maintenance in all 47 counties. Call +254768860665',
     keywords: [
       'Cummins generators Kenya',
       'Cummins generator dealer Kenya',

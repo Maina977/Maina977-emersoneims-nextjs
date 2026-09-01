@@ -21,16 +21,24 @@
  * and on used equipment where it cannot be true, and it is the kind of promise
  * that surfaces after a failure, when it is expensive to have been wrong.
  *
- * No management-approved warranty schedule exists anywhere in this repository.
- * Until one does, the site states the mechanism — that terms are confirmed in
- * the written quotation — rather than inventing a duration. That is both
- * truthful and how the business actually transacts: the quotation is the
- * document that binds.
+ * OWNER-CONFIRMED TERMS, 2026-09-02
  *
- * WHEN APPROVED TERMS ARRIVE: fill in PRODUCT_WARRANTY entries per product
- * rather than reintroducing a site-wide constant. The per-product shape below
- * exists so that a real, differing term can be expressed without going back to
- * one number for everything.
+ *   Warranty        2 years, NEW GENERATOR SETS ONLY.
+ *   Free servicing  1 year, on those same new sets.
+ *
+ * The scope is the load-bearing half. "New generator sets only" means the
+ * term does NOT extend to used or refurbished sets, to solar, UPS, inverters,
+ * motors or pumps, or to repair labour — each of which carries its own terms,
+ * stated in the quotation. That is why the wording below still exists and is
+ * still used everywhere outside a new-generator context: the figures are
+ * confirmed, but they are confirmed for one product line, and the defect this
+ * file was created to fix was publishing them as a promise about everything.
+ *
+ * The one-year figure settles a contradiction the site had been publishing on
+ * both sides: lib/data/warranties.ts offered "free service for the first 1
+ * year" in one entry and "complimentary maintenance for the first 6 months" in
+ * the next, and pages quoted whichever they had copied. That file is now
+ * corrected to one year and is the schedule of record.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * RELATED, AND IMPORTANT: lib/data/warranties.ts
@@ -74,7 +82,13 @@ export const COMMERCIAL_POLICY = {
     'set, the alternator and the controls. The applicable term, what it covers and what ' +
     'it requires of you are stated in the written quotation for your specific machine.',
 
-  /** Replaces "1 Year Free Service" / "6-Month Service". */
+  /**
+   * Owner-confirmed 2026-09-02: one year, on NEW GENERATOR SETS. Use this
+   * only where the surrounding copy makes that scope explicit.
+   */
+  freeServicingNewSets: '1 year free servicing on new generator sets',
+
+  /** Neutral fallback for everything that is NOT a new generator set. */
   servicePackageShort: 'Service package confirmed in quotation',
 
   servicePackageLine:
@@ -120,7 +134,21 @@ export interface ProductWarranty {
  * from a management-approved schedule. Code must therefore handle "no entry"
  * as the normal case, which is what warrantyFor() below guarantees.
  */
-export const PRODUCT_WARRANTY: Record<string, ProductWarranty> = {};
+export const PRODUCT_WARRANTY: Record<string, ProductWarranty> = {
+  /*
+   * Owner-confirmed 2026-09-02. Keyed by product line, NOT applied globally —
+   * warrantyFor() returns the site-wide mechanism for anything absent here,
+   * which is the correct answer for used sets, solar, UPS, motors and repairs.
+   */
+  'new-generator': {
+    duration: '2 years',
+    provider: 'EmersonEIMS',
+    partsCovered: 'Engine components and factory defects, alternator and starter motor, control panel and wiring',
+    startsFrom: 'Commissioning',
+    maintenanceRequired: 'Serviced at the intervals stated in the quotation, with the service record kept',
+    exclusions: ['Used and refurbished sets', 'Solar, UPS, inverters, motors and pumps', 'Repair labour on third-party equipment'],
+  },
+};
 
 /**
  * Warranty wording for a product, falling back to the site-wide mechanism.
