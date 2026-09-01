@@ -141,7 +141,7 @@ export default function GeneratorsSolutionPage() {
           <div className="eims-shell py-0">
             <SectionLead
               title="Why Choose Our Generator Solutions"
-              subtitle="Industry-leading expertise and comprehensive support"
+              subtitle="Engineering expertise and support through the life of the set"
               centered
             />
             

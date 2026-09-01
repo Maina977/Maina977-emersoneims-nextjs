@@ -373,7 +373,7 @@ export default function Solar3DDesignStudio() {
               3D Solar Design Studio
             </h2>
             <p className="text-blue-100">
-              AI-Powered Design | Industry-Leading Technology | No Site Visit Required
+              AI-assisted design | Roof layout modelling | Indicative, pending site survey
             </p>
           </div>
           <div className="flex items-center gap-2">

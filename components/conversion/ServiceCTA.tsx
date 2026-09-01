@@ -28,7 +28,7 @@ const PHONE_NUMBER = '+254768860665';
 const WHATSAPP_NUMBER = '254768860665';
 
 const trustBadges = [
-  { icon: '✓', text: '2-Year Warranty' },
+  { icon: '✓', text: 'Warranty confirmed in quotation' },
   { icon: '✓', text: '24/7 Emergency Support' },
   { icon: '✓', text: 'Nationwide Service' },
   { icon: '✓', text: 'Free Consultation' },
@@ -37,7 +37,7 @@ const trustBadges = [
 export default function ServiceCTA({
   service = 'power solutions',
   location = 'Kenya',
-  urgencyText = 'Limited Time: 2-Year Warranty on All Cummins Generators',
+  urgencyText = 'Cummins and VOLTKA sets sized to your measured load',
   showTrustBadges = true,
   className = '',
   variant = 'default',
@@ -236,13 +236,13 @@ export function HeroServiceCTA({
         animate={{ scale: [1, 1.02, 1] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
-        Limited Time: 2-Year Warranty + FREE Installation Consultation
+        Free site survey and load sizing before you commit to a set
       </motion.p>
 
       {/* Trust Indicators */}
       <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-400">
         <span className="flex items-center gap-1">
-          <span className="text-green-500">✓</span> 2-Year Warranty
+          <span className="text-green-500">✓</span> Warranty confirmed in quotation
         </span>
         <span className="flex items-center gap-1">
           <span className="text-green-500">✓</span> 24/7 Support

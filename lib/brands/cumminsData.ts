@@ -34,7 +34,7 @@ export const CUMMINS_BRAND_INFO = {
   benefits: [
     {
       title: '2 Years Warranty',
-      description: 'Industry-leading comprehensive warranty on all Cummins generators',
+      description: 'Comprehensive warranty on all new Cummins generators, with terms confirmed in your quotation',
       icon: 'shield'
     },
     {

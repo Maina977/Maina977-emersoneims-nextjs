@@ -178,8 +178,8 @@ export default async function ServiceLocationPage({ params }: Props) {
                 <li className="flex items-start gap-3">
                   <span className="text-cyan-400 text-xl">✓</span>
                   <div>
-                    <strong className="text-white">2-Year Warranty</strong>
-                    <p className="text-slate-400 text-sm">Industry-leading warranty on all installations and services</p>
+                    <strong className="text-white">Warranty in writing</strong>
+                    <p className="text-slate-400 text-sm">Warranty terms are set out in your written quotation</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -287,7 +287,7 @@ export default async function ServiceLocationPage({ params }: Props) {
             Looking for professional {service.name.toLowerCase()} in {locationName}? EmersonEIMS is your trusted
             local partner for all {service.shortName.toLowerCase()} needs. We have been serving {locationName}
             {!isCounty && county ? ` and the greater ${county.name} County area` : ''} with reliable, high-quality
-            power solutions backed by our industry-leading 2-Year Warranty.
+            power solutions, with warranty terms set out in your written quotation.
           </p>
 
           {serviceContent.seoContent.map((section, idx) => (

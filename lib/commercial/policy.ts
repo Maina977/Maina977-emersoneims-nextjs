@@ -31,6 +31,29 @@
  * rather than reintroducing a site-wide constant. The per-product shape below
  * exists so that a real, differing term can be expressed without going back to
  * one number for everything.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * RELATED, AND IMPORTANT: lib/data/warranties.ts
+ *
+ * That file already holds a properly structured, differentiated warranty
+ * schedule — new generators, used generators, rental, solar — with coverage
+ * lists and a claim process. It is the best warranty data in this repository
+ * and it is DEAD CODE: nothing imports it. Meanwhile more than twenty files
+ * hard-coded "2-Year Warranty" independently. The correct source existed and
+ * went unused while the wrong copies multiplied.
+ *
+ * It is not wired up here yet for one reason: it contradicts itself on the
+ * free-service period. GENERATOR_WARRANTIES.new lists "Free service for the
+ * first 1 year" in its coverage, and the very next entry in the same array
+ * offers "Complimentary maintenance service for the first 6 months". The site
+ * published BOTH ("1 Year Free Service" in some places, "6-Month Service" in
+ * others), so the contradiction shipped.
+ *
+ * Which is correct is a management question, not one to settle by picking the
+ * more generous number. Until it is answered, warranty DURATIONS are published
+ * only where they are scoped to new generator sales, and free-service periods
+ * are not published as a duration at all.
+ * ─────────────────────────────────────────────────────────────────────────
  */
 
 /**

@@ -974,7 +974,7 @@ export default function AIQuotationSystem() {
           Get an instant, accurate quotation - NO SITE VISIT REQUIRED!
         </p>
         <p className="text-amber-200/70 text-sm mt-1">
-          Industry-Leading AI Technology - Powered by EmersonEIMS AI Engine
+          Solar sizing and quotation, powered by the EmersonEIMS design engine
         </p>
       </div>
 

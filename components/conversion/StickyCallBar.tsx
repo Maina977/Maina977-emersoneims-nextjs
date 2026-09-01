@@ -23,7 +23,7 @@ export default function StickyCallBar() {
     "24/7 Emergency Service Available",
     "Free Quotation - Fast Turnaround!",
     "Same-Day Response Guaranteed",
-    "2-Year Warranty on All Services",
+    "Warranty terms confirmed in your quotation",
     "Serving All 47 Counties in Kenya",
   ];
 

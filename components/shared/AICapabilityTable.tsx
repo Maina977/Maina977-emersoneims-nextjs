@@ -156,7 +156,7 @@ export const SOLAR_GENIUS_PRO_CAPABILITIES: Capability[] = [
   { name: 'Warranty Comparison', description: 'Equipment warranty analysis', accuracy: 99.5, status: 'certified', category: 'Quotation' },
   { name: 'Image/PDF Upload', description: 'Upload site photos and documents', accuracy: 99.9, status: 'certified', category: 'Quotation' },
   { name: 'Video Analysis', description: 'Site video analysis for quotes', accuracy: 98.0, status: 'patent-pending', category: 'Quotation' },
-  { name: 'Competitor Comparison', description: 'Compare against 20+ competitors', accuracy: 99.5, status: 'industry-leading', category: 'Quotation' },
+  { name: 'Options Comparison', description: 'Compare specification and cost across the options we quote', accuracy: 99.5, status: 'industry-leading', category: 'Quotation' },
   { name: 'Client Presentation', description: 'Auto-generated proposal slides', accuracy: 99.3, status: 'certified', category: 'Quotation' },
   { name: 'E-Signature', description: 'Digital contract signing', accuracy: 99.9, status: 'certified', category: 'Quotation' },
 ];
@@ -233,11 +233,20 @@ export const AICapabilityTable: React.FC<AICapabilityTableProps> = ({
       'patent-pending': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
       'industry-leading': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
     };
+    /*
+     * RELABELLED 2026-08-31. These read VERIFIED / CERTIFIED / PATENT PENDING
+     * / #1 INDUSTRY across 124 rows: 82 certifications, 11 patents pending and
+     * three #1 rankings. No certifying body, patent application or ranking
+     * exists for any of them. Those are legal and credential claims, not
+     * marketing adjectives, and they were being made to every visitor who
+     * opened this table. They now describe availability, which is true and is
+     * what a buyer actually wants to know.
+     */
     const labels = {
-      'verified': 'VERIFIED',
-      'certified': 'CERTIFIED',
-      'patent-pending': 'PATENT PENDING',
-      'industry-leading': '#1 INDUSTRY',
+      'verified': 'AVAILABLE',
+      'certified': 'AVAILABLE',
+      'patent-pending': 'IN DEVELOPMENT',
+      'industry-leading': 'AVAILABLE',
     };
     return (
       <span className={`px-2 py-0.5 text-[10px] font-bold rounded border ${styles[status]}`}>
@@ -246,6 +255,13 @@ export const AICapabilityTable: React.FC<AICapabilityTableProps> = ({
     );
   };
 
+  /*
+   * Retained but no longer called: the accuracy column it coloured was removed
+   * above, because none of those percentages was ever measured. Kept rather
+   * than deleted so that if real, measured accuracy figures are ever produced,
+   * the presentation for them still exists.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getAccuracyColor = (accuracy: number) => {
     if (accuracy >= 99) return 'text-green-400';
     if (accuracy >= 97) return 'text-emerald-400';
@@ -280,12 +296,12 @@ export const AICapabilityTable: React.FC<AICapabilityTableProps> = ({
             <div className="text-xs text-gray-400">Total Capabilities</div>
           </div>
           <div className="bg-black/30 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-green-400">{capabilities.filter(c => c.accuracy >= 99).length}</div>
-            <div className="text-xs text-gray-400">99%+ Accuracy</div>
+            <div className="text-2xl font-bold text-green-400">{capabilities.filter(c => c.status !== 'patent-pending').length}</div>
+            <div className="text-xs text-gray-400">Available Now</div>
           </div>
           <div className="bg-black/30 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-blue-400">{capabilities.filter(c => c.status === 'certified').length}</div>
-            <div className="text-xs text-gray-400">Certified</div>
+            <div className="text-2xl font-bold text-blue-400">{capabilities.filter(c => c.status === 'patent-pending').length}</div>
+            <div className="text-xs text-gray-400">In Development</div>
           </div>
           <div className="bg-black/30 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold text-purple-400">{capabilities.filter(c => c.status === 'patent-pending').length}</div>
@@ -314,9 +330,14 @@ export const AICapabilityTable: React.FC<AICapabilityTableProps> = ({
                     <div className="text-xs text-gray-500 md:hidden">{cap.description}</div>
                   </td>
                   <td className="py-3 px-4 text-sm text-gray-400 hidden md:table-cell">{cap.description}</td>
-                  <td className="py-3 px-4 text-center">
-                    <span className={`font-bold ${getAccuracyColor(cap.accuracy)}`}>{cap.accuracy}%</span>
-                  </td>
+                  {/*
+                    A per-capability accuracy figure (99.2%, 99.5%, 99.9%...)
+                    was published in this column for all 124 rows. Nothing
+                    measured any of them against field outcomes, so the numbers
+                    asserted a precision that had never been tested. The data
+                    is left in place rather than deleted, but it is no longer
+                    presented to customers as a measurement.
+                  */}
                   <td className="py-3 px-4 text-center">{getStatusBadge(cap.status)}</td>
                 </tr>
               ))}

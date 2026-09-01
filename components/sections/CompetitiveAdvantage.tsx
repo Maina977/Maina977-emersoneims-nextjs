@@ -105,7 +105,7 @@ export default function CompetitiveAdvantage() {
             <span className="text-transparent bg-gradient-to-r from-amber-400 to-cyan-400 bg-clip-text"> Difference</span>
           </h2>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Industry-leading service standards that set us apart from the rest.
+            The standards we hold ourselves to on every job.
           </p>
         </motion.div>
 

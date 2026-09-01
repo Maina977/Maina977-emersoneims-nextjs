@@ -163,7 +163,7 @@ interface WarrantySectionProps {
 }
 
 export function WarrantySection({
-  title = "Industry-Leading Warranties",
+  title = "Warranties, In Writing",
   subtitle = "Every product and service backed by comprehensive coverage",
   warranties
 }: WarrantySectionProps) {

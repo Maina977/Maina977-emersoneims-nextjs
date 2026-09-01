@@ -1516,7 +1516,7 @@ const WhyChooseUs = () => {
     {
       icon: '🛡️',
       title: '2-Year Warranty',
-      description: 'Industry-leading coverage on all new generators. Includes parts, labor, and emergency service.',
+      description: 'Cover on new generators includes parts, labour and emergency service. The term and its conditions are stated in your written quotation.',
       highlight: 'PEACE OF MIND'
     },
   ];
@@ -2530,7 +2530,7 @@ export default function GeneratorPage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Industry-Leading Warranties
+              Warranties, In Writing
             </h2>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
               Every Cummins generator backed by comprehensive coverage and lifetime support
