@@ -15,6 +15,9 @@ import { getAllIndustries } from '@/lib/seo/industryData';
 import { PRICE_GUIDES } from '@/lib/pricing/publishedPrices';
 import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
 import { BRAND_GROUPS } from '@/lib/plant-oracle/brandGroups';
+import { GENERATOR_BRANDS } from '@/lib/data/generator-brands';
+import { PROBLEM_SLUGS } from '@/lib/seo/generatorProblems';
+import { MAJOR_TOWN_SLUGS } from '@/lib/seo/majorTowns';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -23,10 +26,9 @@ import { BRAND_GROUPS } from '@/lib/plant-oracle/brandGroups';
 const BASE_URL = 'https://www.emersoneims.com';
 
 // Major Towns
-const majorTowns = [
-  'thika', 'eldoret', 'malindi', 'kitale', 'naivasha', 'ruiru', 'juja', 'kikuyu',
-  'westlands', 'karen', 'ngong', 'ongata-rongai', 'mtwapa', 'nyali', 'diani'
-];
+// Moved to lib/seo/majorTowns.ts so app/locations/page.tsx can LINK the same
+// fifteen towns this sitemap lists. Five of them had no inbound link at all.
+const majorTowns = MAJOR_TOWN_SLUGS;
 
 /**
  * Industries — critical for B2B SEO.
@@ -367,6 +369,61 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/generators/caterpillar`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/generators/perkins`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/generators/volvo-penta`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+
+    /*
+     * PAGES THAT HAD NO CRAWL PATH AT ALL — added 2026-09-02 after building
+     * the internal link graph of all 1,425 sitemap URLs and comparing it to
+     * what the site actually serves.
+     *
+     * The 17 brand pages were the worst case: /brands is linked from all
+     * 1,425 pages (it is in the main nav) and linked to NONE of its own brand
+     * pages, and none of them were listed here either. Seventeen pages of
+     * ~900-950 words with zero inbound links and zero sitemap entries.
+     * components/seo/BrandDirectory.tsx now links them as well; a sitemap
+     * entry alone is discovery without authority.
+     *
+     * The whole /generator-problems section was in the same state: the index
+     * itself had no inbound link either.
+     *
+     * Generated from the registries, never hand-typed — a hand-typed list is
+     * a copy, and a copy drifts the moment a brand or a problem is added.
+     */
+    ...GENERATOR_BRANDS.map((brand) => ({
+      url: `${BASE_URL}/brands/${brand.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+    { url: `${BASE_URL}/generator-problems`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+    ...PROBLEM_SLUGS.map((slug) => ({
+      url: `${BASE_URL}/generator-problems/${slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+
+    // Substantial pages (884-1,591 words) that were linked but never listed.
+    { url: `${BASE_URL}/east-africa/uganda`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/east-africa/tanzania`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/east-africa/rwanda`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/fabrication`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/guides/emergency-response`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.75 },
+    { url: `${BASE_URL}/services/air-conditioning`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+
+    // The three tool sub-pages that carry their own crawlable article. The
+    // other four mount ssr:false components, carry no unique text and are
+    // deliberately noindex — they are NOT listed here.
+    { url: `${BASE_URL}/solar-genius-pro/fault-codes`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/solar-genius-pro/design-studio`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/solar-genius-pro/solar-dashboard`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+
+    // Used-equipment specification pages, one per engine brand.
+    ...['cummins', 'caterpillar', 'perkins', 'sdmo', 'volvo-penta', 'wei-chai'].map((brand) => ({
+      url: `${BASE_URL}/specs/used/${brand}`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
     // /generators/case-studies is 308-redirected to /case-studies in
     // next.config.ts and must NOT be listed — a sitemap advertises canonical
     // destinations, not redirect sources. /case-studies is listed below.

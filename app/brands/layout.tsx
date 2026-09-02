@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import BrandDirectory from '@/components/seo/BrandDirectory';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
@@ -19,5 +20,12 @@ export const metadata: Metadata = {
 };
 
 export default function BrandsLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {/* The seventeen brand pages had zero inbound links and no sitemap entry.
+          See components/seo/BrandDirectory.tsx. */}
+      <BrandDirectory />
+    </>
+  );
 }

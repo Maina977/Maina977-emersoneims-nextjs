@@ -8,6 +8,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { COUNTIES, SERVICES, TOTAL_LOCATIONS, TOTAL_SERVICE_PAGES, getServicePath } from '@/lib/seo/kenyaLocations';
+import { MAJOR_TOWN_SLUGS, townLabel } from '@/lib/seo/majorTowns';
 
 export const metadata: Metadata = {
   title: 'Service Locations | Generator & Solar Services Across Kenya',
@@ -165,6 +166,30 @@ export default function LocationsPage() {
             >
               WhatsApp Us
             </a>
+          </div>
+        </div>
+      </section>
+
+      {/*
+        MAJOR TOWNS. The sitemap has published these fifteen town pages for a
+        while, but nothing on the site linked to five of them (diani, eldoret,
+        kitale, malindi, naivasha) — verified 2026-09-02 against the internal
+        link graph. This index listed the 47 counties and stopped there.
+        Same source as the sitemap, so the two cannot drift.
+      */}
+      <section className="py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl font-bold text-white mb-8">Major Towns We Serve</h2>
+          <div className="flex flex-wrap gap-2">
+            {MAJOR_TOWN_SLUGS.map(town => (
+              <Link
+                key={town}
+                href={`/locations/${town}`}
+                className="px-3 py-1 bg-slate-800 border border-slate-700 rounded text-sm text-slate-300 hover:border-cyan-500 hover:text-white transition-all"
+              >
+                {townLabel(town)}
+              </Link>
+            ))}
           </div>
         </div>
       </section>
