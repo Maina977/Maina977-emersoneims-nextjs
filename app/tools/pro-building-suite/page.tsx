@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Pro Building Suite | HVAC & Electrical Load Calculator',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/tools/pro-building-suite' },
+  title: 'Pro Building Suite',
   description: 'Building load calculation tool for HVAC, electrical systems, backup power design. Accurate sizing for Kenya commercial buildings.',
 };
 
 export default function ProBuildingSuitePage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">Pro Building Suite</h1>
@@ -185,6 +189,6 @@ export default function ProBuildingSuitePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Phase 7: Video-Centric Leadership | EmersonEIMS Real Stories',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/phase-7' },
+  title: 'Phase 7: Video-Centric Leadership',
   description: 'Phase 7: Real video content, verified customer testimonials, live case studies, and performance metrics showcasing market leadership across all services.',
 };
 
 export default function Phase7Page() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl font-bold mb-6">Phase 7: Video-Centric Market Leadership</h1>
@@ -310,6 +314,6 @@ export default function Phase7Page() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -16,7 +16,7 @@ const VERIFIED_STATS = {
   countiesServed: 47,          // All Kenya counties
   generatorBrands: 12,         // Brands we service
   certifiedTechnicians: 15,    // Team members
-  errorCodesDatabase: 13500,   // Diagnostic database size
+  errorCodesDatabase: 57612,   // Verified fault codes served by the diagnostic API
   sparePartsInStock: 1560,     // Parts in catalog
   customerSatisfaction: 96,    // Based on feedback surveys
 };
@@ -152,7 +152,7 @@ export default function WebsiteStatsCounter() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-cyan-400">👷</span>
-                  <span className="text-sm text-white/80">Certified Technicians</span>
+                  <span className="text-sm text-white/80">Field Technicians</span>
                 </div>
                 <span className="text-lg font-bold text-cyan-400">{VERIFIED_STATS.certifiedTechnicians}+</span>
               </div>

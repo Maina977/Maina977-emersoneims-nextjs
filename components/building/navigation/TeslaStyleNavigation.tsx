@@ -82,7 +82,7 @@ const MEGA_MENUS = {
         items: [
           { href: '/eims-pro', label: 'EIMS PRO', icon: '🏛️', desc: 'Live workspace — http://127.0.0.1:5000 in iframe', badge: 'LIVE' },
           { href: '/solutions/building', label: 'Pro Building Suite™ (full AI)', icon: '📐', desc: 'In-browser AI reports & BOQ', badge: 'AI' },
-          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400,000+ fault codes, AI diagnostics', badge: 'AI' },
+          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '6,700+ verified fault codes, AI diagnostics', badge: 'AI' },
           { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI Engines, <3 min quotes - #1 WORLDWIDE', badge: '#1' },
           { href: '/aquascan-pro-v3', label: 'AquaScan Pro™', icon: '💧', desc: '26 AI Engines, NASA/Google Earth - #1 WORLDWIDE', badge: '#1' },
         ],

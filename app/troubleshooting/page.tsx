@@ -1252,7 +1252,7 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diagnosis: 'Use Our Diagnostic Suite for Detailed Analysis',
           severity: 'medium',
           causes: ['Error code indicates specific fault'],
-          solutions: ['Go to our Diagnostic Suite', 'Enter your error code for detailed causes and solutions', 'Our database has 9,000+ codes for all major brands'],
+          solutions: ['Go to our Diagnostic Suite', 'Enter your error code for detailed causes and solutions', 'Our database covers all major controller brands'],
           diyPossible: true,
           estimatedCost: 'Depends on fault',
           timeToFix: 'Depends on fault',
@@ -1359,7 +1359,7 @@ export default function TroubleshootingWizardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
       {/* Hero */}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-900/20 via-transparent to-transparent" />
@@ -1561,7 +1561,7 @@ export default function TroubleshootingWizardPage() {
                   </h3>
                   <div className="flex flex-wrap gap-4">
                     <a
-                      href="https://wa.me/254768860665"
+                      href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-6 py-3 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition-colors"
@@ -1587,6 +1587,6 @@ export default function TroubleshootingWizardPage() {
           </AnimatePresence>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

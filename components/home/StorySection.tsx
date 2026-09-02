@@ -25,14 +25,16 @@ export default function StorySection() {
                 No long forms. No clutter. Two ways to move.
               </p>
               <div className="mt-6 flex flex-col gap-3">
+                {/* #assessment / #technical do not exist on /contact — it
+                    defines only #contact-form. See components/HeroVideo.tsx. */}
                 <Link
-                  href="/contact#assessment"
+                  href="/contact?topic=site-assessment#contact-form"
                   className="inline-flex items-center justify-center rounded-xl bg-white text-black px-5 py-3 text-sm font-semibold tracking-wide hover:bg-white/90 transition"
                 >
                   Request Site Assessment
                 </Link>
                 <Link
-                  href="/contact#technical"
+                  href="/contact?topic=technical#contact-form"
                   className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-transparent text-white px-5 py-3 text-sm font-semibold tracking-wide hover:bg-white/10 transition"
                 >
                   Speak to Technical Team

@@ -78,7 +78,8 @@ export default function NavigationBar({
       dropdown: [
         { label: 'EIMS PRO (live workspace)', href: '/eims-pro', description: 'Embedded Flask UI — default http://127.0.0.1:5000', icon: '🏛️', badge: 'LIVE' },
         { label: 'Pro Building Suite™ (full AI)', href: '/solutions/building', description: 'In-browser AI architecture, structural & BOQ reports', icon: '📐', badge: 'AI' },
-        { label: 'Generator Oracle™', href: '/generator-oracle', description: '400,000+ fault codes, AI diagnostics', icon: '🔮', badge: 'AI-POWERED' },
+        { label: 'Generator Oracle™', href: '/generator-oracle', description: 'manufacturer-curated fault codes, AI diagnostics', icon: '🔮', badge: 'AI-POWERED' },
+        { label: 'Plant & Equipment Oracle', href: '/plant-equipment-oracle', description: 'Excavator, loader and machine fault codes', icon: '🚜', badge: 'NEW' },
         { label: 'Solar Genius Pro™', href: '/solar-genius-pro', description: '56 AI Engines, <3 min quotes', icon: '☀️', badge: '#1 WORLDWIDE' },
         { label: 'AquaScan Pro™', href: '/aquascan-pro-v3', description: 'AI water system diagnostics', icon: '💧', badge: 'AI' },
       ]
@@ -108,7 +109,7 @@ export default function NavigationBar({
         { label: 'Rental', href: '/generators/rental', description: 'Short & long term rental', icon: '📅' },
         { label: 'Spare Parts', href: '/generators/spare-parts', description: '2,000+ OEM & aftermarket', icon: '🔧' },
         { label: 'Maintenance & Service', href: '/generators/maintenance', description: 'Service & repair', icon: '🔩' },
-        { label: 'Installation', href: '/generators/installation', description: 'Professional 8-phase installation', icon: '🏗️' },
+        { label: 'Installation', href: '/generators/installation', description: 'Professional eight-stage installation', icon: '🏗️' },
         { label: 'Generator Systems Guide', href: '/generators/systems', description: 'Educational hub for all systems', icon: '📚' },
       ]
     },

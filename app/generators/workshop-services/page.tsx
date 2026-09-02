@@ -38,7 +38,7 @@ const PATH = '/generators/workshop-services';
 const PHONE = '+254768860665';
 
 export const metadata: Metadata = {
-  title: 'Generator Workshop Repairs & Fabrication Kenya | EmersonEIMS',
+  title: 'Generator Workshop Repairs & Fabrication Kenya',
   description:
     'Radiator, starter, alternator, injector, turbo, engine, UPS and pump repairs, plus generator canopies, tanks, plinths and industrial fabrication in Kenya.',
   keywords: [
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: `${BASE}${PATH}` },
   openGraph: {
-    title: 'Generator Workshop Repairs & Fabrication — Kenya | EmersonEIMS',
+    title: 'Generator Workshop Repairs & Fabrication — Kenya',
     description:
       'Component-level repair, rebuild and fabrication for generators, engines, electrical machines, UPS, pumps and industrial machinery. Nationwide receipt and dispatch.',
     url: `${BASE}${PATH}`,
@@ -77,7 +77,7 @@ export default function WorkshopServicesPage() {
   const byDivision = (d: string) => WORKSHOP_SERVICES.filter((s) => s.division === d);
 
   return (
-    <main className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-slate-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -584,6 +584,6 @@ export default function WorkshopServicesPage() {
         backgroundColor="from-orange-900/50 to-amber-900/50"
         icon="🏭"
       />
-    </main>
+    </div>
   );
 }

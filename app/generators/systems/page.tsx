@@ -262,7 +262,7 @@ export default function GeneratorSystemsPage() {
   const selectedSystem = GENERATOR_SYSTEMS.find(s => s.id === activeSystem);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-slate-900 to-black">
+    <div className="min-h-screen bg-gradient-to-b from-black via-slate-900 to-black">
       {/* Hero */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-6 text-center">
@@ -397,6 +397,6 @@ export default function GeneratorSystemsPage() {
           ← Back to Generators Bible
         </Link>
       </div>
-    </main>
+    </div>
   );
 }

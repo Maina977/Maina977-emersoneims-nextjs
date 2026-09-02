@@ -7,10 +7,9 @@ import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Dynamically import language switcher (client-only)
-const LanguageSwitcher = dynamic(
-  () => import('@/components/shared/LanguageSwitcher'),
-  { ssr: false }
-);
+// LanguageSwitcher import removed 2026-07-31 — the component is no longer
+// rendered anywhere in this navigation. The file itself is retained for a
+// future, real localisation effort.
 
 interface TeslaStyleNavigationProps {
   activeSection?: string;
@@ -40,6 +39,81 @@ function prefetchForHref(href: string) {
 // AI POWERHOUSE; case studies / coverage under RESOURCES.
 // ─────────────────────────────────────────────────────────────────────────────
 const MEGA_MENUS = {
+  // HOME carries the company pages beneath it (owner decision 2026-07-31).
+  // Following the pattern every other menu here uses, the FIRST item is the
+  // page the top-level label refers to — so Home is still one click away — and
+  // ABOUT and WHY US move off the top-level bar into this menu, which also
+  // returns two slots to a bar that had none to spare.
+  home: {
+    title: 'EmersonEIMS',
+    description: 'Who we are, why clients stay, and where we work',
+    sections: [
+      {
+        title: 'The Company',
+        items: [
+          { href: '/', label: 'Home', icon: '🏠', desc: 'Front page' },
+          { href: '/about-us', label: 'About Us', icon: '🏢', desc: 'Who we are and what we do' },
+          { href: '/why-emersoneims', label: 'Why EmersonEIMS', icon: '⭐', desc: 'What sets our engineering apart' },
+          { href: '/careers', label: 'Careers', icon: '💼', desc: 'Work with our engineers' },
+        ],
+      },
+      {
+        title: 'Proof of Work',
+        items: [
+          { href: '/case-studies', label: 'Case Studies', icon: '📈', desc: 'Projects we have delivered' },
+          { href: '/gallery', label: 'Gallery', icon: '📷', desc: 'Site and workshop photography' },
+          { href: '/certification', label: 'Training & Certification', icon: '🎓', desc: 'Technical training programmes' },
+          { href: '/faq', label: 'FAQ', icon: '❓', desc: 'Common questions answered' },
+        ],
+      },
+    ],
+    cta: { href: '/contact', label: 'Talk to an Engineer', phone: '+254 768 860 665' },
+  },
+  // Every hub in lib/repair-centre/index.ts appears here. If a hub is added
+  // there and not here, it is reachable only from /repair-centre itself.
+  repairCentre: {
+    title: 'Repair Centre',
+    description: 'Free fault-diagnosis and repair guides written by our engineers',
+    sections: [
+      {
+        title: 'Power Generation',
+        items: [
+          { href: '/repair-centre', label: 'All Guides', icon: '🛠️', desc: '15 categories · 39 guides' },
+          { href: '/repair-centre/generators', label: 'Generator Repair', icon: '⚡', desc: 'Starting, shutdown & output faults' },
+          { href: '/repair-centre/engine-systems', label: 'Engine Mechanical', icon: '⚙️', desc: 'Noise, bearings, oil pressure' },
+          { href: '/repair-centre/fuel-systems', label: 'Fuel & Combustion', icon: '⛽', desc: 'Smoke, contamination, wet stacking' },
+          { href: '/repair-centre/controllers', label: 'Controller Diagnostics', icon: '🎛️', desc: 'DSE, ComAp, SmartGen & more' },
+          { href: '/repair-centre/fault-codes', label: 'Fault Codes', icon: '🔢', desc: 'J1939 SPN & FMI explained' },
+        ],
+      },
+      {
+        title: 'Backup & Renewable',
+        items: [
+          { href: '/repair-centre/inverters', label: 'Inverter Repair', icon: '🔌', desc: 'Output, charging & power stage' },
+          { href: '/repair-centre/ups', label: 'UPS Repair', icon: '🔋', desc: 'Bypass, battery & autonomy' },
+          { href: '/repair-centre/solar', label: 'Solar PV Diagnosis', icon: '☀️', desc: 'Yield loss, strings & DC bus' },
+          { href: '/repair-centre/ats-changeover', label: 'ATS & Changeover', icon: '🔁', desc: 'Transfer and return faults' },
+        ],
+      },
+      {
+        title: 'Electrical & Electronics',
+        items: [
+          { href: '/repair-centre/motors', label: 'Motor Diagnosis', icon: '🌀', desc: 'Windings, single-phasing, overload' },
+          { href: '/repair-centre/pumps', label: 'Pump Diagnosis', icon: '💧', desc: 'Borehole delivery & control' },
+          { href: '/repair-centre/industrial-electronics', label: 'Drives & Electronics', icon: '📟', desc: 'VFD trips and DC bus' },
+          { href: '/repair-centre/pcb-motherboards', label: 'PCB & Board Repair', icon: '🔬', desc: 'Shorted rails, component testing' },
+        ],
+      },
+      {
+        title: 'Method & Safety',
+        items: [
+          { href: '/repair-centre/safety', label: 'Safe Isolation', icon: '🛡️', desc: 'Proving dead, lockout, stored energy' },
+          { href: '/repair-centre/testing-tools', label: 'Test Instruments', icon: '📏', desc: 'Measurement errors that mislead' },
+        ],
+      },
+    ],
+    cta: { href: '/contact', label: 'Talk to an Engineer', phone: '+254 768 860 665' },
+  },
   generators: {
     title: 'Generator Solutions',
     description: 'Sales, service & support — from spec to lifecycle',
@@ -57,11 +131,11 @@ const MEGA_MENUS = {
       {
         title: 'Service & Parts',
         items: [
-          { href: '/generators/installation', label: 'Installation', icon: '🔧', desc: '8-phase setup' },
+          { href: '/generators/installation', label: 'Installation', icon: '🔧', desc: 'Eight-stage setup' },
           { href: '/generators/maintenance', label: 'Maintenance', icon: '🛠️', desc: 'Preventive & repair' },
           { href: '/generators/workshop-services', label: 'Workshop Repairs & Fabrication', icon: '🏭', desc: 'Rebuilds & custom steel' },
           { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'OEM & aftermarket' },
-          { href: '/generator-parts', label: 'Parts Catalog', icon: '📦', desc: '1,560+ SKUs' },
+          { href: '/generators/spare-parts', label: 'Parts Catalog', icon: '📦', desc: '1,560+ SKUs' },
           { href: '/generators/systems', label: 'Systems Guide', icon: '📚', desc: 'Educational hub' },
         ],
       },
@@ -69,10 +143,11 @@ const MEGA_MENUS = {
         title: 'Diagnostics & AI',
         items: [
           { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400k+ fault codes', badge: 'AI' },
+          { href: '/plant-equipment-oracle', label: 'Plant & Equipment Oracle', icon: '🚜', desc: 'Excavator & loader codes', badge: 'NEW' },
           { href: '/maintenance-hub/generators', label: 'Maintenance Hub', icon: '🏭', desc: 'Engine room HQ' },
           { href: '/generators/maintenance-companion', label: 'Repair Companion', icon: '🤖', desc: 'AI step-by-step' },
           { href: '/generator-problems', label: 'Common Problems', icon: '⚠️', desc: 'Diagnose & resolve' },
-          { href: '/faults', label: 'Fault Code Library', icon: '📖', desc: '400,000+ codes' },
+          { href: '/faults', label: 'Fault Code Library', icon: '📖', desc: 'Curated codes' },
         ],
       },
     ],
@@ -86,7 +161,7 @@ const MEGA_MENUS = {
         title: 'Systems & Design',
         items: [
           { href: '/solar', label: 'Solar Overview', icon: '☀️', desc: 'Complete solutions' },
-          { href: '/solutions/solar', label: 'Commercial Solar', icon: '🏢', desc: 'Business & industrial' },
+          { href: '/solar', label: 'Commercial Solar', icon: '🏢', desc: 'Business & industrial' },
           { href: '/solar-genius-pro/design-studio', label: 'AI Design Studio', icon: '🎨', desc: 'Leaflet map · real irradiance', badge: 'NEW' },
           { href: '/solutions/solar-sizing', label: 'System Sizing', icon: '📐', desc: 'Right-size every kWh' },
         ],
@@ -97,17 +172,17 @@ const MEGA_MENUS = {
           { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '🧠', desc: '56 AI engines · <3 min quotes', badge: '#1' },
           { href: '/solar-genius-pro/solar-dashboard', label: 'Site & System Dashboard', icon: '📡', desc: 'NASA + OSM live data', badge: 'NEW' },
           { href: '/solar-genius-pro/calculator-advanced', label: 'Solar System Calculator', icon: '⚡', desc: 'Size, cost & payback', badge: 'NEW' },
-          { href: '/solar-genius-pro/fault-codes', label: 'Fault Codes AI', icon: '🔍', desc: '1,200+ inverter codes', badge: 'NEW' },
+          { href: '/solar-genius-pro/fault-codes', label: 'Fault Codes AI', icon: '🔍', desc: 'Inverter fault codes', badge: 'NEW' },
           { href: '/calculators', label: 'Power Calculators', icon: '🧮', desc: 'ROI, load, payback' },
         ],
       },
       {
         title: 'Service & Coverage',
         items: [
-          { href: '/resources/solar-ups-hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace + simulators' },
+          { href: '/hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace + simulators' },
           { href: '/hub/ups-lab', label: 'UPS Lab', icon: '🔋', desc: 'Battery + load tests' },
           { href: '/maintenance-hub/solar', label: 'Solar Maintenance Hub', icon: '🛠️', desc: 'Diagnostics & repair' },
-          { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Nationwide service' },
+          { href: '/kenya', label: '47 Counties', icon: '📍', desc: 'Nationwide service' },
           { href: '/booking', label: 'Book a Site Visit', icon: '📅', desc: 'Schedule today' },
         ],
       },
@@ -129,7 +204,8 @@ const MEGA_MENUS = {
       {
         title: 'Flagship AI Tools',
         items: [
-          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400,000+ fault codes', badge: 'AI' },
+          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: 'manufacturer-curated fault codes', badge: 'AI' },
+          { href: '/plant-equipment-oracle', label: 'Plant & Equipment Oracle', icon: '🚜', desc: 'Excavator & loader codes', badge: 'NEW' },
           { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI engines · <3 min quotes', badge: '#1' },
           { href: '/aquascan-pro-v3', label: 'AquaScan Pro™', icon: '💧', desc: '26 AI engines · NASA + Google Earth', badge: '#1' },
         ],
@@ -162,7 +238,7 @@ const MEGA_MENUS = {
         title: 'Generators & Power',
         items: [
           { href: '/services', label: 'All Services', icon: '💡', desc: 'Browse everything' },
-          { href: '/services/cummins-generators', label: 'Cummins Generators', icon: '⚡', desc: 'Sales · 3-Yr warranty', badge: '3-YR' },
+          { href: '/services/cummins-generators', label: 'Cummins Generators', icon: '⚡', desc: 'Sales · 2-Yr warranty', badge: '2-YR' },
           { href: '/services/generator-repairs', label: 'Generator Repairs', icon: '🔧', desc: 'Service & overhaul' },
           { href: '/services/ats-changeover', label: 'ATS / Changeover', icon: '🔁', desc: 'Auto transfer switches' },
         ],
@@ -193,12 +269,25 @@ const MEGA_MENUS = {
     description: 'Knowledge, stories, and nationwide coverage',
     sections: [
       {
+        // Repair Centre — technical fault-diagnosis guides. Added as a
+        // first-class Resources section so the articles are reachable through
+        // normal navigation rather than only via search or the sitemap.
+        title: 'Repair Centre',
+        items: [
+          { href: '/repair-centre', label: 'Repair Centre', icon: '🛠️', desc: 'Fault diagnosis & repair guides' },
+          { href: '/repair-centre/generators', label: 'Generator Repair', icon: '⚡', desc: 'Starting, shutdown & output faults' },
+          { href: '/repair-centre/inverters', label: 'Inverter Repair', icon: '🔌', desc: 'Output, charging & thermal faults' },
+          { href: '/repair-centre/ups', label: 'UPS Repair', icon: '🔋', desc: 'Bypass, battery & autonomy faults' },
+          { href: '/repair-centre/controllers', label: 'Controller Diagnostics', icon: '🎛️', desc: 'DSE, ComAp, SmartGen & more' },
+        ],
+      },
+      {
         // SURFACED: the Solar / UPS Hub workspace was previously orphaned from
         // the navbar (only the Quick Access band on /resources linked it).
         // Hub pages now live as a first-class section in the Resources mega.
         title: 'Solar / UPS Hub',
         items: [
-          { href: '/resources/solar-ups-hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace overview' },
+          { href: '/hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace overview' },
           { href: '/hub/simulator', label: 'UPS Simulator', icon: '🧪', desc: 'Sizing & runtime' },
           { href: '/hub/ups-lab', label: 'UPS Lab', icon: '🔋', desc: 'Battery + load tests' },
           { href: '/hub/verifier', label: 'Spec Verifier', icon: '✅', desc: 'Verify nameplate vs spec' },
@@ -229,7 +318,7 @@ const MEGA_MENUS = {
         title: 'Showcase',
         items: [
           { href: '/case-studies', label: 'Case Studies', icon: '📊', desc: 'Real outcomes' },
-          { href: '/case-study/hospital-blackout', label: 'Hospital Blackout', icon: '🏥', desc: 'Featured case' },
+          { href: '/case-studies', label: 'Case Studies', icon: '🏥', desc: 'Verified client projects' },
           { href: '/gallery', label: 'Gallery', icon: '🖼️', desc: 'Project photos' },
           { href: '/innovations', label: 'Innovations', icon: '💡', desc: 'R&D & breakthroughs' },
           { href: '/industries', label: 'Industries', icon: '🏭', desc: 'Sectors served' },
@@ -238,7 +327,7 @@ const MEGA_MENUS = {
       {
         title: 'Coverage & Marketplace',
         items: [
-          { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Kenya nationwide' },
+          { href: '/kenya', label: '47 Counties', icon: '📍', desc: 'Kenya nationwide' },
           { href: '/locations', label: 'Service Locations', icon: '🗺️', desc: 'Branch finder' },
           { href: '/marketplace', label: 'Partner Marketplace', icon: '🤝', desc: '50+ vetted partners', badge: 'NEW' },
           { href: '/kenya', label: 'Kenya Hub', icon: '🇰🇪', desc: 'Country-wide' },
@@ -264,19 +353,46 @@ const MEGA_MENUS = {
 // SERVICES, RESOURCES, ABOUT, CONTACT.
 // ═══════════════════════════════════════════════════════════════════════════════
 const NAV_ITEMS = [
-  { href: '/', label: 'HOME', type: 'link' },
-  { href: '/about-us', label: 'ABOUT', type: 'link' },
-  { href: '/why-emersoneims', label: 'WHY US', type: 'link' },
+  // ORDER IS COMMERCIAL PRIORITY, and it is load-bearing.
+  //
+  // Priority+ collapses from the END of this list, so whatever sits last is what
+  // disappears into MORE first. The header container caps at 1440px, so eleven
+  // items never all fit on the bar at any realistic laptop width — the question
+  // was never whether something collapses, only WHAT.
+  //
+  // Measured before this reorder: at 1366px the bar was showing ABOUT and WHY US
+  // while hiding GENERATORS and SOLAR. Those two are core commercial categories
+  // and must never be the ones that go.
+  //
+  // The items that stay visible at every realistic width are the ones that sell.
+  //
+  // HOME is first by owner decision (2026-07-31). It was briefly removed on the
+  // reasoning that the logo already links to / — that is the usual convention, but
+  // the owner wants it explicit and that is the call that stands. It costs roughly
+  // one slot on the bar, which Priority+ absorbs into MORE from the bottom of this
+  // list rather than by dropping anything.
+  { key: 'home', label: 'HOME', type: 'mega' },
+  { key: 'repairCentre', label: 'REPAIR CENTRE', type: 'mega', featured: true },
   { key: 'services', label: 'SERVICES', type: 'mega' },
-  // INDUSTRIES — direct link to the live B2B sector hub at /industries.
-  // (We previously experimented with a parallel /solutions/<sector> system;
-  // that was retired to avoid duplicating /industries.)
-  { href: '/industries', label: 'INDUSTRIES', type: 'link' },
-  { key: 'aiPowerhouse', label: 'AI SOLUTIONS', type: 'mega', featured: true },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
+  { key: 'aiPowerhouse', label: 'AI SOLUTIONS', type: 'mega', featured: true },
+  // INDUSTRIES — direct link to the live B2B sector hub at /industries.
+  // (A parallel /solutions/<sector> system was retired to avoid duplicating it.)
+  { href: '/industries', label: 'INDUSTRIES', type: 'link' },
   { key: 'resources', label: 'RESOURCES', type: 'mega' },
-  { href: '/phase-4', label: 'PHASE 4', type: 'link', badge: 'NEW' },
+  // Below here are the items that may fall into MORE. CONTACT is deliberately
+  // last: the pinned GET QUOTE button next to it goes to the same conversion
+  // path and is never allowed to overflow, so nothing is lost by CONTACT
+  // collapsing.
+  // ABOUT and WHY US now live inside the HOME menu above.
+  // PHASE 4 removed from the bar 2026-07-31. It had TWO visitors in the whole
+  // analytics history against 43 for /about-us and 20 for /industries, and its
+  // content is an internal roadmap — "Five Pillars", "Strategic Goals",
+  // "Establish EmersonEIMS as the market leader". "PHASE 4" means nothing to a
+  // technician looking for a generator repair, and it was holding a top-level
+  // slot with a NEW badge on a bar where commercial categories were being
+  // pushed into MORE. The page still exists at /phase-4.
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
 
@@ -288,6 +404,99 @@ export default function TeslaStyleNavigation({
   const [activeMega, setActiveMega] = useState<string | null>(null);
   const [mobileSubmenu, setMobileSubmenu] = useState<string | null>(null);
   const megaTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // ── Priority+ overflow ────────────────────────────────────────────────────
+  // Adding REPAIR CENTRE to the bar pushed RESOURCES, PHASE 4 and CONTACT off
+  // screen at 1366px — the most common laptop width — and CONTACT is the worst
+  // item to lose. A horizontal scrollbar was considered and rejected: users do
+  // not discover horizontally-scrolled nav items, so it hides rather than solves,
+  // and it reads as an unfinished layout.
+  //
+  // Instead the bar measures itself and moves whatever does not fit into a MORE
+  // menu. Nothing is ever lost at any width, and adding a future nav item cannot
+  // silently drop an existing one.
+  const navRowRef = useRef<HTMLDivElement | null>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const tailRef = useRef<HTMLDivElement | null>(null);
+  const itemWidths = useRef<number[]>([]);
+  const [visibleCount, setVisibleCount] = useState(NAV_ITEMS.length);
+  const [overflowOpen, setOverflowOpen] = useState(false);
+
+  useEffect(() => {
+    const row = navRowRef.current;
+    if (!row) return;
+
+    // Cache widths: once an item collapses into MORE its offsetWidth reads 0, so
+    // a naive re-measure on resize would compute nonsense. Measure each item once
+    // while it is laid out, keep the width, and recompute from the cache after.
+    const widths = itemWidths.current;
+
+    const measure = () => {
+      for (let i = 0; i < NAV_ITEMS.length; i++) {
+        const w = itemRefs.current[i]?.offsetWidth ?? 0;
+        if (w > 0) widths[i] = w;
+      }
+      const rowWidth = row.clientWidth;
+      const tailWidth = tailRef.current?.offsetWidth ?? 0;
+      const MORE_WIDTH = 92; // width reserved for the MORE control
+
+      // THE GAP IS PART OF THE WIDTH. The row is `flex gap-1 xl:gap-2`, so with
+      // n items on the bar the browser also lays out (n-1) gaps. Summing only
+      // offsetWidth understated the real content width by roughly 80px at
+      // eleven items, so one item too many was kept on the bar.
+      //
+      // That mattered more than it sounds. The row is `justify-end`, and when a
+      // flex row overflows with justify-content:flex-end the excess spills out
+      // of the START edge — leftwards, straight over the logo. Measured on the
+      // live site: at 1440px the HOME button rendered at x=44 while its own
+      // parent began at x=122, sitting on top of a logo occupying x=32..98.
+      //
+      // It also could not be caught by the existing measurement, because
+      // leftward overflow does not register in scrollWidth: the row reported
+      // scrollWidth === clientWidth while visibly overlapping the logo. Hence
+      // this is fixed by counting the gap rather than by watching for overflow.
+      const rowStyle = getComputedStyle(row);
+      const gap = parseFloat(rowStyle.columnGap || rowStyle.gap || '0') || 0;
+
+      let used = 0;
+      let fit = 0;
+      for (let i = 0; i < NAV_ITEMS.length; i++) {
+        const w = widths[i] ?? 0;
+        // A width we have not captured yet must NOT be treated as fitting for
+        // free — doing so inflated the count until the bar overflowed and pushed
+        // MORE itself out of reach. Bail and let the next frame measure instead.
+        if (!w) return;
+        // Reserve room for MORE, and for the gap before it, only while items
+        // still remain after this one.
+        const reserve = i < NAV_ITEMS.length - 1 ? MORE_WIDTH + gap : 0;
+        // Every item after the first is preceded by a gap.
+        const candidate = used + (fit > 0 ? gap : 0) + w;
+        if (candidate + tailWidth + reserve > rowWidth) break;
+        used = candidate;
+        fit++;
+      }
+      setVisibleCount(prev => (prev === fit ? prev : fit));
+    };
+
+    // Widths are only readable once the row has laid out, and on a slow first
+    // paint some are still zero. Keep measuring across a few frames until every
+    // item has reported a width, then let ResizeObserver take over.
+    let frames = 0;
+    const settle = () => {
+      measure();
+      const allKnown = NAV_ITEMS.every((_, i) => (widths[i] ?? 0) > 0);
+      if (!allKnown && frames++ < 30) requestAnimationFrame(settle);
+    };
+    settle();
+
+    const ro = new ResizeObserver(measure);
+    ro.observe(row);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
   const mobileMenuId = 'tesla-primary-mobile-menu';
 
   useEffect(() => {
@@ -377,17 +586,25 @@ export default function TeslaStyleNavigation({
             </Link>
 
             {/* Desktop Navigation — clean, evenly spaced */}
-            <div className="hidden lg:flex items-center flex-1 justify-end gap-1 xl:gap-2">
+            {/* min-w-0 is load-bearing. A flex child defaults to min-width:auto, so it
+                refuses to shrink below its content and instead overflows its PARENT.
+                Measured on the live site at a 1366px viewport this row reported
+                clientWidth 1701 — wider than the screen — so the overflow logic
+                correctly concluded everything fitted and MORE never appeared.
+                With min-w-0 the row shrinks to the width actually available and the
+                measurement becomes true. */}
+            <div ref={navRowRef} className="hidden lg:flex items-center flex-1 min-w-0 justify-end gap-1 xl:gap-2">
               {NAV_ITEMS.map((item) =>
                 item.type === 'mega' && item.key ? (
                   <div
                     key={item.key}
-                    className="relative"
+                    ref={el => { itemRefs.current[NAV_ITEMS.indexOf(item)] = el; }}
+                    className={`relative ${NAV_ITEMS.indexOf(item) < visibleCount ? '' : 'hidden'}`}
                     onMouseEnter={() => handleMegaEnter(item.key!)}
                     onMouseLeave={handleMegaLeave}
                   >
                     <button
-                      className={`relative px-3 xl:px-4 py-2 text-[11px] xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap rounded-md ${
+                      className={`relative px-3 xl:px-4 py-2 text-xs xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap rounded-md ${
                         activeMega === item.key
                           ? 'text-white'
                           : (item as { featured?: boolean }).featured
@@ -415,26 +632,110 @@ export default function TeslaStyleNavigation({
                     </button>
                   </div>
                 ) : (
-                  <Link
+                  <div
                     key={item.href}
+                    ref={el => { itemRefs.current[NAV_ITEMS.indexOf(item)] = el; }}
+                    className={NAV_ITEMS.indexOf(item) < visibleCount ? '' : 'hidden'}
+                  >
+                  <Link
                     href={item.href!}
                     prefetch={prefetchForHref(item.href!)}
-                    className="px-3 xl:px-4 py-2 text-[11px] xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 whitespace-nowrap rounded-md text-white/75 hover:text-white"
+                    className="px-3 xl:px-4 py-2 text-xs xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 whitespace-nowrap rounded-md text-white/75 hover:text-white"
                   >
                     {item.label}
                   </Link>
+                  </div>
                 )
               )}
 
-              {/* Divider + Language Switcher + CTA */}
-              <div className="ml-2 pl-3 flex items-center gap-3 border-l border-white/10">
-                <LanguageSwitcher />
-                <a
-                  href="tel:+254768860665"
-                  className="px-4 py-2 text-[11px] xl:text-[12px] font-bold tracking-[0.08em] uppercase rounded-md bg-amber-500 text-black hover:bg-amber-400 transition-colors duration-200 whitespace-nowrap"
+              {/* Priority+ overflow. Only appears when the bar genuinely runs out
+                  of room, so nothing is ever dropped at any viewport width. */}
+              {visibleCount < NAV_ITEMS.length && (
+                <div
+                  className="relative"
+                  onMouseEnter={() => setOverflowOpen(true)}
+                  onMouseLeave={() => setOverflowOpen(false)}
+                >
+                  <button
+                    type="button"
+                    aria-haspopup="true"
+                    aria-expanded={overflowOpen}
+                    onClick={() => setOverflowOpen(v => !v)}
+                    className={`relative px-3 xl:px-4 py-2 text-xs xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap rounded-md ${overflowOpen ? 'text-white' : 'text-white/75 hover:text-white'}`}
+                  >
+                    More
+                    <svg className={`w-3 h-3 transition-transform duration-200 ${overflowOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    <span className={`absolute left-3 right-3 -bottom-px h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent transition-opacity duration-200 ${overflowOpen ? 'opacity-100' : 'opacity-0'}`} />
+                  </button>
+
+                  <AnimatePresence>
+                    {overflowOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.16 }}
+                        className="absolute right-0 top-full mt-1 min-w-[220px] rounded-xl bg-gray-950 border border-amber-500/20 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.9)] py-2 z-50"
+                      >
+                        {NAV_ITEMS.slice(visibleCount).map(over =>
+                          over.type === 'mega' && over.key ? (
+                            <button
+                              key={over.key}
+                              onClick={() => { setOverflowOpen(false); handleMegaEnter(over.key!); }}
+                              className="w-full text-left px-4 py-2.5 text-[12px] font-semibold tracking-[0.08em] uppercase text-white/75 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                              {over.label}
+                            </button>
+                          ) : (
+                            <Link
+                              key={over.href}
+                              href={over.href!}
+                              prefetch={prefetchForHref(over.href!)}
+                              onClick={() => setOverflowOpen(false)}
+                              className="block px-4 py-2.5 text-[12px] font-semibold tracking-[0.08em] uppercase text-white/75 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                              {over.label}
+                            </Link>
+                          )
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {/* Pinned CTA — measured as a reserved tail and never allowed to
+                  overflow into MORE.
+
+                  LANGUAGE SWITCHER REMOVED 2026-07-31. It offered eleven languages
+                  and delivered none of them. Only nine strings were ever translated
+                  — all of them nav labels — and the component that consumed them,
+                  SciFiHeader, is not imported by any route. The navigation that is
+                  actually rendered site-wide, this file, calls useTranslation zero
+                  times. Selecting Kiswahili, French, Arabic, Amharic or Somali
+                  changed nothing whatsoever on screen.
+
+                  Advertising a capability the site does not have is worse than not
+                  offering it, particularly to the engineers and institutions this
+                  site is written for. components/shared/LanguageSwitcher.tsx is left
+                  in place so a real localisation effort can use it — but it must not
+                  be shown again until the site is genuinely translated.
+
+                  GET QUOTE was href="tel:..." on a DESKTOP-ONLY bar, where a tel:
+                  link does nothing useful. A button promising a quote that silently
+                  does nothing is the same class of problem. It now goes to /contact,
+                  which carries the working enquiry form, WhatsApp and the phone
+                  number — a real quote path. */}
+              <div ref={tailRef} className="ml-2 pl-3 flex items-center gap-3 border-l border-white/10">
+                <Link
+                  href="/contact"
+                  prefetch={prefetchForHref('/contact')}
+                  className="px-4 py-2 text-xs xl:text-[12px] font-bold tracking-[0.08em] uppercase rounded-md bg-amber-500 text-black hover:bg-amber-400 transition-colors duration-200 whitespace-nowrap"
                 >
                   Get Quote
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -670,10 +971,9 @@ export default function TeslaStyleNavigation({
                   </a>
                 </div>
 
-                {/* Mobile Language */}
-                <div className="mt-6 pt-6 border-t border-white/10">
-                  <LanguageSwitcher />
-                </div>
+                {/* Mobile language switcher removed for the same reason as the desktop
+                    one — see the note in the desktop tail. It promised eleven
+                    languages and delivered none. */}
               </div>
             </motion.div>
           </>

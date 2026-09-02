@@ -234,7 +234,7 @@ export const FaultCodesAI: React.FC = () => {
     <div className="fault-codes-container">
       <div className="fault-header">
         <h2>🔧 Fault Codes AI</h2>
-        <p>Search 1,200+ error codes from all brands</p>
+        <p>Search solar error codes from all brands</p>
       </div>
 
       <div className="search-section">

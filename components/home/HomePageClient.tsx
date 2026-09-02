@@ -153,8 +153,18 @@ export default function HomePageClient() {
       {/* CUMMINS/VOLTKA - Our Main Generator Brand */}
       <CumminsBanner variant="hero" showPricing={true} showCTA={true} />
 
-      {/* GENERATOR ORACLE - Lead Generation Tool (Moved Up for Prominence) */}
-      <GeneratorOracleShowcase />
+      {/* GENERATOR ORACLE — Lead Generation Tool.
+          Now lazy. It was mounted eagerly, above the below-the-fold block, and
+          it calls useBackendHealth() on mount — a browser fetch of
+          /api/generator-oracle/health. Measured on the live homepage under
+          Lighthouse mobile throttling that request took 8,006ms, twice, while
+          the hero was still trying to paint. The section sits well below the
+          fold, so nothing is gained by fetching its live stats before anyone
+          has scrolled near it. minHeight reserves the space so deferring it
+          cannot reintroduce layout shift. */}
+      <LazyOnVisible minHeight="min-h-[600px]">
+        <GeneratorOracleShowcase />
+      </LazyOnVisible>
 
       {/* Solar / UPS Hub — restores the previously-missing homepage teaser */}
       <SolarUpsHubTeaser />

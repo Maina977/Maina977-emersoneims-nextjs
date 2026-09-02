@@ -28,7 +28,7 @@ const serviceGallery = [
     title: 'Generator Control Panel Upgrade',
     description: 'Modern ComAp controller installation with remote monitoring capability for hotel chain backup power systems.',
     category: 'Control Systems',
-    stats: { power: 'Multi-Site', duration: '5 Days', warranty: '3 Years' },
+    stats: { power: 'Multi-Site', duration: '5 Days', warranty: '2 Years' },
   },
   {
     image: '/images/solar hotel heaters.png',
@@ -92,7 +92,7 @@ const serviceGallery = [
     title: 'Electrical Panel Installation',
     description: 'Main distribution board upgrade with smart metering for industrial warehouse in Athi River.',
     category: 'Electrical',
-    stats: { capacity: '800A', duration: '4 Days', warranty: '3 Years' },
+    stats: { capacity: '800A', duration: '4 Days', warranty: '2 Years' },
   },
   {
     image: '/images/903.png',
@@ -127,7 +127,7 @@ const serviceGallery = [
     title: 'ATS Installation',
     description: 'Automatic Transfer Switch installation ensuring seamless power switching for office tower.',
     category: 'Control Systems',
-    stats: { rating: '1000A', transfer: '<10ms', warranty: '3 Years' },
+    stats: { rating: '1000A', transfer: '<10ms', warranty: '2 Years' },
   },
   {
     image: '/images/912.png',

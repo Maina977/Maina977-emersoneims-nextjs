@@ -10,7 +10,7 @@ export default function WarrantyPage() {
     generators: {
       standard: {
         title: 'Standard Warranty',
-        duration: '3 Years',
+        duration: '2 Years',
         coverage: ['Engine defects', 'Alternator defects', 'Controller faults', 'Manufacturing defects', 'Factory parts replacement'],
         conditions: ['Professional installation by EmersonEIMS', 'Regular maintenance per schedule', 'Original batteries', 'Genuine spare parts only'],
         exclusions: ['User damage or misuse', 'Unauthorized repairs', 'Fuel contamination', 'Acts of nature', 'Normal wear and tear'],
@@ -94,7 +94,7 @@ export default function WarrantyPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -337,6 +337,6 @@ export default function WarrantyPage() {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Mining Power Solutions Africa | Gold • Diamonds • Cobalt | 99.5% Uptime SLA | EmersonEIMS',
+  title: 'Mining Power Solutions Africa',
   description: 'Industrial power for African mining operations. Gold, diamonds, cobalt, lithium extraction. Generators, UPS, solar, remote monitoring. 99.5% SLA. KES 50M-500M per site. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/mining',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function MiningPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -289,6 +289,6 @@ export default function MiningPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

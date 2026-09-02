@@ -226,7 +226,7 @@ export default function ExitIntentPopup() {
                       Trusted by 500+ businesses across Kenya
                     </p>
                     <div className="flex items-center justify-center gap-4 mt-2">
-                      <span className="text-xs text-gray-400">3-Year Warranty</span>
+                      <span className="text-xs text-gray-400">Warranty in writing</span>
                       <span className="text-amber-500">|</span>
                       <span className="text-xs text-gray-400">24/7 Support</span>
                       <span className="text-amber-500">|</span>

@@ -731,7 +731,7 @@ export default function KnowledgeBasePage() {
 
   if (selectedArticle) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
         {/* Article View */}
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <button
@@ -803,18 +803,18 @@ export default function KnowledgeBasePage() {
               <Link href="/booking" className="px-6 py-3 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-600 transition-colors">
                 📅 Book Service
               </Link>
-              <a href="https://wa.me/254768860665" className="px-6 py-3 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition-colors">
+              <a href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services." className="px-6 py-3 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition-colors">
                 💬 WhatsApp
               </a>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
       {/* Hero */}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent" />
@@ -962,6 +962,6 @@ export default function KnowledgeBasePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

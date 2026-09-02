@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SectionLead from "../../components/generators/SectionLead";
@@ -25,7 +27,7 @@ const MOTOR_TABS = [
 // 10+ DETAILED EDUCATIONAL PARAGRAPHS
 const MOTOR_FUNDAMENTALS = [
   {
-    title: "Understanding Electric Motors: The Backbone of Modern Industry",
+    title: "Electric Motors | Rewinding & Repair",
     content: `Electric motors are electromagnetic machines that convert electrical energy into mechanical motion, serving as the fundamental drivers of nearly all industrial, commercial, and domestic equipment. In Kenya and East Africa, motors power critical infrastructure including water pumping systems, manufacturing equipment, HVAC systems, mining operations, agricultural processing facilities, and countless other applications. The reliability and efficiency of these motors directly impacts operational productivity, energy costs, and facility safety. Motors are classified into several main types: AC induction motors (most common in industry), DC motors (for precise speed control), synchronous motors (for large industrial loads), and specialty motors (servo motors, stepper motors, linear motors). Each type has specific advantages, applications, and failure modes that require different diagnostic and repair approaches. Understanding motor fundamentals is essential for any technician or facility manager responsible for equipment maintenance and operations.`,
   },
   {
@@ -109,18 +111,12 @@ const MAINTENANCE_SCHEDULES = [
   { period: '2-3 Years / As Needed', items: ['Complete electrical survey: hi-pot test, surge test, core loss test', 'Bearing replacement if temperature or noise indicates wear', 'Motor realignment if vibration has increased', 'VFD-compatible retrofit if motor to be used with variable speed drive', 'Motor rewinding if insulation class needs upgrade or performance restored', 'Consider replacement if motor &gt;15 years old and efficiency significantly below modern standards'] },
 ];
 
-export const metadata = {
-  title: "Electric Motor Services & Rewinding — EmersonEIMS solutions",
-  description: "Comprehensive AC/DC motor repair, rewinding, VFD compatibility, bearing replacement, troubleshooting, and maintenance guides. Serving Kenya and East Africa.",
-  keywords: ["electric motors", "motor rewinding", "VFD motors", "bearing replacement", "motor troubleshooting", "motor maintenance", "motor repair Kenya"],
-};
-
 export default function MotorsPage() {
   const [activeTab, setActiveTab] = useState('fundamentals');
   const [expandedError, setExpandedError] = useState<string | null>(null);
 
   return (
-    <main className="bg-black min-h-screen text-white">
+    <div className="bg-black min-h-screen text-white">
       <B2BCommercialBand profile={B2B_PROFILES.motors} />
       <SectionLead
         title="Electric Motor Services & Rewinding"
@@ -375,6 +371,6 @@ export default function MotorsPage() {
       <section className="mx-auto max-w-7xl px-6 py-16">
         <UnifiedCTA />
       </section>
-    </main>
+    </div>
   );
 }

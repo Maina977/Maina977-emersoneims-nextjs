@@ -412,10 +412,17 @@ function zeroedStats(days: number): AnalyticsStats {
   };
 }
 
-export async function getStats(days: number): Promise<AnalyticsStats> {
+export async function getStats(days: number, pageLimit = 500): Promise<AnalyticsStats> {
   let window = Math.floor(Number(days));
   if (!Number.isFinite(window) || window <= 0) window = 30;
   window = Math.max(1, Math.min(365, window));
+
+  // How many top pages to return. Was a hard-coded 25, which hid the long tail and
+  // made "which pages lag" impossible to see. Now parameterised (default 500, cap 5000)
+  // so the consumer can rank the whole site.
+  let pages = Math.floor(Number(pageLimit));
+  if (!Number.isFinite(pages) || pages <= 0) pages = 500;
+  pages = Math.max(1, Math.min(5000, pages));
 
   const pool = await getPostgresPool();
   if (!pool) {
@@ -492,8 +499,8 @@ export async function getStats(days: number): Promise<AnalyticsStats> {
          WHERE type='pageview' AND day >= $1::date
          GROUP BY site, path
          ORDER BY views DESC
-         LIMIT 25`,
-        [sinceDay],
+         LIMIT $2`,
+        [sinceDay, pages],
       ),
       pool.query(
         `SELECT site,

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Healthcare Power Solutions | Hospitals & Clinics | EmersonEIMS Kenya',
+  title: 'Healthcare Power Solutions',
   description: 'Reliable power for hospitals, clinics, and medical facilities across Kenya. Emergency backup generators, UPS systems, solar integration, 24/7 support. Zero downtime, NEMA compliance.',
   alternates: {
     canonical: 'https://www.emersoneims.com/industries/healthcare',
@@ -85,7 +85,13 @@ export default function HealthcareIndustriesPage() {
 
   const caseStudies = [
     {
-      facility: 'Kenyatta National Hospital (KNH)',
+      // Named facilities removed 2026-08-03. These read "Kenyatta National
+      // Hospital (KNH)", "Mombasa Specialist Hospital" and "Nairobi Children's
+      // Hospital" — naming real institutions as our clients with no signed
+      // release and no evidence, which the policy in data/caseStudies.ts
+      // forbids. The engineering detail is retained; only the identification is
+      // generalised, matching the style already used on /industries/manufacturing.
+      facility: 'Level 6 referral hospital (Nairobi)',
       issue: 'Generator failure during critical surgery caused 2-hour emergency evacuation',
       solution: 'Installed dual-redundant 300kVA + 200kVA generators with automatic failover',
       result: '2-hour emergency response, 99.8% uptime, zero patient incidents in 2 years',
@@ -93,7 +99,7 @@ export default function HealthcareIndustriesPage() {
       investment: 'KES 2.8M',
     },
     {
-      facility: 'Mombasa Specialist Hospital',
+      facility: 'Specialist hospital (Mombasa)',
       issue: 'Power cuts causing lab equipment damage (KES 150K per incident), 5-6 cuts/month',
       solution: 'Solar + battery storage + generator hybrid system with voltage regulation',
       result: '99.9% uptime, KES 3M annual savings in equipment damage prevention',
@@ -101,7 +107,7 @@ export default function HealthcareIndustriesPage() {
       investment: 'KES 1.2M',
     },
     {
-      facility: 'Nairobi Children\'s Hospital',
+      facility: 'Children\'s hospital (Nairobi)',
       issue: 'Pediatric ICU power fluctuations causing equipment alarms, patient stress',
       solution: 'Pure UPS + regulated generator backup + solar integration',
       result: '99.95% uptime, zero false alarms, child patients more stable',
@@ -118,7 +124,7 @@ export default function HealthcareIndustriesPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -323,6 +329,6 @@ export default function HealthcareIndustriesPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

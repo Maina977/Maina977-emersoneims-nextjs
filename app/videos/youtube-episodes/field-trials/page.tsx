@@ -1,13 +1,16 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Field Trials & Performance Testing | EmersonEIMS',
+  title: 'Field Trials & Performance Testing',
   description: 'Real-world backup power system testing under load conditions. Kadence facility case study with performance data.',
+  // Explicit self-canonical — /videos/* bypasses middleware, so x-pathname is
+  // never set and the root layout cannot derive one. See the sibling index page.
+  alternates: { canonical: 'https://www.emersoneims.com/videos/youtube-episodes/field-trials' },
 };
 
 export default function FieldTrialsEpisodePage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl font-bold mb-6">Field Trials & Performance Testing</h1>
@@ -84,6 +87,6 @@ export default function FieldTrialsEpisodePage() {
           </a>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

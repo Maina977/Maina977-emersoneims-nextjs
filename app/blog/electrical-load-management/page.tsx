@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/blog/electrical-load-management' },
   title: 'Electrical Load Management: Lower Your Bills',
   description: 'Reduce electricity bills. Load scheduling, demand factor, peak shaving. Save 15-25% with smart management.',
 };
 
 export default function LoadManagementBlogPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <article className="max-w-3xl mx-auto px-4 py-20">
         <header className="mb-12">
           <Link href="/blog" className="text-yellow-400 hover:text-yellow-300 text-sm inline-block mb-4">
@@ -119,6 +123,6 @@ export default function LoadManagementBlogPage() {
           </div>
         </div>
       </article>
-    </main>
+    </div>
   );
 }

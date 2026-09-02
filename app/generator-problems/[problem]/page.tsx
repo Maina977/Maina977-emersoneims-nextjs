@@ -162,14 +162,14 @@ export default function GeneratorProblemPage() {
 
   if (!diagnosis) {
     return (
-      <main className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Problem Not Found</h1>
           <Link href="/generator-problems" className="text-cyan-400 hover:underline">
             View All Generator Problems
           </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -235,7 +235,7 @@ export default function GeneratorProblemPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black">
       {/* Header */}
       <section className="py-8 md:py-12 px-6 border-b border-slate-800">
         <div className="max-w-4xl mx-auto">
@@ -539,6 +539,6 @@ export default function GeneratorProblemPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

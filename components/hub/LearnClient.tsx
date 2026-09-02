@@ -146,7 +146,7 @@ export default function LearnClient() {
                   <button
                     type="button"
                     onClick={() => setDone((prev) => ({ ...prev, [l.id]: !prev[l.id] }))}
-                    className="rounded-md border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider"
+                    className="rounded-md border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider"
                     style={{
                       borderColor: isDone ? statusPalette('success').solid : 'var(--color-border-subtle)',
                       background: isDone ? statusPalette('success').solid : 'transparent',

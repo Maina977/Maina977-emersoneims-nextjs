@@ -3,7 +3,7 @@
  * Complete repair guides for inverters, panels, and batteries
  * 20+ brands sold in Kenya with error codes and solutions
  *
- * © 2026 EmersonEIMS - Kenya's #1 Solar Service Provider
+ * © 2026 EmersonEIMS - Solar Service Provider in Kenya
  */
 
 // ═══════════════════════════════════════════════════════════════════════════════

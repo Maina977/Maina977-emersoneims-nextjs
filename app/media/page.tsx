@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Africa Power Infrastructure Media | YouTube • Podcast • Content | EmersonEIMS',
+  title: 'Africa Power Infrastructure Media',
   description: 'Technical education on backup power systems. YouTube channel with real installations. Weekly podcast on African power infrastructure. Educational resources for mining, healthcare, telecom, utilities.',
   alternates: {
     canonical: 'https://www.emersoneims.com/media',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function MediaPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -238,6 +238,6 @@ export default function MediaPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

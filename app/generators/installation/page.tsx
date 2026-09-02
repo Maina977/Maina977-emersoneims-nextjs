@@ -13,7 +13,7 @@ import ServiceCTASection from '@/components/cta/ServiceCTASection';
 const installationPhases = [
   {
     id: 'site-assessment',
-    phase: 'Phase 1: Site Assessment',
+    phase: 'Stage 1: Site Assessment',
     icon: '📐',
     duration: '1-3 days',
     overview: 'Complete evaluation of your site to ensure optimal generator placement and performance.',
@@ -56,7 +56,7 @@ const installationPhases = [
   },
   {
     id: 'engineering-design',
-    phase: 'Phase 2: Engineering & Design',
+    phase: 'Stage 2: Engineering & Design',
     icon: '📋',
     duration: '3-7 days',
     overview: 'Professional engineering drawings and specifications tailored to your specific requirements.',
@@ -100,7 +100,7 @@ const installationPhases = [
   },
   {
     id: 'equipment-procurement',
-    phase: 'Phase 3: Equipment Procurement',
+    phase: 'Stage 3: Equipment Procurement',
     icon: '📦',
     duration: '2-8 weeks',
     overview: 'Sourcing and delivery of all installation materials and the generator unit.',
@@ -142,7 +142,7 @@ const installationPhases = [
   },
   {
     id: 'civil-works',
-    phase: 'Phase 4: Civil Works',
+    phase: 'Stage 4: Civil Works',
     icon: '🏗️',
     duration: '3-7 days',
     overview: 'Foundation preparation and structural works for permanent installation.',
@@ -184,7 +184,7 @@ const installationPhases = [
   },
   {
     id: 'mechanical-installation',
-    phase: 'Phase 5: Mechanical Installation',
+    phase: 'Stage 5: Mechanical Installation',
     icon: '🔧',
     duration: '2-4 days',
     overview: 'Physical placement and connection of all mechanical systems.',
@@ -227,7 +227,7 @@ const installationPhases = [
   },
   {
     id: 'electrical-installation',
-    phase: 'Phase 6: Electrical Installation',
+    phase: 'Stage 6: Electrical Installation',
     icon: '⚡',
     duration: '3-5 days',
     overview: 'Complete electrical wiring and integration with your power system.',
@@ -271,7 +271,7 @@ const installationPhases = [
   },
   {
     id: 'testing-commissioning',
-    phase: 'Phase 7: Testing & Commissioning',
+    phase: 'Stage 7: Testing & Commissioning',
     icon: '✅',
     duration: '1-2 days',
     overview: 'Comprehensive testing to ensure safe and reliable operation.',
@@ -315,7 +315,7 @@ const installationPhases = [
   },
   {
     id: 'handover-training',
-    phase: 'Phase 8: Handover & Training',
+    phase: 'Stage 8: Handover & Training',
     icon: '🎓',
     duration: '1 day',
     overview: 'Complete documentation and operator training for your team.',
@@ -736,16 +736,16 @@ export default function GeneratorInstallationPage() {
         <div className="absolute top-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-green-500/20 to-transparent blur-sm" />
       </section>
 
-      {/* Installation Process - 8 Phases */}
+      {/* Installation Process - 8 stages */}
       <section className="py-16 bg-gradient-to-b from-black to-gray-900">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Our 8-Phase Installation Process
+              Our Eight-Stage Installation and Commissioning Process
             </h2>
             <p className="text-white/70 max-w-2xl mx-auto">
-              Click on each phase to learn more about what's involved. Every step is documented 
-              and executed by certified technicians.
+              Click on each stage to learn more about what's involved. Every step is documented 
+              and executed by experienced technicians.
             </p>
           </div>
           

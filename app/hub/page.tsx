@@ -1,5 +1,6 @@
 import * as React from 'react';
 import Link from 'next/link';
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 import {
   HubShell,
   SectionHeading,
@@ -9,14 +10,31 @@ import {
 } from '@/components/hub/HubShell';
 import { HUB_TOOLS } from '@/components/hub/hub-tools';
 import HubPhoto from '@/components/hub/HubPhoto';
+import { hubPhotoExists } from '@/components/hub/hub-photo-availability';
 import { HUB_HERO_PHOTO, HUB_TOOL_PHOTOS } from '@/components/hub/hub-photos';
 import { StatusBar } from '@/components/charts/dataviz';
 import LazyLockedChart from '@/components/charts/LazyLockedChart';
 
+/*
+ * This title, NOT the one in app/hub/layout.tsx, is what /hub actually serves.
+ * The layout title was retitled on 2026-08-06 and the live page kept showing
+ * "Solar & UPS Intelligence Hub" anyway — page metadata overrides layout
+ * metadata for the page itself, so the layout edit only ever reached the
+ * sub-pages. Both now say the same thing; edit them together.
+ *
+ * "Intelligence Hub" is not a search anyone performs. Position 34.7 — page
+ * four — with 7 impressions and zero clicks. The words people type are "UPS
+ * sizing", "inverter battery calculator", "how long will my UPS last". The
+ * "Hub" branding is untouched everywhere it is visible on the page itself.
+ */
 export const metadata = {
-  title: 'Solar & UPS Intelligence Hub',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/hub' },
+  title: 'UPS & Inverter Sizing Calculator — Free',
   description:
-    'Solar & UPS Intelligence Hub — sizing, audit, product intelligence, diagnostics, solar/UPS and the case library, in one workspace.',
+    'Free UPS and inverter sizing calculator for Kenya: work out kVA, battery runtime and derating, audit a supplier quotation, and compare products — built by EmersonEIMS engineers.',
 };
 
 /* ---------- Local content ---------- */
@@ -83,6 +101,7 @@ export default function HubLandingPage() {
         </h2>
         <HubPhoto
           photo={HUB_HERO_PHOTO}
+          available={hubPhotoExists(HUB_HERO_PHOTO.src)}
           aspect="aspect-[16/6]"
           rounded="rounded-2xl"
           priority
@@ -115,7 +134,7 @@ export default function HubLandingPage() {
           />
           <div className="grid items-stretch gap-6 md:grid-cols-[1fr_280px]">
             <div className="flex min-w-0 flex-col">
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">
                 Step 1 · Sizing
                 <span className="status-chip status-chip--info">Recommended start</span>
                 <span
@@ -180,6 +199,7 @@ export default function HubLandingPage() {
                 {photo && (
                   <HubPhoto
                     photo={photo}
+                    available={hubPhotoExists(photo.src)}
                     aspect="aspect-[16/9]"
                     rounded="rounded-md"
                     hideCaption
@@ -188,7 +208,7 @@ export default function HubLandingPage() {
                   />
                 )}
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">
                     Step {i + 2}
                   </span>
                   <span className="rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ background: 'rgba(0,113,227,0.08)', color: '#0071e3' }}>{t.meta}</span>
@@ -269,7 +289,7 @@ export default function HubLandingPage() {
             className="mt-5 border-t pt-4"
             style={{ borderColor: 'var(--color-border-subtle)' }}
           >
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
+            <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">
               Today&rsquo;s findings · sample
             </div>
             <ul className="space-y-1.5 text-xs text-ink-secondary">
@@ -287,6 +307,37 @@ export default function HubLandingPage() {
               </li>
             </ul>
           </div>
+        </Card>
+      </section>
+
+      {/*
+        Enquiry, added 2026-08-25.
+        The hub demonstrated the tooling and then stopped — no form and no
+        number anywhere on the page. Someone who has just read a sample load
+        profile and recognised their own site is ready to talk; sending them
+        away to find /contact loses most of them.
+      */}
+      <section aria-labelledby="hub-enquiry" className="mb-12">
+        <Card>
+          <SectionHeading
+            eyebrow="Talk to an engineer"
+            title="Want this running on your own site?"
+            caption="Tell us the load and the location — we reply with what it would take"
+          />
+          <div className="mt-6 max-w-xl">
+            <QuickInquiryForm
+              service="Power Systems Consultation"
+              ctaLabel="Request a consultation"
+              source="hub"
+            />
+          </div>
+          <p className="mt-5 text-xs text-ink-secondary">
+            Or call{' '}
+            <a href="tel:+254768860665" className="font-semibold underline">
+              +254 768 860 665
+            </a>
+            . Embakasi workshop · engineers across all 47 counties.
+          </p>
         </Card>
       </section>
     </HubShell>

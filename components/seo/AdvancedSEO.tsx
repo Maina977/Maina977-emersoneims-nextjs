@@ -45,21 +45,19 @@ export default function AdvancedSEO() {
             alternateName: ['EmersonEIMS', 'EmersonEIMS', 'Generator Companies in Kenya', 'Generator Suppliers Kenya'],
             url: 'https://www.emersoneims.com',
             logo: 'https://www.emersoneims.com/images/logo-tagline.png',
-            description: 'Kenya\'s #1 Generator Company - Sales, Installation, Maintenance & Repairs. Cummins, Perkins, FG Wilson Authorized Dealer. Solar, UPS, Motor Rewinding. 47 Counties.',
+            description: 'Kenya\'s Generator Sales & Service Company - Sales, Installation, Maintenance & Repairs. Cummins, Perkins and FG Wilson generator sales and service. Solar, UPS, Motor Rewinding. 47 Counties.',
 
             numberOfEmployees: '50+',
             slogan: 'Reliable Power. Without Limits.',
             sameAs: [
-              'https://www.facebook.com/EmersonEIMS',
-              'https://twitter.com/EmersonEIMS',
-              'https://www.linkedin.com/company/emersoneims',
+              'https://x.com/eimsemerson',
               'https://www.instagram.com/emersoneims',
               'https://www.youtube.com/@emersoneims',
             ],
             contactPoint: [
               {
                 '@type': 'ContactPoint',
-                telephone: '+254-768-860665',
+                telephone: '+254768860665',
                 contactType: 'Sales',
                 areaServed: 'KE',
                 availableLanguage: ['English', 'Swahili'],
@@ -72,19 +70,14 @@ export default function AdvancedSEO() {
               },
               {
                 '@type': 'ContactPoint',
-                telephone: '+254-782-914717',
+                telephone: '+254782914717',
                 contactType: 'Technical Support',
                 areaServed: 'KE',
                 availableLanguage: ['English', 'Swahili'],
               },
             ],
-            aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: '4.9',
-              reviewCount: '500',
-              bestRating: '5',
-              worstRating: '1',
-            },
+            // Fabricated aggregateRating removed 2026-08-03. Real ratings must come
+            // from the Google Business Profile, never invented here.
             award: ['Best Generator Company Kenya 2024', 'Top Power Solutions Provider East Africa'],
           },
           // Local Business for each county
@@ -168,29 +161,9 @@ export default function AdvancedSEO() {
             url: 'https://www.emersoneims.com'
           }
         },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.9',
-          reviewCount: '350',
-          bestRating: '5',
-          worstRating: '1'
-        },
-        review: [
-          {
-            '@type': 'Review',
-            author: { '@type': 'Person', name: 'John Kamau' },
-            datePublished: '2024-08-15',
-            reviewBody: 'Excellent generator service. Fast installation and great after-sales support.',
-            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
-          },
-          {
-            '@type': 'Review',
-            author: { '@type': 'Person', name: 'Sarah Wanjiku' },
-            datePublished: '2024-07-22',
-            reviewBody: 'Very professional team. Our hospital backup power is now reliable.',
-            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
-          }
-        ]
+        // Fabricated aggregateRating removed 2026-08-03. Real ratings must come
+        // from the Google Business Profile, never invented here.
+        // Fabricated Review entries removed 2026-08-03 — invented authors and quotes.
       };
     }
 
@@ -200,7 +173,7 @@ export default function AdvancedSEO() {
         '@context': 'https://schema.org',
         '@type': 'LocalBusiness',
         name: 'EmersonEIMS - Power Solutions Kenya',
-        telephone: '+254-768-860665',
+        telephone: '+254768860665',
         email: 'info@emersoneims.com',
         address: {
           '@type': 'PostalAddress',
@@ -249,29 +222,9 @@ export default function AdvancedSEO() {
             url: 'https://www.emersoneims.com'
           }
         },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.8',
-          reviewCount: '280',
-          bestRating: '5',
-          worstRating: '1'
-        },
-        review: [
-          {
-            '@type': 'Review',
-            author: { '@type': 'Person', name: 'David Ochieng' },
-            datePublished: '2024-09-10',
-            reviewBody: 'Our solar system has reduced our electricity bill by 80%. Great investment!',
-            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
-          },
-          {
-            '@type': 'Review',
-            author: { '@type': 'Person', name: 'Mary Njeri' },
-            datePublished: '2024-08-05',
-            reviewBody: 'Professional installation team. System works perfectly even during cloudy days.',
-            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
-          }
-        ]
+        // Fabricated aggregateRating removed 2026-08-03. Real ratings must come
+        // from the Google Business Profile, never invented here.
+        // Fabricated Review entries removed 2026-08-03 — invented authors and quotes.
       };
     }
 
@@ -354,7 +307,7 @@ export default function AdvancedSEO() {
             name: 'How do I diagnose generator problems?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'EmersonEIMS offers Kenya\'s most comprehensive generator diagnostics with 13,500+ error codes covering all major brands. Our AI-powered diagnostic suite instantly identifies issues and provides step-by-step solutions in 12 languages.',
+              text: 'EmersonEIMS offers Kenya\'s generator diagnostics built on manufacturer-curated fault codes covering 11 major brands. Our AI-powered diagnostic suite instantly identifies issues and provides step-by-step solutions in 12 languages.',
             },
           },
           {
@@ -362,7 +315,7 @@ export default function AdvancedSEO() {
             name: 'What generator brands do you service?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'We are authorized dealers for Cummins, Perkins, FG Wilson, Caterpillar, SDMO, John Deere, Volvo Penta, MTU, Kohler, and Generac. Our database covers 13,500+ error codes across all manufacturers with solutions.',
+              text: 'We sell and service Cummins, Perkins, FG Wilson, Caterpillar, SDMO, John Deere, Volvo Penta, MTU, Kohler and Generac generators. Our fault-code database carries 2,250+ verified code-to-meaning mappings with causes and remedies.',
             },
           },
           {
@@ -370,7 +323,7 @@ export default function AdvancedSEO() {
             name: 'Do you offer 24/7 emergency generator repairs?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! EmersonEIMS provides 24/7 emergency generator repair services across all 47 Kenyan counties. We have certified technicians on standby. Call +254-768-860665 for immediate assistance.',
+              text: 'Yes! EmersonEIMS provides 24/7 emergency generator repair services across all 47 Kenyan counties. We have certified technicians on standby. Call +254768860665 for immediate assistance.',
             },
           },
           {
@@ -386,7 +339,11 @@ export default function AdvancedSEO() {
             name: 'Which is the best generator company in Kenya?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'EmersonEIMS is Kenya\'s #1 rated generator company with 12+ years experience, 500+ completed projects, and coverage in all 47 counties. We are authorized dealers for Cummins, Perkins, and FG Wilson with 24/7 service.',
+              // "Kenya's #1 rated" removed — nothing rates us. "12+ years"
+              // corrected to 15: the verified Google Business Profile gives the
+              // opening date as 1 March 2011, and the same site said 15 years
+              // elsewhere, so this understated it AND disagreed with itself.
+              text: 'EmersonEIMS is a Kenyan generator company with 15 years\' experience, 500+ completed projects, and coverage in all 47 counties. We sell and service Cummins, Perkins and FG Wilson generators, with 24/7 support.',
             },
           },
           {

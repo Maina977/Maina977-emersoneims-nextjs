@@ -1,10 +1,29 @@
 ﻿'use client'
 
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
+import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
+import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import HeroCinematicFX from '@/components/home/HeroCinematicFX';
+/*
+ * NO framer-motion, NO GSAP/three.js on this page — deliberately.
+ *
+ * This is the page that markets the business. It previously shipped 72
+ * motion-wrapped elements whose `initial={{ opacity: 0 }}` was written into the
+ * server HTML, so the content stayed invisible until a 486 KB bundle had
+ * downloaded, parsed and executed — roughly 3-4.5s on Nairobi 4G, longer on 3G,
+ * and permanently blank if the bundle failed. A first-time visitor met a mostly
+ * empty page.
+ *
+ * The owner's call, and the right one: on a commercial page, working beats
+ * beautiful. The visual design is untouched — colours, gradients, layout,
+ * spacing and CSS hover states all remain. What went is the JavaScript-driven
+ * motion and the cinematic FX layer.
+ *
+ * If motion is ever wanted back here, use CSS animations with
+ * animation-fill-mode so the content is visible by default and animates without
+ * blocking on JS. Do not reintroduce `initial={{ opacity: 0 }}` on this page.
+ */
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PERFORMANCE OPTIMIZED IMPORTS
@@ -21,6 +40,10 @@ import { usePerformanceTier } from '@/components/performance/usePerformanceTier'
 import { CUMMINS_BRAND_INFO, CUMMINS_FAQ } from '@/lib/brands/cumminsData';
 import GeneratorEngineeringDeepDive from '@/components/generators/GeneratorEngineeringDeepDive';
 import ConversionCTA from '@/components/cta/ConversionCTA';
+// Lead capture for the #quote section. Imported statically rather than lazily:
+// it is the page's only form and sits directly under the hero, so it must be
+// present the moment the primary CTA is clicked.
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HEAVY COMPONENTS - Lazy loaded (Chart.js ~70KB, GSAP ~30KB saved)
@@ -47,16 +70,39 @@ const GeneratorSizingCalculator = dynamic(() => import('@/components/calculators
 
 // SALES BOOSTING COMPONENTS - MAXIMIZE CONVERSIONS
 const GeneratorSalesBooster = dynamic(() => import('@/components/generators/GeneratorSalesBooster'), { ssr: false });
-const GeneratorPriceList = dynamic(() => import('@/components/generators/GeneratorPriceList'), { ssr: false });
+/*
+ * SERVER-RENDERED ON PURPOSE — do not add `ssr: false` back.
+ *
+ * This component holds the real price table: 20 capacities from 10 kVA to
+ * 2000 kVA with a figure against each, built from the single source of truth in
+ * lib/brands/cumminsData.ts. Its own header comment reads "People search
+ * 'generator price Kenya' - give them prices!" — and it was then loaded with
+ * ssr:false, so not one of those prices ever appeared in the server response.
+ * Google never saw them. The live page showed only 6 hardcoded KES figures
+ * while 20 real ones sat behind a client-only chunk.
+ *
+ * "Generator prices Kenya" is the highest commercial-intent query this business
+ * can rank for, and the answer was already written and deliberately hidden.
+ *
+ * Safe to server-render: the component uses useState only — no window,
+ * document, localStorage or observers. It still code-splits; dropping ssr:false
+ * changes only whether the markup is in the HTML.
+ */
+const GeneratorPriceList = dynamic(() => import('@/components/generators/GeneratorPriceList'));
 const SizingCalculatorNew = dynamic(() => import('@/components/generators/GeneratorSizingCalculator'), { ssr: false });
 
 // EDUCATIONAL CONTENT - KNOWLEDGE CENTER
 const GeneratorEducationPanel = dynamic(() => import('@/components/generators/GeneratorEducationPanel'), { ssr: false });
 const CinematicImageGallery = dynamic(() => import('@/components/ui/CinematicImageGallery'), { ssr: false });
-const CumminsBanner = dynamic(() => import('@/components/brands/CumminsBanner'), { ssr: false });
+// Server-rendered: carries brand copy and pricing (showPricing) directly under
+// the hero. Verified free of browser-only APIs.
+const CumminsBanner = dynamic(() => import('@/components/brands/CumminsBanner'));
 
 // CONVERSION CTA HUB - Direct Action Buttons
-const ConversionCTAHub = dynamic(() => import('@/components/generators/ConversionCTAHub'), { ssr: false });
+// Server-rendered: this is a block of conversion links. Client-only rendering
+// made them invisible to the crawler, so they carried no internal-link value
+// and did not exist for anyone whose JS failed.
+const ConversionCTAHub = dynamic(() => import('@/components/generators/ConversionCTAHub'));
 
 // AI DIAGNOSTIC COMPONENTS
 const AIVisualDiagnostic = dynamic(() => import('@/components/generator-oracle/AIVisualDiagnostic'), { ssr: false });
@@ -112,7 +158,7 @@ const GENERATOR_HUB_SECTIONS = [
     icon: '🏗️',
     href: '/generators/installation',
     color: 'purple',
-    description: 'Professional 8-phase installation'
+    description: 'Professional eight-stage installation and commissioning'
   },
   // Workshop Repairs & Fabrication — added 2026-07-21 (owner brief). Placed
   // alongside the existing service cards; nothing was removed or reordered.
@@ -232,10 +278,10 @@ const GeneratorBibleHub = () => {
   return (
     <section id="bible-hub" className="py-16 bg-gradient-to-b from-black via-slate-900/50 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
@@ -248,19 +294,19 @@ const GeneratorBibleHub = () => {
             Everything you need - from sales to service, spare parts to AI diagnostics.
             Your complete generator resource in Kenya.
           </p>
-        </motion.div>
+        </div>
 
         {/* Quick Navigation Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {GENERATOR_HUB_SECTIONS.map((section, index) => (
-            <motion.a
+            <a
               key={section.id}
               href={section.href}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
-              whileHover={{ scale: 1.03, y: -5 }}
+              
+              
+              
+              
+              
               className={`relative group p-5 rounded-2xl bg-gradient-to-br from-${section.color}-500/10 to-${section.color}-600/5 border border-${section.color}-500/20 hover:border-${section.color}-500/50 transition-all`}
             >
               {section.badge && (
@@ -271,7 +317,7 @@ const GeneratorBibleHub = () => {
               <div className="text-3xl mb-3">{section.icon}</div>
               <h3 className="text-white font-semibold mb-1">{section.title}</h3>
               <p className="text-gray-400 text-xs">{section.description}</p>
-            </motion.a>
+            </a>
           ))}
         </div>
       </div>
@@ -286,10 +332,10 @@ const GeneratorSystemsHub = () => {
   return (
     <section id="generator-systems" className="py-20 bg-gradient-to-b from-black via-slate-900 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm mb-4">
@@ -302,17 +348,17 @@ const GeneratorSystemsHub = () => {
             Understand every component of your generator. From engine to automation,
             learn how each system works and how to maintain it.
           </p>
-        </motion.div>
+        </div>
 
         {/* Systems Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {GENERATOR_SYSTEMS.map((system, index) => (
-            <motion.div
+            <div
               key={system.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
+              
+              
+              
+              
               className={`group cursor-pointer rounded-2xl p-5 border transition-all ${
                 activeSystem === system.id
                   ? `bg-${system.color}-500/20 border-${system.color}-500/50`
@@ -322,21 +368,21 @@ const GeneratorSystemsHub = () => {
             >
               <div className="flex items-start justify-between mb-3">
                 <span className="text-3xl">{system.icon}</span>
-                <motion.span
-                  animate={{ rotate: activeSystem === system.id ? 180 : 0 }}
+                <span
+                  
                   className="text-gray-400"
                 >
                   ▼
-                </motion.span>
+                </span>
               </div>
               <h3 className="text-white font-semibold mb-1">{system.name}</h3>
               <p className="text-gray-400 text-sm mb-3">{system.description}</p>
 
               {activeSystem === system.id && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
+                <div
+                  
+                  
+                  
                   className="border-t border-slate-700 pt-3 mt-3 space-y-3"
                 >
                   <div>
@@ -363,9 +409,9 @@ const GeneratorSystemsHub = () => {
                       ))}
                     </ul>
                   </div>
-                </motion.div>
+                </div>
               )}
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -396,10 +442,10 @@ const GeneratorLeasingSection = () => {
   return (
     <section id="leasing" className="py-20 bg-gradient-to-b from-black via-emerald-900/10 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-sm mb-4">
@@ -412,22 +458,22 @@ const GeneratorLeasingSection = () => {
             Don't want to buy? Lease a generator with maintenance included.
             Flexible terms from 6 months to lease-to-own options.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-4 gap-4 mb-8">
           {leasingPlans.map((plan, index) => (
-            <motion.div
+            <div
               key={plan.duration}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-2xl p-6 border border-emerald-500/20"
             >
               <h3 className="text-2xl font-bold text-white mb-2">{plan.duration}</h3>
               <div className="text-3xl font-bold text-emerald-400 mb-2">{plan.discount} OFF</div>
               <p className="text-gray-400 text-sm">Ideal for: {plan.ideal}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -475,10 +521,10 @@ const AIVisualDiagnosticSection = () => {
   return (
     <section id="ai-diagnostic" className="py-20 bg-gradient-to-b from-black via-pink-900/10 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-pink-500/10 border border-pink-500/20 rounded-full text-pink-400 text-sm mb-4">
@@ -496,7 +542,7 @@ const AIVisualDiagnosticSection = () => {
             candidate parts and likely faults to accelerate triage. Always
             verify against the equipment and the OEM manual before action.
           </p>
-        </motion.div>
+        </div>
 
         {/* Feature Cards */}
         <div className="grid md:grid-cols-4 gap-4 mb-8">
@@ -506,44 +552,44 @@ const AIVisualDiagnosticSection = () => {
             { icon: '🔮', title: 'Failure Prediction', desc: 'Time to failure estimate' },
             { icon: '💰', title: 'Parts & Pricing', desc: 'Availability & cost' },
           ].map((feature, index) => (
-            <motion.div
+            <div
               key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className="bg-slate-900/50 rounded-xl p-4 border border-slate-800 text-center"
             >
               <div className="text-3xl mb-2">{feature.icon}</div>
               <h3 className="text-white font-semibold text-sm">{feature.title}</h3>
               <p className="text-gray-400 text-xs">{feature.desc}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Toggle Diagnostic Tool */}
         <div className="text-center mb-8">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
+            
+            
             onClick={() => setShowDiagnostic(!showDiagnostic)}
             className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30"
           >
             <span className="text-2xl">🤖</span>
             <span>{showDiagnostic ? 'Hide Diagnostic Tool' : 'Open AI Visual Diagnostic'}</span>
-          </motion.button>
+          </button>
         </div>
 
         {/* AI Diagnostic Component */}
         {showDiagnostic && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+          <div
+            
+            
+            
             className="bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden"
           >
             <AIVisualDiagnostic />
-          </motion.div>
+          </div>
         )}
 
         {/* Alternative: Full Page Link */}
@@ -579,10 +625,10 @@ const TransparentPricing = () => {
   return (
     <section id="pricing" className="py-20 bg-gradient-to-b from-black via-amber-900/10 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
@@ -592,15 +638,15 @@ const TransparentPricing = () => {
             Generator Prices in Kenya 2026
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            No hidden costs. Prices include delivery, installation, ATS, commissioning, and 1-year free service.
+            No hidden costs. Prices include delivery, installation, ATS and commissioning, and new sets carry 1 year of free servicing.
           </p>
-        </motion.div>
+        </div>
 
         {/* VOLTKA house-brand value band — anchored to real EmersonEIMS pricing */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="mb-10 p-6 md:p-8 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-orange-500/5 text-center"
         >
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full mb-3">
@@ -621,16 +667,16 @@ const TransparentPricing = () => {
           >
             Get my VOLTKA quote
           </a>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {priceRanges.map((range, index) => (
-            <motion.div
+            <div
               key={range.kva}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className={`relative p-6 rounded-2xl border transition-all ${
                 range.popular
                   ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/10 border-amber-500/50'
@@ -657,8 +703,35 @@ const TransparentPricing = () => {
               >
                 Get Exact Quote
               </a>
-            </motion.div>
+            </div>
           ))}
+        </div>
+
+        {/*
+          Per-size pages, added 2026-08-26.
+          An external audit found the site had no product-level URLs while every
+          ranking competitor publishes one page per set. Buyers search "30 kva
+          generator price in kenya", not "generator range". These links are the
+          internal path to those pages — the sitemap gives discovery, links pass
+          authority.
+        */}
+        <div className="mb-10">
+          <h3 className="text-center text-lg font-semibold text-white mb-2">Price by exact size</h3>
+          <p className="text-center text-gray-400 text-sm mb-6">
+            What each size costs, what it runs, and how site altitude changes the answer.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl mx-auto">
+            {GENERATOR_SIZES.map((g) => (
+              <a
+                key={g.slug}
+                href={`/generators/sizes/${g.slug}`}
+                className="block rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-center transition hover:border-amber-400/40"
+              >
+                <span className="block font-bold text-white">{g.kva} kVA</span>
+                <span className="mt-1 block text-xs text-gray-400">{g.priceRange.replace('KES ', '')}</span>
+              </a>
+            ))}
+          </div>
         </div>
 
         <div className="text-center text-gray-400 text-sm">
@@ -711,10 +784,10 @@ const BeforeAfterGallery = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-black via-slate-900 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm mb-4">
@@ -726,16 +799,16 @@ const BeforeAfterGallery = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             See the real impact of reliable power on our clients' operations
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           {projects.map((project, index) => (
-            <motion.div
+            <div
               key={project.client}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className="bg-slate-900/50 rounded-2xl overflow-hidden border border-slate-800"
             >
               {/* Project Image — real installation photography */}
@@ -773,7 +846,7 @@ const BeforeAfterGallery = () => {
                   </a>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
@@ -818,10 +891,10 @@ const VideoTestimonials = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-slate-900 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-full text-red-400 text-sm mb-4">
@@ -833,16 +906,16 @@ const VideoTestimonials = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             Real stories from real businesses about their power transformation
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {videos.map((video, index) => (
-            <motion.div
+            <div
               key={video.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className="group cursor-pointer"
               onClick={() => setActiveVideo(video.id)}
             >
@@ -872,7 +945,7 @@ const VideoTestimonials = () => {
               <h3 className="text-white font-semibold mb-1">{video.title}</h3>
               <p className="text-amber-400 text-sm mb-1">{video.client}</p>
               <p className="text-gray-400 text-sm italic">"{video.quote}"</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -887,21 +960,21 @@ const VideoTestimonials = () => {
 // 📊 BRAND COMPARISON TABLE
 const BrandComparisonTable = () => {
   const brands = [
-    { name: 'Cummins', origin: 'USA', warranty: '3 Years', fuelEff: '⭐⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$$$', best: 'Reliability & support' },
+    { name: 'Cummins', origin: 'USA', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$$$', best: 'Reliability & support' },
     { name: 'Perkins', origin: 'UK', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$$', best: 'Value for money' },
     { name: 'Caterpillar', origin: 'USA', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐', price: '$$$$$', best: 'Heavy industrial' },
     { name: 'FG Wilson', origin: 'UK', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐', price: '$$$', best: 'Commercial use' },
     { name: 'Atlas Copco', origin: 'Sweden', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐⭐', parts: '⭐⭐⭐', price: '$$$$', best: 'Quiet operation' },
-    { name: 'Voltka', origin: 'China/Cummins', warranty: '3 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$', best: 'Budget + quality' },
+    { name: 'Voltka', origin: 'China/Cummins', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$', best: 'Budget + quality' },
   ];
 
   return (
     <section className="py-20 bg-gradient-to-b from-black to-slate-900">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-4">
@@ -913,7 +986,7 @@ const BrandComparisonTable = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             We service all brands. Here's how they compare:
           </p>
-        </motion.div>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-white">
@@ -930,12 +1003,12 @@ const BrandComparisonTable = () => {
             </thead>
             <tbody>
               {brands.map((brand, index) => (
-                <motion.tr
+                <tr
                   key={brand.name}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
+                  
+                  
+                  
+                  
                   className="border-b border-gray-800 hover:bg-slate-900/50"
                 >
                   <td className="p-4 font-semibold text-white">{brand.name}</td>
@@ -945,7 +1018,7 @@ const BrandComparisonTable = () => {
                   <td className="p-4">{brand.parts}</td>
                   <td className="p-4 text-amber-400">{brand.price}</td>
                   <td className="p-4 text-gray-300">{brand.best}</td>
-                </motion.tr>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -978,10 +1051,10 @@ const FinancingCalculator = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-slate-900 to-black">
       <div className="max-w-4xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-sm mb-4">
@@ -993,7 +1066,7 @@ const FinancingCalculator = () => {
           <p className="text-xl text-gray-400">
             Calculate your monthly payments. No interest on 3-month plans!
           </p>
-        </motion.div>
+        </div>
 
         <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-800">
           <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -1092,10 +1165,10 @@ const DownloadsSection = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-black to-slate-900">
       <div className="max-w-5xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm mb-4">
@@ -1107,17 +1180,17 @@ const DownloadsSection = () => {
           <p className="text-xl text-gray-400">
             Download detailed information for your planning
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {downloads.map((doc, index) => (
-            <motion.a
+            <a
               key={doc.name}
               href="/contact?download=brochure"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
+              
+              
+              
+              
               className="flex items-center gap-4 p-4 bg-slate-900/50 rounded-xl border border-slate-800 hover:border-blue-500/50 transition-all group"
             >
               <span className="text-3xl">{doc.icon}</span>
@@ -1126,7 +1199,7 @@ const DownloadsSection = () => {
                 <p className="text-gray-500 text-sm">{doc.type} • {doc.size}</p>
               </div>
               <span className="text-blue-400 group-hover:translate-x-1 transition-transform">↓</span>
-            </motion.a>
+            </a>
           ))}
         </div>
 
@@ -1153,10 +1226,10 @@ const LiveStatisticsCounter = () => {
   return (
     <section className="py-16 bg-gradient-to-r from-amber-500/10 via-black to-amber-500/10 border-y border-amber-500/20">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-sm mb-4">
@@ -1169,7 +1242,7 @@ const LiveStatisticsCounter = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-white">
             Kenya's Most Trusted Generator Partner
           </h2>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {[
@@ -1180,27 +1253,24 @@ const LiveStatisticsCounter = () => {
             { value: stats.uptimeAchieved, label: 'Client Uptime', suffix: '%', icon: '✅' },
             { value: stats.partsInStock, label: 'Parts in Stock', suffix: '+', icon: '🔧' },
           ].map((stat, index) => (
-            <motion.div
+            <div
               key={stat.label}
-              initial={{ opacity: 0, scale: 0.5 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className="text-center p-4 rounded-xl bg-black/50 border border-amber-500/20"
             >
               <span className="text-2xl block mb-2">{stat.icon}</span>
-              <motion.span
+              <span
                 className="text-3xl md:text-4xl font-bold text-amber-400 block"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
               >
                 {typeof stat.value === 'number' && stat.value % 1 !== 0
                   ? stat.value.toFixed(1)
                   : stat.value}{stat.suffix}
-              </motion.span>
+              </span>
               <span className="text-gray-400 text-sm">{stat.label}</span>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
@@ -1280,10 +1350,10 @@ const ClientTestimonials = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-black via-slate-900/50 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
@@ -1295,17 +1365,17 @@ const ClientTestimonials = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             From hospitals to hotels, factories to data centers - see why industry leaders choose EmersonEIMS
           </p>
-        </motion.div>
+        </div>
 
         {/* Testimonial Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {testimonials.map((testimonial, index) => (
-            <motion.div
+            <div
               key={testimonial.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              
+              
+              
+              
               className={`p-6 rounded-2xl border transition-all ${
                 index === currentIndex
                   ? 'bg-amber-500/10 border-amber-500/50 scale-105'
@@ -1345,7 +1415,7 @@ const ClientTestimonials = () => {
                   <span>{testimonial.location}, Kenya</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -1387,37 +1457,66 @@ const WhyChooseUs = () => {
     {
       icon: '🏆',
       title: 'Cummins Specialist',
-      description: 'Factory-trained technicians. Genuine parts access. Multi-brand expertise (Cummins, Perkins, Caterpillar, FG Wilson).',
+      // "Factory-trained" removed here and in the two places below. The claim
+      // has no evidence behind it on file (see app/why-emersoneims/page.tsx),
+      // and an unverifiable badge is worth less than a specific one. If
+      // training certificates DO exist, this is worth restoring with the
+      // certificate named — say so and it goes back.
+      description: 'Technicians who work these platforms daily. Genuine parts in stock. Multi-brand capability across Cummins, Perkins, Caterpillar and FG Wilson.',
       highlight: 'EXPERT'
     },
     {
       icon: '⚡',
-      title: '24/7 Emergency Support',
-      description: 'Technicians stationed across all 47 counties. Nairobi emergency response mobilization within business hours. Remote site coordination via phone/WhatsApp.',
-      highlight: '24/7 SUPPORT'
+      title: 'Nationwide Emergency Support',
+      /*
+       * "Technicians stationed across all 47 counties" was removed 2026-08-31.
+       * The nationwide reach is real — the mobile workshop does travel to all
+       * 47 counties — but "stationed" asserts staff permanently based in each
+       * one, which would mean 47 depots we do not have. The true version is
+       * stronger anyway, because it is the one we can honour on the phone.
+       */
+      description: 'Nationwide mobile service, coordinated from our Embakasi workshop in Nairobi. Response is mobilised during business hours, with remote site coordination by phone and WhatsApp.',
+      highlight: 'NATIONWIDE'
     },
+    /*
+     * A "Price Match Guarantee — found a lower price? We'll match it and give
+     * you 5% extra discount. No questions asked." card stood here. Nothing
+     * defines who approves a match, what proof is required, which products
+     * qualify or who authorises 5% off a quoted price, so it was a binding
+     * commercial undertaking with no terms behind it and no way to honour it
+     * consistently. Replaced with the part that is real and checkable.
+     */
     {
       icon: '💰',
-      title: 'Price Match Guarantee',
-      description: 'Found a lower price? We\'ll match it and give you 5% extra discount. No questions asked.',
-      highlight: 'BEST PRICE'
+      title: 'Priced Against the Load',
+      description: 'We size the set to your measured load before quoting, so you are not paying for kVA you will never draw. The quotation itemises the set, ATS, cabling, installation and commissioning separately.',
+      highlight: 'NO OVERSIZING'
     },
     {
       icon: '🔧',
       title: '11+ Years Track Record',
-      description: 'Our senior technicians have serviced generators across Kenya since 2013. Factory-trained on Cummins, Perkins, Caterpillar and 10+ other brands.',
+      description: 'Our senior technicians have serviced generators across Kenya since 2013, on Cummins, Perkins, Caterpillar and 10+ other brands.',
       highlight: 'PROVEN EXPERTISE'
     },
     {
       icon: '📦',
-      title: 'Same-Day Parts Delivery',
-      description: '2,000+ parts in stock in our Nairobi warehouse. Most parts delivered within 4 hours.',
-      highlight: 'FAST DELIVERY'
+      /*
+       * Was: "2,000+ parts in stock in our Nairobi warehouse. Most parts
+       * delivered within 4 hours." Both halves were unevidenced. No inventory
+       * system in this repository produces a stock count, so "2,000+ in stock"
+       * would be wrong the first time a shelf emptied; and no delivery matrix
+       * defines a four-hour window, which cannot hold for an up-country site
+       * regardless. The parts CATALOGUE is real and searchable on this site —
+       * that is what is claimed now, with availability confirmed per order.
+       */
+      title: 'Parts Sourced and Supplied',
+      description: 'Filters, belts, sensors, AVRs, controllers, starters, alternators, and fuel and cooling components. Availability and delivery time are confirmed against your engine and serial number when you order.',
+      highlight: 'PARTS SUPPLY'
     },
     {
       icon: '🛡️',
-      title: '3-Year Warranty',
-      description: 'Industry-leading coverage on all new generators. Includes parts, labor, and emergency service.',
+      title: '2-Year Warranty',
+      description: 'Cover on new generators includes parts, labour and emergency service. The term and its conditions are stated in your written quotation.',
       highlight: 'PEACE OF MIND'
     },
   ];
@@ -1425,10 +1524,10 @@ const WhyChooseUs = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-black to-slate-900">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -1437,17 +1536,17 @@ const WhyChooseUs = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             We don't just sell generators. We deliver reliability, peace of mind, and a partnership that lasts.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reasons.map((reason, index) => (
-            <motion.div
+            <div
               key={reason.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.03, y: -5 }}
+              
+              
+              
+              
+              
               className="relative group p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-black border border-slate-800 hover:border-amber-500/50 transition-all"
             >
               {/* Highlight Badge */}
@@ -1458,7 +1557,7 @@ const WhyChooseUs = () => {
               <span className="text-4xl block mb-4">{reason.icon}</span>
               <h3 className="text-xl font-bold text-white mb-2">{reason.title}</h3>
               <p className="text-gray-400 text-sm">{reason.description}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
@@ -1471,76 +1570,113 @@ const GuaranteeSection = () => {
   return (
     <section className="py-20 bg-gradient-to-r from-emerald-500/10 via-black to-emerald-500/10 border-y border-emerald-500/20">
       <div className="max-w-5xl mx-auto px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
+        <div
         >
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
             <span className="text-5xl">🛡️</span>
           </div>
 
+          {/*
+            REWRITTEN 2026-08-29. The section is kept — its design, its slot and
+            its purpose are unchanged — but every promise in it is now one the
+            site can stand behind. What was here, and why each item went:
+
+              "Iron-Clad Guarantee" / "one of the strongest guarantees
+                available in Kenya" — a comparative superlative about the
+                Kenyan market that nothing evidences.
+              "30-Day Money-Back Guarantee — full refund, no questions asked"
+                — a binding refund undertaking that appears nowhere else on
+                this site and was never confirmed as a real policy. A refund
+                promise is contractual; publishing one we have not agreed is
+                the most exposed thing on this page.
+              "Lifetime Technical Support ... forever" — an unlimited,
+                perpetual commitment with no stated boundary.
+              "If your generator doesn't perform as promised, we'll fix it or
+                replace it. Period." — John Emerson, Founder — an invented
+                quotation attributed to an invented person. "John Emerson"
+                appears nowhere else in this codebase; the business is
+                EmersonEIMS and no such founder is named anywhere on the site.
+
+            The three cards below are each backed elsewhere: the two-year
+            warranty is owner-confirmed and now published site-wide, 24/7
+            emergency response is stated across the site, and the
+            all-47-counties mobile workshop is the owner's own description of
+            the capability.
+          */}
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Our <span className="text-emerald-400">Iron-Clad</span> Guarantee
+            What you get <span className="text-emerald-400">in writing</span>
           </h2>
 
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            We're so confident in our generators and service that we offer one of the strongest guarantees available in Kenya:
+            Every set we supply is quoted, installed and commissioned on these terms:
           </p>
 
           <div className="grid md:grid-cols-3 gap-6 mb-8">
+            {/*
+              The two-year term is KEPT here and is owner-confirmed, but it is
+              now SCOPED. This card sits under "every set we supply", i.e. new
+              sets, which is what that confirmation covered. The same figure was
+              additionally published as a blanket site-wide badge — homepage
+              trust strip, metadata and JSON-LD — where it also covered used and
+              refurbished equipment and repairs, for which it cannot hold. Those
+              blanket instances were removed 2026-08-31; see
+              lib/commercial/policy.ts. The qualifier below is what was missing,
+              not the number.
+            */}
             <div className="p-6 rounded-xl bg-black/50 border border-emerald-500/30">
-              <h3 className="text-2xl font-bold text-emerald-400 mb-2">30-Day</h3>
-              <p className="text-white font-semibold">Money-Back Guarantee</p>
-              <p className="text-gray-400 text-sm mt-2">Not satisfied? Full refund, no questions asked</p>
+              <h3 className="text-2xl font-bold text-emerald-400 mb-2">2-Year</h3>
+              <p className="text-white font-semibold">Warranty on New Sets</p>
+              <p className="text-gray-400 text-sm mt-2">Engine, alternator and control system. Used and refurbished sets carry different terms, stated in your quotation.</p>
             </div>
             <div className="p-6 rounded-xl bg-black/50 border border-emerald-500/30">
-              <h3 className="text-2xl font-bold text-emerald-400 mb-2">3-Year</h3>
-              <p className="text-white font-semibold">Comprehensive Warranty</p>
-              <p className="text-gray-400 text-sm mt-2">Parts, labor, and emergency service included</p>
+              <h3 className="text-2xl font-bold text-emerald-400 mb-2">24/7</h3>
+              <p className="text-white font-semibold">Emergency Response</p>
+              <p className="text-gray-400 text-sm mt-2">Breakdowns attended day or night</p>
             </div>
             <div className="p-6 rounded-xl bg-black/50 border border-emerald-500/30">
-              <h3 className="text-2xl font-bold text-emerald-400 mb-2">Lifetime</h3>
-              <p className="text-white font-semibold">Technical Support</p>
-              <p className="text-gray-400 text-sm mt-2">Phone, WhatsApp, and email support forever</p>
+              <h3 className="text-2xl font-bold text-emerald-400 mb-2">47</h3>
+              <p className="text-white font-semibold">Counties Served</p>
+              <p className="text-gray-400 text-sm mt-2">Mobile workshop travels to your site</p>
             </div>
           </div>
 
-          <p className="text-gray-400 text-sm italic">
-            "If your generator doesn't perform as promised, we'll fix it or replace it. Period." — John Emerson, Founder
+          <p className="text-gray-400 text-sm">
+            Commissioning includes the changeover panel, wired and tested on load.
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
 };
 
-// URGENCY & SCARCITY SECTION
+/*
+ * WAS AN "URGENCY & SCARCITY" BAND WITH A FAKE COUNTDOWN. Removed 2026-08-29.
+ *
+ * The timer started at 3d 14h 27m 45s, counted down, and on reaching zero this
+ * line reset it to exactly 3d 14h 27m 45s again:
+ *     if (days < 0) { days = 3; hours = 14; minutes = 27; seconds = 45; }
+ * So the "Limited Time Offer" never expired and never had expired — every
+ * visitor, on every visit, saw the same deadline about to run out. A deadline
+ * that cannot pass is a fabricated one, and presenting it to buyers is
+ * misleading advertising regardless of whether a discount exists behind it.
+ *
+ * It also advertised "March Sale: 15% OFF All Generators" — in August — plus
+ * "FREE installation (worth KES 50,000)", an offer stated nowhere else on this
+ * site, and a CTA to /contact?promo=march-sale.
+ *
+ * The band is kept, because a prominent call to action in this position is
+ * legitimate and the page is built around it. What it says is now true: no
+ * countdown, no expiring discount, no invented saving. If a real promotion is
+ * running, put its genuine end date here — a real deadline needs no invention.
+ */
 const UrgencySection = () => {
-  const [timeLeft, setTimeLeft] = useState({ days: 3, hours: 14, minutes: 27, seconds: 45 });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        let { days, hours, minutes, seconds } = prev;
-        seconds--;
-        if (seconds < 0) { seconds = 59; minutes--; }
-        if (minutes < 0) { minutes = 59; hours--; }
-        if (hours < 0) { hours = 23; days--; }
-        if (days < 0) { days = 3; hours = 14; minutes = 27; seconds = 45; }
-        return { days, hours, minutes, seconds };
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <section className="py-12 bg-gradient-to-r from-red-500/20 via-black to-red-500/20 border-y border-red-500/30">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="flex flex-col lg:flex-row items-center justify-between gap-6"
         >
           <div className="text-center lg:text-left">
@@ -1549,40 +1685,28 @@ const UrgencySection = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
               </span>
-              <span className="text-red-400 font-bold uppercase tracking-wider text-sm">Limited Time Offer</span>
+              <span className="text-red-400 font-bold uppercase tracking-wider text-sm">24/7 Emergency Line</span>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold text-white">
-              March Sale: <span className="text-red-400">15% OFF</span> All Generators
+              Generator down? <span className="text-red-400">Call now</span>
             </h3>
-            <p className="text-gray-400">Plus FREE installation (worth KES 50,000) on orders above 100kVA</p>
+            <p className="text-gray-400">Breakdowns attended day or night, in all 47 counties.</p>
           </div>
 
-          {/* Countdown Timer */}
-          <div className="flex items-center gap-3">
-            {[
-              { value: timeLeft.days, label: 'DAYS' },
-              { value: timeLeft.hours, label: 'HRS' },
-              { value: timeLeft.minutes, label: 'MIN' },
-              { value: timeLeft.seconds, label: 'SEC' },
-            ].map((unit, index) => (
-              <div key={unit.label} className="text-center">
-                <div className="w-16 h-16 rounded-lg bg-red-500/20 border border-red-500/50 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">{String(unit.value).padStart(2, '0')}</span>
-                </div>
-                <span className="text-xs text-gray-500 mt-1 block">{unit.label}</span>
-              </div>
-            ))}
-          </div>
+          <a
+            href="tel:+254768860665"
+            className="text-2xl md:text-3xl font-bold text-white hover:text-red-300 transition-colors"
+          >
+            +254 768 860 665
+          </a>
 
-          <motion.a
-            href="/contact?promo=march-sale"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <a
+            href="/contact?type=emergency"
             className="px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/30"
           >
-            Claim This Offer →
-          </motion.a>
-        </motion.div>
+            Request a callout &rarr;
+          </a>
+        </div>
       </div>
     </section>
   );
@@ -1595,11 +1719,11 @@ const FAQSection = () => {
   const faqs = [
     {
       question: 'Why should I buy from EmersonEIMS instead of importing directly?',
-      answer: 'While importing may seem cheaper, you lose warranty coverage, local support, and spare parts availability. Our all-inclusive pricing includes delivery, installation, commissioning, 1-year free service, and 3-year warranty. Most importers spend 30% more in the first year on issues we prevent.'
+      answer: 'Importing can look cheaper on the invoice, but you carry the warranty, the commissioning and the spare-parts risk yourself. Our pricing includes delivery, installation and commissioning, new sets carry a 2-year warranty, and service-package terms are set out in your quotation.'
     },
     {
       question: 'What brands do you carry?',
-      answer: 'We specialize in Cummins and Voltka generators, with expert service and genuine parts for Perkins, Caterpillar, FG Wilson, SDMO, and 20+ other brands. Our technicians are factory-trained on all major platforms.'
+      answer: 'We specialise in Cummins and VOLTKA generators, with servicing and genuine parts for Perkins, Caterpillar, FG Wilson, SDMO and 20+ other brands. Being independent, we are free to recommend the set that fits your load rather than the one we are obliged to sell.'
     },
     {
       question: 'How quickly can you deliver and install?',
@@ -1623,17 +1747,20 @@ const FAQSection = () => {
     },
     {
       question: 'What\'s included in the price?',
-      answer: 'Our quoted prices include: Generator unit, delivery anywhere in Kenya, professional installation, ATS (automatic transfer switch), commissioning and testing, operator training, 1-year free maintenance, and 3-year warranty. No hidden costs.'
+      answer: 'Our quoted prices include: Generator unit, delivery anywhere in Kenya, professional installation, ATS (automatic transfer switch), commissioning and testing, operator training, 1-year free maintenance, and 2-year warranty. No hidden costs.'
     },
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-slate-900 to-black">
+    // id="cummins-faq" is the target of /generators#cummins-faq, linked from
+    // app/generators/cummins/page.tsx. It did not exist, so that link scrolled
+    // nowhere — the same defect class as the "New Generators" navbar item.
+    <section id="cummins-faq" className="py-20 bg-gradient-to-b from-slate-900 to-black scroll-mt-28">
       <div className="max-w-4xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+          
+          
+          
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -1642,16 +1769,16 @@ const FAQSection = () => {
           <p className="text-xl text-gray-400">
             Everything you need to know before buying
           </p>
-        </motion.div>
+        </div>
 
         <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
+              
+              
+              
+              
               className="border border-slate-800 rounded-xl overflow-hidden"
             >
               <button
@@ -1659,24 +1786,24 @@ const FAQSection = () => {
                 className="w-full p-5 text-left flex items-center justify-between bg-slate-900/50 hover:bg-slate-900 transition-colors"
               >
                 <span className="text-white font-semibold pr-4">{faq.question}</span>
-                <motion.span
-                  animate={{ rotate: openFaq === index ? 180 : 0 }}
+                <span
+                  
                   className="text-amber-400 text-xl flex-shrink-0"
                 >
                   ▼
-                </motion.span>
+                </span>
               </button>
               {openFaq === index && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
+                <div
+                  
+                  
+                  
                   className="p-5 bg-black/50 border-t border-slate-800"
                 >
                   <p className="text-gray-300">{faq.answer}</p>
-                </motion.div>
+                </div>
               )}
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -1714,16 +1841,16 @@ const FloatingWhatsApp = () => {
   if (!isVisible) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0, y: 100 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
+    <div
+      
+      
       className="fixed bottom-6 right-6 z-50"
     >
       {/* Message Bubble */}
       {showMessage && (
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+        <div
+          
+          
           className="absolute bottom-16 right-0 mb-2 p-3 bg-white rounded-xl shadow-xl max-w-[200px]"
         >
           <button
@@ -1735,23 +1862,23 @@ const FloatingWhatsApp = () => {
           <p className="text-gray-800 text-sm">
             👋 Need help choosing a generator? Chat with our expert now!
           </p>
-        </motion.div>
+        </div>
       )}
 
       {/* WhatsApp Button */}
-      <motion.a
+      <a
         href="https://wa.me/254768860665?text=Hi,%20I'm%20interested%20in%20buying%20a%20generator"
         target="_blank"
         rel="noopener noreferrer"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        
+        
         className="flex items-center justify-center w-16 h-16 bg-green-500 rounded-full shadow-lg shadow-green-500/50"
       >
         <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
-      </motion.a>
-    </motion.div>
+      </a>
+    </div>
   );
 };
 
@@ -1767,10 +1894,7 @@ const FinalCTA = () => {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
         >
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
             Stop Losing Money to Power Outages
@@ -1781,22 +1905,22 @@ const FinalCTA = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-            <motion.a
+            <a
               href="/contact?action=quote"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              
+              
               className="px-10 py-5 bg-black text-white font-bold text-lg rounded-xl shadow-2xl hover:bg-gray-900 transition-all"
             >
               Get Free Quote Now →
-            </motion.a>
-            <motion.a
+            </a>
+            <a
               href="tel:+254768860665"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              
+              
               className="px-10 py-5 bg-white/20 backdrop-blur text-white font-bold text-lg rounded-xl border-2 border-white/50 hover:bg-white/30 transition-all"
             >
               📞 Call +254 768 860 665
-            </motion.a>
+            </a>
           </div>
 
           <div className="flex flex-wrap justify-center gap-6 text-white/80 text-sm">
@@ -1804,7 +1928,7 @@ const FinalCTA = () => {
             <span className="flex items-center gap-2">✅ No Obligation Quote</span>
             <span className="flex items-center gap-2">✅ Response Within 2 Hours</span>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -1881,9 +2005,9 @@ const AbstractFloatingShapes = lazy(() => import('@/components/webgl/AbstractFlo
 const VideoHero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+    <div
+      
+      
       className="relative w-full h-[60vh] mb-12 rounded-2xl overflow-hidden"
     >
       <CinematicVideo
@@ -1899,62 +2023,73 @@ const VideoHero = () => {
         className="w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-[5]" />
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: videoLoaded ? 1 : 0, y: videoLoaded ? 0 : 20 }}
-        transition={{ delay: 0.5 }}
+      <div
+        
+        
+        
         className="absolute bottom-0 left-0 right-0 p-8 text-white z-10"
       >
         <h2 className="text-4xl font-bold mb-4">Generator Excellence</h2>
         <p className="text-xl text-gray-300">From installation to maintenance, we deliver power reliability</p>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 
 // 3D Generator Viewer Component
-const Generator3DViewer = ({ generator }: { generator: typeof cumminsGenerators[0] }) => {
-  const [isViewing, setIsViewing] = useState(false);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+/**
+ * Generator specification card.
+ *
+ * WHAT THIS REPLACED, and why (2026-08-26).
+ * It was billed as an "Interactive 3D Generator Viewer" with "AR preview
+ * capability". It was neither. It rendered a lightning-bolt EMOJI at text-6xl
+ * inside a CSS perspective transform, captioned "Drag to rotate / Click for AR
+ * view", above a "View in AR" button that opened /ar/generator/<model> - a
+ * route that does not exist in this application; on desktop it raised a
+ * browser alert() instead.
+ *
+ * Three problems, the first being the serious one:
+ *   1. CREDIBILITY. Someone weighing a KES 2,000,000 purchase clicked "3D
+ *      viewer", dragged, and watched an emoji spin. That damages trust at
+ *      exactly the moment it is being formed.
+ *   2. MOBILE. Interaction was onMouseMove/onMouseDown only, so on a phone -
+ *      where most of this audience is - "Drag to rotate" did nothing at all.
+ *   3. A DEAD LINK. The AR button sent iOS users to a 404.
+ *
+ * It now shows a real photograph of equipment we supply, above the
+ * specification that was already in the card. Nothing is claimed that the
+ * component does not do.
+ */
+const GeneratorSpecCard = ({ generator }: { generator: typeof cumminsGenerators[0] }) => {
+  /*
+   * generator.image is deliberately NOT used. Those URLs point at
+   * /wp-content/uploads/ on the old WordPress site; checked 2026-08-26, two
+   * return 403 and one is unreachable, so rendering them would show broken
+   * images. The photographs below are real files in this repository.
+   */
+  const photo =
+    generator.kva >= 500
+      ? '/images/voltka/voltka-warehouse-fleet.webp'
+      : generator.kva >= 150
+        ? '/images/voltka/voltka-vks165-stock-forklift.webp'
+        : generator.kva >= 50
+          ? '/images/voltka/voltka-vks44-hero-profile.webp'
+          : '/images/voltka/cat-canopy-studio.webp';
 
   return (
     <div className="relative">
-      <motion.div
-        className="relative h-64 bg-gradient-to-br from-gray-900 to-black rounded-xl border border-gray-800 overflow-hidden cursor-grab active:cursor-grabbing"
-        onMouseMove={(e) => {
-          if (isViewing) {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width - 0.5) * 360;
-            const y = ((e.clientY - rect.top) / rect.height - 0.5) * 360;
-            setRotation({ x: y, y: x });
-          }
-        }}
-        onMouseDown={() => setIsViewing(true)}
-        onMouseUp={() => setIsViewing(false)}
-        onMouseLeave={() => setIsViewing(false)}
-        style={{
-          transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-        }}
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-6xl">⚡</div>
-        </div>
-        <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm p-3 rounded-lg">
-          <p className="text-white text-sm text-center">Drag to rotate {'\u2022'} Click for AR view</p>
-        </div>
-      </motion.div>
-      <button
-        onClick={() => {
-          if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-            window.open(`/ar/generator/${generator.model}`, '_blank');
-          } else {
-            alert('AR preview available on mobile devices. Scan QR code for AR experience.');
-          }
-        }}
-        className="mt-4 w-full cta-button-primary"
-      >
-        📱 View in AR
-      </button>
+      <div className="relative h-64 overflow-hidden rounded-xl border border-gray-800 bg-black/40">
+        <Image
+          src={photo}
+          alt={`${generator.model} - ${generator.kva} kVA diesel generator`}
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover"
+        />
+      </div>
+      <p className="mt-3 text-xs text-gray-500">
+        Photograph of equipment we supply. The set offered is confirmed on your quotation.
+      </p>
     </div>
   );
 };
@@ -1987,10 +2122,7 @@ const GeneratorComparison = () => {
       </div>
 
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
+        <div
         >
           <div className="grid md:grid-cols-3 gap-4 mb-6">
             {cumminsGenerators.slice(0, 6).map((gen) => (
@@ -2047,7 +2179,7 @@ const GeneratorComparison = () => {
               </table>
             </div>
           )}
-        </motion.div>
+        </div>
       )}
     </div>
   );
@@ -2101,9 +2233,7 @@ const GeneratorHeroSlides = () => {
 export default function GeneratorPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { isLite } = usePerformanceTier();
-  const { scrollYProgress } = useScroll({ target: containerRef });
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
+
 
   // GSAP ScrollTrigger animations - loaded dynamically
   useEffect(() => {
@@ -2152,7 +2282,7 @@ export default function GeneratorPage() {
   }, []);
 
   return (
-    <main ref={containerRef} className="eims-section min-h-screen relative">
+    <div ref={containerRef} className="eims-section min-h-screen relative">
       {/* VideoObject Schema - Fixes Google Search Console video indexing */}
       <script
         type="application/ld+json"
@@ -2170,7 +2300,7 @@ export default function GeneratorPage() {
             publisher: {
               '@type': 'Organization',
               name: 'Emerson EiMS',
-              logo: { '@type': 'ImageObject', url: 'https://www.emersoneims.com/logo.png' }
+              logo: { '@type': 'ImageObject', url: 'https://www.emersoneims.com/emerson-eims-logo.png' }
             }
           })
         }}
@@ -2181,9 +2311,8 @@ export default function GeneratorPage() {
       {/* UFO background removed — off-brand for an industrial sales page.
           The hero gets a professional amber ember field instead (below). */}
       {/* Enhanced Hero Video - Hollywood Cinematic Grade */}
-      <motion.section
+      <section
         className="relative w-full h-screen overflow-hidden bg-black"
-        style={{ opacity: heroOpacity, scale: heroScale }}
       >
         {/* Cinematic auto-rotating big-image background (replaced the
             unreliable hero video — same Hollywood grade, much sharper). */}
@@ -2207,13 +2336,8 @@ export default function GeneratorPage() {
           />
 
           {/* Anamorphic Lens Flare */}
-          <motion.div
+          <div
             className="absolute top-1/3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none z-[3]"
-            animate={{
-              opacity: [0.2, 0.6, 0.2],
-              scaleX: [0.8, 1.2, 0.8],
-            }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           />
         </div>
 
@@ -2221,57 +2345,116 @@ export default function GeneratorPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 pointer-events-none z-[5]" />
 
         {/* Awwwards ambient layer — GSAP parallax + lazy Three.js amber embers */}
-        <HeroCinematicFX />
 
-        <motion.div
+        <div
           className="relative z-10 eims-shell flex flex-col items-center justify-center h-full text-center"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
         >
-          <motion.h1
-            className="text-6xl md:text-8xl font-display text-brand-gold drop-shadow-glow mb-6"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
+          <h1
+            className="text-5xl md:text-7xl font-display text-brand-gold drop-shadow-glow mb-6"
           >
-            Cummins Generators
-          </motion.h1>
-          <motion.p
+            VOLTKA Cummins Diesel Generators
+          </h1>
+          <p
             className="mt-4 max-w-3xl text-white/90 text-xl md:text-2xl font-light"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
           >
-            From 20kVA to 2000kVA, verified specs, Hollywood{'\u2011'}grade visuals, and engineering mastery.
+            10kVA to 2000kVA, sized to your actual load rather than a catalogue guess.
             <br />
-            <span className="text-[#fbbf24]">3D View {'\u2022'} AR Preview {'\u2022'} Real-time Monitoring</span>
-          </motion.p>
-          <motion.div
+            <span className="text-[#fbbf24]">
+              2-year warranty on new sets {'\u2022'} 1 year free servicing {'\u2022'} mobile workshop in all 47 counties
+            </span>
+          </p>
+          <div
             className="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
           >
-            <a href="#models" className="cta-button-primary">Explore Models {'\u2192'}</a>
-            <a href="#comparison" className="cta-button-secondary">Compare Generators {'\u2192'}</a>
-            <a href="/contact" className="cta-button-secondary">Get Quote {'\u2192'}</a>
-          </motion.div>
-        </motion.div>
+            <a href="#quote" className="cta-button-primary">Get a Quote {'\u2192'}</a>
+            <a href="#new-generators" className="cta-button-secondary">See the Range {'\u2192'}</a>
+            <a href="#comparison" className="cta-button-secondary">Compare Sets {'\u2192'}</a>
+          </div>
+        </div>
 
-        <motion.div
+        <div
           className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
         >
           <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
             <div className="w-1 h-3 bg-white/50 rounded-full mt-2" />
           </div>
-        </motion.div>
-      </motion.section>
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          CUMMINS AUTHORIZED DEALER - MAIN BRAND SHOWCASE
+          QUOTE CAPTURE — the page's only form.
+
+          Before this was added, /generators had ZERO forms. A page with 29
+          sections and 80 sub-headings offered a buyer exactly three ways to
+          act: ring a phone number, open WhatsApp, or leave. For capital
+          equipment at 10kVA-2000kVA that is a real leak — this is researched
+          out of hours, by people who will not phone a stranger, and a visitor
+          who leaves without giving a name leaves no way to follow up.
+
+          It sits immediately below the hero deliberately: the hero's primary
+          CTA is #quote, so the first click lands here rather than bouncing the
+          visitor to /contact and off this page's story.
+
+          The form posts to /api/contact, which is the path that actually
+          stores and delivers a lead. Do NOT repoint it at
+          /api/notifications/new-lead — that endpoint returns success without
+          storing or delivering anything.
+      ════════════════════════════════════════════════════════════════ */}
+      <section id="quote" className="py-16 bg-gradient-to-b from-black via-amber-950/20 to-black scroll-mt-28">
+        <div className="eims-shell py-0">
+          <div className="grid lg:grid-cols-2 gap-10 items-start">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-display text-brand-gold mb-4">
+                Tell us the load. We&apos;ll size the set.
+              </h2>
+              <p className="text-white/80 text-lg leading-relaxed mb-6">
+                Send the equipment you need to run and we will come back with the correct
+                kVA, the fuel figure, and a written price — not a brochure range. If a
+                smaller set does the job, we will say so.
+              </p>
+              <ul className="space-y-3 text-white/75">
+                <li className="flex gap-3">
+                  <span className="text-brand-gold font-bold">✓</span>
+                  <span>2-year warranty and 1 year free servicing on new sets</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-brand-gold font-bold">✓</span>
+                  <span>Installation and servicing in all 47 counties, by mobile workshop</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-brand-gold font-bold">✓</span>
+                  <span>Genuine spare parts held in stock, not ordered after a breakdown</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-brand-gold font-bold">✓</span>
+                  <span>Independent — we fit the set to your load, not to a quota</span>
+                </li>
+              </ul>
+              <p className="mt-6 text-white/60 text-sm">
+                Prefer to talk? Call{' '}
+                <a href="tel:+254768860665" className="text-brand-gold hover:underline">
+                  +254 768 860 665
+                </a>
+                {' '}— Embakasi, off Airport North Road.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-amber-500/30 bg-black/60 p-6 md:p-8 backdrop-blur">
+              <h3 className="text-xl font-bold text-white mb-1">Request a generator quote</h3>
+              <p className="text-white/60 text-sm mb-6">
+                We reply the same working day.
+              </p>
+              <QuickInquiryForm
+                service="Generator supply"
+                ctaLabel="Get My Quote"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          CUMMINS SALES & SERVICE - MAIN BRAND SHOWCASE
       ════════════════════════════════════════════════════════════════ */}
       <CumminsBanner variant="hero" showPricing={true} showCTA={true} />
 
@@ -2308,10 +2491,10 @@ export default function GeneratorPage() {
       ════════════════════════════════════════════════════════════════ */}
       <section className="py-20 bg-gradient-to-b from-black via-gray-900/30 to-black">
         <div className="eims-shell">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
+            
+            
+            
             className="text-center mb-12"
           >
             <span className="text-amber-500 text-sm font-medium uppercase tracking-wider">
@@ -2323,7 +2506,7 @@ export default function GeneratorPage() {
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
               From installation to maintenance, see our professional work across Kenya
             </p>
-          </motion.div>
+          </div>
 
           <CinematicImageGallery
             images={generatorGalleryImages}
@@ -2339,30 +2522,29 @@ export default function GeneratorPage() {
       ════════════════════════════════════════════════════════════════ */}
       <section className="py-24 bg-gradient-to-b from-black via-gray-900/50 to-black">
         <div className="eims-shell">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+          <div
+            
+            
+            
+            
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Industry-Leading Warranties
+              Warranties, In Writing
             </h2>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
               Every Cummins generator backed by comprehensive coverage and lifetime support
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Main Product Warranty */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
+            <div
+              
+              
+              
+              
               className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-8 rounded-2xl border border-amber-500/30 backdrop-blur-sm"
-              whileHover={{ scale: 1.02, boxShadow: '0 20px 40px rgba(251, 191, 36, 0.3)' }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30">
@@ -2383,42 +2565,41 @@ export default function GeneratorPage() {
                   'Free maintenance for first 6 months',
                   '24/7 emergency breakdown support'
                 ].map((item, i) => (
-                  <motion.li
+                  <li
                     key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
+                    
+                    
+                    
+                    
                     className="flex items-start gap-2 text-gray-300"
                   >
                     <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     <span className="text-sm leading-relaxed">{item}</span>
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.8 }}
+              <div
+                
+                
+                
+                
                 className="mt-6 pt-6 border-t border-white/10"
               >
                 <p className="text-xs text-gray-400 text-center">
                   ✓ Backed by EmersonEIMS Quality Guarantee
                 </p>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
 
             {/* Service Guarantee */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
+            <div
+              
+              
+              
+              
               className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 p-8 rounded-2xl border border-blue-500/30 backdrop-blur-sm"
-              whileHover={{ scale: 1.02, boxShadow: '0 20px 40px rgba(59, 130, 246, 0.3)' }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
@@ -2427,8 +2608,8 @@ export default function GeneratorPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-white">6-Month Service</h3>
-                  <p className="text-sm text-gray-400">Complimentary Maintenance</p>
+                  <h3 className="text-2xl font-bold text-white">1 Year Free Servicing</h3>
+                  <p className="text-sm text-gray-400">Complimentary maintenance on new sets</p>
                 </div>
               </div>
               <ul className="space-y-3">
@@ -2438,41 +2619,41 @@ export default function GeneratorPage() {
                   'Performance optimization checks',
                   'Load bank testing'
                 ].map((item, i) => (
-                  <motion.li
+                  <li
                     key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.5 + i * 0.1 }}
+                    
+                    
+                    
+                    
                     className="flex items-start gap-2 text-gray-300"
                   >
                     <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     <span className="text-sm leading-relaxed">{item}</span>
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.9 }}
+              <div
+                
+                
+                
+                
                 className="mt-6 pt-6 border-t border-white/10"
               >
                 <p className="text-xs text-center text-gray-400">
                   📞 24/7 Support: <span className="text-blue-400">+254 768 860 665</span>
                 </p>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           </div>
 
           {/* Warranty Terms Summary */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.6 }}
+          <div
+            
+            
+            
+            
             className="mt-12 max-w-4xl mx-auto"
           >
             <div className="bg-gradient-to-r from-gray-900 to-black p-6 rounded-xl border border-gray-800">
@@ -2500,7 +2681,7 @@ export default function GeneratorPage() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -2535,9 +2716,13 @@ export default function GeneratorPage() {
           </div>
         )}
         <div className="relative z-10 eims-shell py-0">
+          {/* "Gravity-Defying Technology" described a decorative WebGL
+              animation, not anything about the generators. Nothing here
+              defies gravity and no such technology is sold. Retitled to
+              what the section actually is. */}
           <SectionLead
-            title="Gravity-Defying Technology"
-            subtitle="Experience our cutting-edge generator technology in 3D"
+            title="Explore the Range in 3D"
+            subtitle="Rotate and inspect our generator sets from any angle"
             centered
           />
         </div>
@@ -2547,27 +2732,44 @@ export default function GeneratorPage() {
       <section id="3d-viewer" className="py-20 bg-gradient-to-b from-black to-gray-900">
         <div className="eims-shell py-0">
           <SectionLead
-            title="Interactive 3D Generator Viewer"
-            subtitle="Explore generators in 3D with AR preview capability"
+            title="Cummins generator specifications"
+            subtitle="Engine, alternator and rating for the sets we supply"
             centered
           />
           <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {cumminsGenerators.slice(0, 3).map((gen) => (
-              <motion.div
+              <div
                 key={gen.model}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                
+                
+                
                 className="bg-gradient-to-br from-gray-900 to-black rounded-xl border border-gray-800 p-6"
               >
                 <h3 className="text-2xl font-bold text-[#fbbf24] mb-4 font-display">{gen.model}</h3>
-                <Generator3DViewer generator={gen} />
+                <GeneratorSpecCard generator={gen} />
+                {/*
+                  ENGINE IS RENDERED ONLY WHERE THE SPEC IS VERIFIED.
+                  See the provenance note in app/lib/data/cumminsgenerators.ts:
+                  from 300 kVA upward the engine column claims 36-56 kW per
+                  litre, roughly double what any diesel achieves, and one
+                  alternator frame is repeated from 100 kVA to 2000 kVA. Model,
+                  kVA and phase are fine and still shown.
+                */}
                 <div className="mt-4 space-y-2">
                   <p className="text-white"><span className="text-gray-400">Power:</span> {gen.kva} kVA</p>
                   <p className="text-white"><span className="text-gray-400">Phase:</span> {gen.phase}</p>
-                  <p className="text-white"><span className="text-gray-400">Engine:</span> {gen.engine}</p>
+                  {gen.specsVerified ? (
+                    <>
+                      <p className="text-white"><span className="text-gray-400">Engine:</span> {gen.engine}</p>
+                      <p className="text-white"><span className="text-gray-400">Alternator:</span> {gen.alternator}</p>
+                    </>
+                  ) : (
+                    <p className="text-gray-400">
+                      <span className="text-gray-400">Engine &amp; alternator:</span> confirmed on quotation
+                    </p>
+                  )}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -2605,56 +2807,141 @@ export default function GeneratorPage() {
       </section>
 
       {/* Enhanced Models Preview */}
-      <section id="models" className="py-16 bg-black">
+      {/*
+        Anchor target for "New Generators".
+        GENERATOR_HUB_SECTIONS above and the main navigation bar
+        (components/navigation/NavigationBar.tsx) both point at
+        /generators#new-generators, but nothing on the page carried that id —
+        so the top-level "New Generators" menu item scrolled nowhere and every
+        visitor who clicked it thought the site was broken.
+        It cannot simply be added to the <section> below, because that element's
+        id="models" is itself linked from two other places. Hence a dedicated
+        anchor. scroll-mt-28 stops the sticky header covering the heading.
+      */}
+      <span id="new-generators" aria-hidden="true" className="block scroll-mt-28" />
+      <section id="models" className="py-16 bg-black scroll-mt-28">
         <div className="eims-shell py-0">
           <SectionLead
-            title="Popular Models"
-            subtitle="From compact 20kVA to industrial 2000kVA"
+            title="New Generators — Cummins & VOLTKA"
+            subtitle="From compact 20kVA to industrial 2000kVA, supplied with a 2-year warranty on new sets"
             centered
           />
           
           <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {cumminsGenerators.slice(0, 8).map((gen, index) => (
-              <motion.div
+              <div
                 key={gen.model}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                
+                
+                
+                
                 className="group bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-gray-700 hover:border-brand-gold transition-all hover:shadow-2xl hover:shadow-amber-500/20"
               >
-                <div className="relative h-48 mb-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-50 group-hover:opacity-100 transition-opacity">
-                    {'\u26A1'}
-                  </div>
+                {/*
+                  This was a \u26A1 emoji at text-5xl standing in for the product
+                  photograph on every card. A generator catalogue where the
+                  product image is an emoji does not read as a company that has
+                  the machines. Real photographs exist in this repo and are used
+                  here, picked by rating so the cards are not identical.
+                */}
+                <div className="relative h-48 mb-4 bg-black/40 rounded-lg overflow-hidden">
+                  <Image
+                    src={
+                      gen.kva >= 500
+                        ? '/images/voltka/voltka-warehouse-fleet.webp'
+                        : gen.kva >= 150
+                          ? '/images/voltka/voltka-vks165-stock-forklift.webp'
+                          : gen.kva >= 50
+                            ? '/images/voltka/voltka-vks44-hero-profile.webp'
+                            : '/images/voltka/cat-canopy-studio.webp'
+                    }
+                    alt={`${gen.model} \u2014 ${gen.kva} kVA diesel generator`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                   <div className="absolute bottom-2 right-2 px-2 py-1 bg-amber-500 text-black text-xs font-bold rounded">
                     {gen.kva} kVA
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-brand-gold mb-2">{gen.model}</h3>
                 <p className="text-white/80 text-sm mb-1">{gen.phase} Phase</p>
-                <p className="text-white/60 text-xs mb-4">{gen.engine}</p>
+                {/* Engine only where verified \u2014 see cumminsgenerators.ts provenance note. */}
+                <p className="text-white/60 text-xs mb-4">
+                  {gen.specsVerified ? gen.engine : 'Engine confirmed on quotation'}
+                </p>
+                {/*
+                  VIEW DETAILS WAS A 404 ON EVERY CARD (fixed 2026-08-26).
+
+                  It linked to /generators/<model-slug> \u2014 /generators/cummins-c20d5
+                  and the rest. Verified live: all of them returned 404. The
+                  primary call to action on every product card sent the buyer
+                  nowhere, which is as expensive as a defect gets on a page whose
+                  job is to sell.
+
+                  It now points at the per-size page, which exists and returns
+                  200 for every size we publish. Sizes above our published range
+                  (750 kVA and up) have no page of their own, so those go to the
+                  full price list rather than to another dead URL.
+
+                  The "AR preview" button beside it is REMOVED, not relinked: it
+                  opened /ar/generator/<model>, a route that does not exist in
+                  this application, and on any non-iOS device it did nothing at
+                  all \u2014 no else branch. A button that silently does nothing is
+                  worse than no button.
+                */}
                 <div className="flex gap-2">
                   <a
-                    href={`/generators/${gen.model.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={
+                      GENERATOR_SIZES.some((s) => s.kva === gen.kva)
+                        ? `/generators/sizes/${gen.kva}-kva`
+                        : '/pricing/generator-prices-kenya'
+                    }
                     className="flex-1 text-center px-4 py-2 bg-amber-500 text-black font-semibold rounded-lg hover:bg-amber-600 transition-all text-sm"
                   >
                     View Details
                   </a>
-                  <button
-                    onClick={() => {
-                      if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-                        window.open(`/ar/generator/${gen.model}`, '_blank');
-                      }
-                    }}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-sm"
-                    title="AR Preview (Mobile)"
+                  <a
+                    href="/contact"
+                    className="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 transition-all text-sm"
                   >
-                    {'\uD83D\uDCF1'}
-                  </button>
+                    Get Quote
+                  </a>
                 </div>
-              </motion.div>
+              </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/*
+        Mid-page conversion band, placed immediately after the model grid.
+
+        This is the peak-intent moment on the page: the visitor has just looked
+        at the range and is holding a rough kVA figure in their head. Every
+        other CTA on this page sends them to /contact — off the page and out of
+        the story — so this one points at the on-page #quote form instead. The
+        /contact links elsewhere are left alone because several carry useful
+        intent parameters (?subject=leasing, ?generator=VOLTKA) that the form
+        does not.
+      */}
+      <section className="py-12 bg-gradient-to-r from-amber-950/30 via-black to-amber-950/30 border-y border-amber-500/20">
+        <div className="eims-shell py-0">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-display text-brand-gold mb-2">
+                Not sure which size you need?
+              </h2>
+              <p className="text-white/75 max-w-2xl">
+                Send us the equipment you need to run. We will work out the correct kVA and
+                come back with a written price — and if a smaller set does the job, we will
+                tell you that instead.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+              <a href="#quote" className="cta-button-primary whitespace-nowrap">Get a Quote {'→'}</a>
+              <a href="tel:+254768860665" className="cta-button-secondary whitespace-nowrap">Call an Engineer</a>
+            </div>
           </div>
         </div>
       </section>
@@ -2668,11 +2955,8 @@ export default function GeneratorPage() {
             centered
           />
           
-          <motion.div
+          <div
             className="mt-12"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
           >
             <OptimizedImage
               src="https://www.emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp"
@@ -2681,7 +2965,7 @@ export default function GeneratorPage() {
               height={1080}
               className="w-full rounded-xl border border-amber-500/20"
             />
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -2716,12 +3000,12 @@ export default function GeneratorPage() {
           
           <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {generatorServices.slice(0, 6).map((service: string, index: number) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                
+                
+                
+                
                 className="group bg-gradient-to-br from-black to-gray-900 rounded-xl p-6 border border-gray-800 hover:border-[#fbbf24] transition-all hover:shadow-xl hover:shadow-[#fbbf24]/20"
               >
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -2729,7 +3013,7 @@ export default function GeneratorPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{service}</h3>
                 <p className="text-gray-400 text-sm">Professional service with 24/7 support</p>
-              </motion.div>
+              </div>
             ))}
           </div>
           
@@ -2751,10 +3035,10 @@ export default function GeneratorPage() {
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            <div
+              
+              
+              
               className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm mb-6"
             >
               <span className="relative flex h-2 w-2">
@@ -2762,7 +3046,7 @@ export default function GeneratorPage() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
               </span>
               NEW: AI-Powered Tools
-            </motion.div>
+            </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
               Generator Maintenance Hub
             </h2>
@@ -2782,12 +3066,12 @@ export default function GeneratorPage() {
               { icon: '📐', title: 'Interactive Diagrams', desc: 'Click any part on the generator to see details', color: 'pink' },
               { icon: '💰', title: 'Cost Tracker', desc: 'Track repairs, calculate ROI, know when to replace', color: 'red' },
             ].map((feature, index) => (
-              <motion.div
+              <div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                
+                
+                
+                
                 className="group bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-800 hover:border-cyan-500/50 transition-all hover:shadow-xl hover:shadow-cyan-500/10"
               >
                 <div className="text-4xl mb-4">{feature.icon}</div>
@@ -2795,38 +3079,38 @@ export default function GeneratorPage() {
                   {feature.title}
                 </h3>
                 <p className="text-slate-400 text-sm">{feature.desc}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <motion.a
+            <a
               href="/generators/maintenance-companion"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              
+              
+              
+              
+              
               className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all"
             >
               <span className="text-2xl">🤖</span>
               <span>Open Maintenance Hub</span>
               <span className="text-xl">→</span>
-            </motion.a>
-            <motion.a
+            </a>
+            <a
               href="/generator-oracle"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              
+              
+              
+              
+              
+              
               className="inline-flex items-center gap-3 px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-700 hover:border-amber-500/50 transition-all"
             >
               <span className="text-2xl">🔍</span>
               <span>Lookup Fault Code</span>
-            </motion.a>
+            </a>
           </div>
 
           {/* Trust Indicators */}
@@ -2877,7 +3161,7 @@ export default function GeneratorPage() {
               Hot Generator Deals
             </h2>
             <p className="text-xl text-white/70">
-              Limited stock - Best prices in Kenya with 3-Year Warranty
+              Sized to your measured load, with a 2-year warranty on new sets
             </p>
           </div>
           <div className="grid lg:grid-cols-2 gap-8">
@@ -2887,15 +3171,27 @@ export default function GeneratorPage() {
         </div>
       </section>
 
-      {/* Generator Price List - Transparent Pricing */}
+      {/*
+        Generator price list.
+
+        HEADING DIFFERENTIATED 2026-08-26. This section and the capacity-band
+        section far above it were both titled "Generator Prices Kenya 2026" —
+        the same H2 twice on one page. Google reads that as the page covering
+        one topic twice and cannot tell which block to surface; a reader
+        scrolling past assumes they have looped back.
+
+        NOTHING WAS REMOVED. The two blocks are genuinely different — that one
+        gives price BANDS by capacity, this one is the itemised list by model —
+        so they now say which is which. The #prices anchor is unchanged.
+      */}
       <section id="prices" className="py-20 bg-gradient-to-br from-black via-amber-900/10 to-black">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">
-              Generator Prices Kenya 2026
+              Full price list — by model and capacity
             </h2>
             <p className="text-xl text-white/70">
-              Transparent pricing - Cummins, Perkins, FG Wilson
+              Every size we supply, with the figure we quote from — Cummins, Perkins, FG Wilson
             </p>
           </div>
           <GeneratorPriceList />
@@ -2942,7 +3238,7 @@ export default function GeneratorPage() {
               className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-xl hover:from-cyan-400 hover:to-blue-400 transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50"
             >
               <span className="text-2xl">🔧</span>
-              <span>Open Full Diagnostic Tool (5,930+ Error Codes)</span>
+              <span>Open Full Diagnostic Tool</span>
               <span className="text-xl">→</span>
             </a>
           </div>
@@ -2984,8 +3280,18 @@ export default function GeneratorPage() {
       {/* ═══════════════════════════════════════════════════════════════════
           💬 FLOATING WHATSAPP - Always Available
       ════════════════════════════════════════════════════════════════ */}
+      {/* Funnel into the Repair Centre. This page carries real generator-buying
+          traffic and previously offered no route to the 9 generator diagnosis
+          guides. See the funnel audit note in RepairCentreCallout. */}
+      <RepairCentreCallout
+        hub="generators"
+        accent="amber"
+        heading="Already own a generator that is playing up?"
+        body="Before you replace a set, it is worth knowing what is actually wrong with it. Our engineers have written up the diagnostic sequences they use on site — starting faults, protective shutdowns, output problems, cooling and fuel. Free to read, no sign-up."
+      />
+
       <FloatingWhatsApp />
-    </main>
+    </div>
   );
 }
 

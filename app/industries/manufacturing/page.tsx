@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Manufacturing Power Solutions | Industrial Generators | EmersonEIMS Kenya',
+  title: 'Manufacturing Power Solutions',
   description: 'Reliable industrial power for factories and manufacturing plants across Kenya. Generator sizing, load analysis, preventive maintenance, emergency backup. 60% cost savings typical.',
   alternates: {
     canonical: 'https://www.emersoneims.com/industries/manufacturing',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ManufacturingIndustriesPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -166,14 +166,14 @@ export default function ManufacturingIndustriesPage() {
           <div className="grid md:grid-cols-2 gap-8">
             {[
               {
-                factory: 'Nairobi Steel Works',
+                factory: 'Steel works (Nairobi)',
                 issue: 'Grid outages causing production stops (KES 200K/hour loss), monthly equipment damage',
                 solution: '250 kVA generator + solar canopy + predictive maintenance SLA',
                 result: '99.7% uptime, KES 60M annual production protected, 50% fuel savings',
                 investment: 'KES 3.2M',
               },
               {
-                factory: 'East African Beverages',
+                factory: 'Beverage plant (Nairobi)',
                 issue: 'Refrigeration failures destroying product batches (KES 500K-1M per incident)',
                 solution: 'Dedicated UPS for cold-chain + 150 kVA backup + temperature monitoring',
                 result: 'Zero product loss in 18 months, KES 12M+ damage prevention',
@@ -248,6 +248,6 @@ export default function ManufacturingIndustriesPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * CUMMINS AUTHORIZED DEALER BANNER
+ * CUMMINS SALES & SERVICE BANNER
  * Sci-Fi Black Design with Neon Accents, 3D Effects & Hover Animations
- * 3 Years Warranty + 1 Year Free Service
+ * 2 Years Warranty + 1 Year Free Service
  */
 
 import { motion } from 'framer-motion';
@@ -87,14 +87,14 @@ export default function CumminsBanner({
                     transition={{ delay: 0.2 }}
                     className="text-center lg:text-left"
                   >
-                    {/* Authorized Badge */}
+                    {/* Sales & service badge */}
                     <motion.div
                       whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(0, 255, 255, 0.5)' }}
                       className="inline-flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-cyan-500/20 to-cyan-500/10 backdrop-blur-xl rounded-full border border-cyan-500/30 mb-8"
                       style={{ boxShadow: '0 0 20px rgba(0, 255, 255, 0.2)' }}
                     >
                       <Sparkles className="w-5 h-5 text-cyan-400" />
-                      <span className="text-cyan-300 font-semibold tracking-wide">AUTHORIZED CUMMINS DEALER</span>
+                      <span className="text-cyan-300 font-semibold tracking-wide">CUMMINS SALES & SERVICE</span>
                     </motion.div>
 
                     {/* Main Heading */}
@@ -135,7 +135,7 @@ export default function CumminsBanner({
                         <div className="p-2 bg-green-500/20 rounded-xl">
                           <Shield className="w-6 h-6 text-green-400" />
                         </div>
-                        <span className="text-white font-bold">3 Years Warranty</span>
+                        <span className="text-white font-bold">2 Years Warranty</span>
                       </motion.div>
 
                       <motion.div
@@ -188,9 +188,9 @@ export default function CumminsBanner({
                     className="grid grid-cols-2 gap-4"
                   >
                     {[
-                      { icon: <Shield className="w-8 h-8" />, title: '3 Years Warranty', desc: 'Comprehensive coverage', color: 'green', glow: 'rgba(34, 197, 94, 0.3)' },
+                      { icon: <Shield className="w-8 h-8" />, title: '2 Years Warranty', desc: 'Comprehensive coverage', color: 'green', glow: 'rgba(34, 197, 94, 0.3)' },
                       { icon: <Wrench className="w-8 h-8" />, title: '1 Year Free Service', desc: 'Included maintenance', color: 'blue', glow: 'rgba(59, 130, 246, 0.3)' },
-                      { icon: <Award className="w-8 h-8" />, title: 'Authorized Dealer', desc: 'Official Voltka partner', color: 'amber', glow: 'rgba(245, 158, 11, 0.3)' },
+                      { icon: <Award className="w-8 h-8" />, title: 'Sales & Service', desc: 'Cummins generator sales and service', color: 'amber', glow: 'rgba(245, 158, 11, 0.3)' },
                       { icon: <Zap className="w-8 h-8" />, title: '10-2000KVA', desc: 'All power needs', color: 'cyan', glow: 'rgba(0, 255, 255, 0.3)' },
                     ].map((item, i) => (
                       <motion.div
@@ -301,7 +301,7 @@ export default function CumminsBanner({
             </motion.div>
             <div>
               <h3 className="text-xl font-bold text-white">CUMMINS by VOLTKA</h3>
-              <p className="text-gray-400">Authorized Dealer | 10-2000KVA</p>
+              <p className="text-gray-400">Sales & Service | 10-2000KVA</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -365,8 +365,8 @@ export default function CumminsBanner({
 
           <div className="space-y-3 mb-6">
             {[
-              { text: 'Authorized Dealer', icon: <CheckCircle className="w-4 h-4" /> },
-              { text: '3 Years Warranty', icon: <CheckCircle className="w-4 h-4" /> },
+              { text: 'Sales & Service', icon: <CheckCircle className="w-4 h-4" /> },
+              { text: '2 Years Warranty', icon: <CheckCircle className="w-4 h-4" /> },
               { text: '1 Year Free Service', icon: <CheckCircle className="w-4 h-4" /> },
               { text: '10-2000KVA Range', icon: <CheckCircle className="w-4 h-4" /> },
             ].map((item, i) => (
@@ -410,7 +410,7 @@ export default function CumminsBanner({
         </div>
         <div>
           <p className="text-white font-bold">CUMMINS by VOLTKA</p>
-          <p className="text-gray-400 text-sm">3 Yrs Warranty + 1 Yr Free Service</p>
+          <p className="text-gray-400 text-sm">2 Yrs Warranty + 1 Yr Free Service</p>
         </div>
       </div>
       <motion.div whileHover={{ scale: 1.05 }}>
@@ -447,7 +447,7 @@ export function CumminsBadge() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,255,0.1),transparent_70%)]" />
           <div className="relative text-center">
             <p className="text-amber-400 font-bold text-sm">CUMMINS</p>
-            <p className="text-cyan-400 text-[10px]">3Yr Warranty</p>
+            <p className="text-cyan-400 text-[10px]">2Yr Warranty</p>
           </div>
         </Link>
       </motion.div>

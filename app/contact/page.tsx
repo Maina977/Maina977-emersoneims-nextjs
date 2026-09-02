@@ -815,7 +815,7 @@ export default function SciFiContactPage() {
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   return (
-    <main className="bg-black min-h-screen overflow-hidden">
+    <div className="bg-black min-h-screen overflow-hidden">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center">
         {/* Animated Background */}
@@ -966,7 +966,7 @@ export default function SciFiContactPage() {
               title="INSTANT_LINK"
               value="WhatsApp"
               subtext="Quick response channel for urgent queries and real-time support."
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20an%20enquiry."
               delay={0.2}
               gradient="from-green-600 to-green-700"
             />
@@ -994,7 +994,7 @@ export default function SciFiContactPage() {
                   href={`mailto:${e.address}`}
                   className="group block p-5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-amber-400/40 transition-all"
                 >
-                  <div className="text-[11px] uppercase tracking-wider text-amber-400 font-mono">{e.label}</div>
+                  <div className="text-xs uppercase tracking-wider text-amber-400 font-mono">{e.label}</div>
                   <div className="text-sm md:text-base text-white font-medium mt-1 break-all group-hover:text-amber-300 transition-colors">{e.address}</div>
                   <div className="text-xs text-slate-400 mt-2 leading-snug">{e.use}</div>
                 </a>
@@ -1185,6 +1185,6 @@ export default function SciFiContactPage() {
           </motion.div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

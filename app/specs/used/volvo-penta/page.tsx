@@ -3,13 +3,17 @@ import OptimizedImage from "@/components/media/OptimizedImage";
 import { SectionLead } from "@/components/generators";
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/specs/used/volvo-penta' },
   title: "Used Volvo Penta Generator Specifications",
   description: "Marine-grade Volvo Penta generators (50–1500 kVA) with low emissions, 2,500–7,500 running hours, and closed-loop cooling for remote operations.",
 };
 
 export default function VolvoPentaSpecsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="eims-shell py-16">
         <SectionLead
           title="Volvo Penta Used Generators"
@@ -113,6 +117,6 @@ export default function VolvoPentaSpecsPage() {
           </a>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

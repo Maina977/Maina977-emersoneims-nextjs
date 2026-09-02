@@ -120,20 +120,33 @@ export const BUSINESS_CONTACT = {
 
 export const ALL_SERVICES: Service[] = [
   // ═══════════════════════════════════════════════════════════════════════════
-  // 1. CUMMINS GENERATORS (3-YEAR WARRANTY)
+  // 1. CUMMINS GENERATORS (2-YEAR WARRANTY)
   // ═══════════════════════════════════════════════════════════════════════════
   {
     id: 'cummins-generators',
     slug: 'cummins-generators',
     name: 'Cummins Generators',
     shortName: 'Cummins Generators',
-    tagline: 'Premium Power with Industry-Leading 3-Year Warranty',
-    description: 'Authorized Cummins generator dealer in Kenya. Sales, installation, and maintenance of 10kVA to 2000kVA diesel generators with comprehensive 3-YEAR WARRANTY.',
-    longDescription: `EmersonEIMS is Kenya's premier authorized Cummins generator dealer. We provide complete power solutions including sales, professional installation, and ongoing maintenance support for businesses across East Africa.
+    tagline: 'Cummins-powered sets, sized to your measured load',
+    // CLAIM POLICY — read before editing this block.
+    // THIS IS THE LIVE FILE. lib/building/services/allServices.ts is a dead
+    // mirror imported by nothing; fixing that one alone leaves the false claim
+    // on the live site, which is exactly what happened on the first pass here.
+    // Check the import path before trusting an edit in either file.
+    //
+    // EmersonEIMS SELLS AND SERVICES these brands but is NOT an authorised
+    // dealer, and there is no evidence on file behind any factory-training
+    // claim. Both used to appear here, and this block feeds the Service schema
+    // rendered on /generators — so it was asserting the claim to Google as
+    // structured data. See app/why-emersoneims/page.tsx for the full policy.
+    description: 'Cummins generator supply, installation and maintenance in Kenya. 10kVA to 2000kVA diesel generators, backed by a 2-year warranty and 1 year of free servicing on new sets.',
+    longDescription: `EmersonEIMS supplies, installs and maintains Cummins generators across Kenya. We are an independent power engineering firm — we are not tied to a single manufacturer, so the set we recommend is the one that fits your load, your fuel budget and your site, not the one we are obliged to move.
 
-Our Cummins generators range from compact 10kVA units perfect for small businesses and homes, to massive 2000kVA industrial powerhouses for factories, hospitals, and data centers. Every generator comes with our UNMATCHED 3-YEAR WARRANTY - the best in the industry.
+Our Cummins range runs from compact 10kVA units for small businesses and homes up to 2000kVA industrial sets for factories, hospitals and data centres. Every new generator we supply carries a 2-year warranty and one year of free servicing. Terms are set out in your written quotation.
 
-Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel efficiency, and longevity. With proper maintenance, a Cummins generator can provide decades of dependable service. Our certified technicians are factory-trained to ensure your generator performs at peak efficiency.`,
+Support does not stop at the gate. Our mobile workshop reaches all 47 counties, so a set in Kisumu, Eldoret or Mombasa is serviced to the same standard as one in Nairobi — and we hold genuine spare parts rather than sourcing them after your set has already stopped.
+
+Why Cummins? The engines are known worldwide for reliability, fuel efficiency and long service life. Maintained properly, a Cummins generator will run dependably for decades — and maintenance is precisely what we do.`,
 
     icon: '⚡',
     heroImage: '/images/GEN%202-1920x1080.png',
@@ -143,8 +156,8 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
       '/images/generator-installation.png'
     ],
 
-    metaTitle: 'Cummins Generators Kenya | 3-Year Warranty | 10kVA-2000kVA | EmersonEIMS',
-    metaDescription: 'Authorized Cummins generator dealer in Kenya. 10kVA to 2000kVA diesel generators with 3-YEAR WARRANTY. Professional installation, maintenance. Call +254768860665',
+    metaTitle: 'Cummins Generators Kenya | 10kVA-2000kVA | EmersonEIMS',
+    metaDescription: 'Cummins generators in Kenya, 10kVA to 2000kVA. New sets carry a 2-year warranty and 1 year free servicing. Supply, installation and maintenance in all 47 counties. Call +254768860665',
     keywords: [
       'Cummins generators Kenya',
       'Cummins generator dealer Kenya',
@@ -153,13 +166,13 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
       'industrial generators Kenya',
       'diesel generators for sale Kenya',
       'backup power solutions Kenya',
-      'Cummins authorized dealer'
+      'Cummins generator sales and service Kenya'
     ],
 
     benefits: [
       {
-        title: '3-YEAR WARRANTY',
-        description: 'Industry-leading warranty coverage on all Cummins generators. Complete peace of mind for your investment.',
+        title: '2-YEAR WARRANTY',
+        description: 'Warranty coverage on all new Cummins generators. Complete peace of mind for your investment.',
         icon: '🛡️'
       },
       {
@@ -229,7 +242,7 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
         features: [
           'Perfect for small offices & shops',
           'Single-phase or three-phase options',
-          '3-Year Warranty included',
+          '2-Year Warranty included',
           'Professional installation',
           'Basic ATS included'
         ]
@@ -241,7 +254,7 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
         features: [
           'Ideal for factories & hotels',
           'Sound attenuated canopy',
-          '3-Year Warranty included',
+          '2-Year Warranty included',
           'Automatic Transfer Switch',
           'Remote monitoring option',
           'Extended fuel tank'
@@ -255,7 +268,7 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
         features: [
           'For hospitals, data centers, large industries',
           'Premium sound attenuation',
-          '3-Year Warranty included',
+          '2-Year Warranty included',
           'Fully automatic operation',
           'Remote monitoring & control',
           'Parallel operation ready',
@@ -267,15 +280,15 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
     faqs: [
       {
         question: 'Why should I choose Cummins generators over other brands?',
-        answer: 'Cummins is the world leader in diesel engine technology with over 100 years of experience. Their generators offer superior fuel efficiency (up to 15% better), longer engine life (20,000+ hours), and the best parts availability in Kenya. Plus, we back every Cummins generator with an industry-leading 3-YEAR WARRANTY.'
+        answer: 'Cummins has over a century of diesel engine engineering behind it, and the range is well supported in Kenya — parts for the common blocks are held locally rather than imported after a failure. We supply, install and service the full range, and new sets carry a two-year warranty on terms set out in your quotation.'
       },
       {
         question: 'What size Cummins generator do I need?',
         answer: 'Generator sizing depends on your total load and startup requirements. As a guide: Small office (10-20kVA), Medium business (30-100kVA), Hotel/Factory (150-500kVA), Hospital/Data Center (500-2000kVA). We provide site surveys to calculate your exact requirements.'
       },
       {
-        question: 'What is included in the 3-Year Warranty?',
-        answer: 'Our 3-Year Warranty covers all manufacturing defects in the engine, alternator, control panel, and canopy. It includes parts and labor for covered repairs. Terms and conditions apply - contact us for full details.'
+        question: 'What is included in the 2-Year Warranty?',
+        answer: 'Our 2-Year Warranty covers all manufacturing defects in the engine, alternator, control panel, and canopy. It includes parts and labor for covered repairs. Terms and conditions apply - contact us for full details.'
       },
       {
         question: 'How long does generator installation take?',
@@ -295,14 +308,14 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
     testimonials: [],
 
     stats: [
-      { label: 'Warranty', value: '3 Years' },
+      { label: 'Warranty', value: '2 Years' },
       { label: 'Emergency Response', value: 'Available 24/7' },
       { label: 'Service Coverage', value: 'Nationwide Kenya' },
       { label: 'Consultation', value: 'Free' }
     ],
 
     warranties: [
-      '3-Year Comprehensive Warranty',
+      '2-Year Comprehensive Warranty',
       'Engine warranty by Cummins',
       'Alternator warranty',
       'Parts availability guarantee'
@@ -316,7 +329,8 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
     primaryCTA: 'Get FREE Quote',
     secondaryCTA: 'Download Brochure',
 
-    category: 'power'
+    category: 'power',
+
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -331,7 +345,7 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
     description: 'Professional generator repair and maintenance services in Kenya. 24/7 emergency response, scheduled maintenance contracts, and annual servicing packages for all generator brands.',
     longDescription: `Don't let generator problems disrupt your business. EmersonEIMS provides fast, professional generator repair services across Kenya with 24/7 emergency response.
 
-Our factory-trained technicians service ALL generator brands including Cummins, Perkins, Caterpillar, FG Wilson, SDMO, John Deere, Volvo Penta, and more. From minor adjustments to complete engine overhauls, we have the expertise and genuine parts to get your generator running reliably.
+Our technicians service ALL generator brands including Cummins, Perkins, Caterpillar, FG Wilson, SDMO, John Deere, Volvo Penta, and more. From minor adjustments to complete engine overhauls, we have the expertise and genuine parts to get your generator running reliably.
 
 EMERGENCY REPAIRS: Power out? Our emergency team is on standby 24/7 with fully-equipped service vehicles ready to respond anywhere in Kenya within hours.
 
@@ -345,7 +359,7 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
       '/images/spare-parts.png'
     ],
 
-    metaTitle: 'Generator Repair Kenya | 24/7 Emergency Service | All Brands | EmersonEIMS',
+    metaTitle: 'Generator Repair Kenya | All Brands, 24/7 | EmersonEIMS',
     metaDescription: 'Professional generator repair services in Kenya. 24/7 emergency response, all brands serviced. Cummins, Perkins, CAT experts. Annual maintenance contracts. Call +254768860665',
     keywords: [
       'generator repair Kenya',
@@ -376,8 +390,8 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
         icon: '✅'
       },
       {
-        title: 'Certified Technicians',
-        description: 'Factory-trained technicians with extensive experience on all generator types.',
+        title: 'Experienced Technicians',
+        description: 'Technicians with extensive hands-on experience across all major generator types.',
         icon: '👨‍🔧'
       },
       {
@@ -564,7 +578,7 @@ MANUAL CHANGEOVER: Cost-effective solution for applications where brief manual i
       '/images/changeover-installation.png'
     ],
 
-    metaTitle: 'Automatic Transfer Switch Kenya | ATS Installation | Changeover Switches | EmersonEIMS',
+    metaTitle: 'Automatic Transfer Switch (ATS) Kenya | EmersonEIMS',
     metaDescription: 'Automatic Transfer Switch (ATS) installation in Kenya. Seamless generator changeover. Manual & automatic options. 40A-4000A. Professional installation. Call +254768860665',
     keywords: [
       'automatic transfer switch Kenya',
@@ -768,7 +782,7 @@ SERVICES INCLUDE:
       '/images/panel-fabrication.png'
     ],
 
-    metaTitle: 'Distribution Boards Kenya | Panel Fabrication | MCC | EmersonEIMS',
+    metaTitle: 'Distribution Boards & Panel Fabrication | EmersonEIMS',
     metaDescription: 'Distribution board design, fabrication & installation in Kenya. Main DB, sub-boards, motor control centers. KEBS certified. Quality components. Call +254768860665',
     keywords: [
       'distribution board Kenya',
@@ -977,7 +991,7 @@ SITE SURVEY: Our solar experts will analyze your energy consumption, roof space,
       '/images/solar-panels.png'
     ],
 
-    metaTitle: 'Solar Installation Kenya | Solar Panels | Solar Companies Nairobi | EmersonEIMS',
+    metaTitle: 'Solar Installation Kenya | Panels & Systems | EmersonEIMS',
     metaDescription: 'Solar installation in Kenya. Residential & commercial solar panels. Grid-tied, off-grid, hybrid systems. Free written quotation. Cut bills by 80%. Call +254768860665',
     keywords: [
       'solar installation Kenya',
@@ -1150,7 +1164,8 @@ SITE SURVEY: Our solar experts will analyze your energy consumption, roof space,
     primaryCTA: 'Get a Free Quote',
     secondaryCTA: 'Calculate Savings',
 
-    category: 'renewable'
+    category: 'renewable',
+
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1184,7 +1199,7 @@ QUALITY ASSURANCE: Every rewound motor undergoes comprehensive testing including
       '/images/motor-testing.png'
     ],
 
-    metaTitle: 'Motor Rewinding Kenya | Electric Motor Repair Nairobi | EmersonEIMS',
+    metaTitle: 'Motor Rewinding & Electric Motor Repair | EmersonEIMS',
     metaDescription: 'Professional motor rewinding in Kenya. All motor sizes 0.5HP-500HP. Single-phase, three-phase, DC motors. Fast turnaround. Quality testing. Call +254768860665',
     keywords: [
       'motor rewinding Kenya',
@@ -1379,7 +1394,7 @@ OUR AC SERVICES:
 - AC replacement and upgrades
 - Commercial HVAC solutions
 
-We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier, and Midea. Our technicians are factory-trained and use proper equipment for quality installations.`,
+We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier, and Midea. Our technicians are experienced and use proper equipment for quality installations.`,
 
     icon: '❄️',
     heroImage: '/images/ac-installation.png',
@@ -1389,7 +1404,7 @@ We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier
       '/images/commercial-hvac.png'
     ],
 
-    metaTitle: 'AC Installation Kenya | Air Conditioning Repair Nairobi | EmersonEIMS',
+    metaTitle: 'Air Conditioning Installation & Repair | EmersonEIMS',
     metaDescription: 'AC installation & repair in Kenya. Split AC, cassette, ducted systems. All brands serviced. Professional installation, maintenance contracts. Call +254768860665',
     keywords: [
       'AC installation Kenya',
@@ -1608,7 +1623,7 @@ WE PROVIDE:
       '/images/ups-batteries.png'
     ],
 
-    metaTitle: 'UPS Systems Kenya | UPS Installation Nairobi | Battery Backup | EmersonEIMS',
+    metaTitle: 'UPS Systems & Battery Backup Kenya | EmersonEIMS',
     metaDescription: 'UPS systems in Kenya. Sales, installation, maintenance. APC, Eaton, Vertiv. 600VA to 500kVA. Battery replacement. Protect critical equipment. Call +254768860665',
     keywords: [
       'UPS Kenya',
@@ -1698,7 +1713,7 @@ WE PROVIDE:
           'Line-interactive technology',
           'AVR included',
           '5-15 minutes backup',
-          '2-year warranty'
+          'Warranty per manufacturer terms'
         ]
       },
       {
@@ -1814,7 +1829,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
       '/images/pump-installation.png'
     ],
 
-    metaTitle: 'Borehole Pump Kenya | Pump Installation & Repair Nairobi | EmersonEIMS',
+    metaTitle: 'Borehole Pump Installation & Repair | EmersonEIMS',
     metaDescription: 'Borehole pump services in Kenya. Submersible pump installation, repair, solar pumps. Grundfos, Pedrollo, DAB. Professional service. Call +254768860665',
     keywords: [
       'borehole pump Kenya',
@@ -2024,7 +2039,7 @@ WE PROVIDE:
       '/images/incinerator-installation.png'
     ],
 
-    metaTitle: 'Hospital Incinerators Kenya | Medical Waste Incinerator | NEMA Compliant | EmersonEIMS',
+    metaTitle: 'Hospital Incinerators Kenya | Medical Waste | EmersonEIMS',
     metaDescription: 'Hospital incinerators in Kenya. Medical waste disposal systems. NEMA compliant. Installation, maintenance, compliance support. Professional service. Call +254768860665',
     keywords: [
       'hospital incinerator Kenya',
@@ -2237,7 +2252,7 @@ export const SERVICE_CATEGORIES = [
 
 // Trust badges for display - only verifiable claims
 export const TRUST_BADGES = [
-  { title: '3-Year Warranty', description: 'Generator warranty available', icon: '🛡️' },
+  { title: '2-Year Warranty', description: 'Generator warranty available', icon: '🛡️' },
   { title: '24/7 Support', description: 'Round-the-clock emergency service', icon: '📞' },
   { title: 'Nationwide Service', description: 'Serving all of Kenya', icon: '🇰🇪' },
   { title: 'Free Quotation', description: 'Written quote, no obligation', icon: '💬' },

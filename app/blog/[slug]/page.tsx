@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${article.title} | Emerson EiMS Blog`,
+    title: `${article.title}`,
     description: article.description,
     keywords: article.tags.join(', '),
     authors: [{ name: article.author }],
@@ -205,7 +205,7 @@ export default async function BlogArticlePage({ params }: Props) {
   const relatedArticles = getRelatedArticles(slug, 3);
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Schema.org Article JSON-LD */}
       <script
         type="application/ld+json"
@@ -226,7 +226,7 @@ export default async function BlogArticlePage({ params }: Props) {
               name: 'Emerson EiMS',
               logo: {
                 '@type': 'ImageObject',
-                url: 'https://www.emersoneims.com/logo.png'
+                url: 'https://www.emersoneims.com/emerson-eims-logo.png'
               }
             },
             datePublished: article.date,
@@ -441,7 +441,7 @@ export default async function BlogArticlePage({ params }: Props) {
               Call +254 768 860 665
             </a>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20an%20article%20on%20your%20site."
               target="_blank"
               rel="noopener noreferrer"
               className="px-8 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-500 transition-colors"
@@ -476,7 +476,7 @@ export default async function BlogArticlePage({ params }: Props) {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 

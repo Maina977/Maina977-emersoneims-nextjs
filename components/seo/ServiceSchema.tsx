@@ -22,7 +22,7 @@ export function ServiceSchema({
       "@type": "LocalBusiness",
       "name": "EmersonEIMS",
       "url": "https://www.emersoneims.com",
-      "telephone": "+254-XXX-XXXXXX",
+      "telephone": "+254768860665",
       "address": {
         "@type": "PostalAddress",
         "addressCountry": "KE",

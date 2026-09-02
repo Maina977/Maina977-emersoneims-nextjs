@@ -90,8 +90,8 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
           Emergency: 0768 860 665
         </a>
         <a
-          href="https://wa.me/254768860665"
-          className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-green-500 transition-all hover:scale-105"
+          href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
+          className="flex items-center gap-2 px-4 py-3 bg-green-700 text-white font-bold rounded-full shadow-lg hover:bg-green-600 transition-all hover:scale-105"
         >
           <MessageCircle className="w-5 h-5" />
           WhatsApp Us
@@ -123,7 +123,7 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
           </a>
           <a
             href="https://wa.me/254768860665?text=Hi%2C%20I%20need%20help%20with%20my%20power%20system"
-            className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-500 transition-all"
+            className="flex items-center justify-center gap-2 w-full py-3 bg-green-700 text-white font-bold rounded-xl hover:bg-green-600 transition-all"
           >
             <MessageCircle className="w-5 h-5" />
             WhatsApp Now
@@ -226,7 +226,7 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
               </a>
               <a
                 href="https://wa.me/254768860665?text=URGENT%20-%20I%20need%20emergency%20power%20assistance%20immediately"
-                className="flex items-center justify-center gap-3 px-8 py-4 bg-green-600 text-white font-bold text-lg rounded-full hover:bg-green-500 transition-all shadow-lg shadow-green-500/30 hover:scale-105"
+                className="flex items-center justify-center gap-3 px-8 py-4 bg-green-700 text-white font-bold text-lg rounded-full hover:bg-green-600 transition-all shadow-lg shadow-green-500/30 hover:scale-105"
               >
                 <MessageCircle className="w-6 h-6" />
                 WhatsApp Emergency
@@ -297,7 +297,7 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> KEBS Certified</span>
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> ERC Compliant</span>
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> ISO 9001:2015</span>
-          <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> 3-Year Warranty</span>
+          <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> 2-Year Warranty</span>
         </motion.div>
       </div>
     </section>

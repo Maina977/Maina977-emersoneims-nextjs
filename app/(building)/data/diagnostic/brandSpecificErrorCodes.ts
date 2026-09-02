@@ -18,15 +18,19 @@
  * Updated: January 2026
  */
 
-import { generatePowerWizardErrorCodes, generateDeepSeaErrorCodes } from '@/lib/errorCodeGenerator';
+// NOTE: PowerWizard and DeepSea codes were previously pulled from
+// lib/errorCodeGenerator.ts. That module did not contain real controller data —
+// it generated code numbers sequentially (i + 100) and assigned meanings by
+// `issues[idx % issues.length]`, so every 20th code number shared a meaning and
+// no number corresponded to anything a technician could verify against an OEM
+// manual. It has been removed. Only verified, hand-curated codes are served.
 import { CUMMINS_ERROR_CODES } from '@/lib/data/cumminsErrorCodes';
 import { CATERPILLAR_ERROR_CODES } from '@/lib/data/caterpillarErrorCodes';
 import { PERKINS_ERROR_CODES } from '@/lib/data/perkinsErrorCodes';
 import { GENERATOR_ERROR_CODES } from '@/lib/data/generatorErrorCodes';
-
-// Generate all controller codes
-const powerWizardCodes = generatePowerWizardErrorCodes();
-const deepSeaCodes = generateDeepSeaErrorCodes();
+import { VERIFIED_FAULT_CODES } from '@/lib/data/verifiedFaultCodes';
+import { CURATED_FAULT_CODES } from '@/lib/data/curatedFaultCodes';
+import { getFaultKnowledge, type DiagnosticStep } from '@/lib/data/faultKnowledge';
 
 // Helper function to format manufacturer codes
 const formatManufacturerCodes = (codes: any[], brand: string, service: string) => 
@@ -82,22 +86,74 @@ const perkinsCodesFormatted = formatManufacturerCodes(PERKINS_ERROR_CODES, 'Perk
 const detailedGeneratorCodes = formatDetailedGeneratorCodes(GENERATOR_ERROR_CODES);
 
 // Combine all brand-specific codes
+// Curated CSV-sourced codes (lib/data/fault-codes-raw.csv via
+// scripts/buildVerifiedFaultCodes.mjs). Real brand/model/code/description data
+// that had never been wired into the app.
+//
+// severity is deliberately 'UNSPECIFIED'. The source carries no severity rating
+// and inventing one is precisely how this system previously told a technician
+// that low oil pressure was LOW severity. An unrated code must render as
+// unrated.
+// Each CSV code is enriched from lib/data/faultKnowledge.ts where its fault type
+// has diagnostic content written for it: symptoms, an ordered diagnostic
+// sequence with expected readings, remedies, safety constraints and tools.
+// Where no knowledge entry exists the code keeps its own data and severity stays
+// UNSPECIFIED — an absent entry must render as absent, never as generic filler.
+const verifiedCsvCodes = VERIFIED_FAULT_CODES.map(c => {
+  const k = getFaultKnowledge(c.description);
+  return {
+    code: c.code,
+    brand: c.brand,
+    model: c.model || 'All Models',
+    service: `${c.brand} Generator Diagnostics`,
+    category: k ? k.system : 'Fault Code',
+    issue: c.description,
+    // Severity from engineering judgement about the physical condition where we
+    // have written it; otherwise unrated rather than invented.
+    severity: k ? k.severity.toUpperCase() : 'UNSPECIFIED',
+    summary: k ? k.summary : '',
+    symptoms: k ? k.symptoms : [],
+    causes: c.causes.length ? c.causes : [],
+    diagnosticSteps: k
+      ? k.diagnosis.map((d: DiagnosticStep) => ({
+          step: d.step,
+          action: d.action,
+          expectedResult: d.expect,
+          tools: d.tools || [],
+        }))
+      : [],
+    // Prefer the code's own remedies from the CSV, then the fault-type remedies.
+    solution: [...c.remedies, ...(k ? k.remedy : [])].join('; '),
+    safetyWarnings: k ? k.safety : [],
+    parts: [],
+    tools: k ? k.tools : [],
+    downtime: '',
+    preventive: k ? k.preventive.join('; ') : '',
+    verified: true,
+    enriched: Boolean(k),
+  };
+});
+
 export const brandSpecificErrorCodes: any[] = [
   ...detailedGeneratorCodes,
-  ...powerWizardCodes,
-  ...deepSeaCodes,
   ...cumminsCodesFormatted,
   ...caterpillarCodesFormatted,
-  ...perkinsCodesFormatted
+  ...perkinsCodesFormatted,
+  ...verifiedCsvCodes,
+  // Hand-written controller families (DSE, ComAp, Woodward, SmartGen,
+  // PowerWizard, Datakom, Lovato, Siemens, Enko, Vodia) and solar
+  // inverter/battery codes. These carry per-code severities assigned by hand,
+  // so their severity is preserved rather than blanked.
+  ...CURATED_FAULT_CODES
 ];
 
 // Export code counts for statistics
 export const CODE_STATISTICS = {
   detailedGeneratorCodes: detailedGeneratorCodes.length,
-  powerWizard: powerWizardCodes.length,
-  deepSea: deepSeaCodes.length,
   cummins: cumminsCodesFormatted.length,
   caterpillar: caterpillarCodesFormatted.length,
   perkins: perkinsCodesFormatted.length,
+  verifiedCsv: verifiedCsvCodes.length,
+  curatedControllerAndSolar: CURATED_FAULT_CODES.length,
   total: brandSpecificErrorCodes.length
 };

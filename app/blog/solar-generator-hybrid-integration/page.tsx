@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/blog/solar-generator-hybrid-integration' },
   title: 'Solar + Generator Hybrid Integration: Best of Both Worlds',
   description: 'Hybrid power systems combining solar + generator + battery. How they work, when to use them, cost analysis for Kenya.',
 };
 
 export default function SolarGeneratorBlogPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <article className="max-w-3xl mx-auto px-4 py-20">
         <header className="mb-12">
           <div className="mb-4">
@@ -244,6 +248,6 @@ export default function SolarGeneratorBlogPage() {
           </div>
         </div>
       </article>
-    </main>
+    </div>
   );
 }

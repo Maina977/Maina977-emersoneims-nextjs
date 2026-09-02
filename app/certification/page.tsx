@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Backup Power Certification Program | EmersonEIMS Professional Training',
+  title: 'Backup Power Certification Program',
   description: 'Industry-standard certification for technicians and engineers. Learn real skills, get certified, advance your career. 3-7 day intensive programs.',
   alternates: {
     canonical: 'https://www.emersoneims.com/certification',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function CertificationPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -535,11 +535,14 @@ export default function CertificationPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {/* Was href="#" — a primary CTA promising a session schedule that
+                does not exist, on a page inviting people to enrol. Pointed at the
+                training enquiry path and relabelled to what it actually does. */}
             <a
-              href="#"
+              href="/contact?type=training"
               className="inline-block px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-amber-500/30 transition-all"
             >
-              View Upcoming Sessions
+              Ask about upcoming sessions
             </a>
             <a
               href="/contact?type=training"
@@ -550,6 +553,6 @@ export default function CertificationPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

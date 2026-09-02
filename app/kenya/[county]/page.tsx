@@ -3,6 +3,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { KENYA_LOCATIONS, getCountyBySlug } from '@/lib/data/kenya-locations';
 import CountyPowerContent from '@/components/seo/CountyPowerContent';
+import CountySiteConditions from '@/components/seo/CountySiteConditions';
+import LocationEnquiry from '@/components/seo/LocationEnquiry';
+import LocationProof from '@/components/seo/LocationProof';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
 import { CORE_SERVICE_SLUGS, isPriorityCounty } from '@/lib/seo/kenyaIndexable';
 
@@ -31,8 +34,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'County Not Found' };
   }
 
-  const title = `Generators, Solar & Power Services in ${county.name} County`;
-  const description = `Professional generator installation, repair, maintenance & rental in ${county.name} County, Kenya. Serving ${county.constituencies.length} constituencies including ${county.constituencies.slice(0, 3).map(c => c.name).join(', ')}. Population: ${county.population.toLocaleString()}+. 24/7 emergency support. Call +254768860665`;
+  /*
+   * WRITTEN TO FIT A SEARCH RESULT, not to fill a field.
+   *
+   * Measured on the live site 2026-08-26: the previous title ran 72 characters
+   * and the description 239. Google renders roughly 60 and 158. On /kenya/nairobi
+   * the part that fell off the end was "Call +254768860665" — the phone number
+   * was written into every one of these 990 pages and displayed on none of them.
+   * The constituency list and population count were also past the cut, so they
+   * cost bytes on 990 URLs and were never read.
+   *
+   * The title now leaves room for the "| EmersonEIMS Kenya" the root layout
+   * appends (20 characters), which is what pushed it over in the first place.
+   */
+  const title = `Generators & Solar in ${county.name} County`;
+  const description = `Generator installation, repair and maintenance in ${county.name} County. Solar, UPS and boreholes too. 24/7 emergency response — call +254768860665.`;
 
   return {
     title,
@@ -159,6 +175,36 @@ export default async function CountyPage({ params }: Props) {
             </a>
           </div>
         </div>
+
+        {/*
+          Per-county engineering. This is the section that makes the 47 county
+          pages genuinely different from one another rather than the same page
+          with a place name swapped in — measured at 98% identical vocabulary
+          before this was added, which is why Google was consolidating
+          unrelated counties onto a single canonical.
+
+          Every figure comes from a sourced elevation (see
+          lib/data/kenya-county-conditions.ts). Renders nothing for a county
+          with no sourced record.
+        */}
+        <CountySiteConditions
+          countySlug={county.slug}
+          countyName={county.name}
+          region={county.region}
+          population={county.population}
+        />
+
+        {/*
+          On-page enquiry. Before this, every /kenya/* page rendered zero forms
+          — a visitor ready to buy had to leave for /contact first.
+        */}
+        {/* Named client proof BEFORE the form — trust, then the ask. */}
+        <LocationProof countySlug={county.slug} locationName={`${county.name} County`} />
+
+        <LocationEnquiry
+          locationName={`${county.name} County`}
+          source={`kenya-${county.slug}`}
+        />
 
         {/* Services Grid */}
         <div className="mb-16">
@@ -304,7 +350,7 @@ export default async function CountyPage({ params }: Props) {
               Request a Quote
             </Link>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-green-600 text-white px-8 py-4 rounded-full font-bold hover:bg-green-500 transition-colors"

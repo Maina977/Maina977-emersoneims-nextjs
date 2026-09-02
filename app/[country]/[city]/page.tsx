@@ -11,9 +11,11 @@ import {
   generateCityDescription,
   generateCityH1,
   generateCityKeywords,
+  getCountryHubPath,
 } from '@/lib/data/east-africa-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
 import LocalBusinessSchema from '@/components/seo/LocalBusinessSchema';
+import CitySiteConditions from '@/components/seo/CitySiteConditions';
 
 type Props = {
   params: Promise<{ country: string; city: string }>;
@@ -53,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
      * location, so nothing unreal can ever be indexed.
      */
     return {
-      title: 'Page Not Found | EmersonEIMS',
+      title: 'Page Not Found',
       robots: { index: false, follow: false },
     };
   }
@@ -162,7 +164,7 @@ export default async function InternationalCityPage({ params }: Props) {
           </li>
           <li>/</li>
           <li>
-            <Link href={`/${country.slug}`} className="hover:text-white">{country.name}</Link>
+            <Link href={getCountryHubPath(country.slug)} className="hover:text-white">{country.name}</Link>
           </li>
           <li>/</li>
           <li className="text-amber-400">{city.name}</li>
@@ -231,6 +233,17 @@ export default async function InternationalCityPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/*
+        Per-city site conditions.
+        Added 2026-08-26. These pages measured 89% eight-word shingle overlap —
+        the same ~590 words with the city name swapped, which is the doorway
+        pattern Google consolidates. This section is the one part that is
+        genuinely different per city, because altitude and ambient temperature
+        genuinely differ and genuinely change what should be installed.
+        Renders null for the four cities with no sourced record.
+      */}
+      <CitySiteConditions slug={city.slug} />
 
       {/* Services Grid */}
       <section className="py-12 border-t border-white/5">

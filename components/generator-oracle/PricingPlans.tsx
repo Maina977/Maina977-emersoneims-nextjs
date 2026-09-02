@@ -47,7 +47,7 @@ export default function PricingPlans({
           reports — is free to use right now. No subscription, no limits.
         </p>
         <a
-          href="https://wa.me/254768860665"
+          href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-500 transition-colors"
@@ -237,7 +237,7 @@ export default function PricingPlans({
       {/* Support */}
       <div className="text-center mt-6">
         <a
-          href="https://wa.me/254768860665"
+          href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white"

@@ -44,7 +44,7 @@ export default function HeroSection() {
           <div className="max-w-7xl">
             <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10">
               <span className="w-2 h-2 bg-green-400 rounded-full" />
-              <span className="text-sm text-amber-300 tracking-wider uppercase">East Africa's #1 Power Solutions</span>
+              <span className="text-sm text-amber-300 tracking-wider uppercase">Power Solutions Across East Africa</span>
             </div>
             <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold mb-8 leading-[0.9] tracking-tighter">
               <span className="block text-white">POWER</span>
@@ -126,7 +126,7 @@ export default function HeroSection() {
             className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 backdrop-blur-sm"
           >
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-sm text-amber-300 tracking-wider uppercase">East Africa's #1 Power Solutions</span>
+            <span className="text-sm text-amber-300 tracking-wider uppercase">Power Solutions Across East Africa</span>
           </motion.div>
 
           {/* Title */}
@@ -187,7 +187,7 @@ export default function HeroSection() {
             <span>✓ 47 Counties</span>
             <span>✓ 24/7 Support</span>
             <Link href="/generator-oracle" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-              🔮 400,000+ Fault Codes
+              🔮 Curated Fault Codes
             </Link>
           </motion.div>
         </motion.div>

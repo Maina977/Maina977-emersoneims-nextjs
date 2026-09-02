@@ -13,7 +13,9 @@
  */
 
 import Link from 'next/link';
+import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
 import MobileWorkshopBand from '@/components/trust/MobileWorkshopBand';
+import CapabilitiesIndex from '@/components/services/CapabilitiesIndex';
 import dynamic from 'next/dynamic';
 import {
   ALL_SERVICES,
@@ -222,8 +224,8 @@ export default function ServicesPage() {
                 EmersonEiMS is an engineering solutions partner for
                 <span className="text-white font-medium"> hospitals, manufacturers, telecom operators, commercial property and construction</span>.
                 We design, install and maintain generators, solar, UPS, motor
-                systems, HVAC, boreholes and incinerators &mdash; backed by our{' '}
-                <span className="text-amber-400 font-semibold">3-year warranty</span>,
+                systems, HVAC, boreholes and incinerators &mdash; backed by{' '}
+                <span className="text-amber-400 font-semibold">warranty terms set out in your quotation</span>,
                 an SLA-backed maintenance team and 24/7 emergency response
                 across all 47 counties.
               </p>
@@ -300,11 +302,16 @@ export default function ServicesPage() {
               { href: '/industries/manufacturing', icon: '🏭', name: 'Manufacturing', tag: 'Production-line uptime, motor & VFD support' },
               { href: '/industries/hospitals-healthcare', icon: '🏥', name: 'Hospitals & Healthcare', tag: 'Critical-care backup, NEMA-compliant incineration' },
               { href: '/industries/banks-financial', icon: '🏦', name: 'Telecom & Financial', tag: 'Branch UPS, data-room cooling, ATM uptime' },
-              { href: '/industries/real-estate', icon: '🏢', name: 'Commercial Buildings', tag: 'BMS-ready gensets, solar PV, fuel management' },
+              // Was /industries/real-estate — not a real slug, served "Industry
+              // Not Found" at HTTP 200. /industries/commercial-property is a
+              // published page and matches this card exactly.
+              { href: '/industries/commercial-property', icon: '🏢', name: 'Commercial Buildings', tag: 'BMS-ready gensets, solar PV, fuel management' },
               { href: '/industries/hotels-hospitality', icon: '🏨', name: 'Hotels & Hospitality', tag: 'Silent canopies, HVAC, hot-water automation' },
               { href: '/industries/schools-universities', icon: '🎓', name: 'Schools & Campuses', tag: 'Hostel solar, lab UPS, lecture-hall cooling' },
               { href: '/industries/flower-farms', icon: '🌸', name: 'Agribusiness & Farms', tag: 'Borehole pumping, cold-room, irrigation power' },
-              { href: '/industries/government-ngo', icon: '🏛️', name: 'Government & NGO', tag: 'Tendered installs, training, regulatory reporting' },
+              // Was /industries/government-ngo (singular) — the registry slug is
+              // 'government-ngos'. The singular form soft-404'd at HTTP 200.
+              { href: '/industries/government-ngos', icon: '🏛️', name: 'Government & NGO', tag: 'Tendered installs, training, regulatory reporting' },
               { href: '/industries', icon: '🚧', name: 'Construction & Sites', tag: 'Rental gensets, distribution, fabrication' },
               { href: '/industries', icon: '🔋', name: 'Data Centres', tag: 'Online UPS, N+1 backup, power quality' },
             ].map((i) => (
@@ -342,8 +349,8 @@ export default function ServicesPage() {
                 step: '02',
                 title: 'Install & commission',
                 problem: 'Cheap installs cost more in 3 years than they save on day one.',
-                action: 'Cummins/Voltka generators, IEC-grade panels, ATS, earthing, SPDs, full commissioning records. Factory-trained installation.',
-                outcome: '3-year warranty, 1-year free service and a complete documentation pack.',
+                action: 'Cummins/Voltka generators, IEC-grade panels, ATS, earthing, SPDs, full commissioning records. Specialist installation.',
+                outcome: 'Warranty and service-package terms in writing, with a complete documentation pack.',
               },
               {
                 step: '03',
@@ -459,7 +466,7 @@ export default function ServicesPage() {
         );
       })}
 
-      {/* ── Featured: Cummins 3-Year Warranty ──────────────────────── */}
+      {/* ── Featured: Cummins 2-Year Warranty ──────────────────────── */}
       <section className="px-4 py-14 bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-y border-amber-500/20">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
           <div>
@@ -468,7 +475,7 @@ export default function ServicesPage() {
             </span>
             <h2 className="text-3xl font-bold mb-3">
               Cummins Generators with{' '}
-              <span className="text-amber-400">3-Year Warranty</span>
+              <span className="text-amber-400">2-Year Warranty</span>
             </h2>
             <p className="text-slate-300 mb-5">
               Cummins specialist. Premium 10 kVA – 2000 kVA generators,
@@ -552,7 +559,23 @@ export default function ServicesPage() {
           effectively invisible on the site before 2026-07-20. Placed after the
           service list so a visitor who has just read WHAT we do immediately
           learns WHERE we can do it. */}
+      {/* Funnel into the Repair Centre from the services index. A visitor who
+          has just read what we do is the right reader for the guides on how
+          the faults are actually diagnosed. */}
+      <RepairCentreCallout
+        heading="Want to understand the fault before you call us?"
+        body="Our engineers have published the diagnostic sequences they use on site across 15 equipment categories — generators, inverters, UPS, solar, motors, pumps, drives and control boards. Free to read, no sign-up."
+      />
+
       <MobileWorkshopBand />
+
+      {/* Full capability index. The ten service cards above are the headline
+          disciplines; this names the work inside them in the words a buyer
+          searches — injector pumps, radiators, turbochargers, fuel automation,
+          exhaust fabrication — each linking to the page that already covers
+          it. Server-rendered, because an index a crawler cannot read indexes
+          nothing. */}
+      <CapabilitiesIndex />
     </div>
   );
 }

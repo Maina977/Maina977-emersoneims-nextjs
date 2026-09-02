@@ -43,7 +43,7 @@ export type B2BProfile = {
   accent?: 'amber' | 'cyan' | 'emerald' | 'violet' | 'sky' | 'rose' | 'orange' | 'indigo';
 };
 
-const WHATSAPP = 'https://wa.me/254768860665';
+const WHATSAPP = `https://wa.me/254768860665?text=${encodeURIComponent('Hello EmersonEIMS, I would like to ask about a site requirement.')}`;
 const TEL = 'tel:+254768860665';
 
 export const B2B_PROFILES = {
@@ -51,7 +51,7 @@ export const B2B_PROFILES = {
     eyebrow: 'Power Continuity • Diesel Generators',
     headline: 'Cummins & Voltka diesel generators — sized, installed, and maintained for uptime-critical sites.',
     subtitle:
-      'Authorized dealer engineering for hospitals, manufacturers, telecom, banks, hotels and data-sensitive operations across Kenya. 10 kVA – 2,000 kVA, with ATS, synchronization, and SLA-backed maintenance.',
+      'Specialist generator engineering for hospitals, manufacturers, telecom, banks, hotels and data-sensitive operations across Kenya. 10 kVA – 2,000 kVA, with ATS, synchronization, and SLA-backed maintenance.',
     whoFor: [
       'Hospitals & clinics',
       'Manufacturing plants',
@@ -78,11 +78,15 @@ export const B2B_PROFILES = {
         outcome: 'Fewer breakdowns, full service history for audits and warranty claims.',
       },
     ],
+    // Two claims were removed here on 2026-08-04: "Authorized Cummins / Voltka
+    // dealer" (we are not authorised) and "factory-trained engineers" (no
+    // evidence behind it). What is left is stronger anyway, because all of it
+    // is checkable.
     trust: [
-      'Authorized Cummins / Voltka dealer',
-      '3-year warranty + 1 year free service',
+      'Cummins & VOLTKA supply, installation and service',
+      'Warranty and service terms confirmed in your quotation',
       '24/7 emergency response, all 47 counties',
-      'Genuine parts, factory-trained engineers',
+      'Genuine spare parts held in stock',
     ],
     ctas: [
       { label: 'Request a Generator Quote', href: '/contact?topic=generator-quote', variant: 'primary' },
@@ -864,17 +868,17 @@ export const B2B_PROFILES = {
   },
 
   brands: {
-    eyebrow: 'Authorised Brands',
-    headline: 'Authorised partner for the brands serious Kenyan sites trust.',
+    eyebrow: 'Brands We Supply & Service',
+    headline: 'The brands serious Kenyan sites trust — supplied, installed and maintained.',
     subtitle:
-      'Cummins, Voltka and other tier-one OEMs — supplied, installed and maintained by EmersonEIMS with genuine parts and factory-trained engineers.',
+      'Cummins, Voltka and other tier-one OEMs — supplied, installed and maintained by EmersonEIMS with genuine parts and specialist engineers.',
     whoFor: ['Facility managers', 'EPC & MEP contractors', 'Hospitals & critical sites', 'Manufacturing & agribusiness', 'Banks & financial', 'Government & NGOs'],
     pso: [
-      { problem: 'Grey-market kit voids warranty and fails inspection.', solution: 'Authorised supply with genuine parts and warranty.', outcome: 'Defensible warranty, longer asset life.' },
+      { problem: 'Grey-market kit voids warranty and fails inspection.', solution: 'Traceably sourced equipment and genuine parts, so the manufacturer warranty stands.', outcome: 'Defensible warranty, longer asset life.' },
       { problem: 'Multi-brand sites need one accountable partner.', solution: 'EmersonEIMS service desk covers all listed brands.', outcome: 'One contract, one SLA, one escalation path.' },
       { problem: 'No clear way to compare brand options.', solution: 'Brand-by-brand engineering guidance from the team.', outcome: 'Right brand for the application, not the spreadsheet.' },
     ],
-    trust: ['Authorised dealer (Cummins / Voltka)', 'Genuine parts only', 'Factory-trained engineers', 'Multi-brand service contracts'],
+    trust: ['Traceably sourced equipment', 'Genuine parts only', 'Specialist multi-brand engineers', 'Multi-brand service contracts'],
     ctas: [
       { label: 'Request a Brand Quote', href: '/contact?topic=brand-quote', variant: 'primary' },
       { label: 'Book a Site Audit', href: '/booking?service=site-audit', variant: 'secondary' },
@@ -935,7 +939,11 @@ export const B2B_PROFILES = {
       { problem: 'Aging gensets trip on start-up loads.', solution: 'Independent load study and corrective works.', outcome: 'Stable voltage and frequency.' },
       { problem: 'Reactive call-outs cost more than scheduled service.', solution: 'EmersonEIMS SLA: scheduled service + parts + reports.', outcome: 'Fewer breakdowns, full audit history.' },
     ],
-    trust: ['Authorised Cummins / Voltka dealer', '3-year warranty + 1 year free service', '24/7 emergency response', 'Genuine parts, factory-trained'],
+    // Second copy of the dealer claim, in a different B2B profile and using the
+    // British spelling — which is how it survived the first sweep. Same policy
+    // as the profile earlier in this file: we supply, install and service, we
+    // are not authorised, and no training certificates are on file.
+    trust: ['Cummins & VOLTKA supply, installation and service', 'Warranty and service terms confirmed in your quotation', '24/7 emergency response', 'Genuine spare parts held in stock'],
     ctas: [
       { label: 'Request a Generator Quote', href: '/contact?topic=generator-quote', variant: 'primary' },
       { label: 'Book a Free Site Audit', href: '/booking?service=generator-audit', variant: 'secondary' },
@@ -975,7 +983,7 @@ export const B2B_PROFILES = {
       { problem: 'Fault diagnosed but never properly closed out.', solution: 'Root-cause investigation with corrective actions.', outcome: 'Faults closed, not reset and forgotten.' },
       { problem: 'No PM regime = same problems every quarter.', solution: 'EmersonEIMS PM contract + genuine parts.', outcome: 'Fewer breakdowns, longer asset life.' },
     ],
-    trust: ['Multi-brand fault diagnosis', 'Authorised Cummins / Voltka', '24/7 emergency response', 'Documented job reports'],
+    trust: ['Multi-brand fault diagnosis', 'Cummins / Voltka sales & service', '24/7 emergency response', 'Documented job reports'],
     ctas: [
       { label: 'Call the Emergency Desk', href: TEL, variant: 'primary' },
       { label: 'WhatsApp an Engineer Now', href: WHATSAPP, variant: 'secondary' },

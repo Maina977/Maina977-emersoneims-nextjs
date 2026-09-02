@@ -1,11 +1,46 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cummins Generators Kenya | Diesel Generators 10-2000kVA | 3-Year Warranty | EmersonEIMS",
-  description: "Cummins generator sales, maintenance & spare-parts specialist in Kenya. 10KVA-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation, 24/7 support. Serving all 47 counties. Call +254768860665",
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/generators' },
+  /*
+   * TITLE LENGTH — do not append "| EmersonEIMS" here.
+   * The root layout applies the template "%s | EmersonEIMS Kenya", so anything
+   * added here is on top of that. The previous title ended in "| EmersonEIMS"
+   * and rendered as "... | EmersonEIMS | EmersonEIMS Kenya" — 107 characters
+   * with the brand twice, which Google truncates at roughly 60 and which reads
+   * as keyword stuffing. Keep this field to ~45 characters.
+   */
+  /*
+   * "VOLTKA Cummins", not "Cummins & VOLTKA".
+   * They are not two competing brands. Per lib/brands/cumminsData.ts the
+   * relationship is brandName: 'Cummins', supplier: 'Voltka' — Cummins sets
+   * supplied through Voltka, sold and serviced by EmersonEIMS. The ampersand
+   * implied a choice between two makes and split the keyword; the real
+   * flagship line is named VOLTKA Cummins (VKS 44 through VKS 275).
+   */
+  title: "VOLTKA Cummins Generators | 10-2000kVA",
+  /*
+   * KEEP THIS UNDER ~155 CHARACTERS.
+   * The previous version ran to 260 and Google cut it mid-sentence, which
+   * wasted the part that actually sells: the warranty and the price range.
+   * Lead with the numbers a buyer is searching for.
+   */
+  /*
+   * "from KES 350,000" corrected to 280,000. GENERATOR_SIZES — the source this
+   * site renders its price tables from — opens at "KES 280,000 – 350,000" for
+   * the 10 kVA set, so the old figure quoted the TOP of the entry band as the
+   * starting price. It also disagreed with the homepage, which reads its
+   * opening price from the same data and shows 280,000: two different entry
+   * prices for the same range on one website. Overstating the floor by 70,000
+   * loses the click before the buyer ever sees the page.
+   */
+  description: "Diesel generators in Kenya, 10kVA-2000kVA, from KES 280,000. New sets: 2-year warranty, 1 year free servicing. Serviced in all 47 counties.",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
-    title: 'Cummins & Voltka Generators Kenya | 10-2000kVA | EmersonEIMS',
+    title: 'Cummins & Voltka Generators Kenya | 10-2000kVA',
     description: 'Cummins generator sales & maintenance specialist. NEW generators with warranty + 1 year free maintenance. Serving all 47 counties. Expert installation & support.',
     type: 'website',
     url: 'https://www.emersoneims.com/generators',
@@ -21,12 +56,17 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Cummins Generators Kenya | EmersonEIMS',
-    description: 'Buy NEW Cummins generators in Kenya. 10kVA-2000kVA. 1 year free service.',
+    title: 'Cummins Generators Kenya',
+    description: 'Buy NEW Cummins generators in Kenya, 10kVA-2000kVA. Supplied, installed and commissioned.',
   },
-  alternates: {
-    canonical: 'https://www.emersoneims.com/generators',
-  },
+  /*
+   * NO `alternates.canonical` HERE — a layout's metadata is inherited by every
+   * page beneath it, so this hard-coded value made /generators/used,
+   * /generators/leasing, /generators/systems, /generators/case-studies and
+   * /generators/maintenance-companion all canonicalise to /generators and lose
+   * their own ranking. Those are commercial pages. The root layout emits a
+   * correct self-referential canonical from `x-pathname`.
+   */
   robots: {
     index: true,
     follow: true,
@@ -51,7 +91,7 @@ const jsonLd = {
       url: 'https://www.emersoneims.com',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://www.emersoneims.com/logo.png',
+        url: 'https://www.emersoneims.com/emerson-eims-logo.png',
       },
       contactPoint: [
         {
@@ -77,9 +117,7 @@ const jsonLd = {
         addressCountry: 'KE',
       },
       sameAs: [
-        'https://www.facebook.com/emersoneims',
-        'https://twitter.com/emersoneims',
-        'https://www.linkedin.com/company/emersoneims',
+        'https://x.com/eimsemerson',
       ],
     },
     {
@@ -104,16 +142,24 @@ const jsonLd = {
         '@type': 'Organization',
         name: 'Voltka',
       },
-      description: 'Cummins & Voltka diesel generators in Kenya. 10KVA to 2000KVA with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation. Multi-brand specialist.',
+      description: 'Cummins & Voltka diesel generators in Kenya, 10KVA to 2000KVA, supplied, installed and commissioned. Genuine parts, expert installation. Multi-brand specialist.',
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'KES',
         lowPrice: '500000',
         highPrice: '48000000',
-        availability: 'https://schema.org/InStock',
+        /*
+         * availability: InStock was REMOVED 2026-08-31. It asserted to Google
+         * that every set across a KES 500,000-48,000,000 range was in stock,
+         * on a site with no inventory system to derive that from. Structured
+         * data must match what we can actually honour on the phone.
+         */
         seller: { '@id': 'https://www.emersoneims.com/#organization' },
         offerCount: '50',
-        warranty: '3 Years Comprehensive Warranty + 1 Year Free Service',
+        // Warranty duration removed from structured data 2026-08-31: no
+        // approved schedule exists, and the term differs for new, used and
+        // refurbished sets. See lib/commercial/policy.ts.
+        warranty: 'Warranty terms are confirmed in the written quotation',
       },
       // No self-asserted aggregateRating — violates Google's structured-data
       // policy without on-page UGC reviews, and triggered "Review has multiple
@@ -123,7 +169,7 @@ const jsonLd = {
       '@type': 'LocalBusiness',
       '@id': 'https://www.emersoneims.com/#localbusiness',
       name: 'EmersonEIMS - Generator Sales & Services',
-      image: 'https://www.emersoneims.com/logo.png',
+      image: 'https://www.emersoneims.com/emerson-eims-logo.png',
       telephone: '+254768860665',
       email: 'info@emersoneims.com',
       address: {
@@ -145,7 +191,7 @@ const jsonLd = {
           '@type': 'OpeningHoursSpecification',
           dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
           opens: '08:00',
-          closes: '18:00',
+          closes: '17:00',
         },
         {
           '@type': 'OpeningHoursSpecification',

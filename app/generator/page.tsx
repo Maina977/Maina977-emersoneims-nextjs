@@ -8,13 +8,17 @@ import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata = {
-  title: "Cummins Generators — Powering Kenya | EmersonEIMS",
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/generator' },
+  title: "Cummins Generators — Powering Kenya",
   description: "From 20kVA to 2000kVA, verified specs, Hollywood‑grade visuals, and engineering mastery.",
 };
 
 export default function GeneratorPage() {
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.generatorMain} />
 
@@ -110,7 +114,11 @@ export default function GeneratorPage() {
               <div key={gen.model} className="bg-gray-900/50 rounded-lg p-6 border border-gray-700 hover:border-brand-gold transition-colors">
                 <h3 className="text-xl font-bold text-brand-gold">{gen.model}</h3>
                 <p className="text-white/80 mt-2">{gen.kva} kVA • {gen.phase}</p>
-                <p className="text-white/60 text-sm mt-2">{gen.engine}</p>
+                {/* Engine shown only where verified — see the provenance note in
+                    app/lib/data/cumminsgenerators.ts. */}
+                <p className="text-white/60 text-sm mt-2">
+                  {gen.specsVerified ? gen.engine : 'Engine confirmed on quotation'}
+                </p>
                 <a href="/generator/models" className="inline-block mt-4 text-brand-gold hover:text-yellow-400">
                   View Details →
                 </a>
@@ -458,6 +466,6 @@ export default function GeneratorPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

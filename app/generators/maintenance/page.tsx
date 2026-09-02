@@ -2,6 +2,7 @@
 // SEO-OPTIMIZED: World's Most Comprehensive Generator Service Coverage
 'use client';
 import { useState, useRef } from 'react';
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import { GeneratorEducationCompact } from '@/components/generators/GeneratorEducationPanel';
@@ -721,7 +722,7 @@ export default function GeneratorMaintenancePage() {
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center mb-4">Generator Service Packages</h2>
           <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-            Comprehensive maintenance programs designed to maximize generator lifespan and reliability. All packages include genuine parts and certified technicians.
+            Comprehensive maintenance programs designed to maximize generator lifespan and reliability. All packages include genuine parts and experienced technicians.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {servicePackages.map((pkg, i) => (
@@ -782,7 +783,7 @@ export default function GeneratorMaintenancePage() {
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center mb-4">Generator Brands We Service</h2>
           <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-            Factory-trained technicians for all major generator brands. Genuine parts and manufacturer-approved service procedures.
+            Specialist technicians for all major generator brands. Genuine parts and manufacturer-specification service procedures.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             {generatorBrands.map((brand, i) => (
@@ -804,7 +805,7 @@ export default function GeneratorMaintenancePage() {
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center mb-4">Generator Service in All 47 Counties</h2>
           <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-            No matter where you are in Kenya, our mobile service teams reach you. Dedicated technicians stationed across all regions.
+            No matter where you are in Kenya, our mobile service teams reach you, travelling from our Embakasi workshop in Nairobi.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {counties.map((county, i) => (
@@ -851,66 +852,14 @@ export default function GeneratorMaintenancePage() {
           <p className="text-gray-400 text-center mb-12">
             Fill out the form below and our team will contact you within 2 hours.
           </p>
-          <form className="bg-gray-900/50 rounded-2xl p-8 border border-gray-800 space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Your Name *</label>
-                <input type="text" className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white" placeholder="John Doe" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number *</label>
-                <input type="tel" className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white" placeholder="0768 860 665" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
-                <input type="email" className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white" placeholder="john@company.com" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">County *</label>
-                <select className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white">
-                  <option value="">Select County</option>
-                  {counties.map((c, i) => <option key={i} value={c.name}>{c.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Generator Brand *</label>
-                <select className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white">
-                  <option value="">Select Brand</option>
-                  {generatorBrands.map((b, i) => <option key={i} value={b.name}>{b.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Generator Capacity (kVA)</label>
-                <input type="text" className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white" placeholder="e.g., 500 kVA" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Service Type *</label>
-                <select className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white">
-                  <option value="">Select Service</option>
-                  <option value="emergency">Emergency Repair</option>
-                  <option value="maintenance">Scheduled Maintenance</option>
-                  <option value="overhaul">Engine Overhaul</option>
-                  <option value="diagnosis">Diagnostic Inspection</option>
-                  <option value="installation">New Installation</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Urgency</label>
-                <select className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white">
-                  <option value="normal">Normal (Within 48 hours)</option>
-                  <option value="urgent">Urgent (Within 24 hours)</option>
-                  <option value="emergency">Emergency (ASAP)</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Describe the Issue</label>
-              <textarea rows={4} className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white" placeholder="Please describe the generator issue or service needed..." />
-            </div>
-            <button type="submit" className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition-colors text-lg">
-              Submit Service Request
-            </button>
-          </form>
+          {/* This was a 60-line form with NO onSubmit and NO action, under the
+              promise "our team will contact you within 2 hours". Every service
+              request typed into it was silently discarded. Replaced 2026-07-31
+              with the working component that posts to /api/contact, the same
+              endpoint verified end to end elsewhere in the site. */}
+          <div className="bg-gray-900/50 rounded-2xl p-8 border border-gray-800">
+            <QuickInquiryForm service="Generator Maintenance" ctaLabel="Submit Service Request" />
+          </div>
         </div>
       </section>
 
@@ -955,7 +904,7 @@ export default function GeneratorMaintenancePage() {
           <h2 className="text-2xl font-bold mb-6">About EmersonEIMS Generator Maintenance Services</h2>
           <div className="prose prose-invert prose-orange max-w-none text-gray-400 space-y-4">
             <p>
-              EmersonEIMS is Kenya&apos;s leading provider of generator maintenance, repair, and engine overhaul services. With certified technicians stationed across all 47 counties, we deliver professional generator servicing for residential, commercial, and industrial applications.
+              EmersonEIMS provides generator maintenance, repair and engine overhaul services across Kenya. Our mobile workshop reaches all 47 counties from our base in Embakasi, Nairobi, servicing residential, commercial and industrial installations.
             </p>
             <p>
               Our comprehensive maintenance programs cover all major generator brands including Cummins, Caterpillar, Perkins, FG Wilson, Kohler, MTU, Deutz, Volvo Penta, John Deere, Mitsubishi, Sdmo, Aksa, Kipor, Himoinsa, Atlas Copco, Doosan, Yanmar, Lister Petter, Lombardini, and Iveco generators.
@@ -965,7 +914,7 @@ export default function GeneratorMaintenancePage() {
             </p>
             <h3 className="text-white text-xl font-bold mt-6">Why Choose EmersonEIMS for Generator Maintenance?</h3>
             <ul className="list-disc pl-6 space-y-1">
-              <li>Factory-trained and certified technicians</li>
+              <li>Experienced multi-brand technicians</li>
               <li>Genuine OEM parts for all brands</li>
               <li>24/7 emergency response nationwide</li>
               <li>Comprehensive service documentation</li>

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Oil & Gas Power Infrastructure | Exploration • Production • Processing | 99.7% SLA | EmersonEIMS Africa',
+  title: 'Oil & Gas Power Infrastructure',
   description: 'Enterprise power solutions for African oil & gas operations. Exploration rigs, production platforms, processing plants, export terminals. KES 100M-1B per project. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/oil-gas',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function OilGasPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -316,6 +316,6 @@ export default function OilGasPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

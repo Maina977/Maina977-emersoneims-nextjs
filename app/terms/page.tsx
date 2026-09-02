@@ -1,11 +1,15 @@
 export const metadata = {
-  title: 'Terms of Service | Emerson EiMS',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/terms' },
+  title: 'Terms of Service',
   description: 'Terms of service for Emerson EiMS digital services.',
 };
 
 export default function TermsPage() {
   return (
-    <main className="eims-section min-h-screen">
+    <div className="eims-section min-h-screen">
       <div className="eims-shell py-24">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">Terms of Service</h1>
@@ -50,6 +54,6 @@ export default function TermsPage() {
         </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -25,7 +25,7 @@ const FAQ_DATA = [
     id: 'gen-3',
     category: 'Generators',
     question: 'What brands of generators do you supply?',
-    answer: 'We specialize in Cummins and Voltka generators. We also supply and service Caterpillar, FG Wilson, Perkins, Kohler, SDMO, MTU, Deutz, Volvo Penta, and other major brands from 20kVA to 2000kVA. Factory-trained technicians, genuine parts, full support.',
+    answer: 'We specialize in Cummins and Voltka generators. We also supply and service Caterpillar, FG Wilson, Perkins, Kohler, SDMO, MTU, Deutz, Volvo Penta, and other major brands from 20kVA to 2000kVA. Specialist technicians, genuine parts, full support.',
     tags: ['brands', 'cummins', 'caterpillar', 'kohler']
   },
   {
@@ -171,7 +171,7 @@ const FAQ_DATA = [
     id: 'srv-5',
     category: 'Services',
     question: 'What warranty do you provide?',
-    answer: 'Warranty varies by product: Generators 1-3 years or 2000 hours (3 years standard at EmersonEIMS), Solar panels 25 years performance warranty, Inverters 5-10 years, UPS systems 2-3 years. All warranties are manufacturer-backed, with support through our maintenance programs.',
+    answer: 'Warranty varies by product: Generators 1-3 years or 2000 hours (2 years standard at EmersonEIMS), Solar panels 25 years performance warranty, Inverters 5-10 years, UPS systems 2-3 years. All warranties are manufacturer-backed, with support through our maintenance programs.',
     tags: ['warranty', 'guarantee', 'coverage']
   },
 
@@ -217,7 +217,7 @@ const FAQ_DATA = [
     id: 'diag-1',
     category: 'Diagnostics',
     question: 'What is the EmersonEIMS Diagnostic Suite?',
-    answer: 'Our free, industry-first diagnostic tool contains 9,000+ error codes for all major generator brands. Features include AI-powered symptom analysis, voice commands, offline capability, 47 language support, and step-by-step repair guides. No login required.',
+    answer: 'Our free, industry-first diagnostic tool covers error codes for all major generator brands. Features include AI-powered symptom analysis, voice commands, offline capability, 47 language support, and step-by-step repair guides. No login required.',
     tags: ['diagnostic suite', 'error codes', 'ai', 'free']
   },
   {
@@ -312,7 +312,7 @@ export default function FAQPage() {
         }}
       />
 
-      <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
         {/* Hero Section */}
         <section className="relative py-20 overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent" />
@@ -511,7 +511,7 @@ export default function FAQPage() {
                   🔧 Try Diagnostic Suite
                 </Link>
                 <a
-                  href="https://wa.me/254768860665"
+                  href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20have%20a%20question%20about%20your%20services."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-8 py-4 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition-colors"
@@ -538,7 +538,7 @@ export default function FAQPage() {
               <Link href="/diagnostics" className="p-6 bg-white/5 border border-white/10 rounded-xl hover:border-blue-500/50 transition-colors text-center group">
                 <div className="text-4xl mb-3">🔧</div>
                 <h3 className="font-semibold text-white group-hover:text-blue-400">Diagnostics</h3>
-                <p className="text-sm text-gray-400">9,000+ error codes</p>
+                <p className="text-sm text-gray-400">Generator error codes</p>
               </Link>
               <Link href="/knowledge-base" className="p-6 bg-white/5 border border-white/10 rounded-xl hover:border-blue-500/50 transition-colors text-center group">
                 <div className="text-4xl mb-3">📚</div>
@@ -553,7 +553,7 @@ export default function FAQPage() {
             </div>
           </div>
         </section>
-      </main>
+      </div>
     </>
   );
 }

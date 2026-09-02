@@ -23,6 +23,7 @@
 
 import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
 import { getServiceBySlug } from '@/lib/data/seo-services';
+import { hasConstituencyData } from '@/lib/data/kenya-constituency-conditions';
 
 /**
  * High-intent, commercially meaningful services. A deliberately small
@@ -114,6 +115,34 @@ export function getIndexableKenyaUrls(): string[] {
     if (!isPriorityCounty(county.slug)) continue;
 
     for (const constituency of county.constituencies) {
+      /*
+       * SUBMIT ONLY WHAT WE ASKED GOOGLE TO INDEX (2026-08-29).
+       *
+       * Two separate reasons a constituency URL does not belong in a sitemap
+       * when it has no confirmed altitude/climate record:
+       *
+       * 1. IT CANONICALISES SOMEWHERE ELSE. Without a verified record,
+       *    generateLocationServiceMetadata points its canonical at the
+       *    county+service page. Submitting a URL that declares another URL
+       *    canonical is a contradiction: the sitemap says "index this", the
+       *    page says "no, index that". A sitemap should only ever list
+       *    self-canonical URLs.
+       *
+       * 2. GOOGLE HAS ALREADY ANSWERED. Measured on the live site on
+       *    2026-08-29, two constituency+service pages in different counties
+       *    shared 68% of their 8-word sequences, and Search Console returned
+       *    "Crawled - currently not indexed" for this tier. That status is not
+       *    an error to be validated away — it is Google judging the pages not
+       *    worth index space, and it was right.
+       *
+       * Nothing is deleted. Every one of these URLs still returns 200, still
+       * renders, still carries index/follow and stays internally linked, so a
+       * visitor or a crawler following a link reaches it normally. It simply
+       * stops consuming crawl budget that belongs to the ~850 pages that can
+       * actually rank.
+       */
+      if (!hasConstituencyData(county.slug, constituency.slug)) continue;
+
       urls.push(`/kenya/${county.slug}/${constituency.slug}`);
       for (const service of CORE_SERVICE_SLUGS) {
         urls.push(`/kenya/${county.slug}/${constituency.slug}/${service}`);

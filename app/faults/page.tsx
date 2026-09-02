@@ -6,6 +6,14 @@ import { motion } from 'framer-motion';
 import { FAULT_CODES } from '@/lib/data/faultCodes';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+/* Crawlable index of the brand reference pages.
+   Imported into a 'use client' file it joins the client bundle — but it is
+   static markup with no state, and App Router server-renders client components
+   on first paint, so the links ARE in the initial HTML. That is the whole
+   point: the reference pages carrying ~3,900 codes had no internal link from
+   the hub that owns them, because this page's own codes sit behind a
+   client-side search box that Google never operates. See the component. */
+import FaultReferenceIndex from '@/components/faults/FaultReferenceIndex';
 
 /**
  * Fault Code Database Hub
@@ -68,6 +76,8 @@ export default function FaultCodesPage() {
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.faults} />
 
+      <FaultReferenceIndex />
+
       {/* Hero Section */}
       <section className="relative py-20 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-5" />
@@ -98,7 +108,7 @@ export default function FaultCodesPage() {
               Generator <span className="text-amber-400">Fault Code</span> Database
             </h1>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
-              Search over <span className="text-white font-semibold">400,000+ fault codes</span> from
+              Search <span className="text-white font-semibold">manufacturer-curated fault codes</span>, with range-based coverage of every controller code number, from
               Cummins, Perkins, DSE, ComAp, and more. Get instant diagnosis and repair steps.
             </p>
 
@@ -288,7 +298,7 @@ export default function FaultCodesPage() {
             "@context": "https://schema.org",
             "@type": "WebPage",
             "name": "Generator Fault Code Database",
-            "description": "Search over 400,000+ generator fault codes from Cummins, Perkins, DSE, ComAp. Get instant diagnosis and repair steps.",
+            "description": "Search manufacturer-curated generator fault codes from Cummins, Perkins, DSE and ComAp, plus range-based coverage of every controller code number. Get instant diagnosis and repair steps.",
             "provider": {
               "@type": "Organization",
               "name": "EmersonEIMS",

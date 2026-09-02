@@ -77,7 +77,7 @@ export default function ServiceCTASection({
                 📞 +254 768 860 665
               </a>
               <a
-                href="https://wa.me/254768860665"
+                href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-all"

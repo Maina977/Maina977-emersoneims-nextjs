@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/blog/maintenance-contracts-roi' },
   title: 'Generator Maintenance Contracts: Real ROI Analysis',
   description: 'Why maintenance contracts save money. Preventive maintenance vs emergency repairs. Cost analysis and payback periods.',
 };
 
 export default function MaintenanceContractsROIBlogPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <article className="max-w-3xl mx-auto px-4 py-20">
         <header className="mb-12">
           <div className="mb-4">
@@ -206,6 +210,6 @@ export default function MaintenanceContractsROIBlogPage() {
           </div>
         </div>
       </article>
-    </main>
+    </div>
   );
 }

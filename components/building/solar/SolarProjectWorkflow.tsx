@@ -604,14 +604,27 @@ const KENYA_PERMITS = [
   { name: 'Fire Safety Certificate', authority: 'Fire Department', required: false, forSizeKW: 50, description: 'Commercial installations >50kW' },
 ];
 
-// Kenya Financing Options
+/**
+ * Kenya financing options.
+ *
+ * `providers` used to name individual third-party companies — banks, solar
+ * lessors, PAYGO and PPA operators. Removed 2026-08-03 on the owner's
+ * instruction: we do not put other companies' names on our site, whether to
+ * compare against them or to list them. Each entry now describes the CATEGORY
+ * of financier instead, which is what a buyer actually needs in order to go and
+ * ask their own bank.
+ *
+ * Every rate, term and deposit figure is unchanged. Nothing was deleted beyond
+ * the company names. Edited independently of components/solar/ — these two
+ * files are separate sources, never copied over one another.
+ */
 const KENYA_FINANCING = [
-  { name: 'Cash Purchase', type: 'cash', interestRate: 0, term: 0, downPayment: 100, providers: ['Direct'] },
-  { name: 'Bank Loan', type: 'loan', interestRate: 14.5, term: 60, downPayment: 20, providers: ['KCB', 'Equity', 'Co-op Bank', 'Stanbic'] },
-  { name: 'Solar Lease', type: 'lease', interestRate: 12, term: 84, downPayment: 0, providers: ['SunCulture', 'M-KOPA', 'Greenlight Planet'] },
-  { name: 'Asset Finance', type: 'asset', interestRate: 15, term: 48, downPayment: 25, providers: ['NCBA', 'I&M Bank', 'Standard Chartered'] },
-  { name: 'PPA', type: 'ppa', interestRate: 0, term: 180, downPayment: 0, providers: ['Distributed Power Africa', 'SolarAfrica'] },
-  { name: 'PAYGO', type: 'paygo', interestRate: 18, term: 36, downPayment: 5, providers: ['M-KOPA', 'd.light', 'BBOXX', 'Azuri'] },
+  { name: 'Cash Purchase', type: 'cash', interestRate: 0, term: 0, downPayment: 100, providers: ['Direct purchase'] },
+  { name: 'Bank Loan', type: 'loan', interestRate: 14.5, term: 60, downPayment: 20, providers: ['Commercial banks'] },
+  { name: 'Solar Lease', type: 'lease', interestRate: 12, term: 84, downPayment: 0, providers: ['Solar leasing providers'] },
+  { name: 'Asset Finance', type: 'asset', interestRate: 15, term: 48, downPayment: 25, providers: ['Asset finance providers'] },
+  { name: 'PPA', type: 'ppa', interestRate: 0, term: 180, downPayment: 0, providers: ['Independent power producers'] },
+  { name: 'PAYGO', type: 'paygo', interestRate: 18, term: 36, downPayment: 5, providers: ['Pay-as-you-go providers'] },
 ];
 
 // Legacy compatibility

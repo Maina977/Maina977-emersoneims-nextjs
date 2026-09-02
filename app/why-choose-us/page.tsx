@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Why Choose EmersonEIMS | Kenya Power Solutions',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/why-choose-us' },
+  title: 'Why Choose EmersonEIMS',
   description: 'Why 100+ companies choose EmersonEIMS. 47-county coverage, 15 services, 4 AI tools, fastest response times, transparent pricing.',
 };
 
 export default function WhyChooseUsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">Why Choose EmersonEIMS</h1>
@@ -226,6 +230,6 @@ export default function WhyChooseUsPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -148,7 +148,7 @@ export function Gauge({
           </text>
         ) : null}
       </svg>
-      <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">{label}</span>
+      <span className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">{label}</span>
     </div>
   );
 }

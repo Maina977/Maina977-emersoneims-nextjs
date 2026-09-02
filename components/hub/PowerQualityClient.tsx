@@ -99,7 +99,7 @@ export default function PowerQualityClient() {
             ['flickerPst',  'Flicker P_st',        ''],
           ] as const).map(([k, label, unit]) => (
             <label key={k} className="grid gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted">{label} {unit && `(${unit})`}</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted">{label} {unit && `(${unit})`}</span>
               <input
                 type="number"
                 value={pq[k] as number}

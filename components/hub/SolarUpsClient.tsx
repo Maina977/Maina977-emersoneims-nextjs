@@ -190,7 +190,7 @@ function UpsSection() {
             topologyLabel: 'Online double-conversion',
           }}
         />
-        <p className="mt-2 text-[11px] text-ink-muted">
+        <p className="mt-2 text-xs text-ink-muted">
           For a fully driveable schematic — add UPS units, change loads, drop the mains —
           open the <Link href="/hub/ups-lab" className="text-ink-link">UPS Live Lab</Link>.
         </p>

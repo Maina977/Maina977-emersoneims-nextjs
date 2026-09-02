@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 export default function AIAdvantageHero() {
   const aiTools = [
@@ -36,7 +35,7 @@ export default function AIAdvantageHero() {
   ];
 
   return (
-    <section className="relative py-20 px-4 bg-gradient-to-b from-black via-slate-950 to-black overflow-hidden">
+    <section className="relative py-20 px-4 bg-gradient-to-b from-black via-slate-950 to-black overflow-hidden content-auto">
       {/* Background animated grid */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(99,255,218,.2)_25%,rgba(99,255,218,.2)_50%,transparent_50%,transparent_75%,rgba(99,255,218,.2)_75%,rgba(99,255,218,.2))] bg-[length:40px_40px]" />
@@ -45,16 +44,17 @@ export default function AIAdvantageHero() {
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Section header */}
         <div className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="reveal">
             <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10">
               <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+              {/* Was "Only AI-Powered Platform in Africa" — an exclusivity
+                  claim across an entire continent that we cannot evidence and
+                  that one counter-example disproves. Same family as the "#1",
+                  "Market Leader" and "World's Most Advanced" claims removed
+                  elsewhere on this site. What is checkable is that the tools
+                  exist and are free to use, which the section then shows. */}
               <span className="text-xs sm:text-sm text-cyan-300 tracking-wider uppercase font-medium">
-                Only AI-Powered Platform in Africa
+                Four AI tools · free to use
               </span>
             </div>
 
@@ -65,24 +65,24 @@ export default function AIAdvantageHero() {
               </span>
             </h2>
 
+            {/* Opened "While competitors sell generators, we engineer
+                intelligence into them." That is a disparaging comparison
+                against an unnamed trade — the same move as the "vs Jua Energy"
+                cards struck from this file in August, just without the names.
+                The owner's standing rule is that we never position against
+                other companies. Describing our own work is enough. */}
             <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-              While competitors sell generators, we engineer intelligence into them.
-              Our AI suite diagnoses issues, designs optimal systems, and optimizes performance
-              in real-time — across generators, solar, UPS, and boreholes.
+              Our AI suite diagnoses faults, sizes systems and tunes performance
+              across generators, solar, UPS and boreholes — the same tools our
+              own engineers use on site.
             </p>
-          </motion.div>
+          </div>
         </div>
 
         {/* AI Tools Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {aiTools.map((tool, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: idx * 0.1 }}
-            >
+            <div className="reveal" key={idx}>
               <Link href={tool.link}>
                 <div className={`group relative p-6 rounded-lg border border-gray-700 hover:border-cyan-500/50 bg-gradient-to-br from-gray-900/40 to-gray-950/40 backdrop-blur-sm hover:bg-gradient-to-br hover:from-gray-800/60 hover:to-gray-900/60 transition-all duration-300 cursor-pointer h-full`}>
                   {/* Gradient background on hover */}
@@ -101,18 +101,12 @@ export default function AIAdvantageHero() {
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Why This Matters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="bg-gradient-to-r from-cyan-900/20 to-blue-900/20 border border-cyan-500/30 rounded-lg p-8 md:p-10"
-        >
+        <div className="bg-gradient-to-r from-cyan-900/20 to-blue-900/20 border border-cyan-500/30 rounded-lg p-8 md:p-10 reveal">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <h4 className="text-cyan-400 font-bold mb-2">Better Diagnostics</h4>
@@ -129,59 +123,67 @@ export default function AIAdvantageHero() {
             <div>
               <h4 className="text-cyan-400 font-bold mb-2">Optimized Performance</h4>
               <p className="text-gray-300 text-sm">
-                Real-time intelligence cuts fuel costs by 20-40% through automated load balancing and efficiency tuning
+                {/* "cuts fuel costs by 20-40%" removed: we have published no
+                    measurement behind it, and it is the same unevidenced kind
+                    of figure as the "40-60% more efficient" line struck from
+                    the block below. What the tools actually do is describable
+                    without inventing a percentage. */}
+                Load profiling and efficiency tuning, so the set runs at the load it was sized for rather than idling rich
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Competitive Positioning */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-16 pt-12 border-t border-gray-700"
-        >
+        <div className="mt-16 pt-12 border-t border-gray-700 reveal">
+          {/*
+            REWRITTEN 2026-08-03 (owner instruction). These three cards were
+            headed "vs Jua Energy (Solar-Only)", "vs Fenix (Battery-Focused)" and
+            "vs All Others (Nairobi-Only)" — naming real trading companies on our
+            own homepage to argue we are better. The owner's standing position is
+            that we never use another company's name to promote ourselves. It was
+            also legally exposed, and it asserted a figure we cannot evidence
+            ("40-60% more efficient").
+
+            Replaced with what we actually do. No comparison, no named parties,
+            nothing that cannot be shown elsewhere on this site.
+          */}
           <h3 className="text-2xl font-bold text-white mb-8 text-center">
-            Why We're Different From Every Other Power Company
+            How We Approach a Power Problem
           </h3>
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-amber-400 mb-3">🔍</div>
-              <h4 className="text-white font-bold mb-2">vs Jua Energy (Solar-Only)</h4>
+              <h4 className="text-white font-bold mb-2">We design the whole system</h4>
               <p className="text-gray-400 text-sm">
-                They sell panels. We design intelligent systems that integrate generators, solar, UPS, and automation with AI optimization.
+                Generators, solar, UPS and automation specified together as one system — so the
+                changeover, the load profile and the protection settings actually match.
               </p>
             </div>
 
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-400 mb-3">🌍</div>
-              <h4 className="text-white font-bold mb-2">vs Fenix (Battery-Focused)</h4>
+              <h4 className="text-white font-bold mb-2">We publish our engineering</h4>
               <p className="text-gray-400 text-sm">
-                They sell batteries. We design systems that make batteries 40-60% more efficient through AI power management.
+                Free diagnosis guides and fault-code references for every category we work in. Read
+                the work before you ever speak to us.
               </p>
             </div>
 
             <div className="text-center">
               <div className="text-3xl font-bold text-green-400 mb-3">📍</div>
-              <h4 className="text-white font-bold mb-2">vs All Others (Nairobi-Only)</h4>
+              <h4 className="text-white font-bold mb-2">The workshop travels to you</h4>
               <p className="text-gray-400 text-sm">
-                They're in Nairobi. We're in ALL 47 counties with mobile workshop capability and same-day emergency response.
+                Our mobile workshop covers all 47 counties, so plant that cannot move still gets
+                bench-grade repair on site.
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-16 text-center"
-        >
+        <div className="mt-16 text-center reveal">
           <p className="text-gray-400 mb-6">
             Ready to experience intelligence-powered power solutions?
           </p>
@@ -199,7 +201,7 @@ export default function AIAdvantageHero() {
               Get AI System Design
             </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

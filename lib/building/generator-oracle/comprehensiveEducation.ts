@@ -3,7 +3,7 @@
  *
  * EMERSON EIMS PROPRIETARY CONTENT
  * All content is original, rephrased in our own technical language
- * Designed to integrate with 400,000+ fault code database
+ * Designed to integrate with 6,700+ fault code database
  * SEO optimized for Kenya and East Africa market
  *
  * Categories: ECM, Controllers, Engine, Electrical, Cooling, Fuel System,

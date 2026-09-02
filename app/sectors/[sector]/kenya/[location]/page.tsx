@@ -49,8 +49,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const sector = getSectorBySlug(resolvedParams.sector);
   const county = getCountyBySlug(resolvedParams.location);
 
+  // Unknown sector/county pairs must not render. notFound() alone does NOT
+  // produce a 404 STATUS on Next 16 + Vercel — verified live on
+  // /sectors/nonexistent-sector-xyz/kenya/nairobi, which still answered 200.
+  // The authoritative 404 comes from guard 0g in middleware.ts. dynamicParams
+  // stays true so legitimate pairs outside generateStaticParams still render.
   if (!sector || !county) {
-    return { title: 'Not Found' };
+    notFound();
   }
 
   const title = generateSectorTitle(sector, county.name);

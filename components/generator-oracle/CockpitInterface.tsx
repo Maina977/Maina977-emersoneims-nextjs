@@ -831,7 +831,7 @@ export default function CockpitInterface({
         </header>
 
         {/* ==================== MAIN CONTENT AREA ==================== */}
-        <main className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-6">
           <div className="max-w-[1920px] mx-auto">
             <AnimatePresence mode="wait">
               {/* ==================== COMMAND CENTER ==================== */}
@@ -1303,7 +1303,7 @@ export default function CockpitInterface({
               )}
             </AnimatePresence>
           </div>
-        </main>
+        </div>
 
         {/* ==================== BOTTOM STATUS BAR ==================== */}
         <footer className="flex-shrink-0 bg-slate-950/80 backdrop-blur-xl border-t border-cyan-500/20 py-2 px-6">

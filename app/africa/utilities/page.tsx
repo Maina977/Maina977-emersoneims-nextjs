@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Utilities Power Infrastructure | Water Treatment • Substations • Renewable Integration | EmersonEIMS Africa',
+  title: 'Utilities Power Infrastructure',
   description: 'Government utility power systems across Africa. Water treatment plants, grid substations, renewable energy integration. 99.5% SLA for essential services. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/utilities',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function UtilitiesPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -298,6 +298,6 @@ export default function UtilitiesPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

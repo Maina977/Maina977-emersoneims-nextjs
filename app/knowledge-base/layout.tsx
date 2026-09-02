@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Knowledge Base | Power Systems Engineering Library | EmersonEIMS Kenya',
+  title: 'Knowledge Base | Power Systems Engineering Library',
   description:
     'In-depth technical articles for engineers, facility managers and procurement teams: generator commissioning, solar design, UPS topology, motor rewinding, NEMA compliance, fuel polishing and more.',
   alternates: { canonical: `${SITE}/knowledge-base` },

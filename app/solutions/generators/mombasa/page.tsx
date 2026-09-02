@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Mombasa | 8-Hour Emergency Response',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/solutions/generators/mombasa' },
+  title: 'Generator Service in Mombasa',
   description: 'Backup power solutions in Mombasa. Installation, emergency repair, maintenance. Coastal facility expertise. 24/7 support.',
 };
 
 export default function MombasaGeneratorPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl font-bold mb-6">Generator Service in Mombasa</h1>
@@ -56,6 +60,6 @@ export default function MombasaGeneratorPage() {
           </a>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -158,7 +158,7 @@ export default function LifecycleClient() {
             ['omHybridPct',     'Hybrid O&M',          '%/yr'],
           ] as const).map(([k, label, unit]) => (
             <label key={k} className="grid gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted">{label} ({unit})</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted">{label} ({unit})</span>
               <input
                 type="number"
                 value={v[k] as number}

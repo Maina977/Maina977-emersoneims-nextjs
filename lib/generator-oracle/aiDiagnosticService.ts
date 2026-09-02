@@ -109,12 +109,38 @@ export async function getAIDiagnosis(
     };
   }
 
-  // AI branch — local-AI only. Never paid AI.
+  /*
+   * WHY THESE TWO BRANCHES NOW RETURN AN ANSWER INSTEAD OF NOTHING.
+   *
+   * Both used to return `success: false` with no result, so a technician who
+   * asked for AI without a complete asset card got a dead end — no diagnosis at
+   * all — even though the deterministic engine above would have answered from
+   * the same readings without complaint. Tested live against production: a
+   * realistic payload (low oil pressure, high coolant temp, 85% load) returned
+   *   {"success":false,"unavailableReason":"Asset card ... is required"}
+   * and nothing else. Someone standing at a faulty generator does not know the
+   * FIRMWARE VERSION, and often not the serial without opening a panel. We were
+   * demanding the hardest information a user has before giving them anything.
+   *
+   * THE AI'S EVIDENCE REQUIREMENTS ARE UNCHANGED. A full asset card is still
+   * mandatory for the AI branch — that gate exists so model output is tied to a
+   * specific machine, and weakening it would be exactly the kind of confident-
+   * but-unfounded answer this codebase has spent a lot of effort removing.
+   *
+   * What changes is the fallback. The module contract says it "NEVER silently
+   * falls back to a different surface" — and this is not silent. `source` is
+   * explicitly 'rule-based', never 'local-ai', so the caller and the UI can see
+   * precisely which engine answered, and `unavailableReason` states why the AI
+   * did not run. The user gets a real deterministic analysis plus a clear
+   * invitation to supply the serial and firmware for an AI-grade one.
+   */
   if (isAIDisabledServer()) {
     return {
-      success: false,
-      source: 'unavailable',
-      unavailableReason: 'Generator Oracle AI is disabled on this deployment.',
+      success: true,
+      source: 'rule-based',
+      result: performLocalDiagnosis(request.readings),
+      unavailableReason:
+        'AI diagnosis is disabled on this deployment. Showing the deterministic rule-based analysis instead.',
       processingTimeMs: Date.now() - startTime,
     };
   }
@@ -123,10 +149,11 @@ export async function getAIDiagnosis(
   const cardParse = AssetCardSchema.safeParse(request.assetCard);
   if (!cardParse.success) {
     return {
-      success: false,
-      source: 'unavailable',
+      success: true,
+      source: 'rule-based',
+      result: performLocalDiagnosis(request.readings),
       unavailableReason:
-        'Asset card (make, model, controller, serial, firmware) is required for AI diagnosis.',
+        'AI diagnosis needs the full asset card (make, model, controller, serial, firmware) so its answer is tied to your specific machine. Showing the deterministic rule-based analysis meanwhile — add the serial and firmware for an AI-grade diagnosis.',
       processingTimeMs: Date.now() - startTime,
     };
   }

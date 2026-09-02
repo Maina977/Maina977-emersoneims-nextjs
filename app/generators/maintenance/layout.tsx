@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Maintenance & Engine Overhaul Services Kenya | All 47 Counties | EmersonEIMS',
-  description: 'Expert generator maintenance, engine overhaul, repair & servicing across all 47 Kenya counties. Certified technicians for Cummins, Caterpillar, Perkins, FG Wilson, Kohler, MTU, Deutz generators. 24/7 emergency service. Call +254 768 860 665.',
+  title: 'Generator Maintenance & Overhaul Kenya',
+  description: 'Generator maintenance, engine overhaul and repair across all 47 counties. Cummins, Caterpillar, Perkins, FG Wilson and more. Call +254 768 860 665.',
   keywords: [
     'generator maintenance Kenya', 'generator repair Kenya', 'generator servicing Kenya',
     'engine overhaul Kenya', 'generator engine rebuild', 'diesel generator maintenance',
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     'preventive generator maintenance', 'generator load bank testing', 'generator oil change',
   ],
   openGraph: {
-    title: 'Generator Maintenance & Engine Overhaul | All 47 Counties | EmersonEIMS',
+    title: 'Generator Maintenance & Engine Overhaul | All 47 Counties',
     description: 'Kenya\'s leading generator maintenance company. Expert engine overhauls, repairs & servicing for all brands across all 47 counties.',
     type: 'website',
     url: 'https://www.emersoneims.com/generators/maintenance',

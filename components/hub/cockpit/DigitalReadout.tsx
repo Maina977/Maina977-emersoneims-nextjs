@@ -69,7 +69,7 @@ export function DigitalReadout({
           {txt}
         </span>
         {unit ? (
-          <span className="text-[11px]" style={{ color: 'var(--cockpit-ink-unit)' }}>
+          <span className="text-xs" style={{ color: 'var(--cockpit-ink-unit)' }}>
             {unit}
           </span>
         ) : null}
@@ -117,7 +117,7 @@ export function SegmentBar({
           {label}
         </span>
         <span
-          className="text-[11px] font-semibold tabular-nums"
+          className="text-xs font-semibold tabular-nums"
           style={{ color: 'var(--cockpit-ink)', fontFamily: 'ui-monospace, monospace' }}
         >
           {clamped.toFixed(0)}

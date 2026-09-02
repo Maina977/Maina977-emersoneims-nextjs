@@ -29,7 +29,7 @@ export default function CumminsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero Section */}
       <section className="relative py-20 px-4">
         <div className="max-w-6xl mx-auto">
@@ -43,7 +43,7 @@ export default function CumminsPage() {
                 Solutions
               </h1>
               <p className="text-lg text-gray-300 mb-8 leading-relaxed">
-                Cummins diesel generators engineered for reliability, performance, and efficiency. From 10 kVA portable units to 2000 kVA industrial systems, EmersonEIMS delivers complete solutions with factory-trained installation and 24/7 expert support.
+                Cummins diesel generators engineered for reliability, performance, and efficiency. From 10 kVA portable units to 2000 kVA industrial systems, EmersonEIMS delivers complete solutions with specialist installation and 24/7 support.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link
@@ -160,8 +160,8 @@ export default function CumminsPage() {
             <div className="p-6 border border-slate-700 rounded-lg">
               <h3 className="text-xl font-bold text-cyan-400 mb-4">Support & Warranty</h3>
               <ul className="space-y-2 text-gray-300">
-                <li>• 3-year comprehensive warranty</li>
-                <li>• Factory-trained technicians</li>
+                <li>• 2-year comprehensive warranty</li>
+                <li>• Specialist Cummins technicians</li>
                 <li>• Genuine spare parts</li>
                 <li>• Remote diagnostic support</li>
                 <li>• Extended maintenance packages</li>
@@ -202,7 +202,7 @@ export default function CumminsPage() {
               <div>
                 <h3 className="text-2xl font-bold text-cyan-400 mb-3">Local Expert Support</h3>
                 <p className="text-gray-300">
-                  EmersonEIMS technicians are factory-trained and certified on all Cummins platforms. 24/7 emergency hotline with rapid parts availability.
+                  EmersonEIMS technicians work across every Cummins platform we supply, to manufacturer service specifications. 24/7 emergency hotline with rapid parts availability.
                 </p>
               </div>
             </div>
@@ -236,6 +236,6 @@ export default function CumminsPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

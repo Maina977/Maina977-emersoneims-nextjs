@@ -93,7 +93,7 @@ export default function SynchronizationVideo() {
                       <div className="h-3 rounded-full bg-white/10 overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-1000" style={{ width: s.share ? '50%' : '6%' }} />
                       </div>
-                      <span className="text-[11px] text-white/50">{lbl} — {s.share ? '50% load' : 'standby'}</span>
+                      <span className="text-xs text-white/50">{lbl} — {s.share ? '50% load' : 'standby'}</span>
                     </div>
                   ))}
                 </div>
@@ -110,7 +110,7 @@ export default function SynchronizationVideo() {
                   </g>
                   <circle cx="60" cy="60" r="5" fill="#fbbf24" />
                 </svg>
-                <span className="mt-2 text-[11px] text-white/50">{s.slip === 0 ? 'In phase ✓' : 'Slip — needle turning'}</span>
+                <span className="mt-2 text-xs text-white/50">{s.slip === 0 ? 'In phase ✓' : 'Slip — needle turning'}</span>
               </div>
             </div>
           </div>

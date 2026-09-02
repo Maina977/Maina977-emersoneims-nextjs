@@ -395,7 +395,7 @@ export default function HospitalBlackoutStory() {
               Your Emergency Could Be Next
             </h3>
             <p className="text-xl text-gray-400 mb-8">
-              24/7 emergency response. 400,000+ error codes. 12-minute average diagnosis.
+              24/7 emergency response. Curated error codes. 12-minute average diagnosis.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -405,11 +405,18 @@ export default function HospitalBlackoutStory() {
                 <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 Emergency Hotline: +254-768-860665
               </Link>
+              {/*
+                Was href="/diagnostic-journey" — a route that has never existed,
+                so this CTA 404'd. Its label also carried the old "57,600+"
+                figure, which counted one code once per applicable engine model.
+                The measured distinct total is 6,756 across 79 brands; see
+                lib/data/curatedFaultCodes.ts.
+              */}
               <Link
-                href="/diagnostic-journey"
+                href="/faults"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-xl hover:scale-105 transition-transform"
               >
-                Explore 400,000+ Error Codes
+                Explore the Fault Code Library
               </Link>
             </div>
           </motion.div>

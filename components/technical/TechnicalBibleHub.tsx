@@ -2123,7 +2123,7 @@ export default function TechnicalBibleHub({
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-h-[calc(100vh-80px)]">
+        <div className="flex-1 min-h-[calc(100vh-80px)]">
           {/* Tabs */}
           {selectedService && activeTab !== 'search' && (
             <div className="bg-slate-800/50 border-b border-slate-700 sticky top-20 z-30">
@@ -2166,7 +2166,7 @@ export default function TechnicalBibleHub({
               </AnimatePresence>
             )}
           </div>
-        </main>
+        </div>
       </div>
 
       {/* Full-screen Viewers */}

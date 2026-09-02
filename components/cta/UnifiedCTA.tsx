@@ -109,7 +109,18 @@ const VARIANT_STYLES: Record<CTAVariant, string> = {
 };
 
 export default function UnifiedCTA({
-  action,
+  /*
+   * `action` now defaults. It had none, while every sibling prop did
+   * (variant, size, icon, fullWidth...), so <UnifiedCTA /> with no props left
+   * it undefined, ACTION_CONFIG[undefined] returned undefined, and the next
+   * line read .href off it:
+   *     TypeError: Cannot read properties of undefined (reading 'href')
+   * app/solutions/motors/page.tsx:372 does exactly that, and it crashed the
+   * production build the moment that page began prerendering statically. It
+   * had been invisible only because the page was rendering per-request.
+   * 'get-quote' is the sensible default for a bare call-to-action here.
+   */
+  action = 'get-quote',
   variant = 'primary',
   size = 'md',
   href,
@@ -122,7 +133,10 @@ export default function UnifiedCTA({
   location,
   animated = true,
 }: UnifiedCTAProps) {
-  const config = ACTION_CONFIG[action];
+  // Belt and braces alongside the default above: an `action` string that is not
+  // a known key (from untyped JS, or a value read at runtime) must not be able
+  // to take a page down. Fall back rather than throw.
+  const config = ACTION_CONFIG[action] ?? ACTION_CONFIG['get-quote'];
   
   // Build final href with tracking params
   let finalHref = href || config.href;

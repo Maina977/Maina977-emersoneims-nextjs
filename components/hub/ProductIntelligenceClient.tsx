@@ -163,7 +163,7 @@ function GradePill({ g }: { g: Grade }) {
   const p = GRADE_PALETTE[g];
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-bold tracking-wider"
+      className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-bold tracking-wider"
       style={{ background: p.bg, color: p.fg, border: `1px solid ${p.border}` }}
       title={`Grade ${g} — ${p.label}`}
     >
@@ -214,7 +214,7 @@ export default function ProductIntelligenceClient() {
       >
         <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted">Internal grading</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted">Internal grading</div>
             <h3 className="mt-0.5 text-base font-semibold tracking-tight">A–G suitability grade</h3>
             <p className="mt-1 text-xs text-ink-secondary">
               Platform-internal score across seven axes: <strong>suitability</strong>, <strong>documentation clarity</strong>,{' '}
@@ -240,7 +240,7 @@ export default function ProductIntelligenceClient() {
       >
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">
               Authenticity
             </div>
             <h3 className="mt-0.5 text-base font-semibold tracking-tight">
@@ -253,7 +253,11 @@ export default function ProductIntelligenceClient() {
           {[
             'Manufacturer seal intact',
             'Tamper labels verified',
-            'Authorised dealer confirmed',
+            // Reworded 2026-08-04. This is a checklist of what WE verify about
+            // incoming stock, but "Authorised dealer confirmed" reads as if
+            // EmersonEIMS is claiming to be one. The check itself is about the
+            // supply chain the part came through, so say that instead.
+            'Authorised supply chain confirmed',
             'Photo evidence captured',
             'System labelling printed',
             'Warranty record filed',

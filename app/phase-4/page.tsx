@@ -1,14 +1,24 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 
+// Internal roadmap document, not a customer-facing page. It states business
+// strategy and positioning in plain terms, which is not something to publish to
+// competitors or to rank for. It was already absent from the sitemap; this makes
+// that explicit rather than incidental. The page stays reachable by URL for
+// internal use.
 export const metadata: Metadata = {
-  title: 'Phase 4: Market Leader Transformation | EmersonEIMS',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/phase-4' },
+  robots: { index: false, follow: false },
+  title: 'Phase 4: Market Leader Transformation',
   description: 'Phase 4 infrastructure: YouTube channel, podcast series, partner marketplace, certification program, mobile strategy. Building Africa\'s leading backup power ecosystem.',
 };
 
 export default function Phase4Page() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl font-bold mb-6">Phase 4: Market Leader Transformation</h1>
@@ -340,6 +350,6 @@ export default function Phase4Page() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

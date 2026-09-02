@@ -440,7 +440,7 @@ export default function UniversalDiagnosticPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {/* Service Selector - 9 Services Grid */}
         <section className="mb-8">
           <h2 className="text-lg font-bold text-cyan-400 mb-4">SELECT SERVICE</h2>
@@ -561,7 +561,7 @@ export default function UniversalDiagnosticPage() {
                             {/* CTA Buttons */}
                             <div className="flex gap-3 mt-4 pt-4 border-t border-gray-700">
                               <a 
-                                href="https://wa.me/254768860665" 
+                                href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20a%20generator%20fault%20diagnosis." 
                                 target="_blank"
                                 className="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded text-center text-sm font-bold"
                               >
@@ -603,7 +603,7 @@ export default function UniversalDiagnosticPage() {
                   <p className="text-gray-400 text-sm mb-4">Our certified technicians are available 24/7</p>
                   <div className="space-y-2">
                     <a 
-                      href="https://wa.me/254768860665"
+                      href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20a%20generator%20fault%20diagnosis."
                       className="block w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded font-bold text-center"
                     >
                       💬 WhatsApp: +254768860665
@@ -628,21 +628,22 @@ export default function UniversalDiagnosticPage() {
             <Link href="/faults" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
               <div className="text-2xl mb-2">🔧</div>
               <div className="font-bold text-white">Fault Code Library</div>
-              <div className="text-sm text-gray-400">13,500+ error codes database</div>
+              <div className="text-sm text-gray-400">Manufacturer-curated fault codes</div>
             </Link>
             <Link href="/troubleshooting" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
               <div className="text-2xl mb-2">🎛️</div>
               <div className="font-bold text-white">Troubleshooting Wizard</div>
               <div className="text-sm text-gray-400">Step-by-step problem solver</div>
             </Link>
-            <Link href="/diagnostic-qa" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
-              <div className="text-2xl mb-2">❓</div>
-              <div className="font-bold text-white">Q&A Database</div>
-              <div className="text-sm text-gray-400">Comprehensive troubleshooting</div>
+            {/* Was /diagnostic-qa — a route that has never existed, so this card 404'd. */}
+            <Link href="/repair-centre" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
+              <div className="text-2xl mb-2">📘</div>
+              <div className="font-bold text-white">Repair Centre</div>
+              <div className="text-sm text-gray-400">60 diagnosis guides across 15 categories</div>
             </Link>
           </div>
         </section>
-      </main>
+      </div>
 
       {/* HUD Corners */}
       <div className="hidden sm:block fixed top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-cyan-500/30 pointer-events-none" />

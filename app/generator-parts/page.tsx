@@ -102,7 +102,7 @@ export default function GeneratorPartsPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.generatorParts} />
 
@@ -325,7 +325,7 @@ export default function GeneratorPartsPage() {
                 📞 Call Parts Hotline
               </a>
               <a
-                href="https://wa.me/254768860665"
+                href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                 className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all"
               >
                 💬 WhatsApp Order
@@ -340,6 +340,6 @@ export default function GeneratorPartsPage() {
           </motion.div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -1,15 +1,15 @@
 /**
- * CUMMINS GENERATORS BY VOLTKA - AUTHORIZED DEALER DATA
- * EmersonEIMS is Kenya's Authorized Cummins/Voltka Dealer
+ * CUMMINS GENERATORS BY VOLTKA - BRAND DATA
+ * EmersonEIMS sells and services Cummins generators supplied by Voltka in Kenya
  *
  * SEO Keywords: Cummins generators Kenya, Voltka generators,
- * authorized Cummins dealer Kenya, Cummins 10-2000KVA
+ * Cummins generator supplier Kenya, Cummins 10-2000KVA
  */
 
 export const CUMMINS_BRAND_INFO = {
   brandName: 'Cummins',
   supplier: 'Voltka',
-  dealerStatus: 'Authorized Dealer',
+  dealerStatus: 'Sales & Service',
   country: 'Kenya',
   powerRange: {
     min: 10,
@@ -18,33 +18,33 @@ export const CUMMINS_BRAND_INFO = {
   },
   warranty: {
     years: 3,
-    description: '3 Years Comprehensive Warranty'
+    description: '2 Years Comprehensive Warranty'
   },
   freeService: {
     years: 1,
-    description: '1 Year Free Service & Maintenance'
+    description: '1 Year Free Servicing & Maintenance on new sets'
   },
   taglines: [
-    'Kenya\'s Authorized Cummins Dealer',
+    'Cummins Sales & Service Across Kenya',
     'Powered by Voltka - Trusted Worldwide',
-    '3 Years Warranty + 1 Year Free Service',
+    '2 Years Warranty + 1 Year Free Servicing on new sets',
     '10KVA to 2000KVA - All Power Needs Covered',
     'Genuine Cummins Parts & Expert Service'
   ],
   benefits: [
     {
-      title: '3 Years Warranty',
-      description: 'Industry-leading comprehensive warranty on all Cummins generators',
+      title: '2 Years Warranty',
+      description: 'Comprehensive warranty on all new Cummins generators, with terms confirmed in your quotation',
       icon: 'shield'
     },
     {
-      title: '1 Year Free Service',
-      description: 'Complimentary maintenance and service for the first year',
+      title: '1 Year Free Servicing',
+      description: 'Scheduled maintenance included for the first year on new generator sets',
       icon: 'wrench'
     },
     {
-      title: 'Authorized Dealer',
-      description: 'Official Voltka/Cummins authorized dealer in Kenya',
+      title: 'Sales & Service',
+      description: 'Cummins (Voltka) generator sales and service in Kenya',
       icon: 'badge'
     },
     {
@@ -66,7 +66,7 @@ export const CUMMINS_BRAND_INFO = {
   seoKeywords: [
     'Cummins generators Kenya',
     'Voltka generators Kenya',
-    'authorized Cummins dealer Kenya',
+    'Cummins generator supplier Kenya',
     'Cummins generator price Kenya',
     'Cummins 10KVA generator',
     'Cummins 20KVA generator',
@@ -81,7 +81,7 @@ export const CUMMINS_BRAND_INFO = {
     'industrial generators Kenya',
     'diesel generators Kenya',
     'Cummins warranty Kenya',
-    'generator 3 year warranty',
+    'generator 2 Years warranty',
     'Voltka Kenya dealer'
   ],
   models: [
@@ -129,31 +129,47 @@ export const CUMMINS_BRAND_INFO = {
       "lowPrice": "350000",
       "highPrice": "22000000",
       "offerCount": "20"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "127"
     }
+    /*
+     * A fabricated aggregateRating was removed here (2026-08-29):
+     *     "aggregateRating": { "ratingValue": "4.9", "reviewCount": "127" }
+     *
+     * No 127 reviews exist. Nothing on this site collects, stores or displays
+     * a review corpus, and no source was ever cited for the 4.9. Review
+     * markup that is not backed by reviews visible on the page is a direct
+     * breach of Google's structured-data policy and draws a manual action
+     * against the whole domain, not one page.
+     *
+     * It was dormant rather than live — the pages importing CUMMINS_BRAND_INFO
+     * read .warranty, .supplier and .powerRange, never .structuredData, and
+     * checking the live HTML as Googlebot confirmed no aggregateRating was
+     * being served. It is deleted anyway, because it sat one render away from
+     * shipping and anyone wiring this object up would have published it
+     * without knowing.
+     *
+     * If genuine reviews are ever collected, this can return — with the
+     * reviews themselves rendered on the page, which is what the policy
+     * actually requires.
+     */
   }
 };
 
 export const CUMMINS_FAQ = [
   {
-    question: "Is EmersonEIMS an authorized Cummins dealer in Kenya?",
-    answer: "Yes, EmersonEIMS is an official authorized dealer for Cummins generators supplied by Voltka in Kenya. We offer genuine Cummins generators from 10KVA to 2000KVA with full manufacturer warranty and support."
+    question: "Does EmersonEIMS supply and service Cummins generators in Kenya?",
+    answer: "EmersonEIMS sells and services Cummins generators supplied by Voltka in Kenya. We supply genuine Cummins generators from 10KVA to 2000KVA with full manufacturer warranty and support."
   },
   {
     question: "What warranty do Cummins generators come with?",
-    answer: "All Cummins generators from EmersonEIMS come with a comprehensive 3-year warranty covering parts and labor, plus 1 year of free service and maintenance included."
+    answer: "All Cummins generators from EmersonEIMS come with a comprehensive 2-year warranty covering parts and labor, plus 1 year of free service and maintenance included."
   },
   {
     question: "What sizes of Cummins generators are available?",
     answer: "We stock Cummins generators ranging from 10KVA for small offices to 2000KVA for utility-scale power plants. Popular sizes include 20KVA, 50KVA, 100KVA, 250KVA, 500KVA, and 1000KVA."
   },
   {
-    question: "What is included in the 1 year free service?",
-    answer: "The free service includes scheduled maintenance visits, oil changes, filter replacements, system inspections, and priority technical support for the first 12 months after purchase."
+    question: "What is included in the 1 year free servicing?",
+    answer: "One year of free servicing on new generator sets: scheduled maintenance visits, oil and filter changes, system inspections and technical support. It runs from commissioning, and the visit schedule is set out in your written quotation."
   },
   {
     question: "Do you provide installation services?",
@@ -161,7 +177,7 @@ export const CUMMINS_FAQ = [
   },
   {
     question: "Are genuine Cummins spare parts available?",
-    answer: "Yes, we maintain a comprehensive inventory of genuine Cummins spare parts. As an authorized dealer, all our parts come with full traceability and manufacturer guarantee."
+    answer: "Yes, we maintain a comprehensive inventory of genuine Cummins spare parts, with full traceability and manufacturer guarantee."
   },
   {
     question: "What industries do you serve?",

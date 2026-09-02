@@ -26,8 +26,8 @@ const usedGenerators = [
     warranty: "1 year comprehensive",
     priceRange: "KSh 800,000 – 15M",
     features: ["Fully serviced", "Load tested", "OEM parts", "6-month service history"],
-    status: "In Stock",
-    statusColor: "bg-green-500",
+    status: "Confirm availability",
+    statusColor: "bg-slate-600",
     images: [
       '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg',
       '/images/voltka/voltka-cummins-engine-open-canopy.webp',
@@ -51,8 +51,8 @@ const usedGenerators = [
     warranty: "1 year engine & alternator",
     priceRange: "KSh 500,000 – 8M",
     features: ["Fuel efficient", "Low hours", "New filters", "Painted"],
-    status: "Limited Stock",
-    statusColor: "bg-yellow-500",
+    status: "Confirm availability",
+    statusColor: "bg-slate-600",
     images: [
       '/images/enhanced/ST AUSTINS ACADEMY 50KVA PERKINS ENGINE-4K-CINEMATIC.jpg',
       '/images/PERKINS-ENGINE-PARTS.jpg',
@@ -75,8 +75,8 @@ const usedGenerators = [
     warranty: "1 year comprehensive",
     priceRange: "KSh 1.2M – 20M",
     features: ["Heavy-duty", "Low hours", "Full service", "Canopy available"],
-    status: "In Stock",
-    statusColor: "bg-green-500",
+    status: "Confirm availability",
+    statusColor: "bg-slate-600",
     images: [
       '/images/enhanced/BIGOT CATERPILLAR 30KVA-4K-CINEMATIC.jpg',
       '/images/voltka/cat-canopy-studio.webp',
@@ -100,8 +100,8 @@ const usedGenerators = [
     warranty: "1 year engine",
     priceRange: "KSh 700,000 – 12M",
     features: ["Low emissions", "Advanced controls", "Soundproofed", "Containerized"],
-    status: "Available Soon",
-    statusColor: "bg-blue-500",
+    status: "Confirm availability",
+    statusColor: "bg-slate-600",
     images: [
       '/images/gen00011.jpg',
       '/images/GEN 2-1920x1080.png',
@@ -124,8 +124,8 @@ const usedGenerators = [
     warranty: "1 year",
     priceRange: "KSh 400,000 – 10M",
     features: ["French engineered", "Robust design", "Easy maintenance", "Export ready"],
-    status: "In Stock",
-    statusColor: "bg-green-500",
+    status: "Confirm availability",
+    statusColor: "bg-slate-600",
     images: [
       '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
       '/images/generator-canopy-fabrication.png',
@@ -148,8 +148,8 @@ const usedGenerators = [
     warranty: "6 months",
     priceRange: "KSh 200,000 – 6M",
     features: ["Cost effective", "Fully tested", "New batteries", "Serviced"],
-    status: "In Stock",
-    statusColor: "bg-green-500",
+    status: "Confirm availability",
+    statusColor: "bg-slate-600",
     images: [
       '/images/voltka/voltka-warehouse-fleet.webp',
       '/images/voltka/voltka-vks165-stock-forklift.webp',
@@ -366,10 +366,15 @@ const AdvancedFilters = ({
             onChange={(e) => handleFilterChange('status', e.target.value)}
             className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
           >
-            <option value="">All Status</option>
-            <option value="In Stock">In Stock</option>
-            <option value="Limited Stock">Limited Stock</option>
-            <option value="Available Soon">Available Soon</option>
+            {/*
+              The stock options that stood here — In Stock / Limited Stock /
+              Available Soon — were filtering on hard-coded literals. No
+              inventory system feeds this page, so the filter sorted by a
+              value that was decided when the file was typed and would be
+              wrong the first time a set sold. A buyer could filter to
+              "In Stock" and be shown machines nobody had checked.
+            */}
+            <option value="">All units</option>
           </select>
         </div>
       </div>
@@ -404,7 +409,7 @@ export default function UsedGeneratorsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black">
       {/* Cinematic Hero Section with Hollywood Color Grading */}
       <section ref={heroRef} className="relative h-[85vh] min-h-[600px] overflow-hidden">
         {/* Background Image with Cinematic Scale */}
@@ -713,7 +718,7 @@ export default function UsedGeneratorsPage() {
           </div>
         </motion.div>
       </div>
-    </main>
+    </div>
   );
 }
 

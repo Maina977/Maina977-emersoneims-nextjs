@@ -1,6 +1,38 @@
 /**
  * Generator Oracle - Controller Fault Code Database
- * 400,000+ authentic fault codes for professional generator controller diagnostics
+ * Brand-curated controller fault codes PLUS a template expansion.
+ *
+ * TWO TIERS, AND THE DIFFERENCE MATTERS
+ * =====================================
+ * Tier 1 — curated (verified: true). Hand-written per controller family in
+ * ./data/*-fault-codes.ts. Real alarm numbers, code-specific meanings,
+ * likelihood-weighted causes. Aggregated for the diagnostic API by
+ * lib/data/curatedFaultCodes.ts.
+ *
+ * Tier 2 — template / range-based (verified: false), produced by
+ * generateExtendedCodes() below. These cover every code number in each
+ * controller's published ranges so a technician typing any number gets subsystem
+ * context and a next step instead of a dead end. They are legitimate ONLY while
+ * they stay honest about what they are, so as of 2026-07-27:
+ *   - severity is NO LONGER derived from the code number's digits. Nine loops
+ *     previously did `code % 10 < 3 ? 'shutdown' : ...`, which made DSE 1120 a
+ *     shutdown and DSE 1127 a warning for no reason but the final digit. All
+ *     template entries now carry the neutral 'warning' class.
+ *   - the title says "meaning not verified" rather than asserting a fault name.
+ *   - the description states plainly that the individual code has not been
+ *     checked against the manufacturer's documentation and points to the OEM
+ *     manual.
+ * Anything consuming these must keep verified:false visible and rank Tier 1
+ * first. Never present a Tier 2 entry as a confirmed diagnosis.
+ *
+ * IMPORTANT: generateExtendedCodes() below is a TEMPLATE EXPANSION, not curated
+ * data. It walks every integer in ~99 declared ranges x 81 controller models,
+ * titles each result `Extended ${subcat} Alarm ${code}`, assigns the
+ * subcategory by modulo and the severity from the code number's last digit.
+ * It is the origin of the former "400,000+ fault codes" headline and must not
+ * be presented to users as verified diagnostic data. The hand-written codes
+ * live in ./data/*-fault-codes.ts and are aggregated by
+ * lib/data/curatedFaultCodes.ts.
  *
  * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO, Volvo Penta VODIA
  *
@@ -201,6 +233,7 @@ export interface ControllerFaultCode {
 
 // ==================== IMPORT BRAND-SPECIFIC CODES ====================
 
+import { getKnowledgeBySubsystem } from '@/lib/data/faultKnowledge';
 import { getDSEFaultCodes } from './data/dse-fault-codes';
 import { getComApFaultCodes } from './data/comap-fault-codes';
 import { getWoodwardFaultCodes } from './data/woodward-fault-codes';
@@ -214,7 +247,7 @@ import { getVODIAFaultCodes } from './data/vodia-fault-codes';
 
 // ==================== EXTENDED CODE GENERATION ====================
 
-// Generate additional alarm variations to reach 400,000+ codes
+// TEMPLATE EXPANSION - generated permutations, not curated data. See file header.
 function generateExtendedCodes(): ControllerFaultCode[] {
   const extendedCodes: ControllerFaultCode[] = [];
 
@@ -346,7 +379,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
     dseCategories.forEach(cat => {
       for (let code = cat.range[0]; code <= cat.range[1]; code++) {
         const subcat = cat.subcategories[code % cat.subcategories.length];
-        const severity = code % 10 < 3 ? 'shutdown' : code % 10 < 6 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified, see file header
         extendedCodes.push(createExtendedCode(
           `DSE-${model.replace(/\s+/g, '')}-${code}`,
           code.toString(),
@@ -391,7 +424,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = `${range.prefix}${i.toString().padStart(3, '0')}`;
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified, see file header
         extendedCodes.push(createExtendedCode(
           `COMAP-${model.replace(/\s+/g, '-')}-${code}`,
           code,
@@ -448,7 +481,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified, see file header
         extendedCodes.push(createExtendedCode(
           `WOODWARD-${model.replace(/\s+/g, '-')}-${code}`,
           code,
@@ -505,7 +538,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified, see file header
         extendedCodes.push(createExtendedCode(
           `SMARTGEN-${model}-${code}`,
           code,
@@ -638,7 +671,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified, see file header
         extendedCodes.push(createExtendedCode(
           `PW-${model.replace(/\s+/g, '')}-N${code}`,
           code,
@@ -696,7 +729,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified, see file header
         extendedCodes.push(createExtendedCode(
           `DATAKOM-${model}-${code}`,
           code,
@@ -754,7 +787,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified, see file header
         extendedCodes.push(createExtendedCode(
           `LOVATO-${model.replace(/\s+/g, '-')}-${code}`,
           code,
@@ -807,7 +840,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified, see file header
         extendedCodes.push(createExtendedCode(
           `SIEMENS-${model.replace(/\s+/g, '-')}-${code}`,
           code,
@@ -865,7 +898,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified, see file header
         extendedCodes.push(createExtendedCode(
           `ENKO-${model}-${code}`,
           code,
@@ -1974,9 +2007,17 @@ function createExtendedCode(
 ): ControllerFaultCode {
   const content = getDetailedFaultContent(category, subcategory, severity, model, code);
 
-  // Create a unique, descriptive title
-  const severityLabel = severity === 'shutdown' ? 'SHUTDOWN' : severity === 'critical' ? 'CRITICAL' : 'WARNING';
-  const detailedTitle = `${subcategory} ${severityLabel} - Code ${code}`;
+  // Subsystem-level diagnostic content from lib/data/faultKnowledge.ts. The
+  // individual code meaning is unverified, but the subsystem is real, so the
+  // same engineering the curated codes carry applies here and every template
+  // entry ends up with the same structure and depth as the rest of the database.
+  const k = getKnowledgeBySubsystem(category, subcategory);
+
+  // Title must not assert a severity we have not verified. These entries exist so
+  // that a technician typing any code number in a controller's published range
+  // gets a useful hit with subsystem context and a clear next step, rather than a
+  // dead end. What they must never do is state a meaning or severity as fact.
+  const detailedTitle = `Code ${code} — ${subcategory} range (meaning not verified)`;
 
   return {
     id,
@@ -1989,16 +2030,32 @@ function createExtendedCode(
     severity,
     alarmType: severity === 'shutdown' ? 'shutdown' : severity === 'critical' ? 'trip' : 'warning',
     title: detailedTitle,
-    description: content.description,
+    description: `${code} falls in the ${subcategory.toLowerCase()} code range for ${brand} ${model}. We have not verified the specific meaning of this individual code against the manufacturer's documentation, so treat the guidance below as general ${subcategory.toLowerCase()} diagnosis for this controller family and confirm the exact meaning in the OEM manual for your model before acting. ${content.description}`,
     triggerParameters: [],
-    symptoms: content.symptoms,
-    possibleCauses: content.causes,
-    diagnosticSteps: content.diagnostics.map(d => ({
-      step: d.step,
-      action: d.action,
-      expectedResult: d.expectedResult,
-      tools: d.tools
-    })),
+    // Subsystem knowledge first where we have it, so every entry carries the
+    // same depth as the curated codes; the generated content remains as the
+    // fallback for subsystems not yet written up.
+    symptoms: k ? k.symptoms : content.symptoms,
+    possibleCauses: k
+      ? k.diagnosis.slice(0, 4).map((d, i) => ({
+          likelihood: (i === 0 ? 'high' : i < 3 ? 'medium' : 'low') as 'high' | 'medium' | 'low',
+          cause: d.action,
+          verification: d.expect,
+        }))
+      : content.causes,
+    diagnosticSteps: k
+      ? k.diagnosis.map(d => ({
+          step: d.step,
+          action: d.action,
+          expectedResult: d.expect,
+          tools: d.tools || [],
+        }))
+      : content.diagnostics.map(d => ({
+          step: d.step,
+          action: d.action,
+          expectedResult: d.expectedResult,
+          tools: d.tools
+        })),
     resetPathways: [{
       method: severity === 'shutdown' ? 'keypad' : 'auto',
       applicableFirmware: ['All'],
@@ -2009,13 +2066,13 @@ function createExtendedCode(
     solutions: [{
       difficulty: content.solutions.difficulty as 'easy' | 'moderate' | 'advanced' | 'expert',
       timeEstimate: content.solutions.timeEstimate,
-      procedureSteps: content.solutions.steps,
-      tools: content.solutions.tools,
+      procedureSteps: k ? k.remedy : content.solutions.steps,
+      tools: k ? k.tools : content.solutions.tools,
       parts: content.solutions.parts,
       estimatedCost: { min: content.solutions.cost.min, max: content.solutions.cost.max, currency: 'USD' }
     }],
-    safetyWarnings: content.safetyWarnings,
-    preventiveMeasures: content.preventiveMeasures,
+    safetyWarnings: k ? k.safety : content.safetyWarnings,
+    preventiveMeasures: k ? k.preventive : content.preventiveMeasures,
     interactiveQuestions: content.interactiveQuestions,
     // Procedurally generated from manufacturer-published code-range templates.
     // Marked unverified so the API and UI can label them as "template / range-based"

@@ -13,7 +13,7 @@ const TOOLS: { href: string; name: string; tag: string; blurb: string }[] = [
     href: '/generator-oracle',
     name: 'Generator Oracle',
     tag: 'AI generator diagnostics',
-    blurb: 'Search 400,000+ fault codes, read interactive wiring diagrams, and run AI-guided troubleshooting for Cummins, Perkins, FG Wilson and every major controller (DSE, ComAp, PowerWizard).',
+    blurb: 'Search manufacturer-curated fault codes, read interactive wiring diagrams, and run AI-guided troubleshooting for Cummins, Perkins, FG Wilson and every major controller (DSE, ComAp, PowerWizard).',
   },
   {
     href: '/solar-genius-pro',
@@ -63,10 +63,10 @@ export default function AIToolsPromo() {
             href={t.href}
             className="group block rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-all hover:border-violet-500/40 hover:bg-white/[0.06]"
           >
-            <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-violet-300/70 mb-1">{t.tag}</p>
+            <p className="text-xs font-semibold tracking-[0.18em] uppercase text-violet-300/70 mb-1">{t.tag}</p>
             <h3 className="text-lg font-semibold text-violet-300 group-hover:text-violet-200 mb-2">{t.name}</h3>
             <p className="text-sm text-white/65 leading-relaxed">{t.blurb}</p>
-            <span className="mt-3 inline-block text-xs font-semibold tracking-wider uppercase text-white/40 group-hover:text-violet-300">
+            <span className="mt-3 inline-block text-xs font-semibold tracking-wider uppercase text-white/55 group-hover:text-violet-300">
               Open the tool →
             </span>
           </Link>

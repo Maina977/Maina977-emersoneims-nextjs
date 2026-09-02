@@ -8,6 +8,13 @@ import {
 } from '@/lib/data/east-africa-locations';
 import sparePartsDb from '@/app/data/spare-parts-database-COMPLETE.json';
 import { getEngineIndex } from '@/lib/parts/engineIndex';
+import { REPAIR_HUBS, REPAIR_ARTICLES } from '@/lib/repair-centre';
+import { FAULT_CODES } from '@/lib/data/faultCodes';
+import { ENGINE_BRAND_GROUPS } from '@/lib/faults/engineBrandGroups';
+import { getAllIndustries } from '@/lib/seo/industryData';
+import { PRICE_GUIDES } from '@/lib/pricing/publishedPrices';
+import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
+import { BRAND_GROUPS } from '@/lib/plant-oracle/brandGroups';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -21,17 +28,28 @@ const majorTowns = [
   'westlands', 'karen', 'ngong', 'ongata-rongai', 'mtwapa', 'nyali', 'diani'
 ];
 
-// Industries - Critical for B2B SEO
+/**
+ * Industries — critical for B2B SEO.
+ *
+ * The dynamic slugs come from getAllIndustries(), the same registry that
+ * app/industries/[industry] builds generateStaticParams from. This list used to
+ * be typed by hand and had drifted: it emitted 'real-estate' and
+ * 'government-ngo' while the registry defines 'real-estate-construction' and
+ * 'government-ngos'. Both wrong URLs answered HTTP 200 with the title
+ * "Industry Not Found" — soft-404s, advertised to Google by our own sitemap.
+ *
+ * The four entries below the spread are STATIC routes with their own directories
+ * under app/industries/. They are real, distinct pages (e.g. /industries/
+ * manufacturing has different content from the registry's
+ * manufacturing-industries) and three of them were missing from the sitemap
+ * entirely. They must be listed explicitly because they are not in the registry.
+ */
 const industries = [
-  'hotels-hospitality',
-  'hospitals-healthcare',
-  'schools-universities',
-  'banks-financial',
+  ...getAllIndustries().map(i => i.slug),
+  'commercial-property',
+  'healthcare',
   'manufacturing',
-  'flower-farms',
-  'real-estate',
-  'churches-religious',
-  'government-ngo'
+  'telecommunications',
 ];
 
 // Services for location combinations.
@@ -74,12 +92,8 @@ const blogSlugs = [
   'hvac-cooling-load-sizing-kenya'
 ];
 
-// Fault codes for SEO (sample - full list is in faultCodes.ts)
-const faultCodes = [
-  'spn-111', 'spn-115', 'spn-190', 'spn-94', 'spn-100', 'spn-1514',
-  'dse-e020', 'dse-e040', 'dse-e047', 'dse-e070',
-  'comap-a001', 'comap-a015'
-];
+// Fault code URLs are derived from FAULT_CODES further down — see the comment
+// at that loop for why the previous hand-written list was removed.
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const currentDate = new Date();
@@ -91,7 +105,48 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/contact`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${BASE_URL}/privacy`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/terms`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.4 },
-    { url: `${BASE_URL}/resources`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    /*
+     * Pricing. /pricing has existed for a long time and was never listed here,
+     * which is part of why price intent found nothing: of 1,385 sitemap URLs,
+     * three targeted price or cost, all blog posts. Priority is high because
+     * these are the closest-to-purchase pages on the site.
+     */
+    { url: `${BASE_URL}/pricing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
+    /*
+     * Plant fault-code references. 1,799 OEM codes were reachable only through
+     * a client-side search box, so Google could see none of them. Seven
+     * substantial reference pages make the whole set crawlable without
+     * creating a thin page per code.
+     */
+    { url: `${BASE_URL}/faults/plant`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.8 },
+    ...BRAND_GROUPS.map((g) => ({
+      url: `${BASE_URL}/faults/plant/${g.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    })),
+    ...PRICE_GUIDES.map((g) => ({
+      url: `${BASE_URL}/pricing/${g.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.95,
+    })),
+    // Repair Centre — hub, equipment categories and published diagnosis guides
+    { url: `${BASE_URL}/repair-centre`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    ...REPAIR_HUBS.map((h) => ({
+      url: `${BASE_URL}/repair-centre/${h.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+    ...REPAIR_ARTICLES.map((a) => ({
+      url: `${BASE_URL}/repair-centre/${a.hub}/${a.slug}`,
+      lastModified: new Date(a.header.lastReviewed),
+      changeFrequency: 'monthly' as const,
+      priority: 0.85,
+    })),
+
+    { url: `${BASE_URL}/resources`, lastModified: currentDate, changeFrequency: 'weekly', priority:0.8 },
 
     // Solar & UPS Intelligence Hub (RESOURCES → Solar & UPS Intelligence Hub)
     { url: `${BASE_URL}/hub`,                       lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
@@ -115,6 +170,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     // Generator pages
     { url: `${BASE_URL}/generators`, lastModified: currentDate, changeFrequency: 'daily', priority: 1.0 },
+    /*
+     * Per-size generator pages. An external audit on 2026-08-26 found the site
+     * had no product-level URLs while every ranking competitor publishes one
+     * page per set with a size and a price. Highest priority after the
+     * category page: these are the closest-to-purchase pages on the site.
+     */
+    ...GENERATOR_SIZES.map((g) => ({
+      url: `${BASE_URL}/generators/sizes/${g.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.95,
+    })),
     { url: `${BASE_URL}/generators/spare-parts`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
     // Workshop Repairs & Fabrication — added 2026-07-21 (owner brief).
     { url: `${BASE_URL}/generators/workshop-services`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
@@ -136,27 +203,70 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // so Search Console stops reporting them as 404s during validation.
     { url: `${BASE_URL}/generator-oracle`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
     { url: `${BASE_URL}/diagnostics`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/faults`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/troubleshooting`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+    /*
+     * /faults and /troubleshooting were listed TWICE — here at priority 0.85
+     * and again below at 0.9. A duplicated <loc> makes a sitemap ambiguous
+     * about a URL's own importance and is a validation warning. The later,
+     * higher-priority entries are the ones kept, so neither page loses
+     * standing; only the contradiction is removed.
+     */
     { url: `${BASE_URL}/technical-bible`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
 
-    // AI Products / Intelligence Suite (HIGH PRIORITY for discoverability)
+    /*
+     * AI Products / Intelligence Suite.
+     *
+     * THE TOOL SUB-ROUTES ARE DELIBERATELY NOT LISTED (removed 2026-08-26).
+     * Measured as Googlebot: /aquascan-pro-v3 and its /reports and /compare
+     * sub-routes shared 99% of their 8-word sequences, and
+     * /solar-genius-pro/calculator-advanced was 99% identical to its parent.
+     * They are client-rendered application shells — the interactive tool is
+     * assembled after hydration, so what a crawler receives is the same frame
+     * every time, with no distinct content behind it.
+     *
+     * Submitting them asks Google to index eight copies of one page and choose
+     * between them. The parent tool page is the one that should rank; the
+     * sub-routes are states of the app, not documents.
+     *
+     * NOTHING IS DELETED. Every sub-route still returns 200, still renders,
+     * still carries index/follow and stays internally linked, so a visitor or a
+     * crawler following a link reaches it exactly as before. It simply stops
+     * being advertised as a page worth indexing in its own right.
+     */
     { url: `${BASE_URL}/aquascan-pro-v3`,                       lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
-    { url: `${BASE_URL}/aquascan-pro-v3/reports`,               lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7  },
-    { url: `${BASE_URL}/aquascan-pro-v3/compare`,               lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7  },
     { url: `${BASE_URL}/solar-genius-pro`,                      lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
-    { url: `${BASE_URL}/solar-genius-pro/solar-dashboard`,      lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
-    { url: `${BASE_URL}/solar-genius-pro/design-studio`,        lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
-    { url: `${BASE_URL}/solar-genius-pro/calculator-advanced`,  lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
-    { url: `${BASE_URL}/solar-genius-pro/fault-codes`,          lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
     { url: `${BASE_URL}/solar-genius-pro-tools`,                lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${BASE_URL}/solar-genius-pro-futuristic`,           lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
     { url: `${BASE_URL}/solar-design-studio`,                   lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
     { url: `${BASE_URL}/eims-pro`,                              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
+    // Plant & Equipment Oracle — sibling to Generator Oracle, built on the
+    // same 2,155 VERIFIED codes but framed for excavators, loaders and
+    // compressors. Self-canonical, server-rendered, real body content.
+    { url: `${BASE_URL}/plant-equipment-oracle`,               lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
     { url: `${BASE_URL}/ai-tools`,                              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
     { url: `${BASE_URL}/ai-tools/capabilities`,                 lastModified: currentDate, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/pro-building-suite`,                    lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/all-tools`,                             lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+    /*
+     * /pro-building-suite AND /all-tools ARE DELIBERATELY NOT LISTED HERE.
+     *
+     * Both are redirect stubs carrying robots:{index:false}. Submitting a
+     * noindex page in a sitemap — /pro-building-suite was here at priority 0.9,
+     * higher than most real pages — asks Google to crawl something we have
+     * simultaneously told it to ignore. It spends crawl budget and returns
+     * nothing, which is part of why Building Suite Pro recorded ZERO
+     * impressions in the July 2026 Search Console export.
+     *
+     * Worse, the redirect on /pro-building-suite does not actually fire: the
+     * live URL returns HTTP 200 and renders 162 words of critical CSS and no
+     * content. Anyone reaching it — including from /site-directory — got a
+     * blank page.
+     *
+     * The canonical Building Suite URL is /solutions/building, which is
+     * indexable, renders content, and is already listed below at priority 0.8.
+     * Raised to 0.9 to inherit the weight this entry was carrying.
+     *
+     * Nothing is deleted: both stub routes still exist and still serve, so old
+     * links and bookmarks are unaffected. They are simply no longer advertised
+     * to Google as destinations.
+     */
 
     // Service pages
     // The /solutions/* slugs that 308 redirect in next.config.ts (solar, ups,
@@ -169,7 +279,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/services`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/solutions`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/solutions/incinerators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/solutions/building`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    // Canonical Building Suite URL. Raised 0.8 -> 0.9 to carry the weight the
+    // removed /pro-building-suite stub entry was holding; see the note above.
+    { url: `${BASE_URL}/solutions/building`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/solutions/fabrication`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions/high-voltage`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions/diesel-automation`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
@@ -196,13 +308,56 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/knowledge-base`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/careers`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/locations`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    /*
+     * Added 2026-07-31 after a live crawl found these published, reachable and
+     * absent from the sitemap:
+     *   /east-africa    the regional hub above the 36 /<country>/<city> pages
+     *   /marketplace    the spare-parts marketplace
+     *   /all-tools      the engineering tools index
+     *   /site-directory the HTML index of every section (see that page's header
+     *                   for why it exists — the mega-menu nav renders no hrefs)
+     */
+    { url: `${BASE_URL}/east-africa`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    /*
+     * /marketplace REMOVED 2026-08-31, reversing the 2026-07-31 addition above.
+     *
+     * That addition was correct that the page was published and reachable, but
+     * the page was advertising a partner network that does not exist: three
+     * invented companies, a star rating and review count for each, and a
+     * "Showing 3 of 47 verified partners" line. It is now noindex until real
+     * partners can be listed (see the header of app/marketplace/page.tsx), and
+     * a sitemap must only offer URLs we are asking Google to index.
+     *
+     * RESTORE this entry when the robots block on that page comes off.
+     */
+    /*
+     * /all-tools REMOVED 2026-08-06, reversing the 2026-07-31 addition above.
+     *
+     * That addition was right about the symptom — the page is published and
+     * reachable — but the page carries robots:{index:false} and is a redirect
+     * stub returning 162 words of CSS with no content. Listing a noindex page in
+     * the sitemap asks Google to crawl what we have told it to ignore, and it
+     * was the second such entry (the first, /pro-building-suite at priority 0.9,
+     * is removed above).
+     *
+     * The engineering tools index that SHOULD carry this traffic is /ai-tools,
+     * which is indexable, renders content and is already listed. Nothing is
+     * deleted: /all-tools still exists and still serves.
+     */
+    { url: `${BASE_URL}/site-directory`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.6 },
+    // /why-emersoneims was published, live and reachable from NOTHING — not one
+    // internal link and not in the sitemap. That is how a page built around
+    // naming six competitors survived unreviewed. Rebuilt and listed 2026-08-03.
+    { url: `${BASE_URL}/why-emersoneims`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.7 },
     // /counties is permanently redirected to /kenya — keep only the canonical.
     { url: `${BASE_URL}/kenya`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
 
     // Generator sub-routes (commercial intent)
     { url: `${BASE_URL}/generators/leasing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/generators/systems`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/generators/case-studies`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7 },
+    // /generators/case-studies is 308-redirected to /case-studies in
+    // next.config.ts and must NOT be listed — a sitemap advertises canonical
+    // destinations, not redirect sources. /case-studies is listed below.
     { url: `${BASE_URL}/generators/maintenance-companion`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
 
     // Industry pages - Critical for B2B SEO
@@ -237,10 +392,40 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/case-studies`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 }
   );
 
-  // Add fault code pages (HIGH-INTENT - people searching for specific codes)
-  for (const code of faultCodes) {
+  /*
+   * Fault code pages (HIGH-INTENT — people search for the exact code).
+   *
+   * Derived from FAULT_CODES, the same registry app/faults/[code] builds its
+   * generateStaticParams from, using the identical slug rule
+   * (fault.code.toLowerCase()). It used to be a hand-written list of 12 slugs,
+   * and one of them — dse-e047 — had no record behind it. That URL was
+   * advertised in the sitemap and answered HTTP 200 with the title "Fault Code
+   * Not Found": a soft-404, the class of defect that damages the whole domain
+   * rather than the one page (Next 16 on Vercel returns 200 even when
+   * notFound() fires inside a matched dynamic route).
+   *
+   * Deriving the list makes that impossible, and publishes every real code page
+   * instead of an arbitrary 12. Never hand-add a slug here.
+   */
+  /*
+   * Engine fault-code brand pages. 2,127 verified codes across ten generator
+   * makers that previously had no URL at all — see lib/faults/engineBrandGroups.ts
+   * for why these are per-BRAND rather than per-code. Derived from the same
+   * registry the route builds its generateStaticParams from, so this list can
+   * never advertise a URL that 404s.
+   */
+  for (const g of ENGINE_BRAND_GROUPS) {
     urls.push({
-      url: `${BASE_URL}/faults/${code}`,
+      url: `${BASE_URL}/faults/engine/${g.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    });
+  }
+
+  for (const fault of FAULT_CODES) {
+    urls.push({
+      url: `${BASE_URL}/faults/${fault.code.toLowerCase()}`,
       lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.85,
@@ -273,18 +458,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  // Add curated location + service combinations (HIGH-INTENT keywords).
-  // Sourced from the same indexed registry the page uses for
-  // generateStaticParams — sitemap stays in lockstep with what's
-  // actually rendered + indexable. Anything outside this list 404s.
-  for (const { location, service } of getIndexedServiceLocationPaths()) {
-    urls.push({
-      url: `${BASE_URL}/locations/${location}/${service}`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    });
-  }
+  /*
+   * /locations/<town>/<service> REMOVED FROM THE SITEMAP, 2026-08-29.
+   * The pages are untouched and still serve — this only stops submitting them.
+   *
+   * WHY. Search Console returned "Crawled - currently not indexed" for this
+   * tier. That status is not an error to validate away; it is Google saying it
+   * fetched the pages, understood them, and judged them not worth index space.
+   * Measured on the live site the same day, /locations/thika and
+   * /locations/eldoret shared 64% of their 8-word sequences — Google was right.
+   *
+   * 208 URLs of the 224 in this section were the town+service tier, and
+   * together with the constituency tier they made 81% of everything we asked
+   * Google to index. Crawl budget is finite on a site with this authority, and
+   * every fetch spent re-reading a near-duplicate is one not spent on a page
+   * that can rank. The 15 town landing pages stay listed.
+   *
+   * NOTHING IS DELETED. Every URL still returns 200, still renders, still
+   * carries index/follow and stays internally linked, so both visitors and
+   * crawlers following links reach them exactly as before. Re-listing them is
+   * a one-line change if the content is ever genuinely differentiated.
+   *
+   * for (const { location, service } of getIndexedServiceLocationPaths()) { ... }
+   */
 
   // Sector landing pages live at /industries/<slug> and are already
   // emitted earlier in this sitemap (see the `industries` loop). The
@@ -388,6 +584,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     'tourist-destinations',
     'masai-mara',
   ];
+  // The /sectors index itself — added 2026-07-27 when the page was created.
+  // It previously 404'd while every sector page's breadcrumb linked to it.
+  urls.push({
+    url: `${BASE_URL}/sectors`,
+    lastModified: currentDate,
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  });
   for (const slug of SECTORS_WITHOUT_INDUSTRY_HUB) {
     urls.push({
       url: `${BASE_URL}/sectors/${slug}`,

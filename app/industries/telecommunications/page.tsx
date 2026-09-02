@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Telecom Tower Power Solutions | Cell Site Backup Generators | EmersonEIMS Kenya',
+  title: 'Telecom Tower Power Solutions',
   description: '99.7% uptime for mobile network towers across Kenya. Automatic failover generators, battery backup UPS, remote monitoring, SLA guarantees. Prevents millions in network outages.',
   alternates: {
     canonical: 'https://www.emersoneims.com/industries/telecommunications',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function TelecomIndustriesPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -296,6 +296,6 @@ export default function TelecomIndustriesPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

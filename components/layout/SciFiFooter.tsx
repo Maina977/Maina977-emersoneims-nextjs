@@ -36,7 +36,14 @@ const FOOTER_SECTIONS = [
 ];
 
 const SOCIAL_LINKS = [
-  { name: 'WhatsApp', href: 'https://wa.me/254768860665', icon: '💬' },
+  // Prefilled so the team sees what the enquiry is about. The footer renders on
+  // every page and WhatsApp is the channel most enquiries actually arrive on —
+  // a bare link reaches the team as "Hi" with nothing attached.
+  {
+    name: 'WhatsApp',
+    href: `https://wa.me/254768860665?text=${encodeURIComponent('Hello EmersonEIMS, I would like to ask about your services.')}`,
+    icon: '💬',
+  },
   { name: 'Call', href: 'tel:+254768860665', icon: '📞' },
   { name: 'Email', href: 'mailto:info@emersoneims.com', icon: '✉️' },
 ];
@@ -177,7 +184,8 @@ export default function SciFiFooter() {
                     </a>
                   </div>
                   <div>
-                    <a href="https://wa.me/+254768860665" className="hover:text-green-400 transition-colors" target="_blank" rel="noopener noreferrer">
+                    {/* wa.me takes digits only — the leading "+" was non-standard. */}
+                    <a href={`https://wa.me/254768860665?text=${encodeURIComponent('Hello EmersonEIMS, I would like to ask about your services.')}`} className="hover:text-green-400 transition-colors" target="_blank" rel="noopener noreferrer">
                       WhatsApp: +254768860665
                     </a>
                 </div>

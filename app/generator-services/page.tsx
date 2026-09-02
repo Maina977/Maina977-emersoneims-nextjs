@@ -124,7 +124,7 @@ const serviceAreas = [
 
 export default function GeneratorServicesPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.generatorServices} />
 
@@ -247,7 +247,7 @@ export default function GeneratorServicesPage() {
               { icon: '⚡', title: '24/7 Support', desc: 'Emergency response anytime' },
               { icon: '✓', title: 'All Brands', desc: 'Cummins, Perkins, CAT, Volvo, FG Wilson' },
               { icon: '🛡️', title: 'Warranty', desc: 'All work guaranteed' },
-              { icon: '👨‍🔧', title: 'Certified', desc: 'Factory-trained technicians' },
+              { icon: '👨‍🔧', title: 'Specialist', desc: 'Technicians experienced on every major brand' },
               { icon: '📍', title: '47 Counties', desc: 'Nationwide coverage' },
               { icon: '💰', title: 'Best Rates', desc: 'Competitive pricing' },
               { icon: '📊', title: 'Reports', desc: 'Detailed service documentation' }
@@ -414,7 +414,7 @@ export default function GeneratorServicesPage() {
                 🚨 Emergency: Call Now
               </a>
               <a
-                href="https://wa.me/254768860665"
+                href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                 className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all"
               >
                 💬 WhatsApp Quote
@@ -429,6 +429,6 @@ export default function GeneratorServicesPage() {
           </motion.div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

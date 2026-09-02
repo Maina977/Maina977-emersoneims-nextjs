@@ -1,12 +1,16 @@
 export const metadata = {
-  title: 'Privacy Policy | EmersonEIMS - GDPR Compliant Data Protection',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/privacy' },
+  title: 'Privacy Policy',
   description: 'Learn how EmersonEIMS collects, uses, and protects your personal information. GDPR, CCPA, and Kenya Data Protection Act compliant privacy policy.',
   robots: 'index, follow',
 };
 
 export default function PrivacyPage() {
   return (
-    <main className="eims-section min-h-screen">
+    <div className="eims-section min-h-screen">
       <div className="eims-shell py-24">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">Privacy Policy</h1>
@@ -52,6 +56,6 @@ export default function PrivacyPage() {
         </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

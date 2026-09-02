@@ -111,7 +111,7 @@ function generateEmailHTML(template: EmailTemplate, data: Record<string, string 
               <p><strong>Shipping Location:</strong> ${data.shippingLocation}</p>
             </div>
             <p>You will receive a payment confirmation shortly. Your order will ship as soon as payment is confirmed.</p>
-            <a href="${process.env.NEXTAUTH_URL || 'https://emersoneims.com'}/marketplace/orders" style="${buttonStyle}">
+            <a href="${process.env.NEXTAUTH_URL || 'https://www.emersoneims.com'}/marketplace/orders" style="${buttonStyle}">
               Track Your Order
             </a>
             <p style="color: #999; font-size: 12px; margin-top: 40px;">
@@ -134,7 +134,7 @@ function generateEmailHTML(template: EmailTemplate, data: Record<string, string 
               <p><strong>Transaction ID:</strong> ${data.transactionId}</p>
             </div>
             <p>Your order is now being prepared for shipment. We'll notify you when it ships.</p>
-            <a href="${process.env.NEXTAUTH_URL || 'https://emersoneims.com'}/marketplace/orders" style="${buttonStyle}">
+            <a href="${process.env.NEXTAUTH_URL || 'https://www.emersoneims.com'}/marketplace/orders" style="${buttonStyle}">
               View Order Details
             </a>
           </div>
@@ -153,7 +153,7 @@ function generateEmailHTML(template: EmailTemplate, data: Record<string, string 
               <p><strong>Tracking Number:</strong> ${data.trackingNumber}</p>
               <p><strong>Estimated Delivery:</strong> ${data.estimatedDelivery}</p>
             </div>
-            <a href="${process.env.NEXTAUTH_URL || 'https://emersoneims.com'}/marketplace/orders" style="${buttonStyle}">
+            <a href="${process.env.NEXTAUTH_URL || 'https://www.emersoneims.com'}/marketplace/orders" style="${buttonStyle}">
               Track Shipment
             </a>
           </div>
@@ -170,7 +170,7 @@ function generateEmailHTML(template: EmailTemplate, data: Record<string, string 
             <p style="margin-top: 30px;">
               <strong>Share your experience:</strong> Your feedback helps us serve you better.
             </p>
-            <a href="${process.env.NEXTAUTH_URL || 'https://emersoneims.com'}/marketplace/orders" style="${buttonStyle}">
+            <a href="${process.env.NEXTAUTH_URL || 'https://www.emersoneims.com'}/marketplace/orders" style="${buttonStyle}">
               Leave a Review
             </a>
             <p style="color: #999; font-size: 12px; margin-top: 40px;">
@@ -188,7 +188,7 @@ function generateEmailHTML(template: EmailTemplate, data: Record<string, string 
             <p>Hi ${data.customerName},</p>
             <p>Your review for <strong>${data.partName}</strong> has been approved and is now visible to other customers.</p>
             <p>Thank you for helping the community make informed decisions!</p>
-            <a href="${process.env.NEXTAUTH_URL || 'https://emersoneims.com'}/marketplace/parts" style="${buttonStyle}">
+            <a href="${process.env.NEXTAUTH_URL || 'https://www.emersoneims.com'}/marketplace/parts" style="${buttonStyle}">
               View Your Review
             </a>
           </div>

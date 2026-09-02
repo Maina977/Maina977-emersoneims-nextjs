@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/blog/borehole-drilling-avoid-dry-holes' },
   title: 'Borehole Drilling: How to Avoid Dry Holes in Kenya',
   description: 'Borehole location selection, drilling success rates by county, aquifer mapping, yield prediction. Avoid costly dry holes.',
 };
 
 export default function BoreholeDrillingBlogPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <article className="max-w-3xl mx-auto px-4 py-20">
         <header className="mb-12">
           <div className="mb-4">
@@ -183,6 +187,6 @@ export default function BoreholeDrillingBlogPage() {
           </div>
         </div>
       </article>
-    </main>
+    </div>
   );
 }

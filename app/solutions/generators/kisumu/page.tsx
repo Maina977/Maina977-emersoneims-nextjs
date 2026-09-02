@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Service in Kisumu | 12-Hour Response',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/solutions/generators/kisumu' },
+  title: 'Generator Service in Kisumu',
   description: 'Backup power solutions in Kisumu. Installation, repair, maintenance. Lake Victoria region power specialists.',
 };
 
 export default function KisumuGeneratorPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl font-bold mb-6">Generator Service in Kisumu</h1>
@@ -41,6 +45,6 @@ export default function KisumuGeneratorPage() {
           Call: +254 768 860 665
         </a>
       </section>
-    </main>
+    </div>
   );
 }

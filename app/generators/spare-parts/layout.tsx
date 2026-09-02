@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Spare Parts Kenya | 2000+ Parts | M-Pesa Payment | EmersonEIMS',
-  description: 'Buy 2000+ genuine generator spare parts online in Kenya. Oil filters, fuel filters, engine parts, AVR, controllers for Cummins, Caterpillar, Perkins. Pay via M-Pesa. Same-day delivery in Nairobi. Call +254 768 860 665.',
+  title: 'Generator Spare Parts Kenya | 2000+ Parts',
+  description: 'Generator spare parts in Kenya: filters, engine parts, AVRs and controllers for Cummins, Caterpillar and Perkins. Pay via M-Pesa. Call +254 768 860 665.',
   keywords: [
     'generator oil filter Kenya', 'generator fuel filter', 'generator air filter', 'oil filter Cummins',
     'fuel filter Perkins', 'air filter Caterpillar', 'coolant filter generator', 'hydraulic filter',
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     'Kohler generator parts', 'MTU parts', 'Deutz parts Kenya', 'Sdmo parts',
   ],
   openGraph: {
-    title: 'Buy Generator Spare Parts Online Kenya | 2000+ Parts | M-Pesa | EmersonEIMS',
+    title: 'Buy Generator Spare Parts Online Kenya | 2000+ Parts | M-Pesa',
     description: 'Shop 2000+ genuine generator spare parts online. Oil filters, fuel filters, AVR, controllers, engine parts. Pay via M-Pesa (0768860665). Same-day delivery in Nairobi.',
     type: 'website',
     url: 'https://www.emersoneims.com/generators/spare-parts',

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import DMCAProtection from '@/components/security/DMCAProtection';
 import GeneratorOracleSEO from '@/components/seo/GeneratorOracleSEO';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
@@ -19,7 +19,16 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
  * All brand names are trademarks of their respective owners.
  *
  * Features:
- * - 400,000+ fault-code references compatible with 10 controller types
+ * - Fault-code references across 10 controller families, measured by executing
+ *   the registries rather than estimated:
+ *     Tier 1 verified  — 6,756 DISTINCT codes over 79 brands
+ *     Tier 2 range     — ~397,401 code numbers, each titled "meaning not
+ *                        verified" and carrying verified:false
+ *   The Tier 1 figure was previously quoted as 54,192. That counted one code
+ *   once per applicable engine model — exactly 17x over-count on the VODIA set
+ *   (51,527 rows for 3,029 real codes). Rows are now collapsed per code in
+ *   lib/data/curatedFaultCodes.ts, which preserves every code and records the
+ *   models it applies to. No code was removed.
  * - Step-by-step reset pathways for every fault
  * - Parameter-based diagnosis with live readings
  * - 100% offline capability via IndexedDB
@@ -45,7 +54,29 @@ export default function GeneratorOraclePage() {
   );
 }
 
+/** Deterministic thousands separator — never toLocaleString() (hydration). */
+function fmtNum(n: number): string {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+interface OracleTotals {
+  faultCodes: number;
+  verifiedCodes: number;
+  brands: number;
+}
+
 function LoadingFallback() {
+  const [stats, setStats] = useState<OracleTotals | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/generator-oracle/health')
+      .then((r) => r.json())
+      .then((j) => { if (alive && j?.totals) setStats(j.totals as OracleTotals); })
+      .catch(() => { /* leave the figures blank rather than guess */ });
+    return () => { alive = false; };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
   {/* B2B Commercial Band */}
@@ -80,12 +111,34 @@ function LoadingFallback() {
         {/* Loading Stats */}
         <div className="mt-6 flex justify-center gap-6 text-sm">
           <div className="text-center">
-            <div className="text-amber-400 font-bold">400,000+</div>
-            <div className="text-slate-500">Fault-Code References</div>
+            {/*
+              COUNTS COME FROM THE INDEX, NOT FROM A LITERAL.
+              These were hardcoded, and the verified figure had gone stale: the
+              page claimed "6,700+" while /api/generator-oracle/health — which
+              counts `verified === true` across the loaded index — reported
+              54,192. Neither of us could say which was right, and that is the
+              problem with writing a number into markup. It is now read from the
+              same endpoint the tool itself uses, so the page states whatever the
+              data actually holds and cannot drift again.
+
+              Until the fetch resolves the figures are simply absent rather than
+              approximated — a placeholder number is how the stale one got here.
+
+              The two counts stay separate on purpose. "Verified" are
+              manufacturer-curated entries; "code numbers covered" is range-based
+              structural coverage where entries carry verified:false. Collapsing
+              them into one headline is what would overstate the database.
+            */}
+            <div className="text-amber-400 font-bold">{stats ? fmtNum(stats.verifiedCodes) : '—'}</div>
+            <div className="text-slate-500">Verified Fault Codes</div>
           </div>
           <div className="text-center">
-            <div className="text-amber-400 font-bold">10</div>
-            <div className="text-slate-500">Compatible Types</div>
+            <div className="text-amber-400 font-bold">{stats ? fmtNum(stats.faultCodes) : '—'}</div>
+            <div className="text-slate-500">Code Numbers Covered</div>
+          </div>
+          <div className="text-center">
+            <div className="text-amber-400 font-bold">{stats ? stats.brands : '—'}</div>
+            <div className="text-slate-500">Controller Brands</div>
           </div>
           <div className="text-center">
             <div className="text-amber-400 font-bold">100%</div>

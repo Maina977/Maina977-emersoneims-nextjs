@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Power Solutions West Africa | Nigeria • Ghana • Oil & Gas • Cocoa | EmersonEIMS',
+  title: 'Power Solutions West Africa',
   description: 'Industrial power across West Africa. Nigeria oil & gas hub, Ghana gold & cocoa, Ivory Coast agro-exports. KES 150B+ sector value. 24/7 regional support. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/western',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function WesternAfricaPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -269,6 +269,6 @@ export default function WesternAfricaPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/blog/ups-vs-generator-which-is-right' },
   title: 'UPS vs Generator: Which Backup Power Is Right for You?',
   description: 'Compare UPS systems and generators. Cost, runtime, use cases. When to choose UPS, when to choose generator, when to use both.',
 };
 
 export default function UPSVsGeneratorBlogPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <article className="max-w-3xl mx-auto px-4 py-20">
         <header className="mb-12">
           <div className="mb-4">
@@ -215,6 +219,6 @@ export default function UPSVsGeneratorBlogPage() {
           </div>
         </div>
       </article>
-    </main>
+    </div>
   );
 }

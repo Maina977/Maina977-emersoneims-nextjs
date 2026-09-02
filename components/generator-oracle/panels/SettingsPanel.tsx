@@ -1471,7 +1471,7 @@ export default function SettingsPanel({
                   </div>
                   <p className="text-slate-300 mb-6">
                     The world&apos;s most comprehensive generator diagnostic system. Supporting 10+ major controller brands
-                    with 400,000+ fault codes and AI-powered troubleshooting.
+                    with manufacturer-curated fault codes and AI-powered troubleshooting.
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="p-4 bg-slate-900/50 rounded-lg text-center">
@@ -1516,7 +1516,7 @@ export default function SettingsPanel({
                         <div className="text-xs text-slate-500">Call Support</div>
                       </div>
                     </a>
-                    <a href="https://wa.me/254768860665" className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg text-green-400 hover:bg-slate-800">
+                    <a href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services." className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg text-green-400 hover:bg-slate-800">
                       <span className="text-xl">💬</span>
                       <div>
                         <div className="font-medium">WhatsApp Support</div>

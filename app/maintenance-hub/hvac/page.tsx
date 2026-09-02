@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  * THE HVAC BIBLE - KENYA'S MOST COMPREHENSIVE HVAC MAINTENANCE GUIDE
  * World's Most Complete HVAC, Refrigeration & Air Conditioning Hub
- * 28,000+ Fault Codes | 650+ Repair Procedures | All System Types
+ * HVAC fault codes | 650+ Repair Procedures | All System Types
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
@@ -384,7 +384,7 @@ export default function HVACBible() {
               A Practical HVAC, Refrigeration & Air Conditioning Guide for Kenya
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <span className="bg-cyan-600/30 px-4 py-2 rounded-full">28,000+ Fault Codes</span>
+              <span className="bg-cyan-600/30 px-4 py-2 rounded-full">HVAC fault codes</span>
               <span className="bg-blue-600/30 px-4 py-2 rounded-full">650+ Repair Procedures</span>
               <span className="bg-purple-600/30 px-4 py-2 rounded-full">All HVAC Systems</span>
               <span className="bg-amber-600/30 px-4 py-2 rounded-full">Refrigerant Guide</span>
@@ -425,7 +425,7 @@ export default function HVACBible() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
           {/* Overview Section */}
           {activeSection === 'overview' && (
@@ -470,7 +470,7 @@ export default function HVACBible() {
                 >
                   <div className="text-3xl mb-3">🔧</div>
                   <h3 className="text-xl font-bold mb-2">Diagnose Fault</h3>
-                  <p className="text-gray-400 text-sm">Search 28,000+ fault codes with repair procedures</p>
+                  <p className="text-gray-400 text-sm">Search HVAC fault codes with repair procedures</p>
                 </button>
                 <button
                   onClick={() => setActiveSection('refrigerants')}
@@ -963,7 +963,7 @@ export default function HVACBible() {
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
+      </div>
 
       {/* Repair Manual Modal */}
       <AnimatePresence>

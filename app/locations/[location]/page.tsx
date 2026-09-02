@@ -48,8 +48,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const countyName = county?.name || '';
 
   return {
-    title: `Generator & Solar Services in ${locationName}${!isCounty && countyName ? `, ${countyName}` : ''} | EmersonEIMS`,
-    description: `Professional generator installation, solar power, UPS systems, and electrical services in ${locationName}, Kenya. 3-Year Warranty. 24/7 Emergency Service. Serving ${locationName} and surrounding areas. Call +254768860665.`,
+    // No "| EmersonEIMS" here — the root layout appends "| EmersonEIMS Kenya",
+    // so adding it again shipped the brand twice and ate the characters Google
+    // actually displays. The description was also 220+ characters, cut off well
+    // before the phone number; it now leads with the offer and fits.
+    title: `Generator & Solar Services in ${locationName}${!isCounty && countyName ? `, ${countyName}` : ''}`,
+    description: `Generators, solar, UPS and electrical services in ${locationName}. 2-year warranty, 24/7 emergency response, engineers on site. Call +254768860665.`,
     keywords: [
       `generator company ${locationName}`,
       `solar installation ${locationName}`,
@@ -63,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       // Credibility audit 2026-07-18: replaced the unsubstantiated "Kenya's #1"
       // superiority claim (it appeared on ~190 indexed location pages and in
       // Google results). Kept only verifiable facts: services, warranty, phone.
-      description: `Generator, solar, UPS and electrical engineering services in ${locationName}. 3-year installation warranty. 24/7 emergency response. Call +254768860665`,
+      description: `Generator, solar, UPS and electrical engineering services in ${locationName}. 2-year installation warranty. 24/7 emergency response. Call +254768860665`,
       type: 'website',
     },
     alternates: {
@@ -123,7 +127,7 @@ export default async function LocationPage({ params }: Props) {
 
           <p className="text-xl text-slate-300 max-w-3xl mb-8">
             EmersonEIMS provides professional power solutions in {locationName}{!isCounty && county ? `, ${county.name} County` : ''}.
-            From generator installation and maintenance to solar power systems, we deliver reliable energy solutions with a 3-Year Warranty.
+            From generator installation and maintenance to solar power systems, we deliver reliable energy solutions with a 2-Year Warranty.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -134,7 +138,7 @@ export default async function LocationPage({ params }: Props) {
               Call Now: +254 768 860 665
             </a>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               className="px-8 py-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all"
             >
               WhatsApp Us
@@ -229,7 +233,7 @@ export default async function LocationPage({ params }: Props) {
             - "Certified professionals"    — certification unverified
             - "Quick response times"       — no measured response time exists
 
-          Nothing factual was lost: the 3-year warranty and 24/7 emergency
+          Nothing factual was lost: the 2-year warranty and 24/7 emergency
           cover are both stated in this page's hero, and the genuine
           differentiator (the nationwide mobile workshop) is covered in the
           prose below with per-location facts. */}

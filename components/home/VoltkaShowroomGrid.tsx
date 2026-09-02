@@ -27,7 +27,7 @@ export function VoltkaBillboard() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/40 pointer-events-none" />
 
         <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-14 lg:p-20">
-          <p className="text-[11px] sm:text-xs font-semibold tracking-[0.3em] text-amber-300 uppercase mb-4">
+          <p className="text-xs sm:text-xs font-semibold tracking-[0.3em] text-amber-300 uppercase mb-4">
             24/7 Emergency Response
           </p>
           <h2 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.05] max-w-3xl">
@@ -44,7 +44,7 @@ export function VoltkaBillboard() {
               href="/contact?type=emergency"
               className="w-full sm:w-auto px-10 py-3 rounded-full bg-white text-black text-sm font-semibold text-center hover:bg-white/90 transition-colors duration-200 tap-scale touch-target"
             >
-              Emergency Power in 48 Hours
+              Request Emergency Power
             </Link>
             <a
               href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20need%20emergency%20generator%20delivery"
@@ -77,7 +77,7 @@ const CARDS = [
     alt: 'Genuine Cummins diesel engine and controller inside an open VOLTKA super silent canopy',
     kicker: 'Genuine Cummins Inside',
     title: 'The Engine Sells Itself.',
-    copy: 'Genuine Cummins blocks, Fleetguard filtration, 3-year warranty. Inspect before you buy.',
+    copy: 'Genuine Cummins blocks, Fleetguard filtration, 2-year warranty. Inspect before you buy.',
     href: '/generators',
     cta: 'Explore the Range',
     light: false,
@@ -132,7 +132,7 @@ export function VoltkaDuoGrid() {
               )}
               <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
                 <p
-                  className={`text-[11px] font-semibold tracking-[0.25em] uppercase mb-2 ${
+                  className={`text-xs font-semibold tracking-[0.25em] uppercase mb-2 ${
                     card.light ? 'text-amber-600' : 'text-amber-300'
                   }`}
                 >
@@ -181,7 +181,7 @@ export function VoltkaDuoGrid() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/35 to-transparent pointer-events-none" />
           <div className="absolute inset-0 flex flex-col justify-center p-6 sm:p-12">
-            <p className="text-[11px] font-semibold tracking-[0.25em] text-amber-300 uppercase mb-2">
+            <p className="text-xs font-semibold tracking-[0.25em] text-amber-300 uppercase mb-2">
               Switchgear · Distribution · Changeovers
             </p>
             <h3 className="text-2xl sm:text-4xl font-bold text-white tracking-tight leading-tight max-w-xl">

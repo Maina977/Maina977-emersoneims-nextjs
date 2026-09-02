@@ -13,6 +13,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 import { AnalogClock, AnalogCalendar, WeatherWidget } from '@/components/ui/AnalogWidgets';
 import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
@@ -234,7 +235,7 @@ const SOLAR_PRICING = [
     priceFrom: 950000,
     priceTo: 1400000,
     ideal: 'Large homes, multiple ACs',
-    includes: ['20× 500W Panels', '10kW Hybrid Inverter', '10kWh Lithium Bank', 'Full Installation', '3 Year Warranty'],
+    includes: ['20× 500W Panels', '10kW Hybrid Inverter', '10kWh Lithium Bank', 'Full Installation', '2 Year Warranty'],
     savings: '30,000-45,000/month'
   },
   {
@@ -243,7 +244,7 @@ const SOLAR_PRICING = [
     priceFrom: 1800000,
     priceTo: 2500000,
     ideal: 'Shops, small factories',
-    includes: ['40× 500W Panels', '20kW Inverter', '20kWh Storage', 'Monitoring System', '3 Year Warranty'],
+    includes: ['40× 500W Panels', '20kW Inverter', '20kWh Storage', 'Monitoring System', '2 Year Warranty'],
     savings: '60,000-85,000/month'
   },
   {
@@ -417,8 +418,8 @@ const SOLAR_GUARANTEES = [
     icon: '✅'
   },
   {
-    title: 'Money-Back Guarantee',
-    description: '30-day satisfaction guarantee on all equipment purchases',
+    title: 'Workmanship Guarantee',
+    description: 'Installation faults are put right at our cost. Equipment warranties follow the manufacturer terms stated in your quotation',
     icon: '🔙'
   },
 ];
@@ -560,28 +561,32 @@ function FloatingWhatsApp() {
 }
 
 // ==================== URGENCY BANNER COMPONENT ====================
+/*
+ * FAKE URGENCY REMOVED, 2026-08-31.
+ *
+ * This rendered "SOLAR SAVINGS WEEK - 15% OFF All Systems!" above a live
+ * countdown, and a "Claim Offer" button that opened WhatsApp pre-filled with
+ * "I want the 15% Solar Savings Week discount!".
+ *
+ * The countdown was not counting down to anything. endDate was computed as
+ * `new Date()` plus seven days INSIDE the effect, so it was re-derived on
+ * every mount: every visitor saw a fresh 6d 23h 59m, the week never ended, and
+ * the same "week" had been running for as long as the page had been live. A
+ * customer arriving through that button had been told they were owed 15% off
+ * by a deadline that did not exist.
+ *
+ * No start date, end date, eligible-product list, written terms or approved
+ * source exists for this discount anywhere in the repository, so per the
+ * standing rule it is not advertised at all rather than restated with
+ * different numbers.
+ *
+ * The bar itself is kept, because the WhatsApp route off it is real and
+ * converts — it now says what is actually true and offers the same contact.
+ * A genuine promotion belongs behind a component that renders only when real
+ * dates, terms and eligible products are supplied, and renders nothing
+ * otherwise.
+ */
 function UrgencyBanner() {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-  useEffect(() => {
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 7);
-
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = endDate.getTime() - now;
-
-      setTimeLeft({
-        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((distance % (1000 * 60)) / 1000),
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <motion.div
       initial={{ y: -100, opacity: 0 }}
@@ -589,26 +594,14 @@ function UrgencyBanner() {
       className="bg-gradient-to-r from-amber-600 via-orange-500 to-red-500 text-white py-3 px-4"
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-4 text-center">
-        <span className="font-bold text-lg">☀️ SOLAR SAVINGS WEEK - 15% OFF All Systems!</span>
-        <div className="flex items-center gap-2">
-          <div className="bg-white/20 rounded px-2 py-1">
-            <span className="font-bold">{timeLeft.days}</span>d
-          </div>
-          <div className="bg-white/20 rounded px-2 py-1">
-            <span className="font-bold">{timeLeft.hours}</span>h
-          </div>
-          <div className="bg-white/20 rounded px-2 py-1">
-            <span className="font-bold">{timeLeft.minutes}</span>m
-          </div>
-          <div className="bg-white/20 rounded px-2 py-1">
-            <span className="font-bold">{timeLeft.seconds}</span>s
-          </div>
-        </div>
+        <span className="font-bold text-lg">
+          ☀️ Free solar site survey and system sizing across Kenya
+        </span>
         <a
-          href="https://wa.me/254768860665?text=I%20want%20the%2015%25%20Solar%20Savings%20Week%20discount!"
+          href="https://wa.me/254768860665?text=I%20would%20like%20a%20solar%20site%20survey%20and%20quotation"
           className="bg-white text-orange-600 px-4 py-2 rounded-full font-bold hover:bg-amber-100 transition-all"
         >
-          Claim Offer
+          Talk to a Solar Engineer
         </a>
       </div>
     </motion.div>
@@ -733,7 +726,7 @@ export default function SolarBible() {
     { id: 'quotation', label: 'Get AI Quote', icon: '🤖', badge: 'INSTANT' },
 
     // TIER 2: AI & Design Tools (World's Most Advanced)
-    { id: 'ai-center', label: 'AI Control Center', icon: '🤖', badge: 'WORLD #1' },
+    { id: 'ai-center', label: 'AI Control Center', icon: '🤖', badge: 'AI TOOLS' },
     { id: 'workflow', label: '8-Step Project', icon: '🚀', badge: 'PRO' },
     { id: 'design3d', label: '3D Design Studio', icon: '🏗️', badge: 'PRO' },
     { id: 'webgl3d', label: 'True 3D Viewer', icon: '🎮', badge: 'NEW!' },
@@ -2158,6 +2151,25 @@ export default function SolarBible() {
               Call +254 768 860 665
             </a>
           </div>
+          {/*
+            Survey request form, added 2026-08-25.
+            This page ran 2,200 lines and closed with WhatsApp and a phone
+            number only. Both require the visitor to switch app or speak to
+            someone, and a solar buyer researching at 11pm will do neither —
+            they leave. The two buttons stay; this gives the quiet majority a
+            way to ask without a conversation.
+          */}
+          <div className="mx-auto mt-10 max-w-xl rounded-2xl bg-black/30 p-6 text-left backdrop-blur-sm">
+            <p className="mb-5 text-sm font-semibold uppercase tracking-wider text-amber-100">
+              Or have us call you back
+            </p>
+            <QuickInquiryForm
+              service="Solar Installation"
+              ctaLabel="Request my site survey"
+              source="solar-hub"
+            />
+          </div>
+
           <p className="text-amber-200 text-sm mt-6">
             M-Pesa Payment: 0768860665 | Mon-Sat 8AM-6PM
           </p>
@@ -2208,6 +2220,37 @@ export default function SolarBible() {
           </div>
         </div>
       </footer>
+
+      {/*
+        Inbound link to the Repair Centre. An audit on 2026-07-30 found this page
+        — the main commercial solar page — had ZERO links to /repair-centre/solar,
+        so the diagnostic guides got no internal authority from the one page most
+        likely to send them qualified readers. Only the hub is linked, not the
+        individual guides: the hub is enumerated in the registry and guarded in
+        middleware, so this link cannot rot when articles are renamed.
+      */}
+      <section className="bg-slate-950 border-t border-slate-800">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+          <p className="text-xs uppercase tracking-[0.2em] text-yellow-400 font-semibold mb-2">
+            Free diagnostic guides
+          </p>
+          <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight">
+            Solar system already installed and underperforming?
+          </h2>
+          <p className="mt-3 text-slate-300 leading-relaxed max-w-3xl">
+            Before you replace anything, work out what the array should be producing for the
+            conditions on the day. Our engineers have written the same diagnostic sequence they use
+            on site — yield loss, soiling and shading, charge controllers, and DC bus and isolation
+            faults.
+          </p>
+          <Link
+            href="/repair-centre/solar"
+            className="inline-block mt-6 px-6 py-3 rounded-lg border border-yellow-500/60 text-yellow-300 hover:bg-yellow-500/10 transition-colors font-semibold"
+          >
+            Solar PV diagnosis &amp; repair guides
+          </Link>
+        </div>
+      </section>
 
       {/* Solar CTA Section */}
       <ServiceCTASection

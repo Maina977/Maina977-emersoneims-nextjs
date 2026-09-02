@@ -1040,7 +1040,7 @@ export default function TechnicianAssistantPanel() {
               <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3">Need Expert Help?</h4>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="https://wa.me/254768860665"
+                  href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500/30"

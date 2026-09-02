@@ -81,7 +81,7 @@ export function KPICard({
       aria-label={`${label}: ${formatted}`}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">{label}</span>
+        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">{label}</span>
         <span
           className="status-dot"
           style={{ background: palette.solid }}

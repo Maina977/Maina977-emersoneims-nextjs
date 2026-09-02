@@ -66,6 +66,86 @@ html {
   text-rendering: optimizeLegibility;
 }
 
+/*
+ * The page's ground colour. This is a dark site, but html and body both
+ * computed to rgba(0,0,0,0) — fully transparent — so anywhere no element
+ * painted, the browser filled in its own default WHITE.
+ *
+ * That was not theoretical. Measured on the live homepage at 1440x900:
+ * main#main-content carries padding-top:72px to clear the fixed navbar, and
+ * with nothing painting behind it there was a 72px WHITE BAND across the full
+ * width, between the B2B strip and the hero, on a black page.
+ *
+ * There is already a rule meant to drop that padding on pages with a
+ * full-viewport hero:
+ *     main#main-content:has(>section.hero-full:first-child){padding-top:0}
+ * It does not match, because the hero is not a DIRECT child — pages render
+ * their own wrapper between main and the hero, so the selector misses and the
+ * padding stays. Rather than chase that selector through every page shape, the
+ * background is painted here: then the offset is invisible whether the rule
+ * matches or not.
+ *
+ * This also removes two related artefacts for free: the white flash before
+ * first paint, and the white rubber-band area when overscrolling past the top
+ * or bottom on iOS and Android.
+ */
+html,
+body {
+  background-color: #000;
+}
+
+/*
+ * .reveal — the scroll-entrance animation, in CSS instead of JavaScript.
+ *
+ * WHY THIS EXISTS
+ * Homepage sections used framer-motion's <motion.div initial whileInView>, which
+ * costs a ~110KB library plus an IntersectionObserver and a React re-render per
+ * animated node, and forces every component that uses it to be a client
+ * component. Measured on the live homepage under Lighthouse's 4x CPU throttle:
+ * 8.8s of script evaluation, 24.2s of main-thread work, TBT 3,150ms, and an LCP
+ * of 7.4s that was late not because the hero image was slow (its load time was
+ * ~0) but because the main thread was too busy to paint it. The animation was
+ * costing more than it was worth.
+ *
+ * THE SAFETY RULE THAT SHAPES THIS
+ * Content must NEVER be invisible if the animation does not run. So the base
+ * state is fully visible, and the animation is layered on top only where the
+ * browser can drive it from scroll position. A JS reveal that fails leaves a
+ * blank page; this cannot.
+ *
+ * animation-timeline: view() runs entirely on the compositor with no JS at all.
+ * It is supported in Chrome/Edge 115+ — which is the overwhelming majority of
+ * Android traffic, and Android is most of this site's audience. Everywhere else
+ * (Safari, Firefox) the @supports block simply does not apply and the content
+ * is shown immediately, which is a perfectly good outcome.
+ */
+.reveal {
+  opacity: 1;
+}
+
+@keyframes eims-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: eims-reveal-up linear both;
+      animation-timeline: view();
+      /* Finish well before the element is centred, so it is fully readable by
+         the time the reader gets to it rather than fading in under their eye. */
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+
 /* Reduce paint operations */
 * {
   box-sizing: border-box;
@@ -594,6 +674,29 @@ input, textarea, [contenteditable="true"] {
 
   .eims-card {
     @apply rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm;
+  }
+
+  /*
+   * Footer navigation link.
+   *
+   * WHY THIS IS A CLASS AND NOT A UTILITY STRING.
+   * PremiumFooter renders ~110 links and each one carried the same 206-character
+   * utility list. Measured on the homepage 2026-08-26: that single string
+   * appeared 84 times in the React Server Component payload — about 17 KB —
+   * and again in the rendered markup, so roughly 30 KB of a 400 KB page was one
+   * repeated string. Every visitor downloaded it 168 times.
+   *
+   * The styling is unchanged, byte for byte. Expressing it once here means it
+   * ships once in the stylesheet, which is cached, instead of on every element
+   * in HTML, which is not. It is also now editable in one place rather than
+   * eleven.
+   */
+  .eims-footer-link {
+    @apply text-gray-400 text-sm transition-colors rounded-sm
+           hover:text-white
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2
+           focus-visible:ring-offset-black;
   }
 
   .eims-card-hover {

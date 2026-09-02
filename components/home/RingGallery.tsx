@@ -293,7 +293,7 @@ export default function RingGallery({
 
       {/* Heading */}
       <div className="pointer-events-none absolute inset-x-0 top-0 pt-16 md:pt-20 text-center px-4">
-        <p className="text-[11px] md:text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">{eyebrow}</p>
+        <p className="text-xs md:text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">{eyebrow}</p>
         <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">{heading}</h2>
       </div>
 

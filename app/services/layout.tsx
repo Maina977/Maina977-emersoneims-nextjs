@@ -1,5 +1,8 @@
 import { Metadata } from 'next';
-import Script from 'next/script';
+// next/script is deliberately NOT imported. Its <Script> injects tags
+// client-side, so JSON-LD written that way never reaches a crawler — verified
+// as Googlebot: ten service pages emitted no Service schema at all. Structured
+// data must use a plain <script> so it lands in the server HTML.
 
 /**
  * Services Section Layout - SEO Metadata
@@ -7,8 +10,8 @@ import Script from 'next/script';
  */
 
 export const metadata: Metadata = {
-  title: 'Services | Generators, Solar, Electrical, HVAC | EmersonEIMS Kenya',
-  description: 'Complete power solutions in Kenya: Cummins generators with 3-year warranty, solar installation, ATS changeovers, distribution boards, UPS, motor rewinding, AC, borehole pumps. Call +254768860665',
+  title: 'Services | Generators, Solar, Electrical, HVAC',
+  description: 'Power solutions in Kenya: generators, solar, ATS changeovers, distribution boards, UPS, motor rewinding, AC and borehole pumps. Call +254768860665',
   keywords: [
     // Generator Keywords
     'generator services Kenya',
@@ -61,8 +64,8 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://www.emersoneims.com/services',
     siteName: 'EmersonEIMS',
-    title: 'Professional Power Solutions | EmersonEIMS Kenya',
-    description: 'Complete power solutions: Cummins generators (3-year warranty), solar, electrical, HVAC. Professional installation and maintenance. 24/7 support.',
+    title: 'Professional Power Solutions',
+    description: 'Complete power solutions: Cummins generators (2-year warranty), solar, electrical, HVAC. Professional installation and maintenance. 24/7 support.',
     images: [
       {
         url: '/images/services-og.jpg',
@@ -74,8 +77,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Power Solutions Kenya | EmersonEIMS',
-    description: 'Generators, solar, electrical, HVAC solutions with 3-year warranty. Professional service across Kenya.',
+    title: 'Power Solutions Kenya',
+    description: 'Generators, solar, electrical and HVAC solutions, installed and maintained. Professional service across Kenya.',
     images: ['/images/services-og.jpg'],
     creator: '@EmersonEIMS',
   },
@@ -99,7 +102,7 @@ const structuredData = {
       email: 'info@emersoneims.com',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'Industrial Area',
+        streetAddress: 'Embakasi, off Airport North Road',
         addressLocality: 'Nairobi',
         addressCountry: 'KE',
       },
@@ -113,13 +116,13 @@ const structuredData = {
           '@type': 'OpeningHoursSpecification',
           dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
           opens: '08:00',
-          closes: '18:00',
+          closes: '17:00',
         },
         {
           '@type': 'OpeningHoursSpecification',
           dayOfWeek: 'Saturday',
-          opens: '09:00',
-          closes: '16:00',
+          opens: '08:00',
+          closes: '17:00',
         },
         {
           '@type': 'OpeningHoursSpecification',
@@ -143,7 +146,7 @@ const structuredData = {
             '@type': 'OfferCatalog',
             name: 'Generator Services',
             itemListElement: [
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cummins Generator Sales', description: '10kVA-2000kVA with 3-year warranty' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cummins Generator Sales', description: '10kVA-2000kVA with 2-year warranty' } },
               { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Generator Repairs', description: '24/7 emergency repair service' } },
               { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Generator Maintenance', description: 'AMC and preventive maintenance' } },
             ],
@@ -209,11 +212,7 @@ export default function ServicesLayout({
 }) {
   return (
     <>
-      <Script
-        id="services-structured-data"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}/>
       {children}
     </>
   );

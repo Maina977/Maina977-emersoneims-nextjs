@@ -318,7 +318,7 @@ export function generateStructuredData(type: 'Organization' | 'LocalBusiness' | 
       name: 'Emerson EiMS',
       alternateName: 'EmersonEIMS',
       url: 'https://www.emersoneims.com',
-      logo: 'https://www.emersoneims.com/logo.png',
+      logo: 'https://www.emersoneims.com/emerson-eims-logo.png',
       description: 'Leading power and energy solutions provider in Kenya and East Africa',
       address: {
         '@type': 'PostalAddress',

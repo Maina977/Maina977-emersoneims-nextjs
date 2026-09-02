@@ -3,7 +3,7 @@
 /**
  * ╔══════════════════════════════════════════════════════════════════════════════╗
  * ║   SOLARGENIUS PRO™ - WORLD'S MOST ADVANCED SOLAR AI QUOTING SYSTEM          ║
- * ║   More Advanced Than Aurora Solar - Quotes in Under 5 Minutes               ║
+ * ║   Solar design and sizing - quotes in minutes                          ║
  * ║   Copyright © 2024-2026 EmersonEIMS - All Rights Reserved                   ║
  * ╚══════════════════════════════════════════════════════════════════════════════╝
  */
@@ -108,7 +108,7 @@ const SolarGeniusPro: React.FC = () => {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-full text-amber-400 text-sm font-medium mb-4">
           <span className="animate-pulse">&#9889;</span>
-          <span>WORLD'S #1 SOLAR AI - MORE ADVANCED THAN AURORA</span>
+          <span>SOLAR DESIGN & SIZING AI</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
           SolarGenius <span className="text-amber-400">Pro™</span>

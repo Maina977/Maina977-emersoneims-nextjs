@@ -780,7 +780,7 @@ function FaultDetailModal({
                 Close
               </button>
               <a
-                href="https://wa.me/254768860665"
+                href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 bg-green-500/20 text-green-400 border border-green-500/30 rounded-lg hover:bg-green-500/30 transition-colors"
@@ -823,7 +823,7 @@ export default function FaultDiagnosticsPanel({
           <span className="text-3xl">🔮</span>
           <div>
             <h2 className="text-xl font-bold text-purple-400 uppercase tracking-wider">Generator Oracle</h2>
-            <p className="text-sm text-slate-500">400,000+ fault codes with detailed troubleshooting</p>
+            <p className="text-sm text-slate-500">Manufacturer-curated fault codes with detailed troubleshooting</p>
           </div>
         </div>
       </div>
@@ -1018,7 +1018,7 @@ export default function FaultDiagnosticsPanel({
               </a>
 
               <a
-                href="https://wa.me/254768860665"
+                href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg hover:bg-green-500/20 transition-all"

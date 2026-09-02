@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AC & Air Conditioning Solutions Kenya | Installation, BTU Sizing | EmersonEIMS",
+  title: "AC & Air Conditioning Solutions Kenya",
   description: "Complete AC solutions in Kenya. BTU sizing calculator, installation guides, refrigerant types (R410A, R32, R22), maintenance schedules, troubleshooting. Samsung, LG, Daikin, Carrier experts. Call +254 768 860 665.",
   keywords: "AC installation Kenya, air conditioning Kenya, AC repair Nairobi, BTU calculator Kenya, AC sizing Kenya, R410A Kenya, R32 refrigerant, AC maintenance Kenya, split AC Kenya, VRF system Kenya, AC troubleshooting, inverter AC Kenya, Daikin Kenya, Samsung AC Kenya",
   openGraph: {
-    title: "AC Solutions Kenya | Installation, BTU Sizing, Repairs | EmersonEIMS",
+    title: "AC Solutions Kenya | Installation, BTU Sizing, Repairs",
     description: "Kenya's comprehensive AC resource. BTU sizing guides, refrigerant information, installation procedures, troubleshooting.",
     url: "https://www.emersoneims.com/solutions/ac",
     siteName: "EmersonEIMS",

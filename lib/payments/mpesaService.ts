@@ -34,7 +34,7 @@ class MpesaService {
   private consumerKey = process.env.MPESA_CONSUMER_KEY || '';
   private consumerSecret = process.env.MPESA_CONSUMER_SECRET || '';
   private passkey = process.env.MPESA_PASSKEY || '';
-  private callbackUrl = process.env.MPESA_CALLBACK_URL || 'https://emersoneims.com/api/payments/callback';
+  private callbackUrl = process.env.MPESA_CALLBACK_URL || 'https://www.emersoneims.com/api/payments/callback';
   private environment = process.env.NODE_ENV === 'production' ? 'production' : 'sandbox';
 
   /**

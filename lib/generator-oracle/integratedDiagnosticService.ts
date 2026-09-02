@@ -498,11 +498,11 @@ export async function* streamIntegratedDiagnosis(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// UNIFIED FAULT CODE SEARCH - Combines 400,000+ controller codes with enhanced database
+// UNIFIED FAULT CODE SEARCH - combines controller codes with the enhanced database
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**
- * Search across ALL fault code databases (400,000+ codes)
+ * Search across all fault code databases
  * Returns combined results from both controller codes and enhanced descriptions
  */
 export function searchAllFaultCodes(query: string, options?: {
@@ -516,7 +516,7 @@ export function searchAllFaultCodes(query: string, options?: {
 } {
   const maxResults = options?.maxResults || 100;
 
-  // Search controller fault codes (400,000+)
+  // Search controller fault codes
   let controllerCodes: ControllerFaultCode[] = [];
   if (options?.brand) {
     controllerCodes = getFaultCodesByBrand(options.brand)
@@ -568,7 +568,7 @@ export {
   // From enhanced-fault-database
   getFaultByCode,
   searchEnhancedFaults,
-  // From controllerFaultCodes (400,000+ codes)
+  // From controllerFaultCodes (includes template-expanded entries)
   getAllFaultCodes,
   searchControllerFaults,
   getFaultCodesByBrand,

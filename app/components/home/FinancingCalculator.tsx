@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function FinancingCalculator() {
   const [price, setPrice] = useState(1050000);
   const [months, setMonths] = useState(24);
 
-  // Realistic Kenya interest rates: KCB ~13%, Equity ~14%, Safaricom ~15%
+  // Indicative Kenya market rates by lender type. Named lenders removed 2026-08-03 —
+  // we do not publish other companies' names, and we hold no financing partnership
+  // with any of them. These are market averages a buyer should confirm themselves.
   const interestRate = 0.14;
   const monthlyRate = interestRate / 12;
 
@@ -27,22 +29,16 @@ export default function FinancingCalculator() {
   ];
 
   const banks = [
-    { name: 'KCB Bank', rate: '13%', time: '12-48 months', logo: '🏦' },
-    { name: 'Equity Bank', rate: '14%', time: '12-48 months', logo: '🏦' },
-    { name: 'Safaricom Money', rate: '15%', time: '6-36 months', logo: '📱' },
+    { name: 'Commercial bank loan', rate: '13%', time: '12-48 months', logo: '🏦' },
+    { name: 'Asset finance', rate: '14%', time: '12-48 months', logo: '🏦' },
+    { name: 'Mobile money credit', rate: '15%', time: '6-36 months', logo: '📱' },
   ];
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-black to-slate-900/30">
+    <section className="py-20 px-4 bg-gradient-to-b from-black to-slate-900/30 content-auto">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16 reveal">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-sm font-medium mb-6">
             <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
             Flexible Payment Plans
@@ -55,19 +51,16 @@ export default function FinancingCalculator() {
             </span>
           </h2>
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-            Finance your generator through KCB Bank, Equity Bank, or Safaricom Money. Flexible terms, fast approval, same-day dispatch.
+            {/* "fast approval, same-day dispatch" removed with the other lender
+                promises below — approval is the financier's decision and
+                same-day dispatch is not a commitment made anywhere else. */}
+            Finance your generator through a commercial bank, asset finance or mobile money credit. The figures below are indicative.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Calculator */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="lg:col-span-2 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-2xl p-8"
-          >
+          <div className="lg:col-span-2 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-2xl p-8 reveal">
             <h3 className="text-2xl font-bold text-white mb-8">Calculate Your Monthly Payment</h3>
 
             {/* Model Selector */}
@@ -95,10 +88,14 @@ export default function FinancingCalculator() {
 
             {/* Loan Term Slider */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-300 mb-3">
+              {/* htmlFor/id: the label sat next to the slider but was not
+                  associated with it, so the control had no programmatic name
+                  and a screen reader announced an unlabelled slider. */}
+              <label htmlFor="finance-term" className="block text-sm font-semibold text-gray-300 mb-3">
                 Loan Term: {months} months ({Math.round(months / 12)} years)
               </label>
               <input
+                id="finance-term"
                 type="range"
                 min="12"
                 max="60"
@@ -137,34 +134,47 @@ export default function FinancingCalculator() {
 
               <div className="mt-6 pt-6 border-t border-white/10">
                 <p className="text-sm text-gray-300">
-                  <span className="text-cyan-300 font-semibold">Interest Rate:</span> 14% per annum (Equity Bank average)
+                  <span className="text-cyan-300 font-semibold">Interest Rate:</span> 14% per annum (market average)
                 </p>
+                {/* Was "Approval Time: 24–48 hours · Deployment same-day".
+                    We are not the lender — this file's own note records that we
+                    hold no financing partnership — so we cannot state anyone
+                    else's approval time, and "same-day deployment" is not a
+                    commitment made anywhere else on this site. What we can
+                    truthfully say is that the figures here are indicative. */}
                 <p className="text-sm text-gray-300 mt-2">
-                  <span className="text-cyan-300 font-semibold">Approval Time:</span> 24–48 hours · Deployment same-day
+                  <span className="text-cyan-300 font-semibold">Note:</span> an indicative estimate only — your lender sets the final rate, term and approval.
                 </p>
               </div>
             </div>
 
             {/* CTA */}
             <div className="space-y-3">
-              <button className="w-full px-6 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg hover:scale-105 transition-all">
-                Get Financing Pre-Approval
-              </button>
+              {/* Was "Get Financing Pre-Approval" / "30-second application".
+                  We are not a lender and arrange no credit, so we cannot
+                  pre-approve anything and there is no application to submit.
+                  The honest action is the one we can actually perform: quote
+                  the machine, so the buyer can take a real figure to their own
+                  bank. */}
+              <Link
+                href="/contact?type=quote"
+                className="block w-full px-6 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg text-center hover:scale-105 transition-all"
+              >
+                Get a written quotation
+              </Link>
               <p className="text-xs text-gray-400 text-center">
-                No obligation · 30-second application
+                Take the quoted figure to your own bank or asset financier.
               </p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Financing Partners */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="reveal">
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-2xl p-8">
-              <h3 className="text-xl font-bold text-white mb-6">Financing Partners</h3>
+              {/* "Financing Partners" claimed relationships we do not have —
+                  see the note at the top of this file. These are lender TYPES
+                  with indicative market rates, not partners of ours. */}
+              <h3 className="text-xl font-bold text-white mb-6">Ways buyers finance</h3>
 
               <div className="space-y-4 mb-8">
                 {banks.map((bank, idx) => (
@@ -189,38 +199,39 @@ export default function FinancingCalculator() {
 
               {/* Benefits Card */}
               <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 border border-green-500/20 rounded-xl p-6">
-                <h4 className="text-green-400 font-bold mb-4">✓ Financing Benefits</h4>
+                {/* This list promised terms set by lenders we have no
+                    relationship with: "Zero down payment available" and
+                    "24–48 hour approval" are a financier's decision, not ours,
+                    and we cannot commit anyone else to them. "Free delivery &
+                    installation" appears nowhere else on this site, so it
+                    would have been a new and unbacked promise made in passing.
+                    What remains is what we control and already publish. */}
+                <h4 className="text-green-400 font-bold mb-4">✓ What we supply</h4>
                 <ul className="space-y-2 text-sm text-gray-300">
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
-                    <span>Zero down payment available</span>
+                    <span>A written quotation you can take to any lender</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
-                    <span>24–48 hour approval</span>
+                    <span>2-year warranty on new generators</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
-                    <span>3-year warranty included</span>
+                    <span>Installation and commissioning, with the changeover panel</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
-                    <span>Free delivery & installation</span>
+                    <span>Servicing in all 47 counties from our mobile workshop</span>
                   </li>
                 </ul>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Bottom Trust Strip */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-12 pt-12 border-t border-white/10 text-center"
-        >
+        <div className="mt-12 pt-12 border-t border-white/10 text-center reveal">
           <p className="text-gray-400 mb-4">
             Over 1,200 generators financed across Kenya. Trusted by hospitals, factories, and commercial properties.
           </p>
@@ -231,7 +242,7 @@ export default function FinancingCalculator() {
             <span>🏪 Retail</span>
             <span>🌾 Agriculture</span>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

@@ -8,7 +8,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/eims-pro`;
 
 export const metadata: Metadata = {
-  title: 'EIMS PRO — Building Intelligence & Construction Engineering Workspace | EmersonEIMS',
+  title: 'EIMS PRO | Building Intelligence',
   description:
     'EIMS PRO (Building Suite Pro) is the EmersonEIMS construction engineering workspace: phases, reports, BIM, costing and AI assist for serious building projects across Kenya & East Africa.',
   keywords: [
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   alternates: { canonical: '/eims-pro' },
   openGraph: {
-    title: 'EIMS PRO — Building Intelligence & Engineering Workspace | EmersonEIMS',
+    title: 'EIMS PRO — Building Intelligence & Engineering Workspace',
     description: 'Phases, reports, BIM, costing and AI assist for serious building projects.',
     url: URL,
     siteName: 'EmersonEIMS',
@@ -54,6 +54,14 @@ export default function EimsProPage() {
         industry="EPCs, QS, Architects, Project Managers"
       />
       <B2BCommercialBand profile={B2B_PROFILES.eimsPro} />
+      {/*
+        EimsProClient is dynamically imported with ssr:false, so NOTHING it
+        renders reaches the initial HTML. A Googlebot scan on 2026-07-31 found
+        this page serving no <h1> at all. This heading is server-rendered so the
+        page states what it is before any JavaScript runs; the visual design is
+        unchanged because the client workspace renders its own chrome below.
+      */}
+      <h1 className="sr-only">EIMS PRO — Building Intelligence &amp; Construction Engineering Workspace</h1>
       <EimsProClient />
     </>
   );

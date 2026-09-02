@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Our Team | EmersonEIMS Engineers & Technicians',
-  description: 'Meet the factory-trained engineers and technicians behind EmersonEIMS. Certified specialists in Cummins, Perkins, and multi-brand generators.',
+  title: 'Our Team | Engineers & Technicians',
+  description: 'Meet the engineers and technicians behind EmersonEIMS — specialists in Cummins, Perkins and multi-brand generators.',
   alternates: {
     canonical: 'https://www.emersoneims.com/about-us/team',
   },
@@ -101,7 +101,7 @@ export default function TeamPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -113,7 +113,7 @@ export default function TeamPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Factory-trained engineers and technicians delivering solutions across Kenya. Certified specialists in Cummins, Perkins, Caterpillar, and emerging power technologies.
+            Engineers and technicians delivering solutions across Kenya, specialising in Cummins, Perkins, Caterpillar and emerging power technologies.
           </p>
         </div>
       </section>
@@ -184,7 +184,7 @@ export default function TeamPage() {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-6">
               <div className="text-4xl font-bold text-cyan-400 mb-3">100%</div>
-              <p className="text-gray-300">Factory-trained on all major brands we service</p>
+              <p className="text-gray-300">Experienced on every brand we service</p>
             </div>
             <div className="p-6">
               <div className="text-4xl font-bold text-cyan-400 mb-3">24/7</div>
@@ -248,6 +248,6 @@ export default function TeamPage() {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

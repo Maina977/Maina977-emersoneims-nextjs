@@ -61,13 +61,24 @@ const TOOLS: Record<string, ToolCopy> = {
     capabilities: [
       'Load profiling and array/inverter/battery sizing with irradiance data for your county',
       'Grid-tie, hybrid and off-grid designs, including solar water pumping for boreholes',
-      'Cost estimates at current Kenya market prices with payback and bill-offset projections',
+      /*
+       * DATED, not "current". The panel, battery and inverter prices this tool
+       * quotes live in components/solar/SolarBibleCalculator.tsx and were last
+       * changed in March 2026 (git log on that file). Solar prices move, so
+       * describing five-month-old figures as "current Kenya market prices"
+       * claims a currency we do not maintain.
+       *
+       * AquaScan already gets this right — it says "July 2026 Kenya market
+       * rates" and marks every estimate. Same standard here. When the price
+       * table is refreshed, update this month with it.
+       */
+      'Cost estimates at March 2026 Kenya market rates, with payback and bill-offset projections',
       'Exportable design summaries an installer can quote against',
     ],
     coverage: 'Designs are calibrated for Kenyan irradiance and tariffs and used across East Africa; EmersonEIMS installs and maintains solar plants regionally.',
     faqs: [
       { q: 'How many solar panels do I need in Kenya?', a: 'It depends on daily consumption: a typical home using 10 kWh/day needs roughly a 3 kW array with storage. SolarGenius Pro sizes it precisely from your actual appliances or KPLC bill.' },
-      { q: 'What does a solar system cost in Kenya?', a: 'Residential hybrid systems commonly run KSh 150k–1.5M depending on size and storage. The tool prices your specific design at current market rates rather than a generic bracket.' },
+      { q: 'What does a solar system cost in Kenya?', a: 'Residential hybrid systems commonly run KSh 150k–1.5M depending on size and storage. The tool prices your specific design against a March 2026 component price list rather than a generic bracket — treat it as indicative and confirm before purchase.' },
       { q: 'Can solar run a borehole pump?', a: 'Yes — solar pumping is often the cheapest lifetime option. The tool sizes the array from pump power, head and daily water demand, and pairs with AquaScan Pro for new boreholes.' },
     ],
   },
@@ -183,7 +194,7 @@ const TOOLS: Record<string, ToolCopy> = {
       'Battery storage and backup integration with existing generators and UPS',
       'O&M: cleaning regimes, string testing, inverter service and monitoring',
     ],
-    coverage: 'Installations across Kenya and East Africa with county-level service reach and 3-year workmanship warranty.',
+    coverage: 'Installations across Kenya and East Africa with county-level service reach and 2-year workmanship warranty.',
     faqs: [
       { q: 'Is solar worth it in Kenya?', a: 'Usually yes: with 4.5–6.5 kWh/m²/day of irradiance, commercial systems commonly pay back in 3–5 years against KPLC tariffs, faster where diesel generation is being displaced.' },
       { q: 'Can solar work with my existing generator?', a: 'Yes — hybrid controllers let solar carry the day load and the generator top up, typically halving fuel consumption. We design the integration properly, including reverse-power protection.' },
@@ -192,7 +203,14 @@ const TOOLS: Record<string, ToolCopy> = {
   },
 };
 
-export default function ToolSeoContent({ tool }: { tool: keyof typeof TOOLS | string }) {
+export default function ToolSeoContent({
+  tool,
+  headingLevel = 'h2',
+}: {
+  tool: keyof typeof TOOLS | string;
+  /** Use 'h1' only when the host page renders no <h1> of its own. */
+  headingLevel?: 'h1' | 'h2';
+}) {
   const c = TOOLS[tool as string];
   if (!c) return null;
   const faqLd = {
@@ -207,7 +225,21 @@ export default function ToolSeoContent({ tool }: { tool: keyof typeof TOOLS | st
   return (
     <section aria-label="About this tool" className="mx-auto max-w-4xl px-6 py-14 text-slate-300">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
-      <h2 className="text-2xl font-bold text-white">{c.h2}</h2>
+      {/*
+        Heading level is opt-in. Most hosts (/calculators, /diagnostics,
+        /generator-oracle, /maintenance-hub, /solar ...) already render their own
+        <h1>, so this block must stay an <h2> there.
+
+        The interactive tool pages do NOT: a Googlebot scan on 2026-07-31 found
+        /aquascan-pro-v3 and /solar-genius-pro and their sub-pages serving 700–1000
+        words with no <h1> at all, because the app itself is client-rendered.
+        Those layouts pass headingLevel="h1" so the page has exactly one.
+      */}
+      {headingLevel === 'h1' ? (
+        <h1 className="text-2xl font-bold text-white">{c.h2}</h1>
+      ) : (
+        <h2 className="text-2xl font-bold text-white">{c.h2}</h2>
+      )}
       <p className="mt-4 leading-relaxed">{c.intro}</p>
       <h3 className="mt-8 text-lg font-semibold text-white">What it does</h3>
       <ul className="mt-3 list-disc space-y-2 pl-6">

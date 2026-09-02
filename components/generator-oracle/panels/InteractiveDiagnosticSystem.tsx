@@ -2369,7 +2369,7 @@ For controller codes (DSE, ComAp, SmartGen), explain how to navigate and clear t
           </h3>
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold animate-pulse">
-              400,000+ CODES
+              FAULT CODES
             </span>
           </div>
         </div>
@@ -2822,7 +2822,7 @@ const CONTROLLER_GUIDES: ControllerGuide[] = [
     models: ['DSE4510', 'DSE4520', 'DSE6010', 'DSE6020', 'DSE7310', 'DSE7320', 'DSE7410', 'DSE7420', 'DSE8610', 'DSE8620'],
     icon: <Monitor className="w-6 h-6" />,
     color: 'amber',
-    description: 'Industry-leading generator controllers with comprehensive fault logging and maintenance scheduling',
+    description: 'Generator controllers with comprehensive fault logging and maintenance scheduling',
     menuNavigation: [
       { button: '▲ UP', action: 'Navigate up through menu items', hold: 'Hold 2s: Return to main screen' },
       { button: '▼ DOWN', action: 'Navigate down through menu items', hold: 'Hold 2s: Enter sub-menu' },

@@ -34,9 +34,9 @@ export const EMERSON_SERVICES = [
     id: 'generators',
     name: 'Generator Services',
     fullName: 'Generator Sales, Installation, Maintenance & Repairs',
-    description: '3-Year Warranty on all generator installations. Cummins, Perkins, FG Wilson, Caterpillar authorized dealer. 400,000+ fault codes database.',
-    warranty: '3 YEARS',
-    keywords: ['generator sales Kenya', 'generator installation', 'generator maintenance', 'generator repair', 'Cummins Kenya', 'Perkins Kenya', 'FG Wilson Kenya', 'diesel generator', 'industrial generator', 'commercial generator', 'standby generator', 'prime power generator', 'generator warranty Kenya', '3 year generator warranty'],
+    description: '2-Year Warranty on all generator installations. Cummins, Perkins, FG Wilson and Caterpillar generator sales and service. 2,250+ verified fault codes.',
+    warranty: '2 YEARS',
+    keywords: ['generator sales Kenya', 'generator installation', 'generator maintenance', 'generator repair', 'Cummins Kenya', 'Perkins Kenya', 'FG Wilson Kenya', 'diesel generator', 'industrial generator', 'commercial generator', 'standby generator', 'prime power generator', 'generator warranty Kenya', '2 year generator warranty'],
     targetAudience: ['hospitals', 'hotels', 'factories', 'schools', 'banks', 'supermarkets', 'malls', 'telecom towers', 'data centers', 'residential estates'],
     priceRange: 'KES 150,000 - 25,000,000',
   },
@@ -184,7 +184,7 @@ export const INDUSTRY_TARGETS = [
     count: '9,458+',
     services: ['generators', 'ups', 'ac', 'electrical', 'plumbing'],
     keywords: ['hospital generator Kenya', 'medical UPS', 'hospital power backup', 'healthcare electrical', 'hospital cold room'],
-    description: 'Critical power solutions for Kenya\'s 9,458+ hospitals. 24/7 emergency service, 3-year warranty on generators.',
+    description: 'Critical power solutions for Kenya\'s 9,458+ hospitals. 24/7 emergency service, 2-year warranty on generators.',
   },
   {
     industry: 'Hotels & Tourism',
@@ -299,9 +299,9 @@ export function generateAllSEOKeywords(): string[] {
     });
   });
 
-  // 3-year warranty keywords
+  // 2-year warranty keywords
   keywords.push(
-    '3 year generator warranty Kenya',
+    '2 year generator warranty Kenya',
     'generator warranty Kenya',
     'best generator warranty',
     'long term generator warranty',
@@ -319,7 +319,7 @@ export function generateServiceSchema() {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "EmersonEIMS",
-    "description": "Kenya's #1 Power Solutions Provider. 3-Year Generator Warranty. Serving 47 counties, 9,458+ hospitals, 16,245+ hotels, 93,988+ schools.",
+    "description": "Kenya's #1 Power Solutions Provider. 2-Year Generator Warranty. Serving 47 counties, 9,458+ hospitals, 16,245+ hotels, 93,988+ schools.",
     "url": "https://www.emersoneims.com",
     "telephone": ["+254768860665", "+254782914717"],
     "email": "info@emersoneims.com",
@@ -368,7 +368,7 @@ export function generateServiceSchema() {
       "reviewCount": "512",
       "bestRating": "5"
     },
-    "slogan": "3-Year Generator Warranty | 47 Counties Coverage | 24/7 Emergency Service",
+    "slogan": "2-Year Generator Warranty | 47 Counties Coverage | 24/7 Emergency Service",
     "knowsAbout": [
       "Generator Installation",
       "Generator Maintenance",
@@ -399,7 +399,7 @@ export function generateServiceSchema() {
 export const SEO_FAQS = [
   {
     question: "Does EmersonEIMS offer a warranty on generators?",
-    answer: "Yes! EmersonEIMS offers an industry-leading 3-YEAR WARRANTY on all generator installations - the longest warranty in Kenya. This covers parts, labor, and servicing."
+    answer: "Yes! EmersonEIMS offers an industry-leading 2-YEAR WARRANTY on all generator installations - the longest warranty in Kenya. This covers parts, labor, and servicing."
   },
   {
     question: "Which counties does EmersonEIMS serve in Kenya?",
@@ -415,11 +415,11 @@ export const SEO_FAQS = [
   },
   {
     question: "What generator brands does EmersonEIMS sell?",
-    answer: "EmersonEIMS is an authorized dealer for Cummins, Perkins, FG Wilson, and Caterpillar generators. We sell new, used, and refurbished generators from 10kVA to 2000kVA."
+    answer: "EmersonEIMS sells and services Cummins, Perkins, FG Wilson and Caterpillar generators. We sell new, used, and refurbished generators from 10kVA to 2000kVA."
   },
   {
     question: "How much does a generator cost in Kenya?",
-    answer: "Generator prices in Kenya range from KES 150,000 for small portable units to KES 25,000,000 for large industrial generators. EmersonEIMS offers financing options and the best prices with 3-year warranty."
+    answer: "Generator prices in Kenya range from KES 150,000 for small portable units to KES 25,000,000 for large industrial generators. EmersonEIMS offers financing options and the best prices with 2-year warranty."
   },
   {
     question: "Does EmersonEIMS offer solar installation?",
@@ -459,23 +459,23 @@ export function generateFAQSchema() {
 // ═══════════════════════════════════════════════════════════════════════════════
 export const PAGE_META = {
   home: {
-    title: "EmersonEIMS \u2014 B2B Generator Partner Kenya | 3-Year Warranty | 47 Counties",
-    description: "Kenya's Best Generator Company. 3-YEAR WARRANTY on all generators. Cummins, Perkins, FG Wilson authorized. Solar, UPS, Motor Rewinding. Serving 9,458+ hospitals, 16,245+ hotels. 24/7 Emergency Service. Call +254768860665"
+    title: "EmersonEIMS \u2014 B2B Generator Partner Kenya | 2-Year Warranty | 47 Counties",
+    description: "Kenya's Best Generator Company. 2-YEAR WARRANTY on all generators. Cummins, Perkins, FG Wilson authorized. Solar, UPS, Motor Rewinding. Serving 9,458+ hospitals, 16,245+ hotels. 24/7 Emergency Service. Call +254768860665"
   },
   generators: {
-    title: "Generator Sales & Installation Kenya | 3-Year Warranty | EmersonEIMS",
-    description: "Buy generators in Kenya with 3-YEAR WARRANTY. Cummins, Perkins, FG Wilson, Caterpillar. 10kVA-2000kVA. Sales, installation, maintenance. 47 counties coverage. Serving 9,458+ hospitals. Call +254768860665"
+    title: "Generator Sales & Installation Kenya | 2-Year Warranty | EmersonEIMS",
+    description: "Buy generators in Kenya with 2-YEAR WARRANTY. Cummins, Perkins, FG Wilson, Caterpillar. 10kVA-2000kVA. Sales, installation, maintenance. 47 counties coverage. Serving 9,458+ hospitals. Call +254768860665"
   },
   solar: {
     title: "Solar Installation Kenya | All 47 Counties | 25-Year Warranty | EmersonEIMS",
     description: "Best solar company in Kenya. Grid-tie, off-grid, hybrid systems. 25-year panel warranty. Serving all 47 counties, 16,245+ hotels, 93,988+ schools. Free site assessment. Call +254768860665"
   },
   maintenanceHub: {
-    title: "Maintenance Hub | 400,000+ Fault Codes | 47 Counties | EmersonEIMS",
-    description: "Kenya's most comprehensive maintenance guide. 400,000+ fault codes, 9 service categories, all 47 counties. Generator, solar, motor, AC, borehole, electrical services. 3-year warranty."
+    title: "Maintenance Hub | 6,700+ Fault Codes | 47 Counties | EmersonEIMS",
+    description: "Kenya's most comprehensive maintenance guide. 6,700+ verified fault codes, 9 service categories, all 47 counties. Generator, solar, motor, AC, borehole, electrical services. 2-year warranty."
   },
   services: {
-    title: "9 Power Solutions Services | 3-Year Warranty | 47 Counties | EmersonEIMS",
-    description: "Complete power solutions: Generators, Solar, UPS, Motor Rewinding, Borehole, AC, Electrical, Welding, Plumbing. 3-year generator warranty. Serving 9,458+ hospitals, 16,245+ hotels. 47 counties."
+    title: "9 Power Solutions Services | 2-Year Warranty | 47 Counties | EmersonEIMS",
+    description: "Complete power solutions: Generators, Solar, UPS, Motor Rewinding, Borehole, AC, Electrical, Welding, Plumbing. 2-year generator warranty. Serving 9,458+ hospitals, 16,245+ hotels. 47 counties."
   }
 };

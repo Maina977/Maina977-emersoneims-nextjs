@@ -10,11 +10,11 @@ import { OrganizationSchema, BreadcrumbSchema } from '@/components/seo/Structure
 import { KENYA_COUNTIES } from '@/lib/seo/seoConfig';
 
 export const metadata: Metadata = {
-  title: 'Generator & Solar Services in All 47 Kenya Counties | Emerson EiMS',
+  title: 'Generator & Solar Services in All 47 Kenya Counties',
   description: 'Professional generator, solar, UPS, and electrical services across all 47 counties in Kenya. Complete coverage from Nairobi to Turkana, Mombasa to Kakamega. 24/7 emergency service nationwide.',
   keywords: 'generator kenya, solar installation kenya, generator services all counties, power solutions kenya, generator nairobi, generator mombasa, generator kisumu, generator nakuru, 47 counties kenya, generator installation nationwide, solar power kenya counties',
   openGraph: {
-    title: 'Services in All 47 Kenya Counties | Emerson EiMS',
+    title: 'Services in All 47 Kenya Counties',
     description: 'Complete power solutions coverage across all Kenyan counties. Generators, Solar, UPS, Electrical Services.',
     url: 'https://www.emersoneims.com/counties',
     type: 'website'
@@ -37,7 +37,7 @@ export default function CountiesPage() {
   const regions = Object.keys(countiesByRegion).sort();
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <OrganizationSchema />
       <BreadcrumbSchema items={[
         { name: 'Home', url: 'https://www.emersoneims.com' },
@@ -250,6 +250,6 @@ export default function CountiesPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/solutions/generators/kiambu' },
   title: 'Generator Service in Kiambu | 6-Hour Response',
   description: 'Backup power solutions in Kiambu. Installation, emergency repair, maintenance. Agricultural and industrial hub.',
 };
 
 export default function KiambuGeneratorPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl font-bold mb-6">Generator Service in Kiambu</h1>
@@ -56,6 +60,6 @@ export default function KiambuGeneratorPage() {
           </a>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

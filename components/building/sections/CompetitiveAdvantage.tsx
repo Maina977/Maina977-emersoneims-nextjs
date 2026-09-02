@@ -30,7 +30,7 @@ const COMPARISON_POINTS = [
   },
   {
     feature: 'Diagnostic Capability',
-    emersonEIMS: '400,000+ error codes with step-by-step guides',
+    emersonEIMS: '6,700+ error codes with step-by-step guides',
     industry: 'Basic diagnostics only',
     advantage: true,
   },
@@ -42,7 +42,7 @@ const COMPARISON_POINTS = [
   },
   {
     feature: 'Warranty Support',
-    emersonEIMS: 'Factory-authorized, warranty-compliant service',
+    emersonEIMS: 'Professional service using genuine parts',
     industry: 'May void manufacturer warranty',
     advantage: true,
   },

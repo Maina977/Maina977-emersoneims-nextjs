@@ -8,7 +8,31 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/hub`;
 
 export const metadata: Metadata = {
-  title: 'Solar & UPS Intelligence Hub — Sizing, Verification & Compatibility | EmersonEIMS',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/hub' },
+  /*
+   * "Intelligence Hub" is not a search anyone performs. This page sits at
+   * POSITION 34.7 — page four — with 7 impressions and no clicks, and its
+   * sub-pages fare little better (/hub/ups-lab 11 impressions at 10.6,
+   * /hub/product-intelligence 11 at 19.3, both zero clicks).
+   *
+   * The words people actually type are "UPS sizing", "inverter battery
+   * calculator" and "how long will my UPS last". Job first, as with the other
+   * tools; the "Hub" branding survives in the page itself.
+   */
+  /*
+   * Object form, not a bare string. A segment whose `title` is a plain string
+   * leaves its DESCENDANTS with no template to inherit, so the root layout's
+   * "%s | EmersonEIMS Kenya" stopped applying and all 17 /hub/* pages rendered
+   * with no brand at all. `default` titles this page; `template` is what the
+   * children inherit.
+   */
+  title: {
+    default: 'UPS & Inverter Sizing Calculator — Free',
+    template: '%s | EmersonEIMS Kenya',
+  },
   description:
     'Solar & UPS Intelligence Hub: smart sizing simulator, quotation audit, product intelligence, safety & diagnostics and a curated case library — built and maintained by EmersonEIMS engineers in Kenya.',
   keywords: [
@@ -19,9 +43,15 @@ export const metadata: Metadata = {
     'solar product intelligence',
     'EmersonEIMS Hub',
   ],
-  alternates: { canonical: URL },
+  /*
+   * NO canonical here — layout metadata is INHERITED by every child page, so
+   * this made each sub-page canonicalise to the section root and forfeit its
+   * own indexing while still being listed in the sitemap. The root layout
+   * (app/layout.tsx) emits a correct self-referential canonical from the
+   * x-pathname header.
+   */
   openGraph: {
-    title: 'Solar & UPS Intelligence Hub | EmersonEIMS',
+    title: 'Solar & UPS Intelligence Hub',
     description:
       'Smart sizing, quotation audit, product intelligence and a curated case library for Kenya solar & UPS.',
     url: URL,

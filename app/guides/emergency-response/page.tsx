@@ -2,13 +2,17 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Generator Emergency Response Guide | What To Do When Power Fails | EmersonEIMS',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/guides/emergency-response' },
+  title: 'Generator Emergency Response Guide',
   description: 'Step-by-step emergency response guide when your generator fails. Quick troubleshooting checklist, who to call, and what information to have ready. 24/7 emergency support in Kenya.',
 };
 
 export default function EmergencyResponseGuide() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
       {/* Emergency Banner */}
       <div className="bg-red-600 text-white py-4 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
@@ -252,7 +256,7 @@ export default function EmergencyResponseGuide() {
               📞 Call: 0768 860 665
             </a>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               className="px-8 py-4 bg-green-500 text-white font-bold text-lg rounded-full hover:bg-green-400 transition-colors"
             >
               💬 WhatsApp Now
@@ -260,6 +264,6 @@ export default function EmergencyResponseGuide() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

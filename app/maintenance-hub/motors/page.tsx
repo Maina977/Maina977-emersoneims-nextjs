@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  * THE MOTORS BIBLE - KENYA'S MOST COMPREHENSIVE MOTOR MAINTENANCE GUIDE
  * World's Most Complete Electric & Diesel Motor Maintenance Hub
- * 35,000+ Fault Codes | 850+ Repair Procedures | All Motor Types
+ * motor fault codes | 850+ Repair Procedures | All Motor Types
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
@@ -458,7 +458,7 @@ export default function MotorsBible() {
               A Practical Motor Maintenance & Repair Guide for Kenya
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <span className="bg-blue-600/30 px-4 py-2 rounded-full">35,000+ Fault Codes</span>
+              <span className="bg-blue-600/30 px-4 py-2 rounded-full">motor fault codes</span>
               <span className="bg-green-600/30 px-4 py-2 rounded-full">850+ Repair Procedures</span>
               <span className="bg-purple-600/30 px-4 py-2 rounded-full">All Motor Types</span>
               <span className="bg-amber-600/30 px-4 py-2 rounded-full">Kenya Suppliers</span>
@@ -498,7 +498,7 @@ export default function MotorsBible() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
           {/* Overview Section */}
           {activeSection === 'overview' && (
@@ -546,7 +546,7 @@ export default function MotorsBible() {
                 >
                   <div className="text-3xl mb-3">🔧</div>
                   <h3 className="text-xl font-bold mb-2">Diagnose Fault</h3>
-                  <p className="text-gray-400 text-sm">Search 35,000+ fault codes with repair procedures</p>
+                  <p className="text-gray-400 text-sm">Search motor fault codes with repair procedures</p>
                 </button>
                 <button
                   onClick={() => setActiveSection('maintenance')}
@@ -955,7 +955,7 @@ export default function MotorsBible() {
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
+      </div>
 
       {/* Repair Manual Modal */}
       <AnimatePresence>

@@ -1,0 +1,398 @@
+import type { RepairArticle } from '../types';
+
+export const generatorNoVoltageOutput: RepairArticle = {
+  slug: 'generator-produces-no-voltage-output',
+  hub: 'generators',
+  header: {
+    title: 'Generator Runs But Produces No Voltage — Diagnosis and Repair',
+    equipmentCategory: 'Diesel generating set — alternator and excitation system',
+    appliesTo: 'Brushless and brushed synchronous alternators fitted to Cummins, Perkins, Caterpillar, FG Wilson, SDMO and other sets. Stamford, Leroy-Somer, Marathon, Mecc Alte and equivalent generator ends.',
+    difficulty: 'advanced',
+    diagnosisComplexity: 'Systematic rather than difficult. The excitation chain has a fixed order and each link can be proved or eliminated in turn.',
+    competence: 'qualified-electrician',
+    author: 'EmersonEIMS Engineering',
+    technicalReviewer: 'Mr. Kararaho',
+    published: '2026-07-27',
+    lastReviewed: '2026-07-29',
+    electricalSystem: '240 V / 415 V 50 Hz output; excitation typically supplied from the main output or a separate PMG',
+    safetyClass: 'live-electrical',
+  },
+
+  directAnswer:
+    'The engine running proves the prime mover is fine, so the fault is somewhere in the excitation chain that turns rotation into voltage. That chain has a fixed order and every link can be proved in turn: residual magnetism starts the process, the AVR senses output and feeds the exciter field, the exciter stator induces current in the exciter rotor, the rotating rectifier converts that to DC for the main rotor field, and the main rotor field induces voltage in the stator. Start by measuring residual voltage at the terminals with the set running. If there is a small residual voltage, the machine is magnetically alive and the fault is in the AVR, its sensing, or downstream of it. If there is no residual voltage at all, the machine has lost residual magnetism and needs field flashing before anything else can be judged. Check the AVR sensing fuses before anything else — a blown sensing fuse is one of the most common causes and takes two minutes to eliminate.',
+
+  symptoms: {
+    display: [
+      'Controller showing engine running normally at rated speed with zero or near-zero output voltage',
+      'Under-voltage or loss-of-excitation protection operating shortly after the set reaches speed',
+      'Frequency correct but voltage absent, which confirms the engine and speed control are working',
+      'No alarm at all on simpler controllers, with the fault only visible on the voltmeter',
+    ],
+    indicators: [
+      'Engine running smoothly at rated speed',
+      'Voltmeter reading zero, or a small residual value of a few volts',
+      'Output breaker either not closing, or closing onto a dead bus',
+      'AVR indicator lamp where fitted showing no excitation',
+    ],
+    sounds: [
+      'Engine running normally with no unusual noise, which is expected — the fault is electrical',
+      'No change in engine note when the breaker is closed, because no load is being taken',
+      'Any growling or mechanical noise from the alternator end warrants immediate shutdown and inspection',
+    ],
+    smells: [
+      'Burnt insulation smell from the alternator end, which indicates a winding failure and means stop immediately',
+      'Hot electronics smell around the AVR',
+      'No smell at all, which is the common case and does not clear anything',
+    ],
+    behaviour: [
+      'Produced voltage previously and stopped suddenly, which points at the AVR, a fuse or a diode',
+      'Voltage builds briefly then collapses, which points at sensing loss or a shorted rotating diode',
+      'Never produced voltage since installation or since the alternator was worked on, which points at connections or configuration',
+      'Set has stood unused for a long period, which raises the likelihood of lost residual magnetism',
+      'Voltage present only at very low level and not rising with the AVR adjustment',
+    ],
+    visible: [
+      'AVR sensing fuses, which are the first thing to inspect',
+      'AVR condition — swollen components, burn marks, cracked potting',
+      'Brushes and slip rings on brushed machines, for length, spring pressure and even wear',
+      'Terminal box connections, particularly the sensing leads and the star point',
+      'Any sign of moisture ingress or vermin damage in the terminal box',
+    ],
+  },
+
+  whatItMeans: {
+    plain:
+      'The engine is turning the alternator, but the alternator is not making electricity. An alternator needs a magnetic field to generate voltage, and that field is created and controlled by the excitation system. Something in that system is not working, so the alternator spins without producing anything.',
+    technical:
+      'A synchronous alternator generates output because a rotating magnetic field cuts the stator windings. That field is produced by direct current in the main rotor winding, and the whole excitation system exists to create and regulate that current. In a self-excited brushless machine the sequence is: residual magnetism in the rotor iron induces a small voltage in the stator at speed; the AVR takes that as its supply and sensing input and drives current into the stationary exciter field; the exciter field induces three-phase current in the rotating exciter armature; the rotating rectifier assembly converts it to DC; that DC energises the main rotor field, raising output voltage until the AVR regulates it at setpoint. The process is regenerative, which is why the loss of any single link collapses the whole chain, and why a machine with no residual magnetism cannot start the process at all regardless of the health of everything downstream. On PMG-excited machines a permanent magnet generator provides AVR supply independently of residual magnetism, which changes the diagnosis: such a machine does not require field flashing, and loss of output points instead at the PMG output, the AVR or the excitation path.',
+  },
+
+  causes: {
+    mostLikely: [
+      'AVR sensing fuse blown, removing the AVR reference so it cannot regulate',
+      'Loss of residual magnetism after long standing or after the machine was run without excitation',
+      'AVR failed — a very common single-component failure on generating sets',
+      'Sensing wiring disconnected or damaged in the terminal box, often after other work',
+    ],
+    possible: [
+      'Rotating rectifier diode failed open or short, breaking the field supply to the main rotor',
+      'Brushes worn out or sticking on brushed machines, or slip rings glazed',
+      'Exciter field winding open circuit',
+      'AVR excitation output present but the excitation circuit open somewhere between AVR and exciter field',
+    ],
+    lessCommon: [
+      'Main stator winding fault, which would usually also show as low insulation resistance',
+      'Main rotor winding open circuit',
+      'PMG failed on machines that use one for AVR supply',
+      'Surge suppressor across the exciter field failed short, diverting excitation current',
+    ],
+    modelSpecific: [
+      'Whether the machine is self-excited or PMG-excited changes the diagnosis fundamentally — a PMG machine does not lose residual magnetism in the same way and must not be field flashed as a first step',
+      'AVR sensing configuration differs between single-phase and three-phase sensing and between voltage ranges; a link or selector set for the wrong configuration produces no output or wrong output',
+      'The field flashing method and the permitted voltage and duration are specific to the machine and must be taken from its documentation',
+      'Rotating diode arrangements and their test methods vary between manufacturers',
+    ],
+    environmental: [
+      'Long standing without running, allowing residual magnetism to decay',
+      'Moisture ingress into the terminal box or windings, particularly on coastal sites',
+      'Vermin damage to sensing wiring in outdoor or rural installations',
+      'High operating temperature accelerating AVR component ageing',
+    ],
+    installation: [
+      'Sensing leads connected to the wrong terminals or to the wrong phase after a rebuild',
+      'AVR configured for a different voltage or frequency than the machine is being run at',
+      'Star point or neutral link omitted, so sensing has no reference',
+      'Excitation wiring reversed after maintenance',
+    ],
+    maintenance: [
+      'Brushes never inspected on brushed machines',
+      'Terminal box never opened for inspection, so a loose sensing connection goes unnoticed',
+      'Insulation resistance never tested, so a deteriorating winding is never seen coming',
+      'AVR settings adjusted without record, leaving no known-good baseline',
+    ],
+    componentLevel: [
+      'AVR internal failure',
+      'One or more rotating rectifier diodes failed',
+      'Surge suppressor across the exciter field failed',
+      'Exciter or main field winding failure',
+    ],
+  },
+
+  safety: {
+    isolation: [
+      'Treat the generator output terminals as lethal at all times — a generator can produce full output the moment excitation is restored',
+      'Isolate and lock off the output breaker before working in the terminal box',
+      'Prove dead at the point of work, and remember a generator can be back-energised from the load side or from a parallel source',
+      'Prevent the set from starting automatically while the terminal box is open',
+    ],
+    lockoutTagout: [
+      'Lock off the output breaker and the engine start circuit, and tag both',
+      'Where the set can be paralleled or is behind a transfer switch, prove dead on every source',
+      'Keep the only key with the person doing the work',
+    ],
+    ppe: [
+      'Arc-rated clothing and face protection appropriate to the prospective fault energy where live work is unavoidable',
+      'Insulated tools rated for the system voltage',
+      'Eye protection when working in the terminal box',
+      'Remove watches, rings and metal bracelets',
+    ],
+    storedEnergy: [
+      'The exciter field is an inductive circuit and stores energy — it can produce a substantial voltage spike when interrupted',
+      'Capacitors within the AVR may retain charge; allow the manufacturer\'s discharge period before handling',
+      'Any parallel or bus-connected source can back-feed the machine',
+    ],
+    specificHazards: [
+      'Some tests on this fault require the set to be running, which means live terminals and a rotating machine at the same time. Plan each measurement before starting the engine, and never improvise at the terminals with the set running.',
+      'NEVER open-circuit a current transformer secondary while primary current flows — dangerous voltages appear across the open terminals. Short the secondary before disconnecting.',
+      'Field flashing applies a voltage to the excitation circuit and must follow the machine\'s documented method; the wrong polarity or an excessive voltage damages the rotating rectifier',
+      'Rotating rectifiers cannot be inspected while the machine turns — never attempt it',
+    ],
+    stopAndCallProfessional: [
+      'You cannot safely make measurements at live generator terminals with the appropriate instruments and PPE',
+      'There is a burnt insulation smell or visible damage at the alternator end',
+      'Insulation resistance testing indicates a winding fault',
+      'The machine requires field flashing and you do not have the documented method for it',
+      'The work requires removing the rotating rectifier assembly or the rotor',
+    ],
+  },
+
+  tools: [
+    { tool: 'True-RMS digital multimeter rated for the system voltage', why: 'Residual voltage, sensing voltage, excitation output and winding resistance' },
+    { tool: 'Insulation resistance tester', why: 'Stator, rotor and exciter winding insulation to earth — the test that separates an electrical fault from a component fault' },
+    { tool: 'Low-resistance ohmmeter or micro-ohmmeter', why: 'Field and stator winding resistance, where small differences matter' },
+    { tool: 'Diode test capability on the multimeter', why: 'Rotating rectifier diode testing once the assembly is accessible' },
+    { tool: 'Field flashing equipment per the machine documentation', why: 'Restoring residual magnetism where it has been lost' },
+    { tool: 'Power quality meter or clamp-on voltmeter', why: 'Verifying output across all phases once voltage is restored' },
+    { tool: 'Inspection light and mirror', why: 'Terminal box, brush gear and slip ring inspection' },
+    { tool: 'Appropriate arc-rated PPE and insulated tools', why: 'Any measurement taken at live generator terminals' },
+  ],
+
+  decisionTree: [
+    { question: 'Is the engine running at rated speed with correct frequency indication?', yes: 'The prime mover and governing are fine — the fault is electrical', no: 'Resolve the speed problem first; excitation cannot be judged at the wrong speed' },
+    { question: 'Are the AVR sensing fuses intact?', yes: 'Continue', no: 'Replace them and establish why they blew before re-running' },
+    { question: 'Is there a small residual voltage at the terminals with the set running?', yes: 'The machine is magnetically alive — the fault is the AVR, its sensing, or the excitation path', no: 'Residual magnetism has been lost, or the machine is PMG-excited and the PMG has failed' },
+    { question: 'Is the machine self-excited or PMG-excited?', yes: 'Self-excited — field flashing is appropriate where residual is absent', no: 'PMG-excited — do not field flash; check PMG output instead' },
+    { question: 'Does output build after a correctly performed field flash?', yes: 'Residual loss was the cause; investigate why it was lost', no: 'Continue down the excitation chain' },
+    { question: 'Is AVR sensing voltage present at the AVR terminals?', yes: 'Continue to excitation output', no: 'Trace the sensing circuit — fuses, wiring, links and configuration' },
+    { question: 'Is the AVR producing an excitation output when sensing is present?', yes: 'The AVR is working — the fault is downstream in the excitation path', no: 'Suspect the AVR itself, once sensing and supply are proven' },
+    { question: 'Are the exciter field and main field windings continuous and within resistance specification?', yes: 'Test the rotating rectifier', no: 'Winding fault — refer for rewind assessment' },
+    { question: 'Do all rotating rectifier diodes test healthy?', yes: 'Re-assess the AVR and its configuration', no: 'Replace the failed diodes and establish what caused the failure' },
+  ],
+
+  diagnosis: [
+    {
+      step: 1,
+      title: 'Confirm speed and frequency before judging anything electrical',
+      inspect: 'Engine speed and indicated frequency with the set running unloaded',
+      where: 'Controller display, verified with an independent instrument',
+      instrument: 'Tachometer or power quality meter',
+      expected: 'Rated speed and nominal frequency, steady',
+      ifAbnormal: 'Excitation behaviour cannot be judged at the wrong speed. Correct the speed problem first.',
+      next: 'Step 2',
+      warning: 'Keep clear of the fan, belts and coupling while the set runs.',
+    },
+    {
+      step: 2,
+      title: 'Check the AVR sensing fuses — two minutes that often ends the job',
+      inspect: 'Sensing fuses, and any control fuse feeding the AVR',
+      where: 'Fuse holders in the terminal box or AVR enclosure, with the set stopped and isolated',
+      instrument: 'Multimeter on continuity',
+      expected: 'All fuses continuous',
+      ifAbnormal: 'A blown sensing fuse removes the AVR reference and produces exactly this fault. Replace it, but establish why it blew before running again.',
+      next: 'Step 3',
+      warning: 'Isolate and prove dead before opening the terminal box.',
+    },
+    {
+      step: 3,
+      title: 'Measure residual voltage with the set running',
+      inspect: 'Output voltage at the terminals with no excitation applied by the AVR',
+      where: 'Generator output terminals',
+      instrument: 'True-RMS multimeter rated for the system, with appropriate PPE',
+      expected: 'A small residual voltage on a self-excited machine that has retained magnetism',
+      ifAbnormal: 'Zero residual on a self-excited machine means the magnetic starting point is gone and nothing downstream can be judged until it is restored.',
+      next: 'Step 4',
+      warning: 'These are live generator terminals. Plan the measurement before starting the set and use rated instruments and PPE.',
+      verify: 'The expected residual voltage for the specific machine, and whether it is self-excited or PMG-excited — this determines the entire next step.',
+    },
+    {
+      step: 4,
+      title: 'Establish the excitation architecture before acting',
+      inspect: 'Whether the machine is self-excited or fitted with a PMG',
+      where: 'Machine nameplate and documentation, and physical inspection of the non-drive end',
+      instrument: 'Documentation and visual inspection',
+      expected: 'A definite answer, not an assumption',
+      ifAbnormal: 'Field flashing a PMG machine as a first step is wrong and can damage components. On a PMG machine, measure the PMG output instead.',
+      next: 'Step 5 for self-excited with no residual; Step 6 otherwise',
+      verify: 'The excitation architecture and the documented field flashing method, voltage and duration for this specific machine.',
+    },
+    {
+      step: 5,
+      title: 'Restore residual magnetism by the documented method',
+      inspect: 'Output response during and after a correctly performed field flash',
+      where: 'Excitation circuit per the machine documentation',
+      instrument: 'Field flashing equipment specified for the machine',
+      expected: 'Output builds and holds at setpoint after flashing',
+      ifAbnormal: 'If output builds and then collapses, sensing is being lost. If it does not build at all, the fault is further down the chain.',
+      next: 'Step 6',
+      warning: 'Wrong polarity or excessive voltage during field flashing damages the rotating rectifier. Follow the documented method exactly.',
+      verify: 'Flashing voltage, polarity, duration and connection points for this machine.',
+    },
+    {
+      step: 6,
+      title: 'Verify AVR supply and sensing at the AVR itself',
+      inspect: 'Supply and sensing voltages present at the AVR terminals with the set running',
+      where: 'AVR terminals',
+      instrument: 'True-RMS multimeter with appropriate PPE',
+      expected: 'Sensing voltage present and consistent with the machine output',
+      ifAbnormal: 'No sensing at the AVR while voltage is present at the terminals means the sensing circuit is broken between the two — fuses, wiring, links or configuration.',
+      next: 'Step 7',
+      verify: 'Sensing configuration for this machine — single- or three-phase sensing, voltage range, and any selector links.',
+    },
+    {
+      step: 7,
+      title: 'Check whether the AVR is producing an excitation output',
+      inspect: 'Excitation output at the AVR field terminals with the set running',
+      where: 'AVR field output terminals',
+      instrument: 'Multimeter on DC, with appropriate PPE',
+      expected: 'An excitation output present when sensing indicates output below setpoint',
+      ifAbnormal: 'No output with valid sensing and supply points at the AVR. Output present with no resulting machine voltage points downstream.',
+      next: 'Step 8',
+      warning: 'The exciter field is inductive and stores energy. Do not break the circuit while excitation is applied.',
+    },
+    {
+      step: 8,
+      title: 'Test the excitation path and windings with the set stopped',
+      inspect: 'Exciter field and main field winding continuity and resistance, and insulation to earth',
+      where: 'At the winding terminations, machine isolated and stopped',
+      instrument: 'Low-resistance ohmmeter and insulation resistance tester',
+      expected: 'Windings continuous, resistance within specification, insulation resistance above the acceptable minimum',
+      ifAbnormal: 'An open winding or low insulation resistance is a rewind decision rather than a component swap.',
+      next: 'Step 9',
+      warning: 'Insulation testing applies high voltage — isolate, warn others and discharge the winding afterwards.',
+      verify: 'Winding resistance values and the minimum acceptable insulation resistance for this machine and its voltage class.',
+    },
+    {
+      step: 9,
+      title: 'Test the rotating rectifier assembly',
+      inspect: 'Each diode in the rotating rectifier, and the surge suppressor across the field',
+      where: 'At the rectifier assembly on the rotor, machine stopped and secured against rotation',
+      instrument: 'Multimeter on diode range',
+      expected: 'Each diode conducting in one direction only; suppressor not short circuit',
+      ifAbnormal: 'An open diode reduces excitation capability; a shorted diode or a failed suppressor diverts excitation current and collapses output. Both produce this fault.',
+      next: 'Step 10',
+      warning: 'Never attempt to inspect or test a rotating rectifier while the machine turns. Secure the rotor against rotation.',
+      verify: 'The rectifier configuration and the manufacturer\'s test method for this machine.',
+    },
+    {
+      step: 10,
+      title: 'On brushed machines, inspect brush gear and slip rings',
+      inspect: 'Brush length, spring pressure, seating and slip ring surface condition',
+      where: 'Brush gear at the non-drive end',
+      instrument: 'Inspection light and measurement of brush length',
+      expected: 'Adequate brush length, even wear, correct spring pressure, clean and evenly worn rings',
+      ifAbnormal: 'Worn or sticking brushes interrupt field current and produce this fault or an unstable output.',
+      next: 'Restore excitation and validate',
+    },
+  ],
+
+  repair: [
+    {
+      level: 'cleaning-and-connections',
+      title: 'Fuses and connections',
+      steps: [
+        'Replace blown sensing fuses with the correct rating, and establish why they blew',
+        'Re-make loose or corroded sensing and excitation connections in the terminal box',
+        'Restore the neutral or star point connection where sensing has no reference',
+        'Seal the terminal box against moisture and vermin ingress',
+      ],
+      note: 'This group is where a surprising proportion of no-voltage faults are actually resolved.',
+    },
+    {
+      level: 'configuration',
+      title: 'AVR configuration',
+      steps: [
+        'Verify sensing configuration matches the machine voltage and phase arrangement',
+        'Confirm frequency and voltage selection links are set for the machine as operated',
+        'Record all settings before adjusting anything, so there is a known-good baseline',
+      ],
+    },
+    {
+      level: 'component-replacement',
+      title: 'Excitation components',
+      steps: [
+        'Field flash by the documented method where residual magnetism has been lost',
+        'Replace failed rotating rectifier diodes as a set rather than individually',
+        'Replace a failed surge suppressor across the exciter field',
+        'Replace worn brushes and service slip rings on brushed machines',
+        'Replace the AVR once sensing, supply, excitation path and rectifier are proven sound',
+      ],
+      note: 'Replacing the AVR first is a common and expensive guess. Prove sensing and the excitation path before ordering one.',
+    },
+    {
+      level: 'manufacturer-level',
+      title: 'Windings',
+      steps: [
+        'Refer open or low-insulation windings for professional rewind assessment',
+        'Record insulation resistance and polarisation index results, which inform whether the machine can be dried or must be rewound',
+      ],
+    },
+  ],
+
+  validation: [
+    'Confirm output voltage builds smoothly to setpoint on starting, without overshoot or hunting',
+    'Measure voltage on all three phases and confirm balance within acceptable limits',
+    'Confirm frequency is correct and stable alongside the voltage',
+    'Apply load in steps and confirm voltage regulation holds at each step',
+    'Check voltage recovery after a load step, which is where a marginal AVR or excitation fault reappears',
+    'Re-test insulation resistance and record it as a new baseline where windings were tested',
+    'Thermal-check the AVR and excitation connections after a period at load',
+    'Record residual voltage, winding resistances and insulation values for the next engineer',
+  ],
+
+  whenNotToRepair: [
+    'Main stator or rotor winding failure on an older machine where rewind cost approaches replacement',
+    'Repeated rotating rectifier failure where the underlying cause has not been found — the diodes are a symptom',
+    'Insulation resistance that will not recover after drying, indicating genuine breakdown rather than moisture',
+    'Machines where the AVR and excitation components are obsolete and unobtainable',
+    'Physical damage to the rotor or evidence of overheating in the windings',
+  ],
+
+  prevention: [
+    'Exercise standby sets monthly under load, which maintains residual magnetism and reveals excitation faults during a test rather than an outage',
+    'Inspect and record AVR sensing fuse condition at every service',
+    'Test and trend insulation resistance annually, so deterioration is visible before failure',
+    'Inspect brush gear on interval for brushed machines',
+    'Keep the terminal box sealed against moisture and vermin',
+    'Record AVR settings at commissioning so any later change is detectable',
+    'Investigate the cause whenever a rotating diode fails, rather than only replacing it',
+  ],
+
+  relatedSlugs: ['generator-avr-fault-diagnosis', 'generator-starts-then-stops', 'generator-unstable-voltage'],
+
+  faq: [
+    {
+      q: 'Should I just replace the AVR? It is usually the AVR, isn\'t it?',
+      a: 'It often is, but replacing it first is an expensive guess that frequently does not fix the fault. A blown sensing fuse, a disconnected sensing lead or lost residual magnetism all produce identical symptoms and cost nothing to eliminate. Prove sensing and supply are reaching the AVR before you order one.',
+    },
+    {
+      q: 'What is field flashing and can it damage anything?',
+      a: 'It applies a brief DC voltage to the excitation circuit to restore the small amount of residual magnetism the machine needs to start generating. Done by the documented method it is routine. Done with the wrong polarity or an excessive voltage it damages the rotating rectifier, so follow the machine documentation rather than improvising.',
+    },
+    {
+      q: 'The voltage builds and then collapses. What does that pattern mean?',
+      a: 'It means excitation started but could not be sustained. The two usual explanations are that sensing is being lost once voltage rises, or that a shorted rotating diode or failed surge suppressor is diverting excitation current. Both are diagnosable and both are far cheaper than a rewind.',
+    },
+    {
+      q: 'Can I test the rotating diodes without stripping the machine?',
+      a: 'Access varies by design, and on many machines the assembly is reachable at the non-drive end without a full strip. What you must never do is attempt any inspection while the machine is turning. Secure the rotor against rotation first.',
+    },
+  ],
+
+  references: [
+    'IEC 60034-1 — rotating electrical machines, rating and performance',
+    'IEC 60034-16 — excitation systems for synchronous machines',
+    'IEEE 43 — recommended practice for testing insulation resistance of rotating machinery',
+    'ISO 8528 — reciprocating internal combustion engine driven AC generating sets',
+    'The alternator and AVR manufacturer\'s documentation for the specific machine, which gives the excitation architecture, winding resistances, sensing configuration and the field flashing method',
+  ],
+};

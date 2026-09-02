@@ -156,7 +156,7 @@ export default function AuthenticityClient() {
               >
                 <div className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-80">{b.category}</div>
                 <div className="mt-0.5 text-sm font-semibold tracking-tight">{b.brand}</div>
-                <div className="mt-1 text-[11px] opacity-90">Verification risk: {b.verificationRiskPct} % (sample)</div>
+                <div className="mt-1 text-xs opacity-90">Verification risk: {b.verificationRiskPct} % (sample)</div>
               </button>
             );
           })}
@@ -191,7 +191,7 @@ export default function AuthenticityClient() {
                           onClick={() =>
                             setSteps((prev) => prev.map((x, j) => (j === i ? { ...x, state: opt } : x)))
                           }
-                          className="rounded-md border px-2 py-1 text-[11px] font-semibold uppercase tracking-wider"
+                          className="rounded-md border px-2 py-1 text-xs font-semibold uppercase tracking-wider"
                           style={{
                             borderColor: s.state === opt ? statusPalette(opt === 'pass' ? 'success' : opt === 'fail' ? 'danger' : 'info').solid : 'var(--color-border-subtle)',
                             background: s.state === opt ? statusPalette(opt === 'pass' ? 'success' : opt === 'fail' ? 'danger' : 'info').solid : 'transparent',
@@ -203,7 +203,7 @@ export default function AuthenticityClient() {
                       ))}
                     </div>
                   </div>
-                  <div className="mt-1 text-[11px] text-ink-muted">Weight: {s.weight}</div>
+                  <div className="mt-1 text-xs text-ink-muted">Weight: {s.weight}</div>
                 </li>
               );
             })}

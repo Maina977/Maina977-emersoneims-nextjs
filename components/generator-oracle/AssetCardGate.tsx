@@ -185,7 +185,7 @@ export default function AssetCardGate({ children, feature }: AssetCardGateProps)
           >
             Continue to {feature}
           </button>
-          <p className="text-[11px] text-slate-500 text-center">
+          <p className="text-xs text-slate-500 text-center">
             Stored on this device only (localStorage). Cleared via Edit.
           </p>
         </form>

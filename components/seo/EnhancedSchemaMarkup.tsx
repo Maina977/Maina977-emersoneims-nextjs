@@ -250,7 +250,7 @@ export function LocalBusinessWithAreasSchema() {
     url: 'https://www.emersoneims.com',
     logo: 'https://www.emersoneims.com/images/logo-tagline.png',
     image: 'https://www.emersoneims.com/og-image.jpg',
-    description: 'Kenya\'s #1 Generator & Solar Company. 3-Year Warranty. 9 Services across 47 Counties.',
+    description: 'Kenya\'s Generator & Solar Company. 2-Year Warranty. 9 Services across 47 Counties.',
     telephone: '+254768860665',
     email: 'info@emersoneims.com',
     address: {
@@ -258,7 +258,12 @@ export function LocalBusinessWithAreasSchema() {
       streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: 'Nairobi',
       addressRegion: 'Nairobi County',
-      postalCode: '00100',
+      // 00521, confirmed by the owner 2026-08-04. This was 00100 — the general
+      // Nairobi GPO code, not the Embakasi premises. Three different postal
+      // codes were live across the site's schema (00519, 00521, 00100); Google
+      // matches the address across site, Business Profile and directories, so
+      // the disagreement was weakening all of them.
+      postalCode: '00521',
       addressCountry: 'KE'
     },
     geo: {
@@ -282,31 +287,29 @@ export function LocalBusinessWithAreasSchema() {
         }
       }))
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: 4.8,
-      reviewCount: 347,
-      bestRating: 5
-    },
+    // Fabricated aggregateRating removed 2026-08-29: no review corpus
+    // exists on this site, so a hardcoded 4.8/347 and 4.9/1247 were invented.
+    // Review markup unbacked by reviews visible on the page breaches Google's
+    // structured-data policy and risks a site-wide manual action. The
+    // conditional block at the top of this file is KEPT — it only emits a
+    // rating when one is passed in, which is the correct shape for real data.
     priceRange: 'KES 50,000 - KES 50,000,000',
     openingHoursSpecification: [
       {
         '@type': 'OpeningHoursSpecification',
         dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
         opens: '08:00',
-        closes: '18:00'
+        closes: '17:00'
       },
       {
         '@type': 'OpeningHoursSpecification',
         dayOfWeek: 'Saturday',
-        opens: '09:00',
-        closes: '16:00'
+        opens: '08:00',
+        closes: '17:00'
       }
     ],
     sameAs: [
-      'https://www.facebook.com/EmersonEIMS',
-      'https://twitter.com/EmersonEIMS',
-      'https://www.linkedin.com/company/emersoneims',
+      'https://x.com/eimsemerson',
       'https://www.youtube.com/@EmersonEIMS'
     ]
   };
@@ -329,25 +332,25 @@ export function DiagnosticToolSchema() {
     name: 'Generator Oracle',
     applicationCategory: 'UtilitiesApplication',
     operatingSystem: 'Web Browser',
-    description: 'Advanced generator diagnostic tool with 50,000+ fault codes, AI-powered troubleshooting, and ECM programming capabilities. The most comprehensive generator diagnostic platform in Africa.',
+    description: 'Advanced generator diagnostic tool with manufacturer-curated fault codes, AI-powered troubleshooting, and ECM programming capabilities. The most comprehensive generator diagnostic platform in Africa.',
     offers: {
       '@type': 'Offer',
       price: '0',
       priceCurrency: 'KES',
       description: 'Free diagnostic tool for generator technicians'
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: 4.9,
-      reviewCount: 1247,
-      bestRating: 5
-    },
+    // Fabricated aggregateRating removed 2026-08-29: no review corpus
+    // exists on this site, so a hardcoded 4.8/347 and 4.9/1247 were invented.
+    // Review markup unbacked by reviews visible on the page breaches Google's
+    // structured-data policy and risks a site-wide manual action. The
+    // conditional block at the top of this file is KEPT — it only emits a
+    // rating when one is passed in, which is the correct shape for real data.
     author: {
       '@type': 'Organization',
       name: 'EmersonEIMS'
     },
     featureList: [
-      '50,000+ fault codes from 17+ manufacturers',
+      'Manufacturer-curated fault codes across major controller brands',
       'AI-powered diagnostic assistant',
       'ECM programming guides',
       'Real-time monitoring simulation',
@@ -397,11 +400,11 @@ export function FAQSchemaGenerator({
 export const GENERATOR_FAQS = [
   {
     question: 'How much does a generator cost in Kenya?',
-    answer: 'Generator prices in Kenya range from KES 150,000 for a 10kVA generator to KES 50,000,000+ for large industrial generators (2000kVA). EmersonEIMS offers competitive pricing with 3-year warranty on all generators.'
+    answer: 'Generator prices in Kenya range from KES 150,000 for a 10kVA generator to KES 50,000,000+ for large industrial generators (2000kVA). EmersonEIMS offers competitive pricing with 2-year warranty on all generators.'
   },
   {
     question: 'Which generator brand is best in Kenya?',
-    answer: 'The best generator brands in Kenya are Cummins, Perkins, FG Wilson, and Caterpillar. EmersonEIMS is an authorized dealer for all these brands, offering genuine products with full warranty.'
+    answer: 'The best generator brands in Kenya are Cummins, Perkins, FG Wilson, and Caterpillar. EmersonEIMS sells and services all these brands, supplying genuine parts.'
   },
   {
     question: 'How often should I service my generator?',

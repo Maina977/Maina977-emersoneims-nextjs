@@ -175,14 +175,24 @@ export default function ServiceDetailClient({
                   ))}
                 </div>
 
-                {/* Primary CTAs — kept tight: one quote action + one phone */}
+                {/*
+                  Primary CTAs — kept tight: one quote action + one phone.
+
+                  The quote button points at #quote ON THIS PAGE, not /contact.
+                  It used to send the buyer away to a generic form that had no
+                  idea which service they had just spent five minutes reading,
+                  so they arrived at a blank box and had to explain themselves
+                  from scratch. The form half a page below already knows the
+                  service, and a measurement of the live page found ZERO links
+                  anywhere pointing to it — it existed and nothing led there.
+                */}
                 <div className="flex flex-wrap gap-3">
-                  <Link
-                    href="/contact"
+                  <a
+                    href="#quote"
                     className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
                   >
                     {service.primaryCTA}
-                  </Link>
+                  </a>
                   <a
                     href={`tel:${contact.phoneIntl}`}
                     className="px-6 py-3 border border-slate-600 text-white font-semibold rounded-lg hover:border-cyan-500 hover:bg-cyan-500/10 transition-all flex items-center gap-2"
@@ -235,6 +245,27 @@ export default function ServiceDetailClient({
 
               {/* Contact Options */}
               <div className="space-y-3 mb-6">
+                {/*
+                  A panel headed "Get a FREE Quote" previously offered a phone
+                  number, WhatsApp and an email address — and no way to actually
+                  request a quote. This panel is lg:sticky, so it rides down the
+                  entire page with the reader: it is the most valuable position
+                  on the layout, and it was the one place NOT pointing at the
+                  form. Written quote first, because that is what the heading
+                  promises; the three conversation routes stay underneath for
+                  buyers who would rather talk.
+                */}
+                <a
+                  href="#quote"
+                  className="flex items-center gap-4 p-4 bg-gradient-to-r from-amber-500/20 to-amber-600/10 border border-amber-500/40 rounded-xl hover:from-amber-500/30 hover:to-amber-600/20 transition-all"
+                >
+                  <span className="text-2xl" aria-hidden="true">&#128221;</span>
+                  <div>
+                    <div className="font-semibold text-white">Request a written quote</div>
+                    <div className="text-amber-300">Same working day reply</div>
+                  </div>
+                </a>
+
                 <a
                   href={`tel:${contact.phoneIntl}`}
                   className="flex items-center gap-4 p-4 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-all"
@@ -789,7 +820,7 @@ export default function ServiceDetailClient({
                     </span>
                     <span className="text-slate-100 text-sm font-semibold leading-snug">{feature}</span>
                   </div>
-                  <div className="text-[11px] uppercase tracking-wider text-cyan-400 font-bold flex items-center gap-1 mt-auto">
+                  <div className="text-xs uppercase tracking-wider text-cyan-400 font-bold flex items-center gap-1 mt-auto">
                     {sectionLabel} <span className="transition-transform group-hover:translate-x-1">→</span>
                   </div>
                 </a>
@@ -827,7 +858,7 @@ export default function ServiceDetailClient({
                   {useCase && (
                     <p className="text-slate-400 text-xs leading-relaxed flex-1">Typical project: {useCase}</p>
                   )}
-                  <div className="mt-4 text-[11px] uppercase tracking-wider text-emerald-400 font-bold flex items-center gap-1">
+                  <div className="mt-4 text-xs uppercase tracking-wider text-emerald-400 font-bold flex items-center gap-1">
                     💬 WhatsApp us <span className="transition-transform group-hover:translate-x-1">→</span>
                   </div>
                 </a>

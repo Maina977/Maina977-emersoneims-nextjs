@@ -4,7 +4,7 @@ import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
 
 export const metadata: Metadata = {
-  title: 'Generator Services Across Kenya | All 47 Counties | Emerson EiMS',
+  title: 'Generator Services Across Kenya',
   description: 'Professional generator installation, repair, maintenance, and rental services across all 47 counties in Kenya. Find generator companies, diesel generators, spare parts, and 24/7 emergency support in your area. Call +254768860665',
   keywords: [
     'generator services kenya',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     ...KENYA_LOCATIONS.map(c => `generator repair ${c.name}`),
   ].join(', '),
   openGraph: {
-    title: 'Generator Services Across All 47 Kenya Counties | Emerson EiMS',
+    title: 'Generator Services Across All 47 Kenya Counties',
     description: 'Find professional generator services in your county. Installation, repair, maintenance, rentals across Kenya.',
     type: 'website',
     locale: 'en_KE',
@@ -58,7 +58,13 @@ export default function KenyaPage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Organization',
-            name: 'Emerson EiMS Kenya',
+            /* Same @id as the LocalBusiness node in app/layout.tsx, so the two
+               resolve to ONE company in the graph instead of two unlinked ones.
+               The name is aligned for the same reason — this node called itself
+               "Emerson EiMS Kenya" while the site-wide node said "EmersonEIMS",
+               and nothing connected them. */
+            '@id': 'https://www.emersoneims.com/#organization',
+            name: 'EmersonEIMS',
             description: 'Generator services across all 47 counties in Kenya',
             url: 'https://www.emersoneims.com/kenya',
             areaServed: KENYA_LOCATIONS.map(county => ({
@@ -177,7 +183,9 @@ export default function KenyaPage() {
               { county: 'kiambu', service: 'generators', label: 'Generators in Kiambu' },
               { county: 'machakos', service: 'diesel-generators', label: 'Diesel Generators in Machakos' },
               { county: 'kajiado', service: 'generator-spare-parts', label: 'Generator Parts in Kajiado' },
-              { county: 'kilifi', service: 'generator-not-starting', label: 'Generator Troubleshooting in Kilifi' },
+              // 'generator-not-starting' is a Repair Centre fault topic, not a
+              // /kenya service slug — this link 404'd on the live site.
+              { county: 'kilifi', service: 'generator-repairs', label: 'Generator Repairs in Kilifi' },
               { county: 'uasin-gishu', service: 'solar-installation', label: 'Solar Installation in Eldoret' },
             ].map((item) => (
               <Link
@@ -249,7 +257,7 @@ export default function KenyaPage() {
               Request a Quote
             </Link>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-green-600 text-white px-8 py-4 rounded-full font-bold hover:bg-green-500 transition-colors"

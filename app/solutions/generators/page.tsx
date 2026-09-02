@@ -656,7 +656,7 @@ export default function GeneratorsSolutionHub() {
   const [expandedRepair, setExpandedRepair] = useState<string | null>(null);
 
   return (
-    <main className="bg-black min-h-screen">
+    <div className="bg-black min-h-screen">
       <B2BCommercialBand profile={B2B_PROFILES.solutionsGenerators} />
       {/* CINEMATIC HERO SECTION - Hollywood Color Graded */}
       <section className="relative h-[70vh] md:h-[80vh] overflow-hidden">
@@ -1252,6 +1252,6 @@ export default function GeneratorsSolutionHub() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

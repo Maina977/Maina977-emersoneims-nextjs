@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Grid Reliability Across Africa: Hidden Cost of Downtime | EmersonEIMS Blog',
+  title: 'Grid Reliability Across Africa: Hidden Cost of Downtime',
   description: 'Industry data on grid reliability challenges across Africa. How backup power prevents costly outages. Real statistics, real solutions.',
   alternates: {
     canonical: 'https://www.emersoneims.com/blog/grid-reliability-africa',

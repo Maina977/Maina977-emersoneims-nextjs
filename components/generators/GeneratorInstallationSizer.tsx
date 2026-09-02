@@ -114,7 +114,7 @@ export default function GeneratorInstallationSizer() {
   const Row = ({ label, value, hint }: { label: string; value: string; hint?: string }) => (
     <div className="flex items-baseline justify-between gap-4 py-2.5 border-b border-white/8">
       <span className="text-sm text-white/60">{label}</span>
-      <span className="text-right"><span className="font-semibold text-green-300">{value}</span>{hint && <span className="block text-[11px] text-white/40">{hint}</span>}</span>
+      <span className="text-right"><span className="font-semibold text-green-300">{value}</span>{hint && <span className="block text-xs text-white/40">{hint}</span>}</span>
     </div>
   );
 
@@ -195,7 +195,7 @@ export default function GeneratorInstallationSizer() {
             >
               Send this sizing for a quote on WhatsApp →
             </a>
-            <p className="mt-3 text-[11px] text-white/40 text-center">Indicative to IEC practice — final design confirmed on site by our engineers.</p>
+            <p className="mt-3 text-xs text-white/40 text-center">Indicative to IEC practice — final design confirmed on site by our engineers.</p>
           </div>
         </div>
       </div>

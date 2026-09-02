@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/blog/generator-wont-start-5-fixes' },
   title: 'Why Your Generator Won\'t Start: 5 Common Causes & Quick Fixes',
   description: 'Generator won\'t start? Troubleshooting guide. Battery, fuel, fuel solenoid, starter, compression issues. When to call a technician.',
 };
 
 export default function GeneratorWontStartBlogPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <article className="max-w-3xl mx-auto px-4 py-20">
         <header className="mb-12">
           <div className="mb-4">
@@ -222,6 +226,6 @@ export default function GeneratorWontStartBlogPage() {
           </p>
         </div>
       </article>
-    </main>
+    </div>
   );
 }

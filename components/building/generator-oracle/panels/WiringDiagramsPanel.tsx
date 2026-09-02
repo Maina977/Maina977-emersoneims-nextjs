@@ -393,176 +393,30 @@ interface PinConfig {
   current?: string;
 }
 
-const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
-  'dse-7320': [
-    // Power Supply
-    { pin: '1', name: 'B+', function: 'Battery Positive Input', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-35V DC', current: '2A max' },
-    { pin: '2', name: 'B-', function: 'Battery Negative/Ground', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: '3', name: 'CHASSIS', function: 'Chassis Ground', wireColor: 'Green/Yellow', wireGauge: '2.5mm²', circuit: 'power' },
-    // Starting Circuit
-    { pin: '4', name: 'START', function: 'Crank/Start Output', wireColor: 'Purple', wireGauge: '1.5mm²', circuit: 'starting', voltage: 'B+', current: '3A max' },
-    { pin: '5', name: 'START-RET', function: 'Start Return', wireColor: 'Purple/White', wireGauge: '1.5mm²', circuit: 'starting' },
-    // Fuel System
-    { pin: '6', name: 'FUEL', function: 'Fuel Solenoid Output', wireColor: 'Orange', wireGauge: '1.5mm²', circuit: 'fuel', voltage: 'B+', current: '5A max' },
-    { pin: '7', name: 'FUEL-RET', function: 'Fuel Return', wireColor: 'Orange/White', wireGauge: '1.5mm²', circuit: 'fuel' },
-    // Stop Circuit
-    { pin: '8', name: 'STOP', function: 'Stop Solenoid Output', wireColor: 'Pink', wireGauge: '1.5mm²', circuit: 'protection', voltage: 'B+', current: '3A max' },
-    // Glow Plug
-    { pin: '9', name: 'PRE-HEAT', function: 'Glow Plug Relay Output', wireColor: 'Orange/Black', wireGauge: '1.5mm²', circuit: 'starting', current: '3A max' },
-    // Sensing Inputs
-    { pin: '10', name: 'OIL-P', function: 'Oil Pressure Sender (VDO/Datcon)', wireColor: 'Yellow', wireGauge: '0.75mm²', circuit: 'sensing', voltage: '0-5V' },
-    { pin: '11', name: 'OIL-GND', function: 'Oil Pressure Ground', wireColor: 'Yellow/Black', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '12', name: 'TEMP', function: 'Coolant Temp Sender (NTC/PT100)', wireColor: 'Brown', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '13', name: 'TEMP-GND', function: 'Coolant Temp Ground', wireColor: 'Brown/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '14', name: 'FUEL-LVL', function: 'Fuel Level Sender (Resistive)', wireColor: 'Green', wireGauge: '0.75mm²', circuit: 'sensing', voltage: '0-90Ω / 0-180Ω' },
-    { pin: '15', name: 'FUEL-GND', function: 'Fuel Level Ground', wireColor: 'Green/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    // Speed Sensing
-    { pin: '16', name: 'MPU+', function: 'Magnetic Pickup Positive', wireColor: 'Cyan', wireGauge: '0.75mm²', circuit: 'sensing', voltage: '0.5-70V AC' },
-    { pin: '17', name: 'MPU-', function: 'Magnetic Pickup Negative', wireColor: 'Cyan/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '18', name: 'MPU-SH', function: 'MPU Shield/Screen', wireColor: 'Gray', wireGauge: '0.5mm²', circuit: 'sensing' },
-    // Generator Voltage Sensing
-    { pin: '19', name: 'GEN-L1', function: 'Generator Voltage L1 (Phase A)', wireColor: 'Red', wireGauge: '1.0mm²', circuit: 'generator', voltage: '0-300V AC' },
-    { pin: '20', name: 'GEN-L2', function: 'Generator Voltage L2 (Phase B)', wireColor: 'Yellow', wireGauge: '1.0mm²', circuit: 'generator', voltage: '0-300V AC' },
-    { pin: '21', name: 'GEN-L3', function: 'Generator Voltage L3 (Phase C)', wireColor: 'Blue', wireGauge: '1.0mm²', circuit: 'generator', voltage: '0-300V AC' },
-    { pin: '22', name: 'GEN-N', function: 'Generator Neutral', wireColor: 'White', wireGauge: '1.0mm²', circuit: 'generator' },
-    // Current Transformers
-    { pin: '23', name: 'CT-L1-S1', function: 'CT L1 Secondary S1', wireColor: 'Red/White', wireGauge: '1.0mm²', circuit: 'generator', current: '5A secondary' },
-    { pin: '24', name: 'CT-L1-S2', function: 'CT L1 Secondary S2', wireColor: 'Red/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '25', name: 'CT-L2-S1', function: 'CT L2 Secondary S1', wireColor: 'Yellow/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '26', name: 'CT-L2-S2', function: 'CT L2 Secondary S2', wireColor: 'Yellow/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '27', name: 'CT-L3-S1', function: 'CT L3 Secondary S1', wireColor: 'Blue/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '28', name: 'CT-L3-S2', function: 'CT L3 Secondary S2', wireColor: 'Blue/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    // CAN Bus
-    { pin: '29', name: 'CAN-H', function: 'CAN Bus High (J1939)', wireColor: 'Green', wireGauge: '0.5mm² Twisted', circuit: 'communication' },
-    { pin: '30', name: 'CAN-L', function: 'CAN Bus Low (J1939)', wireColor: 'Yellow', wireGauge: '0.5mm² Twisted', circuit: 'communication' },
-    { pin: '31', name: 'CAN-SH', function: 'CAN Shield', wireColor: 'Gray', wireGauge: 'Braid', circuit: 'communication' },
-    // Digital I/O
-    { pin: '32', name: 'E-STOP', function: 'Emergency Stop Input (NC)', wireColor: 'Red/Yellow', wireGauge: '1.0mm²', circuit: 'protection' },
-  ],
-  'comap-inteligen': [
-    // Power
-    { pin: 'A1', name: 'B+', function: 'Power Supply Positive', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-36V DC' },
-    { pin: 'A2', name: 'B-', function: 'Power Supply Negative', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: 'A3', name: 'PE', function: 'Protective Earth', wireColor: 'Green/Yellow', wireGauge: '2.5mm²', circuit: 'power' },
-    // Outputs
-    { pin: 'B1', name: 'CRANK', function: 'Starter Output', wireColor: 'Purple', wireGauge: '1.5mm²', circuit: 'starting', current: '2A' },
-    { pin: 'B2', name: 'FUEL', function: 'Fuel Solenoid', wireColor: 'Orange', wireGauge: '1.5mm²', circuit: 'fuel', current: '4A' },
-    { pin: 'B3', name: 'IDLE', function: 'Idle Solenoid', wireColor: 'Yellow/Orange', wireGauge: '1.5mm²', circuit: 'fuel', current: '2A' },
-    { pin: 'B4', name: 'STOP', function: 'Stop Output', wireColor: 'Pink', wireGauge: '1.5mm²', circuit: 'protection', current: '2A' },
-    { pin: 'B5', name: 'PREHEAT', function: 'Preheat Relay', wireColor: 'Orange/Black', wireGauge: '1.5mm²', circuit: 'starting', current: '2A' },
-    { pin: 'B6', name: 'GCB', function: 'Gen Breaker Close', wireColor: 'Gray', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    { pin: 'B7', name: 'MCB', function: 'Mains Breaker Close', wireColor: 'Gray/White', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    // Analog Inputs
-    { pin: 'C1', name: 'OIL', function: 'Oil Pressure 4-20mA', wireColor: 'Brown', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'C2', name: 'COOL', function: 'Coolant Temp PT100/NTC', wireColor: 'Blue', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'C3', name: 'FUEL-S', function: 'Fuel Level 0-10V', wireColor: 'Green', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'C4', name: 'AIN1', function: 'Analog Input 1', wireColor: 'White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'C5', name: 'AIN2', function: 'Analog Input 2', wireColor: 'White/Black', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'C6', name: 'A-GND', function: 'Analog Ground', wireColor: 'Black/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    // Speed Input
-    { pin: 'D1', name: 'SPEED+', function: 'Speed Pickup +', wireColor: 'Cyan', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'D2', name: 'SPEED-', function: 'Speed Pickup -', wireColor: 'Cyan/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    // Generator Sensing
-    { pin: 'E1', name: 'GEN-L1', function: 'Gen Voltage L1-N', wireColor: 'Red', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'E2', name: 'GEN-L2', function: 'Gen Voltage L2-N', wireColor: 'Yellow', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'E3', name: 'GEN-L3', function: 'Gen Voltage L3-N', wireColor: 'Blue', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'E4', name: 'GEN-N', function: 'Gen Neutral', wireColor: 'White', wireGauge: '1.0mm²', circuit: 'generator' },
-    // CT Inputs
-    { pin: 'F1', name: 'CT1-S1', function: 'CT1 Secondary S1', wireColor: 'Red/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'F2', name: 'CT1-S2', function: 'CT1 Secondary S2', wireColor: 'Red/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'F3', name: 'CT2-S1', function: 'CT2 Secondary S1', wireColor: 'Yellow/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'F4', name: 'CT2-S2', function: 'CT2 Secondary S2', wireColor: 'Yellow/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'F5', name: 'CT3-S1', function: 'CT3 Secondary S1', wireColor: 'Blue/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'F6', name: 'CT3-S2', function: 'CT3 Secondary S2', wireColor: 'Blue/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    // CAN Bus
-    { pin: 'G1', name: 'CAN1-H', function: 'CAN Bus 1 High', wireColor: 'Green', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'G2', name: 'CAN1-L', function: 'CAN Bus 1 Low', wireColor: 'Yellow', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'G3', name: 'CAN2-H', function: 'CAN Bus 2 High', wireColor: 'Green/White', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'G4', name: 'CAN2-L', function: 'CAN Bus 2 Low', wireColor: 'Yellow/White', wireGauge: '0.5mm²', circuit: 'communication' },
-    // RS485
-    { pin: 'H1', name: 'RS485-A', function: 'RS485 Data A (+)', wireColor: 'Blue', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'H2', name: 'RS485-B', function: 'RS485 Data B (-)', wireColor: 'Orange', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'H3', name: 'RS-GND', function: 'RS485 Ground', wireColor: 'Black', wireGauge: '0.5mm²', circuit: 'communication' },
-  ],
-  'smartgen-hgm9320': [
-    { pin: '1', name: 'DC+', function: 'Power Supply +', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-35V DC' },
-    { pin: '2', name: 'DC-', function: 'Power Supply -', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: '3', name: 'START', function: 'Start Relay', wireColor: 'Purple', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: '4', name: 'STOP', function: 'Stop Relay', wireColor: 'Pink', wireGauge: '1.5mm²', circuit: 'protection', current: '3A' },
-    { pin: '5', name: 'FUEL', function: 'Fuel Valve', wireColor: 'Orange', wireGauge: '1.5mm²', circuit: 'fuel', current: '5A' },
-    { pin: '6', name: 'PREHEAT', function: 'Preheat Relay', wireColor: 'Orange/Black', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: '7', name: 'IDLE', function: 'Idle Control', wireColor: 'Yellow/Orange', wireGauge: '1.0mm²', circuit: 'fuel', current: '2A' },
-    { pin: '8', name: 'GCB-CL', function: 'Gen Breaker Close', wireColor: 'Gray', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    { pin: '9', name: 'MCB-CL', function: 'Mains Breaker Close', wireColor: 'Gray/White', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    { pin: '10', name: 'OIL-P', function: 'Oil Pressure Input', wireColor: 'Brown', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '11', name: 'WATER-T', function: 'Water Temp Input', wireColor: 'Blue', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '12', name: 'FUEL-L', function: 'Fuel Level', wireColor: 'Green', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '13', name: 'SPEED+', function: 'Speed Sensor +', wireColor: 'Cyan', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '14', name: 'SPEED-', function: 'Speed Sensor -', wireColor: 'Cyan/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '15', name: 'A-GND', function: 'Analog Ground', wireColor: 'Black/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '16', name: 'GEN-L1', function: 'Generator L1', wireColor: 'Red', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '17', name: 'GEN-L2', function: 'Generator L2', wireColor: 'Yellow', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '18', name: 'GEN-L3', function: 'Generator L3', wireColor: 'Blue', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '19', name: 'GEN-N', function: 'Generator N', wireColor: 'White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '20', name: 'CT1+', function: 'CT1 S1', wireColor: 'Red/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '21', name: 'CT1-', function: 'CT1 S2', wireColor: 'Red/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '22', name: 'CAN-H', function: 'CAN High', wireColor: 'Green', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: '23', name: 'CAN-L', function: 'CAN Low', wireColor: 'Yellow', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: '24', name: 'E-STOP', function: 'Emergency Stop', wireColor: 'Red/Yellow', wireGauge: '1.0mm²', circuit: 'protection' },
-  ],
-  'woodward-easygen3000': [
-    { pin: 'X1:1', name: '+UB', function: 'Power Supply +', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-32V DC' },
-    { pin: 'X1:2', name: '-UB', function: 'Power Supply -', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: 'X1:3', name: 'PE', function: 'Protective Earth', wireColor: 'Green/Yellow', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: 'X2:1', name: 'DO1', function: 'Start Output', wireColor: 'Purple', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: 'X2:2', name: 'DO2', function: 'Fuel Output', wireColor: 'Orange', wireGauge: '1.5mm²', circuit: 'fuel', current: '5A' },
-    { pin: 'X2:3', name: 'DO3', function: 'GCB Close', wireColor: 'Gray', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    { pin: 'X2:4', name: 'DO4', function: 'MCB Close', wireColor: 'Gray/White', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    { pin: 'X2:5', name: 'DO5', function: 'Preheat', wireColor: 'Orange/Black', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: 'X2:6', name: 'DO-COM', function: 'DO Common', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: 'X3:1', name: 'MPU+', function: 'Speed Pickup +', wireColor: 'Cyan', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X3:2', name: 'MPU-', function: 'Speed Pickup -', wireColor: 'Cyan/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X3:3', name: 'SH', function: 'MPU Shield', wireColor: 'Gray', wireGauge: 'Braid', circuit: 'sensing' },
-    { pin: 'X4:1', name: 'AI1', function: 'Oil Pressure 4-20mA', wireColor: 'Brown', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X4:2', name: 'AI2', function: 'Coolant Temp PT100', wireColor: 'Blue', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X4:3', name: 'AI3', function: 'Fuel Level 0-10V', wireColor: 'Green', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X4:4', name: 'AI4', function: 'Auxiliary Input', wireColor: 'White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X4:5', name: 'A-GND', function: 'Analog Ground', wireColor: 'Black/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X5:1', name: 'L1-N', function: 'Gen Voltage L1', wireColor: 'Red', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'X5:2', name: 'L2-N', function: 'Gen Voltage L2', wireColor: 'Yellow', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'X5:3', name: 'L3-N', function: 'Gen Voltage L3', wireColor: 'Blue', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'X5:4', name: 'N', function: 'Gen Neutral', wireColor: 'White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'X6:1', name: 'CAN-H', function: 'CAN High', wireColor: 'Green', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'X6:2', name: 'CAN-L', function: 'CAN Low', wireColor: 'Yellow', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'X6:3', name: 'CAN-GND', function: 'CAN Ground', wireColor: 'Black', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'X7:1', name: 'RS485-A', function: 'Modbus A (+)', wireColor: 'Blue', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'X7:2', name: 'RS485-B', function: 'Modbus B (-)', wireColor: 'Orange', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'X7:3', name: 'RS-GND', function: 'Modbus GND', wireColor: 'Black', wireGauge: '0.5mm²', circuit: 'communication' },
-  ],
-  'powerwizard-20': [
-    { pin: 'J1-1', name: 'BATT+', function: 'Battery Positive', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '9-32V DC' },
-    { pin: 'J1-2', name: 'BATT-', function: 'Battery Negative', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: 'J1-3', name: 'CRANK', function: 'Crank Relay', wireColor: 'Purple', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: 'J1-4', name: 'FUEL', function: 'Fuel Solenoid', wireColor: 'Orange', wireGauge: '1.5mm²', circuit: 'fuel', current: '5A' },
-    { pin: 'J1-5', name: 'RUN', function: 'Run Relay', wireColor: 'Green', wireGauge: '1.5mm²', circuit: 'fuel', current: '3A' },
-    { pin: 'J1-6', name: 'PREHEAT', function: 'Preheat Relay', wireColor: 'Orange/Black', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: 'J2-1', name: 'OIL-P', function: 'Oil Pressure Sender', wireColor: 'Brown', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J2-2', name: 'COOL-T', function: 'Coolant Temp Sender', wireColor: 'Blue', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J2-3', name: 'FUEL-L', function: 'Fuel Level', wireColor: 'Green', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J2-4', name: 'A-GND', function: 'Analog Ground', wireColor: 'Black/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J3-1', name: 'MPU+', function: 'Speed Sensor +', wireColor: 'Cyan', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J3-2', name: 'MPU-', function: 'Speed Sensor -', wireColor: 'Cyan/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J4-1', name: 'GEN-L1', function: 'Gen Voltage L1', wireColor: 'Red', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J4-2', name: 'GEN-L2', function: 'Gen Voltage L2', wireColor: 'Yellow', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J4-3', name: 'GEN-L3', function: 'Gen Voltage L3', wireColor: 'Blue', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J4-4', name: 'GEN-N', function: 'Gen Neutral', wireColor: 'White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J5-1', name: 'CT1-S1', function: 'CT1 Secondary S1', wireColor: 'Red/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J5-2', name: 'CT1-S2', function: 'CT1 Secondary S2', wireColor: 'Red/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J6-1', name: 'CAN-H', function: 'CAT Data Link +', wireColor: 'Green', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'J6-2', name: 'CAN-L', function: 'CAT Data Link -', wireColor: 'Yellow', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'J7-1', name: 'E-STOP', function: 'Emergency Stop', wireColor: 'Red/Yellow', wireGauge: '1.0mm²', circuit: 'protection' },
-  ],
-};
+// ==================== CONTROLLER PIN DATA: INTENTIONALLY EMPTY ====================
+//
+// This file is the unreferenced components/building mirror of the wiring
+// panel. No app route imports it — /generator-oracle renders
+// components/generator-oracle/panels/WiringDiagramsPanel.tsx instead.
+//
+// It used to carry 139 pin entries across dse-7320, comap-inteligen,
+// smartgen-hgm9320, woodward-easygen3000 and powerwizard-20. On 2026-07-29
+// every one of those maps was found to be FABRICATED — reversed battery
+// polarity on DSE and SmartGen, invented connector schemes on ComAp and
+// Woodward, and no OEM source behind any of them. They were emptied here
+// rather than corrected, because this mirror has no provenance registry and
+// no wiring guard, so there is nothing to stop the same class of invented
+// data being added back.
+//
+// If this mirror is ever revived, take the verified maps and the
+// isControllerVerified() gate from
+// components/generator-oracle/panels/WiringDiagramsPanel.tsx. Do NOT copy
+// this file over that one, or that one over this one — the two files have
+// genuinely diverged.
+//
+// With this empty, every controller here renders the "no verified pinout"
+// notice, which is the correct default.
+const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {};
 
 // ==================== DETAILED SCHEMATIC DIAGRAMS ====================
 const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: ControllerModel) => JSX.Element; notes: string[] } } = {
@@ -587,8 +441,8 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         <g transform="translate(550, 150)">
           <rect x="-60" y="-80" width="120" height="160" rx="8" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
           <rect x="-55" y="-75" width="110" height="25" rx="4" fill="#1e293b" />
-          <text x="0" y="-58" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">{controller.model}</text>
-          <text x="0" y="-45" textAnchor="middle" fill="#64748b" fontSize="8">{controller.brand}</text>
+          <text x="0" y="-58" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">GENSET CONTROLLER</text>
+          <text x="0" y="-45" textAnchor="middle" fill="#64748b" fontSize="8">generic topology</text>
           {/* Pins */}
           <circle cx="-60" cy="-30" r="4" fill="#1e293b" stroke="#ef4444" strokeWidth="2" />
           <text x="-50" y="-27" fill="#ef4444" fontSize="8">B+</text>
@@ -709,7 +563,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(150, 180)">
           <rect x="-50" y="-70" width="100" height="140" rx="6" fill="#0f172a" stroke="#06b6d4" strokeWidth="2" />
-          <text x="0" y="-50" textAnchor="middle" fill="#06b6d4" fontSize="9" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-50" textAnchor="middle" fill="#06b6d4" fontSize="9" fontWeight="bold">GENSET CONTROLLER</text>
           <circle cx="50" cy="-20" r="4" fill="#1e293b" stroke="#a855f7" strokeWidth="2" />
           <text x="40" y="-17" textAnchor="end" fill="#a855f7" fontSize="7">START</text>
           <circle cx="50" cy="10" r="4" fill="#1e293b" stroke="#f97316" strokeWidth="2" />
@@ -840,7 +694,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(100, 200)">
           <rect x="-40" y="-60" width="80" height="120" rx="6" fill="#0f172a" stroke="#06b6d4" strokeWidth="2" />
-          <text x="0" y="-42" textAnchor="middle" fill="#06b6d4" fontSize="9" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-42" textAnchor="middle" fill="#06b6d4" fontSize="9" fontWeight="bold">GENSET CONTROLLER</text>
           <circle cx="40" cy="-20" r="4" fill="#1e293b" stroke="#f97316" strokeWidth="2" />
           <text x="30" y="-17" textAnchor="end" fill="#f97316" fontSize="7">FUEL</text>
           <circle cx="40" cy="10" r="4" fill="#1e293b" stroke="#22c55e" strokeWidth="2" />
@@ -964,7 +818,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(350, 200)">
           <rect x="-80" y="-100" width="160" height="200" rx="8" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
-          <text x="0" y="-80" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-80" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">GENSET CONTROLLER</text>
           {/* Left side pins - Analog inputs */}
           <circle cx="-80" cy="-50" r="4" fill="#1e293b" stroke="#eab308" strokeWidth="2" />
           <text x="-70" y="-47" fill="#eab308" fontSize="7">OIL-P</text>
@@ -1143,7 +997,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(500, 200)">
           <rect x="-70" y="-120" width="140" height="240" rx="8" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
-          <text x="0" y="-100" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-100" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">GENSET CONTROLLER</text>
           {/* Voltage inputs */}
           <text x="-60" y="-75" fill="#94a3b8" fontSize="7">VOLTAGE</text>
           <circle cx="-70" cy="-55" r="4" fill="#ef4444" />
@@ -1225,7 +1079,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(300, 200)">
           <rect x="-80" y="-90" width="160" height="180" rx="8" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
-          <text x="0" y="-70" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-70" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">GENSET CONTROLLER</text>
           {/* CAN */}
           <text x="-70" y="-45" fill="#22c55e" fontSize="8">CAN BUS</text>
           <circle cx="-80" cy="-25" r="4" fill="#22c55e" />
@@ -1382,7 +1236,7 @@ const DETAILED_SCHEMATICS: { [circuitId: string]: { svgContent: (controller: Con
         {/* Controller */}
         <g transform="translate(400, 200)">
           <rect x="-70" y="-100" width="140" height="200" rx="8" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
-          <text x="0" y="-80" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">{controller.model}</text>
+          <text x="0" y="-80" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="bold">GENSET CONTROLLER</text>
           {/* Protection inputs */}
           <circle cx="-70" cy="-50" r="4" fill="#ef4444" />
           <text x="-60" y="-47" fill="#ef4444" fontSize="7">E-STOP</text>
@@ -3226,8 +3080,16 @@ export default function WiringDiagramsPanel() {
   const brands = [...new Set(CONTROLLERS.map(c => c.brand))];
   const brandControllers = CONTROLLERS.filter(c => c.brand === selectedBrand);
 
-  // Get current pin configuration
-  const currentPins = CONTROLLER_PINS[selectedController.id] || CONTROLLER_PINS['dse-7320'];
+  // Get current pin configuration.
+  // SAFETY (2026-07-27): this previously read
+  //   CONTROLLER_PINS[selectedController.id] || CONTROLLER_PINS['dse-7320']
+  // which silently served DSE 7320 terminal wiring for ANY controller with no
+  // entry of its own — ComAp, SmartGen, PowerWizard, Woodward, Datakom, Lovato,
+  // Siemens, ENKO and VODIA all inherited DSE pinouts. A technician wiring from
+  // that would connect a different OEM's terminals. Never substitute one
+  // manufacturer's wiring for another; render nothing instead.
+  // See lib/generator-oracle/wiringGuard.ts.
+  const currentPins = CONTROLLER_PINS[selectedController.id] ?? [];
 
   // Export to PDF function
   const exportToPDF = () => {

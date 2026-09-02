@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+// `headers` is deliberately NOT imported. Calling it in this root layout opted
+// every page into dynamic rendering — see the note in generateMetadata below.
 import PerformanceBoot from "@/components/performance/PerformanceBoot";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -13,15 +14,21 @@ import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import B2BSiteStrip from '@/components/b2b/B2BSiteStrip';
 import { OrganizationSchema, WebSiteSchema, DiagnosticSuiteSchema } from '@/components/seo/StructuredData';
-import AutoBreadcrumb from '@/components/seo/AutoBreadcrumb';
-import FAQSchema from '@/components/seo/FAQSchema';
+// AutoBreadcrumb is intentionally not imported — see the note at its former
+// mount point below. The component file itself is unchanged.
+// FAQSchema is intentionally not imported — see the note where it used to be
+// rendered, below. The component file is still there if it is ever wanted on a
+// page that actually displays its questions.
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import { ScreenReaderAnnouncerProvider } from '@/components/accessibility/ScreenReaderAnnouncer';
 import { KeyboardShortcutsHelper } from '@/components/accessibility/FocusManagement';
 import { AntiScrapingMeta } from '@/components/security/SecurityShield';
 import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, getLocale } from 'next-intl/server';
+// getMessages / getLocale are deliberately NOT imported: both are
+// request-scoped and forced every page in the app to render dynamically.
+import { defaultLocale } from '@/i18n';
+import enMessages from '@/messages/en.json';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import WebVitalsReporter from '@/components/analytics/WebVitalsReporter';
 import { ALL_SERVICES } from '@/lib/services/allServices';
@@ -64,8 +71,38 @@ export async function generateMetadata(): Promise<Metadata> {
   // this. Previously the root layout hard-coded the canonical to the site root,
   // so every page canonicalised to the homepage — the root cause of Search
   // Console's "Duplicate without user-selected canonical".
-  const pathname = (await headers()).get("x-pathname") || "/";
-  const canonical = pathname === "/" ? siteUrl : `${siteUrl}${pathname}`;
+  //
+  // The `|| "/"` fallback used to run whenever the header was absent, which is
+  // exactly what happens on a STATICALLY PRERENDERED route — headers() has no
+  // request to read at build time. /generators/case-studies hit this and
+  // shipped canonical=<homepage>, re-creating the very bug described above on
+  // that page. An absent header yielded NO canonical rather than a wrong one:
+  // Google treating a URL as its own canonical is far less damaging than being
+  // told it duplicates the homepage. Any statically prerendered page must
+  // declare its own alternates.canonical.
+  //
+  // THE headers() CALL IS NOW GONE (2026-08-29), and the condition above is
+  // satisfied instead: scripts/add-canonicals.mjs gave 117 static routes their
+  // own self-referential canonical, joining the 147 that already had one.
+  //
+  // WHY IT HAD TO GO. Reading headers() in the ROOT layout opts every page on
+  // the site into dynamic rendering. The visible cost was the response header
+  //     Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+  // on every URL — Next's default for a dynamically rendered route. That tells
+  // every visitor's browser never to store a page, so repeat visits
+  // re-downloaded the entire document (440KB of HTML on the homepage) instead
+  // of revalidating a cached copy, and it silently overrode the policy this
+  // project deliberately tuned in vercel.json
+  //     public, max-age=0, s-maxage=60, stale-while-revalidate=300
+  // which exists so the edge can answer instantly and refresh behind the user.
+  //
+  // With this removed the site prerenders and `export const revalidate = 3600`
+  // above governs freshness, as originally intended.
+  //
+  // IF YOU ADD A ROUTE: give it its own alternates.canonical. Do not restore
+  // headers() here to cover it — that trades one page's canonical for every
+  // page's cacheability.
+  const canonical: string | undefined = undefined;
 
   return {
   metadataBase: new URL(siteUrl),
@@ -73,7 +110,23 @@ export async function generateMetadata(): Promise<Metadata> {
     default: "EmersonEIMS | B2B Power & Engineering Partner for Industry, Healthcare & Telecom in Kenya",
     template: "%s | EmersonEIMS Kenya"
   },
-  description: "EmersonEIMS is a B2B power-engineering partner for manufacturers, hospitals, telecom, commercial property and construction in Kenya \u2014 Cummins generators, generator repairs, ATS / changeover panels, distribution boards, solar PV, UPS systems, motor rewinding, air-conditioning, borehole pumps, hospital incinerators and steel fabrication \u2014 backed by a 3-year warranty, SLA maintenance and 24/7 emergency response across all 47 counties. Call +254768860665.",
+  /*
+   * 465 characters became 152.
+   *
+   * This is the site-wide fallback description \u2014 it appears in search results
+   * for any page that does not set its own, so it is the most-served piece of
+   * ad copy on the site. It listed nineteen services in one breath. Google
+   * renders roughly 155 characters, so everything from "distribution boards"
+   * onward was written, shipped and never read by anyone, and the part that
+   * WAS visible was a keyword list rather than a reason to click.
+   *
+   * What replaces it leads with the three things people actually search for,
+   * then the two facts that decide a B2B purchase: the price floor and the
+   * warranty. Every figure is verifiable elsewhere on this site \u2014 the opening
+   * price is the lowest in GENERATOR_SIZES, and the warranty is the
+   * owner-confirmed two years.
+   */
+  description: "Generators, solar and UPS for Kenyan industry \u2014 supplied, installed and serviced in all 47 counties. From KES 280,000. 24/7 callout.",
   // NOTE: Keywords meta tag removed - Google has ignored this tag since 2009
   // SEO is achieved through quality content, proper H1-H6 structure, and semantic HTML
   authors: [{ name: "EmersonEIMS" }],
@@ -90,7 +143,7 @@ export async function generateMetadata(): Promise<Metadata> {
     url: siteUrl,
     siteName: "EmersonEIMS",
     title: "EmersonEIMS | B2B Power & Engineering Partner for Kenyan Industry",
-    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes and incinerators for manufacturing, healthcare, telecom and commercial property in Kenya. 3-year warranty, SLA maintenance, 24/7 emergency. Call +254768860665.",
+    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes and incinerators for manufacturing, healthcare, telecom and commercial property in Kenya. SLA maintenance, 24/7 emergency response. Call +254768860665.",
     images: [
       {
         url: `${siteUrl}/og-image.jpg`,
@@ -112,7 +165,7 @@ export async function generateMetadata(): Promise<Metadata> {
   },
   twitter: {
     card: "summary_large_image",
-    title: "EmersonEIMS | B2B Power & Engineering Partner Kenya | 3-Year Warranty",
+    title: "EmersonEIMS | B2B Power & Engineering Partner Kenya",
     description: "B2B power & engineering for industry, healthcare, telecom & construction in Kenya. Generators, solar, UPS, HVAC, boreholes, incinerators. SLA maintenance + 24/7 emergency. Call +254768860665.",
     images: [`${siteUrl}/og-image.jpg`],
     creator: "@EmersonEIMS",
@@ -138,9 +191,8 @@ export async function generateMetadata(): Promise<Metadata> {
     ...(googleSiteVerification ? { google: googleSiteVerification } : {}),
     ...(yandexVerification ? { yandex: yandexVerification } : {}),
   },
-  alternates: {
-    canonical,
-  },
+  // Omitted entirely when the path is unknown — see the note above generateMetadata.
+  ...(canonical ? { alternates: { canonical } } : {}),
   category: 'technology',
   };
 }
@@ -152,22 +204,93 @@ export default async function RootLayout({
 }) {
   const isDev = process.env.NODE_ENV !== 'production';
 
-  // Get locale and messages dynamically from cookie
-  const locale = await getLocale();
-  const messages = await getMessages();
+  /*
+   * Locale and messages are supplied as CONSTANTS, not fetched per request.
+   *
+   * getLocale() and getMessages() are next-intl's request-scoped server APIs.
+   * Calling either one marks this render dynamic — and because this is the
+   * ROOT layout, that made all ~3,400 pages dynamic, which is what produced
+   *     Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+   * on every URL and stopped any browser from ever caching a page.
+   *
+   * Removing the cookie read from i18n.ts was necessary but not sufficient:
+   * these two calls kept the request scope alive on their own. The build route
+   * table still showed the homepage as dynamic afterwards.
+   *
+   * There is nothing left for them to resolve. The switcher that used to set
+   * NEXT_LOCALE was removed from the nav on 2026-07-31 and the translation
+   * hooks in SciFiHeader are commented out, so every visitor already received
+   * the default locale. Passing it directly is what was happening in practice,
+   * now stated honestly and cheaply.
+   *
+   * NextIntlClientProvider still wraps the tree below, so useTranslations()
+   * keeps working for any component that wants it. Restoring real multilingual
+   * support means locale-prefixed routes (/sw/...) with generateStaticParams,
+   * which keeps pages static — not reinstating a request-scoped read here.
+   */
+  const locale = defaultLocale;
+  const messages = enMessages;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
+    /*
+     * THE CANONICAL ENTITY ANCHOR.
+     *
+     * This node had no @id, which caused two separate problems.
+     *
+     * 1. A DANGLING REFERENCE. The OfferCatalog below already points its
+     *    provider at `${siteUrl}/#organization` — but nothing declared that
+     *    @id, so every Offer referenced a company node that did not exist.
+     * 2. TWO COMPANIES INSTEAD OF ONE. Page-level Organization nodes (e.g.
+     *    app/kenya/page.tsx) also had no @id and used a different name —
+     *    "Emerson EiMS Kenya" against this node's "EmersonEIMS". A 400-page
+     *    audit found 114 URLs each carrying two unlinked Organization or
+     *    LocalBusiness entities, so a crawler had no way to know they were the
+     *    same business, and the trust signals split between them.
+     *
+     * An @id is how schema.org expresses identity. Every other node that
+     * describes this company must reuse this exact string so the graph
+     * resolves to one entity rather than several.
+     */
+    "@id": `${siteUrl}/#organization`,
+    // NAP consistency with the Google Business Profile matters for local
+    // ranking: Google associates a site with a listing partly by matching name,
+    // address and phone. The listing is registered as "EMERSON INDUSTRIAL
+    // MAINTENANCE SERVICES - GENERATOR SALES AND MAINTENANCE IN KENYA" while this
+    // schema declared only "EmersonEIMS", so the two did not corroborate each
+    // other. The trading name stays primary; the registered listing name is now
+    // carried as alternateName so both match something.
     "name": "EmersonEIMS",
-    "alternateName": "EmersonEIMS",
+    "alternateName": "EMERSON INDUSTRIAL MAINTENANCE SERVICES - GENERATOR SALES AND MAINTENANCE IN KENYA",
     "url": siteUrl,
     "logo": `${siteUrl}/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png`,
     "image": `${siteUrl}/og-image.jpg`,
-    "description": "EmersonEIMS — B2B power & engineering partner in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 3-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties.",
+    "description": "EmersonEIMS — B2B power & engineering partner in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators, with SLA-backed maintenance and 24/7 emergency response reaching all 47 counties.",
     "telephone": "+254768860665",
     "email": "info@emersoneims.com",
     "address": {
       "@type": "PostalAddress",
+      /*
+       * streetAddress and postalCode were MISSING here, so the site-wide
+       * LocalBusiness node — the primary one Google reads — published
+       * "streetAddress: undefined, postalCode: undefined".
+       *
+       * That matters beyond tidiness. Google corroborates a Business Profile
+       * against the website's address: name, address and phone have to agree
+       * across both. An incomplete address on the canonical node weakens that
+       * match, which is exactly the signal a local listing depends on.
+       *
+       * The values are not invented. They are what the site already tells
+       * humans on /contact ("Embakasi, off Airport North Road, Nairobi (Near
+       * KEMSA Head Office)") and what two other schema blocks already publish
+       * identically — app/generators/layout.tsx and components/common/
+       * SEOHead.tsx both carry this street and this postcode. This node was
+       * the outlier. 00521 is the owner-confirmed postcode; an earlier session
+       * once inferred 00519 and split the NAP across three codes, so it is
+       * stated here explicitly rather than left to be guessed again.
+       */
+      "streetAddress": "Embakasi, off Airport North Road",
+      "postalCode": "00521",
       "addressCountry": "KE",
       "addressLocality": "Nairobi",
       "addressRegion": "Nairobi County"
@@ -177,18 +300,47 @@ export default async function RootLayout({
       "latitude": -1.3200,
       "longitude": 36.8900
     },
+    /*
+     * hasMap and areaServed were both absent. They are two of the signals
+     * Google reads when deciding whether a business belongs in a local pack or
+     * a Maps result, and their absence is invisible on the page — the site
+     * looked complete while telling Google less than it could.
+     *
+     * hasMap uses the coordinates already declared above rather than a
+     * place-ID URL, because a place ID is not something to guess: a wrong one
+     * points Google at a different business. This form is derived from data we
+     * already publish and is correct by construction.
+     *
+     * areaServed states Kenya. The Business Profile currently lists five towns
+     * (Ruiru, Nairobi, Mlolongo, Tatu City, Athi River), which under-claims
+     * what the owner has confirmed and what this site says throughout — the
+     * mobile workshop reaches all 47 counties. The listing's service area
+     * should be widened to match; until it is, the two disagree, and this is
+     * the side that reflects the business.
+     */
+    "hasMap": "https://www.google.com/maps/search/?api=1&query=-1.3200,36.8900",
+    "areaServed": {
+      "@type": "Country",
+      "name": "Kenya"
+    },
+    /*
+     * HOURS MATCH THE GOOGLE BUSINESS PROFILE EXACTLY (owner-supplied
+     * 2026-08-29). They did not before: this schema published Mon–Fri
+     * 08:00–18:00 and Sat 09:00–16:00, while the verified listing says
+     * Mon–Sat 08:00–17:00 with Sunday closed.
+     *
+     * Google cross-checks a listing against the site's structured data, and
+     * conflicting hours are one of the things that weakens that match — and
+     * worse, sends a customer to a closed workshop at 17:30 on a Tuesday
+     * because the website told them it was open. If the real hours change,
+     * change them in the Business Profile and here in the same sitting.
+     */
     "openingHoursSpecification": [
       {
         "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         "opens": "08:00",
-        "closes": "18:00"
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": "Saturday",
-        "opens": "09:00",
-        "closes": "16:00"
+        "closes": "17:00"
       }
     ],
     "priceRange": "$$$",
@@ -199,11 +351,33 @@ export default async function RootLayout({
     // user-generated reviews. We will reintroduce this only when reviews
     // are sourced from a verifiable third party (Google Business Profile,
     // Trustpilot) and rendered on the page itself.
+    /*
+     * sameAs is how Google reconciles this business with its other profiles,
+     * so every entry has to resolve to a real one. The three that were here
+     * did not — checked 2026-08-29:
+     *     facebook.com/EmersonEIMS            HTTP 400
+     *     linkedin.com/company/emersoneims    HTTP 404
+     *     twitter.com/EmersonEIMS             a DIFFERENT handle from the real
+     *                                         account, which is @eimsemerson
+     * Pointing sameAs at profiles that do not exist gives Google nothing to
+     * corroborate and asserts a presence the business does not have.
+     *
+     * The one below is the account listed on the verified Google Business
+     * Profile. Add Facebook and LinkedIn back when those pages actually
+     * exist — and put the same URLs in the Business Profile at the same time,
+     * so the two agree.
+     */
     "sameAs": [
-      "https://www.facebook.com/EmersonEIMS",
-      "https://twitter.com/EmersonEIMS",
-      "https://www.linkedin.com/company/emersoneims"
+      "https://x.com/eimsemerson"
     ],
+    /*
+     * From the verified Google Business Profile: opening date 1 March 2011.
+     * Publishing it lets Google reconcile the listing with the site instead of
+     * inferring an age, and it settles a figure the site could not previously
+     * agree on — "12+ years", "15 years", "15+ years" and "18 years" were all
+     * in circulation. Fifteen years as of 2026 is the one that is true.
+     */
+    "foundingDate": "2011-03-01",
     "contactPoint": [
       {
         "@type": "ContactPoint",
@@ -275,7 +449,27 @@ export default async function RootLayout({
           "@type": "Service",
           "@id": `${siteUrl}/services/${svc.slug}#service`,
           "name": svc.name,
-          "description": svc.description,
+          /*
+           * NO description HERE, DELIBERATELY (2026-09-01).
+           *
+           * This catalogue is emitted on EVERY page, so `svc.description` was
+           * carrying each service's full marketing copy site-wide — including
+           * "backed by a 2-year warranty" onto /contact, /faults, /kenya and
+           * every other page with no generator content on it. A live scan
+           * found the warranty text on 25 of 26 pages and this was the source
+           * of nearly all of them.
+           *
+           * The claim itself is fine and is kept: it is scoped to new Cummins
+           * generators and is owner-confirmed. What was wrong is WHERE it was
+           * asserted. Structured data has to describe the page it is on, and
+           * on /contact this was schema-only text that appeared nowhere in the
+           * visible content.
+           *
+           * The catalogue keeps what is true site-wide — the service exists,
+           * its name, and the URL where it is described in full. Each
+           * /services/<slug> page carries its own Service schema WITH the
+           * description, alongside the visible copy that matches it.
+           */
           "url": `${siteUrl}/services/${svc.slug}`,
           "provider": {
             "@type": "LocalBusiness",
@@ -300,8 +494,31 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
 
-        {/* FAQ Schema for Rich Snippets */}
-        <FAQSchema />
+        {/* FAQPage schema is deliberately NOT emitted here any more.
+            (Component kept at components/seo/FAQSchema.tsx — nothing deleted;
+            restoring it is re-adding this one line.)
+
+            It was mounted in the root layout, so all ~3,400 pages carried the
+            same ten Q&As. Three problems, in order of seriousness:
+
+            1. POLICY. Google requires FAQPage content to be visible on the page
+               that declares it. This markup was visible on none of them, which
+               is the kind of thing that earns a structured-data manual action.
+               Since 2023 Google also stopped showing FAQ rich results for
+               commercial sites, so the upside being risked for was ~zero.
+            2. DUPLICATE ENTITY. /faq builds its own FAQPage from FAQ_DATA and
+               renders every question and answer visibly, which is correct and
+               compliant. The layout copy put a second, different FAQPage on
+               that same URL.
+            3. CONTRADICTORY PRICE. One answer read "a 10kVA home backup
+               generator installation starts from KES 350,000" while the
+               homepage now shows "Generators from KES 280,000" from
+               GENERATOR_SIZES. Two starting prices on one page, and the one a
+               crawler could quote was the wrong one.
+
+            Same class of defect as the canonical-inheritance trap: a tag set in
+            a layout is inherited by every child page, so a layout is the last
+            place page-specific structured data belongs. */}
         
         {/* ═══════════════════════════════════════════════════════════════════
             ENTERPRISE SECURITY META TAGS
@@ -343,8 +560,13 @@ export default async function RootLayout({
         <meta property="og:postal-code" content="" />
         <meta property="og:country-name" content="Kenya" />
 
-        {/* LinkedIn-specific meta tags */}
-        <meta property="og:see_also" content="https://www.linkedin.com/company/emersoneims" />
+        {/* og:see_also removed 2026-08-29. It pointed every page on the site at
+            linkedin.com/company/emersoneims, which returns HTTP 404 — sending
+            anyone who followed it, and any crawler resolving it, to nothing.
+            This was the last live reference after the sameAs arrays were
+            cleaned; a verification pass against the production HTML caught it
+            still serving. Restore it when a real LinkedIn page exists, and add
+            the same URL to the Google Business Profile at the same time. */}
 
         {/* Author & Publisher */}
         <meta name="author" content="EmersonEIMS" />
@@ -383,7 +605,20 @@ export default async function RootLayout({
           /* Hero opt-in: pages add the hero-full class to first section to fill viewport */
           main#main-content>section.hero-full:first-child{min-height:100vh}
           /* Compensate fixed navbar so non-hero pages do not sit under it */
-          main#main-content{padding-top:64px}
+          /* min-height reserves the page. Without it the whole site's
+             Cumulative Layout Shift was 0.62 — against a 0.10 "good"
+             threshold — from ONE shift, measured on the live homepage under
+             Lighthouse conditions (4x CPU, slow 4G):
+                 FOOTER  y 310 -> 0   h 534 -> 0   at 4957ms
+             The cause is streaming SSR. The layout shell (nav and footer)
+             flushes to the browser before the page's children stream in, so
+             the footer paints 310px down a nearly empty viewport and is then
+             shoved below the fold when the content arrives. Reserving a
+             viewport of height means the footer starts off-screen, so the
+             later reflow moves something the user was never shown and costs
+             no CLS. 100svh (not vh) so mobile browser chrome does not make
+             the reservation taller than the actual visible area. */
+          main#main-content{padding-top:64px;min-height:100svh}
           @media(min-width:1024px){nav#main-navigation{min-height:72px}main#main-content{padding-top:72px}}
           /* Pages that own a full-viewport hero opt out of the offset */
           main#main-content:has(>section.hero-full:first-child){padding-top:0}
@@ -416,7 +651,23 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
 
         {/* HIGHEST PRIORITY: Preload critical resources */}
-        <link rel="preload" href="/images/logo-tagline.png" as="image" type="image/png" fetchPriority="high" />
+        {/* The logo preload was removed (2026-08-29), and so was a second,
+            duplicate one in the middleware Link header.
+
+            Both fetched the RAW /images/logo-tagline.png at fetchPriority
+            high. The navbar renders that logo through next/image, which
+            requests an optimised /_next/image URL instead — so the preload
+            never matched what the page actually used, and every visitor
+            downloaded the file TWICE: once as a high-priority preload nothing
+            consumed, once optimised for display.
+
+            The raw file was 98KB — the largest single asset on the homepage,
+            seven times the hero photograph — for a logo displayed 44px tall.
+            It was competing for bandwidth with the LCP image on exactly the
+            connection where that matters.
+
+            The source is now 13KB at 360x240, which is still 2x the rendered
+            height, and next/image handles delivery. */}
 
         {/* PERF: removed blanket <link rel="prefetch"> for /generators, /generator-oracle,
             /contact and /solar. They were forcing every user to download four extra HTML
@@ -464,6 +715,25 @@ export default async function RootLayout({
         <link rel="alternate" hrefLang="x-default" href={`${siteUrl}`} />
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning lang={locale}>
+        {/*
+          NO-JS SAFETY NET.
+
+          framer-motion writes its `initial` state into the server-rendered
+          markup, so any element with initial={{ opacity: 0 }} ships as
+          style="opacity:0" and stays invisible until hydration. On /generators
+          alone that was 127 elements out of 1,380 — if the bundle fails to load
+          on a poor connection, most of the page is blank with no error and no
+          clue why.
+
+          This costs nothing when JavaScript works (a <noscript> block is inert)
+          and turns a blank page into a readable one when it does not. It is a
+          floor, not a fix: the real remedy is fewer elements starting hidden,
+          which is why the hero and the banner directly beneath it no longer
+          animate opacity at all.
+        */}
+        <noscript>
+          <style>{`[style*="opacity:0"],[style*="opacity: 0"]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
         {/* World-class font and resource preloading (client-only) */}
         <PerformanceBoot />
         <ScreenReaderAnnouncerProvider>
@@ -484,17 +754,56 @@ export default async function RootLayout({
         {/* WCAG 2.1 AAA: Multiple Skip Links */}
         <SkipToContent />
         
-        {/* Keyboard Shortcuts Reference for Screen Readers */}
-        <KeyboardShortcutsHelper />
+        {/*
+          KeyboardShortcutsHelper MOVED TO THE END OF THE DOCUMENT (2026-08-26).
+
+          It renders an sr-only <h2>Keyboard Shortcuts</h2>. Mounted here, at
+          the top of <body>, that was the FIRST heading in the document on every
+          page — before the H1. A design audit picked it up on both / and
+          /generators as heading number one.
+
+          Two costs, both real. Google reads sr-only text: the first topic it
+          saw on every page was a list of keyboard keys. And screen-reader users
+          navigating by heading landed on shortcuts before they reached what the
+          page is about.
+
+          It is NOT removed — it is genuinely useful and it stays exactly as
+          written. It now mounts after the footer, where a help reference
+          belongs, so the H1 is the first heading and the note is still
+          reachable by heading navigation and by its role="note" landmark.
+        */}
         
         {/* Global Structured Data for SEO - Rich Snippets */}
         <OrganizationSchema />
         <WebSiteSchema />
         <DiagnosticSuiteSchema />
-        {/* Per-page BreadcrumbList JSON-LD, derived from the request path
-            (set by middleware as `x-pathname`). Lifts SERP CTR by replacing
-            the long URL with a clean Home > Section > Page trail. */}
-        <AutoBreadcrumb />
+        {/* AutoBreadcrumb IS NOT MOUNTED (2026-08-29). The component file is
+            untouched at components/seo/AutoBreadcrumb.tsx — only this mount is
+            removed — but it must not be restored as written, because it was
+            costing the entire site and delivering nothing.
+
+            IT PRODUCED NO BREADCRUMBS. Its intent was a BreadcrumbList JSON-LD
+            on every deep page, to replace the long URL in search results with
+            a Home > Section > Page trail. It returns that schema inside a
+            next/script <Script> tag, which injects client-side, so a crawler
+            never sees it. Verified against the live site as Googlebot on
+            /repair-centre/ups/ups-bypass-fault and /generators/sizes/100-kva:
+            no BreadcrumbList on either — the exact "JSON-LD via next/script is
+            invisible" trap this project has hit before.
+
+            AND IT FORCED THE WHOLE SITE DYNAMIC. It reads the path via
+            headers(), and a request API called from the ROOT layout opts every
+            page into dynamic rendering. That is what produced
+                Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+            on all ~3,400 URLs, so no visitor's browser ever cached a page and
+            repeat visits re-downloaded 440KB of HTML. This mount was the last
+            of three such triggers, after i18n.ts's cookies() read and the
+            layout's own getLocale()/getMessages().
+
+            TO BRING BREADCRUMBS BACK PROPERLY: render the JSON-LD as a plain
+            <script type="application/ld+json"> so it is in the server HTML,
+            and pass the path in from each route rather than reading headers()
+            here — otherwise the schema costs every page its cacheability. */}
 
         <nav id="main-navigation" aria-label="Main navigation">
           <TeslaStyleNavigation />
@@ -514,6 +823,11 @@ export default async function RootLayout({
         <div id="contact-section">
           <PremiumFooter />
         </div>
+
+        {/* Keyboard shortcuts reference for screen readers — see the note where
+            this used to mount, at the top of <body>. Placed after the content so
+            it is not the document's first heading. */}
+        <KeyboardShortcutsHelper />
         
         {/* ═══════════════════════════════════════════════════════════════════
             NON-CRITICAL: Client-side components loaded after page is interactive

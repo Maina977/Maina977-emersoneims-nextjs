@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Infrastructure Power Solutions | Construction • Dams • Ports • Telecom | 24/7 Support | EmersonEIMS Africa',
+  title: 'Infrastructure Power Solutions',
   description: 'Construction site generators, infrastructure project power systems. Roads, dams, ports, airports, railways, telecom towers. Temporary to permanent solutions. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/infrastructure',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function InfrastructurePage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -282,6 +282,6 @@ export default function InfrastructurePage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

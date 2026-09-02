@@ -48,6 +48,38 @@ export interface Service {
 // SERVICES WE OFFER
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/**
+ * Where a location-service slug's CANONICAL national page actually lives.
+ *
+ * The slugs in `SERVICES` are the second segment of /locations/[location]/[service].
+ * They are not top-level routes. Linking to `/${service.slug}` happened to work
+ * for `generators` and `solar` — which do exist at the root — and 404'd for
+ * every other one. A live crawl caught /ups, /electrical, /motors, /borehole,
+ * /ac, /generator-diagnostics and /spare-parts all returning 404 from links the
+ * site itself published.
+ *
+ * Every path below was verified to return HTTP 200 on the live site before
+ * being written here. `electrical` has no dedicated service page, so it points
+ * at the maintenance hub section that does cover it rather than at a route that
+ * does not exist.
+ */
+const SERVICE_CANONICAL_PATH: Record<string, string> = {
+  generators: '/generators',
+  solar: '/solar',
+  ups: '/services/ups-systems',
+  electrical: '/maintenance-hub/electrical',
+  motors: '/services/motor-rewinding',
+  borehole: '/services/borehole-pumps',
+  ac: '/services/air-conditioning',
+  'generator-diagnostics': '/diagnostics',
+  'spare-parts': '/marketplace',
+};
+
+/** Canonical national page for a location-service slug. Falls back to the services index. */
+export function getServicePath(slug: string): string {
+  return SERVICE_CANONICAL_PATH[slug] ?? '/services';
+}
+
 export const SERVICES: Service[] = [
   {
     slug: 'generators',
@@ -791,9 +823,39 @@ export function generateLocationSEO(serviceSlug: string, locationSlug: string) {
   const locationName = location.name;
   const countyName = county?.name || '';
 
+  /*
+   * TITLE AND DESCRIPTION TUNED FROM SEARCH CONSOLE (July 2026).
+   *
+   * These pages RANK and do not convert:
+   *     /locations/eldoret/solar      309 impressions   6 clicks   position 7.1
+   *     /locations/kisumu/solar       201 impressions   5 clicks   position 8.2
+   *     /locations/eldoret/electrical  63 impressions   0 clicks   position 5.9
+   *     /locations/emali/electrical    56 impressions   0 clicks   position 6.4
+   * Five of them held 693 impressions for 12 clicks — 1.7% CTR from page one.
+   * Position 5.9 to 8.2 is not a ranking problem.
+   *
+   * TWO FAULTS, BOTH HERE, BOTH AFFECTING EVERY LOCATION PAGE:
+   *
+   * 1. THE BRAND APPEARED TWICE. This template ended "| EmersonEIMS" while the
+   *    root layout appends "| EmersonEIMS Kenya", so the live title read
+   *    "Solar in Eldoret, Uasin Gishu | EmersonEIMS | EmersonEIMS Kenya".
+   *    Repetition reads as keyword stuffing and burns the characters that
+   *    should be selling. The suffix is dropped; the root still adds the brand.
+   *
+   * 2. "Professional <service> in <town>" PROMISED NOTHING. Every competitor
+   *    says the same words. Someone searching "solar eldoret" wants to know
+   *    whether anyone will actually come out to them. So the title now states
+   *    what we do — install, service, parts — and the description leads with
+   *    engineers on site in their county and the phone number.
+   *
+   * Keep the title under about 45 characters before the inherited suffix.
+   */
+  const countySuffix = county && county.slug !== locationSlug ? `, ${countyName}` : '';
+  const reach = countyName || 'Kenya';
+
   return {
-    title: `${service.shortName} in ${locationName}${county && county.slug !== locationSlug ? `, ${countyName}` : ''} | EmersonEIMS`,
-    description: `Professional ${service.name.toLowerCase()} in ${locationName}, Kenya. ${service.description} Serving ${locationName} and surrounding areas. Call +254768860665 for 24/7 service.`,
+    title: `${service.shortName} in ${locationName}${countySuffix} | Install & Service`,
+    description: `${service.name} in ${locationName}. Installation, servicing and genuine spare parts, with engineers on site across ${reach}. Call +254768860665.`,
     keywords: service.keywords.map(kw => `${kw} ${locationName}`),
     h1: `${service.shortName} in ${locationName}`,
     breadcrumbs: [

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Motor Rewinding Kenya | Electric Motor Repair, VFD Integration | EmersonEIMS",
+  title: "Motor Rewinding Kenya",
   description: "Expert motor rewinding services in Kenya. Electric motor repair, diagnostics, VFD integration, preventive maintenance. All motor sizes from 0.5HP to 500HP. Nairobi workshop. Call +254 768 860 665.",
   keywords: "motor rewinding Kenya, electric motor repair Kenya, motor repair Nairobi, VFD motor Kenya, motor diagnostics, burnt motor repair, motor maintenance Kenya, industrial motor repair, motor winding Kenya, three phase motor repair",
   openGraph: {
-    title: "Motor Rewinding Kenya | Expert Repair & Diagnostics | EmersonEIMS",
+    title: "Motor Rewinding Kenya | Expert Repair & Diagnostics",
     description: "Professional motor rewinding, diagnostics, and VFD integration services in Kenya. All motor sizes.",
     url: "https://www.emersoneims.com/solutions/motor-rewinding",
     siteName: "EmersonEIMS",

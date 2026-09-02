@@ -179,7 +179,7 @@ export default function InnovationsPage() {
     : innovations.filter(i => i.status === filter);
 
   return (
-    <main className="min-h-screen bg-black text-white relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
       <div className="fixed inset-0 opacity-20">
@@ -331,6 +331,6 @@ export default function InnovationsPage() {
           </div>
         </motion.div>
       </div>
-    </main>
+    </div>
   );
 }

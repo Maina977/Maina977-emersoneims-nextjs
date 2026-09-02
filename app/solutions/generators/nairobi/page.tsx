@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Installation & Emergency Repair in Nairobi | 4-Hour Response',
+  title: 'Generator Installation & Repair, Nairobi',
   description: 'Emergency generator repair in Nairobi. Installation, maintenance, 24/7 support. KES 50K-200K emergency call-out. Transparent pricing.',
   alternates: {
     canonical: 'https://www.emersoneims.com/solutions/generators/nairobi',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function NairobiGeneratorPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl font-bold mb-6">
@@ -108,6 +108,6 @@ export default function NairobiGeneratorPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

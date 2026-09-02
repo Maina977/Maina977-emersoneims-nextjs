@@ -57,11 +57,20 @@ export default function CinematicVideoSection() {
             <button
               onClick={start}
               className="group absolute inset-0 w-full h-full cursor-pointer"
-              aria-label="Play the EmersonEIMS services video"
             >
+              {/* No aria-label, and the poster is alt="" (decorative).
+                  The button already contains the visible text "Watch our work
+                  — 28 seconds", so that becomes its accessible name and the
+                  two now match, which WCAG 2.5.3 requires. Previously the
+                  aria-label said "Play the EmersonEIMS services video" and
+                  contained neither the visible caption nor the image alt, so
+                  a voice-control user reading the button aloud could not
+                  activate it. The poster is decorative here: it is the frame
+                  of the video the button plays, and the caption carries the
+                  meaning. */}
               <Image
                 src="/images/voltka/voltka-vks44-dispatch-crane.webp"
-                alt="VOLTKA Cummins generator dispatch — play video"
+                alt=""
                 fill
                 sizes="(min-width: 1536px) 1400px, 100vw"
                 quality={88}

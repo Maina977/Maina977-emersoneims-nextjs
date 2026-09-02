@@ -14,7 +14,7 @@ import {
  * Research-backed tactics to increase generator sales conversion:
  * 1. Urgency (limited stock, price increase warnings)
  * 2. Social proof (recent purchases, reviews)
- * 3. Risk reversal (3-year warranty, money-back guarantee)
+ * 3. Risk reversal (2-year warranty, money-back guarantee)
  * 4. Financing options (make it affordable)
  * 5. Free value-adds (delivery, installation, training)
  */
@@ -42,7 +42,7 @@ const HOT_DEALS: GeneratorDeal[] = [
     originalPrice: 850000,
     salePrice: 725000,
     stock: 3,
-    warranty: '3 Years',
+    warranty: '2 Years',
     features: ['Silent Canopy', 'Auto Start', 'DeepSea Controller', 'Free Delivery']
   },
   {
@@ -53,7 +53,7 @@ const HOT_DEALS: GeneratorDeal[] = [
     originalPrice: 1450000,
     salePrice: 1250000,
     stock: 2,
-    warranty: '3 Years',
+    warranty: '2 Years',
     features: ['Industrial Grade', 'ATS Included', 'Remote Monitoring', 'Free Installation']
   },
   {
@@ -64,7 +64,7 @@ const HOT_DEALS: GeneratorDeal[] = [
     originalPrice: 2200000,
     salePrice: 1890000,
     stock: 4,
-    warranty: '3 Years',
+    warranty: '2 Years',
     features: ['Prime Power', 'Sound Attenuated', 'Digital Controller', 'Fuel Tank 500L']
   },
 ];
@@ -255,7 +255,7 @@ export default function GeneratorSalesBooster() {
           </div>
           <div className="text-center">
             <Shield className="w-5 h-5 text-green-500 mx-auto mb-1" />
-            <span className="text-xs text-gray-400">3-Year Warranty</span>
+            <span className="text-xs text-gray-400">2-Year Warranty</span>
           </div>
           <div className="text-center">
             <Clock className="w-5 h-5 text-blue-500 mx-auto mb-1" />

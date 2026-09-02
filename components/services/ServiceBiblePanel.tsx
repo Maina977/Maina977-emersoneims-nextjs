@@ -160,7 +160,14 @@ export default function ServiceBiblePanel({ bible, contactPhoneDisplay, contactW
         {/* Brands */}
         {filtered.brands.length > 0 && (
           <section id="bible-brands" className="mb-14 scroll-mt-32">
-            <h3 className="text-2xl font-bold text-white mb-4">Top 10 Brands & Capabilities</h3>
+            <h3 className="text-2xl font-bold text-white mb-2">Top 10 Brands &amp; Capabilities</h3>
+            <p className="text-sm text-slate-400 mb-4 max-w-3xl">
+              Independent capability summaries to help you compare options. We are not
+              affiliated with these manufacturers except where stated. Warranty periods
+              are the typical published terms and vary by model, market and channel —
+              treat them as a starting point and confirm the current terms with the
+              manufacturer or dealer before you buy.
+            </p>
             <div className="grid md:grid-cols-2 gap-4">
               {filtered.brands.map((b, i) => (
                 <article key={i} className="rounded-xl border border-slate-700 bg-slate-900/60 p-5">
@@ -178,7 +185,7 @@ export default function ServiceBiblePanel({ bible, contactPhoneDisplay, contactW
                   <p className="text-sm text-slate-300 mb-3">{b.capability}</p>
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {b.bestFor.map((u, j) => (
-                      <span key={j} className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                      <span key={j} className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
                         {u}
                       </span>
                     ))}
@@ -324,7 +331,14 @@ export default function ServiceBiblePanel({ bible, contactPhoneDisplay, contactW
         {/* ROI */}
         {filtered.roi.length > 0 && (
           <section id="bible-roi" className="mb-14 scroll-mt-32">
-            <h3 className="text-2xl font-bold text-white mb-4">ROI & Cost Scenarios</h3>
+            <h3 className="text-2xl font-bold text-white mb-2">ROI &amp; Cost Scenarios</h3>
+            <p className="text-sm text-slate-400 mb-4 max-w-3xl">
+              Indicative planning estimates only, not a quotation. Figures are typical
+              ranges for the Kenyan market and move with exchange rates, import duty,
+              specification and site conditions. Savings and payback depend on your own
+              tariff, runtime and load profile. Ask us for a site-specific figure before
+              committing budget to any of these numbers.
+            </p>
             <div className="overflow-x-auto rounded-xl border border-slate-700">
               <table className="w-full text-sm">
                 <thead className="bg-slate-900 text-slate-400 text-left">

@@ -527,7 +527,7 @@ export default function GalleryPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
       {/* Hero */}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-green-900/20 via-transparent to-transparent" />
@@ -707,7 +707,7 @@ export default function GalleryPage() {
             <Link href="/booking" className="px-8 py-4 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition-colors">
               📅 Book a Consultation
             </Link>
-            <a href="https://wa.me/254768860665" className="px-8 py-4 bg-white/10 text-white font-bold rounded-full hover:bg-white/20 transition-colors">
+            <a href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20work%20I%20saw%20in%20your%20gallery." className="px-8 py-4 bg-white/10 text-white font-bold rounded-full hover:bg-white/20 transition-colors">
               💬 Chat on WhatsApp
             </a>
           </div>
@@ -812,7 +812,7 @@ export default function GalleryPage() {
                         Get Quote
                       </Link>
                       <a 
-                        href="https://wa.me/254768860665"
+                        href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20work%20I%20saw%20in%20your%20gallery."
                         className="flex-1 px-4 py-3 bg-white/10 text-white font-medium rounded-lg text-center hover:bg-white/20 transition-colors"
                       >
                         WhatsApp
@@ -830,6 +830,6 @@ export default function GalleryPage() {
           </motion.div>
         )}
       </AnimatePresence>
-    </main>
+    </div>
   );
 }

@@ -24,7 +24,7 @@ export default function PageLayout({
   className = '',
 }: PageLayoutProps) {
   return (
-    <main className={`min-h-screen bg-black text-white ${className}`}>
+    <div className={`min-h-screen bg-black text-white ${className}`}>
       {/* Hero Section */}
       <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
         {/* Background Gradient */}
@@ -75,7 +75,7 @@ export default function PageLayout({
       <div className="relative z-10">
         {children}
       </div>
-    </main>
+    </div>
   );
 }
 

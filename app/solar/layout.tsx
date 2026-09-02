@@ -8,8 +8,8 @@ import Script from 'next/script';
  */
 
 export const metadata: Metadata = {
-  title: 'Solar Solution School | 10 AI Engines | World\'s Most Advanced Solar Platform | EmersonEIMS',
-  description: 'Comprehensive solar design platform with 10 AI engines with 10 AI engines. 3D AI modeling, voice commands, neural optimization, 25-year predictions. Covers 15 African countries. Enterprise integrations with Salesforce & DocuSign. Free AI-powered solar design.',
+  title: 'Solar Solution School | 10 AI Engines',
+  description: 'Commercial and industrial solar in Kenya: design, supply, installation and maintenance, with free 3D system modelling and load sizing before you commit.',
   authors: [{ name: 'EmersonEIMS' }],
   creator: 'EmersonEIMS',
   publisher: 'EmersonEIMS',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     locale: 'en_KE',
     url: 'https://www.emersoneims.com/solar',
     siteName: 'EmersonEIMS',
-    title: 'Solar Solution School | 10 AI Engines | EmersonEIMS',
+    title: 'Solar Solution School | 10 AI Engines',
     description: 'Leading solar design platform. 10 AI engines: 3D Design, Voice Control, Neural Optimizer, Permit Generator, Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, Grid Analyzer. 15 African countries.',
     images: [
       {
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Solar Solution School | 10 AI Engines | EmersonEIMS',
+    title: 'Solar Solution School | 10 AI Engines',
     description: 'World\'s most advanced solar AI. 10 engines, 15 countries, voice control, 3D design. Free.',
     images: ['/images/solar-ai-platform-og.jpg'],
     creator: '@EmersonEiMS',
@@ -141,7 +141,7 @@ const structuredData = {
           name: 'Is Solar Solution School free to use?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes, Solar Solution School is free to use. All 10 AI engines, 3D design tools, voice control, and calculators are available at no cost. Enterprise integrations with Salesforce, DocuSign, and QuickBooks are also included.',
+            text: 'Yes. The design engines, 3D layout tools and calculators are free to use, with no account required.',
           },
         },
         {

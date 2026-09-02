@@ -1,15 +1,15 @@
 ﻿/**
- * CUMMINS GENERATORS BY VOLTKA - AUTHORIZED DEALER DATA
- * EmersonEIMS is Kenya's Authorized Cummins/Voltka Dealer
+ * CUMMINS GENERATORS BY VOLTKA - BRAND DATA
+ * EmersonEIMS sells and services Cummins generators supplied by Voltka in Kenya
  *
  * SEO Keywords: Cummins generators Kenya, Voltka generators,
- * authorized Cummins dealer Kenya, Cummins 10-2000KVA
+ * Cummins generator supplier Kenya, Cummins 10-2000KVA
  */
 
 export const CUMMINS_BRAND_INFO = {
   brandName: 'Cummins',
   supplier: 'Voltka',
-  dealerStatus: 'Authorized Dealer',
+  dealerStatus: 'Sales & Service',
   country: 'Kenya',
   powerRange: {
     min: 10,
@@ -18,22 +18,22 @@ export const CUMMINS_BRAND_INFO = {
   },
   warranty: {
     years: 3,
-    description: '3 Years Comprehensive Warranty'
+    description: '2 Years Comprehensive Warranty'
   },
   freeService: {
     years: 1,
     description: '1 Year Free Service & Maintenance'
   },
   taglines: [
-    'Kenya\'s Authorized Cummins Dealer',
+    'Cummins Sales & Service Across Kenya',
     'Powered by Voltka - Trusted Worldwide',
-    '3 Years Warranty + 1 Year Free Service',
+    '2 Years Warranty + 1 Year Free Service',
     '10KVA to 2000KVA - All Power Needs Covered',
     'Genuine Cummins Parts & Expert Service'
   ],
   benefits: [
     {
-      title: '3 Years Warranty',
+      title: '2 Years Warranty',
       description: 'Industry-leading comprehensive warranty on all Cummins generators',
       icon: 'shield'
     },
@@ -43,8 +43,8 @@ export const CUMMINS_BRAND_INFO = {
       icon: 'wrench'
     },
     {
-      title: 'Authorized Dealer',
-      description: 'Official Voltka/Cummins authorized dealer in Kenya',
+      title: 'Sales & Service',
+      description: 'Cummins (Voltka) generator sales and service in Kenya',
       icon: 'badge'
     },
     {
@@ -66,7 +66,7 @@ export const CUMMINS_BRAND_INFO = {
   seoKeywords: [
     'Cummins generators Kenya',
     'Voltka generators Kenya',
-    'authorized Cummins dealer Kenya',
+    'Cummins generator supplier Kenya',
     'Cummins generator price Kenya',
     'Cummins 10KVA generator',
     'Cummins 20KVA generator',
@@ -81,7 +81,7 @@ export const CUMMINS_BRAND_INFO = {
     'industrial generators Kenya',
     'diesel generators Kenya',
     'Cummins warranty Kenya',
-    'generator 3 year warranty',
+    'generator 2 Years warranty',
     'Voltka Kenya dealer'
   ],
   models: [
@@ -140,12 +140,12 @@ export const CUMMINS_BRAND_INFO = {
 
 export const CUMMINS_FAQ = [
   {
-    question: "Is EmersonEIMS an authorized Cummins dealer in Kenya?",
-    answer: "Yes, EmersonEIMS is an official authorized dealer for Cummins generators supplied by Voltka in Kenya. We offer genuine Cummins generators from 10KVA to 2000KVA with full manufacturer warranty and support."
+    question: "Does EmersonEIMS supply and service Cummins generators in Kenya?",
+    answer: "EmersonEIMS sells and services Cummins generators supplied by Voltka in Kenya. We supply genuine Cummins generators from 10KVA to 2000KVA with full manufacturer warranty and support."
   },
   {
     question: "What warranty do Cummins generators come with?",
-    answer: "All Cummins generators from EmersonEIMS come with a comprehensive 3-year warranty covering parts and labor, plus 1 year of free service and maintenance included."
+    answer: "All Cummins generators from EmersonEIMS come with a comprehensive 2-year warranty covering parts and labor, plus 1 year of free service and maintenance included."
   },
   {
     question: "What sizes of Cummins generators are available?",
@@ -161,7 +161,7 @@ export const CUMMINS_FAQ = [
   },
   {
     question: "Are genuine Cummins spare parts available?",
-    answer: "Yes, we maintain a comprehensive inventory of genuine Cummins spare parts. As an authorized dealer, all our parts come with full traceability and manufacturer guarantee."
+    answer: "Yes, we maintain a comprehensive inventory of genuine Cummins spare parts, with full traceability and manufacturer guarantee."
   },
   {
     question: "What industries do you serve?",

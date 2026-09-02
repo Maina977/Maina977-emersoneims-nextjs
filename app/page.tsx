@@ -25,13 +25,54 @@ const RingGallery = dynamic(() => import('@/components/home/RingGallery'), {
 });
 import HomeEngineeringAuthority from '@/components/home/HomeEngineeringAuthority';
 import AIToolsPromo from '@/components/ai/AIToolsPromo';
-import AIAdvantageHero from '@/components/home/AIAdvantageHero';
-import CumminsShopNow from '@/components/home/CumminsShopNow';
-import FinancingCalculator from '@/components/home/FinancingCalculator';
+/*
+ * FIVE HOMEPAGE SECTIONS WERE RENDERING NOTHING.
+ *
+ * components/home/{CumminsShopNow,FinancingCalculator,AIAdvantageHero,
+ * SocialProofWidget,CountyCoverageMap}.tsx are each three lines long:
+ *     return <div className="py-20 px-4 bg-black" />;
+ * They were created as empty placeholders in 8211b03 ("Resolve Vercel build
+ * errors ... missing components") to satisfy these imports and get a failing
+ * build through, and were never filled in. Nothing was deleted — but the
+ * homepage has been shipping roughly 800px of blank black in its most valuable
+ * region ever since, and the real implementations sat unimported in
+ * app/components/home/.
+ *
+ * Four are wired below. ONE is deliberately not, and must never be:
+ *
+ *   SocialProofWidget — contains four FABRICATED testimonials attributed to
+ *     invented named individuals ("Dr. James Kipchoge", "Sarah Mwangi", ...),
+ *     each flagged `verified: true`, with invented metrics ("99.8% uptime SLA
+ *     met", "45% cost reduction") and a named hospital director saying our
+ *     service "saved lives". The owner's position is explicit: reviews are
+ *     earned through work actually done. Real testimonials would be welcome
+ *     here; these are not testimonials, they are fiction.
+ *
+ * CumminsShopNow WAS held back for three reasons, all now resolved: the
+ * "3 Years" warranty is corrected to the owner-confirmed two years; the
+ * hardcoded stock counts (7/5/4/3), which no inventory system produced and
+ * which would be wrong the first time a set sold, now read "Ask for
+ * availability"; and the prices — a 62 kVA at KES 1,580,000 against a
+ * published 60 kVA range of 1,100,000–1,350,000 — are no longer written in
+ * that file at all. Each card now reads its band from GENERATOR_SIZES, the
+ * same source /generators renders, so the two cannot drift apart.
+ *
+ * The four below load via next/dynamic so their client JS is split out of the
+ * entry bundle — measured script evaluation on this page is already 8.8s under
+ * Lighthouse's 4x CPU throttle, so adding three client components eagerly
+ * would trade one defect for another. ssr stays on (default), so the markup is
+ * still server-rendered and crawlable.
+ */
+const AIAdvantageHero = dynamic(() => import('@/app/components/home/AIAdvantageHero'));
+const CumminsShopNowReal = dynamic(() => import('@/app/components/home/CumminsShopNow'));
+const FinancingCalculatorReal = dynamic(() => import('@/app/components/home/FinancingCalculator'));
+const CountyCoverageMapReal = dynamic(() => import('@/app/components/home/CountyCoverageMap'));
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
 import TradeInCalculator from '@/components/home/TradeInCalculator';
+import { COMMERCIAL_POLICY } from '@/lib/commercial/policy';
 import SocialProofWidget from '@/components/home/SocialProofWidget';
-import CountyCoverageMap from '@/components/home/CountyCoverageMap';
+import RecentWorkSection from '@/components/home/RecentWorkSection';
+import ClientTestimonials from '@/components/home/ClientTestimonials';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
 // 3D ring showcase — sister piece to the About page spiral gallery.
@@ -59,11 +100,17 @@ const RING_GALLERY_ITEMS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.emersoneims.com'),
-  title: "EmersonEIMS | B2B Generators, Solar & Engineering Partner — Kenya | 3-Year Warranty",
-  description: "EmersonEIMS — B2B power & engineering for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators. Cummins, Perkins & FG Wilson specialist. 3-year warranty, SLA-backed maintenance, 24/7 emergency response across 47 counties. Call +254768860665.",
+  /*
+   * 58 characters. The previous title ran 83 against roughly 60 rendered, so
+   * "| 2-Year Warranty" was written and never shown. It also opened with the
+   * brand — redundant for anyone who searched the brand, and irrelevant to
+   * anyone who did not. This leads with what is sold and where.
+   */
+  title: "Generators, Solar & UPS in Kenya",
+  description: "Generators, solar, UPS, motors, boreholes and incinerators for Kenyan industry, healthcare and telecom. Nationwide service. Call +254768860665.",
   openGraph: {
     title: "EmersonEIMS | B2B Power & Engineering Partner — Kenya",
-    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. 3-year warranty, SLA maintenance, 24/7 emergency. Cummins, Perkins & FG Wilson specialist. AI-assisted diagnostic and design tools.",
+    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. SLA maintenance, 24/7 emergency response, nationwide mobile workshop. Cummins, Perkins & FG Wilson specialist. AI-assisted diagnostic and design tools.",
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
     type: 'website',
     locale: 'en_KE',
@@ -73,7 +120,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'EmersonEIMS | B2B Power & Engineering — Kenya',
-    description: 'Generators, solar, UPS, HVAC, boreholes, incinerators. Cummins specialist. 3-year warranty, SLA maintenance, 24/7 emergency response. Call +254768860665',
+    description: 'Generators, solar, UPS, HVAC, boreholes, incinerators. Cummins specialist. SLA maintenance, 24/7 emergency response, nationwide mobile workshop. Call +254768860665',
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
   },
   alternates: {
@@ -124,11 +171,27 @@ function StaticHeroFallback() {
           style={{ aspectRatio: '16/9', width: '100%', height: '100%' }}
           sizes="100vw"
         />
-        {/* Hero video — TABLET+ ONLY (md↑, ≥768px). Most phones in
-            landscape are 700-900px wide, so we now gate at `md:` instead of
-            `sm:` to keep the 18 MB video off every phone, including
-            landscape. Image stays as poster + fallback for phones, slow
-            connections and SEO. */}
+        {/* Hero video — TABLET+ ONLY (md↑, ≥768px).
+            THE GATE IS ON THE <source>, NOT ONLY THE CLASS. `hidden md:block`
+            and preload="none" were both already here and neither stopped the
+            download: autoPlay overrides preload, and display:none does not
+            prevent a video from fetching. Measured on the live homepage under
+            Lighthouse mobile throttling, this file was pulled anyway —
+            3,700KB over 10,551ms — which saturated the connection and starved
+            the hero image. LCP was 7.6s of which 6,655ms (87%) was Render
+            Delay, while the image's own load time was ~0.
+            A media attribute on <source> is the fix: below 768px NO source
+            matches, so the element has nothing to fetch. No JavaScript, and
+            desktop is unchanged.
+
+            THE poster ATTRIBUTE IS ALSO GONE. It named the RAW original of the
+            same photograph the <Image> above already renders, and a poster
+            downloads even when the video is display:none — measured on mobile
+            as a second 39KB fetch of a picture the optimiser was serving at
+            35KB a few bytes away, competing with the LCP image on a throttled
+            connection. The Image sits directly behind the video, so before
+            playback it is exactly what the viewer sees. The poster was drawing
+            the same picture twice. */}
         <video
           className="absolute inset-0 w-full h-full object-cover hidden md:block [filter:brightness(1.14)_contrast(1.07)_saturate(1.15)]"
           autoPlay
@@ -136,14 +199,23 @@ function StaticHeroFallback() {
           loop
           playsInline
           preload="none"
-          poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
           aria-hidden="true"
         >
-          <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" />
+          <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" media="(min-width: 768px)" />
         </video>
         {/* Lighter grade than before (70/40 → 55/25): keeps text legible while
             letting the 4K-graded footage read bright and cinematic. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/90" />
+        {/* Scrim over the hero video.
+            The middle stop was black/25, and the H1 sits exactly there. That
+            was survivable while the video showed a night city, but the footage
+            also runs through a bright sunset, and amber type over lit orange
+            cloud came out close to unreadable — screenshotted at 1440x900 to
+            confirm. Because the background is video, contrast cannot be judged
+            from one frame: the scrim has to hold for the BRIGHTEST frame, not
+            the average one. Raised to /50 through the middle, which keeps the
+            footage clearly visible while the headline stays legible
+            throughout. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/50 to-black/90" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(251,191,36,0.22),transparent_60%)]" />
       </div>
 
@@ -157,19 +229,42 @@ function StaticHeroFallback() {
           {/* Badge - Apple-style pill */}
           <div className="inline-flex items-center gap-2 mb-6 sm:mb-8 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 backdrop-blur-sm">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-xs sm:text-sm text-amber-300 tracking-wider uppercase font-medium">AI-Powered Energy & Engineering · East Africa</span>
+            <span className="text-xs sm:text-sm text-amber-300 tracking-wider uppercase font-medium">Generator Sales, Installation & 24/7 Repair · All 47 Counties</span>
           </div>
 
           {/* Hero Title - Apple-style display typography */}
-          {/* H1 (audit 2026-07-20, owner-approved): was "POWER & BUILD /
-              REDEFINED BY AI". That wording carried no service word and no
-              place name, so the single strongest on-page ranking signal on the
-              site earned nothing for "generator", "solar" or "Kenya". The AI
-              identity and the two-line cinematic cadence are retained — the
-              first line now names what we actually sell. */}
-          <h1 className="apple-display mb-6 sm:mb-8">
+          {/* H1 — revised twice, each time for the same reason.
+              2026-07-20: was "POWER & BUILD / REDEFINED BY AI", which named no
+              service and no place, so the strongest on-page signal on the site
+              earned nothing. Line one was changed to name the products.
+              2026-08-27: line two still said "POWER, REDEFINED BY AI". That is
+              the amber line — the largest, brightest text on the page — and it
+              described a technology rather than a business. A visitor landing
+              cold could read the biggest words here and still not know we sell,
+              install and repair machines.
+
+              LENGTH IS A DESIGN CONSTRAINT HERE, NOT A PREFERENCE. The first
+              replacement read "SOLD, INSTALLED, SERVICED — KENYA-WIDE" (38
+              chars) and was shipped without anyone looking at the rendered
+              page. Measured afterwards in a real browser it wrapped to FOUR
+              lines at 390px and broke mid-word as "KENYA-/WIDE" at 1440px,
+              making the H1 252px tall on a phone and 420px on desktop, which
+              pushed the subtitle and both call-to-action buttons below the
+              fold on every screen size.
+
+              The rule: line two must be about as long as line one (24 chars),
+              so each wraps to two lines and the block stays a tidy rectangle.
+              "SOLD & SERVICED IN KENYA" is 24 characters, carries the
+              commercial verbs and the place name, and restores the fold.
+              Anything longer must be measured in a browser before it ships. */}
+          {/* text-balance: without it the browser fills each line greedily and
+              broke line one as "GENERATORS · SOLAR ·" / "UPS", stranding one
+              word under a dangling separator. Balancing distributes the words
+              evenly across the lines instead, which is what the two-line
+              cadence was designed around. */}
+          <h1 className="apple-display mb-6 sm:mb-8 text-balance">
             <span className="block text-white">GENERATORS · SOLAR · UPS</span>
-            <span className="block text-amber-500">POWER, REDEFINED BY AI</span>
+            <span className="block text-amber-500">SOLD &amp; SERVICED IN KENYA</span>
           </h1>
 
           {/* Subtitle - Apple-style subheadline.
@@ -193,7 +288,7 @@ function StaticHeroFallback() {
               href="/contact?type=emergency"
               className="w-full sm:w-auto px-6 sm:px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold text-base sm:text-lg rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-amber-500/25 tap-scale touch-target"
             >
-              Emergency Power in 48 Hours
+              Request Emergency Power
             </Link>
             <a
               href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20need%20help%20with%20generator%2Fsolar%20services"
@@ -225,7 +320,11 @@ function StaticHeroFallback() {
                 the homepage's existing length. */}
             <span className="flex items-center justify-center gap-1">✓ Mobile Workshop · 47 Counties</span>
             <span className="flex items-center justify-center gap-1">✓ 24/7 Emergency Response</span>
-            <span className="flex items-center justify-center gap-1">✓ 3-Year Warranty</span>
+            {/* "2-Year Warranty" stood here as a site-wide promise applied to
+                new, used and refurbished sets alike, with no approved schedule
+                behind it. See lib/commercial/policy.ts for why the mechanism is
+                stated instead of a duration. */}
+            <span className="flex items-center justify-center gap-1">✓ {COMMERCIAL_POLICY.warrantyShort}</span>
             <span className="flex items-center justify-center gap-1">✓ SLA Maintenance</span>
           </div>
         </div>
@@ -250,7 +349,7 @@ function StaticStatsSection() {
   const stats = [
     { num: '47', label: 'Counties Covered', icon: '🌍' },
     { num: '24/7', label: 'Emergency Response', icon: '🚨' },
-    { num: '3-Year', label: 'Warranty', icon: '🛡️' },
+    { num: '2-Year', label: 'Warranty', icon: '🛡️' },
     { num: '20–2000', label: 'kVA Range Installed', icon: '⚡' },
   ];
 
@@ -289,7 +388,7 @@ function StaticFeaturesSection() {
           Powering East Africa's critical infrastructure across
           manufacturing, healthcare, telecom and commercial property.
           From <span className="text-amber-400">20kVA</span> commercial systems to <span className="text-amber-400">2000kVA</span> industrial installations,
-          backed by a <span className="text-white font-semibold">3-year warranty</span> and SLA-bound maintenance.
+          installed, commissioned and backed by SLA-bound maintenance.
         </p>
       </div>
     </section>
@@ -304,7 +403,7 @@ function AITechnologyShowcase() {
       subtitle: 'AI Diagnostic System',
       // Audit 2026-07-18: removed a duplicate `description` key (pre-existing —
       // the first value was silently discarded by JS and flagged TS1117).
-      description: 'AI-assisted diagnostic assistant that analyses generator symptoms, looks them up against a 450,000+ fault-code database, and connects you with certified technicians.',
+      description: 'AI-assisted diagnostic assistant that analyses generator symptoms, looks them up against a manufacturer-curated fault-code database, and connects you with our engineering team.',
       features: ['Symptom-based Diagnosis', 'Voice-Activated', 'Fault Code Database', 'Real-time Analysis'],
       icon: '🔧',
       gradient: 'from-amber-500 to-orange-600',
@@ -334,7 +433,13 @@ function AITechnologyShowcase() {
       icon: '☀️',
       gradient: 'from-blue-500 to-cyan-500',
       link: '/solar',
-      badge: 'WORLD #1'
+      /*
+       * badge was 'WORLD #1'. No independent ranking, award or review body
+       * has placed this tool first at anything, so the claim could not be
+       * substantiated if asked. Replaced with a fact about the tool that is
+       * checkable on the page it links to.
+       */
+      badge: '15 AFRICAN MARKETS'
     },
     {
       id: 'building-suite-pro',
@@ -364,7 +469,7 @@ function AITechnologyShowcase() {
     { number: '11', label: 'AI Engines', icon: '🤖' },
     { number: '47', label: 'Counties Covered', icon: '🌍' },
     { number: '24/7', label: 'Emergency Response', icon: '🚨' },
-    { number: '3-Year', label: 'Warranty', icon: '🛡️' },
+    { number: '2-Year', label: 'Warranty', icon: '🛡️' },
   ];
 
   return (
@@ -383,7 +488,11 @@ function AITechnologyShowcase() {
             </span>
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Industry-leading AI technology built for Africa. From generator diagnostics to solar design, we&apos;re redefining what&apos;s possible.
+            {/* "Industry-leading" and "redefining what is possible" are unmeasurable
+                superlatives. Replaced with what the tools actually do, which is more
+                persuasive to an engineer and is verifiable by using them. */}
+            Engineering tools built for African conditions — generator fault diagnosis,
+            solar design and load sizing, free to use on this site.
           </p>
         </div>
 
@@ -557,7 +666,7 @@ function StaticCountiesSection() {
 
 export default function HomePage() {
   return (
-    <main className="bg-black">
+    <div className="bg-black">
       {/* Structured Data for SEO - Organization */}
       <script
         type="application/ld+json"
@@ -565,10 +674,14 @@ export default function HomePage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Organization',
+            /* Same @id as the LocalBusiness node in app/layout.tsx so the graph
+               resolves to one company. Without it the homepage published two
+               unlinked entities describing the same business. */
+            '@id': 'https://www.emersoneims.com/#organization',
             name: 'EmersonEIMS',
-            description: "B2B power-engineering partner for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 3-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties. Includes engineering intelligence tools (Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro).",
+            description: "B2B power-engineering partner for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators, with SLA-backed maintenance and 24/7 emergency response, reaching all 47 counties by mobile workshop. Includes engineering intelligence tools (Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro).",
             url: 'https://www.emersoneims.com',
-            logo: 'https://www.emersoneims.com/logo.png',
+            logo: 'https://www.emersoneims.com/emerson-eims-logo.png',
             image: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
             // foundingDate, numberOfEmployees, slogan and alternateName removed
             // 2026-05-09: data-policy.md — do not assert facts that cannot be
@@ -603,9 +716,7 @@ export default function HomePage() {
               { '@type': 'GeoCircle', geoMidpoint: { '@type': 'GeoCoordinates', latitude: -1.286389, longitude: 36.817223 }, geoRadius: '2000 km' }
             ],
             sameAs: [
-              'https://www.facebook.com/emersoneims',
-              'https://www.linkedin.com/company/emersoneims',
-              'https://twitter.com/emersoneims'
+              'https://x.com/eimsemerson'
             ],
             hasOfferCatalog: {
               '@type': 'OfferCatalog',
@@ -649,7 +760,7 @@ export default function HomePage() {
                   itemOffered: {
                     '@type': 'Service',
                     name: 'Generator Sales & Installation',
-                    description: 'CUMMINS generators 10-2000KVA with 3-year warranty',
+                    description: 'CUMMINS generators 10-2000KVA, supplied, installed and commissioned',
                     provider: { '@type': 'Organization', name: 'EmersonEIMS' }
                   }
                 },
@@ -771,20 +882,26 @@ export default function HomePage() {
           for top 5 Cummins models. This is the PRIMARY CONVERSION POINT where
           online browsers become paying customers. Positioned immediately after
           product showcase to capture buying intent. */}
-      <CumminsShopNow />
+      <CumminsShopNowReal />
       {/* FINANCING CALCULATOR — shows payment options and financing partners
           (KCB, Equity, Safaricom Money). Positioned after shop section so buyers
           who see pricing can immediately calculate their monthly payment and apply. */}
-      <FinancingCalculator />
+      <FinancingCalculatorReal />
       {/* TRADE-IN CALCULATOR — removes upgrade barrier by showing trade-in value
           of old generator. Positioned after financing so buyers can see: new price →
           financing cost → trade-in credit = final cost. */}
       <TradeInCalculator />
-      {/* SERVICES LEADERSHIP MATRIX — visual proof that we're #1 across 30+
-          services (8 market leader, 5 strong competitor, 5+ emerging). Shows
-          competitive ratings (80-99) and market positioning. Positioned after
-          finance to anchor the claim "we're not just a generator company, we're
-          a complete power solutions company." */}
+      {/* WHAT WE SUPPLY — the route from the homepage into the commercial pages.
+          The component name is unchanged only to keep this import stable; what
+          it renders is no longer a "leadership matrix". The ratings and #1
+          rankings it once showed were invented and were removed earlier, but
+          that left an empty div rendering blank black here. It is now a
+          six-line router to /generators, /solar, /services/ups-systems,
+          /repair-centre, /maintenance-hub and /pricing — all verified 200 with
+          no redirect hop — because analytics showed 277 homepage visitors
+          against 18 who reached /generators. Placed after the finance
+          calculators, where a visitor who has kept scrolling is deciding what
+          they need. */}
       <ServicesLeadershipMatrix />
       {/* AI ADVANTAGE SECTION — showcases our 4 flagship AI tools as
           competitive differentiators. Positioned after leadership matrix so
@@ -795,10 +912,36 @@ export default function HomePage() {
           asking for a decision. 5 verified case studies spanning healthcare, finance,
           manufacturing, agriculture, telecom. */}
       <SocialProofWidget />
+      {/*
+        RECENT WORK — photographed proof, added 2026-08-26.
+
+        Placed immediately after the testimonials so a claim and its evidence
+        sit together. Everything above this point on the page asserts capability;
+        nothing showed it. A buyer weighing a KES 2,000,000 machine discounts
+        adjectives, but a changeover panel wired at U/V/W/N and a burnt
+        interface board on a bench read as real.
+
+        Server-rendered deliberately: proof a crawler cannot see never reaches
+        anyone searching. Source of truth is lib/projects/recentWork.ts, where
+        every fact is either visible in the photograph or was stated by the
+        owner — no client is named, and no outcome is claimed beyond what the
+        images show.
+      */}
+      <RecentWorkSection />
+      {/* Eight named client testimonials, SERVER-RENDERED so they are actually
+          crawlable. They already existed in TestimonialsSection, but that is a
+          client carousel behind LazyOnVisible: checked against the live
+          homepage as Googlebot, not one of the eight names appeared in the
+          HTML, and even mounted the carousel shows one at a time. The
+          business's strongest trust signal was invisible to Google and to the
+          AI assistants that now answer "who should I buy a generator from in
+          Kenya". Placed directly after the photographed projects so a claim and
+          the client who made it sit together. */}
+      <ClientTestimonials />
       {/* COUNTY COVERAGE MAP — visual proof of nationwide presence across all 47 counties.
           Shows delivery times and emergency response times per region. Positioned before
           final navigation to emphasize geographic advantage that competitors lack. */}
-      <CountyCoverageMap />
+      <CountyCoverageMapReal />
       <SolutionsBySector />
       <StaticFeaturesSection />
       {/* Auto-rotating 3D ring of real project photography — images "go
@@ -829,7 +972,7 @@ export default function HomePage() {
 
       {/* CLIENT INTERACTIVE SECTIONS - Load after static content */}
       <HomePageClient />
-    </main>
+    </div>
   );
 }
 // Force rebuild - Sun Jul 26 18:54:11 EAST 2026

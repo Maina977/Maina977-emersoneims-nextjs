@@ -3,13 +3,17 @@ import OptimizedImage from "@/components/media/OptimizedImage";
 import { SectionLead } from "@/components/generators";
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/specs/used/wei-chai' },
   title: "Used Wei Chai Generator Specifications",
   description: "Budget-friendly Wei Chai generators (30–1000 kVA) with 3,000–10,000 running hours, ideal for SMEs and agricultural backup power.",
 };
 
 export default function WeiChaiSpecsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="eims-shell py-16">
         <SectionLead
           title="Wei Chai Used Generators"
@@ -113,6 +117,6 @@ export default function WeiChaiSpecsPage() {
           </a>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

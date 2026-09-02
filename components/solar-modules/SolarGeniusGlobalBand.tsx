@@ -40,7 +40,7 @@ export default function SolarGeniusGlobalBand() {
         </nav>
       </div>
 
-      <div className="mx-auto grid max-w-7xl gap-3 px-4 pb-4 text-[11px] text-amber-100/70 md:grid-cols-3 md:px-6">
+      <div className="mx-auto grid max-w-7xl gap-3 px-4 pb-4 text-xs text-amber-100/70 md:grid-cols-3 md:px-6">
         <Pillar
           eyebrow="For"
           body="Solar engineers, EPCs, technicians, energy managers, procurement teams, and operations across East Africa, the wider African market, and global users."

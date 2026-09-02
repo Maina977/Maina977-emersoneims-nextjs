@@ -125,7 +125,7 @@ export default function BookingPage() {
 
   if (isSubmitted) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.booking} />
 
@@ -174,12 +174,12 @@ export default function BookingPage() {
             </a>
           </div>
         </motion.div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
       {/* Hero */}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent" />
@@ -614,7 +614,7 @@ export default function BookingPage() {
                 📞 +254768860665
               </a>
               <a
-                href="https://wa.me/254768860665"
+                href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20booking%20a%20service%20visit."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
@@ -625,6 +625,6 @@ export default function BookingPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

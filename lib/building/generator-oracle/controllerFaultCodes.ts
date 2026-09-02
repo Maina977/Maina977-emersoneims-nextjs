@@ -1,6 +1,6 @@
 /**
  * Generator Oracle - Controller Fault Code Database
- * 400,000+ authentic fault codes for professional generator controller diagnostics
+ * 6,700+ authentic fault codes for professional generator controller diagnostics
  *
  * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO, Volvo Penta VODIA
  */
@@ -313,7 +313,9 @@ import { getVODIAFaultCodes } from './data/vodia-fault-codes';
 
 // ==================== EXTENDED CODE GENERATION ====================
 
-// Generate additional alarm variations to reach 400,000+ codes
+// Tier 2 range-based expansion. NOT verified data and not part of the verified
+// code count — every entry it produces is titled "meaning not verified" and
+// carries verified:false. See the file header.
 function generateExtendedCodes(): ControllerFaultCode[] {
   const extendedCodes: ControllerFaultCode[] = [];
 
@@ -445,7 +447,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
     dseCategories.forEach(cat => {
       for (let code = cat.range[0]; code <= cat.range[1]; code++) {
         const subcat = cat.subcategories[code % cat.subcategories.length];
-        const severity = code % 10 < 3 ? 'shutdown' : code % 10 < 6 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified
         extendedCodes.push(createExtendedCode(
           `DSE-${model.replace(/\s+/g, '')}-${code}`,
           code.toString(),
@@ -490,7 +492,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = `${range.prefix}${i.toString().padStart(3, '0')}`;
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified
         extendedCodes.push(createExtendedCode(
           `COMAP-${model.replace(/\s+/g, '-')}-${code}`,
           code,
@@ -547,7 +549,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified
         extendedCodes.push(createExtendedCode(
           `WOODWARD-${model.replace(/\s+/g, '-')}-${code}`,
           code,
@@ -604,7 +606,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified
         extendedCodes.push(createExtendedCode(
           `SMARTGEN-${model}-${code}`,
           code,
@@ -737,7 +739,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified
         extendedCodes.push(createExtendedCode(
           `PW-${model.replace(/\s+/g, '')}-N${code}`,
           code,
@@ -795,7 +797,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified
         extendedCodes.push(createExtendedCode(
           `DATAKOM-${model}-${code}`,
           code,
@@ -853,7 +855,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified
         extendedCodes.push(createExtendedCode(
           `LOVATO-${model.replace(/\s+/g, '-')}-${code}`,
           code,
@@ -906,7 +908,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified
         extendedCodes.push(createExtendedCode(
           `SIEMENS-${model.replace(/\s+/g, '-')}-${code}`,
           code,
@@ -964,7 +966,7 @@ function generateExtendedCodes(): ControllerFaultCode[] {
       for (let i = range.start; i <= range.end; i++) {
         const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
         const subcat = range.subcategories[i % range.subcategories.length];
-        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        const severity = 'warning'; // template entry - real severity not verified
         extendedCodes.push(createExtendedCode(
           `ENKO-${model}-${code}`,
           code,
@@ -2074,8 +2076,9 @@ function createExtendedCode(
   const content = getDetailedFaultContent(category, subcategory, severity, model, code);
 
   // Create a unique, descriptive title
-  const severityLabel = severity === 'shutdown' ? 'SHUTDOWN' : severity === 'critical' ? 'CRITICAL' : 'WARNING';
-  const detailedTitle = `${subcategory} ${severityLabel} - Code ${code}`;
+  // Must not assert a severity or fault name we have not verified. See the
+  // equivalent note in lib/generator-oracle/controllerFaultCodes.ts.
+  const detailedTitle = `Code ${code} — ${subcategory} range (meaning not verified)`;
 
   return {
     id,

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Cummins Generator Technical Guides | Fault Codes & Maintenance | EmersonEIMS',
+  title: 'Cummins Generator Technical Guides',
   description: 'Comprehensive Cummins technical library: fault codes, maintenance schedules, troubleshooting guides, filter specifications, fuel consumption data.',
   alternates: {
     canonical: 'https://www.emersoneims.com/resources/cummins-guides',
@@ -50,7 +50,7 @@ export default function CumminsGuidesPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -270,7 +270,7 @@ export default function CumminsGuidesPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6">Need Expert Technical Support?</h2>
           <p className="text-lg text-gray-200 mb-10">
-            Our factory-trained technicians can help diagnose and resolve any Cummins generator issue.
+            Our technicians can help diagnose and resolve any Cummins generator issue.
           </p>
           <Link
             href="/contact?type=technical-support"
@@ -280,6 +280,6 @@ export default function CumminsGuidesPage() {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -138,7 +138,7 @@ export const INDUSTRIES: Industry[] = [
           'Seamless transfer - no flicker',
           'Remote monitoring via SMS/App',
           'Weekly auto-test function',
-          '3-year warranty on ATS panel'
+          '2-year warranty on ATS panel'
         ],
         price: 'From Ksh 85,000'
       },
@@ -212,7 +212,7 @@ export const INDUSTRIES: Industry[] = [
       { label: 'Hotels Served', value: '200+' },
       { label: 'Response Time', value: '4 Hours' },
       { label: 'Uptime Guarantee', value: '99.9%' },
-      { label: 'Warranty', value: '3 Years' }
+      { label: 'Warranty', value: '2 Years' }
     ]
   },
 
@@ -404,7 +404,7 @@ export const INDUSTRIES: Industry[] = [
           'Sized for your specific needs',
           'First-year maintenance included',
           'Training for school caretakers',
-          '3-year warranty'
+          '2-year warranty'
         ],
         price: 'From Ksh 280,000 (15kVA)'
       },
@@ -1069,7 +1069,7 @@ export const INDUSTRIES: Industry[] = [
           'Sized for your sound system',
           'First year maintenance included',
           'Training for church caretaker',
-          '3-year warranty'
+          '2-year warranty'
         ],
         price: 'From Ksh 180,000 (10kVA)'
       },
@@ -1143,7 +1143,7 @@ export const INDUSTRIES: Industry[] = [
       { label: 'Churches Served', value: '200+' },
       { label: 'Payment Plans', value: 'Available' },
       { label: 'Refurbished Units', value: 'In Stock' },
-      { label: 'Warranty', value: '2-3 Years' }
+      { label: 'Warranty', value: '2 Years' }
     ]
   },
 

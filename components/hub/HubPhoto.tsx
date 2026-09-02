@@ -37,6 +37,21 @@ interface Props {
   priority?: boolean;
   /** Forwarded to next/image; defaults sensible for cards. */
   sizes?: string;
+  /**
+   * Whether the file behind `photo.src` actually exists in /public.
+   *
+   * Resolved on the SERVER by components/hub/hub-photo-availability.ts and
+   * passed in, because this is a client component and cannot read the disk.
+   *
+   * The onError fallback below already prevented a broken-image icon, but it
+   * could only fire AFTER the request had failed: /hub was firing 17 requests
+   * that each 404'd, one of them a priority preload. When this is false the
+   * <Image> is never emitted and the placeholder renders straight away.
+   *
+   * Defaults to true so any caller that does not pass it keeps the previous
+   * behaviour — degraded, but never worse than before.
+   */
+  available?: boolean;
 }
 
 export default function HubPhoto({
@@ -47,8 +62,9 @@ export default function HubPhoto({
   className = '',
   priority = false,
   sizes = '(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw',
+  available = true,
 }: Props) {
-  const [errored, setErrored] = useState(false);
+  const [errored, setErrored] = useState(!available);
   const caption = captionFor(photo);
 
   return (

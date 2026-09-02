@@ -1,12 +1,12 @@
 export const metadata = {
-  title: 'Careers | EmersonEIMS — Power & Engineering Jobs in Kenya',
+  title: 'Careers | Power & Engineering Jobs in Kenya',
   description: 'Build your engineering career at EmersonEIMS: generators, solar, UPS, high-voltage, motors, HVAC and fabrication across Kenya. Field technicians, electrical engineers, solar specialists and operations roles. Apply today.',
   alternates: { canonical: 'https://www.emersoneims.com/careers' },
 };
 
 export default function CareersPage() {
   return (
-    <main className="eims-section min-h-screen">
+    <div className="eims-section min-h-screen">
       <div className="eims-shell py-24">
         <div className="max-w-4xl">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">Careers</h1>
@@ -82,6 +82,6 @@ export default function CareersPage() {
         </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

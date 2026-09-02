@@ -27,18 +27,29 @@ const AI_TOOLS = [
     overallAccuracy: 99.8,
     capabilities: PRO_BUILDING_SUITE_CAPABILITIES,
     certifications: ['ACCE Certified', 'AIA Compatible'],
-    competitors: [
-      { name: 'AutoCAD', accuracy: 85 },
-      { name: 'Revit', accuracy: 88 },
-      { name: 'SketchUp', accuracy: 75 },
-      { name: 'ArchiCAD', accuracy: 82 },
-    ],
+    /*
+     * The competitor comparison was REMOVED (2026-08-29).
+     *
+     * It listed sixteen real, named products — AutoCAD, Revit, SketchUp,
+     * ArchiCAD, DSE Diagnostic, ComAp Tools, InPower Pro, CAT ET, PVsyst,
+     * Helioscope, Aurora Solar, SolarEdge Designer, ResIPy, ZondRes2D, Surfer
+     * and Oasis Montaj — each assigned an accuracy percentage, benchmarked
+     * against our own claimed 97.8-99.8%. None of those figures was measured
+     * or sourced. Publishing invented performance data about named commercial
+     * products is not a marketing overstatement; it is a factual assertion
+     * about other companies' software, and the owner's standing rule is that
+     * we never use another company's name to promote ourselves.
+     *
+     * The AICapabilityTable prop is optional and its section is gated on
+     * competitors.length, so removing the data removes the comparison cleanly.
+     * Our own capability lists stay — those are countable.
+     */
     color: 'from-emerald-500 to-teal-500',
   },
   {
     id: 'generator-oracle',
     name: 'Generator Oracle™',
-    tagline: '400,000+ Fault Codes | AI Diagnostics | Controller Simulator',
+    tagline: 'Curated Fault Codes | AI Diagnostics | Controller Simulator',
     ranking: 'FLAGSHIP SUITE',
     icon: '🔮',
     link: '/generator-oracle',
@@ -46,12 +57,23 @@ const AI_TOOLS = [
     overallAccuracy: 99.5,
     capabilities: GENERATOR_ORACLE_CAPABILITIES,
     certifications: ['ISO 9001:2015', 'IEC 61131', 'API 670', 'NFPA 110', 'Cummins Compatible', 'CAT Compatible'],
-    competitors: [
-      { name: 'DSE Diagnostic', accuracy: 78 },
-      { name: 'ComAp Tools', accuracy: 75 },
-      { name: 'InPower Pro', accuracy: 82 },
-      { name: 'CAT ET', accuracy: 85 },
-    ],
+    /*
+     * The competitor comparison was REMOVED (2026-08-29).
+     *
+     * It listed sixteen real, named products — AutoCAD, Revit, SketchUp,
+     * ArchiCAD, DSE Diagnostic, ComAp Tools, InPower Pro, CAT ET, PVsyst,
+     * Helioscope, Aurora Solar, SolarEdge Designer, ResIPy, ZondRes2D, Surfer
+     * and Oasis Montaj — each assigned an accuracy percentage, benchmarked
+     * against our own claimed 97.8-99.8%. None of those figures was measured
+     * or sourced. Publishing invented performance data about named commercial
+     * products is not a marketing overstatement; it is a factual assertion
+     * about other companies' software, and the owner's standing rule is that
+     * we never use another company's name to promote ourselves.
+     *
+     * The AICapabilityTable prop is optional and its section is gated on
+     * competitors.length, so removing the data removes the comparison cleanly.
+     * Our own capability lists stay — those are countable.
+     */
     color: 'from-purple-500 to-pink-500',
   },
   {
@@ -65,12 +87,23 @@ const AI_TOOLS = [
     overallAccuracy: 99.6,
     capabilities: SOLAR_GENIUS_PRO_CAPABILITIES,
     certifications: ['IEEE 1547', 'IEEE 2030', 'IEC 61215', 'IEC 61730', 'IEC 62109', 'UL 1741', 'NEC Compliant'],
-    competitors: [
-      { name: 'PVsyst', accuracy: 88 },
-      { name: 'Helioscope', accuracy: 85 },
-      { name: 'Aurora Solar', accuracy: 87 },
-      { name: 'SolarEdge Designer', accuracy: 82 },
-    ],
+    /*
+     * The competitor comparison was REMOVED (2026-08-29).
+     *
+     * It listed sixteen real, named products — AutoCAD, Revit, SketchUp,
+     * ArchiCAD, DSE Diagnostic, ComAp Tools, InPower Pro, CAT ET, PVsyst,
+     * Helioscope, Aurora Solar, SolarEdge Designer, ResIPy, ZondRes2D, Surfer
+     * and Oasis Montaj — each assigned an accuracy percentage, benchmarked
+     * against our own claimed 97.8-99.8%. None of those figures was measured
+     * or sourced. Publishing invented performance data about named commercial
+     * products is not a marketing overstatement; it is a factual assertion
+     * about other companies' software, and the owner's standing rule is that
+     * we never use another company's name to promote ourselves.
+     *
+     * The AICapabilityTable prop is optional and its section is gated on
+     * competitors.length, so removing the data removes the comparison cleanly.
+     * Our own capability lists stay — those are countable.
+     */
     color: 'from-amber-500 to-orange-500',
   },
   {
@@ -84,12 +117,23 @@ const AI_TOOLS = [
     overallAccuracy: 97.8,
     capabilities: AQUASCAN_PRO_CAPABILITIES,
     certifications: ['NASA Partnership', 'ESA Data Access', 'USGS Compatible', 'WHO Guidelines', 'ISO 14001'],
-    competitors: [
-      { name: 'ResIPy', accuracy: 72 },
-      { name: 'ZondRes2D', accuracy: 75 },
-      { name: 'Surfer', accuracy: 70 },
-      { name: 'Oasis Montaj', accuracy: 78 },
-    ],
+    /*
+     * The competitor comparison was REMOVED (2026-08-29).
+     *
+     * It listed sixteen real, named products — AutoCAD, Revit, SketchUp,
+     * ArchiCAD, DSE Diagnostic, ComAp Tools, InPower Pro, CAT ET, PVsyst,
+     * Helioscope, Aurora Solar, SolarEdge Designer, ResIPy, ZondRes2D, Surfer
+     * and Oasis Montaj — each assigned an accuracy percentage, benchmarked
+     * against our own claimed 97.8-99.8%. None of those figures was measured
+     * or sourced. Publishing invented performance data about named commercial
+     * products is not a marketing overstatement; it is a factual assertion
+     * about other companies' software, and the owner's standing rule is that
+     * we never use another company's name to promote ourselves.
+     *
+     * The AICapabilityTable prop is optional and its section is gated on
+     * competitors.length, so removing the data removes the comparison cleanly.
+     * Our own capability lists stay — those are countable.
+     */
     color: 'from-blue-500 to-cyan-500',
   },
 ];
@@ -161,7 +205,12 @@ export default function AICapabilitiesPage() {
         </div>
       </div>
 
-      {/* Capability Table */}
+      {/* Capability Table.
+          No `competitors` prop is passed any more. The data it read was
+          sixteen named rival products carrying invented accuracy scores, and
+          it has been removed. AICapabilityTable declares the prop optional and
+          gates its whole comparison section on competitors.length, so passing
+          nothing renders nothing and no component change was needed. */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <AICapabilityTable
           toolName={currentTool.name}
@@ -171,7 +220,6 @@ export default function AICapabilitiesPage() {
           overallAccuracy={currentTool.overallAccuracy}
           capabilities={currentTool.capabilities}
           certifications={currentTool.certifications}
-          competitors={currentTool.competitors}
         />
 
         {/* CTA */}

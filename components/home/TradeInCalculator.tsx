@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { formatKES } from '@/lib/format/currency';
+import { monthlyRepayment } from '@/lib/finance/annuity';
+import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
 
 export default function TradeInCalculator() {
   const [brand, setBrand] = useState('Cummins');
@@ -64,20 +66,67 @@ export default function TradeInCalculator() {
   const depreciation = (depreciationHours * 0.1) + (extraHours * 0.05);
   const finalValue = Math.max(value * (1 - depreciation / 100), value * 0.3);
 
-  const newGeneratorPrice = 1050000; // VKS44 price
+  /*
+   * THE NEW-SET PRICE IS READ FROM GENERATOR_SIZES, NOT WRITTEN HERE.
+   *
+   * This was `const newGeneratorPrice = 1050000; // VKS44 price` — a hard-coded
+   * figure. The VKS44 card on this same homepage reads its price from
+   * GENERATOR_SIZES and renders "KES 950,000 - 1,150,000, published range".
+   * 1,050,000 is the midpoint of that range, so the two agreed by coincidence
+   * on the day it was typed and would silently disagree the first time the
+   * published range moved — on one page, in two places, to the same buyer.
+   *
+   * There is no 44 kVA entry in GENERATOR_SIZES, so the nearest rating is used,
+   * which is the same rule the VKS44 card applies (nearest is 50 kVA). The LOW
+   * bound is taken rather than the midpoint: this drives a financing
+   * illustration, and quoting the bottom of the published range is the figure
+   * we can actually honour.
+   */
+  const nearestSize = GENERATOR_SIZES.reduce((best, s) =>
+    Math.abs(s.kva - 44) < Math.abs(best.kva - 44) ? s : best
+  );
+  // 'KES 950,000 - 1,150,000' -> 950000. Falls back to 0 if the format changes,
+  // which makes the section render a zero rather than a wrong number.
+  const newGeneratorPrice =
+    Number((nearestSize.priceRange.match(/[\d,]{6,}/) || ['0'])[0].replace(/,/g, '')) || 0;
   const financingGap = newGeneratorPrice - finalValue;
 
+  /*
+   * MONTHLY REPAYMENT — REWRITTEN 2026-08-31. The previous expression was:
+   *
+   *   (gap * 0.14 / 12 * Math.pow(1.14 / 12 + 1, 24)) / (Math.pow(1.14 / 12 + 1, 24) - 1)
+   *
+   * It used TWO DIFFERENT RATES in one formula. The leading coefficient used
+   * 0.14/12, the correct monthly rate. The compounding base used 1.14/12 + 1,
+   * which is 1.095 — a 9.5% MONTHLY rate, because it divides (1 + annual) by
+   * 12 instead of dividing the annual rate alone.
+   *
+   * The effect was not cosmetic. On a KES 996,000 balance it returned
+   * KES 13,104/month, and 13,104 x 24 = KES 314,496 — under a third of the
+   * sum borrowed, before any interest. The correct payment is KES 47,821.
+   * The page understated the monthly cost of a generator by roughly 3.6x, to
+   * buyers deciding whether they could afford one.
+   *
+   * Below is the standard reducing-balance annuity, with the rate and term
+   * named rather than repeated as literals, so the two can no longer drift
+   * apart. INDICATIVE_ANNUAL_RATE is an illustration, not a quoted rate: no
+   * lender, product or approved rate is evidenced anywhere in this repository,
+   * which is why the figure is labelled as an illustration on the page and is
+   * not presented as an offer of credit from EmersonEIMS.
+   */
+  const INDICATIVE_ANNUAL_RATE = 0.14;
+  const FINANCE_TERM_MONTHS = 24;
+  const repayment = monthlyRepayment({
+    principal: financingGap,
+    annualRate: INDICATIVE_ANNUAL_RATE,
+    months: FINANCE_TERM_MONTHS,
+  });
+
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-slate-900/50 to-black border-t border-white/10">
+    <section className="py-20 px-4 bg-gradient-to-b from-slate-900/50 to-black border-t border-white/10 content-auto">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16 reveal">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-sm font-medium mb-6">
             <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
             Trade-In Appraisal
@@ -92,25 +141,26 @@ export default function TradeInCalculator() {
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">
             Upgrade your old generator to a new Cummins or FG Wilson. We buy your existing unit and credit the value toward your purchase. No hassle, fair pricing.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Calculator */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-purple-500/20 rounded-2xl p-8"
-          >
+          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-purple-500/20 rounded-2xl p-8 reveal">
             <h3 className="text-2xl font-bold text-white mb-8">Get Trade-In Value</h3>
 
             {/* Brand */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-300 mb-3">
+              {/* htmlFor/id: the label was adjacent but not associated, so the
+                  control had no programmatic name and Lighthouse reported
+                  "Form elements do not have associated labels" / "Select
+                  elements do not have associated label elements". A sighted
+                  user saw a label; a screen reader announced an unnamed combo
+                  box. */}
+              <label htmlFor="tradein-brand" className="block text-sm font-semibold text-gray-300 mb-3">
                 Generator Brand
               </label>
               <select
+                id="tradein-brand"
                 value={brand}
                 onChange={(e) => {
                   setBrand(e.target.value);
@@ -126,10 +176,11 @@ export default function TradeInCalculator() {
 
             {/* Model */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-300 mb-3">
+              <label htmlFor="tradein-model" className="block text-sm font-semibold text-gray-300 mb-3">
                 Model
               </label>
               <select
+                id="tradein-model"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white font-semibold hover:border-purple-500/50 focus:border-purple-500 transition-all"
@@ -142,10 +193,17 @@ export default function TradeInCalculator() {
 
             {/* Operating Hours */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-300 mb-3">
-                Operating Hours: {hours.toLocaleString()}
+              {/* formatKES, not toLocaleString(): this is a client component,
+                  so a locale-aware formatter can render "5,000" on the server
+                  and "5.000" in the browser, which React reports as a
+                  hydration mismatch. formatKES is byte-identical on every
+                  runtime. (It formats plain numbers too — the name refers to
+                  where it is mostly used, not to a currency prefix.) */}
+              <label htmlFor="tradein-hours" className="block text-sm font-semibold text-gray-300 mb-3">
+                Operating Hours: {formatKES(hours)}
               </label>
               <input
+                id="tradein-hours"
                 type="range"
                 min="100"
                 max="30000"
@@ -188,23 +246,27 @@ export default function TradeInCalculator() {
               <p className="text-sm text-gray-400 mb-2">Estimated Trade-In Value</p>
               <div className="flex items-baseline gap-3 mb-4">
                 <span className="text-4xl font-bold text-purple-400">
-                  KES {finalValue.toLocaleString('en-KE', { maximumFractionDigits: 0 })}
+                  KES {formatKES(finalValue)}
                 </span>
-                <span className="text-sm text-gray-400">(USD ${(finalValue / 13300).toLocaleString('en-US', { maximumFractionDigits: 0 })})</span>
+                {/*
+                  A USD figure stood here, computed as finalValue / 13300. The
+                  KES/USD rate is around 129, so the divisor was out by a factor
+                  of roughly 100 and a KES 54,000 trade-in displayed as "USD $4".
+                  There is no exchange-rate source in this repository, and the
+                  brief forbids hard-coding one, so the conversion is removed
+                  rather than replaced with another fixed number that would be
+                  wrong the day it changed. The appraisal is quoted in KES,
+                  which is the currency the transaction settles in.
+                */}
               </div>
               <p className="text-xs text-gray-500">
                 Based on condition, hours, and current market rates
               </p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Upgrade Path */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="reveal">
             <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/30 rounded-2xl p-8 mb-6">
               <h3 className="text-2xl font-bold text-white mb-6">Upgrade to New Generator</h3>
 
@@ -212,7 +274,7 @@ export default function TradeInCalculator() {
                 <div>
                   <p className="text-sm text-gray-400 mb-2">New VOLTKA VKS44 (44 kVA)</p>
                   <div className="text-3xl font-bold text-white">
-                    KES {newGeneratorPrice.toLocaleString('en-KE', { maximumFractionDigits: 0 })}
+                    KES {formatKES(newGeneratorPrice)}
                   </div>
                 </div>
 
@@ -221,7 +283,7 @@ export default function TradeInCalculator() {
                 <div>
                   <p className="text-sm text-gray-400 mb-2">Your Trade-In Credit</p>
                   <div className="text-2xl font-bold text-green-400">
-                    -KES {finalValue.toLocaleString('en-KE', { maximumFractionDigits: 0 })}
+                    -KES {formatKES(finalValue)}
                   </div>
                 </div>
 
@@ -230,10 +292,17 @@ export default function TradeInCalculator() {
                 <div className="bg-black/60 rounded-lg p-4">
                   <p className="text-sm text-gray-400 mb-2">Amount to Finance</p>
                   <div className="text-3xl font-bold text-cyan-400">
-                    KES {financingGap.toLocaleString('en-KE', { maximumFractionDigits: 0 })}
+                    KES {formatKES(financingGap)}
                   </div>
                   <p className="text-xs text-gray-400 mt-2">
-                    At 14% interest, 24 months = KES {((financingGap * 0.14 / 12 * Math.pow(1.14 / 12 + 1, 24)) / (Math.pow(1.14 / 12 + 1, 24) - 1)).toLocaleString('en-KE', { maximumFractionDigits: 0 })}/month
+                    Illustration only: {FINANCE_TERM_MONTHS} months on a reducing balance at{' '}
+                    {(INDICATIVE_ANNUAL_RATE * 100).toFixed(0)}% a year is about KES{' '}
+                    {formatKES(Math.round(repayment))}/month.
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    This is not an offer of credit and not a quotation. EmersonEIMS does not lend —
+                    financing is arranged with your own bank or asset financier, and your actual
+                    rate, term and repayment come from them.
                   </p>
                 </div>
               </div>
@@ -244,7 +313,7 @@ export default function TradeInCalculator() {
                 <ul className="space-y-2 text-sm text-gray-300">
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
-                    <span>New 3-year warranty</span>
+                    <span>New 2-year warranty</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1">✓</span>
@@ -275,17 +344,11 @@ export default function TradeInCalculator() {
                 Instant valuation · No obligation · Free pickup
               </p>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Process */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-16 pt-12 border-t border-white/10"
-        >
+        <div className="mt-16 pt-12 border-t border-white/10 reveal">
           <h3 className="text-2xl font-bold text-white text-center mb-12">Simple Trade-In Process</h3>
           <div className="grid md:grid-cols-4 gap-6">
             {[
@@ -303,7 +366,7 @@ export default function TradeInCalculator() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

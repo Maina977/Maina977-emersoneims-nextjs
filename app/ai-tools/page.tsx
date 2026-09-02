@@ -131,11 +131,33 @@ export default function AIToolsPage() {
       isPrimary: true,
     },
     {
+      title: 'Plant & Equipment Oracle',
+      subtitle: 'Excavator, Loader & Machine Fault Codes',
+      description:
+        'Fault codes for plant and heavy equipment — the engines that power excavators, loaders and rollers are the ones we already hold, plus sourced tables for the machine makers themselves.',
+      features: [
+        'Machine-maker tables: Bobcat, Kubota, John Deere, Volvo CE, Komatsu, SANY and more',
+        'Engine-brand codes: Perkins, Cummins, Caterpillar, Deutz',
+        'SAE J1939 decoder for any machine we hold no table for',
+        'Unknown codes classified by their published code space',
+        'Gaps declared openly — no invented codes, no invented fixes',
+      ],
+      stats: [
+        { label: 'Curated codes', value: 'Verified' },
+        { label: 'Brands', value: '21' },
+        { label: 'Cost', value: 'Free' },
+      ],
+      icon: <Wrench className="w-8 h-8 text-white" />,
+      href: '/plant-equipment-oracle',
+      gradient: 'from-cyan-600 via-teal-600 to-emerald-600',
+      badge: 'NEW',
+    },
+    {
       title: 'Generator Oracle',
       subtitle: 'AI-Powered Diagnostic System',
-      description: 'Generator diagnostic platform with 450,000+ verified fault codes, interactive wiring diagrams, and AI-powered troubleshooting.',
+      description: 'Generator diagnostic platform with manufacturer-curated fault codes, interactive wiring diagrams, and AI-powered troubleshooting.',
       features: [
-        '400,000+ fault codes database',
+        'Curated codes plus full code-number coverage',
         'Interactive wiring diagrams',
         'Generator simulator with controls',
         'Step-by-step repair guides',
@@ -198,7 +220,7 @@ export default function AIToolsPage() {
   const additionalTools = [
     {
       title: 'Fault Code Lookup',
-      description: 'Search 400,000+ error codes instantly',
+      description: 'Search generator error codes instantly',
       icon: <Search className="w-6 h-6" />,
       href: '/faults',
     },
@@ -335,7 +357,7 @@ export default function AIToolsPage() {
                 { icon: <Cpu className="w-8 h-8" />, title: '75+ AI Engines', desc: 'Powered by advanced artificial intelligence for unmatched accuracy and speed' },
                 { icon: <Globe className="w-8 h-8" />, title: '195+ Countries', desc: 'Global coverage with real-time pricing and local regulations support' },
                 { icon: <Clock className="w-8 h-8" />, title: '<3 Minutes', desc: 'Complete professional reports generated in under 3 minutes' },
-                { icon: <TrendingUp className="w-8 h-8" />, title: '99.8% Accuracy', desc: 'Industry-leading precision backed by AI verification systems' },
+                { icon: <TrendingUp className="w-8 h-8" />, title: 'Curated Data', desc: 'Fault codes taken from manufacturer references, not generated' },
                 { icon: <Layers className="w-8 h-8" />, title: 'All-in-One', desc: 'Architecture, Engineering, and Quantity Surveying in a single platform' },
                 { icon: <Shield className="w-8 h-8" />, title: 'Enterprise Ready', desc: 'Professional-grade tools trusted by engineers and architects worldwide' },
               ].map((item, idx) => (

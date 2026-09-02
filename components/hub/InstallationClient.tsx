@@ -132,7 +132,7 @@ export default function InstallationClient() {
               >
                 <div className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-80">{a.id}</div>
                 <div className="mt-0.5 text-sm font-semibold tracking-tight">{a.label}</div>
-                <div className="mt-1 text-[11px] opacity-90">{a.caption}</div>
+                <div className="mt-1 text-xs opacity-90">{a.caption}</div>
               </button>
             );
           })}
@@ -161,7 +161,7 @@ export default function InstallationClient() {
                   </div>
                   <div className="mt-0.5 text-sm font-semibold tracking-tight">{s.label}</div>
                   <div className="mt-1 font-mono text-xs text-ink-secondary">{s.rating}</div>
-                  <div className="mt-auto pt-1 text-[11px] text-ink-muted">{s.note}</div>
+                  <div className="mt-auto pt-1 text-xs text-ink-muted">{s.note}</div>
                 </li>
                 {i < arch.stages.length - 1 && (
                   <div aria-hidden className="flex items-center text-ink-muted">→</div>

@@ -66,8 +66,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!days || days <= 0) days = 30;
   days = Math.max(1, Math.min(365, days));
 
+  // Optional `pages` param controls how many top pages come back (default 500, was a
+  // fixed 25). Lets the dashboard rank the whole site and surface lagging pages.
+  const pagesParam = Number(request.nextUrl.searchParams.get('pages'));
+  const pages = Number.isFinite(pagesParam) && pagesParam > 0 ? Math.floor(pagesParam) : 500;
+
   try {
-    const stats = await getStats(days);
+    const stats = await getStats(days, pages);
     return jsonResponse(
       { ...stats, configured: true, source: 'live', stale: false },
       200,

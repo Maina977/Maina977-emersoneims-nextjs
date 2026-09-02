@@ -1532,7 +1532,7 @@ export default function GeneratorOracleModule() {
           </header>
 
           {/* ==================== MAIN CONTENT ==================== */}
-          <main className="flex-1 p-4 lg:p-6">
+          <div className="flex-1 p-4 lg:p-6">
             <div className="max-w-[1920px] mx-auto pb-10">
               <ErrorBoundary fallbackTitle="Panel Error" onReset={() => setActiveScreen('command')}>
               <AnimatePresence mode="wait">
@@ -1898,7 +1898,7 @@ export default function GeneratorOracleModule() {
                               </div>
                             </a>
                             <a
-                              href="https://wa.me/254768860665"
+                              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-xl hover:bg-green-500/20 transition-colors"
@@ -1976,7 +1976,7 @@ export default function GeneratorOracleModule() {
                       <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-amber-400">
                         Fault Center
                       </h2>
-                      <p className="text-slate-400 text-sm">400,000+ Fault Codes, Deep Analysis & Interactive Troubleshooting</p>
+                      <p className="text-slate-400 text-sm">Curated Fault Codes, Deep Analysis & Interactive Troubleshooting</p>
                     </div>
 
                     {/* Sub-Tab Navigation */}
@@ -2361,7 +2361,7 @@ export default function GeneratorOracleModule() {
               </AnimatePresence>
               </ErrorBoundary>
             </div>
-          </main>
+          </div>
 
           {/* ==================== PREMIUM FOOTER ==================== */}
           <footer className="flex-shrink-0 bg-slate-950/90 backdrop-blur-2xl border-t border-cyan-500/20 py-3 px-4 lg:px-6">

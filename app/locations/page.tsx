@@ -7,11 +7,11 @@
 
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { COUNTIES, SERVICES, TOTAL_LOCATIONS, TOTAL_SERVICE_PAGES } from '@/lib/seo/kenyaLocations';
+import { COUNTIES, SERVICES, TOTAL_LOCATIONS, TOTAL_SERVICE_PAGES, getServicePath } from '@/lib/seo/kenyaLocations';
 
 export const metadata: Metadata = {
-  title: 'Service Locations | Generator & Solar Services Across Kenya | EmersonEIMS',
-  description: 'EmersonEIMS provides generator, solar, UPS, and electrical services across all 47 counties in Kenya. Find our services in Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, and more. 24/7 support. 3-Year Warranty.',
+  title: 'Service Locations | Generator & Solar Services Across Kenya',
+  description: 'Generator, solar, UPS and electrical services across all 47 Kenyan counties, from Nairobi and Mombasa to Kisumu, Nakuru and Eldoret. 24/7 support.',
   keywords: [
     'generator company Kenya',
     'solar installation Kenya',
@@ -90,7 +90,7 @@ export default function LocationsPage() {
             {SERVICES.map(service => (
               <Link
                 key={service.slug}
-                href={`/${service.slug}`}
+                href={getServicePath(service.slug)}
                 className="px-4 py-2 bg-cyan-900/30 border border-cyan-500/30 rounded-lg text-cyan-400 hover:bg-cyan-900/50 hover:border-cyan-500 transition-all"
               >
                 {service.shortName}
@@ -160,7 +160,7 @@ export default function LocationsPage() {
               Call: +254 768 860 665
             </a>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               className="px-8 py-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all"
             >
               WhatsApp Us
@@ -209,7 +209,7 @@ export default function LocationsPage() {
             needs, so diagnosis, repair and commissioning happen where your plant is rather
             than requiring it to be moved. We understand that power reliability is critical
             for your business, which is why we offer 24/7 emergency support and back all our
-            work with a comprehensive 3-Year Warranty.
+            work with warranty terms set out in your written quotation.
           </p>
           <p>
             Contact us today to discuss your power needs. Our experts will assess your requirements

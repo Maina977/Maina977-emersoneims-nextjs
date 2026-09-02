@@ -329,7 +329,7 @@ export default function SimulatorClient() {
       {/* HEADER: Premium, compact, engineering focus */}
       <header className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-2.5 shadow-sm bg-[color:var(--color-surface-base)]/95 backdrop-blur-md" style={{ borderColor: 'var(--color-border-subtle)' }}>
         <div className="flex items-center gap-3">
-          <span className="grid h-8 w-8 place-items-center rounded-lg text-[11px] font-bold tracking-tight shadow" style={{ background: 'linear-gradient(135deg, var(--color-brand-blue) 0%, var(--color-brand-blue-deep) 100%)', color: 'var(--color-text-inverse)' }} aria-hidden>SU</span>
+          <span className="grid h-8 w-8 place-items-center rounded-lg text-xs font-bold tracking-tight shadow" style={{ background: 'linear-gradient(135deg, var(--color-brand-blue) 0%, var(--color-brand-blue-deep) 100%)', color: 'var(--color-text-inverse)' }} aria-hidden>SU</span>
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-muted)]">Live cockpit · {comp.gridConnected ? 'grid-connected' : 'islanded'}</div>
             <div className="text-[13px] font-semibold text-[color:var(--color-text-primary)]">{effectiveInputs.redundancy} redundancy · <SampleBadge /></div>
@@ -347,7 +347,7 @@ export default function SimulatorClient() {
       </header>
 
       {/* MAIN PANEL: Simulator focus, premium grouping */}
-      <main className="grid gap-6 px-6 py-6 lg:grid-cols-[1.2fr_0.9fr] xl:grid-cols-[1.2fr_0.7fr]">
+      <div className="grid gap-6 px-6 py-6 lg:grid-cols-[1.2fr_0.9fr] xl:grid-cols-[1.2fr_0.7fr]">
         {/* Left: Topology + Inputs + Harmonics */}
         <section className="space-y-6">
           <CockpitPanel
@@ -524,7 +524,7 @@ export default function SimulatorClient() {
           <CockpitPanel eyebrow="Site derate" title="Combined altitude + ambient" right={<SampleBadge />} className="shadow rounded-xl bg-[color:var(--color-surface-base)]/95">
             <div className="flex flex-col items-center gap-2">
               <Gauge label="Derate" value={gen.derate} min={0} max={35} unit="%" decimals={1} thresholds={{ warning: 12, danger: 22, invert: true }} size={120} className="drop-shadow" />
-              <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>Altitude {formatValue(inputs.altitudeM, { unit: 'm' })} · ambient {formatValue(inputs.ambientC, { unit: '°C' })}.</p>
+              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Altitude {formatValue(inputs.altitudeM, { unit: 'm' })} · ambient {formatValue(inputs.ambientC, { unit: '°C' })}.</p>
             </div>
           </CockpitPanel>
 
@@ -534,7 +534,7 @@ export default function SimulatorClient() {
             </div>
           </CockpitPanel>
         </section>
-      </main>
+      </div>
       <div className="px-6 pb-6">
         <HubConnectStrip active="/hub/simulator" />
       </div>
@@ -584,7 +584,7 @@ function NumberField({
   return (
     <label className="block">
       <span
-        className="mb-1 flex items-baseline justify-between text-[11px] font-medium"
+        className="mb-1 flex items-baseline justify-between text-xs font-medium"
         style={{ color: 'var(--cockpit-ink-muted)' }}
       >
         <span>{label}</span>
@@ -626,7 +626,7 @@ function ReadOnlyField({
   return (
     <div>
       <div
-        className="mb-1 flex items-baseline justify-between text-[11px] font-medium"
+        className="mb-1 flex items-baseline justify-between text-xs font-medium"
         style={{ color: 'var(--cockpit-ink-muted)' }}
       >
         <span>{label}</span>
@@ -663,7 +663,7 @@ function SelectField<T extends string>({
   return (
     <label className="block">
       <span
-        className="mb-1 flex items-baseline justify-between text-[11px] font-medium"
+        className="mb-1 flex items-baseline justify-between text-xs font-medium"
         style={{ color: 'var(--cockpit-ink-muted)' }}
       >
         <span>{label}</span>
@@ -717,7 +717,7 @@ function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: Vi
     <div
       role="tablist"
       aria-label="Diagram view mode"
-      className="inline-flex items-center rounded-md border text-[11px] font-semibold"
+      className="inline-flex items-center rounded-md border text-xs font-semibold"
       style={{ borderColor: 'var(--color-border-subtle, rgba(140,170,220,0.25))' }}
     >
       {(['simple', 'engineering'] as const).map((m) => {

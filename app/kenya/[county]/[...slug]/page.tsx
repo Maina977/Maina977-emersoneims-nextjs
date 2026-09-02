@@ -22,6 +22,10 @@ import {
   isPriorityCounty,
 } from '@/lib/seo/kenyaIndexable';
 import LocationServiceSchema from '@/components/seo/LocationServiceSchema';
+import CountySiteConditions from '@/components/seo/CountySiteConditions';
+import ConstituencySiteConditions from '@/components/seo/ConstituencySiteConditions';
+import LocationEnquiry from '@/components/seo/LocationEnquiry';
+import LocationProof from '@/components/seo/LocationProof';
 
 type Props = {
   params: Promise<{ county: string; slug: string[] }>;
@@ -251,6 +255,34 @@ function CountyServicePage({
           </div>
         </div>
 
+        {/*
+          Per-county engineering on the COUNTY+SERVICE page.
+
+          These 423 pages are now the canonical targets for the ~870
+          constituency+service pages that consolidate into them, so they are
+          where the traffic is meant to land — and until this was added they
+          carried no differentiation at all: the same template with a place
+          name and a service name swapped in. Every figure comes from sourced
+          per-county altitude and measured 2025 temperature; the section
+          renders nothing for a county with no sourced record.
+        */}
+        <CountySiteConditions
+          countySlug={county.slug}
+          countyName={county.name}
+          region={county.region}
+          serviceName={service.shortName}
+          serviceSlug={service.slug}
+          population={county.population}
+        />
+
+        <LocationProof countySlug={county.slug} locationName={county.name} />
+
+        <LocationEnquiry
+          locationName={county.name}
+          serviceName={service.shortName}
+          source={`kenya-${county.slug}-${service.slug}`}
+        />
+
         {/* Service Features */}
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
@@ -386,7 +418,7 @@ function CountyServicePage({
               Request a Quote
             </Link>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-green-600 text-white px-8 py-4 rounded-full font-bold hover:bg-green-500 transition-colors"
@@ -451,6 +483,20 @@ function ConstituencyPage({
           </div>
         </div>
 
+        <ConstituencySiteConditions
+          countySlug={county.slug}
+          countyName={county.name}
+          constituencySlug={constituency.slug}
+          constituencyName={constituency.name}
+        />
+
+        <LocationProof countySlug={county.slug} locationName={constituency.name} />
+
+        <LocationEnquiry
+          locationName={constituency.name}
+          source={`kenya-${county.slug}-${constituency.slug}`}
+        />
+
         {/* Services Grid */}
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
@@ -487,7 +533,7 @@ function ConstituencyPage({
               Contact Us
             </Link>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-green-600 text-white px-8 py-4 rounded-full font-bold hover:bg-green-500 transition-colors"
@@ -572,6 +618,28 @@ function ConstituencyServicePage({
           </div>
         </div>
 
+        {/*
+          Per-constituency engineering. Renders only for the 119 constituencies
+          whose altitude and temperature could be VERIFIED; the rest render
+          nothing and keep consolidating to their county+service page rather
+          than showing an invented figure.
+        */}
+        <ConstituencySiteConditions
+          countySlug={county.slug}
+          countyName={county.name}
+          constituencySlug={constituency.slug}
+          constituencyName={constituency.name}
+          serviceName={service.shortName}
+        />
+
+        <LocationProof countySlug={county.slug} locationName={constituency.name} />
+
+        <LocationEnquiry
+          locationName={constituency.name}
+          serviceName={service.shortName}
+          source={`kenya-${county.slug}-${constituency.slug}-${service.slug}`}
+        />
+
         {/* Service Features */}
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
@@ -650,7 +718,7 @@ function ConstituencyServicePage({
               Request a Quote
             </Link>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-green-600 text-white px-8 py-4 rounded-full font-bold hover:bg-green-500 transition-colors"

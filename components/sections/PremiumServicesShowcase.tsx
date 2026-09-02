@@ -10,7 +10,7 @@ const services = [
     id: 'generators',
     title: 'Generator Solutions',
     subtitle: 'Sales • Service • Maintenance',
-    description: 'Cummins Voltka authorized dealer. 20kVA to 2000kVA diesel generators with remote monitoring.',
+    description: 'Cummins (Voltka) generator sales and service. 20kVA to 2000kVA diesel generators with remote monitoring.',
     icon: '⚡',
     color: 'from-amber-500 to-orange-600',
     stats: { capacity: '45,000+ kVA', installed: '523+ units' },

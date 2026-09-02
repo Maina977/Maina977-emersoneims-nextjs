@@ -86,7 +86,7 @@ export default function ReviewModerationDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black">
       {/* Header */}
       <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-b border-amber-500/20 py-6">
         <div className="max-w-7xl mx-auto px-6">
@@ -265,6 +265,6 @@ export default function ReviewModerationDashboard() {
           </motion.div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

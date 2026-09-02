@@ -24,7 +24,7 @@ export const GENERATOR_WARRANTIES: {
 } = {
   new: [
     {
-      duration: "3 Years",
+      duration: "2 Years",
       coverage: [
         "Cummins engine components and factory defects",
         "Alternator and starter motor coverage",
@@ -34,16 +34,27 @@ export const GENERATOR_WARRANTIES: {
       ],
       type: "product",
       highlight: true,
-      details: "Comprehensive 3-year warranty on all new generators with Cummins engines",
+      details: "Comprehensive 2-year warranty on all new generators with Cummins engines",
       claimProcess: [
         "Call 0768 860 665 or 0782 914 717",
         "Provide serial number and issue description",
-        "Technician dispatch within 4 hours (Nairobi) or 24 hours (other counties)",
+        "Technician dispatch scheduled on confirmation, from our Embakasi workshop",
         "Parts covered under warranty at no cost"
       ]
     },
     {
-      duration: "6 Months",
+      /*
+       * OWNER-CONFIRMED 2026-09-02: ONE YEAR, not six months.
+       *
+       * This read "6 Months" while the warranty entry directly above lists
+       * "Free service for the first 1 year" in its own coverage. One file,
+       * two periods — and the site published BOTH: "1 Year Free Service" on
+       * the Cummins pages, "6-Month Service" on /generators. A buyer
+       * comparing two pages was told two different things about the same
+       * purchase. Nothing distinguished the two entries; they described the
+       * same complimentary servicing on the same new sets.
+       */
+      duration: "1 Year",
       coverage: [
         "Free preventive maintenance visits",
         "Oil and filter changes included",
@@ -51,7 +62,7 @@ export const GENERATOR_WARRANTIES: {
         "Load bank testing"
       ],
       type: "service",
-      details: "Complimentary maintenance service for the first 6 months"
+      details: "Complimentary maintenance service for the first year, on new generator sets"
     }
   ],
   used: [

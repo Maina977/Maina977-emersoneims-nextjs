@@ -9,9 +9,19 @@ import { TEAM_EMAILS } from '@/lib/contact/emails';
  * is the first entry and is rendered visibly. Phones are rendered inline below.
  */
 
+/*
+ * LinkedIn removed 2026-08-29: linkedin.com/company/emersoneims returns HTTP
+ * 404 — the page does not exist, so the link sent visitors to an error and
+ * told Google the business had a presence it does not have. Restore it with
+ * the real URL if a company page is created.
+ *
+ * The X account is the one on the verified Google Business Profile. Facebook is
+ * kept as-is: it is a profile.php URL rather than a guessed vanity name, which
+ * is what a real page without a custom handle looks like, and Facebook answers
+ * 400 to every automated request so it cannot be checked from here either way.
+ */
 const SOCIAL_LINKS = [
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/emersoneims' },
-  { label: 'Twitter', href: 'https://twitter.com/emersoneims' },
+  { label: 'X', href: 'https://x.com/eimsemerson' },
   { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=100089864898337' },
 ] as const;
 
@@ -19,6 +29,10 @@ const FOOTER_LINKS = {
   company: [
     { label: 'About Us', href: '/about-us' },
     { label: 'All Services', href: '/services' },
+    // Pricing (added 2026-08-25). /pricing had existed for a long time with no
+    // crawlable inbound link and no sitemap entry, so the one part of the site
+    // that answers "what does it cost" was effectively unreachable.
+    { label: 'Prices & Costs', href: '/pricing' },
     { label: 'Book a Service', href: '/booking' },
     { label: 'Project Gallery', href: '/gallery' },
     { label: 'Case Studies', href: '/case-studies' },
@@ -30,7 +44,7 @@ const FOOTER_LINKS = {
   // Sourced from lib/services/allServices.ts (canonical /services/<slug>) plus
   // /solutions/<slug> deep-dive pages. Keep groups <= 8 entries for scannability.
   servicesPower: [
-    { label: 'Cummins Generators (3-yr warranty)', href: '/services/cummins-generators' },
+    { label: 'Cummins Generators (2-yr warranty)', href: '/services/cummins-generators' },
     { label: 'Generator Repairs & Maintenance', href: '/services/generator-repairs' },
     { label: 'ATS / Changeovers', href: '/services/ats-changeover' },
     { label: 'Generator Sales', href: '/generators' },
@@ -71,6 +85,7 @@ const FOOTER_LINKS = {
     { label: 'EIMS PRO Workspace', href: '/eims-pro' },
     { label: 'AquaScan Pro™', href: '/aquascan-pro-v3' },
     { label: 'Generator Oracle™', href: '/generator-oracle' },
+    { label: 'Plant & Equipment Oracle', href: '/plant-equipment-oracle' },
     { label: 'Diagnostics Hub', href: '/diagnostics' },
     { label: 'Troubleshooting Wizard', href: '/troubleshooting' },
   ],
@@ -85,6 +100,23 @@ const FOOTER_LINKS = {
     { label: 'Fabrication & Welding', href: '/maintenance-hub/fabrication' },
   ],
   resources: [
+    /*
+     * Repair Centre, the marketplace, sectors, brands and the tools index are
+     * listed HERE because the footer is the site's only server-rendered link
+     * surface. The main navigation is a mega-menu whose panel renders only when
+     * opened, so a crawler receives its button labels and no hrefs at all — a
+     * live crawl on 2026-07-31 reached none of these sections from any path,
+     * despite /repair-centre alone owning 76 published routes.
+     */
+    { label: 'Repair Centre — 60 free guides', href: '/repair-centre' },
+    { label: 'Spare Parts Marketplace', href: '/marketplace' },
+    { label: 'Sectors We Serve', href: '/sectors' },
+    { label: 'Brands We Service', href: '/brands' },
+    // NOT /all-tools — that is a Building Suite Pro console feature that
+    // redirects into /solutions/building, so labelling it "All Engineering
+    // Tools" sent people somewhere they did not ask for. /ai-tools is the
+    // actual index of Generator Oracle, Solar Genius Pro, AquaScan Pro etc.
+    { label: 'All Engineering Tools', href: '/ai-tools' },
     { label: 'Resources & Learning Hub', href: '/resources' },
     { label: 'Knowledge Base', href: '/knowledge-base' },
     { label: 'Technical Bible', href: '/technical-bible' },
@@ -102,6 +134,18 @@ const FOOTER_LINKS = {
     { label: 'Nakuru', href: '/kenya/nakuru' },
     { label: 'Kiambu', href: '/kenya/kiambu' },
     { label: 'All Service Locations', href: '/locations' },
+    /*
+     * East Africa. The 36 city pages under /uganda, /tanzania, /rwanda and
+     * /south-sudan were all in the sitemap and reachable by nothing — and the
+     * /east-africa hub itself linked to three routes that returned 404. Capitals
+     * are listed here; the full city list is on /site-directory.
+     */
+    { label: 'East Africa', href: '/east-africa' },
+    { label: 'Kampala, Uganda', href: '/uganda/kampala' },
+    { label: 'Dar es Salaam, Tanzania', href: '/tanzania/dar-es-salaam' },
+    { label: 'Kigali, Rwanda', href: '/rwanda/kigali' },
+    { label: 'Juba, South Sudan', href: '/south-sudan/juba' },
+    { label: 'Site Directory — every page', href: '/site-directory' },
   ],
   legal: [
     { label: 'Privacy Policy', href: '/privacy' },
@@ -166,7 +210,7 @@ export default function PremiumFooter() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                        className="eims-footer-link"
                       >
                         {link.label}
                       </Link>
@@ -192,7 +236,7 @@ export default function PremiumFooter() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                        className="eims-footer-link"
                       >
                         {link.label}
                       </Link>
@@ -208,9 +252,13 @@ export default function PremiumFooter() {
           
           {/* Brand Column */}
           <div className="lg:col-span-4 space-y-8">
+            {/* No aria-label. The wordmark below is real text — "EMERSON" and
+                "EiMS" — so it already names the link. The override read
+                "Emerson EiMS home", which did not contain the rendered text as
+                a substring, and WCAG 2.5.3 requires that it does. Letting the
+                content supply the name is both correct and self-maintaining. */}
             <Link
               href="/"
-              aria-label="Emerson EiMS home"
               className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
             >
               <div className="flex items-center gap-3">
@@ -252,7 +300,7 @@ export default function PremiumFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                      className="eims-footer-link"
                     >
                       {link.label}
                     </Link>
@@ -276,7 +324,7 @@ export default function PremiumFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                      className="eims-footer-link"
                     >
                       {link.label}
                     </Link>
@@ -300,9 +348,21 @@ export default function PremiumFooter() {
                   <ul className="space-y-2">
                     {TEAM_EMAILS.map((entry) => (
                       <li key={entry.address}>
+                        {/* No aria-label. The two spans below already read as
+                            "General Inquiries info@emersoneims.com", which is
+                            exactly what a screen reader should announce. The
+                            aria-label here said "General Inquiries \u2014 info@..."
+                            and that em-dash meant the visible text was NOT a
+                            substring of the accessible name, which is the WCAG
+                            2.5.3 failure Lighthouse reported as "Elements with
+                            visible text labels do not have matching accessible
+                            names". It also breaks voice control: someone saying
+                            "click General Inquiries info at emersoneims dot
+                            com" would not match the announced name. Deleting a
+                            redundant override is the fix; the content already
+                            names the link. */}
                         <a
                           href={`mailto:${entry.address}`}
-                          aria-label={`${entry.label} \u2014 ${entry.address}`}
                           className="block hover:text-brand-gold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
                         >
                           <span className="block text-xs text-gray-400 uppercase tracking-wider">
@@ -359,7 +419,11 @@ export default function PremiumFooter() {
               </Link>
             ))}
           </div>
-          <div className="text-xs text-gray-600 font-mono">
+          {/* gray-600 (#4b5563) on black measured 2.77:1, against the 4.5:1
+              minimum for text this size — it was effectively invisible to
+              anyone with reduced contrast sensitivity. gray-400 (#9ca3af)
+              measures about 7.5:1 and keeps the same quiet, recessive look. */}
+          <div className="text-xs text-gray-400 font-mono">
             ENGINEERED IN NAIROBI, KENYA
           </div>
         </div>

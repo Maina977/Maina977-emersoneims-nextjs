@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Case Studies | Generator, Solar & UPS Projects in Kenya | EmersonEIMS',
+  title: 'Case Studies | Generator, Solar & UPS Projects in Kenya',
   description:
     'Real EmersonEIMS projects across Kenya — generators, solar PV, UPS, motor rewinding and borehole installations with measured results, ROI and uptime data.',
   alternates: { canonical: `${SITE}/case-studies` },

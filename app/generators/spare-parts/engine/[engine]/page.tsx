@@ -39,11 +39,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { engine } = await params;
   const e = getEngineBySlug(engine);
-  if (!e) return { title: 'Page Not Found | EmersonEIMS', robots: { index: false, follow: false } };
+  if (!e) return { title: 'Page Not Found', robots: { index: false, follow: false } };
 
   const label = e.make ? `${e.make} ${e.model}` : e.model;
   return {
-    title: `${label} Generator Spare Parts Kenya | EmersonEIMS`,
+    title: `${label} Generator Spare Parts Kenya`,
     description: `${e.parts.length} spare parts for ${label} generator engines in Kenya — filters, injectors, bearings, gaskets and electrical components with verified fitment. Quotation on request, dispatched nationwide.`,
     alternates: { canonical: `${BASE}/generators/spare-parts/engine/${e.slug}` },
     openGraph: {
@@ -80,7 +80,7 @@ export default async function EnginePartsPage({
     );
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -217,6 +217,6 @@ export default async function EnginePartsPage({
       </div>
 
       <PartsDeliveryNationwide />
-    </main>
+    </div>
   );
 }

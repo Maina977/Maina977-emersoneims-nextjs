@@ -21,10 +21,10 @@ const IndustriesExperience = dynamic(
 );
 
 export const metadata: Metadata = {
-  title: 'Industries We Serve | Generator & Power Solutions for Every Sector | EmersonEIMS',
-  description: 'Specialized generator and power solutions for hotels, hospitals, schools, banks, factories, flower farms, real estate, churches, and government. Serving 16,245+ hotels, 9,458+ hospitals, 93,988+ schools across Kenya. Call +254768860665.',
+  title: 'Generators & Solar by Industry',
+  description: 'Generators, solar and UPS for Kenyan hotels, hospitals, schools, banks and factories. Warranty terms in writing, 24/7 emergency response. Call +254768860665.',
   openGraph: {
-    title: 'Industries We Serve | EmersonEIMS Kenya',
+    title: 'Industries We Serve',
     description: 'Specialized power solutions for every industry in Kenya. Hotels, hospitals, schools, banks, manufacturing, and more.',
     type: 'website',
   },
@@ -78,14 +78,14 @@ export default function IndustriesPage() {
               { problem: 'No single partner for all your sites.', solution: 'Nationwide coverage, one contract, one SLA.', outcome: 'Simplified management, predictable cost, 24/7 support.' },
             ],
             trust: [
-              'Trusted by 16,000+ hotels, 9,000+ hospitals, 93,000+ schools',
-              '3-year warranty, 24/7 support',
+              'Hospitality, healthcare, education, banking and manufacturing sites',
+              'Warranty terms in writing, 24/7 support',
               'SLA-backed service, audit-ready records',
             ],
             ctas: [
               { label: 'Get Industry Proposal', href: '/contact?topic=industry-proposal', variant: 'primary' },
               { label: 'Book a Site Survey', href: '/booking?service=industry-audit', variant: 'secondary' },
-              { label: 'WhatsApp Industry Desk', href: 'https://wa.me/254768860665', variant: 'tertiary' },
+              { label: 'WhatsApp Industry Desk', href: `https://wa.me/254768860665?text=${encodeURIComponent('Hello EmersonEIMS, I would like to ask about your industrial services.')}`, variant: 'tertiary' },
             ],
             accent: 'cyan',
           }} />

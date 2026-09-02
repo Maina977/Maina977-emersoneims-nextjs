@@ -7,7 +7,7 @@ import { Metadata } from 'next';
 
 export default function VolvoPentaPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
@@ -87,6 +87,6 @@ export default function VolvoPentaPage() {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

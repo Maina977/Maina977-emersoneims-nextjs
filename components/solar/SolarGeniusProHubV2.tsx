@@ -191,7 +191,7 @@ const SolarGeniusProHubV2: React.FC = () => {
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-4">
             <span className="px-3 py-1 bg-white/20 rounded-full text-white text-sm font-bold">
-              🏆 WORLD'S #1 SOLAR AI PLATFORM
+              SOLAR DESIGN & SIZING PLATFORM
             </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-4">

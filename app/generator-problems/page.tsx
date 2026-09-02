@@ -5,7 +5,11 @@ import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata: Metadata = {
-  title: 'Generator Problems & Solutions | Free Diagnostic Guide',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/generator-problems' },
+  title: 'Generator Problems & Solutions',
   description: 'Complete guide to diagnosing generator problems. Expert solutions for starting issues, overheating, low oil pressure, voltage fluctuations, and exhaust smoke. Free troubleshooting help.',
   keywords: 'generator problems, generator troubleshooting, generator won\'t start, generator overheating, generator repair Kenya',
   openGraph: {
@@ -73,7 +77,7 @@ const urgencyStyles = {
 
 export default function GeneratorProblemsPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.generatorProblems} />
 
@@ -168,7 +172,7 @@ export default function GeneratorProblemsPage() {
               Need More Detailed Diagnostics?
             </h2>
             <p className="text-slate-300 mb-6 max-w-2xl mx-auto">
-              Generator Oracle provides AI-powered diagnostics with 400,000+ fault codes,
+              Generator Oracle provides AI-powered diagnostics with manufacturer-curated fault codes,
               step-by-step reset procedures, and professional repair guides.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -207,7 +211,7 @@ export default function GeneratorProblemsPage() {
               system failures), and electrical issues like unstable voltage output.
             </p>
             <p>
-              Our diagnostic guides are based on 12+ years of experience servicing
+              Our diagnostic guides are based on 15 years' experience servicing
               generators across all 47 counties in Kenya. Each guide includes possible
               causes ranked by likelihood, step-by-step check procedures, required tools,
               and estimated repair costs.
@@ -253,6 +257,6 @@ export default function GeneratorProblemsPage() {
           }),
         }}
       />
-    </main>
+    </div>
   );
 }

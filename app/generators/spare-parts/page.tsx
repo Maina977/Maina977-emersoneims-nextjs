@@ -16,7 +16,9 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { formatKES } from '@/lib/format/currency';
 import Link from 'next/link';
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 
 interface Part {
   id?: string;
@@ -249,7 +251,7 @@ export default function SparePartsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-slate-900 to-black border-b border-amber-500/30 py-12">
         <div className="max-w-7xl mx-auto px-6">
@@ -539,7 +541,7 @@ export default function SparePartsPage() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div>
                   <h2 className="text-3xl font-bold text-white mb-2">
-                    🔍 Found <span className="text-amber-400">{filteredParts.length.toLocaleString()}</span> spare parts
+                    🔍 Found <span className="text-amber-400">{formatKES(filteredParts.length)}</span> spare parts
                   </h2>
                   {searchQuery && (
                     <p className="text-gray-400">
@@ -571,12 +573,12 @@ export default function SparePartsPage() {
                   )}
                   {minPrice > 0 && (
                     <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full">
-                      Price ≥ KES {minPrice.toLocaleString()} ✕
+                      Price ≥ KES {formatKES(minPrice)} ✕
                     </span>
                   )}
                   {maxPrice < 1000000 && (
                     <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full">
-                      Price ≤ KES {maxPrice.toLocaleString()} ✕
+                      Price ≤ KES {formatKES(maxPrice)} ✕
                     </span>
                   )}
                   {minRating > 0 && (
@@ -636,7 +638,7 @@ export default function SparePartsPage() {
                       <div>
                         <p className="text-sm text-gray-500">Price</p>
                         <p className="text-xl font-bold text-amber-400">
-                          KES {(part.price || 0).toLocaleString()}
+                          KES {formatKES(part.price || 0)}
                         </p>
                       </div>
                       <div className="text-right">
@@ -664,7 +666,7 @@ export default function SparePartsPage() {
             {/* Load More Indicator */}
             <div className="text-center mt-12 pt-8 border-t border-slate-800">
               <p className="text-gray-400 text-sm mb-4">
-                Showing all {filteredParts.length} matching parts from {parts.length.toLocaleString()} in inventory
+                Showing all {filteredParts.length} matching parts from {formatKES(parts.length)} in inventory
               </p>
               <p className="text-amber-400 text-sm font-semibold">
                 🚚 Same-day delivery available in Nairobi | 📦 Nationwide shipping
@@ -679,6 +681,23 @@ export default function SparePartsPage() {
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Can't find what you need?</h2>
           <p className="text-gray-300 mb-6">Call us or WhatsApp for custom parts, bulk orders, or technical support</p>
+
+          {/*
+            Parts enquiry form, added 2026-08-25.
+            This page carried 15,000+ parts and three outbound buttons but no
+            way to ask from the page itself — a visitor who did not want to
+            phone had to navigate to /contact and retype what they were looking
+            at. Every step between wanting to ask and asking loses people. The
+            three buttons below are untouched; this adds the fourth option.
+          */}
+          <div className="max-w-xl mx-auto mb-10 text-left">
+            <QuickInquiryForm
+              service="Generator Spare Parts"
+              ctaLabel="Ask about this part"
+              source="spare-parts"
+            />
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="tel:+254768860665"
@@ -687,7 +706,7 @@ export default function SparePartsPage() {
               📞 +254 768 860665
             </a>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20generators."
               className="px-8 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition"
             >
               💬 WhatsApp
@@ -701,6 +720,6 @@ export default function SparePartsPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

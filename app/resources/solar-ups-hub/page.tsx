@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: 'Solar / UPS Hub | EmersonEIMS',
+  title: 'Solar / UPS Hub',
   description:
     'Solar & UPS Intelligence Hub — sizing, audit, product intelligence, diagnostics, and the case library, in one workspace.',
   alternates: { canonical: '/hub' },

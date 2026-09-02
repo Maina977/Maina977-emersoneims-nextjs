@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Generator Solutions Kenya | Installation, Repairs, Maintenance | EmersonEIMS",
+  title: "Generator Solutions Kenya",
   description: "Complete generator solutions in Kenya. Expert installation, maintenance schedules, fault diagnosis, and 24/7 emergency repairs. Cummins, Perkins, CAT specialists. Serving Nairobi, Mombasa, Kisumu & all 47 counties. Call +254 768 860 665.",
   keywords: "generator installation Kenya, generator repair Kenya, generator maintenance Kenya, generator service Nairobi, Cummins generator Kenya, Perkins generator Kenya, CAT generator Kenya, diesel generator Kenya, standby generator Kenya, generator fault codes, generator troubleshooting, AMF panel Kenya, ATS installation Kenya, generator parts Kenya",
   openGraph: {
-    title: "Generator Solutions Hub | Expert Installation & Repairs | EmersonEIMS Kenya",
+    title: "Generator Solutions Hub | Expert Installation & Repairs",
     description: "A detailed generator resource. Installation guides, maintenance schedules, fault codes & troubleshooting. 24/7 emergency service.",
     url: "https://www.emersoneims.com/solutions/generators",
     siteName: "EmersonEIMS",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Generator Solutions Kenya | EmersonEIMS",
+    title: "Generator Solutions Kenya",
     description: "Complete generator installation, maintenance & repair solutions. Expert technicians, 24/7 service.",
   },
   alternates: {

@@ -107,9 +107,10 @@ export default function SciFiHeader() {
             whileHover={{ scale: 1.05 }}
             transition={{ type: 'spring', stiffness: 400 }}
           >
+            {/* No aria-label: the logo img alt already names this link, and the
+                override did not contain it, failing WCAG 2.5.3. */}
             <Link
               href="/"
-              aria-label="Emerson EiMS home"
               className="flex items-center gap-3 group rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
               <div className="relative">

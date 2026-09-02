@@ -454,7 +454,7 @@ export default function ProBuildingSuiteIntegrated() {
       </header>
 
       {/* Content */}
-      <main className="max-w-7xl mx-auto p-4 md:p-6">
+      <div className="max-w-7xl mx-auto p-4 md:p-6">
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
@@ -1243,7 +1243,7 @@ export default function ProBuildingSuiteIntegrated() {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 import ServiceCTASection from '@/components/cta/ServiceCTASection';
+import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -617,6 +618,15 @@ export default function GeneratorRentalPage() {
           </div>
         </div>
       </section>
+
+      {/* Funnel into the Repair Centre — rental enquiries frequently come from
+          sites whose own set has failed, which is exactly the reader these
+          guides are written for. */}
+      <RepairCentreCallout
+        hub="generators"
+        heading="Renting because your own set has failed?"
+        body="Worth finding out what went wrong before it happens again. Our engineers have written up the diagnostic sequences they use on site, free to read."
+      />
     </div>
   );
 }

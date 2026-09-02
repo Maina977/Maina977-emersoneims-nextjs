@@ -4,7 +4,7 @@
  * EMERSON EIMS PROPRIETARY CONTENT
  * All content original, rephrased in unique wording
  * SEO optimized for Kenya and East Africa markets
- * Integrated with 400,000+ fault code database
+ * Integrated with the fault code database
  */
 
 // Import all category content

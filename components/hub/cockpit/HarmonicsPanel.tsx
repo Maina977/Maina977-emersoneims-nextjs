@@ -86,7 +86,7 @@ export function HarmonicsPanel({ pq, nominalHz = 50 }: { pq: PowerQuality; nomin
       <div className="mt-3">
         <Mini3PhaseTrace pf={pq.pf} thdPct={pq.thdPct} />
       </div>
-      <p className="mt-2 text-[11px]" style={{ color: 'var(--cockpit-ink-unit)' }}>
+      <p className="mt-2 text-xs" style={{ color: 'var(--cockpit-ink-unit)' }}>
         Synthetic estimate from sizing inputs. Real measurements require an installed power-quality analyser.
       </p>
     </CockpitPanel>

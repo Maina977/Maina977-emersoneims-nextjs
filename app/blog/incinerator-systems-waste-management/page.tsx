@@ -2,13 +2,17 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/blog/incinerator-systems-waste-management' },
   title: 'Medical Incinerator Systems: Waste Management Solutions',
   description: 'Incinerator systems for hospitals, clinics. Waste disposal compliance, maintenance, environmental standards.',
 };
 
 export default function IncineratorBlogPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <article className="max-w-3xl mx-auto px-4 py-20">
         <header className="mb-12">
           <Link href="/blog" className="text-slate-400 hover:text-slate-300 text-sm inline-block mb-4">
@@ -173,6 +177,6 @@ export default function IncineratorBlogPage() {
           </div>
         </div>
       </article>
-    </main>
+    </div>
   );
 }

@@ -397,6 +397,11 @@ const FeatureCard: React.FC<{
   color: string;
   onClick?: () => void;
   badge?: string;
+// Four of these cards previously carried onClick={() => {}} — a hover animation
+// and a click handler that did nothing, on cards describing features. Eight of
+// the twelve never had a handler at all, so the four were inconsistent as well
+// as misleading. The no-op handlers were removed 2026-07-31 rather than wired,
+// because there is nothing behind them to wire to.
 }> = ({ icon: Icon, title, description, color, onClick, badge }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -666,7 +671,7 @@ export default function SolarGeniusProFuturistic() {
       </header>
 
       {/* Main Content */}
-      <main style={{ position: 'relative', zIndex: 10, padding: '40px' }}>
+      <div style={{ position: 'relative', zIndex: 10, padding: '40px' }}>
         {/* Hero Section with Solar World */}
         <section
           style={{
@@ -1039,33 +1044,25 @@ export default function SolarGeniusProFuturistic() {
             icon={BookOpen}
             title="Solar Academy"
             description="Complete training from beginner to master with certifications"
-            color="#f59e0b"
-            onClick={() => {}}
-          />
+            color="#f59e0b"          />
           <FeatureCard
             icon={Globe}
             title="195 Countries"
             description="Global component database with local pricing and standards"
-            color="#10b981"
-            onClick={() => {}}
-          />
+            color="#10b981"          />
           <FeatureCard
             icon={Workflow}
             title="Digital Twin"
             description="Real-time monitoring and predictive maintenance"
-            color="#3b82f6"
-            onClick={() => {}}
-            badge="Live"
+            color="#3b82f6"            badge="Live"
           />
           <FeatureCard
             icon={Building2}
             title="White Label"
             description="Custom branding for your solar business"
-            color="#8b5cf6"
-            onClick={() => {}}
-          />
+            color="#8b5cf6"          />
         </section>
-      </main>
+      </div>
 
       {/* Upload Modal */}
       {showUploadModal && (

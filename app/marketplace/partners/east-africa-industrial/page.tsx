@@ -1,13 +1,37 @@
 import { Metadata } from 'next';
 
+/*
+ * NOINDEX, 2026-08-29. This page publishes fabricated trust signals.
+ *
+ * It presents a named third-party company as a "Verified Partner" with a star
+ * rating, a review count, a quoted customer testimonial, a tiered status and a
+ * response-time SLA — none of which came from any collected data — and it makes
+ * a money-back guarantee on that company's behalf ("full refund, no questions
+ * asked"). Nothing in this repository evidences that these partners exist, that
+ * anyone reviewed them, or that any such refund undertaking was agreed.
+ *
+ * Publishing invented review data is a Google structured-data and spam policy
+ * violation as well as misleading advertising, so the page is removed from the
+ * index while the owner decides whether these partners are real. The page is
+ * NOT deleted — that is the owner's call, and the standing instruction is that
+ * nothing is removed without consent.
+ *
+ * TO RESTORE: delete the robots block below, once the partner, the rating and
+ * the guarantee can each be evidenced.
+ */
 export const metadata: Metadata = {
-  title: 'East Africa Industrial | Verified Partner | EmersonEIMS Marketplace',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/marketplace/partners/east-africa-industrial' },
+  robots: { index: false, follow: false },
+  title: 'East Africa Industrial | Verified Partner',
   description: 'Silver tier partner specializing in manufacturing & oil/gas backup power. 4.4 rating, 8-hour response time. Tanzania, Uganda coverage.',
 };
 
 export default function EastAfricaIndustrialPartnerPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-start justify-between mb-6">
@@ -238,6 +262,6 @@ export default function EastAfricaIndustrialPartnerPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

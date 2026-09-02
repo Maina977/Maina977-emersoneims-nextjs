@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import EastAfricaCityLinks from '@/components/east-africa/EastAfricaCityLinks';
 
 export const metadata: Metadata = {
-  title: 'Power Solutions Tanzania | Dar es Salaam • Arusha • Mbeya | EmersonEIMS',
+  title: 'Power Solutions Tanzania',
   description: 'Reliable generator and power solutions across Tanzania. Dar es Salaam industrial parks, Arusha hospitals, Mbeya mining operations. 24/7 support in TZS. Call +255754411722.',
   alternates: {
     canonical: 'https://www.emersoneims.com/east-africa/tanzania',
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function TanzaniaPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero */}
       <section className="relative py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
@@ -225,7 +226,7 @@ export default function TanzaniaPage() {
             {[
               {
                 service: 'Generator Sales & Installation',
-                details: 'Cummins, Perkins, FG Wilson — 20 kVA to 2000 kVA. Same-day delivery in Dar. Professional installation with 3-year warranty.',
+                details: 'Cummins, Perkins, FG Wilson — 20 kVA to 2000 kVA. Delivery scheduled on confirmation. Professional installation, with new sets carrying a 2-year warranty.',
               },
               {
                 service: 'UPS & Battery Backup Systems',
@@ -285,6 +286,8 @@ export default function TanzaniaPage() {
           </p>
         </div>
       </section>
-    </main>
+
+      <EastAfricaCityLinks country="tanzania" />
+    </div>
   );
 }

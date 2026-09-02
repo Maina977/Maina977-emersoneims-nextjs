@@ -157,7 +157,7 @@ export default function LocationAwareCTA() {
 
       {/* Trust badges */}
       <div className="flex items-center justify-center gap-2 mt-4 text-xs text-gray-500">
-        <span>3-Year Warranty</span>
+        <span>2-Year Warranty</span>
         <span className="text-amber-500">•</span>
         <span>Licensed & Insured</span>
         <span className="text-amber-500">•</span>

@@ -15,7 +15,7 @@ import { motion } from 'framer-motion';
 const FEATURES = [
   {
     icon: '🔍',
-    title: '400,000+ Fault Codes',
+    title: 'Curated Fault Codes',
     description: 'The largest fault code database for generators in Africa. Cummins, Perkins, CAT, DSE, ComAp, and more.',
   },
   {
@@ -131,7 +131,7 @@ export default function GeneratorOracleProductPage() {
             className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-full mb-8"
           >
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-amber-400 text-sm font-medium">Africa&apos;s #1 Generator Diagnostic Platform</span>
+            <span className="text-amber-400 text-sm font-medium">Africa&apos;s Generator Diagnostic Platform</span>
           </motion.div>
 
           {/* Logo/Title */}
@@ -431,7 +431,7 @@ export default function GeneratorOracleProductPage() {
             >
               <div className="text-4xl mb-4">📊</div>
               <h3 className="text-xl font-bold mb-2 group-hover:text-amber-400 transition-colors">Fault Code Database</h3>
-              <p className="text-gray-400 mb-4">400,000+ fault codes with detailed explanations and repair guides.</p>
+              <p className="text-gray-400 mb-4">Manufacturer-curated fault codes with detailed explanations and repair guides.</p>
               <span className="text-amber-400 font-medium">Browse Codes →</span>
             </Link>
 
@@ -474,7 +474,7 @@ export default function GeneratorOracleProductPage() {
               "priceCurrency": "KES",
               "description": "Free trial available"
             },
-            "description": "Africa's #1 generator diagnostic platform with 400,000+ fault codes, AI-powered diagnosis, and step-by-step repair guides.",
+            "description": "a generator diagnostic platform with manufacturer-curated fault codes, AI-powered diagnosis, and step-by-step repair guides.",
             "provider": {
               "@type": "Organization",
               "name": "EmersonEIMS",

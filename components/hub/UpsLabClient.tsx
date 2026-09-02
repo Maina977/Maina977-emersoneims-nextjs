@@ -350,7 +350,7 @@ export default function UpsLabClient() {
           ) : (
             <UpsTopologyBoard state={toUpsTopologyState(comp, result)} />
           )}
-          <p className="mt-2 text-[11px]" style={{ color: 'var(--cockpit-ink-muted)' }}>
+          <p className="mt-2 text-xs" style={{ color: 'var(--cockpit-ink-muted)' }}>
             Mains, rectifier, DC bus, battery branch, inverter, static bypass and output bus update as you add UPS units, change loads, or drop the mains.
             Annotations show live kW on the input/output traces and remaining battery runtime when running on battery.
           </p>
@@ -378,7 +378,7 @@ export default function UpsLabClient() {
                   <div className="flex items-center gap-2">
                     <StatusLight state={s.severity === 'fault' ? 'fault' : 'warn'} label={s.label} pulse />
                   </div>
-                  {s.detail ? <div className="mt-1 text-[11px]" style={{ color: 'var(--cockpit-ink-muted)' }}>{s.detail}</div> : null}
+                  {s.detail ? <div className="mt-1 text-xs" style={{ color: 'var(--cockpit-ink-muted)' }}>{s.detail}</div> : null}
                 </li>
               ))}
             </ul>
@@ -399,9 +399,9 @@ export default function UpsLabClient() {
                 <span className="flex items-center gap-2">
                   <StatusLight state={comp.mainsPresent ? 'info' : 'off'} label={comp.mainsPresent ? 'Mains live' : 'Mains down — simulate'} />
                 </span>
-                <span className="text-[11px]" style={{ color: 'var(--cockpit-ink-muted)' }}>{comp.mainsPresent ? 'click to drop' : 'click to restore'}</span>
+                <span className="text-xs" style={{ color: 'var(--cockpit-ink-muted)' }}>{comp.mainsPresent ? 'click to drop' : 'click to restore'}</span>
               </button>
-              <div className="rounded-md border p-2 text-[11px]" style={{ borderColor: 'var(--cockpit-rail)', color: 'var(--cockpit-ink-muted)' }}>
+              <div className="rounded-md border p-2 text-xs" style={{ borderColor: 'var(--cockpit-rail)', color: 'var(--cockpit-ink-muted)' }}>
                 Drop the mains to see how runtime, alarms and output respond. The UPS keeps delivering output from its battery for as long as autonomy allows.
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -414,7 +414,7 @@ export default function UpsLabClient() {
                   status={result.runtimeMin < 5 ? 'warn' : 'ok'}
                 />
               </div>
-              <div className="rounded-md border px-2 py-1.5 text-[11px]" style={{ borderColor: 'var(--cockpit-rail)', color: 'var(--cockpit-ink-muted)' }}>
+              <div className="rounded-md border px-2 py-1.5 text-xs" style={{ borderColor: 'var(--cockpit-rail)', color: 'var(--cockpit-ink-muted)' }}>
                 Topology in cluster: {result.topology.length === 0 ? '—' : result.topology.join(' · ')}
               </div>
             </div>
@@ -546,10 +546,10 @@ function UpsPicker({ comp, onSet }: { comp: Composition; onSet: (id: string, qty
                   <span>{m.name}</span>
                   <GradeChip g={m.grade} />
                 </div>
-                <div className="text-[11px] text-ink-muted">
+                <div className="text-xs text-ink-muted">
                   {m.ratingKva} kVA · pf {m.pf} · {m.topology} · battery {(m.batteryWh/1000).toFixed(2)} kWh · transfer {m.transferMs} ms
                 </div>
-                <div className="text-[11px] text-ink-secondary">{m.note}</div>
+                <div className="text-xs text-ink-secondary">{m.note}</div>
               </div>
               <Stepper qty={qty} onChange={(v) => onSet(m.id, v)} />
             </div>
@@ -582,7 +582,7 @@ function LoadPicker({ comp, onSet }: { comp: Composition; onSet: (kind: LoadKind
                 <span>{l.label}</span>
                 {!l.upsAdvised && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-800">⚠ not advised on UPS</span>}
               </div>
-              <div className="text-[11px] text-ink-muted">
+              <div className="text-xs text-ink-muted">
                 {l.watts} W · pf {l.pf} · surge ×{l.startMult.toFixed(1)} · {l.category}
               </div>
             </div>
@@ -646,7 +646,7 @@ function UpsViewModeToggle({ value, onChange }: { value: UpsViewMode; onChange: 
     <div
       role="tablist"
       aria-label="UPS diagram view mode"
-      className="inline-flex items-center rounded-md border text-[11px] font-semibold"
+      className="inline-flex items-center rounded-md border text-xs font-semibold"
       style={{ borderColor: 'var(--color-border-subtle, rgba(140,170,220,0.25))' }}
     >
       {(['simple', 'engineering'] as const).map((m) => {

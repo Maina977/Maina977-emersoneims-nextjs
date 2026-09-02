@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import ToolSeoContent from '@/components/seo/ToolSeoContent';
 
 export const metadata: Metadata = {
-  title: "Generator Parts Kenya | Filters, Controls, Engine Spares | Same Day Nairobi",
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/generator-parts' },
+  title: "Generator Parts Kenya",
   description: "Genuine generator spare parts for ALL brands in Kenya. Filters, electrical parts, controls, engine components. OEM & aftermarket available. Same-day delivery Nairobi. Serving all 47 counties. Cummins, Perkins, CAT, FG Wilson parts in stock.",
   keywords: "generator parts Kenya, generator spare parts Kenya, cummins parts Kenya, perkins parts Kenya, generator filters Kenya, generator oil filters Kenya, generator fuel filters Kenya, generator electrical parts Kenya, generator control panel Kenya, engine parts Kenya, AVR generator Kenya, governor parts Kenya, alternator parts Kenya, generator controller Kenya, generator starter motor Kenya",
 };

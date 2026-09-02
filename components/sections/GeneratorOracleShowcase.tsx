@@ -21,9 +21,18 @@ import LiveFaultLookup from '@/components/generator-oracle/LiveFaultLookup';
 const ADVANCED_FEATURES = [
   {
     icon: '🤖',
-    title: 'AI Predictive Failure',
-    description: 'Predicts component failures before they happen',
-    stats: 'Hours-to-failure prediction',
+    /*
+     * WAS: 'AI Predictive Failure' / 'Predicts component failures before
+     * they happen' / 'Hours-to-failure prediction'. Nothing in this
+     * repository predicts a time-to-failure, nothing has been validated
+     * against field outcomes, and the ECM panels run in acknowledged
+     * simulation mode. Presenting a demonstration as a live prediction is
+     * the first thing an engineer would test us on. Replaced with what the
+     * tool genuinely does.
+     */
+    title: 'Fault Code Diagnosis',
+    description: 'Matches symptoms and codes against a curated fault-code database',
+    stats: 'Cause and remedy per code',
     color: '#06b6d4',
     benefit: 'Reduce unexpected downtime',
   },
@@ -71,7 +80,13 @@ const ADVANCED_FEATURES = [
 
 // Core Features
 const CORE_FEATURES = [
-  { icon: '🔍', stat: '400,000+', label: 'Fault Codes', desc: 'Comprehensive database' },
+  /*
+   * stat is filled from the live health response at render time. It briefly
+   * held the literal string 'curated' after a bulk count removal, which put a
+   * word in a tile sitting beside '10', '100%' and '7+'. A dash until the
+   * fetch lands is honest; a word in a number slot is just broken.
+   */
+  { icon: '🔍', stat: null, label: 'Fault Codes', desc: 'Comprehensive database' },
   { icon: '⚡', stat: '10', label: 'Controller Brands', desc: 'Wide compatibility' },
   { icon: '🔄', stat: '100%', label: 'Reset Pathways', desc: 'Step-by-step guides' },
   { icon: '📴', stat: '100%', label: 'Offline Ready', desc: 'No internet required' },
@@ -198,8 +213,8 @@ export default function GeneratorOracleShowcase() {
         { value: `${health.totals.brands}`, label: 'Major brands', color: '#8b5cf6' },
       ]
     : [
-        { value: '400,000+', label: 'Fault-code references', color: '#06b6d4' },
-        { value: 'Verified', label: 'Manufacturer-curated', color: '#22c55e' },
+        { value: '—', label: 'Fault-code references', color: '#06b6d4' },
+        { value: '—', label: 'Manufacturer-curated', color: '#22c55e' },
         { value: '80+', label: 'Controller models', color: '#f59e0b' },
         { value: '10', label: 'Major brands', color: '#8b5cf6' },
       ];
@@ -259,7 +274,7 @@ export default function GeneratorOracleShowcase() {
 
           <p className="text-lg text-slate-400 max-w-3xl mx-auto">
             Manufacturer-aware diagnostic lookup with{' '}
-            <span className="text-amber-400 font-bold">400,000+ fault-code references</span>,{' '}
+            <span className="text-amber-400 font-bold">curated fault-code references</span>,{' '}
             verified troubleshooting steps, and AI-assisted analysis across{' '}
             <span className="text-white font-bold">10 controller brands</span>.
           </p>
@@ -442,7 +457,17 @@ export default function GeneratorOracleShowcase() {
               className="text-center p-4 bg-slate-900/50 rounded-xl border border-slate-800 hover:border-cyan-500/50 transition-colors"
             >
               <span className="text-2xl mb-2 block">{feature.icon}</span>
-              <div className="text-xl font-black text-cyan-400">{feature.stat}</div>
+              {/*
+                A null stat means "fill from live health" — currently only the
+                fault-code tile. Renders a dash until the fetch resolves rather
+                than a placeholder that could go stale.
+              */}
+              <div className="text-xl font-black text-cyan-400">
+                {feature.stat ??
+                  (health.status === 'connected' && health.totals
+                    ? `${health.totals.verifiedCodes.toLocaleString('en-US')}`
+                    : '—')}
+              </div>
               <div className="text-white text-sm font-medium">{feature.label}</div>
               <div className="text-slate-500 text-xs">{feature.desc}</div>
             </motion.div>
@@ -502,7 +527,7 @@ export default function GeneratorOracleShowcase() {
                 <span className="text-5xl">🎉</span>
               </div>
               <p className="text-slate-300 max-w-2xl mx-auto">
-                Use Generator Oracle free for life — full access to 400,000+ fault-code references,
+                Use Generator Oracle free for life — full access to the fault-code references,
                 AI-assisted analysis, and 10 supported controller brands. Built for technicians across Africa.
               </p>
               <p className="text-amber-400 font-bold mt-4">

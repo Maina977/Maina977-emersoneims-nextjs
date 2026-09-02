@@ -85,7 +85,7 @@ export default function MaintenanceClient() {
               key={a}
               type="button"
               onClick={() => setFilter(a)}
-              className="rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider"
+              className="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider"
               style={{
                 borderColor: filter === a ? 'var(--color-brand-blue)' : 'var(--color-border-subtle)',
                 background: filter === a ? 'var(--color-brand-blue)' : 'transparent',
@@ -114,7 +114,7 @@ export default function MaintenanceClient() {
                       </div>
                       <div className="text-sm font-semibold tracking-tight">{t.task}</div>
                       {t.consumable && (
-                        <div className="mt-0.5 text-[11px] text-ink-muted">Consumable: {t.consumable}</div>
+                        <div className="mt-0.5 text-xs text-ink-muted">Consumable: {t.consumable}</div>
                       )}
                     </div>
                     <div className="text-right text-xs">
@@ -123,7 +123,7 @@ export default function MaintenanceClient() {
                         {sk === 'warning' && `${t.lastDoneDays - t.intervalDays} d overdue`}
                         {(sk === 'info' || sk === 'success') && `next in ${next} d`}
                       </div>
-                      <div className="text-[11px] text-ink-muted">interval: {t.intervalDays} d</div>
+                      <div className="text-xs text-ink-muted">interval: {t.intervalDays} d</div>
                     </div>
                   </div>
                 </li>

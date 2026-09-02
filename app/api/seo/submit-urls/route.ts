@@ -155,43 +155,38 @@ interface SubmissionResult {
 // SEARCH ENGINE SUBMISSION FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// 1. Google - Sitemap Ping
-async function pingGoogle(): Promise<SubmissionResult> {
-  try {
-    const sitemapUrl = `${SITE_URL}/sitemap.xml`;
-    const pingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
-    const response = await fetch(pingUrl, { method: 'GET' });
-
-    return {
-      engine: 'Google',
-      status: response.ok ? 'success' : 'error',
-      message: response.ok ? 'Sitemap submitted to Google successfully' : `Google ping failed: ${response.status}`,
-      method: 'Sitemap Ping',
-    };
-  } catch (error) {
-    return { engine: 'Google', status: 'error', message: `Error: ${error instanceof Error ? error.message : 'Unknown'}`, method: 'Sitemap Ping' };
-  }
+/**
+ * Every URL the site actually publishes, read from its own sitemap.
+ *
+ * This used to be a hardcoded CRITICAL_PAGES + BLOG_ARTICLES list of 105 URLs
+ * while sitemap.xml carried 2,047. The other ~1,942 pages — the whole /kenya
+ * county matrix, /locations, the Repair Centre, the East Africa cities — were
+ * never submitted to any engine, so "comprehensive submit" covered 5% of the
+ * site. Reading the sitemap means the two can never diverge again.
+ */
+async function getSitemapUrls(): Promise<string[]> {
+  const res = await fetch(`${SITE_URL}/sitemap.xml`, {
+    headers: { 'user-agent': 'EmersonEIMS-IndexNow/1.0' },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`sitemap.xml returned ${res.status}`);
+  const xml = await res.text();
+  const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].trim());
+  return [...new Set(urls)];
 }
 
-// 2. Bing - Sitemap Ping
-async function pingBing(): Promise<SubmissionResult> {
-  try {
-    const sitemapUrl = `${SITE_URL}/sitemap.xml`;
-    const pingUrl = `https://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
-    const response = await fetch(pingUrl, { method: 'GET' });
+/*
+ * Google and Bing sitemap PING have both been retired and were verified dead
+ * from this machine on 2026-07-31: google.com/ping returns 404 and
+ * bing.com/ping returns 410 Gone. The functions that called them were removed
+ * rather than left to report a permanent failure on every run. Google has no
+ * public submission API — it discovers URLs by crawling the sitemap in
+ * robots.txt and via Search Console, which is why the Search Console
+ * verification token still matters. Yandex's ping endpoint still answers 200
+ * and is kept below.
+ */
 
-    return {
-      engine: 'Bing',
-      status: response.ok ? 'success' : 'error',
-      message: response.ok ? 'Sitemap submitted to Bing successfully' : `Bing ping failed: ${response.status}`,
-      method: 'Sitemap Ping',
-    };
-  } catch (error) {
-    return { engine: 'Bing', status: 'error', message: `Error: ${error instanceof Error ? error.message : 'Unknown'}`, method: 'Sitemap Ping' };
-  }
-}
-
-// 3. Yandex - Sitemap Ping
+// 1. Yandex - Sitemap Ping
 async function pingYandex(): Promise<SubmissionResult> {
   try {
     const sitemapUrl = `${SITE_URL}/sitemap.xml`;
@@ -400,11 +395,8 @@ export async function POST(request: NextRequest) {
     let urlsToSubmit: string[] = [];
 
     if (comprehensiveSubmit || submitAll) {
-      // Submit ALL pages
-      urlsToSubmit = [
-        ...CRITICAL_PAGES.map(page => `${SITE_URL}${page}`),
-        ...BLOG_ARTICLES.map(slug => `${SITE_URL}/blog/${slug}`),
-      ];
+      // Every published URL, read from sitemap.xml — see getSitemapUrls().
+      urlsToSubmit = await getSitemapUrls();
     } else if (customUrls && Array.isArray(customUrls)) {
       urlsToSubmit = customUrls;
     } else {
@@ -414,9 +406,7 @@ export async function POST(request: NextRequest) {
 
     // Execute all submissions in parallel
     const results = await Promise.all([
-      // Sitemap Pings (3)
-      pingGoogle(),
-      pingBing(),
+      // Sitemap ping (1 — Google's and Bing's are retired, see above)
       pingYandex(),
 
       // IndexNow Submissions (5)
@@ -433,33 +423,27 @@ export async function POST(request: NextRequest) {
       pingQwant(),
     ]);
 
-    const successful = results.filter(r => r.status === 'success').length;
-    const failed = results.filter(r => r.status === 'error').length;
+    /*
+     * DuckDuckGo, Ecosia, Yahoo and Qwant make no network call — they read from
+     * Bing's index, so their "result" is a note, not a submission. Counting them
+     * as successes inflated the score by four every run. They are separated out
+     * here so `submitted` reflects requests that actually went somewhere.
+     */
+    const DERIVED = new Set(['DuckDuckGo', 'Ecosia', 'Yahoo', 'Qwant (Europe)']);
+    const real = results.filter(r => !DERIVED.has(r.engine));
+    const successful = real.filter(r => r.status === 'success').length;
+    const failed = real.filter(r => r.status === 'error').length;
 
     return NextResponse.json({
-      success: true,
+      success: failed === 0,
       summary: {
-        totalSearchEngines: 12,
-        directSubmissions: 8,
-        viaIndexSubmissions: 4,
+        endpointsCalled: real.length,
         successful,
         failed,
         urlsSubmitted: urlsToSubmit.length,
+        urlSource: comprehensiveSubmit || submitAll ? 'sitemap.xml' : 'request',
+        coveredWithoutSubmission: [...DERIVED],
       },
-      searchEngines: [
-        'Google (Sitemap Ping)',
-        'Bing (Sitemap + IndexNow)',
-        'Yandex (Sitemap + IndexNow)',
-        'Seznam (Czech Republic - IndexNow)',
-        'Naver (South Korea - IndexNow)',
-        'Yep (IndexNow)',
-        'DuckDuckGo (via Bing)',
-        'Ecosia (via Bing)',
-        'Yahoo (via Bing)',
-        'Qwant Europe (via Bing)',
-        'AOL (via Bing)',
-        'StartPage (via Google)',
-      ],
       results,
       totalPages: urlsToSubmit.length,
       sampleUrls: urlsToSubmit.slice(0, 20),
@@ -474,25 +458,38 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  const allUrls = [
-    ...CRITICAL_PAGES.map(page => `${SITE_URL}${page}`),
-    ...BLOG_ARTICLES.map(slug => `${SITE_URL}/blog/${slug}`),
-  ];
+  let totalPagesReady = 0;
+  let samplePages: string[] = [];
+  let sitemapError: string | null = null;
+
+  try {
+    const all = await getSitemapUrls();
+    totalPagesReady = all.length;
+    samplePages = all.slice(0, 30);
+  } catch (e) {
+    sitemapError = e instanceof Error ? e.message : 'Unknown error';
+  }
 
   return NextResponse.json({
-    message: 'Comprehensive SEO URL Submission API',
-    searchEnginesCovered: 12,
-    totalPagesReady: allUrls.length,
-    searchEngines: {
-      directSubmission: ['Google', 'Bing', 'Yandex', 'Seznam', 'Naver', 'Yep'],
-      viaIndexNow: ['Bing', 'Yandex', 'Seznam', 'Naver', 'Yep'],
-      viaBingIndex: ['DuckDuckGo', 'Ecosia', 'Yahoo', 'Qwant', 'AOL'],
-      viaGoogleIndex: ['StartPage'],
+    message: 'SEO URL submission API',
+    urlSource: 'sitemap.xml',
+    totalPagesReady,
+    ...(sitemapError ? { sitemapError } : {}),
+    /*
+     * Stated honestly. Google is NOT in this list: its sitemap ping endpoint was
+     * retired (verified 404 on 2026-07-31) and it has no public submission API,
+     * so nothing here can push a URL to Google. Google reaches these pages via
+     * the sitemap referenced in robots.txt and via Search Console.
+     */
+    engines: {
+      submittedTo: ['Bing', 'Yandex', 'Seznam', 'Naver', 'Yep'],
+      coveredByBingIndex: ['DuckDuckGo', 'Ecosia', 'Yahoo', 'Qwant', 'AOL'],
+      notReachableFromHere: ['Google'],
     },
     usage: {
-      submitAll: 'POST with { "comprehensiveSubmit": true }',
+      submitAll: 'POST with { "comprehensiveSubmit": true } — submits every sitemap URL',
       submitCustom: 'POST with { "urls": ["url1", "url2"] }',
     },
-    samplePages: allUrls.slice(0, 30),
+    samplePages,
   });
 }

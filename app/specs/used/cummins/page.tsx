@@ -4,13 +4,17 @@ import OptimizedImage from "@/components/media/OptimizedImage";
 import { SectionLead } from "@/components/generators";
 
 export const metadata: Metadata = {
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/specs/used/cummins' },
   title: "Used Cummins Generator Specifications",
   description: "Detailed specifications for pre-owned Cummins generators (50–2000 kVA) including running hours, fuel consumption, and service details.",
 };
 
 export default function CumminsSpecsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="eims-shell py-16">
         <SectionLead
           title="Cummins Used Generators"
@@ -91,10 +95,10 @@ export default function CumminsSpecsPage() {
 
             <div className="pt-6">
               <h3 className="text-2xl font-bold mb-4 text-white">Service & Support</h3>
-              <p className="text-gray-300 mb-4">Nationwide authorized service centers provide:</p>
+              <p className="text-gray-300 mb-4">Our nationwide service coverage provides:</p>
               <ul className="space-y-2 text-gray-300">
                 <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> OEM spare parts availability</li>
-                <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Factory-trained technicians</li>
+                <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Specialist technicians</li>
                 <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Preventive maintenance programs</li>
                 <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Emergency breakdown support</li>
               </ul>
@@ -120,6 +124,6 @@ export default function CumminsSpecsPage() {
           </a>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

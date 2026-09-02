@@ -24,11 +24,45 @@ export const CONTACT = {
   SUPPORT_EMAIL: 'support@emersoneims.com',
 
   // Physical address
+  /*
+   * VERIFIED PHYSICAL ADDRESS.
+   *
+   * This constant said "Industrial Area" until 2026-08-03, which
+   * components/seo/LocalBusinessSchema.tsx has explicitly flagged as WRONG since
+   * 2026-07-18: "Correct location: Embakasi, off Airport North Road — near KEMSA
+   * Head Office, behind Coca-Cola, close to Pride Centre. NOT Industrial Area /
+   * Commercial Street (that was wrong)."
+   *
+   * The corrected address was already in ~30 places across the site (footers,
+   * LocalBusiness schema, og:street-address, the QR generator and the map) while
+   * this constant still carried the old one — so the site contradicted itself.
+   * Aligned here. Nothing was invented; this is the address the codebase already
+   * treats as authoritative.
+   *
+   * POSTAL CODE — 00521, CONFIRMED BY THE OWNER 2026-08-04.
+   *
+   * This field previously read 00519, taken from a schema block that looked
+   * authoritative. It was wrong. The rest of the site had it right: 00521
+   * appears in lib/seo/seoConfig.ts, components/seo/StructuredData.tsx,
+   * LocationServiceSchema.tsx, SEOHead.tsx and app/generators/layout.tsx.
+   *
+   * An earlier note here reasoned that 387-00521 in seoConfig was "a P.O. Box,
+   * not the physical location, and the two are not interchangeable". The box
+   * number 387 is indeed separate, but 00521 is the postal code for both. That
+   * inference produced a second, wrong code and split the site's NAP.
+   *
+   * NAP consistency (Name, Address, Phone) is a direct local-ranking signal:
+   * Google matches the address across the site, the Business Profile and
+   * directories, and disagreement weakens all of them. One code, everywhere.
+   */
   ADDRESS: {
-    street: 'Industrial Area',
+    street: 'Embakasi, off Airport North Road',
+    landmark: 'Near KEMSA Head Office, behind Coca-Cola, close to Pride Centre',
     city: 'Nairobi',
+    region: 'Nairobi',
+    postalCode: '00521',
     country: 'Kenya',
-    full: 'Industrial Area, Nairobi, Kenya'
+    full: 'Embakasi, off Airport North Road, Nairobi 00521, Kenya'
   },
 
   // Business hours

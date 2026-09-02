@@ -2,7 +2,11 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Learning Resources & Guides | Generator, Solar & Power Education | EmersonEIMS',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/resources' },
+  title: 'Learning Resources & Guides',
   description: 'Complete resource library for generators, solar systems, and power solutions. Guides, calculators, FAQs, case studies, and educational content. Learn everything about power systems in Kenya.',
 };
 
@@ -15,7 +19,7 @@ const RESOURCE_CATEGORIES = [
       { href: '/guides/emergency-response', title: 'Emergency Response Guide', desc: 'What to do when your generator fails', type: 'Guide' },
       { href: '/generator-oracle', title: 'Generator Oracle', desc: 'AI-powered fault code diagnosis', type: 'Tool' },
       { href: '/troubleshooting', title: 'Troubleshooting Wizard', desc: 'Interactive problem solver', type: 'Tool' },
-      { href: '/faults', title: 'Fault Code Lookup', desc: 'Search 250,000+ error codes', type: 'Database' },
+      { href: '/faults', title: 'Fault Code Lookup', desc: 'Search generator error codes', type: 'Database' },
     ],
   },
   {
@@ -67,10 +71,16 @@ const RESOURCE_CATEGORIES = [
     icon: '🔬',
     color: 'blue',
     resources: [
+      /*
+       * /diagnostic-journey and /diagnostic-qa were listed here as working
+       * tools. Neither route has ever existed — both returned 404. They are
+       * replaced with the real resources that do what their descriptions
+       * promised, and the duplicate /diagnostics entry is dropped.
+       */
       { href: '/diagnostics', title: 'Diagnostic Cockpit', desc: 'Aerospace-style control interface', type: 'Tool' },
-      { href: '/diagnostic-journey', title: 'Diagnostic Journey', desc: 'Step-by-step diagnosis flow', type: 'Tool' },
-      { href: '/diagnostic-qa', title: 'Expert Q&A', desc: 'AI-powered technical answers', type: 'AI' },
-      { href: '/diagnostics', title: 'Full Diagnostic Suite', desc: 'Complete diagnostic platform', type: 'Suite' },
+      { href: '/troubleshooting', title: 'Troubleshooting Wizard', desc: 'Step-by-step diagnosis flow', type: 'Tool' },
+      { href: '/repair-centre', title: 'Repair Centre', desc: '60 diagnosis guides across 15 categories', type: 'Guides' },
+      { href: '/generator-oracle', title: 'Generator Oracle', desc: 'Fault code and controller intelligence', type: 'Suite' },
     ],
   },
 ];
@@ -86,7 +96,7 @@ const colorClasses: Record<string, { border: string; bg: string; text: string }>
 
 export default function ResourcesPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
       <div className="max-w-7xl mx-auto px-6 py-20">
         {/* Header */}
         <div className="text-center mb-16">
@@ -195,7 +205,7 @@ export default function ResourcesPage() {
               📞 Call Expert: 0768 860 665
             </a>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               className="px-8 py-4 bg-green-600 text-white font-bold rounded-full hover:bg-green-500 transition-colors"
             >
               💬 WhatsApp Support
@@ -203,6 +213,6 @@ export default function ResourcesPage() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

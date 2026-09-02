@@ -55,7 +55,7 @@ const TechnicalBibleHub = dynamic(
 
 export default function TechnicalBiblePage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-black">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-black">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.technicalBible} />
 
@@ -165,6 +165,6 @@ export default function TechnicalBiblePage() {
       }>
         <TechnicalBibleHub />
       </Suspense>
-    </main>
+    </div>
   );
 }

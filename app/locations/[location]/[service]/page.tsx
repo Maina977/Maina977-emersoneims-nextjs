@@ -18,7 +18,8 @@ import {
   getCountyBySlug,
   generateLocationSEO,
   SERVICES,
-  COUNTIES
+  COUNTIES,
+  getServicePath
 } from '@/lib/seo/kenyaLocations';
 import { notFound } from 'next/navigation';
 
@@ -96,7 +97,7 @@ export default async function ServiceLocationPage({ params }: Props) {
             <ol className="flex items-center gap-2 text-slate-400 flex-wrap">
               <li><Link href="/" className="hover:text-cyan-400">Home</Link></li>
               <li>/</li>
-              <li><Link href={`/${service.slug}`} className="hover:text-cyan-400">{service.shortName}</Link></li>
+              <li><Link href={getServicePath(service.slug)} className="hover:text-cyan-400">{service.shortName}</Link></li>
               <li>/</li>
               <li><Link href="/locations" className="hover:text-cyan-400">Locations</Link></li>
               {!isCounty && county && (
@@ -119,7 +120,7 @@ export default async function ServiceLocationPage({ params }: Props) {
 
           <p className="text-xl text-slate-300 max-w-3xl mb-8">
             {service.description} Professional {service.shortName.toLowerCase()} services in {locationName}
-            {!isCounty && county ? `, ${county.name} County` : ''}, Kenya. 3-Year Warranty. 24/7 Emergency Support.
+            {!isCounty && county ? `, ${county.name} County` : ''}, Kenya. 2-Year Warranty. 24/7 Emergency Support.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -130,7 +131,7 @@ export default async function ServiceLocationPage({ params }: Props) {
               Call Now: +254 768 860 665
             </a>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               className="px-8 py-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all"
             >
               WhatsApp for Quote
@@ -177,8 +178,8 @@ export default async function ServiceLocationPage({ params }: Props) {
                 <li className="flex items-start gap-3">
                   <span className="text-cyan-400 text-xl">✓</span>
                   <div>
-                    <strong className="text-white">3-Year Warranty</strong>
-                    <p className="text-slate-400 text-sm">Industry-leading warranty on all installations and services</p>
+                    <strong className="text-white">Warranty in writing</strong>
+                    <p className="text-slate-400 text-sm">Warranty terms are set out in your written quotation</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -231,7 +232,7 @@ export default async function ServiceLocationPage({ params }: Props) {
                 </a>
 
                 <a
-                  href="https://wa.me/254768860665"
+                  href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                   className="flex items-center gap-3 p-4 bg-green-900/30 border border-green-700/50 rounded-lg hover:bg-green-900/50 transition-all"
                 >
                   <span className="text-2xl">💬</span>
@@ -286,7 +287,7 @@ export default async function ServiceLocationPage({ params }: Props) {
             Looking for professional {service.name.toLowerCase()} in {locationName}? EmersonEIMS is your trusted
             local partner for all {service.shortName.toLowerCase()} needs. We have been serving {locationName}
             {!isCounty && county ? ` and the greater ${county.name} County area` : ''} with reliable, high-quality
-            power solutions backed by our industry-leading 3-Year Warranty.
+            power solutions, with warranty terms set out in your written quotation.
           </p>
 
           {serviceContent.seoContent.map((section, idx) => (

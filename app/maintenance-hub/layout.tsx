@@ -1,6 +1,9 @@
 import { Metadata } from 'next';
 import ToolSeoContent from '@/components/seo/ToolSeoContent';
-import Script from 'next/script';
+// next/script is deliberately NOT imported. Its <Script> injects tags
+// client-side, so JSON-LD written that way never reaches a crawler — verified
+// as Googlebot: ten service pages emitted no Service schema at all. Structured
+// data must use a plain <script> so it lands in the server HTML.
 
 /**
  * Maintenance Hub - Main SEO Layout
@@ -8,7 +11,32 @@ import Script from 'next/script';
  */
 
 export const metadata: Metadata = {
-  title: 'Maintenance Hub | Complete Industrial Maintenance Services Kenya',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/maintenance-hub' },
+  /*
+   * Was 'Maintenance Hub | Complete Industrial Maintenance Services Kenya' —
+   * 63 chars before the root layout appends ' | EmersonEIMS Kenya', so 83 in
+   * total and truncated in every search result. It also said "Kenya" twice
+   * once the suffix landed. Shortened to lead with the job.
+   */
+  /*
+   * Declared as an object, NOT a bare string, and that distinction matters.
+   *
+   * A segment whose `title` is a plain string gives its DESCENDANTS no
+   * template to inherit, so the root layout's "%s | EmersonEIMS Kenya" stopped
+   * being applied below this point: the ten child pages rendered their titles
+   * with no brand at all. Caught by reading the live HTML after deploying —
+   * the build was green and the titles were "correct", just unbranded.
+   *
+   * `default` titles this segment (and is itself resolved against the root
+   * template); `template` is what the children below inherit.
+   */
+  title: {
+    default: 'Industrial Maintenance Services',
+    template: '%s | EmersonEIMS Kenya',
+  },
   description: 'Your one-stop maintenance solution in Kenya. Generator diagnostics, solar maintenance, pump repair, motor rewinding, AC service, electrical work. 24/7 professional support across Nairobi, Mombasa, Kisumu.',
   keywords: [
     // Main keywords
@@ -92,9 +120,23 @@ export const metadata: Metadata = {
     images: ['/images/maintenance-hub-og.jpg'],
     creator: '@EmersonEiMS',
   },
-  alternates: {
-    canonical: 'https://www.emersoneims.com/maintenance-hub',
-  },
+  /*
+   * NO `alternates.canonical` HERE — deliberately.
+   *
+   * In the App Router a layout's metadata is INHERITED by every page beneath
+   * it. Hard-coding the canonical here made all ten child pages
+   * (/maintenance-hub/generators, /solar, /hvac, /borehole, /electrical,
+   * /motors, /incinerators, /fabrication, /general) declare
+   * <link rel="canonical" href=".../maintenance-hub">, which tells Google to
+   * index the parent and drop them. They were in the sitemap at the same time,
+   * so the site was asking for indexing and refusing it on the same URL.
+   * A Googlebot scan on 2026-07-31 found all ten in that state.
+   *
+   * The root layout already emits a correct self-referential canonical from the
+   * `x-pathname` header (see app/layout.tsx). Leaving this unset lets every page
+   * canonicalise to itself. Only set a canonical in a layout that has no child
+   * routes, or set it per-page.
+   */
   category: 'Business',
 };
 
@@ -108,7 +150,7 @@ const structuredData = {
       name: 'Emerson Industrial Maintenance Services',
       alternateName: 'Emerson EiMS',
       url: 'https://www.emersoneims.com',
-      logo: 'https://www.emersoneims.com/logo.png',
+      logo: 'https://www.emersoneims.com/emerson-eims-logo.png',
       description: 'Complete industrial maintenance services in Kenya including generator diagnostics, solar maintenance, pump repair, motor rewinding, and electrical services.',
       telephone: '+254782914717',
       email: 'info@emersoneims.com',
@@ -124,8 +166,7 @@ const structuredData = {
         { '@type': 'Country', name: 'Rwanda' },
       ],
       sameAs: [
-        'https://www.facebook.com/emersoneims',
-        'https://twitter.com/EmersonEiMS',
+        'https://x.com/eimsemerson',
         'https://www.linkedin.com/company/emerson-eims',
       ],
     },
@@ -152,7 +193,7 @@ const structuredData = {
           position: 1,
           name: 'Generator Oracle',
           url: 'https://www.emersoneims.com/generator-oracle',
-          description: '400,000+ fault codes for generator diagnostics',
+          description: 'manufacturer-curated fault codes for generator diagnostics',
         },
         {
           '@type': 'ListItem',
@@ -204,11 +245,7 @@ export default function MaintenanceHubLayout({
 }) {
   return (
     <>
-      <Script
-        id="maintenance-hub-structured-data"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}/>
       {children}
       <ToolSeoContent tool="maintenance-hub" />
     </>

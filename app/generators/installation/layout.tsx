@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Installation Services Kenya | Professional Installation | EmersonEIMS',
-  description: 'Professional generator installation services across all 47 Kenya counties. Complete 8-phase installation process: site assessment, engineering design, civil works, electrical installation, commissioning. KEBS certified. All brands: Cummins, Caterpillar, Perkins, FG Wilson.',
+  title: 'Generator Installation Services Kenya',
+  description: 'Professional generator installation services across all 47 Kenya counties. Complete eight-stage installation process: site assessment, engineering design, civil works, electrical installation, commissioning. KEBS certified. All brands: Cummins, Caterpillar, Perkins, FG Wilson.',
   keywords: [
     // Primary Installation Keywords
     'generator installation Kenya',
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     'best generator installation company Kenya',
   ],
   openGraph: {
-    title: 'Professional Generator Installation Services | EmersonEIMS Kenya',
+    title: 'Professional Generator Installation Services',
     description: 'Complete generator installation from site assessment to commissioning. 1,200+ installations completed. 47 counties coverage. 100% compliance rate.',
     type: 'website',
     url: 'https://www.emersoneims.com/generators/installation',
@@ -76,8 +76,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Generator Installation Kenya | EmersonEIMS',
-    description: 'Professional generator installation services. 8-phase process. All brands. 47 counties.',
+    title: 'Generator Installation Kenya',
+    description: 'Professional generator installation services. Eight-stage process. All brands. 47 counties.',
   },
   alternates: {
     canonical: 'https://www.emersoneims.com/generators/installation',
@@ -120,7 +120,7 @@ const jsonLd = {
       '@type': 'HowTo',
       '@id': 'https://www.emersoneims.com/generators/installation/#howto',
       name: 'Generator Installation Process',
-      description: 'Our 8-phase professional generator installation process',
+      description: 'Our eight-stage professional generator installation and commissioning process',
       totalTime: 'P14D',
       step: [
         { '@type': 'HowToStep', position: 1, name: 'Site Assessment', text: 'Complete evaluation of your site for optimal generator placement' },

@@ -208,7 +208,7 @@ export default async function IndustryPage({ params }: Props) {
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto">
               Tailored power solutions designed specifically for the challenges your industry faces.
-              All backed by our 3-Year Warranty.
+              All backed by our 2-Year Warranty.
             </p>
           </div>
 
@@ -395,7 +395,7 @@ export default async function IndustryPage({ params }: Props) {
           </div>
 
           <p className="text-slate-400 text-sm">
-            <strong className="text-white">3-Year Warranty</strong> on all installations |
+            <strong className="text-white">2-Year Warranty</strong> on all installations |
             <strong className="text-white"> 24/7 Emergency Support</strong> |
             <strong className="text-white"> 47 Counties Covered</strong>
           </p>

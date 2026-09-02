@@ -61,7 +61,7 @@ const AC_OVERVIEW = [
   },
   {
     title: "Our Comprehensive AC Services",
-    content: `Emerson Industrial Maintenance Services provides complete air conditioning solutions across Kenya and East Africa. Our services include system design and load calculations, supply of quality equipment from leading brands, professional installation with proper commissioning, preventive maintenance contracts, emergency repair services, refrigerant handling and recharging, compressor repairs and replacements, control system upgrades, and energy efficiency consulting. We service all AC types including split systems, cassettes, ducted systems, VRF/VRV, and chillers. Our technicians are factory-trained on major brands including Daikin, LG, Samsung, Midea, Carrier, and others. With fully equipped service vehicles and well-stocked spare parts inventory, we provide fast, reliable service to minimize your downtime.`
+    content: `Emerson Industrial Maintenance Services provides complete air conditioning solutions across Kenya and East Africa. Our services include system design and load calculations, supply of quality equipment from leading brands, professional installation with proper commissioning, preventive maintenance contracts, emergency repair services, refrigerant handling and recharging, compressor repairs and replacements, control system upgrades, and energy efficiency consulting. We service all AC types including split systems, cassettes, ducted systems, VRF/VRV, and chillers. Our technicians work across major brands including Daikin, LG, Samsung, Midea and Carrier. With fully equipped service vehicles and well-stocked spare parts inventory, we provide fast, reliable service to minimize your downtime.`
   }
 ];
 
@@ -423,7 +423,7 @@ export default function ACPage() {
   const textY = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
   return (
-    <main className="bg-black min-h-screen">
+    <div className="bg-black min-h-screen">
       <B2BCommercialBand profile={B2B_PROFILES.ac} />
       {/* Hero Section */}
       <section ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden">
@@ -612,6 +612,6 @@ export default function ACPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

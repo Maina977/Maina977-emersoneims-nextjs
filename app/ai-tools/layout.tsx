@@ -1,15 +1,29 @@
 import type { Metadata } from 'next';
 import ToolSeoContent from '@/components/seo/ToolSeoContent';
 import type { ReactNode } from 'react';
-import Script from 'next/script';
+// next/script is deliberately NOT imported. Its <Script> injects tags
+// client-side, so JSON-LD written that way never reaches a crawler — verified
+// as Googlebot: ten service pages emitted no Service schema at all. Structured
+// data must use a plain <script> so it lands in the server HTML.
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/ai-tools`;
 
 export const metadata: Metadata = {
-  title: 'AI Engineering Tools — Generator Oracle, Solar Genius, AquaScan Pro | EmersonEIMS',
+  // Self-referential canonical. Declared here so this route does not depend
+  // on the root layout reading headers() — that call forced the whole site
+  // to render dynamically and disabled browser caching everywhere.
+  alternates: { canonical: 'https://www.emersoneims.com/ai-tools' },
+  /*
+   * The old title listed four product names, none of which anyone searches, and
+   * ran to 89 characters so Google cut it anyway. This leads with what the tools
+   * DO and that they are free. "No signup" earns its place: it removes the
+   * single most common reason people bounce off a free tool.
+   * See app/generator-oracle/layout.tsx for the Search Console evidence.
+   */
+  title: 'Free Engineering Calculators — No Signup',
   description:
-    'Free AI tools for power, solar and water engineering: Generator Oracle (controller fault diagnosis), Solar Genius Pro (commercial solar engineering), AquaScan Pro (borehole intelligence) and Building Suite Pro. All in-browser, no signup.',
+    'Free browser tools for Kenyan engineers: generator fault code lookup, solar system sizing, borehole depth and yield estimates, and building take-offs. No signup.',
   keywords: [
     'AI engineering tools Kenya',
     'Generator Oracle',
@@ -20,9 +34,15 @@ export const metadata: Metadata = {
     'free engineering AI',
     'EmersonEIMS AI tools',
   ],
-  alternates: { canonical: URL },
+  /*
+   * NO canonical here — layout metadata is INHERITED by every child page, so
+   * this made each sub-page canonicalise to the section root and forfeit its
+   * own indexing while still being listed in the sitemap. The root layout
+   * (app/layout.tsx) emits a correct self-referential canonical from the
+   * x-pathname header.
+   */
   openGraph: {
-    title: 'AI Engineering Tools — Generator Oracle, Solar Genius, AquaScan Pro | EmersonEIMS',
+    title: 'AI Engineering Tools — Generator Oracle, Solar Genius, AquaScan Pro',
     description:
       'Free AI engineering tools in your browser: generator diagnostics, solar design, borehole analysis, BIM/QS.',
     url: URL,
@@ -131,20 +151,9 @@ const TOOL_SOFTWARE_SCHEMAS = [
 export default function AIToolsLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <Script
-        id="ai-tools-itemlist"
-        type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(ITEM_LIST_SCHEMA) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ITEM_LIST_SCHEMA) }}/>
       {TOOL_SOFTWARE_SCHEMAS.map((schema, i) => (
-        <Script
-          key={schema.name}
-          id={`ai-tools-softwareapp-${i}`}
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
+        <script key={schema.name} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       ))}
       {children}
       <ToolSeoContent tool="ai-tools" />

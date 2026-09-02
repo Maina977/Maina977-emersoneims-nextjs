@@ -13,7 +13,7 @@ export default function CalculatorsPage() {
   const [activeCalculator, setActiveCalculator] = useState<'roi' | 'load' | 'solar' | 'ups' | 'ac' | 'motor' | 'pmi'>('roi');
 
   return (
-    <main className="min-h-screen bg-black text-white relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
   {/* B2B Commercial Band */}
   <B2BCommercialBand profile={B2B_PROFILES.calculators} />
 
@@ -87,7 +87,7 @@ export default function CalculatorsPage() {
       <div className="relative z-10">
         <ScientificCalculator />
       </div>
-    </main>
+    </div>
   );
 }
 

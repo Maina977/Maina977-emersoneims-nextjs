@@ -39,10 +39,13 @@ export default function LocalBusinessSchema({
       // Correct location (2026-07-18): Embakasi, off Airport North Road —
       // near KEMSA Head Office, behind Coca-Cola, close to Pride Centre.
       // NOT Industrial Area / Commercial Street (that was wrong).
-      "streetAddress": address?.streetAddress || "Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi",
+      "streetAddress": address?.streetAddress || "Embakasi, off Airport North Road",
       "addressLocality": address?.addressLocality || "Nairobi",
       "addressRegion": address?.addressRegion || "Nairobi",
-      "postalCode": address?.postalCode || "00519",
+      // 00521, confirmed by the owner 2026-08-04. This default read 00519,
+      // which appeared nowhere else in the site's schema. See
+      // lib/constants/contact.ts for why the wrong code existed.
+      "postalCode": address?.postalCode || "00521",
       "addressCountry": address?.addressCountry || "KE"
     },
     "openingHoursSpecification": [
@@ -61,8 +64,12 @@ export default function LocalBusinessSchema({
     ],
     "sameAs": [
       "https://www.facebook.com/emersoneims",
-      "https://twitter.com/emersoneims",
-      "https://www.linkedin.com/company/emersoneims"
+      // linkedin.com/company/emersoneims removed 2026-08-29: HTTP 404. sameAs
+      // exists so Google can reconcile this business with its other profiles;
+      // a URL that 404s gives it nothing to match and asserts a presence the
+      // business does not have. x.com/eimsemerson is the account named on the
+      // verified Google Business Profile.
+      "https://x.com/eimsemerson"
     ]
   };
 

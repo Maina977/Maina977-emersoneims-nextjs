@@ -7,13 +7,23 @@ interface QuickInquiryFormProps {
   service?: string;
   ctaLabel?: string;
   onSuccess?: () => void;
+  /**
+   * Which page produced the lead, e.g. "service-ups-systems".
+   * Sent through to /api/contact so enquiries can be attributed. Without it
+   * every lead arrives looking identical and there is no way to tell which
+   * page is earning its keep.
+   */
+  source?: string;
 }
 
 export default function QuickInquiryForm({
   service = '',
   ctaLabel = 'Send Inquiry',
-  onSuccess
+  onSuccess,
+  source = 'quick-form',
 }: QuickInquiryFormProps) {
+  // Honeypot. Must stay empty — see the note in handleSubmit.
+  const [botTrap, setBotTrap] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     company: '',
@@ -28,6 +38,27 @@ export default function QuickInquiryForm({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    /*
+     * HONEYPOT SPAM TRAP.
+     *
+     * Of the last nine leads that reached the database, two were bot spam. A
+     * bot fills every field it can find; a human never sees this one, because
+     * it is hidden from sight and from screen readers and is skipped by the
+     * keyboard. So anything in it means "not a person" — drop it silently.
+     *
+     * Silently matters: telling a bot it failed teaches whoever wrote it to
+     * adapt. This returns the same success state a real submission gets.
+     *
+     * Chosen over a CAPTCHA deliberately. A CAPTCHA costs every genuine buyer
+     * time and fails more often on a poor mobile connection, which is most of
+     * this audience. A honeypot costs the buyer nothing.
+     */
+    if (botTrap) {
+      setSuccess(true);
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -44,7 +75,15 @@ export default function QuickInquiryForm({
           location: formData.location,
           service: formData.service,
           message: `Quick inquiry: ${formData.service} in ${formData.location}`,
-          source: 'quick-form'
+          // `source` tells you WHICH page produced the lead. Without it every
+          // enquiry looks the same in the inbox and there is no way to know
+          // which service page is actually earning its keep.
+          source,
+          // Always empty from a real person — the early return above guarantees
+          // it. Sent anyway so /api/contact can apply the SAME check server
+          // side, which is the one that matters: a bot posting straight to the
+          // endpoint never loads this component and never sees the honeypot.
+          company_website: botTrap,
         }),
       });
 
@@ -79,6 +118,33 @@ export default function QuickInquiryForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/*
+        HONEYPOT — must remain reachable to a bot and invisible to a person.
+
+        Every attribute here is doing a job:
+          aria-hidden + tabIndex=-1  keep it away from screen readers and the
+                                     keyboard, so nobody using assistive tech
+                                     or tabbing can land in it by accident
+          autoComplete="off"         stops a browser helpfully filling it and
+                                     locking a real buyer out of their own form
+          name="company_website"     plausible enough that a bot wants to fill it
+          absolute + opacity-0       hidden without display:none, which the
+                                     cruder scrapers check for and skip
+        Deliberately NOT `hidden` or `display:none` for that last reason.
+      */}
+      <div className="absolute w-px h-px overflow-hidden opacity-0 -z-10" aria-hidden="true">
+        <label htmlFor="company_website">Do not fill this in</label>
+        <input
+          id="company_website"
+          name="company_website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={botTrap}
+          onChange={(e) => setBotTrap(e.target.value)}
+        />
+      </div>
+
       {/* Name */}
       <div>
         <input

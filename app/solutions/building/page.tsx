@@ -9,7 +9,11 @@ import FlagshipProductSchema from '@/components/seo/FlagshipProductSchema';
 // iframe — exactly the same component used by /pro-building-suite. There is
 // only ONE building-suite UI in this codebase and this is its home.
 export const metadata: Metadata = {
-  title: 'Pro Building Suite | EmersonEIMS',
+  // No "| EmersonEIMS" — the root layout appends "| EmersonEIMS Kenya", so this
+  // rendered the brand twice. Leads with the job instead: this tool does HVAC
+  // load sizing, electrical design and quantity take-offs, and none of those
+  // words appeared in the title anyone searched.
+  title: 'Building Services Calculator — HVAC, Electrical & QS',
   description:
     'Full EIMS engineering, quantity surveying, BIM, and professional reports — Building Suite Pro.',
   robots: { index: true, follow: true },
@@ -38,6 +42,15 @@ export default function BuildingPage() {
       <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
       <link rel="prefetch" href="/eims-building-suite-v20260503.html" as="document" />
       <B2BCommercialBand profile={B2B_PROFILES.mepClash} />
+      {/*
+        Server-rendered heading. ProBuildingSuiteClient is a client component,
+        so a Googlebot scan on 2026-07-31 found this page — and the /all-tools
+        and /pro-building-suite aliases that canonicalise to it — serving no
+        <h1>. Fixing it here fixes all three.
+      */}
+      <h1 className="sr-only">
+        Pro Building Suite — AI Architectural Design, Structural Analysis &amp; BOQ Generation
+      </h1>
       <ProBuildingSuiteClient />
     </>
   );

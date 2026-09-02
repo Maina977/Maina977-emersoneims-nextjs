@@ -175,7 +175,7 @@ export default function DocPackClient() {
             ['date',    'Date',           'date'],
           ] as const).map(([k, label, type]) => (
             <label key={k} className="grid gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted">{label}</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted">{label}</span>
               <input
                 type={type}
                 value={m[k] as string}
@@ -186,7 +186,7 @@ export default function DocPackClient() {
             </label>
           ))}
           <label className="grid gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted">Architecture</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted">Architecture</span>
             <select
               value={m.arch}
               onChange={(e) => set('arch', e.target.value as Architecture)}
@@ -206,7 +206,7 @@ export default function DocPackClient() {
             ['gensetKVA',  'Genset (kVA)'],
           ] as const).map(([k, label]) => (
             <label key={k} className="grid gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted">{label}</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted">{label}</span>
               <input
                 type="number"
                 value={m[k] as number}
@@ -236,7 +236,7 @@ export default function DocPackClient() {
           <header className="border-b pb-3 mb-4" style={{ borderColor: 'var(--color-border-subtle)' }}>
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-[11px] uppercase tracking-[0.2em] text-ink-muted">Emerson Industrial Maintenance Services</div>
+                <div className="text-xs uppercase tracking-[0.2em] text-ink-muted">Emerson Industrial Maintenance Services</div>
                 <h2 className="text-2xl font-semibold mt-1">Installation & Commissioning Pack</h2>
                 <div className="text-sm text-ink-secondary mt-1">{ARCH_LABEL[m.arch]}</div>
               </div>
@@ -271,7 +271,7 @@ export default function DocPackClient() {
           <div className="grid gap-4 md:grid-cols-2">
             {COMMISSIONING_CHECK.map((g) => (
               <div key={g.group} className="rounded border p-3" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                <div className="text-[11px] uppercase tracking-[0.2em] text-ink-muted">{g.group}</div>
+                <div className="text-xs uppercase tracking-[0.2em] text-ink-muted">{g.group}</div>
                 <ul className="mt-2 space-y-1 text-sm">
                   {g.items.map((it, i) => (
                     <li key={i} className="flex gap-2"><span className="select-none">☐</span><span>{it}</span></li>

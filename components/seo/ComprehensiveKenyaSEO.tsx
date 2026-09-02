@@ -33,7 +33,7 @@ export default function ComprehensiveKenyaSEO() {
     "@type": "ProfessionalService",
     "name": "EmersonEIMS",
     "alternateName": ["EmersonEIMS", "EmersonEIMS", "EmersonEIMS Kenya"],
-    "description": `Kenya's #1 Power Solutions Provider with 3-YEAR WARRANTY on generators. Serving ${KENYA_STATS.counties} counties, ${KENYA_STATS.hospitals.toLocaleString()}+ hospitals, ${KENYA_STATS.hotels.toLocaleString()}+ hotels, ${KENYA_STATS.schools.toLocaleString()}+ schools.`,
+    "description": `Power Solutions Provider in Kenya with 2-YEAR WARRANTY on generators. Serving ${KENYA_STATS.counties} counties, ${KENYA_STATS.hospitals.toLocaleString()}+ hospitals, ${KENYA_STATS.hotels.toLocaleString()}+ hotels, ${KENYA_STATS.schools.toLocaleString()}+ schools.`,
     "url": "https://www.emersoneims.com",
     "logo": "https://www.emersoneims.com/images/logo-tagline.png",
     "image": "https://www.emersoneims.com/og-image.jpg",
@@ -45,7 +45,7 @@ export default function ComprehensiveKenyaSEO() {
     "openingHours": ["Mo-Fr 08:00-18:00", "Sa 08:00-16:00"],
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Nairobi, Kenya",
+      "streetAddress": "Embakasi, off Airport North Road",
       "addressLocality": "Nairobi",
       "addressRegion": "Nairobi County",
       "addressCountry": "KE"
@@ -83,7 +83,7 @@ export default function ComprehensiveKenyaSEO() {
     "knowsAbout": [
       "Generator Installation Kenya",
       "Generator Maintenance Kenya",
-      "3 Year Generator Warranty",
+      "2 Year Generator Warranty",
       "Solar Installation Kenya",
       "UPS Systems Kenya",
       "Motor Rewinding Kenya",
@@ -100,7 +100,7 @@ export default function ComprehensiveKenyaSEO() {
       "eligibleCustomerType": industry.industry
     })),
     // Awards and reviews will be added when earned/received
-    "slogan": "3-Year Warranty | Nationwide Service | 24/7 Emergency Support"
+    "slogan": "2-Year Warranty | Nationwide Service | 24/7 Emergency Support"
   };
 
   // Service Area Schema for each county
@@ -185,7 +185,7 @@ export default function ComprehensiveKenyaSEO() {
     "name": "EmersonEIMS",
     "alternateName": "EmersonEIMS",
     "url": "https://www.emersoneims.com",
-    "description": `Kenya's #1 Power Solutions Provider. 3-Year Generator Warranty. ${KENYA_STATS.counties} Counties. ${KENYA_STATS.hospitals.toLocaleString()}+ Hospitals. ${KENYA_STATS.hotels.toLocaleString()}+ Hotels.`,
+    "description": `Power Solutions Provider in Kenya. 2-Year Generator Warranty. ${KENYA_STATS.counties} Counties. ${KENYA_STATS.hospitals.toLocaleString()}+ Hospitals. ${KENYA_STATS.hotels.toLocaleString()}+ Hotels.`,
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
@@ -264,8 +264,8 @@ export default function ComprehensiveKenyaSEO() {
 
       {/* Hidden SEO Content for Crawlers */}
       <div className="sr-only" aria-hidden="true">
-        <h2>EmersonEIMS - Kenya's #1 Power Solutions Provider</h2>
-        <p>3-YEAR WARRANTY on all generator installations</p>
+        <h2>EmersonEIMS - Power Solutions Provider in Kenya</h2>
+        <p>2-YEAR WARRANTY on all generator installations</p>
         <p>Serving all 47 Kenya counties</p>
         <p>
           {KENYA_STATS.hospitals.toLocaleString()}+ hospitals |

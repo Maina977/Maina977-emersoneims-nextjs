@@ -9,13 +9,13 @@ const capabilities = [
   { name: '24/7 Emergency Support', icon: '🚨', description: '<2hr Response Nairobi' },
   { name: 'All 47 Counties', icon: '🗺️', description: 'Kenya-Wide Coverage' },
   { name: 'Factory-Certified', icon: '🏅', description: 'Authorized Service' },
-  { name: 'Diagnostic Database', icon: '🔬', description: '400,000+ Error Codes' },
+  { name: 'Diagnostic Database', icon: '🔬', description: 'curated error codes' },
   { name: 'Remote Monitoring', icon: '📡', description: 'IoT Integration' },
 ];
 
 // Only verified, authentic partnership
 const partners = [
-  { name: 'CUMMINS VOLTKA', tier: 'Authorized Dealer', description: 'Factory-authorized generator sales and service' },
+  { name: 'CUMMINS VOLTKA', tier: 'Sales & Service', description: 'Generator sales and service' },
 ];
 
 const stats = [
@@ -118,7 +118,7 @@ export default function TrustBadgesSection() {
           </div>
         </motion.div>
 
-        {/* Authorized Partners */}
+        {/* Brands we sell and service */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -126,7 +126,7 @@ export default function TrustBadgesSection() {
           className="mb-16"
         >
           <h3 className="text-center text-sm text-gray-500 uppercase tracking-wider mb-8">
-            Authorized Partner
+            Brands We Sell & Service
           </h3>
           <div className="flex flex-wrap justify-center gap-6">
             {partners.map((partner, i) => (
