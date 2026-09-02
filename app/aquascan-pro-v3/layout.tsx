@@ -17,7 +17,10 @@ export const metadata: Metadata = {
    * "borehole survey", "borehole depth" and "how deep to drill" are.
    * Product name and page design untouched.
    */
-  title: 'Borehole Survey & Depth Estimator — Free',
+  // Object form, not a bare string: a bare layout title leaves the pages
+  // below it with no template, so they ship unbranded. Full reasoning and
+  // the sections deliberately left alone: app/ai-tools/layout.tsx.
+  title: { default: 'Borehole Survey & Depth Estimator — Free', template: "%s | EmersonEIMS Kenya" },
   description:
     // The question a landowner actually asks before drilling: is there water,
     // how deep, and what will it cost. Data sources stay because they are what

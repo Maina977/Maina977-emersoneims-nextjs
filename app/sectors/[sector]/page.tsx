@@ -30,14 +30,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Sector Not Found' };
   }
 
+  /*
+   * TITLE — the previous template printed the sector name TWICE
+   * ("Generators for Tourist Destinations Kenya | Tourist Destinations Power
+   * Solutions"), and the root layout then appends " | EmersonEIMS Kenya".
+   * That rendered at 100 characters live, so Google cut it at roughly 60 and
+   * the visible half was a repeated phrase. Keep this field <= 45.
+   *
+   * DESCRIPTION — the old tail repeated the sector name a third time and
+   * pushed the total past 160, so the phone number, the only call to action
+   * in it, was truncated away. Blurbs cap at 90 characters, so this tail is
+   * sized to keep the whole string inside the snippet.
+   */
   return {
-    title: `Generators for ${sector.name} Kenya | ${sector.name} Power Solutions`,
-    description: `${sector.description}. Professional generator installation, service & maintenance for ${sector.name.toLowerCase()} across Kenya. Call +254768860665`,
+    title: `Generators for ${sector.name} in Kenya`,
+    description: `${sector.description}. Installation, servicing and parts across Kenya. Call +254768860665`,
     keywords: [
       ...sector.keywords,
       `${sector.name.toLowerCase()} generators kenya`,
       `${sector.name.toLowerCase()} backup power`,
     ],
+    /*
+     * Self-referential canonical. These pages shipped with NO canonical at
+     * all — 12 of them are in the sitemap — so any tracking parameter or
+     * alternate casing Google found became a competing copy of the page.
+     * Declared here rather than relying on the root layout, which reads
+     * headers() and so forces dynamic rendering site-wide.
+     */
+    alternates: {
+      canonical: `https://www.emersoneims.com/sectors/${sector.slug}`,
+    },
     openGraph: {
       title: `Generators for ${sector.name} in Kenya`,
       description: sector.description,

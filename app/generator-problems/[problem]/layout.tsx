@@ -1,45 +1,43 @@
 import { Metadata } from 'next';
+import { getProblemSeo } from '@/lib/seo/generatorProblems';
 
-// Problem metadata for SEO
-const PROBLEM_SEO: Record<string, { title: string; description: string; keywords: string }> = {
-  'wont-start': {
-    title: "Generator Won't Start - Causes & Solutions",
-    description: "Diagnose why your generator won't start. Common causes include flat battery, air in fuel system, starter motor failure, and control panel faults. Step-by-step troubleshooting guide.",
-    keywords: "generator won't start, generator not starting, generator cranks but won't start, generator starting problems Kenya",
-  },
-  'overheating': {
-    title: 'Generator Overheating - Causes & Solutions',
-    description: 'Fix generator overheating problems. Learn about low coolant, blocked radiator, thermostat failure, water pump issues, and overloading. Expert troubleshooting guide.',
-    keywords: 'generator overheating, generator high temperature, generator cooling problems, generator thermal shutdown Kenya',
-  },
-  'low-oil-pressure': {
-    title: 'Generator Low Oil Pressure - Causes & Solutions',
-    description: 'Troubleshoot low oil pressure warnings on your generator. Causes include low oil level, faulty sensors, worn oil pump, and wrong oil viscosity. Critical diagnostic guide.',
-    keywords: 'generator low oil pressure, oil pressure warning, generator lubrication problems Kenya',
-  },
-  'voltage-frequency-unstable': {
-    title: 'Generator Voltage & Frequency Problems - Causes & Solutions',
-    description: 'Fix unstable voltage and frequency on your generator. Learn about AVR faults, governor issues, load imbalance, and fuel supply problems. Expert power quality guide.',
-    keywords: 'generator voltage fluctuation, generator frequency unstable, generator AVR problems, generator governor Kenya',
-  },
-  'exhaust-smoke': {
-    title: 'Generator Exhaust Smoke - Causes & Solutions',
-    description: 'Diagnose generator exhaust smoke by color. Black smoke indicates fuel issues, white smoke means coolant problems, blue smoke indicates oil burning. Complete diagnosis guide.',
-    keywords: 'generator black smoke, generator white smoke, generator blue smoke, generator exhaust problems Kenya',
-  },
-};
-
-export async function generateMetadata({ params }: { params: { problem: string } }): Promise<Metadata> {
-  const seo = PROBLEM_SEO[params.problem];
+/*
+ * The metadata itself lives in lib/seo/generatorProblems.ts — the page needs
+ * the same slugs, and a second copy would drift.
+ *
+ * `params` IS A PROMISE and must be awaited. The previous version of this file
+ * read `params.problem` directly, so the lookup was always undefined and all
+ * five problem pages fell through to the "Generator Problem" fallback below.
+ * Verified live as Googlebot on 2026-09-02: /generator-problems/low-oil-pressure
+ * served the title "Generator Problem | Generator Troubleshooting - EmersonEIMS"
+ * while rendering its own H1 and 525 words. The descriptions were written and
+ * correct; they simply never reached a crawler. This is invisible in dev and in
+ * the build — only the rendered HTML shows it.
+ */
+export async function generateMetadata(
+  { params }: { params: Promise<{ problem: string }> },
+): Promise<Metadata> {
+  const { problem } = await params;
+  const seo = getProblemSeo(problem);
 
   if (!seo) {
+    // Unknown slugs are 404'd before they get here. If one ever does, do not
+    // invent a page for it.
     return {
       title: 'Generator Problem',
       description: 'Diagnose and fix common generator problems.',
+      robots: { index: false, follow: true },
     };
   }
 
   return {
+    /*
+     * Self-referential canonical. Without it these five pages inherit the one
+     * hard-coded in app/generator-problems/layout.tsx and each declares
+     * <link rel="canonical" href=".../generator-problems">, asking Google to
+     * drop it. See scripts/check-canonical-inheritance.mjs.
+     */
+    alternates: { canonical: `https://www.emersoneims.com/generator-problems/${problem}` },
     title: seo.title,
     description: seo.description,
     keywords: seo.keywords,

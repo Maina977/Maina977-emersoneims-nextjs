@@ -5,15 +5,11 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SYMPTOM_DIAGNOSES, type PossibleCause } from '@/lib/generator-oracle/educationalContent';
+import { getProblemName } from '@/lib/seo/generatorProblems';
 
-// Problem slug to symptom mapping
-const PROBLEM_MAP: Record<string, string> = {
-  'wont-start': "Generator Won't Start",
-  'overheating': "Generator Overheating",
-  'low-oil-pressure': "Low Oil Pressure",
-  'voltage-frequency-unstable': "Unstable Voltage or Frequency",
-  'exhaust-smoke': "Excessive Exhaust Smoke",
-};
+// PROBLEM_MAP moved to lib/seo/generatorProblems.ts so this page and its new
+// layout.tsx build their titles from ONE copy. The layout needs it to emit
+// per-problem metadata, which this page cannot do: it is a client component.
 
 // Interactive diagnostic questions for each problem
 const DIAGNOSTIC_QUESTIONS: Record<string, {
@@ -149,7 +145,7 @@ const DIAGNOSTIC_QUESTIONS: Record<string, {
 export default function GeneratorProblemPage() {
   const params = useParams();
   const problemSlug = params.problem as string;
-  const symptomName = PROBLEM_MAP[problemSlug];
+  const symptomName = getProblemName(problemSlug);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});

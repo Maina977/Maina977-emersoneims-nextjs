@@ -15,7 +15,7 @@
     "dev:3010": "next dev -p 3010",
     "dev:3020": "next dev -p 3020",
     "dev:debug": "set NODE_OPTIONS=--inspect && next dev",
-    "prebuild": "node scripts/build-security.js && node scripts/check-claims.mjs && node scripts/check-anchors.mjs && node scripts/check-hydration.mjs && node scripts/check-bsp-routes.mjs && node scripts/check-code-counts.mjs && node scripts/check-pricing-routes.mjs && node scripts/check-segment-guard.mjs && node scripts/check-size-routes.mjs && node scripts/check-plant-routes.mjs",
+    "prebuild": "node scripts/build-security.js && node scripts/check-claims.mjs && node scripts/check-anchors.mjs && node scripts/check-hydration.mjs && node scripts/check-canonical-inheritance.mjs && node scripts/check-bsp-routes.mjs && node scripts/check-code-counts.mjs && node scripts/check-pricing-routes.mjs && node scripts/check-segment-guard.mjs && node scripts/check-size-routes.mjs && node scripts/check-plant-routes.mjs",
     "build": "next build",
     "build:secure": "node scripts/build-security.js && next build",
     "build:analyze": "set ANALYZE=true && next build",

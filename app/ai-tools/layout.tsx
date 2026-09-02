@@ -21,7 +21,18 @@ export const metadata: Metadata = {
    * single most common reason people bounce off a free tool.
    * See app/generator-oracle/layout.tsx for the Search Console evidence.
    */
-  title: 'Free Engineering Calculators — No Signup',
+  /*
+   * OBJECT FORM, NOT A BARE STRING. A bare `title` in a layout leaves every
+   * page BELOW it with no template, so the root's "%s | EmersonEIMS Kenya"
+   * stops applying and the children ship unbranded. Re-checked 2026-09-02
+   * against the built HTML: 92 child pages across 12 sections were
+   * unbranded. Only the sections whose child titles still fit 65 characters
+   * once the 20-char suffix lands were converted — /brands, /faults,
+   * /generators and /generators/spare-parts children already run to 65-74
+   * characters and carry their own "Kenya" tail, so branding them here
+   * would push ~290 titles past the truncation point instead of fixing them.
+   */
+  title: { default: 'Free Engineering Calculators — No Signup', template: "%s | EmersonEIMS Kenya" },
   description:
     'Free browser tools for Kenyan engineers: generator fault code lookup, solar system sizing, borehole depth and yield estimates, and building take-offs. No signup.',
   keywords: [

@@ -23,7 +23,10 @@ export const metadata: Metadata = {
    *
    * Product name and page design untouched.
    */
-  title: 'Solar System Size Calculator — Free',
+  // Object form, not a bare string: a bare layout title leaves the pages
+  // below it with no template, so they ship unbranded. Full reasoning and
+  // the sections deliberately left alone: app/ai-tools/layout.tsx.
+  title: { default: 'Solar System Size Calculator — Free', template: "%s | EmersonEIMS Kenya" },
   description:
     // Answers the searcher's actual question — how big a system do I need, and
     // what will it cost — instead of describing the product's feature list.

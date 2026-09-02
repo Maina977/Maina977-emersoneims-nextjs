@@ -557,6 +557,34 @@ const nextConfig: NextConfig = {
       { source: '/structural', destination: '/solutions/building?mode=engineeringPro', permanent: true },
       { source: '/reports', destination: '/solutions/building?mode=reports', permanent: true },
       /*
+       * RETIRED SECTOR SLUGS  /solutions/<sector> -> /industries/<hub>
+       *
+       * The same defect as /generators/case-studies below, found the same
+       * way. app/solutions/[slug]/page.tsx was written to permanentRedirect()
+       * these six retired slugs to the /industries hub that replaced them.
+       * It never did: the file ends at a const declaration and exports no
+       * default component at all, so Next rendered the section layout around
+       * nothing. Verified live as Googlebot on 2026-09-02 —
+       * /solutions/hospitals, /solutions/schools and /solutions/hotels each
+       * answered HTTP 200 with no H1, 431 words of pure navigation chrome,
+       * and a canonical pointing at /solutions. That is a soft 404 that
+       * Google is free to index as a thin duplicate.
+       *
+       * A config redirect runs before routing, so it fires whatever the page
+       * file does or fails to do. The page file is left in place; it is now
+       * unreachable.
+       *
+       * 'real-estate' maps to real-estate-construction, not real-estate:
+       * /industries/real-estate is a 404. The map in the page file had it
+       * wrong, which would have turned a working redirect into a broken one.
+       */
+      { source: '/solutions/hospitals', destination: '/industries/hospitals-healthcare', permanent: true },
+      { source: '/solutions/schools', destination: '/industries/schools-universities', permanent: true },
+      { source: '/solutions/hotels', destination: '/industries/hotels-hospitality', permanent: true },
+      { source: '/solutions/factories', destination: '/industries/manufacturing', permanent: true },
+      { source: '/solutions/farms', destination: '/industries/flower-farms', permanent: true },
+      { source: '/solutions/real-estate', destination: '/industries/real-estate-construction', permanent: true },
+      /*
        * /generators/case-studies -> /case-studies
        *
        * app/generators/case-studies/page.tsx called permanentRedirect() but

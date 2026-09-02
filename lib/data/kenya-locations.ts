@@ -597,7 +597,14 @@ export const KENYA_LOCATIONS: County[] = [
         ]
       },
       {
-        name: 'Kiambu',
+        // "Kiambu Town", not "Kiambu". This constituency shares its county's name,
+        // and every string on its pages is built from this field — so all ten
+        // /kenya/kiambu/kiambu-town/* URLs shipped the SAME title, description and
+        // H1 as the /kenya/kiambu/* county pages they sit under ("Generators in
+        // Kiambu" twice, self-canonical both times). Verified live as Googlebot on
+        // 2026-09-02: ten duplicate pairs, the only ones on the whole site.
+        // Kiambu Town is the county's urban centre and matches the slug already here.
+        name: 'Kiambu Town',
         slug: 'kiambu-town',
         villages: [
           { name: 'Kiambu Township', slug: 'kiambu-township' },

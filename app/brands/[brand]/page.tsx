@@ -44,10 +44,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `buy ${brand.name} generator`,
     ],
     openGraph: {
-      title: `${brand.name} Generators Kenya | Official Dealer`,
+      // "Official Dealer" removed. The meta title above carries a comment
+      // forbidding exactly this claim, and the OpenGraph title underneath it
+      // still made it — on all 17 brand pages, in every social share and in
+      // the HTML a crawler reads. EmersonEIMS is not an authorised dealer.
+      title: `${brand.name} Generators Kenya | Supply, Service & Parts`,
       description: brand.description,
       type: 'website',
       locale: 'en_KE',
+    },
+    /*
+     * Self-referential canonical. Without it these pages inherit the one
+     * hard-coded in app/brands/layout.tsx, so all 17 brand pages served
+     * <link rel="canonical" href=".../brands"> — verified live as Googlebot
+     * on 2026-09-02 on /brands/cummins and /brands/perkins, each carrying
+     * ~940 words of their own. See scripts/check-canonical-inheritance.mjs.
+     */
+    alternates: {
+      canonical: `https://www.emersoneims.com/brands/${brand.slug}`,
     },
   };
 }

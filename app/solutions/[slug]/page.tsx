@@ -26,7 +26,10 @@ const SECTOR_TO_INDUSTRY: Record<string, string> = {
   hotels: 'hotels-hospitality',
   factories: 'manufacturing',
   farms: 'flower-farms',
-  'real-estate': 'real-estate',
+  // real-estate-construction, not real-estate: /industries/real-estate is a
+  // 404. This map never actually ran (the file exports no component), so the
+  // error was invisible. The live redirects are in next.config.ts.
+  'real-estate': 'real-estate-construction',
 };
 
 const RETIRED_SECTOR_SLUGS = Object.keys(SECTOR_TO_INDUSTRY);

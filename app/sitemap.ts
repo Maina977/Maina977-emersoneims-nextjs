@@ -355,6 +355,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Generator sub-routes (commercial intent)
     { url: `${BASE_URL}/generators/leasing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/generators/systems`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    /*
+     * The four engine-brand pages. All are live, 200, and carry 560-720 words
+     * of their own, but until 2026-09-02 they had no server layout, so they
+     * inherited the section canonical and told Google they were duplicates of
+     * /generators — and they were absent from this sitemap as well. Three of
+     * them have no inbound internal link either, so they were invisible twice
+     * over. Listed here now that each declares its own canonical.
+     */
+    { url: `${BASE_URL}/generators/cummins`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/generators/caterpillar`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/generators/perkins`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/generators/volvo-penta`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
     // /generators/case-studies is 308-redirected to /case-studies in
     // next.config.ts and must NOT be listed — a sitemap advertises canonical
     // destinations, not redirect sources. /case-studies is listed below.
