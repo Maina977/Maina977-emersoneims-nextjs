@@ -21,6 +21,7 @@ import { usePerformanceTier } from '@/components/performance/usePerformanceTier'
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import AboutCapabilityDeepDive from '@/components/about/AboutCapabilityDeepDive';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import GoogleReviewsWidget from '@/components/reviews/GoogleReviewsWidget';
 import type { SpiralGalleryItem } from '@/components/about/SpiralGallery';
 // Heavy Three.js + GSAP helix gallery — below the fold. Code-split so three.js
 // stays out of the page entry bundle; ssr:false because the imagery is WebGL
@@ -653,6 +654,15 @@ export default function AboutUsPage() {
             </Reveal>
           </div>
         </section>
+
+        {/*
+          Real Google reviews, read live from the Business Profile. Renders
+          nothing until GOOGLE_PLACES_API_KEY and GOOGLE_PLACE_ID are set in
+          Vercel, and nothing if the profile has no reviews — there is no
+          placeholder state and no invented rating. See
+          components/reviews/GoogleReviewsWidget.tsx.
+        */}
+        <GoogleReviewsWidget />
       </div>
     </ErrorBoundary>
   );
