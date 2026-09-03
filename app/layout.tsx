@@ -306,10 +306,20 @@ export default async function RootLayout({
      * a Maps result, and their absence is invisible on the page — the site
      * looked complete while telling Google less than it could.
      *
-     * hasMap uses the coordinates already declared above rather than a
-     * place-ID URL, because a place ID is not something to guess: a wrong one
-     * points Google at a different business. This form is derived from data we
-     * already publish and is correct by construction.
+     * hasMap does NOT use a place-ID URL, because a place ID is not something
+     * to guess: a wrong one points Google at a different business.
+     *
+     * It searches by NAME AND ADDRESS rather than by the coordinates above.
+     * Those coordinates are rounded to two decimal places, which is about 1.1 km
+     * of slack — enough to land in the wrong block, and a coordinate search that
+     * lands in the wrong block resolves to somebody else's premises. A name and
+     * street query is built from data this site already publishes and points at
+     * the business itself.
+     *
+     * REPLACE THIS with the canonical Business Profile URL the moment it is to
+     * hand, and add the same URL to sameAs below. That pair is the strongest
+     * association Google has between this site and the verified listing, and
+     * right now the site does not link to its own Business Profile at all.
      *
      * areaServed states Kenya. The Business Profile currently lists five towns
      * (Ruiru, Nairobi, Mlolongo, Tatu City, Athi River), which under-claims
@@ -318,7 +328,7 @@ export default async function RootLayout({
      * should be widened to match; until it is, the two disagree, and this is
      * the side that reflects the business.
      */
-    "hasMap": "https://www.google.com/maps/search/?api=1&query=-1.3200,36.8900",
+    "hasMap": "https://www.google.com/maps/search/?api=1&query=EmersonEIMS%2C%20Airport%20North%20Road%2C%20Embakasi%2C%20Nairobi",
     "areaServed": {
       "@type": "Country",
       "name": "Kenya"
