@@ -26,6 +26,7 @@ import CountySiteConditions from '@/components/seo/CountySiteConditions';
 import ConstituencySiteConditions from '@/components/seo/ConstituencySiteConditions';
 import LocationEnquiry from '@/components/seo/LocationEnquiry';
 import LocationProof from '@/components/seo/LocationProof';
+import CountyServiceDepth from '@/components/seo/CountyServiceDepth';
 
 type Props = {
   params: Promise<{ county: string; slug: string[] }>;
@@ -274,6 +275,15 @@ function CountyServicePage({
           serviceSlug={service.slug}
           population={county.population}
         />
+
+        {/*
+          The only block on this page that is about the SERVICE rather than the
+          county. Two different services in one county measured 66-70% identical
+          before this was added — see lib/seo/countyServiceDepth.ts. Deliberately
+          compact: a longer shared block would differentiate services while making
+          the same service look identical across all 47 counties.
+        */}
+        <CountyServiceDepth service={service} countyName={county.name} />
 
         <LocationProof countySlug={county.slug} locationName={county.name} />
 

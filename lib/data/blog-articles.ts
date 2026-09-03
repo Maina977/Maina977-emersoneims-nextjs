@@ -738,7 +738,7 @@ Peak kW = Average x 1.5 to 2
 
 ## Step 5: Where to Buy in Kenya
 
-### Authorized Dealers (Recommended)
+### Established suppliers (recommended)
 **Pros:**
 - Genuine products with warranty
 - Factory-trained technicians
@@ -749,11 +749,11 @@ Peak kW = Average x 1.5 to 2
 - Higher prices
 - Less negotiation room
 
-**Major Dealers in Kenya:**
-- Emerson EiMS (nationwide)
-- Mantrac (CAT)
-- DT Dobie
-- Hotpoint Appliances
+**How to tell one:**
+- A physical workshop you can visit, not just an office
+- Their own engineers, not subcontracted labour
+- Genuine parts held in stock, with part numbers quoted
+- Written warranty terms in the quotation before you pay
 
 ### Direct Importers
 **Pros:**
@@ -776,7 +776,7 @@ Peak kW = Average x 1.5 to 2
 - No after-sales support
 - Cash transactions only
 
-**Our Recommendation:** Buy from authorized dealers or reputable companies with physical premises and verifiable track record.
+**Our Recommendation:** Buy from an established supplier with physical premises, its own service capability and a verifiable track record.
 
 ## Step 6: Negotiation Strategies That Work
 
@@ -2807,8 +2807,8 @@ ERC licensed. Quality components. Honest pricing.
     relatedServices: ['generators', 'diesel-generators', 'generator-companies'],
     relatedCounties: ['nairobi', 'mombasa'],
     faqs: [
-      { question: 'Is it cheaper to import a generator directly?', answer: 'Direct imports can save 10-20% on large orders but come with risks: no local warranty, import duties and logistics, and no after-sales support. For most buyers, local authorized dealers offer better overall value.' },
-      { question: 'Where can I find genuine generators in Kenya?', answer: 'Buy from authorized dealers of major brands (Cummins, Perkins, CAT, FG Wilson). Verify dealer authorization on manufacturer websites. Established companies like Emerson EiMS, Mantrac, and DT Dobie are reliable sources.' },
+      { question: 'Is it cheaper to import a generator directly?', answer: 'Direct imports can save 10-20% on large orders but come with risks: no local warranty, import duties and logistics, and no after-sales support. For most buyers, an established local supplier offers better overall value.' },
+      { question: 'Where can I find genuine generators in Kenya?', answer: 'Buy from a supplier that holds genuine parts, quotes part numbers, and services what it sells. Ask to see the workshop and ask who carries out the warranty work.' },
       { question: 'What import duties apply to generators in Kenya?', answer: 'Generators attract 25% import duty plus 16% VAT on the duty-inclusive value. Total taxes can add 45-50% to CIF price. Some industrial generators may qualify for duty exemptions with proper documentation.' }
     ],
     content: `## Generator Sourcing Options in Kenya
@@ -2880,7 +2880,7 @@ Understanding your procurement options helps you make the best decision for your
 
 | Source | Price Range | Warranty | Support |
 |--------|-------------|----------|---------|
-| Authorized Dealer | KES 700-900K | 1-2 years | Full |
+| Established supplier | KES 700-900K | 1-2 years | Full |
 | Direct Import | KES 550-700K | Varies | Limited |
 | Used (Good condition) | KES 350-500K | None | None |
 
@@ -2910,11 +2910,11 @@ Understanding your procurement options helps you make the best decision for your
 5. Review service capability
 6. Assess parts availability
 
-### Trusted Generator Sources in Kenya
-- Emerson EiMS (multiple brands)
-- Mantrac (Caterpillar)
-- DT Dobie (various)
-- Kenya Generator Dealers Association members
+### What a trustworthy source looks like
+- Holds genuine parts and quotes part numbers, not descriptions
+- Services what it sells, with its own engineers
+- Will put warranty terms in writing before payment
+- Can show you comparable installations you may contact
 
 ## Contact Emerson EiMS
 
@@ -2923,7 +2923,7 @@ For procurement assistance and competitive quotes:
 - Email: info@emersoneims.com
 - Request: Formal quotation for procurement
 
-Authorized dealer. Competitive pricing. Full support.
+Supplied, installed and serviced by our own engineers. Competitive pricing. Full support.
     `
   },
   // Article: Generator Servicing Cost in Kenya - SEO Critical
