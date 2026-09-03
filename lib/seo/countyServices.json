@@ -1,0 +1,134 @@
+{
+  "_comment": [
+    "Service slugs that get a page at COUNTY level: /kenya/<county>/<service>.",
+    "",
+    "Shared deliberately between lib/seo/kenyaIndexable.ts (which builds the route's",
+    "generateStaticParams) and scripts/generate-kenya-guard.mjs (which writes the",
+    "inlined allowlist in middleware.ts). The middleware cannot import from @/lib —",
+    "a cross-module import fails open in the edge runtime — so its copy is generated",
+    "rather than imported. JSON is the one format both sides can read, which is why",
+    "this list lives here instead of in the TypeScript.",
+    "",
+    "WHY THIS FILE EXISTS AT ALL. On 2026-08-01 guard 0b was tightened to an exact",
+    "allowlist built from the 10 'core' services. That correctly stopped Google",
+    "inventing junk URLs, but it also swept up every OTHER real service: 46 of the",
+    "56 defined in lib/data/seo-services.ts stopped being pages and started issuing",
+    "308s to the bare county page. Measured live 2026-09-03 across five counties:",
+    "190 of 240 service-county URLs redirected away, including ac-repair,",
+    "borehole-drilling and automatic-transfer-switch — and /kenya/nairobi, where",
+    "they land, never mentions air conditioning, boreholes or transfer switches.",
+    "",
+    "SELECTION RULE: a slug earns a page if it names a DIFFERENT JOB OR PRODUCT.",
+    "Pure synonyms of an already-listed slug do not, because two pages competing on",
+    "the same intent is the duplication problem that started all of this.",
+    "",
+    "DELIBERATELY EXCLUDED, and why:",
+    "  repairs, maintenance, spareparts        bare synonyms of the generator-* slugs",
+    "  generator-maintenance-companies         synonym of generator-maintenance",
+    "  generator-changeover                    same job as automatic-transfer-switch",
+    "  motor-rewinding-companies               synonym of motor-rewinding",
+    "  solar-experts, solar-technicians        synonyms of solar-companies",
+    "  power-backup                            synonym of ups-systems",
+    "  solar-for-farms/hotels/hospitals/       audience variants of one service; they",
+    "    industries/homes                      differ by who reads them, not what we do",
+    "",
+    "These 14 stay out. Adding one back is a one-line change here — run",
+    "scripts/generate-kenya-guard.mjs afterwards or the build will fail.",
+    "",
+    "CONSTITUENCY tier is NOT affected: it keeps the original 10 core services.",
+    "Constituency pages measured 68% identical to one another, and widening that",
+    "tier would rebuild the doorway problem withdrawn from the sitemap on 2026-08-15.",
+    "",
+    "SITEMAP is NOT affected either. These pages are restored as pages — 200,",
+    "indexable, internally linked — which is exactly the state they were in through",
+    "June and July. The sitemap keeps submitting only the core set."
+  ],
+
+  "core": [
+    "generator-companies",
+    "generators",
+    "generator-repairs",
+    "generator-maintenance",
+    "generator-spare-parts",
+    "solar-installation",
+    "solar-companies",
+    "motor-rewinding",
+    "ups-systems",
+    "electrical-services"
+  ],
+
+  "_excludedComment": [
+    "Machine-readable so the guard generator can tell a SERVICE slug from a",
+    "CONSTITUENCY slug. Both appear as '<county>/<one segment>' in the allowlist,",
+    "and without this list the generator deleted 87 real constituency landing",
+    "pages (kajiado/kajiado-central and friends) on its first dry run.",
+    "A two-part key is only ever rewritten when its second segment is a known",
+    "service; everything else is preserved untouched."
+  ],
+  "excluded": [
+    "repairs",
+    "maintenance",
+    "spareparts",
+    "generator-maintenance-companies",
+    "generator-changeover",
+    "motor-rewinding-companies",
+    "solar-experts",
+    "solar-technicians",
+    "power-backup",
+    "solar-for-farms",
+    "solar-for-hotels",
+    "solar-for-hospitals",
+    "solar-for-industries",
+    "solar-for-homes"
+  ],
+
+  "restored": {
+    "airConditioning": [
+      "ac-companies",
+      "ac-installation",
+      "ac-repair",
+      "ac-maintenance",
+      "ac-gas-refill"
+    ],
+    "borehole": [
+      "borehole-drilling",
+      "borehole-pumps",
+      "water-pump-repair"
+    ],
+    "automation": [
+      "control-panels",
+      "plc-programming",
+      "automation-services"
+    ],
+    "incinerators": [
+      "incinerators",
+      "incinerator-installation",
+      "incinerator-maintenance"
+    ],
+    "generators": [
+      "generator-lease",
+      "generator-engine-overhaul",
+      "generator-canopies",
+      "automatic-transfer-switch",
+      "generator-power-factor"
+    ],
+    "solar": [
+      "solar-panels",
+      "solar-batteries",
+      "solar-inverters",
+      "solar-maintenance",
+      "solar-repairs",
+      "solar-spares"
+    ],
+    "motors": [
+      "motor-repairs",
+      "pump-motors",
+      "industrial-motors",
+      "motor-maintenance",
+      "motor-spares"
+    ],
+    "ups": [
+      "inverter-systems"
+    ]
+  }
+}
