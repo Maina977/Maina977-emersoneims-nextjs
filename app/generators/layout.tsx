@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { publishedPriceRange } from '@/lib/products/generatorSizes';
+
+/** Parsed once at module load — see the comment in the offers block below. */
+const PRICE_BAND = publishedPriceRange();
 
 export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend
@@ -47,7 +51,7 @@ export const metadata: Metadata = {
     siteName: 'EmersonEIMS',
     images: [
       {
-        url: 'https://www.emersoneims.com/wp-content/uploads/2024/09/cummins-generator.jpg',
+        url: 'https://www.emersoneims.com/images/desktop/generators/cummins-teal-canopy.jpg',
         width: 1200,
         height: 630,
         alt: 'Cummins Generator Kenya - EmersonEIMS',
@@ -133,7 +137,7 @@ const jsonLd = {
       '@type': 'Product',
       '@id': 'https://www.emersoneims.com/generators/#product',
       name: 'Cummins Diesel Generators by Voltka - Kenya',
-      image: 'https://www.emersoneims.com/wp-content/uploads/2024/09/cummins-generator.jpg',
+      image: 'https://www.emersoneims.com/images/desktop/generators/cummins-teal-canopy.jpg',
       brand: {
         '@type': 'Brand',
         name: 'Cummins',
@@ -146,16 +150,33 @@ const jsonLd = {
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'KES',
-        lowPrice: '500000',
-        highPrice: '48000000',
+        /*
+         * THESE FIGURES USED TO CONTRADICT THE PAGE THEY SIT ON.
+         *
+         * Until 2026-09-06 this block hard-coded lowPrice 500,000, highPrice
+         * 48,000,000 and offerCount 50. The price table this page renders runs
+         * from KES 280,000 to KES 9,000,000 across 13 published sizes, and the
+         * layout's own meta description a few lines above reads "from KES
+         * 280,000". A buyer was shown one opening price and Google another, and
+         * neither schema figure appeared anywhere in the published data.
+         *
+         * Now parsed from GENERATOR_SIZES — the same table the page renders —
+         * so a price change updates both at once. See publishedPriceRange().
+         */
+        ...(PRICE_BAND
+          ? {
+              lowPrice: String(PRICE_BAND.low),
+              highPrice: String(PRICE_BAND.high),
+              offerCount: String(PRICE_BAND.count),
+            }
+          : {}),
         /*
          * availability: InStock was REMOVED 2026-08-31. It asserted to Google
-         * that every set across a KES 500,000-48,000,000 range was in stock,
-         * on a site with no inventory system to derive that from. Structured
-         * data must match what we can actually honour on the phone.
+         * that every set across the whole range was in stock, on a site with no
+         * inventory system to derive that from. Structured data must match what
+         * we can actually honour on the phone.
          */
         seller: { '@id': 'https://www.emersoneims.com/#organization' },
-        offerCount: '50',
         // Warranty duration removed from structured data 2026-08-31: no
         // approved schedule exists, and the term differs for new, used and
         // refurbished sets. See lib/commercial/policy.ts.

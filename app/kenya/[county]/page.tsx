@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { KENYA_LOCATIONS, getCountyBySlug } from '@/lib/data/kenya-locations';
+import { commercialCentre } from '@/lib/seo/countyCentres';
 import CountyPowerContent from '@/components/seo/CountyPowerContent';
 import CountySiteConditions from '@/components/seo/CountySiteConditions';
 import LocationEnquiry from '@/components/seo/LocationEnquiry';
@@ -47,8 +48,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
    * The title now leaves room for the "| EmersonEIMS Kenya" the root layout
    * appends (20 characters), which is what pushed it over in the first place.
    */
-  const title = `Generators & Solar in ${county.name} County`;
-  const description = `Generator installation, repair and maintenance in ${county.name} County. Solar, UPS and boreholes too. 24/7 emergency response — call +254768860665.`;
+  /*
+   * LEAD WITH THE TOWN PEOPLE ACTUALLY SEARCH.
+   *
+   * Sixteen of the 47 counties are known commercially by their principal town,
+   * not by the county: Uasin Gishu is Eldoret, Trans Nzoia is Kitale, Laikipia
+   * is Nanyuki. Buyers type the town. Until 2026-09-03 the title of the page
+   * serving Kenya's fifth-largest city read "Generators & Solar in Uasin Gishu
+   * County" and did not contain the word Eldoret anywhere.
+   *
+   * Naming both keeps the county term (which some people do use, and which
+   * matches the H1 and breadcrumb) while putting the searched word first. The
+   * longest result is "Generators & Solar in Kapenguria, West Pokot" at 44
+   * characters, which still leaves room for the 20 the root layout appends.
+   */
+  const centre = commercialCentre(county.slug, county.name);
+
+  const title = centre
+    ? `Generators & Solar in ${centre}, ${county.name}`
+    : `Generators & Solar in ${county.name} County`;
+
+  const description = centre
+    ? `Generator installation, repair and maintenance in ${centre} and across ${county.name} County. Solar, UPS and boreholes too. 24/7 emergency response — call +254768860665.`
+    : `Generator installation, repair and maintenance in ${county.name} County. Solar, UPS and boreholes too. 24/7 emergency response — call +254768860665.`;
 
   return {
     title,

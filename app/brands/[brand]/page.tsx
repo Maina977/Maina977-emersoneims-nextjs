@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { publishedPriceRange } from '@/lib/products/generatorSizes';
 import {
   GENERATOR_BRANDS,
   getBrandBySlug,
@@ -75,6 +76,8 @@ export default async function BrandPage({ params }: Props) {
   }
 
   const faqs = generateBrandFAQs(brand, 'Kenya');
+  // Published price band, parsed from the table this site renders.
+  const priceBand = publishedPriceRange();
 
   // Get priority counties for location links
   const priorityCounties = KENYA_LOCATIONS.filter(
@@ -268,16 +271,36 @@ export default async function BrandPage({ params }: Props) {
               '@type': 'Brand',
               name: brand.name,
             },
-            offers: {
-              '@type': 'AggregateOffer',
-              priceCurrency: 'KES',
-              availability: 'https://schema.org/InStock',
-              seller: {
-                '@type': 'Organization',
-                name: 'EmersonEIMS',
-                telephone: '+254768860665',
-              },
-            },
+            /*
+             * Search Console, 2026-09-06: "Missing field lowPrice (in offers)"
+             * — critical, so these pages were not eligible for a Product
+             * snippet at all. lowPrice, highPrice and offerCount now come from
+             * publishedPriceRange(), which parses the price table this site
+             * actually renders, so the schema cannot drift from the page.
+             *
+             * availability: InStock was REMOVED for the same reason it was
+             * removed from /generators on 2026-08-31 — it asserted that every
+             * set across the whole range was in stock, on a site with no
+             * inventory system to derive that from.
+             *
+             * The range is the generator range we publish, not a per-brand one:
+             * no per-brand price table exists, and inventing one is exactly
+             * what put a figure in the schema that appeared nowhere else.
+             */
+            offers: priceBand
+              ? {
+                  '@type': 'AggregateOffer',
+                  priceCurrency: 'KES',
+                  lowPrice: String(priceBand.low),
+                  highPrice: String(priceBand.high),
+                  offerCount: String(priceBand.count),
+                  seller: {
+                    '@type': 'Organization',
+                    name: 'EmersonEIMS',
+                    telephone: '+254768860665',
+                  },
+                }
+              : undefined,
           }),
         }}
       />

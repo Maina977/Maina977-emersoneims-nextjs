@@ -211,3 +211,43 @@ export function getAllGeneratorSizeSlugs(): string[] {
 export function nextSizeUp(g: GeneratorSize): GeneratorSize | undefined {
   return GENERATOR_SIZES.find((x) => x.kva > g.kva);
 }
+
+/**
+ * The price range this site ACTUALLY PUBLISHES, parsed from the table above.
+ *
+ * Search Console flagged "Missing field lowPrice (in offers)" as a critical
+ * Product snippet error on 2026-09-06. Tracing it exposed something worse than
+ * a missing field: the AggregateOffer on /generators declared
+ * lowPrice 500,000 and highPrice 48,000,000, while the priceRange values here —
+ * the figures the page itself renders in its price table — run from 280,000 to
+ * 9,000,000, and the page's own meta description reads "from KES 280,000".
+ * The page told a buyer one number and Google another, and neither schema
+ * figure appears anywhere in the published data.
+ *
+ * Deriving the range from the table means the two can never disagree again:
+ * change a price in GENERATOR_SIZES and the structured data follows.
+ *
+ * Returns null rather than guessing if the table is ever unparseable — a Product
+ * with no offers loses a rich result, which is a smaller loss than a Product
+ * quoting a price we do not publish.
+ */
+export function publishedPriceRange(): { low: number; high: number; count: number } | null {
+  const bounds: number[] = [];
+
+  for (const size of GENERATOR_SIZES) {
+    // "KES 280,000 – 350,000" — en dash in the data, hyphen tolerated.
+    const m = /KES\s*([\d,]+)\s*[–-]\s*([\d,]+)/.exec(size.priceRange);
+    if (!m) continue;
+    const from = Number(m[1].replace(/,/g, ''));
+    const to = Number(m[2].replace(/,/g, ''));
+    if (Number.isFinite(from) && Number.isFinite(to)) bounds.push(from, to);
+  }
+
+  if (!bounds.length) return null;
+
+  return {
+    low: Math.min(...bounds),
+    high: Math.max(...bounds),
+    count: GENERATOR_SIZES.length,
+  };
+}

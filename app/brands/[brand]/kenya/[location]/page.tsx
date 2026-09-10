@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { publishedPriceRange } from '@/lib/products/generatorSizes';
 import {
   GENERATOR_BRANDS,
   getBrandBySlug,
@@ -89,6 +90,9 @@ export default async function BrandLocationPage({ params }: Props) {
   if (!brand || !county) {
     notFound();
   }
+
+  // Published price band, parsed from the table this site renders.
+  const priceBand = publishedPriceRange();
 
   const h1 = generateBrandH1(brand, county.name);
   const faqs = generateBrandFAQs(brand, county.name);
@@ -345,10 +349,27 @@ export default async function BrandLocationPage({ params }: Props) {
               '@type': 'Brand',
               name: brand.name,
             },
+            /*
+             * lowPrice / highPrice / offerCount added 2026-09-06 after Search
+             * Console reported the missing lowPrice as a CRITICAL Product
+             * snippet error — without it these pages were not eligible for a
+             * Product rich result at all. The figures come from
+             * publishedPriceRange(), which parses the price table the site
+             * renders, so schema and page cannot disagree.
+             *
+             * availability: InStock removed for the reason /generators removed
+             * it on 2026-08-31 — there is no inventory system behind it.
+             */
             offers: {
               '@type': 'AggregateOffer',
               priceCurrency: 'KES',
-              availability: 'https://schema.org/InStock',
+              ...(priceBand
+                ? {
+                    lowPrice: String(priceBand.low),
+                    highPrice: String(priceBand.high),
+                    offerCount: String(priceBand.count),
+                  }
+                : {}),
               areaServed: {
                 '@type': 'City',
                 name: county.name,

@@ -557,6 +557,41 @@ const nextConfig: NextConfig = {
       { source: '/structural', destination: '/solutions/building?mode=engineeringPro', permanent: true },
       { source: '/reports', destination: '/solutions/building?mode=reports', permanent: true },
       /*
+       * COUNTY COMMERCIAL CENTRES  /kenya/<town> -> /kenya/<county>
+       *
+       * Sixteen of the 47 counties are known commercially by their principal
+       * town rather than by the county. Nobody types "Uasin Gishu generator
+       * repair"; they type "Eldoret". Verified live 2026-09-03: all sixteen of
+       * these town names returned 404 under /kenya/, and /kenya/eldoret was
+       * linked from two pages on this site — broken internal links pointing at
+       * Kenya's fifth-largest city, one of the eight commercial centres the
+       * owner named as priorities.
+       *
+       * A redirect rather than a page: the county page is the canonical target
+       * and now carries the town in its title (see app/kenya/[county]/page.tsx).
+       * Serving both would be two pages competing on one intent.
+       *
+       * Derived from the `capital` field in lib/seo/kenyaLocations.ts —
+       * commercialCentreAliases() in lib/seo/countyCentres.ts returns exactly
+       * this set, so regenerate from there rather than editing by hand.
+       */
+      { source: '/kenya/voi', destination: '/kenya/taita-taveta', permanent: true },
+      { source: '/kenya/hola', destination: '/kenya/tana-river', permanent: true },
+      { source: '/kenya/kutus', destination: '/kenya/kirinyaga', permanent: true },
+      { source: '/kenya/ol-kalou', destination: '/kenya/nyandarua', permanent: true },
+      { source: '/kenya/eldoret', destination: '/kenya/uasin-gishu', permanent: true },
+      { source: '/kenya/kabarnet', destination: '/kenya/baringo', permanent: true },
+      { source: '/kenya/nanyuki', destination: '/kenya/laikipia', permanent: true },
+      { source: '/kenya/kitale', destination: '/kenya/trans-nzoia', permanent: true },
+      { source: '/kenya/kapsabet', destination: '/kenya/nandi', permanent: true },
+      { source: '/kenya/iten', destination: '/kenya/elgeyo-marakwet', permanent: true },
+      { source: '/kenya/kapenguria', destination: '/kenya/west-pokot', permanent: true },
+      { source: '/kenya/lodwar', destination: '/kenya/turkana', permanent: true },
+      { source: '/kenya/maralal', destination: '/kenya/samburu', permanent: true },
+      { source: '/kenya/mbale', destination: '/kenya/vihiga', permanent: true },
+      { source: '/kenya/wote', destination: '/kenya/makueni', permanent: true },
+      { source: '/kenya/chuka', destination: '/kenya/tharaka-nithi', permanent: true },
+      /*
        * RETIRED SECTOR SLUGS  /solutions/<sector> -> /industries/<hub>
        *
        * The same defect as /generators/case-studies below, found the same

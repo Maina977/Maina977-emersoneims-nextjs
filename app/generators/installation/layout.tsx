@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     siteName: 'EmersonEIMS',
     images: [
       {
-        url: 'https://www.emersoneims.com/wp-content/uploads/2024/09/gen-installation.jpg',
+        url: 'https://www.emersoneims.com/images/voltka/kivukoni-cummins-install.webp',
         width: 1200,
         height: 630,
         alt: 'EmersonEIMS Professional Generator Installation',

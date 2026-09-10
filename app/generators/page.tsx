@@ -2959,7 +2959,7 @@ export default function GeneratorPage() {
             className="mt-12"
           >
             <OptimizedImage
-              src="https://www.emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp"
+              src="/images/voltka/voltka-warehouse-fleet.webp"
               alt="Generator spare parts inventory - EmersonEIMS"
               width={1920}
               height={1080}

@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     siteName: 'EmersonEIMS',
     images: [
       {
-        url: 'https://www.emersoneims.com/wp-content/uploads/2024/09/generator-rental.jpg',
+        url: 'https://www.emersoneims.com/images/voltka/voltka-vks165-stock-forklift.webp',
         width: 1200,
         height: 630,
         alt: 'EmersonEIMS Generator Rental Fleet',

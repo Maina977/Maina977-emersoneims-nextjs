@@ -1399,6 +1399,42 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // 0-. LEGACY WORDPRESS URLS — 410 GONE, NOT 403 FORBIDDEN
+  //
+  //     This runs BEFORE the crawler fast-path on purpose. The fast-path calls
+  //     NextResponse.next() for every verified crawler, so anything placed
+  //     after it is invisible to Googlebot — which is the one visitor this
+  //     rule exists for.
+  //
+  //     The site used to run on WordPress and Google still holds thousands of
+  //     /wp-content/ and /wp-admin URLs from that era. MALICIOUS_PATTERNS
+  //     (section 2) classes them as attack probes and answers 403, which is the
+  //     wrong answer for a URL that really did used to exist here:
+  //
+  //       403  "it is there, you may not have it" — Google keeps the URL,
+  //            retries it, and files it under "Blocked due to access forbidden
+  //            (403)". That report held 26,161 URLs in the 2026-08-01 export,
+  //            and the owner's fix-validation FAILED on 2026-09-06 because the
+  //            URLs still answered 403 when Google recrawled them.
+  //       410  "it was here and is permanently gone" — the strongest removal
+  //            signal available, stronger than 404, and Google drops the URL.
+  //
+  //     No content is served either way, so this grants no access that the 403
+  //     withheld. Only the status changes, and with it whether the report can
+  //     ever close. Genuine attack patterns still reach section 2 and still 403.
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (/^\/(wp-content|wp-admin|wp-includes|wp-login|wp-json|xmlrpc\.php|wp-cron\.php)/i.test(pathname)) {
+    return new NextResponse('Gone', {
+      status: 410,
+      headers: {
+        'X-Robots-Tag': 'noindex',
+        'Content-Type': 'text/plain',
+        'Cache-Control': 'public, max-age=86400',
+      },
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // 0. VERIFIED CRAWLER FAST-PATH (Googlebot, Bingbot, etc.)
   //     Search engines & social previewers MUST never be rate-limited,
   //     scrape-blocked, or 403'd. Short-circuit the entire access-control

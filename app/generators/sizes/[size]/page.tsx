@@ -127,6 +127,11 @@ function jsonLd(g: GeneratorSize) {
                 priceCurrency: 'KES',
                 lowPrice: bounds.low,
                 highPrice: bounds.high,
+                // Search Console flagged the missing offerCount on 2026-09-06.
+                // One offer: this page publishes a band for ONE size, not a
+                // catalogue, so the honest count is 1 rather than the number of
+                // sizes the site sells.
+                offerCount: '1',
                 seller: { '@id': 'https://www.emersoneims.com/#organization' },
                 areaServed: { '@type': 'Country', name: 'Kenya' },
               },
