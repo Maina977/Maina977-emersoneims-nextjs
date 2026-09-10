@@ -1750,5 +1750,26 @@ export const config = {
     // — search-engine verifiers and the IndexNow API fetch these with non-browser
     // user-agents and must always get a 200.
     '/((?!_next/static|_next/image|api|favicon.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|images|fonts|videos|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$|.*\\.webp$|.*\\.ico$|.*\\.txt$|.*\\.xml$).*)',
+    /*
+     * LEGACY WORDPRESS MEDIA — matched explicitly, because the rule above does
+     * not reach it.
+     *
+     * That pattern excludes every image extension, which is right for real
+     * assets: middleware has no business inspecting /images/*.jpg on every
+     * request. But an old WordPress site leaves behind mostly MEDIA URLs, and
+     * /wp-content/uploads/<year>/<month>/<file>.jpg ends in .jpg — so those
+     * URLs skipped middleware entirely and the 410 in section 0- never ran for
+     * the very paths it was written for.
+     *
+     * Verified live 2026-09-06: /wp-admin returned 410 (no extension, matched)
+     * while /wp-content/uploads/2024/09/cummins-generator.jpg still returned
+     * 403 — the exact URLs sitting in Search Console's "Blocked due to access
+     * forbidden (403)" report, and the reason the fix validation failed.
+     *
+     * Listing these two prefixes explicitly costs one middleware invocation on
+     * a path that serves nothing, and lets Google finally retire them.
+     */
+    '/wp-content/:path*',
+    '/wp-includes/:path*',
   ],
 };
