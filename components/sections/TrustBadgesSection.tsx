@@ -6,9 +6,15 @@ import Link from 'next/link';
 // Trust badges and certifications - Only factual items
 const capabilities = [
   { name: 'Generator Specialists', icon: '⚡', description: '12 Years Experience' },
+  // Nairobi is the headquarters, so a faster Nairobi response is consistent
+  // with the 2–4 hours stated for other major towns, not a contradiction of it.
+  // Briefly changed on 2026-09-11 on that mistaken assumption and restored the
+  // same day — see memory rule homepage-clients-genuine.
   { name: '24/7 Emergency Support', icon: '🚨', description: '<2hr Response Nairobi' },
   { name: 'All 47 Counties', icon: '🗺️', description: 'Kenya-Wide Coverage' },
-  { name: 'Factory-Certified', icon: '🏅', description: 'Authorized Service' },
+  // Was 'Factory-Certified / Authorized Service' — EmersonEIMS is not an
+  // authorised dealer for any brand (owner-confirmed; see check-claims.mjs).
+  { name: 'Genuine Parts', icon: '🔧', description: 'Supplied & Serviced' },
   { name: 'Diagnostic Database', icon: '🔬', description: 'curated error codes' },
   { name: 'Remote Monitoring', icon: '📡', description: 'IoT Integration' },
 ];
@@ -20,11 +26,20 @@ const partners = [
 
 const stats = [
   { value: '12+', label: 'Years Experience', icon: '📅' },
-  { value: '523+', label: 'Projects Completed', icon: '⚡' },
+  // '523+ Projects Completed' was replaced with the installed kVA range — a
+  // verifiable fact — on 2026-09-11, following the 2026-05-09 data policy in
+  // app/page.tsx. The owner has not confirmed the 523 figure; if they do,
+  // restore it here.
+  { value: '10–2000', label: 'kVA Range Installed', icon: '⚡' },
   { value: '47', label: 'Counties Served', icon: '🗺️' },
+  // THE UPTIME GUARANTEE STAYS — owner instruction, 2026-09-11. It is a genuine
+  // offering. It was removed earlier that day and restored at the owner's
+  // direction; do not remove it again or guard against it.
   { value: '98.7%', label: 'Uptime Guaranteed', icon: '✅' },
   { value: '24/7', label: 'Support Available', icon: '🛠️' },
-  { value: '4.9★', label: 'Google Rating', icon: '⭐' },
+  // Was 4.9★. The verified Business Profile shows 5.0 (owner, 2026-09-11);
+  // this was understating the real rating.
+  { value: '5.0★', label: 'Google Rating', icon: '⭐' },
 ];
 
 // Real verified projects portfolio

@@ -140,6 +140,33 @@ const RULES = [
     why: 'No training certificates are on file to support this.',
   },
   {
+    id: 'authorised-service-badge',
+    severity: 'error',
+    /*
+     * The dealer claim in a different coat. The 'authorised-dealer' rule above
+     * only matches the word DEALER, so on 2026-09-11 a homepage trust tile
+     * reading 'Factory-Certified / Authorized Service' passed it untouched —
+     * the same claim of manufacturer authorisation the owner has ruled out,
+     * shown to every visitor who scrolled, because the section loads
+     * client-side and never appeared in the server HTML an audit checked.
+     *
+     * Matches the bare badge form only: a string literal that is just
+     * "Authorized Service(s)". Prose about somebody else's authorised service
+     * centre (the fault-code guidance tells readers to contact one) is left
+     * alone.
+     */
+    re: /['"`]\s*Authori[sz]ed\s+Services?\s*['"`]/i,
+    why: 'EmersonEIMS is not an authorised dealer or service agent for any brand.',
+  },
+  /*
+   * NO RULE AGAINST "UPTIME GUARANTEE", and there must not be one.
+   *
+   * An 'uptime-guarantee' warning was added here on 2026-09-11 and removed the
+   * same day. The owner confirmed the uptime guarantee is a genuine offering:
+   * "THE UPTIME GUARANTEE STAYS". A guard that flags genuine claims teaches
+   * people to ignore the guard. Do not reintroduce it.
+   */
+  {
     id: 'named-competitor-comparison',
     /*
      * BLOCKING. The owner's standing rule is that we never use another

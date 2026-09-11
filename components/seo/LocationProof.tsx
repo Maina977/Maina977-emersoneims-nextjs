@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getPublishedCaseStudies, type CaseStudy } from '@/data/caseStudies';
+import { CONFIRMED_CLIENTS, type ConfirmedClient } from '@/data/confirmedClients';
 
 /**
  * Client proof on the location pages.
@@ -9,38 +10,31 @@ import { getPublishedCaseStudies, type CaseStudy } from '@/data/caseStudies';
  * and all the /kenya/* pages carried NO client proof. Those pages are where
  * search traffic lands and where a buyer decides whether to trust the firm.
  *
- * WHY IT WAS REWRITTEN, 2026-09-11. The previous version kept its own
- * hand-copied list of three projects, under a comment saying they were "copied
- * verbatim in substance from the records on /case-studies". Checked against
- * data/caseStudies.ts, two of the three were not:
+ * WHERE THE DATA COMES FROM. This component holds no client data of its own —
+ * that was the defect. It used to keep a private hand-copied list which had
+ * drifted from the homepage, so the location pages and the homepage named
+ * different clients with different figures. It now reads two shared records:
  *
- *   Bigot Flowers   shown as "300 kVA + 100 kVA redundant sets" in Naivasha.
- *                   The PUBLISHED record — backed by a load-test report,
- *                   cold-chain logs and a photograph of the actual set — is a
- *                   single 30 kVA Caterpillar C30D in Nairobi. Ten times the
- *                   real capacity, in the wrong county, on every location page.
- *   Maua Methodist  "200 kVA ... 99.95% uptime, no surgery ever interrupted".
- *   Hospital        Not in the registry at all — not published, not even a
- *                   draft — so there was no evidence behind any of it.
+ *   data/confirmedClients.ts  short references the OWNER CONFIRMED GENUINE on
+ *                             2026-09-11 — the same list the homepage shows.
+ *   data/caseStudies.ts       long-form studies; only PUBLISHED entries that
+ *                             carry evidence documents, via
+ *                             getPublishedCaseStudies().
  *
- * Rendered across roughly 1,900 location pages, an inflated capacity is not a
- * typo; it is the same false claim published 1,900 times, and it contradicted
- * this site's own /case-studies page for any buyer who clicked through.
+ * A CORRECTION TO THE RECORD. Commit 9c95479a (2026-09-11) switched this block
+ * to the case-study registry alone and described Bigot Flowers' "300 kVA +
+ * 100 kVA" as "ten times the real capacity", because the registry documents a
+ * 30 kVA set. That description was WRONG. The owner confirmed the same day that
+ * the 300 + 100 kVA figure is genuine. The two records are best read as two
+ * jobs — the main farm installation and a separate cold-chain set. See the
+ * header of data/confirmedClients.ts. Maua Methodist Hospital, which that
+ * commit dropped for having no case study, is likewise a confirmed client.
  *
- * THE RULE NOW: this component has no data of its own. It reads
- * getPublishedCaseStudies(), which returns only entries marked PUBLISHED that
- * carry evidence documents — the same gate /case-studies applies. Every word on
- * a card comes from that record. To show a project here, publish it there, with
- * its evidence; to correct a figure, correct it there and every page follows.
- *
- * WHICH PROJECTS, AND WHY IT VARIES BY PAGE. Local work first, because a
- * project in the reader's own county is the strongest proof there is. Then work
- * in the same trade as the page — a buyer reading about solar installation is
- * better served by a solar project than a generator one. Capped at three.
- * Choosing by county and trade also means different pages show different
- * projects, where the old block printed the same three on every page: roughly
- * 150 identical words across ~1,900 URLs, on pages Search Console had begun
- * reporting as "Duplicate, Google chose different canonical than user".
+ * WHICH CLIENTS, AND WHY IT VARIES BY PAGE. Local work first — a project in the
+ * reader's own county is the strongest proof there is. Then case studies in the
+ * same trade as the page. Capped at three, in stable order, so a given page
+ * always renders the same cards. When a client appears in both records, the
+ * confirmed reference wins, so this block never contradicts the homepage.
  *
  * NO Review OR AggregateRating SCHEMA, and that is a considered decision.
  * Google excludes self-serving reviews about your own business from rich
@@ -56,6 +50,17 @@ const SERVICE_TO_CASE_CATEGORY: Record<string, CaseStudy['category'][]> = {
   automation: ['Generator', 'Diagnostics'],
 };
 
+/**
+ * Case-study client name -> the confirmed reference for the same client. The
+ * two records spell some names differently, and without this a client would be
+ * shown twice on one page, possibly with two different figures.
+ */
+const SAME_CLIENT: Record<string, string> = {
+  'St. Austin Academy': 'St. Austins Academy Nairobi',
+  'Kivukoni School': 'Kivukoni International School',
+  'Bigot Flowers': 'Bigot Flowers - Naivasha',
+};
+
 /** "Trans Nzoia" -> "trans-nzoia", so registry names compare with route slugs. */
 function slugOf(name: string): string {
   return name.toLowerCase().replace(/county/g, '').trim().replace(/\s+/g, '-');
@@ -65,6 +70,19 @@ function slugOf(name: string): string {
 function firstSentence(text: string): string {
   const m = /^(.+?[.!?])(\s|$)/.exec(text.trim());
   return m ? m[1] : text.trim();
+}
+
+interface Card {
+  key: string;
+  client: string;
+  place: string;
+  label: string;
+  body: string;
+  result?: string;
+  local: boolean;
+  /** 0 local, 1 same trade, 2 other — lower renders first. */
+  rank: number;
+  order: number;
 }
 
 interface Props {
@@ -77,25 +95,50 @@ interface Props {
 }
 
 export default function LocationProof({ countySlug, locationName, serviceCategory }: Props) {
-  // Released names only. A study whose client has not agreed to be named does
-  // not belong on a page whose whole point is "named clients, not anonymous".
-  const published = getPublishedCaseStudies().filter((cs) => cs.clientNameReleased !== false);
-  if (!published.length) return null;
-
   const wanted = serviceCategory ? SERVICE_TO_CASE_CATEGORY[serviceCategory] ?? [] : [];
-  const isLocal = (cs: CaseStudy) => slugOf(cs.county) === countySlug;
-  const isTrade = (cs: CaseStudy) => wanted.includes(cs.category);
 
-  // Stable ordering: local, then same trade, then everything else — each group
-  // keeping registry order, so the same page always renders the same cards.
-  const rank = (cs: CaseStudy) => (isLocal(cs) ? 0 : isTrade(cs) ? 1 : 2);
-  const shown = [...published]
-    .map((cs, i) => ({ cs, i }))
-    .sort((a, b) => rank(a.cs) - rank(b.cs) || a.i - b.i)
-    .slice(0, 3)
-    .map(({ cs }) => cs);
+  const fromConfirmed: Card[] = CONFIRMED_CLIENTS.map((c: ConfirmedClient, i) => {
+    const local = c.countySlug === countySlug;
+    return {
+      key: `c-${c.name}`,
+      client: c.name,
+      place: c.place ?? '',
+      label: `${c.sector} · ${c.year}`,
+      body: c.project,
+      local,
+      rank: local ? 0 : 2,
+      order: i,
+    };
+  });
 
-  const local = shown.filter(isLocal);
+  // Released names only, and never a client already shown from the confirmed
+  // list — the confirmed reference is the one the homepage prints.
+  const fromStudies: Card[] = getPublishedCaseStudies()
+    .filter((cs) => cs.clientNameReleased !== false && !SAME_CLIENT[cs.client])
+    .map((cs, i) => {
+      const local = slugOf(cs.county) === countySlug;
+      const trade = wanted.includes(cs.category);
+      const headline = cs.results[0];
+      return {
+        key: `s-${cs.id}`,
+        client: cs.client,
+        place: cs.location,
+        label: cs.technical?.capacity ? `${cs.category} · ${cs.technical.capacity}` : cs.category,
+        body: firstSentence(cs.solution),
+        result: headline ? `${headline.metric}: ${headline.before} → ${headline.after}` : undefined,
+        local,
+        rank: local ? 0 : trade ? 1 : 2,
+        order: CONFIRMED_CLIENTS.length + i,
+      };
+    });
+
+  const shown = [...fromConfirmed, ...fromStudies]
+    .sort((a, b) => a.rank - b.rank || a.order - b.order)
+    .slice(0, 3);
+
+  if (!shown.length) return null;
+
+  const local = shown.filter((c) => c.local);
   const hasLocal = local.length > 0;
 
   return (
@@ -104,43 +147,42 @@ export default function LocationProof({ countySlug, locationName, serviceCategor
         {hasLocal ? `Work we have delivered in ${locationName}` : 'Work we have delivered'}
       </h2>
       <p className="text-gray-400 max-w-3xl mb-6">
+        {/*
+          The sentence does not repeat a client name. Confirmed names often carry
+          their own place — "Bigot Flowers - Naivasha", "AMH Nairobi" — so the
+          earlier "<client> is in <place>" rendered "St. Austins Academy Nairobi
+          is in Nairobi". Stating how many are local says the same thing and
+          reads like a person wrote it.
+        */}
         {hasLocal
-          ? `These are named clients, not anonymous case studies. ${local[0].client} is in ${local[0].location}.`
-          : `We have not published a project in ${locationName} yet. These are named clients elsewhere in Kenya — our mobile workshop covers all 47 counties, so the same team does the work here.`}
+          ? `These are named clients, not anonymous case studies — ${
+              local.length === 1 ? 'including one' : `${local.length} of them`
+            } here in ${locationName}.`
+          : `We have not published a project in ${locationName} yet. These are named clients elsewhere — our mobile workshop covers all 47 counties, so the same team does the work here.`}
       </p>
 
       <div className="grid gap-4 md:grid-cols-3 mb-6">
-        {shown.map((cs) => {
-          const headline = cs.results[0];
-          return (
-            <div
-              key={cs.id}
-              className={`rounded-xl border p-5 ${
-                isLocal(cs) ? 'border-amber-500/40 bg-amber-400/5' : 'border-white/10 bg-white/5'
-              }`}
-            >
-              <div className="text-xs uppercase tracking-wider text-gray-500 mb-2">
-                {cs.category}
-                {cs.technical?.capacity ? ` · ${cs.technical.capacity}` : ''}
-              </div>
-              <div className="text-lg font-semibold text-white mb-1">{cs.client}</div>
-              <div className="text-sm text-amber-300/90 mb-3">{cs.location}</div>
-              <p className="text-sm text-gray-400 mb-3">{firstSentence(cs.solution)}</p>
-              {headline ? (
-                <p className="text-sm text-gray-300 font-medium">
-                  {headline.metric}: {headline.before} → {headline.after}
-                </p>
-              ) : null}
-            </div>
-          );
-        })}
+        {shown.map((card) => (
+          <div
+            key={card.key}
+            className={`rounded-xl border p-5 ${
+              card.local ? 'border-amber-500/40 bg-amber-400/5' : 'border-white/10 bg-white/5'
+            }`}
+          >
+            <div className="text-xs uppercase tracking-wider text-gray-500 mb-2">{card.label}</div>
+            <div className="text-lg font-semibold text-white mb-1">{card.client}</div>
+            {card.place ? <div className="text-sm text-amber-300/90 mb-3">{card.place}</div> : null}
+            <p className="text-sm text-gray-400 mb-3">{card.body}</p>
+            {card.result ? <p className="text-sm text-gray-300 font-medium">{card.result}</p> : null}
+          </div>
+        ))}
       </div>
 
       <Link
         href="/case-studies"
         className="inline-block text-amber-300 hover:text-amber-200 font-semibold"
       >
-        Read the full case studies, with their evidence &rarr;
+        Read the full case studies &rarr;
       </Link>
     </section>
   );

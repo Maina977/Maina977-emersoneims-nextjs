@@ -259,13 +259,20 @@ export const CASE_STUDIES: CaseStudy[] = [
       { metric: 'Class Interruptions', before: '15/month', after: '<1', improvement: '-99%' },
     ],
     technical: {
+      /*
+       * 60 kVA — OWNER-CONFIRMED 2026-09-11 ("for kivukoni is 60kva").
+       * This record previously said 100 kVA and named a Cummins C100D5, a
+       * 100 kVA model, while the homepage said 60 kVA; the owner settled it.
+       * The model code is dropped rather than swapped for a guessed 60 kVA
+       * designation — only the capacity was confirmed, not the model.
+       */
       equipment: [
-        'Cummins C100D5 generator',
+        'Cummins 60 kVA generator',
         'Corrosion-resistant canopy',
         'Salt-spray rated electrical enclosure',
         'Automated transfer switch',
       ],
-      capacity: '100kVA continuous',
+      capacity: '60kVA continuous',
       installation: '10 days',
       commissioning: '3 days',
     },
