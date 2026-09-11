@@ -285,7 +285,7 @@ function CountyServicePage({
         */}
         <CountyServiceDepth service={service} countyName={county.name} />
 
-        <LocationProof countySlug={county.slug} locationName={county.name} />
+        <LocationProof countySlug={county.slug} locationName={county.name} serviceCategory={service.category} />
 
         <LocationEnquiry
           locationName={county.name}
@@ -642,7 +642,7 @@ function ConstituencyServicePage({
           serviceName={service.shortName}
         />
 
-        <LocationProof countySlug={county.slug} locationName={constituency.name} />
+        <LocationProof countySlug={county.slug} locationName={constituency.name} serviceCategory={service.category} />
 
         <LocationEnquiry
           locationName={constituency.name}
