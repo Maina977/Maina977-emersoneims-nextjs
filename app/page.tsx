@@ -307,9 +307,14 @@ function StaticHeroFallback() {
             </Link>
           </div>
 
-          {/* Trust Indicators — only verifiable, on-policy claims kept.
-              Removed "500+ Projects" and "98.7% Uptime" — both lacked
-              provenance and violate the project data policy. */}
+          {/* Trust Indicators.
+              "500+ Projects" and "98.7% Uptime" were removed from this row on
+              2026-05-09 as lacking provenance. SUPERSEDED 2026-09-11: the owner
+              confirmed both are genuine — 523+ projects completed, and the
+              uptime guarantee is a real offering that stays. They already show
+              in TrustBadgesSection. They were not re-added to this hero row only
+              because nobody has asked for a hero change; they are NOT fabricated,
+              and must not be removed anywhere on that basis. */}
           <div className="mt-10 sm:mt-12 grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-4 sm:gap-6 text-gray-400 text-sm">
             {/* "47 Counties Covered" alone did not say HOW. The nationwide
                 mobile workshop is a real, owner-confirmed capability (2026-07-20)
@@ -341,11 +346,14 @@ function StaticHeroFallback() {
 }
 
 function StaticStatsSection() {
-  // Data-policy compliance (audit 2026-05-09): replaced fabricated
-  // headline counters ("500+ projects", "98.7% uptime", "12+ years")
-  // with claims that are either contractual (warranty / SLA window) or
+  // Data-policy compliance (audit 2026-05-09) replaced the headline counters
+  // ("500+ projects", "98.7% uptime", "12+ years") with contractual claims and
   // verifiable public facts (Kenya county count, kVA range we install).
-  // No unlabelled estimates per /memories/data-policy.md.
+  //
+  // CORRECTION 2026-09-11: that audit called those counters "fabricated". They
+  // are not. The owner confirmed 523+ projects completed and the 98.7% uptime
+  // guarantee as genuine, and both appear in TrustBadgesSection. This section's
+  // own stats were left as they are simply because no change was requested.
   const stats = [
     { num: '47', label: 'Counties Covered', icon: '🌍' },
     { num: '24/7', label: 'Emergency Response', icon: '🚨' },

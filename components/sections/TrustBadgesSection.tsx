@@ -26,11 +26,11 @@ const partners = [
 
 const stats = [
   { value: '12+', label: 'Years Experience', icon: '📅' },
-  // '523+ Projects Completed' was replaced with the installed kVA range — a
-  // verifiable fact — on 2026-09-11, following the 2026-05-09 data policy in
-  // app/page.tsx. The owner has not confirmed the 523 figure; if they do,
-  // restore it here.
-  { value: '10–2000', label: 'kVA Range Installed', icon: '⚡' },
+  // 523+ PROJECTS — OWNER-CONFIRMED 2026-09-11 ("ITS CORRECT AND CONFIRMED").
+  // Briefly swapped for the kVA range that day while unconfirmed, and restored
+  // on confirmation. Do not remove it again — see memory rule
+  // homepage-clients-genuine.
+  { value: '523+', label: 'Projects Completed', icon: '⚡' },
   { value: '47', label: 'Counties Served', icon: '🗺️' },
   // THE UPTIME GUARANTEE STAYS — owner instruction, 2026-09-11. It is a genuine
   // offering. It was removed earlier that day and restored at the owner's
