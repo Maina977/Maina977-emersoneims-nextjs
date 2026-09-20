@@ -134,9 +134,27 @@ const RULES = [
      *
      * So it reports every time, loudly, and never blocks. Resolve it one way or
      * the other: produce the certificate and delete this rule, or reword.
+     *
+     * WIDENED 2026-09-20 to catch the manufacturer-named form. The pattern was
+     * /factory[-\s]?trained/ and matched only the literal words "factory
+     * trained". It missed "our Cummins-trained technicians", live on
+     * /brands/cummins, which is the same unverifiable claim of manufacturer
+     * training with the manufacturer named instead of implied — if anything the
+     * stronger version, because naming the brand is what makes it sound
+     * official.
+     *
+     * THE SECOND BRANCH REQUIRES A POSSESSIVE ("our", "we", "EmersonEIMS")
+     * within a few words, and that is load-bearing. A first attempt matched any
+     * "<brand>-trained" and immediately flagged three safety instructions in
+     * lib/generator-oracle/controller-repair-manuals.ts — "Only Cat-trained
+     * technicians should modify configuration", "Volvo Penta trained
+     * technicians only for ECU work". Those are correct warnings telling a
+     * reader NOT to do something, not claims about who we employ. A guard that
+     * reports them teaches people to reword safety copy to silence it, which is
+     * worse than the gap it closed.
      */
     severity: 'warn',
-    re: /factory[-\s]?trained/i,
+    re: /factory[-\s]?trained|\b(?:our|we|emersoneims)\b[^.!?]{0,30}?\b(?:cummins|perkins|caterpillar|cat|volvo|volvo\s*penta|doosan|sdmo|himoinsa|gesan|iveco|man|weichai|john\s*deere|olympian|leyland|lister\s*petter|honda)[-\s]?trained\b/i,
     why: 'No training certificates are on file to support this.',
   },
   {
