@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import PartsCategoryLinks from '@/components/parts/PartsCategoryLinks';
 
 export const metadata: Metadata = {
   title: 'Generator Spare Parts Kenya | 2000+ Parts',
@@ -96,6 +97,34 @@ export default function SparePartsLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       {children}
+      {/*
+        THE CATALOGUE'S ONLY CRAWLABLE INDEX — wired in 2026-09-20.
+
+        app/generators/spare-parts/page.tsx is 'use client', so the hub's
+        entire body arrives after hydration and the server HTML holds nothing
+        but the site chrome. Measured that day against production: 109 unique
+        8-word sequences once chrome was subtracted — the thinnest page on the
+        site — with zero links to its category pages and zero to its engine
+        pages. Forty-odd /generators/spare-parts/<category> routes and
+        twenty-three /engine/<slug> routes were reachable from the sitemap and
+        from nowhere else on the page that owns them.
+
+        PartsCategoryLinks was written for precisely this in the 2026-07-21
+        audit and then never rendered anywhere. Its own header warns that
+        "the category pages are useless if nothing links to them" and cites two
+        earlier page sets lost the same way. The component was correct; only
+        the wiring was missing.
+
+        It lives in the layout rather than the page because the page is a
+        client component and cannot render a server one. That also puts the
+        index on the category and engine pages beneath, which is wanted: from
+        a filters page you can reach another category or jump to the engine
+        you are actually buying for.
+
+        Every count it prints is read from the same JSON the pages render
+        from, so the numbers cannot drift from the catalogue.
+      */}
+      <PartsCategoryLinks />
     </>
   );
 }
