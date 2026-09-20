@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 import Link from 'next/link';
 import OracleDemoVideo from '@/components/generator-oracle/OracleDemoVideo';
 import LiveBackendStatus, { useBackendHealth } from '@/components/generator-oracle/LiveBackendStatus';
@@ -157,7 +157,7 @@ function AnimatedCounter({ value, suffix = '' }: { value: string; suffix?: strin
 // Feature Card
 function FeatureCard({ feature, index }: { feature: typeof ADVANCED_FEATURES[0]; index: number }) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -194,11 +194,11 @@ function FeatureCard({ feature, index }: { feature: typeof ADVANCED_FEATURES[0];
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
-export default function GeneratorOracleShowcase() {
+function GeneratorOracleShowcaseInner() {
   const [activeTab, setActiveTab] = useState<'features' | 'comparison'>('features');
   const health = useBackendHealth();
 
@@ -243,14 +243,14 @@ export default function GeneratorOracleShowcase() {
 
       <div className="max-w-7xl mx-auto px-6 sm:px-12 relative">
         {/* HERO HEADER - Market Dominance Statement */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="text-center mb-16"
         >
           {/* Badge */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -260,7 +260,7 @@ export default function GeneratorOracleShowcase() {
             <span className="text-amber-400 text-lg font-black uppercase tracking-wider">
               Professional Diagnostic Tool
             </span>
-          </motion.div>
+          </m.div>
 
           <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white mb-6">
             <span className="text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text">
@@ -283,17 +283,17 @@ export default function GeneratorOracleShowcase() {
           <div className="max-w-2xl mx-auto mt-6">
             <LiveBackendStatus variant="banner" />
           </div>
-        </motion.div>
+        </m.div>
 
         {/* MASSIVE STATS ROW */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
         >
           {liveStats.map((stat, idx) => (
-            <motion.div
+            <m.div
               key={stat.label}
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -309,12 +309,12 @@ export default function GeneratorOracleShowcase() {
                 )}
               </div>
               <div className="text-slate-400 text-sm font-medium">{stat.label}</div>
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
+        </m.div>
 
         {/* CINEMATIC DEMO */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -322,7 +322,7 @@ export default function GeneratorOracleShowcase() {
         >
           <div className="text-center mb-8">
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-400 text-sm font-bold">
-              <motion.span
+              <m.span
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
                 className="w-3 h-3 bg-purple-500 rounded-full"
@@ -331,10 +331,10 @@ export default function GeneratorOracleShowcase() {
             </span>
           </div>
           <OracleDemoVideo autoPlay={true} />
-        </motion.div>
+        </m.div>
 
         {/* LIVE FAULT-CODE LOOKUP — proves the backend is wired */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -353,7 +353,7 @@ export default function GeneratorOracleShowcase() {
           <div className="max-w-4xl mx-auto">
             <LiveFaultLookup />
           </div>
-        </motion.div>
+        </m.div>
 
         {/* TAB NAVIGATION */}
         <div className="flex justify-center mb-12">
@@ -381,7 +381,7 @@ export default function GeneratorOracleShowcase() {
         {/* FEATURES GRID */}
         <AnimatePresence mode="wait">
           {activeTab === 'features' && (
-            <motion.div
+            <m.div
               key="features"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -391,11 +391,11 @@ export default function GeneratorOracleShowcase() {
               {ADVANCED_FEATURES.map((feature, idx) => (
                 <FeatureCard key={feature.title} feature={feature} index={idx} />
               ))}
-            </motion.div>
+            </m.div>
           )}
 
           {activeTab === 'comparison' && (
-            <motion.div
+            <m.div
               key="comparison"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -404,7 +404,7 @@ export default function GeneratorOracleShowcase() {
             >
               <div className="grid md:grid-cols-2 gap-6">
                 {FEATURE_HIGHLIGHTS.map((item, idx) => (
-                  <motion.div
+                  <m.div
                     key={item.feature}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -418,12 +418,12 @@ export default function GeneratorOracleShowcase() {
                         <p className="text-slate-400 text-sm">{item.description}</p>
                       </div>
                     </div>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
 
               {/* Value Statement */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
@@ -435,20 +435,20 @@ export default function GeneratorOracleShowcase() {
                 <p className="text-slate-400">
                   Generator Oracle combines comprehensive fault databases with AI-powered diagnostics to help you troubleshoot faster.
                 </p>
-              </motion.div>
-            </motion.div>
+              </m.div>
+            </m.div>
           )}
         </AnimatePresence>
 
         {/* CORE FEATURES ROW */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-16"
         >
           {CORE_FEATURES.map((feature, idx) => (
-            <motion.div
+            <m.div
               key={feature.label}
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -470,12 +470,12 @@ export default function GeneratorOracleShowcase() {
               </div>
               <div className="text-white text-sm font-medium">{feature.label}</div>
               <div className="text-slate-500 text-xs">{feature.desc}</div>
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
+        </m.div>
 
         {/* COMPATIBLE CONTROLLERS */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -488,7 +488,7 @@ export default function GeneratorOracleShowcase() {
           </h3>
           <div className="flex flex-wrap justify-center gap-2">
             {COMPATIBLE_CONTROLLERS.map((controller, i) => (
-              <motion.span
+              <m.span
                 key={controller}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -497,13 +497,13 @@ export default function GeneratorOracleShowcase() {
                 className="px-3 py-1.5 bg-slate-900/80 border border-slate-700 rounded-lg text-xs text-slate-300 hover:border-cyan-500/50 hover:text-cyan-400 transition-colors"
               >
                 {controller}
-              </motion.span>
+              </m.span>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* FREE TRIAL MEGA BANNER */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -511,7 +511,7 @@ export default function GeneratorOracleShowcase() {
         >
           <div className="relative overflow-hidden bg-gradient-to-r from-green-500/20 via-emerald-500/30 to-green-500/20 border-2 border-green-500/50 rounded-3xl p-8 text-center">
             {/* Animated shine */}
-            <motion.div
+            <m.div
               className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
               animate={{ x: ['-100%', '200%'] }}
               transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
@@ -535,10 +535,10 @@ export default function GeneratorOracleShowcase() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* CTA SECTION */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -552,15 +552,15 @@ export default function GeneratorOracleShowcase() {
               <span className="relative z-10 flex items-center gap-3">
                 <span className="text-2xl">🔮</span>
                 Launch Generator Oracle FREE
-                <motion.span
+                <m.span
                   animate={{ x: [0, 8, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                   className="text-2xl"
                 >
                   →
-                </motion.span>
+                </m.span>
               </span>
-              <motion.div
+              <m.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                 animate={{ x: ['-100%', '200%'] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
@@ -592,10 +592,10 @@ export default function GeneratorOracleShowcase() {
             <br />
             <span className="text-amber-400">Built for generator technicians in Africa.</span>
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Trademark Disclaimer */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -608,8 +608,28 @@ export default function GeneratorOracleShowcase() {
             These are trademarks of their respective owners. This tool is not affiliated with or endorsed by these companies.
             Feature comparisons based on publicly available product specifications.
           </p>
-        </motion.div>
+        </m.div>
       </div>
     </section>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed GeneratorOracleShowcaseInner and wrapped here.
+ */
+export default function GeneratorOracleShowcase() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <GeneratorOracleShowcaseInner />
+    </LazyMotion>
   );
 }

@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m, LazyMotion, domAnimation } from 'framer-motion';
 import Link from 'next/link';
 import {
   Phone,
@@ -34,7 +34,7 @@ interface EmergencyCTAProps {
   showStats?: boolean;
 }
 
-export default function EmergencyCTA({ variant = 'full', showStats = true }: EmergencyCTAProps) {
+function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAProps) {
   const [projectsThisMonth, setProjectsThisMonth] = useState(47);
   const [activeEmergencies, setActiveEmergencies] = useState(3);
 
@@ -77,7 +77,7 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
 
   if (variant === 'floating') {
     return (
-      <motion.div
+      <m.div
         initial={{ x: 100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         className="fixed bottom-6 right-6 z-50 flex flex-col gap-3"
@@ -96,7 +96,7 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
           <MessageCircle className="w-5 h-5" />
           WhatsApp Us
         </a>
-      </motion.div>
+      </m.div>
     );
   }
 
@@ -152,7 +152,7 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
           {/* Left Content */}
           <div>
             {/* Urgency Badge */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -160,9 +160,9 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
             >
               <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
               <span className="text-sm font-semibold">{activeEmergencies} Active Emergency Responses Right Now</span>
-            </motion.div>
+            </m.div>
 
-            <motion.h2
+            <m.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -171,9 +171,9 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
             >
               Power Emergency?
               <span className="block text-red-500">We're Already Moving.</span>
-            </motion.h2>
+            </m.h2>
 
-            <motion.p
+            <m.p
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -181,10 +181,10 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
               className="text-xl text-slate-300 mb-8"
             >
               When your power goes down, every minute costs money. Our emergency teams are stationed across Nairobi with fully-equipped service vehicles ready to deploy.
-            </motion.p>
+            </m.p>
 
             {/* Trust Badges */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -207,10 +207,10 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
                   </div>
                 </div>
               ))}
-            </motion.div>
+            </m.div>
 
             {/* CTAs */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -231,12 +231,12 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
                 <MessageCircle className="w-6 h-6" />
                 WhatsApp Emergency
               </a>
-            </motion.div>
+            </m.div>
           </div>
 
           {/* Right Content - Stats */}
           {showStats && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -262,7 +262,7 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
                         <span className="text-2xl font-bold text-white">{stat.value}</span>
                       </div>
                       <div className="h-2 bg-slate-800 rounded-full mt-2 overflow-hidden">
-                        <motion.div
+                        <m.div
                           initial={{ width: 0 }}
                           whileInView={{ width: '100%' }}
                           viewport={{ once: true }}
@@ -282,12 +282,12 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
                   <div className="text-slate-400">Projects This Month</div>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </div>
 
         {/* Bottom Trust Strip */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -298,8 +298,28 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> ERC Compliant</span>
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> ISO 9001:2015</span>
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> 2-Year Warranty</span>
-        </motion.div>
+        </m.div>
       </div>
     </section>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed EmergencyCTAInner and wrapped here.
+ */
+export default function EmergencyCTA(props: Parameters<typeof EmergencyCTAInner>[0]) {
+  return (
+    <LazyMotion features={domAnimation}>
+      <EmergencyCTAInner {...props} />
+    </LazyMotion>
   );
 }

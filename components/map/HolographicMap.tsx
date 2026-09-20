@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import { m, useMotionValue, useSpring, useTransform, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 
 /**
  * 🚀 HOLOGRAPHIC 3D INTERACTIVE MAP
@@ -30,7 +30,7 @@ interface Particle {
   life: number;
 }
 
-export default function HolographicMap() {
+function HolographicMapInner() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -189,13 +189,13 @@ export default function HolographicMap() {
   return (
     <div className="relative w-full">
       {/* Layer Controls */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="absolute top-6 left-1/2 -translate-x-1/2 z-30 flex gap-2"
       >
         {layers.map((layer) => (
-          <motion.button
+          <m.button
             key={layer.id}
             onClick={() => setActiveLayer(layer.id)}
             whileHover={{ scale: 1.05 }}
@@ -210,12 +210,12 @@ export default function HolographicMap() {
           >
             <span className="mr-2">{layer.icon}</span>
             {layer.name}
-          </motion.button>
+          </m.button>
         ))}
-      </motion.div>
+      </m.div>
 
       {/* Main Container */}
-      <motion.div
+      <m.div
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
@@ -231,7 +231,7 @@ export default function HolographicMap() {
         className="relative w-full aspect-[16/10] overflow-hidden rounded-3xl"
       >
         {/* Holographic Base Platform */}
-        <motion.div
+        <m.div
           style={{
             rotateX,
             rotateY,
@@ -266,7 +266,7 @@ export default function HolographicMap() {
           {/* Center Pulse Waves */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center pointer-events-none">
             {[0, 1, 2, 3].map((i) => (
-              <motion.div
+              <m.div
                 key={i}
                 className="absolute rounded-full border-2 border-amber-500/50"
                 style={{
@@ -290,7 +290,7 @@ export default function HolographicMap() {
           {/* Holographic Map Layers */}
           <AnimatePresence mode="wait">
             {activeLayer === 'satellite' && (
-              <motion.div
+              <m.div
                 key="satellite"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -309,11 +309,11 @@ export default function HolographicMap() {
                   allowFullScreen
                   loading="lazy"
                 />
-              </motion.div>
+              </m.div>
             )}
 
             {activeLayer === 'hologram' && (
-              <motion.div
+              <m.div
                 key="hologram"
                 initial={{ opacity: 0, z: -100 }}
                 animate={{ opacity: 1, z: 0 }}
@@ -323,7 +323,7 @@ export default function HolographicMap() {
                 {/* Holographic Map Visual */}
                 <div className="relative w-full h-full flex items-center justify-center">
                   {/* Central Location Marker */}
-                  <motion.div
+                  <m.div
                     animate={{
                       y: [0, -20, 0],
                       rotateY: [0, 360],
@@ -348,7 +348,7 @@ export default function HolographicMap() {
 
                     {/* Orbiting Rings */}
                     {[1, 2, 3].map((i) => (
-                      <motion.div
+                      <m.div
                         key={i}
                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-cyan-400/50 rounded-full"
                         style={{
@@ -364,7 +364,7 @@ export default function HolographicMap() {
                           ease: 'linear',
                         }}
                       >
-                        <motion.div
+                        <m.div
                           className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(6,182,212,0.8)]"
                           animate={{
                             scale: [1, 1.5, 1],
@@ -376,9 +376,9 @@ export default function HolographicMap() {
                             delay: i * 0.5,
                           }}
                         />
-                      </motion.div>
+                      </m.div>
                     ))}
-                  </motion.div>
+                  </m.div>
 
                   {/* Hexagonal Grid Overlay */}
                   <div className="absolute inset-0 opacity-20" style={{
@@ -387,7 +387,7 @@ export default function HolographicMap() {
                   }} />
 
                   {/* Coordinate Display */}
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="absolute bottom-8 left-8 bg-black/80 backdrop-blur-xl border border-amber-500/50 rounded-2xl p-6 font-mono"
@@ -399,11 +399,11 @@ export default function HolographicMap() {
                       <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                       <span className="text-green-400 text-xs">LOCATION ACTIVE</span>
                     </div>
-                  </motion.div>
+                  </m.div>
 
                   {/* Data Streams */}
                   {[...Array(8)].map((_, i) => (
-                    <motion.div
+                    <m.div
                       key={i}
                       className="absolute w-1 bg-gradient-to-b from-amber-500 to-transparent"
                       style={{
@@ -424,11 +424,11 @@ export default function HolographicMap() {
                     />
                   ))}
                 </div>
-              </motion.div>
+              </m.div>
             )}
 
             {activeLayer === '3d' && (
-              <motion.div
+              <m.div
                 key="3d"
                 initial={{ opacity: 0, rotateY: -90 }}
                 animate={{ opacity: 1, rotateY: 0 }}
@@ -437,7 +437,7 @@ export default function HolographicMap() {
                 style={{ transformStyle: 'preserve-3d' }}
               >
                 {/* 3D Wireframe Globe */}
-                <motion.div
+                <m.div
                   animate={{
                     rotateY: [0, 360],
                   }}
@@ -476,7 +476,7 @@ export default function HolographicMap() {
                   ))}
 
                   {/* Location Pin on Globe */}
-                  <motion.div
+                  <m.div
                     className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2"
                     animate={{
                       scale: [1, 1.2, 1],
@@ -489,15 +489,15 @@ export default function HolographicMap() {
                     <div className="w-8 h-8 bg-red-500 rounded-full shadow-[0_0_40px_rgba(239,68,68,0.8)] flex items-center justify-center">
                       <div className="w-4 h-4 bg-white rounded-full animate-pulse" />
                     </div>
-                  </motion.div>
-                </motion.div>
-              </motion.div>
+                  </m.div>
+                </m.div>
+              </m.div>
             )}
           </AnimatePresence>
 
           {/* Corner Brackets - Holographic Frame */}
           {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((corner) => (
-            <motion.div
+            <m.div
               key={corner}
               initial={{ opacity: 0 }}
               animate={{ opacity: isHovered ? 1 : 0.5 }}
@@ -518,11 +518,11 @@ export default function HolographicMap() {
                 corner === 'bottom-left' ? '-bottom-1 -left-1' :
                 '-bottom-1 -right-1'
               }`} />
-            </motion.div>
+            </m.div>
           ))}
 
           {/* Info Panel */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="absolute top-8 right-8 bg-black/80 backdrop-blur-xl border border-white/20 rounded-2xl p-6 max-w-xs"
@@ -546,7 +546,7 @@ export default function HolographicMap() {
               </div>
             </div>
 
-            <motion.a
+            <m.a
               href="https://maps.google.com/?q=-1.3200,36.8900"
               target="_blank"
               rel="noopener noreferrer"
@@ -555,11 +555,11 @@ export default function HolographicMap() {
               className="mt-4 block w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center font-bold rounded-xl"
             >
               Navigate Now →
-            </motion.a>
-          </motion.div>
+            </m.a>
+          </m.div>
 
           {/* Scan Lines Effect */}
-          <motion.div
+          <m.div
             className="absolute inset-0 pointer-events-none opacity-20"
             style={{
               background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(251,191,36,0.1) 2px, rgba(251,191,36,0.1) 4px)',
@@ -573,8 +573,28 @@ export default function HolographicMap() {
               ease: 'linear',
             }}
           />
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </div>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Next.js prefetches the
+ * Contact page from homepage links, so that engine was downloaded by every
+ * homepage visitor, and again by everyone opening Contact to get in touch.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed HolographicMapInner and wrapped here.
+ */
+export default function HolographicMap() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <HolographicMapInner />
+    </LazyMotion>
   );
 }

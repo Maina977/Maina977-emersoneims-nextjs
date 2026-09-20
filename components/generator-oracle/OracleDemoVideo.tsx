@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 
 // Demo sequence scenes
 const DEMO_SCENES = [
@@ -66,7 +66,7 @@ function AnimatedGauge({ value, max, color, delay }: { value: number; max: numbe
   const offset = circumference * (1 - percentage / 100);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay, duration: 0.5 }}
@@ -74,7 +74,7 @@ function AnimatedGauge({ value, max, color, delay }: { value: number; max: numbe
     >
       <svg viewBox="0 0 100 100" className="w-full h-full -rotate-[135deg]">
         <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
-        <motion.circle
+        <m.circle
           cx="50"
           cy="50"
           r={radius}
@@ -90,7 +90,7 @@ function AnimatedGauge({ value, max, color, delay }: { value: number; max: numbe
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <motion.span
+        <m.span
           className="text-lg font-mono font-bold"
           style={{ color }}
           initial={{ opacity: 0 }}
@@ -98,16 +98,16 @@ function AnimatedGauge({ value, max, color, delay }: { value: number; max: numbe
           transition={{ delay: delay + 0.5 }}
         >
           {value}
-        </motion.span>
+        </m.span>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
 // Simulated fault code result
 function FaultCodeResult({ code, title, severity, delay }: { code: string; title: string; severity: string; delay: number }) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay, duration: 0.4 }}
@@ -120,20 +120,20 @@ function FaultCodeResult({ code, title, severity, delay }: { code: string; title
       }`}>
         {severity.toUpperCase()}
       </span>
-    </motion.div>
+    </m.div>
   );
 }
 
 // Reset step component
 function ResetStep({ step, text, delay, active }: { step: number; text: string; delay: number; active: boolean }) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3 }}
       className={`flex items-center gap-3 p-2 rounded-lg ${active ? 'bg-cyan-500/20 border border-cyan-500/50' : 'bg-slate-900/50'}`}
     >
-      <motion.div
+      <m.div
         className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${
           active ? 'bg-cyan-500 text-white' : 'bg-slate-700 text-slate-400'
         }`}
@@ -141,14 +141,14 @@ function ResetStep({ step, text, delay, active }: { step: number; text: string; 
         transition={{ duration: 0.5, repeat: active ? Infinity : 0, repeatDelay: 1 }}
       >
         {step}
-      </motion.div>
+      </m.div>
       <span className={`text-sm ${active ? 'text-cyan-300' : 'text-slate-400'}`}>{text}</span>
-    </motion.div>
+    </m.div>
   );
 }
 
 // Main Demo Video Component
-export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolean }) {
+function OracleDemoVideoInner({ autoPlay = true }: { autoPlay?: boolean }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentScene, setCurrentScene] = useState(0);
   const [showOverlay, setShowOverlay] = useState(true);
@@ -211,13 +211,13 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)]" />
 
         {/* Animated light beams */}
-        <motion.div
+        <m.div
           className="absolute top-0 left-1/4 w-32 h-full bg-gradient-to-b from-cyan-500/5 via-cyan-500/10 to-transparent"
           animate={{ x: [-50, 50], opacity: [0.3, 0.6, 0.3] }}
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
           style={{ transform: 'skewX(-15deg)' }}
         />
-        <motion.div
+        <m.div
           className="absolute top-0 right-1/4 w-24 h-full bg-gradient-to-b from-orange-500/5 via-orange-500/8 to-transparent"
           animate={{ x: [50, -50], opacity: [0.2, 0.5, 0.2] }}
           transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
@@ -231,7 +231,7 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
 
       {/* Scene content */}
       <AnimatePresence mode="wait">
-        <motion.div
+        <m.div
           key={scene.id}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -242,7 +242,7 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
           {/* Intro Scene */}
           {scene.id === 'intro' && (
             <div className="text-center">
-              <motion.div
+              <m.div
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ duration: 0.8, type: 'spring' }}
@@ -250,49 +250,49 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
                 style={{ boxShadow: '0 0 60px rgba(6,182,212,0.5)' }}
               >
                 <span className="text-4xl">⚡</span>
-              </motion.div>
-              <motion.h2
+              </m.div>
+              <m.h2
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
                 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-2"
               >
                 {scene.title}
-              </motion.h2>
-              <motion.p
+              </m.h2>
+              <m.p
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5, duration: 0.5 }}
                 className="text-slate-400"
               >
                 {scene.subtitle}
-              </motion.p>
+              </m.p>
             </div>
           )}
 
           {/* Search Scene */}
           {scene.id === 'search' && (
             <div className="w-full max-w-md space-y-4">
-              <motion.div
+              <m.div
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 className="flex items-center gap-2 p-3 bg-slate-900/80 rounded-xl border border-cyan-500/30"
               >
                 <span className="text-cyan-500">🔍</span>
-                <motion.span
+                <m.span
                   className="text-cyan-300 font-mono"
                   initial={{ width: 0 }}
                   animate={{ width: 'auto' }}
                   transition={{ delay: 0.5, duration: 0.8 }}
                 >
                   over speed...
-                </motion.span>
-                <motion.div
+                </m.span>
+                <m.div
                   className="w-0.5 h-5 bg-cyan-400"
                   animate={{ opacity: [1, 0, 1] }}
                   transition={{ duration: 0.8, repeat: Infinity }}
                 />
-              </motion.div>
+              </m.div>
 
               <div className="space-y-2">
                 <FaultCodeResult code="E1234" title="Over Speed Shutdown" severity="critical" delay={1.2} />
@@ -300,27 +300,27 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
                 <FaultCodeResult code="E1235" title="Over Speed Trip" severity="critical" delay={1.8} />
               </div>
 
-              <motion.p
+              <m.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 2.2 }}
                 className="text-center text-sm text-cyan-400"
               >
                 {scene.subtitle}
-              </motion.p>
+              </m.p>
             </div>
           )}
 
           {/* Diagnosis Scene */}
           {scene.id === 'diagnosis' && (
             <div className="w-full">
-              <motion.h3
+              <m.h3
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 className="text-center text-lg font-bold text-cyan-400 mb-6"
               >
                 {scene.title}
-              </motion.h3>
+              </m.h3>
 
               <div className="flex justify-center gap-6 mb-4">
                 <div className="text-center">
@@ -341,34 +341,34 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
                 </div>
               </div>
 
-              <motion.p
+              <m.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.5 }}
                 className="text-center text-sm text-slate-400"
               >
                 {scene.subtitle}
-              </motion.p>
+              </m.p>
             </div>
           )}
 
           {/* Reset Scene */}
           {scene.id === 'reset' && (
             <div className="w-full max-w-sm space-y-3">
-              <motion.h3
+              <m.h3
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 className="text-center text-lg font-bold text-green-400 mb-4"
               >
                 🔄 {scene.title}
-              </motion.h3>
+              </m.h3>
 
               <ResetStep step={1} text="Press STOP button" delay={0.3} active={false} />
               <ResetStep step={2} text="Wait 30 seconds" delay={0.6} active={false} />
               <ResetStep step={3} text="Press RESET" delay={0.9} active={true} />
               <ResetStep step={4} text="Verify fault cleared" delay={1.2} active={false} />
 
-              <motion.div
+              <m.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 2 }}
@@ -376,24 +376,24 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
               >
                 <span className="text-2xl">✅</span>
                 <p className="text-green-400 text-sm mt-1">Fault Cleared!</p>
-              </motion.div>
+              </m.div>
             </div>
           )}
 
           {/* Brands Scene */}
           {scene.id === 'brands' && (
             <div className="text-center">
-              <motion.h3
+              <m.h3
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 className="text-xl font-bold text-white mb-6"
               >
                 {scene.title}
-              </motion.h3>
+              </m.h3>
 
               <div className="flex justify-center gap-4">
                 {['⚡', '🔴', '🟢', '🟣', '🟡'].map((icon, idx) => (
-                  <motion.div
+                  <m.div
                     key={idx}
                     initial={{ scale: 0, y: 20 }}
                     animate={{ scale: 1, y: 0 }}
@@ -402,100 +402,100 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
                     style={{ boxShadow: '0 0 20px rgba(0,0,0,0.5)' }}
                   >
                     {icon}
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
 
-              <motion.p
+              <m.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.2 }}
                 className="text-sm text-slate-400 mt-4"
               >
                 {scene.subtitle}
-              </motion.p>
+              </m.p>
             </div>
           )}
 
           {/* Offline Scene */}
           {scene.id === 'offline' && (
             <div className="text-center">
-              <motion.div
+              <m.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring' }}
                 className="text-6xl mb-4"
               >
                 📴
-              </motion.div>
-              <motion.h3
+              </m.div>
+              <m.h3
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
                 className="text-xl font-bold text-white mb-2"
               >
                 {scene.title}
-              </motion.h3>
-              <motion.p
+              </m.h3>
+              <m.p
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
                 className="text-slate-400"
               >
                 {scene.subtitle}
-              </motion.p>
+              </m.p>
 
-              <motion.div
+              <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
                 className="flex justify-center gap-4 mt-6"
               >
                 {['📱', '💻', '🖥️'].map((device, idx) => (
-                  <motion.span
+                  <m.span
                     key={idx}
                     className="text-3xl"
                     animate={{ y: [0, -5, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity, delay: idx * 0.2 }}
                   >
                     {device}
-                  </motion.span>
+                  </m.span>
                 ))}
-              </motion.div>
+              </m.div>
             </div>
           )}
 
           {/* CTA Scene */}
           {scene.id === 'cta' && (
             <div className="text-center">
-              <motion.div
+              <m.div
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: 'spring', stiffness: 200 }}
                 className="mb-6"
               >
                 <span className="text-5xl">🎉</span>
-              </motion.div>
+              </m.div>
 
-              <motion.h3
+              <m.h3
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
                 className="text-2xl font-bold text-green-400 mb-2"
               >
                 {scene.title}
-              </motion.h3>
+              </m.h3>
 
-              <motion.p
+              <m.p
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
                 className="text-slate-300 mb-6"
               >
                 {scene.subtitle}
-              </motion.p>
+              </m.p>
 
-              <motion.div
+              <m.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.8, type: 'spring' }}
@@ -507,10 +507,10 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
                 >
                   Launch Oracle →
                 </a>
-              </motion.div>
+              </m.div>
             </div>
           )}
-        </motion.div>
+        </m.div>
       </AnimatePresence>
 
       {/* Progress bar */}
@@ -525,7 +525,7 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
                 }`}
               >
                 {idx === currentScene && (
-                  <motion.div
+                  <m.div
                     className="h-full bg-cyan-500"
                     initial={{ width: '0%' }}
                     animate={{ width: '100%' }}
@@ -543,13 +543,13 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
       {/* Play overlay */}
       <AnimatePresence>
         {showOverlay && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm"
           >
-            <motion.button
+            <m.button
               onClick={handlePlay}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
@@ -559,16 +559,16 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
               <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
-            </motion.button>
-            <motion.span
+            </m.button>
+            <m.span
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
               className="absolute bottom-1/3 text-white font-medium"
             >
               Watch Demo
-            </motion.span>
-          </motion.div>
+            </m.span>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -585,5 +585,25 @@ export default function OracleDemoVideo({ autoPlay = true }: { autoPlay?: boolea
         {String(Math.floor((currentScene + 1) / 60)).padStart(2, '0')}:{String((currentScene + 1) % 60).padStart(2, '0')} / 00:28
       </div>
     </div>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed OracleDemoVideoInner and wrapped here.
+ */
+export default function OracleDemoVideo(props: Parameters<typeof OracleDemoVideoInner>[0]) {
+  return (
+    <LazyMotion features={domAnimation}>
+      <OracleDemoVideoInner {...props} />
+    </LazyMotion>
   );
 }

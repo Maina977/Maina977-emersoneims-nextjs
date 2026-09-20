@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { CLIENT_TESTIMONIALS, type ClientTestimonial as Testimonial } from '@/lib/testimonials/clientTestimonials';
 import Image from 'next/image';
@@ -11,7 +11,7 @@ import Image from 'next/image';
 
 const testimonials: Testimonial[] = CLIENT_TESTIMONIALS;
 
-export default function TestimonialsSection() {
+function TestimonialsSectionInner() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
@@ -36,7 +36,7 @@ export default function TestimonialsSection() {
 
       <div className="max-w-7xl mx-auto px-6 sm:px-12 relative">
         {/* Section header */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -52,19 +52,19 @@ export default function TestimonialsSection() {
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
             From hospitals to factories, hotels to farms — see why East Africa&apos;s top organizations choose EmersonEIMS.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Main testimonial display */}
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Quote side */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             className="relative"
           >
             <AnimatePresence mode="wait">
-              <motion.div
+              <m.div
                 key={activeIndex}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -78,7 +78,7 @@ export default function TestimonialsSection() {
                 {/* Rating */}
                 <div className="flex gap-1 mb-6">
                   {[...Array(5)].map((_, i) => (
-                    <motion.span
+                    <m.span
                       key={i}
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -86,7 +86,7 @@ export default function TestimonialsSection() {
                       className={`text-2xl ${i < activeTestimonial.rating ? 'text-amber-400' : 'text-gray-600'}`}
                     >
                       ★
-                    </motion.span>
+                    </m.span>
                   ))}
                 </div>
 
@@ -122,19 +122,19 @@ export default function TestimonialsSection() {
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             </AnimatePresence>
-          </motion.div>
+          </m.div>
 
           {/* Navigation side */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             className="space-y-4"
           >
             {testimonials.map((testimonial, index) => (
-              <motion.button
+              <m.button
                 key={testimonial.id}
                 onClick={() => {
                   setActiveIndex(index);
@@ -170,7 +170,7 @@ export default function TestimonialsSection() {
                     ))}
                   </div>
                 </div>
-              </motion.button>
+              </m.button>
             ))}
 
             {/* Auto-play indicator */}
@@ -188,11 +188,11 @@ export default function TestimonialsSection() {
                 />
               ))}
             </div>
-          </motion.div>
+          </m.div>
         </div>
 
         {/* Stats bar */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -211,8 +211,28 @@ export default function TestimonialsSection() {
               <div className="text-sm text-gray-400">{stat.label}</div>
             </div>
           ))}
-        </motion.div>
+        </m.div>
       </div>
     </section>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed TestimonialsSectionInner and wrapped here.
+ */
+export default function TestimonialsSection() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <TestimonialsSectionInner />
+    </LazyMotion>
   );
 }

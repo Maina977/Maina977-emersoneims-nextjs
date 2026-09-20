@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m, LazyMotion, domAnimation } from 'framer-motion';
 import Link from 'next/link';
 
 // Trust badges and certifications - Only factual items
@@ -54,7 +54,7 @@ const projectHighlights = [
   { client: 'Takaungu Project', power: '44 kVA', type: 'Development', year: '2023' },
 ];
 
-export default function TrustBadgesSection() {
+function TrustBadgesSectionInner() {
   return (
     <section className="py-20 sm:py-28 bg-gradient-to-b from-gray-950 to-black relative overflow-hidden">
       {/* Background pattern */}
@@ -62,7 +62,7 @@ export default function TrustBadgesSection() {
       
       <div className="max-w-7xl mx-auto px-6 sm:px-12 relative">
         {/* Section header */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -78,17 +78,17 @@ export default function TrustBadgesSection() {
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
             Certified, licensed, and backed by world-class equipment partners.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Stats counter row */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-16"
         >
           {stats.map((stat, i) => (
-            <motion.div
+            <m.div
               key={i}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -99,12 +99,12 @@ export default function TrustBadgesSection() {
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">{stat.icon}</div>
               <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stat.value}</div>
               <div className="text-xs text-gray-500 uppercase tracking-wider">{stat.label}</div>
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
+        </m.div>
 
         {/* Capabilities */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -115,7 +115,7 @@ export default function TrustBadgesSection() {
           </h3>
           <div className="flex flex-wrap justify-center gap-4">
             {capabilities.map((cap, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -128,13 +128,13 @@ export default function TrustBadgesSection() {
                   <div className="text-white font-semibold text-sm">{cap.name}</div>
                   <div className="text-gray-500 text-xs">{cap.description}</div>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Brands we sell and service */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -145,7 +145,7 @@ export default function TrustBadgesSection() {
           </h3>
           <div className="flex flex-wrap justify-center gap-6">
             {partners.map((partner, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -158,14 +158,14 @@ export default function TrustBadgesSection() {
                 </div>
                 <div className="text-sm text-amber-400 uppercase tracking-wider mb-1">{partner.tier}</div>
                 <div className="text-xs text-gray-500 text-center">{partner.description}</div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
 
         {/* Project Portfolio */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -176,7 +176,7 @@ export default function TrustBadgesSection() {
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {projectHighlights.map((project, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -188,13 +188,13 @@ export default function TrustBadgesSection() {
                 <div className="text-sm font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">{project.client}</div>
                 <div className="text-amber-400 font-semibold mb-1">{project.power}</div>
                 <div className="text-xs text-cyan-400/80 px-2 py-0.5 bg-cyan-500/10 rounded-full inline-block">{project.type}</div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Google Reviews widget */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -219,8 +219,28 @@ export default function TrustBadgesSection() {
               Write a Review
             </a>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </section>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed TrustBadgesSectionInner and wrapped here.
+ */
+export default function TrustBadgesSection() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <TrustBadgesSectionInner />
+    </LazyMotion>
   );
 }

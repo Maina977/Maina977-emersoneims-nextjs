@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m, LazyMotion, domAnimation } from 'framer-motion';
 import Link from 'next/link';
 
 /**
@@ -108,7 +108,7 @@ const VARIANT_STYLES: Record<CTAVariant, string> = {
   emergency: 'bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white font-bold hover:shadow-[0_0_40px_rgba(239,68,68,0.5)] hover:scale-105 animate-pulse',
 };
 
-export default function UnifiedCTA({
+function UnifiedCTAInner({
   /*
    * `action` now defaults. It had none, while every sibling prop did
    * (variant, size, icon, fullWidth...), so <UnifiedCTA /> with no props left
@@ -167,18 +167,18 @@ export default function UnifiedCTA({
         {finalIcon && <span>{finalIcon}</span>}
         <span>{finalLabel}</span>
         {action === 'learn-more' && (
-          <motion.span
+          <m.span
             animate={animated ? { x: [0, 5, 0] } : {}}
             transition={{ repeat: Infinity, duration: 1.5 }}
           >
             →
-          </motion.span>
+          </m.span>
         )}
       </span>
       
       {/* Shine effect for primary buttons */}
       {variant === 'primary' && (
-        <motion.div 
+        <m.div 
           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
           initial={{ x: '-100%' }}
           whileHover={{ x: '100%' }}
@@ -190,26 +190,26 @@ export default function UnifiedCTA({
 
   if (onClick) {
     return (
-      <motion.button
+      <m.button
         onClick={onClick}
         className={baseStyles}
         whileHover={animated ? { scale: variant === 'ghost' ? 1 : 1.02 } : {}}
         whileTap={animated ? { scale: 0.98 } : {}}
       >
         {content}
-      </motion.button>
+      </m.button>
     );
   }
 
   return (
-    <motion.div
+    <m.div
       whileHover={animated ? { scale: variant === 'ghost' ? 1 : 1.02 } : {}}
       whileTap={animated ? { scale: 0.98 } : {}}
     >
       <Link href={finalHref} className={baseStyles}>
         {content}
       </Link>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -267,7 +267,7 @@ export function CTASection({
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(251,191,36,0.15),transparent_70%)]" />
       
       <div className="max-w-4xl mx-auto px-6 text-center relative">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -284,9 +284,9 @@ export function CTASection({
           <p className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto">
             {subtitle}
           </p>
-        </motion.div>
+        </m.div>
         
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -295,10 +295,10 @@ export function CTASection({
         >
           <UnifiedCTA action={primaryAction} size="lg" />
           <UnifiedCTA action={secondaryAction} variant="secondary" size="lg" />
-        </motion.div>
+        </m.div>
         
         {showEmergency && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -306,11 +306,11 @@ export function CTASection({
             className="mt-8"
           >
             <EmergencyCTA size="md" />
-          </motion.div>
+          </m.div>
         )}
         
         {/* Trust indicators */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -332,8 +332,28 @@ export function CTASection({
               <span className="text-amber-500">✓</span> 98.7% Uptime
             </span>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </section>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed UnifiedCTAInner and wrapped here.
+ */
+export default function UnifiedCTA(props: Parameters<typeof UnifiedCTAInner>[0]) {
+  return (
+    <LazyMotion features={domAnimation}>
+      <UnifiedCTAInner {...props} />
+    </LazyMotion>
   );
 }

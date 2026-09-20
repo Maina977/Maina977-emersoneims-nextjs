@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
+import { m, useInView, LazyMotion, domAnimation } from 'framer-motion';
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 
@@ -107,7 +107,7 @@ const services = [
   },
 ];
 
-export default function PremiumServicesShowcase() {
+function PremiumServicesShowcaseInner() {
   const [activeService, setActiveService] = useState(0);
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
@@ -125,7 +125,7 @@ export default function PremiumServicesShowcase() {
       
       <div className="max-w-7xl mx-auto px-6 sm:px-12 relative">
         {/* Section Header */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -141,12 +141,12 @@ export default function PremiumServicesShowcase() {
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
             From generators to solar, UPS to fabrication - comprehensive energy solutions under one roof.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {services.map((service, index) => (
-            <motion.div
+            <m.div
               key={service.id}
               initial={{ opacity: 0, y: 40 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -181,13 +181,13 @@ export default function PremiumServicesShowcase() {
                     </div>
                     
                     {/* Arrow indicator */}
-                    <motion.div
+                    <m.div
                       initial={{ x: 0, opacity: 0.5 }}
                       whileHover={{ x: 4, opacity: 1 }}
                       className="text-amber-500"
                     >
                       →
-                    </motion.div>
+                    </m.div>
                   </div>
                   
                   {/* Description */}
@@ -223,12 +223,12 @@ export default function PremiumServicesShowcase() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
         {/* Bottom CTA */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.9 }}
@@ -245,8 +245,28 @@ export default function PremiumServicesShowcase() {
           <p className="mt-4 text-gray-500 text-sm">
             Free diagnostic tools for all 9 services • Q&A • Calculators • Instant Quotes
           </p>
-        </motion.div>
+        </m.div>
       </div>
     </section>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed PremiumServicesShowcaseInner and wrapped here.
+ */
+export default function PremiumServicesShowcase() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <PremiumServicesShowcaseInner />
+    </LazyMotion>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m, LazyMotion, domAnimation } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -92,7 +92,7 @@ const caseStudies: CaseStudy[] = [
   },
 ];
 
-export default function CaseStudiesSection() {
+function CaseStudiesSectionInner() {
   return (
     <section className="py-24 sm:py-32 bg-gradient-to-b from-black via-gray-950 to-black relative overflow-hidden">
       {/* Background effects */}
@@ -100,7 +100,7 @@ export default function CaseStudiesSection() {
       
       <div className="max-w-7xl mx-auto px-6 sm:px-12 relative">
         {/* Section header */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -116,12 +116,12 @@ export default function CaseStudiesSection() {
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
             See how we&apos;ve transformed power infrastructure for East Africa&apos;s leading organizations.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Case studies grid */}
         <div className="space-y-24">
           {caseStudies.map((study, index) => (
-            <motion.div
+            <m.div
               key={study.id}
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -189,7 +189,7 @@ export default function CaseStudiesSection() {
                 {/* Results grid */}
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   {study.results.map((result, i) => (
-                    <motion.div
+                    <m.div
                       key={i}
                       initial={{ opacity: 0, scale: 0.9 }}
                       whileInView={{ opacity: 1, scale: 1 }}
@@ -200,7 +200,7 @@ export default function CaseStudiesSection() {
                       <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">{result.metric}</div>
                       <div className="text-2xl font-bold text-white">{result.value}</div>
                       <div className="text-xs text-amber-400">{result.improvement}</div>
-                    </motion.div>
+                    </m.div>
                   ))}
                 </div>
 
@@ -220,12 +220,12 @@ export default function CaseStudiesSection() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
         {/* CTA */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -246,8 +246,28 @@ export default function CaseStudiesSection() {
               View All Case Studies
             </Link>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </section>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed CaseStudiesSectionInner and wrapped here.
+ */
+export default function CaseStudiesSection() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <CaseStudiesSectionInner />
+    </LazyMotion>
   );
 }

@@ -6,7 +6,7 @@
  * Honest, factual comparison without naming competitors directly
  */
 
-import { motion } from 'framer-motion';
+import { m, LazyMotion, domAnimation } from 'framer-motion';
 import Link from 'next/link';
 
 const COMPARISON_POINTS = [
@@ -83,7 +83,7 @@ const VALUE_PROPOSITIONS = [
   },
 ];
 
-export default function CompetitiveAdvantage() {
+function CompetitiveAdvantageInner() {
   return (
     <section className="py-24 bg-gradient-to-b from-black via-gray-950 to-black relative overflow-hidden">
       {/* Background */}
@@ -91,7 +91,7 @@ export default function CompetitiveAdvantage() {
 
       <div className="max-w-7xl mx-auto px-6 relative">
         {/* Header */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -107,10 +107,10 @@ export default function CompetitiveAdvantage() {
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
             The standards we hold ourselves to on every job.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Comparison Table */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -126,7 +126,7 @@ export default function CompetitiveAdvantage() {
             </thead>
             <tbody>
               {COMPARISON_POINTS.map((point, i) => (
-                <motion.tr
+                <m.tr
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -142,21 +142,21 @@ export default function CompetitiveAdvantage() {
                     </div>
                   </td>
                   <td className="py-4 px-4 text-gray-500">{point.industry}</td>
-                </motion.tr>
+                </m.tr>
               ))}
             </tbody>
           </table>
-        </motion.div>
+        </m.div>
 
         {/* Value Propositions */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           className="grid sm:grid-cols-2 gap-6 mb-16"
         >
           {VALUE_PROPOSITIONS.map((prop, i) => (
-            <motion.div
+            <m.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -169,12 +169,12 @@ export default function CompetitiveAdvantage() {
                 {prop.title}
               </h3>
               <p className="text-gray-400">{prop.description}</p>
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
+        </m.div>
 
         {/* Guarantee Badge */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -195,8 +195,28 @@ export default function CompetitiveAdvantage() {
               <span>→</span>
             </Link>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </section>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed CompetitiveAdvantageInner and wrapped here.
+ */
+export default function CompetitiveAdvantage() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <CompetitiveAdvantageInner />
+    </LazyMotion>
   );
 }

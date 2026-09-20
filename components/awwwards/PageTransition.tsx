@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { m, AnimatePresence, Variants, LazyMotion, domAnimation } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
 
@@ -35,7 +35,7 @@ const transitionConfig = {
   },
 };
 
-export default function PageTransition({ children }: PageTransitionProps) {
+function PageTransitionInner({ children }: PageTransitionProps) {
   const pathname = usePathname();
 
   // Different transitions for different routes
@@ -133,7 +133,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
+      <m.div
         key={pathname}
         // initial={false} ⇒ the very first paint of the page is rendered
         // at the `animate` state directly, so SSR HTML is visible
@@ -146,7 +146,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
         transition={transitionConfig.smooth}
       >
         {children}
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   );
 }
@@ -154,9 +154,9 @@ export default function PageTransition({ children }: PageTransitionProps) {
 /**
  * 🎬 LOADING OVERLAY - Appears during transitions
  */
-export function TransitionOverlay() {
+function TransitionOverlayInner() {
   return (
-    <motion.div
+    <m.div
       className="fixed inset-0 z-50 pointer-events-none"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -167,7 +167,7 @@ export function TransitionOverlay() {
 
       {/* Animated logo */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <motion.div
+        <m.div
           className="text-6xl font-bold text-amber-400"
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -178,12 +178,12 @@ export function TransitionOverlay() {
           }}
         >
           ⚡
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Particle burst */}
       {[...Array(12)].map((_, i) => (
-        <motion.div
+        <m.div
           key={i}
           className="absolute top-1/2 left-1/2 w-2 h-2 bg-amber-400 rounded-full"
           initial={{
@@ -205,6 +205,36 @@ export function TransitionOverlay() {
           }}
         />
       ))}
-    </motion.div>
+    </m.div>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * app/template.tsx wraps EVERY page in this component, so the `motion.*` it
+ * used put framer-motion's whole engine — drag and layout-projection code
+ * included, none of it used here — on the first load of every page on the
+ * site, on every phone. `m.*` inside LazyMotion with `domAnimation` keeps the
+ * route-change variants and exit animations exactly as they were and drops
+ * the rest. Features are synchronous, so no transition can be missed while
+ * code is still loading. `initial={false}` is untouched: first paint is still
+ * the server HTML, fully visible.
+ * The component body is unchanged — renamed PageTransitionInner and wrapped here.
+ */
+export default function PageTransition(props: Parameters<typeof PageTransitionInner>[0]) {
+  return (
+    <LazyMotion features={domAnimation}>
+      <PageTransitionInner {...props} />
+    </LazyMotion>
+  );
+}
+
+// Same light mode as PageTransition above; body unchanged, renamed TransitionOverlayInner.
+export function TransitionOverlay() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <TransitionOverlayInner />
+    </LazyMotion>
   );
 }

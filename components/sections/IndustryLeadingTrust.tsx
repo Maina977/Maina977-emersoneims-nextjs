@@ -6,7 +6,7 @@
  * Designed to build credibility at Tesla/Apple/Siemens level
  */
 
-import { motion } from 'framer-motion';
+import { m, LazyMotion, domAnimation } from 'framer-motion';
 import Link from 'next/link';
 
 // Real company data - factual only
@@ -123,7 +123,7 @@ const CAPABILITIES = [
   },
 ];
 
-export default function IndustryLeadingTrust() {
+function IndustryLeadingTrustInner() {
   return (
     <section className="py-24 bg-gradient-to-b from-gray-950 via-black to-gray-950 relative overflow-hidden">
       {/* Premium background */}
@@ -133,7 +133,7 @@ export default function IndustryLeadingTrust() {
       <div className="max-w-7xl mx-auto px-6 relative">
         
         {/* Section Header */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -150,10 +150,10 @@ export default function IndustryLeadingTrust() {
             {COMPANY_FACTS.yearsExperience} years of proven excellence. {COMPANY_FACTS.totalProjects}+ completed projects. 
             {COMPANY_FACTS.totalKVA.toLocaleString()}+ kVA installed capacity across {COMPANY_FACTS.countiesServed} counties.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Key Metrics - Apple Style */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -165,7 +165,7 @@ export default function IndustryLeadingTrust() {
             { value: `${COMPANY_FACTS.clientRetention}%`, label: 'Client Retention', sublabel: 'Long-term Partnerships' },
             { value: `${COMPANY_FACTS.engineersOnStaff}+`, label: 'Expert Engineers', sublabel: 'Factory Certified' },
           ].map((stat, i) => (
-            <motion.div
+            <m.div
               key={i}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -181,12 +181,12 @@ export default function IndustryLeadingTrust() {
                 <div className="text-white font-semibold mb-1">{stat.label}</div>
                 <div className="text-xs text-gray-500">{stat.sublabel}</div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
+        </m.div>
 
         {/* Brands we sell and service */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -197,7 +197,7 @@ export default function IndustryLeadingTrust() {
           </h3>
           <div className="grid sm:grid-cols-3 gap-6">
             {PARTNERSHIPS.map((partner, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -214,13 +214,13 @@ export default function IndustryLeadingTrust() {
                 </h4>
                 <p className="text-amber-400 text-sm font-medium mb-2">{partner.type}</p>
                 <p className="text-gray-400 text-sm">{partner.description}</p>
-              </motion.div>
+              </m.div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Service Capabilities */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -231,7 +231,7 @@ export default function IndustryLeadingTrust() {
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {CAPABILITIES.map((cap, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -252,13 +252,13 @@ export default function IndustryLeadingTrust() {
                     </span>
                   ))}
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Sectors Served */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -269,7 +269,7 @@ export default function IndustryLeadingTrust() {
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {SECTORS_SERVED.map((sector, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -280,13 +280,13 @@ export default function IndustryLeadingTrust() {
                 <span className="text-3xl mb-2 block group-hover:scale-110 transition-transform">{sector.icon}</span>
                 <div className="text-white font-semibold text-sm mb-1">{sector.name}</div>
                 <div className="text-xs text-amber-400">{sector.projects}+ projects</div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Featured Clients */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -297,7 +297,7 @@ export default function IndustryLeadingTrust() {
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {VERIFIED_CLIENTS.map((client, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -312,13 +312,13 @@ export default function IndustryLeadingTrust() {
                 <h4 className="text-white font-semibold text-sm mb-1">{client.name}</h4>
                 <p className="text-amber-400 text-xs mb-1">{client.project}</p>
                 <p className="text-gray-600 text-xs">{client.year}</p>
-              </motion.div>
+              </m.div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Contact CTA */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -344,8 +344,28 @@ export default function IndustryLeadingTrust() {
               </Link>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </section>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed IndustryLeadingTrustInner and wrapped here.
+ */
+export default function IndustryLeadingTrust() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <IndustryLeadingTrustInner />
+    </LazyMotion>
   );
 }

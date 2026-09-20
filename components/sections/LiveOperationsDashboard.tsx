@@ -6,7 +6,7 @@
  * All numbers are accurate business metrics - NOT fake live data
  */
 
-import { motion } from 'framer-motion';
+import { m, LazyMotion, domAnimation } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
 
 // Verified company statistics - These are real business achievements
@@ -21,7 +21,7 @@ const COMPANY_STATS = {
   generatorBrands: 12,
 };
 
-export default function LiveOperationsDashboard() {
+function LiveOperationsDashboardInner() {
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function LiveOperationsDashboard() {
 
       <div className="max-w-7xl mx-auto px-6 relative">
         {/* Header */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -76,12 +76,12 @@ export default function LiveOperationsDashboard() {
               {timeDisplay}
             </div>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {/* Projects Completed */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -97,10 +97,10 @@ export default function LiveOperationsDashboard() {
             <div className="text-sm text-gray-500">
               Since 2012
             </div>
-          </motion.div>
+          </m.div>
 
           {/* System Uptime */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -115,10 +115,10 @@ export default function LiveOperationsDashboard() {
               {COMPANY_STATS.systemUptime}%
             </div>
             <div className="text-sm text-gray-500">Average across all installations</div>
-          </motion.div>
+          </m.div>
 
           {/* Response Time */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -133,10 +133,10 @@ export default function LiveOperationsDashboard() {
               &lt;{COMPANY_STATS.avgResponseTimeNairobi}<span className="text-xl text-gray-400">hrs</span>
             </div>
             <div className="text-sm text-gray-500">Nairobi emergency calls</div>
-          </motion.div>
+          </m.div>
 
           {/* Customer Satisfaction */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -151,11 +151,11 @@ export default function LiveOperationsDashboard() {
               {COMPANY_STATS.customerSatisfaction}%
             </div>
             <div className="text-sm text-gray-500">Based on client feedback</div>
-          </motion.div>
+          </m.div>
         </div>
 
         {/* Team Status Bar */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -181,8 +181,28 @@ export default function LiveOperationsDashboard() {
           <div className="text-xs text-gray-500">
             {COMPANY_STATS.yearsExperience}+ years of experience
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </section>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed LiveOperationsDashboardInner and wrapped here.
+ */
+export default function LiveOperationsDashboard() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <LiveOperationsDashboardInner />
+    </LazyMotion>
   );
 }

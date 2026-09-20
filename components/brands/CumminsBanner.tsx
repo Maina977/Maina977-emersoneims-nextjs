@@ -6,7 +6,7 @@
  * 2 Years Warranty + 1 Year Free Service
  */
 
-import { motion } from 'framer-motion';
+import { m, LazyMotion, domAnimation } from 'framer-motion';
 import Link from 'next/link';
 import { Shield, Wrench, Award, Zap, Phone, ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
 
@@ -16,7 +16,7 @@ interface CumminsBannerProps {
   showCTA?: boolean;
 }
 
-export default function CumminsBanner({
+function CumminsBannerInner({
   variant = 'hero',
   showPricing = false,
   showCTA = true
@@ -32,12 +32,12 @@ export default function CumminsBanner({
         </div>
 
         {/* Floating Orbs */}
-        <motion.div
+        <m.div
           animate={{ y: [-20, 20, -20], opacity: [0.3, 0.6, 0.3] }}
           transition={{ duration: 8, repeat: Infinity }}
           className="absolute top-20 left-10 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl"
         />
-        <motion.div
+        <m.div
           animate={{ y: [20, -20, 20], opacity: [0.2, 0.5, 0.2] }}
           transition={{ duration: 10, repeat: Infinity }}
           className="absolute bottom-20 right-10 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl"
@@ -45,7 +45,7 @@ export default function CumminsBanner({
 
         <div className="relative max-w-7xl mx-auto px-4">
           {/* Main 3D Container */}
-          <motion.div
+          <m.div
             initial={{ y: 50, rotateX: 10 }}
             whileInView={{ y: 0, rotateX: 0 }}
             viewport={{ once: true }}
@@ -80,7 +80,7 @@ export default function CumminsBanner({
               <div className="relative p-8 md:p-12">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                   {/* Left Content */}
-                  <motion.div
+                  <m.div
                     initial={{ x: -30 }}
                     whileInView={{ x: 0 }}
                     viewport={{ once: true }}
@@ -88,14 +88,14 @@ export default function CumminsBanner({
                     className="text-center lg:text-left"
                   >
                     {/* Sales & service badge */}
-                    <motion.div
+                    <m.div
                       whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(0, 255, 255, 0.5)' }}
                       className="inline-flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-cyan-500/20 to-cyan-500/10 backdrop-blur-xl rounded-full border border-cyan-500/30 mb-8"
                       style={{ boxShadow: '0 0 20px rgba(0, 255, 255, 0.2)' }}
                     >
                       <Sparkles className="w-5 h-5 text-cyan-400" />
                       <span className="text-cyan-300 font-semibold tracking-wide">CUMMINS SALES & SERVICE</span>
-                    </motion.div>
+                    </m.div>
 
                     {/* Main Heading */}
                     <h2 className="text-5xl md:text-6xl lg:text-7xl font-black mb-4">
@@ -115,7 +115,7 @@ export default function CumminsBanner({
                     </p>
 
                     {/* Power Range Badge */}
-                    <motion.div
+                    <m.div
                       whileHover={{ scale: 1.02 }}
                       className="inline-block px-6 py-3 bg-gradient-to-r from-amber-500/20 to-amber-500/10 rounded-2xl border border-amber-500/30 mb-8"
                       style={{ boxShadow: '0 0 25px rgba(245, 158, 11, 0.2)' }}
@@ -123,11 +123,11 @@ export default function CumminsBanner({
                       <p className="text-3xl md:text-4xl font-black bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">
                         10KVA - 2000KVA
                       </p>
-                    </motion.div>
+                    </m.div>
 
                     {/* Key Benefits - 3D Cards */}
                     <div className="flex flex-wrap justify-center lg:justify-start gap-4 mb-8">
-                      <motion.div
+                      <m.div
                         whileHover={{ scale: 1.05, y: -5, boxShadow: '0 20px 40px rgba(34, 197, 94, 0.3)' }}
                         className="flex items-center gap-3 px-5 py-3 bg-gradient-to-br from-green-500/20 to-green-600/10 backdrop-blur-xl rounded-2xl border border-green-500/30 cursor-pointer"
                         style={{ boxShadow: '0 10px 30px rgba(34, 197, 94, 0.15)' }}
@@ -136,9 +136,9 @@ export default function CumminsBanner({
                           <Shield className="w-6 h-6 text-green-400" />
                         </div>
                         <span className="text-white font-bold">2 Years Warranty</span>
-                      </motion.div>
+                      </m.div>
 
-                      <motion.div
+                      <m.div
                         whileHover={{ scale: 1.05, y: -5, boxShadow: '0 20px 40px rgba(59, 130, 246, 0.3)' }}
                         className="flex items-center gap-3 px-5 py-3 bg-gradient-to-br from-blue-500/20 to-blue-600/10 backdrop-blur-xl rounded-2xl border border-blue-500/30 cursor-pointer"
                         style={{ boxShadow: '0 10px 30px rgba(59, 130, 246, 0.15)' }}
@@ -147,13 +147,13 @@ export default function CumminsBanner({
                           <Wrench className="w-6 h-6 text-blue-400" />
                         </div>
                         <span className="text-white font-bold">1 Year Free Servicing</span>
-                      </motion.div>
+                      </m.div>
                     </div>
 
                     {/* CTA Buttons */}
                     {showCTA && (
                       <div className="flex flex-wrap justify-center lg:justify-start gap-4">
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                        <m.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                           <Link
                             href="/generators"
                             className="group flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-400 text-black font-bold rounded-2xl transition-all duration-300"
@@ -162,9 +162,9 @@ export default function CumminsBanner({
                             View All Models
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                           </Link>
-                        </motion.div>
+                        </m.div>
 
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                        <m.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                           <a
                             href="https://wa.me/254768860665?text=Hi,%20I'm%20interested%20in%20Cummins%20generators.%20Please%20send%20me%20a%20quote."
                             target="_blank"
@@ -174,13 +174,13 @@ export default function CumminsBanner({
                           >
                             <Phone className="w-5 h-5" /> Get Quote
                           </a>
-                        </motion.div>
+                        </m.div>
                       </div>
                     )}
-                  </motion.div>
+                  </m.div>
 
                   {/* Right Content - 3D Feature Cards */}
-                  <motion.div
+                  <m.div
                     initial={{ x: 30 }}
                     whileInView={{ x: 0 }}
                     viewport={{ once: true }}
@@ -193,7 +193,7 @@ export default function CumminsBanner({
                       { icon: <Award className="w-8 h-8" />, title: 'Sales & Service', desc: 'Cummins generator sales and service', color: 'amber', glow: 'rgba(245, 158, 11, 0.3)' },
                       { icon: <Zap className="w-8 h-8" />, title: '10-2000KVA', desc: 'All power needs', color: 'cyan', glow: 'rgba(0, 255, 255, 0.3)' },
                     ].map((item, i) => (
-                      <motion.div
+                      <m.div
                         key={i}
                         initial={{ y: 20 }}
                         whileInView={{ y: 0 }}
@@ -237,14 +237,14 @@ export default function CumminsBanner({
                         </div>
                         <h3 className="relative z-10 text-white font-bold mb-1 group-hover:text-white transition-colors">{item.title}</h3>
                         <p className="relative z-10 text-gray-400 text-sm group-hover:text-gray-300 transition-colors">{item.desc}</p>
-                      </motion.div>
+                      </m.div>
                     ))}
-                  </motion.div>
+                  </m.div>
                 </div>
 
                 {/* Pricing Preview - Sci-Fi Grid */}
                 {showPricing && (
-                  <motion.div
+                  <m.div
                     initial={{ y: 30 }}
                     whileInView={{ y: 0 }}
                     viewport={{ once: true }}
@@ -259,7 +259,7 @@ export default function CumminsBanner({
                       { kva: '500KVA', price: 'KES 9.5M' },
                       { kva: '1000KVA', price: 'KES 16M' },
                     ].map((item, i) => (
-                      <motion.div
+                      <m.div
                         key={i}
                         whileHover={{ scale: 1.05, y: -5 }}
                         className="group relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur rounded-2xl p-4 text-center border border-white/5 cursor-pointer overflow-hidden"
@@ -268,13 +268,13 @@ export default function CumminsBanner({
                         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
                         <p className="relative text-white font-bold text-lg group-hover:text-cyan-300 transition-colors">{item.kva}</p>
                         <p className="relative text-amber-400 text-sm font-semibold">From {item.price}</p>
-                      </motion.div>
+                      </m.div>
                     ))}
-                  </motion.div>
+                  </m.div>
                 )}
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </section>
     );
@@ -282,7 +282,7 @@ export default function CumminsBanner({
 
   if (variant === 'compact') {
     return (
-      <motion.div
+      <m.div
         whileHover={{ scale: 1.01 }}
         className="relative bg-gradient-to-r from-gray-900 via-black to-gray-900 rounded-3xl p-6 border border-white/10 overflow-hidden"
         style={{ boxShadow: '0 0 30px rgba(0, 255, 255, 0.1), 0 20px 40px rgba(0,0,0,0.5)' }}
@@ -291,36 +291,36 @@ export default function CumminsBanner({
 
         <div className="relative flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <motion.div
+            <m.div
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.5 }}
               className="p-4 bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-2xl border border-cyan-500/30"
               style={{ boxShadow: '0 0 20px rgba(0, 255, 255, 0.2)' }}
             >
               <Award className="w-8 h-8 text-cyan-400" />
-            </motion.div>
+            </m.div>
             <div>
               <h3 className="text-xl font-bold text-white">CUMMINS by VOLTKA</h3>
               <p className="text-gray-400">Sales & Service | 10-2000KVA</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <motion.div
+            <m.div
               whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(34, 197, 94, 0.4)' }}
               className="text-center px-5 py-3 bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-2xl border border-green-500/30"
             >
               <p className="text-green-400 font-bold">3 Years</p>
               <p className="text-white text-sm">Warranty</p>
-            </motion.div>
-            <motion.div
+            </m.div>
+            <m.div
               whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(59, 130, 246, 0.4)' }}
               className="text-center px-5 py-3 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-2xl border border-blue-500/30"
             >
               <p className="text-blue-400 font-bold">1 Year</p>
               <p className="text-white text-sm">Free Service</p>
-            </motion.div>
+            </m.div>
             {showCTA && (
-              <motion.div whileHover={{ scale: 1.05 }}>
+              <m.div whileHover={{ scale: 1.05 }}>
                 <Link
                   href="/generators"
                   className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-400 text-black font-bold rounded-2xl"
@@ -328,37 +328,37 @@ export default function CumminsBanner({
                 >
                   View Models
                 </Link>
-              </motion.div>
+              </m.div>
             )}
           </div>
         </div>
-      </motion.div>
+      </m.div>
     );
   }
 
   if (variant === 'sidebar') {
     return (
-      <motion.div
+      <m.div
         whileHover={{ scale: 1.02 }}
         className="relative bg-gradient-to-b from-gray-900 via-black to-gray-900 rounded-3xl p-6 text-center border border-white/10 overflow-hidden"
         style={{ boxShadow: '0 0 30px rgba(0, 255, 255, 0.1), 0 20px 40px rgba(0,0,0,0.5)' }}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,255,255,0.1),transparent_50%)]" />
 
-        <motion.div
+        <m.div
           animate={{ rotate: [0, 360] }}
           transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
           className="absolute top-4 right-4 w-20 h-20 border border-cyan-500/20 rounded-full"
         />
 
         <div className="relative">
-          <motion.div
+          <m.div
             whileHover={{ scale: 1.1, rotate: 5 }}
             className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-cyan-500/20 to-amber-500/20 rounded-2xl flex items-center justify-center border border-cyan-500/30"
             style={{ boxShadow: '0 0 30px rgba(0, 255, 255, 0.3)' }}
           >
             <Award className="w-10 h-10 text-amber-400" />
-          </motion.div>
+          </m.div>
 
           <h3 className="text-2xl font-bold text-white mb-1">CUMMINS</h3>
           <p className="text-gray-400 text-sm mb-6">Powered by VOLTKA</p>
@@ -370,18 +370,18 @@ export default function CumminsBanner({
               { text: '1 Year Free Servicing', icon: <CheckCircle className="w-4 h-4" /> },
               { text: '10-2000KVA Range', icon: <CheckCircle className="w-4 h-4" /> },
             ].map((item, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 whileHover={{ x: 5 }}
                 className="flex items-center gap-3 text-white text-sm justify-center"
               >
                 <span className="text-green-400">{item.icon}</span>
                 <span>{item.text}</span>
-              </motion.div>
+              </m.div>
             ))}
           </div>
 
-          <motion.div whileHover={{ scale: 1.05 }}>
+          <m.div whileHover={{ scale: 1.05 }}>
             <Link
               href="/generators"
               className="block w-full py-4 bg-gradient-to-r from-amber-500 to-amber-400 text-black font-bold rounded-2xl"
@@ -389,15 +389,15 @@ export default function CumminsBanner({
             >
               View Generators
             </Link>
-          </motion.div>
+          </m.div>
         </div>
-      </motion.div>
+      </m.div>
     );
   }
 
   // Footer variant
   return (
-    <motion.div
+    <m.div
       whileHover={{ scale: 1.01 }}
       className="relative bg-gradient-to-r from-gray-900/80 to-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-between overflow-hidden"
       style={{ boxShadow: '0 0 20px rgba(0, 255, 255, 0.1)' }}
@@ -413,7 +413,7 @@ export default function CumminsBanner({
           <p className="text-gray-400 text-sm">2 Yrs Warranty + 1 Yr Free Service</p>
         </div>
       </div>
-      <motion.div whileHover={{ scale: 1.05 }}>
+      <m.div whileHover={{ scale: 1.05 }}>
         <Link
           href="/generators"
           className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 text-black font-bold rounded-xl text-sm"
@@ -421,21 +421,21 @@ export default function CumminsBanner({
         >
           Learn More
         </Link>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   );
 }
 
 // Floating Cummins Badge - Sci-Fi Style
-export function CumminsBadge() {
+function CumminsBadgeInner() {
   return (
-    <motion.div
+    <m.div
       initial={{ scale: 0, rotate: -180 }}
       animate={{ scale: 1, rotate: 0 }}
       transition={{ type: 'spring', stiffness: 200 }}
       className="fixed bottom-24 right-4 z-40"
     >
-      <motion.div
+      <m.div
         whileHover={{ scale: 1.15, rotate: 5 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -450,7 +450,47 @@ export function CumminsBadge() {
             <p className="text-cyan-400 text-[10px]">2Yr Warranty</p>
           </div>
         </Link>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed CumminsBannerInner and wrapped here.
+ */
+export default function CumminsBanner(props: Parameters<typeof CumminsBannerInner>[0]) {
+  return (
+    <LazyMotion features={domAnimation}>
+      <CumminsBannerInner {...props} />
+    </LazyMotion>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Every homepage section
+ * did this, and because sections pre-mount within 200px of the viewport, the
+ * first one below the hero dragged that engine onto every phone's first load.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed CumminsBadgeInner and wrapped here.
+ */
+export function CumminsBadge() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <CumminsBadgeInner />
+    </LazyMotion>
   );
 }

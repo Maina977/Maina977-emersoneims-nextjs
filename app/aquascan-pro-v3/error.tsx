@@ -16,7 +16,7 @@
  * still happens after the heal, we show a manual recovery UI with the real message.
  */
 
-import * as Sentry from '@sentry/nextjs';
+import { reportError } from '@/lib/monitoring/reportError';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
@@ -153,7 +153,7 @@ export default function AquaScanError({
   const [offline, setOffline] = useState(false);
 
   useEffect(() => {
-    Sentry.captureException(error, {
+    reportError(error, {
       tags: { errorType: 'aquascan-pro-v3', chunkLoad: String(isChunkLoadError(error)) },
     });
     console.error('AquaScan Pro error:', error);

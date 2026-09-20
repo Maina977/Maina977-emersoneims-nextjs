@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import SiteSurveyPolicy from '@/components/trust/SiteSurveyPolicy';
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
+import { m, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring, LazyMotion, domAnimation } from 'framer-motion';
 import Link from 'next/link';
 import HolographicMap from '@/components/map/HolographicMap';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
@@ -67,7 +67,7 @@ function ParticleField() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particles.map((p) => (
-        <motion.div
+        <m.div
           key={p.id}
           className="absolute rounded-full bg-amber-500/30"
           style={{
@@ -115,7 +115,7 @@ function CyberGrid() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(251,191,36,0.15)_0%,transparent_70%)]" />
       
       {/* Scan Lines */}
-      <motion.div
+      <m.div
         className="absolute inset-0 opacity-[0.03]"
         style={{
           background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px)',
@@ -142,7 +142,7 @@ function HoloCard({ children, className = '', delay = 0 }: { children: React.Rea
   };
 
   return (
-    <motion.div
+    <m.div
       ref={cardRef}
       initial={{ opacity: 0, y: 50, rotateX: -15 }}
       whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
@@ -179,7 +179,7 @@ function HoloCard({ children, className = '', delay = 0 }: { children: React.Rea
         />
         {children}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -392,7 +392,7 @@ function SciFiContactForm() {
   // ── SUCCESS STATE ──────────────────────────────────────────────────────────
   if (submitStatus === 'success') {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center py-6"
@@ -430,7 +430,7 @@ function SciFiContactForm() {
         >
           Send another message
         </button>
-      </motion.div>
+      </m.div>
     );
   }
 
@@ -439,7 +439,7 @@ function SciFiContactForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Error / delivery-fallback banner */}
       {submitStatus === 'error' && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           className="rounded-xl border border-red-500/40 bg-red-500/10 p-4"
@@ -461,7 +461,7 @@ function SciFiContactForm() {
               </a>
             </div>
           )}
-        </motion.div>
+        </m.div>
       )}
 
       {/* Name & Email Row */}
@@ -557,7 +557,7 @@ function SciFiContactForm() {
             { value: 'normal', label: 'Priority', color: 'amber' },
             { value: 'high', label: 'Emergency', color: 'red' },
           ].map((level) => (
-            <motion.button
+            <m.button
               key={level.value}
               type="button"
               whileHover={{ scale: 1.02 }}
@@ -577,7 +577,7 @@ function SciFiContactForm() {
                 level.color === 'green' ? 'bg-green-500' : level.color === 'amber' ? 'bg-amber-500' : 'bg-red-500'
               } ${formData.urgency === level.value ? 'animate-pulse' : ''}`} />
               {level.label}
-            </motion.button>
+            </m.button>
           ))}
         </div>
       </div>
@@ -598,7 +598,7 @@ function SciFiContactForm() {
       </div>
 
       {/* Submit Button */}
-      <motion.button
+      <m.button
         type="submit"
         disabled={isSubmitting}
         whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
@@ -606,7 +606,7 @@ function SciFiContactForm() {
         className="relative w-full py-5 rounded-xl font-bold text-lg overflow-hidden transition-all duration-500 group bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white disabled:opacity-80"
       >
         {!isSubmitting && (
-          <motion.div
+          <m.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
             animate={{ x: ['-100%', '100%'] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
@@ -615,7 +615,7 @@ function SciFiContactForm() {
         <span className="relative z-10 flex items-center justify-center gap-3">
           {isSubmitting ? (
             <>
-              <motion.span
+              <m.span
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
@@ -631,7 +631,7 @@ function SciFiContactForm() {
             </>
           )}
         </span>
-      </motion.button>
+      </m.button>
 
       <p className="text-center text-xs text-gray-500">
         Prefer to talk now? WhatsApp or call{' '}
@@ -675,7 +675,7 @@ function ContactMethodCard({
         </div>
         
         {/* Hover indicator */}
-        <motion.div 
+        <m.div 
           className="mt-6 flex items-center gap-2 text-amber-400 text-sm font-medium"
           whileHover={{ x: 5 }}
         >
@@ -683,7 +683,7 @@ function ContactMethodCard({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
           </svg>
-        </motion.div>
+        </m.div>
       </a>
     </HoloCard>
   );
@@ -701,7 +701,7 @@ function StatsDisplay() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
       {stats.map((stat, i) => (
-        <motion.div
+        <m.div
           key={stat.label}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -713,7 +713,7 @@ function StatsDisplay() {
             <AnimatedCounter value={stat.value} suffix={stat.suffix} />
           </div>
           <div className="text-gray-400 text-sm mt-2 font-mono uppercase tracking-wider">{stat.label}</div>
-        </motion.div>
+        </m.div>
       ))}
     </div>
   );
@@ -724,7 +724,7 @@ function LocationSection() {
   return (
     <section className="relative py-20 bg-gradient-to-b from-black via-gray-900/50 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -742,10 +742,10 @@ function LocationSection() {
             Interact with our revolutionary 3D holographic map system. Switch between satellite, hologram,
             and 3D render modes to explore our headquarters location in ways never before seen on the web.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Revolutionary Holographic Map */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -753,7 +753,7 @@ function LocationSection() {
           className="mb-12"
         >
           <HolographicMap />
-        </motion.div>
+        </m.div>
 
         {/* Additional Location Info Cards */}
         <div className="grid md:grid-cols-3 gap-6 mt-12">
@@ -809,7 +809,7 @@ function LocationSection() {
 }
 
 // Main Page Component
-export default function SciFiContactPage() {
+function SciFiContactPageInner() {
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 150]);
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
@@ -823,12 +823,12 @@ export default function SciFiContactPage() {
         <ParticleField />
         
         {/* Main Hero Content */}
-        <motion.div 
+        <m.div 
           style={{ y: heroY, opacity: heroOpacity }}
           className="relative z-10 text-center px-6 max-w-6xl mx-auto"
         >
           {/* Status Badge */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -838,10 +838,10 @@ export default function SciFiContactPage() {
             <span className="text-green-400 font-mono text-sm">SYSTEMS ONLINE</span>
             <span className="text-gray-500">|</span>
             <span className="text-amber-400 font-mono text-sm">READY TO CONNECT</span>
-          </motion.div>
+          </m.div>
 
           {/* Main Title */}
-          <motion.h1
+          <m.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -852,27 +852,27 @@ export default function SciFiContactPage() {
             </GlitchText>
             <br />
             <span className="text-white">COMMAND CENTER</span>
-          </motion.h1>
+          </m.h1>
 
           {/* Subtitle with typing effect */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
             className="text-xl md:text-2xl text-gray-400 mb-12 h-8"
           >
             <TypeWriter text="Initiating secure communication channel..." delay={800} />
-          </motion.div>
+          </m.div>
 
           {/* Quick Action Buttons */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
             className="flex flex-wrap justify-center gap-4"
           >
             <a href="tel:+254782914717">
-              <motion.button
+              <m.button
                 whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(251,191,36,0.4)' }}
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-xl flex items-center gap-3 shadow-lg"
@@ -881,10 +881,10 @@ export default function SciFiContactPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
                 EMERGENCY LINE
-              </motion.button>
+              </m.button>
             </a>
             <a href="#contact-form">
-              <motion.button
+              <m.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-4 border-2 border-white/20 text-white font-bold rounded-xl backdrop-blur-sm hover:bg-white/10 transition-colors flex items-center gap-3"
@@ -893,33 +893,33 @@ export default function SciFiContactPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 SEND MESSAGE
-              </motion.button>
+              </m.button>
             </a>
-          </motion.div>
+          </m.div>
 
           {/* Scroll Indicator */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5 }}
             className="absolute bottom-10 left-1/2 -translate-x-1/2"
           >
-            <motion.div
+            <m.div
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}
               className="flex flex-col items-center gap-2"
             >
               <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">Scroll Down</span>
               <div className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-2">
-                <motion.div 
+                <m.div 
                   animate={{ y: [0, 12, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                   className="w-1.5 h-3 bg-amber-500 rounded-full" 
                 />
               </div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+            </m.div>
+          </m.div>
+        </m.div>
       </section>
 
       {/* Stats Section */}
@@ -932,7 +932,7 @@ export default function SciFiContactPage() {
       {/* Contact Methods Grid */}
       <section className="relative py-20">
         <div className="max-w-7xl mx-auto px-6">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -940,7 +940,7 @@ export default function SciFiContactPage() {
           >
             <p className="text-amber-400 font-mono text-sm mb-4">// COMMUNICATION_CHANNELS</p>
             <h2 className="text-4xl md:text-5xl font-bold text-white">Choose Your Connection</h2>
-          </motion.div>
+          </m.div>
 
           <div className="grid md:grid-cols-3 gap-8">
             <ContactMethodCard
@@ -973,7 +973,7 @@ export default function SciFiContactPage() {
           </div>
 
           {/* Department Email Desks */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -1000,10 +1000,10 @@ export default function SciFiContactPage() {
                 </a>
               ))}
             </div>
-          </motion.div>
+          </m.div>
           
           {/* QR Code Quick Connect */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -1056,7 +1056,7 @@ export default function SciFiContactPage() {
               </div>
             </div>
             <p className="text-gray-500 text-xs mt-3">Scan with your phone camera to connect instantly</p>
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
@@ -1066,7 +1066,7 @@ export default function SciFiContactPage() {
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             {/* Left Column - Info */}
             <div className="space-y-8">
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -1084,10 +1084,10 @@ export default function SciFiContactPage() {
                     before the enquiry, and states the fee is deducted from the
                     contract when the work is awarded. */}
                 <SiteSurveyPolicy className="mt-8" />
-              </motion.div>
+              </m.div>
 
               {/* Response Time Indicators */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -1106,10 +1106,10 @@ export default function SciFiContactPage() {
                   <span className="w-3 h-3 bg-blue-500 rounded-full" />
                   <span className="text-blue-400 font-mono text-sm">Standard: Within 24 Hours</span>
                 </div>
-              </motion.div>
+              </m.div>
 
               {/* Trust Signals */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -1128,7 +1128,7 @@ export default function SciFiContactPage() {
                   </svg>
                   No Spam, Ever
                 </div>
-              </motion.div>
+              </m.div>
             </div>
 
             {/* Right Column - Form */}
@@ -1150,7 +1150,7 @@ export default function SciFiContactPage() {
         <CyberGrid />
         
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -1170,7 +1170,7 @@ export default function SciFiContactPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4 pt-4">
               <a href="tel:+254768860665">
-                <motion.button
+                <m.button
                   whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(251,191,36,0.5)' }}
                   whileTap={{ scale: 0.95 }}
                   className="px-10 py-5 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white font-bold rounded-xl text-lg shadow-2xl flex items-center gap-3"
@@ -1179,12 +1179,32 @@ export default function SciFiContactPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   Call Now: +254 768 860 665
-                </motion.button>
+                </m.button>
               </a>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </section>
     </div>
+  );
+}
+
+/*
+ * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ *
+ * `motion.*` pulls in framer-motion's whole engine, including drag and
+ * layout-projection code this component never uses. Next.js prefetches the
+ * Contact page from homepage links, so that engine was downloaded by every
+ * homepage visitor, and again by everyone opening Contact to get in touch.
+ * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
+ * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
+ * are synchronous so no animation can be missed while code is still loading.
+ * The component body is unchanged — renamed SciFiContactPageInner and wrapped here.
+ */
+export default function SciFiContactPage() {
+  return (
+    <LazyMotion features={domAnimation}>
+      <SciFiContactPageInner />
+    </LazyMotion>
   );
 }
