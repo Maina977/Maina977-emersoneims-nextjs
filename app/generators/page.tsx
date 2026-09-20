@@ -38,6 +38,11 @@ import { generatorServices } from "@/app/lib/data/generatorservices";
 import ErrorBoundary from '@/components/error/ErrorBoundary';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import { CUMMINS_BRAND_INFO, CUMMINS_FAQ } from '@/lib/brands/cumminsData';
+import Link from 'next/link';
+// The seventeen brands this hub links at the foot of the comparison table.
+// Same registry app/brands/[brand] builds its routes from, so the links and
+// the pages cannot drift apart.
+import { GENERATOR_BRANDS } from '@/lib/data/generator-brands';
 import GeneratorEngineeringDeepDive from '@/components/generators/GeneratorEngineeringDeepDive';
 import ConversionCTA from '@/components/cta/ConversionCTA';
 // Lead capture for the #quote section. Imported statically rather than lazily:
@@ -1027,6 +1032,46 @@ const BrandComparisonTable = () => {
         <p className="text-center text-gray-500 text-sm mt-6">
           Not sure which brand? <a href="/contact" className="text-amber-400 hover:underline">Talk to our engineers</a> for a free recommendation.
         </p>
+
+        {/*
+          EVERY BRAND WE HAVE A PAGE FOR, LINKED — added 2026-09-20.
+
+          The table above names six brands as plain text and links none of
+          them. Measured on the live site that day: this hub linked 13 of 13
+          size pages and 0 of 17 brand pages. The only route into
+          /brands/<slug> was the /brands index, itself linked once from the
+          homepage, plus /site-directory — so seventeen commercial pages sat
+          two clicks down a single path, off the one hub whose whole subject
+          they are.
+
+          They are worth linking on their merits rather than for the link:
+          measured the same day, the brand pages are 47-55% alike at their
+          closest, which is genuine per-brand content, not one template with
+          the name swapped.
+
+          Driven from GENERATOR_BRANDS so the list cannot drift from the
+          pages that exist — every slug here is a route app/brands/[brand]
+          builds. Three of the six in the table (FG Wilson, Atlas Copco,
+          Voltka) have no brand page, which is why the table itself is left
+          as text rather than half-linked.
+        */}
+        <nav aria-label="Generator brands" className="mt-14 border-t border-gray-800 pt-10">
+          <h3 className="text-center text-sm uppercase tracking-[0.2em] text-amber-400 font-semibold mb-6">
+            Brands we supply, service and stock parts for
+          </h3>
+          <ul className="flex flex-wrap justify-center gap-3">
+            {GENERATOR_BRANDS.map(brand => (
+              <li key={brand.slug}>
+                <Link
+                  href={`/brands/${brand.slug}`}
+                  className="inline-block rounded-full border border-slate-700 bg-slate-900/60 px-5 py-2 text-sm text-gray-300 transition-colors hover:border-amber-500/60 hover:text-amber-300"
+                >
+                  {brand.name} generators
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </section>
   );
