@@ -9,6 +9,10 @@ import {
   generateBrandFAQs,
 } from '@/lib/data/generator-brands';
 import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
+// Same index that builds /generators/spare-parts/engine/<slug>. Used here so
+// the engine families listed on a brand page are read from the parts
+// catalogue rather than typed out beside it.
+import { getEngineIndex } from '@/lib/parts/engineIndex';
 
 type Props = {
   params: Promise<{ brand: string }>;
@@ -78,6 +82,18 @@ export default async function BrandPage({ params }: Props) {
   const faqs = generateBrandFAQs(brand, 'Kenya');
   // Published price band, parsed from the table this site renders.
   const priceBand = publishedPriceRange();
+
+  /*
+   * Engine families this brand is the make of, read from the parts catalogue.
+   * getEngineIndex infers a make only from well-established model conventions
+   * and leaves anything it cannot recognise undefined, so this is empty for
+   * every brand we hold no catalogue for — and the section below renders
+   * nothing rather than implying coverage we cannot evidence.
+   */
+  const brandEngines = getEngineIndex()
+    .filter((engine) => engine.make === brand.name)
+    .sort((a, b) => b.parts.length - a.parts.length);
+  const brandEnginePartCount = brandEngines.reduce((sum, e) => sum + e.parts.length, 0);
 
   // Get priority counties for location links
   const priorityCounties = KENYA_LOCATIONS.filter(
@@ -199,6 +215,63 @@ export default async function BrandPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/*
+        ENGINE FAMILIES WE HOLD A PARTS CATALOGUE FOR — added 2026-09-20.
+
+        These pages were the thinnest commercial pages on the site: 286-338
+        unique 8-word sequences each, against 534-567 for a generator size page
+        and ~1,280 for a county location page. The pages that sell generators
+        nationally carried a quarter of the content of location pages that sell
+        nothing.
+
+        The fix is not more adjectives. Every figure in this section is read at
+        build time from the same parts database that builds
+        /generators/spare-parts/engine/<slug>, through getEngineIndex(), whose
+        own rule is that an engine needs at least five catalogued parts before
+        it gets a page at all. Nothing here is typed by hand, so nothing here
+        can drift from the catalogue or overstate it.
+
+        IT RENDERS FOR THREE BRANDS AND STAYS SILENT FOR FOURTEEN, and that is
+        the point. engineIndex infers a make only from well-established model
+        conventions — Cummins, Perkins and Caterpillar — and leaves anything
+        else undefined rather than guessing. Where we hold no catalogue, this
+        section says nothing at all rather than implying coverage we cannot
+        evidence.
+
+        The links are the second reason: 23 engine pages that previously had no
+        route in from the brand whose engines they are.
+      */}
+      {brandEngines.length > 0 && (
+        <section className="py-16 border-t border-white/5">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-white mb-3 text-center">
+              {brand.name} engines we hold a parts catalogue for
+            </h2>
+            <p className="text-gray-400 text-center max-w-2xl mx-auto mb-10">
+              {brandEnginePartCount} catalogued parts across {brandEngines.length}{' '}
+              {brand.name} engine {brandEngines.length === 1 ? 'family' : 'families'}. Open a family
+              to see the parts listed against it, then ask us to confirm current availability and
+              lead time for your set.
+            </p>
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+              {brandEngines.map((engine) => (
+                <li key={engine.slug}>
+                  <Link
+                    href={`/generators/spare-parts/engine/${engine.slug}`}
+                    className="flex h-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-gradient-to-br from-gray-900 to-gray-950 px-5 py-4 transition-colors hover:border-amber-400/40"
+                  >
+                    <span className="font-semibold text-white">{engine.model}</span>
+                    <span className="text-sm text-gray-500 whitespace-nowrap">
+                      {engine.parts.length} parts
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* FAQs */}
       <section className="py-16 border-t border-white/5">
