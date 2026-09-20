@@ -76,3 +76,6 @@ app/swoosh-preview/
 app/swoosh-x/
 components/home/SwooshGallery.tsx
 components/home/FreshBoot.tsx
+
+# Claude Code worktrees - nested working copies, never part of the repo
+.claude/worktrees/
