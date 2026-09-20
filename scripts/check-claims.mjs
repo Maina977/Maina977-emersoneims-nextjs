@@ -154,8 +154,45 @@ const RULES = [
      * worse than the gap it closed.
      */
     severity: 'warn',
-    re: /factory[-\s]?trained|\b(?:our|we|emersoneims)\b[^.!?]{0,30}?\b(?:cummins|perkins|caterpillar|cat|volvo|volvo\s*penta|doosan|sdmo|himoinsa|gesan|iveco|man|weichai|john\s*deere|olympian|leyland|lister\s*petter|honda)[-\s]?trained\b/i,
+    re: /factory[-\s]?trained|\b(?:our|we|emersoneims)\b[^.!?]{0,30}?\b(?:cummins|perkins|caterpillar|cat|volvo|volvo\s*penta|doosan|sdmo|himoinsa|gesan|iveco|man|weichai|john\s*deere|olympian|leyland|lister\s*petter|honda|deepsea|deep\s*sea|comap|stamford)[-\s]?(?:trained|certified)\b/i,
     why: 'No training certificates are on file to support this.',
+  },
+  {
+    id: 'market-position-superlative',
+    /*
+     * THE '#1' CLAIM WITHOUT THE '#1'.
+     *
+     * number-one-claim below is deliberately narrow: it wants a literal #1 or
+     * No.1. That catches the form this site kept relapsing into, and nothing
+     * else — which is why "Kenya's largest inventory of 2000+ genuine generator
+     * spare parts" sat inside the Store JSON-LD on /generators/spare-parts
+     * untouched through every previous audit. Same assertion, same absence of
+     * any ranking or survey behind it, different word.
+     *
+     * Structured data is the worst place for one. Google reads it as a factual
+     * statement about the business rather than as marketing, and its
+     * structured-data policies require markup to represent the page honestly.
+     *
+     * WARN, NOT ERROR, and the reason is the same as factory-trained above:
+     * some of these may be defensible, and a blocking rule turned on a backlog
+     * pressures people into deleting claims rather than evidencing them. A
+     * sweep on 2026-09-20 found roughly a dozen in live source — "Kenya's
+     * leading generator maintenance company", "East Africa's Most Trusted",
+     * "Leading generator company in {county}". The two carrying a hard number
+     * were corrected that day because they were also factually wrong. The rest
+     * are listed for the owner to rule on one at a time.
+     *
+     * Turn this to 'error' once that list is empty. Until then it must report
+     * every run, because the lesson of number-one-claim is that this family
+     * comes back if nothing watches for it.
+     *
+     * Requires a possessive place or a self-reference nearby, so it does not
+     * fire on ordinary prose like "the leading cause of bearing failure" or a
+     * third-party product described as world-leading.
+     */
+    severity: 'warn',
+    re: /\b(?:kenya|africa|east\s*africa|nairobi|emersoneims)['’]?s?\s+(?:only\s+|the\s+)?(?:largest|biggest|leading|most\s+trusted|number\s+one|foremost|premier)\b|\b(?:we|our)\b[^.!?]{0,40}?\b(?:largest|biggest)\s+(?:inventory|stock|range|network|supplier|dealer)\b/i,
+    why: 'No ranking, market-share study or citation exists for this anywhere in the project.',
   },
   {
     id: 'authorised-service-badge',

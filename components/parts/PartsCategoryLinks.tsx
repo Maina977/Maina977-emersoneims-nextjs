@@ -15,6 +15,7 @@
  */
 import Link from 'next/link';
 import partsDb from '@/app/data/spare-parts-database-COMPLETE.json';
+import verifiedAdditions from '@/app/data/spare-parts-verified-additions.json';
 import { getEngineIndex } from '@/lib/parts/engineIndex';
 
 type Sub = { id: string; name: string; parts?: unknown[] };
@@ -27,9 +28,37 @@ function getSubcategories(): Sub[] {
   return (cats?.[0]?.subcategories ?? []).filter((s) => s.id && (s.parts?.length ?? 0) > 0);
 }
 
+/**
+ * Parts added to a subcategory by spare-parts-verified-additions.json.
+ *
+ * The category pages merge this file at read time and count it; this component
+ * did not, so it advertised 1,248 parts while the pages behind it listed 1,315.
+ * Understating is a smaller sin than the "2000+" that was on the same page, but
+ * it is still a number that does not match what a visitor can count.
+ */
+function additionsCount(subcategoryId: string): number {
+  const add = verifiedAdditions as { additions?: Array<{ subcategoryId: string; parts?: unknown[] }> };
+  return add.additions?.find((a) => a.subcategoryId === subcategoryId)?.parts?.length ?? 0;
+}
+
+/** Parts in a subcategory as the category page will actually list them. */
+export function partsInSubcategory(s: Sub): number {
+  return (s.parts?.length ?? 0) + additionsCount(s.id);
+}
+
+/** Every part the catalogue can show, base file plus verified additions. */
+export function totalCataloguedParts(): number {
+  return getSubcategories().reduce((n, s) => n + partsInSubcategory(s), 0);
+}
+
+/** Subcategories that have at least one part to show. */
+export function totalPartCategories(): number {
+  return getSubcategories().length;
+}
+
 export default function PartsCategoryLinks({ className = '' }: { className?: string }) {
   const subs = getSubcategories();
-  const total = subs.reduce((n, s) => n + (s.parts?.length ?? 0), 0);
+  const total = subs.reduce((n, s) => n + partsInSubcategory(s), 0);
 
   return (
     <section
@@ -99,7 +128,7 @@ export default function PartsCategoryLinks({ className = '' }: { className?: str
                 {s.name.split(' - ')[0].split(',')[0]}
               </span>
               <span className="mt-1 block text-sm text-slate-400">
-                {(s.parts?.length ?? 0).toLocaleString('en-KE')} parts
+                {partsInSubcategory(s).toLocaleString('en-KE')} parts
               </span>
             </Link>
           ))}

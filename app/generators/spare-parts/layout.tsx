@@ -1,9 +1,33 @@
 import { Metadata } from 'next';
-import PartsCategoryLinks from '@/components/parts/PartsCategoryLinks';
+import PartsCategoryLinks, {
+  totalCataloguedParts,
+  totalPartCategories,
+} from '@/components/parts/PartsCategoryLinks';
+
+/*
+ * THE PARTS COUNT IS COUNTED, NOT ASSERTED (2026-09-20).
+ *
+ * This page stated its own size three different ways and got it wrong three
+ * times. The title and OG copy said "2000+ Parts". lib/maintenance-hub/
+ * enhanced-services-data.ts said "over 1,560 items in stock". The index
+ * rendered below said "1,248 parts", having never counted the verified
+ * additions file the category pages merge.
+ *
+ * The catalogue holds 1,315 parts across 27 categories — 1,248 in the base
+ * file plus 67 verified additions — and a visitor can add the category tiles
+ * up and check. "2000+" overstated it by more than half, on the one page where
+ * a buyer is deciding whether we can supply their part.
+ *
+ * Read at build time from the same two JSON files the pages render from, so
+ * the number in the tab title, the number in the search snippet and the number
+ * in the page body are the same number and cannot drift apart again.
+ */
+const PARTS_TOTAL = totalCataloguedParts();
+const PARTS_CATEGORIES = totalPartCategories();
 
 export const metadata: Metadata = {
-  title: 'Generator Spare Parts Kenya | 2000+ Parts',
-  description: 'Generator spare parts in Kenya: filters, engine parts, AVRs and controllers for Cummins, Caterpillar and Perkins. Pay via M-Pesa. Call +254 768 860 665.',
+  title: `Generator Spare Parts Kenya | ${PARTS_TOTAL.toLocaleString('en-KE')} Parts Catalogued`,
+  description: `Generator spare parts in Kenya: ${PARTS_TOTAL.toLocaleString('en-KE')} parts across ${PARTS_CATEGORIES} categories — filters, engine parts, AVRs and controllers for Cummins, Caterpillar and Perkins. Pay via M-Pesa. Call +254 768 860 665.`,
   keywords: [
     'generator oil filter Kenya', 'generator fuel filter', 'generator air filter', 'oil filter Cummins',
     'fuel filter Perkins', 'air filter Caterpillar', 'coolant filter generator', 'hydraulic filter',
@@ -17,8 +41,8 @@ export const metadata: Metadata = {
     'Kohler generator parts', 'MTU parts', 'Deutz parts Kenya', 'Sdmo parts',
   ],
   openGraph: {
-    title: 'Buy Generator Spare Parts Online Kenya | 2000+ Parts | M-Pesa',
-    description: 'Shop 2000+ genuine generator spare parts online. Oil filters, fuel filters, AVR, controllers, engine parts. Pay via M-Pesa (0768860665). Same-day delivery in Nairobi.',
+    title: `Generator Spare Parts Kenya | ${PARTS_TOTAL.toLocaleString('en-KE')} Parts | M-Pesa`,
+    description: `${PARTS_TOTAL.toLocaleString('en-KE')} genuine generator spare parts catalogued across ${PARTS_CATEGORIES} categories — oil filters, fuel filters, AVRs, controllers and engine parts, each listed with its manufacturer part number and the engines it fits. Pay via M-Pesa (0768860665).`,
     type: 'website',
     url: 'https://www.emersoneims.com/generators/spare-parts',
     siteName: 'EmersonEIMS',
@@ -60,7 +84,25 @@ const jsonLd = {
       '@type': 'Store',
       '@id': 'https://www.emersoneims.com/generators/spare-parts/#store',
       name: 'EmersonEIMS Generator Parts Store',
-      description: 'Kenya\'s largest inventory of 2000+ genuine generator spare parts for Cummins, Caterpillar, Perkins, FG Wilson, and all major brands. Shop online with M-Pesa payment.',
+      /*
+       * Was: "Kenya's largest inventory of 2000+ genuine generator spare
+       * parts". Two separate problems in one sentence, both removed.
+       *
+       * "Kenya's largest" is a market-position claim. It is the same family as
+       * the "#1" claims the number-one-claim guard blocks, and it escaped only
+       * because it says "largest" instead of "#1" — no ranking, no survey, no
+       * citation exists for it anywhere in this project. Structured data is the
+       * worst place to carry one: Google reads it as a factual assertion about
+       * the business, and its structured-data policies require markup to
+       * represent the page honestly.
+       *
+       * "2000+" was simply wrong — the catalogue holds 1,315. Overstating stock
+       * by more than half in machine-readable markup is the kind of thing that
+       * costs a manual action, not just a ranking.
+       *
+       * What replaces it is checkable by anyone who counts the category tiles.
+       */
+      description: `${PARTS_TOTAL.toLocaleString('en-KE')} genuine generator spare parts catalogued across ${PARTS_CATEGORIES} categories, for Cummins, Caterpillar, Perkins and other major brands — each listed with its manufacturer part number and the engines it fits. Order with M-Pesa payment.`,
       telephone: '+254768860665',
       address: {
         '@type': 'PostalAddress',
