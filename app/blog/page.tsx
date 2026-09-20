@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { BLOG_ARTICLES } from '@/lib/data/blog-articles';
+import { DIRECTORY_ARTICLES } from '@/lib/data/blog-directory-articles';
 
 /**
  * Blog index.
@@ -29,8 +30,37 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * What this index is allowed to know about an article. Deliberately narrow:
+ * the two registries behind it have very different shapes, and a card needs
+ * only these six fields plus the two optional ones.
+ */
+interface IndexedArticle {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  readTime: string;
+  category: string;
+  author?: string;
+  /** Only BLOG_ARTICLES marks featured; directory articles never are. */
+  featured?: boolean;
+}
+
 export default function BlogPage() {
-  const articles = [...BLOG_ARTICLES].sort((a, b) => (a.date < b.date ? 1 : -1));
+  /**
+   * TWO SOURCES, ONE INDEX. BLOG_ARTICLES holds the bodies that
+   * app/blog/[slug] renders. DIRECTORY_ARTICLES names the thirteen that render
+   * from their own app/blog/<slug>/page.tsx. Both are real, live, indexable
+   * articles at /blog/<slug>, so both belong in this list.
+   *
+   * Until 2026-09-20 this read from BLOG_ARTICLES alone, which is how thirteen
+   * finished articles ended up unreachable — not listed here, not in the
+   * sitemap, not linked from anywhere. See lib/data/blog-directory-articles.ts.
+   */
+  const articles: IndexedArticle[] = [...BLOG_ARTICLES, ...DIRECTORY_ARTICLES].sort((a, b) =>
+    a.date < b.date ? 1 : -1,
+  );
   const featured = articles.filter(a => a.featured).slice(0, 2);
   const featuredSlugs = new Set(featured.map(a => a.slug));
   const rest = articles.filter(a => !featuredSlugs.has(a.slug));

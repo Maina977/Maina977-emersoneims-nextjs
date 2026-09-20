@@ -478,6 +478,61 @@ const nextConfig: NextConfig = {
     return [
       /*
        * ═══════════════════════════════════════════════════════════════
+       * BLOG DUPLICATES -> THE DEEPER ARTICLE ON THE SAME QUESTION
+       * ═══════════════════════════════════════════════════════════════
+       *
+       * The blog was written twice. Thirteen articles live as their own
+       * app/blog/<slug>/page.tsx and were wired into the index and sitemap on
+       * 2026-09-20. Four more did the same, but each answered a question an
+       * article already in BLOG_ARTICLES answered at greater length — and that
+       * one was already listed, linked and indexed.
+       *
+       * Publishing both would have set the site against itself on one query.
+       * Google's guidance on consolidation is to send the weaker URL to the
+       * stronger with a 301 so the signals already earned move across rather
+       * than being split or discarded, which is what these four do.
+       *
+       * Measured on production before choosing a direction, in words of
+       * rendered body text:
+       *     generator-roi                           609  ->  generator-roi-analysis-kenya            1095
+       *     hvac-sizing-kenya-climate              1070  ->  hvac-cooling-load-sizing-kenya          1287
+       *     generator-fuel-efficiency-reduce-costs  966  ->  generator-cost-saving-strategies        1786
+       *     solar-roi-kenya-real-numbers            906  ->  true-cost-per-kwh-kenya                 1298
+       *
+       * The destination won every pairing on depth as well as on standing, so
+       * no judgement call was needed beyond reading the numbers.
+       *
+       * A redirect is matched before the filesystem route, so these fire even
+       * though the source directories still exist. They are kept on disk
+       * rather than deleted: the shorter versions contain passages the longer
+       * ones do not, and folding the best of each into the destination is
+       * editing work for a person who knows the subject, not something to
+       * settle with rm. Nothing links to them and they are in no sitemap, so
+       * they cost only disk until someone does that merge.
+       */
+      {
+        source: '/blog/generator-roi',
+        destination: '/blog/generator-roi-analysis-kenya',
+        permanent: true,
+      },
+      {
+        source: '/blog/hvac-sizing-kenya-climate',
+        destination: '/blog/hvac-cooling-load-sizing-kenya',
+        permanent: true,
+      },
+      {
+        source: '/blog/generator-fuel-efficiency-reduce-costs',
+        destination: '/blog/generator-cost-saving-strategies',
+        permanent: true,
+      },
+      {
+        source: '/blog/solar-roi-kenya-real-numbers',
+        destination: '/blog/true-cost-per-kwh-kenya',
+        permanent: true,
+      },
+
+      /*
+       * ═══════════════════════════════════════════════════════════════
        * BUILDING SUITE PRO FEATURE SLUGS -> /solutions/building
        * ═══════════════════════════════════════════════════════════════
        *

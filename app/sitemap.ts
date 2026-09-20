@@ -18,6 +18,7 @@ import { BRAND_GROUPS } from '@/lib/plant-oracle/brandGroups';
 import { GENERATOR_BRANDS } from '@/lib/data/generator-brands';
 import { PROBLEM_SLUGS } from '@/lib/seo/generatorProblems';
 import { MAJOR_TOWN_SLUGS } from '@/lib/seo/majorTowns';
+import { DIRECTORY_ARTICLE_SLUGS } from '@/lib/data/blog-directory-articles';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -445,6 +446,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Add blog articles (IMPORTANT for long-tail SEO)
   for (const slug of blogSlugs) {
+    urls.push({
+      url: `${BASE_URL}/blog/${slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    });
+  }
+
+  /**
+   * The other blog. Thirteen articles render from their own
+   * app/blog/<slug>/page.tsx rather than from BLOG_ARTICLES, and blogSlugs
+   * above only ever listed the latter. Audited against production on
+   * 2026-09-20: all thirteen answered 200 with a correct self-referential
+   * canonical and were in no sitemap and linked from no page — finished work
+   * that no crawler and no reader could reach.
+   *
+   * Sourced from the registry rather than retyped here, because a hand-kept
+   * copy is exactly how the drift above happened.
+   */
+  for (const slug of DIRECTORY_ARTICLE_SLUGS) {
     urls.push({
       url: `${BASE_URL}/blog/${slug}`,
       lastModified: currentDate,
