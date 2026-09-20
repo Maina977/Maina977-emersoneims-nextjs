@@ -156,22 +156,53 @@ export function getIndexableKenyaUrls(): string[] {
   for (const county of KENYA_LOCATIONS) {
     urls.push(`/kenya/${county.slug}`);
     /*
-     * THE SITEMAP STAYS ON THE CORE SET, deliberately.
+     * COUNTY+SERVICE IS NO LONGER SUBMITTED (2026-09-20). The bare county page
+     * above still is.
      *
-     * The county tier was widened on 2026-09-03 (see COUNTY_SERVICE_SLUGS) so
-     * those pages EXIST again — 200, indexable, internally linked. That is the
-     * state they were in through June and July, when they were never submitted
-     * here either. Restoring the pages and re-submitting 1,457 of them are two
-     * different decisions, and only the first one is being taken.
+     * The rule this applies is not a new one. On 2026-08-29 the constituency
+     * tier was withdrawn from this sitemap for measuring 68% identical, on the
+     * reasoning that Google had already answered with "Crawled - currently not
+     * indexed" and was right to. The county+service tier was left in because it
+     * was believed to be below that bar. It is not. It is well above it.
      *
-     * Submission stays lean until there is evidence these pages earn clicks;
-     * Search Console's "Crawled - currently not indexed" verdict on the last
-     * batch is the reason for keeping that bar. Widening this loop to
-     * COUNTY_SERVICE_SLUGS is the one-line change if the evidence arrives.
+     * MEASURED 2026-09-20 on the live site, all 47 counties, /generator-repairs,
+     * 8-word sequences — the same method as the August measurement, with two
+     * corrections that make it stricter and fairer:
+     *   - site-wide chrome (nav, footer) subtracted, by removing every sequence
+     *     that also appears on /contact and /blog. Without this the shared
+     *     header inflates every page-to-page comparison on the site.
+     *   - the county name replaced with a placeholder, because a swapped place
+     *     name is the thing Google discounts, not a difference it rewards.
+     *
+     * Each county was then compared with all 46 others and scored on its
+     * CLOSEST twin, which is the only comparison that matters: a page is
+     * redundant if ANY other page already says it.
+     *
+     *     county + service   80-93% identical to its nearest twin  (median 89%)
+     *     bare county page   59-76%                                (median ~67%)
+     *
+     * Every single county has a twin at 80% or above at the service tier. There
+     * is no subset worth keeping and no line to draw between them — picking
+     * winners would be arbitrary, so the whole tier goes.
+     *
+     * WHY THE BARE COUNTY PAGE SURVIVES: at 59-76% it sits around the bar the
+     * August decision accepted, and the sourced altitude, temperature and
+     * distance figures in kenya-county-conditions.ts do real differentiating
+     * work at that level. Mombasa against Kisumu is 59% — coastal against
+     * lakeside, genuinely different engineering. The service tier dilutes that
+     * same data with a much larger shared service description, which is why it
+     * scores so much worse than the page above it.
+     *
+     * NOTHING IS DELETED OR DE-INDEXED. getIndexableKenyaParams is untouched,
+     * so every one of these URLs still builds, still returns 200, still carries
+     * index/follow and stays internally linked — a visitor or crawler following
+     * a link reaches it normally. No noindex is added: that would contradict
+     * the self-referential canonical these pages carry, and this file's own
+     * history records what conflicting directives cost the last time.
+     *
+     * Restoring the loop is the one-line change if Search Console ever shows
+     * this tier earning impressions.
      */
-    for (const service of CORE_SERVICE_SLUGS) {
-      urls.push(`/kenya/${county.slug}/${service}`);
-    }
 
     if (!isPriorityCounty(county.slug)) continue;
 
