@@ -39,21 +39,48 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // dealer", which EmersonEIMS is not. We sell, install, service and supply
     // genuine parts — all true, all worth saying. Authorisation is not ours to
     // claim. Do not reintroduce it.
-    title: `${brand.name} Generators Kenya | Supply, Service & Parts`,
-    description: `${brand.name} generators in Kenya — supply, installation, servicing and genuine spare parts, backed by a mobile workshop covering all 47 counties. ${brand.powerRange}. Call +254768860665`,
+    /*
+     * TITLE REPOSITIONED 2026-09-21 (owner: we sell VOLTKA, we service all
+     * makes). This template fires for every brand, so a wrong word is wrong on
+     * seventeen pages at once — and it overrides brand.metaTemplate.title in
+     * the registry, which is why fixing the registry alone changed nothing
+     * here. It read `Supply, Service & Parts` for makes we do not sell.
+     */
+    title: `${brand.name} Generator Repair & Spare Parts in Kenya | EmersonEIMS`,
+    description: `${brand.name} generator maintenance, repair and genuine spare parts in Kenya, backed by a mobile workshop covering all 47 counties. ${brand.powerRange}. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665`,
+    /*
+     * KEYWORDS REPOSITIONED 2026-09-21. This block generated
+     * `<brand> generator dealer` and `buy <brand> generator` for all
+     * seventeen brands. EmersonEIMS sells one brand of generator, VOLTKA,
+     * its own, Cummins-powered. For every other make it does maintenance,
+     * repairs and parts. Targeting a purchase we do not offer brought the
+     * wrong visitor to the page and described a business we are not.
+     *
+     * The word `dealer` is the same claim family that check-claims blocks
+     * under authorised-dealer; it escaped only because it lacked the word
+     * `authorised`. The meta title above already carries a note that
+     * `Official Dealer` was removed from OG once before.
+     */
     keywords: [
       ...brand.keywords,
       `${brand.name} kenya`,
-      `${brand.name} generator dealer`,
-      `${brand.name} service kenya`,
-      `buy ${brand.name} generator`,
+      `${brand.name} generator repair kenya`,
+      `${brand.name} generator service kenya`,
+      `${brand.name} spare parts kenya`,
     ],
     openGraph: {
       // "Official Dealer" removed. The meta title above carries a comment
       // forbidding exactly this claim, and the OpenGraph title underneath it
       // still made it — on all 17 brand pages, in every social share and in
       // the HTML a crawler reads. EmersonEIMS is not an authorised dealer.
-      title: `${brand.name} Generators Kenya | Supply, Service & Parts`,
+      /*
+     * TITLE REPOSITIONED 2026-09-21 (owner: we sell VOLTKA, we service all
+     * makes). This template fires for every brand, so a wrong word is wrong on
+     * seventeen pages at once — and it overrides brand.metaTemplate.title in
+     * the registry, which is why fixing the registry alone changed nothing
+     * here. It read `Supply, Service & Parts` for makes we do not sell.
+     */
+    title: `${brand.name} Generator Repair & Spare Parts in Kenya | EmersonEIMS`,
       description: brand.description,
       type: 'website',
       locale: 'en_KE',

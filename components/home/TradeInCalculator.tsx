@@ -272,7 +272,7 @@ export default function TradeInCalculator() {
 
               <div className="space-y-4 mb-8">
                 <div>
-                  <p className="text-sm text-gray-400 mb-2">New VOLTKA VKS44 (44 kVA)</p>
+                  <p className="text-sm text-gray-400 mb-2">New VOLTKA VKS44</p>
                   <div className="text-3xl font-bold text-white">
                     KES {formatKES(newGeneratorPrice)}
                   </div>

@@ -23,6 +23,31 @@
  * To change one of these, get the owner to say so. Not an audit, not a
  * catalogue lookup.
  *
+ * ─────────────────────────────────────────────────────────────────────────
+ * WHAT WE SELL vs WHAT WE SERVICE (owner, 2026-09-21).
+ * ─────────────────────────────────────────────────────────────────────────
+ * The generators EmersonEIMS sells are VOLTKA, our own brand, powered by
+ * Cummins engines, from KES 500,000. For every other make on this list we do
+ * maintenance, repairs and parts — not sales.
+ *
+ * Eleven answers in this file said we supply that brand of generator: SDMO,
+ * Volvo Penta, Volvo, Caterpillar, Iveco, Himoinsa, Weichai, John Deere and
+ * Leyland among them. Some of that wording was introduced by the 2026-09-20
+ * audit itself while replacing quality claims, which is worth recording: an
+ * audit that does not know the business can tidy a sentence into a different
+ * untrue statement. All eleven now describe service, repair and parts.
+ *
+ * This does NOT contradict the stock note above. That one is about parts,
+ * which the owner confirmed we stock or source across brands. This is about
+ * whole generators, which we sell in one brand only. The site already said so
+ * in one place before anyone asked: "VOLTKA generators, with servicing and
+ * genuine parts for Perkins, Caterpillar, FG Wilson, SDMO and 20+ other
+ * brands."
+ *
+ * The Cummins entry is the one exception and is deliberately worded: the
+ * Cummins-powered sets we supply are VOLTKA, and Cummins-branded sets already
+ * on a customer site get service and parts like any other make.
+ *
  * WHAT THE SAME AUDIT DID CHANGE, and why it was different: the quality
  * claims. Answers asserting that a third-party manufacturer is "renowned for
  * reliability", has "improved significantly", offers "German engineering
@@ -94,7 +119,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
         // data. It previously opened "EmersonEIMS is an authorized Cummins
         // dealer in {location}" — we are not authorised. Supply, warranty and
         // support are all real and are what a buyer is actually asking about.
-        answer: 'EmersonEIMS supplies new Cummins generators in {location}, from 7.5kVA to 3500kVA, with warranty and ongoing support. We are an independent power engineering firm, so we size the set to your load rather than to a sales quota.'
+        answer: 'EmersonEIMS supplies new Cummins-powered generators in {location} under our own VOLTKA brand, from KES 500,000. For Cummins sets already on site we do maintenance, repairs and genuine parts — we hold a catalogue across eleven Cummins engine families.'
       },
       {
         question: 'How much do Cummins generators cost in {location}?',
@@ -114,10 +139,10 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     description: 'British engine manufacturer renowned for reliable and efficient diesel engines',
     country: 'UK',
     founded: 1932,
-    keywords: ['perkins generators', 'perkins generator', 'perkins engine', 'perkins genset', 'perkins diesel', 'perkins kenya', 'perkins dealer', 'perkins parts'],
+    keywords: ['perkins generators', 'perkins generator', 'perkins engine', 'perkins genset', 'perkins diesel', 'perkins kenya', 'perkins repair', 'perkins parts'],
     metaTemplate: {
-      title: 'Perkins Generators in {location} | Perkins Generator Supplier Kenya',
-      description: 'Perkins generators in {location}. Quality Perkins diesel generators. Sales, service & spare parts. Trusted UK brand. Call +254768860665',
+      title: 'Perkins Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Perkins generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Perkins Generators in {location}'
     },
     powerRange: '6kVA - 2500kVA',
@@ -156,10 +181,10 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     description: 'French manufacturer of high-quality generating sets and power solutions',
     country: 'France',
     founded: 1966,
-    keywords: ['sdmo generators', 'sdmo generator', 'sdmo genset', 'sdmo power', 'sdmo kenya', 'sdmo dealer', 'kohler sdmo', 'sdmo parts'],
+    keywords: ['sdmo generators', 'sdmo generator', 'sdmo genset', 'sdmo power', 'sdmo kenya', 'sdmo repair', 'kohler sdmo', 'sdmo parts'],
     metaTemplate: {
-      title: 'SDMO Generators in {location} | SDMO Generator Dealer Kenya',
-      description: 'SDMO generators in {location}. Premium French generators. Residential to industrial power solutions. Sales & service. Call +254768860665',
+      title: 'SDMO Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'SDMO generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'SDMO Generators in {location}'
     },
     powerRange: '3kVA - 3300kVA',
@@ -179,8 +204,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
         answer: 'SDMO has built generating sets in France since 1966, with a range from 3kVA to 3300kVA — small standby units through to power-plant scale.'
       },
       {
-        question: 'Do you supply SDMO residential generators in {location}?',
-        answer: 'Yes, we supply SDMO home generators from 3kVA in {location}. Silent operation ideal for residential areas.'
+        question: 'Do you service SDMO residential generators in {location}?',
+        answer: 'We maintain, repair and supply parts for SDMO generators in {location}, including the silent canopy sets. The generators we sell are our own VOLTKA brand, Cummins-powered.'
       },
       {
         question: 'Where can I service SDMO generators in {location}?',
@@ -196,10 +221,10 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     description: 'Swedish manufacturer of marine and industrial engines and complete power systems',
     country: 'Sweden',
     founded: 1907,
-    keywords: ['volvo penta generators', 'volvo penta generator', 'volvo penta engine', 'volvo penta genset', 'volvo penta kenya', 'volvo penta dealer', 'volvo penta parts'],
+    keywords: ['volvo penta generators', 'volvo penta generator', 'volvo penta engine', 'volvo penta genset', 'volvo penta kenya', 'volvo penta repair', 'volvo penta parts'],
     metaTemplate: {
-      title: 'Volvo Penta Generators in {location} | Volvo Penta Dealer Kenya',
-      description: 'Volvo Penta generators in {location}. Premium Swedish generators for industrial & marine applications. Sales, service & parts. Call +254768860665',
+      title: 'Volvo Penta Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Volvo Penta generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Volvo Penta Generators in {location}'
     },
     powerRange: '85kVA - 700kVA',
@@ -220,8 +245,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
         answer: 'Volvo Penta is the industrial and marine engine arm of Volvo, Swedish-built since 1907. The generator sets it powers run 85kVA to 700kVA.'
       },
       {
-        question: 'Do you supply Volvo Penta industrial generators in {location}?',
-        answer: 'Yes, we supply Volvo Penta industrial generators from 85kVA to 700kVA in {location} with full warranty and support.'
+        question: 'Do you service Volvo Penta industrial generators in {location}?',
+        answer: 'We maintain, repair and supply parts for Volvo Penta industrial sets in {location}, across the 85kVA to 700kVA band they cover. The generators we sell are our own VOLTKA brand, Cummins-powered.'
       },
       {
         question: 'Where can I get Volvo Penta parts in {location}?',
@@ -239,8 +264,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     founded: 1927,
     keywords: ['volvo generators', 'volvo generator', 'volvo engine', 'volvo genset', 'volvo kenya', 'volvo power', 'volvo diesel generator'],
     metaTemplate: {
-      title: 'Volvo Generators in {location} | Volvo Generator Supplier Kenya',
-      description: 'Volvo generators in {location}. Swedish quality diesel generators. Industrial & commercial power solutions. Sales & service. Call +254768860665',
+      title: 'Volvo Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Volvo generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Volvo Generators in {location}'
     },
     powerRange: '100kVA - 800kVA',
@@ -257,7 +282,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
       {
         question: 'Are Volvo generators available in {location}?',
         // Supply claim kept; "Swedish quality and exceptional durability" went.
-        answer: 'Yes, we supply Volvo-powered generators in {location}. Volvo builds its engines in Sweden and the sets run 100kVA to 800kVA.'
+        answer: 'We service and repair Volvo-powered generators in {location} and supply parts for them. Volvo builds its engines in Sweden and the sets run 100kVA to 800kVA. The generators we sell are our own VOLTKA brand.'
       },
       {
         question: 'How reliable are Volvo generators in {location}?',
@@ -279,10 +304,10 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     description: 'Japanese manufacturer famous for reliable small engines and portable generators',
     country: 'Japan',
     founded: 1946,
-    keywords: ['honda generators', 'honda generator', 'honda portable generator', 'honda genset', 'honda kenya', 'honda dealer', 'honda inverter generator', 'honda eu series'],
+    keywords: ['honda generators', 'honda generator', 'honda portable generator', 'honda genset', 'honda kenya', 'honda repair', 'honda inverter generator', 'honda eu series'],
     metaTemplate: {
-      title: 'Honda Generators in {location} | Honda Generator Dealer Kenya',
-      description: 'Honda generators in {location}. Reliable portable & inverter generators. Genuine Honda products. Sales & service. Call +254768860665',
+      title: 'Honda Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Honda generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Honda Generators in {location}'
     },
     powerRange: '1kVA - 10kVA',
@@ -297,8 +322,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     ],
     faqs: [
       {
-        question: 'Where can I buy Honda generators in {location}?',
-        answer: 'We supply genuine Honda generators in {location}. Portable and inverter models available with full Honda warranty.'
+        question: 'Do you repair Honda generators in {location}?',
+        answer: 'We service and repair Honda portable and inverter generators in {location} and supply parts for them. The generators we sell are our own VOLTKA brand, Cummins-powered.'
       },
       {
         question: 'How quiet are Honda generators?',
@@ -320,8 +345,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     founded: 1867,
     keywords: ['lister petter generators', 'lister petter generator', 'lister petter engine', 'lister petter genset', 'lister petter kenya', 'lister petter parts', 'lister diesel'],
     metaTemplate: {
-      title: 'Lister Petter Generators in {location} | Lister Petter Dealer Kenya',
-      description: 'Lister Petter generators in {location}. Robust British diesel generators. Ideal for harsh conditions. Sales, service & parts. Call +254768860665',
+      title: 'Lister Petter Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Lister Petter generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Lister Petter Generators in {location}'
     },
     powerRange: '5kVA - 25kVA',
@@ -347,7 +372,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
       },
       {
         question: 'What sizes of Lister Petter generators are available?',
-        answer: 'We supply Lister Petter generators from 5kVA to 25kVA in {location}. Ideal for small to medium applications.'
+        answer: 'We service and repair Lister Petter generators in {location}, across the 5kVA to 25kVA band they cover, and supply parts for them.'
       }
     ]
   },
@@ -359,10 +384,10 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     description: 'South Korean manufacturer of quality industrial engines and power equipment',
     country: 'South Korea',
     founded: 1896,
-    keywords: ['doosan generators', 'doosan generator', 'doosan engine', 'doosan genset', 'doosan kenya', 'doosan dealer', 'doosan power', 'doosan infracore'],
+    keywords: ['doosan generators', 'doosan generator', 'doosan engine', 'doosan genset', 'doosan kenya', 'doosan repair', 'doosan power', 'doosan infracore'],
     metaTemplate: {
-      title: 'Doosan Generators in {location} | Doosan Generator Supplier Kenya',
-      description: 'Doosan generators in {location}. Quality Korean diesel generators. Industrial power solutions. Sales & service available. Call +254768860665',
+      title: 'Doosan Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Doosan generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Doosan Generators in {location}'
     },
     powerRange: '60kVA - 700kVA',
@@ -388,7 +413,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
       },
       {
         question: 'What capacity Doosan generators are available?',
-        answer: 'We supply Doosan generators from 60kVA to 700kVA in {location} for industrial and commercial applications.'
+        answer: 'We service and repair Doosan generators in {location}, across the 60kVA to 700kVA band, and supply parts for them.'
       }
     ]
   },
@@ -400,10 +425,10 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     description: 'American heavy equipment manufacturer and world leader in power generation',
     country: 'USA',
     founded: 1925,
-    keywords: ['caterpillar generators', 'cat generators', 'caterpillar generator', 'cat genset', 'caterpillar kenya', 'cat dealer', 'cat power', 'caterpillar parts'],
+    keywords: ['caterpillar generators', 'cat generators', 'caterpillar generator', 'cat genset', 'caterpillar kenya', 'cat repair', 'cat power', 'caterpillar parts'],
     metaTemplate: {
-      title: 'Caterpillar Generators in {location} | CAT Generator Dealer Kenya',
-      description: 'Caterpillar (CAT) generators in {location}. World-class diesel generators. Industrial & commercial power. Sales, service & parts. Call +254768860665',
+      title: 'Caterpillar Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Caterpillar generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Caterpillar Generators in {location}'
     },
     powerRange: '10kVA - 17500kVA',
@@ -424,11 +449,11 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
         // reliability ranking nobody here can evidence. The range figure is
         // checkable against powerRange in this file, so it stays and the
         // ranking goes.
-        answer: 'Caterpillar has built engines in the USA since 1925. Its generator range runs 10kVA to 17,500kVA — the broadest of any brand we supply — and we hold a parts catalogue for the C6.6 and C7.1 engine families.'
+        answer: 'Caterpillar has built engines in the USA since 1925 and its generator range runs 10kVA to 17,500kVA. We maintain and repair Caterpillar sets and hold a parts catalogue for the C6.6 and C7.1 engine families.'
       },
       {
-        question: 'Do you supply CAT generators in {location}?',
-        answer: 'Yes, we supply and service Caterpillar generators in {location}. From small commercial to large industrial power plants.'
+        question: 'Do you service CAT generators in {location}?',
+        answer: 'We service, maintain and repair Caterpillar generators in {location}, from small commercial sets to large industrial plant, and supply parts for them. We do not sell Caterpillar-branded generators — the sets we sell are our own VOLTKA brand.'
       },
       {
         question: 'Are CAT generator parts available in {location}?',
@@ -446,8 +471,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     founded: 1975,
     keywords: ['iveco generators', 'iveco generator', 'iveco engine', 'iveco genset', 'iveco kenya', 'fpt iveco', 'iveco motors'],
     metaTemplate: {
-      title: 'Iveco Generators in {location} | Iveco Generator Supplier Kenya',
-      description: 'Iveco generators in {location}. Italian quality diesel generators. FPT Iveco engines. Sales & service available. Call +254768860665',
+      title: 'Iveco Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Iveco generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Iveco Generators in {location}'
     },
     powerRange: '30kVA - 500kVA',
@@ -465,7 +490,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
         question: 'Are Iveco generators available in {location}?',
         // Supply claim kept; "Italian quality with competitive pricing" went.
         // The FPT answer below already carries the substantive fact.
-        answer: 'Yes, we supply Iveco-powered generators in {location}. Iveco builds in Italy and its sets cover 30kVA to 500kVA.'
+        answer: 'We service and repair Iveco-powered generators in {location} and supply parts for them. Iveco builds in Italy and its sets cover 30kVA to 500kVA.'
       },
       {
         question: 'What is FPT Iveco?',
@@ -487,8 +512,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     founded: 1758,
     keywords: ['man generators', 'man generator', 'man engine', 'man genset', 'man kenya', 'man diesel', 'man power'],
     metaTemplate: {
-      title: 'MAN Generators in {location} | MAN Generator Dealer Kenya',
-      description: 'MAN generators in {location}. Premium German diesel generators. Industrial & commercial power solutions. Sales & service. Call +254768860665',
+      title: 'MAN Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'MAN generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'MAN Generators in {location}'
     },
     powerRange: '100kVA - 3000kVA',
@@ -510,7 +535,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
       },
       {
         question: 'What capacity MAN generators are available?',
-        answer: 'We supply MAN generators from 100kVA to 3000kVA in {location} for industrial and power plant applications.'
+        answer: 'We service and repair MAN generators in {location}, from 100kVA to 3000kVA, and supply parts for them.'
       },
       {
         question: 'Do you service MAN engines in {location}?',
@@ -526,10 +551,10 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     description: 'Spanish manufacturer of quality generating sets for global markets',
     country: 'Spain',
     founded: 1987,
-    keywords: ['gesan generators', 'gesan generator', 'gesan genset', 'gesan kenya', 'gesan power', 'gesan dealer'],
+    keywords: ['gesan generators', 'gesan generator', 'gesan genset', 'gesan kenya', 'gesan power', 'gesan repair'],
     metaTemplate: {
-      title: 'Gesan Generators in {location} | Gesan Generator Supplier Kenya',
-      description: 'Gesan generators in {location}. Quality Spanish generators. Residential to industrial power. Sales & service available. Call +254768860665',
+      title: 'Gesan Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Gesan generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Gesan Generators in {location}'
     },
     powerRange: '5kVA - 2500kVA',
@@ -567,10 +592,10 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     description: 'Spanish manufacturer specializing in power generation and lighting towers',
     country: 'Spain',
     founded: 1982,
-    keywords: ['himoinsa generators', 'himoinsa generator', 'himoinsa genset', 'himoinsa kenya', 'himoinsa dealer', 'himoinsa power', 'himoinsa lighting tower'],
+    keywords: ['himoinsa generators', 'himoinsa generator', 'himoinsa genset', 'himoinsa kenya', 'himoinsa repair', 'himoinsa power', 'himoinsa lighting tower'],
     metaTemplate: {
-      title: 'Himoinsa Generators in {location} | Himoinsa Dealer Kenya',
-      description: 'Himoinsa generators in {location}. Premium Spanish generators & lighting towers. Sales, rental & service. Call +254768860665',
+      title: 'Himoinsa Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Himoinsa generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Himoinsa Generators in {location}'
     },
     powerRange: '3kVA - 3000kVA',
@@ -590,7 +615,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
       },
       {
         question: 'Are Himoinsa generators available in {location}?',
-        answer: 'Yes, we supply and service Himoinsa generators and lighting towers throughout {location}.'
+        answer: 'We service, maintain and repair Himoinsa generators and lighting towers throughout {location}, and supply parts for them.'
       },
       {
         question: 'What makes Himoinsa different?',
@@ -608,10 +633,10 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     description: 'Chinese manufacturer of diesel engines and power generation equipment',
     country: 'China',
     founded: 1946,
-    keywords: ['weichai generators', 'weichai generator', 'weichai engine', 'weichai genset', 'weichai kenya', 'weichai dealer', 'weichai power'],
+    keywords: ['weichai generators', 'weichai generator', 'weichai engine', 'weichai genset', 'weichai kenya', 'weichai repair', 'weichai power'],
     metaTemplate: {
-      title: 'Weichai Generators in {location} | Weichai Generator Supplier Kenya',
-      description: 'Weichai generators in {location}. Reliable Chinese diesel generators. Competitive prices. Sales & service available. Call +254768860665',
+      title: 'Weichai Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Weichai generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Weichai Generators in {location}'
     },
     powerRange: '20kVA - 2000kVA',
@@ -629,7 +654,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
         question: 'Are Weichai generators reliable in {location}?',
         // Was: "has improved significantly ... good value for budget-conscious
         // buyers". Both are opinions about a manufacturer we cannot source.
-        answer: 'Weichai has built diesel engines in China since 1946 and is one of the largest engine makers by volume. The generator range we supply runs 20kVA to 2000kVA.'
+        answer: 'Weichai has built diesel engines in China since 1946 and is one of the largest engine makers by volume. We service and repair Weichai sets across the 20kVA to 2000kVA range and supply parts for them.'
       },
       {
         question: 'Do you supply Weichai parts in {location}?',
@@ -637,7 +662,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
       },
       {
         question: 'What capacity Weichai generators are available?',
-        answer: 'We supply Weichai generators from 20kVA to 2000kVA in {location}.'
+        answer: 'We service and repair Weichai generators in {location}, across the 20kVA to 2000kVA range, and supply parts for them.'
       }
     ]
   },
@@ -651,8 +676,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     founded: 1837,
     keywords: ['john deere generators', 'john deere generator', 'john deere engine', 'john deere genset', 'john deere kenya', 'john deere power'],
     metaTemplate: {
-      title: 'John Deere Generators in {location} | John Deere Dealer Kenya',
-      description: 'John Deere generators in {location}. Premium American diesel generators. Agricultural & industrial power. Sales & service. Call +254768860665',
+      title: 'John Deere Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'John Deere generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'John Deere Generators in {location}'
     },
     powerRange: '20kVA - 500kVA',
@@ -674,8 +699,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
         answer: 'John Deere has built engines in the USA since 1837 and is long established in agriculture. The generator sets it powers run 20kVA to 500kVA, which covers most farm and light industrial loads.'
       },
       {
-        question: 'Do you supply John Deere generators in {location}?',
-        answer: 'Yes, we supply John Deere-powered generators for agricultural and industrial use in {location}.'
+        question: 'Do you service John Deere generators in {location}?',
+        answer: 'We service and repair John Deere-powered generators for agricultural and industrial use in {location}, and supply parts for them.'
       },
       {
         question: 'Where can I get John Deere parts in {location}?',
@@ -693,8 +718,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     founded: 1973,
     keywords: ['olympian generators', 'olympian generator', 'olympian genset', 'olympian kenya', 'olympian cat', 'caterpillar olympian'],
     metaTemplate: {
-      title: 'Olympian Generators in {location} | Olympian Generator Dealer Kenya',
-      description: 'Olympian generators in {location}. Caterpillar quality at competitive prices. Commercial & industrial power. Sales & service. Call +254768860665',
+      title: 'Olympian Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Olympian generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Olympian Generators in {location}'
     },
     powerRange: '9kVA - 750kVA',
@@ -736,8 +761,8 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     founded: 1896,
     keywords: ['leyland generators', 'leyland generator', 'leyland engine', 'leyland genset', 'leyland kenya', 'leyland diesel', 'ashok leyland generator'],
     metaTemplate: {
-      title: 'Leyland Generators in {location} | Leyland Generator Supplier Kenya',
-      description: 'Leyland generators in {location}. British heritage diesel generators. Commercial & industrial power. Sales & service. Call +254768860665',
+      title: 'Leyland Generator Repair & Spare Parts in {location} | EmersonEIMS',
+      description: 'Leyland generator repair, maintenance and genuine spare parts in {location}. Mobile workshop covering all 47 counties. The generators we sell are our own VOLTKA brand, Cummins-powered. Call +254768860665',
       h1: 'Leyland Generators in {location}'
     },
     powerRange: '15kVA - 500kVA',
@@ -756,7 +781,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
         // Supply claim kept verbatim — owner-confirmed 2026-09-20, see the
         // STOCK AND SUPPLY note at the head of this file. Only the trailing
         // "proven reliability and competitive pricing" was replaced.
-        answer: 'Yes, we supply Leyland generators in {location}. The Leyland engine lineage runs back to 1896 in the UK, and the sets cover 15kVA to 500kVA.'
+        answer: 'We service, maintain and repair Leyland generators in {location} and supply parts for them. The Leyland engine lineage runs back to 1896 in the UK, and the sets cover 15kVA to 500kVA.'
       },
       {
         question: 'How reliable are Leyland generators?',
