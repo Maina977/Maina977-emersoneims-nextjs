@@ -28,7 +28,9 @@ import AIToolsPromo from '@/components/ai/AIToolsPromo';
 /*
  * FIVE HOMEPAGE SECTIONS WERE RENDERING NOTHING.
  *
- * components/home/{CumminsShopNow,FinancingCalculator,AIAdvantageHero,
+ * components/home/{CumminsShopNow,AIAdvantageHero,
+ * (FinancingCalculator was in this set too; both copies of it were deleted
+ * on 2026-09-21 when the financing sections were removed.)
  * SocialProofWidget,CountyCoverageMap}.tsx are each three lines long:
  *     return <div className="py-20 px-4 bg-black" />;
  * They were created as empty placeholders in 8211b03 ("Resolve Vercel build
@@ -65,7 +67,6 @@ import AIToolsPromo from '@/components/ai/AIToolsPromo';
  */
 const AIAdvantageHero = dynamic(() => import('@/app/components/home/AIAdvantageHero'));
 const CumminsShopNowReal = dynamic(() => import('@/app/components/home/CumminsShopNow'));
-const FinancingCalculatorReal = dynamic(() => import('@/app/components/home/FinancingCalculator'));
 const CountyCoverageMapReal = dynamic(() => import('@/app/components/home/CountyCoverageMap'));
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
 import TradeInCalculator from '@/components/home/TradeInCalculator';
@@ -891,10 +892,25 @@ export default function HomePage() {
           online browsers become paying customers. Positioned immediately after
           product showcase to capture buying intent. */}
       <CumminsShopNowReal />
-      {/* FINANCING CALCULATOR — shows payment options and financing partners
-          (KCB, Equity, Safaricom Money). Positioned after shop section so buyers
-          who see pricing can immediately calculate their monthly payment and apply. */}
-      <FinancingCalculatorReal />
+      {/*
+        FINANCING CALCULATOR REMOVED (2026-09-21, owner instruction).
+
+        It published indicative credit terms — 13% for a commercial bank loan,
+        15% for mobile money, "14% per annum (market average)" — and computed a
+        monthly payment from them. EmersonEIMS holds no financing partnership;
+        the component's own comment says so, and named lenders had already been
+        stripped out of it on 2026-08-03 for that reason.
+
+        Publishing repayment terms for credit we neither provide nor broker is
+        not a service to a buyer: the rate they are actually offered depends on
+        their own bank and their own standing, so the figure here could only
+        ever be wrong for them, and wrong in the direction that flatters the
+        sale. Consumer credit is regulated in Kenya, and advertising indicative
+        loan terms is not a neutral act.
+
+        The pricing on the product pages is unaffected: those are our own
+        prices, which we can stand behind.
+      */}
       {/* TRADE-IN CALCULATOR — removes upgrade barrier by showing trade-in value
           of old generator. Positioned after financing so buyers can see: new price →
           financing cost → trade-in credit = final cost. */}

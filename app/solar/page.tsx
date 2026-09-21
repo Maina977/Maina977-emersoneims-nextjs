@@ -608,105 +608,6 @@ function UrgencyBanner() {
   );
 }
 
-// ==================== FINANCING CALCULATOR ====================
-function SolarFinancingCalculator() {
-  const [systemCost, setSystemCost] = useState(750000);
-  const [deposit, setDeposit] = useState(30);
-  const [months, setMonths] = useState(12);
-
-  const depositAmount = systemCost * (deposit / 100);
-  const financeAmount = systemCost - depositAmount;
-  const interestRate = months <= 6 ? 0 : months <= 12 ? 0.05 : 0.10;
-  const totalWithInterest = financeAmount * (1 + interestRate);
-  const monthlyPayment = totalWithInterest / months;
-
-  return (
-    <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-2xl p-8 border border-green-500/30">
-      <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-        💳 Solar Financing Calculator
-      </h3>
-
-      <div className="space-y-6">
-        <div>
-          <label className="text-gray-300 mb-2 block">System Cost: KES {systemCost.toLocaleString()}</label>
-          <input
-            type="range"
-            min="200000"
-            max="5000000"
-            step="50000"
-            value={systemCost}
-            onChange={(e) => setSystemCost(Number(e.target.value))}
-            className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>KES 200K</span>
-            <span>KES 5M</span>
-          </div>
-        </div>
-
-        <div>
-          <label className="text-gray-300 mb-2 block">Deposit: {deposit}% (KES {depositAmount.toLocaleString()})</label>
-          <input
-            type="range"
-            min="20"
-            max="70"
-            step="5"
-            value={deposit}
-            onChange={(e) => setDeposit(Number(e.target.value))}
-            className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>20%</span>
-            <span>70%</span>
-          </div>
-        </div>
-
-        <div>
-          <label className="text-gray-300 mb-2 block">Payment Period: {months} months</label>
-          <input
-            type="range"
-            min="3"
-            max="24"
-            step="3"
-            value={months}
-            onChange={(e) => setMonths(Number(e.target.value))}
-            className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>3 months</span>
-            <span>24 months</span>
-          </div>
-        </div>
-
-        <div className="bg-green-500/10 rounded-xl p-6 border border-green-500/30">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-400 text-sm">Deposit Required</p>
-              <p className="text-2xl font-bold text-green-400">KES {depositAmount.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Monthly Payment</p>
-              <p className="text-2xl font-bold text-amber-400">KES {Math.round(monthlyPayment).toLocaleString()}</p>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-green-500/20">
-            <p className="text-gray-400 text-sm">
-              {months <= 6 ? '0% Interest' : months <= 12 ? '5% Interest' : '10% Interest'} •
-              Total: KES {Math.round(depositAmount + totalWithInterest).toLocaleString()}
-            </p>
-          </div>
-        </div>
-
-        <a
-          href={`https://wa.me/254768860665?text=Solar%20Financing%20Inquiry:%20KES%20${systemCost.toLocaleString()}%20system,%20${deposit}%25%20deposit,%20${months}%20months`}
-          className="block w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white text-center py-4 rounded-xl font-bold hover:from-green-400 hover:to-emerald-500 transition-all"
-        >
-          Apply for Financing →
-        </a>
-      </div>
-    </div>
-  );
-}
 
 // ==================== MAIN COMPONENT ====================
 export default function SolarBible() {
@@ -1181,7 +1082,13 @@ export default function SolarBible() {
                 </ul>
               </motion.div>
             </div>
-            <SolarFinancingCalculator />
+            {/*
+              SOLAR FINANCING CALCULATOR REMOVED (2026-09-21, owner
+              instruction). Same reason as its siblings on the homepage and
+              /generators: it published repayment terms for credit EmersonEIMS
+              neither provides nor brokers. The solar system pricing on this
+              page is unaffected — that is our own figure.
+            */}
           </div>
         </div>
       </section>

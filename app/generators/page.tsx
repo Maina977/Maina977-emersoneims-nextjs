@@ -1083,118 +1083,6 @@ const BrandComparisonTable = () => {
 const formatKES = (n: number): string =>
   Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-// 💳 FINANCING CALCULATOR
-const FinancingCalculator = () => {
-  const [price, setPrice] = useState(2000000);
-  const [deposit, setDeposit] = useState(30);
-  const [months, setMonths] = useState(12);
-
-  const depositAmount = price * (deposit / 100);
-  const financeAmount = price - depositAmount;
-  const monthlyPayment = financeAmount / months;
-
-  return (
-    <section className="py-20 bg-gradient-to-b from-slate-900 to-black">
-      <div className="max-w-4xl mx-auto px-6">
-        <div
-          
-          
-          
-          className="text-center mb-12"
-        >
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-sm mb-4">
-            💳 Easy Payment Plans
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Financing Calculator
-          </h2>
-          <p className="text-xl text-gray-400">
-            Calculate your monthly payments. No interest on 3-month plans!
-          </p>
-        </div>
-
-        <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-800">
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            {/* Price Slider */}
-            <div>
-              <label className="text-gray-400 text-sm block mb-2">Generator Price (KES)</label>
-              <input
-                type="range"
-                min="500000"
-                max="30000000"
-                step="100000"
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value))}
-                className="w-full accent-amber-500"
-              />
-              <div className="text-2xl font-bold text-amber-400 mt-2">
-                KES {(price / 1000000).toFixed(1)}M
-              </div>
-            </div>
-
-            {/* Deposit Slider */}
-            <div>
-              <label className="text-gray-400 text-sm block mb-2">Deposit (%)</label>
-              <input
-                type="range"
-                min="20"
-                max="70"
-                step="5"
-                value={deposit}
-                onChange={(e) => setDeposit(Number(e.target.value))}
-                className="w-full accent-amber-500"
-              />
-              <div className="text-2xl font-bold text-white mt-2">
-                {deposit}% (KES {(depositAmount / 1000).toFixed(0)}K)
-              </div>
-            </div>
-
-            {/* Months Selector */}
-            <div>
-              <label className="text-gray-400 text-sm block mb-2">Payment Period</label>
-              <div className="flex gap-2">
-                {[3, 6, 12].map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMonths(m)}
-                    className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
-                      months === m
-                        ? 'bg-amber-500 text-black'
-                        : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
-                    }`}
-                  >
-                    {m} Mo
-                  </button>
-                ))}
-              </div>
-              {months === 3 && <p className="text-green-400 text-xs mt-2">✓ 0% Interest!</p>}
-            </div>
-          </div>
-
-          {/* Results */}
-          <div className="bg-black/50 rounded-xl p-6 text-center">
-            <p className="text-gray-400 mb-2">Your Monthly Payment</p>
-            <div className="text-5xl font-bold text-green-400 mb-2">
-              KES {formatKES(monthlyPayment)}
-            </div>
-            <p className="text-gray-500 text-sm">
-              for {months} months after KES {formatKES(depositAmount)} deposit
-            </p>
-          </div>
-
-          <div className="text-center mt-6">
-            <a
-              href={`/contact?finance=true&price=${price}&deposit=${deposit}&months=${months}`}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl"
-            >
-              Apply for Financing →
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
 
 // 📄 PDF DOWNLOADS SECTION
 const DownloadsSection = () => {
@@ -3299,10 +3187,20 @@ export default function GeneratorPage() {
           </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          💳 FINANCING CALCULATOR - Easy Payment Plans
-      ════════════════════════════════════════════════════════════════ */}
-      <FinancingCalculator />
+      {/*
+        FINANCING CALCULATOR REMOVED (2026-09-21, owner instruction).
+
+        Beyond the policy reason recorded on the homepage, this one was also
+        arithmetically wrong. It computed:
+
+            const monthlyPayment = financeAmount / months;
+
+        No interest term at all. Every monthly figure it showed a buyer was
+        the cost of an interest-free loan, which is not a product anyone in
+        this market is offered. On a KES 2,000,000 set over 12 months at a 30%
+        deposit it understated the real repayment by the entire finance
+        charge, on the page where the buying decision is made.
+      */}
 
       {/* ═══════════════════════════════════════════════════════════════════
           📄 DOWNLOADS - Brochures & Spec Sheets
