@@ -75,6 +75,34 @@ export default function robots(): MetadataRoute.Robots {
         disallow: SHARED_DISALLOW,
         crawlDelay: 0,
       },
+      /*
+       * GOOGLE ADS LANDING-PAGE CRAWLERS.
+       *
+       * AdsBot-Google and AdsBot-Google-Mobile do NOT obey the '*' group. That
+       * is a documented exception, not an oversight on Google's part: an
+       * advertiser is paying for the click, so the landing-page quality check
+       * deliberately ignores blanket crawler rules. A group naming the token is
+       * the only thing either bot reads.
+       *
+       * Until now neither was named anywhere, which left their behaviour
+       * undeclared. Nothing was broken by that - unnamed means unrestricted, so
+       * landing pages were crawlable - but it was luck rather than intent, and
+       * the failure mode is expensive: an AdsBot that cannot fetch a landing
+       * page produces "Destination not crawlable", which disapproves the ad or
+       * drives Quality Score down and the cost-per-click up.
+       *
+       * Naming them makes two things true. The rules now say out loud that ad
+       * landing pages must stay crawlable, so a future blanket disallow under
+       * '*' cannot quietly take the ads down with it. And AdsBot stops spending
+       * its crawl on /api/, /admin/, /private/ and /test-*, none of which will
+       * ever be an ad destination.
+       *
+       * No crawlDelay on either: Google ignores the directive, and throttling
+       * the bot that validates a paid landing page would be the wrong instinct
+       * even if it did not.
+       */
+      { userAgent: 'AdsBot-Google', allow: '/', disallow: SHARED_DISALLOW },
+      { userAgent: 'AdsBot-Google-Mobile', allow: '/', disallow: SHARED_DISALLOW },
       // Bing - Microsoft's search engine
       {
         userAgent: 'Bingbot',
