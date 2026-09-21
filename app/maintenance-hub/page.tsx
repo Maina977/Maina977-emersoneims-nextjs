@@ -111,9 +111,25 @@ const SERVICES = [
     id: 'plumbing',
     name: 'Plumbing Bible',
     icon: '🚿',
-    description: 'Complete plumbing guide with 150+ problem solutions, pipe sizing calculator, installation guides, and Kenya building codes.',
+    /*
+     * CARD CORRECTED 2026-09-21 TO MATCH THE PAGE THAT NOW EXISTS.
+     *
+     * This card was written and linked to /maintenance-hub/plumbing, which
+     * returned 404 from that day until now: ten of the eleven hub children
+     * resolved and this one never had a page. Google crawled the dead URL on
+     * 2026-07-31 and it appears in the Search Console coverage export.
+     *
+     * It promised 150+ problem solutions, a pipe sizing calculator and Kenya
+     * building codes. The page has seven diagnosis procedures, a materials
+     * reference and a maintenance schedule, and cites no code clause by
+     * number because a plausible-looking clause reference is worse than none
+     * when a reader may act on it. The card is corrected to the page rather
+     * than the page padded to the card.
+     */
+    description:
+      'Diagnosis procedures for low water pressure, concealed leaks, water hammer, blocked drains, booster pumps, storage tanks and water heaters, with pipe materials and a maintenance schedule.',
     href: '/maintenance-hub/plumbing',
-    stats: { value: '150+', label: 'Solutions' },
+    stats: { value: '7', label: 'Procedures' },
     color: 'indigo',
     glowColor: 'rgba(99, 102, 241, 0.5)',
     features: ['Pipe Calculator', 'Problem Guide', 'Installation', 'Building Codes'],
