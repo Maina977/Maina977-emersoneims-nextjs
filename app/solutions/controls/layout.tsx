@@ -6,7 +6,8 @@ export const metadata: Metadata = {
   keywords: "DeepSea controller Kenya, DSE7310 Kenya, DSE7320 fault codes, PowerWizard Kenya, generator controller repair, AMF controller Kenya, DSE configuration, generator controller fault codes, DSE8610 parallel, Modbus generator, RS485 generator",
   openGraph: {
     title: "Generator Controller Solutions | DeepSea & PowerWizard Experts",
-    description: "Kenya's leading DeepSea and PowerWizard controller specialists. Fault code lookup, configuration, repairs.",
+    // Was "Kenya's leading ... specialists" — unsourced market position.
+    description: "DeepSea and PowerWizard generator controller work in Kenya: fault code lookup, configuration and repairs.",
     url: "https://www.emersoneims.com/solutions/controls",
     siteName: "EmersonEIMS",
     locale: "en_KE",

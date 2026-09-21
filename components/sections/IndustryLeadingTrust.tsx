@@ -142,9 +142,19 @@ function IndustryLeadingTrustInner() {
           <span className="text-amber-400 text-sm uppercase tracking-[0.3em] mb-4 block font-medium">
             Verified Credentials
           </span>
+          {/*
+            Was a "most trusted in the region" heading, rendered on the
+            homepage. A market-position claim with no survey or ranking behind
+            it — the same family as the "#1" headings removed from this site
+            more than once, surviving only because of the wording and because
+            the apostrophe was HTML-encoded where the guard could not see it.
+
+            What replaces it says where the work is actually done, which the
+            /east-africa pages for Uganda, Tanzania and Rwanda evidence.
+          */}
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-            East Africa&apos;s Most Trusted
-            <span className="text-transparent bg-gradient-to-r from-amber-400 to-cyan-400 bg-clip-text"> Power Partner</span>
+            Engineering Power Systems Across
+            <span className="text-transparent bg-gradient-to-r from-amber-400 to-cyan-400 bg-clip-text"> East Africa</span>
           </h2>
           <p className="text-lg text-gray-400 max-w-3xl mx-auto">
             {COMPANY_FACTS.yearsExperience} years of proven excellence. {COMPANY_FACTS.totalProjects}+ completed projects. 

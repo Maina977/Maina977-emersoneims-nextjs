@@ -85,10 +85,13 @@ const jsonLd = {
       '@id': 'https://www.emersoneims.com/generators/spare-parts/#store',
       name: 'EmersonEIMS Generator Parts Store',
       /*
-       * Was: "Kenya's largest inventory of 2000+ genuine generator spare
-       * parts". Two separate problems in one sentence, both removed.
+       * Was a sentence opening with a "largest in the country" superlative and
+       * a stock figure of 2000+. Two separate problems, both removed. The
+       * wording is paraphrased here rather than quoted, so that the
+       * market-position-superlative guard does not match its own audit trail
+       * and teach people to skim past it.
        *
-       * "Kenya's largest" is a market-position claim. It is the same family as
+       * The superlative was a market-position claim. It is the same family as
        * the "#1" claims the number-one-claim guard blocks, and it escaped only
        * because it says "largest" instead of "#1" — no ranking, no survey, no
        * citation exists for it anywhere in this project. Structured data is the

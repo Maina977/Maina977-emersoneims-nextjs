@@ -217,7 +217,10 @@ export default function LocationsPage() {
         <div className="max-w-4xl mx-auto prose prose-invert">
           <h2>Generator and Solar Services Across Kenya</h2>
           <p>
-            EmersonEIMS is Kenya's leading provider of power solutions, serving businesses and
+            {/* Was a "leading provider in the country" line — unsourced market
+                position. The coverage claim after it is real and does the same
+                work without asserting a rank. */}
+            EmersonEIMS supplies, installs and services power systems for businesses and
             homes across all 47 counties. Whether you're in Nairobi, Mombasa, Kisumu, Nakuru,
             Eldoret, or any other part of Kenya, we're ready to serve you with professional
             generator installation, solar power systems, UPS solutions, and electrical services.

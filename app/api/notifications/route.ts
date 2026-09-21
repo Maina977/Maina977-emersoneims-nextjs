@@ -70,7 +70,7 @@ const EMAIL_TEMPLATES = {
           <p>Our solar experts are ready to assist you with installation planning and financing options.</p>
         </div>
         <div class="footer">
-          <p>EmersonEIMS - Kenya's Leading Solar Solutions Provider</p>
+          <p>EmersonEIMS - Solar, Generators and Power Engineering, Nairobi</p>
           <p>Phone: +254 768 860 665 | Email: info@emersoneims.com</p>
         </div>
       </div>

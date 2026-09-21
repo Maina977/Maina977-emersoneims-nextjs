@@ -1284,8 +1284,16 @@ const LiveStatisticsCounter = () => {
             </span>
             Live Statistics
           </span>
+          {/*
+            Was a "most trusted in the country" heading. A market-position
+            claim with no survey, ranking or citation behind it — the same
+            family as the "#1" claims removed from this site repeatedly, and it
+            survived only because it says "most trusted" rather than "#1".
+            Replaced with the two things about this business that are checkable:
+            the year it started and the counties it reaches.
+          */}
           <h2 className="text-3xl md:text-4xl font-bold text-white">
-            Kenya's Most Trusted Generator Partner
+            Supplying and Servicing Generators in Kenya Since 2011
           </h2>
         </div>
 

@@ -101,7 +101,11 @@ export default function FaultCodesPage() {
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-full mb-6"
             >
-              <span className="text-amber-400 text-sm font-medium">Africa&apos;s Largest Database</span>
+              {/* Was a "largest database on the continent" badge — a
+                  market-position claim with nothing behind it. No count is put
+                  in its place either: check-code-counts exists to stop
+                  hardcoded fault-code totals drifting from the data. */}
+              <span className="text-amber-400 text-sm font-medium">Generator Fault Code Database</span>
             </motion.div>
 
             <h1 className="text-4xl md:text-6xl font-bold mb-6">

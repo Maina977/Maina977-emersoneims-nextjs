@@ -504,7 +504,10 @@ export default function MotorsRewindingHub() {
             </h1>
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.7 }} className="text-lg md:text-xl lg:text-2xl text-gray-200/90 max-w-3xl mx-auto leading-relaxed">
-              Kenya&apos;s leading motor rewinding service. All sizes from 0.5HP to 500HP. Grade A copper wire. 6-10 months warranty. Free collection in Nairobi.
+              {/* Opened with a "leading service in the country" claim. The rest
+                  of the sentence was already specific and checkable, so the
+                  claim was carrying no weight the facts were not. */}
+              Motor rewinding for all sizes from 0.5HP to 500HP. Grade A copper wire, 6-10 months warranty, free collection in Nairobi.
             </motion.p>
 
             <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.2, delay: 1 }} className="mt-8 h-1 w-32 mx-auto bg-gradient-to-r from-transparent via-amber-500 to-transparent" />

@@ -1045,7 +1045,7 @@ export function generatePDFReportHTML(data: PDFReportData): string {
     </div>
 
     <div class="footer">
-      <p>EmersonEIMS Solar Solutions | East & Central Africa's Premier Solar Provider</p>
+      <p>EmersonEIMS Solar Solutions | Embakasi, Nairobi | Serving all 47 counties</p>
       <p>+254 768 860 665 | info@emersoneims.com | www.emersoneims.com</p>
     </div>
   </div>

@@ -411,7 +411,10 @@ export const SEO_FAQS = [
   },
   {
     question: "Does EmersonEIMS offer solar installation?",
-    answer: "Yes! EmersonEIMS is one of Kenya's leading solar companies, installing grid-tie, off-grid, and hybrid systems for homes, businesses, and industries. We cover all 47 counties with 25-year panel warranty."
+    // Was "one of Kenya's leading solar companies" — unsourced market
+    // position. What the sentence actually needed to say is what we install
+    // and where, both of which are checkable.
+    answer: "Yes. EmersonEIMS installs grid-tie, off-grid and hybrid solar systems for homes, businesses and industry, covering all 47 counties. Panel warranty terms are confirmed in the written quotation."
   },
   {
     question: "Can EmersonEIMS drill boreholes?",

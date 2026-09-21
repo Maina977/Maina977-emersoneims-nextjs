@@ -189,9 +189,16 @@ const RULES = [
      * Requires a possessive place or a self-reference nearby, so it does not
      * fire on ordinary prose like "the leading cause of bearing failure" or a
      * third-party product described as world-leading.
+     *
+     * THE APOSTROPHE MUST BE MATCHED IN ALL THREE FORMS. The first version of
+     * this rule caught "Kenya's leading energy solutions provider" in the alt
+     * text on /about-us and missed the SAME phrase forty lines below it,
+     * because that one was written &apos; in JSX. One got fixed, one shipped.
+     * A guard that a text encoding can walk past is worse than none, because
+     * it reports a clean run over a page that still carries the claim.
      */
     severity: 'warn',
-    re: /\b(?:kenya|africa|east\s*africa|nairobi|emersoneims)['’]?s?\s+(?:only\s+|the\s+)?(?:largest|biggest|leading|most\s+trusted|number\s+one|foremost|premier)\b|\b(?:we|our)\b[^.!?]{0,40}?\b(?:largest|biggest)\s+(?:inventory|stock|range|network|supplier|dealer)\b/i,
+    re: /\b(?:kenya|africa|east\s*africa|nairobi|emersoneims)(?:['’]|&apos;|&#0?39;|&rsquo;)?s?\s+(?:only\s+|the\s+)?(?:largest|biggest|leading|most\s+trusted|number\s+one|foremost|premier)\b|\b(?:we|our)\b[^.!?]{0,40}?\b(?:largest|biggest)\s+(?:inventory|stock|range|network|supplier|dealer)\b/i,
     why: 'No ranking, market-share study or citation exists for this anywhere in the project.',
   },
   {

@@ -196,7 +196,10 @@ function AboutHero({ reducedMotion }: { reducedMotion: boolean }) {
       <div ref={bgRef} className="absolute inset-0 will-change-transform">
         <Image
           src="/images/solar power farms.png"
-          alt="EmersonEIMS — Kenya's leading energy solutions provider"
+          /* Alt text carried a market-position claim rather than describing the
+             image. Alt text is read aloud to people using a screen reader, so a
+             slogan there is both an unsourced claim and a worse experience. */
+          alt="Ground-mounted solar array on an open site"
           fill
           priority
           className="object-cover"
@@ -248,9 +251,13 @@ function StorySection() {
 
         <Reveal>
           <p className="mx-auto max-w-4xl text-center text-2xl md:text-4xl font-light leading-snug text-gray-200">
-            From a small startup in Nairobi to{' '}
-            <span className="text-amber-400 font-medium">Kenya&apos;s leading energy solutions provider</span>,
-            we&apos;ve transformed how businesses and communities access reliable, sustainable power.
+            {/* Was a "leading energy solutions provider in the country" line —
+                an unsourced market position, and one the guard could not see
+                because the apostrophe was HTML-encoded. Replaced with the
+                growth this business can actually evidence. */}
+            From a small startup in Nairobi to an engineering team working across{' '}
+            <span className="text-amber-400 font-medium">all 47 counties</span>,
+            we&apos;ve spent over a decade keeping power on for businesses and communities.
           </p>
         </Reveal>
 
