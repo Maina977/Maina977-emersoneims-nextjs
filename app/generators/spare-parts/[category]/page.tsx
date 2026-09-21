@@ -41,8 +41,71 @@ type Part = {
   brand?: string;
   category?: string;
   compatibility?: string[];
+  /*
+   * ADDED 2026-09-21. Every one of the 1,248 rows in the database carries a
+   * specifications object — thread size, micron rating, bore, height, grade,
+   * material — and none of it was reaching the page, because this type did not
+   * declare the field so the renderer could not see it.
+   *
+   * It is the most useful thing on the row. A buyer matching a part is
+   * confirming fitment, and a thread size settles that where a photograph
+   * cannot. It is also why this catalogue does not need product photography to
+   * look like a serious supplier: an industrial buyer reads the spec.
+   */
+  specifications?: Record<string, string | number>;
   pricing?: { currency?: string; retailPrice?: number; bulkPrice?: number; minimumOrder?: number };
 };
+
+/**
+ * Specs worth putting on the row, in the order a buyer checks them.
+ *
+ * Capped at four. The database has parts carrying a dozen keys, and a row that
+ * wraps to six lines is harder to scan than one that omits something — the
+ * full set belongs on a part page, which does not exist yet. Dimensional and
+ * fitment keys come first because those are what decide whether a part fits.
+ */
+const SPEC_PRIORITY = [
+  'threadSize',
+  'micronRating',
+  'bore',
+  'stroke',
+  'height',
+  'length',
+  'width',
+  'diameter',
+  'size',
+  'voltage',
+  'amperage',
+  'capacity',
+  'filterType',
+  'type',
+  'material',
+  'grade',
+  'finish',
+  'specification',
+  'application',
+  'quality',
+];
+
+/** "threadSize" -> "Thread size". The keys are camelCase in the data. */
+function specLabel(key: string): string {
+  const spaced = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+function topSpecs(p: Part): Array<[string, string]> {
+  const specs = p.specifications;
+  if (!specs) return [];
+  const entries = Object.entries(specs).filter(
+    ([, v]) => v !== null && v !== undefined && String(v).trim() !== '',
+  );
+  entries.sort((a, b) => {
+    const ia = SPEC_PRIORITY.indexOf(a[0]);
+    const ib = SPEC_PRIORITY.indexOf(b[0]);
+    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+  });
+  return entries.slice(0, 4).map(([k, v]) => [specLabel(k), String(v)]);
+}
 type Subcategory = { id: string; name: string; description?: string; parts?: Part[] };
 
 const BASE = 'https://www.emersoneims.com';
@@ -276,29 +339,70 @@ export default async function SparePartsCategoryPage({
         <div className="mt-12 overflow-x-auto rounded-2xl border border-slate-700">
           <table className="w-full min-w-[720px] text-left text-sm">
             <caption className="sr-only">{cat.name} — part numbers, compatibility and indicative pricing</caption>
-            <thead className="bg-slate-900/80 text-slate-300">
+            {/*
+              Sticky header. The largest category runs to seventy-odd rows, and
+              a buyer comparing part numbers a screen down should not have to
+              scroll back to remember which column is fitment and which is
+              price. It is part of what separates a catalogue from a table.
+            */}
+            <thead className="sticky top-0 z-10 bg-slate-900 text-slate-300 shadow-[0_1px_0_0_rgb(30_41_59)]">
               <tr>
                 <th scope="col" className="px-4 py-3 font-semibold">Part No.</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Description</th>
+                <th scope="col" className="px-4 py-3 font-semibold">
+                  Description &amp; specification
+                </th>
                 <th scope="col" className="px-4 py-3 font-semibold">Brand</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Fits</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Indicative price</th>
+                <th scope="col" className="px-4 py-3 text-right font-semibold">Indicative price</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Enquire</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
               {parts.map((p) => (
                 <tr key={p.partNo} className="align-top hover:bg-slate-900/40">
-                  <td className="px-4 py-3 font-mono text-amber-400">{p.partNo}</td>
-                  <td className="px-4 py-3 text-slate-200">{p.name}</td>
-                  <td className="px-4 py-3 text-slate-400">{p.brand ?? '—'}</td>
-                  <td className="px-4 py-3 text-slate-400">
-                    {fitmentLabel(p)}
+                  <td className="whitespace-nowrap px-4 py-3 font-mono font-semibold text-amber-400">
+                    {p.partNo}
                   </td>
-                  <td className="px-4 py-3 text-slate-300">
+                  <td className="px-4 py-3 text-slate-200">
+                    {p.name}
+                    {/*
+                      The specification, which was in the data and never on the
+                      page. This is what makes the catalogue useful without a
+                      photograph: a thread size or a micron rating settles
+                      fitment, and a picture of a filter does not.
+                    */}
+                    {topSpecs(p).length > 0 && (
+                      <dl className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+                        {topSpecs(p).map(([k, v]) => (
+                          <div key={k} className="flex gap-1">
+                            <dt>{k}:</dt>
+                            <dd className="font-mono text-slate-400">{v}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-slate-400">{p.brand ?? '—'}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-slate-400">{fitmentLabel(p)}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right text-slate-300">
                     {p.pricing?.retailPrice
                       ? `KES ${p.pricing.retailPrice.toLocaleString('en-KE')}`
                       : 'On request'}
+                    {/*
+                      Bulk rate and minimum order. Present on every row in the
+                      database and never shown. A trade buyer is ordering twelve
+                      filters, not one, so the break price is the number that
+                      decides where they buy — and publishing it is what a
+                      supplier does rather than a brochure. The note beneath the
+                      table already says bulk rates apply on qualifying
+                      quantities; this says what they are.
+                    */}
+                    {p.pricing?.bulkPrice && p.pricing?.minimumOrder ? (
+                      <span className="mt-1 block text-xs font-normal text-slate-500">
+                        KES {p.pricing.bulkPrice.toLocaleString('en-KE')} from{' '}
+                        {p.pricing.minimumOrder}
+                      </span>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3">
                     <a
