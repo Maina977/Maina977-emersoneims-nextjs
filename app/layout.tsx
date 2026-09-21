@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 // `headers` is deliberately NOT imported. Calling it in this root layout opted
 // every page into dynamic rendering — see the note in generateMetadata below.
 import PerformanceBoot from "@/components/performance/PerformanceBoot";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import "@/styles/accessibility.css"; // WCAG 2.1 AAA Accessibility Styles
 
@@ -47,13 +47,31 @@ import DeferredComponents from '@/components/layout/DeferredComponents';
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
-// Performance Optimization: Font loading - only load essential weights
-const inter = Inter({ 
-  subsets: ["latin"],
+// FONT - self-hosted. Deliberately NOT next/font/google.
+//
+// next/font/google downloads Inter from fonts.gstatic.com during every build.
+// That puts a third-party service on the critical path of a deploy: when the
+// request timed out, the build failed outright with "Failed to fetch `Inter`
+// from Google Fonts" and nothing shipped. A release must not depend on a
+// network call to a host we do not control.
+//
+// app/fonts/Inter-Variable.woff2 is the latin subset (U+0000-00FF) of Inter
+// v20 exactly as Google serves it, 48 KB. It is a VARIABLE font - the one file
+// covers the whole 100-900 axis, so the old config's three separate weights
+// bought nothing. Inter is SIL Open Font License 1.1, which permits bundling.
+//
+// adjustFontFallback synthesises a metric-matched Arial face for the moment
+// before the webfont paints, so the swap does not shift the page. CLS here was
+// measured at 0.62 against a 0.10 "good" threshold; it is not a budget to
+// spend carelessly.
+const inter = localFont({
+  src: './fonts/Inter-Variable.woff2',
+  weight: '100 900',
+  style: 'normal',
   display: 'swap',
   preload: true,
-  weight: ['400', '600', '700'], // Reduced from 4 to 3 weights
   variable: '--font-inter',
+  adjustFontFallback: 'Arial',
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
@@ -595,7 +613,22 @@ export default async function RootLayout({
             Target: 100/100 Lighthouse Score
         ════════════════════════════════════════════════════════════════════ */}
 
-        {/* CRITICAL: Inline Critical CSS for instant render */}
+        {/* CRITICAL: Inline Critical CSS for instant render.
+
+            Everything inside the template literal below is shipped verbatim in
+            every HTML response, on every one of ~4,900 pages. Comments in it are
+            paid for by every visitor, so the reasoning lives out here instead.
+
+            An @font-face used to sit in there declaring a family named "Inter"
+            whose only source was local() - whatever copy of Inter happened to be
+            installed on the visitor's machine, any version, any metrics. Nothing
+            in live source ever asked for that family, so it did nothing but take
+            up bytes. The real face is the self-hosted one declared by
+            next/font/local at the top of this file.
+
+            --font-sans is read by the chart components (components/charts/
+            dataviz/*) but was defined nowhere, so those var() lookups resolved
+            to nothing. It is aliased to the font variable below. */}
         <style dangerouslySetInnerHTML={{ __html: `
           /* Critical Above-the-fold CSS - Eliminates render blocking */
           *{box-sizing:border-box;margin:0;padding:0}
@@ -608,8 +641,8 @@ export default async function RootLayout({
           .lazy-image{opacity:0;transition:opacity .3s ease-in-out}.lazy-image.loaded{opacity:1}
           /* Prevent CLS - Reserve space for images and media */
           img,video,iframe{height:auto;max-width:100%;display:block}
-          /* Fast font loading with fallback */
-          @font-face{font-family:Inter;font-style:normal;font-weight:400 700;font-display:swap;src:local('Inter'),local('Inter-Regular')}
+          /* Font family alias */
+          :root{--font-sans:var(--font-inter)}
           /* Navigation skeleton for instant render */
           nav#main-navigation{min-height:64px}
           /* Hero opt-in: pages add the hero-full class to first section to fill viewport */
@@ -647,16 +680,25 @@ export default async function RootLayout({
         {/* CRITICAL: DNS Prefetch - Resolve domains 100ms+ faster */}
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://cdn.vercel-insights.com" />
         <link rel="dns-prefetch" href="https://vercel.live" />
         <link rel="dns-prefetch" href="https://api.anthropic.com" />
 
-        {/* CRITICAL: Preconnect - Establish TCP/TLS 200ms+ faster */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* CRITICAL: Preconnect - Establish TCP/TLS 200ms+ faster.
+
+            The two Google Fonts preconnects here were removed with the move to
+            a self-hosted font. Nothing on this site fetches anything from
+            fonts.googleapis.com or fonts.gstatic.com any more - verified
+            against the built HTML, CSS and JS - so both were opening a
+            connection that was never used. A crossorigin preconnect is a full
+            DNS + TCP + TLS negotiation held open for ten seconds; spending two
+            of them on origins we never call costs real latency on a mobile
+            connection and is exactly what Chrome reports as "A preconnect
+            <link> was found but not used by the browser".
+
+            A preconnect is only worth issuing for an origin the page is
+            definitely about to call. The three below qualify. */}
         <link rel="preconnect" href="https://vitals.vercel-insights.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
 
