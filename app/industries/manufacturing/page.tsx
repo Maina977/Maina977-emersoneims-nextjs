@@ -4,8 +4,21 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Manufacturing Power Solutions',
   description: 'Reliable industrial power for factories and manufacturing plants across Kenya. Generator sizing, load analysis, preventive maintenance, emergency backup. 60% cost savings typical.',
+  /*
+   * CONSOLIDATED 2026-09-21. This page is one of THREE covering the same
+   * subject, all indexable, all self-canonical, two of them carrying the
+   * identical <title>. Google picks a winner arbitrarily in that situation,
+   * which is the "Duplicate without user-selected canonical" pattern.
+   *
+   * /industries/manufacturing-industries
+   * is now the declared canonical for the set. It is the longest of the three at 1,363 words.
+   *
+   * The page still serves in full; only the ranking signal is pooled. To undo
+   * this, restore the self-referential canonical and decide which page should
+   * carry the topic instead.
+   */
   alternates: {
-    canonical: 'https://www.emersoneims.com/industries/manufacturing',
+    canonical: 'https://www.emersoneims.com/industries/manufacturing-industries',
   },
 };
 

@@ -95,25 +95,25 @@ export default function TanzaniaPage() {
                 industry: '⛏️ Mining & Extraction',
                 details: 'Gold, tanzanite, gemstones, copper operations',
                 locations: 'Mbeya, Iringa, Shinyanga, Kagera',
-                link: '/east-africa/tanzania/mining',
+                link: '/africa/mining',
               },
               {
                 industry: '🌾 Agriculture & Processing',
                 details: 'Coffee mills, tea factories, sisal processing, grain storage',
                 locations: 'Morogoro, Iringa, Kigali Region',
-                link: '/east-africa/tanzania/agriculture',
+                link: '/africa/agro-industrial',
               },
               {
                 industry: '📡 Telecommunications',
                 details: 'Tower backup, data centers, carrier operations',
                 locations: 'Dar es Salaam, Arusha, nationwide',
-                link: '/east-africa/tanzania/telecom',
+                link: '/industries/telecommunications',
               },
               {
                 industry: '🏥 Healthcare',
                 details: 'Hospitals, clinics, diagnostic centers',
                 locations: 'Dar es Salaam, Arusha, Mbeya, Dodoma',
-                link: '/services/healthcare',
+                link: '/industries/hospitals-healthcare',
               },
               {
                 industry: '🏢 Commercial Real Estate',
@@ -268,10 +268,10 @@ export default function TanzaniaPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+255754411722"
+              href="tel:+254768860665"
               className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg hover:scale-105 transition-all"
             >
-              Call: +255 754 411 722
+              Call: +254 768 860 665
             </a>
             <a
               href="https://wa.me/255754411722?text=Hi%20EmersonEIMS%2C%20I%20need%20power%20solutions%20in%20Tanzania.%20Please%20contact%20me."

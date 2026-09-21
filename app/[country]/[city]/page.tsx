@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { CONTACT } from '@/lib/constants/contact';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
@@ -200,10 +201,10 @@ export default async function InternationalCityPage({ params }: Props) {
                 Get Quote in {city.name}
               </Link>
               <a
-                href={`tel:${country.dialCode.replace('+', '')}000000000`}
+                href={`tel:${CONTACT.PRIMARY_PHONE_INTL}`}
                 className="px-8 py-3 border border-cyan-400/30 text-cyan-400 rounded-lg hover:bg-cyan-400/10 transition-all"
               >
-                Call {country.dialCode}
+                Call {CONTACT.PRIMARY_PHONE_INTL}
               </a>
             </div>
           </div>

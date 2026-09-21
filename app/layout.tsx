@@ -125,7 +125,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "EmersonEIMS | B2B Power & Engineering Partner for Industry, Healthcare & Telecom in Kenya",
+    // 57 characters. The previous default was 88 and was cut at "...Partner
+    // for Industr", losing healthcare, telecom and Kenya. Leading with the
+    // equipment rather than the company name puts the searcher's own words
+    // first; the brand still fits.
+    default: "Generators, Solar & UPS for Kenyan Industry | EmersonEIMS",
     template: "%s | EmersonEIMS Kenya"
   },
   /*

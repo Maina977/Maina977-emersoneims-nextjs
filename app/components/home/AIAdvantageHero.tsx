@@ -29,7 +29,7 @@ export default function AIAdvantageHero() {
       icon: '⚡',
       name: 'Energy Intelligence Hub',
       desc: 'Real-time system optimization across generators, solar, UPS, and storage',
-      link: '/energy-intelligence',
+      link: '/hub',
       color: 'from-purple-600 to-pink-600',
     },
   ];

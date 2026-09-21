@@ -4,8 +4,21 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Healthcare Power Solutions',
   description: 'Reliable power for hospitals, clinics, and medical facilities across Kenya. Emergency backup generators, UPS systems, solar integration, 24/7 support. Zero downtime, NEMA compliance.',
+  /*
+   * CONSOLIDATED 2026-09-21. This page is one of THREE covering the same
+   * subject, all indexable, all self-canonical, two of them carrying the
+   * identical <title>. Google picks a winner arbitrarily in that situation,
+   * which is the "Duplicate without user-selected canonical" pattern.
+   *
+   * /industries/hospitals-healthcare
+   * is now the declared canonical for the set. It is the longest of the three at 1,391 words and carries the most inbound links.
+   *
+   * The page still serves in full; only the ranking signal is pooled. To undo
+   * this, restore the self-referential canonical and decide which page should
+   * carry the topic instead.
+   */
   alternates: {
-    canonical: 'https://www.emersoneims.com/industries/healthcare',
+    canonical: 'https://www.emersoneims.com/industries/hospitals-healthcare',
   },
 };
 

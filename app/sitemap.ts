@@ -51,8 +51,31 @@ const majorTowns = MAJOR_TOWN_SLUGS;
 const industries = [
   ...getAllIndustries().map(i => i.slug),
   'commercial-property',
-  'healthcare',
-  'manufacturing',
+  /*
+   * 'healthcare' and 'manufacturing' WERE LISTED HERE AND WERE REMOVED
+   * 2026-09-21.
+   *
+   * Each was one of three pages covering the same subject:
+   *
+   *   /industries/healthcare          737 words
+   *   /industry-solutions/healthcare  896 words
+   *   /industries/hospitals-healthcare  1,391 words, 7 inbound links
+   *
+   *   /industries/manufacturing              626 words
+   *   /industry-solutions/manufacturing      862 words
+   *   /industries/manufacturing-industries 1,363 words
+   *
+   * The first two of each pair now declare the third as their canonical. A
+   * page cannot be advertised in the sitemap AND point its canonical at a
+   * different URL: the sitemap says "index this", the canonical says "index
+   * that instead", and Google is left to guess. That contradiction is the
+   * "Duplicate without user-selected canonical" report.
+   *
+   * The winners, hospitals-healthcare and manufacturing-industries, come from
+   * getAllIndustries() above and are still listed. Both losing pages still
+   * serve in full; they are simply no longer advertised as separate
+   * destinations.
+   */
   'telecommunications',
 ];
 

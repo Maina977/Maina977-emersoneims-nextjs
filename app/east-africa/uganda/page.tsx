@@ -246,10 +246,10 @@ export default function UgandaPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+256701234567"
+              href="tel:+254768860665"
               className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-bold rounded-lg hover:scale-105 transition-all"
             >
-              Call: +256 701 234 567
+              Call: +254 768 860 665
             </a>
             <a
               href="https://wa.me/256701234567?text=Hi%20EmersonEIMS%2C%20I%20need%20power%20solutions%20in%20Uganda.%20Please%20contact%20me."

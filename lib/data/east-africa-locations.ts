@@ -57,7 +57,7 @@ export const EAST_AFRICA_COUNTRIES: EastAfricaCountry[] = [
       { name: 'Kasese', slug: 'kasese', population: 101000, region: 'Western' },
     ],
     metaTemplate: {
-      title: 'Generators in {city}, Uganda | Generator Suppliers Uganda',
+      title: 'Generators in {city}, Uganda',
       description: 'Professional generator services in {city}, Uganda. Diesel generators, installation, repairs & maintenance. 24/7 support. Call for quote.',
       h1: 'Generators in {city}, Uganda'
     },
@@ -87,7 +87,7 @@ export const EAST_AFRICA_COUNTRIES: EastAfricaCountry[] = [
       { name: 'Iringa', slug: 'iringa', population: 151345, region: 'Southern Highlands' },
     ],
     metaTemplate: {
-      title: 'Generators in {city}, Tanzania | Generator Suppliers Tanzania',
+      title: 'Generators in {city}, Tanzania',
       description: 'Professional generator services in {city}, Tanzania. Diesel generators, installation, repairs & maintenance. TANESCO backup power. Call for quote.',
       h1: 'Generators in {city}, Tanzania'
     },
@@ -115,7 +115,7 @@ export const EAST_AFRICA_COUNTRIES: EastAfricaCountry[] = [
       { name: 'Nyanza', slug: 'nyanza', population: 51500, region: 'Southern' },
     ],
     metaTemplate: {
-      title: 'Generators in {city}, Rwanda | Generator Suppliers Rwanda',
+      title: 'Generators in {city}, Rwanda',
       description: 'Professional generator services in {city}, Rwanda. Diesel generators, installation, repairs & maintenance. Reliable backup power. Call for quote.',
       h1: 'Generators in {city}, Rwanda'
     },
@@ -143,7 +143,7 @@ export const EAST_AFRICA_COUNTRIES: EastAfricaCountry[] = [
       { name: 'Aweil', slug: 'aweil', population: 38745, region: 'Northern Bahr el Ghazal' },
     ],
     metaTemplate: {
-      title: 'Generators in {city}, South Sudan | Generator Suppliers South Sudan',
+      title: 'Generators in {city}, South Sudan',
       description: 'Professional generator services in {city}, South Sudan. Reliable diesel generators for businesses and NGOs. Installation & maintenance.',
       h1: 'Generators in {city}, South Sudan'
     },
@@ -171,7 +171,7 @@ export const EAST_AFRICA_COUNTRIES: EastAfricaCountry[] = [
       { name: 'Kolwezi', slug: 'kolwezi', population: 453147, region: 'Lualaba' },
     ],
     metaTemplate: {
-      title: 'Generators in {city}, DR Congo | Generator Suppliers DRC',
+      title: 'Generators in {city}, DR Congo',
       description: 'Professional generator services in {city}, DR Congo. Industrial generators for mining and manufacturing. Installation & maintenance.',
       h1: 'Generators in {city}, DR Congo'
     },
@@ -199,7 +199,7 @@ export const EAST_AFRICA_COUNTRIES: EastAfricaCountry[] = [
       { name: 'Jimma', slug: 'jimma', population: 207573, region: 'Oromia' },
     ],
     metaTemplate: {
-      title: 'Generators in {city}, Ethiopia | Generator Suppliers Ethiopia',
+      title: 'Generators in {city}, Ethiopia',
       description: 'Professional generator services in {city}, Ethiopia. Diesel generators for industrial parks and businesses. Installation & maintenance.',
       h1: 'Generators in {city}, Ethiopia'
     },
@@ -224,7 +224,7 @@ export const EAST_AFRICA_COUNTRIES: EastAfricaCountry[] = [
       { name: 'Dikhil', slug: 'dikhil', population: 35000, region: 'Dikhil' },
     ],
     metaTemplate: {
-      title: 'Generators in {city}, Djibouti | Generator Suppliers Djibouti',
+      title: 'Generators in {city}, Djibouti',
       description: 'Professional generator services in {city}, Djibouti. Diesel generators for port facilities and businesses. Installation & maintenance.',
       h1: 'Generators in {city}, Djibouti'
     },
@@ -249,7 +249,7 @@ export const EAST_AFRICA_COUNTRIES: EastAfricaCountry[] = [
       { name: 'Mendefera', slug: 'mendefera', population: 25000, region: 'Debub' },
     ],
     metaTemplate: {
-      title: 'Generators in {city}, Eritrea | Generator Suppliers Eritrea',
+      title: 'Generators in {city}, Eritrea',
       description: 'Professional generator services in {city}, Eritrea. Reliable diesel generators for businesses. Installation & maintenance available.',
       h1: 'Generators in {city}, Eritrea'
     },
@@ -275,7 +275,7 @@ export const EAST_AFRICA_COUNTRIES: EastAfricaCountry[] = [
       { name: 'Erigavo', slug: 'erigavo', population: 50000, region: 'Sanaag' },
     ],
     metaTemplate: {
-      title: 'Generators in {city}, Somaliland | Generator Suppliers Somaliland',
+      title: 'Generators in {city}, Somaliland',
       description: 'Professional generator services in {city}, Somaliland. Reliable diesel generators for businesses and hotels. Installation & maintenance.',
       h1: 'Generators in {city}, Somaliland'
     },

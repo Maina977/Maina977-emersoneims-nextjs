@@ -561,6 +561,11 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
     certifications: [],
 
     relatedServices: ['cummins-generators', 'ats-changeover', 'distribution-boards', 'ups-systems'],
+    technicalGuide: {
+      href: '/services/cummins-generators#bible',
+      title: 'The Diesel Genset Bible',
+      blurb: 'ISO 8528 duty classes, sizing against real load, the alternator, control and cooling subsystems, and what commissioning has to prove.',
+    },
 
     primaryCTA: 'Request Service',
     secondaryCTA: 'Get AMC Quote',
@@ -762,6 +767,11 @@ MANUAL CHANGEOVER: Cost-effective solution for applications where brief manual i
     certifications: [],
 
     relatedServices: ['cummins-generators', 'generator-repairs', 'distribution-boards', 'ups-systems'],
+    technicalGuide: {
+      href: '/services/cummins-generators#bible',
+      title: 'The Diesel Genset Bible',
+      blurb: 'ISO 8528 duty classes, sizing against real load, the alternator, control and cooling subsystems, and what commissioning has to prove.',
+    },
 
     primaryCTA: 'Get Installation Quote',
     secondaryCTA: 'Compare Options',

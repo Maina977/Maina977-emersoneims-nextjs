@@ -17,14 +17,14 @@ const COUNTY_DATA = {
 };
 
 const SERVICES = [
-  { id: 'generators', name: 'Generator Services', icon: '⚡', description: 'Installation, maintenance, and repair of generators' },
-  { id: 'solar', name: 'Solar Energy', icon: '☀️', description: 'Complete solar power system installations' },
-  { id: 'ups', name: 'UPS Systems', icon: '🔋', description: 'Uninterruptible power supply solutions' },
-  { id: 'ac', name: 'Air Conditioning', icon: '❄️', description: 'HVAC installation and servicing' },
-  { id: 'electrical', name: 'Electrical Services', icon: '💡', description: 'Complete electrical wiring and installations' },
-  { id: 'motor', name: 'Motor Rewinding', icon: '🔄', description: 'Electric motor repair and rewinding' },
-  { id: 'controls', name: 'Generator Controls', icon: '🎛️', description: 'Advanced control systems' },
-  { id: 'automation', name: 'Automation', icon: '🤖', description: 'Industrial automation solutions' }
+  { id: 'generators', href: '/generators', name: 'Generator Services', icon: '⚡', description: 'Installation, maintenance, and repair of generators' },
+  { id: 'solar', href: '/solar', name: 'Solar Energy', icon: '☀️', description: 'Complete solar power system installations' },
+  { id: 'ups', href: '/services/ups-systems', name: 'UPS Systems', icon: '🔋', description: 'Uninterruptible power supply solutions' },
+  { id: 'ac', href: '/services/ac-installation', name: 'Air Conditioning', icon: '❄️', description: 'HVAC installation and servicing' },
+  { id: 'electrical', href: '/services/distribution-boards', name: 'Electrical Services', icon: '💡', description: 'Complete electrical wiring and installations' },
+  { id: 'motor', href: '/services/motor-rewinding', name: 'Motor Rewinding', icon: '🔄', description: 'Electric motor repair and rewinding' },
+  { id: 'controls', href: '/services/ats-changeover', name: 'Generator Controls', icon: '🎛️', description: 'Advanced control systems' },
+  { id: 'automation', href: '/solutions/diesel-automation', name: 'Automation', icon: '🤖', description: 'Industrial automation solutions' }
 ];
 
 export const metadata: Metadata = {
@@ -136,7 +136,7 @@ export default function BusiaCountyPage() {
             {SERVICES.map((service) => (
               <Link
                 key={service.id}
-                href={`/services/${service.id}`}
+                href={service.href}
                 className="group bg-white/5 border border-white/10 rounded-xl p-6 hover:border-brand-gold/50 hover:bg-white/10 transition-all"
               >
                 <div className="text-4xl mb-4">{service.icon}</div>

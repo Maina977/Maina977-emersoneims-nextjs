@@ -272,10 +272,14 @@ export default function ServicesPage() {
                 {b.icon}
               </span>
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-white truncate">
+                {/* No truncate: these four lines are the trust claims a buyer
+                    reads before calling, and on a narrow screen the clip cut
+                    "Round-the-clock emergency service" mid-word. min-w-0 on the
+                    wrapper already lets them wrap without disturbing the row. */}
+                <div className="text-sm font-semibold text-white">
                   {b.title}
                 </div>
-                <div className="text-xs text-slate-400 truncate">
+                <div className="text-xs text-slate-400">
                   {b.description}
                 </div>
               </div>

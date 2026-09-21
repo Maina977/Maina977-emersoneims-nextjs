@@ -5,7 +5,20 @@ export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend
   // on the root layout reading headers() — that call forced the whole site
   // to render dynamically and disabled browser caching everywhere.
-  alternates: { canonical: 'https://www.emersoneims.com/industry-solutions/healthcare' },
+  /*
+   * CONSOLIDATED 2026-09-21. This page is one of THREE covering the same
+   * subject, all indexable, all self-canonical, two of them carrying the
+   * identical <title>. Google picks a winner arbitrarily in that situation,
+   * which is the "Duplicate without user-selected canonical" pattern.
+   *
+   * /industries/hospitals-healthcare
+   * is now the declared canonical for the set. It is the longest of the three at 1,391 words and carries the most inbound links.
+   *
+   * The page still serves in full; only the ranking signal is pooled. To undo
+   * this, restore the self-referential canonical and decide which page should
+   * carry the topic instead.
+   */
+  alternates: { canonical: 'https://www.emersoneims.com/industries/hospitals-healthcare' },
   title: 'Healthcare Power Solutions',
   description: 'Complete backup power solutions for hospitals, clinics, and medical facilities. Uninterrupted operations, patient safety, emergency response. 24/7 support.',
 };

@@ -5,7 +5,13 @@ export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend
   // on the root layout reading headers() — that call forced the whole site
   // to render dynamically and disabled browser caching everywhere.
-  alternates: { canonical: 'https://www.emersoneims.com/industry-solutions/telecom' },
+  /*
+   * CONSOLIDATED 2026-09-21. /industries/telecommunications covers the same
+   * subject and is the copy listed in the sitemap, so it is the declared
+   * canonical for the pair. This page still serves in full; only the ranking
+   * signal is pooled.
+   */
+  alternates: { canonical: 'https://www.emersoneims.com/industries/telecommunications' },
   title: 'Telecom Power Solutions',
   description: 'Backup power for telecom towers, data centers, and network facilities. Guaranteed uptime, redundant systems, 24/7 monitoring.',
 };

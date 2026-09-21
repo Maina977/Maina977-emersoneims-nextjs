@@ -214,10 +214,10 @@ export default function SouthernAfricaPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+27118876543"
+              href="tel:+254768860665"
               className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-bold rounded-lg hover:scale-105 transition-all"
             >
-              Call: +27 11 888 7654 (South Africa)
+              Call: +254 768 860 665
             </a>
             <a
               href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20operate%20a%20mining%20facility%20in%20Southern%20Africa%20and%20need%20power%20solutions.%20Please%20contact%20me."

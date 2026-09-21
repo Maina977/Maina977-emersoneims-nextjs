@@ -119,7 +119,7 @@ export default function GeneratorPage() {
                 <p className="text-white/60 text-sm mt-2">
                   {gen.specsVerified ? gen.engine : 'Engine confirmed on quotation'}
                 </p>
-                <a href="/generator/models" className="inline-block mt-4 text-brand-gold hover:text-yellow-400">
+                <a href="/generators" className="inline-block mt-4 text-brand-gold hover:text-yellow-400">
                   View Details →
                 </a>
               </div>

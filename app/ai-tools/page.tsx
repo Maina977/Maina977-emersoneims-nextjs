@@ -240,7 +240,7 @@ export default function AIToolsPage() {
       title: 'Generator Oracle Africa',
       description: 'Optimized for African technicians',
       icon: <Globe className="w-6 h-6" />,
-      href: '/generator-oracle/africa',
+      href: '/generator-oracle',
     },
   ];
 

@@ -4,7 +4,7 @@ import EastAfricaCityLinks from '@/components/east-africa/EastAfricaCityLinks';
 
 export const metadata: Metadata = {
   title: 'Power Solutions Rwanda | Kigali Tech Hub',
-  description: 'Reliable generator and power solutions across Rwanda. Kigali datacenters, tech infrastructure, government services. 24/7 support in RWF. Call +250788123456.',
+  description: 'Reliable generator and power solutions across Rwanda. Kigali datacenters, tech infrastructure, government services. 24/7 support in RWF. Call +254768860665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/east-africa/rwanda',
   },
@@ -258,13 +258,13 @@ export default function RwandaPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+250788123456"
+              href="tel:+254768860665"
               className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-lg hover:scale-105 transition-all"
             >
-              Call: +250 788 123 456
+              Call: +254 768 860 665
             </a>
             <a
-              href="https://wa.me/250788123456?text=Hi%20EmersonEIMS%2C%20I%20need%20power%20solutions%20in%20Rwanda.%20Please%20contact%20me."
+              href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20need%20power%20solutions%20in%20Rwanda.%20Please%20contact%20me."
               className="px-8 py-4 border-2 border-purple-500 text-purple-400 font-bold rounded-lg hover:bg-purple-500/10 transition-all"
             >
               WhatsApp Us

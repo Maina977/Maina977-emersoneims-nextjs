@@ -243,19 +243,19 @@ export default function EastAfricaPage() {
               },
               {
                 country: 'Tanzania',
-                phone: '+255 754 411 722',
+                phone: '+254 768 860 665',
                 currency: 'TZS',
                 response: '24-48 hrs',
               },
               {
                 country: 'Uganda',
-                phone: '+256 701 234 567',
+                phone: '+254 768 860 665',
                 currency: 'UGX',
                 response: '4-6 hrs',
               },
               {
                 country: 'Rwanda',
-                phone: '+250 788 123 456',
+                phone: '+254 768 860 665',
                 currency: 'RWF',
                 response: '2 hrs',
               },

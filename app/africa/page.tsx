@@ -167,7 +167,7 @@ export default function AfricaPage() {
 
             {/* West Africa */}
             <Link
-              href="/africa/west"
+              href="/africa/western"
               className="p-8 bg-gradient-to-br from-orange-900/30 to-red-900/30 border border-orange-500/30 rounded-lg hover:border-orange-400/50 transition-all"
             >
               <h3 className="text-2xl font-bold text-orange-400 mb-4">🌍 West Africa</h3>
@@ -181,8 +181,7 @@ export default function AfricaPage() {
             </Link>
 
             {/* Central Africa */}
-            <Link
-              href="/africa/central"
+            <div
               className="p-8 bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-lg hover:border-purple-400/50 transition-all"
             >
               <h3 className="text-2xl font-bold text-purple-400 mb-4">🌍 Central Africa</h3>
@@ -193,12 +192,11 @@ export default function AfricaPage() {
                 <li>✓ Cameroon: Hydro integration</li>
                 <li>✓ Gabon: Oil & timber</li>
               </ul>
-            </Link>
+            </div>
 
             {/* North Africa */}
             <div className="md:col-span-2">
-              <Link
-                href="/africa/north"
+              <div
                 className="p-8 bg-gradient-to-br from-indigo-900/30 to-blue-900/30 border border-indigo-500/30 rounded-lg hover:border-indigo-400/50 transition-all"
               >
                 <h3 className="text-2xl font-bold text-indigo-400 mb-4">🌍 North Africa</h3>
@@ -209,7 +207,7 @@ export default function AfricaPage() {
                   <li>✓ Algeria: Oil & gas powerhouse</li>
                   <li>✓ Tunisia: Manufacturing & tourism</li>
                 </ul>
-              </Link>
+              </div>
             </div>
           </div>
         </div>

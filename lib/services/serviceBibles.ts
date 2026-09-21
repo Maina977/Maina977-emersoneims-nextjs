@@ -1797,8 +1797,16 @@ const INCINERATOR_BIBLE: ServiceBible = {
 
 export const SERVICE_BIBLES: Record<string, ServiceBible> = {
   'cummins-generators': GENERATOR_BIBLE,
-  'generator-repairs': GENERATOR_BIBLE,
-  'ats-changeover': GENERATOR_BIBLE,
+  /*
+   * 'generator-repairs' and 'ats-changeover' BOTH POINTED AT GENERATOR_BIBLE
+   * AND WERE REMOVED 2026-09-21. See the note above this map for the
+   * measurements. getServiceBible() returns null for them now, which
+   * ServiceDetailClient already handles: hasBible gates the tab and the
+   * "Technical reference" jump link, so both simply do not render.
+   *
+   * They link to the bible instead, via technicalGuide in
+   * lib/services/allServices.ts.
+   */
   'distribution-boards': DISTRIBUTION_BIBLE,
   'solar-energy': SOLAR_BIBLE,
   'motor-rewinding': MOTOR_BIBLE,
