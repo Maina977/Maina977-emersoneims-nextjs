@@ -40,7 +40,21 @@ import { getEngineIndex } from '@/lib/parts/engineIndex';
  */
 
 export const metadata: Metadata = {
-  title: 'VOLTKA Generators Kenya — 10 to 2000 kVA, Cummins-Powered | EmersonEIMS',
+  /*
+   * NO BRAND SUFFIX HERE. app/layout.tsx sets title.template to
+   * "%s | EmersonEIMS Kenya", so anything this page appends is added to that,
+   * not instead of it. The first version ended "| EmersonEIMS" and shipped as
+   * "... | EmersonEIMS | EmersonEIMS Kenya" — 93 characters with the brand
+   * twice, on a page whose whole job is to rank for one brand name.
+   *
+   * The brand pages under /brands do NOT behave this way: app/brands/layout.tsx
+   * overrides the template, so their titles carry their own suffix. Two
+   * different rules in one codebase, which is worth knowing before copying a
+   * title format from one to the other.
+   *
+   * 40 characters here, 60 after the template, which fits what Google renders.
+   */
+  title: 'VOLTKA Generators Kenya — 10 to 2000 kVA',
   description:
     'VOLTKA is the generator brand EmersonEIMS builds and sells: Cummins-powered diesel sets from 10 kVA to 2000 kVA, from KES 500,000, with a two-year warranty. Supplied, installed and commissioned across all 47 counties.',
   keywords: [
