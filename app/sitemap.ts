@@ -18,7 +18,8 @@ import { BRAND_GROUPS } from '@/lib/plant-oracle/brandGroups';
 import { GENERATOR_BRANDS } from '@/lib/data/generator-brands';
 import { PROBLEM_SLUGS } from '@/lib/seo/generatorProblems';
 import { MAJOR_TOWN_SLUGS } from '@/lib/seo/majorTowns';
-import { DIRECTORY_ARTICLE_SLUGS } from '@/lib/data/blog-directory-articles';
+import { DIRECTORY_ARTICLE_SLUGS, DIRECTORY_ARTICLES } from '@/lib/data/blog-directory-articles';
+import { BLOG_ARTICLES } from '@/lib/data/blog-articles';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -99,46 +100,81 @@ const blogSlugs = [
 // at that loop for why the previous hand-written list was removed.
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const currentDate = new Date();
+  /*
+   * <lastmod> IS A CLAIM ABOUT THE CONTENT, NOT ABOUT THE BUILD.
+   *
+   * Until now this file declared `const currentDate = new Date()` and stamped
+   * it on 124 of its 125 entry groups. Every deploy therefore told Google that
+   * all ~1,000 URLs had changed, at the same instant, whether or not a single
+   * word had moved. Measured on the build of 2026-09-21: 948 of 1,008 <lastmod>
+   * values were identical and equal to the build time.
+   *
+   * Google's sitemap documentation is explicit that it uses lastmod only when
+   * the value is consistently and verifiably accurate, and ignores it
+   * otherwise. So the old behaviour bought nothing — but it cost something,
+   * because the 60 entries that WERE accurate (the repair articles, dated from
+   * their own lastReviewed) sat in a file whose every other date was obviously
+   * synthetic. A crawler has no way to trust one and discount the rest.
+   *
+   * The rule now: emit lastmod only where a real content date exists, and omit
+   * it everywhere else. lastmod is an optional element; leaving it out says "we
+   * do not know", which is true and costs nothing. Inventing one says "this
+   * changed today", which is false.
+   *
+   * Real dates come from the two article registries. Everything else — service
+   * pages, brand pages, location pages, calculators — is generated from data
+   * with no modification date to read, so those entries carry no lastmod. If a
+   * dated field is ever added to those registries, look it up here.
+   */
+  const BLOG_DATES = new Map<string, string>([
+    // updatedDate wins where an article has been revised; date is the original.
+    ...BLOG_ARTICLES.map((a) => [a.slug, a.updatedDate ?? a.date] as const),
+    ...DIRECTORY_ARTICLES.map((a) => [a.slug, a.date] as const),
+  ]);
+
+  /** A lastmod fragment to spread, or nothing at all when the date is unknown. */
+  const lastmod = (slug: string) => {
+    const d = BLOG_DATES.get(slug);
+    if (!d) return {};
+    const parsed = new Date(d);
+    return Number.isNaN(parsed.getTime()) ? {} : { lastModified: parsed };
+  };
 
   const urls: MetadataRoute.Sitemap = [
     // Main pages
-    { url: BASE_URL, lastModified: currentDate, changeFrequency: 'daily', priority: 1.0 },
-    { url: `${BASE_URL}/about-us`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${BASE_URL}/contact`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${BASE_URL}/privacy`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.4 },
-    { url: `${BASE_URL}/terms`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.4 },
+    { url: BASE_URL, changeFrequency: 'daily', priority: 1.0 },
+    { url: `${BASE_URL}/about-us`, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${BASE_URL}/contact`, changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${BASE_URL}/privacy`, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${BASE_URL}/terms`, changeFrequency: 'monthly', priority: 0.4 },
     /*
      * Pricing. /pricing has existed for a long time and was never listed here,
      * which is part of why price intent found nothing: of 1,385 sitemap URLs,
      * three targeted price or cost, all blog posts. Priority is high because
      * these are the closest-to-purchase pages on the site.
      */
-    { url: `${BASE_URL}/pricing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
+    { url: `${BASE_URL}/pricing`, changeFrequency: 'weekly', priority: 0.95 },
     /*
      * Plant fault-code references. 1,799 OEM codes were reachable only through
      * a client-side search box, so Google could see none of them. Seven
      * substantial reference pages make the whole set crawlable without
      * creating a thin page per code.
      */
-    { url: `${BASE_URL}/faults/plant`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${BASE_URL}/faults/plant`, changeFrequency: 'monthly', priority: 0.8 },
     ...BRAND_GROUPS.map((g) => ({
       url: `${BASE_URL}/faults/plant/${g.slug}`,
-      lastModified: currentDate,
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     })),
     ...PRICE_GUIDES.map((g) => ({
       url: `${BASE_URL}/pricing/${g.slug}`,
-      lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.95,
     })),
     // Repair Centre — hub, equipment categories and published diagnosis guides
-    { url: `${BASE_URL}/repair-centre`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/repair-centre`, changeFrequency: 'weekly', priority: 0.9 },
     ...REPAIR_HUBS.map((h) => ({
       url: `${BASE_URL}/repair-centre/${h.slug}`,
-      lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),
@@ -149,30 +185,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.85,
     })),
 
-    { url: `${BASE_URL}/resources`, lastModified: currentDate, changeFrequency: 'weekly', priority:0.8 },
+    { url: `${BASE_URL}/resources`, changeFrequency: 'weekly', priority:0.8 },
 
     // Solar & UPS Intelligence Hub (RESOURCES → Solar & UPS Intelligence Hub)
-    { url: `${BASE_URL}/hub`,                       lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
-    { url: `${BASE_URL}/hub/verifier`,              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/hub/simulator`,             lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/hub/ups-lab`,               lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/hub/quote-audit`,           lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/hub/product-intelligence`,  lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/hub/installation`,          lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/hub/authenticity`,          lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/hub/maintenance`,           lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/hub/safety`,                lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/hub/abuse`,                 lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/hub/power-quality`,         lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/hub/lifecycle`,             lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/hub/doc-pack`,              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
-    { url: `${BASE_URL}/hub/learn`,                 lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/hub/diagnostics`,           lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/hub/solar-ups`,             lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/hub/library`,               lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/hub`,                       changeFrequency: 'weekly', priority: 0.95 },
+    { url: `${BASE_URL}/hub/verifier`,              changeFrequency: 'weekly', priority: 0.9  },
+    { url: `${BASE_URL}/hub/simulator`,             changeFrequency: 'weekly', priority: 0.9  },
+    { url: `${BASE_URL}/hub/ups-lab`,               changeFrequency: 'weekly', priority: 0.9  },
+    { url: `${BASE_URL}/hub/quote-audit`,           changeFrequency: 'weekly', priority: 0.9  },
+    { url: `${BASE_URL}/hub/product-intelligence`,  changeFrequency: 'weekly', priority: 0.9  },
+    { url: `${BASE_URL}/hub/installation`,          changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/hub/authenticity`,          changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/hub/maintenance`,           changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/hub/safety`,                changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/hub/abuse`,                 changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/hub/power-quality`,         changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/hub/lifecycle`,             changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/hub/doc-pack`,              changeFrequency: 'weekly', priority: 0.8  },
+    { url: `${BASE_URL}/hub/learn`,                 changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/hub/diagnostics`,           changeFrequency: 'weekly', priority: 0.9  },
+    { url: `${BASE_URL}/hub/solar-ups`,             changeFrequency: 'weekly', priority: 0.9  },
+    { url: `${BASE_URL}/hub/library`,               changeFrequency: 'weekly', priority: 0.85 },
 
     // Generator pages
-    { url: `${BASE_URL}/generators`, lastModified: currentDate, changeFrequency: 'daily', priority: 1.0 },
+    { url: `${BASE_URL}/generators`, changeFrequency: 'daily', priority: 1.0 },
     /*
      * Per-size generator pages. An external audit on 2026-08-26 found the site
      * had no product-level URLs while every ranking competitor publishes one
@@ -181,31 +217,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
      */
     ...GENERATOR_SIZES.map((g) => ({
       url: `${BASE_URL}/generators/sizes/${g.slug}`,
-      lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.95,
     })),
-    { url: `${BASE_URL}/generators/spare-parts`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
+    { url: `${BASE_URL}/generators/spare-parts`, changeFrequency: 'daily', priority: 0.95 },
     // Workshop Repairs & Fabrication — added 2026-07-21 (owner brief).
-    { url: `${BASE_URL}/generators/workshop-services`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/generators/installation`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/generators/maintenance`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/generators/rental`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${BASE_URL}/generators/used`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${BASE_URL}/generators/workshop-services`, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/generators/installation`, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/generators/maintenance`, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/generators/rental`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${BASE_URL}/generators/used`, changeFrequency: 'daily', priority: 0.9 },
 
     // Solar pages
     // /solutions/solar is permanently redirected to /solar in next.config.ts
     // and is kept out of the sitemap to avoid GSC "Page with redirect" warnings.
-    { url: `${BASE_URL}/solar`, lastModified: currentDate, changeFrequency: 'daily', priority: 1.0 },
-    { url: `${BASE_URL}/solutions/solar-sizing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/solar`, changeFrequency: 'daily', priority: 1.0 },
+    { url: `${BASE_URL}/solutions/solar-sizing`, changeFrequency: 'weekly', priority: 0.85 },
 
     // Diagnostic pages
     // /diagnostic-suite, /fault-code-lookup, /diagnostic-cockpit are NOT real
     // routes. /diagnostic-cockpit + /diagnostic-suite redirect to /diagnostics;
     // /fault-code-lookup redirects to /faults. They are removed from the sitemap
     // so Search Console stops reporting them as 404s during validation.
-    { url: `${BASE_URL}/generator-oracle`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
-    { url: `${BASE_URL}/diagnostics`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/generator-oracle`, changeFrequency: 'daily', priority: 0.95 },
+    { url: `${BASE_URL}/diagnostics`, changeFrequency: 'weekly', priority: 0.9 },
     /*
      * /faults and /troubleshooting were listed TWICE — here at priority 0.85
      * and again below at 0.9. A duplicated <loc> makes a sitemap ambiguous
@@ -213,7 +248,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
      * higher-priority entries are the ones kept, so neither page loses
      * standing; only the contradiction is removed.
      */
-    { url: `${BASE_URL}/technical-bible`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/technical-bible`, changeFrequency: 'weekly', priority: 0.9 },
 
     /*
      * AI Products / Intelligence Suite.
@@ -235,18 +270,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
      * crawler following a link reaches it exactly as before. It simply stops
      * being advertised as a page worth indexing in its own right.
      */
-    { url: `${BASE_URL}/aquascan-pro-v3`,                       lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
-    { url: `${BASE_URL}/solar-genius-pro`,                      lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
-    { url: `${BASE_URL}/solar-genius-pro-tools`,                lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/solar-genius-pro-futuristic`,           lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
-    { url: `${BASE_URL}/solar-design-studio`,                   lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8  },
-    { url: `${BASE_URL}/eims-pro`,                              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
+    { url: `${BASE_URL}/aquascan-pro-v3`,                       changeFrequency: 'weekly', priority: 0.95 },
+    { url: `${BASE_URL}/solar-genius-pro`,                      changeFrequency: 'weekly', priority: 0.95 },
+    { url: `${BASE_URL}/solar-genius-pro-tools`,                changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/solar-genius-pro-futuristic`,           changeFrequency: 'weekly', priority: 0.8  },
+    { url: `${BASE_URL}/solar-design-studio`,                   changeFrequency: 'weekly', priority: 0.8  },
+    { url: `${BASE_URL}/eims-pro`,                              changeFrequency: 'weekly', priority: 0.9  },
     // Plant & Equipment Oracle — sibling to Generator Oracle, built on the
     // same 2,155 VERIFIED codes but framed for excavators, loaders and
     // compressors. Self-canonical, server-rendered, real body content.
-    { url: `${BASE_URL}/plant-equipment-oracle`,               lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/ai-tools`,                              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
-    { url: `${BASE_URL}/ai-tools/capabilities`,                 lastModified: currentDate, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE_URL}/plant-equipment-oracle`,               changeFrequency: 'weekly', priority: 0.9  },
+    { url: `${BASE_URL}/ai-tools`,                              changeFrequency: 'weekly', priority: 0.9  },
+    { url: `${BASE_URL}/ai-tools/capabilities`,                 changeFrequency: 'monthly', priority: 0.7 },
     /*
      * /pro-building-suite AND /all-tools ARE DELIBERATELY NOT LISTED HERE.
      *
@@ -279,45 +314,45 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // The /services/<slug> URLs themselves are appended below from the
     // canonical registry (`getAllServiceSlugs`) so this list stays in sync
     // with what's actually rendered by app/services/[service]/page.tsx.
-    { url: `${BASE_URL}/services`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/solutions`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/solutions/incinerators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/services`, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/solutions`, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/solutions/incinerators`, changeFrequency: 'weekly', priority: 0.75 },
     // Canonical Building Suite URL. Raised 0.8 -> 0.9 to carry the weight the
     // removed /pro-building-suite stub entry was holding; see the note above.
-    { url: `${BASE_URL}/solutions/building`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/solutions/fabrication`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/solutions/high-voltage`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/solutions/diesel-automation`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/solutions/power-interruptions`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/solutions/building`, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/solutions/fabrication`, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/solutions/high-voltage`, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/solutions/diesel-automation`, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/solutions/power-interruptions`, changeFrequency: 'weekly', priority: 0.75 },
 
     // Other pages
-    { url: `${BASE_URL}/maintenance-hub`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/maintenance-hub/generators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/maintenance-hub/solar`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/maintenance-hub/hvac`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/maintenance-hub/electrical`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/maintenance-hub/borehole`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/maintenance-hub/incinerators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/maintenance-hub/motors`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/maintenance-hub`, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/maintenance-hub/generators`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/maintenance-hub/solar`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/maintenance-hub/hvac`, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/maintenance-hub/electrical`, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/maintenance-hub/borehole`, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/maintenance-hub/incinerators`, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/maintenance-hub/motors`, changeFrequency: 'weekly', priority: 0.75 },
     /*
      * Plumbing was the eleventh card on /maintenance-hub and the only one
      * without a page: it 404d from the day it was linked until 2026-09-21.
      * Correctly absent from this list while it did not exist; added now that
      * it does.
      */
-    { url: `${BASE_URL}/maintenance-hub/plumbing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/maintenance-hub/fabrication`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7 },
-    { url: `${BASE_URL}/maintenance-hub/welding`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7 },
-    { url: `${BASE_URL}/maintenance-hub/general`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7 },
-    { url: `${BASE_URL}/calculators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/booking`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.85 },
-    { url: `${BASE_URL}/faq`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/blog`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.85 },
-    { url: `${BASE_URL}/gallery`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7 },
-    { url: `${BASE_URL}/brands`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/knowledge-base`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/careers`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${BASE_URL}/locations`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/maintenance-hub/plumbing`, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/maintenance-hub/fabrication`, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${BASE_URL}/maintenance-hub/welding`, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${BASE_URL}/maintenance-hub/general`, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${BASE_URL}/calculators`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/booking`, changeFrequency: 'daily', priority: 0.85 },
+    { url: `${BASE_URL}/faq`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/blog`, changeFrequency: 'daily', priority: 0.85 },
+    { url: `${BASE_URL}/gallery`, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${BASE_URL}/brands`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/knowledge-base`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/careers`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE_URL}/locations`, changeFrequency: 'weekly', priority: 0.9 },
     /*
      * Added 2026-07-31 after a live crawl found these published, reachable and
      * absent from the sitemap:
@@ -327,7 +362,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
      *   /site-directory the HTML index of every section (see that page's header
      *                   for why it exists — the mega-menu nav renders no hrefs)
      */
-    { url: `${BASE_URL}/east-africa`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/east-africa`, changeFrequency: 'weekly', priority: 0.8 },
     /*
      * /marketplace REMOVED 2026-08-31, reversing the 2026-07-31 addition above.
      *
@@ -354,17 +389,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
      * which is indexable, renders content and is already listed. Nothing is
      * deleted: /all-tools still exists and still serves.
      */
-    { url: `${BASE_URL}/site-directory`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.6 },
+    { url: `${BASE_URL}/site-directory`, changeFrequency: 'weekly', priority: 0.6 },
     // /why-emersoneims was published, live and reachable from NOTHING — not one
     // internal link and not in the sitemap. That is how a page built around
     // naming six competitors survived unreviewed. Rebuilt and listed 2026-08-03.
-    { url: `${BASE_URL}/why-emersoneims`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE_URL}/why-emersoneims`, changeFrequency: 'monthly', priority: 0.7 },
     // /counties is permanently redirected to /kenya — keep only the canonical.
-    { url: `${BASE_URL}/kenya`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${BASE_URL}/kenya`, changeFrequency: 'daily', priority: 0.9 },
 
     // Generator sub-routes (commercial intent)
-    { url: `${BASE_URL}/generators/leasing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/generators/systems`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/generators/leasing`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/generators/systems`, changeFrequency: 'weekly', priority: 0.8 },
     /*
      * The four engine-brand pages. All are live, 200, and carry 560-720 words
      * of their own, but until 2026-09-02 they had no server layout, so they
@@ -373,10 +408,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
      * them have no inbound internal link either, so they were invisible twice
      * over. Listed here now that each declares its own canonical.
      */
-    { url: `${BASE_URL}/generators/cummins`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/generators/caterpillar`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/generators/perkins`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/generators/volvo-penta`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/generators/cummins`, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/generators/caterpillar`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/generators/perkins`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/generators/volvo-penta`, changeFrequency: 'weekly', priority: 0.8 },
 
     /*
      * PAGES THAT HAD NO CRAWL PATH AT ALL — added 2026-09-02 after building
@@ -398,54 +433,50 @@ export default function sitemap(): MetadataRoute.Sitemap {
      */
     ...GENERATOR_BRANDS.map((brand) => ({
       url: `${BASE_URL}/brands/${brand.slug}`,
-      lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),
-    { url: `${BASE_URL}/generator-problems`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/generator-problems`, changeFrequency: 'weekly', priority: 0.85 },
     ...PROBLEM_SLUGS.map((slug) => ({
       url: `${BASE_URL}/generator-problems/${slug}`,
-      lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),
 
     // Substantial pages (884-1,591 words) that were linked but never listed.
-    { url: `${BASE_URL}/east-africa/uganda`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/east-africa/tanzania`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/east-africa/rwanda`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/fabrication`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/guides/emergency-response`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.75 },
-    { url: `${BASE_URL}/services/air-conditioning`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/east-africa/uganda`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/east-africa/tanzania`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/east-africa/rwanda`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/fabrication`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/guides/emergency-response`, changeFrequency: 'monthly', priority: 0.75 },
+    { url: `${BASE_URL}/services/air-conditioning`, changeFrequency: 'weekly', priority: 0.8 },
 
     // The three tool sub-pages that carry their own crawlable article. The
     // other four mount ssr:false components, carry no unique text and are
     // deliberately noindex — they are NOT listed here.
-    { url: `${BASE_URL}/solar-genius-pro/fault-codes`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/solar-genius-pro/design-studio`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/solar-genius-pro/solar-dashboard`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/solar-genius-pro/fault-codes`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/solar-genius-pro/design-studio`, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/solar-genius-pro/solar-dashboard`, changeFrequency: 'weekly', priority: 0.75 },
 
     // Used-equipment specification pages, one per engine brand.
     ...['cummins', 'caterpillar', 'perkins', 'sdmo', 'volvo-penta', 'wei-chai'].map((brand) => ({
       url: `${BASE_URL}/specs/used/${brand}`,
-      lastModified: currentDate,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
     // /generators/case-studies is 308-redirected to /case-studies in
     // next.config.ts and must NOT be listed — a sitemap advertises canonical
     // destinations, not redirect sources. /case-studies is listed below.
-    { url: `${BASE_URL}/generators/maintenance-companion`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/generators/maintenance-companion`, changeFrequency: 'weekly', priority: 0.75 },
 
     // Industry pages - Critical for B2B SEO
-    { url: `${BASE_URL}/industries`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
+    { url: `${BASE_URL}/industries`, changeFrequency: 'weekly', priority: 0.95 },
   ];
 
   // Add industry-specific pages (HIGH PRIORITY - B2B leads)
   for (const industry of industries) {
     urls.push({
       url: `${BASE_URL}/industries/${industry}`,
-      lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: 0.9,
     });
@@ -455,7 +486,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const slug of blogSlugs) {
     urls.push({
       url: `${BASE_URL}/blog/${slug}`,
-      lastModified: currentDate,
+      ...lastmod(slug),
       changeFrequency: 'monthly',
       priority: 0.8,
     });
@@ -475,7 +506,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const slug of DIRECTORY_ARTICLE_SLUGS) {
     urls.push({
       url: `${BASE_URL}/blog/${slug}`,
-      lastModified: currentDate,
+      ...lastmod(slug),
       changeFrequency: 'monthly',
       priority: 0.8,
     });
@@ -489,17 +520,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
    */
   urls.push({
     url: BASE_URL + '/voltka',
-    lastModified: currentDate,
     changeFrequency: 'weekly',
     priority: 0.95,
   });
 
   // Generator Oracle Product Pages
   urls.push(
-    { url: `${BASE_URL}/products/generator-oracle`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
-    { url: `${BASE_URL}/faults`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${BASE_URL}/troubleshooting`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/case-studies`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 }
+    { url: `${BASE_URL}/products/generator-oracle`, changeFrequency: 'weekly', priority: 0.95 },
+    { url: `${BASE_URL}/faults`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${BASE_URL}/troubleshooting`, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/case-studies`, changeFrequency: 'weekly', priority: 0.85 }
   );
 
   /*
@@ -527,7 +557,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const g of ENGINE_BRAND_GROUPS) {
     urls.push({
       url: `${BASE_URL}/faults/engine/${g.slug}`,
-      lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.8,
     });
@@ -536,7 +565,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const fault of FAULT_CODES) {
     urls.push({
       url: `${BASE_URL}/faults/${fault.code.toLowerCase()}`,
-      lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.85,
     });
@@ -552,7 +580,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const depth = path.split('/').filter(Boolean).length; // 2=county, 3, 4
     urls.push({
       url: `${BASE_URL}${path}`,
-      lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: depth <= 2 ? 0.85 : depth === 3 ? 0.8 : 0.7,
     });
@@ -562,7 +589,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const town of majorTowns) {
     urls.push({
       url: `${BASE_URL}/locations/${town}`,
-      lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: 0.75,
     });
@@ -604,7 +630,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const slug of getAllServiceSlugs()) {
     urls.push({
       url: `${BASE_URL}/services/${slug}`,
-      lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: 0.85,
     });
@@ -632,7 +657,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       if (!sub.id || !(sub.parts?.length ?? 0)) continue;
       urls.push({
         url: `${BASE_URL}/generators/spare-parts/${sub.id}`,
-        lastModified: currentDate,
         changeFrequency: 'weekly',
         priority: 0.8,
       });
@@ -651,7 +675,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const e of getEngineIndex()) {
     urls.push({
       url: `${BASE_URL}/generators/spare-parts/engine/${e.slug}`,
-      lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: 0.8,
     });
@@ -698,14 +721,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // It previously 404'd while every sector page's breadcrumb linked to it.
   urls.push({
     url: `${BASE_URL}/sectors`,
-    lastModified: currentDate,
     changeFrequency: 'monthly',
     priority: 0.8,
   });
   for (const slug of SECTORS_WITHOUT_INDUSTRY_HUB) {
     urls.push({
       url: `${BASE_URL}/sectors/${slug}`,
-      lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.7,
     });
@@ -731,7 +752,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     for (const citySlug of getCitySlugsForCountry(countrySlug)) {
       urls.push({
         url: `${BASE_URL}/${countrySlug}/${citySlug}`,
-        lastModified: currentDate,
         changeFrequency: 'monthly',
         priority: 0.6,
       });
