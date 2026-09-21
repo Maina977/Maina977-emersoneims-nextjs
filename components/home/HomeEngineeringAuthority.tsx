@@ -16,11 +16,11 @@ import {
 const DISCIPLINES: { href: string; title: string; blurb: string }[] = [
   { href: '/generators', title: 'Diesel Generators', blurb: 'Cummins & multi-brand supply, sizing, repair, ATS — site-corrected for Kenyan altitude.' },
   { href: '/solar', title: 'Solar PV & Hybrid', blurb: 'Grid-tie, hybrid and off-grid systems engineered for real irradiance and load.' },
-  { href: '/solutions/ups', title: 'UPS Systems', blurb: 'Online double-conversion, runtime and N+1 redundancy for critical loads.' },
+  { href: '/services/ups-systems', title: 'UPS Systems', blurb: 'Online double-conversion, runtime and N+1 redundancy for critical loads.' },
   { href: '/solutions/high-voltage', title: 'High Voltage', blurb: '11/33 kV intakes, transformers, switchgear, protection and earthing.' },
-  { href: '/solutions/motor-rewinding', title: 'Motor Rewinding', blurb: 'Efficiency-preserving rewinds with a documented test sheet.' },
-  { href: '/solutions/ac', title: 'HVAC & Cooling', blurb: 'Calculated cooling loads, efficient inverter and VRF systems.' },
-  { href: '/solutions/borehole-pumps', title: 'Borehole Pumps', blurb: 'Pumps matched to the well at the correct duty point, solar-ready.' },
+  { href: '/services/motor-rewinding', title: 'Motor Rewinding', blurb: 'Efficiency-preserving rewinds with a documented test sheet.' },
+  { href: '/services/ac-installation', title: 'HVAC & Cooling', blurb: 'Calculated cooling loads, efficient inverter and VRF systems.' },
+  { href: '/services/borehole-pumps', title: 'Borehole Pumps', blurb: 'Pumps matched to the well at the correct duty point, solar-ready.' },
   { href: '/solutions/incinerators', title: 'Incinerators', blurb: 'Dual-chamber, NEMA-compliant medical-waste incineration.' },
   { href: '/solutions/fabrication', title: 'Steel Fabrication', blurb: 'Certified steel, qualified welds, coastal-grade corrosion protection.' },
 ];
@@ -47,7 +47,7 @@ export default function HomeEngineeringAuthority() {
           measured, not assumed — and ends with a system sized for the worst real case, not the brochure best case. Whether the
           answer is a <Link href="/generators" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">diesel generator</Link>,
           a <Link href="/solar" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">solar-hybrid</Link> system
-          that slashes the diesel bill, or a <Link href="/solutions/ups" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">UPS</Link>
+          that slashes the diesel bill, or a <Link href="/services/ups-systems" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">UPS</Link>
           bridging to a generator for millisecond-critical loads, the design follows the need.
         </p>
       </DeepDiveBlock>

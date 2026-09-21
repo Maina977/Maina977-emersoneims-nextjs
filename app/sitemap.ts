@@ -449,7 +449,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/east-africa/rwanda`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/fabrication`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/guides/emergency-response`, changeFrequency: 'monthly', priority: 0.75 },
+    /*
+     * THE THREE TECHNICAL REFERENCE GUIDES.
+     *
+     * /services/air-conditioning, /services/borehole-drilling and
+     * /services/solar-inverters are static routes under app/services/ that are
+     * NOT in ALL_SERVICES, so the getAllServiceSlugs() loop at the bottom of
+     * this file never reached them. Only the first was ever listed here, by
+     * hand, and the other two were left out.
+     *
+     * Audited on 2026-09-21 against the built output: both answer 200, are
+     * indexable, carry a self-referential canonical and a single h1, and run to
+     * 929 and 1,718 words of hydrogeology and inverter engineering. No page in
+     * the entire 4,875-page build linked to either, and neither was in any
+     * sitemap. They were reachable only by guessing the URL.
+     *
+     * They are not duplicates of the commercial pages they sit beside.
+     * /services/borehole-pumps sells the service; /services/borehole-drilling
+     * explains aquifer testing and yield assessment. The pair is a hub and its
+     * supporting detail, which is why each now links to the other.
+     */
     { url: `${BASE_URL}/services/air-conditioning`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/services/borehole-drilling`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/services/solar-inverters`, changeFrequency: 'weekly', priority: 0.8 },
 
     // The three tool sub-pages that carry their own crawlable article. The
     // other four mount ssr:false components, carry no unique text and are

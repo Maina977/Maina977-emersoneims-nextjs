@@ -510,7 +510,7 @@ export default function SallyAIAssistant() {
           break;
         case 'diagnostic':
           sendUserMessage('🔧 Fault Code Lookup');
-          window.location.href = '/fault-code-lookup';
+          window.location.href = '/faults';
           break;
         case 'parts':
           sendUserMessage('🔩 Spare Parts');

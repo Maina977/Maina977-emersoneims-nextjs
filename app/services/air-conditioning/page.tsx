@@ -151,7 +151,7 @@ export default function AirConditioningPage() {
             <Link href="/contact" className="px-8 py-4 bg-cyan-500 text-black font-bold rounded-lg hover:bg-cyan-400 transition">
               Request Consultation
             </Link>
-            <Link href="/solutions/ac" className="px-8 py-4 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-600 transition">
+            <Link href="/services/ac-installation" className="px-8 py-4 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-600 transition">
               View Solutions
             </Link>
           </div>

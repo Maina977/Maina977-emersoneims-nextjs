@@ -120,7 +120,7 @@ function SolarUpsHubTeaser() {
     >
       <div className="max-w-7xl mx-auto px-6">
         <a
-          href="/resources/solar-ups-hub"
+          href="/hub"
           className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-2xl bg-slate-900/50 border border-amber-500/20 hover:border-amber-500/50 transition-colors"
         >
           <div>

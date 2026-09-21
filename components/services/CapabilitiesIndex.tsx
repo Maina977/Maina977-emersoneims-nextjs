@@ -69,6 +69,7 @@ const GROUPS: Group[] = [
       { label: 'Solar panels, batteries and inverters', href: '/services/solar-energy' },
       { label: 'UPS systems and critical power', href: '/services/ups-systems' },
       { label: 'Inverter and UPS board-level repair', href: '/repair-centre/industrial-electronics' },
+      { label: 'Solar inverters: MPPT, derating and fault codes', href: '/services/solar-inverters' },
       { label: 'Fault diagnosis by symptom', href: '/repair-centre' },
     ],
   },
@@ -78,7 +79,7 @@ const GROUPS: Group[] = [
       'From a distribution board to a high-voltage intake, including the control and automation that ties plant together.',
     items: [
       { label: 'Distribution boards and panels', href: '/services/distribution-boards' },
-      { label: 'Controls, switchgear and automation', href: '/solutions/controls' },
+      { label: 'Controls, switchgear and automation', href: '/services/ats-changeover' },
       { label: 'High-voltage systems', href: '/solutions/high-voltage' },
       { label: 'Electrical fault-finding and repair', href: '/maintenance-hub' },
     ],
@@ -89,7 +90,9 @@ const GROUPS: Group[] = [
       'Pumping, air conditioning and incineration — specified against the actual load, not a catalogue guess.',
     items: [
       { label: 'Borehole and submersible pumps', href: '/services/borehole-pumps' },
+      { label: 'Borehole drilling, aquifer testing and yield', href: '/services/borehole-drilling' },
       { label: 'Air conditioning installation and repair', href: '/services/ac-installation' },
+      { label: 'Air conditioning: refrigeration, SEER and derating', href: '/services/air-conditioning' },
       { label: 'Hospital and industrial incinerators', href: '/services/hospital-incinerators' },
     ],
   },

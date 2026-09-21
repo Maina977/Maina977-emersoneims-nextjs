@@ -21,7 +21,7 @@ export const ALL_SERVICES = [
     description: 'Premium diesel and gas generators from 10kVA to 2000kVA',
     icon: '⚡',
     category: 'Power Generation',
-    href: '/service/generators',
+    href: '/generators',
     image: '/images/GEN%202-1920x1080.png',
   },
   {

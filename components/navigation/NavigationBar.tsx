@@ -64,12 +64,12 @@ export default function NavigationBar({
       label: 'Services',
       dropdown: [
         { label: 'All Services', href: '/services', description: 'View all our services', icon: '🔧' },
-        { label: 'Generator Services', href: '/solutions/generators', description: 'Installation, repair & maintenance', icon: '⚡' },
-        { label: 'Motor Rewinding', href: '/solutions/motor-rewinding', description: 'Professional motor services', icon: '🔄' },
-        { label: 'UPS Systems', href: '/solutions/ups', description: 'Backup power solutions', icon: '🔋' },
-        { label: 'Borehole Pumps', href: '/solutions/borehole-pumps', description: 'Water pumping systems', icon: '💧' },
-        { label: 'AC & Refrigeration', href: '/solutions/ac', description: 'Cooling systems', icon: '❄️' },
-        { label: 'Controls & Automation', href: '/solutions/controls', description: 'Industrial automation', icon: '🎛️' },
+        { label: 'Generator Services', href: '/generators', description: 'Installation, repair & maintenance', icon: '⚡' },
+        { label: 'Motor Rewinding', href: '/services/motor-rewinding', description: 'Professional motor services', icon: '🔄' },
+        { label: 'UPS Systems', href: '/services/ups-systems', description: 'Backup power solutions', icon: '🔋' },
+        { label: 'Borehole Pumps', href: '/services/borehole-pumps', description: 'Water pumping systems', icon: '💧' },
+        { label: 'AC & Refrigeration', href: '/services/ac-installation', description: 'Cooling systems', icon: '❄️' },
+        { label: 'Controls & Automation', href: '/services/ats-changeover', description: 'Industrial automation', icon: '🎛️' },
       ]
     },
     {
@@ -91,7 +91,7 @@ export default function NavigationBar({
       id: 'solar',
       label: 'Solar',
       dropdown: [
-        { label: 'Solar Solutions', href: '/solutions/solar', description: 'Complete solar power systems', icon: '☀️' },
+        { label: 'Solar Solutions', href: '/solar', description: 'Complete solar power systems', icon: '☀️' },
         { label: 'Solar Maintenance Hub', href: '/maintenance-hub/solar', description: 'Complete solar maintenance center', icon: '🛠️' },
         { label: 'Solar Sizing Calculator', href: '/solutions/solar-sizing', description: 'Calculate your solar system needs', icon: '📐' },
       ]

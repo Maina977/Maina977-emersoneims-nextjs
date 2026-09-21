@@ -481,7 +481,7 @@ export const PRICE_GUIDES: readonly PriceGuide[] = [
     ],
     related: [
       { label: 'Motor rewinding in detail', href: '/services/motor-rewinding' },
-      { label: 'Motors & drives', href: '/solutions/motors' },
+      { label: 'Motors & drives', href: '/services/motor-rewinding' },
       { label: 'All service pricing', href: '/pricing' },
     ],
   },
@@ -533,7 +533,7 @@ export const PRICE_GUIDES: readonly PriceGuide[] = [
       VAT_NOTE,
     ],
     related: [
-      { label: 'Air conditioning systems in detail', href: '/solutions/ac' },
+      { label: 'Air conditioning systems in detail', href: '/services/ac-installation' },
       { label: 'HVAC maintenance', href: '/maintenance-hub/hvac' },
       { label: 'All service pricing', href: '/pricing' },
     ],
@@ -587,7 +587,7 @@ export const PRICE_GUIDES: readonly PriceGuide[] = [
     ],
     related: [
       { label: 'Electrical maintenance in detail', href: '/maintenance-hub/electrical' },
-      { label: 'Controls and switchgear', href: '/solutions/controls' },
+      { label: 'Controls and switchgear', href: '/services/ats-changeover' },
       { label: 'All service pricing', href: '/pricing' },
     ],
   },

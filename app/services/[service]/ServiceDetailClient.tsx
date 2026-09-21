@@ -928,6 +928,39 @@ export default function ServiceDetailClient({
         </section>
       )}
 
+      {/* TECHNICAL REFERENCE
+           The deeper engineering guide for this service, where one exists.
+
+           Three guides live at their own static routes under app/services/ and
+           are not in ALL_SERVICES, so relatedServices above could never reach
+           them - it only resolves slugs from that registry. Two of the three
+           were linked from nowhere in the whole build until this was added.
+
+           Rendered as its own section rather than as another Related Services
+           card because it is a different KIND of page: not another service to
+           buy, but the engineering behind the one already being read. */}
+      {service.technicalGuide && (
+        <section className="py-16 px-4 border-t border-slate-800">
+          <div className="max-w-7xl mx-auto">
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-400 font-semibold mb-2">
+              Technical Reference
+            </p>
+            <Link
+              href={service.technicalGuide.href}
+              className="group block p-8 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-cyan-500/50 transition-all"
+            >
+              <h2 className="text-2xl font-bold text-white group-hover:text-cyan-400 transition-colors mb-3">
+                {service.technicalGuide.title}
+              </h2>
+              <p className="text-slate-400 max-w-3xl">{service.technicalGuide.blurb}</p>
+              <span className="mt-4 inline-block text-cyan-400 text-sm font-medium">
+                Read the full reference &rarr;
+              </span>
+            </Link>
+          </div>
+        </section>
+      )}
+
       {/* Hospital-Incinerator Construction & Commissioning Guide
            Continuation block — appears below the existing service content,
            above the final CTA. Rendered ONLY for the hospital-incinerators

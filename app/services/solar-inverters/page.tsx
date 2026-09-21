@@ -273,7 +273,7 @@ export default function SolarInvertersPage() {
             <Link href="/contact" className="px-8 py-4 bg-amber-500 text-black font-bold rounded-lg hover:bg-amber-400 transition text-lg">
               Request Solar Consultation
             </Link>
-            <Link href="/solutions/solar" className="px-8 py-4 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-600 transition text-lg">
+            <Link href="/solar" className="px-8 py-4 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-600 transition text-lg">
               View Solar Solutions
             </Link>
           </div>

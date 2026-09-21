@@ -91,6 +91,22 @@ export interface Service {
   // Related
   relatedServices: string[];
 
+  /**
+   * A deeper engineering reference for this service, at its own static route
+   * under app/services/.
+   *
+   * Three such pages exist - air-conditioning, borehole-drilling and
+   * solar-inverters - and none is in ALL_SERVICES, so no service page could
+   * reach them: relatedServices only resolves slugs from this file. Audited
+   * 2026-09-21, two of the three were linked from nowhere in the entire
+   * 4,875-page build and appeared in no sitemap.
+   *
+   * These are not duplicates of the commercial page. The commercial page sells
+   * the work; the guide explains the engineering behind it. Linking the pair
+   * makes them legible as one topic rather than two pages competing for it.
+   */
+  technicalGuide?: { href: string; title: string; blurb: string };
+
   // CTAs
   primaryCTA: string;
   secondaryCTA: string;
@@ -745,7 +761,7 @@ MANUAL CHANGEOVER: Cost-effective solution for applications where brief manual i
     // Certifications will be added when officially obtained
     certifications: [],
 
-    relatedServices: ['cummins-generators', 'generator-repairs', 'distribution-boards', 'electrical-services'],
+    relatedServices: ['cummins-generators', 'generator-repairs', 'distribution-boards', 'ups-systems'],
 
     primaryCTA: 'Get Installation Quote',
     secondaryCTA: 'Compare Options',
@@ -951,7 +967,7 @@ SERVICES INCLUDE:
     // Certifications will be added when officially obtained
     certifications: [],
 
-    relatedServices: ['ats-changeover', 'electrical-services', 'cummins-generators', 'ups-systems'],
+    relatedServices: ['ats-changeover', 'motor-rewinding', 'cummins-generators', 'ups-systems'],
 
     primaryCTA: 'Request Custom Quote',
     secondaryCTA: 'View Portfolio',
@@ -1160,6 +1176,11 @@ SITE SURVEY: Our solar experts will analyze your energy consumption, roof space,
     certifications: [],
 
     relatedServices: ['cummins-generators', 'ups-systems', 'borehole-pumps', 'ats-changeover'],
+    technicalGuide: {
+      href: '/services/solar-inverters',
+      title: 'Solar Inverters: Complete Technical Reference',
+      blurb: 'MPPT algorithms, temperature derating, grid-tie against hybrid topologies, 30+ inverter error codes and maintenance schedules.',
+    },
 
     primaryCTA: 'Get a Free Quote',
     secondaryCTA: 'Calculate Savings',
@@ -1366,7 +1387,7 @@ QUALITY ASSURANCE: Every rewound motor undergoes comprehensive testing including
     // Certifications will be added when officially obtained
     certifications: [],
 
-    relatedServices: ['borehole-pumps', 'generator-repairs', 'electrical-services', 'ac-installation'],
+    relatedServices: ['borehole-pumps', 'generator-repairs', 'distribution-boards', 'ac-installation'],
 
     primaryCTA: 'Get Repair Quote',
     secondaryCTA: 'Request Pickup',
@@ -1582,7 +1603,12 @@ We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier
     // Certifications will be added when officially obtained
     certifications: [],
 
-    relatedServices: ['electrical-services', 'distribution-boards', 'motor-rewinding'],
+    relatedServices: ['cummins-generators', 'distribution-boards', 'motor-rewinding'],
+    technicalGuide: {
+      href: '/services/air-conditioning',
+      title: 'Air Conditioning: Complete Technical Reference',
+      blurb: 'Refrigeration cycles, SEER and EER, 45 C climate derating, and 30+ fault codes across split, central and VRF systems.',
+    },
 
     primaryCTA: 'Book Service',
     secondaryCTA: 'Get Installation Quote',
@@ -1790,7 +1816,7 @@ WE PROVIDE:
     // Certifications will be added when officially obtained
     certifications: [],
 
-    relatedServices: ['distribution-boards', 'cummins-generators', 'ats-changeover', 'electrical-services'],
+    relatedServices: ['distribution-boards', 'cummins-generators', 'ats-changeover', 'solar-energy'],
 
     primaryCTA: 'Get UPS Quote',
     secondaryCTA: 'Battery Replacement',
@@ -1997,7 +2023,12 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
     // Certifications will be added when officially obtained
     certifications: [],
 
-    relatedServices: ['solar-energy', 'motor-rewinding', 'distribution-boards', 'electrical-services'],
+    relatedServices: ['solar-energy', 'motor-rewinding', 'distribution-boards', 'cummins-generators'],
+    technicalGuide: {
+      href: '/services/borehole-drilling',
+      title: 'Borehole Drilling: Complete Technical Reference',
+      blurb: 'Hydrogeology, transmissivity, aquifer testing, drilling methods, yield assessment and water quality for Kenyan aquifer systems.',
+    },
 
     primaryCTA: 'Request Site Visit',
     secondaryCTA: 'Solar Pump Quote',
@@ -2203,7 +2234,7 @@ WE PROVIDE:
     // Certifications will be added when officially obtained
     certifications: [],
 
-    relatedServices: ['generator-repairs', 'distribution-boards', 'electrical-services'],
+    relatedServices: ['generator-repairs', 'distribution-boards', 'cummins-generators'],
 
     primaryCTA: 'Request Consultation',
     secondaryCTA: 'Compliance Assessment',

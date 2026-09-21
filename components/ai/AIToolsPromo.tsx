@@ -28,7 +28,7 @@ const TOOLS: { href: string; name: string; tag: string; blurb: string }[] = [
     blurb: 'Site and borehole analysis with satellite and NASA data, pump matching, water-quality insight and predictive maintenance for water systems.',
   },
   {
-    href: '/pro-building-suite',
+    href: '/solutions/building',
     name: 'Pro Building Suite',
     tag: 'AI architecture + structural + QS',
     blurb: 'Architectural design, structural engineering analysis and professional BOQ generation in one platform — complete construction documentation in minutes.',

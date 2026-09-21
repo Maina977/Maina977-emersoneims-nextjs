@@ -73,7 +73,7 @@ export default function ServicesTeaser() {
     {
       title: 'UPS & Power Quality',
       desc: 'Clean, uninterrupted power — harmonics tamed, uptime guaranteed.',
-      href: '/solutions/ups',
+      href: '/services/ups-systems',
       icon: <UPSIcon reducedMotion={shouldReduceMotion} />,
       benefit: 'Zero flicker. Zero compromise.',
     },

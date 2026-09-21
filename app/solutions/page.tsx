@@ -7,17 +7,17 @@ import UnifiedCTA, { CTASection } from "@/components/cta/UnifiedCTA";
 import SolutionsEngineeringDeepDive from "@/components/solutions/SolutionsEngineeringDeepDive";
 
 const SOLUTIONS_LINKS = [
-  { href: "/solutions/generators", label: "Diesel generators", icon: "⚡", description: "Troubleshooting & maintenance" },
-  { href: "/solutions/controls", label: "Controls (DeepSea & PowerWizard)", icon: "🎛️", description: "Configuration & monitoring" },
-  { href: "/solutions/solar", label: "Solar technical issues", icon: "☀️", description: "Panel diagnostics & optimization" },
+  { href: "/generators", label: "Diesel generators", icon: "⚡", description: "Troubleshooting & maintenance" },
+  { href: "/services/ats-changeover", label: "Controls (DeepSea & PowerWizard)", icon: "🎛️", description: "Configuration & monitoring" },
+  { href: "/solar", label: "Solar technical issues", icon: "☀️", description: "Panel diagnostics & optimization" },
   { href: "/solutions/solar-sizing", label: "Solar sizing", icon: "📐", description: "System design & calculations" },
   { href: "/solutions/power-interruptions", label: "Power interruptions", icon: "🔌", description: "Backup & UPS solutions" },
-  { href: "/solutions/ac", label: "AC systems", icon: "❄️", description: "HVAC diagnostics & repair" },
-  { href: "/solutions/ups", label: "UPS systems", icon: "🔋", description: "Battery backup solutions" },
+  { href: "/services/ac-installation", label: "AC systems", icon: "❄️", description: "HVAC diagnostics & repair" },
+  { href: "/services/ups-systems", label: "UPS systems", icon: "🔋", description: "Battery backup solutions" },
   { href: "/solutions/diesel-automation", label: "Diesel automation", icon: "🤖", description: "Auto-start & remote control" },
-  { href: "/solutions/borehole-pumps", label: "Borehole pumps", icon: "💧", description: "Water system solutions" },
+  { href: "/services/borehole-pumps", label: "Borehole pumps", icon: "💧", description: "Water system solutions" },
   { href: "/solutions/incinerators", label: "Incinerators", icon: "🔥", description: "Waste management systems" },
-  { href: "/solutions/motors", label: "Motors & rewinding", icon: "⚙️", description: "Motor repair & services" },
+  { href: "/services/motor-rewinding", label: "Motors & rewinding", icon: "⚙️", description: "Motor repair & services" },
 ] as const;
 
 export default function SolutionsHome() {

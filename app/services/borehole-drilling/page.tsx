@@ -153,7 +153,7 @@ export default function BoreholeDrillingPage() {
             <Link href="/contact" className="px-8 py-4 bg-emerald-500 text-black font-bold rounded-lg hover:bg-emerald-400 transition">
               Request Borehole Assessment
             </Link>
-            <Link href="/solutions/borehole-pumps" className="px-8 py-4 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-600 transition">
+            <Link href="/services/borehole-pumps" className="px-8 py-4 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-600 transition">
               View Borehole Solutions
             </Link>
           </div>

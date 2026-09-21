@@ -44,7 +44,7 @@ const RESOURCE_CATEGORIES = [
       { href: '/knowledge-base', title: 'Knowledge Base', desc: 'In-depth technical articles', type: 'Library' },
       // Hidden-content surfacing: /resources/solar-ups-hub page existed but was unlinked from this index.
       // See tests/regression/site-invariants.test.ts (resources-links-solar-ups-hub).
-      { href: '/resources/solar-ups-hub', title: 'Solar / UPS Hub', desc: 'Solar + UPS resource hub', type: 'Hub' },
+      { href: '/hub', title: 'Solar / UPS Hub', desc: 'Solar + UPS resource hub', type: 'Hub' },
     ],
   },
   {
@@ -132,7 +132,7 @@ export default function ResourcesPage() {
             <p className="text-sm text-slate-400">Decode any fault code</p>
           </Link>
           <Link
-            href="/resources/solar-ups-hub"
+            href="/hub"
             className="p-6 bg-gradient-to-br from-green-900/50 to-emerald-800/30 border border-green-500/50 rounded-2xl hover:scale-105 transition-transform group"
           >
             <span className="text-4xl mb-4 block">🔆</span>
