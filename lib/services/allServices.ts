@@ -149,7 +149,7 @@ Support does not stop at the gate. Our mobile workshop reaches all 47 counties, 
 Why Cummins? The engines are known worldwide for reliability, fuel efficiency and long service life. Maintained properly, a Cummins generator will run dependably for decades — and maintenance is precisely what we do.`,
 
     icon: '⚡',
-    heroImage: '/images/GEN%202-1920x1080.png',
+    heroImage: '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
     images: [
       '/images/GEN%202-1920x1080.png',
       '/images/cummins-engine.png',
@@ -352,7 +352,7 @@ EMERGENCY REPAIRS: Power out? Our emergency team is on standby 24/7 with fully-e
 MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Contracts (AMC) ensure your generator receives regular professional servicing, reducing breakdowns and extending equipment life.`,
 
     icon: '🔧',
-    heroImage: '/images/generator-repair.png',
+    heroImage: '/images/FG-WILSON-GENERATOR.webp',
     images: [
       '/images/generator-repair.png',
       '/images/maintenance-team.png',
@@ -571,7 +571,7 @@ AUTOMATIC CHANGEOVER (ATS): Senses mains failure automatically, starts the gener
 MANUAL CHANGEOVER: Cost-effective solution for applications where brief manual intervention is acceptable. Safe, properly interlocked to prevent back-feeding.`,
 
     icon: '🔌',
-    heroImage: '/images/solar%20changeover%20control.png',
+    heroImage: '/images/voltka/ats-changeover-panel-4k.webp',
     images: [
       '/images/solar%20changeover%20control.png',
       '/images/ats-panel.png',
@@ -775,7 +775,7 @@ SERVICES INCLUDE:
 - Panel maintenance and repairs`,
 
     icon: '⚡',
-    heroImage: '/images/distribution-board.png',
+    heroImage: '/images/switchgear-panel.png',
     images: [
       '/images/distribution-board.png',
       '/images/mcc-panel.png',
@@ -1192,7 +1192,7 @@ Our motor workshop handles all types of electric motors:
 QUALITY ASSURANCE: Every rewound motor undergoes comprehensive testing including insulation resistance, winding resistance, no-load current test, and vibration analysis before delivery.`,
 
     icon: '⚙️',
-    heroImage: '/images/motor-rewinding.png',
+    heroImage: '/images/motor-rewinding-workshop.png',
     images: [
       '/images/motor-rewinding.png',
       '/images/motor-workshop.png',
@@ -1397,7 +1397,7 @@ OUR AC SERVICES:
 We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier, and Midea. Our technicians are experienced and use proper equipment for quality installations.`,
 
     icon: '❄️',
-    heroImage: '/images/ac-installation.png',
+    heroImage: '/images/hvac-air-conditioning-unit.png',
     images: [
       '/images/ac-installation.png',
       '/images/ac-service.png',
@@ -1616,7 +1616,7 @@ WE PROVIDE:
 - Capacity upgrades`,
 
     icon: '🔋',
-    heroImage: '/images/ups-system.png',
+    heroImage: '/images/ups-power-protection-system.png',
     images: [
       '/images/ups-system.png',
       '/images/ups-installation.png',
@@ -1822,7 +1822,7 @@ OUR BOREHOLE SERVICES:
 We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and Franklin. Our technicians understand the unique challenges of borehole systems and deliver reliable solutions.`,
 
     icon: '💧',
-    heroImage: '/images/borehole-pump.png',
+    heroImage: '/images/borehole-pump-installation.png',
     images: [
       '/images/borehole-pump.png',
       '/images/solar-pump.png',
@@ -2032,7 +2032,7 @@ WE PROVIDE:
 - Capacity upgrades`,
 
     icon: '🔥',
-    heroImage: '/images/incinerator.png',
+    heroImage: '/images/medical-waste-incinerator.png',
     images: [
       '/images/incinerator.png',
       '/images/medical-waste.png',

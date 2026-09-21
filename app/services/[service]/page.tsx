@@ -61,7 +61,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `https://www.emersoneims.com/services/${service.slug}`,
       images: [
         {
-          url: service.heroImage || '/images/og-default.jpg',
+          /*
+           * FALLBACK CORRECTED 2026-09-21. It pointed at /images/og-default.jpg,
+           * which does not exist and returns 404 — so on any service without a
+           * heroImage the social preview fell back to nothing at all.
+           *
+           * It never fired in practice, because every service sets heroImage.
+           * That was the worse problem: nine of the ten pointed at filenames
+           * that were not in public/images either, so og:image 404d on nine of
+           * ten service pages. A share on WhatsApp or LinkedIn showed no
+           * preview image, on the pages where a B2B enquiry actually starts.
+           *
+           * Now falls back to the homepage hero, which is verified present.
+           */
+          url: service.heroImage || '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
           width: 1200,
           height: 630,
           alt: service.name
