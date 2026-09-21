@@ -42,7 +42,7 @@ export default function SolutionsHome() {
               name: 'Emerson EiMS',
               logo: {
                 '@type': 'ImageObject',
-                url: 'https://www.emersoneims.com/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png',
+                url: 'https://www.emersoneims.com/images/logo-tagline.png',
                 width: 400,
                 height: 200
               }

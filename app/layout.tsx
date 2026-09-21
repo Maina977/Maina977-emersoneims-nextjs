@@ -263,7 +263,7 @@ export default async function RootLayout({
     "name": "EmersonEIMS",
     "alternateName": "EMERSON INDUSTRIAL MAINTENANCE SERVICES - GENERATOR SALES AND MAINTENANCE IN KENYA",
     "url": siteUrl,
-    "logo": `${siteUrl}/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png`,
+    "logo": `${siteUrl}/images/logo-tagline.png`,
     "image": `${siteUrl}/og-image.jpg`,
     "description": "EmersonEIMS — B2B power & engineering partner in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators, with SLA-backed maintenance and 24/7 emergency response reaching all 47 counties.",
     "telephone": "+254768860665",

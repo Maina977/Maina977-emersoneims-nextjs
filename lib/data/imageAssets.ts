@@ -7,7 +7,7 @@
 export const imageAssets = {
   // ==================== LOGOS & BRANDING ====================
   logos: {
-    main: "/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png",
+    main: "/images/logo-tagline.png",
     favicon: "/favicon.ico",
     appleTouch: "/apple-touch-icon.png",
     ogImage: "/og-image.jpg",
