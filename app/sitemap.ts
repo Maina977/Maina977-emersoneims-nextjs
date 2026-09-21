@@ -474,6 +474,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
+  /*
+   * VOLTKA — the one generator brand we actually sell, and until 2026-09-21
+   * the only one without a page. Priority 0.95 puts it level with the other
+   * primary commercial pages: seventeen brand pages exist for makes we
+   * service, and this is the page for the make we sell.
+   */
+  urls.push({
+    url: BASE_URL + '/voltka',
+    lastModified: currentDate,
+    changeFrequency: 'weekly',
+    priority: 0.95,
+  });
+
   // Generator Oracle Product Pages
   urls.push(
     { url: `${BASE_URL}/products/generator-oracle`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },

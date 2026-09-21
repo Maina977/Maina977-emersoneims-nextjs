@@ -1055,6 +1055,31 @@ const BrandComparisonTable = () => {
           Voltka) have no brand page, which is why the table itself is left
           as text rather than half-linked.
         */}
+        {/*
+          THE BRAND WE ACTUALLY SELL GOES ABOVE THE ONES WE SERVICE.
+
+          Owner, 2026-09-21: EmersonEIMS sells VOLTKA, its own Cummins-powered
+          brand. Every other make below it is maintenance, repairs and parts.
+          The list underneath was linking seventeen brands we service while the
+          one we sell had no page at all, which is the wrong way round on the
+          hub where a buyer decides.
+        */}
+        <div className="mt-14 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-transparent p-7 text-center">
+          <p className="text-xs uppercase tracking-[0.2em] text-amber-400 font-semibold">
+            The generators we sell
+          </p>
+          <h3 className="mt-3 text-2xl font-bold text-white">VOLTKA — our own brand, Cummins-powered</h3>
+          <p className="mx-auto mt-3 max-w-2xl text-gray-400 leading-relaxed">
+            From KES 500,000, supplied, delivered and commissioned across all 47 counties.
+          </p>
+          <Link
+            href="/voltka"
+            className="mt-6 inline-block rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-3 font-bold text-black transition-all hover:shadow-lg hover:shadow-amber-500/30"
+          >
+            See the VOLTKA range
+          </Link>
+        </div>
+
         <nav aria-label="Generator brands" className="mt-14 border-t border-gray-800 pt-10">
           <h3 className="text-center text-sm uppercase tracking-[0.2em] text-amber-400 font-semibold mb-6">
             Brands we supply, service and stock parts for
