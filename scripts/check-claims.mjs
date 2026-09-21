@@ -152,9 +152,18 @@ const RULES = [
      * reader NOT to do something, not claims about who we employ. A guard that
      * reports them teaches people to reword safety copy to silence it, which is
      * worse than the gap it closed.
+     *
+     * WIDENED AGAIN 2026-09-21 to "factory certified". The pattern read
+     * /factory[-\s]?trained/ and the homepage carried a statistic reading
+     * "18+ Expert Engineers / Factory Certified", rendered by
+     * components/sections/IndustryLeadingTrust.tsx on every visit. Same
+     * unverifiable claim of manufacturer credentials, sitting in plain sight
+     * through every run of this guard, purely because of one word. That is the
+     * second time this rule has been escaped by a synonym, which is the
+     * argument for matching the CLAIM rather than the phrasing.
      */
     severity: 'warn',
-    re: /factory[-\s]?trained|\b(?:our|we|emersoneims)\b[^.!?]{0,30}?\b(?:cummins|perkins|caterpillar|cat|volvo|volvo\s*penta|doosan|sdmo|himoinsa|gesan|iveco|man|weichai|john\s*deere|olympian|leyland|lister\s*petter|honda|deepsea|deep\s*sea|comap|stamford)[-\s]?(?:trained|certified)\b/i,
+    re: /factory[-\s]?(?:trained|certified)|\b(?:our|we|emersoneims)\b[^.!?]{0,30}?\b(?:cummins|perkins|caterpillar|cat|volvo|volvo\s*penta|doosan|sdmo|himoinsa|gesan|iveco|man|weichai|john\s*deere|olympian|leyland|lister\s*petter|honda|deepsea|deep\s*sea|comap|stamford)[-\s]?(?:trained|certified)\b/i,
     why: 'No training certificates are on file to support this.',
   },
   {
@@ -385,6 +394,15 @@ const isComment = (l) => /^\s*(\/\/|\*|\/\*)/.test(l);
  * two cleanups in the first place.
  */
 const ALLOWED = [
+  {
+    file: 'components/sections/TrustBadgesSection.tsx',
+    contains: "Was 'Factory-Certified / Authorized Service'",
+    // A comment recording that the badge was REMOVED, sitting where the badge
+    // used to be. The widened pattern above cannot tell a note about a deleted
+    // claim from the claim itself, and deleting the note would lose the reason
+    // — which is how the dealer claim came back twice.
+    why: 'a comment recording the removal of that badge, not the badge itself',
+  },
   {
     file: 'components/seo/EnhancedSchemaMarkup.tsx',
     contains: "'@type': 'AggregateRating',",

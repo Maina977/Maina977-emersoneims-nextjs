@@ -114,7 +114,7 @@ function CaseStudiesSectionInner() {
             <span className="text-transparent bg-gradient-to-r from-cyan-400 to-amber-400 bg-clip-text"> Measurable Impact.</span>
           </h2>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            See how we&apos;ve transformed power infrastructure for East Africa&apos;s leading organizations.
+            See how we rebuilt power for a Nairobi school, a Naivasha flower farm and a Meru mission hospital.
           </p>
         </m.div>
 

@@ -846,7 +846,7 @@ const BeforeAfterGallery = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-amber-400 font-semibold">{project.savings}</span>
-                  <a href="/generators/case-studies" className="text-cyan-400 text-sm hover:underline">
+                  <a href="/case-studies" className="text-cyan-400 text-sm hover:underline">
                     View Full Case Study →
                   </a>
                 </div>
@@ -1326,10 +1326,10 @@ const ClientTestimonials = () => {
             ⭐ Client Success Stories
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Trusted by Kenya's Leading Organizations
+            Schools, Farms, Factories and Hospitals
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            From hospitals to hotels, factories to data centers - see why industry leaders choose EmersonEIMS
+            Named projects with the set size and the year — education, horticulture, manufacturing, healthcare and NGO field operations
           </p>
         </div>
 
@@ -1404,7 +1404,7 @@ const ClientTestimonials = () => {
           {/* Link to Full Case Studies */}
           <div className="text-center mt-8">
             <a
-              href="/generators/case-studies"
+              href="/case-studies"
               className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors"
             >
               <span>View All Case Studies with Technical Details</span>

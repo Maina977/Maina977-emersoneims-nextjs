@@ -12,7 +12,10 @@ import Link from 'next/link';
 // Real company data - factual only
 const COMPANY_FACTS = {
   founded: 2012,
-  yearsExperience: 12,
+  // Derived, not typed. This read 12 beside founded: 2012 — correct in 2024,
+  // silently wrong every year after, and rendered on the homepage as
+  // "N years of proven excellence".
+  get yearsExperience() { return new Date().getFullYear() - this.founded; },
   totalProjects: 523,
   totalKVA: 45000,
   countiesServed: 47,
@@ -99,8 +102,8 @@ const SECTORS_SERVED = [
 const CAPABILITIES = [
   {
     title: 'Generator Solutions',
-    range: '20 kVA - 2000 kVA',
-    brands: ['Cummins', 'Caterpillar', 'FG Wilson'],
+    range: '10 kVA - 2000 kVA',
+    brands: ['VOLTKA (Cummins engines) supplied', 'All makes serviced'],
     services: ['Sales', 'Installation', 'Maintenance', 'Repairs', 'Parts'],
   },
   {
@@ -171,9 +174,9 @@ function IndustryLeadingTrustInner() {
         >
           {[
             { value: `${COMPANY_FACTS.totalProjects}+`, label: 'Projects Completed', sublabel: 'Across East Africa' },
-            { value: `${COMPANY_FACTS.uptime}%`, label: 'System Uptime', sublabel: 'Industry Leading' },
+            { value: `${COMPANY_FACTS.uptime}%`, label: 'System Uptime', sublabel: 'Generator Availability' },
             { value: `${COMPANY_FACTS.clientRetention}%`, label: 'Client Retention', sublabel: 'Long-term Partnerships' },
-            { value: `${COMPANY_FACTS.engineersOnStaff}+`, label: 'Expert Engineers', sublabel: 'Factory Certified' },
+            { value: `${COMPANY_FACTS.engineersOnStaff}+`, label: 'Expert Engineers', sublabel: 'On Staff' },
           ].map((stat, i) => (
             <m.div
               key={i}
