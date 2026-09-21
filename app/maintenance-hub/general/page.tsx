@@ -491,7 +491,7 @@ const COMPREHENSIVE_FAQ = [
   { category: 'General', q: 'Can I get a quotation before committing?', a: 'Absolutely. We provide free quotations for all jobs. Site visits are free within Nairobi; transport charges apply elsewhere.' },
   { category: 'Payments', q: 'What payment methods do you accept?', a: 'We accept M-Pesa, bank transfer, cheque, and cash. For large projects, we offer payment plans.' },
   { category: 'Payments', q: 'Do you require deposits?', a: 'For equipment purchases, 50% deposit is required. For service work, payment is on completion.' },
-  { category: 'Payments', q: 'Do you offer financing?', a: 'Yes, we partner with financial institutions to offer equipment financing with up to 24-month terms.' },
+  { category: 'Payments', q: 'Do you offer financing?', a: 'No. We are not a lender and we do not arrange credit. Buyers who finance equipment do so with their own bank or asset financier, and we will supply whatever quotation, specification or proforma that lender needs. For established businesses we can discuss 30-60 day payment terms directly.' },
   { category: 'Scheduling', q: 'How do I book a service?', a: 'Call us, WhatsApp, or fill the online form. We\'ll confirm availability and schedule at your convenience.' },
   { category: 'Scheduling', q: 'What are your working hours?', a: 'Monday-Friday: 8am-6pm, Saturday: 8am-4pm. Emergency services available 24/7.' },
   { category: 'Technical', q: 'Are your technicians certified?', a: 'Yes, all our technicians are trained, certified, and regularly updated. Electricians are ERC licensed.' }

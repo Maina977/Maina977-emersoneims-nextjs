@@ -78,7 +78,9 @@ const SERVICE_KNOWLEDGE = {
     brands: ['Jinko Solar', 'Longi', 'Canadian Solar', 'Trina Solar', 'JA Solar'],
     inverterBrands: ['SMA', 'Fronius', 'Growatt', 'Victron', 'Deye'],
     warranty: '25-year panel performance warranty',
-    financing: 'Flexible payment plans available',
+    // No financing field: we are not a lender and offer no payment plans.
+    // Stating otherwise here is worse than elsewhere, because the assistant
+    // says it to an enquirer in conversation, where it reads as a commitment.
   },
   'motor-rewinding': {
     name: 'Motor Rewinding',

@@ -67,7 +67,7 @@ const EMAIL_TEMPLATES = {
           <p>Download your detailed report or view online:</p>
           <a href="${data.reportUrl || '#'}" class="button">View Full Report</a>
 
-          <p>Our solar experts are ready to assist you with installation planning and financing options.</p>
+          <p>Our solar experts are ready to assist you with site assessment and installation planning.</p>
         </div>
         <div class="footer">
           <p>EmersonEIMS - Solar, Generators and Power Engineering, Nairobi</p>

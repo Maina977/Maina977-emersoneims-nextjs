@@ -157,7 +157,7 @@ const FAQ_DATA = [
     id: 'srv-3',
     category: 'Services',
     question: 'What payment methods do you accept?',
-    answer: 'We accept M-Pesa, bank transfer, cheque, and cash. For large projects, we offer flexible payment terms including 30-60 day credit for established businesses, and equipment financing options.',
+    answer: 'We accept M-Pesa, bank transfer, cheque, and cash. For large projects, we offer flexible payment terms including 30-60 day credit for established businesses. We do not lend: where a buyer finances equipment, that is arranged with their own bank or asset financier.',
     tags: ['payment', 'mpesa', 'credit', 'financing']
   },
   {

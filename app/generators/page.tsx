@@ -1701,7 +1701,7 @@ const FAQSection = () => {
     },
     {
       question: 'Can I pay in installments?',
-      answer: 'Yes! We offer flexible payment plans: 30% deposit, balance over 3-12 months. No interest on 3-month plans. We also accept LPOs from established businesses and government entities.'
+      answer: 'We are not a lender and we do not run instalment or interest-bearing plans. For established businesses we agree payment terms directly, case by case, against a signed order, and we accept LPOs from companies and government entities. Where a buyer finances the purchase, that is arranged with their own bank or asset financier, and we will supply whatever quotation, specification or proforma that lender needs.'
     },
     {
       question: 'What size generator do I need?',

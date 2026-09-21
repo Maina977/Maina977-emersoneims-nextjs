@@ -65,13 +65,16 @@ import AIToolsPromo from '@/components/ai/AIToolsPromo';
  */
 const AIAdvantageHero = dynamic(() => import('@/app/components/home/AIAdvantageHero'));
 /*
- * THESE THREE MOVED FROM STATIC IMPORTS TO dynamic() ON 2026-09-21.
+ * THESE MOVED FROM STATIC IMPORTS TO dynamic() ON 2026-09-21.
  *
- * All three are client components rendering below the fold — at lines 889,
- * 917 and 986 of a page whose hero sits at 155 — and all three were in the
- * entry bundle, so their JavaScript was downloaded and evaluated before
- * anything the visitor could see was interactive. TradeInCalculator alone is
- * 19 KB of source.
+ * They are client components rendering below the fold, on a page whose hero
+ * sits at line 155, and all were in the entry bundle — so their JavaScript was
+ * downloaded and evaluated before anything the visitor could see was
+ * interactive.
+ *
+ * TradeInCalculator was the third of them and the largest at 19 KB. It was
+ * removed outright on 2026-09-21 (see the note at its former mount point
+ * below), so that 19 KB is no longer on the page at all.
  *
  * Lighthouse on the live homepage: 1,852 ms of script evaluation inside 6.6 s
  * of main-thread work, against an LCP of 4.4 s. This does not fix that on its
@@ -93,7 +96,6 @@ const AIAdvantageHero = dynamic(() => import('@/app/components/home/AIAdvantageH
  */
 const VoltkaCinematicShowcase = dynamic(() => import('@/components/home/VoltkaCinematicShowcase'));
 const CinematicVideoSection = dynamic(() => import('@/components/home/CinematicVideoSection'));
-const TradeInCalculator = dynamic(() => import('@/components/home/TradeInCalculator'));
 const CumminsShopNowReal = dynamic(() => import('@/app/components/home/CumminsShopNow'));
 const CountyCoverageMapReal = dynamic(() => import('@/app/components/home/CountyCoverageMap'));
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
@@ -938,10 +940,43 @@ export default function HomePage() {
         The pricing on the product pages is unaffected: those are our own
         prices, which we can stand behind.
       */}
-      {/* TRADE-IN CALCULATOR — removes upgrade barrier by showing trade-in value
-          of old generator. Positioned after financing so buyers can see: new price →
-          financing cost → trade-in credit = final cost. */}
-      <TradeInCalculator />
+      {/* THE TRADE-IN CALCULATOR STOOD HERE AND WAS REMOVED ON 2026-09-21,
+          on the owner's instruction, after an audit of what it actually
+          published. Four reasons, any one of which was sufficient:
+
+          IT QUOTED CREDIT WE DO NOT PROVIDE. The button read "Get Trade-In
+          Approval" and the process band read "Approve financing on balance",
+          beside a 14% rate and a monthly repayment figure. The component's own
+          comment recorded that no lender, product or approved rate is
+          evidenced anywhere in this repository. Advertising credit terms
+          engages the Consumer Protection Act 2012 on misleading
+          representations; an "Illustration only" label under a button marked
+          Approval does not settle that.
+
+          IT PUBLISHED 96 UNSOURCED PRICES. Twenty-four generator models across
+          Cummins, Perkins, Caterpillar, FG Wilson and Atlas Copco, at four
+          condition grades each. Every comparable data block in this repo
+          carries a provenance note; that one had none. A buyer told their
+          6BT5.9 is worth KES 420,000 will hold us to it.
+
+          IT CONTRADICTED WHAT WE SELL. VOLTKA is the only make we sell —
+          owner-confirmed, recorded in lib/data/generator-brands.ts. This
+          offered to take five other makes in trade against a purchase and
+          valued them to the shilling.
+
+          IT HAD ALREADY DONE HARM. Until 2026-08-31 its formula mixed two
+          different interest rates and understated the monthly cost by roughly
+          3.6x — KES 13,104/month shown where the true figure was KES 47,821 —
+          to people deciding whether they could afford a generator.
+
+          Unlike the sections inside HomePageClient, this one WAS server-
+          rendered and therefore fully crawlable, so it was also the most
+          exposed block on the site.
+
+          If trade-in becomes a real service, it returns as an enquiry form
+          with no published valuations and no rate: "tell us what you have and
+          we will appraise it" is true, captures the same lead, and promises
+          nothing we cannot honour. */}
       {/* WHAT WE SUPPLY — the route from the homepage into the commercial pages.
           The component name is unchanged only to keep this import stable; what
           it renders is no longer a "leadership matrix". The ratings and #1

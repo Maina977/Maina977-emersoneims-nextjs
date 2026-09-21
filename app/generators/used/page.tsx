@@ -16,7 +16,7 @@ const USED_SLIDES = [
   { src: '/images/enhanced/FG-WILSON-GENERATOR-4K-CINEMATIC.jpg', title: 'FG Wilson · Perkins Power', subtitle: 'Low-hours commercial units' },
   { src: '/images/desktop/generators/cummins-teal-canopy.jpg', title: 'Cummins Super Silent', subtitle: 'Workshop-inspected, repainted, warrantied' },
   { src: '/images/enhanced/NTSA- ATLAS COPCO GENERATOR-4K-CINEMATIC.jpg', title: 'Atlas Copco — Heavy Duty', subtitle: 'Industrial-grade standby power' },
-  { src: '/images/desktop/overhaul/engine-bay-service.jpg', title: '21-Point Inspection', subtitle: 'Every unit tested before it leaves the yard', ctaHref: '/contact?type=tradein', ctaLabel: 'Get Trade-In Value' },
+  { src: '/images/desktop/overhaul/engine-bay-service.jpg', title: '21-Point Inspection', subtitle: 'Every unit tested before it leaves the yard', ctaHref: '/contact?type=inspection', ctaLabel: 'Request an Inspection' },
 ];
 
 const usedGenerators = [
@@ -697,26 +697,17 @@ export default function UsedGeneratorsPage() {
           </div>
         </motion.div>
 
-        {/* Trade-In Section */}
-        <motion.div
-          className="mt-20 bg-gradient-to-r from-blue-900/30 to-purple-900/30 p-10 rounded-2xl border border-blue-500/20"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-white mb-4">Trade-In Your Old Generator</h3>
-            <p className="text-white/70 max-w-2xl mx-auto mb-8">
-              Get credit towards a new Cummins generator when you trade in your old unit. Free collection and valuation.
-            </p>
-            <a 
-              href="/generator/contact?type=tradein" 
-              className="inline-block sci-fi-button px-10 py-4"
-            >
-              Get Trade-In Value
-            </a>
-          </div>
-        </motion.div>
+        {/* A TRADE-IN PANEL STOOD HERE AND WAS REMOVED ON 2026-09-21, with the
+            homepage trade-in calculator, on the owner's instruction.
+
+            It promised "credit towards a new Cummins generator" and "free
+            collection and valuation" — three commitments, none of them backed
+            by a process anywhere in this business, and the first pointing at
+            the wrong make: VOLTKA is what we sell.
+
+            Its button linked to /generator/contact?type=tradein, which returns
+            HTTP 404 on production and always had. So the panel advertised a
+            service we do not run, through a button that did not work. */}
       </div>
     </div>
   );

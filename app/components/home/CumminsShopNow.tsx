@@ -32,7 +32,6 @@ export default function CumminsShopNow() {
       priceUsd: '$2,400',
       stock: 7,
       features: ['Single phase', 'Compact', 'Quiet'],
-      financing: '12/24 months',
       popular: false,
     },
     {
@@ -42,7 +41,6 @@ export default function CumminsShopNow() {
       priceUsd: '$4,650',
       stock: 5,
       features: ['3-phase', 'Commercial', 'Efficient'],
-      financing: '12/24/36 months',
       popular: true,
     },
     {
@@ -52,7 +50,6 @@ export default function CumminsShopNow() {
       priceUsd: '$7,875',
       stock: 4,
       features: ['Industrial', 'Heavy-duty', 'Reliable'],
-      financing: '24/36 months',
       popular: true,
     },
     {
@@ -62,7 +59,6 @@ export default function CumminsShopNow() {
       priceUsd: '$11,850',
       stock: 3,
       features: ['Cummins engine', 'Industrial', 'Proven'],
-      financing: '24/36/48 months',
       popular: false,
     },
     {
@@ -72,7 +68,6 @@ export default function CumminsShopNow() {
       priceUsd: '$21,675',
       stock: 2,
       features: ['Heavy industrial', 'Mining', 'Healthcare'],
-      financing: '36/48 months',
       popular: true,
     },
   ];
@@ -102,8 +97,7 @@ export default function CumminsShopNow() {
               same-day claim in the same section. */}
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">
             Five popular Cummins and VOLTKA models, at the prices published on
-            our generators page. Financing is arranged through your own bank or
-            asset financier.
+            our generators page.
           </p>
         </div>
 
@@ -161,10 +155,11 @@ export default function CumminsShopNow() {
                   <p className="text-xs text-gray-400">Published range · confirmed on quotation</p>
                 </div>
 
-                {/* Financing */}
-                <p className="text-xs text-gray-400 mb-6">
-                  <span className="text-amber-400 font-semibold">Financing:</span> {gen.financing}
-                </p>
+                {/* A "Financing: 12/24 months" line stood here on every card.
+                    We do not lend and we set no terms, so stating a term per
+                    model read as our offer when the sentence above the grid
+                    already says a buyer arranges credit with their own bank.
+                    Removed 2026-09-21 with the trade-in calculator. */}
 
                 {/* CTAs */}
                 <div className="space-y-3">
