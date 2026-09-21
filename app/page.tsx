@@ -12,9 +12,7 @@ import { Metadata } from 'next';
 import HomePageClient from '@/components/home/HomePageClient';
 import HubFeatureBlock from '@/components/home/HubFeatureBlock';
 import SolutionsBySector from '@/components/home/SolutionsBySector';
-import VoltkaCinematicShowcase from '@/components/home/VoltkaCinematicShowcase';
 import { VoltkaBillboard, VoltkaDuoGrid } from '@/components/home/VoltkaShowroomGrid';
-import CinematicVideoSection from '@/components/home/CinematicVideoSection';
 // Ambient hero FX layer (Three.js particles, post-mount) and the below-the-fold
 // rotating WebGL ring are code-split so their JS stays out of the homepage entry
 // bundle — protecting LCP/FCP. ssr stays on (default), so server markup is
@@ -66,10 +64,39 @@ import AIToolsPromo from '@/components/ai/AIToolsPromo';
  * still server-rendered and crawlable.
  */
 const AIAdvantageHero = dynamic(() => import('@/app/components/home/AIAdvantageHero'));
+/*
+ * THESE THREE MOVED FROM STATIC IMPORTS TO dynamic() ON 2026-09-21.
+ *
+ * All three are client components rendering below the fold — at lines 889,
+ * 917 and 986 of a page whose hero sits at 155 — and all three were in the
+ * entry bundle, so their JavaScript was downloaded and evaluated before
+ * anything the visitor could see was interactive. TradeInCalculator alone is
+ * 19 KB of source.
+ *
+ * Lighthouse on the live homepage: 1,852 ms of script evaluation inside 6.6 s
+ * of main-thread work, against an LCP of 4.4 s. This does not fix that on its
+ * own; it takes three chunks out of the critical path.
+ *
+ * ssr STAYS ON (the next/dynamic default, and app/page.tsx is a server
+ * component so ssr:false is not even available here). That is the whole point
+ * of doing it this way: the markup is still server-rendered, so every word
+ * stays in the crawlable HTML and the DOM is unchanged. Nothing is traded
+ * away for the speed.
+ *
+ * DELIBERATELY NOT LazyOnVisible. That wrapper initialises visible=false and
+ * does not render children until they scroll into view, so its contents are
+ * absent from the server HTML entirely. Googlebot renders JavaScript but does
+ * not scroll. Using it here would cut DOM and main-thread cost — the actual
+ * LCP problem, 2,355 elements against Google's 1,400 failure threshold — but
+ * it would do so by making three sections invisible to search. This codebase
+ * has already recorded that trap once, on TrustBadgesSection.
+ */
+const VoltkaCinematicShowcase = dynamic(() => import('@/components/home/VoltkaCinematicShowcase'));
+const CinematicVideoSection = dynamic(() => import('@/components/home/CinematicVideoSection'));
+const TradeInCalculator = dynamic(() => import('@/components/home/TradeInCalculator'));
 const CumminsShopNowReal = dynamic(() => import('@/app/components/home/CumminsShopNow'));
 const CountyCoverageMapReal = dynamic(() => import('@/app/components/home/CountyCoverageMap'));
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
-import TradeInCalculator from '@/components/home/TradeInCalculator';
 import { COMMERCIAL_POLICY } from '@/lib/commercial/policy';
 import SocialProofWidget from '@/components/home/SocialProofWidget';
 import RecentWorkSection from '@/components/home/RecentWorkSection';
