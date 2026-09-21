@@ -41,11 +41,26 @@ export async function generateMetadata({
   const e = getEngineBySlug(engine);
   if (!e) return { title: 'Page Not Found', robots: { index: false, follow: false } };
 
-  const label = e.make ? `${e.make} ${e.model}` : e.model;
+  /*
+   * A page that covers several engines names all of them. Where the parts
+   * list is identical across models, one page carries the table and the label
+   * reads "Perkins 3054C / 3056E", so a search for either model lands on a
+   * page that says that model. See EngineEntry.sameAs.
+   */
+  const models = [e.model, ...(e.sameAs ?? [])].join(' / ');
+  const label = e.make ? `${e.make} ${models}` : models;
   return {
     title: `${label} Generator Spare Parts Kenya`,
     description: `${e.parts.length} spare parts for ${label} generator engines in Kenya — filters, injectors, bearings, gaskets and electrical components with verified fitment. Quotation on request, dispatched nationwide.`,
-    alternates: { canonical: `${BASE}/generators/spare-parts/engine/${e.slug}` },
+    /*
+     * A duplicate points its canonical at the page that carries the table.
+     * Some engines share every part in the catalogue, so two pages would
+     * otherwise publish one identical table under two URLs. See the note on
+     * EngineEntry.sameAs in lib/parts/engineIndex.ts.
+     */
+    alternates: {
+      canonical: `${BASE}/generators/spare-parts/engine/${e.duplicateOf ?? e.slug}`,
+    },
     openGraph: {
       title: `${label} Generator Spare Parts — Kenya`,
       description: `${e.parts.length} parts verified to fit ${label}. Nationwide dispatch from Nairobi.`,
@@ -63,7 +78,14 @@ export default async function EnginePartsPage({
   const e = getEngineBySlug(engine);
   if (!e) notFound();
 
-  const label = e.make ? `${e.make} ${e.model}` : e.model;
+  /*
+   * A page that covers several engines names all of them. Where the parts
+   * list is identical across models, one page carries the table and the label
+   * reads "Perkins 3054C / 3056E", so a search for either model lands on a
+   * page that says that model. See EngineEntry.sameAs.
+   */
+  const models = [e.model, ...(e.sameAs ?? [])].join(' / ');
+  const label = e.make ? `${e.make} ${models}` : models;
   const others = getEngineIndex().filter((x) => x.slug !== e.slug).slice(0, 24);
 
   // Group by part category so the page reads like a parts list, not a dump.

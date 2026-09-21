@@ -36,6 +36,23 @@ export type EngineEntry = {
   /** Engine manufacturer, inferred only from unambiguous model conventions. */
   make?: string;
   parts: EnginePart[];
+  /**
+   * Other engine models whose parts list is IDENTICAL to this one.
+   *
+   * Some engines share every service part in the catalogue — the Perkins
+   * 3054C and 3056E, the 403C-15 and 404C-22, the 403D-15 and 404D-22. The
+   * fitment data is right: those parts genuinely fit both. But a page per
+   * model then publishes the same table twice, and measured on the build of
+   * 2026-09-21 the two pages ran to 1,361 words each and differed by EIGHT —
+   * the model name, twice.
+   *
+   * One of each group keeps the page and names every model it covers.
+   * `sameAs` on the survivor lists the others; `duplicateOf` on the others
+   * points back, so the route can emit a canonical instead of a second copy.
+   */
+  sameAs?: string[];
+  /** Slug of the entry this one duplicates, when its parts list is identical. */
+  duplicateOf?: string;
 };
 
 /**
@@ -111,7 +128,7 @@ export function getEngineIndex(): EngineEntry[] {
     }
   }
 
-  cached = [...byModel.values()]
+  const entries: EngineEntry[] = [...byModel.values()]
     .map(({ model, parts }) => ({
       slug: engineSlug(model),
       model,
@@ -121,6 +138,30 @@ export function getEngineIndex(): EngineEntry[] {
     .filter((e) => e.slug && e.parts.length >= MIN_PARTS)
     .sort((a, b) => b.parts.length - a.parts.length);
 
+  /*
+   * GROUP ENGINES WHOSE PARTS LIST IS IDENTICAL.
+   *
+   * Keyed on the sorted part numbers, so two engines group only when every
+   * single part matches — not merely most of them. The 6BT5.9 and 6BTA5.9
+   * differ by 36 cells and are left as separate pages, which is correct.
+   *
+   * The survivor is the first in the existing sort order (most parts, then
+   * insertion order), so the choice is deterministic rather than arbitrary.
+   */
+  const byParts = new Map<string, EngineEntry[]>();
+  for (const e of entries) {
+    const key = e.parts.map((p) => p.partNo.toUpperCase()).sort().join('|');
+    if (!byParts.has(key)) byParts.set(key, []);
+    byParts.get(key)!.push(e);
+  }
+  for (const group of byParts.values()) {
+    if (group.length < 2) continue;
+    const [primary, ...rest] = group;
+    primary.sameAs = rest.map((e) => e.model);
+    for (const e of rest) e.duplicateOf = primary.slug;
+  }
+
+  cached = entries;
   return cached;
 }
 

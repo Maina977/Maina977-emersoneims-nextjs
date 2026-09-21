@@ -718,6 +718,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
    * than 5 parts get no page, so none are thin.
    */
   for (const e of getEngineIndex()) {
+    /*
+     * Engines whose parts list is IDENTICAL to another engine are skipped.
+     * They still serve, but their canonical points at the page that carries
+     * the table, and a URL cannot be advertised here while its canonical
+     * names a different one: the sitemap says "index this", the canonical
+     * says "index that". Three pairs are affected - Perkins 3054C/3056E,
+     * 403C-15/404C-22 and 403D-15/404D-22 - and the surviving page names both
+     * models in its title, so neither model loses its search term.
+     */
+    if (e.duplicateOf) continue;
     urls.push({
       url: `${BASE_URL}/generators/spare-parts/engine/${e.slug}`,
       changeFrequency: 'weekly',
