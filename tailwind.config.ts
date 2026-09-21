@@ -1,10 +1,34 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  /*
+   * DEAD MIRRORS ARE EXCLUDED FROM THE SCAN.
+   *
+   * components/building/ is 394 files and 8.26 MB of TSX that nothing
+   * imports - verified 2026-09-21 by grepping every .ts/.tsx under app,
+   * components and lib for that exact path: zero hits outside the directory
+   * itself. app/(building)/ is the route half of the same mirror. Both are
+   * kept on disk deliberately - check-claims reports them as dead mirrors
+   * rather than deleting them - but Tailwind was still reading them, so every
+   * utility class used ONLY by code that ships to nobody was generated into
+   * the stylesheet every visitor downloads and the browser must parse before
+   * it can paint.
+   *
+   * That stylesheet is render-blocking, which puts it on the critical path to
+   * Largest Contentful Paint. LCP measured 4.4s on mobile against a 2.5s
+   * "good" threshold, with Lighthouse attributing 450ms to blocking CSS.
+   *
+   * These are exclusions from a BUILD SCAN, not deletions. Revive a mirror,
+   * import it, and its classes come back with it. The "!" negation is
+   * fast-glob syntax, which is what Tailwind v3 resolves content globs with.
+   */
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "!./components/building/**",
+    "!./app/(building)/**",
+    "!./_archive/**",
   ],
   theme: {
     extend: {
