@@ -30,6 +30,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { defaultLocale } from '@/i18n';
 import enMessages from '@/messages/en.json';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
+import GoogleTags from '@/components/analytics/GoogleTags';
 import WebVitalsReporter from '@/components/analytics/WebVitalsReporter';
 import { ALL_SERVICES } from '@/lib/services/allServices';
 
@@ -795,6 +796,18 @@ export default async function RootLayout({
         <ScreenReaderAnnouncerProvider>
         <NextIntlClientProvider locale={locale} messages={messages}>
         
+        {/*
+          GA4 and Google Ads. Renders nothing until NEXT_PUBLIC_GA_ID or
+          NEXT_PUBLIC_GOOGLE_ADS_ID is set, so this is inert until those are
+          configured in the host environment.
+
+          Mounted HERE rather than through PerformanceProvider, which is where
+          the previous GoogleAnalytics component lived: that chain runs through
+          ClientLayout, which nothing mounts, so it never rendered. Measured on
+          the live site 2026-09-21 — zero occurrences of gtag or dataLayer.
+        */}
+        <GoogleTags />
+
         {/* Real-time Analytics Tracker */}
         <AnalyticsTracker />
         {/* Real-user Core Web Vitals -> /api/analytics/collect (type='vitals').

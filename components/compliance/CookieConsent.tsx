@@ -41,9 +41,21 @@ export default function CookieConsent() {
     
     // Initialize analytics after consent
     if (typeof window !== 'undefined' && (window as any).gtag) {
+      /*
+       * ad_storage was pinned to 'denied' here with the note "We don't use
+       * ads". That changed on 2026-09-22: the business is advertising through
+       * Google Ads, and a denied ad_storage means conversions cannot be
+       * attributed to a click — the campaign would spend without ever
+       * reporting what it produced.
+       *
+       * This fires only from acceptCookies(), i.e. after the visitor has
+       * pressed Accept. Declining still denies everything below.
+       */
       (window as any).gtag('consent', 'update', {
         analytics_storage: 'granted',
-        ad_storage: 'denied', // We don't use ads
+        ad_storage: 'granted',
+        ad_user_data: 'granted',
+        ad_personalization: 'granted',
       });
     }
   };

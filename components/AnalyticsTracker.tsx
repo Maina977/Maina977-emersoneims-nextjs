@@ -147,6 +147,47 @@ export default function AnalyticsTracker() {
         .slice(0, 60);
 
       send({ t: 'click', p: location.pathname, h: location.hostname, label });
+
+      /*
+       * The same click, reported to GA4 and Google Ads.
+       *
+       * The first-party beacon above feeds our own dashboard and cannot reach
+       * Google, so without this an ad campaign has nothing to optimise
+       * toward. These are the actions that are actually worth money on this
+       * site — a phone call, a WhatsApp message, an email — so they are named
+       * rather than lumped into one generic event.
+       *
+       * Guarded on gtag existing: with no measurement ID configured,
+       * components/analytics/GoogleTags.tsx renders nothing, window.gtag is
+       * undefined and this is a no-op.
+       */
+      const w = window as unknown as { gtag?: (...a: unknown[]) => void };
+      if (typeof w.gtag === 'function') {
+        const href = (el.getAttribute('href') || '').toLowerCase();
+        const action =
+          href.startsWith('tel:') ? 'contact_phone'
+          : /wa\.me|whatsapp/.test(href) ? 'contact_whatsapp'
+          : href.startsWith('mailto:') ? 'contact_email'
+          : 'cta_click';
+
+        w.gtag('event', action, {
+          event_category: 'engagement',
+          event_label: label,
+          page_path: location.pathname,
+        });
+
+        /*
+         * The Google Ads conversion itself. It needs a conversion ID AND the
+         * label of a conversion action created inside the Ads account, in the
+         * form AW-123456789/AbC-D_efGh. Without the label no conversion can
+         * be sent, so this stays silent until it is configured.
+         */
+        const convId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
+        const convLabel = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONTACT_LABEL;
+        if (convId && convLabel && action !== 'cta_click') {
+          w.gtag('event', 'conversion', { send_to: `${convId}/${convLabel}` });
+        }
+      }
     };
 
     document.addEventListener('click', onClick, { capture: true, passive: true });

@@ -29,10 +29,19 @@ const LazyAIEngagement = dynamic(() => import('@/components/analytics/AIEngageme
   loading: () => null,
 });
 
-const LazyGoogleAnalytics = dynamic(() => import('@/components/analytics/GoogleAnalytics'), {
-  ssr: false,
-  loading: () => null,
-});
+/*
+ * LazyGoogleAnalytics WAS DECLARED HERE AND WAS REMOVED 2026-09-22.
+ *
+ * It loaded a SECOND copy of googletagmanager.com/gtag/js. Nothing ever ran
+ * it - this provider is reached only through ClientLayout, which nothing
+ * mounts - so it did no harm, but it was a loaded gun: mounting ClientLayout
+ * for any reason would have double-counted every pageview and every
+ * conversion, and that is the kind of fault nobody looks for because the
+ * numbers merely look good.
+ *
+ * gtag now loads in exactly one place, components/analytics/GoogleTags.tsx,
+ * mounted directly in app/layout.tsx.
+ */
 
 const LazyAdvancedPreloader = dynamic(() => import('@/components/performance/AdvancedPreloader'), {
   ssr: false,
@@ -201,7 +210,6 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
       {/* Analytics - load with low priority */}
       <LazyComprehensiveAnalytics />
       <LazyAIEngagement />
-      <LazyGoogleAnalytics />
 
       {/* Performance components */}
       <LazyAdvancedPreloader />
