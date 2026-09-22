@@ -843,6 +843,47 @@ const nextConfig: NextConfig = {
         destination: '/contact',
         permanent: true,
       },
+      /*
+       * ═══════════════════════════════════════════════════════════════
+       * /solutions/generators/<city> -> /kenya/<county>/generators
+       * ═══════════════════════════════════════════════════════════════
+       *
+       * Eighteen city pages sat under /solutions/generators, which itself
+       * already 308s to /generators. Measured on the build of 2026-09-21 they
+       * run to 171-240 words each, carry "index, follow" and a self-referential
+       * canonical, appear in no sitemap, and are linked from nowhere on the
+       * site — findable only by guessing the URL.
+       *
+       * The /kenya county tier answers the same question far better: 1,189
+       * words for Nairobi against 240, with sourced altitude, temperature and
+       * derating figures. The two share only 5% of their phrasing, so this is
+       * not a duplicate being folded away — it is a thin page being replaced by
+       * a substantial one, and any link value it holds going with it.
+       *
+       * Two of the source slugs were truncated and had always been wrong:
+       * 'kirinyag' for Kirinyaga and 'murang' for Murang'a. Both are listed
+       * here exactly as they were published, so the old URLs still resolve.
+       *
+       * Thika maps to Kiambu because Thika is in Kiambu county.
+       */
+      { source: '/solutions/generators/eldoret', destination: '/kenya/uasin-gishu/generators', permanent: true },
+      { source: '/solutions/generators/kajiado', destination: '/kenya/kajiado/generators', permanent: true },
+      { source: '/solutions/generators/kakamega', destination: '/kenya/kakamega/generators', permanent: true },
+      { source: '/solutions/generators/kericho', destination: '/kenya/kericho/generators', permanent: true },
+      { source: '/solutions/generators/kiambu', destination: '/kenya/kiambu/generators', permanent: true },
+      { source: '/solutions/generators/kilifi', destination: '/kenya/kilifi/generators', permanent: true },
+      { source: '/solutions/generators/kirinyag', destination: '/kenya/kirinyaga/generators', permanent: true },
+      { source: '/solutions/generators/kisumu', destination: '/kenya/kisumu/generators', permanent: true },
+      { source: '/solutions/generators/lamu', destination: '/kenya/lamu/generators', permanent: true },
+      { source: '/solutions/generators/machakos', destination: '/kenya/machakos/generators', permanent: true },
+      { source: '/solutions/generators/makueni', destination: '/kenya/makueni/generators', permanent: true },
+      { source: '/solutions/generators/mombasa', destination: '/kenya/mombasa/generators', permanent: true },
+      { source: '/solutions/generators/murang', destination: '/kenya/muranga/generators', permanent: true },
+      { source: '/solutions/generators/nairobi', destination: '/kenya/nairobi/generators', permanent: true },
+      { source: '/solutions/generators/nakuru', destination: '/kenya/nakuru/generators', permanent: true },
+      { source: '/solutions/generators/nyeri', destination: '/kenya/nyeri/generators', permanent: true },
+      { source: '/solutions/generators/taita-taveta', destination: '/kenya/taita-taveta/generators', permanent: true },
+      { source: '/solutions/generators/thika', destination: '/kenya/kiambu/generators', permanent: true },
       // ═══════════════════════════════════════════════════════════════════
       // CONSOLIDATE DUPLICATE PAGES
       // ═══════════════════════════════════════════════════════════════════

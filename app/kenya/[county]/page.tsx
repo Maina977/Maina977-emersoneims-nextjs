@@ -8,16 +8,41 @@ import CountySiteConditions from '@/components/seo/CountySiteConditions';
 import LocationEnquiry from '@/components/seo/LocationEnquiry';
 import LocationProof from '@/components/seo/LocationProof';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
-import { CORE_SERVICE_SLUGS, isPriorityCounty } from '@/lib/seo/kenyaIndexable';
+import { CORE_SERVICE_SLUGS, COUNTY_SERVICE_SLUGS, isPriorityCounty } from '@/lib/seo/kenyaIndexable';
 
 type Props = {
   params: Promise<{ county: string }>;
 };
 
-// Only these services have indexable /kenya/<county>/<service> pages — see
-// kenyaIndexable.ts. Every county-page link must point inside this set.
+/*
+ * THE TEN HEADLINE SERVICES, kept as the prominent grid at the top.
+ *
+ * The comment that stood here said "only these services have indexable
+ * /kenya/<county>/<service> pages". That stopped being true on 2026-09-03,
+ * when four whole trades — air conditioning, boreholes, automation and
+ * incinerators — were restored to the county tier because narrowing it had
+ * 308'd them away entirely. getIndexableKenyaParams() has built the wider
+ * COUNTY_SERVICE_SLUGS set ever since, with its own reasoning recorded there:
+ * "AC repair in Nairobi is not a near-duplicate of generator repair in
+ * Nairobi. Different trade, different buyer, different search."
+ *
+ * The links here were never widened to match. Measured on the build of
+ * 2026-09-21: 41 service pages are built for every county and 10 were linked,
+ * so 1,457 pages across the 47 counties were indexable, in no sitemap, and
+ * reachable from nowhere on the site. A page that nothing links and nothing
+ * advertises can only be found by guessing its URL.
+ */
 const CORE_SERVICES = SEO_SERVICES.filter((s) =>
   CORE_SERVICE_SLUGS.includes(s.slug)
+);
+
+/**
+ * Every other service the route builds for this county. Listed below the main
+ * grid so the ten headline trades keep their prominence, but listed — because
+ * the route builds these pages and something has to reach them.
+ */
+const MORE_SERVICES = SEO_SERVICES.filter(
+  (s) => COUNTY_SERVICE_SLUGS.includes(s.slug) && !CORE_SERVICE_SLUGS.includes(s.slug)
 );
 
 // Generate static params for all counties
@@ -249,6 +274,29 @@ export default async function CountyPage({ params }: Props) {
               </Link>
             ))}
           </div>
+
+          {/* The remaining trades this county has pages for. Plain links, no
+              generated prose: this exists so every page the route builds is
+              reachable from the county it belongs to. */}
+          {MORE_SERVICES.length > 0 && (
+            <div className="mt-10">
+              <h3 className="text-lg font-semibold text-white/90 mb-4 text-center">
+                More trades we cover in {county.name}
+              </h3>
+              <ul className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                {MORE_SERVICES.map((service) => (
+                  <li key={service.id}>
+                    <Link
+                      href={`/kenya/${county.slug}/${service.slug}`}
+                      className="text-sm text-gray-400 hover:text-amber-400 underline-offset-4 hover:underline"
+                    >
+                      {service.shortName} in {county.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Constituencies */}

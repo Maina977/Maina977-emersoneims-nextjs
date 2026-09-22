@@ -209,6 +209,46 @@ export default async function SiteDirectoryPage() {
   ];
 
   /*
+   * PAGES THAT ARE PUBLISHED BUT NOT IN THE SITEMAP.
+   *
+   * This file's own promise — "a page can never again be published, listed for
+   * search engines, and linked from nothing" — holds only for pages the
+   * sitemap lists, because the catch-all group below is computed by
+   * subtracting the named groups from the sitemap itself. A page outside the
+   * sitemap could never appear, and so could never be caught.
+   *
+   * Measured on the build of 2026-09-21, that gap held real pages: every one
+   * below answers HTTP 200, carries index/follow and its own canonical, runs
+   * to between 358 and 1,435 words, and was reachable from nowhere on the
+   * site. /warranty is a trust page. /aquascan-pro-v3/methodology is the
+   * method behind a tool we ask people to rely on.
+   *
+   * Two pairs here look like duplicates and are not: /team (742 words) and
+   * /about-us/team (558) share 6% of their phrasing, and
+   * /tools/generator-oracle and /generator-oracle/tools share 11%. Both pairs
+   * were measured before being listed separately.
+   */
+  const unlistedPages: L[] = [
+    { href: '/warranty', label: 'Warranty coverage' },
+    { href: '/team', label: 'Our engineers and technicians' },
+    { href: '/about-us/team', label: 'Meet the team' },
+    { href: '/customer-success', label: 'Customer success' },
+    { href: '/innovations', label: 'Engineering innovations' },
+    { href: '/media', label: 'Media' },
+    { href: '/aquascan-pro-v3/methodology', label: 'AquaScan methodology' },
+    { href: '/tools/generator-oracle', label: 'Generator Oracle — AI fault diagnosis' },
+    { href: '/generator-oracle/tools', label: 'Generator tools — simulators and wiring' },
+    { href: '/resources/buying-guides', label: 'Buying guides' },
+    { href: '/resources/cummins-guides', label: 'Cummins guides' },
+    { href: '/marketplace/parts', label: 'Browse spare parts' },
+    { href: '/marketplace/returns', label: 'Returns and refunds' },
+    { href: '/africa', label: 'Africa overview' },
+    { href: '/africa/infrastructure', label: 'Africa — infrastructure' },
+    { href: '/africa/oil-gas', label: 'Africa — oil and gas' },
+    { href: '/africa/utilities', label: 'Africa — utilities' },
+  ];
+
+  /*
    * Everything in the sitemap that nothing above already links by name. This is
    * what catches sections like /generators/leasing, /generators/systems and
    * /generators/case-studies — all published, all in the sitemap, and linked
@@ -349,6 +389,11 @@ export default async function SiteDirectoryPage() {
             links={morePages}
           />
 
+          <Group
+            title="Also published"
+            note="Pages that are live and indexable but not listed in the XML sitemap."
+            links={unlistedPages}
+          />
           <Group title="Legal" links={legalLinks} />
         </div>
       </div>
