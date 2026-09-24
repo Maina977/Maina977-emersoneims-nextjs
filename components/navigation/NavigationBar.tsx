@@ -64,6 +64,9 @@ export default function NavigationBar({
       label: 'Services',
       dropdown: [
         { label: 'All Services', href: '/services', description: 'View all our services', icon: '🔧' },
+        // The make we sell. Absent from this menu until 2026-09-24, which left
+        // /voltka on two inbound links while every entry below it had 4,789.
+        { label: 'VOLTKA Generators', href: '/voltka', description: 'Our own brand, Cummins-powered, 10–2000 kVA', icon: '🏭' },
         { label: 'Generator Services', href: '/generators', description: 'Installation, repair & maintenance', icon: '⚡' },
         { label: 'Motor Rewinding', href: '/services/motor-rewinding', description: 'Professional motor services', icon: '🔄' },
         { label: 'UPS Systems', href: '/services/ups-systems', description: 'Backup power solutions', icon: '🔋' },

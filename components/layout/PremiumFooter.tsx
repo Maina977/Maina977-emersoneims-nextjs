@@ -44,6 +44,10 @@ const FOOTER_LINKS = {
   // Sourced from lib/services/allServices.ts (canonical /services/<slug>) plus
   // /solutions/<slug> deep-dive pages. Keep groups <= 8 entries for scannability.
   servicesPower: [
+    // VOLTKA leads: it is the only make we sell, and until 2026-09-24 the page
+    // for it was linked from two pages on a site of 4,791. See the note in
+    // app/voltka/page.tsx.
+    { label: 'VOLTKA Generators (our own brand)', href: '/voltka' },
     { label: 'Cummins Generators (2-yr warranty)', href: '/services/cummins-generators' },
     { label: 'Generator Repairs & Maintenance', href: '/services/generator-repairs' },
     { label: 'ATS / Changeovers', href: '/services/ats-changeover' },
