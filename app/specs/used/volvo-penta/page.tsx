@@ -15,7 +15,10 @@ export default function VolvoPentaSpecsPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="eims-shell py-16">
+        {/* as="h1": this IS the page title. Without it the page had no
+            first-level heading at all - h1=0, h2=3, h3=10. */}
         <SectionLead
+          as="h1"
           title="Volvo Penta Used Generators"
           subtitle="Marine-grade reliability for harsh remote environments"
           centered
