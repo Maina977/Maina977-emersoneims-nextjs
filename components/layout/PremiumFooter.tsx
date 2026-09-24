@@ -102,6 +102,47 @@ const FOOTER_LINKS = {
     { label: 'Incinerator Maintenance', href: '/maintenance-hub/incinerators' },
     { label: 'Fabrication & Welding', href: '/maintenance-hub/fabrication' },
   ],
+  /*
+   * THE 15 REPAIR CENTRE HUBS.
+   *
+   * /repair-centre is listed in the group below and receives 4,790 inbound
+   * links, because this footer renders on every page. Its hubs received
+   * between 5 and 22, and the 60 articles beneath them between 3 and 20 —
+   * measured on the build of 2026-09-24. The authority arriving at the index
+   * collapsed by 99.6% in a single step, because the index passes each hub
+   * exactly one link.
+   *
+   * That content is 242,834 words averaging 4,047 per article, and every one
+   * of the 60 scores full marks on title, description, single h1, canonical,
+   * sitemap inclusion and Article schema. Nothing is wrong with it except
+   * that nothing points at it.
+   *
+   * Listing the hubs here is the same reasoning the group below already
+   * records: this footer is the site's only server-rendered link surface, so
+   * it is the only place a link reliably reaches a crawler. Each hub goes
+   * from ~12 inbound links to 4,791, and passes that on to its articles.
+   *
+   * Labelled by fault rather than by section name — someone searching
+   * "inverter overheating" is looking for a repair, not for a taxonomy.
+   */
+  diagnosticHubs: [
+    { label: 'Generator Repair & Troubleshooting', href: '/repair-centre/generators' },
+    { label: 'Inverter Repair & Troubleshooting', href: '/repair-centre/inverters' },
+    { label: 'UPS Repair & Troubleshooting', href: '/repair-centre/ups' },
+    { label: 'PCB & Motherboard Repair', href: '/repair-centre/pcb-motherboards' },
+    { label: 'ATS & Changeover Panel Diagnosis', href: '/repair-centre/ats-changeover' },
+    { label: 'Fuel & Combustion Diagnosis', href: '/repair-centre/fuel-systems' },
+    { label: 'Industrial Electronics & Drives', href: '/repair-centre/industrial-electronics' },
+    { label: 'Pump Diagnosis & Repair', href: '/repair-centre/pumps' },
+    { label: 'Solar PV Diagnosis & Repair', href: '/repair-centre/solar' },
+    { label: 'Controller Diagnostics', href: '/repair-centre/controllers' },
+    { label: 'Engine Mechanical Diagnosis', href: '/repair-centre/engine-systems' },
+    { label: 'Motor Diagnosis & Rewinding', href: '/repair-centre/motors' },
+    { label: 'Test Instruments & Measurement', href: '/repair-centre/testing-tools' },
+    { label: 'Fault Codes & Diagnostic Messages', href: '/repair-centre/fault-codes' },
+    { label: 'Electrical Safety & Safe Isolation', href: '/repair-centre/safety' },
+  ],
+
   resources: [
     /*
      * Repair Centre, the marketplace, sectors, brands and the tools index are
@@ -195,6 +236,23 @@ export default function PremiumFooter() {
             >
               View all services →
             </Link>
+          </div>
+
+          {/* Diagnostic guides. Its own row rather than a fifth column, so
+              the four-column services grid above is unchanged. */}
+          <div className="mb-12">
+            <h4 className="text-sm font-mono text-brand-gold mb-5 tracking-wider uppercase">
+              Diagnostic Guides — free, no sign-up
+            </h4>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3">
+              {FOOTER_LINKS.diagnosticHubs.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="eims-footer-link">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">

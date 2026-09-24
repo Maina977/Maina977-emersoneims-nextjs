@@ -45,7 +45,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const seoTitle = a.header.title.split('—')[0].trim() || a.header.title;
 
   return {
-    title: seoTitle,
+    /*
+     * ABSOLUTE: no " | EmersonEIMS Kenya" appended.
+     *
+     * The root layout adds that 20-character suffix to every title. Measured
+     * on the build of 2026-09-24, it pushed 17 of these 60 articles past the
+     * ~60 characters a search result shows, so the brand was cut off anyway
+     * AND it took part of the headline with it:
+     *
+     *   "Test Instruments and the Measurement Errors That Mislead You |
+     *    EmersonEIMS Kenya"   80 chars, displayed to about 60
+     *
+     * Without the suffix every one of the 60 fits whole. These pages answer a
+     * fault query - someone typing "generator overheating" wants the answer,
+     * not the supplier - and the domain is shown beside the title regardless.
+     * Trading a suffix that was being truncated for a headline that is not is
+     * the right way round.
+     */
+    title: { absolute: seoTitle },
     description,
     keywords: [a.header.equipmentCategory, a.header.title, 'fault diagnosis', 'repair guide', 'Kenya'],
     alternates: { canonical: url },
