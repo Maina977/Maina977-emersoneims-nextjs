@@ -5,6 +5,7 @@
 
 import { Metadata } from 'next';
 import { SEOService, generateServiceKeywords } from '@/lib/data/seo-services';
+import { primaryServiceSlug } from './serviceTradeGroups';
 import { hasConstituencyData } from '@/lib/data/kenya-constituency-conditions';
 
 interface LocationData {
@@ -107,9 +108,36 @@ export function generateLocationServiceMetadata(
     location.type === 'constituency' &&
     !!parent?.county &&
     !hasConstituencyData(parent.county.slug, location.slug);
+
+  /*
+   * CONSOLIDATION ON THE SERVICE AXIS (2026-09-24).
+   *
+   * The rule above decides whether a page earns its own canonical based on
+   * whether it has anything unique to say about its LOCATION. The same
+   * question had never been asked about its SERVICE.
+   *
+   * Measured within one county on 2026-09-24, its 41 service pages overlap
+   * each other by a median of 50% — automation-services against
+   * electrical-services 72%, control-panels against plc-programming 70%,
+   * generator-companies against generators 68%. Each carried a
+   * self-referential canonical, so 1,927 pages were each claiming to be the
+   * definitive answer for a query several of their siblings answered
+   * identically. Search Console returned "Duplicate without user-selected
+   * canonical" and "Duplicate, Google chose different canonical than user",
+   * which is the correct verdict on that input.
+   *
+   * primaryServiceSlug folds synonyms within a trade onto one page and never
+   * crosses a trade boundary — see lib/seo/serviceTradeGroups.ts for what
+   * merges, what does not, and why.
+   *
+   * Applied to the county target as well as the self path, so a constituency
+   * page consolidating upward lands on the primary rather than on a page that
+   * itself consolidates. No chain forms.
+   */
+  const primary = primaryServiceSlug(service.slug);
   const canonicalPath = consolidateToCounty
-    ? `/kenya/${parent!.county!.slug}/${service.slug}`
-    : selfPath;
+    ? `/kenya/${parent!.county!.slug}/${primary}`
+    : `/kenya/${segs.join('/')}/${primary}`;
 
   const canonicalUrl = `https://www.emersoneims.com${canonicalPath}`;
 

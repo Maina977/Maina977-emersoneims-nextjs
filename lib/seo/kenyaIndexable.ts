@@ -24,6 +24,7 @@
 import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
 import { getServiceBySlug } from '@/lib/data/seo-services';
 import { hasConstituencyData } from '@/lib/data/kenya-constituency-conditions';
+import { primaryServiceSlug } from './serviceTradeGroups';
 import countyServices from '@/lib/seo/countyServices.json';
 
 /**
@@ -236,7 +237,21 @@ export function getIndexableKenyaUrls(): string[] {
       if (!hasConstituencyData(county.slug, constituency.slug)) continue;
 
       urls.push(`/kenya/${county.slug}/${constituency.slug}`);
+      /*
+       * ONLY PRIMARIES ARE SUBMITTED (2026-09-24).
+       *
+       * Two of the ten core slugs now consolidate on the service axis:
+       * generator-companies onto generators, solar-companies onto
+       * solar-installation. See lib/seo/serviceTradeGroups.ts.
+       *
+       * Listing them here would recreate the contradiction this file already
+       * warns about twenty lines above — the sitemap saying "index this"
+       * while the page says "index that instead". Measured before this
+       * filter: 86 sitemap URLs pointed their canonical at a sibling, which
+       * is 43 constituencies x the 2 consolidated slugs.
+       */
       for (const service of CORE_SERVICE_SLUGS) {
+        if (primaryServiceSlug(service) !== service) continue;
         urls.push(`/kenya/${county.slug}/${constituency.slug}/${service}`);
       }
     }
