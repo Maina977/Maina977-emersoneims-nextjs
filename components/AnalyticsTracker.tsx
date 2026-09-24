@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { GOOGLE_ADS_ID, GOOGLE_ADS_CONTACT_LABEL } from '@/lib/analytics/ids';
 import { usePathname } from 'next/navigation';
 
 /**
@@ -182,8 +183,8 @@ export default function AnalyticsTracker() {
          * form AW-123456789/AbC-D_efGh. Without the label no conversion can
          * be sent, so this stays silent until it is configured.
          */
-        const convId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
-        const convLabel = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONTACT_LABEL;
+        const convId = GOOGLE_ADS_ID;
+        const convLabel = GOOGLE_ADS_CONTACT_LABEL;
         if (convId && convLabel && action !== 'cta_click') {
           w.gtag('event', 'conversion', { send_to: `${convId}/${convLabel}` });
         }
