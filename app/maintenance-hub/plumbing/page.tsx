@@ -274,13 +274,20 @@ export default function PlumbingBiblePage() {
           <div className="container mx-auto px-4">
             <div className="mx-auto max-w-3xl text-center">
               <h2 className="mb-4 text-2xl font-bold text-white">
-                Pumps, boreholes and pressure systems
+                Need a plumber, not a diagnosis?
               </h2>
               <p className="mb-8 leading-relaxed text-gray-400">
-                Where a plumbing fault turns out to be the pump, the pressure vessel or the
-                borehole feeding it, that is work EmersonEIMS does.
+                EmersonEIMS installs, repairs and maintains plumbing and hot-water systems
+                across Kenya. And where a plumbing fault turns out to be the pump, the
+                pressure vessel or the borehole feeding it, that is the same team.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
+                <Link
+                  href="/services/plumbing"
+                  className="rounded-lg bg-cyan-500 px-6 py-3 font-bold text-black transition-all hover:bg-cyan-400"
+                >
+                  Our plumbing services
+                </Link>
                 <Link
                   href="/maintenance-hub/borehole"
                   className="rounded-lg border border-cyan-400/30 px-6 py-3 text-cyan-400 transition-all hover:bg-cyan-400/10"

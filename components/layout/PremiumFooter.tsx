@@ -80,6 +80,7 @@ const FOOTER_LINKS = {
     { label: 'Industrial Controls', href: '/services/ats-changeover' },
     { label: 'Steel Fabrication', href: '/solutions/fabrication' },
     { label: 'AC / HVAC Installation', href: '/services/ac-installation' },
+    { label: 'Plumbing & Water Systems', href: '/services/plumbing' },
   ],
   servicesSpecialised: [
     { label: 'Hospital Incinerators', href: '/services/hospital-incinerators' },
@@ -101,6 +102,9 @@ const FOOTER_LINKS = {
     { label: 'Motors Maintenance', href: '/maintenance-hub/motors' },
     { label: 'Incinerator Maintenance', href: '/maintenance-hub/incinerators' },
     { label: 'Fabrication & Welding', href: '/maintenance-hub/fabrication' },
+    { label: 'Plumbing Maintenance', href: '/maintenance-hub/plumbing' },
+    { label: 'Welding Maintenance', href: '/maintenance-hub/welding' },
+    { label: 'General Maintenance', href: '/maintenance-hub/general' },
   ],
   /*
    * THE 15 REPAIR CENTRE HUBS.
@@ -259,7 +263,7 @@ export default function PremiumFooter() {
             {[
               { title: 'Power & Generators', items: FOOTER_LINKS.servicesPower },
               { title: 'Renewable & UPS', items: FOOTER_LINKS.servicesRenewable },
-              { title: 'Electrical & HVAC', items: FOOTER_LINKS.servicesElectrical },
+              { title: 'Electrical, HVAC & Plumbing', items: FOOTER_LINKS.servicesElectrical },
               { title: 'Specialised & AI Suites', items: FOOTER_LINKS.servicesSpecialised },
             ].map((group) => (
               <div key={group.title}>

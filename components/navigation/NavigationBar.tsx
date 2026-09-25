@@ -73,6 +73,10 @@ export default function NavigationBar({
         { label: 'Borehole Pumps', href: '/services/borehole-pumps', description: 'Water pumping systems', icon: '💧' },
         { label: 'AC & Refrigeration', href: '/services/ac-installation', description: 'Cooling systems', icon: '❄️' },
         { label: 'Controls & Automation', href: '/services/ats-changeover', description: 'Industrial automation', icon: '🎛️' },
+        // Plumbing, added 2026-09-25. The trade already had a diagnostic page at
+        // /maintenance-hub/plumbing, but no commercial page and no entry in any
+        // menu — a visitor could not discover from this site that we install it.
+        { label: 'Plumbing & Water Systems', href: '/services/plumbing', description: 'Hotels, homes, hot water & drainage', icon: '🚿' },
       ]
     },
     {

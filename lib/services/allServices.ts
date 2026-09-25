@@ -324,7 +324,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
     testimonials: [],
 
     stats: [
-      { label: 'Warranty', value: '2 Years' },
+      { label: 'Our Warranty', value: '2 Years' },
       { label: 'Emergency Response', value: 'Available 24/7' },
       { label: 'Service Coverage', value: 'Nationwide Kenya' },
       { label: 'Consultation', value: 'Free' }
@@ -752,7 +752,7 @@ MANUAL CHANGEOVER: Cost-effective solution for applications where brief manual i
 
     stats: [
       { label: 'Transfer Time', value: '< 10 Sec' },
-      { label: 'Warranty', value: '2 Years' },
+      { label: 'Our Warranty', value: '2 Years' },
       { label: 'Installation', value: 'Professional' },
       { label: 'Service', value: 'Nationwide' }
     ],
@@ -963,7 +963,7 @@ SERVICES INCLUDE:
 
     stats: [
       { label: 'Lead Time', value: '1-6 Weeks' },
-      { label: 'Warranty', value: '2 Years' },
+      { label: 'Our Warranty', value: '2 Years' },
       { label: 'Custom Design', value: 'Available' },
       { label: 'Installation', value: 'Included' }
     ],
@@ -1185,7 +1185,7 @@ SITE SURVEY: Our solar experts will analyze your energy consumption, roof space,
     // Certifications will be added when officially obtained
     certifications: [],
 
-    relatedServices: ['cummins-generators', 'ups-systems', 'borehole-pumps', 'ats-changeover'],
+    relatedServices: ['cummins-generators', 'ups-systems', 'borehole-pumps', 'plumbing', 'ats-changeover'],
     technicalGuide: {
       href: '/services/solar-inverters',
       title: 'Solar Inverters: Complete Technical Reference',
@@ -1613,7 +1613,7 @@ We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier
     // Certifications will be added when officially obtained
     certifications: [],
 
-    relatedServices: ['cummins-generators', 'distribution-boards', 'motor-rewinding'],
+    relatedServices: ['cummins-generators', 'distribution-boards', 'motor-rewinding', 'plumbing'],
     technicalGuide: {
       href: '/services/air-conditioning',
       title: 'Air Conditioning: Complete Technical Reference',
@@ -1812,15 +1812,15 @@ WE PROVIDE:
 
     stats: [
       { label: 'Capacity Range', value: '600VA-500kVA' },
-      { label: 'Warranty', value: '2-5 Years' },
+      { label: 'Our Warranty', value: '2 Years' },
       { label: 'Battery Service', value: 'Available' },
       { label: 'Installation', value: 'Professional' }
     ],
 
     warranties: [
-      'Manufacturer warranty (2-5 years)',
-      'Installation warranty',
-      'Battery warranty'
+      'Two-year EmersonEIMS warranty on installation and workmanship',
+      'Manufacturer warranty on the UPS itself (2-5 years, varies by model)',
+      'Battery warranty per battery manufacturer'
     ],
 
     // Certifications will be added when officially obtained
@@ -2019,21 +2019,21 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
 
     stats: [
       { label: 'Max Depth', value: '300m' },
-      { label: 'Warranty', value: '1-2 Years' },
+      { label: 'Our Warranty', value: '2 Years' },
       { label: 'Solar Option', value: 'Available' },
       { label: 'Site Survey', value: 'Free' }
     ],
 
     warranties: [
-      'Pump manufacturer warranty',
-      'Installation warranty',
-      'Motor rewinding warranty'
+      'Two-year EmersonEIMS warranty on installation and workmanship',
+      'Manufacturer warranty on the pump itself, per its maker',
+      'Motor rewinding warranty per our rewinding terms'
     ],
 
     // Certifications will be added when officially obtained
     certifications: [],
 
-    relatedServices: ['solar-energy', 'motor-rewinding', 'distribution-boards', 'cummins-generators'],
+    relatedServices: ['plumbing', 'solar-energy', 'motor-rewinding', 'distribution-boards', 'cummins-generators'],
     technicalGuide: {
       href: '/services/borehole-drilling',
       title: 'Borehole Drilling: Complete Technical Reference',
@@ -2049,6 +2049,153 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
   // ═══════════════════════════════════════════════════════════════════════════
   // 10. HOSPITAL INCINERATORS
   // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'plumbing',
+    slug: 'plumbing',
+    name: 'Plumbing & Water Systems',
+    shortName: 'Plumbing',
+    tagline: 'Hotels, Homes & Commercial | Hot Water Systems',
+    description:
+      'Plumbing, water distribution and hot-water systems for hotels, homes, apartments, commercial buildings and institutions across Kenya.',
+    longDescription:
+      'EmersonEIMS installs, repairs and maintains plumbing and hot-water systems for hotels, resorts, homes, apartments, offices, schools and commercial facilities. The work runs from complete installations on new developments through bathroom and kitchen plumbing, central hot-water systems, water storage and booster pumps, drainage, and emergency repairs — designed, installed, tested and commissioned by the same engineering team that already handles the building\'s power, pumping and electrical systems.',
+
+    icon: '🚿',
+    heroImage: '/images/desktop/waterheaters/heater-1.png',
+    images: ['/images/desktop/waterheaters/heater-2.png', '/images/desktop/waterheaters/heater-3.png'],
+
+    metaTitle: 'Plumbing Services Kenya | Hotels, Homes & Hot Water',
+    metaDescription:
+      'Plumbing and hot-water systems across Kenya: hotel and commercial plumbing, bathrooms, kitchens, water pumps, drainage and emergency repairs. Two-year warranty on our workmanship.',
+    keywords: [
+      'plumbing services Kenya',
+      'plumber Nairobi',
+      'hotel plumbing Kenya',
+      'commercial plumbing contractors Kenya',
+      'hot water installation Kenya',
+      'bathroom plumbing Kenya',
+      'kitchen plumbing Kenya',
+      'water pump installation Kenya',
+      'booster pump Kenya',
+      'drainage services Kenya',
+      'blocked drain repair Nairobi',
+      'burst pipe repair Kenya',
+      'water heater installation Kenya',
+      'residential plumbing Kenya',
+    ],
+
+    benefits: [
+      {
+        title: 'One engineering partner',
+        description:
+          'The team that maintains your generator, pumps and electrical distribution also handles the plumbing, so a hot-water fault traced to a pump or a control does not become two contractors blaming each other.',
+        icon: '🔧',
+      },
+      {
+        title: 'Built for occupied buildings',
+        description:
+          'Hotels and apartments cannot close while pipework is replaced. Work is staged and pressure-tested section by section so occupied floors keep water.',
+        icon: '🏨',
+      },
+      {
+        title: 'Hot water that arrives hot',
+        description:
+          'Central systems are designed with circulation, not just capacity. A guest turning a tap on the top floor should not run it for a minute first.',
+        icon: '♨️',
+      },
+    ],
+
+    features: [
+      'Hotel and hospitality plumbing — guest rooms, kitchens, laundries, staff facilities',
+      'Central hot-water systems, circulation lines and thermostatic mixing',
+      'Water heaters and storage cylinders, including solar hot-water integration',
+      'Complete bathroom plumbing: WCs, cisterns, basins, showers, mixers, bathtubs',
+      'Kitchen plumbing for homes, restaurants, hotels and institutional kitchens',
+      'Water storage tanks, booster pumps, pressure systems and pump controls',
+      'Borehole-to-building connections and distribution pipework',
+      'Drainage and wastewater: waste pipes, soil pipes, floor drains, sewer connections',
+      'Leak detection, burst pipes, blocked drains and low-pressure diagnosis',
+      'Scheduled plumbing maintenance for hotels and commercial properties',
+    ],
+
+    targetCustomers: [
+      'Hotels, resorts and lodges',
+      'Apartments and residential developments',
+      'Restaurants and commercial kitchens',
+      'Schools, colleges and institutions',
+      'Hospitals and clinics',
+      'Offices and commercial buildings',
+      'Homeowners',
+    ],
+
+    useCases: [
+      'Complete plumbing installation for a new hotel or apartment block',
+      'Central hot-water system for a hotel where guests report cold showers',
+      'Bathroom renovation with new sanitary ware and concealed pipework',
+      'Booster pump and pressure system for a multi-storey building',
+      'Emergency burst pipe or blocked drain on an occupied property',
+      'Scheduled maintenance contract covering pumps, pipework and hot water',
+    ],
+
+    priceRange: 'Quoted per scope after a site assessment',
+    startingPrice: 'Free site assessment',
+    pricingTiers: [],
+
+    faqs: [
+      {
+        question: 'Do you handle both installation and repairs?',
+        answer:
+          'Yes. The same team installs complete systems on new developments and attends breakdowns on existing ones — burst pipes, blocked drains, failed pumps, hot-water faults and low pressure.',
+      },
+      {
+        question: 'Can you work in an occupied hotel?',
+        answer:
+          'Yes, and most of our hospitality work is. Pipework is replaced in sections and pressure-tested before the next section is opened, so occupied floors keep water while the work proceeds.',
+      },
+      {
+        question: 'What warranty applies to plumbing work?',
+        answer:
+          'Our workmanship carries a two-year warranty. Fittings, heaters and pumps carry their own manufacturer warranties, which vary by product and are stated on the quotation.',
+      },
+      {
+        question: 'Do you install solar hot water?',
+        answer:
+          'Yes, and we integrate it with existing hot-water systems rather than treating it as a separate installation — which matters when a hotel needs guaranteed hot water on a cloudy week.',
+      },
+      {
+        question: 'Which counties do you cover?',
+        answer:
+          'Plumbing is available nationwide through the same teams that cover our generator and pumping work across all 47 counties.',
+      },
+    ],
+
+    testimonials: [],
+
+    stats: [
+      { label: 'Our Warranty', value: '2 Years' },
+      { label: 'Counties Covered', value: '47' },
+      { label: 'Site Assessment', value: 'Free' },
+    ],
+
+    warranties: [
+      'Two-year warranty on our workmanship',
+      'Manufacturer warranty on fittings, heaters and pumps, stated on the quotation',
+    ],
+    certifications: [],
+
+    relatedServices: ['borehole-pumps', 'ac-installation', 'solar-energy', 'distribution-boards'],
+    technicalGuide: {
+      href: '/maintenance-hub/plumbing',
+      title: 'Plumbing Diagnosis: Procedures and Fault Finding',
+      blurb:
+        'Seven diagnosis procedures covering low pressure, no hot water, blocked drainage, leaks and pump faults — how the fault is traced before anything is replaced.',
+    },
+
+    primaryCTA: 'Request a Site Assessment',
+    secondaryCTA: 'Report a Plumbing Fault',
+
+    category: 'water'
+  },
   {
     id: 'hospital-incinerators',
     slug: 'hospital-incinerators',
@@ -2231,14 +2378,14 @@ WE PROVIDE:
     stats: [
       { label: 'Capacity Range', value: '20-300 kg/hr' },
       { label: 'Operating Temp', value: '800-1200°C' },
-      { label: 'Warranty', value: '1 Year' },
+      { label: 'Our Warranty', value: '2 Years' },
       { label: 'Training', value: 'Included' }
     ],
 
     warranties: [
-      '1-Year manufacturer warranty',
-      'Installation warranty',
-      'Refractory warranty'
+      'Two-year EmersonEIMS warranty on installation and workmanship',
+      'One-year manufacturer warranty on the incinerator unit',
+      'Refractory warranty per the lining supplier'
     ],
 
     // Certifications will be added when officially obtained

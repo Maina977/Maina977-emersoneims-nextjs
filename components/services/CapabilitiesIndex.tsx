@@ -85,10 +85,14 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    heading: 'Water, cooling and waste',
+    heading: 'Plumbing, water, cooling and waste',
     blurb:
-      'Pumping, air conditioning and incineration — specified against the actual load, not a catalogue guess.',
+      'Plumbing, pumping, air conditioning and incineration — specified against the actual load, not a catalogue guess.',
     items: [
+      { label: 'Plumbing installation and repair', href: '/services/plumbing' },
+      { label: 'Hotel and commercial plumbing', href: '/services/plumbing' },
+      { label: 'Hot water systems and water heaters', href: '/services/plumbing' },
+      { label: 'Blocked drains, burst pipes and leak detection', href: '/maintenance-hub/plumbing' },
       { label: 'Borehole and submersible pumps', href: '/services/borehole-pumps' },
       { label: 'Borehole drilling, aquifer testing and yield', href: '/services/borehole-drilling' },
       { label: 'Air conditioning installation and repair', href: '/services/ac-installation' },
