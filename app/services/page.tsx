@@ -15,15 +15,10 @@
 import Link from 'next/link';
 import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
 import MobileWorkshopBand from '@/components/trust/MobileWorkshopBand';
-import CapabilitiesIndex from '@/components/services/CapabilitiesIndex';
+import ServiceDivisions from '@/components/services/ServiceDivisions';
+import { SERVICE_DIVISIONS } from '@/lib/services/serviceDivisions';
 import dynamic from 'next/dynamic';
-import {
-  ALL_SERVICES,
-  SERVICE_CATEGORIES,
-  TRUST_BADGES,
-  BUSINESS_CONTACT,
-  type Service,
-} from '@/lib/services/allServices';
+import { TRUST_BADGES, BUSINESS_CONTACT } from '@/lib/services/allServices';
 // Below-the-fold WebGL galaxy gallery. Code-split out of the page entry bundle.
 // Server component, so ssr stays on (default) — its grid fallback renders for
 // crawlers/no-WebGL; only the client chunk is deferred.
@@ -46,141 +41,6 @@ const SERVICES_ORBIT = [
   { src: '/images/desktop/overhaul/engine-liner-overhaul.jpg', title: 'Generator Overhauls', subtitle: 'Factory-spec engine rebuilds' },
   { src: '/images/steel-fabrication-workshop.png', title: 'Steel Fabrication', subtitle: 'Canopies, frames & enclosures' },
 ];
-
-const CATEGORY_META: Record<
-  string,
-  { tagline: string; accent: string; order: number }
-> = {
-  power: {
-    tagline:
-      'Diesel, gas & hybrid generators — sales, installation, ATS, repairs and 24/7 maintenance.',
-    accent: 'from-amber-500/20 to-orange-500/20 border-amber-500/30',
-    order: 1,
-  },
-  renewable: {
-    tagline:
-      'Solar PV, hybrid systems, battery storage and grid-tie installations across East Africa.',
-    accent: 'from-yellow-500/20 to-lime-500/20 border-yellow-500/30',
-    order: 2,
-  },
-  electrical: {
-    tagline:
-      'UPS systems, distribution boards, motor rewinding and full electrical contracting.',
-    accent: 'from-cyan-500/20 to-blue-500/20 border-cyan-500/30',
-    order: 3,
-  },
-  hvac: {
-    tagline:
-      'Air-conditioning, ventilation, cold-room and chiller installation & service.',
-    accent: 'from-sky-500/20 to-indigo-500/20 border-sky-500/30',
-    order: 4,
-  },
-  water: {
-    tagline:
-      'Borehole drilling, pump installation, treatment plants and water management.',
-    accent: 'from-blue-500/20 to-teal-500/20 border-blue-500/30',
-    order: 5,
-  },
-  waste: {
-    tagline:
-      'Hospital, municipal and industrial incinerators — supply, install, maintain.',
-    accent: 'from-rose-500/20 to-red-500/20 border-rose-500/30',
-    order: 6,
-  },
-  fabrication: {
-    tagline:
-      'Custom enclosures, sound-attenuated canopies and steel fabrication.',
-    accent: 'from-slate-500/20 to-zinc-500/20 border-slate-500/30',
-    order: 7,
-  },
-};
-
-const ORDERED_CATEGORIES = [...SERVICE_CATEGORIES].sort(
-  (a, b) =>
-    (CATEGORY_META[a.id]?.order ?? 99) - (CATEGORY_META[b.id]?.order ?? 99),
-);
-
-/**
- * SERVICE → CALCULATOR map.
- * Every entry below points at a calculator that lives under
- * `/diagnostics` (the legacy "diagnostic" hub). The deep link
- * `/diagnostics?service=<slug>#calculator` pre-selects the
- * matching service and scrolls to its Advanced Calculator.
- *
- * Keep these slugs in sync with `lib/services/allServices.ts`.
- */
-const SERVICE_CALCULATOR_SLUGS: ReadonlySet<string> = new Set([
-  'cummins-generators',
-  'generator-repairs',
-  'ats-changeover',
-  'distribution-boards',
-  'solar-energy',
-  'motor-rewinding',
-  'ac-installation',
-  'ups-systems',
-  'borehole-pumps',
-  'hospital-incinerators',
-]);
-
-function calculatorHref(slug: string): string | null {
-  return SERVICE_CALCULATOR_SLUGS.has(slug)
-    ? `/services/${slug}#calculator`
-    : null;
-}
-
-function ServiceCard({ service }: { service: Service }) {
-  const calcHref = calculatorHref(service.slug);
-  return (
-    <div className="group h-full bg-slate-800/40 border border-slate-700/70 rounded-xl overflow-hidden hover:border-cyan-500/60 hover:bg-slate-800/70 transition-colors duration-200 flex flex-col">
-      <Link
-        href={`/services/${service.slug}`}
-        prefetch={false}
-        className="block p-5 flex-1"
-      >
-        <div className="flex items-start gap-3 mb-3">
-          <span className="text-3xl leading-none" aria-hidden="true">
-            {service.icon}
-          </span>
-          <div className="min-w-0">
-            <h3 className="text-base font-semibold text-white leading-snug group-hover:text-cyan-400 transition-colors line-clamp-2">
-              {service.name}
-            </h3>
-            <p className="text-xs text-amber-400/80 mt-0.5">
-              {service.startingPrice}
-            </p>
-          </div>
-        </div>
-        <p className="text-sm text-slate-400 line-clamp-2 mb-3">
-          {service.description}
-        </p>
-        <ul className="space-y-1 mb-3">
-          {service.benefits.slice(0, 2).map((b) => (
-            <li
-              key={b.title}
-              className="flex items-center gap-2 text-xs text-slate-300"
-            >
-              <span className="text-cyan-400">✓</span>
-              <span className="line-clamp-1">{b.title}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="text-xs font-medium text-cyan-400 group-hover:text-cyan-300">
-          View details →
-        </div>
-      </Link>
-      {calcHref && (
-        <Link
-          href={calcHref}
-          prefetch={false}
-          className="block px-5 py-2.5 border-t border-slate-700/70 bg-slate-900/40 text-xs font-semibold text-amber-300 hover:text-amber-200 hover:bg-slate-900/70 transition-colors"
-          aria-label={`Open ${service.name} calculator`}
-        >
-          🧮 Open {service.shortName} Calculator →
-        </Link>
-      )}
-    </div>
-  );
-}
 
 export default function ServicesPage() {
   return (
@@ -213,7 +73,7 @@ export default function ServicesPage() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-300 text-xs font-medium mb-4">
                 <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
-                B2B Engineering Services · {ALL_SERVICES.length} services · {ORDERED_CATEGORIES.length} disciplines
+                B2B Engineering Services · {SERVICE_DIVISIONS.length} divisions · 100+ capabilities
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight mb-4">
                 <span className="bg-gradient-to-r from-white via-cyan-100 to-amber-200 bg-clip-text text-transparent">
@@ -406,69 +266,21 @@ export default function ServicesPage() {
         ctaLabel="Browse All Services"
       />
 
-      {/* ── Sticky category jumplinks ─────────────────────────────── */}
-      <nav
-        aria-label="Service categories"
-        className="px-4 py-3 sticky top-16 lg:top-[72px] z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/60"
-      >
-        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          {ORDERED_CATEGORIES.map((cat) => {
-            const count = ALL_SERVICES.filter(
-              (s) => s.category === cat.id,
-            ).length;
-            return (
-              <a
-                key={cat.id}
-                href={`#cat-${cat.id}`}
-                className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-cyan-500 hover:text-white transition-colors flex items-center gap-1.5"
-              >
-                <span>{cat.icon}</span>
-                <span>{cat.name}</span>
-                <span className="opacity-70">({count})</span>
-              </a>
-            );
-          })}
-        </div>
-      </nav>
+      {/*
+        ── THE TWELVE DIVISIONS ──────────────────────────────────────
+        Replaces the category grid that stood here. That grid grouped the
+        eleven ALL_SERVICES entries by the 'category' union — 'power',
+        'renewable', 'waste' — which is a field in a TypeScript interface, not
+        a way a buyer describes their problem. It also showed only what was in
+        ALL_SERVICES, so the repair centre's fifteen hubs, the eleven
+        maintenance hubs, the parts marketplace and the workshop were absent
+        from the page that is supposed to be the index of everything.
 
-      {/* ── Category sections — every sub-service under its parent ── */}
-      {ORDERED_CATEGORIES.map((cat) => {
-        const services = ALL_SERVICES.filter((s) => s.category === cat.id);
-        if (services.length === 0) return null;
-        const meta = CATEGORY_META[cat.id];
-        return (
-          <section
-            key={cat.id}
-            id={`cat-${cat.id}`}
-            className="px-4 py-12 scroll-mt-32"
-          >
-            <div className="max-w-7xl mx-auto">
-              <div
-                className={`mb-6 p-5 rounded-2xl border bg-gradient-to-r ${meta?.accent ?? 'from-slate-800/40 to-slate-900/40 border-slate-700/40'}`}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-3xl" aria-hidden="true">
-                    {cat.icon}
-                  </span>
-                  <h2 className="text-2xl sm:text-3xl font-bold">{cat.name}</h2>
-                  <span className="ml-auto text-xs px-2 py-1 bg-slate-900/50 rounded-full text-slate-300">
-                    {services.length}{' '}
-                    {services.length === 1 ? 'service' : 'services'}
-                  </span>
-                </div>
-                <p className="text-sm sm:text-base text-slate-300/90">
-                  {meta?.tagline}
-                </p>
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {services.map((s) => (
-                  <ServiceCard key={s.id} service={s} />
-                ))}
-              </div>
-            </div>
-          </section>
-        );
-      })}
+        The divisions carry 76 links across twelve trades, all of them routes
+        that exist, all server-rendered, and every one of the eleven service
+        pages is reachable from one. See lib/services/serviceDivisions.ts.
+      */}
+      <ServiceDivisions />
 
       {/* ── Featured: Cummins 2-Year Warranty ──────────────────────── */}
       <section className="px-4 py-14 bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-y border-amber-500/20">
@@ -503,7 +315,7 @@ export default function ServicesPage() {
           <div className="aspect-video bg-gradient-to-br from-amber-900/30 to-orange-900/30 rounded-2xl border border-amber-500/20 flex items-center justify-center">
             <div className="text-center">
               <div className="text-7xl mb-2">⚡</div>
-              <div className="text-5xl font-bold text-amber-400">3</div>
+              <div className="text-5xl font-bold text-amber-400">2</div>
               <div className="text-lg font-semibold">Year Warranty</div>
             </div>
           </div>
@@ -573,13 +385,14 @@ export default function ServicesPage() {
 
       <MobileWorkshopBand />
 
-      {/* Full capability index. The ten service cards above are the headline
-          disciplines; this names the work inside them in the words a buyer
-          searches — injector pumps, radiators, turbochargers, fuel automation,
-          exhaust fabrication — each linking to the page that already covers
-          it. Server-rendered, because an index a crawler cannot read indexes
-          nothing. */}
-      <CapabilitiesIndex />
+      {/*
+        The capability index that stood here listed 33 phrases across 22
+        destinations. Every one of them is now inside a division above, and the
+        five it had that the divisions lacked — alternator rewinding, starter
+        motors, radiator recoring, injector pumps, turbochargers — were folded
+        into division 01 rather than dropped. Rendering both would have put the
+        same links on the same page twice.
+      */}
     </div>
   );
 }

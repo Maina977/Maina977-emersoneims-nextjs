@@ -1185,7 +1185,7 @@ export function middleware(request: NextRequest) {
       const OK_SERVICES = new Set([
         // dynamic, from getAllServiceSlugs()
         'ac-installation','ats-changeover','borehole-pumps','cummins-generators','distribution-boards',
-        'generator-repairs','hospital-incinerators','motor-rewinding','solar-energy','ups-systems',
+        'generator-repairs','hospital-incinerators','motor-rewinding','plumbing','solar-energy','ups-systems',
         // static route folders under app/services
         'air-conditioning','borehole-drilling','solar-inverters',
       ]);
