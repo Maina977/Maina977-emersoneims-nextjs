@@ -349,6 +349,39 @@ const RULES = [
     why: 'A hardcoded rating or review count. No review corpus exists on this site, so any literal figure here is invented; Google requires the reviews to be visible on the page and treats fabricated markup as a site-wide manual action.',
   },
   {
+    id: 'vague-own-warranty',
+    /*
+     * BLOCKING, for the same reason as three-year-warranty below: a warranty
+     * term is an offer, not a marketing adjective.
+     *
+     * That rule deliberately exempts ranges like "1-3 years", because a range
+     * is usually somebody else's cover — "lithium batteries carry 10-year
+     * warranties", "lead-acid batteries have 2-3 year warranties" — and those
+     * are facts about products rather than promises by us.
+     *
+     * The exemption had a hole. app/solar/page.tsx read:
+     *
+     *     "We also provide our own 1-3 year installation warranty covering
+     *      workmanship."
+     *
+     * First person, and therefore our offer, but written as a range and so
+     * waved through. Owner-confirmed twice — 2026-08-26 and again 2026-09-25 —
+     * the warranty is TWO YEARS. Not one to three.
+     *
+     * A range on our own cover is worse than a wrong number. "1-3 years" tells
+     * a buyer nothing they can hold us to, and it invites the reading that
+     * they will get one.
+     *
+     * The FIRST-PERSON marker is what makes this precise: "our own", "we
+     * provide", "we offer", "we give". Without it the rule would flag every
+     * manufacturer range on the solar page, which is correct content and was
+     * left alone by design.
+     */
+    severity: 'error',
+    re: /\b(our own|we (?:also )?(?:provide|offer|give|include))\b[^.!?]{0,60}?\b\d+\s*[-–]\s*\d+\s*(?:year|yr)s?\b[^.!?]{0,30}?\bwarrant/i,
+    why: 'Our own warranty is TWO YEARS (owner-confirmed 2026-09-25). A range is not an offer a buyer can hold us to.',
+  },
+  {
     id: 'three-year-warranty',
     /*
      * BLOCKING, because this one is settled fact rather than judgement.

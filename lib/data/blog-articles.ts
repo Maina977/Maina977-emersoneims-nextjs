@@ -1808,11 +1808,11 @@ For hybrid systems:
 ## Why Choose Emerson EiMS for Solar
 
 **Our Advantages:**
-- 15+ years experience in Kenya
+- Operating in Kenya since 2012
 - ERC licensed installer
 - Tier-1 panel brands only
 - Premium LiFePO4 batteries
-- Comprehensive 5-year warranty
+- Comprehensive 2-year installation warranty
 - 24/7 monitoring and support
 - Nationwide coverage (47 counties)
 

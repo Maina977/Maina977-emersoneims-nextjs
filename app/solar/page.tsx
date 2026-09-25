@@ -382,7 +382,7 @@ const SOLAR_FAQ = [
   },
   {
     question: 'What warranty do I get with solar panels?',
-    answer: 'Our Tier-1 solar panels come with 25-year performance warranties (guaranteeing 80%+ output at 25 years). Inverters typically have 5-10 year warranties. Lithium batteries carry 10-year warranties, while lead-acid batteries have 2-3 year warranties. We also provide our own 1-3 year installation warranty covering workmanship.'
+    answer: 'Our Tier-1 solar panels come with 25-year performance warranties (guaranteeing 80%+ output at 25 years). Inverters typically have 5-10 year warranties. Lithium batteries carry 10-year warranties, while lead-acid batteries have 2-3 year warranties. Our own installation warranty is 2 years, covering workmanship.'
   },
   {
     question: 'How long does solar installation take?',
