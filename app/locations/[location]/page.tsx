@@ -6,6 +6,7 @@
  */
 
 import { Metadata } from 'next';
+import { MAJOR_TOWN_SLUGS } from '@/lib/seo/majorTowns';
 import Link from 'next/link';
 import {
   getAllLocations,
@@ -71,7 +72,44 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'website',
     },
     alternates: {
-      canonical: `https://www.emersoneims.com/locations/${locationSlug}`,
+      /*
+       * A TOWN PAGE EARNS ITS OWN CANONICAL ONLY IF SOMETHING ABOUT IT IS ITS
+       * OWN.
+       *
+       * 567 of these are built. Measured 2026-09-25, six-word phrase overlap:
+       *
+       *   /locations/ahero (594 words) vs /locations/awendo (595 words) = 80%
+       *
+       * and the 20% that differed was the place name substituted into the same
+       * sentences — "Solar Services in Ahero", "Our Services in Ahero", "about
+       * Generators in Ahero". Not one fact about Ahero that is not also true,
+       * word for word, of Awendo. Google's guidance names this exactly:
+       * substantially similar pages created for cities that funnel users to
+       * the same business. Every one carried a self-referential canonical, so
+       * each claimed to be definitive for its town.
+       *
+       * THE COUNTY PAGE IS THE TARGET BECAUSE IT IS ACTUALLY DIFFERENT.
+       * /kenya/<county> carries sourced altitude, design ambient temperature
+       * and the derating that follows — Nairobi at 1,795 m derates differently
+       * from Mombasa at sea level. That is a real answer to a real question,
+       * and it is what the duplicates lacked.
+       *
+       * THE FIFTEEN PUBLISHED TOWNS KEEP THEIRS. lib/seo/majorTowns.ts lists
+       * them and app/sitemap.ts submits them, and a sitemap URL must be
+       * self-canonical or the two directives contradict each other. They are
+       * equally templated today; when they carry town-specific substance the
+       * way the county pages do, they will have earned it.
+       *
+       * NOTHING IS DELETED OR REDIRECTED. All 567 still serve 200, still
+       * render, still carry index/follow, still linked from /locations. A
+       * canonical consolidates a signal; it does not remove a page.
+       */
+      canonical:
+        isCounty ||
+        !county ||
+        (MAJOR_TOWN_SLUGS as readonly string[]).includes(locationSlug)
+          ? `https://www.emersoneims.com/locations/${locationSlug}`
+          : `https://www.emersoneims.com/kenya/${county.slug}`,
     }
   };
 }
