@@ -76,10 +76,26 @@ export default function ServiceDetailClient({
   diagnostics,
   bible,
 }: ServiceDetailClientProps) {
-  // Check if this is a borehole-related service
-  const isBoreholeService = service.slug?.includes('borehole') ||
-                            service.name?.toLowerCase().includes('borehole') ||
-                            service.category === 'water';
+  /*
+   * IS THIS ACTUALLY A BOREHOLE SERVICE?
+   *
+   * The `category === 'water'` clause used to be part of this test, and it was
+   * wrong the moment a second water-category service existed. /services/plumbing
+   * was added on 2026-09-25 with category 'water', so it inherited the AquaScan
+   * borehole analyser — and because this flag also picks the DEFAULT TAB, a
+   * visitor searching "plumbing services Kenya" landed on a satellite
+   * groundwater-exploration tool before seeing a word about plumbing.
+   *
+   * Topical purity matters more than reuse here: the analyser is excellent, and
+   * it belongs on the borehole pages. Plumbing links to the borehole division
+   * from its related services instead.
+   *
+   * The test is now what its name says — borehole, by slug or name.
+   */
+  const isBoreholeService =
+    service.slug?.includes('borehole') ||
+    service.name?.toLowerCase().includes('borehole') ||
+    false;
 
   const hasDiagnostics = diagnostics !== null;
   const hasBible = bible !== null;
@@ -388,11 +404,13 @@ export default function ServiceDetailClient({
               <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                  {/* World's First Badge */}
-                  <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 text-black px-6 py-2 rounded-full text-sm font-bold mb-4 shadow-lg shadow-amber-500/30">
-                    <span className="text-xl">🏆</span>
-                    <span>WORLD&apos;S #1 AI BOREHOLE ANALYZER</span>
-                    <span className="text-xl">🌍</span>
+                  {/*
+                    Was "WORLD'S #1 AI BOREHOLE ANALYZER" with a trophy. That is
+                    a ranking claim with no independent evidence behind it, and
+                    it was doing less work than the specifics below it.
+                  */}
+                  <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-semibold mb-4">
+                    <span>AI-Assisted Borehole Pre-Feasibility</span>
                   </div>
                   <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-full text-sm font-medium mb-4 ml-2">
                     <span className="animate-pulse">26 AI ENGINES</span>
@@ -405,8 +423,12 @@ export default function ServiceDetailClient({
                     AquaScan Pro™ AI Borehole Analyzer
                   </h2>
                   <p className="text-slate-400 max-w-3xl mx-auto">
-                    The world&apos;s most advanced AI platform for groundwater exploration.
-                    195+ countries coverage. Same satellite technology used by NASA and ESA.
+                    Site screening for groundwater from open Earth-observation
+                    data — ESA Sentinel-2, NASA Landsat-8 and MODIS, and GRACE
+                    groundwater anomaly — combined with Kenyan county
+                    hydrogeology. It narrows where to drill and improves the
+                    odds; it does not replace a survey, and no desktop study can
+                    guarantee a yield before the hole is drilled and tested.
                   </p>
                 </div>
 
@@ -437,7 +459,9 @@ export default function ServiceDetailClient({
                     <div className="text-4xl mb-3">🛰️</div>
                     <h3 className="text-lg font-bold text-cyan-400 mb-2">Satellite Intelligence</h3>
                     <p className="text-sm text-slate-300">
-                      Real-time Sentinel-2, Landsat-8 & MODIS satellite data. Same technology used by NASA and ESA for global water resource mapping.
+                      Sentinel-2, Landsat-8 and MODIS imagery, published openly
+                      by ESA and NASA, read for surface-water extent, vegetation
+                      vigour and lineaments that suggest fracture zones.
                     </p>
                   </div>
                   <div className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 rounded-xl p-6 border border-purple-500/30">

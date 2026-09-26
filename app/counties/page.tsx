@@ -91,8 +91,9 @@ export default function CountiesPage() {
               <div className="text-sm text-gray-400">Emergency Service</div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-              <div className="text-3xl font-bold text-brand-gold mb-2">15+</div>
-              <div className="text-sm text-gray-400">Years Experience</div>
+              {/* "15+ years" was not true — operating since 2012 is 14 as at 2026. */}
+              <div className="text-3xl font-bold text-brand-gold mb-2">2012</div>
+              <div className="text-sm text-gray-400">Operating in Kenya since</div>
             </div>
           </div>
         </div>

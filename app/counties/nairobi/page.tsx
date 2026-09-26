@@ -244,8 +244,17 @@ export default function NairobiCountyPage() {
                 <div className="text-sm text-gray-400">Emergency Response</div>
               </div>
               <div>
-                <div className="text-4xl font-bold text-brand-gold mb-2">15+</div>
-                <div className="text-sm text-gray-400">Cummins/CAT Certified Technicians</div>
+                {/*
+                  REMOVED 2026-09-27: "15+ Cummins/CAT Certified Technicians".
+                  Two unevidenced claims in one stat — a headcount no record
+                  supports, and third-party CERTIFICATION by Cummins and
+                  Caterpillar. scripts/check-claims.mjs already warns on
+                  factory-trained phrasing for exactly this reason, and no
+                  certificates have been supplied. Replaced with the founding
+                  year used elsewhere on the site.
+                */}
+                <div className="text-4xl font-bold text-brand-gold mb-2">2012</div>
+                <div className="text-sm text-gray-400">Operating in Kenya since</div>
               </div>
               <div>
                 <div className="text-4xl font-bold text-brand-gold mb-2">98.7%</div>

@@ -257,7 +257,16 @@ export default function SparePartsPage() {
         <div className="max-w-7xl mx-auto px-6">
           <h1 className="text-5xl font-bold text-white mb-4">Genuine Spare Parts</h1>
           <p className="text-xl text-gray-300 mb-2">For all EmersonEIMS services & equipment</p>
-          <p className="text-amber-400 text-lg font-semibold">15,452+ parts • Real inventory • Same-day Nairobi delivery</p>
+          {/*
+            TWO NUMBERS, BOTH TRUE, PREVIOUSLY PRESENTED AS IF ONE WERE WRONG.
+            15,452 is the exact row count of lib/parts/inventory-2026-07-22.csv,
+            the stock file /api/parts/search reads. 1,315 is how many of those
+            are browsable online with a manufacturer part number and engine
+            fitment, across 27 categories. A visitor seeing "15,452+" here and
+            "1,315" on the catalogue page had no way to know which to believe.
+            The "+" is also gone: the count is exact, not a floor.
+          */}
+          <p className="text-amber-400 text-lg font-semibold">15,452 inventory references • 1,315 catalogued online with part numbers and engine fitment • Same-day Nairobi delivery</p>
         </div>
       </section>
 

@@ -12,6 +12,7 @@ import {
   HQ_LOCATION,
   COUNTY_CONDITIONS_SOURCE,
 } from '@/lib/data/kenya-county-conditions';
+import { verticalOf } from '@/lib/seo/serviceVertical';
 
 /**
  * Per-CONSTITUENCY site conditions.
@@ -44,6 +45,12 @@ interface Props {
   constituencySlug: string;
   constituencyName: string;
   serviceName?: string;
+  /**
+   * Needed to tell which trade the page is about. Without it this component
+   * rendered generator derating on solar, motor and plumbing constituency
+   * pages — see the note in lib/seo/serviceVertical.ts.
+   */
+  serviceSlug?: string;
 }
 
 export default function ConstituencySiteConditions({
@@ -52,6 +59,7 @@ export default function ConstituencySiteConditions({
   constituencySlug,
   constituencyName,
   serviceName,
+  serviceSlug,
 }: Props) {
   const c = getConstituencyConditions(countySlug, constituencySlug);
   if (!c) return null;
@@ -96,6 +104,13 @@ export default function ConstituencySiteConditions({
           <div className="text-3xl font-bold text-amber-300">{c.p95MaxC}&nbsp;°C</div>
           <div className="text-sm text-gray-500 mt-1">peaked at {c.absMaxC}&nbsp;°C in 2025</div>
         </div>
+        {/*
+          Engine-specific. Renders only on generator pages now; every other
+          trade keeps the elevation and ambient figures above, which are the
+          site itself and apply to any machine on it.
+        */}
+        {verticalOf(serviceSlug) === 'generator' && (
+        <>
         <div className="rounded-lg border border-amber-500/20 bg-white/5 p-5">
           <div className="text-sm text-gray-400 mb-1">Indicative derate</div>
           <div className="text-3xl font-bold text-amber-300">
@@ -112,6 +127,8 @@ export default function ConstituencySiteConditions({
             {total > 0 ? 'nameplate required' : 'no uplift needed'}
           </div>
         </div>
+        </>
+        )}
       </div>
 
       <div className="space-y-5 text-gray-300 max-w-4xl">

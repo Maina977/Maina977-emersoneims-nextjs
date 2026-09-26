@@ -22,6 +22,7 @@ const RingGallery = dynamic(() => import('@/components/home/RingGallery'), {
   loading: () => <div className="bg-black h-[100svh] min-h-[620px]" />,
 });
 import HomeEngineeringAuthority from '@/components/home/HomeEngineeringAuthority';
+import CompleteCapability from '@/components/home/CompleteCapability';
 import AIToolsPromo from '@/components/ai/AIToolsPromo';
 /*
  * FIVE HOMEPAGE SECTIONS WERE RENDERING NOTHING.
@@ -1053,6 +1054,16 @@ export default function HomePage() {
 
       {/* ENGINEERING AUTHORITY — crawlable editorial band + internal links to
           every service deep-dive. Additive; on-brand premium dark/amber. */}
+      {/*
+        THE HOMEPAGE CATCHES UP WITH /services.
+        Read as a crawler sees it, this page named generators, solar and UPS and
+        nothing else — no plumbing, boreholes, fabrication, incinerators or
+        industrial electronics — while /services had been rebuilt around twelve
+        divisions. The generator-first hero above is deliberately untouched;
+        this simply connects that authority to the rest of the architecture.
+      */}
+      <CompleteCapability />
+
       <HomeEngineeringAuthority />
 
       {/* 6 AI TOOLS — crawlable marketing band with internal links (does not

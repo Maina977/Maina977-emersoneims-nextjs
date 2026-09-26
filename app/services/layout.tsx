@@ -10,8 +10,15 @@ import { Metadata } from 'next';
  */
 
 export const metadata: Metadata = {
-  title: 'Services | Generators, Solar, Electrical, HVAC',
-  description: 'Power solutions in Kenya: generators, solar, ATS changeovers, distribution boards, UPS, motor rewinding, AC and borehole pumps. Call +254768860665',
+  /*
+   * Retitled 2026-09-27. The old title named four disciplines and the page now
+   * carries twelve divisions and 77 links — plumbing, boreholes, fabrication,
+   * incinerators and industrial electronics were all absent from the search
+   * result for the page that indexes them.
+   */
+  title: 'Engineering Services Kenya | Power, Water & Building Systems',
+  description:
+    'EmersonEIMS provides generators, solar, UPS, electrical, plumbing, boreholes, HVAC, motor rewinding, fabrication, incinerators and industrial repair services across all 47 counties of Kenya.',
   keywords: [
     // Generator Keywords
     'generator services Kenya',

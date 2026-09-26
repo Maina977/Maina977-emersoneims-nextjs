@@ -689,8 +689,9 @@ export default function GalleryPage() {
               <div className="text-gray-400">Client Satisfaction</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-green-400 mb-2">15+</div>
-              <div className="text-gray-400">Years Experience</div>
+              {/* "15+ years" was not true — operating since 2012 is 14 as at 2026. */}
+              <div className="text-4xl font-bold text-green-400 mb-2">2012</div>
+              <div className="text-gray-400">Operating in Kenya since</div>
             </div>
           </div>
         </div>

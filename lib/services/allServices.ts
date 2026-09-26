@@ -1171,7 +1171,7 @@ SITE SURVEY: Our solar experts will analyze your energy consumption, roof space,
     stats: [
       { label: 'Panel Warranty', value: '25 Years' },
       { label: 'Inverter Warranty', value: '10 Years' },
-      { label: 'Site Assessment', value: 'Free' },
+      { label: 'Phone & WhatsApp Advice', value: 'Free' },
       { label: 'Financing', value: 'Available' }
     ],
 
@@ -2138,7 +2138,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
     ],
 
     priceRange: 'Quoted per scope after a site assessment',
-    startingPrice: 'Free site assessment',
+    startingPrice: 'Site survey fee, deducted from the contract on award',
     pricingTiers: [],
 
     faqs: [
@@ -2174,7 +2174,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
     stats: [
       { label: 'Our Warranty', value: '2 Years' },
       { label: 'Counties Covered', value: '47' },
-      { label: 'Site Assessment', value: 'Free' },
+      { label: 'Phone & WhatsApp Advice', value: 'Free' },
     ],
 
     warranties: [

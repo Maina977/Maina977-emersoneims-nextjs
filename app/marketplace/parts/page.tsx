@@ -63,7 +63,7 @@ export default function PartsMarketplace() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-4xl font-bold text-white mb-2">Parts Marketplace</h1>
-              <p className="text-gray-400">15,452+ genuine OEM and aftermarket parts</p>
+              <p className="text-gray-400">15,452 genuine OEM and aftermarket inventory references — 1,315 catalogued online with manufacturer part numbers and engine fitment</p>
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}

@@ -47,7 +47,7 @@ const TOOLS: Record<string, ToolCopy> = {
       'Maintenance-interval guidance (250 h oil service, 500 h full service, major overhaul planning)',
       'Escalation to EmersonEIMS 24/7 emergency repair teams across Kenya when hands-on service is needed',
     ],
-    coverage: 'Backed by EmersonEIMS field engineers stationed across all 47 counties with 2–4 hour emergency response in Nairobi, Mombasa and Kisumu.',
+    coverage: 'Backed by EmersonEIMS mobile field service teams covering all 47 counties from our Nairobi base and scheduled regional deployments, with a 2–4 hour emergency response target in Nairobi, Mombasa and Kisumu.',
     faqs: [
       { q: 'Why does my generator start and then shut down?', a: 'Common causes include low fuel pressure, blocked filters, low coolant/oil protection trips, failing sensors or AVR issues. Generator Oracle walks the elimination sequence for your brand, and EmersonEIMS technicians can attend within hours if it needs hands-on work.' },
       { q: 'Which generator brands does it cover?', a: 'Cummins, Perkins, Caterpillar, FG Wilson, Kohler, SDMO, MTU, Deutz, Volvo Penta and Chinese OEM sets — plus controller families like DeepSea, ComAp and PowerWizard.' },
@@ -126,7 +126,7 @@ const TOOLS: Record<string, ToolCopy> = {
       'Annual maintenance contract (AMC) scoping with transparent Kenya pricing',
       'Fleet dashboards for multi-site operators (hospitals, telecom, retail chains)',
     ],
-    coverage: 'AMC coverage across Kenya and East Africa with stationed technicians, genuine parts stock and 24/7 emergency response for contract clients.',
+    coverage: 'AMC coverage across Kenya and East Africa with mobile field service teams, genuine parts stock and 24/7 emergency response for contract clients.',
     faqs: [
       { q: 'How often should a standby generator be serviced?', a: 'Oil and filters every 250 running hours or 6 months (whichever first), full service at 500 hours or annually, plus weekly no-load checks and monthly on-load tests.' },
       { q: 'What does an AMC cost in Kenya?', a: 'Typical generator AMCs run KSh 60k–250k/year depending on size, site count and response tier — usually 3–5% of replacement value, versus the far higher cost of an unplanned failure.' },

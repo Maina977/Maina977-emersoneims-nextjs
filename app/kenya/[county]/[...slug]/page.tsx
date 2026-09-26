@@ -327,8 +327,10 @@ function CountyServicePage({
               <div className="text-gray-400">Emergency Support</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-cyan-400 mb-2">15+</div>
-              <div className="text-gray-400">Years Experience</div>
+              {/* "15+ Years Experience" was not true: operating since 2012 is
+                  14 years as at 2026. The founding year cannot go stale. */}
+              <div className="text-4xl font-bold text-cyan-400 mb-2">2012</div>
+              <div className="text-gray-400">Operating in Kenya since</div>
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-purple-400 mb-2">47</div>
@@ -640,6 +642,7 @@ function ConstituencyServicePage({
           constituencySlug={constituency.slug}
           constituencyName={constituency.name}
           serviceName={service.shortName}
+          serviceSlug={service.slug}
         />
 
         <LocationProof countySlug={county.slug} locationName={constituency.name} serviceCategory={service.category} />

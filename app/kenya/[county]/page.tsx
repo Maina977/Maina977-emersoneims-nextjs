@@ -32,8 +32,28 @@ type Props = {
  * reachable from nowhere on the site. A page that nothing links and nothing
  * advertises can only be found by guessing its URL.
  */
-const CORE_SERVICES = SEO_SERVICES.filter((s) =>
-  CORE_SERVICE_SLUGS.includes(s.slug)
+/*
+ * PLUMBING IS PROMOTED INTO THE HEADLINE GRID WITHOUT JOINING CORE.
+ *
+ * CORE_SERVICE_SLUGS does two jobs at once: it decides what this grid shows,
+ * and it decides what pages get BUILT — county+service for all 47, and
+ * constituency+service for every priority constituency. Adding plumbing to it
+ * would have promoted the links and simultaneously generated a constituency
+ * page for plumbing in every priority constituency, which is precisely the
+ * "thousands of small pages" expansion we were asked not to do.
+ *
+ * The two jobs are separated here instead. The 94 county plumbing pages
+ * already exist (lib/seo/countyServices.json, restored.plumbing), and they were
+ * reachable only from the "more services" list below the fold — so a reader on
+ * /kenya/kisumu saw ten trades, none of them plumbing, for a business line that
+ * now has a division of its own. This adds the links and builds nothing new.
+ */
+const FEATURED_EXTRA_SLUGS = ['plumbing-installation', 'plumbing-repairs'];
+
+const CORE_SERVICES = SEO_SERVICES.filter(
+  (s) =>
+    CORE_SERVICE_SLUGS.includes(s.slug) ||
+    (FEATURED_EXTRA_SLUGS.includes(s.slug) && COUNTY_SERVICE_SLUGS.includes(s.slug))
 );
 
 /**
@@ -42,7 +62,10 @@ const CORE_SERVICES = SEO_SERVICES.filter((s) =>
  * the route builds these pages and something has to reach them.
  */
 const MORE_SERVICES = SEO_SERVICES.filter(
-  (s) => COUNTY_SERVICE_SLUGS.includes(s.slug) && !CORE_SERVICE_SLUGS.includes(s.slug)
+  (s) =>
+    COUNTY_SERVICE_SLUGS.includes(s.slug) &&
+    !CORE_SERVICE_SLUGS.includes(s.slug) &&
+    !FEATURED_EXTRA_SLUGS.includes(s.slug),
 );
 
 // Generate static params for all counties
@@ -362,9 +385,17 @@ export default async function CountyPage({ params }: Props) {
               <p className="text-xs text-gray-500 mt-2">Available across {county.name}</p>
             </div>
             <div className="text-center p-6 rounded-xl bg-white/5 border border-white/10">
-              <div className="text-4xl font-bold text-cyan-400 mb-2">15+</div>
-              <div className="text-gray-400">Years Experience</div>
-              <p className="text-xs text-gray-500 mt-2">Trusted in Kenya</p>
+              {/*
+                Was "15+ Years Experience". EmersonEIMS has operated in Kenya
+                since 2012, which is 14 years as at 2026 — so "15+" was not
+                true, and any hard-coded countdown goes stale the moment it is
+                written. The founding year states more, cannot drift, and needs
+                no maintenance. (A computed `new Date()` was rejected: the
+                hydration guard blocks non-deterministic server renders.)
+              */}
+              <div className="text-4xl font-bold text-cyan-400 mb-2">2012</div>
+              <div className="text-gray-400">Operating in Kenya since</div>
+              <p className="text-xs text-gray-500 mt-2">Engineering-led, owner-run</p>
             </div>
             <div className="text-center p-6 rounded-xl bg-white/5 border border-white/10">
               <div className="text-4xl font-bold text-purple-400 mb-2">{county.constituencies.length}</div>

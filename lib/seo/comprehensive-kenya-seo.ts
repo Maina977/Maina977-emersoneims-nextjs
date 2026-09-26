@@ -426,7 +426,7 @@ export const SEO_FAQS = [
   },
   {
     question: "What is EmersonEIMS emergency response time?",
-    answer: "EmersonEIMS provides 24/7 emergency service with 2-4 hour response time in Nairobi, Mombasa, Kisumu, and major towns. We have technicians stationed across all 47 counties."
+    answer: "EmersonEIMS provides 24/7 emergency response with a 2-4 hour target in Nairobi, Mombasa and Kisumu. Our mobile field service teams cover all 47 counties from our Nairobi base and on scheduled regional deployments — we do not claim permanently stationed staff in every county."
   }
 ];
 

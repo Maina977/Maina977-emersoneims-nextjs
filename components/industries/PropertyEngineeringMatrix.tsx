@@ -82,7 +82,9 @@ export default function PropertyEngineeringMatrix({
           <p className="mb-6 max-w-2xl text-sm leading-relaxed text-slate-300">
             We will walk the property, list what is installed, and tell you what
             is actually at risk — including the parts we would not change. The
-            survey is free and carries no obligation.
+            technician survey carries a fee, deducted in full from the contract
+            if you award us the work; talking it through first on the phone or
+            WhatsApp costs nothing.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
