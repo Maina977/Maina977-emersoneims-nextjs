@@ -255,7 +255,10 @@ function StaticHeroFallback() {
 
       {/* Static hero content - Apple-style typography & spacing */}
       <div className="relative z-20 h-full min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 text-center py-section">
-        <div className="max-w-content fade-in-up">
+        <div
+          className="max-w-content fade-in-up"
+          style={{ paddingBottom: 'var(--consent-bar-h, 0px)' }}
+        >
           {/* Badge - Apple-style pill */}
           <div className="inline-flex items-center gap-2 mb-6 sm:mb-8 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 backdrop-blur-sm">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />

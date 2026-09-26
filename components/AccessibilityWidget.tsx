@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 
 // Universal Accessibility Icon (International Symbol of Access)
 const AccessibilityIcon = () => (
@@ -218,28 +217,18 @@ function AccessibilityWidgetInner() {
       `}</style>
 
       {/* Floating Accessibility Button - ALWAYS VISIBLE - Positioned ABOVE stats counter */}
-      <m.button
+      <button
         id="accessibility-settings"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 left-4 z-[9999] bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl shadow-2xl shadow-blue-600/50 flex items-center gap-2 sm:gap-3 p-3 sm:px-5 sm:py-4 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group border-2 border-white/20"
+        style={{ bottom: 'calc(6rem + var(--consent-bar-h, 0px))' }}
+        className="fixed left-4 z-[9999] bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl shadow-2xl shadow-blue-600/50 flex items-center gap-2 sm:gap-3 p-3 sm:px-5 sm:py-4 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group border-2 border-white/20"
         aria-label="Open accessibility settings"
         title="♿ Accessibility Options - Click here for visually impaired support: high contrast, large text, line spacing, large cursor and link highlighting"
-        whileHover={{ scale: 1.08, boxShadow: '0 25px 50px rgba(37, 99, 235, 0.5)' }}
-        whileTap={{ scale: 0.98 }}
-        initial={{ opacity: 1, scale: 1, x: 0 }}
-        animate={{
-          opacity: 1,
-          scale: 1,
-          x: 0,
-          boxShadow: [
-            '0 10px 30px rgba(37, 99, 235, 0.4)',
-            '0 15px 40px rgba(37, 99, 235, 0.6)',
-            '0 10px 30px rgba(37, 99, 235, 0.4)',
-          ],
-        }}
-        transition={{
-          boxShadow: { duration: 2, repeat: Infinity },
-        }}
+       
+       
+       
+       
+       
       >
         {/* Accessibility Icon with pulse animation */}
         <span className="relative text-2xl">
@@ -273,27 +262,25 @@ function AccessibilityWidgetInner() {
             </svg>
           </span>
         )}
-      </m.button>
+      </button>
 
-      {/* Accessibility Panel */}
-      <AnimatePresence>
-        {isOpen && (
+      {/* Accessibility Panel */}        {isOpen && (
           <>
             {/* Backdrop */}
-            <m.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div
+             
+             
+             
               onClick={() => setIsOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
             />
 
             {/* Panel */}
-            <m.div
-              initial={{ opacity: 0, x: -100, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -100, scale: 0.95 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            <div
+             
+             
+             
+             
               className="fixed left-4 top-1/2 -translate-y-1/2 z-50 w-80 max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden"
               role="dialog"
               aria-modal="true"
@@ -463,35 +450,31 @@ function AccessibilityWidgetInner() {
                   ♿ EmersonEIMS is committed to digital accessibility for everyone
                 </p>
               </div>
-            </m.div>
+            </div>
           </>
-        )}
-      </AnimatePresence>
-    </>
+        )}    </>
   );
 }
 
 /*
- * LIGHT ANIMATION MODE — added 2026-09-11 for mobile speed.
+ * NO ANIMATION LIBRARY — 2026-09-26.
  *
- * This component used `motion.*`, which pulls in framer-motion's entire
- * engine — including drag and layout-projection code it never uses. Measured
- * with Lighthouse on a throttled mid-range phone, that single 108 KB chunk
- * cost 2.4 s of main-thread time on every page, because the navigation is
- * mounted site-wide. `m.*` inside LazyMotion with `domAnimation` keeps every
- * animation this component uses (enter/exit, variants, hover, tap) and drops
- * the rest.
+ * This component previously used `m.*` inside LazyMotion with `domAnimation`,
+ * which was itself a trim from full `motion.*`. Measured across four clean
+ * Lighthouse runs on 2026-09-26, that shared framer-motion chunk was still the
+ * largest single script cost on the site — 87 KB and ~1,289 ms of phone CPU —
+ * and it stayed on the critical path as long as ANY mounted component imported
+ * it. Removing it from the navigation alone changed nothing for exactly that
+ * reason, so every component that kept it loaded was converted together.
  *
- * Features are passed SYNCHRONOUSLY on purpose. Async loading would shave a
- * few more KB but opens a window where a tap lands before the animation code
- * arrives and a panel with an off-screen `initial` never slides in.
+ * What it animated here was hover and tap scales, opacity fades and small
+ * translations. Those are now Tailwind transition/hover/active classes and the
+ * shared keyframes in app/globals.css.
  *
- * The component body is unchanged; it is renamed AccessibilityWidgetInner and wrapped here.
+ * Exit animations are not reproduced: AnimatePresence held elements in the DOM
+ * to animate them out, and keeping them mounted works against the reason for
+ * the change. Elements now leave immediately, which is ordinary behaviour.
  */
 export default function AccessibilityWidget() {
-  return (
-    <LazyMotion features={domAnimation}>
-      <AccessibilityWidgetInner />
-    </LazyMotion>
-  );
+  return <AccessibilityWidgetInner />;
 }

@@ -2255,3 +2255,55 @@ html[data-hub-route="true"] #contact-section {
 html[data-hub-route="true"] body {
   background: var(--color-surface-base, #f7f8fa);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NAVIGATION ANIMATIONS — replaced framer-motion, 2026-09-26
+
+   TeslaStyleNavigation is mounted in the root layout, so whatever it imports
+   is paid for by all 4,970 pages before anything else runs. It imported
+   framer-motion: 87 KB and, measured with Lighthouse on a throttled phone,
+   1,289 ms of main-thread CPU — the single largest script cost on the site.
+
+   It had already been trimmed once, from 108 KB to 87 KB, by moving to
+   `m.*` inside LazyMotion with the `domAnimation` feature set. 87 KB is that
+   library's floor; the rest only goes by not loading it at all.
+
+   Everything it animated in that component is below: two fades, two small
+   downward drops, a drawer slide and a chevron rotate. None of it needed a
+   JavaScript animation engine.
+
+   EXIT ANIMATIONS ARE DELIBERATELY NOT REPRODUCED. AnimatePresence kept
+   elements mounted so they could animate out; doing that in CSS means either
+   keeping the whole mobile drawer in the DOM on every page, or hand-rolling a
+   closing-state machine. A menu that closes immediately on tap is normal, and
+   the DOM stays lean — which is the point of the exercise.
+
+   The global prefers-reduced-motion rule earlier in this file already reduces
+   these to 0.01ms, so no separate guard is needed here.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes nav-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes nav-drop-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes nav-drop-in-sm {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes nav-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* Desktop mega-menu backdrop (was: opacity 0 -> 1, 0.15s) */
+.nav-anim-fade    { animation: nav-fade-in .15s ease-out both; }
+/* Mega-menu panel (was: opacity + y -10, 0.2s) */
+.nav-anim-drop    { animation: nav-drop-in .2s ease-out both; }
+/* Overflow dropdown (was: opacity + y -6, 0.16s) */
+.nav-anim-drop-sm { animation: nav-drop-in-sm .16s ease-out both; }
+/* Mobile drawer (was: spring x 100% -> 0, damping 25 / stiffness 200) */
+.nav-anim-slide   { animation: nav-slide-in .28s cubic-bezier(.22, 1, .36, 1) both; }

@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
+// framer-motion removed 2026-09-26 — see the note at the foot of this file.
+// Every animation this component performs is now CSS; the keyframes live in
+// app/globals.css under "NAVIGATION ANIMATIONS".
 
 // Dynamically import language switcher (client-only)
 // LanguageSwitcher import removed 2026-07-31 — the component is no longer
@@ -543,20 +545,14 @@ function TeslaStyleNavigationInner({
     <>
       {/* Desktop mega-menu backdrop — dims the rest of the page so dropdown
           contents stay readable instead of bleeding into page content */}
-      <AnimatePresence>
-        {activeMega && (
-          <m.div
-            key="mega-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            aria-hidden="true"
-            className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm hidden lg:block"
-            onMouseEnter={() => setActiveMega(null)}
-          />
-        )}
-      </AnimatePresence>
+      {activeMega && (
+        <div
+          key="mega-backdrop"
+          aria-hidden="true"
+          className="nav-anim-fade fixed inset-0 z-40 bg-black/70 backdrop-blur-sm hidden lg:block"
+          onMouseEnter={() => setActiveMega(null)}
+        />
+      )}
 
       <nav
         data-active-section={activeSection}
@@ -670,15 +666,8 @@ function TeslaStyleNavigationInner({
                     <span className={`absolute left-3 right-3 -bottom-px h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent transition-opacity duration-200 ${overflowOpen ? 'opacity-100' : 'opacity-0'}`} />
                   </button>
 
-                  <AnimatePresence>
-                    {overflowOpen && (
-                      <m.div
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.16 }}
-                        className="absolute right-0 top-full mt-1 min-w-[220px] rounded-xl bg-gray-950 border border-amber-500/20 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.9)] py-2 z-50"
-                      >
+                  {overflowOpen && (
+                    <div className="nav-anim-drop-sm absolute right-0 top-full mt-1 min-w-[220px] rounded-xl bg-gray-950 border border-amber-500/20 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.9)] py-2 z-50">
                         {NAV_ITEMS.slice(visibleCount).map(over =>
                           over.type === 'mega' && over.key ? (
                             <button
@@ -700,9 +689,8 @@ function TeslaStyleNavigationInner({
                             </Link>
                           )
                         )}
-                      </m.div>
-                    )}
-                  </AnimatePresence>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -748,48 +736,36 @@ function TeslaStyleNavigationInner({
               aria-expanded={isMenuOpen}
               aria-controls={mobileMenuId}
             >
-              <m.div
-                animate={isMenuOpen ? 'open' : 'closed'}
-                className="w-6 h-6 flex flex-col justify-center items-center"
-              >
-                <m.span
-                  variants={{
-                    closed: { rotate: 0, y: 0 },
-                    open: { rotate: 45, y: 6 },
-                  }}
-                  className="w-6 h-0.5 bg-current block mb-1.5 origin-center transition-all rounded-full"
+              {/* Hamburger -> X. Same 6px offsets and 45deg rotations the
+                  variants used, driven by a class instead of an engine. */}
+              <div className="w-6 h-6 flex flex-col justify-center items-center">
+                <span
+                  className={`w-6 h-0.5 bg-current block mb-1.5 origin-center rounded-full transition-transform duration-200 ${
+                    isMenuOpen ? 'translate-y-[6px] rotate-45' : ''
+                  }`}
                 />
-                <m.span
-                  variants={{
-                    closed: { opacity: 1 },
-                    open: { opacity: 0 },
-                  }}
-                  className="w-6 h-0.5 bg-current block mb-1.5 rounded-full"
+                <span
+                  className={`w-6 h-0.5 bg-current block mb-1.5 rounded-full transition-opacity duration-200 ${
+                    isMenuOpen ? 'opacity-0' : 'opacity-100'
+                  }`}
                 />
-                <m.span
-                  variants={{
-                    closed: { rotate: 0, y: 0 },
-                    open: { rotate: -45, y: -6 },
-                  }}
-                  className="w-6 h-0.5 bg-current block origin-center transition-all rounded-full"
+                <span
+                  className={`w-6 h-0.5 bg-current block origin-center rounded-full transition-transform duration-200 ${
+                    isMenuOpen ? '-translate-y-[6px] -rotate-45' : ''
+                  }`}
                 />
-              </m.div>
+              </div>
             </button>
           </div>
         </div>
 
         {/* Mega Menu Dropdowns */}
-        <AnimatePresence>
-          {activeMega && MEGA_MENUS[activeMega as keyof typeof MEGA_MENUS] && (
-            <m.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="absolute left-0 right-0 bg-gray-950 border-b border-amber-500/20 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.9)] z-50"
-              onMouseEnter={() => handleMegaEnter(activeMega)}
-              onMouseLeave={handleMegaLeave}
-            >
+        {activeMega && MEGA_MENUS[activeMega as keyof typeof MEGA_MENUS] && (
+          <div
+            className="nav-anim-drop absolute left-0 right-0 bg-gray-950 border-b border-amber-500/20 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.9)] z-50"
+            onMouseEnter={() => handleMegaEnter(activeMega)}
+            onMouseLeave={handleMegaLeave}
+          >
               <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {(() => {
                   const menu = MEGA_MENUS[activeMega as keyof typeof MEGA_MENUS];
@@ -858,30 +834,21 @@ function TeslaStyleNavigationInner({
                   );
                 })()}
               </div>
-            </m.div>
-          )}
-        </AnimatePresence>
+          </div>
+        )}
       </nav>
 
       {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <>
-            <m.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-              onClick={() => setIsMenuOpen(false)}
-            />
-            <m.div
-              id={mobileMenuId}
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-gray-900 z-50 lg:hidden overflow-y-auto"
-            >
+      {isMenuOpen && (
+        <>
+          <div
+            className="nav-anim-fade fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setIsMenuOpen(false)}
+          />
+          <div
+            id={mobileMenuId}
+            className="nav-anim-slide fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-gray-900 z-50 lg:hidden overflow-y-auto"
+          >
               <div className="p-6">
                 {/* Mobile Header */}
                 <div className="flex items-center justify-between mb-8">
@@ -906,25 +873,20 @@ function TeslaStyleNavigationInner({
                           className="w-full flex items-center justify-between px-4 py-3 text-white/80 hover:text-white rounded-xl hover:bg-white/5 transition-all"
                         >
                           <span className="font-semibold">{item.label}</span>
-                          <m.svg
-                            animate={{ rotate: mobileSubmenu === item.key ? 180 : 0 }}
-                            className="w-5 h-5"
+                          <svg
+                            className={`w-5 h-5 transition-transform duration-200 ${
+                              mobileSubmenu === item.key ? 'rotate-180' : ''
+                            }`}
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
                           >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </m.svg>
+                          </svg>
                         </button>
                         
-                        <AnimatePresence>
-                          {mobileSubmenu === item.key && MEGA_MENUS[item.key as keyof typeof MEGA_MENUS] && (
-                            <m.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="overflow-hidden"
-                            >
+                        {mobileSubmenu === item.key && MEGA_MENUS[item.key as keyof typeof MEGA_MENUS] && (
+                          <div className="nav-anim-drop-sm overflow-hidden">
                               <div className="pl-4 py-2 space-y-1">
                                 {MEGA_MENUS[item.key as keyof typeof MEGA_MENUS].sections.map((section) =>
                                   section.items.map((subItem) => (
@@ -941,9 +903,8 @@ function TeslaStyleNavigationInner({
                                   ))
                                 )}
                               </div>
-                            </m.div>
-                          )}
-                        </AnimatePresence>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <Link
@@ -975,35 +936,42 @@ function TeslaStyleNavigationInner({
                     one — see the note in the desktop tail. It promised eleven
                     languages and delivered none. */}
               </div>
-            </m.div>
-          </>
-        )}
-      </AnimatePresence>
+          </div>
+        </>
+      )}
     </>
   );
 }
 
 /*
- * LIGHT ANIMATION MODE — added 2026-09-11 for mobile speed.
+ * NO ANIMATION LIBRARY — 2026-09-26.
  *
- * This component used `motion.*`, which pulls in framer-motion's entire
- * engine — including drag and layout-projection code it never uses. Measured
- * with Lighthouse on a throttled mid-range phone, that single 108 KB chunk
- * cost 2.4 s of main-thread time on every page, because the navigation is
- * mounted site-wide. `m.*` inside LazyMotion with `domAnimation` keeps every
- * animation this component uses (enter/exit, variants, hover, tap) and drops
- * the rest.
+ * THE HISTORY MATTERS, because this is the second trim and the last one.
  *
- * Features are passed SYNCHRONOUSLY on purpose. Async loading would shave a
- * few more KB but opens a window where a tap lands before the animation code
- * arrives and a panel with an off-screen `initial` never slides in.
+ * This component originally used `motion.*`, which pulls in framer-motion's
+ * whole engine including drag and layout-projection code it never touched:
+ * 108 KB, about 2.4 s of main-thread time on a throttled phone, on every page,
+ * because the navigation is mounted in the root layout. On 2026-09-11 it moved
+ * to `m.*` inside LazyMotion with `domAnimation`, which cut the chunk to 87 KB.
  *
- * The component body is unchanged; it is renamed TeslaStyleNavigationInner and wrapped here.
+ * Re-measured on 2026-09-26 across four clean Lighthouse runs, that 87 KB was
+ * still the largest single script cost on the site: 1,289 ms of CPU, paid by
+ * all 4,970 pages before anything else could run. 87 KB is `domAnimation`'s
+ * floor. There was no third trim available — only removal.
+ *
+ * WHAT IT WAS ACTUALLY DOING, in full: two opacity fades, a 10px drop, a 6px
+ * drop, a translateX drawer, a 180 degree chevron rotate, and a hamburger made
+ * of three spans that rotate 45 degrees and shift 6px. All of it is now CSS,
+ * with the keyframes in app/globals.css under "NAVIGATION ANIMATIONS".
+ *
+ * WHAT WAS GIVEN UP: exit animations. AnimatePresence held elements in the DOM
+ * so they could animate out. Reproducing that in CSS means either keeping the
+ * entire mobile drawer mounted on every page — which works against the reason
+ * for doing this — or hand-rolling a closing-state machine for a 200 ms fade
+ * nobody asked for. Menus now close immediately, which is ordinary behaviour.
+ *
+ * The component keeps its own name and export; there is no longer a wrapper.
  */
 export default function TeslaStyleNavigation(props: Parameters<typeof TeslaStyleNavigationInner>[0]) {
-  return (
-    <LazyMotion features={domAnimation}>
-      <TeslaStyleNavigationInner {...props} />
-    </LazyMotion>
-  );
+  return <TeslaStyleNavigationInner {...props} />;
 }

@@ -37,7 +37,14 @@ export default function B2BSiteStrip() {
             B2B
           </span>
           <span className="text-slate-300">
-            EmersonEIMS serves <span className="text-white font-medium">commercial, industrial, healthcare, telecom, hospitality, government &amp; contractor</span> clients.
+            EmersonEIMS serves{' '}
+            <span className="text-white font-medium">
+              <span className="md:hidden">commercial, industrial &amp; institutional</span>
+              <span className="hidden md:inline">
+                commercial, industrial, healthcare, telecom, hospitality, government &amp; contractor
+              </span>
+            </span>{' '}
+            clients.
           </span>
           <span className="hidden md:inline text-slate-500">
             • Engineering-led • SLA-backed • Documented commissioning

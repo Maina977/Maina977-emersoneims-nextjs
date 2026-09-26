@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
 /**
@@ -23,6 +23,7 @@ function safeSet(key: string, value: string): void {
 
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
+  const barRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // Check if user has already consented
@@ -87,6 +88,39 @@ export default function CookieConsent() {
     // Optionally, clear other cookies/localStorage here
   };
 
+  /*
+   * Publish the bar's height so the page can keep its own controls clear of it.
+   * Cleared on unmount and whenever the banner is dismissed, so the reserved
+   * space disappears the moment the bar does.
+   */
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!showBanner) {
+      root.style.removeProperty('--consent-bar-h');
+      return;
+    }
+    const el = barRef.current;
+    if (!el) return;
+
+    const publish = () => {
+      root.style.setProperty('--consent-bar-h', `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    };
+    publish();
+
+    let ro: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(publish);
+      ro.observe(el);
+    }
+    window.addEventListener('orientationchange', publish);
+
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('orientationchange', publish);
+      root.style.removeProperty('--consent-bar-h');
+    };
+  }, [showBanner]);
+
   if (!showBanner) return null;
 
   // Mobile UX audit 2026-07-10: on a 390px phone this banner rendered 326px
@@ -94,7 +128,7 @@ export default function CookieConsent() {
   // first-time visitor's screen. Phones now get a compact single-line notice
   // with the same three GDPR choices; the full copy appears from md: up.
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-3 md:p-4 bg-gradient-to-r from-gray-900 to-black border-t border-cyan-500/30 backdrop-blur-lg">
+    <div ref={barRef} className="fixed bottom-0 left-0 right-0 z-50 p-3 md:p-4 bg-gradient-to-r from-gray-900 to-black border-t border-cyan-500/30 backdrop-blur-lg">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5 md:gap-4">
           <div className="flex-1">

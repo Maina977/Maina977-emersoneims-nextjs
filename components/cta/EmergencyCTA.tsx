@@ -12,7 +12,6 @@
  */
 
 import { useState, useEffect } from 'react';
-import { m, LazyMotion, domAnimation } from 'framer-motion';
 import Link from 'next/link';
 import {
   Phone,
@@ -77,9 +76,9 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
 
   if (variant === 'floating') {
     return (
-      <m.div
-        initial={{ x: 100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
+      <div
+       
+       
         className="fixed bottom-6 right-6 z-50 flex flex-col gap-3"
       >
         <a
@@ -96,7 +95,7 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
           <MessageCircle className="w-5 h-5" />
           WhatsApp Us
         </a>
-      </m.div>
+      </div>
     );
   }
 
@@ -152,43 +151,43 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
           {/* Left Content */}
           <div>
             {/* Urgency Badge */}
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            <div
+             
+             
+             
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500/50 text-red-400 mb-6"
             >
               <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
               <span className="text-sm font-semibold">{activeEmergencies} Active Emergency Responses Right Now</span>
-            </m.div>
+            </div>
 
-            <m.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
+            <h2
+             
+             
+             
+             
               className="text-4xl md:text-5xl font-bold text-white mb-6"
             >
               Power Emergency?
               <span className="block text-red-500">We're Already Moving.</span>
-            </m.h2>
+            </h2>
 
-            <m.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
+            <p
+             
+             
+             
+             
               className="text-xl text-slate-300 mb-8"
             >
               When your power goes down, every minute costs money. Our emergency teams are stationed across Nairobi with fully-equipped service vehicles ready to deploy.
-            </m.p>
+            </p>
 
             {/* Trust Badges */}
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
+            <div
+             
+             
+             
+             
               className="grid grid-cols-2 gap-4 mb-8"
             >
               {[
@@ -207,14 +206,14 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
                   </div>
                 </div>
               ))}
-            </m.div>
+            </div>
 
             {/* CTAs */}
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
+            <div
+             
+             
+             
+             
               className="flex flex-col sm:flex-row gap-4"
             >
               <a
@@ -231,15 +230,15 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
                 <MessageCircle className="w-6 h-6" />
                 WhatsApp Emergency
               </a>
-            </m.div>
+            </div>
           </div>
 
           {/* Right Content - Stats */}
           {showStats && (
-            <m.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+            <div
+             
+             
+             
               className="bg-slate-900/50 border border-slate-700/50 rounded-3xl p-8"
             >
               <h3 className="text-xl font-bold text-white mb-6 text-center">Why Kenya Trusts EmersonEIMS</h3>
@@ -262,11 +261,11 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
                         <span className="text-2xl font-bold text-white">{stat.value}</span>
                       </div>
                       <div className="h-2 bg-slate-800 rounded-full mt-2 overflow-hidden">
-                        <m.div
-                          initial={{ width: 0 }}
-                          whileInView={{ width: '100%' }}
-                          viewport={{ once: true }}
-                          transition={{ delay: idx * 0.1, duration: 1 }}
+                        <div
+                         
+                         
+                         
+                         
                           className={`h-full bg-gradient-to-r from-${stat.color}-500 to-${stat.color}-400 rounded-full`}
                         />
                       </div>
@@ -282,15 +281,15 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
                   <div className="text-slate-400">Projects This Month</div>
                 </div>
               </div>
-            </m.div>
+            </div>
           )}
         </div>
 
         {/* Bottom Trust Strip */}
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <div
+         
+         
+         
           className="mt-16 flex flex-wrap justify-center items-center gap-8 text-slate-400"
         >
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> Licensed & Insured</span>
@@ -298,28 +297,31 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> ERC Compliant</span>
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> ISO 9001:2015</span>
           <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400" /> 2-Year Warranty</span>
-        </m.div>
+        </div>
       </div>
     </section>
   );
 }
 
 /*
- * LIGHT ANIMATION MODE — 2026-09-11, for mobile speed.
+ * NO ANIMATION LIBRARY — 2026-09-26.
  *
- * `motion.*` pulls in framer-motion's whole engine, including drag and
- * layout-projection code this component never uses. Every homepage section
- * did this, and because sections pre-mount within 200px of the viewport, the
- * first one below the hero dragged that engine onto every phone's first load.
- * `m.*` inside LazyMotion with `domAnimation` keeps every animation used here
- * (enter/exit, variants, hover, tap, whileInView) and drops the rest. Features
- * are synchronous so no animation can be missed while code is still loading.
- * The component body is unchanged — renamed EmergencyCTAInner and wrapped here.
+ * This component previously used `m.*` inside LazyMotion with `domAnimation`,
+ * which was itself a trim from full `motion.*`. Measured across four clean
+ * Lighthouse runs on 2026-09-26, that shared framer-motion chunk was still the
+ * largest single script cost on the site — 87 KB and ~1,289 ms of phone CPU —
+ * and it stayed on the critical path as long as ANY mounted component imported
+ * it. Removing it from the navigation alone changed nothing for exactly that
+ * reason, so every component that kept it loaded was converted together.
+ *
+ * What it animated here was hover and tap scales, opacity fades and small
+ * translations. Those are now Tailwind transition/hover/active classes and the
+ * shared keyframes in app/globals.css.
+ *
+ * Exit animations are not reproduced: AnimatePresence held elements in the DOM
+ * to animate them out, and keeping them mounted works against the reason for
+ * the change. Elements now leave immediately, which is ordinary behaviour.
  */
 export default function EmergencyCTA(props: Parameters<typeof EmergencyCTAInner>[0]) {
-  return (
-    <LazyMotion features={domAnimation}>
-      <EmergencyCTAInner {...props} />
-    </LazyMotion>
-  );
+  return <EmergencyCTAInner {...props} />;
 }
