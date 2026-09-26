@@ -152,14 +152,17 @@ export default function ServiceDivisions() {
                   {d.serviced && d.serviced.length > 0 && (
                     <div className="mt-6 border-t border-slate-700/60 pt-5">
                       {/*
-                        THE WORDING HERE IS LOAD-BEARING. VOLTKA is the only make
-                        sold new; these are makes we service and hold parts for.
-                        "We service and supply parts for" is the claim, and it is
-                        one the brand pages, the workshop and the fault-code
-                        database all evidence. It is not a dealership claim.
+                        THE WORDING HERE IS LOAD-BEARING, and it is a three-way
+                        split, not a two-way one. VOLTKA is the only make sold
+                        NEW. These makes are sold USED and slightly used, and all
+                        of them are serviced with parts supplied.
+                        /generators/used and the six /specs/used/<brand> pages
+                        are the evidence for the sales half; the brand pages,
+                        workshop and fault-code database for the service half.
+                        What is never claimed is an authorised dealership.
                       */}
                       <h4 className="mb-3 font-mono text-xs uppercase tracking-[0.2em] text-slate-400">
-                        Makes we service &amp; supply parts for
+                        Makes we sell used, service &amp; supply parts for
                       </h4>
                       <ul className="flex flex-wrap gap-2">
                         {d.serviced.map((b) => (
@@ -175,9 +178,12 @@ export default function ServiceDivisions() {
                         ))}
                       </ul>
                       <p className="mt-3 text-xs leading-relaxed text-slate-400">
-                        VOLTKA is the make we sell new. We are not an authorised
-                        dealer for the others — we service them, and we hold and
-                        supply their parts.
+                        VOLTKA is the only make we sell new, built on Cummins
+                        engines. The makes above are sold used and slightly used
+                        — along with John Deere, Lister Petter, Isuzu and others
+                        — and we service every one of them and supply their
+                        parts. We are not an authorised dealer for any
+                        third-party make.
                       </p>
                     </div>
                   )}

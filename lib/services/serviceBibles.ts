@@ -1792,6 +1792,293 @@ const INCINERATOR_BIBLE: ServiceBible = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 9. PLUMBING BIBLE — /services/plumbing
+//
+// SOURCED, NOT INVENTED. The repair manual below is a condensation of the seven
+// diagnosis procedures already published at /maintenance-hub/plumbing
+// (lib/maintenance-hub/plumbing-bible.ts, ~3,800 words, live and in the
+// sitemap). The parts manual is built from PLUMBING_MATERIALS and
+// PLUMBING_MAINTENANCE_SCHEDULE in that same file. Nothing here contradicts it,
+// because a visitor can read both.
+//
+// topBrands IS DELIBERATELY EMPTY, and it is the only bible where that is true.
+// The 'supply' branch of getCountyServiceDepth() renders brand comparisons under
+// the lede "We supply and service all of these" — a claim about commercial
+// relationships. For generators and pumps those relationships are established
+// and documented on this site. For plumbing fittings, heaters and valves they
+// are not, and writing ten manufacturer profiles with warranty terms and tier
+// ratings to fill a section would be inventing exactly the kind of claim the
+// claims guard exists to stop. ServiceBiblePanel guards every section with a
+// length check and now omits the nav chip too, so an empty array renders
+// nothing rather than an empty heading.
+//
+// errorCodes is empty for the obvious reason: plumbing has no fault codes. roi
+// is empty because a credible payback table needs real Kenyan water tariffs and
+// real job costs, and this repository has neither.
+//
+// NO CLAUSE NUMBERS ARE CITED. Water supply, backflow prevention and drainage
+// connections are regulated work in Kenya, the requirements differ by county and
+// by water service provider, and a specific clause quoted wrongly is worse than
+// a general statement made honestly. Same position as PLUMBING_COMPLIANCE_NOTE.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const PLUMBING_BIBLE: ServiceBible = {
+  family: 'plumbing',
+  hero: {
+    headline: 'The Plumbing & Hot Water Bible',
+    subhead: 'Pressure, storage, hot water and drainage — engineered for buildings that cannot be closed while you fix them.',
+  },
+  intro: [
+    'Most plumbing complaints are not plumbing faults. "No pressure upstairs", "the shower runs cold when the kitchen tap opens", "the drain blocks every few months" are symptoms of a system that was sized for a building that no longer exists, or was never sized at all. The first job on any call is to establish whether the problem is supply, storage, distribution, or the fixture — because each of those is fixed differently and three of them are invisible from the tap the customer is pointing at.',
+    'Pressure and flow are different quantities and they fail differently. Pressure is the force available; flow is the volume delivered per minute. A building can have adequate static pressure and still deliver an unusable shower, because the pipe bore, a part-closed valve or a collapsed flexible hose is throttling the flow. Measure both: static pressure with everything closed, running pressure with one outlet fully open, and flow by timing a bucket fill. A large gap between static and running pressure points to a restriction rather than a supply problem. Guessing between the two is what turns a two-hour visit into a two-day one.',
+    'Storage is what makes a building independent of an intermittent mains supply, which in most of Kenya is the condition rather than the exception. Sizing follows occupancy and the realistic worst case for supply interruption, not a round number. The tank has to be positioned high enough to develop working pressure by gravity, or the building needs a booster set — and a tank placed just above the ceiling of the top floor will supply that floor at a pressure nobody will accept for a shower. Tank stands carry a serious load when full and are a structural item, not a plumbing one.',
+    'Hot water is where hotels and larger residential buildings are let down most often, and almost always through circulation rather than capacity. A cylinder with plenty of stored volume still delivers a cold first minute at a distant outlet if the hot water is not circulated, because the water sitting in the pipe has to be run off first. In a hotel that is a guest complaint on every check-in. A circulation loop with a small pump keeps hot water at the outlets; the loop, its return, its insulation and its balancing are part of the design, not an afterthought bolted on when complaints start.',
+    'Thermostatic mixing protects people, and it is not optional in buildings used by guests, patients or children. Stored hot water has to be hot enough to be safe microbiologically; delivered hot water has to be cool enough not to scald. Those two requirements conflict, and a mixing valve at the point of use is how the conflict is resolved. A system that solves it by simply storing at a lower temperature has traded one risk for another.',
+    'Materials decide how the installation ages, and mixing them badly decides how fast. PPR is fusion welded and the joint is as strong as the pipe, provided the tool was at temperature and the timing was right — a cold joint looks identical to a good one and fails months later. uPVC is for cold supply and drainage and must not be used for hot. PEX tolerates movement and freezing with fewer joints on a run, but its fittings must match its standard. Copper is reliable but must never be joined directly to galvanised steel: the galvanic couple corrodes the steel, and a dielectric union is what prevents it.',
+    'Galvanised steel explains a large share of low-pressure complaints in older Kenyan buildings. It corrodes internally, the bore narrows, and flow falls year by year while the supply itself is unchanged. The building has not lost pressure; the pipe has lost its bore. Replacing fixtures or adding a pump to a building in that condition treats the symptom and often makes the noise and the wear worse.',
+    'Water hammer is a pressure wave, and it damages the system that produces it. It appears when a fast-closing valve stops a column of moving water — a solenoid on a washing machine, a lever tap, a float valve slamming shut. The energy goes somewhere: into pipe clips, into joints, into the fixtures at the end of the run. Arrestors, correctly supported pipework and slower-closing valves fix it. Ignoring it means replacing joints repeatedly and never knowing why.',
+    'Drainage works on falls, ventilation and access, and the commonest cause of a recurring blockage is one of those three being wrong rather than anything that was put down the drain. Too shallow a fall and solids are left behind by the water; too steep and the water runs away from the solids, which is the failure most people find counter-intuitive. A trap that loses its seal — because the run is unvented and siphons — lets drain air into the room and is a health issue rather than a nuisance. Recurring blockages in the same place are a design fault until proven otherwise.',
+    'Backflow prevention is the part of a plumbing system that protects everyone else. A cross-connection between a potable supply and anything else — a storage tank inlet below the water line, a hose left in a filled sink, an irrigation connection — can draw contamination back into the main when pressure drops, and pressure drops are routine on an intermittent supply. Air gaps and check valves at the right points are cheap; the consequence of not having them is not confined to the building that omitted them.',
+    'Scale and water chemistry determine how long heaters and fittings last, and they vary enormously across Kenya. Hard water scales heating elements and cylinder surfaces, cutting output and eventually killing the element; the first symptom is usually "the hot water is not as hot as it was" rather than an outright failure. Where a building is fed from a borehole, the water analysis matters as much to the plumbing as it does to the pump — iron, manganese and hardness all shorten fixture life and stain sanitaryware.',
+    'Testing is what separates an installation from a hope. Pipework is pressure tested before it is concealed, and the test is held long enough to reveal a weeping joint rather than just a gushing one. Drainage is tested for falls and for seal retention. On an occupied building the work is staged so that each tested section is returned to service before the next is opened — which is how a hotel keeps water on occupied floors while its risers are replaced. Nothing gets buried, boxed in or tiled over until it has passed.',
+  ],
+
+  // See the note above this bible: empty on purpose, not by omission.
+  topBrands: [],
+
+  installPhases: [
+    {
+      phase: 'Survey and design',
+      goal: 'Establish what the building actually needs before anything is specified',
+      checklist: [
+        'Measure static and running pressure and flow at the incoming supply',
+        'Record occupancy, fixture count and simultaneous-demand assumptions',
+        'Establish supply reliability and size storage for the realistic interruption',
+        'Confirm hot-water demand pattern — a hotel at 07:00 is not an office at 07:00',
+        'Identify existing pipe material and condition before assuming it can be reused',
+      ],
+    },
+    {
+      phase: 'First fix',
+      goal: 'Get the concealed pipework in, correct and tested, before anything covers it',
+      checklist: [
+        'Set out runs for accessible routes and maintainable joints',
+        'Install supply and waste pipework with the designed falls and supports',
+        'Keep hot, cold and circulation runs separated and insulated as designed',
+        'Fit isolating valves so any fixture can be worked on without draining the building',
+        'Pressure test and hold before any concealment, boxing or tiling',
+      ],
+    },
+    {
+      phase: 'Storage, pumps and hot water',
+      goal: 'Install the plant that makes pressure and hot water predictable',
+      checklist: [
+        'Confirm the tank stand carries the full load and is protected from corrosion',
+        'Fit tank inlet above the water line with an insect screen and a working overflow',
+        'Set booster pump and pressure vessel pre-charge to the designed figures',
+        'Install the hot-water cylinder with a relief valve discharging to a safe point',
+        'Commission the circulation loop and balance it so distant outlets run hot',
+      ],
+    },
+    {
+      phase: 'Second fix',
+      goal: 'Fit the sanitaryware and make the system usable',
+      checklist: [
+        'Fit WCs, basins, showers, mixers and kitchen fittings to the set-out',
+        'Install thermostatic mixing where scald risk requires it',
+        'Set trap seals and confirm every waste is vented or fitted to prevent siphonage',
+        'Check every isolating valve operates and is accessible after finishes',
+      ],
+    },
+    {
+      phase: 'Test, commission and hand over',
+      goal: 'Prove it works and leave the building able to look after it',
+      checklist: [
+        'Full pressure test on the completed installation, held and recorded',
+        'Flow and temperature checked at the worst-case outlet, not the nearest one',
+        'Drainage checked for falls, seal retention and access at every rodding point',
+        'Record static and running pressure as the baseline for future comparison',
+        'Hand over valve locations, isolation points and the maintenance schedule',
+      ],
+    },
+  ],
+
+  partsManual: [
+    {
+      group: 'Pipe materials and jointing',
+      items: [
+        { name: 'PPR — heat fusion welded', note: 'Hot and cold supply inside buildings. Tool temperature and timing decide whether the joint holds; a cold joint is invisible.' },
+        { name: 'uPVC — solvent cement', note: 'Cold supply, waste and drainage only. Not for hot water. UV degrades exposed runs unless stabilised or protected.' },
+        { name: 'PEX — crimp, clamp or push-fit', note: 'Hot and cold, and underfloor circuits. Fittings must match the pipe standard; mixing systems is a common cause of failure.' },
+        { name: 'Copper — soldered, brazed or compression', note: 'Supply and plant rooms. Never join directly to galvanised steel — use a dielectric union or the steel corrodes.' },
+        { name: 'Galvanised steel — threaded', note: 'Older installations. Corrodes internally and narrows the bore, which is why an old building loses flow without losing supply.' },
+        { name: 'HDPE — butt or electrofusion', note: 'Buried mains and borehole rising mains. Long lengths, few joints, trained operators required.' },
+      ],
+    },
+    {
+      group: 'Valves, controls and protection',
+      items: [
+        { name: 'Isolating valves', note: 'One per fixture is the difference between a ten-minute repair and draining the building.' },
+        { name: 'Float valve', note: 'A slamming float valve is a common source of water hammer as well as an overflow risk.' },
+        { name: 'Pressure-reducing valve', note: 'Protects fixtures where incoming pressure is high or variable.' },
+        { name: 'Thermostatic mixing valve', note: 'Required wherever stored hot water is hot enough to scald at the outlet.' },
+        { name: 'Water-hammer arrestor', note: 'Fitted near fast-closing valves; supports and clips do the rest of the work.' },
+        { name: 'Check valve / air gap', note: 'Backflow prevention. Cheap, and the consequence of omitting it is not confined to this building.' },
+        { name: 'Pressure relief valve', note: 'On every hot-water cylinder, discharging to a safe visible point.' },
+      ],
+    },
+    {
+      group: 'Routine service items',
+      items: [
+        { name: 'Visible leak check at exposed pipework, valves and under sinks', interval: 'Monthly' },
+        { name: 'Relief valve checked free and discharging safely', interval: 'Monthly' },
+        { name: 'Tank shut-off confirmed with clearance below the overflow', interval: 'Monthly' },
+        { name: 'Aerators and shower heads cleared of scale and grit', interval: 'Monthly' },
+        { name: 'Meter test with all outlets closed to find a silent leak', interval: 'Quarterly' },
+        { name: 'Booster pump cycling and pressure vessel behaviour checked', interval: 'Quarterly' },
+        { name: 'Gully gratings and rodding eyes inspected and cleared', interval: 'Quarterly' },
+        { name: 'Water heater cylinder drained of sediment', interval: 'Annually' },
+        { name: 'Pressure vessel pre-charge checked with the system drained', interval: 'Annually' },
+        { name: 'Storage tank cleaned, cover and insect screen inspected', interval: 'Annually' },
+        { name: 'Tank stand and supports inspected for corrosion and load', interval: 'Annually' },
+        { name: 'Static and running pressure recorded for year-on-year comparison', interval: 'Annually' },
+      ],
+    },
+  ],
+
+  repairManual: [
+    {
+      fault: 'Low water pressure — finding where it is lost',
+      priority: 'routine',
+      steps: [
+        'Fit a gauge near the supply and read static pressure with everything closed, then running pressure with one tap fully open. A large gap points to a restriction, not a supply problem.',
+        'Time a bucket fill at a fully open tap to get actual flow in litres per minute, and compare it against what the fixture needs. Pressure and flow are different problems with different fixes.',
+        'Test at several fixtures. One bad outlet is an aerator, a service valve or a collapsed flexible hose; every outlet poor points upstream to the main, the storage, the pump or the meter.',
+        'Clear aerators, confirm every isolating valve is fully open including the one at the meter, and check flexible connectors — they restrict flow with no visible fault.',
+        'Where storage is used, check the float valve and the level, then check the stand height actually develops the pressure the top floor needs.',
+        'In an older building, consider the pipe itself: galvanised steel narrows internally, and that is lost bore rather than lost pressure.',
+      ],
+      warning: 'Isolate and drain before opening any joint — mains pressure sprays, and a pressure vessel stores energy even with the pump off.',
+    },
+    {
+      fault: 'Concealed leak — locating before breaking anything',
+      priority: 'urgent',
+      steps: [
+        'Close every outlet and watch the meter. Movement with nothing open is a leak on the system, and that test costs nothing.',
+        'Isolate section by section using the isolating valves, repeating the meter test after each, to narrow the leak to a branch before opening any surface.',
+        'Look for the secondary evidence — a warm patch on a floor over a hot run, staining, efflorescence, a section of ground that stays damp.',
+        'Pressure test the suspect section in isolation and hold it; a weeping joint shows on a held test and not on a glance.',
+        'Only then open the smallest area that reaches the joint. Breaking out on a guess is how a leak repair becomes a building repair.',
+      ],
+      warning: 'Water tracks along falls and voids and surfaces far from its source. The wet patch is evidence, not a location.',
+    },
+    {
+      fault: 'Water hammer and pipe noise',
+      priority: 'routine',
+      steps: [
+        'Identify which outlet triggers it — a solenoid valve, a lever tap or a float valve slamming shut is almost always the source.',
+        'Check pipe supports and clips along the run; unsupported pipework converts the pressure wave into movement and noise.',
+        'Fit arrestors close to the offending valve rather than at the far end of the run.',
+        'Where incoming pressure is high or variable, fit or reset a pressure-reducing valve.',
+        'Re-test after each change; treating the noise without removing the cause simply relocates the damage.',
+      ],
+      warning: 'Hammer damages joints and fixtures cumulatively. Repeated joint failures on one run are a symptom, not bad luck.',
+    },
+    {
+      fault: 'Blocked drain — clearing without damaging the pipe',
+      priority: 'urgent',
+      steps: [
+        'Establish how much of the system is affected. One fixture is a local blockage; several is a blockage downstream of all of them.',
+        'Open the nearest rodding eye or gully and work from the access point rather than through the fixture.',
+        'Rod or jet at a pressure the pipe material tolerates — uPVC and old earthenware do not take the same treatment.',
+        'Once clear, run water and watch the flow away to confirm it is the blockage that has gone and not just the water.',
+        'If the same location blocks repeatedly, inspect the fall and the ventilation. A recurring blockage in one place is a design fault until proven otherwise.',
+      ],
+      warning: 'Drain water is a health hazard. Protect eyes and skin, and ventilate enclosed spaces before working in them.',
+    },
+    {
+      fault: 'Booster pump and pressure vessel faults',
+      priority: 'urgent',
+      steps: [
+        'Watch the pump through a full cycle. Rapid start-stop cycling is the classic symptom of a pressure vessel that has lost its air charge.',
+        'Isolate and drain the system, then check the vessel pre-charge against the cut-in setting and re-charge or replace as required.',
+        'Check the pressure switch settings and that the cut-in and cut-out differential is wide enough for the system.',
+        'Confirm the pump is not running dry or drawing air — check the suction, the storage level and the low-level protection.',
+        'Compare delivered pressure against the pump curve. A pump running far from its best efficiency point wears out and costs more to run.',
+      ],
+      warning: 'A pressure vessel stores energy with the pump off. Release it before opening the system, and isolate the pump electrically before working on it.',
+    },
+    {
+      fault: 'Storage tank, float valve and overflow',
+      priority: 'routine',
+      steps: [
+        'Confirm the float valve shuts off cleanly with clearance below the overflow — a valve that shuts late runs the overflow as designed behaviour.',
+        'Check the inlet discharges above the water line. An inlet below the water line is a cross-connection and a backflow path.',
+        'Inspect the cover and insect screen; an open or damaged tank is a contamination route, not just an eyesore.',
+        'Clean out sediment and check the internal surfaces, then refill and check the shut-off again under normal supply pressure.',
+        'Inspect the stand and supports. A full tank is a serious structural load and corrosion at the base is the failure that matters.',
+      ],
+    },
+    {
+      fault: 'Water heater — no hot water or not enough hot water',
+      priority: 'urgent',
+      steps: [
+        'Separate "no hot water" from "not enough hot water". No hot water is supply, element or control; not enough is capacity, scale or circulation.',
+        'Check supply and controls first — isolator, thermostat setting and any interlock — before condemning the element.',
+        'Check the element and the cylinder for scale. Scale insulates the element and the first symptom is reduced output rather than failure.',
+        'Where the complaint is a cold first minute at a distant outlet, the fault is circulation, not capacity. Check the loop, its pump and its balance.',
+        'Confirm the relief valve is free and discharging to a safe point before returning the cylinder to service.',
+      ],
+      warning: 'Isolate electrically and prove dead before touching an element. A cylinder holds stored hot water long after the supply is off.',
+    },
+  ],
+
+  // Plumbing has no fault codes. Empty rather than padded.
+  errorCodes: [],
+
+  diagrams: [],
+
+  // Empty: a credible payback table needs real Kenyan water tariffs and real job
+  // costs, and neither is in this repository. Better absent than fabricated.
+  roi: [],
+
+  warrantyOptions: [
+    'Two-year EmersonEIMS warranty on installation and workmanship',
+    'Manufacturer warranty on fittings, heaters, pumps and sanitaryware, per the maker and stated on the quotation',
+    'Scheduled maintenance contracts available for hotels and commercial properties',
+  ],
+
+  qualityChecks: [
+    'Pressure test held on every section before it is concealed, boxed in or tiled over',
+    'Flow and temperature verified at the worst-case outlet, not the nearest one',
+    'Drainage falls checked and recorded, with access at every rodding point',
+    'Trap seals confirmed retained under simultaneous discharge, so no run siphons',
+    'Backflow protection confirmed: tank inlets above the water line, check valves and air gaps in place',
+    'Thermostatic mixing verified where stored water is hot enough to scald',
+    'Hot-water circulation balanced so distant outlets run hot without a long draw-off',
+    'Static and running pressure recorded at handover as the baseline for future comparison',
+    'Every fixture isolatable without draining the building',
+  ],
+
+  fastRepairCallouts: [
+    'Burst pipe — isolate, expose the smallest area that reaches the joint, repair and pressure test',
+    'Blocked drain — clear from the access point at a pressure the pipe tolerates, then check the fall',
+    'No hot water — separate supply, element, control and circulation before replacing anything',
+    'Leaking tap or mixer — service or replace the cartridge rather than the fitting where the body is sound',
+    'Running overflow — float valve shut-off and level, and check the inlet is above the water line',
+    'Pump short-cycling — pressure vessel pre-charge is the first check, not the pump',
+  ],
+
+  references: [
+    'Water supply, backflow prevention and drainage connections are regulated work in Kenya. Requirements differ by county and by water service provider, and connections to a public main are the provider\'s to approve.',
+    'Confirm the current requirement with your water service provider before work on the incoming main, on backflow prevention, or on a new drainage connection.',
+    'Manufacturer installation instructions for heaters, pumps, valves and sanitaryware — where these conflict with general practice, the manufacturer instruction governs the warranty.',
+    'Full diagnosis procedures, materials guide and maintenance schedule: /maintenance-hub/plumbing',
+  ],
+};
+
 // MASTER MAP — slug → bible
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1814,6 +2101,7 @@ export const SERVICE_BIBLES: Record<string, ServiceBible> = {
   'ups-systems': UPS_BIBLE,
   'borehole-pumps': PUMP_BIBLE,
   'hospital-incinerators': INCINERATOR_BIBLE,
+  plumbing: PLUMBING_BIBLE,
 };
 
 export function getServiceBible(slug: string): ServiceBible | null {

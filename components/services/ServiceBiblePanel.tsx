@@ -126,7 +126,14 @@ export default function ServiceBiblePanel({ bible, contactPhoneDisplay, contactW
 
         {/* Section nav */}
         <nav className="mb-8 flex flex-wrap gap-2" aria-label="Bible sections">
-          {sections.map(s => (
+          {/*
+            Only offer a chip for a section that has something in it. Every
+            section below is already guarded by a length check, so a zero-count
+            chip scrolled to nothing — visible the moment a bible legitimately
+            omits a section, as the plumbing bible does for error codes and the
+            brand comparison.
+          */}
+          {sections.filter(s => s.count > 0).map(s => (
             <button
               key={s.id}
               onClick={() => {

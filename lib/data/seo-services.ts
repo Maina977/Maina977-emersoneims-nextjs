@@ -18,7 +18,7 @@ export interface SEOService {
   keywords: string[];
   description: string;
   icon: string;
-  category: 'generators' | 'solar' | 'motors' | 'ups' | 'electrical' | 'ac' | 'borehole' | 'automation' | 'incinerators';
+  category: 'generators' | 'solar' | 'motors' | 'ups' | 'electrical' | 'ac' | 'borehole' | 'automation' | 'incinerators' | 'plumbing';
   metaTemplate: {
     title: string;
     description: string;
@@ -60,7 +60,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'What brands of generators do you supply in {location}?',
-        answer: 'We supply all major brands including Cummins, Perkins, Caterpillar, FG Wilson, John Deere, Volvo Penta, and more in {location}.'
+        answer: 'New generators are VOLTKA, our own make, built on Cummins engines from 10 kVA to 2000 kVA. We also sell used and slightly used sets in Cummins, Perkins, Caterpillar, Volvo Penta, John Deere, Lister Petter, Isuzu, SDMO and other makes, and we service and supply parts for all of them in {location}. We are not an authorised dealer for any third-party make.'
       },
       {
         question: 'Do you offer installation services in {location}?',
@@ -1915,6 +1915,90 @@ export const SEO_SERVICES: SEOService[] = [
       { question: 'What is an automatic transfer switch?', answer: 'An ATS automatically switches power between mains and generator when outages occur in {location}.' },
       { question: 'How much does ATS installation cost in {location}?', answer: 'ATS installation in {location} ranges from KES 50,000-300,000 depending on capacity and features.' },
       { question: 'Can you install ATS for existing generators in {location}?', answer: 'Yes, we retrofit ATS systems to existing generators in {location}.' }
+    ]
+  },
+  {
+    id: 'plumbing-repairs',
+    slug: 'plumbing-repairs',
+    name: 'Plumbing Repairs',
+    shortName: 'Plumbing Repairs',
+    keywords: ['plumbing repairs', 'plumber', 'emergency plumber', 'burst pipe repair', 'blocked drain', 'leaking pipe repair', 'low water pressure', 'no hot water', 'plumbing repair near me'],
+    description: 'Emergency and scheduled plumbing repairs',
+    icon: 'Wrench',
+    category: 'plumbing',
+    metaTemplate: {
+      title: 'Plumbing Repairs in {location}',
+      description: 'Plumbing repairs in {location}: burst pipes, blocked drains, leaks, low pressure and hot-water faults. Two-year warranty on our workmanship. Call +254768860665',
+      h1: 'Plumbing Repairs in {location}'
+    },
+    features: [
+      'Burst and leaking pipe repair',
+      'Blocked drain clearing',
+      'Leak detection before breaking out',
+      'Low water pressure diagnosis',
+      'Hot water and water heater faults',
+      'Booster pump and pressure vessel faults',
+      'Tap, mixer, toilet and cistern repairs'
+    ],
+    faqs: [
+      {
+        question: 'Do you attend emergency plumbing callouts in {location}?',
+        answer: 'Yes. Burst pipes, blocked drains and failed hot water are attended as breakdown work in {location}, and the first job on site is to isolate the fault rather than to start replacing parts.'
+      },
+      {
+        question: 'Can you find a leak without breaking up the floor?',
+        answer: 'Usually. We close every outlet and watch the meter, then isolate section by section to narrow the leak to a branch before opening the smallest area that reaches the joint. Breaking out on a guess is how a leak repair becomes a building repair.'
+      },
+      {
+        question: 'Why does the same drain keep blocking?',
+        answer: 'A blockage that recurs in the same place is usually a fall or ventilation fault rather than what went down it. Too shallow a fall leaves solids behind; too steep runs the water away from them. We check the fall and the venting rather than just clearing it again.'
+      },
+      {
+        question: 'What warranty applies to plumbing repairs?',
+        answer: 'Our workmanship carries a two-year warranty. Any parts fitted carry their own manufacturer warranty, which varies by product and is stated on the invoice.'
+      }
+    ]
+  },
+  {
+    id: 'plumbing-installation',
+    slug: 'plumbing-installation',
+    name: 'Plumbing Installation',
+    shortName: 'Plumbing Installation',
+    keywords: ['plumbing installation', 'plumbing contractors', 'hotel plumbing', 'commercial plumbing', 'bathroom plumbing', 'kitchen plumbing', 'hot water installation', 'water heater installation', 'plumbing company'],
+    description: 'Complete plumbing and hot-water installations',
+    icon: 'Droplet',
+    category: 'plumbing',
+    metaTemplate: {
+      title: 'Plumbing Installation in {location}',
+      description: 'Plumbing installation in {location} for hotels, homes and commercial buildings: pipework, bathrooms, kitchens, hot water and storage. Two-year warranty. Call +254768860665',
+      h1: 'Plumbing Installation in {location}'
+    },
+    features: [
+      'Complete installations for new buildings',
+      'Hotel and hospitality plumbing',
+      'Bathroom and kitchen plumbing',
+      'Hot-water systems and circulation loops',
+      'Water storage, booster pumps and pressure systems',
+      'Drainage and waste pipework',
+      'Pressure testing and commissioning'
+    ],
+    faqs: [
+      {
+        question: 'Can you work in an occupied building in {location}?',
+        answer: 'Yes, and most of our hospitality work in {location} is. Pipework is replaced in sections and each section is pressure tested and returned to service before the next is opened, so occupied floors keep water while the work proceeds.'
+      },
+      {
+        question: 'Why do guests report a cold first minute at the shower?',
+        answer: 'That is a circulation problem, not a capacity one. A cylinder with plenty of stored volume still delivers cold water first at a distant outlet if the hot water is not circulated. The fix is a circulation loop, correctly balanced — not a bigger cylinder.'
+      },
+      {
+        question: 'Do you test the pipework before it is covered?',
+        answer: 'Always. Every section is pressure tested and held before it is concealed, boxed in or tiled over. A held test reveals a weeping joint; a glance does not.'
+      },
+      {
+        question: 'What warranty applies to a plumbing installation?',
+        answer: 'Two years on our installation and workmanship. Fittings, heaters and pumps carry their own manufacturer warranties, stated on the quotation.'
+      }
     ]
   },
   {

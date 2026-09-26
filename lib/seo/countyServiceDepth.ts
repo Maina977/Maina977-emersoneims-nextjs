@@ -41,6 +41,7 @@ const CATEGORY_TO_BIBLE: Record<string, string> = {
   borehole: 'borehole-pumps',
   automation: 'distribution-boards',
   incinerators: 'hospital-incinerators',
+  plumbing: 'plumbing',
 };
 
 /**

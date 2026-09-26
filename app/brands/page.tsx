@@ -32,7 +32,10 @@ const RingGallery = dynamic(() => import('@/components/home/RingGallery'), {
   loading: () => <div className="bg-black h-[100svh] min-h-[620px]" />,
 });
 
-// Rotating cylindrical showcase of the brands/models we sell (distinct set)
+// Rotating showcase of the makes we deal in. VOLTKA is the only make sold NEW
+// (Cummins-powered). The rest are sold USED and slightly used, and all of them
+// are serviced with parts supplied. See lib/services/serviceDivisions.ts for
+// the same three-way split, and /generators/used for the used range.
 const BRANDS_RING = [
   { src: '/images/desktop/generators/cummins-teal-canopy.jpg', title: 'Cummins — Super Silent', subtitle: 'Supplied & serviced · 10–2000 kVA' },
   { src: '/images/voltka/voltka-vks44-hero-profile.webp', title: 'VOLTKA VKS Series', subtitle: 'Cummins-powered, 2-year warranty' },

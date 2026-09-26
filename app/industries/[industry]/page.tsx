@@ -22,6 +22,7 @@ import {
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import IndustryDeepDive from '@/components/industries/IndustryDeepDive';
+import PropertyEngineeringMatrix from '@/components/industries/PropertyEngineeringMatrix';
 
 interface Props {
   params: Promise<{ industry: string }>;
@@ -435,6 +436,26 @@ export default async function IndustryPage({ params }: Props) {
       </section>
 
       {/* ENGINEERING REFERENCE — unique per industry */}
+      {/*
+        THE PROPERTY-WIDE VIEW.
+
+        Everything above this point on the hotels page answers one question —
+        what happens when the power fails. The hero is "Never Lose a Guest to a
+        Power Outage Again" and all five pain points are outages.
+
+        That is half the conversation. A hotel's engineering problems are not
+        only electrical: guests complain about cold showers more often than
+        about power, and the hot water at the end of a corridor is a circulation
+        problem nobody was selling them a fix for. EmersonEIMS does that work
+        and this page did not say so.
+
+        Renders only for industries with a profile in
+        lib/seo/propertyEngineering.ts, and returns null otherwise — a generic
+        version of this grid on every sector would be shared text on pages whose
+        risk is shared text.
+      */}
+      <PropertyEngineeringMatrix industrySlug={industry.slug} />
+
       <IndustryDeepDive slug={industry.slug} />
 
       {/* Schema Markup */}

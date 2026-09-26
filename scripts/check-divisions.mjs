@@ -31,23 +31,49 @@ function read(p) {
 }
 
 /* ── The hrefs, lifted from the source without importing TypeScript ───────── */
-const divSrc = read('lib/services/serviceDivisions.ts');
-const hrefs = [...divSrc.matchAll(/href:\s*'([^']+)'/g)].map((m) => m[1]);
-const uniq = [...new Set(hrefs)];
+/*
+ * TWO FILES, because both publish curated internal-link sets:
+ *
+ *   lib/services/serviceDivisions.ts   the twelve trades, rendered on /services
+ *   lib/seo/propertyEngineering.ts     the same work cut by building system,
+ *                                      rendered on /industries/<sector>
+ *
+ * The second was added on 2026-09-26. Its links were unguarded for exactly as
+ * long as it took to notice, which is the argument for putting it here rather
+ * than trusting the next person to remember. A curated list of internal links
+ * is only as good as the thing that fails when one of them dies.
+ *
+ * `split` isolates one entry so a failure can name where the dead link lives;
+ * `label` pulls that entry's human name out of the isolated block.
+ */
+const SOURCES = [
+  {
+    file: 'lib/services/serviceDivisions.ts',
+    split: /\n  \{\n    no: '/,
+    label: /title: '([^']+)'/,
+  },
+  {
+    file: 'lib/seo/propertyEngineering.ts',
+    split: /\n      \{\n        title: '/,
+    label: /^([^']+)'/,
+  },
+];
 
-/* Which division each href belongs to, for a useful error message. */
 const owner = new Map();
-{
-  const blocks = divSrc.split(/\n  \{\n    no: '/).slice(1);
-  for (const b of blocks) {
-    const title = (b.match(/title: '([^']+)'/) || [])[1] || '(unknown)';
-    for (const m of b.matchAll(/href:\s*'([^']+)'/g)) {
-      if (!owner.has(m[1])) owner.set(m[1], title);
+const hrefs = [];
+for (const src of SOURCES) {
+  const text = read(src.file);
+  for (const m of text.matchAll(/href:\s*'([^']+)'/g)) hrefs.push(m[1]);
+  for (const block of text.split(src.split).slice(1)) {
+    const name = (block.match(src.label) || [])[1] || '(unknown)';
+    for (const m of block.matchAll(/href:\s*'([^']+)'/g)) {
+      if (!owner.has(m[1])) owner.set(m[1], name);
     }
   }
 }
+const uniq = [...new Set(hrefs)];
 
-/* ── Known dynamic routes ─────────────────────────────────────────────────── */
+/* ── Known dynamic routes ─────────────────────────────────────────────── */
 const serviceSlugs = new Set(
   [...read('lib/services/allServices.ts').matchAll(/^    slug: '([^']+)',$/gm)].map((m) => m[1]),
 );
@@ -101,17 +127,17 @@ function resolves(href) {
 const dead = uniq.filter((h) => !resolves(h));
 
 console.log(
-  `check-divisions: ${uniq.length} distinct links across 12 divisions` +
+  `check-divisions: ${uniq.length} distinct links across ${SOURCES.length} curated link sets` +
     ` (${serviceSlugs.size} service slugs, ${repairHubs.size} repair hubs known)`,
 );
 
 if (dead.length) {
   console.error('\nFAIL — division links that resolve to no route:\n');
-  for (const h of dead) console.error(`  ${h}\n      in division: ${owner.get(h) || '(unknown)'}`);
+  for (const h of dead) console.error(`  ${h}\n      in: ${owner.get(h) || '(unknown)'}`);
   console.error(
     '\nAdd the page, or remove the link. A division must not promise a page it cannot show.\n',
   );
   process.exit(1);
 }
 
-console.log('PASS — every division link resolves to a real route.');
+console.log('PASS — every curated link resolves to a real route.');

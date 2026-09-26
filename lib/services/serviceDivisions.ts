@@ -25,17 +25,25 @@
  * division that promises a page it cannot show is worse than one that is
  * honestly shorter.
  *
- * THE BRAND QUESTION, HANDLED DELIBERATELY
- * The structure this was built from listed Perkins, Caterpillar, FG Wilson,
- * Volvo Penta and SDMO under "Generator Sales". Owner-confirmed, repeatedly:
- * VOLTKA is the only make EmersonEIMS sells new. Those other makes are ones it
- * SERVICES, REPAIRS AND SUPPLIES PARTS FOR — which is true, is evidenced by the
- * per-brand pages, the fault-code database and the workshop, and captures the
- * same searches without claiming a dealership that does not exist.
+ * THE BRAND QUESTION, IN THREE PARTS
+ * Owner-clarified 2026-09-25, correcting an over-correction of mine:
  *
- * So brands appear under `serviced`, never under sales. See app/voltka/page.tsx
- * and scripts/check-claims.mjs (rule: authorised-dealer) for the same line held
- * elsewhere.
+ *   NEW    VOLTKA only, our own make, built on Cummins engines, 10-2000 kVA.
+ *   USED   and slightly used: Cummins, Perkins, Caterpillar, Volvo Penta,
+ *          John Deere, Lister Petter, Isuzu, SDMO, Wei Chai and others.
+ *   ALL    serviced, with parts supplied.
+ *
+ * The structure this file was built from listed those makes flatly under
+ * "Generator Sales", which reads as a new-equipment dealership and is not true.
+ * My first pass swung the other way and called them service-and-parts only,
+ * which understated the business: /generators/used is a 32KB page selling
+ * exactly these makes, with six /specs/used/<brand> pages beneath it.
+ *
+ * The three-way split is the accurate version and also the better commercial
+ * one — "used Perkins generator Kenya" is a real query, and the honest claim is
+ * the one that captures it. What stays off the site either way is any
+ * suggestion of an authorised dealership; scripts/check-claims.mjs blocks that
+ * phrasing outright.
  */
 
 export interface DivisionLink {
@@ -56,7 +64,10 @@ export interface ServiceDivision {
   /** The best existing page for this trade. */
   hub: DivisionLink;
   items: DivisionLink[];
-  /** Makes we service and supply parts for. NEVER a sales claim. */
+  /**
+   * Makes we sell USED, service and supply parts for. Never a claim of a
+   * new-equipment dealership — VOLTKA is the only make sold new.
+   */
   serviced?: DivisionLink[];
 }
 
@@ -80,7 +91,11 @@ export const SERVICE_DIVISIONS: ServiceDivision[] = [
       { label: 'ATS, changeover and AMF panels', href: '/services/ats-changeover' },
       { label: 'Generator rental', href: '/generators/rental' },
       { label: 'Generator leasing', href: '/generators/leasing' },
-      { label: 'Used and refurbished generators', href: '/generators/used' },
+      { label: 'Used and slightly used generators', href: '/generators/used' },
+      { label: 'Used Cummins — specs and pricing', href: '/specs/used/cummins' },
+      { label: 'Used Perkins — specs and pricing', href: '/specs/used/perkins' },
+      { label: 'Used Caterpillar — specs and pricing', href: '/specs/used/caterpillar' },
+      { label: 'Used Volvo Penta — specs and pricing', href: '/specs/used/volvo-penta' },
       { label: 'Generator systems and sizing', href: '/generators/systems' },
       { label: 'Workshop repairs and fabrication', href: '/generators/workshop-services' },
       { label: 'Engine overhaul and top overhaul', href: '/generators/workshop-services' },
@@ -97,7 +112,10 @@ export const SERVICE_DIVISIONS: ServiceDivision[] = [
       { label: 'Perkins', href: '/generators/perkins' },
       { label: 'Caterpillar', href: '/generators/caterpillar' },
       { label: 'Volvo Penta', href: '/generators/volvo-penta' },
-      { label: 'All brands we service', href: '/brands' },
+      { label: 'SDMO', href: '/specs/used/sdmo' },
+      { label: 'Wei Chai', href: '/specs/used/wei-chai' },
+      { label: 'Used & slightly used range', href: '/generators/used' },
+      { label: 'All makes we deal in', href: '/brands' },
     ],
   },
   {

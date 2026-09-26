@@ -43,7 +43,6 @@
     "indexable, internally linked — which is exactly the state they were in through",
     "June and July. The sitemap keeps submitting only the core set."
   ],
-
   "core": [
     "generator-companies",
     "generators",
@@ -56,7 +55,6 @@
     "ups-systems",
     "electrical-services"
   ],
-
   "_excludedComment": [
     "Machine-readable so the guard generator can tell a SERVICE slug from a",
     "CONSTITUENCY slug. Both appear as '<county>/<one segment>' in the allowlist,",
@@ -81,7 +79,6 @@
     "solar-for-industries",
     "solar-for-homes"
   ],
-
   "restored": {
     "airConditioning": [
       "ac-companies",
@@ -129,6 +126,10 @@
     ],
     "ups": [
       "inverter-systems"
+    ],
+    "plumbing": [
+      "plumbing-repairs",
+      "plumbing-installation"
     ]
   }
 }
