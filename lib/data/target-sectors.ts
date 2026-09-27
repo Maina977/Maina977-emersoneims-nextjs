@@ -134,11 +134,11 @@ export const TARGET_SECTORS: TargetSector[] = [
     shortName: 'Hospitals',
     category: 'healthcare',
     icon: 'Hospital',
-    description: 'Critical power solutions for hospitals requiring 100% uptime',
+    description: 'Critical power solutions for hospitals, engineered so a single failure never reaches theatre, ICU or the cold chain',
     keywords: ['hospital generators', 'medical facility power', 'hospital backup power', 'healthcare generators', 'ICU power backup'],
     metaTemplate: {
       title: 'Generators for Hospitals in {location} | Hospital Power Solutions Kenya',
-      description: 'Critical power solutions for hospitals in {location}. 100% uptime for ICU, theatres, and medical equipment. 24/7 support. Call +254768860665',
+      description: 'Critical power solutions for hospitals in {location}. Redundant backup for ICU, theatres and medical equipment, with 24/7 emergency response. Call +254768860665',
       h1: 'Generators for Hospitals in {location}'
     },
     powerNeeds: ['ICU units', 'Operating theatres', 'Medical equipment', 'Ventilators', 'Blood banks'],

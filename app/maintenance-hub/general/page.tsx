@@ -956,7 +956,7 @@ export default function GeneralServicesBible() {
           <h3 className="text-xl font-bold text-white mb-6 text-center">Why Choose EmersonEIMS?</h3>
           <div className="grid md:grid-cols-4 gap-4">
             {[
-              { icon: '🏆', title: 'Expert Technicians', desc: 'Certified professionals with 10+ years experience' },
+              { icon: '🏆', title: 'Experienced Technicians', desc: 'Field engineers with 10+ years of combined experience' },
               { icon: '⚡', title: 'Fast Response', desc: '2-4 hour response in Nairobi, same-day across Kenya' },
               { icon: '🛡️', title: 'Guaranteed Work', desc: 'All work comes with warranty and after-service support' },
               { icon: '💰', title: 'Fair Pricing', desc: 'Transparent pricing with no hidden charges' }

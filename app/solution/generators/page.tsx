@@ -149,7 +149,7 @@ export default function GeneratorsSolutionPage() {
               {[
                 {
                   title: 'Expert Installation',
-                  description: 'Certified technicians with 15+ years experience',
+                  description: 'Technicians with 15+ years of combined field experience',
                   icon: '🔧',
                 },
                 {

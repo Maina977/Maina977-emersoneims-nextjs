@@ -897,7 +897,7 @@ const FabricationPage = () => {
 
               <p className="text-xl text-gray-200 mb-8 max-w-2xl leading-relaxed">
                 Complete metal fabrication solutions from structural steel to pressure vessels.
-                ASME certified, ISO quality systems, and over 30 years of experience serving
+                ISO-aligned quality systems, and a fabrication team whose combined experience runs well beyond the company's own history serving
                 East Africa's industrial sector.
               </p>
 
@@ -926,7 +926,7 @@ const FabricationPage = () => {
                 { value: "3,000", label: "Tons Annual Capacity" },
                 { value: "50+", label: "Certified Welders" },
                 { value: "ASME", label: "U-Stamp Certified" },
-                { value: "30+", label: "Years Experience" }
+                { value: "2012", label: "Operating in Kenya since" }
               ].map((stat, index) => (
                 <motion.div
                   key={index}
@@ -997,7 +997,7 @@ const FabricationPage = () => {
                       </p>
 
                       <p>
-                        With over 30 years of experience serving East Africa's industrial sector, we
+                        Operating in Kenya since 2012, and drawing on a fabrication team with far longer combined experience in East Africa's industrial sector, we
                         have built a reputation for quality, reliability, and on-time delivery. Our
                         ISO 9001:2015 certified quality management system ensures consistent standards
                         across all projects.

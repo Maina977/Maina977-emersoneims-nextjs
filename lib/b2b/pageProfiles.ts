@@ -90,7 +90,7 @@ export const B2B_PROFILES = {
     ],
     ctas: [
       { label: 'Request a Generator Quote', href: '/contact?topic=generator-quote', variant: 'primary' },
-      { label: 'Book a Free Site Audit', href: '/booking?service=generator-audit', variant: 'secondary' },
+      { label: 'Book a Site Audit', href: '/booking?service=generator-audit', variant: 'secondary' },
       { label: 'WhatsApp an Engineer', href: WHATSAPP, variant: 'tertiary' },
     ],
     accent: 'amber',
@@ -801,7 +801,7 @@ export const B2B_PROFILES = {
     trust: ['SLA-backed response times', 'Genuine parts only', '24/7 emergency response', 'Documented job reports'],
     ctas: [
       { label: 'Request a PM Contract', href: '/contact?topic=pm-contract', variant: 'primary' },
-      { label: 'Book a Free Site Audit', href: '/booking?service=site-audit', variant: 'secondary' },
+      { label: 'Book a Site Audit', href: '/booking?service=site-audit', variant: 'secondary' },
       { label: 'WhatsApp Maintenance Desk', href: WHATSAPP, variant: 'tertiary' },
     ],
     accent: 'emerald',
@@ -946,7 +946,7 @@ export const B2B_PROFILES = {
     trust: ['Cummins & VOLTKA supply, installation and service', 'Warranty and service terms confirmed in your quotation', '24/7 emergency response', 'Genuine spare parts held in stock'],
     ctas: [
       { label: 'Request a Generator Quote', href: '/contact?topic=generator-quote', variant: 'primary' },
-      { label: 'Book a Free Site Audit', href: '/booking?service=generator-audit', variant: 'secondary' },
+      { label: 'Book a Site Audit', href: '/booking?service=generator-audit', variant: 'secondary' },
       { label: 'WhatsApp an Engineer', href: WHATSAPP, variant: 'tertiary' },
     ],
     accent: 'amber',
@@ -966,7 +966,7 @@ export const B2B_PROFILES = {
     trust: ['Multi-brand service capability', 'Authorised Cummins / Voltka', 'Documented job reports', '24/7 nationwide response'],
     ctas: [
       { label: 'Request a Service Visit', href: '/contact?topic=gen-service', variant: 'primary' },
-      { label: 'Book a Free Site Audit', href: '/booking?service=generator-audit', variant: 'secondary' },
+      { label: 'Book a Site Audit', href: '/booking?service=generator-audit', variant: 'secondary' },
       { label: 'WhatsApp the Generator Desk', href: WHATSAPP, variant: 'tertiary' },
     ],
     accent: 'amber',
@@ -1156,7 +1156,7 @@ export const B2B_PROFILES = {
 
   booking: {
     eyebrow: 'Book a Site Audit or Service Visit',
-    headline: 'Book a free site audit or scheduled service visit with EmersonEIMS.',
+    headline: 'Book a site audit or scheduled service visit with EmersonEIMS.',
     subtitle:
       'Pick a service, pick a slot — and an engineer will be on site to assess, quote or service. Nationwide coverage, documented reports, no obligation.',
     whoFor: ['Facility managers', 'Property managers', 'EPC & MEP contractors', 'Hospitals & critical sites', 'Hotels & manufacturing', 'Government & NGOs'],
@@ -1167,7 +1167,7 @@ export const B2B_PROFILES = {
     ],
     trust: ['Engineer-led site visits', 'Documented site reports', 'Nationwide coverage', 'No-obligation audits'],
     ctas: [
-      { label: 'Book a Free Site Audit', href: '/booking?service=site-audit', variant: 'primary' },
+      { label: 'Book a Site Audit', href: '/booking?service=site-audit', variant: 'primary' },
       { label: 'Book a Service Visit', href: '/booking?service=service-visit', variant: 'secondary' },
       { label: 'WhatsApp the Booking Desk', href: WHATSAPP, variant: 'tertiary' },
     ],

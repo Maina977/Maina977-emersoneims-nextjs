@@ -38,7 +38,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
     id: 'generator-maintenance-tips-kenya',
     slug: 'generator-maintenance-tips-kenya',
     title: 'Essential Generator Maintenance Tips for Kenya: Complete 2025 Guide',
-    excerpt: 'Learn how to maintain your diesel generator in Kenya\'s climate. Expert tips from 15+ years of experience serving 47 counties.',
+    excerpt: 'Learn how to maintain your diesel generator in Kenya\'s climate. Expert tips drawn from 15+ years of combined field experience serving 47 counties.',
     description: 'Complete guide to generator maintenance in Kenya. Daily, weekly, monthly checklists. Prevent breakdowns, extend lifespan, and save on repair costs. Expert tips from Emerson EiMS.',
     category: 'Maintenance',
     tags: ['generator maintenance', 'diesel generator', 'maintenance tips', 'Kenya'],

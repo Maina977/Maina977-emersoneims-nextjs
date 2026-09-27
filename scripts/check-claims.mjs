@@ -349,6 +349,67 @@ const RULES = [
     why: 'A hardcoded rating or review count. No review corpus exists on this site, so any literal figure here is invented; Google requires the reviews to be visible on the page and treats fabricated markup as a site-wide manual action.',
   },
   {
+    id: 'free-site-survey',
+    /*
+     * BLOCKING. The site states one survey policy in at least six places —
+     * /faq, /contact, /fabrication, /generators/workshop-services, the county
+     * pages and lib/workshop: the technician site survey and diagnostic visit
+     * carries a fee, and the FULL fee is deducted from the contract when the
+     * work is awarded. Phone and WhatsApp consultation is free. /booking even
+     * says "before booking a PAID site survey".
+     *
+     * Against that, a sweep on 2026-09-27 found ten places promising a free
+     * survey, audit or assessment — five of them in lib/b2b/pageProfiles.ts,
+     * which drives CTAs across many pages at once. A customer who reads the
+     * CTA and then the FAQ finds two different answers to "what does a visit
+     * cost", which is worse than either answer alone.
+     *
+     * The words "free quote", "free consultation" and "free AI sizing" are
+     * deliberately NOT matched: those are all genuinely free.
+     */
+    severity: 'error',
+    re: /\bfree\s+(?:on[-\s]?site\s+)?(?:site\s+)?(?:survey|audit|assessment|site\s+visit|inspection)\b/i,
+    why: 'The technician site survey carries a fee, deducted in full from the contract on award. Only phone/WhatsApp advice and AI sizing are free.',
+  },
+  {
+    id: 'absolute-uptime-guarantee',
+    /*
+     * BLOCKING. "100% uptime" is not deliverable by any power system — it is
+     * the reason redundancy, maintenance contracts and SLAs exist at all. It
+     * was being promised to hospitals, which is the worst possible place to
+     * promise it: the reader is buying for theatre, ICU and a cold chain, and
+     * a claim they can disprove on the first outage costs more trust than the
+     * claim ever bought.
+     *
+     * What IS true and stronger: the system is engineered so a single failure
+     * does not reach the critical load, and it reports when it is degraded.
+     */
+    severity: 'error',
+    re: /\b100\s*%\s*(?:uptime|availability|guarantee)|\bguarantee[ds]?\s+(?:savings|results|yield)\b/i,
+    why: 'No installation can promise 100% uptime or guaranteed savings. State what is engineered — redundancy, changeover, monitoring — and what the savings model is based on.',
+  },
+  {
+    id: 'company-age-claim',
+    /*
+     * BLOCKING. EmersonEIMS has operated in Kenya since 2012 — 14 years as at
+     * 2026. A sweep on 2026-09-27 found the site claiming 10+, 12, 12+, 15+,
+     * 30+ and 35+ years. The 30 and 35 figures describe a company founded in
+     * 1996 and 1991.
+     *
+     * Two different claims were being conflated, which is why they drifted:
+     * the COMPANY's trading history, and an ENGINEER's career experience —
+     * which is legitimately longer and legitimately described as combined.
+     *
+     * So this rule fires on a bare "N years experience" and passes when the
+     * word "combined" is present, or when the claim is written as a founding
+     * year. A founding year is preferred wherever it fits: it says more and it
+     * cannot go stale, which a hard-coded countdown always does.
+     */
+    severity: 'error',
+    re: /(?<!combined\s)(?<!combined\s\w{0,20}\s)\b(?:1[5-9]|[2-9]\d)\s*\+?\s*years?(?:\s+of)?\s+(?:experience|in\s+business|serving|operating)/i,
+    why: 'EmersonEIMS has operated since 2012. For team experience say "combined"; for the company, state the founding year so it cannot go stale.',
+  },
+  {
     id: 'vague-own-warranty',
     /*
      * BLOCKING, for the same reason as three-year-warranty below: a warranty
@@ -416,8 +477,40 @@ const RULES = [
   },
 ];
 
-/** A line that is a comment is documentation ABOUT the rule, not a claim. */
-const isComment = (l) => /^\s*(\/\/|\*|\/\*)/.test(l);
+/**
+ * A line inside a comment is documentation ABOUT a rule, not a claim.
+ *
+ * THIS USED TO BE A SINGLE-LINE TEST, and it had a blind spot. It matched
+ * a line starting with a slash-slash, a star, or a slash-star — but not a
+ * JSX comment block, whose opener starts with a brace and whose body lines
+ * start with nothing at all:
+ *
+ * start with nothing at all: the opener is a brace then slash-star, the body
+ * lines are bare prose, and the closer is star-slash then a brace.
+ *
+ * So a note RECORDING a corrected claim was reported as the claim itself,
+ * three times, on 2026-09-27. A guard that fires on its own documentation
+ * teaches people to ignore it, which is exactly how the dealer claim
+ * survived two cleanups.
+ *
+ * Tracking block state costs one variable and removes the whole class.
+ */
+function makeCommentTracker() {
+  let inBlock = false;
+  return (line) => {
+    const t = line.trim();
+    if (inBlock) {
+      if (t.includes('*' + '/')) inBlock = false;
+      return true;
+    }
+    if (/^(\/\/|\*)/.test(t)) return true;
+    if (/^(\{\s*)?\/\*/.test(t)) {
+      if (!t.includes('*' + '/')) inBlock = true;
+      return true;
+    }
+    return false;
+  };
+}
 
 /**
  * Reviewed exceptions — content that trips a rule but is verified correct.
@@ -587,6 +680,8 @@ for (const file of files) {
   const rel = relative(ROOT, file).replace(/\\/g, '/');
   const lines = readFileSync(file, 'utf8').split('\n');
   const isDead = DEAD.some((d) => d.test(rel));
+
+  const isComment = makeCommentTracker();
 
   lines.forEach((line, i) => {
     if (isComment(line) || isNotAClaimAboutUs(line) || isAllowed(rel, line)) return;

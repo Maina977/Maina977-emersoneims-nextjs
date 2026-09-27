@@ -65,7 +65,7 @@ export default function SolarEnergy({ performanceTier }: SolarEnergyProps) {
           </h2>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto">
             Harness Kenya&apos;s abundant sunshine with our premium solar solutions. 
-            From residential rooftops to commercial solar farms — clean energy, guaranteed savings.
+            From residential rooftops to commercial solar farms — sized against your measured load, with the savings modelled from your own bills.
           </p>
         </motion.div>
 

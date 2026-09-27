@@ -75,7 +75,7 @@ export default async function IndustryPage({ params }: Props) {
         subtitle: industry.heroSubtitle,
         ctas: [
           { label: `Request a ${industry.shortName} Proposal`, href: `/contact?topic=industry-${industrySlug}`, variant: 'primary' },
-          { label: 'Book a Free Site Audit', href: `/booking?service=industry-${industrySlug}`, variant: 'secondary' },
+          { label: 'Book a Site Audit', href: `/booking?service=industry-${industrySlug}`, variant: 'secondary' },
           { label: 'WhatsApp Industry Desk', href: whatsappLink, variant: 'tertiary' },
         ],
       }} />

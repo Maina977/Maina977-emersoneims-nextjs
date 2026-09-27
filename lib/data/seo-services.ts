@@ -919,7 +919,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'Is solar reliable enough for hospitals in {location}?',
-        answer: 'Yes, our hospital solar systems in {location} include battery backup for 100% uptime. Critical equipment is always powered.'
+        answer: 'Yes. Hospital systems in {location} are designed with battery backup and generator changeover so critical circuits ride through an outage. No installation anywhere can promise unbroken power — what we design for is that a single failure does not reach theatre, ICU or the cold chain, and that the system reports when it is running degraded.'
       },
       {
         question: 'Can solar power medical equipment in {location}?',

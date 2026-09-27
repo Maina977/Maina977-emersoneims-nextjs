@@ -236,7 +236,7 @@ export function HeroServiceCTA({
         animate={{ scale: [1, 1.02, 1] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
-        Free site survey and load sizing before you commit to a set
+        Site survey and load sizing before you commit to a set — the survey fee is deducted from the contract on award
       </motion.p>
 
       {/* Trust Indicators */}

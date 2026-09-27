@@ -500,7 +500,7 @@ export default function SolarBibleEngine() {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-white">Solar Bible Calculator</h2>
-            <p className="text-amber-100">World's Most Advanced Solar Sizing System</p>
+            <p className="text-amber-100">Solar Sizing System</p>
           </div>
         </div>
 

@@ -160,7 +160,7 @@ export default function GridReliabilityPost() {
             href="/contact?type=power-assessment"
             className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
           >
-            Get Free Assessment
+            Request an Assessment
           </Link>
         </div>
       </section>

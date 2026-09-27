@@ -233,7 +233,7 @@ export default function MediaPage() {
               href="/contact?type=assessment"
               className="px-8 py-4 border-2 border-cyan-500 text-cyan-400 font-bold rounded-lg hover:bg-cyan-500/10 transition-all"
             >
-              Get Free Assessment
+              Request an Assessment
             </a>
           </div>
         </div>

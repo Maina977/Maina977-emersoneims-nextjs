@@ -1124,7 +1124,7 @@ const HighVoltagePage = () => {
                 { value: "220kV", label: "Maximum Voltage" },
                 { value: "500+", label: "Substations Installed" },
                 { value: "24/7", label: "Emergency Response" },
-                { value: "35+", label: "Years Experience" }
+                { value: "2012", label: "Operating in Kenya since" }
               ].map((stat, index) => (
                 <motion.div
                   key={index}
@@ -1195,7 +1195,7 @@ const HighVoltagePage = () => {
                       </p>
 
                       <p>
-                        With over 35 years of experience in the East African power sector, we have established
+                        Operating in Kenya since 2012, with an HV team whose combined experience in the East African power sector runs considerably longer, we have established
                         ourselves as the region's leading provider of high voltage equipment, installation,
                         testing, and maintenance services. Our team of certified engineers and technicians
                         brings expertise in handling complex power infrastructure projects.

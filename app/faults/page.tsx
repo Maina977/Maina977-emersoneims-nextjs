@@ -271,7 +271,7 @@ export default function FaultCodesPage() {
             Can&apos;t Find Your Fault Code?
           </h2>
           <p className="text-gray-400 mb-8">
-            Our engineers have 15+ years of experience diagnosing generator faults across Kenya.
+            Our engineers bring 15+ years of combined technical experience diagnosing generator faults across Kenya.
             Get expert help now.
           </p>
           <div className="flex flex-wrap justify-center gap-4">

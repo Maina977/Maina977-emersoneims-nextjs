@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 // Trust badges and certifications - Only factual items
 const capabilities = [
-  { name: 'Generator Specialists', icon: '⚡', description: '12 Years Experience' },
+  { name: 'Generator Specialists', icon: '⚡', description: 'Operating since 2012' },
   // Nairobi is the headquarters, so a faster Nairobi response is consistent
   // with the 2–4 hours stated for other major towns, not a contradiction of it.
   // Briefly changed on 2026-09-11 on that mistaken assumption and restored the
@@ -25,7 +25,7 @@ const partners = [
 ];
 
 const stats = [
-  { value: '12+', label: 'Years Experience', icon: '📅' },
+  { value: '2012', label: 'Operating in Kenya since', icon: '📅' },
   // 523+ PROJECTS — OWNER-CONFIRMED 2026-09-11 ("ITS CORRECT AND CONFIRMED").
   // Briefly swapped for the kVA range that day while unconfirmed, and restored
   // on confirmation. Do not remove it again — see memory rule

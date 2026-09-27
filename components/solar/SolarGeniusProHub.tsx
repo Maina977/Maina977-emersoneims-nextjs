@@ -207,7 +207,7 @@ const SolarGeniusProHub: React.FC = () => {
             <span className="text-4xl">☀️</span>
             <div>
               <h1 className="text-2xl font-bold text-white">SolarGenius <span className="text-amber-400">Pro™</span></h1>
-              <p className="text-xs text-gray-400">World's Most Advanced Solar AI Platform</p>
+              <p className="text-xs text-gray-400">Solar Design & Sizing Platform</p>
             </div>
           </div>
           <div className="flex items-center gap-4">

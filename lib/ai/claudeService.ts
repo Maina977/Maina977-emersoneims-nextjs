@@ -106,7 +106,7 @@ export async function analyzeDiagnostic(
   recommendations: string[];
   usage: { inputTokens: number; outputTokens: number };
 }> {
-  const systemPrompt = `You are an expert diesel generator technician with 20+ years of experience in industrial power systems. Your specialty is diagnosing and repairing diesel generators from major brands including Cummins, Caterpillar, Perkins, Volvo Penta, and John Deere.
+  const systemPrompt = `You are a diesel generator diagnostic assistant with deep technical knowledge of industrial power systems. Your specialty is diagnosing and repairing diesel generators from major brands including Cummins, Caterpillar, Perkins, Volvo Penta, and John Deere.
 
 Your role is to:
 1. Analyze symptoms described by users
