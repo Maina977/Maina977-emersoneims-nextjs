@@ -179,6 +179,24 @@ export function getConstituencyConditions(
   return CONSTITUENCY_CONDITIONS[`${countySlug}/${constituencySlug}`];
 }
 
+/**
+ * Which county holds the verified record for this place, if any.
+ *
+ * NEEDED BECAUSE A PLACE CAN BE LISTED UNDER TWO COUNTIES. Ruiru is a Kiambu
+ * town, and lib/seo/kenyaLocations.ts also lists it among Nairobi's areas — so
+ * a page that resolves its county by first match asks for 'nairobi/ruiru' and
+ * is told there is no data, while 'kiambu/ruiru' sits right here. Looking the
+ * county up FROM the record removes the ambiguity instead of guessing at it.
+ *
+ * Returns undefined when no verified record exists, which is the common case
+ * and must stay silent rather than inventing a figure.
+ */
+export function countyForConstituency(constituencySlug: string): string | undefined {
+  const suffix = `/${constituencySlug}`;
+  const key = Object.keys(CONSTITUENCY_CONDITIONS).find((k) => k.endsWith(suffix));
+  return key ? key.slice(0, key.length - suffix.length) : undefined;
+}
+
 /** True when this constituency has its own sourced data worth indexing on. */
 export function hasConstituencyData(countySlug: string, constituencySlug: string): boolean {
   return getConstituencyConditions(countySlug, constituencySlug) !== undefined;

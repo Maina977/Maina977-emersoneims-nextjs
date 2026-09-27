@@ -21,6 +21,9 @@ import {
   OPERATING_BASE,
 } from '@/lib/seo/locationFacts';
 import { notFound } from 'next/navigation';
+import ConstituencySiteConditions from '@/components/seo/ConstituencySiteConditions';
+import { countyForConstituency } from '@/lib/data/kenya-constituency-conditions';
+import { getCountyBySlug as getCountyRecord } from '@/lib/seo/kenyaLocations';
 
 interface Props {
   params: Promise<{ location: string }>;
@@ -133,6 +136,40 @@ export default async function LocationPage({ params }: Props) {
 
   const isCounty = location.type === 'county';
   const locationName = location.name;
+
+  /*
+   * TOWN PAGES WERE STILL NEAR-DUPLICATES OF EACH OTHER.
+   *
+   * Measured live on 2026-09-27, six-word phrase overlap between published
+   * town pages: Engineer vs Njabini 77%, Engineer vs Naivasha 71%, Naivasha vs
+   * Thika 71% — all within a few points of the 80% that forced 567 of these
+   * onto county canonicals in the first place. Every one of them ran to
+   * 1,002-1,005 words, which is the signature of a template rather than a
+   * coincidence.
+   *
+   * The county+service pages were pulled apart by giving each one measured
+   * site data and the physics that follows from it. The same fix applies here,
+   * with one hard limit: the data has to exist.
+   *
+   * lib/data/kenya-constituency-conditions.ts holds sourced elevation and
+   * temperature for 119 constituencies — the ones that could be VERIFIED. Of
+   * the 15 self-canonical towns, 6 have a record: Malindi, Naivasha, Ruiru,
+   * Juja, Kikuyu and Westlands. Those six get real numbers and genuinely stop
+   * reading like each other.
+   *
+   * The other nine, and the 552 consolidated towns, get nothing extra —
+   * because nothing verified exists for them, and a fabricated elevation is
+   * precisely what the constituency dataset was built to avoid. They keep
+   * their county canonical, which is where their signal belongs anyway.
+   */
+  const conditionsCounty = isCounty ? undefined : countyForConstituency(locationSlug);
+  const conditionsCountyName = conditionsCounty
+    ? (getCountyRecord(conditionsCounty)?.name ?? county?.name ?? '')
+    : '';
+  const townConditions =
+    conditionsCounty && conditionsCountyName
+      ? { countySlug: conditionsCounty, countyName: conditionsCountyName }
+      : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-black">
@@ -275,6 +312,23 @@ export default async function LocationPage({ params }: Props) {
           cover are both stated in this page's hero, and the genuine
           differentiator (the nationwide mobile workshop) is covered in the
           prose below with per-location facts. */}
+
+      {/*
+        Measured site conditions, for the towns that have them. Renders nothing
+        where the data was never verified — see the note above townConditions.
+      */}
+      {townConditions && (
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <ConstituencySiteConditions
+              countySlug={townConditions.countySlug}
+              countyName={townConditions.countyName}
+              constituencySlug={locationSlug}
+              constituencyName={locationName}
+            />
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-16 px-4 bg-gradient-to-r from-cyan-900/30 to-blue-900/30">
