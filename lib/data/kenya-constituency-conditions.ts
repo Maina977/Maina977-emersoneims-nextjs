@@ -168,7 +168,52 @@ export const CONSTITUENCY_CONDITIONS: Readonly<Record<string, ConstituencyCondit
   'wajir/tarbaj': { county: 'wajir', slug: 'tarbaj', name: "Tarbaj", place: "Tarbaj", elevationM: 417, lat: 2.2085, lon: 40.11812, meanMaxC: 32.7, p95MaxC: 36.1, absMaxC: 38, geonamesAdmin1: "Wajir County" },
   'west-pokot/kacheliba': { county: 'west-pokot', slug: 'kacheliba', name: "Kacheliba", place: "Kacheliba", elevationM: 1284, lat: 1.4805, lon: 35.01207, meanMaxC: 29.8, p95MaxC: 34.2, absMaxC: 35.6, geonamesAdmin1: "West Pokot County" },
   'west-pokot/kapenguria': { county: 'west-pokot', slug: 'kapenguria', name: "Kapenguria", place: "Kapenguria", elevationM: 2020, lat: 1.23889, lon: 35.11194, meanMaxC: 23, p95MaxC: 26.6, absMaxC: 28.2, geonamesAdmin1: "West Pokot County" },
-  'west-pokot/sigor': { county: 'west-pokot', slug: 'sigor', name: "Sigor", place: "Sigor", elevationM: 985, lat: 1.48806, lon: 35.46948, meanMaxC: 32.5, p95MaxC: 36.3, absMaxC: 37.3, geonamesAdmin1: "West Pokot County" },
+  'west-pokot/sigor': { county: 'west-pokot', slug: 'sigor', name: "Sigor", place: "Sigor", elevationM: 985, lat: 1.48806, lon: 35.46948, meanMaxC: 32.5, p95MaxC: 36.3, absMaxC: 37.3, geonamesAdmin1: "West Pokot County" },
+  /*
+   * ── PUBLISHED TOWNS, ADDED 2026-09-27 ───────────────────────────────────
+   *
+   * These eight are not constituencies. They are the self-canonical towns
+   * listed in lib/seo/majorTowns.ts — the only /locations/* pages Google is
+   * asked to index in their own right, the other 552 having been consolidated
+   * onto their county. Measured live that day, they were near-duplicates of
+   * each other: Engineer vs Njabini 77% six-word overlap, Naivasha vs Thika
+   * 71%, every page 1,002-1,005 words.
+   *
+   * Six of the fifteen already had a record here because they are also
+   * constituencies. These eight did not. Sourced by exactly the method in the
+   * file header — Open-Meteo geocoding for elevation and coordinates, ERA5
+   * reanalysis for full-year 2025 daily maxima at those same coordinates,
+   * retrieved 2026-09-27, 365 days for every one.
+   *
+   * TWO ADMIN1 DISCREPANCIES, RECORDED RATHER THAN HIDDEN. The header's rule
+   * is that GeoNames admin1 must match the expected county. Thika returns
+   * "Nairobi County" and Nyali returns no admin1 at all, so both fail that
+   * rule as written.
+   *
+   * They are included anyway, and the reason is that the rule exists to catch
+   * the WRONG PLACE, not a wrong label. Thika returns exactly one Kenyan
+   * result: a populated place at -1.033, 37.069 with a population of 251,407,
+   * which is Thika town and nothing else — GeoNames simply files it under the
+   * old Nairobi metropolitan grouping rather than Kiambu. Nyali returns one
+   * exact-name Kenyan result, feature code PPLX (a section of a populated
+   * place, which is what a Mombasa suburb is), at 21 m on the coast. Neither
+   * is ambiguous; both are mislabelled upstream. The county recorded here is
+   * the true one.
+   *
+   * KAREN IS DELIBERATELY ABSENT. It returns zero Kenyan results — GeoNames
+   * does not carry it as a populated place. Rather than borrow Nairobi's
+   * figures, /locations/karen renders no site-conditions block at all, which
+   * is the same choice made for the 170 unresolved constituencies.
+   */
+  'kiambu/thika': { county: 'kiambu', slug: 'thika', name: "Thika", place: "Thika", elevationM: 1506, lat: -1.03326, lon: 37.06933, meanMaxC: 25.1, p95MaxC: 28.2, absMaxC: 29.9, geonamesAdmin1: "Nairobi County" },
+  'uasin-gishu/eldoret': { county: 'uasin-gishu', slug: 'eldoret', name: "Eldoret", place: "Eldoret", elevationM: 2095, lat: 0.52036, lon: 35.26993, meanMaxC: 23.2, p95MaxC: 26.6, absMaxC: 28.7, geonamesAdmin1: "Uasin Gishu County" },
+  'trans-nzoia/kitale': { county: 'trans-nzoia', slug: 'kitale', name: "Kitale", place: "Kitale", elevationM: 1900, lat: 1.01572, lon: 35.00622, meanMaxC: 24.6, p95MaxC: 28.9, absMaxC: 31, geonamesAdmin1: "Trans Nzoia" },
+  'kajiado/ngong': { county: 'kajiado', slug: 'ngong', name: "Ngong", place: "Ngong", elevationM: 1924, lat: -1.3527, lon: 36.6699, meanMaxC: 23.6, p95MaxC: 26.9, absMaxC: 28.7, geonamesAdmin1: "Kajiado County" },
+  'kajiado/ongata-rongai': { county: 'kajiado', slug: 'ongata-rongai', name: "Ongata Rongai", place: "Ongata Rongai", elevationM: 1731, lat: -1.3953, lon: 36.764, meanMaxC: 25.2, p95MaxC: 28.7, absMaxC: 30.8, geonamesAdmin1: "Kajiado County" },
+  'kilifi/mtwapa': { county: 'kilifi', slug: 'mtwapa', name: "Mtwapa", place: "Mtwapa", elevationM: 23, lat: -3.93938, lon: 39.74877, meanMaxC: 29.2, p95MaxC: 32.3, absMaxC: 34.5, geonamesAdmin1: "Kilifi County" },
+  'mombasa/nyali': { county: 'mombasa', slug: 'nyali', name: "Nyali", place: "Nyali", elevationM: 21, lat: -4.05246, lon: 39.69541, meanMaxC: 29.2, p95MaxC: 32.3, absMaxC: 34.6, geonamesAdmin1: "(absent)" },
+  'kwale/diani': { county: 'kwale', slug: 'diani', name: "Diani Beach", place: "Diani Beach", elevationM: 12, lat: -4.27774, lon: 39.59413, meanMaxC: 29, p95MaxC: 31.8, absMaxC: 34.7, geonamesAdmin1: "Kwale County" },
+
 };
 
 /** Confirmed record for a constituency, or undefined if it could not be verified. */
