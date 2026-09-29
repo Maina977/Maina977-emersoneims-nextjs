@@ -79,3 +79,7 @@ components/home/FreshBoot.tsx
 
 # Claude Code worktrees - nested working copies, never part of the repo
 .claude/worktrees/
+
+# Scratch note holding the two public GA4 Measurement IDs, which already live
+# in lib/analytics/ids.ts and are emitted in every page. Redundant in the repo.
+GA.txt
