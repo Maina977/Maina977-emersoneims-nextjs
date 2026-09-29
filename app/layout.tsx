@@ -688,7 +688,13 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://cdn.vercel-insights.com" />
         <link rel="dns-prefetch" href="https://vercel.live" />
-        <link rel="dns-prefetch" href="https://api.anthropic.com" />
+        {/*
+          api.anthropic.com dns-prefetch removed 2026-09-29. No browser code
+          calls Anthropic: every AI feature goes through our own /api/ai/*
+          routes, where ANTHROPIC_API_KEY stays server-side. The hint cost a
+          DNS lookup on every page load for a host the browser never opens,
+          and named a vendor to anyone reading the HTML for no return.
+        */}
 
         {/* CRITICAL: Preconnect - Establish TCP/TLS 200ms+ faster.
 

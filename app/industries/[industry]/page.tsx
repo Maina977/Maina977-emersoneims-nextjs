@@ -19,6 +19,7 @@ import {
   getRelatedIndustries,
   generateIndustrySEO
 } from '@/lib/seo/industryData';
+import { seoTitle } from '@/lib/seo/pageTitle';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import IndustryDeepDive from '@/components/industries/IndustryDeepDive';
@@ -38,13 +39,34 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { industry: industrySlug } = await params;
   const seo = generateIndustrySEO(industrySlug);
+  const industry = getIndustryBySlug(industrySlug);
 
-  if (!seo) {
+  if (!seo || !industry) {
     return { title: 'Industry Not Found' };
   }
 
+  /*
+   * TITLE COMPOSED, NOT CONCATENATED — 2026-09-29.
+   *
+   * generateIndustrySEO builds "<name> Generator & Power Solutions Kenya",
+   * and the root layout template (app/layout.tsx:134) appends
+   * " | EmersonEIMS Kenya" on top of it. The two together said Kenya twice
+   * and ran to 88 characters against a ~60-character display limit:
+   *
+   *   "Churches & Religious Organizations Generator & Power Solutions
+   *    Kenya | EmersonEIMS Kenya"
+   *
+   * Google cuts that mid-phrase, so the part a buyer actually reads is the
+   * part we did not choose. Dropping the redundant "Kenya" and letting
+   * seoTitle decide whether the brand suffix still fits brings all nine
+   * industry pages under the limit with the trade words intact — the
+   * longest is now 60 characters, the shortest 43.
+   *
+   * seo.title is left alone: it still feeds openGraph and twitter, where
+   * the limit is different and no template is appended.
+   */
   return {
-    title: seo.title,
+    title: seoTitle(`${industry.name} Generator & Power Systems`),
     description: seo.description,
     openGraph: seo.openGraph,
     twitter: seo.twitter,
