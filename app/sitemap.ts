@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { contentRevision } from '@/lib/seo/contentRevisions';
 import { getAllServiceSlugs } from '@/lib/services/allServices';
 import { getIndexedServiceLocationPaths } from '@/lib/seo/kenyaLocations';
 import { getIndexableKenyaUrls } from '@/lib/seo/kenyaIndexable';
@@ -811,6 +812,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.6,
       });
     }
+  }
+
+  /*
+   * FILL IN lastmod WHERE THE CONTENT GENUINELY CHANGED.
+   *
+   * Entries that already carry a real per-item date — blog posts, repair
+   * articles — keep it; this only fills the gap for families whose content
+   * changed wholesale and which had no date at all. 834 of 929 submitted URLs
+   * carried none, which left Google no reason to re-crawl pages that had in
+   * fact been substantially rewritten. See lib/seo/contentRevisions.ts for why
+   * that matters after the 2026-08-21 impressions collapse, and for the rule
+   * about never setting these to build time.
+   */
+  for (const u of urls) {
+    if ((u as { lastModified?: Date }).lastModified) continue;
+    const d = contentRevision(u.url);
+    if (d) (u as { lastModified?: Date }).lastModified = d;
   }
 
   return urls;
