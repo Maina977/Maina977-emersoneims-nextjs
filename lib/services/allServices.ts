@@ -1383,7 +1383,21 @@ QUALITY ASSURANCE: Every rewound motor undergoes comprehensive testing including
 
     stats: [
       { label: 'Max Motor Size', value: '500HP' },
-      { label: 'Warranty', value: '6 Months' },
+      /*
+       * SIX MONTHS IS CORRECT AND OWNER-CONFIRMED (2026-09-29). Settled.
+       *
+       * This was the one warranty figure left open when the rest of the site
+       * was standardised on the two-year cover. It was flagged rather than
+       * changed because it is stated consistently in five places here and
+       * describes OUR workmanship — raising it on inference would have
+       * quadrupled the liability on every rewind sold. The owner has now
+       * confirmed it: rewinding carries six months, deliberately, and it is
+       * not an oversight to be 'fixed' later.
+       *
+       * Label aligned to 'Our Warranty' to match the other services, because
+       * this is our cover, not a manufacturer term.
+       */
+      { label: 'Our Warranty', value: '6 Months' },
       { label: 'Pickup Service', value: 'Available' },
       { label: 'Turnaround', value: '3-7 Days' }
     ],
