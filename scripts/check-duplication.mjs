@@ -64,12 +64,65 @@ for (const p of ['.next/server/app/sitemap.xml.body', '.next/server/app/sitemap.
 }
 
 /* ── 2. Similarity within route families ──────────────────────────────────── */
+
+/*
+ * MEASURE ONLY WHAT IS SUBMITTED — corrected 2026-09-29.
+ *
+ * The first version of this guard walked every .html in the build output. On
+ * the build of 2026-09-29 that made it flag four families, and THREE OF THEM
+ * DO NOT SERVE:
+ *
+ *     /counties/<name>        47 pages   66%   308 redirect, 0 submitted
+ *     /marketplace/<page>      4 pages   83%   404,           0 submitted
+ *     /solutions/generators/*  18 pages   80%   404,           0 submitted
+ *     /brands/<brand>         17 pages   67%   200,          17 submitted  <- real
+ *
+ * Next builds HTML for routes that middleware or the route handler later
+ * refuses, so build output is not the indexable set. A guard reporting 75%
+ * false positives is worse than no guard: it trains whoever reads the build
+ * log to scroll past it, which is precisely how 100,000+ near-duplicate pages
+ * cleared eighteen other guards in March 2026.
+ *
+ * So the comparison set is now the sitemap — the pages we actually ask Google
+ * to index, which is the only set whose similarity can cost anything.
+ */
+const submittedPaths = new Set();
+if (submitted !== null) {
+  for (const p of ['.next/server/app/sitemap.xml.body', '.next/server/app/sitemap.xml']) {
+    if (!existsSync(p)) continue;
+    for (const m of readFileSync(p, 'utf8').matchAll(/<loc>([^<]+)/g)) {
+      let path = m[1].trim().replace(new RegExp('^https?://[^/]+'), '');
+      if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+      submittedPaths.add(path === '' ? '/' : path);
+    }
+    break;
+  }
+}
+
+/** Path separator in build-output filenames on Windows. */
+const BACKSLASH = String.fromCharCode(92);
+
+/** Build-output file -> the route path it serves at. */
+const routeOf = (file) => {
+  const rel = file.slice(ROOT.length).split(BACKSLASH).join('/').slice(0, -5);
+  return rel === '/index' ? '/' : rel;
+};
+
 const pages = [];
+let skippedUnsubmitted = 0;
 (function walk(d) {
   for (const e of readdirSync(d, { withFileTypes: true })) {
     const p = join(d, e.name);
     if (e.isDirectory()) walk(p);
-    else if (e.name.endsWith('.html')) pages.push(p);
+    else if (e.name.endsWith('.html')) {
+      // With no readable sitemap, fall back to measuring everything rather
+      // than silently measuring nothing.
+      if (submittedPaths.size && !submittedPaths.has(routeOf(p))) {
+        skippedUnsubmitted++;
+        continue;
+      }
+      pages.push(p);
+    }
   }
 })(ROOT);
 
@@ -136,8 +189,9 @@ for (const [family, list] of families) {
 rows.sort((a, b) => b.median - a.median);
 
 console.log(
-  `check-duplication: ${pages.length} pages, ${rows.length} families sampled` +
-    (submitted !== null ? `, ${submitted} URLs submitted (ceiling ${SITEMAP_CEILING})` : ''),
+  `check-duplication: ${pages.length} submitted pages measured, ${rows.length} families sampled` +
+    (submitted !== null ? `, ${submitted} URLs submitted (ceiling ${SITEMAP_CEILING})` : '') +
+    (skippedUnsubmitted ? `, ${skippedUnsubmitted} built-but-unsubmitted pages ignored` : ''),
 );
 
 const flagged = rows.filter((r) => r.median > SIMILARITY_WARN);

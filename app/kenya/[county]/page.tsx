@@ -291,9 +291,6 @@ export default async function CountyPage({ params }: Props) {
                 <h3 className="text-white font-medium group-hover:text-amber-400 transition-colors text-center">
                   {service.shortName}
                 </h3>
-                <p className="text-xs text-gray-500 text-center mt-1">
-                  in {county.name}
-                </p>
               </Link>
             ))}
           </div>
@@ -313,7 +310,7 @@ export default async function CountyPage({ params }: Props) {
                       href={`/kenya/${county.slug}/${service.slug}`}
                       className="text-sm text-gray-400 hover:text-amber-400 underline-offset-4 hover:underline"
                     >
-                      {service.shortName} in {county.name}
+                      {service.shortName}
                     </Link>
                   </li>
                 ))}
@@ -354,24 +351,27 @@ export default async function CountyPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Popular Services in This County */}
-        <div className="mb-16 bg-gradient-to-r from-amber-500/10 to-cyan-500/10 p-8 rounded-3xl border border-white/10">
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
-            Popular Generator Services in {county.name}
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {CORE_SERVICES.slice(0, 6).map((service) => (
-              <Link
-                key={service.id}
-                href={`/kenya/${county.slug}/${service.slug}`}
-                className="p-4 rounded-xl bg-black/30 border border-white/10 hover:border-amber-400/50 hover:bg-white/5 transition-all flex items-center justify-between"
-              >
-                <span className="text-white">{service.shortName} in {county.name}</span>
-                <span className="text-amber-400">&rarr;</span>
-              </Link>
-            ))}
-          </div>
-        </div>
+        {/*
+          REMOVED 2026-09-29 — "Popular Generator Services in {county}".
+
+          It mapped CORE_SERVICES.slice(0, 6) to the same
+          /kenya/<county>/<service> URLs the grid above already links, with the
+          same anchor text, on the same page. Six duplicate links and seven
+          further repetitions of the county name, carrying no destination a
+          reader could not already reach.
+
+          Measured on the live /kenya/nairobi before this change: "Nairobi"
+          appeared 94 times in 1,267 words — 7.4% density, 68 of them inside
+          anchor text. That is the shape Google's keyword-stuffing and
+          doorway-page guidance describes, and this site has already been
+          demoted once for scaled location content. Nothing here was hidden or
+          deceptive, but a second block of identical links exists for a crawler,
+          not for a visitor, and the standing rule on this project is that we do
+          not ship those.
+
+          The links themselves are not lost: all 44 county+service pages remain
+          linked once each from the grid and the "more trades" list above.
+        */}
 
         {/* Why Choose Us */}
         <div className="mb-16">
