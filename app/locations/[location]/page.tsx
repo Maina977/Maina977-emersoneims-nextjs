@@ -6,6 +6,7 @@
  */
 
 import { Metadata } from 'next';
+import { seoTitleParts } from '@/lib/seo/pageTitle';
 import { MAJOR_TOWN_SLUGS } from '@/lib/seo/majorTowns';
 import Link from 'next/link';
 import {
@@ -56,7 +57,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // so adding it again shipped the brand twice and ate the characters Google
     // actually displays. The description was also 220+ characters, cut off well
     // before the phone number; it now leads with the offer and fits.
-    title: `Generator & Solar Services in ${locationName}${!isCounty && countyName ? `, ${countyName}` : ''}`,
+    /*
+     * The county is a useful qualifier, not an essential one. With the root
+     * layout's 20-character " | EmersonEIMS Kenya" suffix, "Generator & Solar
+     * Services in Chuka Igambangombe, Tharaka Nithi" ran to 83 characters and
+     * Google cut it — losing the county a searcher had typed. seoTitleParts
+     * drops the county first, then the brand, and only then gives up.
+     */
+    title: seoTitleParts(
+      `Generator & Solar Services in ${locationName}`,
+      !isCounty && countyName ? `, ${countyName}` : undefined,
+    ),
     description: `Generators, solar, UPS and electrical services in ${locationName}. 2-year warranty, 24/7 emergency response, engineers on site. Call +254768860665.`,
     keywords: [
       `generator company ${locationName}`,

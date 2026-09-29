@@ -11,6 +11,7 @@
  */
 
 import { Metadata } from 'next';
+import { seoTitleSmart } from '@/lib/seo/pageTitle';
 import Link from 'next/link';
 import {
   getIndexedServiceLocationPaths,
@@ -53,7 +54,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!seo) notFound();
 
   return {
-    title: seo.title,
+    // Drops '| Install & Service', then the brand, if they do not fit.
+    title: seoTitleSmart(seo.title),
     description: seo.description,
     keywords: seo.keywords,
     openGraph: {

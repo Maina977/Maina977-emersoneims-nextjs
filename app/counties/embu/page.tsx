@@ -5,6 +5,7 @@
  */
 
 import { Metadata } from 'next';
+import { seoTitleParts } from '@/lib/seo/pageTitle';
 import Link from 'next/link';
 import { OrganizationSchema, LocalBusinessSchema, BreadcrumbSchema } from '@/components/seo/StructuredData';
 
@@ -28,7 +29,14 @@ const SERVICES = [
 ];
 
 export const metadata: Metadata = {
-  title: `Generator, Solar & Electrical Services in ${COUNTY_DATA.name} County`,
+  /*
+   * Was `Generator, Solar & Electrical Services in ${name} County` — 64
+   * characters before the root layout adds its 20-character brand suffix, so
+   * every one of these 47 titles was truncated in results. seoTitleParts keeps
+   * the county name (which is what a searcher typed) and drops ' County',
+   * then the brand, only as far as it needs to.
+   */
+  title: seoTitleParts(`Generators, Solar & Electrical in ${COUNTY_DATA.name}`, ' County'),
   description: `Professional generator installation, solar power, UPS, and electrical services in ${COUNTY_DATA.name} County. Covering all ${COUNTY_DATA.constituencies.length} constituencies. 24/7 emergency service. Call +254768860665`,
   keywords: `generator ${COUNTY_DATA.name}, solar installation ${COUNTY_DATA.name}, generator repair ${COUNTY_DATA.name}, ups ${COUNTY_DATA.name}, electrician ${COUNTY_DATA.name}, generator service ${COUNTY_DATA.name} county, solar company ${COUNTY_DATA.name}, generator maintenance ${COUNTY_DATA.name}, power solutions ${COUNTY_DATA.name}, ${COUNTY_DATA.constituencies.join(', ')}, generator installation ${COUNTY_DATA.name} kenya, best generator company ${COUNTY_DATA.name}, emergency generator repair ${COUNTY_DATA.name}`,
   openGraph: {

@@ -4,6 +4,7 @@
  */
 
 import { Metadata } from 'next';
+import { seoTitleSmart } from '@/lib/seo/pageTitle';
 import { SEOService, generateServiceKeywords } from '@/lib/data/seo-services';
 import { primaryServiceSlug } from './serviceTradeGroups';
 import { hasConstituencyData } from '@/lib/data/kenya-constituency-conditions';
@@ -154,7 +155,8 @@ export function generateLocationServiceMetadata(
   }
 
   return {
-    title,
+    // Brand suffix only when it fits — see lib/seo/pageTitle.ts.
+    title: seoTitleSmart(title),
     description,
     keywords: keywords.join(', '),
     openGraph: {
@@ -215,7 +217,8 @@ export function generateCountyMetadata(
   const description = `Professional generator installation, repair & maintenance in ${countyName} County, Kenya. Solar power, UPS systems, electrical services. Serving ${population ? population.toLocaleString() + '+ residents. ' : ''}24/7 emergency support. Call +254768860665`;
 
   return {
-    title,
+    // Brand suffix only when it fits — see lib/seo/pageTitle.ts.
+    title: seoTitleSmart(title),
     description,
     keywords: [
       `generators ${countyName}`,
@@ -260,7 +263,8 @@ export function generateConstituencyMetadata(
   const description = `Professional generator & power solutions in ${constituencyName}, ${countyName} County. Installation, repair, maintenance, rentals. 24/7 emergency service. Call +254768860665`;
 
   return {
-    title,
+    // Brand suffix only when it fits — see lib/seo/pageTitle.ts.
+    title: seoTitleSmart(title),
     description,
     keywords: [
       `generators ${constituencyName}`,
@@ -303,7 +307,8 @@ export function generateVillageMetadata(
   const description = `Professional generator & power solutions in ${villageName}, ${constituencyName}, ${countyName}. Installation, repair, maintenance. Fast response. Call +254768860665`;
 
   return {
-    title,
+    // Brand suffix only when it fits — see lib/seo/pageTitle.ts.
+    title: seoTitleSmart(title),
     description,
     keywords: [
       `generators ${villageName}`,

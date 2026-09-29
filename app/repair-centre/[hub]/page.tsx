@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { seoTitleSmart } from '@/lib/seo/pageTitle';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { REPAIR_HUBS, REPAIR_ARTICLES, getRepairHub, getArticlesForHub } from '@/lib/repair-centre';
@@ -27,7 +28,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!hub) notFound();
 
   return {
-    title: `${hub.title} | EmersonEIMS Repair Centre`,
+    // The layout already appends '| EmersonEIMS Kenya', so this template
+    // printed the brand twice: '… | EmersonEIMS Repair Centre | EmersonEIMS
+    // Kenya', 82 characters. seoTitleSmart drops the qualifier when needed.
+    title: seoTitleSmart(`${hub.title} | Repair Centre`),
     description: hub.intro.slice(0, 300),
     alternates: { canonical: `https://www.emersoneims.com/repair-centre/${hub.slug}` },
     openGraph: {

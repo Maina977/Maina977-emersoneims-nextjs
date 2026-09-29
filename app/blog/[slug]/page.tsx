@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { seoTitleSmart } from '@/lib/seo/pageTitle';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getArticleBySlug, getRelatedArticles, BLOG_ARTICLES } from '@/lib/data/blog-articles';
@@ -16,7 +17,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${article.title}`,
+    // Article titles are editorial and legitimately long. Spend the brand
+    // suffix only when there is room for it.
+    title: seoTitleSmart(article.title),
     description: article.description,
     keywords: article.tags.join(', '),
     authors: [{ name: article.author }],

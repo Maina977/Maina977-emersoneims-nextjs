@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { seoTitleSmart } from '@/lib/seo/pageTitle';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
@@ -63,7 +64,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const keywords = generateSectorKeywords(sector, county.name);
 
   return {
-    title,
+    // Brand suffix only when it fits; the OG title below keeps the full form,
+    // which has no 60-character budget to respect.
+    title: seoTitleSmart(title),
     description,
     keywords,
     openGraph: {

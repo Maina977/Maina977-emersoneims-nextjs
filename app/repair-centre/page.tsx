@@ -17,7 +17,9 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: 'https://www.emersoneims.com/repair-centre' },
   openGraph: {
-    title: 'EmersonEIMS Repair Centre — Fault Diagnosis & Repair Guidance',
+    // Was 'EmersonEIMS Repair Centre — …', which the layout then suffixed
+    // with '| EmersonEIMS Kenya' — the brand twice, in 82 characters.
+    title: 'Repair Centre — Fault Diagnosis & Repair Guidance',
     description: 'Diagnosis guides for generators, inverters, UPS systems and controllers, written for technicians working on real plant.',
     url: 'https://www.emersoneims.com/repair-centre',
     type: 'website',

@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { seoTitleSmart } from '@/lib/seo/pageTitle';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { publishedPriceRange } from '@/lib/products/generatorSizes';
@@ -63,7 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const keywords = generateBrandKeywords(brand, county.name);
 
   return {
-    title,
+    title: seoTitleSmart(title),
     description,
     keywords,
     openGraph: {
