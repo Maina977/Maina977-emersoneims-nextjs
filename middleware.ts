@@ -821,21 +821,56 @@ export function middleware(request: NextRequest) {
       }
       if (invalid) {
         /*
-         * REDIRECT RATHER THAN 404 WHEN THE COUNTY IS REAL.
+         * 410 GONE FOR THE FABRICATED TIER — CORRECTED 2026-09-29.
          *
-         * An external audit on 2026-08-26 found Google still surfacing removed
-         * pages such as /kenya/nakuru/new-nakuru-town-west-village and
-         * .../upper-funyula-estate. Those belonged to the FABRICATED village
-         * tier and were correctly deleted — but they had been indexed, so a
-         * hard 404 throws away both the click and the accumulated authority,
-         * and grows the "Not found (404)" report in Search Console.
+         * WHAT THE PREVIOUS DECISION GOT WRONG. On 2026-08-26 this branch was
+         * changed to 308-redirect everything invalid under a real county to
+         * that county's page, reasoning that "a hard 404 throws away both the
+         * click and the accumulated authority".
          *
-         * The county page above them is real and substantial, so send the
-         * visitor there instead. 308 keeps it permanent and method-safe. A
-         * bogus COUNTY still 404s: we redirect because the PLACE exists, not
-         * merely because a URL was requested — the same rule the /locations
-         * guard already applies for the same reason.
+         * That reasoning was made five days AFTER the event it needed to
+         * account for, and it inverted the remedy. On 2026-08-21 organic
+         * impressions fell from 1,010/day to 29/day — 97% in a single day,
+         * flat for the five weeks since — while roughly 51,000 pages were
+         * still indexed. No deploy shipped that day, Googlebot was and is
+         * served 200 everywhere, robots.txt allows full crawling and no real
+         * page carries noindex. What the domain carried was tens of thousands
+         * of fabricated near-duplicate location pages, which is the condition
+         * Google's scaled-content and doorway-page policies act on.
+         *
+         * A 308 tells Google the URL MOVED: keep tracking it, and pass its
+         * signals to the target. Applied to a fabricated doorway page that is
+         * the cause of a demotion, that does two harmful things at once — it
+         * keeps ~29,723 junk URLs alive in Google's view of this domain
+         * ("Page with redirect" in the 2026-09-29 coverage export), and it
+         * consolidates whatever those doorway pages carry onto the REAL county
+         * pages we need to rank.
+         *
+         * There is no authority here worth preserving. These pages had no
+         * unique content, nothing on the site links to them, and they appear
+         * in no sitemap. They did not move; they should never have existed,
+         * and 410 is the status that says exactly that. Google drops 410s
+         * substantially faster than it drops redirects and consolidates
+         * nothing.
+         *
+         * SCOPE IS DELIBERATELY NARROW. rest.length >= 2 is the fabricated
+         * tier: /kenya/<county>/<constituency>/<village> and invalid
+         * constituency+service combinations. A single extra segment
+         * (/kenya/<county>/<bad-service>) is far more likely a stale or
+         * mistyped service URL where sending the visitor to the county page is
+         * genuinely useful, so that keeps its 308. A bogus COUNTY still 404s,
+         * unchanged.
          */
+        if (countyIsReal && rest.length >= 2) {
+          return new NextResponse('Gone', {
+            status: 410,
+            headers: {
+              'X-Robots-Tag': 'noindex',
+              'Content-Type': 'text/plain',
+              'X-Loc-Guard': 'kenya-fabricated-tier-gone',
+            },
+          });
+        }
         if (countyIsReal) {
           return NextResponse.redirect(new URL(`/kenya/${county}`, request.url), {
             status: 308,
