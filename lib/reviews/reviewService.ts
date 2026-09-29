@@ -20,6 +20,20 @@ export interface Review {
   createdAt: Date;
   approvedAt?: Date;
   rejectionReason?: string;
+  /**
+   * Result of the spam heuristics in isSuspicious() below, persisted so a
+   * moderator sees the same verdict the service reached.
+   *
+   * THIS FIELD WAS MISSING AND THE FEATURE SILENTLY DID NOTHING. The service
+   * computes a verdict, lib/db/postgres-reviews.ts writes review.isSuspicious
+   * into its INSERT, and app/dashboard/reviews/page.tsx renders a warning
+   * badge when it is set — but with no field on the type it was always
+   * undefined, so the column took NULL and the badge never appeared. Three of
+   * the project's type errors were pointing straight at it.
+   */
+  isSuspicious?: boolean;
+  /** Why the heuristics flagged it, for the moderator to judge. */
+  suspiciousReasons?: string[];
 }
 
 export interface PartRatingSummary {

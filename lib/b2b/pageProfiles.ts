@@ -24,6 +24,25 @@ export type B2BCta = {
   ariaLabel?: string;
 };
 
+/*
+ * WHY EVERY ARRAY HERE IS `readonly`.
+ *
+ * B2B_PROFILES below is declared with `as const`, which makes every array in
+ * it a readonly tuple. This type declared them as mutable arrays, and TypeScript
+ * will not assign `readonly string[]` to `string[]` — so every page that spread
+ * a profile into this type failed to compile.
+ *
+ * That was 38 of the 89 errors in the project's type-check on 2026-09-29: a
+ * single root cause, reported once per consuming page, across /about-us,
+ * /booking, /brands, /calculators, /case-studies, /contact, /eims-pro,
+ * /fabrication, /industries and the rest. The pages were correct; the type was
+ * wrong, and the build was passing only because next.config does not fail on
+ * type errors.
+ *
+ * Marking them readonly is also the honest description of the data: these
+ * profiles are static content, nothing mutates them, and a component that tried
+ * to would now be caught at compile time instead of at runtime.
+ */
 export type B2BProfile = {
   /** Short eyebrow tag, e.g. "Power Continuity" */
   eyebrow: string;
@@ -32,13 +51,17 @@ export type B2BProfile = {
   /** 1-2 sentence commercial subtitle */
   subtitle: string;
   /** Industry chips — pick only the relevant ones */
-  whoFor: string[];
+  whoFor: readonly string[];
   /** 3-column problem -> solution -> outcome triplets */
-  pso: Array<{ problem: string; solution: string; outcome: string }>;
+  pso: ReadonlyArray<{
+    readonly problem: string;
+    readonly solution: string;
+    readonly outcome: string;
+  }>;
   /** Trust badges / signals (short strings) */
-  trust: string[];
+  trust: readonly string[];
   /** CTA buttons (max 3 recommended) */
-  ctas: B2BCta[];
+  ctas: readonly B2BCta[];
   /** Optional accent color tailwind class fragment, e.g. 'amber' / 'cyan' */
   accent?: 'amber' | 'cyan' | 'emerald' | 'violet' | 'sky' | 'rose' | 'orange' | 'indigo';
 };

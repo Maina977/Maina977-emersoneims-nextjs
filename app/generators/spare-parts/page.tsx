@@ -179,8 +179,20 @@ export default function SparePartsPage() {
       }
     }
 
-    // Filter by price range
-    filtered = filtered.filter(p => p.price >= minPrice && p.price <= maxPrice);
+    /*
+     * Price range. An unpriced part is kept while the slider is at its full
+     * default span, and excluded once the buyer actually narrows it — at that
+     * point they have asked a question about price that we cannot answer for
+     * this line. See the note above about what `undefined >= min` used to do.
+     */
+    // 1000000 is the slider default set above, and the same figure the
+    // active-filter chips test against further down this file.
+    const rangeIsDefault = minPrice <= 0 && maxPrice >= 1000000;
+    filtered = filtered.filter(p =>
+      p.price === undefined
+        ? rangeIsDefault
+        : p.price >= minPrice && p.price <= maxPrice,
+    );
 
     // Filter by rating
     filtered = filtered.filter(p => (p.rating || 0) >= minRating);
@@ -227,11 +239,16 @@ export default function SparePartsPage() {
       // Already sorted by relevance above
     } else {
       switch (sortBy) {
+        /*
+         * Unpriced parts sort last in BOTH directions. Subtracting undefined
+         * produced NaN, and a comparator returning NaN leaves the order
+         * unspecified — so "sort by price" was engine-dependent.
+         */
         case 'price-low':
-          filtered.sort((a, b) => a.price - b.price);
+          filtered.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
           break;
         case 'price-high':
-          filtered.sort((a, b) => b.price - a.price);
+          filtered.sort((a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity));
           break;
         case 'rating':
           filtered.sort((a, b) => b.rating - a.rating);

@@ -50,21 +50,39 @@ describe('site invariants — regression protection', () => {
     // 6th item of the 3rd section and reported "not visible" on production, freeze its
     // prominence. It must live either inside the Quick Access band at the top of the
     // page, or as the FIRST resource of one of the RESOURCE_CATEGORIES blocks.
+    /*
+     * WHY THIS ACCEPTS TWO URLS, verified live on 2026-09-29:
+     *
+     *   /hub                      200, self-canonical
+     *   /resources/solar-ups-hub  308 redirect  ->  /hub
+     *
+     * The alias this test was written against is no longer a page. Asserting
+     * it would require the site to link a REDIRECT, which costs a hop for
+     * every visitor and every crawler and is worse than what the code does
+     * today.
+     *
+     * The invariant being protected is PROMINENCE, not a particular path —
+     * the incident it was written after was the card being buried as the 6th
+     * item of the 3rd section and reported invisible on production. That is
+     * still enforced: the hub must be in the Quick Access band or be the first
+     * card of a category. Only the accepted destination has widened, to the
+     * canonical URL and the alias that redirects to it.
+     */
     const src = read('app/resources/page.tsx');
-    const HUB = '/resources/solar-ups-hub';
+    const HUB_URLS = ['/hub', '/resources/solar-ups-hub'];
 
     const quickStart = src.indexOf('{/* Quick Access */}');
     const quickEnd = src.indexOf('{/* Resource Categories */}');
     expect(quickStart, 'Quick Access band marker must exist').toBeGreaterThan(0);
     expect(quickEnd, 'Resource Categories marker must exist').toBeGreaterThan(quickStart);
     const quickBand = src.slice(quickStart, quickEnd);
-    const inQuickAccess = quickBand.includes(HUB);
+    const inQuickAccess = HUB_URLS.some((u) => quickBand.includes(`"${u}"`));
 
     // Fallback: first href inside any `resources: [` block in RESOURCE_CATEGORIES.
     let firstInAnyCategory = false;
     const categoryBlocks = src.matchAll(/resources:\s*\[\s*\{\s*href:\s*['"]([^'"]+)['"]/g);
     for (const m of categoryBlocks) {
-      if (m[1] === HUB) {
+      if (HUB_URLS.includes(m[1])) {
         firstInAnyCategory = true;
         break;
       }
@@ -130,8 +148,17 @@ describe('site invariants — regression protection', () => {
   });
 
   it('9. homepage links the Solar / UPS Hub (restored teaser)', () => {
+    /*
+     * Same correction as 2b: /resources/solar-ups-hub is a 308 redirect to
+     * /hub, verified live 2026-09-29. Requiring the homepage to link the
+     * redirect rather than the destination would make the site worse to
+     * satisfy a test. What matters — that the homepage carries a labelled
+     * link to the hub — is unchanged and still asserted.
+     */
     const home = read('components/home/HomePageClient.tsx');
-    expect(home).toContain('/resources/solar-ups-hub');
+    const linksHub =
+      home.includes('"/hub"') || home.includes("'/hub'") || home.includes('/resources/solar-ups-hub');
+    expect(linksHub, 'homepage must link the Solar / UPS Hub').toBe(true);
     expect(home).toMatch(/Solar\s*\/\s*UPS\s*Hub/i);
   });
 
