@@ -28,7 +28,7 @@ const ServiceCTASection = dynamic(() => import('@/components/cta/ServiceCTASecti
 // Distinct image per service discipline (no recycling across pages) — drawn
 // from the freshly curated Desktop field photography + graded marketing set.
 const SERVICES_ORBIT = [
-  { src: '/images/desktop/generators/cummins-teal-canopy.jpg', title: 'Cummins & Voltka Generators', subtitle: 'Sales · Install · ATS · 10–2000 kVA' },
+  { src: '/images/desktop/generators/cummins-teal-canopy.jpg', title: 'Cummins & Voltka Generators', subtitle: 'Sales · Install · ATS · 10–3000 kVA' },
   { src: '/images/solar power farms.png', title: 'Solar PV & Hybrid', subtitle: 'Grid-tie, off-grid & storage' },
   { src: '/images/ups-power-protection-system.png', title: 'UPS Power Protection', subtitle: 'Enterprise N+1 systems' },
   { src: '/images/desktop/motor/rewinding-1.png', title: 'Motor Rewinding', subtitle: 'All sizes · load tested' },
@@ -294,7 +294,7 @@ export default function ServicesPage() {
               <span className="text-amber-400">2-Year Warranty</span>
             </h2>
             <p className="text-slate-300 mb-5">
-              Cummins specialist. Premium 10 kVA – 2000 kVA generators,
+              Cummins specialist. Premium 10 kVA – 3000 kVA generators,
               professional installation, genuine parts, 24/7 expert support.
             </p>
             <div className="flex flex-wrap gap-3">

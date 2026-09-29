@@ -60,7 +60,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'What brands of generators do you supply in {location}?',
-        answer: 'New generators are VOLTKA, our own make, built on Cummins engines from 10 kVA to 2000 kVA. We also sell used and slightly used sets in Cummins, Perkins, Caterpillar, Volvo Penta, John Deere, Lister Petter, Isuzu, SDMO and other makes, and we service and supply parts for all of them in {location}. We are not an authorised dealer for any third-party make.'
+        answer: 'New generators are VOLTKA, our own make, built on Cummins engines from 10 kVA to 3000 kVA, open or canopied. We also sell used and slightly used sets in Cummins, Perkins, Caterpillar, Volvo Penta, John Deere, Lister Petter, Isuzu, SDMO and other makes, and we service and supply parts for all of them in {location}. We are not an authorised dealer for any third-party make.'
       },
       {
         question: 'Do you offer installation services in {location}?',

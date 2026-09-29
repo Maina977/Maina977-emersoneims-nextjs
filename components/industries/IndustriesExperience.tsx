@@ -58,7 +58,7 @@ const FALLBACK_INDUSTRY_IMAGE = '/images/voltka/voltka-warehouse-fleet.webp';
 
 // Every service, with its field photograph — for the horizontal rail
 const SERVICES = [
-  { label: 'Generators', caption: 'Sales, installation & ATS changeover — 20 to 2000 kVA', image: '/images/voltka/voltka-vks44-hero-profile.webp' },
+  { label: 'Generators', caption: 'Sales, installation & ATS changeover — 20 to 3000 kVA', image: '/images/voltka/voltka-vks44-hero-profile.webp' },
   { label: 'Solar', caption: 'Grid-tie, hybrid & off-grid solar for farms and industry', image: '/images/solar power farms.png' },
   { label: 'UPS Systems', caption: 'Enterprise UPS with N+1 redundancy for critical loads', image: '/images/ups-power-protection-system.png' },
   { label: 'Switchgear', caption: 'Medium-voltage switchgear & distribution panels', image: '/images/switchgear-panel.png' },

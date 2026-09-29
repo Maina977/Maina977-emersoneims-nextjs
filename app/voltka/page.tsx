@@ -29,10 +29,25 @@ import { getEngineIndex } from '@/lib/parts/engineIndex';
  * 2026-09-21, where it read "New VOLTKA VKS44 (44 kVA)". The gap beside each
  * model name below is deliberate. Fill it from the owner, not by inference.
  *
- * SUPPLIED BY THE OWNER 2026-09-21: VOLTKA covers 10 kVA to 2000 kVA and
- * carries a two-year warranty. The warranty figure is consistent with the rest
- * of the site, where "2-year warranty" already appears 55 times and the brand
- * comparison table on /generators lists two years across the board.
+ * SUPPLIED BY THE OWNER 2026-09-21, UPDATED BY THE OWNER 2026-09-29:
+ * VOLTKA covers 10 kVA to 3000 kVA, is available as an OPEN set or in a
+ * CLOSED canopy, and carries a two-year warranty.
+ *
+ * The ceiling was 2000 kVA across 25 places on this site until the owner
+ * raised it on 2026-09-29. If it moves again, it has to move in all of them
+ * at once: a range is a claim a buyer sizes against, and the same figure
+ * reading 2000 on one page and 3000 on another is the drift that put four
+ * different warranty terms on this site.
+ *
+ * NOT CHANGED, AND NOT A CONTRADICTION: the 20-row price table in
+ * lib/brands/cumminsData.ts still runs 10 to 2000 kVA, because those are the
+ * sizes we publish a figure against. The range is what VOLTKA covers; the
+ * table is what we quote openly. /brands/cummins likewise stays at 10-2000,
+ * since that page describes Cummins as a manufacturer, not VOLTKA.
+ *
+ * The warranty figure is consistent with the rest of the site, where
+ * "2-year warranty" already appears 55 times and the brand comparison table
+ * on /generators lists two years across the board.
  *
  * STILL MISSING, AND STILL NOT TO BE GUESSED AT:
  *   - the kVA rating of each individual model. The range above is for the
@@ -54,9 +69,9 @@ export const metadata: Metadata = {
    *
    * 40 characters here, 60 after the template, which fits what Google renders.
    */
-  title: 'VOLTKA Generators Kenya — 10 to 2000 kVA',
+  title: 'VOLTKA Generators Kenya — 10 to 3000 kVA',
   description:
-    'VOLTKA is the generator brand EmersonEIMS builds and sells: Cummins-powered diesel sets from 10 kVA to 2000 kVA, from KES 500,000, with a two-year warranty. Supplied, installed and commissioned across all 47 counties.',
+    'VOLTKA is the generator brand EmersonEIMS builds and sells: Cummins-powered diesel sets from 10 kVA to 3000 kVA, open or canopied, from KES 500,000 with a two-year warranty. Installed and commissioned across all 47 counties.',
   keywords: [
     'VOLTKA generators',
     'VOLTKA generator Kenya',
@@ -138,7 +153,7 @@ export default function VoltkaPage() {
         brand: { '@type': 'Brand', name: 'VOLTKA' },
         manufacturer: { '@type': 'Organization', name: 'EmersonEIMS' },
         description:
-          'VOLTKA is the generator brand EmersonEIMS builds and sells: Cummins-powered diesel generating sets from 10 kVA to 2000 kVA, supplied, installed and commissioned across Kenya with a two-year warranty.',
+          'VOLTKA is the generator brand EmersonEIMS builds and sells: Cummins-powered diesel generating sets from 10 kVA to 3000 kVA, supplied, installed and commissioned across Kenya with a two-year warranty.',
         /*
          * warranty is a real Offer property, but schema.org types it as a
          * WarrantyPromise rather than free text. Stating the term in the
@@ -204,7 +219,7 @@ export default function VoltkaPage() {
                 Generators
               </h1>
               <p className="mx-auto mb-4 max-w-2xl text-xl leading-relaxed text-gray-300">
-                Cummins-powered diesel generating sets from 10 kVA to 2000 kVA, starting at KES
+                Cummins-powered diesel generating sets from 10 kVA to 3000 kVA, starting at KES
                 500,000, with a two-year warranty. VOLTKA is the brand EmersonEIMS sells. Every
                 other make on this site we maintain, repair and stock parts for.
               </p>
@@ -239,7 +254,7 @@ export default function VoltkaPage() {
               </div>
               <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900 to-gray-950 p-7">
                 <h2 className="mb-3 text-lg font-semibold text-amber-400">
-                  10 kVA to 2000 kVA, from KES 500,000
+                  10 kVA to 3000 kVA, from KES 500,000
                 </h2>
                 <p className="leading-relaxed text-gray-400">
                   A shop standby set through to prime power for a factory or a mine. What your own
@@ -264,13 +279,14 @@ export default function VoltkaPage() {
         <section className="border-t border-white/5 py-16">
           <div className="container mx-auto px-4">
             <h2 className="mb-3 text-center text-3xl font-bold text-white">
-              The VOLTKA range — 10 kVA to 2000 kVA
+              The VOLTKA range — 10 kVA to 3000 kVA
             </h2>
             <p className="mx-auto mb-10 max-w-2xl text-center text-gray-400">
-              Model names, smallest to largest. The range runs from 10 kVA up to 2000 kVA, but the
+              Model names, smallest to largest. The range runs from 10 kVA up to 3000 kVA, but the
               model number is not the rating — ask us which set matches your load. Sizing is done
               against the kW your site actually draws, plus the surge your largest motor pulls when
-              it starts.
+              it starts. Every size is available two ways: open, for a plant room or an enclosure
+              you already have, or closed in a canopy where the set stands outdoors or near people.
             </p>
             <ul className="mx-auto flex max-w-3xl flex-wrap justify-center gap-3">
               {MODELS.map((m) => (

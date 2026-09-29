@@ -28,7 +28,8 @@
  * THE BRAND QUESTION, IN THREE PARTS
  * Owner-clarified 2026-09-25, correcting an over-correction of mine:
  *
- *   NEW    VOLTKA only, our own make, built on Cummins engines, 10-2000 kVA.
+ *   NEW    VOLTKA only, our own make, built on Cummins engines, 10-3000 kVA,
+ *          supplied open or in a canopy.
  *   USED   and slightly used: Cummins, Perkins, Caterpillar, Volvo Penta,
  *          John Deere, Lister Petter, Isuzu, SDMO, Wei Chai and others.
  *   ALL    serviced, with parts supplied.

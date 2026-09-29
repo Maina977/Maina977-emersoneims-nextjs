@@ -25,7 +25,7 @@ export const metadata: Metadata = {
    * implied a choice between two makes and split the keyword; the real
    * flagship line is named VOLTKA Cummins (VKS 44 through VKS 275).
    */
-  title: "VOLTKA Cummins Generators | 10-2000kVA",
+  title: "VOLTKA Cummins Generators | 10-3000kVA",
   /*
    * KEEP THIS UNDER ~155 CHARACTERS.
    * The previous version ran to 260 and Google cut it mid-sentence, which
@@ -41,10 +41,10 @@ export const metadata: Metadata = {
    * prices for the same range on one website. Overstating the floor by 70,000
    * loses the click before the buyer ever sees the page.
    */
-  description: "Diesel generators in Kenya, 10kVA-2000kVA, from KES 280,000. New sets: 2-year warranty, 1 year free servicing. Serviced in all 47 counties.",
+  description: "Diesel generators in Kenya, 10kVA-3000kVA, from KES 280,000. New sets: 2-year warranty, 1 year free servicing. Serviced in all 47 counties.",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
-    title: 'Cummins & Voltka Generators Kenya | 10-2000kVA',
+    title: 'Cummins & Voltka Generators Kenya | 10-3000kVA',
     description: 'Cummins generator sales & maintenance specialist. NEW generators with warranty + 1 year free maintenance. Serving all 47 counties. Expert installation & support.',
     type: 'website',
     url: 'https://www.emersoneims.com/generators',
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Cummins Generators Kenya',
-    description: 'Buy NEW Cummins generators in Kenya, 10kVA-2000kVA. Supplied, installed and commissioned.',
+    description: 'Buy NEW Cummins generators in Kenya, 10kVA-3000kVA. Supplied, installed and commissioned.',
   },
   /*
    * NO `alternates.canonical` HERE — a layout's metadata is inherited by every
@@ -131,7 +131,7 @@ const jsonLd = {
       name: 'Generators - Cummins & Voltka Diesel Generators Kenya',
       isPartOf: { '@id': 'https://www.emersoneims.com/#website' },
       about: { '@id': 'https://www.emersoneims.com/#organization' },
-      description: 'Buy NEW Cummins & Voltka diesel generators in Kenya. 10kVA to 2000kVA with warranty and free maintenance.',
+      description: 'Buy NEW Cummins & Voltka diesel generators in Kenya. 10kVA to 3000kVA with warranty and free maintenance.',
     },
     {
       '@type': 'Product',
@@ -146,7 +146,7 @@ const jsonLd = {
         '@type': 'Organization',
         name: 'Voltka',
       },
-      description: 'Cummins & Voltka diesel generators in Kenya, 10KVA to 2000KVA, supplied, installed and commissioned. Genuine parts, expert installation. Multi-brand specialist.',
+      description: 'Cummins & Voltka diesel generators in Kenya, 10KVA to 3000KVA, supplied, installed and commissioned. Genuine parts, expert installation. Multi-brand specialist.',
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'KES',

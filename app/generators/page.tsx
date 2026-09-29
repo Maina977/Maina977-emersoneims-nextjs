@@ -122,7 +122,7 @@ const GENERATOR_HUB_SECTIONS = [
     icon: '⚡',
     href: '#new-generators',
     color: 'amber',
-    description: 'Cummins & Voltka - 10kVA to 2000kVA',
+    description: 'Cummins & Voltka - 10kVA to 3000kVA',
     badge: 'HOT'
   },
   {
@@ -2257,7 +2257,7 @@ export default function GeneratorPage() {
             '@context': 'https://schema.org',
             '@type': 'VideoObject',
             name: 'Industrial Diesel Generators Kenya - Emerson EiMS',
-            description: 'Premium diesel generators from 20kVA to 2000kVA for industrial and commercial use in Kenya. Cummins, Perkins, and CAT generators with installation and maintenance.',
+            description: 'Premium diesel generators from 10kVA to 3000kVA for industrial and commercial use in Kenya. Cummins, Perkins, and CAT generators with installation and maintenance.',
             thumbnailUrl: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
             uploadDate: '2024-01-01T00:00:00+03:00',
             contentUrl: 'https://www.emersoneims.com/videos/VID-20250930-WA0000%20(3).mp4',
@@ -2323,7 +2323,7 @@ export default function GeneratorPage() {
           <p
             className="mt-4 max-w-3xl text-white/90 text-xl md:text-2xl font-light"
           >
-            10kVA to 2000kVA, sized to your actual load rather than a catalogue guess.
+            10kVA to 3000kVA, sized to your actual load rather than a catalogue guess.
             <br />
             <span className="text-[#fbbf24]">
               2-year warranty on new sets {'\u2022'} 1 year free servicing {'\u2022'} mobile workshop in all 47 counties
@@ -2353,7 +2353,7 @@ export default function GeneratorPage() {
           Before this was added, /generators had ZERO forms. A page with 29
           sections and 80 sub-headings offered a buyer exactly three ways to
           act: ring a phone number, open WhatsApp, or leave. For capital
-          equipment at 10kVA-2000kVA that is a real leak — this is researched
+          equipment at 10kVA-3000kVA that is a real leak — this is researched
           out of hours, by people who will not phone a stranger, and a visitor
           who leaves without giving a name leaves no way to follow up.
 
@@ -2789,7 +2789,7 @@ export default function GeneratorPage() {
         <div className="eims-shell py-0">
           <SectionLead
             title="New Generators — Cummins & VOLTKA"
-            subtitle="From compact 20kVA to industrial 2000kVA, supplied with a 2-year warranty on new sets"
+            subtitle="From compact 20kVA to industrial 3000kVA, supplied with a 2-year warranty on new sets"
             centered
           />
           
