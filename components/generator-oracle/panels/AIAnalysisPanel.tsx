@@ -489,14 +489,20 @@ function AIAnalysisPanelImpl({ className = '', card }: AIAnalysisPanelProps) {
     setAnalysisError(null);
     setAnalysisSource(null);
 
-    // Convert string inputs to numbers for the readings
-    const readings: GeneratorReadings = {};
-    Object.entries(inputs).forEach(([key, value]) => {
+    /*
+     * Built, then narrowed - not mutated through a cast.
+     *
+     * This wrote each key with `(readings as Record<string, number>)[key] =`,
+     * which is a mutation the type system cannot see. React Compiler refuses
+     * to preserve memoisation around a write it cannot prove safe, so it
+     * skipped compiling this whole component. Collecting the pairs first and
+     * asserting once at the end says the same thing with no hidden write.
+     */
+    const numericEntries = Object.entries(inputs).flatMap(([key, value]) => {
       const numValue = parseFloat(value);
-      if (!isNaN(numValue)) {
-        (readings as Record<string, number>)[key] = numValue;
-      }
+      return Number.isNaN(numValue) ? [] : [[key, numValue] as const];
     });
+    const readings = Object.fromEntries(numericEntries) as GeneratorReadings;
 
     try {
       if (useAI) {

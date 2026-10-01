@@ -201,7 +201,7 @@ export default function WebGLGradientMesh() {
     window.addEventListener('mousemove', handleMouseMove);
 
     // Animation loop
-    let startTime = Date.now();
+    const startTime = Date.now();
     const animate = () => {
       const time = (Date.now() - startTime) / 1000;
 

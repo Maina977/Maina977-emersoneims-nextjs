@@ -1,9 +1,9 @@
-import SectionLead from "../components/generators/SectionLead";
-import GeneratorCalculator from "../components/generators/generatorscalculator";
-import MTBFChart from "../components/generators/MTBFChart";
-import ErrorFrequencyChart from "../components/generators/ErrorFrequencyChart";
-import { cumminsGenerators } from "../lib/data/cumminsgenerators";
-import { generatorServices } from "../lib/data/generatorservices";
+import SectionLead from "@/app/components/generators/SectionLead";
+import GeneratorCalculator from "@/app/components/generators/generatorscalculator";
+import MTBFChart from "@/app/components/generators/MTBFChart";
+import ErrorFrequencyChart from "@/app/components/generators/ErrorFrequencyChart";
+import { cumminsGenerators } from "@/app/lib/data/cumminsgenerators";
+import { generatorServices } from "@/app/lib/data/generatorservices";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 

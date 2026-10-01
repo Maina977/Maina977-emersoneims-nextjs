@@ -392,7 +392,7 @@ function HolographicMapInner() {
                     animate={{ opacity: 1 }}
                     className="absolute bottom-8 left-8 bg-black/80 backdrop-blur-xl border border-amber-500/50 rounded-2xl p-6 font-mono"
                   >
-                    <div className="text-amber-400 text-xs uppercase tracking-widest mb-2">// COORDINATES</div>
+                    <div className="text-amber-400 text-xs uppercase tracking-widest mb-2">{'// COORDINATES'}</div>
                     <div className="text-white text-2xl font-bold">-1.3200°, 36.8900°</div>
                     <div className="text-gray-400 text-sm mt-2">Embakasi, off Airport North Road, Nairobi</div>
                     <div className="flex items-center gap-2 mt-3">
@@ -527,7 +527,7 @@ function HolographicMapInner() {
             animate={{ opacity: 1, x: 0 }}
             className="absolute top-8 right-8 bg-black/80 backdrop-blur-xl border border-white/20 rounded-2xl p-6 max-w-xs"
           >
-            <div className="text-amber-400 font-mono text-xs uppercase tracking-widest mb-3">// LOCATION DATA</div>
+            <div className="text-amber-400 font-mono text-xs uppercase tracking-widest mb-3">{'// LOCATION DATA'}</div>
             <div className="space-y-3">
               <div>
                 <div className="text-gray-400 text-xs">HQ Address</div>

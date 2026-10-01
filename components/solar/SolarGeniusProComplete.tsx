@@ -591,7 +591,7 @@ export default function SolarGeniusProComplete() {
     AI_ENGINES.forEach(e => { statuses[e.id] = 'pending'; });
     setEngineStatuses(statuses);
 
-    let apiData: any = {};
+    const apiData: any = {};
 
     // Phase 1: Fetch REAL satellite/GIS data (engines 0-2)
     for (let i = 0; i < 3; i++) {

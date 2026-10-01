@@ -1545,7 +1545,7 @@ export class AIDesignCopilot {
   ): Promise<DesignResponse> {
     const changes: DesignChange[] = [];
     const suggestions: string[] = [];
-    let newState = { ...currentState };
+    const newState = { ...currentState };
 
     switch (command.type) {
       case 'add':

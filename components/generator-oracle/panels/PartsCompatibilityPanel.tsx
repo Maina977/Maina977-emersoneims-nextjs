@@ -28,7 +28,17 @@ export default function PartsCompatibilityPanel() {
   const [selectedPart, setSelectedPart] = useState<GeneratorPart | null>(null);
   const [currency, setCurrency] = useState<'KES' | 'USD'>('KES');
 
-  const partsService = getPartsCompatibilityService();
+  /*
+   * Memoised so it can go in the dependency arrays below.
+   *
+   * Both useMemo blocks call methods on partsService while listing only the
+   * query state as dependencies, so React Compiler could not preserve the
+   * existing memoisation and skipped compiling this component. The service
+   * itself is a module singleton, so useMemo with [] returns the same
+   * instance every render and the dependency arrays become honest without
+   * changing behaviour.
+   */
+  const partsService = useMemo(() => getPartsCompatibilityService(), []);
 
   // Search results
   const searchResults = useMemo(() => {
@@ -45,13 +55,13 @@ export default function PartsCompatibilityPanel() {
       default:
         return [];
     }
-  }, [searchQuery, searchType]);
+  }, [searchQuery, searchType, partsService]);
 
   // Category filtered parts
   const categoryParts = useMemo(() => {
     if (selectedCategory === 'all') return PARTS_DATABASE;
     return partsService.searchByCategory(selectedCategory);
-  }, [selectedCategory]);
+  }, [selectedCategory, partsService]);
 
   const handlePartClick = (part: GeneratorPart) => {
     setSelectedPart(part);

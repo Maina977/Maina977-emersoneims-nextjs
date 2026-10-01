@@ -75,7 +75,7 @@ export default function GoogleReviewsWidget({
           >
             <div className="flex items-center gap-3">
               {review.authorPhoto ? (
-                // eslint-disable-next-line @next/next/no-img-element -- Google-hosted avatar, not a local asset
+                 
                 <img
                   src={review.authorPhoto}
                   alt=""

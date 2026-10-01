@@ -117,7 +117,7 @@ export function detectDebugger(): boolean {
   if (typeof window === 'undefined') return false;
 
   const start = performance.now();
-  // eslint-disable-next-line no-debugger
+   
   debugger;
   const end = performance.now();
 

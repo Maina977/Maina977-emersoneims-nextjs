@@ -300,6 +300,13 @@ export interface AnalysisResult {
   };
   clientLocation?: {
     country?: string;
+    /**
+     * ISO-2 code when the geocoder supplies one. Added 2026-10-01: 
+     * boreholeAnalyzer.ts reads clientLocation.countryCode and falls back to
+     * country.slice(0, 2), but the field was absent from this type, so the read
+     * was a type error and the fallback looked like the only path.
+     */
+    countryCode?: string;
     region?: string;
     city?: string;
     county?: string;

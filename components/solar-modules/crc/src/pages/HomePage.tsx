@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { FiArrowRight, FiZap, FiTrendingUp, FiTarget, FiBarChart2, FiActivity } from 'react-icons/fi';
 
 // ============================================
@@ -386,7 +386,16 @@ const ModernHomePage: React.FC = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
   
-  const containerVariants = {
+  /*
+   * ANNOTATED AS Variants so the literals below are contextually typed.
+   *
+   * Without it TypeScript infers transition.ease as `string`, and
+   * framer-motion requires its Easing union, so every <motion.*> that took
+   * these variants failed to match any overload - ten errors in this file,
+   * all from these two objects. The annotation checks "easeOut" against
+   * Easing instead of widening it.
+   */
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -396,7 +405,7 @@ const ModernHomePage: React.FC = () => {
     },
   };
   
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
@@ -466,12 +475,20 @@ const ModernHomePage: React.FC = () => {
             AI-Powered • Real-Time • Professional
           </HeroSubtitle>
           
+          {/*
+            href, not `to` — and real routes. These buttons came from the
+            react-router version of this SPA, but Link here is next/link, which
+            takes href. `to` was passed straight through and ignored, so all
+            three rendered an anchor with no destination. The paths were
+            react-router paths as well: /dashboard and /calculator both answer
+            404 on this domain. The real routes are under /solar-genius-pro.
+          */}
           <HeroButtons variants={itemVariants}>
-            <PrimaryButton to="/dashboard">
+            <PrimaryButton href="/solar-genius-pro/solar-dashboard">
               <FiZap size={20} />
               Launch Dashboard
             </PrimaryButton>
-            <SecondaryButton to="/calculator">
+            <SecondaryButton href="/solar-genius-pro/calculator-advanced">
               <FiBarChart2 size={20} />
               Try Calculator
             </SecondaryButton>
@@ -545,7 +562,7 @@ const ModernHomePage: React.FC = () => {
             <CTAText>
               Join thousands of solar professionals using SolarGenius Pro for advanced analysis and design
             </CTAText>
-            <PrimaryButton to="/dashboard">
+            <PrimaryButton href="/solar-genius-pro/solar-dashboard">
               <FiArrowRight size={20} />
               Get Started Now
             </PrimaryButton>

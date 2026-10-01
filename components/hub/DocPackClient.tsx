@@ -332,7 +332,6 @@ export default function DocPackClient() {
 
       <HubConnectStrip active="/hub/doc-pack" />
 
-      {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx global>{`
         @media print {
           @page { size: A4; margin: 14mm; }

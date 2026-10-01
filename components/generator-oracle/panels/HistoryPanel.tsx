@@ -372,7 +372,7 @@ export default function HistoryPanel({ history = SAMPLE_HISTORY }: HistoryPanelP
 
   // Filter and sort history
   const filteredHistory = useMemo(() => {
-    let filtered = history.filter(entry => {
+    const filtered = history.filter(entry => {
       const matchesSearch = searchQuery === '' ||
         entry.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         entry.faultCode.toLowerCase().includes(searchQuery.toLowerCase()) ||

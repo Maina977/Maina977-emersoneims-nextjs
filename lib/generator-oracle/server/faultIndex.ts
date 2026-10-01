@@ -292,7 +292,10 @@ export function listBrandSummaries(): BrandSummary[] {
   return Object.entries(CONTROLLER_BRANDS).map(([key, b]) => ({
     key,
     name: b.name,
-    models: b.models,
+    // CONTROLLER_BRANDS is `as const`, so b.models is a readonly tuple while
+    // BrandSummary.models is string[]. Copy rather than widen the interface:
+    // callers already treat this as an ordinary array.
+    models: [...b.models],
     color: b.color,
     totalCodes: stats.byBrand[b.name] || 0,
     verifiedCodes: verifiedByBrand[b.name] || 0,
@@ -462,6 +465,7 @@ export function listCategories(): { key: string; name: string; subcategories: st
   return Object.entries(FAULT_CATEGORIES).map(([key, c]) => ({
     key,
     name: c.name,
-    subcategories: c.subcategories,
+    // As above: FAULT_CATEGORIES is `as const`, so this is a readonly tuple.
+    subcategories: [...c.subcategories],
   }));
 }

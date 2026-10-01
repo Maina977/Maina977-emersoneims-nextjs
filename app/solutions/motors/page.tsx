@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SectionLead from "../../components/generators/SectionLead";
+import SectionLead from "@/app/components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import OptimizedImage from "@/components/media/OptimizedImage";

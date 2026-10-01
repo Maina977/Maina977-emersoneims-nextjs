@@ -1,4 +1,4 @@
-import SectionLead from "../../components/generators/SectionLead";
+import SectionLead from "@/app/components/generators/SectionLead";
 import CTAForm from "@/components/CTAForm";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';

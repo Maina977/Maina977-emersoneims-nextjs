@@ -669,7 +669,7 @@ function ContactMethodCard({
         
         {/* Content */}
         <div className="space-y-2">
-          <p className="text-xs text-amber-400 uppercase tracking-wider font-mono">// {title}</p>
+          <p className="text-xs text-amber-400 uppercase tracking-wider font-mono">{'// '}{title}</p>
           <p className="text-2xl font-bold text-white">{value}</p>
           <p className="text-gray-400 text-sm">{subtext}</p>
         </div>
@@ -938,7 +938,7 @@ function SciFiContactPageInner() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <p className="text-amber-400 font-mono text-sm mb-4">// COMMUNICATION_CHANNELS</p>
+            <p className="text-amber-400 font-mono text-sm mb-4">{'// COMMUNICATION_CHANNELS'}</p>
             <h2 className="text-4xl md:text-5xl font-bold text-white">Choose Your Connection</h2>
           </m.div>
 
@@ -981,7 +981,7 @@ function SciFiContactPageInner() {
             className="mt-12"
           >
             <div className="text-center mb-6">
-              <p className="text-amber-400 font-mono text-sm">// EMAIL_DESKS</p>
+              <p className="text-amber-400 font-mono text-sm">{'// EMAIL_DESKS'}</p>
               <h3 className="text-2xl md:text-3xl font-bold text-white mt-2">Reach the right desk directly</h3>
               <p className="text-slate-400 mt-2 max-w-2xl mx-auto">
                 Each desk is staffed by the team that owns the work — faster routing, fewer hand-offs.
@@ -1010,12 +1010,11 @@ function SciFiContactPageInner() {
             transition={{ delay: 0.3 }}
             className="mt-12 text-center"
           >
-            <p className="text-amber-400 font-mono text-sm mb-4">// SCAN_TO_CONNECT</p>
+            <p className="text-amber-400 font-mono text-sm mb-4">{'// SCAN_TO_CONNECT'}</p>
             <div className="inline-flex flex-wrap justify-center items-center gap-6 p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
               {/* WhatsApp QR */}
               <div className="text-center">
                 <div className="bg-white p-2 rounded-lg">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwa.me%2F254768860665%3Ftext%3DHello%2520EmersonEIMS&color=22c55e&format=png"
                     alt="Scan to WhatsApp"
@@ -1029,7 +1028,6 @@ function SciFiContactPageInner() {
               {/* Website QR */}
               <div className="text-center">
                 <div className="bg-white p-2 rounded-lg">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwww.emersoneims.com&color=f59e0b&format=png"
                     alt="Scan to visit website"
@@ -1043,7 +1041,6 @@ function SciFiContactPageInner() {
               {/* Facebook QR */}
               <div className="text-center">
                 <div className="bg-white p-2 rounded-lg">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D100089864898337&color=1877f2&format=png"
                     alt="Scan to visit Facebook"
@@ -1071,7 +1068,7 @@ function SciFiContactPageInner() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <p className="text-amber-400 font-mono text-sm mb-4">// TRANSMISSION_FORM</p>
+                <p className="text-amber-400 font-mono text-sm mb-4">{'// TRANSMISSION_FORM'}</p>
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                   Send a <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">Transmission</span>
                 </h2>
@@ -1156,7 +1153,7 @@ function SciFiContactPageInner() {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <p className="text-amber-400 font-mono text-sm mb-4">// FINAL_TRANSMISSION</p>
+            <p className="text-amber-400 font-mono text-sm mb-4">{'// FINAL_TRANSMISSION'}</p>
             <h2 className="text-4xl md:text-6xl font-bold text-white">
               Power Problems?
               <br />

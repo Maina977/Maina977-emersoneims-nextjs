@@ -469,8 +469,8 @@ export class BoreholeAnalyzer {
         remoteSensing.climate = {
           annualPrecipitation: annualP,
           monthlyPrecipitation: Array.from({ length: 12 }, (_, i) => Math.round(annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6)))),
-          meanTemperature: kbClimate.climate.temp_mean_c ?? 22,
-          monthlyTemperature: Array.from({ length: 12 }, () => kbClimate.climate.temp_mean_c ?? 22),
+          meanTemperature: kbClimate.climate?.temp_mean_c ?? 22,
+          monthlyTemperature: Array.from({ length: 12 }, () => kbClimate.climate?.temp_mean_c ?? 22),
           aridity: annualP > 1000 ? 'Humid' : annualP > 500 ? 'Sub-humid' : annualP > 200 ? 'Semi-arid' : 'Arid',
           rechargeEstimate: Math.round(annualP * rechargePct),
           source: `EmersonEIMS baseline — Open-Meteo ERA5 2015-2024 measured at ${kbClimate.name} (${kbClimate.distance_km} km)`,
@@ -530,8 +530,8 @@ export class BoreholeAnalyzer {
           climate: {
             annualPrecipitation: annualP,
             monthlyPrecipitation: Array.from({ length: 12 }, (_, i) => Math.round(annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6)))),
-            meanTemperature: kb.climate.temp_mean_c ?? 22,
-            monthlyTemperature: Array.from({ length: 12 }, () => kb.climate.temp_mean_c ?? 22),
+            meanTemperature: kb.climate?.temp_mean_c ?? 22,
+            monthlyTemperature: Array.from({ length: 12 }, () => kb.climate?.temp_mean_c ?? 22),
             aridity: annualP > 1000 ? 'Humid' : annualP > 500 ? 'Sub-humid' : annualP > 200 ? 'Semi-arid' : 'Arid',
             rechargeEstimate: Math.round(annualP * rechargePct),
             source: `EmersonEIMS baseline — Open-Meteo ERA5 2015-2024 measured at ${kb.name} (${kb.distance_km} km)`,

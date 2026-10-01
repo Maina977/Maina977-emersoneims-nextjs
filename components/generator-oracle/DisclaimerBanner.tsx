@@ -217,7 +217,7 @@ export function DisclaimerAcknowledgment({ onAccept }: { onAccept: () => void })
     if (accepted) {
       onAccept();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const handleAccept = () => {

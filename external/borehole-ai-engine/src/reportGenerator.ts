@@ -10341,7 +10341,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     // Any alteration of a circulated copy's figures breaks the fingerprint —
     // customers can ask EmersonEIMS to verify a report they have been shown.
     const _fpPayload = JSON.stringify({
-      lat: result.latitude, lon: result.longitude,
+      // result.latitude / result.longitude are not on AnalysisResult: the
+      // coordinates live under result.site, as line 2317 of this file already
+      // reads them. Both were undefined here, so this fingerprint - the one a
+      // customer uses to ask us to verify a report - was computed without the
+      // site, and two reports for different places could fingerprint alike.
+      lat: result.site?.latitude, lon: result.site?.longitude,
       prob: result.probability, depth: result.recommendedDepth, yield: result.estimatedYield,
       generated: new Date().toISOString().slice(0, 16),
     });

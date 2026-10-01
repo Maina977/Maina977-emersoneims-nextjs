@@ -109,7 +109,14 @@ const StatLabel = styled.div`
 `;
 
 export default function FeaturesPage() {
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  /*
+   * Typed state. useState(null) infers the type `null`, which broke this
+   * component in two directions at once: setSelectedCategory(category) could
+   * not take a string, and inside the truthy guard below the value narrowed to
+   * `never`, so features[selectedCategory].map() had no map to call and its
+   * callback parameters fell back to implicit any. Four errors, one cause.
+   */
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const features = {
     "🧮 Financial Calculators": [
@@ -321,7 +328,7 @@ export default function FeaturesPage() {
             {selectedCategory}
           </h2>
           <FeaturesList>
-            {features[selectedCategory].map((feature, i) => (
+            {features[selectedCategory as keyof typeof features].map((feature, i) => (
               <FeatureItem
                 key={i}
                 initial={{ opacity: 0, x: -10 }}

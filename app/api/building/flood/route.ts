@@ -127,8 +127,8 @@ async function fetchNearbyWaterBodies(lat: number, lng: number, radiusKm: number
         let minDistance = Infinity;
 
         for (const element of data.elements) {
-          let elLat = element.center?.lat || element.lat;
-          let elLng = element.center?.lon || element.lon;
+          const elLat = element.center?.lat || element.lat;
+          const elLng = element.center?.lon || element.lon;
 
           if (elLat && elLng) {
             const distance = calculateDistance(lat, lng, elLat, elLng);
@@ -283,7 +283,7 @@ export async function POST(request: NextRequest) {
       fetchNearbyWaterBodies(latitude, longitude),
     ]);
 
-    let source = 'Open-Meteo Historical + OpenStreetMap';
+    const source = 'Open-Meteo Historical + OpenStreetMap';
 
     // Get elevation (simplified - ideally use elevation API)
     // For now, use regional estimate

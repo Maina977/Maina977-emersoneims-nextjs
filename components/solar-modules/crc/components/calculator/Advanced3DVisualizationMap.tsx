@@ -207,7 +207,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
             </div>
             <div className="stat-card">
               <div className="stat-number">
-                {(visualization?.buildings.reduce((sum, b) => sum + b.height, 0) / (visualization?.buildings.length || 1)).toFixed(0)}m
+                {((visualization?.buildings.reduce((sum, b) => sum + b.height, 0) ?? 0) / (visualization?.buildings.length || 1)).toFixed(0)}m
               </div>
               <div className="stat-label">Avg Height</div>
             </div>

@@ -3148,7 +3148,7 @@ export class PreciseLocationIdentifier {
     const { latitude, longitude } = location;
 
     // Find matching zone
-    let locationData = this.findLocationZone(latitude, longitude);
+    const locationData = this.findLocationZone(latitude, longitude);
 
     // Generate unique location code (like What3Words)
     const locationCode = this.generateLocationCode(latitude, longitude);
@@ -3249,8 +3249,8 @@ export class PreciseLocationIdentifier {
   } {
     // Simplified Kenya county detection based on coordinates
     let county = 'Nairobi County';
-    let subCounty = 'Central';
-    let locality = 'CBD Area';
+    const subCounty = 'Central';
+    const locality = 'CBD Area';
 
     if (lat > 0) {
       if (lon < 36) county = 'Turkana County';
@@ -3293,7 +3293,7 @@ export class PreciseLocationIdentifier {
     // Detect continent and country based on coordinates
     let country = 'Unknown';
     let countryCode = 'XX';
-    let region = 'Central Region';
+    const region = 'Central Region';
 
     // Africa
     if (lat >= -35 && lat <= 37 && lon >= -18 && lon <= 52) {

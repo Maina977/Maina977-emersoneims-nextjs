@@ -69,7 +69,7 @@ export default function ContentProtection() {
     const interval = setInterval(() => {
       const before = Date.now();
       // This line detects if debugger is open (execution pauses)
-      // eslint-disable-next-line no-debugger
+       
       // debugger; // Uncomment in production if needed
       const after = Date.now();
       if (after - before > 100) {

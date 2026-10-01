@@ -466,7 +466,7 @@ export function SEOEventTracker() {
     // Track important user signals
     const trackEngagement = () => {
       // Time on site
-      let startTime = Date.now();
+      const startTime = Date.now();
 
       // Scroll depth
       let maxScroll = 0;

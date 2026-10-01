@@ -720,7 +720,7 @@ export function calculateFinancials(
   // LCOE calculation
   const discountRate = 0.1;
   let npvProduction = 0;
-  let npvCost = systemCost;
+  const npvCost = systemCost;
   production = annualProduction;
 
   for (let year = 1; year <= 25; year++) {

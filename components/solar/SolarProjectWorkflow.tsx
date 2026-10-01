@@ -1608,7 +1608,7 @@ const Step4Financial: React.FC<{
     if (yieldData.annualProduction > 0) {
       calculate();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [financingOption]);
 
   return (

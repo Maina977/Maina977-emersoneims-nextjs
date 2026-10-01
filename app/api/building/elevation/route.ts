@@ -134,7 +134,7 @@ function calculateAspect(grid: number[][]): string {
 
   if (Math.abs(dzdx) < 0.001 && Math.abs(dzdy) < 0.001) return 'Flat';
 
-  let aspectRadians = Math.atan2(dzdy, -dzdx);
+  const aspectRadians = Math.atan2(dzdy, -dzdx);
   let aspectDegrees = aspectRadians * (180 / Math.PI);
   if (aspectDegrees < 0) aspectDegrees += 360;
 

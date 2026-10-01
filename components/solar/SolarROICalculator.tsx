@@ -75,7 +75,7 @@ export default function SolarROICalculator() {
 
     // 25-year analysis with inflation and degradation
     let cumulativeSavings = 0;
-    let cumulativeCost = totalSystemCost;
+    const cumulativeCost = totalSystemCost;
     let paybackYear = 0;
     const yearlyData = [];
 

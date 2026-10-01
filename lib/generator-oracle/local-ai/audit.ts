@@ -31,6 +31,6 @@ export interface AuditEvent {
 
 export function logAudit(event: Omit<AuditEvent, 'ts'>): void {
   const full: AuditEvent = { ts: new Date().toISOString(), ...event };
-  // eslint-disable-next-line no-console
+   
   console.log(`[oracle-audit] ${JSON.stringify(full)}`);
 }

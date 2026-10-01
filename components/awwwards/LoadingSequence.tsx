@@ -27,7 +27,7 @@ export default function LoadingSequence({
     }, 2200);
 
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [prefersReducedMotion]);
 
   if (prefersReducedMotion) {

@@ -340,7 +340,23 @@ export function OneLineDiagram() {
         <text x="420" y="180" className="fill-purple-300 text-xs text-center">HVAC Load</text>
 
         {/* Protection Info */}
-        <rect x="50" y="240" width="400" height="90" fill="slate-800" opacity="0.5" rx="5" border="border-slate-700"/>
+        {/*
+          fill="slate-800" and border="border-slate-700" were Tailwind class
+          names in SVG presentation attributes. "slate-800" is not a colour, so
+          the rect fell back to black, and `border` is not an SVG attribute at
+          all - a rect outline is `stroke`. Every other shape in this file sets
+          colour through className, so this follows them.
+        */}
+        <rect
+          x="50"
+          y="240"
+          width="400"
+          height="90"
+          opacity="0.5"
+          rx="5"
+          strokeWidth="1"
+          className="fill-slate-800 stroke-slate-700"
+        />
         <text x="60" y="260" className="fill-gray-300 text-xs font-bold">Protection Strategy:</text>
         <text x="60" y="280" className="fill-gray-400 text-xs">• Main DB: 400A ACB with overload & short circuit protection</text>
         <text x="60" y="295" className="fill-gray-400 text-xs">• Each DB: MCCB sized for respective load, selectivity maintained</text>

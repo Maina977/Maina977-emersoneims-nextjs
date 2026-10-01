@@ -114,7 +114,7 @@ export default function IntelligentPersonalization() {
     else if (timeOfDay === 'evening') greeting = 'Good evening';
     else greeting = 'Welcome back';
 
-    let locationMsg = county ? ` to ${county}` : '';
+    const locationMsg = county ? ` to ${county}` : '';
 
     let intentMsg = '';
     if (intent === 'urgent') {
@@ -137,9 +137,9 @@ export default function IntelligentPersonalization() {
   };
 
   const trackUserBehavior = () => {
-    let scrollTimer: NodeJS.Timeout;
-    let timeTimer: NodeJS.Timeout;
-    let startTime = Date.now();
+    // scrollTimer was declared here and never assigned or read. timeTimer is
+    // assigned once, at the setInterval below, so it is declared there.
+    const startTime = Date.now();
 
     // Track scroll depth
     const handleScroll = () => {
@@ -155,7 +155,7 @@ export default function IntelligentPersonalization() {
     window.addEventListener('scroll', handleScroll);
 
     // Track time on site
-    timeTimer = setInterval(() => {
+    const timeTimer = setInterval(() => {
       const timeSpent = Math.floor((Date.now() - startTime) / 1000);
       setUserProfile(prev => ({ ...prev, timeOnSite: timeSpent }));
 

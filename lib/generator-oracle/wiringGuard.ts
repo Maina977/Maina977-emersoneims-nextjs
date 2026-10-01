@@ -48,7 +48,7 @@ export function validateControllerWiringMatch(
   if (!brandsMatch) {
     const reason = `Blocked unsafe wiring mismatch: ${selectedBrand} cannot use ${wiringBrand} ${wiringModel} wiring.`;
     if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
+       
       console.error('[wiringGuard]', reason, {
         selectedBrand,
         selectedModel,

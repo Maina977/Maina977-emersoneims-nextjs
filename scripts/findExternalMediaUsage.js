@@ -127,7 +127,7 @@ function main() {
   const outPath = path.join(WORKSPACE_ROOT, 'EXTERNAL_MEDIA_USAGE.md');
   fs.writeFileSync(outPath, reportLines.join('\n'), 'utf8');
 
-  // eslint-disable-next-line no-console
+   
   console.log(`Wrote ${outPath}`);
 }
 

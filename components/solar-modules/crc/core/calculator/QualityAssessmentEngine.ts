@@ -559,7 +559,13 @@ export class QualityAssessmentEngine {
   /**
    * Get installation best practices
    */
-  getBestPractices(type: 'panel' | 'inverter' | 'battery'): string[] {
+  /*
+   * Keyed off the data instead of a hand-written union. INSTALLATION_BEST_PRACTICES
+   * uses `panels`, plural, but this signature said 'panel', so a caller asking
+   * for panel practices got the || [] fallback and silently received nothing.
+   * keyof typeof cannot drift from the object again.
+   */
+  getBestPractices(type: keyof typeof INSTALLATION_BEST_PRACTICES): string[] {
     return INSTALLATION_BEST_PRACTICES[type] || [];
   }
 }

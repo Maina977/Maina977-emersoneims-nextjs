@@ -264,15 +264,20 @@ export function useThrottle<T extends (...args: unknown[]) => void>(
 ): T {
   const lastRun = useRef(Date.now());
 
+  // The cast belongs on the result, not on the function expression. With
+  // `((...args) => {...}) as T` as the first argument, useCallback was handed
+  // a TSAsExpression rather than an inline function, which is what
+  // react-compiler reported as "Expected the first argument to be an inline
+  // function expression" - and it declines to compile the hook at all.
   return useCallback(
-    ((...args) => {
+    (...args: Parameters<T>) => {
       if (Date.now() - lastRun.current >= delay) {
         callback(...args);
         lastRun.current = Date.now();
       }
-    }) as T,
+    },
     [callback, delay]
-  );
+  ) as T;
 }
 
 /**

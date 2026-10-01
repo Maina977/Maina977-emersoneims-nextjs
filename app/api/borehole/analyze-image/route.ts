@@ -183,8 +183,8 @@ async function findNearbyWaterBodies(lat: number, lon: number, radiusKm: number 
       const type = element.tags?.waterway || element.tags?.natural || element.tags?.man_made || 'water';
 
       // Calculate distance
-      let elLat = element.lat || element.center?.lat;
-      let elLon = element.lon || element.center?.lon;
+      const elLat = element.lat || element.center?.lat;
+      const elLon = element.lon || element.center?.lon;
       if (elLat && elLon) {
         const distance = calculateDistance(lat, lon, elLat, elLon);
         waterBodies.push({ name, type, distance: Math.round(distance * 100) / 100 });
