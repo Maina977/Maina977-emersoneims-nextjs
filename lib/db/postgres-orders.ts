@@ -4,9 +4,15 @@
  */
 
 import { query, transaction, getConnection } from './postgres';
-import type { Order, OrderRepository, OrderItem } from '@/lib/orders/orderService';
+import type { Order, OrderItem } from '@/lib/orders/orderService';
 
-export class PostgresOrderDb implements OrderRepository {
+/*
+ * No `implements` clause: OrderRepository has never been exported by
+ * lib/orders/orderService.ts, which exports the Order, OrderItem and
+ * OrderShipping interfaces and an orderService instance. Same phantom type
+ * as lib/db/postgres-reviews.ts carried, fixed the same way.
+ */
+export class PostgresOrderDb {
   async create(order: Order): Promise<Order> {
     return transaction(async (client) => {
       // Insert order

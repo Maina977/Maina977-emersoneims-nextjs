@@ -83,3 +83,9 @@ components/home/FreshBoot.tsx
 # Scratch note holding the two public GA4 Measurement IDs, which already live
 # in lib/analytics/ids.ts and are emitted in every page. Redundant in the repo.
 GA.txt
+
+# Incremental TypeScript build cache. Tracked until 2026-10-01, which meant
+# every build produced a diff in a generated file and swept it into unrelated
+# commits.
+tsconfig.tsbuildinfo
+*.tsbuildinfo

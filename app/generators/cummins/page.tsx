@@ -5,9 +5,27 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 
-const OptimizedImage = dynamic(() => import('@/components/media/OptimizedImage'), { ssr: false });
+/*
+ * HERO MOVED TO next/image — 2026-10-01.
+ *
+ * This was OptimizedImage loaded through dynamic(..., { ssr: false }), and it
+ * was broken in two ways at once.
+ *
+ * It was passed `fill`, which components/media/OptimizedImage does not
+ * accept: that component hardcodes width = 1920 and height = 1080 and renders
+ * them on the <Image>. So `fill` was dropped on the floor and a 16:9 image was
+ * laid into a container sized h-80 md:h-96, which is not what the markup asks
+ * for. TypeScript had been reporting it on this exact line.
+ *
+ * And ssr: false meant the hero was absent from the server HTML altogether,
+ * so Googlebot saw a brand page with no product photograph, and a real visitor
+ * waited for JavaScript before the largest element on the page began to load.
+ *
+ * next/image with `fill` does what the markup wanted, renders server-side, and
+ * needs neither the dynamic import nor the IntersectionObserver and
+ * framer-motion wrapper that came with it.
+ */
 
 
 export default function CumminsPage() {
@@ -61,10 +79,11 @@ export default function CumminsPage() {
               </div>
             </div>
             <div className="relative h-80 md:h-96 rounded-lg overflow-hidden">
-              <OptimizedImage
+              <Image
                 src="/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg"
                 alt="Cummins Generator Installation"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
               />
             </div>

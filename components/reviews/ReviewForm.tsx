@@ -40,8 +40,12 @@ export default function ReviewForm({
     Array.from(files).forEach(file => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (typeof event.target?.result === 'string') {
-          setImages(prev => [...prev, event.target.result as string]);
+        // Read once into a local. The optional chain above narrows
+        // event.target for that expression only, so the line below was
+        // dereferencing a FileReader target TypeScript knows can be null.
+        const result = event.target?.result;
+        if (typeof result === 'string') {
+          setImages((prev) => [...prev, result]);
         }
       };
       reader.readAsDataURL(file);

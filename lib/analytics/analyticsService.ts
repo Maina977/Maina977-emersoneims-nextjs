@@ -3,7 +3,11 @@
  * Real-time KPI tracking and business intelligence
  */
 
-import type { Order } from './orderService';
+// ./orderService does not exist in lib/analytics. The Order interface lives in
+// lib/orders/orderService.ts, so this resolved to nothing and every Order in
+// this file was an error type — on a module two live routes import
+// (app/api/analytics/dashboard/route.ts and app/dashboard/analytics/page.tsx).
+import type { Order } from '@/lib/orders/orderService';
 
 export interface DashboardMetrics {
   // Revenue

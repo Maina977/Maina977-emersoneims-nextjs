@@ -133,12 +133,44 @@ const ATS: ProductPhoto = {
 /**
  * Photographs for a size, by band. Illustrative of what we supply and install;
  * the exact machine is confirmed on the quotation, which each page says.
+ *
+ * A CAPTION THAT NAMES A MODEL IS NOW A SIZE CLAIM. Rebanded 2026-10-01.
+ *
+ * Two of these photographs name a model in their caption, and since VKS<n> is
+ * n kVA (see app/voltka/page.tsx) the caption states the size of the machine
+ * shown: VKS44 is a 44 kVA set, and STOCK is captioned "VOLTKA VKS165", so it
+ * is a 165 kVA set. The other seven name no model and make no size claim.
+ *
+ * The old bands put VKS44 FIRST on every page from 80 to 150 kVA and STOCK
+ * first on every page from 200 to 300. While the ratings were unpublished a
+ * reader could not tell; publishing them on 2026-10-01 turned the 150 kVA page
+ * into one that opens with a photograph captioned as a 44 kVA machine, which
+ * overstates what is pictured by 3.4 times. That is the exact failure the
+ * caption rule at the top of this file was written to prevent, arriving by
+ * placement rather than by wording.
+ *
+ * So a model-named photograph now appears only where the page rating is near
+ * that model, and bands with no matching model get the ones that make no claim
+ * at all. Understating is tolerated (a 44 kVA set on the 30 kVA page);
+ * overstating is not.
+ *
+ *   10-20 kVA   OPEN_FRAME, CONTROLLER, ATS      no model named
+ *   30-60 kVA   CANOPY, VKS44, ENGINE            VKS44 = 44 kVA, in band
+ *   80-100 kVA  CANOPY, ENGINE, ATS              no model named
+ *   150-200 kVA STOCK, ENGINE, CRANE             VKS165 = 165 kVA, in band
+ *   250-300 kVA CRANE, FLEET, CONTROLLER         no model named
+ *   500 kVA+    FLEET, CRANE, ENGINE             no model named
+ *
+ * CRANE keeps its place in the large bands deliberately. Its file is a VKS44
+ * being lifted, but its caption and alt describe the DELIVERY SERVICE and name
+ * no model or size, so it claims nothing the photograph does not show.
  */
 export function photosForSize(kva: number): ProductPhoto[] {
   if (kva <= 20) return [OPEN_FRAME, CONTROLLER, ATS];
   if (kva <= 60) return [CANOPY, VKS44, ENGINE];
-  if (kva <= 150) return [VKS44, CANOPY, ATS];
-  if (kva <= 300) return [STOCK, ENGINE, CRANE];
+  if (kva <= 100) return [CANOPY, ENGINE, ATS];
+  if (kva <= 200) return [STOCK, ENGINE, CRANE];
+  if (kva <= 300) return [CRANE, FLEET, CONTROLLER];
   return [FLEET, CRANE, ENGINE];
 }
 

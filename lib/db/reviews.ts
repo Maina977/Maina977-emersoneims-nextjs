@@ -106,7 +106,10 @@ class InMemoryReviewDb implements ReviewRepository {
         partName: 'Unknown',
         averageRating: 0,
         totalReviews: 0,
-        ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+        ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+        // Required by PartRatingSummary. Empty, not invented: no keyword
+        // extraction exists yet.
+        topKeywords: []
       };
     }
 
@@ -126,7 +129,9 @@ class InMemoryReviewDb implements ReviewRepository {
       partName: approvedReviews[0].partName,
       averageRating,
       totalReviews: approvedReviews.length,
-      ratingDistribution
+      ratingDistribution,
+      // As above: required by the type, empty until extraction is implemented.
+      topKeywords: []
     };
   }
 

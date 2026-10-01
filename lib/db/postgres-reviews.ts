@@ -4,9 +4,16 @@
  */
 
 import { query, transaction } from './postgres';
-import type { Review, PartRatingSummary, ReviewRepository } from '@/lib/reviews/reviewService';
+import type { Review, PartRatingSummary } from '@/lib/reviews/reviewService';
 
-export class PostgresReviewDb implements ReviewRepository {
+/*
+ * No `implements` clause: ReviewRepository was imported and implemented here
+ * but has never been exported by lib/reviews/reviewService.ts, which exports
+ * the Review and PartRatingSummary interfaces and a reviewService instance.
+ * The clause type-checked against nothing and erased to nothing at runtime,
+ * so it bought no safety while producing two of this file’s type errors.
+ */
+export class PostgresReviewDb {
   async create(review: Review): Promise<Review> {
     const result = await query(
       `INSERT INTO reviews (
@@ -26,8 +33,13 @@ export class PostgresReviewDb implements ReviewRepository {
         review.body,
         JSON.stringify(review.images || []),
         review.status,
-        review.isSuspicious,
-        review.createdAt,
+        // query() accepts string | number | boolean | null. isSuspicious is
+        // optional on Review, and undefined is none of those: node-postgres
+        // would have bound NULL and lost the moderator verdict the service
+        // just computed. createdAt is a Date, which needs an explicit ISO
+        // string rather than relying on implicit stringification.
+        review.isSuspicious ?? false,
+        review.createdAt.toISOString(),
       ]
     );
 
@@ -112,7 +124,7 @@ export class PostgresReviewDb implements ReviewRepository {
   async approve(reviewId: string): Promise<Review> {
     const result = await query(
       'UPDATE reviews SET status = $1, approvedAt = $2 WHERE id = $3 RETURNING *',
-      ['approved', new Date(), reviewId]
+      ['approved', new Date().toISOString(), reviewId]
     );
 
     if (result.rows.length === 0) {
@@ -180,6 +192,11 @@ export class PostgresReviewDb implements ReviewRepository {
         averageRating: 0,
         totalReviews: 0,
         ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+        // Required by PartRatingSummary and omitted here until now, so a
+        // caller reaching .topKeywords.map() would have thrown on undefined.
+        // Empty rather than invented: no keyword extraction exists yet, and
+        // this file must not be the place that makes some up.
+        topKeywords: [],
       };
     }
 
@@ -196,6 +213,9 @@ export class PostgresReviewDb implements ReviewRepository {
         2: parseInt(row.two_star) || 0,
         1: parseInt(row.one_star) || 0,
       },
+      // As above: required by the type, and empty until keyword extraction
+      // is actually implemented.
+      topKeywords: [],
     };
   }
 

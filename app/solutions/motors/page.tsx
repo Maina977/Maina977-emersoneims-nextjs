@@ -369,7 +369,14 @@ export default function MotorsPage() {
 
       {/* CTA SECTION */}
       <section className="mx-auto max-w-7xl px-6 py-16">
-        <UnifiedCTA />
+        {/*
+          action is REQUIRED by UnifiedCTAProps and was not passed, so this
+          CTA rendered with no action to take at the foot of a live service
+          page. get-quote rather than site-survey on purpose: a quote is free
+          and a site survey carries a fee that is deducted on award, and the
+          two have been conflated on this site before.
+        */}
+        <UnifiedCTA action="get-quote" size="lg" service="motor-rewinding" />
       </section>
     </div>
   );

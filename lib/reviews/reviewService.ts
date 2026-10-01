@@ -132,7 +132,11 @@ class ReviewService {
         partName: reviews[0]?.partName || 'Unknown Part',
         averageRating: 0,
         totalReviews: 0,
-        ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+        ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+        // Required by PartRatingSummary, and omitted here on the live path:
+        // a caller reaching .topKeywords.map() would have thrown on undefined.
+        // Empty rather than invented — no keyword extraction exists yet.
+        topKeywords: []
       };
     }
 
