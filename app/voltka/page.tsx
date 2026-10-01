@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getEngineIndex } from '@/lib/parts/engineIndex';
+import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
 
 /**
  * VOLTKA — the only generator brand EmersonEIMS actually sells.
@@ -53,6 +54,13 @@ import { getEngineIndex } from '@/lib/parts/engineIndex';
  *   - the kVA rating of each individual model. The range above is for the
  *     brand, not a key to the model numbers. VKS44 is not 44 kVA.
  */
+
+/**
+ * Largest capacity we publish a price against, read from the price table in
+ * lib/brands/cumminsData.ts rather than typed here. VOLTKA covers 10-3000 kVA;
+ * the table covers 10-2000. Those are different statements and both are true.
+ */
+const PUBLISHED_MAX_KVA = Math.max(...CUMMINS_BRAND_INFO.models.map((m) => m.kva));
 
 export const metadata: Metadata = {
   /*
@@ -287,6 +295,21 @@ export default function VoltkaPage() {
               against the kW your site actually draws, plus the surge your largest motor pulls when
               it starts. Every size is available two ways: open, for a plant room or an enclosure
               you already have, or closed in a canopy where the set stands outdoors or near people.
+            </p>
+            {/*
+              THE PRICE GAP ABOVE THE TABLE, STATED RATHER THAN LEFT SILENT.
+
+              The range runs to 3000 kVA but the published price table stops at
+              2000, so until now a reader sizing a 2500 kVA set found a figure
+              for every size except theirs and no explanation. PUBLISHED_MAX_KVA
+              is read from the same table the prices come from, so this sentence
+              cannot drift from it the way the range figure drifted across 27
+              places before 2026-09-29.
+            */}
+            <p className="mx-auto mb-10 max-w-2xl text-center text-sm text-gray-500">
+              Prices are published up to {PUBLISHED_MAX_KVA.toLocaleString('en-KE')} kVA. Above
+              that the engine, alternator and canopy are specified against your site, so those
+              sets are quoted on application rather than listed.
             </p>
             <ul className="mx-auto flex max-w-3xl flex-wrap justify-center gap-3">
               {MODELS.map((m) => (

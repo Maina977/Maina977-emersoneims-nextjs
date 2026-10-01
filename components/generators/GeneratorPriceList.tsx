@@ -43,6 +43,13 @@ const VOLTKA_LISTING: GeneratorListing = {
   }),
 };
 
+/*
+ * Largest VOLTKA capacity with a published figure. Derived, not typed: the
+ * footnote below tells a reader where the table stops, and a hardcoded number
+ * here would be a second place for it to go stale.
+ */
+const VOLTKA_MAX_KVA = Math.max(...VOLTKA_LISTING.models.map((m) => m.kva));
+
 const GENERATOR_PRICES: GeneratorListing[] = [
   VOLTKA_LISTING,
   {
@@ -259,6 +266,17 @@ export default function GeneratorPriceList() {
             WhatsApp for Quote
           </a>
         </div>
+
+        {/*
+          WHERE THE TABLE STOPS. VOLTKA is supplied to 3000 kVA but priced here
+          only to VOLTKA_MAX_KVA, and a buyer above that was previously left to
+          guess whether we simply do not build it.
+        */}
+        <p className="mt-6 text-center text-xs text-gray-500">
+          Prices shown run to {VOLTKA_MAX_KVA.toLocaleString('en-KE')} kVA. Larger sets are
+          built to the site and quoted on application &mdash; call or send your load figures and
+          we will price it.
+        </p>
 
         {/* Trust signals */}
         <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs text-gray-400">
