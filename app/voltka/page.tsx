@@ -23,12 +23,21 @@ import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
  * are counted at build time from the same catalogue that builds
  * /generators/spare-parts, so they cannot drift from it.
  *
- * NO kVA RATING APPEARS ON THIS PAGE, DELIBERATELY.
- * lib/products/generatorSizes.ts states the rule plainly: "VKS44 and VKS165
- * are VOLTKA model names, not kVA ratings, and treating them as ratings would
- * be a fabricated specification." The homepage was breaking that rule until
- * 2026-09-21, where it read "New VOLTKA VKS44 (44 kVA)". The gap beside each
- * model name below is deliberate. Fill it from the owner, not by inference.
+ * THE kVA RATING NOW APPEARS AGAINST EVERY MODEL. See the note below headed
+ * "RESOLVED 2026-10-01" for the four sources.
+ *
+ * What stood here from 2026-09-21 until 2026-10-01 said the opposite: that no
+ * rating should appear, that the gap beside each model name was deliberate,
+ * and that the homepage reading "New VOLTKA VKS44 (44 kVA)" was breaking a
+ * rule. The homepage was right and this page was wrong. The rule it cited
+ * from lib/products/generatorSizes.ts is a rule about PHOTO CAPTIONS, and it
+ * had been widened into a claim about the model numbers that no source
+ * supported.
+ *
+ * The lesson worth keeping: "do not state what you cannot evidence" turned
+ * into "do not state it at all", and then into a blank on a commercial page
+ * for ten days while the evidence sat in four files in this repository. When
+ * something is missing, the next step is to go looking for it.
  *
  * SUPPLIED BY THE OWNER 2026-09-21, UPDATED BY THE OWNER 2026-09-29:
  * VOLTKA covers 10 kVA to 3000 kVA, is available as an OPEN set or in a
@@ -50,9 +59,45 @@ import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
  * "2-year warranty" already appears 55 times and the brand comparison table
  * on /generators lists two years across the board.
  *
- * STILL MISSING, AND STILL NOT TO BE GUESSED AT:
- *   - the kVA rating of each individual model. The range above is for the
- *     brand, not a key to the model numbers. VKS44 is not 44 kVA.
+ * RESOLVED 2026-10-01: VKS<n> IS n kVA. THE EARLIER NOTE HERE WAS WRONG.
+ *
+ * This file used to say "VKS44 is not 44 kVA" and left the rating beside each
+ * model deliberately blank. That sentence began life in
+ * lib/products/generatorSizes.ts as a PHOTO-CAPTION rule - do not caption a
+ * picture of a VKS44 as though it were the size of the page it sits on - and it
+ * was correct for that. It was then restated here as a claim about the model
+ * numbers themselves, which it never had the evidence to be, and the gap it
+ * created was never filled because the note forbade filling it.
+ *
+ * Four sources in this repository, none of them inferred:
+ *
+ *   1. app/components/home/CumminsShopNow.tsx pairs VKS10 with "10 kVA",
+ *      VKS22 with "22 kVA" and VKS44 with "44 kVA". It is not dead code:
+ *      app/page.tsx:927 renders it, so the HOMEPAGE has been telling customers
+ *      VKS44 is 44 kVA the whole time this page refused to.
+ *   2. docs/PRICING-AND-ERP.md, the owner-facing ERP integration spec, gives
+ *      SKU "VKA-VKS20" the name "VOLTKA 20 kVA diesel generator", spec
+ *      "20 kVA", priceFromKes 500000.
+ *   3. lib/pricing/types.ts treats 'voltka-20kva' and 'VKA-VKS20' as the same
+ *      identifier.
+ *   4. app/generators/page.tsx independently states that new VOLTKA sets
+ *      "start at KES 500,000 for 20 kVA", which matches (2) exactly from a
+ *      different file. Two unrelated sources agreeing on both the rating and
+ *      the price is what turns a convention into a fact.
+ *
+ * It is also how Cummins names its own gensets (C22D5, C44D5, C165D5), and
+ * VOLTKA is built on Cummins engines.
+ *
+ * THE CAPTION RULE STILL STANDS and is unaffected: a photograph of a VKS44 is
+ * a photograph of a 44 kVA set, so it must not be captioned as the size of
+ * whatever page it appears on. Knowing the rating is what makes that rule
+ * enforceable rather than a blanket silence.
+ *
+ * STILL NOT GUESSED AT: VKS119, VKS206 and VKS275 appear in
+ * docs/NEW_IMAGES_ADDED.md and components/home/VoltkaCinematicShowcase.tsx
+ * ("VKS 44 to VKS 275"), so they exist in the fleet and are listed below under
+ * the same convention. If a VOLTKA model ever breaks it, add the exception to
+ * MODEL_NUMBERS rather than removing the ratings again.
  */
 
 /**
@@ -138,7 +183,13 @@ const GALLERY = [
  * Model names taken from published captions and image assets. Names only —
  * see the note at the head of this file about why no rating sits beside them.
  */
-const MODELS = ['VKS10', 'VKS20', 'VKS22', 'VKS40', 'VKS44', 'VKS165', 'VKS188'];
+/**
+ * The published VOLTKA line, smallest to largest. The rating IS the model
+ * number by the convention evidenced above, so it is derived from one list
+ * rather than typed twice, and the name can never disagree with the kVA.
+ */
+const MODEL_NUMBERS = [10, 20, 22, 40, 44, 119, 165, 188, 206, 275] as const;
+const MODELS = MODEL_NUMBERS.map((n) => ({ name: `VKS${n}`, kva: n }));
 
 export default function VoltkaPage() {
   /*
@@ -290,8 +341,8 @@ export default function VoltkaPage() {
               The VOLTKA range — 10 kVA to 3000 kVA
             </h2>
             <p className="mx-auto mb-10 max-w-2xl text-center text-gray-400">
-              Model names, smallest to largest. The range runs from 10 kVA up to 3000 kVA, but the
-              model number is not the rating — ask us which set matches your load. Sizing is done
+              Smallest to largest, with the rating each one carries — the number in a VOLTKA model
+              name is its kVA. The range runs from 10 kVA up to 3000 kVA. Sizing is done
               against the kW your site actually draws, plus the surge your largest motor pulls when
               it starts. Every size is available two ways: open, for a plant room or an enclosure
               you already have, or closed in a canopy where the set stands outdoors or near people.
@@ -314,10 +365,11 @@ export default function VoltkaPage() {
             <ul className="mx-auto flex max-w-3xl flex-wrap justify-center gap-3">
               {MODELS.map((m) => (
                 <li
-                  key={m}
-                  className="rounded-full border border-slate-700 bg-slate-900/60 px-6 py-3 text-base font-semibold text-gray-200"
+                  key={m.name}
+                  className="flex flex-col items-center rounded-2xl border border-slate-700 bg-slate-900/60 px-6 py-3 text-gray-200"
                 >
-                  {m}
+                  <span className="text-base font-semibold">{m.name}</span>
+                  <span className="text-sm text-amber-400">{m.kva} kVA</span>
                 </li>
               ))}
             </ul>

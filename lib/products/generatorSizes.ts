@@ -60,9 +60,20 @@ export function kwFromKva(kva: number): number {
  * CAPTIONS ARE THE OWNER'S OWN, lifted from app/brands/page.tsx and
  * app/about-us/page.tsx so nothing is re-described here. Each caption states
  * what the photograph actually SHOWS — a canopy, an engine, a delivery — and
- * never claims the machine pictured is the size of the page it sits on. VKS44
- * and VKS165 are VOLTKA model names, not kVA ratings, and treating them as
- * ratings would be a fabricated specification.
+ * never claims the machine pictured is the size of the page it sits on.
+ *
+ * THAT RULE IS ABOUT CAPTIONS, NOT ABOUT THE MODEL NUMBERS. This comment used
+ * to continue "VKS44 and VKS165 are VOLTKA model names, not kVA ratings, and
+ * treating them as ratings would be a fabricated specification". Corrected
+ * 2026-10-01: VKS<n> IS n kVA, evidenced by the ERP spec in
+ * docs/PRICING-AND-ERP.md, by app/components/home/CumminsShopNow.tsx which is
+ * live on the homepage, and by the KES 500,000 / 20 kVA pair that two
+ * unrelated files agree on. The header note in app/voltka/page.tsx sets out
+ * all four sources.
+ *
+ * The caption rule survives that correction intact, and in fact depends on it:
+ * a photograph of a VKS44 is a photograph of a 44 kVA set, which is precisely
+ * why it must not be captioned as the size of the page it sits on.
  *
  * The set is chosen by size band so the pages differ from one another, which
  * also stops them reading as one template with a number swapped.
