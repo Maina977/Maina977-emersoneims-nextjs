@@ -76,7 +76,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: 'en',
     },
     alternates: {
-      canonical: `https://www.emersoneims.com/${country.slug}/${city.slug}`,
+      /*
+       * CANONICALISED AWAY FROM THE CITY - 2026-10-02.
+       *
+       * These 68 pages were self-canonical, "index, follow", and submitted in
+       * the sitemap. Measured as Googlebot on 2026-10-02:
+       *
+       *   /uganda/kampala  vs  /uganda/jinja     62% identical
+       *   954 words        vs  952 words
+       *   words unique to Kampala: TWO - "city" and "west"
+       *
+       * Two pages of 950 words differing by two words cannot both deserve to
+       * be indexed. That is the doorway-page pattern this domain was already
+       * demoted for on 2026-08-21, and unlike the other surviving clusters
+       * these were being actively submitted for indexing.
+       *
+       * The sitemap comment that added them (2026-07-21) said they were
+       * "completely invisible to search engines: ZERO sitemap entries and zero
+       * internal links ... The regional expansion existed but earned nothing."
+       * The conclusion drawn was to submit them. The correct conclusion was
+       * that 68 templated city pages had nothing to earn with.
+       *
+       * Uganda, Tanzania and Rwanda have real country pages at
+       * /east-africa/<country>, so their cities consolidate there. The other
+       * six countries have none, so those cities point at the /east-africa hub.
+       * The URLs keep working - nothing 404s - and the signals land on a page
+       * that is actually distinct.
+       *
+       * To give a city its own canonical back, give it something only that city
+       * has: a commissioned job, a named client, import duty or grid facts
+       * specific to it. Not a template run once more.
+       */
+      canonical: ['uganda', 'tanzania', 'rwanda'].includes(country.slug)
+        ? `https://www.emersoneims.com/east-africa/${country.slug}`
+        : 'https://www.emersoneims.com/east-africa',
     },
   };
 }

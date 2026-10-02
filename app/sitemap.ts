@@ -2,10 +2,6 @@ import { MetadataRoute } from 'next';
 import { contentRevision } from '@/lib/seo/contentRevisions';
 import { getAllServiceSlugs } from '@/lib/services/allServices';
 import { getIndexableKenyaUrls } from '@/lib/seo/kenyaIndexable';
-import {
-  getAllCountrySlugs,
-  getCitySlugsForCountry,
-} from '@/lib/data/east-africa-locations';
 import sparePartsDb from '@/app/data/spare-parts-database-COMPLETE.json';
 import { getEngineIndex } from '@/lib/parts/engineIndex';
 import { REPAIR_HUBS, REPAIR_ARTICLES } from '@/lib/repair-centre';
@@ -803,15 +799,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
    * Priority sits below Kenyan service pages: this is a supporting regional
    * presence, not the core market.
    */
-  for (const countrySlug of getAllCountrySlugs()) {
-    for (const citySlug of getCitySlugsForCountry(countrySlug)) {
-      urls.push({
-        url: `${BASE_URL}/${countrySlug}/${citySlug}`,
-        changeFrequency: 'monthly',
-        priority: 0.6,
-      });
-    }
-  }
+  /*
+   * NO LONGER SUBMITTED - 2026-10-02.
+   *
+   * The loop that stood here submitted all 68 /<country>/<city> pages, on the
+   * reasoning above that they were invisible and "earned nothing", so the
+   * remedy was to make Google aware of them.
+   *
+   * They earned nothing because there was nothing to earn with. Measured as
+   * Googlebot on 2026-10-02, /uganda/kampala and /uganda/jinja are 62%
+   * identical at 954 and 952 words, and exactly TWO words are unique to
+   * Kampala: "city" and "west". Asking Google to index 68 pages like that, on
+   * a domain demoted on 2026-08-21 for precisely this pattern, worked against
+   * the recovery rather than for it.
+   *
+   * They now canonicalise to /east-africa/<country> or the /east-africa hub
+   * (see app/[country]/[city]/page.tsx) and are left out of the sitemap. The
+   * pages still serve 200 for anyone holding a link; they are simply no longer
+   * put forward as separate entries worth indexing.
+   *
+   * The three real country pages and the regional hub ARE still submitted.
+   *
+   * The getAllCountrySlugs / getCitySlugsForCountry imports are removed from
+   * this file along with the loop. app/[country]/[city]/page.tsx still uses them
+   * for generateStaticParams, which is what keeps dynamicParams=false honest -
+   * every one of the 68 URLs remains a real pre-rendered page rather than a
+   * templated fallback for any string a crawler tries.
+   */
 
   /*
    * FILL IN lastmod WHERE THE CONTENT GENUINELY CHANGED.
