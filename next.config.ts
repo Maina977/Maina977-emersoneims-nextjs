@@ -171,12 +171,23 @@ const nextConfig: NextConfig = {
   },
   
   // TypeScript
-  // NOTE: ignoreBuildErrors enabled because the integrated SolarGeniusPro and
-  // AquaScan Pro modules (from external sources) use looser typing than the
-  // host project's strict mode. Runtime is unaffected; types are still
-  // checked by the editor and tsc on a per-file basis.
+  //
+  // ENFORCED FROM 2026-10-02. This was `ignoreBuildErrors: true`, on the
+  // grounds that "the integrated SolarGeniusPro and AquaScan Pro modules (from
+  // external sources) use looser typing than the host project’s strict mode".
+  // That reason has been removed rather than worked around: the project went
+  // from 42 type errors to 0 on 2026-10-01, and the vendored modules were part
+  // of that - a react-router `to` prop passed to next/link, a useState(null)
+  // that narrowed to never, framer-motion variants widening ease to string.
+  //
+  // The flag was not harmless while it was set. It is why a build could report
+  // success with 42 type errors outstanding, including three dead navigation
+  // buttons and a verification fingerprint computed from fields that did not
+  // exist. tsc was the only thing reporting them, and tsc is not what gates a
+  // deploy. Now a type error fails the build, which is the only way zero stays
+  // zero.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   
   // Headers for security and performance
