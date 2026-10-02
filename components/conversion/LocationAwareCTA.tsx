@@ -78,7 +78,7 @@ export default function LocationAwareCTA() {
           }
           setRecentJobs(Math.floor(Math.random() * 15) + 5);
         }
-      } catch (error) {
+      } catch {
         // Default to Nairobi if detection fails
         setLocation('Nairobi');
         setNearbyTechnicians(12);

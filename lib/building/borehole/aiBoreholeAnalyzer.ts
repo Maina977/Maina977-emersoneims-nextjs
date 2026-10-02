@@ -6316,7 +6316,7 @@ export class SiteAutoDetector {
       if (latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180) {
         return { latitude, longitude, altitude };
       }
-    } catch (e) {
+    } catch {
       // GPS parsing failed
     }
 
@@ -6391,7 +6391,7 @@ export class SiteAutoDetector {
       };
 
       return site;
-    } catch (error) {
+    } catch {
       // Fallback if API fails - use coordinate-based estimation
       return this.createFallbackSite(latitude, longitude, source);
     }

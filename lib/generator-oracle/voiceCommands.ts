@@ -558,7 +558,7 @@ export class VoiceRecognitionService {
         confidence: 0,
         error: null,
       });
-    } catch (e) {
+    } catch {
       // Already started
     }
   }

@@ -241,7 +241,7 @@ export default function SolarBibleEngine() {
 
       const data = await response.json();
       setAiResponse(data.diagnosis || data.response || 'Unable to get AI response. Please try again.');
-    } catch (error) {
+    } catch {
       setAiResponse('Error connecting to AI service. Please check your internet connection and try again.');
     }
 

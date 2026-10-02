@@ -223,7 +223,7 @@ export function DisclaimerAcknowledgment({ onAccept }: { onAccept: () => void })
   const handleAccept = () => {
     try {
       localStorage.setItem('oracle_disclaimer_accepted', 'true');
-    } catch (e) {
+    } catch {
       console.warn('Could not save to localStorage');
     }
     setAccepted(true);

@@ -539,7 +539,7 @@ export class ECMCommunicationService {
             }
           });
         }
-      } catch (e) {
+      } catch {
         console.log('Web Serial not available or no ports found');
       }
     }
@@ -610,7 +610,7 @@ export class ECMCommunicationService {
             }
           });
         }
-      } catch (e) {
+      } catch {
         console.log('WebUSB not available or no devices found');
       }
     }

@@ -92,7 +92,7 @@ const SolarGeniusPro: React.FC = () => {
       setProgress(100);
       setQuotation(result);
       setTimeout(() => setStep('results'), 500);
-    } catch (err) {
+    } catch {
       clearInterval(progressInterval);
       setError('Failed to generate quotation. Please try again.');
       setStep('input');

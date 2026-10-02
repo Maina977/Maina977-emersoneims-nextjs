@@ -100,9 +100,34 @@ const OptimizedImage = memo(function OptimizedImage({
     return () => observer.disconnect();
   }, [priority, eager, isInView, threshold, rootMargin]);
 
+  /*
+   * PARSED, NOT EVALUATED - 2026-10-02.
+   *
+   * This read `eval(aspectRatio)` to turn a string like "16/9" into a number.
+   * It was the only real eval() in the application, and it cost more than it
+   * looked: eval is why the Content-Security-Policy has to carry
+   * 'unsafe-eval', which weakens the XSS protection on every page, and React
+   * Compiler refuses to compile any component containing it.
+   *
+   * A ratio is "w/h", "w:h" or a bare number. Parsing those three forms needs
+   * no interpreter, and anything else now yields null instead of running as
+   * code.
+   */
+  const ratioOf = (raw: string): number | null => {
+    const m = /^s*(d+(?:.d+)?)s*[/:]s*(d+(?:.d+)?)s*$/.exec(raw);
+    if (m) {
+      const w = Number(m[1]);
+      const h = Number(m[2]);
+      return h > 0 ? w / h : null;
+    }
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+
   // Calculate aspect ratio padding
-  const aspectPadding = aspectRatio
-    ? `${(1 / eval(aspectRatio)) * 100}%`
+  const parsedRatio = aspectRatio ? ratioOf(aspectRatio) : null;
+  const aspectPadding = parsedRatio
+    ? `${(1 / parsedRatio) * 100}%`
     : height && width
     ? `${(Number(height) / Number(width)) * 100}%`
     : undefined;

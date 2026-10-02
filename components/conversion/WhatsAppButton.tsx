@@ -44,7 +44,7 @@ export default function WhatsAppButton() {
           data: { source: 'floating_button', page: window.location.pathname },
         }),
       });
-    } catch (e) {
+    } catch {
       // Ignore tracking errors
     }
   };

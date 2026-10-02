@@ -213,4 +213,64 @@ export default defineConfig([
     plugins: { "unused-imports": unusedImports },
     rules: { "unused-imports/no-unused-imports": "error" },
   },
+  {
+    /*
+     * ASSERTION STYLE IN THE VERIFICATION SCRIPTS.
+     *
+     * scripts/verify-live-oracle-wiring.mjs asserts with
+     *     /pattern/.test(t) ? ok("...") : bad("...");
+     * nine times over. As a statement that is what no-unused-expressions is
+     * written to catch, but here it is the point: each line is one check, and
+     * the terse form keeps the expected and failing messages side by side
+     * where they can be read against each other.
+     *
+     * Allowed for scripts only. The same pattern in app code was rewritten as
+     * if/else on 2026-10-02 - components/hub/UpsLabClient.tsx and
+     * components/generator-oracle/panels/ECMProgrammingSystemPanel.tsx - where
+     * a ternary performing two side effects is harder to read, not easier.
+     */
+    files: ["scripts/**"],
+    rules: {
+      "@typescript-eslint/no-unused-expressions": [
+        "warn",
+        { allowTernary: true, allowShortCircuit: true },
+      ],
+    },
+  },
+  {
+    /*
+     * COMMONJS SERVER MODULES.
+     *
+     * lib/solar-genius/**.js is CommonJS - module.exports and require(), not a
+     * single ESM import between them. require() is not a lapse there, it is the
+     * module system, and no-require-imports accounted for all 32 remaining
+     * reports of that rule across 8 files.
+     *
+     * The config already made this exemption for scripts/**.js, debug.js and
+     * start-trapped.js; this is the same exemption for the same reason.
+     */
+    files: ["lib/solar-genius/**/*.js"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
+  {
+    /*
+     * `export default { ... }` ON DATA MODULES.
+     *
+     * All 29 reports of import/no-anonymous-default-export are object literals
+     * in namespace modules - service catalogues under
+     * lib/building/technical/services, fault databases, and three diagram
+     * collections under components/visualizations. The rule exists so a default
+     * export has a name in a stack trace, which matters for a function or a
+     * component and does not for a frozen lookup table.
+     *
+     * allowObject keeps the rule on for the cases it was written for: an
+     * anonymous arrow function or class as a default export still reports.
+     */
+    rules: {
+      "import/no-anonymous-default-export": [
+        "warn",
+        { allowObject: true },
+      ],
+    },
+  },
 ]);

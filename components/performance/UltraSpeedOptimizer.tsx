@@ -102,7 +102,7 @@ export default function UltraSpeedOptimizer() {
 
     try {
       observer.observe({ entryTypes: ['paint', 'largest-contentful-paint', 'first-input', 'layout-shift'] });
-    } catch (e) {
+    } catch {
       // Some browsers don't support all entry types
     }
 

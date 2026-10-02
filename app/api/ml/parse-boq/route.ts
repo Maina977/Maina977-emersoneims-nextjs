@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
       if (/^[A-Za-z0-9+/=]+$/.test(document.substring(0, 50)) && document.length > 100) {
         try {
           contentForAnalysis = atob(document);
-        } catch (e) {
+        } catch {
           contentForAnalysis = document;
         }
       }

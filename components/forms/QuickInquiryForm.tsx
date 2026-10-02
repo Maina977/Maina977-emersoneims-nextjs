@@ -95,7 +95,7 @@ export default function QuickInquiryForm({
         setFormData({ name: '', company: '', phone: '', location: '', service });
         setSuccess(false);
       }, 2000);
-    } catch (err) {
+    } catch {
       setError('Failed to send. Please try calling +254 768 860 665');
     } finally {
       setLoading(false);

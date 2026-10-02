@@ -281,7 +281,7 @@ export class CommunityFaultCodeService {
       this.incrementContributorStats(submission.submittedBy.id);
 
       return { success: true, id: newCode.id };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Failed to submit fault code' };
     }
   }

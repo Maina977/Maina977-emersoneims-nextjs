@@ -92,7 +92,7 @@ async function fetchElevation(lat: number, lon: number): Promise<number | null> 
         return data.results[0].elevation;
       }
     }
-  } catch (error) {
+  } catch {
     console.log('[Elevation] Open-Elevation failed, trying OpenTopoData...');
   }
 
@@ -109,7 +109,7 @@ async function fetchElevation(lat: number, lon: number): Promise<number | null> 
         return data.results[0].elevation;
       }
     }
-  } catch (error) {
+  } catch {
     console.log('[Elevation] OpenTopoData also failed');
   }
 
@@ -128,7 +128,7 @@ async function fetchElevation(lat: number, lon: number): Promise<number | null> 
           return data.results[0].elevation;
         }
       }
-    } catch (error) {
+    } catch {
       console.log('[Elevation] Google Elevation also failed');
     }
   }

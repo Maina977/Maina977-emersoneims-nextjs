@@ -506,7 +506,7 @@ function AIVisualDiagnosticImpl({ onAnalysisComplete, onClose, card }: AIVisualD
           videoRef.current.srcObject = mediaStream;
         }
         setError(null);
-      } catch (err) {
+      } catch {
         if (mounted) {
           setError('Camera access denied. Upload images instead for AI analysis.');
         }

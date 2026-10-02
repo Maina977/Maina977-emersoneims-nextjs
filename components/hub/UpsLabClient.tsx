@@ -208,7 +208,7 @@ function useShimmer() {
     const stop = () => {
       if (id != null) { window.clearInterval(id); id = null; }
     };
-    const onVis = () => { document.hidden ? stop() : start(); };
+    const onVis = () => { if (document.hidden) stop(); else start(); };
 
     if (!document.hidden) start();
     document.addEventListener('visibilitychange', onVis);

@@ -55,7 +55,7 @@ function listJpgs(dir) {
       for (const v of lap) lapVar += (v - lapMean) * (v - lapMean);
       lapVar /= n;
       scored.push({ f, brightness: mean, sharpness: lapVar });
-    } catch (e) { /* skip unreadable */ }
+    } catch { /* skip unreadable */ }
   }
 
   // keep reasonably bright (mean > 90) and sharp; weight recency from filename date

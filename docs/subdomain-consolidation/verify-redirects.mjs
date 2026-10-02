@@ -56,7 +56,7 @@ for (const p of targets) {
   let r;
   try {
     r = await get(SUB + p);
-  } catch (e) {
+  } catch {
     notRedirecting.push([p, 'unreachable']);
     continue;
   }

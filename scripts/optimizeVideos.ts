@@ -117,7 +117,7 @@ async function optimizeAllVideos() {
       console.log(
         `  ✓ ${(result.originalSize / 1024 / 1024).toFixed(2)}MB → ${(result.optimizedSize / 1024 / 1024).toFixed(2)}MB (${result.savings.toFixed(1)}% savings)\n`
       );
-    } catch (error) {
+    } catch {
       console.error(`  ✗ Error optimizing ${filePath}`);
     }
   }

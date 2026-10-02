@@ -811,7 +811,11 @@ export default function ECMProgrammingSystemPanel() {
                   <button
                     onClick={() => {
                       const newExpanded = new Set(expandedGroups);
-                      newExpanded.has(group.id) ? newExpanded.delete(group.id) : newExpanded.add(group.id);
+                      if (newExpanded.has(group.id)) {
+                        newExpanded.delete(group.id);
+                      } else {
+                        newExpanded.add(group.id);
+                      }
                       setExpandedGroups(newExpanded);
                     }}
                     className="w-full px-4 py-3 bg-white/5 flex items-center justify-between hover:bg-white/10 transition-colors"

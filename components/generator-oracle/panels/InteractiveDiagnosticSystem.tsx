@@ -2181,7 +2181,7 @@ Be concise but thorough.`
       const data = await response.json();
       const assistantMessage = { role: 'assistant', content: data.content || data.fallbackContent || 'I apologize, I could not generate a response.' };
       setConversation(prev => [...prev, assistantMessage]);
-    } catch (error) {
+    } catch {
       setConversation(prev => [...prev, { role: 'assistant', content: 'Sorry, there was an error processing your question. Please try again.' }]);
     } finally {
       setIsLoading(false);
@@ -2322,7 +2322,7 @@ For controller codes (DSE, ComAp, SmartGen), explain how to navigate and clear t
       };
       setConversation(prev => [...prev, assistantMessage]);
       setResult(data);
-    } catch (error) {
+    } catch {
       setConversation([{ role: 'assistant', content: 'Error looking up fault code. Please try again.' }]);
     } finally {
       setIsSearching(false);
@@ -2348,7 +2348,7 @@ For controller codes (DSE, ComAp, SmartGen), explain how to navigate and clear t
       const data = await response.json();
       const assistantMessage = { role: 'assistant', content: data.content || 'Please try again.' };
       setConversation(prev => [...prev, assistantMessage]);
-    } catch (error) {
+    } catch {
       setConversation(prev => [...prev, { role: 'assistant', content: 'Error processing follow-up. Please try again.' }]);
     } finally {
       setIsSearching(false);
@@ -2600,7 +2600,7 @@ Be conversational, thorough, and ENGAGE the technician throughout!`
 
       const data = await response.json();
       setConversation(prev => [...prev, { role: 'assistant', content: data.content || 'Please provide more details about the problem.' }]);
-    } catch (error) {
+    } catch {
       setConversation(prev => [...prev, { role: 'assistant', content: 'Error analyzing problem. Please try again.' }]);
     } finally {
       setIsAnalyzing(false);
@@ -2625,7 +2625,7 @@ Be conversational, thorough, and ENGAGE the technician throughout!`
 
       const data = await response.json();
       setConversation(prev => [...prev, { role: 'assistant', content: data.content }]);
-    } catch (error) {
+    } catch {
       setConversation(prev => [...prev, { role: 'assistant', content: 'Error processing. Please try again.' }]);
     } finally {
       setIsAnalyzing(false);

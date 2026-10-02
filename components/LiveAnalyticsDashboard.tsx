@@ -45,7 +45,7 @@ export default function LiveAnalyticsDashboard() {
       const json = await res.json();
       setData(json);
       setError(null);
-    } catch (e) {
+    } catch {
       setError('Failed to load analytics');
     } finally {
       setLoading(false);

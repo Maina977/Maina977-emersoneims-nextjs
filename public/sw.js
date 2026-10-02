@@ -85,7 +85,7 @@ async function warmupConnections() {
   for (const url of urls) {
     try {
       await fetch(url, { mode: 'no-cors', cache: 'no-store' });
-    } catch (e) {
+    } catch {
       // Silent fail - just warming up
     }
   }
@@ -335,7 +335,7 @@ async function cacheFirst(request, cacheName) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
+  } catch {
     return new Response('Offline', { status: 503 });
   }
 }
@@ -384,7 +384,7 @@ async function navigationNetworkFirst(request) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
+  } catch {
     const cachedPage = await cache.match(request);
     if (cachedPage) {
       perfMetrics.cacheHits++;
@@ -414,7 +414,7 @@ async function networkFirst(request, cacheName, maxAge) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
+  } catch {
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
       perfMetrics.cacheHits++;
@@ -441,7 +441,7 @@ async function cacheFirstWithRange(request, cacheName) {
   try {
     const networkResponse = await fetch(request);
     return networkResponse;
-  } catch (error) {
+  } catch {
     const cachedResponse = await cache.match(request);
     return cachedResponse || new Response('Offline', { status: 503 });
   }

@@ -322,7 +322,7 @@ export async function validateLicenseWithServer(forceCheck = false): Promise<{
       }
 
       return { valid: false, license, reason: data.error || 'Server validation failed' };
-    } catch (error) {
+    } catch {
       // Network error - allow offline access if heartbeat isn't too stale (48 hours grace)
       const gracePeriodMs = 48 * 60 * 60 * 1000;
       if (license.lastHeartbeat) {
@@ -447,7 +447,7 @@ export async function validateLicense(key: string): Promise<{
       valid: false,
       message: data.error || 'License validation failed',
     };
-  } catch (error) {
+  } catch {
     // Network error - check if we have an existing valid license for this device
     const existingLicense = await getLicense();
     if (
