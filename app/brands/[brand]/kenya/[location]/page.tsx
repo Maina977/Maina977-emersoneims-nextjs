@@ -74,7 +74,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: 'en_KE',
     },
     alternates: {
-      canonical: `https://www.emersoneims.com/brands/${brand.slug}/kenya/${county.slug}`,
+      /*
+       * CANONICALISED TO THE PARENT - 2026-10-02.
+       *
+       * This route built 170 pages, one per county, and each declared
+       * ITSELF canonical with robots "index, follow". Measured on 8-word phrase
+       * overlap they are 61% identical to each other at about 891 words a
+       * page: the same brand copy with a county name substituted.
+       *
+       * That is the shape that cost this domain 94% of its organic impressions
+       * on 2026-08-21. The /kenya and /locations tiers were already consolidated
+       * this way - /locations/ahero points at /kenya/kisumu, and
+       * /kenya/<county>/ac-companies points at /kenya/<county>/ac-installation -
+       * and the /kenya tier was additionally rewritten with sourced per-location
+       * engineering, which is why it now measures 33%. These two families were
+       * never part of either pass and were still self-canonical.
+       *
+       * Pointing them at /brands/<brand> consolidates the duplicates onto a page
+       * that is real and already in the sitemap, without 404ing a URL anyone may
+       * have linked. If a county variant ever earns its own canonical it will be
+       * because it carries facts specific to that county - not because the
+       * template was run once more.
+       */
+      canonical: `https://www.emersoneims.com/brands/${brand.slug}`,
     },
   };
 }
