@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Metadata } from 'next';
 import EastAfricaCityLinks from '@/components/east-africa/EastAfricaCityLinks';
 

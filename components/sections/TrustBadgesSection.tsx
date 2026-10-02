@@ -1,7 +1,6 @@
 'use client';
 
 import { m, LazyMotion, domAnimation } from 'framer-motion';
-import Link from 'next/link';
 
 // Trust badges and certifications - Only factual items
 const capabilities = [

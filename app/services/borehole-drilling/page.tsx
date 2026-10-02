@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { GeneratorDiagnosticFlowchart } from '@/components/visualizations/DiagnosticTools';
 
 export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend

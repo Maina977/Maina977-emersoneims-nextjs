@@ -7,7 +7,7 @@
  * Contact: +254768860665 | WhatsApp: +254768860665
  */
 
-import { CONTACT, getWhatsAppUrl, getTelUrl } from '@/lib/constants/contact';
+import { CONTACT, getWhatsAppUrl } from '@/lib/constants/contact';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPE DEFINITIONS

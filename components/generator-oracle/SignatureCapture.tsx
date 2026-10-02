@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Pen, Eraser, Check, X, RotateCcw } from 'lucide-react';
+import { Pen, Check, X, RotateCcw } from 'lucide-react';
 
 interface SignatureCaptureProps {
   onSave: (signatureDataUrl: string) => void;

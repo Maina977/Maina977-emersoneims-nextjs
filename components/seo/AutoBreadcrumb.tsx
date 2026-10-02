@@ -1,5 +1,4 @@
 import { headers } from 'next/headers';
-import Script from 'next/script';
 
 /**
  * AutoBreadcrumb
@@ -116,11 +115,30 @@ export default async function AutoBreadcrumb() {
     })),
   };
 
+  /*
+   * PLAIN <script>, NOT next/script - corrected 2026-10-02.
+   *
+   * This rendered through next/script with strategy="beforeInteractive",
+   * which the App Router only honours in the root layout, and which eslint
+   * had been reporting for exactly that reason. The effect was not cosmetic:
+   * THIS JSON-LD NEVER REACHED THE SERVER HTML. Fetched as Googlebot on
+   * 2026-10-02, this script id appeared zero times on /, /services,
+   * /generators and /kenya/nairobi, and / and /kenya/nairobi carried no
+   * BreadcrumbList at all.
+   *
+   * Google reads structured data out of the delivered HTML. A script tag it
+   * must run JavaScript to discover may as well not exist - and this
+   * component is mounted in app/layout.tsx, so the loss applied to every page
+   * on the domain.
+   *
+   * A plain tag is also what Next documents for JSON-LD. The sibling
+   * components that already use one - LocalBusinessSchema, services/layout -
+   * are present in the HTML, which is how the difference was found.
+   */
   return (
-    <Script
+    <script
       id="auto-breadcrumb-jsonld"
       type="application/ld+json"
-      strategy="beforeInteractive"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );

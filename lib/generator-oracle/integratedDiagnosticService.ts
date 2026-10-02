@@ -17,8 +17,8 @@ import 'server-only';
 
 import { getFaultByCode, searchFaultCodes as searchEnhancedFaults, type EnhancedFaultCode } from './enhanced-fault-database';
 import { COMPREHENSIVE_FAULT_CODES } from './comprehensiveFaultCodes';
-import { performAIDiagnosis, performHybridDiagnosis, type GeneratorReadings, type AIAnalysisResult } from './ai-diagnostic-engine';
-import { getAIDiagnosis, streamAIDiagnosis, type StreamingDiagnosticEvent } from './aiDiagnosticService';
+import { performAIDiagnosis, performHybridDiagnosis, type AIAnalysisResult } from './ai-diagnostic-engine';
+import { streamAIDiagnosis, type StreamingDiagnosticEvent } from './aiDiagnosticService';
 import {
   getAllFaultCodes,
   searchFaultCodes as searchControllerFaults,

@@ -68,17 +68,12 @@ if (typeof window !== 'undefined') {
 // ============================================================================
 
 import {
-  createSeededRandom,
   getCoordinateValue,
   getValueInRange,
   getIntInRange,
   getBooleanWithProbability,
   selectFromArray,
   getGeologicalZone,
-  calculateAquiferDepth,
-  calculateExpectedYield,
-  predictWaterQuality,
-  calculateSuccessProbability,
   // Note: KENYA_GEOLOGICAL_ZONES is defined locally as GLOBAL_GEOLOGICAL_DATABASE alias
 } from '@/lib/utils/deterministicCalculations';
 

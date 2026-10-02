@@ -12,13 +12,10 @@ import {
   Crown,
   Zap,
   TrendingUp,
-  Calendar,
   AlertTriangle,
   ChevronRight,
   Loader2,
-  CheckCircle,
   X,
-  CreditCard,
   History,
 } from 'lucide-react';
 import PricingPlans from './PricingPlans';
@@ -27,8 +24,6 @@ import {
   type SubscriptionPlan,
   type UserSubscription,
   type UsageRecord,
-  SUBSCRIPTION_PLANS,
-  getPlanById,
 } from '@/lib/generator-oracle/subscriptionTypes';
 
 interface SubscriptionManagerProps {

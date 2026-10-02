@@ -16,27 +16,17 @@ import {
   Phone,
   Clock,
   Wrench,
-  Gauge,
   ChevronDown,
   ChevronRight,
   FileText,
   DollarSign,
   Award,
-  Users,
   Building,
   Truck,
-  Calendar,
   MapPin,
-  ArrowRight,
-  Ruler,
-  Box,
   Layers,
-  Scissors,
-  Flame,
   Factory,
-  Cog,
-  CircleDot,
-  SquareStack
+  Cog
 } from 'lucide-react'
 
 // ============================================================================

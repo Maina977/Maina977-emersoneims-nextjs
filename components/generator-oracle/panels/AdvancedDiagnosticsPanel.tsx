@@ -17,11 +17,10 @@
  * 10. Predictive Maintenance Calendar - When to service each component
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Client-safe metadata only (~5 KB). Heavy fault-code operations are
 // reachable from the client via lib/generator-oracle/client/oracleClient.
-import { CONTROLLER_BRANDS } from '@/lib/generator-oracle/controllerMeta';
 
 // ==================== TYPES ====================
 interface ComponentHealth {

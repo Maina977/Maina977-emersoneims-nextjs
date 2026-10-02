@@ -10,7 +10,7 @@
  * - Cost Projection
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ==================== TYPES ====================

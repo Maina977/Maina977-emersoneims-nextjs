@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Phone, MessageCircle, Gift, Clock, MapPin } from 'lucide-react';
+import { X, Phone, MessageCircle, Gift, Clock } from 'lucide-react';
 
 /**
  * EXIT INTENT POPUP - CAPTURE LEAVING VISITORS

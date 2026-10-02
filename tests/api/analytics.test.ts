@@ -3,7 +3,7 @@
  * Tests the visitor tracking and analytics system
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 // Mock analytics store
 const createMockStore = () => ({

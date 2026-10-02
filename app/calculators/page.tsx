@@ -4,7 +4,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import GlassmorphicCard from '@/components/effects/GlassmorphicCard';
-import { calculatePMI, calculateESSA } from '@/app/data/diagnostic/emersonMethodology';
+import { calculatePMI } from '@/app/data/diagnostic/emersonMethodology';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import ScientificCalculator from '@/components/calculators/ScientificCalculator';

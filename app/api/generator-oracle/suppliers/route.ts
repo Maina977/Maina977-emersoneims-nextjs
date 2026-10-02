@@ -13,7 +13,6 @@ import {
   getSupplierById,
   createPartsRequest,
   updatePartsRequestStatus,
-  getPartsRequestsByDiagnosis,
   generateWhatsAppMessage,
   generateWhatsAppUrl,
   type PartItem,

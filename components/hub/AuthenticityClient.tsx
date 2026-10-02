@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Card, SectionHeading, SampleBadge, HubConnectStrip } from '@/components/hub/HubShell';
-import { KPICard, StatusBar, formatValue, statusPalette, type StatusKey } from '@/components/charts/dataviz';
+import { KPICard, StatusBar, statusPalette, type StatusKey } from '@/components/charts/dataviz';
 
 /**
  * Authenticity Verification — buyer-facing module that turns

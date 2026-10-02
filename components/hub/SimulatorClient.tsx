@@ -6,10 +6,9 @@ import { Gauge, LockedChart, formatValue } from '@/components/charts/dataviz';
 import {
   CockpitFrame,
   CockpitPanel,
-  CockpitDivider,
 } from '@/components/hub/cockpit/CockpitPanel';
 import { StatusLight, LampBar } from '@/components/hub/cockpit/StatusLight';
-import { DigitalReadout, SegmentBar } from '@/components/hub/cockpit/DigitalReadout';
+import { DigitalReadout } from '@/components/hub/cockpit/DigitalReadout';
 import { AlarmController, type AlarmSignal } from '@/components/hub/cockpit/AlarmController';
 import { HarmonicsPanel, type PowerQuality } from '@/components/hub/cockpit/HarmonicsPanel';
 import {

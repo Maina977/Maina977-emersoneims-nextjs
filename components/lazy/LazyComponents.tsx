@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Suspense, ComponentType } from 'react';
+import { Suspense } from 'react';
 
 // Skeleton loader for 3D scenes
 const Scene3DSkeleton = () => (

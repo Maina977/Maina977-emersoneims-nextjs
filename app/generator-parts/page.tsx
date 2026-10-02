@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import OptimizedImage from '@/components/media/OptimizedImage';
 import { useState } from 'react';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';

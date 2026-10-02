@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react';
 import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
 
 /**
  * 🎮 INTERACTIVE 3D PRODUCT CARD - GAMIFIED SELLING

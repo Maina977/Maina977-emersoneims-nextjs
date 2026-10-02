@@ -3,8 +3,8 @@
  * Replaces in-memory storage with persistent database
  */
 
-import { query, transaction, getConnection } from './postgres';
-import type { Order, OrderItem } from '@/lib/orders/orderService';
+import { query, transaction } from './postgres';
+import type { Order } from '@/lib/orders/orderService';
 
 /*
  * No `implements` clause: OrderRepository has never been exported by

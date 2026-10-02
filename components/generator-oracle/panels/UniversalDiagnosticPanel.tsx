@@ -10,7 +10,7 @@
  * ONE TOOL FOR ALL GENERATORS
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   GOUDI_ADAPTER,
@@ -19,13 +19,10 @@ import {
   SECURITY_LEVELS,
   autoDetectECM,
   getECMByModel,
-  getAdapterCableForECM,
   getAllSupportedManufacturers,
   type ECMDatabase,
-  type ECMInfo,
   type DetectionResult,
   type ProgrammingSession,
-  type AdapterCable,
   type FaultCode,
   type ParameterData,
 } from '@/lib/generator-oracle/universalDiagnosticInterface';

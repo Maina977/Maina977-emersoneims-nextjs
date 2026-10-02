@@ -13,13 +13,11 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
 import {
   Star,
   Quote,
   ChevronLeft,
   ChevronRight,
-  Play,
   Building2,
   BadgeCheck,
   MapPin

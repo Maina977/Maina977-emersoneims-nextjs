@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 // Web Speech API types - using any for browser compatibility
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

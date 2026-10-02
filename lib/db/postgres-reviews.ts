@@ -3,7 +3,7 @@
  * Persistent storage for customer reviews and moderation queue
  */
 
-import { query, transaction } from './postgres';
+import { query } from './postgres';
 import type { Review, PartRatingSummary } from '@/lib/reviews/reviewService';
 
 /*

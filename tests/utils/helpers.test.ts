@@ -3,7 +3,7 @@
  * Tests helper functions and utility modules
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 // Price formatting utility
 const formatPrice = (amount: number, currency: string = 'KES'): string => {

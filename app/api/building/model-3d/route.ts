@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { floorPlanGenerator, type GenerationInput } from '@/lib/building/building/floorPlanGenerator';
-import { building3DGenerator, type Building3DModel } from '@/lib/building/building/building3DGenerator';
+import { building3DGenerator } from '@/lib/building/building/building3DGenerator';
 
 // =============================================================================
 // POST - Generate 3D Model

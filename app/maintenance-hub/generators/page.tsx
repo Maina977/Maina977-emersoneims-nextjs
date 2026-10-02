@@ -16,7 +16,6 @@ import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 import {
   ALL_COMPREHENSIVE_FAULTS,
   searchComprehensiveFaults,
-  getFaultByCode,
   getCategories,
   getDatabaseStats,
   type EnhancedFaultCode

@@ -6,7 +6,7 @@
  * Uses FREE AI tools only
  */
 
-import { floorPlanGenerator, type BuildingPlan, type FloorPlan, type Room, type WallSpec } from './floorPlanGenerator';
+import { floorPlanGenerator, type BuildingPlan } from './floorPlanGenerator';
 
 // =============================================================================
 // TYPES

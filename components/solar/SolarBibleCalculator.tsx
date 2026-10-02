@@ -22,16 +22,8 @@
  * @copyright 2026 EmersonEIMS - Solar Bible
  */
 
-import { useState, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Sun, Battery, Zap, Calculator, TrendingUp, Thermometer,
-  MapPin, Home, Building2, Factory, Hotel, Hospital,
-  AlertTriangle, CheckCircle, Download, Send, ChevronRight,
-  ChevronDown, Settings, Search, Filter, BarChart3, LineChart,
-  Cpu, Wifi, Shield, Clock, DollarSign, Leaf, Phone, MessageCircle,
-  FileText, Cable, Gauge, Activity, Target, Lightbulb, RefreshCw
-} from 'lucide-react';
+
+
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MASSIVE EQUIPMENT DATABASE - 300+ PRODUCTS

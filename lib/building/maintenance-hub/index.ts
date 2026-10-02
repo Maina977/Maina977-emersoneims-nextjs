@@ -80,8 +80,6 @@ export {
 // Import comprehensive solar faults (legacy)
 import {
   ALL_SOLAR_FAULTS,
-  GROWATT_FAULTS as GROWATT_LEGACY,
-  DEYE_FAULTS as DEYE_LEGACY,
   VICTRON_FAULTS,
   HUAWEI_FAULTS,
   SOLAR_FAULT_BRANDS,

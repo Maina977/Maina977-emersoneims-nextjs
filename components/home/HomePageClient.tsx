@@ -5,7 +5,6 @@
  * All heavy components loaded lazily after initial paint
  */
 
-import { Suspense, lazy } from 'react';
 import dynamic from 'next/dynamic';
 import LazyOnVisible from '@/components/perf/LazyOnVisible';
 

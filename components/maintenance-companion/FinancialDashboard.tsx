@@ -4,10 +4,6 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   GeneratorAsset,
-  RepairLogEntry,
-  RepairVsReplaceResult,
-  ROIAnalysis,
-  UpsizingRecommendation,
   calculateTotalMaintenanceCost,
   calculateAverageAnnualMaintenance,
   analyzeRepairVsReplace,

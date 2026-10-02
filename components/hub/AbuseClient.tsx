@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Card, SectionHeading, SampleBadge, HubConnectStrip, ProOnly } from '@/components/hub/HubShell';
-import { KPICard, StatusBar, LockedChart, formatValue, statusPalette, type StatusKey } from '@/components/charts/dataviz';
+import { KPICard, LockedChart, statusPalette, type StatusKey } from '@/components/charts/dataviz';
 
 /**
  * Abuse / Misuse Predictor — what happens to the asset when normal-use

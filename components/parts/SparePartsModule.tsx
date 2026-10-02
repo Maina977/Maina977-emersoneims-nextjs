@@ -3,9 +3,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, Filter, Grid, List, ShoppingCart, X, Plus, Minus,
-  ChevronDown, Star, Truck, Shield, Clock, Heart, Eye,
-  ArrowUpDown, SlidersHorizontal, Package, CheckCircle, Tag
+  Search, Grid, List, ShoppingCart, X, Plus, Minus,
+  ChevronDown, Truck, Shield, Heart, Eye, SlidersHorizontal, Package, Tag
 } from 'lucide-react';
 import sparePartsDatabase from '@/app/data/spare-parts-database-COMPLETE.json';
 import MpesaCheckout from './MpesaCheckout';

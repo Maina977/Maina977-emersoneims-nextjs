@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Client-safe metadata only (~5 KB). Heavy fault-code operations are
 // reachable from the client via lib/generator-oracle/client/oracleClient.
-import { CONTROLLER_BRANDS, type ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
 
 interface ECMEntry {
   id: string;

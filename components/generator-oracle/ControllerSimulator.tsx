@@ -9,7 +9,7 @@
  * All visual designs are unique creations inspired by industrial standards.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ==================== CONTROLLER CONFIGURATIONS ====================

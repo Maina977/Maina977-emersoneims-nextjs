@@ -9,7 +9,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   initiateSTKPush,
   querySTKPushStatus,
-  parseSTKCallback,
   isMpesaConfigured,
   getMpesaStatus,
   generateTransactionId,
@@ -18,8 +17,6 @@ import {
 } from '@/lib/generator-oracle/mpesaService';
 import {
   createPaymentRecord,
-  updatePaymentStatus,
-  createSubscription,
   getPlanById,
 } from '@/lib/generator-oracle/subscriptionService';
 

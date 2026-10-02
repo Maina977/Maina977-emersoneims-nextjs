@@ -3,7 +3,6 @@
 import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { CLIENT_TESTIMONIALS, type ClientTestimonial as Testimonial } from '@/lib/testimonials/clientTestimonials';
-import Image from 'next/image';
 
 // The Testimonial shape now lives with the data, in
 // lib/testimonials/clientTestimonials.ts, and is imported above as an alias.

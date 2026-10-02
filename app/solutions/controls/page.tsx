@@ -4,7 +4,6 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
-import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import ControlsEngineeringDeepDive from '@/components/solutions/ControlsEngineeringDeepDive';

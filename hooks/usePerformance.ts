@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { getConnectionProfile, isMobileDevice, getOptimalViewport } from '@/lib/performance/mobileOptimization';
+import { getConnectionProfile } from '@/lib/performance/mobileOptimization';
 import { getDeviceCapabilities, PERFORMANCE_BUDGET } from '@/lib/performance/ultraPerformance';
 
 /**

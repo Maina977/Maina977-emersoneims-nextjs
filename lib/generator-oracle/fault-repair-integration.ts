@@ -7,7 +7,6 @@
 
 import type {
   ControllerFaultCode,
-  Solution,
   SparePart,
   RequiredTool,
   ManualReference,

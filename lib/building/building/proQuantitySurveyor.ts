@@ -5,7 +5,7 @@
 // Professional Standard: RICS, CIQS, NRM1/2, POMI, SMM7
 // =============================================================================
 
-import type { StructuralReport, RebarSchedule, ConcreteSchedule } from './proStructuralEngineer';
+import type { StructuralReport, RebarSchedule } from './proStructuralEngineer';
 import type { BuildingDesign, Schedule } from './proArchitectCAD';
 
 // =============================================================================

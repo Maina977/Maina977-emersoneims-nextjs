@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { motion } from "framer-motion";
 import OptimizedImage from "@/components/media/OptimizedImage";
 import { SectionLead } from "@/components/generators";
 

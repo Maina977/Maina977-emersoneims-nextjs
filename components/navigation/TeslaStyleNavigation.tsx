@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
 // framer-motion removed 2026-09-26 — see the note at the foot of this file.
 // Every animation this component performs is now CSS; the keyframes live in
 // app/globals.css under "NAVIGATION ANIMATIONS".

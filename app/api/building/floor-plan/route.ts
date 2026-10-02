@@ -13,8 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   floorPlanGenerator,
   floorPlanRenderer,
-  type GenerationInput,
-  type BuildingPlan
+  type GenerationInput
 } from '@/lib/building/building/floorPlanGenerator';
 
 // =============================================================================

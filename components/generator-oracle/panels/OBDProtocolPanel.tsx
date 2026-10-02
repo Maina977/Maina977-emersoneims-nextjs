@@ -9,7 +9,7 @@
  * - Service Functions (Oil reset, DPF regeneration, etc.)
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ==================== TYPES ====================

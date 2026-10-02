@@ -13,9 +13,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Wrench, Zap, Battery, Sun, AlertTriangle, CheckCircle2,
-  Search, ChevronDown, ChevronRight, BookOpen, Shield,
-  Thermometer, Cable, Lightbulb, HelpCircle, Phone, FileText,
-  Download, ExternalLink, Play
+  Search, ChevronDown, ChevronRight, Shield, Cable, HelpCircle, Phone
 } from 'lucide-react';
 
 import {
@@ -27,7 +25,6 @@ import {
   REPAIR_PARTS,
   TROUBLESHOOTING_TREES,
   InverterBrand,
-  InverterError,
   BatteryType
 } from '@/lib/solar/solarMaintenanceDatabase';
 

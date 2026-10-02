@@ -15,7 +15,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { formatKES } from '@/lib/format/currency';
 import Link from 'next/link';
 import QuickInquiryForm from '@/components/forms/QuickInquiryForm';

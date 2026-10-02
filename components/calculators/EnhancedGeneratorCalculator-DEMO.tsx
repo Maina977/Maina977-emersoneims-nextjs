@@ -19,7 +19,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
@@ -36,7 +36,7 @@ import {
   Legend,
   Filler
 } from 'chart.js';
-import { Line, Bar, Doughnut, Radar } from 'react-chartjs-2';
+import { Line, Doughnut } from 'react-chartjs-2';
 
 // Register Chart.js components
 ChartJS.register(

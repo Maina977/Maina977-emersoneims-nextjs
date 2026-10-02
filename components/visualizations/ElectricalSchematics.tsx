@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 
 // ════════════════════════════════════════════════════════════════════════
 // ELECTRICAL SYMBOL LIBRARY (Standard IEC/IEEE Symbols)

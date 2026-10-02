@@ -18,12 +18,6 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TECHNICAL_SERVICES,
-  SAMPLE_SCHEMATICS,
-  SAMPLE_WIRING_DIAGRAMS,
-  TROUBLESHOOTING_TREES,
-  REPAIR_PROCEDURES,
-  PARTS_CATALOG,
-  MAINTENANCE_SCHEDULES,
   IEC_WIRE_COLORS,
   searchAllContent,
   getServiceById,
@@ -34,15 +28,12 @@ import {
   getPartsByService,
   getMaintenanceByService,
   type ServiceCategory,
-  type TechnicalService,
   type Schematic,
   type WiringDiagram,
   type TroubleshootingTree,
-  type TroubleshootingNode,
   type RepairProcedure,
   type Part,
   type MaintenanceSchedule,
-  type MaintenanceTask,
 } from '@/lib/technical/technicalBible';
 
 // ==================== ICONS ====================

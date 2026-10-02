@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, lazy, useState, useEffect, useMemo } from "react";
+import React, { Suspense, lazy, useState, useEffect } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import SEOHead from "@/app/components/contact/SEOHead";
 import ErrorBoundary from "@/app/components/contact/ErrorBoundary";

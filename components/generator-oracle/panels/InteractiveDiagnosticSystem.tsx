@@ -10,7 +10,7 @@
  * with clickable diagrams for all generator systems.
  */
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Fuel,
@@ -19,7 +19,6 @@ import {
   Settings,
   ToggleLeft,
   ChevronRight,
-  ChevronDown,
   Info,
   AlertTriangle,
   CheckCircle,

@@ -7,22 +7,18 @@
  * @copyright 2026 EmersonEIMS - Solar Bible
  */
 
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sun, Battery, Zap, Calculator, TrendingUp, Thermometer,
   MapPin, Home, Building2, Factory, Hotel, Hospital,
-  AlertTriangle, CheckCircle, Download, Send, ChevronRight,
-  ChevronDown, Settings, Search, Filter, BarChart3, LineChart,
-  Cpu, Wifi, Shield, Clock, DollarSign, Leaf, Phone, MessageCircle,
-  FileText, Cable, Gauge, Activity, Target, Lightbulb, RefreshCw,
-  GraduationCap, Church, Warehouse, X, Plus, Minus, Wrench,
-  Heart, Brain, FileDown, Printer, AlertCircle, HelpCircle
+  AlertTriangle, CheckCircle, ChevronRight, Search, Clock, DollarSign, Phone, MessageCircle, Activity, Target, Lightbulb, RefreshCw,
+  GraduationCap, Church, Warehouse, X, Plus,
+  Heart, Brain, FileDown, AlertCircle
 } from 'lucide-react';
-import {
-  SOLAR_PANELS, BATTERIES, INVERTERS, ACCESSORIES, KENYA_CLIMATE, ELECTRICITY_TARIFFS,
+import { KENYA_CLIMATE,
   findOptimalSystem, calculateElectricityCost,
-  type SolarPanel, type BatteryUnit, type Inverter, type Accessory, type OptimizationResult
+  type SolarPanel, type BatteryUnit, type Inverter
 } from './SolarEquipmentDatabase';
 import {
   INVERTER_FAULT_CODES, BATTERY_FAULT_CODES, PANEL_FAULT_CODES,

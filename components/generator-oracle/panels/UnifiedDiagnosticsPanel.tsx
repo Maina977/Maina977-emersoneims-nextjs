@@ -22,14 +22,10 @@ import {
   getECMManufacturers,
   getControllerBrands,
   getECMsByManufacturer,
-  searchECMs,
   ECM_DATABASE,
-  CONTROLLER_DATABASE,
   type TechnicianInput,
   type IntegratedDiagnosisResult,
-  type ECMEntry,
 } from '@/lib/generator-oracle/integratedDiagnosticData';
-import { CONTROLLER_BRANDS } from '@/lib/generator-oracle/controllerMeta';
 // Heavy diagnosis runs server-side via the typed API client.
 import { performIntegratedDiagnosis } from '@/lib/generator-oracle/client/oracleClient';
 

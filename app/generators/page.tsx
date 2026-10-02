@@ -37,14 +37,12 @@ import { cumminsGenerators } from "@/app/lib/data/cumminsgenerators";
 import { generatorServices } from "@/app/lib/data/generatorservices";
 import ErrorBoundary from '@/components/error/ErrorBoundary';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
-import { CUMMINS_BRAND_INFO, CUMMINS_FAQ } from '@/lib/brands/cumminsData';
 import Link from 'next/link';
 // The seventeen brands this hub links at the foot of the comparison table.
 // Same registry app/brands/[brand] builds its routes from, so the links and
 // the pages cannot drift apart.
 import { GENERATOR_BRANDS } from '@/lib/data/generator-brands';
 import GeneratorEngineeringDeepDive from '@/components/generators/GeneratorEngineeringDeepDive';
-import ConversionCTA from '@/components/cta/ConversionCTA';
 // Lead capture for the #quote section. Imported statically rather than lazily:
 // it is the page's only form and sits directly under the hero, so it must be
 // present the moment the primary CTA is clicked.

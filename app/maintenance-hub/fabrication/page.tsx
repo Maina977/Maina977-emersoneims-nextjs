@@ -8,11 +8,10 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
-  FABRICATION_FAULT_CODES as BIBLE_FAULT_CODES,
   FABRICATION_REPAIR_MANUALS,
   FABRICATION_PARTS_CATALOGUE,
   FABRICATION_MAINTENANCE_SCHEDULES,

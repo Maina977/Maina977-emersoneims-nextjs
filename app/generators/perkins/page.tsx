@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Metadata } from 'next';
 
 /*
  * HERO MOVED TO next/image — 2026-10-01.

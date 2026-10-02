@@ -5,7 +5,6 @@
  * Real-time charts, gauges, and data visualization for Generator Oracle
  */
 
-import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Chart as ChartJS,

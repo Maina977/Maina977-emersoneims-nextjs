@@ -19,12 +19,8 @@
  */
 
 import {
-  createSeededRandom,
-  getCoordinateValue,
   getValueInRange,
   getIntInRange,
-  getBooleanWithProbability,
-  selectFromArray,
 } from '@/lib/utils/deterministicCalculations';
 
 // Global coordinates for deterministic calculations

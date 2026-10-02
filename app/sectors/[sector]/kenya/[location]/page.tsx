@@ -3,7 +3,6 @@ import { seoTitleSmart } from '@/lib/seo/pageTitle';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
-  TARGET_SECTORS,
   getSectorBySlug,
   getAllSectorSlugs,
   generateSectorTitle,

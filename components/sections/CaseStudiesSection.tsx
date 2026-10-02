@@ -1,7 +1,6 @@
 'use client';
 
 import { m, LazyMotion, domAnimation } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
 
 interface CaseStudy {

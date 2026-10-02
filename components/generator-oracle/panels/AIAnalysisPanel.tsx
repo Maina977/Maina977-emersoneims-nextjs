@@ -19,13 +19,8 @@ import {
   type GeneratorReadings,
   type AIAnalysisResult,
 } from '@/lib/generator-oracle/ai-diagnostic-engine';
-import {
-  searchAllFaultCodes,
-  searchControllerFaults,
-  getTotalFaultCodeCount,
-  getFaultCodesByBrand,
-  CONTROLLER_BRANDS,
-} from '@/lib/generator-oracle/integratedDiagnosticService';
+
+
 import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
 import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNotice';
 import RuleBasedAssistantPanel from '@/components/generator-oracle/RuleBasedAssistantPanel';

@@ -28,8 +28,7 @@ import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
-  BookOpen, Wrench, Cpu, Zap, AlertTriangle,
-  Settings, FileText, Download, Search
+  BookOpen, Wrench, Cpu, Zap, AlertTriangle, Search
 } from 'lucide-react';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';

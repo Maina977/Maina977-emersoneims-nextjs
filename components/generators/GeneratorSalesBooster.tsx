@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Zap, Calculator, Shield, Truck, Clock, Users,
-  TrendingUp, Award, Phone, MessageCircle, ChevronRight,
-  AlertTriangle, CheckCircle, Star, Package
+import { Calculator, Shield, Truck, Clock, Award, Phone, MessageCircle, ChevronRight,
+  AlertTriangle, CheckCircle, Package
 } from 'lucide-react';
 
 /**

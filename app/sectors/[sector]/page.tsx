@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import SectorPowerContent from '@/components/seo/SectorPowerContent';
 import {
-  TARGET_SECTORS,
   getSectorBySlug,
   getAllSectorSlugs,
   generateSectorFAQs,

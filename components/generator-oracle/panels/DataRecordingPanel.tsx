@@ -10,8 +10,8 @@
  * - Overload/shutdown event logging
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 // ==================== TYPES ====================
 interface DataPoint {

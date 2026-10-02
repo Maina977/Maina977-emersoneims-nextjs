@@ -12,10 +12,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  Sun, Zap, Battery, Calculator, FileText, Download, Play, Pause,
-  RotateCw, Move, Trash2, Plus, Minus, Grid, Layers, Cable,
-  AlertTriangle, CheckCircle2, Settings, Eye, Box, MapPin,
-  Clock, Calendar, ArrowLeft, Save, Upload, Printer, Share2, Activity
+  Sun, Zap, Battery, Calculator, FileText, Download, Play, Pause, Trash2, Plus, Grid, Layers, Cable,
+  AlertTriangle, CheckCircle2, Settings, Box, MapPin, Save, Upload, Printer, Share2, Activity
 } from 'lucide-react';
 
 // =============================================================================

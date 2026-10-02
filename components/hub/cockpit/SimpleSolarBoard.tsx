@@ -9,7 +9,6 @@ import {
   HybridInverterBlock,
   LoadBlock,
   GridInputBlock,
-  CombinerBlock,
   FlowArrow,
   LiveValueLabel,
   WarningBadge,

@@ -11,7 +11,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   searchSymptoms,
-  type SymptomDiagnosis,
   type PossibleCause
 } from '@/lib/generator-oracle/educationalContent';
 

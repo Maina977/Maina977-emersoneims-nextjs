@@ -1,5 +1,3 @@
-import type { Metadata } from 'next';
-import { permanentRedirect } from 'next/navigation';
 
 /**
  * /solutions/[slug] — RETIRED (308 → /industries/<mapped>).

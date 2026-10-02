@@ -5,15 +5,12 @@
  * Comprehensive repair guides for all 9 generator controller brands
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CONTROLLER_MANUALS,
-  getControllerManual,
   MANUAL_STATS,
   type ControllerManual,
-  type RepairProcedure,
-  type WiringConnection,
 } from '@/lib/generator-oracle/controller-repair-manuals';
 
 // ═══════════════════════════════════════════════════════════════════════════════

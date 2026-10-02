@@ -13,9 +13,9 @@
 import { KENYA_COUNTIES, SERVICE_CATEGORIES } from './seoConfig';
 import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
-import { GENERATOR_BRANDS, getAllBrandSlugs } from '@/lib/data/generator-brands';
-import { TARGET_SECTORS, getAllSectorSlugs } from '@/lib/data/target-sectors';
-import { EAST_AFRICA_COUNTRIES, getAllCountrySlugs, getCitySlugsForCountry } from '@/lib/data/east-africa-locations';
+import { GENERATOR_BRANDS } from '@/lib/data/generator-brands';
+import { TARGET_SECTORS } from '@/lib/data/target-sectors';
+import { EAST_AFRICA_COUNTRIES } from '@/lib/data/east-africa-locations';
 
 export interface SitemapEntry {
   url: string;

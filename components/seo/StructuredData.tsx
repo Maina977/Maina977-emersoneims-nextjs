@@ -4,19 +4,54 @@
  * Improves rich snippets in Google Search
  */
 
-import Script from 'next/script';
 
 interface StructuredDataProps {
   data: Record<string, any>;
 }
 
+/**
+ * A DOM id unique to the schema being rendered.
+ *
+ * app/layout.tsx mounts OrganizationSchema, WebSiteSchema and
+ * DiagnosticSuiteSchema together, and all three came through here with a
+ * hardcoded id="structured-data" - three elements sharing one id on every
+ * page, which is invalid HTML. Deriving it from @type keeps them distinct
+ * without anyone having to remember to pass one.
+ */
+function schemaId(data: Record<string, any>): string {
+  const t = data?.["@type"];
+  const name = Array.isArray(t) ? t[0] : t;
+  return typeof name === "string" && name
+    ? `structured-data-${name.toLowerCase()}`
+    : "structured-data";
+}
+
 export default function StructuredData({ data }: StructuredDataProps) {
+  /*
+   * PLAIN <script>, NOT next/script - corrected 2026-10-02.
+   *
+   * This rendered through next/script with strategy="beforeInteractive",
+   * which the App Router only honours in the root layout, and which eslint
+   * had been reporting for exactly that reason. The effect was not cosmetic:
+   * THIS JSON-LD NEVER REACHED THE SERVER HTML. Fetched as Googlebot on
+   * 2026-10-02, this script id appeared zero times on /, /services,
+   * /generators and /kenya/nairobi, and / and /kenya/nairobi carried no
+   * BreadcrumbList at all.
+   *
+   * Google reads structured data out of the delivered HTML. A script tag it
+   * must run JavaScript to discover may as well not exist - and this
+   * component is mounted in app/layout.tsx, so the loss applied to every page
+   * on the domain.
+   *
+   * A plain tag is also what Next documents for JSON-LD. The sibling
+   * components that already use one - LocalBusinessSchema, services/layout -
+   * are present in the HTML, which is how the difference was found.
+   */
   return (
-    <Script
-      id="structured-data"
+    <script
+      id={schemaId(data)}
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-      strategy="beforeInteractive"
     />
   );
 }

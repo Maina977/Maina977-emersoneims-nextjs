@@ -6,7 +6,6 @@
  */
 
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   getPartsCompatibilityService,
   PARTS_DATABASE,

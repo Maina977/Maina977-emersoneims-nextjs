@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   generateRoof3D,
   optimizePanelPlacement,
-  calculateShadowAnimation,
-  generateProductionHeatmap,
   calculatePerformance,
   calculateFinancials,
   ROOF_TEMPLATES,
@@ -14,7 +12,6 @@ import {
   type Roof3DModel,
   type Panel3DPlacement,
   type RoofObstacle,
-  type SolarDesign3D,
 } from '@/lib/solar/solar3DDesignEngine';
 
 // ==================== 3D CANVAS COMPONENT ====================

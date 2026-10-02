@@ -6,15 +6,11 @@
  */
 
 import {
-  type ProtocolDriver,
-  type FaultCode
+  type ProtocolDriver
 } from './protocolDrivers';
 import {
   type ECMModel,
-  type Calibration,
   type CalibrationParameter,
-  type ProgrammingEvent,
-  type FirmwareVersion,
   logProgrammingEvent,
   getFirmwareForECM,
   getCalibrationForECM

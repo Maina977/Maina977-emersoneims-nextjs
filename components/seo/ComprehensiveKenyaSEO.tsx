@@ -8,7 +8,6 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-import { useEffect } from 'react';
 import Script from 'next/script';
 import {
   generateServiceSchema,

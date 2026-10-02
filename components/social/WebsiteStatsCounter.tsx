@@ -6,7 +6,7 @@
  * Transparent and accurate information only
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 
 // VERIFIED COMPANY STATISTICS - Real achievements only

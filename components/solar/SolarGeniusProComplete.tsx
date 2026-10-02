@@ -15,13 +15,12 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  Sun, Zap, Battery, Calculator, FileText, Download, Printer,
+  Sun, Zap, Calculator, FileText, Download, Printer,
   CheckCircle2, AlertTriangle, Play, ArrowRight, ArrowLeft,
-  Settings, Award, Shield, Clock, ChevronDown, ChevronRight,
-  Activity, Table, DollarSign, TrendingUp, Plug, MapPin,
-  Thermometer, CloudSun, Grid, Cable, Gauge, BookOpen,
-  BarChart3, PieChart, LineChart, Cpu, Satellite, Wind,
-  Droplets, Leaf, Building2, Eye, RotateCw, Box, Layers, Lock
+  Settings, Award, Shield,
+  Activity, Table, DollarSign, TrendingUp, MapPin,
+  Thermometer, CloudSun, Grid, Cable, BookOpen,
+  BarChart3, Cpu, Satellite, Wind, Leaf, Building2, Eye, RotateCw, Box, Layers, Lock
 } from 'lucide-react';
 import { PaymentModal } from '@/components/payment/PaymentGate';
 import {
@@ -29,8 +28,6 @@ import {
   COUNTRIES,
   PANELS,
   INVERTERS,
-  BATTERIES,
-  EDGE_SERVERS,
   type SolarGeniusQuotation
 } from '@/lib/solar/solarGeniusProEngineV3';
 import { solarAPI } from '@/lib/solar/apiService';

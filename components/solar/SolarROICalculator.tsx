@@ -6,10 +6,9 @@
  */
 
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import {
-  TrendingUp, DollarSign, Sun, Battery, Zap,
-  Calendar, PiggyBank, Leaf, BarChart3, ArrowRight
+  TrendingUp, DollarSign,
+  Calendar, PiggyBank, Leaf
 } from 'lucide-react';
 
 // Kenya electricity rates (KES per kWh)

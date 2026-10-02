@@ -13,8 +13,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  CheckCircle,
-  XCircle,
   AlertTriangle,
   ArrowRight,
   ArrowLeft,
@@ -25,9 +23,6 @@ import {
   ThumbsDown,
   RotateCcw,
   Zap,
-  Fuel,
-  Thermometer,
-  Settings,
   Cpu,
   Battery,
 } from 'lucide-react';

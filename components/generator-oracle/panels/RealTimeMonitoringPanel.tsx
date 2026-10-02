@@ -6,8 +6,8 @@
  * With animated gauges, live graphs, and threshold alerts
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 // ==================== TYPES ====================
 interface MonitoringData {

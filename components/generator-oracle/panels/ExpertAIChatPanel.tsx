@@ -12,11 +12,10 @@
  *   John Deere, Deutz, MTU, MAN, Doosan, Yanmar, Kubota, Kohler, etc.
  */
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Client-safe metadata only (~5 KB). Heavy fault-code operations are
 // reachable from the client via lib/generator-oracle/client/oracleClient.
-import { CONTROLLER_BRANDS } from '@/lib/generator-oracle/controllerMeta';
 import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
 import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNotice';
 import RuleBasedAssistantPanel from '@/components/generator-oracle/RuleBasedAssistantPanel';

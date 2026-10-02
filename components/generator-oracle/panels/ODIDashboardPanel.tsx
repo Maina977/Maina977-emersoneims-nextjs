@@ -11,8 +11,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   createDriver,
-  getSupportedProtocols,
-  J1939_PGNS,
   J1939_SPN_DEFINITIONS,
   type ProtocolDriver,
   type SensorReading,
@@ -22,12 +20,9 @@ import {
 } from '@/lib/generator-oracle/odi/protocolDrivers';
 import {
   ECM_MODELS,
-  getECMById,
   getECMsByManufacturer,
   getAllManufacturers,
   searchECMs,
-  getCompatibleControllers,
-  checkCompatibility,
   getAllProgrammingEvents,
   type ECMModel,
   type ProgrammingEvent
@@ -37,12 +32,10 @@ import {
   formatDuration,
   getLogLevelColor,
   type ProgrammingSession,
-  type ProgrammingLog,
   type ProgrammingOptions
 } from '@/lib/generator-oracle/odi/programmingModule';
 // Client-safe metadata only (~5 KB). Heavy fault-code operations are
 // reachable from the client via lib/generator-oracle/client/oracleClient.
-import { CONTROLLER_BRANDS, type ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPONENTS

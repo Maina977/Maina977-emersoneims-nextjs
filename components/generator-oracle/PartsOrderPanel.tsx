@@ -19,11 +19,7 @@ import {
   CheckCircle,
   Plus,
   Trash2,
-  Send,
-  ExternalLink,
   MessageCircle,
-  Building,
-  Filter,
   X,
 } from 'lucide-react';
 import type { Supplier, PartItem } from '@/lib/generator-oracle/supplierService';

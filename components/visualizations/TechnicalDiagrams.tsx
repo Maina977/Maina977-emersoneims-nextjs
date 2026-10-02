@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 
 // DC-to-AC Inverter Circuit Diagram
 export function DCtoACCircuitDiagram() {

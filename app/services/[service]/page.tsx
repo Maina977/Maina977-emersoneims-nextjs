@@ -6,11 +6,8 @@
  */
 
 import { Metadata } from 'next';
-import Link from 'next/link';
-import Script from 'next/script';
 import { notFound } from 'next/navigation';
 import {
-  ALL_SERVICES,
   getServiceBySlug,
   getRelatedServices,
   getAllServiceSlugs,

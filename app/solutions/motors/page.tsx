@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SectionLead from "@/app/components/generators/SectionLead";
-import InfoCard from "@/components/InfoCard";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import OptimizedImage from "@/components/media/OptimizedImage";
 import B2BCommercialBand from "@/components/b2b/B2BCommercialBand";

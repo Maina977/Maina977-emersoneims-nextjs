@@ -26,8 +26,6 @@ import {
   getCurrentLocation,
   reverseGeocode,
   formatCoordinates,
-  formatDistance,
-  calculateDistance,
   getGoogleMapsUrl,
   getDirectionsUrl,
   saveLocation,

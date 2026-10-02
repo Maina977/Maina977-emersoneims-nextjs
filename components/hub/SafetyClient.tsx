@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Card, SectionHeading, SampleBadge, HubConnectStrip, ProOnly } from '@/components/hub/HubShell';
-import { KPICard, StatusBar, formatValue, statusPalette, type StatusKey } from '@/components/charts/dataviz';
+import { KPICard, formatValue, statusPalette, type StatusKey } from '@/components/charts/dataviz';
 
 /**
  * Safety & Fire Prevention — promoted from a Diagnostics sub-section

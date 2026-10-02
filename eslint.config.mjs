@@ -1,6 +1,7 @@
 import { defineConfig } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import unusedImports from "eslint-plugin-unused-imports";
 
 export default defineConfig([
   ...nextVitals,
@@ -189,5 +190,27 @@ export default defineConfig([
       "components/solar/SolarGeniusProComplete.tsx",
     ],
     rules: { "react-hooks/preserve-manual-memoization": "off" },
+  },
+  {
+    /*
+     * UNUSED IMPORTS, REMOVED AND KEPT REMOVED - added 2026-10-02.
+     *
+     * @typescript-eslint/no-unused-vars found 1,326 of these across 403 files
+     * but has no fixer, so they had accumulated as warnings nobody acted on.
+     * An unused import is not only noise: it is a module the bundler may still
+     * pull into a chunk, and on a site whose audience is mostly on phones that
+     * is bandwidth spent on code that never runs.
+     *
+     * unused-imports/no-unused-imports does the same analysis with an
+     * AST-accurate autofix, which is why it is used here rather than hand
+     * editing 403 files. It is set to error so the next one fails the lint run
+     * instead of joining a backlog.
+     *
+     * Unused local variables stay on @typescript-eslint/no-unused-vars at warn:
+     * deleting a local can change behaviour where an import cannot, so those
+     * are read and removed by hand.
+     */
+    plugins: { "unused-imports": unusedImports },
+    rules: { "unused-imports/no-unused-imports": "error" },
   },
 ]);

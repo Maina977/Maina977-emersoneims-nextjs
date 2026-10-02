@@ -30,7 +30,7 @@ import {
   Legend,
   Filler
 } from 'chart.js';
-import { Line, Bar, Doughnut, Pie } from 'react-chartjs-2';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
 
 // Register Chart.js components
 ChartJS.register(

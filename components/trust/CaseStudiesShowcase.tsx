@@ -16,17 +16,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  Building2,
-  Factory,
   Hospital,
-  Hotel,
-  School,
-  ShoppingBag,
-  Warehouse,
-  CheckCircle2,
   Clock,
   Zap,
-  TrendingUp,
   Quote,
   ChevronRight,
   MapPin,

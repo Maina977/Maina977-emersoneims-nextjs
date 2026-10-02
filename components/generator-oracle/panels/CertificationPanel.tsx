@@ -6,18 +6,14 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   getCertificationService,
   CERTIFICATION_LEVELS,
   CERTIFICATION_EXAMS,
   CertificationLevel,
   CertificationExam,
-  CertificationQuestion,
-  TechnicianProfile,
-  TechnicianCertification,
   getTimeRemaining,
-  formatCertificationDate,
 } from '@/lib/generator-oracle/certificationSystem';
 
 type ViewMode = 'overview' | 'exam' | 'results' | 'profile';

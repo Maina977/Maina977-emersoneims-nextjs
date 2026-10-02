@@ -8,15 +8,12 @@
  * ╚══════════════════════════════════════════════════════════════════════════════╝
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  Sun, Zap, Battery, Calculator, FileText, Download, Mic, MicOff,
-  CheckCircle2, AlertTriangle, Play, ArrowRight, ChevronDown,
-  Settings, Award, Shield, Clock, Activity, DollarSign, TrendingUp,
-  MapPin, Thermometer, CloudSun, Grid, Cable, Gauge, BookOpen,
-  BarChart3, PieChart, Cpu, Satellite, Wind, Globe, Sparkles,
-  Building2, Eye, RotateCw, Box, Layers, Lock, Upload, Camera,
-  Video, FileSpreadsheet, Leaf, Droplets, Home, Factory, Workflow
+  Sun, Zap, Calculator, FileText, Mic, MicOff, Award, Shield, Clock, DollarSign, TrendingUp,
+  MapPin, CloudSun, Grid, BookOpen, Cpu, Satellite, Globe, Sparkles,
+  Building2, Layers, Upload, Camera,
+  Video, FileSpreadsheet, Workflow
 } from 'lucide-react';
 
 // ============================================================================

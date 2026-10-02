@@ -7,7 +7,7 @@
 
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { COUNTIES, SERVICES, TOTAL_LOCATIONS, TOTAL_SERVICE_PAGES, getServicePath } from '@/lib/seo/kenyaLocations';
+import { COUNTIES, SERVICES, getServicePath } from '@/lib/seo/kenyaLocations';
 import { MAJOR_TOWN_SLUGS, townLabel } from '@/lib/seo/majorTowns';
 
 export const metadata: Metadata = {

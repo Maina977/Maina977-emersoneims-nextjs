@@ -7,7 +7,7 @@
  * 2. Updates all code references
  */
 
-import { readFileSync, writeFileSync, renameSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, renameSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 

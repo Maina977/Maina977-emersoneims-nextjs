@@ -12,7 +12,7 @@
  * - Exportable reports
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ==================== TYPES ====================

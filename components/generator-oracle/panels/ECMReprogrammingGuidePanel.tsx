@@ -13,10 +13,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ReprogrammingGuide,
   ALL_ECM_REPROGRAMMING_GUIDES,
-  getReprogrammingGuide,
   getAllManufacturers
 } from '@/lib/generator-oracle/ecmReprogrammingGuides';
-import { DisclaimerBanner, FooterDisclaimer } from '../DisclaimerBanner';
+import { DisclaimerBanner } from '../DisclaimerBanner';
 
 // ==================== COMPONENTS ====================
 

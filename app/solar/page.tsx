@@ -14,7 +14,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
-import { AnalogClock, AnalogCalendar, WeatherWidget } from '@/components/ui/AnalogWidgets';
+import { WeatherWidget } from '@/components/ui/AnalogWidgets';
 import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
@@ -127,17 +127,12 @@ import {
   INVERTERS_DATABASE,
   BATTERIES_DATABASE,
   CABLE_SPECIFICATIONS,
-  MPPT_CONTROLLERS,
-  KENYA_SOLAR_DATA,
-  calculateCableSize,
   TOTAL_EQUIPMENT
 } from '@/lib/solar/solarEquipmentDatabase';
 
 import {
   ALL_MAINTENANCE_GUIDES,
-  INVERTER_FAULT_CODES,
-  getGuidesByCategory,
-  getFaultCodesByBrand
+  INVERTER_FAULT_CODES
 } from '@/lib/solar/solarMaintenanceGuides';
 
 import {

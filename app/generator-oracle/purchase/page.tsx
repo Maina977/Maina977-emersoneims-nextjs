@@ -8,7 +8,7 @@
  * FREE TRIAL: Until April 1st, 2026
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { generateDeviceFingerprint } from '@/lib/generator-oracle/licensing';

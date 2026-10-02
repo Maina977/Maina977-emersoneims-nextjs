@@ -8,9 +8,8 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sun, Battery, Zap, Search, Filter, Grid, List,
-  ShoppingCart, X, Plus, Minus, Heart, Eye, Shield,
-  Truck, Package, Tag, ChevronDown, Star
+  Sun, Search, Grid, List,
+  ShoppingCart, X, Plus, Minus, Eye, Shield, Package, Star
 } from 'lucide-react';
 
 // Product Categories

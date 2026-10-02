@@ -29,42 +29,25 @@
  * consult the manufacturer's authorized service centers.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Activity,
   AlertTriangle,
-  Battery,
   Bluetooth,
   Cable,
   CheckCircle2,
-  ChevronRight,
   ChevronDown,
-  Cpu,
-  Database,
-  Download,
   Droplets,
-  Fan,
-  FileText,
-  Flame,
-  Gauge,
-  HardDrive,
-  History,
-  Layers,
-  LineChart,
   Loader2,
-  MonitorSmartphone,
   Play,
   Power,
-  RefreshCw,
   Search,
-  Settings,
   Shield,
   Sliders,
   Sparkles,
   Thermometer,
   Timer,
-  Truck,
   Upload,
   Usb,
   Wifi,
@@ -72,14 +55,10 @@ import {
   Zap,
   XCircle,
   Cog,
-  CircuitBoard,
   Wind,
-  Waves,
   ShieldCheck,
   Radio,
-  Plug,
-  RotateCcw,
-  Workflow
+  RotateCcw
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════════

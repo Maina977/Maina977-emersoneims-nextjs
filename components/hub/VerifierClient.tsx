@@ -11,7 +11,6 @@ import {
   useHubAudience,
 } from '@/components/hub/HubShell';
 import {
-  KPICard,
   StatusBar,
   LockedChart,
   formatValue,

@@ -9,8 +9,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, MapPin, Phone, User, Home, Building2,
-  Factory, Sun, Battery, Zap, CheckCircle, Clock,
-  FileText, Camera, Wrench
+  Factory, CheckCircle
 } from 'lucide-react';
 
 const INSTALLATION_TYPES = [

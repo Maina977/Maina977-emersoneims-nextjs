@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Card, SectionHeading, SampleBadge, HubConnectStrip, ProOnly, useHubAudience } from '@/components/hub/HubShell';
-import { KPICard, StatusBar, formatValue, statusPalette, type StatusKey } from '@/components/charts/dataviz';
+import { KPICard, StatusBar, type StatusKey } from '@/components/charts/dataviz';
 
 /**
  * Installation Visualizer — single-line diagram + cabling/breaker chain

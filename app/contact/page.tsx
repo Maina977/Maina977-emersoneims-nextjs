@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import SiteSurveyPolicy from '@/components/trust/SiteSurveyPolicy';
-import { m, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring, LazyMotion, domAnimation } from 'framer-motion';
-import Link from 'next/link';
+import { m, useScroll, useTransform, LazyMotion, domAnimation } from 'framer-motion';
 import HolographicMap from '@/components/map/HolographicMap';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';

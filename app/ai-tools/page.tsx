@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Building2, Zap, Sun, Droplets, Cpu, Brain, Sparkles, ArrowRight,
-  CheckCircle2, Globe, Clock, Award, TrendingUp, Shield, Star,
-  Wrench, Search, BarChart3, FileText, Calculator, Layers
+  CheckCircle2, Globe, Clock, Award, TrendingUp, Shield,
+  Wrench, Search, BarChart3, Calculator, Layers
 } from 'lucide-react';
 
 // AI Tool Card Component

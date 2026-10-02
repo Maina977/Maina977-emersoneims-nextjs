@@ -1,7 +1,6 @@
 import { MetadataRoute } from 'next';
 import { contentRevision } from '@/lib/seo/contentRevisions';
 import { getAllServiceSlugs } from '@/lib/services/allServices';
-import { getIndexedServiceLocationPaths } from '@/lib/seo/kenyaLocations';
 import { getIndexableKenyaUrls } from '@/lib/seo/kenyaIndexable';
 import {
   getAllCountrySlugs,

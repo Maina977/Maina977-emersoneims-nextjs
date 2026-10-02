@@ -39,7 +39,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 // Client-safe metadata only — no dataset, no template generator. ~5 KB.
 import { CONTROLLER_BRANDS, type ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
@@ -59,20 +59,16 @@ import {
   getSetting,
   saveSetting,
   isDatabaseAvailable,
-  initializeOfflineData,
   getDiagnosisHistory,
-  saveDiagnosisHistory,
-  saveFeedback,
   type DiagnosisHistoryEntry,
 } from '@/lib/generator-oracle/indexedDBService';
 
 // ==================== CRITICAL COMPONENTS (Load immediately) ====================
 import LicenseGate from './LicenseGate';
 import InstallPrompt from './InstallPrompt';
-import { DisclaimerAcknowledgment, FooterDisclaimer, DisclaimerBanner } from './DisclaimerBanner';
+import { DisclaimerAcknowledgment, FooterDisclaimer } from './DisclaimerBanner';
 import ControllerSimulator, { CONTROLLER_TYPES } from './ControllerSimulator';
 import DetailedFaultDisplay, { DETAILED_FAULT_CODES } from './DetailedFaultDisplay';
-import { AnalogClock, AnalogCalendar } from '@/components/ui/AnalogWidgets';
 import SpeechController from './SpeechController';
 import BackToCommand from './BackToCommand';
 import ErrorBoundary from './ErrorBoundary';

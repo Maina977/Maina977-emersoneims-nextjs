@@ -10,12 +10,10 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import {
-  SolarGeniusProEngine,
   solarGeniusEngine,
   GLOBAL_COUNTRY_DATABASE,
   GLOBAL_PANELS_DATABASE,
   GLOBAL_INVERTERS_DATABASE,
-  GLOBAL_BATTERIES_DATABASE,
   type SolarGeniusQuotation
 } from '@/lib/solar/solarGeniusProEngine';
 import { SOLAR_ACADEMY_COURSES, SOLAR_ACADEMY_METADATA } from '@/lib/solar/solarEducationAcademy';

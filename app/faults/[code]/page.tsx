@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { FAULT_CODES, FaultCode } from '@/lib/data/faultCodes';
+import { FAULT_CODES } from '@/lib/data/faultCodes';
 import FaultCodeRepairLinks from '@/components/repair-centre/FaultCodeRepairLinks';
 
 /**

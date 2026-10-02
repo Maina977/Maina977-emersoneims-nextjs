@@ -12,23 +12,17 @@
  * ╚══════════════════════════════════════════════════════════════════════════════╝
  */
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   SOLARGENIUS_AI_ENGINES,
   GLOBAL_STANDARDS,
   UNIQUE_FEATURES,
-  COMPETITOR_COMPARISON,
   ENTERPRISE_TIERS,
-  calculateElectricalDesign,
-  simulateHourlyProduction,
 } from '@/lib/solar/solarGeniusProEngineV2';
 import {
   solarGeniusEngine,
   GLOBAL_COUNTRY_DATABASE,
-  GLOBAL_PANELS_DATABASE,
-  GLOBAL_INVERTERS_DATABASE,
-  GLOBAL_BATTERIES_DATABASE,
   type SolarGeniusQuotation
 } from '@/lib/solar/solarGeniusProEngine';
 

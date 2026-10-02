@@ -5,7 +5,7 @@
  * Uses NO paid APIs - generates geometry data for browser rendering
  */
 
-import type { BuildingPlan, FloorPlan, WallSpec, Room } from './floorPlanGenerator';
+import type { BuildingPlan, FloorPlan, WallSpec } from './floorPlanGenerator';
 
 // =============================================================================
 // TYPES

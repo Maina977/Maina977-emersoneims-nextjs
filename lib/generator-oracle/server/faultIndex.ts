@@ -18,7 +18,6 @@ import {
   getFaultCodesByBrand,
   getFaultCodeById,
   getFaultCodeStats,
-  getTotalFaultCodeCount,
   searchFaultCodes,
   type ControllerFaultCode,
 } from '@/lib/generator-oracle/controllerFaultCodes';

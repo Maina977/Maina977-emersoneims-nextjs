@@ -12,11 +12,9 @@ import {
   Bell,
   BellOff,
   AlertTriangle,
-  RefreshCw,
   Settings,
   Clock,
   Check,
-  X,
   Loader2,
   Info,
 } from 'lucide-react';

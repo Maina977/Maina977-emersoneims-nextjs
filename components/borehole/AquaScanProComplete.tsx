@@ -15,15 +15,13 @@ import {
   GeoCoordinates,
   detectRegionFromCoordinates,
   ReportExportEngine,
-  EXIFExtractor,
-  BatchUploadProcessor,
   ReportFormat,
   SiteAutoDetector,
   DetectedSite,
 } from '@/lib/borehole/aiBoreholeAnalyzer';
 import { comprehensiveReportGenerator, ComprehensiveReportOptions } from '@/lib/borehole/comprehensiveReportGenerator';
 import { PaymentModal } from '@/components/payment/PaymentGate';
-import { boreholeAPI, runCompleteAnalysis } from '@/lib/borehole/apiService';
+import { runCompleteAnalysis } from '@/lib/borehole/apiService';
 
 // ============================================================================
 // 115 AI TOOLS - COMPLETE CAPABILITY LIST

@@ -14,15 +14,8 @@ import {
   X,
   RotateCcw,
   Check,
-  Trash2,
-  Download,
-  Play,
-  Pause,
   StopCircle,
   SwitchCamera,
-  ZoomIn,
-  ZoomOut,
-  Image as ImageIcon,
 } from 'lucide-react';
 import {
   isCameraAvailable,

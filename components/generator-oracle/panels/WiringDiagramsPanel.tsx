@@ -52,7 +52,7 @@
  * do for the 7310/7320). Record the delta and the sentence that establishes it.
  */
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   WIRING_SAFETY_NOTICE,

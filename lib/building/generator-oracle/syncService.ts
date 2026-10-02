@@ -10,7 +10,6 @@ import {
   setLocalVersion,
   isSyncNeeded,
   generateFaultChecksum,
-  type FaultVersion,
   type VersionComparison,
 } from './versionManager';
 import {
