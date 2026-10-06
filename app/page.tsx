@@ -137,11 +137,17 @@ export const metadata: Metadata = {
    * brand — redundant for anyone who searched the brand, and irrelevant to
    * anyone who did not. This leads with what is sold and where.
    */
-  title: "Generators, Solar & UPS in Kenya",
-  description: "Generators, solar, UPS, motors, boreholes and incinerators for Kenyan industry, healthcare and telecom. Nationwide service. Call +254768860665.",
+  /*
+   * 2026-10-06, owner decision: generator sales is the main business and the
+   * homepage leads with it. The title was "Generators, Solar & UPS in Kenya",
+   * which split the page three ways; in the three months to 3 October,
+   * sales-intent generator queries earned 52 impressions in total. 55 characters.
+   */
+  title: "Generators for Sale in Kenya | New & Used | EmersonEIMS",
+  description: "New VOLTKA Cummins-powered generators, 10–3000 kVA, from KES 280,000, plus used Cummins, Perkins & CAT sets. Installed and serviced Kenya-wide. Call +254768860665.",
   openGraph: {
-    title: "EmersonEIMS | B2B Power & Engineering Partner — Kenya",
-    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. SLA maintenance, 24/7 emergency response, nationwide mobile workshop. Cummins, Perkins & FG Wilson specialist. AI-assisted diagnostic and design tools.",
+    title: "Generators for Sale in Kenya | New VOLTKA & Used Sets | EmersonEIMS",
+    description: "New VOLTKA Cummins-powered generators from 10 to 3000 kVA, open or canopied, from KES 280,000, plus used Cummins, Perkins and Caterpillar sets. Supplied, installed and serviced in all 47 counties, with solar, UPS and 24/7 emergency repair.",
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
     type: 'website',
     locale: 'en_KE',
@@ -150,8 +156,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EmersonEIMS | B2B Power & Engineering — Kenya',
-    description: 'Generators, solar, UPS, HVAC, boreholes, incinerators. Cummins specialist. SLA maintenance, 24/7 emergency response, nationwide mobile workshop. Call +254768860665',
+    title: 'Generators for Sale in Kenya | EmersonEIMS',
+    description: 'New VOLTKA Cummins-powered generators, 10–3000 kVA, from KES 280,000, plus used sets. Installed and serviced in all 47 counties. Call +254768860665',
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
   },
   alternates: {
@@ -296,9 +302,13 @@ function StaticHeroFallback() {
               word under a dangling separator. Balancing distributes the words
               evenly across the lines instead, which is what the two-line
               cadence was designed around. */}
+          {/* 2026-10-06, owner decision: the H1 leads with generator sales. It read
+              "GENERATORS · SOLAR · UPS / SOLD & SERVICED IN KENYA". The two lines
+              are 24 and 22 characters, inside the length rule above. Line two uses a comma, not a middle dot: the first build wrapped as "NEW VOLTKA" / "· USED MAKES" with the dot stranded at the start of a line, which only the browser screenshot showed. The
+              rendered height was measured at 390px and 1440px before shipping. */}
           <h1 className="apple-display mb-6 sm:mb-8 text-balance">
-            <span className="block text-white">GENERATORS · SOLAR · UPS</span>
-            <span className="block text-amber-500">SOLD &amp; SERVICED IN KENYA</span>
+            <span className="block text-white">GENERATOR SALES IN KENYA</span>
+            <span className="block text-amber-500">NEW VOLTKA, USED MAKES</span>
           </h1>
 
           {/* Subtitle - Apple-style subheadline.
@@ -308,21 +318,19 @@ function StaticHeroFallback() {
               tools keep their homepage link equity, they simply no longer
               open the pitch. */}
           <p className="apple-subheadline text-gray-200 mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
-            Kenya’s B2B power and engineering partner — generator sales, installation
-            and 24/7 emergency repair, plus solar, UPS, boreholes and buildings across
-            all 47 counties.
-            <span className="text-amber-400 font-medium"> Engineering-grade</span> reliability,
-            now with Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro
-            &amp; the Solar &amp; UPS Intelligence Hub.
+            New VOLTKA Cummins-powered generators from 10 to 3000 kVA, open or canopied,
+            <span className="text-amber-400 font-medium"> from KES 280,000</span> — plus used
+            Cummins, Perkins and Caterpillar sets. Supplied, installed and serviced in all 47
+            counties, with solar, UPS, boreholes and 24/7 emergency repair from the same team.
           </p>
 
           {/* CTAs - Apple-style buttons with mobile optimization */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center w-full sm:w-auto px-4 sm:px-0">
             <Link
-              href="/contact?type=emergency"
+              href="/generators"
               className="w-full sm:w-auto px-6 sm:px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold text-base sm:text-lg rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-amber-500/25 tap-scale touch-target"
             >
-              Request Emergency Power
+              View Generators &amp; Prices
             </Link>
             <a
               href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20need%20help%20with%20generator%2Fsolar%20services"
@@ -334,10 +342,10 @@ function StaticHeroFallback() {
               WhatsApp Now
             </a>
             <Link
-              href="/contact"
+              href="/contact?type=emergency"
               className="w-full sm:w-auto px-6 sm:px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300 tap-scale touch-target"
             >
-              Talk to Expert
+              24/7 Emergency Repair
             </Link>
           </div>
 
@@ -904,7 +912,7 @@ export default function HomePage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebPage',
-            name: 'EmersonEIMS — B2B Power & Engineering Partner Kenya',
+            name: 'Generators for Sale in Kenya | EmersonEIMS',
             url: 'https://www.emersoneims.com',
             inLanguage: 'en-KE',
             speakable: {

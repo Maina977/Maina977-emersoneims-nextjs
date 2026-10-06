@@ -142,7 +142,7 @@ export const PRICE_GUIDES: readonly PriceGuide[] = [
       { item: '500 kVA — three phase', price: 'KES 7,500,000 – 9,000,000', note: 'Large industrial' },
     ],
     drivers: [
-      'Brand. VOLTKA sets start at KES 500,000 for 20 kVA; Cummins, Perkins and FG Wilson sit higher for the same output.',
+      'Brand. VOLTKA sets start at KES 280,000 for 10 kVA; Cummins, Perkins and FG Wilson sit higher for the same output.',
       'Enclosure. A sound-attenuated canopy costs more than an open set and is usually non-negotiable in a built-up area.',
       'Controller. A basic auto-start panel is far cheaper than an AMF or synchronising controller.',
       'Rating. A standby-rated set is cheaper than a prime-rated one of the same kVA, and is the wrong choice if it will run daily.',

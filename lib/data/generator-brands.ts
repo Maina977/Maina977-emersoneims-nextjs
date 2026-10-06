@@ -27,7 +27,7 @@
  * WHAT WE SELL vs WHAT WE SERVICE (owner, 2026-09-21).
  * ─────────────────────────────────────────────────────────────────────────
  * The generators EmersonEIMS sells are VOLTKA, our own brand, powered by
- * Cummins engines, from KES 500,000. For every other make on this list we do
+ * Cummins engines, from KES 280,000. For every other make on this list we do
  * maintenance, repairs and parts — not sales.
  *
  * Eleven answers in this file said we supply that brand of generator: SDMO,
@@ -119,7 +119,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
         // data. It previously opened "EmersonEIMS is an authorized Cummins
         // dealer in {location}" — we are not authorised. Supply, warranty and
         // support are all real and are what a buyer is actually asking about.
-        answer: 'EmersonEIMS supplies new Cummins-powered generators in {location} under our own VOLTKA brand, from KES 500,000. For Cummins sets already on site we do maintenance, repairs and genuine parts — we hold a catalogue across eleven Cummins engine families.'
+        answer: 'EmersonEIMS supplies new Cummins-powered generators in {location} under our own VOLTKA brand, from KES 280,000. For Cummins sets already on site we do maintenance, repairs and genuine parts — we hold a catalogue across eleven Cummins engine families.'
       },
       {
         question: 'How much do Cummins generators cost in {location}?',

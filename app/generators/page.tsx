@@ -656,11 +656,11 @@ const TransparentPricing = () => {
             ⚡ VOLTKA — OUR OWN BRAND, BEST VALUE
           </span>
           <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
-            VOLTKA Generators from KES 500,000
+            VOLTKA Generators from KES 280,000
           </h3>
           <p className="text-gray-300 max-w-3xl mx-auto">
-            New VOLTKA diesel generators start at <strong>KES 500,000 for 20&nbsp;kVA</strong> and scale across the
-            full <strong>20–2000&nbsp;kVA</strong> range — priced per model (see the price list below). Every unit is
+            New VOLTKA diesel generators start at <strong>KES 280,000 for 10&nbsp;kVA</strong> and scale across the
+            full <strong>10–3000&nbsp;kVA</strong> range — priced per model (see the price list below). Every unit is
             supplied, installed and backed by our warranty on both the job and the parts used. Figures are indicative;
             your exact figure is generated on our ERP.
           </p>
@@ -738,7 +738,7 @@ const TransparentPricing = () => {
         </div>
 
         <div className="text-center text-gray-400 text-sm">
-          <p>* Ranges above are for premium imported brands (Cummins, Perkins, CAT); our VOLTKA house brand is more affordable — from KES 500,000.</p>
+          <p>* Ranges above are for premium imported brands (Cummins, Perkins, CAT); our VOLTKA house brand is more affordable — from KES 280,000.</p>
           <p>* All prices include: Delivery + Installation + ATS + Commissioning + 1-Year Service + Warranty on job &amp; parts</p>
           <p>* Indicative only — every exact quote is generated on our ERP.</p>
         </div>
@@ -1068,7 +1068,7 @@ const BrandComparisonTable = () => {
           </p>
           <h3 className="mt-3 text-2xl font-bold text-white">VOLTKA — our own brand, Cummins-powered</h3>
           <p className="mx-auto mt-3 max-w-2xl text-gray-400 leading-relaxed">
-            From KES 500,000, supplied, delivered and commissioned across all 47 counties.
+            From KES 280,000, supplied, delivered and commissioned across all 47 counties.
           </p>
           <Link
             href="/voltka"

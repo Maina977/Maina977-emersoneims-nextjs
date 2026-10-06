@@ -18,7 +18,7 @@ import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
  *
  * WHAT MAY BE STATED HERE, AND WHY THAT LIST IS SHORT
  * Three facts are owner-confirmed (2026-09-21): VOLTKA is our own brand, it is
- * Cummins-powered, and it starts at KES 500,000. The model names are read from
+ * Cummins-powered, and it starts at KES 280,000 for 10 kVA (owner, 2026-10-06; 20 kVA is KES 500,000). The model names are read from
  * captions and image assets already published on this site. The parts figures
  * are counted at build time from the same catalogue that builds
  * /generators/spare-parts, so they cannot drift from it.
@@ -84,6 +84,9 @@ import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
  *      "start at KES 500,000 for 20 kVA", which matches (2) exactly from a
  *      different file. Two unrelated sources agreeing on both the rating and
  *      the price is what turns a convention into a fact.
+ *      (That /generators sentence was reworded on 2026-10-06, when the owner
+ *      set the opening price at KES 280,000 for 10 kVA. The 20 kVA row in the
+ *      price table is still KES 500,000, so the pairing above still holds.)
  *
  * It is also how Cummins names its own gensets (C22D5, C44D5, C165D5), and
  * VOLTKA is built on Cummins engines.
@@ -124,7 +127,7 @@ export const metadata: Metadata = {
    */
   title: 'VOLTKA Generators Kenya — 10 to 3000 kVA',
   description:
-    'VOLTKA is the generator brand EmersonEIMS builds and sells: Cummins-powered diesel sets from 10 kVA to 3000 kVA, open or canopied, from KES 500,000 with a two-year warranty. Installed and commissioned across all 47 counties.',
+    'VOLTKA is the generator brand EmersonEIMS builds and sells: Cummins-powered diesel sets from 10 kVA to 3000 kVA, open or canopied, from KES 280,000 with a two-year warranty. Installed and commissioned across all 47 counties.',
   keywords: [
     'VOLTKA generators',
     'VOLTKA generator Kenya',
@@ -138,7 +141,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'VOLTKA Generators — Cummins-Powered, Built and Sold by EmersonEIMS',
     description:
-      'Our own generator brand: Cummins-powered diesel sets from KES 500,000, delivered and commissioned across Kenya.',
+      'Our own generator brand: Cummins-powered diesel sets from KES 280,000, delivered and commissioned across Kenya.',
     type: 'website',
     locale: 'en_KE',
     url: 'https://www.emersoneims.com/voltka',
@@ -229,7 +232,7 @@ export default function VoltkaPage() {
         offers: {
           '@type': 'AggregateOffer',
           priceCurrency: 'KES',
-          lowPrice: 500000,
+          lowPrice: 280000,
           seller: { '@id': 'https://www.emersoneims.com/#organization' },
           areaServed: { '@type': 'Country', name: 'Kenya' },
         },
@@ -279,7 +282,7 @@ export default function VoltkaPage() {
               </h1>
               <p className="mx-auto mb-4 max-w-2xl text-xl leading-relaxed text-gray-300">
                 Cummins-powered diesel generating sets from 10 kVA to 3000 kVA, starting at KES
-                500,000, with a two-year warranty. VOLTKA is the brand EmersonEIMS sells. Every
+                280,000, with a two-year warranty. VOLTKA is the brand EmersonEIMS sells. Every
                 other make on this site we maintain, repair and stock parts for.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -313,7 +316,7 @@ export default function VoltkaPage() {
               </div>
               <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900 to-gray-950 p-7">
                 <h2 className="mb-3 text-lg font-semibold text-amber-400">
-                  10 kVA to 3000 kVA, from KES 500,000
+                  10 kVA to 3000 kVA, from KES 280,000
                 </h2>
                 <p className="leading-relaxed text-gray-400">
                   A shop standby set through to prime power for a factory or a mine. What your own
