@@ -106,18 +106,19 @@ export function OrganizationSchema() {
      * reconciles this business with its other identities, and a dead URL gives
      * it nothing to match.
      *
-     * x.com/eimsemerson is the account on the verified Google Business Profile.
-     * The vanity URLs previously listed here (facebook.com/emersoneims,
-     * linkedin.com/company/emersoneims, instagram.com/emersoneims) were guesses
-     * at the brand name; LinkedIn returns 404 for that path. Facebook is not
-     * decidable from a script — it answers 400 to any automated request
-     * regardless — so no conclusion is drawn about it here. The footer carries
-     * a Facebook profile.php URL that appears to be the real page; if the owner
-     * confirms it, add it here AND to the Business Profile at the same time so
-     * the two corroborate.
+     * OWNER-CONFIRMED 2026-10-06: the four profiles below are the business's
+     * own accounts. They replace facebook.com/emersoneims and
+     * linkedin.com/company/emersoneims, which were guesses at the brand name
+     * (LinkedIn returned 404 for that path). Checked the same day: X, Instagram
+     * and TikTok answer 200; Facebook answers 400 to any automated request, so
+     * that one rests on the owner's confirmation alone. Keep this list and the
+     * Google Business Profile in step so the two corroborate.
      */
     sameAs: [
-      'https://x.com/eimsemerson'
+      'https://x.com/mitumba_s',
+      'https://www.facebook.com/profile.php?id=100090175376280',
+      'https://www.instagram.com/emersoneims',
+      'https://www.tiktok.com/@emersoneims'
     ],
     geo: {
       '@type': 'GeoCoordinates',
@@ -702,13 +703,12 @@ export function ComprehensiveLocalBusinessSchema({
     },
     // No self-asserted aggregateRating — see note in DiagnosticSuiteSchema.
     sameAs: [
-      'https://www.facebook.com/emersoneims',
       // linkedin.com/company/emersoneims and instagram.com/emersoneims removed
       // 2026-08-29. The file's own note above already recorded these as
       // guessed vanity URLs rather than confirmed accounts; LinkedIn returns
       // HTTP 404. Only the account named on the verified Google Business
       // Profile remains.
-      'https://x.com/eimsemerson'
+      'https://x.com/mitumba_s'
     ]
   };
 

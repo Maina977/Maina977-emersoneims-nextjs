@@ -50,7 +50,7 @@ export default function AdvancedSEO() {
             numberOfEmployees: '50+',
             slogan: 'Reliable Power. Without Limits.',
             sameAs: [
-              'https://x.com/eimsemerson',
+              'https://x.com/mitumba_s',
               'https://www.instagram.com/emersoneims',
               'https://www.youtube.com/@emersoneims',
             ],

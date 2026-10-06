@@ -1041,7 +1041,7 @@ function SciFiContactPageInner() {
               <div className="text-center">
                 <div className="bg-white p-2 rounded-lg">
                   <img 
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D100089864898337&color=1877f2&format=png"
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D100090175376280&color=1877f2&format=png"
                     alt="Scan to visit Facebook"
                     width={120}
                     height={120}

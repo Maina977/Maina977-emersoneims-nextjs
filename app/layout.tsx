@@ -391,17 +391,20 @@ export default async function RootLayout({
      *     facebook.com/EmersonEIMS            HTTP 400
      *     linkedin.com/company/emersoneims    HTTP 404
      *     twitter.com/EmersonEIMS             a DIFFERENT handle from the real
-     *                                         account, which is @eimsemerson
+     *                                         account, which is @mitumba_s
      * Pointing sameAs at profiles that do not exist gives Google nothing to
      * corroborate and asserts a presence the business does not have.
      *
-     * The one below is the account listed on the verified Google Business
-     * Profile. Add Facebook and LinkedIn back when those pages actually
-     * exist — and put the same URLs in the Business Profile at the same time,
-     * so the two agree.
+     * OWNER-CONFIRMED 2026-10-06: the four below are the business's own
+     * accounts. X, Instagram and TikTok answered 200 that day; Facebook
+     * answers 400 to automated requests, so it rests on the owner's word.
+     * Put the same URLs in the Google Business Profile so the two agree.
      */
     "sameAs": [
-      "https://x.com/eimsemerson"
+      "https://x.com/mitumba_s",
+      "https://www.facebook.com/profile.php?id=100090175376280",
+      "https://www.instagram.com/emersoneims",
+      "https://www.tiktok.com/@emersoneims"
     ],
     /*
      * From the verified Google Business Profile: opening date 1 March 2011.

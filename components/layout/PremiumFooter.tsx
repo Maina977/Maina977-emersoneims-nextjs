@@ -21,8 +21,10 @@ import { TEAM_EMAILS } from '@/lib/contact/emails';
  * 400 to every automated request so it cannot be checked from here either way.
  */
 const SOCIAL_LINKS = [
-  { label: 'X', href: 'https://x.com/eimsemerson' },
-  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=100089864898337' },
+  { label: 'X', href: 'https://x.com/mitumba_s' },
+  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=100090175376280' },
+  { label: 'Instagram', href: 'https://www.instagram.com/emersoneims' },
+  { label: 'TikTok', href: 'https://www.tiktok.com/@emersoneims' },
 ] as const;
 
 const FOOTER_LINKS = {

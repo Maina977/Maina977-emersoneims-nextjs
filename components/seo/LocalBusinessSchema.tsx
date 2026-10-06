@@ -63,13 +63,12 @@ export default function LocalBusinessSchema({
       }
     ],
     "sameAs": [
-      "https://www.facebook.com/emersoneims",
       // linkedin.com/company/emersoneims removed 2026-08-29: HTTP 404. sameAs
       // exists so Google can reconcile this business with its other profiles;
       // a URL that 404s gives it nothing to match and asserts a presence the
-      // business does not have. x.com/eimsemerson is the account named on the
+      // business does not have. x.com/mitumba_s is the account named on the
       // verified Google Business Profile.
-      "https://x.com/eimsemerson"
+      "https://x.com/mitumba_s"
     ]
   };
 

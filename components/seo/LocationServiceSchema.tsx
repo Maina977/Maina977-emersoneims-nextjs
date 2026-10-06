@@ -80,9 +80,8 @@ export function LocationServiceSchema({
     // policy without on-page UGC reviews, and triggers "multiple aggregate
     // ratings" when several schema blocks coexist on one URL.
     sameAs: [
-      'https://www.facebook.com/emersoneims',
       // linkedin.com/company/emersoneims removed 2026-08-29: returns HTTP 404.
-      'https://x.com/eimsemerson'
+      'https://x.com/mitumba_s'
     ]
   };
 

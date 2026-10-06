@@ -121,7 +121,7 @@ const jsonLd = {
         addressCountry: 'KE',
       },
       sameAs: [
-        'https://x.com/eimsemerson',
+        'https://x.com/mitumba_s',
       ],
     },
     {

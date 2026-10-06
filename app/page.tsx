@@ -766,7 +766,7 @@ export default function HomePage() {
               { '@type': 'GeoCircle', geoMidpoint: { '@type': 'GeoCoordinates', latitude: -1.286389, longitude: 36.817223 }, geoRadius: '2000 km' }
             ],
             sameAs: [
-              'https://x.com/eimsemerson'
+              'https://x.com/mitumba_s'
             ],
             hasOfferCatalog: {
               '@type': 'OfferCatalog',

@@ -309,7 +309,7 @@ export function LocalBusinessWithAreasSchema() {
       }
     ],
     sameAs: [
-      'https://x.com/eimsemerson',
+      'https://x.com/mitumba_s',
       'https://www.youtube.com/@EmersonEIMS'
     ]
   };

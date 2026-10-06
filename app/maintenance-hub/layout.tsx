@@ -166,7 +166,7 @@ const structuredData = {
         { '@type': 'Country', name: 'Rwanda' },
       ],
       sameAs: [
-        'https://x.com/eimsemerson',
+        'https://x.com/mitumba_s',
         'https://www.linkedin.com/company/emerson-eims',
       ],
     },

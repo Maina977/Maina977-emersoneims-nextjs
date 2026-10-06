@@ -347,8 +347,7 @@ export function generateStructuredData(type: 'Organization' | 'LocalBusiness' | 
         availableLanguage: ['en', 'sw']
       }],
       sameAs: [
-        'https://www.facebook.com/emersoneims',
-        'https://x.com/eimsemerson',
+        'https://x.com/mitumba_s',
         'https://www.linkedin.com/company/emersoneims'
       ],
       ...data

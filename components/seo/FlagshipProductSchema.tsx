@@ -39,7 +39,7 @@ export default function FlagshipProductSchema(p: FlagshipSchemaProps) {
       name: 'EmersonEIMS',
       url: SITE,
       logo: `${SITE}/logo.png`,
-      sameAs: [        'https://x.com/eimsemerson',      ],
+      sameAs: [        'https://x.com/mitumba_s',      ],
       email: 'info@emersoneims.com',
       telephone: '+254768860665',
     },
