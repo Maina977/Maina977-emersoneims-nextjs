@@ -24,7 +24,7 @@
  * study.
  *
  * SURNAMES DROPPED ON THE OWNER'S INSTRUCTION (2026-09-17): the two now read
- * "Muhindi of Kehancha" and "Bart of Kilifi" rather than in full. The town
+ * "Marwa of Kehancha" and "Bartista of Kilifi" rather than in full. The town
  * keeps the reference checkable by anyone local, which is what the evidence
  * needed the name for, while giving back most of the privacy a full name on a
  * public page takes away — the caution below acted on rather than only noted.
@@ -76,7 +76,7 @@ export const RECENT_PROJECTS: readonly RecentProject[] = [
   {
     slug: 'migori-mining-330kva',
     title: '330 kVA VOLTKA Cummins — supplied, delivered and installed',
-    client: 'Muhindi of Kehancha',
+    client: 'Marwa of Kehancha',
     location: 'Mining operation, Migori County',
     period: 'August 2026',
     service: 'Generator sales & installation',
@@ -115,7 +115,7 @@ export const RECENT_PROJECTS: readonly RecentProject[] = [
   {
     slug: 'kilifi-yacht-genverter',
     title: 'Marine genverter — board-level diagnosis and repair',
-    client: 'Bart of Kilifi',
+    client: 'Bartista of Kilifi',
     location: 'Yacht, Kilifi',
     period: 'August 2026',
     service: 'Inverter & electronics repair',
