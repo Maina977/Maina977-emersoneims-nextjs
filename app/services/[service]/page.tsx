@@ -18,6 +18,7 @@ import {
 import { getServiceDiagnostics } from '@/lib/services/serviceDiagnostics';
 import { getServiceBible } from '@/lib/services/serviceBibles';
 import ServiceRepairLinks from '@/components/repair-centre/ServiceRepairLinks';
+import RepairFieldPhotos from '@/components/services/RepairFieldPhotos';
 import ServiceDeepDive from '@/components/services/ServiceDeepDive';
 import UPSVisualPack from '@/components/services/UPSVisualPack';
 
@@ -229,6 +230,10 @@ export default async function ServiceDetailPage({ params }: Props) {
           whole site, leaving 54 routes and ~115,000 words isolated. Renders
           nothing for service slugs with no matching hub. */}
       <ServiceRepairLinks slug={service.slug} />
+
+      {/* The owner’s 2026 repair photographs. Generator repairs only: the other
+          service pages have no field photographs of their own yet. */}
+      {service.slug === 'generator-repairs' && <RepairFieldPhotos />}
 
       {/* UPS schematic, curves and diagnostic gauges. Moved here from the
           retired hardcoded route app/services/ups-systems/page.tsx, which was

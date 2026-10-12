@@ -33,7 +33,7 @@ import Link from 'next/link';
  * for without shipping a lightbox script.
  */
 
-interface Shot {
+export interface Shot {
   file: string;
   width: number;
   height: number;
@@ -79,7 +79,7 @@ const CONTROL_SHOTS: Shot[] = [
  * photograph was 580px wide and the section ran to 7,013px, 7.8 screens at
  * 1440x900. Every photograph still opens at full size on a tap or click.
  */
-function ShotGrid({ shots }: { shots: Shot[] }) {
+export function ShotGrid({ shots }: { shots: Shot[] }) {
   return (
     <div className="flex snap-x snap-mandatory items-start gap-4 overflow-x-auto pb-3 sm:block sm:columns-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:columns-3">
       {shots.map((shot) => (
