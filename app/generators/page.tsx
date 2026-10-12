@@ -43,6 +43,7 @@ import Link from 'next/link';
 // the pages cannot drift apart.
 import { GENERATOR_BRANDS } from '@/lib/data/generator-brands';
 import GeneratorEngineeringDeepDive from '@/components/generators/GeneratorEngineeringDeepDive';
+import RepairSyncShowcase from '@/components/generators/RepairSyncShowcase';
 // Lead capture for the #quote section. Imported statically rather than lazily:
 // it is the page's only form and sits directly under the hero, so it must be
 // present the moment the primary CTA is clicked.
@@ -1957,6 +1958,36 @@ const generatorGalleryImages = [
     title: 'Parts & Logistics',
     description: 'Efficient parts delivery across Kenya',
   },
+  // Added 2026-10-13 from the owner's new field photographs: two repair, two
+  // controls. The full set of sixteen is in RepairSyncShowcase below.
+  {
+    src: '/images/repairs-sync/overhaul-head-and-old-gasket.webp',
+    alt: 'Cylinder head and old head gasket laid out beside a generator during an engine overhaul',
+    category: 'Overhaul',
+    title: 'Cylinder Head Overhaul',
+    description: 'Head and old gasket off a six-cylinder generator engine',
+  },
+  {
+    src: '/images/repairs-sync/controls-engineer-at-panel.webp',
+    alt: 'EmersonEIMS engineer in branded hi-vis at the control panel of a CAT generator',
+    category: 'Controls',
+    title: 'Control Panel Work',
+    description: 'Our engineer at the control panel of a CAT generator',
+  },
+  {
+    src: '/images/repairs-sync/overhaul-crankshaft-main-bearings.webp',
+    alt: 'Underside of an engine block showing the crankshaft and main bearing caps',
+    category: 'Overhaul',
+    title: 'Bottom-End Inspection',
+    description: 'Crankshaft and main bearing caps with the sump off',
+  },
+  {
+    src: '/images/repairs-sync/controls-dse8610-on-load.webp',
+    alt: 'Deep Sea Electronics DSE8610 MKII controller showing the generator on load at 415 V and 50.3 Hz',
+    category: 'Synchronisation',
+    title: 'Synchronising Controller On Load',
+    description: 'Deep Sea DSE8610 MKII reading 415 V, 50.3 Hz, 68.3 kW',
+  },
 ];
 
 // GSAP will be loaded dynamically in useEffect
@@ -2480,6 +2511,10 @@ export default function GeneratorPage() {
           />
         </div>
       </section>
+
+      {/* The owner's 2026 field photographs: repairs and synchronisation, large and
+          server-rendered. See the note at the top of RepairSyncShowcase. */}
+      <RepairSyncShowcase />
 
       {/* ═══════════════════════════════════════════════════════════════════
           WARRANTY SECTION - Industry-Leading Coverage
