@@ -25,7 +25,8 @@ const SERVICES = [
     icon: '⚡',
     description: 'A detailed generator diagnostic platform with manufacturer-curated fault codes, AI-powered diagnostics, and expert repair guides for all major controller brands.',
     href: '/maintenance-hub/generators',
-    stats: { value: '230K+', label: 'Fault Codes' },
+    // Filled live from /api/generator-oracle/health — see useFaultCodeTotal().
+    stats: { value: '', label: 'Fault Codes' },
     color: 'amber',
     glowColor: 'rgba(251, 191, 36, 0.5)',
     features: ['DSE/ComAp/Woodward', '5-Tab Diagnosis System', 'Kenya Case Studies', 'Real Costs in KES'],
@@ -228,11 +229,32 @@ const ScanlineEffect = () => (
 // ═══════════════════════════════════════════════════════════════════════════════
 // SYSTEM STATUS PANEL
 // ═══════════════════════════════════════════════════════════════════════════════
-const SystemStatusPanel = () => {
+/**
+ * Live fault-code total — the same endpoint and figure the Generator Oracle
+ * shows (451,593 on 2026-10-16). This page used to hard-code 231,500 in one
+ * place and "230K+" in another, which contradicted the Oracle; reading the
+ * index means the two can no longer disagree (see scripts/check-code-counts).
+ */
+function useFaultCodeTotal(): number | null {
+  const [total, setTotal] = useState<number | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/generator-oracle/health')
+      .then((r) => r.json())
+      .then((j) => { if (alive && typeof j?.totals?.faultCodes === 'number') setTotal(j.totals.faultCodes); })
+      .catch(() => { /* leave it blank rather than guess */ });
+    return () => { alive = false; };
+  }, []);
+  return total;
+}
+
+/** Deterministic thousands separator — never toLocaleString() (hydration). */
+const fmtCount = (n: number | null) => (n === null ? '…' : n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+
+const SystemStatusPanel = ({ faultCodes }: { faultCodes: number | null }) => {
   const [systemStats, setSystemStats] = useState({
     uptime: '99.97%',
     activeServices: 9,
-    faultCodes: 231500, // 230K generators + 350 solar + 200 motors + 200 hvac + 200 electrical + 200 pumps + 100 welding + 150 plumbing
     // null until mounted: a Date rendered on the server never matches the
     // browser's, which threw React error #418 on every load (2026-10-16).
     lastUpdate: null as Date | null,
@@ -265,7 +287,7 @@ const SystemStatusPanel = () => {
         </div>
         <div>
           <span className="text-slate-400">Fault Database</span>
-          <div className="text-white font-mono text-lg">{systemStats.faultCodes.toLocaleString()}</div>
+          <div className="text-white font-mono text-lg">{fmtCount(faultCodes)}</div>
         </div>
         <div>
           <span className="text-slate-400">Last Sync</span>
@@ -281,7 +303,7 @@ const SystemStatusPanel = () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // HEXAGON SERVICE CARD
 // ═══════════════════════════════════════════════════════════════════════════════
-const ServiceCard = ({ service, index }: { service: typeof SERVICES[0]; index: number }) => {
+const ServiceCard = ({ service, index, faultCodes }: { service: typeof SERVICES[0]; index: number; faultCodes: number | null }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const colorMap: Record<string, { bg: string; border: string; text: string; glow: string }> = {
@@ -340,7 +362,7 @@ const ServiceCard = ({ service, index }: { service: typeof SERVICES[0]; index: n
                 {service.icon}
               </div>
               <div className="text-right">
-                <div className={`text-2xl font-bold ${colors.text}`}>{service.stats.value}</div>
+                <div className={`text-2xl font-bold ${colors.text}`}>{service.stats.value || fmtCount(faultCodes)}</div>
                 <div className="text-slate-400 text-xs">{service.stats.label}</div>
               </div>
             </div>
@@ -475,6 +497,7 @@ const LiveActivityFeed = () => {
 export default function UniversalCommandBridge() {
   // null until mounted — see SystemStatusPanel.
   const [systemTime, setSystemTime] = useState<Date | null>(null);
+  const faultCodes = useFaultCodeTotal();
 
   useEffect(() => {
     setSystemTime(new Date());
@@ -547,7 +570,7 @@ export default function UniversalCommandBridge() {
           className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
         >
           {[
-            { value: '231,500+', label: 'Fault Codes Database', color: 'cyan' },
+            { value: fmtCount(faultCodes), label: 'Fault Codes Database', color: 'cyan' },
             { value: '47', label: 'Counties Covered', color: 'green' },
             { value: '9', label: 'Comprehensive Bibles', color: 'amber' },
             { value: '24/7', label: 'Emergency Support', color: 'purple' },
@@ -566,7 +589,7 @@ export default function UniversalCommandBridge() {
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Left sidebar */}
           <div className="space-y-6">
-            <SystemStatusPanel />
+            <SystemStatusPanel faultCodes={faultCodes} />
             <QuickAccessTerminal />
             <LiveActivityFeed />
           </div>
@@ -583,7 +606,7 @@ export default function UniversalCommandBridge() {
 
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
               {SERVICES.map((service, index) => (
-                <ServiceCard key={service.id} service={service} index={index} />
+                <ServiceCard key={service.id} service={service} index={index} faultCodes={faultCodes} />
               ))}
             </div>
           </div>
