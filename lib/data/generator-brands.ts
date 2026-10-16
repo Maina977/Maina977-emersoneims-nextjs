@@ -127,7 +127,9 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
       },
       {
         question: 'Do you service Cummins generators in {location}?',
-        answer: 'Yes, our Cummins-trained technicians provide maintenance, repairs, and genuine parts for all Cummins generators in {location}.'
+        // "Cummins-trained" removed 2026-10-16: no training evidence on file
+        // (owner confirmed the team-page certificates were not real).
+        answer: 'Yes, our technicians provide maintenance, repairs, and genuine parts for all Cummins generators in {location}.'
       }
     ]
   },

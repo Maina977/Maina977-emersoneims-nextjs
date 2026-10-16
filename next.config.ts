@@ -930,6 +930,14 @@ const nextConfig: NextConfig = {
         destination: '/about-us',
         permanent: true,
       },
+      // Named staff and certificates on /about-us/team were not real (owner,
+      // 2026-10-16); /team is the real team page. A config redirect gives a
+      // true 308 — permanentRedirect() in a statically built page served 200.
+      {
+        source: '/about-us/team',
+        destination: '/team',
+        permanent: true,
+      },
       // Counties → Kenya (consolidate location pages)
       {
         source: '/counties',

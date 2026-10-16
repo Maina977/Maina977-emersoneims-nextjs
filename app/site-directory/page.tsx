@@ -231,7 +231,6 @@ export default async function SiteDirectoryPage() {
   const unlistedPages: L[] = [
     { href: '/warranty', label: 'Warranty coverage' },
     { href: '/team', label: 'Our engineers and technicians' },
-    { href: '/about-us/team', label: 'Meet the team' },
     { href: '/customer-success', label: 'Customer success' },
     { href: '/innovations', label: 'Engineering innovations' },
     { href: '/media', label: 'Media' },
