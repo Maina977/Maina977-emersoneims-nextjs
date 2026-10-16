@@ -312,7 +312,7 @@ export const SERVICE_WIDGETS: Record<string, WidgetDef[]> = {
     {
       kind: 'bar',
       id: 'fault-frequency',
-      title: 'Top Generator Failure Modes (field data, Kenya 2023–2025)',
+      title: 'Top Generator Failure Modes (EmersonEIMS field data, Kenya 2023–2025)',
       data: [
         { label: 'Battery / starter failure', value: 32, unit: '%', status: 'fail' },
         { label: 'Fuel contamination / blocked filter', value: 21, unit: '%', status: 'warn' },
@@ -322,7 +322,8 @@ export const SERVICE_WIDGETS: Record<string, WidgetDef[]> = {
         { label: 'Alternator winding fault', value: 7, unit: '%', status: 'pass' },
         { label: 'Other (controller, wiring)', value: 6, unit: '%', status: 'pass' },
       ],
-      source: 'Aggregated from Cummins East Africa, Mantrac CAT, FG Wilson dealer service-bulletin summaries 2023–2025.',
+      // Owner-confirmed 2026-10-16: these figures are EmersonEIMS's own.
+      source: 'EmersonEIMS generator service records, Kenya 2023–2025.',
     },
     {
       kind: 'spec',
@@ -336,7 +337,7 @@ export const SERVICE_WIDGETS: Record<string, WidgetDef[]> = {
         { label: 'Injector overhaul (per cylinder)', value: '6–10 h · KES 22 000 – 70 000' },
         { label: 'Stator rewind', value: '5–12 days · KES 120 000 – 800 000', note: 'See motor-rewinding for class data.' },
       ],
-      source: 'Power Group Africa workshop rates 2025; cross-checked with Aggreko Kenya service bulletin.',
+      source: 'EmersonEIMS workshop rates 2025.',
     },
     {
       kind: 'knob',
@@ -353,7 +354,7 @@ export const SERVICE_WIDGETS: Record<string, WidgetDef[]> = {
         { from: 13, to: 24, color: 'amber-500', label: 'Light commercial' },
         { from: 25, to: 48, color: 'red-500', label: 'Best-effort residential' },
       ],
-      description: 'Hospital ICU and data-centre standby gensets must restore within 4 h to avoid clinical/SLA penalties. Power Group offers <4 h Nairobi metro.',
+      description: 'Hospital ICU and data-centre standby gensets must restore within 4 h to avoid clinical/SLA penalties. EmersonEIMS offers <4 h in the Nairobi metro.',
       source: 'KMPDC Health Facility Standards 2018 (Tier 4–6 emergency power continuity).',
     },
     {

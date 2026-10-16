@@ -80,7 +80,7 @@ const services = [
     icon: '💧',
     color: 'from-blue-500 to-sky-600',
     stats: { depth: 'Up to 300m', flow: '100+ m³/hr' },
-    features: ['Solar Pumping', 'Grundfos Partner', 'VFD Control', 'Water Level Sensors'],
+    features: ['Solar Pumping', 'Grundfos Pumps', 'VFD Control', 'Water Level Sensors'], // was 'Grundfos Partner' — no partnership held
     href: '/services/borehole-pumps',
   },
   {

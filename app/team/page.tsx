@@ -24,8 +24,8 @@ export default function TeamPage() {
       ],
       certifications: [
         'Professional Engineer (Kenya)',
-        'Cummins Generator Certified',
-        'Perkins Engine Certified',
+        // 'Cummins Generator Certified' and 'Perkins Engine Certified' removed:
+        // EmersonEIMS holds no manufacturer certification for either.
         'DeepSea & PowerWizard Specialist',
       ],
       availability: 'Design consultations: Monday-Friday, 8am-5pm',
@@ -274,11 +274,13 @@ export default function TeamPage() {
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-amber-500/20 rounded-lg">
-              <h3 className="text-2xl font-bold text-amber-400 mb-6">Equipment Certifications</h3>
+              <h3 className="text-2xl font-bold text-amber-400 mb-6">Equipment We Work On</h3>
               <ul className="space-y-3">
                 {[
-                  'Cummins Generator Authorized Service',
-                  'Perkins Engine Certified',
+                  // Not 'Authorized Service' / 'Certified': EmersonEIMS holds no
+                  // manufacturer authorisation, so the list names what we work on.
+                  'Cummins Generator Servicing',
+                  'Perkins Engine Servicing',
                   'Caterpillar Equipment Knowledge',
                   'DeepSea Electronic Controllers',
                   'PowerWizard Control Systems',

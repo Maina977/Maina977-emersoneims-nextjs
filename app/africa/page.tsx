@@ -213,62 +213,6 @@ export default function AfricaPage() {
         </div>
       </section>
 
-      {/* Competitive Positioning */}
-      <section className="py-20 px-4 bg-black">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center">Why EmersonEIMS Wins Across Africa</h2>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                competitor: 'Aggreko (Global)',
-                weakness: 'Expensive rental model, slow delivery, no local support',
-                ourEdge: 'Sales + service in 10+ countries, local teams, competitive pricing',
-              },
-              {
-                competitor: 'Caterpillar (Direct)',
-                weakness: 'Equipment only, no ongoing support, long sales cycles',
-                ourEdge: 'Full lifecycle: sales, installation, maintenance, emergencies',
-              },
-              {
-                competitor: 'Siemens (Enterprise)',
-                weakness: 'Premium pricing, focus on mega-projects, abandons SMB',
-                ourEdge: 'All sizes welcome: KES 500K to KES 500M solutions',
-              },
-              {
-                competitor: 'Local Competitors',
-                weakness: 'Single-country presence, no SLA guarantees, limited expertise',
-                ourEdge: 'Multi-country reach, contractual SLAs, proven track record',
-              },
-              {
-                competitor: 'Chinese Suppliers',
-                weakness: 'No after-sales support, warranty disputes, quality variance',
-                ourEdge: 'Engineering partnership model, real warranties, quality assurance',
-              },
-              {
-                competitor: 'Grid-Only Approach',
-                weakness: 'Dangerous assumption in Africa, power cuts = revenue loss',
-                ourEdge: 'Backup-first philosophy, 99.5%+ uptime guarantee',
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-yellow-500/20 rounded-lg">
-                <h3 className="text-lg font-bold text-yellow-400 mb-3">{item.competitor}</h3>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xs text-gray-400 font-bold mb-1">WEAKNESS</p>
-                    <p className="text-sm text-gray-300">{item.weakness}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-yellow-400 font-bold mb-1">OUR EDGE</p>
-                    <p className="text-sm text-yellow-300">{item.ourEdge}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Services Across Africa */}
       <section className="py-20 px-4 bg-slate-900/30">
         <div className="max-w-6xl mx-auto">
