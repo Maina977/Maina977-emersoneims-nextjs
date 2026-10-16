@@ -217,7 +217,10 @@ function HubShellInner({
                 boxShadow: '0 6px 16px -6px rgba(0,113,227,0.6), inset 0 0 0 1px rgba(255,255,255,0.10)',
               }}
             >SU</span>
-            <span className="flex flex-col leading-none">
+            {/* Phones: visually hidden, still read out. At 390px the 246px
+                title block plus the AudienceToggle (both shrink-0) made every
+                /hub page 481px wide; the nav between them already scrolls. */}
+            <span className="sr-only sm:not-sr-only sm:flex sm:flex-col leading-none">
               <span className="text-[9px] font-semibold uppercase tracking-[0.22em]" style={{ color: 'var(--cockpit-ink-muted)' }}>Resources</span>
               <span className="mt-1 text-[15px] font-bold tracking-tight" style={{ color: 'var(--cockpit-ink)' }}>Solar &amp; UPS Intelligence Hub</span>
             </span>

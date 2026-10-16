@@ -31,22 +31,29 @@ function ParticleField() {
   // Reduce particles on mobile: 50 -> 8
   const particleCount = isMobile ? 8 : 30;
 
-  const particles = Array.from({ length: particleCount }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 3 + 1,
-    duration: Math.random() * 20 + 10,
-    delay: Math.random() * 5,
-  }));
+  // Random positions are generated after mount, not during render: rendered
+  // on the server and again in the browser they never matched, which React
+  // reported as a hydration attribute mismatch on every load of /contact.
+  const [particles, setParticles] = useState<
+    { id: number; x: number; y: number; size: number; duration: number; delay: number }[]
+  >([]);
+  useEffect(() => {
+    setParticles(
+      Array.from({ length: particleCount }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 3 + 1,
+        duration: Math.random() * 20 + 10,
+        delay: Math.random() * 5,
+      })),
+    );
+  }, [particleCount]);
 
   // Skip animation entirely on mobile for performance
   if (isMobile) {
     return (
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-  {/* B2B Commercial Band */}
-  <B2BCommercialBand profile={B2B_PROFILES.contact} />
-
         {particles.map((p) => (
           <div
             key={p.id}
@@ -920,6 +927,12 @@ function SciFiContactPageInner() {
           </m.div>
         </m.div>
       </section>
+
+      {/* B2B Commercial Band — moved here 2026-10-16. It had been inserted
+          inside ParticleField's phone branch (an absolute, overflow-hidden,
+          pointer-events-none decoration layer), so phones got it unclickable
+          behind the hero and desktops never got it at all. */}
+      <B2BCommercialBand profile={B2B_PROFILES.contact} />
 
       {/* Stats Section */}
       <section className="relative py-20 border-y border-white/5">

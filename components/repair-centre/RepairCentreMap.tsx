@@ -68,9 +68,11 @@ export default function RepairCentreMap({
           role="img"
           aria-labelledby="rc-map-title"
         >
+          {/* One string, not text + {n} + text: the separate text nodes did not
+              survive SSR inside an SVG <title> and caused React error #418
+              (hydration mismatch) on /repair-centre. */}
           <title id="rc-map-title">
-            Repair Centre coverage map: {hubs.length} equipment categories holding {total} published
-            diagnostic guides, grouped by system family.
+            {`Repair Centre coverage map: ${hubs.length} equipment categories holding ${total} published diagnostic guides, grouped by system family.`}
           </title>
 
           {rows.map(({ group, y: gy }) => (

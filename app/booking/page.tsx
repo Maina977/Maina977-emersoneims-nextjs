@@ -126,9 +126,6 @@ export default function BookingPage() {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-  {/* B2B Commercial Band */}
-  <B2BCommercialBand profile={B2B_PROFILES.booking} />
-
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -625,6 +622,11 @@ export default function BookingPage() {
           </div>
         </div>
       </section>
+
+      {/* B2B Commercial Band — moved here 2026-10-16, after the form so the
+          form stays first. It had been inside the "booking submitted" screen
+          only, squeezed beside the confirmation card in a centred flex row. */}
+      <B2BCommercialBand profile={B2B_PROFILES.booking} />
     </div>
   );
 }

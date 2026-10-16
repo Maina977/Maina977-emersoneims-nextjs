@@ -44,6 +44,10 @@ export default function GeneratorOraclePage() {
       <GeneratorOracleSEO pageType="diagnostic" />
       {/* Disable DevTools protection - it causes false positives on Windows with display scaling */}
       <DMCAProtection enableDevToolsProtection={false} />
+      {/* B2B Commercial Band — moved here 2026-10-16, above the tool as on
+          the other tool pages. It had been inside LoadingFallback, so it
+          showed only while the tool loaded, squeezed beside the spinner. */}
+      <B2BCommercialBand profile={B2B_PROFILES.generatorOracle} />
       <div className="px-4 pt-4 max-w-7xl mx-auto">
         <LiveBackendStatus variant="compact" />
       </div>
@@ -79,9 +83,6 @@ function LoadingFallback() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-  {/* B2B Commercial Band */}
-  <B2BCommercialBand profile={B2B_PROFILES.generatorOracle} />
-
       <div className="text-center px-4">
         {/* Oracle Logo Animation */}
         <div className="relative w-24 h-24 mx-auto mb-6">

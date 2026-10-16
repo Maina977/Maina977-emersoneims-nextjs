@@ -233,7 +233,9 @@ const SystemStatusPanel = () => {
     uptime: '99.97%',
     activeServices: 9,
     faultCodes: 231500, // 230K generators + 350 solar + 200 motors + 200 hvac + 200 electrical + 200 pumps + 100 welding + 150 plumbing
-    lastUpdate: new Date(),
+    // null until mounted: a Date rendered on the server never matches the
+    // browser's, which threw React error #418 on every load (2026-10-16).
+    lastUpdate: null as Date | null,
   });
 
   useEffect(() => {
@@ -248,9 +250,6 @@ const SystemStatusPanel = () => {
 
   return (
     <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/30">
-  {/* B2B Commercial Band */}
-  <B2BCommercialBand profile={B2B_PROFILES.maintenanceHub} />
-
       <div className="flex items-center gap-2 mb-4">
         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
         <span className="text-cyan-400 text-sm font-bold">SYSTEM STATUS: ONLINE</span>
@@ -271,7 +270,7 @@ const SystemStatusPanel = () => {
         <div>
           <span className="text-slate-400">Last Sync</span>
           <div className="text-white font-mono text-lg">
-            {systemStats.lastUpdate.toLocaleTimeString('en-US', { hour12: false })}
+            {systemStats.lastUpdate ? systemStats.lastUpdate.toLocaleTimeString('en-US', { hour12: false }) : '--:--:--'}
           </div>
         </div>
       </div>
@@ -474,9 +473,11 @@ const LiveActivityFeed = () => {
 // MAIN COMMAND BRIDGE COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function UniversalCommandBridge() {
-  const [systemTime, setSystemTime] = useState(new Date());
+  // null until mounted — see SystemStatusPanel.
+  const [systemTime, setSystemTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    setSystemTime(new Date());
     const interval = setInterval(() => setSystemTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
@@ -487,6 +488,13 @@ export default function UniversalCommandBridge() {
       <HolographicGrid />
       <OrbitalRings />
       <ScanlineEffect />
+
+      {/* B2B Commercial Band — moved here 2026-10-16. It had been inside
+          SystemStatusPanel, a small status card, where a full-width band
+          was squeezed into the card's padding. */}
+      <div className="relative z-10">
+        <B2BCommercialBand profile={B2B_PROFILES.maintenanceHub} />
+      </div>
 
       {/* Main content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
@@ -522,10 +530,10 @@ export default function UniversalCommandBridge() {
             <div className="text-center">
               <div className="text-cyan-400 text-xs tracking-wider mb-1">SYSTEM TIME</div>
               <div className="text-4xl font-mono text-white font-bold">
-                {systemTime.toLocaleTimeString('en-US', { hour12: false })}
+                {systemTime ? systemTime.toLocaleTimeString('en-US', { hour12: false }) : '--:--:--'}
               </div>
               <div className="text-slate-400 text-sm mt-1">
-                {systemTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {systemTime ? systemTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : ' '}
               </div>
             </div>
           </div>
