@@ -1576,6 +1576,17 @@ export function middleware(request: NextRequest) {
     request.headers.get('x-purpose') === 'prefetch' ||
     (request.headers.get('sec-purpose') || '').includes('prefetch') ||
     request.nextUrl.searchParams.has('_rsc') ||
+    /*
+     * Measured 2026-10-16: the checks above do NOT see Next's own prefetches
+     * — on a 390px phone, /locations/ahero > /locations/nairobi > /kenya got
+     * the /kenya DOCUMENT a 429 after 74 /_tree prefetches were counted, even
+     * though Chrome sent next-router-prefetch: 1 (Next strips its internal
+     * flight headers and _rsc before middleware). Sec-Fetch-Dest is set by
+     * the browser itself and survives: only a real page load says
+     * "document". Non-browser clients (curl, python, most scrapers) send no
+     * Sec-Fetch-Dest at all, so they are still counted.
+     */
+    (!!request.headers.get('sec-fetch-dest') && request.headers.get('sec-fetch-dest') !== 'document') ||
     pathname === '/sw.js' ||
     pathname === '/offline.html' ||
     pathname.startsWith('/data/');
