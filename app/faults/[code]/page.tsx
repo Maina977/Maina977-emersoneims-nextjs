@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FAULT_CODES } from '@/lib/data/faultCodes';
+import { FMI_BY_SPN } from '@/lib/data/faultFmi';
 import FaultCodeRepairLinks from '@/components/repair-centre/FaultCodeRepairLinks';
 
 /**
@@ -188,6 +189,36 @@ export default async function FaultCodePage({ params }: Props) {
                   ))}
                 </ol>
               </div>
+
+              {/* FMI meanings — only for the SPNs in lib/data/faultFmi.ts */}
+              {FMI_BY_SPN[fault.code] && (
+                <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+                  <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+                    <span className="text-2xl">🔢</span> What the FMI number means for {fault.code}
+                  </h2>
+                  <p className="text-gray-400 text-sm mb-4">
+                    {fault.code} reports {FMI_BY_SPN[fault.code].measures}. The FMI (Failure Mode Identifier) shown
+                    beside it says how the reading is wrong. FMI meanings follow the SAE J1939 standard used by
+                    Cummins and most modern diesel engine controllers.
+                  </p>
+                  <div className="space-y-3">
+                    {FMI_BY_SPN[fault.code].entries.map((e) => (
+                      <div key={e.fmi} className="p-4 bg-slate-800/50 rounded-lg">
+                        <p className="font-semibold text-white">
+                          {fault.code} FMI {e.fmi}
+                        </p>
+                        <p className="text-gray-300 text-sm mt-1">{e.meaning}</p>
+                        <p className="text-gray-400 text-sm mt-1">
+                          <span className="text-amber-400">Check first:</span> {e.firstCheck}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  {FMI_BY_SPN[fault.code].note && (
+                    <p className="mt-4 text-sm text-amber-300">{FMI_BY_SPN[fault.code].note}</p>
+                  )}
+                </div>
+              )}
 
               {/* Related Parts */}
               <div className="p-6 bg-white/5 border border-white/10 rounded-xl">

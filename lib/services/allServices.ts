@@ -1450,7 +1450,10 @@ We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier
     ],
 
     metaTitle: 'Air Conditioning Installation & Repair | EmersonEIMS',
-    metaDescription: 'AC installation & repair in Kenya. Split AC, cassette, ducted systems. All brands serviced. Professional installation, maintenance contracts. Call +254768860665',
+    // 2026-10-16: was 164 chars (cut off in results) and omitted what the page
+    // offers and people search for — gas refill, VRF, the KES 3,500 starting
+    // price, the Nairobi base (StructuredData addressLocality). 151 chars.
+    metaDescription: 'AC installation, repair and gas refill in Nairobi and across Kenya: split, cassette, ducted and VRF, all brands. From KES 3,500. Call +254 768 860 665.',
     keywords: [
       'AC installation Kenya',
       'air conditioning Kenya',
