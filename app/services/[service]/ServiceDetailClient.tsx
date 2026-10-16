@@ -551,8 +551,11 @@ export default function ServiceDetailClient({
               <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   {service.stats.map((stat, idx) => (
-                    <div key={idx} className="text-center p-6 bg-slate-800/50 border border-slate-700 rounded-xl">
-                      <div className="text-4xl font-bold text-cyan-400 mb-2">{stat.value}</div>
+                    <div key={idx} className="text-center p-4 xl:p-6 bg-slate-800/50 border border-slate-700 rounded-xl">
+                      {/* Stepped sizes: at a flat text-4xl, "Nationwide" (200px) spilled
+                          out of a 117px phone card and widened the whole page to 432px.
+                          Measured widths in the commit message for 2026-10-16. */}
+                      <div className="text-xl sm:text-2xl md:text-xl lg:text-3xl xl:text-4xl font-bold text-cyan-400 mb-2 [overflow-wrap:anywhere]">{stat.value}</div>
                       <div className="text-slate-300">{stat.label}</div>
                     </div>
                   ))}

@@ -8,15 +8,15 @@
  * - NASA/PVGIS: Solar data
  * 
  * Features:
- * âœ… Interactive 3D terrain and buildings
- * âœ… Real-time sun path animation
- * âœ… Shading visualization
- * âœ… Monthly/seasonal variations
- * âœ… Mobile-responsive (WebGL optimized)
- * âœ… Performance: 60+ FPS on standard hardware
- * âœ… Global coverage (any location on Earth)
- * âœ… Production forecast overlay
- * âœ… Comparison: Before/after system design
+ * ✅ Interactive 3D terrain and buildings
+ * ✅ Real-time sun path animation
+ * ✅ Shading visualization
+ * ✅ Monthly/seasonal variations
+ * ✅ Mobile-responsive (WebGL optimized)
+ * ✅ Performance: 60+ FPS on standard hardware
+ * ✅ Global coverage (any location on Earth)
+ * ✅ Production forecast overlay
+ * ✅ Comparison: Before/after system design
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -117,7 +117,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
         setLoading(false);
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-        console.error('âŒ 3D Visualization Error:', errorMsg);
+        console.error('❌ 3D Visualization Error:', errorMsg);
         setError(errorMsg);
         setLoading(false);
       }
@@ -163,7 +163,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
       <canvas ref={containerRef} className="threed-canvas" />
       <div className="terrain-overlay">
         <div className="terrain-info">
-          <h4>ðŸ”ï¸ Terrain Analysis</h4>
+          <h4>🏔️ Terrain Analysis</h4>
           <div className="info-grid">
             <div className="info-item">
               <label>Elevation:</label>
@@ -175,7 +175,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
             </div>
             <div className="info-item">
               <label>Slope:</label>
-              <span>~5-8Â°</span>
+              <span>~5-8°</span>
             </div>
             <div className="info-item">
               <label>Surface Albedo:</label>
@@ -199,7 +199,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
       <canvas ref={containerRef} className="threed-canvas" />
       <div className="buildings-overlay">
         <div className="buildings-stats">
-          <h4>ðŸ¢ Nearby Buildings</h4>
+          <h4>🏢 Nearby Buildings</h4>
           <div className="stat-grid">
             <div className="stat-card">
               <div className="stat-number">{visualization?.buildings.length || 0}</div>
@@ -233,7 +233,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
               <div key={i} className="building-item">
                 <div className="building-name">Building {i + 1}</div>
                 <div className="building-detail">Height: {building.height.toFixed(0)}m</div>
-                <div className="building-detail">Distance: {(building as any).distanceM?.toFixed?.(0) ?? 'â€”'} m</div>
+                <div className="building-detail">Distance: {(building as any).distanceM?.toFixed?.(0) ?? '—'} m</div>
                 <div className="building-detail">Shading: {building.shading.toFixed(1)}%</div>
               </div>
             ))}
@@ -251,7 +251,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
       <canvas ref={containerRef} className="threed-canvas" />
       <div className="shading-overlay">
         <div className="shading-analysis">
-          <h4>ðŸŒ‘ Shading Analysis</h4>
+          <h4>🌑 Shading Analysis</h4>
           <div className="shading-stats">
             <div className="stat">
               <label>Total Annual Loss:</label>
@@ -259,11 +259,11 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
             </div>
             <div className="stat">
               <label>Recommended Tilt:</label>
-              <span className="value">{visualization?.shadingAnalysis.recommendedTilt}Â°</span>
+              <span className="value">{visualization?.shadingAnalysis.recommendedTilt}°</span>
             </div>
             <div className="stat">
               <label>Recommended Azimuth:</label>
-              <span className="value">{visualization?.shadingAnalysis.recommendedAzimuth}Â°</span>
+              <span className="value">{visualization?.shadingAnalysis.recommendedAzimuth}°</span>
             </div>
           </div>
         </div>
@@ -307,31 +307,31 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
       <canvas ref={containerRef} className="threed-canvas" />
       <div className="sunpath-overlay">
         <div className="sunpath-info">
-          <h4>â˜€ï¸ Sun Path Analysis</h4>
+          <h4>☀️ Sun Path Analysis</h4>
           <div className="season-selector">
             <button
               className={`season-btn ${viewMode.season === 'spring' ? 'active' : ''}`}
               onClick={() => setViewMode(prev => ({ ...prev, season: 'spring' }))}
             >
-              ðŸŒ± Spring
+              🌱 Spring
             </button>
             <button
               className={`season-btn ${viewMode.season === 'summer' ? 'active' : ''}`}
               onClick={() => setViewMode(prev => ({ ...prev, season: 'summer' }))}
             >
-              â˜€ï¸ Summer
+              ☀️ Summer
             </button>
             <button
               className={`season-btn ${viewMode.season === 'autumn' ? 'active' : ''}`}
               onClick={() => setViewMode(prev => ({ ...prev, season: 'autumn' }))}
             >
-              ðŸ‚ Autumn
+              🍂 Autumn
             </button>
             <button
               className={`season-btn ${viewMode.season === 'winter' ? 'active' : ''}`}
               onClick={() => setViewMode(prev => ({ ...prev, season: 'winter' }))}
             >
-              â„ï¸ Winter
+              ❄️ Winter
             </button>
           </div>
         </div>
@@ -362,7 +362,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
                 <span className="value">
                   {visualization.sunPaths[
                     ['spring', 'summer', 'autumn', 'winter'].indexOf(viewMode.season)
-                  ].maxAltitude.toFixed(1)}Â°
+                  ].maxAltitude.toFixed(1)}°
                 </span>
               </div>
             </div>
@@ -381,7 +381,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
                 className="animate-btn"
                 onClick={() => setViewMode(prev => ({ ...prev, animate: !prev.animate }))}
               >
-                {viewMode.animate ? 'â¸ Stop' : 'â–¶ï¸ Animate'}
+                {viewMode.animate ? '⏸ Stop' : '▶️ Animate'}
               </button>
             </div>
           </div>
@@ -456,7 +456,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
       <canvas ref={containerRef} className="threed-canvas" />
       <div className="production-overlay">
         <div className="production-forecast">
-          <h4>âš¡ Production Forecast</h4>
+          <h4>⚡ Production Forecast</h4>
           <div className="forecast-stats">
             <div className="forecast-card">
               <div className="forecast-label">Annual Production</div>
@@ -475,16 +475,16 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
             <div className="forecast-card">
               <div className="forecast-label">GHI</div>
               <div className="forecast-value">
-                {(visualization?.solarPotential.globalHorizontalIrradiance || 0).toFixed(2)} kWh/mÂ²/d
+                {(visualization?.solarPotential.globalHorizontalIrradiance || 0).toFixed(2)} kWh/m²/d
               </div>
               <div className="forecast-unit">Global Horizontal</div>
             </div>
             <div className="forecast-card">
               <div className="forecast-label">GTI</div>
               <div className="forecast-value">
-                {(visualization?.solarPotential.globalTiltedIrradiance || 0).toFixed(2)} kWh/mÂ²/d
+                {(visualization?.solarPotential.globalTiltedIrradiance || 0).toFixed(2)} kWh/m²/d
               </div>
-              <div className="forecast-unit">At {roof.tilt}Â° tilt</div>
+              <div className="forecast-unit">At {roof.tilt}° tilt</div>
             </div>
           </div>
         </div>
@@ -510,9 +510,9 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
         </div>
 
         <div className="data-source">
-          <span>ðŸ“Š Data: {visualization?.solarPotential.dataSource}</span>
-          <span>ðŸ“… Year: {visualization?.solarPotential.yearOfData}</span>
-          <span>âœ“ Confidence: {((visualization?.solarPotential.confidence || 0) * 100).toFixed(0)}%</span>
+          <span>📊 Data: {visualization?.solarPotential.dataSource}</span>
+          <span>📅 Year: {visualization?.solarPotential.yearOfData}</span>
+          <span>✓ Confidence: {((visualization?.solarPotential.confidence || 0) * 100).toFixed(0)}%</span>
         </div>
       </div>
     </div>
@@ -526,7 +526,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
       <div className="visualization-container loading">
         <div className="loading-spinner">
           <div className="spinner" />
-          <p>ðŸ”„ Generating 3D visualization...</p>
+          <p>🔄 Generating 3D visualization...</p>
           <p className="loading-detail">Fetching terrain, buildings, solar data, and generating shading analysis...</p>
         </div>
       </div>
@@ -537,7 +537,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
     return (
       <div className="visualization-container error">
         <div className="error-box">
-          <h3>âŒ Visualization Error</h3>
+          <h3>❌ Visualization Error</h3>
           <p>{error}</p>
           <p className="error-detail">This may be due to API rate limits or network issues. Please try again.</p>
         </div>
@@ -555,41 +555,41 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
             onClick={() => setViewMode(prev => ({ ...prev, mode: 'terrain' }))}
             title="Terrain elevation view"
           >
-            ðŸ”ï¸ Terrain
+            🏔️ Terrain
           </button>
           <button
             className={`view-btn ${viewMode.mode === 'buildings' ? 'active' : ''}`}
             onClick={() => setViewMode(prev => ({ ...prev, mode: 'buildings' }))}
             title="Buildings and OSM data"
           >
-            ðŸ¢ Buildings
+            🏢 Buildings
           </button>
           <button
             className={`view-btn ${viewMode.mode === 'shading' ? 'active' : ''}`}
             onClick={() => setViewMode(prev => ({ ...prev, mode: 'shading' }))}
             title="Shading analysis"
           >
-            ðŸŒ‘ Shading
+            🌑 Shading
           </button>
           <button
             className={`view-btn ${viewMode.mode === 'sunpath' ? 'active' : ''}`}
             onClick={() => setViewMode(prev => ({ ...prev, mode: 'sunpath' }))}
             title="Sun path trajectory"
           >
-            â˜€ï¸ Sun Path
+            ☀️ Sun Path
           </button>
           <button
             className={`view-btn ${viewMode.mode === 'production' ? 'active' : ''}`}
             onClick={() => setViewMode(prev => ({ ...prev, mode: 'production' }))}
             title="Production forecast"
           >
-            âš¡ Production
+            ⚡ Production
           </button>
         </div>
 
         <div className="controls-group">
           <div className="brightness-control">
-            <label htmlFor="brightness">â˜€ï¸ Brightness:</label>
+            <label htmlFor="brightness">☀️ Brightness:</label>
             <input
               id="brightness"
               type="range"
@@ -609,7 +609,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
             onClick={() => setUIControls(prev => ({ ...prev, showGrid: !prev.showGrid }))}
             title={uiControls.showGrid ? 'Hide grid' : 'Show grid'}
           >
-            {uiControls.showGrid ? 'ðŸ“Š' : 'ðŸ“‹'} Grid
+            {uiControls.showGrid ? '📊' : '📋'} Grid
           </button>
 
           <button
@@ -617,7 +617,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
             onClick={() => setUIControls(prev => ({ ...prev, showCompass: !prev.showCompass }))}
             title={uiControls.showCompass ? 'Hide compass' : 'Show compass'}
           >
-            {uiControls.showCompass ? 'ðŸ§­' : 'ðŸ”„'} Compass
+            {uiControls.showCompass ? '🧭' : '🔄'} Compass
           </button>
         </div>
 
@@ -638,7 +638,7 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
             <option value="png">Export PNG</option>
           </select>
           <button className="export-btn" title="Export 3D model or report">
-            ðŸ“¥ Export
+            📥 Export
           </button>
         </div>
       </div>
@@ -656,25 +656,25 @@ export const Advanced3DVisualizationMap: React.FC<Advanced3DVisualizationMapProp
       <div className="visualization-statusbar">
         <div className="status-info">
           <span className="info-item">
-            ðŸ“ {location.name} ({location.latitude.toFixed(4)}, {location.longitude.toFixed(4)})
+            📍 {location.name} ({location.latitude.toFixed(4)}, {location.longitude.toFixed(4)})
           </span>
           <span className="separator">|</span>
           <span className="info-item">
-            ðŸ˜ï¸ {visualization?.buildings.length} buildings nearby
+            🏘️ {visualization?.buildings.length} buildings nearby
           </span>
           <span className="separator">|</span>
           <span className="info-item">
-            â˜€ï¸ {visualization?.sunPaths[0].maxAltitude.toFixed(1)}Â° max sun altitude
+            ☀️ {visualization?.sunPaths[0].maxAltitude.toFixed(1)}° max sun altitude
           </span>
           <span className="separator">|</span>
           <span className="info-item">
-            ðŸŒ‘ {visualization?.shadingAnalysis.totalShadingLoss.toFixed(1)}% annual shading loss
+            🌑 {visualization?.shadingAnalysis.totalShadingLoss.toFixed(1)}% annual shading loss
           </span>
         </div>
         <div className="status-right">
           <span>FPS: 60+</span>
           <span>GPU: Optimized</span>
-          <span>Â©OSM/NASA/PVGIS</span>
+          <span>©OSM/NASA/PVGIS</span>
         </div>
       </div>
     </div>
