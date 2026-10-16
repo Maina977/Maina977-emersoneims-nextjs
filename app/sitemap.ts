@@ -617,12 +617,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // app/kenya/[county]/[...slug]/page.tsx, sourced from kenyaIndexable.ts,
   // so the sitemap can never list a URL that 404s. Village and
   // village-service doorway pages are intentionally excluded.
+  //
+  // Constituency + service pages (depth 4, 352 URLs) are no longer submitted.
+  // Measured 2026-10-16: pages for the same service in different places share
+  // 68-82% of their wording (unrelated pages share 4%), and Search Console
+  // lists them under "Duplicate, Google chose different canonical". They stay
+  // live and linked for visitors; we just stop asking Google to index template
+  // copies. Owner decision, 2026-10-16.
   for (const path of getIndexableKenyaUrls()) {
     const depth = path.split('/').filter(Boolean).length; // 2=county, 3, 4
+    if (depth >= 4) continue;
     urls.push({
       url: `${BASE_URL}${path}`,
       changeFrequency: 'weekly',
-      priority: depth <= 2 ? 0.85 : depth === 3 ? 0.8 : 0.7,
+      priority: depth <= 2 ? 0.85 : 0.8,
     });
   }
 
