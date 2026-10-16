@@ -75,24 +75,22 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
 
   if (variant === 'floating') {
     return (
-      <div
-       
-       
-        className="fixed bottom-6 right-6 z-50 flex flex-col gap-3"
-      >
+      // Sits just left of the site-wide WhatsApp button (components/chat/
+      // WhatsAppButton: 64px at right-6 / sm:right-8), not on top of it. Its
+      // own "WhatsApp Us" pill was removed 2026-10-16 — the site-wide button
+      // already offers WhatsApp, and the two overlapped on phones.
+      <div className="fixed bottom-6 right-24 sm:right-28 z-50">
+        {/* Phones get the short label: with the number written out it is
+            270px wide, which on a 360px screen ran off the left edge and over
+            the accessibility button. The link still dials the number. */}
         <a
           href="tel:+254768860665"
+          aria-label="Emergency call 0768 860 665"
           className="flex items-center gap-2 px-4 py-3 bg-red-600 text-white font-bold rounded-full shadow-lg hover:bg-red-500 transition-all hover:scale-105"
         >
           <Phone className="w-5 h-5 animate-pulse" />
-          Emergency: 0768 860 665
-        </a>
-        <a
-          href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
-          className="flex items-center gap-2 px-4 py-3 bg-green-700 text-white font-bold rounded-full shadow-lg hover:bg-green-600 transition-all hover:scale-105"
-        >
-          <MessageCircle className="w-5 h-5" />
-          WhatsApp Us
+          <span className="sm:hidden">Emergency call</span>
+          <span className="hidden sm:inline">Emergency: 0768 860 665</span>
         </a>
       </div>
     );
