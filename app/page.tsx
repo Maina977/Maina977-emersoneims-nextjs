@@ -58,13 +58,12 @@ import AIToolsPromo from '@/components/ai/AIToolsPromo';
  * that file at all. Each card now reads its band from GENERATOR_SIZES, the
  * same source /generators renders, so the two cannot drift apart.
  *
- * The four below load via next/dynamic so their client JS is split out of the
+ * The client sections below load via next/dynamic so their client JS is split out of the
  * entry bundle — measured script evaluation on this page is already 8.8s under
  * Lighthouse's 4x CPU throttle, so adding three client components eagerly
  * would trade one defect for another. ssr stays on (default), so the markup is
  * still server-rendered and crawlable.
  */
-const AIAdvantageHero = dynamic(() => import('@/app/components/home/AIAdvantageHero'));
 /*
  * THESE MOVED FROM STATIC IMPORTS TO dynamic() ON 2026-09-21.
  *
@@ -98,10 +97,8 @@ const AIAdvantageHero = dynamic(() => import('@/app/components/home/AIAdvantageH
 const VoltkaCinematicShowcase = dynamic(() => import('@/components/home/VoltkaCinematicShowcase'));
 const CinematicVideoSection = dynamic(() => import('@/components/home/CinematicVideoSection'));
 const CumminsShopNowReal = dynamic(() => import('@/app/components/home/CumminsShopNow'));
-const CountyCoverageMapReal = dynamic(() => import('@/app/components/home/CountyCoverageMap'));
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
 import { COMMERCIAL_POLICY } from '@/lib/commercial/policy';
-import SocialProofWidget from '@/components/home/SocialProofWidget';
 import RecentWorkSection from '@/components/home/RecentWorkSection';
 import ClientTestimonials from '@/components/home/ClientTestimonials';
 
@@ -387,270 +384,6 @@ function StaticHeroFallback() {
   );
 }
 
-function StaticStatsSection() {
-  // Data-policy compliance (audit 2026-05-09) replaced the headline counters
-  // ("500+ projects", "98.7% uptime", "12+ years") with contractual claims and
-  // verifiable public facts (Kenya county count, kVA range we install).
-  //
-  // CORRECTION 2026-09-11: that audit called those counters "fabricated". They
-  // are not. The owner confirmed 523+ projects completed and the 98.7% uptime
-  // guarantee as genuine, and both appear in TrustBadgesSection. This section's
-  // own stats were left as they are simply because no change was requested.
-  const stats = [
-    { num: '47', label: 'Counties Covered', icon: '🌍' },
-    { num: '24/7', label: 'Emergency Response', icon: '🚨' },
-    { num: '2-Year', label: 'Warranty', icon: '🛡️' },
-    { num: '20–2000', label: 'kVA Range Installed', icon: '⚡' },
-  ];
-
-  return (
-    <section className="py-16 sm:py-20 lg:py-24 bg-black content-auto">
-      <div className="max-w-full-content mx-auto px-4 sm:px-6 lg:px-8">
-        <p className="apple-caption text-center text-amber-500 mb-8 sm:mb-12">Service Standards</p>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
-          {stats.map((stat, i) => (
-            <div
-              key={i}
-              className="text-center p-4 sm:p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-amber-500/20 transition-all duration-300"
-            >
-              <span className="text-3xl sm:text-4xl mb-3 sm:mb-4 block" aria-hidden="true">{stat.icon}</span>
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-amber-500 mb-1 sm:mb-2 tracking-tight">{stat.num}</div>
-              <div className="text-sm sm:text-base lg:text-lg text-gray-400">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function StaticFeaturesSection() {
-  return (
-    <section className="py-16 sm:py-20 lg:py-24 bg-black content-auto">
-      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8">
-        <p className="apple-caption text-amber-500 mb-4 sm:mb-6">Our Promise</p>
-        <h2 className="apple-headline text-white mb-6 sm:mb-8">
-          Engineering Excellence
-          <br />
-          <span className="text-amber-500">Meets Reliability</span>
-        </h2>
-        <p className="apple-body text-gray-300 max-w-3xl">
-          Powering East Africa's critical infrastructure across
-          manufacturing, healthcare, telecom and commercial property.
-          From <span className="text-amber-400">20kVA</span> commercial systems to <span className="text-amber-400">2000kVA</span> industrial installations,
-          installed, commissioned and backed by SLA-bound maintenance.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function AITechnologyShowcase() {
-  const products = [
-    {
-      id: 'generator-oracle',
-      title: 'Generator Oracle',
-      subtitle: 'AI Diagnostic System',
-      // Audit 2026-07-18: removed a duplicate `description` key (pre-existing —
-      // the first value was silently discarded by JS and flagged TS1117).
-      description: 'AI-assisted diagnostic assistant that analyses generator symptoms, looks them up against a manufacturer-curated fault-code database, and connects you with our engineering team.',
-      features: ['Symptom-based Diagnosis', 'Voice-Activated', 'Fault Code Database', 'Real-time Analysis'],
-      icon: '🔧',
-      gradient: 'from-amber-500 to-orange-600',
-      link: '/generator-oracle',
-      badge: 'AI-POWERED'
-    },
-    {
-      id: 'borehole-analyzer',
-      title: 'AquaScan Pro',
-      subtitle: 'AI Borehole Analyzer - 195+ Countries',
-      // "no site visits needed" removed: it contradicted AquaScan's own
-      // methodology, which requires a field survey (ERT + WRA approval) before
-      // any drilling. The tool screens sites BEFORE that survey.
-      description: 'Desktop borehole pre-feasibility using NASA GLDAS, satellite imagery and terrain data. Screens a site before the statutory hydrogeological survey — it does not replace it.',
-      features: ['195+ Countries', 'NASA GLDAS Data', 'Satellite Rock Mapping', 'Virtual VES/ERT'],
-      icon: '💧',
-      gradient: 'from-cyan-500 to-teal-500',
-      link: '/services/borehole-pumps',
-      badge: "AI BOREHOLE TOOL"
-    },
-    {
-      id: 'solar-school',
-      title: 'Solar Solution School',
-      subtitle: '10 AI Engines',
-      description: 'Solar design platform with 3D modelling, AI-assisted optimisation and voice control. Country presets cover 15 African markets.',
-      features: ['3D AI Design', 'Voice Commands', '25-Year Predictions', '15 Countries'],
-      icon: '☀️',
-      gradient: 'from-blue-500 to-cyan-500',
-      link: '/solar',
-      /*
-       * badge was 'WORLD #1'. No independent ranking, award or review body
-       * has placed this tool first at anything, so the claim could not be
-       * substantiated if asked. Replaced with a fact about the tool that is
-       * checkable on the page it links to.
-       */
-      badge: '15 AFRICAN MARKETS'
-    },
-    {
-      id: 'building-suite-pro',
-      title: 'Building Suite Pro',
-      subtitle: 'AI Construction & Engineering Suite',
-      description: 'Global Construction Intelligence Platform — BIM, structural & MEP engineering, QS / BOQ, healthcare & high-rise compliance, professional reports across 28 countries.',
-      features: ['BIM + 3D Studio', 'AI QS / BOQ', 'MEP Clash + High-Rise', '28 Countries'],
-      icon: '🏗️',
-      gradient: 'from-purple-500 to-pink-500',
-      link: '/solutions/building',
-      badge: 'AI'
-    },
-    {
-      id: 'solar-ups-hub',
-      title: 'Solar & UPS Intelligence Hub',
-      subtitle: 'Sizing · Audit · Diagnostics · UPS Cockpit',
-      description: 'One workspace for solar & UPS engineers — smart sizing, quote audit, product intelligence, UPS live lab and the case library. Every value carries its unit. A–G suitability grading.',
-      features: ['Smart Sizing', 'UPS Live Lab', 'Quote Audit AI', 'Diagnostics'],
-      icon: '🛠️',
-      gradient: 'from-emerald-500 to-cyan-500',
-      link: '/hub',
-      badge: 'HUB'
-    }
-  ];
-
-  const achievements = [
-    { number: '11', label: 'AI Engines', icon: '🤖' },
-    { number: '47', label: 'Counties Covered', icon: '🌍' },
-    { number: '24/7', label: 'Emergency Response', icon: '🚨' },
-    { number: '2-Year', label: 'Warranty', icon: '🛡️' },
-  ];
-
-  return (
-    <section className="py-16 sm:py-24 bg-gradient-to-b from-black via-slate-900 to-black overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center mb-12 sm:mb-16">
-          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-sm font-medium mb-6">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            AI-Powered Technology
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-            Advanced Solutions
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
-              Powered by AI
-            </span>
-          </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            {/* "Industry-leading" and "redefining what is possible" are unmeasurable
-                superlatives. Replaced with what the tools actually do, which is more
-                persuasive to an engineer and is verifiable by using them. */}
-            Engineering tools built for African conditions — generator fault diagnosis,
-            solar design and load sizing, free to use on this site.
-          </p>
-        </div>
-
-        {/* Achievement Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12 sm:mb-16">
-          {achievements.map((stat, i) => (
-            <div key={i} className="text-center p-4 sm:p-6 rounded-2xl bg-white/5 border border-white/10">
-              <span className="text-2xl sm:text-3xl mb-2 block">{stat.icon}</span>
-              <div className="text-2xl sm:text-3xl font-bold text-amber-500">{stat.number}</div>
-              <div className="text-sm text-gray-400">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Product Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 sm:gap-8">
-          {products.map((product) => (            <Link
-              key={product.id}
-              href={product.link}
-              className="group relative bg-white/5 backdrop-blur rounded-2xl border border-white/10 hover:border-amber-500/50 transition-all duration-500 overflow-hidden"
-            >
-              {/* Badge */}
-              <div className="absolute top-4 right-4 z-10">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${product.gradient} text-white`}>
-                  {product.badge}
-                </span>
-              </div>
-
-              {/* Gradient Overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${product.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-
-              {/* Content */}
-              <div className="relative p-6 sm:p-8">
-                {/* Icon */}
-                <div className="text-5xl sm:text-6xl mb-4">{product.icon}</div>
-
-                {/* Title */}
-                <h3 className="text-xl sm:text-2xl font-bold text-white mb-1">{product.title}</h3>
-                <p className={`text-sm font-medium bg-gradient-to-r ${product.gradient} bg-clip-text text-transparent mb-3`}>
-                  {product.subtitle}
-                </p>
-
-                {/* Description */}
-                <p className="text-gray-400 text-sm mb-6">{product.description}</p>
-
-                {/* Features */}
-                <div className="grid grid-cols-2 gap-2 mb-6">
-                  {product.features.map((feature, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs text-gray-300">
-                      <span className="text-green-400">✓</span>
-                      {feature}
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA */}
-                <div className={`flex items-center gap-2 text-sm font-semibold bg-gradient-to-r ${product.gradient} bg-clip-text text-transparent group-hover:gap-4 transition-all`}>
-                  Explore {product.title}
-                  <span className="text-amber-500">→</span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Bottom CTA */}
-        <div className="mt-12 sm:mt-16 text-center">
-          <p className="text-gray-400 mb-6">
-            Experience the future of power solutions with EmersonEIMS
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
-            <Link
-              href="/generator-oracle"
-              className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold rounded-full hover:scale-105 transition-all shadow-lg"
-            >
-              Try Generator Oracle Free
-            </Link>
-            <Link
-              href="/services/borehole-pumps"
-              className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-bold rounded-full hover:scale-105 transition-all shadow-lg"
-            >
-              AI Borehole Site Analysis
-            </Link>
-            <Link
-              href="/solar"
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-full hover:scale-105 transition-all shadow-lg"
-            >
-              Explore Solar AI
-            </Link>
-            <Link
-              href="/solutions/building"
-              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full hover:scale-105 transition-all shadow-lg"
-            >
-              Open Building Suite Pro
-            </Link>
-            <Link
-              href="/hub"
-              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold rounded-full hover:scale-105 transition-all shadow-lg"
-            >
-              Open Solar &amp; UPS Hub
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function StaticCountiesSection() {
   const counties = [
     { name: 'Nairobi', slug: 'nairobi', highlight: true },
@@ -665,6 +398,14 @@ function StaticCountiesSection() {
     { name: 'Nyeri', slug: 'nyeri' },
     { name: 'Meru', slug: 'meru' },
     { name: 'Kakamega', slug: 'kakamega' },
+    // Added 2026-10-16: these six were linked only from the county map that
+    // was removed from the homepage. 18 fills the 2/3/6-column grid evenly.
+    { name: 'Embu', slug: 'embu' },
+    { name: 'Isiolo', slug: 'isiolo' },
+    { name: 'Kericho', slug: 'kericho' },
+    { name: 'Lamu', slug: 'lamu' },
+    { name: 'Narok', slug: 'narok' },
+    { name: 'Tana River', slug: 'tana-river' },
   ];
 
   return (
@@ -1001,15 +742,20 @@ export default function HomePage() {
           calculators, where a visitor who has kept scrolling is deciding what
           they need. */}
       <ServicesLeadershipMatrix />
-      {/* AI ADVANTAGE SECTION — showcases our 4 flagship AI tools as
-          competitive differentiators. Positioned after leadership matrix so
-          buyers see our FULL SCOPE first (30+ services), then our UNIQUE TECH (AI). */}
-      <AIAdvantageHero />
-      {/* SOCIAL PROOF WIDGET — real customer testimonials with verified badges & metrics.
-          Positioned after AI advantage to build trust with concrete success stories before
-          asking for a decision. 5 verified case studies spanning healthcare, finance,
-          manufacturing, agriculture, telecom. */}
-      <SocialProofWidget />
+      {/*
+        HOMEPAGE MERGE, 2026-10-16 (owner decision). On a 390px phone this page
+        was 79,063px — 94 screens, 33 sections — because the same five topics
+        were repeated: 6 AI-tool sections, 5 service lists, 8 proof sections, 3
+        coverage sections. Each topic now appears once or twice. Removed from
+        this page (the components still exist): AIAdvantageHero,
+        SocialProofWidget (rendered an empty 160px box), CountyCoverageMapReal
+        (carried a 404 link to /kenya/murang'a), StaticFeaturesSection,
+        StaticStatsSection, AITechnologyShowcase, and ten client sections in
+        HomePageClient. Kept: every confirmed client (all eight are in
+        ClientTestimonials), every photographed project, and every internal
+        link — measured before and after; the six county links only the map
+        carried were added to StaticCountiesSection.
+      */}
       {/*
         RECENT WORK — photographed proof, added 2026-08-26.
 
@@ -1036,12 +782,7 @@ export default function HomePage() {
           Kenya". Placed directly after the photographed projects so a claim and
           the client who made it sit together. */}
       <ClientTestimonials />
-      {/* COUNTY COVERAGE MAP — visual proof of nationwide presence across all 47 counties.
-          Shows delivery times and emergency response times per region. Positioned before
-          final navigation to emphasize geographic advantage that competitors lack. */}
-      <CountyCoverageMapReal />
       <SolutionsBySector />
-      <StaticFeaturesSection />
       {/* Auto-rotating 3D ring of real project photography — images "go
           round" (sister piece to the About page spiral). three.js loads
           only when the section nears the viewport. */}
@@ -1050,8 +791,6 @@ export default function HomePage() {
           Cummins engine, keeping the product in view mid-scroll. */}
       <VoltkaDuoGrid />
       <HubFeatureBlock />
-      <StaticStatsSection />
-      <AITechnologyShowcase />
       {/* Full-width night-delivery billboard — emergency-response story
           told Nike-billboard style before the services film. */}
       <VoltkaBillboard />

@@ -68,7 +68,8 @@ export interface CaseStudy {
     /** Set true only if the named individual has signed a quote release */
     quoteReleased?: boolean;
   };
-  savings: {
+  /** Omit when the figure is not confirmed — no Financial Impact panel is shown. */
+  savings?: {
     annualKES: number;
     payback: string;
     roi: string;
@@ -229,7 +230,9 @@ export const CASE_STUDIES: CaseStudy[] = [
       position: 'Educational Institution - Nairobi',
       quoteReleased: true,
     },
-    savings: { annualKES: 480_000, payback: '36 months', roi: '133% over 5 years' },
+    // savings removed 2026-10-16: this record said KES 480,000/yr, the homepage
+    // card said KES 2.5M; the owner could not confirm either. Payback and ROI
+    // were derived from it and went with it.
     images: ['/images/enhanced/ST AUSTINS ACADEMY 50KVA PERKINS ENGINE-4K-CINEMATIC.jpg'],
     duration: '8 days',
     complexity: 3,

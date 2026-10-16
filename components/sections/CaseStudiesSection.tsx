@@ -37,7 +37,8 @@ const caseStudies: CaseStudy[] = [
     results: [
       { metric: 'Uptime', value: '99.9%', improvement: '+12%' },
       { metric: 'Transfer Time', value: '<5s', improvement: 'instant' },
-      { metric: 'Annual Savings', value: 'KES 2.5M', improvement: 'verified' },
+      // 'Annual Savings KES 2.5M verified' removed 2026-10-16 — unconfirmed, and
+      // it contradicted the documented case study (KES 480,000).
       { metric: 'Disruptions', value: 'Zero', improvement: 'Since 2023' },
     ],
     image: '/images/case-studies/education.jpg',

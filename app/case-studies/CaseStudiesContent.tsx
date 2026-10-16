@@ -254,25 +254,27 @@ function CaseStudyCard({ study, index }: { study: CaseStudy; index: number }) {
         </div>
 
         {/* Financials */}
-        <div className="mb-12">
-          <h3 className="text-2xl font-bold mb-6">Financial Impact</h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-2xl p-6 border border-green-500/20">
-              <div className="text-sm text-green-400 mb-2">Annual Savings</div>
-              <div className="text-3xl font-bold text-white">
-                KES {(study.savings.annualKES / 1_000_000).toFixed(1)}M
+        {study.savings && (
+          <div className="mb-12">
+            <h3 className="text-2xl font-bold mb-6">Financial Impact</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-2xl p-6 border border-green-500/20">
+                <div className="text-sm text-green-400 mb-2">Annual Savings</div>
+                <div className="text-3xl font-bold text-white">
+                  KES {(study.savings.annualKES / 1_000_000).toFixed(1)}M
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/10 rounded-2xl p-6 border border-amber-500/20">
+                <div className="text-sm text-amber-400 mb-2">Payback Period</div>
+                <div className="text-3xl font-bold text-white">{study.savings.payback}</div>
+              </div>
+              <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-2xl p-6 border border-cyan-500/20">
+                <div className="text-sm text-cyan-400 mb-2">ROI</div>
+                <div className="text-3xl font-bold text-white">{study.savings.roi}</div>
               </div>
             </div>
-            <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/10 rounded-2xl p-6 border border-amber-500/20">
-              <div className="text-sm text-amber-400 mb-2">Payback Period</div>
-              <div className="text-3xl font-bold text-white">{study.savings.payback}</div>
-            </div>
-            <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-2xl p-6 border border-cyan-500/20">
-              <div className="text-sm text-cyan-400 mb-2">ROI</div>
-              <div className="text-3xl font-bold text-white">{study.savings.roi}</div>
-            </div>
           </div>
-        </div>
+        )}
 
         {/* Testimonial — only when explicitly released */}
         {study.testimonial?.quoteReleased && (
