@@ -910,6 +910,13 @@ const nextConfig: NextConfig = {
         destination: '/kenya',
         permanent: true,
       },
+      // Thika is a town in Kiambu County, not a county — the generic rule
+      // below would send it to /kenya/thika, which is a 404.
+      {
+        source: '/counties/thika',
+        destination: '/kenya/kiambu',
+        permanent: true,
+      },
       {
         source: '/counties/:county',
         destination: '/kenya/:county',
