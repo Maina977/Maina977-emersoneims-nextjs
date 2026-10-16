@@ -3,6 +3,9 @@ import { seoTitleSmart } from '@/lib/seo/pageTitle';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getArticleBySlug, getRelatedArticles, BLOG_ARTICLES } from '@/lib/data/blog-articles';
+import { COUNTY_SERVICE_SLUGS } from '@/lib/seo/kenyaIndexable';
+
+const COUNTY_SERVICE_PAGE = new Set(COUNTY_SERVICE_SLUGS);
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -360,15 +363,27 @@ export default async function BlogArticlePage({ params }: Props) {
           <div className="max-w-4xl mx-auto">
             <h2 className="text-xl font-bold mb-6">Related Services</h2>
             <div className="flex flex-wrap gap-3">
-              {article.relatedServices.map(service => (
-                <Link
-                  key={service}
-                  href={`/kenya/nairobi/${service}`}
-                  className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-500/20 transition-colors"
-                >
-                  {service.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </Link>
-              ))}
+              {/* Only services with a real /kenya/nairobi/<service> page are
+                  links; the rest 308'd back to /kenya/nairobi (2026-10-16). */}
+              {article.relatedServices.map(service => {
+                const label = service.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                return COUNTY_SERVICE_PAGE.has(service) ? (
+                  <Link
+                    key={service}
+                    href={`/kenya/nairobi/${service}`}
+                    className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-500/20 transition-colors"
+                  >
+                    {label}
+                  </Link>
+                ) : (
+                  <span
+                    key={service}
+                    className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400"
+                  >
+                    {label}
+                  </span>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -386,7 +401,7 @@ export default async function BlogArticlePage({ params }: Props) {
                   href={`/kenya/${county}`}
                   className="px-3 py-1 bg-white/10 rounded-full text-sm text-gray-300 hover:text-cyan-400 transition-colors"
                 >
-                  {county.charAt(0).toUpperCase() + county.slice(1)}
+                  {county.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Link>
               ))}
               <Link

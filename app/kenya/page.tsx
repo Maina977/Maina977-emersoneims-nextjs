@@ -2,6 +2,11 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
+import { COUNTY_SERVICE_SLUGS } from '@/lib/seo/kenyaIndexable';
+
+/** Services that have a real /kenya/<county>/<service> page. The other
+ *  SEO_SERVICES 308 to the county page, so they are not linked (2026-10-16). */
+const COUNTY_SERVICE_PAGE = new Set(COUNTY_SERVICE_SLUGS);
 
 export const metadata: Metadata = {
   title: 'Generator Services Across Kenya',
@@ -121,17 +126,28 @@ export default function KenyaPage() {
             Our Services Available Nationwide
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {SEO_SERVICES.map((service) => (
-              <Link
-                key={service.id}
-                href={`/kenya/nairobi/${service.slug}`}
-                className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-white/10 transition-all text-center group"
-              >
-                <h3 className="text-white font-medium group-hover:text-amber-400 transition-colors text-sm md:text-base">
-                  {service.shortName}
-                </h3>
-              </Link>
-            ))}
+            {SEO_SERVICES.map((service) =>
+              COUNTY_SERVICE_PAGE.has(service.slug) ? (
+                <Link
+                  key={service.id}
+                  href={`/kenya/nairobi/${service.slug}`}
+                  className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-white/10 transition-all text-center group"
+                >
+                  <h3 className="text-white font-medium group-hover:text-amber-400 transition-colors text-sm md:text-base">
+                    {service.shortName}
+                  </h3>
+                </Link>
+              ) : (
+                <div
+                  key={service.id}
+                  className="p-4 rounded-xl bg-white/5 border border-white/10 text-center"
+                >
+                  <h3 className="text-white font-medium text-sm md:text-base">
+                    {service.shortName}
+                  </h3>
+                </div>
+              ),
+            )}
           </div>
         </div>
 
@@ -181,7 +197,8 @@ export default function KenyaPage() {
               { county: 'kisumu', service: 'generator-maintenance', label: 'Generator Maintenance in Kisumu' },
               { county: 'nakuru', service: 'generator-lease', label: 'Generator Rental in Nakuru' },
               { county: 'kiambu', service: 'generators', label: 'Generators in Kiambu' },
-              { county: 'machakos', service: 'diesel-generators', label: 'Diesel Generators in Machakos' },
+              // was 'diesel-generators', which has no page and 308'd to /kenya/machakos
+              { county: 'machakos', service: 'generators', label: 'Generators in Machakos' },
               { county: 'kajiado', service: 'generator-spare-parts', label: 'Generator Parts in Kajiado' },
               // 'generator-not-starting' is a Repair Centre fault topic, not a
               // /kenya service slug — this link 404'd on the live site.

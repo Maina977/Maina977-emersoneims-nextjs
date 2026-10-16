@@ -109,7 +109,7 @@ export const WORKSHOP_SERVICES: WorkshopService[] = [
     ],
     symptoms: ['No output voltage', 'Output collapses under load', 'Burning smell or discoloured windings', 'Motor trips its protection on start', 'Insulation failure after standing or flooding'],
     cta: 'Request Motor Repair',
-    relatedHref: '/solutions/motor-rewinding',
+    relatedHref: '/services/motor-rewinding',
     relatedLabel: 'View motor rewinding details',
   },
   {
@@ -237,7 +237,7 @@ export const WORKSHOP_SERVICES: WorkshopService[] = [
     ],
     symptoms: ['Reduced flow or pressure', 'Pump tripping on overload', 'Leaking at the seal', 'Noise or vibration', 'Motor overheating'],
     cta: 'Request Pump Inspection',
-    relatedHref: '/solutions/borehole-pumps',
+    relatedHref: '/services/borehole-pumps',
     relatedLabel: 'View borehole & pump services',
   },
   {

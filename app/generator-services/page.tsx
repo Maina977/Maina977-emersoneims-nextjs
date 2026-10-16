@@ -107,7 +107,7 @@ const services = [
     ],
     pricing: 'From KSh 80,000',
     timeline: '1-2 days',
-    link: '/solutions/controls'
+    link: '/services/ats-changeover'
   }
 ];
 

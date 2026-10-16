@@ -23,21 +23,21 @@ const searchData: SearchResult[] = [
   { title: "About Us", url: "/about-us", description: "Learn about Emerson EiMS", category: "Page" },
 
   // Services
-  { title: "Diesel Generators", url: "/solutions/generators", description: "Generator installation, maintenance, and repair", category: "Service" },
-  { title: "Solar Energy", url: "/solutions/solar", description: "Solar panel installation and maintenance", category: "Service" },
-  { title: "UPS Systems", url: "/solutions/ups", description: "Uninterruptible power supply systems", category: "Service" },
+  { title: "Diesel Generators", url: "/generators", description: "Generator installation, maintenance, and repair", category: "Service" },
+  { title: "Solar Energy", url: "/solar", description: "Solar panel installation and maintenance", category: "Service" },
+  { title: "UPS Systems", url: "/services/ups-systems", description: "Uninterruptible power supply systems", category: "Service" },
   { title: "High Voltage", url: "/services", description: "High voltage infrastructure solutions", category: "Service" },
-  { title: "Motor Rewinding", url: "/solutions/motor-rewinding", description: "Motor repair and rewinding services", category: "Service" },
-  { title: "Water Systems", url: "/solutions/borehole-pumps", description: "Borehole pumps and water systems", category: "Service" },
-  { title: "HVAC Systems", url: "/solutions/ac", description: "Air conditioning and ventilation", category: "Service" },
+  { title: "Motor Rewinding", url: "/services/motor-rewinding", description: "Motor repair and rewinding services", category: "Service" },
+  { title: "Water Systems", url: "/services/borehole-pumps", description: "Borehole pumps and water systems", category: "Service" },
+  { title: "HVAC Systems", url: "/services/ac-installation", description: "Air conditioning and ventilation", category: "Service" },
   { title: "Incinerators", url: "/solutions/incinerators", description: "Waste management and incineration", category: "Service" },
 
   // Solutions
-  { title: "Generator Solutions", url: "/solutions/generators", description: "Generator troubleshooting and solutions", category: "Solution" },
+  { title: "Generator Solutions", url: "/generators", description: "Generator troubleshooting and solutions", category: "Solution" },
   { title: "Solar Sizing", url: "/solutions/solar-sizing", description: "Calculate optimal solar system size", category: "Solution" },
   { title: "Power Interruptions", url: "/solutions/power-interruptions", description: "Solutions for power outages", category: "Solution" },
-  { title: "AC Systems", url: "/solutions/ac", description: "Air conditioning solutions", category: "Solution" },
-  { title: "UPS Solutions", url: "/solutions/ups", description: "UPS system solutions", category: "Solution" },
+  { title: "AC Systems", url: "/services/ac-installation", description: "Air conditioning solutions", category: "Solution" },
+  { title: "UPS Solutions", url: "/services/ups-systems", description: "UPS system solutions", category: "Solution" },
 ];
 
 export default function SiteSearch() {

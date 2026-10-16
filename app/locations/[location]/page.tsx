@@ -14,7 +14,8 @@ import {
   getLocationBySlug,
   getCountyBySlug,
   SERVICES,
-  COUNTIES
+  COUNTIES,
+  getServicePath
 } from '@/lib/seo/kenyaLocations';
 import {
   getLocationFacts,
@@ -22,6 +23,7 @@ import {
   OPERATING_BASE,
 } from '@/lib/seo/locationFacts';
 import { notFound } from 'next/navigation';
+import { isIndexedLocationService } from '@/lib/seo/indexedMatrix';
 import ConstituencySiteConditions from '@/components/seo/ConstituencySiteConditions';
 import { countyForConstituency } from '@/lib/data/kenya-constituency-conditions';
 import { getCountyBySlug as getCountyRecord } from '@/lib/seo/kenyaLocations';
@@ -241,10 +243,21 @@ export default async function LocationPage({ params }: Props) {
           </h2>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {SERVICES.map(service => (
+            {SERVICES.map(service => {
+              /*
+               * Only 26 places x 8 services have their own page
+               * (lib/seo/indexedMatrix.ts). Every other /locations/<place>/<svc>
+               * 308s straight back to this page, so linking it made each place
+               * page link to itself nine times — about 4,950 such links across
+               * the site, and the largest family in Search Console's "Page with
+               * redirect" export (2026-10-16). Those cards now go to the
+               * national page for the service instead.
+               */
+              const local = isIndexedLocationService(locationSlug, service.slug);
+              return (
               <Link
                 key={service.slug}
-                href={`/locations/${locationSlug}/${service.slug}`}
+                href={local ? `/locations/${locationSlug}/${service.slug}` : getServicePath(service.slug)}
                 className="group p-6 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-cyan-500/50 hover:bg-slate-800 transition-all"
               >
                 <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-cyan-400 transition-colors">
@@ -254,10 +267,13 @@ export default async function LocationPage({ params }: Props) {
                   {service.description}
                 </p>
                 <span className="text-cyan-400 text-sm font-medium group-hover:underline">
-                  Learn more about {service.shortName} in {locationName} →
+                  {local
+                    ? `Learn more about ${service.shortName} in ${locationName} →`
+                    : `Learn more about ${service.shortName} →`}
                 </span>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

@@ -130,7 +130,6 @@ export const SERVICE_DIVISIONS: ServiceDivision[] = [
     hub: { label: 'Generator spare parts', href: '/generators/spare-parts' },
     items: [
       { label: 'Generator spare parts catalogue', href: '/generators/spare-parts' },
-      { label: 'Engine and electrical parts', href: '/generator-parts' },
       { label: 'Parts marketplace', href: '/marketplace/parts' },
       { label: 'Controllers: DSE, SmartGen, ComAp, PowerWizard', href: '/repair-centre/controllers' },
       { label: 'Fuel-system components', href: '/repair-centre/fuel-systems' },
@@ -153,7 +152,6 @@ export const SERVICE_DIVISIONS: ServiceDivision[] = [
       { label: 'Solar inverters', href: '/services/solar-inverters' },
       { label: 'Solar maintenance hub', href: '/maintenance-hub/solar' },
       { label: 'Solar repair centre', href: '/repair-centre/solar' },
-      { label: 'Solar solutions overview', href: '/solutions/solar' },
     ],
   },
   {
@@ -167,12 +165,11 @@ export const SERVICE_DIVISIONS: ServiceDivision[] = [
     hub: { label: 'UPS systems', href: '/services/ups-systems' },
     items: [
       { label: 'UPS systems: supply and installation', href: '/services/ups-systems' },
-      { label: 'UPS solutions overview', href: '/solutions/ups' },
       { label: 'UPS Lab', href: '/hub/ups-lab' },
       { label: 'Inverter systems', href: '/services/solar-inverters' },
       { label: 'UPS repair centre', href: '/repair-centre/ups' },
       { label: 'Inverter repair centre', href: '/repair-centre/inverters' },
-      { label: 'Solar & UPS intelligence hub', href: '/resources/solar-ups-hub' },
+      { label: 'Solar & UPS intelligence hub', href: '/hub' },
     ],
   },
   {
@@ -187,7 +184,6 @@ export const SERVICE_DIVISIONS: ServiceDivision[] = [
     items: [
       { label: 'Distribution boards, panels and switchgear', href: '/services/distribution-boards' },
       { label: 'High-voltage systems', href: '/solutions/high-voltage' },
-      { label: 'Industrial controls', href: '/solutions/controls' },
       { label: 'Diesel and generator automation', href: '/solutions/diesel-automation' },
       { label: 'ATS and changeover panels', href: '/services/ats-changeover' },
       { label: 'Electrical maintenance hub', href: '/maintenance-hub/electrical' },
@@ -205,8 +201,6 @@ export const SERVICE_DIVISIONS: ServiceDivision[] = [
     hub: { label: 'Motor rewinding', href: '/services/motor-rewinding' },
     items: [
       { label: 'Motor rewinding and repair', href: '/services/motor-rewinding' },
-      { label: 'Motor rewinding solutions', href: '/solutions/motor-rewinding' },
-      { label: 'Industrial motors', href: '/solutions/motors' },
       { label: 'Motor repair centre', href: '/repair-centre/motors' },
       { label: 'Motors maintenance hub', href: '/maintenance-hub/motors' },
     ],
@@ -241,7 +235,6 @@ export const SERVICE_DIVISIONS: ServiceDivision[] = [
     items: [
       { label: 'Borehole and submersible pumps', href: '/services/borehole-pumps' },
       { label: 'Borehole drilling, aquifer testing and yield', href: '/services/borehole-drilling' },
-      { label: 'Borehole pump solutions', href: '/solutions/borehole-pumps' },
       { label: 'Pump repair centre', href: '/repair-centre/pumps' },
       { label: 'Borehole maintenance hub', href: '/maintenance-hub/borehole' },
       { label: 'AquaScan Pro — borehole & water intelligence', href: '/aquascan-pro-v3' },
@@ -259,7 +252,6 @@ export const SERVICE_DIVISIONS: ServiceDivision[] = [
     items: [
       { label: 'Air conditioning installation and repair', href: '/services/ac-installation' },
       { label: 'Air conditioning: refrigeration, SEER and derating', href: '/services/air-conditioning' },
-      { label: 'AC and cooling solutions', href: '/solutions/ac' },
       { label: 'HVAC maintenance hub', href: '/maintenance-hub/hvac' },
     ],
   },

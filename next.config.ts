@@ -738,6 +738,32 @@ const nextConfig: NextConfig = {
         destination: '/solutions',
         permanent: true,
       },
+      // One hop, not two: these /solutions/<slug> pages themselves redirect
+      // (rules further down), so the generic rule below sent Google through
+      // a 308 > 308 chain — /solution/solar > /solutions/solar > /solar, seen
+      // in the Search Console "Page with redirect" export of 2026-10-16. Keep
+      // in step with the /solutions/* redirects below.
+      ...([
+        ['hospitals', '/industries/hospitals-healthcare'],
+        ['schools', '/industries/schools-universities'],
+        ['hotels', '/industries/hotels-hospitality'],
+        ['factories', '/industries/manufacturing'],
+        ['farms', '/industries/flower-farms'],
+        ['real-estate', '/industries/real-estate-construction'],
+        ['generators', '/generators'],
+        ['solar', '/solar'],
+        ['motors', '/services/motor-rewinding'],
+        ['motor-rewinding', '/services/motor-rewinding'],
+        ['controls', '/services/ats-changeover'],
+        ['ups', '/services/ups-systems'],
+        ['ac', '/services/ac-installation'],
+        ['borehole-pumps', '/services/borehole-pumps'],
+        ['contact', '/contact'],
+      ] as const).map(([slug, destination]) => ({
+        source: `/solution/${slug}`,
+        destination,
+        permanent: true,
+      })),
       {
         source: '/solution/:path*',
         destination: '/solutions/:path*',

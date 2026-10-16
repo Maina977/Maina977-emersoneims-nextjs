@@ -2943,7 +2943,7 @@ Supplied, installed and serviced by our own engineers. Competitive pricing. Full
     image: '/images/motor-diagnostics-testing.png',
     imageAlt: 'Generator servicing and maintenance in Kenya',
     relatedServices: ['generator-maintenance', 'generator-repairs', 'spare-parts'],
-    relatedCounties: ['nairobi', 'mombasa', 'kisumu', 'nakuru', 'eldoret'],
+    relatedCounties: ['nairobi', 'mombasa', 'kisumu', 'nakuru', 'uasin-gishu'], // was 'eldoret' (a town; /kenya/eldoret 308s)
     faqs: [
       {
         question: 'How much does basic generator servicing cost in Kenya?',

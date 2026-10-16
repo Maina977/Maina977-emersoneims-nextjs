@@ -23,6 +23,7 @@ import {
   getServicePath
 } from '@/lib/seo/kenyaLocations';
 import { notFound } from 'next/navigation';
+import { isIndexedLocationService } from '@/lib/seo/indexedMatrix';
 
 interface Props {
   params: Promise<{ location: string; service: string }>;
@@ -268,10 +269,13 @@ export default async function ServiceLocationPage({ params }: Props) {
           </h2>
 
           <div className="flex flex-wrap gap-3">
+            {/* Siblings without their own page here (e.g. motors, outside the
+                8 curated services) go to the national page; linking
+                /locations/<place>/<svc> for them 308'd back to the place page. */}
             {SERVICES.filter(s => s.slug !== serviceSlug).map(s => (
               <Link
                 key={s.slug}
-                href={`/locations/${locationSlug}/${s.slug}`}
+                href={isIndexedLocationService(locationSlug, s.slug) ? `/locations/${locationSlug}/${s.slug}` : getServicePath(s.slug)}
                 className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 hover:border-cyan-500 hover:text-white transition-all"
               >
                 {s.shortName}

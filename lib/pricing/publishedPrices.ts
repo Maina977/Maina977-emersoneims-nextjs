@@ -506,7 +506,7 @@ export const PRICE_GUIDES: readonly PriceGuide[] = [
     description:
       'What air conditioning costs in Kenya in 2026 — split, cassette, ducted, VRF and chiller systems by capacity, plus installation, and what drives the price.',
     service: 'Air Conditioning',
-    source: '/solutions/ac',
+    source: '/services/ac-installation',
     sourceLabel: 'our air conditioning page',
     intro:
       'AC is priced by cooling capacity, not by room. A unit sized by guesswork either short-cycles and never dehumidifies, or runs flat out and fails early — so the figures below are grouped by BTU and tonnage, which is what an engineer actually specifies against.',

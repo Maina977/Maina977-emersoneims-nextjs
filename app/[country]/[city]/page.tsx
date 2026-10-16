@@ -341,7 +341,7 @@ export default async function InternationalCityPage({ params }: Props) {
                   Energy Storage
                 </li>
               </ul>
-              <Link href="/solution/solar" className="text-amber-400 hover:text-amber-300 transition-colors">
+              <Link href="/solar" className="text-amber-400 hover:text-amber-300 transition-colors">
                 Explore Solar →
               </Link>
             </div>
