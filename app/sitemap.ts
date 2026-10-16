@@ -783,13 +783,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'monthly',
     priority: 0.8,
   });
-  for (const slug of SECTORS_WITHOUT_INDUSTRY_HUB) {
-    urls.push({
-      url: `${BASE_URL}/sectors/${slug}`,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    });
-  }
+  /*
+   * The 12 sector pages themselves are no longer submitted (owner decision,
+   * 2026-10-16). Measured that day: they share a median 52% (max 64%) of their
+   * wording — one template with the sector swapped in; unrelated pages on this
+   * site share ~4%. Search Console listed /sectors/embassies as "Crawled -
+   * currently not indexed". They stay live and linked from /sectors; rewrite
+   * one with real sector-specific content before submitting it again.
+   */
+  void SECTORS_WITHOUT_INDUSTRY_HUB;
 
   /**
    * East African city pages — /<country>/<city>, served by app/[country]/[city].
