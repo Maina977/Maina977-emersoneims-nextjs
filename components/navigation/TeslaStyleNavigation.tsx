@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { SERVICE_ACTIONS } from '@/lib/serviceConnect/actions';
 // framer-motion removed 2026-09-26 — see the note at the foot of this file.
 // Every animation this component performs is now CSS; the keyframes live in
 // app/globals.css under "NAVIGATION ANIMATIONS".
@@ -717,7 +718,7 @@ function TeslaStyleNavigationInner({
                   number — a real quote path. */}
               <div ref={tailRef} className="ml-2 pl-3 flex items-center gap-3 border-l border-white/10">
                 <Link
-                  href="/contact"
+                  href="/contact?type=quote"
                   prefetch={prefetchForHref('/contact')}
                   className="px-4 py-2 text-xs xl:text-[12px] font-bold tracking-[0.08em] uppercase rounded-md bg-amber-500 text-black hover:bg-amber-400 transition-colors duration-200 whitespace-nowrap"
                 >
@@ -841,12 +842,15 @@ function TeslaStyleNavigationInner({
       {isMenuOpen && (
         <>
           <div
-            className="nav-anim-fade fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+            className="nav-anim-fade fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden"
             onClick={() => setIsMenuOpen(false)}
           />
           <div
             id={mobileMenuId}
-            className="nav-anim-slide fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-gray-900 z-50 lg:hidden overflow-y-auto"
+            // z-[60]: above the floating launcher / Emergency pill (z-50), which
+            // otherwise sat on top of the open drawer and covered its Service
+            // Connect grid (seen in the 2026-10-18 screenshots).
+            className="nav-anim-slide fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-gray-900 z-[60] lg:hidden overflow-y-auto"
           >
               <div className="p-6">
                 {/* Mobile Header */}
@@ -921,8 +925,34 @@ function TeslaStyleNavigationInner({
 
                 {/* Mobile CTA */}
                 <div className="mt-8 p-4 bg-gradient-to-br from-amber-500/20 to-amber-600/10 rounded-2xl border border-amber-500/20">
-                  <h4 className="font-bold text-white mb-2">Need Help?</h4>
-                  <p className="text-sm text-white/60 mb-4">Call us for immediate assistance</p>
+                  <h4 className="font-bold text-white mb-1">Need Help?</h4>
+                  <p className="text-sm text-white/60 mb-3">Service Connect — pick what you need</p>
+                  {/* Same six actions as the floating launcher (lib/serviceConnect/actions.ts). */}
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    {SERVICE_ACTIONS.map((a) =>
+                      a.external ? (
+                        <a
+                          key={a.id}
+                          href={a.href}
+                          {...(a.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                          onClick={() => setIsMenuOpen(false)}
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold border ${a.urgent ? 'bg-red-500/15 border-red-500/30 text-red-200' : 'bg-white/5 border-white/10 text-white'}`}
+                        >
+                          <span aria-hidden>{a.icon}</span>{a.label}
+                        </a>
+                      ) : (
+                        <Link
+                          key={a.id}
+                          href={a.href}
+                          prefetch={false}
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold border bg-white/5 border-white/10 text-white"
+                        >
+                          <span aria-hidden>{a.icon}</span>{a.label}
+                        </Link>
+                      ),
+                    )}
+                  </div>
                   <a
                     href="tel:+254768860665"
                     className="block w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-bold rounded-xl text-center"

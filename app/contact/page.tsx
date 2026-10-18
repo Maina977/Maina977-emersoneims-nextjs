@@ -295,6 +295,20 @@ function SciFiContactForm() {
   const [whatsappLink, setWhatsappLink] = useState('');
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  // Service Connect / header links arrive as /contact?type=quote|engineer|emergency
+  // (lib/serviceConnect/actions.ts). Pre-fill the start of the message so the
+  // team knows which request it is. Read once after mount (no useSearchParams,
+  // so the page needs no Suspense boundary).
+  useEffect(() => {
+    const type = new URLSearchParams(window.location.search).get('type');
+    const opener: Record<string, string> = {
+      quote: 'I would like a quotation for: ',
+      engineer: 'I would like to speak to an engineer about: ',
+    };
+    if (type && opener[type]) setFormData((f) => (f.message ? f : { ...f, message: opener[type] }));
+    if (type === 'emergency') setFormData((f) => ({ ...f, urgency: 'high' }));
+  }, []);
+
   // Build a wa.me deep link with the enquiry pre-filled — used as the guaranteed
   // fallback if the server can't be reached, and offered as a one-tap option on success.
   const buildWhatsAppLink = () => {

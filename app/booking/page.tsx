@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SiteSurveyPolicy from '@/components/trust/SiteSurveyPolicy';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -56,6 +56,17 @@ export default function BookingPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  // Service Connect links arrive as /booking?type=<service id> (lib/serviceConnect/
+  // actions.ts). Read once after mount — window, not useSearchParams, so the
+  // page stays statically rendered without a Suspense boundary.
+  useEffect(() => {
+    const type = new URLSearchParams(window.location.search).get('type');
+    if (type && SERVICE_TYPES.some((s) => s.id === type)) {
+      setFormData((f) => ({ ...f, serviceType: type }));
+    }
+  }, []);
 
   const updateForm = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -88,8 +99,15 @@ export default function BookingPage() {
       `Preferred contact: ${formData.preferredContact}`,
     ].filter(Boolean).join('\n');
 
+    setSubmitError('');
+    /*
+     * Confirm only what actually happened (2026-10-18). This used to ignore the
+     * response and show "Booking Confirmed!" even when the request was rejected
+     * (validation, rate limit) or never reached the server — the booking was
+     * then lost while the customer believed it was made.
+     */
     try {
-      await fetch('/api/contact', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -103,10 +121,17 @@ export default function BookingPage() {
           source: 'booking_page',
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setSubmitError(typeof data?.error === 'string' ? data.error : 'Your booking could not be sent.');
+        setIsSubmitting(false);
+        return;
+      }
     } catch (err) {
-      // Even if delivery hiccups, show confirmation — the lead is also captured
-      // server-side and the user is given a WhatsApp fallback on the success screen.
       console.error('Booking delivery error:', err);
+      setSubmitError('Your booking could not be sent — please check your connection.');
+      setIsSubmitting(false);
+      return;
     }
 
     setIsSubmitting(false);
@@ -559,6 +584,24 @@ export default function BookingPage() {
                   </div>
                 </div>
               </>
+            )}
+
+            {submitError && (
+              <div role="alert" className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-sm text-red-200">
+                <p className="font-semibold">{submitError}</p>
+                <p className="mt-1">
+                  Nothing was booked yet. Call{' '}
+                  <a href="tel:+254768860665" className="underline">0768 860 665</a>{' '}or{' '}
+                  <a
+                    href={`https://wa.me/254768860665?text=${encodeURIComponent(`Booking request: ${SERVICE_TYPES.find((s) => s.id === formData.serviceType)?.label || ''} — ${formData.name}, ${formData.phone}, ${formData.county} ${formData.date} ${formData.time}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    send it on WhatsApp
+                  </a>.
+                </p>
+              </div>
             )}
 
             {/* Navigation Buttons */}

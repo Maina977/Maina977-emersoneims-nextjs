@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { SERVICE_ACTIONS, COMPANY_PHONE_DISPLAY } from '@/lib/serviceConnect/actions';
 
 interface WhatsAppButtonProps {
   phoneNumber?: string;
@@ -30,13 +32,14 @@ function WhatsAppButtonInner({
 
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
-  const quickMessages = [
-    { icon: '⚡', text: 'Emergency Power Support', message: 'URGENT: I need emergency power support immediately!' },
-    { icon: '📋', text: 'Get a Quote', message: 'Hi, I would like to request a quote for power solutions.' },
-    { icon: '🔍', text: 'Request Site Survey', message: 'Hi, I would like to schedule a site survey for my location.' },
-    { icon: '🔧', text: 'Technical Support', message: 'Hi, I need technical support for my generator/system.' },
-    { icon: '💬', text: 'General Inquiry', message: 'Hello, I have some questions about your services.' },
-  ];
+  /*
+   * SERVICE CONNECT LAUNCHER (Phase 1, owner-approved 2026-10-18).
+   * The five WhatsApp-only rows became the six Service Connect actions
+   * (lib/serviceConnect/actions.ts) plus a WhatsApp chat row. Same button,
+   * same size, position, z-index, consent-bar offset and /hub suppression —
+   * deliberately NOT a fourth floating button (see the 2026-10-16 tidy-up).
+   */
+  const close = () => { setIsOpen(false); setHasInteracted(true); };
 
   const positionClasses = position === 'bottom-right' 
     ? 'right-6 sm:right-8' 
@@ -54,7 +57,10 @@ function WhatsAppButtonInner({
              
              
              
-              className="absolute bottom-20 right-0 w-72 bg-black/95 backdrop-blur-xl border border-green-500/30 rounded-2xl shadow-2xl shadow-green-500/20 overflow-hidden"
+              id="service-connect-menu"
+              role="dialog"
+              aria-label="Service Connect — how can we help?"
+              className="absolute bottom-20 right-0 w-72 max-h-[calc(100vh-11rem)] overflow-y-auto bg-black/95 backdrop-blur-xl border border-green-500/30 rounded-2xl shadow-2xl shadow-green-500/20"
             >
               {/* Header */}
               <div className="bg-gradient-to-r from-green-600 to-green-500 p-4">
@@ -65,45 +71,68 @@ function WhatsAppButtonInner({
                     </svg>
                   </div>
                   <div>
-                    <div className="text-white font-bold">EmersonEIMS Support</div>
+                    <div className="text-white font-bold">EmersonEIMS Service Connect</div>
                     <div className="text-green-100 text-xs flex items-center gap-1">
                       {/* No pulsing "online" dot: nothing knows whether anyone is online. */}
-                      Chat with our team on WhatsApp
+                      How can we help you today?
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Quick messages */}
-              <div className="p-3 space-y-2">
-                <div className="text-xs text-gray-400 uppercase tracking-wider px-2 mb-3">
-                  Quick Actions
-                </div>
-                {quickMessages.map((item, index) => (
-                  <a
-                    key={index}
-                    href={`https://wa.me/${phoneNumber}?text=${encodeURIComponent(item.message)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-green-500/20 border border-transparent hover:border-green-500/30 transition-all group"
-                   
-                   
-                    onClick={() => setHasInteracted(true)}
-                  >
-                    <span className="text-xl">{item.icon}</span>
-                    <span className="text-white group-hover:text-green-400 transition-colors text-sm font-medium">
-                      {item.text}
-                    </span>
-                    <span className="ml-auto text-gray-500 group-hover:text-green-400 transition-colors">→</span>
-                  </a>
-                ))}
+              {/* Service Connect actions */}
+              <div className="p-3 space-y-1.5">
+                {SERVICE_ACTIONS.map((item) => {
+                  const rowClass = `flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all group ${
+                    item.urgent
+                      ? 'bg-red-500/15 border-red-500/30 hover:bg-red-500/25'
+                      : 'bg-white/5 border-transparent hover:bg-green-500/20 hover:border-green-500/30'
+                  }`;
+                  const body = (
+                    <>
+                      <span className="text-lg" aria-hidden>{item.icon}</span>
+                      <span className="flex flex-col leading-tight">
+                        <span className={`text-sm font-medium ${item.urgent ? 'text-red-300' : 'text-white group-hover:text-green-400'} transition-colors`}>{item.label}</span>
+                        <span className="text-[11px] text-gray-400">{item.hint}</span>
+                      </span>
+                      <span className="ml-auto text-gray-500 group-hover:text-green-400 transition-colors" aria-hidden>→</span>
+                    </>
+                  );
+                  return item.external ? (
+                    <a
+                      key={item.id}
+                      href={item.href}
+                      {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                      className={rowClass}
+                      onClick={close}
+                    >
+                      {body}
+                    </a>
+                  ) : (
+                    <Link key={item.id} href={item.href} prefetch={false} className={rowClass} onClick={close}>
+                      {body}
+                    </Link>
+                  );
+                })}
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-green-600/20 border border-green-500/30 hover:bg-green-600/30 transition-all"
+                  onClick={close}
+                >
+                  <span className="text-lg" aria-hidden>💬</span>
+                  <span className="text-sm font-medium text-green-300">Chat on WhatsApp</span>
+                  <span className="ml-auto text-green-400" aria-hidden>→</span>
+                </a>
               </div>
 
               {/* Footer */}
-              <div className="p-3 border-t border-white/10">
-                <div className="text-xs text-gray-500 text-center">
-                  Breakdown? Call 0768 860 665
-                </div>
+              <div className="px-3 py-2.5 border-t border-white/10 flex items-center justify-between text-xs">
+                <Link href="/service-connect" prefetch={false} className="text-green-400 hover:text-green-300" onClick={close}>
+                  All options →
+                </Link>
+                <span className="text-gray-500">Breakdown? Call {COMPANY_PHONE_DISPLAY}</span>
               </div>
             </div>
           )}
@@ -114,8 +143,8 @@ function WhatsAppButtonInner({
              
               className="absolute bottom-4 right-20 bg-black border border-green-500/30 rounded-lg px-4 py-2 whitespace-nowrap shadow-lg"
             >
-              <div className="text-white text-sm font-medium">Need help? Chat with us!</div>
-              <div className="text-green-400 text-xs">Message our team 💬</div>
+              <div className="text-white text-sm font-medium">Need help?</div>
+              <div className="text-green-400 text-xs">Service menu &amp; WhatsApp</div>
               {/* Arrow */}
               <div className="absolute right-[-8px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-b-8 border-l-8 border-transparent border-l-green-500/30"></div>
             </div>
@@ -128,8 +157,9 @@ function WhatsAppButtonInner({
             setShowTooltip(false);
           }}
           className="relative w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full shadow-lg shadow-green-500/40 flex items-center justify-center group transition-transform duration-200 hover:scale-110 active:scale-95"
-          aria-label={isOpen ? 'Close WhatsApp chat' : 'Chat with us on WhatsApp'}
+          aria-label={isOpen ? 'Close the service menu' : 'Need help? Open the service menu'}
           aria-expanded={isOpen}
+          aria-controls="service-connect-menu"
         >            {isOpen ? (
               <span
                 key="close"
