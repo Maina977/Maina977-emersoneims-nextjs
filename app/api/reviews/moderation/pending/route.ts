@@ -1,6 +1,8 @@
 import { reviewsRepository } from '@/lib/db/reviews';
+import { isAdminRequest, adminNotFound } from '@/lib/auth/adminRequest';
 
 export async function GET(request: Request) {
+  if (!isAdminRequest(request)) return adminNotFound();
   try {
     const reviews = await reviewsRepository.getPendingReviews();
 

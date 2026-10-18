@@ -1,6 +1,8 @@
 import { reviewsRepository } from '@/lib/db/reviews';
+import { isAdminRequest, adminNotFound } from '@/lib/auth/adminRequest';
 
 export async function POST(request: Request) {
+  if (!isAdminRequest(request)) return adminNotFound();
   try {
     const { reviewId } = await request.json();
 

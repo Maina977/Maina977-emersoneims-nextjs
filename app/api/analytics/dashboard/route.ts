@@ -4,8 +4,10 @@
  */
 
 import { analyticsService } from '@/lib/analytics/analyticsService';
+import { isAdminRequest, adminNotFound } from '@/lib/auth/adminRequest';
 
 export async function GET(request: Request) {
+  if (!isAdminRequest(request)) return adminNotFound();
   try {
     // In production, fetch from database
     // const orders = await db.orders.findAll();
@@ -29,6 +31,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  if (!isAdminRequest(request)) return adminNotFound();
   try {
     const body = await request.json();
     const { startDate, endDate, groupBy = 'monthly' } = body;

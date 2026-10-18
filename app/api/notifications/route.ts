@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { isAdminRequest, adminNotFound } from '@/lib/auth/adminRequest';
 
 interface NotificationRequest {
   type: 'email' | 'sms' | 'both';
@@ -269,6 +270,12 @@ async function sendTwilioSMS(to: string[], message: string): Promise<boolean> {
 }
 
 export async function POST(request: NextRequest) {
+  // Admin-only since 2026-10-18: this sends email/SMS to whatever address the
+  // caller supplies, so unauthenticated it was an open relay for anyone on the
+  // internet to send through the company's SMTP / SMS accounts. No page on
+  // the site calls it (the lib/borehole and lib/solar helpers that could are
+  // themselves never called).
+  if (!isAdminRequest(request)) return adminNotFound();
   try {
     const body: NotificationRequest = await request.json();
     const { type, to, subject, message, template, data } = body;

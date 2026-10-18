@@ -485,7 +485,12 @@ function constantTimeEqual(a: string, b: string): boolean {
 }
 
 function isAdminPath(pathname: string): boolean {
-  return pathname === '/admin' || pathname.startsWith('/admin/');
+  return (
+    pathname === '/admin' || pathname.startsWith('/admin/') ||
+    // /dashboard/* (analytics, review moderation) had no access control at all;
+    // its layout only set noindex. Gated with /admin since 2026-10-18.
+    pathname === '/dashboard' || pathname.startsWith('/dashboard/')
+  );
 }
 
 /**
@@ -1470,6 +1475,18 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // ADMIN GATE — runs BEFORE the crawler fast-path (moved here 2026-10-18).
+  //   It used to sit at step 2.5, after the fast-path, and the fast-path
+  //   trusts the User-Agent string: measured live, /admin/analytics answered
+  //   404 to a browser but 200 ("Live Analytics") to anyone whose UA merely
+  //   said "Googlebot". Crawlers never need these pages (robots.txt disallows
+  //   /admin/ and /dashboard is noindex), so gating them first costs nothing.
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (isAdminPath(pathname) && !hasValidAdminSession(request)) {
+    return new NextResponse('Not Found', { status: 404 });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // 0. VERIFIED CRAWLER FAST-PATH (Googlebot, Bingbot, etc.)
   //     Search engines & social previewers MUST never be rate-limited,
   //     scrape-blocked, or 403'd. Short-circuit the entire access-control
@@ -1551,15 +1568,9 @@ export function middleware(request: NextRequest) {
     return new NextResponse('Forbidden', { status: 403 });
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 2.5. ADMIN GATE — /admin/* requires a session cookie matching ADMIN_API_KEY
-  //      (set in production env). Owners log in by issuing the cookie out-of-
-  //      band — see SECURITY.md / SECURITY-NOTES below. Returns 404 to avoid
-  //      advertising the existence of admin surfaces to anonymous scanners.
-  // ─────────────────────────────────────────────────────────────────────────────
-  if (isAdminPath(pathname) && !hasValidAdminSession(request)) {
-    return new NextResponse('Not Found', { status: 404 });
-  }
+  // 2.5. ADMIN GATE — moved above the crawler fast-path (see "ADMIN GATE" there).
+  //      /admin/* and /dashboard/* require a session cookie matching
+  //      ADMIN_API_KEY, issued out-of-band; 404 so the surfaces aren't advertised.
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 3. RATE LIMITING + SCRAPING DETECTION
