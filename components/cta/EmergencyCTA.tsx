@@ -50,7 +50,7 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 animate-pulse" />
-            <span className="font-semibold">Power Emergency? We respond within 2 hours in Nairobi.</span>
+            <span className="font-semibold">Power Emergency? Under 4 hours in the Nairobi metro.</span>
           </div>
           <div className="flex items-center gap-4">
             <a
@@ -105,7 +105,7 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
           </div>
           <div>
             <h3 className="text-lg font-bold text-white">Need Power NOW?</h3>
-            <p className="text-sm text-slate-400">Emergency response in 2 hours</p>
+            <p className="text-sm text-slate-400">Under 4 hours in the Nairobi metro</p>
           </div>
         </div>
 
@@ -189,7 +189,7 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
             >
               {[
                 { icon: Clock, text: '2-Hour Response', sub: 'In Nairobi' },
-                { icon: Truck, text: '48-Hour Nationwide', sub: 'All 47 Counties' },
+                { icon: Truck, text: 'Mobile Workshop', sub: 'All 47 Counties' },
                 { icon: Shield, text: '24/7 Availability', sub: 'Never Closed' },
                 { icon: Award, text: '98.7% Uptime', sub: 'Guaranteed' },
               ].map((item, idx) => (
@@ -244,7 +244,7 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
                 {[
                   { value: '500+', label: 'Projects Completed', icon: CheckCircle2, color: 'emerald' },
                   { value: '47', label: 'Counties Covered', icon: Users, color: 'blue' },
-                  { value: '<2hrs', label: 'Avg Response Time', icon: Timer, color: 'amber' },
+                  { value: '<4 h', label: 'Nairobi Metro Response', icon: Timer, color: 'amber' },
                   { value: '98.7%', label: 'Client Retention', icon: Award, color: 'purple' },
                   { value: '12+', label: 'Years Experience', icon: Shield, color: 'red' },
                 ].map((stat, idx) => (

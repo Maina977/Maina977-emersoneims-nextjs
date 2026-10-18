@@ -48,6 +48,7 @@ import RepairSyncShowcase from '@/components/generators/RepairSyncShowcase';
 // it is the page's only form and sits directly under the hero, so it must be
 // present the moment the primary CTA is clicked.
 import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
+import { RESPONSE_NAIROBI } from '@/lib/business/responseTime';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HEAVY COMPONENTS - Lazy loaded (Chart.js ~70KB, GSAP ~30KB saved)
@@ -1833,7 +1834,7 @@ const FinalCTA = () => {
           <div className="flex flex-wrap justify-center gap-6 text-white/80 text-sm">
             <span className="flex items-center gap-2">✅ Technician Site Survey</span>
             <span className="flex items-center gap-2">✅ No Obligation Quote</span>
-            <span className="flex items-center gap-2">✅ Response Within 2 Hours</span>
+            <span className="flex items-center gap-2">✅ {RESPONSE_NAIROBI}</span>
           </div>
         </div>
       </div>

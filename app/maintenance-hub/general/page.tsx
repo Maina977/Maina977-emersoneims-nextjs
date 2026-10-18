@@ -10,6 +10,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RESPONSE_NAIROBI_SHORT, RESPONSE_ELSEWHERE_SHORT, RESPONSE_SUMMARY } from '@/lib/business/responseTime';
 import Link from 'next/link';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -894,7 +895,8 @@ export default function GeneralServicesBible() {
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="font-semibold text-white">{area.county}</h4>
                           <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
-                            {area.response}
+                            {/* per-county hour ranges in the data were never confirmed */}
+                            {area.county === 'Nairobi' ? RESPONSE_NAIROBI_SHORT : RESPONSE_ELSEWHERE_SHORT}
                           </span>
                         </div>
                         <div className="flex flex-wrap gap-1">
@@ -957,7 +959,7 @@ export default function GeneralServicesBible() {
           <div className="grid md:grid-cols-4 gap-4">
             {[
               { icon: '🏆', title: 'Experienced Technicians', desc: 'Field engineers with 10+ years of combined experience' },
-              { icon: '⚡', title: 'Fast Response', desc: '2-4 hour response in Nairobi, same-day across Kenya' },
+              { icon: '⚡', title: 'Fast Response', desc: RESPONSE_SUMMARY },
               { icon: '🛡️', title: 'Guaranteed Work', desc: 'All work comes with warranty and after-service support' },
               { icon: '💰', title: 'Fair Pricing', desc: 'Transparent pricing with no hidden charges' }
             ].map((item, idx) => (

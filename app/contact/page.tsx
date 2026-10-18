@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import SiteSurveyPolicy from '@/components/trust/SiteSurveyPolicy';
+import { RESPONSE_NAIROBI, RESPONSE_NAIROBI_SHORT, RESPONSE_ELSEWHERE, RESPONSE_SUMMARY } from '@/lib/business/responseTime';
 import { m, useScroll, useTransform, LazyMotion, domAnimation } from 'framer-motion';
 import HolographicMap from '@/components/map/HolographicMap';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
@@ -248,28 +249,10 @@ function TypeWriter({ text, delay = 0 }: { text: string; delay?: number }) {
 
 // Animated Counter
 function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: string }) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    const duration = 2000;
-    const steps = 60;
-    const increment = value / steps;
-    let current = 0;
-    
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= value) {
-        setCount(value);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(current));
-      }
-    }, duration / steps);
-
-    return () => clearInterval(timer);
-  }, [value]);
-
-  return <span>{count}{suffix}</span>;
+  // Renders the real value from the first paint. It used to start at 0 and
+  // count up after mount, so the server HTML — what Google indexes — read
+  // "0/7 Emergency Support" and "0+ Projects" (2026-10-18).
+  return <span>{value}{suffix}</span>;
 }
 
 // Main Contact Form — premium, B2B-grade, multi-channel delivery.
@@ -700,7 +683,8 @@ function StatsDisplay() {
   const stats = [
     { value: 47, suffix: '', label: 'Counties Covered' },
     { value: 24, suffix: '/7', label: 'Emergency Support' },
-    { value: 2, suffix: 'hr', label: 'Response Time' },
+    // Was "2hr Response Time" — unconfirmed. Owner-confirmed: <4 h in the Nairobi metro.
+    { value: 4, suffix: 'h', label: 'Response · Nairobi metro', prefix: '<' },
     { value: 500, suffix: '+', label: 'Projects Completed' },
   ];
 
@@ -716,7 +700,7 @@ function StatsDisplay() {
           className="text-center p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm"
         >
           <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-            <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+            {'prefix' in stat ? stat.prefix : ''}<AnimatedCounter value={stat.value} suffix={stat.suffix} />
           </div>
           <div className="text-gray-400 text-sm mt-2 font-mono uppercase tracking-wider">{stat.label}</div>
         </m.div>
@@ -805,7 +789,7 @@ function LocationSection() {
               <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">{'// COVERAGE'}</p>
               <p className="text-white font-semibold mb-1">All 47 Counties</p>
               <p className="text-gray-400 text-sm mb-2">Kenya-Wide Service</p>
-              <p className="text-green-400 font-medium text-sm">2hr Response Time</p>
+              <p className="text-green-400 font-medium text-sm">{RESPONSE_NAIROBI_SHORT}</p>
             </div>
           </HoloCard>
         </div>
@@ -1085,8 +1069,8 @@ function SciFiContactPageInner() {
                   Send a <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">Transmission</span>
                 </h2>
                 <p className="text-gray-400 text-lg leading-relaxed">
-                  Our command center receives your message instantly. Expect a response 
-                  within 2 hours during business hours, or immediately for emergencies.
+                  Your message reaches our team straight away. For a breakdown, call
+                  0768 860 665 — {RESPONSE_SUMMARY}
                 </p>
 
                 {/* Official survey-fee policy — sets the correct expectation
@@ -1105,15 +1089,15 @@ function SciFiContactPageInner() {
               >
                 <div className="flex items-center gap-4 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
                   <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-green-400 font-mono text-sm">Emergency: Immediate Response</span>
+                  <span className="text-green-400 font-mono text-sm">Emergency: call 0768 860 665</span>
                 </div>
                 <div className="flex items-center gap-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
                   <span className="w-3 h-3 bg-amber-500 rounded-full" />
-                  <span className="text-amber-400 font-mono text-sm">Priority: Within 2 Hours</span>
+                  <span className="text-amber-400 font-mono text-sm">{RESPONSE_NAIROBI}</span>
                 </div>
                 <div className="flex items-center gap-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
                   <span className="w-3 h-3 bg-blue-500 rounded-full" />
-                  <span className="text-blue-400 font-mono text-sm">Standard: Within 24 Hours</span>
+                  <span className="text-blue-400 font-mono text-sm">{RESPONSE_ELSEWHERE}</span>
                 </div>
               </m.div>
 

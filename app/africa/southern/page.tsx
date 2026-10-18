@@ -50,13 +50,13 @@ export default function SouthernAfricaPage() {
                 country: '🇿🇼 Zimbabwe',
                 profile: 'Gold & platinum extraction',
                 economy: 'KES 80B+ mining value annual',
-                coverage: 'Standard (48-hour response)',
+                coverage: 'Standard (response time confirmed when you call)',
               },
               {
                 country: '🇿🇲 Zambia',
                 profile: 'Copper belt operations',
                 economy: 'KES 100B+ mining value annual',
-                coverage: 'Standard (48-hour response)',
+                coverage: 'Standard (response time confirmed when you call)',
               },
             ].map((item, idx) => (
               <div key={idx} className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-yellow-500/20 rounded-lg">

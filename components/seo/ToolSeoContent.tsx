@@ -47,7 +47,7 @@ const TOOLS: Record<string, ToolCopy> = {
       'Maintenance-interval guidance (250 h oil service, 500 h full service, major overhaul planning)',
       'Escalation to EmersonEIMS 24/7 emergency repair teams across Kenya when hands-on service is needed',
     ],
-    coverage: 'Backed by EmersonEIMS mobile field service teams covering all 47 counties from our Nairobi base and scheduled regional deployments, with a 2–4 hour emergency response target in Nairobi, Mombasa and Kisumu.',
+    coverage: 'Backed by EmersonEIMS mobile field service teams covering all 47 counties from our Nairobi base and scheduled regional deployments, with emergency response in under 4 hours in the Nairobi metro; other counties by mobile workshop, time depending on distance.',
     faqs: [
       { q: 'Why does my generator start and then shut down?', a: 'Common causes include low fuel pressure, blocked filters, low coolant/oil protection trips, failing sensors or AVR issues. Generator Oracle walks the elimination sequence for your brand, and EmersonEIMS technicians can attend within hours if it needs hands-on work.' },
       { q: 'Which generator brands does it cover?', a: 'Cummins, Perkins, Caterpillar, FG Wilson, Kohler, SDMO, MTU, Deutz, Volvo Penta and Chinese OEM sets — plus controller families like DeepSea, ComAp and PowerWizard.' },

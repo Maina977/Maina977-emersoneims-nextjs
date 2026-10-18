@@ -403,8 +403,8 @@ const SOLAR_GUARANTEES = [
     icon: '📋'
   },
   {
-    title: '48-Hour Response',
-    description: 'Any maintenance issue addressed within 48 hours anywhere in Kenya',
+    title: 'Mobile Workshop',
+    description: 'Maintenance visits anywhere in Kenya by our mobile workshop — timing depends on distance',
     icon: '⚡'
   },
   {

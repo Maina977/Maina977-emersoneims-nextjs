@@ -37,7 +37,7 @@ export default function CompetitivePositioningPage() {
               <tbody>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Urban Response Time</td>
-                  <td className="p-4 text-emerald-400">4 hours ✓</td>
+                  <td className="p-4 text-emerald-400">Under 4 hours, Nairobi metro ✓</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/50">
                   <td className="p-4 font-bold text-white">Service Coverage</td>
@@ -89,7 +89,7 @@ export default function CompetitivePositioningPage() {
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
               <h3 className="text-2xl font-bold text-emerald-400 mb-4">1. Proven Emergency Response</h3>
               <p className="text-gray-300 mb-4">
-                Real-world proven capability: 24/7 response teams nationwide. Verified emergency response across hospitals, manufacturers, and telecom facilities. Seamless installations from remote diagnostics to on-site deployment. Competitors typically take 24+ hours; we're active in 4 hours urban.
+                Real-world proven capability: 24/7 response teams nationwide. Verified emergency response across hospitals, manufacturers, and telecom facilities. Seamless installations from remote diagnostics to on-site deployment. In the Nairobi metro we aim to be on site in under 4 hours.
               </p>
               <p className="text-gray-400 text-sm">
                 <strong>Why it matters:</strong> In emergencies, speed is the difference between success and catastrophe. Our 4-hour urban SLA is backed by verified performance across multiple customer scenarios.
@@ -109,7 +109,7 @@ export default function CompetitivePositioningPage() {
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
               <h3 className="text-2xl font-bold text-emerald-400 mb-4">3. Nationwide Coverage (47 Counties)</h3>
               <p className="text-gray-300 mb-4">
-                Urban: 4-7 hour response. Regional: 8-14 hours. Remote: 16-20 hours. Coverage across all 47 Kenyan counties with regional teams, not just Nairobi headquarters.
+                Under 4 hours in the Nairobi metro; other counties by mobile workshop, time depends on distance. Coverage across all 47 Kenyan counties with regional teams, not just Nairobi headquarters.
               </p>
               <p className="text-gray-400 text-sm">
                 <strong>Why it matters:</strong> Competitors serve 2-3 cities. We serve the entire nation. Transparency on response times builds trust in remote areas.
@@ -129,7 +129,7 @@ export default function CompetitivePositioningPage() {
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
               <h3 className="text-2xl font-bold text-emerald-400 mb-4">5. Written SLAs, Not Verbal Promises</h3>
               <p className="text-gray-300 mb-4">
-                Our maintenance contracts include measurable SLAs: 4-hour emergency response, 99%+ uptime guarantees, automatic compensation for SLA misses. Enforceable commitments.
+                Our maintenance contracts include measurable SLAs: emergency response times written into the contract, 99%+ uptime guarantees, automatic compensation for SLA misses. Enforceable commitments.
               </p>
               <p className="text-gray-400 text-sm">
                 <strong>Why it matters:</strong> Competitors say "we'll help you," we say "we guarantee this, or we pay you." Real accountability.
@@ -223,7 +223,7 @@ export default function CompetitivePositioningPage() {
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div>
                 <p className="text-emerald-400 font-bold mb-2">Speed</p>
-                <p className="text-gray-400 text-sm">4-hour emergency response (vs 24-48 hours)</p>
+                <p className="text-gray-400 text-sm">Under 4 hours in the Nairobi metro</p>
               </div>
               <div>
                 <p className="text-emerald-400 font-bold mb-2">Breadth</p>

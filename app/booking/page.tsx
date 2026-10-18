@@ -150,7 +150,7 @@ export default function BookingPage() {
 
           <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-6">
             <p className="text-green-400 font-medium">
-              📞 Our team will contact you within 2 hours to confirm your appointment.
+              📞 Our team will contact you shortly to confirm your appointment.
             </p>
           </div>
 

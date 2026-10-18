@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
+import { RESPONSE_NAIROBI } from '@/lib/business/responseTime'
 import UnifiedCTA from '@/components/cta/UnifiedCTA'
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand'
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles'
@@ -1282,7 +1283,7 @@ const HighVoltagePage = () => {
                         </a>
                         <div className="flex items-center gap-2 text-gray-300">
                           <Clock className="w-5 h-5" />
-                          <span>Response within 2 hours</span>
+                          <span>{RESPONSE_NAIROBI}</span>
                         </div>
                       </div>
                     </div>

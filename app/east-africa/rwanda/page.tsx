@@ -74,7 +74,7 @@ export default function RwandaPage() {
                   'N+1 redundant UPS architecture',
                   'Multi-generator synchronization',
                   'Real-time remote monitoring',
-                  'Emergency response (2-hour SLA)',
+                  'Emergency response (time confirmed when you call)',
                   'BNR-compliant documentation',
                   'ISO 27001 power infrastructure',
                 ].map((item, idx) => (
@@ -198,7 +198,7 @@ export default function RwandaPage() {
               },
               {
                 title: '24/7 Emergency Response',
-                details: '2-hour SLA response in Kigali, nationwide support',
+                details: 'Response time confirmed when you call; nationwide support',
               },
               {
                 title: 'Remote Monitoring',

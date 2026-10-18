@@ -335,7 +335,9 @@ export async function POST(request: NextRequest) {
       success: true,
       delivered,
       message: delivered
-        ? 'Thank you! Our team will contact you within 2 hours.'
+        // No hour count: the 2-hour callback promise was never confirmed
+        // (lib/business/responseTime.ts, 2026-10-18).
+        ? 'Thank you! Our team will contact you shortly.'
         : 'Thank you! For the fastest response, message us directly on WhatsApp.',
       leadId,
       whatsappFallback,

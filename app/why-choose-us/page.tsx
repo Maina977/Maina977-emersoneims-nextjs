@@ -37,7 +37,7 @@ export default function WhyChooseUsPage() {
             <div className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg text-center">
               <p className="text-5xl mb-4">⚡</p>
               <h3 className="text-lg font-bold text-cyan-400 mb-3">Fastest Response</h3>
-              <p className="text-gray-300 text-sm">4 hours Nairobi, 8-14 hours regional. Competitors: 24-48 hours.</p>
+              <p className="text-gray-300 text-sm">Under 4 hours in the Nairobi metro; other counties by mobile workshop, time depends on distance.</p>
             </div>
 
             <div className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-amber-500/20 rounded-lg text-center">
@@ -188,7 +188,7 @@ export default function WhyChooseUsPage() {
               <h3 className="text-xl font-bold text-amber-400 mb-6">Fast Response</h3>
               <ul className="space-y-3 text-gray-300 text-sm">
                 <li>✓ Answer calls same day</li>
-                <li>✓ Emergency response 4-14 hours</li>
+                <li>✓ Emergency response: under 4 hours in the Nairobi metro</li>
                 <li>✓ Quick diagnostics</li>
                 <li>✓ Minimal downtime</li>
                 <li>✓ 24/7 available</li>

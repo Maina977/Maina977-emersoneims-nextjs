@@ -86,7 +86,7 @@ export default function EastAfricaPage() {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>✓ Same-day delivery in Nairobi</li>
                 <li>✓ 47-county coverage guaranteed</li>
-                <li>✓ 2-4 hour emergency response</li>
+                <li>✓ Emergency response under 4 hours in the Nairobi metro</li>
                 <li>✓ 500+ installations in healthcare alone</li>
               </ul>
               <p className="mt-6 text-red-400 font-bold">Explore Kenya Services →</p>
@@ -125,7 +125,7 @@ export default function EastAfricaPage() {
                 <li>✓ Kampala tech startup specialists</li>
                 <li>✓ Jinja industrial expert network</li>
                 <li>✓ UGX pricing & payment options</li>
-                <li>✓ 4-hour emergency response</li>
+                <li>✓ Emergency response times confirmed when you call</li>
               </ul>
               <p className="mt-6 text-blue-400 font-bold">Explore Uganda →</p>
             </Link>
@@ -239,25 +239,25 @@ export default function EastAfricaPage() {
                 country: 'Kenya',
                 phone: '+254 768 860 665',
                 currency: 'KES',
-                response: 'Same-day',
+                response: '<4 h Nairobi metro',
               },
               {
                 country: 'Tanzania',
                 phone: '+254 768 860 665',
                 currency: 'TZS',
-                response: '24-48 hrs',
+                response: 'Confirmed when you call',
               },
               {
                 country: 'Uganda',
                 phone: '+254 768 860 665',
                 currency: 'UGX',
-                response: '4-6 hrs',
+                response: 'Confirmed when you call',
               },
               {
                 country: 'Rwanda',
                 phone: '+254 768 860 665',
                 currency: 'RWF',
-                response: '2 hrs',
+                response: 'Confirmed when you call',
               },
             ].map((contact, idx) => (
               <div key={idx} className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg text-center">

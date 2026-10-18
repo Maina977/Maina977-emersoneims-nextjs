@@ -65,7 +65,7 @@ export default function UgandaPage() {
               <h3 className="text-lg font-bold text-blue-400 mb-4">Kampala Hub</h3>
               <ul className="space-y-2 text-gray-300">
                 <li>✓ Same-day delivery for generators</li>
-                <li>✓ 4-hour emergency response</li>
+                <li>✓ Emergency response time confirmed when you call</li>
                 <li>✓ Full service & parts inventory</li>
                 <li>✓ Tech startup support specialists</li>
               </ul>
@@ -87,7 +87,7 @@ export default function UgandaPage() {
             <p className="text-gray-300 mb-4">
               From Kampala's high-rise offices to Fort Portal's hospitals, from Jinja's factories to Mbale's agricultural processors — we serve all of Uganda's 134 districts.
             </p>
-            <p className="text-sm text-blue-300">Response times: Kampala 4 hours • Jinja 6 hours • Regional 24-48 hours</p>
+            <p className="text-sm text-blue-300">Response times depend on location and are confirmed when you call</p>
           </div>
         </div>
       </section>

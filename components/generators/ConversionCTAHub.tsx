@@ -66,7 +66,7 @@ export default function ConversionCTAHub() {
             What Can We Help With?
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Pick your need. We'll respond within 2 hours (business hours).
+            Pick your need and our team will get back to you shortly.
           </p>
         </motion.div>
 

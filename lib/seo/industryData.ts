@@ -157,7 +157,7 @@ export const INDUSTRIES: Industry[] = [
       },
       {
         title: 'Hospitality Maintenance Contract',
-        description: '24/7 priority service for hotels. We know you can\'t wait 48 hours for a technician - we respond within 4 hours, guaranteed.',
+        description: '24/7 priority service for hotels. We know you can\'t wait days for a technician: in the Nairobi metro we aim to be on site in under 4 hours, and other counties are served by our mobile workshop.',
         features: [
           '4-hour emergency response guarantee',
           'Monthly preventive maintenance',
@@ -210,7 +210,7 @@ export const INDUSTRIES: Industry[] = [
     whatsappMessage: 'Hi EmersonEIMS, I manage a hotel and need a reliable generator solution. Please contact me for a site survey.',
     stats: [
       { label: 'Hotels Served', value: '200+' },
-      { label: 'Response Time', value: '4 Hours' },
+      { label: 'Response Time', value: '<4 h Nairobi metro' },
       { label: 'Uptime Guarantee', value: '99.9%' },
       { label: 'Warranty', value: '2 Years' }
     ]
@@ -343,7 +343,7 @@ export const INDUSTRIES: Industry[] = [
     whatsappMessage: 'Hi EmersonEIMS, I\'m from a hospital/clinic and need critical power solutions. Please contact me for an assessment.',
     stats: [
       { label: 'Hospitals Served', value: '150+' },
-      { label: 'Emergency Response', value: '2 Hours' },
+      { label: 'Emergency Response', value: '<4 h Nairobi metro' },
       { label: 'Uptime Achieved', value: '99.99%' },
       { label: 'Lives Protected', value: '1M+' }
     ]
@@ -589,7 +589,7 @@ export const INDUSTRIES: Industry[] = [
       },
       {
         question: 'Do you offer SLAs with financial penalties?',
-        answer: 'Yes. For enterprise customers, we offer SLAs with guaranteed response times (2-4 hours) and uptime commitments (99.9-99.99%). If we fail to meet SLA, you receive service credits. Our SLAs are designed to match your commitments to regulators and customers.'
+        answer: 'Yes. For enterprise customers, we offer SLAs with response times written into the contract (under 4 hours in the Nairobi metro) and uptime commitments (99.9-99.99%). If we fail to meet SLA, you receive service credits. Our SLAs are designed to match your commitments to regulators and customers.'
       }
     ],
     keywords: [
@@ -1010,7 +1010,7 @@ export const INDUSTRIES: Industry[] = [
       { label: 'Buildings Powered', value: '400+' },
       { label: 'Units Protected', value: '15,000+' },
       { label: 'Rental Fleet', value: '50+ Units' },
-      { label: 'Response Time', value: '4 Hours' }
+      { label: 'Response Time', value: '<4 h Nairobi metro' }
     ]
   },
 

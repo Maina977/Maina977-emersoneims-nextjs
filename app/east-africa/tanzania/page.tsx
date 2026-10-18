@@ -39,13 +39,13 @@ export default function TanzaniaPage() {
               {
                 region: 'Dar es Salaam',
                 description: 'Industrial hub, port operations, commercial centers',
-                coverage: 'Premium — Same-day delivery & 8-hour response',
+                coverage: 'Premium — response time confirmed when you call',
                 icon: '🏭',
               },
               {
                 region: 'Arusha',
                 description: 'Regional business center, healthcare, tourism',
-                coverage: 'Premium — 12-hour response',
+                coverage: 'Premium — response time confirmed when you call',
                 icon: '🏢',
               },
               {

@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { RESPONSE_NAIROBI, RESPONSE_NAIROBI_SHORT, RESPONSE_ELSEWHERE } from '@/lib/business/responseTime';
 
 export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend
@@ -20,7 +21,7 @@ export default function EmergencyResponseGuide() {
             <span className="text-3xl">🚨</span>
             <div>
               <p className="font-bold text-lg">Power Emergency Right Now?</p>
-              <p className="text-sm text-red-100">We respond within 2 hours in Nairobi</p>
+              <p className="text-sm text-red-100">{RESPONSE_NAIROBI}</p>
             </div>
           </div>
           <div className="flex gap-4">
@@ -170,7 +171,7 @@ export default function EmergencyResponseGuide() {
               >
                 📞 0768 860 665
               </a>
-              <p className="text-slate-400 mt-2">Response within 2 hours in Nairobi</p>
+              <p className="text-slate-400 mt-2">{RESPONSE_NAIROBI}</p>
             </div>
             <div>
               <h3 className="text-xl font-semibold text-green-400 mb-4">WhatsApp (Fastest)</h3>
@@ -190,16 +191,18 @@ export default function EmergencyResponseGuide() {
           <h2 className="text-2xl font-bold mb-6 text-center">Our Response Times</h2>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center p-6 bg-slate-800/50 rounded-xl border border-slate-700">
-              <div className="text-4xl font-bold text-green-400 mb-2">&lt;2 hrs</div>
-              <div className="text-slate-300">Nairobi CBD & Suburbs</div>
+              {/* Owner-confirmed 2026-10-18 (lib/business/responseTime.ts). Was
+                  "<2 hrs / <6 hrs / <24 hrs nationwide", none of it confirmed. */}
+              <div className="text-4xl font-bold text-green-400 mb-2">{RESPONSE_NAIROBI_SHORT}</div>
+              <div className="text-slate-300">Nairobi metro</div>
             </div>
             <div className="text-center p-6 bg-slate-800/50 rounded-xl border border-slate-700">
-              <div className="text-4xl font-bold text-amber-400 mb-2">&lt;6 hrs</div>
-              <div className="text-slate-300">Greater Nairobi, Kiambu, Machakos</div>
+              <div className="text-2xl font-bold text-amber-400 mb-2">Mobile workshop</div>
+              <div className="text-slate-300">{RESPONSE_ELSEWHERE}</div>
             </div>
             <div className="text-center p-6 bg-slate-800/50 rounded-xl border border-slate-700">
-              <div className="text-4xl font-bold text-cyan-400 mb-2">&lt;24 hrs</div>
-              <div className="text-slate-300">All 47 Counties Nationwide</div>
+              <div className="text-2xl font-bold text-cyan-400 mb-2">Call first</div>
+              <div className="text-slate-300">Call 0768 860 665 to ask how soon we can reach your site</div>
             </div>
           </div>
         </section>

@@ -265,7 +265,7 @@ Our service vehicles carry common spare parts and diagnostic equipment, enabling
 Emergency service includes rapid fault diagnosis, immediate repair where feasible, clear communication about status and timeline, and follow-up to ensure lasting repair. We prioritize based on criticality - hospitals, data centers, and other critical facilities receive priority response.`,
       benefits: [
         '24/7 availability',
-        '2-4 hour response time',
+        'Under 4 hours in the Nairobi metro',
         'Stocked service vehicles',
         'Experienced emergency technicians',
         'Temporary solutions when needed',
@@ -1077,7 +1077,7 @@ Pressure hazards exist in the cooling system, fuel system, and engine crankcase.
       priceRange: 'KES 15,000 - 25,000 base + parts',
       includes: [
         '24/7 availability',
-        '2-4 hour response',
+        'Under 4 hours in the Nairobi metro',
         'Diagnosis and repair',
         'Parts at standard pricing',
         'Emergency stabilization'

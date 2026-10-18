@@ -3,6 +3,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
+import { RESPONSE_NAIROBI_SHORT, RESPONSE_ELSEWHERE_SHORT, RESPONSE_SUMMARY } from '@/lib/business/responseTime';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import { GeneratorEducationCompact } from '@/components/generators/GeneratorEducationPanel';
@@ -825,7 +826,12 @@ export default function GeneratorMaintenancePage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Response Time:</span>
-                    <span className="text-green-400">{county.responseTime}</span>
+                    {/* The per-county responseTime values in the data above ("30 mins"
+                        Nairobi, "45 mins" Mombasa…) were never confirmed and are not
+                        shown; owner-confirmed wording from lib/business/responseTime.ts. */}
+                    <span className="text-green-400 text-right text-xs max-w-[60%]">
+                      {county.name === 'Nairobi' ? RESPONSE_NAIROBI_SHORT : RESPONSE_ELSEWHERE_SHORT}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -850,7 +856,7 @@ export default function GeneratorMaintenancePage() {
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center mb-4">Request Generator Service</h2>
           <p className="text-gray-400 text-center mb-12">
-            Fill out the form below and our team will contact you within 2 hours.
+            Fill out the form below and our team will contact you shortly.
           </p>
           {/* This was a 60-line form with NO onSubmit and NO action, under the
               promise "our team will contact you within 2 hours". Every service
@@ -866,7 +872,7 @@ export default function GeneratorMaintenancePage() {
       {/* Contact CTA */}
       <ServiceCTASection
         title="Need Emergency Generator Service?"
-        subtitle="Our 24/7 emergency response team is ready across all 47 Kenya counties. Average response time: 45 minutes in Nairobi, 2-4 hours nationwide."
+        subtitle={`Our emergency team covers all 47 Kenya counties. ${RESPONSE_SUMMARY}`}
         primaryService="Emergency Generator Service"
         primaryLabel="Request Emergency Service"
         secondaryServices={[

@@ -392,7 +392,7 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
     benefits: [
       {
         title: '24/7 Emergency Response',
-        description: 'Round-the-clock emergency repair service. We respond within 2-4 hours across major cities.',
+        description: 'Round-the-clock emergency repair service. Under 4 hours in the Nairobi metro; other counties by mobile workshop, time depends on distance.',
         icon: '🚨'
       },
       {
@@ -517,7 +517,7 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
     faqs: [
       {
         question: 'How quickly can you respond to emergency generator repairs?',
-        answer: 'We maintain 24/7 emergency response capability. In Nairobi and major cities, we typically arrive within 2-4 hours. For remote locations, same-day response is usually possible.'
+        answer: 'We maintain 24/7 emergency response capability. In the Nairobi metro we aim to be on site in under 4 hours. Other counties are served by our mobile workshop, so the time depends on distance — call 0768 860 665 and we will tell you how soon we can reach your site.'
       },
       {
         question: 'Do you repair all generator brands?',
@@ -1615,7 +1615,7 @@ We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier
     testimonials: [],
 
     stats: [
-      { label: 'Response Time', value: 'Same Day' },
+      { label: 'Response Time', value: '<4 h Nairobi metro' },
       { label: 'All Major Brands', value: 'Serviced' },
       { label: 'Installation', value: 'Professional' },
       { label: 'Maintenance Plans', value: 'Available' }

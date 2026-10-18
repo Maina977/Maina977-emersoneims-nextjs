@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { m, useMotionValue, useSpring, useTransform, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
+import { RESPONSE_NAIROBI_SHORT } from '@/lib/business/responseTime';
 
 /**
  * 🚀 HOLOGRAPHIC 3D INTERACTIVE MAP
@@ -541,7 +542,7 @@ function HolographicMapInner() {
                 <div className="text-gray-400 text-xs">Response Time</div>
                 <div className="text-green-400 font-semibold flex items-center gap-2">
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  2 Hours Average
+                  {RESPONSE_NAIROBI_SHORT}
                 </div>
               </div>
             </div>
