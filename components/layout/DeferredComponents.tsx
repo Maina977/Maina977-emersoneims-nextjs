@@ -36,9 +36,32 @@ const WebsiteStatsCounter = dynamic(() => import('@/components/social/WebsiteSta
 // ═══════════════════════════════════════════════════════════════════════════════
 // TIER 4: Background (load at 6s) - SEO only (no visual impact)
 // ═══════════════════════════════════════════════════════════════════════════════
-const AdvancedSEO = dynamic(() => import('@/components/seo/AdvancedSEO').then(mod => ({ default: mod.default })), { ssr: false });
+/*
+ * AdvancedSEO's default export REMOVED 2026-10-18 (SEOEventTracker, which
+ * only reports engagement events, stays). After hydration it injected JSON-LD
+ * that only crawlers see: 47 LocalBusiness entries, one per county, each with
+ * an addressLocality and an @id on a /counties/* URL that now 308s — telling
+ * Google there are premises in every county; plus FAQPage answers not visible
+ * on the page with unconfirmed claims ("15 years' experience, 500+ completed
+ * projects", "certified technicians on standby", selling Cummins/Perkins/FG
+ * Wilson — only VOLTKA is sold new) and "numberOfEmployees: 50+". Misleading
+ * structured data breaches Google's structured-data guidelines. The
+ * server-rendered schema (app/layout.tsx, StructuredData) is unaffected.
+ */
 const SEOEventTracker = dynamic(() => import('@/components/seo/AdvancedSEO').then(mod => ({ default: mod.SEOEventTracker })), { ssr: false });
-const ComprehensiveKenyaSEO = dynamic(() => import('@/components/seo/ComprehensiveKenyaSEO'), { ssr: false });
+/*
+ * REMOVED 2026-10-16/18: ComprehensiveKenyaSEO. Rendered in a real browser
+ * (and by Google, which runs JS) it added a 1,488-word block to every page
+ * inside <div className="sr-only" aria-hidden="true"> — invisible to visitors,
+ * readable by crawlers: hidden text + keyword stuffing under Google's spam
+ * policies. It listed every county/town and "9,458+ hospitals | 16,245+
+ * hotels" (national totals that read as clients) and warranty terms that
+ * contradict the owner-confirmed 2 years. It also injected seven JSON-LD
+ * blocks on every page, including a site-wide FAQPage and BreadcrumbList that
+ * match no page's visible content. The server-rendered schema in
+ * app/layout.tsx and each page already carries the legitimate entities.
+ * Do not re-mount it.
+ */
 // REMOVED: UltraSpeedOptimizer - Not needed
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -126,9 +149,7 @@ export default function DeferredComponents() {
       {/* TIER 4: SEO only (invisible to users) */}
       {tier4 && (
         <>
-          <AdvancedSEO />
           <SEOEventTracker />
-          <ComprehensiveKenyaSEO />
         </>
       )}
 
