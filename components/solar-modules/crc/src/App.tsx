@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // HashRouter used instead of BrowserRouter so the Solar SPA can mount inside Next.js
 // without conflicting with the host app's URL/routing. All internal nav uses #/...
-import { HashRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 import { FiMenu, FiX, FiBarChart2, FiGrid, FiBox, FiTrendingUp, FiSettings, FiStar, FiClipboard, FiTool, FiCpu, FiZap, FiAlertTriangle, FiLayout, FiEye, FiHexagon, FiActivity, FiCheckSquare, FiGlobe, FiSearch, FiBell, FiUser, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
@@ -11,7 +11,6 @@ import CalculatorPage from './pages/CalculatorPage';
 import DesignerPage from './pages/DesignerPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
-import FeaturesPage from './pages/FeaturesPage';
 import ReportPage from './pages/ReportPage';
 import ProToolsPage from './pages/ProToolsPage';
 import IntelligentCalculatorPage from './pages/IntelligentCalculatorPage';
@@ -463,7 +462,6 @@ const App: React.FC = () => {
       label: 'Overview',
       items: [
         { path: '/dashboard', label: 'Mission Control', icon: FiBarChart2 },
-        { path: '/features',  label: 'Capability Matrix', icon: FiStar },
       ],
     },
     {
@@ -471,10 +469,9 @@ const App: React.FC = () => {
       label: 'Sizing & Quoting',
       items: [
         { path: '/calculator',   label: 'Solar Calculator',     icon: FiGrid },
-        { path: '/intelligent',  label: 'Intelligent Calc',     icon: FiCpu, badge: 'AI' },
+        { path: '/intelligent',  label: 'Appliance Calculator', icon: FiCpu },
         { path: '/report',       label: 'Reports & Quotation',  icon: FiClipboard },
         { path: '/quote-check',  label: 'Quote Checker',        icon: FiCheckSquare, badge: 'NEW' },
-        { path: '/quote-parser', label: 'Quote Parser AI',      icon: FiSearch, badge: 'AI' },
       ],
     },
     {
@@ -482,11 +479,11 @@ const App: React.FC = () => {
       label: 'Design & Engineering',
       items: [
         { path: '/designer',      label: 'System Designer',   icon: FiBox },
-        { path: '/design-studio', label: 'Design Studio AI',  icon: FiLayout, badge: 'AI' },
-        { path: '/voice',         label: 'Voice Design AI',   icon: FiBell, badge: 'AI' },
+        { path: '/design-studio', label: 'Design Studio',     icon: FiLayout },
+        { path: '/voice',         label: 'Voice Commands',    icon: FiBell },
         { path: '/viewer-3d',     label: 'True 3D Viewer',    icon: FiEye },
         { path: '/global-3d',     label: 'Global 3D Map',     icon: FiGlobe },
-        { path: '/panel-layout',  label: 'Panel Layout AI',   icon: FiGrid, badge: 'NEW' },
+        { path: '/panel-layout',  label: 'Panel Layout',      icon: FiGrid },
         { path: '/sun-weather',   label: 'Sun & Weather',     icon: FiActivity, badge: 'NEW' },
         { path: '/wiring',        label: 'Wiring Diagram',    icon: FiActivity },
       ],
@@ -507,7 +504,6 @@ const App: React.FC = () => {
       label: 'Business Intelligence',
       items: [
         { path: '/analytics', label: 'Analytics',     icon: FiTrendingUp },
-        { path: '/sales',     label: 'Sales Dashboard', icon: FiUser, badge: 'LIVE' },
         { path: '/pro',       label: 'Pro Tools',     icon: FiTool },
         { path: '/advanced',  label: 'Advanced Suite', icon: FiZap, badge: 'PRO' },
       ],
@@ -667,7 +663,8 @@ const App: React.FC = () => {
             <Route path="/workflow" element={<ProjectWorkflowPage />} />
             <Route path="/fault-codes" element={<FaultCodesPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/features" element={<FeaturesPage />} />
+            {/* Was a marketing list of "100+ features" (many not built), "24/7 support" and "∞ scalable" — removed 2026-10-18. */}
+            <Route path="/features" element={<Navigate to="/dashboard" replace />} />
             <Route path="/report" element={<ReportPage />} />
             <Route path="/quote-check" element={<QuoteCheckerPage />} />
             <Route path="/voice" element={<VoiceCommandPage />} />

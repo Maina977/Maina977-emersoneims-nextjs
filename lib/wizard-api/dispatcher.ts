@@ -8,29 +8,43 @@
  * Categories of handler:
  *   1. REAL — pure engineering math implemented from authoritative codes
  *      (Eurocode, ASCE 7, Terzaghi, Kirpich, etc.).
- *   2. NEUTRAL — returns deterministic empty/default structures so the
- *      wizard UI keeps working without ever fabricating numbers.
+ *   2. REAL DATA — site context from OpenStreetMap and NASA POWER.
+ *   3. NOT AVAILABLE — stub() answers HTTP 501, success:false, with the
+ *      engineer's number. Never success:true for something not computed.
  *
- * Per data-policy: NEVER invent values. If we don't have a source, we
- * return { ok: true, data: <empty>, note: 'pending implementation' }.
+ * Per data-policy: NEVER invent values, and never default a missing input:
+ * calculators answer 400 naming the missing field (2026-10-18 tool audit).
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { fetchOsmSite } from '@/lib/site/osmSite';
+import { fetchNasaSun, DAYS_IN_MONTH } from '@/lib/solar/nasa';
 
 const ok = (data: unknown, extra: Record<string, unknown> = {}) =>
   NextResponse.json({ success: true, ok: true, data, ...extra });
 
+/*
+ * Not-yet-built endpoints answer 501 with success:false (2026-10-18 tool
+ * audit). They used to answer success:true + empty data + "backend will be
+ * enabled in next release", so screens showed "Ready ✓", "0 risks" or a
+ * BOQ total of 0 as if they were results. `shape` is kept in the response so
+ * existing clients that read data.* do not crash, but nothing claims success.
+ */
 const stub = (path: string, shape: unknown = {}) =>
   NextResponse.json(
     {
-      success: true,
-      ok: true,
+      success: false,
+      ok: false,
+      error: 'not_available',
+      message: 'This calculation is not available online yet. Talk to an EmersonEIMS engineer: 0768 860 665.',
       data: shape,
-      note: 'Endpoint accepted. Calculation backend will be enabled in next release.',
       _path: path,
     },
-    { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600' } },
+    { status: 501, headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300' } },
   );
+
+const fail = (message: string, status = 502) =>
+  NextResponse.json({ success: false, ok: false, error: message }, { status });
 
 async function readJson(req: NextRequest): Promise<Record<string, unknown>> {
   if (req.method === 'GET' || req.method === 'HEAD') return {};
@@ -471,6 +485,43 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
   if (path.startsWith('/api/report/')) return stub(path, { url: null, sections: [] });
   if (path.startsWith('/api/pay/')) return ok({ enabled: false, providers: [] });
   if (path.startsWith('/api/project/')) return ok({ overrides: {}, accepted: true });
+  // ── site context (real data; 2026-10-18 tool audit) ─────────────────────
+  if (path.endsWith('/site/buildings') || path.endsWith('/site/obstacles')) {
+    const sp = req.nextUrl.searchParams;
+    const lat = Number(sp.get('lat') ?? body.lat);
+    const lon = Number(sp.get('lon') ?? body.lon);
+    const radius = Number(sp.get('radiusMeters') ?? body.radiusMeters ?? 80);
+    try {
+      return ok(await fetchOsmSite(lat, lon, radius));
+    } catch (e) {
+      return fail(e instanceof Error ? e.message : 'OpenStreetMap lookup failed');
+    }
+  }
+  if (path.endsWith('/site/pvwatts')) {
+    // Was a proxy to NREL PVWatts that never existed. Now an EmersonEIMS
+    // estimate from NASA POWER climatology, labelled as such.
+    const sp = req.nextUrl.searchParams;
+    const lat = Number(sp.get('lat') ?? body.lat);
+    const lon = Number(sp.get('lon') ?? body.lon);
+    const kw = Number(sp.get('kw') ?? body.kw ?? 1);
+    if (!(kw > 0 && kw < 100_000)) return fail('kw must be a positive system size in kWp', 400);
+    try {
+      const sun = await fetchNasaSun(lat, lon);
+      const PR = 0.78;
+      const monthlyKwh = sun.monthly.map((psh, i) => Math.round(kw * psh * DAYS_IN_MONTH[i] * PR));
+      return ok({
+        annualKwh: monthlyKwh.reduce((s, v) => s + v, 0),
+        monthlyKwh,
+        solradAnnualKwhM2: sun.annual,
+        performanceRatio: PR,
+        provenance: {
+          source: 'NASA POWER long-term irradiance × 78% performance ratio (EmersonEIMS estimate, horizontal plane)',
+        },
+      });
+    } catch (e) {
+      return fail(e instanceof Error ? e.message : 'NASA POWER lookup failed');
+    }
+  }
   if (path.startsWith('/api/site/')) return stub(path, { enriched: false });
   if (path.endsWith('/health-dashboards')) return ok({ dashboards: [] });
   if (path.endsWith('/ai/render')) return stub(path, { url: null });

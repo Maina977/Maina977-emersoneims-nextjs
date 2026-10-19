@@ -1,113 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sizeSolar, KENYA_TOWNS, type SystemType, type RoofType } from '@/lib/solar/sizing';
+import { fetchNasaSun } from '@/lib/solar/nasa';
 
-// Kenyan city → approx peak sun hours (kWh/m²/day)
-const LOCATION_PSH: Record<string, number> = {
-  nairobi: 5.5,
-  mombasa: 5.8,
-  kisumu: 5.2,
-  nakuru: 5.4,
-  eldoret: 5.0,
-  thika: 5.3,
-  malindi: 5.9,
-  garissa: 6.2,
-  kakamega: 4.8,
-  nyeri: 5.1,
-};
+/**
+ * Solar Genius Pro calculator API (rewritten 2026-10-18, tool audit).
+ *
+ * Sun-hours come from NASA POWER climatology for the chosen town or
+ * coordinates (yearly average for sizing, cloudiest month for off-grid). If
+ * NASA cannot be reached the response says so and uses a stated Kenyan
+ * typical value instead of pretending. Maths: lib/solar/sizing.ts.
+ *
+ * Units: annualProduction is kWh/year (it used to be Wh, shown as "MWh").
+ */
 
-// KES market rates (approximate, mid-2025)
-const PANEL_COST_PER_KW_KES = 85000;   // 400 W mono panel + mounting
-const INVERTER_COST_PER_KW_KES = 40000;
-const BATTERY_COST_PER_KWH_KES = 55000; // LiFePO4
-const INSTALLATION_RATE = 0.15;          // 15% of equipment cost
-const KPLC_RATE_KES_PER_KWH = 24.5;     // Kenya Power residential tariff (2025)
-const PANEL_WATT = 400;
-const SYSTEM_EFFICIENCY = 0.78;          // derate: wiring, inverter, temp, soiling
-const DAYS_AUTONOMY = 1.5;              // battery backup days
+const KENYA_TYPICAL_PSH = 5.5;
 
-function getPeakSunHours(location: string): number {
-  const key = location.toLowerCase().replace(/[^a-z]/g, '');
-  for (const [city, psh] of Object.entries(LOCATION_PSH)) {
-    if (key.includes(city) || city.includes(key)) return psh;
-  }
-  return 5.3; // Kenya average fallback
+interface SunHours {
+  annual: number;
+  worstMonth: number;
+  source: 'nasa-power' | 'kenya-typical';
+  note: string;
 }
 
-export async function POST(request: NextRequest) {
+async function sunHoursFor(lat: number, lon: number): Promise<SunHours> {
   try {
-    const body = await request.json();
-    const { consumption, location = 'nairobi', roofType = 'pitched', budget } = body;
+    const n = await fetchNasaSun(lat, lon);
+    return {
+      annual: n.annual,
+      worstMonth: n.worstMonth,
+      source: 'nasa-power',
+      note: `NASA POWER long-term average for ${lat.toFixed(2)}, ${lon.toFixed(2)}`,
+    };
+  } catch {
+    return {
+      annual: KENYA_TYPICAL_PSH,
+      worstMonth: 4.5,
+      source: 'kenya-typical',
+      note: 'NASA POWER could not be reached, so a typical Kenyan value of 5.5 sun-hours was used. Try again for your exact location',
+    };
+  }
+}
 
-    const monthlyKwh = Number(consumption);
-    if (!monthlyKwh || monthlyKwh <= 0) {
-      return NextResponse.json({ error: 'consumption must be a positive number (kWh/month)' }, { status: 400 });
-    }
+const SYSTEM_TYPES: SystemType[] = ['grid-tied', 'hybrid', 'off-grid'];
+const ROOF_TYPES: RoofType[] = ['pitched', 'flat', 'ground'];
+const num = (v: unknown) => (v === null || v === undefined || v === '' ? undefined : Number(v));
 
-    const peakSunHours = getPeakSunHours(location);
-    const dailyKwh = monthlyKwh / 30;
+export async function POST(request: NextRequest) {
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Send a JSON body.' }, { status: 400 });
+  }
 
-    // Roof-type yield factor
-    const roofFactor = roofType === 'flat' ? 0.95 : roofType === 'ground' ? 1.05 : 1.0;
+  const monthlyKwh = Number(body.consumption);
+  if (!Number.isFinite(monthlyKwh) || monthlyKwh <= 0 || monthlyKwh > 2_000_000) {
+    return NextResponse.json({ error: 'consumption must be a positive number of kWh per month' }, { status: 400 });
+  }
+  const systemType = (SYSTEM_TYPES as string[]).includes(String(body.systemType)) ? (body.systemType as SystemType) : 'hybrid';
+  const roofType = (ROOF_TYPES as string[]).includes(String(body.roofType)) ? (body.roofType as RoofType) : 'pitched';
 
-    // System sizing: kW needed to cover daily load with given PSH & efficiency
-    const rawSystemKw = dailyKwh / (peakSunHours * SYSTEM_EFFICIENCY * roofFactor);
-    const systemKw = Math.ceil(rawSystemKw * 10) / 10; // round up to 0.1 kW
+  // Location: explicit coordinates win; otherwise a known Kenyan town.
+  let lat = num(body.lat);
+  let lon = num(body.lon);
+  let locationName = 'Custom location';
+  if (!(Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat!) <= 90 && Math.abs(lon!) <= 180)) {
+    const key = String(body.location ?? 'nairobi').toLowerCase().replace(/[^a-z]/g, '');
+    const town = KENYA_TOWNS.find((t) => t.key === key) ?? KENYA_TOWNS[0];
+    lat = town.lat;
+    lon = town.lon;
+    locationName = town.name;
+  }
 
-    const panels = Math.ceil((systemKw * 1000) / PANEL_WATT);
-    const actualSystemKw = Math.round((panels * PANEL_WATT) / 1000 * 10) / 10;
+  const sun = await sunHoursFor(lat!, lon!);
 
-    const inverterKw = Math.ceil(actualSystemKw * 1.1 * 10) / 10; // 10% headroom
-    const batteryKwh = Math.ceil(dailyKwh * DAYS_AUTONOMY * 10) / 10;
-
-    // Annual production
-    const annualProductionKwh = actualSystemKw * peakSunHours * 365 * SYSTEM_EFFICIENCY;
-    const annualProductionWh = Math.round(annualProductionKwh * 1000);
-
-    // Costs (KES)
-    const equipmentCost =
-      actualSystemKw * PANEL_COST_PER_KW_KES +
-      inverterKw * INVERTER_COST_PER_KW_KES +
-      batteryKwh * BATTERY_COST_PER_KWH_KES;
-    const totalCost = Math.round(equipmentCost * (1 + INSTALLATION_RATE));
-
-    // Monthly saving = units generated / month × tariff, capped at consumption
-    const monthlyProductionKwh = annualProductionKwh / 12;
-    const billableKwh = Math.min(monthlyProductionKwh, monthlyKwh);
-    const monthlySaving = Math.round(billableKwh * KPLC_RATE_KES_PER_KWH);
-
-    // Payback
-    const annualSaving = monthlySaving * 12;
-    const paybackYears = annualSaving > 0 ? (totalCost / annualSaving).toFixed(1) : 'N/A';
-
-    // Carbon offset: Kenya grid factor ≈ 0.314 kg CO₂/kWh
-    const carbonOffsetKgPerYear = Math.round(annualProductionKwh * 0.314);
-
-    // Budget check
-    let budgetNote: string | undefined;
-    if (budget && Number(budget) > 0 && totalCost > Number(budget)) {
-      const affordable = Math.floor((Number(budget) / (1 + INSTALLATION_RATE)) / (PANEL_COST_PER_KW_KES + INVERTER_COST_PER_KW_KES * 1.1 + BATTERY_COST_PER_KWH_KES * DAYS_AUTONOMY / actualSystemKw) * 10) / 10;
-      budgetNote = `Budget KES ${Number(budget).toLocaleString()} is below estimated cost. Consider a ${affordable > 0 ? affordable + ' kW' : 'smaller'} system.`;
-    }
-
-    return NextResponse.json({
-      systemKw: actualSystemKw,
-      panels,
-      batteryKwh,
-      inverterKw,
-      totalCost,
-      monthlySaving,
-      paybackYears,
-      annualProduction: annualProductionWh,
-      peakSunHours,
-      carbonOffsetKgPerYear,
-      location,
+  try {
+    const r = sizeSolar({
+      monthlyKwh,
+      pshAnnual: sun.annual,
+      pshWorstMonth: sun.worstMonth,
+      systemType,
       roofType,
-      ...(budgetNote ? { budgetNote } : {}),
+      tariffKesPerKwh: num(body.tariff),
+      daytimeUsePct: num(body.daytimeUsePct),
+      nightUsePct: num(body.nightUsePct),
+      autonomyDays: num(body.autonomyDays),
+      peakLoadKw: num(body.peakLoadKw),
+      dieselKesPerLitre: num(body.dieselKesPerLitre),
+    });
+    return NextResponse.json({
+      ...r,
+      location: locationName,
+      lat,
+      lon,
+      sunHours: sun,
+      // Field names the rest of the Solar app already reads (all in kWh / KES).
+      systemKw: r.pvKwp,
+      totalCost: r.cost.midKes,
+      monthlySaving: r.monthlySavingKes,
+      annualProduction: r.annualEnergyKwh,
+      peakSunHours: sun.annual,
+      carbonOffsetKgPerYear: r.co2AvoidedKgPerYear ?? null,
     });
   } catch (err) {
-    console.error('[solar/calculate]', err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Calculation failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Calculation failed' }, { status: 400 });
   }
 }

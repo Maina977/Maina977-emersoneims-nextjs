@@ -831,14 +831,18 @@ const OcrTool = () => {
 // Page
 // ============================================
 const ProToolsPage: React.FC = () => {
-  const tabs = ['Finance', 'Solar', 'Sustainability', 'Reports', 'Business', 'R&D'] as const;
+  // 2026-10-18 tool audit: the 'Business' tab exposed the CRM (leads,
+  // pipeline, profit) — /api/biz is admin-only now — and every 'R&D' tool
+  // called /api/research/*, which returns 501 (they were empty success
+  // stubs). Both tabs are off the public page.
+  const tabs = ['Finance', 'Solar', 'Sustainability', 'Reports'] as const;
   type T = typeof tabs[number];
   const [tab, setTab] = useState<T>('Finance');
 
   return (
     <Container>
       <Title>Pro Tools</Title>
-      <Sub>Direct access to every engineering, financial, sustainability and business endpoint — all backed by real algorithms or cited datasets (no fabricated values).</Sub>
+      <Sub>Direct access to every engineering, financial, sustainability and business endpoint — backed by published algorithms or cited datasets. Results are engineering estimates; check them before relying on them.</Sub>
       <Tabs>
         {tabs.map((x) => <Tab key={x} $active={tab === x} onClick={() => setTab(x)}>{x}</Tab>)}
       </Tabs>
@@ -854,24 +858,6 @@ const ProToolsPage: React.FC = () => {
         </>)}
         {tab === 'Reports' && (<>
           <ProposalPdfTool /><XlsxTool /><SchematicTool />
-        </>)}
-        {tab === 'Business' && (<>
-          <LeadCaptureTool /><PipelineTool /><ConversionTool /><PortfolioTool /><ProfitTool />
-        </>)}
-        {tab === 'R&D' && (<>
-          <ResearchTool />
-          <NlpTool />
-          <ShadingTool />
-          <FaultDetectTool />
-          <ForecastTool />
-          <TouTool />
-          <SoilingTool />
-          <YieldValTool />
-          <EvRouteTool />
-          <PermitTool />
-          <PanelCountTool />
-          <MqttTool />
-          <OcrTool />
         </>)}
       </Grid>
     </Container>

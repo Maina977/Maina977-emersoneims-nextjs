@@ -9,7 +9,7 @@ import './AdvancedSolarCalculator.css';
 /**
  * 🌟 ADVANCED INTELLIGENT SOLAR CALCULATOR
  * 
- * Harvard-level solar design and diagnostic tool
+ * Appliance-based solar design and diagnostic tool
  * - Complete system sizing
  * - Cost estimation  
  * - Troubleshooting & diagnostics
@@ -278,8 +278,8 @@ export const AdvancedSolarCalculator: React.FC = () => {
   const renderDiagnosticTab = () => (
     <div className="calculator-tab diagnostic-tab">
       <div className="section-header">
-        <h2>🤖 Intelligent Diagnostic AI</h2>
-        <p>Describe your solar system problem and get AI solutions</p>
+        <h2>🛠️ Symptom Diagnosis</h2>
+        <p>Describe the problem and get the likely causes and checks (rule-based).</p>
       </div>
 
       <div className="diagnostic-input">
@@ -1010,7 +1010,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
     <div className="advanced-solar-calculator">
       <header className="calculator-header">
         <h1>🌟 INTELLIGENT SOLAR CALCULATOR</h1>
-        <p>Harvard-level solar system design, diagnostics, and installation guide</p>
+        <p>Appliance-based sizing, diagnostics and installation guide</p>
       </header>
 
       {/* Tab Navigation */}

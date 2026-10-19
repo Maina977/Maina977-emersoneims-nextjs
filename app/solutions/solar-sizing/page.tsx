@@ -249,15 +249,19 @@ const DESIGN_EXAMPLES = [
 ];
 
 // KENYA PEAK SUN HOURS BY REGION
+// NASA POWER climatology (ALLSKY_SFC_SW_DWN, long-term average), retrieved
+// 2026-10-18 for each town's coordinates — the same source the Solar Genius
+// Pro calculator uses. The previous hand-typed values (Nairobi 4.5, Nyeri
+// 4.3 ...) were 20-30% below NASA's and disagreed with the calculator.
 const KENYA_PSH = [
-  { region: 'Nairobi', psh: 4.5, note: 'Moderate, some cloud cover' },
-  { region: 'Mombasa', psh: 5.0, note: 'Good coastal radiation' },
-  { region: 'Kisumu', psh: 5.2, note: 'Excellent, hot climate' },
-  { region: 'Nakuru', psh: 4.8, note: 'Good highland conditions' },
-  { region: 'Eldoret', psh: 4.5, note: 'Moderate, cooler temps' },
-  { region: 'Turkana', psh: 6.0, note: 'Excellent, arid conditions' },
-  { region: 'Garissa', psh: 5.8, note: 'Very good, hot and dry' },
-  { region: 'Nyeri', psh: 4.3, note: 'Moderate, highland area' },
+  { region: 'Nairobi', psh: 5.82, note: 'Cloudiest month (June): 4.74' },
+  { region: 'Mombasa', psh: 5.69, note: 'Cloudiest month: 4.69' },
+  { region: 'Kisumu', psh: 6.03, note: 'Cloudiest month: 5.46' },
+  { region: 'Nakuru', psh: 5.68, note: 'Cloudiest month: 4.88' },
+  { region: 'Eldoret', psh: 6.0, note: 'Cloudiest month: 5.20' },
+  { region: 'Turkana (Lodwar)', psh: 6.31, note: 'Cloudiest month: 5.95' },
+  { region: 'Garissa', psh: 5.87, note: 'Cloudiest month: 5.32' },
+  { region: 'Nyeri', psh: 5.68, note: 'Cloudiest month: 4.88' },
 ];
 
 export default function SolarSizingHub() {
@@ -420,15 +424,15 @@ export default function SolarSizingHub() {
                       <h4 className="text-white font-bold mb-2">Example:</h4>
                       <ul className="text-gray-300 text-sm space-y-1">
                         <li>• Daily load: 10 kWh</li>
-                        <li>• Peak sun hours (Nairobi): 4.5</li>
-                        <li>• System efficiency: 80%</li>
+                        <li>• Peak sun hours (Nairobi, NASA POWER): 5.82</li>
+                        <li>• System efficiency (performance ratio): 78%</li>
                       </ul>
                     </div>
                     <div>
                       <h4 className="text-white font-bold mb-2">Result:</h4>
-                      <p className="text-green-400 font-mono">= 10 ÷ (4.5 × 0.8)</p>
-                      <p className="text-green-400 text-2xl font-bold mt-2">= 2.78 kWp</p>
-                      <p className="text-gray-400 text-sm mt-1">→ 6-7 × 450W panels</p>
+                      <p className="text-green-400 font-mono">= 10 ÷ (5.82 × 0.78)</p>
+                      <p className="text-green-400 text-2xl font-bold mt-2">= 2.20 kWp</p>
+                      <p className="text-gray-400 text-sm mt-1">→ 4 × 550 W panels (off-grid: size on the cloudiest month, 4.74)</p>
                     </div>
                   </div>
                 </div>

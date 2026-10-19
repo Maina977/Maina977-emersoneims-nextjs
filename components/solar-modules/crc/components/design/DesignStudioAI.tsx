@@ -1,6 +1,7 @@
-// DESIGN STUDIO AI — real Leaflet map + real OSM satellite tiles
-// + real geocoding via Nominatim + real OSM building obstacles +
-// real PVWatts production. Panels are placed at true (lat, lon) and
+// DESIGN STUDIO — Leaflet map + OSM tiles + Nominatim geocoding +
+// OSM building/tree obstacles (/api/site/obstacles, Overpass) + yearly
+// yield from NASA POWER sun-hours (/api/site/pvwatts; an EmersonEIMS
+// estimate, not NREL PVWatts — renamed endpoint kept for compatibility). Panels are placed at true (lat, lon) and
 // their shading comes from the real /api/site/obstacles endpoint.
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
@@ -134,7 +135,7 @@ export const DesignStudioAI: React.FC<{ address: string; roofImage?: File }> = (
     setState((s) => ({ ...s, loadingPV: true }));
     try {
       const r = await fetch(`/api/site/pvwatts?lat=${lat}&lon=${lon}&kw=${kw.toFixed(3)}&az=${az}&tilt=${tilt}`);
-      if (!r.ok) throw new Error(`PVWatts HTTP ${r.status}`);
+      if (!r.ok) throw new Error(`Yield estimate HTTP ${r.status}`);
       const j = await r.json();
       if (!j.success) throw new Error(j.error || 'PVWatts failed');
       setState((s) => ({ ...s, pvwattsAnnualKwh: j.data.annualKwh, pvwattsSource: j.data.provenance.source, loadingPV: false }));
@@ -215,7 +216,7 @@ export const DesignStudioAI: React.FC<{ address: string; roofImage?: File }> = (
   return (
     <div className="design-studio-container">
       <div className="studio-header">
-        <h2>🎨 Design Studio AI <span style={{ fontSize: '0.7em', color: '#0fc' }}>(real OSM + NREL PVWatts + sun geometry)</span></h2>
+        <h2>🎨 Design Studio <span style={{ fontSize: '0.7em', color: '#0fc' }}>(OpenStreetMap buildings + NASA sun data + sun geometry)</span></h2>
         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
           <input
             value={searchAddress}
@@ -336,7 +337,7 @@ export const DesignStudioAI: React.FC<{ address: string; roofImage?: File }> = (
             <div>OSM obstacles loaded: <strong>{state.obstaclesGeo.length}</strong>{state.loadingObstacles && ' (loading…)'}</div>
             <div style={{ marginTop: '0.5rem', borderTop: '1px solid #333', paddingTop: '0.5rem' }}>
               <strong>Annual production:</strong>{' '}
-              {state.loadingPV ? 'fetching NREL PVWatts…'
+              {state.loadingPV ? 'fetching NASA sun data…'
                 : state.pvwattsAnnualKwh ? `${Math.round(state.pvwattsAnnualKwh).toLocaleString()} kWh/yr` : '—'}
               {state.pvwattsSource && (
                 <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{state.pvwattsSource}</div>
@@ -350,7 +351,7 @@ export const DesignStudioAI: React.FC<{ address: string; roofImage?: File }> = (
               <li>Map tiles: Esri World Imagery (free)</li>
               <li>Geocoding: OSM Nominatim</li>
               <li>Obstacles: OSM Overpass (buildings + trees)</li>
-              <li>Production: NREL PVWatts v8 (NSRDB TMY)</li>
+              <li>Production: NASA POWER long-term sun-hours × 78% performance ratio (estimate)</li>
               <li>Shading: SPA solar geometry</li>
             </ul>
           </div>

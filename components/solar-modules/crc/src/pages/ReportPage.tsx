@@ -326,14 +326,17 @@ export default function ReportPage() {
       },
       env: {
         lifetimeMwh: Math.round((annualProduction * 25) / 1000),
-        co2AvoidedTonnes: Math.round((annualProduction * 25 * 0.82) / 1000),
-        treesEquivalent: Math.round((annualProduction * 25 * 0.82) / 60),
-        carsEquivalent: Math.round((annualProduction * 25 * 0.82) / 4600)
+        // CO2 only when the calculator measured it (off-grid, diesel displaced).
+        // A flat 0.82 kg/kWh grid factor overstated Kenya's largely renewable
+        // grid several times over (2026-10-18 tool audit).
+        co2AvoidedTonnes: metrics.carbonOffsetKg > 0 ? Math.round((metrics.carbonOffsetKg * 25) / 1000) : null,
+        treesEquivalent: null,
+        carsEquivalent: null
       },
       provenance: [
-        { label: 'Tariff KSh ' + site.tariffKesPerKwh + '/kWh', source: 'EPRA tariff order',
-          url: 'https://epra.go.ke', retrievedIso: new Date().toISOString().slice(0, 10) },
-        { label: 'Equipment pricing', source: brand.companyName + ' supplier quotes',
+        { label: 'Tariff KSh ' + site.tariffKesPerKwh + '/kWh', source: 'Entered by the client (total bill ÷ kWh)',
+          url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
+        { label: 'Equipment pricing', source: 'Typical Kenyan installed prices (estimate, not a quotation)',
           url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
         { label: 'Irradiance ' + (site.irradianceKwhPerM2Day || metrics.peakSunHours) + ' kWh/m²/day',
           source: 'NASA POWER Project', url: 'https://power.larc.nasa.gov',

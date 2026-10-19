@@ -6,13 +6,13 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/solar-design-studio`;
 
 export const metadata: Metadata = {
-  title: 'Solar Design Studio — 3D AI Solar Layout, Sizing & BOQ',
+  title: 'Solar Design Studio — Roof Layout, Shading & Wiring',
   description:
-    'Browser-based solar design studio: roof analysis, panel layout, string sizing, shading, irradiance and BOQ. Powered by EmersonEIMS Solar Genius Pro for installers across Kenya and East Africa.',
+    'Draw your roof, place panels, see sun-path shading through the day, and get a single-line diagram and wire schedule. Free in your browser; an EmersonEIMS engineer can turn it into a quotation.',
   keywords: [
     'solar design studio',
-    '3D solar layout Kenya',
-    'solar BOQ generator',
+    'solar roof layout Kenya',
+    'solar single-line diagram',
     'PV string sizing',
     'shading analysis',
     'roof solar layout',
@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: URL },
   openGraph: {
-    title: 'Solar Design Studio — 3D Layout, Sizing & BOQ',
-    description: '3D solar layout, sizing and BOQ in your browser. Built for Kenya & East Africa installers.',
+    title: 'Solar Design Studio — Roof Layout, Shading & Wiring',
+    description: 'Roof layout, sun-path shading, single-line diagram and wire schedule in your browser.',
     url: URL,
     siteName: 'EmersonEIMS',
     type: 'website',
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Solar Design Studio — 3D Layout, Sizing & BOQ',
-    description: 'Browser-based solar layout, sizing and BOQ.',
+    title: 'Solar Design Studio — Roof Layout, Shading & Wiring',
+    description: 'Roof layout, shading and wiring in your browser.',
     images: [`${SITE}/og-image.jpg`],
     site: '@EmersonEIMS',
   },
@@ -45,10 +45,10 @@ export default function SolarDesignStudioLayout({ children }: { children: ReactN
       <FlagshipProductSchema
         name="Solar Design Studio"
         url={URL}
-        description="Browser-based solar design studio: roof analysis, panel layout, string sizing, shading and BOQ."
+        description="Browser-based solar design studio: roof layout, panel placement, sun-path shading, single-line diagram and wire schedule."
         category="Solar Design"
         applicationCategory="DesignApplication"
-        keywords={['Solar Design', 'PV Layout', 'String Sizing', 'Shading', 'BOQ']}
+        keywords={['Solar Design', 'PV Layout', 'Shading', 'Single-Line Diagram', 'Wire Schedule']}
         industry="Solar Installers, EPCs"
         priceKes="Free"
       />

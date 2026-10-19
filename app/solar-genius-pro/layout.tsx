@@ -30,12 +30,12 @@ export const metadata: Metadata = {
   description:
     // Answers the searcher's actual question — how big a system do I need, and
     // what will it cost — instead of describing the product's feature list.
-    'Work out what size solar system you need, free. Panel and battery sizing, payback and running costs at Kenya prices, with EPRA-aware output you can quote from.',
+    'Work out what size solar system you need, free. Panel, inverter and battery sizing from NASA sun-hours for your town, with a typical Kenyan cost range and payback.',
   keywords: [
     'commercial solar design Kenya',
     'solar sizing tool',
     'hybrid solar engineering',
-    'EPRA compliance solar',
+    'solar battery sizing Kenya',
     'solar feasibility study',
     'Solar Genius Pro',
     'EmersonEIMS solar',
@@ -49,9 +49,9 @@ export const metadata: Metadata = {
    * x-pathname header.
    */
   openGraph: {
-    title: 'Solar Genius Pro — Commercial Solar Engineering Intelligence',
+    title: 'Solar Genius Pro — Free Solar Sizing for Kenya',
     description:
-      'Load profiling, hybrid sizing, financials and EPRA-aware compliance for serious commercial solar projects.',
+      'Grid-tied, hybrid and off-grid sizing from NASA sun-hours, with cost range, payback and a route to an engineer.',
     url: URL,
     type: 'website',
     siteName: 'EmersonEIMS',
@@ -60,8 +60,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Solar Genius Pro — Commercial Solar Engineering Intelligence',
-    description: 'Sizing, hybrid, financials, EPRA-aware compliance.',
+    title: 'Solar Genius Pro — Free Solar Sizing for Kenya',
+    description: 'Free solar sizing from NASA sun-hours, with cost and payback.',
     images: [`${SITE}/og-image.jpg`],
     site: '@EmersonEIMS',
   },
@@ -75,10 +75,10 @@ export default function SolarGeniusProLayout({ children }: { children: ReactNode
       <FlagshipProductSchema
         name="Solar Genius Pro"
         url={URL}
-        description="Commercial solar design and engineering intelligence: load profiling, hybrid sizing, financials, EPRA-aware compliance, proposal-ready outputs."
+        description="Free solar sizing estimate for Kenya: panels, inverter and battery from NASA sun-hours, with typical cost range and payback."
         category="Solar Engineering"
         applicationCategory="EngineeringApplication"
-        keywords={['Commercial Solar', 'Hybrid Solar', 'EPRA', 'Solar Sizing', 'Solar Financials']}
+        keywords={['Solar Sizing', 'Hybrid Solar', 'Off-grid Solar', 'Battery Sizing', 'Solar Payback']}
         industry="EPCs, Facility Managers, C&I Buyers"
         priceKes="Free"
       />

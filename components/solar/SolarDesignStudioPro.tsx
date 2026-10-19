@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * SOLAR DESIGN STUDIO PRO - AURORA KILLER
+ * SOLAR DESIGN STUDIO — roof layout, sun-path shading, SLD and wire schedule
  *
  * Features:
  * 1. Interactive Roof Editor - Draw roof, place panels drag-drop
@@ -12,9 +12,10 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  Sun, Zap, Battery, Calculator, FileText, Download, Play, Pause, Trash2, Plus, Grid, Layers, Cable,
-  AlertTriangle, CheckCircle2, Settings, Box, MapPin, Save, Upload, Printer, Share2, Activity
+  Sun, Zap, Battery, Calculator, FileText, Play, Pause, Trash2, Plus, Grid, Layers, Cable,
+  AlertTriangle, CheckCircle2, Settings, Box, MapPin, Printer, Share2, Activity
 } from 'lucide-react';
+import { estimateInstalledCost } from '@/lib/solar/sizing';
 
 // =============================================================================
 // TYPES
@@ -97,6 +98,29 @@ export default function SolarDesignStudioPro() {
   const [batteryCapacity, setBatteryCapacity] = useState(10);
   const [stringConfig, setStringConfig] = useState({ series: 2, parallel: 2 });
 
+  // NASA POWER sun-hours for the chosen point (via /api/site/pvwatts, kw=1).
+  const [sunHours, setSunHours] = useState(5.5);
+  const [sunSource, setSunSource] = useState('Kenya typical value (NASA loading…)');
+  useEffect(() => {
+    let cancelled = false;
+    const t = setTimeout(() => {
+      fetch(`/api/site/pvwatts?lat=${latitude}&lon=${longitude}&kw=1`)
+        .then((r) => r.json())
+        .then((j) => {
+          if (cancelled) return;
+          if (j?.success && j.data?.solradAnnualKwhM2) {
+            setSunHours(j.data.solradAnnualKwhM2);
+            setSunSource(`NASA POWER long-term average for ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+          } else {
+            setSunHours(5.5);
+            setSunSource('Kenya typical value (NASA unavailable)');
+          }
+        })
+        .catch(() => { if (!cancelled) { setSunHours(5.5); setSunSource('Kenya typical value (NASA unavailable)'); } });
+    }, 600);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [latitude, longitude]);
+
   // Canvas refs
   const roofCanvasRef = useRef<HTMLCanvasElement>(null);
   const shadingCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -112,9 +136,16 @@ export default function SolarDesignStudioPro() {
     ? panels.reduce((sum, p) => sum + p.shaded, 0) / panels.length
     : 0;
   const effectiveKW = totalKW * (1 - avgShading / 100);
-  const dailyProduction = effectiveKW * 5.5; // Avg sun hours Kenya
+  // Production = kWp × NASA POWER sun-hours for this location × 78%
+  // performance ratio (2026-10-18 tool audit: was kWp × a flat 5.5 with no
+  // losses at all, ~28% high). Falls back to 5.5 until NASA answers.
+  const PERFORMANCE_RATIO = 0.78;
+  const dailyProduction = effectiveKW * sunHours * PERFORMANCE_RATIO;
   const monthlyProduction = dailyProduction * 30;
   const annualProduction = dailyProduction * 365;
+  const installedCost = estimateInstalledCost(totalKW, inverterSize, batteryCapacity, batteryCapacity > 0 ? 'hybrid' : 'grid-tied');
+  const TARIFF_KES = 25;
+  const annualSavingKes = annualProduction * TARIFF_KES;
 
   // Wire sizing (simplified)
   const systemVoltage = stringConfig.series * 40; // ~40V per panel
@@ -405,33 +436,43 @@ export default function SolarDesignStudioPro() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900">
       {/* Header */}
-      <header className="bg-slate-800/80 backdrop-blur border-b border-slate-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+      <header className="bg-slate-800/80 backdrop-blur border-b border-slate-700 px-3 sm:px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-12 h-12 shrink-0 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
               <Sun className="w-7 h-7 text-white" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Solar Design Studio Pro</h1>
-              <p className="text-slate-400 text-sm">Interactive Solar Design Platform</p>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-white">Solar Design Studio</h1>
+              <p className="text-slate-400 text-sm">Roof layout, shading and wiring</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg flex items-center gap-2">
-              <Save className="w-4 h-4" /> Save
+          {/* Save / Load / "Export PDF" had no handlers and did nothing
+              (2026-10-18 tool audit). Print works in every browser and gives
+              a PDF via "Save as PDF"; sending the design to an engineer is the
+              real next step. */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg flex items-center gap-2"
+            >
+              <Printer className="w-4 h-4" /> Print / PDF
             </button>
-            <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg flex items-center gap-2">
-              <Upload className="w-4 h-4" /> Load
-            </button>
-            <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-2">
-              <Download className="w-4 h-4" /> Export PDF
-            </button>
+            <a
+              href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi EmersonEIMS, please check my solar layout: ${totalPanels} panels, ${totalKW.toFixed(2)} kW at ${location} (${latitude.toFixed(3)}, ${longitude.toFixed(3)}).`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-2"
+            >
+              <Share2 className="w-4 h-4" /> Send to an engineer
+            </a>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-4">
           {[
             { id: 'design', label: 'Roof Design', icon: Layers },
             { id: 'shading', label: 'Shading Analysis', icon: Sun },
@@ -454,9 +495,9 @@ export default function SolarDesignStudioPro() {
         </div>
       </header>
 
-      <div className="flex">
-        {/* Left Sidebar - Tools */}
-        <aside className="w-64 bg-slate-800/50 border-r border-slate-700 p-4 min-h-[calc(100vh-140px)]">
+      <div className="flex flex-col lg:flex-row">
+        {/* Left Sidebar - Tools (stacks above the canvas on phones) */}
+        <aside className="w-full lg:w-64 shrink-0 bg-slate-800/50 border-b lg:border-b-0 lg:border-r border-slate-700 p-4 lg:min-h-[calc(100vh-140px)]">
           {/* Location */}
           <div className="mb-6">
             <label className="text-slate-400 text-sm mb-2 block">Location</label>
@@ -729,14 +770,14 @@ export default function SolarDesignStudioPro() {
         </aside>
 
         {/* Main Canvas */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 min-w-0 p-3 sm:p-6">
           {(activeTab === 'design' || activeTab === 'shading') && (
             <div className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+              <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-slate-700">
                 <h2 className="text-white font-medium">
                   {activeTab === 'design' ? 'Roof Designer' : 'Shading Simulation'}
                 </h2>
-                <div className="flex items-center gap-4 text-sm">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                   <span className="text-slate-400">Panels: <span className="text-white">{totalPanels}</span></span>
                   <span className="text-slate-400">Total: <span className="text-amber-400">{totalKW.toFixed(2)} kW</span></span>
                   <span className="text-slate-400">Effective: <span className="text-emerald-400">{effectiveKW.toFixed(2)} kW</span></span>
@@ -769,7 +810,7 @@ export default function SolarDesignStudioPro() {
 
                 {/* SLD Diagram */}
                 <div className="bg-slate-900 rounded-lg p-6 font-mono text-sm overflow-x-auto">
-                  <pre className="text-slate-300">
+                  <pre className="text-slate-300 overflow-x-auto">
 {`
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        SINGLE LINE DIAGRAM - AUTO GENERATED                  │
@@ -875,16 +916,23 @@ EARTHING:
                   </pre>
                 </div>
 
-                <div className="flex gap-3 mt-4">
-                  <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-2">
-                    <Download className="w-4 h-4" /> Download SLD (PDF)
+                {/* These three buttons had no handlers (2026-10-18 tool audit). */}
+                <div className="flex flex-wrap gap-3 mt-4">
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg flex items-center gap-2"
+                  >
+                    <Printer className="w-4 h-4" /> Print / save as PDF
                   </button>
-                  <button className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg flex items-center gap-2">
-                    <Printer className="w-4 h-4" /> Print
-                  </button>
-                  <button className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg flex items-center gap-2">
-                    <Share2 className="w-4 h-4" /> Share with Electrician
-                  </button>
+                  <a
+                    href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi EmersonEIMS, please check the wiring for my solar design: ${totalPanels} × ${panelWatts} W (${totalKW.toFixed(2)} kW), ${stringConfig.series} in series × ${stringConfig.parallel} strings, ${inverterSize} kW inverter, ${batteryCapacity} kWh battery.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg flex items-center gap-2"
+                  >
+                    <Share2 className="w-4 h-4" /> Send to an engineer
+                  </a>
                 </div>
               </div>
 
@@ -949,7 +997,7 @@ EARTHING:
               <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
                 <h2 className="text-white font-bold text-xl mb-4">System Summary Report</h2>
 
-                <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl p-4 border border-amber-500/30">
                     <Sun className="w-8 h-8 text-amber-400 mb-2" />
                     <p className="text-slate-400 text-sm">System Size</p>
@@ -998,29 +1046,42 @@ EARTHING:
                     <table className="w-full text-sm">
                       <tbody className="text-slate-300">
                         <tr className="border-b border-slate-700/50">
-                          <td className="py-2">Estimated System Cost</td>
-                          <td className="text-right">KSh {(totalKW * 85000).toLocaleString()}</td>
+                          <td className="py-2">Typical installed cost</td>
+                          <td className="text-right">KSh {installedCost.lowKes.toLocaleString()} – {installedCost.highKes.toLocaleString()}</td>
                         </tr>
                         <tr className="border-b border-slate-700/50">
-                          <td className="py-2">Annual Savings</td>
-                          <td className="text-right text-emerald-400">KSh {(annualProduction * 25).toLocaleString()}</td>
+                          <td className="py-2">Annual saving (all used on site, KSh {TARIFF_KES}/kWh)</td>
+                          <td className="text-right text-emerald-400">KSh {Math.round(annualSavingKes).toLocaleString()}</td>
                         </tr>
                         <tr>
-                          <td className="py-2">Payback Period</td>
-                          <td className="text-right text-amber-400">{((totalKW * 85000) / (annualProduction * 25)).toFixed(1)} years</td>
+                          <td className="py-2">Simple payback</td>
+                          <td className="text-right text-amber-400">{annualSavingKes > 0 ? `${(installedCost.midKes / annualSavingKes).toFixed(1)} years` : '—'}</td>
                         </tr>
                       </tbody>
                     </table>
+                    <p className="text-xs text-slate-500 mt-2">
+                      Sun data: {sunSource} ({sunHours} sun-hours a day), 78% performance ratio. Prices are typical Kenyan
+                      installed ranges (mid-2026), not a quotation.
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex gap-3 mt-6">
-                  <button className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-2">
-                    <Download className="w-5 h-5" /> Download Full Report (PDF)
+                <div className="flex flex-wrap gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-2"
+                  >
+                    <Printer className="w-5 h-5" /> Print / save as PDF
                   </button>
-                  <button className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg flex items-center gap-2">
-                    <FileText className="w-5 h-5" /> Generate Quotation
-                  </button>
+                  <a
+                    href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi EmersonEIMS, please quote this solar design: ${totalPanels} × ${panelWatts} W (${totalKW.toFixed(2)} kW), ${inverterSize} kW inverter, ${batteryCapacity} kWh battery, at ${location}.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg flex items-center gap-2"
+                  >
+                    <FileText className="w-5 h-5" /> Get a quotation on WhatsApp
+                  </a>
                 </div>
               </div>
             </div>
@@ -1028,7 +1089,7 @@ EARTHING:
         </div>
 
         {/* Right Sidebar - Stats */}
-        <aside className="w-72 bg-slate-800/50 border-l border-slate-700 p-4 min-h-[calc(100vh-140px)]">
+        <aside className="w-full lg:w-72 shrink-0 bg-slate-800/50 border-t lg:border-t-0 lg:border-l border-slate-700 p-4 lg:min-h-[calc(100vh-140px)]">
           <h3 className="text-white font-medium mb-4">System Overview</h3>
 
           <div className="space-y-4">

@@ -675,17 +675,19 @@ export const B2B_PROFILES = {
   },
 
   solarDesignStudio: {
-    eyebrow: 'Solar Design Studio • C&I PV',
-    headline: 'Visual C&I solar design — array layouts, single-line diagrams and tender packs.',
+    // 2026-10-18 tool audit: was "tender packs", "BOQ generation", "side-by-side
+    // option compare" and "used on live tenders" — the studio does none of those.
+    eyebrow: 'Solar Design Studio • Roof Layout',
+    headline: 'Lay out panels on your roof and see the shading — then have an engineer check it.',
     subtitle:
-      'Drag-and-drop solar layout, string design, single-line schematics and BOQ generation for commercial & industrial PV — backed by EmersonEIMS engineers.',
-    whoFor: ['EPC & solar contractors', 'Consulting engineers', 'Facility & energy managers', 'Architects & developers', 'Property managers'],
+      'Draw the roof, place panels, follow the sun through the day, and get a single-line diagram and wire schedule. Free in your browser, backed by EmersonEIMS engineers.',
+    whoFor: ['Homeowners', 'Solar installers', 'Facility & energy managers', 'Architects & developers', 'Property managers'],
     pso: [
-      { problem: 'Hand-drawn layouts cause BOQ errors and re-orders on site.', solution: 'Studio generates layout, BOQ and SLD in one consistent package.', outcome: 'Fewer site change-orders, predictable cost, faster install.' },
-      { problem: 'Designs lack engineering review.', solution: 'Every studio design can be escalated to a real engineer for sign-off.', outcome: 'Designs that get permitted and financed.' },
-      { problem: 'Hard to compare two design options for the board.', solution: 'Side-by-side option compare with yield + ROI deltas.', outcome: 'Faster, cleaner board decisions.' },
+      { problem: 'You cannot tell how many panels fit or where shade falls.', solution: 'Draw the roof and move the sun through the day to see shade on each panel.', outcome: 'A layout you can discuss with an installer.' },
+      { problem: 'Designs lack engineering review.', solution: 'Send your layout to an EmersonEIMS engineer to check before anything is bought.', outcome: 'Fewer surprises on site.' },
+      { problem: 'Wiring is guessed on the day.', solution: 'The studio drafts a single-line diagram and wire schedule from your layout.', outcome: 'A starting point for the electrical design.' },
     ],
-    trust: ['BOQ-ready exports', 'Engineer-reviewed designs', 'Used on live tenders', 'Backed by EmersonEIMS field team'],
+    trust: ['Free, no sign-up', 'Sun-path shading', 'Checked by registered engineers on request', 'ISO 9001 & KEBS registered'],
     ctas: [
       { label: 'Request a Studio Design', href: '/contact?topic=solar-studio', variant: 'primary' },
       { label: 'Book a Design Walkthrough', href: '/booking?service=solar-studio', variant: 'secondary' },

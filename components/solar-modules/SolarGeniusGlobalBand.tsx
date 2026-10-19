@@ -23,10 +23,10 @@ export default function SolarGeniusGlobalBand() {
           </div>
           <div className="min-w-0">
             <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-300/80">
-              Flagship · solar engineering AI · designed for Africa, ready globally
+              Free solar sizing and engineering tools · built for Kenya
             </div>
             <div className="truncate text-sm font-semibold text-white">
-              SolarGeniusPro — sizing, design, diagnostics, fault codes, monitoring in one workspace
+              SolarGeniusPro — sizing, roof layout, wiring checks and inverter fault codes in one place
             </div>
           </div>
         </div>
@@ -43,11 +43,11 @@ export default function SolarGeniusGlobalBand() {
       <div className="mx-auto grid max-w-7xl gap-3 px-4 pb-4 text-xs text-amber-100/70 md:grid-cols-3 md:px-6">
         <Pillar
           eyebrow="For"
-          body="Solar engineers, EPCs, technicians, energy managers, procurement teams, and operations across East Africa, the wider African market, and global users."
+          body="Homeowners, farms and businesses planning solar, and the installers and engineers who build it."
         />
         <Pillar
           eyebrow="Solves"
-          body="Sizing under real irradiance, inverter loading, battery autonomy, DC/AC mismatch, fault-code triage, monitoring, repair playbooks, and quotation defensibility."
+          body="Sizing from NASA sun-hours, battery sized to the backup you want, inverter loading, cable and string checks, and inverter fault-code triage."
         />
         <Pillar
           eyebrow="Trust"

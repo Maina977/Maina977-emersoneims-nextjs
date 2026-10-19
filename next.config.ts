@@ -537,6 +537,11 @@ const nextConfig: NextConfig = {
       { source: '/tools/solar-genius-pro', destination: '/solar-genius-pro', permanent: true },
       { source: '/tools/pro-building-suite', destination: '/solutions/building', permanent: true },
       { source: '/generator-oracle/tools', destination: '/generator-oracle', permanent: true },
+      // Solar duplicates: -tools crashed on every real coordinate (float index
+      // into an array) and invented roof analysis from a coordinate hash;
+      // -futuristic was a static mock with fixed "28% ROI / 3.5 years".
+      { source: '/solar-genius-pro-tools', destination: '/solar-genius-pro', permanent: true },
+      { source: '/solar-genius-pro-futuristic', destination: '/solar-genius-pro', permanent: true },
       /*
        * ═══════════════════════════════════════════════════════════════
        * BLOG DUPLICATES -> THE DEEPER ARTICLE ON THE SAME QUESTION

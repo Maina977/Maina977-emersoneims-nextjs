@@ -418,12 +418,12 @@ const ModernHomePage: React.FC = () => {
     {
       icon: <FiZap />,
       title: 'Advanced Solar Calculator',
-      desc: 'AI-powered calculations with 34+ calculation engines for precise energy estimates',
+      desc: 'Size panels, inverter and battery from your consumption, using NASA sun-hours for your area',
     },
     {
       icon: <FiTarget />,
       title: '3D Design Studio',
-      desc: 'Real-time 3D visualization with drag-drop placement and shading analysis',
+      desc: 'Place panels on a map of your site and see shading from nearby buildings (OpenStreetMap)',
     },
     {
       icon: <FiBarChart2 />,
@@ -437,21 +437,21 @@ const ModernHomePage: React.FC = () => {
     },
     {
       icon: <FiActivity />,
-      title: 'System Monitoring',
-      desc: 'Real-time monitoring dashboard with predictive maintenance',
+      title: 'Fault Codes & Repair',
+      desc: 'Inverter and battery fault codes from manufacturer manuals, with repair steps',
     },
     {
       icon: <FiArrowRight />,
       title: 'Smart Recommendations',
-      desc: 'AI-driven insights for optimal system design and deployment',
+      desc: 'Rule-based checks on string sizing, inverter loading and cable choice',
     },
   ];
   
   const stats = [
-    { number: '34+', label: 'Calculation Engines' },
-    { number: '98', label: 'Features Verified' },
-    { number: '360°', label: 'Analysis Depth' },
-    { number: '99.9%', label: 'Accuracy' },
+    { number: 'NASA', label: 'Sun-hour data' },
+    { number: 'Free', label: 'No sign-up' },
+    { number: 'KES', label: 'Kenyan prices' },
+    { number: '1 tap', label: 'To an engineer' },
   ];
 
   return (
@@ -472,7 +472,7 @@ const ModernHomePage: React.FC = () => {
           <HeroSubtitle variants={itemVariants}>
             Enterprise-Grade Solar Design & Analysis Platform
             <br />
-            AI-Powered • Real-Time • Professional
+            Free · Engineering estimates · Backed by EmersonEIMS engineers
           </HeroSubtitle>
           
           {/*

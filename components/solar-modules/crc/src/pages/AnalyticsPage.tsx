@@ -193,7 +193,8 @@ export default function AnalyticsPage() {
   const hasSystem = metrics.systemSizeKw > 0;
   const maxMonthly = monthly.length ? Math.max(...monthly.map(d => d.kwh)) : 1;
   const annualSavings = financial.year1SavingsKes || (metrics.monthlySaving * 12);
-  const co2 = metrics.carbonOffsetKg || (metrics.annualProduction * 0.45);
+  // Only the measured figure (off-grid diesel displaced); no invented grid factor.
+  const co2 = metrics.carbonOffsetKg || 0;
 
   return (
     <Container>
@@ -248,7 +249,7 @@ export default function AnalyticsPage() {
             <StatRow><StatLabel>Monthly Saving</StatLabel><StatValue>KSh {Math.round(metrics.monthlySaving).toLocaleString()}</StatValue></StatRow>
             <StatRow><StatLabel>Payback</StatLabel><StatValue>{(financial.paybackYears || metrics.paybackPeriods).toFixed(1)} yrs</StatValue></StatRow>
             <StatRow><StatLabel>Tariff (EPRA)</StatLabel><StatValue>KSh {site.tariffKesPerKwh.toFixed(2)}/kWh</StatValue></StatRow>
-            <StatRow><StatLabel>CO₂ Avoided / yr</StatLabel><StatValue>{Math.round(co2)} kg</StatValue></StatRow>
+            {co2 > 0 && <StatRow><StatLabel>CO₂ Avoided / yr</StatLabel><StatValue>{Math.round(co2)} kg</StatValue></StatRow>}
           </Card>
 
           <Card initial={{opacity: 0, y: 8}} animate={{opacity: 1, y: 0}} transition={{delay:0.15}}>

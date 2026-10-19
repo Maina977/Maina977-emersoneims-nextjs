@@ -291,8 +291,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
      */
     { url: `${BASE_URL}/aquascan-pro-v3`,                       changeFrequency: 'weekly', priority: 0.95 },
     { url: `${BASE_URL}/solar-genius-pro`,                      changeFrequency: 'weekly', priority: 0.95 },
-    { url: `${BASE_URL}/solar-genius-pro-tools`,                changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/solar-genius-pro-futuristic`,           changeFrequency: 'weekly', priority: 0.8  },
     { url: `${BASE_URL}/solar-design-studio`,                   changeFrequency: 'weekly', priority: 0.8  },
     { url: `${BASE_URL}/eims-pro`,                              changeFrequency: 'weekly', priority: 0.9  },
     // Plant & Equipment Oracle — sibling to Generator Oracle, built on the

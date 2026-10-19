@@ -57,29 +57,28 @@ const TOOLS: Record<string, ToolCopy> = {
   'solar-genius-pro': {
     h2: 'SolarGenius Pro — Solar System Design & Sizing for Kenya',
     intro:
-      'SolarGenius Pro designs solar PV systems from real usage data: enter appliances or utility bills and it sizes the array, inverter, batteries and protection, with Kenya-market pricing and payback analysis for homes, farms, businesses and institutions.',
+      'SolarGenius Pro gives a first estimate of the solar system you need: enter your monthly kWh from your KPLC bill (or your appliances) and it sizes the panels, inverter and battery using NASA sun-hours for your town, with a typical Kenyan cost range and payback. It is an estimate, not a quotation.',
     capabilities: [
-      'Load profiling and array/inverter/battery sizing with irradiance data for your county',
-      'Grid-tie, hybrid and off-grid designs, including solar water pumping for boreholes',
+      'Panel, inverter and battery sizing with NASA POWER sun-hours for your town',
+      'Grid-tied, hybrid and off-grid modes; off-grid is sized on the cloudiest month and compared with diesel',
       /*
-       * DATED, not "current". The panel, battery and inverter prices this tool
-       * quotes live in components/solar/SolarBibleCalculator.tsx and were last
-       * changed in March 2026 (git log on that file). Solar prices move, so
-       * describing five-month-old figures as "current Kenya market prices"
-       * claims a currency we do not maintain.
+       * DATED, not "current". The calculator's prices live in
+       * lib/solar/sizing.ts (costKes) and are mid-2026 typical installed
+       * ranges. Solar prices move, so the text dates them rather than calling
+       * them "current Kenya market prices".
        *
        * AquaScan already gets this right — it says "July 2026 Kenya market
        * rates" and marks every estimate. Same standard here. When the price
        * table is refreshed, update this month with it.
        */
-      'Cost estimates at March 2026 Kenya market rates, with payback and bill-offset projections',
-      'Exportable design summaries an installer can quote against',
+      'Installed-cost range at mid-2026 typical Kenyan prices, with monthly saving and simple payback',
+      'Send the design summary to us on WhatsApp for a quotation',
     ],
-    coverage: 'Designs are calibrated for Kenyan irradiance and tariffs and used across East Africa; EmersonEIMS installs and maintains solar plants regionally.',
+    coverage: 'Estimates use NASA sun data for Kenyan towns and your own tariff; EmersonEIMS designs, installs and maintains the systems.',
     faqs: [
-      { q: 'How many solar panels do I need in Kenya?', a: 'It depends on daily consumption: a typical home using 10 kWh/day needs roughly a 3 kW array with storage. SolarGenius Pro sizes it precisely from your actual appliances or KPLC bill.' },
-      { q: 'What does a solar system cost in Kenya?', a: 'Residential hybrid systems commonly run KSh 150k–1.5M depending on size and storage. The tool prices your specific design against a March 2026 component price list rather than a generic bracket — treat it as indicative and confirm before purchase.' },
-      { q: 'Can solar run a borehole pump?', a: 'Yes — solar pumping is often the cheapest lifetime option. The tool sizes the array from pump power, head and daily water demand, and pairs with AquaScan Pro for new boreholes.' },
+      { q: 'How many solar panels do I need in Kenya?', a: 'It depends on daily consumption: a typical home using 10 kWh/day needs roughly a 3 kW array with storage. SolarGenius Pro estimates it from your KPLC bill or appliances.' },
+      { q: 'What does a solar system cost in Kenya?', a: 'Residential hybrid systems commonly run KSh 150k–1.5M depending on size and storage. The tool gives a typical installed-cost range for your design — treat it as indicative and confirm it with a quotation.' },
+      { q: 'Can solar run a borehole pump?', a: 'Yes — solar pumping is often the cheapest lifetime option. For a first estimate use off-grid mode with the pump\'s kW as the largest load; our engineers size the pump itself from your borehole\'s test-pumping results.' },
     ],
   },
   calculators: {

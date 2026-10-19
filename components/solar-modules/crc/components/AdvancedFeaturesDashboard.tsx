@@ -195,8 +195,6 @@ const FEATURES: FeatureCfg[] = [
   { id: 'solar-offset',      icon: '🌳', title: '25-yr Solar CO₂ Offset', tier: 'sustainability', desc: 'Lifetime grid emissions avoided + tree-equivalent', status: 'Run live', open: { kind: 'drawer', runner: 'solar-offset' } },
   { id: 'emission-factors',  icon: '📊', title: 'Emission Factors Reference', tier: 'sustainability', desc: 'IEA 11-country grid factors + Climate TRACE', status: 'Open', open: { kind: 'drawer', runner: 'emission-factors' } },
   { id: 'panel-counter',     icon: '📐', title: 'Roof Panel Counter', tier: 'sustainability', desc: 'Max panels at IEC 62548 setbacks for a roof area', status: 'Run live', open: { kind: 'drawer', runner: 'panel-counter' } },
-  { id: 'p2p-energy',        icon: '🔗', title: 'P2P Energy Trading', tier: 'sustainability', desc: 'Blockchain energy marketplace — pilot, EPRA approval pending', status: 'Pilot', open: { kind: 'drawer', runner: 'pilot' } },
-  { id: 'carbon-nft',        icon: '🪙', title: 'Carbon NFTs', tier: 'sustainability', desc: 'Tokenise carbon credits — Polygon testnet ready', status: 'Pilot', open: { kind: 'drawer', runner: 'pilot' } },
   { id: 'design-studio',     icon: '🎨', title: 'Design Studio AI', tier: 'design', desc: 'Drag-and-drop array design with shading and string topology', status: 'Open', open: { kind: 'route', path: '/design-studio' } },
   { id: 'panel-layout',      icon: '🟦', title: 'Panel Layout AI', tier: 'design', desc: 'Deterministic grid layout with NEC 690.12 setbacks', status: 'Open', open: { kind: 'route', path: '/panel-layout' } },
   { id: 'wiring',            icon: '🔌', title: 'Wiring Diagram AI', tier: 'design', desc: 'SVG single-line diagram from your project string config', status: 'Open', open: { kind: 'route', path: '/wiring' } },
@@ -317,7 +315,7 @@ const AdvancedFeaturesDashboard: React.FC = () => {
           <CardDesc>{f.desc}</CardDesc>
           <CardFoot>
             <span>{f.open.kind === 'route' ? 'Page' : 'Tool'}</span>
-            <span>{f.status} →</span>
+            <span>{isNotOnline(f) ? 'Not online yet' : f.status} →</span>
           </CardFoot>
         </Card>
       ))}
@@ -327,7 +325,7 @@ const AdvancedFeaturesDashboard: React.FC = () => {
   return (
     <Shell>
       <Header>
-        <h1>🚀 Advanced Suite — {FEATURES.length} interactive engines</h1>
+        <h1>🚀 Advanced Suite — {FEATURES.filter((x) => !isNotOnline(x)).length} working tools</h1>
         <p>Every tile is a live tool. Click any card to run it or open its dedicated page.</p>
       </Header>
 
@@ -423,7 +421,43 @@ interface RunnerCtx {
   navigate: ReturnType<typeof useNavigate>;
 }
 
+/*
+ * Runners whose back-end is not built (2026-10-18 tool audit). Probed on a
+ * production build: /api/archapproval/* and /api/engapproval/* return 404,
+ * /api/research/* returned success:true with empty results (now 501), and
+ * "pilot" is a placeholder for blockchain / NFT ideas. These tiles say
+ * "Not online yet" and open an honest panel instead of a calculator that
+ * can only fail or show nothing. Remove an id here once its endpoint exists.
+ */
+const NOT_ONLINE_RUNNERS = new Set([
+  'tou-dispatch', 'fault-prediction', 'load-forecast', 'nlp-advisor', 'permit-pack', 'mqtt', 'panel-counter', 'pilot',
+  'sld-svg', 'arc-rsd', 'cable-derated', 'faa-glare', 'sign-off-package',
+  'wind-uplift', 'snow-load', 'ballast-schedule', 'roof-reserve', 'fire-setback', 'flashing', 'neighbour-shadow', 'ifc-export',
+  // CRM-backed (/api/biz is admin-only) and /api/market/suppliers (404).
+  'portfolio', 'suppliers',
+]);
+
+const isNotOnline = (f: FeatureCfg) => f.open.kind === 'drawer' && NOT_ONLINE_RUNNERS.has(f.open.runner);
+
+const NotOnlineRunner: React.FC = () => (
+  <div>
+    <Hint>
+      This calculation is not available online yet. An EmersonEIMS engineer can do it for your project as part of a
+      design or site survey.
+    </Hint>
+    <a
+      href={`https://wa.me/254768860665?text=${encodeURIComponent('Hi EmersonEIMS, I need help with a solar engineering calculation for my project.')}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ display: 'inline-block', marginTop: 12, padding: '10px 16px', borderRadius: 8, background: '#25D366', color: '#06210f', fontWeight: 700, textDecoration: 'none' }}
+    >
+      WhatsApp an engineer
+    </a>
+  </div>
+);
+
 const FeatureRunner: React.FC<{ runnerId: string; ctx: RunnerCtx }> = ({ runnerId, ctx }) => {
+  if (NOT_ONLINE_RUNNERS.has(runnerId)) return <NotOnlineRunner />;
   switch (runnerId) {
     case 'tou-dispatch':     return <TouDispatchRunner ctx={ctx} />;
     case 'fault-prediction': return <FaultPredictionRunner />;
