@@ -22,19 +22,19 @@ const TOOLS: Record<string, ToolCopy> = {
   'aquascan-pro-v3': {
     h2: 'AquaScan Pro — Borehole & Groundwater Survey Intelligence for Kenya and East Africa',
     intro:
-      'AquaScan Pro is a desktop groundwater and hydroecological screening platform for anyone planning a borehole in Kenya or the wider region. It fuses satellite remote sensing, verified water-point registries (WPDx, OSM, UNESCO IHP-WINS), county drilling statistics and hydrogeological physics into one audited pre-feasibility report — with maps of existing boreholes, springs, soil, vegetation and water-table conditions around your exact site.',
+      'AquaScan Pro is a free desktop pre-screen for anyone planning a borehole in Kenya. Add a site photo and coordinates and it combines public climate and soil data (NASA POWER, ERA5-Land, ISRIC SoilGrids), mapped water points (WPDx, OpenStreetMap, UNESCO IHP-WINS field records) and county drilling statistics into a first look at likely depth, yield and cost. It is a planning estimate, not a survey.',
     capabilities: [
-      'Desktop pre-feasibility report with success probability, provisional investigation depth and planning yield — every figure range-bounded and audit-gated',
-      'Registry map and 50 km roll of existing successful boreholes and springs, with names, depths and distances',
-      'Recharge and water-balance modelling, water-quality screening (WHO GDWQ) and drilling cost estimates at July 2026 Kenya market rates',
-      'Field Validation Attachment Pack and Drilling Instruction Package that carry the project from desktop to a drill-ready, WRA-compliant submission',
+      'Likelihood of success, a provisional depth and a planning yield, each given as a range with its data source',
+      'Map and list of recorded boreholes and springs within 50 km, with names, depths and distances where the records have them',
+      'Rainfall and recharge estimate, the water-quality risks to test for (against WHO guideline values) and a drilling cost range at July 2026 Kenyan rates',
+      'Checklists for the next steps: the geophysical survey, the hydrogeologist’s report and the Water Resources Authority permit',
     ],
     coverage:
-      'Used for borehole planning across all 47 Kenyan counties — from Vihiga springs country to Turkana basement — and adaptable region-wide. It complements (never replaces) the statutory hydrogeological survey and licensed professional sign-off.',
+      'Works for any site in Kenya. Depth checks against real drilled boreholes are strongest in the northern counties (Turkana, Wajir, Garissa, Isiolo, Marsabit), where field records exist. It never replaces the statutory hydrogeological survey and a licensed hydrogeologist’s sign-off.',
     faqs: [
       { q: 'How much does a borehole survey cost in Kenya?', a: 'A statutory hydrogeological survey with targeted ERT typically costs KSh 40,000–110,000 depending on site access and reporting scope. AquaScan Pro produces the desktop pre-feasibility stage first, so you spend that survey money on a site that already screens well.' },
       { q: 'Can AquaScan Pro tell me exactly where and how deep to drill?', a: 'No desktop tool can — and any that claims to should worry you. AquaScan Pro gives a provisional investigation depth and target evidence, then requires field ERT/VES, a licensed hydrogeologist and WRA authorisation before any drilling instruction is issued.' },
-      { q: 'What data does the report use?', a: 'NASA/ESA satellite products, ISRIC SoilGrids, SRTM terrain, verified water-point registries, and compiled county drilling records — every value carries its source and estimates are marked "(est.)". The full methodology is public at /aquascan-pro-v3/methodology.' },
+      { q: 'What data does the report use?', a: 'NASA POWER and ERA5-Land climate data, ISRIC SoilGrids, SRTM terrain, mapped water points and compiled county drilling records. Every value carries its source and estimates are marked "(est.)". The full methodology is public at /aquascan-pro-v3/methodology.' },
     ],
   },
   'generator-oracle': {

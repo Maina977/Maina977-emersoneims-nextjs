@@ -17,23 +17,8 @@ import type { ServiceBible } from '@/lib/services/serviceBibles';
 import ServiceDiagnosticsPanel from '@/components/services/ServiceDiagnosticsPanel';
 import ServiceBiblePanel from '@/components/services/ServiceBiblePanel';
 import ServiceWidgetsPanel from '@/components/services/ServiceWidgetsPanel';
+import AquaScanPreScreenCard from '@/components/borehole/AquaScanPreScreenCard';
 import { SERVICE_WIDGETS } from '@/lib/services/serviceWidgets';
-
-// Dynamic import for AI Borehole Analyzer (only loads when needed)
-const BoreholeAIAnalyzer = dynamic(
-  () => import('@/components/borehole/BoreholeAIAnalyzer'),
-  {
-    loading: () => (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-400">Loading AI Analyzer...</p>
-        </div>
-      </div>
-    ),
-    ssr: false,
-  }
-);
 
 // Lazy-loaded technical handbook — rendered only on the hospital-incinerators
 // service page as a continuation below the existing service content.
@@ -352,7 +337,7 @@ export default function ServiceDetailClient({
           <div className="flex gap-1 py-3 overflow-x-auto">
             {[
               // AI Analyzer tab only for borehole services
-              ...(isBoreholeService ? [{ id: 'ai-analyzer', label: 'AI Site Analyzer', badge: 'NEW' }] : []),
+              ...(isBoreholeService ? [{ id: 'ai-analyzer', label: 'Borehole Pre-Screen', badge: 'FREE' }] : []),
               { id: 'overview', label: 'Overview' },
               ...(hasBible ? [{ id: 'bible', label: 'Technical Bible', badge: 'PRO' }] : []),
               ...(hasDiagnostics ? [{ id: 'calculator', label: 'Calculator & Diagnostics', badge: 'TOOLS' }] : []),
@@ -402,89 +387,13 @@ export default function ServiceDetailClient({
           >
             <section className="py-12 px-4">
               <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-8">
-                  {/*
-                    Was "WORLD'S #1 AI BOREHOLE ANALYZER" with a trophy. That is
-                    a ranking claim with no independent evidence behind it, and
-                    it was doing less work than the specifics below it.
-                  */}
-                  <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-semibold mb-4">
-                    <span>AI-Assisted Borehole Pre-Feasibility</span>
-                  </div>
-                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-full text-sm font-medium mb-4 ml-2">
-                    <span className="animate-pulse">26 AI ENGINES</span>
-                    <span>•</span>
-                    <span>195+ COUNTRIES</span>
-                    <span>•</span>
-                    <span>FREE</span>
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                    AquaScan Pro™ AI Borehole Analyzer
-                  </h2>
-                  <p className="text-slate-400 max-w-3xl mx-auto">
-                    Site screening for groundwater from open Earth-observation
-                    data — ESA Sentinel-2, NASA Landsat-8 and MODIS, and GRACE
-                    groundwater anomaly — combined with Kenyan county
-                    hydrogeology. It narrows where to drill and improves the
-                    odds; it does not replace a survey, and no desktop study can
-                    guarantee a yield before the hole is drilled and tested.
-                  </p>
-                </div>
-
-                {/* Technology Features */}
-                <div className="grid grid-cols-4 md:grid-cols-7 gap-2 mb-8">
-                  {[
-                    { icon: '🛰️', label: 'Sentinel-2' },
-                    { icon: '📡', label: 'LiDAR' },
-                    { icon: '💎', label: 'Hyperspectral' },
-                    { icon: '⚡', label: 'VES/ERT/TDEM' },
-                    { icon: '🛸', label: 'NASA GRACE' },
-                    { icon: '🌐', label: 'Google Earth' },
-                    { icon: '🌍', label: '195+ Countries' },
-                  ].map((tech, i) => (
-                    <div key={i} className="bg-slate-800/50 backdrop-blur rounded-lg p-2 text-center border border-slate-700">
-                      <div className="text-xl mb-1">{tech.icon}</div>
-                      <p className="text-white text-[10px] font-medium">{tech.label}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* AI Analyzer Component */}
-                <BoreholeAIAnalyzer />
-
-                {/* AI Capabilities - Full Confidence */}
-                <div className="grid md:grid-cols-3 gap-6 mt-8">
-                  <div className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 rounded-xl p-6 border border-cyan-500/30">
-                    <div className="text-4xl mb-3">🛰️</div>
-                    <h3 className="text-lg font-bold text-cyan-400 mb-2">Satellite Intelligence</h3>
-                    <p className="text-sm text-slate-300">
-                      Sentinel-2, Landsat-8 and MODIS imagery, published openly
-                      by ESA and NASA, read for surface-water extent, vegetation
-                      vigour and lineaments that suggest fracture zones.
-                    </p>
-                  </div>
-                  <div className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 rounded-xl p-6 border border-purple-500/30">
-                    <div className="text-4xl mb-3">⚡</div>
-                    <h3 className="text-lg font-bold text-purple-400 mb-2">Virtual Geophysics</h3>
-                    <p className="text-sm text-slate-300">
-                      AI-simulated VES & ERT surveys. No expensive equipment needed. Get subsurface layer analysis instantly from your desk.
-                    </p>
-                  </div>
-                  <div className="bg-gradient-to-br from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30">
-                    <div className="text-4xl mb-3">🎯</div>
-                    <h3 className="text-lg font-bold text-green-400 mb-2">Precision Results</h3>
-                    <p className="text-sm text-slate-300">
-                      ML-powered analysis of 47 Kenya counties, historical borehole data, and geological formations. Make drilling decisions with confidence.
-                    </p>
-                  </div>
-                </div>
+                <AquaScanPreScreenCard />
 
                 {/* Call to Action */}
                 <div className="mt-8 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-8 text-center">
                   <h3 className="text-2xl font-bold text-white mb-3">Ready to Drill? We&apos;ve Got You Covered</h3>
                   <p className="text-cyan-100 mb-6 max-w-2xl mx-auto">
-                    From AI site analysis to professional drilling and pump installation - EmersonEIMS handles everything.
+                    From the site survey to drilling supervision and pump installation, EmersonEIMS handles the whole borehole project.
                   </p>
                   <div className="flex flex-wrap gap-4 justify-center">
                     <a href={`tel:${contact.phoneIntl}`} className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-600 rounded-full font-bold hover:bg-cyan-50 transition-colors">

@@ -1,15 +1,15 @@
 ﻿/**
- * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
- * ENGINEER CONFIDENCE ENGINE â€” Professional-Grade Trust Infrastructure
- * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ENGINEER CONFIDENCE ENGINE — Professional-Grade Trust Infrastructure
+ * ═══════════════════════════════════════════════════════════════════════════
  *
  * PURPOSE: Transform AI predictions into engineer-trustable outputs by:
- *   1. Data Provenance â€” tag every figure with source, method, confidence
- *   2. Cross-Validation â€” compare predictions against known nearby wells
- *   3. Monte Carlo Uncertainty â€” confidence intervals via simulation
- *   4. Methodology Documentation â€” explain every calculation
- *   5. Standards Compliance â€” ISO/BS/ASTM references
- *   6. Limitations Disclosure â€” transparent about what's estimated
+ *   1. Data Provenance — tag every figure with source, method, confidence
+ *   2. Cross-Validation — compare predictions against known nearby wells
+ *   3. Monte Carlo Uncertainty — confidence intervals via simulation
+ *   4. Methodology Documentation — explain every calculation
+ *   5. Standards Compliance — ISO/BS/ASTM references
+ *   6. Limitations Disclosure — transparent about what's estimated
  *
  * REFERENCES:
  *   - ISO 14688-1:2017 Soil classification
@@ -24,10 +24,10 @@
  *   - Pre-feasibility studies (always)
  *   - Engineering-grade assessment (when field data present)
  *   - Bankable reports (when ERT + pump test + validation data present)
- * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ * ═══════════════════════════════════════════════════════════════════════════
  */
 
-// Seeded PRNG (Mulberry32) â€” deterministic Monte Carlo results across runs
+// Seeded PRNG (Mulberry32) — deterministic Monte Carlo results across runs
 function mulberry32(seed: number): () => number {
   return () => {
     let t = (seed += 0x6D2B79F5);
@@ -43,7 +43,7 @@ export function resetRNG(seed: number) {
   _rng = mulberry32(seed);
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ DATA PROVENANCE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ──────────────────── DATA PROVENANCE ────────────────────
 
 export type DataTier = 'MEASURED' | 'CALIBRATED' | 'ESTIMATED' | 'INFERRED' | 'DEFAULT';
 export type DataCategory = 'field_measurement' | 'laboratory' | 'satellite' | 'model_derived' | 'database' | 'user_input' | 'assumed';
@@ -83,7 +83,7 @@ export interface ProvenanceMatrix {
   reportGradeJustification: string;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ CROSS-VALIDATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ──────────────────── CROSS-VALIDATION ────────────────────
 
 export interface WellValidationPoint {
   wellId: string;
@@ -121,7 +121,7 @@ export interface CrossValidationResult {
   verdictJustification: string;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ MONTE CARLO UNCERTAINTY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ──────────────────── MONTE CARLO UNCERTAINTY ────────────────────
 
 export interface MonteCarloResult {
   parameter: string;
@@ -152,7 +152,7 @@ export interface UncertaintyAnalysis {
   methodology: string;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ METHODOLOGY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ──────────────────── METHODOLOGY ────────────────────
 
 export interface MethodologyStep {
   step: number;
@@ -179,7 +179,7 @@ export interface MethodologyReport {
   recommendations: string[];
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ COMPLETE ENGINE OUTPUT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ──────────────────── COMPLETE ENGINE OUTPUT ────────────────────
 
 export interface EngineerConfidenceResult {
   provenance: ProvenanceMatrix;
@@ -202,9 +202,9 @@ export interface EngineerConfidenceResult {
   };
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 //  MAIN ENGINE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 
 export function runEngineerConfidenceEngine(analysisResult: any): EngineerConfidenceResult {
   const provenance = buildProvenanceMatrix(analysisResult);
@@ -228,14 +228,14 @@ export function runEngineerConfidenceEngine(analysisResult: any): EngineerConfid
   };
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 //  1. DATA PROVENANCE MATRIX
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 
 function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   const items: DataProvenance[] = [];
 
-  // â”€â”€ Detect available data â€” normalize property name mismatches â”€â”€
+  // ── Detect available data — normalize property name mismatches ──
   const hasERT = !!(r.fieldData?.ertSurvey || r.fieldData?.ertDataFile) && r.ertInterpretation?.dataSource !== 'modelled';
   const hasModelledERT = !!(r.ertInterpretation?.depthOptimization || r.ertInterpretation?.invertedLayers?.length || r.ertIntelligence?.depthOptimization) && !hasERT;
   const nearbyWellList = r.nearbyWells?.nearbyWells ?? r.nearbyWells?.wells ?? [];
@@ -250,7 +250,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   const hasLabWater = !!(r.fieldData?.labWaterAnalysis || r.fieldValidation?.waterSample);
   const hasLithology = !!(r.fieldValidation?.lithologyLog || r.fieldData?.lithologyLog);
 
-  // â”€â”€ Satellite / Remote Sensing sources â”€â”€
+  // ── Satellite / Remote Sensing sources ──
   const hasSoilGrids = !!(r.remoteSensing?.soilGrids?.available || r.soil?.dataSource?.includes?.('SoilGrids') || r.globalSoilAnalysis);
   const hasDEM = !!(r.demHydrology || r.remoteSensing?.elevation);
   const hasNDVI = !!(r.vegetationGWProxy || r.satelliteVegetation || r.satelliteWaterAnalysis?.vegetation);
@@ -264,7 +264,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   const hasWRBSoil = !!(r.globalSoilAnalysis?.wrbClassification);      // ISRIC WRB classification
   const hasSoilHydraulics = !!(r.globalSoilAnalysis?.hydraulicProperties); // Saxton & Rawls pedotransfer
 
-  // â”€â”€ AI / Model engines â”€â”€
+  // ── AI / Model engines ──
   const hasRockMapping = !!(r.advancedRockMapping || r.rockClassification);
   const hasFractureAI = !!(r.fractureAI);
   const hasEnsemble = !!(r.ensembleResult);
@@ -281,14 +281,14 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   const modelSourceCount = [hasRockMapping, hasFractureAI, hasEnsemble, hasGeophysics, hasSubsurfaceModel, hasAquiferClass, hasRechargeModel, hasHydrochem, hasConfWeighted, hasDrillingPred].filter(Boolean).length;
   const fieldSourceCount = [hasERT, hasPumpTest, hasLabWater, hasLithology].filter(Boolean).length;
 
-  // â”€â”€ Depth Prediction â”€â”€
+  // ── Depth Prediction ──
   items.push({
     parameter: 'Recommended Drilling Depth',
     value: r.recommendedDepth ?? 0,
     unit: 'm',
     tier: hasERT ? 'MEASURED' : hasModelledERT ? 'ESTIMATED' : (hasEnsemble && hasNearby) ? 'CALIBRATED' : (hasEnsemble || satelliteSourceCount >= 3) ? 'CALIBRATED' : hasNearby ? 'ESTIMATED' : 'INFERRED',
     category: hasERT ? 'field_measurement' : hasModelledERT ? 'model_derived' : (hasEnsemble || satelliteSourceCount >= 3) ? 'satellite' : hasNearby ? 'database' : 'model_derived',
-    source: hasERT ? 'ERT 2D Inversion + AI Fusion' : hasModelledERT ? 'Modelled ERT (synthetic â€” no field survey)' : hasEnsemble ? `Bayesian ensemble (${r.ensembleResult?.sourcesUsed ?? satelliteSourceCount} sources) + satellite ML` : hasNearby ? 'Nearby borehole average + satellite ML' : 'Satellite remote sensing + geological model',
+    source: hasERT ? 'ERT 2D Inversion + AI Fusion' : hasModelledERT ? 'Modelled ERT (synthetic — no field survey)' : hasEnsemble ? `Bayesian ensemble (${r.ensembleResult?.sourcesUsed ?? satelliteSourceCount} sources) + satellite ML` : hasNearby ? 'Nearby borehole average + satellite ML' : 'Satellite remote sensing + geological model',
     method: hasERT
       ? 'Occam 2D inversion -> low-resistivity zone detection -> depth optimization (ERT 40% + AI 35% + Borehole 25%)'
       : hasNearby
@@ -304,17 +304,17 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
       ? ['ERT resolution decreases with depth', 'Assumes laterally continuous aquifer', 'Clay/saline water ambiguity']
       : hasNearby
         ? ['Nearby wells may be in different geological unit', 'No direct subsurface measurement', 'Spatial interpolation uncertainty']
-        : ['No subsurface data â€” satellite-only estimate', 'Resolution limited to 30m DEM', 'Geological heterogeneity not captured'],
+        : ['No subsurface data — satellite-only estimate', 'Resolution limited to 30m DEM', 'Geological heterogeneity not captured'],
   });
 
-  // â”€â”€ Yield Prediction â”€â”€
+  // ── Yield Prediction ──
   items.push({
     parameter: 'Estimated Yield',
     value: r.estimatedYield ?? r.calibratedYield ?? 0,
     unit: 'm3/hr',
     tier: hasPumpTest ? 'CALIBRATED' : hasERT ? 'CALIBRATED' : hasModelledERT ? 'ESTIMATED' : (hasEnsemble || hasGeophysics) ? 'CALIBRATED' : 'ESTIMATED',
     category: hasPumpTest ? 'field_measurement' : hasERT ? 'field_measurement' : 'model_derived',
-    source: hasPumpTest ? 'Pump test analysis (Theis/Cooper-Jacob â€” analytically derived, not raw measurement)' : hasERT ? 'ERT transmissivity + Darcy flow model' : hasModelledERT ? 'Modelled ERT transmissivity (synthetic â€” no field survey)' : hasGeophysics ? 'Advanced geophysics engine (literature K + Logan yield)' : 'Empirical yield-from-rainfall/geology regression',
+    source: hasPumpTest ? 'Pump test analysis (Theis/Cooper-Jacob — analytically derived, not raw measurement)' : hasERT ? 'ERT transmissivity + Darcy flow model' : hasModelledERT ? 'Modelled ERT transmissivity (synthetic — no field survey)' : hasGeophysics ? 'Advanced geophysics engine (literature K + Logan yield)' : 'Empirical yield-from-rainfall/geology regression',
     method: hasPumpTest
       ? 'Cooper-Jacob straight-line: T = 2.303Q/(4pi*delta_s), Q_safe = 0.7 * T * i * A'
       : hasERT
@@ -332,7 +332,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
         : ['No subsurface data', 'Yield estimated from surface features only', 'Accuracy typically +/-50% without field data'],
   });
 
-  // â”€â”€ Success Probability â”€â”€
+  // ── Success Probability ──
   items.push({
     parameter: 'Drilling Success Probability',
     // DISPLAY FIX (2026-07-12): r.probability is a 0-1 fraction; the provenance
@@ -350,11 +350,11 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
       'Assumes geological continuity between data points',
       hasERT ? '' : 'No direct subsurface confirmation',
       hasNearby ? '' : 'No local calibration data available',
-      'Prior probabilities based on pan-African statistics â€” regional bias possible',
+      'Prior probabilities based on pan-African statistics — regional bias possible',
     ].filter(Boolean),
   });
 
-  // â”€â”€ Water Quality â”€â”€
+  // ── Water Quality ──
   items.push({
     parameter: 'Water Quality Assessment',
     value: r.waterQuality?.overallRating ?? 'Unknown',
@@ -369,11 +369,11 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     reference: 'WHO (2011) Guidelines for Drinking-water Quality, 4th Ed.',
     isoStandard: hasLabWater ? 'ISO 5667 Water sampling, ISO 17025 Lab accreditation' : undefined,
     limitations: hasLabWater
-      ? ['Single sample â€” seasonal variation not captured', 'Lab turnaround may miss acute contamination']
+      ? ['Single sample — seasonal variation not captured', 'Lab turnaround may miss acute contamination']
       : ['No water sample collected', 'Prediction based on geological inference only', 'Cannot detect anthropogenic contamination', 'Fluoride/arsenic hotspots may be missed'],
   });
 
-  // â”€â”€ Geological Classification â”€â”€
+  // ── Geological Classification ──
   items.push({
     parameter: 'Rock Type / Geology',
     value: r.rockMapping?.rockType ?? r.advancedRockMapping?.primaryRockType ?? r.rockClassification?.primaryRockType ?? 'Unknown',
@@ -389,10 +389,10 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     isoStandard: 'ISO 14688-1:2017 Soil classification',
     limitations: hasLithology
       ? ['Classification depends on logger experience', 'May miss thin interbeds']
-      : ['Surface classification â€” subsurface may differ', 'Satellite resolution 10-30m', 'Vegetation cover can mask geology'],
+      : ['Surface classification — subsurface may differ', 'Satellite resolution 10-30m', 'Vegetation cover can mask geology'],
   });
 
-  // â”€â”€ Aquifer Type â”€â”€
+  // ── Aquifer Type ──
   items.push({
     parameter: 'Aquifer Type',
     value: r.aquiferClassification?.primaryType?.type ?? 'Unknown',
@@ -401,7 +401,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     category: 'model_derived',
     source: hasPumpTest ? 'Pump test curve analysis + geological model' : 'Multi-evidence Bayesian classifier',
     method: hasPumpTest
-      ? 'Theis/Cooper-Jacob curve shape analysis â€” log-log derivative plot for confined/unconfined/leaky distinction'
+      ? 'Theis/Cooper-Jacob curve shape analysis — log-log derivative plot for confined/unconfined/leaky distinction'
       : 'Bayesian evidence fusion: geology + topography + ERT + satellite indicators',
     accuracy_pct: hasPumpTest ? 90 : hasERT ? 75 : 55,
     reference: 'Kruseman & de Ridder (1990); Freeze & Cherry (1979) Groundwater',
@@ -410,7 +410,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
       : ['No direct aquifer test', 'Classification based on indirect evidence'],
   });
 
-  // â”€â”€ Transmissivity â”€â”€
+  // ── Transmissivity ──
   const T_val = r.ertInterpretation?.yieldEstimation?.transmissivity_m2day ?? r.ertIntelligence?.yieldEstimation?.transmissivity_m2day ?? r.advancedGeophysics?.projectedInversions?.[0]?.transmissivity_m2day ?? r.aquiferSimulation?.pumpTest?.cooperJacob?.transmissivity ?? 0;
   items.push({
     parameter: 'Transmissivity (T)',
@@ -424,13 +424,13 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
       : 'T = K * b, where K from Kozeny-Carman: K = (rho*g/mu) * (d10^2 * n^3) / (180*(1-n)^2)',
     accuracy_pct: hasPumpTest ? 90 : hasERT ? 65 : 40,
     reference: 'Cooper & Jacob (1946) A generalized graphical method for evaluating formation constants',
-    isoStandard: hasPumpTest ? 'ASTM D4106 Aquifer test â€” Cooper-Jacob' : undefined,
+    isoStandard: hasPumpTest ? 'ASTM D4106 Aquifer test — Cooper-Jacob' : undefined,
     limitations: hasPumpTest
       ? ['Assumes infinite aquifer', 'Assumes fully penetrating well', 'Early-time data excluded']
-      : ['Archie/Kozeny-Carman empirical â€” high uncertainty', 'Assumes isotropic aquifer'],
+      : ['Archie/Kozeny-Carman empirical — high uncertainty', 'Assumes isotropic aquifer'],
   });
 
-  // â”€â”€ Hydraulic Conductivity â”€â”€
+  // ── Hydraulic Conductivity ──
   const K_val = r.ertInterpretation?.yieldEstimation?.hydraulicConductivity_mday ?? r.ertIntelligence?.yieldEstimation?.hydraulicConductivity_mday ?? r.advancedGeophysics?.projectedInversions?.[0]?.hydraulicConductivity_mday ?? (r.globalSoilAnalysis?.hydraulicProperties ? (r.globalSoilAnalysis.hydraulicProperties.ksat_mm_hr * 24 / 1000) : (r.aquiferSimulation?.pumpTest?.cooperJacob?.transmissivity ? (r.aquiferSimulation.pumpTest.cooperJacob.transmissivity / 30) : 0));
   items.push({
     parameter: 'Hydraulic Conductivity (K)',
@@ -447,7 +447,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
       : ['Pedotransfer valid for 0-200cm only', 'Deep K extrapolated', 'Fracture K not modeled'],
   });
 
-  // â”€â”€ Static Water Level â”€â”€
+  // ── Static Water Level ──
   items.push({
     parameter: 'Static Water Level',
     value: r.ertInterpretation?.yieldEstimation?.staticWaterLevel_m ?? r.ertIntelligence?.yieldEstimation?.staticWaterLevel_m ?? r.aquiferSimulation?.staticWaterLevel ?? 0,
@@ -461,18 +461,18 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     accuracy_pct: hasPumpTest ? 98 : hasERT ? 75 : 40,
     reference: 'BS EN ISO 22475-1:2006 Geotechnical investigation and testing',
     limitations: hasPumpTest
-      ? ['Single measurement â€” diurnal/seasonal variation not captured']
+      ? ['Single measurement — diurnal/seasonal variation not captured']
       : ['No direct measurement', 'Model resolution ~25km', 'Local heterogeneity not captured'],
   });
 
-  // â”€â”€ Recharge Rate â”€â”€
+  // ── Recharge Rate ──
   items.push({
     parameter: 'Annual Recharge Rate',
     value: r.dynamicRecharge?.annualRecharge_mm ?? r.satelliteWaterAnalysis?.waterBalance?.potential_recharge_mm ?? r.historicalData?.groundwater?.averageRecharge_mm ?? 0,
     unit: 'mm/yr',
     tier: hasERA5Land ? 'CALIBRATED' : 'ESTIMATED',
     category: 'model_derived',
-    source: hasERA5Land ? 'ERA5-Land water balance (P âˆ’ ETâ‚€ âˆ’ Runoff) + Simmers 1988/Scanlon 2006 recharge fraction' : 'Soil moisture balance + GRACE-FO trend',
+    source: hasERA5Land ? 'ERA5-Land water balance (P − ET₀ − Runoff) + Simmers 1988/Scanlon 2006 recharge fraction' : 'Soil moisture balance + GRACE-FO trend',
     method: 'R = P - ET - Ro - dS/dt (water balance), calibrated against GRACE TWS anomaly trend',
     accuracy_pct: hasERA5Land ? 60 : 55,
     reference: 'Scanlon et al. (2006) Global synthesis of groundwater recharge in semiarid and arid regions',
@@ -540,9 +540,9 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   };
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 //  2. CROSS-VALIDATION ENGINE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 
 function performCrossValidation(r: any): CrossValidationResult {
   const wells: WellValidationPoint[] = [];
@@ -625,7 +625,7 @@ function performCrossValidation(r: any): CrossValidationResult {
   const yieldMAE = yieldWells.reduce((s, w) => s + w.yieldError_m3hr, 0) / nY;
   const yieldMAPE = yieldWells.reduce((s, w) => s + w.yieldErrorPct, 0) / nY;
 
-  // RÂ² calculation (coefficient of determination)
+  // R² calculation (coefficient of determination)
   // AUDIT FIX (2026-07-10): R² is undefined for a single-point predictor --
   // every well gets the SAME predicted value, so 1 - SSres/SStot <= 0 by
   // construction and the max(0,..) clamp printed a misleading 0.00 in 100%
@@ -647,7 +647,7 @@ function performCrossValidation(r: any): CrossValidationResult {
 
   let engineerVerdict: CrossValidationResult['engineerVerdict'];
   let verdictJustification: string;
-  const syntheticNote = syntheticCount > 0 ? ` (${syntheticCount} of ${n} are model-generated â€” not field-verified boreholes)` : '';
+  const syntheticNote = syntheticCount > 0 ? ` (${syntheticCount} of ${n} are model-generated — not field-verified boreholes)` : '';
   if (realCount >= 5 && depthMAPE < 20 && yieldMAPE < 30) {
     engineerVerdict = 'RELIABLE';
     verdictJustification = `Predictions validated against ${realCount} real nearby wells${syntheticNote}. Depth MAPE ${depthMAPE.toFixed(1)}% and yield MAPE ${yieldMAPE.toFixed(1)}% are within engineering tolerance (RWSN: <20% depth, <30% yield).`;
@@ -704,9 +704,9 @@ function computeR2(predicted: number[], actual: number[]): number {
   return Math.max(0, 1 - ssRes / ssTot);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 //  3. MONTE CARLO UNCERTAINTY QUANTIFICATION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 
 function runMonteCarloAnalysis(r: any): UncertaintyAnalysis {
   // Seed from deterministic input data for reproducible results across runs
@@ -725,7 +725,7 @@ function runMonteCarloAnalysis(r: any): UncertaintyAnalysis {
   const hasGeophysics = !!(r.advancedGeophysics || r.hybridGeophysics);
   const hasEnsemble = !!(r.ensembleResult);
 
-  // â”€â”€ Depth Monte Carlo â”€â”€
+  // ── Depth Monte Carlo ──
   const baseDepth = r.recommendedDepth ?? 40;
   const depthCV = hasERT ? 0.12 : (hasGeophysics && hasNearby) ? 0.15 : (hasEnsemble || hasGeophysics) ? 0.18 : hasNearby ? 0.22 : 0.35; // Coefficient of variation
   const depthSamples = generateLognormalSamples(baseDepth, baseDepth * depthCV, N);
@@ -734,7 +734,7 @@ function runMonteCarloAnalysis(r: any): UncertaintyAnalysis {
     { name: 'Geological uncertainty', distribution: 'Normal', params: `CV=${(depthCV * 100).toFixed(0)}%` },
   ]);
 
-  // â”€â”€ Yield Monte Carlo â”€â”€
+  // ── Yield Monte Carlo ──
   const baseYield = r.estimatedYield ?? r.calibratedYield ?? 1.5;
   const yieldCV = hasERT ? 0.20 : (hasGeophysics && hasNearby) ? 0.25 : (hasEnsemble || hasGeophysics) ? 0.28 : hasNearby ? 0.35 : 0.50;
   const yieldSamples = generateLognormalSamples(Math.max(baseYield, 0.1), Math.max(baseYield, 0.1) * yieldCV, N);
@@ -744,7 +744,7 @@ function runMonteCarloAnalysis(r: any): UncertaintyAnalysis {
     { name: 'Aquifer geometry', distribution: 'Normal', params: `CV=${(yieldCV * 100).toFixed(0)}%` },
   ]);
 
-  // â”€â”€ Success Probability Monte Carlo â”€â”€
+  // ── Success Probability Monte Carlo ──
   // UNITS BUG FIX (audit 2026-07-10): r.probability is a 0-1 FRACTION.
   // Dividing it by 100 fed 0.006 into the Beta sampler, whose parameters
   // collapsed to the 0.5 floor -- an arcsine distribution centred at 50%
@@ -758,7 +758,7 @@ function runMonteCarloAnalysis(r: any): UncertaintyAnalysis {
     { name: 'Base probability', distribution: 'Beta', params: `mean=${(baseProb * 100).toFixed(0)}%, spread=${(probSpread * 100).toFixed(0)}%` },
   ]);
 
-  // â”€â”€ Water Quality Monte Carlo â”€â”€
+  // ── Water Quality Monte Carlo ──
   const baseWQ = r.waterQuality?.overallScore ?? 60;
   const wqSamples = generateNormalSamples(baseWQ, 15, N).map(v => Math.max(0, Math.min(100, v)));
   const wqMC = computeMonteCarloStats('Water Quality Index', '', wqSamples, [
@@ -887,9 +887,9 @@ function computeMonteCarloStats(parameter: string, unit: string, samples: number
   };
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 //  4. METHODOLOGY DOCUMENTATION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 
 function generateMethodologyReport(r: any): MethodologyReport {
   // FIELD data only — a modelled ERT/pump-test object always exists on the
@@ -974,7 +974,7 @@ function generateMethodologyReport(r: any): MethodologyReport {
       assumptions: ['Infinite, homogeneous, isotropic aquifer', 'Fully penetrating well', 'Constant pumping rate', 'Darcy flow valid'],
       limitations: hasPumpTest
         ? ['Short test duration may miss boundary effects', 'Well efficiency factor assumed']
-        : ['Using ESTIMATED T and S â€” NOT from pump test', 'High uncertainty in simulation outputs', 'For validation purposes only â€” not for design'],
+        : ['Using ESTIMATED T and S — NOT from pump test', 'High uncertainty in simulation outputs', 'For validation purposes only — not for design'],
       dataTier: hasPumpTest ? 'MEASURED' : 'ESTIMATED',
       isoStandard: 'ASTM D4043, D4044, D4050, D4105, D4106',
     },
@@ -1005,7 +1005,7 @@ function generateMethodologyReport(r: any): MethodologyReport {
     inputs: ['All upstream outputs', 'Feature importance weights'],
     outputs: ['Final depth recommendation', 'Yield estimate with CI', 'Success probability', 'Data quality score'],
     assumptions: ['Source independence for Dempster-Shafer', 'Linear feature combination for logistic model'],
-    limitations: ['Model trained on pan-African data â€” regional bias possible', 'Features may correlate (violated independence)'],
+    limitations: ['Model trained on pan-African data — regional bias possible', 'Features may correlate (violated independence)'],
     dataTier: hasERT ? 'CALIBRATED' : 'ESTIMATED',
   });
 
@@ -1022,19 +1022,19 @@ function generateMethodologyReport(r: any): MethodologyReport {
   });
 
   const standards = [
-    'ISO 14688-1:2017 â€” Soil classification',
-    'ISO 14689:2017 â€” Rock identification and classification',
-    'ISO 22475-1:2006 â€” Sampling and groundwater measurements',
-    'ISO 5667 â€” Water sampling',
-    'ISO 6709:2008 â€” Geographic point location',
-    'BS 5930:2015 â€” Code of practice for ground investigations',
-    'ASTM D4043 â€” Guide for selection of aquifer test methods',
-    'ASTM D4044 â€” Aquifer testing: Theis nonequilibrium method',
-    'ASTM D4050 â€” Slug test method for hydraulic conductivity',
-    'ASTM D4106 â€” Cooper-Jacob nonequilibrium method',
-    'ASTM D5922 â€” Analysis of spatial variation in geostatistical site investigations',
-    'ASTM D6431 â€” Direct current resistivity method for subsurface investigation',
-    'WHO (2011) â€” Guidelines for Drinking-water Quality, 4th Edition',
+    'ISO 14688-1:2017 — Soil classification',
+    'ISO 14689:2017 — Rock identification and classification',
+    'ISO 22475-1:2006 — Sampling and groundwater measurements',
+    'ISO 5667 — Water sampling',
+    'ISO 6709:2008 — Geographic point location',
+    'BS 5930:2015 — Code of practice for ground investigations',
+    'ASTM D4043 — Guide for selection of aquifer test methods',
+    'ASTM D4044 — Aquifer testing: Theis nonequilibrium method',
+    'ASTM D4050 — Slug test method for hydraulic conductivity',
+    'ASTM D4106 — Cooper-Jacob nonequilibrium method',
+    'ASTM D5922 — Analysis of spatial variation in geostatistical site investigations',
+    'ASTM D6431 — Direct current resistivity method for subsurface investigation',
+    'WHO (2011) — Guidelines for Drinking-water Quality, 4th Edition',
   ];
 
   const limitations = [
@@ -1046,8 +1046,8 @@ function generateMethodologyReport(r: any): MethodologyReport {
     'Geological classification from satellite may not reflect subsurface lithology below weathered zone',
     'The tool does not replace professional hydrogeological assessment for final drilling decisions',
     'All predictions should be verified by field investigation before financial commitment',
-    hasERT ? '' : 'No geophysical field data â€” predictions are desktop estimates only',
-    hasPumpTest ? '' : 'No pump test data â€” aquifer parameters are model estimates, not measured values',
+    hasERT ? '' : 'No geophysical field data — predictions are desktop estimates only',
+    hasPumpTest ? '' : 'No pump test data — aquifer parameters are model estimates, not measured values',
   ].filter(Boolean);
 
   const assumptions = [
@@ -1061,18 +1061,18 @@ function generateMethodologyReport(r: any): MethodologyReport {
   ];
 
   const recommendations = [
-    hasERT ? 'ERT data present â€” verify electrode layout and data quality before relying on resistivity model' : 'CRITICAL: Conduct ERT geophysical survey before any drilling commitment',
-    hasPumpTest ? 'Pump test data present â€” verify test duration was adequate (>24 hours recommended for confined aquifers)' : 'Conduct step-drawdown and constant-rate pump test after drilling to validate yield estimates',
-    hasNearby ? `${nearbyWellList.length} nearby wells used for calibration â€” verify records are current` : 'Seek additional nearby borehole records from local water authorities for calibration',
+    hasERT ? 'ERT data present — verify electrode layout and data quality before relying on resistivity model' : 'CRITICAL: Conduct ERT geophysical survey before any drilling commitment',
+    hasPumpTest ? 'Pump test data present — verify test duration was adequate (>24 hours recommended for confined aquifers)' : 'Conduct step-drawdown and constant-rate pump test after drilling to validate yield estimates',
+    hasNearby ? `${nearbyWellList.length} nearby wells used for calibration — verify records are current` : 'Seek additional nearby borehole records from local water authorities for calibration',
     'Commission laboratory water quality analysis after drilling (WHO guideline parameters at minimum)',
     'Engage qualified hydrogeologist to review findings before final engineering design',
-    'Consider seasonal variation â€” drill during/after wet season for best yield estimate',
+    'Consider seasonal variation — drill during/after wet season for best yield estimate',
   ];
 
   return {
     steps,
     standardsReferenced: standards,
-    softwareVersion: 'AquaScan Pro v2.0 â€” AI Borehole Intelligence Platform',
+    softwareVersion: 'AquaScan Pro v2.0 — AI Borehole Intelligence Platform',
     analysisDate: new Date().toISOString(),
     disclaimer: 'This report is generated by an AI-assisted decision support tool. It is intended to supplement, not replace, professional hydrogeological judgment. All predictions carry stated uncertainty and should be verified by field investigation. The tool operators and developers accept no liability for drilling outcomes based solely on this report. A qualified hydrogeologist or water engineer should review all findings before any financial commitment or drilling mobilization.',
     limitations,
@@ -1081,9 +1081,9 @@ function generateMethodologyReport(r: any): MethodologyReport {
   };
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 //  5. TRUST SCORE COMPUTATION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════════════════
 
 function computeTrustBreakdown(
   prov: ProvenanceMatrix,
@@ -1094,26 +1094,26 @@ function computeTrustBreakdown(
   const satCount = prov.satelliteSourceCount ?? 0;
   const modelCount = prov.modelEngineCount ?? 0;
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // DATA QUALITY (0-25): How much real data feeds the analysis?
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   let dataQuality = 0;
 
-  // Field measurements â€” highest value
+  // Field measurements — highest value
   dataQuality += Math.min(8, prov.measuredCount * 2.5);           // Up to 8 for MEASURED params (ERT, pump test, lab water)
   dataQuality += prov.ertPresent ? 4 : 0;                         // 4 for ERT field survey
   dataQuality += prov.pumpTestPresent ? 4 : 0;                    // 4 for pump test
 
-  // Satellite/remote sensing data â€” real observations from space
+  // Satellite/remote sensing data — real observations from space
   dataQuality += Math.min(5, satCount * 1.0);                     // Up to 5 for satellite sources (SoilGrids, DEM, NDVI, GLDAS, GRACE, InSAR, climate)
 
   // Calibrated/model-derived sources
   dataQuality += Math.min(3, prov.calibratedCount * 0.8);         // Up to 3 for CALIBRATED params
   dataQuality += Math.min(2, prov.nearbyWellsUsed * 0.4);         // Up to 2 for nearby wells
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // PHYSICS RIGOR (0-25): How physically sound is the analysis?
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   let physicsRigor = 5; // Base: Theis + Cooper-Jacob + pedotransfer always present
 
   // Core hydrogeological models
@@ -1128,9 +1128,9 @@ function computeTrustBreakdown(
   // Ensemble & uncertainty quantification
   physicsRigor += mc.convergenceAchieved ? 1.5 : 0;               // Monte Carlo convergence
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // VALIDATION (0-25): How well-validated are the predictions?
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   let validation = 0;
 
   // Cross-validation against nearby wells. Only REAL field wells earn full
@@ -1147,7 +1147,7 @@ function computeTrustBreakdown(
   // Monte Carlo uncertainty quantified
   validation += mc.convergenceAchieved ? 3 : 0;
 
-  // Multi-source agreement â€” if many engines agree, that IS validation
+  // Multi-source agreement — if many engines agree, that IS validation
   if (modelCount >= 6 && satCount >= 4) validation += 5;          // Strong multi-engine consensus
   else if (modelCount >= 4 && satCount >= 3) validation += 4;
   else if (modelCount >= 2 && satCount >= 2) validation += 2.5;
@@ -1156,9 +1156,9 @@ function computeTrustBreakdown(
   // Ensemble result is itself a validation mechanism (Bayesian fusion)
   validation += prov.calibratedCount >= 3 ? 2 : prov.calibratedCount >= 1 ? 1 : 0;
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   // TRANSPARENCY (0-25): Always full if this engine runs
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════════════════════════
   const transparency = 25; // Full provenance, methodology, limitations, uncertainty disclosed
 
   return {
@@ -1205,7 +1205,7 @@ function computeCertificationReadiness(
   regMissing.push('Professional hydrogeologist review and sign-off');
   regMissing.push('Laboratory water quality analysis (ISO 5667)');
   if (cv.depthMAPE_pct > 15) regMissing.push('Depth prediction accuracy <15% MAPE');
-  const regReady = false; // Always false â€” requires human sign-off
+  const regReady = false; // Always false — requires human sign-off
 
   return {
     preFeasibility: { ready: preFeasReady, score: Math.min(100, trustScore + 10), missing: preFeasMissing },

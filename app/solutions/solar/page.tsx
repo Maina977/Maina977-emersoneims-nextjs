@@ -2,28 +2,17 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import dynamic from 'next/dynamic';
 import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import Link from 'next/link';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import SolarFaultEngineeringDeepDive from '@/components/solutions/SolarFaultEngineeringDeepDive';
+import SolarGeniusProCard from '@/components/solar/SolarGeniusProCard';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
-// Dynamic import for SolarGenius Pro Hub V2 — solar AI platform
-const SolarGeniusProHub = dynamic(() => import('@/components/solar/SolarGeniusProHubV2'), {
-  loading: () => (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-20 h-20 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-white text-xl font-bold">Loading SolarGenius Pro™ V2</p>
-        <p className="text-amber-400 text-sm mt-2">56 AI Engines | 25+ Modules | 195+ Countries</p>
-        <p className="text-green-400 text-xs mt-1">IEEE/IEC DESIGN METHODS | FAST QUOTES</p>
-      </div>
-    </div>
-  ),
-  ssr: false
-});
+// The embedded SolarGeniusProHubV2 ("56 AI engines | 195+ countries", a
+// made-up accuracy % per engine) was replaced 2026-10-19 by a plain card that
+// links to the real calculator. See components/solar/SolarGeniusProCard.tsx.
 
 // =====================================================
 // COMPREHENSIVE SOLAR POWER SOLUTIONS HUB
@@ -469,7 +458,7 @@ export default function SolarSolutionHub() {
 
       <div className="mx-auto max-w-7xl px-6 py-12">
         <AnimatePresence mode="wait">
-          {/* SOLARGENIUS PRO HUB - COMPLETE 20+ MODULE PLATFORM */}
+          {/* SolarGenius Pro — what it does, with a link to the calculator */}
           {activeTab === 'ai-quotation' && (
             <motion.div
               key="ai-quotation"
@@ -478,7 +467,7 @@ export default function SolarSolutionHub() {
               exit={{ opacity: 0, y: -20 }}
               className="-mx-6 -mt-12"
             >
-              <SolarGeniusProHub />
+              <SolarGeniusProCard />
             </motion.div>
           )}
 

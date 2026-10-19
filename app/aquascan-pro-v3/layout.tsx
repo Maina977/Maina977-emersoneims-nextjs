@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import ToolSeoContent from '@/components/seo/ToolSeoContent';
 import type { ReactNode } from 'react';
 import FlagshipProductSchema from '@/components/seo/FlagshipProductSchema';
 
@@ -25,18 +24,18 @@ export const metadata: Metadata = {
     // The question a landowner actually asks before drilling: is there water,
     // how deep, and what will it cost. Data sources stay because they are what
     // make the answer credible.
-    'Check any site in Kenya before you drill, free. Likely depth, yield and drilling cost, from satellite, NASA POWER and GLDAS data — with water-quality screening.',
+    // "GLDAS" removed 2026-10-19: the module of that name fetches ERA5-Land and
+    // NASA POWER data. Name the sources the tool really uses.
+    'Check any site in Kenya before you drill, free. A first look at likely depth, yield and drilling cost from NASA POWER, ERA5-Land, soil and water-point data — then a survey confirms it.',
   keywords: [
     'borehole analysis Kenya',
     'borehole intelligence',
     'hydrogeology software',
-    'water quality analysis',
-    'satellite borehole survey',
-    'GLDAS water modelling',
+    'borehole depth Kenya',
+    'borehole pre-screen',
     'NASA POWER water',
     'AquaScan Pro',
     'EmersonEIMS borehole',
-    'donor-grade borehole reports',
     'pump sizing Kenya',
   ],
   /*
@@ -49,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AquaScan Pro — Borehole & Water Intelligence',
     description:
-      'Audit-grade borehole, hydrogeology and water-quality intelligence with full data provenance — for drillers, NGOs and counties in Kenya.',
+      'A free desktop pre-screen for a borehole site in Kenya: likely depth, yield and cost ranges, each with its data source. A survey confirms where to drill.',
     url: URL,
     type: 'website',
     siteName: 'EmersonEIMS',
@@ -59,7 +58,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'AquaScan Pro — Borehole & Water Intelligence',
-    description: 'Satellite, GLDAS, NASA POWER, water quality, donor-grade reports.',
+    description: 'Free borehole pre-screen for Kenya: depth, yield and cost ranges from public data.',
     images: [`${SITE}/og-image.jpg`],
     site: '@EmersonEIMS',
   },
@@ -73,15 +72,16 @@ export default function AquaScanProV3Layout({ children }: { children: ReactNode 
       <FlagshipProductSchema
         name="AquaScan Pro"
         url={URL}
-        description="Borehole, hydrogeology and water intelligence platform: satellite indices, GLDAS, NASA POWER, water quality and donor-grade reports."
+        description="Free desktop borehole pre-screen for Kenya: likely depth, yield and drilling-cost ranges from NASA POWER, ERA5-Land, ISRIC SoilGrids and mapped water points, with the water-quality risks to test for."
         category="Borehole Intelligence"
         applicationCategory="EngineeringApplication"
-        keywords={['Borehole Analysis', 'Hydrogeology', 'Satellite Survey', 'Water Quality', 'GLDAS', 'NASA POWER']}
+        keywords={['Borehole Analysis', 'Hydrogeology', 'Borehole Depth', 'Water Quality', 'NASA POWER']}
         industry="Drillers, NGOs, County Governments, Agribusiness"
         priceKes="Free"
       />
+      {/* ToolSeoContent (the h1) moved into page.tsx 2026-10-19: rendered here it
+          gave /aquascan-pro-v3/methodology a second h1 above its own. */}
       {children}
-      <ToolSeoContent tool="aquascan-pro-v3" headingLevel="h1" />
     </>
   );
 }

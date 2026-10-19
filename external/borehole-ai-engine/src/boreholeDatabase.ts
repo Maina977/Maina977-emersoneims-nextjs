@@ -212,18 +212,18 @@ const KENYA_COUNTY_BOREHOLE_DATA: Record<string, CountyBoreholeStats> = {
   },
   'turkana': {
     county: 'Turkana',
-    estimatedBoreholes: 380,
-    avgDepth_m: 200,
-    depthRange: [50, 400],
+    estimatedBoreholes: 1586, // records in the shipped IHP-WINS field data alone (was 380)
+    avgDepth_m: 67, // median of drilled depths in the IHP-WINS field records shipped with this tool (n=672; was 200)
+    depthRange: [18, 350],
     avgYield_m3h: 2.0,
     yieldRange: [0.2, 10],
     successRate: 0.45,
     primaryGeology: 'Tertiary sediments + basement + Turkana volcanics',
     aquiferType: 'Sedimentary + basement',
-    avgWaterTable_m: 80,
-    waterTableRange: [20, 200],
+    avgWaterTable_m: 20, // only 6 field records give a static level (4-53 m); was 80, deeper than most drilled holes
+    waterTableRange: [4, 60],
     drillingCostPerM_USD: [60, 180],
-    keyRisks: ['Very deep, very low yield', 'High salinity/TDS', 'Remote access difficulties', 'Borehole collapse in unconsolidated sediments'],
+    keyRisks: ['Many dry or saline holes; yields vary widely', 'High salinity/TDS', 'Remote access difficulties', 'Borehole collapse in unconsolidated sediments'],
     notes: 'Arid region. Lotikipi Basin aquifer discovered 2013 (UNESCO/Japan) — deep sedimentary. Surface water scarce.',
   },
   'kilifi': {
@@ -311,9 +311,9 @@ const KENYA_COUNTY_BOREHOLE_DATA: Record<string, CountyBoreholeStats> = {
 
   'garissa': {
     county: 'Garissa',
-    estimatedBoreholes: 320,
-    avgDepth_m: 180,
-    depthRange: [60, 350],
+    estimatedBoreholes: 510, // records in the shipped IHP-WINS field data alone (was 320)
+    avgDepth_m: 151, // median of drilled depths in the IHP-WINS field records shipped with this tool (n=198; was 180)
+    depthRange: [66, 300],
     avgYield_m3h: 2.5,
     yieldRange: [0.3, 12],
     successRate: 0.48,
@@ -327,9 +327,9 @@ const KENYA_COUNTY_BOREHOLE_DATA: Record<string, CountyBoreholeStats> = {
   },
   'wajir': {
     county: 'Wajir',
-    estimatedBoreholes: 280,
-    avgDepth_m: 220,
-    depthRange: [80, 400],
+    estimatedBoreholes: 587, // records in the shipped IHP-WINS field data alone (was 280)
+    avgDepth_m: 180, // median of drilled depths in the IHP-WINS field records shipped with this tool (n=222; was 220)
+    depthRange: [38, 300],
     avgYield_m3h: 1.8,
     yieldRange: [0.2, 8],
     successRate: 0.42,
@@ -359,7 +359,7 @@ const KENYA_COUNTY_BOREHOLE_DATA: Record<string, CountyBoreholeStats> = {
   },
   'marsabit': {
     county: 'Marsabit',
-    estimatedBoreholes: 250,
+    estimatedBoreholes: 516, // records in the shipped IHP-WINS field data alone (was 250)
     avgDepth_m: 180,
     depthRange: [40, 350],
     avgYield_m3h: 2.2,
@@ -929,18 +929,18 @@ const COUNTRY_BOREHOLE_DATA: Record<string, Omit<RegionalBoreholeStats, 'region'
     averageDepth: 120, depthRange: [30, 350],
     averageYield: 5.2, yieldRange: [0.5, 25],
     successRate: 0.72,
-    totalBoreholesDrilled: '~35,000+ (WASREB registry)',
+    totalBoreholesDrilled: '~35,000+ (estimate)',
     commonAquiferTypes: ['Fractured basement', 'Volcanic aquifer', 'Sedimentary (Coastal)', 'Alluvial'],
     commonGeology: ['Precambrian basement', 'Tertiary volcanics', 'Quaternary sediments', 'Coral limestone (Coast)'],
     averageCost: '$45-150/m',
     typicalWaterTable: '10-80m (varies by region: 5m Coast, 50-120m Rift Valley)',
     databaseLinks: [
-      { name: 'Kenya WASREB Database', url: 'https://wasreb.go.ke/', description: 'Water Services Regulatory Board — national borehole register' },
+      { name: 'Water Resources Authority (WRA)', url: 'https://wra.go.ke/', description: 'Issues borehole permits; holds the national abstraction records' },
       { name: 'Kenya Open Data', url: 'https://opendata.go.ke/', description: 'Government open data portal with water point data' },
       { name: 'WPDx (Water Point Data Exchange)', url: 'https://www.waterpointdata.org/', description: 'Global water point database — filter by Kenya' },
     ],
-    source: 'Kenya Ministry of Water, WASREB, RWSN borehole cost benchmarking 2020',
-    notes: ['Nairobi basin: 60-150m typical', 'Turkana: very deep (200-350m), low yield', 'Mt Kenya flanks: high yield (volcanic)'],
+    source: 'Kenya Ministry of Water, Water Resources Authority, RWSN borehole cost benchmarking 2020',
+    notes: ['Nairobi basin: 60-150m typical', 'Turkana: typically 25-120m (field-record median 67m); many dry or saline holes', 'Mt Kenya flanks: high yield (volcanic)'],
   },
   UG: {
     country: 'Uganda', countryCode: 'UG',

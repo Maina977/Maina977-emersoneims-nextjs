@@ -3,32 +3,14 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import BoreholePumpEngineeringDeepDive from '@/components/solutions/BoreholePumpEngineeringDeepDive';
 import { PUMP_PRICING } from '@/lib/data/pumpPricing';
 
-// Dynamic import for AI Borehole Analyzer
-const BoreholeAIAnalyzer = dynamic(
-  () => import('@/components/borehole/BoreholeAIAnalyzer'),
-  {
-    loading: () => (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-400">Loading AI Analyzer...</p>
-        </div>
-      </div>
-    ),
-    ssr: false,
-  }
-);
-
 const TABS = [
-  { id: 'ai-analyzer', label: 'AquaScan Pro', color: 'gradient', badge: 'DESKTOP PRE-FEASIBILITY' },
-  { id: 'ai-capabilities', label: 'AI Capabilities', color: 'cyan', badge: '85% ACC' },
+  { id: 'ai-analyzer', label: 'AquaScan Pro', color: 'gradient', badge: 'FREE PRE-SCREEN' },
   { id: 'overview', label: 'Overview', color: 'cyan' },
   { id: 'types', label: 'Pump Types', color: 'blue' },
   { id: 'parts', label: 'Pump Parts', color: 'slate' },
@@ -41,128 +23,6 @@ const TABS = [
   { id: 'shipping', label: 'Send Your Pump', color: 'orange' },
   { id: 'warranty', label: 'Warranty', color: 'teal' },
 ];
-
-// ============================================================================
-// AQUASCAN PRO - COMPREHENSIVE CAPABILITIES DATABASE
-// ============================================================================
-
-const AQUASCAN_CAPABILITIES = {
-  globalCoverage: [
-    { capability: 'Geographic Coverage', details: '195+ countries, 6 continents, worldwide operation', accuracy: 100 },
-    { capability: 'Region Auto-Detection', details: 'GPS coordinates automatically detect nearest geological database', accuracy: 95 },
-    { capability: 'Multi-Currency Pricing', details: '25+ currencies (USD, EUR, GBP, KES, etc.) with regional cost multipliers', accuracy: 100 },
-    { capability: 'Geological Database', details: '100+ major cities with detailed aquifer characteristics and historical data', accuracy: 92 },
-  ],
-  satelliteAnalysis: [
-    { capability: 'Sentinel-2 Imagery', details: 'NDVI (vegetation), NDWI (water), NDMI (moisture), BSI (bare soil) indices', accuracy: 89, source: 'ESA Copernicus' },
-    { capability: 'Landsat-8 Thermal', details: 'Surface temperature mapping, thermal anomaly detection, moisture index calculation', accuracy: 87, source: 'NASA/USGS' },
-    { capability: 'MODIS Data', details: 'Evapotranspiration rates, land surface temperature, vegetation condition monitoring', accuracy: 85, source: 'NASA Terra/Aqua' },
-    { capability: 'NASA GLDAS 2.1', details: 'Groundwater storage anomalies, 4-layer soil moisture (0-10cm, 10-40cm, 40-100cm, 100-200cm), monthly time series', accuracy: 88, source: 'NASA GES DISC' },
-    { capability: 'Google Earth Engine', details: 'Real-time multi-temporal satellite data integration and processing', accuracy: 90, source: 'Google Cloud' },
-  ],
-  terrainAnalysis: [
-    { capability: 'LiDAR Terrain Analysis', details: 'Digital Elevation Model (DEM) at 30m resolution, slope gradient, aspect direction', accuracy: 94 },
-    { capability: 'Topographic Wetness Index', details: 'TWI calculation for water accumulation and flow prediction zones', accuracy: 91 },
-    { capability: 'Drainage Pattern Detection', details: 'Dendritic, radial, trellis, rectangular, parallel pattern identification', accuracy: 88 },
-    { capability: 'Depression Mapping', details: 'Natural topographic depressions indicating water collection potential', accuracy: 90 },
-    { capability: 'Valley/Hill Classification', details: 'Terrain favorability scoring based on geomorphological features', accuracy: 89 },
-  ],
-  hyperspectralMapping: [
-    { capability: 'Mineral Identification', details: 'Quartz, feldspar, clay minerals, iron oxides, carbonite detection via spectral signatures', accuracy: 85 },
-    { capability: 'Rock Type Classification', details: 'Granite, basalt, limestone, sandstone, shale, metamorphic rock identification', accuracy: 87 },
-    { capability: 'Weathering Assessment', details: 'Fresh rock, slightly weathered, moderately weathered, highly weathered, residual soil classification', accuracy: 84 },
-    { capability: 'Fracture Detection', details: 'Linear features and rock fractures indicating potential groundwater pathways', accuracy: 82 },
-    { capability: 'Porosity Estimation', details: 'High (>30%), medium (15-30%), low (5-15%), very low (<5%) porosity classification', accuracy: 86 },
-  ],
-  geophysicalSurveys: [
-    { capability: 'Virtual VES', details: 'Vertical Electrical Sounding simulation - layer resistivity and thickness estimation', accuracy: 83, equivalent: 'Saves KES 50,000+ per survey' },
-    { capability: 'Virtual ERT', details: 'Electrical Resistivity Tomography - 2D subsurface resistivity imaging', accuracy: 81, equivalent: 'Saves KES 80,000+ per survey' },
-    { capability: 'Resistivity Mapping', details: 'Subsurface layer conductivity mapping for aquifer delineation', accuracy: 84, equivalent: 'No field equipment needed' },
-    { capability: 'Aquifer Boundary Detection', details: 'Top and bottom aquifer boundary identification with layer thickness', accuracy: 80, equivalent: 'Instant results vs 2-week wait' },
-    { capability: 'Water Table Depth Prediction', details: 'Static water level estimation based on regional hydrogeology', accuracy: 85, equivalent: '2 minutes vs 2 weeks' },
-  ],
-  soilAnalysis: [
-    { capability: 'USDA Soil Order Classification', details: 'All 12 USDA soil orders: Alfisols, Andisols, Aridisols, Entisols, Gelisols, Histosols, Inceptisols, Mollisols, Oxisols, Spodosols, Ultisols, Vertisols', accuracy: 88, standard: 'USDA NRCS' },
-    { capability: 'FAO Soil Group', details: 'International Reference Base soil classification system', accuracy: 86, standard: 'FAO/UNESCO' },
-    { capability: 'Texture Triangle Analysis', details: 'Sand/silt/clay percentages with USDA texture class determination', accuracy: 90, standard: 'USDA Textural Triangle' },
-    { capability: 'Hydraulic Conductivity', details: 'Saturated hydraulic conductivity (Ksat) in m/day for water flow rate', accuracy: 85, standard: 'Darcy\'s Law' },
-    { capability: 'Infiltration Rate', details: 'Surface water absorption speed in mm/hour for recharge estimation', accuracy: 87, standard: 'Green-Ampt Model' },
-    { capability: 'Soil Color Profile', details: 'Depth-based Munsell color mapping showing soil horizons (O, A, E, B, C, R)', accuracy: 92, standard: 'Munsell Color System' },
-    { capability: 'pH & Chemical Properties', details: 'Soil pH, electrical conductivity (EC), cite exchange capacity (CEC), organic matter %', accuracy: 84, standard: 'Lab-equivalent' },
-  ],
-  weatherClimate: [
-    { capability: 'Current Weather Conditions', details: 'Real-time temperature, humidity, wind speed/direction, pressure, cloud cover', accuracy: 95 },
-    { capability: 'Monthly Rainfall Patterns', details: '12-month historical precipitation with wet/dry season identification', accuracy: 90 },
-    { capability: 'Seasonal Forecasts', details: '4-season predictions: Long rains, dry season, short rains, cool dry period', accuracy: 82 },
-    { capability: 'Drought Risk Assessment', details: 'Historical drought frequency, severity, and current risk level', accuracy: 85 },
-    { capability: 'Optimal Drilling Seasons', details: 'Best months for drilling based on rainfall and water table patterns', accuracy: 88 },
-    { capability: 'Climate Change Impact', details: '10-year precipitation trend analysis for sustainability planning', accuracy: 80 },
-  ],
-  financialAnalysis: [
-    { capability: 'Comprehensive Cost Breakdown', details: 'Drilling per meter, casing, gravel pack, pump, motor, pipes, tank, solar, shelter, permits', accuracy: 90 },
-    { capability: 'ROI Analysis', details: '10-year return on investment calculation with water savings quantification', accuracy: 88 },
-    { capability: 'NPV Calculation', details: 'Net Present Value at 10% discount rate for investment decision', accuracy: 90 },
-    { capability: 'IRR Computation', details: 'Internal Rate of Return percentage for project viability assessment', accuracy: 88 },
-    { capability: 'Payback Period', details: 'Years to recover initial investment through water cost savings', accuracy: 92 },
-    { capability: 'Water Cost per Liter', details: 'Lifetime levelized cost of water production in local currency', accuracy: 90 },
-    { capability: 'Solar System Sizing', details: 'Panel wattage, battery capacity, inverter size, mounting structure costs', accuracy: 88 },
-    { capability: 'Maintenance Budget', details: 'Annual maintenance, pump replacement, and contingency fund estimates', accuracy: 85 },
-  ],
-  predictions: [
-    { capability: 'Overall Success Probability', details: 'Combined probability of successful water extraction (target: potable yield)', accuracy: 85, highlight: true },
-    { capability: 'Expected Yield Range', details: 'Conservative and optimistic m³/hour water output estimates', accuracy: 83 },
-    { capability: 'Optimal Drilling Depth', details: 'Recommended depth with minimum/maximum range in meters', accuracy: 87 },
-    { capability: 'Water Quality Prediction', details: 'TDS (mg/L), pH, hardness, iron, fluoride, salinity risk assessment', accuracy: 82 },
-    { capability: '5-Year Yield Sustainability', details: 'Long-term yield stability based on aquifer characteristics', accuracy: 80 },
-    { capability: '10-Year Water Table Projection', details: 'Predicted water table depth changes over decade', accuracy: 78 },
-    { capability: 'Climate Impact Modeling', details: 'Drought and flood effects on aquifer recharge and yield', accuracy: 75 },
-    { capability: 'Aquifer Depletion Risk', details: 'Risk of over-extraction based on recharge vs demand analysis', accuracy: 77 },
-  ],
-  vegetationIndicators: [
-    { capability: 'Water-Indicating Plants', details: 'Papyrus (95% confidence), Wild Fig (85%), Yellow Fever Tree (90%), Reeds (95%)', accuracy: 90 },
-    { capability: 'Green Index Analysis', details: 'NDVI-based vegetation density correlation with shallow groundwater', accuracy: 88 },
-    { capability: 'Seasonal Vegetation Patterns', details: 'Wet vs dry season greenness indicating water table proximity', accuracy: 87 },
-    { capability: 'Phreatophyte Detection', details: 'Deep-rooted plants accessing groundwater identification', accuracy: 85 },
-  ],
-  visualizations: [
-    { capability: 'Interactive Area Map', details: 'Satellite basemap with land use, geology, hydrology overlays', accuracy: 95 },
-    { capability: 'Land Use Distribution Chart', details: 'Agriculture, urban, forest, water, barren land percentages', accuracy: 90 },
-    { capability: 'Points of Interest Markers', details: 'Nearby successful boreholes, rivers, springs, towns with distances', accuracy: 92 },
-    { capability: '3D Aquifer Cross-Section', details: 'Visual subsurface layers: topsoil, subsoil, weathered rock, aquifer, bedrock', accuracy: 85 },
-    { capability: 'Soil Color Depth Profile', details: 'Visual horizon representation with Munsell colors and descriptions', accuracy: 88 },
-    { capability: 'Success Probability Gauge', details: '4-segment visual indicator: Excellent/Good/Moderate/Poor zones', accuracy: 90 },
-    { capability: 'Cost Breakdown Pie Chart', details: 'Interactive budget allocation by category', accuracy: 100 },
-    { capability: 'Depth vs Yield Graph', details: 'Relationship between drilling depth and expected water yield', accuracy: 87 },
-    { capability: 'ROI Timeline Chart', details: 'Cumulative savings projection over 10-year period', accuracy: 88 },
-    { capability: 'Monthly Rainfall Bar Chart', details: '12-month precipitation visualization with averages', accuracy: 90 },
-  ],
-  compliance: [
-    { capability: 'EIA Category Assessment', details: 'Exempt (no EIA), Project Report, or Full EIA requirement determination', accuracy: 90 },
-    { capability: 'WRA Permit Requirements', details: 'Water Resources Authority borehole drilling permit checklist', accuracy: 95 },
-    { capability: 'NEMA Compliance', details: 'National Environment Management Authority requirements', accuracy: 92 },
-    { capability: 'County Government Permits', details: 'Local county borehole permit and registration requirements', accuracy: 90 },
-    { capability: 'Setback Distance Calculation', details: 'Minimum distances from latrines (30m), septic tanks (50m), contamination sources', accuracy: 100 },
-    { capability: 'Water Rights Assessment', details: 'Water abstraction licensing and allocation requirements', accuracy: 88 },
-  ],
-  advancedFeatures: [
-    { capability: 'Multi-Site Comparison', details: 'Compare up to 5 sites side-by-side with ranking algorithm', accuracy: 90 },
-    { capability: 'Scenario Simulation', details: 'Shallow/standard/deep well scenarios with cost-benefit analysis', accuracy: 85 },
-    { capability: 'Drought Scenario Modeling', details: 'Yield predictions under drought conditions (-30% recharge)', accuracy: 80 },
-    { capability: 'Wet Season Optimization', details: 'Peak yield expectations during rainy season (+20% recharge)', accuracy: 82 },
-    { capability: 'Self-Learning Algorithm', details: 'Model improves with each successful borehole data point', accuracy: 88 },
-    { capability: 'Confidence Metrics', details: '8-factor confidence scoring: satellite, geological, historical, terrain, vegetation, hydrological, geophysical, data density', accuracy: 90 },
-  ],
-  outputs: [
-    { capability: 'Comprehensive PDF Report', details: '15+ page downloadable report with all analysis results', available: true },
-    { capability: 'WhatsApp One-Click Share', details: 'Instant report sharing to drilling consultant', available: true },
-    { capability: 'Executive Summary', details: '1-page decision document for quick review', available: true },
-    { capability: 'Detailed Technical Notes', details: 'Full geological and hydrogeological analysis', available: true },
-    { capability: 'Risk Assessment Report', details: 'All identified risks with mitigation strategies', available: true },
-    { capability: 'Actionable Next Steps', details: 'Prioritized checklist for proceeding with drilling', available: true },
-    { capability: 'Cost Estimation Sheet', details: 'Detailed budget breakdown for funding applications', available: true },
-    { capability: 'Permit Checklist', details: 'Required permits and application guidance', available: true },
-  ],
-};
 
 // Comprehensive Borehole Pump Overview - 10 Detailed Paragraphs
 const PUMP_OVERVIEW = [
@@ -826,151 +686,56 @@ export default function BoreholePumpsPage() {
               exit={{ opacity: 0 }}
               className="space-y-8"
             >
-              {/* Header */}
+              {/* Was: "85% Overall Accuracy", "195+ countries", per-satellite accuracy
+                  badges, "Virtual VES/ERT saves KES 130,000+" and "Why AquaScan Pro
+                  beats traditional surveys", over an older embedded analyzer that
+                  produced results even from an empty image. None of it was measured,
+                  and telling a landowner to skip the survey can cost them a dry hole.
+                  (2026-10-19 tool audit) The real tool lives at /aquascan-pro-v3. */}
               <div className="text-center mb-8">
-                {/* Desktop pre-feasibility badge */}
-                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 text-black px-6 py-2 rounded-full text-sm font-bold mb-4 shadow-lg shadow-amber-500/30 animate-pulse">
-                  <span className="text-xl">🏆</span>
-                  <span>AI DESKTOP BOREHOLE PRE-FEASIBILITY</span>
-                  <span className="text-xl">🌍</span>
-                </div>
-                <div className="flex flex-wrap justify-center gap-2 mb-4">
-                  <span className="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full text-xs font-medium border border-cyan-500/30">195+ COUNTRIES</span>
-                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium border border-green-500/30">AUDITED REPORTS</span>
-                  <span className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-xs font-medium border border-purple-500/30">NASA GLDAS DATA</span>
-                  <span className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-xs font-medium border border-orange-500/30">BEFORE YOU DRILL</span>
-                  <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-medium border border-red-500/30">6 CONTINENTS</span>
-                </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                  AquaScan Pro - AI Borehole Analyzer
+                  AquaScan Pro — free borehole pre-screen
                 </h2>
-                <p className="text-gray-400 max-w-3xl mx-auto">
-                  A desktop groundwater pre-feasibility platform.
-                  NASA GLDAS + Google Earth Engine + 15 satellite sources. Global data coverage. Screens sites BEFORE the statutory hydrogeological survey — it does not replace it.
+                <p className="text-gray-300 max-w-3xl mx-auto">
+                  Before you pay for a survey, get a first look at a site: likely depth, yield and drilling-cost ranges
+                  from public climate, soil and water-point data, and the water-quality risks to test for. It screens a
+                  site <strong>before</strong> the hydrogeological survey — it does not replace it.
                 </p>
-                {/* Quick Stats */}
-                <div className="flex flex-wrap justify-center gap-6 mt-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-cyan-400">200+</div>
-                    <div className="text-xs text-gray-500">Analysis Parameters</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-green-400">85%</div>
-                    <div className="text-xs text-gray-500">Overall Accuracy</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-purple-400">15+</div>
-                    <div className="text-xs text-gray-500">Data Sources</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-amber-400">2 min</div>
-                    <div className="text-xs text-gray-500">Analysis Time</div>
-                  </div>
-                </div>
               </div>
 
-              {/* Technology Features - Global */}
-              <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-2 mb-8">
+              <div className="grid md:grid-cols-3 gap-4">
                 {[
-                  { icon: '🛰️', label: 'Sentinel-2', desc: '89% acc', color: 'cyan' },
-                  { icon: '🌡️', label: 'Landsat-8', desc: '87% acc', color: 'orange' },
-                  { icon: '🌍', label: 'MODIS', desc: '85% acc', color: 'green' },
-                  { icon: '💧', label: 'NASA GLDAS', desc: '88% acc', color: 'blue' },
-                  { icon: '📡', label: 'LiDAR', desc: '94% acc', color: 'purple' },
-                  { icon: '💎', label: 'Hyperspectral', desc: '85% acc', color: 'pink' },
-                  { icon: '⚡', label: 'VES/ERT', desc: '83% acc', color: 'yellow' },
-                  { icon: '🏔️', label: 'Soil USDA', desc: '88% acc', color: 'amber' },
-                  { icon: '🌧️', label: 'Weather', desc: '90% acc', color: 'teal' },
-                  { icon: '💰', label: 'ROI/NPV', desc: '90% acc', color: 'emerald' },
-                ].map((tech, i) => (
-                  <div key={i} className={`bg-${tech.color}-500/10 backdrop-blur rounded-xl p-2 text-center border border-${tech.color}-500/30 hover:border-${tech.color}-500 transition-colors`}>
-                    <div className="text-xl mb-0.5">{tech.icon}</div>
-                    <p className="text-white text-[10px] font-semibold">{tech.label}</p>
-                    <p className="text-green-400 text-[9px] font-bold">{tech.desc}</p>
+                  { title: 'What it uses', body: 'NASA POWER and ERA5-Land climate data, ISRIC SoilGrids, SRTM terrain, mapped water points (WPDx, OpenStreetMap) and real drilled-borehole records (UNESCO IHP-WINS) where they exist.' },
+                  { title: 'What you get', body: 'Depth, yield and cost as ranges, each with its data source, plus recorded boreholes and springs near the site. A downloadable PDF summarises it.' },
+                  { title: 'What it cannot do', body: 'Pick the exact drilling point or guarantee water. A geophysical survey (ERT/VES), a licensed hydrogeologist and a Water Resources Authority permit come before any drilling.' },
+                ].map((card) => (
+                  <div key={card.title} className="bg-slate-800/60 rounded-xl p-5 border border-cyan-500/20">
+                    <h3 className="text-md font-bold text-cyan-400 mb-2">{card.title}</h3>
+                    <p className="text-sm text-gray-300">{card.body}</p>
                   </div>
                 ))}
               </div>
 
-              {/* AI Analyzer Component */}
-              <BoreholeAIAnalyzer />
-
-              {/* AI Capabilities - THE FUTURE IS NOW */}
-              <div className="grid md:grid-cols-4 gap-4 mt-8">
-                <div className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 rounded-xl p-5 border border-cyan-500/30">
-                  <div className="text-3xl mb-2">🛰️</div>
-                  <h3 className="text-md font-bold text-cyan-400 mb-1">Satellite Intelligence</h3>
-                  <p className="text-xs text-gray-300">NASA GLDAS, Sentinel-2, Landsat-8, MODIS - 5 satellite sources</p>
-                  <div className="mt-2 text-lg font-bold text-green-400">89% Accuracy</div>
-                </div>
-                <div className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 rounded-xl p-5 border border-purple-500/30">
-                  <div className="text-3xl mb-2">⚡</div>
-                  <h3 className="text-md font-bold text-purple-400 mb-1">Virtual Geophysics</h3>
-                  <p className="text-xs text-gray-300">VES & ERT simulations - saves KES 130,000+ in surveys</p>
-                  <div className="mt-2 text-lg font-bold text-green-400">83% Accuracy</div>
-                </div>
-                <div className="bg-gradient-to-br from-green-900/40 to-emerald-900/40 rounded-xl p-5 border border-green-500/30">
-                  <div className="text-3xl mb-2">🌍</div>
-                  <h3 className="text-md font-bold text-green-400 mb-1">Global Coverage</h3>
-                  <p className="text-xs text-gray-300">195+ countries, 6 continents, 100+ detailed city databases</p>
-                  <div className="mt-2 text-lg font-bold text-green-400">95% Coverage</div>
-                </div>
-                <div className="bg-gradient-to-br from-amber-900/40 to-orange-900/40 rounded-xl p-5 border border-amber-500/30">
-                  <div className="text-3xl mb-2">💰</div>
-                  <h3 className="text-md font-bold text-amber-400 mb-1">Financial Analysis</h3>
-                  <p className="text-xs text-gray-300">ROI, NPV, IRR, payback period - 10-year projections</p>
-                  <div className="mt-2 text-lg font-bold text-green-400">90% Accuracy</div>
-                </div>
-              </div>
-
-              {/* Why AI is the Future */}
-              <div className="mt-8 bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-8 border border-cyan-500/20">
-                <h3 className="text-2xl font-bold text-white mb-4 text-center">Why AquaScan Pro Beats Traditional Surveys</h3>
-                <div className="grid md:grid-cols-5 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-red-400 line-through opacity-50">$1,000+</div>
-                    <div className="text-xl font-bold text-green-400">FREE</div>
-                    <p className="text-xs text-gray-400 mt-1">Survey Cost</p>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-red-400 line-through opacity-50">2-4 Weeks</div>
-                    <div className="text-xl font-bold text-green-400">2 Minutes</div>
-                    <p className="text-xs text-gray-400 mt-1">Time to Results</p>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-red-400 line-through opacity-50">1 Expert</div>
-                    <div className="text-xl font-bold text-green-400">15+ Sources</div>
-                    <p className="text-xs text-gray-400 mt-1">Data Sources</p>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-red-400 line-through opacity-50">Local Only</div>
-                    <div className="text-xl font-bold text-green-400">195+ Countries</div>
-                    <p className="text-xs text-gray-400 mt-1">Coverage</p>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-red-400 line-through opacity-50">10 Params</div>
-                    <div className="text-xl font-bold text-green-400">200+ Params</div>
-                    <p className="text-xs text-gray-400 mt-1">Analysis Depth</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* View Full Capabilities Button */}
-              <div className="mt-6 text-center">
-                <button
-                  onClick={() => setActiveTab('ai-capabilities')}
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-cyan-500/30"
+              <div className="flex flex-wrap gap-4 justify-center">
+                <a
+                  href="/aquascan-pro-v3"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full hover:scale-105 transition-transform"
                 >
-                  <span>📊</span>
-                  View All 50+ AI Capabilities with Accuracy Ratings
-                  <span>→</span>
-                </button>
+                  Open AquaScan Pro <span aria-hidden="true">→</span>
+                </a>
+                <a
+                  href="/aquascan-pro-v3/methodology"
+                  className="inline-flex items-center gap-2 px-8 py-4 border border-cyan-500/40 text-cyan-300 font-bold rounded-full hover:bg-cyan-500/10 transition-colors"
+                >
+                  How it works and how it is tested
+                </a>
               </div>
 
               {/* Call to Action */}
               <div className="mt-8 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-8 text-center">
                 <h3 className="text-2xl font-bold text-white mb-3">Ready to Drill? Let&apos;s Go!</h3>
                 <p className="text-cyan-100 mb-6 max-w-2xl mx-auto">
-                  From AI site analysis to professional drilling and pump installation - EmersonEIMS delivers end-to-end water solutions.
+                  From the site survey to drilling supervision and pump installation, EmersonEIMS handles the whole borehole project.
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center">
                   <a href="tel:+254768860665" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-600 rounded-full font-bold hover:bg-cyan-50 transition-colors">
@@ -980,293 +745,6 @@ export default function BoreholePumpsPage() {
                     <span>💬</span> WhatsApp Us
                   </a>
                 </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* AI Capabilities Tab - COMPREHENSIVE BREAKDOWN */}
-          {activeTab === 'ai-capabilities' && (
-            <motion.div
-              key="ai-capabilities"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="space-y-8"
-            >
-              {/* Header */}
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-full text-sm font-bold mb-4">
-                  <span>🔬</span>
-                  <span>COMPLETE TECHNICAL SPECIFICATIONS</span>
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                  AquaScan Pro - All 50+ AI Capabilities
-                </h2>
-                <p className="text-gray-400 max-w-3xl mx-auto">
-                  Every analysis capability with accuracy percentages. No other borehole analyzer in the world offers this level of detail.
-                </p>
-                {/* Overall Stats */}
-                <div className="flex flex-wrap justify-center gap-8 mt-6 p-4 bg-white/5 rounded-xl">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-green-400">85%</div>
-                    <div className="text-sm text-gray-400">Overall Accuracy</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-cyan-400">50+</div>
-                    <div className="text-sm text-gray-400">Analysis Parameters</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-purple-400">15+</div>
-                    <div className="text-sm text-gray-400">Data Sources</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-amber-400">195+</div>
-                    <div className="text-sm text-gray-400">Countries</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 1: Global Coverage */}
-              <div className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 rounded-2xl p-6 border border-cyan-500/30">
-                <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">🌍</span> Global Coverage
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {AQUASCAN_CAPABILITIES.globalCoverage.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs">{item.details}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 2: Satellite & Remote Sensing */}
-              <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-2xl p-6 border border-purple-500/30">
-                <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">🛰️</span> Satellite & Remote Sensing Analysis
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {AQUASCAN_CAPABILITIES.satelliteAnalysis.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs mb-1">{item.details}</p>
-                      <p className="text-purple-400 text-[10px]">Source: {item.source}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 3: Terrain Analysis */}
-              <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-2xl p-6 border border-green-500/30">
-                <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">🏔️</span> Terrain & Topography Analysis
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  {AQUASCAN_CAPABILITIES.terrainAnalysis.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs">{item.details}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 4: Hyperspectral Rock Mapping */}
-              <div className="bg-gradient-to-br from-pink-900/30 to-red-900/30 rounded-2xl p-6 border border-pink-500/30">
-                <h3 className="text-xl font-bold text-pink-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">💎</span> Hyperspectral Rock Mapping
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  {AQUASCAN_CAPABILITIES.hyperspectralMapping.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs">{item.details}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 5: Virtual Geophysical Surveys */}
-              <div className="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 rounded-2xl p-6 border border-yellow-500/30">
-                <h3 className="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">⚡</span> Virtual Geophysical Surveys
-                </h3>
-                <p className="text-gray-400 text-sm mb-4">Traditional surveys cost KES 50,000-150,000 and take 2-4 weeks. AquaScan Pro delivers equivalent analysis in 2 minutes for FREE.</p>
-                <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  {AQUASCAN_CAPABILITIES.geophysicalSurveys.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs mb-1">{item.details}</p>
-                      <p className="text-yellow-400 text-[10px] font-semibold">{item.equivalent}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 6: Soil Analysis */}
-              <div className="bg-gradient-to-br from-amber-900/30 to-yellow-900/30 rounded-2xl p-6 border border-amber-500/30">
-                <h3 className="text-xl font-bold text-amber-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">🏛️</span> Soil Analysis (USDA/FAO Standards)
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {AQUASCAN_CAPABILITIES.soilAnalysis.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs mb-1">{item.details}</p>
-                      <p className="text-amber-400 text-[10px]">Standard: {item.standard}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 7: Weather & Climate */}
-              <div className="bg-gradient-to-br from-teal-900/30 to-cyan-900/30 rounded-2xl p-6 border border-teal-500/30">
-                <h3 className="text-xl font-bold text-teal-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">🌧️</span> Weather & Climate Analysis
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  {AQUASCAN_CAPABILITIES.weatherClimate.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs">{item.details}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 8: Financial Analysis */}
-              <div className="bg-gradient-to-br from-emerald-900/30 to-green-900/30 rounded-2xl p-6 border border-emerald-500/30">
-                <h3 className="text-xl font-bold text-emerald-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">💰</span> Financial Analysis & ROI
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {AQUASCAN_CAPABILITIES.financialAnalysis.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs">{item.details}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 9: Predictive Capabilities */}
-              <div className="bg-gradient-to-br from-indigo-900/30 to-violet-900/30 rounded-2xl p-6 border border-indigo-500/30">
-                <h3 className="text-xl font-bold text-indigo-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">🔮</span> Predictive Capabilities
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {AQUASCAN_CAPABILITIES.predictions.map((item, i) => (
-                    <div key={i} className={`bg-black/30 rounded-xl p-4 border ${item.highlight ? 'border-green-500 ring-2 ring-green-500/30' : 'border-white/10'}`}>
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className={`${item.highlight ? 'bg-green-400' : 'bg-green-500'} text-white text-xs px-2 py-0.5 rounded-full font-bold`}>{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs">{item.details}</p>
-                      {item.highlight && <p className="text-green-400 text-[10px] mt-1 font-bold">★ PRIMARY OUTPUT</p>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 10: Visualizations */}
-              <div className="bg-gradient-to-br from-rose-900/30 to-pink-900/30 rounded-2xl p-6 border border-rose-500/30">
-                <h3 className="text-xl font-bold text-rose-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">📊</span> Visualization & Mapping
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {AQUASCAN_CAPABILITIES.visualizations.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs">{item.details}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 11: Compliance & Permits */}
-              <div className="bg-gradient-to-br from-slate-800 to-gray-900 rounded-2xl p-6 border border-slate-500/30">
-                <h3 className="text-xl font-bold text-slate-300 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">📋</span> Compliance & Permits
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {AQUASCAN_CAPABILITIES.compliance.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-white font-semibold text-sm">{item.capability}</span>
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">{item.accuracy}%</span>
-                      </div>
-                      <p className="text-gray-400 text-xs">{item.details}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 12: Output Formats */}
-              <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-2xl p-6 border border-cyan-500/30">
-                <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                  <span className="text-2xl">📱</span> Output & Reporting
-                </h3>
-                <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {AQUASCAN_CAPABILITIES.outputs.map((item, i) => (
-                    <div key={i} className="bg-black/30 rounded-xl p-4 border border-white/10 text-center">
-                      <span className="text-green-400 text-2xl">✓</span>
-                      <p className="text-white font-semibold text-sm mt-2">{item.capability}</p>
-                      <p className="text-gray-400 text-xs mt-1">{item.details}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Disclaimer */}
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-amber-400 mb-3 flex items-center gap-2">
-                  <span>⚠️</span> Important Disclaimer
-                </h3>
-                <p className="text-gray-300 text-sm">
-                  <strong>AquaScan Pro is a PRE-ASSESSMENT tool.</strong> While it achieves 85% accuracy using satellite imagery, NASA data, and AI analysis,
-                  final drilling decisions should ALWAYS be verified by professional hydrogeological surveys and licensed drilling contractors for high-value projects.
-                  This tool complements, not replaces, professional site visits.
-                </p>
-              </div>
-
-              {/* CTA */}
-              <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-8 text-center">
-                <h3 className="text-2xl font-bold text-white mb-3">Ready to Use AquaScan Pro?</h3>
-                <p className="text-cyan-100 mb-6">Start your FREE AI analysis now - no registration required.</p>
-                <button
-                  onClick={() => setActiveTab('ai-analyzer')}
-                  className="inline-flex items-center gap-2 px-10 py-4 bg-white text-blue-600 rounded-full font-bold hover:bg-cyan-50 transition-colors text-lg"
-                >
-                  <span>🚀</span> Launch AquaScan Pro
-                </button>
               </div>
             </motion.div>
           )}

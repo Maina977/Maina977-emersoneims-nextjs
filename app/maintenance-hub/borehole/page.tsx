@@ -11,29 +11,13 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
+import AquaScanPreScreenCard from '@/components/borehole/AquaScanPreScreenCard';
 import {
   BOREHOLE_REPAIR_MANUALS,
   BOREHOLE_PARTS_CATALOGUE,
   BOREHOLE_MAINTENANCE_SCHEDULES,
   BOREHOLE_KENYA_SUPPLIERS,
 } from '@/lib/maintenance-hub/borehole-bible';
-
-// Dynamic import for AI Borehole Analyzer (reduces initial bundle)
-const BoreholeAIAnalyzer = dynamic(
-  () => import('@/components/borehole/BoreholeAIAnalyzer'),
-  {
-    loading: () => (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/70">Loading AI Analyzer...</p>
-        </div>
-      </div>
-    ),
-    ssr: false,
-  }
-);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // KENYA 47 COUNTIES AQUIFER DATA
@@ -510,7 +494,7 @@ export default function BoreholeMaintenanceHub() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '💧' },
-    { id: 'ai-analyzer', label: 'AI Site Analyzer', icon: '🤖', badge: 'NEW' },
+    { id: 'ai-analyzer', label: 'Borehole Pre-Screen', icon: '💧', badge: 'FREE' },
     { id: 'aquifer', label: '47 Counties Data', icon: '🗺️' },
     { id: 'faults', label: 'Fault Codes (200+)', icon: '⚠️' },
     { id: 'calculator', label: 'Pump Calculator', icon: '🔢' },
@@ -670,70 +654,11 @@ export default function BoreholeMaintenanceHub() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
-                  <span className="animate-pulse">AI-POWERED</span>
-                  <span>Kenya&apos;s First Borehole Pre-Assessment Tool</span>
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                  AI Borehole Site Analyzer
-                </h2>
-                <p className="text-slate-400 max-w-2xl mx-auto">
-                  Upload a photo of your land and get an instant AI-powered groundwater assessment.
-                  Our AI analyzes terrain, vegetation, and geological indicators to estimate
-                  borehole success probability and provide recommendations.
-                </p>
-              </div>
-
-              {/* Feature Highlights */}
-              <div className="grid md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-slate-800 rounded-xl p-4 border border-blue-500/30 text-center">
-                  <div className="text-3xl mb-2">🏔️</div>
-                  <h3 className="font-semibold text-white text-sm">Terrain Analysis</h3>
-                  <p className="text-xs text-slate-400">Identifies valleys, slopes & drainage</p>
-                </div>
-                <div className="bg-slate-800 rounded-xl p-4 border border-green-500/30 text-center">
-                  <div className="text-3xl mb-2">🌿</div>
-                  <h3 className="font-semibold text-white text-sm">Vegetation Mapping</h3>
-                  <p className="text-xs text-slate-400">Detects water-indicating plants</p>
-                </div>
-                <div className="bg-slate-800 rounded-xl p-4 border border-orange-500/30 text-center">
-                  <div className="text-3xl mb-2">🪨</div>
-                  <h3 className="font-semibold text-white text-sm">Geological Analysis</h3>
-                  <p className="text-xs text-slate-400">Rock types & aquifer potential</p>
-                </div>
-                <div className="bg-slate-800 rounded-xl p-4 border border-cyan-500/30 text-center">
-                  <div className="text-3xl mb-2">📊</div>
-                  <h3 className="font-semibold text-white text-sm">47 Counties Data</h3>
-                  <p className="text-xs text-slate-400">Regional success rates & depths</p>
-                </div>
-              </div>
-
-              {/* AI Analyzer Component */}
-              <BoreholeAIAnalyzer />
-
-              {/* AI Technology Info */}
-              <div className="mt-8 p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🚀</span>
-                  <div>
-                    <h4 className="font-semibold text-cyan-400 mb-1">The Future of Groundwater Exploration</h4>
-                    <p className="text-sm text-slate-400">
-                      This AI uses the same satellite imagery (Sentinel-2, Landsat-8, MODIS), LiDAR data,
-                      and remote sensing technologies employed by NASA, ESA, and leading geological survey
-                      companies worldwide. Make confident drilling decisions backed by 26 AI engines and
-                      100,000+ historical borehole records across 195+ countries.
-                    </p>
-                    <a
-                      href="tel:+254768860665"
-                      className="inline-flex items-center gap-2 mt-3 text-cyan-400 hover:text-cyan-300 text-sm"
-                    >
-                      <span>📞</span>
-                      <span>Ready to drill? Call us: +254 768 860 665</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
+              <AquaScanPreScreenCard />
+              <p className="text-center text-sm text-slate-400">
+                Ready for the survey or the drilling?{' '}
+                <a href="tel:+254768860665" className="text-cyan-400 hover:text-cyan-300">Call +254 768 860 665</a>
+              </p>
             </motion.div>
           )}
 

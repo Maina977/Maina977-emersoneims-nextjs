@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { ToolAppShell, ToolLoadingState } from '@/components/tools/ToolAppShell';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import ToolSeoContent from '@/components/seo/ToolSeoContent';
 // Engine stylesheet imported HERE (statically) instead of inside the
 // dynamically-imported engine: this ships it in the initial page <head>,
 // eliminating the lazy CSS chunk whose fetch failure crashed the tool with
@@ -46,6 +47,7 @@ export default function AquaScanProV3Page() {
       <B2BCommercialBand profile={B2B_PROFILES.aquascanPro} />
 
       <AquaScanProV2 />
+      <ToolSeoContent tool="aquascan-pro-v3" headingLevel="h1" />
     </ToolAppShell>
   );
 }

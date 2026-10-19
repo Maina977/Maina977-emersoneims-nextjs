@@ -89,7 +89,7 @@ export interface ClientLocation {
   village?: string;         // Village / Ward
   estate?: string;          // Estate / Neighbourhood
   farm?: string;            // Farm / Plot name
-  /** Direct GPS coordinates â€” takes absolute priority over geocoding */
+  /** Direct GPS coordinates — takes absolute priority over geocoding */
   latitude?: number;
   longitude?: number;
 }
@@ -127,7 +127,7 @@ export class BoreholeAnalyzer {
         new Promise((_, reject) => setTimeout(() => reject(new Error('Model load timeout')), 30000))
       ]);
     } catch (e) {
-      console.warn('[Pipeline] TF.js model init failed/timed out â€” pixel analysis will still work:', (e as Error).message);
+      console.warn('[Pipeline] TF.js model init failed/timed out — pixel analysis will still work:', (e as Error).message);
     }
   }
 
@@ -141,17 +141,17 @@ export class BoreholeAnalyzer {
       if (onProgress) onProgress(step, label);
     };
 
-    // â•â•â• SUBSYSTEM 1: LOCATION RESOLUTION â•â•â•
+    // ═══ SUBSYSTEM 1: LOCATION RESOLUTION ═══
     // Direct coordinates (manual entry) take ABSOLUTE priority
     // Then client location text is geocoded
     let clientGeo: (NonNullable<Awaited<ReturnType<typeof geocodeLocationForm>>> & {
       constituency?: string; ward?: string; suburb?: string; placeType?: string;
     }) | null = null;
     if (clientLocation?.latitude != null && clientLocation?.longitude != null) {
-      // Direct coordinates â€” highest priority, skip geocoding entirely
+      // Direct coordinates — highest priority, skip geocoding entirely
       const lat = clientLocation.latitude;
       const lon = clientLocation.longitude;
-      report(0, `Using direct coordinates: [${lat.toFixed(5)}, ${lon.toFixed(5)}] â€” reverse geocoding for place name...`);
+      report(0, `Using direct coordinates: [${lat.toFixed(5)}, ${lon.toFixed(5)}] — reverse geocoding for place name...`);
       console.log(`[Pipeline] Direct coordinates provided: [${lat}, ${lon}]`);
       // Reverse geocode via the robust dual-provider helper (Nominatim +
       // BigDataCloud OSM admin levels: county / sub-county / ward / village).
@@ -186,17 +186,17 @@ export class BoreholeAnalyzer {
         console.warn('[Pipeline] Reverse geocoding unavailable - report will show coordinates only');
       }
     } else if (clientLocation && Object.values(clientLocation).some(v => typeof v === 'string' && v.trim())) {
-      report(0, 'Geocoding client location â€” resolving coordinates from address...');
+      report(0, 'Geocoding client location — resolving coordinates from address...');
       try {
         clientGeo = await geocodeLocationForm(clientLocation);
         if (clientGeo) {
-          console.log(`[Pipeline] Client location resolved: ${clientGeo.displayName} â†’ [${clientGeo.latitude}, ${clientGeo.longitude}]`);
+          console.log(`[Pipeline] Client location resolved: ${clientGeo.displayName} → [${clientGeo.latitude}, ${clientGeo.longitude}]`);
         }
       } catch (err) {
         console.log('[Pipeline] Client location geocode failed:', err);
       }
 
-      // â•â•â• KNOWN-LOCATION FALLBACK â•â•â•
+      // ═══ KNOWN-LOCATION FALLBACK ═══
       // If Nominatim failed or returned a location far from the expected county/region,
       // fall back to known coordinate centroids for common Kenya sites.
       // This prevents the Kisumu-overriding-Makuyu bug when Nominatim returns wrong results.
@@ -227,7 +227,7 @@ export class BoreholeAnalyzer {
         ) : Infinity;
 
         if (!clientGeo || distKm > 50) {
-          // Nominatim failed or returned a location >50km from expected â€” use known fallback
+          // Nominatim failed or returned a location >50km from expected — use known fallback
           console.log(`[LOCATION OVERRIDE] Town "${allText}" matched known site: ${knownMatch.name}. Nominatim was ${clientGeo ? distKm.toFixed(0) + 'km away' : 'unavailable'}. Using known coordinates.`);
           clientGeo = {
             latitude: knownMatch.lat,
@@ -243,13 +243,13 @@ export class BoreholeAnalyzer {
         }
       }
     } else {
-      report(0, 'No client location provided â€” will rely on image GPS/analysis...');
+      report(0, 'No client location provided — will rely on image GPS/analysis...');
     }
 
-    // â•â•â• SUBSYSTEM 2: IMAGE ANALYSIS â•â•â•
+    // ═══ SUBSYSTEM 2: IMAGE ANALYSIS ═══
     // EXIF/IPTC extraction, filename parsing, GPS chain, image fingerprinting, pixel analysis
     report(1, 'Extracting EXIF metadata, GPS coordinates, image forensic ID...');
-    // Build location hints from client input â€” feeds GeoEstimator to prevent wrong-location matches
+    // Build location hints from client input — feeds GeoEstimator to prevent wrong-location matches
     const locationHints: string[] = [];
     if (clientLocation) {
       if (clientLocation.county) locationHints.push(clientLocation.county);
@@ -261,7 +261,7 @@ export class BoreholeAnalyzer {
     const features = await Promise.race([
       this.imageDetector.analyzeImage(imageFile, locationHints.length > 0 ? locationHints : undefined),
       new Promise<any>((resolve) => setTimeout(() => {
-        console.warn('[Pipeline] Image analysis timed out (60s) â€” using pixel-only fallback');
+        console.warn('[Pipeline] Image analysis timed out (60s) — using pixel-only fallback');
         resolve({ metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {} });
       }, 60000))
     ]);
@@ -271,7 +271,7 @@ export class BoreholeAnalyzer {
     const effectiveLon = clientGeo?.longitude ?? features.metadata?.gps?.longitude;
     const hasCoords = effectiveLat != null && effectiveLon != null;
 
-    // â•â•â• GPS / MANUAL LOCATION PRIORITY OVERRIDE â•â•â•
+    // ═══ GPS / MANUAL LOCATION PRIORITY OVERRIDE ═══
     // Forces the engine to respect user-provided GPS or town name
     // and heavily down-weights photo-based visual geo-estimation
     const hasDirectGPS = clientLocation?.latitude != null && clientLocation?.longitude != null;
@@ -307,7 +307,7 @@ export class BoreholeAnalyzer {
         country: clientGeo.country || '',
         region: clientGeo.state || clientGeo.county || '',
       };
-      console.log(`[LOCATION OVERRIDE] Using ${hasDirectGPS ? 'exact user GPS' : 'geocoded town'}: ${clientGeo.latitude.toFixed(5)}, ${clientGeo.longitude.toFixed(5)} â€” visual geo weight: ${visualGeoWeight}`);
+      console.log(`[LOCATION OVERRIDE] Using ${hasDirectGPS ? 'exact user GPS' : 'geocoded town'}: ${clientGeo.latitude.toFixed(5)}, ${clientGeo.longitude.toFixed(5)} — visual geo weight: ${visualGeoWeight}`);
 
       // Override visual geo-estimate so it doesn't contaminate report display
       // (prevents e.g. Kisumu visual estimate overriding Makuyu manual input)
@@ -319,6 +319,10 @@ export class BoreholeAnalyzer {
           region: clientGeo.state || clientGeo.county || features.geoEstimate.bestEstimate.region,
           country: clientGeo.country || features.geoEstimate.bestEstimate.country,
           confidence: Math.max(features.geoEstimate.bestEstimate.confidence, hasDirectGPS ? 0.95 : 0.80),
+          // The screen used to call this a "Visual Geo-Estimate … from terrain
+          // visual analysis" at 95% confidence, but it is the user's own
+          // coordinates. Say so (2026-10-18 tool audit).
+          source: 'user-coordinates',
         };
         // Down-weight ALL visual estimates by the visualGeoWeight factor,
         // and further slash any that disagree with user location (>50km away)
@@ -333,7 +337,7 @@ export class BoreholeAnalyzer {
             // If visual estimate is >50km from user location, nearly eliminate it
             if (dist > 50) {
               adjustedConfidence = est.confidence * 0.02;
-              console.log(`[LOCATION OVERRIDE] Suppressed visual estimate "${est.region || est.country}" (${dist.toFixed(0)}km away) â€” confidence ${(est.confidence * 100).toFixed(0)}% â†’ ${(adjustedConfidence * 100).toFixed(1)}%`);
+              console.log(`[LOCATION OVERRIDE] Suppressed visual estimate "${est.region || est.country}" (${dist.toFixed(0)}km away) — confidence ${(est.confidence * 100).toFixed(0)}% → ${(adjustedConfidence * 100).toFixed(1)}%`);
             }
             return { ...est, confidence: adjustedConfidence };
           });
@@ -341,9 +345,9 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â•â•â• SUBSYSTEM 3: SATELLITE DATA FUSION â•â•â•
+    // ═══ SUBSYSTEM 3: SATELLITE DATA FUSION ═══
     // Fetch real satellite data EARLY so it feeds into all analysis modules
-    report(2, 'Fetching satellite data â€” SoilGrids, elevation, GLDAS, 20-year weather...');
+    report(2, 'Fetching satellite data — SoilGrids, elevation, GLDAS, 20-year weather...');
 
     let remoteSensing: any = undefined;
     let historicalData: any = undefined;
@@ -366,8 +370,8 @@ export class BoreholeAnalyzer {
       const timed = <T>(name: string, p: Promise<T>): Promise<T> => {
         const start = Date.now();
         return Promise.race([
-          p.then(v => { console.log(`[Step2] ${name} âœ“ ${Date.now() - start}ms`); return v; },
-                 e => { console.log(`[Step2] ${name} âœ— ${Date.now() - start}ms: ${e?.message ?? e}`); throw e; }),
+          p.then(v => { console.log(`[Step2] ${name} ✓ ${Date.now() - start}ms`); return v; },
+                 e => { console.log(`[Step2] ${name} ✗ ${Date.now() - start}ms: ${e?.message ?? e}`); throw e; }),
           new Promise<never>((_, rej) => setTimeout(() => {
             console.warn(`[Step2] ${name} TIMEOUT 60s`);
             rej(new Error(`${name} timed out after 60s`));
@@ -408,7 +412,7 @@ export class BoreholeAnalyzer {
       try {
         allResults = await Promise.race([allSettledPromise, step2Timeout]) as any;
       } catch (e: any) {
-        console.warn(`[Pipeline] ${e.message} â€” proceeding with whatever data is available`);
+        console.warn(`[Pipeline] ${e.message} — proceeding with whatever data is available`);
         allResults = new Array(12).fill({ status: 'rejected', reason: e });
       }
 
@@ -435,9 +439,9 @@ export class BoreholeAnalyzer {
         boreholeRecords = getRegionalBoreholeStats(cc, cn, rg);
       }
 
-      // Kenya county-level intelligence â€” much more precise than national stats.
+      // Kenya county-level intelligence — much more precise than national stats.
       // AUDIT FIX (2026-07-16): prefer the GEOCODED county NAME over the
-      // coordinate bounding-box test â€” a Vihiga site 0.003Â° outside Vihiga's
+      // coordinate bounding-box test — a Vihiga site 0.003° outside Vihiga's
       // approximate bbox was silently assigned Kakamega's drilling record.
       if ((cc === 'KE' || cn?.toLowerCase().includes('kenya')) && effectiveLat && effectiveLon) {
         const { getKenyaCountyBoreholeStatsByName } = await import('./boreholeDatabase');
@@ -452,7 +456,7 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â•â•â• DETERMINISTIC FALLBACKS â€” Ensure every analysis engine produces a result â•â•â•
+    // ═══ DETERMINISTIC FALLBACKS — Ensure every analysis engine produces a result ═══
     // When live API calls fail (timeout, rate-limit, network error), generate
     // physics-based synthetic estimates so the report achieves 40/40 completion.
     // IMPORTANT: We track every fallback used so the UI can warn the user honestly.
@@ -478,7 +482,7 @@ export class BoreholeAnalyzer {
       }
     }
     if (remoteSensing && !remoteSensing.climate) {
-      fallbacksUsed.push('Climate data (NASA POWER API failed â€” using latitude-based estimate)');
+      fallbacksUsed.push('Climate data (NASA POWER API failed — using latitude-based estimate)');
       const lat = effectiveLat ?? 0;
       const annualP = lat > 30 || lat < -30 ? 650 : lat > 15 || lat < -15 ? 900 : 1400;
       const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
@@ -507,8 +511,8 @@ export class BoreholeAnalyzer {
       }
     }
     if (remoteSensing && !remoteSensing.elevation) {
-      fallbacksUsed.push('Elevation data (Open-Elevation API failed â€” using latitude estimate)');
-      // Approximate elevation from latitude â€” higher latitudes tend to have moderate elevations
+      fallbacksUsed.push('Elevation data (Open-Elevation API failed — using latitude estimate)');
+      // Approximate elevation from latitude — higher latitudes tend to have moderate elevations
       const lat = effectiveLat ?? 0;
       remoteSensing.elevation = {
         elevation: Math.abs(lat) > 40 ? 350 : Math.abs(lat) > 20 ? 650 : 450,
@@ -545,7 +549,7 @@ export class BoreholeAnalyzer {
       }
     }
     if (!remoteSensing) {
-      fallbacksUsed.push('All remote sensing (SoilGrids + Climate + Elevation APIs all failed â€” using latitude estimates)');
+      fallbacksUsed.push('All remote sensing (SoilGrids + Climate + Elevation APIs all failed — using latitude estimates)');
       const lat = effectiveLat ?? 0;
       const annualP = lat > 30 || lat < -30 ? 650 : lat > 15 || lat < -15 ? 900 : 1400;
       const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
@@ -579,7 +583,7 @@ export class BoreholeAnalyzer {
     }
 
     if (!graceData) {
-      fallbacksUsed.push('GRACE-FO water storage (ERA5-Land proxy failed â€” using latitude estimate)');
+      fallbacksUsed.push('GRACE-FO water storage (ERA5-Land proxy failed — using latitude estimate)');
       const lat = effectiveLat ?? 0;
       const trendBase = Math.abs(lat) > 30 ? -0.3 : Math.abs(lat) > 15 ? -0.8 : -0.5;
       graceData = {
@@ -589,7 +593,7 @@ export class BoreholeAnalyzer {
         status: trendBase > -0.5 ? 'stable' : 'losing',
         aquiferStress: trendBase > -0.5 ? 'low' : 'moderate',
         dataSource: 'Latitude-based GRACE-FO proxy (API fallback)',
-        period: '2019â€“2024',
+        period: '2019–2024',
       };
     }
 
@@ -617,9 +621,9 @@ export class BoreholeAnalyzer {
     }
 
     if (!vegetationGWProxy) {
-      fallbacksUsed.push('Vegetation-GW proxy (MODIS NDVI API failed â€” using latitude estimate)');
+      fallbacksUsed.push('Vegetation-GW proxy (MODIS NDVI API failed — using latitude estimate)');
       const lat = effectiveLat ?? 0;
-      // Latitude-based NDVI: tropical regions (~0Â°) have higher NDVI, arid (~30Â°) lower
+      // Latitude-based NDVI: tropical regions (~0°) have higher NDVI, arid (~30°) lower
       const ndvi = Math.max(0.15, 0.55 - Math.abs(lat) * 0.008 + (Math.abs(lat) < 15 ? 0.1 : 0));
       vegetationGWProxy = {
         ndviMean: ndvi,
@@ -632,7 +636,7 @@ export class BoreholeAnalyzer {
     }
 
     if (!satelliteVegetation) {
-      fallbacksUsed.push('Satellite vegetation (ORNL DAAC MODIS failed â€” using latitude estimate)');
+      fallbacksUsed.push('Satellite vegetation (ORNL DAAC MODIS failed — using latitude estimate)');
       const lat = effectiveLat ?? 0;
       const baseNdvi = Math.max(0.15, 0.55 - Math.abs(lat) * 0.008 + (Math.abs(lat) < 15 ? 0.1 : 0));
       satelliteVegetation = {
@@ -644,7 +648,7 @@ export class BoreholeAnalyzer {
     }
 
     if (!nasaPowerMoisture) {
-      fallbacksUsed.push('NASA POWER soil moisture (API failed â€” using latitude estimate)');
+      fallbacksUsed.push('NASA POWER soil moisture (API failed — using latitude estimate)');
       const lat = effectiveLat ?? 0;
       // Latitude-based soil moisture: tropical = wetter, arid belt = drier
       const baseMoisture = Math.max(0.15, 0.50 - Math.abs(lat) * 0.007 + (Math.abs(lat) < 15 ? 0.08 : 0));
@@ -659,8 +663,8 @@ export class BoreholeAnalyzer {
     // Extract SoilGrids data for downstream modules
     const soilGridsData = remoteSensing?.soilGrids?.available ? remoteSensing.soilGrids : null;
 
-    // â•â•â• SUBSYSTEM 4: GEOLOGICAL ANALYSIS â•â•â•
-    report(3, 'Geological analysis â€” terrain classification, aquifer estimation...');
+    // ═══ SUBSYSTEM 4: GEOLOGICAL ANALYSIS ═══
+    report(3, 'Geological analysis — terrain classification, aquifer estimation...');
     const site = this.siteLocator.determineSiteLocation(
       features.vegetationScore,
       features.terrainType,
@@ -670,8 +674,8 @@ export class BoreholeAnalyzer {
       features.gpsAccuracy
     );
 
-    // â•â•â• SUBSYSTEM 5: HYDROGEOLOGICAL MODELLING â•â•â•
-    report(4, 'Hydrogeological modelling â€” soil classification from SoilGrids + pixel analysis...');
+    // ═══ SUBSYSTEM 5: HYDROGEOLOGICAL MODELLING ═══
+    report(4, 'Hydrogeological modelling — soil classification from SoilGrids + pixel analysis...');
     const soil = this.soilAnalyzer.analyzeFromImage(
       features.vegetationScore,
       features.terrainType,
@@ -698,12 +702,12 @@ export class BoreholeAnalyzer {
       const smClass = gldasGroundwater.soilMoisture?.classification;
       const trend = gldasGroundwater.graceAnomaly?.trend;
 
-      // Recharge-based adjustment (most critical â€” a site with no recharge cannot sustain a borehole)
+      // Recharge-based adjustment (most critical — a site with no recharge cannot sustain a borehole)
       if (rechargeFrac >= 0.15) probability = Math.min(0.95, probability + 0.05);
       else if (rechargeFrac >= 0.08) { /* neutral */ }
       else if (rechargeFrac >= 0.03) probability = Math.max(0.15, probability - 0.10);
       else if (rechargeFrac > 0) probability = Math.max(0.15, probability - 0.20);
-      else probability = Math.max(0.10, probability - 0.30); // Zero recharge â†’ severe penalty
+      else probability = Math.max(0.10, probability - 0.30); // Zero recharge → severe penalty
 
       // Soil moisture adjustment
       if (smClass === 'saturated') probability = Math.min(0.95, probability + 0.05);
@@ -717,7 +721,7 @@ export class BoreholeAnalyzer {
       else if (trend === 'critically-depleting') probability = Math.max(0.10, probability - 0.15);
 
       probability = Math.round(probability * 100) / 100;
-      console.log(`[Pipeline] Probability recalibrated with water budget: recharge=${recharge}mm/yr, smClass=${smClass}, trend=${trend} â†’ ${(probability*100).toFixed(1)}%`);
+      console.log(`[Pipeline] Probability recalibrated with water budget: recharge=${recharge}mm/yr, smClass=${smClass}, trend=${trend} → ${(probability*100).toFixed(1)}%`);
     }
 
     // Depth estimation with real data calibration
@@ -730,18 +734,24 @@ export class BoreholeAnalyzer {
     const recommendedDepth = this.siteLocator.estimateDepth(probability, site.siteType, depthRealData);
     const estimatedYield = this.siteLocator.estimateYield(probability, recommendedDepth);
 
-    // â•â•â• SUBSYSTEM 6: ML PREDICTIONS â•â•â•
-    report(5, 'ML predictions â€” water quality from SoilGrids geochemistry, contamination detection...');
+    // ═══ SUBSYSTEM 6: ML PREDICTIONS ═══
+    report(5, 'ML predictions — water quality from SoilGrids geochemistry, contamination detection...');
     const contaminationSources = this.contaminationDetector.detectContamination(
       features,
       features.terrainType,
       features.waterProbability
     );
+    // Chemistry follows LOCATION, not the photo's colours (2026-10-18 tool
+    // audit: two photos at the same coordinates gave fluoride 4.2 vs 2.5 mg/L
+    // and pH 5.5 vs 6.8). The soil type is used only when it came from ISRIC
+    // SoilGrids; image-derived water probability and photo "contamination"
+    // no longer move the numbers. Contamination is a lab question.
+    const chemSoilType = soil.realSoilGrids ? soil.type : 'loamy';
     const waterQuality = this.waterQualityAnalyzer.predictQuality(
-      soil.type,
-      contaminationSources,
+      chemSoilType,
+      [],
       recommendedDepth,
-      features.waterProbability,
+      0.5,
       soilGridsData,  // REAL ISRIC SoilGrids data when available
     );
 
@@ -759,8 +769,8 @@ export class BoreholeAnalyzer {
       waterQuality.dataSource = `${waterQuality.dataSource} + Regional: ${regionalWQ.province}`;
     }
 
-    // â•â•â• SUBSYSTEM 7: RISK ASSESSMENT â•â•â•
-    report(6, 'Risk assessment â€” geological, contamination, financial, technical risks...');
+    // ═══ SUBSYSTEM 7: RISK ASSESSMENT ═══
+    report(6, 'Risk assessment — geological, contamination, financial, technical risks...');
     const riskRealData = hasCoords ? {
       soilGrids: soilGridsData,
       elevation: remoteSensing?.elevation,
@@ -775,11 +785,11 @@ export class BoreholeAnalyzer {
       riskRealData,  // REAL satellite data when available
     );
 
-    // â•â•â• SUBSYSTEM 8: COST & ROI ENGINE â•â•â•
-    report(7 as PipelineStep, 'Cost & ROI engine â€” drilling cost, pump sizing, payback period...');
+    // ═══ SUBSYSTEM 8: COST & ROI ENGINE ═══
+    report(7 as PipelineStep, 'Cost & ROI engine — drilling cost, pump sizing, payback period...');
 
-    // â•â•â• SUBSYSTEM 9: LOCATION VERIFICATION â•â•â•
-    report(8 as PipelineStep, 'Location verification â€” confidence scoring, OSINT checklist...');
+    // ═══ SUBSYSTEM 9: LOCATION VERIFICATION ═══
+    report(8 as PipelineStep, 'Location verification — confidence scoring, OSINT checklist...');
     const locationConfidence = calculateLocationConfidence(
       clientGeo ? 'manual-entry' : (features.locationMethod || 'none'),
       clientGeo ? 50 : (features.gpsAccuracy || 0),
@@ -789,8 +799,8 @@ export class BoreholeAnalyzer {
       features.geoEstimate?.bestEstimate?.confidence,
     );
 
-    // â•â•â• SUBSYSTEM 10: REMOTE SENSING + HISTORICAL DATA â•â•â•
-    // Data already fetched in subsystem 3 â€” now recalibrate recharge with NASA POWER ET
+    // ═══ SUBSYSTEM 10: REMOTE SENSING + HISTORICAL DATA ═══
+    // Data already fetched in subsystem 3 — now recalibrate recharge with NASA POWER ET
     report(9 as PipelineStep, 'Recalibrating groundwater recharge with NASA POWER evapotranspiration...');
 
     let nasaPowerET: number | undefined;
@@ -815,7 +825,7 @@ export class BoreholeAnalyzer {
     // Prefer county-level data (more precise) over national stats
     const countyData = (boreholeRecords as any)?.countyIntelligence;
     if (countyData) {
-      // County intelligence is much more precise â€” weight it higher
+      // County intelligence is much more precise — weight it higher
       calibratedDepth = Math.round(recommendedDepth * 0.3 + countyData.avgDepth_m * 0.7);
       calibratedYield = parseFloat((estimatedYield * 0.3 + countyData.avgYield_m3h * 0.7).toFixed(1));
       // ACCURACY FIX (2026-07-12): the county DB may only carry a representative
@@ -827,7 +837,7 @@ export class BoreholeAnalyzer {
       // National-level calibration
       calibratedDepth = Math.round(recommendedDepth * 0.4 + boreholeRecords.averageDepth * 0.6);
       calibratedYield = parseFloat((estimatedYield * 0.4 + boreholeRecords.averageYield * 0.6).toFixed(1));
-      yieldSource = `40% image analysis + 60% regional database (n=${boreholeRecords.sampleSize ?? 'national'}, r=${boreholeRecords.searchRadius_km ?? 'â€”'}km). NOT field-measured.`;
+      yieldSource = `40% image analysis + 60% regional database (n=${boreholeRecords.sampleSize ?? 'national'}, r=${boreholeRecords.searchRadius_km ?? '—'}km). NOT field-measured.`;
     }
 
     // Further refine with nearby well data if available (real API data)
@@ -851,10 +861,10 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â•â•â• ENRICH NEARBY WELLS WITH REGIONAL CONTEXT â•â•â•
+    // ═══ ENRICH NEARBY WELLS WITH REGIONAL CONTEXT ═══
     // When OSM (or other) wells have no depth/yield/lithology, fill from regional
     // database statistics (county-level) NOT from the analysis's own calibrated values
-    // (which would create circular validation â€” W13 audit finding).
+    // (which would create circular validation — W13 audit finding).
     if (nearbyWells?.nearbyWells?.length > 0) {
       const soilLabel = soil?.type || 'Unknown';
       const geoLithology = soilLabel.includes('sand') ? 'Sandy alluvium'
@@ -877,7 +887,7 @@ export class BoreholeAnalyzer {
         // — 60 m"). Springs keep their registry data only; /sp?ring/i also
         // catches registry typos ("Water Sring").
         const _isSpringRec = /sp?ring/i.test(String(w.id ?? '')) || /sp?ring/i.test(String(w.lithology ?? ''));
-        // Only fill from regional stats if regional data exists â€” never from calibratedDepth
+        // Only fill from regional stats if regional data exists — never from calibratedDepth
         if (!_isSpringRec && (!w.depth_m || w.depth_m === 0) && regionalAvgDepth > 0) {
           const variation = 0.85 + 0.30 * (Math.abs(Math.sin(i * 7.919 + (w.distance_km ?? 1) * 3.14159)) % 1);
           w.depth_m = Math.round(regionalAvgDepth * variation);
@@ -932,7 +942,7 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â•â•â• SUBSYSTEM 11: 3D/2D SUBSURFACE MODEL + AQUIFER SIMULATION â•â•â•
+    // ═══ SUBSYSTEM 11: 3D/2D SUBSURFACE MODEL + AQUIFER SIMULATION ═══
     report(10 as PipelineStep, 'Building 3D subsurface model, advanced hydro analysis, Bayesian ensemble...');
 
     // Lineament analysis from DEM grid (if DEM hydrology was computed)
@@ -945,7 +955,7 @@ export class BoreholeAnalyzer {
         // Use the DEM hydrology elevation as center and estimate a simple grid
         const centerElev = demHydrology.elevation_m;
         const slope = demHydrology.slope_degrees;
-        // Build synthetic 5Ã—5 grid from slope/aspect for lineament analysis
+        // Build synthetic 5×5 grid from slope/aspect for lineament analysis
         // Use deterministic noise based on lat/lon to ensure reproducible results
         const seedVal = Math.abs(Math.sin(effectiveLat! * 12.9898 + effectiveLon! * 78.233) * 43758.5453) % 1;
         for (let i = 0; i < 5; i++) {
@@ -956,7 +966,7 @@ export class BoreholeAnalyzer {
             const aspectRad = (demHydrology.aspect_degrees ?? 0) * Math.PI / 180;
             const slopeRad = slope * Math.PI / 180;
             const elevOffset = -Math.tan(slopeRad) * (dx * Math.cos(aspectRad) + dy * Math.sin(aspectRad));
-            // Deterministic Â±5m noise from grid position + coordinate seed (no Math.random)
+            // Deterministic ±5m noise from grid position + coordinate seed (no Math.random)
             const deterministicNoise = (Math.sin((i * 5 + j) * 127.1 + seedVal * 311.7) * 43758.5453 % 1 - 0.5) * 5;
             row.push(centerElev + elevOffset + deterministicNoise);
           }
@@ -969,7 +979,7 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â•â•â• BAYESIAN MULTI-SOURCE ENSEMBLE â•â•â•
+    // ═══ BAYESIAN MULTI-SOURCE ENSEMBLE ═══
     // Fuse ALL data sources into a single probability/depth/yield estimate
     const weightedProb = this.siteLocator.calculateWeightedSuccessProbability({
       geology_probability: globalSoilAnalysis?.wrbClassification
@@ -1010,7 +1020,7 @@ export class BoreholeAnalyzer {
       shallowWTLikelihood: vegetationGWProxy?.shallowWaterTableLikelihood,
       weightedProbability: weightedProb.success_probability,
       weightedConfidence: weightedProb.confidence_level,
-      // â•â•â• Field Geophysics Sources 9-13 â•â•â•
+      // ═══ Field Geophysics Sources 9-13 ═══
       ertResistivity: fieldData?.ertSurvey ? {
         aquiferDepthM: fieldData.ertSurvey.aquiferDepthM ?? 0,
         aquiferThicknessM: fieldData.ertSurvey.aquiferThicknessM ?? 10,
@@ -1041,11 +1051,11 @@ export class BoreholeAnalyzer {
 
     const ensembleResult = runBayesianEnsemble(ensembleInput);
 
-    // Apply ensemble results â€” override pipeline estimates with fused multi-source values
+    // Apply ensemble results — override pipeline estimates with fused multi-source values
     probability = ensembleResult.probability;
     calibratedDepth = ensembleResult.depth_m;
     calibratedYield = ensembleResult.yield_m3h;
-    console.log(`[Pipeline] Bayesian ensemble: ${ensembleResult.sourcesUsed} sources, agreement=${ensembleResult.sourceAgreement}, P=${(probability*100).toFixed(1)}%, depth=${calibratedDepth}m, yield=${calibratedYield}mÂ³/h`);
+    console.log(`[Pipeline] Bayesian ensemble: ${ensembleResult.sourcesUsed} sources, agreement=${ensembleResult.sourceAgreement}, P=${(probability*100).toFixed(1)}%, depth=${calibratedDepth}m, yield=${calibratedYield}m³/h`);
 
     let subsurfaceModel: any = undefined;
     let aquiferSimulation: any = undefined;
@@ -1070,11 +1080,11 @@ export class BoreholeAnalyzer {
       const bVal = primaryAquifer?.thicknessM ?? 20;
       const nVal = subsurfaceModel?.lithologicalColumn?.layers?.[0]?.porosity ?? 0.25;
       const precipMm = historicalData?.weather?.averageAnnualPrecipitation ?? 800;
-      // waterBudget.evapotranspiration is ALREADY in mm/yr (annual) â€” do NOT multiply by 365
+      // waterBudget.evapotranspiration is ALREADY in mm/yr (annual) — do NOT multiply by 365
       const etMm = gldasGroundwater?.waterBudget?.evapotranspiration
         ? gldasGroundwater.waterBudget.evapotranspiration
         : precipMm * 0.6;
-      const pumpQ = calibratedYield * 24; // mÂ³/day from mÂ³/hr
+      const pumpQ = calibratedYield * 24; // m³/day from m³/hr
       const gldasRecharge = gldasGroundwater?.waterBudget?.estimatedRecharge ?? undefined;
 
       aquiferSimulation = runAquiferSimulation(
@@ -1084,9 +1094,9 @@ export class BoreholeAnalyzer {
       );
     }
 
-    // â•â•â• POST-PROCESSING: CROSS-SYSTEM CONSISTENCY CHECKS â•â•â•
+    // ═══ POST-PROCESSING: CROSS-SYSTEM CONSISTENCY CHECKS ═══
 
-    // â•â•â• ROCK TYPE CLASSIFICATION + WEATHERING DEPTH â•â•â•
+    // ═══ ROCK TYPE CLASSIFICATION + WEATHERING DEPTH ═══
     let rockClassification: ReturnType<typeof classifyRockType> | undefined;
     let weatheringProfile: ReturnType<typeof estimateWeatheringProfile> | undefined;
     let advancedRockResult: Awaited<ReturnType<typeof advancedRockMapping>> | undefined;
@@ -1108,7 +1118,7 @@ export class BoreholeAnalyzer {
         console.warn('[Pipeline] Rock classification failed:', e);
       }
 
-      // â•â•â• ADVANCED MULTI-SOURCE ROCK MAPPING (8 classifiers + Dempster-Shafer fusion) â•â•â•
+      // ═══ ADVANCED MULTI-SOURCE ROCK MAPPING (8 classifiers + Dempster-Shafer fusion) ═══
       try {
         advancedRockResult = await advancedRockMapping({
           lat: effectiveLat!,
@@ -1138,7 +1148,7 @@ export class BoreholeAnalyzer {
             primaryRockType: advancedRockResult.primaryRockType as any,
             confidence: advancedRockResult.confidence,
             secondaryRockType: advancedRockResult.secondaryRockType,
-            methodology: `Advanced ensemble (${advancedRockResult.fusionMethod}) â€” ${advancedRockResult.sourcesUsed} sources`,
+            methodology: `Advanced ensemble (${advancedRockResult.fusionMethod}) — ${advancedRockResult.sourcesUsed} sources`,
           } as any;
           weatheringProfile = estimateWeatheringProfile(
             advancedRockResult.primaryRockType, precipMmForRock, tempForRock, elevForRock, slopeForRock,
@@ -1150,9 +1160,9 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â•â•â• GEOLOGY-AWARE DEPTH CORRECTION â•â•â•
+    // ═══ GEOLOGY-AWARE DEPTH CORRECTION ═══
     // Use detected rock type + GEOLOGICAL_FORMATIONS database to correct depth estimate.
-    // The initial siteLocator depth is terrain-agnostic â€” this corrects for geology.
+    // The initial siteLocator depth is terrain-agnostic — this corrects for geology.
     if (rockClassification?.primaryRockType) {
       const rockLower = rockClassification.primaryRockType.toLowerCase();
       let matchedFormation = GEOLOGICAL_FORMATIONS.find(f => {
@@ -1171,13 +1181,13 @@ export class BoreholeAnalyzer {
         // If calibrated depth is below the formation's minimum, correct upward
         if (calibratedDepth < minD) {
           const corrected = Math.round(minD + (formationMidDepth - minD) * 0.3);
-          console.log(`[Pipeline] Geology depth correction: ${calibratedDepth}m â†’ ${corrected}m (${matchedFormation.name}: ${minD}-${maxD}m range)`);
+          console.log(`[Pipeline] Geology depth correction: ${calibratedDepth}m → ${corrected}m (${matchedFormation.name}: ${minD}-${maxD}m range)`);
           calibratedDepth = corrected;
         }
         // If calibrated depth is above formation mid, blend toward formation mean
         else if (calibratedDepth < formationMidDepth * 0.7) {
           const blended = Math.round(calibratedDepth * 0.4 + formationMidDepth * 0.6);
-          console.log(`[Pipeline] Geology depth blend: ${calibratedDepth}m â†’ ${blended}m (${matchedFormation.name} mid=${formationMidDepth}m)`);
+          console.log(`[Pipeline] Geology depth blend: ${calibratedDepth}m → ${blended}m (${matchedFormation.name} mid=${formationMidDepth}m)`);
           calibratedDepth = blended;
         }
         // Also correct yield if below formation minimum
@@ -1188,7 +1198,7 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â•â•â• SELF-LEARNING CORRECTIONS (from feedback loop) â•â•â•
+    // ═══ SELF-LEARNING CORRECTIONS (from feedback loop) ═══
     let learningCorrection: ReturnType<typeof applyLearningCorrections> | undefined;
     if (hasCoords) {
       try {
@@ -1216,12 +1226,12 @@ export class BoreholeAnalyzer {
         outcomeCount: 0,
       };
     } else if (!learningCorrection.correctionApplied) {
-      // Mark as applied â€” the passthrough IS a valid calibration result
+      // Mark as applied — the passthrough IS a valid calibration result
       learningCorrection.correctionApplied = true;
       learningCorrection.correctionSource = learningCorrection.correctionSource || 'Passthrough calibration (insufficient regional data)';
     }
 
-    // â•â•â• SMART SITE SELECTION (top 3 GPS drilling points) â•â•â•
+    // ═══ SMART SITE SELECTION (top 3 GPS drilling points) ═══
     let siteSelectionResult: Awaited<ReturnType<typeof selectTopDrillingSites>> | undefined;
     if (hasCoords) {
       try {
@@ -1243,7 +1253,7 @@ export class BoreholeAnalyzer {
 
     // Geology-aware bedrock cap:
     // - Sedimentary/alluvial terrain: cap at bedrock (aquifer is above)
-    // - Fractured basement terrain: DO NOT cap â€” the basement IS the drilling target
+    // - Fractured basement terrain: DO NOT cap — the basement IS the drilling target
     //   (productive fracture zones in gneiss/granite occur at 50-250m depth)
     const bedrockDepth = subsurfaceModel?.lithologicalColumn?.bedrockDepthM;
     const isBasementGeology = (() => {
@@ -1256,7 +1266,7 @@ export class BoreholeAnalyzer {
       // Sedimentary/alluvial: stop drilling at bedrock surface + 5m
       calibratedDepth = Math.round(bedrockDepth + 5);
     }
-    // For basement geology: no bedrock cap â€” fracture zones are the target
+    // For basement geology: no bedrock cap — fracture zones are the target
 
     // Weathering-depth constraint: if weathering is shallow (<15m) and no field-confirmed
     // fault/fracture zone, cap depth at weatheringDepth + fractureThickness + 30m safety margin
@@ -1275,14 +1285,14 @@ export class BoreholeAnalyzer {
     // Audit fix #9: Flag if aquifer target depth > weathering depth + 25m (geologically unlikely in basement)
     const weatheringAquiferMismatch = wDepthM > 0 && calibratedDepth > wDepthM + 25 && isBasementGeology && !hasFaultConfirmation;
 
-    // Audit fix #3: Zero-thickness aquifer guard â€” if ERT shows thickness < 0.5m, yield must be 0
+    // Audit fix #3: Zero-thickness aquifer guard — if ERT shows thickness < 0.5m, yield must be 0
     // Note: ertInterpretation is computed later in the pipeline (Subsystem 12), so use fieldData here
     const ertThickness = fieldData?.ertSurvey?.aquiferThicknessM ?? null;
     // isFieldValidated declared here so it's available for the ERT thickness guard below
     let isFieldValidated = false;
     let fieldConfidenceBoost = 0;
     if (ertThickness !== null && ertThickness < 0.5 && !isFieldValidated) {
-      calibratedYield = 0.1; // Minimum â€” physical impossibility of extraction from zero-thickness
+      calibratedYield = 0.1; // Minimum — physical impossibility of extraction from zero-thickness
     }
 
     // CRITICAL: Sync ensemble result depth with the bedrock-capped depth
@@ -1312,14 +1322,14 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // Desktop confidence cap â€” compute early so all engines can reference it
+    // Desktop confidence cap — compute early so all engines can reference it
     // Scales with data density: more sources = higher possible desktop confidence
     let desktopCap = 85; // Will be recalculated precisely once dataSources is counted
 
-    // â•â•â• SUBSYSTEM 12: REPORT GENERATION â•â•â•
+    // ═══ SUBSYSTEM 12: REPORT GENERATION ═══
     report(11 as PipelineStep, 'Compiling final analysis report...');
 
-    // â•â•â• FIELD DATA INTEGRATION (when available) â•â•â•
+    // ═══ FIELD DATA INTEGRATION (when available) ═══
     // If field data is provided, it overrides desktop estimates and boosts confidence
     // fieldData is now passed as a parameter from the UI field data forms
 
@@ -1359,7 +1369,7 @@ export class BoreholeAnalyzer {
       fieldConfidenceBoost += 8;
     }
 
-    // â•â•â• FIELD CALIBRATION ENGINE (when field data available) â•â•â•
+    // ═══ FIELD CALIBRATION ENGINE (when field data available) ═══
     let calibrationResult: Awaited<ReturnType<typeof calibrateWithFieldData>> | undefined;
     if (fieldData) {
       try {
@@ -1377,7 +1387,22 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â•â•â• InSAR GROUND DEFORMATION â•â•â•
+    // ACCURACY FIX (2026-10-19 tool audit): the bedrock, weathering and
+    // learning corrections above could push a desktop-only depth outside the
+    // drilled band the same report quotes for the county ("drilled band
+    // 18-350 m … recommended 12 m"). Without field data, keep the estimate
+    // inside that band; field data (ERT/VES/calibration) still governs.
+    const countyBand = Array.isArray(countyData?.depthRange) ? countyData.depthRange as [number, number] : null;
+    if (!isFieldValidated && countyBand && countyBand[0] > 0 && countyBand[1] >= countyBand[0]) {
+      const clamped = Math.round(Math.min(countyBand[1], Math.max(countyBand[0], calibratedDepth)));
+      if (clamped !== calibratedDepth) {
+        console.log(`[Pipeline] Depth ${calibratedDepth}m kept inside the county drilled band ${countyBand[0]}-${countyBand[1]}m → ${clamped}m`);
+        calibratedDepth = clamped;
+        if (ensembleResult) ensembleResult.depth_m = calibratedDepth;
+      }
+    }
+
+    // ═══ InSAR GROUND DEFORMATION ═══
     let insarResult: Awaited<ReturnType<typeof fetchInSARDeformation>> | undefined;
     try {
       insarResult = await fetchInSARDeformation(
@@ -1392,7 +1417,7 @@ export class BoreholeAnalyzer {
       console.warn('[Pipeline] InSAR analysis failed:', e);
     }
 
-    // â•â•â• DIGITAL SUBSURFACE TWIN â•â•â•
+    // ═══ DIGITAL SUBSURFACE TWIN ═══
     let subsurfaceTwinResult: ReturnType<typeof buildSubsurfaceTwin> | undefined;
     try {
       subsurfaceTwinResult = buildSubsurfaceTwin({
@@ -1416,7 +1441,7 @@ export class BoreholeAnalyzer {
       console.warn('[Pipeline] Subsurface Twin build failed:', e);
     }
 
-    // â•â•â• SMART SURVEY PLANNER â•â•â•
+    // ═══ SMART SURVEY PLANNER ═══
     let surveyPlanResult: ReturnType<typeof generateSmartSurveyPlan> | undefined;
     try {
       surveyPlanResult = generateSmartSurveyPlan({
@@ -1453,7 +1478,7 @@ export class BoreholeAnalyzer {
       } as any;
     }
 
-    // â•â•â• HYBRID AI + TARGETED GEOPHYSICS â•â•â•
+    // ═══ HYBRID AI + TARGETED GEOPHYSICS ═══
     let hybridGeophysicsResult: HybridGeophysicsResult | undefined;
     try {
       const hasFieldERT = !!(fieldData?.ertSurvey?.aquiferDepthM);
@@ -1501,12 +1526,12 @@ export class BoreholeAnalyzer {
         elevationM: remoteSensing?.elevation?.elevation ?? 500,
         isRemoteSite: fieldData?.isRemoteSite ?? false,
       });
-      console.log(`[Pipeline] Hybrid Geophysics: DRI ${hybridGeophysicsResult.drillReadinessIndex}% â†’ ${hybridGeophysicsResult.drillReadinessLabel} (${hybridGeophysicsResult.driGrade}), saves $${hybridGeophysicsResult.costSavingsUSD}`);
+      console.log(`[Pipeline] Hybrid Geophysics: DRI ${hybridGeophysicsResult.drillReadinessIndex}% → ${hybridGeophysicsResult.drillReadinessLabel} (${hybridGeophysicsResult.driGrade}), saves $${hybridGeophysicsResult.costSavingsUSD}`);
     } catch (e) {
       console.warn('[Pipeline] Hybrid Geophysics Engine failed:', e);
     }
 
-    // â•â•â• ADVANCED GEOPHYSICS â€” Multi-Method 3D Subsurface Characterization â•â•â•
+    // ═══ ADVANCED GEOPHYSICS — Multi-Method 3D Subsurface Characterization ═══
     let advancedGeophysicsResult: AdvancedGeophysicsResult | undefined;
     try {
       const hasFieldERT = !!(fieldData?.ertSurvey?.aquiferDepthM);
@@ -1549,12 +1574,12 @@ export class BoreholeAnalyzer {
         lineamentDetected: lineamentAnalysis?.lineamentDensity != null && lineamentAnalysis.lineamentDensity > 0.5,
         elevationM: remoteSensing?.elevation?.elevation ?? 500,
       });
-      console.log(`[Pipeline] Advanced Geophysics: ${advancedGeophysicsResult.optimalPackage.name} â†’ ${advancedGeophysicsResult.successRateAnalysis.withFullIntegrated_pct}% success (target â‰¥90%)`);
+      console.log(`[Pipeline] Advanced Geophysics: ${advancedGeophysicsResult.optimalPackage.name} → ${advancedGeophysicsResult.successRateAnalysis.withFullIntegrated_pct}% success (target ≥90%)`);
     } catch (e) {
       console.warn('[Pipeline] Advanced Geophysics Engine failed:', e);
     }
 
-    // â•â•â• CONFIDENCE METRICS â€” Per-category credibility scores â•â•â•
+    // ═══ CONFIDENCE METRICS — Per-category credibility scores ═══
     const hasRealSoilGrids = !!remoteSensing?.soilGrids?.clay;
     const hasGLDAS = !!gldasGroundwater?.waterBudget?.precipitation;
     const hasSubsurface = !!subsurfaceModel?.lithologicalColumn;
@@ -1620,7 +1645,7 @@ export class BoreholeAnalyzer {
       wqConf * 0.20
     );
 
-    // Use ensemble confidence if available â€” take WEIGHTED AVERAGE, not MAX
+    // Use ensemble confidence if available — take WEIGHTED AVERAGE, not MAX
     // Taking MAX inflated confidence (e.g., 68 from data vs 83 from ensemble = 83, misleading)
     const ensembleConfidence = ensembleResult?.confidence ?? overallConf;
     // Weight: 60% data-availability score, 40% ensemble score (ensemble has fewer sources evaluated)
@@ -1653,7 +1678,7 @@ export class BoreholeAnalyzer {
       ].filter(Boolean).join(', ')}. ${ensembleResult ? `Ensemble agreement: ${ensembleResult.sourceAgreement}.` : ''} Desktop analysis capped at ${desktopCap}% (scales with data density: 8+ sources=92%, 6-7=88%, <6=85%). Field data required for >92%.`,
     };
 
-    // â•â•â• 10 ADVANCED FEATURE ENGINES â•â•â•
+    // ═══ 10 ADVANCED FEATURE ENGINES ═══
     let geophysicsFusion: any;
     let boreholeIntelligence: any;
     let fractureAI: any;
@@ -1858,10 +1883,10 @@ export class BoreholeAnalyzer {
       }
     } catch (e) { console.warn('[Pipeline] Micro-Siting Optimizer failed:', e); }
 
-    // â”€â”€ Fallbacks for advanced engines that didn't produce results â”€â”€
+    // ── Fallbacks for advanced engines that didn't produce results ──
     if (!geophysicsFusion) {
       geophysicsFusion = {
-        methodsUsed: ['None â€” modelled from calibrated estimates'],
+        methodsUsed: ['None — modelled from calibrated estimates'],
         methodAgreement: 0,
         fusionQuality: 'Low (no field geophysics)',
         overallConfidence: 0.40,
@@ -1871,7 +1896,7 @@ export class BoreholeAnalyzer {
         recommendedCasingDepth_m: Math.round(calibratedDepth * 0.4),
         expectedYield_m3hr: [Math.round(calibratedYield * 0.7 * 10) / 10, Math.round(calibratedYield * 1.3 * 10) / 10],
         aquiferZones: [{ topM: calibratedDepth * 0.3, bottomM: calibratedDepth * 0.8, type: 'weathered/fractured (estimated)', confidence: 0.40 }],
-        dataSource: 'MODELLED â€” no field geophysics. Values are arithmetic estimates from calibrated depth/yield, NOT from any geophysical measurement. Field ERT survey recommended.',
+        dataSource: 'MODELLED — no field geophysics. Values are arithmetic estimates from calibrated depth/yield, NOT from any geophysical measurement. Field ERT survey recommended.',
       };
     }
 
@@ -1894,7 +1919,7 @@ export class BoreholeAnalyzer {
         ],
         dataSource: hasRealNearby
           ? `Regional borehole database (${nearbyWells.sampleSize} records within search radius)`
-          : 'No nearby borehole records found â€” values derived from calibrated model estimates',
+          : 'No nearby borehole records found — values derived from calibrated model estimates',
       };
     }
 
@@ -1957,7 +1982,7 @@ export class BoreholeAnalyzer {
       drillMap = {
         topPoints: [{
           lat: effectiveLat!, lon: effectiveLon!, probability: probability,
-          rank: 1, rationale: 'Primary analysis site â€” drill map engine did not run (insufficient data for spatial modelling)',
+          rank: 1, rationale: 'Primary analysis site — drill map engine did not run (insufficient data for spatial modelling)',
         }],
         allCandidates: [],
         heatmap: [],
@@ -1967,12 +1992,12 @@ export class BoreholeAnalyzer {
         minProbability: probability,
         highProbabilityArea_km2: 0,
         coverageRadius_km: 0,
-        methodology: 'Single-point fallback â€” spatial modelling requires additional geophysical data',
+        methodology: 'Single-point fallback — spatial modelling requires additional geophysical data',
         confidence: 0.40,
       };
     }
 
-    // â•â•â• PHASE 7: GROUND TRUTH & CREDIBILITY ENGINES â•â•â•
+    // ═══ PHASE 7: GROUND TRUTH & CREDIBILITY ENGINES ═══
     let pumpTestAnalysis: any;
     let lithologyAnalysis: any;
     let ertInterpretation: any;
@@ -1981,7 +2006,7 @@ export class BoreholeAnalyzer {
     let hydrochemPrediction: any;
 
     try {
-      // 1. Pump Test Analysis â€” if pump test field data provided
+      // 1. Pump Test Analysis — if pump test field data provided
       if (fieldData?.pumpTest) {
         pumpTestAnalysis = analyzePumpTest({
           pumpingRate_m3hr: (fieldData.pumpTest.sustainableYieldM3Hr || 1),
@@ -1995,7 +2020,7 @@ export class BoreholeAnalyzer {
         pumpTestAnalysis = quickPumpEstimate(calibratedYield, calibratedDepth * 0.3, calibratedDepth * 0.3);
       }
 
-      // 2. Lithology Analysis â€” query nearby lithology logs
+      // 2. Lithology Analysis — query nearby lithology logs
       if (hasCoords) {
         const nearbyLithLogs = queryNearbyLithologyLogs(effectiveLat!, effectiveLon!, 50);
         if (nearbyLithLogs.length > 0) {
@@ -2009,7 +2034,7 @@ export class BoreholeAnalyzer {
         }
       }
 
-      // 3. ERT Interpretation â€” if ERT field data provided
+      // 3. ERT Interpretation — if ERT field data provided
       if (fieldData?.ertSurvey || fieldData?.ertDataFile) {
         const dataPoints: ERTDataPoint[] = [];
         if (fieldData.ertDataFile?.apparentResistivities) {
@@ -2073,7 +2098,7 @@ export class BoreholeAnalyzer {
         }
       }
 
-      // 4. Multi-Source Agreement â€” evaluate all data sources against each other
+      // 4. Multi-Source Agreement — evaluate all data sources against each other
       {
         const sources: any[] = [];
         // Depth estimates from various sources
@@ -2113,7 +2138,7 @@ export class BoreholeAnalyzer {
         }
       }
 
-      // 5. Temporal Drought Analysis â€” if historical data available
+      // 5. Temporal Drought Analysis — if historical data available
       if (historicalData?.weather?.annualPrecipitation && historicalData.weather.annualPrecipitation.length >= 2) {
         // Convert annual to monthly approximation
         const monthlyData = historicalData.weather.annualPrecipitation.flatMap((yr: any) => {
@@ -2133,7 +2158,7 @@ export class BoreholeAnalyzer {
         }
       }
 
-      // 6. Hydrochemical Prediction â€” from rock type + depth
+      // 6. Hydrochemical Prediction — from rock type + depth
       if (rockClassification?.primaryRockType) {
         hydrochemPrediction = predictHydroChemistry(
           {
@@ -2161,7 +2186,7 @@ export class BoreholeAnalyzer {
       console.warn('[Pipeline] Phase 7 ground truth engines (partial failure):', e);
     }
 
-    // â”€â”€ Fallbacks for Phase 7 engines that didn't produce results â”€â”€
+    // ── Fallbacks for Phase 7 engines that didn't produce results ──
     if (!ertInterpretation) {
       // Build synthetic ERT data points from geological priors and run intelligence pipeline
       const syntheticDataPoints: ERTDataPoint[] = [
@@ -2203,7 +2228,7 @@ export class BoreholeAnalyzer {
           timestamp: new Date().toISOString(),
           executiveSummary: 'Modelled ERT from geological priors (no field ERT data)',
           drillOrNoDrill: 'INVESTIGATE_FURTHER',
-          drillDecisionReasoning: 'Modelled data only â€” field ERT recommended',
+          drillDecisionReasoning: 'Modelled data only — field ERT recommended',
           depthOptimization: { recommendedDrillingDepth_m: calibratedDepth, screenFrom_m: Math.round(calibratedDepth * 0.45), screenTo_m: Math.round(calibratedDepth * 0.75), casingDepth_m: Math.round(calibratedDepth * 0.15), aquiferCenter_m: Math.round(calibratedDepth * 0.6), aquiferThickness_m: Math.round(calibratedDepth * 0.3), safetyMargin_m: 6, safetyMarginPercent: 15, minimumDepth_m: Math.round(calibratedDepth * 0.6), maximumDepth_m: Math.round(calibratedDepth * 1.3), rationale: 'Modelled from geological priors', depthBreakdown: { topsoil_m: 2, overburden_m: Math.round(calibratedDepth * 0.15), aquiferTop_m: Math.round(calibratedDepth * 0.45), aquiferBottom_m: Math.round(calibratedDepth * 0.75), drillBeyond_m: 6 } },
           yieldEstimation: { estimatedYield_m3hr: calibratedYield, estimatedYield_Lmin: Math.round(calibratedYield * 1000 / 60), sustainableYield_m3hr: calibratedYield * 0.7, staticWaterLevel_m: calibratedDepth * 0.3, dynamicWaterLevel_m: calibratedDepth * 0.3 + 5, expectedDrawdown_m: 5, transmissivity_m2day: 50, storativity: 0.001, hydraulicConductivity_mday: 3, specificCapacity_m3hr_m: calibratedYield / 5, yieldCategory: 'moderate' as const, components: { fromThickness: 40, fromResistivity: 30, fromFractures: 15, fromRecharge: 15 }, confidenceInterval: { lower: calibratedYield * 0.7, upper: calibratedYield * 1.3 }, reasoning: 'Modelled from geological priors' },
           confidence: { finalConfidence: probability, beforeERT: probability, afterERT: probability + 0.05, improvementPercent: 5, ertAgreement: 0.6, aiModelConfidence: probability, dataDensity: 0.4, weights: { ertAgreement: 0.4 as const, aiModel: 0.3 as const, dataDensity: 0.3 as const }, componentBreakdown: [{ name: 'ERT Data', score: 0.6, weight: 0.4, weighted: 0.24 }, { name: 'AI Model', score: probability, weight: 0.3, weighted: probability * 0.3 }, { name: 'Data Density', score: 0.4, weight: 0.3, weighted: 0.12 }], isHighConfidence: false, needsMoreData: true, recommendations: ['Field ERT survey recommended to improve confidence'] },
@@ -2238,7 +2263,7 @@ export class BoreholeAnalyzer {
         weakestAgreement: 'Yield estimates',
         depthSources: depthSources.map(d => ({ source: d.name, value: d.value, deviation_pct: Math.abs(d.value - depthMean) / depthMean * 100 })),
         yieldSources: yieldSources.map(d => ({ source: d.name, value: d.value, deviation_pct: Math.abs(d.value - yieldMean) / yieldMean * 100 })),
-        narrative: `${depthSources.length + yieldSources.length} data sources compared. Depth consensus: ${Math.round(depthMean)}m. Yield consensus: ${(yieldMean).toFixed(1)} mÂ³/hr.`,
+        narrative: `${depthSources.length + yieldSources.length} data sources compared. Depth consensus: ${Math.round(depthMean)}m. Yield consensus: ${(yieldMean).toFixed(1)} m³/hr.`,
         dataSource: 'Cross-validation synthesis (computed fallback)',
       };
     }
@@ -2294,13 +2319,13 @@ export class BoreholeAnalyzer {
       };
     }
 
-    // â•â•â• PHASE 8: PUSH TO 95% ACCURACY â•â•â•
+    // ═══ PHASE 8: PUSH TO 95% ACCURACY ═══
     let dataQualityScore: any;
     let drillingPrediction: any;
     let regionalModel: any;
 
     try {
-      // 1. Regional Learning Model â€” apply region-specific corrections
+      // 1. Regional Learning Model — apply region-specific corrections
       if (hasCoords && rockClassification?.primaryRockType) {
         regionalModel = applyRegionalModel(
           effectiveLat!, effectiveLon!,
@@ -2348,7 +2373,7 @@ export class BoreholeAnalyzer {
       console.warn('[Pipeline] Phase 8 accuracy engines (partial failure):', e);
     }
 
-    // Data Quality Score â€” runs LAST because it inspects the entire result object
+    // Data Quality Score — runs LAST because it inspects the entire result object
     try {
       const partialResult = {
         remoteSensing, fieldData, historicalData, boreholeRecords,
@@ -2404,9 +2429,9 @@ export class BoreholeAnalyzer {
       satelliteWaterAnalysis: satelliteWaterAnalysis ?? undefined,
       globalSoilAnalysis: globalSoilAnalysis ?? undefined,
       ensembleResult: ensembleResult ?? undefined,
-      // Uncertainty ranges â€” tightened based on available data sources
-      // Multi-source ensemble reduces uncertainty by âˆšN factor
-      // With nearby wells: Â±10-15%; with ensemble 5+ sources: Â±15-20%; basic: Â±25-35%
+      // Uncertainty ranges — tightened based on available data sources
+      // Multi-source ensemble reduces uncertainty by √N factor
+      // With nearby wells: ±10-15%; with ensemble 5+ sources: ±15-20%; basic: ±25-35%
       uncertainty: {
         depthRange: [
           Math.max(10, Math.round(calibratedDepth * (isFieldValidated ? 0.95 : hasNearbyWells ? 0.85 : boreholeRecords ? 0.80 : 0.70))),
@@ -2423,20 +2448,20 @@ export class BoreholeAnalyzer {
           Math.min(0.95, Math.round((probability + (hasNearbyWells ? 0.06 : boreholeRecords ? 0.08 : 0.12)) * 100) / 100),
         ],
         methodology: hasNearbyWells
-          ? `Multi-source ensemble (${ensembleResult?.sourcesUsed ?? dataSources} sources) with nearby well validation. Bayesian fusion reduces individual uncertainties by âˆšN. Ranges represent Â±1Ïƒ (68% CI).`
+          ? `Multi-source ensemble (${ensembleResult?.sourcesUsed ?? dataSources} sources) with nearby well validation. Bayesian fusion reduces individual uncertainties by √N. Ranges represent ±1σ (68% CI).`
           : boreholeRecords
-          ? `Multi-source ensemble (${ensembleResult?.sourcesUsed ?? dataSources} sources) cross-validated with regional borehole records. Ranges represent Â±1Ïƒ (68% CI).`
-          : `Satellite-only ensemble (${ensembleResult?.sourcesUsed ?? dataSources} sources): SoilGrids (Â±15-25%), GLDAS (Â±15%), pedotransfer (Â±20-30%). Ranges represent Â±1Ïƒ. Field data reduces these by 40-60%.`,
+          ? `Multi-source ensemble (${ensembleResult?.sourcesUsed ?? dataSources} sources) cross-validated with regional borehole records. Ranges represent ±1σ (68% CI).`
+          : `Satellite-only ensemble (${ensembleResult?.sourcesUsed ?? dataSources} sources): SoilGrids (±15-25%), GLDAS (±15%), pedotransfer (±20-30%). Ranges represent ±1σ. Field data reduces these by 40-60%.`,
       },
       assessmentType: isFieldValidated ? 'FIELD_VALIDATED' as const : 'DESKTOP_ESTIMATE' as const,
       assessmentDisclaimer: isFieldValidated
-        ? `FIELD-VALIDATED ASSESSMENT â€” Multi-source AI analysis enhanced with field measurements (${[
+        ? `FIELD-VALIDATED ASSESSMENT — Multi-source AI analysis enhanced with field measurements (${[
             fieldData?.ertSurvey ? 'ERT survey' : '',
             fieldData?.pumpTest ? 'pumping test' : '',
             fieldData?.labWaterAnalysis ? 'lab water analysis' : '',
             fieldData?.localBoreholes ? `${fieldData.localBoreholes.count} local boreholes` : '',
           ].filter(Boolean).join(', ')}). Confidence: ${confidenceMetrics.overall}%.`
-        : `MULTI-SOURCE AI ASSESSMENT â€” This analysis fuses ${ensembleResult?.sourcesUsed ?? dataSources} independent data sources (${[
+        : `MULTI-SOURCE AI ASSESSMENT — This analysis fuses ${ensembleResult?.sourcesUsed ?? dataSources} independent data sources (${[
             hasRealSoilGrids ? 'ISRIC SoilGrids v2.0' : null,
             hasGLDAS ? 'NASA GLDAS/ERA5-Land' : null,
             hasElevation ? 'Open-Elevation' : null,
@@ -2511,7 +2536,7 @@ export class BoreholeAnalyzer {
         ...clientLocation,
         geocodedDisplayName: clientGeo?.displayName,
       } : undefined,
-      // â•â•â• 10 ADVANCED FEATURE ENGINE RESULTS â•â•â•
+      // ═══ 10 ADVANCED FEATURE ENGINE RESULTS ═══
       geophysicsFusion: geophysicsFusion ?? undefined,
       boreholeIntelligence: boreholeIntelligence ?? undefined,
       fractureAI: fractureAI ?? undefined,
@@ -2522,7 +2547,7 @@ export class BoreholeAnalyzer {
       riskDecision: riskDecision ?? undefined,
       confidenceWeighted: confidenceWeighted ?? undefined,
       microSiting: microSiting ?? undefined,
-      // â•â•â• PHASE 7 GROUND TRUTH ENGINE RESULTS â•â•â•
+      // ═══ PHASE 7 GROUND TRUTH ENGINE RESULTS ═══
       pumpTestAnalysis: pumpTestAnalysis ?? undefined,
       lithologyAnalysis: lithologyAnalysis ?? undefined,
       ertInterpretation: ertInterpretation ?? undefined,
@@ -2530,15 +2555,15 @@ export class BoreholeAnalyzer {
       kenyaHydroPrior: (this as any)._kenyaPrior ?? undefined,
       temporalDrought: temporalDrought ?? undefined,
       hydrochemPrediction: hydrochemPrediction ?? undefined,
-      // â•â•â• PHASE 8 ACCURACY ENGINE RESULTS â•â•â•
+      // ═══ PHASE 8 ACCURACY ENGINE RESULTS ═══
       dataQualityScore: dataQualityScore ?? undefined,
       drillingPrediction: drillingPrediction ?? undefined,
       regionalModel: regionalModel ?? undefined,
 
-      // â•â•â• DATA HONESTY: Track which APIs failed and used fallback data â•â•â•
+      // ═══ DATA HONESTY: Track which APIs failed and used fallback data ═══
       fallbacksUsed: fallbacksUsed.length > 0 ? fallbacksUsed : undefined,
 
-      // â•â•â• BANKABLE REPORT PACKAGE â•â•â•
+      // ═══ BANKABLE REPORT PACKAGE ═══
       siteIdentity: {
         siteId: `ASP-${(features.resolvedLocation?.countryCode || 'XX').toUpperCase()}-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${String(Math.floor(Math.abs((effectiveLat ?? 0) * 1000) % 100)).padStart(2, '0')}`,
         coordinates: {
@@ -2553,7 +2578,7 @@ export class BoreholeAnalyzer {
         verificationMethod: features.gpsSource === 'exif' ? 'EXIF GPS extraction (camera)'
           : features.gpsSource === 'device' ? 'Device GPS (browser geolocation)'
           : clientGeo ? 'Manual entry + Nominatim geocoding'
-          : 'No GPS â€” coordinates required',
+          : 'No GPS — coordinates required',
       },
       riskRegister: [
         {
@@ -2726,9 +2751,9 @@ export class BoreholeAnalyzer {
         { item: 'Nearby borehole records', category: 'calibration', status: nearbyWells && (nearbyWells.sampleSize ?? 0) >= 3 ? 'PRESENT' : nearbyWells ? 'PARTIAL' : 'MISSING', detail: nearbyWells ? `${nearbyWells.sampleSize ?? 0} wells within search radius` : 'No nearby wells found', requiredForBankable: true },
         { item: 'Pump test (24-hr)', category: 'calibration', status: isFieldValidated && fieldData?.pumpTest ? 'PRESENT' : 'PLANNED', detail: isFieldValidated && fieldData?.pumpTest ? 'Field pump test data integrated' : 'Protocol prepared; awaiting field execution', requiredForBankable: true },
         { item: 'Lab water analysis (WHO panel)', category: 'water_quality', status: isFieldValidated && fieldData?.labWaterAnalysis ? 'PRESENT' : 'PLANNED', detail: isFieldValidated ? 'Lab results integrated' : 'Recommended post-drilling ($500-1,200)', requiredForBankable: true },
-        { item: 'Financial model + sensitivity', category: 'financial', status: calibratedYield > 0 && calibratedDepth > 0 ? 'PARTIAL' : 'MISSING', detail: calibratedYield > 0 ? 'Desktop NPV/IRR/payback (modelled inputs â€” verify yield & depth before commitment)' : 'Insufficient data', requiredForBankable: false },
-        { item: 'Risk register', category: 'integrity', status: risk ? 'PARTIAL' : 'MISSING', detail: risk ? 'Auto-generated from modelled parameters â€” field validation pending' : 'Not computed', requiredForBankable: true },
-        { item: 'Report integrity audit (10-step)', category: 'integrity', status: 'PARTIAL', detail: 'Automated pre-export validation (desktop data only â€” no field QA/QC)', requiredForBankable: true },
+        { item: 'Financial model + sensitivity', category: 'financial', status: calibratedYield > 0 && calibratedDepth > 0 ? 'PARTIAL' : 'MISSING', detail: calibratedYield > 0 ? 'Desktop NPV/IRR/payback (modelled inputs — verify yield & depth before commitment)' : 'Insufficient data', requiredForBankable: false },
+        { item: 'Risk register', category: 'integrity', status: risk ? 'PARTIAL' : 'MISSING', detail: risk ? 'Auto-generated from modelled parameters — field validation pending' : 'Not computed', requiredForBankable: true },
+        { item: 'Report integrity audit (10-step)', category: 'integrity', status: 'PARTIAL', detail: 'Automated pre-export validation (desktop data only — no field QA/QC)', requiredForBankable: true },
       ],
 
       // Inverted field VES sounding (rendered as its own report section)
@@ -2775,14 +2800,14 @@ export class BoreholeAnalyzer {
       timestamp: new Date().toISOString()
     }) as any as AnalysisResult;
 
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    //  AUDIT-GRADE CROSS-CALIBRATION â€” resolves contradictions between
+    // ═══════════════════════════════════════════════════════════════════════
+    //  AUDIT-GRADE CROSS-CALIBRATION — resolves contradictions between
     //  independently-computed metrics (prevents reportAuditor Check 7 FAIL)
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ═══════════════════════════════════════════════════════════════════════
     {
       let probChanged = false;
 
-      // 1. Risk â†” viability coherence
+      // 1. Risk ↔ viability coherence
       if (result.risk.overallRisk > 0.7 && result.risk.viability === 'high') {
         result.risk.viability = 'low';
       }
@@ -2802,7 +2827,7 @@ export class BoreholeAnalyzer {
         result.risk.viability = 'medium';
       }
 
-      // 2. Probability â†” risk coherence (prevents prob>85% + risk>65%)
+      // 2. Probability ↔ risk coherence (prevents prob>85% + risk>65%)
       if (result.probability > 0.85 && result.risk.overallRisk > 0.65) {
         result.risk.overallRisk = 0.60;
       }
@@ -2813,20 +2838,20 @@ export class BoreholeAnalyzer {
         result.risk.overallRisk = Math.max(result.risk.overallRisk, 0.35);
       }
 
-      // 3. Depth â†” yield coherence (very shallow + very high yield is unlikely)
+      // 3. Depth ↔ yield coherence (very shallow + very high yield is unlikely)
       if (result.recommendedDepth < 20 && result.estimatedYield > 5) {
         result.estimatedYield = Math.min(result.estimatedYield, 4.5);
         if (result.drillDecision) result.drillDecision.expectedYield_m3hr = result.estimatedYield;
       }
 
-      // 4. GW potential â†” depletion trend
+      // 4. GW potential ↔ depletion trend
       if (result.gldasGroundwater?.groundwaterPotential != null &&
           result.gldasGroundwater.groundwaterPotential > 70 &&
           result.gldasGroundwater?.graceAnomaly?.trend === 'critically-depleting') {
         result.gldasGroundwater.groundwaterPotential = 65;
       }
 
-      // 5. Historical depletion â†” probability
+      // 5. Historical depletion ↔ probability
       if (result.historicalData?.groundwater?.depletionRisk === 'critical' && result.probability > 0.70) {
         result.probability = 0.68;
         probChanged = true;
@@ -2977,18 +3002,18 @@ export class BoreholeAnalyzer {
         }
       }
 
-      // 6. Recharge â†” yield coherence (prevents contradictory low-recharge + high-yield)
+      // 6. Recharge ↔ yield coherence (prevents contradictory low-recharge + high-yield)
       {
         const rechFrac = result.rechargeModel?.rechargeFraction
           ?? result.gldasGroundwater?.waterBudget?.rechargeFraction ?? null;
         if (rechFrac != null) {
           const rechPct = rechFrac * 100;
-          // Very low recharge (<5%) â†’ cap yield at 2.0 mÂ³/hr unless field-validated
+          // Very low recharge (<5%) → cap yield at 2.0 m³/hr unless field-validated
           if (rechPct < 5 && result.estimatedYield > 2.0 && !isFieldValidated) {
             result.estimatedYield = 2.0;
             if (result.drillDecision) result.drillDecision.expectedYield_m3hr = result.estimatedYield;
           }
-          // Low recharge (5-10%) â†’ cap yield at 5.0 mÂ³/hr unless field-validated
+          // Low recharge (5-10%) → cap yield at 5.0 m³/hr unless field-validated
           else if (rechPct < 10 && result.estimatedYield > 5.0 && !isFieldValidated) {
             result.estimatedYield = 5.0;
             if (result.drillDecision) result.drillDecision.expectedYield_m3hr = result.estimatedYield;
@@ -3019,10 +3044,10 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â”€â”€â”€ FULL OUTPUT SANITIZATION â€” prevents impossible numbers (>100%, NaN, Infinity, contradictions) â”€â”€â”€
+    // ─── FULL OUTPUT SANITIZATION — prevents impossible numbers (>100%, NaN, Infinity, contradictions) ───
     sanitizeAnalysisResult(result);
 
-    // â”€â”€â”€ ENGINEER CONFIDENCE ENGINE (runs last â€” needs full result) â”€â”€â”€
+    // ─── ENGINEER CONFIDENCE ENGINE (runs last — needs full result) ───
     try {
       result.engineerConfidence = runEngineerConfidenceEngine(result);
     } catch (_) {
@@ -3052,15 +3077,15 @@ export class BoreholeAnalyzer {
           yieldSources: 1,
           agreementScore: 0.6,
           conflicts: [],
-          engineerVerdict: 'Desktop assessment â€” field validation recommended',
+          engineerVerdict: 'Desktop assessment — field validation recommended',
         },
       } as any;
     }
 
-    // â”€â”€â”€ POST-ENGINE SANITIZATION â€” catch any values added after main sanitize pass â”€â”€â”€
+    // ─── POST-ENGINE SANITIZATION — catch any values added after main sanitize pass ───
     sanitizeAnalysisResult(result);
 
-    // â”€â”€â”€ WELL DESIGN ENGINE v3 â”€â”€â”€
+    // ─── WELL DESIGN ENGINE v3 ───
     try {
       const aqSim = result.aquiferSimulation as any;
       const aqClass = result.aquiferClassification as any;
@@ -3091,7 +3116,7 @@ export class BoreholeAnalyzer {
             h2s_detected: labWQ.h2s ?? false,
           };
         }
-        // No lab data â€” build from remote sensing water quality if available
+        // No lab data — build from remote sensing water quality if available
         if (wqRemote?.pH || wqRemote?.tds) {
           return {
             pH: wqRemote.pH ?? 7,
@@ -3231,31 +3256,31 @@ export class BoreholeAnalyzer {
       }
     } catch (e) { console.warn('[Pipeline] Governing-yield reconciliation failed:', e); }
 
-    // â”€â”€â”€ PINN + EXPLAINABLE AI (runs on full result) â”€â”€â”€
+    // ─── PINN + EXPLAINABLE AI (runs on full result) ───
     try {
       result.pinnExplainable = runPINNExplainableAnalysis(result);
     } catch (e) { console.warn('[Pipeline] PINN Explainable engine failed:', e); }
 
-    // â”€â”€â”€ SATELLITE REMOTE SENSING â€” 10-method consolidation (runs after all satellite data collected) â”€â”€â”€
+    // ─── SATELLITE REMOTE SENSING — 10-method consolidation (runs after all satellite data collected) ───
     try {
       if (effectiveLat != null && effectiveLon != null) {
         result.satelliteRemoteSensing = await runSatelliteRemoteSensing(effectiveLat, effectiveLon, result);
       }
     } catch (e) { console.warn('[Pipeline] Satellite Remote Sensing engine failed:', e); }
 
-    // â”€â”€â”€ SURFACE GEOPHYSICS â€” 30 non-invasive field methods recommendation engine â”€â”€â”€
+    // ─── SURFACE GEOPHYSICS — 30 non-invasive field methods recommendation engine ───
     try {
       if (effectiveLat != null && effectiveLon != null) {
         result.surfaceGeophysics30 = evaluateSurfaceGeophysics(effectiveLat, effectiveLon, result);
       }
     } catch (e) { console.warn('[Pipeline] Surface Geophysics 30 engine failed:', e); }
 
-    // â”€â”€â”€ PATH TO 97% CHECKLIST (runs last â€” needs all data) â”€â”€â”€
+    // ─── PATH TO 97% CHECKLIST (runs last — needs all data) ───
     try {
       result.pathTo97 = computePathTo97(result);
     } catch (e) { console.warn('[Pipeline] Path-to-97 engine failed:', e); }
 
-    // â”€â”€â”€ ENSURE CORE PREDICTIONS EXIST â€” fallback defaults if engines failed â”€â”€â”€
+    // ─── ENSURE CORE PREDICTIONS EXIST — fallback defaults if engines failed ───
     if (result.probability == null) result.probability = 0.5;
     if (result.recommendedDepth == null) result.recommendedDepth = 80;
     if (result.estimatedYield == null) result.estimatedYield = 2.0;
@@ -3271,10 +3296,10 @@ export class BoreholeAnalyzer {
       if (result.site.longitude == null) result.site.longitude = effectiveLon;
     }
 
-    // â”€â”€â”€ SANITIZATION â€” clamp ALL values to valid ranges BEFORE verification â”€â”€â”€
+    // ─── SANITIZATION — clamp ALL values to valid ranges BEFORE verification ───
     sanitizeAnalysisResult(result);
 
-    // â”€â”€â”€ Satellite RS: cap all groundwaterScore and GPI to [0, 100] â”€â”€â”€
+    // ─── Satellite RS: cap all groundwaterScore and GPI to [0, 100] ───
     if (result.satelliteRemoteSensing) {
       const srs = result.satelliteRemoteSensing;
       if (srs.fusion?.groundwaterPotentialIndex != null) {
@@ -3289,7 +3314,7 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â”€â”€â”€ PHYSICS ENFORCEMENT â€” ensure no impossible contradictions survive â”€â”€â”€
+    // ─── PHYSICS ENFORCEMENT — ensure no impossible contradictions survive ───
     // Water table must be above bedrock
     if (result.geophysicsFusion?.waterTableDepth_m != null && result.geophysicsFusion?.bedrockDepth_m != null) {
       if (result.geophysicsFusion.waterTableDepth_m >= result.geophysicsFusion.bedrockDepth_m) {
@@ -3314,7 +3339,7 @@ export class BoreholeAnalyzer {
       }
     }
 
-    // â”€â”€â”€ PRE-REPORT VERIFICATION â€” 40+ check foolproof validation (90s cap) â”€â”€â”€
+    // ─── PRE-REPORT VERIFICATION — 40+ check foolproof validation (90s cap) ───
     try {
       const { runPreReportVerification } = await import('./preReportVerification');
       const verificationTimeout = new Promise<never>((_, reject) =>
@@ -3325,14 +3350,14 @@ export class BoreholeAnalyzer {
         verificationTimeout,
       ]);
       const vr = (result as any).verificationReport;
-      console.log(`[Pipeline] Verification: ${vr?.verified ? 'âœ… PASSED' : 'âŒ FAILED'} â€” Grade ${vr?.grade}, ${vr?.score}%, ${vr?.apiRequeriesPerformed} API re-queries`);
+      console.log(`[Pipeline] Verification: ${vr?.verified ? '✅ PASSED' : '❌ FAILED'} — Grade ${vr?.grade}, ${vr?.score}%, ${vr?.apiRequeriesPerformed} API re-queries`);
     } catch (e) {
       console.warn('[Pipeline] Pre-report verification engine failed:', e);
       (result as any).verificationReport = {
         verified: true, score: 0, grade: 'F', totalChecks: 0, passed: 0, warnings: 0,
         failures: 0, skipped: 0, checks: [], apiRequeriesPerformed: 0, apiRequeriesMatched: 0,
         timestamp: new Date().toISOString(), durationMs: 0,
-        summary: 'âš ï¸ Verification engine failed â€” report generated without verification.',
+        summary: '⚠️ Verification engine failed — report generated without verification.',
       };
     }
 

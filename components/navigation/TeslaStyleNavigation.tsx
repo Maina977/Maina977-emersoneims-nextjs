@@ -19,8 +19,6 @@ interface TeslaStyleNavigationProps {
 
 const HEAVY_APP_ROUTES = new Set<string>([
   '/aquascan-pro-v3',
-  '/aquascan-pro-v3/reports',
-  '/aquascan-pro-v3/compare',
   '/solar-genius-pro',
   '/solar-genius-pro/solar-dashboard',
   '/solar-genius-pro/design-studio',

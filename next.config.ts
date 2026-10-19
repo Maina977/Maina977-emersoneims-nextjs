@@ -537,6 +537,11 @@ const nextConfig: NextConfig = {
       { source: '/tools/solar-genius-pro', destination: '/solar-genius-pro', permanent: true },
       { source: '/tools/pro-building-suite', destination: '/solutions/building', permanent: true },
       { source: '/generator-oracle/tools', destination: '/generator-oracle', permanent: true },
+      // AquaScan mock screens (2026-10-19): /compare compared five hard-coded
+      // demo sites, /reports "sent" reports by email with a fake alert. Both were
+      // noindex. The real tool already compares scenarios and downloads the PDF.
+      { source: '/aquascan-pro-v3/compare', destination: '/aquascan-pro-v3', permanent: true },
+      { source: '/aquascan-pro-v3/reports', destination: '/aquascan-pro-v3', permanent: true },
       // Solar duplicates: -tools crashed on every real coordinate (float index
       // into an array) and invented roof analysis from a coordinate hash;
       // -futuristic was a static mock with fixed "28% ROI / 3.5 years".

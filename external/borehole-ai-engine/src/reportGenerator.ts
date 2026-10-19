@@ -112,9 +112,9 @@ export function sanitizePdfText(s: string): string {
   // Never let that reach the page -- replace with an em-dash placeholder.
   let t = String(s).replace(/\[object Object\]/g, '—')
     // CP1252 mojibake literally present in a few source strings
-    .replace(/â€”/g, '--').replace(/â€“/g, '-').replace(/â€™/g, "'")
-    .replace(/â€˜/g, "'").replace(/â€œ/g, '"').replace(/â€/g, '"')
-    .replace(/â€¦/g, '...').replace(/â€/g, '').replace(/Ã—/g, 'x').replace(/Â/g, '')
+    .replace(/—/g, '--').replace(/–/g, '-').replace(/’/g, "'")
+    .replace(/‘/g, "'").replace(/“/g, '"').replace(/”/g, '"')
+    .replace(/…/g, '...').replace(/â€/g, '').replace(/×/g, 'x').replace(/Â/g, '')
     // literal "?" left behind by a past encoding accident:
     // digit?digit was an en-dash range; " ?digit" was a plus-minus;
     // " ? " was a decorative separator; leading/trailing " ?" was a symbol

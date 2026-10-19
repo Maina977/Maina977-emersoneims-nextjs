@@ -147,10 +147,10 @@ const SUBSYSTEMS: SubsystemDef[] = [
     accepts:['Photos, videos, EXIF metadata, image fingerprinting'],
     processes:['Pixel spectral analysis, terrain classification, vegetation scoring'],
     outputs:['Validated inputs, NDVI, soil exposure index, terrain type, forensic ID'] },
-  { id:'satellite', number:3, title:'Satellite Data Fusion', icon:'\u{1F6F0}\uFE0F', status:100, color:'#2196F3',
-    fetches:['Sentinel-1/2, Landsat 8/9, GRACE-FO, SMAP+S1, GPM IMERG, MODIS MCD43A3, AMSR-2, CHIRPS, SRTM'],
-    calculates:['NDVI, NDWI (Otsu), LST, SEBAL ET, soil moisture 1km, SWE, BRDF albedo, InSAR, TWI'],
-    outputs:['10 remote sensing capabilities, 28 spectral indices, 6 data providers'] },
+  { id:'satellite', number:3, title:'Climate & Satellite-Derived Data', icon:'\u{1F6F0}\uFE0F', status:100, color:'#2196F3',
+    fetches:['NASA POWER climate, Open-Meteo, ISRIC SoilGrids, SRTM elevation, and MODIS vegetation where the service answers'],
+    calculates:['Rainfall, temperature, vegetation and soil indicators from those datasets'],
+    outputs:['Inputs to the depth, yield and recharge estimates; each value names its source'] },
   { id:'geological', number:4, title:'Geological Analysis', icon:'\u{1FAA8}', status:90, color:'#FF9800',
     maps:['Rock formations, fault lines, aquifer boundaries, lineament density, subsurface layers'],
     classifies:['Aquifer type (confined/unconfined/karst), lithology, porosity'],
@@ -159,10 +159,10 @@ const SUBSYSTEMS: SubsystemDef[] = [
     calculates:['Hydraulic conductivity, transmissivity, storage coefficient, recharge rate'],
     models:['Groundwater flow, capture zones, drawdown, seasonal recharge cycles'],
     outputs:['Flow nets, capture zone maps, sustainable yield, climate projections'] },
-  { id:'ml', number:6, title:'ML Predictions', icon:'\u{1F9E0}', status:88, color:'#9C27B0',
-    predicts:['Success probability, depth, yield, scenario simulations, probability breakdown'],
-    classifies:['Soil type, water potability, contamination risk, drilling strategy'],
-    outputs:['Confidence intervals, SHAP explanations, self-learning feedback loop'] },
+  { id:'ml', number:6, title:'Estimate Model', icon:'\u{1F9E0}', status:88, color:'#9C27B0',
+    predicts:['Success likelihood, depth and yield ranges from the data above and nearby records'],
+    classifies:['Soil type and water-quality risks to test for'],
+    outputs:['Ranges, not certainties — confirmed only by a survey and a test-pumped borehole'] },
   { id:'risk', number:7, title:'Risk Assessment', icon:'\u26A0\uFE0F', status:85, color:'#F44336',
     evaluates:['Geological, contamination, depth, financial, technical, 5-year depletion risk'],
     detects:['Sewage, industrial, agricultural, landfill, mining contamination'],
@@ -325,7 +325,9 @@ function genCostBreakdown(depth: number, yld: number, soilType?: string) {
   const drilling = Math.round(depth * ratePerM);
   const casing = Math.round(depth * 0.35 * 45);
   const screen = Math.round(depth * 0.15 * 55);
-  const pump = Math.round(3500 + yld * 800);
+  // Submersible pump + motor priced on its kW (a deeper or higher-yield
+  // borehole needs a bigger pump); was 3500 + 800·yield, blind to depth.
+  const pump = Math.round(1000 + 650 * Math.max(0.37, pumpKwFor(yld, depth)));
   const installation = Math.round(pump * 0.35);
   // Mobilization scales with depth (proxy for remoteness: deeper wells = harder terrain)
   const mobilization = Math.round(1200 + depth * 6);
@@ -353,8 +355,26 @@ function genCostBreakdown(depth: number, yld: number, soilType?: string) {
  * Deterministic solar sizing — runtime derived from yield requirement.
  * Higher yield = longer runtime needed. Based on Kenya solar irradiance.
  */
-function genSolar(yld: number, lat?: number) {
-  const pumpKw = 0.5 + yld * 0.35;
+/**
+ * Submersible pump shaft power from hydraulics: P = ρ g Q H / η.
+ * 2026-10-18 tool audit: was `0.5 + 0.35·Q`, which ignored head entirely and
+ * undersized deep-borehole pumps by 50–60% (Q 5 m³/h at 150 m needs ~4.5 kW;
+ * the old formula gave 2.25 kW) — the burnt-motor problem we warn about.
+ * Head is estimated until a test-pumping record gives the real water level:
+ * pump set at 75% of borehole depth, +10 m delivery, +10% friction.
+ */
+const PUMP_WIRE_TO_WATER_EFF = 0.45;
+function pumpHeadM(depth: number) {
+  return Math.round((depth * 0.75 + 10) * 1.1);
+}
+function pumpKwFor(yldM3h: number, depth: number) {
+  const q = Math.max(0, yldM3h) / 3600; // m³/s
+  return (1000 * 9.81 * q * pumpHeadM(depth)) / PUMP_WIRE_TO_WATER_EFF / 1000;
+}
+
+function genSolar(yld: number, lat?: number, depth: number = 60) {
+  // Never below 0.37 kW — the smallest common borehole pump motor.
+  const pumpKw = Math.max(0.37, pumpKwFor(yld, depth));
   // Solar runtime based on latitude: equatorial Kenya gets ~5-6 peak sun hours
   // Pump runs proportional to yield need (bigger demand = longer runtime)
   const peakSunHours = lat !== undefined ? Math.max(4, 7 - Math.abs(lat) * 0.08) : 5.5;
@@ -371,7 +391,7 @@ function genSolar(yld: number, lat?: number) {
   const labourCost = Math.round(800 + panelKwp * 150);
   const accessoryCost = Math.round(400 + panelKwp * 80);
   const totalSolar = panelCost+batteryCost+inverterCost+shelterCost+labourCost+accessoryCost;
-  return { pumpKw:Math.round(pumpKw*10)/10, runtime:Math.round(runtime*10)/10, dailyKwh:Math.round(dailyKwh*10)/10,
+  return { pumpKw:Math.round(pumpKw*100)/100, headM: pumpHeadM(depth), runtime:Math.round(runtime*10)/10, dailyKwh:Math.round(dailyKwh*10)/10,
     panelKwp, batteryKwh, batteryAh, inverterKva, panelCost, batteryCost, inverterCost,
     shelterCost, labourCost, accessoryCost, totalSolar };
 }
@@ -438,11 +458,15 @@ function genROI(boreholeCost: number, solarCost: number, yld: number, runtime?: 
   };
 }
 
-function genScenarios(depth: number, yld: number): ScenarioResult[] {
+// Costs come from the same genCostBreakdown as the summary card (2026-10-18
+// tool audit: scenarios used depth×85/95/110, so one borehole showed three
+// different prices on one report).
+function genScenarios(depth: number, yld: number, soilType?: string): ScenarioResult[] {
+  const opt = (d: number, y: number) => genCostBreakdown(Math.round(d), y, soilType).total;
   return [
-    { depth:Math.round(depth*0.65), yield:Math.round(yld*0.4*10)/10, cost:Math.round(depth*0.65*85), risk:'Medium', recommendation:'Shallow option — lower cost but reduced yield; consider if budget is constrained' },
-    { depth:Math.round(depth), yield:Math.round(yld*10)/10, cost:Math.round(depth*95), risk:'Low', recommendation:'Optimal depth — best yield-to-cost ratio' },
-    { depth:Math.round(depth*1.4), yield:Math.round(yld*1.15*10)/10, cost:Math.round(depth*1.4*110), risk:'Medium', recommendation:'Marginal yield gain — higher cost, diminishing returns' },
+    { depth:Math.round(depth*0.65), yield:Math.round(yld*0.4*10)/10, cost:opt(depth*0.65, yld*0.4), risk:'Medium', recommendation:'Shallow option — lower cost but reduced yield; consider if budget is constrained' },
+    { depth:Math.round(depth), yield:Math.round(yld*10)/10, cost:opt(depth, yld), risk:'Low', recommendation:'Recommended depth — same cost basis as the summary' },
+    { depth:Math.round(depth*1.4), yield:Math.round(yld*1.15*10)/10, cost:opt(depth*1.4, yld*1.15), risk:'Medium', recommendation:'Marginal yield gain — higher cost, diminishing returns' },
   ];
 }
 
@@ -542,6 +566,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [analyzer, setAnalyzer] = useState<BoreholeAnalyzer|null>(null);
   const [activeView, setActiveView] = useState<ViewId>('dashboard');
   const [activeResultTab, setActiveResultTab] = useState('overview');
+  // Customer view shows ~13 plain-English tabs; the model detail sits behind a
+  // "Technical appendix" toggle (2026-10-18 tool audit: 69 slug-named tabs
+  // formed a 1,061 px button wall on phones).
+  const [showTechnical, setShowTechnical] = useState(false);
   const [initStatus, setInitStatus] = useState<'loading'|'ready'|'error'>('loading');
   const [initError, setInitError] = useState('');
   const [analysisError, setAnalysisError] = useState<string|null>(null);
@@ -722,7 +750,15 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
   const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
-    if (files.length === 0 || !analyzer) return;
+    // Clear the input so choosing the same photo again fires onChange (it
+    // silently did nothing before).
+    event.target.value = '';
+    if (files.length === 0) return;
+    if (!analyzer) {
+      setAnalysisError('AquaScan is still loading. Wait a few seconds and choose the photo again.');
+      setActiveView('analyze');
+      return;
+    }
 
     // Coordinates typed but invalid? STOP and say so — never run the analysis
     // at the wrong place while the user believes their location was applied.
@@ -732,6 +768,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
       if ('error' in parsed) {
         setManualLocError(parsed.error);
         setAnalysisError(`Location problem: ${parsed.error}`);
+        setActiveView('analyze');
         return;
       }
       manualCoords = parsed;
@@ -756,6 +793,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
     setAnalysisError(null);
     setAnalyzing(true);
     setActiveView('analyze');
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
     setPipelineStep(0);
     setPipelineLabel(files.length > 1 ? `Analyzing primary photo (1 of ${files.length})...` : 'Initializing data ingestion pipeline...');
     // Compress every uploaded photo for the PDF report (runs alongside the
@@ -791,6 +829,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
       setResult(analysisResult);
       setActiveView('results');
       setActiveResultTab('overview');
+      if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error: any) {
       console.error('Analysis failed:', error);
       setAnalysisError(error?.message || String(error) || 'Unknown pipeline error');
@@ -1025,7 +1064,6 @@ const AIBoreholeAnalyzer: React.FC = () => {
   };
 
   const getRiskColor = (risk: number) => risk < 0.3 ? '#4CAF50' : risk < 0.6 ? '#FFC107' : risk < 0.8 ? '#FF9800' : '#F44336';
-  const overallHealth = Math.round(SUBSYSTEMS.reduce((a,s) => a+s.status, 0) / SUBSYSTEMS.length);
   const fmtUSD = (n: number) => '$' + n.toLocaleString();
   const fmtKSH = (n: number) => 'KSh ' + Math.round(n*130).toLocaleString();
 
@@ -1054,14 +1092,19 @@ const AIBoreholeAnalyzer: React.FC = () => {
      ═══════════════════════════════════════════════════════════════ */
   const renderDashboard = () => (
     <div className="dashboard">
-      <div className="system-health-bar">
-        <div className="health-label"><span>System Health</span><span className="health-value">{overallHealth}%</span></div>
-        <div className="health-track"><div className="health-fill" style={{width:`${overallHealth}%`}}></div></div>
+      {/* A "System Health NN%" bar sat here, averaged from hard-coded
+          per-subsystem numbers (2026-10-18 tool audit). Removed. */}
+      <div className="system-health-bar" role="note">
+        <div className="health-label"><span>Desktop pre-screen — not authority to drill</span></div>
+        <p style={{margin:'6px 0 0',fontSize:13,color:'var(--text-secondary)'}}>
+          Upload a site photo and add coordinates. AquaScan Pro pulls public rainfall, soil and water-point data and gives a
+          first look at depth, yield and cost ranges. A geophysical survey and a licensed hydrogeologist decide where to drill.
+        </p>
       </div>
 
       {/* Pipeline */}
       <div className="pipeline-flow">
-        <h3 className="section-title">12-Subsystem AI Pipeline</h3>
+        <h3 className="section-title">How the pre-screen works (12 steps)</h3>
         <div className="pipeline-steps">
           {SUBSYSTEMS.map((s,i) => (
             <React.Fragment key={s.id}>
@@ -1069,8 +1112,6 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 onClick={()=>setExpandedSubsystem(expandedSubsystem===s.id?null:s.id)}>
                 <div className="node-header"><span className="node-icon">{s.icon}</span><span className="node-number">{s.number}</span></div>
                 <div className="node-title">{s.title}</div>
-                <div className="node-status-bar"><div className="node-status-fill" style={{width:`${s.status}%`,background:s.color}}></div></div>
-                <div className="node-status-text" style={{color:s.color}}>{s.status}%</div>
                 {expandedSubsystem===s.id && renderSubsystemDetails(s)}
               </div>
               {i < SUBSYSTEMS.length-1 && <div className="pipeline-connector"><span>&rarr;</span></div>}
@@ -1081,15 +1122,18 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
       {/* Quick Stats */}
       <div className="quick-stats">
-        <div className="stat-card"><div className="stat-icon">{'\u{1F6F0}\uFE0F'}</div><div className="stat-number">{SCI.TOTAL_CAPABILITIES}</div><div className="stat-label">Scientific Capabilities</div><div className="stat-sub">Parts 1–7: Remote Sensing → Validation</div></div>
-        <div className="stat-card"><div className="stat-icon">{'\u{1F310}'}</div><div className="stat-number">6</div><div className="stat-label">Data Providers</div><div className="stat-sub">NASA, ESA, USGS, JAXA, GFZ, UCSB-CHG</div></div>
-        <div className="stat-card"><div className="stat-icon">{'\u{1F9E0}'}</div><div className="stat-number">6</div><div className="stat-label">AI/ML Models</div><div className="stat-sub">ResNet-50, U-Net, ViT, RF, LSTM, XGBoost</div></div>
-        <div className="stat-card"><div className="stat-icon">{'\u{1F4CA}'}</div><div className="stat-number">15</div><div className="stat-label">Science Domains</div><div className="stat-sub">Remote Sensing, Geology, Hydrology, ML, Risk, Reports, Validation</div></div>
+        {/* Was "168 Scientific Capabilities", "6 AI/ML Models (ResNet-50, U-Net,
+            ViT, RF, LSTM, XGBoost)" and "15 Science Domains". Only a small image
+            model and pixel-colour analysis run in the browser (2026-10-18 audit). */}
+        <div className="stat-card"><div className="stat-icon">{'\u{1F310}'}</div><div className="stat-number">Public</div><div className="stat-label">Data sources</div><div className="stat-sub">NASA POWER, ISRIC SoilGrids, Open-Meteo, Water Point Data Exchange, OpenStreetMap</div></div>
+        <div className="stat-card"><div className="stat-icon">{'\u{1F4CD}'}</div><div className="stat-number">3,446</div><div className="stat-label">Field borehole records</div><div className="stat-sub">UNESCO IHP-WINS, northern Kenya</div></div>
+        <div className="stat-card"><div className="stat-icon">{'\u{1F4A7}'}</div><div className="stat-number">22,820</div><div className="stat-label">Mapped water points</div><div className="stat-sub">Kenya government water-point inventory</div></div>
+        <div className="stat-card"><div className="stat-icon">{'\u{1F9ED}'}</div><div className="stat-number">Survey</div><div className="stat-label">Next step</div><div className="stat-sub">A geophysical survey confirms where and how deep to drill</div></div>
       </div>
 
       {/* Science Catalog Quick Nav */}
       <div className="science-nav-section">
-        <h3 className="section-title">7-Part Scientific Capability Catalog</h3>
+        <h3 className="section-title">Methods reference</h3>
         <div className="science-parts-grid">
           {SCI.SCIENCE_PARTS.map(p => (
             <div key={p.id} className="science-part-card" style={{borderColor:p.color}} onClick={()=>{setActiveSciPart(p.id);setActiveView('capabilities');}}>
@@ -1101,7 +1145,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           ))}
         </div>
         <div style={{textAlign:'center',marginTop:16}}>
-          <button className="btn btn-science" onClick={()=>setActiveView('capabilities')}>{'\u{1F52C}'} Browse Full Scientific Catalog ({SCI.TOTAL_CAPABILITIES} Capabilities)</button>
+          <button className="btn btn-science" onClick={()=>setActiveView('capabilities')}>{'\u{1F52C}'} Browse the methods reference (what runs here and what needs a full study)</button>
         </div>
       </div>
 
@@ -1144,15 +1188,15 @@ const AIBoreholeAnalyzer: React.FC = () => {
         <h3 className="section-title">Key Formulas</h3>
         <div className="formula-grid">
           {[
-            ['Transmissivity','T = K \u00D7 b','Rock type lookup (10 types)'],
-            ['Sustainable Yield','min(T-lim, recharge, storage)\u00D7SF','3-constraint model'],
+            ['Transmissivity','T = K × b','Rock type lookup (10 types)'],
+            ['Sustainable Yield','min(T-lim, recharge, storage)×SF','3-constraint model'],
             ['NPV','NPV = -C\u2080 + \u03A3[(R\u209C-C\u209C)/(1+r)\u1D57]','20-year projection'],
-            ['Drilling Cost','rate \u00D7 depth \u00D7 remoteness','$45-$150/m by geology'],
+            ['Drilling Cost','rate × depth × remoteness','$45-$150/m by geology'],
             ['SEBAL ET','\u03BBET = Rn - G - H','11-step energy balance'],
             ['SWE','SWE = \u03B1(Tb18V-Tb36V)+\u03B2','Modified Chang BTGR'],
-            ['SMAP+S1','SM = a\u00B7\u03C3\u00B0VV + b\u00B7\u03C3\u00B0VH + c\u00B7NDVI','36km\u21921km fusion'],
-            ['Otsu','argmax \u03C3\u00B2B = w0w1(\u03BC0-\u03BC1)\u00B2','Auto water threshold'],
-            ['MCD43A3','BSA(\u03B8) = fiso+fvol\u00B7Kvol+fgeo\u00B7Kgeo','BRDF albedo (\u00B10.02)'],
+            ['SMAP+S1','SM = a·\u03C3°VV + b·\u03C3°VH + c·NDVI','36km→1km fusion'],
+            ['Otsu','argmax \u03C3²B = w0w1(\u03BC0-\u03BC1)²','Auto water threshold'],
+            ['MCD43A3','BSA(\u03B8) = fiso+fvol·Kvol+fgeo·Kgeo','BRDF albedo (±0.02)'],
           ].map(([name,eq,desc],i) => (
             <div key={i} className="formula-card"><div className="formula-name">{name}</div><div className="formula-eq">{eq}</div><div className="formula-desc">{desc}</div></div>
           ))}
@@ -1789,10 +1833,15 @@ const AIBoreholeAnalyzer: React.FC = () => {
     return (
       <div className="capabilities-view">
         <div className="results-header">
-          <h3>{'\u{1F52C}'} Scientific Capability Catalog</h3>
+          <h3>{'\u{1F52C}'} Methods reference</h3>
           <button className="btn btn-secondary" onClick={()=>setActiveView('dashboard')}>Dashboard</button>
         </div>
-        <p className="tab-desc">Browse all {SCI.TOTAL_CAPABILITIES} scientific capabilities across 7 domains. Every capability listed here is integrated into the analysis pipeline.</p>
+        {/* Was: "Every capability listed here is integrated into the analysis pipeline",
+            with an Accuracy column on each row. Most rows are methods a full
+            hydrogeological study uses (deep-learning models, InSAR, field
+            geophysics); the browser pre-screen runs only a few of them, and the
+            accuracy figures were never measured. (2026-10-19 tool audit) */}
+        <p className="tab-desc">A reference list of the methods used in groundwater studies. The free pre-screen uses only some of them (public climate, soil, terrain and water-point data, plus photo analysis); the rest need a full study with field work. Each result shows which data it actually used.</p>
 
         {/* Part Navigation Tabs */}
         <div className="sci-part-tabs">
@@ -1810,23 +1859,23 @@ const AIBoreholeAnalyzer: React.FC = () => {
           <div className="sph-icon">{part.icon}</div>
           <div>
             <div className="sph-title">Part {part.part}: {part.title}</div>
-            <div className="sph-desc">{part.count} capabilities &mdash; {part.description}</div>
+            <div className="sph-desc">{part.description}</div>
           </div>
         </div>
 
         {/* Part Content */}
         <div className="sci-part-content">
           {activeSciPart==='remote-sensing' && renderSciTable(
-            ['Capability','Scientific Method','Data Source','Output','Accuracy'],
-            SCI.REMOTE_SENSING, ['name','method','source','output','accuracy']
+            ['Capability','Scientific Method','Data Source','Output'],
+            SCI.REMOTE_SENSING, ['name','method','source','output']
           )}
           {activeSciPart==='geo-hydro' && renderSciTable(
-            ['Capability','Scientific Method','Data Source','Output','Accuracy'],
-            SCI.GEO_HYDRO_MAPPING, ['name','method','source','output','accuracy']
+            ['Capability','Scientific Method','Data Source','Output'],
+            SCI.GEO_HYDRO_MAPPING, ['name','method','source','output']
           )}
           {activeSciPart==='topo-hydro' && renderSciTable(
-            ['Capability','Scientific Method','Data Source','Output','Accuracy'],
-            SCI.TOPO_HYDROLOGY, ['name','method','source','output','accuracy']
+            ['Capability','Scientific Method','Data Source','Output'],
+            SCI.TOPO_HYDROLOGY, ['name','method','source','output']
           )}
           {activeSciPart==='historical' && renderSciTable(
             ['Capability','Data Needed','Source','Output'],
@@ -1845,12 +1894,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
             SCI.ENSEMBLE_METHODS, ['method','purpose','models','weighting']
           )}
           {activeSciPart==='time-series' && renderSciTable(
-            ['Variable','Horizon','Model','Input Features','Accuracy'],
-            SCI.TIME_SERIES, ['variable','horizon','model','input','accuracy']
+            ['Variable','Horizon','Model','Input Features'],
+            SCI.TIME_SERIES, ['variable','horizon','model','input']
           )}
           {activeSciPart==='geolocation' && renderSciTable(
-            ['Method','Technology','Accuracy','Data Source'],
-            SCI.GEOLOCATION_METHODS, ['method','tech','accuracy','source']
+            ['Method','Technology','Data Source'],
+            SCI.GEOLOCATION_METHODS, ['method','tech','source']
           )}
           {activeSciPart==='terrain' && renderSciTable(
             ['Feature','Method','Input','Output','Scientific Basis'],
@@ -1948,18 +1997,34 @@ const AIBoreholeAnalyzer: React.FC = () => {
       )}
       {analysisError ? (
         <div style={{background:'rgba(244,67,54,0.12)',border:'2px solid rgba(244,67,54,0.4)',borderRadius:12,padding:'20px 24px',margin:'20px auto',maxWidth:600}}>
-          <h3 style={{color:'#F44336',margin:'0 0 8px'}}>Pipeline Error</h3>
-          <pre style={{color:'#ff8a80',fontSize:12,whiteSpace:'pre-wrap',wordBreak:'break-word',margin:'0 0 16px',fontFamily:'var(--font-mono)'}}>{analysisError}</pre>
-          <p style={{fontSize:12,color:'var(--text-secondary)',margin:'0 0 12px'}}>
-            {pipelineStep >= 0 ? `Failed at Subsystem ${pipelineStep + 1} of 12: ${SUBSYSTEMS[pipelineStep]?.title || ''}` : 'Failed before pipeline started'}
+          <h3 style={{color:'#F44336',margin:'0 0 8px'}}>The pre-screen could not finish</h3>
+          <p style={{fontSize:14,color:'var(--text-secondary)',margin:'0 0 12px',lineHeight:1.5}}>
+            {analysisError.startsWith('Location problem') || analysisError.startsWith('AquaScan is still loading')
+              ? analysisError
+              : 'One of the public data services did not answer, or the photo could not be read. Check your connection and try again. If it keeps failing, send us the coordinates and we will run it for you.'}
           </p>
-          <button className="btn btn-analyze" onClick={() => { setAnalysisError(null); setActiveView('dashboard'); }}>
-            Back to Dashboard
-          </button>
+          {!(analysisError.startsWith('Location problem') || analysisError.startsWith('AquaScan is still loading')) && (
+            <details style={{margin:'0 0 12px'}}>
+              <summary style={{fontSize:12,color:'var(--text-tertiary)',cursor:'pointer'}}>Technical detail</summary>
+              <pre style={{color:'#ff8a80',fontSize:12,whiteSpace:'pre-wrap',wordBreak:'break-word',margin:'8px 0 0',fontFamily:'var(--font-mono)'}}>{analysisError}</pre>
+              <p style={{fontSize:12,color:'var(--text-secondary)',margin:'6px 0 0'}}>
+                {pipelineStep >= 0 ? `Stopped at step ${pipelineStep + 1} of 12: ${SUBSYSTEMS[pipelineStep]?.title || ''}` : 'Stopped before the first step'}
+              </p>
+            </details>
+          )}
+          <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
+            <button className="btn btn-analyze" onClick={() => { setAnalysisError(null); setActiveView('dashboard'); }}>
+              Back and try again
+            </button>
+            <a className="btn btn-secondary" style={{textDecoration:'none'}} target="_blank" rel="noopener noreferrer"
+               href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20AquaScan%20could%20not%20finish%20for%20my%20site.%20Coordinates%3A%20">
+              WhatsApp an engineer
+            </a>
+          </div>
         </div>
       ) : (
         <>
-          <h3>Running 12-Subsystem Pipeline...</h3>
+          <h3>Running the pre-screen (12 steps)…</h3>
       {pipelineLabel && (
         <div style={{fontSize:12,color:'var(--accent)',fontFamily:'var(--font-mono)',marginBottom:10,textAlign:'center',opacity:0.9}}>{pipelineLabel}</div>
       )}
@@ -1992,17 +2057,36 @@ const AIBoreholeAnalyzer: React.FC = () => {
      ═══════════════════════════════════════════════════════════════ */
   const renderResults = () => {
     if (!result) return null;
-    const cost = genCostBreakdown(result.recommendedDepth, result.estimatedYield, result.soil.type);
-    const solar = genSolar(result.estimatedYield, result.site.latitude);
+    // Drilling rate uses the soil type only when it came from ISRIC SoilGrids;
+    // a photo's colours must not change the price (2026-10-18 tool audit).
+    const costSoil = result.soil.realSoilGrids ? result.soil.type : undefined;
+    const cost = genCostBreakdown(result.recommendedDepth, result.estimatedYield, costSoil);
+    const solar = genSolar(result.estimatedYield, result.site.latitude, result.recommendedDepth);
     const roi = genROI(cost.total, solar.totalSolar, result.estimatedYield, solar.runtime, cost.confidence);
     const layers = genSubsurface(result);
-    const scenarios = genScenarios(result.recommendedDepth, result.estimatedYield);
+    const scenarios = genScenarios(result.recommendedDepth, result.estimatedYield, costSoil);
     const climate = genClimate(result.historicalData, result.gldasGroundwater);
     const prob = genProbability(result.probability, result.recommendedDepth);
     const wqExpanded = genWaterQualityExpanded(result.waterQuality, result.recommendedDepth);
     const strategy = genDrillingStrategy(result.recommendedDepth, result.soil.type);
     const nearby = result.nearbyWells?.nearbyWells ?? [];
     const tabs = ['overview','ai-scanner','verification','geolocation','remote-sensing','satellite-rs','surface-geophysics-30','gldas-groundwater','realtime-water','subsurface-3d','subsurface-twin','insar','survey-plan','hybrid-geophysics','advanced-geophysics','aquifer-sim','historical','borehole-records','subsurface','geological','rock-sites','topographic','scenarios','water','costs','solar','roi','strategy','climate','probability','ml-models','risk','risk-decision','confidence-quality','geophysics-fusion','fracture-ai','aquifer-type','recharge-model','drill-map','micro-siting','calibration-loop','borehole-intelligence','pump-test','lithology','ert-interpretation','source-agreement','drought-analysis','hydrochemistry','data-quality','drilling-prediction','regional-model','site-identity','drill-decision','risk-register','pump-protocol','prediction-table','confidence-breakdown','bankable-checklist','well-design','engineer-trust','data-provenance','methodology','cross-validation','ai-vs-reality','pinn-explainable','path-to-97','validation','compare','report'] as const;
+
+    // What a customer needs, in plain English.
+    const CUSTOMER_TABS = ['overview','borehole-records','climate','water','costs','solar','roi','strategy','scenarios','risk','data-provenance','methodology','report'];
+    const TAB_LABELS: Record<string, string> = {
+      overview: 'Summary', 'borehole-records': 'Nearby boreholes', climate: 'Rain & climate', water: 'Water quality risk',
+      costs: 'Costs', solar: 'Solar pump', roi: 'Payback', strategy: 'Drilling plan', scenarios: 'Depth options',
+      risk: 'Risks', 'data-provenance': 'Data sources', methodology: 'How it works', report: 'Report',
+    };
+    // Removed outright (2026-10-18 tool audit): these presented capabilities a
+    // desktop pre-screen does not have — deep-learning models "applied to this
+    // site", validation and accuracy figures with no field data behind them,
+    // "30 surface geophysics methods" and InSAR without a survey, a "bankable"
+    // checklist, a "path to 97%", and a site-comparison mock.
+    const HIDDEN_TABS = new Set(['ml-models','path-to-97','ai-vs-reality','validation','cross-validation','bankable-checklist','engineer-trust','surface-geophysics-30','insar','compare','pinn-explainable','subsurface-twin']);
+    const visibleTabs: string[] = showTechnical ? tabs.filter((t) => !HIDDEN_TABS.has(t)) : CUSTOMER_TABS;
+    const tabLabel = (t: string) => TAB_LABELS[t] ?? t.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
     return (
       <div className="results-view">
@@ -2021,10 +2105,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
         <div className="results-summary-cards">
           <div className="summary-card success"><div className="summary-value">{(result.probability*100).toFixed(1)}%</div><div className="summary-label">Success Probability</div></div>
           <div className="summary-card depth"><div className="summary-value">{result.recommendedDepth.toFixed(0)}m</div><div className="summary-label">Recommended Depth</div></div>
-          <div className="summary-card yield-card"><div className="summary-value">{result.estimatedYield.toFixed(1)}</div><div className="summary-label">Yield (m\u00B3/h)</div></div>
+          <div className="summary-card yield-card"><div className="summary-value">{result.estimatedYield.toFixed(1)}</div><div className="summary-label">Yield (m³/h)</div></div>
           <div className="summary-card cost-card"><div className="summary-value">{fmtUSD(cost.total)}</div><div className="summary-label">Total Borehole Cost</div></div>
           <div className="summary-card solar-card"><div className="summary-value">{fmtUSD(solar.totalSolar)}</div><div className="summary-label">Solar System Cost</div></div>
-          <div className="summary-card roi-card"><div className="summary-value">{roi.paybackMonths}mo</div><div className="summary-label">Payback Period</div></div>
+          <div className="summary-card roi-card"><div className="summary-value">{roi.paybackMonths >= 240 ? 'None' : `${roi.paybackMonths}mo`}</div><div className="summary-label">Payback Period</div></div>
           <div className="summary-card risk-sc" style={{borderColor:getRiskColor(result.risk.overallRisk)}}><div className="summary-value" style={{color:getRiskColor(result.risk.overallRisk)}}>{(result.risk.overallRisk*100).toFixed(0)}%</div><div className="summary-label">Overall Risk</div></div>
           <div className="summary-card wq-card"><div className="summary-value">{wqExpanded.treatmentRequired}</div><div className="summary-label">Treatment Required</div></div>
         </div>
@@ -2151,68 +2235,35 @@ const AIBoreholeAnalyzer: React.FC = () => {
           );
         })()}
 
-        {/* ── Credibility Rating Dashboard ── */}
-        {(() => {
-          const cred = computeCredibility(result);
-          return (
-            <div className="cred-dashboard">
-              <div className="cred-header">
-                <div className="cred-title">{'\u{1F4CA}'} Credibility Rating Dashboard</div>
-                <div className="cred-grade" style={{color: cred.gradeColor, borderColor: cred.gradeColor}}>
-                  {cred.grade}
-                </div>
-              </div>
-              <div className="cred-dimensions">
-                {cred.dimensions.map(dim => (
-                  <div key={dim.key} className="cred-dim-card">
-                    <div className="cred-dim-header">
-                      <span className="cred-dim-label">{dim.label}</span>
-                      <span className="cred-dim-score">{dim.score.toFixed(1)} / 5</span>
-                    </div>
-                    <div className="cred-bar-track">
-                      <div className="cred-bar-fill" style={{width: `${(dim.score / 5) * 100}%`, background: dim.score >= 4.0 ? '#22c55e' : dim.score >= 3.0 ? '#38bdf8' : dim.score >= 2.0 ? '#f59e0b' : '#ef4444'}} />
-                      <div className="cred-bar-target" style={{left: `${(dim.target / 5) * 100}%`}} title={`Target: ${dim.target}`} />
-                    </div>
-                    <div className="cred-stars">
-                      {[1,2,3,4,5].map(s => (
-                        <span key={s} className={`cred-star ${s <= Math.round(dim.score) ? 'filled' : ''}`}>{'\u2605'}</span>
-                      ))}
-                      <span className="cred-dim-comment">{dim.comment}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="cred-overall">
-                <div className="cred-gauge" style={{background: `conic-gradient(${cred.gradeColor} ${cred.overallPct * 3.6}deg, rgba(148,163,184,0.1) 0deg)`}}>
-                  <div className="cred-gauge-inner">
-                    <div className="cred-gauge-val">{cred.overallPct}%</div>
-                    <div className="cred-gauge-label">Overall</div>
-                  </div>
-                </div>
-                <div className="cred-verdict-text">
-                  <strong>Status: {cred.grade}</strong>
-                  <p style={{margin:'4px 0 0',fontSize:12,color:'var(--text-muted)'}}>
-                    {!cred.fieldValidated
-                      ? `Desktop pre-feasibility screen (${cred.overallPct}% model agreement). This measures how well the AI + satellite models agree — it is NOT field validation. This assessment is NOT a bankable submission and is NOT authority for drilling, or for procuring a pump, casing or screen. A field ERT/VES survey, 24-hour pump test and accredited lab water analysis are required before any drilling decision.`
-                     : cred.overallPct >= 85 ? 'This assessment is field-validated and meets bankable-grade standards. Suitable for investor proposals, government submissions, and drilling decisions.'
-                     : cred.overallPct >= 70 ? 'Field-validated engineering-grade assessment. Complete remaining field steps to elevate to bankable grade (≥85%).'
-                     : 'Field data present but coverage is limited. Additional field validation recommended.'}
-                  </p>
-                  {cred.overallPct < 85 && (
-                    <div className="cred-improve">
-                      <strong>Upgrade Path to Bankable (≥85%):</strong>
-                      <ul>
-                        {cred.dimensions.filter(d => d.score < d.target).map(d => (
-                          <li key={d.key}>{d.label}: {d.score.toFixed(1)} → {d.target} ({d.comment.includes('→') ? d.comment.split('→')[1].trim() : 'ERT/field integration available'})</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+        {/* Was a "Credibility Rating Dashboard" in which the tool awarded itself
+            star ratings ("Scientific Methodology 4.9 / 5") and an "upgrade path to
+            bankable". Self-rated credibility is not credibility, and the results
+            had no next step at all. (2026-10-18 tool audit) */}
+        <div className="cred-dashboard" role="note" style={{ borderColor: 'rgba(56,189,248,0.35)' }}>
+          <div className="cred-header">
+            <div className="cred-title">{'\u{1F9ED}'} What this result is — and your next step</div>
+          </div>
+          <p style={{ margin: '6px 0 10px', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            This is a <strong>desktop pre-screen</strong> from public data. The depth, yield and cost figures are
+            ranges to plan with, not a drilling instruction. Before anyone drills, a geophysical survey (ERT/VES)
+            and a licensed hydrogeologist confirm the spot and the depth, and the Water Resources Authority issues
+            the permit.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+            <a className="btn btn-primary" href="/booking?type=site-survey" style={{ textDecoration: 'none' }}>
+              Book a site survey
+            </a>
+            <a
+              className="btn btn-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none' }}
+              href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi EmersonEIMS, I ran an AquaScan pre-screen for ${result.site.latitude.toFixed(4)}, ${result.site.longitude.toFixed(4)}: about ${result.recommendedDepth.toFixed(0)} m deep, ${result.estimatedYield.toFixed(1)} m³/h. I would like to discuss a survey.`)}`}
+            >
+              WhatsApp an engineer
+            </a>
+          </div>
+        </div>
 
         {/* Simple Outputs Bar (#17) */}
         <div className="simple-outputs">
@@ -2224,11 +2275,19 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
         {/* Tabs */}
         <div className="result-tabs">
-          {tabs.map(tab => (
+          {visibleTabs.map(tab => (
             <button key={tab} onClick={()=>setActiveResultTab(tab)} className={`result-tab ${activeResultTab===tab?'active':''}`}>
-              {tab.charAt(0).toUpperCase()+tab.slice(1)}
+              {tabLabel(tab)}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => { setShowTechnical((v) => !v); if (showTechnical && !CUSTOMER_TABS.includes(activeResultTab)) setActiveResultTab('overview'); }}
+            className="result-tab"
+            style={{ borderStyle: 'dashed' }}
+          >
+            {showTechnical ? '← Back to the summary tabs' : 'Technical appendix (model estimates) →'}
+          </button>
         </div>
 
         <div className="result-tab-content">
@@ -2292,10 +2351,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
               {/* DATA SOURCE TRANSPARENCY BANNER */}
               <div className="data-source-banner" style={{background:result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'rgba(34,197,94,0.08)':result.gpsSource==='manual'?'rgba(56,189,248,0.08)':result.locationMethod==='visual-estimate'?'rgba(251,191,36,0.08)':'rgba(239,68,68,0.08)',color:'var(--text-secondary)',padding:'14px 18px',borderRadius:12,marginBottom:16,fontSize:13,border:`1px solid ${result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'rgba(34,197,94,0.2)':result.gpsSource==='manual'?'rgba(56,189,248,0.2)':result.locationMethod==='visual-estimate'?'rgba(251,191,36,0.2)':'rgba(239,68,68,0.2)'}`}}>
                 <div style={{fontWeight:700,marginBottom:6,color:'var(--text-primary)',fontSize:14}}>{'\u{1F4E1}'} Data Source Transparency</div>
-                <div><strong>Image Verified:</strong> {result.pixelAnalysis?.isOutdoorScene ? `\u2705 Outdoor terrain scene (${Math.round((result.pixelAnalysis.sceneConfidence||0)*100)}% confidence)` : `\u26A0\uFE0F Non-terrain image detected \u2014 results may be less accurate`}</div>
-                <div><strong>Location:</strong> {result.locationMethod==='exif-gps' ? '\u{1F4E1} Photo EXIF GPS (\u00B110m) \u2014 Location extracted FROM THE IMAGE' : result.locationMethod==='filename-geocode' ? `\u{1F4C1} Filename Geocode \u2014 "${result.locationContext?.filenameHint?.split(' \u2192 ')[0] || 'filename'}" matched to real place via OpenStreetMap` : result.locationMethod==='iptc-geocode' ? '\u{1F3F7}\uFE0F IPTC/XMP Geocode \u2014 Photo metadata text matched to real place' : result.gpsSource==='device' ? '\u{1F4F1} Device GPS \u2014 You confirmed you are at the borehole site' + (result.gpsAccuracy ? ` (\u00B1${Math.round(result.gpsAccuracy)}m)` : '') : result.gpsSource==='manual' ? '\u{1F4DD} Manual Entry \u2014 Coordinates entered by user' : result.locationMethod==='visual-estimate' ? '\u{1F30D} Visual Terrain Estimate \u2014 Location estimated from soil color, vegetation, and terrain' : '\u274C No location found \u2014 use your device location or enter coordinates below'}</div>
+                <div><strong>Image Verified:</strong> {result.pixelAnalysis?.isOutdoorScene ? `\u2705 Outdoor terrain scene (${Math.round((result.pixelAnalysis.sceneConfidence||0)*100)}% confidence)` : `\u26A0\uFE0F Non-terrain image detected — results may be less accurate`}</div>
+                <div><strong>Location:</strong> {result.locationMethod==='exif-gps' ? '\u{1F4E1} Photo EXIF GPS (±10m) — Location extracted FROM THE IMAGE' : result.locationMethod==='filename-geocode' ? `\u{1F4C1} Filename Geocode — "${result.locationContext?.filenameHint?.split(' → ')[0] || 'filename'}" matched to real place via OpenStreetMap` : result.locationMethod==='iptc-geocode' ? '\u{1F3F7}\uFE0F IPTC/XMP Geocode — Photo metadata text matched to real place' : result.gpsSource==='device' ? '\u{1F4F1} Device GPS — You confirmed you are at the borehole site' + (result.gpsAccuracy ? ` (±${Math.round(result.gpsAccuracy)}m)` : '') : result.gpsSource==='manual' ? '\u{1F4DD} Manual Entry — Coordinates entered by user' : result.locationMethod==='visual-estimate' ? '\u{1F30D} Visual Terrain Estimate — Location estimated from soil color, vegetation, and terrain' : '\u274C No location found — use your device location or enter coordinates below'}</div>
                 {result.geoEstimate?.bestEstimate && (
-                  <div><strong>{'\u{1F30D}'} Visual Geo-Estimate:</strong> <span style={{color:'var(--accent-amber)',fontWeight:600}}>{result.geoEstimate.bestEstimate.region}, {result.geoEstimate.bestEstimate.country}</span> ({Math.round(result.geoEstimate.bestEstimate.confidence*100)}% confidence) <span style={{opacity:0.6,fontSize:11}}>\u2014 Climate: {result.geoEstimate.climateZone} \u2014 from terrain visual analysis</span></div>
+                  (result.geoEstimate.bestEstimate as { source?: string }).source === 'user-coordinates'
+                    ? <div><strong>{'\u{1F4CD}'} Area:</strong> <span style={{color:'var(--accent-amber)',fontWeight:600}}>{result.geoEstimate.bestEstimate.region}, {result.geoEstimate.bestEstimate.country}</span> <span style={{opacity:0.6,fontSize:11}}>— from the coordinates you entered \u00b7 climate zone: {result.geoEstimate.climateZone}</span></div>
+                    : <div><strong>{'\u{1F30D}'} Visual Geo-Estimate:</strong> <span style={{color:'var(--accent-amber)',fontWeight:600}}>{result.geoEstimate.bestEstimate.region}, {result.geoEstimate.bestEstimate.country}</span> ({Math.round(result.geoEstimate.bestEstimate.confidence*100)}% match) <span style={{opacity:0.6,fontSize:11}}>— a rough guess from the photo&apos;s soil and vegetation; enter coordinates for a real location</span></div>
                 )}
                 {result.imageFingerprint && <div><strong>Image ID:</strong> <code style={{fontFamily:'var(--font-mono)',background:'rgba(56,189,248,0.1)',padding:'2px 6px',borderRadius:4}}>{result.imageForensicId?.compositeId || result.imageFingerprint}</code>{result.imageForensicId?.cameraMake ? ` — ${result.imageForensicId.cameraMake} ${result.imageForensicId.cameraModel||''}` : ''}{result.imageForensicId?.cameraSerial ? ` (SN: ${result.imageForensicId.cameraSerial})` : ''}{result.imageForensicId?.dateOriginal ? ` | Photo taken: ${(() => { try { const d = new Date(result.imageForensicId.dateOriginal!); return isNaN(d.getTime()) ? result.imageForensicId.dateOriginal : d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); } catch { return result.imageForensicId!.dateOriginal; } })()}` : ''}{result.imageForensicId?.imageSize ? ` | ${result.imageForensicId.imageSize}` : ''}</div>}
                 {/* SOCIAL MEDIA / STRIPPED IMAGE WARNING */}
@@ -2312,7 +2373,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 )}
                 <div><strong>Terrain:</strong> Pixel color/texture analysis ({result.pixelAnalysis?.isOutdoorScene ? '80' : '70'}%) + MobileNet scene classification ({result.pixelAnalysis?.isOutdoorScene ? '20' : '10'}%)</div>
                 <div><strong>Soil:</strong> {result.pixelAnalysis ? `Pixel color class: ${result.pixelAnalysis.dominantColorClass} (soil exposure: ${Math.round(result.pixelAnalysis.soilExposureIndex*100)}%)` : 'Rule-based from terrain type'}</div>
-                <div><strong>Depth/Yield/Cost:</strong> Deterministic models from terrain + soil type \u2014 NOT from subsurface scanning</div>
+                <div><strong>Depth/Yield/Cost:</strong> Deterministic models from terrain + soil type — NOT from subsurface scanning</div>
               </div>
               {/* CLIENT LOCATION SUMMARY */}
               {result.clientLocation && Object.values(result.clientLocation).some(v=>v) && (
@@ -2345,7 +2406,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{fontSize:12,color:'var(--text-secondary)',marginBottom:10}}>{result.gpsSource==='none'&&result.locationMethod!=='filename-geocode'&&result.locationMethod!=='iptc-geocode'?'No GPS found in image. Use your device GPS (if you are at the site) or enter coordinates manually.':'Location is set. You can update it below if needed.'}</div>
                   <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
                     <button onClick={useMyLocation} disabled={locatingDevice} style={{padding:'10px 20px',borderRadius:8,border:'none',background:locatingDevice?'var(--bg-elevated)':'#22c55e',color:locatingDevice?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:locatingDevice?'wait':'pointer',display:'flex',alignItems:'center',gap:6}}>
-                      {locatingDevice ? '\u23F3 Locating...' : '\u{1F4F1} I\u2019m at the site \u2014 Use My GPS'}
+                      {locatingDevice ? '\u23F3 Locating...' : '\u{1F4F1} I\u2019m at the site — Use My GPS'}
                     </button>
                   </div>
                   <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:8}}>Or search the place by name (village, church, school, town):</div>
@@ -2406,7 +2467,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               {/* GEO-ESTIMATION FROM VISUAL TERRAIN ANALYSIS */}
               {result.geoEstimate && result.geoEstimate.estimates.length > 0 && (
                 <div style={{background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.18)',padding:'14px 18px',borderRadius:12,marginBottom:16}}>
-                  <div style={{fontWeight:700,marginBottom:8,color:'var(--text-primary)',fontSize:14}}>{'\u{1F30D}'} Visual Geographic Estimation {'\u2014'} AI Terrain Fingerprint</div>
+                  <div style={{fontWeight:700,marginBottom:8,color:'var(--text-primary)',fontSize:14}}>{'\u{1F30D}'} Visual Geographic Estimation {'—'} AI Terrain Fingerprint</div>
                   <div style={{fontSize:12,color:'var(--text-secondary)',marginBottom:10}}>Location estimated by matching soil color, vegetation, brightness, and terrain texture against 30+ geographic profiles worldwide. Best with outdoor terrain photos.</div>
                   <div style={{display:'flex',flexDirection:'column',gap:6}}>
                     {result.geoEstimate.estimates.slice(0,3).map((est: any, i: number) => (
@@ -2422,7 +2483,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   </div>
                   {result.geoEstimate.bestEstimate && result.geoEstimate.bestEstimate.reasoning.length > 0 && (
                     <div style={{marginTop:8,fontSize:11,color:'var(--text-tertiary)'}}>
-                      <strong>Why #{'\u00A0'}1:</strong> {result.geoEstimate.bestEstimate.reasoning.slice(0,3).join(' \u2022 ')}
+                      <strong>Why #{'\u00A0'}1:</strong> {result.geoEstimate.bestEstimate.reasoning.slice(0,3).join(' • ')}
                     </div>
                   )}
                   {result.resolvedLocation && result.resolvedLocation.source !== 'none' && result.gpsSource === 'none' && (
@@ -2436,7 +2497,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 </div>
               )}
               <div className="result-grid">
-                <div className="result-item"><span className="rl">Location</span><span className="rv">{result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'||result.gpsSource==='manual' ? `${result.site.latitude.toFixed(4)}, ${result.site.longitude.toFixed(4)}` : result.geoEstimate?.bestEstimate ? `~${result.geoEstimate.bestEstimate.latitude.toFixed(2)}, ${result.geoEstimate.bestEstimate.longitude.toFixed(2)} (estimated)` : 'No GPS \u2014 set location above'}</span></div>
+                <div className="result-item"><span className="rl">Location</span><span className="rv">{result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'||result.gpsSource==='manual' ? `${result.site.latitude.toFixed(4)}, ${result.site.longitude.toFixed(4)}` : result.geoEstimate?.bestEstimate ? `~${result.geoEstimate.bestEstimate.latitude.toFixed(2)}, ${result.geoEstimate.bestEstimate.longitude.toFixed(2)} (estimated)` : 'No GPS — set location above'}</span></div>
                 <div className="result-item"><span className="rl">GPS Source</span><span className="rv" style={{color:result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'#4CAF50':result.gpsSource==='manual'?'#38bdf8':result.locationMethod==='visual-estimate'?'#fbbf24':'#F44336'}}>{result.locationMethod==='exif-gps'?'Photo EXIF (from image)':result.locationMethod==='filename-geocode'?'Filename Geocode (OSM)':result.locationMethod==='iptc-geocode'?'IPTC/XMP Geocode (OSM)':result.gpsSource==='device'?'Device GPS (at site)':result.gpsSource==='manual'?'Manual Entry':result.locationMethod==='visual-estimate'?`Visual Estimate (${result.geoEstimate?.bestEstimate?.country||'terrain'})`:'No GPS'}</span></div>
                 {result.imageForensicId && <div className="result-item"><span className="rl">Image ID</span><span className="rv" style={{fontFamily:'var(--font-mono)',fontSize:11}}>{result.imageForensicId.compositeId}</span></div>}
                 {result.imageForensicId?.cameraMake && <div className="result-item"><span className="rl">Camera</span><span className="rv">{[result.imageForensicId.cameraMake, result.imageForensicId.cameraModel].filter(Boolean).join(' ')}{result.imageForensicId.cameraSerial ? ` (SN: ${result.imageForensicId.cameraSerial})` : ''}</span></div>}
@@ -2865,7 +2926,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{fontWeight:700,marginBottom:8,color:'var(--text-primary)',fontSize:14}}>{'\u{1F4CD}'} {result.gpsSource==='none'?'Set Site Location':'Update Location'}</div>
                   <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
                     <button onClick={useMyLocation} disabled={locatingDevice} style={{padding:'10px 20px',borderRadius:8,border:'none',background:locatingDevice?'var(--bg-elevated)':'#22c55e',color:locatingDevice?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:locatingDevice?'wait':'pointer',display:'flex',alignItems:'center',gap:6}}>
-                      {locatingDevice ? '\u23F3 Locating...' : '\u{1F4F1} I\u2019m at the site \u2014 Use My GPS'}
+                      {locatingDevice ? '\u23F3 Locating...' : '\u{1F4F1} I\u2019m at the site — Use My GPS'}
                     </button>
                   </div>
                   <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:8}}>Or enter coordinates manually:</div>
@@ -2897,15 +2958,15 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   </div>
                   {(result.geoEstimate.bestEstimate?.reasoning?.length ?? 0) > 0 && (
                     <div style={{marginTop:8,fontSize:11,color:'var(--text-tertiary)',lineHeight:1.4}}>
-                      <strong>Top match reasoning:</strong> {result.geoEstimate.bestEstimate!.reasoning!.join(' \u2022 ')}
+                      <strong>Top match reasoning:</strong> {result.geoEstimate.bestEstimate!.reasoning!.join(' • ')}
                     </div>
                   )}
                   <div style={{marginTop:6,fontSize:10,color:'var(--text-tertiary)',opacity:0.7}}>Climate zone: {result.geoEstimate.climateZone} | Method: {result.geoEstimate.method} | Profiles: 30+ regions worldwide</div>
                 </div>
               )}
               <div className="result-grid">
-                <div className="result-item"><span className="rl">GPS Source</span><span className="rv" style={{color:result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'#4CAF50':result.gpsSource==='manual'?'#38bdf8':result.locationMethod==='visual-estimate'?'#fbbf24':'#F44336'}}>{result.locationMethod==='exif-gps'?'Photo EXIF (\u00B110m) \u2014 from image':result.locationMethod==='filename-geocode'?'Filename Geocode \u2014 matched via OpenStreetMap':result.locationMethod==='iptc-geocode'?'IPTC/XMP Geocode \u2014 matched via OpenStreetMap':result.gpsSource==='device'?`Device GPS${result.gpsAccuracy?` (\u00B1${Math.round(result.gpsAccuracy)}m)`:''} \u2014 at site`:result.gpsSource==='manual'?'Manual Entry \u2014 user provided':result.locationMethod==='visual-estimate'?`Visual Estimate \u2014 ${result.geoEstimate?.bestEstimate?.region||'terrain analysis'}`:'No GPS \u2014 set location above'}</span></div>
-                <div className="result-item"><span className="rl">GPS Coordinates</span><span className="rv">{result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'||result.gpsSource==='manual' ? `${result.site.latitude.toFixed(6)}, ${result.site.longitude.toFixed(6)}` : result.geoEstimate?.bestEstimate ? `~${result.geoEstimate.bestEstimate.latitude.toFixed(2)}, ${result.geoEstimate.bestEstimate.longitude.toFixed(2)} (visual estimate)` : 'Not available \u2014 set location above'}</span></div>
+                <div className="result-item"><span className="rl">GPS Source</span><span className="rv" style={{color:result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'#4CAF50':result.gpsSource==='manual'?'#38bdf8':result.locationMethod==='visual-estimate'?'#fbbf24':'#F44336'}}>{result.locationMethod==='exif-gps'?'Photo EXIF (±10m) — from image':result.locationMethod==='filename-geocode'?'Filename Geocode — matched via OpenStreetMap':result.locationMethod==='iptc-geocode'?'IPTC/XMP Geocode — matched via OpenStreetMap':result.gpsSource==='device'?`Device GPS${result.gpsAccuracy?` (±${Math.round(result.gpsAccuracy)}m)`:''} — at site`:result.gpsSource==='manual'?'Manual Entry — user provided':result.locationMethod==='visual-estimate'?`Visual Estimate — ${result.geoEstimate?.bestEstimate?.region||'terrain analysis'}`:'No GPS — set location above'}</span></div>
+                <div className="result-item"><span className="rl">GPS Coordinates</span><span className="rv">{result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'||result.gpsSource==='manual' ? `${result.site.latitude.toFixed(6)}, ${result.site.longitude.toFixed(6)}` : result.geoEstimate?.bestEstimate ? `~${result.geoEstimate.bestEstimate.latitude.toFixed(2)}, ${result.geoEstimate.bestEstimate.longitude.toFixed(2)} (visual estimate)` : 'Not available — set location above'}</span></div>
                 {result.imageForensicId && (
                   <>
                     <div className="result-item"><span className="rl">{"\u{1F50D}"} Image Forensic ID</span><span className="rv" style={{fontFamily:'var(--font-mono)',fontSize:11,wordBreak:'break-all'}}>{result.imageForensicId.compositeId}</span></div>
@@ -2933,10 +2994,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
               </div>
               {result.resolvedLocation && result.resolvedLocation.source !== 'none' && (
                 <div style={{marginTop:16}}>
-                  <h4 className="tab-title">{'\u{1F4CD}'} {result.locationMethod==='exif-gps'?'Image Location \u2014 Verified from Photo EXIF GPS':result.locationMethod==='filename-geocode'?'Location \u2014 Geocoded from Filename':result.locationMethod==='iptc-geocode'?'Location \u2014 Geocoded from Photo Metadata':result.gpsSource==='device'?'Site Location \u2014 From Your Device GPS':result.gpsSource==='manual'?'Site Location \u2014 From Manual Coordinates':result.locationMethod==='visual-estimate'?'Estimated Location \u2014 From Visual Terrain Analysis':'Location'}</h4>
+                  <h4 className="tab-title">{'\u{1F4CD}'} {result.locationMethod==='exif-gps'?'Image Location — Verified from Photo EXIF GPS':result.locationMethod==='filename-geocode'?'Location — Geocoded from Filename':result.locationMethod==='iptc-geocode'?'Location — Geocoded from Photo Metadata':result.gpsSource==='device'?'Site Location — From Your Device GPS':result.gpsSource==='manual'?'Site Location — From Manual Coordinates':result.locationMethod==='visual-estimate'?'Estimated Location — From Visual Terrain Analysis':'Location'}</h4>
                   <div style={{background:result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'rgba(34,197,94,0.06)':result.locationMethod==='visual-estimate'?'rgba(251,191,36,0.06)':'rgba(56,189,248,0.06)',border:`1px solid ${result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'rgba(34,197,94,0.15)':result.locationMethod==='visual-estimate'?'rgba(251,191,36,0.15)':'rgba(56,189,248,0.15)'}`,padding:'14px 18px',borderRadius:12,marginBottom:8}}>
                     <div style={{fontWeight:700,fontSize:15,color:result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'var(--accent-green)':result.locationMethod==='visual-estimate'?'#fbbf24':'#38bdf8',marginBottom:10}}>{result.resolvedLocation.displayName || 'Location resolved'}</div>
-                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:10}}>Source: {result.resolvedLocation.source === 'nominatim' ? 'OpenStreetMap Nominatim' : 'BigDataCloud'} \u2014 {result.locationMethod==='exif-gps'?'coordinates from photo EXIF data':result.locationMethod==='filename-geocode'?'place name from filename matched via OpenStreetMap':result.locationMethod==='iptc-geocode'?'place name from photo metadata matched via OpenStreetMap':result.gpsSource==='device'?'coordinates from your device GPS':result.locationMethod==='visual-estimate'?'coordinates estimated from terrain visual analysis':'coordinates entered manually'}, resolved via real map database</div>
+                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:10}}>Source: {result.resolvedLocation.source === 'nominatim' ? 'OpenStreetMap Nominatim' : 'BigDataCloud'} — {result.locationMethod==='exif-gps'?'coordinates from photo EXIF data':result.locationMethod==='filename-geocode'?'place name from filename matched via OpenStreetMap':result.locationMethod==='iptc-geocode'?'place name from photo metadata matched via OpenStreetMap':result.gpsSource==='device'?'coordinates from your device GPS':result.locationMethod==='visual-estimate'?'coordinates estimated from terrain visual analysis':'coordinates entered manually'}, resolved via real map database</div>
                   </div>
                   <div className="result-grid">
                     {result.resolvedLocation.country && <div className="result-item"><span className="rl">{'\u{1F30D}'} Country</span><span className="rv">{result.resolvedLocation.country}{result.resolvedLocation.countryCode ? ` (${result.resolvedLocation.countryCode})` : ''}</span></div>}
@@ -2971,7 +3032,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 </div>
               )}
               <div className="geo-note">
-                <strong>Methodology:</strong> GPS extracted via multi-strategy EXIF parsing (3 strategies), IPTC/XMP text, filename parsing. When no GPS is available, <strong>Visual Geo-Estimation</strong> analyzes terrain color, vegetation density, soil exposure, brightness, and texture \u2014 matching against 30+ geographic profiles covering East Africa, West Africa, Southern Africa, North Africa, Middle East, South Asia, SE Asia, South America, Europe, Central Asia, Australia, and North America. Each image gets a unique perceptual fingerprint (pHash). Terrain classified using pixel-level analysis fused with MobileNet scene labels.
+                <strong>Methodology:</strong> GPS extracted via multi-strategy EXIF parsing (3 strategies), IPTC/XMP text, filename parsing. When no GPS is available, <strong>Visual Geo-Estimation</strong> analyzes terrain color, vegetation density, soil exposure, brightness, and texture — matching against 30+ geographic profiles covering East Africa, West Africa, Southern Africa, North Africa, Middle East, South Asia, SE Asia, South America, Europe, Central Asia, Australia, and North America. Each image gets a unique perceptual fingerprint (pHash). Terrain classified using pixel-level analysis fused with MobileNet scene labels.
               </div>
               {/* Nearby Wells — REAL data from USGS NWIS + OSM + WPDx */}
               {nearby.length > 0 && (
@@ -4056,7 +4117,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       }}>
                         <div style={{fontWeight:700,fontSize:13}}>{api.icon} {api.label}</div>
                         <div style={{fontSize:12,color:api.status==='success'?'#22c55e':api.status==='not-applicable'?'#94a3b8':'#ef4444',fontWeight:600,marginTop:4}}>
-                          {api.status==='success'?'\u2705 LIVE DATA':api.status==='not-applicable'?'\u2014 Not applicable (non-US)':'\u274C Failed'}
+                          {api.status==='success'?'\u2705 LIVE DATA':api.status==='not-applicable'?'— Not applicable (non-US)':'\u274C Failed'}
                         </div>
                       </div>
                     ))}
@@ -5158,10 +5219,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
                                 <div style={{fontSize:20,fontWeight:900,color: pt.rank===1 ? '#3b82f6' : '#64748b'}}>{pt.aiScore}</div>
                               </div>
                               <div style={{fontSize:11,fontWeight:700,marginBottom:4}}>{pt.label}</div>
-                              <div style={{fontSize:10,color:'var(--text-secondary)',marginBottom:6}}>{pt.lat.toFixed(4)}{'\u00B0'}, {pt.lon.toFixed(4)}{'\u00B0'}</div>
+                              <div style={{fontSize:10,color:'var(--text-secondary)',marginBottom:6}}>{pt.lat.toFixed(4)}{'°'}, {pt.lon.toFixed(4)}{'°'}</div>
                               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:4,fontSize:10}}>
                                 <div><span style={{fontWeight:600}}>Depth:</span> {pt.estimatedDepthM}m</div>
-                                <div><span style={{fontWeight:600}}>Yield:</span> {pt.estimatedYieldM3hr} m{'\u00B3'}/hr</div>
+                                <div><span style={{fontWeight:600}}>Yield:</span> {pt.estimatedYieldM3hr} m{'³'}/hr</div>
                               </div>
                               <div style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>{pt.geologyNote}</div>
                               <ul style={{margin:'6px 0 0',paddingLeft:12,fontSize:9,color:'var(--text-secondary)'}}>
@@ -5311,7 +5372,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div>
               <h4 className="tab-title">{'\u{1F30D}'} Advanced Geophysics — Multi-Method 3D Survey</h4>
               <div style={{background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.2)',borderRadius:8,padding:'8px 14px',marginBottom:10,fontSize:11,color:'#fbbf24'}}>{'\u26A0\uFE0F'} <strong>Independent Model Estimate</strong> — Yield and depth values below are from the ERT simulation model (Logan 1964 approximation). See the <strong>Final Recommendation</strong> banner for the reconciled consensus answer.</div>
-              <p className="tab-desc">Comprehensive multi-method geophysical survey design: <strong>3D + 2D ERT, Seismic Refraction, GPR, FDEM, VES, Magnetics</strong>. AI inversion projections and equipment catalog. Target: {'\u2265'}90% drilling success rate.</p>
+              <p className="tab-desc">Comprehensive multi-method geophysical survey design: <strong>3D + 2D ERT, Seismic Refraction, GPR, FDEM, VES, Magnetics</strong>. AI inversion projections and equipment catalog. Target: {'≥'}90% drilling success rate.</p>
               {result.advancedGeophysics ? (() => {
                 const ag = result.advancedGeophysics as any;
                 const sra = ag.successRateAnalysis;
@@ -5459,7 +5520,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                           <div className="result-item"><span className="rl">Drill Depth</span><span className="rv">{integrated.drillSpec.optimalDepth_m}m</span></div>
                           <div className="result-item"><span className="rl">Casing Depth</span><span className="rv">{integrated.drillSpec.casingDepth_m}m</span></div>
                           <div className="result-item"><span className="rl">Screen</span><span className="rv">{integrated.drillSpec.screenInterval_m[0]}–{integrated.drillSpec.screenInterval_m[1]}m</span></div>
-                          <div className="result-item"><span className="rl">Expected Yield</span><span className="rv">{integrated.drillSpec.expectedYield_m3hr} m{'\u00B3'}/hr</span></div>
+                          <div className="result-item"><span className="rl">Expected Yield</span><span className="rv">{integrated.drillSpec.expectedYield_m3hr} m{'³'}/hr</span></div>
                           <div className="result-item"><span className="rl">Success Prob.</span><span className="rv" style={{color:'#22c55e',fontWeight:700}}>{integrated.drillSpec.successProbability_pct}%</span></div>
                           <div className="result-item"><span className="rl">Method</span><span className="rv">{integrated.drillSpec.drillingMethod}</span></div>
                           <div className="result-item"><span className="rl">Drill Cost Est.</span><span className="rv">${integrated.drillSpec.estimatedCost_usd.toLocaleString()}</span></div>
@@ -5630,7 +5691,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div>
               <h4 className="tab-title">{'\u2600\uFE0F'} Solar + Shelter + Structure Costing</h4>
               <div className="result-grid">
-                <div className="result-item"><span className="rl">Pump Power</span><span className="rv">{solar.pumpKw} kW</span></div>
+                <div className="result-item"><span className="rl">Pump Power</span><span className="rv">{solar.pumpKw} kW (head ≈ {solar.headM} m, assumed until test-pumped)</span></div>
                 <div className="result-item"><span className="rl">Runtime</span><span className="rv">{solar.runtime} hrs/day</span></div>
                 <div className="result-item"><span className="rl">Daily Energy Need</span><span className="rv">{solar.dailyKwh} kWh</span></div>
                 <div className="result-item"><span className="rl">Solar Panel Size</span><span className="rv">{solar.panelKwp} kWp</span></div>
@@ -5659,7 +5720,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div>
               <h4 className="tab-title">{'\u{1F4C8}'} ROI &amp; Payback Analysis</h4>
               <div className="roi-highlight">
-                <div className="roi-big"><div className="roi-big-value">{roi.paybackMonths}</div><div className="roi-big-label">Months to Payback (P50)</div></div>
+                <div className="roi-big"><div className="roi-big-value">{roi.paybackMonths >= 240 ? 'None' : roi.paybackMonths}</div><div className="roi-big-label">Months to Payback (P50)</div></div>
                 <div className="roi-big"><div className="roi-big-value">{roi.roi}%</div><div className="roi-big-label">Annual ROI</div></div>
                 <div className="roi-big"><div className="roi-big-value">{fmtUSD(roi.npv20)}</div><div className="roi-big-label">20-Year NPV (P50)</div></div>
               </div>
@@ -5669,23 +5730,23 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div style={{display:'grid',gridTemplateColumns:'repeat(3, 1fr)',gap:12,marginBottom:12}}>
                   <div style={{textAlign:'center',padding:'10px',borderRadius:8,background:'rgba(56,189,248,0.08)'}}>
                     <div style={{fontSize:11,color:'var(--text-tertiary)'}}>P50 Payback</div>
-                    <div style={{fontSize:20,fontWeight:700,color:'#38bdf8'}}>{roi.financialConfidence.paybackP50} mo</div>
-                    <div style={{fontSize:11,color:'var(--text-tertiary)'}}>({(roi.financialConfidence.paybackP50/12).toFixed(1)} yrs)</div>
+                    <div style={{fontSize:20,fontWeight:700,color:'#38bdf8'}}>{roi.financialConfidence.paybackP50 >= 240 ? 'None' : `${roi.financialConfidence.paybackP50} mo`}</div>
+                    <div style={{fontSize:11,color:'var(--text-tertiary)'}}>{roi.financialConfidence.paybackP50 >= 240 ? '(beyond 20 years)' : `(${(roi.financialConfidence.paybackP50/12).toFixed(1)} yrs)`}</div>
                   </div>
                   <div style={{textAlign:'center',padding:'10px',borderRadius:8,background:'rgba(251,191,36,0.08)'}}>
                     <div style={{fontSize:11,color:'var(--text-tertiary)'}}>P75 Payback</div>
-                    <div style={{fontSize:20,fontWeight:700,color:'#fbbf24'}}>{roi.financialConfidence.paybackP75} mo</div>
-                    <div style={{fontSize:11,color:'var(--text-tertiary)'}}>({(roi.financialConfidence.paybackP75/12).toFixed(1)} yrs)</div>
+                    <div style={{fontSize:20,fontWeight:700,color:'#fbbf24'}}>{roi.financialConfidence.paybackP75 >= 240 ? 'None' : `${roi.financialConfidence.paybackP75} mo`}</div>
+                    <div style={{fontSize:11,color:'var(--text-tertiary)'}}>{roi.financialConfidence.paybackP75 >= 240 ? '(beyond 20 years)' : `(${(roi.financialConfidence.paybackP75/12).toFixed(1)} yrs)`}</div>
                   </div>
                   <div style={{textAlign:'center',padding:'10px',borderRadius:8,background:'rgba(239,68,68,0.08)'}}>
                     <div style={{fontSize:11,color:'var(--text-tertiary)'}}>P90 Payback</div>
-                    <div style={{fontSize:20,fontWeight:700,color:'#ef4444'}}>{roi.financialConfidence.paybackP90} mo</div>
-                    <div style={{fontSize:11,color:'var(--text-tertiary)'}}>({(roi.financialConfidence.paybackP90/12).toFixed(1)} yrs)</div>
+                    <div style={{fontSize:20,fontWeight:700,color:'#ef4444'}}>{roi.financialConfidence.paybackP90 >= 240 ? 'None' : `${roi.financialConfidence.paybackP90} mo`}</div>
+                    <div style={{fontSize:11,color:'var(--text-tertiary)'}}>{roi.financialConfidence.paybackP90 >= 240 ? '(beyond 20 years)' : `(${(roi.financialConfidence.paybackP90/12).toFixed(1)} yrs)`}</div>
                   </div>
                 </div>
                 <div style={{fontSize:12,color:'var(--text-secondary)'}}>
-                  P75 scenario: Investment {fmtUSD(roi.financialConfidence.investmentRange.p75)} + low yield → payback in {roi.financialConfidence.paybackP75} months.
-                  P90 (worst case): Investment {fmtUSD(roi.financialConfidence.investmentRange.p90)} + 70% yield → payback in {roi.financialConfidence.paybackP90} months. NPV₂₀ at P90: {fmtUSD(roi.financialConfidence.npvP90)}.
+                  P75 scenario: Investment {fmtUSD(roi.financialConfidence.investmentRange.p75)} + low yield → {roi.financialConfidence.paybackP75 >= 240 ? 'no payback within 20 years' : `payback in ${roi.financialConfidence.paybackP75} months`}.
+                  P90 (worst case): Investment {fmtUSD(roi.financialConfidence.investmentRange.p90)} + 70% yield → {roi.financialConfidence.paybackP90 >= 240 ? 'no payback within 20 years' : `payback in ${roi.financialConfidence.paybackP90} months`}. NPV₂₀ at P90: {fmtUSD(roi.financialConfidence.npvP90)}.
                 </div>
               </div>
               <div className="result-grid">
@@ -5696,7 +5757,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div className="result-item"><span className="rl">Annual Revenue</span><span className="rv">{fmtUSD(roi.annualRevenue)}</span></div>
                 <div className="result-item"><span className="rl">Annual Maintenance</span><span className="rv">{fmtUSD(roi.maintenanceCost)}</span></div>
               </div>
-              <div className="roi-note">This analysis converts the borehole from an expense into a <strong>business decision engine</strong>. Payback in {roi.paybackMonths} months means the borehole pays for itself in ~{(roi.paybackMonths/12).toFixed(1)} years.</div>
+              <div className="roi-note">{roi.paybackMonths >= 240
+                ? 'At this yield and water value the borehole does not pay back within 20 years. That does not mean it is not worth drilling — a household or farm may need the water regardless — but it should not be justified on water sales alone.'
+                : `At this yield and water value the borehole pays for itself in about ${(roi.paybackMonths / 12).toFixed(1)} years (${roi.paybackMonths} months).`}{' '}
+                The water value used is an assumption; replace it with what you pay today for a firmer figure.</div>
             </div>
           )}
 
@@ -5862,7 +5926,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div className="result-item"><span className="rl">Best Case</span><span className="rv">${result.riskDecision.bestCase_USD.toLocaleString()}</span></div>
                     <div className="result-item"><span className="rl">Worst Case</span><span className="rv" style={{color:'#ef4444'}}>${result.riskDecision.worstCase_USD.toLocaleString()}</span></div>
                     <div className="result-item"><span className="rl">ROI</span><span className="rv">{(result.riskDecision.roi*100).toFixed(0)}%</span></div>
-                    <div className="result-item"><span className="rl">Payback</span><span className="rv">{result.riskDecision.paybackMonths} months</span></div>
+                    <div className="result-item"><span className="rl">Payback</span><span className="rv">{result.riskDecision.paybackMonths >= 240 ? 'No payback within 20 years' : `${result.riskDecision.paybackMonths} months`}</span></div>
                     <div className="result-item"><span className="rl">Risk Level</span><span className="rv" style={{textTransform:'uppercase'}}>{result.riskDecision.overallRiskLevel}</span></div>
                     <div className="result-item"><span className="rl">Confidence Grade</span><span className="rv">{result.riskDecision.confidenceGrade}</span></div>
                   </div>
@@ -6693,7 +6757,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div style={{marginTop:12}}>
                       <div style={{fontSize:11,color:'#38bdf8',fontWeight:600,marginBottom:4}}>Recommendations:</div>
                       {ert.confidence.recommendations.map((r: string, i: number) => (
-                        <div key={i} style={{fontSize:11,color:'var(--text-secondary)',padding:'2px 0'}}>{'\u2192'} {r}</div>
+                        <div key={i} style={{fontSize:11,color:'var(--text-secondary)',padding:'2px 0'}}>{'→'} {r}</div>
                       ))}
                     </div>
                   )}
@@ -6945,7 +7009,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <h4 style={{color:'#d97706',marginBottom:8}}>{'\u{1F4E1}'} Regional Estimate Sources</h4>
                       <p style={{fontSize:12,color:'var(--text-secondary)',marginBottom:8}}>The following sources used latitude-based regional estimates. Adding field survey data (ERT, pump test) will upgrade these to measured values:</p>
                       {dq.fallbackSources.map((fb: string, i: number) => (
-                        <div key={i} style={{padding:6,borderRadius:6,background:'rgba(245,158,11,0.04)',marginBottom:4,fontSize:12,color:'var(--text-muted)'}}>{'\u2022'} {fb}</div>
+                        <div key={i} style={{padding:6,borderRadius:6,background:'rgba(245,158,11,0.04)',marginBottom:4,fontSize:12,color:'var(--text-muted)'}}>{'•'} {fb}</div>
                       ))}
                     </div>
                   )}
@@ -7139,7 +7203,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <div><strong>Casing Depth:</strong> {dd.casingDepth_m}m</div>
                       <div><strong>Screen Interval:</strong> {dd.screenInterval_m[0]}-{dd.screenInterval_m[1]}m</div>
                       <div><strong>Pump Type:</strong> {dd.pumpType}</div>
-                      <div><strong>Estimated Cost:</strong> ${dd.estimatedCost_usd.toLocaleString()}</div>
+                      <div><strong>Estimated Cost:</strong> {fmtUSD(cost.total)} <span style={{opacity:0.7}}>(same basis as the summary)</span></div>
                     </div>
                   </div>
                   {dd.alternativePoints?.length ? (
@@ -7737,7 +7801,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{padding:12,borderRadius:10,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.06)'}}>
                     {m.limitations.map((l, i) => (
                       <div key={i} style={{fontSize:11,padding:'4px 0',paddingLeft:16,position:'relative'}}>
-                        <span style={{position:'absolute',left:0,color:'var(--text-muted)'}}>{'\u2022'}</span>{l}
+                        <span style={{position:'absolute',left:0,color:'var(--text-muted)'}}>{'•'}</span>{l}
                       </div>
                     ))}
                   </div>
@@ -7747,7 +7811,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{padding:12,borderRadius:10,background:'rgba(34,197,94,0.06)',border:'1px solid rgba(34,197,94,0.2)'}}>
                     {m.recommendations.map((r, i) => (
                       <div key={i} style={{fontSize:11,padding:'4px 0',paddingLeft:16,position:'relative'}}>
-                        <span style={{position:'absolute',left:0,color:'#16a34a'}}>{'\u2192'}</span>{r}
+                        <span style={{position:'absolute',left:0,color:'#16a34a'}}>{'→'}</span>{r}
                       </div>
                     ))}
                   </div>
@@ -7782,11 +7846,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         <div className="result-item"><span className="rl">Depth RMSE</span><span className="rv">{cv.depthRMSE_m}m</span></div>
                         <div className="result-item"><span className="rl">Depth MAE</span><span className="rv">{cv.depthMAE_m}m</span></div>
                         <div className="result-item"><span className="rl">Depth MAPE</span><span className="rv" style={{color:cv.depthMAPE_pct<20?'#16a34a':cv.depthMAPE_pct<35?'#f59e0b':'#dc2626'}}>{cv.depthMAPE_pct}%</span></div>
-                        <div className="result-item"><span className="rl">Depth R{'\u00B2'}</span><span className="rv">{cv.depthR2}</span></div>
+                        <div className="result-item"><span className="rl">Depth R{'²'}</span><span className="rv">{cv.depthR2}</span></div>
                         <div className="result-item"><span className="rl">Yield RMSE</span><span className="rv">{cv.yieldRMSE_m3hr} m3/hr</span></div>
                         <div className="result-item"><span className="rl">Yield MAE</span><span className="rv">{cv.yieldMAE_m3hr} m3/hr</span></div>
                         <div className="result-item"><span className="rl">Yield MAPE</span><span className="rv" style={{color:cv.yieldMAPE_pct<30?'#16a34a':cv.yieldMAPE_pct<50?'#f59e0b':'#dc2626'}}>{cv.yieldMAPE_pct}%</span></div>
-                        <div className="result-item"><span className="rl">Yield R{'\u00B2'}</span><span className="rv">{cv.yieldR2}</span></div>
+                        <div className="result-item"><span className="rl">Yield R{'²'}</span><span className="rv">{cv.yieldR2}</span></div>
                       </div>
                       <div style={{display:'flex',gap:16,marginBottom:12,fontSize:12}}>
                         <span>Actual success rate: <strong>{cv.successRateActual_pct}%</strong></span>
@@ -8039,7 +8103,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   {pinn.localExplanation.confidenceDrivers.map((d: any,i: number)=>(
                     <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'3px 0',fontSize:11}}>
                       <span>{d.factor} <span style={{color:'var(--text-muted)',fontSize:10}}>({d.source})</span></span>
-                      <span style={{color:d.effect==='increases'?'#22c55e':d.effect==='decreases'?'#ef4444':'#fbbf24',fontWeight:600}}>{d.effect==='increases'?'\u2191':d.effect==='decreases'?'\u2193':'\u2194'} {d.effect}</span>
+                      <span style={{color:d.effect==='increases'?'#22c55e':d.effect==='decreases'?'#ef4444':'#fbbf24',fontWeight:600}}>{d.effect==='increases'?'↑':d.effect==='decreases'?'↓':'\u2194'} {d.effect}</span>
                     </div>
                   ))}
                 </div>
@@ -9100,7 +9164,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           </div>
         </div>
         <div className="header-right">
-          <div className="header-badge" style={{background:overallHealth>=90?'rgba(34,197,94,0.2)':'rgba(245,158,11,0.2)',border:`1px solid ${overallHealth>=90?'rgba(34,197,94,0.3)':'rgba(245,158,11,0.3)'}`, color:overallHealth>=90?'#22c55e':'#f59e0b'}}>{overallHealth}% Online</div>
+          <div className="header-badge" style={{background:'rgba(56,189,248,0.15)',border:'1px solid rgba(56,189,248,0.3)',color:'#38bdf8'}}>Free desktop pre-screen</div>
           {activeView !=='dashboard' && <button className="btn btn-ghost" onClick={()=>{setActiveView('dashboard');setAnalyzing(false);}}>Dashboard</button>}
         </div>
       </header>
