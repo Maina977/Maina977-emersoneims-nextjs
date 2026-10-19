@@ -7,9 +7,10 @@
  * was true. Unlike the on-page stats, metadata cannot read the index at request
  * time, so ANY number written here will drift again.
  *
- * The claims are therefore qualitative and permanently true: manufacturer-
- * curated codes plus range-based coverage, named controller brands, free, no
- * signup. Nothing about search performance depended on the digits.
+ * The claims are therefore qualitative and permanently true: hand-written
+ * controller alarm guides plus the J1939 engine-code reference, named brands,
+ * free. (2026-10-18: the range-based template codes and the "manufacturer-
+ * curated" wording were removed; see lib/generator-oracle/controllerFaultCodes.ts.)
  *
  * Live counts belong on the page, fetched from /api/generator-oracle/health,
  * where they cannot go out of date.
@@ -47,7 +48,7 @@ export const metadata: Metadata = {
     // searcher gets and the fact it costs nothing; the brand names that make it
     // credible (DSE, ComAp, SmartGen) stay, the marketing word "intelligence"
     // goes. Full detail still lives in the page body.
-    'Look up any generator fault code free. DeepSea (DSE), ComAp, Woodward, SmartGen, CAT PowerWizard and Datakom codes, with reset steps and Kenya engineer support.',
+    'Free generator fault-code lookup: DSE, ComAp, SmartGen, Woodward and CAT alarms plus J1939 engine codes, with checks and Kenya engineer support.',
   keywords: [
     'generator diagnostics Kenya',
     'generator fault codes',
@@ -68,9 +69,9 @@ export const metadata: Metadata = {
   applicationName: 'Generator Oracle',
   alternates: { canonical: URL },
   openGraph: {
-    title: 'Generator Oracle — Generator Diagnostic Intelligence',
+    title: 'Generator Oracle — Generator Fault Codes & Diagnosis',
     description:
-      'Manufacturer-curated fault codes, plus range-based coverage of every controller code number, for DSE, ComAp, Woodward, SmartGen and PowerWizard. Built and maintained by Kenya generator engineers. Free to use.',
+      'Controller alarms for DSE, ComAp, Woodward, SmartGen and CAT PowerWizard, plus J1939 engine codes, explained by Kenya generator engineers. Free to use.',
     url: URL,
     type: 'website',
     locale: 'en_KE',
@@ -79,8 +80,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Generator Oracle — Generator Diagnostic Intelligence',
-    description: 'Curated fault codes plus full code-number coverage. Reset pathways. Engineer escalation. Free.',
+    title: 'Generator Oracle — Generator Fault Codes & Diagnosis',
+    description: 'Controller alarms and J1939 engine codes explained. Reset steps. Engineer escalation. Free.',
     images: [`${SITE}/og-image.jpg`],
     site: '@EmersonEIMS',
     creator: '@EmersonEIMS',
@@ -93,8 +94,8 @@ export const viewport: Viewport = {
   themeColor: '#f59e0b',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // maximumScale: 1 / userScalable: false were removed (2026-10-18): blocking
+  // pinch-zoom fails WCAG 1.4.4 and hurts technicians reading small print.
 };
 
 export default function GeneratorOracleLayout({ children }: { children: React.ReactNode }) {
@@ -103,7 +104,7 @@ export default function GeneratorOracleLayout({ children }: { children: React.Re
       <FlagshipProductSchema
         name="Generator Oracle"
         url={URL}
-        description="Generator fault & controller diagnostic intelligence: manufacturer-curated fault codes plus range-based code-number coverage for DSE, ComAp, Woodward, SmartGen and PowerWizard, with reset pathways and Kenya engineer escalation."
+        description="Generator fault-code lookup: hand-written controller alarm guides for DSE, ComAp, Woodward, SmartGen and CAT PowerWizard plus J1939 engine codes, with reset steps and Kenya engineer escalation."
         category="Generator Diagnostics"
         applicationCategory="EngineeringApplication"
         keywords={['Generator Diagnostics', 'Fault Codes', 'DSE', 'ComAp', 'Woodward', 'SmartGen', 'PowerWizard', 'Cummins', 'Voltka']}

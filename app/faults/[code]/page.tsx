@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { FAULT_CODES } from '@/lib/data/faultCodes';
+import { FAULT_CODES, faultLabel } from '@/lib/data/faultCodes';
 import { FMI_BY_SPN } from '@/lib/data/faultFmi';
 import FaultCodeRepairLinks from '@/components/repair-centre/FaultCodeRepairLinks';
 
@@ -9,7 +9,8 @@ import FaultCodeRepairLinks from '@/components/repair-centre/FaultCodeRepairLink
  * Individual Fault Code Page
  *
  * SEO-optimized page for each fault code.
- * Target searches: "Cummins SPN 111", "DSE E020 error", etc.
+ * Numbered codes (SPN, Cummins fault codes) print their number; DSE / ComAp
+ * text alarms print the alarm name via faultLabel() — see lib/data/faultCodes.ts.
  */
 
 interface Props {
@@ -62,12 +63,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
    * in an ellipsis followed by boilerplate. It now leads with the answer and
    * states the action, inside the limit.
    */
+  // Text alarms have no number, so their title names the alarm instead.
+  const title = fault.alarm
+    ? `${fault.brand} ${fault.title} Alarm — Causes & Fix`
+    : `${fault.brand} ${fault.code}: ${fault.title} — Causes & Fix`;
+  const description = fault.alarm
+    ? `What the ${fault.brand} "${fault.title}" alarm means, likely causes, how to diagnose it, and the steps to clear it. Generator support across Kenya.`
+    : `${fault.brand} ${fault.code} means ${fault.title}. Likely causes, how to diagnose it, and the steps to clear the fault. Generator support across Kenya.`;
   return {
-    title: `${fault.brand} ${fault.code}: ${fault.title} — Causes & Fix`,
-    description: `${fault.brand} ${fault.code} means ${fault.title}. Likely causes, how to diagnose it, and the steps to clear the fault. Generator support across Kenya.`,
+    title,
+    description,
     keywords: fault.searchKeywords?.join(', '),
     openGraph: {
-      title: `${fault.brand} ${fault.code} - ${fault.title}`,
+      title: fault.alarm ? `${fault.brand} ${fault.title} alarm` : `${fault.brand} ${fault.code} - ${fault.title}`,
       description: fault.description.slice(0, 200),
       type: 'article',
     },
@@ -116,7 +124,8 @@ export default async function FaultCodePage({ params }: Props) {
     (f) => fault.relatedCodes?.includes(f.code) || f.category === fault.category
   ).slice(0, 4);
 
-  const whatsappLink = `https://wa.me/254768860665?text=Hi%2C%20I%20need%20help%20with%20${fault.brand}%20fault%20code%20${encodeURIComponent(fault.code)}`;
+  const label = faultLabel(fault);
+  const whatsappLink = `https://wa.me/254768860665?text=${encodeURIComponent(`Hi, I need help with ${fault.brand} ${fault.alarm ? `"${fault.title}" alarm` : `fault code ${fault.code}`}`)}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
@@ -130,15 +139,26 @@ export default async function FaultCodePage({ params }: Props) {
               <li>/</li>
               <li><Link href="/faults" className="hover:text-amber-400">Fault Codes</Link></li>
               <li>/</li>
-              <li className="text-white">{fault.code}</li>
+              <li className="text-white">{label}</li>
             </ol>
           </nav>
 
           <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
             <div>
               <span className="text-sm text-gray-500 uppercase tracking-wider">{fault.brand}</span>
-              <h1 className="text-4xl md:text-5xl font-bold text-amber-400 mb-2">{fault.code}</h1>
-              <p className="text-2xl text-white font-semibold">{fault.title}</p>
+              {fault.alarm ? (
+                <>
+                  <h1 className="text-4xl md:text-5xl font-bold text-amber-400 mb-2">{fault.title}</h1>
+                  <p className="text-lg text-gray-400">
+                    {fault.brand} controllers show this as a text alarm on the display, not as a numbered code.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-4xl md:text-5xl font-bold text-amber-400 mb-2">{fault.code}</h1>
+                  <p className="text-2xl text-white font-semibold">{fault.title}</p>
+                </>
+              )}
             </div>
             <div className={`px-4 py-2 rounded-lg border ${severity.bg} ${severity.border}`}>
               <span className={`${severity.text} font-bold flex items-center gap-2`}>
@@ -237,7 +257,7 @@ export default async function FaultCodePage({ params }: Props) {
                 </div>
                 <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
                   <p className="text-amber-400 text-sm">
-                    <strong>Need parts?</strong> We stock genuine {fault.brand} parts with next-day delivery in Nairobi.
+                    <strong>Need parts?</strong> Call us with your engine or controller model and we will confirm what we can supply and when.
                     <a href="tel:+254768860665" className="underline ml-1">Call +254 768 860 665</a>
                   </p>
                 </div>
@@ -272,7 +292,7 @@ export default async function FaultCodePage({ params }: Props) {
               <div className="p-6 bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl">
                 <h3 className="text-lg font-bold mb-3">Need Expert Help?</h3>
                 <p className="text-gray-400 text-sm mb-4">
-                  Our engineers have fixed 1,000+ {fault.brand} generators. Get professional diagnosis now.
+                  Send us the code or alarm and what the generator is doing, and one of our engineers will help you diagnose it.
                 </p>
                 <div className="space-y-3">
                   <a
@@ -295,9 +315,9 @@ export default async function FaultCodePage({ params }: Props) {
 
               {/* Generator Oracle CTA */}
               <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
-                <h3 className="text-lg font-bold mb-3">Advanced Diagnostics</h3>
+                <h3 className="text-lg font-bold mb-3">Look Up More Codes</h3>
                 <p className="text-gray-400 text-sm mb-4">
-                  Use Generator Oracle for AI-powered diagnosis, wiring diagrams, and repair manuals.
+                  Search other controller alarms and engine fault codes, with troubleshooting steps, in Generator Oracle.
                 </p>
                 <Link
                   href="/generator-oracle"
@@ -318,7 +338,7 @@ export default async function FaultCodePage({ params }: Props) {
                         href={`/faults/${related.code.toLowerCase()}`}
                         className="block p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors"
                       >
-                        <span className="text-amber-400 font-bold">{related.code}</span>
+                        <span className="text-amber-400 font-bold">{related.alarm ? `${related.brand} alarm` : related.code}</span>
                         <span className="text-gray-400 text-sm ml-2">{related.title}</span>
                       </Link>
                     ))}
@@ -344,7 +364,7 @@ export default async function FaultCodePage({ params }: Props) {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "HowTo",
-            "name": `How to Fix ${fault.brand} ${fault.code} - ${fault.title}`,
+            "name": fault.alarm ? `How to Fix the ${fault.brand} ${fault.title} Alarm` : `How to Fix ${fault.brand} ${fault.code} - ${fault.title}`,
             "description": fault.description,
             "step": fault.troubleshootingSteps.map((step, i) => ({
               "@type": "HowToStep",

@@ -583,8 +583,8 @@ export default function RealTimeMonitoringPanel() {
             <span className="text-3xl">📊</span>
           </motion.div>
           <div>
-            <h2 className="text-xl font-bold text-cyan-400 uppercase tracking-wider">Real-Time Monitoring</h2>
-            <p className="text-sm text-slate-500">Live voltage, frequency, load & fuel monitoring</p>
+            <h2 className="text-xl font-bold text-cyan-400 uppercase tracking-wider">Monitoring Simulator</h2>
+            <p className="text-sm text-slate-500">Simulated voltage, frequency, load and fuel, for training. Not connected to your generator.</p>
           </div>
         </div>
 
@@ -595,7 +595,7 @@ export default function RealTimeMonitoringPanel() {
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
             />
-            <span className="text-xs text-slate-400">{isConnected ? 'LIVE' : 'OFFLINE'}</span>
+            <span className="text-xs text-slate-400">{isConnected ? 'SIMULATED' : 'PAUSED'}</span>
           </div>
           <span className="text-xs text-slate-500">
             Updated: {lastUpdate.toLocaleTimeString()}

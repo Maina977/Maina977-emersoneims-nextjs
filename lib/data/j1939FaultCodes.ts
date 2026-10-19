@@ -25,6 +25,10 @@
  *
  * SCOPE AND HONESTY
  * =================
+ * 2026-10-18: SPN 609, 615, 634, 638, 640, 644, 1043 and 1132 were removed —
+ * their names could not be confirmed against a published J1939 source. Add an
+ * SPN back only with its J1939-71 / J1939DA definition in hand.
+ *
  * Only SPNs whose parameter definition is well established are listed, and each
  * SPN is paired only with the FMIs that are physically meaningful for it: a
  * pressure sensor can read high, low, open-circuit or short-circuit; it cannot
@@ -219,7 +223,6 @@ const SPN: SpnDef[] = [
   // ── Lubrication and crankcase ──────────────────────────────────────────────
   { spn: 101, name: 'Crankcase Pressure', category: 'Lubrication', note: 'Rising crankcase pressure is the classic indicator of ring or liner blow-by.', fmis: RANGE_AND_ELEC },
   { spn: 104, name: 'Turbocharger Lube Oil Pressure', category: 'Lubrication', note: 'Turbo bearing failures usually begin as an oil supply problem.', fmis: RANGE_AND_ELEC },
-  { spn: 1043, name: 'Auxiliary Water Pump Pressure', category: 'Cooling', note: 'Applies where a separate circuit serves an aftercooler or auxiliary load.', fmis: RANGE_AND_ELEC },
 
   // ── Fuel system ───────────────────────────────────────────────────────────
   { spn: 96, name: 'Fuel Level 1', category: 'Fuel', note: 'On standby sets a level fault often masks a theft or leak problem rather than a sender fault.', fmis: RANGE_AND_ELEC },
@@ -228,20 +231,17 @@ const SPN: SpnDef[] = [
   { spn: 1349, name: 'Injector Metering Rail 2 Pressure', category: 'Fuel', note: 'Second rail on larger V-configuration engines.', fmis: RANGE_AND_ELEC },
   { spn: 164, name: 'Injection Control Pressure', category: 'Fuel', note: 'Hydraulically actuated injection systems regulate this actively.', fmis: RANGE_AND_ELEC },
   { spn: 632, name: 'Fuel Shutoff Valve', category: 'Fuel', note: 'A failed shutoff valve prevents starting or prevents stopping — both are serious.', fmis: ACTUATOR },
-  { spn: 638, name: 'Fuel Rack Position', category: 'Fuel', note: 'Mechanical governor interface; check linkage freedom before the actuator.', fmis: ACTUATOR },
   { spn: 250, name: 'Engine Total Fuel Used', category: 'Fuel', note: 'Cumulative counter, useful for consumption trending against load.', fmis: [2, 9, 19] },
 
   // ── Air, boost and turbocharger ───────────────────────────────────────────
   { spn: 103, name: 'Turbocharger 1 Speed', category: 'Air Intake', note: 'Overspeed or erratic turbo speed precedes bearing failure.', fmis: RANGE_AND_ELEC },
   { spn: 132, name: 'Engine Air Mass Flow Rate', category: 'Air Intake', note: 'Used for fuelling and emissions control; a drifting reading skews both.', fmis: RANGE_AND_ELEC },
   { spn: 1127, name: 'Turbocharger 1 Boost Pressure', category: 'Air Intake', note: 'Compare against the engine spec card at full load.', fmis: RANGE_AND_ELEC },
-  { spn: 1132, name: 'Intake Manifold 2 Temperature', category: 'Air Intake', note: 'Second bank on V-configuration engines.', fmis: RANGE_AND_ELEC },
   { spn: 1176, name: 'Turbocharger 1 Compressor Inlet Pressure', category: 'Air Intake', note: 'A low reading points at intake restriction upstream of the turbo.', fmis: RANGE_AND_ELEC },
   { spn: 1180, name: 'Turbocharger 1 Turbine Inlet Temperature', category: 'Exhaust', note: 'The most direct indicator of thermal overload on the turbine.', fmis: RANGE_AND_ELEC },
   { spn: 1184, name: 'Turbocharger 1 Turbine Outlet Temperature', category: 'Exhaust', note: 'Compared with inlet temperature to assess turbine work.', fmis: RANGE_AND_ELEC },
   { spn: 2629, name: 'Turbocharger 1 Compressor Outlet Temperature', category: 'Air Intake', note: 'High outlet temperature with normal boost suggests compressor inefficiency.', fmis: RANGE_AND_ELEC },
   { spn: 52, name: 'Engine Intercooler Temperature', category: 'Air Intake', note: 'Charge-air cooling directly limits available power in hot engine rooms.', fmis: RANGE_AND_ELEC },
-  { spn: 615, name: 'Compressor Bypass Actuator', category: 'Air Intake', note: 'Control-side fault on compressor bypass where fitted.', fmis: ACTUATOR },
 
   // ── Exhaust and aftertreatment ────────────────────────────────────────────
   { spn: 1209, name: 'Exhaust Gas Pressure', category: 'Exhaust', note: 'High back-pressure raises EGT and fuel consumption; check silencer and ducting.', fmis: RANGE_AND_ELEC },
@@ -267,9 +267,7 @@ const SPN: SpnDef[] = [
   { spn: 515, name: 'Engine Desired Operating Speed', category: 'Speed & Position', note: 'Mismatch against actual speed indicates a governing problem.', fmis: [2, 9, 19] },
   { spn: 189, name: 'Engine Rated Speed', category: 'Speed & Position', note: 'Configuration parameter; a wrong value affects the whole control model.', fmis: [2, 13, 19] },
   { spn: 188, name: 'Engine Idle Speed', category: 'Speed & Position', note: 'Configuration parameter for the low idle point.', fmis: [2, 13, 19] },
-  { spn: 644, name: 'External Speed Command Input', category: 'Control', note: 'On gensets this is how the controller asks for speed; check before blaming the governor.', fmis: RANGE_AND_ELEC },
   { spn: 3464, name: 'Engine Throttle Actuator Control', category: 'Control', note: 'Distinguish an electrical actuator fault from a mechanically stuck throttle.', fmis: ACTUATOR },
-  { spn: 634, name: 'Timing Actuator', category: 'Injection', note: 'Injection timing control fault.', fmis: ACTUATOR },
 
   // ── Misfire and combustion ────────────────────────────────────────────────
   { spn: 1322, name: 'Engine Misfire — Multiple Cylinders', category: 'Injection', note: 'Multiple-cylinder misfire points at fuel supply or air rather than one injector.', fmis: [7, 11, 31] },
@@ -302,7 +300,6 @@ const SPN: SpnDef[] = [
   { spn: 1110, name: 'Engine Protection System Has Shutdown Engine', category: 'Protection', note: 'The engine was stopped by its own protection. Find the originating fault before restarting.', fmis: [31] },
   { spn: 970, name: 'Engine Auxiliary Shutdown Switch', category: 'Protection', note: 'External shutdown input; check the field wiring and the device driving it.', fmis: [2, 3, 4, 11, 31] },
   { spn: 971, name: 'Engine External Fuel Derate Input', category: 'Protection', note: 'External request to reduce fuelling; verify the requesting device.', fmis: [2, 3, 4, 11, 31] },
-  { spn: 640, name: 'External Engine Protection Input', category: 'Protection', note: 'Site protection signal wired into the ECU.', fmis: [2, 3, 4, 11, 31] },
   { spn: 1237, name: 'Engine Shutdown Override Switch', category: 'Protection', note: 'Override circuits must be proven before they are relied upon in an emergency.', fmis: [2, 3, 4, 11, 31] },
   { spn: 623, name: 'Red Stop Lamp', category: 'Protection', note: 'Indicates a stop-now condition is active.', fmis: [3, 4, 5, 6, 11, 31] },
   { spn: 624, name: 'Amber Warning Lamp', category: 'Protection', note: 'Indicates a non-critical fault is active.', fmis: [3, 4, 5, 6, 11, 31] },
@@ -313,7 +310,6 @@ const SPN: SpnDef[] = [
   { spn: 975, name: 'Engine Fan Speed', category: 'Cooling', note: 'Compare commanded against actual fan speed when investigating overheating.', fmis: RANGE_AND_ELEC },
 
   // ── Controller, memory and network ────────────────────────────────────────
-  { spn: 609, name: 'Controller 2', category: 'Control', note: 'Secondary control module self-reported fault.', fmis: [2, 11, 12, 13, 31] },
   { spn: 628, name: 'Program Memory', category: 'Control', note: 'Memory faults after a firmware operation usually mean an interrupted flash.', fmis: [2, 12, 13, 31] },
   { spn: 631, name: 'Calibration Module', category: 'Control', note: 'Verify the calibration part number matches the engine build.', fmis: [2, 12, 13, 31] },
   { spn: 625, name: 'Proprietary Data Link', category: 'Control', note: 'Manufacturer-specific link between modules.', fmis: NETWORK },

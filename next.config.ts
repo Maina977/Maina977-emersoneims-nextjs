@@ -488,6 +488,56 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       /*
+       * FAULT-CODE PAGES CORRECTED (2026-10-18 tool audit). See the header of
+       * lib/data/faultCodes.ts.
+       *  - spn-111 / spn-115 taught the wrong meaning: SPN 111 is coolant level
+       *    and SPN 115 is alternator current. Their content is Cummins FAULT
+       *    CODE 111 / 115 (SPN 629 FMI 12, SPN 612 FMI 2), now at its own URL.
+       *  - DSE and ComAp show text alarms; the E0xx / A0xx numbers in the old
+       *    URLs were invented. Same content, plain-name URLs.
+       *  - spn-1514, spn-3556 and perkins-111/115/2387 were removed (meaning
+       *    wrong or unverifiable); they go to the fault-code hub.
+       */
+      ...([
+        ['spn-111', 'cummins-111'],
+        ['spn-115', 'cummins-115'],
+        ['dse-e020', 'dse-fail-to-start'],
+        ['dse-e040', 'dse-underspeed'],
+        ['dse-e070', 'dse-low-oil-pressure'],
+        ['dse-e090', 'dse-low-fuel-level'],
+        ['dse-e100', 'dse-high-coolant-temperature'],
+        ['dse-e110', 'dse-emergency-stop'],
+        ['dse-e120', 'dse-generator-over-voltage'],
+        ['dse-e125', 'dse-generator-under-voltage'],
+        ['dse-e130', 'dse-reverse-power'],
+        ['dse-e140', 'dse-earth-fault'],
+        ['comap-a001', 'comap-low-oil-pressure'],
+        ['comap-a015', 'comap-overspeed'],
+        ['comap-a020', 'comap-high-coolant-temperature'],
+        ['comap-a030', 'comap-start-fail'],
+        ['comap-a040', 'comap-generator-over-frequency'],
+        ['comap-a050', 'comap-low-battery-voltage'],
+        ['comap-a060', 'comap-speed-signal-lost'],
+      ] as const).map(([from, to]) => ({ source: `/faults/${from}`, destination: `/faults/${to}`, permanent: true })),
+      ...['spn-1514', 'spn-3556', 'perkins-111', 'perkins-115', 'perkins-2387'].map((from) => ({
+        source: `/faults/${from}`,
+        destination: '/faults',
+        permanent: true,
+      })),
+      /*
+       * TOOL DUPLICATES -> THE REAL TOOL (2026-10-18 tool audit).
+       * /tools/* were thin marketing copies of each tool with claims the tools
+       * do not make good (sample outputs for calculators that do not exist,
+       * "400K+ codes", "AI-powered"), and each "Launch" button linked back to
+       * itself. /generator-oracle/tools was a client-side "Redirecting..." page
+       * that Google could index. One URL per tool now.
+       */
+      { source: '/tools/generator-oracle', destination: '/generator-oracle', permanent: true },
+      { source: '/tools/aquascan-pro', destination: '/aquascan-pro-v3', permanent: true },
+      { source: '/tools/solar-genius-pro', destination: '/solar-genius-pro', permanent: true },
+      { source: '/tools/pro-building-suite', destination: '/solutions/building', permanent: true },
+      { source: '/generator-oracle/tools', destination: '/generator-oracle', permanent: true },
+      /*
        * ═══════════════════════════════════════════════════════════════
        * BLOG DUPLICATES -> THE DEEPER ARTICLE ON THE SAME QUESTION
        * ═══════════════════════════════════════════════════════════════

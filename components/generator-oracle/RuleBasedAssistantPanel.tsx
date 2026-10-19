@@ -10,7 +10,8 @@
  *
  * It is NOT generative AI. It does not hallucinate. Every response is
  * sourced from one of:
- *   - the curated fault-code database (POST /api/generator-oracle/diagnose)
+ *   - the published Repair Centre guides and our hand-written controller alarm
+ *     descriptions (POST /api/generator-oracle/diagnose)
  *   - the typed fault-code lookup index (GET /api/generator-oracle/fault-code)
  *   - the asset card the user supplied
  *   - deterministic threshold rules in `ai-diagnostic-engine.ts`
@@ -22,15 +23,20 @@
  */
 
 import React, { useCallback, useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   diagnoseSymptoms,
   lookupFaultCode,
+  codeLabel,
+  modelsLabel,
   type RankedFault,
+  type RankedGuide,
   type FaultLookupResponse,
   OracleApiError,
 } from '@/lib/generator-oracle/client/oracleClient';
 import type { AssetCardValue } from '@/components/generator-oracle/AssetCardGate';
+import { waLink, COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from '@/lib/serviceConnect/actions';
 
 export type RuleBasedMode = 'chat' | 'visual' | 'analysis';
 
@@ -46,7 +52,7 @@ const MODE_HEADERS: Record<RuleBasedMode, { title: string; subtitle: string; emo
   chat: {
     title: 'Expert Engineering Assistant — Rule-Based',
     subtitle:
-      'Symptom-driven diagnosis using the curated fault-code library. Deterministic. No generative AI.',
+      'Describe the symptoms and get the matching diagnostic guides and controller alarms from our library. Deterministic. No generative AI.',
     emoji: '🛠️',
   },
   visual: {
@@ -58,7 +64,7 @@ const MODE_HEADERS: Record<RuleBasedMode, { title: string; subtitle: string; emo
   analysis: {
     title: 'Cross-Parameter Engineering Analysis — Rule-Based',
     subtitle:
-      'Threshold-driven ranked diagnosis from the curated fault library. Deterministic. No generative AI.',
+      'Ranked diagnosis from our diagnostic guides and controller alarm library. Deterministic. No generative AI.',
     emoji: '🧪',
   },
 };
@@ -91,6 +97,7 @@ export default function RuleBasedAssistantPanel({
   const [symptoms, setSymptoms] = useState('');
   const [faultCode, setFaultCode] = useState('');
   const [ranked, setRanked] = useState<RankedFault[] | null>(null);
+  const [guides, setGuides] = useState<RankedGuide[]>([]);
   const [lookup, setLookup] = useState<FaultLookupResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,6 +108,7 @@ export default function RuleBasedAssistantPanel({
       setBusy(true);
       setError(null);
       setRanked(null);
+      setGuides([]);
       try {
         const res = await diagnoseSymptoms({
           symptoms: symptomList,
@@ -110,6 +118,7 @@ export default function RuleBasedAssistantPanel({
           topN: 10,
         });
         setRanked(res.ranked);
+        setGuides(res.guides ?? []);
       } catch (e) {
         const msg =
           e instanceof OracleApiError
@@ -291,14 +300,14 @@ export default function RuleBasedAssistantPanel({
       {/* Fault code lookup (all modes) */}
       <div className="mt-6 space-y-2">
         <label className="block text-sm font-semibold text-slate-200" htmlFor="rb-faultcode">
-          Or look up a specific fault code (curated library)
+          Or look up a specific fault code
         </label>
         <div className="flex gap-2">
           <input
             id="rb-faultcode"
             value={faultCode}
             onChange={(e) => setFaultCode(e.target.value)}
-            placeholder="e.g. SPN 100, P0217, 0001, A1.04"
+            placeholder="e.g. SPN 100 FMI 1, 110-0, low oil pressure"
             className="flex-1 rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
           />
           <button
@@ -322,16 +331,35 @@ export default function RuleBasedAssistantPanel({
         </div>
       )}
 
-      {/* Ranked results */}
+      {/* Diagnostic guides — the primary answer for mechanical symptoms */}
+      {ranked && guides.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-emerald-300 mb-2">
+            Start here: diagnostic guides for these symptoms
+          </h3>
+          <ul className="space-y-2">
+            {guides.map((g) => (
+              <li key={g.url} className="rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-3">
+                <Link href={g.url} className="font-semibold text-sm text-emerald-200 hover:text-emerald-100 underline-offset-2 hover:underline">
+                  {g.title} →
+                </Link>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">{g.summary}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Ranked controller alarms */}
       {ranked && (
         <div className="mt-6">
           <h3 className="text-sm font-bold uppercase tracking-wide text-emerald-300 mb-2">
-            Top {ranked.length} ranked matches from curated library
+            {ranked.length > 0 ? `Related controller alarms (${ranked.length})` : 'Related controller alarms'}
           </h3>
           {ranked.length === 0 ? (
             <p className="text-sm text-slate-400">
-              No documented fault matched the supplied symptoms. Refine the description or
-              try the structured Fault Centre tab.
+              No controller alarm in our library matches these symptoms.
+              {guides.length > 0 ? ' Use the guides above.' : ' Try describing what the generator does in different words, or ask an engineer below.'}
             </p>
           ) : (
             <ul className="space-y-2">
@@ -343,12 +371,15 @@ export default function RuleBasedAssistantPanel({
                   <div className="flex items-baseline justify-between gap-2 flex-wrap">
                     <div className="font-semibold text-sm">
                       <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-900/60 mr-2">
-                        {r.brand} · {r.model}
+                        {r.brand} · {modelsLabel(r)}
                       </span>
-                      {r.code} — {r.title}
+                      {r.title}
+                      <span className="ml-2 font-mono text-xs opacity-70" title={r.codeKind === 'reference' ? 'Our reference number. This controller shows the alarm as text, so match it by name.' : undefined}>
+                        {codeLabel(r)}
+                      </span>
                     </div>
                     <div className="text-xs uppercase tracking-wide opacity-80">
-                      score {r.score.toFixed(2)} · {r.severity}
+                      {r.severity}
                     </div>
                   </div>
                   <p className="text-xs text-slate-300 mt-1 leading-relaxed">{r.description}</p>
@@ -372,7 +403,8 @@ export default function RuleBasedAssistantPanel({
           </h3>
           {!lookup.found ? (
             <p className="text-sm text-slate-400">
-              No matching curated entry. Verify the code against the OEM service manual.
+              This code is not in our library. Check it against the engine or controller
+              service manual, or send it to one of our engineers below.
             </p>
           ) : (
             <div className="space-y-2">
@@ -383,9 +415,9 @@ export default function RuleBasedAssistantPanel({
                 >
                   <div className="font-semibold text-sm">
                     <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-900/60 mr-2">
-                      {m.brand} · {m.model}
+                      {m.brand} · {modelsLabel(m)}
                     </span>
-                    {m.code} — {m.title}
+                    {codeLabel(m)} — {m.title}
                   </div>
                   <p className="text-xs text-slate-300 mt-1 leading-relaxed">{m.description}</p>
                 </div>
@@ -397,15 +429,47 @@ export default function RuleBasedAssistantPanel({
                 >
                   <div className="font-semibold text-sm text-slate-200">
                     <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-800 mr-2">
-                      {p.brand} · {p.model}
+                      {p.brand} · {modelsLabel(p)}
                     </span>
-                    {p.code} — {p.title}
+                    {codeLabel(p)} — {p.title}
                   </div>
                   <p className="text-xs text-slate-400 mt-1">{p.description}</p>
                 </div>
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Next step: a person. Carries what the user typed so they do not repeat it. */}
+      {(ranked || lookup) && (
+        <div className="mt-6 rounded-lg border border-cyan-500/30 bg-cyan-500/5 p-4">
+          <p className="text-sm text-slate-200 font-semibold">Want an engineer to look at this?</p>
+          <p className="text-xs text-slate-400 mt-1">
+            Send us what you entered and one of our engineers will help you narrow it down.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a
+              href={waLink(
+                `Hi EmersonEIMS, I need help with my generator.` +
+                  (card?.make ? `\nMake: ${card.make}` : '') +
+                  (card?.controller ? `\nController: ${card.controller}` : '') +
+                  (symptoms.trim() ? `\nSymptoms: ${symptoms.trim()}` : '') +
+                  (lookup ? `\nFault code: ${lookup.code}` : ''),
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-500"
+            >
+              WhatsApp an engineer
+            </a>
+            <a
+              href={`tel:${COMPANY_PHONE_TEL}`}
+              className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
+            >
+              Call {COMPANY_PHONE_DISPLAY}
+            </a>
+          </div>
         </div>
       )}
 

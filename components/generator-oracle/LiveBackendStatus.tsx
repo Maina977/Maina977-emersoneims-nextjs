@@ -17,8 +17,9 @@ import { useEffect, useState } from 'react';
 
 export interface BackendHealthTotals {
   faultCodes: number;
-  verifiedCodes: number;
-  templateCodes: number;
+  controllerAlarms: number;
+  j1939Codes: number;
+  j1939Spns: number;
   brands: number;
   models: number;
   categories: number;
@@ -111,7 +112,7 @@ export default function LiveBackendStatus({ variant = 'banner', className = '' }
         />
         <span className="text-slate-300">
           {health.status === 'connected' && health.totals
-            ? `Diagnostic engine connected · ${formatNumber(health.totals.faultCodes)} fault-code references`
+            ? `Diagnostic engine connected · ${formatNumber(health.totals.faultCodes)} searchable fault codes`
             : health.status === 'checking'
               ? 'Checking diagnostic engine…'
               : 'Diagnostic engine unreachable — using offline references'}
@@ -156,10 +157,10 @@ export default function LiveBackendStatus({ variant = 'banner', className = '' }
       {health.status === 'connected' && health.totals && (
         <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-300">
           <span>
-            <span className="text-cyan-300 font-semibold">{formatNumber(health.totals.faultCodes)}</span> fault-code references
+            <span className="text-cyan-300 font-semibold">{formatNumber(health.totals.controllerAlarms)}</span> controller alarms
           </span>
           <span>
-            <span className="text-emerald-300 font-semibold">{formatNumber(health.totals.verifiedCodes)}</span> manufacturer-curated
+            <span className="text-emerald-300 font-semibold">{formatNumber(health.totals.j1939Codes)}</span> J1939 engine codes
           </span>
           <span>
             <span className="text-amber-300 font-semibold">{formatNumber(health.totals.brands)}</span> brands ·{' '}

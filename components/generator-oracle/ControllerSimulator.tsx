@@ -2779,7 +2779,7 @@ export default function ControllerSimulator({
     recommendedActions: string[];
     urgency: string;
     timestamp: Date | null;
-    // Enhanced 400K fault code integration
+    // Rule-based repair guidance fields
     faultCode?: string;
     spareParts?: { name: string; partNumber: string; cost: string; supplier?: string }[];
     toolsRequired?: { name: string; specification?: string; essential: boolean }[];
@@ -3070,7 +3070,7 @@ export default function ControllerSimulator({
         urgency = 'MODERATE - Requires investigation';
       }
 
-      // Enhanced repair information from 400K fault code database
+      // Rule-based repair information mapped from the problem description
       const enhancedRepairInfo = getEnhancedRepairInfo(problem, diagnosis);
 
       setAiSolution({
@@ -3080,14 +3080,15 @@ export default function ControllerSimulator({
         recommendedActions,
         urgency,
         timestamp: new Date(),
-        // 400K Fault Code Integration
+        // Rule-based repair guidance (local keyword mapping, no AI, no external database)
         faultCode: enhancedRepairInfo.faultCode,
         spareParts: enhancedRepairInfo.spareParts,
         toolsRequired: enhancedRepairInfo.toolsRequired,
         manualReferences: enhancedRepairInfo.manualReferences,
         controllerNavigation: enhancedRepairInfo.controllerNavigation,
         verificationSteps: enhancedRepairInfo.verificationSteps,
-        costBreakdown: enhancedRepairInfo.costBreakdown,
+        // costBreakdown was invented USD ranges; not shown (2026-10-18 audit)
+        costBreakdown: undefined,
         safetyWarnings: enhancedRepairInfo.safetyWarnings,
         // Internal spare parts links (SEO)
         sparePartsLinks: enhancedRepairInfo.sparePartsLinks,
@@ -3102,7 +3103,7 @@ export default function ControllerSimulator({
     }, 1500);
   }, [techProblem]);
 
-  // Get enhanced repair info from 400K fault code database
+  // Rule-based repair info mapped from the problem description (local keyword rules)
   const getEnhancedRepairInfo = (problem: string, diagnosis: string) => {
     // Map problem to relevant spare parts, tools, and manuals
     const lowerProblem = problem.toLowerCase();
@@ -3130,12 +3131,12 @@ export default function ControllerSimulator({
     // Oil pressure related
     if (lowerProblem.includes('oil') || lowerProblem.includes('pressure') || lowerProblem.includes('lubrication')) {
       return {
-        faultCode: 'DSE-121 / SPN-100 FMI-1',
+        faultCode: 'Low Oil Pressure alarm / J1939 SPN 100 FMI 1',
         spareParts: [
-          { name: 'Oil Pressure Sensor', partNumber: 'VDO-360-081-030-014K', cost: '$35-85', supplier: 'Mantrac Kenya' },
-          { name: 'Oil Filter - Perkins 400', partNumber: 'Perkins 2654403', cost: '$15-35', supplier: 'CMC Motors' },
-          { name: 'Oil Pressure Switch', partNumber: 'Murphy-EZT-1/4NPT-20PSI', cost: '$45-120', supplier: 'Genset Services' },
-          { name: 'Engine Oil 15W-40 (10L)', partNumber: 'Shell Rimula R4X 15W-40', cost: '$45-65', supplier: 'AutoXpress' }
+          { name: 'Oil Pressure Sensor', partNumber: 'VDO-360-081-030-014K', cost: '$35-85' },
+          { name: 'Oil Filter - Perkins 400', partNumber: 'Perkins 2654403', cost: '$15-35' },
+          { name: 'Oil Pressure Switch', partNumber: 'Murphy-EZT-1/4NPT-20PSI', cost: '$45-120' },
+          { name: 'Engine Oil 15W-40 (10L)', partNumber: 'Shell Rimula R4X 15W-40', cost: '$45-65' }
         ],
         toolsRequired: [
           { name: 'Mechanical Oil Pressure Gauge', specification: '0-100 PSI', essential: true },
@@ -3179,13 +3180,13 @@ export default function ControllerSimulator({
     // Coolant/Temperature related
     if (lowerProblem.includes('coolant') || lowerProblem.includes('overheat') || lowerProblem.includes('temperature') || lowerProblem.includes('temp')) {
       return {
-        faultCode: 'DSE-130 / SPN-110 FMI-16',
+        faultCode: 'High Coolant Temperature alarm / J1939 SPN 110 FMI 16',
         spareParts: [
-          { name: 'Thermostat - Perkins', partNumber: 'Perkins 2485C041', cost: '$25-60', supplier: 'CMC Motors' },
-          { name: 'Coolant Temp Sensor', partNumber: 'VDO-323-801-001-009K', cost: '$25-65', supplier: 'Mantrac Kenya' },
-          { name: 'Water Pump Assembly', partNumber: 'Perkins U5MW0208', cost: '$180-350', supplier: 'CMC Motors' },
-          { name: 'Upper Radiator Hose', partNumber: 'Gates 20691', cost: '$15-45', supplier: 'AutoXpress' },
-          { name: 'Coolant Concentrate (5L)', partNumber: 'Shell Glycoshell', cost: '$25-40', supplier: 'AutoXpress' }
+          { name: 'Thermostat - Perkins', partNumber: 'Perkins 2485C041', cost: '$25-60' },
+          { name: 'Coolant Temp Sensor', partNumber: 'VDO-323-801-001-009K', cost: '$25-65' },
+          { name: 'Water Pump Assembly', partNumber: 'Perkins U5MW0208', cost: '$180-350' },
+          { name: 'Upper Radiator Hose', partNumber: 'Gates 20691', cost: '$15-45' },
+          { name: 'Coolant Concentrate (5L)', partNumber: 'Shell Glycoshell', cost: '$25-40' }
         ],
         toolsRequired: [
           { name: 'Cooling System Pressure Tester', specification: '0-25 PSI', essential: true },
@@ -3229,13 +3230,13 @@ export default function ControllerSimulator({
     // Starting system / won't start
     if (lowerProblem.includes('start') || lowerProblem.includes('crank') || lowerProblem.includes('turn over')) {
       return {
-        faultCode: 'DSE-151 / Fail to Start',
+        faultCode: 'Fail to Start alarm',
         spareParts: [
-          { name: 'Starter Solenoid', partNumber: 'Denso 053400-4400', cost: '$45-95', supplier: 'AutoXpress' },
-          { name: 'Fuel Solenoid', partNumber: 'Perkins 26420518', cost: '$85-150', supplier: 'CMC Motors' },
-          { name: 'Battery 12V 100Ah', partNumber: 'Chloride-EXIDE-N100', cost: '$120-200', supplier: 'Chloride Kenya' },
-          { name: 'Fuel Filter Primary', partNumber: 'Perkins 26560145', cost: '$12-30', supplier: 'CMC Motors' },
-          { name: 'Glow Plugs (set of 4)', partNumber: 'Perkins 2666A016', cost: '$80-140', supplier: 'CMC Motors' }
+          { name: 'Starter Solenoid', partNumber: 'Denso 053400-4400', cost: '$45-95' },
+          { name: 'Fuel Solenoid', partNumber: 'Perkins 26420518', cost: '$85-150' },
+          { name: 'Battery 12V 100Ah', partNumber: 'Chloride-EXIDE-N100', cost: '$120-200' },
+          { name: 'Fuel Filter Primary', partNumber: 'Perkins 26560145', cost: '$12-30' },
+          { name: 'Glow Plugs (set of 4)', partNumber: 'Perkins 2666A016', cost: '$80-140' }
         ],
         toolsRequired: [
           { name: 'Digital Multimeter', specification: 'True RMS', essential: true },
@@ -3279,13 +3280,13 @@ export default function ControllerSimulator({
     // Maintenance alarm
     if (lowerProblem.includes('maintenance') || lowerProblem.includes('service')) {
       return {
-        faultCode: 'DSE-200 / Maintenance Due',
+        faultCode: 'Maintenance Due alarm',
         spareParts: [
-          { name: 'Oil Filter', partNumber: 'Perkins 2654403', cost: '$15-35', supplier: 'CMC Motors' },
-          { name: 'Fuel Filter Primary', partNumber: 'Perkins 26560145', cost: '$12-30', supplier: 'CMC Motors' },
-          { name: 'Fuel Filter Secondary', partNumber: 'Perkins 26560143', cost: '$15-35', supplier: 'CMC Motors' },
-          { name: 'Air Filter Element', partNumber: 'Perkins 26510337', cost: '$25-55', supplier: 'CMC Motors' },
-          { name: 'Engine Oil 15W-40 (10L)', partNumber: 'Shell Rimula R4X', cost: '$45-65', supplier: 'Shell Kenya' }
+          { name: 'Oil Filter', partNumber: 'Perkins 2654403', cost: '$15-35' },
+          { name: 'Fuel Filter Primary', partNumber: 'Perkins 26560145', cost: '$12-30' },
+          { name: 'Fuel Filter Secondary', partNumber: 'Perkins 26560143', cost: '$15-35' },
+          { name: 'Air Filter Element', partNumber: 'Perkins 26510337', cost: '$25-55' },
+          { name: 'Engine Oil 15W-40 (10L)', partNumber: 'Shell Rimula R4X', cost: '$45-65' }
         ],
         toolsRequired: [
           { name: 'Oil Filter Wrench', specification: 'Adjustable strap', essential: true },
@@ -3328,12 +3329,12 @@ export default function ControllerSimulator({
     // Voltage / AVR / No output
     if (lowerProblem.includes('voltage') || lowerProblem.includes('avr') || lowerProblem.includes('output') || lowerProblem.includes('no power')) {
       return {
-        faultCode: 'DSE-220 / Generator Voltage Fault',
+        faultCode: 'Generator Under / Over Voltage alarm',
         spareParts: [
-          { name: 'AVR AS440', partNumber: 'Stamford-AS440', cost: '$180-320', supplier: 'Power Controls EA' },
-          { name: 'AVR SX460', partNumber: 'Stamford-SX460', cost: '$150-280', supplier: 'Power Controls EA' },
-          { name: 'Brush Set', partNumber: 'Stamford-33-2764', cost: '$35-75', supplier: 'Power Controls EA' },
-          { name: 'Varistor/Diode Bridge', partNumber: 'RSK5001', cost: '$45-80', supplier: 'Genset Services' }
+          { name: 'AVR AS440', partNumber: 'Stamford-AS440', cost: '$180-320' },
+          { name: 'AVR SX460', partNumber: 'Stamford-SX460', cost: '$150-280' },
+          { name: 'Brush Set', partNumber: 'Stamford-33-2764', cost: '$35-75' },
+          { name: 'Varistor/Diode Bridge', partNumber: 'RSK5001', cost: '$45-80' }
         ],
         toolsRequired: [
           { name: 'Digital Multimeter', specification: 'True RMS CAT IV', essential: true },
@@ -3374,7 +3375,7 @@ export default function ControllerSimulator({
     return {
       faultCode: 'General - See controller display',
       spareParts: [
-        { name: 'Consult parts manual', partNumber: 'Per fault code', cost: 'Varies', supplier: 'Contact dealer' }
+        { name: 'Consult parts manual', partNumber: 'Per fault code', cost: 'Varies' }
       ],
       toolsRequired: [
         { name: 'Digital Multimeter', specification: 'True RMS', essential: true },
@@ -4367,7 +4368,7 @@ function DisplayContent({
     recommendedActions: string[];
     urgency: string;
     timestamp: Date | null;
-    // Enhanced 400K fault code integration
+    // Rule-based repair guidance fields
     faultCode?: string;
     spareParts?: { name: string; partNumber: string; cost: string; supplier?: string }[];
     toolsRequired?: { name: string; specification?: string; essential: boolean }[];
@@ -4539,7 +4540,7 @@ function DisplayContent({
   }
 
   // AI DIAGNOSIS PAGE - Shows technician problem and AI solution on controller display
-  // With enhanced 400K fault code integration
+  // With rule-based repair guidance fields
   if (page === 'diagnosis') {
     return (
       <div style={{ color: textColor }} className="h-full">
@@ -4622,7 +4623,6 @@ function DisplayContent({
                   <div key={idx} className="flex justify-between text-[10px] border-b border-current/10 py-0.5">
                     <span>{part.name}</span>
                     <span className="text-cyan-400 font-mono">{part.partNumber}</span>
-                    <span className="text-green-400">{part.cost}</span>
                   </div>
                 ))}
               </div>
@@ -4749,13 +4749,13 @@ function DisplayContent({
           <div className="text-center py-6 opacity-60">
             <div className="text-2xl mb-2">📝</div>
             <div>Enter problem description below</div>
-            <div className="text-[10px] mt-1">AI will analyze and display comprehensive repair guidance including:</div>
+            <div className="text-[10px] mt-1">Our rule-based guide will show:</div>
             <div className="text-[9px] mt-2 space-y-0.5">
-              <div>• 400K+ fault codes with OEM part numbers</div>
+              <div>• The matching alarm and likely causes</div>
               <div>• Step-by-step controller navigation</div>
               <div>• Required tools & manual references</div>
-              <div>• Verification steps & cost breakdown</div>
-              <div>• Kenya supplier contacts</div>
+              <div>• Verification steps</div>
+              <div>• Links to the parts you may need</div>
             </div>
           </div>
         )}

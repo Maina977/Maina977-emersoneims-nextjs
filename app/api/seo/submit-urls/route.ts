@@ -26,7 +26,6 @@ const CRITICAL_PAGES = [
 
   // Generator Oracle
   '/generator-oracle',
-  '/generator-oracle/tools',
   '/generator-oracle/purchase',
 
   // Main Service Pages

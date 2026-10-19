@@ -142,9 +142,9 @@ const MEGA_MENUS = {
         ],
       },
       {
-        title: 'Diagnostics & AI',
+        title: 'Diagnostics',
         items: [
-          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400k+ fault codes', badge: 'AI' },
+          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: 'Fault codes & diagnosis', badge: 'FREE' },
           { href: '/plant-equipment-oracle', label: 'Plant & Equipment Oracle', icon: '🚜', desc: 'Excavator & loader codes', badge: 'NEW' },
           { href: '/maintenance-hub/generators', label: 'Maintenance Hub', icon: '🏭', desc: 'Engine room HQ' },
           { href: '/generators/maintenance-companion', label: 'Repair Companion', icon: '🤖', desc: 'AI step-by-step' },
@@ -171,10 +171,10 @@ const MEGA_MENUS = {
       {
         title: 'Solar Genius Pro Suite',
         items: [
-          { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '🧠', desc: '56 AI engines · <3 min quotes', badge: '#1' },
+          { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '🧠', desc: 'Free solar sizing estimate', badge: 'FREE' },
           { href: '/solar-genius-pro/solar-dashboard', label: 'Site & System Dashboard', icon: '📡', desc: 'NASA + OSM live data', badge: 'NEW' },
           { href: '/solar-genius-pro/calculator-advanced', label: 'Solar System Calculator', icon: '⚡', desc: 'Size, cost & payback', badge: 'NEW' },
-          { href: '/solar-genius-pro/fault-codes', label: 'Fault Codes AI', icon: '🔍', desc: 'Inverter fault codes', badge: 'NEW' },
+          { href: '/solar-genius-pro/fault-codes', label: 'Inverter Fault Codes', icon: '🔍', desc: 'Sourced from manufacturer manuals' },
           { href: '/calculators', label: 'Power Calculators', icon: '🧮', desc: 'ROI, load, payback' },
         ],
       },
@@ -204,29 +204,28 @@ const MEGA_MENUS = {
         ],
       },
       {
-        title: 'Flagship AI Tools',
+        title: 'Flagship Tools',
         items: [
-          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: 'manufacturer-curated fault codes', badge: 'AI' },
+          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: 'Fault codes & diagnosis', badge: 'FREE' },
           { href: '/plant-equipment-oracle', label: 'Plant & Equipment Oracle', icon: '🚜', desc: 'Excavator & loader codes', badge: 'NEW' },
-          { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI engines · <3 min quotes', badge: '#1' },
-          { href: '/aquascan-pro-v3', label: 'AquaScan Pro™', icon: '💧', desc: '26 AI engines · NASA + Google Earth', badge: '#1' },
+          { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '☀️', desc: 'Free solar sizing estimate', badge: 'FREE' },
+          { href: '/aquascan-pro-v3', label: 'AquaScan Pro™', icon: '💧', desc: 'Borehole pre-screen · public data', badge: 'FREE' },
         ],
       },
       {
         title: 'AquaScan Pro Suite',
         items: [
-          { href: '/aquascan-pro-v3', label: 'Borehole Analyzer', icon: '🔬', desc: 'AI-powered site analysis' },
-          { href: '/aquascan-pro-v3/reports', label: 'Reports & Downloads', icon: '📄', desc: 'View & export reports', badge: 'NEW' },
-          { href: '/aquascan-pro-v3/compare', label: 'Site Comparison', icon: '⚖️', desc: 'Compare up to 3 sites', badge: 'NEW' },
+          { href: '/aquascan-pro-v3', label: 'Borehole Pre-Screen', icon: '🔬', desc: 'Desktop site check before a survey' },
+          { href: '/aquascan-pro-v3/methodology', label: 'How It Works', icon: '📄', desc: 'Data sources & limits' },
         ],
       },
       {
         title: 'Hub & Capabilities',
         items: [
           { href: '/ai-tools', label: 'All AI Tools', icon: '🤖', desc: 'Central hub' },
-          { href: '/ai-tools/capabilities', label: 'Capabilities Matrix', icon: '📊', desc: 'Accuracy tables', badge: 'NEW' },
+          { href: '/ai-tools/capabilities', label: 'What Each Tool Does', icon: '📊', desc: 'Can and cannot do' },
           { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive solver' },
-          { href: '/generator-oracle/tools', label: 'Oracle Tools', icon: '🧰', desc: 'Pro toolkit' },
+          { href: '/faults', label: 'Fault Code Guides', icon: '🧰', desc: 'Common alarms explained' },
         ],
       },
     ],

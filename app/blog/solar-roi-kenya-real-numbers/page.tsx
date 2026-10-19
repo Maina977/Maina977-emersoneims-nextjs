@@ -154,7 +154,7 @@ export default function SolarROIBlogPage() {
             <p className="text-emerald-300 mb-4">
               <strong>Want your specific solar ROI?</strong> We analyze your actual bills and building conditions to give you honest numbers—not estimates.
             </p>
-            <Link href="/tools/solar-genius-pro" className="inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-all">
+            <Link href="/solar-genius-pro" className="inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-all">
               Try Solar Genius Pro
             </Link>
           </div>

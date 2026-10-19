@@ -27,7 +27,6 @@ import {
   Send,
   X,
   ArrowLeft,
-  Search,
   BookOpen,
   Activity,
   Gauge,
@@ -49,6 +48,10 @@ import {
 } from 'lucide-react';
 import { sanitizeAndFormatContent } from '@/lib/generator-oracle/sanitizeHtml';
 import { SYSTEM_DIAGRAMS } from '../SystemDiagramSVG';
+import LiveFaultLookup from '../LiveFaultLookup';
+import RuleBasedAssistantPanel from '../RuleBasedAssistantPanel';
+import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
+import { waLink } from '@/lib/serviceConnect/actions';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -2132,6 +2135,40 @@ const AIQuestionPanel = ({
   const [answer, setAnswer] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversation, setConversation] = useState<{role: string; content: string}[]>([]);
+  const aiAvailability = useAIAvailable();
+  const subject = component?.name || system?.name || 'my generator';
+
+  // Without a configured AI stack the chat endpoint answers 503; offer a person.
+  if (aiAvailability !== 'available') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className="fixed bottom-4 right-4 left-4 sm:left-auto sm:w-96 bg-slate-900 border border-green-500/30 rounded-2xl shadow-2xl z-50 p-4"
+        role="dialog"
+        aria-label={`Ask about ${subject}`}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-semibold text-white">Ask about {subject}</span>
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-white" aria-label="Close">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <p className="text-sm text-slate-400 mb-3">
+          Send your question to one of our engineers and they will reply on WhatsApp.
+        </p>
+        <a
+          href={waLink(`Hi EmersonEIMS, I have a question about the ${subject}: `)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-500 text-white font-semibold rounded-xl"
+        >
+          <Send className="w-4 h-4" /> WhatsApp an engineer
+        </a>
+      </motion.div>
+    );
+  }
 
   const handleAsk = async () => {
     if (!question.trim()) return;
@@ -2151,7 +2188,7 @@ Description: ${component.description}
 Function: ${component.function}
 Common Symptoms: ${component.symptoms.join(', ')}
 Troubleshooting Steps: ${component.troubleshooting.join('; ')}
-Part Numbers: ${component.partNumbers.map(p => `${p.brand}: ${p.partNo} (KES ${p.price})`).join(', ')}
+Typical part numbers (confirm before ordering; do not quote prices): ${component.partNumbers.map(p => `${p.brand}: ${p.partNo}`).join(', ')}
 Common Faults: ${component.commonFaults.map(f => `${f.fault}: ${f.cause} → ${f.solution}`).join('; ')}`;
       }
       if (system) {
@@ -2266,270 +2303,11 @@ Be concise but thorough.`
 // FAULT CODE LOOKUP COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const FaultCodeLookup = () => {
-  const [faultCode, setFaultCode] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [conversation, setConversation] = useState<{role: string; content: string}[]>([]);
-
-  const searchFaultCode = async () => {
-    if (!faultCode.trim()) return;
-    setIsSearching(true);
-
-    const userMessage = { role: 'user', content: `What does fault code ${faultCode} mean? Give me the full diagnosis, causes, solutions, and part numbers needed.` };
-    setConversation([userMessage]);
-
-    try {
-      const response = await fetch('/api/generator-oracle/expert-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [userMessage],
-          systemPrompt: `You are the GENERATOR ORACLE Fault Code Expert with 90% DIAGNOSTIC ACCURACY.
-
-When given a fault code, provide with 90% CONFIDENCE:
-
-1. **Code Meaning**: What this fault indicates
-2. **Severity**: 🔴 Shutdown / 🟡 Warning / 🟢 Informational
-3. **Most Likely Cause (90% Confidence)**: State the PRIMARY cause definitively
-4. **Alternative Causes**: List other possibilities
-5. **Diagnostic Steps**: Step-by-step with exact values
-6. **How to CLEAR the Code**:
-   - Manual button sequence (for technicians WITHOUT cables)
-   - Through diagnostic software (for those WITH cables)
-7. **Required Tools**: Specific tools needed
-8. **Part Numbers**: OEM and aftermarket with KES prices
-9. **Safety Warnings**: ⚠️ critical warnings
-
-ENGAGEMENT - ALWAYS ASK:
-- "Have you checked [most likely cause] yet?"
-- "What symptoms are you observing?"
-- "Do you have diagnostic cables, or are you working manually?"
-- "Did this resolve your issue?"
-- "Have you understood the procedure?"
-- "What tools do you have available?"
-
-Include torque specs, wire colors, and pin numbers where relevant.
-
-For controller codes (DSE, ComAp, SmartGen), explain how to navigate and clear through the controller buttons.`
-        }),
-      });
-
-      const data = await response.json();
-      const assistantMessage = {
-        role: 'assistant',
-        content: data.content || data.fallbackContent || 'Fault code not found in database. Please provide more details about the controller brand and model.'
-      };
-      setConversation(prev => [...prev, assistantMessage]);
-      setResult(data);
-    } catch {
-      setConversation([{ role: 'assistant', content: 'Error looking up fault code. Please try again.' }]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const askFollowUp = async (question: string) => {
-    if (!question.trim()) return;
-    setIsSearching(true);
-
-    const userMessage = { role: 'user', content: question };
-    setConversation(prev => [...prev, userMessage]);
-
-    try {
-      const response = await fetch('/api/generator-oracle/expert-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...conversation, userMessage],
-        }),
-      });
-
-      const data = await response.json();
-      const assistantMessage = { role: 'assistant', content: data.content || 'Please try again.' };
-      setConversation(prev => [...prev, assistantMessage]);
-    } catch {
-      setConversation(prev => [...prev, { role: 'assistant', content: 'Error processing follow-up. Please try again.' }]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const [followUpInput, setFollowUpInput] = useState('');
-
-  return (
-    <div className="space-y-6">
-      {/* Fault Code Input */}
-      <div className="p-6 bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-2xl">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <AlertTriangle className="w-6 h-6 text-red-400" />
-            Fault Code Lookup
-          </h3>
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold animate-pulse">
-              FAULT CODES
-            </span>
-          </div>
-        </div>
-        <p className="text-slate-400 text-sm mb-4">
-          Enter ANY fault code from ANY manufacturer: J1939 SPN/FMI, DSE, ComAp, Cummins, CAT, Perkins, Volvo, Woodward, SmartGen, Datakom, DEIF, Sices, Bernini, OBD-II (P/B/C/U codes), and more
-        </p>
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={faultCode}
-            onChange={(e) => setFaultCode(e.target.value.toUpperCase())}
-            onKeyDown={(e) => e.key === 'Enter' && searchFaultCode()}
-            placeholder="Enter fault code (e.g., SPN-111, E020, A001, P0171)"
-            className="flex-1 px-4 py-3 bg-slate-900/80 border border-red-500/30 rounded-xl text-white font-mono text-lg placeholder-slate-500 focus:outline-none focus:border-red-500"
-          />
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={searchFaultCode}
-            disabled={isSearching}
-            className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-50"
-          >
-            {isSearching ? (
-              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
-                <Settings className="w-5 h-5" />
-              </motion.div>
-            ) : (
-              <Search className="w-5 h-5" />
-            )}
-            {isSearching ? 'Searching...' : 'Diagnose'}
-          </motion.button>
-        </div>
-
-        {/* Quick Code Examples - Multiple Manufacturers */}
-        <div className="mt-4 space-y-2">
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-cyan-400 font-semibold">J1939:</span>
-            {['SPN-111', 'SPN-100', 'SPN-190', 'SPN-94', 'SPN-157'].map(code => (
-              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors">{code}</button>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-amber-400 font-semibold">DSE:</span>
-            {['E020', 'E040', 'E047', 'E070', 'E106'].map(code => (
-              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-amber-500/20 hover:text-amber-300 transition-colors">{code}</button>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-green-400 font-semibold">ComAp:</span>
-            {['A001', 'A015', 'A042', 'A105', 'A201'].map(code => (
-              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-green-500/20 hover:text-green-300 transition-colors">{code}</button>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-purple-400 font-semibold">SmartGen:</span>
-            {['HGM-01', 'HGM-15', 'HGM-23', 'HGM-45'].map(code => (
-              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-purple-500/20 hover:text-purple-300 transition-colors">{code}</button>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-red-400 font-semibold">Cummins:</span>
-            {['CM-111', 'CM-115', 'CM-143', 'CM-234'].map(code => (
-              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-red-500/20 hover:text-red-300 transition-colors">{code}</button>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-orange-400 font-semibold">CAT/OBD:</span>
-            {['CAT-E361', 'CAT-E362', 'P0171', 'P0300', 'P0420'].map(code => (
-              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-orange-500/20 hover:text-orange-300 transition-colors">{code}</button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Results */}
-      {conversation.length > 0 && (
-        <div className="p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl space-y-4">
-          <h4 className="text-lg font-semibold text-cyan-400 flex items-center gap-2">
-            <CheckCircle className="w-5 h-5" />
-            Diagnosis for: <span className="font-mono text-white">{faultCode}</span>
-          </h4>
-
-          <div className="space-y-4 max-h-[500px] overflow-y-auto">
-            {conversation.map((msg, i) => (
-              <div key={i} className={msg.role === 'user' ? 'text-right' : ''}>
-                <div className={`inline-block max-w-full p-4 rounded-xl ${
-                  msg.role === 'user'
-                    ? 'bg-cyan-500/20 text-cyan-100'
-                    : 'bg-slate-900/50 text-slate-200'
-                }`}>
-                  <div className="text-sm whitespace-pre-wrap prose prose-invert prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: sanitizeAndFormatContent(msg.content)
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-            {isSearching && (
-              <div className="flex items-center gap-2 text-slate-400">
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
-                  <Settings className="w-4 h-4" />
-                </motion.div>
-                <span className="text-sm">Analyzing...</span>
-              </div>
-            )}
-          </div>
-
-          {/* Follow-up Input */}
-          <div className="pt-4 border-t border-slate-700">
-            <p className="text-sm text-slate-400 mb-2">Ask a follow-up question:</p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={followUpInput}
-                onChange={(e) => setFollowUpInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && followUpInput.trim()) {
-                    askFollowUp(followUpInput);
-                    setFollowUpInput('');
-                  }
-                }}
-                placeholder="e.g., What part should I replace? What tools do I need?"
-                className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-              />
-              <button
-                onClick={() => {
-                  if (followUpInput.trim()) {
-                    askFollowUp(followUpInput);
-                    setFollowUpInput('');
-                  }
-                }}
-                className="p-2 bg-cyan-500 hover:bg-cyan-600 rounded-xl transition-colors"
-              >
-                <Send className="w-5 h-5 text-white" />
-              </button>
-            </div>
-            {/* Quick follow-ups */}
-            <div className="mt-2 flex flex-wrap gap-2">
-              {[
-                'What part should I replace?',
-                'What tools do I need?',
-                'How long will this take?',
-                'Is this a serious issue?',
-                'What causes this fault?',
-              ].map(q => (
-                <button
-                  key={q}
-                  onClick={() => askFollowUp(q)}
-                  className="px-3 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-lg hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+// The same index-backed lookup the product page uses (2026-10-18 audit). This
+// used to send every code to the AI chat, which answers 503 on this site, and
+// then told the user the code was "not found in database". Its prompt also
+// demanded "90% diagnostic accuracy" and part numbers with KES prices.
+const FaultCodeLookup = () => <LiveFaultLookup />;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // AI PROBLEM SOLVER COMPONENT
@@ -2554,9 +2332,9 @@ const AIProblemSolver = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [userMessage],
-          systemPrompt: `You are the GENERATOR ORACLE AI with 90% DIAGNOSTIC ACCURACY and 30 years of expert experience.
+          systemPrompt: `You are the GENERATOR ORACLE diagnostic assistant.
 
-IMPORTANT: You provide diagnoses with 90% CONFIDENCE, not probability. Be definitive and actionable.
+IMPORTANT: Be practical and actionable, and say plainly when you are not sure. Recommend contacting an EmersonEIMS engineer (0768 860 665) when the cause is unclear or the work is dangerous.
 
 When a technician describes a problem:
 
@@ -2567,8 +2345,8 @@ When a technician describes a problem:
    - "When did this start?"
    - "Do you have diagnostic cables or working manually?"
 
-3. **Provide DEFINITIVE Diagnosis** (90% CONFIDENCE):
-   - "Based on my analysis, with 90% confidence, the cause is..."
+3. **Give the Most Likely Cause First**:
+   - Say how sure you are honestly; do not quote a percentage you cannot back
    - Give the MOST LIKELY cause first, then alternatives
    - Be specific - don't just list possibilities
 
@@ -2890,7 +2668,7 @@ const CONTROLLER_GUIDES: ControllerGuide[] = [
         confidence: 95,
       },
       {
-        problem: 'DSE6020 showing E047 "High Engine Temperature" after fixing coolant leak',
+        problem: 'DSE6020 still showing a "High Coolant Temperature" alarm after fixing a coolant leak',
         solution: [
           '1. Ensure engine has cooled down completely',
           '2. Verify coolant level is correct',
@@ -2979,7 +2757,7 @@ const CONTROLLER_GUIDES: ControllerGuide[] = [
     ],
     realWorldExamples: [
       {
-        problem: 'InteliLite showing A015 "Low Oil Pressure Warning" that won\'t clear',
+        problem: 'InteliLite showing a "Wrn Oil Press" (low oil pressure warning) that won\'t clear',
         solution: [
           '1. Check actual oil pressure with mechanical gauge',
           '2. If oil pressure is OK, the sensor may be faulty',
@@ -3301,6 +3079,7 @@ const ControllerGuide = () => {
   const [aiQuestion, setAiQuestion] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const aiAvailability = useAIAvailable();
 
   const colorMap: Record<string, string> = {
     amber: 'from-amber-500/20 to-amber-600/20 border-amber-500/30',
@@ -3321,16 +3100,16 @@ const ControllerGuide = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [{ role: 'user', content: question }],
-          systemPrompt: `You are an expert ${selectedController.brand} controller technician with 90% DIAGNOSTIC ACCURACY. You help technicians who DO NOT have diagnostic cables and must navigate the controller manually.
+          systemPrompt: `You are an experienced ${selectedController.brand} controller technician. You help technicians who DO NOT have diagnostic cables and must navigate the controller manually.
 
-IMPORTANT: Your diagnoses have 90% CONFIDENCE based on symptoms described.
+IMPORTANT: Say plainly when you are not sure; never invent menu paths, passwords or part numbers.
 
 Controller Models You Support: ${selectedController.models.join(', ')}
 
 When answering:
 1. Give EXACT button sequences (e.g., "Press ▼ → MENU → MAINTENANCE → ENTER")
 2. Include DEFAULT PASSWORDS: ${selectedController.id === 'deepsea' ? '0000, 1234' : selectedController.id === 'comap' ? '1111, 2222' : '0000, 0001, 1234'}
-3. Provide CONFIDENCE LEVEL for your diagnosis (aim for 90%)
+3. Say how sure you are, honestly
 4. List EXACT STEPS the technician can follow without a laptop
 5. Include part numbers if components need replacement
 
@@ -3367,7 +3146,7 @@ Be specific, practical, and remember - no diagnostic cables available!`
           </p>
           <div className="mt-3 flex items-center justify-center gap-2">
             <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold">
-              90% AI DIAGNOSTIC ACCURACY
+              FRONT-PANEL STEPS
             </span>
             <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-500/50 rounded-full text-xs text-cyan-400 font-bold">
               NO CABLE REQUIRED
@@ -3420,7 +3199,7 @@ Be specific, practical, and remember - no diagnostic cables available!`
           <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
             <Trash2 className="w-6 h-6 text-red-400 mb-2" />
             <h4 className="font-semibold text-white mb-1">Fault Code Erasure</h4>
-            <p className="text-sm text-slate-400">Clear any fault code without a laptop</p>
+            <p className="text-sm text-slate-400">Clear alarms from the front panel once the cause is fixed</p>
           </div>
           <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
             <RefreshCcw className="w-6 h-6 text-green-400 mb-2" />
@@ -3452,8 +3231,8 @@ Be specific, practical, and remember - no diagnostic cables available!`
             <p className="text-sm text-slate-400">{selectedController.models.length} supported models</p>
           </div>
         </div>
-        <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold">
-          90% ACCURACY
+        <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-500/50 rounded-full text-xs text-cyan-300 font-bold">
+          Front-panel steps
         </span>
       </div>
 
@@ -3493,7 +3272,7 @@ Be specific, practical, and remember - no diagnostic cables available!`
           }`}
         >
           <BookOpen className="w-4 h-4" />
-          Real Examples
+          Worked Examples
         </button>
       </div>
 
@@ -3631,15 +3410,10 @@ Be specific, practical, and remember - no diagnostic cables available!`
           >
             {selectedController.realWorldExamples.map((example, i) => (
               <div key={i} className="p-5 bg-slate-800/50 border border-slate-700/50 rounded-xl">
-                <div className="flex items-start justify-between mb-3">
+                {/* The per-example "NN% CONFIDENCE" badge was removed
+                    (2026-10-18): those figures were typed in, not measured. */}
+                <div className="mb-3">
                   <h4 className="text-white font-semibold text-sm">{example.problem}</h4>
-                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                    example.confidence >= 90 ? 'bg-green-500/20 text-green-400' :
-                    example.confidence >= 80 ? 'bg-amber-500/20 text-amber-400' :
-                    'bg-red-500/20 text-red-400'
-                  }`}>
-                    {example.confidence}% CONFIDENCE
-                  </span>
                 </div>
                 <div className="space-y-2">
                   {example.solution.map((step, j) => (
@@ -3655,12 +3429,33 @@ Be specific, practical, and remember - no diagnostic cables available!`
         )}
       </AnimatePresence>
 
-      {/* AI Assistant for this Controller */}
+      {/* Ask about this controller. Without a configured AI stack the
+          expert-chat endpoint answers 503, so offer a person instead of a
+          box that can only fail. */}
+      {aiAvailability !== 'available' ? (
+        <div className="p-5 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl">
+          <h4 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-green-400" />
+            Ask an engineer about your {selectedController.brand} controller
+          </h4>
+          <p className="text-slate-400 text-sm mb-3">
+            Tell us the model, what the display shows and what you have tried. One of our engineers will
+            walk you through it.
+          </p>
+          <a
+            href={waLink(`Hi EmersonEIMS, I need help with a ${selectedController.brand} controller (${selectedController.models[0]}). The display shows: `)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl"
+          >
+            <Send className="w-4 h-4" /> WhatsApp an engineer
+          </a>
+        </div>
+      ) : (
       <div className="p-5 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl">
         <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
           <HelpCircle className="w-5 h-5 text-cyan-400" />
-          AI Controller Expert
-          <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-bold rounded-full ml-2">90% ACCURACY</span>
+          AI Controller Assistant
         </h4>
         <p className="text-slate-400 text-sm mb-3">
           Ask anything about {selectedController.brand} controllers - no diagnostic cable needed!
@@ -3717,7 +3512,7 @@ Be specific, practical, and remember - no diagnostic cables available!`
           <div className="mt-4 p-4 bg-slate-900/50 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-4 h-4 text-green-400" />
-              <span className="text-green-400 text-sm font-semibold">AI Response (90% Confidence)</span>
+              <span className="text-green-400 text-sm font-semibold">AI response — check it against your controller manual</span>
             </div>
             <div
               className="text-sm text-slate-200 prose prose-invert prose-sm max-w-none"
@@ -3728,6 +3523,7 @@ Be specific, practical, and remember - no diagnostic cables available!`
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };
@@ -3738,6 +3534,7 @@ Be specific, practical, and remember - no diagnostic cables available!`
 
 export default function InteractiveDiagnosticSystem() {
   const [activeTab, setActiveTab] = useState<'systems' | 'faultcode' | 'aisolve' | 'controllers'>('systems');
+  const aiAvailability = useAIAvailable();
   const [selectedSystem, setSelectedSystem] = useState<DiagnosticSystem | null>(null);
   const [selectedComponent, setSelectedComponent] = useState<SystemComponent | null>(null);
   const [showAIPanel, setShowAIPanel] = useState(false);
@@ -3770,7 +3567,6 @@ export default function InteractiveDiagnosticSystem() {
           >
             <AlertTriangle className="w-5 h-5" />
             Fault Code Lookup
-            <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-full">400K+</span>
           </button>
           <button
             onClick={() => setActiveTab('aisolve')}
@@ -3781,7 +3577,7 @@ export default function InteractiveDiagnosticSystem() {
             }`}
           >
             <HelpCircle className="w-5 h-5" />
-            AI Problem Solver
+            Problem Solver
           </button>
           <button
             onClick={() => setActiveTab('systems')}
@@ -3828,7 +3624,7 @@ export default function InteractiveDiagnosticSystem() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
-              <AIProblemSolver />
+              {aiAvailability === 'available' ? <AIProblemSolver /> : <RuleBasedAssistantPanel mode="chat" />}
             </motion.div>
           )}
 
@@ -4152,16 +3948,23 @@ export default function InteractiveDiagnosticSystem() {
 
         {/* Part Numbers */}
         <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
-          <h4 className="text-sm font-semibold text-cyan-400 mb-4 flex items-center gap-2">
-            <BookOpen className="w-4 h-4" /> Part Numbers & Pricing (KES)
+          {/* Prices were shown here as a "Pricing (KES)" column. They were
+              typed into this file, not quoted, and parts prices move; a stale
+              price shown as ours is a promise we may not keep. The column is
+              removed and the customer is routed to a real quote (2026-10-18). */}
+          <h4 className="text-sm font-semibold text-cyan-400 mb-2 flex items-center gap-2">
+            <BookOpen className="w-4 h-4" /> Typical Part Numbers
           </h4>
+          <p className="text-xs text-slate-400 mb-3">
+            Common cross-references for this component. Confirm against your engine&apos;s parts book or
+            serial number before ordering.
+          </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-slate-400 text-left border-b border-slate-700">
                   <th className="pb-2 pr-4">Brand</th>
                   <th className="pb-2 pr-4">Part Number</th>
-                  <th className="pb-2">Price (KES)</th>
                 </tr>
               </thead>
               <tbody>
@@ -4169,12 +3972,19 @@ export default function InteractiveDiagnosticSystem() {
                   <tr key={i} className="border-b border-slate-700/50">
                     <td className="py-2 pr-4 text-white">{part.brand}</td>
                     <td className="py-2 pr-4 font-mono text-cyan-300">{part.partNo}</td>
-                    <td className="py-2 text-green-300">{part.price}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <a
+            href={waLink(`Hi EmersonEIMS, please quote a ${selectedComponent.name} for my generator. Engine/model: `)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-green-400 hover:text-green-300"
+          >
+            Get a price and availability on WhatsApp →
+          </a>
         </div>
 
         {/* Test Procedure */}

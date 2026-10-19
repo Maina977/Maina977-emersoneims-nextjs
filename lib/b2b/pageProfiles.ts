@@ -649,21 +649,26 @@ export const B2B_PROFILES = {
     accent: 'violet',
   },
 
+  /*
+   * 2026-10-18 tool audit: was "Bankable C&I solar design… tender-ready
+   * reports", "used by partner EPCs", "audit-grade PDF reports" and "used on
+   * live EPC tenders" — none of which the calculator does or can show.
+   */
   solarGeniusPro: {
-    eyebrow: 'Solar Genius Pro • Design & Sizing Suite',
-    headline: 'Bankable C&I solar design — sizing, yield, ROI and tender-ready reports in one suite.',
+    eyebrow: 'Solar Genius Pro • Solar Sizing',
+    headline: 'Size a solar system in minutes — then have an EmersonEIMS engineer check it.',
     subtitle:
-      'Used by EmersonEIMS engineers and partner EPCs to size, simulate and document commercial & industrial solar systems for hospitals, factories, agribusiness and government in Kenya.',
-    whoFor: ['EPC & solar contractors', 'Facility & energy managers', 'Hospitals & data centres', 'Manufacturing & agribusiness', 'Banks & financiers', 'Government & NGOs'],
+      'A free sizing estimate for homes, farms and businesses in Kenya: panels, inverter, battery and a first cost and payback figure. It is an estimate; a site survey turns it into a design you can buy.',
+    whoFor: ['Homeowners', 'Farms & agribusiness', 'Shops & offices', 'Schools & clinics', 'Hotels & lodges', 'Facility & energy managers'],
     pso: [
-      { problem: 'Spreadsheets and vendor calculators disagree on size and ROI.', solution: 'Single suite with NASA POWER irradiance, real tariffs and load profiles.', outcome: 'One defensible design package, faster tender turnaround.' },
-      { problem: 'Lender / board rejects designs that lack provenance.', solution: 'Every figure cites its source; PDF includes Data Provenance appendix.', outcome: 'Designs that pass due diligence the first time.' },
-      { problem: 'Designs ignore generator interaction, ATS and uptime.', solution: 'Hybrid sizing with grid + diesel + battery + ATS engineering.', outcome: 'Real uptime gains, not just panel kWp on paper.' },
+      { problem: 'Vendor quotes disagree on what size system you need.', solution: 'Get an independent first estimate from your own consumption figures.', outcome: 'You know roughly what you need before you talk to anyone.' },
+      { problem: 'Batteries sized far too big or too small.', solution: 'Battery size follows the backup you actually want, not a rule of thumb.', outcome: 'You pay for the backup you need, not more.' },
+      { problem: 'Designs ignore the generator, changeover and grid.', solution: 'Our engineers design hybrid solar, battery, generator and changeover systems.', outcome: 'A system that keeps the power on, not just panels on a roof.' },
     ],
-    trust: ['NASA POWER irradiance', 'Audit-grade PDF reports', 'Cross-checked by Kenya engineers', 'Used on live EPC tenders'],
+    trust: ['Free estimate, no sign-up', 'Checked by registered engineers on request', 'ISO 9001 & KEBS registered', '2-year workmanship warranty'],
     ctas: [
       { label: 'Request a Solar Design', href: '/contact?topic=solar-design', variant: 'primary' },
-      { label: 'Book a Solar Site Audit', href: '/booking?service=solar-audit', variant: 'secondary' },
+      { label: 'Book a Site Survey', href: '/booking?type=site-survey', variant: 'secondary' },
       { label: 'WhatsApp the Solar Desk', href: WHATSAPP, variant: 'tertiary' },
     ],
     accent: 'orange',
@@ -689,38 +694,51 @@ export const B2B_PROFILES = {
     accent: 'orange',
   },
 
+  /*
+   * 2026-10-18 tool audit: was "audit-grade… bankable reports", "real aquifer,
+   * drawdown and demand modelling", "used by drillers & NGOs" and "data
+   * provenance appendix in every PDF". The tool is a desktop pre-screen; it is
+   * now described as one.
+   */
   aquascanPro: {
-    eyebrow: 'AquaScan Pro • Borehole & Water',
-    headline: 'Audit-grade borehole, hydrogeology and water-quality intelligence for serious projects.',
+    eyebrow: 'AquaScan Pro • Borehole Pre-Screen',
+    headline: 'A free desktop borehole pre-screen — then a field survey before anyone drills.',
     subtitle:
-      'Real datasets from NASA POWER, ORNL DAAC, Open-Meteo and government sources — turned into bankable reports for boreholes, pumps, irrigation and rural water supply in Kenya.',
-    whoFor: ['Drillers & hydrogeologists', 'NGOs & development agencies', 'Agribusiness & flower farms', 'County governments', 'Real estate & developers', 'Mining & industry'],
+      'Uses public datasets (NASA POWER rainfall, ISRIC soils, mapped water points and Kenyan borehole records) to give a first look at a site. It is a screening tool: a geophysical survey and a licensed hydrogeologist decide where to drill.',
+    whoFor: ['Farms & agribusiness', 'Schools & institutions', 'NGOs & community water projects', 'Real estate & developers', 'County governments', 'Industry'],
     pso: [
-      { problem: 'Borehole proposals lack provenance and get rejected by donors.', solution: 'AquaScan Pro reports cite every dataset and include a Data Provenance appendix.', outcome: 'Proposals pass donor and lender due diligence.' },
-      { problem: 'Pump sizing based on guesswork = burnt motors and dry runs.', solution: 'Real aquifer, drawdown and demand modelling, reviewed by engineers.', outcome: 'Right-sized pumps, longer asset life, lower opex.' },
-      { problem: 'No single partner for survey, drilling, pumps and O&M.', solution: 'EmersonEIMS borehole desk handles the full chain.', outcome: 'One contract, one SLA, accountable delivery.' },
+      { problem: 'You do not know whether a site is worth surveying.', solution: 'AquaScan Pro shows rainfall, soils, nearby water points and a rough depth range, with every source named.', outcome: 'A better-informed decision before you pay for a survey.' },
+      { problem: 'Pump sizing based on guesswork means burnt motors and dry runs.', solution: 'Our engineers size the pump from the test-pumping results of your actual borehole.', outcome: 'A pump that suits the borehole, and a longer motor life.' },
+      { problem: 'You need someone to take it from here.', solution: 'Talk to the EmersonEIMS water desk about the survey, pump and power for your site.', outcome: 'One conversation instead of several.' },
     ],
-    trust: ['Sources cited on every figure', 'Data Provenance appendix in every PDF', 'Used by drillers & NGOs', 'Backed by EmersonEIMS field team'],
+    trust: ['Every data source named', 'Pre-screen only: survey before drilling', 'ISO 9001 & KEBS registered', 'Registered engineers'],
     ctas: [
-      { label: 'Request a Borehole Report', href: '/contact?topic=borehole-report', variant: 'primary' },
-      { label: 'Book a Hydrogeology Review', href: '/booking?service=hydrogeology', variant: 'secondary' },
+      { label: 'Talk to the Water Desk', href: '/contact?topic=borehole-report', variant: 'primary' },
+      { label: 'Book a Site Visit', href: '/booking?type=site-survey', variant: 'secondary' },
       { label: 'WhatsApp the Water Desk', href: WHATSAPP, variant: 'tertiary' },
     ],
     accent: 'sky',
   },
 
+  /*
+   * 2026-10-18 tool audit: was "AI-assisted… 24/7 generator service desk",
+   * "trained on real Cummins, Voltka and multi-brand fault histories",
+   * "Cummins / Voltka authorised", "24/7 emergency response" and "engineers
+   * across 47 counties". None is confirmed; the trust row now uses only claims
+   * the owner has confirmed.
+   */
   generatorOracle: {
-    eyebrow: 'Generator Oracle • AI Diagnostic',
-    headline: 'AI-assisted generator diagnostics — backed by Kenya\'s 24/7 generator service desk.',
+    eyebrow: 'Generator Oracle • Free Fault-Code Tool',
+    headline: 'Generator fault diagnosis — with EmersonEIMS engineers behind every answer.',
     subtitle:
-      'Describe the symptom, get a structured root-cause path, then escalate to EmersonEIMS for on-site repair across Kenya. Trained on real Cummins, Voltka and multi-brand fault histories.',
+      'Look up the alarm or engine code, follow the checks, and escalate to EmersonEIMS for on-site repair. The guidance is written by our engineers; it is rule-based, not generative AI.',
     whoFor: ['Facility managers', 'Hospitals & critical sites', 'Banks & ATM networks', 'Telecom & data centres', 'Manufacturing', 'Hotels & service buildings'],
     pso: [
-      { problem: 'Generator down at 02:00 and the supplier isn\'t picking up.', solution: 'Oracle isolates the likely cause; emergency desk dispatches an engineer.', outcome: 'Faster restoration, fewer wrong parts, less downtime cost.' },
+      { problem: 'Generator down and you do not know what the alarm means.', solution: 'Oracle explains the alarm and the likely causes; our engineers come out when it needs hands-on work.', outcome: 'Faster restoration, fewer wrong parts.' },
       { problem: 'Engineers waste hours guessing fault codes.', solution: 'Structured fault-code path with brand-specific guidance.', outcome: 'Faster diagnosis, fewer parts swapped on guess.' },
-      { problem: 'Recurring trips never properly closed out.', solution: 'Oracle logs symptoms; engineers do root-cause analysis on site.', outcome: 'Fault closed out, not reset and forgotten.' },
+      { problem: 'Recurring trips never properly closed out.', solution: 'Our engineers find the root cause on site and explain what they found.', outcome: 'Fault closed out, not reset and forgotten.' },
     ],
-    trust: ['Cummins / Voltka authorised', '24/7 emergency response', 'Engineers across 47 counties', 'Documented job reports'],
+    trust: ['ISO 9001 & KEBS registered', 'Registered engineers', 'Under 4 h response in the Nairobi metro', '2-year workmanship warranty'],
     ctas: [
       { label: 'Call the Emergency Desk', href: TEL, variant: 'primary' },
       { label: 'WhatsApp an Engineer Now', href: WHATSAPP, variant: 'secondary' },

@@ -3,11 +3,12 @@
 /**
  * EXPERT AI CHAT PANEL - THE CORE SELLING POINT
  *
- * This is the flagship feature of Generator Oracle. It provides:
- * - Conversational AI that diagnoses like a 30-year veteran technician
+ * Conversational diagnosis when a local AI stack is configured; otherwise it
+ * renders the deterministic RuleBasedAssistantPanel (no generative AI).
  * - NO EXTERNAL HARDWARE REQUIRED for diagnosis
- * - Handles 99% of generator issues through intelligent questioning
  * - Provides step-by-step repair procedures
+ * (2026-10-18: a "handles 99% of generator issues" claim was removed here and
+ * from the model prompt — nothing measured it.)
  * - Covers ALL manufacturers: Cummins, Caterpillar, Volvo Penta, Perkins,
  *   John Deere, Deutz, MTU, MAN, Doosan, Yanmar, Kubota, Kohler, etc.
  */
@@ -164,7 +165,7 @@ IMPORTANT RULES:
 - Never recommend dangerous shortcuts
 - Always consider the skill level of the technician
 
-Remember: Your goal is to help ANY technician solve 99% of generator issues without needing external hardware. You ARE the expert they need.`;
+Remember: help the technician find the cause safely and step by step. If you are not sure, say so plainly and recommend they contact an EmersonEIMS engineer (WhatsApp or call 0768 860 665). Never invent fault-code meanings, part numbers or prices.`;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HELPER COMPONENTS

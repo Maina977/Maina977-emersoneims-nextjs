@@ -36,13 +36,13 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
       url: 'https://www.emersoneims.com',
     },
     featureList: [
-      'Fault Code Lookup for 10+ Engine Platforms',
-      'Live Data Monitoring',
+      'Controller alarm lookup for 10 controller brands',
+      'J1939 SPN/FMI engine code reference',
       'Step-by-Step Repair Guides',
       'J1939/CAN Protocol Support',
-      'Offline Mode Available',
+      'Training simulators for controller displays',
       'Multi-Language Support',
-      'AI-Powered Diagnostics',
+      'One-tap escalation to an EmersonEIMS engineer',
     ],
   };
 
@@ -128,7 +128,7 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
       {
         '@type': 'HowToStep',
         name: 'Check for Fault Codes',
-        text: 'Open Generator Oracle and connect to your generator. Read any active fault codes displayed on the controller.',
+        text: 'Read the active alarm or fault code shown on your generator controller display.',
         position: 1,
       },
       {
@@ -140,7 +140,7 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
       {
         '@type': 'HowToStep',
         name: 'Review Possible Causes',
-        text: 'Generator Oracle lists possible causes ranked by probability. Start with the most likely cause.',
+        text: 'Generator Oracle lists the likely causes, most common first. Start with the first one.',
         position: 3,
       },
       {

@@ -34,7 +34,7 @@ export const metadata: Metadata = {
    */
   title: { default: 'Free Engineering Calculators — No Signup', template: "%s | EmersonEIMS Kenya" },
   description:
-    'Free browser tools for Kenyan engineers: generator fault code lookup, solar system sizing, borehole depth and yield estimates, and building take-offs. No signup.',
+    'Free browser tools for Kenyan engineers: generator fault code lookup, solar system sizing, borehole site pre-screening and building engineering calculators. No signup.',
   keywords: [
     'AI engineering tools Kenya',
     'Generator Oracle',
@@ -53,9 +53,9 @@ export const metadata: Metadata = {
    * x-pathname header.
    */
   openGraph: {
-    title: 'AI Engineering Tools — Generator Oracle, Solar Genius, AquaScan Pro',
+    title: 'Free Engineering Tools — Generator Oracle, Solar Genius, AquaScan Pro',
     description:
-      'Free AI engineering tools in your browser: generator diagnostics, solar design, borehole analysis, BIM/QS.',
+      'Free engineering tools in your browser: generator fault codes, solar sizing, borehole pre-screening and building calculators.',
     url: URL,
     siteName: 'EmersonEIMS',
     type: 'website',
@@ -64,8 +64,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Engineering Tools — EmersonEIMS',
-    description: 'Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro. Free.',
+    title: 'Free Engineering Tools — EmersonEIMS',
+    description: 'Generator Oracle, Solar Genius Pro, AquaScan Pro and the Building Suite. Free, no sign-up.',
     images: [`${SITE}/og-image.jpg`],
     site: '@EmersonEIMS',
   },

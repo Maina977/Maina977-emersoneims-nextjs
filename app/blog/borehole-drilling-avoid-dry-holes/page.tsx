@@ -181,7 +181,7 @@ export default function BoreholeDrillingBlogPage() {
             <p className="text-blue-300 mb-4">
               <strong>Planning a borehole? Get professional geological survey first.</strong> It's 15% of drilling cost and prevents 95% of failures.
             </p>
-            <Link href="/tools/aquascan-pro" className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all">
+            <Link href="/aquascan-pro-v3" className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all">
               Get Borehole Analysis with AquaScan Pro
             </Link>
           </div>

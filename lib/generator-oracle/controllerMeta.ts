@@ -154,6 +154,8 @@ export interface ControllerFaultCode {
   code: string;
   brand: string;
   model: string;
+  /** Every controller model this code applies to (set when per-model copies are merged). */
+  models?: string[];
   firmwareVersions: string[];
   category: string;
   subcategory: string;

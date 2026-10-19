@@ -18,24 +18,17 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
  * It is NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
  * All brand names are trademarks of their respective owners.
  *
- * Features:
- * - Fault-code references across 10 controller families, measured by executing
- *   the registries rather than estimated:
- *     Tier 1 verified  — 6,756 DISTINCT codes over 79 brands
- *     Tier 2 range     — ~397,401 code numbers, each titled "meaning not
- *                        verified" and carrying verified:false
- *   The Tier 1 figure was previously quoted as 54,192. That counted one code
- *   once per applicable engine model — exactly 17x over-count on the VODIA set
- *   (51,527 rows for 3,029 real codes). Rows are now collapsed per code in
- *   lib/data/curatedFaultCodes.ts, which preserves every code and records the
- *   models it applies to. No code was removed.
- * - Step-by-step reset pathways for every fault
- * - Parameter-based diagnosis with live readings
- * - 100% offline capability via IndexedDB
+ * What it holds (2026-10-18 tool audit, owner chose an honest count):
+ * - Hand-written controller alarm guides for 10 controller brands, one entry
+ *   per brand + code, plus the J1939 SPN/FMI engine-code reference. Live
+ *   totals come from /api/generator-oracle/health; never write them here.
+ * - The ~397,401 range-generated "template" codes and the generated VODIA
+ *   rows are gone, and nothing is described as manufacturer text.
+ * - Reset steps per alarm, Repair Centre guides for symptoms, and a
+ *   one-tap route to an EmersonEIMS engineer on every result.
+ * - Simulators (dashboard, monitoring, controller displays) are training
+ *   views on simulated data and say so on screen.
  * - 7-language support including RTL Arabic
- * - Technician feedback loop
- * - Licensed product with M-Pesa/Bank payment verification
- * - Volvo Penta VODIA diagnostic integration
  */
 export default function GeneratorOraclePage() {
   return (
@@ -64,8 +57,8 @@ function fmtNum(n: number): string {
 }
 
 interface OracleTotals {
-  faultCodes: number;
-  verifiedCodes: number;
+  controllerAlarms: number;
+  j1939Codes: number;
   brands: number;
 }
 
@@ -125,25 +118,20 @@ function LoadingFallback() {
               Until the fetch resolves the figures are simply absent rather than
               approximated — a placeholder number is how the stale one got here.
 
-              The two counts stay separate on purpose. "Verified" are
-              manufacturer-curated entries; "code numbers covered" is range-based
-              structural coverage where entries carry verified:false. Collapsing
-              them into one headline is what would overstate the database.
+              The two counts stay separate on purpose: hand-written controller
+              alarm guides, and J1939 engine-code reference entries. They are
+              different kinds of entry, so they are not summed into one headline.
             */}
-            <div className="text-amber-400 font-bold">{stats ? fmtNum(stats.verifiedCodes) : '—'}</div>
-            <div className="text-slate-500">Verified Fault Codes</div>
+            <div className="text-amber-400 font-bold">{stats ? fmtNum(stats.controllerAlarms) : '—'}</div>
+            <div className="text-slate-500">Controller Alarms</div>
           </div>
           <div className="text-center">
-            <div className="text-amber-400 font-bold">{stats ? fmtNum(stats.faultCodes) : '—'}</div>
-            <div className="text-slate-500">Code Numbers Covered</div>
+            <div className="text-amber-400 font-bold">{stats ? fmtNum(stats.j1939Codes) : '—'}</div>
+            <div className="text-slate-500">J1939 Engine Codes</div>
           </div>
           <div className="text-center">
             <div className="text-amber-400 font-bold">{stats ? stats.brands : '—'}</div>
             <div className="text-slate-500">Controller Brands</div>
-          </div>
-          <div className="text-center">
-            <div className="text-amber-400 font-bold">100%</div>
-            <div className="text-slate-500">Offline</div>
           </div>
         </div>
       </div>

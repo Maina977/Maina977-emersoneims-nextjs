@@ -355,114 +355,15 @@ export const POWERWIZARD_FAULT_CODES: Partial<ControllerFaultCode>[] = [
     ['Check sensing circuit']
   ),
 
-  // ==================== GENERATOR VOLTAGE (SPN 520-522) ====================
-  ...createPowerWizardCode(520, 0, 'Generator Voltage', 'Electrical', 'Voltage', 'shutdown',
-    'Generator output voltage exceeded critical high limit. Load disconnected for protection.',
-    ['Generator tripped', 'Voltage was too high', 'Equipment protection activated'],
-    [
-      { likelihood: 'high', cause: 'AVR failure or runaway', verification: 'Check AVR' },
-      { likelihood: 'medium', cause: 'Speed surge', verification: 'Check governor' }
-    ],
-    ['Check AVR operation', 'Replace if faulty', 'Check speed stability']
-  ),
-
-  ...createPowerWizardCode(520, 1, 'Generator Voltage', 'Electrical', 'Voltage', 'shutdown',
-    'Generator output voltage collapsed below critical minimum.',
-    ['Generator tripped', 'Voltage was very low'],
-    [
-      { likelihood: 'high', cause: 'Severe overload', verification: 'Check load' },
-      { likelihood: 'high', cause: 'Excitation failure', verification: 'Check field' }
-    ],
-    ['Remove excessive load', 'Check excitation system']
-  ),
-
-  ...createPowerWizardCode(520, 15, 'Generator Voltage High', 'Electrical', 'Voltage', 'warning',
-    'Generator voltage above normal but below shutdown level.',
-    ['Voltage somewhat high', 'AVR adjustment needed'],
-    [
-      { likelihood: 'high', cause: 'AVR set high', verification: 'Check setting' }
-    ],
-    ['Adjust AVR voltage']
-  ),
-
-  ...createPowerWizardCode(520, 17, 'Generator Voltage Low', 'Electrical', 'Voltage', 'warning',
-    'Generator voltage below normal but above critical.',
-    ['Voltage somewhat low', 'Check load and AVR'],
-    [
-      { likelihood: 'high', cause: 'Overloaded', verification: 'Check kW' },
-      { likelihood: 'medium', cause: 'AVR low', verification: 'Check AVR' }
-    ],
-    ['Reduce load', 'Adjust AVR']
-  ),
-
-  ...createPowerWizardCode(521, 0, 'Generator Current', 'Electrical', 'Current', 'shutdown',
-    'Generator current massively exceeded rating. Short circuit protection activated.',
-    ['Generator tripped', 'Severe overcurrent'],
-    [
-      { likelihood: 'high', cause: 'Short circuit', verification: 'Check load circuits' }
-    ],
-    ['Find and repair short', 'Test insulation']
-  ),
-
-  ...createPowerWizardCode(521, 15, 'Generator Current High', 'Electrical', 'Current', 'warning',
-    'Generator current above rated value but below trip.',
-    ['Current high', 'Overload condition'],
-    [
-      { likelihood: 'high', cause: 'Load exceeds rating', verification: 'Check total load' }
-    ],
-    ['Reduce load']
-  ),
-
-  ...createPowerWizardCode(522, 0, 'Generator Frequency', 'Electrical', 'Frequency', 'shutdown',
-    'Generator frequency exceeded maximum safe limit.',
-    ['Tripped on high frequency'],
-    [
-      { likelihood: 'high', cause: 'Governor failure', verification: 'Check governor' }
-    ],
-    ['Check governor', 'Test actuator']
-  ),
-
-  ...createPowerWizardCode(522, 1, 'Generator Frequency', 'Electrical', 'Frequency', 'warning',
-    'Generator frequency below minimum operating threshold.',
-    ['Frequency low', 'Engine laboring'],
-    [
-      { likelihood: 'high', cause: 'Overload', verification: 'Check kW' },
-      { likelihood: 'high', cause: 'Fuel issue', verification: 'Check fuel' }
-    ],
-    ['Reduce load', 'Check fuel system']
-  ),
-
-  // ==================== STARTING SYSTEM (SPN 636, 637, 1075) ====================
-  ...createPowerWizardCode(636, 7, 'Engine Cranking', 'Engine', 'Starting', 'shutdown',
-    'Engine failed to crank. Starter motor did not turn engine.',
-    ['No cranking', 'Starter didn\'t engage'],
-    [
-      { likelihood: 'high', cause: 'Battery dead', verification: 'Check voltage' },
-      { likelihood: 'high', cause: 'Starter connections', verification: 'Check cables' },
-      { likelihood: 'medium', cause: 'Starter failed', verification: 'Test starter' }
-    ],
-    ['Check battery', 'Clean connections', 'Test starter']
-  ),
-
-  ...createPowerWizardCode(637, 7, 'Engine Start', 'Engine', 'Starting', 'shutdown',
-    'Engine failed to start within allowed time and attempts.',
-    ['Cranked but didn\'t start', 'Start lockout active'],
-    [
-      { likelihood: 'high', cause: 'No fuel delivery', verification: 'Check fuel to engine' },
-      { likelihood: 'high', cause: 'Fuel solenoid issue', verification: 'Test solenoid' },
-      { likelihood: 'medium', cause: 'Air in fuel', verification: 'Bleed system' }
-    ],
-    ['Check fuel system', 'Test solenoid', 'Bleed air']
-  ),
-
-  ...createPowerWizardCode(1075, 31, 'Emergency Stop', 'Engine', 'Emergency', 'shutdown',
-    'Emergency stop circuit activated stopping the engine.',
-    ['Engine stopped', 'E-stop active'],
-    [
-      { likelihood: 'high', cause: 'E-stop pressed', verification: 'Check buttons' }
-    ],
-    ['Release e-stop', 'Reset alarm']
-  ),
+  /*
+   * REMOVED 2026-10-18 (tool audit): SPN 520-523, 636, 637, 1075 and 3510-3512.
+   * Under SAE J1939 those numbers mean other things (520 = actual retarder
+   * percent torque, 523 = transmission current gear, 636 = engine position
+   * sensor, 1075 = electric lift pump, 3509-3514 = sensor supply voltages),
+   * so labelling them generator voltage, cranking, e-stop or shutdowns taught
+   * the wrong meaning under a verified flag. Add generator AC alarms back only
+   * with the SPN/FMI numbers from Caterpillar EMCP/PowerWizard documentation.
+   */
 
   // ==================== COMMUNICATION (SPN 639) ====================
   ...createPowerWizardCode(639, 9, 'J1939 Data Link', 'Control', 'Communication', 'warning',
@@ -485,52 +386,6 @@ export const POWERWIZARD_FAULT_CODES: Partial<ControllerFaultCode>[] = [
     ['Check connections', 'Verify shielding']
   ),
 
-  // ==================== REVERSE POWER (SPN 523) ====================
-  ...createPowerWizardCode(523, 1, 'Generator Power', 'Electrical', 'Power', 'shutdown',
-    'Reverse power detected - generator motoring. Engine not producing power.',
-    ['Generator disconnected', 'Was consuming power'],
-    [
-      { likelihood: 'high', cause: 'Engine not producing', verification: 'Check engine' }
-    ],
-    ['Verify engine runs correctly']
-  ),
-
-  ...createPowerWizardCode(523, 17, 'Generator Power Low', 'Electrical', 'Power', 'warning',
-    'Generator power output below expected level.',
-    ['Power output low'],
-    [
-      { likelihood: 'medium', cause: 'Load reduced', verification: 'Check load' }
-    ],
-    ['Verify load']
-  ),
-
-  // ==================== PROTECTION ALARMS ====================
-  ...createPowerWizardCode(3510, 0, 'Engine Overspeed', 'Engine', 'Speed', 'shutdown',
-    'Engine overspeed protection activated.',
-    ['Shutdown on overspeed'],
-    [
-      { likelihood: 'high', cause: 'Governor fault', verification: 'Check governor' }
-    ],
-    ['Check governor', 'Test at no load']
-  ),
-
-  ...createPowerWizardCode(3511, 0, 'Low Oil Pressure Shutdown', 'Engine', 'Oil Pressure', 'shutdown',
-    'Low oil pressure protection shutdown activated.',
-    ['Stopped on low oil pressure'],
-    [
-      { likelihood: 'high', cause: 'Oil issue', verification: 'Check level' }
-    ],
-    ['Check oil', 'Find cause']
-  ),
-
-  ...createPowerWizardCode(3512, 0, 'High Coolant Temp Shutdown', 'Engine', 'Coolant', 'shutdown',
-    'High coolant temperature protection shutdown activated.',
-    ['Stopped on high temperature'],
-    [
-      { likelihood: 'high', cause: 'Cooling issue', verification: 'Check system' }
-    ],
-    ['Check cooling system']
-  ),
 ];
 
 export function getPowerWizardFaultCodes(): ControllerFaultCode[] {

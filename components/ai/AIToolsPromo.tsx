@@ -12,26 +12,26 @@ const TOOLS: { href: string; name: string; tag: string; blurb: string }[] = [
   {
     href: '/generator-oracle',
     name: 'Generator Oracle',
-    tag: 'AI generator diagnostics',
-    blurb: 'Search manufacturer-curated fault codes, read interactive wiring diagrams, and run AI-guided troubleshooting for Cummins, Perkins, FG Wilson and every major controller (DSE, ComAp, PowerWizard).',
+    tag: 'Generator fault codes & diagnosis',
+    blurb: 'Look up controller alarms (DSE, ComAp, Woodward, SmartGen, CAT PowerWizard and more) and J1939 engine codes, follow the checks, and reach an engineer in one tap.',
   },
   {
     href: '/solar-genius-pro',
     name: 'Solar Genius Pro',
-    tag: 'AI solar design & sizing',
-    blurb: 'Design and optimise a solar system in minutes — array, inverter and battery sizing tuned to real Kenyan irradiance, with fault codes and a design studio.',
+    tag: 'Solar sizing estimate',
+    blurb: 'A free first estimate of panels, inverter, battery, cost and payback from your own consumption, using NASA sun-hours for your area, plus an inverter fault-code library.',
   },
   {
     href: '/aquascan-pro-v3',
     name: 'AquaScan Pro',
-    tag: 'AI water & borehole intelligence',
-    blurb: 'Site and borehole analysis with satellite and NASA data, pump matching, water-quality insight and predictive maintenance for water systems.',
+    tag: 'Borehole pre-screen',
+    blurb: 'A desktop first look at a borehole site from public rainfall, soil and water-point data, with every source named — the step before a field survey, not a replacement for one.',
   },
   {
     href: '/solutions/building',
     name: 'Pro Building Suite',
-    tag: 'AI architecture + structural + QS',
-    blurb: 'Architectural design, structural engineering analysis and professional BOQ generation in one platform — complete construction documentation in minutes.',
+    tag: 'Engineering calculators',
+    blurb: 'Hand-checked building calculators — wind load, bolt and beam checks, drainage runoff, bearing capacity, U-values and acoustics — with a route to our engineers for full design.',
   },
   {
     href: '/diagnostics',
@@ -52,9 +52,9 @@ export default function AIToolsPromo() {
     <DeepDiveSection
       id="ai-tools"
       eyebrow="Engineering intelligence"
-      title="6 Powerful AI Tools — Free to Explore"
+      title="6 Free Engineering Tools"
       accent="violet"
-      intro="Beyond installing and maintaining power systems, EmersonEIMS has built a suite of AI engineering tools used across Africa and beyond — diagnostics, design, sizing and documentation that put professional-grade engineering in your hands in minutes. Explore any of them free."
+      intro="Beyond installing and maintaining power systems, EmersonEIMS has built free engineering tools for diagnosis, sizing and reference. Each one tells you what it can and cannot do, and each one ends with a route to our engineers."
     >
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {TOOLS.map((t) => (
@@ -74,9 +74,8 @@ export default function AIToolsPromo() {
       </div>
 
       <p className="text-white/70 leading-relaxed">
-        These tools are how we reach far beyond a single site visit: a technician in any of Kenya&apos;s 47 counties — or anywhere
-        in the region — can diagnose a generator fault, size a solar array, analyse a borehole or generate a BOQ without waiting
-        for an engineer to arrive. They are part of the same engineering discipline behind our field work, and they are{' '}
+        These tools are how we help before a site visit: a technician anywhere can look up a generator fault, get a first solar
+        estimate or pre-screen a borehole site before an engineer arrives. They are part of the same engineering discipline behind our field work, and they are{' '}
         <Link href="/ai-tools" className="text-violet-300 hover:text-violet-200 underline underline-offset-2">all gathered on our AI Tools hub</Link>.
         When the tool points to a real-world job, our engineers are a call away on{' '}
         <strong>+254&nbsp;768&nbsp;860&nbsp;665</strong> or <strong>+254&nbsp;782&nbsp;914&nbsp;717</strong>.

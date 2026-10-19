@@ -35,6 +35,14 @@ const PATTERNS = [
   /\b\d{1,3},\d{3}\+?(?:\s+\w+){0,4}\s+(?:fault[- ]?codes?|error codes?|codes)\b/i,
   /\b(?:over|access|search|hold)\s+\d{1,3},\d{3}\b[^.]{0,40}\b(?:fault|code)/i,
   /\b\d{1,3},\d{3}\b[^.]{0,40}\bacross\s+\d{1,3}\s+(?:engine\s+)?brands?\b/i,
+  /*
+   * Short forms (2026-10-18 tool audit): "400k+ fault codes", "450K+ Fault
+   * Codes" and stat objects like { label: 'Fault Codes', value: '400K+' } all
+   * shipped past the comma-only patterns above.
+   */
+  /\b\d{2,3}\s?[kK]\+?(?:\s+\w+){0,3}\s+(?:fault[- ]?codes?|error codes?)\b/i,
+  /\b\d{2,3}[kK]\+?['"][^\n]{0,60}\bfault[- ]?codes?\b/i,
+  /\bfault[- ]?codes?\b[^\n]{0,60}['"]\d{2,3}[kK]\+?['"]/i,
 ];
 
 /**

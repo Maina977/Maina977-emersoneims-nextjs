@@ -11,44 +11,50 @@ import { motion } from 'framer-motion';
  * with its own identity, lead capture, and authority positioning.
  */
 
+/*
+ * 2026-10-18 tool audit: this list claimed "the largest fault code database
+ * in Africa", AI photo diagnosis, "100% offline", live J1939 monitoring and
+ * Portuguese/Amharic/Somali. None of those are in the product. What follows
+ * is what Generator Oracle actually does.
+ */
 const FEATURES = [
   {
     icon: '🔍',
-    title: 'Curated Fault Codes',
-    description: 'The largest fault code database for generators in Africa. Cummins, Perkins, CAT, DSE, ComAp, and more.',
+    title: 'Controller Alarm Lookup',
+    description: 'Plain-English guides to the alarms on DeepSea, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens and ENKO controllers.',
   },
   {
-    icon: '🧠',
-    title: 'AI-Powered Diagnosis',
-    description: 'Upload a photo of your error screen. Our AI identifies the fault and provides instant solutions.',
+    icon: '🔢',
+    title: 'J1939 Engine Codes',
+    description: 'Type SPN 100 FMI 1 the way it shows on the display and see what it means, for Cummins, CAT, Perkins, Volvo Penta and other electronic diesels.',
   },
   {
-    icon: '📱',
-    title: '100% Offline Capable',
-    description: 'Works in remote areas with no internet. All data stored locally on your device.',
+    icon: '🛠️',
+    title: 'Symptom Diagnosis',
+    description: 'Describe what the generator is doing and get the matching diagnostic guides and alarms. Rule-based, written by our engineers.',
   },
   {
     icon: '🔧',
-    title: 'Step-by-Step Repairs',
-    description: 'Every fault code comes with detailed repair instructions. No guesswork.',
+    title: 'Step-by-Step Checks',
+    description: 'Likely causes, what to check first, and how to clear the alarm once the cause is fixed.',
   },
   {
-    icon: '📊',
-    title: 'Live Parameter Monitoring',
-    description: 'Connect via OBD-II/J1939 to monitor engine parameters in real-time.',
+    icon: '🖥️',
+    title: 'Training Simulators',
+    description: 'Practise on simulated controller displays and a simulated running set before you touch the real one.',
   },
   {
     icon: '🌍',
     title: '7 Languages',
-    description: 'English, Swahili, French, Arabic, Portuguese, Amharic, and Somali. Built for Africa.',
+    description: 'English, Kiswahili, French, Spanish, Arabic, Hindi and Chinese.',
   },
 ];
 
 const STATS = [
-  { value: '400K+', label: 'Fault Codes' },
-  { value: '10+', label: 'Controller Types' },
-  { value: '47', label: 'Counties Served' },
-  { value: '24/7', label: 'Support' },
+  { value: '10', label: 'Controller Brands' },
+  { value: 'J1939', label: 'Engine Codes Decoded' },
+  { value: 'Free', label: 'No Sign-up Needed' },
+  { value: '1 tap', label: 'To an Engineer' },
 ];
 
 // Testimonials audit 2026-07-23 (owner-directed): the Radisson Blu Nairobi and
@@ -74,14 +80,16 @@ export default function GeneratorOracleProductPage() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
 
   const handleLeadCapture = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(false);
 
     // Deliver the lead through the real pipeline (/api/contact → email/SMS/ERP/sheet).
     try {
-      await fetch('/api/contact', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -89,10 +97,11 @@ export default function GeneratorOracleProductPage() {
           email,
           phone: '',
           service: 'Generator Oracle',
-          message: 'Requested Generator Oracle access from the product page.',
+          message: 'Asked to be told about new Generator Oracle guides (product page).',
           source: 'generator_oracle_product_page',
         }),
       });
+      if (!res.ok) { setSubmitError(true); return; }
       setSubmitted(true);
 
       // Track conversion
@@ -103,7 +112,7 @@ export default function GeneratorOracleProductPage() {
         });
       }
     } catch {
-      // Handle error silently
+      setSubmitError(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +125,6 @@ export default function GeneratorOracleProductPage() {
         {/* Background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-black" />
-          <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-5" />
           {/* Animated orbs */}
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
@@ -130,7 +138,7 @@ export default function GeneratorOracleProductPage() {
             className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-full mb-8"
           >
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-amber-400 text-sm font-medium">Africa&apos;s Generator Diagnostic Platform</span>
+            <span className="text-amber-400 text-sm font-medium">Free generator fault-code tool</span>
           </motion.div>
 
           {/* Logo/Title */}
@@ -152,8 +160,8 @@ export default function GeneratorOracleProductPage() {
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto">
-              The diagnostic tool that turns <span className="text-white font-semibold">any technician</span> into
-              a <span className="text-amber-400 font-semibold">generator expert</span>.
+              Find the cause of a generator fault faster, with an
+              <span className="text-amber-400 font-semibold"> EmersonEIMS engineer</span> one tap away.
             </p>
           </motion.div>
 
@@ -185,7 +193,7 @@ export default function GeneratorOracleProductPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email for free access"
+                  placeholder="Your email for new fault-code guides"
                   required
                   className="flex-1 px-6 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition-colors"
                 />
@@ -194,13 +202,13 @@ export default function GeneratorOracleProductPage() {
                   disabled={isSubmitting}
                   className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold rounded-xl hover:shadow-lg hover:shadow-amber-500/25 transition-all disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Starting...' : 'Start Free Trial'}
+                  {isSubmitting ? 'Sending…' : 'Keep me posted'}
                 </button>
               </form>
             ) : (
               <div className="p-6 bg-green-500/10 border border-green-500/30 rounded-xl">
-                <div className="text-green-400 font-semibold text-lg mb-2">Welcome to Generator Oracle!</div>
-                <p className="text-gray-400 mb-4">Check your email for access instructions.</p>
+                <div className="text-green-400 font-semibold text-lg mb-2">Thank you, we have your email.</div>
+                <p className="text-gray-400 mb-4">You do not need to wait for us: Generator Oracle is free to use now.</p>
                 <Link
                   href="/generator-oracle"
                   className="inline-block px-6 py-3 bg-amber-500 text-black font-bold rounded-lg hover:bg-amber-400 transition-colors"
@@ -209,8 +217,13 @@ export default function GeneratorOracleProductPage() {
                 </Link>
               </div>
             )}
+            {submitError && (
+              <p role="alert" className="mt-3 text-sm text-red-300">
+                That did not go through. Please try again, or WhatsApp us on 0768 860 665.
+              </p>
+            )}
             <p className="mt-4 text-sm text-gray-500">
-              Free 7-day trial. No credit card required. Cancel anytime.
+              Generator Oracle is free to use with no sign-up. We only email you about new guides.
             </p>
           </motion.div>
 
@@ -234,7 +247,7 @@ export default function GeneratorOracleProductPage() {
               href="/generator-oracle"
               className="px-6 py-3 border border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-colors"
             >
-              Try Demo →
+              Open Generator Oracle →
             </Link>
           </motion.div>
         </div>
@@ -253,7 +266,7 @@ export default function GeneratorOracleProductPage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               Everything You Need to
-              <span className="text-amber-400"> Diagnose Any Generator</span>
+              <span className="text-amber-400"> Diagnose Common Generator Faults</span>
             </h2>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
               Built by engineers, for engineers. Generator Oracle is the result of 15+ years
@@ -284,7 +297,7 @@ export default function GeneratorOracleProductPage() {
       <section className="py-16 px-4 bg-slate-950">
         <div className="max-w-6xl mx-auto text-center">
           <h3 className="text-sm text-gray-500 uppercase tracking-wider mb-8">
-            Compatible With All Major Brands
+            Works With Sets From These Brands
           </h3>
           <div className="flex flex-wrap justify-center gap-6">
             {BRANDS_SUPPORTED.map((brand, i) => (
@@ -304,7 +317,7 @@ export default function GeneratorOracleProductPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Diagnose Any Fault in <span className="text-amber-400">3 Steps</span>
+              Find the Cause in <span className="text-amber-400">3 Steps</span>
             </h2>
           </div>
 
@@ -315,7 +328,7 @@ export default function GeneratorOracleProductPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Enter Fault Code</h3>
               <p className="text-gray-400">
-                Type the code from your controller display, or snap a photo and let AI read it.
+                Type the code or alarm exactly as it shows on your controller display.
               </p>
             </div>
             <div className="text-center">
@@ -324,7 +337,7 @@ export default function GeneratorOracleProductPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Get Diagnosis</h3>
               <p className="text-gray-400">
-                Instantly see what the fault means, possible causes ranked by likelihood, and repair costs.
+                See what the fault means, the likely causes, and what to check first.
               </p>
             </div>
             <div className="text-center">
@@ -333,7 +346,7 @@ export default function GeneratorOracleProductPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Follow Repair Steps</h3>
               <p className="text-gray-400">
-                Step-by-step instructions with diagrams. No guessing, no unnecessary part replacements.
+                Step-by-step checks, fewer guesses and fewer unnecessary part replacements. Stuck? WhatsApp an engineer.
               </p>
             </div>
           </div>
@@ -345,7 +358,7 @@ export default function GeneratorOracleProductPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Trusted by <span className="text-amber-400">Engineers Across Africa</span>
+              What Our <span className="text-amber-400">Clients Say</span>
             </h2>
           </div>
 
@@ -359,11 +372,6 @@ export default function GeneratorOracleProductPage() {
                 transition={{ delay: i * 0.1 }}
                 className="p-6 bg-white/5 border border-white/10 rounded-2xl"
               >
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, j) => (
-                    <span key={j} className="text-amber-400">★</span>
-                  ))}
-                </div>
                 <p className="text-gray-300 mb-6 italic">&quot;{testimonial.quote}&quot;</p>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -384,10 +392,10 @@ export default function GeneratorOracleProductPage() {
       <section className="py-24 px-4 bg-gradient-to-r from-amber-900/20 to-orange-900/20">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Ready to Diagnose Like a Pro?
+            Ready to Find the Fault?
           </h2>
           <p className="text-xl text-gray-400 mb-8">
-            Start your free trial today. No credit card required.
+            Free to use. No sign-up needed.
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
@@ -395,7 +403,7 @@ export default function GeneratorOracleProductPage() {
               href="/generator-oracle"
               className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold text-lg rounded-xl hover:shadow-lg hover:shadow-amber-500/25 transition-all"
             >
-              Start Free Trial
+              Open Generator Oracle
             </Link>
             <a
               href="tel:+254768860665"
@@ -430,7 +438,7 @@ export default function GeneratorOracleProductPage() {
             >
               <div className="text-4xl mb-4">📊</div>
               <h3 className="text-xl font-bold mb-2 group-hover:text-amber-400 transition-colors">Fault Code Database</h3>
-              <p className="text-gray-400 mb-4">Manufacturer-curated fault codes with detailed explanations and repair guides.</p>
+              <p className="text-gray-400 mb-4">Common controller alarms and engine codes, explained with causes and fixes.</p>
               <span className="text-amber-400 font-medium">Browse Codes →</span>
             </Link>
 
@@ -466,14 +474,14 @@ export default function GeneratorOracleProductPage() {
             "@type": "SoftwareApplication",
             "name": "Generator Oracle",
             "applicationCategory": "BusinessApplication",
-            "operatingSystem": "Web, iOS, Android",
+            "operatingSystem": "Web browser",
             "offers": {
               "@type": "Offer",
               "price": "0",
               "priceCurrency": "KES",
-              "description": "Free trial available"
+              "description": "Free to use"
             },
-            "description": "a generator diagnostic platform with manufacturer-curated fault codes, AI-powered diagnosis, and step-by-step repair guides.",
+            "description": "A free generator fault-code tool: controller alarm guides, J1939 engine codes and step-by-step checks, with escalation to EmersonEIMS engineers.",
             "provider": {
               "@type": "Organization",
               "name": "EmersonEIMS",

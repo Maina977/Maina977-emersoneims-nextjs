@@ -31,40 +31,45 @@ const ADVANCED_FEATURES = [
      * tool genuinely does.
      */
     title: 'Fault Code Diagnosis',
-    description: 'Matches symptoms and codes against a curated fault-code database',
-    stats: 'Cause and remedy per code',
+    description: 'Matches symptoms and codes against our hand-written alarm guides and the J1939 engine-code reference',
+    stats: 'Cause and checks per code',
     color: '#06b6d4',
     benefit: 'Reduce unexpected downtime',
   },
+  /*
+   * The next three are TRAINING VIEWS. A website cannot read a customer's
+   * engine, so they run on simulated values and must say so (2026-10-18 audit:
+   * they were described as "real-time" tracking and analysis).
+   */
   {
     icon: '🎮',
     title: '3D Engine Visualization',
-    description: 'Animated engine with Exterior/Cutaway/X-Ray views',
-    stats: 'Real-time component tracking',
+    description: 'Animated engine with exterior, cutaway and X-ray views',
+    stats: 'Training view',
     color: '#8b5cf6',
-    benefit: 'Visual troubleshooting made easy',
+    benefit: 'See where each component sits',
   },
   {
     icon: '🌡️',
-    title: 'Thermal Mapping System',
-    description: 'Color-coded heat zones & temperature gradients',
-    stats: 'Hotspot identification',
+    title: 'Thermal Map',
+    description: 'Shows where heat builds up in a running generator and why',
+    stats: 'Training view, simulated values',
     color: '#ef4444',
-    benefit: 'Prevent overheating issues',
+    benefit: 'Know where to check first when it overheats',
   },
   {
     icon: '📊',
-    title: 'Vibration Analysis',
-    description: 'Real-time frequency spectrum analysis',
-    stats: 'Bearing wear detection',
+    title: 'Vibration Guide',
+    description: 'Explains what each vibration frequency usually points to',
+    stats: 'Training view, simulated spectrum',
     color: '#22c55e',
-    benefit: 'Early mechanical fault detection',
+    benefit: 'Recognise bearing and alignment faults',
   },
   {
     icon: '🔮',
-    title: 'Smart Parts Finder',
-    description: 'Intelligent parts recommendations with pricing',
-    stats: 'Priority-based suggestions',
+    title: 'Parts Finder',
+    description: 'The parts usually involved in each fault',
+    stats: 'We confirm price and availability',
     color: '#f59e0b',
     benefit: 'Find the right part quickly',
   },
@@ -86,10 +91,11 @@ const CORE_FEATURES = [
    * word in a tile sitting beside '10', '100%' and '7+'. A dash until the
    * fetch lands is honest; a word in a number slot is just broken.
    */
-  { icon: '🔍', stat: null, label: 'Fault Codes', desc: 'Comprehensive database' },
+  { icon: '🔍', stat: null, label: 'Controller Alarms', desc: 'Hand-written guides' },
   { icon: '⚡', stat: '10', label: 'Controller Brands', desc: 'Wide compatibility' },
-  { icon: '🔄', stat: '100%', label: 'Reset Pathways', desc: 'Step-by-step guides' },
-  { icon: '📴', stat: '100%', label: 'Offline Ready', desc: 'No internet required' },
+  { icon: '🔢', stat: 'J1939', label: 'Engine Codes', desc: 'SPN / FMI decoded' },
+  /* "Offline Ready · 100% · No internet required" was removed (2026-10-18):
+     sw-oracle.js caches only the page shell; fault lookups need the server. */
   { icon: '🌍', stat: '7+', label: 'Languages', desc: 'Including Arabic RTL' },
   { icon: '📱', stat: 'PWA', label: 'Install as App', desc: 'Phone, tablet, desktop' },
 ];
@@ -97,8 +103,8 @@ const CORE_FEATURES = [
 // Feature Highlights
 const FEATURE_HIGHLIGHTS = [
   { feature: 'Multi-brand compatibility', description: 'Compatible with DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO and Volvo Penta VODIA controllers' },
-  { feature: 'Verified fault-code intelligence', description: 'Manufacturer-curated entries plus template-extended coverage from published code-range documentation' },
-  { feature: 'Offline capability', description: 'Works without internet connection — references cached locally on first load' },
+  { feature: 'Plain-English alarm guides', description: 'Each controller alarm explained by our engineers, with likely causes and what to check, plus J1939 SPN/FMI engine codes decoded from the standard' },
+  { feature: 'A real engineer behind it', description: 'Every result has a one-tap WhatsApp or phone route to an EmersonEIMS engineer' },
   { feature: 'Professional pricing', description: 'KES 20,000/year subscription with full support & updates' },
 ];
 
@@ -202,21 +208,20 @@ function GeneratorOracleShowcaseInner() {
   const [activeTab, setActiveTab] = useState<'features' | 'comparison'>('features');
   const health = useBackendHealth();
 
-  // Stats are driven from the live /api/generator-oracle/health response
-  // when the diagnostic engine is reachable; otherwise we fall back to the
-  // verified static counts so the section stays presentable offline.
+  // Stats are read from the live /api/generator-oracle/health response. They
+  // are exact counts, so no "+" is appended; a dash shows until they load.
   const liveStats = health.status === 'connected' && health.totals
     ? [
-        { value: `${health.totals.faultCodes.toLocaleString('en-US')}+`, label: 'Fault-code references', color: '#06b6d4' },
-        { value: `${health.totals.verifiedCodes.toLocaleString('en-US')}`, label: 'Manufacturer-curated', color: '#22c55e' },
+        { value: `${health.totals.controllerAlarms.toLocaleString('en-US')}`, label: 'Controller alarm guides', color: '#06b6d4' },
+        { value: `${health.totals.j1939Codes.toLocaleString('en-US')}`, label: 'J1939 engine codes', color: '#22c55e' },
         { value: `${health.totals.models}`, label: 'Controller models', color: '#f59e0b' },
-        { value: `${health.totals.brands}`, label: 'Major brands', color: '#8b5cf6' },
+        { value: `${health.totals.brands}`, label: 'Controller brands', color: '#8b5cf6' },
       ]
     : [
-        { value: '—', label: 'Fault-code references', color: '#06b6d4' },
-        { value: '—', label: 'Manufacturer-curated', color: '#22c55e' },
-        { value: '80+', label: 'Controller models', color: '#f59e0b' },
-        { value: '10', label: 'Major brands', color: '#8b5cf6' },
+        { value: '—', label: 'Controller alarm guides', color: '#06b6d4' },
+        { value: '—', label: 'J1939 engine codes', color: '#22c55e' },
+        { value: '—', label: 'Controller models', color: '#f59e0b' },
+        { value: '10', label: 'Controller brands', color: '#8b5cf6' },
       ];
 
   return (
@@ -273,9 +278,9 @@ function GeneratorOracleShowcaseInner() {
           </p>
 
           <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-            Manufacturer-aware diagnostic lookup with{' '}
-            <span className="text-amber-400 font-bold">curated fault-code references</span>,{' '}
-            verified troubleshooting steps, and AI-assisted analysis across{' '}
+            Look up controller alarms and{' '}
+            <span className="text-amber-400 font-bold">J1939 engine fault codes</span>, read the likely causes and
+            what to check, and reach one of our engineers in one tap, across{' '}
             <span className="text-white font-bold">10 controller brands</span>.
           </p>
 
@@ -433,7 +438,7 @@ function GeneratorOracleShowcaseInner() {
                   Built for Professional Technicians
                 </p>
                 <p className="text-slate-400">
-                  Generator Oracle combines comprehensive fault databases with AI-powered diagnostics to help you troubleshoot faster.
+                  Generator Oracle combines fault-code lookup, step-by-step diagnostic guides and direct access to our engineers to help you troubleshoot faster.
                 </p>
               </m.div>
             </m.div>
@@ -465,7 +470,7 @@ function GeneratorOracleShowcaseInner() {
               <div className="text-xl font-black text-cyan-400">
                 {feature.stat ??
                   (health.status === 'connected' && health.totals
-                    ? `${health.totals.verifiedCodes.toLocaleString('en-US')}`
+                    ? `${health.totals.controllerAlarms.toLocaleString('en-US')}`
                     : '—')}
               </div>
               <div className="text-white text-sm font-medium">{feature.label}</div>
@@ -483,8 +488,8 @@ function GeneratorOracleShowcaseInner() {
         >
           <h3 className="text-center text-lg font-bold text-white mb-6">
             {health.status === 'connected' && health.totals
-              ? `${health.totals.models}+ Controller Models Across ${health.totals.brands} Major Brands`
-              : '80+ Controller Models Across 10 Major Brands'}
+              ? `${health.totals.models} Controller Models Across ${health.totals.brands} Brands`
+              : 'Controller Models We Cover'}
           </h3>
           <div className="flex flex-wrap justify-center gap-2">
             {COMPATIBLE_CONTROLLERS.map((controller, i) => (
@@ -527,8 +532,8 @@ function GeneratorOracleShowcaseInner() {
                 <span className="text-5xl">🎉</span>
               </div>
               <p className="text-slate-300 max-w-2xl mx-auto">
-                Use Generator Oracle free for life — full access to the fault-code references,
-                AI-assisted analysis, and 10 supported controller brands. Built for technicians across Africa.
+                Use Generator Oracle free — full access to the fault-code lookup, the diagnostic
+                guides and all 10 supported controller brands. Built for technicians across Africa.
               </p>
               <p className="text-amber-400 font-bold mt-4">
                 Pro plan available from KES 20,000/year (updates &amp; premium support)
@@ -588,7 +593,7 @@ function GeneratorOracleShowcaseInner() {
           </div>
 
           <p className="text-slate-500 text-sm mt-8 max-w-2xl mx-auto">
-            🔮 <span className="text-cyan-400">Professional-grade</span> diagnostic tool with AI Analysis, 3D Visualization, Thermal Mapping, and Vibration Analysis.
+            🔮 Fault-code lookup, diagnostic guides and <span className="text-cyan-400">training simulators</span> (3D engine, thermal and vibration views).
             <br />
             <span className="text-amber-400">Built for generator technicians in Africa.</span>
           </p>

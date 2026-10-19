@@ -177,12 +177,12 @@ const GENERATOR_HUB_SECTIONS = [
   },
   {
     id: 'ai-diagnostic',
-    title: 'AI Diagnostic',
-    icon: '🤖',
+    title: 'Visual Fault Checklist',
+    icon: '👀',
     href: '#ai-diagnostic',
     color: 'pink',
-    description: 'AI-assisted visual triage — verification required',
-    badge: 'AI'
+    description: 'Tick what you can see and get the matching diagnostic guides',
+    badge: 'Free'
   },
   {
     id: 'maintenance-hub',
@@ -315,7 +315,7 @@ const GeneratorBibleHub = () => {
               className={`relative group p-5 rounded-2xl bg-gradient-to-br from-${section.color}-500/10 to-${section.color}-600/5 border border-${section.color}-500/20 hover:border-${section.color}-500/50 transition-all`}
             >
               {section.badge && (
-                <span className={`absolute -top-2 -right-2 px-2 py-0.5 text-xs font-bold rounded-full ${section.badge === 'AI' ? 'bg-pink-500' : 'bg-red-500'} text-white`}>
+                <span className={`absolute -top-2 -right-2 px-2 py-0.5 text-xs font-bold rounded-full ${section.badge === 'Free' ? 'bg-pink-500' : 'bg-red-500'} text-white`}>
                   {section.badge}
                 </span>
               )}
@@ -537,26 +537,29 @@ const AIVisualDiagnosticSection = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
             </span>
-            AI-assisted • verification required
+            Free • verify on site before acting
           </span>
+          {/* Was "AI Visual Diagnostic" promising photo AI, shelf-life and
+              time-to-failure prediction. Photo AI is not enabled on this site;
+              the tool below is the visual checklist (2026-10-18 audit). */}
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            AI Visual Diagnostic
+            Visual Fault Checklist
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Upload a photo of a generator component. The AI returns ranked
-            candidate parts and likely faults to accelerate triage. Always
-            verify against the equipment and the OEM manual before action.
+            Tick what you can see on the generator — a leak, smoke, corrosion, a damaged belt or burnt
+            wiring — and get the matching diagnostic guides and controller alarms. Then send it to one of
+            our engineers in one tap.
           </p>
         </div>
 
         {/* Feature Cards */}
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: '📸', title: 'Part Identification', desc: 'Name & OEM numbers' },
-            { icon: '⏰', title: 'Shelf Life Analysis', desc: 'Age & wear estimation' },
-            { icon: '🔮', title: 'Failure Prediction', desc: 'Time to failure estimate' },
-            { icon: '💰', title: 'Parts & Pricing', desc: 'Availability & cost' },
-          ].map((feature, index) => (
+            { icon: '👀', title: 'What You See', desc: 'Tick the visible signs' },
+            { icon: '📋', title: 'Matching Guides', desc: 'Step-by-step diagnosis' },
+            { icon: '🎛️', title: 'Related Alarms', desc: 'From 10 controller brands' },
+            { icon: '💬', title: 'Ask an Engineer', desc: 'One tap on WhatsApp' },
+          ].map((feature) => (
             <div
               key={feature.title}
               
@@ -580,8 +583,8 @@ const AIVisualDiagnosticSection = () => {
             onClick={() => setShowDiagnostic(!showDiagnostic)}
             className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30"
           >
-            <span className="text-2xl">🤖</span>
-            <span>{showDiagnostic ? 'Hide Diagnostic Tool' : 'Open AI Visual Diagnostic'}</span>
+            <span className="text-2xl">👀</span>
+            <span>{showDiagnostic ? 'Hide Checklist' : 'Open Visual Checklist'}</span>
           </button>
         </div>
 
@@ -3160,7 +3163,7 @@ export default function GeneratorPage() {
       <GeneratorLeasingSection />
 
       {/* ═══════════════════════════════════════════════════════════════════
-          AI VISUAL DIAGNOSTIC — AI-assisted triage (verification required)
+          VISUAL FAULT CHECKLIST (rule-based; photo AI is not enabled)
       ════════════════════════════════════════════════════════════════ */}
       <AIVisualDiagnosticSection />
 

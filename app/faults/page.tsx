@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FAULT_CODES } from '@/lib/data/faultCodes';
+import { FAULT_CODES, getAllBrands } from '@/lib/data/faultCodes';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 /* Crawlable index of the brand reference pages.
@@ -22,7 +22,8 @@ import FaultReferenceIndex from '@/components/faults/FaultReferenceIndex';
  * Establishes engineering authority and captures leads.
  */
 
-const BRANDS = ['All', 'Cummins', 'DSE', 'ComAp', 'Perkins', 'CAT', 'Volvo Penta'];
+// Only brands that actually have guides here — a filter that returns nothing looks broken.
+const BRANDS = ['All', ...getAllBrands()];
 
 const SEVERITY_COLORS = {
   critical: 'bg-red-500/10 text-red-400 border-red-500/30',
@@ -38,8 +39,12 @@ export default function FaultCodesPage() {
 
   const filteredCodes = useMemo(() => {
     return FAULT_CODES.filter(fault => {
-      const matchesSearch = search === '' ||
-        fault.code.toLowerCase().includes(search.toLowerCase()) ||
+      // "SPN 100", "spn100" and "Cummins 111" should all find the code.
+      const q = search.trim().toLowerCase();
+      const compact = (s: string) => s.toLowerCase().replace(/[\s_-]+/g, '');
+      const matchesSearch = q === '' ||
+        compact(fault.code).includes(compact(q)) ||
+        compact(`${fault.brand}${fault.code}`).includes(compact(q)) ||
         fault.title.toLowerCase().includes(search.toLowerCase()) ||
         fault.description.toLowerCase().includes(search.toLowerCase());
 
@@ -49,11 +54,15 @@ export default function FaultCodesPage() {
     });
   }, [search, selectedBrand]);
 
+  const [subscribeError, setSubscribeError] = useState(false);
+
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubscribeError(false);
     // Deliver the signup as a real lead via /api/contact (email/SMS/ERP/sheet).
+    // Only confirm when the server accepted it.
     try {
-      await fetch('/api/contact', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -65,10 +74,11 @@ export default function FaultCodesPage() {
           source: 'faults_newsletter',
         }),
       });
+      if (res.ok) setSubscribed(true);
+      else setSubscribeError(true);
     } catch {
-      // Non-blocking — still confirm to the user.
+      setSubscribeError(true);
     }
-    setSubscribed(true);
   };
 
   return (
@@ -80,7 +90,6 @@ export default function FaultCodesPage() {
 
       {/* Hero Section */}
       <section className="relative py-20 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-5" />
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
 
         <div className="max-w-6xl mx-auto relative z-10">
@@ -112,8 +121,8 @@ export default function FaultCodesPage() {
               Generator <span className="text-amber-400">Fault Code</span> Database
             </h1>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
-              Search <span className="text-white font-semibold">manufacturer-curated fault codes</span>, with range-based coverage of every controller code number, from
-              Cummins, Perkins, DSE, ComAp, and more. Get instant diagnosis and repair steps.
+              Plain-English guides to common generator alarms and engine fault codes from
+              Cummins, Perkins, DSE and ComAp: what each one means, the likely causes, and how to fix it.
             </p>
 
             {/* Search Bar */}
@@ -123,7 +132,7 @@ export default function FaultCodesPage() {
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Enter fault code (e.g., SPN-111, E020, A015...)"
+                  placeholder="Enter a code or alarm (e.g., SPN-100, Cummins 111, low oil pressure)"
                   className="w-full px-6 py-4 pl-14 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition-colors text-lg"
                 />
                 <svg className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,11 +161,11 @@ export default function FaultCodesPage() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
               <div className="text-center">
-                <div className="text-2xl font-bold text-amber-400">400K+</div>
-                <div className="text-sm text-gray-500">Fault Codes</div>
+                <div className="text-2xl font-bold text-amber-400">{FAULT_CODES.length}</div>
+                <div className="text-sm text-gray-500">Detailed guides</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-amber-400">12+</div>
+                <div className="text-2xl font-bold text-amber-400">{BRANDS.length - 1}</div>
                 <div className="text-sm text-gray-500">Brands</div>
               </div>
               <div className="text-center">
@@ -184,12 +193,12 @@ export default function FaultCodesPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredCodes.slice(0, 30).map((fault, i) => (
+            {filteredCodes.map((fault, i) => (
               <motion.div
                 key={fault.code}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: Math.min(i, 12) * 0.05 }}
               >
                 <Link
                   href={`/faults/${encodeURIComponent(fault.code.toLowerCase())}`}
@@ -199,7 +208,7 @@ export default function FaultCodesPage() {
                     <div>
                       <span className="text-xs text-gray-500 uppercase">{fault.brand}</span>
                       <h3 className="text-lg font-bold text-amber-400 group-hover:text-amber-300 transition-colors">
-                        {fault.code}
+                        {fault.alarm ? 'Controller alarm' : fault.code}
                       </h3>
                     </div>
                     <span className={`px-2 py-1 text-xs rounded-full border ${SEVERITY_COLORS[fault.severity]}`}>
@@ -216,16 +225,6 @@ export default function FaultCodesPage() {
             ))}
           </div>
 
-          {filteredCodes.length > 30 && (
-            <div className="text-center mt-8">
-              <Link
-                href="/generator-oracle"
-                className="inline-block px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold rounded-xl hover:shadow-lg hover:shadow-amber-500/25 transition-all"
-              >
-                Access Full Database in Generator Oracle
-              </Link>
-            </div>
-          )}
         </div>
       </section>
 
@@ -236,7 +235,7 @@ export default function FaultCodesPage() {
             Get Fault Code Alerts
           </h2>
           <p className="text-gray-400 mb-6">
-            Subscribe to receive weekly updates on new fault codes, troubleshooting tips, and engineering insights.
+            Leave your email and we will let you know when we publish new fault-code guides and troubleshooting tips.
           </p>
 
           {!subscribed ? (
@@ -258,8 +257,13 @@ export default function FaultCodesPage() {
             </form>
           ) : (
             <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-              <p className="text-green-400 font-semibold">Subscribed! Check your email for confirmation.</p>
+              <p className="text-green-400 font-semibold">Thank you, we have your email.</p>
             </div>
+          )}
+          {subscribeError && (
+            <p role="alert" className="mt-3 text-sm text-red-300">
+              That did not go through. Please try again, or WhatsApp us on 0768 860 665.
+            </p>
           )}
         </div>
       </section>
@@ -302,7 +306,7 @@ export default function FaultCodesPage() {
             "@context": "https://schema.org",
             "@type": "WebPage",
             "name": "Generator Fault Code Database",
-            "description": "Search manufacturer-curated generator fault codes from Cummins, Perkins, DSE and ComAp, plus range-based coverage of every controller code number. Get instant diagnosis and repair steps.",
+            "description": "Plain-English guides to common generator alarms and engine fault codes from Cummins, Perkins, DSE and ComAp: what each one means, the likely causes, and how to fix it.",
             "provider": {
               "@type": "Organization",
               "name": "EmersonEIMS",

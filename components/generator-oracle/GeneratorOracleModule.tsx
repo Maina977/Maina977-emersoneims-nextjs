@@ -47,6 +47,8 @@ import { CONTROLLER_BRANDS, type ControllerFaultCode } from '@/lib/generator-ora
 import {
   getHealth as oracleHealth,
   searchFaultCodes as apiSearchFaultCodes,
+  codeLabel,
+  type CodeKind,
   type SearchResultItem,
 } from '@/lib/generator-oracle/client/oracleClient';
 import {
@@ -696,191 +698,6 @@ function AnalyticsCard({
   );
 }
 
-// ==================== AI DIAGNOSTICS ENGINE DISPLAY ====================
-function AIDiagnosticsEngine({
-  isActive,
-  confidence,
-  prediction,
-}: {
-  isActive: boolean;
-  confidence: number;
-  prediction: string;
-}) {
-  return (
-    <HolographicGlassPanel
-      title="AI Diagnostics Engine"
-      subtitle="Neural Network Analysis"
-      icon="🧠"
-      accentColor="purple"
-      variant="holographic"
-    >
-      <div className="space-y-4">
-        {/* AI Status */}
-        <div className="flex items-center justify-between p-3 bg-purple-500/5 rounded-lg border border-purple-500/20">
-          <div className="flex items-center gap-3">
-            <motion.div
-              className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/30 to-violet-600/30 flex items-center justify-center"
-              animate={isActive ? {
-                boxShadow: ['0 0 20px rgba(139,92,246,0.3)', '0 0 40px rgba(139,92,246,0.6)', '0 0 20px rgba(139,92,246,0.3)']
-              } : {}}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <motion.span
-                className="text-2xl"
-                animate={isActive ? { rotate: [0, 360] } : {}}
-                transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-              >
-                🔮
-              </motion.span>
-            </motion.div>
-            <div>
-              <div className="text-sm font-medium text-white">Neural Engine</div>
-              <div className={`text-xs ${isActive ? 'text-green-400' : 'text-slate-500'}`}>
-                {isActive ? 'PROCESSING' : 'STANDBY'}
-              </div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-lg font-mono text-purple-400">{confidence}%</div>
-            <div className="text-[10px] text-slate-500 uppercase">Confidence</div>
-          </div>
-        </div>
-
-        {/* Processing animation */}
-        {isActive && (
-          <div className="relative h-1 bg-slate-800 rounded-full overflow-hidden">
-            <motion.div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 via-violet-500 to-purple-500"
-              animate={{ x: ['-100%', '200%'] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-              style={{ width: '50%' }}
-            />
-          </div>
-        )}
-
-        {/* Prediction */}
-        <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-          <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-2">AI Prediction</div>
-          <div className="text-sm text-white">{prediction}</div>
-        </div>
-
-        {/* Neural network visualization */}
-        <div className="flex justify-center gap-4 py-4">
-          {[...Array(5)].map((_, layer) => (
-            <div key={layer} className="flex flex-col gap-2">
-              {[...Array(3 + (layer === 2 ? 2 : 0))].map((_, node) => (
-                <motion.div
-                  key={node}
-                  className="w-3 h-3 rounded-full bg-purple-500/30 border border-purple-500/50"
-                  animate={isActive ? {
-                    backgroundColor: ['rgba(139,92,246,0.3)', 'rgba(139,92,246,0.8)', 'rgba(139,92,246,0.3)'],
-                    boxShadow: ['0 0 0 rgba(139,92,246,0)', '0 0 15px rgba(139,92,246,0.5)', '0 0 0 rgba(139,92,246,0)'],
-                  } : {}}
-                  transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                    delay: layer * 0.2 + node * 0.1
-                  }}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </HolographicGlassPanel>
-  );
-}
-
-// ==================== VOICE COMMAND & AR INDICATORS ====================
-function FeatureIndicators() {
-  return (
-    <div className="flex items-center gap-4">
-      {/* Voice Command */}
-      <motion.div
-        className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg"
-        whileHover={{ scale: 1.05 }}
-      >
-        <motion.span
-          className="text-lg"
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          🎤
-        </motion.span>
-        <span className="text-xs text-blue-400 uppercase tracking-wider font-medium">Voice Ready</span>
-      </motion.div>
-
-      {/* AR Mode */}
-      <motion.div
-        className="flex items-center gap-2 px-3 py-1.5 bg-violet-500/10 border border-violet-500/30 rounded-lg"
-        whileHover={{ scale: 1.05 }}
-      >
-        <motion.span
-          className="text-lg"
-          animate={{ rotateY: [0, 180, 360] }}
-          transition={{ duration: 3, repeat: Infinity }}
-        >
-          👓
-        </motion.span>
-        <span className="text-xs text-violet-400 uppercase tracking-wider font-medium">AR Mode</span>
-      </motion.div>
-    </div>
-  );
-}
-
-// ==================== SYSTEM HEALTH SCORE ====================
-function SystemHealthScore({ score }: { score: number }) {
-  const getColor = () => {
-    if (score >= 90) return { text: 'text-green-400', glow: '#22c55e', bg: 'from-green-500/20' };
-    if (score >= 70) return { text: 'text-amber-400', glow: '#f59e0b', bg: 'from-amber-500/20' };
-    return { text: 'text-red-400', glow: '#ef4444', bg: 'from-red-500/20' };
-  };
-
-  const colors = getColor();
-
-  return (
-    <motion.div
-      className={`relative p-6 rounded-2xl bg-gradient-to-br ${colors.bg} to-transparent border border-slate-700/50 overflow-hidden`}
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-    >
-      {/* Animated background glow */}
-      <motion.div
-        className="absolute inset-0 opacity-30"
-        style={{ background: `radial-gradient(circle at center, ${colors.glow}40, transparent 70%)` }}
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ duration: 3, repeat: Infinity }}
-      />
-
-      <div className="relative z-10 text-center">
-        <div className="text-xs text-slate-500 uppercase tracking-[0.2em] mb-2">System Health</div>
-        <motion.div
-          className={`text-6xl font-bold font-mono ${colors.text}`}
-          style={{ textShadow: `0 0 30px ${colors.glow}` }}
-          key={score}
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 200 }}
-        >
-          {score}
-        </motion.div>
-        <div className="text-slate-400 text-sm mt-1">/ 100</div>
-
-        {/* Health bar */}
-        <div className="mt-4 h-2 bg-slate-800 rounded-full overflow-hidden">
-          <motion.div
-            className="h-full rounded-full"
-            style={{ background: `linear-gradient(90deg, ${colors.glow}80, ${colors.glow})` }}
-            initial={{ width: 0 }}
-            animate={{ width: `${score}%` }}
-            transition={{ duration: 1.5, ease: [0.23, 1, 0.32, 1] }}
-          />
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 // ==================== LIVE DATA STREAM DISPLAY ====================
 function LiveDataStream() {
   const [data, setData] = useState<number[]>([65, 72, 68, 75, 70, 78, 73, 80, 76, 82, 79, 85]);
@@ -1073,10 +890,12 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  // CONSOLIDATED 8 SUPER-TABS (reduced from 34+ tabs)
+  // CONSOLIDATED 8 SUPER-TABS (reduced from 34+ tabs).
+  // Opens on the Fault Center: the lookup is the part that answers a real
+  // customer's question. The 'command' dashboard is a training simulator.
   const [activeScreen, setActiveScreen] = useState<
     'command' | 'ai' | 'faults' | 'systems' | 'controllers' | 'wiring' | 'monitoring' | 'tools'
-  >('command');
+  >('faults');
 
   // Sub-tab states for each super-tab
   const [aiSubTab, setAiSubTab] = useState<'expert' | 'visual' | 'analyze'>('expert');
@@ -1122,12 +941,11 @@ export default function GeneratorOracleModule() {
     return false;
   });
 
-  // AI Diagnostics state
-  const [aiActive, setAiActive] = useState(true);
-  const [aiConfidence, setAiConfidence] = useState(94);
-  const [systemHealth, setSystemHealth] = useState(87);
-
-  // Simulate live data updates
+  // TRAINING SIMULATOR: the 'command' dashboard animates plausible readings so
+  // technicians can practise reading a running set. It is NOT connected to any
+  // generator, and every panel that shows these values says "simulated".
+  // (2026-10-18 audit: removed the fake "AI confidence 94%", "system health
+  // 87%" and "AI Engine" status that sat alongside these values.)
   useEffect(() => {
     const interval = setInterval(() => {
       setParameters(prev => ({
@@ -1144,7 +962,6 @@ export default function GeneratorOracleModule() {
         coolantTemp: 78 + Math.random() * 3 - 1.5,
         oilPressure: 45 + Math.random() * 4 - 2,
       }));
-      setAiConfidence(prev => Math.min(99, Math.max(85, prev + (Math.random() * 4 - 2))));
     }, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -1241,11 +1058,13 @@ export default function GeneratorOracleModule() {
       // existing consumers (FaultDiagnosticsPanel list, command-search list)
       // keep working. Detail panes that need the full record can call
       // lookupFaultCode(code) on click — no full dataset is required.
-      const stubs: ControllerFaultCode[] = data.results.map((r: SearchResultItem) => ({
+      const stubs: (ControllerFaultCode & { codeKind: CodeKind })[] = data.results.map((r: SearchResultItem) => ({
         id: r.id,
         code: r.code,
+        codeKind: r.codeKind,
         brand: r.brand,
         model: r.model,
+        models: r.models,
         firmwareVersions: [],
         category: r.category,
         subcategory: r.subcategory,
@@ -1327,19 +1146,14 @@ export default function GeneratorOracleModule() {
                 <div className="flex items-center gap-4 lg:gap-8">
                   <PremiumStatusLED
                     status={generatorStatus === 'running' ? 'online' : generatorStatus === 'fault' ? 'error' : 'offline'}
-                    label="Generator"
+                    label="Simulator"
                     size="md"
                   />
                   <PremiumStatusLED status={isOffline ? 'offline' : 'online'} label="Network" size="sm" />
                   <PremiumStatusLED status={offlineReady ? 'online' : 'processing'} label="Database" size="sm" />
-                  <PremiumStatusLED status={aiActive ? 'processing' : 'offline'} label="AI Engine" size="sm" />
                 </div>
 
                 <div className="flex items-center gap-4">
-                  {/* Feature Indicators */}
-                  <div className="hidden xl:block">
-                    <FeatureIndicators />
-                  </div>
 
                   {/* Stats */}
                   <div className="hidden lg:flex items-center gap-4 px-4 py-1.5 bg-slate-900/60 rounded-lg border border-slate-700/50">
@@ -1351,11 +1165,6 @@ export default function GeneratorOracleModule() {
                     <div className="text-center">
                       <span className="text-[9px] text-slate-500 uppercase tracking-wider">{t.controllers}</span>
                       <div className="font-mono text-cyan-400 text-sm">{selectedModel || 'All'}</div>
-                    </div>
-                    <div className="w-px h-8 bg-slate-700" />
-                    <div className="text-center">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-wider">{t.severity}</span>
-                      <div className="font-mono text-green-400 text-sm">{systemHealth}%</div>
                     </div>
                   </div>
 
@@ -1474,10 +1283,10 @@ export default function GeneratorOracleModule() {
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                   <div className="flex items-center gap-2 shrink-0">
-                    <PremiumNavTab icon="🎛️" label="Command" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
+                    <PremiumNavTab icon="🔧" label="Fault Center" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} />
+                    <PremiumNavTab icon="🛠️" label="Diagnostic Assistant" active={activeScreen === 'ai'} onClick={() => setActiveScreen('ai')} />
                     <PremiumNavTab icon="🖥️" label="Controllers & Simulators" active={activeScreen === 'controllers'} onClick={() => setActiveScreen('controllers')} />
-                    <PremiumNavTab icon="🔧" label="Fault Center" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
-                    <PremiumNavTab icon="🧠" label="AI Diagnostics" active={activeScreen === 'ai'} onClick={() => setActiveScreen('ai')} />
+                    <PremiumNavTab icon="🎛️" label="Simulator Dashboard" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
                     <PremiumNavTab icon="🏭" label="Systems" active={activeScreen === 'systems'} onClick={() => setActiveScreen('systems')} />
                     <PremiumNavTab icon="📐" label="Wiring & Manuals" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
                     <PremiumNavTab icon="📊" label="Monitoring" active={activeScreen === 'monitoring'} onClick={() => setActiveScreen('monitoring')} />
@@ -1495,10 +1304,10 @@ export default function GeneratorOracleModule() {
                     onChange={(e) => setActiveScreen(e.target.value as typeof activeScreen)}
                     className="bg-slate-900/60 text-cyan-400 px-3 py-2 rounded-xl border border-cyan-500/30 font-medium text-sm"
                   >
-                    <option value="command">🎛️ Command Center</option>
-                    <option value="controllers">🖥️ Controllers & Simulators</option>
                     <option value="faults">🔧 Fault Center</option>
-                    <option value="ai">🧠 AI Diagnostics</option>
+                    <option value="ai">🛠️ Diagnostic Assistant</option>
+                    <option value="controllers">🖥️ Controllers & Simulators</option>
+                    <option value="command">🎛️ Simulator Dashboard</option>
                     <option value="systems">🏭 Systems</option>
                     <option value="wiring">📐 Wiring & Manuals</option>
                     <option value="monitoring">📊 Monitoring</option>
@@ -1506,23 +1315,16 @@ export default function GeneratorOracleModule() {
                   </select>
                 </div>
 
-                {/* Emergency Stop */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="hidden lg:flex px-6 py-3 bg-gradient-to-br from-red-600 via-red-700 to-red-800 rounded-xl font-bold uppercase tracking-wider text-white items-center gap-2"
-                  style={{
-                    boxShadow: '0 0 30px rgba(239,68,68,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
-                  }}
+                {/* A pulsing "E-STOP" button sat here that did nothing. A website
+                    cannot stop anyone's generator, and someone in an emergency
+                    must not be led to think it can. Removed 2026-10-18; the
+                    real emergency route is the phone number below. */}
+                <a
+                  href="tel:+254768860665"
+                  className="hidden lg:flex px-5 py-3 bg-red-600/90 hover:bg-red-600 rounded-xl font-bold text-white items-center gap-2 text-sm"
                 >
-                  <motion.span
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 0.5, repeat: Infinity }}
-                  >
-                    ⚠️
-                  </motion.span>
-                  <span className="text-sm">E-STOP</span>
-                </motion.button>
+                  🚨 Breakdown? Call 0768 860 665
+                </a>
               </div>
             </div>
           </header>
@@ -1541,6 +1343,16 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-6"
                   >
+                    {/* Every reading on this screen is simulated; say so first. */}
+                    <div role="note" className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                      <strong className="text-amber-300">Training simulator.</strong> The gauges and readings on this
+                      screen are simulated so you can practise reading a running generator. They are not from your
+                      generator.{' '}
+                      <button type="button" onClick={() => setActiveScreen('faults')} className="underline font-semibold text-amber-200">
+                        Look up a real fault code →
+                      </button>
+                    </div>
+
                     {/* HERO SECTION - Value Proposition */}
                     <motion.div
                       className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-950/80 via-slate-900/90 to-purple-950/80 border border-cyan-500/30 p-6"
@@ -1553,13 +1365,15 @@ export default function GeneratorOracleModule() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold">NO HARDWARE REQUIRED</span>
-                            <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/50 rounded-full text-xs text-purple-400 font-bold">AI-POWERED</span>
+                            <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-500/50 rounded-full text-xs text-cyan-300 font-bold">FREE</span>
                           </div>
                           <h2 className="text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
-                            99% of Generator Issues Solved by AI
+                            Find the Cause of a Generator Fault, Step by Step
                           </h2>
                           <p className="text-slate-400 text-sm lg:text-base mb-4">
-                            Expert-level diagnostics for ALL manufacturers: Cummins, Caterpillar, Volvo Penta, Perkins, John Deere, Deutz, MTU, and 20+ more. No external hardware needed - just your knowledge and our AI.
+                            Look up controller alarms (DSE, ComAp, Woodward, SmartGen, CAT PowerWizard and more) and J1939 engine
+                            codes from Cummins, Caterpillar, Perkins, Volvo Penta and other electronic diesels, then follow the
+                            checks. When you are stuck, one of our engineers is a WhatsApp message away.
                           </p>
                           {/* PRIMARY: Diagnostic Tools & Simulators - Most Used by Technicians */}
                           <div className="flex flex-wrap gap-2 mb-3">
@@ -1596,7 +1410,7 @@ export default function GeneratorOracleModule() {
                               onClick={() => { setActiveScreen('ai'); setAiSubTab('expert'); }}
                               className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 flex items-center gap-2"
                             >
-                              <span>💬</span> AI Expert Chat
+                              <span>💬</span> Diagnostic Assistant
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.02 }}
@@ -1604,7 +1418,7 @@ export default function GeneratorOracleModule() {
                               onClick={() => { setActiveScreen('faults'); setFaultsSubTab('lookup'); }}
                               className="px-6 py-3 bg-slate-800/80 border border-slate-600/50 text-white font-medium rounded-xl hover:bg-slate-700/80 flex items-center gap-2"
                             >
-                              <span>🔍</span> 400k+ Fault Codes
+                              <span>🔍</span> Fault Code Lookup
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.02 }}
@@ -1612,7 +1426,7 @@ export default function GeneratorOracleModule() {
                               onClick={() => { setActiveScreen('ai'); setAiSubTab('visual'); }}
                               className="px-6 py-3 bg-slate-800/80 border border-slate-600/50 text-white font-medium rounded-xl hover:bg-slate-700/80 flex items-center gap-2"
                             >
-                              <span>📷</span> Visual Diagnose
+                              <span>📷</span> Visual Checklist
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.02 }}
@@ -1626,12 +1440,12 @@ export default function GeneratorOracleModule() {
                         </div>
                         <div className="flex-shrink-0 grid grid-cols-3 gap-3">
                           {[
-                            { icon: '🛠️', label: 'Troubleshoot', desc: 'Guided repair', action: 'troubleshoot' },
+                            { icon: '🛠️', label: 'Troubleshoot', desc: 'Guided checks', action: 'troubleshoot' },
                             { icon: '📋', label: 'Repair Guides', desc: 'Step-by-step' },
-                            { icon: '💰', label: 'Cost Estimates', desc: 'Parts & labor' },
-                            { icon: '🔄', label: 'ECM/ECU Reset', desc: 'All brands' },
-                            { icon: '🛡️', label: 'Predictive', desc: 'Prevent failures' },
-                            { icon: '📊', label: 'Fleet Mgmt', desc: 'Multi-unit' },
+                            { icon: '📐', label: 'Wiring', desc: 'Controller diagrams' },
+                            { icon: '🔄', label: 'Reset Steps', desc: 'Per alarm' },
+                            { icon: '🖥️', label: 'Simulators', desc: 'Practise safely' },
+                            { icon: '💬', label: 'Engineer', desc: 'On WhatsApp' },
                           ].map((item, idx) => (
                             <div key={idx} className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 text-center">
                               <span className="text-2xl mb-1 block">{item.icon}</span>
@@ -1644,20 +1458,20 @@ export default function GeneratorOracleModule() {
                     </motion.div>
 
                     {/* Top Analytics Row */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                      <AnalyticsCard title="Active Power" value={`${parameters.activePowerKw?.toFixed(1) || '--'} kW`} change="+2.3%" trend="up" icon="⚡" color="cyan" />
-                      <AnalyticsCard title="Load Factor" value={`${parameters.loadPercent?.toFixed(0) || '--'}%`} change="-1.2%" trend="down" icon="📊" color="amber" />
-                      <AnalyticsCard title="Fuel Level" value={`${parameters.fuelLevel || '--'}%`} change="stable" trend="stable" icon="⛽" color="green" />
-                      <AnalyticsCard title="Engine Hours" value={`${parameters.engineHours?.toFixed(0) || '--'}`} change="+24h" trend="up" icon="⏱️" color="purple" />
-                      <AnalyticsCard title="Efficiency" value="94.2%" change="+0.8%" trend="up" icon="🎯" color="green" />
-                      <AnalyticsCard title="CO2 Saved" value="12.4 kg" change="+15%" trend="up" icon="🌿" color="green" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {/* Simulated readings. The fixed "Efficiency 94.2%", "CO2 Saved
+                          12.4 kg" cards and invented trend percentages were removed. */}
+                      <AnalyticsCard title="Active Power" value={`${parameters.activePowerKw?.toFixed(1) || '--'} kW`} change="simulated" trend="stable" icon="⚡" color="cyan" />
+                      <AnalyticsCard title="Load Factor" value={`${parameters.loadPercent?.toFixed(0) || '--'}%`} change="simulated" trend="stable" icon="📊" color="amber" />
+                      <AnalyticsCard title="Fuel Level" value={`${parameters.fuelLevel || '--'}%`} change="simulated" trend="stable" icon="⛽" color="green" />
+                      <AnalyticsCard title="Engine Hours" value={`${parameters.engineHours?.toFixed(0) || '--'}`} change="simulated" trend="stable" icon="⏱️" color="purple" />
                     </div>
 
                     {/* Main Dashboard Grid */}
                     <div className="grid grid-cols-12 gap-6">
                       {/* Left Column - Gauges */}
                       <div className="col-span-12 lg:col-span-4 space-y-6">
-                        <HolographicGlassPanel title="Engine Vitals" subtitle="Real-time Monitoring" icon="⚙️" accentColor="amber" variant="glow">
+                        <HolographicGlassPanel title="Engine Vitals" subtitle="Simulated values" icon="⚙️" accentColor="amber" variant="glow">
                           <div className="grid grid-cols-2 gap-6">
                             <Gauge3D
                               value={parameters.rpm}
@@ -1705,8 +1519,6 @@ export default function GeneratorOracleModule() {
                             />
                           </div>
                         </HolographicGlassPanel>
-
-                        <SystemHealthScore score={systemHealth} />
                       </div>
 
                       {/* Center Column - Main Display */}
@@ -1799,12 +1611,12 @@ export default function GeneratorOracleModule() {
                         </HolographicGlassPanel>
 
                         {/* Live Data Stream */}
-                        <HolographicGlassPanel title="Live Performance" subtitle="Real-time Data Stream" icon="📈" accentColor="cyan">
+                        <HolographicGlassPanel title="Performance Trend" subtitle="Simulated data stream" icon="📈" accentColor="cyan">
                           <LiveDataStream />
                         </HolographicGlassPanel>
 
                         {/* Quick Search */}
-                        <HolographicGlassPanel title={t.faultCode} subtitle={`${totalCodes.toLocaleString()}+ ${t.faultCodes}`} icon="🔍" accentColor="purple">
+                        <HolographicGlassPanel title={t.faultCode} subtitle={totalCodes ? `${totalCodes.toLocaleString()} ${t.faultCodes}` : t.faultCodes} icon="🔍" accentColor="purple">
                           <div className="flex gap-3">
                             <input
                               type="text"
@@ -1834,7 +1646,7 @@ export default function GeneratorOracleModule() {
                                   onClick={() => setActiveScreen('faults')}
                                 >
                                   <div className="flex items-center gap-3">
-                                    <span className="px-2 py-1 bg-slate-800 rounded font-mono text-cyan-400 text-sm">{fault.code}</span>
+                                    <span className="px-2 py-1 bg-slate-800 rounded font-mono text-cyan-400 text-sm">{codeLabel(fault as { code: string; codeKind?: CodeKind })}</span>
                                     <span className="text-white text-sm flex-1">{fault.title}</span>
                                     <span className={`px-2 py-0.5 rounded text-xs ${
                                       fault.severity === 'shutdown' ? 'bg-red-500/20 text-red-400' :
@@ -1851,13 +1663,11 @@ export default function GeneratorOracleModule() {
                         </HolographicGlassPanel>
                       </div>
 
-                      {/* Right Column - AI & Support */}
+                      {/* Right Column - Controller & Support. The "AI Diagnostics
+                          Engine" card that showed a random confidence figure and a
+                          fixed "operating within optimal parameters" verdict was
+                          removed (2026-10-18): no AI runs here. */}
                       <div className="col-span-12 lg:col-span-3 space-y-6">
-                        <AIDiagnosticsEngine
-                          isActive={aiActive}
-                          confidence={Math.round(aiConfidence)}
-                          prediction="System operating within optimal parameters. No immediate maintenance required."
-                        />
 
                         {/* Controller Selection Mini */}
                         <HolographicGlassPanel title="Controller" icon="🎛️" accentColor="cyan">
@@ -1902,7 +1712,7 @@ export default function GeneratorOracleModule() {
                               <span className="text-xl">💬</span>
                               <div className="flex-1">
                                 <div className="text-sm text-green-400 font-medium">{t.whatsappSupport}</div>
-                                <div className="text-xs text-slate-500">24/7</div>
+                                <div className="text-xs text-slate-500">Chat with an engineer</div>
                               </div>
                             </a>
                           </div>
@@ -1924,22 +1734,22 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ai" />
+                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="ai" />
 
                     {/* AI Super-Tab Header */}
                     <div className="text-center mb-4">
                       <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400">
-                        AI Diagnostics Hub
+                        Diagnostic Assistant
                       </h2>
-                      <p className="text-slate-400 text-sm">Expert AI Chat, Visual Diagnosis & Intelligent Analysis - All in One Place</p>
+                      <p className="text-slate-400 text-sm">Rule-based guidance from our diagnostic guides and alarm library</p>
                     </div>
 
                     {/* Sub-Tab Navigation */}
                     <SubTabNav
                       tabs={[
-                        { id: 'expert' as const, label: 'Expert Chat', icon: '💬' },
-                        { id: 'visual' as const, label: 'Visual Diagnose', icon: '📷' },
-                        { id: 'analyze' as const, label: 'AI Analysis', icon: '🧠' },
+                        { id: 'expert' as const, label: 'Describe Symptoms', icon: '💬' },
+                        { id: 'visual' as const, label: 'Visual Checklist', icon: '📷' },
+                        { id: 'analyze' as const, label: 'Readings Analysis', icon: '🧪' },
                       ]}
                       activeTab={aiSubTab}
                       onTabChange={setAiSubTab}
@@ -1965,14 +1775,14 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="faults" />
+                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="faults" showBack={false} />
 
                     {/* Fault Center Header */}
                     <div className="text-center mb-4">
                       <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-amber-400">
                         Fault Center
                       </h2>
-                      <p className="text-slate-400 text-sm">Curated Fault Codes, Deep Analysis & Interactive Troubleshooting</p>
+                      <p className="text-slate-400 text-sm">Controller alarms, J1939 engine codes and step-by-step troubleshooting</p>
                     </div>
 
                     {/* Sub-Tab Navigation */}
@@ -2012,7 +1822,7 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="systems" />
+                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="systems" />
 
                     {/* Systems Header */}
                     <div className="text-center mb-4">
@@ -2065,14 +1875,14 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="controllers" />
+                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="controllers" />
 
                     {/* Controllers Header */}
                     <div className="text-center mb-4">
                       <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
                         Controller Center
                       </h2>
-                      <p className="text-slate-400 text-sm">10 Controller Simulators, ECM Suite, Programming & Professional Tools</p>
+                      <p className="text-slate-400 text-sm">Controller display simulators, ECM guidance and practice tools</p>
                     </div>
 
                     {/* Sub-Tab Navigation */}
@@ -2080,7 +1890,7 @@ export default function GeneratorOracleModule() {
                       tabs={[
                         { id: 'simulator' as const, label: 'Controller Simulator', icon: '🖥️' },
                         { id: 'ecmsuite' as const, label: 'ECM Suite (10 Brands)', icon: '🧠' },
-                        { id: 'ecmhardware' as const, label: 'ECM Hardware Link', icon: '🔌' },
+                        { id: 'ecmhardware' as const, label: 'ECM Link (sim)', icon: '🔌' },
                         { id: 'ecmprog' as const, label: 'ECM Programming', icon: '💾' },
                         { id: 'ecmguide' as const, label: 'ECM Reprogram Guide', icon: '📋' },
                         { id: 'protools' as const, label: 'Pro Diagnostic Tools', icon: '🔧' },
@@ -2135,7 +1945,7 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="wiring" />
+                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="wiring" />
 
                     {/* Wiring Header */}
                     <div className="text-center mb-4">
@@ -2176,20 +1986,20 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="monitoring" />
+                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="monitoring" />
 
                     {/* Monitoring Header */}
                     <div className="text-center mb-4">
                       <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-violet-400">
                         Monitoring & Data
                       </h2>
-                      <p className="text-slate-400 text-sm">Real-time Monitoring, CAN Bus, OBD, Recording & Predictive Maintenance</p>
+                      <p className="text-slate-400 text-sm">Training views of monitoring, CAN bus, OBD and data recording (simulated data)</p>
                     </div>
 
                     {/* Sub-Tab Navigation */}
                     <SubTabNav
                       tabs={[
-                        { id: 'realtime' as const, label: 'Live Monitor', icon: '📊' },
+                        { id: 'realtime' as const, label: 'Monitor (sim)', icon: '📊' },
                         { id: 'canbus' as const, label: 'CAN Bus', icon: '📡' },
                         { id: 'obd' as const, label: 'OBD Protocol', icon: '🔌' },
                         { id: 'recording' as const, label: 'Data Recording', icon: '📈' },
@@ -2223,7 +2033,7 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="tools" />
+                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="tools" />
 
                     {/* Tools Header */}
                     <div className="text-center mb-4">

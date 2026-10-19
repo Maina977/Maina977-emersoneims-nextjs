@@ -1,36 +1,27 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { codeLabel, modelsLabel, type SearchResultItem } from '@/lib/generator-oracle/client/oracleClient';
+import { waLink } from '@/lib/serviceConnect/actions';
 
 /**
  * LiveFaultLookup
  *
  * Public-facing fault-code lookup that calls the real
- * /api/generator-oracle/search and /api/generator-oracle/fault-code endpoints.
+ * /api/generator-oracle/search endpoint.
  * No mocks, no static results — every row comes back from the server-side
  * fault index. Empty/unknown queries surface clear, honest UI states.
+ *
+ * Each result says what its number is: a J1939 SPN/FMI the engine reports, or
+ * our reference number for a controller that shows a text alarm (codeLabel).
  */
 
 type Severity = 'info' | 'warning' | 'critical' | 'shutdown';
 
-interface SearchResultItem {
-  id: string;
-  code: string;
-  brand: string;
-  model: string;
-  category: string;
-  subcategory: string;
-  severity: Severity;
-  alarmType: 'warning' | 'trip' | 'shutdown' | 'lockout';
-  title: string;
-  description: string;
-  verified: boolean;
-  source: 'manufacturer-curated' | 'template-extended';
-}
-
 interface SearchPayload {
   ok: boolean;
   query: string;
+  interpretedAs?: string | null;
   total: number;
   totalPages: number;
   page: number;
@@ -46,7 +37,7 @@ const SEVERITY_STYLE: Record<Severity, string> = {
   shutdown: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
 };
 
-const QUICK_QUERIES = ['1100', 'oil pressure', 'overspeed', 'low coolant', 'voltage', 'battery'];
+const QUICK_QUERIES = ['SPN 100 FMI 1', 'oil pressure', 'overspeed', 'coolant', 'under voltage', 'battery'];
 
 function SeverityBadge({ severity }: { severity: Severity }) {
   return (
@@ -58,20 +49,23 @@ function SeverityBadge({ severity }: { severity: Severity }) {
   );
 }
 
-function SourceBadge({ verified }: { verified: boolean }) {
-  return verified ? (
+function KindBadge({ item }: { item: SearchResultItem }) {
+  if (item.codeKind === 'reference') {
+    return (
+      <span
+        className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded border bg-slate-700/40 text-slate-300 border-slate-600/40"
+        title="Our reference number. This controller shows the alarm as text on its display, so match it by the alarm name."
+      >
+        Text alarm
+      </span>
+    );
+  }
+  return (
     <span
       className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded border bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
-      title="Sourced from a manufacturer-curated brand file"
+      title="The code number the engine or controller reports"
     >
-      Manufacturer-curated
-    </span>
-  ) : (
-    <span
-      className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded border bg-slate-700/40 text-slate-300 border-slate-600/40"
-      title="Generated from manufacturer-published code-range templates"
-    >
-      Template-extended
+      {item.codeKind === 'j1587' ? 'J1587 code' : 'J1939 code'}
     </span>
   );
 }
@@ -121,16 +115,18 @@ export default function LiveFaultLookup({ className = '', compact = false }: Pro
     runSearch(query);
   };
 
+  const askEngineer = (subject: string) => waLink(`Hi EmersonEIMS, I need help with generator fault: ${subject}`);
+
   return (
     <div
       className={`bg-slate-900/70 border border-slate-700 rounded-2xl ${compact ? 'p-5' : 'p-6 sm:p-8'} ${className}`}
     >
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-white font-bold text-lg">Live fault-code lookup</h3>
+          <h3 className="text-white font-bold text-lg">Fault-code lookup</h3>
           <p className="text-slate-400 text-xs mt-1">
-            Backed by the real <span className="font-mono text-cyan-300">/api/generator-oracle/search</span> endpoint —
-            results are read from the server-side fault index, not the page.
+            Type a code as it appears on your generator (for example SPN 100 FMI 1) or the alarm wording.
+            Descriptions are written by our engineers; your engine or controller manual is the final word.
           </p>
         </div>
       </div>
@@ -142,8 +138,8 @@ export default function LiveFaultLookup({ className = '', compact = false }: Pro
           autoComplete="off"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Try: 1100, oil pressure, DSE 7320, overspeed…"
-          className="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-cyan-200 font-mono text-sm placeholder-slate-600 focus:outline-none focus:border-cyan-500/60"
+          placeholder="Try: SPN 110 FMI 0, oil pressure, DSE7320, overspeed…"
+          className="flex-1 min-w-0 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-cyan-200 font-mono text-sm placeholder-slate-600 focus:outline-none focus:border-cyan-500/60"
           aria-label="Fault code or keyword"
           maxLength={100}
         />
@@ -175,14 +171,16 @@ export default function LiveFaultLookup({ className = '', compact = false }: Pro
       <div className="mt-5">
         {error && (
           <div className="rounded-lg border border-rose-500/40 bg-rose-500/5 px-3 py-2 text-sm text-rose-200">
-            <strong>Lookup failed:</strong> {error}. The diagnostic engine is reachable separately —
-            try again, or refine the query.
+            <strong>Lookup failed:</strong> {error}. Please try again in a moment, or{' '}
+            <a href={askEngineer(query.trim() || 'a fault code')} target="_blank" rel="noopener noreferrer" className="underline">
+              ask an engineer on WhatsApp
+            </a>.
           </div>
         )}
 
         {!error && !loading && !data && (
           <div className="text-sm text-slate-500">
-            Enter a code or keyword to query the live fault index.
+            Enter a code or alarm wording to search the library.
           </div>
         )}
 
@@ -190,8 +188,11 @@ export default function LiveFaultLookup({ className = '', compact = false }: Pro
           <div className="rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-3 text-sm text-slate-300">
             <div className="font-semibold text-white mb-1">No matches for &ldquo;{data.query}&rdquo;.</div>
             <div className="text-slate-400 text-xs">
-              Try a manufacturer code (e.g. <span className="font-mono">1100</span>), a symptom keyword,
-              or browse by brand.
+              Try the code exactly as shown on the display (e.g. <span className="font-mono">SPN 100 FMI 1</span>) or the
+              alarm wording (e.g. <span className="font-mono">low oil pressure</span>).{' '}
+              <a href={askEngineer(data.query)} target="_blank" rel="noopener noreferrer" className="text-green-400 underline">
+                Or send it to an engineer on WhatsApp
+              </a>.
             </div>
           </div>
         )}
@@ -200,8 +201,16 @@ export default function LiveFaultLookup({ className = '', compact = false }: Pro
           <div className="space-y-2">
             <div className="text-xs text-slate-400">
               {data.total.toLocaleString('en-US')} match{data.total === 1 ? '' : 'es'} for{' '}
-              <span className="text-cyan-300 font-mono">{data.query}</span> · showing{' '}
-              {data.results.length}
+              <span className="text-cyan-300 font-mono">{data.query}</span>
+              {data.interpretedAs && data.interpretedAs.toUpperCase() !== data.query.toUpperCase() && (
+                <>
+                  {' '}(read as{' '}
+                  <span className="font-mono text-cyan-300">
+                    {codeLabel({ code: data.interpretedAs, codeKind: /^SPN/i.test(data.interpretedAs) ? 'j1939' : 'j1587' })}
+                  </span>)
+                </>
+              )}{' '}
+              · showing {data.results.length}
             </div>
             <ul className="divide-y divide-slate-800 rounded-lg border border-slate-800 overflow-hidden">
               {data.results.map((r) => (
@@ -209,19 +218,29 @@ export default function LiveFaultLookup({ className = '', compact = false }: Pro
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-cyan-300 text-sm bg-slate-900 border border-cyan-500/30 px-2 py-0.5 rounded">
-                        {r.code}
+                        {codeLabel(r)}
                       </span>
                       <SeverityBadge severity={r.severity} />
-                      <SourceBadge verified={r.verified} />
+                      <KindBadge item={r} />
                     </div>
                     <span className="text-xs text-slate-500">
-                      {r.brand} · {r.model}
+                      {r.brand} · {modelsLabel(r)}
                     </span>
                   </div>
                   <div className="text-sm text-white font-medium mt-2 line-clamp-1">{r.title}</div>
                   <div className="text-xs text-slate-400 mt-1 line-clamp-2">{r.description}</div>
-                  <div className="text-xs text-slate-500 mt-2">
-                    {r.category} · {r.subcategory}
+                  <div className="text-xs text-slate-500 mt-2 flex flex-wrap items-center justify-between gap-2">
+                    <span>
+                      {r.category} · {r.subcategory}
+                    </span>
+                    <a
+                      href={askEngineer(`${r.brand} ${codeLabel(r)} — ${r.title}`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-400 hover:text-green-300 font-semibold"
+                    >
+                      Ask an engineer about this →
+                    </a>
                   </div>
                 </li>
               ))}

@@ -23,13 +23,15 @@ const DEMO_SCENES = [
   {
     id: 'search',
     title: 'INSTANT FAULT LOOKUP',
-    subtitle: 'manufacturer-curated fault codes at your fingertips',
+    subtitle: 'Controller alarms and J1939 engine codes, explained',
     duration: 4000,
   },
   {
+    // A website cannot read a customer's engine: this scene shows the
+    // training simulator and must not be called real-time (2026-10-18 audit).
     id: 'diagnosis',
-    title: 'REAL-TIME DIAGNOSTICS',
-    subtitle: 'Aircraft-grade instrument panels',
+    title: 'TRAINING SIMULATOR',
+    subtitle: 'Practise reading a running generator (simulated values)',
     duration: 4000,
   },
   {
@@ -45,15 +47,17 @@ const DEMO_SCENES = [
     duration: 4000,
   },
   {
+    // Was "WORKS OFFLINE · No internet required": sw-oracle.js caches only the
+    // page shell, and fault lookups need the server.
     id: 'offline',
-    title: 'WORKS OFFLINE',
-    subtitle: 'Install as app • No internet required',
+    title: 'INSTALL AS AN APP',
+    subtitle: 'Add it to your phone home screen',
     duration: 3500,
   },
   {
     id: 'cta',
     title: 'TRY FREE NOW',
-    subtitle: 'Full access until April 2026',
+    subtitle: 'Free to use · Our engineers one tap away on WhatsApp',
     duration: 4000,
   },
 ];
@@ -295,9 +299,9 @@ function OracleDemoVideoInner({ autoPlay = true }: { autoPlay?: boolean }) {
               </m.div>
 
               <div className="space-y-2">
-                <FaultCodeResult code="E1234" title="Over Speed Shutdown" severity="critical" delay={1.2} />
-                <FaultCodeResult code="W2045" title="Over Speed Warning" severity="warning" delay={1.5} />
-                <FaultCodeResult code="E1235" title="Over Speed Trip" severity="critical" delay={1.8} />
+                <FaultCodeResult code="SPN 190 / FMI 0" title="Engine Speed — above normal, most severe (overspeed)" severity="critical" delay={1.2} />
+                <FaultCodeResult code="SPN 190 / FMI 16" title="Engine Speed — above normal, moderately severe" severity="warning" delay={1.5} />
+                <FaultCodeResult code="Text alarm" title="DSE: Overspeed Shutdown" severity="critical" delay={1.8} />
               </div>
 
               <m.p
@@ -426,7 +430,7 @@ function OracleDemoVideoInner({ autoPlay = true }: { autoPlay?: boolean }) {
                 transition={{ type: 'spring' }}
                 className="text-6xl mb-4"
               >
-                📴
+                📱
               </m.div>
               <m.h3
                 initial={{ y: 20, opacity: 0 }}

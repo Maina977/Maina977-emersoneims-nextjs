@@ -11,6 +11,10 @@ export function clampString(v: unknown, max = MAX_STR): string | undefined {
 }
 
 export function clampInt(v: unknown, min: number, max: number, dflt: number): number {
+  // A missing query param arrives as null and Number(null) is 0, which the
+  // clamp below turned into 1 — so GET search returned one result unless
+  // pageSize was given. Absent or blank means "use the default".
+  if (v === null || v === undefined || (typeof v === 'string' && v.trim() === '')) return dflt;
   const n = typeof v === 'number' ? v : Number(v);
   if (!Number.isFinite(n)) return dflt;
   return Math.max(min, Math.min(max, Math.floor(n)));

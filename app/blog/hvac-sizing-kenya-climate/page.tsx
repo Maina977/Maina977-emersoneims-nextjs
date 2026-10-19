@@ -185,7 +185,7 @@ export default function HVACSizingBlogPage() {
             <p className="text-cyan-300 mb-4">
               <strong>Get professional cooling load calculation.</strong> We analyze your building and recommend exact AC size. Saves money over system lifespan.
             </p>
-            <Link href="/tools/pro-building-suite" className="inline-block px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-lg transition-all">
+            <Link href="/solutions/building" className="inline-block px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-lg transition-all">
               Calculate Your HVAC Load
             </Link>
           </div>

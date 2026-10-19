@@ -1,289 +1,206 @@
-'use client';
-
 /**
- * AI POWERHOUSE CAPABILITIES PAGE
- * Complete capability tables for all 4 #1 WORLDWIDE AI tools
+ * WHAT EACH ENGINEERING TOOL CAN — AND CANNOT — DO
+ *
+ * Rewritten 2026-10-18 (tool audit). The previous page showed "verified
+ * accuracy percentages" of 97.8–99.8% per tool, an "average accuracy 99.2%",
+ * "195+ countries", "4 #1 rankings" and certifications such as "NASA
+ * Partnership", "Patent Pending", "ACCE Certified" and "UL 1741". None of
+ * those was measured or held, and its own comments said so. A capability page
+ * a customer can rely on lists what each tool does, what it does not do, the
+ * data behind it, and where a person takes over. Keep every line true to the
+ * tool as it ships; when a tool changes, change this page in the same commit.
  */
-
-import React, { useState } from 'react';
 import Link from 'next/link';
-import {
-  AICapabilityTable,
-  PRO_BUILDING_SUITE_CAPABILITIES,
-  GENERATOR_ORACLE_CAPABILITIES,
-  SOLAR_GENIUS_PRO_CAPABILITIES,
-  AQUASCAN_PRO_CAPABILITIES,
-} from '@/components/shared/AICapabilityTable';
 
-const AI_TOOLS = [
-  {
-    id: 'pro-building-suite',
-    name: 'Pro Building Suite™',
-    tagline: 'AI Architecture + Structural Engineering + Quantity Surveying',
-    ranking: 'FLAGSHIP SUITE',
-    icon: '🏛️',
-    link: '/solutions/building',
-    totalCapabilities: 75,
-    overallAccuracy: 99.8,
-    capabilities: PRO_BUILDING_SUITE_CAPABILITIES,
-    certifications: ['ACCE Certified', 'AIA Compatible'],
-    /*
-     * The competitor comparison was REMOVED (2026-08-29).
-     *
-     * It listed sixteen real, named products — AutoCAD, Revit, SketchUp,
-     * ArchiCAD, DSE Diagnostic, ComAp Tools, InPower Pro, CAT ET, PVsyst,
-     * Helioscope, Aurora Solar, SolarEdge Designer, ResIPy, ZondRes2D, Surfer
-     * and Oasis Montaj — each assigned an accuracy percentage, benchmarked
-     * against our own claimed 97.8-99.8%. None of those figures was measured
-     * or sourced. Publishing invented performance data about named commercial
-     * products is not a marketing overstatement; it is a factual assertion
-     * about other companies' software, and the owner's standing rule is that
-     * we never use another company's name to promote ourselves.
-     *
-     * The AICapabilityTable prop is optional and its section is gated on
-     * competitors.length, so removing the data removes the comparison cleanly.
-     * Our own capability lists stay — those are countable.
-     */
-    color: 'from-emerald-500 to-teal-500',
-  },
+interface ToolFacts {
+  id: string;
+  name: string;
+  icon: string;
+  link: string;
+  oneLine: string;
+  does: string[];
+  doesNot: string[];
+  data: string[];
+  next: { label: string; href: string };
+}
+
+const TOOLS: ToolFacts[] = [
   {
     id: 'generator-oracle',
-    name: 'Generator Oracle™',
-    tagline: 'Curated Fault Codes | AI Diagnostics | Controller Simulator',
-    ranking: 'FLAGSHIP SUITE',
+    name: 'Generator Oracle',
     icon: '🔮',
     link: '/generator-oracle',
-    totalCapabilities: 50,
-    overallAccuracy: 99.5,
-    capabilities: GENERATOR_ORACLE_CAPABILITIES,
-    certifications: ['ISO 9001:2015', 'IEC 61131', 'API 670', 'NFPA 110', 'Cummins Compatible', 'CAT Compatible'],
-    /*
-     * The competitor comparison was REMOVED (2026-08-29).
-     *
-     * It listed sixteen real, named products — AutoCAD, Revit, SketchUp,
-     * ArchiCAD, DSE Diagnostic, ComAp Tools, InPower Pro, CAT ET, PVsyst,
-     * Helioscope, Aurora Solar, SolarEdge Designer, ResIPy, ZondRes2D, Surfer
-     * and Oasis Montaj — each assigned an accuracy percentage, benchmarked
-     * against our own claimed 97.8-99.8%. None of those figures was measured
-     * or sourced. Publishing invented performance data about named commercial
-     * products is not a marketing overstatement; it is a factual assertion
-     * about other companies' software, and the owner's standing rule is that
-     * we never use another company's name to promote ourselves.
-     *
-     * The AICapabilityTable prop is optional and its section is gated on
-     * competitors.length, so removing the data removes the comparison cleanly.
-     * Our own capability lists stay — those are countable.
-     */
-    color: 'from-purple-500 to-pink-500',
+    oneLine: 'Look up a generator alarm or engine fault code and see the likely causes and checks.',
+    does: [
+      'Explains controller alarms for DeepSea, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens and ENKO',
+      'Decodes J1939 engine codes typed the way they appear (for example "SPN 100 FMI 1")',
+      'Matches described symptoms to Repair Centre diagnostic guides and related alarms',
+      'Gives reset steps per alarm, wiring references and training simulators',
+      'Puts a WhatsApp or phone route to an engineer on every result',
+    ],
+    doesNot: [
+      'Connect to or read your generator, controller or ECM — the simulators use simulated values',
+      'Use generative AI — the guidance is rule-based and written by our engineers',
+      'Replace the manufacturer\'s manual, which is the final word on your exact model',
+      'Cover every possible code — older mechanical engines have no engine codes at all',
+    ],
+    data: [
+      'Hand-written controller alarm descriptions (one entry per brand and code)',
+      'SAE J1939 SPN and FMI definitions, combined into plain-English meanings',
+      'EmersonEIMS Repair Centre articles, reviewed by our engineers',
+    ],
+    next: { label: 'Ask an engineer about a fault', href: '/contact?type=engineer' },
   },
   {
     id: 'solar-genius-pro',
-    name: 'Solar Genius Pro™',
-    tagline: '56 AI Engines | <3 Minute Quotations',
-    ranking: 'FLAGSHIP SUITE',
+    name: 'Solar Genius Pro',
     icon: '☀️',
     link: '/solar-genius-pro',
-    totalCapabilities: 56,
-    overallAccuracy: 99.6,
-    capabilities: SOLAR_GENIUS_PRO_CAPABILITIES,
-    certifications: ['IEEE 1547', 'IEEE 2030', 'IEC 61215', 'IEC 61730', 'IEC 62109', 'UL 1741', 'NEC Compliant'],
-    /*
-     * The competitor comparison was REMOVED (2026-08-29).
-     *
-     * It listed sixteen real, named products — AutoCAD, Revit, SketchUp,
-     * ArchiCAD, DSE Diagnostic, ComAp Tools, InPower Pro, CAT ET, PVsyst,
-     * Helioscope, Aurora Solar, SolarEdge Designer, ResIPy, ZondRes2D, Surfer
-     * and Oasis Montaj — each assigned an accuracy percentage, benchmarked
-     * against our own claimed 97.8-99.8%. None of those figures was measured
-     * or sourced. Publishing invented performance data about named commercial
-     * products is not a marketing overstatement; it is a factual assertion
-     * about other companies' software, and the owner's standing rule is that
-     * we never use another company's name to promote ourselves.
-     *
-     * The AICapabilityTable prop is optional and its section is gated on
-     * competitors.length, so removing the data removes the comparison cleanly.
-     * Our own capability lists stay — those are countable.
-     */
-    color: 'from-amber-500 to-orange-500',
+    oneLine: 'A first estimate of the solar system you need, from your own consumption.',
+    does: [
+      'Sizes panels, inverter and battery from your monthly kWh and the backup you want',
+      'Uses NASA POWER sun-hours for your location',
+      'Gives a first cost, yearly energy, saving and payback, using your tariff',
+      'Inverter and battery fault-code library, with the manual each code comes from',
+    ],
+    doesNot: [
+      'Produce a bankable or tender-ready design — a site survey does that',
+      'Analyse your roof from satellite images',
+      'Use generative AI',
+      'Replace a quotation: prices are typical Kenyan ranges, not an offer',
+    ],
+    data: [
+      'NASA POWER solar irradiance (sun-hours) for the chosen location',
+      'Your consumption and tariff figures',
+      'Typical Kenyan equipment prices, stated as ranges',
+    ],
+    next: { label: 'Book a solar site survey', href: '/booking?type=site-survey' },
   },
   {
     id: 'aquascan-pro',
-    name: 'AquaScan Pro™',
-    tagline: '26 AI Analysis Tools | NASA Integration | Patent Pending',
-    ranking: 'FLAGSHIP SUITE',
+    name: 'AquaScan Pro',
     icon: '💧',
     link: '/aquascan-pro-v3',
-    totalCapabilities: 26,
-    overallAccuracy: 97.8,
-    capabilities: AQUASCAN_PRO_CAPABILITIES,
-    certifications: ['NASA Partnership', 'ESA Data Access', 'USGS Compatible', 'WHO Guidelines', 'ISO 14001'],
-    /*
-     * The competitor comparison was REMOVED (2026-08-29).
-     *
-     * It listed sixteen real, named products — AutoCAD, Revit, SketchUp,
-     * ArchiCAD, DSE Diagnostic, ComAp Tools, InPower Pro, CAT ET, PVsyst,
-     * Helioscope, Aurora Solar, SolarEdge Designer, ResIPy, ZondRes2D, Surfer
-     * and Oasis Montaj — each assigned an accuracy percentage, benchmarked
-     * against our own claimed 97.8-99.8%. None of those figures was measured
-     * or sourced. Publishing invented performance data about named commercial
-     * products is not a marketing overstatement; it is a factual assertion
-     * about other companies' software, and the owner's standing rule is that
-     * we never use another company's name to promote ourselves.
-     *
-     * The AICapabilityTable prop is optional and its section is gated on
-     * competitors.length, so removing the data removes the comparison cleanly.
-     * Our own capability lists stay — those are countable.
-     */
-    color: 'from-blue-500 to-cyan-500',
+    oneLine: 'A desktop first look at a borehole site, before you pay for a field survey.',
+    does: [
+      'Pulls long-term rainfall, temperature and soil data for the site',
+      'Shows mapped water points and Kenyan borehole records nearby',
+      'Gives a rough depth range and a drilling-cost band, with every source named',
+      'States plainly that it is a pre-screen and that a survey decides where to drill',
+    ],
+    doesNot: [
+      'Tell you exactly where or how deep to drill — a geophysical survey and a licensed hydrogeologist do',
+      'Measure water quality — it shows the risks to test for',
+      'Use deep-learning models or generative AI',
+      'Replace Water Resources Authority permits',
+    ],
+    data: [
+      'NASA POWER climate data, ISRIC SoilGrids and SRTM terrain',
+      'Water Point Data Exchange and OpenStreetMap water points',
+      'Published Kenyan borehole records, where they exist for the area',
+    ],
+    next: { label: 'Book a site visit', href: '/booking?type=site-survey' },
+  },
+  {
+    id: 'building-suite',
+    name: 'Building Suite',
+    icon: '🏗️',
+    link: '/solutions/building',
+    oneLine: 'Engineering reference calculators for building work, each checked by hand.',
+    does: [
+      'Wind pressure, steel bolt shear, reinforced-concrete beam bending and rational-method runoff',
+      'Bearing capacity of a shallow footing, building U-values, daylight factor and room acoustics',
+      'Uses every input you type, and tells you when an input is missing instead of assuming one',
+    ],
+    doesNot: [
+      'Produce architectural drawings, BIM models or a bill of quantities',
+      'Price a project or design electrical, plumbing or HVAC systems',
+      'Replace a registered engineer\'s design and sign-off',
+    ],
+    data: [
+      'Published engineering formulas (Eurocode and ASCE methods, named on each calculator)',
+      'Your inputs only — no stored project data',
+    ],
+    next: { label: 'Talk to an engineer about your project', href: '/contact?type=engineer' },
   },
 ];
 
-export default function AICapabilitiesPage() {
-  const [activeTool, setActiveTool] = useState(AI_TOOLS[0].id);
-  const currentTool = AI_TOOLS.find(t => t.id === activeTool)!;
-
+export default function ToolCapabilitiesPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-slate-900 to-black">
-      {/* Hero Section */}
-      <div className="relative py-20 px-4">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.1),transparent_50%)]" />
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 rounded-full border border-amber-500/30 mb-6">
-            <span className="animate-pulse">🏆</span>
-            <span className="text-amber-400 font-bold">FULL ENGINEERING SUITE</span>
-            <span className="animate-pulse">🏆</span>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            AI Powerhouse <span className="text-amber-400">Capabilities</span>
-          </h1>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
-            Complete breakdown of what each AI tool can achieve with verified accuracy percentages
-          </p>
-
-          {/* Overall Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-              <div className="text-3xl font-bold text-amber-400">207+</div>
-              <div className="text-sm text-gray-400">Total Capabilities</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-              <div className="text-3xl font-bold text-green-400">99.2%</div>
-              <div className="text-sm text-gray-400">Average Accuracy</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-              <div className="text-3xl font-bold text-blue-400">195+</div>
-              <div className="text-sm text-gray-400">Countries Covered</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-              <div className="text-3xl font-bold text-purple-400">4</div>
-              <div className="text-sm text-gray-400">#1 Rankings</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tool Selector */}
-      <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-y border-white/10 py-4">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-wrap justify-center gap-3">
-            {AI_TOOLS.map(tool => (
-              <button
-                key={tool.id}
-                onClick={() => setActiveTool(tool.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all ${
-                  activeTool === tool.id
-                    ? `bg-gradient-to-r ${tool.color} text-white shadow-lg scale-105`
-                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <span className="text-xl">{tool.icon}</span>
-                <span className="hidden sm:inline">{tool.name}</span>
-                <span className="px-2 py-0.5 bg-black/30 rounded text-xs">{tool.ranking}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Capability Table.
-          No `competitors` prop is passed any more. The data it read was
-          sixteen named rival products carrying invented accuracy scores, and
-          it has been removed. AICapabilityTable declares the prop optional and
-          gates its whole comparison section on competitors.length, so passing
-          nothing renders nothing and no component change was needed. */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <AICapabilityTable
-          toolName={currentTool.name}
-          tagline={currentTool.tagline}
-          ranking={currentTool.ranking}
-          totalCapabilities={currentTool.totalCapabilities}
-          overallAccuracy={currentTool.overallAccuracy}
-          capabilities={currentTool.capabilities}
-          certifications={currentTool.certifications}
-        />
-
-        {/* CTA */}
-        <div className="mt-12 text-center">
-          <Link
-            href={currentTool.link}
-            className={`inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r ${currentTool.color} text-white font-bold rounded-xl hover:scale-105 transition-transform shadow-lg`}
-          >
-            <span className="text-2xl">{currentTool.icon}</span>
-            <span>Try {currentTool.name} Now</span>
-            <span className="text-xl">→</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* All Tools Summary */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-3xl font-bold text-white text-center mb-8">All AI Tools at a Glance</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {AI_TOOLS.map(tool => (
-            <Link
-              key={tool.id}
-              href={tool.link}
-              className="group bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 border border-white/10 hover:border-amber-500/50 transition-all hover:scale-105"
-            >
-              <div className="text-4xl mb-4">{tool.icon}</div>
-              <h3 className="text-xl font-bold text-white mb-2">{tool.name}</h3>
-              <p className="text-sm text-gray-400 mb-4">{tool.tagline}</p>
-              <div className="flex items-center justify-between">
-                <span className="px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full">
-                  {tool.ranking}
-                </span>
-                <span className="text-green-400 font-bold">{tool.overallAccuracy}%</span>
-              </div>
-              <div className="mt-4 pt-4 border-t border-white/10">
-                <div className="text-sm text-gray-500">
-                  <span className="text-white font-bold">{tool.totalCapabilities}</span> capabilities
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Footer CTA */}
-      <div className="py-20 px-4 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border-t border-white/10">
+    <div className="min-h-screen bg-gradient-to-b from-black via-slate-900 to-black text-white">
+      <section className="px-4 py-16 sm:py-20">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Experience #1 AI Tools?</h2>
-          <p className="text-gray-400 mb-8">
-            All tools are free to use. No signup required. Start now and see the difference.
+          <h1 className="text-3xl sm:text-5xl font-bold mb-4">
+            What Each Tool Can <span className="text-amber-400">— and Cannot —</span> Do
+          </h1>
+          <p className="text-lg text-slate-300">
+            Our four free engineering tools, described plainly: what each one does, what it does not do, the data
+            behind it, and where one of our engineers takes over.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            {AI_TOOLS.map(tool => (
-              <Link
-                key={tool.id}
-                href={tool.link}
-                className="flex items-center gap-2 px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-              >
-                <span>{tool.icon}</span>
-                <span>{tool.name}</span>
-              </Link>
-            ))}
-          </div>
         </div>
+      </section>
+
+      <nav aria-label="Tools on this page" className="px-4 pb-8">
+        <ul className="max-w-4xl mx-auto flex flex-wrap justify-center gap-2">
+          {TOOLS.map((t) => (
+            <li key={t.id}>
+              <a href={`#${t.id}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-amber-500/50 text-sm">
+                <span aria-hidden>{t.icon}</span> {t.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="px-4 pb-20 space-y-10 max-w-5xl mx-auto">
+        {TOOLS.map((t) => (
+          <section key={t.id} id={t.id} className="scroll-mt-24 rounded-2xl border border-white/10 bg-slate-900/60 p-5 sm:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-3">
+                  <span aria-hidden>{t.icon}</span> {t.name}
+                </h2>
+                <p className="text-slate-300 mt-2">{t.oneLine}</p>
+              </div>
+              <Link href={t.link} className="px-5 py-3 rounded-xl bg-amber-500 text-black font-bold hover:bg-amber-400">
+                Open {t.name} →
+              </Link>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-400 mb-3">What it does</h3>
+                <ul className="space-y-2 text-sm text-slate-300">
+                  {t.does.map((x) => (
+                    <li key={x} className="flex gap-2"><span className="text-emerald-400" aria-hidden>✓</span><span>{x}</span></li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-amber-400 mb-3">What it does not do</h3>
+                <ul className="space-y-2 text-sm text-slate-300">
+                  {t.doesNot.map((x) => (
+                    <li key={x} className="flex gap-2"><span className="text-amber-400" aria-hidden>✕</span><span>{x}</span></li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-6 grid md:grid-cols-2 gap-6 pt-6 border-t border-white/10">
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-cyan-400 mb-3">Data behind it</h3>
+                <ul className="space-y-1 text-sm text-slate-400 list-disc pl-5">
+                  {t.data.map((x) => <li key={x}>{x}</li>)}
+                </ul>
+              </div>
+              <div className="flex md:justify-end items-end">
+                <Link href={t.next.href} className="text-green-400 font-semibold hover:text-green-300">
+                  {t.next.label} →
+                </Link>
+              </div>
+            </div>
+          </section>
+        ))}
       </div>
     </div>
   );

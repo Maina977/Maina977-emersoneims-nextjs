@@ -13,6 +13,8 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
 import type { EnhancedFaultCode } from '@/lib/generator-oracle/enhanced-fault-database';
+import { lookupFaultCode, codeLabel, modelsLabel, type CodeKind } from '@/lib/generator-oracle/client/oracleClient';
+import { waLink } from '@/lib/serviceConnect/actions';
 // `getFaultByCode` only resolves a static set of 6 enriched records — keeping
 // it dynamically imported in this client component means the 1.9k-line module
 // is fetched only when the modal mounts, not on initial page render.
@@ -62,12 +64,28 @@ function LikelihoodBadge({ likelihood }: { likelihood: 'high' | 'medium' | 'low'
 
 // ==================== COMPREHENSIVE FAULT DETAIL MODAL ====================
 function FaultDetailModal({
-  fault,
+  fault: summary,
   onClose,
 }: {
   fault: ExtendedFaultCode;
   onClose: () => void;
 }) {
+  // Search results are slim summaries (no causes, steps, reset pathways or
+  // solutions), so the Diagnostics / Reset / Solution tabs used to open empty.
+  // Fetch the full record by id when the modal opens (2026-10-18 audit).
+  const [full, setFull] = useState<ExtendedFaultCode | null>(null);
+  const [loadingFull, setLoadingFull] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingFull(true);
+    lookupFaultCode(summary.id)
+      .then((res) => { if (!cancelled && res.exactMatches[0]) setFull(res.exactMatches[0] as ExtendedFaultCode); })
+      .catch(() => { /* keep the summary */ })
+      .finally(() => { if (!cancelled) setLoadingFull(false); });
+    return () => { cancelled = true; };
+  }, [summary.id]);
+  const fault: ExtendedFaultCode = full ?? summary;
+
   const [activeTab, setActiveTab] = useState<'overview' | 'diagnostics' | 'reset' | 'solution' | 'ai-insights'>('overview');
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [completedDiagnostics, setCompletedDiagnostics] = useState<number[]>([]);
@@ -85,7 +103,8 @@ function FaultDetailModal({
   // Get the first reset pathway and solution
   const resetPathway = fault.resetPathways?.[0];
   const solution = fault.solutions?.[0];
-  const timeEstimate = solution?.timeEstimate || '15-60 minutes';
+  // No invented default: show a time only when the record has one.
+  const timeEstimate = solution?.timeEstimate;
 
   const handleResetStepComplete = (stepNum: number) => {
     if (!completedSteps.includes(stepNum)) {
@@ -104,7 +123,7 @@ function FaultDetailModal({
     { id: 'diagnostics', label: 'Diagnostics', icon: '🔍' },
     { id: 'reset', label: 'Reset Steps', icon: '🔄' },
     { id: 'solution', label: 'Solution', icon: '🔧' },
-    ...(enhancedFault ? [{ id: 'ai-insights', label: 'AI Insights', icon: '🤖' }] : []),
+    ...(enhancedFault ? [{ id: 'ai-insights', label: 'Expert Notes', icon: '📘' }] : []),
   ];
 
   return (
@@ -128,22 +147,32 @@ function FaultDetailModal({
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-4">
               <div
-                className="px-4 py-2 bg-slate-800 rounded-lg border border-cyan-500/30 font-mono text-2xl text-cyan-400"
+                className="px-3 py-2 bg-slate-800 rounded-lg border border-cyan-500/30 font-mono text-lg sm:text-2xl text-cyan-400 shrink-0"
                 style={{ textShadow: '0 0 20px rgba(6,182,212,0.5)' }}
+                title={(fault as { codeKind?: CodeKind }).codeKind === 'reference' ? 'Our reference number. This controller shows the alarm as text, so match it by name.' : undefined}
               >
-                {fault.code}
+                {codeLabel(fault as { code: string; codeKind?: CodeKind })}
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h2 className="text-xl font-bold text-white">{fault.title}</h2>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">{fault.title}</h2>
                   <SeverityBadge severity={fault.severity} />
                 </div>
-                <div className="flex items-center gap-4 text-sm text-slate-400">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
                   <span>📦 {fault.brand}</span>
-                  <span>📱 {fault.model}</span>
+                  <span>📱 {modelsLabel(fault)}</span>
                   <span>📂 {fault.category}</span>
-                  <span>⏱️ {timeEstimate}</span>
+                  {timeEstimate && <span>⏱️ {timeEstimate}</span>}
+                  {loadingFull && <span className="text-cyan-400">Loading details…</span>}
                 </div>
+                <a
+                  href={waLink(`Hi EmersonEIMS, I need help with ${fault.brand} ${codeLabel(fault as { code: string; codeKind?: CodeKind })} — ${fault.title}`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-green-400 hover:text-green-300"
+                >
+                  💬 Ask an engineer about this fault →
+                </a>
               </div>
             </div>
 
@@ -158,7 +187,7 @@ function FaultDetailModal({
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 mt-4">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -231,17 +260,24 @@ function FaultDetailModal({
                       </div>
                     </div>
 
-                    {/* Case Studies from Kenya */}
+                    {/* Worked examples. These were headed "Real Case Studies from
+                        Kenya" with named sites (a Masai Mara lodge, an Athi River
+                        cement plant) and resolution times, but they are written
+                        scenarios, not job records — so they are labelled as such
+                        and the site names and times are not shown (2026-10-18). */}
                     {enhancedFault.caseStudies && enhancedFault.caseStudies.length > 0 && (
                       <div className="p-5 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl">
-                        <h3 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <span>🇰🇪</span> Real Case Studies from Kenya
+                        <h3 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-1 flex items-center gap-2">
+                          <span>📘</span> Worked Examples
                         </h3>
+                        <p className="text-xs text-slate-400 mb-3">
+                          Illustrative scenarios showing how this fault is usually diagnosed. They are not records of specific jobs.
+                        </p>
                         <div className="space-y-4">
                           {enhancedFault.caseStudies.map((cs, idx) => (
                             <div key={idx} className="p-4 bg-slate-900/50 rounded-lg">
                               <div className="flex items-center gap-2 mb-2">
-                                <span className="text-green-400 font-bold">{cs.location}</span>
+                                <span className="text-green-400 font-bold">Example {idx + 1}</span>
                                 <span className="text-slate-500">•</span>
                                 <span className="text-slate-400 text-sm">{cs.generatorModel}</span>
                               </div>
@@ -249,7 +285,6 @@ function FaultDetailModal({
                               <p className="text-slate-300 text-sm mb-2"><strong>Diagnosis:</strong> {cs.diagnosis}</p>
                               <p className="text-slate-300 text-sm mb-2"><strong>Solution:</strong> {cs.solution}</p>
                               <p className="text-amber-400 text-sm"><strong>Lesson:</strong> {cs.lessonsLearned}</p>
-                              <p className="text-slate-500 text-xs mt-2">Time to resolve: {cs.timeToResolve}</p>
                             </div>
                           ))}
                         </div>
@@ -542,6 +577,9 @@ function FaultDetailModal({
                 {solution && (
                   <>
                     {/* Solution overview */}
+                    {/* A third card showed "Estimated Cost $min-$max" (falling
+                        back to $0-$500). Those figures were generic, not quotes,
+                        so cost now routes to a real quote (2026-10-18). */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-center">
                         <div className="text-2xl mb-2">⚙️</div>
@@ -550,16 +588,19 @@ function FaultDetailModal({
                       </div>
                       <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-center">
                         <div className="text-2xl mb-2">⏱️</div>
-                        <div className="text-xs text-slate-500 uppercase">Time Estimate</div>
+                        <div className="text-xs text-slate-500 uppercase">Typical Time</div>
                         <div className="text-lg font-bold text-cyan-400">{solution.timeEstimate}</div>
                       </div>
-                      <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-center">
-                        <div className="text-2xl mb-2">💰</div>
-                        <div className="text-xs text-slate-500 uppercase">Estimated Cost</div>
-                        <div className="text-lg font-bold text-green-400">
-                          ${solution.estimatedCost?.min || 0} - ${solution.estimatedCost?.max || 500}
-                        </div>
-                      </div>
+                      <a
+                        href={waLink(`Hi EmersonEIMS, please quote the repair for ${fault.brand} ${fault.code} — ${fault.title}`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-center hover:bg-green-500/20 transition-colors"
+                      >
+                        <div className="text-2xl mb-2">💬</div>
+                        <div className="text-xs text-slate-500 uppercase">Cost</div>
+                        <div className="text-sm font-bold text-green-400">Get a quote on WhatsApp</div>
+                      </a>
                     </div>
 
                     {/* Procedure steps */}
@@ -807,10 +848,15 @@ export default function FaultDiagnosticsPanel({
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFault, setSelectedFault] = useState<ExtendedFaultCode | null>(null);
+  // The query that was last actually searched, so an empty result can say so
+  // instead of showing the idle "ready" screen.
+  const [lastSearched, setLastSearched] = useState('');
 
-  const handleSearch = () => {
-    onSearch(searchQuery);
+  const runSearch = (q: string) => {
+    setLastSearched(q.trim());
+    onSearch(q);
   };
+  const handleSearch = () => runSearch(searchQuery);
 
   // Sample codes for when there are no search results
   const displayResults = searchResults.length > 0 ? searchResults : [];
@@ -823,7 +869,7 @@ export default function FaultDiagnosticsPanel({
           <span className="text-3xl">🔮</span>
           <div>
             <h2 className="text-xl font-bold text-purple-400 uppercase tracking-wider">Generator Oracle</h2>
-            <p className="text-sm text-slate-500">Manufacturer-curated fault codes with detailed troubleshooting</p>
+            <p className="text-sm text-slate-500">Controller alarms and J1939 engine codes, with step-by-step troubleshooting</p>
           </div>
         </div>
       </div>
@@ -843,7 +889,7 @@ export default function FaultDiagnosticsPanel({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    placeholder="Enter fault code (e.g., 1100), keyword, or description..."
+                    placeholder="Code as shown (e.g. SPN 100 FMI 1) or alarm wording (e.g. low oil pressure)"
                     className="w-full px-4 py-3 pl-8 bg-slate-950/80 border border-purple-500/30 rounded-xl text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-purple-500/50"
                     style={{ boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.3)' }}
                   />
@@ -870,12 +916,12 @@ export default function FaultDiagnosticsPanel({
 
               {/* Quick search tags */}
               <div className="flex flex-wrap gap-2 mt-4">
-                {['1100', 'Oil Pressure', 'Coolant', 'Overspeed', 'Battery', 'Fuel', 'Voltage', 'Starting'].map((tag) => (
+                {['SPN 100 FMI 1', 'Oil Pressure', 'Coolant', 'Overspeed', 'Battery', 'Fuel', 'Voltage', 'Fail to Start'].map((tag) => (
                   <button
                     key={tag}
                     onClick={() => {
                       setSearchQuery(tag);
-                      onSearch(tag);
+                      runSearch(tag);
                     }}
                     className="px-3 py-1 bg-slate-800/50 text-slate-400 rounded-lg border border-slate-700/50 text-xs hover:bg-slate-700/50 hover:text-white transition-all"
                   >
@@ -892,12 +938,25 @@ export default function FaultDiagnosticsPanel({
               {displayResults.length > 0 ? `Results (${displayResults.length} found)` : 'Search for a fault code to see detailed troubleshooting'}
             </h3>
 
-            {displayResults.length === 0 && !isSearching && (
+            {displayResults.length === 0 && !isSearching && lastSearched && (
+              <div className="text-center py-10">
+                <div className="text-lg font-bold text-white mb-2">No matches for &ldquo;{lastSearched}&rdquo;</div>
+                <div className="text-slate-400 max-w-md mx-auto text-sm">
+                  Try the code exactly as it shows on the display (for example <span className="text-cyan-400 font-mono">SPN 110 FMI 0</span>)
+                  or the alarm wording. Not in our library?{' '}
+                  <a href={waLink(`Hi EmersonEIMS, I need help with this generator fault: ${lastSearched}`)} target="_blank" rel="noopener noreferrer" className="text-green-400 underline">
+                    Send it to an engineer on WhatsApp
+                  </a>.
+                </div>
+              </div>
+            )}
+
+            {displayResults.length === 0 && !isSearching && !lastSearched && (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">🔮</div>
                 <div className="text-xl font-bold text-cyan-400 mb-2">Generator Oracle Ready</div>
                 <div className="text-slate-500 max-w-md mx-auto">
-                  Enter a fault code like <span className="text-cyan-400 font-mono">1100</span> or search for keywords like{' '}
+                  Enter a code like <span className="text-cyan-400 font-mono">SPN 110 FMI 0</span> or search for an alarm like{' '}
                   <span className="text-cyan-400">"oil pressure"</span> to get detailed troubleshooting guidance.
                 </div>
               </div>
@@ -917,7 +976,7 @@ export default function FaultDiagnosticsPanel({
                         className="flex-shrink-0 px-3 py-1 bg-slate-800 rounded-lg font-mono text-lg text-cyan-400 border border-cyan-500/30"
                         style={{ textShadow: '0 0 10px rgba(6,182,212,0.3)' }}
                       >
-                        {fault.code}
+                        {codeLabel(fault as { code: string; codeKind?: CodeKind })}
                       </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -928,7 +987,7 @@ export default function FaultDiagnosticsPanel({
                         <div className="flex items-center gap-3 mt-2 text-xs text-slate-600">
                           <span>{fault.brand}</span>
                           <span>•</span>
-                          <span>{fault.model}</span>
+                          <span>{modelsLabel(fault)}</span>
                           <span>•</span>
                           <span>{fault.category}</span>
                         </div>
@@ -966,7 +1025,7 @@ export default function FaultDiagnosticsPanel({
                 { icon: '🎯', text: 'Ranked possible causes' },
                 { icon: '🔍', text: 'Step-by-step diagnostics' },
                 { icon: '🔄', text: 'Reset procedures with key sequences' },
-                { icon: '🔧', text: 'Complete repair solutions' },
+                { icon: '🔧', text: 'Repair steps' },
                 { icon: '💬', text: 'Interactive guidance questions' },
               ].map((item, idx) => (
                 <li key={idx} className="flex items-center gap-3 text-sm text-slate-300">

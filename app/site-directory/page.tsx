@@ -224,9 +224,9 @@ export default async function SiteDirectoryPage() {
    * method behind a tool we ask people to rely on.
    *
    * Two pairs here look like duplicates and are not: /team (742 words) and
-   * /about-us/team (558) share 6% of their phrasing, and
-   * /tools/generator-oracle and /generator-oracle/tools share 11%. Both pairs
-   * were measured before being listed separately.
+   * /about-us/team (558) share 6% of their phrasing. (/tools/generator-oracle
+   * and /generator-oracle/tools were listed here too; since 2026-10-18 both
+   * redirect to /generator-oracle, so they are no longer listed.)
    */
   const unlistedPages: L[] = [
     { href: '/warranty', label: 'Warranty coverage' },
@@ -235,8 +235,6 @@ export default async function SiteDirectoryPage() {
     { href: '/innovations', label: 'Engineering innovations' },
     { href: '/media', label: 'Media' },
     { href: '/aquascan-pro-v3/methodology', label: 'AquaScan methodology' },
-    { href: '/tools/generator-oracle', label: 'Generator Oracle — AI fault diagnosis' },
-    { href: '/generator-oracle/tools', label: 'Generator tools — simulators and wiring' },
     { href: '/resources/buying-guides', label: 'Buying guides' },
     { href: '/resources/cummins-guides', label: 'Cummins guides' },
     { href: '/marketplace/parts', label: 'Browse spare parts' },

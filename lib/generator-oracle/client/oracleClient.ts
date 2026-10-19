@@ -27,11 +27,20 @@ import type { TechnicianInput, IntegratedDiagnosisResult } from '../integratedDi
 export type Severity = 'info' | 'warning' | 'critical' | 'shutdown';
 export type AlarmType = 'warning' | 'trip' | 'shutdown' | 'lockout';
 
+/**
+ * What kind of number `code` is: a J1939 SPN/FMI or J1587 MID/PID/FMI the
+ * engine really reports, or our own reference number for a controller that
+ * shows a text alarm (match those by alarm name). See server/faultIndex.ts.
+ */
+export type CodeKind = 'j1939' | 'j1587' | 'reference';
+
 export interface SearchResultItem {
   id: string;
   code: string;
+  codeKind: CodeKind;
   brand: string;
   model: string;
+  models: string[];
   category: string;
   subcategory: string;
   severity: Severity;
@@ -39,7 +48,7 @@ export interface SearchResultItem {
   title: string;
   description: string;
   verified: boolean;
-  source: 'manufacturer-curated' | 'template-extended';
+  source: 'hand-written' | 'j1939-reference';
 }
 
 export interface SearchOptions {
@@ -57,6 +66,8 @@ export interface SearchOptions {
 export interface SearchResponse {
   ok: true;
   query: string;
+  /** Canonical code the query was read as ("SPN 100 FMI 1" → "SPN100-FMI1"), or null. */
+  interpretedAs: string | null;
   filters: { brand?: string; model?: string; severity?: Severity; category?: string; verifiedOnly?: boolean };
   page: number;
   pageSize: number;
@@ -72,8 +83,9 @@ export interface FaultLookupResponse {
   brand: string | null;
   found: boolean;
   matchType: 'exact' | 'partial' | 'none';
-  exactMatches: ControllerFaultCode[];
+  exactMatches: (ControllerFaultCode & { codeKind: CodeKind })[];
   partialMatches: SearchResultItem[];
+  interpretedAs: string | null;
 }
 
 export interface BrandSummary {
@@ -120,9 +132,22 @@ export interface RankedFault extends SearchResultItem {
   matchedTerms: string[];
 }
 
+/** A published Repair Centre article for the described symptoms. */
+export interface RankedGuide {
+  title: string;
+  url: string;
+  hub: string;
+  summary: string;
+  score: number;
+  matchedTerms: string[];
+}
+
 export interface DiagnoseResponse {
   ok: true;
   input: Omit<DiagnoseInput, 'signal'>;
+  /** Repair Centre guides — the primary answer for mechanical symptoms. */
+  guides: RankedGuide[];
+  /** Controller alarms whose descriptions match the symptoms. */
   ranked: RankedFault[];
   considered: number;
   source: 'index';
@@ -133,9 +158,13 @@ export interface HealthResponse {
   ok: true;
   generatedAt: string;
   totals: {
+    /** Everything searchable: controller alarms + J1939 reference entries. */
     faultCodes: number;
-    verifiedCodes: number;
-    templateCodes: number;
+    /** Hand-written controller alarm descriptions, one per brand + code. */
+    controllerAlarms: number;
+    /** J1939 SPN/FMI reference entries, and the distinct SPNs they cover. */
+    j1939Codes: number;
+    j1939Spns: number;
     brands: number;
     models: number;
     categories: number;
@@ -144,6 +173,23 @@ export interface HealthResponse {
   bySeverity: Record<string, number>;
   byCategory: Record<string, number>;
   notes: string[];
+}
+
+/**
+ * How to print a code. J1939 / J1587 numbers are shown as the engine reports
+ * them; our reference numbers for text-alarm controllers are marked "Ref" so
+ * nobody looks for that number on their controller's display.
+ */
+export function codeLabel(r: { code: string; codeKind?: CodeKind }): string {
+  if (r.codeKind === 'j1939') return r.code.replace(/^SPN(\d+)-FMI(\d+)$/i, 'SPN $1 / FMI $2');
+  if (r.codeKind === 'reference') return `Ref ${r.code}`;
+  return r.code;
+}
+
+/** "DSE7320, DSE7310, DSE8610, DSE8620" → "DSE7320, DSE7310, DSE8610 +1 more". */
+export function modelsLabel(r: { model: string; models?: string[] }, max = 3): string {
+  const list = r.models && r.models.length ? r.models : [r.model];
+  return list.length > max ? `${list.slice(0, max).join(', ')} +${list.length - max} more` : list.join(', ');
 }
 
 export class OracleApiError extends Error {

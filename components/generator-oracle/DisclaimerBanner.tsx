@@ -232,110 +232,54 @@ export function DisclaimerAcknowledgment({ onAccept }: { onAccept: () => void })
 
   if (accepted) return null;
 
+  /*
+   * 2026-10-18 audit: this was a full-screen, scroll-to-accept legal wall with
+   * claims the tool cannot back ("Every session logged", "proprietary
+   * dataset", market-positioning copy). It is now a short notice saying the
+   * three things a technician actually needs to know, sized for a phone.
+   */
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+    <div
+      className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="oracle-notice-title"
+    >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="max-w-3xl w-full max-h-[90vh] flex flex-col bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl border border-amber-500/30 shadow-2xl shadow-amber-500/10"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="max-w-lg w-full max-h-[85vh] overflow-y-auto bg-slate-900 rounded-2xl border border-amber-500/30 shadow-2xl p-5"
       >
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 pb-0">
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-amber-500/20 rounded-xl">
-              <span className="text-3xl">🛡️</span>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white">Security & Independence Framework</h2>
-              <p className="text-amber-400 text-sm">Generator Oracle Legal Notice</p>
-            </div>
-          </div>
-
-          {/* Main Disclaimer */}
-          <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl mb-4">
-            <p className="text-amber-200 leading-relaxed">
-              <strong>Generator Oracle</strong> is an <strong className="text-white">independent diagnostic and maintenance platform</strong>.
-              Controller and ECM names are used solely for identification purposes. Generator Oracle is{' '}
-              <strong className="text-white">NOT affiliated with, endorsed by, or sponsored by</strong>{' '}
-              Cummins, Caterpillar, Volvo Penta, Perkins, Honda, Doosan, Deutz, John Deere, Lister Petter,
-              SDMO, MTU, MAN, Iveco, Yanmar, Weichai, or any other OEM.
-            </p>
-          </div>
-
-          {/* Key Points */}
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
-              <h3 className="text-cyan-400 font-semibold mb-2 flex items-center gap-2">
-                <span>📝</span> Technician-Style Language
-              </h3>
-              <p className="text-slate-400 text-sm">
-                All diagnostic guidance uses <strong className="text-slate-300">Oracle's own phrasing</strong> —
-                field-report style, not OEM manual text.
-              </p>
-            </div>
-
-            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
-              <h3 className="text-green-400 font-semibold mb-2 flex items-center gap-2">
-                <span>🔒</span> Security Layer
-              </h3>
-              <p className="text-slate-400 text-sm">
-                <strong className="text-slate-300">Data Ownership:</strong> Oracle's proprietary dataset.{' '}
-                <strong className="text-slate-300">Audit Trail:</strong> Every session logged.
-              </p>
-            </div>
-
-            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
-              <h3 className="text-purple-400 font-semibold mb-2 flex items-center gap-2">
-                <span>🎯</span> Market Positioning
-              </h3>
-              <p className="text-slate-400 text-sm">
-                Oracle is <strong className="text-slate-300">NOT a clone of OEM tools</strong> — it's a universal diagnostic suite.
-              </p>
-            </div>
-
-            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
-              <h3 className="text-orange-400 font-semibold mb-2 flex items-center gap-2">
-                <span>⚖️</span> Legal Safety
-              </h3>
-              <p className="text-slate-400 text-sm">
-                Fault code <strong className="text-slate-300">NUMBERS</strong> are standard. All <strong className="text-slate-300">DESCRIPTIONS</strong> are independent.
-              </p>
-            </div>
-          </div>
-
-          {/* Acknowledgment Checklist */}
-          <div className="p-4 bg-slate-800 rounded-xl mb-4">
-            <p className="font-medium text-white mb-3">By continuing, you acknowledge:</p>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li className="flex items-start gap-2">
-                <span className="text-green-400 mt-0.5">✓</span>
-                <span>Generator Oracle provides <strong className="text-slate-300">independent interpretations</strong>, not OEM documentation</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-400 mt-0.5">✓</span>
-                <span>Brand names are used for <strong className="text-slate-300">identification only</strong></span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-400 mt-0.5">✓</span>
-                <span>You will verify critical procedures against <strong className="text-slate-300">official documentation</strong></span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Fixed Footer with Button - Always Visible */}
-        <div className="flex-shrink-0 p-6 pt-4 border-t border-slate-700/50 bg-slate-900/80">
-          <button
-            onClick={handleAccept}
-            className="w-full py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-600 hover:via-orange-600 hover:to-red-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40"
-          >
-            🛡️ I Understand & Accept - Enter Generator Oracle
-          </button>
-          <p className="text-center text-xs text-slate-600 mt-3">
-            © {new Date().getFullYear()} Generator Oracle - Proprietary Independent Diagnostic Platform
-          </p>
-        </div>
+        <h2 id="oracle-notice-title" className="text-lg font-bold text-white mb-3">Before you start</h2>
+        <ul className="space-y-2 text-sm text-slate-300">
+          <li className="flex items-start gap-2">
+            <span className="text-amber-400 mt-0.5">1.</span>
+            <span>
+              The fault descriptions are written by EmersonEIMS engineers in our own words. They are guidance,
+              not manufacturer documentation. Check critical procedures against your engine or controller manual.
+            </span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-amber-400 mt-0.5">2.</span>
+            <span>
+              Brand names are used to identify equipment only. Generator Oracle is not affiliated with or endorsed
+              by any manufacturer.
+            </span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-amber-400 mt-0.5">3.</span>
+            <span>
+              Generators carry lethal voltages and start automatically. Isolate and lock off before working on one,
+              or call us on <a href="tel:+254768860665" className="text-amber-300 underline">0768 860 665</a>.
+            </span>
+          </li>
+        </ul>
+        <button
+          onClick={handleAccept}
+          className="mt-5 w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl transition-colors"
+        >
+          I understand, continue
+        </button>
       </motion.div>
     </div>
   );

@@ -107,28 +107,99 @@ function AIToolCard({ title, subtitle, description, features, stats, icon, href,
 }
 
 export default function AIToolsPage() {
+  /*
+   * 2026-10-18 tool audit: this page claimed "the world's most powerful AI
+   * construction platform", 99.8% / 98.5% / 97% accuracy, "195+ countries with
+   * real-time pricing", "75+ AI engines", "450k+ fault codes", "+25% ROI boost"
+   * and "thousands of professionals". None was measured or true. Each card now
+   * says what the tool does; the full can/cannot list is at /ai-tools/capabilities.
+   * The Solar and AquaScan cards also linked to /solar and
+   * /services/borehole-pumps instead of the tools themselves.
+   */
   const aiTools = [
     {
-      title: 'Pro Building Suite',
-      subtitle: 'AI Architecture + Structural + Quantity Surveying',
-      description: 'The world\'s most powerful AI construction platform. Complete architectural design, structural engineering analysis, and professional BOQ generation in under 3 minutes.',
+      title: 'Generator Oracle',
+      subtitle: 'Generator fault codes & diagnosis',
+      description: 'Look up a controller alarm or J1939 engine code, see the likely causes and checks, and reach an engineer in one tap.',
       features: [
-        'AI Architect CAD - Floor plans, elevations, sections',
-        'AI Structural Engineer - Load analysis, foundation design',
-        'AI Quantity Surveyor - 134+ item BOQ, quotations',
-        '195+ countries with real-time pricing',
-        'Complete reports in under 3 minutes',
+        'Alarms for DeepSea, ComAp, Woodward, SmartGen, CAT PowerWizard and more',
+        'J1939 engine codes, typed the way the display shows them',
+        'Symptom search that points to the right diagnostic guide',
+        'Reset steps, wiring references and training simulators',
+        'WhatsApp an engineer from any result',
       ],
       stats: [
-        { label: 'Accuracy', value: '99.8%' },
-        { label: 'Countries', value: '195+' },
-        { label: 'Time', value: '<3min' },
+        { label: 'Controller brands', value: '10' },
+        { label: 'Engine codes', value: 'J1939' },
+        { label: 'Cost', value: 'Free' },
+      ],
+      icon: <Zap className="w-8 h-8 text-white" />,
+      href: '/generator-oracle',
+      gradient: 'from-amber-600 via-orange-600 to-red-600',
+      badge: 'FLAGSHIP',
+      isPrimary: true,
+    },
+    {
+      title: 'Solar Genius Pro',
+      subtitle: 'Solar sizing estimate',
+      description: 'A first estimate of the panels, inverter and battery you need, with cost and payback, from your own consumption.',
+      features: [
+        'NASA POWER sun-hours for your location',
+        'Battery sized to the backup you actually want',
+        'Your tariff, residential or commercial',
+        'Inverter and battery fault-code library',
+        'Send the result to us for a site survey and quote',
+      ],
+      stats: [
+        { label: 'Sun data', value: 'NASA' },
+        { label: 'Sign-up', value: 'None' },
+        { label: 'Cost', value: 'Free' },
+      ],
+      icon: <Sun className="w-8 h-8 text-white" />,
+      href: '/solar-genius-pro',
+      gradient: 'from-yellow-500 via-orange-500 to-amber-600',
+      badge: 'FREE',
+    },
+    {
+      title: 'AquaScan Pro',
+      subtitle: 'Borehole pre-screen',
+      description: 'A desktop first look at a borehole site from public rainfall, soil and water-point data — the step before a field survey.',
+      features: [
+        'Long-term rainfall, temperature and soils for the site',
+        'Mapped water points and borehole records nearby',
+        'Rough depth range and drilling-cost band',
+        'Every data source named',
+        'Book a field survey from the result',
+      ],
+      stats: [
+        { label: 'Type', value: 'Pre-screen' },
+        { label: 'Sources', value: 'Named' },
+        { label: 'Cost', value: 'Free' },
+      ],
+      icon: <Droplets className="w-8 h-8 text-white" />,
+      href: '/aquascan-pro-v3',
+      gradient: 'from-cyan-600 via-blue-600 to-indigo-600',
+      badge: 'FREE',
+    },
+    {
+      title: 'Building Suite',
+      subtitle: 'Engineering reference calculators',
+      description: 'Hand-checked calculators for building work. Each one uses every input you type and names the method it follows.',
+      features: [
+        'Wind pressure and steel bolt shear',
+        'Reinforced-concrete beam bending',
+        'Rational-method drainage runoff',
+        'Bearing capacity, U-values, daylight and acoustics',
+        'Talk to an engineer for full design',
+      ],
+      stats: [
+        { label: 'Methods', value: 'Named' },
+        { label: 'Sign-up', value: 'None' },
+        { label: 'Cost', value: 'Free' },
       ],
       icon: <Building2 className="w-8 h-8 text-white" />,
       href: '/solutions/building',
       gradient: 'from-indigo-600 via-purple-600 to-violet-600',
-      badge: 'FLAGSHIP SUITE',
-      isPrimary: true,
     },
     {
       title: 'Plant & Equipment Oracle',
@@ -152,95 +223,32 @@ export default function AIToolsPage() {
       gradient: 'from-cyan-600 via-teal-600 to-emerald-600',
       badge: 'NEW',
     },
-    {
-      title: 'Generator Oracle',
-      subtitle: 'AI-Powered Diagnostic System',
-      description: 'Generator diagnostic platform with manufacturer-curated fault codes, interactive wiring diagrams, and AI-powered troubleshooting.',
-      features: [
-        'Curated codes plus full code-number coverage',
-        'Interactive wiring diagrams',
-        'Generator simulator with controls',
-        'Step-by-step repair guides',
-        'All major generator brands supported',
-      ],
-      stats: [
-        { label: 'Fault Codes', value: '400K+' },
-        { label: 'Controllers', value: '15+' },
-        { label: 'Brands', value: '50+' },
-      ],
-      icon: <Zap className="w-8 h-8 text-white" />,
-      href: '/generator-oracle',
-      gradient: 'from-amber-600 via-orange-600 to-red-600',
-      badge: 'AI-POWERED',
-    },
-    {
-      title: 'Solar Genius Pro',
-      subtitle: 'AI Solar Design & Optimization',
-      description: 'Advanced AI-powered solar system design, sizing calculator, and optimization engine. Perfect installations every time.',
-      features: [
-        'AI system sizing & optimization',
-        'Panel placement optimization',
-        'Battery & inverter selection',
-        'ROI & payback calculations',
-        'Weather-adjusted performance',
-      ],
-      stats: [
-        { label: 'Accuracy', value: '98.5%' },
-        { label: 'ROI Boost', value: '+25%' },
-        { label: 'Time Saved', value: '90%' },
-      ],
-      icon: <Sun className="w-8 h-8 text-white" />,
-      href: '/solar',
-      gradient: 'from-yellow-500 via-orange-500 to-amber-600',
-      badge: 'AI',
-    },
-    {
-      title: 'AquaScan Pro',
-      subtitle: 'AI Water System Diagnostics',
-      description: 'Intelligent borehole and water pump diagnostic system with predictive maintenance and optimization recommendations.',
-      features: [
-        'Pump performance analysis',
-        'Water quality predictions',
-        'Predictive maintenance alerts',
-        'Energy optimization',
-        'Flow rate optimization',
-      ],
-      stats: [
-        { label: 'Uptime', value: '99.5%' },
-        { label: 'Energy Save', value: '30%' },
-        { label: 'Accuracy', value: '97%' },
-      ],
-      icon: <Droplets className="w-8 h-8 text-white" />,
-      href: '/services/borehole-pumps',
-      gradient: 'from-cyan-600 via-blue-600 to-indigo-600',
-      badge: 'AI',
-    },
   ];
 
   const additionalTools = [
     {
-      title: 'Fault Code Lookup',
-      description: 'Search generator error codes instantly',
+      title: 'Fault Code Guides',
+      description: 'Common generator alarms explained',
       icon: <Search className="w-6 h-6" />,
       href: '/faults',
     },
     {
       title: 'Diagnostic Suite',
-      description: 'Complete diagnostic experience',
+      description: 'Guided fault trees',
       icon: <BarChart3 className="w-6 h-6" />,
       href: '/diagnostics',
     },
     {
-      title: 'Solar Sizing Calculator',
-      description: 'AI-powered system sizing',
+      title: 'Solar Sizing Guide',
+      description: 'How sizing works, step by step',
       icon: <Calculator className="w-6 h-6" />,
       href: '/solutions/solar-sizing',
     },
     {
-      title: 'Generator Oracle Africa',
-      description: 'Optimized for African technicians',
-      icon: <Globe className="w-6 h-6" />,
-      href: '/generator-oracle',
+      title: 'What Each Tool Does',
+      description: 'Can and cannot do, plainly',
+      icon: <Layers className="w-6 h-6" />,
+      href: '/ai-tools/capabilities',
     },
   ];
 
@@ -249,7 +257,6 @@ export default function AIToolsPage() {
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 px-4 overflow-hidden">
         {/* Background Effects */}
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl" />
 
@@ -260,7 +267,7 @@ export default function AIToolsPage() {
             className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-amber-500/20 rounded-full border border-purple-500/30 mb-6"
           >
             <Brain className="w-5 h-5 text-purple-400" />
-            <span className="text-purple-300 font-medium">Powered by 75+ AI Engines</span>
+            <span className="text-purple-300 font-medium">Free · No sign-up · Engineers behind every tool</span>
             <Sparkles className="w-5 h-5 text-amber-400" />
           </motion.div>
 
@@ -270,7 +277,7 @@ export default function AIToolsPage() {
             transition={{ delay: 0.1 }}
             className="text-5xl md:text-7xl font-black text-white mb-6"
           >
-            AI Tools{' '}
+            Engineering Tools{' '}
             <span className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
               Suite
             </span>
@@ -282,8 +289,8 @@ export default function AIToolsPage() {
             transition={{ delay: 0.2 }}
             className="text-xl text-gray-300 max-w-3xl mx-auto mb-8"
           >
-            Comprehensive AI-powered tools for construction, power generation,
-            solar energy, and water systems. Designed for accuracy and speed across industries.
+            Free tools for generator diagnosis, solar sizing, borehole pre-screening and building calculations.
+            Each one says what it can and cannot do, and ends with a route to our engineers.
           </motion.p>
 
           {/* Stats Bar */}
@@ -294,11 +301,10 @@ export default function AIToolsPage() {
             className="flex flex-wrap justify-center gap-8 mb-12"
           >
             {[
-              { icon: <Cpu className="w-5 h-5" />, value: '75+', label: 'AI Engines' },
-              { icon: <Globe className="w-5 h-5" />, value: '195+', label: 'Countries' },
+              { icon: <Cpu className="w-5 h-5" />, value: '5', label: 'Free Tools' },
               { icon: <TrendingUp className="w-5 h-5" />, value: '10', label: 'Controller Brands' },
-              { icon: <Clock className="w-5 h-5" />, value: '<3min', label: 'Report Time' },
-              { icon: <Award className="w-5 h-5" />, value: '450k+', label: 'Fault Codes' },
+              { icon: <Shield className="w-5 h-5" />, value: 'ISO 9001', label: '& KEBS Registered' },
+              { icon: <Award className="w-5 h-5" />, value: '1 tap', label: 'To an Engineer' },
             ].map((stat, idx) => (
               <div key={idx} className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700/50">
                 <span className="text-amber-400">{stat.icon}</span>
@@ -324,7 +330,7 @@ export default function AIToolsPage() {
       {/* Additional Tools */}
       <section className="px-4 pb-16">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Additional AI Tools</h2>
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">More Free Resources</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {additionalTools.map((tool, idx) => (
               <Link key={idx} href={tool.href}>
@@ -349,17 +355,17 @@ export default function AIToolsPage() {
         <div className="max-w-5xl mx-auto">
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl border border-gray-700/50 p-8">
             <h2 className="text-3xl font-bold text-white text-center mb-8">
-              Why Choose EmersonEIMS AI Tools
+              Why Use EmersonEIMS Tools
             </h2>
 
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { icon: <Cpu className="w-8 h-8" />, title: '75+ AI Engines', desc: 'Powered by advanced artificial intelligence for unmatched accuracy and speed' },
-                { icon: <Globe className="w-8 h-8" />, title: '195+ Countries', desc: 'Global coverage with real-time pricing and local regulations support' },
-                { icon: <Clock className="w-8 h-8" />, title: '<3 Minutes', desc: 'Complete professional reports generated in under 3 minutes' },
-                { icon: <TrendingUp className="w-8 h-8" />, title: 'Curated Data', desc: 'Fault codes taken from manufacturer references, not generated' },
-                { icon: <Layers className="w-8 h-8" />, title: 'All-in-One', desc: 'Architecture, Engineering, and Quantity Surveying in a single platform' },
-                { icon: <Shield className="w-8 h-8" />, title: 'Enterprise Ready', desc: 'Professional-grade tools trusted by engineers and architects worldwide' },
+                { icon: <Shield className="w-8 h-8" />, title: 'Honest Limits', desc: 'Every tool says what it cannot do, so you know when to call an engineer' },
+                { icon: <Search className="w-8 h-8" />, title: 'Named Sources', desc: 'Data comes from NASA POWER, SAE J1939, ISRIC and other public sources, named on screen' },
+                { icon: <Clock className="w-8 h-8" />, title: 'Free, No Sign-up', desc: 'Open any tool and use it straight away' },
+                { icon: <Wrench className="w-8 h-8" />, title: 'Written by Engineers', desc: 'Fault guides and calculators written and checked by our engineering team' },
+                { icon: <Globe className="w-8 h-8" />, title: 'Built for Kenya', desc: 'Kenyan tariffs, sun-hours, borehole records and the equipment we service' },
+                { icon: <TrendingUp className="w-8 h-8" />, title: 'A Person Behind It', desc: 'WhatsApp or call 0768 860 665 when the tool reaches its limit' },
               ].map((item, idx) => (
                 <div key={idx} className="text-center p-6 bg-gray-800/30 rounded-xl border border-gray-700/30">
                   <div className="w-16 h-16 bg-amber-500/20 rounded-xl flex items-center justify-center mx-auto mb-4 text-amber-400">
@@ -384,29 +390,29 @@ export default function AIToolsPage() {
             className="bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 rounded-2xl p-8 md:p-12"
           >
             <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
-              Ready to Experience the Future?
+              Need a Hand With the Real Thing?
             </h2>
             <p className="text-white/80 mb-8 max-w-2xl mx-auto">
-              Join thousands of professionals using our AI tools to work faster,
-              smarter, and more accurately than ever before.
+              Use the tools to get started, then bring in EmersonEIMS for the survey, the design
+              and the work on site.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/solutions/building">
+              <Link href="/generator-oracle">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-4 bg-white text-orange-600 font-bold rounded-xl hover:bg-gray-100 transition-colors"
                 >
-                  Try Pro Building Suite
+                  Try Generator Oracle
                 </motion.button>
               </Link>
-              <Link href="/generator-oracle">
+              <Link href="/contact?type=engineer">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-4 bg-white/10 text-white font-bold rounded-xl border-2 border-white/30 hover:bg-white/20 transition-colors"
                 >
-                  Try Generator Oracle
+                  Talk to an Engineer
                 </motion.button>
               </Link>
             </div>
