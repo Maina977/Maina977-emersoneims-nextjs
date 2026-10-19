@@ -81,7 +81,7 @@ const ITEM_LIST_SCHEMA = {
     { '@type': 'ListItem', position: 1, url: `${SITE}/generator-oracle`, name: 'Generator Oracle' },
     { '@type': 'ListItem', position: 2, url: `${SITE}/solar-genius-pro`, name: 'Solar Genius Pro' },
     { '@type': 'ListItem', position: 3, url: `${SITE}/aquascan-pro-v3`, name: 'AquaScan Pro' },
-    { '@type': 'ListItem', position: 4, url: `${SITE}/eims-pro`, name: 'Building Suite Pro' },
+    { '@type': 'ListItem', position: 4, url: `${SITE}/solutions/building`, name: 'Building Suite' },
     { '@type': 'ListItem', position: 5, url: `${SITE}/solar-design-studio`, name: 'Solar Design Studio' },
     { '@type': 'ListItem', position: 6, url: `${SITE}/hub`, name: 'Solar & UPS Intelligence Hub' },
   ],
@@ -90,7 +90,9 @@ const ITEM_LIST_SCHEMA = {
 // ────────────────────────────────────────────────────────────────────
 // Per-tool SoftwareApplication schemas. This is the schema type Google
 // uses for the SoftwareApp rich result in search — without it the
-// tools could only ever appear as plain blue links. Every fact below
+// tools could only ever appear as plain blue links. Rewritten 2026-10-19
+// (tool audit): the old text claimed AI, wiring diagrams, predictive
+// maintenance, floor plans and BoQs the tools do not have. Every fact below
 // is verifiable on the live tool page; per data policy, no fabricated
 // metrics. Free tools => price 0 / KES with InStock availability so
 // search engines don't flag them as paywalled SaaS.
@@ -101,28 +103,28 @@ const TOOL_SOFTWARE_SCHEMAS = [
     url: `${SITE}/generator-oracle`,
     applicationCategory: 'BusinessApplication',
     description:
-      'AI-powered generator fault-code diagnostic platform with a large fault-code database, interactive wiring diagrams and step-by-step repair guides. Supports major generator brands and controllers.',
+      'Free generator fault-code lookup and symptom diagnosis: controller alarms (DeepSea, ComAp, Woodward, SmartGen and more) and J1939 engine codes, with likely causes, checks and repair guides. Rule-based, written by our engineers.',
   },
   {
     name: 'Solar Genius Pro',
     url: `${SITE}/solar-genius-pro`,
     applicationCategory: 'DesignApplication',
     description:
-      'AI solar system design, sizing and ROI optimisation. Panel placement, battery and inverter selection, weather-adjusted performance modelling and payback analysis for residential, commercial and industrial PV.',
+      'Free solar sizing estimate for Kenya: panels, inverter and battery for grid-tied, hybrid or off-grid systems from your monthly kWh and NASA POWER sun-hours, with an installed-cost range and simple payback.',
   },
   {
     name: 'AquaScan Pro',
     url: `${SITE}/aquascan-pro-v3`,
     applicationCategory: 'BusinessApplication',
     description:
-      'Intelligent borehole and water-pump diagnostic system with predictive maintenance, energy-optimisation and flow-rate guidance. Backed by authoritative hydrological and meteorological data sources.',
+      'Free desktop borehole pre-screen for Kenya: likely depth, yield and drilling-cost ranges from NASA POWER, ERA5-Land, ISRIC SoilGrids and mapped water points, with every source named. A survey confirms where to drill.',
   },
   {
-    name: 'EIMS Pro Building Suite',
-    url: `${SITE}/eims-pro`,
-    applicationCategory: 'DesignApplication',
+    name: 'Building Suite',
+    url: `${SITE}/solutions/building`,
+    applicationCategory: 'EngineeringApplication',
     description:
-      'AI architecture, structural engineering and quantity-surveying suite. Generates floor plans, structural analyses and itemised bills of quantities with current pricing inputs.',
+      'Free building design calculators: ASCE 7 and Eurocode wind, seismic ELF, EN 1992 RC beam, EN 1993 bolt, bearing capacity, rational runoff, U-value, daylight factor and reverberation time, each with its code clause.',
   },
   {
     name: 'Solar & UPS Intelligence Hub',
@@ -136,7 +138,7 @@ const TOOL_SOFTWARE_SCHEMAS = [
     url: `${SITE}/solar-design-studio`,
     applicationCategory: 'DesignApplication',
     description:
-      'Browser-based solar design canvas — array layout, string sizing, shading and quick BoQ for engineers and contractors.',
+      'Browser-based solar roof layout: place panels, follow the sun through the day to see shading, and draft a single-line diagram and wire schedule.',
   },
 ].map((t) => ({
   '@context': 'https://schema.org',

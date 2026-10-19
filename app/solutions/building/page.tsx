@@ -13,9 +13,12 @@ export const metadata: Metadata = {
   // rendered the brand twice. Leads with the job instead: this tool does HVAC
   // load sizing, electrical design and quantity take-offs, and none of those
   // words appeared in the title anyone searched.
-  title: 'Building Services Calculator — HVAC, Electrical & QS',
+  // 2026-10-19 tool audit: the title promised HVAC, electrical and QS, and the
+  // schema "AI design … BOQ … complete construction documentation in minutes".
+  // None of those run online; these are the calculators that do.
+  title: 'Building Design Calculators — Wind, Structural & Daylight',
   description:
-    'Full EIMS engineering, quantity surveying, BIM, and professional reports — Building Suite Pro.',
+    'Free building design calculators: wind and seismic loads, RC beam, steel bolt, bearing capacity, storm runoff, U-value, daylight and acoustics — each worked to the cited code clause.',
   robots: { index: true, follow: true },
   alternates: { canonical: '/solutions/building' },
   other: {
@@ -29,11 +32,11 @@ export default function BuildingPage() {
       <FlagshipProductSchema
         name="Pro Building Suite"
         url="https://www.emersoneims.com/solutions/building"
-        description="AI architectural design, structural engineering analysis and professional BOQ / quantity surveying with BIM and downloadable reports — complete construction documentation in minutes."
-        category="Construction & Quantity Surveying"
+        description="Free building design calculators: ASCE 7 and Eurocode wind, ASCE 7 seismic ELF, EN 1992 RC beam, EN 1993 bolt, bearing capacity, rational runoff, U-value, daylight factor and reverberation time."
+        category="Building Design Calculators"
         applicationCategory="EngineeringApplication"
-        keywords={['BOQ generator', 'Quantity Surveying', 'Structural Design', 'Architectural Design', 'BIM', 'Bill of Quantities Kenya']}
-        industry="Architects, Engineers, Quantity Surveyors, Developers"
+        keywords={['Wind Load Calculator', 'RC Beam Design', 'Bearing Capacity', 'U-value Calculator', 'Daylight Factor', 'Structural Engineering Kenya']}
+        industry="Architects, Engineers, Developers, Contractors"
         priceKes="Free"
       />
       <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
@@ -41,7 +44,7 @@ export default function BuildingPage() {
       <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
       <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
       <link rel="prefetch" href="/eims-building-suite-v20260503.html" as="document" />
-      <B2BCommercialBand profile={B2B_PROFILES.mepClash} />
+      <B2BCommercialBand profile={B2B_PROFILES.buildingSuite} />
       {/*
         Server-rendered heading. ProBuildingSuiteClient is a client component,
         so a Googlebot scan on 2026-07-31 found this page — and the /all-tools
@@ -49,7 +52,7 @@ export default function BuildingPage() {
         <h1>. Fixing it here fixes all three.
       */}
       <h1 className="sr-only">
-        Pro Building Suite — AI Architectural Design, Structural Analysis &amp; BOQ Generation
+        Building Suite — Free Building Design Calculators (Wind, Structural, Geotechnical, Daylight &amp; Acoustics)
       </h1>
       <ProBuildingSuiteClient />
     </>

@@ -674,6 +674,31 @@ export const B2B_PROFILES = {
     accent: 'orange',
   },
 
+  /*
+   * 2026-10-19 tool audit: /solutions/building used the mepClash profile
+   * ("clash detection", "coordinated MEP models"), which the suite does not do.
+   * This describes what runs online today: the calculators in
+   * lib/wizard-api/buildingCalcs.ts.
+   */
+  buildingSuite: {
+    eyebrow: 'Building Suite • Design Calculators',
+    headline: 'Free building design calculators — with every input and assumption shown.',
+    subtitle:
+      'Wind and seismic loads, RC beam and steel bolt checks, bearing capacity, storm runoff, U-value, daylight and reverberation time, worked to the cited code clause. For full designs and sign-off, our registered engineers take it from there.',
+    whoFor: ['Architects', 'Structural & civil engineers', 'Developers', 'Contractors', 'Students & graduate engineers'],
+    pso: [
+      { problem: 'You need a quick check before the full design.', solution: 'Run the calculation with your own inputs; the result names the clause and lists its assumptions.', outcome: 'A first answer you can trace.' },
+      { problem: 'A missing input silently becomes a default.', solution: 'The calculators refuse to run until every required input is given.', outcome: 'No answer that quietly came from someone else\'s numbers.' },
+      { problem: 'A check is not a design.', solution: 'Send the job to EmersonEIMS for a full design by registered engineers.', outcome: 'Drawings and calculations you can submit.' },
+    ],
+    trust: ['Free, no sign-up', 'Code clause on every result', 'Registered engineers', 'ISO 9001 & KEBS registered'],
+    ctas: [
+      { label: 'Request a Design', href: '/contact?topic=building-design', variant: 'primary' },
+      { label: 'WhatsApp an Engineer', href: WHATSAPP, variant: 'secondary' },
+    ],
+    accent: 'sky',
+  },
+
   solarDesignStudio: {
     // 2026-10-18 tool audit: was "tender packs", "BOQ generation", "side-by-side
     // option compare" and "used on live tenders" — the studio does none of those.

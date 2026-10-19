@@ -9159,7 +9159,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
         <div className="header-left">
           <div className="logo">{'\u{1F30D}'}</div>
           <div>
-            <h1>EMERSON EIMS &mdash; AquaScan Pro</h1>
+            <div className="app-title" role="heading" aria-level={2}>EMERSON EIMS &mdash; AquaScan Pro</div>
             <p className="subtitle">{SCI.TOTAL_CAPABILITIES} Capabilities &bull; 8 Subsystems &bull; AI-Powered Borehole Analysis</p>
           </div>
         </div>

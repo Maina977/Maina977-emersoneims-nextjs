@@ -254,21 +254,18 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
         <button class="mode-tab" onclick="setMode('curation')" title="Design intelligence: brief parser, Marbella details, interior palette, plants, irrigation">🎨 Curation</button>
         <button class="mode-tab" onclick="setMode('interior')" title="Interior designer: 6-step guided workflow (palette, emotion, anchors, inspiration, finishes, restraint score)">🛋️ Interior</button>
         <span style="display:inline-block;width:1px;height:20px;background:#dc2626;margin:0 4px;align-self:center"></span>
-        <button class="mode-tab" onclick="setMode('mepClash')" title="3D AABB clash detection (Navisworks-class) — replaces $2,500/yr Navisworks Manage">⚠️ MEP Clash</button>
-        <button class="mode-tab" onclick="setMode('highrise')" title="High-rise dynamics: P-Δ, modal RSA, dynamic wind, vortex shedding, ISO 10137 comfort">🏙️ High-Rise</button>
-        <button class="mode-tab" onclick="setMode('healthcare')" title="Healthcare compliance audit (FGI 2022, HBN 00-09, HTM 03-01, HTM 05-02)">🏥 Healthcare</button>
-        <button class="mode-tab" onclick="setMode('collab')" title="Real-time multi-user worksharing — locks, presence, change feed (replaces BIM 360)">👥 Collab</button>
+        <button class="mode-tab" onclick="setMode('mepClash')" title="MEP clash detection — not online yet">⚠️ MEP Clash</button>
+        <button class="mode-tab" onclick="setMode('highrise')" title="High-rise dynamics — not online yet">🏙️ High-Rise</button>
+        <button class="mode-tab" onclick="setMode('healthcare')" title="Healthcare compliance audit — not online yet">🏥 Healthcare</button>
+        <button class="mode-tab" onclick="setMode('collab')" title="Multi-user collaboration — not online yet">👥 Collab</button>
         <button class="mode-tab" onclick="setMode('proConsole')" title="Professional calculators and engineering checks">🛠️ All Tools</button>
     </div>
+    <!-- Was Save / PDF / Excel / DXF / FBX / NWD / All Drawings / Export IFC:
+         every one called a route that is missing or answers 501, so each only
+         ever alerted "failed" (2026-10-19 tool audit). -->
     <div class="top-actions">
-        <button onclick="saveAllData()">Save</button>
-        <button onclick="generateReport()">PDF</button>
-        <button onclick="exportExcel()">Excel</button>
-        <button onclick="exportDXF()">DXF</button>
-        <button onclick="exportFBX()">FBX</button>
-        <button onclick="exportNWD()">NWD</button>
-        <button onclick="generateAllDrawings()">All Drawings</button>
-        <button onclick="generateIFC()">Export IFC</button>
+        <button onclick="window.print()" title="Print or save this screen as PDF">Print</button>
+        <button onclick="window.open('https://wa.me/254768860665?text='+encodeURIComponent('Hi EmersonEIMS, I am using the Building Suite and would like an engineer to help with a design.'),'_blank','noopener')" title="Talk to an EmersonEIMS engineer">WhatsApp an engineer</button>
     </div>
 </div>
 
@@ -466,7 +463,9 @@ let currentSVG='', cadCtx=null, cadDrawing=false, cadPenColor='#0c2461', cadPenW
    over slow networks. */
 async function init(){
     buildNav();
-    setMode('phases');
+    // Open on the calculators that work online (2026-10-19 tool audit); the
+    // phase wizard is one click away and says what it cannot do.
+    setMode('engineeringPro');
     // Warm the catalog in the background AFTER paint. requestIdleCallback
     // if available, otherwise a short setTimeout so it doesn't block
     // interactive tasks.
@@ -849,7 +848,10 @@ async function repBuild(){
         })),
         fjson('/safety/methods/catalog')
     ]);
-    Object.assign(extras, {daylight, uvalue, acoustics, egress, access, shadow, wind, geotech, rcbeam, carbon, ve, cpm, risks, msCatalog});
+    // Calculator results live under .data; failed (400/501) calls keep success:false
+    // so their report sections are skipped rather than printed blank.
+    const _unwrap = (x) => (x && x.success !== false && x.data && typeof x.data === 'object') ? Object.assign({success:true}, x.data) : x;
+    Object.assign(extras, Object.fromEntries(Object.entries({daylight, uvalue, acoustics, egress, access, shadow, wind, geotech, rcbeam, carbon, ve, cpm, risks, msCatalog}).map(([k, v]) => [k, _unwrap(v)])));
     // Stash the last build so Download buttons can export raw data + project name
     window._repData = { params: p, report, quote, drawings, render, extras, generated_at: new Date().toISOString() };
     repRender(report, quote, drawings, render, p, extras);
@@ -1103,7 +1105,7 @@ function repRender(report, quote, drawings, render, p, extras){
         // 6.1 Daylight
         if(ok(extras.daylight)){
             const d = extras.daylight;
-            const adf = d.adf_pct ?? d.adf ?? d.average_daylight_factor;
+            const adf = d.ADF_pct ?? d.adf_pct ?? d.adf ?? d.average_daylight_factor;
             const status = (adf>=2)?'<span style="color:#1b5e20;font-weight:600">✅ Compliant (BS 8206-2: ADF ≥ 2% for living spaces)</span>':'<span style="color:#c62828;font-weight:600">⚠️ Below 2% — review glazing area</span>';
             arch += card('6.1 Daylight Study (BS 8206-2 / CIBSE LG10)',
                 `Average Daylight Factor (ADF): <strong>${fmt(adf)}%</strong><br>Glazing transmittance T<sub>glass</sub>: 0.68 · Sky angle: 65° · Maintenance factor: 0.90<br>${status}`);
@@ -1112,14 +1114,14 @@ function repRender(report, quote, drawings, render, p, extras){
         if(ok(extras.uvalue)){
             const u = extras.uvalue;
             const uval = u.U_value_W_m2K ?? u.U_W_m2K ?? u.u_value ?? u.U;
-            const r = u.R_total_m2K_per_W ?? u.R_total ?? u.r_total;
+            const r = u.R_total_m2K_W ?? u.R_total_m2K_per_W ?? u.R_total ?? u.r_total;
             arch += card('6.2 Envelope Thermal Performance (ISO 6946)',
                 `Wall build-up U-value: <strong>${fmt(uval)} W/m²K</strong> · Total R-value: <strong>${fmt(r)} m²K/W</strong><br>Layers: 20 mm external plaster + 200 mm concrete block + 50 mm EPS insulation + 12 mm internal plaster<br>Target (Part L1A 2021): U ≤ 0.18 W/m²K · Tropical climate target: U ≤ 0.50 W/m²K`);
         }
         // 6.3 Acoustics
         if(ok(extras.acoustics)){
             const a = extras.acoustics;
-            const rt = a.T60_seconds ?? a.RT60_s ?? a.rt60 ?? a.reverberation_time_s;
+            const rt = a.T60_s ?? a.T60_seconds ?? a.RT60_s ?? a.rt60 ?? a.reverberation_time_s;
             arch += card('6.3 Room Acoustics (Sabine, BS EN 12354-6)',
                 `Reverberation Time RT<sub>60</sub>: <strong>${fmt(rt)} s</strong> (volume ${fmt(p.area*3)} m³)<br>Living-room target: 0.4–0.6 s (BS 8233:2014). Bedroom target: 0.5–0.8 s.<br>If above target: add absorptive ceiling tiles or carpet to reduce flutter echo.`);
         }
@@ -1169,7 +1171,7 @@ function repRender(report, quote, drawings, render, p, extras){
             const _L = Math.sqrt(p.area) * 1.2;
             const _W = Math.sqrt(p.area) * 0.83;
             const qp = w.qp_kPa ?? w.peak_velocity_pressure_kPa ?? w.qp;
-            const ve = w.ve_ms ?? w.basic_velocity_ms;
+            const ve = w.vm_ms ?? w.ve_ms ?? w.basic_velocity_ms;
             eng += card('7.1 Wind Loading (EN 1991-1-4 / Eurocode 1)',
                 `Basic wind velocity v<sub>b</sub>: 24 m/s · Building H×L×W: ${fmt(_H)}×${fmt(_L)}×${fmt(_W)} m · Terrain cat. II<br>Peak velocity pressure q<sub>p</sub>: <strong>${fmt(qp)} kPa</strong> · Reference height velocity: ${fmt(ve)} m/s<br>Apply external pressure coefficients c<sub>pe,10</sub> per Table 7.1; verify against ASCE 7-22 for jurisdictions outside EU.`);
         }
@@ -1177,8 +1179,8 @@ function repRender(report, quote, drawings, render, p, extras){
         if(ok(extras.geotech)){
             const g = extras.geotech;
             const qu = g.qu_kPa ?? g.qult_kPa ?? g.ultimate_bearing_kPa;
-            const qa = g.qa_FS3_kPa ?? g.allowable_bearing_kPa ?? g.qa;
-            eng += card('7.2 Foundation Bearing Capacity (Terzaghi 1943)',
+            const qa = g.qa_kPa ?? g.qa_FS3_kPa ?? g.allowable_bearing_kPa ?? g.qa;
+            eng += card('7.2 Foundation Bearing Capacity (Terzaghi form; Nc, Nq Prandtl–Reissner, Nγ Vesić)',
                 `Strip footing B = 0.6 m, D<sub>f</sub> = 1.2 m · Soil c′ = 15 kPa, φ′ = 28°, γ = 18 kN/m³<br>Ultimate bearing pressure q<sub>u</sub>: <strong>${fmt(qu)} kPa</strong><br>Allowable bearing (FS=3): <strong>${fmt(qa)} kPa</strong><br>Recommendation: confirm with site-specific SPT/CPT before final design.`);
         }
         // 7.3 RC beam design
@@ -1602,7 +1604,7 @@ function repRender(report, quote, drawings, render, p, extras){
         const rcRows = [
             ['BD-01', 'Typical Beam Reinforcement (300×500 mm)', 'EN 1992-1-1', ok ? `As,req ${fmt(rc.As_required_mm2 ?? rc.As_req)} mm² · 3ØT25 bottom + 2ØT16 top · R10 links @ 200 c/c (R10 @ 100 within d from supports)` : 'Run /eng/rc-beam to populate'],
             ['CD-01', 'Typical Column Reinforcement (300×300 mm)', 'EN 1992-1-1', '4ØT16 main + R8 ties @ 200 c/c (200 mm splice length × 40d)'],
-            ['FD-01', 'Strip Footing Detail (B = 600 mm, Dₜ = 1200 mm)', 'EN 1997-1', extras.geotech?.qa_FS3_kPa ? `Allowable bearing ${fmt(extras.geotech.qa_FS3_kPa)} kPa (FS = 3) · T12 @ 150 both ways bottom + T10 @ 200 top distribution` : 'Pending geotech bearing capacity'],
+            ['FD-01', 'Strip Footing Detail (B = 600 mm, Dₜ = 1200 mm)', 'EN 1997-1', (extras.geotech?.qa_kPa ?? extras.geotech?.qa_FS3_kPa) ? `Allowable bearing ${fmt(extras.geotech.qa_kPa ?? extras.geotech.qa_FS3_kPa)} kPa (FS = 3) · T12 @ 150 both ways bottom + T10 @ 200 top distribution` : 'Pending geotech bearing capacity'],
             ['SD-01', 'Suspended Slab (one-way solid)', 'EN 1992-1-1', `${stories>1?`Slab thickness ${Math.ceil((Math.sqrt(p.area)*1.2*1000)/24/10)*10} mm (≈ L/24)`:'Single storey — ground slab on grade only'} · T10 @ 200 main + T8 @ 250 distribution · 25 mm cover`],
             ['SS-01', 'Lintel Schedule', 'EN 1992-1-1', '150 × 230 mm precast or in-situ RC, 2ØT12 bottom + R8 links · minimum bearing 150 mm each end'],
             ['SC-01', 'Staircase Reinforcement', 'EN 1992-1-1', stories>1 ? `Waist 150 mm · T12 @ 150 main + T10 @ 200 distribution · cover 25 mm` : 'N/A — single storey']
@@ -1622,8 +1624,8 @@ function repRender(report, quote, drawings, render, p, extras){
             ['Cohesion c′', `${fmt(g.c_kPa ?? 15)} kPa`, 'Assumed (preliminary)'],
             ['Friction angle φ′', `${fmt(g.phi_deg ?? 28)}°`, 'Assumed (preliminary)'],
             ['Unit weight γ', `${fmt(g.gamma_kN_m3 ?? 18)} kN/m³`, 'Assumed (preliminary)'],
-            ['Ultimate bearing qᵤ', `${fmt(g.qu_kPa)} kPa`, 'Computed (Terzaghi 1943)'],
-            ['Allowable bearing qₐ (FS=3)', `${fmt(g.qa_FS3_kPa)} kPa`, 'Computed (Terzaghi 1943)']
+            ['Ultimate bearing qᵤ', `${fmt(g.qu_kPa)} kPa`, 'Computed (Terzaghi form, Vesić Nγ)'],
+            ['Allowable bearing qₐ (FS=3)', `${fmt(g.qa_kPa ?? g.qa_FS3_kPa)} kPa`, 'Computed (Terzaghi form, Vesić Nγ)']
         ] : [];
         const tbl = tableRows.length
             ? `<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#efebe9"><th style="padding:5px 8px;text-align:left">Parameter</th><th style="padding:5px 8px;text-align:left">Value</th><th style="padding:5px 8px;text-align:left">Source</th></tr></thead><tbody>` + tableRows.map(r=>`<tr><td style="padding:4px 8px;border-bottom:1px solid #eee">${r[0]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;font-weight:600">${r[1]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:10px;color:#666">${r[2]}</td></tr>`).join('') + `</tbody></table>`
@@ -2140,6 +2142,12 @@ function repPrint(){
 }
 
 /* ============ PHASES ============ */
+/* Shown at the top of every phase (2026-10-19 tool audit). */
+const SUITE_OFFLINE_NOTE = '<div style="background:rgba(255,183,77,.08);border:1px solid rgba(255,183,77,.35);border-radius:6px;padding:8px 12px;margin:0 0 12px;font-size:11px;line-height:1.5;color:#ffcc80">'
+  + '<b>Not online yet:</b> the full 13-phase project run (site report, bill of quantities, drawings and costing). You can fill in the phases, but the online suite cannot produce the project report — our engineers do that as a design job: '
+  + '<a href="https://wa.me/254768860665" target="_blank" rel="noopener noreferrer" style="color:#64b5f6">WhatsApp 0768 860 665</a>. '
+  + '<b>Working online now:</b> the <a href="#" onclick="setMode(\'physics\');return false" style="color:#64b5f6">Physics</a> and '
+  + '<a href="#" onclick="setMode(\'engineeringPro\');return false" style="color:#64b5f6">Engineering+</a> calculators.</div>';
 function goPhase(i){
     saveInputs();curPhase=i;curMode='phases';
     document.querySelectorAll('.nav-item').forEach((e,j)=>{if(j<13)e.classList.toggle('active',j===i);});
@@ -2147,6 +2155,7 @@ function goPhase(i){
     let h='<div class="main-scroll" id="ms">';
     h+='<div style="font-size:18px;font-weight:700;color:#64b5f6;margin-bottom:2px">'+p.ico+' Phase '+p.n+': '+p.name+'</div>';
     h+='<div style="font-size:10px;color:#5c6bc0;margin-bottom:12px">'+p.roles.join(' \u2022 ')+'</div>';
+    h+=SUITE_OFFLINE_NOTE;
 
     // Role tabs
     h+='<div class="rtabs">';
@@ -3287,12 +3296,12 @@ function showBIMStudio(){
 
       <div class="builder-right" style="overflow-y:auto;padding:12px">
         <div class="rtabs" style="margin-bottom:10px">
-          <div class="rtab on" id="bimTabPlan" onclick="bimTab('plan')">📐 Plan</div>
-          <div class="rtab" id="bimTab3D" onclick="bimTab('3d')">🎮 3D</div>
-          <div class="rtab" id="bimTabSched" onclick="bimTab('schedules')">📋 Schedules</div>
-          <div class="rtab" id="bimTabLib" onclick="bimTab('library')">📚 Library</div>
-          <div class="rtab" id="bimTabSheets" onclick="bimTab('sheets')">📄 Sheets</div>
-          <div class="rtab" id="bimTabCopilot" onclick="bimTab('copilot')" style="background:linear-gradient(90deg,#4a148c,#1a237e);color:#fff;font-weight:700">✨ Copilot</div>
+          <div class="rtab on" id="bimTabPlan" onclick="bimStudioTab('plan')">📐 Plan</div>
+          <div class="rtab" id="bimTab3D" onclick="bimStudioTab('3d')">🎮 3D</div>
+          <div class="rtab" id="bimTabSched" onclick="bimStudioTab('schedules')">📋 Schedules</div>
+          <div class="rtab" id="bimTabLib" onclick="bimStudioTab('library')">📚 Library</div>
+          <div class="rtab" id="bimTabSheets" onclick="bimStudioTab('sheets')">📄 Sheets</div>
+          <div class="rtab" id="bimTabCopilot" onclick="bimStudioTab('copilot')" style="background:linear-gradient(90deg,#4a148c,#1a237e);color:#fff;font-weight:700">✨ Copilot</div>
         </div>
         <div id="bimRight">
           <div style="text-align:center;padding:60px 20px;color:#5c6bc0">
@@ -3308,7 +3317,7 @@ function showBIMStudio(){
 
 function bimEsc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-function bimTab(which){
+function bimStudioTab(which){
     ['Plan','3D','Sched','Lib','Sheets','Copilot'].forEach(suffix => {
         const el = document.getElementById('bimTab' + suffix);
         if (el) el.classList.toggle('on', {Plan:'plan',3:'3d','3D':'3d',Sched:'schedules',Lib:'library',Sheets:'sheets',Copilot:'copilot'}[suffix] === which);
@@ -3493,7 +3502,7 @@ async function bimApplyLibrary(cat, libId){
         const j2 = await r2.json();
         if (j2.success){ bimState.bim = j2.bim; }
         bimRefreshStats();
-        bimTab('plan');
+        bimStudioTab('plan');
         setTimeout(() => bimSelect(sel.id), 250);
     }catch(e){
         alert('Apply error: ' + (e.message||e));
@@ -4517,7 +4526,7 @@ function bimScheduleTab(key){
     h += '<tr>' + cols.map(c => `<th style="padding:8px 10px;font-weight:700">${bimEsc(c)}</th>`).join('') + '</tr>';
     h += '</thead><tbody>';
     sch.rows.forEach((r,i) => {
-        h += `<tr style="border-top:1px solid #1e2560" onclick="${r.element_id?`bimSelect('${r.element_id}');bimTab('plan')`:''}" `
+        h += `<tr style="border-top:1px solid #1e2560" onclick="${r.element_id?`bimSelect('${r.element_id}');bimStudioTab('plan')`:''}" `
               + `style="${r.element_id?'cursor:pointer;':''}border-top:1px solid #1e2560">`;
         cols.forEach(c => {
             const v = r[c];
@@ -7174,9 +7183,9 @@ const PRO_CATALOG = [
       {k:'Fv_Ed_kN',type:'number',def:50,l:'Fv,Ed (kN)'},
       {k:'Ft_Ed_kN',type:'number',def:10,l:'Ft,Ed (kN)'},
     ]},
-  {id:'en_geo', grp:'Engineering+', title:'Bearing capacity (Terzaghi)',
+  {id:'en_geo', grp:'Engineering+', title:'Bearing capacity (Terzaghi form)',
     ep:'/api/geotech/bearing/terzaghi', mth:'POST',
-    refs:['Terzaghi 1943','Meyerhof','Hansen'],
+    refs:['Terzaghi 1943 (equation, shape factors)','Prandtl–Reissner (Nc, Nq)','Vesić 1973 (Nγ)'],
     f:[
       {k:'c_kPa',type:'number',def:10,l:'Cohesion c (kPa)'},
       {k:'phi_deg',type:'number',def:30,l:'Friction φ (°)'},
@@ -7610,7 +7619,7 @@ window.eimsToggleDevMode = function(on){
 
 function proRenderResult(endpoint,data){
   if(!data||typeof data!=='object') return `<div style="padding:14px;color:#7986cb;font-size:12px">${proEscape(data)}</div>`;
-  if(data.success===false) return `<div class="err">❌ ${proEscape(data.error||data.message||'Request failed')}</div>`;
+  if(data.success===false) return `<div class="err">❌ ${proEscape(data.message||data.error||'Request failed')}</div>`; // message first: a 501 carries the readable one (2026-10-19)
 
   const SPECIAL=new Set(['success','disclaimer','code','clauses','standard','reference','generated_utc','fetched_at','data_provenance','source','sources','copyright','notice']);
   const specials={}, main={};
@@ -8320,6 +8329,27 @@ async function proExecutePollinations(calc, body){
   </div>`;
 }
 
+/* Endpoints the server really computes (lib/wizard-api/dispatcher.ts). Every
+   other catalog endpoint answers 501 "not available online yet", so its tile
+   says so up front instead of letting the user fill a form for nothing.
+   (2026-10-19 tool audit) */
+const PRO_LIVE_EPS = new Set([
+  '/api/arch/daylight/adf','/api/arch/acoustics/reverberation','/api/arch/uvalue','/api/arch/shadow/position',
+  '/api/loads/wind/asce7','/api/loads/seismic/asce7-elf','/api/rc/beam/bending','/api/steel/bolt',
+  '/api/geotech/bearing/terzaghi','/api/hydro/rational','/api/hydro/tc/kirpich','/api/hydro/runoff-coefficients',
+  '/api/global/fx/rates',
+]);
+function proIsLive(c){ return !!(c.embed || c.openInTab || c.mth==='POLLINATIONS' || PRO_LIVE_EPS.has(c.ep)); }
+function proTabLabel(c){ return c.title + (proIsLive(c) ? '' : ' <span style="color:#ffb74d;font-size:9px">· not online</span>'); }
+function proNotOnlineCard(c){
+  return `<div class="pro-page"><div class="pro-inputs"><div class="card">
+    <div class="card-h">${c.title}</div>
+    <div style="color:#ffb74d;font-weight:600;margin:6px 0 8px">Not available online yet</div>
+    <div style="color:#b0bec5;font-size:12px;line-height:1.6">This calculation is not built into the online suite. Our engineers do it as part of a design job.
+      Call or WhatsApp <a href="https://wa.me/254768860665" target="_blank" rel="noopener noreferrer" style="color:#64b5f6">0768 860 665</a>.</div>
+    <div style="color:#7986cb;font-size:11px;margin-top:10px">Working online now: daylight factor, reverberation time, U-value, sun position, wind (ASCE 7 / Eurocode), seismic ELF, RC beam, steel bolt, bearing capacity, rational runoff and Kirpich.</div>
+  </div></div></div>`;
+}
 function proShowCalc(calcId){
   const c=PRO_CATALOG.find(x=>x.id===calcId); if(!c) return;
   document.querySelectorAll('.pro-sub-tab').forEach(b=>b.classList.toggle('active',b.dataset.cid===calcId));
@@ -8340,6 +8370,7 @@ function proShowCalc(calcId){
       </div>`;
     return;
   }
+  if(!proIsLive(c)){ document.getElementById('pro-pane').innerHTML=proNotOnlineCard(c); return; }
   const formHtml=c.f.map(proFieldInput).join('');
   const refsHtml=c.refs&&c.refs.length?`<div class="pro-refs"><b>Standards / sources:</b> ${c.refs.join(' · ')}</div>`:'';
   const pane=document.getElementById('pro-pane');
@@ -8383,11 +8414,11 @@ function proShowGroup(grp,icon){
       <h2 style="color:#42a5f5;margin:0 0 10px;font-size:15px">${icon} ${grp}
         <span style="color:#7986cb;font-size:11px;font-weight:500;margin-left:8px">${items.length} tools</span></h2>
       <div class="pro-sub-tabs">
-        ${items.map((c,i)=>`<button class="pro-sub-tab ${i===0?'active':''}" data-cid="${c.id}" onclick="proShowCalc('${c.id}')">${c.title}</button>`).join('')}
+        ${items.map((c,i)=>`<button class="pro-sub-tab ${i===0?'active':''}" data-cid="${c.id}" onclick="proShowCalc('${c.id}')">${proTabLabel(c)}</button>`).join('')}
       </div>
       <div id="pro-pane" style="flex:1;overflow:hidden"></div>
     </div>`;
-  if(items.length) proShowCalc(items[0].id);
+  if(items.length) proShowCalc((items.find(proIsLive) || items[0]).id);
 }
 function showVillaStudio(){   proShowGroup('Villa Studio',   '🏛️'); }
 function showExperience(){    proShowGroup('Experience',     '✨'); }

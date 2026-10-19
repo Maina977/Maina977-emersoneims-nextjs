@@ -83,7 +83,7 @@ body {
   border-radius: 12px;
   border: 1px solid var(--border-active);
 }
-.app-header h1 {
+.app-header h1, .app-header .app-title {
   font-size: 17px;
   font-weight: 700;
   color: #fff;

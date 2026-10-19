@@ -106,7 +106,8 @@ const SidebarHeader = styled.div<{ $mini: boolean }>`
   justify-content: space-between;
   gap: 0.5rem;
 
-  h1 {
+  h1, .brand {
+    line-height: 1.2;
     margin: 0;
     font-size: ${p => p.$mini ? '1.4rem' : '1.05rem'};
     font-weight: 700;
@@ -548,7 +549,8 @@ const App: React.FC = () => {
       <AppContainer>
       <Sidebar $open={sidebarOpen} $mini={mini}>
         <SidebarHeader $mini={mini}>
-          <h1>{mini ? '⚡' : '⚡ SolarGeniusPro'}</h1>
+          {/* Not an h1: the page's server-rendered h1 names the tool (2026-10-19). */}
+          <div className="brand" role="heading" aria-level={2}>{mini ? '⚡' : '⚡ SolarGeniusPro'}</div>
           <RailToggle
             onClick={() => setMini(m => !m)}
             title={mini ? 'Expand sidebar' : 'Collapse sidebar'}

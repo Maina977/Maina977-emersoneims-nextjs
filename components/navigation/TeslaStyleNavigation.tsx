@@ -196,8 +196,7 @@ const MEGA_MENUS = {
       {
         title: 'Live Workspaces',
         items: [
-          { href: '/eims-pro', label: 'EIMS PRO', icon: '🏛️', desc: 'Live engineering workspace', badge: 'LIVE' },
-          { href: '/solutions/building', label: 'Pro Building Suite™', icon: '📐', desc: 'AI architecture, structural & BOQ', badge: 'AI' },
+          { href: '/solutions/building', label: 'Pro Building Suite™', icon: '📐', desc: 'Wind, structural & daylight calculators', badge: 'FREE' },
           { href: '/diagnostics', label: 'Diagnostics Hub™', icon: '🔧', desc: '9-service Q&A & telemetry', badge: 'HOT' },
         ],
       },

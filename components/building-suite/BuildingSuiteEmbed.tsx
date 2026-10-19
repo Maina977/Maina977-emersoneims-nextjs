@@ -20,11 +20,13 @@ const IFRAME_ALLOW =
 function BuildingSuiteEmbed() {
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // Without NEXT_PUBLIC_EIMS_BUILDING_SUITE_URL this used to embed
+  // http://127.0.0.1:5000 — the visitor's own computer — so the public page
+  // was blank with "start the Flask suite" developer text (2026-10-19 audit).
+  // Fall back to the same-origin Building Suite instead.
   const src = useMemo(() => {
-    const raw =
-      process.env.NEXT_PUBLIC_EIMS_BUILDING_SUITE_URL ||
-      'http://127.0.0.1:5000';
-    return `${normalizeBase(raw)}/`;
+    const raw = process.env.NEXT_PUBLIC_EIMS_BUILDING_SUITE_URL;
+    return raw ? `${normalizeBase(raw)}/` : '/eims-building-suite-v20260503.html';
   }, []);
 
   const onFrameLoad = useCallback(() => {
@@ -33,19 +35,14 @@ function BuildingSuiteEmbed() {
 
   const onFrameError = useCallback(() => {
     startTransition(() =>
-      setLoadError(
-        'Iframe failed to load. Check Flask is running and CSP allows this origin.',
-      ),
+      setLoadError('The workspace did not load. Please refresh, or WhatsApp us on 0768 860 665.'),
     );
   }, []);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
       if (!loaded) {
-        setLoadError(
-          'Still loading… If this stays blank, start the Flask suite (port 5000) ' +
-            'and restart Next after setting NEXT_PUBLIC_EIMS_BUILDING_SUITE_URL.',
-        );
+        setLoadError('Still loading… If this stays blank, refresh the page or open it in a new tab.');
       }
     }, 10000);
     return () => window.clearTimeout(t);
@@ -72,11 +69,7 @@ function BuildingSuiteEmbed() {
           <h1 className="mt-5 text-lg font-semibold text-white sm:text-xl">
             EIMS PRO
           </h1>
-          <p className="mt-2 max-w-md text-sm text-slate-400">
-            Connecting to your suite (default{' '}
-            <span className="font-mono text-slate-300">http://127.0.0.1:5000</span> when
-            env is unset)…
-          </p>
+          <p className="mt-2 max-w-md text-sm text-slate-400">Loading the workspace…</p>
           {loadError && (
             <p className="mt-4 max-w-lg text-xs text-amber-200/90">{loadError}</p>
           )}

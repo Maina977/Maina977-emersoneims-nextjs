@@ -8,23 +8,24 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/eims-pro`;
 
 export const metadata: Metadata = {
-  title: 'EIMS PRO | Building Intelligence',
+  // 2026-10-19 tool audit: promised "phases, reports, BIM, costing and AI
+  // assist". What loads here is the Building Suite; describe that.
+  title: 'EIMS PRO | Building Design Calculators',
   description:
-    'EIMS PRO (Building Suite Pro) is the EmersonEIMS construction engineering workspace: phases, reports, BIM, costing and AI assist for serious building projects across Kenya & East Africa.',
+    'EIMS PRO opens the EmersonEIMS Building Suite: free wind, seismic, RC beam, steel bolt, bearing capacity, runoff, U-value, daylight and acoustics calculators, each worked to the cited code clause.',
   keywords: [
     'EIMS PRO',
     'Building Suite Pro',
     'construction engineering software Kenya',
-    'BIM workspace',
-    'BOQ software Kenya',
-    'project costing tool',
+    'structural calculators Kenya',
+    'wind load calculator',
     'EmersonEIMS PRO',
   ],
   robots: { index: true, follow: true },
   alternates: { canonical: '/eims-pro' },
   openGraph: {
-    title: 'EIMS PRO — Building Intelligence & Engineering Workspace',
-    description: 'Phases, reports, BIM, costing and AI assist for serious building projects.',
+    title: 'EIMS PRO — Building Design Calculators',
+    description: 'Free structural, wind, geotechnical, daylight and acoustics calculators with the code clause on every result.',
     url: URL,
     siteName: 'EmersonEIMS',
     type: 'website',
@@ -33,8 +34,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EIMS PRO — Building Intelligence Workspace',
-    description: 'BIM, costing, phases, reports, AI assist.',
+    title: 'EIMS PRO — Building Design Calculators',
+    description: 'Structural, wind, geotechnical, daylight and acoustics calculators.',
     images: [`${SITE}/og-image.jpg`],
     site: '@EmersonEIMS',
   },
@@ -47,13 +48,13 @@ export default function EimsProPage() {
       <FlagshipProductSchema
         name="EIMS PRO"
         url={URL}
-        description="Building Intelligence and construction engineering workspace: phases, reports, BIM, costing and AI assist."
-        category="Construction Engineering"
-        applicationCategory="DesignApplication"
-        keywords={['BIM', 'BOQ', 'Costing', 'Construction Phases', 'Engineering Workspace']}
+        description="Building design calculators: wind and seismic loads, RC beam, steel bolt, bearing capacity, runoff, U-value, daylight factor and reverberation time."
+        category="Building Design Calculators"
+        applicationCategory="EngineeringApplication"
+        keywords={['Wind Load', 'RC Beam', 'Bearing Capacity', 'U-value', 'Daylight Factor']}
         industry="EPCs, QS, Architects, Project Managers"
       />
-      <B2BCommercialBand profile={B2B_PROFILES.eimsPro} />
+      <B2BCommercialBand profile={B2B_PROFILES.buildingSuite} />
       {/*
         EimsProClient is dynamically imported with ssr:false, so NOTHING it
         renders reaches the initial HTML. A Googlebot scan on 2026-07-31 found
@@ -61,7 +62,7 @@ export default function EimsProPage() {
         page states what it is before any JavaScript runs; the visual design is
         unchanged because the client workspace renders its own chrome below.
       */}
-      <h1 className="sr-only">EIMS PRO — Building Intelligence &amp; Construction Engineering Workspace</h1>
+      <h1 className="sr-only">EIMS PRO — Building Design Calculators</h1>
       <EimsProClient />
     </>
   );

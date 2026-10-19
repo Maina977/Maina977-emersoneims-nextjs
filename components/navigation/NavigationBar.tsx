@@ -83,8 +83,8 @@ export default function NavigationBar({
       id: 'ai-powerhouse',
       label: 'AI Powerhouse',
       dropdown: [
-        { label: 'EIMS PRO (live workspace)', href: '/eims-pro', description: 'Embedded Flask UI — default http://127.0.0.1:5000', icon: '🏛️', badge: 'LIVE' },
-        { label: 'Pro Building Suite™ (full AI)', href: '/solutions/building', description: 'In-browser AI architecture, structural & BOQ reports', icon: '📐', badge: 'AI' },
+        { label: 'EIMS PRO', href: '/eims-pro', description: 'Building design calculators', icon: '🏛️' },
+        { label: 'Pro Building Suite™', href: '/solutions/building', description: 'Wind, structural & daylight calculators', icon: '📐', badge: 'FREE' },
         { label: 'Generator Oracle™', href: '/generator-oracle', description: 'manufacturer-curated fault codes, AI diagnostics', icon: '🔮', badge: 'AI-POWERED' },
         { label: 'Plant & Equipment Oracle', href: '/plant-equipment-oracle', description: 'Excavator, loader and machine fault codes', icon: '🚜', badge: 'NEW' },
         { label: 'Solar Genius Pro™', href: '/solar-genius-pro', description: '56 AI Engines, <3 min quotes', icon: '☀️', badge: '#1 WORLDWIDE' },

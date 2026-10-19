@@ -1,0 +1,146 @@
+/**
+ * Building Suite calculators — hand-checked values (2026-10-19 tool audit).
+ * Before this audit every calculator ignored the keys the screens send and
+ * computed from defaults, so the answer never changed with the input.
+ * Each expected value below was worked by hand from the cited clause.
+ */
+import { describe, it, expect } from 'vitest';
+import { NextRequest } from 'next/server';
+import * as c from '@/lib/wizard-api/buildingCalcs';
+import { dispatch } from '@/lib/wizard-api/dispatcher';
+
+const ok = <T,>(v: T) => {
+  expect(c.isCalcError(v)).toBe(false);
+  return v as Exclude<T, c.CalcError> & Record<string, number>;
+};
+
+describe('building calculators — hand checks', () => {
+  it('bolt M12 grade 4.6, one shear plane through threads: Fv,Rd = 0.6·400·84.3/1.25 = 16.2 kN', () => {
+    const r = ok(c.steelBolt({ designation: 'M12', grade: '4.6', shear_planes: 1, threads_in_shear: true }));
+    expect(r.Fv_Rd_kN).toBeCloseTo(16.19, 2);
+  });
+
+  it('bolt M20 8.8: Fv,Rd 94.08 kN, Ft,Rd 141.12 kN; input changes the answer', () => {
+    const r = ok(c.steelBolt({ designation: 'M20', grade: '8.8' }));
+    expect(r.Fv_Rd_kN).toBeCloseTo(94.08, 2);
+    expect(r.Ft_Rd_kN).toBeCloseTo(141.12, 2);
+    const two = ok(c.steelBolt({ designation: 'M20', grade: '8.8', shear_planes: 2 }));
+    expect(two.Fv_Rd_kN).toBeCloseTo(188.16, 2);
+  });
+
+  it('rational method: 2 ha, C 0.9, 120 mm/h → 0.600 m³/s', () => {
+    expect(ok(c.rationalRunoff({ area_ha: 2, runoff_c: 0.9, rainfall_intensity_mm_hr: 120 })).Q_m3_s).toBeCloseTo(0.6, 3);
+  });
+
+  it('RC beam 300×450 (d), As 1500, C30, B500: M_Rd ≈ 251.8 kNm', () => {
+    const r = ok(c.rcBeam({ b_mm: 300, h_mm: 500, d_mm: 450, As_mm2: 1500, fck_MPa: 30, fyk_MPa: 500, Med_kNm: 180 }));
+    expect(r.M_Rd_kNm).toBeCloseTo(251.8, 1);
+    expect(r.utilisation).toBeCloseTo(0.715, 2);
+  });
+
+  it('bearing, φ 30°, c 0, γ 18, B 1 m, Df 1 m, strip: Nq 18.40, Nγ 22.40, qu ≈ 532.8 kPa', () => {
+    const r = ok(c.bearingCapacity({ c_kPa: 0, phi_deg: 30, gamma_kN_m3: 18, B_m: 1, Df_m: 1, shape: 'strip' }));
+    expect(r.Nq).toBeCloseTo(18.4, 1);
+    expect(r.Ngamma).toBeCloseTo(22.4, 1);
+    expect(r.qu_kPa).toBeCloseTo(532.8, 0);
+  });
+
+  it('bearing reads Df_m (the form key) — deeper footing, higher capacity', () => {
+    const a = ok(c.bearingCapacity({ c_kPa: 10, phi_deg: 30, gamma_kN_m3: 18, B_m: 2, Df_m: 0.5, shape: 'strip' }));
+    const b = ok(c.bearingCapacity({ c_kPa: 10, phi_deg: 30, gamma_kN_m3: 18, B_m: 2, Df_m: 1.5, shape: 'strip' }));
+    expect(b.qu_kPa).toBeGreaterThan(a.qu_kPa);
+  });
+
+  it('ASCE 7-22 wind, 115 mph, 33 ft, exposure C: Kz ≈ 1.00, qz ≈ 33.9 psf', () => {
+    const r = ok(c.windAsce7({ V_mph: 115, height_ft: 33, exposure: 'C', enclosure: 'enclosed' }));
+    expect(r.Kz).toBeCloseTo(1.0, 2);
+    expect(r.qz_psf).toBeCloseTo(33.9, 0);
+  });
+
+  it('EN 1991-1-4 wind, vb 24 m/s, 10 m, terrain II: qp ≈ 847 Pa (ce ≈ 2.35)', () => {
+    const r = ok(c.windEurocode({ vb_ms: 24, height_m: 10, terrain_category: 'II' }));
+    expect(r.qp_Pa).toBeGreaterThan(840);
+    expect(r.qp_Pa).toBeLessThan(855);
+  });
+
+  it('ASCE 7 ELF, steel MF 48 ft: Ta 0.618 s, Cs governed by period limit, V ≈ 900 kN', () => {
+    const r = ok(c.seismicElf({ SDS: 1, SD1: 0.5, R: 8, Ie: 1, W_kN: 8896, height_ft: 48, structure_type: 'steel_moment_frame' }));
+    expect(r.T_s).toBeCloseTo(0.618, 2);
+    expect(r.V_kN).toBeGreaterThan(890);
+    expect(r.V_kN).toBeLessThan(910);
+  });
+
+  it('average daylight factor: 6 m² window, ff 0.7, T 0.68, θ 65°, M 0.9, A 120, R 0.5 → 1.86%', () => {
+    expect(ok(c.daylightAdf({ T_glass: 0.68, window_area_m2: 6, sky_angle_deg: 65, total_internal_surface_m2: 120, avg_reflectance: 0.5, maintenance_factor: 0.9, frame_factor: 0.7 })).ADF_pct).toBeCloseTo(1.86, 2);
+  });
+
+  it('U-value: 100 brick + 100 mineral wool, horizontal flow → 0.342 W/m²K', () => {
+    const r = ok(c.uValue({ heat_flow: 'horizontal', layers: '[{"thickness_m":0.1,"lambda_W_mK":0.84},{"thickness_m":0.1,"lambda_W_mK":0.038}]' }));
+    expect(r.U_W_m2K).toBeCloseTo(0.342, 3);
+  });
+
+  it('Sabine: 200 m³, ΣSα 31.2 → T60 1.03 s', () => {
+    const r = ok(c.reverberation({ volume_m3: 200, method: 'sabine', surfaces: [{ area_m2: 80, alpha: 0.04 }, { area_m2: 80, alpha: 0.3 }, { area_m2: 40, alpha: 0.1 }] }));
+    expect(r.T60_s).toBeCloseTo(1.03, 2);
+  });
+
+  it('Kirpich: 300 m at 2% → 7.1 min', () => {
+    expect(ok(c.kirpich({ length_m: 300, slope_m_per_m: 0.02 })).Tc_min).toBeCloseTo(7.1, 1);
+  });
+
+  it('sun position at the equator, June solstice, noon UTC on Greenwich: altitude ≈ 66.6°, sun to the north', () => {
+    const r = ok(c.sunPosition({ lat: 0, lng: 0, datetime_utc: '2026-06-21T12:00:00Z' }));
+    expect(r.altitude_deg).toBeGreaterThan(66);
+    expect(r.altitude_deg).toBeLessThan(67);
+    expect(r.azimuth_deg < 5 || r.azimuth_deg > 355).toBe(true);
+  });
+});
+
+describe('building calculators — missing input is refused, never defaulted', () => {
+  it.each([
+    ['rational without area', () => c.rationalRunoff({ runoff_c: 0.9, rainfall_intensity_mm_hr: 120 }), 'area_ha'],
+    ['wind without exposure', () => c.windAsce7({ V_mph: 115, height_ft: 30 }), 'exposure'],
+    ['bolt without grade', () => c.steelBolt({ designation: 'M20' }), 'grade'],
+    ['bearing without Df', () => c.bearingCapacity({ c_kPa: 0, phi_deg: 30, gamma_kN_m3: 18, B_m: 1 }), 'Df_m'],
+    ['RC beam without As', () => c.rcBeam({ b_mm: 300, d_mm: 450, fck_MPa: 30, fyk_MPa: 500 }), 'As_mm2'],
+  ])('%s', (_n, fn, field) => {
+    const r = fn();
+    expect(c.isCalcError(r)).toBe(true);
+    expect((r as c.CalcError).missing).toContain(field);
+  });
+
+  it('dispatcher answers 400 naming the field', async () => {
+    const req = new NextRequest('http://localhost/api/hydro/rational', {
+      method: 'POST', body: JSON.stringify({ runoff_c: 0.9 }), headers: { 'content-type': 'application/json' },
+    });
+    const res = await dispatch(req, ['rational'], 'hydro');
+    expect(res.status).toBe(400);
+    const j = await res.json();
+    expect(j.success).toBe(false);
+    expect(j.missing).toEqual(expect.arrayContaining(['area_ha', 'rainfall_intensity_mm_hr']));
+  });
+
+  it.each([
+    ['/api/eng/frame/analyze', 'eng', ['frame', 'analyze']],
+    ['/api/bim/build', 'bim', ['build']],
+    ['/api/generate', 'generate', []],
+    ['/api/unknown/thing', 'unknown', ['thing']],
+  ])('%s is 501, not a fake success', async (path, prefix, segs) => {
+    const req = new NextRequest(`http://localhost${path}`, { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } });
+    const res = await dispatch(req, segs as string[], prefix as string);
+    expect(res.status).toBe(501);
+  });
+});
+
+describe('building calculators — report fields', () => {
+  it('RC beam As,req for 120 kNm on 300×450 C30/B500: K 0.0658, z 0.938d = 422.2 mm, As = 120e6/(434.8·422.2) ≈ 654 mm²', () => {
+    const r = c.rcBeam({ b_mm: 300, h_mm: 500, d_mm: 450, As_mm2: 1500, fck_MPa: 30, fyk_MPa: 500, Med_kNm: 120 }) as unknown as Record<string, number>;
+    expect(r.K).toBeCloseTo(0.0658, 3);
+    expect(r.As_required_mm2).toBeGreaterThanOrEqual(653);
+    expect(r.As_required_mm2).toBeLessThanOrEqual(655);
+  });
+  it('Eurocode wind also reports qp in kPa', () => {
+    const r = c.windEurocode({ vb_ms: 24, height_m: 10, terrain_category: 'II' }) as unknown as Record<string, number>;
+    expect(r.qp_kPa).toBeCloseTo(r.qp_Pa / 1000, 2);
+  });
+});

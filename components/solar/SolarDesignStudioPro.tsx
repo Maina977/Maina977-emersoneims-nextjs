@@ -443,7 +443,7 @@ export default function SolarDesignStudioPro() {
               <Sun className="w-7 h-7 text-white" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-white">Solar Design Studio</h1>
+              <p className="text-xl sm:text-2xl font-bold text-white" role="heading" aria-level={2}>Solar Design Studio</p>
               <p className="text-slate-400 text-sm">Roof layout, shading and wiring</p>
             </div>
           </div>

@@ -53,6 +53,11 @@ export default function ProBuildingSuiteClient() {
   useEffect(() => {
     killOldServiceWorkerOnce();
     const t = window.setTimeout(() => setLoaded(true), 6000); // safety hide (wizard typically ready in 2-3s)
+    // A cached iframe can finish loading before React hydrates and attaches
+    // onLoad, so the ?mode= deep link was silently lost (2026-10-19 audit).
+    try {
+      if (iframeRef.current?.contentDocument?.readyState === 'complete') handleIframeLoad();
+    } catch { /* not same-origin yet */ }
     return () => window.clearTimeout(t);
   }, []);
 
@@ -70,11 +75,12 @@ export default function ProBuildingSuiteClient() {
       const mode = params.get('mode');
       if (!mode || !VALID_MODES.has(mode)) return;
       const win = iframeRef.current?.contentWindow as WizardWindow | null | undefined;
-      if (typeof win?.setMode === 'function') {
-        // Wizard sometimes initialises async — try now and again shortly after.
-        win.setMode(mode);
-        setTimeout(() => { try { win.setMode?.(mode); } catch { /* noop */ } }, 400);
-      }
+      // The wizard runs its own start-up (which sets its default mode) after
+      // load, so one early call could be overwritten. Apply now and re-apply
+      // through the first ~2 s; setMode is idempotent.
+      [0, 400, 1200, 2200].forEach((ms) =>
+        window.setTimeout(() => { try { win?.setMode?.(mode); } catch { /* noop */ } }, ms),
+      );
     } catch { /* ignore — wizard may not yet expose setMode */ }
   }
 
@@ -118,7 +124,7 @@ export default function ProBuildingSuiteClient() {
           />
           <p style={{ marginTop: 16, fontSize: 14, fontWeight: 600 }}>Loading Building Suite Pro…</p>
           <p style={{ marginTop: 4, fontSize: 12, opacity: 0.7 }}>
-            Global Construction Intelligence Platform · 28 Countries
+            Building design calculators
           </p>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
