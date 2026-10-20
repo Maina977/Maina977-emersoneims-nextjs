@@ -440,11 +440,22 @@ function genROI(boreholeCost: number, solarCost: number, yld: number, runtime?: 
 
   // P50/P75/P90 payback confidence — accounts for cost uncertainty + yield uncertainty (±30%)
   const yieldLow = yld * 0.7;
-  const savingsLow = Math.round(yieldLow * dailyHours * effectiveDaysPerMonth * waterValuePerM3 * 0.85) - monthlyMaintenance;
   const investP75 = (costConfidence?.p75 ?? Math.round(totalInvestment * 1.15));
   const investP90 = (costConfidence?.p90 ?? Math.round(totalInvestment * 1.35));
-  const paybackP75 = savingsLow > 0 ? Math.ceil(investP75 / Math.max(savingsLow, 1)) : 999;
-  const paybackP90 = savingsLow > 0 ? Math.ceil(investP90 / Math.max(savingsLow, 1)) : 999;
+  // Same month-by-month ramp as P50 (2026-10-19 re-audit: P75/P90 skipped the
+  // ramp, so P75 could pay back sooner than P50).
+  const rampPayback = (invest: number, yieldMult: number) => {
+    const gross = grossMonthlySavings * yieldMult;
+    let cf = -invest;
+    for (let m = 1; m <= 240; m++) {
+      const util = m <= 12 ? 0.60 : m <= 24 ? 0.75 : 0.85;
+      cf += Math.round(gross * util) - monthlyMaintenance;
+      if (cf >= 0) return m;
+    }
+    return 999;
+  };
+  const paybackP75 = rampPayback(investP75, 0.7);
+  const paybackP90 = rampPayback(investP90, 0.7);
   const npvP90 = Math.round(-investP90 + Array.from({length:20},(_,yr)=> {
     const util = yr === 0 ? 0.50 : yr === 1 ? 0.65 : 0.75;
     return (yieldLow * dailyHours * effectiveDaysPerMonth * 12 * waterValuePerM3 * util - Math.round(investP90 * 0.05)) / Math.pow(1.12, yr+1);
@@ -2519,10 +2530,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 {result.imageForensicId?.cameraMake && <div className="result-item"><span className="rl">Camera</span><span className="rv">{[result.imageForensicId.cameraMake, result.imageForensicId.cameraModel].filter(Boolean).join(' ')}{result.imageForensicId.cameraSerial ? ` (SN: ${result.imageForensicId.cameraSerial})` : ''}</span></div>}
                 <div className="result-item"><span className="rl">Site Type</span><span className="rv">{result.site.siteType.toUpperCase()}</span></div>
                 <div className="result-item"><span className="rl">Viability</span><span className="rv">{result.risk.viability === 'not_recommended' ? 'NEEDS ASSESSMENT' : result.risk.viability.toUpperCase()}</span></div>
-                <div className="result-item"><span className="rl">Soil Type</span><span className="rv">{result.soil.type.toUpperCase()}</span></div>
+                {/* Soil from ISRIC SoilGrids only; photo-derived soil and porosity are not shown (2026-10-19). */}
+                <div className="result-item"><span className="rl">Soil Type</span><span className="rv">{(result.soil as any)?.realSoilGrids ? result.soil.type.toUpperCase() : 'Unknown until drilled'}</span></div>
                 <div className="result-item"><span className="rl">Potability</span><span className="rv">{result.waterQuality.isPotable ? 'Potable' : 'Treatment Required'}</span></div>
                 <div className="result-item"><span className="rl">Quality Score</span><span className="rv">{(result.waterQuality.score*100).toFixed(0)}%</span></div>
-                <div className="result-item"><span className="rl">Porosity</span><span className="rv">{(result.soil.porosity*100).toFixed(0)}%</span></div>
+                {(result.soil as any)?.realSoilGrids && <div className="result-item"><span className="rl">Porosity</span><span className="rv">{(result.soil.porosity*100).toFixed(0)}%</span></div>}
               </div>
             </div>
           )}

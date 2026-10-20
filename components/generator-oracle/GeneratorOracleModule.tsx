@@ -1202,7 +1202,8 @@ export default function GeneratorOracleModule() {
               </div>
 
               {/* Main Header */}
-              <div className="flex items-center justify-between py-4">
+              {/* Stacks on phones so the tab strip gets its own full-width row (2026-10-19). */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-4">
                 {/* Logo */}
                 <div className="flex items-center gap-5">
                   <motion.div

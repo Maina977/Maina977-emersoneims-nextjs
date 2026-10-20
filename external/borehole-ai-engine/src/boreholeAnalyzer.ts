@@ -2896,7 +2896,11 @@ export class BoreholeAnalyzer {
           ?? null;
         const wb = result.gldasGroundwater?.waterBudget as any;
         const wbIsFallback = wb && /Estimated \(both APIs unavailable\)/.test(String(wb.dataSource ?? ''));
-        if (wb && canonP && (wbIsFallback || Math.abs(wb.precipitation - canonP) / canonP > 0.1)) {
+        void wbIsFallback;
+        // Always rebalance with Budyko on the canonical rainfall (2026-10-19 re-audit:
+        // only some sites were rebalanced, so arid Lodwar kept a fixed 9% recharge
+        // and showed more recharge than Nairobi).
+        if (wb && canonP) {
           const oldP = wb.precipitation;
           const oldFrac = wb.rechargeFraction ?? 0;
           // Reference ET from the best measured source, else scale from old ratio
@@ -3290,18 +3294,35 @@ export class BoreholeAnalyzer {
       if (!isFieldValidated && typeof result.estimatedYield === 'number') {
         const wells: any[] = (nearbyWells as any)?.nearbyWells ?? [];
         const isField = (w: any) => Number(w?.yield_m3h) > 0 && !/regional est|estimat|synth|model|fallback|wpdx|osm|registry/i.test(String(w?.source ?? ''));
-        // Nearest evidence first: within 20 km when there are at least three.
+        // ALL shipped field records within 20 km (2026-10-19 re-audit: the
+        // nearby-wells list is capped at the nearest 150 of every source, so it
+        // held 35 of the 76 field yields near Lodwar and overstated the quartile).
+        let fileYields: number[] = [];
+        if (effectiveLat != null && effectiveLon != null) {
+          try {
+            const resp = await fetch('/data/wra-boreholes.json', { signal: AbortSignal.timeout(8000) });
+            const recs: any[] = resp.ok ? await resp.json() : [];
+            const R = 6371, rad = Math.PI / 180;
+            for (const b of Array.isArray(recs) ? recs : []) {
+              const y = Number(b?.yield_m3h), la = Number(b?.lat), lo = Number(b?.lon);
+              if (!(y > 0) || !Number.isFinite(la) || !Number.isFinite(lo)) continue;
+              const dLa = (la - effectiveLat) * rad, dLo = (lo - effectiveLon) * rad;
+              const h = Math.sin(dLa / 2) ** 2 + Math.cos(effectiveLat * rad) * Math.cos(la * rad) * Math.sin(dLo / 2) ** 2;
+              if (2 * R * Math.asin(Math.sqrt(h)) <= 20) fileYields.push(y);
+            }
+          } catch { fileYields = []; }
+        }
         const near = wells.filter((w) => isField(w) && Number(w?.distance_km) <= 20);
-        const fieldYields = (near.length >= 3 ? near : wells.filter(isField))
-          .map((w) => Number(w.yield_m3h))
+        const fieldYields = (fileYields.length >= 3 ? fileYields : (near.length >= 3 ? near : wells.filter(isField)).map((w) => Number(w.yield_m3h)))
           .sort((a, b) => a - b);
-        const fieldRadius = near.length >= 3 ? 'within 20 km' : 'within 50 km';
+        const fieldRadius = fileYields.length >= 3 || near.length >= 3 ? 'within 20 km' : 'within 50 km';
+        const fieldMedian = fieldYields.length ? fieldYields[Math.floor((fieldYields.length - 1) / 2)] : 0;
         const ci = (boreholeRecords as any)?.countyIntelligence;
         let floor = 0;
         let basis = '';
         if (fieldYields.length >= 3) {
           floor = fieldYields[Math.floor((fieldYields.length - 1) * 0.25)];
-          basis = `the lower quartile of ${fieldYields.length} field-tested yields ${fieldRadius}`;
+          basis = `the lower quartile of ${fieldYields.length} field-tested yields ${fieldRadius} (median ${fieldMedian} m³/h)`;
         } else if (Number(ci?.avgYield_m3h) > 0) {
           floor = Math.max(Number(ci?.yieldRange?.[0]) || 0, Number(ci.avgYield_m3h) * 0.3);
           basis = `30% of the ${ci.county} County typical yield (${ci.avgYield_m3h} m³/h)`;

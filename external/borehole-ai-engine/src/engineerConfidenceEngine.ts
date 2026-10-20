@@ -454,7 +454,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     unit: 'm bgl',
     tier: hasPumpTest ? 'CALIBRATED' : hasERT ? 'CALIBRATED' : hasModelledERT ? 'ESTIMATED' : 'ESTIMATED',
     category: hasPumpTest ? 'field_measurement' : hasERT ? 'field_measurement' : 'model_derived',
-    source: hasPumpTest ? 'Pre-pump dipper reading (field measurement, but single point-in-time)' : hasERT ? 'ERT saturated zone interface' : 'GLDAS + ERA5-Land water table model',
+    source: hasPumpTest ? 'Pre-pump dipper reading (field measurement, but single point-in-time)' : hasERT ? 'ERT saturated zone interface' : 'Model only — not a measurement (GLDAS + ERA5-Land soil-moisture regression)',
     method: hasPumpTest
       ? 'Direct measurement per BS EN ISO 22475-1:2006'
       : hasERT ? 'Resistivity contrast at vadose/saturated interface' : 'GLDAS Noah 0-200cm soil moisture -> water table depth regression',
@@ -462,7 +462,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     reference: 'BS EN ISO 22475-1:2006 Geotechnical investigation and testing',
     limitations: hasPumpTest
       ? ['Single measurement — diurnal/seasonal variation not captured']
-      : ['No direct measurement', 'Model resolution ~25km', 'Local heterogeneity not captured'],
+      : ['No direct measurement', 'Model resolution ~25km', 'Can be far from the real level where aquifers are deep (e.g. Nairobi) — a survey or a drilled hole confirms it'],
   });
 
   // ── Recharge Rate ──
@@ -1012,7 +1012,7 @@ function generateMethodologyReport(r: any): MethodologyReport {
     inputs: ['All upstream outputs', 'Feature importance weights'],
     outputs: ['Final depth recommendation', 'Yield estimate with CI', 'Success probability', 'Data quality score'],
     assumptions: ['Source independence for Dempster-Shafer', 'Linear feature combination for logistic model'],
-    limitations: ['Model trained on pan-African data — regional bias possible', 'Features may correlate (violated independence)'],
+    limitations: ['Weights are set from the literature, not trained on local data — regional bias possible', 'Features may correlate (violated independence)'],
     dataTier: hasERT ? 'CALIBRATED' : 'ESTIMATED',
   });
 

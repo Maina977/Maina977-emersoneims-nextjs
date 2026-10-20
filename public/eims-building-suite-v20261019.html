@@ -545,7 +545,9 @@ function setMode(m){
     if(SUITE_OFFLINE_MODES[m]){
         const addNote=()=>{const ma=document.getElementById('mainArea');if(!ma||curMode!==m)return;
             if(!document.getElementById('suite-offline-note'))ma.insertAdjacentHTML('afterbegin','<div id="suite-offline-note">'+suiteOfflineNotice(m)+'</div>');
-            ma.querySelectorAll('button').forEach(b=>{if(!b.closest('#suite-offline-note')){b.disabled=true;b.style.opacity='.45';b.style.cursor='not-allowed';b.title='Not available online yet';}});};
+            ma.querySelectorAll('button').forEach(b=>{if(!b.closest('#suite-offline-note')){b.disabled=true;b.style.opacity='.45';b.style.cursor='not-allowed';b.title='Not available online yet';}});
+            // Raw load errors from the missing routes read as 'not available' instead (2026-10-19).
+            ma.querySelectorAll('div,span,p,td').forEach(el=>{if(el.closest('#suite-offline-note')||el.children.length)return;if(/Error loading|Unexpected token|HTTP 50\d|HTTP 404|not_available|Server offline/i.test(el.textContent||'')){el.textContent='Not available online yet.';el.style.color='#ffb74d';}});};
         addNote();setTimeout(addNote,600);setTimeout(addNote,2000);
     }
 }
@@ -8248,7 +8250,7 @@ async function proExecute(calc){
    whitelists their host. No data passes through our server. */
 function proBuildExteriorPrompt(p){
   const styleMap = {
-    'marbella_modern':'luxury Marbella modern villa with minimalist white micro-cement render, floor-to-ceiling glass, flat roof, travertine terrace, infinity pool, olive trees, SAOTA-inspired architecture',
+    'marbella_modern':'luxury Marbella modern villa with minimalist white micro-cement render, floor-to-ceiling glass, flat roof, travertine terrace, infinity pool, olive trees, contemporary minimalist architecture',
     'andalusian_courtyard':'Andalusian courtyard villa with whitewashed walls, terracotta roof tiles, arched windows, interior patio with central fountain, Moorish tilework details, bougainvillea',
     'mediterranean_classic':'classic Mediterranean villa with cream stucco, red clay roof tiles, timber shutters, stone arches, climbing roses, cypress trees, ochre wash',
     'contemporary_minimalist':'contemporary minimalist villa, concrete and glass, cantilevered volumes, integrated landscape, monochrome palette',

@@ -864,7 +864,7 @@ export default function FaultDiagnosticsPanel({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="hidden sm:flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-3xl">🔮</span>
           <div>
