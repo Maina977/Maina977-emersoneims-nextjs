@@ -288,16 +288,9 @@ export default function QuoteCheckerPage() {
           ...reduceBatteries((bR as any)?.data || [])
         ];
         setLib(merged);
-        // Pull live market prices snippet for the provenance footer.
-        try {
-          const m: any = await core.marketPrices();
-          if (m?.data?.lastUpdated) {
-            setMarketProvenance('Reference prices: equipment library (manufacturer datasheets) + EPRA/market index updated ' + m.data.lastUpdated);
-          } else {
-            setMarketProvenance('Reference prices: SolarGeniusPro equipment library (manufacturer datasheets, dealer quotes)');
-          }
-        } catch {
-          setMarketProvenance('Reference prices: SolarGeniusPro equipment library (manufacturer datasheets)');
+        // No live market-price feed exists (the call 404'd on every load; 2026-10-19).
+        {
+          setMarketProvenance('Reference prices: equipment library (manufacturer datasheets) and mid-2026 typical Kenyan battery price (KES 38,000/kWh)');
         }
       } catch (e: any) {
         setLibErr(e?.message || 'Could not load equipment library');

@@ -371,8 +371,20 @@ export function searchIndex(opts: SearchOptions): SearchResponse {
       const code = c.code.toLowerCase();
       return code === q || (canonical && code === canonical.toLowerCase()) ? 0 : code.startsWith(q) ? 1 : 2;
     };
+    // "low oil pressure" should list FMI 1/17/18 (below normal) before FMI 0
+    // ("above normal"); "high …" the reverse (2026-10-19 re-audit).
+    const wantsLow = /\blow\b/.test(q), wantsHigh = /\bhigh\b/.test(q);
+    const direction = (c: ControllerFaultCode) => {
+      if (wantsLow === wantsHigh) return 0;
+      const m = /FMI(\d+)$/.exec(c.code);
+      if (!m) return 0;
+      const fmi = Number(m[1]);
+      const low = fmi === 1 || fmi === 17 || fmi === 18 || fmi === 21;
+      const high = fmi === 0 || fmi === 15 || fmi === 16 || fmi === 20;
+      return (wantsLow ? low : high) ? 0 : (wantsLow ? high : low) ? 2 : 1;
+    };
     filtered = [...filtered].sort(
-      (a, b) => rank(a) - rank(b) || Number(a.brand === J1939_BRAND) - Number(b.brand === J1939_BRAND),
+      (a, b) => rank(a) - rank(b) || direction(a) - direction(b) || Number(a.brand === J1939_BRAND) - Number(b.brand === J1939_BRAND),
     );
   }
 

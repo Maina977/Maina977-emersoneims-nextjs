@@ -181,7 +181,7 @@ const SUBSYSTEMS: SubsystemDef[] = [
     outputs:['Satellite soil data, elevation, soil moisture & water budget (Budyko ET), GRACE storage trend proxy, drilling favorability rating, 20-year weather, regional statistics'] },
   { id:'calibration', number:11, title:'Cross-Reference & Calibration', icon:'\u{1F504}', status:90, color:'#FF9800',
     evaluates:['Image terrain analysis vs world data, regional borehole statistics vs AI prediction'],
-    calculates:['Calibrated depth (weighted: 60% regional data + 40% image analysis)', 'Calibrated yield'],
+    calculates:['Depth anchored to county and nearby borehole records (photo only used when no coordinates are given)', 'Yield'],
     outputs:['Final calibrated depth, yield, cost estimates'] },
   { id:'report', number:12, title:'Report Generation', icon:'\u{1F4C4}', status:92, color:'#607D8B',
     creates:['PDF, DOCX, CSV, GeoJSON — Basic / Professional / Expert tiers'],
@@ -2368,7 +2368,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div><strong>Location:</strong> {result.locationMethod==='exif-gps' ? '\u{1F4E1} Photo EXIF GPS (±10m) — Location extracted FROM THE IMAGE' : result.locationMethod==='filename-geocode' ? `\u{1F4C1} Filename Geocode — "${result.locationContext?.filenameHint?.split(' → ')[0] || 'filename'}" matched to real place via OpenStreetMap` : result.locationMethod==='iptc-geocode' ? '\u{1F3F7}\uFE0F IPTC/XMP Geocode — Photo metadata text matched to real place' : result.gpsSource==='device' ? '\u{1F4F1} Device GPS — You confirmed you are at the borehole site' + (result.gpsAccuracy ? ` (±${Math.round(result.gpsAccuracy)}m)` : '') : result.gpsSource==='manual' ? '\u{1F4DD} Manual Entry — Coordinates entered by user' : result.locationMethod==='visual-estimate' ? '\u{1F30D} Visual Terrain Estimate — Location estimated from soil color, vegetation, and terrain' : '\u274C No location found — use your device location or enter coordinates below'}</div>
                 {result.geoEstimate?.bestEstimate && (
                   (result.geoEstimate.bestEstimate as { source?: string }).source === 'user-coordinates'
-                    ? <div><strong>{'\u{1F4CD}'} Area:</strong> <span style={{color:'var(--accent-amber)',fontWeight:600}}>{result.geoEstimate.bestEstimate.region}, {result.geoEstimate.bestEstimate.country}</span> <span style={{opacity:0.6,fontSize:11}}>— from the coordinates you entered · climate zone: {result.geoEstimate.climateZone}</span></div>
+                    ? <div><strong>{'\u{1F4CD}'} Area:</strong> <span style={{color:'var(--accent-amber)',fontWeight:600}}>{result.geoEstimate.bestEstimate.region}, {result.geoEstimate.bestEstimate.country}</span> <span style={{opacity:0.6,fontSize:11}}>— from the coordinates you entered</span></div>
                     : <div><strong>{'\u{1F30D}'} Visual Geo-Estimate:</strong> <span style={{color:'var(--accent-amber)',fontWeight:600}}>{result.geoEstimate.bestEstimate.region}, {result.geoEstimate.bestEstimate.country}</span> ({Math.round(result.geoEstimate.bestEstimate.confidence*100)}% match) <span style={{opacity:0.6,fontSize:11}}>— a rough guess from the photo&apos;s soil and vegetation; enter coordinates for a real location</span></div>
                 )}
                 {result.imageFingerprint && <div><strong>Image ID:</strong> <code style={{fontFamily:'var(--font-mono)',background:'rgba(56,189,248,0.1)',padding:'2px 6px',borderRadius:4}}>{result.imageForensicId?.compositeId || result.imageFingerprint}</code>{result.imageForensicId?.cameraMake ? ` — ${result.imageForensicId.cameraMake} ${result.imageForensicId.cameraModel||''}` : ''}{result.imageForensicId?.cameraSerial ? ` (SN: ${result.imageForensicId.cameraSerial})` : ''}{result.imageForensicId?.dateOriginal ? ` | Photo taken: ${(() => { try { const d = new Date(result.imageForensicId.dateOriginal!); return isNaN(d.getTime()) ? result.imageForensicId.dateOriginal : d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); } catch { return result.imageForensicId!.dateOriginal; } })()}` : ''}{result.imageForensicId?.imageSize ? ` | ${result.imageForensicId.imageSize}` : ''}</div>}
@@ -2384,9 +2384,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 {result.resolvedLocation && result.resolvedLocation.source !== 'none' && (
                   <div><strong>{"\u{1F4CD}"} {result.locationMethod==='exif-gps'?'Image Location (from photo EXIF)':result.locationMethod==='filename-geocode'?'Filename Location (geocoded from file name)':result.locationMethod==='iptc-geocode'?'Metadata Location (geocoded from IPTC/XMP)':result.gpsSource==='device'?'Site Location (from your device GPS)':result.gpsSource==='manual'?'Site Location (from manual coordinates)':result.locationMethod==='visual-estimate'?'Estimated Location (from terrain analysis)':'Location'}:</strong> {result.resolvedLocation.displayName || [result.resolvedLocation.village, result.resolvedLocation.suburb, result.resolvedLocation.city, result.resolvedLocation.county, result.resolvedLocation.state, result.resolvedLocation.country].filter(Boolean).join(', ')} <span style={{opacity:0.6,fontSize:11}}>(via {result.resolvedLocation.source === 'nominatim' ? 'OpenStreetMap' : 'BigDataCloud'})</span></div>
                 )}
-                <div><strong>Terrain:</strong> Pixel color/texture analysis ({result.pixelAnalysis?.isOutdoorScene ? '80' : '70'}%) + MobileNet scene classification ({result.pixelAnalysis?.isOutdoorScene ? '20' : '10'}%)</div>
-                <div><strong>Soil:</strong> {result.pixelAnalysis ? `Pixel color class: ${result.pixelAnalysis.dominantColorClass} (soil exposure: ${Math.round(result.pixelAnalysis.soilExposureIndex*100)}%)` : 'Rule-based from terrain type'}</div>
-                <div><strong>Depth/Yield/Cost:</strong> Deterministic models from terrain + soil type — NOT from subsurface scanning</div>
+                {/* 2026-10-19 re-audit: these lines described the photo as the basis of soil, depth and cost. */}
+                <div><strong>Soil:</strong> {(result.soil as any)?.realSoilGrids ? `${result.soil.type} (ISRIC SoilGrids for these coordinates)` : 'Not known from public data here — confirmed only by drilling'}</div>
+                <div><strong>Depth/Yield/Cost:</strong> County and nearby borehole records, public climate and soil data, and standard hydrogeology formulas — not subsurface scanning. A survey confirms them.</div>
               </div>
               {/* CLIENT LOCATION SUMMARY */}
               {result.clientLocation && Object.values(result.clientLocation).some(v=>v) && (
@@ -2469,6 +2469,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div style={{fontSize:13,color:'var(--text-secondary)',marginBottom:12}}>
                       Drill to <strong style={{color:'#fbbf24'}}>{Math.round(dDepth)} m</strong> at this point{result.gpsSource==='manual' ? ' (location you provided)' : result.gpsSource==='device' ? ' (your device GPS)' : ' (photo GPS)'} — confirm the final rig position with the ERT survey.
                     </div>
+                    {/* Why the yield is what it is (2026-10-19 re-audit). */}
+                    {(result as any).governingYieldNote && <div style={{fontSize:12,color:'var(--text-tertiary)',margin:'-6px 0 12px'}}>Planning yield {result.estimatedYield} m³/h. {(result as any).governingYieldNote}{(result as any).wellDesign?.drawdown?.modelNote ? ' ' + (result as any).wellDesign.drawdown.modelNote : ''}</div>}
                     <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
                       <a href={`https://www.google.com/maps?q=${dLat.toFixed(6)},${dLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" style={{padding:'8px 16px',borderRadius:8,background:'#22c55e',color:'#fff',fontWeight:700,fontSize:13,textDecoration:'none'}}>{'\u{1F5FA}️'} Open in Google Maps</a>
                       <button onClick={()=>{try{navigator.clipboard.writeText(`${dLat.toFixed(6)}, ${dLon.toFixed(6)}`);}catch{/* clipboard blocked */}}} style={{padding:'8px 16px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontWeight:600,fontSize:13,cursor:'pointer'}}>{'\u{1F4CB}'} Copy coordinates</button>
@@ -2477,10 +2479,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 );
               })()}
 
-              {/* GEO-ESTIMATION FROM VISUAL TERRAIN ANALYSIS */}
-              {result.geoEstimate && result.geoEstimate.estimates.length > 0 && (
+              {/* GEO-ESTIMATION FROM VISUAL TERRAIN ANALYSIS — hidden when coordinates were
+                  entered: a photo-matched region beside a known location only confuses (2026-10-19). */}
+              {result.geoEstimate && result.geoEstimate.estimates.length > 0 && !((result.geoEstimate as any)?.source === 'user-coordinates' || (result.clientLocation as any)?.latitude != null) && (
                 <div style={{background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.18)',padding:'14px 18px',borderRadius:12,marginBottom:16}}>
-                  <div style={{fontWeight:700,marginBottom:8,color:'var(--text-primary)',fontSize:14}}>{'\u{1F30D}'} Visual Geographic Estimation {'—'} AI Terrain Fingerprint</div>
+                  <div style={{fontWeight:700,marginBottom:8,color:'var(--text-primary)',fontSize:14}}>{'\u{1F30D}'} Location guessed from the photo (colour and texture match)</div>
                   <div style={{fontSize:12,color:'var(--text-secondary)',marginBottom:10}}>Location estimated by matching soil color, vegetation, brightness, and terrain texture against 30+ geographic profiles worldwide. Best with outdoor terrain photos.</div>
                   <div style={{display:'flex',flexDirection:'column',gap:6}}>
                     {result.geoEstimate.estimates.slice(0,3).map((est: any, i: number) => (
@@ -2950,8 +2953,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   </div>
                 </div>
               )}
-              {/* GEO-ESTIMATION — VISUAL TERRAIN MATCHING */}
-              {result.geoEstimate && result.geoEstimate.estimates.length > 0 && (
+              {/* GEO-ESTIMATION — VISUAL TERRAIN MATCHING (hidden when coordinates were entered) */}
+              {result.geoEstimate && result.geoEstimate.estimates.length > 0 && !((result.geoEstimate as any)?.source === 'user-coordinates' || (result.clientLocation as any)?.latitude != null) && (
                 <div style={{background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.18)',padding:'14px 18px',borderRadius:12,marginBottom:16}}>
                   <div style={{fontWeight:700,marginBottom:6,color:'var(--text-primary)',fontSize:14}}>{'\u{1F30D}'} Visual Geographic Estimation</div>
                   <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:10}}>Estimated by matching soil color ({result.pixelAnalysis?.dominantColorClass}), vegetation ({Math.round((result.pixelAnalysis?.vegetationIndex||0)*100)}%), brightness ({result.pixelAnalysis?.brightness}), and terrain texture against geographic profiles.</div>
@@ -4852,7 +4855,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   )}
 
                   <div className="geo-note">
-                    <strong>Source:</strong> {result.boreholeRecords.source} | National borehole statistics calibrate the AI depth/yield predictions (60% regional data weight + 40% image analysis weight).
+                    <strong>Source:</strong> {result.boreholeRecords.source} | National and county borehole statistics anchor the depth and yield estimates; the photo is not used for them when coordinates are entered.
                   </div>
                 </div>
               ) : (
@@ -5694,7 +5697,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               </div>
               {/* P50/P75/P90 Confidence Intervals */}
               <div style={{marginTop:20,background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.18)',borderRadius:12,padding:16}}>
-                <h4 style={{margin:'0 0 12px',color:'#fbbf24',fontSize:14}}>{'📊'} Cost Confidence Intervals (±{cost.confidence.uncertaintyPct}% base uncertainty for {result.soil.type} soil)</h4>
+                <h4 style={{margin:'0 0 12px',color:'#fbbf24',fontSize:14}}>{'📊'} Cost Confidence Intervals (±{cost.confidence.uncertaintyPct}% base uncertainty{(result.soil as any)?.realSoilGrids ? ` for ${result.soil.type} soil (ISRIC SoilGrids)` : ' — soil type unknown until drilling'})</h4>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))',gap:12}}>
                   <div style={{padding:'12px 16px',borderRadius:8,background:'rgba(34,197,94,0.08)',border:'1px solid rgba(34,197,94,0.15)'}}>
                     <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>P10 (Optimistic)</div>
@@ -7757,7 +7760,14 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         <div style={{gridColumn:'1/-1'}}><strong>Method:</strong> {item.method}</div>
                         {item.reference && <div><strong>Reference:</strong> {item.reference}</div>}
                         {item.isoStandard && <div><strong>Standard:</strong> {item.isoStandard}</div>}
-                        {item.confidenceInterval && !String(item.parameter).toLowerCase().includes('yield') && <div><strong>{item.confidenceInterval.confidence_pct}% CI:</strong> {item.confidenceInterval.lower.toFixed(1)} - {item.confidenceInterval.upper.toFixed(1)} {item.unit}</div>}
+                        {(() => {
+                          // One depth range everywhere (2026-10-19 re-audit: 109–147 m here vs 89.6–179.2 m in the summary).
+                          const p = String(item.parameter).toLowerCase();
+                          if (p.includes('yield')) return null;
+                          const ur = (result as any).uncertainty?.depthRange;
+                          if (p.includes('depth') && p.includes('drill') && Array.isArray(ur)) return <div><strong>Range:</strong> {ur[0]} – {ur[1]} m</div>;
+                          return item.confidenceInterval ? <div><strong>{item.confidenceInterval.confidence_pct}% CI:</strong> {item.confidenceInterval.lower.toFixed(1)} - {item.confidenceInterval.upper.toFixed(1)} {item.unit}</div> : null;
+                        })()}
                       </div>
                       {item.limitations.length > 0 && (
                         <div style={{marginTop:6,fontSize:10,color:'var(--text-muted)'}}>
@@ -9202,7 +9212,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           <div className="logo">{'\u{1F30D}'}</div>
           <div>
             <div className="app-title" role="heading" aria-level={2}>EMERSON EIMS &mdash; AquaScan Pro</div>
-            <p className="subtitle">{SCI.TOTAL_CAPABILITIES} Capabilities &bull; 8 Subsystems &bull; AI-Powered Borehole Analysis</p>
+            <p className="subtitle">Free desktop borehole pre-screen &bull; a survey confirms where to drill</p>
           </div>
         </div>
         <div className="header-right">

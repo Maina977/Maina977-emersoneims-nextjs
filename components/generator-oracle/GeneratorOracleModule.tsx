@@ -1281,7 +1281,7 @@ export default function GeneratorOracleModule() {
                     is styled thin so the swipe affordance is obvious on touch devices. */}
                 <nav
                   aria-label="Generator Oracle sections"
-                  className="flex-1 min-w-0 flex items-center gap-2 p-2 bg-slate-900/80 rounded-2xl border border-cyan-500/30 overflow-x-auto flex-nowrap [scrollbar-width:thin] [scrollbar-color:rgba(6,182,212,0.5)_transparent] snap-x snap-mandatory [-webkit-overflow-scrolling:touch]"
+                  className="flex-1 min-w-0 flex items-center gap-2 p-2 pr-10 bg-slate-900/80 rounded-2xl border border-cyan-500/30 overflow-x-auto flex-nowrap [mask-image:linear-gradient(to_right,black_88%,transparent)] [scrollbar-width:thin] [scrollbar-color:rgba(6,182,212,0.5)_transparent] snap-x snap-mandatory [-webkit-overflow-scrolling:touch]"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                   <div className="flex items-center gap-2 shrink-0">
@@ -1780,7 +1780,7 @@ export default function GeneratorOracleModule() {
                     <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="faults" showBack={false} />
 
                     {/* Fault Center Header */}
-                    <div className="text-center mb-4">
+                    <div className="hidden sm:block text-center mb-4">
                       <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-amber-400">
                         Fault Center
                       </h2>

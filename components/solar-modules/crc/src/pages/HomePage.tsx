@@ -52,7 +52,7 @@ const HeroSection = styled(motion.section)`
   }
 `;
 
-const HeroTitle = styled(motion.h1)`
+const HeroTitle = styled(motion.h2)`
   font-size: 4.5rem;
   font-weight: 900;
   margin: 0 0 1.5rem;

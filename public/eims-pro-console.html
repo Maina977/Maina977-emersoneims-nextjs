@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>EmersonEIMS Building Suite Pro &middot; Console</title>
+<title>EmersonEIMS Building Suite &middot; Calculators</title>
+<meta name="robots" content="noindex, follow"/>
 <style>
   :root{
     --bg:#0b1220;--panel:#111a2e;--panel2:#16223c;--ink:#e6edf7;--mute:#9aa7c2;
@@ -87,7 +88,7 @@ const MODULES = [
   { id:'wind', group:'Engineering', tag:'b-eng',
     title:'Wind loads (ASCE 7-22)',
     endpoint:'/api/loads/wind/asce7', method:'POST',
-    refs:['ASCE 7-22 Ch. 26-27', 'EN 1991-1-4'],
+    refs:['ASCE 7-22 §26.10 (velocity pressure)'],
     fields:[
       {k:'V_mph', label:'Basic wind speed (mph)', type:'number', def:115},
       {k:'height_ft', label:'Mean roof height (ft)', type:'number', def:30},
@@ -279,7 +280,7 @@ const MODULES = [
 
   // ---------------- Architecture ----------------
   { id:'villa_brief', group:'Architecture', tag:'b-arch',
-    title:'AI villa design brief (Marbella / Andalusian / Mediterranean)',
+    title:'Villa design brief (Marbella / Andalusian / Mediterranean)',
     endpoint:'/api/design/villa/brief', method:'POST',
     refs:['RIBA Plan of Work 2020 Stage 2','Neufert 5e','CTE DB-HE/HS'],
     fields:[
@@ -375,9 +376,9 @@ const MODULES = [
     fields:[]},
 
   { id:'daylight', group:'Architecture', tag:'b-arch',
-    title:'Daylight factor (BS EN 17037)',
+    title:'Average daylight factor (BRE)',
     endpoint:'/api/arch/daylight/adf', method:'POST',
-    refs:['BS EN 17037','BS 8206-2','CIBSE LG10'],
+    refs:['BRE Digest 309','BS 8206-2'],
     fields:[
       {k:'T_glass', label:'τ glass', type:'number', def:0.68, step:'0.01'},
       {k:'window_area_m2', label:'Window area (m²)', type:'number', def:6},
@@ -650,8 +651,8 @@ const MODULES = [
       {k:'n_colors', label:'Number of palette colors (2-10)', type:'number', def:6},
     ]},
 
-  // ---------------- Design AI: brief parser ----------------
-  { id:'brief_parse', group:'Design AI', tag:'b-ai',
+  // ---------------- Design: brief parser ----------------
+  { id:'brief_parse', group:'Design', tag:'b-ai',
     title:'Natural-language brief parser',
     endpoint:'/api/design/brief/parse', method:'POST',
     refs:['Deterministic regex + keyword extraction'],
@@ -863,13 +864,13 @@ const MODULES = [
     ]},
 
   // ====================================================================
-  //  DISRUPTION MODULES — areas where Revit needs Robot/Navisworks/BIM360
+  //  Advanced modules (not online yet)
   //  ($5,000+/yr in extra licences). Here they're built-in.
   // ====================================================================
 
-  // ---------- MEP clash detection (replaces Navisworks Manage) ----------
+  // ---------- MEP clash detection ----------
   { id:'mep_clash', group:'MEP Clash Detection', tag:'b-mep',
-    title:'3D AABB clash sweep (Navisworks-class)',
+    title:'3D clash sweep (bounding boxes)',
     endpoint:'/api/mep/clash-detect', method:'POST',
     refs:['BS 1192-1:2007','BSRIA BG 6/2018','AIA E202-2008 LOD 350'],
     fields:[
@@ -989,11 +990,11 @@ const MODULES = [
     refs:['FGI 2022','HBN 00-09','HTM 03-01','HTM 05-02'],
     fields:[]},
 
-  // ---------- Real-time multi-user collaboration (replaces BIM 360) ----------
+  // ---------- Multi-user collaboration ----------
   { id:'cl_lock_acq', group:'Collaboration', tag:'b-collab',
-    title:'Acquire project lock (Worksharing-class)',
+    title:'Acquire project lock',
     endpoint:'/api/collab/lock/acquire', method:'POST',
-    refs:['Advisory locks with TTL — replaces Revit Worksharing on BIM 360'],
+    refs:['Advisory locks with time-out'],
     fields:[
       {k:'project_id', label:'Project ID', type:'text', def:'demo-001'},
       {k:'user_id',    label:'User ID',    type:'text', def:'alice'},
@@ -1079,6 +1080,14 @@ const MODULES = [
 const $ = (s,el=document)=>el.querySelector(s);
 const $$ = (s,el=document)=>el.querySelectorAll(s);
 
+/* Endpoints the server really computes (lib/wizard-api/dispatcher.ts); every
+   other tool answers 501. They are labelled and not runnable (2026-10-19). */
+const LIVE_EPS = new Set([
+  '/api/arch/daylight/adf','/api/arch/acoustics/reverberation','/api/arch/uvalue','/api/arch/shadow/position',
+  '/api/loads/wind/asce7','/api/loads/wind/eurocode','/api/loads/seismic/asce7-elf','/api/rc/beam/bending','/api/steel/bolt',
+  '/api/geotech/bearing/terzaghi','/api/hydro/rational','/api/hydro/tc/kirpich','/api/hydro/runoff-coefficients',
+]);
+const isLive = (m) => LIVE_EPS.has(m.endpoint);
 function buildNav(){
   const nav = $('#nav'); nav.innerHTML='';
   const groups = {};
@@ -1088,7 +1097,7 @@ function buildNav(){
     nav.appendChild(h);
     list.forEach(m=>{
       const b = document.createElement('button');
-      b.innerHTML = `<span class="badge ${m.tag}">${m.group[0]}</span>${m.title}`;
+      b.innerHTML = `<span class="badge ${m.tag}">${m.group[0]}</span>${m.title}${isLive(m) ? '' : ' <span style="color:#f59e0b;font-size:10px">· not online</span>'}`;
       b.dataset.id = m.id;
       b.onclick = ()=>show(m.id);
       nav.appendChild(b);
@@ -1100,6 +1109,13 @@ function show(id){
   $$('#nav button').forEach(b=>b.classList.toggle('active', b.dataset.id===id));
   const m = MODULES.find(x=>x.id===id); if(!m) return;
   const v = $('#view');
+  if (!isLive(m)) {
+    v.innerHTML = `<h2>${m.title}</h2>
+      <div class="card"><strong style="color:#f59e0b">Not available online yet</strong>
+      <p class="sub">This calculation is not built into the online suite. Our engineers do it as part of a design job — WhatsApp <a href="https://wa.me/254768860665" target="_blank" rel="noopener noreferrer" style="color:#3b82f6">0768 860 665</a>.</p>
+      <p class="sub">Working online now: wind (ASCE 7), seismic ELF, RC beam, steel bolt, bearing capacity, rational runoff, Kirpich, U-value, daylight factor, reverberation time and sun position.</p></div>`;
+    return;
+  }
   const refs = m.refs.length ? `<div class="ref"><strong>Standards / sources:</strong> ${m.refs.join(' &middot; ')}</div>` : '';
   v.innerHTML = `
     <h2>${m.title}</h2>

@@ -424,6 +424,8 @@ export class BoreholeAnalyzer {
       if (realTimeResult.status === 'fulfilled') realTimeWaterData = realTimeResult.value;
       if (graceResult.status === 'fulfilled') graceData = graceResult.value;
       if (nearbyResult.status === 'fulfilled') nearbyWells = nearbyResult.value;
+      // Full lookup timed out or failed: still use the shipped field records.
+      if (!nearbyWells) nearbyWells = (await fetchNearbyBoreholeData(effectiveLat!, effectiveLon!, { localOnly: true }).catch(() => null)) ?? undefined as any; console.log(`[Step2] nearbyWells in use: ${(nearbyWells as any)?.sampleSize ?? 0} records (${nearbyResult.status === 'fulfilled' ? 'full lookup' : 'local field records only'})`);
       if (demResult.status === 'fulfilled') demHydrology = demResult.value;
       if (vegResult.status === 'fulfilled') vegetationGWProxy = vegResult.value;
       if (satVegResult.status === 'fulfilled') satelliteVegetation = satVegResult.value;
@@ -2883,8 +2885,10 @@ export class BoreholeAnalyzer {
       // of ~1,656 mm in Section 21, and wrongly penalised probability through
       // an artificially low recharge fraction computed from the wrong rainfall.
       {
-        const histArr = (result.historicalData as any)?.weather?.annualPrecipitation as Array<{ total: number }> | undefined;
-        const histVals = (histArr ?? []).map(p => p?.total).filter((v): v is number => typeof v === 'number' && v > 50 && v < 6000);
+        // annualPrecipitation is number[] (2026-10-19 re-audit: this read p.total,
+        // which never existed, so the 20-year mean never governed the budget).
+        const histArr = (result.historicalData as any)?.weather?.annualPrecipitation as Array<number | { total: number }> | undefined;
+        const histVals = (histArr ?? []).map(p => (typeof p === 'number' ? p : p?.total)).filter((v): v is number => typeof v === 'number' && v > 50 && v < 6000);
         const measuredP = histVals.length >= 3 ? Math.round(histVals.reduce((a, b) => a + b, 0) / histVals.length) : undefined;
         const canonP = measuredP
           ?? (result.rechargeModel as any)?.avgAnnualPrecipitation_mm
@@ -2892,7 +2896,7 @@ export class BoreholeAnalyzer {
           ?? null;
         const wb = result.gldasGroundwater?.waterBudget as any;
         const wbIsFallback = wb && /Estimated \(both APIs unavailable\)/.test(String(wb.dataSource ?? ''));
-        if (wb && canonP && (wbIsFallback || Math.abs(wb.precipitation - canonP) / canonP > 0.3)) {
+        if (wb && canonP && (wbIsFallback || Math.abs(wb.precipitation - canonP) / canonP > 0.1)) {
           const oldP = wb.precipitation;
           const oldFrac = wb.rechargeFraction ?? 0;
           // Reference ET from the best measured source, else scale from old ratio
@@ -3274,6 +3278,83 @@ export class BoreholeAnalyzer {
         console.log(`[GOVERNING] yield ${prev} → ${designRate} m³/hr (single source of truth)`);
       }
     } catch (e) { console.warn('[Pipeline] Governing-yield reconciliation failed:', e); }
+
+    // ─── EVIDENCE FLOOR (2026-10-19 re-audit) ───
+    // The conservative well-design rate alone gave Nairobi 0.69 m³/h (below the
+    // county's own 1–30 range) and Lodwar 0.74 m³/h where the field records
+    // within ~17 km have a lower quartile of 2.7. Without a pump test, the
+    // governing yield may not sit below what real boreholes nearby deliver:
+    // the lower quartile of ≥3 nearby field-tested yields, else 30% of the
+    // county's typical yield.
+    try {
+      if (!isFieldValidated && typeof result.estimatedYield === 'number') {
+        const wells: any[] = (nearbyWells as any)?.nearbyWells ?? [];
+        const isField = (w: any) => Number(w?.yield_m3h) > 0 && !/regional est|estimat|synth|model|fallback|wpdx|osm|registry/i.test(String(w?.source ?? ''));
+        // Nearest evidence first: within 20 km when there are at least three.
+        const near = wells.filter((w) => isField(w) && Number(w?.distance_km) <= 20);
+        const fieldYields = (near.length >= 3 ? near : wells.filter(isField))
+          .map((w) => Number(w.yield_m3h))
+          .sort((a, b) => a - b);
+        const fieldRadius = near.length >= 3 ? 'within 20 km' : 'within 50 km';
+        const ci = (boreholeRecords as any)?.countyIntelligence;
+        let floor = 0;
+        let basis = '';
+        if (fieldYields.length >= 3) {
+          floor = fieldYields[Math.floor((fieldYields.length - 1) * 0.25)];
+          basis = `the lower quartile of ${fieldYields.length} field-tested yields ${fieldRadius}`;
+        } else if (Number(ci?.avgYield_m3h) > 0) {
+          floor = Math.max(Number(ci?.yieldRange?.[0]) || 0, Number(ci.avgYield_m3h) * 0.3);
+          basis = `30% of the ${ci.county} County typical yield (${ci.avgYield_m3h} m³/h)`;
+        }
+        floor = Math.round(floor * 100) / 100;
+        // Physics check: drawdown scales ~linearly with Q (Cooper–Jacob; well
+        // loss ~Q², hence the 0.85 margin). Real boreholes (field records or
+        // county statistics) outrank the synthetic (no-survey) aquifer model:
+        // the floor applies, and if the modelled drawdown disagrees it is capped
+        // within what is available and flagged for a pump test.
+        const dd: any = (result as any).wellDesign?.drawdown;
+        const scale = result.estimatedYield > 0 ? floor / result.estimatedYield : 1;
+        const fitsDrawdown = !dd || !(Number(dd.availableDrawdown_m) > 0) ||
+          Number(dd.totalDrawdown_m) * scale * (scale > 1 ? scale ** 0.3 : 1) <= Number(dd.availableDrawdown_m) * 0.85;
+        const fieldFloor = fieldYields.length >= 3;
+        // Both floors rest on real boreholes (field records or county statistics);
+        // the drawdown model here is synthetic, so the evidence governs and the
+        // modelled drawdown is capped and flagged below when it disagrees.
+        void fieldFloor;
+        if (floor > 0 && result.estimatedYield < floor) {
+          const prev = result.estimatedYield;
+          result.estimatedYield = floor;
+          if (dd) {
+            // Keep the well design on the same rate (report check 18 compares them).
+            dd.designPumpingRate_m3hr = floor;
+            dd.designPumpingRate_m3day = Math.round(floor * 24 * 10) / 10;
+            const oldTotal = Number(dd.totalDrawdown_m) || 0;
+            if (Number(dd.dynamicWaterLevel_m) > 0) dd.dynamicWaterLevel_m = Math.round((Number(dd.dynamicWaterLevel_m) + oldTotal * (scale - 1)) * 10) / 10;
+            for (const k of ['theis_drawdown_m', 'cooperJacob_drawdown_m', 'totalDrawdown_m']) {
+              if (Number(dd[k]) > 0) dd[k] = Math.round(Number(dd[k]) * scale * 100) / 100;
+            }
+            const avail = Number(dd.availableDrawdown_m);
+            if (!fitsDrawdown && avail > 0 && Number(dd.totalDrawdown_m) > avail * 0.85) {
+              const capF = (avail * 0.85) / Number(dd.totalDrawdown_m);
+              for (const k of ['theis_drawdown_m', 'cooperJacob_drawdown_m', 'totalDrawdown_m']) {
+                if (Number(dd[k]) > 0) dd[k] = Math.round(Number(dd[k]) * capF * 100) / 100;
+              }
+              dd.modelNote = 'The modelled aquifer (no field survey) predicted more drawdown than real boreholes show; the yield follows the borehole records. Confirm with a pump test.';
+            }
+            if (Number(dd.availableDrawdown_m) > 0 && Number(dd.totalDrawdown_m) >= 0) {
+              dd.drawdownMargin_pct = Math.round((1 - Number(dd.totalDrawdown_m) / Number(dd.availableDrawdown_m)) * 100);
+            }
+          }
+          if (result.uncertainty) result.uncertainty.yieldRange = [Math.round(floor * 0.7 * 100) / 100, Math.round(floor * 1.5 * 100) / 100];
+          if (result.drillDecision) {
+            result.drillDecision.expectedYield_m3hr = floor;
+            if ((result.drillDecision as any).sustainableYield_m3hr != null) (result.drillDecision as any).sustainableYield_m3hr = floor;
+          }
+          (result as any).governingYieldNote = `Governing yield raised from ${prev} to ${floor} m³/hr: not below ${basis}. A pump test sets the real figure.`;
+          console.log(`[GOVERNING] yield floor ${prev} → ${floor} m³/hr (${basis})`);
+        }
+      }
+    } catch (e) { console.warn('[Pipeline] Yield evidence floor failed:', e); }
 
     // ─── PINN + EXPLAINABLE AI (runs on full result) ───
     try {

@@ -468,7 +468,8 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   // ── Recharge Rate ──
   items.push({
     parameter: 'Annual Recharge Rate',
-    value: r.dynamicRecharge?.annualRecharge_mm ?? r.satelliteWaterAnalysis?.waterBalance?.potential_recharge_mm ?? r.historicalData?.groundwater?.averageRecharge_mm ?? 0,
+    // Same figure as the Rain & climate tab first (2026-10-19 re-audit: this showed 0.0 there 41).
+    value: r.gldasGroundwater?.waterBudget?.estimatedRecharge ?? r.dynamicRecharge?.annualRecharge_mm ?? r.satelliteWaterAnalysis?.waterBalance?.potential_recharge_mm ?? r.historicalData?.groundwater?.averageRecharge_mm ?? 'n/a',
     unit: 'mm/yr',
     tier: hasERA5Land ? 'CALIBRATED' : 'ESTIMATED',
     category: 'model_derived',
@@ -1005,7 +1006,7 @@ function generateMethodologyReport(r: any): MethodologyReport {
   steps.push({
     step: hasERT ? 8 : 7,
     name: 'Multi-Source Ensemble & Depth/Yield Prediction',
-    method: 'Bayesian multi-source fusion using Dempster-Shafer evidence theory. 10-feature logistic regression for success probability. Monte Carlo uncertainty quantification (N=5000).',
+    method: 'Bayesian multi-source fusion using Dempster-Shafer evidence theory. Weighted multi-source scoring for success probability. Monte Carlo uncertainty quantification (N=5000).',
     equation: 'P(success) = sigmoid(sum(w_i * f_i)); depth = fusion(ERT, AI, boreholes); yield = f(T, i, b)',
     reference: 'Shafer (1976); MacDonald et al. (2012)',
     inputs: ['All upstream outputs', 'Feature importance weights'],
@@ -1072,7 +1073,7 @@ function generateMethodologyReport(r: any): MethodologyReport {
     hasNearby ? `${nearbyWellList.length} nearby wells used for calibration — verify records are current` : 'Seek additional nearby borehole records from local water authorities for calibration',
     'Commission laboratory water quality analysis after drilling (WHO guideline parameters at minimum)',
     'Engage qualified hydrogeologist to review findings before final engineering design',
-    'Consider seasonal variation — drill during/after wet season for best yield estimate',
+    'Drill in the drier months for site access; test-pump at the end of the dry season for a conservative yield',
   ];
 
   return {

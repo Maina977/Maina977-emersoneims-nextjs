@@ -22,15 +22,15 @@ describe('sizeSolar', () => {
   });
 
   // Hand check (2026-10-19): 150 kWh/day × 70% daytime = 105 kWh; 105 / (5.71 × 0.78) = 23.6 kWp → 43 × 550 W = 23.7 kWp;
-  // cost (23.7×60k + 25 kW×15k)×1.12 ≈ KES 2.01M; saving 38,325 kWh × 25 = KES 958k → payback ≈ 2.1 years.
+  // cost (23.7×60k + 25 kW×15k)×1.12 ≈ KES 2.01M; saving 38,325 kWh × 0.9 used on site × 25 = KES 862k → payback ≈ 2.3 years.
   it('Mombasa hotel, 4,500 kWh/month, grid-tied, 70% daytime use', () => {
     const r = sizeSolar({ monthlyKwh: 4500, pshAnnual: 5.71, systemType: 'grid-tied', daytimeUsePct: 70, tariffKesPerKwh: 25 });
     expect(r.pvKwp).toBe(23.7);
     expect(r.batteryKwh).toBe(0);
     expect(r.cost.midKes).toBeGreaterThan(1_950_000);
     expect(r.cost.midKes).toBeLessThan(2_080_000);
-    expect(r.paybackYears!).toBeGreaterThan(1.9);
-    expect(r.paybackYears!).toBeLessThan(2.3);
+    expect(r.paybackYears!).toBeGreaterThan(2.2);
+    expect(r.paybackYears!).toBeLessThan(2.45);
   });
 
   it('Machakos farm, 600 kWh/month, off-grid, compared with diesel', () => {

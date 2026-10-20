@@ -476,7 +476,7 @@ function PowerMeter({ power }: { power: { active: number; reactive: number; appa
           />
           <text x="70" y="85" fill="#94a3b8" fontSize="10">kW ({power.active.toFixed(1)})</text>
           <text x="155" y="50" fill="#94a3b8" fontSize="10">kVAR</text>
-          <text x="60" y="40" fill="#a855f7" fontSize="10">kVA ({power.apparent})</text>
+          <text x="60" y="40" fill="#a855f7" fontSize="10">kVA ({power.apparent.toFixed(1)})</text>
         </svg>
       </div>
     </div>
@@ -489,7 +489,7 @@ export default function RealTimeMonitoringPanel() {
     voltage: { L1N: 230, L2N: 232, L3N: 229, L1L2: 400, L2L3: 402, L3L1: 398 },
     current: { L1: 125, L2: 128, L3: 122, N: 8 },
     frequency: 50.02,
-    power: { active: 85, reactive: 32, apparent: 91, factor: 0.93 },
+    power: { active: 85, reactive: 33.6, apparent: 91.4, factor: 0.93 },
     load: 72,
     fuel: { level: 78, consumption: 18.5, remaining: 8.4 },
     oil: { pressure: 45, temperature: 85 },
@@ -535,12 +535,14 @@ export default function RealTimeMonitoringPanel() {
           N: 5 + Math.random() * 8,
         },
         frequency: 49.95 + Math.random() * 0.1,
-        power: {
-          active: 80 + Math.random() * 15,
-          reactive: 28 + Math.random() * 10,
-          apparent: 88 + Math.random() * 10,
-          factor: 0.9 + Math.random() * 0.08,
-        },
+        // Consistent power triangle (2026-10-19 re-audit): the four values were
+        // independent random numbers, so kVA could read below kW.
+        power: (() => {
+          const active = 80 + Math.random() * 15;
+          const factor = 0.9 + Math.random() * 0.08;
+          const apparent = active / factor;
+          return { active, factor, apparent, reactive: Math.sqrt(apparent * apparent - active * active) };
+        })(),
         load: 68 + Math.random() * 10,
         fuel: {
           ...prev.fuel,

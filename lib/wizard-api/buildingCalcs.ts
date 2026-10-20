@@ -308,6 +308,8 @@ export function seismicElf(b: Body) {
   const hn = pick(b, 'height_ft');
   const Ta = hn !== undefined && hn > 0 ? p.Ct * Math.pow(hn, p.x) : undefined;
   let T = pick(b, 'T', 'T_s');
+  const tGiven = ('T' in b && b.T !== '' && b.T != null) || ('T_s' in b && b.T_s !== '' && b.T_s != null);
+  if (tGiven && (T === undefined || !(T > 0))) return { error: 'Invalid input: T must be a positive period in seconds', missing: ['T'] };
   let periodNote: string;
   if (T === undefined) {
     if (Ta === undefined) return { error: 'Missing or invalid input: height_ft (or a period T in seconds)', missing: ['height_ft'] };
@@ -315,7 +317,14 @@ export function seismicElf(b: Body) {
     periodNote = `Approximate period Ta = ${p.Ct}·hn^${p.x} (Table 12.8-2)`;
   } else if (Ta !== undefined) {
     // §12.8.2: T from analysis may not exceed Cu·Ta (Table 12.8-1).
-    const Cu = SD1! >= 0.4 ? 1.4 : SD1! >= 0.3 ? 1.4 : SD1! >= 0.2 ? 1.5 : SD1! >= 0.15 ? 1.6 : 1.7;
+    // Table 12.8-1, linear interpolation between tabulated SD1 values.
+    const CU: [number, number][] = [[0.1, 1.7], [0.15, 1.6], [0.2, 1.5], [0.3, 1.4], [0.4, 1.4]];
+    const s = SD1!;
+    let Cu = s <= 0.1 ? 1.7 : s >= 0.4 ? 1.4 : 1.4;
+    for (let i = 0; i < CU.length - 1; i++) {
+      const [x0, y0] = CU[i], [x1, y1] = CU[i + 1];
+      if (s >= x0 && s <= x1) { Cu = y0 + ((s - x0) / (x1 - x0)) * (y1 - y0); break; }
+    }
     if (T > Cu * Ta) { periodNote = `Period given (${T} s) capped at Cu·Ta = ${r(Cu * Ta, 3)} s (§12.8.2)`; T = Cu * Ta; }
     else periodNote = `Period given by the user (within Cu·Ta = ${r(Cu * Ta, 3)} s)`;
   } else {

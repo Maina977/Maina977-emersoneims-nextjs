@@ -19,3 +19,11 @@ describe('oracle multi-word search', () => {
     expect(searchIndex({ query: 'SPN 100 FMI 1', page: 1, pageSize: 20 }).results[0].code).toBe('SPN100-FMI1');
   });
 });
+
+describe('oracle search direction', () => {
+  it('"low oil pressure" lists a below-normal J1939 code before the above-normal one', () => {
+    const r = searchIndex({ query: 'Perkins low oil pressure', page: 1, pageSize: 50 });
+    const j = r.results.filter((x) => x.code.startsWith('SPN100-'));
+    if (j.length >= 2) expect(j[0].code).not.toBe('SPN100-FMI0');
+  });
+});

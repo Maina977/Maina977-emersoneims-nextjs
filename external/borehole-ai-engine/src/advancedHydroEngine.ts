@@ -249,7 +249,13 @@ export interface NearbyBoreholeData {
  * Results are deduplicated, merged, and sorted by distance.
  * Base radius 50 km (owner requirement 2026-07-16).
  */
-export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise<NearbyBoreholeData | null> {
+export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: { localOnly?: boolean }): Promise<NearbyBoreholeData | null> {
+  // localOnly (2026-10-19 re-audit): read only the field-record files shipped
+  // with the site (/data/...). Used when the full lookup — ~15 external sources
+  // queried one after another — hits the 60 s limit, which used to discard the
+  // local field records too. External calls fail fast into their own catch.
+  const fetch = (input: any, init?: any): Promise<Response> =>
+    opts?.localOnly && !String(input).startsWith('/data/') ? Promise.reject(new Error('local-only')) : globalThis.fetch(input, init);
   const wells: NearbyBoreholeData['nearbyWells'] = [];
   const dataSources: string[] = [];
   // Owner requirement (2026-07-16): report must cover successful water points

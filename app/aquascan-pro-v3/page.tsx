@@ -43,10 +43,15 @@ const AquaScanProV2 = dynamic(
 export default function AquaScanProV3Page() {
   return (
     <ToolAppShell label="aquascan-pro-v3">
+      {/* Visible, server-rendered h1 at the top (2026-10-19 re-audit: the only h1
+          was the SEO block below the tool, ~12,400 px down on a phone). */}
+      <h1 className="px-4 pt-4 text-center text-lg font-semibold text-white sm:text-xl">
+        AquaScan Pro — free borehole pre-screen for Kenya
+      </h1>
       <AquaScanProV2 />
       {/* B2B band below the tool (2026-10-19 re-audit): above it, it pushed the upload form further down on phones. */}
       <B2BCommercialBand profile={B2B_PROFILES.aquascanPro} />
-      <ToolSeoContent tool="aquascan-pro-v3" headingLevel="h1" />
+      <ToolSeoContent tool="aquascan-pro-v3" headingLevel="h2" />
     </ToolAppShell>
   );
 }

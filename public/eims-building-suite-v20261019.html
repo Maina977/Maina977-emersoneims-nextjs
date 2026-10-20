@@ -543,7 +543,9 @@ function setMode(m){
     else if(m==='mepClash'||m==='highrise'||m==='healthcare'||m==='collab'){const ma=document.getElementById('mainArea');ma.style.padding='';ma.style.overflow='';ma.innerHTML='';}
     else if(m==='proConsole')showProConsole();
     if(SUITE_OFFLINE_MODES[m]){
-        const addNote=()=>{const ma=document.getElementById('mainArea');if(ma&&curMode===m&&!document.getElementById('suite-offline-note'))ma.insertAdjacentHTML('afterbegin','<div id="suite-offline-note">'+suiteOfflineNotice(m)+'</div>');};
+        const addNote=()=>{const ma=document.getElementById('mainArea');if(!ma||curMode!==m)return;
+            if(!document.getElementById('suite-offline-note'))ma.insertAdjacentHTML('afterbegin','<div id="suite-offline-note">'+suiteOfflineNotice(m)+'</div>');
+            ma.querySelectorAll('button').forEach(b=>{if(!b.closest('#suite-offline-note')){b.disabled=true;b.style.opacity='.45';b.style.cursor='not-allowed';b.title='Not available online yet';}});};
         addNote();setTimeout(addNote,600);setTimeout(addNote,2000);
     }
 }
@@ -2245,7 +2247,7 @@ function showBuilder(){
             h+='</div></div>';
         });
     }else{
-        h+='<div style="color:#ef5350;font-size:11px;padding:12px">Start server on port 5000 to load catalog.</div>';
+        h+='<div style="color:#ffb74d;font-size:11px;padding:12px">The component catalogue is not available online yet.</div>';
     }
 
     // Placed components
@@ -2424,7 +2426,7 @@ function showDrawings(){
     h+='<div class="draw-bar" style="background:transparent;padding:0;border:none;margin-bottom:8px">';
     ['floor-plan','elevation:north','elevation:south','elevation:east','elevation:west','structural','mep:electrical','mep:plumbing','site-plan','section'].forEach(t=>{
         let parts=t.split(':'),label=parts[0].replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase())+(parts[1]?' ('+parts[1]+')':'');
-        let params=parts[1]?(parts[0]==='elevation'?',direction:\"'+parts[1]+'\"':',mep_type:\"'+parts[1]+'\"'):'';
+        let params=parts[1]?(parts[0]==='elevation'?',direction:\''+parts[1]+'\'':',mep_type:\''+parts[1]+'\''):'';
         h+='<button class="btn btn-p" onclick="loadDraw(\''+parts[0]+'\''+',{'+params.substring(1)+'})">'+label+'</button>';
     });
     h+='<button class="btn btn-g" onclick="downloadSVG()">\u2B07 SVG</button>';
@@ -6296,7 +6298,7 @@ function cmShowSchedule(){
     svg+=`</svg>`;
     document.getElementById('cm-content').innerHTML=`
     <div style="background:#1a1a2e;border-radius:8px;padding:16px">
-        <h3 style="color:#42a5f5;font-size:14px;margin:0 0 8px">📅 Construction Schedule (Gantt)</h3>
+        <h3 style="color:#42a5f5;font-size:14px;margin:0 0 8px">📅 Example programme for a typical house (fixed illustration, not calculated for your project)</h3>
         <div style="overflow-x:auto">${svg}</div>
         <div style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:11px">
             <div style="background:#0d1b2a;padding:8px;border-radius:4px;text-align:center">
@@ -6912,7 +6914,7 @@ let currentProjectId='';
 const PRO_CATALOG = [
 
   /* -------- VILLA STUDIO -------- */
-  {id:'vs_brief', grp:'Villa Studio', title:'AI design brief (validate)',
+  {id:'vs_brief', grp:'Villa Studio', title:'Design brief (validate)',
     ep:'/api/design/villa/brief', mth:'POST',
     refs:['EIMS Villa Designer v1.0'],
     f:[
@@ -6979,7 +6981,7 @@ const PRO_CATALOG = [
     ]},
   {id:'vs_fin', grp:'Villa Studio', title:'Finishes palette', mth:'GET',
     ep:'/api/design/villa/finishes',
-    refs:['manufacturer-cited (Topciment, Vitrocsa, etc.)'],
+    refs:['Manufacturer data sheets'],
     f:[]},
   {id:'vs_viewer', grp:'Villa Studio', title:'🏡 Finished 3D villa (photorealistic)', mth:'GET',
     ep:'/api/design/villa/viewer', embed:true,
@@ -8496,7 +8498,7 @@ const INTERIOR_STEPS = [
   {n:2, id:'ex_emo',   label:'Step 2 · Room emotion',    hint:'For every room, get an emotion target plus ceiling height, palette, accent material, lighting concept, glazing strategy, acoustic target.'},
   {n:3, id:'cu_pal1',  label:'Step 3 · Anchor colours',  hint:'Browse the EIMS anchor-colour library — each anchor shows the materials it pairs with (e.g. the "Warm white" anchor pairs with limewash, travertine, bleached oak, linen).'},
   {n:4, id:'cu_pal2',  label:'Step 4 · Inspiration',     hint:'Upload an inspiration photograph — the median-cut quantiser extracts the dominant colour palette directly from the image.'},
-  {n:5, id:'vs_fin',   label:'Step 5 · Finishes spec',   hint:'Manufacturer-cited finishes (Topciment, Vitrocsa, Marmoles Castellanos, Alttoglass) for your chosen style. Ready to paste into spec sheets.'},
+  {n:5, id:'vs_fin',   label:'Step 5 · Finishes spec',   hint:'Finish specifications for your chosen style. Ready to paste into spec sheets.'},
   {n:6, id:'ex_rest',  label:'Step 6 · Restraint score', hint:'Grade your material and feature choices for restraint: fewer primary materials, higher the score.'},
   {n:7, id:'in_mats',  label:'· PBR materials',          hint:'19 physically-based render materials — ready to drop into Three.js / Blender / Rhino scenes.'},
 ];

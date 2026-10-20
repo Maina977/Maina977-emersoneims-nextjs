@@ -1132,7 +1132,7 @@ body {
 
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
-  .app-header { flex-direction: column; gap: 12px; text-align: center; padding: 12px 16px; }
+  .app-header { flex-direction: column; gap: 12px; text-align: center; padding: 12px 16px; position: static; background: #0d1520; } /* not sticky on phones: it covered the results bar (2026-10-19) */
   .header-left { flex-direction: column; gap: 8px; }
   .app-main { padding: 16px; }
   .pipeline-steps { flex-direction: column; align-items: stretch; }

@@ -166,7 +166,8 @@ export function sizeSolar(input: SizingInput): SizingResult {
   let savingBasis: SizingResult['savingBasis'] = 'grid-tariff';
   if (type === 'grid-tied') {
     const day = clamp(input.daytimeUsePct ?? 50, 0, 100) / 100;
-    energyUsedKwh = Math.min(annualEnergyKwh, annualConsumption * day);
+    // ~90% of daytime solar is used on site (load does not track the sun exactly).
+    energyUsedKwh = Math.min(annualEnergyKwh, annualConsumption * day) * 0.9;
     annualSavingKes = energyUsedKwh * tariff;
     assumptions.push(`Without a battery you only save on power used while the sun is up: ${Math.round(day * 100)}% of your use. Surplus is not paid for (no net metering assumed).`);
   } else if (type === 'hybrid') {

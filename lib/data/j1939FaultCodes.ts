@@ -167,7 +167,7 @@ const SPN: SpnDef[] = [
   { spn: 5571, name: 'High Pressure Common Rail Fuel Pressure Relief Valve', category: 'Fuel', note: 'An open relief valve dumps rail pressure and causes power loss.', fmis: [7, 11, 31] },
   { spn: 183, name: 'Engine Fuel Rate', category: 'Fuel', note: 'Useful for trending consumption against load rather than as a fault in isolation.', fmis: [2, 9, 19] },
   // Air and boost
-  { spn: 102, name: 'Intake Manifold 1 Pressure (Boost)', category: 'Air Intake', note: 'Low boost with black smoke points at the turbo, its controls or an intake leak.', fmis: RANGE_AND_ELEC },
+  { spn: 102, name: 'Intake Manifold 1 Pressure (Boost)', category: 'Air Intake', note: 'LOW boost with black smoke points at the turbo, its controls or an intake leak; HIGH boost points at a stuck wastegate or VGT control.', fmis: RANGE_AND_ELEC },
   { spn: 105, name: 'Intake Manifold 1 Temperature', category: 'Air Intake', note: 'High intake temperature reduces available power and is often a charge-air-cooler or room-ventilation issue.', fmis: RANGE_AND_ELEC },
   { spn: 107, name: 'Air Filter 1 Differential Pressure', category: 'Air Intake', note: 'Rising differential pressure is the correct trigger for filter replacement, not the calendar.', fmis: RANGE_AND_ELEC },
   { spn: 106, name: 'Air Inlet Pressure', category: 'Air Intake', note: 'Compare against barometric pressure at site altitude.', fmis: RANGE_AND_ELEC },

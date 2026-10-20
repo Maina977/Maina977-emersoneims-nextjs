@@ -63,6 +63,12 @@ export async function POST(request: NextRequest) {
   // Location: explicit coordinates win; otherwise a known Kenyan town.
   let lat = num(body.lat);
   let lon = num(body.lon);
+  // Coordinates supplied but unusable used to fall back to Nairobi (2026-10-19).
+  const latGiven = body.lat !== undefined && body.lat !== null && body.lat !== '';
+  const lonGiven = body.lon !== undefined && body.lon !== null && body.lon !== '';
+  if ((latGiven || lonGiven) && !(Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat!) <= 90 && Math.abs(lon!) <= 180)) {
+    return NextResponse.json({ error: 'lat and lon must be valid coordinates (lat ±90, lon ±180)' }, { status: 400 });
+  }
   let locationName = 'Custom location';
   if (!(Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat!) <= 90 && Math.abs(lon!) <= 180)) {
     // An unknown town used to fall back to Nairobi silently (2026-10-19 re-audit).

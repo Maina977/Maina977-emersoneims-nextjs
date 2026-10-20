@@ -541,7 +541,7 @@ function auditCrossMetricContradictions(result: AnalysisResult): AuditCheck {
     };
   }
 
-  return { ...base, severity: 'PASS', details: 'No cross-metric contradictions detected. Risk, probability, GW potential, depletion trend, and viability are internally consistent.' };
+  return { ...base, severity: 'PASS', details: 'Risk, probability, groundwater potential, depletion trend and viability are consistent with each other. Rainfall and recharge are reconciled to one 20-year rainfall figure earlier in the pipeline.' };
 }
 
 
@@ -819,7 +819,7 @@ function auditDataProvenance(result: AnalysisResult): AuditCheck {
     return { ...base, severity: 'WARN', details: `Overall data accuracy ${p.overallAccuracy_pct}% is below 50% threshold. ${p.items.length} parameters tracked across ${p.measuredCount} measured, ${p.calibratedCount} calibrated, ${p.estimatedCount} estimated, ${p.inferredCount} inferred.` };
   }
 
-  return { ...base, severity: 'PASS', details: `${p.items.length} parameters with provenance. Accuracy: ${p.overallAccuracy_pct}%. ${p.measuredCount} MEASURED, ${p.calibratedCount} CALIBRATED, ${p.estimatedCount} ESTIMATED. Report grade: ${p.reportGrade}.` };
+  return { ...base, severity: 'PASS', details: `${p.items.length} parameters with provenance. ${p.measuredCount} MEASURED, ${p.calibratedCount} CALIBRATED, ${p.estimatedCount} ESTIMATED. Report grade: ${p.reportGrade}.` };
 }
 
 function auditEngineerTrust(result: AnalysisResult): AuditCheck {

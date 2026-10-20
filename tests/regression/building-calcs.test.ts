@@ -163,3 +163,15 @@ describe('building calculators — supplied-but-invalid optional inputs are refu
     expect(r.T_s).toBeCloseTo(1.4 * 0.618, 2);
   });
 });
+
+describe('seismic period input (2026-10-19 re-audit 2)', () => {
+  it('a non-numeric T is refused', () => {
+    const r = c.runCalc(c.seismicElf, { SDS: 1, SD1: 0.5, R: 8, Ie: 1, W_kN: 1000, height_ft: 48, structure_type: 'steel_moment_frame', T: 'abc' });
+    expect(c.isCalcError(r)).toBe(true);
+  });
+  it('Cu interpolates: SD1 0.25 → 1.45', () => {
+    // Ta = 0.028·48^0.8 = 0.6178 s; cap = 1.45 × 0.6178 = 0.896 s
+    const r = c.runCalc(c.seismicElf, { SDS: 1, SD1: 0.25, R: 8, Ie: 1, W_kN: 1000, height_ft: 48, structure_type: 'steel_moment_frame', T: 3 }) as unknown as Record<string, number>;
+    expect(r.T_s).toBeCloseTo(0.896, 2);
+  });
+});

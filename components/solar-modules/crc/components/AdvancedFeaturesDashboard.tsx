@@ -200,7 +200,7 @@ const FEATURES: FeatureCfg[] = [
   { id: 'wiring',            icon: '🔌', title: 'Wiring Diagram', tier: 'design', desc: 'SVG single-line diagram from your project string config', status: 'Open', open: { kind: 'route', path: '/wiring' } },
   { id: 'true-3d',           icon: '🏠', title: 'True 3D Viewer', tier: 'design', desc: 'WebGL render of array on the actual OSM building footprint', status: 'Open', open: { kind: 'route', path: '/viewer-3d' } },
   { id: 'global-3d',         icon: '🌐', title: 'Global 3D Map', tier: 'design', desc: 'Geo-positioned 3D scene at your site lat/lon', status: 'Open', open: { kind: 'route', path: '/global-3d' } },
-  { id: 'smart-home',        icon: '🏘️', title: 'Smart Home Design', tier: 'design', desc: 'House-image analysis, BOM matcher, multi-audience summaries', status: 'Open', open: { kind: 'route', path: '/smart-home' } },
+  // 'smart-home' tile removed 2026-10-19: the screen returned the same invented result for any photo.
   { id: 'sun-weather',       icon: '☀️', title: 'Sun & Weather', tier: 'design', desc: 'Sun-path chart, NASA POWER GHI, live weather', status: 'Open', open: { kind: 'route', path: '/sun-weather' } },
   { id: 'fault-codes',       icon: '🛠️', title: 'Fault Codes Database', tier: 'design', desc: '80+ inverter fault codes (Deye, Sungrow, Growatt, SMA, Huawei…)', status: 'Open', open: { kind: 'route', path: '/fault-codes' } },
 
