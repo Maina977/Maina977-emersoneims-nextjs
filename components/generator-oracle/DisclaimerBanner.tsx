@@ -159,10 +159,7 @@ export function FooterDisclaimer() {
       </p>
       <div className="flex items-center justify-center gap-4 mt-3 text-xs text-slate-600">
         <span>🔒 Data Ownership: Generator Oracle</span>
-        <span>|</span>
-        <span>📋 Audit Trail Enabled</span>
-        <span>|</span>
-        <span>🔐 Encrypted Storage</span>
+
       </div>
       <p className="text-xs text-cyan-400/70 mt-2 font-medium">
         © {new Date().getFullYear()} Generator Oracle - One Tool for All Brands™

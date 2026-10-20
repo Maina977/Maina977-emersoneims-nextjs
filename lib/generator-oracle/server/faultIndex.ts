@@ -291,6 +291,40 @@ function matchesQuery(c: ControllerFaultCode, q: string, canonical: string | nul
   );
 }
 
+// ── Multi-word queries (2026-10-19 re-audit) ────────────────────────────────
+// "DSE low oil pressure" used to be matched as ONE substring, so it found
+// nothing. Brand words become a brand filter; every other word must match.
+const BRAND_ALIASES: Record<string, string> = {
+  dse: 'deepsea electronics', deepsea: 'deepsea electronics', comap: 'comap', woodward: 'woodward',
+  smartgen: 'smartgen', powerwizard: 'cat powerwizard', datakom: 'datakom', lovato: 'lovato electric',
+  siemens: 'siemens', enko: 'enko', vodia: 'volvo penta vodia',
+};
+const STOP_WORDS = new Set(['the', 'a', 'an', 'and', 'or', 'of', 'on', 'in', 'my', 'is', 'it', 'to', 'for', 'with', 'fault', 'code', 'alarm', 'error', 'controller']);
+
+/** Light stemming so "starting" finds "start" and "pressures" finds "pressure". */
+function searchStem(w: string): string {
+  if (w.length > 5 && w.endsWith('ing')) return w.slice(0, -3);
+  if (w.length > 4 && w.endsWith('es')) return w.slice(0, -2);
+  if (w.length > 3 && w.endsWith('s')) return w.slice(0, -1);
+  return w;
+}
+
+interface ParsedQuery { brand: string | null; words: string[] }
+function parseWords(q: string): ParsedQuery {
+  let brand: string | null = null;
+  const words: string[] = [];
+  for (const w of q.split(/[^a-z0-9.+-]+/).filter(Boolean)) {
+    if (!brand && BRAND_ALIASES[w]) { brand = BRAND_ALIASES[w]; continue; }
+    if (STOP_WORDS.has(w) || w.length < 2) continue;
+    words.push(searchStem(w));
+  }
+  return { brand, words };
+}
+
+function haystack(c: ControllerFaultCode): string {
+  return [c.code, c.title, c.description, c.model, c.category, c.subcategory].join(' ').toLowerCase();
+}
+
 export interface SearchResponse {
   query: string;
   /** The code form the query was read as, when it was a J1939 / J1587 code. */
@@ -312,7 +346,22 @@ export function searchIndex(opts: SearchOptions): SearchResponse {
   const canonical = query ? normalizeCodeQuery(query) : null;
 
   const base = opts.brand ? indexByBrand(opts.brand) : indexAll();
-  let filtered = query ? base.filter((c) => matchesQuery(c, q, canonical)) : base;
+  let filtered: ControllerFaultCode[];
+  const parsed = !canonical && /\s/.test(q) ? parseWords(q) : null;
+  if (parsed && (parsed.brand || parsed.words.length > 1)) {
+    const pool = parsed.brand ? base.filter((c) => c.brand.toLowerCase() === parsed.brand) : base;
+    const scored = pool.map((c) => {
+      const h = haystack(c);
+      return { c, hits: parsed.words.filter((w) => h.includes(w)).length };
+    });
+    const need = parsed.words.length;
+    const all = scored.filter((s) => s.hits === need);
+    // Nothing matches every word: show the closest (at least half the words).
+    const best = all.length ? all : scored.filter((s) => need > 0 && s.hits >= Math.ceil(need / 2)).sort((a, b) => b.hits - a.hits);
+    filtered = (need === 0 ? pool : best.map((s) => s.c));
+  } else {
+    filtered = query ? base.filter((c) => matchesQuery(c, q, canonical)) : base;
+  }
   filtered = applyFilters(filtered, opts);
 
   // Exact code first, then code-prefix matches, then controller entries before

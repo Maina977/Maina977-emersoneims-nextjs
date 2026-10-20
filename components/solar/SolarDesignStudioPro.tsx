@@ -1050,11 +1050,11 @@ EARTHING:
                           <td className="text-right">KSh {installedCost.lowKes.toLocaleString()} – {installedCost.highKes.toLocaleString()}</td>
                         </tr>
                         <tr className="border-b border-slate-700/50">
-                          <td className="py-2">Annual saving (all used on site, KSh {TARIFF_KES}/kWh)</td>
+                          <td className="py-2">Maximum annual saving (only if every kWh is used on site, KSh {TARIFF_KES}/kWh)</td>
                           <td className="text-right text-emerald-400">KSh {Math.round(annualSavingKes).toLocaleString()}</td>
                         </tr>
                         <tr>
-                          <td className="py-2">Simple payback</td>
+                          <td className="py-2">Fastest simple payback (real payback is longer if power is exported or wasted)</td>
                           <td className="text-right text-amber-400">{annualSavingKes > 0 ? `${(installedCost.midKes / annualSavingKes).toFixed(1)} years` : '—'}</td>
                         </tr>
                       </tbody>
@@ -1117,7 +1117,7 @@ EARTHING:
                 <Activity className="w-4 h-4 text-blue-400" />
               </div>
               <p className="text-blue-400 text-2xl font-bold">{dailyProduction.toFixed(1)} kWh</p>
-              <p className="text-slate-500 text-xs">~5.5 peak sun hours</p>
+              <p className="text-slate-500 text-xs">{sunHours.toFixed(2)} peak sun hours</p>
             </div>
 
             <div className="bg-slate-700/50 rounded-lg p-3">
@@ -1137,7 +1137,7 @@ EARTHING:
                 <Battery className="w-4 h-4 text-green-400" />
               </div>
               <p className="text-green-400 text-2xl font-bold">{batteryCapacity} kWh</p>
-              <p className="text-slate-500 text-xs">{(batteryCapacity / (dailyProduction || 1) * 100).toFixed(0)}% daily backup</p>
+              <p className="text-slate-500 text-xs">{batteryCapacity > 0 ? `${(batteryCapacity * 0.9).toFixed(1)} kWh usable (90% depth)` : 'No battery'}</p>
             </div>
 
             {roofSegments.length > 0 && (

@@ -4771,7 +4771,7 @@ export default function WiringDiagramsPanel() {
               </span>
             </h2>
             <p className="text-slate-500 text-sm">
-              IEEE/IEC standard diagrams • Complete wiring documentation • {CONTROLLERS.length} controllers
+              Typical wiring layouts for {CONTROLLERS.length} controllers • always confirm against the OEM manual
             </p>
           </div>
         </div>

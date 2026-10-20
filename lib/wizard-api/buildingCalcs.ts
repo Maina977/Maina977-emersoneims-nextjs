@@ -42,6 +42,30 @@ function bad(message: string): CalcError {
   return { error: message };
 }
 
+/** Thrown when an optional input is supplied but invalid; runCalc() turns it into a CalcError. */
+export class BadInput extends Error {
+  constructor(public field: string, message: string) { super(message); }
+}
+
+/** Optional number: the default only when the key is absent. Present but
+ *  blank or non-numeric is an error — never a silent default. */
+function opt(b: Body, key: string, def: number, check?: (x: number) => boolean, rule = 'a valid number'): number {
+  if (!(key in b) || b[key] === null || b[key] === undefined) return def;
+  const v = n(b[key]);
+  if (v === undefined || (check && !check(v))) throw new BadInput(key, `Invalid input: ${key} must be ${rule}`);
+  return v;
+}
+
+/** Run a calculator, converting BadInput into a CalcError naming the field. */
+export function runCalc(fn: (b: Body) => unknown, b: Body): unknown {
+  try {
+    return fn(b);
+  } catch (e) {
+    if (e instanceof BadInput) return { error: e.message, missing: [e.field] } as CalcError;
+    throw e;
+  }
+}
+
 function parseArray(v: unknown): Body[] | undefined {
   if (Array.isArray(v)) return v as Body[];
   if (typeof v === 'string') {
@@ -71,7 +95,7 @@ export function daylightAdf(b: Body) {
   const M = pick(b, 'maintenance_factor', 'maintenance');
   const err = missing({ T_glass: T, window_area_m2: W, sky_angle_deg: theta, total_internal_surface_m2: A, avg_reflectance: R, maintenance_factor: M });
   if (err) return err;
-  const ff = pick(b, 'frame_factor') ?? 1;
+  const ff = opt(b, 'frame_factor', 1, (x) => x > 0 && x <= 1, 'between 0 and 1');
   if (!(A! > 0) || !(R! >= 0 && R! < 1)) return bad('total_internal_surface_m2 must be > 0 and avg_reflectance between 0 and 1');
   const Aw = W! * ff;
   const ADF = (T! * Aw * theta! * M!) / (A! * (1 - R! * R!));
@@ -79,7 +103,7 @@ export function daylightAdf(b: Body) {
     ADF_pct: r(ADF),
     glazed_area_m2: r(Aw),
     assessment: ADF >= 5 ? 'Well daylit (≥ 5%)' : ADF >= 2 ? 'Adequately daylit (2–5%)' : 'Under-lit (< 2%) — supplementary electric lighting needed',
-    assumptions: pick(b, 'frame_factor') === undefined ? ['No frame factor given: whole window area treated as glass'] : [],
+    assumptions: !('frame_factor' in b) ? ['No frame factor given: whole window area treated as glass'] : [],
     method: 'Average daylight factor, BRE Digest 309 / BS 8206-2 formula',
   };
 }
@@ -88,6 +112,7 @@ export function daylightAdf(b: Body) {
 export function reverberation(b: Body) {
   const V = pick(b, 'volume_m3');
   const method = String(b.method ?? 'sabine').toLowerCase();
+  if (method !== 'sabine' && method !== 'eyring') return { error: 'Invalid input: method must be sabine or eyring', missing: ['method'] };
   const surfaces = parseArray(b.surfaces);
   const legacyA = pick(b, 'absorption_m2_sabin');
   if (V === undefined) return missing({ volume_m3: V })!;
@@ -130,9 +155,9 @@ export function uValue(b: Body) {
   if (!layers || !layers.length) return { error: 'Missing or invalid input: layers (array of {thickness_m, lambda_W_mK})', missing: ['layers'] };
   const flow = String(b.heat_flow ?? 'horizontal').toLowerCase();
   const RSI: Record<string, number> = { horizontal: 0.13, upward: 0.1, downward: 0.17 };
-  const rsi = pick(b, 'rsi') ?? RSI[flow];
+  const rsi = 'rsi' in b ? opt(b, 'rsi', 0, (x) => x >= 0, 'zero or more') : RSI[flow];
   if (rsi === undefined) return bad('heat_flow must be horizontal, upward or downward');
-  const rse = pick(b, 'rse') ?? 0.04;
+  const rse = opt(b, 'rse', 0.04, (x) => x >= 0, 'zero or more');
   let R = rsi + rse;
   const rows = [];
   for (const [i, l] of layers.entries()) {
@@ -212,11 +237,12 @@ export function windAsce7(b: Body) {
   if (!(V! > 0 && z! > 0)) return bad('V_mph and height_ft must be > 0');
   const zEff = Math.max(z!, 15);
   const Kz = 2.41 * Math.pow(zEff / e.zg_ft, 2 / e.alpha);
-  const Kzt = pick(b, 'Kzt') ?? 1;
-  const Ke = pick(b, 'Ke') ?? 1;
+  const Kzt = opt(b, 'Kzt', 1, (x) => x >= 1, '1 or more');
+  const Ke = opt(b, 'Ke', 1, (x) => x > 0 && x <= 1.1, 'between 0 and 1.1');
   const qz_psf = 0.00256 * Kz * Kzt * Ke * V! * V!;
   const GCPI: Record<string, number> = { enclosed: 0.18, partially_enclosed: 0.55, partially_open: 0.18, open: 0 };
   const enclosure = String(b.enclosure ?? 'enclosed');
+  if (!(enclosure in GCPI)) return { error: 'Invalid input: enclosure must be enclosed, partially_enclosed, partially_open or open', missing: ['enclosure'] };
   return {
     qz_psf: r(qz_psf),
     qz_Pa: r(qz_psf * 47.880259, 0),
@@ -245,8 +271,9 @@ export function windEurocode(b: Body) {
   const tc = String(b.terrain_category ?? '').toUpperCase();
   const t = TERRAIN[tc];
   if (!t) return { error: 'Missing or invalid input: terrain_category (0, I, II, III or IV)', missing: ['terrain_category'] };
-  const cdir = pick(b, 'cdir') ?? 1, cseason = pick(b, 'cseason') ?? 1, cprob = pick(b, 'cprob') ?? 1;
-  const co = pick(b, 'co') ?? 1, rho = pick(b, 'rho_kg_m3') ?? 1.25;
+  const pos = (x: number) => x > 0;
+  const cdir = opt(b, 'cdir', 1, pos, 'greater than 0'), cseason = opt(b, 'cseason', 1, pos, 'greater than 0'), cprob = opt(b, 'cprob', 1, pos, 'greater than 0');
+  const co = opt(b, 'co', 1, pos, 'greater than 0'), rho = opt(b, 'rho_kg_m3', 1.25, pos, 'greater than 0');
   const vb = cdir * cseason * cprob * vb0!;
   const zEff = Math.max(z!, t.zmin);
   const kr = 0.19 * Math.pow(t.z0 / 0.05, 0.07);
@@ -275,14 +302,24 @@ export function seismicElf(b: Body) {
   const err = missing({ SDS, SD1, R, Ie, W_kN: W });
   if (err) return err;
   if (!(R! > 0 && Ie! > 0 && W! > 0)) return bad('R, Ie and W_kN must be > 0');
+  const st = String(b.structure_type ?? 'other');
+  if (!(st in PERIOD)) return { error: 'Invalid input: structure_type must be steel_moment_frame, concrete_moment_frame, eccentric_braced or other', missing: ['structure_type'] };
+  const p = PERIOD[st];
+  const hn = pick(b, 'height_ft');
+  const Ta = hn !== undefined && hn > 0 ? p.Ct * Math.pow(hn, p.x) : undefined;
   let T = pick(b, 'T', 'T_s');
-  let periodNote = 'Period given by the user';
+  let periodNote: string;
   if (T === undefined) {
-    const hn = pick(b, 'height_ft');
-    if (hn === undefined) return { error: 'Missing or invalid input: height_ft (or a period T in seconds)', missing: ['height_ft'] };
-    const p = PERIOD[String(b.structure_type ?? 'other')] ?? PERIOD.other;
-    T = p.Ct * Math.pow(hn, p.x);
+    if (Ta === undefined) return { error: 'Missing or invalid input: height_ft (or a period T in seconds)', missing: ['height_ft'] };
+    T = Ta;
     periodNote = `Approximate period Ta = ${p.Ct}·hn^${p.x} (Table 12.8-2)`;
+  } else if (Ta !== undefined) {
+    // §12.8.2: T from analysis may not exceed Cu·Ta (Table 12.8-1).
+    const Cu = SD1! >= 0.4 ? 1.4 : SD1! >= 0.3 ? 1.4 : SD1! >= 0.2 ? 1.5 : SD1! >= 0.15 ? 1.6 : 1.7;
+    if (T > Cu * Ta) { periodNote = `Period given (${T} s) capped at Cu·Ta = ${r(Cu * Ta, 3)} s (§12.8.2)`; T = Cu * Ta; }
+    else periodNote = `Period given by the user (within Cu·Ta = ${r(Cu * Ta, 3)} s)`;
+  } else {
+    periodNote = 'Period given by the user; not checked against Cu·Ta (no height given)';
   }
   const Cs0 = SDS! / (R! / Ie!);
   const CsMax = SD1! / (T * (R! / Ie!));
@@ -370,8 +407,10 @@ export function steelBolt(b: Body) {
   const As = BOLT_AS[desig], fub = BOLT_FUB[grade];
   if (!As || !fub) return { error: 'Missing or invalid input: designation (M12–M30) and grade (4.6, 5.6, 8.8, 10.9)', missing: [!As ? 'designation' : '', !fub ? 'grade' : ''].filter(Boolean) };
   const dNom = parseInt(desig.slice(1), 10);
-  const planes = pick(b, 'shear_planes') ?? 1;
-  const threads = b.threads_in_shear === undefined ? true : String(b.threads_in_shear) !== 'false';
+  const planes = opt(b, 'shear_planes', 1, (x) => Number.isInteger(x) && x >= 1 && x <= 4, 'a whole number from 1 to 4');
+  const tis = b.threads_in_shear;
+  if (tis !== undefined && !['true', 'false'].includes(String(tis))) return { error: 'Invalid input: threads_in_shear must be true or false', missing: ['threads_in_shear'] };
+  const threads = tis === undefined ? true : String(tis) === 'true';
   const A = threads ? As : (Math.PI * dNom * dNom) / 4;
   const av = threads && ['4.8', '5.8', '6.8', '10.9'].includes(grade) ? 0.5 : 0.6;
   const FvRd = (planes * av * fub * A) / gM2 / 1000;
@@ -427,7 +466,7 @@ export function bearingCapacity(b: Body) {
   const Ng = 2 * (Nq + 1) * Math.tan(phi);
   const q = gamma! * Df!;
   const qu = s.sc * c! * Nc + q * Nq + s.sg * gamma! * B! * Ng;
-  const FS = pick(b, 'FS') ?? 3;
+  const FS = opt(b, 'FS', 3, (x) => x >= 1, '1 or more');
   return {
     qu_kPa: r(qu, 1),
     qa_kPa: r(qu / FS, 1),

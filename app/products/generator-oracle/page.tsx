@@ -269,8 +269,7 @@ export default function GeneratorOracleProductPage() {
               <span className="text-amber-400"> Diagnose Common Generator Faults</span>
             </h2>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Built by engineers, for engineers. Generator Oracle is the result of 15+ years
-              of field experience distilled into one powerful tool.
+              Built by our field engineers from the faults we see on Kenyan sites, and kept to what we can stand behind.
             </p>
           </div>
 

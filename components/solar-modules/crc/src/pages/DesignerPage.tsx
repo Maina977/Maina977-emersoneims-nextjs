@@ -230,7 +230,7 @@ const DesignerPage: React.FC = () => {
         </Grid>
         <div style={{display:'flex', gap:'0.75rem', marginTop:'1.25rem', flexWrap:'wrap'}}>
           <Btn onClick={runAutoDesign} disabled={loading}>
-            {loading ? 'Designing…' : '🤖 Run auto-design'}
+            {loading ? 'Designing…' : 'Run auto-design'}
           </Btn>
           <Btn $variant="ghost" onClick={() => router.push('/solar-genius-pro/design-studio')} disabled={metrics.systemSizeKw === 0}>
             → Wiring diagram

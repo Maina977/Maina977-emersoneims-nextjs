@@ -126,7 +126,7 @@ const SunWeatherPage: React.FC = () => {
 
   return (
     <Wrap>
-      <h1 style={{ marginTop: 0 }}>☀️ Sun & Weather Analysis</h1>
+      <h2 style={{ marginTop: 0 }}>☀️ Sun & Weather Analysis</h2>
       <p style={{ color: 'rgba(230,241,255,0.65)' }}>
         Real solar geometry (Michalsky 1988) + Open-Meteo weather + NASA POWER irradiance
         for any location on Earth. All values are sourced; nothing is fabricated.

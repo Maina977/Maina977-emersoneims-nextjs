@@ -146,7 +146,7 @@ const PanelLayoutPage: React.FC = () => {
 
   return (
     <Wrap>
-      <h1 style={{ marginTop: 0 }}>🔲 Panel Layout AI</h1>
+      <h2 style={{ marginTop: 0 }}>🔲 Panel Layout</h2>
       <p style={{ color: 'rgba(230,241,255,0.65)' }}>
         Deterministic top-down panel arrangement using real catalogue panel
         geometry. Output is computed from physical width × height + your

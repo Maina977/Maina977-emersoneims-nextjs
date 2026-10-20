@@ -330,7 +330,7 @@ export const WiringDiagramAI: React.FC<WiringDiagramProps> = ({
   return (
     <div className="wiring-diagram-container">
       <div className="diagram-header">
-        <h2>⚡ Wiring Diagram AI</h2>
+        <h2>⚡ Wiring Diagram</h2>
         <p>Single-line diagram for your {systemSize} kWp system</p>
       </div>
 

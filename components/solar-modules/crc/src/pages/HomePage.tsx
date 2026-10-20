@@ -470,7 +470,7 @@ const ModernHomePage: React.FC = () => {
           </HeroTitle>
           
           <HeroSubtitle variants={itemVariants}>
-            Enterprise-Grade Solar Design & Analysis Platform
+            Solar sizing and design tools
             <br />
             Free · Engineering estimates · Backed by EmersonEIMS engineers
           </HeroSubtitle>
@@ -560,7 +560,7 @@ const ModernHomePage: React.FC = () => {
           <CTABox>
             <CTATitle>Ready to Transform Solar Design?</CTATitle>
             <CTAText>
-              Join thousands of solar professionals using SolarGenius Pro for advanced analysis and design
+              Size a system for your site, then talk to our engineers for a quotation
             </CTAText>
             <PrimaryButton href="/solar-genius-pro/solar-dashboard">
               <FiArrowRight size={20} />

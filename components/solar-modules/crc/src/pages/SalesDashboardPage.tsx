@@ -117,7 +117,7 @@ const SalesDashboardPage: React.FC = () => {
 
   return (
     <Wrap>
-      <h1 style={{ marginTop: 0 }}>📊 Sales Dashboard</h1>
+      <h2 style={{ marginTop: 0 }}>📊 Sales Dashboard</h2>
       <p style={{ color: 'rgba(230,241,255,0.65)' }}>
         Live operational metrics from your CRM. Every value shown is recorded
         — nothing is fabricated. Empty fields simply mean no data has been

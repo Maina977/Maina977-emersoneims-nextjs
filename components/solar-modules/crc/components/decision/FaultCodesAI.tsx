@@ -233,7 +233,7 @@ export const FaultCodesAI: React.FC = () => {
   return (
     <div className="fault-codes-container">
       <div className="fault-header">
-        <h2>🔧 Fault Codes AI</h2>
+        <h2>🔧 Inverter Fault Codes</h2>
         <p>Search solar error codes from all brands</p>
       </div>
 

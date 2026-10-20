@@ -121,7 +121,7 @@ export default async function FaultCodePage({ params }: Props) {
 
   const severity = SEVERITY_CONFIG[fault.severity];
   const relatedFaults = FAULT_CODES.filter(
-    (f) => fault.relatedCodes?.includes(f.code) || f.category === fault.category
+    (f) => f.code !== fault.code && (fault.relatedCodes?.includes(f.code) || f.category === fault.category)
   ).slice(0, 4);
 
   const label = faultLabel(fault);

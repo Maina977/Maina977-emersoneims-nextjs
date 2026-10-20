@@ -21,7 +21,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { BSP_FEATURES } from '@/lib/buildingSuitePro/featureRoutes';
 
-const VALID_MODES = new Set(BSP_FEATURES.map((f) => f.mode));
+// Feature-slug modes plus the wizard's own working modes, so links such as
+// /solutions/building?mode=physics open the right tab (2026-10-19 audit).
+const VALID_MODES = new Set([...BSP_FEATURES.map((f) => f.mode), 'physics', 'engineeringPro', 'phases', 'floorEditor']);
 
 type WizardWindow = Window & { setMode?: (m: string) => void };
 
@@ -31,7 +33,7 @@ type WizardWindow = Window & { setMode?: (m: string) => void };
 // it never loops. Bump the KEY date whenever the wizard file is replaced.
 function killOldServiceWorkerOnce() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
-  const KEY = 'eims-bs-cache-cleared-20260503';
+  const KEY = 'eims-bs-cache-cleared-20261019';
   if (sessionStorage.getItem(KEY)) return;
   Promise.all([
     navigator.serviceWorker.getRegistrations().then((regs) =>
@@ -131,7 +133,7 @@ export default function ProBuildingSuiteClient() {
       )}
       <iframe
         ref={iframeRef}
-        src="/eims-building-suite-v20260503.html"
+        src="/eims-building-suite-v20261019.html"
         title="EMERSON EIMS Building Suite Pro"
         onLoad={handleIframeLoad}
         loading="eager"

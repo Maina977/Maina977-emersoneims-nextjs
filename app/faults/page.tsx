@@ -83,11 +83,6 @@ export default function FaultCodesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
-  {/* B2B Commercial Band */}
-  <B2BCommercialBand profile={B2B_PROFILES.faults} />
-
-      <FaultReferenceIndex />
-
       {/* Hero Section */}
       <section className="relative py-20 px-4 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
@@ -267,6 +262,11 @@ export default function FaultCodesPage() {
           )}
         </div>
       </section>
+
+      {/* Reference index and B2B band moved below the search (2026-10-19
+          re-audit): above it they pushed the h1 ~3,600 px down on a phone. */}
+      <FaultReferenceIndex />
+      <B2BCommercialBand profile={B2B_PROFILES.faults} />
 
       {/* Expert Help CTA */}
       <section className="py-16 px-4">

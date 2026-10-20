@@ -37,16 +37,15 @@ export default function GeneratorOraclePage() {
       <GeneratorOracleSEO pageType="diagnostic" />
       {/* Disable DevTools protection - it causes false positives on Windows with display scaling */}
       <DMCAProtection enableDevToolsProtection={false} />
-      {/* B2B Commercial Band — moved here 2026-10-16, above the tool as on
-          the other tool pages. It had been inside LoadingFallback, so it
-          showed only while the tool loaded, squeezed beside the spinner. */}
-      <B2BCommercialBand profile={B2B_PROFILES.generatorOracle} />
       <div className="px-4 pt-4 max-w-7xl mx-auto">
         <LiveBackendStatus variant="compact" />
       </div>
       <Suspense fallback={<LoadingFallback />}>
         <GeneratorOracleModule />
       </Suspense>
+      {/* B2B band moved BELOW the tool (2026-10-19 re-audit): above it, the band
+          pushed the fault lookup ~2,800 px down on a phone. */}
+      <B2BCommercialBand profile={B2B_PROFILES.generatorOracle} />
     </>
   );
 }

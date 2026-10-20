@@ -1052,7 +1052,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   // --- VERIFICATION GATE ---
   enforceVerificationGate(result);
 
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
   applyPdfTextSanitizer(doc);
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 14;
@@ -11838,7 +11838,7 @@ export function generateJSONReport(result: AnalysisResult): void {
 export async function generateComparisonReport(sites: Array<{ name: string; result: AnalysisResult }>): Promise<void> {
   if (sites.length < 2) throw new Error('Need at least 2 analyzed sites to compare');
   const jsPDF = (await import('jspdf')).default;
-  const doc = new jsPDF('p', 'mm', 'a4');
+  const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
   applyPdfTextSanitizer(doc);
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 15;

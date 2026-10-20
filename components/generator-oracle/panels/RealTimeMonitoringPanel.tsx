@@ -255,9 +255,9 @@ function VoltageTriangle({ voltages }: { voltages: { L1L2: number; L2L3: number;
           ))}
 
           {/* Voltage labels on edges */}
-          <text x="145" y="80" fill="#06b6d4" fontSize="12" fontWeight="bold">{voltages.L1L2}V</text>
-          <text x="90" y="170" fill="#06b6d4" fontSize="12" fontWeight="bold">{voltages.L2L3}V</text>
-          <text x="35" y="80" fill="#06b6d4" fontSize="12" fontWeight="bold">{voltages.L3L1}V</text>
+          <text x="145" y="80" fill="#06b6d4" fontSize="12" fontWeight="bold">{voltages.L1L2.toFixed(0)}V</text>
+          <text x="90" y="170" fill="#06b6d4" fontSize="12" fontWeight="bold">{voltages.L2L3.toFixed(0)}V</text>
+          <text x="35" y="80" fill="#06b6d4" fontSize="12" fontWeight="bold">{voltages.L3L1.toFixed(0)}V</text>
         </svg>
       </div>
 
@@ -375,7 +375,7 @@ function FuelTank({ level, consumption, remaining }: { level: number; consumptio
         <span className="text-2xl">⛽</span>
         <div>
           <h4 className="text-sm font-bold text-amber-400">Fuel System</h4>
-          <p className="text-[10px] text-slate-500">Real-time fuel monitoring</p>
+          <p className="text-[10px] text-slate-500">Simulated fuel view</p>
         </div>
       </div>
 
@@ -474,7 +474,7 @@ function PowerMeter({ power }: { power: { active: number; reactive: number; appa
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
           />
-          <text x="70" y="85" fill="#94a3b8" fontSize="10">kW ({power.active})</text>
+          <text x="70" y="85" fill="#94a3b8" fontSize="10">kW ({power.active.toFixed(1)})</text>
           <text x="155" y="50" fill="#94a3b8" fontSize="10">kVAR</text>
           <text x="60" y="40" fill="#a855f7" fontSize="10">kVA ({power.apparent})</text>
         </svg>

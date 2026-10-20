@@ -113,7 +113,7 @@ const VideoLibraryPage: React.FC = () => {
 
   return (
     <Wrap>
-      <h1 style={{ marginTop: 0 }}>🎬 Video Tutorial Library</h1>
+      <h2 style={{ marginTop: 0 }}>🎬 Video Tutorial Library</h2>
       <p style={{ color: 'rgba(230,241,255,0.65)' }}>
         A curated topic directory of public solar PV training on YouTube. Each
         card opens a publisher's channel or a live YouTube topic search in a

@@ -27,7 +27,7 @@
   border-bottom: 5px solid #001a4d;
 }
 
-.calculator-header h1 {
+.calculator-header h1, .calculator-header h2 {
   font-size: 3em;
   margin: 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
@@ -756,7 +756,7 @@
 /* ==================== RESPONSIVE DESIGN ==================== */
 
 @media (max-width: 768px) {
-  .calculator-header h1 {
+  .calculator-header h1, .calculator-header h2 {
     font-size: 2em;
   }
 
@@ -799,7 +799,7 @@
     padding: 20px 10px;
   }
 
-  .calculator-header h1 {
+  .calculator-header h1, .calculator-header h2 {
     font-size: 1.5em;
   }
 

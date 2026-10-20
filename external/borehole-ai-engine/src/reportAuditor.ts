@@ -928,7 +928,7 @@ function auditIntegrityRegressions(result: AnalysisResult): AuditCheck {
   return {
     ...base,
     severity: 'PASS',
-    details: `All integrity rules hold: ${wells.length} well record(s) all verified-source and within physical bounds; field-validation claims ${r.fieldData || r.fieldValidation ? 'backed by field data' : 'absent (desktop run, honestly labelled)'}; location grade consistent with GPS source (${gpsSource}${grade ? ` → grade ${grade}` : ''}).`,
+    details: `All integrity rules hold: ${wells.length} nearby water-point record(s), each from a named public source (not individually verified) and within physical bounds; field-validation claims ${r.fieldData || r.fieldValidation ? 'backed by field data' : 'absent (desktop run, honestly labelled)'}; location grade consistent with GPS source (${gpsSource}${grade ? ` → grade ${grade}` : ''}).`,
   };
 }
 

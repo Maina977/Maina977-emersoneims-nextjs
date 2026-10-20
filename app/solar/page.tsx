@@ -9,7 +9,7 @@
  * Score Target: 95/100 (Matching Generator Bible standards)
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -20,6 +20,7 @@ import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import SolarEngineeringDeepDive from '@/components/solar/SolarEngineeringDeepDive';
 import ServiceCTASection from '@/components/cta/ServiceCTASection';
+import SolarGeniusProCard from '@/components/solar/SolarGeniusProCard';
 
 // Strictly-solar rotating gallery (like the landing page ring)
 // Deterministic particle layout — fixed values so SSR and client render
@@ -211,7 +212,7 @@ const SOLAR_PRICING = [
     priceFrom: 350000,
     priceTo: 450000,
     ideal: 'Small homes, 3-4 rooms',
-    includes: ['6× 500W Panels', '3kW Inverter', '200Ah Battery', 'Installation', '1 Year Warranty'],
+    includes: ['6× 500W Panels', '3kW Inverter', '200Ah Battery', 'Installation', '2-Year Workmanship Warranty'],
     savings: '8,000-12,000/month'
   },
   {
@@ -220,7 +221,7 @@ const SOLAR_PRICING = [
     priceFrom: 550000,
     priceTo: 750000,
     ideal: 'Medium homes, offices',
-    includes: ['10× 500W Panels', '5kW Hybrid Inverter', '400Ah Lithium', 'Installation', '2 Year Warranty'],
+    includes: ['10× 500W Panels', '5kW Hybrid Inverter', '400Ah Lithium', 'Installation', '2-Year Workmanship Warranty'],
     savings: '15,000-22,000/month',
     popular: true
   },
@@ -230,7 +231,7 @@ const SOLAR_PRICING = [
     priceFrom: 950000,
     priceTo: 1400000,
     ideal: 'Large homes, multiple ACs',
-    includes: ['20× 500W Panels', '10kW Hybrid Inverter', '10kWh Lithium Bank', 'Full Installation', '2 Year Warranty'],
+    includes: ['20× 500W Panels', '10kW Hybrid Inverter', '10kWh Lithium Bank', 'Full Installation', '2-Year Workmanship Warranty'],
     savings: '30,000-45,000/month'
   },
   {
@@ -239,7 +240,7 @@ const SOLAR_PRICING = [
     priceFrom: 1800000,
     priceTo: 2500000,
     ideal: 'Shops, small factories',
-    includes: ['40× 500W Panels', '20kW Inverter', '20kWh Storage', 'Monitoring System', '2 Year Warranty'],
+    includes: ['40× 500W Panels', '20kW Inverter', '20kWh Storage', 'Monitoring System', '2-Year Workmanship Warranty'],
     savings: '60,000-85,000/month'
   },
   {
@@ -248,7 +249,7 @@ const SOLAR_PRICING = [
     priceFrom: 3500000,
     priceTo: 5000000,
     ideal: 'Schools, hotels, factories',
-    includes: ['100× 500W Panels', '50kW Central Inverter', '50kWh Battery', 'SCADA Monitoring', '5 Year Warranty'],
+    includes: ['100× 500W Panels', '50kW Central Inverter', '50kWh Battery', 'SCADA Monitoring', '2-Year Workmanship Warranty'],
     savings: '150,000-200,000/month'
   },
   {
@@ -257,7 +258,7 @@ const SOLAR_PRICING = [
     priceFrom: 7000000,
     priceTo: 15000000,
     ideal: 'Large factories, farms',
-    includes: ['200+ Panels', 'Central Inverter System', 'Industrial Battery', 'Full EMS', '5 Year Warranty'],
+    includes: ['200+ Panels', 'Central Inverter System', 'Industrial Battery', 'Full EMS', '2-Year Workmanship Warranty'],
     savings: '300,000-600,000/month'
   },
 ];
@@ -487,44 +488,6 @@ const SOLAR_DOWNLOADS = [
 
 type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair' | 'quotation' | 'design3d' | 'voice' | 'webgl3d' | 'sales' | 'portal' | 'workflow' | 'ai-center';
 
-// ==================== ANIMATED COUNTER COMPONENT ====================
-function AnimatedCounter({ end, suffix = '', prefix = '' }: { end: number; suffix?: string; prefix?: string }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-          let start = 0;
-          const duration = 2000;
-          const increment = end / (duration / 16);
-          const timer = setInterval(() => {
-            start += increment;
-            if (start >= end) {
-              setCount(end);
-              clearInterval(timer);
-            } else {
-              setCount(Math.floor(start));
-            }
-          }, 16);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [end, hasAnimated]);
-
-  return (
-    <div ref={ref} className="text-4xl md:text-5xl font-bold text-amber-400">
-      {prefix}{count.toLocaleString()}{suffix}
-    </div>
-  );
-}
-
 // ==================== FLOATING WHATSAPP COMPONENT ====================
 function FloatingWhatsApp() {
   const [isVisible, setIsVisible] = useState(false);
@@ -747,22 +710,19 @@ export default function SolarBible() {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-6"
           >
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-              <AnimatedCounter end={500} suffix="+" />
-              <p className="text-gray-400 text-sm mt-1">Systems Installed</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-              <AnimatedCounter end={2} suffix="MW+" />
-              <p className="text-gray-400 text-sm mt-1">Total Capacity</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-              <AnimatedCounter end={47} />
-              <p className="text-gray-400 text-sm mt-1">Counties Served</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-              <AnimatedCounter end={98} suffix="%" />
-              <p className="text-gray-400 text-sm mt-1">Client Satisfaction</p>
-            </div>
+            {/* Were "500+ systems installed", "2 MW+", "47 counties" and "98% client
+                satisfaction" — none owner-confirmed (2026-10-19 re-audit). These are. */}
+            {[
+              ['2 years', 'Workmanship warranty'],
+              ['< 4 h', 'Response in the Nairobi metro'],
+              ['ISO 9001', '& KEBS registered'],
+              ['Registered', 'Engineers'],
+            ].map(([big, small]) => (
+              <div key={small} className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <div className="text-2xl md:text-3xl font-bold text-amber-400">{big}</div>
+                <p className="text-gray-400 text-sm mt-1">{small}</p>
+              </div>
+            ))}
           </motion.div>
         </div>
 
@@ -781,6 +741,10 @@ export default function SolarBible() {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* The free sizing tool — /solutions/solar (where this card was first
+          placed) 308s here, so it was never seen (2026-10-19 re-audit). */}
+      <SolarGeniusProCard />
 
       {/* ==================== ROTATING SOLAR GALLERY ==================== */}
       <RingGallery

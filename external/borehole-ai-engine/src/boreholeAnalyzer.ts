@@ -762,7 +762,7 @@ export class BoreholeAnalyzer {
       waterQuality.iron = Math.round(waterQuality.iron * regionalWQ.ironMult * 100) / 100;
       waterQuality.arsenic = Math.round(waterQuality.arsenic * regionalWQ.arsenicMult * 10000) / 10000;
       waterQuality.tds = Math.round(waterQuality.tds * regionalWQ.tdsMult);
-      waterQuality.isPotable = waterQuality.fluoride <= 1.5 && waterQuality.iron <= 0.3 && waterQuality.arsenic <= 0.01 && waterQuality.tds <= 1000 && waterQuality.pH >= 6.5 && waterQuality.pH <= 8.5;
+      this.waterQualityAnalyzer.refreshDerived(waterQuality);
       (waterQuality as any).regionalProvince = regionalWQ.province;
       (waterQuality as any).regionalWarnings = regionalWQ.warnings;
       (waterQuality as any).regionalCitations = regionalWQ.citations;
@@ -824,20 +824,26 @@ export class BoreholeAnalyzer {
 
     // Prefer county-level data (more precise) over national stats
     const countyData = (boreholeRecords as any)?.countyIntelligence;
+    // 2026-10-19 re-audit: a photo cannot see underground (an indoor plant-room
+    // photo scored "outdoor terrain 95%"). When the user typed coordinates the
+    // site is known, so the photo no longer moves depth or yield.
+    const photoW = hasDirectGPS ? 0 : 0.3;
+    const photoWNational = hasDirectGPS ? 0 : 0.4;
+    const photoNote = hasDirectGPS ? 'Photo not used for depth/yield (coordinates given). ' : '';
     if (countyData) {
       // County intelligence is much more precise — weight it higher
-      calibratedDepth = Math.round(recommendedDepth * 0.3 + countyData.avgDepth_m * 0.7);
-      calibratedYield = parseFloat((estimatedYield * 0.3 + countyData.avgYield_m3h * 0.7).toFixed(1));
+      calibratedDepth = Math.round(recommendedDepth * photoW + countyData.avgDepth_m * (1 - photoW));
+      calibratedYield = parseFloat((estimatedYield * photoW + countyData.avgYield_m3h * (1 - photoW)).toFixed(1));
       // ACCURACY FIX (2026-07-12): the county DB may only carry a representative
       // county for a province (e.g. Kakamega for western-Kenya BASEMENT), so a
       // Vihiga site borrowed "Kakamega County" and implied the site sat there.
       // State it honestly as a same-province analog, not the site's county.
-      yieldSource = `30% image analysis + 70% regional borehole intelligence (nearest represented county: ${countyData.county}, ~${countyData.estimatedBoreholes} boreholes — used as a same-province analog, not the site's own county). NOT field-measured.`;
+      yieldSource = `${photoNote}${Math.round(photoW * 100)}% image analysis + ${Math.round((1 - photoW) * 100)}% regional borehole intelligence (nearest represented county: ${countyData.county}, ~${countyData.estimatedBoreholes} boreholes — used as a same-province analog, not the site's own county). NOT field-measured.`;
     } else if (boreholeRecords) {
       // National-level calibration
-      calibratedDepth = Math.round(recommendedDepth * 0.4 + boreholeRecords.averageDepth * 0.6);
-      calibratedYield = parseFloat((estimatedYield * 0.4 + boreholeRecords.averageYield * 0.6).toFixed(1));
-      yieldSource = `40% image analysis + 60% regional database (n=${boreholeRecords.sampleSize ?? 'national'}, r=${boreholeRecords.searchRadius_km ?? '—'}km). NOT field-measured.`;
+      calibratedDepth = Math.round(recommendedDepth * photoWNational + boreholeRecords.averageDepth * (1 - photoWNational));
+      calibratedYield = parseFloat((estimatedYield * photoWNational + boreholeRecords.averageYield * (1 - photoWNational)).toFixed(1));
+      yieldSource = `${photoNote}${Math.round(photoWNational * 100)}% image analysis + ${Math.round((1 - photoWNational) * 100)}% regional database (n=${boreholeRecords.sampleSize ?? 'national'}, r=${boreholeRecords.searchRadius_km ?? '—'}km). NOT field-measured.`;
     }
 
     // Further refine with nearby well data if available (real API data)
@@ -1392,6 +1398,19 @@ export class BoreholeAnalyzer {
     // drilled band the same report quotes for the county ("drilled band
     // 18-350 m … recommended 12 m"). Without field data, keep the estimate
     // inside that band; field data (ERT/VES/calibration) still governs.
+    // 2026-10-19 re-audit: with no drilled-depth records nearby, the desktop
+    // models alone put Nairobi CBD at 77 m against a county figure of 150 m.
+    // Without local field depths the county figure carries 70% of the weight;
+    // where real records exist (e.g. Lodwar, IHP-WINS) they govern instead.
+    const hasFieldDepthsNearby = Number((nearbyWells as any)?.fieldMeasuredShare ?? 0) > 0;
+    if (!isFieldValidated && !hasFieldDepthsNearby && Number(countyData?.avgDepth_m) > 0) {
+      const anchored = Math.round(0.7 * Number(countyData.avgDepth_m) + 0.3 * calibratedDepth);
+      if (anchored !== calibratedDepth) {
+        console.log(`[Pipeline] No nearby field depths: depth ${calibratedDepth}m anchored to county ${countyData.avgDepth_m}m → ${anchored}m`);
+        calibratedDepth = anchored;
+        if (ensembleResult) ensembleResult.depth_m = calibratedDepth;
+      }
+    }
     const countyBand = Array.isArray(countyData?.depthRange) ? countyData.depthRange as [number, number] : null;
     if (!isFieldValidated && countyBand && countyBand[0] > 0 && countyBand[1] >= countyBand[0]) {
       const clamped = Math.round(Math.min(countyBand[1], Math.max(countyBand[0], calibratedDepth)));

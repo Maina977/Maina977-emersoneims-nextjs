@@ -143,9 +143,9 @@ function FaultDetailModal({
         style={{ boxShadow: '0 0 60px rgba(6,182,212,0.2)' }}
       >
         {/* Header */}
-        <div className="flex-shrink-0 p-6 bg-slate-900/50 border-b border-slate-700/50">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-4">
+        <div className="flex-shrink-0 p-4 sm:p-6 bg-slate-900/50 border-b border-slate-700/50">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:gap-4">
               <div
                 className="px-3 py-2 bg-slate-800 rounded-lg border border-cyan-500/30 font-mono text-lg sm:text-2xl text-cyan-400 shrink-0"
                 style={{ textShadow: '0 0 20px rgba(6,182,212,0.5)' }}

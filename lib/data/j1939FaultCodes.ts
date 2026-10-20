@@ -63,10 +63,10 @@ interface FmiDef {
 }
 
 const FMI: FmiDef[] = [
-  { fmi: 0, label: 'Above normal — most severe', meaning: 'The measurement is trustworthy and is above the normal operating range, at the most severe level.', severity: 'shutdown', kind: 'range',
+  { fmi: 0, label: 'Above normal — most severe', meaning: 'The measurement is trustworthy and is above the normal operating range, at the most severe level.', severity: 'critical', kind: 'range',
     causes: ['Genuine over-range condition in the monitored system', 'Loss of regulation or control of the parameter', 'Restriction, blockage or overload driving the value up'],
     remedies: ['Treat as a real over-range event until measurement is disproved', 'Compare the broadcast value against an independent gauge or meter', 'Correct the underlying system condition before clearing'] },
-  { fmi: 1, label: 'Below normal — most severe', meaning: 'The measurement is trustworthy and is below the normal operating range, at the most severe level.', severity: 'shutdown', kind: 'range',
+  { fmi: 1, label: 'Below normal — most severe', meaning: 'The measurement is trustworthy and is below the normal operating range, at the most severe level.', severity: 'critical', kind: 'range',
     causes: ['Genuine under-range condition in the monitored system', 'Loss of supply, level or pressure feeding the parameter', 'Leakage or consumption exceeding supply'],
     remedies: ['Treat as a real under-range event until measurement is disproved', 'Verify with an independent instrument before dismissing as a sensor fault', 'Correct the underlying system condition before clearing'] },
   { fmi: 2, label: 'Data erratic or incorrect', meaning: 'The signal is present but implausible or unstable.', severity: 'warning', kind: 'signal',
@@ -150,7 +150,7 @@ const NETWORK = [2, 9, 12, 13, 19, 31];
 
 const SPN: SpnDef[] = [
   // Lubrication
-  { spn: 100, name: 'Engine Oil Pressure', category: 'Lubrication', note: 'Low oil pressure is a shutdown condition on a diesel engine — never run on to investigate.', fmis: RANGE_AND_ELEC },
+  { spn: 100, name: 'Engine Oil Pressure', category: 'Lubrication', note: 'A LOW reading is a shutdown condition on a diesel engine — never run on to investigate. A HIGH reading is usually a cold start, a sensor fault or a stuck relief valve.', fmis: RANGE_AND_ELEC },
   { spn: 98, name: 'Engine Oil Level', category: 'Lubrication', note: 'Read with the set stopped and level; a running reading is not comparable.', fmis: RANGE_AND_ELEC },
   { spn: 175, name: 'Engine Oil Temperature', category: 'Lubrication', note: 'Rising oil temperature with normal coolant temperature points at the oil cooler or excessive load.', fmis: RANGE_AND_ELEC },
   // Cooling
@@ -319,7 +319,16 @@ const SPN: SpnDef[] = [
   { spn: 247, name: 'Engine Total Hours of Operation', category: 'Control', note: 'The number every maintenance and overhaul decision should reference.', fmis: [2, 9, 19] },
 ];
 
-const SEVERITY_FOR_CRITICAL_SPN = new Set([100, 110, 190, 111, 98]);
+/*
+ * Severity for "most severe" readings (FMI 0 high / FMI 1 low) depends on the
+ * parameter AND the direction (2026-10-19 re-audit): every FMI 0/1 used to be
+ * "shutdown", so a low barometric or battery reading looked like an engine
+ * protection trip, and high oil pressure carried the low-pressure warning.
+ */
+const SHUTDOWN_WHEN_LOW = new Set([100, 111, 98]);   // oil pressure, coolant level, oil level
+const SHUTDOWN_WHEN_HIGH = new Set([110, 190]);      // coolant temperature, engine speed (overspeed)
+/** Measurements that inform fuelling or derating but do not protect the engine. */
+const ADVISORY_SPN = new Set([108, 171, 172, 106, 1172, 96, 38, 168, 158, 174, 183, 250, 92]);
 
 function build(): J1939FaultCode[] {
   const out: J1939FaultCode[] = [];
@@ -327,10 +336,12 @@ function build(): J1939FaultCode[] {
     for (const f of FMI) {
       if (!s.fmis.includes(f.fmi)) continue;
 
-      // Severity comes from the FMI's defined class, raised one step where the
-      // parameter is one that shuts an engine down in its own right.
+      // Severity comes from the FMI's defined class, adjusted by parameter and direction.
       let severity = f.severity;
-      if (SEVERITY_FOR_CRITICAL_SPN.has(s.spn) && (f.fmi === 0 || f.fmi === 1)) severity = 'shutdown';
+      if (f.fmi === 0 || f.fmi === 1) {
+        if ((f.fmi === 1 && SHUTDOWN_WHEN_LOW.has(s.spn)) || (f.fmi === 0 && SHUTDOWN_WHEN_HIGH.has(s.spn))) severity = 'shutdown';
+        else if (ADVISORY_SPN.has(s.spn)) severity = 'warning';
+      }
 
       out.push({
         code: `SPN ${s.spn} / FMI ${f.fmi}`,

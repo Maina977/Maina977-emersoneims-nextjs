@@ -23,7 +23,7 @@ import * as calcs from './buildingCalcs';
 
 /** Run a calculator: 400 naming the missing/invalid input, else ok(). */
 function calc(fn: (b: calcs.Body) => unknown, body: calcs.Body) {
-  const out = fn(body);
+  const out = calcs.runCalc(fn, body);
   if (calcs.isCalcError(out)) {
     return NextResponse.json({ success: false, ok: false, error: out.error, missing: out.missing ?? [] }, { status: 400 });
   }
@@ -330,6 +330,7 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
     const lat = Number(sp.get('lat') ?? body.lat);
     const lon = Number(sp.get('lon') ?? body.lon);
     const radius = Number(sp.get('radiusMeters') ?? body.radiusMeters ?? 80);
+    if (!(Math.abs(lat) <= 90 && Math.abs(lon) <= 180)) return fail('lat and lon must be valid coordinates (lat ±90, lon ±180)', 400);
     try {
       return ok(await fetchOsmSite(lat, lon, radius));
     } catch (e) {
@@ -343,6 +344,7 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
     const lat = Number(sp.get('lat') ?? body.lat);
     const lon = Number(sp.get('lon') ?? body.lon);
     const kw = Number(sp.get('kw') ?? body.kw ?? 1);
+    if (!(Math.abs(lat) <= 90 && Math.abs(lon) <= 180)) return fail('lat and lon must be valid coordinates (lat ±90, lon ±180)', 400);
     if (!(kw > 0 && kw < 100_000)) return fail('kw must be a positive system size in kWp', 400);
     try {
       const sun = await fetchNasaSun(lat, lon);

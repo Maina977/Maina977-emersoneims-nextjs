@@ -3413,7 +3413,7 @@ export default function ControllerSimulator({
     { id: 'generator', name: 'Generator' },
     { id: 'mains', name: 'Mains' },
     { id: 'alarms', name: 'Alarms' },
-    { id: 'diagnosis', name: 'AI Diagnosis' },
+    { id: 'diagnosis', name: 'Rule-based Diagnosis' },
   ];
 
   return (
@@ -3451,7 +3451,7 @@ export default function ControllerSimulator({
           onClick={() => runAIDiagnosis()}
           className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-medium flex items-center gap-2"
         >
-          <span>🤖</span> AI Diagnosis
+          <span>🔎</span> Rule-based Diagnosis
         </button>
 
         <button
@@ -3710,7 +3710,7 @@ export default function ControllerSimulator({
             <span className="text-2xl">📝</span>
             <div>
               <h3 className="text-white font-bold">Technician Problem Input</h3>
-              <p className="text-cyan-200 text-xs">Describe the problem - AI will analyze and show solution on controller display</p>
+              <p className="text-cyan-200 text-xs">Describe the problem - matching guidance from our fault library appears on the controller display</p>
             </div>
           </div>
           {aiSolution && (
@@ -3816,8 +3816,8 @@ export default function ControllerSimulator({
           <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700">
             <p className="text-slate-400 text-sm">
               <span className="text-cyan-400 font-medium">💡 How it works:</span> Enter the problem you observe on the actual generator.
-              The AI will analyze and display the diagnosis on the controller simulator above - mimicking how you would see it on the real unit.
-              Use the controller navigation to switch between pages (Overview, Engine, Generator, Mains, Alarms, <span className="text-cyan-400 font-bold">AI Diagnosis</span>).
+              Matching guidance from our fault library appears on the controller simulator above - mimicking how you would see it on the real unit.
+              Use the controller navigation to switch between pages (Overview, Engine, Generator, Mains, Alarms, <span className="text-cyan-400 font-bold">Diagnosis</span>).
             </p>
           </div>
         </div>
@@ -4193,7 +4193,7 @@ export default function ControllerSimulator({
                 onClick={() => setShowAnalysis(true)}
                 className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-medium flex items-center gap-2"
               >
-                <span>🤖</span> View Full AI Analysis
+                <span>🔎</span> View Full Analysis
               </button>
               <a
                 href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi! I need generator diagnostic support.\n\nController: ${selectedModel.name}\nEngine Hours: ${sensorValues.engineHours}\nIssues: ${diagnosticResults.length > 0 ? diagnosticResults.map(r => r.parameter + ': ' + r.issue).join(', ') : 'None - routine check'}`)}`}
@@ -4545,7 +4545,7 @@ function DisplayContent({
     return (
       <div style={{ color: textColor }} className="h-full">
         <div className="text-center border-b border-current/30 pb-1 mb-1 font-bold flex items-center justify-center gap-2">
-          <span>🤖</span> AI DIAGNOSIS
+          <span>🔎</span> RULE-BASED DIAGNOSIS
           {aiSolution?.faultCode && (
             <span className="text-[10px] bg-blue-600/50 px-2 rounded">{aiSolution.faultCode}</span>
           )}
@@ -4741,7 +4741,7 @@ function DisplayContent({
             {/* Timestamp */}
             {aiSolution.timestamp && (
               <div className="text-center text-[9px] opacity-50 pt-0.5">
-                🤖 AI Analysis: {aiSolution.timestamp.toLocaleTimeString()}
+                🔎 Analysis: {aiSolution.timestamp.toLocaleTimeString()}
               </div>
             )}
           </div>
@@ -6012,7 +6012,7 @@ function AIAnalysisModal({
           <div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
               <span className="text-3xl">🤖</span>
-              AI Diagnostic Analysis
+              Diagnostic Analysis
             </h2>
             <p className="text-purple-200">Intelligent fault detection based on your readings</p>
           </div>

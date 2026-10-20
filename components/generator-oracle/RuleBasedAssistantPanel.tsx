@@ -477,9 +477,7 @@ export default function RuleBasedAssistantPanel({
       <p className="mt-6 text-xs text-slate-500 leading-relaxed">
         This assistant returns documented engineering data only. It does not generate or
         infer diagnoses. Always verify findings against the OEM service manual and the
-        physical unit before acting. Generative AI surfaces (Expert Chat, Visual Diagnose,
-        AI Analysis) activate automatically when a local AI stack endpoint is configured for
-        this deployment.
+        physical unit before acting.
       </p>
     </div>
   );

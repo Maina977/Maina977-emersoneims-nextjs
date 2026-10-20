@@ -927,7 +927,8 @@ export default function GeneratorOracleModule() {
   const [isSearching, setIsSearching] = useState(false);
 
   // System
-  const [systemTime, setSystemTime] = useState(new Date());
+  // null until mounted: a build-time clock in the static HTML caused React hydration error #418 (2026-10-19).
+  const [systemTime, setSystemTime] = useState<Date | null>(null);
   const [isOffline, setIsOffline] = useState(false);
   const [offlineReady, setOfflineReady] = useState(false);
   const [totalCodes, setTotalCodes] = useState(0);
@@ -968,6 +969,7 @@ export default function GeneratorOracleModule() {
 
   // System clock
   useEffect(() => {
+    setSystemTime(new Date());
     const timer = setInterval(() => setSystemTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -1190,10 +1192,10 @@ export default function GeneratorOracleModule() {
                       style={{ boxShadow: '0 0 10px #22c55e' }}
                     />
                     <span className="font-mono text-cyan-400 text-sm tracking-wider">
-                      {systemTime.toLocaleTimeString('en-US', { hour12: false })}
+                      {systemTime ? systemTime.toLocaleTimeString('en-US', { hour12: false }) : '--:--:--'}
                     </span>
                     <span className="text-slate-500 text-xs">
-                      {systemTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      {systemTime ? systemTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
                     </span>
                   </div>
                 </div>
@@ -1267,7 +1269,7 @@ export default function GeneratorOracleModule() {
                       </motion.span>
                     </h1>
                     <p className="text-[10px] lg:text-xs text-slate-500 uppercase tracking-[0.3em] mt-1">
-                      Ultra-Premium Diagnostic System v3.0
+                      Fault-code lookup and diagnosis
                     </p>
                   </div>
                 </div>
@@ -1321,7 +1323,7 @@ export default function GeneratorOracleModule() {
                     real emergency route is the phone number below. */}
                 <a
                   href="tel:+254768860665"
-                  className="hidden lg:flex px-5 py-3 bg-red-600/90 hover:bg-red-600 rounded-xl font-bold text-white items-center gap-2 text-sm"
+                  className="hidden 2xl:flex shrink-0 px-5 py-3 bg-red-600/90 hover:bg-red-600 rounded-xl font-bold text-white items-center gap-2 text-sm"
                 >
                   🚨 Breakdown? Call 0768 860 665
                 </a>

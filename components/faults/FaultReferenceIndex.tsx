@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ENGINE_BRAND_GROUPS, ENGINE_CODES_PUBLISHED } from '@/lib/faults/engineBrandGroups';
 import { BRAND_GROUPS } from '@/lib/plant-oracle/brandGroups';
 
 /**
@@ -38,32 +37,16 @@ export default function FaultReferenceIndex() {
           id="fault-reference-index"
           className="mt-4 text-3xl font-semibold tracking-tight text-white lg:text-4xl"
         >
-          Every fault code we hold, by make
+          Plant and machinery fault codes, by make
         </h2>
         <p className="mt-5 max-w-2xl leading-relaxed text-white/60">
-          {(ENGINE_CODES_PUBLISHED + plantCodes).toLocaleString('en-KE')} verified
-          codes across {ENGINE_BRAND_GROUPS.length + BRAND_GROUPS.length} makes,
-          free to read. Generator engines carry the fault, its likely causes and
-          the remedy; plant and machinery carry the fault and its description.
+          {plantCodes.toLocaleString('en-KE')} plant and machinery codes across{' '}
+          {BRAND_GROUPS.length} makes, free to read: the fault and its
+          description. For generator controllers and J1939 engine codes, use the
+          search above.
         </p>
 
-        <h3 className="mt-12 text-sm font-semibold uppercase tracking-wider text-amber-400">
-          Generator engines &middot; {ENGINE_CODES_PUBLISHED.toLocaleString('en-KE')} codes
-        </h3>
-        <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {ENGINE_BRAND_GROUPS.map((g) => (
-            <li key={g.slug}>
-              <Link
-                href={`/faults/engine/${g.slug}`}
-                className="flex items-baseline justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 transition hover:border-amber-400/40 hover:bg-white/[0.05]"
-              >
-                <span className="font-medium text-white/85">{g.brand}</span>
-                <span className="font-mono text-xs text-white/45">{g.codes.length}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-
+        {/* Engine-brand list removed 2026-10-19 (corrupted source; see app/sitemap.ts). */}
         <h3 className="mt-12 text-sm font-semibold uppercase tracking-wider text-amber-400">
           Plant &amp; machinery &middot; {plantCodes.toLocaleString('en-KE')} codes
         </h3>

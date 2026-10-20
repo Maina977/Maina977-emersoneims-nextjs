@@ -108,7 +108,7 @@ const RepairMaintenancePage: React.FC = () => {
 
   return (
     <Wrap>
-      <h1 style={{ marginTop: 0 }}>🔧 Repair Guides &amp; Maintenance</h1>
+      <h2 style={{ marginTop: 0 }}>🔧 Repair Guides &amp; Maintenance</h2>
       <Tabs>
         <Tab $active={tab === 'repair'} onClick={() => setTab('repair')}>Repair Guides</Tab>
         <Tab $active={tab === 'maintenance'} onClick={() => setTab('maintenance')}>Maintenance Schedule</Tab>

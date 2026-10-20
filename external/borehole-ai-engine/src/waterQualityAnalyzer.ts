@@ -455,6 +455,16 @@ export class WaterQualityAnalyzer {
     return Math.max(5.0, Math.min(8.5, pH));
   }
 
+  /** Recompute potability, treatment list and score after any value is changed
+   *  (2026-10-19 re-audit: a regional fluoride rescale left "94%" and "iron removal only"
+   *  beside fluoride 2.5 mg/L, "not potable"). */
+  refreshDerived(quality: WaterQuality): WaterQuality {
+    quality.isPotable = this.checkPotability(quality);
+    quality.treatmentRequired = this.determineTreatment(quality);
+    quality.score = this.calculateScore(quality);
+    return quality;
+  }
+
   private checkPotability(quality: WaterQuality): boolean {
     // WHO Guidelines for Drinking-water Quality (4th ed, 2011) — these are correct reference values
     const standards = {

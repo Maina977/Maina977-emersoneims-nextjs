@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { equipment, core } from '../services/api';
+import { BATTERY_KES_PER_KWH } from '@/lib/solar/sizing'; // one battery price for every tool (2026-10-19)
 
 // Self-quote checker.
 // Paste any quotation BOM. We parse rows, identify the equipment in the
@@ -13,7 +14,7 @@ const Container = styled.div`
   padding: 2rem;
   @media (max-width: 768px) { padding: 1rem; }
 `;
-const Title = styled.h1`
+const Title = styled.h2`
   color: #00D9FF;
   margin: 0 0 0.5rem;
   font-size: clamp(1.5rem, 5vw, 2.2rem);
@@ -180,7 +181,7 @@ function reduceBatteries(arr: any[]): LibItem[] {
     manufacturer: p.manufacturer || p.make || '',
     model: p.model || '',
     ratingKwh: p.ratingKwh || p.kwh || p.capacityKwh || 10,
-    refPriceKes: p.priceKes || p.priceKES || ((p.ratingKwh || 10) * 36000),
+    refPriceKes: p.priceKes || p.priceKES || ((p.ratingKwh || 10) * BATTERY_KES_PER_KWH),
     datasheetUrl: p.datasheetUrl
   }));
 }

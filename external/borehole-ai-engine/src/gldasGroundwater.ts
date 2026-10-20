@@ -178,7 +178,8 @@ async function fetchNASAPower(lat: number, lon: number): Promise<PowerMonthlyDat
     const clean = (obj: Record<string, number>): Record<string, number> => {
       const out: Record<string, number> = {};
       for (const [k, v] of Object.entries(obj)) {
-        if (v != null && v > -998) out[k] = v;
+        // Skip YYYY13: NASA's annual mean, not a month (counted as one it inflated rainfall; 2026-10-19).
+        if (v != null && v > -998 && !k.endsWith('13')) out[k] = v;
       }
       return out;
     };

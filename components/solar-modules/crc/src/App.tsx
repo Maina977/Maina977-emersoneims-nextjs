@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 // without conflicting with the host app's URL/routing. All internal nav uses #/...
 import { HashRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
-import { FiMenu, FiX, FiBarChart2, FiGrid, FiBox, FiTrendingUp, FiSettings, FiStar, FiClipboard, FiTool, FiCpu, FiZap, FiAlertTriangle, FiLayout, FiEye, FiHexagon, FiActivity, FiCheckSquare, FiGlobe, FiSearch, FiBell, FiUser, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import { FiMenu, FiX, FiBarChart2, FiGrid, FiBox, FiTrendingUp, FiSettings, FiStar, FiClipboard, FiTool, FiCpu, FiZap, FiAlertTriangle, FiLayout, FiEye, FiActivity, FiCheckSquare, FiGlobe, FiBell, FiUser, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
 // Pages
 import DashboardPage from './pages/DashboardPage';
@@ -18,14 +18,12 @@ import AdvancedFeaturesPage from './pages/AdvancedFeaturesPage';
 import FaultCodesPage from './pages/FaultCodesPage';
 import DesignStudioPage from './pages/DesignStudioPage';
 import Viewer3DPage from './pages/Viewer3DPage';
-import SmartHomePage from './pages/SmartHomePage';
 import WiringDiagramPage from './pages/WiringDiagramPage';
 import ProjectWorkflowPage from './pages/ProjectWorkflowPage';import Global3DPage from './pages/Global3DPage';
 import QuoteCheckerPage from './pages/QuoteCheckerPage';
 import VoiceCommandPage from './pages/VoiceCommandPage';
 import QuoteParserPage from './pages/QuoteParserPage';
 import RepairMaintenancePage from './pages/RepairMaintenancePage';
-import SalesDashboardPage from './pages/SalesDashboardPage';
 import HomePage from './pages/HomePage';
 import PanelLayoutPage from './pages/PanelLayoutPage';
 import SunWeatherPage from './pages/SunWeatherPage';
@@ -179,11 +177,6 @@ const NavBadge = styled.span`
   font-weight: 700;
 `;
 
-const SidebarTagline = styled.div`
-  margin-top: 0.5rem;
-  font-size: 0.7rem;
-`;
-
 const SidebarFooter = styled.div`
   padding: 0.75rem 1.5rem;
   border-top: 1px solid rgba(0, 217, 255, 0.08);
@@ -276,24 +269,6 @@ const TopBarRight = styled.div`
   letter-spacing: 0.06em;
 `;
 
-const SystemPulse = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  &::before {
-    content: '';
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: #16E29F;
-    box-shadow: 0 0 10px #16E29F;
-    animation: sf-pulse 2s ease-in-out infinite;
-  }
-  @keyframes sf-pulse {
-    0%, 100% { opacity: 0.55; transform: scale(0.85); }
-    50%      { opacity: 1.00; transform: scale(1.10); }
-  }
-`;
-
 const MenuButton = styled.button`
   background: linear-gradient(135deg, #00D9FF, #0099CC);
   border: none;
@@ -341,33 +316,6 @@ const Content = styled.main`
 `;
 
 /* Command bar (⌘K) inside the top bar */
-const CommandBar = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  width: 320px;
-  max-width: 36vw;
-  padding: 0.45rem 0.7rem;
-  background: rgba(5, 8, 24, 0.55);
-  border: 1px solid rgba(0, 217, 255, 0.18);
-  border-radius: 8px;
-  color: rgba(230, 241, 255, 0.55);
-  font-size: 0.82rem;
-  cursor: pointer;
-  text-align: left;
-  &:hover { border-color: rgba(0, 217, 255, 0.45); color: #E6F1FF; }
-  & .kbd {
-    margin-left: auto;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem;
-    padding: 1px 6px;
-    border: 1px solid rgba(230, 241, 255, 0.2);
-    border-radius: 4px;
-    color: rgba(230, 241, 255, 0.55);
-  }
-  @media (max-width: 768px) { display: none; }
-`;
-
 /* Round icon button used in top bar (notifications, profile) */
 const IconBtn = styled.button`
   width: 34px; height: 34px;
@@ -438,17 +386,6 @@ const App: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Ctrl/⌘+K opens command palette (placeholder)
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
-        e.preventDefault();
-        alert('Command palette — coming soon');
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
 
   // ------------------------------------------------------------------
   // GROUPED MENU — 6 workspaces, sci-fi shell. Every existing page is
@@ -494,7 +431,6 @@ const App: React.FC = () => {
       label: 'Operations & Service',
       items: [
         { path: '/workflow',    label: '8-Step Project Wizard', icon: FiCheckSquare },
-        { path: '/smart-home',  label: 'Smart Home',            icon: FiHexagon },
         { path: '/fault-codes', label: 'Fault Codes DB',        icon: FiAlertTriangle },
         { path: '/repair',      label: 'Repair & Maintenance',  icon: FiTool },
         { path: '/videos',      label: 'Video Tutorials',       icon: FiEye, badge: 'NEW' },
@@ -560,11 +496,6 @@ const App: React.FC = () => {
           </RailToggle>
         </SidebarHeader>
 
-        {!mini && (
-          <SidebarTagline style={{ padding: '0 1.25rem 0.5rem' }}>
-            <span className="sf-badge sf-badge--ok">v2.0 · Online</span>
-          </SidebarTagline>
-        )}
 
         <NavMenu>
           {menuGroups.map(group => {
@@ -632,19 +563,9 @@ const App: React.FC = () => {
             </div>
           </TopBarLeft>
           <TopBarRight>
-            <CommandBar
-              onClick={() => alert('Command palette — coming soon')}
-              title="Command palette"
-            >
-              <FiSearch size={14} />
-              <span>Search anything…</span>
-              <span className="kbd">Ctrl K</span>
-            </CommandBar>
-            <SystemPulse>NOMINAL</SystemPulse>
-            <IconBtn title="Notifications">
-              <FiBell size={16} />
-              <span className="dot" />
-            </IconBtn>
+            {/* A "Search anything… Ctrl K" bar that only alerted "coming soon", a
+                "NOMINAL" status and a notification bell with an unread dot that
+                did nothing were removed 2026-10-19. */}
             <IconBtn title="Account" onClick={() => navigate('/settings')}>
               <FiUser size={16} />
             </IconBtn>
@@ -660,7 +581,8 @@ const App: React.FC = () => {
             <Route path="/design-studio" element={<DesignStudioPage />} />
             <Route path="/viewer-3d" element={<Viewer3DPage />} />
             <Route path="/global-3d" element={<Global3DPage />} />
-            <Route path="/smart-home" element={<SmartHomePage />} />
+            {/* Smart Home showed the same invented result for any photo (2026-10-19). */}
+            <Route path="/smart-home" element={<Navigate to="/dashboard" replace />} />
             <Route path="/wiring" element={<WiringDiagramPage />} />
             <Route path="/workflow" element={<ProjectWorkflowPage />} />
             <Route path="/fault-codes" element={<FaultCodesPage />} />
@@ -672,7 +594,7 @@ const App: React.FC = () => {
             <Route path="/voice" element={<VoiceCommandPage />} />
             <Route path="/quote-parser" element={<QuoteParserPage />} />
             <Route path="/repair" element={<RepairMaintenancePage />} />
-            <Route path="/sales" element={<SalesDashboardPage />} />
+            <Route path="/sales" element={<Navigate to="/dashboard" replace />} />
             <Route path="/panel-layout" element={<PanelLayoutPage />} />
             <Route path="/sun-weather" element={<SunWeatherPage />} />
             <Route path="/videos" element={<VideoLibraryPage />} />

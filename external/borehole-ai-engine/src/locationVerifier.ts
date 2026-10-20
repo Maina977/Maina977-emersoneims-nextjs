@@ -234,19 +234,19 @@ export function calculateLocationConfidence(
   let drillingReliability: LocationConfidence['drillingReliability'];
 
   if (score >= 90) {
-    grade = 'A'; label = 'Verified — Drilling-Grade Accuracy';
+    grade = 'A'; label = 'Location verified (this grades the location, not the chance of water)';
     drillingReliability = 'VERIFIED';
   } else if (score >= 75) {
-    grade = 'B'; label = 'High Confidence — Suitable for Planning';
+    grade = 'B'; label = 'Location well established (not a drilling verdict)';
     drillingReliability = 'HIGH';
   } else if (score >= 50) {
-    grade = 'C'; label = 'Moderate — Verify Before Drilling';
+    grade = 'C'; label = 'Location approximate — confirm on site';
     drillingReliability = 'MODERATE';
   } else if (score >= 20) {
-    grade = 'D'; label = 'Low — Estimated Location Only';
+    grade = 'D'; label = 'Location estimated only';
     drillingReliability = 'LOW';
   } else {
-    grade = 'F'; label = 'Unverified — No Reliable Location';
+    grade = 'F'; label = 'Location unverified';
     drillingReliability = 'UNVERIFIED';
   }
 

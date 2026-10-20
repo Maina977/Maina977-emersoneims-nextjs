@@ -1074,8 +1074,10 @@ export class ImageDetector {
           }
 
           // Layer 3: Filename location hints
-          const filenameHint = this.extractLocationFromFilename(file.name);
-          if (filenameHint) locationContext.filenameHint = filenameHint;
+          // Filename geocoding DISABLED (2026-10-19 re-audit): "FG-WILSON-GENERATOR.jpg"
+          // was placed at Wilson Airport, Nairobi. A file name is not a location.
+          const filenameHint: string | null = null;
+          void this.extractLocationFromFilename;
           console.log('[GPS] Filename hint:', filenameHint, '| IPTC:', locationText);
 
           // Pre-declare resolvedLocation

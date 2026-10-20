@@ -1169,3 +1169,6 @@ body {
    client-blocked URL 5962c3274b2602e3.css. Bump the number if a css URL
    ever needs to be rotated again. */
 .aquascan-styles-rev { --aquascan-css-rev: 2; }
+
+/* Scrolled-to panels clear the fixed site header (2026-10-19). */
+.results-view, .analyzing-view { scroll-margin-top: 80px; }

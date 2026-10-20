@@ -1,5 +1,19 @@
 import { NextRequest } from 'next/server';
-import { diagnoseFromSymptoms } from '@/lib/generator-oracle/server/faultIndex';
+import { diagnoseFromSymptoms, searchIndex, type DiagnoseResponse } from '@/lib/generator-oracle/server/faultIndex';
+
+/**
+ * A code goes to the code index first (2026-10-19 re-audit): passed only as
+ * alarm text, "SPN 100 FMI 1" scored below the two-word evidence threshold and
+ * came back ranked: []. Exact code matches now head the list.
+ */
+function withCodeMatches(result: DiagnoseResponse, code: string | undefined, brand: string | undefined, topN: number): DiagnoseResponse {
+  if (!code) return result;
+  const hits = searchIndex({ query: code, brand, page: 1, pageSize: topN }).results
+    .map((r) => ({ ...r, score: 100, matchedTerms: ['code'] }));
+  if (hits.length === 0) return result;
+  const ids = new Set(hits.map((h) => h.id));
+  return { ...result, ranked: [...hits, ...result.ranked.filter((r) => !ids.has(r.id))].slice(0, topN) };
+}
 import { clampInt, clampString, clampStringList, jsonError, jsonOk } from '@/lib/generator-oracle/server/httpUtils';
 
 export const runtime = 'nodejs';
@@ -37,15 +51,16 @@ export async function POST(req: NextRequest) {
     if (symptoms.length === 0 && !alarmText) {
       return jsonError('missing_symptoms_alarm_text_or_code');
     }
+    const topN = clampInt(body.topN, 1, 50, 10);
     const result = diagnoseFromSymptoms({
       symptoms,
       alarmText,
       brand: clampString(body.brand),
       model: clampString(body.model),
       category: clampString(body.category),
-      topN: clampInt(body.topN, 1, 50, 10),
+      topN,
     });
-    return jsonOk(result);
+    return jsonOk(withCodeMatches(result, faultCode, clampString(body.brand) || undefined, topN));
   } catch (e) {
     return jsonError('diagnose_failed', 500, e instanceof Error ? e.message : 'unknown');
   }
@@ -61,15 +76,16 @@ export async function GET(req: NextRequest) {
     // asks. Falls through to the identical matcher.
     const code = clampString(sp.get('code') ?? sp.get('faultCode'), 64);
     if (symptoms.length === 0 && !code) return jsonError('missing_q_or_code');
+    const topN = clampInt(sp.get('topN'), 1, 50, 10);
     const result = diagnoseFromSymptoms({
       symptoms,
       alarmText: code || undefined,
       brand: clampString(sp.get('brand')),
       model: clampString(sp.get('model')),
       category: clampString(sp.get('category')),
-      topN: clampInt(sp.get('topN'), 1, 50, 10),
+      topN,
     });
-    return jsonOk(result);
+    return jsonOk(withCodeMatches(result, code, clampString(sp.get('brand')) || undefined, topN));
   } catch (e) {
     return jsonError('diagnose_failed', 500, e instanceof Error ? e.message : 'unknown');
   }

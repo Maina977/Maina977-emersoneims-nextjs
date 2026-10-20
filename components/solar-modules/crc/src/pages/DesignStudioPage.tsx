@@ -79,7 +79,7 @@ const DesignStudioPage: React.FC = () => {
         <DesignStudioAI address={submitted} />
       ) : (
         <div style={{padding:'2rem', color:'rgba(255,255,255,0.6)', textAlign:'center'}}>
-          Enter a site address above to load the AI design studio.
+          Enter a site address above to load the design studio.
         </div>
       )}
     </Wrap>

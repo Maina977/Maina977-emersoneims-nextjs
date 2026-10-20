@@ -43,10 +43,9 @@ const AquaScanProV2 = dynamic(
 export default function AquaScanProV3Page() {
   return (
     <ToolAppShell label="aquascan-pro-v3">
-      {/* B2B Commercial Band */}
-      <B2BCommercialBand profile={B2B_PROFILES.aquascanPro} />
-
       <AquaScanProV2 />
+      {/* B2B band below the tool (2026-10-19 re-audit): above it, it pushed the upload form further down on phones. */}
+      <B2BCommercialBand profile={B2B_PROFILES.aquascanPro} />
       <ToolSeoContent tool="aquascan-pro-v3" headingLevel="h1" />
     </ToolAppShell>
   );

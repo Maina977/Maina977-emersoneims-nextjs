@@ -422,7 +422,7 @@ const nextConfig: NextConfig = {
       // NOTE: bump the date suffix here whenever a new wizard version is deployed
       // (see memory: project_building_suite_pro_wizard_sync.md).
       {
-        source: '/eims-building-suite-v20260503.html',
+        source: '/eims-building-suite-v20261019.html',
         headers: [
           {
             key: 'Cache-Control',
@@ -542,6 +542,11 @@ const nextConfig: NextConfig = {
       // noindex. The real tool already compares scenarios and downloads the PDF.
       { source: '/aquascan-pro-v3/compare', destination: '/aquascan-pro-v3', permanent: true },
       { source: '/aquascan-pro-v3/reports', destination: '/aquascan-pro-v3', permanent: true },
+      // Engine-brand fault tables unpublished (corrupted CSV parse; app/sitemap.ts).
+      { source: '/faults/engine/:brand', destination: '/faults', permanent: true },
+      // Building Suite file renamed 2026-10-19: the old name was served
+      // "immutable" for a year, so the fixed suite needed a new URL.
+      { source: '/eims-building-suite-v20260503.html', destination: '/eims-building-suite-v20261019.html', permanent: true },
       // Solar duplicates: -tools crashed on every real coordinate (float index
       // into an array) and invented roof analysis from a coordinate hash;
       // -futuristic was a static mock with fixed "28% ROI / 3.5 years".

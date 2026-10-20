@@ -19,14 +19,12 @@ const SolarGeniusProV2 = dynamic(
 export default function SolarGeniusProPage() {
   return (
     <ToolAppShell label="solar-genius-pro">
-      {/* Global-readiness positioning band — frames SolarGeniusPro as a
-          flagship engineering AI for Africa and globally relevant solar work. */}
-      <SolarGeniusGlobalBand />
-
-      {/* B2B Commercial Band */}
-      <B2BCommercialBand profile={B2B_PROFILES.solarGeniusPro} />
-
       <SolarGeniusProV2 />
+
+      {/* Bands moved below the tool (2026-10-19 re-audit): above it they pushed
+          the calculator ~2,700 px down on a phone. */}
+      <SolarGeniusGlobalBand />
+      <B2BCommercialBand profile={B2B_PROFILES.solarGeniusPro} />
     </ToolAppShell>
   );
 }

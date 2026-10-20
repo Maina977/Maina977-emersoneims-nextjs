@@ -598,10 +598,10 @@ export default function BoreholeMaintenanceHub() {
                 <div className="bg-slate-800 rounded-xl p-6 border border-blue-500/30">
                   <h3 className="text-lg font-bold text-blue-400 mb-4">Kenya Borehole Statistics</h3>
                   <ul className="space-y-2 text-slate-300">
-                    <li>• ~35,000+ registered boreholes</li>
-                    <li>• Average depth: 80-200 meters</li>
-                    <li>• Success rate: 75-85%</li>
-                    <li>• WRMA licensed: ~60%</li>
+                    <li>• Roughly 35,000+ boreholes drilled (estimate)</li>
+                    <li>• Typical depth: about 120 m nationally (30–350 m; under 70 m in much of Turkana, 150 m+ around Nairobi)</li>
+                    <li>• Success rate: around 70% nationally, much lower in arid counties</li>
+                    <li>• Every new borehole needs a Water Resources Authority (WRA) permit</li>
                   </ul>
                 </div>
                 <div className="bg-slate-800 rounded-xl p-6 border border-cyan-500/30">

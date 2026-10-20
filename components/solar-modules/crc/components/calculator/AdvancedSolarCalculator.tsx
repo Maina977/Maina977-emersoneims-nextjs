@@ -1009,7 +1009,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
   return (
     <div className="advanced-solar-calculator">
       <header className="calculator-header">
-        <h1>🌟 INTELLIGENT SOLAR CALCULATOR</h1>
+        <h2>🌟 INTELLIGENT SOLAR CALCULATOR</h2>
         <p>Appliance-based sizing, diagnostics and installation guide</p>
       </header>
 
@@ -1025,7 +1025,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
           className={`tab-btn ${activeTab === 'diagnostic' ? 'active' : ''}`}
           onClick={() => setActiveTab('diagnostic')}
         >
-          🤖 Diagnostics
+          🔎 Diagnostics
         </button>
         <button
           className={`tab-btn ${activeTab === 'quality' ? 'active' : ''}`}

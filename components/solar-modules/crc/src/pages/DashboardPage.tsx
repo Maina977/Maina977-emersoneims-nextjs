@@ -363,7 +363,7 @@ export default function DashboardPage() {
 
       {!hasSystem && (
         <Banner $kind="warn">
-          ⚠ Open <b>Sizing & Quoting → Solar Sizer</b> to design the system. The
+          ⚠ Open <b>Sizing & Quoting → Solar Calculator</b> to design the system. The
           dashboard updates the moment the calculator runs.
         </Banner>
       )}

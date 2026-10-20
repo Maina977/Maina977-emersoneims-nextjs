@@ -14,7 +14,7 @@ const Container = styled.div`
   margin: 0 auto;
 `;
 
-const Title = styled.h1`
+const Title = styled.h2`
   font-size: 2rem;
   background: linear-gradient(135deg, #00d9ff, #ff006e);
   -webkit-background-clip: text;
@@ -436,13 +436,13 @@ const DieselVsSolarTool = () => {
 // ----- Reports -----
 const ProposalPdfTool = () => {
   const t = useTool();
-  const [name, setName] = useState('Demo Customer Ltd');
+  const [name, setName] = useState('Sample Customer');
   const generate = async () => {
     const blob = await reports.proposalBlob({
-      brand: { companyName: 'SolarGenius Pro', primaryHex: '#0b8457', tagline: 'Engineering-grade solar' },
+      brand: { companyName: 'EmersonEIMS', primaryHex: '#0b8457', tagline: 'SAMPLE LAYOUT — fixed example, not your design and not a quotation' },
       customer: { name, site: 'Nairobi' },
-      design: { systemKw: 6.8, batteryKwh: 10, panelCount: 14, panelW: 485, inverterKw: 5, tiltDeg: 15, azimuthDeg: 0, specificYieldKwhPerKwp: 1850, annualOffsetPct: 95,
-        bom: [['JA Solar 485Wp', 14, 12500, 175000], ['Deye 5kW Hybrid', 1, 180000, 180000], ['BSLBATT 10kWh', 1, 380000, 380000]] },
+      design: { systemKw: 6.8, batteryKwh: 10, panelCount: 14, panelW: 485, inverterKw: 5, tiltDeg: 15, azimuthDeg: 0, specificYieldKwhPerKwp: 1650, annualOffsetPct: 95,
+        bom: [['485 Wp mono panel', 14, 12500, 175000], ['5 kW hybrid inverter', 1, 180000, 180000], ['10 kWh LiFePO4 battery', 1, 380000, 380000]] },
       financial: { capexKes: 1247500, year1SavingsKes: 240000, paybackYears: 5.2, irrPct: 14.1, npvKes: 227196,
         cashFlowTable: [[1, 240000, 240000], [2, 240000, 480000], [3, 240000, 720000]] }
     });
@@ -451,8 +451,8 @@ const ProposalPdfTool = () => {
   };
   return (
     <Card>
-      <CardH>Branded Proposal PDF</CardH>
-      <CardSub>jsPDF + autotable, real PDF download</CardSub>
+      <CardH>Sample Proposal PDF</CardH>
+      <CardSub>Shows the proposal layout with a fixed example design (6.8 kWp, Nairobi). It is not built from your inputs and is not a quotation.</CardSub>
       <Row><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Customer name" /></Row>
       <Btn disabled={t.busy} onClick={() => t.run(generate)}>Generate &amp; Download PDF</Btn>
       <Result {...t} />

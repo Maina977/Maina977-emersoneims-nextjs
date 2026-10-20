@@ -65,11 +65,19 @@ export async function POST(request: NextRequest) {
   let lon = num(body.lon);
   let locationName = 'Custom location';
   if (!(Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat!) <= 90 && Math.abs(lon!) <= 180)) {
-    const key = String(body.location ?? 'nairobi').toLowerCase().replace(/[^a-z]/g, '');
-    const town = KENYA_TOWNS.find((t) => t.key === key) ?? KENYA_TOWNS[0];
+    // An unknown town used to fall back to Nairobi silently (2026-10-19 re-audit).
+    const given = body.location !== undefined && String(body.location).trim() !== '';
+    const key = String(given ? body.location : 'nairobi').toLowerCase().replace(/[^a-z]/g, '');
+    const town = KENYA_TOWNS.find((t) => t.key === key);
+    if (!town) {
+      return NextResponse.json(
+        { error: `Unknown location "${String(body.location)}". Send lat and lon, or one of: ${KENYA_TOWNS.map((t) => t.name).join(', ')}.` },
+        { status: 400 },
+      );
+    }
     lat = town.lat;
     lon = town.lon;
-    locationName = town.name;
+    locationName = given ? town.name : `${town.name} (no location given)`;
   }
 
   const sun = await sunHoursFor(lat!, lon!);

@@ -68,6 +68,9 @@ export const BATTERY_DOD = 0.9; // LiFePO4 usable depth of discharge
 export const BATTERY_EFFICIENCY = 0.95; // round trip
 export const DIESEL_L_PER_KWH = 0.35; // small genset at part load
 export const DIESEL_CO2_KG_PER_L = 2.68;
+/** LiFePO4 installed price per kWh (KES, mid-2026 typical; market roughly 25–40k).
+ *  One constant for every tool — the calculator said 48k and the quote checker 36k. */
+export const BATTERY_KES_PER_KWH = 38_000;
 const STANDARD_INVERTERS_KW = [1, 1.5, 2, 3, 3.6, 5, 6, 8, 10, 12, 15, 20, 25, 30, 36, 40, 50, 60, 80, 100, 120, 150, 200, 250, 300, 400, 500];
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
@@ -78,7 +81,7 @@ const nextStandardInverter = (kw: number) => STANDARD_INVERTERS_KW.find((s) => s
 function costKes(pvKwp: number, inverterKw: number, batteryKwh: number, type: SystemType): number {
   const pvRate = pvKwp <= 10 ? 70_000 : pvKwp <= 50 ? 60_000 : 52_000; // panels + mounting + DC
   const invRate = type === 'grid-tied' ? (inverterKw <= 10 ? 20_000 : 15_000) : inverterKw <= 10 ? 35_000 : 28_000;
-  const batRate = 48_000; // LiFePO4 per kWh
+  const batRate = BATTERY_KES_PER_KWH;
   const equipment = pvKwp * pvRate + inverterKw * invRate + batteryKwh * batRate;
   return equipment * 1.12; // installation, cabling and protection
 }
@@ -113,10 +116,17 @@ export function sizeSolar(input: SizingInput): SizingResult {
   // month and carries the battery's losses on the share it stores.
   const sizingPsh = type === 'off-grid' ? pshWorst : psh;
   const lossFactor = type === 'off-grid' ? 0.9 : 1;
-  const rawKwp = dailyKwh / (sizingPsh * PERFORMANCE_RATIO * roofFactor * lossFactor);
-  const panels = Math.max(1, Math.ceil((rawKwp * 1000) / PANEL_WATT));
+  // Grid-tied without a battery or net metering only saves what is used while
+  // the sun is up, so it is sized on that share (2026-10-19 re-audit: sized on
+  // 100%, ~60% of the output earned nothing and payback looked twice as long).
+  const dayShare = clamp(input.daytimeUsePct ?? 50, 0, 100) / 100;
+  const targetDailyKwh = type === 'grid-tied' ? dailyKwh * dayShare : dailyKwh;
+  const rawKwp = targetDailyKwh / (sizingPsh * PERFORMANCE_RATIO * roofFactor * lossFactor);
+  // 3% tolerance: 4.005 panels is four panels, not five.
+  const panels = Math.max(1, Math.ceil((rawKwp * 1000) / PANEL_WATT - 0.03));
   const pvKwp = round1((panels * PANEL_WATT) / 1000);
   assumptions.push(`${PANEL_WATT} W panels; ${Math.round(PERFORMANCE_RATIO * 100)}% performance ratio (wiring, inverter, heat and dust losses).`);
+  if (type === 'grid-tied') assumptions.push(`Grid-tied array sized to cover the ${Math.round(dayShare * 100)}% of your use that happens in daylight; the grid supplies the rest.`);
   if (type === 'off-grid') assumptions.push(`Off-grid array sized on the cloudiest month (${pshWorst.toFixed(2)} sun-hours), not the yearly average.`);
 
   // ── Battery ─────────────────────────────────────────────────────────────
@@ -131,7 +141,7 @@ export function sizeSolar(input: SizingInput): SizingResult {
     assumptions.push(`Battery carries the full load for ${days} day${days === 1 ? '' : 's'} without sun.`);
   }
   const batteryKwh = batteryUsableKwh > 0 ? round1(batteryUsableKwh / (BATTERY_DOD * BATTERY_EFFICIENCY)) : 0;
-  if (batteryKwh > 0) assumptions.push(`LiFePO4 battery: ${Math.round(BATTERY_DOD * 100)}% usable depth, ${Math.round(BATTERY_EFFICIENCY * 100)}% round-trip efficiency.`);
+  if (batteryKwh > 0) assumptions.push(`LiFePO4 battery: ${Math.round(BATTERY_DOD * 100)}% usable depth, ${Math.round(BATTERY_EFFICIENCY * 100)}% round-trip efficiency, about KES ${BATTERY_KES_PER_KWH.toLocaleString('en-KE')} per kWh installed.`);
 
   // ── Inverter ────────────────────────────────────────────────────────────
   let inverterKw: number;

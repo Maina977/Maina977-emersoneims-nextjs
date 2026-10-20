@@ -15,7 +15,7 @@ const Container = styled.div`
   @media (max-width: 768px) { padding: 1rem; }
 `;
 
-const Title = styled.h1`
+const Title = styled.h2`
   color: #00D9FF;
   margin: 0 0 0.5rem;
   font-size: clamp(1.5rem, 5vw, 2.2rem);

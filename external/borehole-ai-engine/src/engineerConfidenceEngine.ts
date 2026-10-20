@@ -293,7 +293,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
       ? 'Occam 2D inversion -> low-resistivity zone detection -> depth optimization (ERT 40% + AI 35% + Borehole 25%)'
       : hasNearby
         ? 'IDW-weighted average of nearby well depths + satellite-derived ML correction'
-        : 'Random Forest regression on NDVI, NDWI, elevation, slope, geology, climate features',
+        : 'Weighted scoring of NDVI, NDWI, elevation, slope, geology and climate features (rule-based, not a trained model)',
     accuracy_pct: hasERT ? 88 : hasNearby ? 72 : 55,
     confidenceInterval: r.ertIntelligence?.depthOptimization
       ? { lower: r.ertIntelligence.depthOptimization.minimumDepth_m, upper: r.ertIntelligence.depthOptimization.maximumDepth_m, confidence_pct: 90 }
@@ -383,7 +383,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     source: hasLithology ? 'Lithology log from drill cuttings' : hasRockMapping ? `Multi-classifier rock mapping (${r.advancedRockMapping?.dataSources?.length ?? 8} classifiers)` : 'Macrostrat + Sentinel-2 + DEM classification',
     method: hasLithology
       ? 'Visual logging per BS 5930:2015 + thin section analysis'
-      : 'Random Forest classifier on NDVI, spectral bands, elevation, Macrostrat formation',
+      : 'Rule-based classification from NDVI, spectral bands, elevation and the Macrostrat formation',
     accuracy_pct: hasLithology ? 95 : (hasRockMapping && hasDEM) ? 78 : hasERT ? 78 : 60,
     reference: 'BS 5930:2015 Code of practice for ground investigations',
     isoStandard: 'ISO 14688-1:2017 Soil classification',
@@ -480,6 +480,12 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   });
 
   // Count tiers
+  // 2026-10-19 re-audit: with no field data at all, nothing here has been
+  // calibrated against a measurement at this site ("0.0 mm/yr recharge —
+  // CALIBRATED" beside 41–81 mm/yr elsewhere). Desktop runs cap at ESTIMATED.
+  if (!hasERT && !hasPumpTest && !hasLithology) {
+    for (const it of items) if (it.tier === 'CALIBRATED' || it.tier === 'MEASURED') it.tier = 'ESTIMATED';
+  }
   const measuredCount = items.filter(i => i.tier === 'MEASURED').length;
   const calibratedCount = items.filter(i => i.tier === 'CALIBRATED').length;
   const estimatedCount = items.filter(i => i.tier === 'ESTIMATED').length;
@@ -508,10 +514,10 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     reportGradeJustification = `Strong desktop assessment: Bayesian ensemble of ${satelliteSourceCount} satellite sources + ${modelSourceCount} model engines + ${nearbyWellList.length} nearby water points. This is model agreement, NOT field validation — engineering grade requires a field ERT/VES survey and pump test. Suitable for site screening and budget estimation.`;
   } else if (hasNearby && satelliteSourceCount >= 3) {
     reportGrade = 'PRE_FEASIBILITY';
-    reportGradeJustification = `Predictions calibrated against ${nearbyWellList.length} nearby wells + ${satelliteSourceCount} satellite sources. Recommend ERT survey before drilling. Suitable for site screening and budget estimation.`;
+    reportGradeJustification = `Predictions compared with ${nearbyWellList.length} nearby wells + ${satelliteSourceCount} satellite sources. Recommend ERT survey before drilling. Suitable for site screening and budget estimation.`;
   } else if (hasNearby) {
     reportGrade = 'PRE_FEASIBILITY';
-    reportGradeJustification = 'Predictions calibrated against nearby wells but no direct geophysical measurement. Recommend ERT survey before drilling. Suitable for site screening and budget estimation.';
+    reportGradeJustification = 'Predictions compared with nearby water points but no direct geophysical measurement. Recommend ERT survey before drilling. Suitable for site screening and budget estimation.';
   } else if (satelliteSourceCount >= 4 && modelSourceCount >= 3) {
     reportGrade = 'PRE_FEASIBILITY';
     reportGradeJustification = `${satelliteSourceCount} satellite sources + ${modelSourceCount} analytical engines provide robust desktop estimate. Nearby borehole calibration or ERT survey recommended for engineering grade.`;
@@ -930,7 +936,7 @@ function generateMethodologyReport(r: any): MethodologyReport {
     {
       step: 3,
       name: 'Geological Classification',
-      method: 'Macrostrat API for stratigraphic unit + lithology. Random Forest classification on spectral/topographic features. Rock weathering profile from climate-adjusted decay model.',
+      method: 'Macrostrat API for stratigraphic unit + lithology. Rule-based classification on spectral/topographic features. Rock weathering profile from climate-adjusted decay model.',
       reference: 'Peters et al. (2018) Macrostrat; BS 5930:2015',
       inputs: ['Coordinates', 'Elevation', 'Spectral indices', 'Climate data'],
       outputs: ['Rock type', 'Weathering depth', 'Fracture density estimate', 'Stratigraphic unit'],
@@ -942,9 +948,9 @@ function generateMethodologyReport(r: any): MethodologyReport {
     {
       step: 4,
       name: 'Nearby Borehole Analysis',
-      method: 'Query USGS NWIS + BGS + OSM Overpass within 25km. IDW-weighted statistics. Lithology inference from depth + geological context.',
+      method: 'Nearby water points from WPDx, the IHP-WINS field records and OpenStreetMap within 25 km (USGS NWIS is queried but covers the US only). IDW-weighted statistics.',
       equation: 'w_i = 1 / d_i^2; weighted_mean = sum(w_i * x_i) / sum(w_i)',
-      reference: 'USGS NWIS database; BGS GeoIndex',
+      reference: 'Water Point Data Exchange (WPDx); UNESCO IHP-WINS; OpenStreetMap',
       inputs: ['Coordinates', 'Search radius 25km'],
       outputs: ['Average depth/yield of nearby wells', 'Success rate', 'Lithology patterns', 'Calibration factors'],
       assumptions: ['Nearby wells are in similar hydrogeological setting', 'Database records are accurate'],
@@ -1072,7 +1078,7 @@ function generateMethodologyReport(r: any): MethodologyReport {
   return {
     steps,
     standardsReferenced: standards,
-    softwareVersion: 'AquaScan Pro v2.0 — AI Borehole Intelligence Platform',
+    softwareVersion: 'AquaScan Pro — desktop borehole pre-screen',
     analysisDate: new Date().toISOString(),
     disclaimer: 'This report is generated by an AI-assisted decision support tool. It is intended to supplement, not replace, professional hydrogeological judgment. All predictions carry stated uncertainty and should be verified by field investigation. The tool operators and developers accept no liability for drilling outcomes based solely on this report. A qualified hydrogeologist or water engineer should review all findings before any financial commitment or drilling mobilization.',
     limitations,

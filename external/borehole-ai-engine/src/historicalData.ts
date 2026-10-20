@@ -63,7 +63,9 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
     const endYear = new Date().getFullYear() - 1;
     const startYear = endYear - 19;  // 20 years
 
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&monthly=precipitation_sum,temperature_2m_mean&timezone=auto`;
+    // DAILY, summed to months below: the archive API answers HTTP 400 to
+    // "monthly=" (measured 2026-10-19), so the Climate tab was always empty.
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum,temperature_2m_mean&timezone=auto`;
 
     // NASA POWER cross-validation: independent satellite-gauge-merged precipitation
     const nasaUrl = `https://power.larc.nasa.gov/api/temporal/monthly/point`
@@ -79,14 +81,61 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
       fetch(nasaUrl, { signal: AbortSignal.timeout(20000) }),
     ]);
 
-    const res = openMeteoRes.status === 'fulfilled' ? openMeteoRes.value : null;
-    if (!res || !res.ok) {
-      console.log(`[HistoricalWeather] Open-Meteo HTTP ${res?.status ?? 'FAILED'}`);
-      return null;
-    }
+    // NASA POWER is read once here: it is the cross-check when Open-Meteo answers,
+    // and the SOURCE when Open-Meteo does not (2026-10-19 re-audit: a 20-year daily
+    // request is heavy on Open-Meteo's free quota and was rate-limited (429), so the
+    // Climate tab said "NO DATA" even though NASA had answered).
+    const nasaResp = nasaPowerRes.status === 'fulfilled' && nasaPowerRes.value.ok ? nasaPowerRes.value : null;
+    const nasaJson: any = nasaResp ? await nasaResp.json().catch(() => null) : null;
 
-    const data = await res.json();
-    const monthly = data.monthly;
+    const res = openMeteoRes.status === 'fulfilled' ? openMeteoRes.value : null;
+    let usedNasaOnly = false;
+    let data: any = null;
+    if (res && res.ok) {
+      data = await res.json().catch(() => null);
+    } else {
+      console.log(`[HistoricalWeather] Open-Meteo HTTP ${res?.status ?? 'FAILED'} — trying NASA POWER monthly instead`);
+    }
+    if (!data?.daily && nasaJson?.properties?.parameter?.PRECTOTCORR) {
+      // Rebuild a "daily" shape from NASA monthly means (mm/day × days in month),
+      // skipping the YYYY13 annual means.
+      const P = nasaJson.properties.parameter.PRECTOTCORR as Record<string, number>;
+      const T = (nasaJson.properties.parameter.T2M || {}) as Record<string, number>;
+      const time: string[] = [];
+      const precipitation_sum: number[] = [];
+      const temperature_2m_mean: (number | null)[] = [];
+      for (const k of Object.keys(P).sort()) {
+        const mo = parseInt(k.slice(4, 6));
+        if (mo < 1 || mo > 12 || !(P[k] > -998)) continue;
+        const yr = parseInt(k.slice(0, 4));
+        time.push(`${k.slice(0, 4)}-${k.slice(4, 6)}-01`);
+        precipitation_sum.push(P[k] * new Date(yr, mo, 0).getDate());
+        temperature_2m_mean.push(T[k] > -998 ? T[k] : null);
+      }
+      data = { daily: { time, precipitation_sum, temperature_2m_mean } };
+      usedNasaOnly = true;
+    }
+    if (!data?.daily) return null;
+    const daily = data.daily;
+    // Sum daily rain (and average daily temperature) into calendar months.
+    const monthly: { time: string[]; precipitation_sum: number[]; temperature_2m_mean: number[] } | null =
+      daily?.time && daily?.precipitation_sum ? (() => {
+        const order: string[] = [];
+        const acc = new Map<string, { p: number; t: number; n: number }>();
+        for (let i = 0; i < daily.time.length; i++) {
+          const ym = String(daily.time[i]).substring(0, 7);
+          if (!acc.has(ym)) { acc.set(ym, { p: 0, t: 0, n: 0 }); order.push(ym); }
+          const a = acc.get(ym)!;
+          a.p += Number(daily.precipitation_sum[i]) || 0;
+          const tv = daily.temperature_2m_mean?.[i];
+          if (tv !== null && tv !== undefined) { a.t += Number(tv); a.n++; }
+        }
+        return {
+          time: order,
+          precipitation_sum: order.map((m) => Math.round(acc.get(m)!.p * 10) / 10),
+          temperature_2m_mean: order.map((m) => (acc.get(m)!.n ? Math.round((acc.get(m)!.t / acc.get(m)!.n) * 10) / 10 : (null as unknown as number))),
+        };
+      })() : null;
     if (!monthly?.time || !monthly?.precipitation_sum) {
       console.log('[HistoricalWeather] No monthly data returned');
       return null;
@@ -180,10 +229,9 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
 
     // Cross-validate with NASA POWER if available
     let crossValidation = '';
-    const nasaRes = nasaPowerRes.status === 'fulfilled' ? nasaPowerRes.value : null;
-    if (nasaRes?.ok) {
+    if (nasaJson && !usedNasaOnly) {
       try {
-        const nasaData = await nasaRes.json();
+        const nasaData = nasaJson;
         const nasaPrecip = nasaData?.properties?.parameter?.PRECTOTCORR;
         if (nasaPrecip && typeof nasaPrecip === 'object') {
           const nasaYearMap = new Map<number, number[]>();
@@ -191,6 +239,7 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
             if (typeof val !== 'number' || val < -998) continue;
             const yr = parseInt(yyyymm.slice(0, 4));
             const mo = parseInt(yyyymm.slice(4, 6));
+            if (mo < 1 || mo > 12) continue; // YYYY13 is NASA's annual mean, not a month (it doubled rainfall; 2026-10-19)
             if (!nasaYearMap.has(yr)) nasaYearMap.set(yr, []);
             // NASA POWER PRECTOTCORR is mm/day average for the month → multiply by days
             const daysInMo = new Date(yr, mo, 0).getDate();
@@ -218,7 +267,9 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
       trendDirection, trendPerDecade, avgAnnualPrecip, avgAnnualTemp,
       maxAnnualPrecip, minAnnualPrecip,
       rainySeasonMonths, drySeasonMonths, bestDrillingSeason,
-      source: `Open-Meteo Historical ERA5-Land (${startYear}–${endYear})${crossValidation}`,
+      source: usedNasaOnly
+        ? `NASA POWER monthly (${startYear}–${endYear}); Open-Meteo ERA5-Land did not answer`
+        : `Open-Meteo Historical ERA5-Land (${startYear}–${endYear})${crossValidation}`,
     };
   } catch (err) {
     console.log('[HistoricalWeather] Error:', err);

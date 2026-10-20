@@ -74,7 +74,7 @@ const QuoteParserPage: React.FC = () => {
 
   return (
     <Wrap>
-      <h1 style={{ marginTop: 0 }}>📄 Quote Parser AI</h1>
+      <h2 style={{ marginTop: 0 }}>📄 Quote Parser</h2>
       <p style={{ color: 'rgba(230,241,255,0.65)' }}>
         Upload a Bill of Quantities (PDF / Excel), site photo or measurement file.
         SolarGeniusPro extracts every line item, matches it against the live

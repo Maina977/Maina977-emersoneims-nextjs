@@ -144,3 +144,22 @@ describe('building calculators — report fields', () => {
     expect(r.qp_kPa).toBeCloseTo(r.qp_Pa / 1000, 2);
   });
 });
+
+describe('building calculators — supplied-but-invalid optional inputs are refused (2026-10-19 re-audit)', () => {
+  it.each([
+    ['blank shear_planes', () => c.runCalc(c.steelBolt, { designation: 'M20', grade: '8.8', shear_planes: '' }), 'shear_planes'],
+    ['Kzt below 1', () => c.runCalc(c.windAsce7, { V_mph: 115, height_ft: 30, exposure: 'C', Kzt: 0.5 }), 'Kzt'],
+    ['unknown structure_type', () => c.runCalc(c.seismicElf, { SDS: 1, SD1: 0.5, R: 8, Ie: 1, W_kN: 1000, height_ft: 48, structure_type: 'timber' }), 'structure_type'],
+    ['unknown enclosure', () => c.runCalc(c.windAsce7, { V_mph: 115, height_ft: 30, exposure: 'C', enclosure: 'tent' }), 'enclosure'],
+    ['unknown reverberation method', () => c.runCalc(c.reverberation, { volume_m3: 100, method: 'magic', surfaces: [{ area_m2: 10, alpha: 0.5 }] }), 'method'],
+  ])('%s', (_n, fn, field) => {
+    const r = fn();
+    expect(c.isCalcError(r)).toBe(true);
+    expect((r as c.CalcError).missing).toContain(field);
+  });
+
+  it('a user period above Cu·Ta is capped (ASCE 7-22 §12.8.2): steel MF 48 ft, SD1 0.5 → T ≤ 1.4 × 0.618', () => {
+    const r = c.runCalc(c.seismicElf, { SDS: 1, SD1: 0.5, R: 8, Ie: 1, W_kN: 8896, height_ft: 48, structure_type: 'steel_moment_frame', T: 3 }) as Record<string, number>;
+    expect(r.T_s).toBeCloseTo(1.4 * 0.618, 2);
+  });
+});

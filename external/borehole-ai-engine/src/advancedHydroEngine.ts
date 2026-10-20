@@ -1,3 +1,4 @@
+import { nasaMonthlyYears, nasaMonthlyValues } from './nasaPowerMonthly';
 /**
  * ADVANCED HYDROGEOLOGICAL ENGINE
  * 
@@ -151,15 +152,13 @@ export async function fetchNASAPowerMoisture(lat: number, lon: number): Promise<
   dataSource: string;
 } | null> {
   try {
-    const end = new Date().toISOString().split('T')[0].replace(/-/g, '');
-    const startDate = new Date();
-    startDate.setFullYear(startDate.getFullYear() - 3);
-    const start = startDate.toISOString().split('T')[0].replace(/-/g, '');
-    const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=GWETPROF,GWETROOT&community=AG&longitude=${lon}&latitude=${lat}&start=${start.substring(0,6)}&end=${end.substring(0,6)}&format=JSON`;
+    // Years only — YYYYMM answers 422 (see nasaPowerMonthly.ts).
+    const yr = nasaMonthlyYears(3);
+    const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=GWETPROF,GWETROOT&community=AG&longitude=${lon}&latitude=${lat}&start=${yr.start}&end=${yr.end}&format=JSON`;
     const resp = await fetch(url, { signal: AbortSignal.timeout(20000) });
     if (!resp.ok) return null;
     const data = await resp.json();
-    const prof = Object.values(data.properties?.parameter?.GWETPROF || {}).filter((v: any) => v > -990) as number[];
+    const prof = nasaMonthlyValues(data.properties?.parameter?.GWETPROF);
     if (prof.length < 12) return null;
     const mean = prof.reduce((a, b) => a + b, 0) / prof.length;
     // Simple linear trend
@@ -1505,13 +1504,10 @@ export async function fetchSatelliteVegetationIndex(lat: number, lon: number): P
   monthlyProfile: number[];
 } | null> {
   try {
-    const end = new Date().toISOString().split('T')[0].replace(/-/g, '');
-    const startDate = new Date();
-    startDate.setFullYear(startDate.getFullYear() - 1);
-    const start = startDate.toISOString().split('T')[0].replace(/-/g, '');
-
-    // NASA POWER — free global gridded data with vegetation-relevant parameters
-    const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M,T2M_RANGE,PRECTOTCORR,ALLSKY_SFC_SW_DWN,EVPTRNS&community=AG&longitude=${lon}&latitude=${lat}&start=${start.substring(0,6)}&end=${end.substring(0,6)}&format=JSON`;
+    // NASA POWER — free global gridded data with vegetation-relevant parameters.
+    // Years only — YYYYMM answers 422 (see nasaPowerMonthly.ts).
+    const yr = nasaMonthlyYears(1);
+    const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M,T2M_RANGE,PRECTOTCORR,ALLSKY_SFC_SW_DWN,EVPTRNS&community=AG&longitude=${lon}&latitude=${lat}&start=${yr.start}&end=${yr.end}&format=JSON`;
 
     const resp = await fetch(url, { signal: AbortSignal.timeout(20000) });
     if (!resp.ok) return null;
@@ -1519,10 +1515,10 @@ export async function fetchSatelliteVegetationIndex(lat: number, lon: number): P
     const params = data.properties?.parameter;
     if (!params) return null;
 
-    const precip = Object.values(params.PRECTOTCORR || {}).filter((v: any) => v > -990) as number[];
-    const radiation = Object.values(params.ALLSKY_SFC_SW_DWN || {}).filter((v: any) => v > -990) as number[];
-    const et = Object.values(params.EVPTRNS || {}).filter((v: any) => v > -990) as number[];
-    const tempRange = Object.values(params.T2M_RANGE || {}).filter((v: any) => v > -990) as number[];
+    const precip = nasaMonthlyValues(params.PRECTOTCORR);
+    const radiation = nasaMonthlyValues(params.ALLSKY_SFC_SW_DWN);
+    const et = nasaMonthlyValues(params.EVPTRNS);
+    const tempRange = nasaMonthlyValues(params.T2M_RANGE);
 
     if (precip.length < 6) return null;
 

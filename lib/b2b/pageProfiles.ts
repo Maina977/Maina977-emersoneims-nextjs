@@ -975,20 +975,22 @@ export const B2B_PROFILES = {
     accent: 'sky',
   },
 
+  // 2026-10-19 re-audit: "24/7 emergency desk" and "engineers across 47
+  // counties" are not owner-confirmed; only confirmed claims are used.
   faults: {
     eyebrow: 'Fault Library • Diagnostics',
-    headline: 'Generator, solar, UPS and motor fault library — with engineers on call.',
+    headline: 'Generator fault library — with EmersonEIMS engineers behind it.',
     subtitle:
-      'Searchable fault codes, symptoms and root causes — backed by the EmersonEIMS 24/7 emergency desk for sites that cannot afford to stay down.',
+      'Searchable controller alarms and J1939 engine codes with likely causes and checks — and registered engineers to call when the fault needs hands-on work.',
     whoFor: ['Facility managers', 'Site engineers', 'Hospitals & critical sites', 'Banks & ATM networks', 'Telecom & data centres', 'Manufacturing'],
     pso: [
       { problem: 'Fault code on screen, no time to read the manual.', solution: 'Quick-search fault library with brand-specific causes.', outcome: 'Faster diagnosis, fewer wrong parts.' },
       { problem: 'Recurring faults reset and forgotten.', solution: 'Library + engineer-led root-cause investigation.', outcome: 'Faults closed out, not papered over.' },
-      { problem: 'Suppliers slow to respond when it matters.', solution: 'EmersonEIMS 24/7 emergency desk + nationwide engineers.', outcome: 'Predictable, accountable response.' },
+      { problem: 'Suppliers slow to respond when it matters.', solution: 'EmersonEIMS engineers: under 4 hours in the Nairobi metro; elsewhere by mobile workshop.', outcome: 'A clear response time you can plan around.' },
     ],
-    trust: ['Brand-specific fault data', '24/7 emergency response', 'Engineers across 47 counties', 'Documented job reports'],
+    trust: ['Registered engineers', 'Under 4 h response in the Nairobi metro', '2-year workmanship warranty', 'ISO 9001 & KEBS registered'],
     ctas: [
-      { label: 'Call the Emergency Desk', href: TEL, variant: 'primary' },
+      { label: 'Call an Engineer', href: TEL, variant: 'primary' },
       { label: 'WhatsApp an Engineer Now', href: WHATSAPP, variant: 'secondary' },
       { label: 'Request an SLA Contract', href: '/contact?topic=sla', variant: 'tertiary' },
     ],

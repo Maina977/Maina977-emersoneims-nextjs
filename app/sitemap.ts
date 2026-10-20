@@ -593,13 +593,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
    * registry the route builds its generateStaticParams from, so this list can
    * never advertise a URL that 404s.
    */
-  for (const g of ENGINE_BRAND_GROUPS) {
-    urls.push({
-      url: `${BASE_URL}/faults/engine/${g.slug}`,
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    });
-  }
+  // UNPUBLISHED 2026-10-19: the engine-brand tables were built from a CSV
+  // split on every comma, so causes and remedies are cross-wired between
+  // codes. The pages 308 to /faults (next.config.ts) until the source is
+  // re-parsed and reviewed. ENGINE_BRAND_GROUPS stays for that work.
+  void ENGINE_BRAND_GROUPS;
 
   for (const fault of FAULT_CODES) {
     urls.push({

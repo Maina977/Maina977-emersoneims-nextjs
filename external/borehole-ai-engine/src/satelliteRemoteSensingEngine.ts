@@ -19,6 +19,7 @@
  */
 
 import type { AnalysisResult } from './types';
+import { nasaMonthlyValues } from './nasaPowerMonthly';
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -71,7 +72,8 @@ async function fetchLandSurfaceTemperature(lat: number, lon: number): Promise<{
     const end = new Date();
     const start = new Date();
     start.setFullYear(end.getFullYear() - 2);
-    const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M,T2M_MAX,T2M_MIN,TS&community=AG&longitude=${lon}&latitude=${lat}&start=${start.getFullYear()}01&end=${end.getFullYear() - 1}12&format=JSON`;
+    // Years only — YYYYMM answers 422 (see nasaPowerMonthly.ts).
+    const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M,T2M_MAX,T2M_MIN,TS&community=AG&longitude=${lon}&latitude=${lat}&start=${start.getFullYear()}&end=${end.getFullYear() - 1}&format=JSON`;
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) return null;
     const data = await res.json();
@@ -79,8 +81,8 @@ async function fetchLandSurfaceTemperature(lat: number, lon: number): Promise<{
     const t2m = data.properties?.parameter?.T2M; // 2m air temperature
     if (!ts || !t2m) return null;
 
-    const tsValues = Object.values(ts).filter((v: any) => v > -900) as number[];
-    const t2mValues = Object.values(t2m).filter((v: any) => v > -900) as number[];
+    const tsValues = nasaMonthlyValues(ts);
+    const t2mValues = nasaMonthlyValues(t2m);
 
     const meanLST = tsValues.reduce((a, b) => a + b, 0) / tsValues.length;
     const meanAir = t2mValues.reduce((a, b) => a + b, 0) / t2mValues.length;
@@ -181,7 +183,7 @@ async function fetchSoilMoisture(lat: number, lon: number): Promise<{
     const end = new Date();
     const start = new Date();
     start.setFullYear(end.getFullYear() - 2);
-    const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=GWETROOT,GWETPROF,GWETTOP,PRECTOTCORR&community=AG&longitude=${lon}&latitude=${lat}&start=${start.getFullYear()}01&end=${end.getFullYear() - 1}12&format=JSON`;
+    const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=GWETROOT,GWETPROF,GWETTOP,PRECTOTCORR&community=AG&longitude=${lon}&latitude=${lat}&start=${start.getFullYear()}&end=${end.getFullYear() - 1}&format=JSON`;
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) return null;
     const data = await res.json();
@@ -191,9 +193,9 @@ async function fetchSoilMoisture(lat: number, lon: number): Promise<{
     const precip = data.properties?.parameter?.PRECTOTCORR;
     if (!gwetRoot && !gwetProf) return null;
 
-    const rootValues = Object.values(gwetRoot || gwetProf || {}).filter((v: any) => v > -900) as number[];
-    const topValues = Object.values(gwetTop || gwetRoot || {}).filter((v: any) => v > -900) as number[];
-    const precipValues = Object.values(precip || {}).filter((v: any) => v > -900) as number[];
+    const rootValues = nasaMonthlyValues(gwetRoot || gwetProf);
+    const topValues = nasaMonthlyValues(gwetTop || gwetRoot);
+    const precipValues = nasaMonthlyValues(precip);
 
     const surfaceMean = topValues.length > 0 ? topValues.reduce((a, b) => a + b, 0) / topValues.length : 0.5;
     const rootMean = rootValues.length > 0 ? rootValues.reduce((a, b) => a + b, 0) / rootValues.length : 0.5;

@@ -1,8 +1,11 @@
-import {
-  VERIFIED_FAULT_CODES,
-  type VerifiedFaultCode,
-} from '@/lib/data/verifiedFaultCodes';
+import { type VerifiedFaultCode } from '@/lib/data/verifiedFaultCodes';
 import { OEM_FAULT_CODES, searchOemCodes } from '@/lib/plant-oracle/oemFaultCodes';
+
+// SUSPENDED 2026-10-19: the engine-brand records in verifiedFaultCodes.ts were
+// parsed from a CSV split on every comma, so causes and remedies are cross-wired
+// between codes. They are left out of search and stats until re-parsed and
+// reviewed. Plant (OEM) records are unaffected.
+const VERIFIED_FAULT_CODES: VerifiedFaultCode[] = [];
 
 /**
  * PLANT & EQUIPMENT ORACLE — coverage and search over VERIFIED data only.

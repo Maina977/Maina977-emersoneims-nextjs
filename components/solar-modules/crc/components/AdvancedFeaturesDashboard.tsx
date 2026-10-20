@@ -20,7 +20,7 @@ const Header = styled.div`
   background: linear-gradient(135deg, rgba(11,132,87,0.18), rgba(0,217,255,0.10));
   border: 1px solid rgba(0,217,255,0.25); padding: clamp(16px,3vw,28px);
   border-radius: 14px; margin-bottom: 22px;
-  h1 { margin: 0; font-size: clamp(1.4rem,3.4vw,2.1rem); }
+  h1, h2 { margin: 0; font-size: clamp(1.4rem,3.4vw,2.1rem); }
   p  { margin: 8px 0 0; opacity: 0.78; font-size: clamp(0.86rem,1.6vw,1rem); }
 `;
 const Tabs = styled.div`display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;`;
@@ -170,12 +170,12 @@ interface FeatureCfg {
 }
 
 const FEATURES: FeatureCfg[] = [
-  { id: 'storage-optimizer', icon: '🔋', title: 'AI Storage Optimizer', tier: 'ai', desc: 'TOU battery dispatch — when to charge/discharge to maximise self-consumption', status: 'Run live', open: { kind: 'drawer', runner: 'tou-dispatch' } },
+  { id: 'storage-optimizer', icon: '🔋', title: 'Storage Optimizer', tier: 'ai', desc: 'TOU battery dispatch — when to charge/discharge to maximise self-consumption', status: 'Run live', open: { kind: 'drawer', runner: 'tou-dispatch' } },
   { id: 'predictive-maint',  icon: '🚨', title: 'Predictive Maintenance', tier: 'ai', desc: 'EWMA + z-score anomaly detection on inverter telemetry', status: 'Run live', open: { kind: 'drawer', runner: 'fault-prediction' } },
   { id: 'smart-load',        icon: '⚡', title: 'Smart Load Management', tier: 'ai', desc: 'Holt-Winters seasonal load forecast', status: 'Run live', open: { kind: 'drawer', runner: 'load-forecast' } },
   { id: 'weather-alerts',    icon: '☁️', title: 'Weather Alerts', tier: 'ai', desc: 'Open-Meteo live forecast at the project coordinates', status: 'Live', open: { kind: 'drawer', runner: 'weather' } },
   { id: 'ar-installer',      icon: '📱', title: 'AR Installation Guide', tier: 'ai', desc: 'Step-by-step procedures from the Repair & Maintenance library', status: 'Open', open: { kind: 'route', path: '/repair' } },
-  { id: 'energy-assistant',  icon: '🤖', title: 'AI Energy Assistant', tier: 'ai', desc: 'Rule-based NL advisor — sizing, savings, ROI, faults', status: 'Run live', open: { kind: 'drawer', runner: 'nlp-advisor' } },
+  { id: 'energy-assistant',  icon: '🤖', title: 'Energy Assistant (rule-based)', tier: 'ai', desc: 'Rule-based NL advisor — sizing, savings, ROI, faults', status: 'Run live', open: { kind: 'drawer', runner: 'nlp-advisor' } },
   { id: 'independence-score',icon: '💚', title: 'Energy Independence Score', tier: 'ai', desc: 'Live score from your project: yield ÷ consumption', status: 'From project', open: { kind: 'drawer', runner: 'independence' } },
   { id: 'benchmark',         icon: '📈', title: 'Performance Benchmarking', tier: 'ai', desc: 'Compare specific yield (kWh/kWp) vs KE climate-zone median', status: 'From project', open: { kind: 'drawer', runner: 'benchmark' } },
   { id: 'finance-roi',       icon: '💰', title: 'Financial Modeling', tier: 'financial', desc: '25-yr NPV + IRR using EPRA tariffs and your project capex', status: 'Run live', open: { kind: 'drawer', runner: 'finance-roi' } },
@@ -195,9 +195,9 @@ const FEATURES: FeatureCfg[] = [
   { id: 'solar-offset',      icon: '🌳', title: '25-yr Solar CO₂ Offset', tier: 'sustainability', desc: 'Lifetime grid emissions avoided + tree-equivalent', status: 'Run live', open: { kind: 'drawer', runner: 'solar-offset' } },
   { id: 'emission-factors',  icon: '📊', title: 'Emission Factors Reference', tier: 'sustainability', desc: 'IEA 11-country grid factors + Climate TRACE', status: 'Open', open: { kind: 'drawer', runner: 'emission-factors' } },
   { id: 'panel-counter',     icon: '📐', title: 'Roof Panel Counter', tier: 'sustainability', desc: 'Max panels at IEC 62548 setbacks for a roof area', status: 'Run live', open: { kind: 'drawer', runner: 'panel-counter' } },
-  { id: 'design-studio',     icon: '🎨', title: 'Design Studio AI', tier: 'design', desc: 'Drag-and-drop array design with shading and string topology', status: 'Open', open: { kind: 'route', path: '/design-studio' } },
-  { id: 'panel-layout',      icon: '🟦', title: 'Panel Layout AI', tier: 'design', desc: 'Deterministic grid layout with NEC 690.12 setbacks', status: 'Open', open: { kind: 'route', path: '/panel-layout' } },
-  { id: 'wiring',            icon: '🔌', title: 'Wiring Diagram AI', tier: 'design', desc: 'SVG single-line diagram from your project string config', status: 'Open', open: { kind: 'route', path: '/wiring' } },
+  { id: 'design-studio',     icon: '🎨', title: 'Design Studio', tier: 'design', desc: 'Drag-and-drop array design with shading and string topology', status: 'Open', open: { kind: 'route', path: '/design-studio' } },
+  { id: 'panel-layout',      icon: '🟦', title: 'Panel Layout', tier: 'design', desc: 'Deterministic grid layout with NEC 690.12 setbacks', status: 'Open', open: { kind: 'route', path: '/panel-layout' } },
+  { id: 'wiring',            icon: '🔌', title: 'Wiring Diagram', tier: 'design', desc: 'SVG single-line diagram from your project string config', status: 'Open', open: { kind: 'route', path: '/wiring' } },
   { id: 'true-3d',           icon: '🏠', title: 'True 3D Viewer', tier: 'design', desc: 'WebGL render of array on the actual OSM building footprint', status: 'Open', open: { kind: 'route', path: '/viewer-3d' } },
   { id: 'global-3d',         icon: '🌐', title: 'Global 3D Map', tier: 'design', desc: 'Geo-positioned 3D scene at your site lat/lon', status: 'Open', open: { kind: 'route', path: '/global-3d' } },
   { id: 'smart-home',        icon: '🏘️', title: 'Smart Home Design', tier: 'design', desc: 'House-image analysis, BOM matcher, multi-audience summaries', status: 'Open', open: { kind: 'route', path: '/smart-home' } },
@@ -238,7 +238,7 @@ const FEATURES: FeatureCfg[] = [
   { id: 'earth-electrode',   icon: '⚡', title: 'Earth Electrode (BS 7430)', tier: 'design', desc: 'Dwight equation + multi-rod correction for soil resistivity', status: 'Run live', open: { kind: 'drawer', runner: 'earth-electrode' } },
   { id: 'portal-jwt',        icon: '🔐', title: 'Portal JWT (signed)', tier: 'iot', desc: 'HMAC-SHA256 signed JWT + revocation list (production-grade)', status: 'Run live', open: { kind: 'drawer', runner: 'portal-jwt' } },
   // ===== ENGINEERING-ELITE — Tier-4 utility-scale / bankable =====
-  { id: 'tmy-8760',          icon: '🌞', title: 'Full 8760-hr TMY Sim', tier: 'design', desc: 'Hour-by-hour PVsyst-grade simulation: Erbs + Hay-Davies + clipping', status: 'Run live', open: { kind: 'drawer', runner: 'tmy-8760' } },
+  { id: 'tmy-8760',          icon: '🌞', title: 'Full 8760-hr TMY Sim', tier: 'design', desc: 'Hour-by-hour simulation: Erbs + Hay-Davies + clipping', status: 'Run live', open: { kind: 'drawer', runner: 'tmy-8760' } },
   { id: 'obstructions',      icon: '🌲', title: '3D Obstructions → Mask', tier: 'design', desc: 'Trees / buildings as cylinders → 36-azimuth horizon mask (ray-test)', status: 'Run live', open: { kind: 'drawer', runner: 'obstructions' } },
   { id: 'interval-meter',    icon: '📈', title: 'Interval-Meter CSV Ingest', tier: 'ai', desc: 'Paste KPLC/AMR meter export → 8760 load profile + battery sizing', status: 'Run live', open: { kind: 'drawer', runner: 'interval-meter' } },
   { id: 'member-structural', icon: '🔩', title: 'Member-by-Member Structural', tier: 'design', desc: 'Purlin + rafter + fastener pull-out per Eurocode 5/3, ACI 318-19', status: 'Run live', open: { kind: 'drawer', runner: 'member-structural' } },
@@ -273,7 +273,7 @@ const FEATURES: FeatureCfg[] = [
 ];
 
 const TIER_LABELS: Record<Tier, string> = {
-  ai: 'AI & Predictive Intelligence',
+  ai: 'Forecasting & Optimisation',
   financial: 'Financial · Modeling · Twins',
   iot: 'IoT · Grid · Fleet',
   sustainability: 'Sustainability · Carbon · Web3',
@@ -325,8 +325,8 @@ const AdvancedFeaturesDashboard: React.FC = () => {
   return (
     <Shell>
       <Header>
-        <h1>🚀 Advanced Suite — {FEATURES.filter((x) => !isNotOnline(x)).length} working tools</h1>
-        <p>Every tile is a live tool. Click any card to run it or open its dedicated page.</p>
+        <h2>🚀 Advanced Suite — {FEATURES.filter((x) => !isNotOnline(x)).length} working tools</h2>
+        <p>Tiles marked "Not online yet" are not available in the browser; every other tile runs here.</p>
       </Header>
 
       {!hasProject && (
