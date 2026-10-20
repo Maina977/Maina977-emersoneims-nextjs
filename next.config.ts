@@ -547,6 +547,9 @@ const nextConfig: NextConfig = {
       // Building Suite file renamed 2026-10-19: the old name was served
       // "immutable" for a year, so the fixed suite needed a new URL.
       { source: '/eims-building-suite-v20260503.html', destination: '/eims-building-suite-v20261019.html', permanent: true },
+      // Vercel serves public .html files at their clean path too (.html -> 308 -> no
+      // extension), so the old clean address needs its own redirect.
+      { source: '/eims-building-suite-v20260503', destination: '/eims-building-suite-v20261019', permanent: true },
       // Solar duplicates: -tools crashed on every real coordinate (float index
       // into an array) and invented roof analysis from a coordinate hash;
       // -futuristic was a static mock with fixed "28% ROI / 3.5 years".
