@@ -89,7 +89,7 @@ export const COMPREHENSIVE_FAULT_CODES: Record<string, ComprehensiveFaultCode> =
   // ════════════════════════════════════════════════════════════════
   'LOW_OIL_PRESSURE': {
     id: 'LOW_OIL_PRESSURE',
-    code: '190-0 / ALM-01 / E01 / F001',
+    code: '100-1 / ALM-01 / E01 / F001',
     title: 'Low Engine Oil Pressure',
     controller: 'Universal',
     controllerModels: [

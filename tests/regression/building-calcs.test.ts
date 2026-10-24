@@ -175,3 +175,77 @@ describe('seismic period input (2026-10-19 re-audit 2)', () => {
     expect(r.T_s).toBeCloseTo(0.896, 2);
   });
 });
+
+describe('blank optional inputs (2026-10-20)', () => {
+  it('a cleared shear_planes box (null) is refused, not defaulted to 1', () => {
+    const r = c.runCalc(c.steelBolt, { designation: 'M20', grade: '8.8', shear_planes: null });
+    expect(c.isCalcError(r)).toBe(true);
+    expect((r as c.CalcError).missing).toContain('shear_planes');
+  });
+});
+
+describe('physical bounds (2026-10-20 audit)', () => {
+  const err = (fn: (b: c.Body) => unknown, b: c.Body) => expect(c.isCalcError(c.runCalc(fn, b))).toBe(true);
+  it('daylight: transmittance > 1, sky angle > 90° and maintenance > 1 are refused', () => {
+    const base = { T_glass: 0.7, window_area_m2: 4, sky_angle_deg: 65, total_internal_surface_m2: 120, avg_reflectance: 0.5, maintenance_factor: 0.9 };
+    err(c.daylightAdf, { ...base, T_glass: 5 });
+    err(c.daylightAdf, { ...base, sky_angle_deg: 200 });
+    err(c.daylightAdf, { ...base, maintenance_factor: 3 });
+  });
+  it('seismic: negative spectral accelerations are refused', () => {
+    err(c.seismicElf, { SDS: -1, SD1: 0.5, R: 8, Ie: 1, W_kN: 1000, height_ft: 48, structure_type: 'other' });
+  });
+  it('RC beam: d ≥ h and a compression zone below the steel are refused', () => {
+    err(c.rcBeam, { b_mm: 300, d_mm: 600, h_mm: 500, As_mm2: 1000, fck_MPa: 30, fyk_MPa: 500 });
+    err(c.rcBeam, { b_mm: 300, d_mm: 450, h_mm: 500, As_mm2: 15000, fck_MPa: 30, fyk_MPa: 500 });
+  });
+  it('bolt: negative plate thickness or edge distance is refused', () => {
+    err(c.steelBolt, { designation: 'M20', grade: '8.8', t_ply_mm: -10, fu_ply_MPa: 430, e1_mm: 40, d_hole_mm: 22 });
+    err(c.steelBolt, { designation: 'M20', grade: '8.8', t_ply_mm: 10, fu_ply_MPa: 430, e1_mm: -40, d_hole_mm: 22 });
+  });
+  it('bearing: negative soil unit weight is refused', () => {
+    err(c.bearingCapacity, { c_kPa: 10, phi_deg: 30, gamma_kN_m3: -18, B_m: 2, Df_m: 1 });
+  });
+  it('ASCE 7 Kz never exceeds 2.41 (z capped at zg)', () => {
+    const r = c.runCalc(c.windAsce7, { V_mph: 115, height_ft: 5000, exposure: 'C' }) as Record<string, number>;
+    expect(r.Kz).toBeLessThanOrEqual(2.41);
+  });
+  it('EN 1991-1-4 refuses heights above 200 m', () => {
+    err(c.windEurocode, { vb_ms: 30, height_m: 350, terrain_category: 'II' });
+  });
+});
+
+describe('physical bounds, round 2 (2026-10-20)', () => {
+  const isErr = (fn: (b: c.Body) => unknown, b: c.Body) => c.isCalcError(c.runCalc(fn, b));
+  it('RC beam refuses a negative M_Ed', () => {
+    expect(isErr(c.rcBeam, { b_mm: 300, d_mm: 450, h_mm: 500, As_mm2: 1000, fck_MPa: 30, fyk_MPa: 500, Med_kNm: -100 })).toBe(true);
+  });
+  it('bolt refuses e1 below 1.2·d0, p1 below 2.2·d0 and negative loads', () => {
+    const base = { designation: 'M20', grade: '8.8', t_ply_mm: 10, fu_ply_MPa: 430, e1_mm: 40, p1_mm: 60, d_hole_mm: 22 };
+    expect(isErr(c.steelBolt, { ...base, e1_mm: 5 })).toBe(true);
+    expect(isErr(c.steelBolt, { ...base, p1_mm: 30 })).toBe(true);
+    expect(isErr(c.steelBolt, { ...base, Fv_Ed_kN: -10 })).toBe(true);
+    expect(isErr(c.steelBolt, base)).toBe(false);
+  });
+  it('rational method warns above 80 ha; Kirpich refuses slope ≥ 1 and warns outside 3–10%', () => {
+    const q = c.runCalc(c.rationalRunoff, { runoff_c: 0.5, rainfall_intensity_mm_hr: 50, area_ha: 5000 }) as Record<string, unknown>;
+    expect(String(q.warning)).toMatch(/80 ha/);
+    expect(isErr(c.kirpich, { length_m: 500, slope_m_per_m: 2 })).toBe(true);
+    const k = c.runCalc(c.kirpich, { length_m: 500, slope_m_per_m: 0.2 }) as Record<string, unknown>;
+    expect(String(k.warning)).toMatch(/3–10%/);
+  });
+});
+
+describe('metric inputs (2026-10-20)', () => {
+  it('seismic ELF accepts height in metres: 14.63 m ≈ 48 ft gives the same Ta', () => {
+    const ft = c.runCalc(c.seismicElf, { SDS: 1, SD1: 0.5, R: 8, Ie: 1, W_kN: 8896, height_ft: 48, structure_type: 'steel_moment_frame' }) as Record<string, number>;
+    const m = c.runCalc(c.seismicElf, { SDS: 1, SD1: 0.5, R: 8, Ie: 1, W_kN: 8896, height_m: 14.6304, structure_type: 'steel_moment_frame' }) as Record<string, number>;
+    expect(m.T_s).toBeCloseTo(ft.T_s, 3);
+    expect(m.V_kN).toBeCloseTo(ft.V_kN, 0);
+  });
+  it('ASCE wind accepts m/s and metres', () => {
+    const imp = c.runCalc(c.windAsce7, { V_mph: 115, height_ft: 30, exposure: 'C' }) as Record<string, number>;
+    const si = c.runCalc(c.windAsce7, { V_ms: 115 * 0.44704, height_m: 30 * 0.3048, exposure: 'C' }) as Record<string, number>;
+    expect(si.qz_psf).toBeCloseTo(imp.qz_psf, 1);
+  });
+});

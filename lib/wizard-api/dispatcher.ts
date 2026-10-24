@@ -53,6 +53,9 @@ const stub = (path: string, shape: unknown = {}) =>
     { status: 501, headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300' } },
   );
 
+/** A coordinate, or NaN when absent or blank (Number('') is 0: ?lat=&lon= answered for 0,0; 2026-10-20). */
+const coordNum = (v: unknown): number => (v == null || String(v).trim() === '' ? NaN : Number(v));
+
 const fail = (message: string, status = 502) =>
   NextResponse.json({ success: false, ok: false, error: message }, { status });
 
@@ -327,8 +330,8 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
   // ── site context (real data; 2026-10-18 tool audit) ─────────────────────
   if (path.endsWith('/site/buildings') || path.endsWith('/site/obstacles')) {
     const sp = req.nextUrl.searchParams;
-    const lat = Number(sp.get('lat') ?? body.lat);
-    const lon = Number(sp.get('lon') ?? body.lon);
+    const lat = coordNum(sp.get('lat') ?? body.lat);
+    const lon = coordNum(sp.get('lon') ?? body.lon);
     const radius = Number(sp.get('radiusMeters') ?? body.radiusMeters ?? 80);
     if (!(Math.abs(lat) <= 90 && Math.abs(lon) <= 180)) return fail('lat and lon must be valid coordinates (lat ±90, lon ±180)', 400);
     try {
@@ -341,8 +344,8 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
     // Was a proxy to NREL PVWatts that never existed. Now an EmersonEIMS
     // estimate from NASA POWER climatology, labelled as such.
     const sp = req.nextUrl.searchParams;
-    const lat = Number(sp.get('lat') ?? body.lat);
-    const lon = Number(sp.get('lon') ?? body.lon);
+    const lat = coordNum(sp.get('lat') ?? body.lat);
+    const lon = coordNum(sp.get('lon') ?? body.lon);
     const kw = Number(sp.get('kw') ?? body.kw ?? 1);
     if (!(Math.abs(lat) <= 90 && Math.abs(lon) <= 180)) return fail('lat and lon must be valid coordinates (lat ±90, lon ±180)', 400);
     if (!(kw > 0 && kw < 100_000)) return fail('kw must be a positive system size in kWp', 400);

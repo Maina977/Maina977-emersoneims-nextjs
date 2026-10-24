@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import ToolSeoContent from '@/components/seo/ToolSeoContent';
+import SolarProTopHeading from '@/components/solar-modules/SolarProTopHeading';
 import type { ReactNode } from 'react';
 import FlagshipProductSchema from '@/components/seo/FlagshipProductSchema';
 
@@ -82,8 +83,9 @@ export default function SolarGeniusProLayout({ children }: { children: ReactNode
         industry="EPCs, Facility Managers, C&I Buyers"
         priceKes="Free"
       />
+      <SolarProTopHeading />
       {children}
-      <ToolSeoContent tool="solar-genius-pro" headingLevel="h1" />
+      <ToolSeoContent tool="solar-genius-pro" headingLevel="h2" />
     </>
   );
 }

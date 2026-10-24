@@ -1742,7 +1742,7 @@ For hybrid systems:
 - Unwilling to provide references
 
 ### Questions to Ask
-1. Are you ERC licensed? (Ask for license number)
+1. Do you hold an EPRA solar licence? (Ask for the licence number; EPRA replaced the ERC in 2019)
 2. How many similar systems have you installed?
 3. Can I contact previous customers?
 4. What warranty do you provide on installation?
@@ -1808,8 +1808,8 @@ For hybrid systems:
 ## Why Choose Emerson EiMS for Solar
 
 **Our Advantages:**
-- Operating in Kenya since 2012
-- ERC licensed installer
+- 15 years of engineering work in Kenya
+- Registered engineers design and install every system
 - Tier-1 panel brands only
 - Premium LiFePO4 batteries
 - Comprehensive 2-year installation warranty
@@ -2785,7 +2785,7 @@ For transparent, professional solar installation:
 - Email: info@emersoneims.com
 - Free written quotation in Nairobi area
 
-ERC licensed. Quality components. Honest pricing.
+Registered engineers. Quality components. Honest pricing.
     `
   },
 

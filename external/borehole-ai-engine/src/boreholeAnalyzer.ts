@@ -69,6 +69,30 @@ import { computePathTo97 } from './pathTo97Engine';
 import { runSatelliteRemoteSensing } from './satelliteRemoteSensingEngine';
 import { evaluateSurfaceGeophysics } from './surfaceGeophysicsEngine';
 import { sanitizeAnalysisResult } from './sanitizeOutputs';
+
+/**
+ * Shipped field borehole records within `km` of a point (public/data/wra-boreholes.json).
+ * Fetched once per page load. Used for the depth and yield evidence bands.
+ */
+let _fieldRecs: Promise<any[]> | null = null;
+async function fieldRecordsWithin(lat: number, lon: number, km: number): Promise<any[]> {
+  if (!_fieldRecs) {
+    _fieldRecs = fetch('/data/wra-boreholes.json', { signal: AbortSignal.timeout(8000) })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((j) => (Array.isArray(j) ? j : []))
+      .catch(() => { _fieldRecs = null; return []; });
+  }
+  const recs = await _fieldRecs;
+  const R = 6371, rad = Math.PI / 180, out: any[] = [];
+  for (const b of recs) {
+    const la = Number(b?.lat), lo = Number(b?.lon);
+    if (!Number.isFinite(la) || !Number.isFinite(lo)) continue;
+    const dLa = (la - lat) * rad, dLo = (lo - lon) * rad;
+    const h = Math.sin(dLa / 2) ** 2 + Math.cos(lat * rad) * Math.cos(la * rad) * Math.sin(dLo / 2) ** 2;
+    if (2 * R * Math.asin(Math.sqrt(h)) <= km) out.push(b);
+  }
+  return out;
+}
 import { getKenyaHydroPrior } from './kenyaHydroPriors';
 import { nearestKenyaBaseline } from './kenyaBaseline';
 
@@ -433,6 +457,27 @@ export class BoreholeAnalyzer {
       if (satWaterResult.status === 'fulfilled') satelliteWaterAnalysis = satWaterResult.value;
       if (soilEngineResult.status === 'fulfilled') globalSoilAnalysis = soilEngineResult.value;
 
+      // Rainfall second source when live ERA5 did not answer (2026-10-20): the
+      // shipped ERA5 2015-2024 Kenya baseline. As in historicalData.ts, when the
+      // two differ by more than 30% the LOWER is used and the spread is stated.
+      try {
+        const w: any = historicalData?.weather;
+        if (w && !w.precipitationNote && /did not answer/i.test(String(w.source ?? '')) && effectiveLat != null && effectiveLon != null) {
+          const kb = await nearestKenyaBaseline(effectiveLat, effectiveLon, 50);
+          const pB = Number(kb?.climate?.precip_mm_yr), pN = Number(w.averageAnnualPrecipitation);
+          if (pB > 0 && pN > 0 && Math.max(pB, pN) / Math.min(pB, pN) > 1.3) {
+            const lo = Math.round(Math.min(pB, pN)); const k = lo / pN;
+            const sc = (v: any) => (typeof v === 'number' ? Math.round(v * k) : v);
+            w.averageAnnualPrecipitation = lo; w.avgAnnualPrecip = lo;
+            if (Array.isArray(w.annualPrecipitation)) w.annualPrecipitation = w.annualPrecipitation.map((r: any) => (typeof r === 'number' ? sc(r) : { ...r, total: sc(r.total) }));
+            if (Array.isArray(w.monthlyAvgPrecip)) w.monthlyAvgPrecip = w.monthlyAvgPrecip.map(sc);
+            if (Array.isArray(w.seasonalAnalysis)) w.seasonalAnalysis = w.seasonalAnalysis.map((s: any) => ({ ...s, avgPrecipitation: sc(s.avgPrecipitation) }));
+            w.precipitationNote = `Rainfall sources disagree: NASA POWER ${Math.round(pN)} mm/yr, ERA5 2015-2024 baseline for ${kb!.name} (${kb!.distance_km} km) ${Math.round(pB)} mm/yr. Long-term rainfall here is probably between ${lo} and ${Math.round(Math.max(pB, pN))} mm/yr; the lower figure is used for recharge as the cautious choice.`;
+            console.warn('[Pipeline] ' + w.precipitationNote);
+          }
+        }
+      } catch { /* keep the source values */ }
+
       // Look up regional borehole statistics
       const cc = clientGeo?.countryCode || features.resolvedLocation?.countryCode || '';
       const cn = clientGeo?.country || features.resolvedLocation?.country || '';
@@ -763,7 +808,7 @@ export class BoreholeAnalyzer {
       waterQuality.fluoride = Math.round(waterQuality.fluoride * regionalWQ.fluorideMult * 100) / 100;
       waterQuality.iron = Math.round(waterQuality.iron * regionalWQ.ironMult * 100) / 100;
       waterQuality.arsenic = Math.round(waterQuality.arsenic * regionalWQ.arsenicMult * 10000) / 10000;
-      waterQuality.tds = Math.round(waterQuality.tds * regionalWQ.tdsMult);
+      waterQuality.tds = Math.round(Math.max(waterQuality.tds * regionalWQ.tdsMult, regionalWQ.tdsFloor ?? 0));
       this.waterQualityAnalyzer.refreshDerived(waterQuality);
       (waterQuality as any).regionalProvince = regionalWQ.province;
       (waterQuality as any).regionalWarnings = regionalWQ.warnings;
@@ -895,23 +940,17 @@ export class BoreholeAnalyzer {
         // — 60 m"). Springs keep their registry data only; /sp?ring/i also
         // catches registry typos ("Water Sring").
         const _isSpringRec = /sp?ring/i.test(String(w.id ?? '')) || /sp?ring/i.test(String(w.lithology ?? ''));
-        // Only fill from regional stats if regional data exists — never from calibratedDepth
-        if (!_isSpringRec && (!w.depth_m || w.depth_m === 0) && regionalAvgDepth > 0) {
-          const variation = 0.85 + 0.30 * (Math.abs(Math.sin(i * 7.919 + (w.distance_km ?? 1) * 3.14159)) % 1);
-          w.depth_m = Math.round(regionalAvgDepth * variation);
-          w.source = w.source.includes('(regional est') ? w.source : w.source + ' (regional est. from county database)';
-        }
-        if (!_isSpringRec && (!w.yield_m3h || w.yield_m3h === 0) && regionalAvgYield > 0) {
-          const variation = 0.85 + 0.30 * (Math.abs(Math.sin(i * 7.919 + (w.distance_km ?? 1) * 3.14159)) % 1);
-          w.yield_m3h = parseFloat((regionalAvgYield * variation).toFixed(1));
-          if (!w.source.includes('regional est')) w.source = w.source + ' (regional est. from county database)';
-        }
+        // No back-fill (2026-10-20 audit): a missing depth or yield stays missing.
+        // The county average used to be written onto the record (× a sin()
+        // "variation") and then turned into an outcome, so springs and dug
+        // wells showed as successful drilled boreholes.
+        void regionalAvgDepth; void regionalAvgYield; void _isSpringRec;
         if (!w.lithology) {
           w.lithology = geoLithology;
         }
-        // Only assign outcome based on actual or regionally-estimated yield —
-        // never for springs (their functionality comes from registry status).
-        if (!_isSpringRec && w.outcome === 'Unknown' && w.yield_m3h > 0) {
+        // Outcome only from a MEASURED yield on a drilled borehole.
+        const _isDrilled = !/spring|dug well/i.test(String(w.aquiferType ?? '') + ' ' + String(w.id ?? ''));
+        if (_isDrilled && w.outcome === 'Unknown' && w.yield_m3h > 0) {
           w.outcome = w.yield_m3h >= 2 ? 'Success' : w.yield_m3h >= 0.5 ? 'Moderate' : 'Fail';
         }
       }
@@ -1413,8 +1452,33 @@ export class BoreholeAnalyzer {
         if (ensembleResult) ensembleResult.depth_m = calibratedDepth;
       }
     }
+    // Field depth band: drilled depths of productive boreholes within 20 km.
+    // With >=3 records the depth stays between their lower and upper quartiles
+    // and the county band is not applied on top (the local records are better).
+    let fieldDepthBand: { lq: number; med: number; uq: number; n: number } | null = null;
+    if (!isFieldValidated && effectiveLat != null && effectiveLon != null) {
+      try {
+        const ds = (await fieldRecordsWithin(effectiveLat, effectiveLon, 20))
+          .filter((b) => Number(b?.depth_m) > 0 && (Number(b?.yield_m3h) > 0 || /success|moderate|productive|wet/i.test(String(b?.outcome ?? ''))))
+          .map((b) => Number(b.depth_m)).sort((a, b) => a - b);
+        if (ds.length >= 3) {
+          const q = (p: number) => ds[Math.floor((ds.length - 1) * p)];
+          fieldDepthBand = { lq: q(0.25), med: q(0.5), uq: q(0.75), n: ds.length };
+          // Anchor to the local median like the county anchor (70% with >=5 records,
+          // 50% with 3-4), then keep inside the quartiles.
+          const w = ds.length >= 5 ? 0.7 : 0.5;
+          const kept = Math.round(Math.min(fieldDepthBand.uq, Math.max(fieldDepthBand.lq, w * fieldDepthBand.med + (1 - w) * calibratedDepth)));
+          if (kept !== calibratedDepth) {
+            console.warn(`[Pipeline] Depth ${calibratedDepth}m kept inside the field band ${fieldDepthBand.lq}-${fieldDepthBand.uq}m (${ds.length} productive boreholes within 20 km, median ${fieldDepthBand.med}m) → ${kept}m`);
+            calibratedDepth = kept;
+            if (ensembleResult) ensembleResult.depth_m = calibratedDepth;
+          }
+        }
+      } catch (e) { console.warn('[Pipeline] Field depth band failed:', e); }
+    }
+    (this as any)._fieldDepthBand = fieldDepthBand;
     const countyBand = Array.isArray(countyData?.depthRange) ? countyData.depthRange as [number, number] : null;
-    if (!isFieldValidated && countyBand && countyBand[0] > 0 && countyBand[1] >= countyBand[0]) {
+    if (!isFieldValidated && !fieldDepthBand && countyBand && countyBand[0] > 0 && countyBand[1] >= countyBand[0]) {
       const clamped = Math.round(Math.min(countyBand[1], Math.max(countyBand[0], calibratedDepth)));
       if (clamped !== calibratedDepth) {
         console.log(`[Pipeline] Depth ${calibratedDepth}m kept inside the county drilled band ${countyBand[0]}-${countyBand[1]}m → ${clamped}m`);
@@ -1602,16 +1666,19 @@ export class BoreholeAnalyzer {
 
     // ═══ CONFIDENCE METRICS — Per-category credibility scores ═══
     const hasRealSoilGrids = !!remoteSensing?.soilGrids?.clay;
-    const hasGLDAS = !!gldasGroundwater?.waterBudget?.precipitation;
+    // A latitude-based stand-in after an API failure is not a data source (2026-10-20 audit:
+    // a GRACE fallback was counted in "8/11 data sources").
+    const isFb = (o: any) => /fallback|latitude estimate|latitude-based/i.test(String(o?.dataSource ?? o?.source ?? o?.methodology ?? ''));
+    const hasGLDAS = !!gldasGroundwater?.waterBudget?.precipitation && !isFb(gldasGroundwater);
     const hasSubsurface = !!subsurfaceModel?.lithologicalColumn;
     const hasBoreholeDB = !!boreholeRecords;
     const hasHistorical = !!historicalData?.weather?.averageAnnualPrecipitation;
-    const hasElevation = !!remoteSensing?.elevation?.elevation;
-    const hasGRACE = !!graceData;
+    const hasElevation = !!remoteSensing?.elevation?.elevation && !isFb(remoteSensing?.elevation);
+    const hasGRACE = !!graceData && !isFb(graceData);
     const hasNearbyWells = !!nearbyWells && nearbyWells.sampleSize > 0;
     const hasDEM = !!demHydrology;
     const hasLineaments = !!lineamentAnalysis;
-    const hasVegProxy = !!vegetationGWProxy;
+    const hasVegProxy = !!vegetationGWProxy && !isFb(vegetationGWProxy);
     const gpsQuality = features.gpsSource === 'exif' ? 1.0 : features.gpsSource === 'device' ? 0.8 : features.gpsSource === 'manual' ? 0.65 : 0.2;
 
     // Geological confidence: SoilGrids + subsurface model + borehole records + nearby wells + lineaments
@@ -1684,19 +1751,19 @@ export class BoreholeAnalyzer {
       waterQuality: Math.min(wqConf + (fieldData?.labWaterAnalysis ? 30 : 0), isFieldValidated ? 98 : desktopCap),
       // Desktop cap scales with data density. Field validated = up to 98%.
       overall: totalConfidence,
-      methodology: `Bayesian ensemble of ${dataSources}/11 data sources: ${[
+      methodology: `Confidence draws on ${dataSources} of 11 data sources that answered for this site: ${[
         hasRealSoilGrids ? 'SoilGrids' : null,
         hasGLDAS ? 'GLDAS/ERA5' : null,
         hasSubsurface ? 'SubsurfaceModel' : null,
         hasBoreholeDB ? 'BoreholeDB' : null,
-        hasHistorical ? 'NASAPower' : null,
+        hasHistorical ? 'ERA5/NASA rainfall' : null,
         hasElevation ? 'SRTM' : null,
         gpsQuality > 0.5 ? 'GPS' : null,
         hasGRACE ? 'GRACE-FO' : null,
-        hasNearbyWells ? 'NearbyWells(USGS/OSM)' : null,
+        hasNearbyWells ? 'NearbyWells(field records/OSM/WPDx)' : null,
         hasDEM ? 'DEM-Hydrology' : null,
         hasVegProxy ? 'VegetationGW' : null,
-      ].filter(Boolean).join(', ')}. ${ensembleResult ? `Ensemble agreement: ${ensembleResult.sourceAgreement}.` : ''} Desktop analysis capped at ${desktopCap}% (scales with data density: 8+ sources=92%, 6-7=88%, <6=85%). Field data required for >92%.`,
+      ].filter(Boolean).join(', ')}. ${ensembleResult ? `Data-source agreement: ${ensembleResult.sourceAgreement}.` : ''} Desktop analysis capped at ${desktopCap}% (scales with data density: 8+ sources=92%, 6-7=88%, <6=85%). Field data required for >92%.`,
     };
 
     // ═══ 10 ADVANCED FEATURE ENGINES ═══
@@ -1740,7 +1807,7 @@ export class BoreholeAnalyzer {
           rockType: rockClassification?.primaryRockType,
         });
       }
-    } catch (e) { console.warn('[Pipeline] Fracture AI failed:', e); }
+    } catch (e) { console.warn('[Pipeline] Fracture desktop model failed:', e); }
 
     // 4. Aquifer Type Classifier
     try {
@@ -2252,7 +2319,7 @@ export class BoreholeAnalyzer {
           drillDecisionReasoning: 'Modelled data only — field ERT recommended',
           depthOptimization: { recommendedDrillingDepth_m: calibratedDepth, screenFrom_m: Math.round(calibratedDepth * 0.45), screenTo_m: Math.round(calibratedDepth * 0.75), casingDepth_m: Math.round(calibratedDepth * 0.15), aquiferCenter_m: Math.round(calibratedDepth * 0.6), aquiferThickness_m: Math.round(calibratedDepth * 0.3), safetyMargin_m: 6, safetyMarginPercent: 15, minimumDepth_m: Math.round(calibratedDepth * 0.6), maximumDepth_m: Math.round(calibratedDepth * 1.3), rationale: 'Modelled from geological priors', depthBreakdown: { topsoil_m: 2, overburden_m: Math.round(calibratedDepth * 0.15), aquiferTop_m: Math.round(calibratedDepth * 0.45), aquiferBottom_m: Math.round(calibratedDepth * 0.75), drillBeyond_m: 6 } },
           yieldEstimation: { estimatedYield_m3hr: calibratedYield, estimatedYield_Lmin: Math.round(calibratedYield * 1000 / 60), sustainableYield_m3hr: calibratedYield * 0.7, staticWaterLevel_m: calibratedDepth * 0.3, dynamicWaterLevel_m: calibratedDepth * 0.3 + 5, expectedDrawdown_m: 5, transmissivity_m2day: 50, storativity: 0.001, hydraulicConductivity_mday: 3, specificCapacity_m3hr_m: calibratedYield / 5, yieldCategory: 'moderate' as const, components: { fromThickness: 40, fromResistivity: 30, fromFractures: 15, fromRecharge: 15 }, confidenceInterval: { lower: calibratedYield * 0.7, upper: calibratedYield * 1.3 }, reasoning: 'Modelled from geological priors' },
-          confidence: { finalConfidence: probability, beforeERT: probability, afterERT: probability + 0.05, improvementPercent: 5, ertAgreement: 0.6, aiModelConfidence: probability, dataDensity: 0.4, weights: { ertAgreement: 0.4 as const, aiModel: 0.3 as const, dataDensity: 0.3 as const }, componentBreakdown: [{ name: 'ERT Data', score: 0.6, weight: 0.4, weighted: 0.24 }, { name: 'AI Model', score: probability, weight: 0.3, weighted: probability * 0.3 }, { name: 'Data Density', score: 0.4, weight: 0.3, weighted: 0.12 }], isHighConfidence: false, needsMoreData: true, recommendations: ['Field ERT survey recommended to improve confidence'] },
+          confidence: { finalConfidence: probability, beforeERT: probability, afterERT: probability + 0.05, improvementPercent: 5, ertAgreement: 0.6, aiModelConfidence: probability, dataDensity: 0.4, weights: { ertAgreement: 0.4 as const, aiModel: 0.3 as const, dataDensity: 0.3 as const }, componentBreakdown: [{ name: 'ERT Data', score: 0.6, weight: 0.4, weighted: 0.24 }, { name: 'desktop model Model', score: probability, weight: 0.3, weighted: probability * 0.3 }, { name: 'Data Density', score: 0.4, weight: 0.3, weighted: 0.12 }], isHighConfidence: false, needsMoreData: true, recommendations: ['Field ERT survey recommended to improve confidence'] },
           feedbackHistory: [],
           modelAccuracy: { meanDepthError_pct: 0, meanYieldError_pct: 0, successRate: 0, sampleCount: 0 },
         };
@@ -2261,12 +2328,12 @@ export class BoreholeAnalyzer {
 
     if (!multiSourceAgreement) {
       const depthSources = [
-        { name: 'AI ensemble', value: calibratedDepth },
+        { name: 'desktop scoring', value: calibratedDepth },
         { name: 'Nearby wells', value: nearbyWells?.averageDepth ?? calibratedDepth * 0.95 },
         { name: 'Regional stats', value: boreholeRecords?.averageDepth ?? calibratedDepth * 1.05 },
       ];
       const yieldSources = [
-        { name: 'AI ensemble', value: calibratedYield },
+        { name: 'desktop scoring', value: calibratedYield },
         { name: 'Nearby wells', value: nearbyWells?.averageYield ?? calibratedYield * 0.9 },
       ];
       const depthMean = depthSources.reduce((s, d) => s + d.value, 0) / depthSources.length;
@@ -2607,7 +2674,7 @@ export class BoreholeAnalyzer {
           category: 'geological',
           likelihood: probability > 0.8 ? 'Very Low' : probability > 0.6 ? 'Low' : probability > 0.4 ? 'Medium' : 'High',
           impact: 'Critical',
-          mitigation: 'ERT survey + AI siting reduces dry hole risk by 60-80%',
+          mitigation: 'ERT survey at the desktop-selected point lowers the dry-hole risk; a survey is required before drilling',
           residualRisk: probability > 0.7 ? 'Low' : 'Medium',
         },
         {
@@ -2761,7 +2828,7 @@ export class BoreholeAnalyzer {
       bankableChecklist: [
         { item: 'GPS coordinates (WGS84)', category: 'location', status: hasCoords ? 'PRESENT' : 'MISSING', detail: hasCoords ? `${(effectiveLat ?? 0).toFixed(6)}, ${(effectiveLon ?? 0).toFixed(6)}` : 'No coordinates provided', requiredForBankable: true },
         { item: 'Site elevation (DEM)', category: 'location', status: remoteSensing?.elevation ? 'PRESENT' : 'MISSING', detail: remoteSensing?.elevation ? `${remoteSensing.elevation.elevation}m a.s.l.` : 'Not available', requiredForBankable: true },
-        { item: 'ERT geophysical survey', category: 'geophysics', status: isFieldValidated && fieldData?.ertSurvey ? 'PRESENT' : 'PLANNED', detail: isFieldValidated && fieldData?.ertSurvey ? 'Field ERT data integrated' : 'AI-modelled; field ERT recommended', requiredForBankable: true },
+        { item: 'ERT geophysical survey', category: 'geophysics', status: isFieldValidated && fieldData?.ertSurvey ? 'PRESENT' : 'PLANNED', detail: isFieldValidated && fieldData?.ertSurvey ? 'Field ERT data integrated' : 'desktop-modelled; field ERT recommended', requiredForBankable: true },
         { item: 'Geological model (layered)', category: 'geology', status: subsurfaceModel?.lithologicalColumn?.layers?.length ? 'PRESENT' : 'PARTIAL', detail: subsurfaceModel?.lithologicalColumn?.layers?.length ? `${subsurfaceModel.lithologicalColumn.layers.length} layers defined` : 'Estimated from pedotransfer', requiredForBankable: true },
         { item: 'Aquifer physics (T, S, K)', category: 'aquifer', status: aquiferSimulation?.pumpTest?.theis ? 'PRESENT' : 'PARTIAL', detail: aquiferSimulation?.pumpTest?.theis ? 'Theis + Cooper-Jacob computed' : 'Estimated parameters', requiredForBankable: true },
         // A proprietary desktop WQ score is NOT a lab analysis. Presenting it as
@@ -3113,6 +3180,32 @@ export class BoreholeAnalyzer {
     sanitizeAnalysisResult(result);
 
     // ─── WELL DESIGN ENGINE v3 ───
+    // ─── EVIDENCE YIELD BAND (2026-10-20) ───
+    // Without a pump test, the yield may not sit below what real boreholes near
+    // the site deliver: the lower quartile of >=3 field-tested yields within
+    // 20 km (all shipped records, not the capped nearby list), else 30% of the
+    // county's typical yield. The upper bound is the field 75th percentile or
+    // the county range ceiling.
+    let evidenceBand: { lo: number; hi: number; typical: number; basis: string } | null = null;
+    if (!isFieldValidated) {
+      try {
+        let ys: number[] = [];
+        if (effectiveLat != null && effectiveLon != null) {
+          ys = (await fieldRecordsWithin(effectiveLat, effectiveLon, 20))
+            .map((b) => Number(b?.yield_m3h)).filter((y) => y > 0);
+        }
+        ys = ys.sort((a, b) => a - b);
+        const q = (p: number) => ys[Math.floor((ys.length - 1) * p)];
+        const ci = (boreholeRecords as any)?.countyIntelligence;
+        if (ys.length >= 3) {
+          evidenceBand = { lo: q(0.25), hi: Math.max(q(0.25), q(0.75)), typical: q(0.5), basis: `the lower quartile of ${ys.length} field-tested yields within 20 km (${q(0.25)} m³/h; median ${q(0.5)} m³/h)` };
+        } else if (Number(ci?.avgYield_m3h) > 0) {
+          const lo = Math.round(Math.max(Number(ci?.yieldRange?.[0]) || 0, Number(ci.avgYield_m3h) * 0.3) * 100) / 100;
+          evidenceBand = { lo, hi: Math.max(lo, Number(ci?.yieldRange?.[1]) || lo * 3), typical: Number(ci.avgYield_m3h), basis: `the ${ci.county} County drilling record (typical ${ci.avgYield_m3h} m³/h; cautious floor ${lo} m³/h)` };
+        }
+      } catch (e) { console.warn('[Pipeline] Evidence yield band failed:', e); }
+    }
+
     try {
       const aqSim = result.aquiferSimulation as any;
       const aqClass = result.aquiferClassification as any;
@@ -3179,7 +3272,9 @@ export class BoreholeAnalyzer {
 
       result.wellDesign = computeWellDesign({
         recommendedDepth_m: calibratedDepth,
-        estimatedYield_m3hr: calibratedYield,
+        // Planning yield sits between the cautious floor and the typical yield of real
+        // boreholes for this site — never below the floor, never above typical (2026-10-20).
+        estimatedYield_m3hr: evidenceBand ? Math.min(Math.max(calibratedYield, evidenceBand.lo), Math.max(evidenceBand.lo, evidenceBand.typical || calibratedYield)) : calibratedYield,
         staticWaterLevel_m: realTimeWaterData?.usgsGroundwater?.averageDepthToWaterM ?? calibratedDepth * 0.3,
         aquiferType: aqClass?.aquiferType ?? subsurfaceModel?.lithologicalColumn?.aquifers?.[0]?.type ?? 'unknown',
         primaryRockType: rockClassification?.primaryRockType ?? soil?.type ?? 'unknown',
@@ -3190,7 +3285,8 @@ export class BoreholeAnalyzer {
         aquiferThickness_m: subsurfaceModel?.lithologicalColumn?.aquifers?.[0]?.thicknessM,
         // Published regional tested-yield band → reconciles an outlier desktop
         // transmissivity to real drilled outcomes (one consistent T → one yield).
-        regionalTestedYieldBand_m3hr: (this as any)._kenyaPrior?.typicalYieldM3h,
+        regionalTestedYieldBand_m3hr: evidenceBand ? [evidenceBand.lo, evidenceBand.hi] : (this as any)._kenyaPrior?.typicalYieldM3h,
+        regionalTypicalYield_m3hr: evidenceBand?.typical,
         hasPumpTestData: isFieldValidated && !!fieldData?.pumpTest,
         precipitation_mm_yr: historicalData?.weather?.averageAnnualPrecipitation,
         isFieldValidated,
@@ -3283,99 +3379,46 @@ export class BoreholeAnalyzer {
       }
     } catch (e) { console.warn('[Pipeline] Governing-yield reconciliation failed:', e); }
 
-    // ─── EVIDENCE FLOOR (2026-10-19 re-audit) ───
-    // The conservative well-design rate alone gave Nairobi 0.69 m³/h (below the
-    // county's own 1–30 range) and Lodwar 0.74 m³/h where the field records
-    // within ~17 km have a lower quartile of 2.7. Without a pump test, the
-    // governing yield may not sit below what real boreholes nearby deliver:
-    // the lower quartile of ≥3 nearby field-tested yields, else 30% of the
-    // county's typical yield.
-    try {
-      if (!isFieldValidated && typeof result.estimatedYield === 'number') {
-        const wells: any[] = (nearbyWells as any)?.nearbyWells ?? [];
-        const isField = (w: any) => Number(w?.yield_m3h) > 0 && !/regional est|estimat|synth|model|fallback|wpdx|osm|registry/i.test(String(w?.source ?? ''));
-        // ALL shipped field records within 20 km (2026-10-19 re-audit: the
-        // nearby-wells list is capped at the nearest 150 of every source, so it
-        // held 35 of the 76 field yields near Lodwar and overstated the quartile).
-        let fileYields: number[] = [];
-        if (effectiveLat != null && effectiveLon != null) {
-          try {
-            const resp = await fetch('/data/wra-boreholes.json', { signal: AbortSignal.timeout(8000) });
-            const recs: any[] = resp.ok ? await resp.json() : [];
-            const R = 6371, rad = Math.PI / 180;
-            for (const b of Array.isArray(recs) ? recs : []) {
-              const y = Number(b?.yield_m3h), la = Number(b?.lat), lo = Number(b?.lon);
-              if (!(y > 0) || !Number.isFinite(la) || !Number.isFinite(lo)) continue;
-              const dLa = (la - effectiveLat) * rad, dLo = (lo - effectiveLon) * rad;
-              const h = Math.sin(dLa / 2) ** 2 + Math.cos(effectiveLat * rad) * Math.cos(la * rad) * Math.sin(dLo / 2) ** 2;
-              if (2 * R * Math.asin(Math.sqrt(h)) <= 20) fileYields.push(y);
-            }
-          } catch { fileYields = []; }
+    // ─── EVIDENCE NOTE ───
+    // The yield evidence (nearby field records or county statistics) is applied
+    // BEFORE the well design — see "EVIDENCE YIELD BAND" above computeWellDesign.
+    // With evidence in use the governing yield IS the design rate (the 5% tolerance
+    // above let 8.3 stand beside an 8.0 design; 2026-10-20).
+    {
+      const dr = Number((result as any).wellDesign?.drawdown?.designPumpingRate_m3hr);
+      if (evidenceBand && !isFieldValidated && dr > 0 && result.estimatedYield !== dr) {
+        result.estimatedYield = dr;
+        if (result.drillDecision) {
+          result.drillDecision.expectedYield_m3hr = dr;
+          if ((result.drillDecision as any).sustainableYield_m3hr != null) (result.drillDecision as any).sustainableYield_m3hr = dr;
         }
-        const near = wells.filter((w) => isField(w) && Number(w?.distance_km) <= 20);
-        const fieldYields = (fileYields.length >= 3 ? fileYields : (near.length >= 3 ? near : wells.filter(isField)).map((w) => Number(w.yield_m3h)))
-          .sort((a, b) => a - b);
-        const fieldRadius = fileYields.length >= 3 || near.length >= 3 ? 'within 20 km' : 'within 50 km';
-        const fieldMedian = fieldYields.length ? fieldYields[Math.floor((fieldYields.length - 1) / 2)] : 0;
-        const ci = (boreholeRecords as any)?.countyIntelligence;
-        let floor = 0;
-        let basis = '';
-        if (fieldYields.length >= 3) {
-          floor = fieldYields[Math.floor((fieldYields.length - 1) * 0.25)];
-          basis = `the lower quartile of ${fieldYields.length} field-tested yields ${fieldRadius} (median ${fieldMedian} m³/h)`;
-        } else if (Number(ci?.avgYield_m3h) > 0) {
-          floor = Math.max(Number(ci?.yieldRange?.[0]) || 0, Number(ci.avgYield_m3h) * 0.3);
-          basis = `30% of the ${ci.county} County typical yield (${ci.avgYield_m3h} m³/h)`;
-        }
-        floor = Math.round(floor * 100) / 100;
-        // Physics check: drawdown scales ~linearly with Q (Cooper–Jacob; well
-        // loss ~Q², hence the 0.85 margin). Real boreholes (field records or
-        // county statistics) outrank the synthetic (no-survey) aquifer model:
-        // the floor applies, and if the modelled drawdown disagrees it is capped
-        // within what is available and flagged for a pump test.
-        const dd: any = (result as any).wellDesign?.drawdown;
-        const scale = result.estimatedYield > 0 ? floor / result.estimatedYield : 1;
-        const fitsDrawdown = !dd || !(Number(dd.availableDrawdown_m) > 0) ||
-          Number(dd.totalDrawdown_m) * scale * (scale > 1 ? scale ** 0.3 : 1) <= Number(dd.availableDrawdown_m) * 0.85;
-        const fieldFloor = fieldYields.length >= 3;
-        // Both floors rest on real boreholes (field records or county statistics);
-        // the drawdown model here is synthetic, so the evidence governs and the
-        // modelled drawdown is capped and flagged below when it disagrees.
-        void fieldFloor;
-        if (floor > 0 && result.estimatedYield < floor) {
-          const prev = result.estimatedYield;
-          result.estimatedYield = floor;
-          if (dd) {
-            // Keep the well design on the same rate (report check 18 compares them).
-            dd.designPumpingRate_m3hr = floor;
-            dd.designPumpingRate_m3day = Math.round(floor * 24 * 10) / 10;
-            const oldTotal = Number(dd.totalDrawdown_m) || 0;
-            if (Number(dd.dynamicWaterLevel_m) > 0) dd.dynamicWaterLevel_m = Math.round((Number(dd.dynamicWaterLevel_m) + oldTotal * (scale - 1)) * 10) / 10;
-            for (const k of ['theis_drawdown_m', 'cooperJacob_drawdown_m', 'totalDrawdown_m']) {
-              if (Number(dd[k]) > 0) dd[k] = Math.round(Number(dd[k]) * scale * 100) / 100;
-            }
-            const avail = Number(dd.availableDrawdown_m);
-            if (!fitsDrawdown && avail > 0 && Number(dd.totalDrawdown_m) > avail * 0.85) {
-              const capF = (avail * 0.85) / Number(dd.totalDrawdown_m);
-              for (const k of ['theis_drawdown_m', 'cooperJacob_drawdown_m', 'totalDrawdown_m']) {
-                if (Number(dd[k]) > 0) dd[k] = Math.round(Number(dd[k]) * capF * 100) / 100;
-              }
-              dd.modelNote = 'The modelled aquifer (no field survey) predicted more drawdown than real boreholes show; the yield follows the borehole records. Confirm with a pump test.';
-            }
-            if (Number(dd.availableDrawdown_m) > 0 && Number(dd.totalDrawdown_m) >= 0) {
-              dd.drawdownMargin_pct = Math.round((1 - Number(dd.totalDrawdown_m) / Number(dd.availableDrawdown_m)) * 100);
-            }
-          }
-          if (result.uncertainty) result.uncertainty.yieldRange = [Math.round(floor * 0.7 * 100) / 100, Math.round(floor * 1.5 * 100) / 100];
-          if (result.drillDecision) {
-            result.drillDecision.expectedYield_m3hr = floor;
-            if ((result.drillDecision as any).sustainableYield_m3hr != null) (result.drillDecision as any).sustainableYield_m3hr = floor;
-          }
-          (result as any).governingYieldNote = `Governing yield raised from ${prev} to ${floor} m³/hr: not below ${basis}. A pump test sets the real figure.`;
-          console.log(`[GOVERNING] yield floor ${prev} → ${floor} m³/hr (${basis})`);
-        }
+        if (result.uncertainty) result.uncertainty.yieldRange = [Math.round(Math.min(dr, evidenceBand.lo) * 100) / 100, Math.round(Math.max(dr, evidenceBand.hi) * 100) / 100];
       }
-    } catch (e) { console.warn('[Pipeline] Yield evidence floor failed:', e); }
+    }
+    // Data sources is built before the well design: point its T at the one
+    // reconciled value the design used (2026-10-20: it showed 307 m²/day while
+    // the design ran on a different T).
+    try {
+      const Trec = Number((result as any).wellDesign?.drawdown?.reconciledTransmissivity_m2day);
+      const items: any[] = (result as any).engineerConfidence?.provenance?.items ?? [];
+      const tItem = items.find((i) => i?.parameter === 'Transmissivity (T)');
+      if (!isFieldValidated && Trec > 0 && tItem) {
+        tItem.value = Math.round(Trec * 10) / 10;
+        tItem.source = 'Aquifer model reconciled to the yields of real boreholes nearby (no field survey)';
+      }
+      // Yield provenance names the evidence that governs it (2026-10-20 audit).
+      const yItem = items.find((i) => i?.parameter === 'Estimated Yield');
+      if (!isFieldValidated && evidenceBand && yItem) {
+        yItem.value = result.estimatedYield;
+        yItem.source = `Tested yields of real boreholes: ${evidenceBand.basis} (no field survey)`;
+        yItem.method = 'Planning yield kept between the lower quartile and the typical tested yield; transmissivity solved so drawdown and pump size agree with it';
+      }
+    } catch { /* provenance optional */ }
+    // The field depth band travels with the result so the stated range covers it (2026-10-20).
+    if ((this as any)._fieldDepthBand) (result as any).fieldDepthBand = (this as any)._fieldDepthBand;
+    if (evidenceBand && typeof result.estimatedYield === 'number' && result.estimatedYield >= evidenceBand.lo * 0.99) {
+      (result as any).governingYieldNote = `Planning yield is kept between ${evidenceBand.basis} and the typical yield of real boreholes here (${evidenceBand.typical} m³/h). The aquifer model was reconciled to that evidence, so yield, drawdown and pump agree. A pump test sets the real figure.`;
+    }
 
     // ─── PINN + EXPLAINABLE AI (runs on full result) ───
     try {

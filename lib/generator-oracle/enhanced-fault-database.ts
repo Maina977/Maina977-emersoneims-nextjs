@@ -137,8 +137,8 @@ export interface EnhancedFaultCode {
 
 // THE WORLD'S MOST DETAILED FAULT CODE DATABASE
 export const ENHANCED_FAULT_DATABASE: Record<string, EnhancedFaultCode> = {
-  '190-0': {
-    code: '190-0',
+  '100-1': {
+    code: '100-1',
     title: 'Low Engine Oil Pressure - Critical Shutdown',
     alternativeCodes: ['OilPres', 'OP1', 'LOP', 'E101', 'F001'],
     severity: 'shutdown',
@@ -174,7 +174,7 @@ If the root cause of low oil pressure is determined to be a failed oil pump or s
 
 The development of electronic controllers in the 1980s and 1990s brought significant improvements to oil pressure monitoring. Variable resistance senders replaced simple switches, allowing controllers to display actual pressure readings and implement multiple protection thresholds. Digital signal processing enabled features like rate-of-change monitoring, temperature compensation, and data logging. These advances significantly reduced engine damage from oil-related failures.
 
-Modern controllers used in generator applications, including the Deep Sea Electronics, ComAp, Woodward, SmartGen, and CAT PowerWizard families, represent the current state of the art in engine protection. These controllers can monitor pressure at multiple points in the oil system, correlate readings with engine speed and temperature, predict impending problems based on trend analysis, and provide detailed diagnostic information to guide troubleshooting. The fault code 190-0 and its equivalents represent the accumulated engineering knowledge of decades of diesel engine protection.
+Modern controllers used in generator applications, including the Deep Sea Electronics, ComAp, Woodward, SmartGen, and CAT PowerWizard families, represent the current state of the art in engine protection. These controllers can monitor pressure at multiple points in the oil system, correlate readings with engine speed and temperature, predict impending problems based on trend analysis, and provide detailed diagnostic information to guide troubleshooting. The fault code 100-1 and its equivalents represent the accumulated engineering knowledge of decades of diesel engine protection.
 
 The economic impact of improved oil pressure protection has been substantial for generator operators. Before modern protection systems, catastrophic engine failures from lubrication issues were common, often requiring complete engine replacement. Today, most oil pressure faults are caught early enough that only sensor or minor mechanical repairs are needed. The key is responding promptly to any oil pressure fault and never bypassing protection systems for "just one more start."`,
 
@@ -314,7 +314,7 @@ The economic impact of improved oil pressure protection has been substantial for
           'Navigate to INSTRUMENTATION using UP/DOWN arrows',
           'Select ENGINE PROTECTION submenu',
           'Scroll to ALARM LOG',
-          'Press ENTER on fault 190-0 Low Oil Pressure',
+          'Press ENTER on fault 100-1 Low Oil Pressure',
           'Select RESET ALARM option',
           'Confirm reset by pressing ENTER when prompted',
           'Press STOP button to exit menu',
@@ -362,7 +362,7 @@ The economic impact of improved oil pressure protection has been substantial for
           'Press SET button to enter menu',
           'Navigate to FAULT MANAGEMENT',
           'Select ACTIVE FAULTS',
-          'Choose fault 190-0',
+          'Choose fault 100-1',
           'Press SET to reset',
           'Confirm action',
           'Exit menu with ESC',
@@ -662,7 +662,7 @@ The economic impact of improved oil pressure protection has been substantial for
       signalType: 'Analog variable voltage or resistance'
     },
 
-    relatedFaults: ['175-0 High Oil Temperature', '110-0 High Coolant Temperature', '100-0 Low Coolant Level', '94-0 Low Fuel Pressure'],
+    relatedFaults: ['175-0 High Oil Temperature', '110-0 High Coolant Temperature', '111-1 Low Coolant Level', '94-0 Low Fuel Pressure'],
 
     frequentlyAskedQuestions: [
       {
@@ -1105,9 +1105,9 @@ Electronic temperature monitoring replaced mechanical gauges in most application
         'Temperature spikes during rain may indicate belt slip or water ingestion'
       ],
       correlatedFaults: [
-        'Low Oil Pressure (190-0) - both may occur if head gasket allows oil/coolant mixing',
+        'Low Oil Pressure (100-1) - both may occur if head gasket allows oil/coolant mixing',
         'High Oil Temperature (175-0) - may share oil cooler with cooling system',
-        'Low Coolant Level (100-0) - often precedes overheating',
+        'Low Coolant Level (111-1) - often precedes overheating',
         'Fan Belt Failure - direct cause of overheating'
       ],
       seasonalFactors: 'Overheating issues in Kenya peak during February-March hot season. Coastal installations (Mombasa, Malindi) experience chronic higher temperatures due to ambient heat and humidity. Highland installations rarely overheat except when sized incorrectly.',
@@ -1130,7 +1130,7 @@ Electronic temperature monitoring replaced mechanical gauges in most application
       signalType: 'Analog variable resistance (NTC thermistor)'
     },
 
-    relatedFaults: ['100-0 Low Coolant Level', '175-0 High Oil Temperature', '190-0 Low Oil Pressure (if head gasket fails)', 'Radiator Fan Failure'],
+    relatedFaults: ['111-1 Low Coolant Level', '175-0 High Oil Temperature', '100-1 Low Oil Pressure (if head gasket fails)', 'Radiator Fan Failure'],
 
     frequentlyAskedQuestions: [
       {

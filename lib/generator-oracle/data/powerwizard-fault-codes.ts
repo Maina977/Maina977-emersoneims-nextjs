@@ -127,7 +127,7 @@ function createPowerWizardCode(
     }],
     safetyWarnings: severity === 'shutdown' ? ['Diagnose with CAT ET before restart', 'Check for mechanical damage'] : [],
     preventiveMeasures: ['Regular CAT dealer maintenance', 'Keep ET software updated'],
-    verified: true,
+    verified: false, // independently written guide, not checked line-by-line against the OEM manual (2026-10-20)
     lastUpdated: '2024-01-15'
   }));
 }

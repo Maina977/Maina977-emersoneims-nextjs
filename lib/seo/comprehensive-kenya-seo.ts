@@ -94,7 +94,7 @@ export const EMERSON_SERVICES = [
     id: 'electrical',
     name: 'Electrical Installation',
     fullName: 'Industrial & Commercial Electrical Services',
-    description: 'Power distribution, power factor correction, earthing, lightning protection. ERC licensed contractors.',
+    description: 'Power distribution, power factor correction, earthing, lightning protection. Work led by registered engineers.',
     warranty: '2 YEARS',
     keywords: ['electrical contractor Kenya', 'power factor correction', 'earthing installation', 'lightning protection', 'industrial wiring', 'panel board installation'],
     targetAudience: ['factories', 'offices', 'hotels', 'hospitals', 'residential estates', 'malls'],

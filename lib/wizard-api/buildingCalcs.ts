@@ -50,7 +50,10 @@ export class BadInput extends Error {
 /** Optional number: the default only when the key is absent. Present but
  *  blank or non-numeric is an error — never a silent default. */
 function opt(b: Body, key: string, def: number, check?: (x: number) => boolean, rule = 'a valid number'): number {
-  if (!(key in b) || b[key] === null || b[key] === undefined) return def;
+  // Absent = default. Present but blank/null = an error, not a silent default:
+  // the suite's forms send every field, so a cleared box arrives as null (2026-10-20).
+  if (!(key in b) || b[key] === undefined) return def;
+  if (b[key] === null || b[key] === '') throw new BadInput(key, `Invalid input: ${key} was left blank`);
   const v = n(b[key]);
   if (v === undefined || (check && !check(v))) throw new BadInput(key, `Invalid input: ${key} must be ${rule}`);
   return v;
@@ -97,6 +100,10 @@ export function daylightAdf(b: Body) {
   if (err) return err;
   const ff = opt(b, 'frame_factor', 1, (x) => x > 0 && x <= 1, 'between 0 and 1');
   if (!(A! > 0) || !(R! >= 0 && R! < 1)) return bad('total_internal_surface_m2 must be > 0 and avg_reflectance between 0 and 1');
+  if (!(T! > 0 && T! <= 1)) return bad('T_glass is a light transmittance: between 0 and 1 (clear glazing about 0.7–0.8)');
+  if (!(theta! > 0 && theta! <= 90)) return bad('sky_angle_deg is the visible sky angle: between 0 and 90 degrees');
+  if (!(M! > 0 && M! <= 1)) return bad('maintenance_factor must be between 0 and 1');
+  if (!(W! > 0) || W! >= A!) return bad('window_area_m2 must be > 0 and smaller than total_internal_surface_m2');
   const Aw = W! * ff;
   const ADF = (T! * Aw * theta! * M!) / (A! * (1 - R! * R!));
   return {
@@ -235,7 +242,9 @@ export function windAsce7(b: Body) {
   const e = EXPOSURE[exp];
   if (!e) return { error: 'Missing or invalid input: exposure (B, C or D)', missing: ['exposure'] };
   if (!(V! > 0 && z! > 0)) return bad('V_mph and height_ft must be > 0');
-  const zEff = Math.max(z!, 15);
+  if (V! > 300) return bad('V_mph above 300 is outside ASCE 7 basic wind speeds');
+  // Table 26.10-1: z is taken between 15 ft and the gradient height zg (Kz ≤ 2.41).
+  const zEff = Math.min(Math.max(z!, 15), e.zg_ft);
   const Kz = 2.41 * Math.pow(zEff / e.zg_ft, 2 / e.alpha);
   const Kzt = opt(b, 'Kzt', 1, (x) => x >= 1, '1 or more');
   const Ke = opt(b, 'Ke', 1, (x) => x > 0 && x <= 1.1, 'between 0 and 1.1');
@@ -253,6 +262,7 @@ export function windAsce7(b: Body) {
     assumptions: [
       'Kzt = 1 (no hill or escarpment speed-up) and Ke = 1 (sea level) unless given',
       z! < 15 ? 'Height below 15 ft: Kz taken at 15 ft (Table 26.10-1 note)' : null,
+      z! > e.zg_ft ? `Height above the gradient height zg = ${e.zg_ft} ft: Kz capped at 2.41` : null,
       'Velocity pressure only: design pressures need GCp for each surface (Ch. 27/28/30)',
     ].filter(Boolean),
     method: 'ASCE 7-22 Eq. 26.10-1 with Kz from Table 26.10-1',
@@ -274,6 +284,8 @@ export function windEurocode(b: Body) {
   const pos = (x: number) => x > 0;
   const cdir = opt(b, 'cdir', 1, pos, 'greater than 0'), cseason = opt(b, 'cseason', 1, pos, 'greater than 0'), cprob = opt(b, 'cprob', 1, pos, 'greater than 0');
   const co = opt(b, 'co', 1, pos, 'greater than 0'), rho = opt(b, 'rho_kg_m3', 1.25, pos, 'greater than 0');
+  if (!(vb0! > 0)) return bad('vb_ms must be > 0');
+  if (!(z! > 0 && z! <= 200)) return bad('height_m must be between 0 and 200 m: the EN 1991-1-4 profile (§4.3.2) applies up to 200 m');
   const vb = cdir * cseason * cprob * vb0!;
   const zEff = Math.max(z!, t.zmin);
   const kr = 0.19 * Math.pow(t.z0 / 0.05, 0.07);
@@ -302,17 +314,20 @@ export function seismicElf(b: Body) {
   const err = missing({ SDS, SD1, R, Ie, W_kN: W });
   if (err) return err;
   if (!(R! > 0 && Ie! > 0 && W! > 0)) return bad('R, Ie and W_kN must be > 0');
+  if (!(SDS! > 0 && SDS! <= 3) || !(SD1! > 0 && SD1! <= 3)) return bad('SDS and SD1 are spectral accelerations in g: greater than 0 and at most 3');
   const st = String(b.structure_type ?? 'other');
   if (!(st in PERIOD)) return { error: 'Invalid input: structure_type must be steel_moment_frame, concrete_moment_frame, eccentric_braced or other', missing: ['structure_type'] };
   const p = PERIOD[st];
-  const hn = pick(b, 'height_ft');
+  // Height in feet (ASCE) or metres (2026-10-20: the suite now offers metres).
+  const hnM = pick(b, 'height_m');
+  const hn = pick(b, 'height_ft') ?? (hnM !== undefined ? hnM / 0.3048 : undefined);
   const Ta = hn !== undefined && hn > 0 ? p.Ct * Math.pow(hn, p.x) : undefined;
   let T = pick(b, 'T', 'T_s');
   const tGiven = ('T' in b && b.T !== '' && b.T != null) || ('T_s' in b && b.T_s !== '' && b.T_s != null);
   if (tGiven && (T === undefined || !(T > 0))) return { error: 'Invalid input: T must be a positive period in seconds', missing: ['T'] };
   let periodNote: string;
   if (T === undefined) {
-    if (Ta === undefined) return { error: 'Missing or invalid input: height_ft (or a period T in seconds)', missing: ['height_ft'] };
+    if (Ta === undefined) return { error: 'Missing or invalid input: height_m or height_ft (or a period T in seconds)', missing: ['height_ft'] };
     T = Ta;
     periodNote = `Approximate period Ta = ${p.Ct}·hn^${p.x} (Table 12.8-2)`;
   } else if (Ta !== undefined) {
@@ -359,15 +374,20 @@ export function rcBeam(b: Body) {
   if (!(bw! > 0 && d! > 0 && As! > 0 && fck! > 0 && fyk! > 0)) return bad('Section dimensions, steel area and strengths must be > 0');
   if (fck! > 50) return bad('This check covers fck ≤ 50 MPa only');
   const h = pick(b, 'h_mm');
+  if (h !== undefined && !(d! < h)) return bad('d_mm (effective depth) must be smaller than h_mm (overall depth)');
   const fcd = (0.85 * fck!) / 1.5;
   const fyd = fyk! / 1.15;
   const x = (As! * fyd) / (0.8 * bw! * fcd);
+  // A compression zone deeper than the steel means the section cannot develop
+  // that steel: no meaningful M_Rd (it went negative before 2026-10-20).
+  if (x >= d!) return bad(`As_mm2 = ${As} is too much steel for this section: the compression zone (x = ${r(x, 0)} mm) would reach below the steel (d = ${d} mm). Reduce As or enlarge the section.`);
   const z = d! - 0.4 * x;
   const MRd = (As! * fyd * z) / 1e6;
   const fctm = 0.3 * Math.pow(fck!, 2 / 3);
   const AsMin = Math.max((0.26 * fctm / fyk!) * bw! * d!, 0.0013 * bw! * d!);
   const AsMax = h !== undefined ? 0.04 * bw! * h : undefined;
   const Med = pick(b, 'Med_kNm');
+  if (Med !== undefined && Med < 0) return bad('Med_kNm must be 0 or more (sagging moment). Design a hogging section with its top steel as a separate check.');
   // Steel needed for M_Ed (UK-NA form with αcc = 0.85): K = M/(b·d²·fck),
   // z = d·[0.5 + √(0.25 − K/1.134)] ≤ 0.95d, As,req = M/(fyd·z). K > K' = 0.167
   // means compression steel is needed — not covered here.
@@ -431,6 +451,11 @@ export function steelBolt(b: Body) {
   const checks: Array<{ check: string; value: string; pass: boolean }> = [];
   const t = pick(b, 't_ply_mm'), fu = pick(b, 'fu_ply_MPa'), e1 = pick(b, 'e1_mm'), p1 = pick(b, 'p1_mm'), d0 = pick(b, 'd_hole_mm');
   const assumptions: string[] = [];
+  if ([t, fu, e1, d0, p1].some((v) => v !== undefined && !(v > 0))) return bad('t_ply_mm, fu_ply_MPa, e1_mm, p1_mm and d_hole_mm must be > 0');
+  if (d0 !== undefined && d0 < dNom) return bad(`d_hole_mm must be at least the bolt diameter (${dNom} mm)`);
+  // EN 1993-1-8 Table 3.3 minimum end distance and spacing.
+  if (e1 !== undefined && d0 !== undefined && e1 < 1.2 * d0) return bad(`e1_mm = ${e1} is below the EN 1993-1-8 Table 3.3 minimum end distance 1.2·d0 = ${r(1.2 * d0, 1)} mm`);
+  if (p1 !== undefined && d0 !== undefined && p1 < 2.2 * d0) return bad(`p1_mm = ${p1} is below the EN 1993-1-8 Table 3.3 minimum spacing 2.2·d0 = ${r(2.2 * d0, 1)} mm`);
   if (t !== undefined && fu !== undefined && e1 !== undefined && d0 !== undefined) {
     const ad = Math.min(e1 / (3 * d0), p1 !== undefined ? p1 / (3 * d0) - 0.25 : Infinity);
     const ab = Math.min(ad, fub / fu, 1);
@@ -443,6 +468,7 @@ export function steelBolt(b: Body) {
     assumptions.push('Bearing not checked: give t_ply_mm, fu_ply_MPa, e1_mm and d_hole_mm');
   }
   const FvEd = pick(b, 'Fv_Ed_kN'), FtEd = pick(b, 'Ft_Ed_kN');
+  if ((FvEd !== undefined && FvEd < 0) || (FtEd !== undefined && FtEd < 0)) return bad('Fv_Ed_kN and Ft_Ed_kN are load magnitudes and must be 0 or more');
   if (FvEd !== undefined) {
     const gov = out.Fb_Rd_kN !== undefined ? Math.min(FvRd, out.Fb_Rd_kN as number) : FvRd;
     checks.push({ check: 'Fv,Ed ≤ min(Fv,Rd, Fb,Rd)', value: `${FvEd} ≤ ${r(gov)} kN`, pass: FvEd <= gov });
@@ -465,6 +491,7 @@ export function bearingCapacity(b: Body) {
   const err = missing({ c_kPa: c, phi_deg: phiDeg, gamma_kN_m3: gamma, B_m: B, Df_m: Df });
   if (err) return err;
   if (!(phiDeg! >= 0 && phiDeg! < 50) || !(B! > 0) || Df! < 0 || c! < 0) return bad('Need 0 ≤ φ < 50°, B > 0, Df ≥ 0 and c ≥ 0');
+  if (!(gamma! > 0 && gamma! <= 30)) return bad('gamma_kN_m3 (soil unit weight) must be between 0 and 30 kN/m³');
   const shape = String(b.shape ?? 'strip');
   const SHAPE: Record<string, { sc: number; sg: number }> = { strip: { sc: 1, sg: 0.5 }, square: { sc: 1.3, sg: 0.4 }, circular: { sc: 1.3, sg: 0.3 } };
   const s = SHAPE[shape];
@@ -498,6 +525,7 @@ export function rationalRunoff(b: Body) {
   return {
     Q_m3_s: r((C! * i! * A!) / 360, 3),
     Q_L_s: r((C! * i! * A!) / 0.36, 0),
+    ...(A! > 80 ? { warning: `${A} ha is above the rational method's usual limit of about 80 ha; use a unit-hydrograph or routing method for a catchment this size.` } : {}),
     assumptions: ['Intensity for a storm lasting the time of concentration', 'Best for catchments under about 80 ha'],
     method: 'Rational method Q = C·i·A/360',
   };
@@ -509,7 +537,13 @@ export function kirpich(b: Body) {
   const err = missing({ length_m: L, slope_m_per_m: S });
   if (err) return err;
   if (!(L! > 0 && S! > 0)) return bad('length_m and slope_m_per_m must be > 0');
-  return { Tc_min: r(0.0195 * Math.pow(L!, 0.77) * Math.pow(S!, -0.385)), method: 'Kirpich (1940), small rural catchments' };
+  if (S! >= 1) return bad('slope_m_per_m is a gradient (rise ÷ run): 0.05 means 5%. Values of 1 or more are not catchment slopes.');
+  const outside = S! < 0.03 || S! > 0.1;
+  return {
+    Tc_min: r(0.0195 * Math.pow(L!, 0.77) * Math.pow(S!, -0.385)),
+    ...(outside ? { warning: `Kirpich was fitted to slopes of 3–10%; ${r(S! * 100, 1)}% is outside that range, so treat the time as indicative.` } : {}),
+    method: 'Kirpich (1940), small rural catchments',
+  };
 }
 
 /** Typical runoff coefficients (ASCE Manual 77 / WEF MOP FD-20 ranges). */

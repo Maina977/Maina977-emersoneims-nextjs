@@ -269,6 +269,10 @@ export interface WellDesignInput {
    *  drawdown, specific capacity and pump all derive from ONE consistent T.
    *  Ignored when hasPumpTestData is true (field data always wins). */
   regionalTestedYieldBand_m3hr?: [number, number];
+  /** Typical yield of real boreholes for this site (field median or county average).
+   *  The aquifer model is reconciled so this is sustainable; the DESIGN rate stays at
+   *  the cautious floor (band[0]) (2026-10-20). */
+  regionalTypicalYield_m3hr?: number;
   precipitation_mm_yr?: number;
   isFieldValidated: boolean;
 
@@ -1062,7 +1066,7 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   // the design rate to what the available drawdown allows and warn loudly.
   const availDD = Math.max(1, depth - swl - 5); // usable drawdown to a 5 m pump-submergence margin
   const usableDD = availDD * 0.7;               // design to 70% of available (operating reserve)
-  const cCoef = Math.max(0, wlResult.C);                 // well-loss coeff (day²/m⁵)
+  let cCoef = Math.max(0, wlResult.C);                   // well-loss coeff (day²/m⁵); may be reconciled below
   // helper: max sustainable discharge (m³/hr) from geometry at a given T
   const qMaxAtT = (T: number): number => {
     const lg = Math.max(0.3, Math.log10(2.25 * T * (tSec / 86400) / (S_eff * rw * rw)));
@@ -1085,11 +1089,29 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   const band = input.regionalTestedYieldBand_m3hr;
   const qMaxModel = qMaxAtT(T_eff);
   if (band && band[0] > 0 && !input.hasPumpTestData) {
-    if (qMaxModel < band[0] && yield_m3hr >= band[0]) {
-      // low-T outlier: lift T so the regional floor becomes sustainable
-      T_recon = T_eff * (band[0] / Math.max(1e-6, qMaxModel));
+    const target = Math.max(band[0], Math.min(band[1] || Infinity, input.regionalTypicalYield_m3hr ?? 0));
+    if (qMaxModel < target && yield_m3hr >= band[0]) {
+      // Low-T outlier: SOLVE for the T at which the floor is sustainable (qMax is
+      // not linear in T — 2026-10-20: proportional scaling left Lodwar at 1.71
+      // against a 2.7 m³/h floor). If even a very high T cannot reach the floor,
+      // the empirical well-loss coefficient is what is pessimistic, so it is
+      // reduced to the value at which real nearby boreholes' yield is sustainable.
+      let hi = T_eff;
+      while (qMaxAtT(hi) < target && hi < 1e5) hi *= 2;
+      if (qMaxAtT(hi) >= target) {
+        let lo = T_eff;
+        for (let k = 0; k < 50; k++) { const mid = (lo + hi) / 2; if (qMaxAtT(mid) >= target) hi = mid; else lo = mid; }
+        T_recon = hi;
+      } else {
+        T_recon = hi;
+        const Qd = target * 24;
+        const lgR = Math.max(0.3, Math.log10(2.25 * T_recon * (tSec / 86400) / (S_eff * rw * rw)));
+        const aR = (2.3 / (4 * Math.PI * T_recon)) * lgR;
+        cCoef = Math.max(0, (usableDD - aR * Qd) / (Qd * Qd));
+        notes.push(`WELL LOSS RECONCILED: the empirical well-loss coefficient could not sustain the ${target} m³/hr that real boreholes nearby typically deliver; reduced to ${cCoef.toExponential(2)} day²/m⁵. A step-drawdown test measures the real value.`);
+      }
       notes.push(
-        `TRANSMISSIVITY RECONCILED: the modelled T (${T_eff.toFixed(2)} m²/day) implied only ${qMaxModel.toFixed(2)} m³/hr — below the published ${band[0]}–${band[1]} m³/hr regional tested-yield floor. T revised to ${T_recon.toFixed(1)} m²/day so yield, drawdown and pump are consistent with real drilled outcomes. CONFIRM with a 24-h pump test.`,
+        `TRANSMISSIVITY RECONCILED: the modelled T (${T_eff.toFixed(2)} m²/day) implied only ${qMaxModel.toFixed(2)} m³/hr — below the ${band[0]}–${band[1]} m³/hr yield range of real boreholes for this site. T revised to ${T_recon.toFixed(1)} m²/day so yield, drawdown and pump are consistent with real drilled outcomes. CONFIRM with a 24-h pump test.`,
       );
     }
   }

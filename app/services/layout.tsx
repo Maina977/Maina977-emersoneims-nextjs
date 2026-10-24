@@ -153,7 +153,7 @@ const structuredData = {
             '@type': 'OfferCatalog',
             name: 'Generator Services',
             itemListElement: [
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cummins Generator Sales', description: '10kVA-2000kVA with 2-year warranty' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Generator Sales', description: 'New VOLTKA generators on Cummins engines (10-3000 kVA) and used Cummins, Perkins and other makes; 2-year workmanship warranty' } },
               { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Generator Repairs', description: '24/7 emergency repair service' } },
               { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Generator Maintenance', description: 'AMC and preventive maintenance' } },
             ],

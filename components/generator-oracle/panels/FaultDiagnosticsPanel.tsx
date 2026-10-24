@@ -811,7 +811,7 @@ function FaultDetailModal({
         <div className="flex-shrink-0 p-4 bg-slate-900/50 border-t border-slate-700/50">
           <div className="flex items-center justify-between">
             <div className="text-xs text-slate-500">
-              Last updated: {fault.lastUpdated} | {fault.verified ? '✓ Verified' : 'Unverified'}
+              Last updated: {fault.lastUpdated} | {fault.verified ? '✓ Checked against the OEM manual' : "Our engineers' guide — confirm against the controller manual"}
             </div>
             <div className="flex gap-3">
               <button
@@ -863,23 +863,12 @@ export default function FaultDiagnosticsPanel({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="hidden sm:flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-3xl">🔮</span>
-          <div>
-            <h2 className="text-xl font-bold text-purple-400 uppercase tracking-wider">Generator Oracle</h2>
-            <p className="text-sm text-slate-500">Controller alarms and J1939 engine codes, with step-by-step troubleshooting</p>
-          </div>
-        </div>
-      </div>
-
       <div className="grid grid-cols-12 gap-6">
         {/* Left - Search & Results */}
         <div className="col-span-12 lg:col-span-8 space-y-6">
           {/* Search Box */}
-          <div className="p-6 bg-slate-900/50 rounded-xl border border-purple-500/30">
-            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">Fault Code Search</h3>
+          <div className="p-4 sm:p-6 bg-slate-900/50 rounded-xl border border-purple-500/30">
+            <h2 className="text-sm text-slate-300 font-semibold mb-3">Look up a fault code or alarm</h2>
 
             <div className="relative">
               <div className="flex gap-3">

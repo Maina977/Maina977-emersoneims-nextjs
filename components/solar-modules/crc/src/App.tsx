@@ -602,7 +602,8 @@ const App: React.FC = () => {
             <Route path="/advanced" element={<AdvancedFeaturesPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/home" element={<HomePage />} />
-            <Route path="/" element={<DashboardPage />} />
+            {/* The page is titled "Calculator": open on it (2026-10-20 audit). */}
+            <Route path="/" element={<CalculatorPage />} />
           </Routes>
         </Content>
       </MainArea>

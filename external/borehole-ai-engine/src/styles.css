@@ -1172,3 +1172,12 @@ body {
 
 /* Scrolled-to panels clear the fixed site header (2026-10-19). */
 .results-view, .analyzing-view { scroll-margin-top: 80px; }
+
+
+/* Phones (2026-10-20 audit): coordinates first. The page h1 above names the
+   tool, so the engine header keeps only its title; long how-to text is left out. */
+@media (max-width: 600px) {
+  .app-header .logo, .app-header .subtitle, .app-header .header-badge { display: none; }
+  .app-header { padding-top: 8px; padding-bottom: 8px; }
+  .aq-mobile-hide { display: none; }
+}

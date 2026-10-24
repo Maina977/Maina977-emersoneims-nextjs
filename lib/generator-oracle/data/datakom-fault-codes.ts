@@ -104,7 +104,7 @@ function createDatakomCode(
       'Risk of equipment damage if issue not resolved'
     ] : ['Follow standard safety procedures'],
     preventiveMeasures: ['Regular maintenance', 'Periodic sensor calibration'],
-    verified: true,
+    verified: false, // independently written guide, not checked line-by-line against the OEM manual (2026-10-20)
     lastUpdated: '2024-01-15'
   }));
 }

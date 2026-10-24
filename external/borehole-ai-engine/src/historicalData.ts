@@ -32,6 +32,11 @@ export interface HistoricalWeather {
   drySeasonMonths: string[];         // months with <30mm avg
   bestDrillingSeason: string;        // dry season recommendation
   source: string;
+  /** Alias read by the analyzer and the UI (they never matched avgAnnualPrecip; 2026-10-20). */
+  averageAnnualPrecipitation?: number;
+  averageTemperature?: number;
+  /** Set when ERA5 and NASA POWER disagree by more than 30%. */
+  precipitationNote?: string;
 }
 
 export interface GroundwaterTrend {
@@ -229,6 +234,7 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
 
     // Cross-validate with NASA POWER if available
     let crossValidation = '';
+    let nasaAvgForCheck = 0;
     if (nasaJson && !usedNasaOnly) {
       try {
         const nasaData = nasaJson;
@@ -251,6 +257,7 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
           }
           if (nasaAnnuals.length >= 5) {
             const nasaAvg = Math.round(nasaAnnuals.reduce((a, b) => a + b, 0) / nasaAnnuals.length);
+            nasaAvgForCheck = nasaAvg;
             const diff = Math.abs(nasaAvg - avgAnnualPrecip);
             const pctDiff = Math.round((diff / Math.max(avgAnnualPrecip, 1)) * 100);
             crossValidation = ` | NASA POWER MERRA-2 cross-validation: ${nasaAvg}mm/yr avg (${pctDiff}% ${nasaAvg > avgAnnualPrecip ? 'higher' : 'lower'} — ${pctDiff <= 15 ? 'good agreement' : 'moderate divergence'})`;
@@ -260,12 +267,27 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
       } catch { /* NASA POWER parse error — non-critical */ }
     }
 
+    // Two sources, one figure (2026-10-20 audit: Lodwar showed 442 mm/yr from
+    // ERA5 while NASA POWER gave 297; the long-term mean is near 200). When they
+    // differ by more than 30%, the LOWER is used — rainfall drives recharge and
+    // the sustainable yield, so the cautious figure is the safe one — and the
+    // spread is stated. The yearly and monthly series are scaled to match.
+    let scale = 1;
+    let precipitationNote: string | undefined;
+    if (nasaAvgForCheck > 0 && avgAnnualPrecip > 0 && Math.max(nasaAvgForCheck, avgAnnualPrecip) / Math.min(nasaAvgForCheck, avgAnnualPrecip) > 1.3) {
+      const lo = Math.min(nasaAvgForCheck, avgAnnualPrecip);
+      scale = lo / avgAnnualPrecip;
+      precipitationNote = `Rainfall sources disagree: ERA5 reanalysis ${avgAnnualPrecip} mm/yr, NASA POWER ${nasaAvgForCheck} mm/yr. Long-term rainfall here is probably between ${lo} and ${Math.max(nasaAvgForCheck, avgAnnualPrecip)} mm/yr; the lower figure is used for recharge as the cautious choice.${lo < 450 ? ' In arid areas both can overstate rainfall; a local weather-station record is the better reference.' : ''}`;
+    }
+    const sc = (v: number) => Math.round(v * scale);
+    const avgP = sc(avgAnnualPrecip);
     return {
-      years, annualPrecipitation, annualMeanTemp,
-      monthlyAvgPrecip, monthlyAvgTemp,
+      years, annualPrecipitation: annualPrecipitation.map(sc), annualMeanTemp,
+      monthlyAvgPrecip: monthlyAvgPrecip.map(sc), monthlyAvgTemp,
       droughtYears, wetYears,
-      trendDirection, trendPerDecade, avgAnnualPrecip, avgAnnualTemp,
-      maxAnnualPrecip, minAnnualPrecip,
+      trendDirection, trendPerDecade: sc(trendPerDecade), avgAnnualPrecip: avgP, avgAnnualTemp,
+      averageAnnualPrecipitation: avgP, averageTemperature: avgAnnualTemp, precipitationNote,
+      maxAnnualPrecip: sc(maxAnnualPrecip), minAnnualPrecip: sc(minAnnualPrecip),
       rainySeasonMonths, drySeasonMonths, bestDrillingSeason,
       source: usedNasaOnly
         ? `NASA POWER monthly (${startYear}–${endYear}); Open-Meteo ERA5-Land did not answer`
@@ -378,7 +400,27 @@ export function estimateGroundwaterTrend(
  * Fetch all historical data for given coordinates.
  */
 export async function fetchHistoricalData(lat: number, lon: number): Promise<HistoricalDataResult> {
-  const weather = await fetchHistoricalWeather(lat, lon);
-  const groundwater = weather ? estimateGroundwaterTrend(weather, lat, lon) : null;
+  const hw = await fetchHistoricalWeather(lat, lon);
+  const groundwater = hw ? estimateGroundwaterTrend(hw, lat, lon) : null;
+  // The report, the Climate tab and the analyzer read the AnalysisResult shape
+  // (types.ts): a year count, {year,total} rows, seasonal sums and
+  // averageAnnualPrecipitation. This module returned a different shape, so the
+  // analyzer ran on its 600-800 mm defaults and the Climate tab showed NaN
+  // (2026-10-20). The original fields are kept alongside.
+  const weather: any = hw ? {
+    ...hw,
+    years: hw.years.length,
+    yearList: hw.years,
+    annualPrecipitation: hw.years.map((y, i) => ({ year: y, total: hw.annualPrecipitation[i] })),
+    annualTemperature: hw.years.map((y, i) => ({ year: y, avg: hw.annualMeanTemp[i] })).filter((r) => Number.isFinite(r.avg)),
+    seasonalAnalysis: [
+      { season: "Dec-Feb", months: "Dec, Jan, Feb", m: [11, 0, 1] },
+      { season: "Mar-May", months: "Mar, Apr, May", m: [2, 3, 4] },
+      { season: "Jun-Aug", months: "Jun, Jul, Aug", m: [5, 6, 7] },
+      { season: "Sep-Nov", months: "Sep, Oct, Nov", m: [8, 9, 10] },
+    ].map((s) => ({ season: s.season, months: s.months, avgPrecipitation: s.m.reduce((acc, k) => acc + (hw.monthlyAvgPrecip[k] || 0), 0) })),
+    averageAnnualPrecipitation: hw.avgAnnualPrecip,
+    averageTemperature: hw.avgAnnualTemp,
+  } : null;
   return { weather, groundwater, fetchedAt: new Date().toISOString() };
 }

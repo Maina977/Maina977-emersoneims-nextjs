@@ -100,7 +100,7 @@ export default function BackToCommand({ onBack, currentPanel, showPanelInfo = tr
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`p-4 bg-gradient-to-br from-slate-900/90 to-slate-950/90 border rounded-xl ${
+          className={`p-3 sm:p-4 bg-gradient-to-br from-slate-900/90 to-slate-950/90 border rounded-xl ${
             panelInfo.simulated ? 'border-amber-500/40' : 'border-slate-700/50'
           }`}
         >
@@ -114,8 +114,9 @@ export default function BackToCommand({ onBack, currentPanel, showPanelInfo = tr
                   </span>
                 )}
               </h2>
-              <p className="text-sm text-cyan-400 mb-3">{panelInfo.purpose}</p>
-              <div className="flex items-start gap-2">
+              <p className="text-sm text-cyan-400 sm:mb-3">{panelInfo.purpose}</p>
+              {/* On phones the how-to text is left out; the search box placeholder says the same (2026-10-20). */}
+              <div className="hidden sm:flex items-start gap-2">
                 <span className="text-amber-400 text-xs font-medium uppercase tracking-wider mt-0.5">How to use:</span>
                 <p className="text-sm text-slate-300">{panelInfo.howToUse}</p>
               </div>

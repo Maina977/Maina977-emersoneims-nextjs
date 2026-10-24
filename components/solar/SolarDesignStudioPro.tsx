@@ -1125,9 +1125,10 @@ EARTHING:
                 <span className="text-slate-400 text-sm">Inverter</span>
                 <Settings className="w-4 h-4 text-purple-400" />
               </div>
-              <p className="text-purple-400 text-2xl font-bold">{inverterSize} kW</p>
-              <p className={`text-xs ${inverterSize < totalKW ? 'text-red-400' : 'text-emerald-400'}`}>
-                {inverterSize < totalKW ? '⚠️ Undersized!' : '✓ Properly sized'}
+              {/* No verdict until panels are placed (2026-10-20 audit: "5 kW ✓ Properly sized" with 0 panels). */}
+              <p className="text-purple-400 text-2xl font-bold">{totalPanels > 0 ? `${inverterSize} kW` : '—'}</p>
+              <p className={`text-xs ${totalPanels === 0 ? 'text-slate-500' : inverterSize < totalKW ? 'text-red-400' : 'text-emerald-400'}`}>
+                {totalPanels === 0 ? 'Place panels first' : inverterSize < totalKW ? '⚠️ Undersized!' : '✓ Matches the array'}
               </p>
             </div>
 
@@ -1136,8 +1137,8 @@ EARTHING:
                 <span className="text-slate-400 text-sm">Battery</span>
                 <Battery className="w-4 h-4 text-green-400" />
               </div>
-              <p className="text-green-400 text-2xl font-bold">{batteryCapacity} kWh</p>
-              <p className="text-slate-500 text-xs">{batteryCapacity > 0 ? `${(batteryCapacity * 0.9).toFixed(1)} kWh usable (90% depth)` : 'No battery'}</p>
+              <p className="text-green-400 text-2xl font-bold">{totalPanels > 0 ? `${batteryCapacity} kWh` : '—'}</p>
+              <p className="text-slate-500 text-xs">{totalPanels === 0 ? 'Place panels first' : batteryCapacity > 0 ? `${(batteryCapacity * 0.9).toFixed(1)} kWh usable (90% depth)` : 'No battery'}</p>
             </div>
 
             {roofSegments.length > 0 && (

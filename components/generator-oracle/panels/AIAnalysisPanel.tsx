@@ -962,8 +962,14 @@ function AIAnalysisPanelImpl({ className = '', card }: AIAnalysisPanelProps) {
  * the deterministic local engine, misrepresenting the source of advice.
  */
 export default function AIAnalysisPanel(props: AIAnalysisPanelProps) {
+  // No five-field form when the AI service is off: the rule-based assistant
+  // runs without it, as in ExpertAIChatPanel (2026-10-20 audit).
+  const aiAvailability = useAIAvailable();
+  if (aiAvailability === 'unavailable') {
+    return <RuleBasedAssistantPanel mode="analysis" className={props.className} />;
+  }
   return (
-    <AssetCardGate feature="AI Parameter Analysis">
+    <AssetCardGate feature="Parameter Analysis">
       {(card) => <AIAnalysisPanelImpl {...props} card={card} />}
     </AssetCardGate>
   );

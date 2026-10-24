@@ -81,7 +81,6 @@ const EnginePanel = dynamic(() => import('./panels/EnginePanel'), { ssr: false }
 const ElectricalPanel = dynamic(() => import('./panels/ElectricalPanel'), { ssr: false });
 const FaultDiagnosticsPanel = dynamic(() => import('./panels/FaultDiagnosticsPanel'), { ssr: false });
 const TechnicianAssistantPanel = dynamic(() => import('./panels/TechnicianAssistantPanel'), { ssr: false });
-const AdvancedDiagnosticsPanel = dynamic(() => import('./panels/AdvancedDiagnosticsPanel'), { ssr: false });
 const WiringDiagramsPanel = dynamic(() => import('./panels/WiringDiagramsPanel'), { ssr: false });
 const AllControllerWiringDiagrams = dynamic(() => import('./AllControllerWiringDiagrams'), { ssr: false });
 const TechnicianInputDiagnostics = dynamic(() => import('./TechnicianInputDiagnostics'), { ssr: false });
@@ -863,12 +862,12 @@ function SubTabNav<T extends string>({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 p-2 bg-slate-900/50 rounded-xl border border-slate-700/50 mb-6">
+    <div className="flex flex-nowrap sm:flex-wrap overflow-x-auto items-center gap-2 p-2 bg-slate-900/50 rounded-xl border border-slate-700/50 mb-4 sm:mb-6">
       {tabs.map((tab) => (
         <motion.button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all ${
+          className={`shrink-0 flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg transition-all ${
             activeTab === tab.id
               ? `bg-gradient-to-br ${colors[accentColor]} border`
               : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
@@ -876,8 +875,8 @@ function SubTabNav<T extends string>({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          <span className="text-lg">{tab.icon}</span>
-          <span className="text-sm font-medium">{tab.label}</span>
+          <span className="text-base sm:text-lg">{tab.icon}</span>
+          <span className="text-xs sm:text-sm font-medium whitespace-nowrap">{tab.label}</span>
         </motion.button>
       ))}
     </div>
@@ -1143,33 +1142,10 @@ export default function GeneratorOracleModule() {
           {/* ==================== ULTRA-PREMIUM COMMAND HEADER ==================== */}
           <header className="flex-shrink-0 bg-slate-950/90 backdrop-blur-2xl border-b border-cyan-500/20">
             <div className="max-w-[1920px] mx-auto px-4 lg:px-6">
-              {/* Top Status Bar */}
-              <div className="flex items-center justify-between py-2 border-b border-slate-800/50 text-xs">
-                <div className="flex items-center gap-4 lg:gap-8">
-                  <PremiumStatusLED
-                    status={generatorStatus === 'running' ? 'online' : generatorStatus === 'fault' ? 'error' : 'offline'}
-                    label="Simulator"
-                    size="md"
-                  />
-                  <PremiumStatusLED status={isOffline ? 'offline' : 'online'} label="Network" size="sm" />
-                  <PremiumStatusLED status={offlineReady ? 'online' : 'processing'} label="Database" size="sm" />
-                </div>
-
-                <div className="flex items-center gap-4">
-
-                  {/* Stats */}
-                  <div className="hidden lg:flex items-center gap-4 px-4 py-1.5 bg-slate-900/60 rounded-lg border border-slate-700/50">
-                    <div className="text-center">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-wider">{t.faultCodes}</span>
-                      <div className="font-mono text-cyan-400 text-sm">{totalCodes.toLocaleString()}</div>
-                    </div>
-                    <div className="w-px h-8 bg-slate-700" />
-                    <div className="text-center">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-wider">{t.controllers}</span>
-                      <div className="font-mono text-cyan-400 text-sm">{selectedModel || 'All'}</div>
-                    </div>
-                  </div>
-
+              {/* Status bar reduced to the language picker (2026-10-20 audit): the
+                  "Simulator / Network / Database" lights and the clock looked like live
+                  telemetry on a plain lookup and pushed the search box down. */}
+              <div className="flex items-center justify-end pt-2 text-xs">
                   {/* Language with Flags */}
                   <select
                     value={language}
@@ -1182,32 +1158,15 @@ export default function GeneratorOracleModule() {
                       </option>
                     ))}
                   </select>
-
-                  {/* Time Display */}
-                  <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-900/60 rounded-lg border border-slate-700/50">
-                    <motion.div
-                      className="w-2 h-2 bg-green-500 rounded-full"
-                      animate={{ opacity: [1, 0.3, 1] }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                      style={{ boxShadow: '0 0 10px #22c55e' }}
-                    />
-                    <span className="font-mono text-cyan-400 text-sm tracking-wider">
-                      {systemTime ? systemTime.toLocaleTimeString('en-US', { hour12: false }) : '--:--:--'}
-                    </span>
-                    <span className="text-slate-500 text-xs">
-                      {systemTime ? systemTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
-                    </span>
-                  </div>
-                </div>
               </div>
 
               {/* Main Header */}
               {/* Stacks on phones so the tab strip gets its own full-width row (2026-10-19). */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-3">
                 {/* Logo */}
                 <div className="flex items-center gap-5">
                   <motion.div
-                    className="relative w-14 h-14 lg:w-16 lg:h-16"
+                    className="relative hidden sm:block w-14 h-14 lg:w-16 lg:h-16"
                     style={{ perspective: 1000 }}
                   >
                     <motion.div
@@ -1282,7 +1241,7 @@ export default function GeneratorOracleModule() {
                     is styled thin so the swipe affordance is obvious on touch devices. */}
                 <nav
                   aria-label="Generator Oracle sections"
-                  className="flex-1 min-w-0 flex items-center gap-2 p-2 pr-10 bg-slate-900/80 rounded-2xl border border-cyan-500/30 overflow-x-auto flex-nowrap [mask-image:linear-gradient(to_right,black_88%,transparent)] [scrollbar-width:thin] [scrollbar-color:rgba(6,182,212,0.5)_transparent] snap-x snap-mandatory [-webkit-overflow-scrolling:touch]"
+                  className="flex-1 min-w-0 hidden sm:flex items-center gap-2 p-2 pr-10 bg-slate-900/80 rounded-2xl border border-cyan-500/30 overflow-x-auto flex-nowrap [mask-image:linear-gradient(to_right,black_88%,transparent)] [scrollbar-width:thin] [scrollbar-color:rgba(6,182,212,0.5)_transparent] snap-x snap-mandatory [-webkit-overflow-scrolling:touch]"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                   <div className="flex items-center gap-2 shrink-0">
@@ -1305,7 +1264,7 @@ export default function GeneratorOracleModule() {
                     id="oracle-section-jump"
                     value={activeScreen}
                     onChange={(e) => setActiveScreen(e.target.value as typeof activeScreen)}
-                    className="bg-slate-900/60 text-cyan-400 px-3 py-2 rounded-xl border border-cyan-500/30 font-medium text-sm"
+                    className="w-full bg-slate-900/60 text-cyan-400 px-3 py-2 rounded-xl border border-cyan-500/30 font-medium text-sm"
                   >
                     <option value="faults">🔧 Fault Center</option>
                     <option value="ai">🛠️ Diagnostic Assistant</option>
@@ -1780,19 +1739,11 @@ export default function GeneratorOracleModule() {
                   >
                     <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="faults" showBack={false} />
 
-                    {/* Fault Center Header */}
-                    <div className="hidden sm:block text-center mb-4">
-                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-amber-400">
-                        Fault Center
-                      </h2>
-                      <p className="text-slate-400 text-sm">Controller alarms, J1939 engine codes and step-by-step troubleshooting</p>
-                    </div>
-
                     {/* Sub-Tab Navigation */}
                     <SubTabNav
                       tabs={[
                         { id: 'lookup' as const, label: 'Fault Code Lookup', icon: '🔍' },
-                        { id: 'analysis' as const, label: 'Detailed Analysis', icon: '📊' },
+                        { id: 'analysis' as const, label: 'Worked Example: Low Oil Pressure', icon: '📊' },
                         { id: 'troubleshoot' as const, label: 'Interactive Troubleshoot', icon: '🛠️' },
                       ]}
                       activeTab={faultsSubTab}
@@ -1808,7 +1759,7 @@ export default function GeneratorOracleModule() {
                         isSearching={isSearching}
                       />
                     )}
-                    {faultsSubTab === 'analysis' && <DetailedFaultDisplay faultCode={DETAILED_FAULT_CODES['190-0']} />}
+                    {faultsSubTab === 'analysis' && <DetailedFaultDisplay faultCode={DETAILED_FAULT_CODES['100-1']} />}
                     {faultsSubTab === 'troubleshoot' && <InteractiveTroubleshooter />}
                   </motion.div>
                 )}
@@ -2203,7 +2154,9 @@ export default function GeneratorOracleModule() {
         </div>
 
         {/* Voice Assistant - Accessibility Feature */}
-        <SpeechController language={language} />
+        <div className="hidden sm:block">
+          <SpeechController language={language} />
+        </div>
 
         {/* Legal Footer Disclaimer - Always visible */}
         <FooterDisclaimer />

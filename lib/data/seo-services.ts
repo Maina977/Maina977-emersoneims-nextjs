@@ -1544,7 +1544,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'Are your electricians licensed in {location}?',
-        answer: 'Yes, all our electricians are ERC licensed and trained for industrial and commercial work in {location}.'
+        answer: 'Yes. Our registered engineers lead every industrial and commercial electrical job in {location}.'
       },
       {
         question: 'Do you handle KPLC installations in {location}?',

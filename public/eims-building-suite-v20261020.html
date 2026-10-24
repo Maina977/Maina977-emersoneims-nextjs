@@ -75,7 +75,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0e2
 
 /* FORM */
 .fg{margin-bottom:10px}
-.fl{font-size:10px;font-weight:600;color:#7986cb;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px;display:block}
+.fl{font-size:11px;font-weight:600;color:#7986cb;letter-spacing:.2px;margin-bottom:3px;display:block}
 input[type=text],input[type=number],input[type=email],select,textarea{width:100%;padding:6px 8px;background:#0a0e27;border:1px solid #1e2560;border-radius:3px;color:#e0e0e0;font-size:12px;font-family:inherit}
 textarea{min-height:50px;resize:vertical}
 input:focus,select:focus,textarea:focus{outline:none;border-color:#5c6bc0;box-shadow:0 0 0 2px rgba(92,107,192,.15)}
@@ -208,7 +208,7 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
 @media(max-width:900px){.nav{display:none}.builder-left{width:100%}.builder-split{flex-direction:column}.fpe-sidebar{width:100%}.fpe-wrap{flex-direction:column}}
 
 /* PRO-SUITE SUB-TAB NAVIGATION */
-.pro-sub-tabs{display:flex;gap:2px;overflow-x:auto;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid #1e2560}
+.pro-sub-tabs{display:flex;flex-wrap:wrap;gap:2px;overflow-x:auto;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid #1e2560}
 .pro-sub-tab{padding:6px 12px;background:rgba(255,255,255,.04);color:#8899aa;border:1px solid #1e2560;border-radius:4px 4px 0 0;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;white-space:nowrap;transition:.12s}
 .pro-sub-tab:hover{background:rgba(100,181,246,.08);color:#bbdefb}
 .pro-sub-tab.active{background:#1a237e;color:#64b5f6;border-color:#283593}
@@ -226,6 +226,17 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
 .pro-headline{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-bottom:10px}
 .pro-output .err{background:rgba(244,67,54,.1);border:1px solid #ef5350;color:#ef9a9a;padding:10px;border-radius:4px;font-size:11px;margin-bottom:10px}
 @media(max-width:900px){.pro-page{grid-template-columns:1fr;height:auto}#pro-pane{overflow:auto!important;-webkit-overflow-scrolling:touch}}
+/* Phones (2026-10-20 audit): the tab strip showed 2 of 5 tabs and the
+   sub-tabs scrolled 1,600 px sideways with no cue; small result text. */
+@media(max-width:700px){
+  body{overflow:auto;height:auto}
+  .app{height:auto;min-height:calc(100vh - 80px)}
+  .top{height:auto;flex-wrap:wrap;row-gap:4px;padding:6px 10px}
+  .mode-tabs{order:3;flex-basis:100%;margin-left:0;flex-wrap:wrap;gap:4px;overflow:visible}
+  .mode-tab{font-size:12px;padding:6px 10px;border-radius:4px}
+  .pro-sub-tabs{flex-wrap:wrap;overflow:visible}
+  [style*="font-size:9px"],[style*="font-size:10px"]{font-size:12px!important}
+}
 </style>
 </head>
 <body>
@@ -244,12 +255,12 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
         <button class="mode-tab" onclick="setMode('steelRebar')">Steel</button>
         <button class="mode-tab" onclick="setMode('construction')">Construction</button>
         <button class="mode-tab" onclick="setMode('costReport')">Costing</button>
-        <button class="mode-tab" onclick="setMode('reports')" title="Comprehensive Report: project summary, site map, all drawings, 3D model, photorealistic render, full QS quotation, BOQ — print or save as PDF" style="background:#1b5e20;border-color:#4caf50;color:#a5d6a7;font-weight:600">📑 Reports</button>
+        <button class="mode-tab" onclick="setMode('reports')" title="Project report (not online yet)" style="background:#1b5e20;border-color:#4caf50;color:#a5d6a7;font-weight:600">📑 Reports</button>
         <span style="display:inline-block;width:1px;height:20px;background:#2a3070;margin:0 4px;align-self:center"></span>
         <button class="mode-tab" onclick="setMode('villaStudio')" title="Villa design tools — not online yet">🏛️ Villa Studio</button>
         <button class="mode-tab" onclick="setMode('experience')" title="Experience Design Engine: solar path, lifestyle journeys, emotion, flow, restraint, brief, palettes">✨ Experience</button>
-        <button class="mode-tab" onclick="setMode('physics')" title="Building physics: daylight, acoustics, U-value, egress, accessibility, shadow study">☀️ Physics</button>
-        <button class="mode-tab" onclick="setMode('engineeringPro')" title="Engineering calcs: wind, seismic, RC beam, steel bolt, geotech, frame, hydrology, site hazard">⚙️ Engineering+</button>
+        <button class="mode-tab" onclick="setMode('physics')" title="Building physics: daylight factor, reverberation time, U-value, sun position">☀️ Physics</button>
+        <button class="mode-tab" onclick="setMode('engineeringPro')" title="Engineering: wind (ASCE 7 / Eurocode), seismic ELF, RC beam, steel bolt, bearing capacity, runoff">⚙️ Engineering+</button>
         <button class="mode-tab" onclick="setMode('qsPro')" title="QS suite: FX, materials, rate buildup, cashflow, valuation, tender, Monte Carlo, EVM, carbon, BOQ, NRM1, CPM, VE">💰 QS+</button>
         <button class="mode-tab" onclick="setMode('safety')" title="Safety & health: ISO 45001 risk register + 7 method statements">🦺 Safety</button>
         <button class="mode-tab" onclick="setMode('curation')" title="Design intelligence: brief parser, Marbella details, interior palette, plants, irrigation">🎨 Curation</button>
@@ -464,6 +475,14 @@ let currentSVG='', cadCtx=null, cadDrawing=false, cadPenColor='#0c2461', cadPenW
    over slow networks. */
 async function init(){
     buildNav();
+    // Toolbar shows only what works online (2026-10-20). Modes whose server
+    // routes are missing, and tile groups with no live tile, are hidden; their
+    // code stays and deep links (?mode=…) still open them with the notice.
+    const HIDE_MODES = new Set([...Object.keys(SUITE_OFFLINE_MODES), 'villaStudio', 'experience', 'qsPro', 'safety', 'curation']);
+    document.querySelectorAll('.mode-tab').forEach((b) => {
+      const m = (b.getAttribute('onclick') || '').match(/setMode\('([^']+)'\)/);
+      if (m && HIDE_MODES.has(m[1])) b.style.display = 'none';
+    });
     // Open on the calculators that work online (2026-10-19 tool audit); the
     // phase wizard is one click away and says what it cannot do.
     setMode('engineeringPro');
@@ -472,27 +491,21 @@ async function init(){
     // interactive tasks.
     const warm = async () => {
       if (catalog) return;
-      try{
-        const r = await fetch(API+'/components/catalog');
-        const d = await r.json();
-        if (d.success) catalog = d.catalog;
-      }catch(e){}
+      // /api/components/catalog is not online: no request (it 404'd on every load; 2026-10-20).
+      return;
     };
     if (window.requestIdleCallback) requestIdleCallback(warm, {timeout:2000});
     else setTimeout(warm, 400);
 }
 
 function buildNav(){
-    let h='<div class="nav-grp">Design Phases</div>';
-    PHASES.forEach((p,i)=>{h+='<div class="nav-item'+(i===0?' active':'')+'" onclick="goPhase('+i+')" id="nv'+i+'"><span class="dot"></span>'+p.ico+' '+p.n+'. '+p.name+'</div>';});
-    h+='<div class="nav-grp" style="margin-top:12px">Tools</div>';
-    h+='<div class="nav-item" onclick="setMode(\'builder\')"><span class="dot" style="background:#ff9800"></span>\u{1F3D7}\uFE0F Component Builder</div>';
-    h+='<div class="nav-item" onclick="setMode(\'describe\')"><span class="dot" style="background:#26a69a"></span>\u{1F3E0} Describe &amp; Generate</div>';
+    // The 13-phase wizard needs a project server that is not online, so it is
+    // not listed (2026-10-20); deep links show the offline notice.
+    let h='<div class="nav-grp">Tools</div>';
+    // Only tools that work online are listed (2026-10-20).
     h+='<div class="nav-item" onclick="setMode(\'floorEditor\')"><span class="dot" style="background:#e91e63"></span>✏️ Floor Plan Editor</div>';
-    h+='<div class="nav-item" onclick="setMode(\'bimStudio\')"><span class="dot" style="background:#00bcd4"></span>\u{1F3D7}️ BIM Studio</div>';
-    h+='<div class="nav-item" onclick="setMode(\'drawings\')"><span class="dot" style="background:#2196f3"></span>\u{1F4D0} 2D Drawings</div>';
-    h+='<div class="nav-item" onclick="setMode(\'viewer3d\')"><span class="dot" style="background:#9c27b0"></span>\u{1F3AE} 3D Viewer</div>';
-    h+='<div class="nav-item" onclick="setMode(\'bim\')"><span class="dot" style="background:#4caf50"></span>\u{1F4E6} BIM / IFC</div>';
+    h+='<div class="nav-item" onclick="setMode(\'physics\')"><span class="dot" style="background:#ffb300"></span>☀️ Building Physics</div>';
+    h+='<div class="nav-item" onclick="setMode(\'engineeringPro\')"><span class="dot" style="background:#42a5f5"></span>⚙️ Engineering Calculations</div>';
     document.getElementById('nav').innerHTML=h;
 }
 
@@ -505,6 +518,8 @@ const SUITE_OFFLINE_MODES = {
   steelRebar:'Steel section selection and rebar design', construction:'Construction management (RFIs, submittals)',
   costReport:'Costing and quotation', reports:'The comprehensive project report', interior:'The interior design workflow',
   mepClash:'MEP clash detection', highrise:'High-rise dynamics', healthcare:'Healthcare compliance audit', collab:'Multi-user collaboration',
+  describe:'Describe & generate (brief to design)', bimStudio:'BIM Studio', villaStudio:'Villa design studio', experience:'Experience design tools',
+  phases:'The 13-phase project wizard', qsPro:'The quantity-surveying suite', safety:'Safety method statements and risk register', curation:'Design curation tools',
 };
 function suiteOfflineNotice(m){
   return '<div style="background:rgba(255,183,77,.08);border:1px solid rgba(255,183,77,.35);border-radius:6px;padding:8px 12px;margin:10px 12px;font-size:11px;line-height:1.5;color:#ffcc80">'
@@ -519,6 +534,13 @@ function setMode(m){
     document.querySelectorAll('.mode-tab').forEach(t=>{
         t.classList.toggle('active',t.textContent.toLowerCase().includes(needle));
     });
+    // An offline mode (reached only by a deep link) shows its notice and does
+    // not start its screen, whose server calls would 404 (2026-10-20).
+    if(SUITE_OFFLINE_MODES[m]){
+        const ma=document.getElementById('mainArea');
+        if(ma){ma.style.padding='';ma.style.overflow='auto';ma.innerHTML='<div id="suite-offline-note">'+suiteOfflineNotice(m)+'</div>';}
+        return;
+    }
     if(m==='phases')goPhase(curPhase);
     else if(m==='builder')showBuilder();
     else if(m==='describe')showDescribeMode();
@@ -2556,10 +2578,8 @@ function bimTab(){
         '<div>\u{1F4C1} <b>IfcProject</b> - EIMS Building</div>'+
         '<div class="bim-node">\u{1F4C1} <b>IfcSite</b></div>'+
         '<div class="bim-node"><div class="bim-node">\u{1F3E2} <b>IfcBuilding</b></div></div>'+
-        '<div class="bim-node" style="color:#444;font-size:9px">Generate IFC to populate tree</div></div></div>'+
-        '<div class="card"><div class="card-h">Compatibility <span style="font-size:9px;color:#888">(via IFC2x3 exchange)</span></div>'+
-        '<table style="width:100%;font-size:10px;border-collapse:collapse"><tr style="background:rgba(100,181,246,.06)"><th style="padding:4px;text-align:left;color:#5c6bc0">Software</th><th>IFC Import</th><th>IFC Export</th><th>Clash</th><th>4D Scheduling</th></tr>'+
-        [['EmersonEIMS online suite','Not yet','Not yet','Not yet','Not yet'],['ArchiCAD','YES','YES','Via Solibri','Via Plugin'],['BlenderBIM','YES','YES','Via Script','No'],['FreeCAD','PARTIAL','PARTIAL','No','No'],['IFC.js','YES','View Only','No','No'],['Tekla','YES','YES','YES','Via Primavera']].map(r=>'<tr><td style="padding:3px;color:#8899aa">'+r[0]+'</td>'+r.slice(1).map(v=>'<td><span class="tag '+(v==='YES'?'tag-ok':v==='PARTIAL'?'tag-warn':v.startsWith('Via')?'tag-warn':'tag-fail')+'">'+v+'</span></td>').join('')+'</tr>').join('')+'</table><div style="font-size:8px;color:#666;margin-top:4px">* Compatibility tested via IFC2x3 file exchange. Clash/4D depend on target software capabilities.</div></div>';
+        '<div class="bim-node" style="color:#444;font-size:9px">Generate IFC to populate tree</div></div></div>';
+        // IFC compatibility table removed (2026-10-20): it listed ArchiCAD/Tekla as tested while IFC export is not online.
 }
 
 async function generateIFC(){
@@ -5530,7 +5550,7 @@ async function fetchLocationIntel(location){
             if(r.climate_zone)h+=rb('\u2600\uFE0F Climate',r.climate_zone.charAt(0).toUpperCase()+r.climate_zone.slice(1));
             if(r.seismic_zone)h+=rb('\uD83C\uDF0B Seismic',r.seismic_zone);
             if(r.design_tips){
-                h+='</div><div style="margin-top:8px"><b style="color:#42a5f5;font-size:10px">\u2728 AI Design Tips:</b><ul style="font-size:10px;margin:4px 0;padding-left:16px;color:#aaa">';
+                h+='</div><div style="margin-top:8px"><b style="color:#42a5f5;font-size:10px">\u2728 Design tips:</b><ul style="font-size:10px;margin:4px 0;padding-left:16px;color:#aaa">';
                 r.design_tips.forEach(t=>{h+='<li>'+t+'</li>';});
                 h+='</ul></div>';
             }else h+='</div>';
@@ -6989,10 +7009,10 @@ const PRO_CATALOG = [
     ep:'/api/design/villa/viewer', embed:true,
     refs:['Three.js r160 + GLTF','Mediterranean sky + Marbella sun lighting','PBR materials (white render, glazing, travertine, pool, lawn)'],
     f:[]},
-  {id:'vs_ai_render', grp:'Villa Studio', title:'🤖 AI exterior render (Pollinations)',
-    desc:'Generate a photorealistic exterior shot of the villa using the Pollinations open-source AI (Flux model). No API key, no sign-up. Takes ~10 seconds. Best for client presentations and mood boards.',
+  {id:'vs_ai_render', grp:'Villa Studio', title:'Exterior visualisation',
+    desc:'Exterior visualisation. Not online.',
     ep:'POLLINATIONS_EXTERIOR', mth:'POLLINATIONS',
-    refs:['Pollinations.ai (Flux model)','Berlin-based open-source generative AI','No API key required · zero data retention'],
+    refs:['Not online'],
     f:[
       {k:'style',type:'select',opts:['marbella_modern','andalusian_courtyard','mediterranean_classic','contemporary_minimalist','tropical_beach','alpine_chalet'],def:'marbella_modern',l:'Architectural style'},
       {k:'setting',type:'select',opts:['Mediterranean coast','hillside overlooking sea','suburban street','desert landscape','forest clearing','urban corner plot','lakeside','olive grove'],def:'Mediterranean coast',l:'Setting / location'},
@@ -7002,10 +7022,10 @@ const PRO_CATALOG = [
       {k:'levels',type:'number',def:2,l:'Levels'},
       {k:'seed',type:'number',def:42,l:'Random seed (change for variation)'},
     ]},
-  {id:'vs_ai_interior', grp:'Villa Studio', title:'🤖 AI interior render (Pollinations)',
+  {id:'vs_ai_interior', grp:'Villa Studio', title:'Interior visualisation',
     desc:'Generate an interior room shot — perfect to show clients the emotion/palette before finishes are specified.',
     ep:'POLLINATIONS_INTERIOR', mth:'POLLINATIONS',
-    refs:['Pollinations.ai (Flux model)','No API key required'],
+    refs:['Not online'],
     f:[
       {k:'room_type',type:'select',opts:['living room','master bedroom','kitchen','dining room','bathroom','home office','terrace'],def:'living room',l:'Room type'},
       {k:'style',type:'select',opts:['marbella_modern','andalusian_courtyard','mediterranean_classic','scandinavian','japandi','industrial_loft','tropical_luxury'],def:'marbella_modern',l:'Interior style'},
@@ -7099,7 +7119,6 @@ const PRO_CATALOG = [
     f:[
       {k:'volume_m3',type:'number',def:200,l:'Room volume (m³)'},
       {k:'method',type:'select',opts:['sabine','eyring'],def:'sabine',l:'Method'},
-      {k:'room_type',type:'select',opts:['office','classroom','meeting','auditorium','residential'],def:'office',l:'Room type'},
       {k:'surfaces',type:'textarea',
         def:'[\n  {"description":"ceiling","area_m2":80,"alpha":0.04},\n  {"description":"floor","area_m2":80,"alpha":0.30},\n  {"description":"walls","area_m2":40,"alpha":0.10}\n]',l:'Surfaces (JSON array)'},
     ]},
@@ -7161,8 +7180,8 @@ const PRO_CATALOG = [
     ep:'/api/loads/wind/asce7', mth:'POST',
     refs:['ASCE 7-22 §26.10 (velocity pressure)'],
     f:[
-      {k:'V_mph',type:'number',def:115,l:'Basic wind speed (mph)'},
-      {k:'height_ft',type:'number',def:30,l:'Mean roof height (ft)'},
+      {k:'V_ms',type:'number',def:51.4,step:'0.1',l:'Basic wind speed (m/s)'},
+      {k:'height_m',type:'number',def:9.1,step:'0.1',l:'Mean roof height (m)'},
       {k:'exposure',type:'select',opts:['B','C','D'],def:'C',l:'Exposure'},
       {k:'enclosure',type:'select',opts:['enclosed','partially_enclosed','open'],def:'enclosed',l:'Enclosure'},
     ]},
@@ -7183,7 +7202,7 @@ const PRO_CATALOG = [
       {k:'R',type:'number',def:8,l:'R factor'},
       {k:'Ie',type:'number',def:1.0,step:'0.1',l:'Ie'},
       {k:'W_kN',type:'number',def:8896,l:'Seismic weight W (kN)'},
-      {k:'height_ft',type:'number',def:48,l:'Building height (ft)'},
+      {k:'height_m',type:'number',def:14.6,step:'0.1',l:'Building height (m)'},
       {k:'structure_type',type:'select',opts:['steel_moment_frame','concrete_moment_frame','eccentric_braced','other'],def:'steel_moment_frame',l:'Structure type'},
     ]},
   {id:'en_rc', grp:'Engineering+', title:'RC beam (EN 1992-1-1)',
@@ -7687,7 +7706,12 @@ function proRenderResult(endpoint,data){
   if(override){
     try{ body=override(main,specials); }catch(e){ body=`<div class="err">render error: ${e.message}</div>`+proRenderObject(main); }
   } else {
-    body = proHeadlines(main) + proRenderChecks(main.checks) + proRenderObject(main);
+    // Values shown as headline cards are not repeated in the table (2026-10-20).
+    const _hk=new Set(Object.entries(main).filter(([k,v])=>typeof v==='number'&&!k.startsWith('_')).slice(0,6).map(([k])=>k));
+    const _rest=Object.fromEntries(Object.entries(main).filter(([k])=>!_hk.has(k)&&k!=='warning'));
+    // A method-limit warning is shown as a banner, not a table row (2026-10-20).
+    const _warn = main.warning ? `<div style="margin:0 0 10px;padding:8px 12px;border-radius:6px;background:rgba(255,183,77,.1);border:1px solid rgba(255,183,77,.4);color:#ffcc80;font-size:12px">⚠ ${proEscape(main.warning)}</div>` : '';
+    body = _warn + proHeadlines(main) + proRenderChecks(main.checks) + proRenderObject(_rest);
   }
   const footer = proRenderFooter(specials);
   // Raw-JSON dump is engineer-only — hidden from clients by default.
@@ -8186,6 +8210,8 @@ async function proExecute(calc){
     if(ctype.startsWith('application/json')){
       const j=await r.json();
       outBd.innerHTML=proRenderResult(calc.ep, j);
+      // Phones: bring the answer into view after Run (2026-10-20).
+      if (window.innerWidth < 900) setTimeout(()=>outBd.scrollIntoView({behavior:'smooth',block:'start'}),60);
       if (calc.mth === 'GET' && r.ok) proCachePut(url, ctype, j);
     } else if(ctype.startsWith('image/svg')){
       const svg=await r.text();
@@ -8395,7 +8421,7 @@ const PRO_LIVE_EPS = new Set([
   '/api/loads/wind/asce7','/api/loads/wind/eurocode','/api/loads/seismic/asce7-elf','/api/rc/beam/bending','/api/steel/bolt',
   '/api/geotech/bearing/terzaghi','/api/hydro/rational','/api/hydro/tc/kirpich','/api/hydro/runoff-coefficients',
 ]);
-function proIsLive(c){ return !!(c.embed || c.openInTab || c.mth==='POLLINATIONS' || PRO_LIVE_EPS.has(c.ep)); }
+function proIsLive(c){ return PRO_LIVE_EPS.has(c.ep); }
 function proTabLabel(c){ return c.title + (proIsLive(c) ? '' : ' <span style="color:#ffb74d;font-size:9px">· not online</span>'); }
 function proNotOnlineCard(c){
   return `<div class="pro-page"><div class="pro-inputs"><div class="card">
@@ -8463,7 +8489,9 @@ function proShowCalc(calcId){
   }
 }
 function proShowGroup(grp,icon){
-  const items=PRO_CATALOG.filter(x=>x.grp===grp);
+  // Only live tiles are listed (2026-10-20); a group with none shows its notice.
+  const allItems=PRO_CATALOG.filter(x=>x.grp===grp);
+  const items=allItems.some(proIsLive)?allItems.filter(proIsLive):allItems;
   const main=document.getElementById('mainArea');
   main.innerHTML=`
     <div style="padding:14px 18px;height:100%;display:flex;flex-direction:column">

@@ -25,6 +25,12 @@ import {
   analyzeSystemHealth, type FaultCode, type HealthMetrics, type HealthReport
 } from './SolarFaultCodes';
 
+/** Counted, never quoted as a round number (2026-10-20: the page said "500+" and held 247). */
+const SOLAR_FAULT_TOTAL =
+  Object.values(INVERTER_FAULT_CODES).reduce((n, l) => n + l.length, 0) +
+  Object.values(BATTERY_FAULT_CODES).reduce((n, l) => n + l.length, 0) +
+  PANEL_FAULT_CODES.length;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // CALCULATION ENGINE TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -219,34 +225,42 @@ export default function SolarBibleEngine() {
   // ═══════════════════════════════════════════════════════════════════════════════
 
   const runAIDiagnosis = useCallback(async () => {
-    if (!aiQuery.trim()) return;
-
+    const q = aiQuery.trim().toLowerCase();
+    if (!q) return;
     setIsAiLoading(true);
-    setAiResponse('');
-
-    try {
-      const response = await fetch('/api/ai/diagnose', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: aiQuery,
-          context: 'solar',
-          systemInfo: systemDesign ? {
-            panelWattage: systemDesign.totalPanelWattage,
-            batteryCapacity: systemDesign.totalBatteryCapacity,
-            inverterPower: systemDesign.inverter?.ratedPower,
-          } : null,
-        }),
-      });
-
-      const data = await response.json();
-      setAiResponse(data.diagnosis || data.response || 'Unable to get AI response. Please try again.');
-    } catch {
-      setAiResponse('Error connecting to AI service. Please check your internet connection and try again.');
+    const STOP = new Set(['the', 'and', 'my', 'is', 'not', 'with', 'for', 'a', 'an', 'of', 'on', 'it', 'to', 'in', 'are', 'was', 'has', 'have', 'system', 'solar', 'shows', 'error']);
+    const words = q.split(/[^a-z0-9]+/).filter((w) => w.length > 2 && !STOP.has(w));
+    const pool: { kind: string; brand: string; fc: FaultCode }[] = [
+      ...Object.entries(INVERTER_FAULT_CODES).flatMap(([brand, list]) => list.map((fc) => ({ kind: 'Inverter', brand, fc }))),
+      ...Object.entries(BATTERY_FAULT_CODES).flatMap(([brand, list]) => list.map((fc) => ({ kind: 'Battery', brand, fc }))),
+      ...PANEL_FAULT_CODES.map((fc) => ({ kind: 'Panel', brand: 'Any', fc })),
+    ];
+    const brandHit = Object.keys({ ...INVERTER_FAULT_CODES, ...BATTERY_FAULT_CODES }).find((br) => q.includes(br.toLowerCase()));
+    const scored = pool.map((p) => {
+      const title = (p.fc.description + ' ' + p.fc.category).toLowerCase();
+      const body = (p.fc.cause + ' ' + p.fc.causes.join(' ')).toLowerCase();
+      let s = 0;
+      if (q.includes(p.fc.code.toLowerCase())) s += 10;
+      for (const w of words) { if (title.includes(w)) s += 3; else if (body.includes(w)) s += 1; }
+      if (brandHit && p.brand === brandHit) s += 2;
+      return { ...p, s };
+    }).filter((p) => p.s >= 3).sort((x, y) => y.s - x.s);
+    // One entry per fault description, so the same fault from several brands is not repeated.
+    const seen = new Set<string>();
+    const top = scored.filter((p) => { const k = p.fc.description.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 3);
+    if (top.length === 0) {
+      setAiResponse('No fault in our solar fault list matches that description. Try the code shown on the inverter or battery display, or send the details to an engineer on WhatsApp below.');
+    } else {
+      setAiResponse(
+        'Rule-based lookup: closest matches in our solar fault list (ranked by keyword match, not probability)\n\n' +
+        top.map((p, i) =>
+          `${i + 1}. ${p.fc.code}: ${p.fc.description} (${p.kind}${p.brand !== 'Any' ? ', ' + p.brand : ''}; ${p.fc.severity})\n   Likely causes: ${p.fc.causes.slice(0, 3).join('; ') || p.fc.cause}\n   What to do: ${p.fc.solutions.slice(0, 3).join('; ') || p.fc.solution}`
+        ).join('\n\n') +
+        '\n\nIf the fault keeps returning, isolate the system safely and ask an engineer.'
+      );
     }
-
     setIsAiLoading(false);
-  }, [aiQuery, systemDesign]);
+  }, [aiQuery]);
 
   // ═══════════════════════════════════════════════════════════════════════════════
   // CALCULATIONS
@@ -506,7 +520,7 @@ export default function SolarBibleEngine() {
             { id: 'calculator', label: 'System Sizing', icon: <Calculator className="w-4 h-4" /> },
             { id: 'faultcodes', label: 'Fault Codes', icon: <AlertCircle className="w-4 h-4" /> },
             { id: 'health', label: 'Health Analysis', icon: <Heart className="w-4 h-4" /> },
-            { id: 'ai', label: 'AI Diagnosis', icon: <Brain className="w-4 h-4" /> },
+            { id: 'ai', label: 'Describe a Fault', icon: <Brain className="w-4 h-4" /> },
           ].map(tab => (
             <button
               key={tab.id}
@@ -1006,7 +1020,7 @@ export default function SolarBibleEngine() {
       {mode === 'faultcodes' && (
         <div className="p-6">
           <h3 className="text-xl font-bold text-white mb-4">Solar Fault Code Diagnosis</h3>
-          <p className="text-gray-400 mb-6">500+ fault codes for inverters, batteries, and panels</p>
+          <p className="text-gray-400 mb-6">{SOLAR_FAULT_TOTAL} fault codes for inverters, batteries, and panels</p>
 
           {/* Equipment Type Selector */}
           <div className="flex gap-2 mb-4">
@@ -1322,9 +1336,9 @@ export default function SolarBibleEngine() {
         <div className="p-6">
           <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
             <Brain className="w-6 h-6 text-purple-500" />
-            AI Solar Diagnosis
+            Describe a Solar Fault
           </h3>
-          <p className="text-gray-400 mb-6">Describe your issue and get expert AI-powered advice</p>
+          <p className="text-gray-400 mb-6">Describe what you see; we match it against our solar fault list ({SOLAR_FAULT_TOTAL} codes). This is a rule-based lookup, not an AI.</p>
 
           <div className="space-y-4">
             <textarea
@@ -1347,7 +1361,7 @@ export default function SolarBibleEngine() {
               ) : (
                 <>
                   <Brain className="w-5 h-5" />
-                  Get AI Diagnosis
+                  Find Matching Faults
                 </>
               )}
             </button>
@@ -1360,12 +1374,12 @@ export default function SolarBibleEngine() {
               >
                 <h4 className="text-lg font-bold text-purple-400 mb-3 flex items-center gap-2">
                   <Lightbulb className="w-5 h-5" />
-                  AI Diagnosis
+                  Matching faults
                 </h4>
                 <div className="text-gray-300 whitespace-pre-wrap">{aiResponse}</div>
 
                 <a
-                  href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent(`Hi! I need help with my solar system. AI diagnosed: ${aiResponse.substring(0, 200)}...`)}`}
+                  href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent(`Hi! I need help with my solar system: ${aiQuery.substring(0, 200)}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-4 flex items-center justify-center gap-2 py-3 bg-[#25D366] text-white font-bold rounded-xl hover:bg-[#22c55e] w-full"
@@ -1404,7 +1418,7 @@ export default function SolarBibleEngine() {
       {/* Footer */}
       <div className="px-6 py-4 bg-gray-800/50 border-t border-gray-700">
         <p className="text-xs text-gray-500 text-center">
-          Solar Bible Calculator v3.0 | AI-Powered by EmersonEIMS | 300+ Equipment | 500+ Fault Codes | Health Analytics
+          Solar Bible Calculator | EmersonEIMS | {SOLAR_FAULT_TOTAL} fault codes | Health analysis
         </p>
       </div>
     </div>

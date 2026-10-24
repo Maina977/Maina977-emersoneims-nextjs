@@ -360,6 +360,26 @@ export function sanitizeAnalysisResult(result: any): void {
   // independent estimates. This is THE definitive recommendation.
   // ══════════════════════════════════════════════════════════════
   result.finalConsensus = computeFinalConsensus(result);
+
+  // ONE interval per quantity: every panel that shows a range shows the
+  // consensus range (2026-10-20 audit found two different depth and
+  // probability ranges in the same report).
+  const fc = result.finalConsensus as any;
+  if (fc) {
+    const r = result as any;
+    const d = fc.depthRange.map((v: number) => Math.round(v)) as [number, number];
+    // The range must contain the field evidence it is built on: the quartiles of
+    // productive boreholes within 20 km (2026-10-20 audit: Garissa 86-130 m against
+    // a 150 m field median).
+    const fb = r.fieldDepthBand;
+    if (fb && Number(fb.lq) > 0 && Number(fb.uq) > 0) { d[0] = Math.min(d[0], Math.round(fb.lq)); d[1] = Math.max(d[1], Math.round(fb.uq)); }
+    fc.depthRange = d;
+    fc.yieldRange = fc.yieldRange.map((v: number) => Math.round(v * 10) / 10);
+    const y = fc.yieldRange as [number, number];
+    const p = fc.probabilityRange as [number, number];
+    if (r.uncertainty) { r.uncertainty.depthRange = d; r.uncertainty.yieldRange = y; r.uncertainty.probabilityRange = p; }
+    if (r.drillDecision) { r.drillDecision.depthRange_m = d; r.drillDecision.yieldRange_m3hr = y; }
+  }
 }
 
 /**
@@ -639,8 +659,9 @@ export function propagateGoverningValues(result: any): void {
     const gdTxt = Number.isFinite(gD) ? `${Math.round(gD)}` : null;
     const stampProse = (s: any) => {
       if (typeof s !== 'string') return s;
-      let out = s.replace(/Expected yield:\s*[\d.]+\s*m³?\/?h(r|our)?/gi, `Expected yield: ${gyTxt} m³/hr (governing reconciled value)`);
-      if (gdTxt) out = out.replace(/Target depth:\s*[\d.]+\s*m/gi, `Target depth: ${gdTxt}m (governing)`);
+      // Idempotent: tags from earlier passes are consumed, not repeated (2026-10-20).
+      let out = s.replace(/Expected yield:\s*[\d.]+\s*m³?\/?h(r|our)?(\s*\(governing reconciled value\))*/gi, `Expected yield: ${gyTxt} m³/hr (governing reconciled value)`);
+      if (gdTxt) out = out.replace(/Target depth:\s*[\d.]+\s*m(\s*\(governing\))*/gi, `Target depth: ${gdTxt}m (governing)`);
       return out;
     };
     hg.drillerBrief = stampProse(hg.drillerBrief);
@@ -730,7 +751,7 @@ function computeFinalConsensus(r: any): FinalConsensus {
         yield: dp.predictedYield_m3h || r.estimatedYield,
         prob: dp.successProbability / 100, // it's 0-100 scale
         weight: 2,
-        label: 'ML Drilling Predictor',
+        label: 'Drilling success scoring',
       });
     }
   }
@@ -758,7 +779,7 @@ function computeFinalConsensus(r: any): FinalConsensus {
         yield: hi.expectedYield_m3hr,
         prob: hi.successProbability,
         weight: 2,
-        label: 'Hybrid ERT + AI',
+        label: 'Hybrid ERT + desktop model',
       });
     }
   }
@@ -784,14 +805,16 @@ function computeFinalConsensus(r: any): FinalConsensus {
   const depths = estimates.map(e => e.depth).filter(Number.isFinite);
   const yields = estimates.map(e => e.yield).filter(Number.isFinite);
   const probs = estimates.map(e => e.prob).filter(Number.isFinite);
+  // The governing value is never the edge of its own range: at least ±10%
+  // depth, ±25% yield and ±5 points probability either side (2026-10-20).
   const depthRange: [number, number] = depths.length > 1
-    ? [safeDepth(Math.min(...depths, finalDepth)), safeDepth(Math.max(...depths, finalDepth))]
+    ? [safeDepth(Math.min(...depths, finalDepth * 0.9)), safeDepth(Math.max(...depths, finalDepth * 1.1))]
     : [safeDepth(finalDepth * 0.8), safeDepth(finalDepth * 1.2)];
   const yieldRange: [number, number] = yields.length > 1
-    ? [safeYield(Math.min(...yields, finalYield)), safeYield(Math.max(...yields, finalYield))]
+    ? [safeYield(Math.min(...yields, finalYield * 0.75)), safeYield(Math.max(...yields, finalYield * 1.25))]
     : [safeYield(finalYield * 0.7), safeYield(finalYield * 1.3)];
   const probabilityRange: [number, number] = probs.length > 1
-    ? [safeProb(Math.min(...probs, finalProb)), safeProb(Math.max(...probs, finalProb))]
+    ? [safeProb(Math.min(...probs, finalProb - 0.05)), safeProb(Math.max(...probs, finalProb + 0.05))]
     : [safeProb(finalProb * 0.85), safeProb(finalProb * 1.15)];
 
   // Agreement: how close are the estimates?
@@ -822,7 +845,7 @@ function computeFinalConsensus(r: any): FinalConsensus {
     disclaimer: assessmentGrade === 'DESKTOP SCREENING'
       ? 'This assessment is based solely on remote/desktop analysis. Field geophysical verification (ERT, TDEM, or seismic) is REQUIRED before drilling decisions.'
       : assessmentGrade === 'PRE-FEASIBILITY'
-      ? 'This pre-feasibility assessment combines AI analysis with available remote data. Ground-truthing with at least one geophysical method is strongly recommended before commitment.'
+      ? 'This pre-feasibility assessment combines rule-based desktop scoring with available public data. Ground-truthing with at least one geophysical method is strongly recommended before commitment.'
       : assessmentGrade === 'ENGINEERING GRADE'
       ? 'This engineering-grade assessment is supported by field geophysical data. Suitable for preliminary design, subject to pump test verification.'
       : 'This bankable-grade assessment meets the requirements for investment decisions. Field data, pump test, and independent verification have been incorporated.',

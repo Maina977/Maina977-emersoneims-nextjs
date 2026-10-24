@@ -296,11 +296,44 @@ export class WaterQualityAnalyzer {
   static getRegionalWQModifiers(lat: number, lon: number): {
     fluorideMult: number; ironMult: number; arsenicMult: number; tdsMult: number;
     warnings: string[]; province: string; citations: string[];
+    /** Minimum TDS (mg/L) typical of the province; 0 = none. */
+    tdsFloor: number;
   } {
     const warnings: string[] = [];
     const citations: string[] = [];
     let province = 'Global default';
     let fluorideMult = 1.0, ironMult = 1.0, arsenicMult = 1.0, tdsMult = 1.0;
+    let tdsFloor = 0;
+
+    // ── Kenya provinces first (2026-10-20) ──
+    // North-eastern sedimentary basins (Garissa, Wajir, Mandera, Tana River,
+    // eastern Isiolo/Marsabit): brackish groundwater is the norm; Merti and
+    // Wajir boreholes commonly exceed 1,000 mg/L TDS.
+    const inKenyaBox = lat >= -4.8 && lat <= 5.1 && lon >= 33.9 && lon <= 41.95;
+    if (inKenyaBox && lon >= 38.6 && lat >= -2.3 && !(lon >= 39.2 && lat <= -1.6)) {
+      province = 'North-eastern Kenya sedimentary basins';
+      tdsMult = 1.5; tdsFloor = 1100; fluorideMult = 1.5;
+      warnings.push('NORTH-EASTERN KENYA: brackish (salty) groundwater is common; many boreholes exceed 1,000 mg/L TDS. Test salinity before buying a pump or tank.');
+      citations.push('Swarzenski & Mundorff (1977) Geohydrology of North Eastern Province, Kenya (USGS WSP 1757-N)');
+      citations.push('MacDonald et al. (2012) Quantitative maps of groundwater resources in Africa');
+      return { fluorideMult, ironMult, arsenicMult, tdsMult, tdsFloor, warnings, province, citations };
+    }
+    // Coastal strip (Kwale, Mombasa, Kilifi, Lamu): saline intrusion near the sea.
+    if (inKenyaBox && lon >= 39.2 && lat <= -1.6) {
+      province = 'Kenya coastal aquifers';
+      tdsMult = 1.3; tdsFloor = 700;
+      warnings.push('COAST: over-pumping near the sea draws in salt water. Keep pumping within the tested yield and test salinity.');
+      citations.push('Comte et al. (2016) Challenges in groundwater resource management in coastal aquifers of East Africa');
+      return { fluorideMult, ironMult, arsenicMult, tdsMult, tdsFloor, warnings, province, citations };
+    }
+    // Eastern basement (Machakos, Makueni, Kitui): pockets of salty water.
+    if (inKenyaBox && lon >= 37.2 && lon < 38.6 && lat <= 0.3) {
+      province = 'Eastern Kenya basement (Ukambani)';
+      tdsMult = 1.4; tdsFloor = 450;
+      warnings.push('EASTERN BASEMENT: salty boreholes occur in parts of Machakos, Makueni and Kitui. Test salinity.');
+      citations.push('MacDonald et al. (2012) Quantitative maps of groundwater resources in Africa');
+      return { fluorideMult, ironMult, arsenicMult, tdsMult, tdsFloor, warnings, province, citations };
+    }
 
     // East African Rift Valley AXIS (Ethiopia + Kenya Gregory Rift + N Tanzania).
     // The rift is a NARROW graben, not the whole of East Africa. The old box
@@ -308,7 +341,7 @@ export class WaterQualityAnalyzer {
     // lon 34.65, in the Lake Victoria basin) and stamped a 3.5x fluoride
     // multiplier on them (re-audit #6). Restrict to the volcanic rift axis
     // (roughly lon >= 35.5) where the extreme-fluoride literature actually applies.
-    if (lat >= -6 && lat <= 12 && lon >= 35.5 && lon <= 42) {
+    if (lat >= -6 && lat <= 12 && lon >= 35.5 && (inKenyaBox ? lon <= 37.2 : lon <= 42)) {
       province = 'East African Rift Valley';
       fluorideMult = 3.5;  // Typical 1.5-15 mg/L (Rango et al. 2012)
       tdsMult = 1.8;       // Alkaline volcanic: TDS 200-1500 mg/L
@@ -388,7 +421,7 @@ export class WaterQualityAnalyzer {
       citations.push('UN-ESCWA/BGR (2013) Shared Aquifer Resources in Western Asia');
     }
 
-    return { fluorideMult, ironMult, arsenicMult, tdsMult, warnings, province, citations };
+    return { fluorideMult, ironMult, arsenicMult, tdsMult, tdsFloor, warnings, province, citations };
   }
 
   private calculateContaminationImpact(sources: any[]): any {

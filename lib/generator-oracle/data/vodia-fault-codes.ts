@@ -86,7 +86,7 @@ function createVODIACode(
       'Allow engine to cool before working on cooling system'
     ] : ['Follow standard safety procedures', 'Use proper PPE when working on engine'],
     preventiveMeasures: ['Regular maintenance per manufacturer schedule', 'Use quality parts and fluids', 'Monitor via diagnostic tool periodically'],
-    verified: true,
+    verified: false, // independently written guide, not checked line-by-line against the OEM manual (2026-10-20)
     lastUpdated: '2024-01-15'
   }));
 }

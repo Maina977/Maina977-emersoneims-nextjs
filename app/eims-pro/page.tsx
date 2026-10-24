@@ -2,10 +2,9 @@ import type { Metadata } from 'next';
 import EimsProClient from './EimsProClient';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
-import FlagshipProductSchema from '@/components/seo/FlagshipProductSchema';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
-const URL = `${SITE}/eims-pro`;
+const URL = `${SITE}/solutions/building`; // canonical (2026-10-20)
 
 export const metadata: Metadata = {
   // 2026-10-19 tool audit: promised "phases, reports, BIM, costing and AI
@@ -22,7 +21,8 @@ export const metadata: Metadata = {
     'EmersonEIMS PRO',
   ],
   robots: { index: true, follow: true },
-  alternates: { canonical: '/eims-pro' },
+  // Same suite as /solutions/building: one canonical page for it (2026-10-20 audit).
+  alternates: { canonical: '/solutions/building' },
   openGraph: {
     title: 'EIMS PRO — Building Design Calculators',
     description: 'Free structural, wind, geotechnical, daylight and acoustics calculators with the code clause on every result.',
@@ -45,15 +45,7 @@ export const metadata: Metadata = {
 export default function EimsProPage() {
   return (
     <>
-      <FlagshipProductSchema
-        name="EIMS PRO"
-        url={URL}
-        description="Building design calculators: wind and seismic loads, RC beam, steel bolt, bearing capacity, runoff, U-value, daylight factor and reverberation time."
-        category="Building Design Calculators"
-        applicationCategory="EngineeringApplication"
-        keywords={['Wind Load', 'RC Beam', 'Bearing Capacity', 'U-value', 'Daylight Factor']}
-        industry="EPCs, QS, Architects, Project Managers"
-      />
+      {/* Product schema lives on /solutions/building, this page's canonical (2026-10-20). */}
       <B2BCommercialBand profile={B2B_PROFILES.buildingSuite} />
       {/*
         EimsProClient is dynamically imported with ssr:false, so NOTHING it

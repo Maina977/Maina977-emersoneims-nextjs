@@ -140,6 +140,10 @@ interface SpnDef {
   name: string;
   category: string;
   note: string;
+  /** Note for a below-normal reading (FMI 1/17/18/21), when it differs. */
+  noteLow?: string;
+  /** Note for an above-normal reading (FMI 0/15/16/20), when it differs. */
+  noteHigh?: string;
   fmis: number[];
 }
 
@@ -150,7 +154,7 @@ const NETWORK = [2, 9, 12, 13, 19, 31];
 
 const SPN: SpnDef[] = [
   // Lubrication
-  { spn: 100, name: 'Engine Oil Pressure', category: 'Lubrication', note: 'A LOW reading is a shutdown condition on a diesel engine — never run on to investigate. A HIGH reading is usually a cold start, a sensor fault or a stuck relief valve.', fmis: RANGE_AND_ELEC },
+  { spn: 100, name: 'Engine Oil Pressure', category: 'Lubrication', note: 'Check the sender and its wiring against a mechanical gauge before replacing parts.', noteLow: 'Low oil pressure is a shutdown condition on a diesel engine — never run on to investigate. Check the oil level first, then confirm with a mechanical gauge.', noteHigh: 'High oil pressure is usually a cold start, a sensor fault or a stuck relief valve.', fmis: RANGE_AND_ELEC },
   { spn: 98, name: 'Engine Oil Level', category: 'Lubrication', note: 'Read with the set stopped and level; a running reading is not comparable.', fmis: RANGE_AND_ELEC },
   { spn: 175, name: 'Engine Oil Temperature', category: 'Lubrication', note: 'Rising oil temperature with normal coolant temperature points at the oil cooler or excessive load.', fmis: RANGE_AND_ELEC },
   // Cooling
@@ -167,7 +171,7 @@ const SPN: SpnDef[] = [
   { spn: 5571, name: 'High Pressure Common Rail Fuel Pressure Relief Valve', category: 'Fuel', note: 'An open relief valve dumps rail pressure and causes power loss.', fmis: [7, 11, 31] },
   { spn: 183, name: 'Engine Fuel Rate', category: 'Fuel', note: 'Useful for trending consumption against load rather than as a fault in isolation.', fmis: [2, 9, 19] },
   // Air and boost
-  { spn: 102, name: 'Intake Manifold 1 Pressure (Boost)', category: 'Air Intake', note: 'LOW boost with black smoke points at the turbo, its controls or an intake leak; HIGH boost points at a stuck wastegate or VGT control.', fmis: RANGE_AND_ELEC },
+  { spn: 102, name: 'Intake Manifold 1 Pressure (Boost)', category: 'Air Intake', note: 'Compare the reading with a gauge on the intake manifold before replacing the sensor.', noteLow: 'Low boost with black smoke points at the turbo, its controls or an intake leak.', noteHigh: 'High boost points at a stuck wastegate or VGT control.', fmis: RANGE_AND_ELEC },
   { spn: 105, name: 'Intake Manifold 1 Temperature', category: 'Air Intake', note: 'High intake temperature reduces available power and is often a charge-air-cooler or room-ventilation issue.', fmis: RANGE_AND_ELEC },
   { spn: 107, name: 'Air Filter 1 Differential Pressure', category: 'Air Intake', note: 'Rising differential pressure is the correct trigger for filter replacement, not the calendar.', fmis: RANGE_AND_ELEC },
   { spn: 106, name: 'Air Inlet Pressure', category: 'Air Intake', note: 'Compare against barometric pressure at site altitude.', fmis: RANGE_AND_ELEC },
@@ -197,7 +201,7 @@ const SPN: SpnDef[] = [
   { spn: 627, name: 'Power Supply (ECU)', category: 'Electrical', note: 'Voltage excursions here damage control electronics over time.', fmis: [2, 3, 4, 12] },
   { spn: 677, name: 'Start Relay / Starter Motor Relay', category: 'Starting', note: 'Distinguish relay drive faults from starter and battery condition.', fmis: ACTUATOR },
   { spn: 729, name: 'Inlet Air Heater 1', category: 'Starting', note: 'Cold-start aid; failure shows as hard starting and white smoke when cold.', fmis: ACTUATOR },
-  { spn: 626, name: 'Start Enable Device 1', category: 'Starting', note: 'Blocks cranking when not satisfied — check the interlock before the starter.', fmis: ACTUATOR },
+  { spn: 626, name: 'Start Enable Device 1', category: 'Starting', note: 'The cold-start aid (intake heater, glow plugs or ether injection). A fault shows as hard starting and white smoke when cold.', fmis: ACTUATOR },
   // Controller and network
   { spn: 629, name: 'Controller 1 (Engine ECU)', category: 'Control', note: 'A self-reported controller fault should not be cleared without recording the history first.', fmis: [2, 11, 12, 13, 31] },
   { spn: 630, name: 'Calibration Memory', category: 'Control', note: 'Verify the calibration matches the engine build after any module replacement.', fmis: [2, 12, 13, 31] },
@@ -342,6 +346,9 @@ function build(): J1939FaultCode[] {
         if ((f.fmi === 1 && SHUTDOWN_WHEN_LOW.has(s.spn)) || (f.fmi === 0 && SHUTDOWN_WHEN_HIGH.has(s.spn))) severity = 'shutdown';
         else if (ADVISORY_SPN.has(s.spn)) severity = 'warning';
       }
+      // "Has shut down" is a shutdown and "approaching shutdown" is critical (2026-10-20 audit).
+      if (f.fmi === 31 && s.spn === 1110) severity = 'shutdown';
+      if (f.fmi === 31 && s.spn === 1109) severity = 'critical';
 
       out.push({
         code: `SPN ${s.spn} / FMI ${f.fmi}`,
@@ -352,7 +359,7 @@ function build(): J1939FaultCode[] {
         category: s.category,
         severity,
         title: `${s.name} — ${f.label}`,
-        description: `${s.name}: ${f.meaning} ${s.note}`,
+        description: `${s.name}: ${f.meaning} ${([1, 17, 18, 21].includes(f.fmi) && s.noteLow) || ([0, 15, 16, 20].includes(f.fmi) && s.noteHigh) || s.note}`,
         causes: f.causes,
         remedies: f.remedies,
       });

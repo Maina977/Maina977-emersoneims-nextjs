@@ -141,11 +141,13 @@ export const DEPTH_COEFFICIENTS = [
 
 // ─── PART 4.4: WATER QUALITY PREDICTION (5) ───
 export const WQ_PREDICTIONS = [
-  { parameter:'TDS', method:'Random Forest (geology + depth + climate)', r2:'0.72', mae:'±85 mg/L' },
-  { parameter:'Fluoride', method:'Geology-specific lookup + depth', r2:'0.68', mae:'±0.3 mg/L' },
-  { parameter:'Arsenic', method:'Sediment type + redox conditions', r2:'0.65', mae:'±0.002 mg/L' },
-  { parameter:'Nitrate', method:'Land use + depth + recharge', r2:'0.60', mae:'±8 mg/L' },
-  { parameter:'Iron', method:'Reducing conditions + depth', r2:'0.55', mae:'±0.4 mg/L' },
+  // Screening only: typical values for the rock type. No accuracy has been
+  // measured; a laboratory test is the only result (2026-10-20 audit).
+  { parameter:'TDS / salinity', method:'Typical range for the rock type and climate; laboratory test required' },
+  { parameter:'Fluoride', method:'Rock-type risk (volcanic and Rift rocks are high risk); laboratory test required' },
+  { parameter:'Arsenic', method:'Sediment-type risk; laboratory test required' },
+  { parameter:'Nitrate', method:'Land-use and pit-latrine risk; laboratory test required' },
+  { parameter:'Iron / manganese', method:'Rock-type risk; laboratory test required' },
 ];
 
 // ─── PART 4.5: COST COMPONENTS — KENYA CONTEXT (10) ───
@@ -251,7 +253,7 @@ export const EXPORT_FORMATS = [
 
 // ─── PART 7.1: ACCURACY TARGETS (5) ───
 export const ACCURACY_TARGETS = [
-  { prediction:'Success/failure', target:'85%', bestInClass:'77% (WATex)', goal:'85%' },
+  { prediction:'Success/failure', target:'85%', bestInClass:'not measured', goal:'85%' },
   { prediction:'Depth (±15m)', target:'75%', bestInClass:'70%', goal:'80%' },
   { prediction:'Yield (±5 m³/h)', target:'70%', bestInClass:'65%', goal:'75%' },
   { prediction:'Water quality (potable/non)', target:'80%', bestInClass:'75%', goal:'85%' },

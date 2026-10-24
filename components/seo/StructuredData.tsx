@@ -229,7 +229,8 @@ export function DiagnosticSuiteSchema() {
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'EmersonEIMS Diagnostic Suite',
+    name: 'Generator Oracle',
+    url: 'https://www.emersoneims.com/generator-oracle',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web Browser',
     offers: {
@@ -241,19 +242,17 @@ export function DiagnosticSuiteSchema() {
     // No self-asserted aggregateRating — violates Google's structured-data
     // policy without on-page UGC reviews, and triggers "multiple aggregate
     // ratings" when several schema blocks coexist on one URL.
-    description: 'Professional generator diagnostic tool with curated error codes covering Cummins, Caterpillar, Perkins, DeepSea, PowerWizard and more. AI-powered fault analysis with step-by-step repair guides.',
+    // Only what the tool does (2026-10-20 audit): it is a rule-based lookup, it
+    // has no live telemetry, no WCAG conformance level has been audited, and the
+    // screenshot file did not exist.
+    description: 'Free generator fault-code lookup: controller alarms (DeepSea, ComAp, Woodward, SmartGen, CAT PowerWizard and more) and J1939 SPN/FMI engine codes, with step-by-step checks and reset steps.',
     featureList: [
-      'curated error codes Database',
-      'AI-Powered Diagnostics',
-      'Multi-Brand Support (Cummins, CAT, Perkins, DeepSea, PowerWizard)',
-      'Real-Time Telemetry',
-      'Offline Capability',
-      'Voice Control',
-      '7+ Languages Supported',
-      'WCAG 2.1 AAA Accessible'
+      'Controller alarm lookup',
+      'J1939 SPN/FMI engine-code reference',
+      'Step-by-step checks and reset steps',
+      'Symptom search',
+      '7 languages'
     ],
-    screenshot: 'https://www.emersoneims.com/images/diagnostic-suite-screenshot.jpg',
-    softwareVersion: '2.0',
     author: {
       '@type': 'Organization',
       name: 'EmersonEIMS',

@@ -141,9 +141,9 @@ export const ALL_SERVICES: Service[] = [
   {
     id: 'cummins-generators',
     slug: 'cummins-generators',
-    name: 'Cummins Generators',
-    shortName: 'Cummins Generators',
-    tagline: 'Cummins-powered sets, sized to your measured load',
+    name: 'Cummins-Powered Generators',
+    shortName: 'Cummins-Powered Generators',
+    tagline: 'New VOLTKA sets on Cummins engines, used Cummins sets, and service for both',
     // CLAIM POLICY — read before editing this block.
     // THIS IS THE LIVE FILE. lib/building/services/allServices.ts is a dead
     // mirror imported by nothing; fixing that one alone leaves the false claim
@@ -155,14 +155,14 @@ export const ALL_SERVICES: Service[] = [
     // claim. Both used to appear here, and this block feeds the Service schema
     // rendered on /generators — so it was asserting the claim to Google as
     // structured data. See app/why-emersoneims/page.tsx for the full policy.
-    description: 'Cummins generator supply, installation and maintenance in Kenya. 10kVA to 2000kVA diesel generators, backed by a 2-year warranty and 1 year of free servicing on new sets.',
-    longDescription: `EmersonEIMS supplies, installs and maintains Cummins generators across Kenya. We are an independent power engineering firm — we are not tied to a single manufacturer, so the set we recommend is the one that fits your load, your fuel budget and your site, not the one we are obliged to move.
+    description: 'Cummins-powered generators in Kenya: new VOLTKA sets built on Cummins engines (10-3000 kVA, open or canopied), used and slightly used Cummins sets, and servicing for both. 2-year workmanship warranty.',
+    longDescription: `EmersonEIMS supplies, installs and maintains Cummins-powered generators across Kenya. We are an independent power engineering firm, not a Cummins dealer, so the set we recommend is the one that fits your load, your fuel budget and your site.
 
-Our Cummins range runs from compact 10kVA units for small businesses and homes up to 2000kVA industrial sets for factories, hospitals and data centres. Every new generator we supply carries a 2-year warranty and one year of free servicing. Terms are set out in your written quotation.
+New sets are VOLTKA, our own make built on Cummins engines, from 10 kVA to 3000 kVA, open or in a closed canopy. We also sell used and slightly used Cummins generators, each inspected and load-tested before sale, and we service and repair Cummins sets whoever supplied them. Our workmanship carries a 2-year warranty; terms are set out in your written quotation.
 
 Support does not stop at the gate. Our mobile workshop reaches all 47 counties, so a set in Kisumu, Eldoret or Mombasa is serviced to the same standard as one in Nairobi — and we hold genuine spare parts rather than sourcing them after your set has already stopped.
 
-Why Cummins? The engines are known worldwide for reliability, fuel efficiency and long service life. Maintained properly, a Cummins generator will run dependably for decades — and maintenance is precisely what we do.`,
+Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and trained mechanics are easy to find. Maintained properly, a Cummins-powered set runs for many years, and maintenance is what we do.`,
 
     icon: '⚡',
     heroImage: '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
@@ -172,13 +172,13 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
       '/images/generator-installation.png'
     ],
 
-    metaTitle: 'Cummins Generators Kenya | 10kVA-2000kVA | EmersonEIMS',
-    metaDescription: 'Cummins generators in Kenya, 10kVA to 2000kVA. New sets carry a 2-year warranty and 1 year free servicing. Supply, installation and maintenance in all 47 counties. Call +254768860665',
+    metaTitle: 'Cummins-Powered Generators Kenya | New VOLTKA & Used Cummins | EmersonEIMS',
+    metaDescription: 'New VOLTKA generators on Cummins engines (10-3000 kVA), used Cummins sets, and Cummins servicing in all 47 counties. 2-year workmanship warranty. Call +254768860665',
     keywords: [
       'Cummins generators Kenya',
-      'Cummins generator dealer Kenya',
-      'buy Cummins generator Nairobi',
-      'Cummins 500kVA generator price Kenya',
+      'used Cummins generator Kenya',
+      'Cummins powered generator Nairobi',
+      'VOLTKA generator Kenya',
       'industrial generators Kenya',
       'diesel generators for sale Kenya',
       'backup power solutions Kenya',
@@ -188,17 +188,17 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
     benefits: [
       {
         title: '2-YEAR WARRANTY',
-        description: 'Warranty coverage on all new Cummins generators. Complete peace of mind for your investment.',
+        description: 'Our workmanship on supply, installation and service carries a 2-year warranty, on the terms in your quotation.',
         icon: '🛡️'
       },
       {
         title: 'Fuel Efficiency',
-        description: 'Cummins engines deliver exceptional fuel economy - up to 15% better than competitors at full load.',
+        description: 'We size the set to your measured load, so it runs where a diesel engine is most efficient instead of idling oversized.',
         icon: '⛽'
       },
       {
         title: 'Reliable Performance',
-        description: 'Proven track record with millions of Cummins generators operating worldwide in critical applications.',
+        description: 'Cummins engines are common in Kenya, so parts and experienced mechanics are close at hand.',
         icon: '✅'
       },
       {
@@ -208,7 +208,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
       },
       {
         title: 'Genuine Parts',
-        description: 'Access to genuine Cummins spare parts with fast delivery and competitive pricing.',
+        description: 'We source genuine Cummins spare parts and tell you the lead time before ordering.',
         icon: '🔧'
       }
     ],
@@ -217,13 +217,11 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
       'Electronic governor for stable frequency',
       'Low fuel consumption technology',
       'Sound attenuated canopy options',
-      'Automatic Transfer Switch (ATS) included',
-      'Remote monitoring capabilities',
+      'Automatic Transfer Switch (ATS) quoted to suit the site',
+      'Remote monitoring available as an option',
       'Deep Sea Electronics controllers',
-      'Heavy-duty alternators',
       'Extended fuel tank options',
-      'Parallel operation capability',
-      'EPA/CARB emission compliant'
+      'Parallel operation on suitable sets'
     ],
 
     targetCustomers: [
@@ -248,8 +246,8 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
       'Critical facility backup'
     ],
 
-    priceRange: 'KES 350,000 - KES 25,000,000',
-    startingPrice: 'From KES 350,000',
+    priceRange: 'New VOLTKA from KES 500,000; used sets priced per unit',
+    startingPrice: 'New VOLTKA from KES 500,000',
     pricingTiers: [
       {
         name: 'Small Business',
@@ -258,9 +256,9 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
         features: [
           'Perfect for small offices & shops',
           'Single-phase or three-phase options',
-          '2-Year Warranty included',
+          '2-year workmanship warranty',
           'Professional installation',
-          'Basic ATS included'
+          'ATS quoted to suit the site'
         ]
       },
       {
@@ -270,7 +268,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
         features: [
           'Ideal for factories & hotels',
           'Sound attenuated canopy',
-          '2-Year Warranty included',
+          '2-year workmanship warranty',
           'Automatic Transfer Switch',
           'Remote monitoring option',
           'Extended fuel tank'
@@ -280,11 +278,11 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
       {
         name: 'Industrial/Critical',
         price: 'KES 3,500,000 - 25,000,000',
-        description: '250kVA - 2000kVA generators',
+        description: '250kVA - 3000kVA generators',
         features: [
           'For hospitals, data centers, large industries',
           'Premium sound attenuation',
-          '2-Year Warranty included',
+          '2-year workmanship warranty',
           'Fully automatic operation',
           'Remote monitoring & control',
           'Parallel operation ready',
@@ -295,16 +293,16 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
 
     faqs: [
       {
-        question: 'Why should I choose Cummins generators over other brands?',
-        answer: 'Cummins has over a century of diesel engine engineering behind it, and the range is well supported in Kenya — parts for the common blocks are held locally rather than imported after a failure. We supply, install and service the full range, and new sets carry a two-year warranty on terms set out in your quotation.'
+        question: 'Do you sell new Cummins generators?',
+        answer: 'Our new sets are VOLTKA, our own make built on Cummins engines, from 10 kVA to 3000 kVA. We also sell used and slightly used Cummins generators, and we service Cummins sets whoever supplied them. We are not a Cummins dealer. Our workmanship carries a two-year warranty on the terms in your quotation.'
       },
       {
         question: 'What size Cummins generator do I need?',
-        answer: 'Generator sizing depends on your total load and startup requirements. As a guide: Small office (10-20kVA), Medium business (30-100kVA), Hotel/Factory (150-500kVA), Hospital/Data Center (500-2000kVA). We provide site surveys to calculate your exact requirements.'
+        answer: 'Generator sizing depends on your total load and startup requirements. As a guide: Small office (10-20kVA), Medium business (30-100kVA), Hotel/Factory (150-500kVA), Hospital/Data Center (500-3000kVA). We provide site surveys to calculate your exact requirements.'
       },
       {
         question: 'What is included in the 2-Year Warranty?',
-        answer: 'Our 2-Year Warranty covers all manufacturing defects in the engine, alternator, control panel, and canopy. It includes parts and labor for covered repairs. Terms and conditions apply - contact us for full details.'
+        answer: 'Our warranty is 2 years on workmanship: the supply, installation and service work we do. Cover for the equipment itself depends on whether the set is new or used and is written into your quotation before you pay.'
       },
       {
         question: 'How long does generator installation take?',
@@ -312,7 +310,7 @@ Why Cummins? The engines are known worldwide for reliability, fuel efficiency an
       },
       {
         question: 'Do you offer generator financing?',
-        answer: 'Yes! We partner with leading banks to offer flexible financing options. Pay up to 24 months with competitive interest rates. Contact us for financing options tailored to your needs.'
+        answer: 'Ask us when you request a quotation. Payment terms are agreed per project and written into the quotation.'
       },
       {
         question: 'What maintenance is required for Cummins generators?',

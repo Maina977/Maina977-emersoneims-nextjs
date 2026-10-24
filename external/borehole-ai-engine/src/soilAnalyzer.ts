@@ -59,7 +59,7 @@ export class SoilAnalyzer {
       laterite: { withSG: '70-82%', withoutSG: '40-55%' },  // requires chemical confirmation
       silty:    { withSG: '72-84%', withoutSG: '42-58%' },  // easily confused with loamy
     };
-    const conf = typeConfidence[soilType] || typeConfidence.loamy;
+    void typeConfidence;
 
     return {
       type: soilType,
@@ -74,7 +74,9 @@ export class SoilAnalyzer {
       dataSource: hasRealData
         ? 'ISRIC SoilGrids v2.0 (250m resolution, real measurements)'
         : 'Pixel-based classification + USDA Soil Taxonomy heuristics',
-      accuracy: hasRealData ? conf.withSG : conf.withoutSG,
+      // No accuracy has been measured for this classifier (2026-10-20 audit: a
+      // 45-60% figure was printed, even on runs with no photo).
+      accuracy: hasRealData ? 'Not measured for this tool (ISRIC SoilGrids publishes its own validation)' : 'Not measured (photo colour heuristic)',
       realSoilGrids: !!hasRealData,
     };
   }

@@ -33,7 +33,7 @@ type WizardWindow = Window & { setMode?: (m: string) => void };
 // it never loops. Bump the KEY date whenever the wizard file is replaced.
 function killOldServiceWorkerOnce() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
-  const KEY = 'eims-bs-cache-cleared-20261019';
+  const KEY = 'eims-bs-cache-cleared-20261020';
   if (sessionStorage.getItem(KEY)) return;
   Promise.all([
     navigator.serviceWorker.getRegistrations().then((regs) =>
@@ -133,7 +133,7 @@ export default function ProBuildingSuiteClient() {
       )}
       <iframe
         ref={iframeRef}
-        src="/eims-building-suite-v20261019.html"
+        src="/eims-building-suite-v20261020.html"
         title="EMERSON EIMS Building Suite Pro"
         onLoad={handleIframeLoad}
         loading="eager"

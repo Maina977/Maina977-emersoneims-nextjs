@@ -975,8 +975,8 @@ export const B2B_PROFILES = {
     accent: 'sky',
   },
 
-  // 2026-10-19 re-audit: "24/7 emergency desk" and "engineers across 47
-  // counties" are not owner-confirmed; only confirmed claims are used.
+  // 2026-10-20: 24/7 emergency calls and all-47-county coverage are owner-
+  // confirmed (they were briefly removed as unconfirmed on 2026-10-19).
   faults: {
     eyebrow: 'Fault Library • Diagnostics',
     headline: 'Generator fault library — with EmersonEIMS engineers behind it.',
@@ -988,7 +988,7 @@ export const B2B_PROFILES = {
       { problem: 'Recurring faults reset and forgotten.', solution: 'Library + engineer-led root-cause investigation.', outcome: 'Faults closed out, not papered over.' },
       { problem: 'Suppliers slow to respond when it matters.', solution: 'EmersonEIMS engineers: under 4 hours in the Nairobi metro; elsewhere by mobile workshop.', outcome: 'A clear response time you can plan around.' },
     ],
-    trust: ['Registered engineers', 'Under 4 h response in the Nairobi metro', '2-year workmanship warranty', 'ISO 9001 & KEBS registered'],
+    trust: ['24/7 emergency line', 'All 47 counties by mobile workshop', 'Under 4 h response in the Nairobi metro', 'Registered engineers'],
     ctas: [
       { label: 'Call an Engineer', href: TEL, variant: 'primary' },
       { label: 'WhatsApp an Engineer Now', href: WHATSAPP, variant: 'secondary' },

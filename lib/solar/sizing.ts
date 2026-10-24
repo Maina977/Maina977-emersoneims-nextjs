@@ -151,10 +151,13 @@ export function sizeSolar(input: SizingInput): SizingResult {
     inverterBasis = 'array';
   } else {
     const avgLoadKw = dailyKwh / 24;
-    const peak = input.peakLoadKw && input.peakLoadKw > 0 ? input.peakLoadKw : avgLoadKw * 3;
+    // Without a stated peak: 4x the average load, and never under 3 kW, because a
+    // kettle, iron or pump alone draws 2-3 kW (2026-10-20 audit: a 450 kWh/month
+    // home got a 3 kW inverter).
+    const peak = input.peakLoadKw && input.peakLoadKw > 0 ? input.peakLoadKw : Math.max(avgLoadKw * 4, 3);
     inverterBasis = input.peakLoadKw && input.peakLoadKw > 0 ? 'peak-load' : 'estimated-peak';
     inverterKw = nextStandardInverter(Math.max(peak * 1.25, pvKwp * 0.8));
-    if (inverterBasis === 'estimated-peak') assumptions.push('Inverter sized on an estimated peak of 3x your average load. Enter your largest load (pumps, welders, AC) for a firmer figure.');
+    if (inverterBasis === 'estimated-peak') assumptions.push('Inverter sized on an estimated peak of 4x your average load (at least 3 kW). Enter your largest load (pumps, welders, AC) for a firmer figure.');
   }
 
   // ── Energy and saving ───────────────────────────────────────────────────
@@ -166,10 +169,12 @@ export function sizeSolar(input: SizingInput): SizingResult {
   let savingBasis: SizingResult['savingBasis'] = 'grid-tariff';
   if (type === 'grid-tied') {
     const day = clamp(input.daytimeUsePct ?? 50, 0, 100) / 100;
-    // ~90% of daytime solar is used on site (load does not track the sun exactly).
-    energyUsedKwh = Math.min(annualEnergyKwh, annualConsumption * day) * 0.9;
+    // ~75% of daytime solar is used on site: load does not track the sun, and
+    // weekends and cloudy mornings waste some (2026-10-20 audit: 90% gave
+    // 2.4-year paybacks; Kenyan commercial projects typically see 3-5).
+    energyUsedKwh = Math.min(annualEnergyKwh, annualConsumption * day) * 0.75;
     annualSavingKes = energyUsedKwh * tariff;
-    assumptions.push(`Without a battery you only save on power used while the sun is up: ${Math.round(day * 100)}% of your use. Surplus is not paid for (no net metering assumed).`);
+    assumptions.push(`Without a battery you only save on power used while the sun is up: ${Math.round(day * 100)}% of your use. Surplus is not paid for (no net metering assumed), and about 75% of the daytime solar is assumed to be used.`);
   } else if (type === 'hybrid') {
     energyUsedKwh = Math.min(annualEnergyKwh, annualConsumption) * 0.9;
     annualSavingKes = energyUsedKwh * tariff;
@@ -189,6 +194,7 @@ export function sizeSolar(input: SizingInput): SizingResult {
   const mid = costKes(pvKwp, inverterKw, batteryKwh, type);
   const cost = { lowKes: Math.round((mid * 0.85) / 1000) * 1000, midKes: Math.round(mid / 1000) * 1000, highKes: Math.round((mid * 1.15) / 1000) * 1000 };
   const paybackYears = annualSavingKes > 0 ? round1(cost.midKes / annualSavingKes) : null;
+  if (annualSavingKes > 0) assumptions.push(`Payback range: ${round1(cost.lowKes / annualSavingKes)}-${round1(cost.highKes / annualSavingKes)} years across the price range, longer if less of the solar is used on site.`);
   assumptions.push('Prices are typical Kenyan installed ranges (mid-2026), not a quotation. A site survey fixes the real price.');
   if (batteryKwh > 0) assumptions.push('LiFePO4 batteries usually need replacing after 10–12 years; that cost is not in the payback.');
 

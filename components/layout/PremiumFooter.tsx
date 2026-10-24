@@ -50,7 +50,7 @@ const FOOTER_LINKS = {
     // for it was linked from two pages on a site of 4,791. See the note in
     // app/voltka/page.tsx.
     { label: 'VOLTKA Generators (our own brand)', href: '/voltka' },
-    { label: 'Cummins Generators (2-yr warranty)', href: '/services/cummins-generators' },
+    { label: 'Cummins-powered generators (new VOLTKA, used Cummins)', href: '/services/cummins-generators' },
     { label: 'Generator Repairs & Maintenance', href: '/services/generator-repairs' },
     { label: 'ATS / Changeovers', href: '/services/ats-changeover' },
     { label: 'Generator Sales', href: '/generators' },

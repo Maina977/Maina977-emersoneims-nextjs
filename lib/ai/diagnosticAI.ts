@@ -1,6 +1,7 @@
 /**
- * AI-POWERED GENERATOR DIAGNOSTIC ENGINE
- * Natural Language Processing for Fault Code Analysis
+ * RULE-BASED GENERATOR FAULT LOOKUP: keyword matching of a plain-language
+ * description against the fault-code reference. Not a language model; the
+ * match score is a ranking aid only.
  * 
  * Features:
  * - Symptom-to-code mapping
@@ -32,7 +33,7 @@ const SYMPTOM_KEYWORDS: Record<string, {
   // Overheating issues
   'overheating': {
     categories: ['Cooling System', 'Lubrication'],
-    keywords: ['overheating', 'hot', 'temperature high', 'coolant', 'radiator', 'boiling', 'steam', 'thermal', 'heat'],
+    keywords: ['overheating', 'overheat', 'hot', 'temperature high', 'high temperature', 'coolant', 'radiator', 'boiling', 'steam', 'thermal', 'heat'],
     severity: 'critical',
     relatedCodes: ['E1003', 'E1020', 'E2003', 'C101', 'C102']
   },
@@ -256,7 +257,8 @@ function calculateConfidence(
     const symptomConfig = SYMPTOM_KEYWORDS[symptom];
     if (symptomConfig) {
       for (const category of symptomConfig.categories) {
-        if (codeCategory.includes(category.toLowerCase())) {
+        const cat = category.toLowerCase();
+        if (codeCategory && (codeCategory.includes(cat) || cat.includes(codeCategory))) {
           confidence += 10;
           break;
         }
@@ -264,6 +266,45 @@ function calculateConfidence(
     }
   }
   
+  // The symptom's own vocabulary in the code title (2026-10-20): "overheating"
+  // must rank Coolant Temperature above Oil Pressure, which only shares a category.
+  const TITLE_TERMS: Record<string, string[]> = {
+    overheating: ['coolant temp', 'coolant level', 'temperature', 'fan', 'overheat'],
+    oil_pressure: ['oil pressure', 'oil level'],
+    low_power: ['derate', 'boost', 'power', 'torque'],
+    fuel_problem: ['fuel'],
+    electrical: ['voltage', 'battery', 'charg', 'frequency', 'alternator'],
+    no_start: ['start', 'crank', 'speed sensor', 'position', 'shutoff'],
+    turbo: ['turbo', 'boost', 'charge air'],
+    exhaust: ['exhaust', 'dpf', 'egr', 'particulate', 'def', 'scr'],
+    shutdown: ['shutdown', 'protection'],
+  };
+  for (const symptom of detectedSymptoms) {
+    const terms = TITLE_TERMS[symptom] || [];
+    if (terms.some((t) => codeTitle.includes(t))) {
+      confidence += 20;
+      // Overheating is first a COOLANT temperature fault; oil temperature follows it.
+      if (symptom === 'overheating' && codeTitle.includes('coolant')) confidence += 10;
+      break;
+    }
+  }
+
+  // Direction (2026-10-20 audit): "overheating" is an ABOVE-normal reading (FMI 0/15/16);
+  // "low oil pressure" is BELOW normal (FMI 1/17/18). The opposite direction is penalised,
+  // so coolant temperature FMI 1 (too cold) no longer answers "overheating".
+  const fmiMatch = /FMI ?(\d+)/i.exec(String(code.code || ''));
+  if (fmiMatch) {
+    const fmi = Number(fmiMatch[1]);
+    const HIGH = [0, 15, 16], LOW = [1, 17, 18];
+    const wantHigh = detectedSymptoms.includes('overheating');
+    const wantLow = detectedSymptoms.includes('oil_pressure');
+    if (wantHigh !== wantLow) {
+      const want = wantHigh ? HIGH : LOW, opp = wantHigh ? LOW : HIGH;
+      if (want.includes(fmi)) confidence += 15;
+      else if (opp.includes(fmi)) confidence -= 30;
+    }
+  }
+
   // Keyword match in title/description
   const queryWords = lowerQuery.split(/\s+/).filter(w => w.length > 2);
   for (const word of queryWords) {
@@ -280,7 +321,9 @@ function calculateConfidence(
     }
   }
   
-  return Math.min(99, confidence);
+  // Uncapped: the score only ranks matches (it is not shown as a percentage), and a
+  // cap made coolant and oil temperature tie for "overheating" (2026-10-20).
+  return confidence;
 }
 
 /**
@@ -305,14 +348,18 @@ export function analyzeSymptoms(query: string): DiagnosticResult {
   
   for (const code of allCodes) {
     // Filter by brand if detected
-    if (detectedBrand && code.brand && 
-        !code.brand.toLowerCase().includes(detectedBrand.toLowerCase())) {
+    // Engine brands (Cummins, Perkins…) now match the J1939 reference through its
+    // model list; controller brands match the brand field (2026-10-20).
+    if (detectedBrand && code.brand &&
+        !code.brand.toLowerCase().includes(detectedBrand.toLowerCase()) &&
+        !String(code.model || '').toLowerCase().includes(detectedBrand.toLowerCase())) {
       continue;
     }
     
     // Filter by category if symptoms detected
     if (relevantCategories.size > 0) {
       const codeCategory = (code.category || '').toLowerCase();
+      if (!codeCategory) continue; // an empty category must not match every symptom
       let categoryMatch = false;
       for (const cat of relevantCategories) {
         if (codeCategory.includes(cat) || cat.includes(codeCategory)) {
@@ -345,7 +392,9 @@ export function analyzeSymptoms(query: string): DiagnosticResult {
   matchedCodes.sort((a, b) => b.confidence - a.confidence);
   
   // Take top 10
-  const topMatches = matchedCodes.slice(0, 10);
+  // Ranked on the full score; the score returned is capped at 99 (it is a match
+  // score, never a probability).
+  const topMatches = matchedCodes.slice(0, 10).map((m) => ({ ...m, confidence: Math.min(99, m.confidence) }));
   
   // Generate AI summary
   const aiSummary = generateAISummary(query, detectedSymptoms, detectedBrand, topMatches);
@@ -407,10 +456,10 @@ function generateAISummary(
   const topMatch = matches[0];
   const brandText = brand ? ` for ${brand} generators` : '';
   
-  let summary = `Based on your description${brandText}, I found ${matches.length} potentially related fault codes. `;
+  let summary = `Matching your description${brandText} against our fault-code reference found ${matches.length} potentially related fault codes. `;
   
   if (topMatch.confidence >= 90) {
-    summary += `The most likely issue is **${topMatch.title}** (Code: ${topMatch.code}) with ${topMatch.confidence}% confidence. `;
+    summary += `The closest match is **${topMatch.title}** (Code: ${topMatch.code}). `;
   } else if (topMatch.confidence >= 75) {
     summary += `A probable cause is **${topMatch.title}** (Code: ${topMatch.code}). `;
   } else {

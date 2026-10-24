@@ -182,7 +182,8 @@ export interface HealthResponse {
  */
 export function codeLabel(r: { code: string; codeKind?: CodeKind }): string {
   if (r.codeKind === 'j1939') return r.code.replace(/^SPN(\d+)-FMI(\d+)$/i, 'SPN $1 / FMI $2');
-  if (r.codeKind === 'reference') return `Ref ${r.code}`;
+  // Our own index number, never shown as if the controller displayed it (2026-10-20).
+  if (r.codeKind === 'reference') return `EmersonEIMS ref ${r.code}`;
   return r.code;
 }
 

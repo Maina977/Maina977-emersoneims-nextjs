@@ -138,7 +138,7 @@ export function generateSmartSurveyPlan(input: SurveyPlannerInput): SmartSurveyP
   const ertCost = SURVEY_COSTS[ertType];
   const site0 = input.candidateSites?.[0];
   const ertLocation = site0 && typeof site0.lat === 'number' && typeof site0.lon === 'number'
-    ? `Along AI-selected drill point #1 (${site0.lat.toFixed(4)}, ${site0.lon.toFixed(4)})`
+    ? `Along desktop-selected drill point #1 (${site0.lat.toFixed(4)}, ${site0.lon.toFixed(4)})`
     : `Across primary target zone at (${input.lat.toFixed(4)}, ${input.lon.toFixed(4)})`;
   
   surveys.push({
@@ -164,7 +164,7 @@ export function generateSmartSurveyPlan(input: SurveyPlannerInput): SmartSurveyP
       reason: 'Rapid depth-to-bedrock mapping, complements ERT for fracture detection',
       costEstimateUSD: emCost.baseCostUSD + emCost.perStationUSD * emCost.typicalStations,
       timeEstimateHrs: emCost.timeHrs,
-      deploymentLocation: 'Grid around top 2 AI drill candidates',
+      deploymentLocation: 'Grid around top 2 desktop drill candidates',
       expectedConfidenceGain: 8,
       costPerConfidencePercent: Math.round((emCost.baseCostUSD + emCost.perStationUSD * emCost.typicalStations) / 8),
     });
@@ -207,7 +207,7 @@ export function generateSmartSurveyPlan(input: SurveyPlannerInput): SmartSurveyP
       reason: isKarst ? 'Critical for void/cavity detection in karst terrain' : 'Shallow water table confirmation',
       costEstimateUSD: gprCost.baseCostUSD + gprCost.perStationUSD * gprCost.typicalStations,
       timeEstimateHrs: gprCost.timeHrs,
-      deploymentLocation: 'Grid pattern over top AI candidate, 200m × 200m',
+      deploymentLocation: 'Grid pattern over top desktop model candidate, 200m × 200m',
       expectedConfidenceGain: isKarst ? 8 : 5,
       costPerConfidencePercent: Math.round((gprCost.baseCostUSD + gprCost.perStationUSD * gprCost.typicalStations) / (isKarst ? 8 : 5)),
     });
@@ -250,7 +250,7 @@ export function generateSmartSurveyPlan(input: SurveyPlannerInput): SmartSurveyP
       reason: 'Direct water detection — only method that sees water molecules. High cost but eliminates guesswork.',
       costEstimateUSD: nmrCost.baseCostUSD + nmrCost.perStationUSD * nmrCost.typicalStations,
       timeEstimateHrs: nmrCost.timeHrs,
-      deploymentLocation: 'Single sounding at AI top-ranked drill point',
+      deploymentLocation: 'Single sounding at desktop top-ranked drill point',
       expectedConfidenceGain: 15,
       costPerConfidencePercent: Math.round((nmrCost.baseCostUSD + nmrCost.perStationUSD * nmrCost.typicalStations) / 15),
     });
@@ -329,19 +329,19 @@ export function generateSmartSurveyPlan(input: SurveyPlannerInput): SmartSurveyP
       lon: s.lon,
       rank: i + 1,
       confidence: Math.min(95, s.score + tierSurveys.reduce((sum, sv) => sum + sv.expectedConfidenceGain, 0) * 0.3),
-      reason: i === 0 ? 'Highest AI-ranked site — primary target' :
+      reason: i === 0 ? 'Highest desktop-ranked site — primary target' :
               i === 1 ? 'Secondary target — backup or comparison' : 'Tertiary target — additional option',
     }));
 
   const tierNames = {
-    1: 'AI Screening Only',
-    2: 'AI + Targeted Survey',
+    1: 'Desktop Screening Only',
+    2: 'desktop model + Targeted Survey',
     3: 'Bankable Investigation',
   };
 
   const tierDescs = {
-    1: 'Desktop AI analysis using satellite data, geological models, and machine learning. No field surveys. ~70% accuracy.',
-    2: 'AI screening + targeted ERT/EM at top drill candidates. 80% survey cost reduction. ~85% accuracy.',
+    1: 'Desktop screening from public satellite data, geological models and nearby borehole records. No field survey; a survey is still required before drilling.',
+    2: 'Desktop screening plus targeted ERT/EM at the top drill candidates, instead of surveying the whole site.',
     3: 'Full geophysical investigation with pump test and lab analysis. Bankable confidence. ~90-95% accuracy.',
   };
 

@@ -33,7 +33,7 @@ type ChatRequestBody = {
 const DIAGNOSTIC_TRIGGERS = [
   'error', 'fault', 'code', 'problem', 'issue', 'not working', 'won\'t',
   'doesn\'t', 'smoke', 'overheating', 'shutdown', 'low power', 'noise',
-  'vibration', 'leak', 'pressure', 'temperature', 'voltage', 'diagnose',
+  'vibration', 'leak', 'pressure', 'temperature', 'temp', 'coolant', 'voltage', 'diagnose', 'shuts down', 'trips', 'alarm',
   'troubleshoot', 'fix', 'repair', 'what\'s wrong', 'why is my', 'help with'
 ];
 
@@ -176,7 +176,7 @@ function formatClaudeDiagnosticResponse(
   if (diagnosticResult.matchedCodes.length > 0) {
     response += `\n\n---\n\n### 📋 Matched Fault Codes from Our Database\n`;
     diagnosticResult.matchedCodes.slice(0, 3).forEach((code, i) => {
-      response += `${i + 1}. \`${code.code}\` - ${code.title} (${code.confidence}% match)\n`;
+      response += `${i + 1}. \`${code.code}\` - ${code.title}\n`;
     });
   }
 
@@ -201,12 +201,12 @@ function formatDiagnosticResponse(query: string, result: DiagnosticResult): stri
   
   // No matches found
   if (result.matchedCodes.length === 0) {
-    return `🔍 **AI Diagnostic Analysis**
+    return `🔍 **Fault-code lookup (rule-based)**
 
-I analyzed your query but couldn't find specific fault codes matching your description. 
+Your description did not match specific fault codes matching your description. 
 
 **Try these approaches:**
-1. Enter the exact error code displayed (e.g., "E1001" or "SPN 111")
+1. Enter the exact error code displayed (e.g., "SPN 110 FMI 0" or "SPN 100 FMI 1")
 2. Describe symptoms in detail (e.g., "generator overheating and shutting down")
 3. Mention the brand (e.g., "Cummins won't start")
 
@@ -225,9 +225,11 @@ Or visit our **[Diagnostic Suite](/diagnostic-suite)** for interactive troublesh
   const topMatch = result.matchedCodes[0];
   const brandInfo = result.detectedBrand ? ` (${result.detectedBrand})` : '';
   
-  let response = `🔧 **AI Diagnostic Analysis**${brandInfo}
+  let response = `🔧 **Fault-code lookup (rule-based keyword match)**${brandInfo}
 
-**Confidence:** ${result.confidence}% | **Difficulty:** ${result.estimatedDifficulty} | **Est. Time:** ${result.estimatedTime}
+**Difficulty:** ${result.estimatedDifficulty} | **Est. Time:** ${result.estimatedTime}
+
+_Ranked by keyword match, not measured probability. A technician confirms the fault with a reader on the controller._
 
 ---
 
@@ -236,7 +238,7 @@ ${result.aiSummary}
 `;
 
   // Top matched code details
-  response += `### 🎯 Most Likely Issue: ${topMatch.title}
+  response += `### 🎯 Closest Match: ${topMatch.title}
 **Code:** \`${topMatch.code}\` | **Category:** ${topMatch.category} | **Severity:** ${topMatch.severity}
 
 `;
@@ -281,7 +283,7 @@ ${result.aiSummary}
   if (result.matchedCodes.length > 1) {
     response += `### 📋 Other Possible Codes\n`;
     result.matchedCodes.slice(1, 5).forEach(code => {
-      response += `- \`${code.code}\` - ${code.title} (${code.confidence}%)\n`;
+      response += `- \`${code.code}\` - ${code.title}\n`;
     });
     response += '\n';
   }
@@ -345,7 +347,7 @@ async function generateAIResponse(
 🔧 **Need Diagnostic Help?** I can analyze generator fault codes and symptoms! Just describe the issue:
 - "My Cummins generator won't start"
 - "Black smoke from CAT generator"
-- "Error code E1001"
+- "SPN 110 FMI 0"
 
 Are you looking for a new installation, need service, or have a diagnostic question?`;
   }
@@ -385,6 +387,6 @@ How can I assist you today?`;
 🔌 **UPS & Power** - Backup power solutions
 🛠️ **Parts & Service** - Equipment and support
 
-Try asking: "My generator won't start" or "What does error code E1001 mean?"`;
+Try asking: "My generator won't start" or "What does SPN 110 FMI 0 mean?"`;
 }
 

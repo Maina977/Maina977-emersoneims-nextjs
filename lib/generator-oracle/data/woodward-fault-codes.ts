@@ -88,7 +88,7 @@ function createWoodwardCode(
     }],
     safetyWarnings: severity === 'shutdown' ? ['Investigate before restart', 'Check for damage'] : [],
     preventiveMeasures: ['Regular maintenance', 'Firmware updates'],
-    verified: true,
+    verified: false, // independently written guide, not checked line-by-line against the OEM manual (2026-10-20)
     lastUpdated: '2024-01-15'
   }));
 }

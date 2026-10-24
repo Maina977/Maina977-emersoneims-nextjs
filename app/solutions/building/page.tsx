@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   alternates: { canonical: '/solutions/building' },
   other: {
-    'link-prefetch': '/eims-building-suite-v20261019.html',
+    'link-prefetch': '/eims-building-suite-v20261020.html',
   },
 };
 
@@ -43,7 +43,7 @@ export default function BuildingPage() {
       <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
       <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
       <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-      <link rel="prefetch" href="/eims-building-suite-v20261019.html" as="document" />
+      <link rel="prefetch" href="/eims-building-suite-v20261020.html" as="document" />
       <B2BCommercialBand profile={B2B_PROFILES.buildingSuite} />
       {/*
         Server-rendered heading. ProBuildingSuiteClient is a client component,

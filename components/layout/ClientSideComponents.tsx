@@ -29,6 +29,9 @@ export default function ClientSideComponents() {
   // Suppress the global WhatsApp/PWA floating widgets on /hub/* so they
   // never overlap simulator inputs, KPI cards, or the governance strip.
   const isHub = pathname === '/hub' || pathname.startsWith('/hub/');
+  // The Generator Oracle has its own "send to an engineer" WhatsApp links on
+  // every result; the floating bubble covered its search button (2026-10-20).
+  const hideWhatsApp = isHub || pathname === '/generator-oracle' || pathname.startsWith('/generator-oracle/');
 
   const [tier1, setTier1] = useState(false); // Essential (1s)
   const [tier2, setTier2] = useState(false); // Nice-to-have (3s)
@@ -67,7 +70,7 @@ export default function ClientSideComponents() {
         <>
           <CookieConsent />
           <AccessibilityWidget />
-          {!isHub && <ClientWhatsApp />}
+          {!hideWhatsApp && <ClientWhatsApp />}
         </>
       )}
 

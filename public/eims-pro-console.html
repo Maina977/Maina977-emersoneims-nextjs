@@ -68,6 +68,8 @@
 <header>
   <h1>EmersonEIMS Building Suite Pro <small>Professional Console</small></h1>
   <div>
+    <a class="pill" href="/solutions/building" style="text-decoration:none;color:inherit">← Building Suite</a>
+    <a class="pill" href="https://wa.me/254768860665" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit">WhatsApp an engineer</a>
     <span class="pill" id="health">Checking connection…</span>
   </div>
 </header>
@@ -92,8 +94,6 @@ const MODULES = [
     fields:[
       {k:'V_mph', label:'Basic wind speed (mph)', type:'number', def:115},
       {k:'height_ft', label:'Mean roof height (ft)', type:'number', def:30},
-      {k:'length_ft', label:'Length (ft)', type:'number', def:60},
-      {k:'width_ft', label:'Width (ft)', type:'number', def:40},
       {k:'exposure', label:'Exposure', type:'select', opts:['B','C','D'], def:'C'},
       {k:'enclosure', label:'Enclosure', type:'select',
         opts:['enclosed','partially_enclosed','open'], def:'enclosed'},
@@ -1091,7 +1091,10 @@ const isLive = (m) => LIVE_EPS.has(m.endpoint);
 function buildNav(){
   const nav = $('#nav'); nav.innerHTML='';
   const groups = {};
-  MODULES.forEach(m=>{ (groups[m.group]=groups[m.group]||[]).push(m); });
+  // Only live tools are listed (2026-10-20); unbuilt ones stay in MODULES for
+  // later but are not offered.
+  const hidden = MODULES.filter(m=>!isLive(m)).length;
+  MODULES.filter(isLive).forEach(m=>{ (groups[m.group]=groups[m.group]||[]).push(m); });
   Object.entries(groups).forEach(([g, list])=>{
     const h = document.createElement('div'); h.className='grp'; h.textContent=g;
     nav.appendChild(h);
@@ -1103,6 +1106,11 @@ function buildNav(){
       nav.appendChild(b);
     });
   });
+  const note = document.createElement('div');
+  note.className = 'grp';
+  note.style.cssText = 'text-transform:none;font-weight:400;opacity:.75;line-height:1.4';
+  note.textContent = hidden + ' further tools are not online yet; our engineers handle them as part of a design job (0768 860 665).';
+  nav.appendChild(note);
 }
 
 function show(id){
@@ -1207,6 +1215,9 @@ function formatValue(v){
   if (v === null || v === undefined) return 'n/a';
   if (typeof v === 'number') return Number.isFinite(v) ? v.toLocaleString() : String(v);
   if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+  // Nested values as readable text, never "[object Object]" (2026-10-20).
+  if (Array.isArray(v)) return v.map(formatValue).join('; ');
+  if (typeof v === 'object') return Object.entries(v).map(([k, x]) => toLabel(k) + ': ' + formatValue(x)).join(', ');
   return String(v);
 }
 
@@ -1270,6 +1281,16 @@ function renderResponse(status, statusText, payload, moduleInfo){
   const profile = endpointProfile(moduleInfo?.endpoint || '');
   const title = profile.title || moduleInfo?.title || 'Result';
   const head = `<div class="stat"><span class="chip ${ok?'ok':'bad'}">${ok ? 'Completed' : 'Could not complete'}</span><span class="chip">${proEscape(title)}</span></div>`;
+  // The API wraps results as {success, ok, data}: show the data, or the error text (2026-10-20).
+  if (isPlainObject(payload) && (payload.success === false || !ok) && (payload.error || payload.message)) {
+    return head + `<div class="note">${proEscape(payload.error || payload.message)}</div>`;
+  }
+  if (isPlainObject(payload) && isPlainObject(payload.data)) payload = payload.data;
+  if (isPlainObject(payload)) {
+    const { success: _s, ok: _o, warning, ...rest } = payload;
+    const warn = warning ? `<div class="note" style="border-color:#f0b35c;color:#f6d08b">⚠ ${proEscape(warning)}</div>` : '';
+    return head + warn + renderObject(rest, profile);
+  }
   if (Array.isArray(payload)) return head + renderArray(payload);
   if (isPlainObject(payload)) return head + renderObject(payload, profile);
   return head + `<div class="note">${proEscape(formatValue(payload))}</div>`;

@@ -411,7 +411,7 @@ export function applyRegionalModel(
     regionalConfidence: Math.round(confidence),
     recommendations,
     methodology: activeModel
-      ? `Regional model "${activeModel.regionName}" (${activeModel.outcomeCount} outcomes, RMSE depth=${activeModel.rmseDepth_m}m, yield=${activeModel.rmseYield_m3h}m³/h). Rock-specific: ${rock}. Seasonal: ${month} factor=${seasonalAdj.toFixed(2)}.`
+      ? `Regional model "${activeModel.regionName}" (built-in regional prior; not trained on recorded drilling outcomes). Rock-specific: ${rock}. Seasonal: ${month} factor=${seasonalAdj.toFixed(2)}.`
       : 'No matching regional model. Corrections based on nearest regions with distance-weighted interpolation.',
   };
 }

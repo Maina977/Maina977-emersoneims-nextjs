@@ -14,7 +14,7 @@
  * - Doosan diesel engines
  * - World-class detailed generator error codes
  * 
- * Total: 9,000+ error codes (growing database)
+ * Total: the curated codes plus the J1939 reference (1,270 at 2026-10-20); count it, never quote a round number
  * Updated: January 2026
  */
 
@@ -30,6 +30,7 @@ import { PERKINS_ERROR_CODES } from '@/lib/data/perkinsErrorCodes';
 import { GENERATOR_ERROR_CODES } from '@/lib/data/generatorErrorCodes';
 import { VERIFIED_FAULT_CODES } from '@/lib/data/verifiedFaultCodes';
 import { CURATED_FAULT_CODES } from '@/lib/data/curatedFaultCodes';
+import { J1939_FAULT_CODES } from '@/lib/data/j1939FaultCodes';
 import { getFaultKnowledge, type DiagnosticStep } from '@/lib/data/faultKnowledge';
 
 // Helper function to format manufacturer codes
@@ -134,26 +135,56 @@ const verifiedCsvCodes = VERIFIED_FAULT_CODES.map(c => {
   };
 });
 
+/*
+ * RETIRED 2026-10-20 — engine-maker lists that failed review.
+ *  - verifiedFaultCodes (2,155 rows from fault-codes-raw.csv): 1,500 are
+ *    sequential "E1001…E1500" codes under Caterpillar, Cummins and Perkins,
+ *    which no such maker uses, and the CSV's spilled columns cross-wire causes
+ *    and remedies between codes. Re-parsing cannot fix invented codes.
+ *  - cumminsErrorCodes / caterpillarErrorCodes / generatorErrorCodes /
+ *    perkinsErrorCodes: many mislabelled numbers (e.g. Cummins 151 is a
+ *    critical coolant-temperature fault, CAT E360 is low oil pressure).
+ * The AI routes now use the same reviewed data as the Generator Oracle:
+ * hand-written controller and solar alarms plus the J1939 SPN/FMI reference.
+ * The retired files stay in the repo for a proper rebuild from OEM tables.
+ */
+void detailedGeneratorCodes; void cumminsCodesFormatted; void caterpillarCodesFormatted;
+void perkinsCodesFormatted; void verifiedCsvCodes;
+
+const j1939Codes = J1939_FAULT_CODES.map((c) => ({
+  code: `SPN${c.spn}-FMI${c.fmi}`,
+  brand: 'J1939 engine code',
+  model: c.model,
+  service: 'J1939 Engine Diagnostics',
+  category: c.category,
+  issue: c.title,
+  severity: c.severity.toUpperCase(),
+  symptoms: [],
+  causes: c.causes,
+  solution: c.remedies.join('; '),
+  parts: [],
+  tools: [],
+  downtime: '',
+  preventive: '',
+  verified: true,
+}));
+
 export const brandSpecificErrorCodes: any[] = [
-  ...detailedGeneratorCodes,
-  ...cumminsCodesFormatted,
-  ...caterpillarCodesFormatted,
-  ...perkinsCodesFormatted,
-  ...verifiedCsvCodes,
   // Hand-written controller families (DSE, ComAp, Woodward, SmartGen,
   // PowerWizard, Datakom, Lovato, Siemens, Enko, Vodia) and solar
-  // inverter/battery codes. These carry per-code severities assigned by hand,
-  // so their severity is preserved rather than blanked.
-  ...CURATED_FAULT_CODES
+  // inverter/battery codes, with per-code severities assigned by hand.
+  ...CURATED_FAULT_CODES,
+  ...j1939Codes,
 ];
 
-// Export code counts for statistics
+// Export code counts for statistics (retired sources count 0).
 export const CODE_STATISTICS = {
-  detailedGeneratorCodes: detailedGeneratorCodes.length,
-  cummins: cumminsCodesFormatted.length,
-  caterpillar: caterpillarCodesFormatted.length,
-  perkins: perkinsCodesFormatted.length,
-  verifiedCsv: verifiedCsvCodes.length,
+  detailedGeneratorCodes: 0,
+  cummins: 0,
+  caterpillar: 0,
+  perkins: 0,
+  verifiedCsv: 0,
   curatedControllerAndSolar: CURATED_FAULT_CODES.length,
+  j1939: j1939Codes.length,
   total: brandSpecificErrorCodes.length
 };

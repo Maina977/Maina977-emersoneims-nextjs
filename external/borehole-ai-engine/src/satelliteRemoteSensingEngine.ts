@@ -356,9 +356,11 @@ function analyzeSAR(
     method: '2. SAR / InSAR (Interferometric SAR)',
     platform: 'Sentinel-1, COMET LiCSAR, ESA EGMS',
     resolution: '20-100m',
-    status: hasInsar ? (sceneCount > 20 ? 'available' : 'partial') : 'unavailable',
-    confidence: hasInsar ? insarData.confidence ?? 0.65 : 0.2,
-    groundwaterScore: Math.min(100, Math.max(0, score)),
+    // A proxy is not an InSAR result: status, confidence and score follow REAL
+    // processed scenes only (2026-10-20 audit: a proxy printed "AVAILABLE 70/100").
+    status: isRealInsar ? (sceneCount > 20 ? 'available' : 'partial') : 'unavailable',
+    confidence: isRealInsar ? insarData.confidence ?? 0.65 : 0.2,
+    groundwaterScore: isRealInsar ? Math.min(100, Math.max(0, score)) : 50,
     keyFindings: findings,
     dataSource: hasInsar ? insarData.dataSource || 'Sentinel-1 InSAR' : 'N/A',
     metrics: {

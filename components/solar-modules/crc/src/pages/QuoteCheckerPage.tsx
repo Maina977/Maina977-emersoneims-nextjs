@@ -155,61 +155,91 @@ interface VerdictRow {
   message: string;
 }
 
+// Reference prices are mid-2026 Kenyan RULES OF THUMB, not datasheet prices
+// (the library holds no prices): panels KES 21.5/W; inverters KES 35,000/kW up
+// to 10 kW and KES 18,000/kW above that (large string inverters cost less per
+// kW); batteries at the site-wide battery rate per usable kWh.
+const PANEL_KES_PER_W = 21.5;
+function inverterRefKes(kw: number): number {
+  return Math.round(35000 * Math.min(kw, 10) + 18000 * Math.max(0, kw - 10));
+}
+const num = (...v: any[]) => { for (const x of v) { const n = Number(x); if (n > 0) return n; } return 0; };
+
 function reducePanels(arr: any[]): LibItem[] {
-  return (arr || []).map((p) => ({
-    category: 'panel',
-    manufacturer: p.manufacturer || p.make || '',
-    model: p.model || '',
-    ratingW: p.ratingW || p.wattage || p.power || 580,
-    refPriceKes: p.priceKes || p.priceKES || p.unitPriceKes || ((p.ratingW || 580) * 21.5),
-    datasheetUrl: p.datasheetUrl
-  }));
+  return (arr || []).map((p) => {
+    const w = num(p.pStcW, p.ratingW, p.wattage, p.power);
+    return {
+      category: 'panel' as const,
+      manufacturer: p.manufacturer || p.make || '',
+      model: p.model || '',
+      ratingW: w || undefined,
+      refPriceKes: num(p.priceKes, p.priceKES, p.unitPriceKes) || Math.round(w * PANEL_KES_PER_W),
+      datasheetUrl: p.datasheetUrl
+    };
+  }).filter((i) => i.refPriceKes > 0);
 }
 function reduceInverters(arr: any[]): LibItem[] {
-  return (arr || []).map((p) => ({
-    category: 'inverter',
-    manufacturer: p.manufacturer || p.make || '',
-    model: p.model || '',
-    ratingKw: p.ratingKw || p.kw || p.power || 5,
-    refPriceKes: p.priceKes || p.priceKES || ((p.ratingKw || 5) * 35000),
-    datasheetUrl: p.datasheetUrl
-  }));
+  return (arr || []).map((p) => {
+    const kw = num(p.acRatedKw, p.ratingKw, p.kw, p.power);
+    return {
+      category: 'inverter' as const,
+      manufacturer: p.manufacturer || p.make || '',
+      model: p.model || '',
+      ratingKw: kw || undefined,
+      refPriceKes: num(p.priceKes, p.priceKES) || inverterRefKes(kw),
+      datasheetUrl: p.datasheetUrl
+    };
+  }).filter((i) => i.refPriceKes > 0);
 }
 function reduceBatteries(arr: any[]): LibItem[] {
-  return (arr || []).map((p) => ({
-    category: 'battery',
-    manufacturer: p.manufacturer || p.make || '',
-    model: p.model || '',
-    ratingKwh: p.ratingKwh || p.kwh || p.capacityKwh || 10,
-    refPriceKes: p.priceKes || p.priceKES || ((p.ratingKwh || 10) * BATTERY_KES_PER_KWH),
-    datasheetUrl: p.datasheetUrl
-  }));
+  return (arr || []).map((p) => {
+    const kwh = num(p.usableKwh, p.nominalKwh, p.ratingKwh, p.kwh, p.capacityKwh);
+    return {
+      category: 'battery' as const,
+      manufacturer: p.manufacturer || p.make || '',
+      model: p.model || '',
+      ratingKwh: kwh || undefined,
+      refPriceKes: num(p.priceKes, p.priceKES) || Math.round(kwh * BATTERY_KES_PER_KWH),
+      datasheetUrl: p.datasheetUrl
+    };
+  }).filter((i) => i.refPriceKes > 0);
 }
 
 // Very tolerant line parser. Examples it accepts:
 //   "Jinko 580W panels x 52 @ 12500"
 //   "Sungrow SG5K-D inverter, 1, 145000"
 //   "BYD HVS 10.2kWh battery 1 350000"
-function parseLines(input: string): ParsedLine[] {
+export function parseLines(input: string): ParsedLine[] {
   const lines = input.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   return lines.map((raw) => {
-    // Strip trailing currency symbols + commas in numbers.
-    const clean = raw.replace(/[,]/g, '').replace(/ksh|kes|sh\.?/gi, '');
-    // Find numbers in the line; last number is unit price, prior likely qty.
-    const nums = (clean.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+    // Thousands separators out ("12,500" → "12500"), currency words out.
+    const clean = raw.replace(/(\d),(?=\d{3}\b)/g, '$1').replace(/\b(ksh|kes|sh)\.?/gi, ' ');
     let qty = 1;
     let unitPriceKes: number | null = null;
-    if (nums.length >= 1) {
-      // Heuristic: the largest number is usually the price. Qty is the
-      // small integer that appears before it.
-      const max = Math.max(...nums);
-      const maxIdx = nums.lastIndexOf(max);
-      unitPriceKes = max;
-      const candidates = nums.slice(0, maxIdx).filter((n) => n > 0 && n < 500 && Number.isInteger(n));
-      if (candidates.length) qty = candidates[candidates.length - 1];
+    // 1) Explicit markers win: "x 24", "× 24", "qty 24", "@ 13920".
+    const qm = clean.match(/(?:\b[x×]|qty|quantity)\s*:?\s*(\d+)(?![\d.]*\s*(?:k?w|kwh|ah|v)\b)/i);
+    const pm = clean.match(/@\s*(\d+(?:\.\d+)?)/);
+    if (qm) qty = Number(qm[1]);
+    if (pm) unitPriceKes = Number(pm[1]);
+    if (unitPriceKes == null) {
+      // 2) Otherwise only STANDALONE numbers count: "580W", "10.2kWh" and
+      //    model names like "JAM72D40-580" are ratings or names, not amounts.
+      const nums = clean.split(/[\s;|\t]+/).filter((tok) => /^\d+(?:\.\d+)?$/.test(tok)).map(Number);
+      if (nums.length >= 3) {
+        // "... qty unit total": the last three, when qty × unit ≈ total.
+        const [q, u, tot] = nums.slice(-3);
+        if (Number.isInteger(q) && q > 0 && Math.abs(q * u - tot) / tot < 0.02) { qty = qm ? qty : q; unitPriceKes = u; }
+        else unitPriceKes = Math.max(...nums);
+      } else if (nums.length === 2) {
+        const [n1, n2] = nums;
+        if (!qm && Number.isInteger(n1) && n1 > 0 && n1 < 1000 && n2 > n1) { qty = n1; unitPriceKes = n2; }
+        else unitPriceKes = Math.max(n1, n2);
+      } else if (nums.length === 1) {
+        unitPriceKes = nums[0];
+      }
     }
-    // Description = strip out the qty/price tokens for display.
-    const description = raw.replace(/[xX@]\s*\d+/g, '').trim();
+    // Description = the line without the quantity and price markers.
+    const description = raw.replace(/(?:\b[x×]|@)\s*[\d,]+(?:\.\d+)?/g, '').trim();
     return { raw, description, qty, unitPriceKes };
   });
 }
@@ -290,7 +320,7 @@ export default function QuoteCheckerPage() {
         setLib(merged);
         // No live market-price feed exists (the call 404'd on every load; 2026-10-19).
         {
-          setMarketProvenance('Reference prices: equipment library (manufacturer datasheets) and mid-2026 typical Kenyan battery price (KES 38,000/kWh)');
+          setMarketProvenance(`Reference prices are mid-2026 Kenyan rules of thumb applied to each item's rating from the equipment library: panels KES ${PANEL_KES_PER_W}/W, inverters KES 35,000/kW up to 10 kW and KES 18,000/kW above, batteries KES ${BATTERY_KES_PER_KWH.toLocaleString()}/kWh. Use them to spot outliers, not as a supplier price list.`);
         }
       } catch (e: any) {
         setLibErr(e?.message || 'Could not load equipment library');

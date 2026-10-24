@@ -258,6 +258,9 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
     opts?.localOnly && !String(input).startsWith('/data/') ? Promise.reject(new Error('local-only')) : globalThis.fetch(input, init);
   const wells: NearbyBoreholeData['nearbyWells'] = [];
   const dataSources: string[] = [];
+  // Sources run concurrently (2026-10-20): one after another they could take
+  // ~170 s and hit the caller's 60 s limit, losing every result.
+  const tasks: Promise<void>[] = [];
   // Owner requirement (2026-07-16): report must cover successful water points
   // and boreholes within 50 km of the site (was 25 km).
   const searchRadius = 50; // km
@@ -269,6 +272,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   // 1. USGS NWIS — US coverage (skip if clearly outside US bbox)
   // ────────────────────────────────────────────────────────
   const inUSBBox = lat >= 18 && lat <= 72 && lon >= -180 && lon <= -60;
+  tasks.push((async () => {
   if (inUSBBox) {
     try {
       const bbox = `${(lon - degOffset).toFixed(4)},${(lat - degOffset).toFixed(4)},${(lon + degOffset).toFixed(4)},${(lat + degOffset).toFixed(4)}`;
@@ -305,11 +309,13 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     } catch { /* non-US locations will fail silently */ }
   }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 2. WPDx (Water Point Data Exchange) — best Africa/global coverage
   //    https://data.waterpointdata.org/
   // ────────────────────────────────────────────────────────
+  tasks.push((async () => {
   try {
     // Dataset FIX (2026-07-09, live-verified): the old `gihr-buz6` resource is
     // now auth-walled, which silently killed this query and dropped reports to
@@ -357,6 +363,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     }
   } catch { /* OK — WPDx may be unreachable */ }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 3. WRA / GOVERNMENT BOREHOLE RECORDS (local registry)
@@ -371,6 +378,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //       "yield_m3h": 3.2, "swl_m": 21, "outcome": "Success",
   //       "permit": "WRA/..." }]
   // ────────────────────────────────────────────────────────
+  tasks.push((async () => {
   try {
     const wraResp = await fetch('/data/wra-boreholes.json', { signal: AbortSignal.timeout(6000) });
     if (wraResp.ok && (wraResp.headers.get('content-type') || '').includes('json')) {
@@ -400,12 +408,14 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     }
   } catch { /* registry file not installed yet — expected until WRA data obtained */ }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 3a-ii. OWNER-PROVIDED WRA RECORDS (localStorage, from the ingestion panel)
   //     Lets a WRA/county CSV take effect immediately without redeploying the
   //     public JSON file. Same FIELD-grade treatment as the file channel.
   // ────────────────────────────────────────────────────────
+  tasks.push((async () => {
   try {
     const lsRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('aquascan_wra_records') : null;
     if (lsRaw) {
@@ -435,6 +445,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     }
   } catch { /* no local WRA records — fine */ }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 3b. UNESCO IHP-WINS KENYA REGISTRY (bundled, 22,820 named wells)
@@ -444,6 +455,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //     depths (sanity-bounded 1–400 m). Compact tuple format:
   //     fields = [name, lat, lon, depth_m, yield_m3h, status, county, src]
   // ────────────────────────────────────────────────────────
+  tasks.push((async () => {
   try {
     const unResp = await fetch('/data/gov-wells-kenya.json', { signal: AbortSignal.timeout(10000) });
     if (unResp.ok) {
@@ -466,10 +478,9 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
         let unCount = 0;
         for (const { t, dist } of unMatches.slice(0, UN_CAP)) {
           const [wName, wLat, wLon, wDepth, wYield, wStatus, wCounty, wSrc] = t;
-          const st = String(wStatus || '').toLowerCase();
-          let outcome: 'Success' | 'Moderate' | 'Fail' | 'Unknown' = 'Unknown';
-          if (st.includes('non') || st.includes('closed') || st.includes('abandon')) outcome = 'Fail';
-          else if (st.includes('open') || st.includes('functional') || st.includes('protected')) outcome = 'Success';
+          // The 6th field is the water-point TYPE, not whether it works: no
+          // outcome is inferred from it (2026-10-20).
+          const outcome: 'Success' | 'Moderate' | 'Fail' | 'Unknown' = 'Unknown';
           wells.push({
             id: `${wName}${wCounty ? ` (${wCounty})` : ''}`,
             lat: Number(wLat), lon: Number(wLon),
@@ -487,8 +498,10 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     }
   } catch { /* registry unreachable — other sources still apply */ }
+  })());
 
   // (retired duplicate WPDx query — dataset columns removed upstream)
+  tasks.push((async () => {
   try {
     const wpdxPlusUrl = '';
     const resp = wpdxPlusUrl ? await fetch(wpdxPlusUrl, { signal: AbortSignal.timeout(12000) }) : ({ ok: false } as Response);
@@ -542,10 +555,12 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     }
   } catch { /* OK */ }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 4. BGS GeoIndex (UK & some Africa coverage)
   // ────────────────────────────────────────────────────────
+  tasks.push((async () => {
   try {
     const wfsUrl = `https://ogc.bgs.ac.uk/dppp/wfs?service=WFS&version=2.0.0&request=GetFeature&typeName=GBR_BGS_625k_BLT&bbox=${lat-degOffset},${lon-degOffset},${lat+degOffset},${lon+degOffset},urn:ogc:def:crs:EPSG::4326&count=10&outputFormat=application/json`;
     const resp = await fetch(wfsUrl, { signal: AbortSignal.timeout(10000) });
@@ -556,10 +571,12 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     }
   } catch { /* OK */ }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 5. OpenStreetMap — global well/borehole POIs
   // ────────────────────────────────────────────────────────
+  tasks.push((async () => {
   try {
     const overpassUrl = `https://overpass-api.de/api/interpreter`;
     const bb = `${(lat-degOffset).toFixed(4)},${(lon-degOffset).toFixed(4)},${(lat+degOffset).toFixed(4)},${(lon+degOffset).toFixed(4)}`;
@@ -601,6 +618,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       if (data.elements?.length > 0) dataSources.push('OpenStreetMap Overpass (water wells, boreholes, monitoring wells, springs)');
     }
   } catch { /* OK */ }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 6. IGRAC GGIS — UN International Groundwater Resources Assessment Centre
@@ -608,6 +626,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //    Government & research institute monitoring wells worldwide
   //    https://ggis.un-igrac.org/
   // ────────────────────────────────────────────────────────
+  tasks.push((async () => {
   try {
     const igracBbox = `${(lon - degOffset).toFixed(4)},${(lat - degOffset).toFixed(4)},${(lon + degOffset).toFixed(4)},${(lat + degOffset).toFixed(4)}`;
     const igracUrl = `https://ggis.un-igrac.org/geoserver/ggis/wfs?service=WFS&version=2.0.0&request=GetFeature&typeName=ggis:groundwater_monitoring_stations&bbox=${igracBbox},EPSG:4326&count=30&outputFormat=application/json`;
@@ -648,6 +667,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     }
   } catch { /* IGRAC may be unreachable or CORS-restricted */ }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 7. ISRIC WoSIS — World Soil Information Service
@@ -655,6 +675,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //    Contains drilling logs, horizon descriptions, measured depth data
   //    https://www.isric.org/explore/wosis
   // ────────────────────────────────────────────────────────
+  tasks.push((async () => {
   try {
     const wosisUrl = `https://rest.isric.org/wosis/latest/profiles?lat=${lat}&lon=${lon}&within=${searchRadius * 1000}&limit=20`;
     const resp = await fetch(wosisUrl, { signal: AbortSignal.timeout(12000) });
@@ -686,6 +707,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     }
   } catch { /* WoSIS endpoint may not be publicly accessible */ }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 8. BGS Africa Groundwater Atlas — British Geological Survey / NERC
@@ -694,6 +716,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //    https://www2.bgs.ac.uk/groundwater/international/africanGroundwater/
   // ────────────────────────────────────────────────────────
   const inAfrica = lat >= -35 && lat <= 37 && lon >= -25 && lon <= 55;
+  tasks.push((async () => {
   if (inAfrica) {
     try {
       const africaBbox = `${(lon - degOffset).toFixed(4)},${(lat - degOffset).toFixed(4)},${(lon + degOffset).toFixed(4)},${(lat + degOffset).toFixed(4)}`;
@@ -734,6 +757,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     } catch { /* BGS Africa endpoint may not be accessible */ }
   }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 9. South Africa DWS — Department of Water and Sanitation
@@ -741,6 +765,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //    https://www.dws.gov.za/Groundwater/
   // ────────────────────────────────────────────────────────
   const inSouthAfrica = lat >= -35 && lat <= -22 && lon >= 16 && lon <= 33;
+  tasks.push((async () => {
   if (inSouthAfrica) {
     try {
       const saBbox = `${(lon - degOffset).toFixed(4)},${(lat - degOffset).toFixed(4)},${(lon + degOffset).toFixed(4)},${(lat + degOffset).toFixed(4)}`;
@@ -776,6 +801,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     } catch { /* SA DWS may not be accessible */ }
   }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 10. GEMStat — UNEP Global Environment Monitoring System
@@ -783,6 +809,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //     Operated by Federal Institute of Hydrology (BfG), Germany
   //     https://gemstat.org/
   // ────────────────────────────────────────────────────────
+  tasks.push((async () => {
   try {
     const gemBbox = `${(lon - degOffset).toFixed(4)},${(lat - degOffset).toFixed(4)},${(lon + degOffset).toFixed(4)},${(lat + degOffset).toFixed(4)}`;
     const gemstatUrl = `https://gemstat.bafg.de/applications/public.html/api/stations?bbox=${gemBbox}&type=groundwater&format=json`;
@@ -813,6 +840,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     }
   } catch { /* GEMStat may not have public API accessible from browser */ }
+  })());
 
   // ────────────────────────────────────────────────────────
   // 11. mWater — Mobile Water Point Monitoring Platform
@@ -820,6 +848,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //     Used by UNICEF, WaterAid, World Vision, and national WASH depts
   //     https://www.mwater.co/
   // ────────────────────────────────────────────────────────
+  tasks.push((async () => {
   try {
     const mwFilter = JSON.stringify({
       geo: { $near: { $geometry: { type: 'Point', coordinates: [lon, lat] }, $maxDistance: searchRadius * 1000 } },
@@ -852,11 +881,14 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       }
     }
   } catch { /* mWater may require auth or CORS-restricted */ }
+  })());
 
   // ────────────────────────────────────────────────────────
   // ADAPTIVE RADIUS — if very few wells found in 25 km, try 50 km
   //   with the highest-coverage sources (WPDx, OSM)
   // ────────────────────────────────────────────────────────
+  await Promise.allSettled(tasks);
+
   if (wells.length < 3) {
     const expandedRadius = 50;
     const expandedDeg = expandedRadius / 111;

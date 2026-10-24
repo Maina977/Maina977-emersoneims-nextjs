@@ -288,12 +288,12 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     unit: 'm',
     tier: hasERT ? 'MEASURED' : hasModelledERT ? 'ESTIMATED' : (hasEnsemble && hasNearby) ? 'CALIBRATED' : (hasEnsemble || satelliteSourceCount >= 3) ? 'CALIBRATED' : hasNearby ? 'ESTIMATED' : 'INFERRED',
     category: hasERT ? 'field_measurement' : hasModelledERT ? 'model_derived' : (hasEnsemble || satelliteSourceCount >= 3) ? 'satellite' : hasNearby ? 'database' : 'model_derived',
-    source: hasERT ? 'ERT 2D Inversion + AI Fusion' : hasModelledERT ? 'Modelled ERT (synthetic — no field survey)' : hasEnsemble ? `Bayesian ensemble (${r.ensembleResult?.sourcesUsed ?? satelliteSourceCount} sources) + satellite ML` : hasNearby ? 'Nearby borehole average + satellite ML' : 'Satellite remote sensing + geological model',
+    source: hasERT ? 'Field ERT survey (2D inversion)' : hasNearby ? 'Drilled depths of boreholes nearby + county drilling record (no field survey)' : 'County drilling record + terrain (no field survey)',
     method: hasERT
-      ? 'Occam 2D inversion -> low-resistivity zone detection -> depth optimization (ERT 40% + AI 35% + Borehole 25%)'
+      ? 'Occam 2D inversion -> low-resistivity zone detection -> depth optimisation, checked against nearby boreholes'
       : hasNearby
-        ? 'IDW-weighted average of nearby well depths + satellite-derived ML correction'
-        : 'Weighted scoring of NDVI, NDWI, elevation, slope, geology and climate features (rule-based, not a trained model)',
+        ? 'Weighted towards the median drilled depth of productive boreholes within 20 km and kept between their quartiles; terrain and climate adjust it slightly (rule-based, not a trained model)'
+        : 'County average drilled depth, adjusted for terrain and climate (rule-based, not a trained model)',
     accuracy_pct: hasERT ? 88 : hasNearby ? 72 : 55,
     confidenceInterval: r.ertIntelligence?.depthOptimization
       ? { lower: r.ertIntelligence.depthOptimization.minimumDepth_m, upper: r.ertIntelligence.depthOptimization.maximumDepth_m, confidence_pct: 90 }
@@ -314,12 +314,14 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     unit: 'm3/hr',
     tier: hasPumpTest ? 'CALIBRATED' : hasERT ? 'CALIBRATED' : hasModelledERT ? 'ESTIMATED' : (hasEnsemble || hasGeophysics) ? 'CALIBRATED' : 'ESTIMATED',
     category: hasPumpTest ? 'field_measurement' : hasERT ? 'field_measurement' : 'model_derived',
-    source: hasPumpTest ? 'Pump test analysis (Theis/Cooper-Jacob — analytically derived, not raw measurement)' : hasERT ? 'ERT transmissivity + Darcy flow model' : hasModelledERT ? 'Modelled ERT transmissivity (synthetic — no field survey)' : hasGeophysics ? 'Advanced geophysics engine (literature K + Logan yield)' : 'Empirical yield-from-rainfall/geology regression',
+    source: hasPumpTest ? 'Pump test analysis (Theis/Cooper-Jacob — analytically derived, not raw measurement)' : hasERT ? 'ERT transmissivity + Darcy flow model' : (r as any).governingYieldNote ? 'Tested yields of real boreholes nearby (or the county record), with the aquifer model reconciled to them (no field survey)' : 'Regional yield for the rock type and rainfall (no field survey)',
     method: hasPumpTest
       ? 'Cooper-Jacob straight-line: T = 2.303Q/(4pi*delta_s), Q_safe = 0.7 * T * i * A'
       : hasERT
         ? 'T from Archie resistivity -> K via Kozeny-Carman -> Q = T * i * effective_width'
-        : 'Regional yield = f(MAP, geology, aquifer_type, depth) per MacDonald et al. (2012)',
+        : (r as any).governingYieldNote
+          ? 'Planning yield kept between the lower quartile and the median of nearby tested yields; transmissivity solved so drawdown and pump size agree with that yield'
+          : 'Regional yield = f(MAP, geology, aquifer_type, depth) per MacDonald et al. (2012)',
     accuracy_pct: hasPumpTest ? 92 : hasERT ? 75 : 50,
     reference: hasPumpTest
       ? 'Kruseman & de Ridder (1990) Analysis and Evaluation of Pumping Test Data'
@@ -329,7 +331,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
       ? ['Short-duration test may overestimate sustainable yield', 'Well efficiency assumed >70%']
       : hasERT
         ? ['Resistivity-to-K conversion is empirical', 'Aquifer geometry simplified', 'No pumping data to validate']
-        : ['No subsurface data', 'Yield estimated from surface features only', 'Accuracy typically +/-50% without field data'],
+        : ['No subsurface measurement at this plot', 'Nearby boreholes may tap a different fracture or layer', 'Only a pump test gives the real yield'],
   });
 
   // ── Success Probability ──
@@ -380,7 +382,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     unit: '',
     tier: hasLithology ? 'MEASURED' : (hasRockMapping && hasDEM) ? 'CALIBRATED' : hasRockMapping ? 'ESTIMATED' : hasERT ? 'CALIBRATED' : 'ESTIMATED',
     category: hasLithology ? 'field_measurement' : hasRockMapping ? 'satellite' : 'satellite',
-    source: hasLithology ? 'Lithology log from drill cuttings' : hasRockMapping ? `Multi-classifier rock mapping (${r.advancedRockMapping?.dataSources?.length ?? 8} classifiers)` : 'Macrostrat + Sentinel-2 + DEM classification',
+    source: hasLithology ? 'Lithology log from drill cuttings' : hasRockMapping ? `Multi-classifier rock mapping (${r.advancedRockMapping?.dataSources?.length ?? 8} classifiers)` : 'Macrostrat geology + DEM classification',
     method: hasLithology
       ? 'Visual logging per BS 5930:2015 + thin section analysis'
       : 'Rule-based classification from NDVI, spectral bands, elevation and the Macrostrat formation',
@@ -411,7 +413,8 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   });
 
   // ── Transmissivity ──
-  const T_val = r.ertInterpretation?.yieldEstimation?.transmissivity_m2day ?? r.ertIntelligence?.yieldEstimation?.transmissivity_m2day ?? r.advancedGeophysics?.projectedInversions?.[0]?.transmissivity_m2day ?? r.aquiferSimulation?.pumpTest?.cooperJacob?.transmissivity ?? 0;
+  // One governing T (2026-10-20): without field data, the well design's evidence-reconciled T.
+  const T_val = (!hasERT && !hasPumpTest && r.wellDesign?.drawdown?.reconciledTransmissivity_m2day) || (r.ertInterpretation?.yieldEstimation?.transmissivity_m2day ?? r.ertIntelligence?.yieldEstimation?.transmissivity_m2day ?? r.advancedGeophysics?.projectedInversions?.[0]?.transmissivity_m2day ?? r.aquiferSimulation?.pumpTest?.cooperJacob?.transmissivity ?? 0);
   items.push({
     parameter: 'Transmissivity (T)',
     value: T_val,
@@ -926,10 +929,10 @@ function generateMethodologyReport(r: any): MethodologyReport {
     {
       step: 2,
       name: 'Remote Sensing Data Acquisition',
-      method: 'Multi-source satellite data fusion: ISRIC SoilGrids (soil), Open-Meteo (climate), NASA POWER (radiation/moisture), Sentinel-2 (vegetation indices)',
+      method: 'Public data: ISRIC SoilGrids (soil), Open-Meteo ERA5 (climate), NASA POWER (rainfall, radiation, moisture), MODIS (vegetation index)',
       reference: 'Hengl et al. (2017) SoilGrids250m; Munoz-Sabater et al. (2021) ERA5-Land',
       inputs: ['Coordinates', 'Search radius 25km'],
-      outputs: ['Soil texture profile (0-200cm)', 'Climate normals', 'NDVI/NDWI', 'Soil moisture'],
+      outputs: ['Soil texture profile (0-200cm)', 'Climate normals', 'NDVI', 'Soil moisture'],
       assumptions: ['Satellite data representative of point location', '250m SoilGrids resolution adequate'],
       limitations: ['Cloud cover may affect optical indices', 'SoilGrids accuracy ~75% for texture class', 'Climate normals use 30-year average'],
       dataTier: 'ESTIMATED',
@@ -1007,7 +1010,7 @@ function generateMethodologyReport(r: any): MethodologyReport {
     step: hasERT ? 8 : 7,
     name: 'Multi-Source Ensemble & Depth/Yield Prediction',
     method: 'Bayesian multi-source fusion using Dempster-Shafer evidence theory. Weighted multi-source scoring for success probability. Monte Carlo uncertainty quantification (N=5000).',
-    equation: 'P(success) = sigmoid(sum(w_i * f_i)); depth = fusion(ERT, AI, boreholes); yield = f(T, i, b)',
+    equation: 'P(success) = sigmoid(sum(w_i * f_i)); depth = fusion(ERT, desktop model, boreholes); yield = f(T, i, b)',
     reference: 'Shafer (1976); MacDonald et al. (2012)',
     inputs: ['All upstream outputs', 'Feature importance weights'],
     outputs: ['Final depth recommendation', 'Yield estimate with CI', 'Success probability', 'Data quality score'],
@@ -1081,7 +1084,7 @@ function generateMethodologyReport(r: any): MethodologyReport {
     standardsReferenced: standards,
     softwareVersion: 'AquaScan Pro — desktop borehole pre-screen',
     analysisDate: new Date().toISOString(),
-    disclaimer: 'This report is generated by an AI-assisted decision support tool. It is intended to supplement, not replace, professional hydrogeological judgment. All predictions carry stated uncertainty and should be verified by field investigation. The tool operators and developers accept no liability for drilling outcomes based solely on this report. A qualified hydrogeologist or water engineer should review all findings before any financial commitment or drilling mobilization.',
+    disclaimer: 'This report is generated by a rule-based desktop screening tool. It is intended to supplement, not replace, professional hydrogeological judgment. All predictions carry stated uncertainty and should be verified by field investigation. The tool operators and developers accept no liability for drilling outcomes based solely on this report. A qualified hydrogeologist or water engineer should review all findings before any financial commitment or drilling mobilization.',
     limitations,
     assumptions,
     recommendations,

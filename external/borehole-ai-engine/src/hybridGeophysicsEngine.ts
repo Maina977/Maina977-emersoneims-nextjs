@@ -7,7 +7,7 @@
  * has already identified the 2-3 best drill points. Why survey the whole area?
  *
  * This engine computes a DRILL READINESS INDEX (DRI) from all available
- * AI data sources. When DRI is high enough → DRILL WITHOUT SURVEY.
+ * desktop data sources. A hydrogeological survey is always required before drilling (2026-10-20: this used to say "drill without survey").
  * When DRI has specific gaps → prescribe the EXACT 1-2 surveys that fill them.
  *
  * Decision ladder:
@@ -322,9 +322,9 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
     ? 'Aquifer presence not confirmed — relying on indirect indicators'
     : null;
   dimensions.push({
-    name: 'Aquifer Presence', score: aquiferScore,
+    name: 'Aquifer presence confidence (model)', score: aquiferScore,
     source: input.hasPumpTest ? 'Pump test (confirmed)' : input.hasFieldNMR ? 'NMR direct detection' :
-      input.hasFieldERT ? 'ERT low-resistivity layer' : 'AI ensemble (satellite + borehole DB)',
+      input.hasFieldERT ? 'ERT low-resistivity layer' : 'desktop scoring (satellite + borehole DB)',
     gap: aquiferGap,
     fillMethod: aquiferGap ? (isCrystalline ? 'ERT survey (1 line, 480m)' : 'EM/TDEM sounding') : null,
     fillCostUSD: aquiferGap ? (isCrystalline ? 1520 : 1000) : 0,
@@ -352,9 +352,9 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
     ? `Depth estimate ±${depthScore < 40 ? '40-60' : '20-35'}% uncertainty — ${isCrystalline ? 'fracture zone depth unknown' : 'aquifer top/bottom not constrained'}`
     : null;
   dimensions.push({
-    name: 'Depth Accuracy', score: depthScore,
+    name: 'Depth confidence (model)', score: depthScore,
     source: input.hasPumpTest ? 'Pump test' : input.hasFieldERT ? 'ERT profile' :
-      input.hasNearbyBoreholes ? 'Nearby boreholes + AI model' : 'AI ensemble (satellite + geology)',
+      input.hasNearbyBoreholes ? 'Nearby boreholes + desktop model' : 'desktop scoring (satellite + geology)',
     gap: depthGap,
     fillMethod: depthGap ? (isCrystalline ? 'ERT survey (1 line, 480m)' : 'EM/TDEM + ERT short line') : null,
     fillCostUSD: depthGap ? 1520 : 0,
@@ -379,9 +379,9 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
     ? 'Yield estimate is modelled, not measured — ±50% uncertainty typical for desktop analysis'
     : null;
   dimensions.push({
-    name: 'Yield Estimate', score: yieldScore,
+    name: 'Yield confidence (model)', score: yieldScore,
     source: input.hasPumpTest ? 'Pump test (24hr)' : input.hasFieldNMR ? 'NMR water content' :
-      'AI model (regional DB + satellite moisture)',
+      'desktop model (regional DB + satellite moisture)',
     gap: yieldGap,
     fillMethod: yieldGap ? 'Pump test after drilling (not a pre-drill survey)' : null,
     fillCostUSD: 0, fillTimeHrs: 0, confidenceGainIfFilled: yieldGap ? 12 : 0,
@@ -503,8 +503,8 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
     ? 'Drill point positioned from satellite — ±50-100m uncertainty. Field walkover recommended.'
     : null;
   dimensions.push({
-    name: 'Drill Site Precision', score: siteScore,
-    source: input.hasFieldERT ? 'ERT anomaly location' : 'DEM + satellite + lineament AI',
+    name: 'Drill site confidence (model)', score: siteScore,
+    source: input.hasFieldERT ? 'ERT anomaly location' : 'DEM + satellite + lineament analysis',
     gap: siteGap,
     fillMethod: siteGap ? 'Field GPS walkover + EM profiling (2hr)' : null,
     fillCostUSD: siteGap ? 300 : 0,
@@ -572,6 +572,14 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
     driGrade = 'A';
     driColor = '#22c55e';
   }
+  // Desktop data alone never reaches "DRILL NOW" (2026-10-20): a hydrogeological
+  // survey is required before drilling in Kenya, so the best a desktop-only run
+  // can say is that a TARGETED survey at the top point is enough.
+  if (!input.hasFieldERT && drillReadinessLabel === 'DRILL NOW') {
+    drillReadinessLabel = 'TARGETED SURVEY';
+    driGrade = 'B';
+    driColor = '#3b82f6';
+  }
 
   // ═══ STRENGTHS & WEAKNESSES ═══
   for (const d of dimensions) {
@@ -588,11 +596,11 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
   // ═══ SURVEY ELIMINATION REASONING ═══
   if (drillReadinessLabel === 'DRILL NOW') {
     surveyEliminationReasoning.push(
-      `AI analysis achieves DRI ${finalDRI}% — exceeds the ${drillThreshold}% threshold for ${isCrystalline ? 'crystalline' : isSedimentary ? 'sedimentary' : 'mixed'} terrain`,
+      `desktop analysis achieves DRI ${finalDRI}% — exceeds the ${drillThreshold}% threshold for ${isCrystalline ? 'crystalline' : isSedimentary ? 'sedimentary' : 'mixed'} terrain`,
       `${sourceConvergence} independent data sources analyzed (satellite, geological, hydrological, borehole database)`,
       `Source agreement: ${input.sourceAgreement} — predictions are internally consistent`,
       `Estimated drilling success probability: ${(input.probability * 100).toFixed(0)}%`,
-      `RECOMMENDATION: Proceed to drill without additional geophysical survey. Cost savings: $${FULL_SURVEY_COST_USD.toLocaleString()} (100%)`,
+      `RECOMMENDATION: drill at the surveyed point once the field ERT confirms the target.`,
     );
     if (input.hasNearbyBoreholes) surveyEliminationReasoning.push('Nearby borehole records confirm aquifer presence in this area');
     if (input.hasBoreholeDB) surveyEliminationReasoning.push('National borehole database provides regional depth/yield calibration');
@@ -600,24 +608,24 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
     const gapsToFill = knowledgeGaps.filter(g => g.fillCostUSD > 0).sort((a, b) => b.confidenceGainIfFilled - a.confidenceGainIfFilled);
     const topGap = gapsToFill[0];
     surveyEliminationReasoning.push(
-      `AI analysis achieves DRI ${finalDRI}% — close to drill threshold but ${knowledgeGaps.length} knowledge gap(s) remain`,
+      `desktop analysis achieves DRI ${finalDRI}% — close to drill threshold but ${knowledgeGaps.length} knowledge gap(s) remain`,
       `Primary gap: ${topGap?.name ?? 'unknown'} — ${topGap?.gap ?? 'needs verification'}`,
       `TARGETED FIX: ${topGap?.fillMethod ?? 'single survey'} ($${topGap?.fillCostUSD ?? 0}) to gain +${topGap?.confidenceGainIfFilled ?? 0}% confidence`,
       `This eliminates ${Math.round(((FULL_SURVEY_COST_USD - (topGap?.fillCostUSD ?? 0)) / FULL_SURVEY_COST_USD) * 100)}% of traditional survey cost`,
-      `Full site survey NOT required — AI has already narrowed the target to specific drill points`,
+      `A targeted survey at the top drill point is enough; a full-site survey is not needed`,
     );
   } else if (drillReadinessLabel === 'FOCUSED SURVEY') {
     surveyEliminationReasoning.push(
-      `AI analysis achieves DRI ${finalDRI}% — ${knowledgeGaps.length} significant knowledge gaps`,
+      `desktop analysis achieves DRI ${finalDRI}% — ${knowledgeGaps.length} significant knowledge gaps`,
       `${isCrystalline ? 'Crystalline basement terrain requires fracture targeting — ERT essential' : 'Multiple uncertainties require field verification'}`,
-      `FOCUSED APPROACH: Survey only at the AI-identified top 1-2 drill points, not the entire site`,
+      `FOCUSED APPROACH: Survey only at the desktop-identified top 1-2 drill points, not the entire site`,
       `Expected cost: $${knowledgeGaps.reduce((s, g) => s + g.fillCostUSD, 0).toLocaleString()} vs $${FULL_SURVEY_COST_USD.toLocaleString()} for full survey`,
     );
   } else {
     surveyEliminationReasoning.push(
-      `AI analysis achieves only DRI ${finalDRI}% — insufficient data for confident drilling`,
+      `desktop analysis achieves only DRI ${finalDRI}% — insufficient data for confident drilling`,
       `${knowledgeGaps.length} major knowledge gaps identified — full geophysical investigation recommended`,
-      `However, AI still saves money by identifying optimal survey lines and drill candidates`,
+      `However, desktop screening still saves money by identifying optimal survey lines and drill candidates`,
     );
   }
 
@@ -640,7 +648,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
         purpose: 'Map fracture zones and weathering depth in basement rock',
         costUSD: 1520,
         timeHrs: 4,
-        location: `Deploy across AI drill point #1 (${input.lat.toFixed(4)}°, ${input.lon.toFixed(4)}°), oriented perpendicular to detected lineament`,
+        location: `Deploy across desktop drill point #1 (${input.lat.toFixed(4)}°, ${input.lon.toFixed(4)}°), oriented perpendicular to detected lineament`,
         expectedOutcome: 'Clear resistivity contrast showing fracture zone (50-150 Ω·m) vs intact rock (>500 Ω·m)',
         decisionCriteria: 'If clear fracture anomaly found at 30-200m depth → PROCEED TO DRILL. If no anomaly → rotate line 90° (Step 2)',
         canTerminateEarly: true,
@@ -671,7 +679,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
         purpose: 'Rapid depth-to-aquifer mapping and layer thickness',
         costUSD: 1000,
         timeHrs: 4,
-        location: `Grid pattern around AI drill point #1, 100m spacing`,
+        location: `Grid pattern around desktop drill point #1, 100m spacing`,
         expectedOutcome: 'Conductive layer (aquifer) identified at predicted depth, thickness constrained',
         decisionCriteria: 'If aquifer layer confirmed at predicted depth → PROCEED TO DRILL. If no conductive layer → run ERT (Step 2)',
         canTerminateEarly: true,
@@ -703,7 +711,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
         purpose: 'Detect voids, cavities and solution channels in karst terrain',
         costUSD: 1000,
         timeHrs: 3,
-        location: 'Grid pattern centered on AI drill point #1',
+        location: 'Grid pattern centered on desktop drill point #1',
         expectedOutcome: 'Map of subsurface voids to AVOID and solution channels to TARGET',
         decisionCriteria: 'If stable ground confirmed at drill point → DRILL. If void detected → relocate 50m away',
         canTerminateEarly: true,
@@ -719,9 +727,9 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
         purpose: 'Confirm terrain, access, and refine drill point by ±50m',
         costUSD: 200,
         timeHrs: 2,
-        location: `500m radius around AI point (${input.lat.toFixed(4)}°, ${input.lon.toFixed(4)}°)`,
+        location: `500m radius around desktop point (${input.lat.toFixed(4)}°, ${input.lon.toFixed(4)}°)`,
         expectedOutcome: 'Confirmed drill point with clear rig access and no surface hazards',
-        decisionCriteria: 'If site is accessible and geology matches AI prediction → proceed. If terrain differs significantly → re-evaluate',
+        decisionCriteria: 'If site is accessible and geology matches desktop prediction → proceed. If terrain differs significantly → re-evaluate',
         canTerminateEarly: false,
       });
     }
@@ -740,12 +748,12 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
 
   // ═══ EXECUTIVE SUMMARY ═══
   const executiveSummary = drillReadinessLabel === 'DRILL NOW'
-    ? `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). The AI analysis has processed ${sourceConvergence} independent data sources with ${input.sourceAgreement} agreement. Aquifer presence is ${aquiferScore >= 70 ? 'well-supported' : 'indicated'}, depth estimate is calibrated against ${input.hasNearbyBoreholes ? 'nearby borehole records' : 'regional database'}, and geology is classified as ${input.rockType}. NO SITE SURVEY REQUIRED — proceed directly to drilling. This saves an estimated $${FULL_SURVEY_COST_USD.toLocaleString()} in survey costs and ${Math.round(FULL_SURVEY_COST_USD / 500)} days of mobilization time.`
+    ? `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). The desktop analysis has processed ${sourceConvergence} independent data sources with ${input.sourceAgreement} agreement. Aquifer presence is ${aquiferScore >= 70 ? 'well-supported' : 'indicated'}, depth estimate is calibrated against ${input.hasNearbyBoreholes ? 'nearby borehole records' : 'regional database'}, and geology is classified as ${input.rockType}. NO SITE SURVEY REQUIRED — proceed directly to drilling. This saves an estimated $${FULL_SURVEY_COST_USD.toLocaleString()} in survey costs and ${Math.round(FULL_SURVEY_COST_USD / 500)} days of mobilization time.`
     : drillReadinessLabel === 'TARGETED SURVEY'
-    ? `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). The AI analysis is strong but ${knowledgeGaps.length} knowledge gap(s) need targeted verification. Instead of a full $${FULL_SURVEY_COST_USD.toLocaleString()} site survey, conduct ${adaptiveSurveySequence.length <= 2 ? 'only' : ''} ${adaptiveSurveySequence.length} targeted survey step(s) at the AI-identified drill point for ~$${recommendedSurveyCostUSD.toLocaleString()}. This is a ${costSavingsPercent}% cost reduction. The AI has already done the heavy lifting — the targeted survey just confirms the final details.`
+    ? `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). The desktop analysis is strong but ${knowledgeGaps.length} knowledge gap(s) need targeted verification. Instead of a full $${FULL_SURVEY_COST_USD.toLocaleString()} site survey, conduct ${adaptiveSurveySequence.length <= 2 ? 'only' : ''} ${adaptiveSurveySequence.length} targeted survey step(s) at the desktop-identified drill point for ~$${recommendedSurveyCostUSD.toLocaleString()}. This is a ${costSavingsPercent}% cost reduction. The desktop model has already done the heavy lifting — the targeted survey just confirms the final details.`
     : drillReadinessLabel === 'FOCUSED SURVEY'
-    ? `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). ${knowledgeGaps.length} significant gaps require focused field investigation at the AI-selected drill points. Cost: ~$${recommendedSurveyCostUSD.toLocaleString()} (${costSavingsPercent}% savings vs full survey). The AI has narrowed the search area from km² to specific GPS points — survey only those points.`
-    : `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). Insufficient data confidence for this location. A comprehensive geophysical survey is recommended before drilling. However, the AI analysis has identified optimal survey lines and priority areas, which still reduces survey scope and cost.`;
+    ? `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). ${knowledgeGaps.length} significant gaps require focused field investigation at the desktop-selected drill points. Cost: ~$${recommendedSurveyCostUSD.toLocaleString()} (${costSavingsPercent}% savings vs full survey). The desktop model has narrowed the search area from km² to specific GPS points — survey only those points.`
+    : `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). Insufficient data confidence for this location. A comprehensive geophysical survey is recommended before drilling. However, the desktop analysis has identified optimal survey lines and priority areas, which still reduces survey scope and cost.`;
 
   // ═══ DRILLER BRIEF ═══
   // Never instructs mobilization before the statutory survey: in Kenya a
@@ -753,7 +761,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
   // the final drilling method is the contractor's call after ERT.
   const drillerBrief = drillReadinessLabel === 'DRILL NOW'
     ? `Desktop model supports drilling at ${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}° (elevation ${input.elevationM.toFixed(0)}m) SUBJECT to the statutory hydrogeological survey/ERT confirming the target. Expected geology: ${input.rockType}. Target depth: ${input.predictedDepth_m}m. Expected aquifer: ${input.aquiferType} at ${input.waterTableDepthM.toFixed(0)}m. ${isCrystalline ? 'Target fracture zones — watch for water strikes and increased penetration rate.' : 'Drill through overburden to the aquifer horizon.'} Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr. Final drilling method to be selected by the contractor after ERT interpretation and access review. Conduct step-drawdown test at first significant water strike.`
-    : `After the ${adaptiveSurveySequence[0]?.method ?? 'targeted survey'} confirms the target, mobilize to the confirmed drill point. ${isCrystalline ? 'Orient the rig to intercept the fracture zone identified by ERT.' : 'Drilling method to be selected by the contractor after ERT interpretation and formation review.'} Target depth: ${input.predictedDepth_m}m (confirm with survey results). Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr.`;
+    : `After the ${adaptiveSurveySequence[0]?.method ?? 'targeted survey'} confirms the target, mobilize to the confirmed drill point. ${isCrystalline ? 'Orient the rig to intercept the fracture zone the ERT survey finds.' : 'Drilling method to be selected by the contractor after ERT interpretation and formation review.'} Target depth: ${input.predictedDepth_m}m (confirm with survey results). Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr.`;
 
   // ═══ CLIENT BRIEF ═══
   // Kenya market truth (owner-supplied 2026-07): the statutory hydrogeological
@@ -787,7 +795,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
 
   topDrillPoints.push({
     rank: 1, lat: input.lat, lon: input.lon,
-    label: 'Primary — Highest AI composite score',
+    label: 'Primary — Highest desktop composite score',
     aiScore: Math.round(input.probability * 80 + (input.confidence / 100) * 20),
     reasons: p1reasons,
     estimatedDepthM: input.predictedDepth_m,
@@ -893,14 +901,14 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
     driBoostPercent: postFusionDRI - finalDRI,
     fusionVerdict: postFusionDRI >= drillThreshold ? 'CONFIRMED' : postFusionDRI >= targetedThreshold ? 'REFINED' : 'CONTRADICTED',
     fusionNarrative: postFusionDRI >= drillThreshold
-      ? `IF the ERT survey confirms the AI predictions, DRI is projected to rise from ${finalDRI}% to ${postFusionDRI}% — exceeding the ${drillThreshold}% drill threshold. This remains a projection until the ERT is run; bankable grade additionally requires a pump test and lab water analysis.`
+      ? `IF the ERT survey confirms the desktop predictions, DRI is projected to rise from ${finalDRI}% to ${postFusionDRI}% — exceeding the ${drillThreshold}% drill threshold. This remains a projection until the ERT is run; bankable grade additionally requires a pump test and lab water analysis.`
       : `ERT is projected to boost DRI from ${finalDRI}% to ${postFusionDRI}%. ${postFusionDRI >= targetedThreshold ? 'This brings the site close to drill-ready — minor additional verification may suffice.' : 'Additional surveys may be needed, but ERT significantly narrows the uncertainty.'}`,
     aiPredictions: [
       `Aquifer type: ${input.aquiferType}`,
       `Expected depth: ${input.predictedDepth_m}m`,
       `Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr`,
       `Rock type: ${input.rockType}`,
-      `AI probability: ${(input.probability * 100).toFixed(0)}%`,
+      `Desktop probability: ${(input.probability * 100).toFixed(0)}%`,
       isCrystalline ? `Fracture zone expected at ${Math.round(input.predictedDepth_m * 0.3)}-${Math.round(input.predictedDepth_m * 0.8)}m` : `Aquifer horizon at ${Math.round(input.predictedDepth_m * 0.4)}-${input.predictedDepth_m}m`,
     ],
     ertExpected: [
@@ -920,18 +928,18 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
   // pump test and lab water analysis remain mandatory AFTER drilling even
   // when the ERT confirms the target (client review finding #13).
   const finalDecision = postFusionDRI >= drillThreshold
-    ? `DRILL AT POINT #1 (${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}°) — AI + ERT fusion DRI: ${postFusionDRI}%, subject to hydrogeologist review and statutory approvals. Pump testing and laboratory water analysis remain mandatory after drilling.`
+    ? `DRILL AT POINT #1 (${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}°) — Desktop + ERT fusion DRI: ${postFusionDRI}%, subject to hydrogeologist review and statutory approvals. Pump testing and laboratory water analysis remain mandatory after drilling.`
     : postFusionDRI >= targetedThreshold
-    ? `DRILL WITH MONITORING — AI + ERT DRI: ${postFusionDRI}%. Proceed to drill with enhanced monitoring during drilling. Pump testing and laboratory water analysis remain mandatory after drilling.`
+    ? `DRILL WITH MONITORING — Desktop + ERT DRI: ${postFusionDRI}%. Proceed to drill with enhanced monitoring during drilling. Pump testing and laboratory water analysis remain mandatory after drilling.`
     : `ADDITIONAL SURVEY RECOMMENDED — Post-fusion DRI ${postFusionDRI}% still below threshold. Consider ${isCrystalline ? 'cross-line ERT or magnetic survey' : 'TDEM sounding'} at Point #1 before drilling.`;
 
   // Build the 5-step pipeline
   const pipeline: PipelineStep[] = [
     {
-      step: 1, title: 'AI Screening', subtitle: 'Entire Site',
+      step: 1, title: 'Desktop Screening', subtitle: 'Entire Site',
       status: 'complete',
       icon: '\u{1F9E0}',
-      description: `${sourceConvergence} satellite, geological, and hydrological data sources analyzed across the entire site area. AI ensemble model computes groundwater probability, depth, yield, geology classification, and contamination risk.`,
+      description: `${sourceConvergence} satellite, geological, and hydrological data sources analyzed across the entire site area. desktop scoring model computes groundwater probability, depth, yield, geology classification, and contamination risk.`,
       keyOutput: `${(input.probability * 100).toFixed(0)}% groundwater probability | ${input.predictedDepth_m}m depth | ${input.predictedYield_m3hr.toFixed(1)} m³/hr | ${input.rockType}`,
       details: [
         `Satellite data: SRTM elevation, GLDAS soil moisture, GRACE groundwater trends, NASA POWER climate`,
@@ -943,10 +951,10 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
       costUSD: 0, timeHrs: 0,
     },
     {
-      step: 2, title: 'Top 3 Points Selected', subtitle: 'AI Ranking',
+      step: 2, title: 'Top 3 Points Selected', subtitle: 'Desktop Ranking',
       status: 'complete',
       icon: '\u{1F4CD}',
-      description: `AI evaluated terrain, geology, lineaments, vegetation, moisture, and drainage patterns to rank 3 optimal drill candidates. Only the #1 point receives a field survey — eliminating the need to survey the entire site.`,
+      description: `The desktop model evaluated terrain, geology, lineaments, vegetation, moisture, and drainage patterns to rank 3 optimal drill candidates. Only the #1 point receives a field survey — eliminating the need to survey the entire site.`,
       keyOutput: `#1: ${topDrillPoints[0].label} (Score: ${topDrillPoints[0].aiScore}) | #2: Score ${topDrillPoints[1].aiScore} | #3: Score ${topDrillPoints[2].aiScore}`,
       details: [
         `Point #1 (${input.lat.toFixed(4)}°, ${input.lon.toFixed(4)}°): ${topDrillPoints[0].reasons[0]}`,
@@ -961,7 +969,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
       step: 3, title: 'ERT on ONLY Best Point', subtitle: `$${ertCost} | ${ertTime}h`,
       status: 'actionable',
       icon: '\u{26A1}',
-      description: `Deploy ${ertSpec.arrayType} array (${ertLineLength}m line, ${ertSpacing}m spacing) at Point #1 ONLY. ${ertSpec.lineOrientation}. This is the ONLY field survey needed — AI has already eliminated the need for blanket site coverage.`,
+      description: `Deploy ${ertSpec.arrayType} array (${ertLineLength}m line, ${ertSpacing}m spacing) at Point #1 ONLY. ${ertSpec.lineOrientation}. This is the ONLY field survey needed — desktop screening has already eliminated the need for blanket site coverage.`,
       keyOutput: `${ertSpec.arrayType} | ${ertLineLength}m | Looking for: ${ertSpec.expectedTarget}`,
       details: [
         `Array: ${ertSpec.arrayType}, ${ertSpec.numLines} line × ${ertLineLength}m`,
@@ -974,10 +982,10 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
       costUSD: ertCost, timeHrs: ertTime,
     },
     {
-      step: 4, title: 'AI + ERT Fusion', subtitle: `DRI: ${finalDRI}% → ${postFusionDRI}%`,
+      step: 4, title: 'Desktop + ERT Fusion', subtitle: `DRI: ${finalDRI}% → ${postFusionDRI}%`,
       status: 'pending',
       icon: '\u{1F52C}',
-      description: `Feed ERT resistivity profile back into AI engine. The AI recalculates depth, geology, fracture targets, and yield estimate using combined satellite + field data. DRI projected to rise from ${finalDRI}% to ${postFusionDRI}% (+${postFusionDRI - finalDRI}%).`,
+      description: `Feed ERT resistivity profile back into desktop model. The desktop model recalculates depth, geology, fracture targets, and yield estimate using combined satellite + field data. DRI projected to rise from ${finalDRI}% to ${postFusionDRI}% (+${postFusionDRI - finalDRI}%).`,
       keyOutput: `Projected DRI: ${postFusionDRI}% | Confidence: ${fusionResult.combinedConfidence}% | Projected verdict if ERT confirms: ${fusionResult.fusionVerdict}`,
       details: [
         `Pre-ERT DRI: ${finalDRI}% → Post-ERT projected DRI: ${postFusionDRI}%`,
@@ -1013,8 +1021,8 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
   // If DRI is already high enough to drill without any survey, mark step 3 as "optional"
   if (drillReadinessLabel === 'DRILL NOW') {
     pipeline[2].status = 'complete';
-    pipeline[2].subtitle = 'OPTIONAL — AI sufficient';
-    pipeline[2].description = `AI DRI is ${finalDRI}% — already exceeds ${drillThreshold}% drill threshold. ERT survey is OPTIONAL but recommended for maximum confidence. If skipped, proceed directly to drilling and save $${ertCost}.`;
+    pipeline[2].subtitle = 'Required before drilling';
+    pipeline[2].description = `Desktop DRI is ${finalDRI}% — already exceeds ${drillThreshold}% drill threshold. a hydrogeological survey (with ERT) is still required before drilling, for confidence. If skipped, proceed directly to drilling and save $${ertCost}.`;
     pipeline[3].status = 'complete';
     pipeline[3].subtitle = 'N/A — Direct drill';
     pipeline[4].status = 'complete';
@@ -1023,8 +1031,8 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
   }
 
   const pipelineSummary = drillReadinessLabel === 'DRILL NOW'
-    ? `AI screening alone achieves DRI ${finalDRI}% — DRILL WITHOUT SURVEY. Saves $${FULL_SURVEY_COST_USD.toLocaleString()} and weeks of delay.`
-    : `AI screens site → selects 3 drill points → ERT on #1 only ($${ertCost}) → AI+ERT fusion boosts DRI to ${postFusionDRI}% → ${postFusionDRI >= drillThreshold ? 'DRILL' : 'DECIDE'}. Saves $${(FULL_SURVEY_COST_USD - ertCost).toLocaleString()} vs full survey.`;
+    ? `Desktop screening alone reaches DRI ${finalDRI}%. A hydrogeological survey is still required before drilling (Kenya Water Resources Regulations); a targeted survey at point #1 is enough.`
+    : `desktop model screens site → selects 3 drill points → ERT on #1 only ($${ertCost}) → desktop+ERT fusion boosts DRI to ${postFusionDRI}% → ${postFusionDRI >= drillThreshold ? 'DRILL' : 'DECIDE'}. Saves $${(FULL_SURVEY_COST_USD - ertCost).toLocaleString()} vs full survey.`;
 
   return {
     // 5-Step Pipeline

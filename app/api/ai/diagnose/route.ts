@@ -27,7 +27,10 @@ type DiagnoseRequestBody = {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as DiagnoseRequestBody;
+    const body = (await request.json().catch(() => null)) as DiagnoseRequestBody | null;
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Request body must be JSON' }, { status: 400 });
+    }
     const { query, brand, category, mode = 'analyze' } = body;
 
     if (!query || typeof query !== 'string') {

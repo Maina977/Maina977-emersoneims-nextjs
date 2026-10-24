@@ -75,7 +75,7 @@ export interface ERT3DConfig {
   arrayTypes: string[];       // e.g. ['Wenner-Schlumberger', 'Dipole-Dipole']
   depth_m: number;            // investigation depth
   inversionMethod: string;    // e.g. "Gauss-Newton 3D with L1/L2 norms"
-  inversionSoftware: string;  // e.g. "RES3DINV / AI-assisted real-time"
+  inversionSoftware: string;  // e.g. "RES3DINV / desktop model-assisted real-time"
   datapointsEstimated: number;
   /** 3D resolution voxel size */
   voxelSize_m: [number, number, number]; // [x, y, z]
@@ -343,7 +343,7 @@ const GEOPHYSICAL_METHODS: GeophysicalMethod[] = [
     name: '3D Electrical Resistivity Tomography (ERT)',
     shortName: '3D ERT',
     category: 'electrical',
-    principle: 'Multi-channel electrode grid measures resistivity in all directions simultaneously. 3D inversion creates volumetric resistivity model. Real-time AI-assisted inversion enables field decisions.',
+    principle: 'Multi-channel electrode grid measures resistivity in all directions simultaneously. 3D inversion creates volumetric resistivity model. Field inversion softsted inversion enables field decisions.',
     bestFor: ['Complex fracture networks', '3D aquifer geometry', 'Precise drill point positioning', 'Contamination plume mapping'],
     limitations: ['Requires large electrode grid (>48 electrodes)', 'Higher cost and setup time', 'Needs flat terrain or advanced corrections'],
     depthRange_m: [2, 150],
@@ -468,12 +468,12 @@ function buildSurveyPackages(isCrystalline: boolean, isKarst: boolean, isSedimen
     id: 'ert_3d',
     name: '3D ERT Survey (Multi-Channel)',
     methods: ['ert_3d'],
-    description: `Multi-channel 3D ERT grid (${depth_m > 100 ? '24×12' : '16×8'} electrodes). Real-time AI inversion software produces volumetric resistivity model. Maps fracture networks and aquifer geometry in full 3D.`,
+    description: `Multi-channel 3D ERT grid (${depth_m > 100 ? '24×12' : '16×8'} electrodes). Inversion software produces volumetric resistivity model. Maps fracture networks and aquifer geometry in full 3D.`,
     targetAccuracy_pct: 82,
     cost_usd: 4500,
     time_hrs: 8,
     bestFor: ['Complex fracture zones', 'High-value boreholes', '3D aquifer mapping', 'Contamination studies'],
-    equipment: ['ABEM Terrameter LS 2 (84-channel)', 'RES3DINV / AI inversion software'],
+    equipment: ['ABEM Terrameter LS 2 (84-channel)', 'RES3DINV or pyGIMLi inversion software'],
     successRateBoost_pct: 20,
   });
 
@@ -496,7 +496,7 @@ function buildSurveyPackages(isCrystalline: boolean, isKarst: boolean, isSedimen
     id: 'combined_full',
     name: 'Combined Geophysics (ERT + Magnetics + Seismic)',
     methods: ['ert_3d', 'magnetics', 'seismic_refraction'],
-    description: '3D ERT for aquifer geometry + magnetics for structural mapping + seismic for velocity structure. Triple-method validation achieves highest confidence. AI fusion of all three datasets.',
+    description: '3D ERT for aquifer geometry + magnetics for structural mapping + seismic for velocity structure. Triple-method validation achieves highest confidence. desktop model fusion of all three datasets.',
     targetAccuracy_pct: 92,
     cost_usd: 7500,
     time_hrs: 16,
@@ -622,7 +622,7 @@ const EQUIPMENT_CATALOG = [
     advantage: 'High-speed surveying (10 Hz), simultaneous total field + gradient, ideal for fracture detection',
   },
   {
-    method: 'AI Inversion',
+    method: 'Inversion software',
     model: 'RES2DINV / RES3DINV v4.x',
     manufacturer: 'Geotomo Software (Malaysia)',
     channels: 0,
@@ -630,12 +630,12 @@ const EQUIPMENT_CATALOG = [
     advantage: 'Gold standard for ERT inversion — used in >10,000 published groundwater studies',
   },
   {
-    method: 'AI Inversion',
+    method: 'Inversion software',
     model: 'BERT / pyGIMLi (Open Source)',
     manufacturer: 'Open-source community',
     channels: 0,
     feature: 'Finite-element mesh, unstructured grids, joint inversion, Python API',
-    advantage: 'Research-grade inversion with AI extensions — neural network regularization, real-time field use',
+    advantage: 'Research-grade open-source inversion (pyGIMLi with its BERT ERT module)',
   },
 ];
 
@@ -1151,7 +1151,7 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
     arrayTypes: ['Wenner-Schlumberger', 'Dipole-Dipole'],
     depth_m: Math.min(predictedDepth_m * 1.2, 150),
     inversionMethod: 'Gauss-Newton 3D with Tikhonov regularization (L1/L2 adaptive norm)',
-    inversionSoftware: 'RES3DINV v4.x + AI-assisted real-time inversion (pyGIMLi/BERT neural network regularization)',
+    inversionSoftware: 'RES2DINV/RES3DINV or pyGIMLi/BERT inversion',
     datapointsEstimated: Math.round(electrodeCount * 3.5),
     voxelSize_m: isCrystalline ? [2.5, 2.5, 1.5] : [5, 5, 2.5],
     equipment: 'ABEM Terrameter LS 2 (84-channel) with multi-electrode cables',
@@ -1318,7 +1318,7 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
   const recommendation = successRateAnalysis.meetsTarget
     ? `RECOMMENDED: "${optimalPackage.name}" reaches ${expectedSuccessRate}% projected siting/information confidence IF the surveys are carried out and their results are mutually consistent (planning target ≥90%). This is not a drilling-success guarantee — the governing site probability is unchanged until field data exists. ` +
       `Cost: $${optimalPackage.cost_usd.toLocaleString()} | Time: ${optimalPackage.time_hrs}h field work. ` +
-      `${methodCount} independent geophysical methods with AI-assisted inversion provide comprehensive subsurface characterization.`
+      `${methodCount} independent geophysical methods with joint inversion provide comprehensive subsurface characterization.`
     : `RECOMMENDED: Upgrade to "${rankedPackages.find(p => aiOnlySuccess + p.successRateBoost_pct >= 90)?.name ?? 'Combined Geophysics'}" to reach the 90% projected-confidence planning target. ` +
       `Current optimal package "${optimalPackage.name}" reaches ${expectedSuccessRate}% projected information-confidence (below the 90% target). ` +
       `Adding methods increases cross-validation and eliminates interpretation ambiguities.`;
@@ -1326,10 +1326,10 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
   const technicalSummary = [
     `Site: ${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}° | Elevation: ${input.elevationM}m`,
     `Geology: ${rockType} (${isCrystalline ? 'crystalline basement' : isSedimentary ? 'sedimentary' : isKarst ? 'karst' : 'mixed'})`,
-    `AI prediction: ${predictedDepth_m}m depth, ${input.predictedYield_m3hr} m³/hr yield, ${aiOnlySuccess}% probability`,
+    `desktop prediction: ${predictedDepth_m}m depth, ${input.predictedYield_m3hr} m³/hr yield, ${aiOnlySuccess}% probability`,
     `Weathering: ${weatheringDepth_m}m | Water table: ${waterTableDepth_m}m | Bedrock: ${input.bedrockDepth_m}m`,
     `Optimal survey: ${optimalPackage.name} (${methodCount} methods, $${optimalPackage.cost_usd.toLocaleString()})`,
-    `Projected siting/information confidence if surveys confirm the model: ${expectedSuccessRate}% (AI-only: ${aiOnlySuccess}%, boost: +${optimalPackage.successRateBoost_pct}%) — NOT a drilling-success guarantee`,
+    `Projected siting/information confidence if surveys confirm the model: ${expectedSuccessRate}% (desktop-only: ${aiOnlySuccess}%, boost: +${optimalPackage.successRateBoost_pct}%) — NOT a drilling-success guarantee`,
     `Fracture targets: ${ertInversion.fractureZones.length} zones modelled (projected from geology — not field-detected)`,
     `Weathered layer: ${ertInversion.weatheredLayer.classification} (${ertInversion.weatheredLayer.thickness_m}m thick)`,
     `Drill depth recommendation: ${Math.round(drillSpecDepth)}m`,

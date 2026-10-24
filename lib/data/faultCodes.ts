@@ -125,8 +125,8 @@ export const FAULT_CODES: FaultCode[] = [
   },
   {
     code: 'SPN-190',
-    brand: 'Cummins',
-    title: 'Engine Overspeed Warning',
+    brand: 'J1939',
+    title: 'Engine Overspeed Shutdown',
     description: 'The engine has exceeded its maximum safe operating speed. This protection fault activates when engine RPM surpasses the manufacturer\'s specified limit, typically 10-15% above rated speed. Engine overspeed can cause catastrophic mechanical damage including connecting rod failure, piston damage, and crankshaft breakage.',
     severity: 'critical',
     category: 'Engine Speed/Timing',
@@ -168,7 +168,7 @@ export const FAULT_CODES: FaultCode[] = [
   },
   {
     code: 'SPN-100',
-    brand: 'Cummins',
+    brand: 'J1939',
     title: 'Engine Oil Pressure Low',
     description: 'Engine oil pressure has dropped below the minimum safe operating threshold. Low oil pressure can cause severe engine damage within minutes as bearings, pistons, and camshafts rely on pressurized oil for lubrication and cooling. This fault requires immediate engine shutdown to prevent catastrophic failure.',
     severity: 'critical',
@@ -212,7 +212,7 @@ export const FAULT_CODES: FaultCode[] = [
   },
   {
     code: 'SPN-94',
-    brand: 'Cummins',
+    brand: 'J1939',
     title: 'Fuel Pressure Low',
     description: 'The fuel system pressure is below the minimum required for proper injection. Low fuel pressure prevents adequate fuel delivery to the injectors, causing hard starting, loss of power, rough running, and potential engine stalling under load. Modern common-rail systems require precise fuel pressure for proper atomization.',
     severity: 'warning',
@@ -256,7 +256,7 @@ export const FAULT_CODES: FaultCode[] = [
   },
   {
     code: 'SPN-102',
-    brand: 'Cummins',
+    brand: 'J1939',
     title: 'Intake Manifold Pressure High',
     description: 'The turbocharger is producing excessive boost pressure beyond normal operating parameters. Over-boost conditions can cause pre-detonation, excessive cylinder pressures, head gasket failure, and potential engine damage. This fault is often accompanied by black smoke and engine knocking.',
     severity: 'warning',
@@ -300,7 +300,7 @@ export const FAULT_CODES: FaultCode[] = [
   },
   {
     code: 'SPN-105',
-    brand: 'Cummins',
+    brand: 'J1939',
     title: 'Intake Manifold Temperature High',
     description: 'Air entering the engine from the turbocharger is excessively hot. High intake air temperature reduces engine efficiency, increases exhaust temperatures, and can cause detonation. This fault typically indicates a problem with the charge air cooler (intercooler) or ambient temperature issues.',
     severity: 'warning',
@@ -344,7 +344,7 @@ export const FAULT_CODES: FaultCode[] = [
   },
   {
     code: 'SPN-110',
-    brand: 'Cummins',
+    brand: 'J1939',
     title: 'Engine Coolant Temperature High',
     description: 'Engine coolant temperature has exceeded the maximum safe operating limit. Overheating can cause severe engine damage including head gasket failure, piston scoring, and potential engine seizure. This is a shutdown-class fault that requires immediate attention.',
     severity: 'critical',
@@ -389,7 +389,7 @@ export const FAULT_CODES: FaultCode[] = [
   },
   {
     code: 'SPN-157',
-    brand: 'Cummins',
+    brand: 'J1939',
     title: 'Fuel Injector Rail Pressure Low',
     description: 'The high-pressure fuel rail in the common-rail injection system is not achieving required pressure. Modern diesel engines require very high fuel pressure (1,600-2,000+ bar) for proper atomization. Low rail pressure causes poor combustion, white smoke, hard starting, and significant power loss.',
     severity: 'critical',
@@ -1251,7 +1251,7 @@ export const FAULT_CODES: FaultCode[] = [
   // ═══════════════════════════════════════════════════════════════════════════════
   {
     code: 'SPN-639',
-    brand: 'Cummins',
+    brand: 'J1939',
     title: 'J1939 Network Communication Error',
     description: 'The ECM has lost communication with other modules on the J1939 data network. This fault affects data exchange between ECM, transmission, instrument cluster, and other networked components.',
     severity: 'warning',

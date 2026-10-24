@@ -1,6 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+
+// Tool workspaces where the full-size button covered inputs and tabs
+// (2026-10-20 audit). There it shrinks to a small corner icon; the panel,
+// the Alt+A shortcut and the skip link are unchanged.
+const COMPACT_ROUTES = ['/aquascan-pro-v3', '/solar-genius-pro', '/solar-design-studio', '/generator-oracle', '/solutions/building', '/eims-pro'];
 
 // Universal Accessibility Icon (International Symbol of Access)
 const AccessibilityIcon = () => (
@@ -63,6 +69,8 @@ interface AccessibilitySettings {
 }
 
 function AccessibilityWidgetInner() {
+  const pathname = usePathname() || '';
+  const compact = COMPACT_ROUTES.some((r) => pathname === r || pathname.startsWith(r + '/'));
   const [isOpen, setIsOpen] = useState(false);
   const [settings, setSettings] = useState<AccessibilitySettings>({
     fontSize: 0,
@@ -220,8 +228,8 @@ function AccessibilityWidgetInner() {
       <button
         id="accessibility-settings"
         onClick={() => setIsOpen(true)}
-        style={{ bottom: 'calc(6rem + var(--consent-bar-h, 0px))' }}
-        className="fixed left-4 z-[9999] bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl shadow-2xl shadow-blue-600/50 flex items-center gap-2 sm:gap-3 p-3 sm:px-5 sm:py-4 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group border-2 border-white/20"
+        style={{ bottom: compact ? 'calc(0.5rem + var(--consent-bar-h, 0px))' : 'calc(6rem + var(--consent-bar-h, 0px))' }}
+        className={(compact ? 'fixed left-2 scale-75 origin-bottom-left opacity-90 ' : 'fixed left-4 ') + "z-[9999] bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl shadow-2xl shadow-blue-600/50 flex items-center gap-2 sm:gap-3 p-3 sm:px-5 sm:py-4 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group border-2 border-white/20"}
         aria-label="Open accessibility settings"
         title="♿ Accessibility Options - Click here for visually impaired support: high contrast, large text, line spacing, large cursor and link highlighting"
        
@@ -240,7 +248,7 @@ function AccessibilityWidgetInner() {
             button doesn't eat a third of the screen width (mobile UX audit
             2026-07-10: 282x76px button + cookie banner covered 54% of a
             390px viewport). aria-label keeps it screen-reader complete. */}
-        <div className="hidden sm:flex flex-col items-start">
+        <div className={compact ? 'hidden' : 'hidden sm:flex flex-col items-start'}>
           <span className="font-bold text-base whitespace-nowrap">
             Accessibility
           </span>
@@ -249,10 +257,6 @@ function AccessibilityWidgetInner() {
           </span>
         </div>
 
-        {/* WCAG Badge - Larger and more prominent */}
-        <span className="hidden sm:inline-block bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full border-2 border-white shadow-lg">
-          ♿ AAA
-        </span>
         
         {/* Active indicator - shows when settings are enabled */}
         {(settings.fontSize > 0 || settings.highContrast || settings.largeCursor || settings.lineSpacing > 0 || settings.highlightLinks) && (
@@ -308,7 +312,7 @@ function AccessibilityWidgetInner() {
                 {/* Accessibility Statement */}
                 <div className="bg-white/10 rounded-lg px-3 py-2 border border-white/20">
                   <p className="text-xs text-blue-50 leading-relaxed">
-                    <strong>EmersonEIMS is committed to digital accessibility.</strong> We provide tools for visually impaired users, screen reader support, and WCAG 2.1 AAA compliance.
+                    <strong>EmersonEIMS is committed to digital accessibility.</strong> This panel adjusts text size, contrast, spacing, cursor size and link highlighting. If anything on the site is hard to use, call 0768 860 665 and we will help.
                   </p>
                 </div>
               </div>

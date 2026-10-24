@@ -1706,7 +1706,7 @@ export default function SolarBible() {
         {/* Footer */}
         <div className="mt-12 text-center">
           <p className="text-slate-500 text-sm">
-            THE SOLAR BIBLE v2.0 | A Practical Solar Energy Resource for Kenya
+            THE SOLAR BIBLE | A Practical Solar Energy Resource for Kenya
           </p>
           <p className="text-amber-400/50 text-xs mt-2">
             47 Counties | {FAULT_CODE_STATS.totalCodes}+ Fault Codes | {MANUAL_STATS.inverterManuals} Repair Manuals | {CABLE_SIZING_GUIDE.length} Cable Guides | Complete Installation Guide

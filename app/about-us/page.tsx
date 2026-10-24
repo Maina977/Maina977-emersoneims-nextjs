@@ -65,7 +65,7 @@ const ContrastComplianceLayer = () => {
         className="hc-toggle"
         onClick={() => setHighContrast(!highContrast)}
         aria-label="Toggle high contrast mode"
-        title="High contrast mode (WCAG AAA)"
+        title="High contrast mode"
       >
         {highContrast ? "◐" : "◑"}
       </button>

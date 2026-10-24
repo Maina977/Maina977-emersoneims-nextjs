@@ -292,7 +292,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/aquascan-pro-v3`,                       changeFrequency: 'weekly', priority: 0.95 },
     { url: `${BASE_URL}/solar-genius-pro`,                      changeFrequency: 'weekly', priority: 0.95 },
     { url: `${BASE_URL}/solar-design-studio`,                   changeFrequency: 'weekly', priority: 0.8  },
-    { url: `${BASE_URL}/eims-pro`,                              changeFrequency: 'weekly', priority: 0.9  },
+    // /eims-pro canonicalises to /solutions/building (2026-10-20); not listed.
     // Plant & Equipment Oracle — sibling to Generator Oracle, built on the
     // same 2,155 VERIFIED codes but framed for excavators, loaders and
     // compressors. Self-canonical, server-rendered, real body content.

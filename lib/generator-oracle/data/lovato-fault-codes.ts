@@ -104,7 +104,7 @@ function createLovatoCode(
       'Equipment damage risk if not corrected'
     ] : ['Follow standard safety procedures'],
     preventiveMeasures: ['Regular maintenance', 'Periodic sensor checks'],
-    verified: true,
+    verified: false, // independently written guide, not checked line-by-line against the OEM manual (2026-10-20)
     lastUpdated: '2024-01-15'
   }));
 }

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 const DATA_SOURCES: { family: string; sources: string; role: string }[] = [
-  { family: 'Water-point registries', sources: 'WPDx (Water Point Data Exchange), OpenStreetMap, UNESCO IHP-WINS, USGS NWIS, owner-supplied WRA/county records', role: 'Real named water points (springs, wells, boreholes) within 50 km — the strongest desktop evidence in weathered basement terrain. No water point is ever invented.' },
+  { family: 'Water-point registries', sources: 'WPDx (Water Point Data Exchange), OpenStreetMap, UNESCO IHP-WINS and KenyaRapid+ field records, owner-supplied WRA/county records', role: 'Real named water points (springs, wells, boreholes) within 50 km — the strongest desktop evidence in weathered basement terrain. No water point is ever invented.' },
   { family: 'Regional drilling statistics', sources: 'Compiled county drilling records (all 47 Kenya counties) + national statistics (RWSN, UNICEF WASH, BGS)', role: 'Drilled-depth bands, tested-yield ranges and success rates that anchor and bound every depth/yield estimate.' },
   { family: 'Climate & recharge', sources: 'NASA POWER, ERA5-Land, GLDAS, multi-year precipitation series', role: 'Water-balance (banded Budyko) recharge model with quickflow separation — sustainable abstraction is capped by recharge.' },
   { family: 'Terrain & structure', sources: 'SRTM 30 m DEM (slope, aspect, TWI, drainage density), DEM lineament analysis', role: 'Topographic wetness and structural screening. Desktop lineaments are weighted LOW by design — published inter-analyst reproducibility is poor.' },
@@ -132,8 +132,9 @@ export default function AquaScanMethodologyPage() {
           </div>
           <p className="mt-3 text-sm text-slate-400">
             Every report carries a full data-provenance annex naming the source of each governing value. Where a
-            source did not return data, the report says so — a gap is reported as a gap, never filled with an
-            invented number.
+            source did not answer, the report says so. A few inputs (rainfall, elevation, satellite storage and vegetation)
+            then fall back to a regional or latitude-based estimate; each one is listed in the report under
+            “data sources that used regional estimates”, and none of them is presented as a measurement.
           </p>
         </section>
 
@@ -147,8 +148,8 @@ export default function AquaScanMethodologyPage() {
               report is stamped from that single result. Sub-model outputs appear only in a labelled diagnostic annex.
             </li>
             <li className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm">
-              <span className="font-bold text-white">A 19-check consistency validator that can block its own product.</span> Before
-              export, every report passes 19 automated audits (range containment, cross-engine reconciliation,
+              <span className="font-bold text-white">A consistency validator that can block its own product.</span> Before
+              export, every report passes a set of automated audits (range containment, cross-engine reconciliation,
               water-point arithmetic, grade gating). If a check fails, the report refuses to export — customers have
               seen this happen, because it is real.
             </li>
@@ -158,7 +159,7 @@ export default function AquaScanMethodologyPage() {
               records. Estimated values are marked “(est.)” wherever they appear.
             </li>
             <li className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm">
-              <span className="font-bold text-white">149 automated verification assertions</span> run against the physics and
+              <span className="font-bold text-white">Automated verification tests</span> run against the physics and
               scoring engines on every change — Theis drawdown limits (Driscoll ⅔ rule), Budyko recharge banding,
               consensus-tracks-governing, county-record lookup, score discrimination (a data-poor site scores &lt;40;
               no participation trophies).

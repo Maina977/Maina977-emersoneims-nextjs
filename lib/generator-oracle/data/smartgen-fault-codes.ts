@@ -89,7 +89,7 @@ function createSmartGenCode(
     }],
     safetyWarnings: severity === 'shutdown' ? ['Investigate before restart'] : [],
     preventiveMeasures: ['Regular maintenance', 'Calibration checks'],
-    verified: true,
+    verified: false, // independently written guide, not checked line-by-line against the OEM manual (2026-10-20)
     lastUpdated: '2024-01-15'
   }));
 }

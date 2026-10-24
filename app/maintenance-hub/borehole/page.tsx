@@ -605,18 +605,18 @@ export default function BoreholeMaintenanceHub() {
                   </ul>
                 </div>
                 <div className="bg-slate-800 rounded-xl p-6 border border-cyan-500/30">
-                  <h3 className="text-lg font-bold text-cyan-400 mb-4">Typical Costs (2024)</h3>
+                  <h3 className="text-lg font-bold text-cyan-400 mb-4">Typical Costs (2026)</h3>
                   <ul className="space-y-2 text-slate-300">
-                    <li>• Drilling: KES 4,000-8,000/m</li>
+                    <li>• Drilling: KES 6,500-9,500/m in rock (air drilling); up to about KES 13,000/m in loose ground (mud drilling)</li>
                     <li>• Pump installation: KES 80,000-500,000</li>
-                    <li>• WRMA permit: KES 5,000-50,000</li>
-                    <li>• Geophysical survey: KES 30,000-80,000</li>
+                    <li>• WRA approvals and permits: budget about KES 25,000 (fees vary by category)</li>
+                    <li>• Hydrogeological survey: KES 40,000-110,000</li>
                   </ul>
                 </div>
                 <div className="bg-slate-800 rounded-xl p-6 border border-teal-500/30">
                   <h3 className="text-lg font-bold text-teal-400 mb-4">Regulatory Requirements</h3>
                   <ul className="space-y-2 text-slate-300">
-                    <li>• WRMA drilling permit required</li>
+                    <li>• WRA authorisation before drilling</li>
                     <li>• County government approval</li>
                     <li>• NEMA clearance (EIA)</li>
                     <li>• Water quality testing (KEBS)</li>
@@ -998,7 +998,7 @@ export default function BoreholeMaintenanceHub() {
                 <div className="space-y-4">
                   {[
                     { step: 1, title: 'Site Selection & Survey', description: 'Geophysical survey (resistivity), hydro-geological assessment, site accessibility', duration: '1-2 days' },
-                    { step: 2, title: 'Permits & Approvals', description: 'WRMA permit, County approval, NEMA clearance if required', duration: '2-8 weeks' },
+                    { step: 2, title: 'Permits & Approvals', description: 'WRA authorisation, County approval, NEMA clearance if required', duration: '2-8 weeks' },
                     { step: 3, title: 'Rig Mobilization', description: 'Transport drilling rig, water tanker, support equipment to site', duration: '1-2 days' },
                     { step: 4, title: 'Drilling', description: 'Rotary or DTH drilling through various formations to target depth', duration: '3-14 days' },
                     { step: 5, title: 'Casing Installation', description: 'Install plain and screen casing (PVC or steel), gravel packing', duration: '1-2 days' },

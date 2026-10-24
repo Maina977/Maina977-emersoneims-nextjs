@@ -22,7 +22,9 @@ function WhatsAppButtonInner({
   // Show tooltip after 5 seconds if user hasn't interacted
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!hasInteracted) {
+      // Not on the tool workspaces, where it covered form buttons (2026-10-20).
+      const onTool = /^\/(aquascan-pro-v3|solar-genius-pro|solar-design-studio|solutions\/building|eims-pro)/.test(window.location.pathname);
+      if (!hasInteracted && !onTool) {
         setShowTooltip(true);
         setTimeout(() => setShowTooltip(false), 5000);
       }

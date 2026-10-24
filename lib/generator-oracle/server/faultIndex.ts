@@ -84,7 +84,7 @@ function j1939AsFaultCode(c: J1939FaultCode): ControllerFaultCode {
     solutions: [],
     safetyWarnings: [],
     preventiveMeasures: [],
-    verified: true,
+    verified: false, // SPN/FMI identity is SAE J1939; the notes are our own guidance (2026-10-20)
     lastUpdated: '2026-10-18',
   };
 }
@@ -280,8 +280,12 @@ function matchesQuery(c: ControllerFaultCode, q: string, canonical: string | nul
     const cn = canonical.toLowerCase();
     return cn.endsWith('-') ? code.startsWith(cn) : code === cn;
   }
+  // Our own reference numbers are not on any display, so a typed code never
+  // matches them; those alarms are found by their text (2026-10-20 audit: "E001"
+  // returned four unrelated alarms from four brands).
+  const codeHit = codeKindOf(c) !== 'reference' && code.includes(q);
   return (
-    code.includes(q) ||
+    codeHit ||
     c.title.toLowerCase().includes(q) ||
     c.description.toLowerCase().includes(q) ||
     c.brand.toLowerCase().includes(q) ||
@@ -322,7 +326,7 @@ function parseWords(q: string): ParsedQuery {
 }
 
 function haystack(c: ControllerFaultCode): string {
-  return [c.code, c.title, c.description, c.model, c.category, c.subcategory].join(' ').toLowerCase();
+  return [codeKindOf(c) === 'reference' ? '' : c.code, c.title, c.description, c.model, c.category, c.subcategory].join(' ').toLowerCase();
 }
 
 export interface SearchResponse {
@@ -338,7 +342,26 @@ export interface SearchResponse {
   source: 'index';
 }
 
+// Words technicians type that the alarm titles do not use (2026-10-20 audit):
+// "overcrank" found nothing although every controller has a crank-fail alarm.
+// Used only when the typed word itself matches nothing.
+const SEARCH_SYNONYMS: Record<string, string> = {
+  overcrank: 'crank', overcranking: 'crank', 'over crank': 'crank',
+  overheating: 'temperature', overheat: 'temperature', 'over heating': 'temperature',
+  'no start': 'fail to start', 'wont start': 'fail to start', "won't start": 'fail to start',
+  fluctuating: 'voltage', hunting: 'speed', surging: 'speed',
+};
+
 export function searchIndex(opts: SearchOptions): SearchResponse {
+  const typed = (opts.query || '').trim();
+  const syn = SEARCH_SYNONYMS[typed.toLowerCase()];
+  if (syn && opts.query !== syn && searchIndexRaw({ ...opts, page: 1, pageSize: 1 }).total === 0) {
+    return { ...searchIndexRaw({ ...opts, query: syn }), query: typed };
+  }
+  return searchIndexRaw(opts);
+}
+
+function searchIndexRaw(opts: SearchOptions): SearchResponse {
   const query = (opts.query || '').trim();
   const page = Math.max(1, Math.floor(opts.page ?? 1));
   const pageSize = Math.max(1, Math.min(100, Math.floor(opts.pageSize ?? 20)));
@@ -652,6 +675,22 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
     ),
   );
 
+  // Symptom words that alarm titles do not use expand to the words they do
+  // (2026-10-20 audit: "overheating" ranked Generator Over Current first and
+  // "voltage fluctuating" found nothing). Expanded words score at half weight
+  // and do not count towards the two-word evidence threshold on their own.
+  const EXPAND: Record<string, string[]> = {
+    overheat: ['coolant', 'temperatur'],
+    hot: ['coolant', 'temperatur'],
+    overcrank: ['crank', 'fail'],
+    fluctuat: ['unstabl', 'frequency', 'regulation', 'regulator', 'hunt'],
+    unstabl: ['frequency', 'regulation', 'regulator', 'hunt'],
+    hunt: ['speed', 'governor', 'unstabl'],
+    surg: ['speed', 'governor', 'unstabl'],
+  };
+  const expanded = new Set<string>();
+  for (const t of terms) for (const e of EXPAND[t] || []) if (!terms.includes(e)) expanded.add(e);
+
   const filters: SearchFilters = {
     brand: input.brand,
     model: input.model,
@@ -702,12 +741,17 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
         if (proseSet.has(t)) { score += 1; hit = true; }
         if (hit) matched.push(t);
       }
+      let expandedHits = 0;
+      for (const t of expanded) {
+        if (titleSet.has(t)) { score += 2; expandedHits++; }
+        else if (symSet.has(t) || proseSet.has(t)) { score += 0.5; expandedHits++; }
+      }
       for (const p of pairs) {
         if (containsPair(title, p)) score += 5;
         else if (containsPair(symptomWords, p) || containsPair(prose, p)) score += 3;
       }
       // One weak word in a long description is not evidence.
-      if (score === 0 || matched.length < Math.min(2, terms.length)) continue;
+      if (score === 0 || matched.length + Math.min(1, expandedHits) < Math.min(2, terms.length + Math.min(1, expanded.size))) continue;
       out.push({ ...SLIM_FIELDS(c), score, matchedTerms: matched });
     }
     out.sort((a, b) => b.score - a.score);

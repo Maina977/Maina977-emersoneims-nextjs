@@ -1426,14 +1426,21 @@ export function middleware(request: NextRequest) {
 
       const allowed = SLUG_GUARDS[seg[0].toLowerCase()];
       if (allowed && !allowed.has(decodeURIComponent(seg[1]).toLowerCase())) {
-        return new NextResponse('Not Found', {
-          status: 404,
-          headers: {
-            'X-Robots-Tag': 'noindex, follow',
-            'Content-Type': 'text/plain',
-            'X-Loc-Guard': 'slug-404',
+        // A readable page, not bare text (2026-10-20 audit): a visitor who
+        // mistypes a URL gets a way back, at phone width. Still a real 404.
+        const section = seg[0].toLowerCase();
+        const sectionHref = section === 'kenya' || section === 'locations' ? '/locations' : `/${section}`;
+        return new NextResponse(
+          `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow"><title>Page not found | EmersonEIMS</title><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b0f14;color:#e8edf2;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}main{max-width:520px}h1{font-size:1.6rem;margin:0 0 .5rem}p{line-height:1.5;color:#b8c2cc}a{color:#f5b301}ul{padding-left:1.1rem;line-height:1.9}</style></head><body><main><h1>Page not found</h1><p>This address does not exist on emersoneims.com. It may have been mistyped or moved.</p><ul><li><a href="${sectionHref}">Back to this section</a></li><li><a href="/">Home page</a></li><li><a href="/contact">Contact us</a> or call <a href="tel:+254768860665">0768 860 665</a></li></ul></main></body></html>`,
+          {
+            status: 404,
+            headers: {
+              'X-Robots-Tag': 'noindex, follow',
+              'Content-Type': 'text/html; charset=utf-8',
+              'X-Loc-Guard': 'slug-404',
+            },
           },
-        });
+        );
       }
     }
   }

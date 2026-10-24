@@ -88,7 +88,7 @@ function createComApCode(
     }],
     safetyWarnings: severity === 'shutdown' ? ['Investigate cause before restart'] : [],
     preventiveMeasures: ['Regular maintenance', 'Periodic calibration'],
-    verified: true,
+    verified: false, // independently written guide, not checked line-by-line against the OEM manual (2026-10-20)
     lastUpdated: '2024-01-15'
   }));
 }

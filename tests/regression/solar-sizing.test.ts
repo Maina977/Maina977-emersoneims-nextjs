@@ -22,15 +22,15 @@ describe('sizeSolar', () => {
   });
 
   // Hand check (2026-10-19): 150 kWh/day × 70% daytime = 105 kWh; 105 / (5.71 × 0.78) = 23.6 kWp → 43 × 550 W = 23.7 kWp;
-  // cost (23.7×60k + 25 kW×15k)×1.12 ≈ KES 2.01M; saving 38,325 kWh × 0.9 used on site × 25 = KES 862k → payback ≈ 2.3 years.
+  // cost (23.7×60k + 25 kW×15k)×1.12 ≈ KES 2.01M; saving 38,325 kWh × 0.75 used on site × 25 = KES 719k → payback ≈ 2.8 years (2026-10-20: 90% self-use was optimistic).
   it('Mombasa hotel, 4,500 kWh/month, grid-tied, 70% daytime use', () => {
     const r = sizeSolar({ monthlyKwh: 4500, pshAnnual: 5.71, systemType: 'grid-tied', daytimeUsePct: 70, tariffKesPerKwh: 25 });
     expect(r.pvKwp).toBe(23.7);
     expect(r.batteryKwh).toBe(0);
     expect(r.cost.midKes).toBeGreaterThan(1_950_000);
     expect(r.cost.midKes).toBeLessThan(2_080_000);
-    expect(r.paybackYears!).toBeGreaterThan(2.2);
-    expect(r.paybackYears!).toBeLessThan(2.45);
+    expect(r.paybackYears!).toBeGreaterThan(2.65);
+    expect(r.paybackYears!).toBeLessThan(2.95);
   });
 
   it('Machakos farm, 600 kWh/month, off-grid, compared with diesel', () => {
@@ -55,6 +55,12 @@ describe('sizeSolar', () => {
     const r = sizeSolar({ monthlyKwh: 600, pshAnnual: 5.5, systemType: 'off-grid', peakLoadKw: 7.5 });
     expect(r.inverterBasis).toBe('peak-load');
     expect(r.inverterKw).toBeGreaterThanOrEqual(7.5 * 1.25);
+  });
+
+  it('a home with no stated peak gets at least a 5 kW inverter', () => {
+    const r = sizeSolar({ monthlyKwh: 450, pshAnnual: 5.79, systemType: 'hybrid' });
+    expect(r.inverterBasis).toBe('estimated-peak');
+    expect(r.inverterKw).toBeGreaterThanOrEqual(3.6);
   });
 
   it('rejects impossible inputs instead of guessing', () => {

@@ -397,8 +397,41 @@ const ANALYSIS_MODES: AnalysisMode[] = [
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function AIVisualDiagnostic(props: AIVisualDiagnosticProps) {
+  // The photo service is checked first (2026-10-20): when it is not running the
+  // visitor gets a plain message and the engineer route, not a five-field form
+  // that ends in a server error.
+  const [online, setOnline] = useState<boolean | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/generator-oracle/ai-visual-diagnose', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (alive) setOnline(!!j?.aiConfigured); })
+      .catch(() => { if (alive) setOnline(false); });
+    return () => { alive = false; };
+  }, []);
+  if (online === null) return <div className="p-6 text-sm text-slate-400">Checking the photo service…</div>;
+  if (!online) {
+    return (
+      <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-5 text-slate-300">
+        <h3 className="mb-2 text-lg font-semibold text-white">Photo diagnosis is not online yet</h3>
+        <p className="mb-4 text-sm leading-relaxed">
+          Send clear photos of the controller display, the engine bay and any leaks or damage to one of our engineers.
+          Include the generator make and model and the alarm text or code shown. We reply on WhatsApp.
+        </p>
+        <a
+          href={`https://wa.me/254768860665?text=${encodeURIComponent('Hi EmersonEIMS, I would like an engineer to look at photos of my generator fault.')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500"
+        >
+          Send photos on WhatsApp
+        </a>
+        <p className="mt-4 text-xs text-slate-500">Meanwhile, the Fault Code Lookup tab covers controller alarms and J1939 engine codes.</p>
+      </div>
+    );
+  }
   return (
-    <AssetCardGate feature="AI Visual Diagnostic">
+    <AssetCardGate feature="Photo Diagnosis">
       {(card) => <AIVisualDiagnosticImpl {...props} card={card} />}
     </AssetCardGate>
   );
@@ -616,12 +649,10 @@ function AIVisualDiagnosticImpl({ onAnalysisComplete, onClose, card }: AIVisualD
       { progress: 90, stage: 'Parsing structured response…' },
     ];
 
-    // Simulate advanced analysis stages
-    for (const { progress, stage } of stages) {
-      setAnalysisProgress(progress);
-      setAnalysisStage(stage);
-      await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 100));
-    }
+    // One honest status while the request runs (the staged animation played
+    // before any request was sent; 2026-10-20).
+    setAnalysisProgress(stages[1].progress);
+    setAnalysisStage('Sending the photos and waiting for the diagnosis…');
 
     try {
       const response = await fetch('/api/generator-oracle/ai-visual-diagnose', {
@@ -820,7 +851,7 @@ function AIVisualDiagnosticImpl({ onAnalysisComplete, onClose, card }: AIVisualD
           apiCode ?? (response.status === 503 ? 'AI_NOT_CONFIGURED' : 'AI_UPSTREAM_ERROR');
         const fallbackMessages: Record<string, string> = {
           AI_NOT_CONFIGURED:
-            'AI Visual Diagnostic is not configured on the server. Set LOCAL_AI_BASE_URL to a healthy Ollama with Qwen2.5-VL.',
+            'Photo diagnosis is not online at the moment. Send the photos to an engineer on WhatsApp instead.',
           AI_UPSTREAM_ERROR: 'AI vision service is unavailable. Please retry in a moment.',
           INVALID_REQUEST: 'Request was rejected as invalid by the server.',
           ASSET_CARD_REQUIRED:

@@ -13,7 +13,7 @@ import "@/styles/accessibility.css"; // WCAG 2.1 AAA Accessibility Styles
 import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import B2BSiteStrip from '@/components/b2b/B2BSiteStrip';
-import { OrganizationSchema, WebSiteSchema, DiagnosticSuiteSchema } from '@/components/seo/StructuredData';
+import { OrganizationSchema, WebSiteSchema } from '@/components/seo/StructuredData';
 // AutoBreadcrumb is intentionally not imported — see the note at its former
 // mount point below. The component file itself is unchanged.
 // FAQSchema is intentionally not imported — see the note where it used to be
@@ -854,7 +854,7 @@ export default async function RootLayout({
         {/* Global Structured Data for SEO - Rich Snippets */}
         <OrganizationSchema />
         <WebSiteSchema />
-        <DiagnosticSuiteSchema />
+        {/* The Generator Oracle SoftwareApplication schema lives on /generator-oracle only (GeneratorOracleSEO); it was on every page (2026-10-20). */}
         {/* AutoBreadcrumb IS NOT MOUNTED (2026-08-29). The component file is
             untouched at components/seo/AutoBreadcrumb.tsx — only this mount is
             removed — but it must not be restored as written, because it was

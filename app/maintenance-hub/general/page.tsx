@@ -495,7 +495,7 @@ const COMPREHENSIVE_FAQ = [
   { category: 'Payments', q: 'Do you offer financing?', a: 'No. We are not a lender and we do not arrange credit. Buyers who finance equipment do so with their own bank or asset financier, and we will supply whatever quotation, specification or proforma that lender needs. For established businesses we can discuss 30-60 day payment terms directly.' },
   { category: 'Scheduling', q: 'How do I book a service?', a: 'Call us, WhatsApp, or fill the online form. We\'ll confirm availability and schedule at your convenience.' },
   { category: 'Scheduling', q: 'What are your working hours?', a: 'Monday-Friday: 8am-6pm, Saturday: 8am-4pm. Emergency services available 24/7.' },
-  { category: 'Technical', q: 'Are your technicians certified?', a: 'Yes, all our technicians are trained, certified, and regularly updated. Electricians are ERC licensed.' }
+  { category: 'Technical', q: 'Are your technicians certified?', a: 'Yes, all our technicians are trained, certified, and regularly updated. Engineering work is led by registered engineers.' }
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════

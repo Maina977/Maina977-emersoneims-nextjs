@@ -272,8 +272,7 @@ const SOLAR_BRANDS = [
     warranty: '25 Years',
     tier: 'Tier 1',
     priceRange: 'Premium',
-    bestFor: 'Commercial, Industrial',
-    rating: 4.8
+    bestFor: 'Commercial, Industrial'
   },
   {
     name: 'LONGi',
@@ -282,8 +281,7 @@ const SOLAR_BRANDS = [
     warranty: '25 Years',
     tier: 'Tier 1',
     priceRange: 'Premium',
-    bestFor: 'All applications',
-    rating: 4.9
+    bestFor: 'All applications'
   },
   {
     name: 'Jinko Solar',
@@ -292,8 +290,7 @@ const SOLAR_BRANDS = [
     warranty: '25 Years',
     tier: 'Tier 1',
     priceRange: 'Mid-Premium',
-    bestFor: 'Residential, Commercial',
-    rating: 4.7
+    bestFor: 'Residential, Commercial'
   },
   {
     name: 'Trina Solar',
@@ -302,8 +299,7 @@ const SOLAR_BRANDS = [
     warranty: '25 Years',
     tier: 'Tier 1',
     priceRange: 'Mid-Premium',
-    bestFor: 'Large-scale projects',
-    rating: 4.7
+    bestFor: 'Large-scale projects'
   },
   {
     name: 'Canadian Solar',
@@ -312,8 +308,7 @@ const SOLAR_BRANDS = [
     warranty: '25 Years',
     tier: 'Tier 1',
     priceRange: 'Mid-Range',
-    bestFor: 'Budget-conscious',
-    rating: 4.5
+    bestFor: 'Budget-conscious'
   },
   {
     name: 'SunPower',
@@ -322,8 +317,7 @@ const SOLAR_BRANDS = [
     warranty: '25 Years',
     tier: 'Tier 1',
     priceRange: 'Ultra-Premium',
-    bestFor: 'Limited roof space',
-    rating: 4.9
+    bestFor: 'Limited roof space'
   },
 ];
 
@@ -337,18 +331,8 @@ const INVERTER_BRANDS = [
   { name: 'Victron', type: 'Off-Grid', warranty: '5 Years', origin: 'Netherlands', priceRange: 'Premium' },
 ];
 
-// ==================== BEFORE/AFTER PROJECTS ====================
-const SOLAR_PROJECTS = [
-  {
-    client: 'Lenchada Group of Hotels',
-    location: 'Nairobi',
-    type: 'Hybrid Solar-Diesel',
-    before: 'KES 2.8M monthly electricity bills, 100% grid dependency, frequent outages disrupting guests',
-    after: '250kWp solar array with 400kWh battery storage - 65% energy savings, 60% renewable energy',
-    image: '/images/solar power farms.png',
-    stats: { panels: 556, capacity: '250kWp', savings: '65%', payback: '3.2 years' }
-  },
-];
+// Before/after case studies are published only once verified and released by
+// the client (data/caseStudies.ts). The draft that was here is not (2026-10-20).
 
 // ==================== FAQ SECTION ====================
 const SOLAR_FAQ = [
@@ -358,7 +342,7 @@ const SOLAR_FAQ = [
   },
   {
     question: 'How long is the payback period for solar in Kenya?',
-    answer: 'With Kenya\'s excellent solar irradiation (5-6 peak sun hours daily), most systems pay back in 2-4 years for residential and 3-5 years for commercial installations. After payback, you enjoy essentially free electricity for the remaining 20+ years of panel life. Our ROI calculator can show your exact payback timeline.'
+    answer: 'With Kenya\'s excellent solar irradiation (5-6 peak sun hours daily), commercial systems with daytime loads typically pay back in 3-5 years, and homes with batteries in 4-7 years. After payback, you enjoy essentially free electricity for the remaining 20+ years of panel life. Our ROI calculator can show your exact payback timeline.'
   },
   {
     question: 'Do solar panels work during cloudy days or at night?',
@@ -374,7 +358,7 @@ const SOLAR_FAQ = [
   },
   {
     question: 'Do you offer financing for solar installations?',
-    answer: 'Yes! We offer multiple financing options: 30-50% deposit with 6-24 month payment plans, asset financing through partner banks, and lease-to-own arrangements. Many businesses also qualify for green energy tax incentives. Contact us to discuss the best financing option for your situation.'
+    answer: 'Payment terms are agreed per project and written into your quotation; a deposit with staged payments is common. Ask us when you request a quote.'
   },
   {
     question: 'What warranty do I get with solar panels?',
@@ -394,8 +378,8 @@ const SOLAR_GUARANTEES = [
     icon: '🛡️'
   },
   {
-    title: 'ROI Guarantee',
-    description: 'If your system doesn\'t achieve projected savings in year 1, we\'ll make it right',
+    title: 'Written Yield Estimate',
+    description: 'Your quotation states the expected yearly kWh from NASA sun-hour data, so the system can be checked against it',
     icon: '💰'
   },
   {
@@ -410,7 +394,7 @@ const SOLAR_GUARANTEES = [
   },
   {
     title: 'Certified Installation',
-    description: 'All installations by ERC-licensed technicians following international standards',
+    description: 'Designed and installed by our registered engineers to IEC standards',
     icon: '✅'
   },
   {
@@ -433,14 +417,14 @@ const WHY_SOLAR_KENYA = [
     description: 'Modern panels last 25-30 years with minimal degradation'
   },
   {
-    stat: '65%',
-    label: 'Bill Reduction',
-    description: 'Average electricity bill savings with solar'
+    stat: '2 yrs',
+    label: 'Workmanship Warranty',
+    description: 'On every installation we carry out'
   },
   {
-    stat: '3-4',
+    stat: '3-7',
     label: 'Year Payback',
-    description: 'Typical ROI timeframe for solar investment'
+    description: 'Typical range: shorter for daytime business loads, longer for homes with batteries'
   },
 ];
 
@@ -896,7 +880,6 @@ export default function SolarBible() {
                   <th className="text-left p-4 text-gray-400">Tier</th>
                   <th className="text-left p-4 text-gray-400">Price Range</th>
                   <th className="text-left p-4 text-gray-400">Best For</th>
-                  <th className="text-left p-4 text-gray-400">Rating</th>
                 </tr>
               </thead>
               <tbody>
@@ -918,10 +901,6 @@ export default function SolarBible() {
                     </td>
                     <td className="p-4">{brand.priceRange}</td>
                     <td className="p-4 text-sm">{brand.bestFor}</td>
-                    <td className="p-4">
-                      <span className="text-amber-400">{'★'.repeat(Math.floor(brand.rating))}</span>
-                      <span className="text-gray-600">{brand.rating}</span>
-                    </td>
                   </motion.tr>
                 ))}
               </tbody>
@@ -930,76 +909,6 @@ export default function SolarBible() {
         </div>
       </section>
 
-      {/* ==================== BEFORE/AFTER GALLERY ==================== */}
-      <section className="py-20 bg-black/50">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
-              Real <span className="text-amber-400">Transformations</span>
-            </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              See the impact of solar energy on our clients' operations
-            </p>
-          </motion.div>
-
-          <div className="space-y-8">
-            {SOLAR_PROJECTS.map((project, index) => (
-              <motion.div
-                key={project.client}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="bg-slate-900/50 rounded-2xl overflow-hidden border border-slate-700"
-              >
-                <div className="p-6 bg-gradient-to-r from-amber-500/10 to-orange-500/5">
-                  <div className="flex flex-wrap items-center gap-4 mb-4">
-                    <h3 className="text-2xl font-bold text-white">{project.client}</h3>
-                    <span className="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm">
-                      {project.type}
-                    </span>
-                    <span className="text-gray-400">{project.location}</span>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="bg-red-500/10 rounded-xl p-4 border border-red-500/20">
-                      <h4 className="text-red-400 font-semibold mb-2">❌ Before</h4>
-                      <p className="text-gray-300">{project.before}</p>
-                    </div>
-                    <div className="bg-green-500/10 rounded-xl p-4 border border-green-500/20">
-                      <h4 className="text-green-400 font-semibold mb-2">✓ After</h4>
-                      <p className="text-gray-300">{project.after}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-4 mt-6">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-amber-400">{project.stats.panels}</p>
-                      <p className="text-gray-500 text-xs">Solar Panels</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-amber-400">{project.stats.capacity}</p>
-                      <p className="text-gray-500 text-xs">System Capacity</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-green-400">{project.stats.savings}</p>
-                      <p className="text-gray-500 text-xs">Energy Savings</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-blue-400">{project.stats.payback}</p>
-                      <p className="text-gray-500 text-xs">Payback Period</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ==================== FINANCING SECTION ==================== */}
       <section className="py-20">

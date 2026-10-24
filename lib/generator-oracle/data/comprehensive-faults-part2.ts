@@ -841,7 +841,7 @@ The development of improved lubricant chemistry has paralleled mechanical advanc
         'Oil level dropping between weekly checks but not between services indicates slow leak',
         'Sudden oil loss indicates acute failure (new leak, gasket blow-out)'
       ],
-      correlatedFaults: ['190-0 Low Oil Pressure', 'High Oil Temperature', 'Engine Knock Detected'],
+      correlatedFaults: ['100-1 Low Oil Pressure', 'High Oil Temperature', 'Engine Knock Detected'],
       seasonalFactors: 'Oil consumption may increase slightly in very hot weather due to reduced viscosity. Generators in cold highland areas should use appropriate oil weight.',
       environmentalFactors: 'Dusty environments accelerate oil filter loading, potentially affecting oil consumption. Generators near coast may have more gasket corrosion issues.',
       recommendations: [
@@ -861,7 +861,7 @@ The development of improved lubricant chemistry has paralleled mechanical advanc
       signalType: 'Switched DC signal'
     },
 
-    relatedFaults: ['190-0 Low Oil Pressure', 'LUB-002 High Oil Temperature', 'LUB-003 Oil Pressure Sensor Fail'],
+    relatedFaults: ['100-1 Low Oil Pressure', 'LUB-002 High Oil Temperature', 'LUB-003 Oil Pressure Sensor Fail'],
 
     frequentlyAskedQuestions: [
       {

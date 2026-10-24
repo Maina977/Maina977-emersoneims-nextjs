@@ -958,7 +958,7 @@ export const SERVICE_WIDGETS: Record<string, WidgetDef[]> = {
       ],
       description:
         'TDH = static lift + drawdown + friction + delivery head. Pump must be sized so duty point falls inside the manufacturer curve at best efficiency point (BEP).',
-      source: 'WRMA Kenya Drilling & Pumping Test Guidelines 2018; Grundfos Pump Handbook (5th ed.).',
+      source: 'WRA Kenya Drilling & Pumping Test Guidelines 2018; Grundfos Pump Handbook (5th ed.).',
     },
     {
       kind: 'line',

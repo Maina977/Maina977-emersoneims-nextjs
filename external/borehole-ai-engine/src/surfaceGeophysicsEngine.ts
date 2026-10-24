@@ -111,7 +111,8 @@ function extractSiteContext(lat: number, lon: number, r: Partial<AnalysisResult>
     lat, lon,
     geology: geo?.primaryRockType || geo?.formationName || 'Unknown',
     rockType: geo?.rockType || geo?.primaryRockType || 'Unknown',
-    terrain: dem?.twiClass || (dem?.slope_degrees != null && dem.slope_degrees < 5 ? 'Flat' : dem?.slope_degrees != null && dem.slope_degrees < 15 ? 'Moderate' : 'Steep'),
+    // Terrain follows the measured slope first (2026-10-20: a TWI class printed "Steep" where the slope said flat).
+    terrain: dem?.slope_degrees != null ? (dem.slope_degrees < 5 ? 'Flat' : dem.slope_degrees < 15 ? 'Moderate' : 'Steep') : (dem?.twiClass || 'Unknown'),
     targetDepth: r.recommendedDepth || 80,
     waterTableDepth: (r as any).waterTableDepth || r.recommendedDepth ? (r.recommendedDepth || 80) * 0.6 : 40,
     slope: dem?.slope_degrees ?? 5,
