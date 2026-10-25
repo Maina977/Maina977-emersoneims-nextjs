@@ -317,7 +317,7 @@ function MessageBubble({ message }: { message: Message }) {
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
               <span className="text-sm">🤖</span>
             </div>
-            <span className="text-xs text-cyan-400 font-medium">Generator Oracle AI</span>
+            <span className="text-xs text-cyan-400 font-medium">Diagnostic assistant</span>
           </div>
         )}
 

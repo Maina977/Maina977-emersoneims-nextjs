@@ -1,5 +1,5 @@
 ﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { drillRatePerM, mobilisationUSD, countyRateBand } from './costModel';
+import { drillRatePerM, mobilisationUSD, countyRateBand, KES_PER_USD } from './costModel';
 import { BoreholeAnalyzer } from './boreholeAnalyzer';
 import type { ClientLocation } from './boreholeAnalyzer';
 import { AnalysisResult, FieldValidationData, SitePhoto } from './types';
@@ -15,6 +15,7 @@ import { parseWRARecords, wraRecordsToJSON, WRA_LOCALSTORAGE_KEY, type WRAIngest
 import { runAIScanner, type AIScanResult } from './aiScanner';
 import { render2DAnnotatedMap, render2DCrossSection, render3DTerrain, render3DSubsurface } from './terrainMapper';
 import { computeDrillReadiness } from './drillReadiness';
+import { wellKind, displayOutcome, cleanWellsForDisplay } from './wellDisplay';
 import { invertVES, type VESInversionResult, type VESDataPoint } from './vesInversionEngine';
 // NOTE: styles.css is deliberately NOT imported here. This module is loaded
 // via next/dynamic, so a CSS import here becomes a SEPARATE runtime CSS chunk
@@ -492,7 +493,7 @@ function genScenarios(depth: number, yld: number, soilType?: string, ctx: CostCo
  * Climate summary derived from REAL historicalData (20-year NASA POWER archive).
  * Falls back to a basic label when no API data is available. Never fabricates rainfall values.
  */
-function genClimate(historicalData: any, gldasData: any) {
+function genClimate(historicalData: any, gldasData: any, rechargeSummary?: any) {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   // HistoricalWeather carries monthlyAvgPrecip (12 values). This read a
   // "monthly" field that never existed, so the Climate tab said NO DATA on every
@@ -505,9 +506,12 @@ function genClimate(historicalData: any, gldasData: any) {
     // name the wettest months, contradicting the drilling plan (2026-10-19 re-audit).
     const driest = [...rainfall].sort((x, y) => x.mm - y.mm).slice(0, 4).map(r => r.month);
     const bestSeason = totalPrecip > 0 ? `Drier months: ${months.filter(m => driest.includes(m)).join(', ')}` : 'Consult local data';
-    const rechargeRate = gldasData?.waterBudget?.estimatedRecharge
-      ? `${gldasData.waterBudget.estimatedRecharge} mm/yr (NASA POWER water budget)`
-      : `~${Math.round(totalPrecip * 0.08)} mm/yr (8% of precipitation — global average estimate)`;
+    // The same governing recharge as the PDF (2026-10-25 audit: 16 vs 270 mm/yr).
+    const rechargeRate = rechargeSummary?.governing_mm != null
+      ? `~${rechargeSummary.governing_mm} mm/yr (${Math.round(rechargeSummary.fraction * 100)}% of rainfall; methods give ${rechargeSummary.spread_mm[0]}-${rechargeSummary.spread_mm[1]} mm/yr)`
+      : gldasData?.waterBudget?.estimatedRecharge
+        ? `${gldasData.waterBudget.estimatedRecharge} mm/yr (GLDAS water budget)`
+        : `~${Math.round(totalPrecip * 0.08)} mm/yr (8% of precipitation — global average estimate)`;
     const droughtRisk = totalPrecip < 500 ? 'High — arid zone' : totalPrecip < 800 ? 'Moderate' : 'Low';
     return { rainfall, bestDrillingSeason: bestSeason, aquiferRechargeRisk: droughtRisk,
       rechargeRate, waterTableStability: gldasData?.graceAnomaly?.trend === 'gaining' ? 'Stable/Rising' : gldasData?.graceAnomaly?.trend === 'losing' ? 'Declining' : 'Variable',
@@ -553,14 +557,18 @@ function genWaterQualityExpanded(wq: any, depth?: number) {
     estimatedTreatmentCostUSD: treatmentCost, contaminationRisk: wq.fluoride > 1.5 || wq.arsenic > 0.01 ? 'High' : wq.iron > 0.3 ? 'Medium' : 'Low' };
 }
 
-function genDrillingStrategy(depth: number, soil: string) {
+function genDrillingStrategy(depth: number, soil: string, eco?: any) {
   // One string: plain casing from the surface to the top of the screen, screen
-  // to the bottom (2026-10-20 audit: casing stopped at 35% of depth while the
-  // screen started at 60%, leaving an unsupported gap).
-  const screenTop = Math.round(depth * 0.6);
+  // to the bottom. Casing, screen and method come from the same economics model
+  // as the Costs tab and the PDF (2026-10-25 audit: web "casing 0-71 m, screen
+  // 71-118 m, rotary" vs PDF "98 m blind + 20 m screen, air/DTH").
+  const screenTop = eco?.blindCasingLen != null ? Math.min(Math.round(eco.blindCasingLen), Math.round(depth)) : Math.round(depth * 0.6);
+  const method = eco?.drillMethod
+    ? (/mud rotary/i.test(eco.drillMethod) ? 'Mud rotary (loose formation) throughout' : 'Air rotary / DTH hammer (consolidated rock)')
+    : depth > 100 ? 'DTH (Down-The-Hole) hammer from '+Math.round(depth*0.55)+'m' : 'Rotary drilling throughout';
   return {
     recommendedSeason: 'The drier months for this site (see Rain & climate) — easier access for the rig',
-    method: depth > 100 ? 'DTH (Down-The-Hole) hammer from '+Math.round(depth*0.55)+'m' : 'Rotary drilling throughout',
+    method,
     casingRequired: `Plain casing 0–${screenTop} m, then screen (PVC/steel, one string)`,
     screenPlacement: `${screenTop} m – ${depth} m (final interval set from the drilling log)`,
     gravelPack: 'Required around screen section',
@@ -1146,7 +1154,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
   const getRiskColor = (risk: number) => risk < 0.3 ? '#4CAF50' : risk < 0.6 ? '#FFC107' : risk < 0.8 ? '#FF9800' : '#F44336';
   const fmtUSD = (n: number) => '$' + n.toLocaleString();
-  const fmtKSH = (n: number) => 'KSh ' + Math.round(n*130).toLocaleString();
+  const fmtKSH = (n: number) => 'KSh ' + Math.round(n*KES_PER_USD).toLocaleString();
 
   /* ─── SUBSYSTEM DETAILS ─── */
   const renderSubsystemDetails = (s: SubsystemDef) => {
@@ -1712,8 +1720,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       analogBoreholeCount: fd.localBoreholes?.count,
                       analogSuccessRate: fd.localBoreholes?.successRate,
                     });
-                    const prospectColor = dr.groundwaterProspect === 'VERY STRONG' || dr.groundwaterProspect === 'STRONG'
-                      ? '#10b981' : dr.groundwaterProspect === 'MODERATE' ? '#f59e0b' : '#94a3b8';
+                    const prospectColor = (result?.probability ?? 0) >= 0.6 ? '#10b981' : (result?.probability ?? 0) >= 0.4 ? '#f59e0b' : '#94a3b8';
                     const statusColor = dr.status === 'ISSUED FOR DRILLING' || dr.status === 'COMPLETED / BANKABLE RECORD'
                       ? '#10b981' : dr.status === 'FIELD VALIDATION IN PROGRESS' ? '#f59e0b' : '#ef4444';
                     const gateItems = [
@@ -1728,9 +1735,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         {/* Two axes side by side: PROSPECT (chance of water) vs READINESS (authority to drill) */}
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}}>
                           <div style={{padding:10,borderRadius:8,border:`1px solid ${prospectColor}`,background:`${prospectColor}10`}}>
-                            <div style={{fontSize:10,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:0.5}}>Groundwater Prospect</div>
-                            <div style={{fontSize:16,fontWeight:800,color:prospectColor}}>{dr.groundwaterProspect} <span style={{fontSize:12,opacity:0.7}}>~{dr.prospectIndex}%</span></div>
-                            <div style={{fontSize:9,color:'var(--text-secondary)'}}>Chance of water &mdash; data-backed, not gated</div>
+                            <div style={{fontSize:10,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:0.5}}>Chance of water</div>
+                            <div style={{fontSize:16,fontWeight:800,color:prospectColor}}>{Math.round((result?.probability ?? 0) * 100)}%</div>
+                            <div style={{fontSize:9,color:'var(--text-secondary)'}}>{(dr as any).waterPointEvidence}</div>
                           </div>
                           <div style={{padding:10,borderRadius:8,border:`1px solid ${statusColor}`,background:`${statusColor}10`}}>
                             <div style={{fontSize:10,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:0.5}}>Drilling Readiness</div>
@@ -1738,7 +1745,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                             <div style={{fontSize:9,color:'var(--text-secondary)'}}>Authority to mobilise &mdash; needs field steps</div>
                           </div>
                         </div>
-                        {dr.prospectIndex >= 60 && (
+                        {(result?.probability ?? 0) >= 0.6 && (
                           <div style={{fontSize:10,color:'#10b981',lineHeight:1.5,marginBottom:10,padding:'6px 8px',background:'rgba(16,185,129,0.08)',borderRadius:6}}>
                             {dr.prospectStatement}
                           </div>
@@ -2158,10 +2165,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
     const scenariosRaw = genScenarios(result.recommendedDepth, result.estimatedYield, costSoil, costCtx);
     const recRaw = scenariosRaw[1]?.cost || 1;
     const scenarios = scenariosRaw.map((s) => ({ ...s, cost: Math.round(s.cost * ecoTotal / recRaw) }));
-    const climate = genClimate(result.historicalData, result.gldasGroundwater);
+    const climate = genClimate(result.historicalData, result.gldasGroundwater, (result as any).rechargeSummary);
     const prob = genProbability(result.probability, result.recommendedDepth);
     const wqExpanded = genWaterQualityExpanded(result.waterQuality, result.recommendedDepth);
-    const strategy = genDrillingStrategy(result.recommendedDepth, result.soil.type);
+    const strategy = genDrillingStrategy(result.recommendedDepth, result.soil.type, eco);
     const nearby = result.nearbyWells?.nearbyWells ?? [];
     const tabs = ['overview','ai-scanner','verification','geolocation','remote-sensing','satellite-rs','surface-geophysics-30','gldas-groundwater','realtime-water','subsurface-3d','subsurface-twin','insar','survey-plan','hybrid-geophysics','advanced-geophysics','aquifer-sim','historical','borehole-records','subsurface','geological','rock-sites','topographic','scenarios','water','costs','solar','roi','strategy','climate','probability','ml-models','risk','risk-decision','confidence-quality','geophysics-fusion','fracture-ai','aquifer-type','recharge-model','drill-map','micro-siting','calibration-loop','borehole-intelligence','pump-test','lithology','ert-interpretation','source-agreement','drought-analysis','hydrochemistry','data-quality','drilling-prediction','regional-model','site-identity','drill-decision','risk-register','pump-protocol','prediction-table','confidence-breakdown','bankable-checklist','well-design','engineer-trust','data-provenance','methodology','cross-validation','ai-vs-reality','pinn-explainable','path-to-97','validation','compare','report'] as const;
 
@@ -2547,7 +2554,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       </div>
                     )}
                     <div style={{fontSize:13,color:'var(--text-secondary)',marginBottom:12}}>
-                      Drill to <strong style={{color:'#fbbf24'}}>{Math.round(dDepth)} m</strong> at this point{result.gpsSource==='manual' ? ' (location you provided)' : result.gpsSource==='device' ? ' (your device GPS)' : ' (photo GPS)'} — confirm the final rig position with the ERT survey.
+                      {/* A planning figure, not an instruction (2026-10-25 audit). */}
+                      Planning depth <strong style={{color:'#fbbf24'}}>{Math.round(dDepth)} m</strong> at this point{result.gpsSource==='manual' ? ' (location you provided)' : result.gpsSource==='device' ? ' (your device GPS)' : ' (photo GPS)'} — an ERT survey and a hydrogeologist fix the drilling point and depth before any rig is booked.
                     </div>
                     {/* Why the yield is what it is (2026-10-19 re-audit). */}
                     {(result as any).governingYieldNote && <div style={{fontSize:12,color:'var(--text-tertiary)',margin:'-6px 0 12px'}}>Planning yield {result.estimatedYield} m³/h. {(result as any).governingYieldNote}{(result as any).wellDesign?.drawdown?.modelNote ? ' ' + (result as any).wellDesign.drawdown.modelNote : ''}</div>}
@@ -4004,8 +4012,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <div className="result-item"><span className="rl">Evapotranspiration (ET)</span><span className="rv" style={{color:'#f97316'}}>{result.gldasGroundwater.waterBudget.evapotranspiration} mm/yr</span></div>
                       <div className="result-item"><span className="rl">Surface Runoff (Qs)</span><span className="rv">{result.gldasGroundwater.waterBudget.surfaceRunoff} mm/yr</span></div>
                       <div className="result-item"><span className="rl">Baseflow (Qsb)</span><span className="rv" style={{color:'#00BCD4'}}>{result.gldasGroundwater.waterBudget.baseflow} mm/yr</span></div>
-                      <div className="result-item"><span className="rl">GW Recharge (estimated)</span><span className="rv" style={{fontWeight:700,fontSize:18,color:'#22c55e'}}>{result.gldasGroundwater.waterBudget.estimatedRecharge} mm/yr</span></div>
-                      <div className="result-item"><span className="rl">Recharge Fraction</span><span className="rv" style={{fontWeight:700}}>{Math.round(result.gldasGroundwater.waterBudget.rechargeFraction * 100)}% of rainfall</span></div>
+                      {/* Governing recharge, the same figure as the PDF; this budget's own value is shown as the cross-check. */}
+                      <div className="result-item"><span className="rl">GW Recharge (planning figure)</span><span className="rv" style={{fontWeight:700,fontSize:18,color:'#22c55e'}}>{(result as any).rechargeSummary?.governing_mm ?? result.gldasGroundwater.waterBudget.estimatedRecharge} mm/yr</span></div>
+                      <div className="result-item"><span className="rl">This budget alone</span><span className="rv" style={{fontWeight:700}}>{result.gldasGroundwater.waterBudget.estimatedRecharge} mm/yr ({Math.round(result.gldasGroundwater.waterBudget.rechargeFraction * 100)}% of rainfall)</span></div>
                     </div>
                   </div>
 
@@ -4858,8 +4867,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
               {/* Named water points near the site (2026-10-20 audit: they appeared only in the PDF). */}
               {(() => {
-                const wells = ((result.nearbyWells as any)?.nearbyWells ?? []).filter((w: any) => w && String(w.id ?? '').trim() && Number.isFinite(Number(w.distance_km)))
-                  .sort((a: any, b: any) => Number(a.distance_km) - Number(b.distance_km)).slice(0, 15);
+                const wells = cleanWellsForDisplay(((result.nearbyWells as any)?.nearbyWells ?? []).filter((w: any) => w && String(w.id ?? '').trim() && Number.isFinite(Number(w.distance_km)))
+                  .sort((a: any, b: any) => Number(a.distance_km) - Number(b.distance_km))).slice(0, 15);
                 if (wells.length === 0) return <div className="geo-note" style={{marginBottom:16}}>No named boreholes or water points were found near this site in the records we hold. The county figures below are used instead.</div>;
                 return (
                   <div style={{marginBottom:20}}>
@@ -4869,16 +4878,16 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <tbody>{wells.map((w: any, i: number) => (
                         <tr key={i}>
                           <td>{String(w.id)}</td>
-                          <td>{w.aquiferType && !/aquifer/i.test(String(w.aquiferType)) ? String(w.aquiferType) : '—'}</td>
+                          <td>{w.aquiferType && !/aquifer/i.test(String(w.aquiferType)) ? String(w.aquiferType) : wellKind(w)}</td>
                           <td>{Number(w.distance_km).toFixed(1)} km</td>
                           <td>{Number(w.depth_m) > 0 ? `${Math.round(Number(w.depth_m))} m` : '—'}</td>
                           <td>{Number(w.yield_m3h) > 0 ? `${Number(w.yield_m3h).toFixed(1)} m³/h` : '—'}</td>
-                          <td>{w.outcome && w.outcome !== 'Unknown' ? w.outcome : '—'}</td>
+                          <td>{displayOutcome(w)}</td>
                           <td style={{fontSize:11}}>{String(w.source ?? '')}</td>
                         </tr>
                       ))}</tbody>
                     </table></div>
-                    <p style={{fontSize:11,color:'var(--text-tertiary)',marginTop:6}}>A dash means the record does not say; nothing is filled in. Springs and dug wells show that groundwater is present but are not drilled boreholes. Nearby boreholes can tap a different fracture or layer from your plot.</p>
+                    <p style={{fontSize:11,color:'var(--text-tertiary)',marginTop:6}}>A dash means the record does not say; nothing is filled in. "Success" is used only for drilled boreholes with a tested yield or a field record; for springs, dug wells and other registry points the status is whether the point works today. Springs and dug wells show that groundwater is present but are not drilled boreholes. Nearby boreholes can tap a different fracture or layer from your plot.</p>
                   </div>
                 );
               })()}
@@ -5784,7 +5793,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
               })()}
               <div className="treatment-box">
                 <div className="treatment-header">Treatment likely: <strong style={{color:wqExpanded.treatmentRequired==='YES'?'#F44336':'#4CAF50'}}>{wqExpanded.treatmentRequired}</strong></div>
-                {wqExpanded.estimatedTreatmentCostUSD > 0 && <div className="treatment-cost">Allowance if treatment is needed: <strong>{fmtUSD(wqExpanded.estimatedTreatmentCostUSD)}</strong> ({fmtKSH(wqExpanded.estimatedTreatmentCostUSD)}). A laboratory test decides whether it is.</div>}
+                {/* The same allowance as the Costs tab and the PDF (2026-10-25 audit: six sites, two figures each). */}
+                {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">Allowance if treatment is needed: <strong>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</strong> ({fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day` : ''}. A laboratory test decides whether it is.</div>}
                 {result.waterQuality.treatmentRequired.length>0 && <ul className="rec-list">{result.waterQuality.treatmentRequired.map((t,i)=><li key={i}>{t}</li>)}</ul>}
               </div>
             </div>
@@ -8523,7 +8533,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{marginTop:20,padding:20,background:auditBg,borderRadius:12,border:`2px solid ${auditBorder}`}}>
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
                       <h4 style={{color:auditColor,margin:0,fontSize:18}}>
-                        {audit.passed ? '\u2705' : '\u{1F4CB}'} 10-Step Quality Review — {audit.passed ? 'PASSED' : 'PENDING'}
+                        {audit.passed ? '\u2705' : '\u{1F4CB}'} Internal consistency checks ({audit.passedChecks + audit.warningChecks + audit.failedChecks}) — {audit.passed ? 'PASSED' : 'PENDING'}
                       </h4>
                       <div style={{display:'flex',alignItems:'center',gap:12}}>
                         <span style={{fontSize:28,fontWeight:800,color:auditColor}}>{audit.score}/100</span>

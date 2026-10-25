@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FAULT_CODES, getAllBrands } from '@/lib/data/faultCodes';
@@ -33,6 +33,11 @@ const SEVERITY_COLORS = {
 
 export default function FaultCodesPage() {
   const [search, setSearch] = useState('');
+  // The site's search markup points here as /faults?q=… (2026-10-25 audit: q was ignored).
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('q');
+    if (q) setSearch(q.slice(0, 100));
+  }, []);
   const [selectedBrand, setSelectedBrand] = useState('All');
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
@@ -179,7 +184,7 @@ export default function FaultCodesPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold">
-              {filteredCodes.length} Fault Codes Found
+              {filteredCodes.length} Fault Code{filteredCodes.length === 1 ? '' : 's'} Found
             </h2>
             <Link
               href="/generator-oracle"

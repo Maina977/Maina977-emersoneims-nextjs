@@ -54,11 +54,37 @@ export async function POST(request: NextRequest) {
   }
 
   const monthlyKwh = Number(body.consumption);
-  if (!Number.isFinite(monthlyKwh) || monthlyKwh <= 0 || monthlyKwh > 2_000_000) {
-    return NextResponse.json({ error: 'consumption must be a positive number of kWh per month' }, { status: 400 });
+  // Below ~10 kWh/month there is nothing to size (2026-10-25 audit: 1e-9 kWh
+  // gave an 887-billion-year payback).
+  if (!Number.isFinite(monthlyKwh) || monthlyKwh < 10 || monthlyKwh > 2_000_000) {
+    return NextResponse.json({ error: 'consumption must be between 10 and 2,000,000 kWh per month' }, { status: 400 });
   }
-  const systemType = (SYSTEM_TYPES as string[]).includes(String(body.systemType)) ? (body.systemType as SystemType) : 'hybrid';
-  const roofType = (ROOF_TYPES as string[]).includes(String(body.roofType)) ? (body.roofType as RoofType) : 'pitched';
+  // Out-of-range inputs are refused, not silently clamped (tariff -5 became 1
+  // and a 244-year payback; systemType "banana" became hybrid).
+  const given = (k: string) => body[k] !== undefined && body[k] !== null && body[k] !== '';
+  if (given('systemType') && !(SYSTEM_TYPES as string[]).includes(String(body.systemType))) {
+    return NextResponse.json({ error: `systemType must be one of: ${SYSTEM_TYPES.join(', ')}` }, { status: 400 });
+  }
+  if (given('roofType') && !(ROOF_TYPES as string[]).includes(String(body.roofType))) {
+    return NextResponse.json({ error: `roofType must be one of: ${ROOF_TYPES.join(', ')}` }, { status: 400 });
+  }
+  const RANGES: Record<string, [number, number, string]> = {
+    tariff: [5, 200, 'KES per kWh'],
+    daytimeUsePct: [0, 100, '%'],
+    nightUsePct: [0, 100, '%'],
+    autonomyDays: [0.5, 5, 'days'],
+    peakLoadKw: [0.1, 5000, 'kW'],
+    dieselKesPerLitre: [50, 500, 'KES per litre'],
+  };
+  for (const [k, [lo, hi, unit]] of Object.entries(RANGES)) {
+    if (!given(k)) continue;
+    const v = Number(body[k]);
+    if (!Number.isFinite(v) || v < lo || v > hi) {
+      return NextResponse.json({ error: `${k} must be between ${lo} and ${hi} ${unit}` }, { status: 400 });
+    }
+  }
+  const systemType = given('systemType') ? (body.systemType as SystemType) : 'hybrid';
+  const roofType = given('roofType') ? (body.roofType as RoofType) : 'pitched';
 
   // Location: explicit coordinates win; otherwise a known Kenyan town.
   let lat = num(body.lat);

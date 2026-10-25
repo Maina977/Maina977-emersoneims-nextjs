@@ -375,6 +375,12 @@ export function sanitizeAnalysisResult(result: any): void {
     if (fb && Number(fb.lq) > 0 && Number(fb.uq) > 0) { d[0] = Math.min(d[0], Math.round(fb.lq)); d[1] = Math.max(d[1], Math.round(fb.uq)); }
     fc.depthRange = d;
     fc.yieldRange = fc.yieldRange.map((v: number) => Math.round(v * 10) / 10);
+    // With tested yields nearby, the range IS their spread (2026-10-25 audit:
+    // quartiles 4 / 10 / 10 m3/h printed beside a 7.5-30 range).
+    const yb = r.yieldEvidenceBand;
+    if (yb && Number(yb.hi) > 0 && typeof r.estimatedYield === 'number') {
+      fc.yieldRange = [Math.round(Math.min(yb.lo, r.estimatedYield) * 10) / 10, Math.round(Math.max(yb.hi, r.estimatedYield) * 10) / 10];
+    }
     const y = fc.yieldRange as [number, number];
     const p = fc.probabilityRange as [number, number];
     if (r.uncertainty) { r.uncertainty.depthRange = d; r.uncertainty.yieldRange = y; r.uncertainty.probabilityRange = p; }

@@ -677,7 +677,7 @@ const ComprehensiveFaultModal = ({
                 {fault.aiInsights && (
                   <div className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-xl p-5 border border-purple-500/30">
                     <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
-                      <span>🤖</span> AI-Powered Pattern Analysis
+                      <span>🔎</span> Pattern Analysis
                     </h3>
                     <p className="text-slate-300 leading-relaxed mb-6">{fault.aiInsights.patternAnalysis}</p>
 

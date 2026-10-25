@@ -472,12 +472,12 @@ function generateAISummary(
   
   let summary = `Matching your description${brandText} against our fault-code reference found ${matches.length} potentially related fault codes. `;
   
+  // A keyword match is not a diagnosis (2026-10-25 audit: "A probable cause is
+  // Injector Metering Rail 1 Pressure — Data erratic" for black smoke).
   if (topMatch.confidence >= 90) {
-    summary += `The closest match is **${topMatch.title}** (Code: ${topMatch.code}). `;
-  } else if (topMatch.confidence >= 75) {
-    summary += `A probable cause is **${topMatch.title}** (Code: ${topMatch.code}). `;
+    summary += `The closest entry in our reference is **${topMatch.title}** (Code: ${topMatch.code}). `;
   } else {
-    summary += `Possible causes include **${topMatch.title}** (Code: ${topMatch.code}), but further diagnosis is recommended. `;
+    summary += `Entries that mention these symptoms include **${topMatch.title}** (Code: ${topMatch.code}). This is a keyword match, not a diagnosis — check the basics below first. `;
   }
   
   if (symptoms.includes('shutdown') || symptoms.includes('oil_pressure') || symptoms.includes('overheating')) {
@@ -689,8 +689,12 @@ export function normalizeJ1939(s: string): string | null {
 }
 
 export function getExactCode(codeStr: string): MatchedCode | null {
-  const allCodes = brandSpecificErrorCodes || [];
   const wanted = normalizeJ1939(codeStr) ?? codeStr.toLowerCase();
+  // A bare J1939 code is brand-neutral: prefer the generic entry over a
+  // controller-specific one (2026-10-25 audit: "SPN 110 FMI 0" answered with
+  // the CAT PowerWizard entry and "connect CAT ET").
+  const isGeneric = (c: any) => /^(j1939|generic|universal)/i.test(String(c?.brand ?? ''));
+  const allCodes = [...(brandSpecificErrorCodes || [])].sort((a: any, b: any) => Number(isGeneric(b)) - Number(isGeneric(a)));
 
   for (const code of allCodes) {
     const stored = code.code ? (normalizeJ1939(code.code) ?? code.code.toLowerCase()) : '';

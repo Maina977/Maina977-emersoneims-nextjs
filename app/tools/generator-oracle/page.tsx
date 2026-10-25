@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   // on the root layout reading headers() — that call forced the whole site
   // to render dynamically and disabled browser caching everywhere.
   alternates: { canonical: 'https://www.emersoneims.com/tools/generator-oracle' },
-  title: 'Generator Oracle | AI Fault Diagnosis Tool',
-  description: 'AI-powered generator fault diagnosis. 400K+ diesel engine fault codes database. Instant troubleshooting for Caterpillar, Cummins, Perkins, FG Wilson generators.',
+  title: 'Generator Oracle | Fault-Code Lookup',
+  description: 'Free generator fault-code lookup: J1939 SPN/FMI codes and controller alarm text, with likely causes and checks written by our engineers.',
 };
 
 export default function GeneratorOraclePage() {
@@ -16,7 +16,7 @@ export default function GeneratorOraclePage() {
       <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">Generator Oracle</h1>
-          <p className="text-2xl text-gray-300 mb-8">AI-Powered Generator Fault Diagnosis</p>
+          <p className="text-2xl text-gray-300 mb-8">Generator fault-code lookup</p>
           <p className="text-lg text-gray-400 max-w-3xl mx-auto">
             Diagnose generator problems in minutes, not hours. Access curated diesel engine fault codes across all major brands.
           </p>

@@ -172,7 +172,7 @@ export default function GeneratorProblemsPage() {
               Need More Detailed Diagnostics?
             </h2>
             <p className="text-slate-300 mb-6 max-w-2xl mx-auto">
-              Generator Oracle provides AI-powered diagnostics with manufacturer-curated fault codes,
+              Generator Oracle looks up fault codes and alarm text, with causes and checks written by our engineers,
               step-by-step reset procedures, and professional repair guides.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

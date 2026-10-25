@@ -14,7 +14,10 @@ const handler = async (
   ctx: { params: Promise<{ path?: string[] }> },
 ) => {
   const { path = [] } = await ctx.params;
-  const res = await handleSolarGenius(req, 'eng', path);
+  // The first handler reads the body; give it a copy so the fallback can read
+  // it too (2026-10-25 audit: /api/eng/frame/analyze answered "not valid JSON"
+  // instead of its honest 501).
+  const res = await handleSolarGenius(req.clone() as NextRequest, 'eng', path);
   if (res.status !== 404) return res;
   return dispatch(req, path, 'eng');
 };

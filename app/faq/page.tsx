@@ -217,7 +217,7 @@ const FAQ_DATA = [
     id: 'diag-1',
     category: 'Diagnostics',
     question: 'What is the EmersonEIMS Diagnostic Suite?',
-    answer: 'Our free, industry-first diagnostic tool covers error codes for all major generator brands. Features include AI-powered symptom analysis, voice commands, offline capability, 47 language support, and step-by-step repair guides. No login required.',
+    answer: 'Our free Generator Oracle looks up J1939 SPN/FMI codes and controller alarm text for the main generator brands, and suggests likely causes for a described symptom. The causes and checks are written by our engineers, and it links to step-by-step repair guides. No login required.',
     tags: ['diagnostic suite', 'error codes', 'ai', 'free']
   },
   {

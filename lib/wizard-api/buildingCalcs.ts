@@ -60,9 +60,17 @@ function opt(b: Body, key: string, def: number, check?: (x: number) => boolean, 
 }
 
 /** Run a calculator, converting BadInput into a CalcError naming the field. */
+/** Shown with every result: a desk check, not a signed design (2026-10-25 audit:
+ *  no calculator result said so; only the host page did, below the frame). */
+export const CALC_DISCLAIMER = 'Desk check to the cited code clause only. Not a design: a registered engineer must check loads, detailing and the full set of code requirements before anything is built.';
+
 export function runCalc(fn: (b: Body) => unknown, b: Body): unknown {
   try {
-    return fn(b);
+    const out = fn(b);
+    if (out && typeof out === 'object' && !Array.isArray(out) && !('error' in (out as Record<string, unknown>))) {
+      return { ...(out as Record<string, unknown>), disclaimer: CALC_DISCLAIMER };
+    }
+    return out;
   } catch (e) {
     if (e instanceof BadInput) return { error: e.message, missing: [e.field] } as CalcError;
     throw e;
@@ -149,9 +157,14 @@ export function reverberation(b: Body) {
   } else {
     T = (0.161 * V) / A;
   }
+  const notes: string[] = [];
+  if (method === 'eyring' && used !== 'Eyring') notes.push('Eyring needs the surfaces (area and alpha of each); with a total absorption only, Sabine was used.');
+  const warning = T > 10 ? `T60 = ${r(T, 1)} s is longer than any furnished room (cathedrals reach about 8-10 s): check the absorption and volume.` : undefined;
   return {
     T60_s: r(T),
     total_absorption_m2_sabin: r(A),
+    ...(notes.length ? { note: notes.join(' ') } : {}),
+    ...(warning ? { warning } : {}),
     ...(S > 0 ? { total_surface_m2: r(S), mean_alpha: r(A / S, 3) } : {}),
     method: `${used} reverberation time`,
   };
@@ -173,6 +186,8 @@ export function uValue(b: Body) {
     const k = n(l.lambda_W_mK ?? l.lambda ?? l.k);
     if (d === undefined || k === undefined) return bad(`layers[${i}] needs thickness_m and lambda_W_mK`);
     if (!(d > 0 && k > 0)) return bad(`layers[${i}] thickness and conductivity must be > 0`);
+    if (d > 2) return bad(`layers[${i}] is ${d} m thick: thickness_m is in metres (0.1 = 100 mm), and building layers are under 2 m`);
+    if (k > 500) return bad(`layers[${i}] lambda_W_mK = ${k} is above any building material (copper is about 380)`);
     R += d / k;
     rows.push({ layer: String(l.description ?? `Layer ${i + 1}`), R_m2K_W: r(d / k, 3) });
   }
@@ -291,6 +306,7 @@ export function windEurocode(b: Body) {
   const cdir = opt(b, 'cdir', 1, pos, 'greater than 0'), cseason = opt(b, 'cseason', 1, pos, 'greater than 0'), cprob = opt(b, 'cprob', 1, pos, 'greater than 0');
   const co = opt(b, 'co', 1, pos, 'greater than 0'), rho = opt(b, 'rho_kg_m3', 1.25, pos, 'greater than 0');
   if (!(vb0! > 0)) return bad('vb_ms must be > 0');
+  if (vb0! > 70) return bad('vb_ms above 70 m/s is not a basic wind speed (the strongest national values are about 50 m/s; Kenya is about 20-30 m/s)');
   if (!(z! > 0 && z! <= 200)) return bad('height_m must be between 0 and 200 m: the EN 1991-1-4 profile (§4.3.2) applies up to 200 m');
   const vb = cdir * cseason * cprob * vb0!;
   const zEff = Math.max(z!, t.zmin);
@@ -320,6 +336,9 @@ export function seismicElf(b: Body) {
   const err = missing({ SDS, SD1, R, Ie, W_kN: W });
   if (err) return err;
   if (!(R! > 0 && Ie! > 0 && W! > 0)) return bad('R, Ie and W_kN must be > 0');
+  // ASCE 7-22 Table 12.2-1 tops out at R = 8; Ie is 1.0, 1.25 or 1.5 (Table 1.5-2).
+  if (R! > 8) return bad('R above 8 is outside ASCE 7-22 Table 12.2-1 (the largest response modification coefficient is 8)');
+  if (![1, 1.25, 1.5].includes(Ie!)) return bad('Ie must be 1.0, 1.25 or 1.5 (ASCE 7-22 Table 1.5-2, risk categories I/II, III, IV)');
   if (!(SDS! > 0 && SDS! <= 3) || !(SD1! > 0 && SD1! <= 3)) return bad('SDS and SD1 are spectral accelerations in g: greater than 0 and at most 3');
   const st = String(b.structure_type ?? 'other');
   if (!(st in PERIOD)) return { error: 'Invalid input: structure_type must be steel_moment_frame, concrete_moment_frame, eccentric_braced or other', missing: ['structure_type'] };
@@ -327,6 +346,7 @@ export function seismicElf(b: Body) {
   // Height in feet (ASCE) or metres (2026-10-20: the suite now offers metres).
   const hnM = pick(b, 'height_m');
   const hn = pick(b, 'height_ft') ?? (hnM !== undefined ? hnM / 0.3048 : undefined);
+  if (hn !== undefined && hn > 1000) return bad('Height above 1,000 ft (about 300 m) is outside an equivalent-lateral-force check: use a dynamic analysis');
   const Ta = hn !== undefined && hn > 0 ? p.Ct * Math.pow(hn, p.x) : undefined;
   let T = pick(b, 'T', 'T_s');
   const tGiven = ('T' in b && b.T !== '' && b.T != null) || ('T_s' in b && b.T_s !== '' && b.T_s != null);
@@ -351,6 +371,10 @@ export function seismicElf(b: Body) {
   } else {
     periodNote = 'Period given by the user; not checked against Cu·Ta (no height given)';
   }
+  // ELF is not permitted for every structure: Table 12.6-1 limits it (e.g. T
+  // >= 3.5·Ts in higher seismic design categories). Say so rather than refuse.
+  const Ts = SD1! / SDS!;
+  const elfWarning = T > 3.5 * Ts ? `T = ${r(T, 2)} s is at least 3.5·Ts (${r(3.5 * Ts, 2)} s): ASCE 7-22 Table 12.6-1 does not permit ELF for many systems in seismic design categories D-F. Check the permitted procedure; a modal response spectrum analysis may be required.` : undefined;
   const Cs0 = SDS! / (R! / Ie!);
   const CsMax = SD1! / (T * (R! / Ie!));
   const CsMin = Math.max(0.044 * SDS! * Ie!, 0.01);
@@ -360,6 +384,7 @@ export function seismicElf(b: Body) {
     Cs: r(Cs, 4),
     V_kN: r(Cs * W!, 1),
     governing: Cs === CsMin ? 'minimum (Eq. 12.8-5)' : Cs === CsMax ? 'period limit (Eq. 12.8-3)' : 'Eq. 12.8-2',
+    ...(elfWarning ? { warning: elfWarning } : {}),
     assumptions: [periodNote, 'T ≤ TL assumed (Eq. 12.8-4 not checked)', 'S1 ≥ 0.6g minimum (Eq. 12.8-6) not checked'],
     method: 'ASCE 7-22 §12.8 equivalent lateral force',
   };
@@ -379,7 +404,9 @@ export function rcBeam(b: Body) {
   const err = missing({ b_mm: bw, d_mm: d, As_mm2: As, fck_MPa: fck, fyk_MPa: fyk });
   if (err) return err;
   if (!(bw! > 0 && d! > 0 && As! > 0 && fck! > 0 && fyk! > 0)) return bad('Section dimensions, steel area and strengths must be > 0');
-  if (fck! > 50) return bad('This check covers fck ≤ 50 MPa only');
+  if (fck! < 12 || fck! > 50) return bad('fck_MPa must be between 12 and 50 MPa (EN 1992-1-1 Table 3.1 classes this check covers)');
+  if (fyk! < 400 || fyk! > 600) return bad('fyk_MPa must be between 400 and 600 MPa (EN 1992-1-1 Annex C reinforcement)');
+  if (bw! > 5000 || d! > 5000) return bad('b_mm and d_mm above 5,000 mm are not a beam section');
   const h = pick(b, 'h_mm');
   if (h !== undefined && !(d! < h)) return bad('d_mm (effective depth) must be smaller than h_mm (overall depth)');
   const fcd = (0.85 * fck!) / 1.5;
@@ -492,6 +519,18 @@ export function steelBolt(b: Body) {
     checks.push({ check: 'Fv,Ed ≤ min(Fv,Rd, Fb,Rd)', value: `${FvEd} ≤ ${r(gov)} kN`, pass: FvEd <= gov });
   }
   if (FtEd !== undefined) checks.push({ check: 'Ft,Ed ≤ Ft,Rd', value: `${FtEd} ≤ ${r(FtRd)} kN`, pass: FtEd <= FtRd });
+  // Punching shear of the plate under the head/nut, Table 3.4: Bp,Rd =
+  // 0.6·π·dm·tp·fu/γM2, dm ≈ 1.6·d (mean of across-flats and across-corners).
+  if (t !== undefined && fu !== undefined) {
+    const dm = 1.6 * dNom;
+    const BpRd = (0.6 * Math.PI * dm * t * fu) / gM2 / 1000;
+    out.Bp_Rd_kN = r(BpRd);
+    assumptions.push(`Punching shear with dm ≈ 1.6·d = ${r(dm, 1)} mm (use the nut's real dimensions if they differ)`);
+    if (FtEd !== undefined) checks.push({ check: 'Ft,Ed ≤ Bp,Rd (punching shear)', value: `${FtEd} ≤ ${r(BpRd)} kN`, pass: FtEd <= BpRd });
+  }
+  // Table 3.3 maxima (steel not exposed to weather): e1 ≤ 4t + 40 mm, p1 ≤ min(14t, 200 mm).
+  if (t !== undefined && e1 !== undefined) checks.push({ check: 'e1 ≤ 4t + 40 mm (Table 3.3 maximum)', value: `${e1} ≤ ${4 * t + 40} mm`, pass: e1 <= 4 * t + 40 });
+  if (t !== undefined && p1 !== undefined) checks.push({ check: 'p1 ≤ min(14t, 200 mm) (Table 3.3 maximum)', value: `${p1} ≤ ${Math.min(14 * t, 200)} mm`, pass: p1 <= Math.min(14 * t, 200) });
   if (FvEd !== undefined && FtEd !== undefined) {
     const inter = FvEd / FvRd + FtEd / (1.4 * FtRd);
     checks.push({ check: 'Combined Fv,Ed/Fv,Rd + Ft,Ed/(1.4·Ft,Rd) ≤ 1', value: r(inter, 3).toString(), pass: inter <= 1 });
@@ -540,6 +579,7 @@ export function rationalRunoff(b: Body) {
   if (err) return err;
   if (!(C! > 0 && C! <= 1)) return bad('runoff_c must be between 0 and 1');
   if (!(i! > 0 && A! > 0)) return bad('rainfall_intensity_mm_hr and area_ha must be > 0');
+  if (i! > 500) return bad('rainfall_intensity_mm_hr above 500 mm/h is beyond any recorded design storm; check the units (mm per hour)');
   return {
     Q_m3_s: r((C! * i! * A!) / 360, 3),
     Q_L_s: r((C! * i! * A!) / 0.36, 0),
@@ -556,10 +596,13 @@ export function kirpich(b: Body) {
   if (err) return err;
   if (!(L! > 0 && S! > 0)) return bad('length_m and slope_m_per_m must be > 0');
   if (S! >= 1) return bad('slope_m_per_m is a gradient (rise ÷ run): 0.05 means 5%. Values of 1 or more are not catchment slopes.');
+  if (L! > 100000) return bad('length_m above 100 km is not a small catchment; Kirpich applies to small rural catchments');
   const outside = S! < 0.03 || S! > 0.1;
+  const long = L! > 10000;
+  const warn = [outside ? `Kirpich was fitted to slopes of 3–10%; ${r(S! * 100, 1)}% is outside that range.` : '', long ? `A ${r(L! / 1000, 1)} km flow path is longer than the small catchments Kirpich was fitted to.` : ''].filter(Boolean).join(' ');
   return {
     Tc_min: r(0.0195 * Math.pow(L!, 0.77) * Math.pow(S!, -0.385)),
-    ...(outside ? { warning: `Kirpich was fitted to slopes of 3–10%; ${r(S! * 100, 1)}% is outside that range, so treat the time as indicative.` } : {}),
+    ...(warn ? { warning: `${warn} Treat the time as indicative.` } : {}),
     method: 'Kirpich (1940), small rural catchments',
   };
 }

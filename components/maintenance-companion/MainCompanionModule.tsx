@@ -54,7 +54,7 @@ export default function MainCompanionModule() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
             </span>
-            AI-Powered Maintenance Intelligence
+            Maintenance guides and tools
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
             Generator Maintenance Companion

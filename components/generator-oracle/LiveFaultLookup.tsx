@@ -212,6 +212,14 @@ export default function LiveFaultLookup({ className = '', compact = false }: Pro
               )}{' '}
               · showing {data.results.length}
             </div>
+            {/* Every entry is a reference note, none checked line by line against
+                each maker's manual yet; say so where the results are read (2026-10-25 audit). */}
+            {data.results.some((r) => !r.verified) && (
+              <p className="text-xs text-amber-300/80">
+                Reference notes written by our engineers, not yet checked against each manufacturer&apos;s manual.
+                Confirm with your controller or engine manual before replacing parts.
+              </p>
+            )}
             <ul className="divide-y divide-slate-800 rounded-lg border border-slate-800 overflow-hidden">
               {data.results.map((r) => (
                 <li key={r.id} className="p-3 bg-slate-950/40 hover:bg-slate-900/60 transition-colors">

@@ -173,15 +173,20 @@ function inverterRefKes(kw: number, gridTie = false): number {
 interface Rated { kind: 'panel' | 'inverter' | 'battery' | null; w?: number; kw?: number; kwh?: number; gridTie?: boolean }
 export function readRating(desc: string): Rated {
   const s = desc.toLowerCase();
-  const kwh = s.match(/(\d+(?:\.\d+)?)\s*kwh\b/);
-  const kw = s.match(/(\d+(?:\.\d+)?)\s*kw\b(?!h)/) || s.match(/\b(\d+(?:\.\d+)?)k\b/);
-  const w = s.match(/(\d{2,4})\s*w(?:p)?\b/);
+  const kwhM = s.match(/(\d+(?:\.\d+)?)\s*kwh\b/);
+  // "48V 100Ah" (either order) is 4.8 kWh.
+  const vAh = s.match(/(\d+(?:\.\d+)?)\s*v\b[^\d]*?(\d+(?:\.\d+)?)\s*ah\b/) || s.match(/(\d+(?:\.\d+)?)\s*ah\b[^\d]*?(\d+(?:\.\d+)?)\s*v\b/);
+  const kwhFromAh = vAh ? (Number(vAh[1]) * Number(vAh[2])) / 1000 : null;
+  const kwh = kwhM ? Number(kwhM[1]) : kwhFromAh;
+  // kVA on an inverter is read as kW (inverter power factor ~1).
+  const kw = s.match(/(\d+(?:\.\d+)?)\s*k(?:w|va)\b(?!h)/) || s.match(/\b(\d+(?:\.\d+)?)k\b/);
+  const w = s.match(/(\d{2,4})\s*(?:w|wp|watts?)\b/);
   let kind: Rated['kind'] = null;
   if (/\bbatter|\blithium|\blifepo|\bbatt\b/.test(s) || kwh) kind = 'battery';
-  else if (/\binverter|\bhybrid\b/.test(s)) kind = 'inverter';
+  else if (/\binverter|\bhybrid\b|\boff[- ]?grid\b|\bkva\b/.test(s)) kind = 'inverter';
   else if (/\bpanel|\bmodule|\bpv\b/.test(s) || (w && !kw)) kind = 'panel';
   const out: Rated = { kind };
-  if (kind === 'battery' && kwh) out.kwh = Number(kwh[1]);
+  if (kind === 'battery' && kwh) out.kwh = Math.round(kwh * 100) / 100;
   if (kind === 'inverter') {
     if (kw) out.kw = Number(kw[1]);
     out.gridTie = /grid[- ]?tie|on[- ]?grid|string\b/.test(s) && !/hybrid|off[- ]?grid/.test(s);
@@ -242,10 +247,17 @@ function reduceBatteries(arr: any[]): LibItem[] {
 //   "Jinko 580W panels x 52 @ 12500"
 //   "Sungrow SG5K-D inverter, 1, 145000"
 //   "BYD HVS 10.2kWh battery 1 350000"
+/** Subtotal, VAT, totals, discounts and payment terms: not items to price. */
+export function isSummaryLine(l: string): boolean {
+  return /^\s*(sub\s*-?\s*total|grand\s*total|total|vat|tax|discount|balance|deposit|amount\s+due|less\b|pay(ment)?\b|valid|terms|quotation\s+valid|note)\b/i.test(l)
+    || /\bvat\s*\(?\s*16\s*%/i.test(l);
+}
+
 export function parseLines(input: string): ParsedLine[] {
   // Header rows ("Item, Qty, Unit price, Total") and lines without a number are not items.
   const lines = input.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
-    .filter((l) => /\d/.test(l) && !/^(item|description|product|no\.?)\b[^\d]*(qty|quantity|price|amount|total)/i.test(l));
+    .filter((l) => /\d/.test(l) && !/^(item|description|product|no\.?)\b[^\d]*(qty|quantity|price|amount|total)/i.test(l))
+    .filter((l) => !isSummaryLine(l));
   return lines.map((raw) => {
     // Thousands separators out ("12,500" → "12500"), currency words out.
     const clean = raw.replace(/(\d),(?=\d{3}\b)/g, '$1').replace(/\b(ksh|kes|sh)\.?/gi, ' ');
@@ -293,11 +305,11 @@ function findMatch(line: ParsedLine, lib: LibItem[]): LibItem | null {
     const itemRating = item.category === 'panel' ? item.ratingW : item.category === 'inverter' ? item.ratingKw : item.ratingKwh;
     if (lineRating && itemRating && Math.abs(lineRating / itemRating - 1) > 0.1) continue;
     let score = 0;
-    if (item.manufacturer && hay.includes(item.manufacturer.toLowerCase())) score += 3;
-    if (item.model && hay.includes(item.model.toLowerCase())) score += 4;
+    if (item.model && item.model.length >= 4 && hay.includes(item.model.toLowerCase())) score += 4;
+    if (score && item.manufacturer && hay.includes(item.manufacturer.toLowerCase())) score += 3;
     if (score > bestScore) { best = item; bestScore = score; }
   }
-  return bestScore >= 3 ? best : null;
+  return bestScore >= 4 ? best : null;
 }
 
 function evaluate(line: ParsedLine, match: LibItem | null): VerdictRow {
@@ -317,21 +329,22 @@ function evaluate(line: ParsedLine, match: LibItem | null): VerdictRow {
   const market = match ? match.refPriceKes : rule!.kes;
   const you = line.unitPriceKes;
   const delta = ((you - market) / market) * 100;
+  const [hiWarn, hiBad, loWarn] = match ? [10, 25, -25] : [15, 35, -40];
   let tone: VerdictRow['tone'] = 'ok';
-  let msg = 'Within ±10% of the reference';
-  if (delta > 25) { tone = 'bad'; msg = `Overpriced by ${delta.toFixed(0)}% — challenge supplier`; }
-  else if (delta > 10) { tone = 'warn'; msg = `Slightly high (+${delta.toFixed(0)}%)`; }
-  else if (delta < -25) { tone = 'warn'; msg = `Suspiciously cheap (${delta.toFixed(0)}%) — verify warranty/origin`; }
+  let msg = match ? 'Within ±10% of the reference' : 'Within the typical range';
+  if (delta > hiBad) { tone = 'bad'; msg = `Overpriced by ${delta.toFixed(0)}% — challenge supplier`; }
+  else if (delta > hiWarn) { tone = 'warn'; msg = `Slightly high (+${delta.toFixed(0)}%)`; }
+  else if (delta < loWarn) { tone = 'warn'; msg = `Well below the typical price (${delta.toFixed(0)}%) — confirm brand, model and warranty`; }
   else if (delta < -10) { tone = 'ok'; msg = `Good price (${delta.toFixed(0)}%)`; }
   return { line, match, basis, perUnitMarket: market, perUnitYou: you, deltaPct: delta, tone, message: msg };
 }
 
-const SAMPLE = `JA Solar JAM72D40-580 580W panel x 52 @ 12500
-Sungrow SG5K-D 5kW inverter x 1 @ 165000
-BYD HVS 10.2kWh battery x 1 @ 420000
-DC isolators + cabling x 1 @ 220000
-Mounting (galvanised steel) x 1 @ 290000
-Installation + commissioning x 1 @ 480000`;
+const SAMPLE = `JA Solar JAM72D40-580 580W panel x 10 @ 12500
+Deye 5kW hybrid inverter x 1 @ 165000
+Pylontech US5000 4.8kWh battery x 2 @ 180000
+DC isolators + cabling x 1 @ 45000
+Mounting (aluminium rails) x 1 @ 60000
+Installation + commissioning x 1 @ 80000`;
 
 export default function QuoteCheckerPage() {
   const [text, setText] = useState('');
@@ -361,7 +374,7 @@ export default function QuoteCheckerPage() {
         setLib(merged);
         // No live market-price feed exists (the call 404'd on every load; 2026-10-19).
         {
-          setMarketProvenance(`Reference prices are mid-2026 Kenyan rules of thumb applied to each item's rating from the equipment library: panels KES ${PANEL_KES_PER_W}/W, inverters KES 35,000/kW up to 10 kW and KES 18,000/kW above, batteries KES ${BATTERY_KES_PER_KWH.toLocaleString()}/kWh. Use them to spot outliers, not as a supplier price list.`);
+          setMarketProvenance(`Reference prices are mid-2026 Kenyan rules of thumb applied to each item's rating from the equipment library: panels KES ${PANEL_KES_PER_W}/W, hybrid and off-grid inverters KES 35,000/kW up to 10 kW and KES 28,000/kW above (grid-tie KES 20,000 and 15,000), batteries KES ${BATTERY_KES_PER_KWH.toLocaleString()}/kWh. Summary lines (subtotal, VAT, total) and payment terms are not counted as items. Use them to spot outliers, not as a supplier price list.`);
         }
       } catch (e: any) {
         setLibErr(e?.message || 'Could not load equipment library');
@@ -408,7 +421,7 @@ export default function QuoteCheckerPage() {
 
       <Card>
         <Label>Paste quotation BOM (one line per item; spaces, commas or tabs between columns)</Label>
-        <TextArea value={text} placeholder={'Example quote:\n' + SAMPLE} onChange={(e) => setText(e.target.value)} />
+        <TextArea aria-label="Quotation lines, one item per line" value={text} placeholder={'Example quote:\n' + SAMPLE} onChange={(e) => setText(e.target.value)} />
         <button type="button" onClick={() => setText(SAMPLE)} style={{ background: 'none', border: 'none', color: '#00D9FF', textDecoration: 'underline', cursor: 'pointer', padding: '4px 0', marginRight: 12 }}>Load the example quote</button>
         <Button onClick={runCheck} disabled={loadingLib || running || !text.trim()}>
           {running ? <><Spinner /> Checking…</> : '✓ Check this quote'}

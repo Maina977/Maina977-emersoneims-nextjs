@@ -675,7 +675,7 @@ function AIAnalysisPanelImpl({ className = '', card }: AIAnalysisPanelProps) {
               <h4 className="text-white font-semibold">Analysis Mode</h4>
               <p className="text-slate-400 text-sm">
                 {useAI
-                  ? 'Generator Oracle AI — local Ollama (Qwen2.5) or Gemini fallback when configured'
+                  ? 'Diagnostic assistant — a language model, when one is configured; check its answers against your manual'
                   : 'Rule-based engine — deterministic threshold analysis'}
               </p>
             </div>

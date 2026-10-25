@@ -9,7 +9,6 @@
      Saves ~150-300ms on first visit before the cache warms up. -->
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="dns-prefetch" href="https://image.pollinations.ai">
 <!-- Three.js is deferred: browser downloads it in parallel with HTML parsing
      but doesn't execute until the document is fully parsed. HTML paints first,
      Three.js becomes available before any 3D-tab function actually runs.
@@ -103,7 +102,7 @@ select option{background:#111640;color:#e0e0e0}
 /* RESULTS */
 .res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px}
 .rb{background:rgba(100,181,246,.06);border:1px solid #1e3a6e;padding:10px;border-radius:4px}
-.rb .rl{font-size:9px;font-weight:700;color:#5c6bc0;text-transform:uppercase}
+.rb .rl{font-size:9px;font-weight:700;color:#5c6bc0}
 .rb .rv{font-size:16px;font-weight:700;color:#64b5f6;margin-top:2px}
 .recs{background:rgba(255,152,0,.06);border-left:3px solid #ff9800;padding:10px;border-radius:0 4px 4px 0;margin-top:10px}
 .recs b{color:#ffb74d}
@@ -205,7 +204,7 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
 .fpe-handle{fill:#64b5f6;stroke:#fff;stroke-width:1;cursor:nwse-resize}
 .fpe-handle:hover{fill:#42a5f5}
 
-@media(max-width:900px){.nav{display:none}.builder-left{width:100%}.builder-split{flex-direction:column}.fpe-sidebar{width:100%}.fpe-wrap{flex-direction:column}}
+@media(max-width:900px){.nav{display:none}.builder-left{width:100%}.builder-split{flex-direction:column}.fpe-sidebar{width:100%;max-height:45vh;overflow:auto}.fpe-wrap{flex-direction:column;height:auto}.fpe-canvas-area{flex:none;height:60vh;min-height:360px}}
 
 /* PRO-SUITE SUB-TAB NAVIGATION */
 .pro-sub-tabs{display:flex;flex-wrap:wrap;gap:2px;overflow-x:auto;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid #1e2560}
@@ -276,6 +275,8 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
          every one called a route that is missing or answers 501, so each only
          ever alerted "failed" (2026-10-19 tool audit). -->
     <div class="top-actions">
+        <!-- Opened on its own, the suite had no way back to the site (2026-10-25 audit). -->
+        <a href="/solutions/building" target="_top" title="Back to EmersonEIMS" style="text-decoration:none"><button type="button">← EmersonEIMS</button></a>
         <button onclick="window.print()" title="Print or save this screen as PDF">Print</button>
         <button onclick="window.open('https://wa.me/254768860665?text='+encodeURIComponent('Hi EmersonEIMS, I am using the Building Suite and would like an engineer to help with a design.'),'_blank','noopener')" title="Talk to an EmersonEIMS engineer">WhatsApp an engineer</button>
     </div>
@@ -4714,7 +4715,7 @@ function showFloorEditor(){
         h+='<div class="fpe-grp"><div class="fpe-grp-label" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'">\u25BC '+group.charAt(0).toUpperCase()+group.slice(1)+'</div>';
         h+='<div>';
         items.forEach((item,i)=>{
-            h+='<div class="fpe-el" draggable="true" data-group="'+group+'" data-idx="'+i+'" onmousedown="fpeStartPaletteDrag(event,\''+group+'\','+i+')">';
+            h+='<div class="fpe-el" draggable="true" data-group="'+group+'" data-idx="'+i+'" ondragstart="fpeStartPaletteDrag(event,\''+group+'\','+i+')" onclick="fpePlaceFromPalette(\''+group+'\','+i+')" title="Tap to place, or drag onto the plan">';
             let ico=item.type==='room'?'\u2B1C':item.type==='wall'?'\u2501':item.type==='door'?'\u{1F6AA}':item.type==='window'?'\u2395':'\u2B1B';
             h+='<span class="fpe-ico" style="background:'+item.color+'">'+ico+'</span>';
             h+='<span>'+item.label+'</span>';
@@ -4772,7 +4773,7 @@ function fpeInitCanvas(){
     let area=document.getElementById('fpeCanvasArea');
     if(!area)return;
     fpe.wrapEl=area;
-    let W=area.clientWidth, H=area.clientHeight;
+    let W=area.clientWidth||360, H=area.clientHeight||420;
     let svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('width',W);
     svg.setAttribute('height',H);
@@ -5154,12 +5155,22 @@ function fpeDrop(e){
     e.preventDefault();
     let data;
     try{data=JSON.parse(e.dataTransfer.getData('text/plain'));}catch(x){return;}
-    let item=FPE_PALETTE[data.group][data.idx];
-    if(!item)return;
-
     let rect=fpe.svgEl.getBoundingClientRect();
-    let px=(e.clientX-rect.left-fpe.panX)/fpe.zoom;
-    let py=(e.clientY-rect.top-fpe.panY)/fpe.zoom;
+    fpeInsertAt(data.group,data.idx,e.clientX-rect.left,e.clientY-rect.top);
+}
+
+function fpePlaceFromPalette(group,idx){
+    if(!fpe.svgEl)return;
+    let rect=fpe.svgEl.getBoundingClientRect();
+    fpeInsertAt(group,idx,rect.width/2,rect.height/2);
+    if(window.innerWidth<900) fpe.svgEl.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function fpeInsertAt(group,idx,sx,sy){
+    let item=(FPE_PALETTE[group]||[])[idx];
+    if(!item)return;
+    let px=(sx-fpe.panX)/fpe.zoom;
+    let py=(sy-fpe.panY)/fpe.zoom;
     let mX=fpeSnap(fpeWorldToM(px));
     let mY=fpeSnap(fpeWorldToM(py));
 
@@ -7021,7 +7032,7 @@ const PRO_CATALOG = [
       {k:'seed',type:'number',def:42,l:'Random seed (change for variation)'},
     ]},
   {id:'vs_ai_interior', grp:'Villa Studio', title:'Interior visualisation',
-    desc:'Generate an interior room shot — perfect to show clients the emotion/palette before finishes are specified.',
+    desc:'Not online.',
     ep:'POLLINATIONS_INTERIOR', mth:'POLLINATIONS',
     refs:['Not online'],
     f:[
@@ -7559,7 +7570,14 @@ const PRO_LABELS = {
   altitude_deg:'Sun altitude', azimuth_deg:'Sun azimuth (from north)', declination_deg:'Solar declination', equation_of_time_min:'Equation of time',
   datetime_utc:'Time (UTC)', method:'Method', assumptions:'Assumptions', checks:'Checks', warning:'Warning',
 };
-function proLabel(k){ return PRO_LABELS[k] || String(k).replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase()); }
+function proLabel(k){
+  if(PRO_LABELS[k]) return PRO_LABELS[k];
+  let base=String(k);
+  const sufs=Object.keys(PRO_UNIT_SUFFIXES).concat(['_m2K_W','_sabin']).sort((a,b)=>b.length-a.length);
+  for(const s of sufs){ if(base.length>s.length && base.endsWith(s)){ base=base.slice(0,-s.length); break; } }
+  base=base.replace(/_/g,' ');
+  return base.charAt(0).toUpperCase()+base.slice(1);
+}
 // Exact keys win, then the longest suffix: "Q_L_s" was shown in seconds and
 // "C_min" in minutes because "_s"/"_min" matched first (2026-10-19 audit).
 const PRO_KEY_UNITS = {Q_L_s:'L/s', qz_Pa:'Pa', qp_Pa:'Pa', C_min:'', C_max:'', R_total_m2K_W:'m²K/W', R_m2K_W:'m²K/W',
@@ -7587,7 +7605,7 @@ function proFmtValue(k,v){
     return `<span style="color:#90caf9;font-weight:600">${proFmtNumber(v)}</span>${unit?' <span style="color:#7986cb;font-size:10px">'+unit+'</span>':''}`;
   }
   if(Array.isArray(v)){
-    if(v.length===0) return '<span style="color:#555">(empty)</span>';
+    if(v.length===0) return '<span style="color:#555">None</span>';
     if(v.every(x=>typeof x!=='object'||x===null))
       return v.map(x=>'<span style="color:#a5b4fc">'+proEscape(x)+'</span>').join(' · ');
     return proRenderArray(v);
@@ -7607,16 +7625,16 @@ function proRenderObject(obj,depth){
   return Object.entries(obj).map(([k,v])=>{
     const label=proLabel(k);
     if(v && typeof v==='object' && !Array.isArray(v) && Object.keys(v).length){
-      return `<div style="margin-top:${depth?6:10}px"><div style="font-weight:600;color:#7986cb;font-size:11px;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #1e2560">${label}</div><div style="padding-left:${depth?0:8}px">${proRenderObject(v,depth+1)}</div></div>`;
+      return `<div style="margin-top:${depth?6:10}px"><div style="font-weight:600;color:#7986cb;font-size:11px;letter-spacing:.3px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #1e2560">${label}</div><div style="padding-left:${depth?0:8}px">${proRenderObject(v,depth+1)}</div></div>`;
     }
     if(Array.isArray(v) && v.length && v.every(x=>x && typeof x==='object')){
-      return `<div style="margin-top:${depth?6:10}px"><div style="font-weight:600;color:#7986cb;font-size:11px;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">${label} <span style="color:#555;font-size:10px;font-weight:400">(${v.length})</span></div>${proRenderArray(v)}</div>`;
+      return `<div style="margin-top:${depth?6:10}px"><div style="font-weight:600;color:#7986cb;font-size:11px;letter-spacing:.3px;margin-bottom:4px">${label} <span style="color:#555;font-size:10px;font-weight:400">(${v.length})</span></div>${proRenderArray(v)}</div>`;
     }
     return `<div style="display:grid;grid-template-columns:180px 1fr;gap:10px;padding:4px 0;font-size:12px;border-bottom:1px dotted #1e2560"><div style="color:#8899aa">${label}</div><div>${proFmtValue(k,v)}</div></div>`;
   }).join('');
 }
 function proRenderArray(arr){
-  if(!arr.length) return '<div style="color:#555;font-size:11px">(empty)</div>';
+  if(!arr.length) return '<div style="color:#555;font-size:11px">None</div>';
   const cols=new Set();
   arr.forEach(o=>Object.keys(o).forEach(k=>cols.add(k)));
   const colKeys=Array.from(cols);

@@ -150,7 +150,10 @@ const Result: React.FC<{ out: any; err: string | null }> = ({ out, err }) => {
 
 /** Results as readable tables, not JSON (2026-10-20). */
 const label = (k: string) => k.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
-const fmt = (v: any): string => (typeof v === 'number' ? (Number.isInteger(v) ? v.toLocaleString() : v.toLocaleString(undefined, { maximumFractionDigits: 2 })) : typeof v === 'boolean' ? (v ? 'Yes' : 'No') : v == null ? '—' : String(v));
+const fmt = (v: any): string => (typeof v === 'number' ? (Number.isInteger(v) ? v.toLocaleString() : v.toLocaleString(undefined, { maximumFractionDigits: 2 })) : typeof v === 'boolean' ? (v ? 'Yes' : 'No') : v == null ? '—'
+  // A nested object inside a table cell (e.g. the sun's position) printed "[object Object]" (2026-10-25 audit).
+  : typeof v === 'object' ? (Array.isArray(v) ? v.map(fmt).join(', ') : Object.entries(v).map(([k, x]) => `${label(k)} ${fmt(x)}`).join(', '))
+  : String(v));
 const Pretty: React.FC<{ v: any; depth: number }> = ({ v, depth }) => {
   if (v == null || typeof v !== 'object') return <span>{fmt(v)}</span>;
   if (Array.isArray(v)) {
@@ -245,7 +248,7 @@ const TariffTool = () => {
           <option value="DC2">Domestic ordinary (over 100 kWh)</option>
           <option value="SC">Small commercial</option>
         </Select>
-        <Input type="number" value={kwh} onChange={(e) => setKwh(+e.target.value)} placeholder="kWh" />
+        <Input type="number" value={kwh} onChange={(e) => setKwh(+e.target.value)} placeholder="kWh" aria-label="kWh" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => finance.tariff(cat, kwh))}>Compute Bill</Btn>
       <Result {...t} />
@@ -298,16 +301,16 @@ const HourlyTool = () => {
   return (
     <Card>
       <CardH>Hourly Production Simulation</CardH>
-      <CardSub>Sun → POA → Tcell → DC → AC, NREL SAM losses</CardSub>
+      <CardSub>Clear-sky estimate for one day (synthetic sunshine, no cloud), so it reads high in rainy months. Use the calculator for yearly energy from NASA sun-hours.</CardSub>
       <Row>
-        <Input type="number" value={p.lat} onChange={(e) => setP({ ...p, lat: +e.target.value })} placeholder="lat" />
-        <Input type="number" value={p.lon} onChange={(e) => setP({ ...p, lon: +e.target.value })} placeholder="lon" />
+        <Input type="number" value={p.lat} onChange={(e) => setP({ ...p, lat: +e.target.value })} placeholder="lat" aria-label="lat" />
+        <Input type="number" value={p.lon} onChange={(e) => setP({ ...p, lon: +e.target.value })} placeholder="lon" aria-label="lon" />
       </Row>
       <Row>
-        <Input value={p.dateISO} onChange={(e) => setP({ ...p, dateISO: e.target.value })} placeholder="YYYY-MM-DD" />
-        <Input type="number" value={p.tilt} onChange={(e) => setP({ ...p, tilt: +e.target.value })} placeholder="tilt°" />
-        <Input type="number" value={p.azimuth} onChange={(e) => setP({ ...p, azimuth: +e.target.value })} placeholder="azimuth°" />
-        <Input type="number" value={p.systemKwStc} onChange={(e) => setP({ ...p, systemKwStc: +e.target.value })} placeholder="kWp" />
+        <Input value={p.dateISO} onChange={(e) => setP({ ...p, dateISO: e.target.value })} placeholder="YYYY-MM-DD" aria-label="YYYY-MM-DD" />
+        <Input type="number" value={p.tilt} onChange={(e) => setP({ ...p, tilt: +e.target.value })} placeholder="tilt°" aria-label="tilt°" />
+        <Input type="number" value={p.azimuth} onChange={(e) => setP({ ...p, azimuth: +e.target.value })} placeholder="azimuth°" aria-label="azimuth°" />
+        <Input type="number" value={p.systemKwStc} onChange={(e) => setP({ ...p, systemKwStc: +e.target.value })} placeholder="kWp" aria-label="kWp" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => solar.hourly(p))}>Simulate Day</Btn>
       <Result {...t} />
@@ -325,16 +328,19 @@ const StringConfigTool = () => {
   return (
     <Card>
       <CardH>String Configuration</CardH>
-      <CardSub>IEC 62548 with temperature coefficients</CardSub>
+      <CardSub>IEC 62548: cold Voc under the inverter maximum, cold Vmp inside the MPPT window, 1.25 × Isc per string</CardSub>
       <Row>
-        <Input type="number" value={p.panelVocStc} onChange={upd('panelVocStc')} placeholder="Panel Voc" />
-        <Input type="number" value={p.panelVmppStc} onChange={upd('panelVmppStc')} placeholder="Panel Vmpp" />
-        <Input type="number" value={p.panelIscStc} onChange={upd('panelIscStc')} placeholder="Panel Isc" />
+        <Input type="number" value={p.panelVocStc} onChange={upd('panelVocStc')} placeholder="Panel Voc" aria-label="Panel Voc" />
+        <Input type="number" value={p.panelVmppStc} onChange={upd('panelVmppStc')} placeholder="Panel Vmpp" aria-label="Panel Vmpp" />
+        <Input type="number" value={p.panelIscStc} onChange={upd('panelIscStc')} placeholder="Panel Isc" aria-label="Panel Isc" />
       </Row>
       <Row>
-        <Input type="number" value={p.inverterMaxDcV} onChange={upd('inverterMaxDcV')} placeholder="Inv max DC V" />
-        <Input type="number" value={p.inverterMpptMinV} onChange={upd('inverterMpptMinV')} placeholder="MPPT min" />
-        <Input type="number" value={p.inverterMaxInputA} onChange={upd('inverterMaxInputA')} placeholder="Max input A" />
+        <Input type="number" value={p.inverterMaxDcV} onChange={upd('inverterMaxDcV')} placeholder="Inv max DC V" aria-label="Inv max DC V" />
+        <Input type="number" value={p.inverterMpptMinV} onChange={upd('inverterMpptMinV')} placeholder="MPPT min V" aria-label="MPPT min V" />
+        <Input type="number" value={p.inverterMpptMaxV} onChange={upd('inverterMpptMaxV')} placeholder="MPPT max V" aria-label="MPPT max V" />
+      </Row>
+      <Row>
+        <Input type="number" value={p.inverterMaxInputA} onChange={upd('inverterMaxInputA')} placeholder="Max input A per MPPT" aria-label="Max input A per MPPT" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => solar.stringConfig(p))}>Compute</Btn>
       <Result {...t} />
@@ -351,8 +357,8 @@ const InverterMatchTool = () => {
       <CardH>Inverter Match Check</CardH>
       <CardSub>DC/AC ratio with verdict</CardSub>
       <Row>
-        <Input type="number" value={pv} onChange={(e) => setPv(+e.target.value)} placeholder="PV kWp" />
-        <Input type="number" value={inv} onChange={(e) => setInv(+e.target.value)} placeholder="Inverter kW" />
+        <Input type="number" value={pv} onChange={(e) => setPv(+e.target.value)} placeholder="PV kWp" aria-label="PV kWp" />
+        <Input type="number" value={inv} onChange={(e) => setInv(+e.target.value)} placeholder="Inverter kW" aria-label="Inverter kW" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => solar.inverterMatch({ pvKwStc: pv, inverterAcKw: inv }))}>Check</Btn>
       <Result {...t} />
@@ -370,7 +376,7 @@ const CarbonFootprintTool = () => {
       <CardH>Carbon Footprint</CardH>
       <CardSub>IEA 2024 grid factors (11 countries)</CardSub>
       <Row>
-        <Input type="number" value={k} onChange={(e) => setK(+e.target.value)} placeholder="Annual kWh" />
+        <Input type="number" value={k} onChange={(e) => setK(+e.target.value)} placeholder="Annual kWh" aria-label="Annual kWh" />
         <Select value={c} onChange={(e) => setC(e.target.value)}>
           {['KE','UG','TZ','RW','ET','NG','ZA','EG','MA','GH','GLOBAL_AVG'].map((x) => <option key={x}>{x}</option>)}
         </Select>
@@ -391,11 +397,11 @@ const SolarOffsetTool = () => {
       <CardH>Solar Offset (Lifetime)</CardH>
       <CardSub>Net of UNECE PV LCA</CardSub>
       <Row>
-        <Input type="number" value={k} onChange={(e) => setK(+e.target.value)} placeholder="Annual PV kWh" />
+        <Input type="number" value={k} onChange={(e) => setK(+e.target.value)} placeholder="Annual PV kWh" aria-label="Annual PV kWh" />
         <Select value={c} onChange={(e) => setC(e.target.value)}>
           {['KE','UG','TZ','ZA','GLOBAL_AVG'].map((x) => <option key={x}>{x}</option>)}
         </Select>
-        <Input type="number" value={y} onChange={(e) => setY(+e.target.value)} placeholder="Years" />
+        <Input type="number" value={y} onChange={(e) => setY(+e.target.value)} placeholder="Years" aria-label="Years" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => sustain.solarOffset(k, c, y))}>Compute</Btn>
       <Result {...t} />
@@ -415,7 +421,7 @@ const EvTool = () => {
         <Select value={v} onChange={(e) => setV(e.target.value)}>
           {['compact_ev','sedan_ev','suv_ev','pickup_ev','twowheel_ev','tuktuk_ev','minibus_ev','matatu_ev'].map((x) => <option key={x}>{x}</option>)}
         </Select>
-        <Input type="number" value={km} onChange={(e) => setKm(+e.target.value)} placeholder="km/day" />
+        <Input type="number" value={km} onChange={(e) => setKm(+e.target.value)} placeholder="km/day" aria-label="km/day" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => sustain.evCharging({ vehicleType: v, kmPerDay: km }))}>Size</Btn>
       <Result {...t} />
@@ -432,12 +438,12 @@ const MicrogridTool = () => {
       <CardH>Microgrid Sizing</CardH>
       <CardSub>HOMER Pro / NREL daily-balance</CardSub>
       <Row>
-        <Input type="number" value={p.households} onChange={upd('households')} placeholder="Households" />
-        <Input type="number" value={p.avgDailyKwhPerHousehold} onChange={upd('avgDailyKwhPerHousehold')} placeholder="kWh/day each" />
+        <Input type="number" value={p.households} onChange={upd('households')} placeholder="Households" aria-label="Households" />
+        <Input type="number" value={p.avgDailyKwhPerHousehold} onChange={upd('avgDailyKwhPerHousehold')} placeholder="kWh/day each" aria-label="kWh/day each" />
       </Row>
       <Row>
-        <Input type="number" value={p.productiveLoadKwh} onChange={upd('productiveLoadKwh')} placeholder="Productive kWh" />
-        <Input type="number" value={p.peakKwLoad} onChange={upd('peakKwLoad')} placeholder="Peak kW" />
+        <Input type="number" value={p.productiveLoadKwh} onChange={upd('productiveLoadKwh')} placeholder="Productive kWh" aria-label="Productive kWh" />
+        <Input type="number" value={p.peakKwLoad} onChange={upd('peakKwLoad')} placeholder="Peak kW" aria-label="Peak kW" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => sustain.microgrid(p))}>Size Microgrid</Btn>
       <Result {...t} />
@@ -454,8 +460,8 @@ const DieselVsSolarTool = () => {
       <CardH>Diesel vs Solar TCO</CardH>
       <CardSub>EPRA fuel + DEFRA CO2 + NPV</CardSub>
       <Row>
-        <Input type="number" value={p.annualKwh} onChange={upd('annualKwh')} placeholder="Annual kWh" />
-        <Input type="number" value={p.pvCapexKes} onChange={upd('pvCapexKes')} placeholder="PV CAPEX KES" />
+        <Input type="number" value={p.annualKwh} onChange={upd('annualKwh')} placeholder="Annual kWh" aria-label="Annual kWh" />
+        <Input type="number" value={p.pvCapexKes} onChange={upd('pvCapexKes')} placeholder="PV CAPEX KES" aria-label="PV CAPEX KES" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => sustain.dieselVsSolar(p))}>Compare</Btn>
       <Result {...t} />
@@ -483,7 +489,7 @@ const ProposalPdfTool = () => {
     <Card>
       <CardH>Sample Proposal PDF</CardH>
       <CardSub>Shows the proposal layout with a fixed example design (6.8 kWp, Nairobi). It is not built from your inputs and is not a quotation.</CardSub>
-      <Row><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Customer name" /></Row>
+      <Row><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Customer name" aria-label="Customer name" /></Row>
       <Btn disabled={t.busy} onClick={() => t.run(generate)}>Generate &amp; Download PDF</Btn>
       <Result {...t} />
     </Card>
@@ -524,10 +530,10 @@ const SchematicTool = () => {
       <CardH>Single-Line Schematic</CardH>
       <CardSub>IEC 60617 ASCII + nodes/edges JSON</CardSub>
       <Row>
-        <Input type="number" value={p.panels} onChange={upd('panels')} placeholder="Panels" />
-        <Input type="number" value={p.panelW} onChange={upd('panelW')} placeholder="W each" />
-        <Input type="number" value={p.inverterKw} onChange={upd('inverterKw')} placeholder="Inv kW" />
-        <Input type="number" value={p.batteryKwh} onChange={upd('batteryKwh')} placeholder="Bat kWh" />
+        <Input type="number" value={p.panels} onChange={upd('panels')} placeholder="Panels" aria-label="Panels" />
+        <Input type="number" value={p.panelW} onChange={upd('panelW')} placeholder="W each" aria-label="W each" />
+        <Input type="number" value={p.inverterKw} onChange={upd('inverterKw')} placeholder="Inv kW" aria-label="Inv kW" />
+        <Input type="number" value={p.batteryKwh} onChange={upd('batteryKwh')} placeholder="Bat kWh" aria-label="Bat kWh" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => reports.schematic(p))}>Generate</Btn>
       <Result {...t} />
@@ -545,12 +551,12 @@ const LeadCaptureTool = () => {
       <CardH>Capture Lead</CardH>
       <CardSub>Persisted to data/business.json</CardSub>
       <Row>
-        <Input placeholder="Name" value={p.name} onChange={upd('name')} />
-        <Input placeholder="Email" value={p.email} onChange={upd('email')} />
+        <Input placeholder="Name" aria-label="Name" value={p.name} onChange={upd('name')} />
+        <Input placeholder="Email" aria-label="Email" value={p.email} onChange={upd('email')} />
       </Row>
       <Row>
-        <Input placeholder="Phone" value={p.phone} onChange={upd('phone')} />
-        <Input type="number" placeholder="Monthly bill KES" value={p.monthlyBillKes} onChange={(e) => setP({ ...p, monthlyBillKes: +e.target.value })} />
+        <Input placeholder="Phone" aria-label="Phone" value={p.phone} onChange={upd('phone')} />
+        <Input type="number" placeholder="Monthly bill KES" aria-label="Monthly bill KES" value={p.monthlyBillKes} onChange={(e) => setP({ ...p, monthlyBillKes: +e.target.value })} />
       </Row>
       <Btn disabled={t.busy || !p.name || (!p.email && !p.phone)} onClick={() => t.run(() => biz.captureLead(p))}>Capture</Btn>
       <Result {...t} />
@@ -577,7 +583,7 @@ const ConversionTool = () => {
     <Card>
       <CardH>Conversion Funnel</CardH>
       <CardSub>From event log (real)</CardSub>
-      <Row><Input type="number" value={d} onChange={(e) => setD(+e.target.value)} placeholder="Days" /></Row>
+      <Row><Input type="number" value={d} onChange={(e) => setD(+e.target.value)} placeholder="Days" aria-label="Days" /></Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => biz.conversion(d))}>Compute Funnel</Btn>
       <Result {...t} />
     </Card>
@@ -629,12 +635,12 @@ const ShadingTool = () => {
       <CardH>OSM Shading Analyzer</CardH>
       <CardSub>Free: OpenStreetMap buildings + sun geometry</CardSub>
       <Row>
-        <Input type="number" value={p.lat} onChange={(e) => setP({ ...p, lat: +e.target.value })} placeholder="lat" />
-        <Input type="number" value={p.lon} onChange={(e) => setP({ ...p, lon: +e.target.value })} placeholder="lon" />
+        <Input type="number" value={p.lat} onChange={(e) => setP({ ...p, lat: +e.target.value })} placeholder="lat" aria-label="lat" />
+        <Input type="number" value={p.lon} onChange={(e) => setP({ ...p, lon: +e.target.value })} placeholder="lon" aria-label="lon" />
       </Row>
       <Row>
-        <Input value={p.dateISO} onChange={(e) => setP({ ...p, dateISO: e.target.value })} placeholder="YYYY-MM-DD" />
-        <Input type="number" value={p.radiusMeters} onChange={(e) => setP({ ...p, radiusMeters: +e.target.value })} placeholder="radius m" />
+        <Input value={p.dateISO} onChange={(e) => setP({ ...p, dateISO: e.target.value })} placeholder="YYYY-MM-DD" aria-label="YYYY-MM-DD" />
+        <Input type="number" value={p.radiusMeters} onChange={(e) => setP({ ...p, radiusMeters: +e.target.value })} placeholder="radius m" aria-label="radius m" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => research.satelliteShading(p))}>Analyze (slow first call)</Btn>
       <Result {...t} />
@@ -649,7 +655,7 @@ const NlpTool = () => {
     <Card>
       <CardH>NL Solar Advisor</CardH>
       <CardSub>Free: keyword-intent rule engine (no LLM)</CardSub>
-      <Row><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask anything..." /></Row>
+      <Row><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask anything..." aria-label="Ask anything..." /></Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => research.nlpAdvisor(q))}>Ask</Btn>
       <Result {...t} />
     </Card>
@@ -667,7 +673,7 @@ const FaultDetectTool = () => {
     <Card>
       <CardH>Fault Anomaly Detection</CardH>
       <CardSub>Free: EWMA + z-score (Hunter 1986)</CardSub>
-      <Row><Input value={csv} onChange={(e) => setCsv(e.target.value)} placeholder="comma-separated values" /></Row>
+      <Row><Input value={csv} onChange={(e) => setCsv(e.target.value)} placeholder="comma-separated values" aria-label="comma-separated values" /></Row>
       <Btn disabled={t.busy} onClick={() => t.run(run)}>Detect</Btn>
       <Result {...t} />
     </Card>
@@ -684,10 +690,10 @@ const ForecastTool = () => {
     <Card>
       <CardH>Load Forecast (Holt-Winters)</CardH>
       <CardSub>Free: triple exponential smoothing</CardSub>
-      <Row><Input value={csv} onChange={(e) => setCsv(e.target.value)} placeholder="historical kWh series" /></Row>
+      <Row><Input value={csv} onChange={(e) => setCsv(e.target.value)} placeholder="historical kWh series" aria-label="historical kWh series" /></Row>
       <Row>
-        <Input type="number" value={season} onChange={(e) => setSeason(+e.target.value)} placeholder="season" />
-        <Input type="number" value={horizon} onChange={(e) => setHorizon(+e.target.value)} placeholder="horizon" />
+        <Input type="number" value={season} onChange={(e) => setSeason(+e.target.value)} placeholder="season" aria-label="season" />
+        <Input type="number" value={horizon} onChange={(e) => setHorizon(+e.target.value)} placeholder="horizon" aria-label="horizon" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(run)}>Forecast</Btn>
       <Result {...t} />
@@ -707,7 +713,7 @@ const TouTool = () => {
     <Card>
       <CardH>TOU Battery Dispatch</CardH>
       <CardSub>Free: deterministic peak/off-peak heuristic (NREL REopt)</CardSub>
-      <Row><Input type="number" value={batt} onChange={(e) => setBatt(+e.target.value)} placeholder="Battery kWh" /></Row>
+      <Row><Input type="number" value={batt} onChange={(e) => setBatt(+e.target.value)} placeholder="Battery kWh" aria-label="Battery kWh" /></Row>
       <Btn disabled={t.busy} onClick={() => t.run(run)}>Compute Schedule</Btn>
       <Result {...t} />
     </Card>
@@ -725,11 +731,11 @@ const PermitTool = () => {
         <Select value={p.country} onChange={(e) => setP({ ...p, country: e.target.value })}>
           {['KE','UG','TZ','RW'].map(x=><option key={x}>{x}</option>)}
         </Select>
-        <Input type="number" value={p.projectKw} onChange={(e) => setP({ ...p, projectKw: +e.target.value })} placeholder="kWp" />
+        <Input type="number" value={p.projectKw} onChange={(e) => setP({ ...p, projectKw: +e.target.value })} placeholder="kWp" aria-label="kWp" />
       </Row>
       <Row>
-        <Input value={p.customerName} onChange={(e) => setP({ ...p, customerName: e.target.value })} placeholder="Customer" />
-        <Input value={p.siteAddress} onChange={(e) => setP({ ...p, siteAddress: e.target.value })} placeholder="Site" />
+        <Input value={p.customerName} onChange={(e) => setP({ ...p, customerName: e.target.value })} placeholder="Customer" aria-label="Customer" />
+        <Input value={p.siteAddress} onChange={(e) => setP({ ...p, siteAddress: e.target.value })} placeholder="Site" aria-label="Site" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => research.permitPack(p))}>Generate Pack</Btn>
       <Result {...t} />
@@ -744,7 +750,7 @@ const PanelCountTool = () => {
     <Card>
       <CardH>Panel Counter (Roof Area)</CardH>
       <CardSub>Free: IEC 62548 packing-factor geometry</CardSub>
-      <Row><Input type="number" value={area} onChange={(e) => setArea(+e.target.value)} placeholder="Roof area m²" /></Row>
+      <Row><Input type="number" value={area} onChange={(e) => setArea(+e.target.value)} placeholder="Roof area m²" aria-label="Roof area m²" /></Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => research.panelCounter({ roofAreaM2: area }))}>Count</Btn>
       <Result {...t} />
     </Card>
@@ -759,14 +765,14 @@ const SoilingTool = () => {
       <CardH>Real Soiling (Open-Meteo + Kimber)</CardH>
       <CardSub>Free: weather archive → cleaning event detection</CardSub>
       <Row>
-        <Input type="number" value={p.lat} onChange={(e) => setP({ ...p, lat: +e.target.value })} placeholder="lat" />
-        <Input type="number" value={p.lon} onChange={(e) => setP({ ...p, lon: +e.target.value })} placeholder="lon" />
+        <Input type="number" value={p.lat} onChange={(e) => setP({ ...p, lat: +e.target.value })} placeholder="lat" aria-label="lat" />
+        <Input type="number" value={p.lon} onChange={(e) => setP({ ...p, lon: +e.target.value })} placeholder="lon" aria-label="lon" />
       </Row>
       <Row>
         <Select value={p.climate} onChange={(e) => setP({ ...p, climate: e.target.value })}>
           {['arid','semiarid','tropical','temperate'].map(x=><option key={x}>{x}</option>)}
         </Select>
-        <Input type="number" value={p.days} onChange={(e) => setP({ ...p, days: +e.target.value })} placeholder="days" />
+        <Input type="number" value={p.days} onChange={(e) => setP({ ...p, days: +e.target.value })} placeholder="days" aria-label="days" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => research.satelliteSoiling(p))}>Analyze</Btn>
       <Result {...t} />
@@ -782,9 +788,9 @@ const YieldValTool = () => {
       <CardH>Yield Validation vs NASA POWER</CardH>
       <CardSub>Free: NASA POWER monthly GHI climatology</CardSub>
       <Row>
-        <Input type="number" value={p.lat} onChange={(e) => setP({ ...p, lat: +e.target.value })} placeholder="lat" />
-        <Input type="number" value={p.lon} onChange={(e) => setP({ ...p, lon: +e.target.value })} placeholder="lon" />
-        <Input type="number" value={p.systemKwStc} onChange={(e) => setP({ ...p, systemKwStc: +e.target.value })} placeholder="kWp" />
+        <Input type="number" value={p.lat} onChange={(e) => setP({ ...p, lat: +e.target.value })} placeholder="lat" aria-label="lat" />
+        <Input type="number" value={p.lon} onChange={(e) => setP({ ...p, lon: +e.target.value })} placeholder="lon" aria-label="lon" />
+        <Input type="number" value={p.systemKwStc} onChange={(e) => setP({ ...p, systemKwStc: +e.target.value })} placeholder="kWp" aria-label="kWp" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => research.yieldValidation(p))}>Compare</Btn>
       <Result {...t} />
@@ -801,12 +807,12 @@ const EvRouteTool = () => {
       <CardH>EV Route Energy (OSRM)</CardH>
       <CardSub>Free: OSRM demo router + EV-Database 2024</CardSub>
       <Row>
-        <Input type="number" value={p.from.lat} onChange={(e) => setP({ ...p, from: { ...p.from, lat: +e.target.value } })} placeholder="from lat" />
-        <Input type="number" value={p.from.lon} onChange={(e) => setP({ ...p, from: { ...p.from, lon: +e.target.value } })} placeholder="from lon" />
+        <Input type="number" value={p.from.lat} onChange={(e) => setP({ ...p, from: { ...p.from, lat: +e.target.value } })} placeholder="from lat" aria-label="from lat" />
+        <Input type="number" value={p.from.lon} onChange={(e) => setP({ ...p, from: { ...p.from, lon: +e.target.value } })} placeholder="from lon" aria-label="from lon" />
       </Row>
       <Row>
-        <Input type="number" value={p.to.lat} onChange={(e) => setP({ ...p, to: { ...p.to, lat: +e.target.value } })} placeholder="to lat" />
-        <Input type="number" value={p.to.lon} onChange={(e) => setP({ ...p, to: { ...p.to, lon: +e.target.value } })} placeholder="to lon" />
+        <Input type="number" value={p.to.lat} onChange={(e) => setP({ ...p, to: { ...p.to, lat: +e.target.value } })} placeholder="to lat" aria-label="to lat" />
+        <Input type="number" value={p.to.lon} onChange={(e) => setP({ ...p, to: { ...p.to, lon: +e.target.value } })} placeholder="to lon" aria-label="to lon" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(run)}>Route</Btn>
       <Result {...t} />
@@ -822,10 +828,10 @@ const MqttTool = () => {
       <CardH>IoT Live MQTT Subscribe</CardH>
       <CardSub>Free: any MQTT broker (HiveMQ, Mosquitto demo)</CardSub>
       <Row>
-        <Input value={p.brokerUrl} onChange={(e) => setP({ ...p, brokerUrl: e.target.value })} placeholder="broker URL" />
+        <Input value={p.brokerUrl} onChange={(e) => setP({ ...p, brokerUrl: e.target.value })} placeholder="broker URL" aria-label="broker URL" />
       </Row>
       <Row>
-        <Input value={p.topic} onChange={(e) => setP({ ...p, topic: e.target.value })} placeholder="topic" />
+        <Input value={p.topic} onChange={(e) => setP({ ...p, topic: e.target.value })} placeholder="topic" aria-label="topic" />
       </Row>
       <Row>
         <Btn disabled={t.busy} onClick={() => t.run(() => research.mqttConnect(p))}>Connect</Btn>

@@ -1,48 +1,42 @@
 import type { Metadata } from 'next';
 
+/*
+ * 2026-10-25 audit: the metadata named another organisation ("Oracle Heavy
+ * Plant & Equipment", oracleheavyplant.com) as the provider of this page,
+ * promised "AI-powered failure prediction", and pointed at an Open Graph image
+ * that does not exist. It now describes this page, provided by EmersonEIMS.
+ */
+const DESCRIPTION =
+  'Generator maintenance companion: repair guides, a parts catalogue, an efficiency calculator and repair-or-replace costing, written by EmersonEIMS engineers in Kenya.';
+
 export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend
   // on the root layout reading headers() — that call forced the whole site
   // to render dynamically and disabled browser caching everywhere.
   alternates: { canonical: 'https://www.emersoneims.com/generators/maintenance-companion' },
-  title: 'Generator Maintenance AI Companion',
-  description: 'Your complete AI-powered generator maintenance companion. Repair guides, parts catalog, predictive failure analysis, efficiency calculator, and financial dashboard. The ultimate fusion of repair manual, parts manual, and AI diagnostics.',
+  title: 'Generator Maintenance Companion',
+  description: DESCRIPTION,
   keywords: [
     'generator maintenance',
     'generator repair guide',
     'generator parts catalog',
-    'predictive maintenance',
     'generator efficiency calculator',
-    'generator ROI analysis',
     'generator troubleshooting',
     'diesel generator service',
     'generator fault diagnosis',
-    'generator schematic',
-    'Cummins maintenance',
-    'Caterpillar generator parts',
-    'Perkins service manual',
     'Kenya generator service',
-    'Africa generator maintenance'
   ],
   openGraph: {
-    title: 'Generator Maintenance AI Companion | Oracle Heavy Plant',
-    description: 'The ultimate AI-powered generator maintenance platform. Repair guides, parts catalog, predictive analysis, and financial intelligence.',
+    title: 'Generator Maintenance Companion | EmersonEIMS',
+    description: DESCRIPTION,
     type: 'website',
     locale: 'en_KE',
-    images: [
-      {
-        url: '/images/maintenance-companion-og.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Generator Maintenance AI Companion'
-      }
-    ]
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Generator Maintenance AI Companion',
-    description: 'Complete AI-powered maintenance platform for generators'
-  }
+    card: 'summary',
+    title: 'Generator Maintenance Companion',
+    description: DESCRIPTION,
+  },
 };
 
 export default function MaintenanceCompanionLayout({
@@ -59,30 +53,27 @@ export default function MaintenanceCompanionLayout({
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebApplication',
-            name: 'Generator Maintenance AI Companion',
-            applicationCategory: 'MaintenanceApplication',
-            description: 'AI-powered generator maintenance companion with repair guides, parts catalog, predictive analysis, and financial dashboard',
+            name: 'Generator Maintenance Companion',
+            applicationCategory: 'BusinessApplication',
+            description: DESCRIPTION,
             offers: {
               '@type': 'Offer',
               price: '0',
-              priceCurrency: 'KES'
+              priceCurrency: 'KES',
             },
             operatingSystem: 'Web Browser',
             provider: {
               '@type': 'Organization',
-              name: 'Oracle Heavy Plant & Equipment',
-              url: 'https://oracleheavyplant.com'
+              name: 'EmersonEIMS',
+              url: 'https://www.emersoneims.com',
             },
             featureList: [
-              'AI-powered failure prediction',
-              'Interactive schematic diagrams',
               'Step-by-step repair guides',
-              'Comprehensive parts catalog',
-              'Real-time efficiency calculator',
-              'Repair vs replace analysis',
-              'ROI tracking and projections'
-            ]
-          })
+              'Parts catalogue',
+              'Efficiency calculator',
+              'Repair vs replace costing',
+            ],
+          }),
         }}
       />
       {children}

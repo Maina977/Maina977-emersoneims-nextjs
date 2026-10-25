@@ -152,7 +152,7 @@ const TOOLS: Record<string, ToolCopy> = {
   'ai-tools': {
     h2: 'EmersonEIMS AI Tools — Free Engineering Intelligence for Power, Water & Solar',
     intro:
-      'A suite of free AI-powered engineering tools built for the Kenyan and East African market: AquaScan Pro for boreholes and groundwater, Generator Oracle for diagnostics, SolarGenius Pro for solar design, BuildingPro for construction services, plus calculators, diagnostics and maintenance planners.',
+      'A suite of free engineering tools built for the Kenyan and East African market: AquaScan Pro for boreholes and groundwater, Generator Oracle for diagnostics, SolarGenius Pro for solar design, BuildingPro for construction services, plus calculators, diagnostics and maintenance planners.',
     capabilities: [
       'AquaScan Pro — desktop borehole pre-feasibility with audited, verifiable reports',
       'Generator Oracle — brand-specific generator fault diagnosis and maintenance guidance',

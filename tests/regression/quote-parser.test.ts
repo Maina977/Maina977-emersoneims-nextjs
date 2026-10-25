@@ -44,3 +44,16 @@ describe('CSV quotes and ratings (2026-10-20 audit round 3)', () => {
     expect(readRating('DC cabling and isolators').kind).toBeNull();
   });
 });
+
+describe('Kenyan quote formats (2026-10-25 audit round 4)', () => {
+  it('skips subtotal, VAT, total and payment terms', () => {
+    const lines = parseLines('Panels 580W x 10 @ 12500\nSubtotal 295000\nVAT 16% 47200\nTOTAL KES 342,200\nPay within 30 days');
+    expect(lines).toHaveLength(1);
+    expect(lines[0].unitPriceKes).toBe(12500);
+  });
+  it('reads 48V 100Ah, kVA and "watts"', () => {
+    expect(readRating('48V 100Ah lithium battery')).toMatchObject({ kind: 'battery', kwh: 4.8 });
+    expect(readRating('3.5kVA off-grid inverter')).toMatchObject({ kind: 'inverter', kw: 3.5 });
+    expect(readRating('450 watts mono panel')).toMatchObject({ kind: 'panel', w: 450 });
+  });
+});

@@ -12,6 +12,9 @@
  */
 
 /** USD per metre by ground type. */
+/** One KSh/USD rate for the web page and the PDF (2026-10-25 audit: 130 vs 129). Indicative; update annually. */
+export const KES_PER_USD = 129;
+
 export const DRILL_RATE_USD_PER_M: Record<string, number> = {
   sandy: 100, silty: 88, clay: 82, loamy: 72, laterite: 66, rocky: 62, unknown: 75,
 };
@@ -45,7 +48,10 @@ export function kmFromBase(lat?: number, lon?: number): number | null {
  */
 export function mobilisationUSD(lat?: number, lon?: number): number {
   const km = kmFromBase(lat, lon) ?? 250;
-  return Math.round(3 * Math.max(0, km - 50));
+  const usd = Math.round(3 * Math.max(0, km - 50));
+  // A few extra kilometres are absorbed in the drilling rate; a "$15" line is
+  // noise (2026-10-25 audit, Machakos).
+  return usd < 100 ? 0 : usd;
 }
 
 /** County rate band from an analysis result, if the county record has one. */

@@ -71,7 +71,10 @@ function j1939AsFaultCode(c: J1939FaultCode): ControllerFaultCode {
     category: c.category,
     subcategory: c.category,
     severity: c.severity,
-    alarmType: c.severity === 'shutdown' ? 'shutdown' : c.severity === 'critical' ? 'trip' : 'warning',
+    // A J1939 diagnostic reports a condition; whether the set trips is the
+    // controller's configuration. Only codes that ARE a shutdown say so
+    // (2026-10-25 audit: "Approaching Shutdown" was labelled a trip).
+    alarmType: c.severity === 'shutdown' ? 'shutdown' : 'warning',
     title: c.title,
     description: c.description,
     triggerParameters: [],
@@ -126,7 +129,8 @@ export function normalizeCodeQuery(q: string): string | null {
   const s = q.trim().toUpperCase();
   let m = s.match(/^MID\s*[:#-]?\s*(\d+)\s*[,/-]?\s*PID\s*[:#-]?\s*(\d+)\s*[,/-]?\s*FMI\s*[:#-]?\s*(\d+)$/);
   if (m) return `MID${+m[1]}-PID${+m[2]}-FMI${+m[3]}`;
-  m = s.match(/^SPN\s*[:#-]?\s*(\d+)\s*(?:[,/-]|\s)\s*(?:FMI\s*[:#-]?\s*)?(\d+)$/);
+  // "SPN629FMI12" (no separator) is written down as often as "SPN 629 FMI 12".
+  m = s.match(/^SPN\s*[:#-]?\s*(\d+)\s*(?:[,/-]\s*|\s+|(?=FMI))(?:FMI\s*[:#-]?\s*)?(\d+)$/);
   if (m) return `SPN${+m[1]}-FMI${+m[2]}`;
   m = s.match(/^(\d{1,6})\s*[/-]\s*(\d{1,2})$/); // "100-1", "100/1"
   if (m) return `SPN${+m[1]}-FMI${+m[2]}`;
@@ -374,6 +378,14 @@ export function searchIndex(opts: SearchOptions): SearchResponse {
   if (maker) {
     const mapped = MAKER_CODE_TO_J1939[`${maker[1].toLowerCase()} ${maker[2]}`];
     if (mapped) return { ...searchIndex({ ...opts, query: mapped }), query: (opts.query || '').trim(), interpretedAs: `${maker[1]} ${maker[2]} = ${mapped}` };
+    // A maker's fault number we have not mapped is "not found", never the whole
+    // catalogue: "Cummins 146" returned 896 rows led by SPN 100 (2026-10-25 audit).
+    const pageSize = Math.max(1, Math.min(100, Math.floor(opts.pageSize ?? 20)));
+    return {
+      query: (opts.query || '').trim(), interpretedAs: null,
+      filters: { brand: opts.brand, model: opts.model, severity: opts.severity, category: opts.category, verifiedOnly: opts.verifiedOnly },
+      page: 1, pageSize, total: 0, totalPages: 1, results: [], source: 'index',
+    };
   }
   const typed = (opts.query || '').trim();
   const syn = SEARCH_SYNONYMS[typed.toLowerCase()];
@@ -395,14 +407,24 @@ function searchIndexRaw(opts: SearchOptions): SearchResponse {
   const parsed = !canonical && /\s/.test(q) ? parseWords(q) : null;
   if (parsed && (parsed.brand || parsed.words.length > 1)) {
     const pool = parsed.brand ? base.filter((c) => c.brand.toLowerCase() === parsed.brand) : base;
+    // Title words count first: a word at the start of a title word ("speed" in
+    // "Over Speed", not in "Underspeed") says what the alarm is; prose only
+    // mentions it (2026-10-25 audit: "Loss of speed signal" led with an
+    // overvoltage alarm, "Over speed" listed Underspeed second).
+    const esc = (w: string) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const wordRes = parsed.words.map((w) => new RegExp(`\\b${esc(w)}`));
     const scored = pool.map((c) => {
       const h = haystack(c);
-      return { c, hits: parsed.words.filter((w) => h.includes(w)).length };
+      const t = c.title.toLowerCase();
+      return { c, hits: parsed.words.filter((w) => h.includes(w)).length, titleHits: wordRes.filter((re) => re.test(t)).length };
     });
     const need = parsed.words.length;
-    const all = scored.filter((s) => s.hits === need);
-    // Nothing matches every word: show the closest (at least half the words).
-    const best = all.length ? all : scored.filter((s) => need > 0 && s.hits >= Math.ceil(need / 2)).sort((a, b) => b.hits - a.hits);
+    const byTitle = (a: { hits: number; titleHits: number }, b: { hits: number; titleHits: number }) => b.titleHits - a.titleHits || b.hits - a.hits;
+    // Every word somewhere is not enough when none of them is in the title.
+    const all = scored.filter((s) => s.hits === need && (s.titleHits > 0 || need === 1)).sort(byTitle);
+    // Nothing matches every word: show the closest (at least half the words,
+    // and at least one of them in the title).
+    const best = all.length ? all : scored.filter((s) => need > 0 && s.hits >= Math.ceil(need / 2) && s.titleHits > 0).sort(byTitle);
     filtered = (need === 0 ? pool : best.map((s) => s.c));
   } else {
     filtered = query ? base.filter((c) => matchesQuery(c, q, canonical)) : base;
@@ -649,8 +671,8 @@ function containsPair(seq: string[], [a, b]: [string, string]): boolean {
 /** Generator-side Repair Centre hubs; solar, UPS etc. are out of scope for the Oracle. */
 const GENERATOR_HUBS = new Set(['generators', 'engine-systems', 'fuel-systems', 'controllers', 'fault-codes', 'ats-changeover']);
 
-function rankGuides(terms: string[], pairs: [string, string][]): RankedGuide[] {
-  const out: RankedGuide[] = [];
+function rankGuides(terms: string[], pairs: [string, string][], expanded: Set<string> = new Set()): RankedGuide[] {
+  const out: (RankedGuide & { titleHit: boolean })[] = [];
   for (const a of REPAIR_ARTICLES as RepairArticle[]) {
     if (!GENERATOR_HUBS.has(a.hub)) continue;
     const title = words(a.header.title);
@@ -673,9 +695,20 @@ function rankGuides(terms: string[], pairs: [string, string][]): RankedGuide[] {
       if (containsPair(title, p)) score += 6;
       else if (containsPair(symWords, p) || containsPair(body, p)) score += 4;
     }
-    // A guide must match more than one weak word to be worth showing.
+    // Synonyms ("fluctuating" -> unstable, hunting) count at half weight.
+    for (const x of expanded) {
+      if (titleSet.has(x)) score += 2;
+      else if (symSet.has(x)) score += 1;
+    }
+    // A guide must match more than one weak word to be worth showing, and
+    // must name the problem in its title or symptom list, not only in its
+    // body (2026-10-25 audit: "overheating" listed Low Oil Pressure Shutdown).
     const enough = matched.length >= Math.min(2, terms.length) || score >= 6;
-    if (score > 0 && enough) {
+    const strong = terms.some((x) => titleSet.has(x) || symSet.has(x))
+      || pairs.some((p) => containsPair(title, p) || containsPair(symWords, p))
+      || [...expanded].some((x) => titleSet.has(x));
+    const titleHit = terms.some((x) => titleSet.has(x)) || [...expanded].some((x) => titleSet.has(x)) || pairs.some((p) => containsPair(title, p));
+    if (score > 0 && enough && strong) {
       out.push({
         title: a.header.title,
         url: `/repair-centre/${a.hub}/${a.slug}`,
@@ -683,10 +716,16 @@ function rankGuides(terms: string[], pairs: [string, string][]): RankedGuide[] {
         summary: a.directAnswer.length > 280 ? `${a.directAnswer.slice(0, 277).replace(/\s+\S*$/, '')}…` : a.directAnswer,
         score,
         matchedTerms: matched,
+        titleHit,
       });
     }
   }
-  return out.sort((x, y) => y.score - x.score).slice(0, 3);
+  // Guides whose title names the problem lead ("Cranks But Will Not Start"
+  // before "Valve Train and Clearances" for "hard starting").
+  return out
+    .sort((x, y) => Number(y.titleHit) - Number(x.titleHit) || y.score - x.score)
+    .slice(0, 3)
+    .map(({ titleHit: _t, ...g }) => g);
 }
 
 export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
@@ -745,6 +784,10 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   // matches, with the title and listed symptoms weighted above the prose, and a
   // bonus when a whole symptom phrase ("low oil pressure") appears in order.
   const wantsGenVoltage = terms.some((x) => x.startsWith('voltag')) && !terms.some((x) => x.startsWith('batter'));
+  const mentionsGrid = terms.some((x) => /^(main|sync|bus|utilit|grid|kplc)/.test(x));
+  const typedText = phrases.join(' ').toLowerCase();
+  const wantsHighDir = /\b(high|over|too high|excess)/.test(typedText) && !/\b(low|under)\b/.test(typedText);
+  const wantsLowDir = /\b(low|under(?! load)|too low|drop)/.test(typedText) && !/\b(high|over)\b/.test(typedText);
   const rankPool = (codes: ControllerFaultCode[]): RankedFault[] => {
     const out: RankedFault[] = [];
     for (const c of codes) {
@@ -783,7 +826,20 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
       if (!terms.some((x) => titleSet.has(x) || symSet.has(x)) && !pairs.some((p) => containsPair(title, p)) && !([...expanded].some((x) => titleSet.has(x)))) continue;
       // A voltage question that does not mention the battery is about the
       // generator's output first.
-      if (wantsGenVoltage && titleSet.has('battery')) score -= 4;
+      // Titles are stemmed ("mains" -> "main"), so test the raw title text.
+      const rawTitle = c.title.toLowerCase();
+      if (wantsGenVoltage && /\bbattery\b/.test(rawTitle)) score -= 10;
+      // Nor about the mains or synchronising bus unless the user says so
+      // (2026-10-25 audit: "voltage too high" led with Sync / Mains Over Voltage).
+      if (!mentionsGrid && /\b(mains|sync\w*|bus|utility|grid)\b/.test(rawTitle)) score -= 10;
+      // "high" favours over-/high- titles and "low" under-/low- titles.
+      const tl = c.title.toLowerCase();
+      const titleHigh = /\b(over|high)/.test(tl), titleLow = /\b(under|low)/.test(tl);
+      if (wantsHighDir) score += titleHigh ? 3 : titleLow ? -3 : 0;
+      if (wantsLowDir) score += titleLow ? 3 : titleHigh ? -3 : 0;
+      // A two-word symptom ("black smoke") the alarm never mentions is a
+      // weaker match than one it does.
+      if (pairs.length && !pairs.some((p) => containsPair(title, p) || containsPair(symptomWords, p) || containsPair(prose, p))) score *= 0.5;
       out.push({ ...SLIM_FIELDS(c), score, matchedTerms: matched });
     }
     out.sort((a, b) => b.score - a.score);
@@ -796,7 +852,7 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   for (const p of phrases) for (const w of p.toLowerCase().split(/[^a-z0-9]+/g)) if (w && !typed.has(stem(w))) typed.set(stem(w), w);
   const show = (list: string[]) => list.map((t) => typed.get(t) ?? t);
 
-  const guides = rankGuides(terms, pairs).map((g) => ({ ...g, matchedTerms: show(g.matchedTerms) }));
+  const guides = rankGuides(terms, pairs, expanded).map((g) => ({ ...g, matchedTerms: show(g.matchedTerms) }));
   let ranked = rankPool(filtered).map((r) => ({ ...r, matchedTerms: show(r.matchedTerms) }));
   let considered = filtered.length;
   const notes = [

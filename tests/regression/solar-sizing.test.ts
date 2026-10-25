@@ -12,7 +12,10 @@ describe('sizeSolar', () => {
     expect(r.pvKwp).toBeLessThanOrEqual(4.4);
     expect(r.batteryKwh).toBeGreaterThanOrEqual(8);
     expect(r.batteryKwh).toBeLessThanOrEqual(10);
-    expect(r.cost.midKes).toBeGreaterThan(800_000);
+    // 2026-10-25: battery priced as equipment (installation added once) and a
+    // 3.6 kW inverter instead of an automatic 5 kW: ~KES 740k, inside the
+    // typical Kenyan range for 3-4 kWp + ~9 kWh LiFePO4 installed.
+    expect(r.cost.midKes).toBeGreaterThan(650_000);
     expect(r.cost.midKes).toBeLessThan(1_150_000);
     expect(r.paybackYears!).toBeGreaterThan(5);
     expect(r.paybackYears!).toBeLessThan(9);

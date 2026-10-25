@@ -85,7 +85,7 @@ For mechanical low pressure issues, systematically work through the oil system f
 
     resetInstructions: `IMPORTANT: Do NOT reset this alarm until you have positively identified and corrected the root cause of the low oil pressure condition. Resetting the alarm and restarting the engine with actual low oil pressure will cause catastrophic and expensive engine damage within minutes. This alarm exists specifically to prevent such damage, and bypassing it is never appropriate.
 
-Once you have confirmed that oil pressure is now within normal parameters (verified with a mechanical gauge if any doubt exists), you can reset the alarm using the following procedures. On most controllers, this is classified as a "shutdown" or "lockout" alarm that requires a specific reset sequence rather than simply pressing the stop button. First, ensure the engine is stopped and the cause has been corrected. Then, locate the alarm reset function - on Type A controllers, press and hold the STOP button for 3 seconds, then press RESET (or ALARM MUTE depending on model). On Type B controllers, navigate to the Alarm History screen, select the active alarm, and press the RESET soft key. On Type C and D controllers, the reset button is typically a dedicated physical button - press and hold for 2-3 seconds. On Type E controllers, press the SERVICE button, navigate to ACTIVE FAULTS, select the fault, and choose CLEAR. Some controllers require that oil pressure be above the minimum threshold before they will allow a reset - if the engine won't restart after reset, verify actual oil pressure again and check that the oil pressure sender is correctly reading the actual pressure.`,
+Once you have confirmed that oil pressure is now within normal parameters (verified with a mechanical gauge if any doubt exists), you can reset the alarm using the following procedures. On most controllers, this is classified as a "shutdown" or "lockout" alarm that requires a specific reset sequence rather than simply pressing the stop button. First, ensure the engine is stopped and the cause has been corrected. The reset sequence depends on the controller make and model (DSE, ComAp, Cummins PowerCommand, CAT EMCP/PowerWizard and others each differ), so follow your controller's manual. Most panels clear a shutdown from the alarm or event list, or with the stop/reset key, only once the condition has gone. Some controllers require that oil pressure be above the minimum threshold before they will allow a reset - if the engine won't restart after reset, verify actual oil pressure again and check that the oil pressure sender is correctly reading the actual pressure.`,
 
     solutionGuide: `The solution to error 100-1 depends entirely on correctly diagnosing the root cause. The most common causes in order of frequency are: insufficient oil level, failed oil pressure sender/wiring, degraded oil condition, clogged oil filter, failed oil pump, worn engine bearings, and failed oil pressure relief valve. Each requires a different repair approach.
 
@@ -271,7 +271,7 @@ For low oil level issues, simply add the correct grade of oil until the dipstick
       'Keep spare oil pressure sender on site for quick replacement',
     ],
 
-    relatedCodes: ['190-1', '190-2', '190-8', '100-3', '100-4'],
+    relatedCodes: ['100-3', '100-4', '100-17', '100-18'],
     technicalNotes: 'Oil pressure requirements vary by engine manufacturer and operating conditions. Cold start pressure will be higher than hot idle pressure. Consult engine manual for specific pressure specifications for your model.',
   },
 
@@ -292,7 +292,7 @@ If actual overheating is confirmed, work systematically through the cooling syst
 
     resetInstructions: `Before attempting to reset this alarm, the engine MUST be allowed to cool completely. Never add cold water or coolant to a hot engine - the thermal shock can crack the block or head. Allow the engine to cool naturally for at least 30-60 minutes, or longer in hot ambient conditions. Only when the coolant temperature has dropped below 50°C (122°F) should you proceed with diagnosis and repair.
 
-Once the underlying cause has been identified and corrected, and the engine has cooled to safe temperatures, reset the alarm using your controller's procedure. For Type A controllers: press STOP for 3 seconds, then press RESET. For Type B: navigate to ALARM HISTORY, select the alarm, press RESET. For Type C: use the scroll wheel to find RESET ALARMS, confirm selection. For Type D: press MENU, navigate to ALARMS, select CLEAR ALL. For Type E: access SERVICE menu, select ACTIVE FAULTS, choose CLEAR. After resetting, start the engine and carefully monitor temperature. The engine should warm up gradually over 5-10 minutes to normal operating temperature (82-95°C) and then stabilize. If temperature continues climbing toward the alarm point, shut down immediately and continue diagnosis - the root cause has not been corrected.`,
+Once the underlying cause has been identified and corrected, and the engine has cooled to safe temperatures, reset the alarm using your controller's procedure. The reset sequence depends on the controller make and model (DSE, ComAp, Cummins PowerCommand, CAT EMCP/PowerWizard and others each differ), so follow your controller's manual. Most panels clear a shutdown from the alarm or event list, or with the stop/reset key, only once the condition has gone. After resetting, start the engine and carefully monitor temperature. The engine should warm up gradually over 5-10 minutes to normal operating temperature (82-95°C) and then stabilize. If temperature continues climbing toward the alarm point, shut down immediately and continue diagnosis - the root cause has not been corrected.`,
 
     solutionGuide: `Solving overheating issues requires matching the repair to the diagnosed cause. The repair difficulty ranges from simple tasks like adding coolant to major work like head gasket replacement. Always start with the simplest and most common causes before assuming the worst.
 
@@ -773,7 +773,7 @@ export default function DetailedFaultDisplay({ faultCode, onReset, className = '
             {faultCode.relatedCodes.join(', ')}
           </div>
           <div className="text-slate-500 text-xs">
-            Generated by Generator Oracle AI
+            Reference note by EmersonEIMS engineers — your engine and controller manuals take precedence
           </div>
         </div>
       </div>

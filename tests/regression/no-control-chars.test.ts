@@ -35,5 +35,5 @@ describe('source hygiene', () => {
       }
     }
     expect(hits).toEqual([]);
-  });
+  }, 60_000); // walks every source file; 5 s is too short when suites run in parallel
 });

@@ -511,10 +511,10 @@ export class BoreholeAnalyzer {
 
     if (remoteSensing && !remoteSensing.climate) {
       // NO-GUESSWORK: inside Kenya, a failed climate API falls back to the
-      // pre-computed MEASURED baseline (ERA5 2015-2024), not a latitude guess.
+      // stored ERA5 reanalysis baseline (2015-2024), not a latitude guess.
       const kbClimate = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0);
       if (kbClimate?.climate) {
-        fallbacksUsed.push(`Climate API failed — using EmersonEIMS pre-computed MEASURED baseline for ${kbClimate.name} (ERA5 2015-2024, ${kbClimate.distance_km} km away) — NOT an estimate`);
+        fallbacksUsed.push(`Climate API failed — using a stored ERA5 reanalysis baseline for ${kbClimate.name} (2015-2024, ${kbClimate.distance_km} km away) instead of values for this exact point`);
         const annualP = kbClimate.climate.precip_mm_yr;
         const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
         remoteSensing.climate = {
@@ -550,7 +550,7 @@ export class BoreholeAnalyzer {
       // NO-GUESSWORK: inside Kenya, use the measured SRTM baseline elevation.
       const kbElev = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0);
       if (kbElev?.elevation_m != null) {
-        fallbacksUsed.push(`Elevation API failed — using EmersonEIMS pre-computed MEASURED baseline for ${kbElev.name} (SRTM, ${kbElev.distance_km} km away) — NOT an estimate`);
+        fallbacksUsed.push(`Elevation API failed — using a stored SRTM elevation for ${kbElev.name} (${kbElev.distance_km} km away) instead of this exact point`);
         remoteSensing.elevation = {
           elevation: kbElev.elevation_m,
           source: `EmersonEIMS baseline — SRTM measured at ${kbElev.name} (${kbElev.distance_km} km)`,
@@ -572,7 +572,7 @@ export class BoreholeAnalyzer {
     if (!remoteSensing) {
       const kb = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0);
       if (kb && kb.climate) {
-        fallbacksUsed.push(`Remote sensing APIs failed — using EmersonEIMS pre-computed MEASURED baseline for ${kb.name} (${kb.level}, ${kb.distance_km} km away; SoilGrids/ERA5/SRTM, fetched ${kb.fetched}) — NOT an estimate`);
+        fallbacksUsed.push(`Remote sensing APIs failed — using a stored baseline for ${kb.name} (${kb.level}, ${kb.distance_km} km away; SoilGrids/ERA5/SRTM, fetched ${kb.fetched}) — NOT an estimate`);
         const annualP = kb.climate.precip_mm_yr;
         const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
         remoteSensing = {
@@ -1987,7 +1987,8 @@ export class BoreholeAnalyzer {
         fusionQuality: 'Low (no field geophysics)',
         overallConfidence: 0.40,
         bedrockDepth_m: Math.round(calibratedDepth * 1.2),
-        waterTableDepth_m: Math.round(calibratedDepth * 0.35 * 100) / 100,
+        // No arithmetic water table: set later from evidence, or left unstated.
+        waterTableDepth_m: undefined as unknown as number,
         recommendedDrillingDepth_m: calibratedDepth,
         recommendedCasingDepth_m: Math.round(calibratedDepth * 0.4),
         expectedYield_m3hr: [Math.round(calibratedYield * 0.7 * 10) / 10, Math.round(calibratedYield * 1.3 * 10) / 10],
@@ -2568,7 +2569,7 @@ export class BoreholeAnalyzer {
             hasNearbyWells ? 'USGS nearby wells' : null,
             hasVegProxy ? 'Vegetation-groundwater proxy' : null,
           ].filter(Boolean).join(', ')}) via Bayesian ensemble with Tikhonov-regularized inversion. ` +
-          `Depth and yield predictions are derived from physics-based models (Thiem equation, Cooper-Jacob, Dar Zarrouk parameters) constrained by satellite observations. ` +
+          `Depth and yield come from nearby drilled-borehole records and county drilling statistics, with standard well equations (Thiem, Cooper-Jacob) used to check the design; ${fieldData?.ertSurvey ? 'your ERT data constrain the aquifer' : 'no field geophysics was supplied'}. ` +
           `Confidence: ${confidenceMetrics.overall}% (${
             (confidenceMetrics.overall >= 90 && isFieldValidated && fieldData?.pumpTest) ? 'BANKABLE' :
             confidenceMetrics.overall >= 80 ? 'ENGINEERING GRADE' :
@@ -2902,6 +2903,13 @@ export class BoreholeAnalyzer {
     // ═══════════════════════════════════════════════════════════════════════
     {
       let probChanged = false;
+
+      // 0. Overall risk includes the chance of a dry or poor hole, so it can
+      // never be below 1 - success probability (2026-10-25 audit: Garissa
+      // showed "Overall risk 18% LOW" at a 60% success probability).
+      if (typeof result.probability === 'number' && result.risk) {
+        result.risk.overallRisk = Math.max(result.risk.overallRisk, Math.round((1 - result.probability) * 100) / 100);
+      }
 
       // 1. Risk ↔ viability coherence
       if (result.risk.overallRisk > 0.7 && result.risk.viability === 'high') {
@@ -3412,7 +3420,9 @@ export class BoreholeAnalyzer {
       const tItem = items.find((i) => i?.parameter === 'Transmissivity (T)');
       if (!isFieldValidated && Trec > 0 && tItem) {
         tItem.value = Math.round(Trec * 10) / 10;
-        tItem.source = 'Aquifer model reconciled to the yields of real boreholes nearby (no field survey)';
+        // It is the LOWEST T at which the planning yield is possible: a
+        // conservative design value, not a site estimate (2026-10-25 audit).
+        tItem.source = 'Lowest transmissivity at which the planning yield is possible, used so drawdown and pump head are upper-end figures. Real boreholes here usually do better; a pump test measures it.';
       }
       // Yield provenance names the evidence that governs it (2026-10-20 audit).
       const yItem = items.find((i) => i?.parameter === 'Estimated Yield');
@@ -3426,6 +3436,86 @@ export class BoreholeAnalyzer {
     } catch { /* provenance optional */ }
     // The field depth band travels with the result so the stated range covers it (2026-10-20).
     if ((this as any)._fieldDepthBand) (result as any).fieldDepthBand = (this as any)._fieldDepthBand;
+    // The stated yield range is the evidence band when there is one (2026-10-25
+    // audit: Garissa printed "lower quartile 4, median 10, upper quartile 10"
+    // beside a 7.5-30 m3/h range).
+    if (!isFieldValidated && evidenceBand && typeof result.estimatedYield === 'number' && result.uncertainty) {
+      (result as any).yieldEvidenceBand = { lo: evidenceBand.lo, hi: evidenceBand.hi };
+      const lo = Math.round(Math.min(evidenceBand.lo, result.estimatedYield) * 100) / 100;
+      const hi = Math.round(Math.max(evidenceBand.hi, result.estimatedYield) * 100) / 100;
+      result.uncertainty.yieldRange = [lo, hi];
+      const dd: any = result.drillDecision;
+      if (dd && Array.isArray(dd.yieldRange_m3hr)) dd.yieldRange_m3hr = [lo, hi];
+    }
+    // ONE recharge figure for the web page and the PDF (2026-10-25 audit: web
+    // 16 mm/yr vs PDF 270 mm/yr at Nairobi, and 15% vs 6% inside one PDF). The
+    // soil-water balance governs, kept within a rainfall-dependent share (1-6% arid, 2-10% semi-arid, 3-15% sub-humid; the usual
+    // range for Kenyan settings from arid to sub-humid); the other method's
+    // figure is shown as the spread, not as a second answer.
+    try {
+      const P = Number(historicalData?.weather?.averageAnnualPrecipitation);
+      const wm = Number((result as any).rechargeModel?.avgAnnualRecharge_mm);
+      const gl = Number(result.gldasGroundwater?.waterBudget?.estimatedRecharge);
+      const have = [wm, gl].filter((v) => Number.isFinite(v) && v >= 0);
+      if (Number.isFinite(P) && P > 0 && have.length) {
+        // The plausible share of rainfall that recharges falls with aridity:
+        // a few percent in dry lands, more where it is wet.
+        const [fLo, fHi] = P < 400 ? [0.01, 0.06] : P < 800 ? [0.02, 0.10] : [0.03, 0.15];
+        const lo = fLo * P, hi = fHi * P;
+        const raw = Number.isFinite(wm) && wm >= 0 ? wm : gl;
+        const governing = Math.round(Math.min(hi, Math.max(lo, raw)));
+        const spread = [Math.round(Math.min(...have)), Math.round(Math.max(...have))] as [number, number];
+        const clamped = governing !== Math.round(raw);
+        (result as any).rechargeSummary = {
+          governing_mm: governing,
+          fraction: Math.round((governing / P) * 1000) / 1000,
+          rainfall_mm: Math.round(P),
+          spread_mm: spread,
+          basis: `Soil-water balance on ${Math.round(P)} mm/yr of rainfall${clamped ? `, held within ${Math.round(fLo * 100)}-${Math.round(fHi * 100)}% of rainfall for this climate (the model gave ${Math.round(raw)} mm)` : ''}.${have.length > 1 ? ` The two methods give ${spread[0]}-${spread[1]} mm/yr, so recharge is uncertain.` : ''}`,
+        };
+      }
+    } catch (e) { console.warn('[Pipeline] Recharge summary failed:', e); }
+    // ONE water table for the web page and the PDF (2026-10-25 audit: the PDF
+    // tile showed 0.35 x the drilling depth as "MODELLED", the register said
+    // "not modelled" and the web a 25 km soil-moisture regression). Only
+    // evidence sets it: a field reading, else the median static level of >=3
+    // drilled boreholes within 20 km. Otherwise it is stated as not measured.
+    try {
+      let wt: number | null = null;
+      let kind: 'field' | 'nearby' | null = null;
+      let basis = 'Not measured: no field reading and too few recorded water levels nearby. An ERT survey or the drilled hole sets it.';
+      const fieldSwl = Number(fieldData?.stepDrawdownTest?.staticWaterLevel_m ?? fieldData?.gprSurvey?.waterTableDepthM);
+      if (Number.isFinite(fieldSwl) && fieldSwl > 0) {
+        wt = fieldSwl; kind = 'field'; basis = 'Measured on site (field data you entered).';
+      } else if (effectiveLat != null && effectiveLon != null) {
+        // A level is only credible if it is shallower than the hole it was
+        // read in: 35 of the 41 records with swl_m say otherwise.
+        const levels = (await fieldRecordsWithin(effectiveLat, effectiveLon, 20))
+          .filter((b) => Number(b?.swl_m) > 0 && Number(b?.depth_m) > 0 && Number(b.swl_m) < Number(b.depth_m))
+          .map((b) => Number(b.swl_m)).filter((v) => v < 400).sort((a, b) => a - b);
+        if (levels.length >= 3) {
+          wt = levels[Math.floor((levels.length - 1) / 2)]; kind = 'nearby';
+          basis = `Median static water level of ${levels.length} drilled boreholes within 20 km (range ${levels[0]}-${levels[levels.length - 1]} m). Confirm on site.`;
+        }
+      }
+      (result as any).waterTableDepth = wt;
+      (result as any).waterTableKind = kind;
+      (result as any).waterTableBasis = basis;
+      if (result.geophysicsFusion && !isFieldValidated) (result.geophysicsFusion as any).waterTableDepth_m = wt ?? undefined;
+      // The web's data-sources list shows the same value and basis.
+      const swlItem = ((result as any).engineerConfidence?.provenance?.items ?? []).find((i: any) => i?.parameter === 'Static Water Level');
+      if (swlItem && kind !== 'field') {
+        const modelled = Number(swlItem.value);
+        swlItem.value = wt ?? 'Not measured';
+        swlItem.unit = wt != null ? 'm bgl' : '';
+        swlItem.tier = 'ESTIMATED';
+        swlItem.source = basis;
+        swlItem.method = kind === 'nearby' ? 'Median of recorded static water levels' : 'No measurement';
+        if (Number.isFinite(modelled) && modelled > 0) {
+          swlItem.limitations = [...(swlItem.limitations ?? []), `A ~25 km soil-moisture model suggests about ${modelled.toFixed(0)} m; it is too coarse to quote as the water table.`];
+        }
+      }
+    } catch (e) { console.warn('[Pipeline] Water table evidence failed:', e); }
     if (evidenceBand && typeof result.estimatedYield === 'number' && result.estimatedYield >= evidenceBand.lo * 0.99) {
       (result as any).governingYieldNote = `Planning yield is kept between the cautious floor (${evidenceBand.lo} m³/h) and the typical yield (${evidenceBand.typical} m³/h) of real boreholes here, from ${evidenceBand.basis}. The aquifer model was reconciled to that evidence, so yield, drawdown and pump agree. A pump test sets the real figure.`;
     }

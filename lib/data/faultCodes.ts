@@ -169,8 +169,8 @@ export const FAULT_CODES: FaultCode[] = [
   {
     code: 'SPN-100',
     brand: 'J1939',
-    title: 'Engine Oil Pressure Low',
-    description: 'Engine oil pressure has dropped below the minimum safe operating threshold. Low oil pressure can cause severe engine damage within minutes as bearings, pistons, and camshafts rely on pressurized oil for lubrication and cooling. This fault requires immediate engine shutdown to prevent catastrophic failure.',
+    title: 'Engine Oil Pressure — Low Pressure (FMI 1, 17, 18)',
+    description: 'SPN 100 is the oil-pressure signal; the FMI beside it says whether the reading is low, high or a sensor fault. This page covers LOW pressure (FMI 1, 17, 18): oil pressure has dropped below the minimum safe operating threshold. Low oil pressure can cause severe engine damage within minutes as bearings, pistons, and camshafts rely on pressurized oil for lubrication and cooling. This fault requires immediate engine shutdown to prevent catastrophic failure.',
     severity: 'critical',
     category: 'Lubrication System',
     possibleCauses: [
@@ -257,15 +257,14 @@ export const FAULT_CODES: FaultCode[] = [
   {
     code: 'SPN-102',
     brand: 'J1939',
-    title: 'Intake Manifold Pressure High',
-    description: 'The turbocharger is producing excessive boost pressure beyond normal operating parameters. Over-boost raises peak cylinder pressure and can lead to head gasket failure and engine damage. Common causes are a wastegate or VGT actuator stuck closed or a faulty boost sensor. (Black smoke usually points the other way: too little boost.)',
+    title: 'Intake Manifold (Boost) Pressure — High Boost (FMI 0, 15, 16)',
+    description: 'SPN 102 is the boost-pressure signal; the FMI says whether boost is high, low or the sensor is faulty. This page covers HIGH boost (FMI 0, 15, 16): the turbocharger is producing excessive boost pressure beyond normal operating parameters. Over-boost raises peak cylinder pressure and can lead to head gasket failure and engine damage. Common causes are a wastegate or VGT actuator stuck closed or a faulty boost sensor. (Black smoke usually points the other way: too little boost.)',
     severity: 'warning',
     category: 'Air Intake/Turbo',
     possibleCauses: [
       'Turbo wastegate stuck closed or binding',
       'Wastegate actuator diaphragm failure',
       'Boost control solenoid malfunction',
-      'Restricted exhaust system increasing backpressure',
       'MAP sensor reading incorrectly high',
       'ECM boost control calibration error'
     ],

@@ -278,3 +278,34 @@ describe('bolt hole default (2026-10-20)', () => {
     expect((r.assumptions as string[]).join(' ')).toMatch(/26 mm/);
   });
 });
+
+describe('Building Suite audit round 4 (2026-10-25)', () => {
+  const run = (fn: (b: Record<string, unknown>) => unknown, b: Record<string, unknown>) => c.runCalc(fn as never, b) as Record<string, unknown>;
+  it('every successful result carries the desk-check disclaimer', () => {
+    const r = run(c.rationalRunoff, { runoff_c: 0.8, rainfall_intensity_mm_hr: 100, area_ha: 2 });
+    expect(String(r.disclaimer)).toMatch(/not a design/i);
+    expect(run(c.rationalRunoff, { runoff_c: 0.8 }).disclaimer).toBeUndefined();
+  });
+  it('refuses implausible inputs', () => {
+    expect(run(c.seismicElf, { SDS: 1, SD1: 0.6, R: 500, Ie: 1, W_kN: 1000, height_ft: 60 }).error).toMatch(/R above 8/);
+    expect(run(c.seismicElf, { SDS: 1, SD1: 0.6, R: 8, Ie: 9, W_kN: 1000, height_ft: 60 }).error).toMatch(/Ie must be/);
+    expect(run(c.windEurocode, { vb_ms: 900, height_m: 10, terrain_category: 'II' }).error).toMatch(/70 m\/s/);
+    expect(run(c.rationalRunoff, { runoff_c: 0.8, rainfall_intensity_mm_hr: 100000, area_ha: 2 }).error).toMatch(/500 mm\/h/);
+    expect(run(c.kirpich, { length_m: 5_000_000, slope_m_per_m: 0.05 }).error).toMatch(/100 km/);
+    expect(run(c.uValue, { layers: [{ thickness_m: 200, lambda_W_mK: 0.04 }] }).error).toMatch(/metres/);
+    expect(run(c.rcBeam, { b_mm: 300, d_mm: 450, As_mm2: 1257, fck_MPa: 30, fyk_MPa: 50000 }).error).toMatch(/fyk_MPa/);
+  });
+  it('warns when ELF may not be permitted and when T60 is implausible', () => {
+    expect(String(run(c.seismicElf, { SDS: 1, SD1: 0.6, R: 8, Ie: 1, W_kN: 1000, height_ft: 900 }).warning)).toMatch(/3\.5·Ts/);
+    expect(String(run(c.reverberation, { volume_m3: 200, absorption_m2_sabin: 1 }).warning)).toMatch(/longer than any furnished room/);
+    expect(String(run(c.reverberation, { volume_m3: 200, absorption_m2_sabin: 46, method: 'eyring' }).note)).toMatch(/Sabine was used/);
+  });
+  it('checks bolt punching shear and the Table 3.3 maxima', () => {
+    const r = run(c.steelBolt, { designation: 'M20', grade: '8.8', t_ply_mm: 10, fu_ply_MPa: 430, e1_mm: 40, p1_mm: 70, Ft_Ed_kN: 50 });
+    // 0.6·π·(1.6·20)·10·430/1.25 = 207.5 kN
+    expect(Number(r.Bp_Rd_kN)).toBeCloseTo(207.5, 0);
+    const checks = (r.checks as Array<{ check: string }>).map((x) => x.check).join(' | ');
+    expect(checks).toMatch(/punching/);
+    expect(checks).toMatch(/e1 ≤ 4t \+ 40/);
+  });
+});

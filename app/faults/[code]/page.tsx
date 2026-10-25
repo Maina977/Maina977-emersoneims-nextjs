@@ -69,7 +69,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const codeLabel = fault.code.toUpperCase().startsWith(brandPrefix)
     ? `${fault.brand} ${fault.code.slice(brandPrefix.length)}`
     : `${fault.brand} ${fault.code}`;
-  const base = fault.alarm ? `${fault.brand} ${fault.title} Alarm` : `${codeLabel}: ${fault.title}`;
+  const fullBase = fault.alarm ? `${fault.brand} ${fault.title} Alarm` : `${codeLabel}: ${fault.title}`;
+  const base = fullBase.length > 60 ? fullBase.replace(/\s*\([^)]*\)\s*$/, '') : fullBase;
   // Keep within ~60 characters before the site suffix.
   const title = base.length <= 44 ? `${base} — Causes & Fix` : base;
   const description = fault.alarm
@@ -160,8 +161,10 @@ export default async function FaultCodePage({ params }: Props) {
                 </>
               ) : (
                 <>
-                  <h1 className="text-4xl md:text-5xl font-bold text-amber-400 mb-2">{fault.code}</h1>
-                  <p className="text-2xl text-white font-semibold">{fault.title}</p>
+                  <h1 className="text-4xl md:text-5xl font-bold text-amber-400 mb-2">
+                    {fault.code.toUpperCase().startsWith(fault.brand.toUpperCase() + '-') ? `${fault.brand} ${fault.code.slice(fault.brand.length + 1)}` : `${fault.brand} ${fault.code}`}
+                    <span className="block text-2xl text-white font-semibold mt-2">{fault.title}</span>
+                  </h1>
                 </>
               )}
             </div>

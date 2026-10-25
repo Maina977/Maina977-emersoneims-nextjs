@@ -1,4 +1,4 @@
-// app/innovations/page.tsx - INNOVATION SHOWCASE (9.8/10 Target)
+// app/innovations/page.tsx - what we build in-house: live tools and work in progress
 // DISCLAIMER: Generator Oracle is independently developed and not affiliated with any manufacturer
 'use client';
 
@@ -10,165 +10,132 @@ import GlassmorphicCard from '@/components/effects/GlassmorphicCard';
 interface Innovation {
   id: string;
   title: string;
-  category: 'AI' | '3D' | 'AR' | 'IoT' | 'Blockchain' | 'Voice' | 'Predictive';
+  category: 'Diagnostics' | 'Water' | 'Solar' | 'Engineering' | 'Maintenance' | 'Parts';
   status: 'Live' | 'Beta' | 'Coming Soon';
   description: string;
   features: string[];
   icon: string;
   color: string;
   patent?: string;
+  href?: string;
 }
 
+// 2026-10-25 audit: this list showed unbuilt features as "Live" or "Beta"
+// with invented accuracy figures (92%, 95%, 99.9%), "world's first" claims and
+// an implied integration with other manufacturers' databases. Live entries are
+// now the tools that exist on this site, described as they work; everything
+// else is labelled as in development, with no performance figures.
 const innovations: Innovation[] = [
   {
-    id: 'essa',
-    title: 'ESSA™ Severity Scoring Algorithm',
-    category: 'AI',
+    id: 'generator-oracle',
+    title: 'Generator Oracle fault-code lookup',
+    category: 'Diagnostics',
     status: 'Live',
-    description: 'World\'s first AI-powered diagnostic severity calculator that adapts to Kenya\'s unique climate conditions, altitude, and load patterns. Predicts equipment failures with 92% accuracy.',
+    description: 'Look up J1939 SPN/FMI codes and controller alarm text, or describe a symptom, and get the likely causes and checks written by our engineers. Rule-based: it matches your words to our reference; it does not guess.',
     features: [
-      'Real-time severity adjustment based on 7 environmental factors',
-      'Temperature compensation (15-35°C range optimized for Kenya)',
-      'Altitude correction for Nairobi (1800m), Mombasa (0m), Mt. Kenya (3000m)',
-      'Load-based degradation modeling (>80% load increases severity)',
-      'Maintenance history tracking (up to 2× severity multiplier)',
-      'Equipment age factor (5% per year)',
-      'Frequency analysis (10% per occurrence/month)'
+      'Reads codes as technicians write them: "SPN 110 FMI 0", "SPN110-FMI0", "110/0"',
+      'Says plainly when a code is not in our reference',
+      'Symptom search ranked by title and listed symptoms',
+      'Ask-an-engineer link on every result',
     ],
-    icon: '🧠',
-    color: 'from-purple-500 to-pink-500',
-    patent: 'Proprietary in-house R&D'
+    icon: '🔧',
+    color: 'from-amber-500 to-orange-500',
+    href: '/generator-oracle',
   },
   {
-    id: 'pmi',
-    title: 'PMI™ Predictive Maintenance Index',
-    category: 'Predictive',
+    id: 'aquascan',
+    title: 'AquaScan Pro borehole pre-screen',
+    category: 'Water',
     status: 'Live',
-    description: 'Predictive maintenance index using climate-region degradation curves and field-data MTBF tracking from EmersonEIMS installations. Surfaces failure-likelihood signals so maintenance can be scheduled ahead of breakdowns.',
+    description: 'A desktop pre-screen for a borehole site in Kenya: planning depth, yield range, water-quality risks and budget from public data and nearby drilled-borehole records. It is not a survey, and the report says so on every page.',
     features: [
-      'Field-tracked MTBF (sample size disclosed in audit log)',
-      'Climate-specific degradation curves (Coastal, Highland, Arid, Urban)',
-      'Failure probability calculation (0-100%)',
-      'Days-to-failure prediction with model-validation accuracy reported per release',
-      'Cost impact estimation (configurable per fleet)',
-      'Maintenance scheduling optimization',
-      'Real-time monitoring integration'
+      'Depth and yield anchored to real drilled boreholes nearby where they exist',
+      'One set of figures on the web page and in the PDF',
+      'Measured record published: modelled depth inside the drilled band about 40% of the time so far',
     ],
+    icon: '💧',
+    color: 'from-cyan-500 to-blue-500',
+    href: '/aquascan-pro-v3',
+  },
+  {
+    id: 'solargenius',
+    title: 'SolarGenius Pro sizing and quote checker',
+    category: 'Solar',
+    status: 'Live',
+    description: 'Size a solar system from your bill using NASA sun-hours for your location, and check a supplier\'s quotation line by line against stated rule-of-thumb prices.',
+    features: [
+      'Grid-tied, hybrid and off-grid sizing with every assumption listed',
+      'Quote checker that reads common Kenyan quote formats and skips VAT and total lines',
+      'String, cable and inverter-match checks to IEC 62548 / IEC 60364',
+    ],
+    icon: '☀️',
+    color: 'from-yellow-500 to-orange-500',
+    href: '/solar-genius-pro',
+  },
+  {
+    id: 'building-suite',
+    title: 'Building Suite engineering calculators',
+    category: 'Engineering',
+    status: 'Live',
+    description: 'Desk checks for RC beams, bolted connections, wind and seismic loads, drainage, daylight, acoustics and U-values, each to the code clause it cites. A check, not a signed design.',
+    features: [
+      'Inputs outside a code\'s scope are refused with the reason',
+      'Every result states the clause and assumptions used',
+    ],
+    icon: '🏗️',
+    color: 'from-indigo-500 to-purple-500',
+    href: '/solutions/building',
+  },
+  {
+    id: 'severity',
+    title: 'Fault severity for Kenyan conditions',
+    category: 'Diagnostics',
+    status: 'Coming Soon',
+    description: 'In development: adjusting how urgent a fault is for heat, altitude and load, so a technician in Garissa and one in Nairobi get advice that fits the site.',
+    features: ['Temperature and altitude factors', 'Load and maintenance-history factors'],
+    icon: '🧭',
+    color: 'from-purple-500 to-pink-500',
+  },
+  {
+    id: 'maintenance-index',
+    title: 'Predictive maintenance index',
+    category: 'Maintenance',
+    status: 'Coming Soon',
+    description: 'In development: using service records from sets we maintain to flag which machines are due for attention first. It will publish how well its warnings match what actually failed.',
+    features: ['Built from our own service records', 'Results checked against real failures before release'],
     icon: '🔮',
     color: 'from-cyan-500 to-blue-500',
-    patent: 'Proprietary in-house R&D'
-  },
-  {
-    id: 'multi-brand',
-    title: 'Multi-Type Correlation Engine™',
-    category: 'AI',
-    status: 'Live',
-    description: 'Unique to EmersonEIMS: Cross-references error codes across multiple controller types. Our independently developed platform correlates diagnostics across 9 compatible controller types.',
-    features: [
-      'Cross-type fault correlation (85-95% similarity matching)',
-      'Universal symptom database (200+ error codes)',
-      'Shared solution recommendations',
-      'Parts compatibility matrix',
-      'Troubleshooting time reduction (avg 60% faster)',
-      'Real-world similarity scoring based on field repairs',
-      'Automatic code translation between compatible controller types'
-    ],
-    icon: '🔗',
-    color: 'from-amber-500 to-orange-500',
-    patent: 'Proprietary in-house R&D'
   },
   {
     id: 'voice-search',
-    title: 'Voice-Activated Diagnostic Search',
-    category: 'Voice',
-    status: 'Beta',
-    description: 'Hands-free diagnostic lookup for technicians in the field. Speak error codes, symptoms, or equipment models to get instant solutions.',
-    features: [
-      'Natural language processing (Swahili + English)',
-      'Offline voice recognition (works without internet)',
-      'Bluetooth headset support',
-      'Noise cancellation for loud generator environments',
-      'Voice-guided repair procedures',
-      'Automatic log generation from voice commands',
-      'Multi-accent support (Kenyan, Tanzanian, Ugandan English)'
-    ],
+    title: 'Voice fault-code lookup',
+    category: 'Diagnostics',
+    status: 'Coming Soon',
+    description: 'In development: saying a fault code or symptom instead of typing it, for technicians with their hands full.',
+    features: ['English and Swahili', 'Same reference as the typed lookup'],
     icon: '🎙️',
     color: 'from-green-500 to-teal-500',
-    patent: 'Proprietary in-house R&D'
   },
   {
-    id: 'ar-overlay',
-    title: 'AR Repair Assistant',
-    category: 'AR',
-    status: 'Beta',
-    description: 'Augmented reality overlay for smartphone/tablet cameras. Point at equipment to see real-time diagnostic overlays, part labels, and step-by-step repair guides.',
-    features: [
-      'Real-time equipment recognition (95% accuracy)',
-      'Part identification and labeling',
-      'Animated repair procedures overlaid on physical equipment',
-      'Torque specifications displayed in AR',
-      'Wiring diagram overlay',
-      'Safety warnings highlighted',
-      'Remote expert assistance with shared AR view'
-    ],
-    icon: '👓',
-    color: 'from-red-500 to-pink-500',
-    patent: 'Proprietary in-house R&D'
-  },
-  {
-    id: '3d-models',
-    title: 'Interactive 3D Equipment Models',
-    category: '3D',
+    id: 'remote-monitoring',
+    title: 'Remote generator monitoring',
+    category: 'Maintenance',
     status: 'Coming Soon',
-    description: 'Fully interactive 3D models of generators, control panels, and solar installations. Exploded views, animations, and clickable hotspots for detailed specifications.',
-    features: [
-      'Photorealistic 3D rendering (WebGL)',
-      '360° rotation and zoom',
-      'Exploded view animations',
-      'Clickable parts with specifications',
-      'Maintenance history visualization',
-      'Failure heat-maps on 3D models',
-      'VR headset support (Meta Quest, HTC Vive)'
-    ],
-    icon: '🎮',
-    color: 'from-indigo-500 to-purple-500'
-  },
-  {
-    id: 'iot-dashboard',
-    title: 'Real-Time IoT Monitoring',
-    category: 'IoT',
-    status: 'Coming Soon',
-    description: 'Live telemetry from installed equipment. Monitor voltage, frequency, temperature, fuel levels, and runtime from anywhere in Kenya via 4G/LTE connectivity.',
-    features: [
-      'Real-time data streaming (1-second intervals)',
-      'Multi-site dashboard (manage 100+ installations)',
-      'SMS/Email/WhatsApp alerts',
-      'Fuel theft detection (statistical anomaly detection)',
-      'Remote start/stop control',
-      'Historical data analytics (5-year retention)',
-      'API for third-party integrations'
-    ],
+    description: 'In development: voltage, frequency, temperature, fuel and run-hours from installed sets, with alerts by SMS or WhatsApp.',
+    features: ['Alerts by SMS, email or WhatsApp', 'Fuel-level and run-hour history'],
     icon: '📡',
-    color: 'from-yellow-500 to-orange-500'
+    color: 'from-yellow-500 to-orange-500',
   },
   {
-    id: 'blockchain-parts',
-    title: 'Blockchain Parts Authentication',
-    category: 'Blockchain',
+    id: 'parts-check',
+    title: 'Genuine-parts check',
+    category: 'Parts',
     status: 'Coming Soon',
-    description: 'Verify genuine OEM parts using blockchain-verified serial numbers. Combat counterfeit parts with immutable supply chain tracking.',
-    features: [
-      'QR code scanning for instant verification',
-      'Immutable supply chain ledger',
-      'Counterfeit detection (99.9% accuracy)',
-      'Warranty validation',
-      'Parts history tracking (install date, replacements)',
-      'Supplier reputation scoring',
-      'Integration with Cummins, Perkins, Caterpillar databases'
-    ],
+    description: 'In development: checking a part\'s serial number against our supply records to help spot counterfeits.',
+    features: ['QR code scan', 'Install and replacement history per part'],
     icon: '🔐',
-    color: 'from-blue-500 to-cyan-500'
-  }
+    color: 'from-blue-500 to-cyan-500',
+  },
 ];
 
 export default function InnovationsPage() {
@@ -206,24 +173,21 @@ export default function InnovationsPage() {
             Innovations
           </h1>
           <p className="text-2xl md:text-3xl text-gray-300 max-w-4xl mx-auto font-light mb-8">
-            Pioneering the future of power engineering with AI, AR, IoT, and blockchain
+            The tools we build in-house for generator, solar, borehole and building work in Kenya — what is live today and what we are working on
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <span className="px-6 py-3 bg-green-500/20 text-green-300 rounded-full text-sm font-semibold border border-green-500/30">
-              3 Patents Pending
-            </span>
             <span className="px-6 py-3 bg-purple-500/20 text-purple-300 rounded-full text-sm font-semibold border border-purple-500/30">
-              {innovations.filter(i => i.status === 'Live').length} Live Features
+              {innovations.filter(i => i.status === 'Live').length} live tools
             </span>
             <span className="px-6 py-3 bg-amber-500/20 text-amber-300 rounded-full text-sm font-semibold border border-amber-500/30">
-              {innovations.filter(i => i.status === 'Beta').length} In Beta
+              {innovations.filter(i => i.status === 'Coming Soon').length} in development
             </span>
           </div>
         </motion.div>
 
         {/* Filter */}
         <div className="flex justify-center gap-4 mb-12">
-          {(['All', 'Live', 'Beta', 'Coming Soon'] as const).map(status => (
+          {(['All', 'Live', 'Coming Soon'] as const).map(status => (
             <button
               key={status}
               onClick={() => setFilter(status)}
@@ -233,7 +197,7 @@ export default function InnovationsPage() {
                   : 'bg-white/10 text-gray-300 hover:bg-white/20'
               }`}
             >
-              {status}
+              {status === 'Coming Soon' ? 'In development' : status}
             </button>
           ))}
         </div>
@@ -262,7 +226,7 @@ export default function InnovationsPage() {
                           innovation.status === 'Beta' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
                           'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
                         }`}>
-                          {innovation.status}
+                          {innovation.status === 'Coming Soon' ? 'In development' : innovation.status}
                         </span>
                         <span className="px-3 py-1 bg-white/10 rounded-full text-xs text-gray-300">
                           {innovation.category}
@@ -276,10 +240,13 @@ export default function InnovationsPage() {
                 <p className="text-gray-300 mb-6 leading-relaxed">
                   {innovation.description}
                 </p>
+                {innovation.href && (
+                  <Link href={innovation.href} className="inline-block mb-6 text-amber-300 underline font-semibold">Open the tool →</Link>
+                )}
 
                 {/* Features */}
                 <div className="mb-6">
-                  <h4 className="text-sm font-bold text-gray-400 mb-3">Key Features:</h4>
+                  <h4 className="text-sm font-bold text-gray-400 mb-3">{innovation.status === 'Live' ? 'What it does:' : 'Planned:'}</h4>
                   <ul className="space-y-2">
                     {innovation.features.map((feature, i) => (
                       <li key={i} className="text-sm text-gray-300 flex items-start">
@@ -311,22 +278,22 @@ export default function InnovationsPage() {
           viewport={{ once: true }}
           className="mt-32 text-center"
         >
-          <h2 className="text-5xl font-bold mb-8">Experience the Future Today</h2>
+          <h2 className="text-5xl font-bold mb-8">Try the live tools</h2>
           <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-            Try our live innovations or request beta access to upcoming features
+            They are free to use. Tell us what would help your site and we will tell you honestly whether we can build it.
           </p>
           <div className="flex justify-center gap-6">
             <Link
               href="/diagnostics"
               className="px-12 py-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl font-bold rounded-full hover:scale-105 transition-all duration-500 shadow-[0_0_30px_rgba(168,85,247,0.4)]"
             >
-              Try Live Features
+              Diagnostics
             </Link>
             <Link 
               href="/contact"
               className="px-12 py-6 bg-white/10 backdrop-blur-sm text-white text-xl font-bold rounded-full hover:bg-white/20 transition-all border-2 border-white/20"
             >
-              Request Beta Access
+              Talk to us
             </Link>
           </div>
         </motion.div>

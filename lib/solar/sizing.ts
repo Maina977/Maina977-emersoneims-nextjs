@@ -68,9 +68,17 @@ export const BATTERY_DOD = 0.9; // LiFePO4 usable depth of discharge
 export const BATTERY_EFFICIENCY = 0.95; // round trip
 export const DIESEL_L_PER_KWH = 0.35; // small genset at part load
 export const DIESEL_CO2_KG_PER_L = 2.68;
-/** LiFePO4 installed price per kWh (KES, mid-2026 typical; market roughly 25–40k).
- *  One constant for every tool — the calculator said 48k and the quote checker 36k. */
-export const BATTERY_KES_PER_KWH = 38_000;
+/** LiFePO4 EQUIPMENT price per kWh (KES, mid-2026 typical retail 25–32k).
+ *  One constant for every tool — the calculator said 48k and the quote checker 36k.
+ *  2026-10-25 audit: it was described as "installed" while costKes added the
+ *  12% installation factor on top, and the quote checker compared
+ *  equipment-only battery lines with it. It is the equipment price; costKes
+ *  adds installation once. */
+export const BATTERY_KES_PER_KWH = 30_000;
+/** Smallest practical string (see sizeSolar). */
+export const MIN_PANELS = 4;
+/** Grid-tied array-to-inverter ratio. */
+export const GRID_DC_AC = 1.15;
 const STANDARD_INVERTERS_KW = [1, 1.5, 2, 3, 3.6, 5, 6, 8, 10, 12, 15, 20, 25, 30, 36, 40, 50, 60, 80, 100, 120, 150, 200, 250, 300, 400, 500];
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
@@ -122,10 +130,14 @@ export function sizeSolar(input: SizingInput): SizingResult {
   const dayShare = clamp(input.daytimeUsePct ?? 50, 0, 100) / 100;
   const targetDailyKwh = type === 'grid-tied' ? dailyKwh * dayShare : dailyKwh;
   const rawKwp = targetDailyKwh / (sizingPsh * PERFORMANCE_RATIO * roofFactor * lossFactor);
-  // 3% tolerance: 4.005 panels is four panels, not five.
-  const panels = Math.max(1, Math.ceil((rawKwp * 1000) / PANEL_WATT - 0.03));
+  // 3% tolerance: 4.005 panels is four panels, not five. At least MIN_PANELS:
+  // a string of 2-3 panels (~80-125 V) is below the MPPT start voltage of
+  // most inverters sold in Kenya (2026-10-25 audit: 150 kWh/month got 2 panels).
+  const neededPanels = Math.ceil((rawKwp * 1000) / PANEL_WATT - 0.03);
+  const panels = Math.max(MIN_PANELS, neededPanels);
   const pvKwp = round1((panels * PANEL_WATT) / 1000);
   assumptions.push(`${PANEL_WATT} W panels; ${Math.round(PERFORMANCE_RATIO * 100)}% performance ratio (wiring, inverter, heat and dust losses).`);
+  if (neededPanels < MIN_PANELS) assumptions.push(`Your use needs fewer than ${MIN_PANELS} panels, but ${MIN_PANELS} is the smallest string that reaches a typical inverter's MPPT voltage, so the array is rounded up.`);
   if (type === 'grid-tied') assumptions.push(`Grid-tied array sized to cover the ${Math.round(dayShare * 100)}% of your use that happens in daylight; the grid supplies the rest.`);
   if (type === 'off-grid') assumptions.push(`Off-grid array sized on the cloudiest month (${pshWorst.toFixed(2)} sun-hours), not the yearly average.`);
 
@@ -141,23 +153,28 @@ export function sizeSolar(input: SizingInput): SizingResult {
     assumptions.push(`Battery carries the full load for ${days} day${days === 1 ? '' : 's'} without sun.`);
   }
   const batteryKwh = batteryUsableKwh > 0 ? round1(batteryUsableKwh / (BATTERY_DOD * BATTERY_EFFICIENCY)) : 0;
-  if (batteryKwh > 0) assumptions.push(`LiFePO4 battery: ${Math.round(BATTERY_DOD * 100)}% usable depth, ${Math.round(BATTERY_EFFICIENCY * 100)}% round-trip efficiency, about KES ${BATTERY_KES_PER_KWH.toLocaleString('en-KE')} per kWh installed.`);
+  if (batteryKwh > 0) assumptions.push(`LiFePO4 battery: ${Math.round(BATTERY_DOD * 100)}% usable depth, ${Math.round(BATTERY_EFFICIENCY * 100)}% round-trip efficiency, about KES ${BATTERY_KES_PER_KWH.toLocaleString('en-KE')} per kWh for the battery itself, plus installation.`);
 
   // ── Inverter ────────────────────────────────────────────────────────────
   let inverterKw: number;
   let inverterBasis: SizingResult['inverterBasis'];
   if (type === 'grid-tied') {
-    inverterKw = nextStandardInverter(pvKwp * 0.95);
+    // DC/AC about 1.1-1.2, the range the inverter-match tool calls a good
+    // match (2026-10-25 audit: 0.95 x PV put 27.5 kWp on a 30 kW inverter).
+    inverterKw = nextStandardInverter(pvKwp / GRID_DC_AC);
     inverterBasis = 'array';
+    assumptions.push(`Grid-tied inverter sized for a DC/AC ratio of about ${GRID_DC_AC} (array ${pvKwp} kWp, inverter ${inverterKw} kW).`);
   } else {
     const avgLoadKw = dailyKwh / 24;
-    // Without a stated peak: 4x the average load, and never under 3 kW, because a
-    // kettle, iron or pump alone draws 2-3 kW (2026-10-20 audit: a 450 kWh/month
-    // home got a 3 kW inverter).
-    const peak = input.peakLoadKw && input.peakLoadKw > 0 ? input.peakLoadKw : Math.max(avgLoadKw * 4, 3);
+    // Without a stated peak: 4x the average load, and never under 2.4 kW, because
+    // a kettle, iron or pump alone draws about 2 kW (2026-10-20 audit: a 450
+    // kWh/month home got a 3 kW inverter; 2026-10-25: a 3 kW floor x 1.25 put
+    // every small home on 5 kW).
+    const peak = input.peakLoadKw && input.peakLoadKw > 0 ? input.peakLoadKw : Math.max(avgLoadKw * 4, 2.4);
     inverterBasis = input.peakLoadKw && input.peakLoadKw > 0 ? 'peak-load' : 'estimated-peak';
     inverterKw = nextStandardInverter(Math.max(peak * 1.25, pvKwp * 0.8));
-    if (inverterBasis === 'estimated-peak') assumptions.push('Inverter sized on an estimated peak of 4x your average load (at least 3 kW). Enter your largest load (pumps, welders, AC) for a firmer figure.');
+    if (inverterBasis === 'estimated-peak') assumptions.push('Inverter sized on an estimated peak of 4x your average load (at least 2.4 kW). Enter your largest load (pumps, welders, AC) for a firmer figure.');
+    if (pvKwp / inverterKw < 0.8) assumptions.push(`A battery inverter is sized for your largest load, not the array, so it is larger than the ${pvKwp} kWp array (DC/AC ${round1(pvKwp / inverterKw)}). That is normal for a hybrid or off-grid system.`);
   }
 
   // ── Energy and saving ───────────────────────────────────────────────────

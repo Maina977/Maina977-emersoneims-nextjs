@@ -184,7 +184,7 @@ export default function AquaScanMethodologyPage() {
               <span className="font-bold text-emerald-400">Measured benchmark (northern Kenya):</span> against real drilled
               boreholes in validated counties, the modelled depth fell within the drilled band ~40% of the time — and
               the reports say exactly that, including that yield could not be reliably predicted without a pump test.
-              This benchmark is cited inside every report generated in its coverage area.
+              This benchmark is stated on the cover of every report.
             </div>
             <div className="rounded-lg border border-amber-800 bg-amber-950/30 p-4 text-sm text-slate-300">
               <span className="font-bold text-amber-400">Prediction-vs-outcome register: collecting.</span> Every borehole drilled

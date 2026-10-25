@@ -16,7 +16,7 @@ const handler = async (
   ctx: { params: Promise<{ path?: string[] }> },
 ) => {
   const { path = [] } = await ctx.params;
-  const res = await handleSolarGenius(req, 'engglobal', path);
+  const res = await handleSolarGenius(req.clone() as NextRequest, 'engglobal', path);
   if (res.status !== 404) return res;
   return dispatch(req, path, 'engglobal');
 };

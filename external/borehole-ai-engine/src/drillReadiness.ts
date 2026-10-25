@@ -65,6 +65,8 @@ export interface DrillReadinessResult {
   prospectIndex: number;
   /** plain-language explanation of the prospect (analog wells + convergence) */
   prospectStatement: string;
+  /** "N nearby water points, ~X% recorded functional" — evidence, not a probability */
+  waterPointEvidence: string;
 }
 
 /**
@@ -211,10 +213,17 @@ export function computeDrillReadiness(input: DrillReadinessInput): DrillReadines
     : analogN > 0
     ? `${analogN} nearby water-point record(s) and `
     : '';
-  const prospectStatement = `${analogPhrase}together with convergent vegetation, drainage, water-body and recharge signals, indicate a ${groundwaterProspect} groundwater prospect (~${prospectIndex}%). This is the DATA-BACKED chance of groundwater OCCURRENCE at this location. NOTE: the functionality of nearby springs and water points proves groundwater is present — it is NOT a borehole drilling success rate; borehole success additionally depends on striking a productive zone at depth, which only field geophysics and drilling confirm. Drilling READINESS — pegging the exact point and depth and holding regulatory authority — is scored separately and still requires the field steps below.`;
+  // 2026-10-25 audit: this printed a second "chance of water" percentage
+  // (Mombasa: LOW ~32% beside a 70% success probability). Water-point
+  // functionality shows groundwater OCCURS nearby; it is not a probability of
+  // a successful borehole, so it is stated as evidence, with no percentage.
+  const waterPointEvidence = analogN > 0
+    ? `${analogN} nearby water point${analogN === 1 ? '' : 's'} on record${analogSR > 0 ? `, about ${Math.round(analogSR * 100)}% recorded as working` : ''}`
+    : 'No nearby water points on record';
+  const prospectStatement = `${analogPhrase}together with vegetation, drainage, water-body and recharge signals, show whether groundwater OCCURS in the area. The functionality of nearby springs and water points proves groundwater is present — it is NOT a borehole drilling success rate; that also depends on striking a productive zone at depth, which only field geophysics and drilling confirm.`;
 
   return {
     score, status, stage, openGates, breakdown: cats, cappedByGates, handoverStatement,
-    groundwaterProspect, prospectIndex, prospectStatement,
+    groundwaterProspect, prospectIndex, prospectStatement, waterPointEvidence,
   };
 }

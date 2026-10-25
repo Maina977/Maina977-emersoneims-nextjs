@@ -6,22 +6,22 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/solar-design-studio`;
 
 export const metadata: Metadata = {
-  title: 'Solar Design Studio — Roof Layout, Shading & Wiring',
+  title: 'Solar Design Studio — Roof Layout, Sun Path & Wiring',
   description:
-    'Draw your roof, place panels, see sun-path shading through the day, and get a single-line diagram and wire schedule. Free in your browser; an EmersonEIMS engineer can turn it into a quotation.',
+    'Draw your roof, place panels, follow the path and angle of the sun through the day (trees and walls are not modelled), and get a single-line diagram and wire schedule. Free in your browser; an EmersonEIMS engineer can turn it into a quotation.',
   keywords: [
     'solar design studio',
     'solar roof layout Kenya',
     'solar single-line diagram',
     'PV string sizing',
-    'shading analysis',
+    'sun path',
     'roof solar layout',
     'EmersonEIMS Solar Design',
   ],
   alternates: { canonical: URL },
   openGraph: {
-    title: 'Solar Design Studio — Roof Layout, Shading & Wiring',
-    description: 'Roof layout, sun-path shading, single-line diagram and wire schedule in your browser.',
+    title: 'Solar Design Studio — Roof Layout, Sun Path & Wiring',
+    description: 'Roof layout, sun path, single-line diagram and wire schedule in your browser.',
     url: URL,
     siteName: 'EmersonEIMS',
     type: 'website',
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Solar Design Studio — Roof Layout, Shading & Wiring',
-    description: 'Roof layout, shading and wiring in your browser.',
+    title: 'Solar Design Studio — Roof Layout, Sun Path & Wiring',
+    description: 'Roof layout, sun path and wiring in your browser.',
     images: [`${SITE}/og-image.jpg`],
     site: '@EmersonEIMS',
   },
@@ -45,10 +45,10 @@ export default function SolarDesignStudioLayout({ children }: { children: ReactN
       <FlagshipProductSchema
         name="Solar Design Studio"
         url={URL}
-        description="Browser-based solar design studio: roof layout, panel placement, sun-path shading, single-line diagram and wire schedule."
+        description="Browser-based solar design studio: roof layout, panel placement, sun path, single-line diagram and wire schedule."
         category="Solar Design"
         applicationCategory="DesignApplication"
-        keywords={['Solar Design', 'PV Layout', 'Shading', 'Single-Line Diagram', 'Wire Schedule']}
+        keywords={['Solar Design', 'PV Layout', 'Sun Path', 'Single-Line Diagram', 'Wire Schedule']}
         industry="Solar Installers, EPCs"
         priceKes="Free"
       />

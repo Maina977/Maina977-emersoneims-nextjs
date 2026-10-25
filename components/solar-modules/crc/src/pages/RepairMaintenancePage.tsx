@@ -118,7 +118,7 @@ const RepairMaintenancePage: React.FC = () => {
         <>
           <Card>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px', gap: '0.6rem' }}>
-              <Input placeholder="Search by code, title or tag…" value={q} onChange={e => setQ(e.target.value)} />
+              <Input aria-label="Search fault codes" placeholder="Search by code, title or tag…" value={q} onChange={e => setQ(e.target.value)} />
               <select value={brand} onChange={e => setBrand(e.target.value)}
                 style={{ padding: '0.55rem 0.8rem', borderRadius: 8, background: 'rgba(0,0,0,0.25)', color: '#E6F1FF', border: '1px solid rgba(0,217,255,0.25)' }}>
                 <option value="">All brands</option>

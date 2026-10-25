@@ -70,7 +70,7 @@
 <header>
   <h1>EmersonEIMS Building Suite Pro <small>Professional Console</small></h1>
   <div>
-    <a class="pill" href="/solutions/building" style="text-decoration:none;color:inherit">← Building Suite</a>
+    <a class="pill" href="/solutions/building" target="_top" style="text-decoration:none;color:inherit">← Building Suite</a>
     <a class="pill" href="https://wa.me/254768860665" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit">WhatsApp an engineer</a>
     <span class="pill" id="health">Checking connection…</span>
   </div>
@@ -115,7 +115,6 @@ const MODULES = [
       {k:'structure_type', label:'Structure type', type:'select',
         opts:['steel_moment_frame','concrete_moment_frame','eccentric_braced','other'],
         def:'steel_moment_frame'},
-      {k:'stories', label:'Stories', type:'number', def:4},
     ]},
 
   { id:'geotech', group:'Engineering', tag:'b-eng',
@@ -398,8 +397,6 @@ const MODULES = [
     fields:[
       {k:'volume_m3', label:'Volume (m³)', type:'number', def:200},
       {k:'method', label:'Method', type:'select', opts:['sabine','eyring'], def:'sabine'},
-      {k:'room_type', label:'Room type', type:'select',
-        opts:['office','classroom','meeting','concert_hall','auditorium','restaurant'], def:'office'},
       {k:'surfaces', label:'Surfaces (JSON)', type:'textarea',
         def:'[\n  {"description":"plastered ceiling","area_m2":80,"alpha":0.04},\n  {"description":"carpet on concrete","area_m2":80,"alpha":0.30},\n  {"description":"glass / drywall","area_m2":40,"alpha":0.10}\n]'},
     ]},
@@ -1235,7 +1232,7 @@ function formatValue(v){
 }
 
 function renderArray(arr){
-  if (!arr.length) return '<div class="note">No records returned.</div>';
+  if (!arr.length) return '<div class="note">None</div>';
   if (arr.every(v => !isPlainObject(v))){
     return `<div>${arr.slice(0, 40).map(v => `<span class="chip">${proEscape(formatValue(v))}</span>`).join(' ')}</div>`;
   }

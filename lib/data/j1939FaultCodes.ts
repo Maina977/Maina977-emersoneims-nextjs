@@ -335,27 +335,67 @@ const SHUTDOWN_WHEN_HIGH = new Set([110, 190]);      // coolant temperature, eng
 /** Measurements that inform fuelling or derating but do not protect the engine. */
 const ADVISORY_SPN = new Set([108, 171, 172, 106, 1172, 96, 38, 168, 158, 174, 183, 250, 92]);
 
+/** Directions that are harmful but not normally an automatic shutdown. */
+const CRITICAL_WHEN_HIGH = new Set([173, 175, 1136, 101, 3251, 3719, 1180, 412]);
+const CRITICAL_WHEN_LOW = new Set([94, 157, 104, 109, 1349, 164]);
+const HIGH_FMI = [0, 15, 16];
+const LOW_FMI = [1, 17, 18];
+const HIGH_WORDS = /\b(high|rising|sustained|overload|back-?pressure|overspeed|over-?temperature|overheat\w*|overboost)\b/i;
+const LOW_WORDS = /\b(low|leak\w*|loss|consumption|drop\w*|starv\w*|underspeed)\b/i;
+
+/**
+ * The note must fit the failure mode (2026-10-25 audit): a sensor-signal FMI
+ * on SPN 190 said "Overspeed is a shutdown event", an erratic coolant signal
+ * talked about radiator restriction, and coolant level ABOVE normal said "a
+ * repeating low-level alarm is a leak".
+ */
+function noteFor(s: SpnDef, f: FmiDef, isHigh: boolean, isLow: boolean, isTemp: boolean): string {
+  if (isHigh) {
+    if (s.noteHigh) return s.noteHigh;
+    if (!LOW_WORDS.test(s.note)) return s.note;
+    return 'Confirm the reading with an independent gauge; if it is real, find what is driving the value above its normal range before clearing.';
+  }
+  if (isLow) {
+    if (s.noteLow) return s.noteLow;
+    if (!HIGH_WORDS.test(s.note)) return s.note;
+    return isTemp
+      ? 'A low reading usually means a stuck-open or missing thermostat, a sensor or wiring fault, or a cold or lightly loaded engine. Check with an independent thermometer before replacing parts.'
+      : 'A below-normal reading on this parameter is most often a sensor, wiring or reference fault. Verify with an independent gauge before replacing parts.';
+  }
+  if (f.fmi === 31) return s.note;
+  if (f.kind === 'electrical' || f.kind === 'signal') {
+    return `This reports a fault in the ${s.name.toLowerCase()} signal or its circuit, not a confirmed high or low value. Check the wiring and sensor, and confirm the actual value with an independent gauge or meter before acting on it.`;
+  }
+  return HIGH_WORDS.test(s.note) || LOW_WORDS.test(s.note) ? '' : s.note;
+}
+
 function build(): J1939FaultCode[] {
   const out: J1939FaultCode[] = [];
   for (const s of SPN) {
     for (const f of FMI) {
       if (!s.fmis.includes(f.fmi)) continue;
 
-      // Severity comes from the FMI's defined class, adjusted by parameter and direction.
-      let severity = f.severity;
-      if (f.fmi === 0 || f.fmi === 1) {
-        if ((f.fmi === 1 && SHUTDOWN_WHEN_LOW.has(s.spn)) || (f.fmi === 0 && SHUTDOWN_WHEN_HIGH.has(s.spn))) severity = 'shutdown';
-        else if (ADVISORY_SPN.has(s.spn)) severity = 'warning';
-      }
-      // Direction (2026-10-20 audit round 3). A LOW temperature is not an
-      // over-temperature emergency, and a note written about high or rising
-      // values must not be shown for a low reading.
-      const isLow = [1, 17, 18, 21].includes(f.fmi);
+      // Severity follows the FMI class, then — for real over/under-range
+      // readings — the parameter and the direction that actually harms the
+      // engine (2026-10-25 audit: high oil pressure, water-in-fuel and coolant
+      // level ABOVE normal were "critical/trip"; SPN 100 FMI 17 was "info").
+      const isHigh = HIGH_FMI.includes(f.fmi);
+      const isLow = LOW_FMI.includes(f.fmi);
       const isTemp = /temperature/i.test(s.name);
-      if (isLow && isTemp && severity === 'critical') severity = 'warning';
+      let severity = f.severity;
+      if (isHigh || isLow) {
+        const protect = (isLow && SHUTDOWN_WHEN_LOW.has(s.spn)) || (isHigh && SHUTDOWN_WHEN_HIGH.has(s.spn));
+        const harmful = (isLow && CRITICAL_WHEN_LOW.has(s.spn)) || (isHigh && CRITICAL_WHEN_HIGH.has(s.spn));
+        const most = f.fmi === 0 || f.fmi === 1, moderate = f.fmi === 16 || f.fmi === 18;
+        if (protect) severity = most ? 'shutdown' : moderate ? 'critical' : 'warning';
+        else if (harmful) severity = most ? 'critical' : 'warning';
+        else severity = most || moderate ? 'warning' : 'info';
+        if (ADVISORY_SPN.has(s.spn) && severity !== 'info') severity = 'warning';
+      }
       // "Has shut down" is a shutdown and "approaching shutdown" is critical (2026-10-20 audit).
       if (f.fmi === 31 && s.spn === 1110) severity = 'shutdown';
       if (f.fmi === 31 && s.spn === 1109) severity = 'critical';
+      const note = noteFor(s, f, isHigh, isLow, isTemp);
 
       out.push({
         code: `SPN ${s.spn} / FMI ${f.fmi}`,
@@ -366,7 +406,7 @@ function build(): J1939FaultCode[] {
         category: s.category,
         severity,
         title: `${s.name} — ${f.label}`,
-        description: `${s.name}: ${f.meaning} ${([1, 17, 18, 21].includes(f.fmi) && s.noteLow) || ([0, 15, 16, 20].includes(f.fmi) && s.noteHigh) || (isLow && /\b(high|rising|sustained|overload|back-pressure|overspeed)\b/i.test(s.note) ? (isTemp ? 'A low reading usually means a stuck-open or missing thermostat, a sensor or wiring fault, or a cold or lightly loaded engine. Check with an independent thermometer before replacing parts.' : 'A below-normal reading on this parameter is most often a sensor, wiring or reference fault. Verify with an independent gauge before replacing parts.') : s.note)}`,
+        description: `${s.name}: ${f.meaning} ${note}`,
         causes: isLow && isTemp ? ['Thermostat stuck open or missing', 'Sensor or wiring fault reading low', 'Engine running cold, unloaded or in low ambient temperature'] : f.causes,
         remedies: f.remedies,
       });

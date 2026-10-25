@@ -649,7 +649,7 @@ console.log('\nS. Desktop drill-target readiness (DDTR / FRR / MAG)');
   check('all field+regulatory gates done → MAG RELEASED FOR DRILLING', released.mag === 'RELEASED FOR DRILLING');
   check('field-complete FRR reaches 100', released.frr === 100);
   check('even a strong+field-complete site never exceeds DDTR 95', released.ddtr <= 95);
-  check('DDTR classification bands map correctly', ddt.classifyDDTR(30) === 'DESKTOP TARGET REJECTED' && ddt.classifyDDTR(92) === 'HIGH-CONFIDENCE DESKTOP DRILL TARGET');
+  check('DDTR classification bands map correctly', ddt.classifyDDTR(30) === 'DESKTOP TARGET REJECTED' && ddt.classifyDDTR(92) === 'STRONGLY EVIDENCED DESKTOP TARGET');
 
   // ── Owner directive 2026-07-16: a COMPLETE, convergent desktop study must
   //    legitimately reach 80+ (the remaining ~20% is the actual site survey),
@@ -672,8 +672,8 @@ console.log('\nS. Desktop drill-target readiness (DDTR / FRR / MAG)');
   const richR = ddt.computeDesktopDrillTargetReadiness(rich, 0);
   check('evidence-rich COMPLETE desktop study reaches DDTR >= 80 (desktop pre-feasibility earns its 80%+)',
     richR.ddtr >= 80, `ddtr ${richR.ddtr}`);
-  check('...and is classed ADVANCED or HIGH-CONFIDENCE desktop target',
-    /ADVANCED|HIGH-CONFIDENCE/.test(richR.ddtrClass), richR.ddtrClass);
+  check('...and is classed well or strongly evidenced desktop target',
+    /WELL-EVIDENCED|STRONGLY EVIDENCED/.test(richR.ddtrClass), richR.ddtrClass);
   check('...but MAG still NOT released for drilling (the ~20% field share is explicit)',
     richR.mag === 'CONDITIONALLY RELEASED' && richR.frr === 0);
   check('regional-est outcomes earn NO drilled-analogue credit (no synthetic validation)',

@@ -353,7 +353,7 @@ export default function CommercialPropertyIndustriesPage() {
               {
                 step: '1',
                 title: 'Energy Audit',
-                details: 'We analyze your building\'s power consumption patterns, peak loads, and historical outages. AI-powered load analysis identifies optimization opportunities.',
+                details: 'We analyze your building\'s power consumption patterns, peak loads, and historical outages. The load analysis shows where demand can be cut or shifted.',
               },
               {
                 step: '2',

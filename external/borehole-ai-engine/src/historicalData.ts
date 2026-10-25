@@ -226,9 +226,14 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
     // Seasons
     const rainySeasonMonths = MONTHS.filter((_, i) => monthlyAvgPrecip[i] >= 80);
     const drySeasonMonths = MONTHS.filter((_, i) => monthlyAvgPrecip[i] < 30);
-    const bestDrillingSeason = drySeasonMonths.length > 0
-      ? `${drySeasonMonths[0]}–${drySeasonMonths[drySeasonMonths.length - 1]} (dry season — water table lowest, easier drilling)`
-      : 'Year-round (no distinct dry season)';
+    // The four driest months, listed — the same rule as the web page. A
+    // first-to-last range ("Jan-Oct") swallowed the rains between them
+    // (2026-10-25 audit).
+    const driest = MONTHS.map((m, i) => ({ m, i, mm: monthlyAvgPrecip[i] }))
+      .sort((a, b) => a.mm - b.mm).slice(0, 4).sort((a, b) => a.i - b.i).map((x) => x.m);
+    const bestDrillingSeason = monthlyAvgPrecip.some((v) => v > 0)
+      ? `Drier months: ${driest.join(', ')} (easier site access; water table usually lowest)`
+      : 'No monthly rainfall record';
 
     console.log(`[HistoricalWeather] ${years.length} years, avg=${avgAnnualPrecip}mm, trend=${trendPerDecade}mm/decade`);
 

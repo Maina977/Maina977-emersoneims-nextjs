@@ -23,7 +23,7 @@ const SERVICES = [
     id: 'generators',
     name: 'Generator Oracle',
     icon: '⚡',
-    description: 'A detailed generator diagnostic platform with manufacturer-curated fault codes, AI-powered diagnostics, and expert repair guides for all major controller brands.',
+    description: 'Generator diagnostics: a fault-code reference written by our engineers, symptom guides and repair guides for the main controller brands.',
     href: '/maintenance-hub/generators',
     // Filled live from /api/generator-oracle/health — see useFaultCodeTotal().
     stats: { value: '', label: 'Fault Codes' },

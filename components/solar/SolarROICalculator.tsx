@@ -6,31 +6,27 @@
  */
 
 import { useState, useMemo } from 'react';
+import { estimateInstalledCost, PERFORMANCE_RATIO } from '@/lib/solar/sizing';
 import {
   TrendingUp, DollarSign,
   Calendar, PiggyBank, Leaf
 } from 'lucide-react';
 
-// Kenya electricity rates (KES per kWh)
-const KPLC_RATES = {
-  domestic: { tier1: 12.00, tier2: 15.80, tier3: 20.57, tier4: 22.00 },
-  commercial: 18.50,
-  industrial: 14.20,
-};
+// Effective KES per kWh including levies and VAT (your bill divided by the
+// kWh on it); the same default as the SolarGenius calculator.
+const KPLC_RATES = { domestic: 25, commercial: 25, industrial: 18 };
 
-// Solar system pricing in Kenya (KES per Watt installed)
-const SOLAR_PRICING = {
-  budget: 85,      // Basic off-grid
-  standard: 120,   // Quality hybrid
-  premium: 160,    // Premium brands
-};
+// Price points: the low / typical / high ends of the calculator's installed-
+// price range (lib/solar/sizing.ts), not separate per-watt prices.
+type Quality = 'budget' | 'standard' | 'premium';
 
-// Kenya-specific factors
+// Kenya-specific factors, shared with the calculator where it has them.
 const KENYA_SOLAR = {
   avgSunHours: 5.5,
   degradationRate: 0.005, // 0.5% per year
   maintenanceCostPercent: 0.01, // 1% of system cost per year
-  inflationRate: 0.07, // 7% electricity price increase
+  tariffGrowth: 0, // tariffs held flat: no assumed price rises
+  gridKgCo2PerKwh: 0.213, // Kenya grid (Climate Watch / KPLC 2023), as the sustainability tool
 };
 
 export default function SolarROICalculator() {
@@ -38,34 +34,41 @@ export default function SolarROICalculator() {
   const [monthlyBill, setMonthlyBill] = useState(15000);
   const [customerType, setCustomerType] = useState<'domestic' | 'commercial' | 'industrial'>('domestic');
   const [systemSize, setSystemSize] = useState(5); // kW
-  const [systemQuality, setSystemQuality] = useState<'budget' | 'standard' | 'premium'>('standard');
+  const [systemQuality, setSystemQuality] = useState<Quality>('standard');
   const [includesBattery, setIncludesBattery] = useState(true);
   const [batteryCapacity, setBatteryCapacity] = useState(10); // kWh
 
   // Calculate ROI metrics
   const calculations = useMemo(() => {
     // Get electricity rate
-    const rate = customerType === 'domestic' ? 18.5 : KPLC_RATES[customerType]; // Average domestic
+    const rate = KPLC_RATES[customerType];
 
     // Monthly consumption estimate
     const monthlyConsumption = monthlyBill / rate; // kWh
 
     // Solar system cost
-    const panelCost = systemSize * 1000 * SOLAR_PRICING[systemQuality];
-    const batteryCost = includesBattery ? batteryCapacity * 15000 : 0; // ~15,000 KES per kWh
-    const installationCost = (panelCost + batteryCost) * 0.15; // 15% installation
-    const totalSystemCost = panelCost + batteryCost + installationCost;
+    const type = includesBattery ? 'hybrid' : 'grid-tied';
+    const battery = includesBattery ? batteryCapacity : 0;
+    const range = estimateInstalledCost(systemSize, systemSize, battery, type);
+    const totalSystemCost = systemQuality === 'budget' ? range.lowKes : systemQuality === 'premium' ? range.highKes : range.midKes;
+    const withoutBattery = estimateInstalledCost(systemSize, systemSize, 0, type);
+    const batteryCost = totalSystemCost - (systemQuality === 'budget' ? withoutBattery.lowKes : systemQuality === 'premium' ? withoutBattery.highKes : withoutBattery.midKes);
+    const panelCost = totalSystemCost - batteryCost;
 
     // Daily production
-    const dailyProduction = systemSize * KENYA_SOLAR.avgSunHours * 0.8; // 80% efficiency
+    const dailyProduction = systemSize * KENYA_SOLAR.avgSunHours * PERFORMANCE_RATIO;
     const monthlyProduction = dailyProduction * 30;
     const annualProduction = dailyProduction * 365;
 
     // Coverage calculation
     const coveragePercent = Math.min(100, (monthlyProduction / monthlyConsumption) * 100);
 
-    // Monthly savings
-    const energySaved = Math.min(monthlyProduction, monthlyConsumption);
+    // Monthly savings: not all solar is used on site. With a battery ~90%
+    // (calculator's hybrid figure); without one only daytime use counts, about
+    // half the load, of which ~75% is met (calculator's grid-tied figure).
+    const energySaved = includesBattery
+      ? Math.min(monthlyProduction, monthlyConsumption) * 0.9
+      : Math.min(monthlyProduction, monthlyConsumption * 0.5) * 0.75;
     const monthlySavings = energySaved * rate;
     const annualSavings = monthlySavings * 12;
 
@@ -80,7 +83,7 @@ export default function SolarROICalculator() {
 
     for (let year = 1; year <= 25; year++) {
       const degradationFactor = Math.pow(1 - KENYA_SOLAR.degradationRate, year - 1);
-      const inflationFactor = Math.pow(1 + KENYA_SOLAR.inflationRate, year - 1);
+      const inflationFactor = Math.pow(1 + KENYA_SOLAR.tariffGrowth, year - 1);
       const yearSavings = annualSavings * degradationFactor * inflationFactor;
       const yearMaintenance = totalSystemCost * KENYA_SOLAR.maintenanceCostPercent;
       const netSavings = yearSavings - yearMaintenance;
@@ -102,15 +105,14 @@ export default function SolarROICalculator() {
     const totalROI = ((cumulativeSavings - totalSystemCost) / totalSystemCost) * 100;
     const lifetimeSavings = cumulativeSavings - totalSystemCost;
 
-    // Carbon offset (Kenya grid: ~0.35 kg CO2/kWh)
-    const annualCO2Offset = annualProduction * 0.35;
+    // Carbon offset at the Kenya grid factor
+    const annualCO2Offset = annualProduction * KENYA_SOLAR.gridKgCo2PerKwh;
     const lifetimeCO2Offset = annualCO2Offset * 25;
 
     return {
       totalSystemCost,
       panelCost,
       batteryCost,
-      installationCost,
       monthlyConsumption: Math.round(monthlyConsumption),
       monthlyProduction: Math.round(monthlyProduction),
       coveragePercent: Math.round(coveragePercent),
@@ -197,9 +199,9 @@ export default function SolarROICalculator() {
             <label className="block text-slate-300 text-sm mb-2">System Quality</label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { id: 'budget', label: 'Budget', price: 'KES 85/W' },
-                { id: 'standard', label: 'Standard', price: 'KES 120/W' },
-                { id: 'premium', label: 'Premium', price: 'KES 160/W' },
+                { id: 'budget', label: 'Budget', price: 'Low end of range' },
+                { id: 'standard', label: 'Standard', price: 'Typical' },
+                { id: 'premium', label: 'Premium', price: 'High end of range' },
               ].map((opt) => (
                 <button
                   key={opt.id}
@@ -260,7 +262,7 @@ export default function SolarROICalculator() {
             </div>
             <div className="text-sm text-slate-500 space-y-1">
               <div className="flex justify-between">
-                <span>Solar Panels ({systemSize}kW)</span>
+                <span>Panels, inverter, mounting &amp; installation ({systemSize} kW)</span>
                 <span>KES {calculations.panelCost.toLocaleString()}</span>
               </div>
               {includesBattery && (
@@ -269,10 +271,7 @@ export default function SolarROICalculator() {
                   <span>KES {calculations.batteryCost.toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex justify-between">
-                <span>Installation</span>
-                <span>KES {calculations.installationCost.toLocaleString()}</span>
-              </div>
+              <p className="text-xs text-slate-500 pt-1">Typical Kenyan installed prices (mid-2026), the same model as the SolarGenius calculator. Not a quotation: a site survey fixes the price.</p>
             </div>
           </div>
 

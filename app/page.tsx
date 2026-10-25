@@ -517,8 +517,8 @@ export default function HomePage() {
                   '@type': 'Offer',
                   itemOffered: {
                     '@type': 'SoftwareApplication',
-                    name: 'Generator Oracle AI',
-                    description: 'AI-powered generator diagnostic system with voice activation and an extensive fault-code database',
+                    name: 'Generator Oracle',
+                    description: 'Fault-code lookup and rule-based symptom guide for diesel generators: J1939 SPN/FMI codes and controller alarms, with likely causes and checks written by our engineers.',
                     applicationCategory: 'BusinessApplication',
                     operatingSystem: 'Web Browser',
                     offers: { '@type': 'Offer', price: '0', priceCurrency: 'KES' }
@@ -528,8 +528,8 @@ export default function HomePage() {
                   '@type': 'Offer',
                   itemOffered: {
                     '@type': 'SoftwareApplication',
-                    name: 'Solar Solution School',
-                    description: 'World-class solar design platform with 10 AI engines, 3D modeling, voice commands, and coverage across 15 African countries',
+                    name: 'SolarGenius Pro',
+                    description: 'Free solar sizing tools for Kenya: system and battery sizing, a supplier-quote checker, roof layout and wiring checks, with the assumptions stated.',
                     applicationCategory: 'BusinessApplication',
                     operatingSystem: 'Web Browser',
                     offers: { '@type': 'Offer', price: '0', priceCurrency: 'KES' }
@@ -539,8 +539,8 @@ export default function HomePage() {
                   '@type': 'Offer',
                   itemOffered: {
                     '@type': 'SoftwareApplication',
-                    name: 'AI Borehole Site Analyzer',
-                    description: "Africa's first AI-powered borehole site analysis tool using satellite imagery, LiDAR, hyperspectral data, and virtual geophysical surveys. Rock mapping without site visits.",
+                    name: 'AquaScan Pro borehole pre-screen',
+                    description: 'Desktop borehole pre-screen for Kenya: depth, yield and water-quality risk estimated from public satellite, climate and soil data and nearby drilled-borehole records. Not a substitute for a hydrogeological survey.',
                     applicationCategory: 'BusinessApplication',
                     operatingSystem: 'Web Browser',
                     offers: { '@type': 'Offer', price: '0', priceCurrency: 'KES' }
@@ -551,7 +551,7 @@ export default function HomePage() {
                   itemOffered: {
                     '@type': 'Service',
                     name: 'Generator Sales & Installation',
-                    description: 'CUMMINS generators 10-2000KVA, supplied, installed and commissioned',
+                    description: 'New VOLTKA generators 10-3000 kVA (open or canopied), and used generators of other makes, supplied, installed and commissioned',
                     provider: { '@type': 'Organization', name: 'EmersonEIMS' }
                   }
                 },
@@ -567,19 +567,13 @@ export default function HomePage() {
               ]
             },
             knowsAbout: [
-              'Artificial Intelligence',
-              'Machine Learning',
               'Generator Diagnostics',
               'Solar Panel Design',
               'Power Solutions',
               'Borehole Site Analysis',
               'Remote Sensing',
               'Satellite Imagery Analysis',
-              'LiDAR Terrain Mapping',
-              'Geophysical Surveys',
-              'Enterprise Software',
-              'CRM Integration',
-              'Voice Recognition'
+              'Geophysical Surveys'
             ],
             // 'award' array removed (audit 2026-05-09): all entries were
             // self-asserted superlatives ("Most Advanced", "World's Most
@@ -598,9 +592,9 @@ export default function HomePage() {
             {
               '@context': 'https://schema.org',
               '@type': 'SoftwareApplication',
-              name: 'Generator Oracle AI',
+              name: 'Generator Oracle',
               applicationCategory: 'BusinessApplication',
-              description: 'AI-powered generator diagnostic tool that analyses symptoms and suggests solutions, backed by an extensive fault-code database. Features voice activation and real-time analysis.',
+              description: 'Fault-code lookup and rule-based symptom guide for diesel generators: J1939 SPN/FMI codes and controller alarms, with likely causes and checks written by our engineers.',
               operatingSystem: 'Any (Web-based)',
               url: 'https://www.emersoneims.com/generator-oracle',
               offers: {
@@ -612,16 +606,16 @@ export default function HomePage() {
               // structured-data policy requires on-page user-generated
               // reviews for self-asserted ratings — we don't have them
               // yet, so emitting one is a policy violation.
-              featureList: 'Voice Activation, Fault Code Database, Real-time Analysis, AI-Powered Recommendations'
+              featureList: 'J1939 SPN/FMI lookup, Controller alarm reference, Symptom guide, Ask an engineer'
             },
             {
               '@context': 'https://schema.org',
               '@type': 'SoftwareApplication',
-              name: 'Solar Solution School',
+              name: 'SolarGenius Pro',
               applicationCategory: 'BusinessApplication',
-              description: 'Solar design platform featuring 10 AI engines, 3D modelling, voice commands and 25-year production projections. Country presets cover 15 African markets.',
+              description: 'Free solar sizing tools for Kenya: system and battery sizing, a supplier-quote checker, roof layout and wiring checks, with the assumptions stated.',
               operatingSystem: 'Any (Web-based)',
-              url: 'https://www.emersoneims.com/solar',
+              url: 'https://www.emersoneims.com/solar-genius-pro',
               offers: {
                 '@type': 'Offer',
                 price: '0',
@@ -629,7 +623,7 @@ export default function HomePage() {
               },
               // aggregateRating removed (audit 2026-05-09) — see note
               // above. Self-asserted ratings without UGC violate policy.
-              featureList: '10 AI Engines, 3D Design Studio, Voice Commands, 25-Year Predictions, Enterprise Integrations'
+              featureList: 'System sizing, Battery sizing, Quote checker, Roof layout, Wiring checks'
             }
           ]),
         }}

@@ -1727,7 +1727,8 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="faults" showBack={false} />
+                    {/* The lookup below has its own heading; this card only pushed the search box off a laptop screen (2026-10-25 audit). */}
+                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="faults" showBack={false} showPanelInfo={false} />
 
                     {/* Sub-Tab Navigation */}
                     <SubTabNav

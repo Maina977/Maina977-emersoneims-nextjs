@@ -781,7 +781,7 @@ function PMICalculator() {
       <GlassmorphicCard intensity="medium" className="p-8 max-w-6xl mx-auto">
         <div className="mb-8">
           <h2 className="text-4xl font-bold mb-2">PMI™ Predictive Maintenance Calculator</h2>
-          <p className="text-gray-400">Powered by EmersonEIMS proprietary algorithms • Patent Pending KE/P/2025/XXXXX</p>
+          <p className="text-gray-400">Built in-house by EmersonEIMS engineers. Results are estimates to plan with; a site survey confirms them.</p>
         </div>
         
         <div className="grid md:grid-cols-2 gap-8">

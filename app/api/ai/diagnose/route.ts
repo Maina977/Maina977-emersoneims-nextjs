@@ -60,13 +60,13 @@ export async function POST(request: NextRequest) {
         break;
     }
 
-    return NextResponse.json({
+    return NextResponse.json(withoutConfidence({
       success: true,
       mode,
       query,
       timestamp: Date.now(),
       ...result
-    });
+    }));
 
   } catch (error) {
     console.error('Diagnostic API error:', error);
@@ -79,6 +79,25 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * The ranking scores are keyword-match counts, not probabilities. Publishing
+ * them as "confidence: 95" (on both Over and Under Voltage) or 100 on an
+ * unverified entry overstated them (2026-10-25 audit). They stay internal for
+ * ordering and are removed from every response.
+ */
+function withoutConfidence<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(withoutConfidence) as unknown as T;
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (k === 'confidence') continue;
+      out[k] = withoutConfidence(v);
+    }
+    return out as T;
+  }
+  return value;
 }
 
 type DiagnosticAPIResponse = {
@@ -148,13 +167,13 @@ function handleLookup(query: string): DiagnosticAPIResponse {
     return {
       found: false,
       results: suggestions,
-      summary: `No verified entry for ${asked}. Showing ${suggestions.length} related code(s) — these are suggestions, not a match for the code you entered. Confirm any code against the OEM service manual before acting on it.`
+      summary: `No exact entry for ${asked}. Showing ${suggestions.length} related code(s) — these are suggestions, not a match for the code you entered. Confirm any code against the OEM service manual before acting on it.`
     };
   }
 
   return {
     found: false,
-    summary: `No verified entry for ${asked}. Our database carries hand-checked codes only, so an absent code means we have not verified it — not that your controller is faulty. Check the OEM service manual, or contact us with the controller make and model.`
+    summary: `No entry for ${asked} in our fault-code reference. An absent code means we do not hold it — not that your controller is faulty. Check the OEM service manual, or contact us with the controller make and model.`
   };
 }
 
@@ -252,7 +271,7 @@ export async function GET(request: NextRequest) {
     if (result) {
       return NextResponse.json({
         success: true,
-        code: result
+        code: withoutConfidence(result)
       });
     }
     return NextResponse.json({
@@ -265,7 +284,7 @@ export async function GET(request: NextRequest) {
     const analysis = analyzeSymptoms(query);
     return NextResponse.json({
       success: true,
-      analysis
+      analysis: withoutConfidence(analysis)
     });
   }
   
@@ -273,10 +292,10 @@ export async function GET(request: NextRequest) {
     const results = searchFaultCodes(search, 10);
     return NextResponse.json({
       success: true,
-      results
+      results: withoutConfidence(results)
     });
   }
-  
+
   return NextResponse.json({
     success: false,
     error: 'Missing required parameter: code, query, or search',

@@ -5,7 +5,7 @@
  *
  * Features:
  * 1. Interactive Roof Editor - Draw roof, place panels drag-drop
- * 2. Real-Time Shading - Sun slider, minute-by-minute shadows
+ * 2. Sun angle - sun slider showing low-sun loss on the panels (no obstacles are modelled)
  * 3. Auto SLD Generator - Professional electrical diagrams
  * 4. Complete System Calculator - Strings, wires, batteries
  */
@@ -135,7 +135,11 @@ export default function SolarDesignStudioPro() {
   const avgShading = panels.length > 0
     ? panels.reduce((sum, p) => sum + p.shaded, 0) / panels.length
     : 0;
-  const effectiveKW = totalKW * (1 - avgShading / 100);
+  // The performance ratio below already covers heat, dust, wiring and
+  // low-sun losses. The sun-angle view is for one moment of one day, so it
+  // must not scale the annual figure (2026-10-25 audit: moving the time
+  // slider changed the yearly production).
+  const effectiveKW = totalKW;
   // Production = kWp × NASA POWER sun-hours for this location × 78%
   // performance ratio (2026-10-18 tool audit: was kWp × a flat 5.5 with no
   // losses at all, ~28% high). Falls back to 5.5 until NASA answers.
@@ -147,10 +151,27 @@ export default function SolarDesignStudioPro() {
   const TARIFF_KES = 25;
   const annualSavingKes = annualProduction * TARIFF_KES;
 
-  // Wire sizing (simplified)
-  const systemVoltage = stringConfig.series * 40; // ~40V per panel
-  const systemCurrent = (totalWatts / systemVoltage) || 0;
-  const wireSize = systemCurrent < 15 ? '4mm²' : systemCurrent < 25 ? '6mm²' : systemCurrent < 35 ? '10mm²' : '16mm²';
+  // Wire sizing from typical module data: modern 400 W+ half-cell modules
+  // run ~41.5 V Vmp / ~49.5 V Voc; smaller 60/72-cell ~34 / ~41 V.
+  const panelVmp = panelWatts >= 400 ? 41.5 : 34;
+  const panelVoc = panelWatts >= 400 ? 49.5 : 41;
+  const panelIsc = (panelWatts / panelVmp) * 1.06;
+  const stringVoc = stringConfig.series * panelVoc;
+  const stringDesignA = 1.25 * panelIsc;               // per string (IEC 62548)
+  const arrayDesignA = stringDesignA * Math.max(1, stringConfig.parallel);
+  const systemCurrent = panelIsc * Math.max(1, stringConfig.parallel);
+  const pickCsa = (amps: number, table: [number, string][]) => (table.find(([a]) => amps <= a) ?? table[table.length - 1])[1];
+  // PV1-F on a hot roof (derated): 4 mm² to ~22 A, 6 mm² to ~28 A, 10 mm² to ~39 A.
+  const wireSize = pickCsa(stringDesignA, [[22, '4mm²'], [28, '6mm²'], [39, '10mm²'], [52, '16mm²']]);
+  const combinerWire = pickCsa(arrayDesignA, [[22, '4mm²'], [28, '6mm²'], [39, '10mm²'], [52, '16mm²'], [69, '25mm²'], [86, '35mm²']]);
+  // 48 V battery: inverter kW at ~90% efficiency; short run, copper.
+  const batteryAmps = (inverterSize * 1000) / (48 * 0.9);
+  const batteryWire = pickCsa(batteryAmps, [[70, '16mm²'], [100, '25mm²'], [125, '35mm²'], [160, '50mm²'], [200, '70mm²'], [245, '95mm²'], [285, '120mm²'], [330, '150mm²']]);
+  // AC: single phase to 10 kW, three phase above.
+  const threePhase = inverterSize > 10;
+  const acAmps = threePhase ? (inverterSize * 1000) / (Math.sqrt(3) * 400) : (inverterSize * 1000) / 230;
+  const acWire = pickCsa(acAmps, [[25, '4mm²'], [32, '6mm²'], [45, '10mm²'], [63, '16mm²'], [80, '25mm²'], [100, '35mm²']]);
+  const dcAcRatio = inverterSize > 0 ? totalKW / inverterSize : 0;
 
   // ==========================================================================
   // SUN POSITION UPDATE
@@ -444,7 +465,7 @@ export default function SolarDesignStudioPro() {
             </div>
             <div className="min-w-0">
               <p className="text-xl sm:text-2xl font-bold text-white" role="heading" aria-level={2}>Solar Design Studio</p>
-              <p className="text-slate-400 text-sm">Roof layout, shading and wiring</p>
+              <p className="text-slate-400 text-sm">Roof layout, sun angle and wiring</p>
             </div>
           </div>
 
@@ -475,7 +496,7 @@ export default function SolarDesignStudioPro() {
         <div className="flex flex-wrap gap-2 mt-4">
           {[
             { id: 'design', label: 'Roof Design', icon: Layers },
-            { id: 'shading', label: 'Shading Analysis', icon: Sun },
+            { id: 'shading', label: 'Sun Angle', icon: Sun },
             { id: 'electrical', label: 'Electrical (SLD)', icon: Zap },
             { id: 'report', label: 'Report', icon: FileText }
           ].map(tab => (
@@ -513,6 +534,7 @@ export default function SolarDesignStudioPro() {
             <div className="grid grid-cols-2 gap-2 mt-2">
               <input
                 type="number"
+                aria-label="Latitude"
                 value={latitude}
                 onChange={(e) => setLatitude(parseFloat(e.target.value))}
                 className="bg-slate-700/50 text-white text-sm rounded px-2 py-1"
@@ -521,6 +543,7 @@ export default function SolarDesignStudioPro() {
               />
               <input
                 type="number"
+                aria-label="Longitude"
                 value={longitude}
                 onChange={(e) => setLongitude(parseFloat(e.target.value))}
                 className="bg-slate-700/50 text-white text-sm rounded px-2 py-1"
@@ -832,7 +855,7 @@ export default function SolarDesignStudioPro() {
                  │             │             │
           ┌──────┴─────────────┴─────────────┴──────┐
           │          DC COMBINER BOX                 │
-          │   Voc: ${(stringConfig.series * 40).toFixed(0)}V  |  Isc: ${(systemCurrent * 1.25).toFixed(1)}A              │
+          │   Voc: ${stringVoc.toFixed(0)}V  |  Isc: ${(systemCurrent * 1.25).toFixed(1)}A              │
           │   Surge Protection: Type II              │
           └────────────────┬─────────────────────────┘
                            │
@@ -841,7 +864,7 @@ export default function SolarDesignStudioPro() {
                            │
                     ┌──────┴──────┐
                     │  DC ISOLATOR │
-                    │  ${Math.ceil(stringConfig.series * 40 * 1.25)}V / ${Math.ceil(systemCurrent * 1.5)}A   │
+                    │  ${Math.ceil(stringVoc * 1.15)}V / ${Math.ceil(arrayDesignA * 1.25)}A   │
                     └──────┬──────┘
                            │
           ┌────────────────┴────────────────┐
@@ -902,7 +925,7 @@ PROTECTION:
 ───────────────────────────────────────────────────────────────────────────────
   DC Surge Protection  : Type II SPD
   AC Surge Protection  : Type II SPD
-  DC Isolator          : ${Math.ceil(stringConfig.series * 40 * 1.25)}V / ${Math.ceil(systemCurrent * 1.5)}A
+  DC Isolator          : ${Math.ceil(stringVoc * 1.15)}V / ${Math.ceil(arrayDesignA * 1.25)}A
   AC MCB               : 63A Double Pole
   ELCB/RCD             : 63A 30mA
 
@@ -960,21 +983,21 @@ EARTHING:
                     <tr className="border-b border-slate-700/50">
                       <td className="py-2">Combiner to Inverter</td>
                       <td>DC Cable</td>
-                      <td>{systemCurrent > 30 ? '10mm²' : '6mm²'}</td>
+                      <td>{combinerWire}</td>
                       <td>~10m</td>
                       <td>Red (+) / Black (-)</td>
                     </tr>
                     <tr className="border-b border-slate-700/50">
                       <td className="py-2">Inverter to Battery</td>
-                      <td>Battery Cable</td>
-                      <td>16mm²</td>
+                      <td>Battery Cable ({Math.round(batteryAmps)} A at 48 V)</td>
+                      <td>{batteryWire}</td>
                       <td>~3m</td>
                       <td>Red (+) / Black (-)</td>
                     </tr>
                     <tr className="border-b border-slate-700/50">
                       <td className="py-2">Inverter to DB</td>
-                      <td>AC Cable</td>
-                      <td>6mm²</td>
+                      <td>AC Cable ({Math.round(acAmps)} A{threePhase ? ', 3-phase' : ''})</td>
+                      <td>{acWire}</td>
                       <td>~15m</td>
                       <td>Brown/Blue/Green-Yellow</td>
                     </tr>
@@ -1108,7 +1131,7 @@ EARTHING:
                 <Zap className="w-4 h-4 text-emerald-400" />
               </div>
               <p className="text-emerald-400 text-2xl font-bold">{effectiveKW.toFixed(2)} kW</p>
-              <p className="text-slate-500 text-xs">After {avgShading.toFixed(1)}% shading loss</p>
+              <p className="text-slate-500 text-xs">78% performance ratio (heat, dust, wiring, low sun)</p>
             </div>
 
             <div className="bg-slate-700/50 rounded-lg p-3">
@@ -1128,7 +1151,7 @@ EARTHING:
               {/* No verdict until panels are placed (2026-10-20 audit: "5 kW ✓ Properly sized" with 0 panels). */}
               <p className="text-purple-400 text-2xl font-bold">{totalPanels > 0 ? `${inverterSize} kW` : '—'}</p>
               <p className={`text-xs ${totalPanels === 0 ? 'text-slate-500' : inverterSize < totalKW ? 'text-red-400' : 'text-emerald-400'}`}>
-                {totalPanels === 0 ? 'Place panels first' : inverterSize < totalKW ? '⚠️ Undersized!' : '✓ Matches the array'}
+                {totalPanels === 0 ? 'Place panels first' : dcAcRatio > 1.35 ? '⚠️ Array too large for this inverter (clipping)' : dcAcRatio < 0.8 && batteryCapacity === 0 ? '⚠️ Inverter large for this array' : `✓ DC/AC ${dcAcRatio.toFixed(2)}`}
               </p>
             </div>
 
@@ -1168,7 +1191,7 @@ EARTHING:
               )}
               {avgShading > 25 && (
                 <div className="bg-amber-500/20 border border-amber-500/30 rounded-lg p-2 text-amber-400 text-xs">
-                  High shading ({avgShading.toFixed(0)}%) - consider panel repositioning
+                  Low sun at this time ({avgShading.toFixed(0)}% loss). Obstacles such as trees and walls are not modelled: check them on site.
                 </div>
               )}
             </div>

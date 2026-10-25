@@ -1793,4 +1793,3 @@ export const TOTAL_INVERTERS = INVERTERS_DATABASE.length;
 export const TOTAL_BATTERIES = BATTERIES_DATABASE.length;
 export const TOTAL_EQUIPMENT = TOTAL_PANELS + TOTAL_INVERTERS + TOTAL_BATTERIES;
 
-console.log(`Solar Equipment Database: ${TOTAL_PANELS} panels, ${TOTAL_INVERTERS} inverters, ${TOTAL_BATTERIES} batteries = ${TOTAL_EQUIPMENT} total items`);

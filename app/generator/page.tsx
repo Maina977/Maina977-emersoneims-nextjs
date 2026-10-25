@@ -451,7 +451,7 @@ export default function GeneratorPage() {
               </div>
               <h4 className="text-lg font-semibold text-white mb-2">Predictive Maintenance</h4>
               <p className="text-sm text-white/60">
-                AI-powered analytics detect issues before they cause downtime
+                Scheduled inspections and service records catch wear before it causes downtime
               </p>
             </div>
             <div className="text-center">

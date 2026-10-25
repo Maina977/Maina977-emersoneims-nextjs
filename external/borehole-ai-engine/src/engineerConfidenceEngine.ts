@@ -345,7 +345,8 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     tier: hasNearby && hasERT ? 'CALIBRATED' : (hasEnsemble && hasNearby) ? 'CALIBRATED' : (hasEnsemble || satelliteSourceCount >= 4) ? 'CALIBRATED' : hasNearby ? 'ESTIMATED' : 'ESTIMATED',
     category: 'model_derived',
     source: 'Multi-source Bayesian ensemble',
-    method: 'Logistic regression on 10 features (rock type, fractures, weathering, ERT, nearby success, rainfall, topography, agreement, conductor target, local learning) with Dempster-Shafer fusion',
+    // Only the inputs this run had (2026-10-25 audit: ERT was listed on runs without it).
+    method: `Weighted scoring of ${hasERT ? 'ERT results, ' : ''}rock type, fractures, weathering, nearby borehole outcomes, rainfall and topography`,
     accuracy_pct: hasERT ? 82 : hasNearby ? 68 : 52,
     reference: 'Shafer (1976) A Mathematical Theory of Evidence; MacDonald et al. (2012)',
     limitations: [
@@ -436,7 +437,9 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   // ── Hydraulic Conductivity ──
   const K_val = r.ertInterpretation?.yieldEstimation?.hydraulicConductivity_mday ?? r.ertIntelligence?.yieldEstimation?.hydraulicConductivity_mday ?? r.advancedGeophysics?.projectedInversions?.[0]?.hydraulicConductivity_mday ?? (r.globalSoilAnalysis?.hydraulicProperties ? (r.globalSoilAnalysis.hydraulicProperties.ksat_mm_hr * 24 / 1000) : (r.aquiferSimulation?.pumpTest?.cooperJacob?.transmissivity ? (r.aquiferSimulation.pumpTest.cooperJacob.transmissivity / 30) : 0));
   items.push({
-    parameter: 'Hydraulic Conductivity (K)',
+    // Without a pump test this is near-surface SOIL conductivity (0-2 m), not
+    // the aquifer's; it is named that way (2026-10-25 audit: K = 8 beside T = 2.9).
+    parameter: hasPumpTest ? 'Hydraulic Conductivity (K)' : 'Soil Hydraulic Conductivity (top 2 m, not the aquifer)',
     value: K_val,
     unit: 'm/day',
     tier: hasPumpTest ? 'CALIBRATED' : hasERT ? 'CALIBRATED' : hasGeophysics ? 'CALIBRATED' : hasSoilHydraulics ? 'CALIBRATED' : 'ESTIMATED',

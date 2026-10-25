@@ -109,9 +109,7 @@ const structuredData = {
       featureList: [
         'Interactive controller simulators',
         'Complete wiring diagrams with terminal labels',
-        'Program controllers without laptop',
-        'Real-time sensor value analysis',
-        'AI-powered fault diagnosis',
+        'Fault-code lookup with causes and checks',
         'Step-by-step repair procedures',
       ],
       author: {

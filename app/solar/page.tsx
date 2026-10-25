@@ -71,50 +71,22 @@ const SolarMaintenanceHub = dynamic(() => import('@/components/solar/SolarMainte
   ssr: false
 });
 
-const SolarMonitoringApp = dynamic(() => import('@/components/solar/SolarMonitoringApp'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
 
-const AIQuotationSystem = dynamic(() => import('@/components/solar/AIQuotationSystem'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
 
 const Solar3DDesignStudio = dynamic(() => import('@/components/solar/Solar3DDesignStudio'), {
   loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
   ssr: false
 });
 
-const VoiceControlledDesign = dynamic(() => import('@/components/solar/VoiceControlledDesign'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
 
 const True3DWebGLViewer = dynamic(() => import('@/components/solar/True3DWebGLViewer'), {
   loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
   ssr: false
 });
 
-const SalesDashboard = dynamic(() => import('@/components/solar/SalesDashboard'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
 
-const CustomerPortal = dynamic(() => import('@/components/solar/CustomerPortal'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
 
-const SolarProjectWorkflow = dynamic(() => import('@/components/solar/SolarProjectWorkflow'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
 
-const AIControlCenter = dynamic(() => import('@/components/solar/AIControlCenter'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
 
 // Below-the-fold rotating WebGL ring gallery — code-split to keep it out of the
 // page entry bundle (matches the dynamic pattern used for every section above).
@@ -303,7 +275,9 @@ const INVERTER_BRANDS = [
 const SOLAR_FAQ = [
   {
     question: 'How much does a solar system cost in Kenya?',
-    answer: 'Solar system costs in Kenya range from KES 350,000 for a basic 3kW residential system to KES 15M+ for industrial installations over 100kW. The exact cost depends on your energy needs, panel quality, battery capacity, and whether you need grid-tie or off-grid configuration. We offer site surveys to give you an accurate quote.'
+    // From the same model as the package cards, so the two never disagree
+    // (2026-10-25 audit: "from KES 350,000" sat beside a KES 481,000 card).
+    answer: `With the same assumptions as the packages on this page, a 3 kWp home system with battery starts at about KES ${SOLAR_PRICING[0].priceFrom.toLocaleString('en-KE')}, and industrial systems over 100 kW run to several million shillings. The exact cost depends on your energy needs, panel quality, battery capacity, and whether you need grid-tie or off-grid configuration. We offer site surveys to give you an accurate quote.`
   },
   {
     question: 'How long is the payback period for solar in Kenya?',
@@ -435,7 +409,7 @@ const SOLAR_DOWNLOADS = [
   { title: 'Solar System Wiring Diagrams', description: 'Technical diagrams for common configurations', type: 'PDF', size: '4.5 MB', icon: '⚡' },
 ];
 
-type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair' | 'quotation' | 'design3d' | 'voice' | 'webgl3d' | 'sales' | 'portal' | 'workflow' | 'ai-center';
+type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'repair' | 'design3d' | 'webgl3d';
 
 // ==================== FLOATING WHATSAPP COMPONENT ====================
 function FloatingWhatsApp() {
@@ -531,30 +505,21 @@ export default function SolarBible() {
     { id: 'overview', label: 'Solar Overview', icon: '☀️', badge: 'START' },
     { id: 'calculator', label: 'Size My System', icon: '🧮', badge: 'FREE' },
     { id: 'roi', label: 'Savings Calculator', icon: '💰', badge: 'FREE' },
-    { id: 'quotation', label: 'Get AI Quote', icon: '🤖', badge: 'INSTANT' },
 
-    // TIER 2: AI & Design Tools (World's Most Advanced)
-    { id: 'ai-center', label: 'AI Control Center', icon: '🤖', badge: 'AI TOOLS' },
-    { id: 'workflow', label: '8-Step Project', icon: '🚀', badge: 'PRO' },
+    // TIER 2: Design tools
     { id: 'design3d', label: '3D Design Studio', icon: '🏗️', badge: 'PRO' },
     { id: 'webgl3d', label: 'True 3D Viewer', icon: '🎮', badge: 'NEW!' },
-    { id: 'voice', label: 'Voice Design', icon: '🎤', badge: 'AI' },
 
     // TIER 3: Technical Resources
-    { id: 'equipment', label: 'Equipment DB', icon: '🔌', badge: `${TOTAL_EQUIPMENT}+` },
+    { id: 'equipment', label: 'Equipment DB', icon: '🔌', badge: `${TOTAL_EQUIPMENT}` },
     { id: 'wiring', label: 'Wiring Diagrams', icon: '⚡', badge: 'TECH' },
     { id: 'repair', label: 'Repair Guides', icon: '🔧', badge: 'DIY' },
     { id: 'faults', label: 'Fault Codes', icon: '⚠️', badge: 'HELP' },
 
-    // TIER 4: Monitoring & Maintenance
-    { id: 'monitoring', label: 'Live Monitor', icon: '📱', badge: 'REALTIME' },
+    // TIER 4: Maintenance
     { id: 'maintenance', label: 'Maintenance', icon: '🗓️' },
 
-    // TIER 5: Sales & Business Tools
-    { id: 'sales', label: 'Sales Dashboard', icon: '📈', badge: 'TEAM' },
-    { id: 'portal', label: 'Customer Portal', icon: '👤', badge: 'LOGIN' },
-
-    // TIER 6: Action & Education
+    // TIER 5: Action & Education
     { id: 'shop', label: 'Shop Products', icon: '🛒', badge: 'BUY' },
     { id: 'booking', label: 'Book Install', icon: '📅', badge: 'SCHEDULE' },
     { id: 'education', label: 'Solar School', icon: '📚', badge: 'LEARN' },
@@ -562,14 +527,13 @@ export default function SolarBible() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-slate-900 to-black">
-      <B2BCommercialBand profile={B2B_PROFILES.solar} />
       {/* Urgency Banner */}
       <UrgencyBanner />
 
       {/* ==================== CINEMATIC HERO ==================== */}
       <motion.section
         style={{ opacity: heroOpacity }}
-        className="relative h-screen flex items-center justify-center overflow-hidden"
+        className="relative min-h-[70vh] flex items-start justify-center overflow-hidden pt-10 md:pt-16"
       >
         {/* Animated Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-black to-orange-900/20" />
@@ -610,10 +574,10 @@ export default function SolarBible() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6"
+            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6"
           >
-            <span className="text-white">The </span>
-            <span className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">Solar Bible</span>
+            <span className="text-white">Solar Power </span>
+            <span className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">in Kenya</span>
           </motion.h1>
 
           <motion.p
@@ -690,6 +654,9 @@ export default function SolarBible() {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* Below the hero so the page h1 is near the top (2026-10-25 audit: h1 at 1,224 px). */}
+      <B2BCommercialBand profile={B2B_PROFILES.solar} />
 
       {/* The free sizing tool — /solutions/solar (where this card was first
           placed) 308s here, so it was never seen (2026-10-19 re-audit). */}
@@ -1307,17 +1274,6 @@ export default function SolarBible() {
               </motion.div>
             )}
 
-            {/* ==================== SOLAR MONITORING APP TAB ==================== */}
-            {activeTab === 'monitoring' && (
-              <motion.div
-                key="monitoring"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                <SolarMonitoringApp />
-              </motion.div>
-            )}
 
             {/* ==================== EQUIPMENT DATABASE TAB ==================== */}
             {activeTab === 'equipment' && (
@@ -1330,8 +1286,8 @@ export default function SolarBible() {
               >
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-white mb-2">🔋 Solar Equipment Database</h2>
-                  <p className="text-amber-400 text-lg">1000+ Products with Full Specifications & Pricing</p>
-                  <p className="text-gray-500 text-sm mt-2">A detailed solar equipment database in East Africa</p>
+                  <p className="text-amber-400 text-lg">{TOTAL_EQUIPMENT} products with their key specifications</p>
+                  <p className="text-gray-500 text-sm mt-2">Prices change often, so none are listed here. Ask us for a current quote, or check a supplier&apos;s quote with the <a href="/solar-genius-pro#/quote-check" className="text-amber-400 underline">Quote Checker</a>.</p>
                 </div>
 
                 {/* Solar Panels Database */}
@@ -1349,7 +1305,6 @@ export default function SolarBible() {
                           <th className="p-3 text-amber-400">Vmp</th>
                           <th className="p-3 text-amber-400">Imp</th>
                           <th className="p-3 text-amber-400">Warranty</th>
-                          <th className="p-3 text-amber-400">Price (KES)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1363,7 +1318,6 @@ export default function SolarBible() {
                             <td className="p-3 text-gray-400">{panel.vmp}V</td>
                             <td className="p-3 text-gray-400">{panel.imp}A</td>
                             <td className="p-3 text-gray-400">{panel.warranty.product}yr/{panel.warranty.performance}yr</td>
-                            <td className="p-3 text-amber-400 font-bold">{panel.priceKES.toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1386,7 +1340,6 @@ export default function SolarBible() {
                           <th className="p-3 text-blue-400">Max PV</th>
                           <th className="p-3 text-blue-400">Battery V</th>
                           <th className="p-3 text-blue-400">Efficiency</th>
-                          <th className="p-3 text-blue-400">Price (KES)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1400,7 +1353,6 @@ export default function SolarBible() {
                             <td className="p-3 text-gray-400">{(inv.maxDCPower / 1000).toFixed(1)}kW</td>
                             <td className="p-3 text-gray-400">{inv.batteryVoltage || 'N/A'}V</td>
                             <td className="p-3 text-blue-400">{inv.efficiency}%</td>
-                            <td className="p-3 text-amber-400 font-bold">{inv.priceKES.toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1423,7 +1375,6 @@ export default function SolarBible() {
                           <th className="p-3 text-green-400">DoD</th>
                           <th className="p-3 text-green-400">Cycles</th>
                           <th className="p-3 text-green-400">Warranty</th>
-                          <th className="p-3 text-green-400">Price (KES)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1437,7 +1388,6 @@ export default function SolarBible() {
                             <td className="p-3 text-blue-400">{bat.maxDoD}%</td>
                             <td className="p-3 text-gray-400">{bat.cycleLife.toLocaleString()}</td>
                             <td className="p-3 text-gray-400">{bat.warranty}yr</td>
-                            <td className="p-3 text-amber-400 font-bold">{bat.priceKES.toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1458,7 +1408,6 @@ export default function SolarBible() {
                           <th className="p-3 text-orange-400">Resistance (Ω/km)</th>
                           <th className="p-3 text-orange-400">Voltage</th>
                           <th className="p-3 text-orange-400">Application</th>
-                          <th className="p-3 text-orange-400">Price/m (KES)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1470,7 +1419,6 @@ export default function SolarBible() {
                             <td className="p-3 text-gray-400">{cable.resistancePerKm}</td>
                             <td className="p-3 text-amber-400">{cable.voltageRating}V</td>
                             <td className="p-3 text-purple-400">{cable.application.join(', ')}</td>
-                            <td className="p-3 text-amber-400">{cable.pricePerMeterKES}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1777,29 +1725,7 @@ export default function SolarBible() {
               </motion.div>
             )}
 
-            {/* ==================== AI QUOTATION SYSTEM TAB ==================== */}
-            {activeTab === 'quotation' && (
-              <motion.div
-                key="quotation"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                <AIQuotationSystem />
-              </motion.div>
-            )}
 
-            {/* ==================== VOICE CONTROLLED DESIGN TAB ==================== */}
-            {activeTab === 'voice' && (
-              <motion.div
-                key="voice"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                <VoiceControlledDesign />
-              </motion.div>
-            )}
 
             {/* ==================== TRUE 3D WEBGL VIEWER TAB ==================== */}
             {activeTab === 'webgl3d' && (
@@ -1813,53 +1739,9 @@ export default function SolarBible() {
               </motion.div>
             )}
 
-            {/* ==================== SALES DASHBOARD TAB ==================== */}
-            {activeTab === 'sales' && (
-              <motion.div
-                key="sales"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                <SalesDashboard />
-              </motion.div>
-            )}
 
-            {/* ==================== CUSTOMER PORTAL TAB ==================== */}
-            {activeTab === 'portal' && (
-              <motion.div
-                key="portal"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                <CustomerPortal />
-              </motion.div>
-            )}
 
-            {/* ==================== PROJECT WORKFLOW TAB ==================== */}
-            {activeTab === 'workflow' && (
-              <motion.div
-                key="workflow"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                <SolarProjectWorkflow />
-              </motion.div>
-            )}
 
-            {/* ==================== AI CONTROL CENTER TAB ==================== */}
-            {activeTab === 'ai-center' && (
-              <motion.div
-                key="ai-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
-                <AIControlCenter />
-              </motion.div>
-            )}
           </AnimatePresence>
         </div>
       </section>

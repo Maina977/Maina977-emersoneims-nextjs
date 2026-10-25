@@ -708,7 +708,7 @@ export const B2B_PROFILES = {
       'Draw the roof, place panels, follow the sun through the day, and get a single-line diagram and wire schedule. Free in your browser, backed by EmersonEIMS engineers.',
     whoFor: ['Homeowners', 'Solar installers', 'Facility & energy managers', 'Architects & developers', 'Property managers'],
     pso: [
-      { problem: 'You cannot tell how many panels fit or where shade falls.', solution: 'Draw the roof and move the sun through the day to see shade on each panel.', outcome: 'A layout you can discuss with an installer.' },
+      { problem: 'You cannot tell how many panels fit or how the sun moves over the roof.', solution: 'Draw the roof and move the sun through the day to see the sun angle on each panel. Trees and walls are checked on site.', outcome: 'A layout you can discuss with an installer.' },
       { problem: 'Designs lack engineering review.', solution: 'Send your layout to an EmersonEIMS engineer to check before anything is bought.', outcome: 'Fewer surprises on site.' },
       { problem: 'Wiring is guessed on the day.', solution: 'The studio drafts a single-line diagram and wire schedule from your layout.', outcome: 'A starting point for the electrical design.' },
     ],

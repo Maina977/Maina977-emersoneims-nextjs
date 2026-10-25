@@ -3,13 +3,22 @@ import ToolSeoContent from '@/components/seo/ToolSeoContent';
 import Script from 'next/script';
 
 /**
- * Solar Maintenance Hub - SEO Metadata
- * Complete solar system maintenance for Kenya and East Africa
+ * /solar — SEO metadata.
+ *
+ * 2026-10-25 audit: the title, Open Graph text and JSON-LD described "10 AI
+ * engines", voice control, a drone commander and 15 countries — none of which
+ * the page offers — plus an FAQPage whose questions were not on the page
+ * (Google requires FAQ markup to match visible content). The OG image did not
+ * exist. Everything below describes what the page actually has.
  */
 
+const DESCRIPTION =
+  'Solar for homes, farms and businesses in Kenya: design, supply, installation and maintenance, with free sizing and savings calculators before you commit.';
+const OG_IMAGE = '/images/solar%20power%20farms.png';
+
 export const metadata: Metadata = {
-  title: 'Solar Solution School | 10 AI Engines',
-  description: 'Commercial and industrial solar in Kenya: design, supply, installation and maintenance, with free 3D system modelling and load sizing before you commit.',
+  title: 'Solar Installation & Free Sizing Tools Kenya',
+  description: DESCRIPTION,
   authors: [{ name: 'EmersonEIMS' }],
   creator: 'EmersonEIMS',
   publisher: 'EmersonEIMS',
@@ -29,22 +38,15 @@ export const metadata: Metadata = {
     locale: 'en_KE',
     url: 'https://www.emersoneims.com/solar',
     siteName: 'EmersonEIMS',
-    title: 'Solar Solution School | 10 AI Engines',
-    description: 'Leading solar design platform. 10 AI engines: 3D Design, Voice Control, Neural Optimizer, Permit Generator, Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, Grid Analyzer. 15 African countries.',
-    images: [
-      {
-        url: '/images/solar-ai-platform-og.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'EmersonEIMS Solar Solution School - 10 AI Engines',
-      },
-    ],
+    title: 'Solar Installation & Free Sizing Tools Kenya',
+    description: DESCRIPTION,
+    images: [{ url: OG_IMAGE, alt: 'Solar power installation by EmersonEIMS' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Solar Solution School | 10 AI Engines',
-    description: 'World\'s most advanced solar AI. 10 engines, 15 countries, voice control, 3D design. Free.',
-    images: ['/images/solar-ai-platform-og.jpg'],
+    title: 'Solar Installation & Free Sizing Tools Kenya',
+    description: DESCRIPTION,
+    images: [OG_IMAGE],
     creator: '@EmersonEiMS',
   },
   alternates: {
@@ -53,122 +55,27 @@ export const metadata: Metadata = {
   category: 'Technology',
 };
 
-// Structured Data
 const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
     {
-      '@type': 'SoftwareApplication',
-      name: 'Solar Solution School',
-      applicationCategory: 'BusinessApplication',
-      description: 'Comprehensive solar design platform with 10 AI engines featuring 10 AI engines: AI Depth Estimator, Neural Panel Optimizer, AI Permit Generator, Satellite Roof Analyzer, AI Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, and Grid Analyzer.',
-      operatingSystem: 'Any (Web-based)',
-      url: 'https://www.emersoneims.com/solar',
-      offers: {
-        '@type': 'Offer',
-        price: '0',
-        priceCurrency: 'KES',
-      },
-      // No self-asserted aggregateRating — violates Google's structured-data
-      // policy without on-page UGC reviews, and triggers "multiple aggregate
-      // ratings" when several schema blocks coexist on one URL.
-      featureList: '10 AI Engines, 3D Design Studio, Voice Commands, 25-Year Predictions, 15 Countries Coverage, Enterprise Integrations, Neural Optimization, Permit Generation, Drone Planning, Grid Analysis',
-      provider: {
-        '@type': 'Organization',
-        name: 'EmersonEIMS',
-        telephone: '+254768860665',
-        email: 'info@emersoneims.com',
-      },
-    },
-    {
       '@type': 'Service',
-      name: 'AI-Powered Solar Design & Installation',
-      serviceType: 'Solar System Design and Installation',
-      description: 'Complete AI-powered solar design with 10 AI engines, 3D modeling, voice control, and installation services across 15 African countries.',
+      name: 'Solar design, supply and installation',
+      serviceType: 'Solar PV system design and installation',
+      description: DESCRIPTION,
       provider: {
         '@type': 'Organization',
         name: 'EmersonEIMS',
         telephone: '+254768860665',
         email: 'info@emersoneims.com',
       },
-      areaServed: [
-        { '@type': 'Country', name: 'Kenya' },
-        { '@type': 'Country', name: 'Tanzania' },
-        { '@type': 'Country', name: 'Uganda' },
-        { '@type': 'Country', name: 'Rwanda' },
-        { '@type': 'Country', name: 'Ethiopia' },
-        { '@type': 'Country', name: 'Burundi' },
-        { '@type': 'Country', name: 'South Sudan' },
-        { '@type': 'Country', name: 'Somalia' },
-        { '@type': 'Country', name: 'DR Congo' },
-        { '@type': 'Country', name: 'Cameroon' },
-        { '@type': 'Country', name: 'Central African Republic' },
-        { '@type': 'Country', name: 'Gabon' },
-        { '@type': 'Country', name: 'Congo' },
-        { '@type': 'Country', name: 'Chad' },
-        { '@type': 'Country', name: 'Madagascar' },
-      ],
-    },
-    {
-      '@type': 'FAQPage',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'What is Solar Solution School?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Solar Solution School is the world\'s most advanced solar design platform by EmersonEIMS. It features 10 AI engines including 3D design, voice control, neural optimization, permit generation, and 25-year production predictions. It covers 15 African countries.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'What are the 10 AI engines in Solar Solution School?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'The 10 AI engines are: 1) AI Depth Estimator - 3D from photos, 2) Neural Panel Optimizer - ML placement, 3) AI Permit Generator - auto documents, 4) Satellite Roof Analyzer, 5) AI Energy Oracle - 25-year predictions, 6) Financial Genius - ROI analysis, 7) Design Copilot - voice commands, 8) Anomaly Detector - predictive maintenance, 9) Drone Commander - survey planning, 10) Grid Analyzer - optimization.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Which countries does Solar Solution School cover?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Solar Solution School covers 15 African countries: Kenya, Tanzania, Uganda, Rwanda, Ethiopia, Burundi, South Sudan, Somalia, DR Congo, Cameroon, Central African Republic, Gabon, Congo, Chad, and Madagascar. Each country has local utility data, incentives, and currency support.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Is Solar Solution School free to use?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes. The design engines, 3D layout tools and calculators are free to use, with no account required.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Can I design solar systems using voice commands?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes! Solar Solution School features AI Design Copilot that accepts natural language voice commands like "Add 10 panels avoiding the chimney" or "Maximize production on south roof". This is an industry-first feature.',
-          },
-        },
-      ],
+      areaServed: { '@type': 'Country', name: 'Kenya' },
     },
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Home',
-          item: 'https://www.emersoneims.com',
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: 'Solar Solution School',
-          item: 'https://www.emersoneims.com/solar',
-        },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.emersoneims.com' },
+        { '@type': 'ListItem', position: 2, name: 'Solar', item: 'https://www.emersoneims.com/solar' },
       ],
     },
   ],

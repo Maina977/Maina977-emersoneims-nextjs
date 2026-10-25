@@ -29,6 +29,7 @@ export const FMI_BY_SPN: Record<string, { measures: string; entries: FmiEntry[];
   'SPN-100': {
     measures: 'engine oil pressure',
     entries: [
+      { fmi: 0, meaning: 'Oil pressure far above normal — usually a cold start, a stuck relief valve or a faulty sender, not a low-oil emergency.', firstCheck: 'Confirm with a mechanical gauge when warm; check the relief valve and the sender.' },
       { fmi: 1, meaning: 'Oil pressure far below normal (most severe). Most controllers treat this as a shutdown.', firstCheck: 'Stop the engine. Check the oil level, then confirm the real pressure with a mechanical gauge before any restart.' },
       { fmi: 18, meaning: 'Oil pressure below normal (moderately severe).', firstCheck: 'Oil level and grade, oil filter, and a mechanical gauge reading at idle and at rated speed.' },
       { fmi: 17, meaning: 'Oil pressure slightly below normal (least severe) — an early warning.', firstCheck: 'Oil level, filter condition and whether the last oil change used the correct viscosity.' },

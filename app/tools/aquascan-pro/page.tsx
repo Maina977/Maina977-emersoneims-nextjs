@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   // to render dynamically and disabled browser caching everywhere.
   alternates: { canonical: 'https://www.emersoneims.com/tools/aquascan-pro' },
   title: 'AquaScan Pro | Borehole & Water System Analysis',
-  description: 'Borehole analysis, water quality testing, yield estimation, drilling location optimization. AI-powered hydrogeology for Kenya.',
+  description: 'Desktop borehole pre-screen for Kenya: planning depth, yield range, water-quality risks and budget from public data and nearby borehole records. A survey still fixes the drilling point.',
 };
 
 export default function AquaScanProPage() {
