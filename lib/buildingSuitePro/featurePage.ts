@@ -22,7 +22,7 @@ export function bspFeatureMetadata(slug: string): Metadata {
   const label = feature?.label ?? 'Building Suite Pro';
   return {
     title: `${label} · Building Suite Pro`,
-    description: `${label} — open inside the EmersonEIMS Building Suite Pro wizard. AI construction & engineering platform across 28 countries.`,
+    description: `${label} — part of the EmersonEIMS Building Suite. Online now: building physics and engineering calculators, each worked to its cited code.`,
     robots: { index: false, follow: true },
     alternates: { canonical: '/solutions/building' },
   };

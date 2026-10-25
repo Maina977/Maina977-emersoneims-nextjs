@@ -49,7 +49,7 @@ const PLACEHOLDERS = new Set(['-', '--', 'n/a', 'na', 'tbc', 'tbd', 'various', '
 const SPEC_IDENTIFIED = new Set(['hardware','tools','lubricants','wiring-electrical','hoses-clamps','fuel-tanks','gauges','safety-fire','enclosures','batteries','control-panels','exhaust-system','belts-pulleys','electrical-components']);
 
 /** Auto-generated filler names — not real products. */
-const GENERATED_NAME = /(part|item|component|accessory|spare)\s*#\s*\d+/i;
+const GENERATED_NAME = /\b(part|item|component|accessory|spare)\s*#\s*\d+/i;
 
 function collect() {
   const out = [];

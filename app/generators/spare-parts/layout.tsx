@@ -13,7 +13,8 @@ import PartsCategoryLinks, {
  * rendered below said "1,248 parts", having never counted the verified
  * additions file the category pages merge.
  *
- * The catalogue holds 1,315 parts across 27 categories — 1,248 in the base
+ * (2026-10-25: computed below through cleanParts, as the pages list them.)
+ * The catalogue held 1,315 parts across 27 categories — 1,248 in the base
  * file plus 67 verified additions — and a visitor can add the category tiles
  * up and check. "2000+" overstated it by more than half, on the one page where
  * a buyer is deciding whether we can supply their part.

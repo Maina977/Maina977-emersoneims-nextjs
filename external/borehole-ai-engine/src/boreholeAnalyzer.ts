@@ -1309,7 +1309,15 @@ export class BoreholeAnalyzer {
       const combined = `${rock} ${geo}`;
       return /gneiss|granite|schist|quartzite|basement|metamorphic|crystalline|migmatite/.test(combined);
     })();
-    if (bedrockDepth && bedrockDepth > 10 && calibratedDepth > bedrockDepth + 5 && !isBasementGeology) {
+    // Only sedimentary/alluvial ground, as stated above. Volcanic aquifers sit
+    // inside the lava and tuff pile, above any modelled crystalline basement;
+    // capping them there put Nairobi at 39 m before the county anchor (2026-10-25).
+    const isSedimentaryGeology = (() => {
+      const combined = `${rockClassification?.primaryRockType ?? ''} ${advancedRockResult?.primaryRockType ?? ''}`.toLowerCase();
+      return /sediment|sandstone|alluvi|sand|gravel|clay|floodplain|limestone|karst|coral|shale|mudstone/.test(combined)
+        && !/basalt|volcanic|trachyte|phonolite|tuff|lava|pyroclastic/.test(combined);
+    })();
+    if (bedrockDepth && bedrockDepth > 10 && calibratedDepth > bedrockDepth + 5 && !isBasementGeology && isSedimentaryGeology) {
       // Sedimentary/alluvial: stop drilling at bedrock surface + 5m
       calibratedDepth = Math.round(bedrockDepth + 5);
     }
@@ -3198,7 +3206,7 @@ export class BoreholeAnalyzer {
         const q = (p: number) => ys[Math.floor((ys.length - 1) * p)];
         const ci = (boreholeRecords as any)?.countyIntelligence;
         if (ys.length >= 3) {
-          evidenceBand = { lo: q(0.25), hi: Math.max(q(0.25), q(0.75)), typical: q(0.5), basis: `the lower quartile of ${ys.length} field-tested yields within 20 km (${q(0.25)} m³/h; median ${q(0.5)} m³/h)` };
+          evidenceBand = { lo: q(0.25), hi: Math.max(q(0.25), q(0.75)), typical: q(0.5), basis: `${ys.length} field-tested yields within 20 km (lower quartile ${q(0.25)} m³/h, median ${q(0.5)} m³/h, upper quartile ${q(0.75)} m³/h)` };
         } else if (Number(ci?.avgYield_m3h) > 0) {
           const lo = Math.round(Math.max(Number(ci?.yieldRange?.[0]) || 0, Number(ci.avgYield_m3h) * 0.3) * 100) / 100;
           evidenceBand = { lo, hi: Math.max(lo, Number(ci?.yieldRange?.[1]) || lo * 3), typical: Number(ci.avgYield_m3h), basis: `the ${ci.county} County drilling record (typical ${ci.avgYield_m3h} m³/h; cautious floor ${lo} m³/h)` };
@@ -3410,14 +3418,16 @@ export class BoreholeAnalyzer {
       const yItem = items.find((i) => i?.parameter === 'Estimated Yield');
       if (!isFieldValidated && evidenceBand && yItem) {
         yItem.value = result.estimatedYield;
-        yItem.source = `Tested yields of real boreholes: ${evidenceBand.basis} (no field survey)`;
+        // Name the whole spread, not just the floor: "the lower quartile (4 m³/h)"
+        // beside a 10 m³/h figure read as a contradiction (2026-10-25).
+        yItem.source = `Tested yields of real boreholes: kept between the cautious floor (${evidenceBand.lo} m³/h) and the typical yield (${evidenceBand.typical} m³/h), from ${evidenceBand.basis} (no field survey)`;
         yItem.method = 'Planning yield kept between the lower quartile and the typical tested yield; transmissivity solved so drawdown and pump size agree with it';
       }
     } catch { /* provenance optional */ }
     // The field depth band travels with the result so the stated range covers it (2026-10-20).
     if ((this as any)._fieldDepthBand) (result as any).fieldDepthBand = (this as any)._fieldDepthBand;
     if (evidenceBand && typeof result.estimatedYield === 'number' && result.estimatedYield >= evidenceBand.lo * 0.99) {
-      (result as any).governingYieldNote = `Planning yield is kept between ${evidenceBand.basis} and the typical yield of real boreholes here (${evidenceBand.typical} m³/h). The aquifer model was reconciled to that evidence, so yield, drawdown and pump agree. A pump test sets the real figure.`;
+      (result as any).governingYieldNote = `Planning yield is kept between the cautious floor (${evidenceBand.lo} m³/h) and the typical yield (${evidenceBand.typical} m³/h) of real boreholes here, from ${evidenceBand.basis}. The aquifer model was reconciled to that evidence, so yield, drawdown and pump agree. A pump test sets the real figure.`;
     }
 
     // ─── PINN + EXPLAINABLE AI (runs on full result) ───

@@ -134,6 +134,7 @@ interface LibItem {
   ratingW?: number;          // panel watt
   ratingKw?: number;         // inverter kW
   ratingKwh?: number;        // battery kWh
+  gridTie?: boolean;         // inverter: grid-tie/string (cheaper per kW) vs hybrid/off-grid
   refPriceKes: number;       // KSh per unit
   datasheetUrl?: string;
 }
@@ -148,6 +149,8 @@ interface ParsedLine {
 interface VerdictRow {
   line: ParsedLine;
   match: LibItem | null;
+  /** What the price was compared with. */
+  basis: string | null;
   perUnitMarket: number | null;
   perUnitYou: number | null;
   deltaPct: number | null;
@@ -156,12 +159,41 @@ interface VerdictRow {
 }
 
 // Reference prices are mid-2026 Kenyan RULES OF THUMB, not datasheet prices
-// (the library holds no prices): panels KES 21.5/W; inverters KES 35,000/kW up
-// to 10 kW and KES 18,000/kW above that (large string inverters cost less per
-// kW); batteries at the site-wide battery rate per usable kWh.
+// (the library holds no prices), and the SAME rates as the sizing calculator
+// (lib/solar/sizing.ts): panels KES 21.5/W; grid-tie inverters KES 20,000/kW to
+// 10 kW then 15,000/kW; hybrid/off-grid KES 35,000/kW to 10 kW then 28,000/kW;
+// batteries at the site-wide rate per usable kWh.
 const PANEL_KES_PER_W = 21.5;
-function inverterRefKes(kw: number): number {
-  return Math.round(35000 * Math.min(kw, 10) + 18000 * Math.max(0, kw - 10));
+function inverterRefKes(kw: number, gridTie = false): number {
+  const [a, b] = gridTie ? [20000, 15000] : [35000, 28000];
+  return Math.round(a * Math.min(kw, 10) + b * Math.max(0, kw - 10));
+}
+
+/** What a quote line says it is: category and rating, read from its text. */
+interface Rated { kind: 'panel' | 'inverter' | 'battery' | null; w?: number; kw?: number; kwh?: number; gridTie?: boolean }
+export function readRating(desc: string): Rated {
+  const s = desc.toLowerCase();
+  const kwh = s.match(/(\d+(?:\.\d+)?)\s*kwh\b/);
+  const kw = s.match(/(\d+(?:\.\d+)?)\s*kw\b(?!h)/) || s.match(/\b(\d+(?:\.\d+)?)k\b/);
+  const w = s.match(/(\d{2,4})\s*w(?:p)?\b/);
+  let kind: Rated['kind'] = null;
+  if (/\bbatter|\blithium|\blifepo|\bbatt\b/.test(s) || kwh) kind = 'battery';
+  else if (/\binverter|\bhybrid\b/.test(s)) kind = 'inverter';
+  else if (/\bpanel|\bmodule|\bpv\b/.test(s) || (w && !kw)) kind = 'panel';
+  const out: Rated = { kind };
+  if (kind === 'battery' && kwh) out.kwh = Number(kwh[1]);
+  if (kind === 'inverter') {
+    if (kw) out.kw = Number(kw[1]);
+    out.gridTie = /grid[- ]?tie|on[- ]?grid|string\b/.test(s) && !/hybrid|off[- ]?grid/.test(s);
+  }
+  if (kind === 'panel' && w) out.w = Number(w[1]);
+  return out;
+}
+function ruleRefKes(r: Rated): { kes: number; label: string } | null {
+  if (r.kind === 'panel' && r.w) return { kes: Math.round(r.w * PANEL_KES_PER_W), label: `rule of thumb for a ${r.w} W panel` };
+  if (r.kind === 'inverter' && r.kw) return { kes: inverterRefKes(r.kw, !!r.gridTie), label: `rule of thumb for a ${r.kw} kW ${r.gridTie ? 'grid-tie' : 'hybrid'} inverter` };
+  if (r.kind === 'battery' && r.kwh) return { kes: Math.round(r.kwh * BATTERY_KES_PER_KWH), label: `rule of thumb for ${r.kwh} kWh of battery` };
+  return null;
 }
 const num = (...v: any[]) => { for (const x of v) { const n = Number(x); if (n > 0) return n; } return 0; };
 
@@ -186,7 +218,8 @@ function reduceInverters(arr: any[]): LibItem[] {
       manufacturer: p.manufacturer || p.make || '',
       model: p.model || '',
       ratingKw: kw || undefined,
-      refPriceKes: num(p.priceKes, p.priceKES) || inverterRefKes(kw),
+      gridTie: /grid-tie|commercial|micro/i.test(String(p.type ?? '')) && !/hybrid|off-grid/i.test(String(p.type ?? '')),
+      refPriceKes: num(p.priceKes, p.priceKES) || inverterRefKes(kw, /grid-tie|commercial|micro/i.test(String(p.type ?? '')) && !/hybrid|off-grid/i.test(String(p.type ?? ''))),
       datasheetUrl: p.datasheetUrl
     };
   }).filter((i) => i.refPriceKes > 0);
@@ -210,7 +243,9 @@ function reduceBatteries(arr: any[]): LibItem[] {
 //   "Sungrow SG5K-D inverter, 1, 145000"
 //   "BYD HVS 10.2kWh battery 1 350000"
 export function parseLines(input: string): ParsedLine[] {
-  const lines = input.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  // Header rows ("Item, Qty, Unit price, Total") and lines without a number are not items.
+  const lines = input.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+    .filter((l) => /\d/.test(l) && !/^(item|description|product|no\.?)\b[^\d]*(qty|quantity|price|amount|total)/i.test(l));
   return lines.map((raw) => {
     // Thousands separators out ("12,500" → "12500"), currency words out.
     const clean = raw.replace(/(\d),(?=\d{3}\b)/g, '$1').replace(/\b(ksh|kes|sh)\.?/gi, ' ');
@@ -224,7 +259,8 @@ export function parseLines(input: string): ParsedLine[] {
     if (unitPriceKes == null) {
       // 2) Otherwise only STANDALONE numbers count: "580W", "10.2kWh" and
       //    model names like "JAM72D40-580" are ratings or names, not amounts.
-      const nums = clean.split(/[\s;|\t]+/).filter((tok) => /^\d+(?:\.\d+)?$/.test(tok)).map(Number);
+      // Spaces, commas (CSV), semicolons, pipes and tabs all separate columns.
+      const nums = clean.split(/[\s,;|\t]+/).filter((tok) => /^\d+(?:\.\d+)?$/.test(tok)).map(Number);
       if (nums.length >= 3) {
         // "... qty unit total": the last three, when qty × unit ≈ total.
         const [q, u, tot] = nums.slice(-3);
@@ -246,43 +282,48 @@ export function parseLines(input: string): ParsedLine[] {
 
 function findMatch(line: ParsedLine, lib: LibItem[]): LibItem | null {
   const hay = line.description.toLowerCase();
-  // First exact manufacturer + model substring match.
+  const r = readRating(line.description);
   let best: LibItem | null = null;
   let bestScore = 0;
   for (const item of lib) {
+    if (r.kind && item.category !== r.kind) continue;
+    // The rating must agree within ±10% when both are known (2026-10-20: a
+    // "Deye 5kW" line was priced as the library's Deye 12 kW).
+    const lineRating = r.kind === 'panel' ? r.w : r.kind === 'inverter' ? r.kw : r.kind === 'battery' ? r.kwh : undefined;
+    const itemRating = item.category === 'panel' ? item.ratingW : item.category === 'inverter' ? item.ratingKw : item.ratingKwh;
+    if (lineRating && itemRating && Math.abs(lineRating / itemRating - 1) > 0.1) continue;
     let score = 0;
     if (item.manufacturer && hay.includes(item.manufacturer.toLowerCase())) score += 3;
     if (item.model && hay.includes(item.model.toLowerCase())) score += 4;
-    // Category keyword nudges
-    if (item.category === 'panel' && /\bpanel|module|pv\b/.test(hay)) score += 1;
-    if (item.category === 'inverter' && /\binverter\b/.test(hay)) score += 1;
-    if (item.category === 'battery' && /\bbattery|batt\b/.test(hay)) score += 1;
     if (score > bestScore) { best = item; bestScore = score; }
   }
   return bestScore >= 3 ? best : null;
 }
 
 function evaluate(line: ParsedLine, match: LibItem | null): VerdictRow {
-  if (!match || line.unitPriceKes == null) {
+  // No library match: price by the line's own rating, or say it was not checked.
+  const rule = match ? null : ruleRefKes(readRating(line.description));
+  const basis = match ? `${match.manufacturer} ${match.model}` : rule ? rule.label : null;
+  if ((!match && !rule) || line.unitPriceKes == null) {
     return {
-      line, match,
-      perUnitMarket: match ? match.refPriceKes : null,
+      line, match, basis,
+      perUnitMarket: match ? match.refPriceKes : rule ? rule.kes : null,
       perUnitYou: line.unitPriceKes,
       deltaPct: null,
       tone: 'unknown',
-      message: !match ? 'Item not in library — verify with supplier' : 'No price detected'
+      message: line.unitPriceKes == null ? 'No price detected' : 'Not checked — no reference for this item (for example cabling, mounting or labour)'
     };
   }
-  const market = match.refPriceKes;
+  const market = match ? match.refPriceKes : rule!.kes;
   const you = line.unitPriceKes;
   const delta = ((you - market) / market) * 100;
   let tone: VerdictRow['tone'] = 'ok';
-  let msg = 'Within ±10% of library reference';
+  let msg = 'Within ±10% of the reference';
   if (delta > 25) { tone = 'bad'; msg = `Overpriced by ${delta.toFixed(0)}% — challenge supplier`; }
   else if (delta > 10) { tone = 'warn'; msg = `Slightly high (+${delta.toFixed(0)}%)`; }
   else if (delta < -25) { tone = 'warn'; msg = `Suspiciously cheap (${delta.toFixed(0)}%) — verify warranty/origin`; }
   else if (delta < -10) { tone = 'ok'; msg = `Good price (${delta.toFixed(0)}%)`; }
-  return { line, match, perUnitMarket: market, perUnitYou: you, deltaPct: delta, tone, message: msg };
+  return { line, match, basis, perUnitMarket: market, perUnitYou: you, deltaPct: delta, tone, message: msg };
 }
 
 const SAMPLE = `JA Solar JAM72D40-580 580W panel x 52 @ 12500
@@ -293,7 +334,7 @@ Mounting (galvanised steel) x 1 @ 290000
 Installation + commissioning x 1 @ 480000`;
 
 export default function QuoteCheckerPage() {
-  const [text, setText] = useState(SAMPLE);
+  const [text, setText] = useState('');
   const [lib, setLib] = useState<LibItem[]>([]);
   const [loadingLib, setLoadingLib] = useState(true);
   const [libErr, setLibErr] = useState<string | null>(null);
@@ -333,14 +374,15 @@ export default function QuoteCheckerPage() {
   const summary = useMemo(() => {
     if (!rows) return null;
     const total = rows.reduce((s, r) => s + (r.line.unitPriceKes || 0) * r.line.qty, 0);
-    const market = rows.reduce(
-      (s, r) => s + (r.perUnitMarket != null ? r.perUnitMarket * r.line.qty : (r.line.unitPriceKes || 0) * r.line.qty),
-      0
-    );
+    // Compare only the lines we could check. Counting an unchecked line at its
+    // own price made "Difference +KSh 0" look like a verified fair quote.
+    const checked = rows.filter((r) => r.tone !== 'unknown' && r.perUnitMarket != null);
+    const checkedTotal = checked.reduce((s, r) => s + (r.line.unitPriceKes || 0) * r.line.qty, 0);
+    const market = checked.reduce((s, r) => s + (r.perUnitMarket as number) * r.line.qty, 0);
     const overpriced = rows.filter((r) => r.tone === 'bad').length;
     const warn = rows.filter((r) => r.tone === 'warn').length;
     const unknown = rows.filter((r) => r.tone === 'unknown').length;
-    return { total, market, delta: total - market, overpriced, warn, unknown };
+    return { total, checkedCount: checked.length, checkedTotal, market, delta: checkedTotal - market, overpriced, warn, unknown };
   }, [rows]);
 
   function runCheck() {
@@ -359,14 +401,15 @@ export default function QuoteCheckerPage() {
     <Container>
       <Title>🔍 Self-Quote Checker</Title>
       <Sub>
-        Paste any solar quotation. We match each line against our real equipment
-        library and flag anything more than ±10–25% off market. Helps clients spot
-        inflated quotes before signing.
+        Paste any solar quotation. Each panel, inverter and battery line is compared with
+        a mid-2026 Kenyan price rule for its rating (or a library model of the same rating)
+        and flagged when it is more than 10–25% off. Use it to spot outliers before signing.
       </Sub>
 
       <Card>
-        <Label>Paste quotation BOM (one line per item)</Label>
-        <TextArea value={text} onChange={(e) => setText(e.target.value)} />
+        <Label>Paste quotation BOM (one line per item; spaces, commas or tabs between columns)</Label>
+        <TextArea value={text} placeholder={'Example quote:\n' + SAMPLE} onChange={(e) => setText(e.target.value)} />
+        <button type="button" onClick={() => setText(SAMPLE)} style={{ background: 'none', border: 'none', color: '#00D9FF', textDecoration: 'underline', cursor: 'pointer', padding: '4px 0', marginRight: 12 }}>Load the example quote</button>
         <Button onClick={runCheck} disabled={loadingLib || running || !text.trim()}>
           {running ? <><Spinner /> Checking…</> : '✓ Check this quote'}
         </Button>
@@ -391,7 +434,7 @@ export default function QuoteCheckerPage() {
               {rows.map((r, i) => (
                 <React.Fragment key={i}>
                   <Td>{r.line.description}</Td>
-                  <Td>{r.match ? `${r.match.manufacturer} ${r.match.model}` : '—'}</Td>
+                  <Td>{r.basis ?? '—'}</Td>
                   <Td>{r.line.qty}</Td>
                   <Td>{r.line.unitPriceKes != null ? 'KSh ' + Math.round(r.line.unitPriceKes).toLocaleString() : '—'}</Td>
                   <Td>{r.perUnitMarket != null ? 'KSh ' + Math.round(r.perUnitMarket).toLocaleString() : '—'}</Td>
@@ -407,8 +450,8 @@ export default function QuoteCheckerPage() {
               <h3 style={{ color: '#00D9FF', marginTop: 0 }}>Summary</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.8rem' }}>
                 <div><Label>Quote total</Label><div style={{ color: '#00D9FF', fontSize: '1.2rem', fontWeight: 800 }}>KSh {Math.round(summary.total).toLocaleString()}</div></div>
-                <div><Label>Reference total</Label><div style={{ color: '#00FF88', fontSize: '1.2rem', fontWeight: 800 }}>KSh {Math.round(summary.market).toLocaleString()}</div></div>
-                <div><Label>Difference</Label><div style={{ color: summary.delta > 0 ? '#FF4D6D' : '#00FF88', fontSize: '1.2rem', fontWeight: 800 }}>{summary.delta >= 0 ? '+' : ''}KSh {Math.round(summary.delta).toLocaleString()}</div></div>
+                <div><Label>Checked lines: quoted vs reference</Label><div style={{ color: '#00FF88', fontSize: '1.2rem', fontWeight: 800 }}>{summary.checkedCount ? `KSh ${Math.round(summary.checkedTotal).toLocaleString()} vs ${Math.round(summary.market).toLocaleString()}` : '—'}</div></div>
+                <div><Label>Difference (checked lines)</Label><div style={{ color: summary.delta > 0 ? '#FF4D6D' : '#00FF88', fontSize: '1.2rem', fontWeight: 800 }}>{summary.checkedCount ? `${summary.delta >= 0 ? '+' : ''}KSh ${Math.round(summary.delta).toLocaleString()}` : 'Nothing checked'}</div></div>
                 <div><Label>Overpriced lines</Label><div style={{ color: '#FF4D6D', fontSize: '1.2rem', fontWeight: 800 }}>{summary.overpriced}</div></div>
                 <div><Label>Warnings</Label><div style={{ color: '#FFB800', fontSize: '1.2rem', fontWeight: 800 }}>{summary.warn}</div></div>
                 <div><Label>Unmatched</Label><div style={{ color: '#aaa', fontSize: '1.2rem', fontWeight: 800 }}>{summary.unknown}</div></div>
@@ -416,8 +459,11 @@ export default function QuoteCheckerPage() {
               {summary.overpriced > 0 && (
                 <Banner $kind="error">⚠ {summary.overpriced} line(s) significantly above market. Renegotiate or get an alternative quote.</Banner>
               )}
-              {summary.overpriced === 0 && summary.warn === 0 && (
-                <Banner $kind="ok">✓ Quote looks fair — every priced line is within ±10% of reference.</Banner>
+              {summary.overpriced === 0 && summary.warn === 0 && summary.unknown === 0 && (
+                <Banner $kind="ok">✓ Every line was checked and is within the reference range.</Banner>
+              )}
+              {summary.unknown > 0 && (
+                <Banner $kind="info">{summary.unknown} line(s) could not be checked (no price, or no reference for that item). The verdict covers the other lines only.</Banner>
               )}
               <Banner $kind="info">{marketProvenance}</Banner>
             </Card>

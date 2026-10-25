@@ -44,9 +44,9 @@ const FEATURES = [
     description: 'Practise on simulated controller displays and a simulated running set before you touch the real one.',
   },
   {
-    icon: '🌍',
-    title: '7 Languages',
-    description: 'English, Kiswahili, French, Spanish, Arabic, Hindi and Chinese.',
+    icon: '📱',
+    title: 'Built for the Phone',
+    description: 'Look up a code standing at the generator, on a phone, with no sign-up.',
   },
 ];
 

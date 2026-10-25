@@ -44,7 +44,6 @@ export default function BuildingPage() {
       <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
       <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
       <link rel="prefetch" href="/eims-building-suite-v20261020.html" as="document" />
-      <B2BCommercialBand profile={B2B_PROFILES.buildingSuite} />
       {/*
         Server-rendered heading. ProBuildingSuiteClient is a client component,
         so a Googlebot scan on 2026-07-31 found this page — and the /all-tools
@@ -55,6 +54,8 @@ export default function BuildingPage() {
         Building Suite — Free Building Design Calculators (Wind, Structural, Geotechnical, Daylight &amp; Acoustics)
       </h1>
       <ProBuildingSuiteClient />
+      {/* Band below the tool (2026-10-20 audit: the calculator started ~1,745 px down on a phone). */}
+      <B2BCommercialBand profile={B2B_PROFILES.buildingSuite} />
     </>
   );
 }

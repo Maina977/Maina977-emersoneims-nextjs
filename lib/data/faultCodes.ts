@@ -258,7 +258,7 @@ export const FAULT_CODES: FaultCode[] = [
     code: 'SPN-102',
     brand: 'J1939',
     title: 'Intake Manifold Pressure High',
-    description: 'The turbocharger is producing excessive boost pressure beyond normal operating parameters. Over-boost conditions can cause pre-detonation, excessive cylinder pressures, head gasket failure, and potential engine damage. This fault is often accompanied by black smoke and engine knocking.',
+    description: 'The turbocharger is producing excessive boost pressure beyond normal operating parameters. Over-boost raises peak cylinder pressure and can lead to head gasket failure and engine damage. Common causes are a wastegate or VGT actuator stuck closed or a faulty boost sensor. (Black smoke usually points the other way: too little boost.)',
     severity: 'warning',
     category: 'Air Intake/Turbo',
     possibleCauses: [
@@ -302,7 +302,7 @@ export const FAULT_CODES: FaultCode[] = [
     code: 'SPN-105',
     brand: 'J1939',
     title: 'Intake Manifold Temperature High',
-    description: 'Air entering the engine from the turbocharger is excessively hot. High intake air temperature reduces engine efficiency, increases exhaust temperatures, and can cause detonation. This fault typically indicates a problem with the charge air cooler (intercooler) or ambient temperature issues.',
+    description: 'Air entering the engine from the turbocharger is excessively hot. High intake air temperature reduces engine power, raises exhaust temperature and makes the ECU derate the engine. This fault typically indicates a problem with the charge air cooler (intercooler) or ambient temperature issues.',
     severity: 'warning',
     category: 'Air Intake/Turbo',
     possibleCauses: [

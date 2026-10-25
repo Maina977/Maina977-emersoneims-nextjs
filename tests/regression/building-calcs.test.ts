@@ -249,3 +249,32 @@ describe('metric inputs (2026-10-20)', () => {
     expect(si.qz_psf).toBeCloseTo(imp.qz_psf, 1);
   });
 });
+
+describe('round 3 bounds (2026-10-20)', () => {
+  const isErr = (fn: (b: c.Body) => unknown, b: c.Body) => c.isCalcError(c.runCalc(fn, b));
+  it('RC beam refuses a section whose steel would not yield (x/d > 0.617 for B500)', () => {
+    // b 300, d 450, fck 30, fyk 500, As 3000 → x = 3000·434.8/(0.8·300·17) = 319.7 mm, x/d = 0.71
+    expect(isErr(c.rcBeam, { b_mm: 300, d_mm: 450, h_mm: 500, As_mm2: 3000, fck_MPa: 30, fyk_MPa: 500 })).toBe(true);
+    // As 1000 → x/d 0.237: still a normal result
+    expect(isErr(c.rcBeam, { b_mm: 300, d_mm: 450, h_mm: 500, As_mm2: 1000, fck_MPa: 30, fyk_MPa: 500 })).toBe(false);
+  });
+  it('reverberation refuses a negative surface area', () => {
+    expect(isErr(c.reverberation, { volume_m3: 200, surfaces: [{ area_m2: -50, alpha: 0.1 }, { area_m2: 80, alpha: 0.3 }] })).toBe(true);
+  });
+  it('legacy RC and bolt inputs are validated', () => {
+    expect(isErr(c.rcBeam, { w_kN_m: -10, L_m: 5 })).toBe(true);
+    expect(isErr(c.steelBolt, { fub_MPa: -800, As_mm2: 245 })).toBe(true);
+  });
+  it('a metric wind error names the metric fields', () => {
+    const r = c.runCalc(c.windAsce7, { V_ms: 0, height_m: 9, exposure: 'C' }) as c.CalcError;
+    expect(r.error).toMatch(/V_ms|m\/s/);
+  });
+});
+
+describe('bolt hole default (2026-10-20)', () => {
+  it('M24 with no hole given uses the 26 mm normal clearance hole', () => {
+    const r = c.runCalc(c.steelBolt, { designation: 'M24', grade: '8.8', t_ply_mm: 12, fu_ply_MPa: 430, e1_mm: 50, p1_mm: 70, d_hole_mm: null }) as Record<string, unknown>;
+    expect(c.isCalcError(r)).toBe(false);
+    expect((r.assumptions as string[]).join(' ')).toMatch(/26 mm/);
+  });
+});

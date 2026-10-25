@@ -230,6 +230,22 @@ function detectSymptoms(query: string): string[] {
   return detectedSymptoms;
 }
 
+/** Words a fault title must contain to be relevant to a symptom (2026-10-20). */
+const SYMPTOM_TITLE_TERMS: Record<string, string[]> = {
+  overheating: ['coolant temp', 'coolant level', 'temperature', 'fan', 'overheat'],
+  oil_pressure: ['oil pressure', 'oil level'],
+  low_power: ['derate', 'boost', 'power', 'torque', 'intake manifold', 'fuel rail', 'fuel delivery', 'injector'],
+  fuel_problem: ['fuel'],
+  electrical: ['voltage', 'battery', 'charg', 'frequency', 'alternator'],
+  no_start: ['start', 'crank', 'speed sensor', 'position', 'shutoff', 'speed'],
+  turbo: ['turbo', 'boost', 'charge air', 'intake manifold'],
+  exhaust: ['exhaust', 'dpf', 'egr', 'particulate', 'def', 'scr'],
+  shutdown: ['shutdown', 'protection'],
+  black_smoke: ['boost', 'intake manifold', 'air filter', 'turbo', 'injector', 'fuel rail', 'charge air', 'exhaust'],
+  white_smoke: ['coolant', 'injector', 'intake air temp', 'start enable'],
+  blue_smoke: ['oil', 'crankcase', 'turbo'],
+};
+
 /**
  * Calculate match confidence based on query and code
  */
@@ -268,20 +284,10 @@ function calculateConfidence(
   
   // The symptom's own vocabulary in the code title (2026-10-20): "overheating"
   // must rank Coolant Temperature above Oil Pressure, which only shares a category.
-  const TITLE_TERMS: Record<string, string[]> = {
-    overheating: ['coolant temp', 'coolant level', 'temperature', 'fan', 'overheat'],
-    oil_pressure: ['oil pressure', 'oil level'],
-    low_power: ['derate', 'boost', 'power', 'torque'],
-    fuel_problem: ['fuel'],
-    electrical: ['voltage', 'battery', 'charg', 'frequency', 'alternator'],
-    no_start: ['start', 'crank', 'speed sensor', 'position', 'shutoff'],
-    turbo: ['turbo', 'boost', 'charge air'],
-    exhaust: ['exhaust', 'dpf', 'egr', 'particulate', 'def', 'scr'],
-    shutdown: ['shutdown', 'protection'],
-  };
+  const TITLE_TERMS = SYMPTOM_TITLE_TERMS;
   for (const symptom of detectedSymptoms) {
     const terms = TITLE_TERMS[symptom] || [];
-    if (terms.some((t) => codeTitle.includes(t))) {
+    if (terms.some((t) => new RegExp('\\b' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(codeTitle))) {
       confidence += 20;
       // Overheating is first a COOLANT temperature fault; oil temperature follows it.
       if (symptom === 'overheating' && codeTitle.includes('coolant')) confidence += 10;
@@ -370,6 +376,14 @@ export function analyzeSymptoms(query: string): DiagnosticResult {
       if (!categoryMatch) continue;
     }
     
+    // A generic J1939 row must name the symptom in its title; sharing a broad
+    // category ("Fuel") is not enough (2026-10-20).
+    if (/^SPN/i.test(String(code.code)) && detectedSymptoms.length) {
+      const title = String(code.issue || code.title || '').toLowerCase();
+      const terms = detectedSymptoms.flatMap((s) => SYMPTOM_TITLE_TERMS[s] || []);
+      // Word-start match: "moderately" must not count as "derate".
+      if (terms.length && !terms.some((w) => new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(title))) continue;
+    }
     const confidence = calculateConfidence(query, code, detectedSymptoms, detectedBrand);
     
     if (confidence >= 60) {
@@ -666,11 +680,21 @@ export function searchFaultCodes(query: string, limit: number = 20): MatchedCode
 /**
  * Get code by exact code string
  */
+/** "SPN 110 FMI 0", "SPN110-FMI0", "110-0", "110/0" → "spn110-fmi0" (the stored form). */
+export function normalizeJ1939(s: string): string | null {
+  const m = /^\s*(?:SPN\s*[:#-]?\s*)?(\d{1,6})\s*(?:[/-]|\s)\s*(?:FMI\s*[:#-]?\s*)?(\d{1,2})\s*$/i.exec(s);
+  if (!m) return null;
+  if (!/spn|fmi|[/-]/i.test(s)) return null; // two bare numbers are not a J1939 code
+  return `spn${+m[1]}-fmi${+m[2]}`;
+}
+
 export function getExactCode(codeStr: string): MatchedCode | null {
   const allCodes = brandSpecificErrorCodes || [];
-  
+  const wanted = normalizeJ1939(codeStr) ?? codeStr.toLowerCase();
+
   for (const code of allCodes) {
-    if (code.code?.toLowerCase() === codeStr.toLowerCase()) {
+    const stored = code.code ? (normalizeJ1939(code.code) ?? code.code.toLowerCase()) : '';
+    if (stored === wanted || code.code?.toLowerCase() === codeStr.toLowerCase()) {
       return {
         code: code.code,
         brand: code.brand || 'Generic',

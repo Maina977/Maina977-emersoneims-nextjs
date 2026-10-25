@@ -17,6 +17,7 @@ import Link from 'next/link';
 import partsDb from '@/app/data/spare-parts-database-COMPLETE.json';
 import verifiedAdditions from '@/app/data/spare-parts-verified-additions.json';
 import { getEngineIndex } from '@/lib/parts/engineIndex';
+import { cleanParts, type PartLike } from '@/lib/parts/partsQuality';
 
 type Sub = { id: string; name: string; parts?: unknown[] };
 
@@ -28,6 +29,10 @@ function getSubcategories(): Sub[] {
   return (cats?.[0]?.subcategories ?? []).filter((s) => s.id && (s.parts?.length ?? 0) > 0);
 }
 
+function subcategoriesWithParts(): Sub[] {
+  return getSubcategories().filter((s) => partsInSubcategory(s) > 0);
+}
+
 /**
  * Parts added to a subcategory by spare-parts-verified-additions.json.
  *
@@ -36,14 +41,20 @@ function getSubcategories(): Sub[] {
  * Understating is a smaller sin than the "2000+" that was on the same page, but
  * it is still a number that does not match what a visitor can count.
  */
-function additionsCount(subcategoryId: string): number {
+function additionsFor(subcategoryId: string): unknown[] {
   const add = verifiedAdditions as { additions?: Array<{ subcategoryId: string; parts?: unknown[] }> };
-  return add.additions?.find((a) => a.subcategoryId === subcategoryId)?.parts?.length ?? 0;
+  return add.additions?.find((a) => a.subcategoryId === subcategoryId)?.parts ?? [];
 }
 
-/** Parts in a subcategory as the category page will actually list them. */
+/**
+ * Parts in a subcategory as the category page will actually list them: base
+ * file plus additions, then cleanParts (drops placeholder rows such as
+ * "Battery Accessory Part #4" and duplicates), exactly as the page does.
+ * Counting the raw rows advertised 100 batteries where the page lists 20
+ * (2026-10-25).
+ */
 export function partsInSubcategory(s: Sub): number {
-  return (s.parts?.length ?? 0) + additionsCount(s.id);
+  return cleanParts([...(s.parts ?? []), ...additionsFor(s.id)] as PartLike[]).length;
 }
 
 /** Every part the catalogue can show, base file plus verified additions. */
@@ -53,11 +64,11 @@ export function totalCataloguedParts(): number {
 
 /** Subcategories that have at least one part to show. */
 export function totalPartCategories(): number {
-  return getSubcategories().length;
+  return subcategoriesWithParts().length;
 }
 
 export default function PartsCategoryLinks({ className = '' }: { className?: string }) {
-  const subs = getSubcategories();
+  const subs = subcategoriesWithParts();
   const total = subs.reduce((n, s) => n + partsInSubcategory(s), 0);
 
   return (

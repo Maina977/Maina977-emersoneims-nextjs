@@ -250,8 +250,7 @@ export function DiagnosticSuiteSchema() {
       'Controller alarm lookup',
       'J1939 SPN/FMI engine-code reference',
       'Step-by-step checks and reset steps',
-      'Symptom search',
-      '7 languages'
+      'Symptom search'
     ],
     author: {
       '@type': 'Organization',

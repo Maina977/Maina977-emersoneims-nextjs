@@ -3,7 +3,7 @@
  * must never be read as a quantity or a price.
  */
 import { describe, it, expect } from 'vitest';
-import { parseLines } from '@/components/solar-modules/crc/src/pages/QuoteCheckerPage';
+import { parseLines, readRating } from '@/components/solar-modules/crc/src/pages/QuoteCheckerPage';
 
 const one = (s: string) => parseLines(s)[0];
 
@@ -25,5 +25,22 @@ describe('parseLines', () => {
   });
   it('quantity then price, without markers', () => {
     expect(one('Sungrow SG5K-D inverter 2 165000')).toMatchObject({ qty: 2, unitPriceKes: 165000 });
+  });
+});
+
+describe('CSV quotes and ratings (2026-10-20 audit round 3)', () => {
+  it('CSV row "JA Solar 550W, 12, 15,000, 180,000" → 12 at 15,000', () => {
+    expect(one('JA Solar 550W, 12, 15,000, 180,000')).toMatchObject({ qty: 12, unitPriceKes: 15000 });
+  });
+  it('a header row is not an item', () => {
+    const rows = parseLines('Item, Qty, Unit price, Total\nJA Solar 550W, 12, 15,000, 180,000');
+    expect(rows).toHaveLength(1);
+  });
+  it('reads the rating and kind of each line', () => {
+    expect(readRating('Deye 5kW hybrid inverter')).toMatchObject({ kind: 'inverter', kw: 5, gridTie: false });
+    expect(readRating('Sungrow SG5K-D 5kW grid-tie inverter')).toMatchObject({ kind: 'inverter', kw: 5, gridTie: true });
+    expect(readRating('550W mono panel')).toMatchObject({ kind: 'panel', w: 550 });
+    expect(readRating('Pylontech 5kWh lithium battery')).toMatchObject({ kind: 'battery', kwh: 5 });
+    expect(readRating('DC cabling and isolators').kind).toBeNull();
   });
 });

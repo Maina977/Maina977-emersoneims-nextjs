@@ -3,7 +3,7 @@
  *
  * Fetches REAL scientific data from free satellite/soil APIs:
  *   - ISRIC SoilGrids v2.0 — global soil properties (clay, sand, pH, organic carbon)
- *   - Open-Elevation API — terrain elevation
+ *   - Open-Elevation API — terrain elevation (Open-Meteo / Copernicus DEM when it does not answer)
  *   - Open-Meteo — climate/weather data (precipitation, temperature)
  *   - JRC Global Surface Water — water occurrence and seasonality
  *
@@ -26,6 +26,8 @@
  *   - DSWE (Dynamic Surface Water Extent, USGS)
  *   - GRACE-FO (groundwater storage changes)
  */
+
+import { fetchElevations } from './elevationService';
 
 export interface SoilGridsData {
   available: boolean;
@@ -158,17 +160,11 @@ export async function fetchSoilGrids(lat: number, lon: number): Promise<SoilGrid
  * Fetch elevation from Open-Elevation API (free, no key).
  */
 export async function fetchElevation(lat: number, lon: number): Promise<ElevationData | null> {
-  try {
-    const url = `https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lon}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const elev = data.results?.[0]?.elevation;
-    if (elev === undefined) return null;
-    return { elevation: elev, source: 'Open-Elevation API (SRTM 30m)' };
-  } catch {
-    return null;
-  }
+  // Open-Elevation is often rate-limited (HTTP 429). Without a second source the
+  // pipeline fell back to a fixed 500 m, and the same Nairobi point gave 117 m
+  // or 128 m depending on whether it answered (2026-10-25).
+  const r = await fetchElevations([{ lat, lon }], 10000);
+  return r ? { elevation: r.elevations[0], source: r.source } : null;
 }
 
 /**

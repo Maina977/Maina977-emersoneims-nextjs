@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { estimateInstalledCost, PERFORMANCE_RATIO, PANEL_WATT } from '@/lib/solar/sizing';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -205,63 +206,36 @@ const SOLAR_SYSTEMS = [
 ];
 
 // ==================== TRANSPARENT PRICING ====================
+// Prices and savings are computed with the calculator's own model
+// (lib/solar/sizing.ts) so this table and the calculator never disagree
+// (2026-10-20 audit). Savings = what the array produces (5.5 sun-hours, 78%
+// performance ratio) × 75-90% used on site × KES 22-28/kWh.
+const PKG = (pvKwp: number, invKw: number, batKwh: number) => {
+  const c = estimateInstalledCost(pvKwp, invKw, batKwh, 'hybrid');
+  const kwhMonth = pvKwp * 5.5 * 30.4 * PERFORMANCE_RATIO;
+  const lo = Math.round((kwhMonth * 0.75 * 22) / 1000) * 1000;
+  const hi = Math.round((kwhMonth * 0.9 * 28) / 1000) * 1000;
+  return {
+    capacity: `${pvKwp} kWp`,
+    priceFrom: c.lowKes,
+    priceTo: c.highKes,
+    panels: Math.ceil((pvKwp * 1000) / PANEL_WATT),
+    savings: `${lo.toLocaleString('en-KE')}-${hi.toLocaleString('en-KE')}/month`,
+    inv: invKw, bat: batKwh,
+  };
+};
 const SOLAR_PRICING = [
-  {
-    type: 'Residential Basic',
-    capacity: '3 kW',
-    priceFrom: 350000,
-    priceTo: 450000,
-    ideal: 'Small homes, 3-4 rooms',
-    includes: ['6× 500W Panels', '3kW Inverter', '200Ah Battery', 'Installation', '2-Year Workmanship Warranty'],
-    savings: '8,000-12,000/month'
-  },
-  {
-    type: 'Residential Standard',
-    capacity: '5 kW',
-    priceFrom: 550000,
-    priceTo: 750000,
-    ideal: 'Medium homes, offices',
-    includes: ['10× 500W Panels', '5kW Hybrid Inverter', '400Ah Lithium', 'Installation', '2-Year Workmanship Warranty'],
-    savings: '15,000-22,000/month',
-    popular: true
-  },
-  {
-    type: 'Residential Premium',
-    capacity: '10 kW',
-    priceFrom: 950000,
-    priceTo: 1400000,
-    ideal: 'Large homes, multiple ACs',
-    includes: ['20× 500W Panels', '10kW Hybrid Inverter', '10kWh Lithium Bank', 'Full Installation', '2-Year Workmanship Warranty'],
-    savings: '30,000-45,000/month'
-  },
-  {
-    type: 'Commercial Small',
-    capacity: '20 kW',
-    priceFrom: 1800000,
-    priceTo: 2500000,
-    ideal: 'Shops, small factories',
-    includes: ['40× 500W Panels', '20kW Inverter', '20kWh Storage', 'Monitoring System', '2-Year Workmanship Warranty'],
-    savings: '60,000-85,000/month'
-  },
-  {
-    type: 'Commercial Medium',
-    capacity: '50 kW',
-    priceFrom: 3500000,
-    priceTo: 5000000,
-    ideal: 'Schools, hotels, factories',
-    includes: ['100× 500W Panels', '50kW Central Inverter', '50kWh Battery', 'SCADA Monitoring', '2-Year Workmanship Warranty'],
-    savings: '150,000-200,000/month'
-  },
-  {
-    type: 'Industrial',
-    capacity: '100+ kW',
-    priceFrom: 7000000,
-    priceTo: 15000000,
-    ideal: 'Large factories, farms',
-    includes: ['200+ Panels', 'Central Inverter System', 'Industrial Battery', 'Full EMS', '2-Year Workmanship Warranty'],
-    savings: '300,000-600,000/month'
-  },
-];
+  { type: 'Residential Basic', ideal: 'Small homes, 3-4 rooms', ...PKG(3, 3, 5) },
+  { type: 'Residential Standard', ideal: 'Medium homes, offices', popular: true, ...PKG(5, 5, 10) },
+  { type: 'Residential Premium', ideal: 'Large homes, multiple ACs', ...PKG(10, 10, 15) },
+  { type: 'Commercial Small', ideal: 'Shops, small factories', ...PKG(20, 20, 20) },
+  { type: 'Commercial Medium', ideal: 'Schools, hotels, factories', ...PKG(50, 50, 50) },
+  { type: 'Industrial', ideal: 'Large factories, farms', ...PKG(100, 100, 100) },
+].map((p: { popular?: boolean } & ReturnType<typeof PKG> & { type: string; ideal: string }) => ({
+  popular: !!p.popular,
+  ...p,
+  includes: [`${p.panels}× ${PANEL_WATT} W panels`, `${p.inv} kW hybrid inverter`, `${p.bat} kWh lithium (LiFePO4) battery`, 'Installation and commissioning', '2-Year Workmanship Warranty'],
+}));
 
 // ==================== SOLAR BRANDS COMPARISON ====================
 const SOLAR_BRANDS = [
@@ -309,15 +283,6 @@ const SOLAR_BRANDS = [
     tier: 'Tier 1',
     priceRange: 'Mid-Range',
     bestFor: 'Budget-conscious'
-  },
-  {
-    name: 'SunPower',
-    origin: 'USA',
-    efficiency: '22.8%',
-    warranty: '25 Years',
-    tier: 'Tier 1',
-    priceRange: 'Ultra-Premium',
-    bestFor: 'Limited roof space'
   },
 ];
 
@@ -924,7 +889,7 @@ export default function SolarBible() {
                   💳 Flexible Financing
                 </span>
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-                  Can't Pay <span className="text-green-400">Upfront?</span> We've Got You.
+                  Can't Pay <span className="text-green-400">Upfront?</span> Ask About Terms.
                 </h2>
                 <p className="text-gray-400 mb-6">
                   We understand that solar is an investment. That's why we offer flexible payment plans
@@ -933,19 +898,15 @@ export default function SolarBible() {
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-center gap-3 text-gray-300">
                     <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
-                    20-50% deposit, balance over 6-24 months
+                    Payment terms agreed per project and written into your quotation
                   </li>
                   <li className="flex items-center gap-3 text-gray-300">
                     <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
-                    0% interest on 6-month payment plans
+                    A deposit, with staged payments tied to delivery and commissioning, is common
                   </li>
                   <li className="flex items-center gap-3 text-gray-300">
                     <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
-                    Asset financing through partner banks
-                  </li>
-                  <li className="flex items-center gap-3 text-gray-300">
-                    <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
-                    Lease-to-own options available
+                    Ask us when you request a quote; we will set out what is possible for your project
                   </li>
                 </ul>
               </motion.div>

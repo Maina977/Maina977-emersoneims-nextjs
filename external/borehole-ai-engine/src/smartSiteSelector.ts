@@ -10,6 +10,7 @@
 
 import { classifyRockType, estimateWeatheringProfile, type RockClassification, type WeatheringProfile } from './rockClassifier';
 import type { FieldValidationData } from './types';
+import { fetchElevations } from './elevationService';
 
 export interface CandidateSite {
   latitude: number;
@@ -66,12 +67,8 @@ const FEATURE_WEIGHTS = {
  * Fetch elevation for a single point from Open-Elevation API.
  */
 async function fetchElevation(lat: number, lon: number): Promise<number> {
-  try {
-    const resp = await fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lon}`);
-    if (!resp.ok) return 0;
-    const data = await resp.json();
-    return data?.results?.[0]?.elevation ?? 0;
-  } catch { return 0; }
+  const r = await fetchElevations([{ lat, lon }], 10000);
+  return r ? r.elevations[0] : 0;
 }
 
 /**
@@ -196,14 +193,8 @@ export async function selectTopDrillingSites(
 
   // Batch elevation fetch
   let elevations: number[] = [];
-  try {
-    const locStr = sampledPoints.map(p => `${p.lat},${p.lon}`).join('|');
-    const resp = await fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${locStr}`);
-    if (resp.ok) {
-      const data = await resp.json();
-      elevations = (data?.results ?? []).map((r: any) => r?.elevation ?? 0);
-    }
-  } catch { /* will use zeros */ }
+  const lookup = await fetchElevations(sampledPoints, 15000);
+  if (lookup) elevations = lookup.elevations;
   if (elevations.length !== sampledPoints.length) {
     elevations = new Array(sampledPoints.length).fill(0);
   }

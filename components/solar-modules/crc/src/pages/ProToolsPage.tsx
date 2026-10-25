@@ -145,7 +145,36 @@ const Result: React.FC<{ out: any; err: string | null }> = ({ out, err }) => {
   if (out instanceof Blob) {
     return <Out>Binary file received ({(out as Blob).size} bytes) — download triggered.</Out>;
   }
-  return <Out>{JSON.stringify(out, null, 2)}</Out>;
+  return <Out style={{ whiteSpace: 'normal' }}><Pretty v={out} depth={0} /></Out>;
+};
+
+/** Results as readable tables, not JSON (2026-10-20). */
+const label = (k: string) => k.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+const fmt = (v: any): string => (typeof v === 'number' ? (Number.isInteger(v) ? v.toLocaleString() : v.toLocaleString(undefined, { maximumFractionDigits: 2 })) : typeof v === 'boolean' ? (v ? 'Yes' : 'No') : v == null ? '—' : String(v));
+const Pretty: React.FC<{ v: any; depth: number }> = ({ v, depth }) => {
+  if (v == null || typeof v !== 'object') return <span>{fmt(v)}</span>;
+  if (Array.isArray(v)) {
+    if (!v.length) return <span>—</span>;
+    if (v.every((x) => x == null || typeof x !== 'object')) return <span>{v.map(fmt).join(', ')}</span>;
+    const keys = Array.from(new Set(v.slice(0, 12).flatMap((o) => Object.keys(o || {})))).slice(0, 7);
+    return (
+      <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.75rem' }}>
+        <thead><tr>{keys.map((k) => <th key={k} style={{ textAlign: 'left', padding: '2px 6px', color: '#7fd6ff' }}>{label(k)}</th>)}</tr></thead>
+        <tbody>{v.slice(0, 30).map((row, i) => <tr key={i}>{keys.map((k) => <td key={k} style={{ padding: '2px 6px' }}>{fmt(row?.[k])}</td>)}</tr>)}</tbody>
+      </table>
+    );
+  }
+  const entries = Object.entries(v).filter(([k]) => !['success', 'ok'].includes(k));
+  return (
+    <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.78rem' }}>
+      <tbody>{entries.map(([k, x]) => (
+        <tr key={k}>
+          <th style={{ textAlign: 'left', verticalAlign: 'top', padding: '2px 8px 2px 0', color: '#7fd6ff', fontWeight: 600, whiteSpace: 'nowrap' }}>{label(k)}</th>
+          <td style={{ padding: '2px 0' }}>{depth < 3 ? <Pretty v={x} depth={depth + 1} /> : fmt(x)}</td>
+        </tr>
+      ))}</tbody>
+    </table>
+  );
 };
 
 // ---------- Tools ----------
@@ -189,7 +218,7 @@ const LoanTool = () => {
   return (
     <Card>
       <CardH>Loan Amortization</CardH>
-      <CardSub>PMT formula, ISO 31-11</CardSub>
+      <CardSub>Standard annuity (PMT) formula</CardSub>
       <Row>
         <Input aria-label="Loan principal" type="number" value={p.principal} onChange={(e) => setP({ ...p, principal: +e.target.value })} placeholder="Principal" />
         <Input aria-label="Annual interest rate (decimal)" type="number" step="0.01" value={p.annualRate} onChange={(e) => setP({ ...p, annualRate: +e.target.value })} placeholder="Rate" />
@@ -208,12 +237,13 @@ const TariffTool = () => {
   return (
     <Card>
       <CardH>KPLC Tariff Bill</CardH>
-      <CardSub>Real EPRA Q1 2026 schedule</CardSub>
+      <CardSub>Indicative bill from the EPRA consumption bands; check the rates on your latest KPLC bill</CardSub>
       <Row>
         <Select value={cat} onChange={(e) => setCat(e.target.value)}>
-          <option value="DC1">DC1 (≤30 kWh, lifeline)</option>
-          <option value="DC2">DC2 (residential)</option>
-          <option value="SC">SC (small commercial)</option>
+          <option value="DC">Domestic lifeline (0–30 kWh)</option>
+          <option value="DC1">Domestic ordinary (31–100 kWh)</option>
+          <option value="DC2">Domestic ordinary (over 100 kWh)</option>
+          <option value="SC">Small commercial</option>
         </Select>
         <Input type="number" value={kwh} onChange={(e) => setKwh(+e.target.value)} placeholder="kWh" />
       </Row>

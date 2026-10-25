@@ -129,6 +129,7 @@ export function reverberation(b: Body) {
     for (const [i, s] of surfaces.entries()) {
       const area = n(s.area_m2), alpha = n(s.alpha);
       if (area === undefined || alpha === undefined) return bad(`surfaces[${i}] needs area_m2 and alpha`);
+      if (!(area > 0)) return bad(`surfaces[${i}].area_m2 must be greater than 0`);
       if (!(alpha >= 0 && alpha <= 1)) return bad(`surfaces[${i}].alpha must be between 0 and 1`);
       S += area; A += area * alpha;
     }
@@ -236,13 +237,18 @@ export function windAsce7(b: Body) {
   let z = pick(b, 'height_ft');
   const zm = pick(b, 'height_m');
   if (z === undefined && zm !== undefined) z = zm / 0.3048;
-  const err = missing({ V_mph: V, height_ft: z });
-  if (err) return err;
+  if (V === undefined || z === undefined) {
+    const m: string[] = [];
+    if (V === undefined) m.push(Vms === undefined && b.V_mph === undefined ? 'V_ms (or V_mph)' : 'V_ms');
+    if (z === undefined) m.push(zm === undefined && b.height_ft === undefined ? 'height_m (or height_ft)' : 'height_m');
+    return { error: `Missing or invalid input: ${m.join(', ')}`, missing: m };
+  }
   const exp = String(b.exposure ?? '').toUpperCase();
   const e = EXPOSURE[exp];
   if (!e) return { error: 'Missing or invalid input: exposure (B, C or D)', missing: ['exposure'] };
-  if (!(V! > 0 && z! > 0)) return bad('V_mph and height_ft must be > 0');
-  if (V! > 300) return bad('V_mph above 300 is outside ASCE 7 basic wind speeds');
+  const metric = Vms !== undefined || zm !== undefined;
+  if (!(V! > 0 && z! > 0)) return bad(metric ? 'Wind speed (V_ms) and height (height_m) must be > 0' : 'V_mph and height_ft must be > 0');
+  if (V! > 300) return bad(metric ? 'A basic wind speed above 134 m/s is outside ASCE 7' : 'V_mph above 300 is outside ASCE 7 basic wind speeds');
   // Table 26.10-1: z is taken between 15 ft and the gradient height zg (Kz ≤ 2.41).
   const zEff = Math.min(Math.max(z!, 15), e.zg_ft);
   const Kz = 2.41 * Math.pow(zEff / e.zg_ft, 2 / e.alpha);
@@ -366,6 +372,7 @@ export function rcBeam(b: Body) {
   const w = pick(b, 'w_kN_m'), L = pick(b, 'L_m');
   if (w !== undefined && L !== undefined && b.b_mm === undefined) {
     if (!(L > 0)) return bad('L_m must be > 0');
+    if (!(w >= 0)) return bad('w_kN_m must be 0 or more (a downward uniform load)');
     return { M_kNm: r((w * L * L) / 8), V_kN: r((w * L) / 2), method: 'Simply supported beam, uniform load: M = wL²/8, V = wL/2' };
   }
   const bw = pick(b, 'b_mm'), d = pick(b, 'd_mm'), As = pick(b, 'As_mm2'), fck = pick(b, 'fck_MPa'), fyk = pick(b, 'fyk_MPa');
@@ -380,6 +387,11 @@ export function rcBeam(b: Body) {
   const x = (As! * fyd) / (0.8 * bw! * fcd);
   // A compression zone deeper than the steel means the section cannot develop
   // that steel: no meaningful M_Rd (it went negative before 2026-10-20).
+  // Steel must yield at failure: x/d ≤ εcu/(εcu + fyd/Es). Above that the
+  // fyd-based M_Rd is unsafe (2026-10-20: As = 3000 gave 420 kNm against ~394
+  // by strain compatibility).
+  const xLim = 0.0035 / (0.0035 + fyd / 200000);
+  if (x < d! && x / d! > xLim) return bad(`Over-reinforced: x/d = ${r(x / d!, 3)} exceeds ${r(xLim, 3)}, so the steel would not yield and this check does not apply. Reduce As, deepen the section, or add compression steel.`);
   if (x >= d!) return bad(`As_mm2 = ${As} is too much steel for this section: the compression zone (x = ${r(x, 0)} mm) would reach below the steel (d = ${d} mm). Reduce As or enlarge the section.`);
   const z = d! - 0.4 * x;
   const MRd = (As! * fyd * z) / 1e6;
@@ -428,6 +440,7 @@ export function steelBolt(b: Body) {
     const fub = pick(b, 'fub_MPa'), As = pick(b, 'As_mm2');
     const err = missing({ fub_MPa: fub, As_mm2: As });
     if (err) return err;
+    if (!(fub! > 0 && As! > 0)) return bad('fub_MPa and As_mm2 must be > 0');
     const av = pick(b, 'alpha_v') ?? 0.6;
     return { Fv_Rd_kN: r((av * fub! * As!) / gM2 / 1000), method: 'EN 1993-1-8 Table 3.4, one shear plane' };
   }
@@ -449,8 +462,13 @@ export function steelBolt(b: Body) {
     alpha_v: av, shear_area_mm2: r(A, 1), shear_planes: planes,
   };
   const checks: Array<{ check: string; value: string; pass: boolean }> = [];
-  const t = pick(b, 't_ply_mm'), fu = pick(b, 'fu_ply_MPa'), e1 = pick(b, 'e1_mm'), p1 = pick(b, 'p1_mm'), d0 = pick(b, 'd_hole_mm');
+  const t = pick(b, 't_ply_mm'), fu = pick(b, 'fu_ply_MPa'), e1 = pick(b, 'e1_mm'), p1 = pick(b, 'p1_mm');
+  // Hole: as given, else the EN 1090-2 normal clearance hole for the bolt (2026-10-20:
+  // changing to M24 errored because the form kept a 22 mm hole).
+  const d0Given = pick(b, 'd_hole_mm');
+  const d0 = d0Given ?? (dNom <= 14 ? dNom + 1 : dNom <= 24 ? dNom + 2 : dNom + 3);
   const assumptions: string[] = [];
+  if (d0Given === undefined) assumptions.push(`Hole diameter taken as ${d0} mm (EN 1090-2 normal clearance for ${desig})`);
   if ([t, fu, e1, d0, p1].some((v) => v !== undefined && !(v > 0))) return bad('t_ply_mm, fu_ply_MPa, e1_mm, p1_mm and d_hole_mm must be > 0');
   if (d0 !== undefined && d0 < dNom) return bad(`d_hole_mm must be at least the bolt diameter (${dNom} mm)`);
   // EN 1993-1-8 Table 3.3 minimum end distance and spacing.

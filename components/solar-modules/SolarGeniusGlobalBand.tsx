@@ -51,7 +51,7 @@ export default function SolarGeniusGlobalBand() {
         />
         <Pillar
           eyebrow="Trust"
-          body="Transparent assumptions, sample data clearly badged, deterministic calculations, hardware-grade fault-code library, no fabricated confidence."
+          body="Assumptions shown on every result, deterministic calculations, an inverter and battery fault-code reference, and no invented confidence figures."
         />
       </div>
     </section>

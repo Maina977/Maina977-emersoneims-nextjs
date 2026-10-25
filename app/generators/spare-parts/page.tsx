@@ -282,8 +282,11 @@ export default function SparePartsPage() {
             fitment, across 27 categories. A visitor seeing "15,452+" here and
             "1,315" on the catalogue page had no way to know which to believe.
             The "+" is also gone: the count is exact, not a floor.
+            2026-10-25: "1,315" counted placeholder and duplicate rows the
+            category pages never show (they list 761). The browsable count is
+            computed in the layout's title; it is not hard-coded here.
           */}
-          <p className="text-amber-400 text-lg font-semibold">15,452 inventory references • 1,315 catalogued online with part numbers and engine fitment • Same-day Nairobi delivery</p>
+          <p className="text-amber-400 text-lg font-semibold">15,452 inventory references • browse the categories below for parts listed with part numbers and engine fitment • Same-day Nairobi delivery</p>
         </div>
       </section>
 

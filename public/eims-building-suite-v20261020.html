@@ -4733,9 +4733,7 @@ function showFloorEditor(){
 
     // Actions
     h+='<div class="btn-row" style="margin-top:8px">';
-    h+='<button class="btn btn-g" onclick="fpeValidate()">\u2705 Validate</button>';
-    h+='<button class="btn btn-p" onclick="fpeAutoSolve()">\u{1F9E0} Auto-Fix</button>';
-    h+='<button class="btn btn-o" onclick="fpeExportDXF()">\u{1F4E5} DXF</button>';
+    // Validate, Auto-Fix and DXF removed (2026-10-20): their server routes are not online.
     h+='<button class="btn" onclick="fpeClear()">\u2715 Clear</button>';
     h+='</div>';
     h+='<div id="fpeValidateOut" style="margin-top:6px"></div>';
@@ -7229,7 +7227,7 @@ const PRO_CATALOG = [
       {k:'fu_ply_MPa',type:'number',def:410,l:'fu ply (MPa)'},
       {k:'e1_mm',type:'number',def:30,l:'e1 (mm)'},
       {k:'p1_mm',type:'number',def:60,l:'p1 (mm)'},
-      {k:'d_hole_mm',type:'number',def:22,l:'Hole d (mm)'},
+      {k:'d_hole_mm',type:'number',def:'',l:'Hole d (mm; blank = normal clearance)'},
       {k:'Fv_Ed_kN',type:'number',def:50,l:'Fv,Ed (kN)'},
       {k:'Ft_Ed_kN',type:'number',def:10,l:'Ft,Ed (kN)'},
     ]},

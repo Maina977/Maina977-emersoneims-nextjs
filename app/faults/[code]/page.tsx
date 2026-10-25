@@ -64,18 +64,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
    * states the action, inside the limit.
    */
   // Text alarms have no number, so their title names the alarm instead.
-  const title = fault.alarm
-    ? `${fault.brand} ${fault.title} Alarm — Causes & Fix`
-    : `${fault.brand} ${fault.code}: ${fault.title} — Causes & Fix`;
+  // "CUMMINS-111" reads as "Cummins 111", not "Cummins CUMMINS-111" (2026-10-20).
+  const brandPrefix = fault.brand.toUpperCase() + '-';
+  const codeLabel = fault.code.toUpperCase().startsWith(brandPrefix)
+    ? `${fault.brand} ${fault.code.slice(brandPrefix.length)}`
+    : `${fault.brand} ${fault.code}`;
+  const base = fault.alarm ? `${fault.brand} ${fault.title} Alarm` : `${codeLabel}: ${fault.title}`;
+  // Keep within ~60 characters before the site suffix.
+  const title = base.length <= 44 ? `${base} — Causes & Fix` : base;
   const description = fault.alarm
     ? `What the ${fault.brand} "${fault.title}" alarm means, likely causes, how to diagnose it, and the steps to clear it. Generator support across Kenya.`
-    : `${fault.brand} ${fault.code} means ${fault.title}. Likely causes, how to diagnose it, and the steps to clear the fault. Generator support across Kenya.`;
+    : `${codeLabel} means ${fault.title}. Likely causes, how to diagnose it, and the steps to clear the fault. Generator support across Kenya.`;
   return {
     title,
     description,
     keywords: fault.searchKeywords?.join(', '),
     openGraph: {
-      title: fault.alarm ? `${fault.brand} ${fault.title} alarm` : `${fault.brand} ${fault.code} - ${fault.title}`,
+      title: fault.alarm ? `${fault.brand} ${fault.title} alarm` : `${codeLabel} - ${fault.title}`,
       description: fault.description.slice(0, 200),
       type: 'article',
     },
@@ -125,7 +130,7 @@ export default async function FaultCodePage({ params }: Props) {
   ).slice(0, 4);
 
   const label = faultLabel(fault);
-  const whatsappLink = `https://wa.me/254768860665?text=${encodeURIComponent(`Hi, I need help with ${fault.brand} ${fault.alarm ? `"${fault.title}" alarm` : `fault code ${fault.code}`}`)}`;
+  const whatsappLink = `https://wa.me/254768860665?text=${encodeURIComponent(`Hi, I need help with ${fault.brand} ${fault.alarm ? `"${fault.title}" alarm` : `fault code ${(fault.code.toUpperCase().startsWith(fault.brand.toUpperCase() + '-') ? fault.code.slice(fault.brand.length + 1) : fault.code)}`}`)}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white">
@@ -364,7 +369,7 @@ export default async function FaultCodePage({ params }: Props) {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "HowTo",
-            "name": fault.alarm ? `How to Fix the ${fault.brand} ${fault.title} Alarm` : `How to Fix ${fault.brand} ${fault.code} - ${fault.title}`,
+            "name": fault.alarm ? `How to Fix the ${fault.brand} ${fault.title} Alarm` : `How to Fix ${fault.brand} ${(fault.code.toUpperCase().startsWith(fault.brand.toUpperCase() + '-') ? fault.code.slice(fault.brand.length + 1) : fault.code)} - ${fault.title}`,
             "description": fault.description,
             "step": fault.troubleshootingSteps.map((step, i) => ({
               "@type": "HowToStep",

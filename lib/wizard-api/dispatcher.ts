@@ -73,7 +73,8 @@ async function readJson(req: NextRequest): Promise<Record<string, unknown>> {
   try {
     return (await req.json()) as Record<string, unknown>;
   } catch {
-    return {};
+    // Malformed JSON is reported as such, not as a missing field (2026-10-20).
+    return { __invalidJson: true };
   }
 }
 
@@ -263,6 +264,7 @@ async function globalFxRates() {
 export async function dispatch(req: NextRequest, segments: string[], prefix: string) {
   const path = `/api/${prefix}/${segments.join('/')}`.replace(/\/+$/, '');
   const body = await readJson(req);
+  if (body.__invalidJson) return fail('Request body is not valid JSON', 400);
 
   // ── architecture
   if (path.endsWith('/arch/uvalue')) return calc(calcs.uValue, body);

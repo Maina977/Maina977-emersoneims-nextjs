@@ -111,7 +111,10 @@ function handleLookup(query: string): DiagnosticAPIResponse {
   let code = getExactCode(raw);
   let searchCode = raw;
 
-  if (!code) {
+  // A J1939 code is looked up whole; its digits are never searched alone (2026-10-20:
+  // "SPN 110 FMI 0" matched an unrelated alarm numbered 110).
+  const isJ1939 = /\b(?:spn|fmi)/i.test(raw);
+  if (!code && !isJ1939) {
     // Multi-segment alphanumeric codes (PW10-147, UPS-COM-1154), or a bare
     // numeric code (Cummins 111). Keep all segments.
     const codeMatch = raw.match(/\b[A-Za-z]{1,4}(?:[-_][A-Za-z0-9]{1,8})+\b/)
@@ -216,12 +219,12 @@ async function handleAnalysis(query: string, brand?: string): Promise<Diagnostic
 
   // Rule-based response (fallback or when Claude not enabled)
   if (analysis.matchedCodes.length > 0) {
+    // Rule-based keyword ranking: no confidence percentage (2026-10-20).
     return {
       found: true,
-      confidence: analysis.confidence,
       analysis,
       results: analysis.matchedCodes,
-      summary: analysis.aiSummary,
+      summary: `${analysis.aiSummary} Ranked by keyword match, not measured probability.`,
       usedClaudeAPI: false
     };
   }

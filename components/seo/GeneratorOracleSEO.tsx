@@ -41,7 +41,6 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
       'Step-by-Step Repair Guides',
       'J1939/CAN Protocol Support',
       'Training simulators for controller displays',
-      'Multi-Language Support',
       'One-tap escalation to an EmersonEIMS engineer',
     ],
   };

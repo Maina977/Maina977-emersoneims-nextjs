@@ -45,6 +45,8 @@ export default function FaultCodesPage() {
       const matchesSearch = q === '' ||
         compact(fault.code).includes(compact(q)) ||
         compact(`${fault.brand}${fault.code}`).includes(compact(q)) ||
+        // "SPN 110 FMI 0" finds the SPN-110 page (2026-10-20).
+        (compact(q).startsWith(compact(fault.code)) && /^spn/i.test(fault.code) && !/^\d/.test(compact(q).slice(compact(fault.code).length))) ||
         fault.title.toLowerCase().includes(search.toLowerCase()) ||
         fault.description.toLowerCase().includes(search.toLowerCase());
 

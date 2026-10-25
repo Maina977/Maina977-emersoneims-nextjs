@@ -21,6 +21,8 @@
   .pill{padding:3px 8px;border-radius:999px;background:var(--pill);color:var(--mute);font-size:11px;margin-left:6px}
   .ok{color:var(--acc2)}.bad{color:var(--bad)}.warn{color:var(--warn)}
   main{display:grid;grid-template-columns:260px 1fr;height:calc(100% - 46px)}
+  /* Phones (2026-10-20): one column, menu above the form. */
+  @media(max-width:760px){main{grid-template-columns:1fr;height:auto}#nav{max-height:40vh;overflow:auto}header{flex-wrap:wrap;gap:6px}}
   nav{border-right:1px solid var(--line);background:var(--panel);overflow-y:auto;padding:10px 0}
   nav .grp{padding:10px 14px 4px;color:var(--mute);font-size:11px;letter-spacing:1px;text-transform:uppercase}
   nav button{display:block;width:100%;text-align:left;padding:8px 14px;background:none;border:0;color:var(--ink);
@@ -102,7 +104,7 @@ const MODULES = [
   { id:'seismic', group:'Engineering', tag:'b-eng',
     title:'Seismic ELF (ASCE 7-22 §12.8)',
     endpoint:'/api/loads/seismic/asce7-elf', method:'POST',
-    refs:['ASCE 7-22 §12.8','PMI/ANSI'],
+    refs:['ASCE 7-22 §12.8'],
     fields:[
       {k:'SDS', label:'SDS (g)', type:'number', def:1.0, step:'0.01'},
       {k:'SD1', label:'SD1 (g)', type:'number', def:0.5, step:'0.01'},
@@ -119,7 +121,7 @@ const MODULES = [
   { id:'geotech', group:'Engineering', tag:'b-eng',
     title:'Bearing capacity (Terzaghi)',
     endpoint:'/api/geotech/bearing/terzaghi', method:'POST',
-    refs:['Terzaghi 1943','Meyerhof','Hansen'],
+    refs:['Terzaghi 1943 bearing equation','Prandtl–Reissner Nc, Nq','Vesić Nγ'],
     fields:[
       {k:'c_kPa', label:'Cohesion c (kPa)', type:'number', def:10},
       {k:'phi_deg', label:'Friction φ (°)', type:'number', def:30},
@@ -127,7 +129,7 @@ const MODULES = [
       {k:'B_m', label:'Footing width B (m)', type:'number', def:2, step:'0.1'},
       {k:'Df_m', label:'Embedment Df (m)', type:'number', def:1.5, step:'0.1'},
       {k:'shape', label:'Shape', type:'select',
-        opts:['strip','square','circular','rectangular'], def:'strip'},
+        opts:['strip','square','circular'], def:'strip'},
     ]},
 
   { id:'rc_beam', group:'Engineering', tag:'b-eng',
@@ -159,7 +161,7 @@ const MODULES = [
       {k:'fu_ply_MPa', label:'fu ply (MPa)', type:'number', def:410},
       {k:'e1_mm', label:'e1 (mm)', type:'number', def:30},
       {k:'p1_mm', label:'p1 (mm)', type:'number', def:60},
-      {k:'d_hole_mm', label:'Hole d (mm)', type:'number', def:22},
+      {k:'d_hole_mm', label:'Hole d (mm; blank = normal clearance)', type:'number', def:''},
       {k:'Fv_Ed_kN', label:'Fv,Ed (kN)', type:'number', def:50},
       {k:'Ft_Ed_kN', label:'Ft,Ed (kN)', type:'number', def:10},
     ]},
@@ -1203,8 +1205,19 @@ function proEscape(v){
   return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Units keep their case and go in brackets ("qz_psf" → "qz (psf)", "M_Rd_kNm" →
+// "M Rd (kNm)") instead of "Qz Psf" / "M Rd KNm" (2026-10-20).
+const UNIT_LABELS = { psf:'psf', Pa:'Pa', kPa:'kPa', MPa:'MPa', kN:'kN', kNm:'kNm', mm:'mm', mm2:'mm²', m:'m', m2:'m²', m3:'m³', m3_s:'m³/s', L_s:'L/s', s:'s', min:'min', pct:'%', deg:'°', W_m2K:'W/m²K', m2K_W:'m²K/W', ms:'m/s', kWh:'kWh', kW:'kW', ha:'ha', g:'g' };
 function toLabel(key){
-  return String(key).replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+  const k = String(key);
+  for (const u of Object.keys(UNIT_LABELS).sort((a,b)=>b.length-a.length)) {
+    if (k.endsWith('_' + u)) {
+      const base = k.slice(0, -(u.length + 1)).replace(/_/g,' ');
+      return base.charAt(0).toUpperCase() + base.slice(1) + ' (' + UNIT_LABELS[u] + ')';
+    }
+  }
+  const s = k.replace(/_/g,' ');
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function isPlainObject(v){

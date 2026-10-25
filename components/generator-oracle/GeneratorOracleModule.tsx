@@ -788,8 +788,11 @@ function PremiumNavTab({
 }) {
   return (
     <motion.button
+      type="button"
+      role="tab"
+      aria-selected={active}
       onClick={onClick}
-      className={`relative px-5 py-3 rounded-xl transition-all ${
+      className={`relative shrink-0 px-3 py-2 xl:px-5 xl:py-3 rounded-xl transition-all ${
         active
           ? 'bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/50'
           : 'hover:bg-slate-800/50 border border-transparent hover:border-slate-700/50'
@@ -805,7 +808,7 @@ function PremiumNavTab({
         >
           {icon}
         </motion.span>
-        <span className={`text-sm font-medium uppercase tracking-wider ${active ? 'text-cyan-400' : 'text-slate-400'}`}>
+        <span className={`text-xs xl:text-sm font-medium uppercase tracking-wide whitespace-nowrap ${active ? 'text-cyan-400' : 'text-slate-400'}`}>
           {label}
         </span>
       </div>
@@ -862,10 +865,13 @@ function SubTabNav<T extends string>({
   };
 
   return (
-    <div className="flex flex-nowrap sm:flex-wrap overflow-x-auto items-center gap-2 p-2 bg-slate-900/50 rounded-xl border border-slate-700/50 mb-4 sm:mb-6">
+    <div role="tablist" className="flex flex-nowrap sm:flex-wrap overflow-x-auto items-center gap-2 p-2 bg-slate-900/50 rounded-xl border border-slate-700/50 mb-4 sm:mb-6">
       {tabs.map((tab) => (
         <motion.button
           key={tab.id}
+          type="button"
+          role="tab"
+          aria-selected={activeTab === tab.id}
           onClick={() => onTabChange(tab.id)}
           className={`shrink-0 flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg transition-all ${
             activeTab === tab.id
@@ -1142,23 +1148,7 @@ export default function GeneratorOracleModule() {
           {/* ==================== ULTRA-PREMIUM COMMAND HEADER ==================== */}
           <header className="flex-shrink-0 bg-slate-950/90 backdrop-blur-2xl border-b border-cyan-500/20">
             <div className="max-w-[1920px] mx-auto px-4 lg:px-6">
-              {/* Status bar reduced to the language picker (2026-10-20 audit): the
-                  "Simulator / Network / Database" lights and the clock looked like live
-                  telemetry on a plain lookup and pushed the search box down. */}
-              <div className="flex items-center justify-end pt-2 text-xs">
-                  {/* Language with Flags */}
-                  <select
-                    value={language}
-                    onChange={(e) => handleLanguageChange(e.target.value)}
-                    className="bg-slate-900/60 text-cyan-400 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs font-medium cursor-pointer hover:border-cyan-500/50 transition-colors"
-                  >
-                    {SUPPORTED_ORACLE_LANGUAGES.map(lang => (
-                      <option key={lang.code} value={lang.code}>
-                        {lang.flag} {lang.name}
-                      </option>
-                    ))}
-                  </select>
-              </div>
+              {/* Language picker removed (2026-10-20 audit): it translated only a few labels. */}
 
               {/* Main Header */}
               {/* Stacks on phones so the tab strip gets its own full-width row (2026-10-19). */}
@@ -1241,10 +1231,10 @@ export default function GeneratorOracleModule() {
                     is styled thin so the swipe affordance is obvious on touch devices. */}
                 <nav
                   aria-label="Generator Oracle sections"
-                  className="flex-1 min-w-0 hidden sm:flex items-center gap-2 p-2 pr-10 bg-slate-900/80 rounded-2xl border border-cyan-500/30 overflow-x-auto flex-nowrap [mask-image:linear-gradient(to_right,black_88%,transparent)] [scrollbar-width:thin] [scrollbar-color:rgba(6,182,212,0.5)_transparent] snap-x snap-mandatory [-webkit-overflow-scrolling:touch]"
+                  className="flex-1 min-w-0 hidden sm:flex items-center gap-2 p-2 pr-10 lg:pr-2 bg-slate-900/80 rounded-2xl border border-cyan-500/30 overflow-x-auto lg:overflow-visible flex-nowrap [mask-image:linear-gradient(to_right,black_88%,transparent)] lg:[mask-image:none] [scrollbar-width:thin] [scrollbar-color:rgba(6,182,212,0.5)_transparent] snap-x snap-mandatory [-webkit-overflow-scrolling:touch]"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div role="tablist" aria-label="Generator Oracle sections" className="flex items-center gap-2 shrink-0 lg:shrink lg:flex-wrap lg:min-w-0">
                     <PremiumNavTab icon="🔧" label="Fault Center" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} />
                     <PremiumNavTab icon="🛠️" label="Diagnostic Assistant" active={activeScreen === 'ai'} onClick={() => setActiveScreen('ai')} />
                     <PremiumNavTab icon="🖥️" label="Controllers & Simulators" active={activeScreen === 'controllers'} onClick={() => setActiveScreen('controllers')} />

@@ -30,6 +30,7 @@ import {
   type ControllerFaultCode,
 } from '@/lib/generator-oracle/controllerFaultCodes';
 import { J1939_FAULT_CODES, type J1939FaultCode } from '@/lib/data/j1939FaultCodes';
+import { FAULT_CODES as CURATED_ENGINE_CODES } from '@/lib/data/faultCodes';
 import { REPAIR_ARTICLES, type RepairArticle } from '@/lib/repair-centre';
 
 export const J1939_BRAND = 'J1939 engine codes';
@@ -352,7 +353,28 @@ const SEARCH_SYNONYMS: Record<string, string> = {
   fluctuating: 'voltage', hunting: 'speed', surging: 'speed',
 };
 
+/**
+ * Engine-maker fault numbers ("Cummins 111") mapped to the J1939 SPN/FMI they
+ * are reported as, from the curated table (lib/data/faultCodes.ts). Without
+ * this, "Cummins 111" matched SPN 111 (coolant level) — a different fault
+ * (2026-10-20 audit).
+ */
+const MAKER_CODE_TO_J1939: Record<string, string> = (() => {
+  const out: Record<string, string> = {};
+  for (const c of CURATED_ENGINE_CODES) {
+    const m = /^(CUMMINS|PERKINS)-(\d+)$/i.exec(c.code);
+    const j = /SPN\s*(\d+)\s*FMI\s*(\d+)/i.exec(c.title);
+    if (m && j) out[`${m[1].toLowerCase()} ${m[2]}`] = `SPN ${j[1]} FMI ${j[2]}`;
+  }
+  return out;
+})();
+
 export function searchIndex(opts: SearchOptions): SearchResponse {
+  const maker = /^(cummins|perkins)\s*(?:fault\s*)?(?:code\s*)?(\d{2,4})$/i.exec((opts.query || '').trim());
+  if (maker) {
+    const mapped = MAKER_CODE_TO_J1939[`${maker[1].toLowerCase()} ${maker[2]}`];
+    if (mapped) return { ...searchIndex({ ...opts, query: mapped }), query: (opts.query || '').trim(), interpretedAs: `${maker[1]} ${maker[2]} = ${mapped}` };
+  }
   const typed = (opts.query || '').trim();
   const syn = SEARCH_SYNONYMS[typed.toLowerCase()];
   if (syn && opts.query !== syn && searchIndexRaw({ ...opts, page: 1, pageSize: 1 }).total === 0) {
@@ -603,7 +625,10 @@ function words(s: string): string[] {
 const STOP_STEMS = new Set([...STOP].map(stem));
 
 function tokenize(s: string): string[] {
-  return words(s).filter((t) => t.length >= 3 && !STOP_STEMS.has(t));
+  // "under load" says when the symptom happens, not that something is under
+  // range: it must not pull in Under Frequency / Under Voltage (2026-10-25).
+  const cleaned = s.replace(/\bunder\s+(?=(?:full\s+|heavy\s+|high\s+|light\s+)?load\b)/gi, '');
+  return words(cleaned).filter((t) => t.length >= 3 && !STOP_STEMS.has(t));
 }
 
 /** Adjacent pairs from each symptom phrase, e.g. "white smoke", "hard start". */
@@ -719,6 +744,7 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   // Score controller alarms against the symptom terms: whole-word (stemmed)
   // matches, with the title and listed symptoms weighted above the prose, and a
   // bonus when a whole symptom phrase ("low oil pressure") appears in order.
+  const wantsGenVoltage = terms.some((x) => x.startsWith('voltag')) && !terms.some((x) => x.startsWith('batter'));
   const rankPool = (codes: ControllerFaultCode[]): RankedFault[] => {
     const out: RankedFault[] = [];
     for (const c of codes) {
@@ -752,6 +778,12 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
       }
       // One weak word in a long description is not evidence.
       if (score === 0 || matched.length + Math.min(1, expandedHits) < Math.min(2, terms.length + Math.min(1, expanded.size))) continue;
+      // An alarm must name the problem in its title or listed symptoms, not
+      // only in its prose (2026-10-20).
+      if (!terms.some((x) => titleSet.has(x) || symSet.has(x)) && !pairs.some((p) => containsPair(title, p)) && !([...expanded].some((x) => titleSet.has(x)))) continue;
+      // A voltage question that does not mention the battery is about the
+      // generator's output first.
+      if (wantsGenVoltage && titleSet.has('battery')) score -= 4;
       out.push({ ...SLIM_FIELDS(c), score, matchedTerms: matched });
     }
     out.sort((a, b) => b.score - a.score);

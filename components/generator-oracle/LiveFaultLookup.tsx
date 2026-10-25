@@ -138,7 +138,7 @@ export default function LiveFaultLookup({ className = '', compact = false }: Pro
           autoComplete="off"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Try: SPN 110 FMI 0, oil pressure, DSE7320, overspeed…"
+          placeholder="e.g. SPN 110 FMI 0 or oil pressure"
           className="flex-1 min-w-0 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-cyan-200 font-mono text-sm placeholder-slate-600 focus:outline-none focus:border-cyan-500/60"
           aria-label="Fault code or keyword"
           maxLength={100}

@@ -1,4 +1,5 @@
 import { nasaMonthlyYears, nasaMonthlyValues } from './nasaPowerMonthly';
+import { fetchElevations } from './elevationService';
 /**
  * ADVANCED HYDROGEOLOGICAL ENGINE
  * 
@@ -322,7 +323,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
     // synthetic wells. Current public WPDx resource is `jfkt-jmqa` (39,959
     // Kenya records incl. government/ministry submissions); geo column is
     // `geocoded_column`; place names live in clean_adm2/clean_adm3.
-    const wpdxUrl = `https://data.waterpointdata.org/resource/jfkt-jmqa.json?$where=within_circle(geocoded_column,${lat},${lon},${searchRadius * 1000})&$limit=250&$select=row_id,lat_deg,lon_deg,water_source,water_tech,status_id,status_clean,water_source_clean,water_source_category,install_year,report_date,clean_adm2,clean_adm3,source`;
+    const wpdxUrl = `https://data.waterpointdata.org/resource/jfkt-jmqa.json?$where=within_circle(geocoded_column,${lat},${lon},${searchRadius * 1000})&$order=${encodeURIComponent(`distance_in_meters(geocoded_column, 'POINT(${lon} ${lat})'),row_id`)}&$limit=250&$select=row_id,lat_deg,lon_deg,water_source,water_tech,status_id,status_clean,water_source_clean,water_source_category,install_year,report_date,clean_adm2,clean_adm3,source`;
     const resp = await fetch(wpdxUrl, { signal: AbortSignal.timeout(12000) });
     if (resp.ok) {
       const data = await resp.json();
@@ -953,21 +954,38 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
 
   if (wells.length === 0) return null;
 
-  // Deduplicate wells that may appear in multiple sources (same location ±200m)
+  // The sources above are fetched in parallel, so `wells` arrives in whatever
+  // order they answered. Fix the order first so the same site always gives the
+  // same merge, depth and cost (2026-10-25: one Nairobi point gave 117 m and
+  // 128 m on consecutive runs). Records with measured values lead.
+  wells.sort((a, b) =>
+    (Number(b.depth_m > 0) - Number(a.depth_m > 0)) ||
+    (Number((b.yield_m3h ?? 0) > 0) - Number((a.yield_m3h ?? 0) > 0)) ||
+    a.distance_km - b.distance_km ||
+    a.source.localeCompare(b.source) ||
+    String(a.id).localeCompare(String(b.id)));
+
+  // Deduplicate wells that may appear in multiple sources (same location ±200m).
+  // Compare positions when both records have them: two wells at the same
+  // distance in different directions are not the same well.
+  const samePlace = (a: (typeof wells)[number], b: (typeof wells)[number]) => {
+    const aa = a as any, bb = b as any;
+    if (isFinite(aa.lat) && isFinite(aa.lon) && isFinite(bb.lat) && isFinite(bb.lon)) {
+      return haversineDistance(aa.lat, aa.lon, bb.lat, bb.lon) < 0.2;
+    }
+    return Math.abs(a.distance_km - b.distance_km) < 0.2;
+  };
   const dedupWells: typeof wells = [];
   for (const w of wells) {
-    const isDuplicate = dedupWells.some(existing =>
-      Math.abs(existing.distance_km - w.distance_km) < 0.2 &&
+    const isDuplicate = (existing: (typeof wells)[number]) =>
+      samePlace(existing, w) &&
       existing.source !== w.source &&
-      (existing.depth_m === w.depth_m || existing.depth_m === 0 || w.depth_m === 0)
-    );
-    if (!isDuplicate) {
+      (existing.depth_m === w.depth_m || existing.depth_m === 0 || w.depth_m === 0);
+    const idx = dedupWells.findIndex(isDuplicate);
+    if (idx < 0) {
       dedupWells.push(w);
     } else {
       // Merge data into existing record if the new one has more info
-      const idx = dedupWells.findIndex(existing =>
-        Math.abs(existing.distance_km - w.distance_km) < 0.2
-      );
       if (idx >= 0) {
         if (w.depth_m > 0 && dedupWells[idx].depth_m === 0) dedupWells[idx].depth_m = w.depth_m;
         if (w.yield_m3h && !dedupWells[idx].yield_m3h) dedupWells[idx].yield_m3h = w.yield_m3h;
@@ -1158,16 +1176,10 @@ export async function computeDEMHydrology(lat: number, lon: number): Promise<DEM
       }
     }
 
-    // Batch fetch elevations using Open-Elevation API
-    const resp = await fetch('https://api.open-elevation.com/api/v1/lookup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ locations: points.map(p => ({ latitude: p.lat, longitude: p.lon })) }),
-      signal: AbortSignal.timeout(20000),
-    });
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    const elevations: number[] = (data.results ?? []).map((r: any) => r.elevation ?? 0);
+    // Batch fetch elevations (Open-Elevation, else Open-Meteo / Copernicus DEM).
+    const lookup = await fetchElevations(points, 20000);
+    if (!lookup) return null;
+    const elevations: number[] = lookup.elevations;
     if (elevations.length < 25) return null;
 
     // Build 5×5 elevation grid

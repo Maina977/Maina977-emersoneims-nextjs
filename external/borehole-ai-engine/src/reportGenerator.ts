@@ -10291,7 +10291,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   provenanceRows.push(['Precipitation (cross-val)', 'NASA POWER MERRA-2/IMERG', 'Government (NASA)', '50km, monthly', 'https://power.larc.nasa.gov']);
   provenanceRows.push(['River Discharge', 'GloFAS (Copernicus/ECMWF)', 'Government (EU)', '~10km, daily', 'https://flood-api.open-meteo.com']);
   provenanceRows.push(['Surface Water', 'JRC Global Surface Water', 'Government (EU/JRC)', '30m, monthly', 'https://global-surface-water.appspot.com']);
-  provenanceRows.push(['Elevation (DEM)', 'SRTM 30m via Open-Elevation', 'Government (NASA)', '30m', 'https://api.open-elevation.com']);
+  provenanceRows.push(['Elevation (DEM)', 'SRTM 30m via Open-Elevation; Copernicus DEM 90m via Open-Meteo when it does not answer', 'Government (NASA / ESA)', '30-90m', 'https://api.open-elevation.com']);
   provenanceRows.push(['InSAR Ground Motion', 'COMET LiCSAR / ESA EGMS', 'Government (ESA/NERC)', 'Variable', 'https://comet.nerc.ac.uk']);
   provenanceRows.push(['Sentinel-1 SAR', 'ASF DAAC (Alaska Satellite Facility)', 'Government (NASA)', '~20m', 'https://asf.alaska.edu']);
   // Geological sources

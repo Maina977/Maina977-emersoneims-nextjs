@@ -190,8 +190,14 @@ function formatClaudeDiagnosticResponse(
  * Format diagnostic results into readable response
  */
 function formatDiagnosticResponse(query: string, result: DiagnosticResult): string {
+  // A J1939 code ("SPN 110 FMI 0", "SPN110-FMI0") is looked up whole (2026-10-20).
+  const j1939 = query.match(/\bSPN\s*[:#-]?\s*\d{1,6}\s*(?:[/-]|\s)\s*(?:FMI\s*[:#-]?\s*)?\d{1,2}\b/i);
+  if (j1939) {
+    const exactJ = getExactCode(j1939[0]);
+    if (exactJ) return formatExactCodeResponse(exactJ);
+  }
   // Check for exact code lookup
-  const codeMatch = query.match(/[A-Z]{1,3}[-_]?\d{2,5}/i);
+  const codeMatch = j1939 ? null : query.match(/[A-Z]{1,3}[-_]?\d{2,5}/i);
   if (codeMatch) {
     const exactCode = getExactCode(codeMatch[0]);
     if (exactCode) {
@@ -203,7 +209,7 @@ function formatDiagnosticResponse(query: string, result: DiagnosticResult): stri
   if (result.matchedCodes.length === 0) {
     return `🔍 **Fault-code lookup (rule-based)**
 
-Your description did not match specific fault codes matching your description. 
+Nothing in our fault-code reference matched that description.
 
 **Try these approaches:**
 1. Enter the exact error code displayed (e.g., "SPN 110 FMI 0" or "SPN 100 FMI 1")

@@ -2470,7 +2470,7 @@ Be conversational, thorough, and ENGAGE the technician throughout!`
         <div className="p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl space-y-4">
           <h4 className="text-lg font-semibold text-cyan-400 flex items-center gap-2">
             <Activity className="w-5 h-5" />
-            AI Diagnosis & Guidance
+            Diagnosis & Guidance
           </h4>
 
           <div className="space-y-4 max-h-[500px] overflow-y-auto">
@@ -3715,7 +3715,7 @@ export default function InteractiveDiagnosticSystem() {
             className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-cyan-400 hover:bg-cyan-500/30"
           >
             <HelpCircle className="w-5 h-5" />
-            Ask AI About {selectedSystem.name}
+            Ask an Engineer About {selectedSystem.name}
           </button>
         </div>
 

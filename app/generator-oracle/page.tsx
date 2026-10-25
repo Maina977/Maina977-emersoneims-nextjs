@@ -28,7 +28,7 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
  *   one-tap route to an EmersonEIMS engineer on every result.
  * - Simulators (dashboard, monitoring, controller displays) are training
  *   views on simulated data and say so on screen.
- * - 7-language support including RTL Arabic
+ * - English interface (the partial language picker was removed 2026-10-20)
  */
 export default function GeneratorOraclePage() {
   return (

@@ -75,6 +75,14 @@ describe('Generator Oracle fault index', () => {
     // "hard" must not match inside "hardware"
     expect(smoke.ranked.some((x) => /watchdog/i.test(x.title))).toBe(false);
   });
+
+  it('reads "under load" as when the symptom happens, not as under-range', () => {
+    const r = diagnoseFromSymptoms({ symptoms: ['black smoke under load'] });
+    expect(r.ranked.some((x) => x.matchedTerms.includes('under'))).toBe(false);
+    expect(r.ranked[0]?.matchedTerms).toEqual(expect.arrayContaining(['black', 'smoke']));
+    const uv = diagnoseFromSymptoms({ symptoms: ['under voltage'] });
+    expect(uv.ranked[0]?.title).toMatch(/under ?voltage/i);
+  });
 });
 
 describe('Published fault-code pages', () => {

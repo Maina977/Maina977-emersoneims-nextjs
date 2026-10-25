@@ -191,6 +191,7 @@ const SPN: SpnDef[] = [
   { spn: 190, name: 'Engine Speed', category: 'Speed & Position', note: 'Overspeed is a shutdown event and must be investigated before restarting.', fmis: SPEED },
   { spn: 636, name: 'Engine Position Sensor', category: 'Speed & Position', note: 'A failed position signal typically prevents starting entirely.', fmis: [2, 3, 4, 5, 6, 8, 10, 12] },
   { spn: 637, name: 'Engine Timing Sensor', category: 'Speed & Position', note: 'Check air gap and trigger wheel condition before replacing the sensor.', fmis: [2, 3, 4, 5, 6, 8, 10, 12] },
+  { spn: 612, name: 'System Diagnostic Code #2 (Cummins: engine speed/position signals)', category: 'Speed & Position', note: 'Cummins reports fault 115, both speed/position signals lost, on this SPN: the engine cranks but will not start. Check both sensors, their air gaps and the harness.', fmis: [2] },
   { spn: 723, name: 'Engine Speed Sensor 2', category: 'Speed & Position', note: 'Backup speed signal; loss of both stops the engine.', fmis: [2, 3, 4, 5, 6, 8, 10, 12] },
   // Electrical supply
   { spn: 168, name: 'Battery Potential / Power Input 1', category: 'Electrical', note: 'On standby sets, charging faults are the most common cause of a failure to start on demand.', fmis: RANGE_AND_ELEC },
@@ -346,6 +347,12 @@ function build(): J1939FaultCode[] {
         if ((f.fmi === 1 && SHUTDOWN_WHEN_LOW.has(s.spn)) || (f.fmi === 0 && SHUTDOWN_WHEN_HIGH.has(s.spn))) severity = 'shutdown';
         else if (ADVISORY_SPN.has(s.spn)) severity = 'warning';
       }
+      // Direction (2026-10-20 audit round 3). A LOW temperature is not an
+      // over-temperature emergency, and a note written about high or rising
+      // values must not be shown for a low reading.
+      const isLow = [1, 17, 18, 21].includes(f.fmi);
+      const isTemp = /temperature/i.test(s.name);
+      if (isLow && isTemp && severity === 'critical') severity = 'warning';
       // "Has shut down" is a shutdown and "approaching shutdown" is critical (2026-10-20 audit).
       if (f.fmi === 31 && s.spn === 1110) severity = 'shutdown';
       if (f.fmi === 31 && s.spn === 1109) severity = 'critical';
@@ -359,8 +366,8 @@ function build(): J1939FaultCode[] {
         category: s.category,
         severity,
         title: `${s.name} — ${f.label}`,
-        description: `${s.name}: ${f.meaning} ${([1, 17, 18, 21].includes(f.fmi) && s.noteLow) || ([0, 15, 16, 20].includes(f.fmi) && s.noteHigh) || s.note}`,
-        causes: f.causes,
+        description: `${s.name}: ${f.meaning} ${([1, 17, 18, 21].includes(f.fmi) && s.noteLow) || ([0, 15, 16, 20].includes(f.fmi) && s.noteHigh) || (isLow && /\b(high|rising|sustained|overload|back-pressure|overspeed)\b/i.test(s.note) ? (isTemp ? 'A low reading usually means a stuck-open or missing thermostat, a sensor or wiring fault, or a cold or lightly loaded engine. Check with an independent thermometer before replacing parts.' : 'A below-normal reading on this parameter is most often a sensor, wiring or reference fault. Verify with an independent gauge before replacing parts.') : s.note)}`,
+        causes: isLow && isTemp ? ['Thermostat stuck open or missing', 'Sensor or wiring fault reading low', 'Engine running cold, unloaded or in low ambient temperature'] : f.causes,
         remedies: f.remedies,
       });
     }

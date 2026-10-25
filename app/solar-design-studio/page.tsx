@@ -28,7 +28,6 @@ const SolarDesignStudioPro = dynamic(
 export default function SolarDesignStudioPage() {
   return (
     <>
-      <B2BCommercialBand profile={B2B_PROFILES.solarDesignStudio} />
       {/*
         SolarDesignStudioPro is dynamically imported with ssr:false, so none of
         it reaches the initial HTML and this page served no <h1> (Googlebot scan,
@@ -37,6 +36,8 @@ export default function SolarDesignStudioPage() {
       */}
       <h1 className="sr-only">Solar Design Studio — PV System Layout &amp; Yield Modelling for Kenya</h1>
       <SolarDesignStudioPro />
+      {/* Band below the tool (2026-10-20 audit: the first input sat ~2,050 px down on a phone). */}
+      <B2BCommercialBand profile={B2B_PROFILES.solarDesignStudio} />
     </>
   );
 }
