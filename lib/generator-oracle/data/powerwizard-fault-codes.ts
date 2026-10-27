@@ -158,7 +158,7 @@ export const POWERWIZARD_FAULT_CODES: Partial<ControllerFaultCode>[] = [
   ),
 
   ...createPowerWizardCode(100, 4, 'Engine Oil Pressure Sensor', 'Engine', 'Oil Pressure', 'warning',
-    'The oil pressure sensor circuit is showing voltage below normal range indicating open circuit or short to ground.',
+    'The oil pressure sensor circuit is showing voltage below normal: usually the signal wire shorted to ground, a lost sensor supply or a failed sensor.',
     ['Oil pressure reading zero or invalid', 'Sensor circuit open', 'Protection may default active'],
     [
       { likelihood: 'high', cause: 'Sensor wiring disconnected or broken', verification: 'Check wiring continuity' },
@@ -203,7 +203,7 @@ export const POWERWIZARD_FAULT_CODES: Partial<ControllerFaultCode>[] = [
   ),
 
   ...createPowerWizardCode(110, 4, 'Coolant Temperature Sensor', 'Engine', 'Coolant', 'warning',
-    'The coolant temperature sensor circuit shows voltage below normal indicating open circuit or ground short.',
+    'The coolant temperature sensor circuit shows voltage below normal: usually the signal wire shorted to ground or a failed sensor (an open circuit on this sensor normally reads high, FMI 3).',
     ['Temperature reading minimum or invalid', 'Sensor circuit open'],
     [
       { likelihood: 'high', cause: 'Sensor disconnected', verification: 'Check connector' },

@@ -291,8 +291,10 @@ function generateUnifiedSolution(
   aiAnalysis?: AIAnalysisResult
 ): IntegratedDiagnosisResult['solution'] {
   // Determine primary diagnosis
-  let primaryDiagnosis = 'System diagnosis in progress';
-  let confidence = 50;
+  // No invented defaults (2026-10-27 audit: an empty diagnosis returned
+  // confidence 50, "2-4 hours" and KES 5,000-50,000). 0 / '' mean "not known".
+  let primaryDiagnosis = 'No matching fault found. Check the code as shown on the display, or ask an engineer.';
+  let confidence = 0;
 
   if (faultCodeAnalysis.rootCauseProbability.length > 0) {
     primaryDiagnosis = faultCodeAnalysis.rootCauseProbability[0].cause;
@@ -302,7 +304,6 @@ function generateUnifiedSolution(
     confidence = aiAnalysis.primaryDiagnosis.confidence;
   } else if (faultCodeAnalysis.codeDetails.length > 0 && faultCodeAnalysis.codeDetails[0].faultInfo) {
     primaryDiagnosis = faultCodeAnalysis.codeDetails[0].faultInfo.title;
-    confidence = 75;
   }
 
   // Compile immediate actions
@@ -375,7 +376,7 @@ function generateUnifiedSolution(
         name: part.description,
         partNumber: part.partNumber,
         quantity: 1,
-        estimatedCostKES: 15000, // Default estimate
+        estimatedCostKES: 0, // not known: quote on request
         source: [part.manufacturer, 'Authorized Dealer']
       });
     }
@@ -398,8 +399,8 @@ function generateUnifiedSolution(
   }
 
   // Calculate estimates
-  const estimatedRepairTime = aiAnalysis?.detailedAnalysis[0]?.estimatedRepairTime || '2-4 hours';
-  const estimatedCostKES = aiAnalysis?.detailedAnalysis[0]?.estimatedCostKES || { min: 5000, max: 50000 };
+  const estimatedRepairTime = aiAnalysis?.detailedAnalysis[0]?.estimatedRepairTime || '';
+  const estimatedCostKES = aiAnalysis?.detailedAnalysis[0]?.estimatedCostKES || { min: 0, max: 0 };
 
   // Preventive measures
   const preventiveMeasures: string[] = [];

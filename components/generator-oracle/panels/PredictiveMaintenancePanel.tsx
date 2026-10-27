@@ -423,7 +423,7 @@ function MaintenanceCalendar({ events }: { events: CalendarEvent[] }) {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm font-mono text-amber-400">KES {event.estimatedCost.toLocaleString()}</div>
+              <div className="text-sm font-mono text-slate-400">Quote on request</div>
               <div className={`text-[10px] uppercase ${priorityColors[event.priority].split(' ')[2]}`}>{event.priority}</div>
             </div>
           </motion.div>
@@ -437,10 +437,8 @@ function MaintenanceCalendar({ events }: { events: CalendarEvent[] }) {
           <div className="text-xs text-slate-500">Scheduled</div>
         </div>
         <div>
-          <div className="text-xl font-bold text-amber-400">
-            KES {events.reduce((acc, e) => acc + e.estimatedCost, 0).toLocaleString()}
-          </div>
-          <div className="text-xs text-slate-500">Est. Total</div>
+          <div className="text-xl font-bold text-slate-400">—</div>
+          <div className="text-xs text-slate-500">Cost: quote on request</div>
         </div>
         <div>
           <div className="text-xl font-bold text-red-400">
@@ -998,6 +996,12 @@ export default function PredictiveMaintenancePanel() {
             <div className="text-[10px] text-slate-500">Critical</div>
           </div>
         </div>
+      </div>
+
+      {/* Every figure in this panel is sample data, not a reading from the
+          visitor's generator (2026-10-27 audit). */}
+      <div role="note" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">
+        <strong>Example dashboard with sample data.</strong> These readings, dates and predictions illustrate what a monitored generator shows. They are not from your generator. For a real service plan, WhatsApp an engineer on 0768 860 665.
       </div>
 
       {/* Category Filter */}

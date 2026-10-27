@@ -9,7 +9,7 @@
  * with AI insights, case studies, and predictive maintenance indicators
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
 import type { EnhancedFaultCode } from '@/lib/generator-oracle/enhanced-fault-database';
@@ -118,11 +118,16 @@ function FaultDetailModal({
     }
   };
 
+  // Only tabs that have something in them (2026-10-27 audit: J1939 rows
+  // opened a "0/0" reset tab and an empty solution tab).
+  // J1939 causes are not ranked, so no likelihood badge is shown for them.
+  const isJ1939 = (fault as { codeKind?: CodeKind }).codeKind === 'j1939' || /^SPN\d+-FMI\d+$/i.test(fault.code);
+  const hasDiagnostics = (fault.diagnosticSteps?.length ?? 0) > 0;
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '📋' },
-    { id: 'diagnostics', label: 'Diagnostics', icon: '🔍' },
-    { id: 'reset', label: 'Reset Steps', icon: '🔄' },
-    { id: 'solution', label: 'Solution', icon: '🔧' },
+    ...(hasDiagnostics ? [{ id: 'diagnostics', label: isJ1939 ? 'Checks' : 'Diagnostics', icon: '🔍' }] : []),
+    ...(resetPathway ? [{ id: 'reset', label: 'Reset Steps', icon: '🔄' }] : []),
+    ...(solution ? [{ id: 'solution', label: 'Solution', icon: '🔧' }] : []),
     ...(enhancedFault ? [{ id: 'ai-insights', label: 'Expert Notes', icon: '📘' }] : []),
   ];
 
@@ -318,7 +323,8 @@ function FaultDetailModal({
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Symptoms */}
+                  {/* Symptoms (only when the record lists them) */}
+                  {(fault.symptoms?.length ?? 0) > 0 && (
                   <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
                     <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                       <span>👁️</span> Symptoms to Look For
@@ -332,22 +338,25 @@ function FaultDetailModal({
                       ))}
                     </ul>
                   </div>
+                  )}
 
                   {/* Possible Causes */}
                   <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
                     <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                      <span>🎯</span> Possible Causes
+                      <span>🎯</span> {isJ1939 ? 'Possible Causes (not ranked)' : 'Possible Causes'}
                     </h3>
                     <div className="space-y-3">
                       {fault.possibleCauses?.map((cause, idx) => (
                         <div key={idx} className="p-3 bg-slate-800/50 rounded-lg">
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <span className="text-sm text-white font-medium">{cause.cause}</span>
-                            <LikelihoodBadge likelihood={cause.likelihood} />
+                            {!isJ1939 && <LikelihoodBadge likelihood={cause.likelihood} />}
                           </div>
-                          <p className="text-xs text-slate-400">
-                            <span className="text-cyan-400">How to verify:</span> {cause.verification}
-                          </p>
+                          {cause.verification && (
+                            <p className="text-xs text-slate-400">
+                              <span className="text-cyan-400">How to verify:</span> {cause.verification}
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -581,16 +590,23 @@ function FaultDetailModal({
                         back to $0-$500). Those figures were generic, not quotes,
                         so cost now routes to a real quote (2026-10-18). */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-center">
-                        <div className="text-2xl mb-2">⚙️</div>
-                        <div className="text-xs text-slate-500 uppercase">Difficulty</div>
-                        <div className="text-lg font-bold text-cyan-400">{solution.difficulty}</div>
-                      </div>
-                      <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-center">
-                        <div className="text-2xl mb-2">⏱️</div>
-                        <div className="text-xs text-slate-500 uppercase">Typical Time</div>
-                        <div className="text-lg font-bold text-cyan-400">{solution.timeEstimate}</div>
-                      </div>
+                      {/* Difficulty and time only where the record really has them;
+                          the generated "1-4 hours by severity" figures are blanked
+                          on the server (2026-10-27 audit). */}
+                      {solution.timeEstimate && (
+                        <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-center">
+                          <div className="text-2xl mb-2">⚙️</div>
+                          <div className="text-xs text-slate-500 uppercase">Difficulty</div>
+                          <div className="text-lg font-bold text-cyan-400">{solution.difficulty}</div>
+                        </div>
+                      )}
+                      {solution.timeEstimate && (
+                        <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-center">
+                          <div className="text-2xl mb-2">⏱️</div>
+                          <div className="text-xs text-slate-500 uppercase">Typical Time</div>
+                          <div className="text-lg font-bold text-cyan-400">{solution.timeEstimate}</div>
+                        </div>
+                      )}
                       <a
                         href={waLink(`Hi EmersonEIMS, please quote the repair for ${fault.brand} ${fault.code} — ${fault.title}`)}
                         target="_blank"
@@ -851,6 +867,15 @@ export default function FaultDiagnosticsPanel({
   // The query that was last actually searched, so an empty result can say so
   // instead of showing the idle "ready" screen.
   const [lastSearched, setLastSearched] = useState('');
+  // On a phone the results start below the fold: scroll to them once a
+  // search has finished (2026-10-27 audit: results at y=790 with no scroll).
+  const resultsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!lastSearched || isSearching) return;
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [lastSearched, isSearching, searchResults]);
 
   const runSearch = (q: string) => {
     setLastSearched(q.trim());
@@ -923,7 +948,7 @@ export default function FaultDiagnosticsPanel({
           </div>
 
           {/* Search Results */}
-          <div className="p-6 bg-slate-900/50 rounded-xl border border-slate-700/50">
+          <div ref={resultsRef} className="scroll-mt-20 p-6 bg-slate-900/50 rounded-xl border border-slate-700/50">
             <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">
               {displayResults.length > 0 ? `Results (${displayResults.length} found)` : lastSearched ? 'Results' : 'Search for a fault code to see detailed troubleshooting'}
             </h3>
@@ -1012,9 +1037,9 @@ export default function FaultDiagnosticsPanel({
               {[
                 { icon: '📖', text: 'Detailed fault descriptions' },
                 { icon: '👁️', text: 'Symptoms to look for' },
-                { icon: '🎯', text: 'Ranked possible causes' },
+                { icon: '🎯', text: 'Likely causes and checks' },
                 { icon: '🔍', text: 'Step-by-step diagnostics' },
-                { icon: '🔄', text: 'Reset procedures with key sequences' },
+                { icon: '🔄', text: 'How to clear the alarm, where we have it' },
                 { icon: '🔧', text: 'Repair steps' },
                 { icon: '💬', text: 'Interactive guidance questions' },
               ].map((item, idx) => (

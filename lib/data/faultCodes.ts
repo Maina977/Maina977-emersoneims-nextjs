@@ -357,7 +357,7 @@ export const FAULT_CODES: FaultCode[] = [
       'Failed cooling fan or fan clutch'
     ],
     troubleshootingSteps: [
-      'Check coolant level in radiator and expansion tank - add if low',
+      'Stop the engine and let it cool: never open the radiator or expansion-tank cap on a hot engine, the coolant is under pressure and can scald. Then check the coolant level and add if low',
       'Inspect for visible coolant leaks at hoses, clamps, and gaskets',
       'Verify cooling fan operation and proper belt tension',
       'Check thermostat operation - should open at rated temperature',
@@ -382,7 +382,7 @@ export const FAULT_CODES: FaultCode[] = [
       },
       {
         question: 'Can I add water instead of coolant in an emergency?',
-        answer: 'In an emergency, clean water can be added temporarily. However, replace with proper coolant mixture as soon as possible to prevent corrosion and provide freeze/boil protection.'
+        answer: 'Only once the engine has cooled: never open the cap on a hot engine. In an emergency, clean water can be added temporarily. However, replace with proper coolant mixture as soon as possible to prevent corrosion and provide freeze/boil protection.'
       }
     ]
   },
@@ -631,7 +631,7 @@ export const FAULT_CODES: FaultCode[] = [
     ],
     troubleshootingSteps: [
       'Allow engine to cool before inspection',
-      'Check coolant level in radiator and expansion tank',
+      'With the engine stopped and cool (never open the cap hot), check the coolant level in the radiator and expansion tank',
       'Inspect for visible coolant leaks',
       'Clean radiator fins of any debris',
       'Verify cooling fan operates when engine is hot',

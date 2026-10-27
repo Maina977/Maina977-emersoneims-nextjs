@@ -525,15 +525,9 @@ export default function UnifiedDiagnosticsPanel({ className = '' }: UnifiedDiagn
             </div>
             <div>
               <h3 className="text-xl font-bold text-white">{results.solution.primaryDiagnosis}</h3>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="h-2 w-32 bg-gray-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-amber-500"
-                    style={{ width: `${results.solution.confidence}%` }}
-                  />
-                </div>
-                <span className="text-amber-400 text-sm">{results.solution.confidence}% confidence</span>
-              </div>
+              {/* A keyword match is not a measured confidence, so no percentage
+                  is shown (2026-10-27 audit). */}
+              <p className="mt-1 text-sm text-gray-400">Matched from the codes and symptoms you entered. Confirm with the controller event log before replacing parts.</p>
             </div>
           </div>
         </div>
@@ -704,9 +698,7 @@ export default function UnifiedDiagnosticsPanel({ className = '' }: UnifiedDiagn
                       <td className="py-2 text-white">{part.name}</td>
                       <td className="py-2 text-gray-400 font-mono">{part.partNumber}</td>
                       <td className="py-2 text-center text-gray-400">{part.quantity}</td>
-                      <td className="py-2 text-right text-green-400">
-                        {part.estimatedCostKES.toLocaleString()}
-                      </td>
+                      <td className="py-2 text-right text-gray-400">Quote</td>
                     </tr>
                   ))}
                 </tbody>
@@ -716,17 +708,10 @@ export default function UnifiedDiagnosticsPanel({ className = '' }: UnifiedDiagn
         )}
 
         {/* Cost & Time Estimates */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 text-center">
-            <p className="text-gray-400 text-sm">Estimated Repair Time</p>
-            <p className="text-2xl font-bold text-white">{results.solution.estimatedRepairTime}</p>
-          </div>
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 text-center">
-            <p className="text-gray-400 text-sm">Estimated Cost (KES)</p>
-            <p className="text-2xl font-bold text-green-400">
-              {results.solution.estimatedCostKES.min.toLocaleString()} - {results.solution.estimatedCostKES.max.toLocaleString()}
-            </p>
-          </div>
+        {/* Part prices in the engine were fixed figures, not quotes (2026-10-27). */}
+        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 text-center">
+          <p className="text-gray-400 text-sm">Repair cost and time</p>
+          <p className="text-lg font-bold text-white">Depend on the parts and site: ask us for a quote on WhatsApp 0768 860 665.</p>
         </div>
 
         {/* Preventive Measures */}

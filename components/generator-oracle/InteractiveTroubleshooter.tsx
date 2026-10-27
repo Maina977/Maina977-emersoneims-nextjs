@@ -870,9 +870,11 @@ If no = mechanical/fuel issue
         id: 'overheating',
         question: 'Overheating under load. Check cooling system:',
         instruction: `
+⚠️ **Stop the engine and let it cool first.** Never open the radiator or expansion-tank cap on a hot engine: the coolant is under pressure and can scald.
+
 **Cooling System Checklist:**
 
-1. ☐ Coolant level correct?
+1. ☐ Coolant level correct? (checked cold)
 2. ☐ Radiator fins clean (not blocked)?
 3. ☐ Fan belt tight and not slipping?
 4. ☐ Fan clutch engaging (if equipped)?

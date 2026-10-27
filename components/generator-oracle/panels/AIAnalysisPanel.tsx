@@ -202,10 +202,8 @@ function IssueCard({
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <div className="text-xs text-slate-500">Est. Repair Cost</div>
-              <div className="text-amber-400 font-bold">
-                KES {analysis.estimatedCostKES.min.toLocaleString()} - {analysis.estimatedCostKES.max.toLocaleString()}
-              </div>
+              <div className="text-xs text-slate-500">Repair cost</div>
+              <div className="text-slate-300 font-bold">Quote on request</div>
             </div>
             <motion.span
               className="text-slate-400 text-xl"
@@ -365,9 +363,7 @@ function IssueCard({
                         <div key={idx} className="p-4 bg-slate-800/50 rounded-lg">
                           <div className="flex items-center justify-between mb-2">
                             <h6 className="text-white font-semibold">{part.name}</h6>
-                            <span className="text-amber-400 font-bold">
-                              KES {part.estimatedCostKES.toLocaleString()}
-                            </span>
+
                           </div>
                           <div className="text-xs text-slate-400 mb-2">Quantity: {part.quantity}</div>
 
@@ -393,14 +389,8 @@ function IssueCard({
                       ))}
                     </div>
 
-                    <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <span className="text-amber-400 font-semibold">Estimated Total Parts Cost:</span>
-                        <span className="text-amber-400 font-bold text-xl">
-                          KES {analysis.partsRequired.reduce((acc, p) => acc + p.estimatedCostKES * p.quantity, 0).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
+                    {/* Part prices were fixed figures, not quotes (2026-10-27). */}
+                    <p className="mt-4 text-xs text-slate-400">Prices vary by supplier and model: ask us for a quote.</p>
                   </div>
 
                   <div>

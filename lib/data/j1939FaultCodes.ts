@@ -49,6 +49,8 @@ export interface J1939FaultCode {
   description: string;
   causes: string[];
   remedies: string[];
+  /** Safety warnings to show before any check (2026-10-27 audit: none on any J1939 row). */
+  safety: string[];
 }
 
 /** SAE J1939-73 failure mode identifiers. */
@@ -144,8 +146,113 @@ interface SpnDef {
   noteLow?: string;
   /** Note for an above-normal reading (FMI 0/15/16/20), when it differs. */
   noteHigh?: string;
+  /** The note describes the code itself, so keep it for every FMI (e.g. SPN 612 = Cummins 115). */
+  noteAlways?: boolean;
   fmis: number[];
 }
+
+/*
+ * Parameter-specific causes and checks for the codes technicians meet most,
+ * by direction (2026-10-27 audit: every J1939 row showed the FMI's generic
+ * text, e.g. "Genuine over-range condition in the monitored system").
+ * Written from standard diesel-generator practice in our own words.
+ */
+interface SpnGuidance { causes: string[]; checks: string[] }
+const SPN_GUIDANCE: Record<number, { high?: SpnGuidance; low?: SpnGuidance }> = {
+  110: {
+    high: {
+      causes: ['Radiator core blocked by dust or debris, or hot air recirculating to the radiator', 'Low coolant from a leak (hoses, pump seal, core)', 'Fan belt slipping or broken, or fan not engaging', 'Thermostat stuck closed or water pump failing', 'Engine overloaded, or a hot enclosure with poor ventilation'],
+      checks: ['Let the engine cool before opening anything; then check the coolant level in the expansion tank', 'Inspect the radiator fins for blockage and the room or canopy for hot-air recirculation', 'Check the fan belt tension and the fan', 'Compare the reading with an independent thermometer on the outlet housing', 'Check the load against the set rating'],
+    },
+    low: {
+      causes: ['Thermostat stuck open or missing', 'Engine running cold or lightly loaded, or a cold ambient', 'Sensor or wiring fault reading low'],
+      checks: ['Compare with an independent thermometer once the engine is warm', 'Check the thermostat if the engine never reaches normal temperature under load'],
+    },
+  },
+  100: {
+    low: {
+      causes: ['Low oil level, or a leak', 'Oil diluted with fuel or coolant, or the wrong grade', 'Blocked oil filter or pickup screen', 'Worn oil pump or bearings, or a stuck relief valve', 'Faulty sender (confirm with a mechanical gauge)'],
+      checks: ['Stop the engine; check the oil level on the dipstick with the set level', 'Smell and look at the oil for fuel or coolant contamination', 'Fit a mechanical gauge and compare with the displayed pressure', 'Change the filter if it is overdue'],
+    },
+    high: {
+      causes: ['Cold oil just after a start', 'Relief valve stuck closed', 'Wrong oil grade', 'Sensor or wiring fault'],
+      checks: ['Re-check once the engine is at operating temperature', 'Compare with a mechanical gauge before replacing parts'],
+    },
+  },
+  190: {
+    high: {
+      causes: ['Sudden loss of load (breaker trip or load rejection)', 'Governor or actuator fault, or a sticking fuel rack', 'Wrong speed setting or controller configuration', 'Speed signal reading high (sensor or wiring)'],
+      checks: ['Do not restart until the cause is found: an overspeed can destroy the engine and alternator', 'Check the governor, actuator and fuel linkage for free movement', 'Check the speed setting and the controller event log for what happened at the trip'],
+    },
+    low: {
+      causes: ['Load above what the engine can carry', 'Fuel starvation: blocked filters, air in the fuel, failing lift pump, low tank', 'Slow or faulty governor or actuator', 'Air intake restriction'],
+      checks: ['Check the load against the rating', 'Check fuel filters, the water separator and the tank level; bleed air from the fuel system', 'Check the air filter restriction indicator'],
+    },
+  },
+  111: {
+    low: {
+      causes: ['Coolant leak: hoses, clamps, radiator core, water pump seal', 'Head gasket leaking coolant into the oil or exhaust', 'Coolant level sensor dirty or failed'],
+      checks: ['Let the engine cool before opening the cap; then check the level', 'Look for leaks and wet patches, and check the oil for a milky appearance', 'Find the leak; a repeating low-level alarm is not a top-up task'],
+    },
+  },
+  97: {
+    high: {
+      causes: ['Water in the fuel from tank condensation, a leaking tank or a contaminated delivery', 'Water separator full and not drained'],
+      checks: ['Drain the water separator until clean fuel flows', 'Check the tank bottom for water and its vents and fill cap for leaks', 'Replace the fuel filters if water has passed them'],
+    },
+  },
+  168: {
+    low: {
+      causes: ['Battery charger or alternator not charging', 'Old or sulphated battery', 'Loose or corroded battery terminals', 'Parasitic drain while standing'],
+      checks: ['Measure the battery voltage at rest and while charging', 'Check the charger or charge alternator output and its fuse', 'Clean and tighten the terminals; load-test the battery'],
+    },
+    high: {
+      causes: ['Charger or alternator regulator over-charging', 'Wrong charger setting for the battery type'],
+      checks: ['Measure the charging voltage against the battery maker\'s limit', 'Check the regulator or charger setting'],
+    },
+  },
+  94: {
+    low: {
+      causes: ['Blocked primary fuel filter or water separator', 'Air leak on the suction side', 'Failing lift pump', 'Low tank level or a closed valve'],
+      checks: ['Replace or check the fuel filters and drain the separator', 'Check suction-side fittings for air leaks and bleed the system', 'Check the tank level and every valve between tank and engine'],
+    },
+  },
+  102: {
+    low: {
+      causes: ['Leak in the charge-air pipework or charge-air cooler', 'Turbocharger damaged or its controls faulty', 'Blocked air filter'],
+      checks: ['Check the charge-air hoses and clamps for leaks under load', 'Check the air filter restriction', 'Inspect the turbocharger for shaft play and oil leaks'],
+    },
+    high: {
+      causes: ['Wastegate or variable-geometry control stuck', 'Boost sensor or wiring fault'],
+      checks: ['Check the wastegate or VGT actuator movement', 'Compare with a gauge on the intake manifold'],
+    },
+  },
+  105: {
+    high: {
+      causes: ['Charge-air cooler blocked or dirty', 'Hot engine room or enclosure air', 'High load in a high ambient temperature'],
+      checks: ['Clean the charge-air cooler fins', 'Check the room or canopy ventilation and hot-air recirculation'],
+    },
+  },
+};
+
+/** Safety warnings by parameter and direction ('any' = every FMI). */
+export const COOL_DOWN = 'Do not open the radiator or expansion-tank cap while the engine is hot: the coolant is under pressure and can scald. Stop the engine and let it cool first.';
+const SPN_SAFETY: Record<number, { high?: string[]; low?: string[]; any?: string[] }> = {
+  110: { any: [COOL_DOWN] },
+  111: { any: [COOL_DOWN] },
+  109: { any: [COOL_DOWN] },
+  100: { low: ['Stop the engine: running with low oil pressure can destroy the bearings in minutes. Do not restart until the cause is found.'] },
+  98: { low: ['Stop the engine and check the oil level before running it again.'] },
+  190: { high: ['Do not restart after an overspeed until the governor, actuator and fuel control are checked.'] },
+  168: { any: ['Batteries give off explosive gas: no sparks or flames near them, and disconnect the negative lead first.'] },
+  97: { any: ['Collect drained fuel and water in a container; do not drain it onto the ground.'] },
+};
+
+/** Severity set by the code's meaning rather than the FMI class (key `spn-fmi`). */
+const SEVERITY_OVERRIDE: Record<string, J1939FaultCode['severity']> = {
+  // Cummins 115: both speed/position signals lost, the engine stops or will not start.
+  '612-2': 'critical',
+};
 
 const RANGE_AND_ELEC = [0, 1, 2, 3, 4, 15, 16, 17, 18];
 const ACTUATOR = [2, 5, 6, 7, 11, 12, 13, 31];
@@ -163,7 +270,7 @@ const SPN: SpnDef[] = [
   { spn: 109, name: 'Engine Coolant Pressure', category: 'Cooling', note: 'Loss of pressure points at the cap, hoses or the core.', fmis: RANGE_AND_ELEC },
   // Fuel
   { spn: 94, name: 'Fuel Delivery Pressure', category: 'Fuel', note: 'Check the primary filter and water separator before the pump.', fmis: RANGE_AND_ELEC },
-  { spn: 97, name: 'Water In Fuel Indicator', category: 'Fuel', note: 'Drain the separator and investigate tank condensation and storage practice.', fmis: [0, 3, 4, 31] },
+  { spn: 97, name: 'Water In Fuel Indicator', category: 'Fuel', note: 'Drain the separator and investigate tank condensation and storage practice.', noteHigh: 'Water has been detected in the fuel: drain the water separator, then find where the water is coming from (tank condensation, a leaking tank or a contaminated delivery).', fmis: [0, 3, 4, 15, 16, 31] },
   { spn: 174, name: 'Fuel Temperature', category: 'Fuel', note: 'Hot fuel returning to a day tank reduces power and reveals return-line routing faults.', fmis: RANGE_AND_ELEC },
   { spn: 157, name: 'Injector Metering Rail 1 Pressure', category: 'Fuel', note: 'Common-rail pressure faults can be supply, control valve or relief valve related.', fmis: RANGE_AND_ELEC },
   { spn: 1347, name: 'Fuel Pump Pressurizing Assembly 1', category: 'Fuel', note: 'Control-side fault on the high-pressure pump.', fmis: ACTUATOR },
@@ -191,7 +298,7 @@ const SPN: SpnDef[] = [
   { spn: 190, name: 'Engine Speed', category: 'Speed & Position', note: 'Overspeed is a shutdown event and must be investigated before restarting.', noteHigh: 'Overspeed is a shutdown event and must be investigated before restarting: check the governor, actuator and fuel rack, and any sudden loss of load.', noteLow: 'Underspeed usually means the engine cannot hold speed: overload, fuel starvation (filters, air in the fuel, lift pump) or a slow governor or actuator. Check the load first, then the fuel supply.', fmis: SPEED },
   { spn: 636, name: 'Engine Position Sensor', category: 'Speed & Position', note: 'A failed position signal typically prevents starting entirely.', fmis: [2, 3, 4, 5, 6, 8, 10, 12] },
   { spn: 637, name: 'Engine Timing Sensor', category: 'Speed & Position', note: 'Check air gap and trigger wheel condition before replacing the sensor.', fmis: [2, 3, 4, 5, 6, 8, 10, 12] },
-  { spn: 612, name: 'System Diagnostic Code #2 (Cummins: engine speed/position signals)', category: 'Speed & Position', note: 'Cummins reports fault 115, both speed/position signals lost, on this SPN: the engine cranks but will not start. Check both sensors, their air gaps and the harness.', fmis: [2] },
+  { spn: 612, name: 'System Diagnostic Code #2 (Cummins: engine speed/position signals)', category: 'Speed & Position', note: 'Cummins reports fault 115, both speed/position signals lost, on this SPN: the engine stops or cranks but will not start. Check both sensors, their air gaps and the harness.', noteAlways: true, fmis: [2] },
   { spn: 723, name: 'Engine Speed Sensor 2', category: 'Speed & Position', note: 'Backup speed signal; loss of both stops the engine.', fmis: [2, 3, 4, 5, 6, 8, 10, 12] },
   // Electrical supply
   { spn: 168, name: 'Battery Potential / Power Input 1', category: 'Electrical', note: 'On standby sets, charging faults are the most common cause of a failure to start on demand.', fmis: RANGE_AND_ELEC },
@@ -356,6 +463,7 @@ const LOW_WORDS = /\b(low|leak\w*|loss|consumption|drop\w*|starv\w*|underspeed)\
  * repeating low-level alarm is a leak".
  */
 function noteFor(s: SpnDef, f: FmiDef, isHigh: boolean, isLow: boolean, isTemp: boolean): string {
+  if (s.noteAlways) return s.note;
   if (isHigh) {
     if (s.noteHigh) return s.noteHigh;
     if (!LOW_WORDS.test(s.note)) return s.note;
@@ -413,7 +521,12 @@ function build(): J1939FaultCode[] {
       // "Has shut down" is a shutdown and "approaching shutdown" is critical (2026-10-20 audit).
       if (f.fmi === 31 && s.spn === 1110) severity = 'shutdown';
       if (f.fmi === 31 && s.spn === 1109) severity = 'critical';
+      severity = SEVERITY_OVERRIDE[`${s.spn}-${f.fmi}`] ?? severity;
       const note = noteFor(s, f, isHigh, isLow, isTemp);
+      // Parameter-specific causes and checks for a real high/low reading.
+      const guide = isHigh ? SPN_GUIDANCE[s.spn]?.high : isLow ? SPN_GUIDANCE[s.spn]?.low : undefined;
+      const sf = SPN_SAFETY[s.spn];
+      const safety = [...(sf?.any ?? []), ...((isHigh && sf?.high) || []), ...((isLow && sf?.low) || [])];
 
       out.push({
         code: `SPN ${s.spn} / FMI ${f.fmi}`,
@@ -425,9 +538,11 @@ function build(): J1939FaultCode[] {
         severity,
         title: `${s.name} — ${f.label}`,
         description: `${s.name}: ${f.meaning} ${note}`,
-        causes: isLow && isTemp && THERMOSTAT_SPN.has(s.spn) ? ['Thermostat stuck open or missing', 'Sensor or wiring fault reading low', 'Engine running cold, unloaded or in low ambient temperature']
+        causes: guide ? guide.causes
+          : isLow && isTemp && THERMOSTAT_SPN.has(s.spn) ? ['Thermostat stuck open or missing', 'Sensor or wiring fault reading low', 'Engine running cold, unloaded or in low ambient temperature']
           : isLow && isTemp ? ['Cold ambient conditions or a light load', 'Sensor or wiring fault reading low'] : f.causes,
-        remedies: f.remedies,
+        remedies: guide ? guide.checks : f.remedies,
+        safety,
       });
     }
   }

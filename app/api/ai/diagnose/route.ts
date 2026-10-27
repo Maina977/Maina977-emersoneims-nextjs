@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const p = request.nextUrl.searchParams;
   const code = p.get('code'), search = p.get('search'), query = p.get('query');
+  // Same 300-character limit as POST (2026-10-27 audit: GET took 5,000).
+  if ([code, search, query].some((v) => v != null && v.length > 300)) return NextResponse.json({ error: 'Query too long (300 characters at most)' }, { status: 400 });
   if (code) return NextResponse.json({ success: true, mode: 'lookup', query: code, ...run(code, 'lookup') });
   if (search) return NextResponse.json({ success: true, mode: 'search', query: search, ...run(search, 'search') });
   if (query) return NextResponse.json({ success: true, mode: 'analyze', query, ...run(query, 'analyze') });

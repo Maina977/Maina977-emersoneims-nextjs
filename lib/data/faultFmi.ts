@@ -44,6 +44,7 @@ export const FMI_BY_SPN: Record<string, { measures: string; entries: FmiEntry[];
     entries: [
       { fmi: 0, meaning: 'Engine speed far above normal — overspeed (most severe). The controller shuts the engine down.', firstCheck: 'Governor and actuator, fuel control, and whether a large load was suddenly dropped. Do not restart until the cause is found.' },
       { fmi: 16, meaning: 'Engine speed above normal (moderately severe).', firstCheck: 'Governor settings, actuator response, behaviour on load rejection.' },
+      { fmi: 1, meaning: 'Engine speed far below normal (most severe) — severe underspeed; the engine cannot hold its speed.', firstCheck: 'Load against the set rating, then fuel supply: filters, water separator, air in the fuel, lift pump and tank level.' },
       { fmi: 18, meaning: 'Engine speed below normal (moderately severe) — underspeed.', firstCheck: 'Overload, fuel supply restriction, governor response under load.' },
       { fmi: 2, meaning: 'The speed signal is erratic.', firstCheck: 'Magnetic pickup air gap, damaged flywheel teeth, a loose sensor, wiring.' },
       { fmi: 8, meaning: 'Abnormal frequency or pulse from the speed sensor.', firstCheck: 'Sensor air gap, interference from nearby power cables, sensor condition.' },
