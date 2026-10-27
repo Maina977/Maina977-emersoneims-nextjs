@@ -45,6 +45,11 @@ const ping = () => new Promise((res) => {
 });
 
 (async () => {
+  if (process.argv.includes('--stop')) {
+    stopPort3111();
+    fs.appendFileSync(summary, `${new Date().toTimeString().slice(0, 8)} STOPPED local server\n`);
+    return;
+  }
   note('START local verification (localhost only)');
   stopPort3111();
 
@@ -75,6 +80,15 @@ const ping = () => new Promise((res) => {
   let ready = false;
   for (let i = 0; i < 60 && !ready; i++) { await new Promise((r) => setTimeout(r, 2000)); ready = await ping(); }
   note(`SERVER ready=${ready}`);
+
+  // --serve: keep the server up for auditors (no checks). Stop it later with
+  // `node scripts/verify/run-local-verify.cjs --stop`.
+  if (process.argv.includes('--serve')) {
+    note(ready ? `SERVING on http://localhost:3111 (server pid ${server.pid}); stop with --stop` : 'RESULT FAILED (server did not start)');
+    note('DONE');
+    server.unref();
+    process.exit(0);
+  }
 
   let s2 = -1, aq = -1;
   if (ready) {
