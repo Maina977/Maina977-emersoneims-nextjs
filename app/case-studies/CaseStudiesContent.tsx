@@ -33,7 +33,7 @@ export default function CaseStudiesContent() {
   const draftCount = CASE_STUDIES.length - published.length;
 
   return (
-    <main className="min-h-screen bg-black text-white relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">{/* layout.tsx owns the one <main> */}
       <B2BCommercialBand profile={B2B_PROFILES.caseStudies} />
 
       {/*
@@ -116,7 +116,7 @@ export default function CaseStudiesContent() {
           </Link>
         </motion.div>
       </div>
-    </main>
+    </div>
   );
 }
 

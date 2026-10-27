@@ -29,7 +29,9 @@ const GOOGLEBOT =
 const CHROME =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
-const ORIGIN = 'https://www.emersoneims.com';
+// AUDIT_ORIGIN=http://localhost:3111 audits the local build (the gate's rule:
+// heavy checks never go against the live site).
+const ORIGIN = process.env.AUDIT_ORIGIN || 'https://www.emersoneims.com';
 
 const argIdx = process.argv.indexOf('--url');
 const PAGES =
@@ -48,9 +50,9 @@ const PAGES =
         '/kenya',
       ];
 
-const { chromium } = await import(
-  'file:///d:/MY%20WEBSITE%20RECOVERY%20FOLDER/my-app/.claude/worktrees/market-leader-transformation/node_modules/playwright/index.mjs'
-);
+// The project's own Playwright (the old import pointed at a d:\ worktree that
+// no longer exists, so the audit could not run).
+const { chromium } = (await import('playwright')).default ?? (await import('playwright'));
 
 const strip = (h) =>
   h
@@ -77,7 +79,7 @@ function missingFromCrawler(botText, domText) {
   return [...missing.keys()].slice(0, 4);
 }
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ channel: "chrome" });
 const findings = [];
 
 console.log(`\nGOOGLEBOT AUDIT — ${ORIGIN}\n`);

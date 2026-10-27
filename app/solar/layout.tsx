@@ -17,7 +17,7 @@ const DESCRIPTION =
 const OG_IMAGE = '/images/solar%20power%20farms.png';
 
 export const metadata: Metadata = {
-  title: 'Solar Installation & Free Sizing Tools Kenya',
+  title: 'Solar Installation & Free Sizing Tools', // + ' | EmersonEIMS Kenya' = 58 characters
   description: DESCRIPTION,
   authors: [{ name: 'EmersonEIMS' }],
   creator: 'EmersonEIMS',

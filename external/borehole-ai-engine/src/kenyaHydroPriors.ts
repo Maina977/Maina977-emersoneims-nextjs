@@ -83,7 +83,10 @@ const COUNTY_PROVINCE: Record<string, KenyaHydroPrior['province']> = {
   turkana: 'ALLUVIAL',
 };
 
-const norm = (s: string) => s.toLowerCase().replace(/['`´’]/g, '').replace(/\s+county\s*$/i, '').trim().replace(/\s+/g, '-');
+// "Nairobi City" (OpenStreetMap's name) is Nairobi: without stripping "City"
+// the lookup missed, and Nairobi's depth swung 117 m / 150 m between runs
+// with whichever soil service answered (2026-10-27).
+const norm = (s: string) => s.toLowerCase().replace(/['`´’]/g, '').replace(/\s+county\s*$/i, '').trim().replace(/\s+city$/i, '').replace(/\s+/g, '-');
 
 /** Look up the hydrogeological prior for a Kenyan county (name or slug). */
 export function getKenyaHydroPrior(county?: string, countryCode?: string): (KenyaHydroPrior & { county: string }) | null {

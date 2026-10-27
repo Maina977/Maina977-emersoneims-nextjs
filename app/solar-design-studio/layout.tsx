@@ -6,9 +6,10 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 const URL = `${SITE}/solar-design-studio`;
 
 export const metadata: Metadata = {
-  title: 'Solar Design Studio — Roof Layout, Sun Path & Wiring',
+  // Within search-result limits: title 60 with the site suffix, description 151 (2026-10-27).
+  title: 'Solar Design Studio — Roof, Sun & Wiring',
   description:
-    'Draw your roof, place panels, follow the path and angle of the sun through the day (trees and walls are not modelled), and get a single-line diagram and wire schedule. Free in your browser; an EmersonEIMS engineer can turn it into a quotation.',
+    'Draw your roof, place panels, follow the sun through the day, then get a single-line diagram and wire schedule. Free; trees and walls are not modelled.',
   keywords: [
     'solar design studio',
     'solar roof layout Kenya',

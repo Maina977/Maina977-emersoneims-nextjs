@@ -172,7 +172,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
       '/images/generator-installation.png'
     ],
 
-    metaTitle: 'Cummins-Powered Generators Kenya | New VOLTKA & Used Cummins | EmersonEIMS',
+    metaTitle: 'Cummins-Engine Generators Kenya: New VOLTKA, Used Cummins', // 57 chars: shown whole in search (2026-10-27)
     metaDescription: 'New VOLTKA generators on Cummins engines (10-3000 kVA), used Cummins sets, and Cummins servicing in all 47 counties. 2-year workmanship warranty. Call +254768860665',
     keywords: [
       'Cummins generators Kenya',

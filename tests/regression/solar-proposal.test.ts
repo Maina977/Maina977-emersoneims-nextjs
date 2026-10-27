@@ -8,9 +8,7 @@ import { createRequire } from 'module';
 import { proposalFinance, loanMonthlyPayment } from '@/components/solar-modules/crc/src/services/proposalFinance';
 
 const require = createRequire(import.meta.url);
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { dispatch } = require('../../lib/solar-genius/dispatch.js');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const reports = require('../../lib/solar-genius/server/reports.js');
 
 describe('proposalFinance', () => {

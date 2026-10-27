@@ -52,6 +52,14 @@ const ping = () => new Promise((res) => {
   // --step2-only skips the AquaScan repeatability stage.
   const noBuild = process.argv.includes('--no-build');
   const step2Only = process.argv.includes('--step2-only');
+  // --gate adds the Google-compliance gate: lint first, then (after step 2)
+  // route audit, full-sitemap site audit, Googlebot audit and live-vs-local SEO compare.
+  const gate = process.argv.includes('--gate');
+  if (gate) {
+    const lint = run('npx eslint .', 'lint.log', 20 * 60 * 1000);
+    note(`LINT exit=${lint} :: ${tail(path.join(out, 'lint.log'))}`);
+    if (lint !== 0) { note('RESULT FAILED (lint)'); note('DONE'); return; }
+  }
   if (noBuild) {
     note('BUILD skipped (--no-build: reusing the existing .next build)');
   } else {
@@ -79,9 +87,29 @@ const ping = () => new Promise((res) => {
     }
   }
 
+  let gateFails = 0;
+  if (ready && gate) {
+    const steps = [
+      ['ROUTE-AUDIT', 'node scripts/route-audit.mjs http://localhost:3111', 'route-audit.log'],
+      // One worker with a 300 ms pause (~3 pages/s) stays under both of the
+      // site's own guards: 600 requests/min and 120 unique pages per 30 s
+      // (middleware.ts). Two workers tripped the scraping guard: 119 x 429.
+      ['SITE-AUDIT', 'node scripts/site-audit.mjs --all --concurrency 1 --pace-ms 300 --origin http://localhost:3111', 'site-audit.log'],
+      ['GOOGLEBOT-AUDIT', 'set AUDIT_ORIGIN=http://localhost:3111&& node scripts/googlebot-audit.mjs', 'googlebot-audit.log'],
+      ['SEO-COMPARE', 'node scripts/verify/seo-compare.cjs', 'seo-compare.log'],
+    ];
+    // Let the rate limiter's one-minute window clear after step 2 and AquaScan.
+    await new Promise((r) => setTimeout(r, 65000));
+    for (const [label, cmd, log] of steps) {
+      const code = run(cmd, log, 60 * 60 * 1000);
+      if (code !== 0) gateFails++;
+      note(`${label} exit=${code} :: ${tail(path.join(out, log))}`);
+    }
+  }
+
   stopPort3111();
   try { spawnSync('taskkill', ['/PID', String(server.pid), '/T', '/F'], { stdio: 'ignore' }); } catch { /* already gone */ }
-  note(ready && s2 === 0 && aq === 0 ? 'RESULT PASSED' : `RESULT FAILED (${ready ? 'see step2.log / aquascan.log' : 'server did not start'})`);
+  note(ready && s2 === 0 && aq === 0 && gateFails === 0 ? 'RESULT PASSED' : `RESULT FAILED (${ready ? 'see the logs in scripts/verify/out' : 'server did not start'})`);
   note('DONE');
   process.exit(0);
 })();

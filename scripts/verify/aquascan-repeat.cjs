@@ -58,8 +58,22 @@ async function analyse(browser, site) {
       else if (site.name === 'Garissa' && hi < 11) { problems++; console.log(`FAIL Garissa: range top ${hi} below the 90th percentile of local tested yields`); }
       else console.log(`ok   ${site.name}: yield ${y} m³/h inside ${lo}-${hi}`);
     }
-    const na = normalise(a.text).split('\n');
-    const nb = normalise(b.text).split('\n');
+    // Keep both runs for diagnosis (scripts/verify/out is git-ignored).
+    try {
+      const fs = require('fs'), path = require('path');
+      const dir = path.join(__dirname, 'out'); fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, `aquascan-${site.name}-run1.txt`), a.text);
+      fs.writeFileSync(path.join(dir, `aquascan-${site.name}-run2.txt`), b.text);
+    } catch { /* diagnosis only */ }
+    // Address wording comes live from OpenStreetMap and can differ between
+    // calls ("Starehe, Nairobi City" vs the full street address). It is shown,
+    // not compared; every computed line must still match (2026-10-27).
+    const isAddress = (l) => /^📍 (Area|Site Location|Site identified|Village|Sub-Location|Town|Sub-County)\b|^📍 \w[\w -]*:.*•|^Geocoded to:/.test(l);
+    const addrA = normalise(a.text).split('\n').filter(isAddress);
+    const addrB = normalise(b.text).split('\n').filter(isAddress);
+    if (addrA.join('\n') !== addrB.join('\n')) console.log(`note ${site.name}: geocoder address wording differed between runs (not a computed value)`);
+    const na = normalise(a.text).split('\n').filter((l) => !isAddress(l));
+    const nb = normalise(b.text).split('\n').filter((l) => !isAddress(l));
     const diffs = [];
     for (let i = 0; i < Math.max(na.length, nb.length); i++) if (na[i] !== nb[i]) diffs.push(`  run1: ${na[i] || '∅'}\n  run2: ${nb[i] || '∅'}`);
     if (diffs.length) { problems++; console.log(`FAIL ${site.name}: ${diffs.length} line(s) differ between runs\n${diffs.slice(0, 8).join('\n')}`); }

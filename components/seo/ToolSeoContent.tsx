@@ -9,6 +9,15 @@
  * NEVER modify the tools themselves (standing rule).
  */
 import Link from 'next/link';
+import { estimateInstalledCost, PANEL_WATT } from '@/lib/solar/sizing';
+
+// Home hybrid price range from the same model as the /solar package cards
+// (smallest: 3 kWp worth of 550 W panels + 5 kWh; largest home: 10 kWp + 15 kWh),
+// so the FAQ cannot disagree with them (2026-10-27: it said "KSh 150k-1.5M").
+const kwpFor = (kwp: number) => Math.round(Math.ceil((kwp * 1000) / PANEL_WATT) * PANEL_WATT / 100) / 10;
+const HOME_FROM = estimateInstalledCost(kwpFor(3), 3, 5, 'hybrid').lowKes;
+const HOME_TO = estimateInstalledCost(kwpFor(10), 10, 15, 'hybrid').highKes;
+const kes = (n: number) => `KSh ${n.toLocaleString('en-KE')}`;
 
 interface ToolCopy {
   h2: string;
@@ -77,7 +86,7 @@ const TOOLS: Record<string, ToolCopy> = {
     coverage: 'Estimates use NASA sun data for Kenyan towns and your own tariff; EmersonEIMS designs, installs and maintains the systems.',
     faqs: [
       { q: 'How many solar panels do I need in Kenya?', a: 'It depends on daily consumption: a typical home using 10 kWh/day needs roughly a 3 kW array with storage. SolarGenius Pro estimates it from your KPLC bill or appliances.' },
-      { q: 'What does a solar system cost in Kenya?', a: 'Residential hybrid systems commonly run KSh 150k–1.5M depending on size and storage. The tool gives a typical installed-cost range for your design — treat it as indicative and confirm it with a quotation.' },
+      { q: 'What does a solar system cost in Kenya?', a: `On our mid-2026 cost model, home hybrid systems with a lithium battery run from about ${kes(HOME_FROM)} (${kwpFor(3)} kWp, 5 kWh) to about ${kes(HOME_TO)} (${kwpFor(10)} kWp, 15 kWh). The tool gives a typical installed-cost range for your own design; treat it as indicative and confirm it with a quotation.` },
       { q: 'Can solar run a borehole pump?', a: 'Yes — solar pumping is often the cheapest lifetime option. For a first estimate use off-grid mode with the pump\'s kW as the largest load; our engineers size the pump itself from your borehole\'s test-pumping results.' },
     ],
   },
@@ -186,7 +195,7 @@ const TOOLS: Record<string, ToolCopy> = {
   solar: {
     h2: 'Solar Hub — Solar Power Systems, Water Pumping & Hybrid Energy for Kenya',
     intro:
-      'The EmersonEIMS Solar Hub covers everything solar in Kenya: grid-tie and hybrid systems, solar water pumping for boreholes and irrigation, commercial rooftops, battery storage and generator-solar hybrids that cut diesel bills by half or more.',
+      'The EmersonEIMS Solar Hub covers everything solar in Kenya: grid-tie and hybrid systems, solar water pumping for boreholes and irrigation, commercial rooftops, battery storage and generator-solar hybrids that cut generator run-hours and diesel use.',
     capabilities: [
       'Residential, commercial and industrial PV design, supply and installation',
       'Solar borehole pumping — sized with AquaScan Pro groundwater data',
@@ -197,7 +206,7 @@ const TOOLS: Record<string, ToolCopy> = {
     faqs: [
       { q: 'Is solar worth it in Kenya?', a: 'Usually yes: with 4.5–6.5 kWh/m²/day of irradiance, commercial systems commonly pay back in 3–5 years against KPLC tariffs, faster where diesel generation is being displaced.' },
       { q: 'Can solar work with my existing generator?', a: 'Yes — hybrid controllers let solar carry the day load and the generator top up, which cuts run-hours and fuel; how much depends on how much of the load falls in daylight. We design the integration properly, including reverse-power protection.' },
-      { q: 'Do you offer financing?', a: 'We work with asset financiers and structure phased installations; talk to our engineers about options for your project size.' },
+      { q: 'Do you offer financing?', a: 'We do not lend or arrange credit. Payment terms are agreed for each project and written into the quotation, and larger systems can be installed in phases.' },
     ],
   },
 };

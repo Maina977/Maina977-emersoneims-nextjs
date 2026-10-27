@@ -788,7 +788,7 @@ const KENYA_COUNTY_BOREHOLE_DATA: Record<string, CountyBoreholeStats> = {
 };
 
 // Lookup by approximate county from coordinates (All 47 Kenya counties)
-function getKenyaCountyFromCoords(lat: number, lon: number): string | null {
+export function getKenyaCountyFromCoords(lat: number, lon: number): string | null {
   // Approximate bounding boxes for all Kenya counties
   // Ordered from smallest/most-specific to largest to handle overlapping bounds
   const countyBounds: { county: string; latRange: [number, number]; lonRange: [number, number] }[] = [

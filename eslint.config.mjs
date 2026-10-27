@@ -123,7 +123,7 @@ export default defineConfig([
     }
   },
   {
-    files: ["scripts/**/*.js", "debug.js", "start-trapped.js"],
+    files: ["scripts/**/*.js", "scripts/**/*.cjs", "debug.js", "start-trapped.js"],
     rules: {
       "@typescript-eslint/no-require-imports": "off",
     },
@@ -265,7 +265,12 @@ export default defineConfig([
      *
      * allowObject keeps the rule on for the cases it was written for: an
      * anonymous arrow function or class as a default export still reports.
+     *
+     * Same file set eslint-config-next loads the "import" plugin for: without
+     * it, any .cjs file (scripts/verify/*.cjs, 2026-10-27) got this rule but
+     * not the plugin, and ESLint stopped with a config error before linting.
      */
+    files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
     rules: {
       "import/no-anonymous-default-export": [
         "warn",

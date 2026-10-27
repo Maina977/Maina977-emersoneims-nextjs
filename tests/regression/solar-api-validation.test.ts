@@ -6,9 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { dispatch } = require('../../lib/solar-genius/dispatch.js');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const elite = require('../../lib/solar-genius/server/engineering-elite.js');
 
 const call = (family: string, path: string[], body: unknown = {}, query: Record<string, string> = {}) =>

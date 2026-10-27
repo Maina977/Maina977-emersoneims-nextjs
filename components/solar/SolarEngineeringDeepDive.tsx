@@ -185,7 +185,7 @@ export default function SolarEngineeringDeepDive() {
           well-designed Kenyan PV system delivers solar electricity at roughly KSh&nbsp;8–15 per kWh over 25 years — well under
           both commercial grid tariffs and the KSh&nbsp;40+ per kWh of diesel generation. That spread is the entire business
           case, and it is why we so often pair solar with an existing generator: the panels carry the day cheaply, the genset
-          becomes true backup, and the diesel bill falls by half or more.
+          becomes true backup, and the diesel bill falls in step with the share of the load that runs in daylight.
         </p>
       </DeepDiveBlock>
 

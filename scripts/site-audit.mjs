@@ -37,6 +37,7 @@ const ORIGIN = argValue('--origin', 'https://www.emersoneims.com');
 const LIMIT = Number(argValue('--limit', process.argv.includes('--all') ? '100000' : '250'));
 const JSON_OUT = argValue('--json', null);
 const CONCURRENCY = Number(argValue('--concurrency', '6'));
+const PACE_MS = Number(argValue('--pace-ms', '0'));
 
 // The middleware refuses obvious bot/headless agents, so present as real Chrome.
 const UA =
@@ -224,6 +225,9 @@ await Promise.all(
     while (queue.length) {
       const p = queue.shift();
       const r = await audit(p);
+      // --pace-ms keeps the run under the site's own rate limit (600 page
+      // requests a minute per IP); without it a full local run got 359 x 429.
+      if (PACE_MS) await new Promise((res) => setTimeout(res, PACE_MS));
       results.push(r);
       done++;
       if (done % 25 === 0 || done === urls.length) process.stdout.write(`\r  audited ${done}/${urls.length}`);

@@ -8,7 +8,7 @@ import { AnalysisResult, FieldValidationData } from './types';
 import { calculateLocationConfidence } from './locationVerifier';
 import { fetchRemoteSensingData } from './remoteSensing';
 import { fetchHistoricalData, estimateGroundwaterTrend } from './historicalData';
-import { getRegionalBoreholeStats, geocodeLocationForm, GEOLOGICAL_FORMATIONS, getKenyaCountyBoreholeStats } from './boreholeDatabase';
+import { getRegionalBoreholeStats, geocodeLocationForm, GEOLOGICAL_FORMATIONS, getKenyaCountyBoreholeStats, getKenyaCountyFromCoords } from './boreholeDatabase';
 import { fetchGLDASGroundwaterData } from './gldasGroundwater';
 import { budykoWaterBalance } from './hydroPhysics';
 import { fetchSatelliteActualET, reconcileRechargeWithMeasuredET } from './satelliteETEngine';
@@ -1211,7 +1211,10 @@ export class BoreholeAnalyzer {
     // stronger evidence and always available, so without field geophysics it
     // sets the rock type — the same answer every time.
     try {
-      const provCounty = clientGeo?.county || features.resolvedLocation?.county || (clientLocation as any)?.county;
+      // Geocoded county first; when the geocoder gave none, the built-in
+      // coordinate lookup, so the result never depends on that service (2026-10-27).
+      const provCounty = clientGeo?.county || features.resolvedLocation?.county || (clientLocation as any)?.county
+        || (effectiveLat != null && effectiveLon != null ? getKenyaCountyFromCoords(effectiveLat, effectiveLon) : null) || undefined;
       const provCc = clientGeo?.countryCode || features.resolvedLocation?.countryCode || '';
       const provPrior = getKenyaHydroPrior(provCounty, provCc || 'KE');
       if (provPrior && !fieldData?.ertSurvey) {

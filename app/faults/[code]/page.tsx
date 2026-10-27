@@ -70,7 +70,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? `${fault.brand} ${fault.code.slice(brandPrefix.length)}`
     : `${fault.brand} ${fault.code}`;
   const fullBase = fault.alarm ? `${fault.brand} ${fault.title} Alarm` : `${codeLabel}: ${fault.title}`;
-  const base = fullBase.length > 60 ? fullBase.replace(/\s*\([^)]*\)\s*$/, '') : fullBase;
+  // Over 60: drop a trailing "(…)", then a " — …" qualifier (2026-10-27:
+  // "SPN-102: Intake Manifold (Boost) Pressure — High, Low and Sensor Faults"
+  // was 77 characters). The page itself keeps the full name.
+  const noParen = fullBase.length > 60 ? fullBase.replace(/\s*\([^)]*\)\s*$/, '') : fullBase;
+  const base = noParen.length > 60 ? noParen.replace(/\s+—\s+.*$/, '') : noParen;
   // Keep within ~60 characters before the site suffix.
   const title = base.length <= 44 ? `${base} — Causes & Fix` : base;
   const fullDescription = fault.alarm
