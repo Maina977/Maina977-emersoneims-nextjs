@@ -24,10 +24,7 @@ const LazyComprehensiveAnalytics = dynamic(() => import('@/components/analytics/
   loading: () => null,
 });
 
-const LazyAIEngagement = dynamic(() => import('@/components/analytics/AIEngagement'), {
-  ssr: false,
-  loading: () => null,
-});
+
 
 /*
  * LazyGoogleAnalytics WAS DECLARED HERE AND WAS REMOVED 2026-09-22.
@@ -209,7 +206,7 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
 
       {/* Analytics - load with low priority */}
       <LazyComprehensiveAnalytics />
-      <LazyAIEngagement />
+      {/* AIEngagement removed 2026-10-25: an unconfirmed "10% off" exit-intent pop-up and an "AI Assistant" chat on every page. Contact is the WhatsApp button. */}
 
       {/* Performance components */}
       <LazyAdvancedPreloader />

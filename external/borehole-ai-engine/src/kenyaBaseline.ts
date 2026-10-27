@@ -1,7 +1,7 @@
 /**
  * EMERSONEIMS KENYA NATIONAL BASELINE — loader
  * ────────────────────────────────────────────
- * Reads public/data/kenya-baseline.json — REAL measured environmental values
+ * Bundles public/data/kenya-baseline.json — REAL measured environmental values
  * pre-computed per administrative unit (counties now; constituencies, towns
  * and villages appended in batches by scripts/build-kenya-baseline.mjs).
  *
@@ -23,20 +23,16 @@ export interface BaselineUnit {
   sources: string[];
 }
 
-let cache: BaselineUnit[] | null = null;
-let loadTried = false;
+// Bundled with the engine, not fetched (2026-10-27): during an analysis the
+// browser has dozens of data requests open, the 14 KB fetch sometimes timed
+// out, and Garissa then fell to a latitude guess (~1,400 mm/yr of rain for a
+// ~300 mm/yr site). The same input now always uses the same measured baseline.
+import baselineData from '../../../public/data/kenya-baseline.json';
+
+const BASELINE_UNITS: BaselineUnit[] = Array.isArray((baselineData as any)?.units) ? (baselineData as any).units : [];
 
 async function loadBaseline(): Promise<BaselineUnit[]> {
-  if (cache || loadTried) return cache ?? [];
-  loadTried = true;
-  try {
-    const res = await fetch('/data/kenya-baseline.json', { signal: AbortSignal.timeout(8000) });
-    if (res.ok) {
-      const j = await res.json();
-      if (Array.isArray(j?.units)) cache = j.units;
-    }
-  } catch { /* baseline not available — callers keep their own behaviour */ }
-  return cache ?? [];
+  return BASELINE_UNITS;
 }
 
 const KENYA_BBOX = { latMin: -5, latMax: 5.5, lonMin: 33, lonMax: 42.5 };

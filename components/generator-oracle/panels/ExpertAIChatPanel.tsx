@@ -459,20 +459,8 @@ function ExpertAIChatPanelInner({
       setMessages([{
         id: 'welcome',
         role: 'assistant',
-        content: `Welcome to Generator Oracle Expert AI! 🔧
-
-I'm your 24/7 generator diagnostic specialist with expertise in ALL major manufacturers including Cummins, Caterpillar, Volvo Penta, Perkins, John Deere, Deutz, MTU, and many more.
-
-**What I can help you with:**
-• Diagnose any generator problem through intelligent questioning
-• Provide step-by-step repair procedures
-• Explain fault codes from any controller
-• Recommend parts and estimate costs
-• Guide ECM/ECU procedures
-
-**No external hardware needed for diagnosis!**
-
-Tell me about your generator problem, or choose a quick action below to get started.`,
+        // No unbacked claims ("24/7 specialist", "30+ years", cost estimates) — 2026-10-25 audit.
+        content: `This assistant uses a language model to talk through the symptoms with you. It can be wrong: check every step against your engine and controller manual, and isolate the set before working on it. For anything safety-critical, WhatsApp an engineer on 0768 860 665.`,
         timestamp: new Date(),
       }]);
     }
@@ -674,9 +662,9 @@ Tell me about your generator problem, or choose a quick action below to get star
             </motion.div>
             <div>
               <h2 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-                Expert AI Assistant
+                Diagnostic assistant
               </h2>
-              <p className="text-xs text-slate-400">30+ years of generator expertise at your fingertips</p>
+              <p className="text-xs text-slate-400">A language model: check its answers against your manual</p>
             </div>
           </div>
 
@@ -907,14 +895,14 @@ Tell me about your generator problem, or choose a quick action below to get star
 function AskAIBootstrap({ className }: { className?: string }) {
   const aiAvailability = useAIAvailable();
 
-  if (aiAvailability === 'unavailable') {
+  if (aiAvailability !== 'available') {
     return <RuleBasedAssistantPanel mode="chat" className={className} />;
   }
 
   // 'loading' and 'available' both go through the asset-card gate, then
   // hand off to the inner chat panel which handles the live conversation.
   return (
-    <AssetCardGate feature="Expert AI Chat">
+    <AssetCardGate feature="Diagnostic assistant">
       {(card) => <ExpertAIChatPanelInner className={className} card={card} />}
     </AssetCardGate>
   );

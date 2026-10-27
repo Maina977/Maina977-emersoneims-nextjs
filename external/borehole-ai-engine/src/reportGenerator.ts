@@ -187,7 +187,7 @@ function applyPdfTextSanitizer(doc: jsPDF): void {
       const o = (opts && typeof opts === 'object' && !Array.isArray(opts)) ? opts : undefined;
       if (typeof clean === 'string' && typeof x === 'number' && !(o && (o.maxWidth || o.align === 'center' || o.align === 'right'))) {
         const pageW = doc.internal.pageSize.getWidth();
-        const avail = pageW - x - 8;
+        const avail = pageW - x - 15; // stay inside the 14 mm page margin, where boxes end
         const w = doc.getTextWidth(clean);
         if (avail > 15 && w > avail) {
           const size = doc.getFontSize();
@@ -205,6 +205,26 @@ function applyPdfTextSanitizer(doc: jsPDF): void {
 }
 
 // --- HELPERS ---
+
+/** The public sources that actually answered for this run. */
+function answeredSources(r: any): string {
+  const s: string[] = [];
+  if (r?.soil?.realSoilGrids) s.push('ISRIC SoilGrids');
+  if (r?.historicalData?.weather) s.push(String(r.historicalData.weather.source ?? 'ERA5 / NASA POWER rainfall'));
+  if (r?.remoteSensing?.elevation?.source) s.push(String(r.remoteSensing.elevation.source));
+  if (r?.gldasGroundwater?.waterBudget) s.push('NASA POWER / GLDAS water budget');
+  if (r?.nearbyWells?.nearbyWells?.length) s.push('borehole and water-point registries (WPDx, UNESCO IHP-WINS, OSM)');
+  if (r?.boreholeRecords?.countyIntelligence) s.push('county drilling records');
+  return s.length ? s.join('; ') : 'regional estimates only (no public source answered)';
+}
+
+/** Soil type only when ISRIC SoilGrids answered for this point. */
+function soilLabel(r: any): string {
+  return r?.soil?.realSoilGrids && r?.soil?.type ? String(r.soil.type).toUpperCase() : 'Not measured';
+}
+function soilPorosity(r: any): string {
+  return r?.soil?.realSoilGrids ? `Porosity: ${fmt(r?.soil?.porosity)}` : 'SoilGrids did not answer here';
+}
 
 function fmt(v: any, decimals = 2): string {
   if (v == null || v === undefined) return 'N/A';
@@ -885,7 +905,11 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   // Sediments (Garissa's Merti beds, Lodwar alluvium) are drilled mud-rotary
   // whatever the topsoil (2026-10-25 audit: every site was priced air/DTH).
   const _geo = String((result as any).rockClassification?.primaryRockType ?? '').toLowerCase();
-  const _loose = ['sandy', 'silty', 'clay'].includes(soilType) || /sand|alluv|sediment|gravel|clay/.test(_geo) && !/stone|basalt|granite|gneiss/.test(_geo);
+  // The aquifer province decides first (2026-10-25 audit round 5: "sandstone"
+  // hit the "stone" exclusion, so Garissa's Merti sediments were still DTH).
+  const _prov = String((result as any).hydroProvince ?? '');
+  const _loose = _prov === 'SEDIMENT_NE' || _prov === 'ALLUVIAL'
+    || (!_prov && (['sandy', 'silty', 'clay'].includes(soilType) || /sand|alluv|sediment|gravel|clay/.test(_geo) && !/basalt|granite|gneiss|quartzite/.test(_geo)));
   const drillMethod = _loose ? 'mud rotary (loose formation)' : 'air/DTH (consolidated)';
 
   const wci = (result as any).waterDesign?.waterChemistryIndices;
@@ -1311,7 +1335,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(56, 189, 248);
       doc.text(`PAGE ${pageNo} OF 2`, pageW - margin, 11, { align: 'right' });
       doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(148, 163, 184);
-      doc.text('For the decision-maker. Every figure below traces to the full technical annex that follows this brief.', margin, 18);
+      doc.text((tier as string) === 'basic' ? 'For the decision-maker. Every figure below is the same as on the web page; the Professional report adds the full technical annex.' : 'For the decision-maker. Every figure below traces to the full technical annex that follows this brief.', margin, 18);
       doc.text(`${isRegionalPreScreening ? 'REGIONAL PRE-SCREENING' : assessmentGrade}  •  Generated ${new Date().toLocaleDateString()}`, margin, 22.5);
       y = 34;
       doc.setTextColor(30, 30, 30);
@@ -1366,7 +1390,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFillColor(71, 85, 105);
       doc.roundedRect(margin, y, pw, 15, 2.5, 2.5, 'F');
       doc.setFontSize(9.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
-      doc.text(`NEARBY WATER-POINT EVIDENCE: ${drB.waterPointEvidence}`, margin + 5, y + 6.2, { maxWidth: pw - 10 });
+      doc.text(`NEARBY WATER-POINT EVIDENCE: ${drB.waterPointEvidence}`, margin + 5, y + 6.2);
       doc.setFontSize(6.8); doc.setFont('helvetica', 'normal'); doc.setTextColor(238, 246, 240);
       doc.text(`Shows groundwater occurs in the area. It is not a borehole success rate: the chance of water is the success probability, ${pct(result.probability)}.`, margin + 5, y + 11.5, { maxWidth: pw - 10 });
       y += 19;
@@ -1446,7 +1470,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ? 'POTABLE (modelled) -- verify with an ISO 17025 lab analysis before community use.'
         : healthFails.length > 0
           ? `MODELLED EXCEEDANCE RISK -- ${healthFails.join(', ')} may exceed WHO guideline values. Do not use for drinking until an accredited lab confirms; treatment budgeted below.`
-          : 'TREATMENT REQUIRED (aesthetic parameters; modelled -- lab-confirm).';
+          : (wq?.tds ?? 0) >= 1000
+            ? 'LIKELY TOO SALTY TO DRINK WITHOUT REVERSE OSMOSIS (modelled -- lab-confirm); RO budgeted below.'
+            : 'TREATMENT REQUIRED (aesthetic parameters; modelled -- lab-confirm).';
       // Render the FULL message wrapped over as many lines as needed — the old
       // code printed only splitTextToSize(...)[0], truncating the sentence to
       // "...until an" on p2 (re-audit #7). Box height follows the wrapped text.
@@ -1500,7 +1526,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         if (springCount > 0 || boreholeCount > 0) {
           statBits.push(`${springCount} springs + ${dugCount} dug wells + ${boreholeCount} drilled boreholes${_otherRecs > 0 ? ` + ${_otherRecs} other water points` : ''}`);
         }
-        if ((nwB.averageDepth ?? 0) > 0) statBits.push(`typical depth ~${nwB.averageDepth} m (regional est. where unmeasured)`);
+        // Typical depth from drilled records, not a registry average that mixes in regional estimates (2026-10-25 audit: "~200 m" at a 45 m site).
+        { const fbB = (result as any).fieldDepthBand; const ciB = (result as any).boreholeRecords?.countyIntelligence;
+          if (fbB?.med > 0) statBits.push(`typical drilled depth ~${fbB.med} m (median of ${fbB.n} productive boreholes within 20 km)`);
+          else if (Number(ciB?.avgDepth_m) > 0) statBits.push(`county typical depth ~${ciB.avgDepth_m} m`); }
         const knownOutcomes = wellsB.filter((w) => w.outcome === 'Success' || w.outcome === 'Fail').length;
         if (knownOutcomes > 0) statBits.push(`${Math.round((nwB.successRate ?? 0) * 100)}% functional among ${knownOutcomes} with recorded status`);
         doc.text(statBits.length ? statBits.join('  •  ') : 'Depths/outcomes not published for most records -- names and positions are verified.', margin + 4, y + 11);
@@ -1528,8 +1557,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       head: [['Item', 'USD', 'KSh (approx)', 'Basis']],
       body: [
         ['Survey + statutory approvals', `$${(eco.surveyCost + eco.permitCost).toLocaleString()}`, eco.kes(eco.surveyCost + eco.permitCost), 'Hydrogeological survey report (required for motorised boreholes, KSh 40k-110k market) + WRA abstraction approval'],
-        ['Drilling', `${eco.drillingCost.toLocaleString()}`, eco.kes(eco.drillingCost), `${eco.depthVal} m × ~KSh ${eco.cpmKES.toLocaleString()}/m — ${eco.drillMethod}, ${eco.soilType} ground (Kenya 2026 market)`],
-        ...(eco.mobilisationCost > 0 ? [['Mobilisation', `${eco.mobilisationCost.toLocaleString()}`, eco.kes(eco.mobilisationCost), 'Rig and support trucks beyond 50 km of Nairobi (~$3/km); nearer sites are covered by the per-metre rate'] as string[]] : []),
+        ['Drilling', `$${eco.drillingCost.toLocaleString()}`, eco.kes(eco.drillingCost), `${eco.depthVal} m × ~KSh ${eco.cpmKES.toLocaleString()}/m — ${eco.drillMethod}, ${eco.soilType} ground (Kenya 2026 market)`],
+        ...(eco.mobilisationCost > 0 ? [['Mobilisation', `$${eco.mobilisationCost.toLocaleString()}`, eco.kes(eco.mobilisationCost), 'Rig and support trucks beyond 50 km of Nairobi (~$3/km); nearer sites are covered by the per-metre rate'] as string[]] : []),
         ['Casing + screen', `$${(eco.casingCost + eco.screenCost).toLocaleString()}`, eco.kes(eco.casingCost + eco.screenCost), `Casing ${eco.casingNote} = $${eco.casingCost.toLocaleString()}; provisional screen ${Math.round(eco.screenLength)}m x $35/m = $${eco.screenCost.toLocaleString()}`],
         ['Pump + installation', `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.kes(eco.pumpCost + eco.installCost), eco.pumpNote],
         // Hand-pump systems need no solar array — omit the row entirely (audit #9)
@@ -1556,7 +1585,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     });
     y = lastY(4);
     doc.setFontSize(6.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 130);
-    doc.text(`One economics model: same figures as Section 5.1 and the Investor Summary. KSh at ~${eco.kesPerUsd}/USD (July 2026). Kenya benchmark: a properly completed borehole runs KSh 1.5M-3.5M.`, margin, y); y += 4;
+    doc.text(`One economics model: ${(tier as string) === 'basic' ? 'same figures as the cost table in this report and on the web page' : 'same figures as Section 5.1 and the Investor Summary'}. KSh at ~${eco.kesPerUsd}/USD (July 2026). Kenya benchmark: a properly completed borehole runs KSh 1.5M-3.5M.`, margin, y); y += 4;
     doc.setFontSize(6.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 100, 0);
     doc.text('CAUTION: quotes below ~KSh 5,000/m usually exclude casing, gravel pack, development, test pumping, water analysis or VAT — compare scope, not price.', margin, y); y += 8;
 
@@ -1588,7 +1617,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(154, 92, 6);
     doc.text('WHAT THIS BRIEF IS -- AND IS NOT', margin + 4, y + 6);
     doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(110, 75, 20);
-    doc.text('IS: an expert pre-drilling filter built from satellite data, physics models and verified registry records. It screens out siting-stage', margin + 4, y + 11.5);
+    doc.text('IS: an expert pre-drilling filter built from satellite data, physics models and registry records (positions as recorded). It screens out siting-stage', margin + 4, y + 11.5);
     doc.text('errors before any money is spent, and hands you the exact field-validation plan above.', margin + 4, y + 15.5);
     doc.text(`IS NOT: a substitute for the ERT survey and pump test${isRegionalPreScreening ? ', nor a site report -- the location itself is unverified' : ''}. No desktop analysis anywhere can be.`, margin + 4, y + 20);
     y += 30;
@@ -1601,7 +1630,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(226, 232, 240);
     doc.text('+254 768 860 665   •   info@emersoneims.com   •   www.emersoneims.com', margin + 5, y + 12);
     doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(148, 163, 184);
-    doc.text('Full technical annex follows', pageW - margin - 5, y + 9.5, { align: 'right' });
+    doc.text((tier as string) === 'basic' ? 'Summary report — the full technical annex is in the Professional report' : 'Full technical annex follows', pageW - margin - 5, y + 9.5, { align: 'right' });
     y += 20;
     // NOTE: do NOT addPage() here — the next section (Drilling Readiness) starts
     // with its own addPage(). A second break here left a blank page 4 (re-audit #7).
@@ -1649,7 +1678,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFillColor(71, 85, 105);
       doc.roundedRect(margin, y, pw, 16, 3, 3, 'F');
       doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
-      doc.text(`NEARBY WATER-POINT EVIDENCE: ${(dr as any).waterPointEvidence}`, margin + 5, y + 7, { maxWidth: pw - 10 });
+      doc.text(`NEARBY WATER-POINT EVIDENCE: ${(dr as any).waterPointEvidence}`, margin + 5, y + 7);
       doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(245, 245, 245);
       doc.text(`Shows groundwater occurs nearby; not a borehole success rate. Chance of water: the success probability, ${pct(result.probability)}.`, margin + 5, y + 13, { maxWidth: pw - 10 });
       y += 20;
@@ -1868,6 +1897,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Success probability', `${pct(result.probability)}${result.uncertainty ? ` (range ${(result.uncertainty.probabilityRange[0] * 100).toFixed(0)}-${(result.uncertainty.probabilityRange[1] * 100).toFixed(0)}%)` : ''}`, 'Modelled (reconciled ensemble)'],
         ['Provisional investigation depth', `${fmt(result.recommendedDepth, 0)} m${result.uncertainty ? ` (range ${result.uncertainty.depthRange[0]}-${result.uncertainty.depthRange[1]} m)` : ''}`, 'Modelled — revise after ERT'],
         ['Expected yield (planning)', `${fmt(result.estimatedYield, 1)} m³/hr${result.uncertainty ? ` (range ${result.uncertainty.yieldRange[0]}-${result.uncertainty.yieldRange[1]})` : ''}`, 'Modelled — pump test decides'],
+        ...((result as any).coastalIntrusionNote ? [['Seawater intrusion', 'Main risk at this coastal site', (result as any).coastalIntrusionNote]] : []),
         ['Water table', (result as any).waterTableDepth != null ? `~${fmt((result as any).waterTableDepth, 0)} m` : 'not measured', (result as any).waterTableBasis ?? 'Not measured — confirm by ERT or drilling'],
         ['Transmissivity (design)', (wdG?.drawdown?.reconciledTransmissivity_m2day ?? wdG?.drawdown?.transmissivity_m2day) != null ? `${wdG.drawdown.reconciledTransmissivity_m2day ?? wdG.drawdown.transmissivity_m2day} m²/day` : 'unconstrained (field test required)', 'Lowest value that sustains the planning yield (conservative) — a pump test measures it'],
         ['Recharge (governing)', (result as any).rechargeSummary ? `${(result as any).rechargeSummary.governing_mm} mm/yr (${((result as any).rechargeSummary.fraction * 100).toFixed(0)}% of rainfall)` : rmG?.avgAnnualRecharge_mm != null ? `${fmt(rmG.avgAnnualRecharge_mm, 0)} mm/yr` : 'not modelled', (result as any).rechargeSummary?.basis ?? 'Modelled (multi-year water balance)'],
@@ -1941,9 +1971,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       // B7 — the drilling window was computed from measured rainfall history
       // all along but buried in Section 30; the payer needs it on page 1.
       ...(result.historicalData?.weather?.bestDrillingSeason
-        ? [['Best Drilling Window', result.historicalData.weather.bestDrillingSeason, 'Schedule rig mobilization in this window'] as string[]]
+        ? [['Best Drilling Window', result.historicalData.weather.bestDrillingSeason, 'Plan the survey and, once authorised, drilling for these months'] as string[]]
         : []),
-      ['Soil Type', result.soil?.type?.toUpperCase() || 'N/A', `Porosity: ${fmt(result.soil?.porosity)}`],
+      ['Soil Type', soilLabel(result), soilPorosity(result)],
       ['Water Quality (modelled)', (() => {
         // Potability verdict FIRST -- a high index number beside a WHO
         // failure reads as good news (review finding).
@@ -1972,7 +2002,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         // the operative fact first (review finding: "94/100 looks too
         // optimistic unless it clearly means treatable after defluoridation").
         if (healthFails.length > 0) return `Modelled ${healthFails.join(', ')} above WHO guideline -- treatment likely required; lab-confirm before drinking`;
-        if (aestheticFails.length > 0) return `AESTHETIC TREATMENT: ${aestheticFails.join(', ')} (minor)`;
+        if (aestheticFails.length > 0) return (wq?.tds ?? 0) >= 1000
+          ? `SALTY: ${aestheticFails.join(', ')} -- reverse osmosis likely; lab-confirm`
+          : `AESTHETIC TREATMENT: ${aestheticFails.join(', ')} (minor)`;
         return 'TREATMENT NEEDED';
       })()],
       ['Treatment Required', result.waterQuality?.isPotable ? 'NO' : 'YES', (() => {
@@ -1991,9 +2023,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         result.confidenceMetrics.overall >= 80 ? 'ENGINEERING GRADE (80?89%)' :
         result.confidenceMetrics.overall >= 70 ? 'PRE-FEASIBILITY (70?79%)' :
         result.confidenceMetrics.overall >= 50 ? 'STANDARD ASSESSMENT (50?69%)' : 'PRELIMINARY (<50%)'
-      ) : 'N/A', result.confidenceMetrics?.overall && result.confidenceMetrics.overall < 90 ? 'Tier thresholds per IGRAC/RWSN remote sensing assessment framework' : 'Field data integration achieved'],
-      ['Assessment Type', result.assessmentType === 'FIELD_VALIDATED' ? 'FIELD VALIDATED' : 'DESKTOP PRE-SCREEN', result.assessmentType === 'FIELD_VALIDATED' ? 'Includes field measurements' : `Bayesian fusion of ${(result as any).apiSuccessCount ?? (result as any).dataSources ?? 'multiple'} independent data sources`],
-      ['Data Basis', 'Public data + physics models + borehole records', `${(result as any).apiSuccessCount ?? (result as any).dataSources ?? 'multiple'} sources: SoilGrids v2.0, NASA POWER, ERA5-Land, GLDAS, DEM, GRACE-FO, USGS`],
+      ) : 'N/A', result.confidenceMetrics?.overall && result.confidenceMetrics.overall < 90 ? 'EmersonEIMS internal grading of how complete the evidence is — not a measured accuracy' : 'Field data integration achieved'],
+      ['Assessment Type', result.assessmentType === 'FIELD_VALIDATED' ? 'FIELD VALIDATED' : 'DESKTOP PRE-SCREEN', result.assessmentType === 'FIELD_VALIDATED' ? 'Includes field measurements' : `Combination of ${(result as any).apiSuccessCount ?? (result as any).dataSources ?? 'multiple'} independent data sources`],
+      ['Data Basis', 'Public data + physics models + borehole records', answeredSources(result)],
+      ['Sources that used estimates', (result as any).fallbacksUsed?.length ? `${(result as any).fallbacksUsed.length}` : 'None', (result as any).fallbacksUsed?.length ? (result as any).fallbacksUsed.join('; ') : 'Every source answered for this point'],
     ],
     headStyles: { fillColor: [56, 189, 248], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 9 },
@@ -2202,15 +2235,15 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       head: [['Cost Component', 'Amount (USD)', 'Notes']],
       body: [
         ['Survey + statutory approvals', `$${(eco.surveyCost + eco.permitCost).toLocaleString()}`, 'Hydrogeological survey report + WRA abstraction approval (required)'],
-        ['Drilling, casing & screen',  `${(eco.drillingCost + eco.casingCost + eco.screenCost).toLocaleString()}`, `${eco.depthVal}m at ~KSh ${eco.cpmKES.toLocaleString()}/m (${eco.drillMethod}, ${eco.soilType}) + casing + screen`],
-        ...(eco.mobilisationCost > 0 ? [['Mobilisation', `${eco.mobilisationCost.toLocaleString()}`, 'Rig and support trucks beyond 50 km of Nairobi (~$3/km); nearer sites are covered by the per-metre rate'] as [string, string, string]] : []),
+        ['Drilling, casing & screen',  `$${(eco.drillingCost + eco.casingCost + eco.screenCost).toLocaleString()}`, `${eco.depthVal}m at ~KSh ${eco.cpmKES.toLocaleString()}/m (${eco.drillMethod}, ${eco.soilType}) + casing + screen`],
+        ...(eco.mobilisationCost > 0 ? [['Mobilisation', `$${eco.mobilisationCost.toLocaleString()}`, 'Rig and support trucks beyond 50 km of Nairobi (~$3/km); nearer sites are covered by the per-metre rate'] as [string, string, string]] : []),
         ['Pump & installation',        `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.pumpNote],
         ...(eco.solarCost > 0 ? [['Solar power system', `$${eco.solarCost.toLocaleString()}`, `${eco.solarKW} kW array + controller`] as [string, string, string]] : []),
         ...((eco.wqTreatmentCost + eco.defluoridationCost) > 0
           ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.defluoridationCost > 0 ? 'Incl. defluoridation (fluoride > WHO 1.5 mg/L)' : 'Per water-quality model'] as [string, string, string]]
           : []),
         [`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, `$${eco.contingency.toLocaleString()}`, eco.isHardRock ? 'Hard-rock drilling risk premium' : 'Standard engineering contingency'],
-        ['TOTAL CAPITAL COST',         `$${_totalCap.toLocaleString()}`,  'Same model as Section 5.1. Incl. survey + statutory approvals. Excl. land, storage tank'],
+        ['TOTAL CAPITAL COST',         `$${_totalCap.toLocaleString()}`,  `${(tier as string) === 'basic' ? 'Same model as the cost table' : 'Same model as Section 5.1'}. Incl. survey + statutory approvals. Excl. land, storage tank`],
         ['Annual O&M',                 `$${eco.annualOM.toLocaleString()}/yr`, eco.annualDefluoridation > 0 ? `4.5% of capital ($${_annualMaint.toLocaleString()}) + defluoridation media ($${eco.annualDefluoridation}/yr) — same O&M used in every table` : '4.5% of capital (World Bank WASH benchmark) — same O&M used in every table'],
       ],
       headStyles: { fillColor: [15,23,42] as [number,number,number], textColor: [56,189,248] as [number,number,number], fontStyle: 'bold', fontSize: 9 },
@@ -2223,7 +2256,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(56,189,248);
     doc.text('Revenue Scenarios & Payback Period', margin, y); y += 5;
     doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120,120,140);
-    doc.text(`Simple payback per scenario (solar ${eco.pumpHoursPerDay} h/day × ${eco.operatingDaysPerYear} d/yr; identical scenarios & formula to Section 5.1's Tariff Scenario Comparison). Section 5.1 additionally shows the ramped cash-flow payback for the base tariff.`, margin, y); y += 5;
+    doc.text(`Simple payback per scenario (solar ${eco.pumpHoursPerDay} h/day × ${eco.operatingDaysPerYear} d/yr; ${(tier as string) === 'basic' ? 'same formula as the payback figure above' : "identical scenarios & formula to Section 5.1's Tariff Scenario Comparison). Section 5.1 additionally shows the ramped cash-flow payback for the base tariff"}${(tier as string) === 'basic' ? ').' : '.'}`, margin, y); y += 5;
     autoTable(doc, {
       startY: y,
       head: [['Scenario', 'Tariff', 'Annual Revenue', 'Net Annual Profit', 'Simple Payback']],
@@ -2242,9 +2275,13 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y = lastY(8);
 
     doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(56,189,248);
-    doc.text('Recommended Use Cases (Based on Yield)', margin, y); y += 6;
-    const _useCases: Array<[string, string, [number,number,number]]> = _invYld >= 5
-      ? [['Commercial Irrigation', 'Drip/sprinkler, 2-5 ha farm', [22,163,74]], ['Industrial / Construction', 'Site water & dust suppression', [56,189,248]], ['Community Water Point', 'Piped scheme for 500+ people', [251,191,36]]]
+    doc.text('Suitable Uses (yield and water quality)', margin, y); y += 6;
+    // Uses follow water quality and volume too (2026-10-25 audit: irrigation of 2-5 ha was suggested for salty water needing RO).
+    const _salty = Number(result.waterQuality?.tds ?? 0) >= 1000;
+    const _useCases: Array<[string, string, [number,number,number]]> = _salty
+      ? [['Livestock Watering', 'Most livestock tolerate this salinity; check the lab result', [22,163,74]], ['Construction / Dust Suppression', 'Site water where salinity does not matter', [56,189,248]], ['Drinking Water After RO', 'Community supply only after reverse osmosis', [251,191,36]]]
+      : _invYld >= 5
+      ? [['Small-Scale Irrigation', 'Drip on about 1-2 ha (~3 mm/day)', [22,163,74]], ['Industrial / Construction', 'Site water & dust suppression', [56,189,248]], ['Community Water Point', 'Piped scheme for 500+ people', [251,191,36]]]
       : _invYld >= 2
       ? [['Rural Domestic Supply', '200-500 people at 50 L/day', [22,163,74]], ['Small-Scale Irrigation', 'Kitchen garden, poultry', [56,189,248]], ['School / Health Clinic', 'Institutional water point', [251,191,36]]]
       : [['Household / Homestead', '1-3 families at 50 L/day', [22,163,74]], ['Hand Pump Installation', 'Afridev / India Mk II', [56,189,248]], ['Monitoring Well', 'Groundwater level baseline', [251,191,36]]];
@@ -2966,7 +3003,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   const _rwqProv = (result.waterQuality as any)?.regionalProvince;
   if (_rwqProv) {
     doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
-    doc.text(`Regional adjustment applied: ${_rwqProv} hydrogeological province. See Regional WQ Alert section for details.`, margin, y); y += 3;
+    doc.text(`Regional adjustment applied: ${_rwqProv} hydrogeological province. ${(tier as string) === 'basic' ? 'The province adjustment is explained in the Professional report.' : 'See Regional WQ Alert section for details.'}`, margin, y); y += 3;
   }
   y += 2;
 
@@ -2980,7 +3017,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     startY: y,
     head: [['Parameter', 'Value', 'WHO GDWQ reference', 'Basis', 'Status', 'Data Source']],
     body: [
-      ['pH', fmt(result.waterQuality?.pH), '6.5 - 8.5', 'Operational', _wqStatus((result.waterQuality?.pH ?? 7) >= 6.5 && (result.waterQuality?.pH ?? 7) <= 8.5, true), 'Pedotransfer Model'],
+      ['pH', fmt(result.waterQuality?.pH), '6.5 - 8.5', 'Operational', _wqStatus((result.waterQuality?.pH ?? 7) >= 6.5 && (result.waterQuality?.pH ?? 7) <= 8.5, true), 'Modelled (regional) — lab test decides'],
       ['TDS (mg/L)', fmt(result.waterQuality?.tds, 0), '< 1000', 'Palatability', _wqStatus((result.waterQuality?.tds ?? 0) < 1000, true), 'SoilGrids + Geology'],
       ['Hardness (mg/L)', fmt(result.waterQuality?.hardness, 0), '< 500', 'Aesthetic', _wqStatus((result.waterQuality?.hardness ?? 0) < 500, true), 'Geochemical Model'],
       ['Fluoride (mg/L)', fmt(result.waterQuality?.fluoride, 2), '< 1.5', 'HEALTH', _wqStatus((result.waterQuality?.fluoride ?? 0) < 1.5, false), 'Regional Database'],
@@ -3032,7 +3069,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setDrawColor(217, 119, 6);
       doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'S');
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
-      doc.text('MODELLED SCREENING: AESTHETIC/OPERATIONAL CONCERN — NOT A POTABILITY FAILURE', margin + 3, y + 4);
+      doc.text(Number(result.waterQuality?.tds ?? 0) >= 1000 ? 'MODELLED SCREENING: LIKELY TOO SALTY TO DRINK WITHOUT TREATMENT' : 'MODELLED SCREENING: AESTHETIC/OPERATIONAL CONCERN — NOT A POTABILITY FAILURE', margin + 3, y + 4);
       doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 80, 20);
       // Salty water is not "simple treatment" (2026-10-25 audit).
       const _salty = Number(result.waterQuality?.tds ?? 0) >= 1000;
@@ -3084,8 +3121,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     startY: y,
     head: [['Property', 'Value']],
     body: [
-      ['Soil Type', result.soil?.type?.toUpperCase() || 'N/A'],
-      ['Porosity', fmt(result.soil?.porosity)],
+      ['Soil Type', soilLabel(result)],
+      ['Porosity', (result.soil as any)?.realSoilGrids ? fmt(result.soil?.porosity) : 'not measured'],
       ['Permeability', fmt(result.soil?.permeability)],
       ['Organic Matter', fmt(result.soil?.organicMatter)],
       ['pH', fmt(result.soil?.pH)],
@@ -3233,8 +3270,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Hydrogeological Survey + ERT', `$${surveyCost.toLocaleString()}`, 'Statutory requirement for motorised boreholes (Kenya Water Resources Regulations) -- KSh 40,000-110,000 market range, July 2026'],
         ['WRA Approvals & Permits', `$${permitCost.toLocaleString()}`, 'Groundwater abstraction approval before drilling + water use permit after completion'],
         ['Drilling', `$${drillingCost.toLocaleString()}`, `${depthVal}m x $${cpm}/m (~KSh ${cpmKES.toLocaleString()}/m) -- ${drillMethod}, ${soilType} ground. Kenya market July 2026: KSh 6,500-9,500/m standard (air), up to ~KSh 13,000/m mud drilling in loose formations`],
-        ...(mobilisationCost > 0 ? [['Mobilisation', `${mobilisationCost.toLocaleString()}`, 'Rig and support trucks beyond 50 km of Nairobi (~$3/km); nearer sites are covered by the per-metre rate']] : []),
-        ['Casing & Grouting', `${casingCost.toLocaleString()}`, casingNote],
+        ...(mobilisationCost > 0 ? [['Mobilisation', `$${mobilisationCost.toLocaleString()}`, 'Rig and support trucks beyond 50 km of Nairobi (~$3/km); nearer sites are covered by the per-metre rate']] : []),
+        ['Casing & Grouting', `$${casingCost.toLocaleString()}`, casingNote],
         ['Well Screen', `$${screenCost.toLocaleString()}`, screenNote],
         ['Pump Unit', `$${pumpCost.toLocaleString()}`, pumpNote],
         ['Installation & Pipe', `$${installCost.toLocaleString()}`, 'Rising main, fittings, civil works'],
@@ -10418,7 +10455,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       'Theis C.V. (1935). Trans. AGU 16 — non-equilibrium well hydraulics.  |  Cooper H.H. & Jacob C.E. (1946). Trans. AGU 27.',
       'Budyko M.I. (1974). Climate and Life — water-balance recharge banding (Fu parameterisation).',
       'WHO (2011, 4th ed.). Guidelines for Drinking-water Quality.  |  Saaty T.L. (1980). The Analytic Hierarchy Process.',
-      'RWSN/UNICEF guidance on professional borehole siting & supervision.  |  Kenya Water (Resources) Regulations, 2025 (LN 58/2025) — verify current provisions with WRA.',
+      'RWSN/UNICEF guidance on professional borehole siting & supervision.  |  Kenya Water Act 2016 and the Water Resources Regulations in force — confirm current provisions with WRA.',
     ];
     doc.setFontSize(6.5); doc.setTextColor(90, 90, 100);
     refs.forEach((r, i) => { doc.text(`${i + 1}. ${r}`, margin, y, { maxWidth: pw }); y += doc.splitTextToSize(r, pw).length * 2.9 + 1.2; });
@@ -10627,7 +10664,7 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
     ['Recommended Depth (m)', result.recommendedDepth, ''],
     ['Estimated Yield (m³/h)', result.estimatedYield, ''],
     ['Overall Risk', pct(result.risk?.overallRisk), result.risk?.viability?.toUpperCase()],
-    ['Soil Type', result.soil?.type?.toUpperCase(), `Porosity: ${fmt(result.soil?.porosity)}`],
+    ['Soil Type', soilLabel(result), soilPorosity(result)],
     ['Water Potable', result.waterQuality?.isPotable ? 'YES' : 'NO', ''],
   ], [30, 25, 25]);
 
@@ -10666,8 +10703,8 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
   addSheet('Soil Analysis', [
     ['SOIL ANALYSIS'],
     ['Property', 'Value'],
-    ['Type', result.soil?.type?.toUpperCase()],
-    ['Porosity', result.soil?.porosity],
+    ['Type', soilLabel(result)],
+    ['Porosity', (result.soil as any)?.realSoilGrids ? result.soil?.porosity : 'not measured'],
     ['Permeability', result.soil?.permeability],
     ['Organic Matter', result.soil?.organicMatter],
     ['pH', result.soil?.pH],
@@ -11263,7 +11300,7 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
       makeRow([{ text: 'Recommended Depth' }, { text: `${fmt(result.recommendedDepth, 0)} meters${result.uncertainty ? ` (range: ${result.uncertainty.depthRange[0]}-${result.uncertainty.depthRange[1]}m)` : ''}`, bold: true }, { text: '' }]),
       makeRow([{ text: 'Estimated Yield' }, { text: `${fmt(result.estimatedYield, 1)} m\u00b3/hour${result.uncertainty ? ` (range: ${result.uncertainty.yieldRange[0]}-${result.uncertainty.yieldRange[1]})` : ''}`, bold: true }, { text: '' }]),
       makeRow([{ text: 'Overall Risk' }, { text: pct(result.risk?.overallRisk) }, { text: result.risk?.viability?.toUpperCase() || '' }]),
-      makeRow([{ text: 'Soil Type' }, { text: result.soil?.type?.toUpperCase() || 'N/A' }, { text: `Porosity: ${fmt(result.soil?.porosity)}` }]),
+      makeRow([{ text: 'Soil Type' }, { text: soilLabel(result) }, { text: soilPorosity(result) }]),
       makeRow([{ text: 'Water Quality' }, { text: `${fmt((result.waterQuality?.score ?? 0) * 100, 0)}/100` }, { text: result.waterQuality?.isPotable ? 'POTABLE' : 'TREATMENT NEEDED' }]),
       makeRow([{ text: 'Assessment Type' }, { text: 'DESKTOP PRE-SCREEN' }, { text: 'ERT integration available for field validation' }]),
       makeRow([{ text: 'Coordinates' }, { text: getCoords(result) }, { text: `GPS: ${result.gpsSource?.toUpperCase()}` }]),
@@ -11614,8 +11651,8 @@ export function generateCSVReport(result: AnalysisResult): void {
     ['Technical Risk', pct(result.risk?.categories?.technical), '', ''],
     [''],
     ['SOIL ANALYSIS'],
-    ['Soil Type', result.soil?.type || '', '', ''],
-    ['Porosity', fmt(result.soil?.porosity), '', ''],
+    ['Soil Type', soilLabel(result), '', ''],
+    ['Porosity', (result.soil as any)?.realSoilGrids ? fmt(result.soil?.porosity) : 'not measured', '', ''],
     ['Permeability', fmt(result.soil?.permeability), '', ''],
     ['pH', fmt(result.soil?.pH), '', ''],
     ['Moisture', fmt(result.soil?.moistureContent), '', ''],
@@ -12006,7 +12043,7 @@ export async function generateComparisonReport(sites: Array<{ name: string; resu
     ['Contamination Risk', ...scored.map(s => pct(s.result.risk?.categories?.contamination))],
     ['Financial Risk', ...scored.map(s => pct(s.result.risk?.categories?.financial))],
     ['Viability', ...scored.map(s => (s.result.risk?.viability ?? 'N/A').toUpperCase())],
-    ['Soil Type', ...scored.map(s => (s.result.soil?.type ?? 'N/A').toUpperCase())],
+    ['Soil Type', ...scored.map(s => soilLabel(s.result))],
     ['Data Confidence', ...scored.map(s => `${s.result.confidenceMetrics?.overall ?? 'N/A'}%`)],
     ['Water Quality Score', ...scored.map(s => `${fmt((s.result.waterQuality?.score ?? 0) * 100, 0)}/100`)],
     ['Treatment Required', ...scored.map(s => s.result.waterQuality?.isPotable ? 'NO' : 'YES')],

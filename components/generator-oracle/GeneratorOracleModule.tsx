@@ -2126,7 +2126,7 @@ export default function GeneratorOracleModule() {
                   Generator Oracle v3.0
                 </motion.span>
                 <span className="hidden sm:inline">|</span>
-                <span className="hidden sm:inline">DSE | ComAp | Woodward | SmartGen | PowerWizard Compatible</span>
+                <span className="hidden sm:inline">Alarm reference for DSE, ComAp, Woodward, SmartGen and PowerWizard</span>
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-slate-500 text-xs">© 2024-2026 EmersonEIMS. All Rights Reserved.</span>

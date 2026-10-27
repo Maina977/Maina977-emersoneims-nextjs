@@ -210,9 +210,9 @@ const FEATURES: FeatureCfg[] = [
   { id: 'ocpd-fuse',         icon: '🧯', title: 'Fuse / OCPD Sizing', tier: 'design', desc: 'String fuse + AC breaker per NEC 690.9 / IEC 60269-6 (gPV) / IEC 60898', status: 'Run live', open: { kind: 'drawer', runner: 'ocpd-fuse' } },
   { id: 'lightning-iec62305',icon: '⚡', title: 'Lightning Protection (IEC 62305)', tier: 'design', desc: 'Risk class + rolling sphere + SPD selection per IEC 62305 / KS 1515', status: 'Run live', open: { kind: 'drawer', runner: 'lightning' } },
   { id: 'battery-sizing',    icon: '🔋', title: 'Battery Sizing Wizard', tier: 'financial', desc: 'IEEE 1561 sizing: autonomy × critical loads × DoD × derating', status: 'Run live', open: { kind: 'drawer', runner: 'battery-sizing' } },
-  { id: 'priced-boq',        icon: '📄', title: 'Priced BOQ / Quotation', tier: 'financial', desc: 'Line-itemised BOM → cost → contingency → margin → 16 % VAT', status: 'Run live', open: { kind: 'drawer', runner: 'priced-boq' } },
+  { id: 'priced-boq',        icon: '📄', title: 'Priced BOQ (estimate)', tier: 'financial', desc: 'Line-itemised BOM → cost → contingency → margin → 16 % VAT', status: 'Run live', open: { kind: 'drawer', runner: 'priced-boq' } },
   { id: 'om-schedule',       icon: '📅', title: 'O&M Schedule Generator', tier: 'iot', desc: 'IEC 62446-1 annual maintenance calendar + labour cost', status: 'Run live', open: { kind: 'drawer', runner: 'om-schedule' } },
-  { id: 'net-metering-ke',   icon: '⇄', title: 'Net-Metering (KE)', tier: 'financial', desc: 'EPRA 2024 export-credit math — avoided cost, not retail', status: 'Run live', open: { kind: 'drawer', runner: 'net-metering' } },
+  { id: 'net-metering-ke',   icon: '⇄', title: 'Net-Metering (KE)', tier: 'financial', desc: 'Self-use vs export maths; the export credit rate is your input', status: 'Run live', open: { kind: 'drawer', runner: 'net-metering' } },
 
   // ===== ENGINEERING TIER 2 — differentiators =====
   { id: 'bifacial-gain',     icon: '🪞', title: 'Bifacial Gain', tier: 'design', desc: 'Rear-side irradiance + albedo → specific-yield uplift', status: 'Run live', open: { kind: 'drawer', runner: 'bifacial' } },
@@ -242,7 +242,7 @@ const FEATURES: FeatureCfg[] = [
   { id: 'obstructions',      icon: '🌲', title: '3D Obstructions → Mask', tier: 'design', desc: 'Trees / buildings as cylinders → 36-azimuth horizon mask (ray-test)', status: 'Run live', open: { kind: 'drawer', runner: 'obstructions' } },
   { id: 'interval-meter',    icon: '📈', title: 'Interval-Meter CSV Ingest', tier: 'ai', desc: 'Paste KPLC/AMR meter export → 8760 load profile + battery sizing', status: 'Run live', open: { kind: 'drawer', runner: 'interval-meter' } },
   { id: 'member-structural', icon: '🔩', title: 'Member-by-Member Structural', tier: 'design', desc: 'Purlin + rafter + fastener pull-out per Eurocode 5/3, ACI 318-19', status: 'Run live', open: { kind: 'drawer', runner: 'member-structural' } },
-  { id: 'epra-grid-code',    icon: '📜', title: 'EPRA 2024 Grid-Code Pack', tier: 'financial', desc: 'Auto-fills Form ECP-1 + KE Grid Code 2024 compliance checklist', status: 'Run live', open: { kind: 'drawer', runner: 'epra-grid-code' } },
+  { id: 'epra-grid-code',    icon: '📜', title: 'Grid-Connection Checklist (Kenya)', tier: 'financial', desc: 'Documents and rules to prepare before applying to Kenya Power', status: 'Run live', open: { kind: 'drawer', runner: 'epra-grid-code' } },
   { id: 'ga-optimiser',      icon: '🧠', title: 'GA Optimiser (lowest LCOE)', tier: 'ai', desc: 'Genetic algorithm picks panel + inverter combo from catalog', status: 'Run live', open: { kind: 'drawer', runner: 'ga-optimiser' } },
   { id: 'pan-degradation',   icon: '📉', title: 'PAN-File Degradation', tier: 'financial', desc: 'Year-1 LID step + linear annual decline; module-specific presets', status: 'Run live', open: { kind: 'drawer', runner: 'pan-degradation' } },
   // ===== ENGINEERING-GLOBAL — Tier-5 global utility-scale, no upper limit =====
@@ -1287,11 +1287,11 @@ const NetMeteringRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const [exportCredit, setExportCredit] = useState(0.65);
   return (
     <>
-      <Hint>EPRA Net-Metering Regulations 2024 — exports credited at avoided-cost (~65 % of retail), not retail.</Hint>
+      <Hint>Exports are credited at the fraction of the retail tariff you enter (0.65 is an assumption). Use the rate in your Kenya Power net-metering agreement.</Hint>
       <Field><span className="l">Annual PV (kWh)</span><input type="number" value={pvKwh} onChange={e=>setPvKwh(+e.target.value)} /></Field>
       <Field><span className="l">Annual load (kWh)</span><input type="number" value={loadKwh} onChange={e=>setLoadKwh(+e.target.value)} /></Field>
       <Field><span className="l">Self-consumption fraction</span><input type="number" step="0.05" min="0" max="1" value={selfUse} onChange={e=>setSelfUse(+e.target.value)} /></Field>
-      <Field><span className="l">Export credit fraction (avoided/retail)</span><input type="number" step="0.05" min="0" max="1" value={exportCredit} onChange={e=>setExportCredit(+e.target.value)} /></Field>
+      <Field><span className="l">Export credit fraction (credit ÷ retail tariff)</span><input type="number" step="0.05" min="0" max="1" value={exportCredit} onChange={e=>setExportCredit(+e.target.value)} /></Field>
       <Run disabled={r.loading} onClick={() => r.run(() => eng.netMeteringKE({
         annualPvKwh: pvKwh, annualLoadKwh: loadKwh,
         selfConsumptionFraction: selfUse, exportCreditFraction: exportCredit,
@@ -1882,7 +1882,7 @@ const EpraGridCodeRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const [county, setCounty] = useState('Nairobi');
   return (
     <>
-      <Hint>Auto-fills EPRA Form ECP-1 + Grid Code 2024 compliance checklist for KPLC interconnection.</Hint>
+      <Hint>Lists the documents and Kenyan regulations to prepare before applying to Kenya Power. A checklist, not legal advice: confirm forms, fees and limits with Kenya Power.</Hint>
       <Field><span className="l">System (kW AC)</span><input type="number" step="0.1" value={kw} onChange={e=>setKw(+e.target.value)} /></Field>
       <Field><span className="l">Voltage (V)</span>
         <select value={voltage} onChange={e=>setVoltage(+e.target.value)}>

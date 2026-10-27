@@ -180,7 +180,7 @@ const SettingsPage: React.FC = () => {
           </Field>
         </Grid>
         <p style={{fontSize:'0.78rem', color:'rgba(255,255,255,0.5)', marginTop:'0.75rem', fontFamily:'JetBrains Mono, monospace'}}>
-          Reference tariff: EPRA Kenya DC1/CI1 ≈ KSh 25.50/kWh
+          Default tariff: KSh 25/kWh effective (your bill divided by the kWh on it, including levies and VAT). Enter your own for accurate savings.
         </p>
       </Card>
 

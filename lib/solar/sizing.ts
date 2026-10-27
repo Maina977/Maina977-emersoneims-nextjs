@@ -62,6 +62,9 @@ export interface SizingResult {
   assumptions: string[];
 }
 
+// Effective KES per kWh including levies and VAT (a bill divided by the kWh
+// on it). One default for the calculator, ROI tool, studio and proposals.
+export const DEFAULT_TARIFF_KES_PER_KWH = 25;
 export const PANEL_WATT = 550;
 export const PERFORMANCE_RATIO = 0.78; // wiring, inverter, temperature and soiling losses
 export const BATTERY_DOD = 0.9; // LiFePO4 usable depth of discharge
@@ -114,7 +117,7 @@ export function sizeSolar(input: SizingInput): SizingResult {
   const type = input.systemType;
   const roof = input.roofType ?? 'pitched';
   const roofFactor = roof === 'flat' ? 0.95 : roof === 'ground' ? 1.03 : 1.0;
-  const tariff = clamp(input.tariffKesPerKwh ?? 25, 1, 200);
+  const tariff = clamp(input.tariffKesPerKwh ?? DEFAULT_TARIFF_KES_PER_KWH, 1, 200);
   const dailyKwh = monthlyKwh / 30;
   const annualConsumption = dailyKwh * 365;
   const assumptions: string[] = [];

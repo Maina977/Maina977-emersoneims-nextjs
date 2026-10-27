@@ -169,7 +169,7 @@ export default function InnovationsPage() {
           >
             <span className="text-7xl">🚀</span>
           </motion.div>
-          <h1 className="text-7xl md:text-8xl font-bold mb-8 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent break-words">
             Innovations
           </h1>
           <p className="text-2xl md:text-3xl text-gray-300 max-w-4xl mx-auto font-light mb-8">

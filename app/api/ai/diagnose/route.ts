@@ -1,308 +1,66 @@
 /**
- * AI GENERATOR DIAGNOSTIC API
- * Dedicated endpoint for AI-powered fault code analysis
- * 
- * Endpoints:
- * POST /api/ai/diagnose - Analyze symptoms/codes
- * 
- * @copyright 2026 EmersonEIMS
+ * Generator fault-code lookup / symptom endpoint (legacy path).
+ *
+ * POST /api/ai/diagnose  { query, mode: 'lookup' | 'search' | 'analyze' }
+ * GET  /api/ai/diagnose?code=… | ?search=… | ?query=…
+ *
+ * Rewritten 2026-10-25 (audit round 5): it ran its own matcher, which called a
+ * DeepSea "Battery Voltage Low" an "Exact match" for "Cummins 111" and ranked
+ * a Siemens self-test failure first for "overspeed shutdown". It now answers
+ * from the same fault index as /api/generator-oracle/*, with no confidence
+ * percentages (they were keyword counts, not probabilities).
  */
-
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  analyzeSymptoms,
-  searchFaultCodes,
-  getExactCode,
-  DiagnosticResult,
-  MatchedCode
-} from '@/lib/ai/diagnosticAI';
-import { isClaudeAPIEnabled, analyzeDiagnostic, estimateCost } from '@/lib/ai/claudeService';
+import { searchIndex, diagnoseFromSymptoms } from '@/lib/generator-oracle/server/faultIndex';
+import { answerOracle, codeLabel } from '@/lib/generator-oracle/server/answer';
 
-type DiagnoseRequestBody = {
-  query: string;
-  brand?: string;
-  category?: string;
-  mode?: 'analyze' | 'search' | 'lookup';
-};
+type Mode = 'lookup' | 'search' | 'analyze';
+
+const slim = (r: { code: string; codeKind: 'j1939' | 'j1587' | 'reference'; brand: string; title: string; severity: string; description: string; category: string }) => ({
+  code: r.code, label: codeLabel(r), codeKind: r.codeKind, brand: r.brand, title: r.title,
+  severity: r.severity, category: r.category, description: r.description,
+});
+
+function run(query: string, mode: Mode) {
+  if (mode === 'search') {
+    const r = searchIndex({ query, pageSize: 20 });
+    return { found: r.total > 0, interpretedAs: r.interpretedAs, results: r.results.map(slim), summary: r.total > 0 ? `${r.total} entr${r.total === 1 ? 'y' : 'ies'} match "${query}".` : `Nothing in our fault-code reference matches "${query}".` };
+  }
+  if (mode === 'analyze') {
+    const d = diagnoseFromSymptoms({ symptoms: [query], topN: 10 });
+    const found = d.ranked.length > 0 || d.guides.length > 0;
+    return {
+      found, interpretedAs: null, results: d.ranked.map(slim), guides: d.guides.map((g) => ({ title: g.title, url: g.url })),
+      summary: found ? 'Matched on the words used, not a diagnosis. Ranked by keyword match, not measured probability.' : 'Nothing in our reference matched that description. Add the alarm text or what the set is doing.',
+    };
+  }
+  const a = answerOracle(query);
+  return { found: a.found, interpretedAs: a.interpretedAs, results: a.results.map(slim), summary: a.text };
+}
 
 export async function POST(request: NextRequest) {
+  let body: unknown;
   try {
-    const body = (await request.json().catch(() => null)) as DiagnoseRequestBody | null;
-    if (!body || typeof body !== 'object') {
-      return NextResponse.json({ error: 'Request body must be JSON' }, { status: 400 });
-    }
-    const { query, brand, category, mode = 'analyze' } = body;
-
-    if (!query || typeof query !== 'string') {
-      return NextResponse.json(
-        { error: 'Missing or invalid query' },
-        { status: 400 }
-      );
-    }
-
-    let result: DiagnosticAPIResponse;
-
-    switch (mode) {
-      case 'lookup':
-        // Direct code lookup
-        result = handleLookup(query);
-        break;
-
-      case 'search':
-        // Keyword search
-        result = handleSearch(query);
-        break;
-
-      case 'analyze':
-      default:
-        // Full AI analysis (async)
-        result = await handleAnalysis(query, brand);
-        break;
-    }
-
-    return NextResponse.json(withoutConfidence({
-      success: true,
-      mode,
-      query,
-      timestamp: Date.now(),
-      ...result
-    }));
-
-  } catch (error) {
-    console.error('Diagnostic API error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to process diagnostic request',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Request body must be JSON' }, { status: 400 });
   }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ error: 'Request body must be a JSON object' }, { status: 400 });
+  const { query, mode = 'analyze' } = body as { query?: unknown; mode?: unknown };
+  if (typeof query !== 'string' || !query.trim() || query.length > 300) return NextResponse.json({ error: 'Missing or invalid query' }, { status: 400 });
+  if (!['lookup', 'search', 'analyze'].includes(String(mode))) return NextResponse.json({ error: 'mode must be lookup, search or analyze' }, { status: 400 });
+  return NextResponse.json({ success: true, mode, query, source: 'Generator Oracle fault index (rule-based)', ...run(query.trim(), mode as Mode) });
 }
 
-/**
- * The ranking scores are keyword-match counts, not probabilities. Publishing
- * them as "confidence: 95" (on both Over and Under Voltage) or 100 on an
- * unverified entry overstated them (2026-10-25 audit). They stay internal for
- * ordering and are removed from every response.
- */
-function withoutConfidence<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(withoutConfidence) as unknown as T;
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === 'confidence') continue;
-      out[k] = withoutConfidence(v);
-    }
-    return out as T;
-  }
-  return value;
-}
-
-type DiagnosticAPIResponse = {
-  found: boolean;
-  confidence?: number;
-  results?: MatchedCode[];
-  analysis?: DiagnosticResult;
-  code?: MatchedCode;
-  summary?: string;
-  claudeAnalysis?: string;
-  usedClaudeAPI?: boolean;
-  apiUsage?: {
-    inputTokens: number;
-    outputTokens: number;
-    estimatedCost: string;
-  };
-};
-
-/**
- * Direct fault code lookup
- */
-function handleLookup(query: string): DiagnosticAPIResponse {
-  const raw = query.trim();
-
-  // Try the whole query as a code first. The previous pattern
-  // (/[A-Z]{1,3}[-_]?\d{2,5}/i) captured only the first letter-digit pair, so
-  // multi-segment codes were silently truncated before lookup — "UPS-COM-1154"
-  // was searched as "COM-1154" and "DS-7320-105" as "DS-7320", guaranteeing a
-  // miss on codes that do exist.
-  let code = getExactCode(raw);
-  let searchCode = raw;
-
-  // A J1939 code is looked up whole; its digits are never searched alone (2026-10-20:
-  // "SPN 110 FMI 0" matched an unrelated alarm numbered 110).
-  const isJ1939 = /\b(?:spn|fmi)/i.test(raw);
-  if (!code && !isJ1939) {
-    // Multi-segment alphanumeric codes (PW10-147, UPS-COM-1154), or a bare
-    // numeric code (Cummins 111). Keep all segments.
-    const codeMatch = raw.match(/\b[A-Za-z]{1,4}(?:[-_][A-Za-z0-9]{1,8})+\b/)
-      || raw.match(/\b\d{2,5}\b/);
-    if (codeMatch) {
-      searchCode = codeMatch[0];
-      code = getExactCode(searchCode);
-    }
-  }
-
-  if (code) {
-    return {
-      found: true,
-      confidence: 100,
-      code,
-      summary: `Found exact match for code ${code.code}: ${code.title}`
-    };
-  }
-
-  // No exact match. Similar codes may still help, but they are NOT the code
-  // that was asked for, so this must not report found:true — a technician
-  // acting on a neighbouring code's meaning is exactly the failure mode this
-  // endpoint has to avoid. Report the miss plainly and offer the rest as
-  // clearly-labelled suggestions.
-  // Quote what the user actually typed. Where we had to extract a fragment to
-  // search on, say so, rather than echoing the fragment as if it were their input.
-  const asked = searchCode === raw ? `"${raw}"` : `"${raw}" (searched as "${searchCode}")`;
-
-  const suggestions = searchFaultCodes(searchCode, 5);
-  if (suggestions.length > 0) {
-    return {
-      found: false,
-      results: suggestions,
-      summary: `No exact entry for ${asked}. Showing ${suggestions.length} related code(s) — these are suggestions, not a match for the code you entered. Confirm any code against the OEM service manual before acting on it.`
-    };
-  }
-
-  return {
-    found: false,
-    summary: `No entry for ${asked} in our fault-code reference. An absent code means we do not hold it — not that your controller is faulty. Check the OEM service manual, or contact us with the controller make and model.`
-  };
-}
-
-/**
- * Keyword search in fault codes
- */
-function handleSearch(query: string): DiagnosticAPIResponse {
-  const results = searchFaultCodes(query, 20);
-  
-  if (results.length > 0) {
-    return {
-      found: true,
-      confidence: results[0].confidence,
-      results,
-      summary: `Found ${results.length} fault codes matching "${query}"`
-    };
-  }
-  
-  return {
-    found: false,
-    results: [],
-    summary: `No fault codes found matching "${query}"`
-  };
-}
-
-/**
- * Full AI symptom analysis with optional Claude enhancement
- */
-async function handleAnalysis(query: string, brand?: string): Promise<DiagnosticAPIResponse> {
-  const analysis = analyzeSymptoms(query);
-
-  // Try Claude API if enabled
-  if (isClaudeAPIEnabled()) {
-    try {
-      const claudeResult = await analyzeDiagnostic(
-        query,
-        brand || analysis.detectedBrand || undefined,
-        analysis.matchedCodes.map(c => c.code)
-      );
-
-      const costEstimate = estimateCost(claudeResult.usage.inputTokens, claudeResult.usage.outputTokens);
-
-      return {
-        found: analysis.matchedCodes.length > 0,
-        confidence: claudeResult.confidence,
-        analysis,
-        results: analysis.matchedCodes,
-        summary: analysis.aiSummary,
-        claudeAnalysis: claudeResult.analysis,
-        usedClaudeAPI: true,
-        apiUsage: {
-          inputTokens: claudeResult.usage.inputTokens,
-          outputTokens: claudeResult.usage.outputTokens,
-          estimatedCost: costEstimate.totalCost.toFixed(4)
-        }
-      };
-    } catch (error) {
-      console.error('Claude API failed in handleAnalysis, using rule-based system:', error);
-      // Fall through to rule-based response
-    }
-  }
-
-  // Rule-based response (fallback or when Claude not enabled)
-  if (analysis.matchedCodes.length > 0) {
-    // Rule-based keyword ranking: no confidence percentage (2026-10-20).
-    return {
-      found: true,
-      analysis,
-      results: analysis.matchedCodes,
-      summary: `${analysis.aiSummary} Ranked by keyword match, not measured probability.`,
-      usedClaudeAPI: false
-    };
-  }
-
-  return {
-    found: false,
-    confidence: 0,
-    analysis,
-    summary: 'Unable to match symptoms to specific fault codes. Please provide more details or check our Diagnostic Suite.',
-    usedClaudeAPI: false
-  };
-}
-
-/**
- * GET endpoint for simple code lookup
- */
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const code = searchParams.get('code');
-  const query = searchParams.get('query');
-  const search = searchParams.get('search');
-  
-  if (code) {
-    const result = getExactCode(code);
-    if (result) {
-      return NextResponse.json({
-        success: true,
-        code: withoutConfidence(result)
-      });
-    }
-    return NextResponse.json({
-      success: false,
-      error: 'Code not found'
-    }, { status: 404 });
-  }
-  
-  if (query) {
-    const analysis = analyzeSymptoms(query);
-    return NextResponse.json({
-      success: true,
-      analysis: withoutConfidence(analysis)
-    });
-  }
-  
-  if (search) {
-    const results = searchFaultCodes(search, 10);
-    return NextResponse.json({
-      success: true,
-      results: withoutConfidence(results)
-    });
-  }
-
+  const p = request.nextUrl.searchParams;
+  const code = p.get('code'), search = p.get('search'), query = p.get('query');
+  if (code) return NextResponse.json({ success: true, mode: 'lookup', query: code, ...run(code, 'lookup') });
+  if (search) return NextResponse.json({ success: true, mode: 'search', query: search, ...run(search, 'search') });
+  if (query) return NextResponse.json({ success: true, mode: 'analyze', query, ...run(query, 'analyze') });
   return NextResponse.json({
     success: false,
-    error: 'Missing required parameter: code, query, or search',
-    usage: {
-      lookup: '/api/ai/diagnose?code=E1001',
-      analyze: '/api/ai/diagnose?query=generator+overheating',
-      search: '/api/ai/diagnose?search=fuel+pressure'
-    }
+    error: 'Missing required parameter: code, search or query',
+    usage: { lookup: '/api/ai/diagnose?code=SPN%20110%20FMI%200', search: '/api/ai/diagnose?search=oil%20pressure', analyze: '/api/ai/diagnose?query=generator%20overheating' },
   }, { status: 400 });
 }

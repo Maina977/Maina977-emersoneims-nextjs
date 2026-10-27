@@ -73,9 +73,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const base = fullBase.length > 60 ? fullBase.replace(/\s*\([^)]*\)\s*$/, '') : fullBase;
   // Keep within ~60 characters before the site suffix.
   const title = base.length <= 44 ? `${base} — Causes & Fix` : base;
-  const description = fault.alarm
+  const fullDescription = fault.alarm
     ? `What the ${fault.brand} "${fault.title}" alarm means, likely causes, how to diagnose it, and the steps to clear it. Generator support across Kenya.`
     : `${codeLabel} means ${fault.title}. Likely causes, how to diagnose it, and the steps to clear the fault. Generator support across Kenya.`;
+  // Under ~155 characters so search results show it whole (2026-10-25 audit:
+  // 172 characters on /faults/cummins-111): drop the closing line first.
+  const description = fullDescription.length <= 155
+    ? fullDescription
+    : fullDescription.replace(/ Generator support across Kenya\.$/, '').slice(0, 155).replace(/\s+\S*$/, '').replace(/[,;:]$/, '') + (fullDescription.replace(/ Generator support across Kenya\.$/, '').length > 155 ? '…' : '');
   return {
     title,
     description,

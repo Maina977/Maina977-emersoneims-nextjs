@@ -15,7 +15,7 @@ import {
   Sun, Zap, Battery, Calculator, FileText, Play, Pause, Trash2, Plus, Grid, Layers, Cable,
   AlertTriangle, CheckCircle2, Settings, Box, MapPin, Printer, Share2, Activity
 } from 'lucide-react';
-import { estimateInstalledCost } from '@/lib/solar/sizing';
+import { estimateInstalledCost, DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
 
 // =============================================================================
 // TYPES
@@ -148,7 +148,7 @@ export default function SolarDesignStudioPro() {
   const monthlyProduction = dailyProduction * 30;
   const annualProduction = dailyProduction * 365;
   const installedCost = estimateInstalledCost(totalKW, inverterSize, batteryCapacity, batteryCapacity > 0 ? 'hybrid' : 'grid-tied');
-  const TARIFF_KES = 25;
+  const TARIFF_KES = DEFAULT_TARIFF_KES_PER_KWH;
   const annualSavingKes = annualProduction * TARIFF_KES;
 
   // Wire sizing from typical module data: modern 400 W+ half-cell modules
@@ -172,6 +172,19 @@ export default function SolarDesignStudioPro() {
   const acAmps = threePhase ? (inverterSize * 1000) / (Math.sqrt(3) * 400) : (inverterSize * 1000) / 230;
   const acWire = pickCsa(acAmps, [[25, '4mm²'], [32, '6mm²'], [45, '10mm²'], [63, '16mm²'], [80, '25mm²'], [100, '35mm²']]);
   const dcAcRatio = inverterSize > 0 ? totalKW / inverterSize : 0;
+
+  // MPPT window: typical for this inverter class (check the datasheet). Hot
+  // Vmp (70 °C module, -0.40 %/°C) must stay above the minimum; cold Voc
+  // (10 °C, -0.27 %/°C) below the maximum DC input.
+  const mppt = inverterSize > 10 ? { min: 200, max: 850, maxDc: 1000 } : { min: 125, max: 425, maxDc: 500 };
+  const stringVmpHot = stringConfig.series * panelVmp * (1 - 0.004 * 45);
+  const stringVmpCold = stringConfig.series * panelVmp * (1 + 0.004 * 15);
+  const stringVocCold = stringConfig.series * panelVoc * (1 + 0.0027 * 15);
+  const mpptProblems: string[] = [];
+  if (stringVmpHot < mppt.min) mpptProblems.push(`Hot string voltage (${stringVmpHot.toFixed(0)} V) is below the typical MPPT minimum of ${mppt.min} V: add panels in series.`);
+  if (stringVocCold > mppt.maxDc) mpptProblems.push(`Cold open-circuit voltage (${stringVocCold.toFixed(0)} V) exceeds the typical ${mppt.maxDc} V maximum DC input: fewer panels in series.`);
+  else if (stringVmpCold > mppt.max) mpptProblems.push(`Cold string voltage (${stringVmpCold.toFixed(0)} V) is above the typical MPPT maximum of ${mppt.max} V.`);
+  const plannedPanels = stringConfig.series * stringConfig.parallel;
 
   // ==========================================================================
   // SUN POSITION UPDATE
@@ -732,8 +745,9 @@ export default function SolarDesignStudioPro() {
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-slate-500 text-xs">Panels in Series</label>
+                    <label htmlFor="studio-series" className="text-slate-500 text-xs">Panels in Series</label>
                     <input
+                      id="studio-series"
                       type="number"
                       value={stringConfig.series}
                       onChange={(e) => setStringConfig(s => ({ ...s, series: parseInt(e.target.value) || 1 }))}
@@ -742,14 +756,27 @@ export default function SolarDesignStudioPro() {
                     />
                   </div>
                   <div>
-                    <label className="text-slate-500 text-xs">Strings in Parallel</label>
+                    <label htmlFor="studio-parallel" className="text-slate-500 text-xs">Strings in Parallel</label>
                     <input
+                      id="studio-parallel"
                       type="number"
                       value={stringConfig.parallel}
                       onChange={(e) => setStringConfig(s => ({ ...s, parallel: parseInt(e.target.value) || 1 }))}
                       className="w-full bg-slate-700 text-white rounded px-2 py-1 mt-1"
                       min="1"
                     />
+                  </div>
+                  {plannedPanels !== totalPanels && (
+                    <p className="text-amber-400 text-xs" role="status">
+                      The string plan ({stringConfig.series} × {stringConfig.parallel} = {plannedPanels} panels) does not match the {totalPanels} panels placed on the roof.
+                    </p>
+                  )}
+                  <div className={`text-xs rounded p-2 ${mpptProblems.length ? 'bg-amber-500/10 text-amber-300' : 'bg-green-500/10 text-green-300'}`} role="status">
+                    <p>String: {stringVmpHot.toFixed(0)}–{stringVmpCold.toFixed(0)} V working, {stringVocCold.toFixed(0)} V open-circuit when cold.</p>
+                    {mpptProblems.length
+                      ? mpptProblems.map((m) => <p key={m}>{m}</p>)
+                      : <p>Inside the typical {mppt.min}–{mppt.max} V MPPT window for a {inverterSize} kW unit.</p>}
+                    <p className="text-slate-500 mt-1">Typical window only: check your inverter&apos;s datasheet.</p>
                   </div>
                 </div>
               </div>
@@ -860,7 +887,7 @@ export default function SolarDesignStudioPro() {
           └────────────────┬─────────────────────────┘
                            │
                            │  DC Cable ${wireSize}
-                           │  Vmp: ${(stringConfig.series * 35).toFixed(0)}V
+                           │  Vmp: ${(stringConfig.series * panelVmp).toFixed(0)}V
                            │
                     ┌──────┴──────┐
                     │  DC ISOLATOR │
@@ -914,7 +941,7 @@ SPECIFICATIONS:
   Total System Size    : ${totalKW.toFixed(2)} kW
   Number of Panels     : ${totalPanels} x ${panelWatts}W
   String Configuration : ${stringConfig.series}S x ${stringConfig.parallel}P
-  System Voltage (Vmp) : ${(stringConfig.series * 35).toFixed(0)}V DC
+  System Voltage (Vmp) : ${(stringConfig.series * panelVmp).toFixed(0)}V DC
   System Current       : ${systemCurrent.toFixed(1)}A
   Inverter Size        : ${inverterSize} kW Hybrid
   Battery Capacity     : ${batteryCapacity} kWh

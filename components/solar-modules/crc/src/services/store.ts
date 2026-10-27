@@ -1,4 +1,5 @@
 ﻿import { create } from 'zustand';
+import { DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
 
 const STORAGE_KEY = 'solargeniuspro_project_v1';
 const LEGACY_SETTINGS_KEY = 'solargeniuspro_settings';
@@ -69,7 +70,7 @@ const DEFAULT_CLIENT: ClientInfo = {
 const DEFAULT_SITE: SiteInfo = {
   lat: null, lon: null, displayName: '',
   elevationM: null, irradianceKwhPerM2Day: null, temperatureC: null,
-  monthlyConsumptionKwh: null, tariffKesPerKwh: 25.5, gridReliabilityNotes: '',
+  monthlyConsumptionKwh: null, tariffKesPerKwh: DEFAULT_TARIFF_KES_PER_KWH, gridReliabilityNotes: '',
   roofAreaM2: null, roofPerimeterM: null,
   roofAzimuthDeg: null, roofPitchDeg: null, roofProvenance: ''
 };

@@ -233,13 +233,14 @@ export function computeDesktopDrillTargetReadiness(
     'Add genuine multi-DATE Sentinel-2 + Sentinel-1 retrieval (wet vs dry season) and require cross-sensor lineament/wetness agreement (§3B/§3C).');
 
   // ── 8. Soil, infiltration & land-cover suitability (6) ──
-  const soil = r.soil;
+  // Default values (no SoilGrids answer) earn nothing and are not printed as data.
+  const soil = r.soil?.realSoilGrids ? r.soil : null;
   let soilScore = 0;
   if (soil?.type) soilScore += 3;
   if (Number.isFinite(soil?.permeability)) soilScore += 2;
   if (Number.isFinite(soil?.porosity)) soilScore += 1;
   add('Soil, infiltration & land-cover suitability', soilScore, 6, 'Soil',
-    soil ? `Soil ${soil.type ?? '—'}, permeability ${soil.permeability ?? '—'}, porosity ${soil.porosity ?? '—'}.` : 'No soil data.',
+    soil ? `Soil ${soil.type ?? '—'}, permeability ${soil.permeability ?? '—'}, porosity ${soil.porosity ?? '—'} (ISRIC SoilGrids).` : 'Soil not measured: SoilGrids did not answer for this point.',
     'Add ESA WorldCover land cover + national soil map; a field soil pit confirms infiltration class.');
 
   // ── 9. Water-quality & contamination screening (5) ──

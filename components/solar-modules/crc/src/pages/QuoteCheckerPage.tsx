@@ -164,13 +164,15 @@ interface VerdictRow {
 // 10 kW then 15,000/kW; hybrid/off-grid KES 35,000/kW to 10 kW then 28,000/kW;
 // batteries at the site-wide rate per usable kWh.
 const PANEL_KES_PER_W = 21.5;
-function inverterRefKes(kw: number, gridTie = false): number {
-  const [a, b] = gridTie ? [20000, 15000] : [35000, 28000];
+function inverterRefKes(kw: number, gridTie = false, offGrid = false): number {
+  // Off-grid-only inverters sell for about KES 15-20k/kW in Kenya (2026-10-25
+  // audit: a 3.5 kVA off-grid unit at 65k was called "well below typical").
+  const [a, b] = gridTie ? [20000, 15000] : offGrid ? [20000, 15000] : [35000, 28000];
   return Math.round(a * Math.min(kw, 10) + b * Math.max(0, kw - 10));
 }
 
 /** What a quote line says it is: category and rating, read from its text. */
-interface Rated { kind: 'panel' | 'inverter' | 'battery' | null; w?: number; kw?: number; kwh?: number; gridTie?: boolean }
+interface Rated { kind: 'panel' | 'inverter' | 'battery' | null; w?: number; kw?: number; kwh?: number; gridTie?: boolean; offGrid?: boolean }
 export function readRating(desc: string): Rated {
   const s = desc.toLowerCase();
   const kwhM = s.match(/(\d+(?:\.\d+)?)\s*kwh\b/);
@@ -190,13 +192,14 @@ export function readRating(desc: string): Rated {
   if (kind === 'inverter') {
     if (kw) out.kw = Number(kw[1]);
     out.gridTie = /grid[- ]?tie|on[- ]?grid|string\b/.test(s) && !/hybrid|off[- ]?grid/.test(s);
+    out.offGrid = /off[- ]?grid/.test(s) && !/hybrid/.test(s);
   }
   if (kind === 'panel' && w) out.w = Number(w[1]);
   return out;
 }
 function ruleRefKes(r: Rated): { kes: number; label: string } | null {
   if (r.kind === 'panel' && r.w) return { kes: Math.round(r.w * PANEL_KES_PER_W), label: `rule of thumb for a ${r.w} W panel` };
-  if (r.kind === 'inverter' && r.kw) return { kes: inverterRefKes(r.kw, !!r.gridTie), label: `rule of thumb for a ${r.kw} kW ${r.gridTie ? 'grid-tie' : 'hybrid'} inverter` };
+  if (r.kind === 'inverter' && r.kw) return { kes: inverterRefKes(r.kw, !!r.gridTie, !!r.offGrid), label: `rule of thumb for a ${r.kw} kW ${r.gridTie ? 'grid-tie' : r.offGrid ? 'off-grid' : 'hybrid'} inverter` };
   if (r.kind === 'battery' && r.kwh) return { kes: Math.round(r.kwh * BATTERY_KES_PER_KWH), label: `rule of thumb for ${r.kwh} kWh of battery` };
   return null;
 }
@@ -231,7 +234,7 @@ function reduceInverters(arr: any[]): LibItem[] {
 }
 function reduceBatteries(arr: any[]): LibItem[] {
   return (arr || []).map((p) => {
-    const kwh = num(p.usableKwh, p.nominalKwh, p.ratingKwh, p.kwh, p.capacityKwh);
+    const kwh = num(p.nominalKwh, p.ratingKwh, p.kwh, p.capacityKwh, p.usableKwh);
     return {
       category: 'battery' as const,
       manufacturer: p.manufacturer || p.make || '',
@@ -249,9 +252,11 @@ function reduceBatteries(arr: any[]): LibItem[] {
 //   "BYD HVS 10.2kWh battery 1 350000"
 /** Subtotal, VAT, totals, discounts and payment terms: not items to price. */
 export function isSummaryLine(l: string): boolean {
-  return /^\s*(sub\s*-?\s*total|grand\s*total|total|vat|tax|discount|balance|deposit|amount\s+due|less\b|pay(ment)?\b|valid|terms|quotation\s+valid|note)\b/i.test(l)
-    || /\bvat\s*\(?\s*16\s*%/i.test(l);
+  return /^\s*(sub\s*-?\s*total|grand\s*total|total|vat|tax|discount|balance|deposit|amount\s+due|less\b|pay(ment)?\b|valid|terms|quotation\b|quote\s*(no|number|#)|invoice|proforma|pro-forma|date\b|customer|client|to:|from:|ref\b|note)\b/i.test(l);
 }
+
+/** Words that make a line a quotation item even without a recognised rating. */
+const ITEM_WORDS = /\b(panel|module|inverter|battery|batt|cable|wire|wiring|conduit|trunking|mount|mounting|rail|bracket|clamp|structure|install|installation|labou?r|commission|breaker|mcb|mccb|isolator|switch|fuse|spd|surge|earth|earthing|lightning|charge|controller|mppt|combiner|meter|db\b|distribution|kit|connector|mc4|transport|delivery|survey|design|pump|tank|accessor)/i;
 
 export function parseLines(input: string): ParsedLine[] {
   // Header rows ("Item, Qty, Unit price, Total") and lines without a number are not items.
@@ -286,6 +291,8 @@ export function parseLines(input: string): ParsedLine[] {
         unitPriceKes = nums[0];
       }
     }
+    const itemish = ITEM_WORDS.test(clean) || readRating(clean).kind !== null || /\b(ksh|kes)\b|@|\bx\s*\d|\bqty\b/i.test(raw);
+    if (!itemish) unitPriceKes = null;
     // Description = the line without the quantity and price markers.
     const description = raw.replace(/(?:\b[x×]|@)\s*[\d,]+(?:\.\d+)?/g, '').trim();
     return { raw, description, qty, unitPriceKes };
@@ -462,7 +469,7 @@ export default function QuoteCheckerPage() {
             <Card>
               <h3 style={{ color: '#00D9FF', marginTop: 0 }}>Summary</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.8rem' }}>
-                <div><Label>Quote total</Label><div style={{ color: '#00D9FF', fontSize: '1.2rem', fontWeight: 800 }}>KSh {Math.round(summary.total).toLocaleString()}</div></div>
+                <div><Label>Quote total (item lines, excl. VAT lines)</Label><div style={{ color: '#00D9FF', fontSize: '1.2rem', fontWeight: 800 }}>KSh {Math.round(summary.total).toLocaleString()}</div></div>
                 <div><Label>Checked lines: quoted vs reference</Label><div style={{ color: '#00FF88', fontSize: '1.2rem', fontWeight: 800 }}>{summary.checkedCount ? `KSh ${Math.round(summary.checkedTotal).toLocaleString()} vs ${Math.round(summary.market).toLocaleString()}` : '—'}</div></div>
                 <div><Label>Difference (checked lines)</Label><div style={{ color: summary.delta > 0 ? '#FF4D6D' : '#00FF88', fontSize: '1.2rem', fontWeight: 800 }}>{summary.checkedCount ? `${summary.delta >= 0 ? '+' : ''}KSh ${Math.round(summary.delta).toLocaleString()}` : 'Nothing checked'}</div></div>
                 <div><Label>Overpriced lines</Label><div style={{ color: '#FF4D6D', fontSize: '1.2rem', fontWeight: 800 }}>{summary.overpriced}</div></div>
@@ -472,7 +479,10 @@ export default function QuoteCheckerPage() {
               {summary.overpriced > 0 && (
                 <Banner $kind="error">⚠ {summary.overpriced} line(s) significantly above market. Renegotiate or get an alternative quote.</Banner>
               )}
-              {summary.overpriced === 0 && summary.warn === 0 && summary.unknown === 0 && (
+              {summary.checkedCount === 0 && (
+                <Banner $kind="info">No items were recognised for checking. Paste one item per line with a quantity and a price, for example "580W panel x 10 @ 12,500".</Banner>
+              )}
+              {summary.checkedCount > 0 && summary.overpriced === 0 && summary.warn === 0 && summary.unknown === 0 && (
                 <Banner $kind="ok">✓ Every line was checked and is within the reference range.</Banner>
               )}
               {summary.unknown > 0 && (

@@ -6,7 +6,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import { estimateInstalledCost, PERFORMANCE_RATIO } from '@/lib/solar/sizing';
+import { estimateInstalledCost, PERFORMANCE_RATIO, BATTERY_DOD, BATTERY_EFFICIENCY, DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
 import {
   TrendingUp, DollarSign,
   Calendar, PiggyBank, Leaf
@@ -14,7 +14,7 @@ import {
 
 // Effective KES per kWh including levies and VAT (your bill divided by the
 // kWh on it); the same default as the SolarGenius calculator.
-const KPLC_RATES = { domestic: 25, commercial: 25, industrial: 18 };
+const KPLC_RATES = { domestic: DEFAULT_TARIFF_KES_PER_KWH, commercial: DEFAULT_TARIFF_KES_PER_KWH, industrial: 18 };
 
 // Price points: the low / typical / high ends of the calculator's installed-
 // price range (lib/solar/sizing.ts), not separate per-watt prices.
@@ -60,25 +60,33 @@ export default function SolarROICalculator() {
     const monthlyProduction = dailyProduction * 30;
     const annualProduction = dailyProduction * 365;
 
-    // Coverage calculation
-    const coveragePercent = Math.min(100, (monthlyProduction / monthlyConsumption) * 100);
+    // Coverage: unknown until there is a bill to compare with (a KES 0 bill
+    // showed "100 %").
+    const coveragePercent = monthlyConsumption > 0
+      ? Math.min(100, (monthlyProduction / monthlyConsumption) * 100) : null;
 
-    // Monthly savings: not all solar is used on site. With a battery ~90%
-    // (calculator's hybrid figure); without one only daytime use counts, about
-    // half the load, of which ~75% is met (calculator's grid-tied figure).
+    // Monthly savings: not all solar is used on site. Daytime loads (about
+    // half) are met directly, ~75% of them (calculator's grid-tied figure).
+    // A battery can move the surplus into the evening, but no more per day
+    // than its usable capacity; overall capped at the calculator's ~90%
+    // hybrid figure. (Before 2026-10-25 a 5 kWh and a 50 kWh battery saved the same.)
+    const direct = Math.min(monthlyProduction, monthlyConsumption * 0.5) * 0.75;
+    const stored = includesBattery
+      ? Math.min(
+          (monthlyProduction - direct) * BATTERY_EFFICIENCY,
+          monthlyConsumption - direct,
+          batteryCapacity * BATTERY_DOD * 30,
+        )
+      : 0;
     const energySaved = includesBattery
-      ? Math.min(monthlyProduction, monthlyConsumption) * 0.9
-      : Math.min(monthlyProduction, monthlyConsumption * 0.5) * 0.75;
+      ? Math.min(direct + Math.max(0, stored), Math.min(monthlyProduction, monthlyConsumption) * 0.9)
+      : direct;
     const monthlySavings = energySaved * rate;
     const annualSavings = monthlySavings * 12;
 
-    // Payback period (simple)
-    const simplePayback = totalSystemCost / annualSavings;
-
     // 25-year analysis with inflation and degradation
     let cumulativeSavings = 0;
-    const cumulativeCost = totalSystemCost;
-    let paybackYear = 0;
+    let paybackYear: number | null = null;
     const yearlyData = [];
 
     for (let year = 1; year <= 25; year++) {
@@ -90,7 +98,7 @@ export default function SolarROICalculator() {
 
       cumulativeSavings += netSavings;
 
-      if (cumulativeSavings >= totalSystemCost && paybackYear === 0) {
+      if (cumulativeSavings >= totalSystemCost && paybackYear === null) {
         paybackYear = year;
       }
 
@@ -115,10 +123,9 @@ export default function SolarROICalculator() {
       batteryCost,
       monthlyConsumption: Math.round(monthlyConsumption),
       monthlyProduction: Math.round(monthlyProduction),
-      coveragePercent: Math.round(coveragePercent),
+      coveragePercent: coveragePercent == null ? null : Math.round(coveragePercent),
       monthlySavings: Math.round(monthlySavings),
       annualSavings: Math.round(annualSavings),
-      simplePayback: simplePayback.toFixed(1),
       paybackYear,
       totalROI: Math.round(totalROI),
       lifetimeSavings: Math.round(lifetimeSavings),
@@ -142,11 +149,13 @@ export default function SolarROICalculator() {
 
           {/* Monthly Bill */}
           <div>
-            <label className="block text-slate-300 text-sm mb-2">Monthly Electricity Bill (KES)</label>
+            <label htmlFor="roi-bill" className="block text-slate-300 text-sm mb-2">Monthly Electricity Bill (KES)</label>
             <input
+              id="roi-bill"
               type="number"
+              min={0}
               value={monthlyBill}
-              onChange={(e) => setMonthlyBill(Number(e.target.value))}
+              onChange={(e) => setMonthlyBill(Math.max(0, Number(e.target.value) || 0))}
               className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:border-amber-500 focus:outline-none"
             />
             <p className="text-slate-500 text-xs mt-1">
@@ -176,10 +185,11 @@ export default function SolarROICalculator() {
 
           {/* System Size */}
           <div>
-            <label className="block text-slate-300 text-sm mb-2">
+            <label htmlFor="roi-size" className="block text-slate-300 text-sm mb-2">
               System Size: {systemSize} kW
             </label>
             <input
+              id="roi-size"
               type="range"
               min="1"
               max="50"
@@ -232,10 +242,11 @@ export default function SolarROICalculator() {
             </label>
             {includesBattery && (
               <div className="mt-3">
-                <label className="block text-slate-400 text-sm mb-2">
+                <label htmlFor="roi-battery" className="block text-slate-400 text-sm mb-2">
                   Battery Capacity: {batteryCapacity} kWh
                 </label>
                 <input
+                  id="roi-battery"
                   type="range"
                   min="5"
                   max="50"
@@ -287,7 +298,7 @@ export default function SolarROICalculator() {
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-center">
               <Calendar className="w-8 h-8 text-amber-400 mx-auto mb-2" />
               <p className="text-2xl font-bold text-amber-400">
-                {calculations.paybackYear} Years
+                {calculations.paybackYear != null ? `${calculations.paybackYear} Years` : 'Not within 25 years'}
               </p>
               <p className="text-slate-400 text-sm">Payback Period</p>
             </div>
@@ -303,20 +314,27 @@ export default function SolarROICalculator() {
               <p className="text-2xl font-bold text-purple-400">
                 KES {(calculations.lifetimeSavings / 1000000).toFixed(1)}M
               </p>
-              <p className="text-slate-400 text-sm">Lifetime Savings</p>
+              <p className="text-slate-400 text-sm">25-Year Net Savings</p>
             </div>
           </div>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            How this is worked out: savings are the solar energy used on site times
+            KES {KPLC_RATES[customerType]}/kWh (your bill ÷ that rate gives the
+            consumption). Panel output falls 0.5% a year, maintenance is 1% of the
+            system cost a year and tariffs are held flat. Payback is the first year
+            the running total of net savings passes the system cost. Estimates only.
+          </p>
 
           {/* Coverage */}
           <div className="bg-slate-900 rounded-xl p-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-slate-300">Energy Coverage</span>
-              <span className="text-white font-bold">{calculations.coveragePercent}%</span>
+              <span className="text-white font-bold">{calculations.coveragePercent != null ? `${calculations.coveragePercent}%` : 'Enter your bill'}</span>
             </div>
             <div className="w-full bg-slate-700 rounded-full h-3">
               <div
                 className="bg-gradient-to-r from-amber-500 to-green-500 h-3 rounded-full transition-all"
-                style={{ width: `${Math.min(100, calculations.coveragePercent)}%` }}
+                style={{ width: `${Math.min(100, calculations.coveragePercent ?? 0)}%` }}
               />
             </div>
             <p className="text-slate-500 text-sm mt-2">
@@ -345,7 +363,7 @@ export default function SolarROICalculator() {
           {/* CTA */}
           <a
             href={`https://wa.me/254768860665?text=${encodeURIComponent(
-              `Hi, I'm interested in a ${systemSize}kW solar system.\n\nMy details:\n- Monthly bill: KES ${monthlyBill.toLocaleString()}\n- Customer type: ${customerType}\n- Quality: ${systemQuality}\n- Battery: ${includesBattery ? `${batteryCapacity}kWh` : 'No'}\n\nEstimated cost: KES ${calculations.totalSystemCost.toLocaleString()}\nPayback: ${calculations.paybackYear} years\n\nPlease provide a detailed quote.`
+              `Hi, I'm interested in a ${systemSize}kW solar system.\n\nMy details:\n- Monthly bill: KES ${monthlyBill.toLocaleString()}\n- Customer type: ${customerType}\n- Quality: ${systemQuality}\n- Battery: ${includesBattery ? `${batteryCapacity}kWh` : 'No'}\n\nEstimated cost: KES ${calculations.totalSystemCost.toLocaleString()}\nPayback: ${calculations.paybackYear != null ? `${calculations.paybackYear} years` : 'not within 25 years'}\n\nPlease provide a detailed quote.`
             )}`}
             target="_blank"
             rel="noopener noreferrer"

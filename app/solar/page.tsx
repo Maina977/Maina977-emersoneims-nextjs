@@ -34,10 +34,10 @@ const SOLAR_HERO_PARTICLES = Array.from({ length: 20 }, (_, i) => ({
 }));
 
 const SOLAR_RING = [
-  { src: '/images/solar power farms.png', title: 'Solar Power Farms', subtitle: 'Utility-scale PV, Turkana' },
-  { src: '/images/solar for flower farms.png', title: 'Solar for Flower Farms', subtitle: 'Irrigation & cold-room, Naivasha' },
+  { src: '/images/solar power farms.png', title: 'Solar Power Farms', subtitle: 'Utility-scale PV' },
+  { src: '/images/solar for flower farms.png', title: 'Solar for Flower Farms', subtitle: 'Irrigation & cold rooms' },
   { src: '/images/solar power for farms.png', title: 'Agricultural Solar', subtitle: 'Dairy, poultry & greenhouse' },
-  { src: '/images/solar hotel heaters.png', title: 'Solar Hotel Water Heating', subtitle: '80% energy savings' },
+  { src: '/images/solar hotel heaters.png', title: 'Solar Hotel Water Heating', subtitle: 'Hot water from the sun' },
   { src: '/images/solar-water-pumping.png', title: 'Solar Water Pumping', subtitle: 'Borehole & irrigation, no fuel' },
   { src: '/images/solar changeover control.png', title: 'Solar Changeover Control', subtitle: 'Smart grid-tie switching' },
   { src: '/images/desktop/waterheaters/heater-1.png', title: 'Solar Thermal Heating', subtitle: 'Commercial hot-water systems' },
@@ -183,16 +183,25 @@ const SOLAR_SYSTEMS = [
 // (2026-10-20 audit). Savings = what the array produces (5.5 sun-hours, 78%
 // performance ratio) × 75-90% used on site × KES 22-28/kWh.
 const PKG = (pvKwp: number, invKw: number, batKwh: number) => {
-  const c = estimateInstalledCost(pvKwp, invKw, batKwh, 'hybrid');
-  const kwhMonth = pvKwp * 5.5 * 30.4 * PERFORMANCE_RATIO;
-  const lo = Math.round((kwhMonth * 0.75 * 22) / 1000) * 1000;
-  const hi = Math.round((kwhMonth * 0.9 * 28) / 1000) * 1000;
+  // Size and price follow the panels actually listed: 3 kWp needs 6 x 550 W,
+  // which is 3.3 kWp (2026-10-25 audit: card said 3 kWp, list said 6 panels).
+  const panels = Math.ceil((pvKwp * 1000) / PANEL_WATT);
+  const kwp = Math.round(panels * PANEL_WATT / 100) / 10;
+  const c = estimateInstalledCost(kwp, invKw, batKwh, 'hybrid');
+  const kwhMonth = kwp * 5.5 * 30.4 * PERFORMANCE_RATIO;
+  const loMonth = (kwhMonth * 0.75 * 22);
+  const hiMonth = (kwhMonth * 0.9 * 28);
+  const lo = Math.round(loMonth / 1000) * 1000;
+  const hi = Math.round(hiMonth / 1000) * 1000;
   return {
-    capacity: `${pvKwp} kWp`,
+    capacity: `${kwp} kWp`,
     priceFrom: c.lowKes,
     priceTo: c.highKes,
-    panels: Math.ceil((pvKwp * 1000) / PANEL_WATT),
+    panels,
     savings: `${lo.toLocaleString('en-KE')}-${hi.toLocaleString('en-KE')}/month`,
+    // Simple payback range: cheapest price at the best saving, dearest at the lowest.
+    paybackMin: c.lowKes / (hiMonth * 12),
+    paybackMax: c.highKes / (loMonth * 12),
     inv: invKw, bat: batKwh,
   };
 };
@@ -208,6 +217,12 @@ const SOLAR_PRICING = [
   ...p,
   includes: [`${p.panels}× ${PANEL_WATT} W panels`, `${p.inv} kW hybrid inverter`, `${p.bat} kWh lithium (LiFePO4) battery`, 'Installation and commissioning', '2-Year Workmanship Warranty'],
 }));
+// "about 3-6 years" across the cards above, for the FAQ.
+const PAYBACK_RANGE = (() => {
+  const lo = Math.floor(Math.min(...SOLAR_PRICING.map((p) => p.paybackMin)));
+  const hi = Math.ceil(Math.max(...SOLAR_PRICING.map((p) => p.paybackMax)));
+  return `${lo}-${hi} years`;
+})();
 
 // ==================== SOLAR BRANDS COMPARISON ====================
 const SOLAR_BRANDS = [
@@ -277,11 +292,12 @@ const SOLAR_FAQ = [
     question: 'How much does a solar system cost in Kenya?',
     // From the same model as the package cards, so the two never disagree
     // (2026-10-25 audit: "from KES 350,000" sat beside a KES 481,000 card).
-    answer: `With the same assumptions as the packages on this page, a 3 kWp home system with battery starts at about KES ${SOLAR_PRICING[0].priceFrom.toLocaleString('en-KE')}, and industrial systems over 100 kW run to several million shillings. The exact cost depends on your energy needs, panel quality, battery capacity, and whether you need grid-tie or off-grid configuration. We offer site surveys to give you an accurate quote.`
+    answer: `With the same assumptions as the packages on this page, a ${SOLAR_PRICING[0].capacity} home system with battery starts at about KES ${SOLAR_PRICING[0].priceFrom.toLocaleString('en-KE')}, and industrial systems over 100 kW run to several million shillings. The exact cost depends on your energy needs, panel quality, battery capacity, and whether you need grid-tie or off-grid configuration. We offer site surveys to give you an accurate quote.`
   },
   {
     question: 'How long is the payback period for solar in Kenya?',
-    answer: 'With Kenya\'s excellent solar irradiation (5-6 peak sun hours daily), commercial systems with daytime loads typically pay back in 3-5 years, and homes with batteries in 4-7 years. After payback, you enjoy essentially free electricity for the remaining 20+ years of panel life. Our ROI calculator can show your exact payback timeline.'
+    // Range from the package cards' own prices and savings (2026-10-25 audit).
+    answer: `With the same assumptions as the packages on this page (5.5 sun hours a day, KES 22-28 per kWh, 75-90% of the solar used on site), the systems shown pay back in about ${PAYBACK_RANGE}. Systems used mostly in daytime, such as shops and offices, pay back faster than homes that need a battery for the evening. After payback the savings continue for the rest of the panels' 25-year life, less maintenance and a battery replacement after roughly 10-12 years. The ROI calculator on this page works it out for your own bill.`
   },
   {
     question: 'Do solar panels work during cloudy days or at night?',
@@ -293,7 +309,7 @@ const SOLAR_FAQ = [
   },
   {
     question: 'Can I add a generator to my solar system?',
-    answer: 'Absolutely! Hybrid solar-generator systems are very popular in Kenya due to grid unreliability. A hybrid inverter manages solar, battery, and generator inputs automatically. The generator only runs when solar and battery can\'t meet demand, dramatically reducing fuel costs. We specialize in these integrated systems.'
+    answer: 'Absolutely! Hybrid solar-generator systems are very popular in Kenya due to grid unreliability. A hybrid inverter manages solar, battery, and generator inputs automatically. The generator only runs when solar and battery can\'t meet demand, which cuts generator run-hours and fuel use; how much depends on how much of your load falls in daylight. We specialize in these integrated systems.'
   },
   {
     question: 'Do you offer financing for solar installations?',
@@ -301,7 +317,7 @@ const SOLAR_FAQ = [
   },
   {
     question: 'What warranty do I get with solar panels?',
-    answer: 'Our Tier-1 solar panels come with 25-year performance warranties (guaranteeing 80%+ output at 25 years). Inverters typically have 5-10 year warranties. Lithium batteries carry 10-year warranties, while lead-acid batteries have 2-3 year warranties. Our own installation warranty is 2 years, covering workmanship.'
+    answer: 'Tier-1 solar panels typically carry 25-year performance warranties (usually 80% or more of rated output at 25 years); the exact terms are on each manufacturer\'s datasheet. Inverters typically have 5-10 year warranties. Lithium batteries typically carry 10-year warranties, while lead-acid batteries have 2-3 year warranties. Our own installation warranty is 2 years, covering workmanship.'
   },
   {
     question: 'How long does solar installation take?',
@@ -587,7 +603,7 @@ export default function SolarBible() {
             className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto"
           >
             Your complete guide to solar energy in Kenya. From sizing calculators to installation,
-            maintenance to financing — everything you need to harness the power of the sun.
+            maintenance and payback — everything you need to harness the power of the sun.
           </motion.p>
 
           <motion.div
@@ -721,7 +737,7 @@ export default function SolarBible() {
               Solar System <span className="text-amber-400">Pricing</span>
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              Real prices. No hidden fees. Know exactly what you're paying before you commit.
+              Price ranges from our installed-cost model (mid-2026). Your quotation after a site survey gives the exact price.
             </p>
           </motion.div>
 
@@ -853,14 +869,14 @@ export default function SolarBible() {
                 viewport={{ once: true }}
               >
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-sm mb-6">
-                  💳 Flexible Financing
+                  💳 Payment Terms
                 </span>
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
                   Can't Pay <span className="text-green-400">Upfront?</span> Ask About Terms.
                 </h2>
                 <p className="text-gray-400 mb-6">
-                  We understand that solar is an investment. That's why we offer flexible payment plans
-                  to make clean energy accessible to everyone.
+                  Solar is an investment. We do not lend or arrange credit; payment terms are agreed
+                  for each project and written into the quotation.
                 </p>
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-center gap-3 text-gray-300">
@@ -902,7 +918,7 @@ export default function SolarBible() {
               Our <span className="text-green-400">Guarantees</span>
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              We stand behind our work with ironclad guarantees
+              What we commit to, in writing
             </p>
           </motion.div>
 

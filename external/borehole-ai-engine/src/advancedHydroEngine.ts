@@ -1,3 +1,4 @@
+import { loadLocalJson } from './localData';
 import { nasaMonthlyYears, nasaMonthlyValues } from './nasaPowerMonthly';
 import { fetchElevations } from './elevationService';
 /**
@@ -381,9 +382,10 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   // ────────────────────────────────────────────────────────
   tasks.push((async () => {
   try {
-    const wraResp = await fetch('/data/wra-boreholes.json', { signal: AbortSignal.timeout(6000) });
-    if (wraResp.ok && (wraResp.headers.get('content-type') || '').includes('json')) {
-      const wraData = await wraResp.json();
+    // Shared, pre-started download (localData.ts): a 6 s timeout mid-analysis
+    // sometimes dropped these records and changed the answer (2026-10-27).
+    {
+      const wraData = await loadLocalJson<any[]>('/data/wra-boreholes.json');
       if (Array.isArray(wraData)) {
         let wraCount = 0;
         for (const b of wraData) {
@@ -458,9 +460,8 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   // ────────────────────────────────────────────────────────
   tasks.push((async () => {
   try {
-    const unResp = await fetch('/data/gov-wells-kenya.json', { signal: AbortSignal.timeout(10000) });
-    if (unResp.ok) {
-      const un = await unResp.json();
+    {
+      const un = await loadLocalJson<any>('/data/gov-wells-kenya.json');
       if (Array.isArray(un?.wells)) {
         // Collect EVERY in-radius record first, then keep the NEAREST ones.
         // The old loop took the first 30 in file order — it could list a well

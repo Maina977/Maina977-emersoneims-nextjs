@@ -819,7 +819,7 @@ function AIVisualDiagnosticImpl({ onAnalysisComplete, onClose, card }: AIVisualD
         // Voice narration if enabled
         if (isVoiceEnabled && 'speechSynthesis' in window) {
           const utterance = new SpeechSynthesisUtterance(
-            `Analysis complete with ${enhancedResult.overallConfidence}% confidence. ${enhancedResult.quickSummary}`
+            `Analysis complete. ${enhancedResult.quickSummary}`
           );
           speechSynthesis.speak(utterance);
         }

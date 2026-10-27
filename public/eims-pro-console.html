@@ -98,7 +98,7 @@ const MODULES = [
       {k:'height_ft', label:'Mean roof height (ft)', type:'number', def:30},
       {k:'exposure', label:'Exposure', type:'select', opts:['B','C','D'], def:'C'},
       {k:'enclosure', label:'Enclosure', type:'select',
-        opts:['enclosed','partially_enclosed','open'], def:'enclosed'},
+        opts:['enclosed','partially_enclosed','partially_open','open'], def:'enclosed'},
     ]},
 
   { id:'seismic', group:'Engineering', tag:'b-eng',
@@ -1205,8 +1205,10 @@ function proEscape(v){
 // Units keep their case and go in brackets ("qz_psf" → "qz (psf)", "M_Rd_kNm" →
 // "M Rd (kNm)") instead of "Qz Psf" / "M Rd KNm" (2026-10-20).
 const UNIT_LABELS = { psf:'psf', Pa:'Pa', kPa:'kPa', MPa:'MPa', kN:'kN', kNm:'kNm', mm:'mm', mm2:'mm²', m:'m', m2:'m²', m3:'m³', m3_s:'m³/s', L_s:'L/s', s:'s', min:'min', pct:'%', deg:'°', W_m2K:'W/m²K', m2K_W:'m²K/W', ms:'m/s', kWh:'kWh', kW:'kW', ha:'ha', g:'g' };
+const KEY_LABELS = { alpha_v:'αv', alpha_b:'αb', alpha_d:'αd', total_absorption_m2_sabin:'Total absorption (m² Sabine)', datetime_utc:'Date/time (UTC)', x_mm:'x (mm)', z_mm:'z (mm)', qz_psf:'qz (psf)', qz_Pa:'qz (Pa)', qp_Pa:'qp (Pa)', fcd_MPa:'fcd (MPa)', fyd_MPa:'fyd (MPa)', Kz:'Kz', Cs:'Cs', T_s:'T (s)', Fv_Rd_kN:'Fv,Rd (kN)', Ft_Rd_kN:'Ft,Rd (kN)', Fb_Rd_kN:'Fb,Rd (kN)', Bp_Rd_kN:'Bp,Rd (kN)', M_Rd_kNm:'M,Rd (kNm)', As_min_mm2:'As,min (mm²)', As_required_mm2:'As,req (mm²)', mean_alpha:'Mean absorption ᾱ', T60_s:'T60 (s)' };
 function toLabel(key){
   const k = String(key);
+  if (KEY_LABELS[k]) return KEY_LABELS[k];
   for (const u of Object.keys(UNIT_LABELS).sort((a,b)=>b.length-a.length)) {
     if (k.endsWith('_' + u)) {
       const base = k.slice(0, -(u.length + 1)).replace(/_/g,' ');
@@ -1269,11 +1271,14 @@ function renderObject(obj, profile){
   const entries = Object.entries(obj || {});
   if (!entries.length) return '<div class="note">No data returned.</div>';
   const preferred = profile?.metrics?.length ? profile.metrics : [];
-  const scalarEntries = entries.filter(([,v]) => ['string','number','boolean'].includes(typeof v) || v == null);
+  const PROSE = ['disclaimer','method','note','warning'];
+  const scalarEntries = entries.filter(([k,v]) => !PROSE.includes(k) && (['string','number','boolean'].includes(typeof v) || v == null));
   const picked = preferred.length
     ? preferred.map(k => [k, obj?.[k]]).filter(([,v]) => v !== undefined)
-    : scalarEntries.slice(0, 8);
-  const extra = scalarEntries.filter(([k]) => !picked.some(([pk]) => pk===k)).slice(0, Math.max(0, 8 - picked.length));
+    : scalarEntries;
+  const extra = scalarEntries.filter(([k]) => !picked.some(([pk]) => pk===k));
+  const prose = PROSE.filter(k => typeof obj?.[k] === 'string' && obj[k])
+    .map(k => `<div class="note" style="margin-top:8px">${k === 'disclaimer' ? '<b>Note:</b> ' : k === 'method' ? '<b>Method:</b> ' : ''}${proEscape(obj[k])}</div>`).join('');
   const metrics = [...picked, ...extra]
     .map(([k,v]) => `<div class="metric"><b>${proEscape(toLabel(k))}</b><span>${proEscape(formatValue(v))}</span></div>`)
     .join('');
@@ -1283,7 +1288,7 @@ function renderObject(obj, profile){
     const rows = Object.entries(v).slice(0, 20).map(([ik,iv]) => `<tr><th>${proEscape(toLabel(ik))}</th><td>${proEscape(formatValue(iv))}</td></tr>`).join('');
     return sectionTitle + `<div class="tblwrap"><table><tbody>${rows}</tbody></table></div>`;
   }).join('');
-  return (metrics ? `<div>${metrics}</div>` : '') + nested;
+  return (metrics ? `<div>${metrics}</div>` : '') + nested + prose;
 }
 
 function renderResponse(status, statusText, payload, moduleInfo){

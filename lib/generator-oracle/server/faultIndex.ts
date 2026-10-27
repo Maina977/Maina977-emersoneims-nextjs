@@ -125,8 +125,32 @@ export function codeKindOf(c: Pick<ControllerFaultCode, 'brand' | 'code'>): Code
  * stores "SPN100-FMI1" and "MID128-PID100-FMI1". Returns the canonical form
  * when the query is recognisably a J1939 / J1587 code, otherwise null.
  */
+/** Words that describe how a fault shows rather than what it is. */
+const GENERIC_TERMS = new Set(['shutdown', 'shut', 'alarm', 'fault', 'problem', 'warn', 'warning', 'trip', 'stop', 'error', 'issu', 'issue', 'morn', 'morning', 'start', 'run', 'high', 'low', 'too', 'very']);
+
+/** Title words that mean the same thing to a technician (search ranking only). */
+const TITLE_EQUIV: Record<string, string[]> = {
+  overheat: ['overheat', 'temperature', 'temp'],
+  signal: ['signal', 'sensor', 'pickup', 'mpu'],
+  loss: ['loss', 'lost', 'fail'],
+  lost: ['loss', 'lost', 'fail'],
+  high: ['high', 'over'],
+  low: ['low', 'under'],
+  speed: ['speed', 'rpm'],
+  smoke: ['smoke', 'exhaust'],
+};
+
 export function normalizeCodeQuery(q: string): string | null {
-  const s = q.trim().toUpperCase();
+  // A brand word typed with the code ("SPN 110 FMI 0 cummins") identifies the
+  // engine, not the fault: read the code without it (2026-10-25 audit: the
+  // brand word sent the query to word search, which returned SPN 612).
+  const s = q.trim().toUpperCase()
+    .replace(/\b(CUMMINS|PERKINS|CATERPILLAR|CAT|VOLVO(\s+PENTA)?|DEUTZ|JOHN\s+DEERE|DEERE|MTU|DOOSAN|WEICHAI|FPT|IVECO|SCANIA|KOHLER|FG\s+WILSON|ENGINE|GENERATOR|CODE|FAULT)\b/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+  if (!s) return null;
+  // "110 0": a three-or-more-digit SPN and an FMI separated by a space.
+  const sp = s.match(/^(\d{3,6})\s+(\d{1,2})$/);
+  if (sp) return `SPN${+sp[1]}-FMI${+sp[2]}`;
   let m = s.match(/^MID\s*[:#-]?\s*(\d+)\s*[,/-]?\s*PID\s*[:#-]?\s*(\d+)\s*[,/-]?\s*FMI\s*[:#-]?\s*(\d+)$/);
   if (m) return `MID${+m[1]}-PID${+m[2]}-FMI${+m[3]}`;
   // "SPN629FMI12" (no separator) is written down as often as "SPN 629 FMI 12".
@@ -450,8 +474,21 @@ function searchIndexRaw(opts: SearchOptions): SearchResponse {
       const high = fmi === 0 || fmi === 15 || fmi === 16 || fmi === 20;
       return (wantsLow ? low : high) ? 0 : (wantsLow ? high : low) ? 2 : 1;
     };
+    // Title relevance, for one word or several, with the words technicians use
+    // interchangeably (2026-10-25 audit: "overheating" listed Low Coolant Level
+    // and Over Current first; "loss of speed signal" led with voltage sensing;
+    // "generator high voltage" led with Sync Voltage Difference).
+    const qWords = q.split(/[^a-z0-9]+/).filter((w) => w.length >= 3 && !['the', 'and', 'for', 'with', 'generator', 'engine'].includes(w));
+    const alts = (w: string): string[] => TITLE_EQUIV[w] ?? Object.entries(TITLE_EQUIV).find(([k]) => w.startsWith(k))?.[1] ?? [w];
+    const mentionsGrid = /\b(mains|sync|bus|utility|grid|battery|batt)\b/.test(q);
+    const titleScore = (c: ControllerFaultCode) => {
+      const t = c.title.toLowerCase();
+      let s = qWords.filter((w) => alts(w).some((a) => new RegExp(`\\b${a}`).test(t))).length;
+      if (!mentionsGrid && /\b(mains|sync\w*|bus|utility|battery)\b/.test(t)) s -= 1;
+      return s;
+    };
     filtered = [...filtered].sort(
-      (a, b) => rank(a) - rank(b) || direction(a) - direction(b) || Number(a.brand === J1939_BRAND) - Number(b.brand === J1939_BRAND),
+      (a, b) => rank(a) - rank(b) || titleScore(b) - titleScore(a) || direction(a) - direction(b) || Number(a.brand === J1939_BRAND) - Number(b.brand === J1939_BRAND),
     );
   }
 
@@ -671,7 +708,11 @@ function containsPair(seq: string[], [a, b]: [string, string]): boolean {
 /** Generator-side Repair Centre hubs; solar, UPS etc. are out of scope for the Oracle. */
 const GENERATOR_HUBS = new Set(['generators', 'engine-systems', 'fuel-systems', 'controllers', 'fault-codes', 'ats-changeover']);
 
-function rankGuides(terms: string[], pairs: [string, string][], expanded: Set<string> = new Set()): RankedGuide[] {
+function rankGuides(terms: string[], pairs: [string, string][], expanded: Set<string> = new Set(), dir: 'high' | 'low' | null = null): RankedGuide[] {
+  // Words that say how a fault shows, not what it is, cannot carry a guide on
+  // their own (2026-10-25 audit: "overspeed shutdown" led with Low Oil
+  // Pressure Shutdown on the word "shutdown").
+  const specific = terms.filter((x) => !GENERIC_TERMS.has(x));
   const out: (RankedGuide & { titleHit: boolean })[] = [];
   for (const a of REPAIR_ARTICLES as RepairArticle[]) {
     if (!GENERATOR_HUBS.has(a.hub)) continue;
@@ -704,11 +745,19 @@ function rankGuides(terms: string[], pairs: [string, string][], expanded: Set<st
     // must name the problem in its title or symptom list, not only in its
     // body (2026-10-25 audit: "overheating" listed Low Oil Pressure Shutdown).
     const enough = matched.length >= Math.min(2, terms.length) || score >= 6;
-    const strong = terms.some((x) => titleSet.has(x) || symSet.has(x))
+    const key = specific.length ? specific : terms;
+    // Several specific words typed: a guide needs two of them, or one in its title.
+    const keyHits = key.filter((x) => titleSet.has(x) || symSet.has(x)).length;
+    const enoughKey = key.length < 2 || keyHits >= 2 || key.some((x) => titleSet.has(x));
+    const strong = key.some((x) => titleSet.has(x) || symSet.has(x))
       || pairs.some((p) => containsPair(title, p) || containsPair(symWords, p))
       || [...expanded].some((x) => titleSet.has(x));
-    const titleHit = terms.some((x) => titleSet.has(x)) || [...expanded].some((x) => titleSet.has(x)) || pairs.some((p) => containsPair(title, p));
-    if (score > 0 && enough && strong) {
+    let titleHit = key.some((x) => titleSet.has(x)) || [...expanded].some((x) => titleSet.has(x)) || pairs.some((p) => containsPair(title, p));
+    // Direction: "voltage too high" is not "Produces No Voltage".
+    const rawTitle = a.header.title.toLowerCase();
+    if (dir === 'high' && /\b(no|low|under|loss)\b/.test(rawTitle)) { titleHit = false; score -= 6; }
+    if (dir === 'low' && /\b(over|high)\b/.test(rawTitle)) { titleHit = false; score -= 6; }
+    if (score > 0 && enough && strong && enoughKey) {
       out.push({
         title: a.header.title,
         url: `/repair-centre/${a.hub}/${a.slug}`,
@@ -722,8 +771,16 @@ function rankGuides(terms: string[], pairs: [string, string][], expanded: Set<st
   }
   // Guides whose title names the problem lead ("Cranks But Will Not Start"
   // before "Valve Train and Clearances" for "hard starting").
-  return out
-    .sort((x, y) => Number(y.titleHit) - Number(x.titleHit) || y.score - x.score)
+  const sorted = out.sort((x, y) => Number(y.titleHit) - Number(x.titleHit) || y.score - x.score);
+  // Only guides that are about the problem: when none names it in its title,
+  // at most one strong match; otherwise the named ones plus close seconds
+  // (2026-10-25 audit: "loss of speed signal" listed Abnormal Noise, No
+  // Voltage and Valve Train).
+  const top = sorted[0]?.score ?? 0;
+  const kept = sorted.some((g) => g.titleHit)
+    ? sorted.filter((g) => g.titleHit || g.score >= top * 0.75)
+    : sorted.filter((g) => g.score >= 8).slice(0, 1);
+  return kept
     .slice(0, 3)
     .map(({ titleHit: _t, ...g }) => g);
 }
@@ -747,6 +804,7 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
     overheat: ['coolant', 'temperatur'],
     hot: ['coolant', 'temperatur'],
     overcrank: ['crank', 'fail'],
+    hard: ['crank'],
     fluctuat: ['unstabl', 'frequency', 'regulation', 'regulator', 'hunt'],
     unstabl: ['frequency', 'regulation', 'regulator', 'hunt'],
     hunt: ['speed', 'governor', 'unstabl'],
@@ -852,7 +910,7 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   for (const p of phrases) for (const w of p.toLowerCase().split(/[^a-z0-9]+/g)) if (w && !typed.has(stem(w))) typed.set(stem(w), w);
   const show = (list: string[]) => list.map((t) => typed.get(t) ?? t);
 
-  const guides = rankGuides(terms, pairs, expanded).map((g) => ({ ...g, matchedTerms: show(g.matchedTerms) }));
+  const guides = rankGuides(terms, pairs, expanded, wantsHighDir ? 'high' : wantsLowDir ? 'low' : null).map((g) => ({ ...g, matchedTerms: show(g.matchedTerms) }));
   let ranked = rankPool(filtered).map((r) => ({ ...r, matchedTerms: show(r.matchedTerms) }));
   let considered = filtered.length;
   const notes = [

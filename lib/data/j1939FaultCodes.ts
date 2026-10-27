@@ -188,7 +188,7 @@ const SPN: SpnDef[] = [
   { spn: 3719, name: 'Aftertreatment 1 DPF Soot Load Percent', category: 'Exhaust', note: 'Drives regeneration demand and derate.', fmis: [0, 15, 16, 31] },
   { spn: 4364, name: 'Aftertreatment 1 SCR Conversion Efficiency', category: 'Exhaust', note: 'Low efficiency points at dosing, catalyst condition or reductant quality.', fmis: [1, 17, 18, 31] },
   // Speed and position
-  { spn: 190, name: 'Engine Speed', category: 'Speed & Position', note: 'Overspeed is a shutdown event and must be investigated before restarting.', fmis: SPEED },
+  { spn: 190, name: 'Engine Speed', category: 'Speed & Position', note: 'Overspeed is a shutdown event and must be investigated before restarting.', noteHigh: 'Overspeed is a shutdown event and must be investigated before restarting: check the governor, actuator and fuel rack, and any sudden loss of load.', noteLow: 'Underspeed usually means the engine cannot hold speed: overload, fuel starvation (filters, air in the fuel, lift pump) or a slow governor or actuator. Check the load first, then the fuel supply.', fmis: SPEED },
   { spn: 636, name: 'Engine Position Sensor', category: 'Speed & Position', note: 'A failed position signal typically prevents starting entirely.', fmis: [2, 3, 4, 5, 6, 8, 10, 12] },
   { spn: 637, name: 'Engine Timing Sensor', category: 'Speed & Position', note: 'Check air gap and trigger wheel condition before replacing the sensor.', fmis: [2, 3, 4, 5, 6, 8, 10, 12] },
   { spn: 612, name: 'System Diagnostic Code #2 (Cummins: engine speed/position signals)', category: 'Speed & Position', note: 'Cummins reports fault 115, both speed/position signals lost, on this SPN: the engine cranks but will not start. Check both sensors, their air gaps and the harness.', fmis: [2] },
@@ -211,7 +211,7 @@ const SPN: SpnDef[] = [
   { spn: 611, name: 'System Diagnostic Code 1', category: 'Control', note: 'Often indicates an injector harness short on many engine families.', fmis: [3, 4, 31] },
   { spn: 1136, name: 'Engine ECU Temperature', category: 'Control', note: 'High ECU temperature indicates a mounting or engine-room cooling problem.', fmis: RANGE_AND_ELEC },
   // Injectors
-  { spn: 651, name: 'Injector Cylinder 1', category: 'Injection', note: 'Electrical fault on the cylinder 1 injector circuit.', fmis: [2, 5, 6, 7, 11, 12] },
+  { spn: 651, name: 'Injector Cylinder 1', category: 'Injection', note: 'Cylinder 1 injector: the FMI says whether it is the circuit or the injector itself.', fmis: [2, 5, 6, 7, 11, 12] },
   { spn: 652, name: 'Injector Cylinder 2', category: 'Injection', note: 'Electrical fault on the cylinder 2 injector circuit.', fmis: [2, 5, 6, 7, 11, 12] },
   { spn: 653, name: 'Injector Cylinder 3', category: 'Injection', note: 'Electrical fault on the cylinder 3 injector circuit.', fmis: [2, 5, 6, 7, 11, 12] },
   { spn: 654, name: 'Injector Cylinder 4', category: 'Injection', note: 'Electrical fault on the cylinder 4 injector circuit.', fmis: [2, 5, 6, 7, 11, 12] },
@@ -335,6 +335,12 @@ const SHUTDOWN_WHEN_HIGH = new Set([110, 190]);      // coolant temperature, eng
 /** Measurements that inform fuelling or derating but do not protect the engine. */
 const ADVISORY_SPN = new Set([108, 171, 172, 106, 1172, 96, 38, 168, 158, 174, 183, 250, 92]);
 
+/** Coolant and oil temperature: the only temperatures a thermostat controls. */
+const THERMOSTAT_SPN = new Set([110, 175]);
+/** Data links. */
+const NETWORK_SPN = new Set([639, 1231, 1235, 625]);
+/** Driven devices: injectors, valves, relays and actuators. */
+const ACTUATOR_SPN = new Set([651, 652, 653, 654, 655, 656, 657, 658, 659, 660, 661, 662, 633, 632, 677, 676, 2791, 1188, 641, 3464, 647, 729, 626, 1347, 1348, 5571, 3361, 3556]);
 /** Directions that are harmful but not normally an automatic shutdown. */
 const CRITICAL_WHEN_HIGH = new Set([173, 175, 1136, 101, 3251, 3719, 1180, 412]);
 const CRITICAL_WHEN_LOW = new Set([94, 157, 104, 109, 1349, 164]);
@@ -358,13 +364,25 @@ function noteFor(s: SpnDef, f: FmiDef, isHigh: boolean, isLow: boolean, isTemp: 
   if (isLow) {
     if (s.noteLow) return s.noteLow;
     if (!HIGH_WORDS.test(s.note)) return s.note;
-    return isTemp
+    return isTemp && THERMOSTAT_SPN.has(s.spn)
       ? 'A low reading usually means a stuck-open or missing thermostat, a sensor or wiring fault, or a cold or lightly loaded engine. Check with an independent thermometer before replacing parts.'
+      : isTemp
+      ? 'A below-normal temperature here is most often cold weather, a light load or a sensor or wiring fault. Check with an independent thermometer before replacing parts.'
       : 'A below-normal reading on this parameter is most often a sensor, wiring or reference fault. Verify with an independent gauge before replacing parts.';
   }
   if (f.fmi === 31) return s.note;
+  const name = s.name.toLowerCase();
+  // Data links: a communication fault, not a reading to check with a gauge.
+  if (NETWORK_SPN.has(s.spn) || f.fmi === 9 || f.fmi === 19) {
+    return `A communication fault on ${name}: check the CAN wiring and connectors, the two 120-ohm terminators (60 ohms across the bus with power off) and whether the sending module is powered.`;
+  }
+  // Driven devices (injectors, valves, relays, actuators): the circuit or the device.
+  if (ACTUATOR_SPN.has(s.spn)) {
+    if (f.fmi === 7) return `The ${name} was commanded but did not respond: check it for sticking, seizure, contamination or a broken linkage before replacing electrical parts.`;
+    if (f.kind === 'electrical' || f.kind === 'signal') return `A fault in the ${name} circuit: measure the device's resistance against its specification and check the harness and connector for opens, shorts and corrosion.`;
+  }
   if (f.kind === 'electrical' || f.kind === 'signal') {
-    return `This reports a fault in the ${s.name.toLowerCase()} signal or its circuit, not a confirmed high or low value. Check the wiring and sensor, and confirm the actual value with an independent gauge or meter before acting on it.`;
+    return `This reports a fault in the ${name} signal or its circuit, not a confirmed high or low value. Check the wiring and sensor, and confirm the actual value with an independent gauge or meter before acting on it.`;
   }
   return HIGH_WORDS.test(s.note) || LOW_WORDS.test(s.note) ? '' : s.note;
 }
@@ -407,7 +425,8 @@ function build(): J1939FaultCode[] {
         severity,
         title: `${s.name} — ${f.label}`,
         description: `${s.name}: ${f.meaning} ${note}`,
-        causes: isLow && isTemp ? ['Thermostat stuck open or missing', 'Sensor or wiring fault reading low', 'Engine running cold, unloaded or in low ambient temperature'] : f.causes,
+        causes: isLow && isTemp && THERMOSTAT_SPN.has(s.spn) ? ['Thermostat stuck open or missing', 'Sensor or wiring fault reading low', 'Engine running cold, unloaded or in low ambient temperature']
+          : isLow && isTemp ? ['Cold ambient conditions or a light load', 'Sensor or wiring fault reading low'] : f.causes,
         remedies: f.remedies,
       });
     }

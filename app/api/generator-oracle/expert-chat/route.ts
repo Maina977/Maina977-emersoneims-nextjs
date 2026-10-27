@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
         ok: false,
         code: 'ASSET_CARD_REQUIRED',
         message:
-          'Asset card is required: provide make, model, controller, serial, and firmware before chatting with Expert AI.',
+          'Asset card is required: provide make, model, controller, serial, and firmware before chatting with the diagnostic assistant.',
         detail: cardParse.error.issues
           .map((i) => `${i.path.join('.') || 'card'}: ${i.message}`)
           .join('; '),

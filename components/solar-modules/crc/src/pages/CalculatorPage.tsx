@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useSolarStore } from '../services/store';
 import { core } from '../services/api';
+import { DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
 
 const Container = styled.div`
   background: #0A0E27;
@@ -201,7 +202,7 @@ export default function CalculatorPage() {
   const [location, setLocation] = useState('nairobi');
   const [systemType, setSystemType] = useState<SystemType>('hybrid');
   const [roofType, setRoofType] = useState<'flat' | 'pitched' | 'ground'>('pitched');
-  const [tariff, setTariff] = useState('25');
+  const [tariff, setTariff] = useState(String(DEFAULT_TARIFF_KES_PER_KWH));
   const [daytimeUse, setDaytimeUse] = useState('50');
   const [nightUse, setNightUse] = useState('50');
   const [autonomy, setAutonomy] = useState('1');

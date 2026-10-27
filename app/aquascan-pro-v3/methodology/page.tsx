@@ -42,7 +42,7 @@ const REFERENCES: string[] = [
   'WHO (2011, 4th ed. + addenda). Guidelines for Drinking-water Quality.',
   'Saaty T.L. (1980). The Analytic Hierarchy Process. (Multi-sensor weighted-overlay fusion weights.)',
   'RWSN / UNICEF (2016+). Guidance on professional borehole siting and supervision.',
-  'Kenya Water Resources Regulations (2021) — statutory hydrogeological survey and WRA authorisation requirements.',
+  'Kenya Water Act 2016 and the Water Resources Regulations in force — statutory hydrogeological survey and WRA authorisation requirements (confirm current provisions with WRA).',
 ];
 
 export default function AquaScanMethodologyPage() {
@@ -78,7 +78,7 @@ export default function AquaScanMethodologyPage() {
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-300">
                 <li>NOT a statutory hydrogeological survey, and never sold as one — Kenya law requires a licensed survey and WRA authorisation before drilling.</li>
                 <li>NOT authority to mobilise a drilling rig. No AquaScan score, however high, releases the mobilisation gate without field ERT, a survey-grade peg, professional sign-off and WRA approval.</li>
-                <li>NOT a measurement of your site — depths, yields and water quality are calibrated estimates until field validation, and every estimated figure is marked “(est.)”.</li>
+                <li>NOT a measurement of your site — depths, yields and water quality are calibrated estimates until field validation, and estimated figures are labelled as such (for example “modelled”, “regional est.” or “not measured”).</li>
               </ul>
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function AquaScanMethodologyPage() {
             <li className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm">
               <span className="font-bold text-white">No invented data — enforced in code.</span> No synthetic wells, no fabricated
               satellite scenes, no “ground is stable” claims from proxy data, no drilled-outcome credit for estimated
-              records. Estimated values are marked “(est.)” wherever they appear.
+              records. Estimated values are labelled as estimates, and anything not measured says so.
             </li>
             <li className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm">
               <span className="font-bold text-white">Automated verification tests</span> run against the physics and

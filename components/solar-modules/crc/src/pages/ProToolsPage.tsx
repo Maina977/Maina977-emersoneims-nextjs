@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { finance, solar, sustain, biz, reports, downloadBlob, research } from '../services/api';
+import { proposalFinance } from '../services/proposalFinance';
+import { DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
 
 // ============================================
 // Pro Tools — surfaces every new backend endpoint
@@ -264,7 +266,7 @@ const FxTool = () => {
   return (
     <Card>
       <CardH>Currency Conversion</CardH>
-      <CardSub>exchangerate.host (free, no key)</CardSub>
+      <CardSub>Frankfurter (ECB reference rates), open.er-api.com as fallback</CardSub>
       <Row>
         <Input type="number" value={a} onChange={(e) => setA(+e.target.value)} />
         <Input value={from} onChange={(e) => setFrom(e.target.value.toUpperCase())} />
@@ -374,7 +376,7 @@ const CarbonFootprintTool = () => {
   return (
     <Card>
       <CardH>Carbon Footprint</CardH>
-      <CardSub>IEA 2024 grid factors (11 countries)</CardSub>
+      <CardSub>Grid emission factors for 10 African countries plus a world average</CardSub>
       <Row>
         <Input type="number" value={k} onChange={(e) => setK(+e.target.value)} placeholder="Annual kWh" aria-label="Annual kWh" />
         <Select value={c} onChange={(e) => setC(e.target.value)}>
@@ -474,13 +476,33 @@ const ProposalPdfTool = () => {
   const t = useTool();
   const [name, setName] = useState('Sample Customer');
   const generate = async () => {
+    // A fixed, self-consistent example: the BOM adds up to the capex, and
+    // payback/NPV/IRR come from the 25-year table printed in the PDF
+    // (2026-10-25 audit: a 3-row "25-year" table, and a 735k BOM vs 1.25M capex).
+    const bom: Array<[string, number, number, number]> = [
+      ['485 Wp mono panel', 14, 12500, 175000],
+      ['5 kW hybrid inverter', 1, 180000, 180000],
+      ['10 kWh LiFePO4 battery', 1, 360000, 360000],
+      ['Mounting, cabling, protection, installation & commissioning', 1, 285000, 285000],
+    ];
+    const capexKes = bom.reduce((s, r) => s + r[3], 0);
+    const annualKwh = 6.8 * 1600;                 // 1,600 kWh/kWp/yr, Nairobi (estimate)
+    const consumptionKwhMonth = 1000;
+    const tariff = DEFAULT_TARIFF_KES_PER_KWH;    // effective KES/kWh, the calculator's default
+    const year1SavingsKes = Math.round(annualKwh * 0.85 * tariff); // 85 % used on site
+    const f = proposalFinance({ capexKes, year1SavingsKes, batteryReplacement: { year: 12, costKes: 360000 } });
     const blob = await reports.proposalBlob({
       brand: { companyName: 'EmersonEIMS', primaryHex: '#0b8457', tagline: 'SAMPLE LAYOUT — fixed example, not your design and not a quotation' },
       customer: { name, site: 'Nairobi' },
-      design: { systemKw: 6.8, batteryKwh: 10, panelCount: 14, panelW: 485, inverterKw: 5, tiltDeg: 15, azimuthDeg: 0, specificYieldKwhPerKwp: 1650, annualOffsetPct: 95,
-        bom: [['485 Wp mono panel', 14, 12500, 175000], ['5 kW hybrid inverter', 1, 180000, 180000], ['10 kWh LiFePO4 battery', 1, 380000, 380000]] },
-      financial: { capexKes: 1247500, year1SavingsKes: 240000, paybackYears: 5.2, irrPct: 14.1, npvKes: 227196,
-        cashFlowTable: [[1, 240000, 240000], [2, 240000, 480000], [3, 240000, 720000]] }
+      site: { irradianceKwhPerM2Day: 5.4, monthlyConsumptionKwh: consumptionKwhMonth, tariffKesPerKwh: tariff },
+      design: { systemKw: 6.8, batteryKwh: 10, panelCount: 14, panelW: 485, inverterKw: 5, tiltDeg: 15, azimuthDeg: 0, specificYieldKwhPerKwp: 1600,
+        annualOffsetPct: Math.round(annualKwh / (consumptionKwhMonth * 12) * 100), bom },
+      financial: { capexKes, year1SavingsKes, paybackYears: f.paybackYears, irrPct: f.irrPct, npvKes: f.npvKes,
+        discountRatePct: f.assumptions.discountRatePct, tariffEscalationPct: f.assumptions.tariffEscalationPct,
+        panelDegradationPct: f.assumptions.panelDegradationPct, cashFlowTable: f.cashFlowTable },
+      provenance: [
+        { label: 'Example inputs', source: `Fixed example: tariff KES ${tariff}/kWh, 85% of output used on site, O&M ${f.assumptions.omPctOfCapex}% of capex/yr, battery replaced in year 12`, url: 'internal' },
+      ],
     });
     downloadBlob(blob as any, `proposal-${Date.now()}.pdf`);
     return { ok: true, message: 'PDF downloaded' };
@@ -549,7 +571,7 @@ const LeadCaptureTool = () => {
   return (
     <Card>
       <CardH>Capture Lead</CardH>
-      <CardSub>Persisted to data/business.json</CardSub>
+      <CardSub>Demo: kept in server memory only, not saved permanently</CardSub>
       <Row>
         <Input placeholder="Name" aria-label="Name" value={p.name} onChange={upd('name')} />
         <Input placeholder="Email" aria-label="Email" value={p.email} onChange={upd('email')} />
@@ -582,7 +604,7 @@ const ConversionTool = () => {
   return (
     <Card>
       <CardH>Conversion Funnel</CardH>
-      <CardSub>From event log (real)</CardSub>
+      <CardSub>From the events recorded in this session</CardSub>
       <Row><Input type="number" value={d} onChange={(e) => setD(+e.target.value)} placeholder="Days" aria-label="Days" /></Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => biz.conversion(d))}>Compute Funnel</Btn>
       <Result {...t} />
@@ -620,7 +642,7 @@ const ResearchTool = () => {
   return (
     <Card>
       <CardH>R&amp;D Catalogue</CardH>
-      <CardSub>13 of 19 features now implemented with free tools; 6 honest stubs remain</CardSub>
+      <CardSub>Lists each research feature and whether it is implemented yet</CardSub>
       <Btn disabled={t.busy} onClick={() => t.run(() => research.list())}>List All</Btn>
       <Result {...t} />
     </Card>

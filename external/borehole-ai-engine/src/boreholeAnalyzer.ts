@@ -29,7 +29,7 @@ import {
   runBayesianEnsemble,
   type EnsembleInput,
 } from './advancedHydroEngine';
-import { classifyRockType, estimateWeatheringProfile } from './rockClassifier';
+import { classifyRockType, estimateWeatheringProfile, ROCK_PROPERTIES, type RockClassification } from './rockClassifier';
 import { advancedRockMapping } from './advancedRockMapper';
 import { applyLearningCorrections } from './feedbackLearningLoop';
 import { selectTopDrillingSites } from './smartSiteSelector';
@@ -69,20 +69,16 @@ import { computePathTo97 } from './pathTo97Engine';
 import { runSatelliteRemoteSensing } from './satelliteRemoteSensingEngine';
 import { evaluateSurfaceGeophysics } from './surfaceGeophysicsEngine';
 import { sanitizeAnalysisResult } from './sanitizeOutputs';
+import { loadLocalJson } from './localData';
 
 /**
  * Shipped field borehole records within `km` of a point (public/data/wra-boreholes.json).
  * Fetched once per page load. Used for the depth and yield evidence bands.
  */
-let _fieldRecs: Promise<any[]> | null = null;
 async function fieldRecordsWithin(lat: number, lon: number, km: number): Promise<any[]> {
-  if (!_fieldRecs) {
-    _fieldRecs = fetch('/data/wra-boreholes.json', { signal: AbortSignal.timeout(8000) })
-      .then((r) => (r.ok ? r.json() : []))
-      .then((j) => (Array.isArray(j) ? j : []))
-      .catch(() => { _fieldRecs = null; return []; });
-  }
-  const recs = await _fieldRecs;
+  // Shared, pre-started download with retry (localData.ts, 2026-10-27).
+  const j = await loadLocalJson<any[]>('/data/wra-boreholes.json');
+  const recs = Array.isArray(j) ? j : [];
   const R = 6371, rad = Math.PI / 180, out: any[] = [];
   for (const b of recs) {
     const la = Number(b?.lat), lo = Number(b?.lon);
@@ -1206,6 +1202,45 @@ export class BoreholeAnalyzer {
         console.warn('[Pipeline] Advanced rock mapping failed, using basic classifier:', e);
       }
     }
+
+    // ═══ REGIONAL PROVINCE GOVERNS THE ROCK TYPE (2026-10-25 audit round 5) ═══
+    // The rock type above is guessed from topsoil texture and needs SoilGrids;
+    // when SoilGrids did not answer there was no rock type at all, and the
+    // same Garissa point gave 118 m on one run and 150 m on the next. The
+    // county's hydrogeological province (BGS Africa Atlas / MacDonald 2012) is
+    // stronger evidence and always available, so without field geophysics it
+    // sets the rock type — the same answer every time.
+    try {
+      const provCounty = clientGeo?.county || features.resolvedLocation?.county || (clientLocation as any)?.county;
+      const provCc = clientGeo?.countryCode || features.resolvedLocation?.countryCode || '';
+      const provPrior = getKenyaHydroPrior(provCounty, provCc || 'KE');
+      if (provPrior && !fieldData?.ertSurvey) {
+        const PROVINCE_ROCK: Record<string, RockClassification['primaryRockType']> = {
+          BASEMENT: 'gneiss', VOLCANIC: 'basalt', COASTAL: 'limestone', SEDIMENT_NE: 'sandstone', ALLUVIAL: 'alluvium',
+        };
+        const rk = PROVINCE_ROCK[provPrior.province];
+        const props = ROCK_PROPERTIES[rk];
+        if (rk && props) {
+          rockClassification = {
+            primaryRockType: rk,
+            secondaryRockType: rockClassification?.primaryRockType !== rk ? rockClassification?.primaryRockType : undefined,
+            confidence: 0.8,
+            geologicalFormation: props.typicalFormation,
+            geologicalAge: '',
+            aquiferType: props.aquiferType,
+            aquiferProductivity: props.aquiferProductivity,
+            typicalKsat_m_day: props.ksat_m_day,
+            typicalPorosity: props.porosity,
+            methodology: `Regional hydrogeological province for ${provPrior.county} County (${provPrior.province.replace('_', ' ').toLowerCase()})`,
+          };
+          const precipP = historicalData?.weather?.averageAnnualPrecipitation ?? 800;
+          const tempP = historicalData?.weather?.averageTemperature ?? 22;
+          weatheringProfile = estimateWeatheringProfile(rk, precipP, tempP, remoteSensing?.elevation?.elevation ?? 500, demHydrology?.slope_degrees ?? 5);
+          if (advancedRockResult) (advancedRockResult as any).primaryRockType = rk;
+          (this as any)._hydroProvince = provPrior.province;
+        }
+      }
+    } catch (e) { console.warn('[Pipeline] Province rock type failed:', e); }
 
     // ═══ GEOLOGY-AWARE DEPTH CORRECTION ═══
     // Use detected rock type + GEOLOGICAL_FORMATIONS database to correct depth estimate.
@@ -3202,7 +3237,7 @@ export class BoreholeAnalyzer {
     // 20 km (all shipped records, not the capped nearby list), else 30% of the
     // county's typical yield. The upper bound is the field 75th percentile or
     // the county range ceiling.
-    let evidenceBand: { lo: number; hi: number; typical: number; basis: string } | null = null;
+    let evidenceBand: { lo: number; hi: number; upper?: number; typical: number; basis: string } | null = null;
     if (!isFieldValidated) {
       try {
         let ys: number[] = [];
@@ -3212,9 +3247,16 @@ export class BoreholeAnalyzer {
         }
         ys = ys.sort((a, b) => a - b);
         const q = (p: number) => ys[Math.floor((ys.length - 1) * p)];
+        // Interpolated percentile for the top of the range: the floor index put
+        // Garissa's 90th percentile at 10 m³/h while 2 of its 12 tested
+        // boreholes gave 12 and 15 (2026-10-27). The cautious floor keeps q().
+        const qi = (p: number) => {
+          const x = (ys.length - 1) * p, i = Math.floor(x), f = x - i;
+          return Math.round((i + 1 < ys.length ? ys[i] + f * (ys[i + 1] - ys[i]) : ys[i]) * 10) / 10;
+        };
         const ci = (boreholeRecords as any)?.countyIntelligence;
         if (ys.length >= 3) {
-          evidenceBand = { lo: q(0.25), hi: Math.max(q(0.25), q(0.75)), typical: q(0.5), basis: `${ys.length} field-tested yields within 20 km (lower quartile ${q(0.25)} m³/h, median ${q(0.5)} m³/h, upper quartile ${q(0.75)} m³/h)` };
+          evidenceBand = { lo: q(0.25), hi: Math.max(q(0.25), q(0.75)), upper: Math.max(q(0.75), qi(0.9)), typical: q(0.5), basis: `${ys.length} field-tested yields within 20 km (lower quartile ${q(0.25)} m³/h, median ${q(0.5)} m³/h, upper quartile ${q(0.75)} m³/h)` };
         } else if (Number(ci?.avgYield_m3h) > 0) {
           const lo = Math.round(Math.max(Number(ci?.yieldRange?.[0]) || 0, Number(ci.avgYield_m3h) * 0.3) * 100) / 100;
           evidenceBand = { lo, hi: Math.max(lo, Number(ci?.yieldRange?.[1]) || lo * 3), typical: Number(ci.avgYield_m3h), basis: `the ${ci.county} County drilling record (typical ${ci.avgYield_m3h} m³/h; cautious floor ${lo} m³/h)` };
@@ -3436,13 +3478,20 @@ export class BoreholeAnalyzer {
     } catch { /* provenance optional */ }
     // The field depth band travels with the result so the stated range covers it (2026-10-20).
     if ((this as any)._fieldDepthBand) (result as any).fieldDepthBand = (this as any)._fieldDepthBand;
+    if ((this as any)._hydroProvince) (result as any).hydroProvince = (this as any)._hydroProvince;
+    // Coastal aquifers: seawater intrusion is the main risk (2026-10-25 audit
+    // round 5: Mombasa, 1-2 km from the sea, had no mention of it).
+    if ((this as any)._hydroProvince === 'COASTAL') {
+      (result as any).coastalIntrusionNote = 'Coastal aquifer: pumping can draw seawater in (saline intrusion and upconing). Keep the pumping rate modest, do not drill deeper than the fresh-water lens needs, and test conductivity (EC) during the pump test and then every few months. A hydrogeologist sets the safe abstraction rate.';
+    }
     // The stated yield range is the evidence band when there is one (2026-10-25
     // audit: Garissa printed "lower quartile 4, median 10, upper quartile 10"
     // beside a 7.5-30 m3/h range).
     if (!isFieldValidated && evidenceBand && typeof result.estimatedYield === 'number' && result.uncertainty) {
-      (result as any).yieldEvidenceBand = { lo: evidenceBand.lo, hi: evidenceBand.hi };
+      // The stated range reaches the 90th percentile of local tested yields (2026-10-25 audit: the planning yield was also the ceiling).
+      (result as any).yieldEvidenceBand = { lo: evidenceBand.lo, hi: evidenceBand.upper ?? evidenceBand.hi };
       const lo = Math.round(Math.min(evidenceBand.lo, result.estimatedYield) * 100) / 100;
-      const hi = Math.round(Math.max(evidenceBand.hi, result.estimatedYield) * 100) / 100;
+      const hi = Math.round(Math.max(evidenceBand.upper ?? evidenceBand.hi, result.estimatedYield) * 100) / 100;
       result.uncertainty.yieldRange = [lo, hi];
       const dd: any = result.drillDecision;
       if (dd && Array.isArray(dd.yieldRange_m3hr)) dd.yieldRange_m3hr = [lo, hi];
@@ -3470,8 +3519,9 @@ export class BoreholeAnalyzer {
           governing_mm: governing,
           fraction: Math.round((governing / P) * 1000) / 1000,
           rainfall_mm: Math.round(P),
-          spread_mm: spread,
-          basis: `Soil-water balance on ${Math.round(P)} mm/yr of rainfall${clamped ? `, held within ${Math.round(fLo * 100)}-${Math.round(fHi * 100)}% of rainfall for this climate (the model gave ${Math.round(raw)} mm)` : ''}.${have.length > 1 ? ` The two methods give ${spread[0]}-${spread[1]} mm/yr, so recharge is uncertain.` : ''}`,
+          // The stated range always includes the planning figure (2026-10-25 audit: 18 mm/yr beside "27-69").
+          spread_mm: [Math.min(spread[0], governing), Math.max(spread[1], governing)] as [number, number],
+          basis: `Soil-water balance on ${Math.round(P)} mm/yr of rainfall${clamped ? `, held within ${Math.round(fLo * 100)}-${Math.round(fHi * 100)}% of rainfall for this climate (the model gave ${Math.round(raw)} mm)` : ''}.${have.length > 1 ? ` Estimates range ${Math.min(spread[0], governing)}-${Math.max(spread[1], governing)} mm/yr, so recharge is uncertain.` : ''}`,
         };
       }
     } catch (e) { console.warn('[Pipeline] Recharge summary failed:', e); }

@@ -92,7 +92,8 @@ const SunWeatherPage: React.FC = () => {
       azimuth:  p.azimuth  ?? p.azimuthDeg
     })));
     setSeasonal(s3);
-    setWeather(w);
+    // The route answers { current: { temperature, cloudCover, windSpeed, humidity } }.
+    setWeather(w?.current ?? null);
     setNasa(n);
     setBusy(false);
   };
@@ -165,17 +166,17 @@ const SunWeatherPage: React.FC = () => {
           </Stat>
           <Stat>
             <div className="label">Air temperature</div>
-            <div className="value">{weather?.temp != null ? `${weather.temp}°C` : '—'}</div>
+            <div className="value">{weather?.temperature != null ? `${weather.temperature}°C` : '—'}</div>
             <div className="sub">Open-Meteo current</div>
           </Stat>
           <Stat>
             <div className="label">Cloud cover</div>
-            <div className="value">{weather?.cloud_cover != null ? `${weather.cloud_cover}%` : '—'}</div>
+            <div className="value">{weather?.cloudCover != null ? `${weather.cloudCover}%` : '—'}</div>
             <div className="sub">Open-Meteo</div>
           </Stat>
           <Stat>
             <div className="label">Wind</div>
-            <div className="value">{weather?.wind_speed != null ? `${weather.wind_speed} m/s` : '—'}</div>
+            <div className="value">{weather?.windSpeed != null ? `${weather.windSpeed} m/s` : '—'}</div>
             <div className="sub">{weather?.humidity != null ? `humidity ${weather.humidity}%` : 'Open-Meteo'}</div>
           </Stat>
         </Grid>
@@ -189,6 +190,9 @@ const SunWeatherPage: React.FC = () => {
       {/* Sun path chart */}
       <Card>
         <h3 style={{ marginTop: 0 }}>Sun path — {date}</h3>
+        <p style={{ margin: '0 0 0.6rem', fontSize: '0.8rem', color: 'rgba(230,241,255,0.6)' }}>
+          Hours are in UTC. Kenya time is UTC + 3 (solar noon in Nairobi is about 12:30 local).
+        </p>
         {sunPath.length > 0 ? (
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={sunPath} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>

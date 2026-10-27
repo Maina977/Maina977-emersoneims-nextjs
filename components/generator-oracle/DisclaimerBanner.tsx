@@ -162,7 +162,7 @@ export function FooterDisclaimer() {
 
       </div>
       <p className="text-xs text-cyan-400/70 mt-2 font-medium">
-        © {new Date().getFullYear()} Generator Oracle - One Tool for All Brands™
+        © {new Date().getFullYear()} Generator Oracle — fault-code reference by EmersonEIMS
       </p>
     </div>
   );

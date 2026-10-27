@@ -508,7 +508,7 @@ function genClimate(historicalData: any, gldasData: any, rechargeSummary?: any) 
     const bestSeason = totalPrecip > 0 ? `Drier months: ${months.filter(m => driest.includes(m)).join(', ')}` : 'Consult local data';
     // The same governing recharge as the PDF (2026-10-25 audit: 16 vs 270 mm/yr).
     const rechargeRate = rechargeSummary?.governing_mm != null
-      ? `~${rechargeSummary.governing_mm} mm/yr (${Math.round(rechargeSummary.fraction * 100)}% of rainfall; methods give ${rechargeSummary.spread_mm[0]}-${rechargeSummary.spread_mm[1]} mm/yr)`
+      ? `~${rechargeSummary.governing_mm} mm/yr (${Math.round(rechargeSummary.fraction * 100)}% of rainfall; estimates range ${rechargeSummary.spread_mm[0]}-${rechargeSummary.spread_mm[1]} mm/yr)`
       : gldasData?.waterBudget?.estimatedRecharge
         ? `${gldasData.waterBudget.estimatedRecharge} mm/yr (GLDAS water budget)`
         : `~${Math.round(totalPrecip * 0.08)} mm/yr (8% of precipitation — global average estimate)`;
@@ -530,15 +530,26 @@ function genClimate(historicalData: any, gldasData: any, rechargeSummary?: any) 
  * No Math.random(). Aquifer hit correlates with overall success probability;
  * deeper yield improvement decreases with depth (diminishing returns per Cooper-Jacob).
  */
-function genProbability(prob: number, depth: number) {
+function genProbability(prob: number, _depth: number, r?: any) {
+  // 2026-10-25 audit round 5: "Recharge" and "5-year risk" were the success
+  // probability relabelled, and "hit main aquifer" / "deeper yield
+  // improvement" were arithmetic on it. Each card now shows what it names, or
+  // says it was not measured.
+  const rs = r?.rechargeSummary;
+  const rechargePotential = rs?.governing_mm != null
+    ? `~${rs.governing_mm} mm/yr (${rs.governing_mm >= 100 ? 'high' : rs.governing_mm >= 30 ? 'moderate' : 'low'})`
+    : 'Not estimated';
+  const ga = r?.gldasGroundwater?.graceAnomaly;
+  const proxyOk = ga?.trend && /NASA POWER|GWETPROF/i.test(String(ga?.dataSource ?? ''));
+  const storageTrend = proxyOk
+    ? (ga.trend === 'gaining' ? 'Rising (soil-moisture proxy)' : ga.trend === 'stable' ? 'Steady (soil-moisture proxy)' : 'Falling (soil-moisture proxy)')
+    : 'Not measured';
+  const wt = r?.waterTableDepth;
   return {
     success: Math.round(prob * 100),
-    // Aquifer hit probability tracks ~12% below success (structural uncertainty)
-    hitMainAquifer: Math.round(Math.min(95, Math.max(0, prob * 100 - 12))),
-    // Deeper drilling improvement follows diminishing returns curve
-    deeperYieldImprovement: Math.round(Math.max(10, 60 - depth * 0.25)),
-    rechargePotential: prob > 0.7 ? 'High' : prob > 0.4 ? 'Medium' : 'Low',
-    fiveYearRisk: prob > 0.7 ? 'Low depletion risk' : prob > 0.4 ? 'Moderate depletion' : 'High depletion risk',
+    rechargePotential,
+    storageTrend,
+    waterTable: wt != null ? `~${Math.round(wt)} m` : 'Not measured',
   };
 }
 
@@ -2166,7 +2177,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
     const recRaw = scenariosRaw[1]?.cost || 1;
     const scenarios = scenariosRaw.map((s) => ({ ...s, cost: Math.round(s.cost * ecoTotal / recRaw) }));
     const climate = genClimate(result.historicalData, result.gldasGroundwater, (result as any).rechargeSummary);
-    const prob = genProbability(result.probability, result.recommendedDepth);
+    const prob = genProbability(result.probability, result.recommendedDepth, result);
     const wqExpanded = genWaterQualityExpanded(result.waterQuality, result.recommendedDepth);
     const strategy = genDrillingStrategy(result.recommendedDepth, result.soil.type, eco);
     const nearby = result.nearbyWells?.nearbyWells ?? [];
@@ -2367,9 +2378,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
         {/* Simple Outputs Bar (#17) */}
         <div className="simple-outputs">
-          <div className="simple-out"><span className="so-label">Water Table</span><span className="so-value">{climate.waterTableStability}</span></div>
+          <div className="simple-out"><span className="so-label">Water Table</span><span className="so-value">{prob.waterTable}</span></div>
           <div className="simple-out"><span className="so-label">Recharge</span><span className="so-value">{prob.rechargePotential}</span></div>
-          <div className="simple-out"><span className="so-label">5-Year Risk</span><span className="so-value">{prob.fiveYearRisk}</span></div>
+          <div className="simple-out"><span className="so-label">Storage Trend</span><span className="so-value">{prob.storageTrend}</span></div>
           <div className="simple-out"><span className="so-label">Best Season</span><span className="so-value">{climate.bestDrillingSeason}</span></div>
         </div>
 
@@ -5795,6 +5806,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div className="treatment-header">Treatment likely: <strong style={{color:wqExpanded.treatmentRequired==='YES'?'#F44336':'#4CAF50'}}>{wqExpanded.treatmentRequired}</strong></div>
                 {/* The same allowance as the Costs tab and the PDF (2026-10-25 audit: six sites, two figures each). */}
                 {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">Allowance if treatment is needed: <strong>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</strong> ({fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day` : ''}. A laboratory test decides whether it is.</div>}
+                {(result as any).coastalIntrusionNote && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Seawater intrusion risk:</strong> {(result as any).coastalIntrusionNote}</div>}
                 {result.waterQuality.treatmentRequired.length>0 && <ul className="rec-list">{result.waterQuality.treatmentRequired.map((t,i)=><li key={i}>{t}</li>)}</ul>}
               </div>
             </div>
@@ -5922,7 +5934,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div className="result-item"><span className="rl">Best Drilling Season</span><span className="rv" style={{color:'#4CAF50'}}>{climate.bestDrillingSeason}</span></div>
                 <div className="result-item"><span className="rl">Aquifer Recharge Risk</span><span className="rv">{climate.aquiferRechargeRisk}</span></div>
                 <div className="result-item"><span className="rl">Recharge Rate</span><span className="rv">{climate.rechargeRate}</span></div>
-                <div className="result-item"><span className="rl">Water Table Stability</span><span className="rv">{climate.waterTableStability}</span></div>
+                <div className="result-item"><span className="rl">Storage trend</span><span className="rv">{prob.storageTrend}</span></div>
               </div>
               {climate.rainfall.some((r: any) => r.mm > 0) ? (
                 <>
@@ -5951,12 +5963,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <h4 className="tab-title">{'\u{1F4CA}'} Probability Breakdown</h4>
               <div className="prob-cards">
                 <div className="prob-card"><div className="prob-value">{prob.success}%</div><div className="prob-label">Success Probability</div></div>
-                <div className="prob-card"><div className="prob-value">{prob.hitMainAquifer}%</div><div className="prob-label">Hit Main Aquifer</div></div>
-                <div className="prob-card"><div className="prob-value">{prob.deeperYieldImprovement}%</div><div className="prob-label">Deeper Yield Improvement</div></div>
+                {result.uncertainty?.probabilityRange && <div className="prob-card"><div className="prob-value">{Math.round(result.uncertainty.probabilityRange[0] * 100)}–{Math.round(result.uncertainty.probabilityRange[1] * 100)}%</div><div className="prob-label">Range across the models</div></div>}
               </div>
               <div className="result-grid">
-                <div className="result-item"><span className="rl">Recharge Potential</span><span className="rv">{prob.rechargePotential}</span></div>
-                <div className="result-item"><span className="rl">5-Year Risk</span><span className="rv">{prob.fiveYearRisk}</span></div>
+                <div className="result-item"><span className="rl">Recharge</span><span className="rv">{prob.rechargePotential}</span></div>
+                <div className="result-item"><span className="rl">Storage trend</span><span className="rv">{prob.storageTrend}</span></div>
               </div>
             </div>
           )}

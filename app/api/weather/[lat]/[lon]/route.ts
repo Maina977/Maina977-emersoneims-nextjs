@@ -41,11 +41,16 @@ export async function GET(
       ].join(','),
       timezone: 'auto',
       forecast_days: '7',
+      // The page labels wind in m/s; Open-Meteo's default is km/h.
+      wind_speed_unit: 'ms',
     });
 
-    const res = await fetch(`${OPEN_METEO}?${qs}`, {
-      signal: AbortSignal.timeout(10000),
-    });
+    // One retry: a single upstream blip answered the page with a 502.
+    let res = await fetch(`${OPEN_METEO}?${qs}`, { signal: AbortSignal.timeout(10000) }).catch(() => null);
+    if (!res || !res.ok) {
+      await new Promise((r) => setTimeout(r, 800));
+      res = await fetch(`${OPEN_METEO}?${qs}`, { signal: AbortSignal.timeout(10000) });
+    }
 
     if (!res.ok) throw new Error(`Open-Meteo error: ${res.status}`);
 
@@ -53,9 +58,11 @@ export async function GET(
     const cur = d.current ?? {};
     const daily = d.daily ?? {};
 
-    const cloudCover: number = cur.cloud_cover ?? 0;
+    // Missing cloud data is unknown, not a clear sky.
+    const cloudCover: number | null = typeof cur.cloud_cover === 'number' ? cur.cloud_cover : null;
     const condition =
-      cloudCover <= 10 ? 'excellent'
+      cloudCover == null ? 'unknown'
+      : cloudCover <= 10 ? 'excellent'
       : cloudCover <= 30 ? 'good'
       : cloudCover <= 60 ? 'moderate'
       : 'poor';
@@ -98,7 +105,7 @@ export async function GET(
       forecast,
       solarAnalysis: {
         currentCondition: condition,
-        estimatedEfficiency: Math.round(100 - cloudCover * 0.75),
+        estimatedEfficiency: cloudCover == null ? null : Math.round(100 - cloudCover * 0.75),
         daylightHours,
       },
     });

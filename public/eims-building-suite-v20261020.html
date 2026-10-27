@@ -177,7 +177,7 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
 .fpe-sidebar{width:220px;background:#0d1030;border-right:1px solid #1e2560;overflow-y:auto;padding:10px;flex-shrink:0}
 .fpe-canvas-area{flex:1;position:relative;background:#f5f5f5;overflow:hidden}
 .fpe-canvas-area svg{position:absolute;top:0;left:0;cursor:crosshair}
-.fpe-toolbar{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:3px;background:rgba(13,16,48,.92);padding:5px 8px;border-radius:6px;border:1px solid #1e2560;z-index:10}
+.fpe-toolbar{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 16px);gap:3px;background:rgba(13,16,48,.92);padding:5px 8px;border-radius:6px;border:1px solid #1e2560;z-index:10}
 .fpe-toolbar button{padding:4px 10px;background:rgba(255,255,255,.06);color:#90caf9;border:1px solid #283593;border-radius:3px;cursor:pointer;font-size:10px;font-weight:600;font-family:inherit;transition:.12s;white-space:nowrap}
 .fpe-toolbar button:hover{background:rgba(100,181,246,.2);color:#fff}
 .fpe-toolbar button.fpe-active{background:#1a237e;color:#64b5f6;border-color:#5c6bc0}
@@ -4700,7 +4700,7 @@ function showFloorEditor(){
     // Sidebar
     h+='<div class="fpe-sidebar" id="fpeSidebar">';
     h+='<div style="font-size:13px;font-weight:700;color:#64b5f6;margin-bottom:4px">\u270F\uFE0F Floor Plan Editor</div>';
-    h+='<div style="font-size:10px;color:#5c6bc0;margin-bottom:8px">Drag elements onto the canvas. Click to select, drag to move.</div>';
+    h+='<div style="font-size:10px;color:#5c6bc0;margin-bottom:8px">Tap an element to add it, or drag it onto the plan. Tap to select; drag to move.</div>';
 
     // Floor tabs
     h+='<div class="fpe-floor-tabs" id="fpeFloorTabs">';
@@ -4783,9 +4783,14 @@ function fpeInitCanvas(){
     fpe.svgEl=svg;
 
     // Mouse events on SVG
-    svg.addEventListener('mousedown',fpeMouseDown);
-    svg.addEventListener('mousemove',fpeMouseMove);
-    svg.addEventListener('mouseup',fpeMouseUp);
+    // Pointer events so touch works like a mouse (2026-10-25 audit: touch
+    // could not move anything). touch-action:none keeps a drag on the plan
+    // from scrolling the page.
+    svg.style.touchAction='none';
+    svg.addEventListener('pointerdown',e=>{try{svg.setPointerCapture(e.pointerId)}catch(x){} fpeMouseDown(e);});
+    svg.addEventListener('pointermove',fpeMouseMove);
+    svg.addEventListener('pointerup',fpeMouseUp);
+    svg.addEventListener('pointercancel',fpeMouseUp);
     svg.addEventListener('wheel',fpeWheel,{passive:false});
     svg.addEventListener('dblclick',fpeDblClick);
 
@@ -5171,8 +5176,8 @@ function fpeInsertAt(group,idx,sx,sy){
     if(!item)return;
     let px=(sx-fpe.panX)/fpe.zoom;
     let py=(sy-fpe.panY)/fpe.zoom;
-    let mX=fpeSnap(fpeWorldToM(px));
-    let mY=fpeSnap(fpeWorldToM(py));
+    let mX=fpeSnap(fpeWorldToM(px)-(item.w||0)/2);
+    let mY=fpeSnap(fpeWorldToM(py)-(item.h||0)/2);
 
     let newEl={
         id:fpe.nextId++,
@@ -7192,7 +7197,7 @@ const PRO_CATALOG = [
       {k:'V_ms',type:'number',def:51.4,step:'0.1',l:'Basic wind speed (m/s)'},
       {k:'height_m',type:'number',def:9.1,step:'0.1',l:'Mean roof height (m)'},
       {k:'exposure',type:'select',opts:['B','C','D'],def:'C',l:'Exposure'},
-      {k:'enclosure',type:'select',opts:['enclosed','partially_enclosed','open'],def:'enclosed',l:'Enclosure'},
+      {k:'enclosure',type:'select',opts:['enclosed','partially_enclosed','partially_open','open'],def:'enclosed',l:'Enclosure'},
     ]},
   {id:'en_wind_ec', grp:'Engineering+', title:'Wind — peak velocity pressure (EN 1991-1-4)',
     ep:'/api/loads/wind/eurocode', mth:'POST',
@@ -7554,6 +7559,7 @@ const PRO_UNIT_SUFFIXES = {'_kNm':'kNm','_kN':'kN','_MPa':'MPa','_kPa':'kPa','_p
   '_lux':'lux','_s':'s','_dB':'dB','_y_in':'in','_lbf':'lbf'};
 
 const PRO_LABELS = {
+  Bp_Rd_kN:'Punching resistance Bp,Rd', C_min:'C min', C_max:'C max', T60_s:'Reverberation time T60', total_absorption_m2_sabin:'Total absorption', mean_alpha:'Mean absorption ᾱ', datetime_utc:'Date/time (UTC)',
   qz_psf:'Velocity pressure qz', qz_Pa:'Velocity pressure qz', qp_Pa:'Peak velocity pressure qp', qp_kPa:'Peak velocity pressure qp',
   Kz:'Exposure coefficient Kz', GCpi:'Internal pressure coefficient GCpi', Kd_for_pressure_equations:'Kd (for pressure equations)',
   vb_ms:'Basic wind velocity vb', vm_ms:'Mean wind velocity vm', Iv:'Turbulence intensity Iv', cr:'Roughness factor cr', kr:'Terrain factor kr',

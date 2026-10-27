@@ -196,7 +196,7 @@ const TOOLS: Record<string, ToolCopy> = {
     coverage: 'Installations across Kenya and East Africa with county-level service reach and 2-year workmanship warranty.',
     faqs: [
       { q: 'Is solar worth it in Kenya?', a: 'Usually yes: with 4.5–6.5 kWh/m²/day of irradiance, commercial systems commonly pay back in 3–5 years against KPLC tariffs, faster where diesel generation is being displaced.' },
-      { q: 'Can solar work with my existing generator?', a: 'Yes — hybrid controllers let solar carry the day load and the generator top up, typically halving fuel consumption. We design the integration properly, including reverse-power protection.' },
+      { q: 'Can solar work with my existing generator?', a: 'Yes — hybrid controllers let solar carry the day load and the generator top up, which cuts run-hours and fuel; how much depends on how much of the load falls in daylight. We design the integration properly, including reverse-power protection.' },
       { q: 'Do you offer financing?', a: 'We work with asset financiers and structure phased installations; talk to our engineers about options for your project size.' },
     ],
   },

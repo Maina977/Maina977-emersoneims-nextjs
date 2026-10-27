@@ -41,6 +41,11 @@ export function isJunkRecord(w: any): boolean {
   // A single "word" with five consonants in a row is keyboard noise ("fcuyvchsc").
   const first = id.split(/[\s—,(-]/)[0];
   if (/^[a-z]+$/i.test(first) && first.length >= 6 && /[bcdfghjklmnpqrstvwxz]{5,}/i.test(first)) return true;
+  // Mis-placed registry points (2026-10-25 audit round 5): a record named for a
+  // town in a neighbouring country, or sitting exactly on the queried point
+  // (a place-name centroid, not a surveyed position).
+  if (/\b(mbarara|kampala|wakiso|mukono|jinja|gulu|mbale|arusha|moshi|dodoma|mwanza|kigali|juba|addis ababa|mogadishu)\b/i.test(id)) return true;
+  if (Number(w?.distance_km) === 0 && !/field|wra|completion/i.test(String(w?.source ?? ''))) return true;
   return false;
 }
 

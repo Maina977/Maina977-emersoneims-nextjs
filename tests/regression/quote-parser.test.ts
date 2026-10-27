@@ -57,3 +57,18 @@ describe('Kenyan quote formats (2026-10-25 audit round 4)', () => {
     expect(readRating('450 watts mono panel')).toMatchObject({ kind: 'panel', w: 450 });
   });
 });
+
+describe('Quote checker audit round 5 (2026-10-25)', () => {
+  it('keeps an item that mentions VAT inclusive', () => {
+    const l = parseLines('Deye 8kW hybrid inverter (VAT 16% inclusive) 1 260000 260000');
+    expect(l).toHaveLength(1);
+    expect(l[0].unitPriceKes).toBe(260000);
+  });
+  it('does not price gibberish and skips document headers', () => {
+    expect(parseLines('lorem 123 ipsum 456')[0].unitPriceKes).toBeNull();
+    expect(parseLines('QUOTATION - 5kVA HYBRID SOLAR SYSTEM\nPanels 580W x 10 @ 12500')).toHaveLength(1);
+  });
+  it('reads an off-grid inverter as off-grid', () => {
+    expect(readRating('Must 3.5kVA off-grid inverter')).toMatchObject({ kind: 'inverter', kw: 3.5, offGrid: true });
+  });
+});

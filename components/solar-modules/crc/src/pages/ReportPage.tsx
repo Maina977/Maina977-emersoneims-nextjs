@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useSolarStore } from '../services/store';
 import { reports, downloadBlob } from '../services/api';
+import { proposalFinance, loanMonthlyPayment } from '../services/proposalFinance';
 
 // Real proposal generator.
 // Fills in client + brand + site + design + financial from the shared
@@ -193,40 +194,51 @@ export default function ReportPage() {
 
   const hasProject = metrics.systemSizeKw > 0 && client.name.trim().length > 0;
 
+  const capexKes = financial.capexKes || metrics.totalCost;
+  // Equipment at typical Kenyan prices (estimates), then the rest of the
+  // capital cost as one balance line, so the BOM adds up to the capex used
+  // in the financial section. Fixed lump sums for mounting/BOS/installation
+  // (the same for 3 kWp and 30 kWp) and a battery line costed at 10 kWh when
+  // there was no battery were removed (2026-10-25 audit).
+  const batteryLineKes = design.batteryKwh > 0 ? Math.round(design.batteryKwh * 36000) : 0;
   function buildBom() {
-    // Reasonable defaults if user hasn't filled the design out fully — these
-    // values come from the calculator/store, never invented.
-    const panelTotalKes = (design.panelCount || metrics.panelCount) * 12500;
-    const inverterCost = Math.max(80000, (design.inverterKw || 5) * 35000);
-    const batteryCost = (design.batteryKwh || 10) * 36000;
-    const balanceOfSystem = 180000;
-    const mounting = 250000;
-    const installation = 420000;
-    return [
-      [`${design.panelMake || 'Panel'} ${design.panelModel || ''} ${design.panelW}W`,
-        design.panelCount || metrics.panelCount, 12500, panelTotalKes, null],
-      [`${design.inverterMake || 'Inverter'} ${design.inverterModel || ''} ${design.inverterKw}kW`,
-        1, inverterCost, inverterCost, null],
-      [`${design.batteryMake || 'Battery'} ${design.batteryModel || ''} ${design.batteryKwh}kWh`,
-        design.batteryKwh > 0 ? 1 : 0, batteryCost, batteryCost, null],
-      ['DC isolators + cabling',           1, balanceOfSystem, balanceOfSystem, null],
-      ['Mounting (galvanised steel)',      1, mounting,        mounting,        null],
-      ['Installation + commissioning',     1, installation,    installation,    null]
+    const panels = design.panelCount || metrics.panelCount;
+    const panelTotalKes = panels * 12500;
+    const inverterCost = design.inverterKw > 0 ? Math.max(80000, design.inverterKw * 35000) : 0;
+    const rows: Array<[string, number, number, number, null]> = [
+      [`${design.panelMake || 'Panel'} ${design.panelModel || ''} ${design.panelW}W`.replace(/\s+/g, ' '),
+        panels, 12500, panelTotalKes, null],
     ];
+    if (inverterCost > 0) {
+      rows.push([`${design.inverterMake || 'Inverter'} ${design.inverterModel || ''} ${design.inverterKw}kW`.replace(/\s+/g, ' '),
+        1, inverterCost, inverterCost, null]);
+    }
+    if (batteryLineKes > 0) {
+      rows.push([`${design.batteryMake || 'Battery'} ${design.batteryModel || ''} ${design.batteryKwh}kWh`.replace(/\s+/g, ' '),
+        1, batteryLineKes, batteryLineKes, null]);
+    }
+    const equipment = rows.reduce((s, r) => s + r[3], 0);
+    const balance = Math.round(capexKes - equipment);
+    if (balance > 0) {
+      rows.push(['Mounting, cabling, protection, installation & commissioning (balance of the estimate)',
+        1, balance, balance, null]);
+    }
+    return rows;
   }
+  const finance = proposalFinance({
+    capexKes,
+    year1SavingsKes: financial.year1SavingsKes,
+    batteryReplacement: batteryLineKes > 0 ? { year: 12, costKes: batteryLineKes } : null,
+  });
 
   function buildProposalPayload() {
     const annualProduction = metrics.annualProduction;
-    const monthlyYield = Array.from({ length: 12 }, () => Math.round(annualProduction / 12));
-    const cashFlowTable = Array.from({ length: 25 }, (_, i) => {
-      const yr = i + 1;
-      const annual = Math.round((financial.year1SavingsKes || 1) * Math.pow(1.025, i));
-      const cumulative =
-        Array.from({ length: yr }, (_, j) =>
-          Math.round((financial.year1SavingsKes || 1) * Math.pow(1.025, j))
-        ).reduce((a, b) => a + b, 0) - financial.capexKes;
-      return [yr, annual, cumulative];
-    });
+    const monthlyKwh = site.monthlyConsumptionKwh;
+    // Share of the annual consumption the array produces; unknown without a
+    // consumption figure (it was a fixed 92 %).
+    const annualOffsetPct = monthlyKwh && monthlyKwh > 0 && annualProduction > 0
+      ? Math.min(100, Math.round(annualProduction / (monthlyKwh * 12) * 100)) : null;
+    const a = finance.assumptions;
     return {
       brand,
       customer: {
@@ -244,10 +256,10 @@ export default function ReportPage() {
         elevationM: site.elevationM,
         climateZone: 'East Africa',
         irradianceKwhPerM2Day: site.irradianceKwhPerM2Day || metrics.peakSunHours,
-        monthlyConsumptionKwh: site.monthlyConsumptionKwh || (metrics.annualProduction / 12),
-        peakDemandKw: Math.round(metrics.systemSizeKw * 0.7 * 10) / 10,
+        monthlyConsumptionKwh: monthlyKwh ?? null,
+        peakDemandKw: null,
         tariffKesPerKwh: site.tariffKesPerKwh,
-        tariffSchedule: 'KPLC retail',
+        tariffSchedule: 'Kenya Power retail (as entered)',
         gridReliabilityNotes: site.gridReliabilityNotes
       },
       design: {
@@ -269,59 +281,48 @@ export default function ReportPage() {
           metrics.systemSizeKw > 0
             ? Math.round(metrics.annualProduction / metrics.systemSizeKw)
             : 0,
-        annualOffsetPct: 92,
-        monthlyYieldKwh: monthlyYield,
-        systemLossesPct: 14,
+        annualOffsetPct,
         bom: buildBom()
       },
       financial: {
-        capexKes: financial.capexKes || metrics.totalCost,
+        capexKes,
         year1SavingsKes: financial.year1SavingsKes,
-        paybackYears: financial.paybackYears || metrics.paybackPeriods,
-        irrPct: financial.irrPct || 25,
-        npvKes: financial.npvKes || Math.round((financial.year1SavingsKes || 0) * 8),
-        discountRatePct: 10,
-        tariffEscalationPct: 3,
-        panelDegradationPct: 0.5,
-        cashFlowTable,
+        paybackYears: finance.paybackYears,
+        irrPct: finance.irrPct,
+        npvKes: finance.npvKes,
+        discountRatePct: a.discountRatePct,
+        tariffEscalationPct: a.tariffEscalationPct,
+        panelDegradationPct: a.panelDegradationPct,
+        cashFlowTable: finance.cashFlowTable,
         financingOptions: [
-          ['Equity', 0, 0, 0, financial.capexKes || metrics.totalCost],
-          ['Bank loan 5yr', 60, 14, Math.round((financial.capexKes || metrics.totalCost) / 50), Math.round((financial.capexKes || metrics.totalCost) * 1.4)],
-          ['Lease-to-own 7yr', 84, 16, Math.round((financial.capexKes || metrics.totalCost) / 60), Math.round((financial.capexKes || metrics.totalCost) * 1.85)]
+          ['Cash', 0, 0, 0, capexKes],
+          ['Bank loan, 5 years', 60, 14, loanMonthlyPayment(capexKes, 14, 60), loanMonthlyPayment(capexKes, 14, 60) * 60],
+          ['Bank loan, 7 years', 84, 16, loanMonthlyPayment(capexKes, 16, 84), loanMonthlyPayment(capexKes, 16, 84) * 84]
         ]
       },
       warranties: [
-        ['Modules', '15', '30', 'Linear performance warranty'],
-        ['Inverter', '10', '-', '+5yr extension available'],
-        ['Battery', '10', '-', '60% retained capacity at 10yr'],
-        ['Workmanship', '2', '-', 'From commissioning']
+        ['Modules', 'Typically 12–15', 'Typically 25–30', 'Confirm on the selected datasheet'],
+        ['Inverter', 'Typically 5–10', '—', 'Confirm on the selected datasheet'],
+        ['Battery', 'Typically 10', '—', 'Confirm cycles and end-of-warranty capacity on the datasheet'],
+        ['Workmanship', '2', '—', 'From commissioning']
       ],
       scope: {
         included: [
-          'Detailed design + permit pack',
-          'Supply of all listed equipment',
-          'Roof structural assessment',
-          'DC/AC installation + commissioning',
-          '24-month warranty + remote monitoring'
+          'Design and single-line diagram',
+          'Supply of the listed equipment',
+          'Roof and structure check at the site survey',
+          'Installation, testing and commissioning',
+          'Workmanship warranty: 2 years from commissioning'
         ],
         excluded: [
-          'Civil works > KSh 50,000',
-          'Utility interconnection fees',
-          'Optional: SCADA / off-site monitoring portal'
+          'Civil and building works',
+          'Kenya Power connection or metering fees'
         ],
         deliverables: [
-          'Stamped single-line diagram',
+          'Single-line diagram',
           'As-built drawings',
-          'O&M manual',
-          'Test & commissioning certificate',
-          'EPRA permit submission pack'
-        ],
-        milestones: [
-          ['Design freeze', 7, 'Stamped drawings + BOM'],
-          ['Equipment delivery', 35, 'Goods received note'],
-          ['Mechanical install', 49, 'Roof + structure complete'],
-          ['Electrical + commissioning', 56, 'Energised system'],
-          ['Handover', 63, 'Acceptance certificate']
+          'Operation and maintenance notes',
+          'Test and commissioning record'
         ]
       },
       env: {
@@ -338,9 +339,11 @@ export default function ReportPage() {
           url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
         { label: 'Equipment pricing', source: 'Typical Kenyan installed prices (estimate, not a quotation)',
           url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
-        { label: 'Irradiance ' + (site.irradianceKwhPerM2Day || metrics.peakSunHours) + ' kWh/m²/day',
-          source: 'NASA POWER Project', url: 'https://power.larc.nasa.gov',
-          retrievedIso: new Date().toISOString().slice(0, 10) }
+        { label: 'Cash flow assumptions',
+          source: `Tariff +${a.tariffEscalationPct}%/yr, panel output -${a.panelDegradationPct}%/yr, O&M ${a.omPctOfCapex}% of capex/yr`
+            + (batteryLineKes > 0 ? ', one battery replacement in year 12 at today\'s price' : '')
+            + `, NPV at ${a.discountRatePct}%. Loan rates are illustrative.`,
+          url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) }
       ]
     };
   }
@@ -403,12 +406,13 @@ export default function ReportPage() {
 
   return (
     <Container>
-      <Title>📋 Proposal & Quotation Generator</Title>
+      <Title>📋 Proposal Generator</Title>
       <Sub>
-        Generate a fully branded engineering proposal in PDF, Word or Excel —
+        Generate a branded, indicative design proposal in PDF, Word or Excel:
         cover, executive summary, site assessment, system design, bill of
-        materials, 25-year cash-flow, environmental impact, warranties, scope,
-        terms and a data-provenance appendix listing every source.
+        materials, 25-year cash flow, warranties, scope, assumptions and the
+        data sources used. It is an estimate, not a quotation; a site survey
+        confirms the design and price.
       </Sub>
 
       <Grid>
@@ -531,9 +535,9 @@ export default function ReportPage() {
               </Button>
             </div>
             <div style={{ fontSize: 11.5, color: 'rgba(230,241,255,0.6)', marginTop: 10, lineHeight: 1.5 }}>
-              Each format contains the full proposal: site map, single-line diagram,
-              monthly yield, 25-year cash-flow, bill of materials, financials,
-              warranties, scope, terms and a data-provenance appendix.
+              Each format contains the same proposal: system design, bill of
+              materials, financials with a 25-year cash flow, warranties, scope,
+              assumptions and data sources.
             </div>
           </div>
 
@@ -567,7 +571,7 @@ export default function ReportPage() {
           <Section>Financial</Section>
           <SummaryRow><SummaryK>CAPEX</SummaryK><SummaryV>KSh {Math.round((financial.capexKes || metrics.totalCost) / 1000)}k</SummaryV></SummaryRow>
           <SummaryRow><SummaryK>Year-1 saving</SummaryK><SummaryV>KSh {Math.round(financial.year1SavingsKes / 1000)}k</SummaryV></SummaryRow>
-          <SummaryRow><SummaryK>Payback</SummaryK><SummaryV>{financial.paybackYears || metrics.paybackPeriods} yrs</SummaryV></SummaryRow>
+          <SummaryRow><SummaryK>Payback (proposal cash flow)</SummaryK><SummaryV>{finance.paybackYears != null ? `${finance.paybackYears} yrs` : 'Not within 25 years'}</SummaryV></SummaryRow>
 
           <Banner $kind="info">
             All values pulled live from the project store (Calculator output → here).

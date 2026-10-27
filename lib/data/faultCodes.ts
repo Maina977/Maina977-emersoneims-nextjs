@@ -126,8 +126,8 @@ export const FAULT_CODES: FaultCode[] = [
   {
     code: 'SPN-190',
     brand: 'J1939',
-    title: 'Engine Overspeed Shutdown',
-    description: 'The engine has exceeded its maximum safe operating speed. This protection fault activates when engine RPM surpasses the manufacturer\'s specified limit, typically 10-15% above rated speed. Engine overspeed can cause catastrophic mechanical damage including connecting rod failure, piston damage, and crankshaft breakage.',
+    title: 'Engine Speed — Overspeed, Underspeed and Sensor Faults',
+    description: 'SPN 190 is the engine-speed signal; the FMI says whether the engine is over speed, under speed or the sensor is at fault. Overspeed first: the engine has exceeded its maximum safe operating speed. This protection fault activates when engine RPM surpasses the manufacturer\'s specified limit, typically 10-15% above rated speed. Engine overspeed can cause catastrophic mechanical damage including connecting rod failure, piston damage, and crankshaft breakage.',
     severity: 'critical',
     category: 'Engine Speed/Timing',
     possibleCauses: [
@@ -169,7 +169,7 @@ export const FAULT_CODES: FaultCode[] = [
   {
     code: 'SPN-100',
     brand: 'J1939',
-    title: 'Engine Oil Pressure — Low Pressure (FMI 1, 17, 18)',
+    title: 'Engine Oil Pressure — Low, High and Sensor Faults',
     description: 'SPN 100 is the oil-pressure signal; the FMI beside it says whether the reading is low, high or a sensor fault. This page covers LOW pressure (FMI 1, 17, 18): oil pressure has dropped below the minimum safe operating threshold. Low oil pressure can cause severe engine damage within minutes as bearings, pistons, and camshafts rely on pressurized oil for lubrication and cooling. This fault requires immediate engine shutdown to prevent catastrophic failure.',
     severity: 'critical',
     category: 'Lubrication System',
@@ -257,7 +257,7 @@ export const FAULT_CODES: FaultCode[] = [
   {
     code: 'SPN-102',
     brand: 'J1939',
-    title: 'Intake Manifold (Boost) Pressure — High Boost (FMI 0, 15, 16)',
+    title: 'Intake Manifold (Boost) Pressure — High, Low and Sensor Faults',
     description: 'SPN 102 is the boost-pressure signal; the FMI says whether boost is high, low or the sensor is faulty. This page covers HIGH boost (FMI 0, 15, 16): the turbocharger is producing excessive boost pressure beyond normal operating parameters. Over-boost raises peak cylinder pressure and can lead to head gasket failure and engine damage. Common causes are a wastegate or VGT actuator stuck closed or a faulty boost sensor. (Black smoke usually points the other way: too little boost.)',
     severity: 'warning',
     category: 'Air Intake/Turbo',

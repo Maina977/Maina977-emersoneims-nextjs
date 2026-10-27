@@ -878,7 +878,8 @@ export default function FaultDiagnosticsPanel({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    placeholder="Code as shown (e.g. SPN 100 FMI 1) or alarm wording (e.g. low oil pressure)"
+                    placeholder="Code as shown, e.g. SPN 100 FMI 1, or alarm text"
+                    aria-label="Fault code as shown on the display, or the alarm wording"
                     className="w-full px-4 py-3 pl-8 bg-slate-950/80 border border-purple-500/30 rounded-xl text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-purple-500/50"
                     style={{ boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.3)' }}
                   />
@@ -924,7 +925,7 @@ export default function FaultDiagnosticsPanel({
           {/* Search Results */}
           <div className="p-6 bg-slate-900/50 rounded-xl border border-slate-700/50">
             <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">
-              {displayResults.length > 0 ? `Results (${displayResults.length} found)` : 'Search for a fault code to see detailed troubleshooting'}
+              {displayResults.length > 0 ? `Results (${displayResults.length} found)` : lastSearched ? 'Results' : 'Search for a fault code to see detailed troubleshooting'}
             </h3>
 
             {displayResults.length === 0 && !isSearching && lastSearched && (

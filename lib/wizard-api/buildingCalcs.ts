@@ -20,8 +20,10 @@ export const isCalcError = (v: unknown): v is CalcError =>
 /** Finite number from a number or numeric string, else undefined. */
 function n(v: unknown): number | undefined {
   if (v === null || v === undefined || v === '') return undefined;
-  const x = typeof v === 'string' ? parseFloat(v) : (v as number);
-  return Number.isFinite(x) ? x : undefined;
+  // Whole numeric strings only: parseFloat accepted "300abc" as 300 (2026-10-25 audit).
+  if (typeof v === 'string' && !/^\s*[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?\s*$/.test(v)) return undefined;
+  const x = typeof v === 'string' ? Number(v) : (v as number);
+  return typeof x === 'number' && Number.isFinite(x) ? x : undefined;
 }
 
 /** First key present (aliases), as a number. */
@@ -39,7 +41,8 @@ function missing(fields: Record<string, number | undefined>): CalcError | null {
 }
 
 function bad(message: string): CalcError {
-  return { error: message };
+  const fields = Array.from(new Set((message.match(/\b[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]+\b/g) || [])));
+  return { error: message, ...(fields.length ? { missing: fields } : {}) } as CalcError;
 }
 
 /** Thrown when an optional input is supplied but invalid; runCalc() turns it into a CalcError. */
@@ -188,11 +191,12 @@ export function uValue(b: Body) {
     if (!(d > 0 && k > 0)) return bad(`layers[${i}] thickness and conductivity must be > 0`);
     if (d > 2) return bad(`layers[${i}] is ${d} m thick: thickness_m is in metres (0.1 = 100 mm), and building layers are under 2 m`);
     if (k > 500) return bad(`layers[${i}] lambda_W_mK = ${k} is above any building material (copper is about 380)`);
+    if (k < 0.005) return bad(`layers[${i}] lambda_W_mK = ${k} is below any building material (vacuum panels are about 0.007)`);
     R += d / k;
     rows.push({ layer: String(l.description ?? `Layer ${i + 1}`), R_m2K_W: r(d / k, 3) });
   }
   return {
-    U_W_m2K: r(1 / R, 3),
+    U_W_m2K: 1 / R >= 0.001 ? r(1 / R, 3) : Number((1 / R).toPrecision(2)),
     R_total_m2K_W: r(R, 3),
     surface_resistances: { Rsi: rsi, Rse: rse, heat_flow: flow },
     layers: rows,
@@ -303,8 +307,11 @@ export function windEurocode(b: Body) {
   const t = TERRAIN[tc];
   if (!t) return { error: 'Missing or invalid input: terrain_category (0, I, II, III or IV)', missing: ['terrain_category'] };
   const pos = (x: number) => x > 0;
-  const cdir = opt(b, 'cdir', 1, pos, 'greater than 0'), cseason = opt(b, 'cseason', 1, pos, 'greater than 0'), cprob = opt(b, 'cprob', 1, pos, 'greater than 0');
-  const co = opt(b, 'co', 1, pos, 'greater than 0'), rho = opt(b, 'rho_kg_m3', 1.25, pos, 'greater than 0');
+  const upTo = (hi: number) => (x: number) => x > 0 && x <= hi;
+  const cdir = opt(b, 'cdir', 1, upTo(1), 'greater than 0 and at most 1'), cseason = opt(b, 'cseason', 1, upTo(1), 'greater than 0 and at most 1'), cprob = opt(b, 'cprob', 1, upTo(1.2), 'greater than 0 and at most 1.2');
+  const co = opt(b, 'co', 1, upTo(1.5), 'greater than 0 and at most 1.5 (orography factor)');
+  const rho = opt(b, 'rho_kg_m3', 1.25, (x) => x >= 0.9 && x <= 1.4, 'between 0.9 and 1.4 kg/m³ (air density; about 1.0 at Nairobi altitude)');
+  void pos;
   if (!(vb0! > 0)) return bad('vb_ms must be > 0');
   if (vb0! > 70) return bad('vb_ms above 70 m/s is not a basic wind speed (the strongest national values are about 50 m/s; Kenya is about 20-30 m/s)');
   if (!(z! > 0 && z! <= 200)) return bad('height_m must be between 0 and 200 m: the EN 1991-1-4 profile (§4.3.2) applies up to 200 m');
@@ -346,6 +353,7 @@ export function seismicElf(b: Body) {
   // Height in feet (ASCE) or metres (2026-10-20: the suite now offers metres).
   const hnM = pick(b, 'height_m');
   const hn = pick(b, 'height_ft') ?? (hnM !== undefined ? hnM / 0.3048 : undefined);
+  if (hn !== undefined && !(hn > 0)) return bad('height_m / height_ft must be greater than 0');
   if (hn !== undefined && hn > 1000) return bad('Height above 1,000 ft (about 300 m) is outside an equivalent-lateral-force check: use a dynamic analysis');
   const Ta = hn !== undefined && hn > 0 ? p.Ct * Math.pow(hn, p.x) : undefined;
   let T = pick(b, 'T', 'T_s');
@@ -374,6 +382,7 @@ export function seismicElf(b: Body) {
   // ELF is not permitted for every structure: Table 12.6-1 limits it (e.g. T
   // >= 3.5·Ts in higher seismic design categories). Say so rather than refuse.
   const Ts = SD1! / SDS!;
+  const spectrumNote = SD1! > SDS! ? `SD1 (${SD1}) is larger than SDS (${SDS}); in ASCE 7 maps SD1 is normally below SDS. Check the values were not swapped.` : undefined;
   const elfWarning = T > 3.5 * Ts ? `T = ${r(T, 2)} s is at least 3.5·Ts (${r(3.5 * Ts, 2)} s): ASCE 7-22 Table 12.6-1 does not permit ELF for many systems in seismic design categories D-F. Check the permitted procedure; a modal response spectrum analysis may be required.` : undefined;
   const Cs0 = SDS! / (R! / Ie!);
   const CsMax = SD1! / (T * (R! / Ie!));
@@ -384,7 +393,7 @@ export function seismicElf(b: Body) {
     Cs: r(Cs, 4),
     V_kN: r(Cs * W!, 1),
     governing: Cs === CsMin ? 'minimum (Eq. 12.8-5)' : Cs === CsMax ? 'period limit (Eq. 12.8-3)' : 'Eq. 12.8-2',
-    ...(elfWarning ? { warning: elfWarning } : {}),
+    ...(elfWarning || spectrumNote ? { warning: [elfWarning, spectrumNote].filter(Boolean).join(' ') } : {}),
     assumptions: [periodNote, 'T ≤ TL assumed (Eq. 12.8-4 not checked)', 'S1 ≥ 0.6g minimum (Eq. 12.8-6) not checked'],
     method: 'ASCE 7-22 §12.8 equivalent lateral force',
   };
@@ -396,7 +405,8 @@ export function rcBeam(b: Body) {
   // Legacy form: simply supported span under UDL.
   const w = pick(b, 'w_kN_m'), L = pick(b, 'L_m');
   if (w !== undefined && L !== undefined && b.b_mm === undefined) {
-    if (!(L > 0)) return bad('L_m must be > 0');
+    if (!(L > 0 && L <= 50)) return bad('L_m must be between 0 and 50 m for a beam span');
+    if (w > 10000) return bad('w_kN_m above 10,000 kN/m is not a beam load; check the units (kN per metre)');
     if (!(w >= 0)) return bad('w_kN_m must be 0 or more (a downward uniform load)');
     return { M_kNm: r((w * L * L) / 8), V_kN: r((w * L) / 2), method: 'Simply supported beam, uniform load: M = wL²/8, V = wL/2' };
   }
@@ -469,12 +479,13 @@ export function steelBolt(b: Body) {
     if (err) return err;
     if (!(fub! > 0 && As! > 0)) return bad('fub_MPa and As_mm2 must be > 0');
     const av = pick(b, 'alpha_v') ?? 0.6;
+    if (!(av > 0 && av <= 0.6)) return bad('alpha_v must be 0.5 or 0.6 (EN 1993-1-8 Table 3.4)');
     return { Fv_Rd_kN: r((av * fub! * As!) / gM2 / 1000), method: 'EN 1993-1-8 Table 3.4, one shear plane' };
   }
   const desig = String(b.designation ?? '').toUpperCase();
   const grade = String(b.grade ?? '');
   const As = BOLT_AS[desig], fub = BOLT_FUB[grade];
-  if (!As || !fub) return { error: 'Missing or invalid input: designation (M12–M30) and grade (4.6, 5.6, 8.8, 10.9)', missing: [!As ? 'designation' : '', !fub ? 'grade' : ''].filter(Boolean) };
+  if (!As || !fub) return { error: 'Missing or invalid input: designation (M12–M30) and grade (4.6, 4.8, 5.6, 5.8, 6.8, 8.8, 10.9)', missing: [!As ? 'designation' : '', !fub ? 'grade' : ''].filter(Boolean) };
   const dNom = parseInt(desig.slice(1), 10);
   const planes = opt(b, 'shear_planes', 1, (x) => Number.isInteger(x) && x >= 1 && x <= 4, 'a whole number from 1 to 4');
   const tis = b.threads_in_shear;
@@ -497,6 +508,9 @@ export function steelBolt(b: Body) {
   const assumptions: string[] = [];
   if (d0Given === undefined) assumptions.push(`Hole diameter taken as ${d0} mm (EN 1090-2 normal clearance for ${desig})`);
   if ([t, fu, e1, d0, p1].some((v) => v !== undefined && !(v > 0))) return bad('t_ply_mm, fu_ply_MPa, e1_mm, p1_mm and d_hole_mm must be > 0');
+  if (t !== undefined && t > 100) return bad('t_ply_mm above 100 mm is outside bolted-plate practice');
+  if (fu !== undefined && (fu < 300 || fu > 1000)) return bad('fu_ply_MPa must be between 300 and 1000 MPa (structural steel ultimate strength, e.g. 430 for S275, 510 for S355)');
+  if ((e1 !== undefined && e1 > 1000) || (p1 !== undefined && p1 > 1000)) return bad('e1_mm and p1_mm above 1,000 mm are not bolt spacings');
   if (d0 !== undefined && d0 < dNom) return bad(`d_hole_mm must be at least the bolt diameter (${dNom} mm)`);
   // EN 1993-1-8 Table 3.3 minimum end distance and spacing.
   if (e1 !== undefined && d0 !== undefined && e1 < 1.2 * d0) return bad(`e1_mm = ${e1} is below the EN 1993-1-8 Table 3.3 minimum end distance 1.2·d0 = ${r(1.2 * d0, 1)} mm`);
@@ -549,6 +563,8 @@ export function bearingCapacity(b: Body) {
   if (err) return err;
   if (!(phiDeg! >= 0 && phiDeg! < 50) || !(B! > 0) || Df! < 0 || c! < 0) return bad('Need 0 ≤ φ < 50°, B > 0, Df ≥ 0 and c ≥ 0');
   if (!(gamma! > 0 && gamma! <= 30)) return bad('gamma_kN_m3 (soil unit weight) must be between 0 and 30 kN/m³');
+  if (c! > 1000) return bad('c_kPa above 1,000 kPa is rock, not a soil cohesion this method applies to');
+  if (B! > 50 || Df! > 50) return bad('B_m and Df_m above 50 m are outside shallow-foundation practice');
   const shape = String(b.shape ?? 'strip');
   const SHAPE: Record<string, { sc: number; sg: number }> = { strip: { sc: 1, sg: 0.5 }, square: { sc: 1.3, sg: 0.4 }, circular: { sc: 1.3, sg: 0.3 } };
   const s = SHAPE[shape];
@@ -597,6 +613,7 @@ export function kirpich(b: Body) {
   if (!(L! > 0 && S! > 0)) return bad('length_m and slope_m_per_m must be > 0');
   if (S! >= 1) return bad('slope_m_per_m is a gradient (rise ÷ run): 0.05 means 5%. Values of 1 or more are not catchment slopes.');
   if (L! > 100000) return bad('length_m above 100 km is not a small catchment; Kirpich applies to small rural catchments');
+  if (L! < 10) return bad('length_m below 10 m is not a catchment flow path (Kirpich uses the longest flow path in metres)');
   const outside = S! < 0.03 || S! > 0.1;
   const long = L! > 10000;
   const warn = [outside ? `Kirpich was fitted to slopes of 3–10%; ${r(S! * 100, 1)}% is outside that range.` : '', long ? `A ${r(L! / 1000, 1)} km flow path is longer than the small catchments Kirpich was fitted to.` : ''].filter(Boolean).join(' ');

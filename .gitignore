@@ -89,3 +89,6 @@ GA.txt
 # commits.
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+
+# local verification output (scripts/verify/run-local-verify.cjs)
+scripts/verify/out/

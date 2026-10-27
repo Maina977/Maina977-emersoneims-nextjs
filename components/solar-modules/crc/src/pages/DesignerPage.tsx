@@ -171,7 +171,9 @@ const DesignerPage: React.FC = () => {
           monthlySaving: d.monthlySavingKes || 0,
           paybackPeriods: d.paybackYears || 0,
           annualProduction: d.annualKwh || 0,
-          carbonOffsetKg: (d.annualKwh || 0) * 0.45,
+          // No flat grid factor: Kenya's grid is largely renewable, so a fixed
+          // 0.45 kg/kWh overstated CO2 several times (same rule as the Report page).
+          carbonOffsetKg: 0,
           peakSunHours: site.irradianceKwhPerM2Day ?? metrics.peakSunHours
         });
         updateFinancial({

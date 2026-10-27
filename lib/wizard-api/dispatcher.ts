@@ -71,7 +71,11 @@ async function readJson(req: NextRequest): Promise<Record<string, unknown>> {
   const ct = req.headers.get('content-type') || '';
   if (!ct.includes('application/json')) return {};
   try {
-    return (await req.json()) as Record<string, unknown>;
+    const parsed = await req.json();
+    // `null`, a number or an array is valid JSON but not a set of inputs
+    // (2026-10-25 audit: a `null` body crashed with an empty 500).
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { __invalidJson: true };
+    return parsed as Record<string, unknown>;
   } catch {
     // Malformed JSON is reported as such, not as a missing field (2026-10-20).
     return { __invalidJson: true };
