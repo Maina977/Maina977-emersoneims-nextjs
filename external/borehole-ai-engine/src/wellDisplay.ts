@@ -26,7 +26,9 @@ export function displayOutcome(w: any): string {
   const o = String(w?.outcome ?? 'Unknown');
   if (o === 'Unknown' || !o) return '—';
   const measured = Number(w?.yield_m3h) > 0 || /field|wra|completion/i.test(String(w?.source ?? ''));
-  if (wellKind(w) === 'borehole' && measured) return o === 'Fail' ? 'Dry / failed' : o;
+  // An outcome inferred from the tested yield is not a recorded outcome (2026-10-27 audit).
+  const inferred = w?.outcomeFromYield ? ' (from yield)' : '';
+  if (wellKind(w) === 'borehole' && measured) return (o === 'Fail' ? 'Dry / failed' : o) + inferred;
   // Registry status for anything else is whether the point works today.
   if (o === 'Success' || o === 'Moderate') return 'Working';
   if (o === 'Fail') return 'Not working';

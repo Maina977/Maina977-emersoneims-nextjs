@@ -173,21 +173,32 @@ export async function fetchElevation(lat: number, lon: number): Promise<Elevatio
  */
 export async function fetchClimateData(lat: number, lon: number): Promise<ClimateData | null> {
   try {
-    // Use climate normals (1991-2020 averages)
-    const url = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lon}&models=EC_Earth3P_HR&start_date=2020-01-01&end_date=2020-12-31&monthly=temperature_2m_mean,precipitation_sum`;
+    // Ten years of ERA5 reanalysis (2015-2024), averaged into a mean year —
+    // the same source and period as the bundled county baseline. The climate
+    // API used before does not serve "monthly" data, so it failed on every
+    // call (2026-10-27 audit), and one simulated year is not a climate.
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=2015-01-01&end_date=2024-12-31&daily=precipitation_sum,temperature_2m_mean&timezone=UTC`;
 
-    const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) {
       console.log(`[Climate] HTTP ${res.status}`);
       return null;
     }
 
     const data = await res.json();
-    const monthly = data.monthly;
-    if (!monthly) return null;
-
-    const monthlyPrecip: number[] = monthly.precipitation_sum || [];
-    const monthlyTemp: number[] = monthly.temperature_2m_mean || [];
+    const days: string[] = data?.daily?.time ?? [];
+    const dp: (number | null)[] = data?.daily?.precipitation_sum ?? [];
+    const dt: (number | null)[] = data?.daily?.temperature_2m_mean ?? [];
+    if (days.length < 365 * 5) return null;
+    const years = new Set(days.map((d) => d.slice(0, 4))).size;
+    const pSum = Array(12).fill(0), tSum = Array(12).fill(0), tN = Array(12).fill(0);
+    days.forEach((d, i) => {
+      const m = Number(d.slice(5, 7)) - 1;
+      if (typeof dp[i] === 'number') pSum[m] += dp[i] as number;
+      if (typeof dt[i] === 'number') { tSum[m] += dt[i] as number; tN[m]++; }
+    });
+    const monthlyPrecip: number[] = pSum.map((s) => s / years);
+    const monthlyTemp: number[] = tSum.map((s, m) => (tN[m] ? s / tN[m] : 0));
     const annualPrecip = monthlyPrecip.reduce((a: number, b: number) => a + b, 0);
     const meanTemp = monthlyTemp.length > 0
       ? monthlyTemp.reduce((a: number, b: number) => a + b, 0) / monthlyTemp.length
@@ -210,7 +221,7 @@ export async function fetchClimateData(lat: number, lon: number): Promise<Climat
       monthlyTemperature: monthlyTemp.map((v: number) => Math.round(v * 10) / 10),
       aridity,
       rechargeEstimate,
-      source: 'Open-Meteo Climate API (EC-Earth3P-HR model)',
+      source: 'ERA5 reanalysis 2015-2024 mean year (Open-Meteo archive)',
     };
   } catch (err) {
     console.log('[Climate] Error:', err);

@@ -288,11 +288,15 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     unit: 'm',
     tier: hasERT ? 'MEASURED' : hasModelledERT ? 'ESTIMATED' : (hasEnsemble && hasNearby) ? 'CALIBRATED' : (hasEnsemble || satelliteSourceCount >= 3) ? 'CALIBRATED' : hasNearby ? 'ESTIMATED' : 'INFERRED',
     category: hasERT ? 'field_measurement' : hasModelledERT ? 'model_derived' : (hasEnsemble || satelliteSourceCount >= 3) ? 'satellite' : hasNearby ? 'database' : 'model_derived',
-    source: hasERT ? 'Field ERT survey (2D inversion)' : hasNearby ? 'Drilled depths of boreholes nearby + county drilling record (no field survey)' : 'County drilling record + terrain (no field survey)',
+    // Name the depth evidence actually used (2026-10-27 audit: "drilled depths
+    // of boreholes nearby" was printed where no nearby record had a depth).
+    source: hasERT ? 'Field ERT survey (2D inversion)'
+      : r.fieldDepthBand ? `Drilled depths: ${r.fieldDepthBand.basis ?? `${r.fieldDepthBand.n} productive boreholes within 20 km (field records)`} (no field survey)`
+      : 'County drilling record + terrain (no field survey)',
     method: hasERT
       ? 'Occam 2D inversion -> low-resistivity zone detection -> depth optimisation, checked against nearby boreholes'
-      : hasNearby
-        ? 'Weighted towards the median drilled depth of productive boreholes within 20 km and kept between their quartiles; terrain and climate adjust it slightly (rule-based, not a trained model)'
+      : r.fieldDepthBand
+        ? `Weighted towards the median of those drilled depths (${r.fieldDepthBand.med} m) and kept between their quartiles (${r.fieldDepthBand.lq}-${r.fieldDepthBand.uq} m); terrain and climate adjust it slightly (rule-based, not a trained model)`
         : 'County average drilled depth, adjusted for terrain and climate (rule-based, not a trained model)',
     accuracy_pct: hasERT ? 88 : hasNearby ? 72 : 55,
     confidenceInterval: r.ertIntelligence?.depthOptimization

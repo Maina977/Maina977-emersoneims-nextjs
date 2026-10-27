@@ -64,11 +64,11 @@ export async function fetchGRACETWSData(lat: number, lon: number): Promise<GRACE
     startDate.setFullYear(startDate.getFullYear() - 5);
     const start = startDate.toISOString().split('T')[0];
 
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${start}&end_date=${end}&daily=soil_moisture_100_to_255cm&timezone=auto`;
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${start}&end_date=${end}&daily=soil_moisture_100_to_255cm_mean&timezone=UTC`;
     const resp = await fetch(url, { signal: AbortSignal.timeout(20000) });
     if (!resp.ok) return null;
     const data = await resp.json();
-    const smValues: number[] = (data.daily?.soil_moisture_100_to_255cm ?? []).filter((v: any) => v != null && v > 0);
+    const smValues: number[] = (data.daily?.soil_moisture_100_to_255cm_mean ?? []).filter((v: any) => v != null && v > 0);
     
     if (smValues.length < 365) return null;
 
@@ -103,7 +103,7 @@ export async function fetchGRACETWSData(lat: number, lon: number): Promise<GRACE
     const monthlyAvg = new Array(12).fill(0);
     const monthlyCnt = new Array(12).fill(0);
     const dailyDates = data.daily?.time ?? [];
-    (data.daily?.soil_moisture_100_to_255cm ?? []).forEach((v: number, i: number) => {
+    (data.daily?.soil_moisture_100_to_255cm_mean ?? []).forEach((v: number, i: number) => {
       if (v != null && v > 0 && dailyDates[i]) {
         const m = new Date(dailyDates[i]).getMonth();
         monthlyAvg[m] += v;
@@ -1453,13 +1453,13 @@ export async function analyzeVegetationGroundwater(lat: number, lon: number): Pr
     startDate.setFullYear(startDate.getFullYear() - 2);
     const start = startDate.toISOString().split('T')[0];
 
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${start}&end_date=${end}&daily=et0_fao_evapotranspiration,soil_moisture_0_to_7cm,precipitation_sum&timezone=auto`;
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${start}&end_date=${end}&daily=et0_fao_evapotranspiration,soil_moisture_0_to_7cm_mean,precipitation_sum&timezone=UTC`;
     const resp = await fetch(url, { signal: AbortSignal.timeout(20000) });
     if (!resp.ok) return null;
     const data = await resp.json();
 
     const et0Values: number[] = (data.daily?.et0_fao_evapotranspiration ?? []).filter((v: any) => v != null);
-    const smValues: number[] = (data.daily?.soil_moisture_0_to_7cm ?? []).filter((v: any) => v != null);
+    const smValues: number[] = (data.daily?.soil_moisture_0_to_7cm_mean ?? []).filter((v: any) => v != null);
     const precipValues: number[] = (data.daily?.precipitation_sum ?? []).filter((v: any) => v != null);
 
     if (et0Values.length < 365) return null;
@@ -1659,6 +1659,8 @@ export interface EnsembleInput {
   shallowWTLikelihood?: number;
   // From weighted probability (siteLocator)
   weightedProbability?: number;
+  /** false for a coordinates-only run: the image source then has no vote. */
+  photoUsed?: boolean;
   weightedConfidence?: string;
   // ═══ Sources 9-13: FIELD GEOPHYSICS (reliability 0.85-0.95) ═══
   ertResistivity?: { aquiferDepthM: number; aquiferThicknessM: number; avgResistivity: number };
@@ -1676,15 +1678,19 @@ export interface EnsembleInput {
 export function runBayesianEnsemble(input: EnsembleInput): EnsembleResult {
   const estimates: EnsembleResult['individualEstimates'] = [];
 
-  // Source 1: Base image analysis (lowest reliability)
-  estimates.push({
-    source: 'Image Analysis + SoilGrids',
-    probability: input.baseProbability,
-    depth_m: input.baseDepth,
-    yield_m3h: input.baseYield,
-    weight: 0.15,
-    reliability: 0.55,
-  });
+  // Source 1: Base image analysis (lowest reliability) — only when a real
+  // site photo was analysed (2026-10-27 audit: the coordinates-only
+  // placeholder image voted at 15% weight).
+  if (input.photoUsed !== false) {
+    estimates.push({
+      source: 'Image Analysis + SoilGrids',
+      probability: input.baseProbability,
+      depth_m: input.baseDepth,
+      yield_m3h: input.baseYield,
+      weight: 0.15,
+      reliability: 0.55,
+    });
+  }
 
   // Source 2: GLDAS/ERA5 water budget — INDEPENDENT probability from recharge rate
   if (input.gldasRecharge != null) {
@@ -1731,7 +1737,7 @@ export function runBayesianEnsemble(input: EnsembleInput): EnsembleResult {
     const valueReliability = Math.min(reliabilityByCount, 0.55 + 0.40 * fieldShare);
     estimates.push({
       source: fieldShare >= 0.5
-        ? 'Nearby Wells (USGS/OSM)'
+        ? 'Nearby Wells (field-tested boreholes)'
         : `Nearby Water Points (${Math.round(fieldShare * 100)}% field-measured)`,
       depth_m: input.nearbyWellAvgDepth,
       yield_m3h: input.nearbyWellAvgYield,
@@ -1865,6 +1871,12 @@ export function runBayesianEnsemble(input: EnsembleInput): EnsembleResult {
       weight: 0.30,
       reliability: 0.95,
     });
+  }
+
+  // Nothing else answered: fall back to the site prior, named as such, so the
+  // fusion never divides by zero.
+  if (estimates.length === 0) {
+    estimates.push({ source: 'Site prior (no other source answered)', probability: input.baseProbability, depth_m: input.baseDepth, yield_m3h: input.baseYield, weight: 0.15, reliability: 0.4 });
   }
 
   // ═══ BAYESIAN FUSION ═══

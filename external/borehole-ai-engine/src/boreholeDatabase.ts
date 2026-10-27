@@ -32,7 +32,9 @@ export interface CountyBoreholeStats {
   notes: string;
 }
 
-// Real county-level data from Kenya WRA borehole records + BGS Africa GW Atlas
+// County PROFILES: typical values estimated from published hydrogeology (BGS
+// Africa Groundwater Atlas) and drilling practice. They are estimates, not
+// counts of individual WRA records, and the UI labels them so (2026-10-27 audit).
 const KENYA_COUNTY_BOREHOLE_DATA: Record<string, CountyBoreholeStats> = {
   "murang'a": {
     county: "Murang'a",

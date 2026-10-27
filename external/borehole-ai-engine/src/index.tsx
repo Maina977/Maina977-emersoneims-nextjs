@@ -1,4 +1,6 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
+﻿import { inKenya } from './kenyaLand';
+import { finalVerdict } from './verdict';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { drillRatePerM, mobilisationUSD, countyRateBand, KES_PER_USD } from './costModel';
 import { BoreholeAnalyzer } from './boreholeAnalyzer';
 import type { ClientLocation } from './boreholeAnalyzer';
@@ -604,25 +606,7 @@ function findNearest(arr: number[], val: number): number {
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════ */
-/**
- * Coarse outline of Kenya's land border (lon, lat) with a ~8 km tolerance:
- * enough to refuse the sea and neighbouring countries (2026-10-20 audit).
- * Checked against all 3,446 shipped field records and 22,820 registry points
- * (none fall outside) and 22 towns including border and coastal ones.
- */
-const KENYA_OUTLINE: [number, number][] = [[33.95,0.15],[34.09,0.45],[34.24,0.65],[34.4,0.8],[34.6,1.2],[34.58,1.6],[34.97,1.95],[35,2.5],[34.45,2.95],[34.15,3.6],[33.99,4.22],[34.39,4.61],[34.4,4.98],[35,5.1],[35.95,5.45],[36.04,4.45],[37.05,4.36],[38.2,4.2],[38.95,3.6],[39.5,3.55],[39.86,3.84],[40.77,4.27],[41.17,3.94],[41.89,3.98],[41,2.78],[40.99,-0.85],[41.6,-1.65],[41.35,-1.95],[41.1,-2.25],[40.4,-2.62],[40.25,-3.1],[39.95,-3.6],[39.75,-4.05],[39.65,-4.4],[39.4,-4.72],[39.2,-4.68],[38.95,-4.45],[37.6,-3.45],[37.6,-3.05],[33.95,-1]];
-function inKenya(lat: number, lon: number): boolean {
-  let inside = false;
-  let minD = Infinity;
-  for (let i = 0, j = KENYA_OUTLINE.length - 1; i < KENYA_OUTLINE.length; j = i++) {
-    const [xi, yi] = KENYA_OUTLINE[i], [xj, yj] = KENYA_OUTLINE[j];
-    if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
-    const dx = xi - xj, dy = yi - yj;
-    const s = Math.max(0, Math.min(1, ((lon - xj) * dx + (lat - yj) * dy) / (dx * dx + dy * dy)));
-    minD = Math.min(minD, Math.hypot(lon - (xj + s * dx), lat - (yj + s * dy)));
-  }
-  return inside || minD < 0.07;
-}
+// inKenya / siteRefusal live in kenyaLand.ts (shared with the engine).
 
 /** File name of the neutral placeholder used for a coordinates-only run. */
 const NO_PHOTO_NAME = '__aquascan-no-photo__.jpg';
@@ -1040,7 +1024,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
         setResult(analysisResult);
         setActiveView('results');
         setActiveResultTab('overview');
-      } catch (error) { console.error('Re-analysis failed:', error); }
+      } catch (error: any) {
+        // Shown to the user (2026-10-27 audit: a refused site failed silently).
+        console.error('Re-analysis failed:', error);
+        setAnalysisError(error?.message || 'Re-analysis failed');
+        setManualLocError(error?.message || 'Re-analysis failed');
+      }
       finally { setAnalyzing(false); setPipelineStep(-1); setPipelineLabel(''); }
     } else if (result) {
       // No image file available — do coordinate-only update (fallback)
@@ -2030,7 +2019,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               {renderSciTable(['Factor','Weight','Data Source','Justification'], SCI.SUCCESS_WEIGHTS, ['factor','weight','source','justification'])}
 
               <h4 className="tab-title" style={{marginTop:24}}>How depth is estimated</h4>
-              <p className="tab-desc">The county drilling record and, where they exist, the drilled depths of productive boreholes within 20 km set the depth. Terrain and the photo adjust it a little. With three or more field records nearby, the depth is weighted towards their median and kept between their lower and upper quartiles.</p>
+              <p className="tab-desc">The county profile (estimates) and, where they exist, the drilled depths of productive boreholes within 20 km set the depth. Terrain and the photo adjust it a little. With three or more field records nearby, the depth is weighted towards their median and kept between their lower and upper quartiles.</p>
 
               <h4 className="tab-title" style={{marginTop:24}}>How yield is estimated</h4>
               <div className="formula-block"><code>{SCI.FORMULAS.yieldEmpirical}</code></div>
@@ -2239,6 +2228,14 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <span style={{fontSize:11,padding:'2px 10px',borderRadius:6,background:fcColor,color:'#fff',fontWeight:700}}>{fc.assessmentGrade}</span>
                 <span style={{fontSize:11,padding:'2px 10px',borderRadius:6,background:agrColor,color:'#fff',fontWeight:600}}>Sub-model spread: {fc.agreementLevel}</span>
               </div>
+              {/* The same verdict as the PDF (verdict.ts); before 2026-10-27 the
+                  web page never showed it and the PDF said PROCEED from desktop data. */}
+              {(() => { const v = finalVerdict(result); return (
+                <div style={{margin:'0 0 12px',padding:'10px 14px',borderRadius:10,border:`1.5px solid rgb(${v.color.join(',')})`,background:`rgba(${v.color.join(',')},0.08)`}}>
+                  <div style={{fontSize:14,fontWeight:800,color:`rgb(${v.color.join(',')})`}}>{v.verdict.replace(' -- ', ' — ')}</div>
+                  <div style={{fontSize:12,color:'var(--text-secondary)',marginTop:2}}>{v.next}</div>
+                </div>
+              ); })()}
               <div style={{display:'flex',gap:20,flexWrap:'wrap',marginBottom:12}}>
                 <div style={{textAlign:'center',minWidth:120,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderRadius:10,border:'1px solid rgba(255,255,255,0.08)'}}>
                   <div style={{fontSize:28,fontWeight:800,color:'#38bdf8',lineHeight:1}}>{fc.depth_m}<span style={{fontSize:14}}>m</span></div>
@@ -3371,7 +3368,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div className="result-item"><span className="rl">Annual Precipitation</span><span className="rv">{result.remoteSensing.climate.annualPrecipitation} mm/year</span></div>
                     <div className="result-item"><span className="rl">Mean Temperature</span><span className="rv">{result.remoteSensing.climate.meanTemperature}°C</span></div>
                     <div className="result-item"><span className="rl">Aridity Class</span><span className="rv">{result.remoteSensing.climate.aridity}</span></div>
-                    <div className="result-item"><span className="rl">Est. Groundwater Recharge</span><span className="rv" style={{fontWeight:700}}>{result.remoteSensing.climate.rechargeEstimate} mm/year</span></div>
+                    <div className="result-item"><span className="rl">Est. Groundwater Recharge</span><span className="rv" style={{fontWeight:700}}>{(result as any).rechargeSummary?.governing_mm ?? result.remoteSensing.climate.rechargeEstimate} mm/year</span></div>
                   </div>
                   {result.remoteSensing.climate.monthlyPrecipitation?.length > 0 && (
                     <div style={{marginTop:10}}>
@@ -4910,14 +4907,15 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 if (!ci) return null;
                 return (
                   <div style={{background:'rgba(34,197,94,0.06)',border:'1px solid rgba(34,197,94,0.25)',borderRadius:12,padding:16,marginBottom:20}}>
-                    <h4 style={{margin:'0 0 12px',color:'#22c55e'}}>{ci.county} County — drilling statistics</h4>
+                    <h4 style={{margin:'0 0 4px',color:'#22c55e'}}>{ci.county} County — typical drilling figures (estimates)</h4>
+                    <p style={{margin:'0 0 10px',fontSize:11,color:'var(--text-secondary)'}}>Compiled county profile: typical values estimated from published hydrogeology and drilling practice, not a count of individual drilling records.</p>
                     <div className="result-grid">
                       <div className="result-item"><span className="rl">Typical depth</span><span className="rv" style={{fontWeight:700,fontSize:18}}>{ci.avgDepth_m} m</span></div>
                       <div className="result-item"><span className="rl">Depth range</span><span className="rv">{ci.depthRange?.[0]} – {ci.depthRange?.[1]} m</span></div>
                       <div className="result-item"><span className="rl">Typical yield</span><span className="rv" style={{fontWeight:700,fontSize:18}}>{ci.avgYield_m3h} m³/h</span></div>
                       <div className="result-item"><span className="rl">Yield range</span><span className="rv">{ci.yieldRange?.[0]} – {ci.yieldRange?.[1]} m³/h</span></div>
                       <div className="result-item"><span className="rl">Success rate</span><span className="rv">{Math.round(Number(ci.successRate) * 100)}%</span></div>
-                      <div className="result-item"><span className="rl">Boreholes on record</span><span className="rv">~{Number(ci.estimatedBoreholes).toLocaleString()}</span></div>
+                      <div className="result-item"><span className="rl">Boreholes (estimate)</span><span className="rv">~{Number(ci.estimatedBoreholes).toLocaleString()}</span></div>
                     </div>
                     {ci.notes && <p style={{margin:'10px 0 0',fontSize:12,color:'var(--text-secondary)'}}>{ci.notes}</p>}
                   </div>
@@ -5429,9 +5427,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     )}
 
                     {/* ═══ AI + ERT FUSION ═══ */}
-                    {hg.fusionResult && (
+                    {/* Shown only once a field ERT exists: a readiness score
+                        "after ERT" for a survey not yet done is a projection, not a
+                        result (2026-10-27 audit). */}
+                    {hg.fusionResult && (result as any)._auditFlags?.hasFieldERT === true && (
                       <div style={{marginBottom:20}}>
-                        <h5 style={{fontSize:13,fontWeight:700,marginBottom:10}}>{'\u{1F52C}'} Desktop + ERT Fusion (Projected)</h5>
+                        <h5 style={{fontSize:13,fontWeight:700,marginBottom:10}}>{'\u{1F52C}'} Desktop + ERT Fusion</h5>
                         <div style={{padding:14,borderRadius:12,background:'rgba(59,130,246,0.04)',border:'2px solid rgba(59,130,246,0.2)'}}>
                           {/* DRI boost visualization */}
                           <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:12}}>
@@ -5538,7 +5539,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div>
               <h4 className="tab-title">{'\u{1F30D}'} Advanced Geophysics — Multi-Method 3D Survey</h4>
               <div style={{background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.2)',borderRadius:8,padding:'8px 14px',marginBottom:10,fontSize:11,color:'#fbbf24'}}>{'\u26A0\uFE0F'} <strong>Independent Model Estimate</strong> — Yield and depth values below are from the ERT simulation model (Logan 1964 approximation). See the <strong>Final Recommendation</strong> banner for the reconciled consensus answer.</div>
-              <p className="tab-desc">Comprehensive multi-method geophysical survey design: <strong>3D + 2D ERT, Seismic Refraction, GPR, FDEM, VES, Magnetics</strong>. desktop model inversion projections and equipment catalog. Target: {'≥'}90% drilling success rate.</p>
+              <p className="tab-desc">Comprehensive multi-method geophysical survey design: <strong>3D + 2D ERT, Seismic Refraction, GPR, FDEM, VES, Magnetics</strong>. methods, typical costs and field time for planning a survey.</p>
               {result.advancedGeophysics ? (() => {
                 const ag = result.advancedGeophysics as any;
                 const sra = ag.successRateAnalysis;
@@ -5546,34 +5547,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 const opt = ag.optimalPackage;
                 return (
                   <div>
-                    {/* Recommendation Banner */}
-                    <div style={{padding:'14px 18px',borderRadius:14,background:sra.meetsTarget?'linear-gradient(135deg,rgba(34,197,94,0.12),rgba(34,197,94,0.04))':'linear-gradient(135deg,rgba(251,191,36,0.12),rgba(251,191,36,0.04))',border:`2px solid ${sra.meetsTarget?'rgba(34,197,94,0.4)':'rgba(251,191,36,0.4)'}`,marginBottom:20}}>
-                      <div style={{fontWeight:800,fontSize:13,color:sra.meetsTarget?'#22c55e':'#f59e0b',marginBottom:6}}>{sra.meetsTarget?'\u2705 Target Met':'\u26A0\uFE0F Below Target'}: {sra.withFullIntegrated_pct}% Success Rate (Target: {sra.target_pct}%)</div>
-                      <div style={{fontSize:11,lineHeight:1.6}}>{ag.recommendation}</div>
-                    </div>
-
-                    {/* Success Rate Progression */}
-                    <div style={{marginBottom:24}}>
-                      <h4 style={{fontSize:13,fontWeight:700,marginBottom:10}}>Success Rate Analysis — Desktop to Full Geophysics</h4>
-                      <div style={{display:'flex',gap:4,alignItems:'flex-end',height:140,padding:'0 4px'}}>
-                        {[
-                          {label:'Desktop Only',pct:sra.aiOnly_pct,color:'#6366f1'},
-                          {label:'+2D ERT',pct:sra.withERT2D_pct,color:'#3b82f6'},
-                          {label:'+3D ERT',pct:sra.withERT3D_pct,color:'#0ea5e9'},
-                          {label:'+ERT+Seismic',pct:sra.withERTSeismic_pct,color:'#14b8a6'},
-                          {label:'+Combined',pct:sra.withCombinedGeophysics_pct,color:'#22c55e'},
-                          {label:'+Full Integrated',pct:sra.withFullIntegrated_pct,color:'#16a34a'},
-                        ].map((bar,i)=>(
-                          <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-                            <div style={{fontSize:10,fontWeight:700,color:bar.color}}>{bar.pct}%</div>
-                            <div style={{width:'100%',height:`${bar.pct * 1.2}px`,background:`linear-gradient(180deg,${bar.color},${bar.color}88)`,borderRadius:'6px 6px 0 0',minHeight:20,transition:'height 0.3s'}}/>
-                            <div style={{fontSize:8,textAlign:'center',color:'var(--text-secondary)',lineHeight:1.2}}>{bar.label}</div>
-                          </div>
-                        ))}
-                      </div>
-                      <div style={{height:2,background:sra.meetsTarget?'#22c55e':'#f59e0b',marginTop:2,borderRadius:1,position:'relative'}}>
-                        <div style={{position:'absolute',right:0,top:-14,fontSize:9,fontWeight:700,color:sra.meetsTarget?'#22c55e':'#f59e0b'}}>Target: {sra.target_pct}%</div>
-                      </div>
+                    {/* The projected success rates ("+Full Integrated 99%",
+                        "Target Met") were not measured on any site, so they are not
+                        shown (2026-10-27 audit). This tab plans a survey; the
+                        survey itself is what measures the ground. */}
+                    <div style={{padding:'12px 16px',borderRadius:12,background:'rgba(59,130,246,0.06)',border:'1px solid rgba(59,130,246,0.25)',marginBottom:20,fontSize:12,lineHeight:1.6}}>
+                      <strong>Survey planning only.</strong> This tab lists geophysical methods that could be used at this site, with typical costs and field time. It does not predict how much a survey would raise the chance of success: that depends on what the survey finds.
                     </div>
 
                     {/* Optimal Package */}
@@ -5584,8 +5563,6 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         <div className="result-item"><span className="rl">Methods</span><span className="rv">{opt.methods.length}</span></div>
                         <div className="result-item"><span className="rl">Cost</span><span className="rv">${opt.cost_usd.toLocaleString()}</span></div>
                         <div className="result-item"><span className="rl">Time</span><span className="rv">{opt.time_hrs}h field work</span></div>
-                        <div className="result-item"><span className="rl">Success Boost</span><span className="rv">+{opt.successRateBoost_pct}%</span></div>
-                        <div className="result-item"><span className="rl">Target Accuracy</span><span className="rv">{opt.targetAccuracy_pct}%</span></div>
                       </div>
                     </div>
 
@@ -5612,12 +5589,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     {/* Survey Packages Ranked */}
                     <h4 style={{fontSize:13,fontWeight:700,marginBottom:8}}>Survey Packages — Ranked by Suitability</h4>
                     <div className="sci-table-wrap" style={{marginBottom:20}}>
-                      <table className="sci-table"><thead><tr><th>Package</th><th>Methods</th><th>Success Boost</th><th>Cost</th><th>Time</th><th>Best For</th></tr></thead><tbody>
+                      <table className="sci-table"><thead><tr><th>Package</th><th>Methods</th><th>Cost</th><th>Time</th><th>Best For</th></tr></thead><tbody>
                         {ag.recommendedPackages.map((p: any,i: number)=>(
                           <tr key={i} style={{background:p.id===opt.id?'rgba(59,130,246,0.08)':''}}>
                             <td style={{fontWeight:p.id===opt.id?700:400}}>{p.id===opt.id?'\u2B50 ':''}{p.name}</td>
                             <td>{p.methods.length}</td>
-                            <td style={{color:'#22c55e',fontWeight:700}}>+{p.successRateBoost_pct}%</td>
                             <td>${p.cost_usd.toLocaleString()}</td>
                             <td>{p.time_hrs}h</td>
                             <td style={{fontSize:10}}>{p.bestFor.slice(0,2).join(', ')}</td>

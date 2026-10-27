@@ -69,6 +69,7 @@ import { computePathTo97 } from './pathTo97Engine';
 import { runSatelliteRemoteSensing } from './satelliteRemoteSensingEngine';
 import { evaluateSurfaceGeophysics } from './surfaceGeophysicsEngine';
 import { sanitizeAnalysisResult } from './sanitizeOutputs';
+import { siteRefusal } from './kenyaLand';
 import { loadLocalJson } from './localData';
 
 /**
@@ -157,6 +158,10 @@ export class BoreholeAnalyzer {
     clientLocation?: ClientLocation,
     fieldData?: FieldValidationData,
   ): Promise<AnalysisResult> {
+    // Coordinates-only run: the page sends a neutral grey placeholder. Its
+    // "terrain" and "vegetation" are not evidence and must not vote
+    // (2026-10-27 audit: it gave 66% at Garissa and Nakuru at 15% weight).
+    const noPhoto = imageFile?.name === '__aquascan-no-photo__.jpg';
     const report = (step: PipelineStep, label: string) => {
       if (onProgress) onProgress(step, label);
     };
@@ -290,6 +295,13 @@ export class BoreholeAnalyzer {
     const effectiveLat = clientGeo?.latitude ?? features.metadata?.gps?.latitude;
     const effectiveLon = clientGeo?.longitude ?? features.metadata?.gps?.longitude;
     const hasCoords = effectiveLat != null && effectiveLon != null;
+    // Kenyan land only, whatever the entry point (typed, re-analysis, place
+    // search or photo GPS) (2026-10-27 audit: Kampala, Lake Turkana and the
+    // sea off Mombasa all got full results).
+    if (hasCoords) {
+      const refusal = await siteRefusal(effectiveLat as number, effectiveLon as number);
+      if (refusal) throw new Error(refusal);
+    }
 
     // ═══ GPS / MANUAL LOCATION PRIORITY OVERRIDE ═══
     // Forces the engine to respect user-provided GPS or town name
@@ -508,7 +520,7 @@ export class BoreholeAnalyzer {
     if (remoteSensing && !remoteSensing.climate) {
       // NO-GUESSWORK: inside Kenya, a failed climate API falls back to the
       // stored ERA5 reanalysis baseline (2015-2024), not a latitude guess.
-      const kbClimate = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0);
+      const kbClimate = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0, 300);
       if (kbClimate?.climate) {
         fallbacksUsed.push(`Climate API failed — using a stored ERA5 reanalysis baseline for ${kbClimate.name} (2015-2024, ${kbClimate.distance_km} km away) instead of values for this exact point`);
         const annualP = kbClimate.climate.precip_mm_yr;
@@ -520,7 +532,7 @@ export class BoreholeAnalyzer {
           monthlyTemperature: Array.from({ length: 12 }, () => kbClimate.climate?.temp_mean_c ?? 22),
           aridity: annualP > 1000 ? 'Humid' : annualP > 500 ? 'Sub-humid' : annualP > 200 ? 'Semi-arid' : 'Arid',
           rechargeEstimate: Math.round(annualP * rechargePct),
-          source: `EmersonEIMS baseline — Open-Meteo ERA5 2015-2024 measured at ${kbClimate.name} (${kbClimate.distance_km} km)`,
+          source: `EmersonEIMS baseline — Open-Meteo ERA5 2015-2024 measured at ${kbClimate.name} (${kbClimate.distance_km} km). Annual total measured; the monthly split is a seasonal shape, not measured`,
         };
       }
     }
@@ -544,7 +556,7 @@ export class BoreholeAnalyzer {
     }
     if (remoteSensing && !remoteSensing.elevation) {
       // NO-GUESSWORK: inside Kenya, use the measured SRTM baseline elevation.
-      const kbElev = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0);
+      const kbElev = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0, 300);
       if (kbElev?.elevation_m != null) {
         fallbacksUsed.push(`Elevation API failed — using a stored SRTM elevation for ${kbElev.name} (${kbElev.distance_km} km away) instead of this exact point`);
         remoteSensing.elevation = {
@@ -566,7 +578,7 @@ export class BoreholeAnalyzer {
     // pre-computed MEASURED national baseline (public/data/kenya-baseline.json
     // — SoilGrids/ERA5/SRTM values fetched once per administrative unit).
     if (!remoteSensing) {
-      const kb = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0);
+      const kb = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0, 300);
       if (kb && kb.climate) {
         fallbacksUsed.push(`Remote sensing APIs failed — using a stored baseline for ${kb.name} (${kb.level}, ${kb.distance_km} km away; SoilGrids/ERA5/SRTM, fetched ${kb.fetched}) — NOT an estimate`);
         const annualP = kb.climate.precip_mm_yr;
@@ -581,7 +593,7 @@ export class BoreholeAnalyzer {
             monthlyTemperature: Array.from({ length: 12 }, () => kb.climate?.temp_mean_c ?? 22),
             aridity: annualP > 1000 ? 'Humid' : annualP > 500 ? 'Sub-humid' : annualP > 200 ? 'Semi-arid' : 'Arid',
             rechargeEstimate: Math.round(annualP * rechargePct),
-            source: `EmersonEIMS baseline — Open-Meteo ERA5 2015-2024 measured at ${kb.name} (${kb.distance_km} km)`,
+            source: `EmersonEIMS baseline — Open-Meteo ERA5 2015-2024 measured at ${kb.name} (${kb.distance_km} km). Annual total measured; the monthly split is a seasonal shape, not measured`,
           },
           waterIndices: null,
           surfaceWater: null,
@@ -625,19 +637,10 @@ export class BoreholeAnalyzer {
       };
     }
 
+    // A failed source stays empty: no latitude-made values (2026-10-27 audit:
+    // a constant "losing" storage trend subtracted 5 points at every site).
     if (!graceData) {
-      fallbacksUsed.push('GRACE-FO water storage (ERA5-Land proxy failed — using latitude estimate)');
-      const lat = effectiveLat ?? 0;
-      const trendBase = Math.abs(lat) > 30 ? -0.3 : Math.abs(lat) > 15 ? -0.8 : -0.5;
-      graceData = {
-        twsAnomaly_cm: Math.round(trendBase * 3 * 10) / 10,
-        trend_cm_per_year: trendBase,
-        seasonalAmplitude_cm: Math.abs(lat) > 30 ? 4.2 : 6.8,
-        status: trendBase > -0.5 ? 'stable' : 'losing',
-        aquiferStress: trendBase > -0.5 ? 'low' : 'moderate',
-        dataSource: 'Latitude-based GRACE-FO proxy (API fallback)',
-        period: '2019–2024',
-      };
+      fallbacksUsed.push('GRACE-FO water storage: not available (the service did not answer) — left out of the probability and shown as "not available"');
     }
 
     if (!nearbyWells) {
@@ -663,44 +666,15 @@ export class BoreholeAnalyzer {
       };
     }
 
+    // Nairobi CBD and Lodwar both got "dense vegetation" from latitude (2026-10-27 audit).
     if (!vegetationGWProxy) {
-      fallbacksUsed.push('Vegetation-GW proxy (MODIS NDVI API failed — using latitude estimate)');
-      const lat = effectiveLat ?? 0;
-      // Latitude-based NDVI: tropical regions (~0°) have higher NDVI, arid (~30°) lower
-      const ndvi = Math.max(0.15, 0.55 - Math.abs(lat) * 0.008 + (Math.abs(lat) < 15 ? 0.1 : 0));
-      vegetationGWProxy = {
-        ndviMean: ndvi,
-        ndviMin: ndvi * 0.6,
-        ndviSeasonalRange: ndvi * 0.35,
-        groundwaterDependence: ndvi > 0.45 ? 'moderate' : 'low',
-        shallowWaterTableLikelihood: Math.round(ndvi * 70),
-        methodology: 'Latitude-based vegetation-GW proxy (API fallback)',
-      };
+      fallbacksUsed.push('Vegetation-groundwater proxy (MODIS NDVI): not available (the service did not answer) — left out of the probability and shown as "not available"');
     }
-
     if (!satelliteVegetation) {
-      fallbacksUsed.push('Satellite vegetation (ORNL DAAC MODIS failed — using latitude estimate)');
-      const lat = effectiveLat ?? 0;
-      const baseNdvi = Math.max(0.15, 0.55 - Math.abs(lat) * 0.008 + (Math.abs(lat) < 15 ? 0.1 : 0));
-      satelliteVegetation = {
-        ndviEstimate: baseNdvi,
-        vegetationVigor: baseNdvi > 0.45 ? 'Moderate' : baseNdvi > 0.3 ? 'Low' : 'Very Low',
-        dataSource: 'Latitude-based NDVI model (API fallback)',
-        monthlyProfile: Array.from({ length: 12 }, (_, i) => Math.round((baseNdvi + 0.12 * Math.sin((i - 2) * Math.PI / 6)) * 100) / 100),
-      };
+      fallbacksUsed.push('Satellite vegetation (MODIS): not available (the service did not answer) — left out of the probability and shown as "not available"');
     }
-
     if (!nasaPowerMoisture) {
-      fallbacksUsed.push('NASA POWER soil moisture (API failed — using latitude estimate)');
-      const lat = effectiveLat ?? 0;
-      // Latitude-based soil moisture: tropical = wetter, arid belt = drier
-      const baseMoisture = Math.max(0.15, 0.50 - Math.abs(lat) * 0.007 + (Math.abs(lat) < 15 ? 0.08 : 0));
-      nasaPowerMoisture = {
-        gwetprofMean: baseMoisture,
-        gwetprofTrend: -0.002,
-        gwetprofMonthly: Array.from({ length: 12 }, (_, i) => Math.round((baseMoisture + 0.1 * Math.sin((i - 2) * Math.PI / 6)) * 100) / 100),
-        dataSource: 'Latitude-based soil moisture model (API fallback)',
-      };
+      fallbacksUsed.push('NASA POWER soil moisture: not available (the service did not answer) — left out of the probability and shown as "not available"');
     }
 
     // Extract SoilGrids data for downstream modules
@@ -947,7 +921,9 @@ export class BoreholeAnalyzer {
         // Outcome only from a MEASURED yield on a drilled borehole.
         const _isDrilled = !/spring|dug well/i.test(String(w.aquiferType ?? '') + ' ' + String(w.id ?? ''));
         if (_isDrilled && w.outcome === 'Unknown' && w.yield_m3h > 0) {
+          // Inferred from the tested yield, not a recorded outcome: say so (2026-10-27 audit).
           w.outcome = w.yield_m3h >= 2 ? 'Success' : w.yield_m3h >= 0.5 ? 'Moderate' : 'Fail';
+          w.outcomeFromYield = true;
         }
       }
 
@@ -1029,10 +1005,10 @@ export class BoreholeAnalyzer {
         ? ({'excellent':0.85,'good':0.72,'moderate':0.55,'poor':0.35,'very_poor':0.20}[globalSoilAnalysis.wrbClassification.aquiferSuitability] ?? 0.50)
         : (soilGridsData?.clay != null) ? (1 - Math.min(1, (soilGridsData.clay ?? 30) / 60)) * 0.7 + 0.3 : 0.50,
       structure_probability: demHydrology ? demHydrology.groundwaterFavorability / 100 : 0.50,
-      topography_probability: site.siteType === 'valley' ? 0.85 : site.siteType === 'drainage' ? 0.75 : site.siteType === 'flat' ? 0.55 : 0.35,
+      topography_probability: noPhoto ? 0.5 : site.siteType === 'valley' ? 0.85 : site.siteType === 'drainage' ? 0.75 : site.siteType === 'flat' ? 0.55 : 0.35,
       vegetation_probability: satelliteWaterAnalysis?.vegetation
         ? Math.min(1, satelliteWaterAnalysis.vegetation.ndvi.annual_mean * 1.3 + 0.15)
-        : Math.min(1, features.vegetationScore * 1.5),
+        : noPhoto ? 0.5 : Math.min(1, features.vegetationScore * 1.5),
       remote_sensing_probability: gldasGroundwater ? (gldasGroundwater.groundwaterPotential ?? 50) / 100 : 0.50,
       historical_boreholes_probability: countyData ? countyData.successRate : boreholeRecords ? boreholeRecords.successRate : 0.50,
     });
@@ -1044,6 +1020,7 @@ export class BoreholeAnalyzer {
       baseProbability: probabilityBeforeWaterBudget,
       baseDepth: calibratedDepth,
       baseYield: calibratedYield,
+      photoUsed: !noPhoto,
       gldasRecharge: gldasGroundwater?.waterBudget?.estimatedRecharge,
       boreholeAvgDepth: countyData?.avgDepth_m ?? boreholeRecords?.averageDepth,
       boreholeAvgYield: countyData?.avgYield_m3h ?? boreholeRecords?.averageYield,
@@ -1521,6 +1498,36 @@ export class BoreholeAnalyzer {
           }
         }
       } catch (e) { console.warn('[Pipeline] Field depth band failed:', e); }
+    }
+    // No field records with depths: the government water-point registry's
+    // drilled BOREHOLES within 30 km (dug wells excluded: they are shallow).
+    // 2026-10-27 audit: Machakos was put at 58-87 m while 24 of the 25
+    // registry boreholes within 30 km were deeper (median 120 m); Kisumu 41-57 m
+    // against 60-120 m. With >=5 records they set the band like field records.
+    if (!isFieldValidated && !fieldDepthBand && effectiveLat != null && effectiveLon != null) {
+      try {
+        const reg = await loadLocalJson<any>('/data/gov-wells-kenya.json');
+        const R = 6371, rad = Math.PI / 180;
+        const ds = (Array.isArray(reg?.wells) ? reg.wells : [])
+          .filter((t: any[]) => /borehole|tubewell/i.test(String(t[5] ?? '')) && Number(t[3]) >= 10 && Number(t[3]) <= 400)
+          .filter((t: any[]) => {
+            const dLa = (Number(t[1]) - effectiveLat) * rad, dLo = (Number(t[2]) - effectiveLon) * rad;
+            const h = Math.sin(dLa / 2) ** 2 + Math.cos(effectiveLat * rad) * Math.cos(Number(t[1]) * rad) * Math.sin(dLo / 2) ** 2;
+            return 2 * R * Math.asin(Math.sqrt(h)) <= 30;
+          })
+          .map((t: any[]) => Number(t[3])).sort((a: number, b: number) => a - b);
+        if (ds.length >= 5) {
+          const q = (p: number) => ds[Math.floor((ds.length - 1) * p)];
+          fieldDepthBand = { lq: q(0.25), med: q(0.5), uq: q(0.75), n: ds.length };
+          (fieldDepthBand as any).basis = `${ds.length} drilled boreholes within 30 km in the government water-point registry`;
+          const kept = Math.round(Math.min(fieldDepthBand.uq, Math.max(fieldDepthBand.lq, 0.7 * fieldDepthBand.med + 0.3 * calibratedDepth)));
+          if (kept !== calibratedDepth) {
+            console.warn(`[Pipeline] Depth ${calibratedDepth}m kept inside the registry band ${fieldDepthBand.lq}-${fieldDepthBand.uq}m (${ds.length} boreholes within 30 km, median ${fieldDepthBand.med}m) → ${kept}m`);
+            calibratedDepth = kept;
+            if (ensembleResult) ensembleResult.depth_m = calibratedDepth;
+          }
+        }
+      } catch (e) { console.warn('[Pipeline] Registry depth band failed:', e); }
     }
     (this as any)._fieldDepthBand = fieldDepthBand;
     const countyBand = Array.isArray(countyData?.depthRange) ? countyData.depthRange as [number, number] : null;
@@ -2321,138 +2328,13 @@ export class BoreholeAnalyzer {
       console.warn('[Pipeline] Phase 7 ground truth engines (partial failure):', e);
     }
 
-    // ── Fallbacks for Phase 7 engines that didn't produce results ──
-    if (!ertInterpretation) {
-      // Build synthetic ERT data points from geological priors and run intelligence pipeline
-      const syntheticDataPoints: ERTDataPoint[] = [
-        { pseudoDepth_m: calibratedDepth * 0.1, apparentResistivity_ohmm: 150, electrode_spacing_m: 5 },
-        { pseudoDepth_m: calibratedDepth * 0.25, apparentResistivity_ohmm: 80, electrode_spacing_m: 5 },
-        { pseudoDepth_m: calibratedDepth * 0.45, apparentResistivity_ohmm: 35, electrode_spacing_m: 5 },
-        { pseudoDepth_m: calibratedDepth * 0.6, apparentResistivity_ohmm: 25, electrode_spacing_m: 5 },
-        { pseudoDepth_m: calibratedDepth * 0.75, apparentResistivity_ohmm: 30, electrode_spacing_m: 5 },
-        { pseudoDepth_m: calibratedDepth * 0.9, apparentResistivity_ohmm: 120, electrode_spacing_m: 5 },
-        { pseudoDepth_m: calibratedDepth * 1.2, apparentResistivity_ohmm: 800, electrode_spacing_m: 5 },
-      ];
-      try {
-        ertInterpretation = runERTIntelligencePipeline(
-          {
-            dataPoints: syntheticDataPoints,
-            arrayType: 'schlumberger',
-            lineLength_m: 200,
-            electrodeSpacing_m: 5,
-            latitude: effectiveLat,
-            longitude: effectiveLon,
-            knownGeology: rockClassification?.primaryRockType,
-          },
-          {
-            rockType: rockClassification?.primaryRockType,
-            annualRainfall_mm: historicalData?.weather?.averageAnnualPrecipitation,
-            nearbyBoreholeYield_m3hr: nearbyWells?.averageYield,
-            nearbyBoreholeDepth_m: nearbyWells?.averageDepth,
-            calibratedDepth_m: calibratedDepth,
-            calibratedYield_m3hr: calibratedYield,
-            baseConfidence: probability,
-          },
-          false, // modelled, not field ERT
-        );
-      } catch {
-        ertInterpretation = {
-          pipelineVersion: '2.0',
-          dataSource: 'modelled',
-          executedSteps: ['fallback'],
-          timestamp: new Date().toISOString(),
-          executiveSummary: 'Modelled ERT from geological priors (no field ERT data)',
-          drillOrNoDrill: 'INVESTIGATE_FURTHER',
-          drillDecisionReasoning: 'Modelled data only — field ERT recommended',
-          depthOptimization: { recommendedDrillingDepth_m: calibratedDepth, screenFrom_m: Math.round(calibratedDepth * 0.45), screenTo_m: Math.round(calibratedDepth * 0.75), casingDepth_m: Math.round(calibratedDepth * 0.15), aquiferCenter_m: Math.round(calibratedDepth * 0.6), aquiferThickness_m: Math.round(calibratedDepth * 0.3), safetyMargin_m: 6, safetyMarginPercent: 15, minimumDepth_m: Math.round(calibratedDepth * 0.6), maximumDepth_m: Math.round(calibratedDepth * 1.3), rationale: 'Modelled from geological priors', depthBreakdown: { topsoil_m: 2, overburden_m: Math.round(calibratedDepth * 0.15), aquiferTop_m: Math.round(calibratedDepth * 0.45), aquiferBottom_m: Math.round(calibratedDepth * 0.75), drillBeyond_m: 6 } },
-          yieldEstimation: { estimatedYield_m3hr: calibratedYield, estimatedYield_Lmin: Math.round(calibratedYield * 1000 / 60), sustainableYield_m3hr: calibratedYield * 0.7, staticWaterLevel_m: calibratedDepth * 0.3, dynamicWaterLevel_m: calibratedDepth * 0.3 + 5, expectedDrawdown_m: 5, transmissivity_m2day: 50, storativity: 0.001, hydraulicConductivity_mday: 3, specificCapacity_m3hr_m: calibratedYield / 5, yieldCategory: 'moderate' as const, components: { fromThickness: 40, fromResistivity: 30, fromFractures: 15, fromRecharge: 15 }, confidenceInterval: { lower: calibratedYield * 0.7, upper: calibratedYield * 1.3 }, reasoning: 'Modelled from geological priors' },
-          confidence: { finalConfidence: probability, beforeERT: probability, afterERT: probability + 0.05, improvementPercent: 5, ertAgreement: 0.6, aiModelConfidence: probability, dataDensity: 0.4, weights: { ertAgreement: 0.4 as const, aiModel: 0.3 as const, dataDensity: 0.3 as const }, componentBreakdown: [{ name: 'ERT Data', score: 0.6, weight: 0.4, weighted: 0.24 }, { name: 'desktop model Model', score: probability, weight: 0.3, weighted: probability * 0.3 }, { name: 'Data Density', score: 0.4, weight: 0.3, weighted: 0.12 }], isHighConfidence: false, needsMoreData: true, recommendations: ['Field ERT survey recommended to improve confidence'] },
-          feedbackHistory: [],
-          modelAccuracy: { meanDepthError_pct: 0, meanYieldError_pct: 0, successRate: 0, sampleCount: 0 },
-        };
-      }
-    }
-
-    if (!multiSourceAgreement) {
-      const depthSources = [
-        { name: 'desktop scoring', value: calibratedDepth },
-        { name: 'Nearby wells', value: nearbyWells?.averageDepth ?? calibratedDepth * 0.95 },
-        { name: 'Regional stats', value: boreholeRecords?.averageDepth ?? calibratedDepth * 1.05 },
-      ];
-      const yieldSources = [
-        { name: 'desktop scoring', value: calibratedYield },
-        { name: 'Nearby wells', value: nearbyWells?.averageYield ?? calibratedYield * 0.9 },
-      ];
-      const depthMean = depthSources.reduce((s, d) => s + d.value, 0) / depthSources.length;
-      const yieldMean = yieldSources.reduce((s, d) => s + d.value, 0) / yieldSources.length;
-      multiSourceAgreement = {
-        overallAgreementScore: 0.78,
-        overallConfidence: 0.74,
-        confidenceGain_pct: 8,
-        sourceCount: depthSources.length + yieldSources.length,
-        consensusDepth_m: Math.round(depthMean),
-        consensusYield_m3hr: Math.round(yieldMean * 10) / 10,
-        consensusProbability: probability,
-        conflictSeverity: 'Low',
-        strongestAgreement: 'Depth estimates',
-        weakestAgreement: 'Yield estimates',
-        depthSources: depthSources.map(d => ({ source: d.name, value: d.value, deviation_pct: Math.abs(d.value - depthMean) / depthMean * 100 })),
-        yieldSources: yieldSources.map(d => ({ source: d.name, value: d.value, deviation_pct: Math.abs(d.value - yieldMean) / yieldMean * 100 })),
-        narrative: `${depthSources.length + yieldSources.length} data sources compared. Depth consensus: ${Math.round(depthMean)}m. Yield consensus: ${(yieldMean).toFixed(1)} m³/hr.`,
-        dataSource: 'Cross-validation synthesis (computed fallback)',
-      };
-    }
-
-    if (!temporalDrought) {
-      const annualP = remoteSensing?.climate?.annualPrecipitation ?? historicalData?.weather?.averageAnnualPrecipitation ?? 700;
-      const spi = annualP > 800 ? 0.5 : annualP > 400 ? -0.3 : -1.2;
-      const droughtStatus = spi > 0 ? 'No drought' : spi > -1 ? 'Mild drought' : 'Moderate drought';
-      temporalDrought = {
-        yearsAnalyzed: historicalData?.weather?.annualPrecipitation?.length ?? 20,
-        meanAnnualRainfall_mm: annualP,
-        currentSPI: spi,
-        currentDroughtStatus: droughtStatus,
-        droughtFrequency_perDecade: annualP > 800 ? 1.5 : annualP > 400 ? 3.0 : 5.0,
-        averageDroughtDuration_months: annualP > 800 ? 4 : annualP > 400 ? 8 : 14,
-        sustainableYield_m3day: Math.round(calibratedYield * 24 * 10) / 10,
-        yieldDuringDrought_m3day: Math.round(calibratedYield * 24 * 0.6 * 10) / 10,
-        yieldReliability_pct: annualP > 800 ? 92 : annualP > 400 ? 78 : 55,
-        depletionRiskUnderDrought: annualP > 800 ? 'LOW' : annualP > 400 ? 'MODERATE' : 'HIGH',
-        projectedRainfall2050_mm: Math.round(annualP * 0.92),
-        spiTimeSeries: Array.from({ length: 20 }, (_, i) => ({
-          year: 2006 + i,
-          spi: Math.round((Math.sin(i * 0.8) * 1.5) * 100) / 100,
-        })),
-        dataSource: 'Climate-based drought model (computed fallback)',
-      };
-    }
-
-    if (!hydrochemPrediction) {
-      const rock = rockClassification?.primaryRockType?.toLowerCase() || 'sandstone';
-      const isCalcareous = rock.includes('limestone') || rock.includes('dolomite') || rock.includes('calc');
-      const isGranitic = rock.includes('granite') || rock.includes('gneiss') || rock.includes('basalt');
-      const pH = isCalcareous ? 7.8 : isGranitic ? 6.8 : 7.2;
-      const tds = isCalcareous ? 450 : isGranitic ? 280 : 350;
-      const fluoride = isGranitic ? 1.2 : 0.4;
-      const iron = isGranitic ? 0.4 : 0.15;
-      hydrochemPrediction = {
-        overallQuality: tds < 500 && fluoride < 1.5 ? 'Good' : 'Moderate',
-        potabilityScore: tds < 500 ? 78 : 55,
-        waterType: isCalcareous ? 'Ca-HCO3' : isGranitic ? 'Na-HCO3' : 'Mixed',
-        treatmentCost: fluoride > 1.5 || iron > 0.3 ? 'Moderate ($200-500/yr)' : 'Low (<$100/yr)',
-        confidence: 0.62,
-        predictions: [
-          { parameter: 'pH', predictedValue: pH, unit: '', whoGuideline: '6.5-8.5', exceedsGuideline: false, healthRisk: 'None' },
-          { parameter: 'TDS', predictedValue: tds, unit: 'mg/L', whoGuideline: '600', exceedsGuideline: tds > 600, healthRisk: tds > 600 ? 'Taste' : 'None' },
-          { parameter: 'Fluoride', predictedValue: fluoride, unit: 'mg/L', whoGuideline: '1.5', exceedsGuideline: fluoride > 1.5, healthRisk: fluoride > 1.5 ? 'Dental/skeletal fluorosis' : 'None' },
-          { parameter: 'Iron', predictedValue: iron, unit: 'mg/L', whoGuideline: '0.3', exceedsGuideline: iron > 0.3, healthRisk: iron > 0.3 ? 'Staining, taste' : 'None' },
-          { parameter: 'Arsenic', predictedValue: 0.005, unit: 'mg/L', whoGuideline: '0.01', exceedsGuideline: false, healthRisk: 'None' },
-          { parameter: 'Nitrate', predictedValue: 12, unit: 'mg/L', whoGuideline: '50', exceedsGuideline: false, healthRisk: 'None' },
-          { parameter: 'Hardness', predictedValue: isCalcareous ? 320 : 150, unit: 'mg/L CaCO3', whoGuideline: '500', exceedsGuideline: false, healthRisk: 'None' },
-        ],
-        dataSource: 'Geology-based hydrochemistry model (computed fallback)',
-      };
-    }
+    // Phase-7 engines that did not run stay empty, and their tabs say so.
+    // Removed 2026-10-27 (independent audit): when an engine had no input the
+    // pipeline invented one — synthetic ERT "data points" run through the full
+    // ERT pipeline (a second depth, probability and drill decision), a
+    // constant 0.78 "agreement" between made-up sources, a drought history
+    // drawn from a sine wave, and a second water-chemistry model guessed from
+    // rock type. None of these were measurements.
 
     // ═══ PHASE 8: PUSH TO 95% ACCURACY ═══
     let dataQualityScore: any;
@@ -3197,6 +3079,8 @@ export class BoreholeAnalyzer {
 
     // ─── ENGINEER CONFIDENCE ENGINE (runs last — needs full result) ───
     try {
+      // The depth evidence must be on the result before provenance is written.
+      if ((this as any)._fieldDepthBand) (result as any).fieldDepthBand = (this as any)._fieldDepthBand;
       result.engineerConfidence = runEngineerConfidenceEngine(result);
     } catch (_) {
       // Fallback: create minimal engineerConfidence to prevent Check 15/16 WARN
@@ -3262,7 +3146,7 @@ export class BoreholeAnalyzer {
           evidenceBand = { lo: q(0.25), hi: Math.max(q(0.25), q(0.75)), upper: Math.max(q(0.75), qi(0.9)), typical: q(0.5), basis: `${ys.length} field-tested yields within 20 km (lower quartile ${q(0.25)} m³/h, median ${q(0.5)} m³/h, upper quartile ${q(0.75)} m³/h)` };
         } else if (Number(ci?.avgYield_m3h) > 0) {
           const lo = Math.round(Math.max(Number(ci?.yieldRange?.[0]) || 0, Number(ci.avgYield_m3h) * 0.3) * 100) / 100;
-          evidenceBand = { lo, hi: Math.max(lo, Number(ci?.yieldRange?.[1]) || lo * 3), typical: Number(ci.avgYield_m3h), basis: `the ${ci.county} County drilling record (typical ${ci.avgYield_m3h} m³/h; cautious floor ${lo} m³/h)` };
+          evidenceBand = { lo, hi: Math.max(lo, Number(ci?.yieldRange?.[1]) || lo * 3), typical: Number(ci.avgYield_m3h), basis: `the ${ci.county} County profile (estimates; typical ${ci.avgYield_m3h} m³/h; cautious floor ${lo} m³/h)` };
         }
       } catch (e) { console.warn('[Pipeline] Evidence yield band failed:', e); }
     }
@@ -3481,6 +3365,7 @@ export class BoreholeAnalyzer {
     } catch { /* provenance optional */ }
     // The field depth band travels with the result so the stated range covers it (2026-10-20).
     if ((this as any)._fieldDepthBand) (result as any).fieldDepthBand = (this as any)._fieldDepthBand;
+    (result as any).fieldValidated = isFieldValidated;
     if ((this as any)._hydroProvince) (result as any).hydroProvince = (this as any)._hydroProvince;
     // Coastal aquifers: seawater intrusion is the main risk (2026-10-25 audit
     // round 5: Mombasa, 1-2 km from the sea, had no mention of it).

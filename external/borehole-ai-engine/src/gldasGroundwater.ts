@@ -213,9 +213,13 @@ interface ERA5SoilData {
 
 async function fetchERA5SoilMoisture(lat: number, lon: number): Promise<ERA5SoilData | null> {
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
-      + `&daily=soil_moisture_0_to_7cm,soil_moisture_7_to_28cm,soil_moisture_28_to_100cm,soil_moisture_100_to_255cm,precipitation_sum,et0_fao_evapotranspiration`
-      + `&past_days=92&forecast_days=1&timezone=auto`;
+    const endD = new Date(Date.now() - 7 * 86400000);
+    const startD = new Date(endD.getTime() - 92 * 86400000);
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}`
+      + `&start_date=${iso(startD)}&end_date=${iso(endD)}`
+      + `&daily=soil_moisture_0_to_7cm_mean,soil_moisture_7_to_28cm_mean,soil_moisture_28_to_100cm_mean,soil_moisture_100_to_255cm_mean,precipitation_sum,et0_fao_evapotranspiration`
+      + `&timezone=UTC`;
 
     console.log('[GLDAS] ERA5-Land: fetching 92-day soil moisture');
     const res = await fetch(url, {
@@ -238,10 +242,11 @@ async function fetchERA5SoilMoisture(lat: number, lon: number): Promise<ERA5Soil
     //   Layer 2: 7–28 cm  → 210 mm  → vol × 210 = kg/m²
     //   Layer 3: 28–100cm → 720 mm  → vol × 720 = kg/m²
     //   Layer 4: 100–255cm→ 1550 mm → vol × 1550= kg/m²
-    const sm0 = avg(daily.soil_moisture_0_to_7cm || []);
-    const sm1 = avg(daily.soil_moisture_7_to_28cm || []);
-    const sm2 = avg(daily.soil_moisture_28_to_100cm || []);
-    const sm3 = avg(daily.soil_moisture_100_to_255cm || []);
+    const sm0 = avg(daily.soil_moisture_0_to_7cm_mean || []);
+    const sm1 = avg(daily.soil_moisture_7_to_28cm_mean || []);
+    const sm2 = avg(daily.soil_moisture_28_to_100cm_mean || []);
+    const sm3 = avg(daily.soil_moisture_100_to_255cm_mean || []);
+    if (!(sm0 > 0 || sm1 > 0 || sm2 > 0 || sm3 > 0)) return null;
 
     return {
       layers: [
@@ -328,12 +333,12 @@ async function fetchERA5ArchiveSoilTrend(lat: number, lon: number): Promise<ERA5
 
     const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}`
       + `&start_date=${start}&end_date=${end}`
-      + `&daily=soil_moisture_100_to_255cm&timezone=auto`;
+      + `&daily=soil_moisture_100_to_255cm_mean&timezone=UTC`;
 
     const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
     if (!res.ok) return null;
     const data = await res.json();
-    const values: number[] = (data.daily?.soil_moisture_100_to_255cm ?? []).filter((v: any) => v != null && v > 0);
+    const values: number[] = (data.daily?.soil_moisture_100_to_255cm_mean ?? []).filter((v: any) => v != null && v > 0);
     const times: string[] = data.daily?.time ?? [];
 
     if (values.length < 365) return null;

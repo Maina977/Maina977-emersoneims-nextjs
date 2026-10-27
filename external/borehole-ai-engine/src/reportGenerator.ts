@@ -18,6 +18,7 @@
  *   - JSON (raw data dump)
  */
 
+import { finalVerdict } from './verdict';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
@@ -214,7 +215,7 @@ function answeredSources(r: any): string {
   if (r?.remoteSensing?.elevation?.source) s.push(String(r.remoteSensing.elevation.source));
   if (r?.gldasGroundwater?.waterBudget) s.push('NASA POWER / GLDAS water budget');
   if (r?.nearbyWells?.nearbyWells?.length) s.push('borehole and water-point registries (WPDx, UNESCO IHP-WINS, OSM)');
-  if (r?.boreholeRecords?.countyIntelligence) s.push('county drilling records');
+  if (r?.boreholeRecords?.countyIntelligence) s.push('county profile (estimates)');
   return s.length ? s.join('; ') : 'regional estimates only (no public source answered)';
 }
 
@@ -1092,14 +1093,10 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
 // FINAL DECISION box and any future summary must all call this — never
 // re-derive PROCEED/INVESTIGATE from probability locally.
 function computeFinalVerdict(result: AnalysisResult) {
-  const prob = result.probability ?? 0.5;
-  const risk = result.risk?.overallRisk ?? 0.5;
-  const verdict = prob >= 0.65 && risk < 0.5 ? 'DRILL -- PROCEED'
-    : prob >= 0.5 && risk < 0.65 ? 'INVESTIGATE FURTHER BEFORE DRILLING'
-    : 'HIGH RISK -- ADDITIONAL SURVEYS REQUIRED';
-  const color: [number, number, number] =
-    prob >= 0.65 && risk < 0.5 ? [22, 163, 74] : prob >= 0.5 ? [217, 119, 6] : [220, 38, 38];
-  return { prob, risk, verdict, color };
+  // Shared with the web page (verdict.ts): a desktop-only screen never says
+  // "DRILL -- PROCEED" (2026-10-27 audit).
+  const v = finalVerdict(result);
+  return { prob: v.prob, risk: v.risk, verdict: v.verdict, color: v.color, next: v.next };
 }
 
 // --- PDF REPORT ---
@@ -1731,7 +1728,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
         doc.text('Regional drilled-borehole evidence (same hydrogeological unit)', margin, y); y += 6;
         if (ciR && Number(ciR.estimatedBoreholes ?? 0) > 0) {
-          const ciLine = `${ciR.county ?? 'County'} drilling record: ~${ciR.estimatedBoreholes} boreholes drilled — success rate ${(Number(ciR.successRate ?? 0) * 100).toFixed(0)}%, average depth ${ciR.avgDepth_m ?? '—'} m (drilled band ${ciR.depthRange?.[0] ?? '—'}-${ciR.depthRange?.[1] ?? '—'} m), average tested yield ${ciR.avgYield_m3h ?? '—'} m³/hr (range ${ciR.yieldRange?.[0] ?? '—'}-${ciR.yieldRange?.[1] ?? '—'}). Geology: ${ciR.primaryGeology ?? '—'}. ` +
+          const ciLine = `${ciR.county ?? 'County'} county profile (estimates, not individual records): ~${ciR.estimatedBoreholes} boreholes — success rate ${(Number(ciR.successRate ?? 0) * 100).toFixed(0)}%, average depth ${ciR.avgDepth_m ?? '—'} m (drilled band ${ciR.depthRange?.[0] ?? '—'}-${ciR.depthRange?.[1] ?? '—'} m), average tested yield ${ciR.avgYield_m3h ?? '—'} m³/hr (range ${ciR.yieldRange?.[0] ?? '—'}-${ciR.yieldRange?.[1] ?? '—'}). Geology: ${ciR.primaryGeology ?? '—'}. ` +
             (Number.isFinite(result.recommendedDepth) && Array.isArray(ciR.depthRange) && result.recommendedDepth >= ciR.depthRange[0] && result.recommendedDepth <= ciR.depthRange[1]
               ? `This report's recommended depth (${Math.round(result.recommendedDepth)} m) is within the county's drilled band. The band is wide; a geophysical survey sets the depth for this plot.`
               : `Compare this report's recommended depth (${Math.round(result.recommendedDepth ?? 0)} m) against the drilled band during the ERT survey.`);
@@ -1765,7 +1762,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           y = lastY(4);
         }
         doc.setFontSize(6.8); doc.setFont('helvetica', 'italic'); doc.setTextColor(110, 110, 110);
-        doc.text(doc.splitTextToSize('County statistics are compiled from WRA and published drilling records for the region; registry wells come from official water-point databases at true positions. Values marked "(regional est.)" are estimates, not field measurements — no borehole is ever invented.', pw), margin, y);
+        doc.text(doc.splitTextToSize('County figures are a compiled profile: typical values estimated from published hydrogeology and drilling practice, not counts of individual records; registry wells come from official water-point databases at true positions. Values marked "(regional est.)" are estimates, not field measurements — no borehole is ever invented.', pw), margin, y);
         y += 10;
       }
     }
@@ -3476,7 +3473,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Classification', sm?.classification || 'N/A'],
         ['Precipitation (mm/yr)', wb ? fmt(wb.precipitation, 0) : 'N/A'],
         ['Evapotranspiration (mm/yr)', wb ? fmt(wb.evapotranspiration, 0) : 'N/A'],
-        ['Estimated Recharge (mm/yr)', wb ? fmt(wb.estimatedRecharge, 0) : 'N/A'],
+        ['Recharge, planning figure (mm/yr)', (result as any).rechargeSummary?.governing_mm != null ? fmt((result as any).rechargeSummary.governing_mm, 0) : wb ? fmt(wb.estimatedRecharge, 0) : 'N/A'],
         ['Recharge Fraction', wb ? pct(wb.rechargeFraction) : 'N/A'],
         ['Groundwater Potential', fmt(result.gldasGroundwater.groundwaterPotential)],
         ['Drilling Favorability', result.gldasGroundwater.drillingFavorability?.toUpperCase() || 'N/A'],
@@ -3846,7 +3843,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           w.depth_m ? Math.round(w.depth_m).toString() : 'not published',
           w.yield_m3h ? (w.yield_m3h ?? 0).toFixed(1) : w.outcome === 'Fail' ? '0' : 'N/A',
           w.lithology || w.aquiferType || 'N/A',
-          w.outcome === 'Fail' ? 'Dry' : (w.outcome || 'Unknown'),
+          (w.outcome === 'Fail' ? 'Dry' : (w.outcome || 'Unknown')) + (w.outcomeFromYield ? ' (from yield)' : ''),
           w.source,
         ]),
         headStyles: { fillColor: [33, 150, 243], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
@@ -6695,7 +6692,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       ['Yield Estimation', 'min(T-limited, Recharge-limited, Storage-limited) ? SF', 'Theis equation with estimated T, S', '?30?50%; requires pumping test for validation'],
       ['Transmissivity (T)', 'T = K ? b (hydraulic conductivity ? aquifer thickness)', 'Rock-type lookup table (10 types)', 'Estimated; field measurement via pump test required'],
       ['Sustainable Yield', 'Q = T ? i ? W (Darcy); constrained by recharge', 'Geological model + NASA POWER recharge', 'Pre-feasibility estimate only'],
-      ['Depth Estimation', 'Weighted towards drilled depths of productive boreholes within 20 km, else the county record; terrain adjusts it', 'Shipped field borehole records + county drilling records + SRTM', 'Measured: inside the drilled band ~40% of the time (northern Kenya); ERT survey before drilling'],
+      ['Depth Estimation', 'Weighted towards drilled depths of productive boreholes within 20 km, else the county profile (estimates); terrain adjusts it', 'Shipped field borehole records + county drilling records + SRTM', 'Measured: inside the drilled band ~40% of the time (northern Kenya); ERT survey before drilling'],
       ['Risk Assessment', '5-dimensional: geological, contamination, depth, financial, technical', 'Multi-source fusion scoring', 'Probabilistic estimate; field validation improves to <10%'],
       ['Financial Analysis', 'NPV = -C0 + S[(R?-C?)/(1+r)n]; IRR via bisection', 'Kenya contractor surveys (2024), $0.80/m³ rural tariff', 'Base case; sensitivity analysis included'],
       ['Elevation', 'SRTM 30m Digital Elevation Model', 'Open-Elevation API', '?5m vertical accuracy'],
@@ -6989,9 +6986,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
 
     // AI + ERT Fusion -- projections only until a field ERT actually exists.
     // Never print "CONFIRMED" for a survey that has not been carried out.
-    if (hg.fusionResult) {
+    if (hg.fusionResult && (result as any)._auditFlags?.hasFieldERT === true) {
       checkSpace(40);
-      const _hasRealErt = (result as any)._auditFlags?.hasFieldERT === true;
+      const _hasRealErt = true;
       const fusionLabel = _hasRealErt
         ? hg.fusionResult.fusionVerdict
         : `PROJECTED IF ERT ${hg.fusionResult.fusionVerdict === 'CONFIRMED' ? 'CONFIRMS' : 'REFINES'} (survey not yet done)`;
@@ -7012,9 +7009,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       body: [
         ['Full Survey Cost (Traditional)', `$${(hg.fullSurveyCostUSD ?? 15000).toLocaleString()}`],
         ['ERT Only (This Pipeline)', `$${hg.ertSpec?.costUSD?.toLocaleString() ?? '0'}`],
-        ['Cost Savings', `$${((hg.fullSurveyCostUSD ?? 15000) - (hg.ertSpec?.costUSD ?? 0)).toLocaleString()} (${Math.round((1 - (hg.ertSpec?.costUSD ?? 0) / (hg.fullSurveyCostUSD ?? 15000)) * 100)}%)`],
+        ['Cost difference vs full survey', `$${((hg.fullSurveyCostUSD ?? 15000) - (hg.ertSpec?.costUSD ?? 0)).toLocaleString()} (${Math.round((1 - (hg.ertSpec?.costUSD ?? 0) / (hg.fullSurveyCostUSD ?? 15000)) * 100)}%)`],
         ['Data Sources Used', `${hg.sourceConvergence ?? 0} independent sources`],
-        ['Post-Fusion DRI (Projected)', `${hg.fusionResult?.postFusionDRI ?? '?'}%`],
       ],
       headStyles: { fillColor: driColor as [number, number, number], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9 },
@@ -7076,40 +7072,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const opt = ag.optimalPackage;
 
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 163, 74);
-    doc.text('Advanced Geophysics -- Survey Design (Hypothetical Sensitivity Model)', margin, y); y += 8;
-    doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 0);
-    doc.text(`HYPOTHETICAL SENSITIVITY MODEL -- NOT A SITE RESULT. The percentages below answer one planning question only: "how much would each survey package reduce siting uncertainty IF it were carried out and confirmed the model?" No survey has been conducted. The governing site success probability remains ${pct(result.probability)} (Executive Summary).`, margin, y, { maxWidth: pw }); y += 14;
-
-    // Recommendation banner -- never print an unconditional "99% success"
-    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.setTextColor(sra.meetsTarget ? 34 : 217, sra.meetsTarget ? 197 : 119, sra.meetsTarget ? 94 : 6);
-    doc.text(`PROJECTED SITING CONFIDENCE IF FULL SURVEY CONFIRMS: ${sra.withFullIntegrated_pct}% (planning target: ${sra.target_pct}%)`, margin, y); y += 7;
-    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
-    const recLines = doc.splitTextToSize(ag.recommendation ?? '', 170);
-    doc.text(recLines, margin, y); y += recLines.length * 3.5 + 6;
-
-    // Success Rate Analysis Table
-    checkSpace(40);
-    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(59, 130, 246);
-    doc.text('Projected Siting Confidence by Survey Package (hypothetical)', margin, y); y += 6;
-    autoTable(doc, {
-      startY: y,
-      head: [['Configuration', 'Projected Siting Confidence (if survey confirms)', 'Boost vs Desktop Only']],
-      body: [
-        ['Desktop Study Only', `${sra.aiOnly_pct}%`, 'Baseline'],
-        ['+ 2D ERT', `${sra.withERT2D_pct}%`, `+${sra.withERT2D_pct - sra.aiOnly_pct}%`],
-        ['+ 3D ERT', `${sra.withERT3D_pct}%`, `+${sra.withERT3D_pct - sra.aiOnly_pct}%`],
-        ['+ ERT + Seismic', `${sra.withERTSeismic_pct}%`, `+${sra.withERTSeismic_pct - sra.aiOnly_pct}%`],
-        ['+ Combined (ERT+Mag+Seis)', `${sra.withCombinedGeophysics_pct}%`, `+${sra.withCombinedGeophysics_pct - sra.aiOnly_pct}%`],
-        ['+ Full Integrated (5 methods)', `${sra.withFullIntegrated_pct}%`, `+${sra.withFullIntegrated_pct - sra.aiOnly_pct}%`],
-      ],
-      headStyles: { fillColor: [16, 163, 74], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-      bodyStyles: { fontSize: 8 },
-      alternateRowStyles: { fillColor: [240, 253, 244] },
-      margin: { left: margin, right: margin },
-      theme: 'grid',
-    });
-    y = lastY(6);
+    doc.text('Advanced Geophysics -- Survey Planning', margin, y); y += 8;
+    // Projected success rates ("Full Integrated 99%") were not measured on any
+    // site, so they are not printed (2026-10-27 audit). The section lists the
+    // methods, costs and time for planning a survey.
+    doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(80, 80, 80);
+    const planLines = doc.splitTextToSize('Survey planning only: the methods that could be used here, with typical costs and field time. It does not predict how much a survey would raise the chance of success; that depends on what the survey finds.', 170);
+    doc.text(planLines, margin, y); y += planLines.length * 3.5 + 5;
+    void sra; void integrated;
 
     // Survey Packages
     if (ag.recommendedPackages?.length > 0) {
@@ -7118,10 +7088,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.text('Survey Packages -- Ranked by Suitability', margin, y); y += 6;
       autoTable(doc, {
         startY: y,
-        head: [['Package', 'Methods', 'Boost', 'Cost', 'Time', 'Best For']],
+        head: [['Package', 'Methods', 'Cost', 'Time', 'Best For']],
         body: ag.recommendedPackages.map((p: any) => [
           `${p.id === opt.id ? '\u2B50 ' : ''}${p.name}`,
-          `${p.methods.length}`, `+${p.successRateBoost_pct}%`,
+          `${p.methods.length}`,
           `$${(p.cost_usd ?? 0).toLocaleString()}`, `${p.time_hrs}h`,
           p.bestFor.slice(0, 2).join(', '),
         ]),
@@ -10747,7 +10717,7 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
       ['Classification', sm?.classification, ''],
       ['Precipitation', wb2?.precipitation, 'mm/yr'],
       ['Evapotranspiration', wb2?.evapotranspiration, 'mm/yr'],
-      ['Recharge', wb2?.estimatedRecharge, 'mm/yr'],
+      ['Recharge (planning figure)', (result as any).rechargeSummary?.governing_mm ?? wb2?.estimatedRecharge, 'mm/yr'],
       ['GW Potential', result.gldasGroundwater.groundwaterPotential, ''],
       ['Drilling Favorability', result.gldasGroundwater.drillingFavorability, ''],
     ], [25, 20, 10]);

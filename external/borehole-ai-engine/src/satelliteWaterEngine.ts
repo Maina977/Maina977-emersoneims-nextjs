@@ -144,6 +144,27 @@ export interface SatelliteWaterAnalysis {
 
 // ─── MODIS NDVI/EVI from ORNL DAAC ────────────────────────────
 
+/**
+ * ORNL DAAC answers at most 10 composites per request ("exceeds maximum
+ * subset tiles support of 10"); a year of 16-day NDVI is 23, so every
+ * request failed (2026-10-27 audit: 0 of 35). Ask in windows of 9.
+ */
+async function modisSubsetChunked(product: string, band: string, lat: number, lon: number, start: Date, end: Date, compositeDays: number): Promise<{ subset: any[] } | null> {
+  const modisDate = (d: Date) => {
+    const y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 0));
+    const doy = Math.floor((d.getTime() - y0.getTime()) / 86400000);
+    return `A${d.getUTCFullYear()}${String(doy).padStart(3, '0')}`;
+  };
+  const span = compositeDays * 9 * 86400000;
+  const windows: [Date, Date][] = [];
+  for (let s = start.getTime(); s < end.getTime(); s += span) windows.push([new Date(s), new Date(Math.min(end.getTime(), s + span - 86400000))]);
+  const parts = await Promise.all(windows.map(([a, b]) =>
+    fetch(`https://modis.ornl.gov/rst/api/v1/${product}/subset?latitude=${lat}&longitude=${lon}&band=${band}&startDate=${modisDate(a)}&endDate=${modisDate(b)}&kmAboveBelow=0&kmLeftRight=0`, { signal: AbortSignal.timeout(25000) })
+      .then((r) => (r.ok ? r.json() : null)).catch(() => null)));
+  const subset = parts.flatMap((p) => (Array.isArray(p?.subset) ? p.subset : []));
+  return subset.length ? { subset } : null;
+}
+
 async function fetchMODISVegetation(lat: number, lon: number): Promise<MODISVegetationData | null> {
   try {
     const now = new Date();
@@ -164,9 +185,10 @@ async function fetchMODISVegetation(lat: number, lon: number): Promise<MODISVege
     const ndviUrl = `https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=${lat}&longitude=${lon}&band=250m_16_days_NDVI&startDate=${startDate}&endDate=${endDate}&kmAboveBelow=0&kmLeftRight=0`;
     const eviUrl = `https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=${lat}&longitude=${lon}&band=250m_16_days_EVI&startDate=${startDate}&endDate=${endDate}&kmAboveBelow=0&kmLeftRight=0`;
 
+    void ndviUrl; void eviUrl; void startDate; void endDate;
     const [ndviResp, eviResp] = await Promise.all([
-      fetch(ndviUrl, { signal: AbortSignal.timeout(15000) }).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch(eviUrl, { signal: AbortSignal.timeout(15000) }).then(r => r.ok ? r.json() : null).catch(() => null),
+      modisSubsetChunked('MOD13Q1', '250m_16_days_NDVI', lat, lon, oneYearAgo, now, 16),
+      modisSubsetChunked('MOD13Q1', '250m_16_days_EVI', lat, lon, oneYearAgo, now, 16),
     ]);
 
     const ndviSeries: { date: string; value: number }[] = [];
@@ -284,9 +306,10 @@ async function fetchMODISLandSurfaceTemp(lat: number, lon: number): Promise<MODI
     const dayUrl = `https://modis.ornl.gov/rst/api/v1/MOD11A2/subset?latitude=${lat}&longitude=${lon}&band=LST_Day_1km&startDate=${formatModisDate(sixMonthsAgo)}&endDate=${formatModisDate(now)}&kmAboveBelow=0&kmLeftRight=0`;
     const nightUrl = `https://modis.ornl.gov/rst/api/v1/MOD11A2/subset?latitude=${lat}&longitude=${lon}&band=LST_Night_1km&startDate=${formatModisDate(sixMonthsAgo)}&endDate=${formatModisDate(now)}&kmAboveBelow=0&kmLeftRight=0`;
 
+    void dayUrl; void nightUrl;
     const [dayResp, nightResp] = await Promise.all([
-      fetch(dayUrl, { signal: AbortSignal.timeout(15000) }).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch(nightUrl, { signal: AbortSignal.timeout(15000) }).then(r => r.ok ? r.json() : null).catch(() => null),
+      modisSubsetChunked('MOD11A2', 'LST_Day_1km', lat, lon, sixMonthsAgo, now, 8),
+      modisSubsetChunked('MOD11A2', 'LST_Night_1km', lat, lon, sixMonthsAgo, now, 8),
     ]);
 
     const extractLST = (resp: any): number[] => {
@@ -336,6 +359,9 @@ async function fetchMODISLandSurfaceTemp(lat: number, lon: number): Promise<MODI
 // ─── ERA5-Land Leaf Area Index & Soil Temperature ──────────────
 
 async function fetchLeafAreaIndex(lat: number, lon: number): Promise<LeafAreaIndexData | null> {
+  // Open-Meteo does not serve leaf area index (2026-10-27: every request
+  // errored), so no request is made and the source is not listed.
+  if (lat === lat) return null;
   try {
     const now = new Date();
     const start = new Date(now.getFullYear() - 1, 0, 1);

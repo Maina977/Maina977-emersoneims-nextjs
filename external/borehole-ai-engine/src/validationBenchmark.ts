@@ -21,6 +21,8 @@ export interface ValidationBenchmark {
   nDepthScored: number;         // holes with a drilled depth used in the depth test
   analogDepthWithin20pct: number; // fraction predicted within +-20% from real neighbours
   analogDepthMAPE_pct: number;
+  /** Median absolute percentage error of the same predictions. */
+  analogDepthMedianAPE_pct?: number;
   analogYieldMAPE_pct: number;  // yield is essentially unpredictable from the desk
   priorDepthWithin20pct: number; // county-prior-alone baseline (for contrast)
   source: string;
@@ -36,6 +38,8 @@ export const KENYA_NORTH_BENCHMARK: ValidationBenchmark = {
   nDepthScored: 1072,
   analogDepthWithin20pct: 0.40,
   analogDepthMAPE_pct: 66.7,
+  // Reproduced by the 2026-10-27 audit: mean 66.6%, median 29%, within 20% 39.4%.
+  analogDepthMedianAPE_pct: 29,
   analogYieldMAPE_pct: 182.5,
   priorDepthWithin20pct: 0.27,
   source: 'Acacia Water / KenyaRapid+ and Rural Focus / TMAM (UNESCO IHP-WINS) — real drilled boreholes',
@@ -64,7 +68,7 @@ export function validationStatement(b: ValidationBenchmark): string {
   return (
     `Backtested against ${b.nBoreholes.toLocaleString()} real drilled boreholes in ${b.region.split(' (')[0]} ` +
     `(${b.source}): predicting a new borehole's depth from real nearby boreholes lands within ±20% about ${dPct}% of the time ` +
-    `(median absolute error ${b.analogDepthMAPE_pct}%). YIELD could NOT be reliably predicted from desktop/analog data ` +
+    `(typical error ${b.analogDepthMedianAPE_pct ?? b.analogDepthMAPE_pct}% as the median; ${b.analogDepthMAPE_pct}% as the mean, pulled up by a few large misses). This measures the nearby-borehole method on which the depth range is based, not every figure in this report. YIELD could NOT be reliably predicted from desktop/analog data ` +
     `(error ${b.analogYieldMAPE_pct}%) — which is exactly why this report specifies a pump test rather than a promised flow rate. ` +
     `Treat the depth as a range and confirm the target with a field survey before drilling.`
   );

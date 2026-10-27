@@ -15,6 +15,20 @@ import { WaterQuality } from './types';
  * Falls back to soil-type heuristics ONLY when API data unavailable.
  * WHO potability standards are always applied correctly (reference values).
  */
+/** Kenya's Indian Ocean shoreline, Vanga to Kiunga (lon, lat), for distance-to-sea. */
+const KENYA_SHORE: [number, number][] = [[39.2, -4.68], [39.45, -4.55], [39.6, -4.3], [39.68, -4.06], [39.85, -3.65], [40.0, -3.3], [40.15, -3.0], [40.2, -2.75], [40.6, -2.5], [40.9, -2.3], [41.2, -2.05], [41.6, -1.65]];
+function kmToKenyaShore(lat: number, lon: number): number {
+  let best = Infinity;
+  for (let i = 1; i < KENYA_SHORE.length; i++) {
+    const [x1, y1] = KENYA_SHORE[i - 1], [x2, y2] = KENYA_SHORE[i];
+    const dx = x2 - x1, dy = y2 - y1;
+    const s = Math.max(0, Math.min(1, ((lon - x1) * dx + (lat - y1) * dy) / (dx * dx + dy * dy)));
+    const ex = (lon - (x1 + s * dx)) * 111.32 * Math.cos((lat * Math.PI) / 180), ey = (lat - (y1 + s * dy)) * 110.57;
+    best = Math.min(best, Math.hypot(ex, ey));
+  }
+  return best;
+}
+
 export class WaterQualityAnalyzer {
   predictQuality(
     soilType: string,
@@ -319,17 +333,36 @@ export class WaterQualityAnalyzer {
       return { fluorideMult, ironMult, arsenicMult, tdsMult, tdsFloor, warnings, province, citations };
     }
     // Coastal strip (Kwale, Mombasa, Kilifi, Lamu): saline intrusion near the sea.
+    // Within ~8 km of the shore brackish water is the norm (Mombasa island,
+    // Malindi), so salinity is HIGH there, as in the COASTAL province prior
+    // (2026-10-27 audit: Mombasa island was rated only "Moderate").
     if (inKenyaBox && lon >= 39.2 && lat <= -1.6) {
+      const nearShore = kmToKenyaShore(lat, lon) <= 8;
       province = 'Kenya coastal aquifers';
-      tdsMult = 1.3; tdsFloor = 700;
-      warnings.push('COAST: over-pumping near the sea draws in salt water. Keep pumping within the tested yield and test salinity.');
+      tdsMult = 1.3; tdsFloor = nearShore ? 1100 : 700;
+      warnings.push(nearShore
+        ? 'COAST (within about 8 km of the sea): brackish groundwater is common and over-pumping draws in seawater. Expect salty water; test salinity (EC) before buying a pump or tank, and keep pumping within the tested yield.'
+        : 'COAST: over-pumping near the sea draws in salt water. Keep pumping within the tested yield and test salinity.');
+      if (lat >= -4.1 && lat <= -4.0 && lon >= 39.62 && lon <= 39.73) {
+        warnings.push('MOMBASA ISLAND: shallow groundwater under dense housing is affected by sewage; nitrate and bacteria are likely. A laboratory test is essential before any use.');
+      }
       citations.push('Comte et al. (2016) Challenges in groundwater resource management in coastal aquifers of East Africa');
       return { fluorideMult, ironMult, arsenicMult, tdsMult, tdsFloor, warnings, province, citations };
     }
-    // Eastern basement (Machakos, Makueni, Kitui): pockets of salty water.
+    // Turkana basin (Lodwar, Lokichar, Kakuma): high salinity is common, as the
+    // county data in this tool records (2026-10-27 audit: Lodwar rated LOW).
+    if (inKenyaBox && lat >= 1.5 && lon >= 34.4 && lon < 36.5) {
+      province = 'Turkana basin';
+      tdsMult = 1.5; tdsFloor = 1050; fluorideMult = 2.5;
+      warnings.push('TURKANA: high salinity (TDS) and fluoride are common in this basin. Test salinity and fluoride before equipping the borehole.');
+      citations.push('MacDonald et al. (2012) Quantitative maps of groundwater resources in Africa');
+      return { fluorideMult, ironMult, arsenicMult, tdsMult, tdsFloor, warnings, province, citations };
+    }
+    // Eastern basement (Machakos, Makueni, Kitui): pockets of salty water, so
+    // at least MODERATE (2026-10-27 audit: rated LOW beside its own warning).
     if (inKenyaBox && lon >= 37.2 && lon < 38.6 && lat <= 0.3) {
       province = 'Eastern Kenya basement (Ukambani)';
-      tdsMult = 1.4; tdsFloor = 450;
+      tdsMult = 1.4; tdsFloor = 650;
       warnings.push('EASTERN BASEMENT: salty boreholes occur in parts of Machakos, Makueni and Kitui. Test salinity.');
       citations.push('MacDonald et al. (2012) Quantitative maps of groundwater resources in Africa');
       return { fluorideMult, ironMult, arsenicMult, tdsMult, tdsFloor, warnings, province, citations };

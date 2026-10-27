@@ -927,11 +927,13 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
   // STEP 5: Final decision -- never says "no further surveys needed": the
   // pump test and lab water analysis remain mandatory AFTER drilling even
   // when the ERT confirms the target (client review finding #13).
-  const finalDecision = postFusionDRI >= drillThreshold
-    ? `DRILL AT POINT #1 (${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}°) — Desktop + ERT fusion DRI: ${postFusionDRI}%, subject to hydrogeologist review and statutory approvals. Pump testing and laboratory water analysis remain mandatory after drilling.`
-    : postFusionDRI >= targetedThreshold
-    ? `DRILL WITH MONITORING — Desktop + ERT DRI: ${postFusionDRI}%. Proceed to drill with enhanced monitoring during drilling. Pump testing and laboratory water analysis remain mandatory after drilling.`
-    : `ADDITIONAL SURVEY RECOMMENDED — Post-fusion DRI ${postFusionDRI}% still below threshold. Consider ${isCrystalline ? 'cross-line ERT or magnetic survey' : 'TDEM sounding'} at Point #1 before drilling.`;
+  // On what is known now (2026-10-27 audit: the decision used a DRI projected
+  // as if an ERT survey had already confirmed the desktop model).
+  const finalDecision = finalDRI >= drillThreshold
+    ? `SURVEY POINT #1 FIRST (${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}°) — desktop readiness ${finalDRI}%. A hydrogeological survey (required for the WRA permit) confirms the point before drilling. Pump testing and laboratory water analysis remain mandatory after drilling.`
+    : finalDRI >= targetedThreshold
+    ? `TARGETED SURVEY — desktop readiness ${finalDRI}%. Survey point #1 (ERT or VES) before deciding to drill. Pump testing and laboratory water analysis remain mandatory after drilling.`
+    : `ADDITIONAL SURVEY RECOMMENDED — desktop readiness ${finalDRI}% is below the threshold. Consider ${isCrystalline ? 'cross-line ERT or magnetic survey' : 'TDEM sounding'} at Point #1 before drilling.`;
 
   // Build the 5-step pipeline
   const pipeline: PipelineStep[] = [
@@ -1022,17 +1024,17 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
   if (drillReadinessLabel === 'DRILL NOW') {
     pipeline[2].status = 'complete';
     pipeline[2].subtitle = 'Required before drilling';
-    pipeline[2].description = `Desktop DRI is ${finalDRI}% — already exceeds ${drillThreshold}% drill threshold. a hydrogeological survey (with ERT) is still required before drilling, for confidence. If skipped, proceed directly to drilling and save $${ertCost}.`;
+    pipeline[2].description = `Desktop DRI is ${finalDRI}% — already exceeds ${drillThreshold}% drill threshold. a hydrogeological survey (with ERT) is still required before drilling, for confidence. The survey is not optional.`;
     pipeline[3].status = 'complete';
-    pipeline[3].subtitle = 'N/A — Direct drill';
+    pipeline[3].subtitle = 'After the survey';
     pipeline[4].status = 'complete';
-    pipeline[4].subtitle = 'DRILL NOW';
-    pipeline[4].description = `DRI ${finalDRI}% exceeds threshold. DRILL DIRECTLY at Point #1 (${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}°). No field survey required.`;
+    pipeline[4].subtitle = 'Survey, then drill';
+    pipeline[4].description = `DRI ${finalDRI}% exceeds threshold. Point #1 (${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}°) is the preferred drilling point. A hydrogeological survey is still required before drilling (WRA permit).`;
   }
 
   const pipelineSummary = drillReadinessLabel === 'DRILL NOW'
     ? `Desktop screening alone reaches DRI ${finalDRI}%. A hydrogeological survey is still required before drilling (Kenya Water Resources Regulations); a targeted survey at point #1 is enough.`
-    : `desktop model screens site → selects 3 drill points → ERT on #1 only ($${ertCost}) → desktop+ERT fusion boosts DRI to ${postFusionDRI}% → ${postFusionDRI >= drillThreshold ? 'DRILL' : 'DECIDE'}. Saves $${(FULL_SURVEY_COST_USD - ertCost).toLocaleString()} vs full survey.`;
+    : `desktop model screens site → selects 3 drill points → ERT on #1 only ($${ertCost}) → the survey result decides whether to drill.`;
 
   return {
     // 5-Step Pipeline
