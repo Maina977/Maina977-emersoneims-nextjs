@@ -58,10 +58,12 @@ export interface GRACEData {
  */
 export async function fetchGRACETWSData(lat: number, lon: number): Promise<GRACEData | null> {
   try {
-    // Fetch 5-year deep soil moisture trend as GRACE TWS proxy
-    const end = new Date().toISOString().split('T')[0];
-    const startDate = new Date();
-    startDate.setFullYear(startDate.getFullYear() - 5);
+    // Fetch 5-year deep soil moisture trend as GRACE TWS proxy. The window
+    // ends at the last complete month (fixed all month, so the relay's cached
+    // answer is reused and runs repeat; 2026-10-29).
+    const endDate = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 0));
+    const end = endDate.toISOString().split('T')[0];
+    const startDate = new Date(Date.UTC(endDate.getUTCFullYear() - 5, endDate.getUTCMonth(), endDate.getUTCDate() + 1));
     const start = startDate.toISOString().split('T')[0];
 
     const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${start}&end_date=${end}&daily=soil_moisture_100_to_255cm_mean&timezone=UTC`;
@@ -1448,9 +1450,11 @@ export interface VegetationGroundwaterProxy {
 export async function analyzeVegetationGroundwater(lat: number, lon: number): Promise<VegetationGroundwaterProxy | null> {
   try {
     // Fetch 2 years of daily ET₀ and soil moisture as vegetation proxy
-    const end = new Date().toISOString().split('T')[0];
-    const startDate = new Date();
-    startDate.setFullYear(startDate.getFullYear() - 2);
+    // Window ends at the last complete month (fixed all month, so the relay's
+    // cached answer is reused and runs repeat; 2026-10-29).
+    const endDate = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 0));
+    const end = endDate.toISOString().split('T')[0];
+    const startDate = new Date(Date.UTC(endDate.getUTCFullYear() - 2, endDate.getUTCMonth(), endDate.getUTCDate() + 1));
     const start = startDate.toISOString().split('T')[0];
 
     const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${start}&end_date=${end}&daily=et0_fao_evapotranspiration,soil_moisture_0_to_7cm_mean,precipitation_sum&timezone=UTC`;

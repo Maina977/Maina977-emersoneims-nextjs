@@ -847,7 +847,7 @@ const LoanVsCashRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const [rate, setRate] = useState(0.14);
   return (
     <>
-      <Hint>Cash purchase vs 5-year bank loan at the rate below.</Hint>
+      <Hint>Cash purchase vs a loan over 20 years (20% down) at the rate you enter. An example to compare, not a financing offer: EmersonEIMS does not lend or arrange credit.</Hint>
       <Field><span className="l">Loan annual rate</span>
         <input type="number" step="0.005" value={rate} onChange={e => setRate(+e.target.value)} /></Field>
       <Run disabled={r.loading} onClick={() => r.run(() => finance.loanVsCash({
@@ -1349,7 +1349,7 @@ const TariffSensRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const r = useRunner();
   const [capex, setCapex] = useState(ctx.financial?.capexKes || ctx.metrics?.totalCost || 1200000);
   const [year1, setYear1] = useState((ctx.metrics?.monthlySaving || 8000) * 12);
-  const [baseline, setBaseline] = useState(6);
+  const [baseline, setBaseline] = useState(0); // flat, like the calculator and proposals
   return (
     <>
       <Hint>IRR sensitivity to KPLC tariff escalation. Tests baseline ±3 % around your assumption.</Hint>
@@ -1368,7 +1368,7 @@ const GensetDisplaceRunner: React.FC = () => {
   const r = useRunner();
   const [kva, setKva] = useState(30);
   const [hours, setHours] = useState(6);
-  const [diesel, setDiesel] = useState(195);
+  const [diesel, setDiesel] = useState(175);
   return (
     <>
       <Hint>Computes diesel litres + maintenance + overhaul accrual saved by solar/battery.</Hint>
@@ -1742,17 +1742,26 @@ const Tmy8760Runner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const [invKw, setInvKw] = useState(4.2);
   const [tilt, setTilt] = useState(10);
   const [az, setAz] = useState(0);
+  // The model needs this site's monthly irradiance (it used Nairobi's for any
+  // latitude until the 2026-10-27 audit). Prefilled flat from the site's
+  // annual average when the calculator found one.
+  const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const psh = Number(ctx.site?.irradianceKwhPerM2Day) || 0;
+  const [ghi, setGhi] = useState(psh > 0 ? DAYS.map((d) => Math.round(psh * d)).join(', ') : '');
+  const ghiList = ghi.split(/[\s,;]+/).filter(Boolean).map(Number);
   return (
     <>
-      <Hint>Hour-by-hour 8760 simulation: Spencer sun-position × Erbs diffuse × Hay-Davies POA × NOCT cell-temp × inverter clipping. Synthesises hourly GHI from 12 monthly values when no TMY supplied.</Hint>
+      <Hint>Hour-by-hour 8760 simulation: Spencer sun-position × Erbs diffuse × Hay-Davies POA × NOCT cell-temp × soiling, wiring and inverter losses × clipping. Hourly irradiance is synthesised from the 12 monthly totals below. For seasonality, paste the site's monthly GHI from NASA POWER or PVGIS.</Hint>
       <Field><span className="l">Latitude</span><input type="number" step="0.0001" value={lat} onChange={e=>setLat(+e.target.value)} /></Field>
       <Field><span className="l">Longitude</span><input type="number" step="0.0001" value={lon} onChange={e=>setLon(+e.target.value)} /></Field>
       <Field><span className="l">DC system (kWp)</span><input type="number" step="0.1" value={systemKw} onChange={e=>setSystemKw(+e.target.value)} /></Field>
       <Field><span className="l">Inverter (kW AC)</span><input type="number" step="0.1" value={invKw} onChange={e=>setInvKw(+e.target.value)} /></Field>
       <Field><span className="l">Tilt (°)</span><input type="number" value={tilt} onChange={e=>setTilt(+e.target.value)} /></Field>
       <Field><span className="l">Azimuth (° from N)</span><input type="number" value={az} onChange={e=>setAz(+e.target.value)} /></Field>
+      <Field><span className="l">Monthly GHI, Jan-Dec (kWh/m²){psh > 0 ? ' — prefilled flat from the site average' : ''}</span><input type="text" value={ghi} placeholder="12 values, e.g. 180, 175, 200, ..." onChange={e=>setGhi(e.target.value)} /></Field>
       <Run disabled={r.loading} onClick={() => r.run(() => engElite.tmy8760({
         latDeg: lat, lonDeg: lon, systemKwDc: systemKw, inverterKwAc: invKw, tiltDeg: tilt, azimuthDeg: az,
+        monthlyGhiKwhM2: ghiList.length === 12 ? ghiList : undefined,
       }))}>{r.loading ? 'Simulating 8760 hours…' : 'Run TMY simulation'}</Run>
       <ResultBlock {...r} />
     </>

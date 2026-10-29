@@ -140,14 +140,18 @@ export class WaterQualityAnalyzer {
       fluoride *= 1.3;   // Longer rock-water contact → more F dissolution
     }
 
+    // Modelled values carry 2 significant figures (TDS and hardness to the
+    // nearest 10 mg/L): 4-figure values such as "sulfate 32.63 mg/L" implied a
+    // lab precision a desktop estimate does not have (2026-10-27 audit).
+    const sig2 = (v: number) => (v === 0 ? 0 : Number(v.toPrecision(2)));
     return {
-      turbidity: Math.max(0, Math.min(10, turbidity)),
-      tds: Math.max(50, Math.round(tds)),
-      hardness: Math.max(20, Math.round(hardness)),
-      fluoride: Math.max(0.1, Math.round(fluoride * 100) / 100),
-      iron: Math.max(0.01, Math.round(iron * 100) / 100),
-      arsenic: Math.max(0.0001, Math.round(arsenic * 10000) / 10000),
-      nitrate: Math.max(1, Math.round(nitrate * 10) / 10),
+      turbidity: sig2(Math.max(0, Math.min(10, turbidity))),
+      tds: Math.max(50, Math.round(tds / 10) * 10),
+      hardness: Math.max(20, Math.round(hardness / 10) * 10),
+      fluoride: Math.max(0.1, sig2(fluoride)),
+      iron: Math.max(0.01, sig2(iron)),
+      arsenic: Math.max(0.0001, sig2(arsenic)),
+      nitrate: Math.max(1, sig2(nitrate)),
     };
   }
 

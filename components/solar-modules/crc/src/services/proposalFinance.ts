@@ -29,7 +29,9 @@ export function proposalFinance(a: FinanceAssumptions): FinanceResult {
     capexKes: Math.max(0, Number(a.capexKes) || 0),
     year1SavingsKes: Math.max(0, Number(a.year1SavingsKes) || 0),
     years: a.years ?? 25,
-    tariffEscalationPct: a.tariffEscalationPct ?? 3,
+    // Tariffs held flat by default, like the calculator and the ROI tool
+    // (2026-10-27 audit: 0% in one tool and 3% in the proposal).
+    tariffEscalationPct: a.tariffEscalationPct ?? 0,
     panelDegradationPct: a.panelDegradationPct ?? 0.5,
     omPctOfCapex: a.omPctOfCapex ?? 1,
     discountRatePct: a.discountRatePct ?? 10,

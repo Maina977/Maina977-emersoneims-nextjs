@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useSolarStore } from '../services/store';
 import { reports, downloadBlob } from '../services/api';
-import { proposalFinance, loanMonthlyPayment } from '../services/proposalFinance';
+import { proposalFinance } from '../services/proposalFinance';
+import { BATTERY_KES_PER_KWH } from '@/lib/solar/sizing';
 
 // Real proposal generator.
 // Fills in client + brand + site + design + financial from the shared
@@ -200,11 +201,19 @@ export default function ReportPage() {
   // in the financial section. Fixed lump sums for mounting/BOS/installation
   // (the same for 3 kWp and 30 kWp) and a battery line costed at 10 kWh when
   // there was no battery were removed (2026-10-25 audit).
-  const batteryLineKes = design.batteryKwh > 0 ? Math.round(design.batteryKwh * 36000) : 0;
+  // Battery and inverter at the calculator's rates (lib/solar/sizing.ts), so
+  // the BOM and the capex come from one price list.
+  const offGrid = design.systemType === 'off-grid';
+  const batteryLineKes = design.batteryKwh > 0 ? Math.round(design.batteryKwh * BATTERY_KES_PER_KWH) : 0;
+  function inverterKes(kw: number): number {
+    if (!(kw > 0)) return 0;
+    const [low, high] = design.systemType === 'grid-tied' ? [20000, 15000] : [35000, 28000];
+    return Math.round(Math.min(kw, 10) * low + Math.max(0, kw - 10) * high);
+  }
   function buildBom() {
     const panels = design.panelCount || metrics.panelCount;
     const panelTotalKes = panels * 12500;
-    const inverterCost = design.inverterKw > 0 ? Math.max(80000, design.inverterKw * 35000) : 0;
+    const inverterCost = inverterKes(design.inverterKw);
     const rows: Array<[string, number, number, number, null]> = [
       [`${design.panelMake || 'Panel'} ${design.panelModel || ''} ${design.panelW}W`.replace(/\s+/g, ' '),
         panels, 12500, panelTotalKes, null],
@@ -258,8 +267,9 @@ export default function ReportPage() {
         irradianceKwhPerM2Day: site.irradianceKwhPerM2Day || metrics.peakSunHours,
         monthlyConsumptionKwh: monthlyKwh ?? null,
         peakDemandKw: null,
-        tariffKesPerKwh: site.tariffKesPerKwh,
-        tariffSchedule: 'Kenya Power retail (as entered)',
+        // Off-grid savings are against diesel, so no grid tariff is shown.
+        tariffKesPerKwh: offGrid ? null : site.tariffKesPerKwh,
+        tariffSchedule: offGrid ? 'Not applicable: off-grid, savings are against diesel generation' : 'Kenya Power retail (as entered)',
         gridReliabilityNotes: site.gridReliabilityNotes
       },
       design: {
@@ -276,6 +286,7 @@ export default function ReportPage() {
         batteryModel: design.batteryModel,
         tiltDeg: design.tiltDeg,
         azimuthDeg: design.azimuthDeg,
+        systemType: design.systemType,
         stringConfig: 'auto-sized by Calculator',
         specificYieldKwhPerKwp:
           metrics.systemSizeKw > 0
@@ -293,12 +304,9 @@ export default function ReportPage() {
         discountRatePct: a.discountRatePct,
         tariffEscalationPct: a.tariffEscalationPct,
         panelDegradationPct: a.panelDegradationPct,
-        cashFlowTable: finance.cashFlowTable,
-        financingOptions: [
-          ['Cash', 0, 0, 0, capexKes],
-          ['Bank loan, 5 years', 60, 14, loanMonthlyPayment(capexKes, 14, 60), loanMonthlyPayment(capexKes, 14, 60) * 60],
-          ['Bank loan, 7 years', 84, 16, loanMonthlyPayment(capexKes, 16, 84), loanMonthlyPayment(capexKes, 16, 84) * 84]
-        ]
+        // Loan examples with invented bank rates were removed (2026-10-27
+        // audit): financing terms come from the lender, not this proposal.
+        cashFlowTable: finance.cashFlowTable
       },
       warranties: [
         ['Modules', 'Typically 12–15', 'Typically 25–30', 'Confirm on the selected datasheet'],

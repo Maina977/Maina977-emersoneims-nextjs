@@ -241,7 +241,7 @@ export default function CalculatorPage() {
         carbonOffsetKg: data.co2AvoidedKgPerYear ?? 0,
         peakSunHours: data.sunHours.annual,
       });
-      updateDesign({ systemKw: data.pvKwp, panelCount: data.panels, inverterKw: data.inverterKw, batteryKwh: data.batteryKwh });
+      updateDesign({ systemKw: data.pvKwp, panelCount: data.panels, panelW: data.panelWatt, inverterKw: data.inverterKw, batteryKwh: data.batteryKwh, systemType });
       updateFinancial({ capexKes: data.cost.midKes, year1SavingsKes: data.monthlySavingKes * 12, paybackYears: data.paybackYears ?? 0 });
       updateSite({ monthlyConsumptionKwh: cons, irradianceKwhPerM2Day: data.sunHours.annual });
       saveProject();

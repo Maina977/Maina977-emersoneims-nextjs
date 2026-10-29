@@ -354,6 +354,7 @@ const InverterMatchTool = () => {
   const t = useTool();
   const [pv, setPv] = useState(6.8);
   const [inv, setInv] = useState(5.0);
+  const [type, setType] = useState('grid-tied');
   return (
     <Card>
       <CardH>Inverter Match Check</CardH>
@@ -361,8 +362,13 @@ const InverterMatchTool = () => {
       <Row>
         <Input type="number" value={pv} onChange={(e) => setPv(+e.target.value)} placeholder="PV kWp" aria-label="PV kWp" />
         <Input type="number" value={inv} onChange={(e) => setInv(+e.target.value)} placeholder="Inverter kW" aria-label="Inverter kW" />
+        <Select value={type} onChange={(e) => setType(e.target.value)} aria-label="System type">
+          <option value="grid-tied">Grid-tied</option>
+          <option value="hybrid">Hybrid (battery)</option>
+          <option value="off-grid">Off-grid</option>
+        </Select>
       </Row>
-      <Btn disabled={t.busy} onClick={() => t.run(() => solar.inverterMatch({ pvKwStc: pv, inverterAcKw: inv }))}>Check</Btn>
+      <Btn disabled={t.busy} onClick={() => t.run(() => solar.inverterMatch({ pvKwStc: pv, inverterAcKw: inv, systemType: type }))}>Check</Btn>
       <Result {...t} />
     </Card>
   );

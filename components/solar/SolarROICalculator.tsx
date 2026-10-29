@@ -6,7 +6,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import { estimateInstalledCost, PERFORMANCE_RATIO, BATTERY_DOD, BATTERY_EFFICIENCY, DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
+import { estimateInstalledCost, PERFORMANCE_RATIO, BATTERY_DOD, BATTERY_EFFICIENCY, BATTERY_KES_PER_KWH, DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
 import {
   TrendingUp, DollarSign,
   Calendar, PiggyBank, Leaf
@@ -84,7 +84,12 @@ export default function SolarROICalculator() {
     const monthlySavings = energySaved * rate;
     const annualSavings = monthlySavings * 12;
 
-    // 25-year analysis with inflation and degradation
+    // 25-year analysis with degradation, maintenance and, with a battery, one
+    // LiFePO4 replacement in year 12 at today's equipment price (the
+    // calculator, FAQ and proposal all count it; this tool left it out until
+    // the 2026-10-27 audit).
+    const batteryReplacementYear = 12;
+    const batteryReplacementKes = includesBattery ? Math.round(batteryCapacity * BATTERY_KES_PER_KWH) : 0;
     let cumulativeSavings = 0;
     let paybackYear: number | null = null;
     const yearlyData = [];
@@ -94,7 +99,7 @@ export default function SolarROICalculator() {
       const inflationFactor = Math.pow(1 + KENYA_SOLAR.tariffGrowth, year - 1);
       const yearSavings = annualSavings * degradationFactor * inflationFactor;
       const yearMaintenance = totalSystemCost * KENYA_SOLAR.maintenanceCostPercent;
-      const netSavings = yearSavings - yearMaintenance;
+      const netSavings = yearSavings - yearMaintenance - (year === batteryReplacementYear ? batteryReplacementKes : 0);
 
       cumulativeSavings += netSavings;
 
@@ -129,6 +134,7 @@ export default function SolarROICalculator() {
       paybackYear,
       totalROI: Math.round(totalROI),
       lifetimeSavings: Math.round(lifetimeSavings),
+      batteryReplacementKes,
       annualCO2Offset: Math.round(annualCO2Offset),
       lifetimeCO2Offset: Math.round(lifetimeCO2Offset / 1000), // tonnes
       yearlyData,
@@ -282,7 +288,7 @@ export default function SolarROICalculator() {
                   <span>KES {calculations.batteryCost.toLocaleString()}</span>
                 </div>
               )}
-              <p className="text-xs text-slate-500 pt-1">Typical Kenyan installed prices (mid-2026), the same model as the SolarGenius calculator. Not a quotation: a site survey fixes the price.</p>
+              <p className="text-xs text-slate-500 pt-1">Typical Kenyan installed prices (mid-2026), before VAT, the same model as the SolarGenius calculator. Not a quotation: a site survey fixes the price.</p>
             </div>
           </div>
 
@@ -321,7 +327,9 @@ export default function SolarROICalculator() {
             How this is worked out: savings are the solar energy used on site times
             KES {KPLC_RATES[customerType]}/kWh (your bill ÷ that rate gives the
             consumption). Panel output falls 0.5% a year, maintenance is 1% of the
-            system cost a year and tariffs are held flat. Payback is the first year
+            system cost a year and tariffs are held flat.
+            {calculations.batteryReplacementKes > 0 && ` The battery is replaced once, in year 12, at today's price (KES ${calculations.batteryReplacementKes.toLocaleString()}).`}
+            {' '}Payback is the first year
             the running total of net savings passes the system cost. Estimates only.
           </p>
 

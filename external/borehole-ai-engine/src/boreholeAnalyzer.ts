@@ -17,6 +17,7 @@ import { fetchClimateType } from './climateClassifier';
 import { getValidationBenchmark } from './validationBenchmark';
 import { fetchRealTimeWaterData } from './realTimeWaterData';
 import { generateSubsurfaceModel } from './subsurfaceModeler';
+import { installReliableFetch } from './reliableFetch';
 import { runAquiferSimulation } from './aquiferSimulator';
 import {
   fetchGRACETWSData,
@@ -162,6 +163,9 @@ export class BoreholeAnalyzer {
     // "terrain" and "vegetation" are not evidence and must not vote
     // (2026-10-27 audit: it gave 66% at Garissa and Nakuru at 15% weight).
     const noPhoto = imageFile?.name === '__aquascan-no-photo__.jpg';
+    // ERA5, the GRACE-FO proxy, NASA POWER and MODIS through the data relay
+    // (retries + one-day cache), so every source answers and repeats.
+    installReliableFetch();
     const report = (step: PipelineStep, label: string) => {
       if (onProgress) onProgress(step, label);
     };

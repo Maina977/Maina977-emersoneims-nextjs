@@ -235,7 +235,19 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
   .mode-tab{font-size:12px;padding:6px 10px;border-radius:4px}
   .pro-sub-tabs{flex-wrap:wrap;overflow:visible}
   [style*="font-size:9px"],[style*="font-size:10px"]{font-size:12px!important}
+  /* 2026-10-27 audit: 28-30 px buttons, 9 px text, toolbar over 17% of the
+     plan, status and dimension labels overlapping. */
+  [style*="font-size:8px"],.fpe-grp-label,.fpe-el .fpe-info,.fpe-status,.fpe-dims,.fpe-placed,.fpe-floor-tab,.fpe-toolbar button,.cad-bar button{font-size:12px!important}
+  .mode-tab,.fpe-toolbar button,.fpe-floor-tab,.cad-bar button,.pro-sub-tabs button,.pro-page button,.fpe-placed button{min-height:44px;min-width:44px}
+  .fpe-el{min-height:44px}
+  .fpe-toolbar{left:8px;transform:none;max-width:calc(100% - 16px);justify-content:flex-start}
+  .fpe-toolbar.fpe-collapsed>:not(.fpe-tb-toggle){display:none}
+  .fpe-status{left:8px;right:8px;bottom:48px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fpe-dims{left:8px;right:auto;bottom:8px;max-width:calc(100% - 16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fpe-dims:empty{display:none}
 }
+.fpe-tb-toggle{display:none}
+@media(max-width:700px){.fpe-tb-toggle{display:inline-block}}
 </style>
 </head>
 <body>
@@ -850,13 +862,12 @@ async function repBuild(){
             terrain_category:'II', co:1.0, cprob:1.0, cdir:1.0, cseason:1.0,
             rho_kg_m3:1.25
         })),
-        fjson('/geotech/bearing/terzaghi', post({
-            c_kPa:15, phi_deg:28, gamma_kN_m3:18, B_m:0.6, Df_m:1.2, shape:'strip'
-        })),
-        fjson('/rc/beam/bending', post({
-            b_mm:300, h_mm:500, d_mm:450, As_mm2:1500,
-            fck_MPa:30, fyk_MPa:500, Med_kNm:120
-        })),
+        // No bearing or beam result without the site's soil test and the
+        // project's own sections: invented soil (c 15, phi 28) and a fixed beam
+        // must not appear in a client report (2026-10-27 audit). The report
+        // shows "pending" for these.
+        Promise.resolve(null),
+        Promise.resolve(null),
         // ---- QS ----
         fjson('/qs/carbon/assess', post({
             assessment_stage:'RIBA-3',
@@ -4743,7 +4754,8 @@ function showFloorEditor(){
 
     // Canvas area
     h+='<div class="fpe-canvas-area" id="fpeCanvasArea">';
-    h+='<div class="fpe-toolbar" id="fpeToolbar">';
+    h+='<div class="fpe-toolbar'+(window.innerWidth<=700?' fpe-collapsed':'')+'" id="fpeToolbar">';
+    h+='<button class="fpe-tb-toggle" onclick="document.getElementById(\'fpeToolbar\').classList.toggle(\'fpe-collapsed\')" title="Show or hide the tools">\u2630 Tools</button>';
     ['select','wall','door','window','room','measure'].forEach(t=>{
         let lbl={select:'\u{1F5B1}\uFE0F Select',wall:'\u2501 Wall',door:'\u{1F6AA} Door',window:'\u2395 Window',room:'\u2B1C Room',measure:'\u{1F4CF} Measure'}[t];
         h+='<button onclick="fpeTool(\''+t+'\')" id="fpeTool_'+t+'"'+(t===fpe.tool?' class="fpe-active"':'')+'>'+lbl+'</button>';
@@ -4787,10 +4799,44 @@ function fpeInitCanvas(){
     // could not move anything). touch-action:none keeps a drag on the plan
     // from scrolling the page.
     svg.style.touchAction='none';
-    svg.addEventListener('pointerdown',e=>{try{svg.setPointerCapture(e.pointerId)}catch(x){} fpeMouseDown(e);});
-    svg.addEventListener('pointermove',fpeMouseMove);
-    svg.addEventListener('pointerup',fpeMouseUp);
-    svg.addEventListener('pointercancel',fpeMouseUp);
+    // Two fingers pinch-zoom about their midpoint (2026-10-27 audit: a pinch
+    // dragged the room 2.1 m because every pointer was treated as the mouse).
+    const fpePts=new Map(); let fpePinch=null;
+    svg.addEventListener('pointerdown',e=>{
+        fpePts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+        if(fpePts.size===2){
+            fpeMouseUp(e); // end the one-finger drag the first finger started
+            const [a,b]=[...fpePts.values()];
+            fpePinch={d:Math.hypot(a.x-b.x,a.y-b.y)};
+            return;
+        }
+        if(fpePts.size>2) return;
+        try{svg.setPointerCapture(e.pointerId)}catch(x){} fpeMouseDown(e);
+    });
+    svg.addEventListener('pointermove',e=>{
+        if(fpePts.has(e.pointerId)) fpePts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+        if(fpePinch){
+            if(fpePts.size===2){
+                const [a,b]=[...fpePts.values()];
+                const d=Math.hypot(a.x-b.x,a.y-b.y);
+                if(fpePinch.d>0 && d>0){
+                    const rect=svg.getBoundingClientRect();
+                    const mx=(a.x+b.x)/2-rect.left, my=(a.y+b.y)/2-rect.top;
+                    const nz=Math.max(0.2,Math.min(5,fpe.zoom*d/fpePinch.d));
+                    const k=nz/fpe.zoom;
+                    fpe.panX=mx-(mx-fpe.panX)*k; fpe.panY=my-(my-fpe.panY)*k; fpe.zoom=nz;
+                    fpePinch.d=d; fpeRender();
+                }
+            }
+            return;
+        }
+        fpeMouseMove(e);
+    });
+    const fpeUp=e=>{ fpePts.delete(e.pointerId); if(fpePinch){ if(fpePts.size===0) fpePinch=null; return; } fpeMouseUp(e); };
+    svg.addEventListener('pointerup',fpeUp);
+    svg.addEventListener('pointercancel',fpeUp);
+    // On a phone, fit the plan to the screen so nothing starts clipped.
+    if(window.innerWidth<=700) setTimeout(()=>{ try{ fpeZoomFit(); }catch(x){} },60);
     svg.addEventListener('wheel',fpeWheel,{passive:false});
     svg.addEventListener('dblclick',fpeDblClick);
 
@@ -7206,6 +7252,8 @@ const PRO_CATALOG = [
       {k:'vb_ms',type:'number',def:24,l:'Basic wind velocity vb,0 (m/s)'},
       {k:'height_m',type:'number',def:10,step:'0.1',l:'Reference height z (m)'},
       {k:'terrain_category',type:'select',opts:['0','I','II','III','IV'],def:'II',l:'Terrain category'},
+      {k:'rho_kg_m3',type:'number',def:1.25,step:'0.01',l:'Air density ρ (kg/m³; 1.25 sea level, about 1.0 at Nairobi)'},
+      {k:'co',type:'number',def:1,step:'0.01',l:'Orography factor co (1.0 flat terrain)'},
     ]},
   {id:'en_seis', grp:'Engineering+', title:'Seismic ELF (ASCE 7-22 §12.8)',
     ep:'/api/loads/seismic/asce7-elf', mth:'POST',
@@ -7243,11 +7291,14 @@ const PRO_CATALOG = [
       {k:'fu_ply_MPa',type:'number',def:410,l:'fu ply (MPa)'},
       {k:'e1_mm',type:'number',def:30,l:'e1 (mm)'},
       {k:'p1_mm',type:'number',def:60,l:'p1 (mm)'},
+      {k:'e2_mm',type:'number',def:35,l:'e2 edge distance (mm; sets k1)'},
+      {k:'p2_mm',type:'number',def:'',l:'p2 gauge (mm; blank = one line of bolts)'},
+      {k:'exposed_to_weather',type:'select',opts:[false,true],def:false,l:'Steel exposed to weather (e1/e2 maximum)'},
       {k:'d_hole_mm',type:'number',def:'',l:'Hole d (mm; blank = normal clearance)'},
       {k:'Fv_Ed_kN',type:'number',def:50,l:'Fv,Ed (kN)'},
       {k:'Ft_Ed_kN',type:'number',def:10,l:'Ft,Ed (kN)'},
     ]},
-  {id:'en_geo', grp:'Engineering+', title:'Bearing capacity (Terzaghi form)',
+  {id:'en_geo', grp:'Engineering+', title:'Bearing capacity (classical equation)',
     ep:'/api/geotech/bearing/terzaghi', mth:'POST',
     refs:['Terzaghi 1943 (equation, shape factors)','Prandtl–Reissner (Nc, Nq)','Vesić 1973 (Nγ)'],
     f:[
@@ -7257,6 +7308,72 @@ const PRO_CATALOG = [
       {k:'B_m',type:'number',def:2,step:'0.1',l:'Footing width B (m)'},
       {k:'Df_m',type:'number',def:1.5,step:'0.1',l:'Embedment Df (m)'},
       {k:'shape',type:'select',opts:['strip','square','circular'],def:'strip',l:'Shape'},
+    ]},
+  {id:'en_geo_ec7', grp:'Engineering+', title:'Bearing resistance (EN 1997-1 Annex D, DA1)',
+    ep:'/api/geotech/bearing/ec7', mth:'POST',
+    refs:['EN 1997-1 Annex D','Design Approach 1 (C1, C2)'],
+    f:[
+      {k:'condition',type:'select',opts:['drained','undrained'],def:'drained',l:'Condition'},
+      {k:'c_kPa',type:'number',def:5,l:"Drained: c′ (kPa)"},
+      {k:'phi_deg',type:'number',def:30,l:"Drained: φ′ (°)"},
+      {k:'cu_kPa',type:'number',def:'',l:'Undrained: cu (kPa)'},
+      {k:'gamma_kN_m3',type:'number',def:18,l:'Bulk unit weight γ (kN/m³)'},
+      {k:'B_m',type:'number',def:2,step:'0.05',l:'Width B (m, shorter side)'},
+      {k:'L_m',type:'number',def:2,step:'0.05',l:'Length L (m)'},
+      {k:'Df_m',type:'number',def:1.2,step:'0.1',l:'Founding depth Df (m)'},
+      {k:'water_depth_m',type:'number',def:'',step:'0.1',l:'Water table depth (m; blank = deep)'},
+      {k:'Gk_kN',type:'number',def:'',l:'Permanent load Gk (kN; incl. footing and backfill)'},
+      {k:'Qk_kN',type:'number',def:'',l:'Variable load Qk (kN)'},
+    ]},
+  {id:'en_pad', grp:'Engineering+', title:'Pad footing (size, bending, shear, punching)',
+    ep:'/api/geotech/pad-footing', mth:'POST',
+    refs:['EN 1992-1-1 §6.1, §6.2.2, §6.4'],
+    f:[
+      {k:'N_sls_kN',type:'number',def:800,l:'Column load, service N (kN)'},
+      {k:'N_uls_kN',type:'number',def:1120,l:'Column load, ultimate N (kN)'},
+      {k:'q_allow_kPa',type:'number',def:200,l:'Allowable bearing pressure (kPa)'},
+      {k:'column_mm',type:'number',def:300,l:'Square column side (mm)'},
+      {k:'h_mm',type:'number',def:500,l:'Footing depth h (mm)'},
+      {k:'fck_MPa',type:'number',def:25,l:'fck (MPa)'},
+      {k:'As_prov_mm2_per_m',type:'number',def:'',l:'Bottom steel provided (mm²/m; blank = required)'},
+    ]},
+  {id:'en_shear', grp:'Engineering+', title:'RC shear (EN 1992-1-1 §6.2)',
+    ep:'/api/rc/beam/shear', mth:'POST',
+    refs:['EN 1992-1-1 §6.2.2, §6.2.3, §9.2.2'],
+    f:[
+      {k:'bw_mm',type:'number',def:300,l:'Web width bw (mm)'},
+      {k:'d_mm',type:'number',def:450,l:'Effective depth d (mm)'},
+      {k:'fck_MPa',type:'number',def:30,l:'fck (MPa)'},
+      {k:'Asl_mm2',type:'number',def:942,l:'Tension steel Asl (mm²)'},
+      {k:'VEd_kN',type:'number',def:200,l:'Design shear V_Ed (kN)'},
+      {k:'Asw_mm2',type:'number',def:157,l:'Link legs area Asw (mm²; blank = none)'},
+      {k:'s_mm',type:'number',def:200,l:'Link spacing s (mm)'},
+    ]},
+  {id:'en_defl', grp:'Engineering+', title:'Deflection, span/depth (EN 1992-1-1 §7.4.2)',
+    ep:'/api/rc/deflection/span-depth', mth:'POST',
+    refs:['EN 1992-1-1 §7.4.2, Eq. 7.16'],
+    f:[
+      {k:'system',type:'select',opts:['simply_supported','end_span','interior_span','flat_slab','cantilever'],def:'simply_supported',l:'Structural system'},
+      {k:'span_m',type:'number',def:5,step:'0.1',l:'Effective span (m)'},
+      {k:'d_mm',type:'number',def:450,l:'Effective depth d (mm)'},
+      {k:'b_mm',type:'number',def:300,l:'Width b (mm; 1000 for a slab strip)'},
+      {k:'As_req_mm2',type:'number',def:900,l:'Steel required at mid-span (mm²)'},
+      {k:'As_prov_mm2',type:'number',def:942,l:'Steel provided (mm²)'},
+      {k:'fck_MPa',type:'number',def:30,l:'fck (MPa)'},
+    ]},
+  {id:'en_seis_ec8', grp:'Engineering+', title:'Seismic lateral force (EN 1998-1 §4.3.3.2)',
+    ep:'/api/loads/seismic/ec8-lfm', mth:'POST',
+    refs:['EN 1998-1 §3.2.2.5, §4.3.3.2'],
+    f:[
+      {k:'agR_g',type:'number',def:0.15,step:'0.01',l:'Reference PGA agR (g, from the hazard map)'},
+      {k:'ground_type',type:'select',opts:['A','B','C','D','E'],def:'C',l:'Ground type'},
+      {k:'spectrum_type',type:'select',opts:['1','2'],def:'1',l:'Spectrum type'},
+      {k:'importance_class',type:'select',opts:['I','II','III','IV'],def:'II',l:'Importance class'},
+      {k:'q',type:'number',def:3.9,step:'0.1',l:'Behaviour factor q'},
+      {k:'W_kN',type:'number',def:10000,l:'Seismic weight W (kN)'},
+      {k:'height_m',type:'number',def:12,step:'0.1',l:'Height H (m)'},
+      {k:'storeys',type:'number',def:4,l:'Storeys'},
+      {k:'structure_type',type:'select',opts:['concrete_moment_frame','steel_moment_frame','eccentric_braced_steel','other'],def:'concrete_moment_frame',l:'Structure type'},
     ]},
   {id:'en_frame', grp:'Engineering+', title:'2D frame analysis (matrix stiffness)',
     ep:'/api/eng/frame/analyze', mth:'POST',
@@ -7730,10 +7847,14 @@ function proRenderResult(endpoint,data){
   } else {
     // Values shown as headline cards are not repeated in the table (2026-10-20).
     const _hk=new Set(Object.entries(main).filter(([k,v])=>typeof v==='number'&&!k.startsWith('_')).slice(0,6).map(([k])=>k));
-    const _rest=Object.fromEntries(Object.entries(main).filter(([k])=>!_hk.has(k)&&k!=='warning'));
+    const _rest=Object.fromEntries(Object.entries(main).filter(([k])=>!_hk.has(k)&&k!=='warning'&&k!=='overall'&&k!=='all_checks_pass'));
     // A method-limit warning is shown as a banner, not a table row (2026-10-20).
     const _warn = main.warning ? `<div style="margin:0 0 10px;padding:8px 12px;border-radius:6px;background:rgba(255,183,77,.1);border:1px solid rgba(255,183,77,.4);color:#ffcc80;font-size:12px">⚠ ${proEscape(main.warning)}</div>` : '';
-    body = _warn + proHeadlines(main) + proRenderChecks(main.checks) + proRenderObject(_rest);
+    // One overall verdict when the result has checks (2026-10-27 audit: a failed
+    // check was only a small "✗ no" row).
+    const _pass = main.all_checks_pass;
+    const _verdict = typeof _pass==='boolean' ? `<div style="margin:0 0 10px;padding:10px 14px;border-radius:6px;font-weight:700;font-size:14px;background:${_pass?'rgba(76,175,80,.15)':'rgba(244,67,54,.15)'};border:1px solid ${_pass?'#66bb6a':'#ef5350'};color:${_pass?'#a5d6a7':'#ef9a9a'}">${_pass?'✓':'✗'} ${proEscape(main.overall||'')}</div>` : '';
+    body = _verdict + _warn + proHeadlines(main) + proRenderChecks(main.checks) + proRenderObject(_rest);
   }
   const footer = proRenderFooter(specials);
   // Raw-JSON dump is engineer-only — hidden from clients by default.
@@ -8442,6 +8563,7 @@ const PRO_LIVE_EPS = new Set([
   '/api/arch/daylight/adf','/api/arch/acoustics/reverberation','/api/arch/uvalue','/api/arch/shadow/position',
   '/api/loads/wind/asce7','/api/loads/wind/eurocode','/api/loads/seismic/asce7-elf','/api/rc/beam/bending','/api/steel/bolt',
   '/api/geotech/bearing/terzaghi','/api/hydro/rational','/api/hydro/tc/kirpich','/api/hydro/runoff-coefficients',
+  '/api/geotech/bearing/ec7','/api/geotech/pad-footing','/api/rc/beam/shear','/api/rc/deflection/span-depth','/api/loads/seismic/ec8-lfm',
 ]);
 function proIsLive(c){ return PRO_LIVE_EPS.has(c.ep); }
 function proTabLabel(c){ return c.title + (proIsLive(c) ? '' : ' <span style="color:#ffb74d;font-size:9px">· not online</span>'); }

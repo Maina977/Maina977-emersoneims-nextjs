@@ -181,7 +181,8 @@ export function readRating(desc: string): Rated {
   const kwhFromAh = vAh ? (Number(vAh[1]) * Number(vAh[2])) / 1000 : null;
   const kwh = kwhM ? Number(kwhM[1]) : kwhFromAh;
   // kVA on an inverter is read as kW (inverter power factor ~1).
-  const kw = s.match(/(\d+(?:\.\d+)?)\s*k(?:w|va)\b(?!h)/) || s.match(/\b(\d+(?:\.\d+)?)k\b/);
+  // "10KTL3-X" / "SG10KTL" (transformerless) and "SUN-5K-SG03" are inverter ratings too.
+  const kw = s.match(/(\d+(?:\.\d+)?)\s*k(?:w|va)\b(?!h)/) || s.match(/(\d+(?:\.\d+)?)ktl/) || s.match(/\b(\d+(?:\.\d+)?)k\b/);
   const w = s.match(/(\d{2,4})\s*(?:w|wp|watts?)\b/);
   let kind: Rated['kind'] = null;
   if (/\bbatter|\blithium|\blifepo|\bbatt\b/.test(s) || kwh) kind = 'battery';
@@ -252,7 +253,45 @@ function reduceBatteries(arr: any[]): LibItem[] {
 //   "BYD HVS 10.2kWh battery 1 350000"
 /** Subtotal, VAT, totals, discounts and payment terms: not items to price. */
 export function isSummaryLine(l: string): boolean {
-  return /^\s*(sub\s*-?\s*total|grand\s*total|total|vat|tax|discount|balance|deposit|amount\s+due|less\b|pay(ment)?\b|valid|terms|quotation\b|quote\s*(no|number|#)|invoice|proforma|pro-forma|date\b|customer|client|to:|from:|ref\b|note)\b/i.test(l);
+  // "16% VAT 20,000" starts with the rate (2026-10-27 audit: listed as an item).
+  return /^\s*(\d+(?:\.\d+)?\s*%\s*)?(sub\s*-?\s*total|grand\s*total|total|vat|tax|discount|balance|deposit|amount\s+due|less\b|pay(ment)?\b|valid|terms|quotation\b|quote\s*(no|number|#)|invoice|proforma|pro-forma|date\b|customer|client|to:|from:|ref\b|note)\b/i.test(l);
+}
+
+/** Subtotal, VAT and total amounts the quote states, for checking its arithmetic. */
+export interface QuoteTotals { subtotal: number | null; vat: number | null; total: number | null }
+export function parseTotals(input: string): QuoteTotals {
+  const out: QuoteTotals = { subtotal: null, vat: null, total: null };
+  for (const raw of input.split(/\r?\n/)) {
+    const l = raw.trim();
+    // Rates ("16%") are not amounts; the last number left is ("VAT 16% 123,000").
+    const amounts = l.replace(/(\d),(?=\d{3}\b)/g, '$1').replace(/\d+(?:\.\d+)?\s*%/g, ' ').match(/\d+(?:\.\d+)?/g);
+    if (!amounts) continue;
+    const amount = Number(amounts[amounts.length - 1]);
+    if (/^\s*sub\s*-?\s*total\b/i.test(l)) out.subtotal = amount;
+    else if (/^\s*(\d+(?:\.\d+)?\s*%\s*)?(vat|tax)\b/i.test(l)) out.vat = amount;
+    else if (/^\s*(grand\s*)?total\b/i.test(l)) out.total = amount;
+  }
+  return out;
+}
+export const KENYA_VAT = 0.16;
+
+/** Mounting, cabling, protection and labour: priced as a whole, not per line. */
+const BOS_WORDS = /\b(cable|wire|wiring|conduit|trunking|mount|mounting|rail|bracket|clamp|structure|install|installation|labou?r|commission|breaker|mcb|mccb|isolator|switch|fuse|spd|surge|earth|earthing|lightning|combiner|db\b|distribution|connector|mc4|accessor)/i;
+/**
+ * Balance of system (mounting, cabling, protection, installation) at the
+ * calculator's rates (lib/solar/sizing.ts): its PV rate less the panels, plus
+ * its 12% installation factor on the equipment. A rule of thumb for the whole
+ * job, so it is checked once, not line by line.
+ */
+export function bosReferenceKes(arrayKwp: number, equipmentKes: number): number {
+  const bands: [number, number][] = [[10, 70_000], [50, 60_000], [Infinity, 52_000]];
+  let pv = 0, from = 0;
+  for (const [upTo, rate] of bands) {
+    if (arrayKwp <= from) break;
+    pv += (Math.min(arrayKwp, upTo) - from) * rate;
+    from = upTo;
+  }
+  return Math.round(pv - arrayKwp * 1000 * PANEL_KES_PER_W + equipmentKes * 0.12);
 }
 
 /** Words that make a line a quotation item even without a recognised rating. */
@@ -281,7 +320,12 @@ export function parseLines(input: string): ParsedLine[] {
       if (nums.length >= 3) {
         // "... qty unit total": the last three, when qty × unit ≈ total.
         const [q, u, tot] = nums.slice(-3);
+        const [q2, u2] = nums.slice(-2);
         if (Number.isInteger(q) && q > 0 && Math.abs(q * u - tot) / tot < 0.02) { qty = qm ? qty : q; unitPriceKes = u; }
+        // "... rating qty unit" ("Panel 550 W 10 12500"): the last two are the
+        // quantity and the unit price (2026-10-27 audit: read as qty 1 at 12,500
+        // only by luck, and as KES 550 when the price came first).
+        else if (!qm && Number.isInteger(q2) && q2 > 0 && q2 < 1000 && u2 > q2) { qty = q2; unitPriceKes = u2; }
         else unitPriceKes = Math.max(...nums);
       } else if (nums.length === 2) {
         const [n1, n2] = nums;
@@ -336,13 +380,15 @@ function evaluate(line: ParsedLine, match: LibItem | null): VerdictRow {
   const market = match ? match.refPriceKes : rule!.kes;
   const you = line.unitPriceKes;
   const delta = ((you - market) / market) * 100;
-  const [hiWarn, hiBad, loWarn] = match ? [10, 25, -25] : [15, 35, -40];
+  const [hiWarn, hiBad, loWarn] = match ? [10, 25, -25] : [15, 35, -25];
   let tone: VerdictRow['tone'] = 'ok';
   let msg = match ? 'Within ±10% of the reference' : 'Within the typical range';
   if (delta > hiBad) { tone = 'bad'; msg = `Overpriced by ${delta.toFixed(0)}% — challenge supplier`; }
   else if (delta > hiWarn) { tone = 'warn'; msg = `Slightly high (+${delta.toFixed(0)}%)`; }
   else if (delta < loWarn) { tone = 'warn'; msg = `Well below the typical price (${delta.toFixed(0)}%) — confirm brand, model and warranty`; }
-  else if (delta < -10) { tone = 'ok'; msg = `Good price (${delta.toFixed(0)}%)`; }
+  // "Good price" for a line 38% under the reference read as an endorsement
+  // (2026-10-27 audit); a low price is only a difference to explain.
+  else if (delta < -10) { tone = 'ok'; msg = `Below the typical price (${delta.toFixed(0)}%) — confirm brand, model and warranty`; }
   return { line, match, basis, perUnitMarket: market, perUnitYou: you, deltaPct: delta, tone, message: msg };
 }
 
@@ -361,6 +407,7 @@ export default function QuoteCheckerPage() {
 
   const [running, setRunning] = useState(false);
   const [rows, setRows] = useState<VerdictRow[] | null>(null);
+  const [totals, setTotals] = useState<QuoteTotals | null>(null);
   const [marketProvenance, setMarketProvenance] = useState<string>('');
 
   useEffect(() => {
@@ -381,7 +428,7 @@ export default function QuoteCheckerPage() {
         setLib(merged);
         // No live market-price feed exists (the call 404'd on every load; 2026-10-19).
         {
-          setMarketProvenance(`Reference prices are mid-2026 Kenyan rules of thumb applied to each item's rating from the equipment library: panels KES ${PANEL_KES_PER_W}/W, hybrid and off-grid inverters KES 35,000/kW up to 10 kW and KES 28,000/kW above (grid-tie KES 20,000 and 15,000), batteries KES ${BATTERY_KES_PER_KWH.toLocaleString()}/kWh. Summary lines (subtotal, VAT, total) and payment terms are not counted as items. Use them to spot outliers, not as a supplier price list.`);
+          setMarketProvenance(`Reference prices are mid-2026 Kenyan rules of thumb applied to each item's rating from the equipment library: panels KES ${PANEL_KES_PER_W}/W, hybrid and off-grid inverters KES 35,000/kW up to 10 kW and KES 28,000/kW above (grid-tie KES 20,000 and 15,000), batteries KES ${BATTERY_KES_PER_KWH.toLocaleString()}/kWh. All references are before VAT, like quote item lines; the quote's VAT, subtotal and total are checked separately and payment terms are ignored. Use them to spot outliers, not as a supplier price list.`);
         }
       } catch (e: any) {
         setLibErr(e?.message || 'Could not load equipment library');
@@ -401,8 +448,20 @@ export default function QuoteCheckerPage() {
     const market = checked.reduce((s, r) => s + (r.perUnitMarket as number) * r.line.qty, 0);
     const overpriced = rows.filter((r) => r.tone === 'bad').length;
     const warn = rows.filter((r) => r.tone === 'warn').length;
-    const unknown = rows.filter((r) => r.tone === 'unknown').length;
-    return { total, checkedCount: checked.length, checkedTotal, market, delta: checkedTotal - market, overpriced, warn, unknown };
+    // Balance of system as a whole: lines with no reference of their own that
+    // are mounting, cabling, protection or labour, against the calculator's
+    // allowance for the quoted array.
+    const bosRows = rows.filter((r) => r.tone === 'unknown' && r.line.unitPriceKes != null && BOS_WORDS.test(r.line.description));
+    const bosQuoted = bosRows.reduce((s, r) => s + (r.line.unitPriceKes || 0) * r.line.qty, 0);
+    const arrayKwp = rows.reduce((s, r) => {
+      const rt = readRating(r.line.description);
+      return rt.kind === 'panel' && rt.w ? s + (rt.w * r.line.qty) / 1000 : s;
+    }, 0);
+    const bosRef = arrayKwp > 0 && bosRows.length ? bosReferenceKes(arrayKwp, market) : null;
+    const bosDeltaPct = bosRef ? ((bosQuoted - bosRef) / bosRef) * 100 : null;
+    const unknown = rows.filter((r) => r.tone === 'unknown' && !bosRows.includes(r)).length;
+    return { total, checkedCount: checked.length, checkedTotal, market, delta: checkedTotal - market, overpriced, warn, unknown,
+      bosQuoted, bosRef, bosDeltaPct, bosCount: bosRows.length, arrayKwp: Math.round(arrayKwp * 100) / 100 };
   }, [rows]);
 
   function runCheck() {
@@ -412,6 +471,7 @@ export default function QuoteCheckerPage() {
       const lines = parseLines(text);
       const verdicts = lines.map((l) => evaluate(l, findMatch(l, lib)));
       setRows(verdicts);
+      setTotals(parseTotals(text));
     } finally {
       setRunning(false);
     }
@@ -488,6 +548,39 @@ export default function QuoteCheckerPage() {
               {summary.unknown > 0 && (
                 <Banner $kind="info">{summary.unknown} line(s) could not be checked (no price, or no reference for that item). The verdict covers the other lines only.</Banner>
               )}
+              {summary.bosCount > 0 && (summary.bosRef != null && summary.bosDeltaPct != null ? (
+                <Banner $kind={summary.bosDeltaPct > 35 ? 'error' : summary.bosDeltaPct < -35 ? 'warn' : 'ok'}>
+                  Mounting, cabling, protection and installation ({summary.bosCount} line{summary.bosCount > 1 ? 's' : ''}): KSh {Math.round(summary.bosQuoted).toLocaleString()} vs about KSh {summary.bosRef.toLocaleString()} for a {summary.arrayKwp} kWp array at the calculator&apos;s rates ({summary.bosDeltaPct >= 0 ? '+' : ''}{summary.bosDeltaPct.toFixed(0)}%).
+                  {' '}{summary.bosDeltaPct > 35 ? 'High: ask the supplier to itemise it.' : summary.bosDeltaPct < -35 ? 'Low: check that mounting, protection and labour are all included.' : 'Within the typical range for the job as a whole.'}
+                  {' '}Checked as one total, since site conditions move individual lines.
+                </Banner>
+              ) : (
+                <Banner $kind="info">{summary.bosCount} mounting, cabling or installation line(s) were not checked: no panel line with a wattage, so the array size is unknown.</Banner>
+              ))}
+              {totals && (totals.subtotal != null || totals.vat != null || totals.total != null) && (() => {
+                const notes: string[] = [];
+                let bad = false;
+                const sub = totals.subtotal ?? summary.total;
+                if (totals.subtotal != null && Math.abs(totals.subtotal - summary.total) > Math.max(1, summary.total * 0.005)) {
+                  bad = true;
+                  notes.push(`The quote's subtotal (KSh ${Math.round(totals.subtotal).toLocaleString()}) does not equal its item lines (KSh ${Math.round(summary.total).toLocaleString()}).`);
+                }
+                if (totals.vat != null) {
+                  const expected = sub * KENYA_VAT;
+                  if (Math.abs(totals.vat - expected) > Math.max(1, expected * 0.01)) {
+                    bad = true;
+                    notes.push(`VAT is KSh ${Math.round(totals.vat).toLocaleString()}; 16% of KSh ${Math.round(sub).toLocaleString()} is KSh ${Math.round(expected).toLocaleString()}. Ask the supplier which lines VAT was charged on.`);
+                  }
+                }
+                if (totals.total != null) {
+                  const expected = sub + (totals.vat ?? 0);
+                  if (Math.abs(totals.total - expected) > Math.max(1, expected * 0.005)) {
+                    bad = true;
+                    notes.push(`The total (KSh ${Math.round(totals.total).toLocaleString()}) does not equal the subtotal${totals.vat != null ? ' plus VAT' : ''} (KSh ${Math.round(expected).toLocaleString()}).`);
+                  }
+                }
+                return <Banner $kind={bad ? 'warn' : 'ok'}>{bad ? notes.join(' ') : "The quote's subtotal, VAT and total agree with its item lines."}</Banner>;
+              })()}
               <Banner $kind="info">{marketProvenance}</Banner>
             </Card>
           )}

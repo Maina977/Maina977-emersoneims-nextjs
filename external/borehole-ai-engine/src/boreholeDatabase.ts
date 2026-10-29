@@ -217,7 +217,7 @@ const KENYA_COUNTY_BOREHOLE_DATA: Record<string, CountyBoreholeStats> = {
     estimatedBoreholes: 1586, // records in the shipped IHP-WINS field data alone (was 380)
     avgDepth_m: 67, // median of drilled depths in the IHP-WINS field records shipped with this tool (n=672; was 200)
     depthRange: [18, 350],
-    avgYield_m3h: 3.0, // median tested yield of successful boreholes in the shipped IHP-WINS records (n=766; was 2.0)
+    avgYield_m3h: 3.0, // median of all tested yields above zero in the shipped IHP-WINS records (any outcome; 2026-10-27 audit) (n=766; was 2.0)
     yieldRange: [0.8, 30],
     successRate: 0.45,
     primaryGeology: 'Tertiary sediments + basement + Turkana volcanics',
@@ -316,7 +316,7 @@ const KENYA_COUNTY_BOREHOLE_DATA: Record<string, CountyBoreholeStats> = {
     estimatedBoreholes: 510, // records in the shipped IHP-WINS field data alone (was 320)
     avgDepth_m: 151, // median of drilled depths in the IHP-WINS field records shipped with this tool (n=198; was 180)
     depthRange: [66, 300],
-    avgYield_m3h: 12.5, // median tested yield of successful boreholes in the shipped IHP-WINS records (n=330; was 2.5)
+    avgYield_m3h: 12.5, // median of all tested yields above zero in the shipped IHP-WINS records (any outcome; 2026-10-27 audit) (n=330; was 2.5)
     yieldRange: [2.5, 52],
     successRate: 0.48,
     primaryGeology: 'Quaternary alluvium (Tana River) + Jurassic-Cretaceous sediments + Precambrian basement',
@@ -332,7 +332,7 @@ const KENYA_COUNTY_BOREHOLE_DATA: Record<string, CountyBoreholeStats> = {
     estimatedBoreholes: 587, // records in the shipped IHP-WINS field data alone (was 280)
     avgDepth_m: 180, // median of drilled depths in the IHP-WINS field records shipped with this tool (n=222; was 220)
     depthRange: [38, 300],
-    avgYield_m3h: 6.2, // median tested yield of successful boreholes in the shipped IHP-WINS records (n=255; was 1.8)
+    avgYield_m3h: 6.2, // median of all tested yields above zero in the shipped IHP-WINS records (any outcome; 2026-10-27 audit) (n=255; was 1.8)
     yieldRange: [1.6, 22],
     successRate: 0.42,
     primaryGeology: 'Jurassic limestone + Precambrian basement + Quaternary alluvium',
@@ -364,7 +364,7 @@ const KENYA_COUNTY_BOREHOLE_DATA: Record<string, CountyBoreholeStats> = {
     estimatedBoreholes: 516, // records in the shipped IHP-WINS field data alone (was 250)
     avgDepth_m: 180,
     depthRange: [40, 350],
-    avgYield_m3h: 6.0, // median tested yield of successful boreholes in the shipped IHP-WINS records (n=151; was 2.2)
+    avgYield_m3h: 6.0, // median of all tested yields above zero in the shipped IHP-WINS records (any outcome; 2026-10-27 audit) (n=151; was 2.2)
     yieldRange: [2.0, 24],
     successRate: 0.45,
     primaryGeology: 'Quaternary volcanics (Marsabit shield) + Precambrian basement + Chalbi Desert sediments',

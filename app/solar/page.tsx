@@ -181,16 +181,17 @@ const SOLAR_SYSTEMS = [
 // Prices and savings are computed with the calculator's own model
 // (lib/solar/sizing.ts) so this table and the calculator never disagree
 // (2026-10-20 audit). Savings = what the array produces (5.5 sun-hours, 78%
-// performance ratio) × 75-90% used on site × KES 22-28/kWh.
-const PKG = (pvKwp: number, invKw: number, batKwh: number) => {
+// performance ratio) × 75-90% used on site × KES 22-28/kWh (industrial
+// KES 18/kWh, the ROI calculator's industrial rate; 2026-10-27 audit).
+const PKG = (pvKwp: number, invKw: number, batKwh: number, [rateLo, rateHi]: [number, number] = [22, 28]) => {
   // Size and price follow the panels actually listed: 3 kWp needs 6 x 550 W,
   // which is 3.3 kWp (2026-10-25 audit: card said 3 kWp, list said 6 panels).
   const panels = Math.ceil((pvKwp * 1000) / PANEL_WATT);
   const kwp = Math.round(panels * PANEL_WATT / 100) / 10;
   const c = estimateInstalledCost(kwp, invKw, batKwh, 'hybrid');
   const kwhMonth = kwp * 5.5 * 30.4 * PERFORMANCE_RATIO;
-  const loMonth = (kwhMonth * 0.75 * 22);
-  const hiMonth = (kwhMonth * 0.9 * 28);
+  const loMonth = (kwhMonth * 0.75 * rateLo);
+  const hiMonth = (kwhMonth * 0.9 * rateHi);
   const lo = Math.round(loMonth / 1000) * 1000;
   const hi = Math.round(hiMonth / 1000) * 1000;
   return {
@@ -211,7 +212,7 @@ const SOLAR_PRICING = [
   { type: 'Residential Premium', ideal: 'Large homes, multiple ACs', ...PKG(10, 10, 15) },
   { type: 'Commercial Small', ideal: 'Shops, small factories', ...PKG(20, 20, 20) },
   { type: 'Commercial Medium', ideal: 'Schools, hotels, factories', ...PKG(50, 50, 50) },
-  { type: 'Industrial', ideal: 'Large factories, farms', ...PKG(100, 100, 100) },
+  { type: 'Industrial', ideal: 'Large factories, farms', ...PKG(100, 100, 100, [18, 18]) },
 ].map((p: { popular?: boolean } & ReturnType<typeof PKG> & { type: string; ideal: string }) => ({
   popular: !!p.popular,
   ...p,
@@ -297,7 +298,7 @@ const SOLAR_FAQ = [
   {
     question: 'How long is the payback period for solar in Kenya?',
     // Range from the package cards' own prices and savings (2026-10-25 audit).
-    answer: `With the same assumptions as the packages on this page (5.5 sun hours a day, KES 22-28 per kWh, 75-90% of the solar used on site), the systems shown pay back in about ${PAYBACK_RANGE}. Systems used mostly in daytime, such as shops and offices, pay back faster than homes that need a battery for the evening. After payback the savings continue for the rest of the panels' 25-year life, less maintenance and a battery replacement after roughly 10-12 years. The ROI calculator on this page works it out for your own bill.`
+    answer: `With the same assumptions as the packages on this page (5.5 sun hours a day, KES 22-28 per kWh, or 18 for industrial users, 75-90% of the solar used on site), the systems shown pay back in about ${PAYBACK_RANGE}. Systems used mostly in daytime, such as shops and offices, pay back faster than homes that need a battery for the evening. After payback the savings continue for the rest of the panels' 25-year life, less maintenance and a battery replacement after roughly 10-12 years. The ROI calculator on this page works it out for your own bill.`
   },
   {
     question: 'Do solar panels work during cloudy days or at night?',
@@ -377,7 +378,8 @@ const WHY_SOLAR_KENYA = [
     description: 'On every installation we carry out'
   },
   {
-    stat: '3-7',
+    // From the package cards (2026-10-27 audit: a fixed "3-7" disagreed with the FAQ).
+    stat: PAYBACK_RANGE.replace(' years', ''),
     label: 'Year Payback',
     description: 'Typical range: shorter for daytime business loads, longer for homes with batteries'
   },
@@ -415,14 +417,16 @@ const SOLAR_EDUCATION = [
   { title: 'Maintenance Best Practices', content: 'Clean panels monthly during dry season. Check battery water levels (for lead-acid). Inspect connections quarterly. Monitor system performance daily through your inverter app. Schedule professional inspection annually.', icon: '🔧' },
 ];
 
-// ==================== DOWNLOADABLE RESOURCES ====================
+// ==================== GUIDES ON REQUEST ====================
+// Sent on WhatsApp on request; there is no file to download here, so no file
+// size is shown (the sizes were invented; 2026-10-27 audit).
 const SOLAR_DOWNLOADS = [
-  { title: 'Solar System Sizing Guide', description: 'Complete guide to sizing your solar system for Kenya', type: 'PDF', size: '2.4 MB', icon: '📐' },
-  { title: 'Solar Product Catalog 2026', description: 'Full catalog with panels, inverters, batteries, and pricing', type: 'PDF', size: '8.1 MB', icon: '📚' },
-  { title: 'Solar ROI Calculator Spreadsheet', description: 'Excel calculator for solar investment analysis', type: 'XLSX', size: '156 KB', icon: '📊' },
-  { title: 'Solar Maintenance Checklist', description: 'Monthly, quarterly, and annual maintenance tasks', type: 'PDF', size: '890 KB', icon: '✅' },
-  { title: 'Solar Tax Incentives Guide', description: 'Guide to solar tax benefits in Kenya', type: 'PDF', size: '1.2 MB', icon: '💰' },
-  { title: 'Solar System Wiring Diagrams', description: 'Technical diagrams for common configurations', type: 'PDF', size: '4.5 MB', icon: '⚡' },
+  { title: 'Solar System Sizing Guide', description: 'Complete guide to sizing your solar system for Kenya', type: 'PDF', icon: '📐' },
+  { title: 'Solar Product Catalog 2026', description: 'Full catalog with panels, inverters, batteries, and pricing', type: 'PDF', icon: '📚' },
+  { title: 'Solar ROI Calculator Spreadsheet', description: 'Excel calculator for solar investment analysis', type: 'XLSX', icon: '📊' },
+  { title: 'Solar Maintenance Checklist', description: 'Monthly, quarterly, and annual maintenance tasks', type: 'PDF', icon: '✅' },
+  { title: 'Solar Tax Incentives Guide', description: 'Guide to solar tax benefits in Kenya', type: 'PDF', icon: '💰' },
+  { title: 'Solar System Wiring Diagrams', description: 'Technical diagrams for common configurations', type: 'PDF', icon: '⚡' },
 ];
 
 type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'repair' | 'design3d' | 'webgl3d';
@@ -737,7 +741,7 @@ export default function SolarBible() {
               Solar System <span className="text-amber-400">Pricing</span>
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              Price ranges from our installed-cost model (mid-2026). Your quotation after a site survey gives the exact price.
+              Price ranges from our installed-cost model (mid-2026), before VAT. Your quotation after a site survey gives the exact price.
             </p>
           </motion.div>
 
@@ -1007,7 +1011,7 @@ export default function SolarBible() {
               📥 Free Resources
             </span>
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
-              Download Our <span className="text-blue-400">Solar Guides</span>
+              Ask for Our <span className="text-blue-400">Solar Guides</span>
             </h2>
           </motion.div>
 
@@ -1025,12 +1029,12 @@ export default function SolarBible() {
                 <h3 className="text-lg font-bold text-white mb-2">{download.title}</h3>
                 <p className="text-gray-400 text-sm mb-4">{download.description}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-500 text-xs">{download.type} • {download.size}</span>
+                  <span className="text-gray-500 text-xs">{download.type}, sent on WhatsApp</span>
                   <a
                     href={`https://wa.me/254768860665?text=Please%20send%20me%20the%20${encodeURIComponent(download.title)}`}
                     className="text-blue-400 hover:text-blue-300 text-sm font-medium group-hover:underline"
                   >
-                    Download →
+                    Request on WhatsApp →
                   </a>
                 </div>
               </motion.div>

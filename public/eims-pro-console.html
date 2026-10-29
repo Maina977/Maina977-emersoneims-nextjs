@@ -101,6 +101,35 @@ const MODULES = [
         opts:['enclosed','partially_enclosed','partially_open','open'], def:'enclosed'},
     ]},
 
+  { id:'wind_ec', group:'Engineering', tag:'b-eng',
+    title:'Wind — peak velocity pressure (EN 1991-1-4)',
+    endpoint:'/api/loads/wind/eurocode', method:'POST',
+    refs:['EN 1991-1-4 §4.2–4.5 (recommended values; check the National Annex)'],
+    fields:[
+      {k:'vb_ms', label:'Basic wind velocity vb,0 (m/s)', type:'number', def:24},
+      {k:'height_m', label:'Reference height z (m)', type:'number', def:10, step:'0.1'},
+      {k:'terrain_category', label:'Terrain category', type:'select', opts:['0','I','II','III','IV'], def:'II'},
+      {k:'rho_kg_m3', label:'Air density ρ (kg/m³; 1.25 sea level, about 1.0 at Nairobi)', type:'number', def:1.25, step:'0.01'},
+      {k:'co', label:'Orography factor co (1.0 flat terrain)', type:'number', def:1, step:'0.01'},
+    ]},
+
+  { id:'seismic_ec8', group:'Engineering', tag:'b-eng',
+    title:'Seismic lateral force (EN 1998-1)',
+    endpoint:'/api/loads/seismic/ec8-lfm', method:'POST',
+    refs:['EN 1998-1 §3.2.2.5, §4.3.3.2'],
+    fields:[
+      {k:'agR_g', label:'Reference PGA agR (g)', type:'number', def:0.15, step:'0.01'},
+      {k:'ground_type', label:'Ground type', type:'select', opts:['A','B','C','D','E'], def:'C'},
+      {k:'spectrum_type', label:'Spectrum type', type:'select', opts:['1','2'], def:'1'},
+      {k:'importance_class', label:'Importance class', type:'select', opts:['I','II','III','IV'], def:'II'},
+      {k:'q', label:'Behaviour factor q', type:'number', def:3.9, step:'0.1'},
+      {k:'W_kN', label:'Seismic weight W (kN)', type:'number', def:10000},
+      {k:'height_m', label:'Height H (m)', type:'number', def:12, step:'0.1'},
+      {k:'storeys', label:'Storeys', type:'number', def:4},
+      {k:'structure_type', label:'Structure type', type:'select',
+        opts:['concrete_moment_frame','steel_moment_frame','eccentric_braced_steel','other'], def:'concrete_moment_frame'},
+    ]},
+
   { id:'seismic', group:'Engineering', tag:'b-eng',
     title:'Seismic ELF (ASCE 7-22 §12.8)',
     endpoint:'/api/loads/seismic/asce7-elf', method:'POST',
@@ -118,9 +147,9 @@ const MODULES = [
     ]},
 
   { id:'geotech', group:'Engineering', tag:'b-eng',
-    title:'Bearing capacity (Terzaghi)',
+    title:'Bearing capacity (classical equation)',
     endpoint:'/api/geotech/bearing/terzaghi', method:'POST',
-    refs:['Terzaghi 1943 bearing equation','Prandtl–Reissner Nc, Nq','Vesić Nγ'],
+    refs:['Terzaghi form and shape factors','Prandtl–Reissner Nc, Nq','Vesić Nγ'],
     fields:[
       {k:'c_kPa', label:'Cohesion c (kPa)', type:'number', def:10},
       {k:'phi_deg', label:'Friction φ (°)', type:'number', def:30},
@@ -129,6 +158,38 @@ const MODULES = [
       {k:'Df_m', label:'Embedment Df (m)', type:'number', def:1.5, step:'0.1'},
       {k:'shape', label:'Shape', type:'select',
         opts:['strip','square','circular'], def:'strip'},
+    ]},
+
+  { id:'geotech_ec7', group:'Engineering', tag:'b-eng',
+    title:'Bearing resistance (EN 1997-1 Annex D, DA1)',
+    endpoint:'/api/geotech/bearing/ec7', method:'POST',
+    refs:['EN 1997-1 Annex D','Design Approach 1'],
+    fields:[
+      {k:'condition', label:'Condition', type:'select', opts:['drained','undrained'], def:'drained'},
+      {k:'c_kPa', label:"Drained: c′ (kPa)", type:'number', def:5},
+      {k:'phi_deg', label:"Drained: φ′ (°)", type:'number', def:30},
+      {k:'cu_kPa', label:'Undrained: cu (kPa)', type:'number', def:''},
+      {k:'gamma_kN_m3', label:'Bulk unit weight γ (kN/m³)', type:'number', def:18},
+      {k:'B_m', label:'Width B (m, shorter side)', type:'number', def:2, step:'0.05'},
+      {k:'L_m', label:'Length L (m)', type:'number', def:2, step:'0.05'},
+      {k:'Df_m', label:'Founding depth Df (m)', type:'number', def:1.2, step:'0.1'},
+      {k:'water_depth_m', label:'Water table depth (m; blank = deep)', type:'number', def:''},
+      {k:'Gk_kN', label:'Permanent load Gk (kN)', type:'number', def:''},
+      {k:'Qk_kN', label:'Variable load Qk (kN)', type:'number', def:''},
+    ]},
+
+  { id:'pad_footing', group:'Engineering', tag:'b-eng',
+    title:'Pad footing (size, bending, shear, punching)',
+    endpoint:'/api/geotech/pad-footing', method:'POST',
+    refs:['EN 1992-1-1 §6.1, §6.2.2, §6.4'],
+    fields:[
+      {k:'N_sls_kN', label:'Column load, service (kN)', type:'number', def:800},
+      {k:'N_uls_kN', label:'Column load, ultimate (kN)', type:'number', def:1120},
+      {k:'q_allow_kPa', label:'Allowable bearing pressure (kPa)', type:'number', def:200},
+      {k:'column_mm', label:'Square column side (mm)', type:'number', def:300},
+      {k:'h_mm', label:'Footing depth h (mm)', type:'number', def:500},
+      {k:'fck_MPa', label:'fck (MPa)', type:'number', def:25},
+      {k:'As_prov_mm2_per_m', label:'Bottom steel provided (mm²/m; blank = required)', type:'number', def:''},
     ]},
 
   { id:'rc_beam', group:'Engineering', tag:'b-eng',
@@ -143,6 +204,34 @@ const MODULES = [
       {k:'fck_MPa', label:'fck (MPa)', type:'number', def:30},
       {k:'fyk_MPa', label:'fyk (MPa)', type:'number', def:500},
       {k:'Med_kNm', label:'M_Ed (kNm)', type:'number', def:180},
+    ]},
+
+  { id:'rc_shear', group:'Engineering', tag:'b-eng',
+    title:'RC shear (EN 1992-1-1 §6.2)',
+    endpoint:'/api/rc/beam/shear', method:'POST',
+    refs:['EN 1992-1-1 §6.2.2, §6.2.3'],
+    fields:[
+      {k:'bw_mm', label:'Web width bw (mm)', type:'number', def:300},
+      {k:'d_mm', label:'Effective depth d (mm)', type:'number', def:450},
+      {k:'fck_MPa', label:'fck (MPa)', type:'number', def:30},
+      {k:'Asl_mm2', label:'Tension steel Asl (mm²)', type:'number', def:942},
+      {k:'VEd_kN', label:'Design shear V_Ed (kN)', type:'number', def:200},
+      {k:'Asw_mm2', label:'Link legs area Asw (mm²)', type:'number', def:157},
+      {k:'s_mm', label:'Link spacing s (mm)', type:'number', def:200},
+    ]},
+
+  { id:'rc_defl', group:'Engineering', tag:'b-eng',
+    title:'Deflection, span/depth (EN 1992-1-1 §7.4.2)',
+    endpoint:'/api/rc/deflection/span-depth', method:'POST',
+    refs:['EN 1992-1-1 §7.4.2'],
+    fields:[
+      {k:'system', label:'Structural system', type:'select', opts:['simply_supported','end_span','interior_span','flat_slab','cantilever'], def:'simply_supported'},
+      {k:'span_m', label:'Effective span (m)', type:'number', def:5, step:'0.1'},
+      {k:'d_mm', label:'Effective depth d (mm)', type:'number', def:450},
+      {k:'b_mm', label:'Width b (mm)', type:'number', def:300},
+      {k:'As_req_mm2', label:'Steel required (mm²)', type:'number', def:900},
+      {k:'As_prov_mm2', label:'Steel provided (mm²)', type:'number', def:942},
+      {k:'fck_MPa', label:'fck (MPa)', type:'number', def:30},
     ]},
 
   { id:'steel_bolt', group:'Engineering', tag:'b-eng',
@@ -160,6 +249,9 @@ const MODULES = [
       {k:'fu_ply_MPa', label:'fu ply (MPa)', type:'number', def:410},
       {k:'e1_mm', label:'e1 (mm)', type:'number', def:30},
       {k:'p1_mm', label:'p1 (mm)', type:'number', def:60},
+      {k:'e2_mm', label:'e2 edge distance (mm; sets k1)', type:'number', def:35},
+      {k:'p2_mm', label:'p2 gauge (mm; blank = one line)', type:'number', def:''},
+      {k:'exposed_to_weather', label:'Steel exposed to weather', type:'select', opts:[false,true], def:false},
       {k:'d_hole_mm', label:'Hole d (mm; blank = normal clearance)', type:'number', def:''},
       {k:'Fv_Ed_kN', label:'Fv,Ed (kN)', type:'number', def:50},
       {k:'Ft_Ed_kN', label:'Ft,Ed (kN)', type:'number', def:10},
@@ -1085,6 +1177,7 @@ const LIVE_EPS = new Set([
   '/api/arch/daylight/adf','/api/arch/acoustics/reverberation','/api/arch/uvalue','/api/arch/shadow/position',
   '/api/loads/wind/asce7','/api/loads/wind/eurocode','/api/loads/seismic/asce7-elf','/api/rc/beam/bending','/api/steel/bolt',
   '/api/geotech/bearing/terzaghi','/api/hydro/rational','/api/hydro/tc/kirpich','/api/hydro/runoff-coefficients',
+  '/api/geotech/bearing/ec7','/api/geotech/pad-footing','/api/rc/beam/shear','/api/rc/deflection/span-depth','/api/loads/seismic/ec8-lfm',
 ]);
 const isLive = (m) => LIVE_EPS.has(m.endpoint);
 function buildNav(){
@@ -1302,9 +1395,13 @@ function renderResponse(status, statusText, payload, moduleInfo){
   }
   if (isPlainObject(payload) && isPlainObject(payload.data)) payload = payload.data;
   if (isPlainObject(payload)) {
-    const { success: _s, ok: _o, warning, ...rest } = payload;
+    const { success: _s, ok: _o, warning, overall, all_checks_pass, ...rest } = payload;
     const warn = warning ? `<div class="note" style="border-color:#f0b35c;color:#f6d08b">⚠ ${proEscape(warning)}</div>` : '';
-    return head + warn + renderObject(rest, profile);
+    // One overall verdict when the result has checks (2026-10-27 audit).
+    const verdict = typeof all_checks_pass === 'boolean'
+      ? `<div class="note" style="font-weight:700;font-size:14px;border-color:${all_checks_pass ? '#66bb6a' : '#ef5350'};color:${all_checks_pass ? '#a5d6a7' : '#ef9a9a'}">${all_checks_pass ? '✓' : '✗'} ${proEscape(overall || '')}</div>`
+      : '';
+    return head + verdict + warn + renderObject(rest, profile);
   }
   if (Array.isArray(payload)) return head + renderArray(payload);
   if (isPlainObject(payload)) return head + renderObject(payload, profile);

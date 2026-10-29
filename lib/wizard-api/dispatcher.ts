@@ -288,6 +288,12 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
   if (path.endsWith('/rc/beam/bending')) return calc(calcs.rcBeam, body);
   if (path.endsWith('/steel/bolt')) return calc(calcs.steelBolt, body);
   if (path.endsWith('/geotech/bearing/terzaghi')) return calc(calcs.bearingCapacity, body);
+  // 2026-10-27 audit: EC7 bearing, EC2 shear and deflection, pad footings and EN 1998.
+  if (path.endsWith('/geotech/bearing/ec7')) return calc(calcs.bearingEc7, body);
+  if (path.endsWith('/rc/beam/shear')) return calc(calcs.ec2Shear, body);
+  if (path.endsWith('/rc/deflection/span-depth')) return calc(calcs.ec2Deflection, body);
+  if (path.endsWith('/geotech/pad-footing')) return calc(calcs.padFooting, body);
+  if (path.endsWith('/loads/seismic/ec8-lfm')) return calc(calcs.seismicEc8, body);
   if (path.endsWith('/hydro/tc/kirpich')) return calc(calcs.kirpich, body);
   if (path.endsWith('/hydro/rational')) return calc(calcs.rationalRunoff, body);
   if (path.endsWith('/hydro/runoff-coefficients')) return ok(calcs.runoffCoefficients());

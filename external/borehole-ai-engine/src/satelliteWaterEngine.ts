@@ -167,7 +167,9 @@ async function modisSubsetChunked(product: string, band: string, lat: number, lo
 
 async function fetchMODISVegetation(lat: number, lon: number): Promise<MODISVegetationData | null> {
   try {
-    const now = new Date();
+    // Window ends at the last complete month, so the request (and the relay's
+    // cached answer) is the same all month and runs repeat (2026-10-29).
+    const now = new Date(new Date().getFullYear(), new Date().getMonth(), 0);
     const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
 
     // Format MODIS dates: A{YYYY}{DOY}
@@ -294,7 +296,9 @@ interface MODISLSTData {
 
 async function fetchMODISLandSurfaceTemp(lat: number, lon: number): Promise<MODISLSTData | null> {
   try {
-    const now = new Date();
+    // Window ends at the last complete month, so the request (and the relay's
+    // cached answer) is the same all month and runs repeat (2026-10-29).
+    const now = new Date(new Date().getFullYear(), new Date().getMonth(), 0);
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
     const formatModisDate = (d: Date) => {
       const start = new Date(d.getFullYear(), 0, 0);

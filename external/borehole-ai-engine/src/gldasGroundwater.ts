@@ -326,9 +326,11 @@ interface ERA5ArchiveTrend {
 
 async function fetchERA5ArchiveSoilTrend(lat: number, lon: number): Promise<ERA5ArchiveTrend | null> {
   try {
-    const end = new Date().toISOString().split('T')[0];
-    const startDate = new Date();
-    startDate.setFullYear(startDate.getFullYear() - 5);
+    // Window ends at the last complete month (fixed all month, so the relay's
+    // cached answer is reused and runs repeat; 2026-10-29).
+    const endDate = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 0));
+    const end = endDate.toISOString().split('T')[0];
+    const startDate = new Date(Date.UTC(endDate.getUTCFullYear() - 5, endDate.getUTCMonth(), endDate.getUTCDate() + 1));
     const start = startDate.toISOString().split('T')[0];
 
     const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}`

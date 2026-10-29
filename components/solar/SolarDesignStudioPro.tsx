@@ -17,6 +17,12 @@ import {
 } from 'lucide-react';
 import { estimateInstalledCost, DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
 
+// Roof drawing scale and module size (metres). See the panel size state below.
+const PX_PER_M = 20;
+const PANEL_W_M = 1.134;
+const PANEL_H_M = 2.278;
+const EDGE_SETBACK_M = 0.3;
+
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -84,8 +90,12 @@ export default function SolarDesignStudioPro() {
   const [panels, setPanels] = useState<Panel[]>([]);
   const [selectedPanel, setSelectedPanel] = useState<string | null>(null);
   const [panelWatts, setPanelWatts] = useState(550);
-  const [panelWidth, setPanelWidth] = useState(40);
-  const [panelHeight, setPanelHeight] = useState(60);
+  // One scale for the roof and the panels: PX_PER_M pixels = 1 m, so each
+  // 20 px grid square is 1 m. A 550 W module is about 2.28 × 1.13 m. (Before
+  // the 2026-10-27 audit the roof was 10 px/m but panels were 40 × 60 px,
+  // i.e. 4 × 6 m each.)
+  const [panelWidth, setPanelWidth] = useState(Math.round(PANEL_W_M * PX_PER_M));
+  const [panelHeight, setPanelHeight] = useState(Math.round(PANEL_H_M * PX_PER_M));
 
   // Sun & Shading
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -170,7 +180,21 @@ export default function SolarDesignStudioPro() {
   // AC: single phase to 10 kW, three phase above.
   const threePhase = inverterSize > 10;
   const acAmps = threePhase ? (inverterSize * 1000) / (Math.sqrt(3) * 400) : (inverterSize * 1000) / 230;
-  const acWire = pickCsa(acAmps, [[25, '4mm²'], [32, '6mm²'], [45, '10mm²'], [63, '16mm²'], [80, '25mm²'], [100, '35mm²']]);
+  // Breaker at 1.25 x the inverter's AC current, then a cable whose rating is
+  // at least the breaker's, so the breaker protects the cable (IEC 60364-4-43).
+  // Ratings: IEC 60364-5-52 Table B.52.4, method B1 (PVC in conduit), copper.
+  // 2026-10-27 audit: the diagram always printed "63A MCB + 6 mm²" (6 mm² is
+  // about 41 A, so a 63 A breaker did not protect it) for 3 kW to 15 kW.
+  const STD_MCB = [6, 10, 13, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160];
+  const acBreakerA = STD_MCB.find((s) => s >= acAmps * 1.25) ?? 160;
+  const CABLE_B1: [number, number][] = threePhase
+    ? [[4, 28], [6, 36], [10, 50], [16, 68], [25, 89], [35, 110], [50, 134], [70, 171], [95, 207]]
+    : [[4, 32], [6, 41], [10, 57], [16, 76], [25, 101], [35, 125], [50, 151], [70, 192], [95, 232]];
+  const acCsa = (CABLE_B1.find(([, iz]) => iz >= acBreakerA) ?? CABLE_B1[CABLE_B1.length - 1])[0];
+  const acWire = `${acCsa}mm²`;
+  const acBreakerLabel = `${acBreakerA}A ${threePhase ? '4-pole (3P+N)' : 'double-pole'} MCB`;
+  // Protective earth (IEC 60364-5-54): as the phase up to 16 mm², 16 mm² to 35, half above.
+  const earthCsa = acCsa <= 16 ? acCsa : acCsa <= 35 ? 16 : acCsa / 2;
   const dcAcRatio = inverterSize > 0 ? totalKW / inverterSize : 0;
 
   // MPPT window: typical for this inverter class (check the datasheet). Hot
@@ -239,9 +263,11 @@ export default function SolarDesignStudioPro() {
     const canvas = roofCanvasRef.current;
     if (!canvas) return;
 
+    // The canvas is drawn at 900 × 500 but shown at the page width: map the
+    // click into canvas pixels so points land where they were clicked.
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
     setCurrentPoints(prev => [...prev, { x, y }]);
   }, [isDrawing]);
@@ -261,7 +287,7 @@ export default function SolarDesignStudioPro() {
     const newSegment: RoofSegment = {
       id: `roof-${Date.now()}`,
       points: currentPoints,
-      area: area * 0.01, // Convert to m²
+      area: area / (PX_PER_M * PX_PER_M), // px² to m²
       azimuth: roofAzimuth,
       tilt: roofTilt
     };
@@ -304,12 +330,18 @@ export default function SolarDesignStudioPro() {
     };
 
     const newPanels: Panel[] = [];
-    const spacing = 5;
+    const spacing = Math.max(1, Math.round(0.05 * PX_PER_M)); // ~5 cm between modules
+    const setback = Math.round(EDGE_SETBACK_M * PX_PER_M);    // clear strip at the roof edge
 
-    for (let y = bounds.minY + 20; y < bounds.maxY - panelHeight; y += panelHeight + spacing) {
-      for (let x = bounds.minX + 20; x < bounds.maxX - panelWidth; x += panelWidth + spacing) {
-        // Check if point is inside polygon
-        if (isPointInPolygon({ x: x + panelWidth/2, y: y + panelHeight/2 }, segment.points)) {
+    for (let y = bounds.minY + setback; y + panelHeight <= bounds.maxY - setback; y += panelHeight + spacing) {
+      for (let x = bounds.minX + setback; x + panelWidth <= bounds.maxX - setback; x += panelWidth + spacing) {
+        // The whole module, with the edge setback, must be on the roof: its
+        // corners and edge midpoints are checked, not only its centre (which
+        // let panels overhang the edge).
+        const x0 = x - setback, x1 = x + panelWidth + setback, y0 = y - setback, y1 = y + panelHeight + setback;
+        const xm = (x0 + x1) / 2, ym = (y0 + y1) / 2;
+        const probes = [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x0, y: y1 }, { x: x1, y: y1 }, { x: xm, y: y0 }, { x: xm, y: y1 }, { x: x0, y: ym }, { x: x1, y: ym }];
+        if (probes.every((p) => isPointInPolygon(p, segment.points))) {
           newPanels.push({
             id: `panel-${Date.now()}-${newPanels.length}`,
             x, y,
@@ -843,7 +875,7 @@ export default function SolarDesignStudioPro() {
               />
               {isDrawing && (
                 <div className="px-4 py-2 bg-amber-500/20 text-amber-400 text-sm">
-                  Click to add points. Click "Complete Roof" when done (min 3 points).
+                  Click to add points. Click "Complete Roof" when done (min 3 points). Each grid square is 1 m; Auto-Fill keeps a {EDGE_SETBACK_M} m clear strip at the edge.
                 </div>
               )}
             </div>
@@ -913,21 +945,21 @@ export default function SolarDesignStudioPro() {
                            │
                     ┌──────┴──────┐
                     │ AC ISOLATOR  │
-                    │  63A DP MCB  │
+                    │  ${(acBreakerA + 'A MCB').padEnd(11)}│
                     └──────┬──────┘
                            │
           ┌────────────────┴────────────────┐
           │     📊 ENERGY METER              │
           │     Bidirectional                │
-          │     CT Ratio: 100/5A             │
+          │     CT sized to the supply       │
           └────────────────┬────────────────┘
                            │
           ┌────────────────┴────────────────┐
           │     🏠 MAIN DISTRIBUTION BOARD   │
-          │     ├── Lights Circuit  (16A)    │
-          │     ├── Sockets Circuit (20A)    │
-          │     ├── AC Unit Circuit (32A)    │
-          │     └── Backup Circuit  (32A)    │
+          │     ├── Lights Circuit  (example)│
+          │     ├── Sockets Circuit (example)│
+          │     ├── Other circuits  (example)│
+          │     └── Backup circuits (example)│
           └────────────────┬────────────────┘
                            │
                     ┌──────┴──────┐
@@ -946,20 +978,20 @@ SPECIFICATIONS:
   Inverter Size        : ${inverterSize} kW Hybrid
   Battery Capacity     : ${batteryCapacity} kWh
   DC Cable Size        : ${wireSize} (UV resistant)
-  AC Cable Size        : 6mm² (to DB)
+  AC Cable Size        : ${acWire} (to DB; rated at least the breaker)
 
 PROTECTION:
 ───────────────────────────────────────────────────────────────────────────────
   DC Surge Protection  : Type II SPD
   AC Surge Protection  : Type II SPD
   DC Isolator          : ${Math.ceil(stringVoc * 1.15)}V / ${Math.ceil(arrayDesignA * 1.25)}A
-  AC MCB               : 63A Double Pole
-  ELCB/RCD             : 63A 30mA
+  AC MCB               : ${acBreakerLabel} (1.25 x ${acAmps.toFixed(1)} A inverter output)
+  ELCB/RCD             : 30mA, rated at least ${acBreakerA}A
 
 EARTHING:
 ───────────────────────────────────────────────────────────────────────────────
   Earth Rod            : 2m Copper-clad steel
-  Earth Cable          : 16mm² Green/Yellow
+  Earth Cable          : ${earthCsa}mm² Green/Yellow (IEC 60364-5-54)
   Lightning Protection : Recommended for arrays > 5kW
 ═══════════════════════════════════════════════════════════════════════════════
 `}
@@ -1023,7 +1055,7 @@ EARTHING:
                     </tr>
                     <tr className="border-b border-slate-700/50">
                       <td className="py-2">Inverter to DB</td>
-                      <td>AC Cable ({Math.round(acAmps)} A{threePhase ? ', 3-phase' : ''})</td>
+                      <td>AC Cable ({Math.round(acAmps)} A{threePhase ? ', 3-phase' : ''}; breaker {acBreakerA} A)</td>
                       <td>{acWire}</td>
                       <td>~15m</td>
                       <td>Brown/Blue/Green-Yellow</td>
@@ -1031,7 +1063,7 @@ EARTHING:
                     <tr>
                       <td className="py-2">Earth</td>
                       <td>Earth Cable</td>
-                      <td>16mm²</td>
+                      <td>{earthCsa}mm²</td>
                       <td>~20m</td>
                       <td>Green/Yellow</td>
                     </tr>

@@ -206,9 +206,10 @@ describe('physical bounds (2026-10-20 audit)', () => {
   it('bearing: negative soil unit weight is refused', () => {
     err(c.bearingCapacity, { c_kPa: 10, phi_deg: 30, gamma_kN_m3: -18, B_m: 2, Df_m: 1 });
   });
-  it('ASCE 7 Kz never exceeds 2.41 (z capped at zg)', () => {
-    const r = c.runCalc(c.windAsce7, { V_mph: 115, height_ft: 5000, exposure: 'C' }) as Record<string, number>;
+  it('ASCE 7 Kz stays below 2.41; heights above 1,000 ft are refused (2026-10-27)', () => {
+    const r = c.runCalc(c.windAsce7, { V_mph: 115, height_ft: 1000, exposure: 'D' }) as Record<string, number>;
     expect(r.Kz).toBeLessThanOrEqual(2.41);
+    err(c.windAsce7, { V_mph: 115, height_ft: 5000, exposure: 'C' });
   });
   it('EN 1991-1-4 refuses heights above 200 m', () => {
     err(c.windEurocode, { vb_ms: 30, height_m: 350, terrain_category: 'II' });
@@ -228,8 +229,9 @@ describe('physical bounds, round 2 (2026-10-20)', () => {
     expect(isErr(c.steelBolt, base)).toBe(false);
   });
   it('rational method warns above 80 ha; Kirpich refuses slope ≥ 1 and warns outside 3–10%', () => {
-    const q = c.runCalc(c.rationalRunoff, { runoff_c: 0.5, rainfall_intensity_mm_hr: 50, area_ha: 5000 }) as Record<string, unknown>;
+    const q = c.runCalc(c.rationalRunoff, { runoff_c: 0.5, rainfall_intensity_mm_hr: 50, area_ha: 500 }) as Record<string, unknown>;
     expect(String(q.warning)).toMatch(/80 ha/);
+    expect(isErr(c.rationalRunoff, { runoff_c: 0.5, rainfall_intensity_mm_hr: 50, area_ha: 5000 })).toBe(true); // above 1,000 ha (2026-10-27)
     expect(isErr(c.kirpich, { length_m: 500, slope_m_per_m: 2 })).toBe(true);
     const k = c.runCalc(c.kirpich, { length_m: 500, slope_m_per_m: 0.2 }) as Record<string, unknown>;
     expect(String(k.warning)).toMatch(/3–10%/);
@@ -301,7 +303,8 @@ describe('Building Suite audit round 4 (2026-10-25)', () => {
     expect(String(run(c.reverberation, { volume_m3: 200, absorption_m2_sabin: 46, method: 'eyring' }).note)).toMatch(/Sabine was used/);
   });
   it('checks bolt punching shear and the Table 3.3 maxima', () => {
-    const r = run(c.steelBolt, { designation: 'M20', grade: '8.8', t_ply_mm: 10, fu_ply_MPa: 430, e1_mm: 40, p1_mm: 70, Ft_Ed_kN: 50 });
+    // The e1 maximum is for steel exposed to the weather (Table 3.3; 2026-10-27 audit).
+    const r = run(c.steelBolt, { designation: 'M20', grade: '8.8', t_ply_mm: 10, fu_ply_MPa: 430, e1_mm: 40, p1_mm: 70, Ft_Ed_kN: 50, exposed_to_weather: true });
     // 0.6·π·(1.6·20)·10·430/1.25 = 207.5 kN
     expect(Number(r.Bp_Rd_kN)).toBeCloseTo(207.5, 0);
     const checks = (r.checks as Array<{ check: string }>).map((x) => x.check).join(' | ');

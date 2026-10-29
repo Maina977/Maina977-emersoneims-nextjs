@@ -218,7 +218,8 @@ export function predictHydroChemistry(input: HydroChemPredictionInput, labData?:
     
     predictions.push({
       parameter: param,
-      predictedValue: Math.round(val * 100) / 100,
+      // 2 significant figures: a rock-type estimate, not a lab result (2026-10-27 audit).
+      predictedValue: val === 0 ? 0 : Number(val.toPrecision(2)),
       unit: guideline?.unit || '',
       whoGuideline: guideline?.limit || 0,
       exceedsGuideline: exceeds,

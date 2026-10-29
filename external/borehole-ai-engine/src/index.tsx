@@ -19,6 +19,9 @@ import { render2DAnnotatedMap, render2DCrossSection, render3DTerrain, render3DSu
 import { computeDrillReadiness } from './drillReadiness';
 import { wellKind, displayOutcome, cleanWellsForDisplay } from './wellDisplay';
 import { invertVES, type VESInversionResult, type VESDataPoint } from './vesInversionEngine';
+import { installReliableFetch } from './reliableFetch';
+// Pre-checks (Kenya land/water, elevation) use the same relay as the analysis.
+if (typeof window !== 'undefined') installReliableFetch();
 // NOTE: styles.css is deliberately NOT imported here. This module is loaded
 // via next/dynamic, so a CSS import here becomes a SEPARATE runtime CSS chunk
 // that must fetch successfully or the whole tool dies with ChunkLoadError —
@@ -353,7 +356,10 @@ function genCostBreakdown(depth: number, yld: number, soilType?: string, ctx: Co
 
   return { drilling, casing, screen, pump, installation, mobilization, accessories, contingency,
     total, ratePerM: Math.round(ratePerM),
-    confidence: { p10, p50, p75, p90, uncertaintyPct: Math.round(unc * 100) },
+    // The range is skewed (overruns are likelier than savings), so the label
+    // states P10 and P90 separately; "±18%" was shown for −9% / +24% (2026-10-27 audit).
+    confidence: { p10, p50, p75, p90, uncertaintyPct: Math.round(unc * 100),
+      p10Pct: Math.round((p10 / total - 1) * 100), p90Pct: Math.round((p90 / total - 1) * 100) },
   };
 }
 
@@ -2275,10 +2281,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
             marginBottom:16,
           }}>
             <div style={{fontSize:13,fontWeight:700,color:'#d97706',marginBottom:8}}>
-              {'\u{1F4E1}'} {result.fallbacksUsed.length} Data Source{result.fallbacksUsed.length > 1 ? 's' : ''} Used Regional Estimates
+              {'\u{1F4E1}'} {result.fallbacksUsed.length} data source{result.fallbacksUsed.length > 1 ? 's' : ''} did not answer or used a stored baseline
             </div>
             <div style={{fontSize:11,color:'var(--text-secondary)',marginBottom:8}}>
-              The following sources used latitude-based regional estimates. This is normal for remote or offline areas. Adding field data (ERT, pump test) will upgrade accuracy.
+              Public data services sometimes do not answer. Where one did not, its value is either a stored measured baseline (named below, with its distance) or left out of the result. Nothing is estimated from latitude. Adding field data (ERT, pump test) upgrades accuracy.
             </div>
             {result.fallbacksUsed.map((fb: string, i: number) => (
               <div key={i} style={{fontSize:11,color:'var(--text-muted)',padding:'3px 0',borderBottom:'1px solid rgba(255,255,255,0.03)'}}>
@@ -5814,7 +5820,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               </div>
               {/* P50/P75/P90 Confidence Intervals */}
               <div style={{marginTop:20,background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.18)',borderRadius:12,padding:16}}>
-                <h4 style={{margin:'0 0 12px',color:'#fbbf24',fontSize:14}}>{'📊'} Cost Confidence Intervals (±{cost.confidence.uncertaintyPct}% base uncertainty{(result.soil as any)?.realSoilGrids ? ` for ${result.soil.type} soil (ISRIC SoilGrids)` : ' — soil type unknown until drilling'})</h4>
+                <h4 style={{margin:'0 0 12px',color:'#fbbf24',fontSize:14}}>{'📊'} Cost Confidence Intervals (P10 {cost.confidence.p10Pct}% to P90 +{cost.confidence.p90Pct}% of the estimate{(result.soil as any)?.realSoilGrids ? ` for ${result.soil.type} soil (ISRIC SoilGrids)` : ' — soil type unknown until drilling'})</h4>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))',gap:12}}>
                   <div style={{padding:'12px 16px',borderRadius:8,background:'rgba(34,197,94,0.08)',border:'1px solid rgba(34,197,94,0.15)'}}>
                     <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>P10 (Optimistic)</div>
@@ -5834,7 +5840,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   </div>
                 </div>
                 <div style={{marginTop:10,fontSize:11,color:'var(--text-tertiary)'}}>
-                  Budget at P75 for planning ({fmtUSD(Math.round(ecoTotal * cost.confidence.p75 / cost.total))}). Reserve P90 ({fmtUSD(Math.round(ecoTotal * cost.confidence.p90 / cost.total))}) for contingency. Uncertainty driven by: soil variability (±{cost.confidence.uncertaintyPct}%), depth uncertainty, and local market fluctuations.
+                  Budget at P75 for planning ({fmtUSD(Math.round(ecoTotal * cost.confidence.p75 / cost.total))}). Reserve P90 ({fmtUSD(Math.round(ecoTotal * cost.confidence.p90 / cost.total))}) for contingency. Uncertainty driven by: soil variability, depth uncertainty and local market prices; overruns are likelier than savings, so the range is wider above the estimate.
                 </div>
               </div>
             </div>
@@ -7124,7 +7130,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   {dq.fallbackSources?.length > 0 && (
                     <div style={{marginBottom:12,padding:12,borderRadius:8,background:'rgba(245,158,11,0.05)',border:'1px solid rgba(245,158,11,0.2)'}}>
                       <h4 style={{color:'#d97706',marginBottom:8}}>{'\u{1F4E1}'} Regional Estimate Sources</h4>
-                      <p style={{fontSize:12,color:'var(--text-secondary)',marginBottom:8}}>The following sources used latitude-based regional estimates. Adding field survey data (ERT, pump test) will upgrade these to measured values:</p>
+                      <p style={{fontSize:12,color:'var(--text-secondary)',marginBottom:8}}>These sources did not answer or used a stored measured baseline (none is estimated from latitude). Adding field survey data (ERT, pump test) will upgrade these to measured values:</p>
                       {dq.fallbackSources.map((fb: string, i: number) => (
                         <div key={i} style={{padding:6,borderRadius:6,background:'rgba(245,158,11,0.04)',marginBottom:4,fontSize:12,color:'var(--text-muted)'}}>{'•'} {fb}</div>
                       ))}

@@ -1,5 +1,5 @@
 ﻿import { create } from 'zustand';
-import { DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
+import { DEFAULT_TARIFF_KES_PER_KWH, PANEL_WATT } from '@/lib/solar/sizing';
 
 const STORAGE_KEY = 'solargeniuspro_project_v1';
 const LEGACY_SETTINGS_KEY = 'solargeniuspro_settings';
@@ -23,6 +23,8 @@ export interface DesignInfo {
   inverterKw: number; inverterMake: string; inverterModel: string;
   batteryKwh: number; batteryMake: string; batteryModel: string;
   tiltDeg: number; azimuthDeg: number;
+  /** From the calculator; drives the tariff and labels in the report. */
+  systemType?: 'grid-tied' | 'hybrid' | 'off-grid';
 }
 export interface FinancialInfo {
   capexKes: number; year1SavingsKes: number; paybackYears: number; irrPct: number; npvKes: number;
@@ -80,7 +82,7 @@ const DEFAULT_BRAND: BrandInfo = {
   primaryColor: '#00B894', accentColor: '#0984E3'
 };
 const DEFAULT_DESIGN: DesignInfo = {
-  systemKw: 0, panelCount: 0, panelW: 580,
+  systemKw: 0, panelCount: 0, panelW: PANEL_WATT,
   panelMake: '', panelModel: '',
   inverterKw: 0, inverterMake: '', inverterModel: '',
   batteryKwh: 0, batteryMake: '', batteryModel: '',

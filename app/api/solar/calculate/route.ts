@@ -52,6 +52,10 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Send a JSON body.' }, { status: 400 });
   }
+  // "null" and arrays parse as JSON but are not an object (a null body was a 500).
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Send a JSON object, for example {"consumption": 300}.' }, { status: 400 });
+  }
 
   const monthlyKwh = Number(body.consumption);
   // Below ~10 kWh/month there is nothing to size (2026-10-25 audit: 1e-9 kWh
@@ -82,6 +86,14 @@ export async function POST(request: NextRequest) {
     if (!Number.isFinite(v) || v < lo || v > hi) {
       return NextResponse.json({ error: `${k} must be between ${lo} and ${hi} ${unit}` }, { status: 400 });
     }
+  }
+  // A peak that could not run even 15 minutes a day on the stated monthly use
+  // is a typing error (2026-10-27 audit: 5,000 kW on a home gave a
+  // 1,597-year payback).
+  if (given('peakLoadKw') && Number(body.peakLoadKw) * 0.25 * 30 > monthlyKwh) {
+    return NextResponse.json({
+      error: `peakLoadKw ${Number(body.peakLoadKw)} kW does not fit ${monthlyKwh} kWh a month: it could not run even 15 minutes a day. Check both figures (the most for this consumption is ${Math.floor(monthlyKwh / 7.5)} kW).`,
+    }, { status: 400 });
   }
   const systemType = given('systemType') ? (body.systemType as SystemType) : 'hybrid';
   const roofType = given('roofType') ? (body.roofType as RoofType) : 'pitched';

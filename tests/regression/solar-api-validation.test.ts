@@ -57,7 +57,12 @@ describe('valid input still works', () => {
     expect(r.body.data.stringFuse.required).toBe(true);
   });
   it('string-config names the current limit when that is what fails', async () => {
-    const r = await call('solar', ['string-config'], { panelVocStc: 49.5, panelVmppStc: 41.5, panelIscStc: 13.9, inverterMaxDcV: 500, inverterMpptMinV: 120, inverterMpptMaxV: 450, inverterMaxInputA: 15 });
+    // 2026-10-27 audit (M3): operating current, not 1.25·Isc, is compared with
+    // the input limit. Isc 13.9 A (≈13.1 A operating) fits 15 A; Isc 18 A does not.
+    const base = { panelVocStc: 49.5, panelVmppStc: 41.5, inverterMaxDcV: 500, inverterMpptMinV: 120, inverterMpptMaxV: 450, inverterMaxInputA: 15 };
+    const okR = await call('solar', ['string-config'], { ...base, panelIscStc: 13.9 });
+    expect(okR.body.data.feasible).toBe(true);
+    const r = await call('solar', ['string-config'], { ...base, panelIscStc: 18 });
     expect(r.status).toBe(200);
     expect(r.body.data.feasible).toBe(false);
     expect(r.body.data.verdict).toMatch(/15 A input limit/);

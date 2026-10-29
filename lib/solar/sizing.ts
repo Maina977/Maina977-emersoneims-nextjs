@@ -71,6 +71,9 @@ export const BATTERY_DOD = 0.9; // LiFePO4 usable depth of discharge
 export const BATTERY_EFFICIENCY = 0.95; // round trip
 export const DIESEL_L_PER_KWH = 0.35; // small genset at part load
 export const DIESEL_CO2_KG_PER_L = 2.68;
+/** Diesel pump price (KES/L) when the client gives none: an assumption, shown with every
+ *  result, and one value for every solar tool (2026-10-27 audit: 175, 195 and 210 were used). */
+export const DEFAULT_DIESEL_KES_PER_LITRE = 175;
 /** LiFePO4 EQUIPMENT price per kWh (KES, mid-2026 typical retail 25–32k).
  *  One constant for every tool — the calculator said 48k and the quote checker 36k.
  *  2026-10-25 audit: it was described as "installed" while costKes added the
@@ -88,12 +91,27 @@ const round1 = (n: number) => Math.round(n * 10) / 10;
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 const nextStandardInverter = (kw: number) => STANDARD_INVERTERS_KW.find((s) => s >= kw) ?? Math.ceil(kw / 50) * 50;
 
-/** Typical Kenyan installed prices (KES), mid-2026, stated as a ±15% range. */
+/** Typical Kenyan installed prices (KES), mid-2026, before VAT, stated as a ±15% range. Every solar tool uses this basis (2026-10-27 audit). */
+/**
+ * Tiered (marginal) rates: each band's rate applies only to the kW inside it,
+ * so a bigger system never costs less (2026-10-27 audit: 10 kWp = KES 1.51M
+ * but 11 kWp = KES 1.42M, because the whole system dropped to the lower rate).
+ */
+function tiered(kw: number, bands: [number, number][]): number {
+  let cost = 0, from = 0;
+  for (const [upTo, rate] of bands) {
+    if (kw <= from) break;
+    cost += (Math.min(kw, upTo) - from) * rate;
+    from = upTo;
+  }
+  return cost;
+}
 function costKes(pvKwp: number, inverterKw: number, batteryKwh: number, type: SystemType): number {
-  const pvRate = pvKwp <= 10 ? 70_000 : pvKwp <= 50 ? 60_000 : 52_000; // panels + mounting + DC
-  const invRate = type === 'grid-tied' ? (inverterKw <= 10 ? 20_000 : 15_000) : inverterKw <= 10 ? 35_000 : 28_000;
-  const batRate = BATTERY_KES_PER_KWH;
-  const equipment = pvKwp * pvRate + inverterKw * invRate + batteryKwh * batRate;
+  const pv = tiered(pvKwp, [[10, 70_000], [50, 60_000], [Infinity, 52_000]]); // panels + mounting + DC
+  const inv = type === 'grid-tied'
+    ? tiered(inverterKw, [[10, 20_000], [Infinity, 15_000]])
+    : tiered(inverterKw, [[10, 35_000], [Infinity, 28_000]]);
+  const equipment = pv + inv + batteryKwh * BATTERY_KES_PER_KWH;
   return equipment * 1.12; // installation, cabling and protection
 }
 
@@ -202,7 +220,7 @@ export function sizeSolar(input: SizingInput): SizingResult {
   } else {
     savingBasis = 'diesel';
     energyUsedKwh = Math.min(annualEnergyKwh, annualConsumption);
-    const dieselPrice = clamp(input.dieselKesPerLitre ?? 175, 50, 500);
+    const dieselPrice = clamp(input.dieselKesPerLitre ?? DEFAULT_DIESEL_KES_PER_LITRE, 50, 500);
     dieselLitres = Math.round(energyUsedKwh * DIESEL_L_PER_KWH);
     annualSavingKes = dieselLitres * dieselPrice;
     co2 = Math.round(dieselLitres * DIESEL_CO2_KG_PER_L);
@@ -215,7 +233,7 @@ export function sizeSolar(input: SizingInput): SizingResult {
   const cost = { lowKes: Math.round((mid * 0.85) / 1000) * 1000, midKes: Math.round(mid / 1000) * 1000, highKes: Math.round((mid * 1.15) / 1000) * 1000 };
   const paybackYears = annualSavingKes > 0 ? round1(cost.midKes / annualSavingKes) : null;
   if (annualSavingKes > 0) assumptions.push(`Payback range: ${round1(cost.lowKes / annualSavingKes)}-${round1(cost.highKes / annualSavingKes)} years across the price range, longer if less of the solar is used on site.`);
-  assumptions.push('Prices are typical Kenyan installed ranges (mid-2026), not a quotation. A site survey fixes the real price.');
+  assumptions.push('Prices are typical Kenyan installed ranges (mid-2026), before VAT, not a quotation. A site survey fixes the real price.');
   if (batteryKwh > 0) assumptions.push('LiFePO4 batteries usually need replacing after 10–12 years; that cost is not in the payback.');
 
   return {
