@@ -11,7 +11,7 @@ import { COUNTIES, SERVICES, getServicePath } from '@/lib/seo/kenyaLocations';
 import { MAJOR_TOWN_SLUGS, townLabel } from '@/lib/seo/majorTowns';
 
 export const metadata: Metadata = {
-  title: 'Service Locations | Generator & Solar Services Across Kenya',
+  title: 'Service Locations Across Kenya',
   description: 'Generator, solar, UPS and electrical services across all 47 Kenyan counties, from Nairobi and Mombasa to Kisumu, Nakuru and Eldoret. 24/7 support.',
   keywords: [
     'generator company Kenya',

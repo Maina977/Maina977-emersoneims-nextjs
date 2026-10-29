@@ -186,13 +186,16 @@ export function readRating(desc: string): Rated {
   const w = s.match(/(\d{2,4})\s*(?:w|wp|watts?)\b/);
   let kind: Rated['kind'] = null;
   if (/\bbatter|\blithium|\blifepo|\bbatt\b/.test(s) || kwh) kind = 'battery';
-  else if (/\binverter|\bhybrid\b|\boff[- ]?grid\b|\bkva\b/.test(s)) kind = 'inverter';
+  // "SUN2000-10KTL-M1" names an inverter even without the word (2026-10-29 audit).
+  else if (/\binverter|\bhybrid\b|\boff[- ]?grid\b|\bkva\b|\d\s*ktl/.test(s)) kind = 'inverter';
   else if (/\bpanel|\bmodule|\bpv\b/.test(s) || (w && !kw)) kind = 'panel';
   const out: Rated = { kind };
   if (kind === 'battery' && kwh) out.kwh = Math.round(kwh * 100) / 100;
   if (kind === 'inverter') {
     if (kw) out.kw = Number(kw[1]);
-    out.gridTie = /grid[- ]?tie|on[- ]?grid|string\b/.test(s) && !/hybrid|off[- ]?grid/.test(s);
+    // KTL ("kilowatt, transformerless") models are grid-tie string inverters
+    // (2026-10-29 audit: priced as hybrids, so a fair price showed -34%).
+    out.gridTie = /grid[- ]?tie|on[- ]?grid|string\b|\d\s*ktl/.test(s) && !/hybrid|off[- ]?grid/.test(s);
     out.offGrid = /off[- ]?grid/.test(s) && !/hybrid/.test(s);
   }
   if (kind === 'panel' && w) out.w = Number(w[1]);
@@ -276,7 +279,7 @@ export function parseTotals(input: string): QuoteTotals {
 export const KENYA_VAT = 0.16;
 
 /** Mounting, cabling, protection and labour: priced as a whole, not per line. */
-const BOS_WORDS = /\b(cable|wire|wiring|conduit|trunking|mount|mounting|rail|bracket|clamp|structure|install|installation|labou?r|commission|breaker|mcb|mccb|isolator|switch|fuse|spd|surge|earth|earthing|lightning|combiner|db\b|distribution|connector|mc4|accessor)/i;
+const BOS_WORDS = /\b(cabl(?:e|es|ing)|wire|wiring|conduit|trunking|mount|mounting|rail|bracket|clamp|structure|install|installation|labou?r|commission|breaker|mcb|mccb|isolator|switch|fuse|spd|surge|earth|earthing|lightning|combiner|db\b|distribution|connector|mc4|accessor)/i;
 /**
  * Balance of system (mounting, cabling, protection, installation) at the
  * calculator's rates (lib/solar/sizing.ts): its PV rate less the panels, plus
@@ -295,7 +298,7 @@ export function bosReferenceKes(arrayKwp: number, equipmentKes: number): number 
 }
 
 /** Words that make a line a quotation item even without a recognised rating. */
-const ITEM_WORDS = /\b(panel|module|inverter|battery|batt|cable|wire|wiring|conduit|trunking|mount|mounting|rail|bracket|clamp|structure|install|installation|labou?r|commission|breaker|mcb|mccb|isolator|switch|fuse|spd|surge|earth|earthing|lightning|charge|controller|mppt|combiner|meter|db\b|distribution|kit|connector|mc4|transport|delivery|survey|design|pump|tank|accessor)/i;
+const ITEM_WORDS = /\b(panel|module|inverter|battery|batt|cabl(?:e|es|ing)|wire|wiring|conduit|trunking|mount|mounting|rail|bracket|clamp|structure|install|installation|labou?r|commission|breaker|mcb|mccb|isolator|switch|fuse|spd|surge|earth|earthing|lightning|charge|controller|mppt|combiner|meter|db\b|distribution|kit|connector|mc4|transport|delivery|survey|design|pump|tank|accessor)/i;
 
 export function parseLines(input: string): ParsedLine[] {
   // Header rows ("Item, Qty, Unit price, Total") and lines without a number are not items.
@@ -309,7 +312,8 @@ export function parseLines(input: string): ParsedLine[] {
     let unitPriceKes: number | null = null;
     // 1) Explicit markers win: "x 24", "× 24", "qty 24", "@ 13920".
     const qm = clean.match(/(?:\b[x×]|qty|quantity)\s*:?\s*(\d+)(?![\d.]*\s*(?:k?w|kwh|ah|v)\b)/i);
-    const pm = clean.match(/@\s*(\d+(?:\.\d+)?)/);
+    // "@ 1e9" is not a price of KES 1 (2026-10-29 audit): exponents are refused.
+    const pm = clean.match(/@\s*(\d+(?:\.\d+)?)(?![\d.]*[eE])/);
     if (qm) qty = Number(qm[1]);
     if (pm) unitPriceKes = Number(pm[1]);
     if (unitPriceKes == null) {
@@ -337,6 +341,8 @@ export function parseLines(input: string): ParsedLine[] {
     }
     const itemish = ITEM_WORDS.test(clean) || readRating(clean).kind !== null || /\b(ksh|kes)\b|@|\bx\s*\d|\bqty\b/i.test(raw);
     if (!itemish) unitPriceKes = null;
+    // A quantity of 0, or a price written with an exponent, is not checked (2026-10-29 audit).
+    if (!(qty > 0) || /\d[eE][+-]?\d/.test(clean)) unitPriceKes = null;
     // Description = the line without the quantity and price markers.
     const description = raw.replace(/(?:\b[x×]|@)\s*[\d,]+(?:\.\d+)?/g, '').trim();
     return { raw, description, qty, unitPriceKes };
@@ -395,9 +401,9 @@ function evaluate(line: ParsedLine, match: LibItem | null): VerdictRow {
 const SAMPLE = `JA Solar JAM72D40-580 580W panel x 10 @ 12500
 Deye 5kW hybrid inverter x 1 @ 165000
 Pylontech US5000 4.8kWh battery x 2 @ 180000
-DC isolators + cabling x 1 @ 45000
-Mounting (aluminium rails) x 1 @ 60000
-Installation + commissioning x 1 @ 80000`;
+DC isolators, SPDs + cabling x 1 @ 85000
+Mounting (aluminium rails) x 1 @ 90000
+Installation + commissioning x 1 @ 140000`;
 
 export default function QuoteCheckerPage() {
   const [text, setText] = useState('');

@@ -343,14 +343,16 @@ function FaultDetailModal({
                   {/* Possible Causes */}
                   <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
                     <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                      <span>🎯</span> {isJ1939 ? 'Possible Causes (not ranked)' : 'Possible Causes'}
+                      {/* Likelihood badges only for entries checked against the OEM manual:
+                          the brand files' HIGH/MEDIUM/LOW came from templates (2026-10-29 audit). */}
+                      <span>🎯</span> {isJ1939 || !fault.verified ? 'Possible Causes (not ranked)' : 'Possible Causes'}
                     </h3>
                     <div className="space-y-3">
                       {fault.possibleCauses?.map((cause, idx) => (
                         <div key={idx} className="p-3 bg-slate-800/50 rounded-lg">
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <span className="text-sm text-white font-medium">{cause.cause}</span>
-                            {!isJ1939 && <LikelihoodBadge likelihood={cause.likelihood} />}
+                            {!isJ1939 && fault.verified && <LikelihoodBadge likelihood={cause.likelihood} />}
                           </div>
                           {cause.verification && (
                             <p className="text-xs text-slate-400">
@@ -432,9 +434,11 @@ function FaultDetailModal({
                           <p className={`font-medium ${completedDiagnostics.includes(step.step) ? 'text-green-400' : 'text-white'}`}>
                             {step.action}
                           </p>
+                          {step.expectedResult && (
                           <p className="text-sm text-green-400 mt-2 flex items-center gap-2">
                             <span>✓</span> Expected: {step.expectedResult}
                           </p>
+                          )}
                           {step.tools && step.tools.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-2">
                               {step.tools.map((tool, toolIdx) => (
@@ -548,9 +552,11 @@ function FaultDetailModal({
                             </div>
                           )}
 
+                          {step.expectedResponse && (
                           <p className="text-sm text-green-400 mt-3 flex items-center gap-2">
                             <span>✓</span> Expected: {step.expectedResponse}
                           </p>
+                          )}
                         </div>
                       </div>
                     </motion.div>

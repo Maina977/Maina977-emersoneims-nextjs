@@ -11,6 +11,8 @@ export interface SiteInfo {
   lat: number | null; lon: number | null; displayName: string;
   elevationM: number | null; irradianceKwhPerM2Day: number | null; temperatureC: number | null;
   monthlyConsumptionKwh: number | null; tariffKesPerKwh: number; gridReliabilityNotes: string;
+  /** Diesel price the calculator used for an off-grid saving (KES/L). */
+  dieselKesPerLitre?: number;
   roofAreaM2: number | null; roofPerimeterM: number | null;
   roofAzimuthDeg: number | null; roofPitchDeg: number | null; roofProvenance: string;
 }

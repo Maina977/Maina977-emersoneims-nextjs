@@ -8,7 +8,11 @@ import { AnalysisResult, FieldValidationData, SitePhoto } from './types';
 import * as SCI from './scienceData';
 import { generateVerificationResult, getOSINTChecklist } from './locationVerifier';
 import type { RemoteSensingResult } from './remoteSensing';
-import { generatePDFReport, generateExcelReport, generateWordReport, generateCSVReport, generateJSONReport, generateComparisonReport, runPrePublishAudit, AuditBlockError, VerificationBlockError, setCustomerDetails, computeCanonicalEconomics, type AuditReport } from './reportGenerator';
+import { runPrePublishAudit, AuditBlockError, VerificationBlockError, setCustomerDetails, computeCanonicalEconomics } from './reportShared';
+import type { AuditReport } from './reportAuditor';
+// The report generator (with jsPDF, ExcelJS and docx) is loaded only when a
+// report is downloaded, which keeps the page itself light (2026-10-29).
+const loadReports = () => import('./reportGenerator');
 import { getTrackerStats, getLifetimeCount, searchHistory, getSuccessStories, type ReportRecord, type TrackerStats } from './reportTracker';
 import { parseERTFile } from './ertFileParser';
 import { recordDrillingOutcome, getLearningStats, exportOutcomes, importOutcomes, loadOutcomes } from './feedbackLearningLoop';
@@ -299,7 +303,7 @@ function computeCredibility(r: AnalysisResult) {
       { key: 'science', label: 'Scientific Methodology', score: sciScore, target: 5.0, comment: sciScore >= 4.5 ? 'Transparent, well-documented equations' : sciScore >= 3.5 ? 'Good methodology; ERT integration available for 5★' : 'Building data source coverage' },
       { key: 'data', label: 'Data Integrity', score: dataScore, target: 5.0, comment: dataScore >= 4.0 ? 'Multiple satellite + API sources confirmed' : dataScore >= 3.0 ? 'Satellite data present; ERT integration available for 5★' : 'Limited data sources — additional sources recommended' },
       { key: 'economics', label: 'Economic Analysis', score: econScore, target: 4.5, comment: econScore >= 4.0 ? 'Realistic ROI with sensitivity analysis' : 'Good base; validate tariff and utilization locally' },
-      { key: 'confidence', label: 'Confidence Metrics', score: confScore, target: 4.5, comment: confPct >= 85 ? 'High model agreement (desktop)' : confPct >= 65 ? `Moderate (${confPct}%); ERT integration → 90%+` : `Building (${confPct}%); ERT + pump test → 90%+` },
+      { key: 'confidence', label: 'Confidence Metrics', score: confScore, target: 4.5, comment: confPct >= 85 ? 'Well supported by desktop data' : confPct >= 65 ? `Moderate (${confPct}%); an ERT survey adds measured evidence` : `Limited (${confPct}%); an ERT survey and pump test add measured evidence` },
     ],
     overall,
     overallPct,
@@ -314,11 +318,11 @@ function computeCredibility(r: AnalysisResult) {
  * No Math.random(). Geology-based drilling rates from Kenya industry surveys.
  */
 /** Site context for costing: coordinates (mobilisation) and the county's recorded rate band. */
-interface CostContext { lat?: number; lon?: number; countyRatePerM?: [number, number] }
+interface CostContext { lat?: number; lon?: number; countyRatePerM?: [number, number]; rockType?: string }
 
 /** Cost context from an analysis result. */
 function costContextOf(r: any): CostContext {
-  return { lat: Number(r?.site?.latitude), lon: Number(r?.site?.longitude), countyRatePerM: countyRateBand(r) ?? undefined };
+  return { lat: Number(r?.site?.latitude), lon: Number(r?.site?.longitude), countyRatePerM: countyRateBand(r) ?? undefined, rockType: r?.rockClassification?.primaryRockType };
 }
 
 function genCostBreakdown(depth: number, yld: number, soilType?: string, ctx: CostContext = {}) {
@@ -328,7 +332,7 @@ function genCostBreakdown(depth: number, yld: number, soilType?: string, ctx: Co
   };
   // Same per-metre basis as the PDF report (costModel.ts), kept inside the
   // county's recorded drilling-rate band.
-  const ratePerM = drillRatePerM(soilType, ctx.countyRatePerM);
+  const ratePerM = drillRatePerM(soilType, ctx.countyRatePerM, ctx.rockType);
   const unc = uncertaintyBySoil[soilType || 'loamy'] || 0.20;
   const drilling = Math.round(depth * ratePerM);
   const casing = Math.round(depth * 0.35 * 45);
@@ -1000,16 +1004,30 @@ const AIBoreholeAnalyzer: React.FC = () => {
   }, [manualLat, manualLon, analyzer]);
 
   /** Core: re-run the FULL analysis at the given verified coordinates. */
-  const applyCoordinates = async (lat: number, lon: number) => {
-    if (!analyzer) return;
+  const applyCoordinates = async (lat: number, lon: number): Promise<boolean> => {
+    if (!analyzer) return false;
     setManualLocError('');
+    // Every coordinate change is checked and re-analysed (2026-10-29 audit: the
+    // GPS button relabelled a Nairobi result as Kampala without re-running).
+    if (!inKenya(lat, lon)) {
+      setManualLocError(`${lat.toFixed(4)}, ${lon.toFixed(4)} is outside Kenya's land area (sea or a neighbouring country). AquaScan only runs for sites in Kenya.`);
+      return false;
+    }
 
-    // If we have an image file, re-run the FULL analysis with correct coordinates
-    // This is critical: all satellite data, geology, depth, yield must use the right location
+    // Re-run the FULL analysis at the new coordinates: with the site photo, or
+    // the neutral placeholder of a coordinates-only run.
     const imageInput = document.querySelector<HTMLInputElement>('input[type="file"][accept*="image"]');
-    const file = primaryFileRef.current ?? imageInput?.files?.[0];
+    let file: File | undefined = primaryFileRef.current ?? imageInput?.files?.[0];
+    if (!file) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 64; canvas.height = 64;
+      const c2 = canvas.getContext('2d');
+      if (c2) { c2.fillStyle = '#808080'; c2.fillRect(0, 0, 64, 64); }
+      const blob: Blob | null = await new Promise((res) => canvas.toBlob((b) => res(b), 'image/jpeg', 0.8));
+      if (blob) file = new File([blob], NO_PHOTO_NAME, { type: 'image/jpeg' });
+    }
+    const previous = result;
     if (file) {
-      setResult(null);
       setAnalyzing(true);
       setActiveView('analyze');
       setPipelineStep(0);
@@ -1030,37 +1048,22 @@ const AIBoreholeAnalyzer: React.FC = () => {
         setResult(analysisResult);
         setActiveView('results');
         setActiveResultTab('overview');
+        setManualLat('');
+        setManualLon('');
+        return true;
       } catch (error: any) {
-        // Shown to the user (2026-10-27 audit: a refused site failed silently).
+        // Shown to the user, and the previous result is kept (2026-10-29
+        // audit: a refused re-analysis wiped the existing result).
         console.error('Re-analysis failed:', error);
-        setAnalysisError(error?.message || 'Re-analysis failed');
         setManualLocError(error?.message || 'Re-analysis failed');
+        if (previous) { setResult(previous); setActiveView('results'); }
+        else setAnalysisError(error?.message || 'Re-analysis failed');
+        return false;
       }
       finally { setAnalyzing(false); setPipelineStep(-1); setPipelineLabel(''); }
-    } else if (result) {
-      // No image file available — do coordinate-only update (fallback)
-      const now = Date.now();
-      const elapsed = now - lastNominatimCall.current;
-      if (elapsed < 1100) await new Promise(r => setTimeout(r, 1100 - elapsed));
-      lastNominatimCall.current = Date.now();
-      let resolvedLocation = result.resolvedLocation;
-      try {
-        const rg = await analyzer.reverseGeocode(lat, lon);
-        if (rg && rg.source !== 'none') {
-          resolvedLocation = { ...rg, isFromImage: false };
-        }
-      } catch { /* reverse geocode failed, continue without */ }
-      setResult({
-        ...result,
-        site: { ...result.site, latitude: lat, longitude: lon, confidence: Math.max(result.site.confidence, 0.60) },
-        gpsSource: 'manual' as const,
-        locationMethod: 'manual-entry' as const,
-        gpsAccuracy: 50,
-        resolvedLocation,
-      });
     }
-    setManualLat('');
-    setManualLon('');
+    setManualLocError('Could not start the analysis in this browser. Add a site photo instead.');
+    return false;
   };
 
   /** Apply manually entered coordinates — validates loudly, then re-runs analysis. */
@@ -1129,29 +1132,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
       const lat = pos.coords.latitude;
       const lon = pos.coords.longitude;
       const accuracy = pos.coords.accuracy;
-      // Reverse geocode the confirmed device location
-      // Rate limit: Nominatim requires max 1 req/sec
-      const nowGps = Date.now();
-      const elapsedGps = nowGps - lastNominatimCall.current;
-      if (elapsedGps < 1100) {
-        await new Promise(r => setTimeout(r, 1100 - elapsedGps));
-      }
-      lastNominatimCall.current = Date.now();
-      let resolvedLocation = result.resolvedLocation;
-      try {
-        const rg = await analyzer?.reverseGeocode(lat, lon);
-        if (rg && rg.source !== 'none') {
-          resolvedLocation = { ...rg, isFromImage: false };
-        }
-      } catch { /* reverse geocode failed, still use coordinates */ }
-      setResult({
-        ...result,
-        site: { ...result.site, latitude: lat, longitude: lon, confidence: Math.max(result.site.confidence, 0.70) },
-        gpsSource: 'device' as const,
-        locationMethod: 'device-gps' as const,
-        gpsAccuracy: accuracy,
-        resolvedLocation,
-      });
+      // The same checked, full re-analysis as typed coordinates (2026-10-29
+      // audit C1: the result was relabelled to the new place without re-running
+      // and without the Kenya check); then mark it as a device fix.
+      const ok = await applyCoordinates(lat, lon);
+      if (ok) setResult((r) => (r ? { ...r, gpsSource: 'device' as const, locationMethod: 'device-gps' as const, gpsAccuracy: accuracy } : r));
     } catch {
       // Geolocation denied or failed — do nothing
     }
@@ -1237,7 +1222,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   return 'error' in p
                     ? <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.25)',color:'#fca5a5',fontSize:12,lineHeight:1.5}}>{'⚠️'} {p.error}</div>
                     : <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(34,197,94,0.10)',border:'1px solid rgba(34,197,94,0.30)',fontSize:12}}>
-                        <div style={{color:'#4ade80',fontWeight:700}}>{'✅'} Drilling location PINNED: {p.lat.toFixed(6)}, {p.lon.toFixed(6)} — the analysis will run exactly here (full site report unlocked)</div>
+                        <div style={{color:'#4ade80',fontWeight:700}}>{'✅'} Drilling location PINNED: {p.lat.toFixed(6)}, {p.lon.toFixed(6)} — the analysis will run exactly here (it first checks the point is on land, not a lake or the sea)</div>
                         {pinnedPlaceLoading && <div style={{marginTop:6,color:'var(--text-secondary)',fontSize:11}}>{'\u{1F30D}'} Resolving County / Sub-County / Ward / Village names…</div>}
                         {!pinnedPlaceLoading && pinnedPlace && <div style={{marginTop:6,color:'#86efac',fontSize:11.5,lineHeight:1.6}}>{'\u{1F4CD}'} <strong>Site identified:</strong> {pinnedPlace}</div>}
                         {!pinnedPlaceLoading && !pinnedPlace && <div style={{marginTop:6,color:'var(--text-tertiary)',fontSize:11}}>Place names will be resolved during analysis and printed in the report.</div>}
@@ -2072,7 +2057,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <div className="geo-note" style={{marginTop:12}}>
                 <strong>Measured so far:</strong> against real drilled boreholes in northern Kenya, the modelled depth fell inside the drilled band about 40% of the time, and yield cannot be predicted reliably without a pump test. No other accuracy figure has been measured. The full ledger is on the <a href="/aquascan-pro-v3/methodology" style={{color:'#38bdf8'}}>methodology page</a>.
               </div>
-              <h4 className="tab-title" style={{marginTop:24}}>Confidence Metrics</h4>
+              <h4 className="tab-title" style={{marginTop:24}}>Data Availability by Topic</h4>
               {renderSciTable(['Confidence Level','Criteria','Interpretation'], SCI.CONFIDENCE_LEVELS, ['level','criteria','interpretation'])}
             </div>
           )}
@@ -2228,7 +2213,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           const agrColor = fc.agreementLevel === 'Strong' ? '#22c55e' : fc.agreementLevel === 'Moderate' ? '#f59e0b' : '#ef4444';
           return (
             <div style={{background:fcBg,border:`2px solid ${fcBorder}`,borderRadius:14,padding:'18px 22px',marginBottom:16}}>
-              <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
+              <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12,flexWrap:'wrap'}}>
                 <span style={{fontSize:20}}>{'\u2B50'}</span>
                 <div style={{fontSize:16,fontWeight:800,color:fcColor}}>FINAL RECOMMENDATION</div>
                 <span style={{fontSize:11,padding:'2px 10px',borderRadius:6,background:fcColor,color:'#fff',fontWeight:700}}>{fc.assessmentGrade}</span>
@@ -2326,7 +2311,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           )}
           {result.confidenceMetrics && (
             <div style={{marginTop:10,padding:'10px 14px',borderRadius:8,background:'rgba(59,130,246,0.06)',border:'1px solid rgba(59,130,246,0.15)'}}>
-              <div style={{fontWeight:700,fontSize:12,color:'#3b82f6',marginBottom:6}}>Confidence Metrics</div>
+              <div style={{fontWeight:700,fontSize:12,color:'#3b82f6',marginBottom:6}}>Data Availability by Topic</div>
               <div style={{display:'flex',gap:10,flexWrap:'wrap',fontSize:11}}>
                 {[
                   {label:'Geological',val:result.confidenceMetrics.geological},
@@ -3282,6 +3267,31 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <strong>Data sources:</strong> {result.nearbyWells.dataSources.join(', ')}
                     </div>
                   )}
+                  {(() => {
+                    // Open groundwater evidence (2026-10-29): measured chemistry and
+                    // water levels, the BGS Africa maps, IGRAC wells, WoSIS soils.
+                    const od: any = (result.nearbyWells as any)?.openData;
+                    if (!od) return null;
+                    const m = od.measured, b = od.bgsMaps;
+                    const rows: [string, string, string][] = [];
+                    if (m?.ec) rows.push(['Salinity (EC)', `median ${m.ec.median} µS/cm; ${m.ec.over1500} of ${m.ec.n} above 1,500, ${m.ec.over3000} above 3,000`, `${m.ec.n} boreholes within ${m.radius_km} km, measured`]);
+                    if (m?.fluoride) rows.push(['Fluoride', `median ${m.fluoride.median} mg/L, max ${m.fluoride.max}; ${m.fluoride.over1_5} of ${m.fluoride.n} above 1.5`, `${m.fluoride.n} boreholes, laboratory`]);
+                    if (m?.restWaterLevel) rows.push(['Rest water level', `median ${m.restWaterLevel.median} m (quartiles ${m.restWaterLevel.p25}–${m.restWaterLevel.p75} m)`, `${m.restWaterLevel.n} boreholes, measured`]);
+                    if (m?.firstStrike) rows.push(['First water strike', `median ${m.firstStrike.median} m`, `${m.firstStrike.n} borehole logs`]);
+                    for (const a of m?.areaSurveys ?? []) rows.push([`${a.name.split(' (')[0]} survey`, `${a.shallowWellsAndSprings.faecalColiformPositive}/${a.shallowWellsAndSprings.n} shallow sources had faecal coliforms; ${a.shallowWellsAndSprings.nitrateOver50} above 50 mg/L nitrate; boreholes fluoride ${a.boreholes.fluoride_mgL.join(', ')} mg/L`, `NERC Groundwater2030, ${a.sampled}`]);
+                    if (b) rows.push(['Regional map (BGS)', `depth to groundwater ${b.depthToGroundwater ?? 'n/a'}; productivity ${b.productivity ?? 'n/a'}; storage ${b.storage ?? 'n/a'}`, 'MacDonald et al. 2012, 5 km grid: context, not a site measurement. Contains data supplied by permission of the Natural Environment Research Council [2023]']);
+                    if (od.igracWells?.length) rows.push(['Monitoring wells (IGRAC)', `${od.igracWells.length} within ${result.nearbyWells!.searchRadius_km} km, nearest ${od.igracWells[0].distance_km} km`, 'UN IGRAC GGIS']);
+                    if (od.soilProfiles?.length) rows.push(['Soil profiles (WoSIS)', `${od.soilProfiles.length} within 25 km, nearest ${od.soilProfiles[0].distance_km} km${od.soilProfiles[0].soilGroup ? ` (${od.soilProfiles[0].soilGroup})` : ''}`, 'ISRIC WoSIS: measured soil, not boreholes']);
+                    if (!rows.length) return null;
+                    return (
+                      <div style={{marginTop:12}}>
+                        <strong style={{fontSize:13}}>Open groundwater evidence near the site</strong>
+                        <div className="sci-table-wrap"><table className="sci-table"><thead><tr><th>Evidence</th><th>What it shows</th><th>Basis</th></tr></thead><tbody>
+                          {rows.map((r, i) => <tr key={i}><td><strong>{r[0]}</strong></td><td>{r[1]}</td><td style={{fontSize:10,color:'var(--text-tertiary)'}}>{r[2]}</td></tr>)}
+                        </tbody></table></div>
+                      </div>
+                    );
+                  })()}
                   <div style={{marginTop:12,padding:12,background:'rgba(33,150,243,0.06)',borderRadius:8,border:'1px solid rgba(33,150,243,0.15)'}}>
                     <strong style={{color:'#1976d2'}}>How Nearby Wells Calibrate This Prediction:</strong>
                     <ul style={{margin:'8px 0 0',paddingLeft:20,fontSize:13,lineHeight:1.6}}>
@@ -3536,7 +3546,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         {sat.waterBalance && (
                           <div style={{marginTop:10,padding:10,background:'rgba(33,150,243,0.05)',borderRadius:6}}>
                             <div style={{fontSize:12,lineHeight:1.6}}>
-                              <strong>Water Balance:</strong> P={sat.waterBalance.precipitation_mm}mm − ET={sat.waterBalance.evapotranspiration_mm}mm − Runoff≈{sat.waterBalance.runoff_estimate_mm}mm = <strong style={{color:sat.waterBalance.recharge_pct>10?'#16a34a':'#d97706'}}>Recharge ≈ {sat.waterBalance.potential_recharge_mm}mm ({sat.waterBalance.recharge_pct}%)</strong>
+                              <strong>Water Balance:</strong> P={sat.waterBalance.precipitation_mm}mm − ET={sat.waterBalance.evapotranspiration_mm}mm − Runoff≈{sat.waterBalance.runoff_estimate_mm}mm = <strong style={{color:sat.waterBalance.recharge_pct>10?'#16a34a':'#d97706'}}>Recharge ≈ {sat.waterBalance.potential_recharge_mm}mm ({sat.waterBalance.recharge_pct}%)</strong> by this method alone{(result as any).rechargeSummary?.governing_mm != null ? `; the planning figure, reconciling all methods, is ${(result as any).rechargeSummary.governing_mm} mm/yr` : ''}
                             </div>
                             <div style={{fontSize:12,marginTop:4}}>{sat.waterBalance.verdict}</div>
                           </div>
@@ -3720,7 +3730,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               })()}
 
               <div className="geo-note" style={{marginTop:16}}>
-                <strong>Methodology:</strong> Soil data from ISRIC SoilGrids v2.0 (250m global grid, peer-reviewed). Elevation from SRTM 30m DEM via Open-Elevation API. Climate from Open-Meteo (EC-Earth3P-HR model). Water indices computed as RGB proxies — for true NDWI/MNDWI/AWEI, use the Sentinel Hub links above to view actual NIR/SWIR band data from Sentinel-2 and Landsat.
+                <strong>Methodology:</strong> Soil data from ISRIC SoilGrids v2.0 (250m global grid, peer-reviewed). Elevation from the Copernicus DEM 90 m (Open-Meteo), with SRTM 30 m (Open-Elevation) as backup. Climate from Open-Meteo (EC-Earth3P-HR model). Water indices computed as RGB proxies — for true NDWI/MNDWI/AWEI, use the Sentinel Hub links above to view actual NIR/SWIR band data from Sentinel-2 and Landsat.
               </div>
             </div>
           )}
@@ -4136,10 +4146,23 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   {/* GRACE-FO Deep Storage Trend (from advancedHydroEngine) */}
                   {result.graceData && (
                     <div style={{marginBottom:20,background:'rgba(156,39,176,0.04)',borderRadius:12,padding:16,border:'1px solid rgba(156,39,176,0.15)'}}>
-                      <h4 style={{margin:'0 0 12px',color:'#9C27B0'}}>{'🛰️'} GRACE-FO Deep Storage Analysis (5-Year Trend)</h4>
+                      <h4 style={{margin:'0 0 12px',color:'#9C27B0'}}>{'🛰️'} {(result.graceData as any).isSatelliteGravity !== false ? 'GRACE / GRACE-FO Water Storage (satellite gravity)' : 'Water Storage Trend (stand-in: GRACE grid does not cover this site)'}</h4>
+                      {(() => {
+                        const g: any = result.graceData;
+                        const sgn = (v: number) => `${v > 0 ? '+' : ''}${v}`;
+                        if (!g.groundwater && !g.totalStorage) return null;
+                        return (
+                          <div className="result-grid" style={{marginBottom:10}}>
+                            {g.groundwater && <div className="result-item"><span className="rl">Groundwater trend ({g.groundwater.period})</span><span className="rv" style={{fontWeight:700}}>{sgn(g.groundwater.trend_cm_per_year)} ± {g.groundwater.trendStdErr_cm_per_year} cm/yr</span></div>}
+                            {g.groundwater?.trend10yr_cm_per_year != null && <div className="result-item"><span className="rl">Groundwater trend, last 10 years</span><span className="rv">{sgn(g.groundwater.trend10yr_cm_per_year)} cm/yr</span></div>}
+                            {g.totalStorage && <div className="result-item"><span className="rl">Total storage trend ({g.totalStorage.period})</span><span className="rv">{sgn(g.totalStorage.trend_cm_per_year)} ± {g.totalStorage.trendStdErr_cm_per_year} cm/yr</span></div>}
+                            {g.totalStorage?.trendGraceFO_cm_per_year != null && <div className="result-item"><span className="rl">Total storage, GRACE-FO years</span><span className="rv">{sgn(g.totalStorage.trendGraceFO_cm_per_year)} cm/yr</span></div>}
+                          </div>
+                        );
+                      })()}
                       <div className="result-grid">
-                        <div className="result-item"><span className="rl">TWS Anomaly</span><span className="rv" style={{fontWeight:700,color:(result.graceData as any).twsAnomaly_cm>0?'#22c55e':'#ef4444'}}>{(result.graceData as any).twsAnomaly_cm > 0 ? '+' : ''}{(result.graceData as any).twsAnomaly_cm} cm</span></div>
-                        <div className="result-item"><span className="rl">Trend</span><span className="rv" style={{fontWeight:700,color:(result.graceData as any).trend_cm_per_year>0?'#22c55e':'#ef4444'}}>{(result.graceData as any).trend_cm_per_year > 0 ? '+' : ''}{(result.graceData as any).trend_cm_per_year} cm/yr</span></div>
+                        <div className="result-item"><span className="rl">Storage, last 12 months vs record</span><span className="rv" style={{fontWeight:700,color:(result.graceData as any).twsAnomaly_cm>0?'#22c55e':'#ef4444'}}>{(result.graceData as any).twsAnomaly_cm > 0 ? '+' : ''}{(result.graceData as any).twsAnomaly_cm} cm</span></div>
+                        {(result.graceData as any).isSatelliteGravity === false && <div className="result-item"><span className="rl">Trend</span><span className="rv" style={{fontWeight:700,color:(result.graceData as any).trend_cm_per_year>0?'#22c55e':'#ef4444'}}>{(result.graceData as any).trend_cm_per_year > 0 ? '+' : ''}{(result.graceData as any).trend_cm_per_year} cm/yr</span></div>}
                         <div className="result-item"><span className="rl">Seasonal Amplitude</span><span className="rv">{(result.graceData as any).seasonalAmplitude_cm} cm</span></div>
                         <div className="result-item"><span className="rl">Status</span><span className="rv" style={{fontWeight:700,textTransform:'uppercase',color:(result.graceData as any).status==='gaining'?'#22c55e':(result.graceData as any).status==='stable'?'#38bdf8':(result.graceData as any).status==='losing'?'#f97316':'#ef4444'}}>{(result.graceData as any).status}</span></div>
                         <div className="result-item"><span className="rl">Aquifer Stress</span><span className="rv" style={{textTransform:'uppercase',color:(result.graceData as any).aquiferStress==='none'||(result.graceData as any).aquiferStress==='low'?'#22c55e':(result.graceData as any).aquiferStress==='moderate'?'#fbbf24':'#ef4444'}}>{(result.graceData as any).aquiferStress}</span></div>
@@ -4841,7 +4864,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div style={{background:'rgba(0,188,212,0.06)',border:'1px solid rgba(0,188,212,0.2)',borderRadius:12,padding:16}}>
                       <h4 style={{color:'#00BCD4',margin:'0 0 12px'}}>💧 Groundwater Sustainability Assessment</h4>
                       <div className="result-grid">
-                        <div className="result-item"><span className="rl">Recharge Rate</span><span className="rv">{result.historicalData.groundwater.rechargeRate}</span></div>
+                        <div className="result-item"><span className="rl">Recharge (rainfall-history method alone)</span><span className="rv">{result.historicalData.groundwater.rechargeRate}{(result as any).rechargeSummary?.governing_mm != null ? ` — planning figure ${(result as any).rechargeSummary.governing_mm} mm/yr` : ''}</span></div>
                         <div className="result-item"><span className="rl">Depletion Risk</span><span className="rv" style={{fontWeight:700,color:
                           result.historicalData.groundwater.depletionRisk==='low'?'#22c55e':
                           result.historicalData.groundwater.depletionRisk==='moderate'?'#fbbf24':
@@ -5088,7 +5111,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <h5 style={{color:'#8B4513',marginBottom:8}}>Rock Type Classification</h5>
                   <p className="tab-desc">Estimated from soil texture, climate, and elevation using Taylor &amp; Eggleton (2001) classification. Upgradeable with ERT survey integration.</p>
                   <div className="result-grid">
-                    <div className="result-item"><span className="rl">Primary Rock</span><span className="rv">{result.rockClassification.primaryRockType}</span></div>
+                    <div className="result-item"><span className="rl">Primary Rock</span><span className="rv">{(result.rockClassification as any).rockLabel ?? result.rockClassification.primaryRockType}</span></div>
                     {result.rockClassification.secondaryRockType && <div className="result-item"><span className="rl">Secondary Rock</span><span className="rv">{result.rockClassification.secondaryRockType}</span></div>}
                     <div className="result-item"><span className="rl">Formation</span><span className="rv">{result.rockClassification.geologicalFormation}</span></div>
                     <div className="result-item"><span className="rl">Age</span><span className="rv">{result.rockClassification.geologicalAge}</span></div>
@@ -5551,6 +5574,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 const sra = ag.successRateAnalysis;
                 const integrated = ag.integratedResult;
                 const opt = ag.optimalPackage;
+                // Modelled inversions and the drill spec are shown only with a
+                // field ERT survey, as in the PDF (2026-10-29 audit).
+                const fieldERT = (result as any)._auditFlags?.hasFieldERT === true;
                 return (
                   <div>
                     {/* The projected success rates ("+Full Integrated 99%",
@@ -5565,9 +5591,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div style={{padding:14,borderRadius:12,background:'rgba(59,130,246,0.05)',border:'1.5px solid rgba(59,130,246,0.2)',marginBottom:20}}>
                       <div style={{fontWeight:800,fontSize:13,color:'#3b82f6',marginBottom:6}}>Optimal Survey Package: {opt.name}</div>
                       <div style={{fontSize:11,lineHeight:1.5,marginBottom:8}}>{opt.description}</div>
+                      <div style={{fontSize:10,color:'var(--text-muted)',marginBottom:8}}>An optional geophysical survey, priced separately. It is not the required hydrogeological survey and WRA approval in the Costs tab.</div>
                       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))',gap:8}}>
                         <div className="result-item"><span className="rl">Methods</span><span className="rv">{opt.methods.length}</span></div>
-                        <div className="result-item"><span className="rl">Cost</span><span className="rv">${opt.cost_usd.toLocaleString()}</span></div>
+                        <div className="result-item"><span className="rl">Cost (optional geophysics)</span><span className="rv">${opt.cost_usd.toLocaleString()}</span></div>
                         <div className="result-item"><span className="rl">Time</span><span className="rv">{opt.time_hrs}h field work</span></div>
                       </div>
                     </div>
@@ -5626,7 +5653,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     )}
 
                     {/* AI Inversion Projections */}
-                    {ag.projectedInversions?.length > 0 && (
+                    {fieldERT && ag.projectedInversions?.length > 0 && (
                       <div style={{marginBottom:20}}>
                         <h4 style={{fontSize:13,fontWeight:700,marginBottom:8}}>Inversion Projections ({ag.projectedInversions.length} methods)</h4>
                         {ag.projectedInversions.map((inv: any,i: number) => (
@@ -5661,7 +5688,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     )}
 
                     {/* Integrated Survey Result — Drill Spec */}
-                    {integrated && (
+                    {fieldERT && integrated && (
                       <div style={{padding:14,borderRadius:12,background:'rgba(22,163,74,0.05)',border:'1.5px solid rgba(22,163,74,0.2)',marginBottom:20}}>
                         <div style={{fontWeight:800,fontSize:13,color:'#16a34a',marginBottom:8}}>Integrated Survey — Drill Specification</div>
                         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:8,marginBottom:10}}>
@@ -5669,13 +5696,13 @@ const AIBoreholeAnalyzer: React.FC = () => {
                           <div className="result-item"><span className="rl">Casing Depth</span><span className="rv">{integrated.drillSpec.casingDepth_m}m</span></div>
                           <div className="result-item"><span className="rl">Screen</span><span className="rv">{integrated.drillSpec.screenInterval_m[0]}–{integrated.drillSpec.screenInterval_m[1]}m</span></div>
                           <div className="result-item"><span className="rl">Expected Yield</span><span className="rv">{integrated.drillSpec.expectedYield_m3hr} m{'³'}/hr</span></div>
-                          <div className="result-item"><span className="rl">Success Prob.</span><span className="rv" style={{color:'#22c55e',fontWeight:700}}>{integrated.drillSpec.successProbability_pct}%</span></div>
+                          <div className="result-item"><span className="rl">Siting confidence (after survey)</span><span className="rv">{integrated.drillSpec.successProbability_pct}%</span></div>
                           <div className="result-item"><span className="rl">Method</span><span className="rv">{integrated.drillSpec.drillingMethod}</span></div>
                           <div className="result-item"><span className="rl">Drill Cost Est.</span><span className="rv">${integrated.drillSpec.estimatedCost_usd.toLocaleString()}</span></div>
-                          <div className="result-item"><span className="rl">Survey Cost</span><span className="rv">${integrated.totalCost_usd.toLocaleString()}</span></div>
+                          <div className="result-item"><span className="rl">Geophysics survey (optional)</span><span className="rv">${integrated.totalCost_usd.toLocaleString()}</span></div>
                         </div>
                         <div style={{fontSize:10,padding:'6px 10px',background:'rgba(22,163,74,0.08)',borderRadius:8}}>
-                          <strong>Cross-Method Agreement:</strong> {integrated.crossMethodAgreement}% | <strong>Integration Boost:</strong> +{integrated.integrationBoost_pct}% confidence | <strong>Savings vs Traditional:</strong> ${integrated.savingsVsTraditional_usd.toLocaleString()} ({integrated.savingsPercent}%)
+                          Drill specification from the field survey entered. The contractor confirms the final depth and method on site.
                         </div>
                       </div>
                     )}
@@ -5706,7 +5733,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <h4 className="tab-title">{'\u{1F3D4}\uFE0F'} Topographic &amp; Hydrological Analysis</h4>
               {result.demHydrology ? (
                 <div>
-                  <p className="tab-desc">DEM-derived indices from SRTM 30m elevation data via Open-Elevation API. {result.demHydrology.methodology}</p>
+                  <p className="tab-desc">DEM-derived indices from Copernicus DEM 90 m elevations (Open-Meteo; SRTM 30 m via Open-Elevation as backup). {result.demHydrology.methodology}</p>
                   <div className="result-grid">
                     <div className="result-item"><span className="rl">Elevation</span><span className="rv">{result.demHydrology.elevation_m}m ASL</span></div>
                     <div className="result-item"><span className="rl">Slope</span><span className="rv">{result.demHydrology.slope_degrees.toFixed(2)}°</span></div>
@@ -7295,7 +7322,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <tr><td><strong>Latitude</strong></td><td>{si.coordinates.lat.toFixed(si.coordinates.decimals)}</td><td>{si.coordinates.datum}</td></tr>
                       <tr><td><strong>Longitude</strong></td><td>{si.coordinates.lon.toFixed(si.coordinates.decimals)}</td><td>{si.coordinates.datum}</td></tr>
                       <tr><td><strong>Coordinate System</strong></td><td>{si.coordinateSystem}</td><td>Standard geodetic</td></tr>
-                      <tr><td><strong>Elevation</strong></td><td>{si.elevation_masl} m a.s.l.</td><td>SRTM 30m DEM</td></tr>
+                      <tr><td><strong>Elevation</strong></td><td>{si.elevation_masl} m a.s.l.</td><td>Copernicus DEM 90m / SRTM 30m</td></tr>
                       <tr><td><strong>Location Confidence</strong></td><td style={{color: si.locationConfidenceGrade <= 'B' ? '#16a34a' : si.locationConfidenceGrade === 'C' ? '#d97706' : '#dc2626', fontWeight:'bold'}}>Grade {si.locationConfidenceGrade}</td><td>{si.verificationMethod}</td></tr>
                     </tbody>
                   </table>
@@ -8637,23 +8664,23 @@ const AIBoreholeAnalyzer: React.FC = () => {
               )}
               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:12,marginTop:12, opacity: result && !runPrePublishAudit(result).passed ? 0.4 : 1, pointerEvents: result && !runPrePublishAudit(result).passed ? 'none' : 'auto'}}>
                 <button className="btn btn-analyze" style={{background:'linear-gradient(135deg,#ef4444,#dc2626)',padding:'16px 20px',fontSize:14,display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}
-                  onClick={async ()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);await generatePDFReport(result,reportTier);setTrackerRefresh(n=>n+1);setExportMsg('PDF report downloaded!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('PDF error: '+e.message)}}}}}>
+                  onClick={async ()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);await (await loadReports()).generatePDFReport(result,reportTier);setTrackerRefresh(n=>n+1);setExportMsg('PDF report downloaded!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('PDF error: '+e.message)}}}}}>
                   {'\u{1F4C4}'} <span><strong>PDF Report</strong><br/><small>Charts, tables, graphs in color</small></span>
                 </button>
                 <button className="btn btn-analyze" style={{background:'linear-gradient(135deg,#2563eb,#1d4ed8)',padding:'16px 20px',fontSize:14,display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}
-                  onClick={async ()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);await generateWordReport(result,reportTier);setTrackerRefresh(n=>n+1);setExportMsg('Word document downloaded!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('Word error: '+e.message)}}}}}>
+                  onClick={async ()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);await (await loadReports()).generateWordReport(result,reportTier);setTrackerRefresh(n=>n+1);setExportMsg('Word document downloaded!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('Word error: '+e.message)}}}}}>
                   {'\u{1F4DD}'} <span><strong>MS Word (.docx)</strong><br/><small>Formatted document with tables</small></span>
                 </button>
                 <button className="btn btn-analyze" style={{background:'linear-gradient(135deg,#16a34a,#15803d)',padding:'16px 20px',fontSize:14,display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}
-                  onClick={async ()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);await generateExcelReport(result,reportTier);setTrackerRefresh(n=>n+1);setExportMsg('Excel workbook downloaded!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('Excel error: '+e.message)}}}}}>
+                  onClick={async ()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);await (await loadReports()).generateExcelReport(result,reportTier);setTrackerRefresh(n=>n+1);setExportMsg('Excel workbook downloaded!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('Excel error: '+e.message)}}}}}>
                   {'\u{1F4CA}'} <span><strong>Excel (.xlsx)</strong><br/><small>Multi-sheet workbook with data</small></span>
                 </button>
                 <button className="btn btn-analyze" style={{background:'linear-gradient(135deg,#ca8a04,#a16207)',padding:'16px 20px',fontSize:14,display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}
-                  onClick={()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);generateCSVReport(result);setTrackerRefresh(n=>n+1);setExportMsg('CSV data exported!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('CSV error: '+e.message)}}}}}>
+                  onClick={async ()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);(await loadReports()).generateCSVReport(result);setTrackerRefresh(n=>n+1);setExportMsg('CSV data exported!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('CSV error: '+e.message)}}}}}>
                   {'\u{1F4CB}'} <span><strong>CSV Data</strong><br/><small>Flat data for spreadsheets</small></span>
                 </button>
                 <button className="btn btn-analyze" style={{background:'linear-gradient(135deg,#7c3aed,#6d28d9)',padding:'16px 20px',fontSize:14,display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}
-                  onClick={()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);generateJSONReport(result);setTrackerRefresh(n=>n+1);setExportMsg('JSON export downloaded!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('JSON error: '+e.message)}}}}}>
+                  onClick={async ()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);(await loadReports()).generateJSONReport(result);setTrackerRefresh(n=>n+1);setExportMsg('JSON export downloaded!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('JSON error: '+e.message)}}}}}>
                   {'\u{1F4BE}'} <span><strong>JSON (Raw Data)</strong><br/><small>Full analysis data dump</small></span>
                 </button>
               </div>
@@ -8870,7 +8897,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             {analyzed.length >= 2 && (
               <button className="btn btn-primary" onClick={async () => {
                 try {
-                  await generateComparisonReport(analyzed.map(s => ({ name: s.name, result: s.result! })));
+                  await (await loadReports()).generateComparisonReport(analyzed.map(s => ({ name: s.name, result: s.result! })));
                   setExportMsg('Comparison PDF downloaded.');
                 } catch (e: any) { setExportMsg('Export error: ' + e.message); }
               }}>{'\u{1F4E5}'} Export Comparison PDF</button>

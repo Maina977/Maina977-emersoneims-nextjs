@@ -8,6 +8,7 @@
  */
 
 import { useState, useCallback, useMemo, useRef } from 'react';
+import { DIESEL_L_PER_KWH, DEFAULT_DIESEL_KES_PER_LITRE } from '@/lib/solar/sizing';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sun, Battery, Zap, Calculator, TrendingUp, Thermometer,
@@ -61,6 +62,7 @@ interface CostAnalysis {
   annualSavings: number;
   paybackPeriod: number;
   roi25Years: number;
+  warning?: string;
   gridCostPerMonth: number;
   generatorCostPerMonth: number;
   solarCostPerMonth: number;
@@ -312,7 +314,8 @@ export default function SolarBibleEngine() {
       // Calculate accurate electricity costs
       const monthlyConsumption = dailyConsumption * 30;
       const monthlyGridCost = calculateElectricityCost(monthlyConsumption);
-      const monthlyGeneratorCost = dailyConsumption * 30 * (160 / 3); // Diesel at KES 160/L, 3kWh/L
+      // The calculator's diesel basis (lib/solar/sizing.ts): 0.35 L/kWh at KES 175/L.
+      const monthlyGeneratorCost = dailyConsumption * 30 * DIESEL_L_PER_KWH * DEFAULT_DIESEL_KES_PER_LITRE;
 
       const systemVoltage: 12 | 24 | 48 = bestSystem.systemSpecs.systemVoltage >= 48 ? 48 :
                                           bestSystem.systemSpecs.systemVoltage >= 24 ? 24 : 12;
@@ -337,6 +340,7 @@ export default function SolarBibleEngine() {
         annualSavings: bestSystem.roi.monthlySavings * 12,
         paybackPeriod: bestSystem.roi.paybackYears,
         roi25Years: bestSystem.roi.twentyFiveYearSavings,
+        warning: bestSystem.warning,
         gridCostPerMonth: monthlyGridCost,
         generatorCostPerMonth: monthlyGeneratorCost,
         solarCostPerMonth: bestSystem.totalCost / (25 * 12),
@@ -450,7 +454,7 @@ export default function SolarBibleEngine() {
             <tr><td>Monthly Grid Cost (Current):</td><td>KES ${costAnalysis.gridCostPerMonth.toLocaleString()}</td></tr>
             <tr><td>Monthly Solar Cost (Amortized):</td><td>KES ${Math.round(costAnalysis.solarCostPerMonth).toLocaleString()}</td></tr>
             <tr><td><strong>Monthly Savings:</strong></td><td class="highlight">KES ${Math.round(costAnalysis.monthlySavings).toLocaleString()}</td></tr>
-            <tr><td><strong>Payback Period:</strong></td><td class="highlight">${costAnalysis.paybackPeriod.toFixed(1)} years</td></tr>
+            <tr><td><strong>Payback Period:</strong></td><td class="highlight">${Number.isFinite(costAnalysis.paybackPeriod) && costAnalysis.paybackPeriod <= 25 ? costAnalysis.paybackPeriod.toFixed(1) + ' years' : 'Not within 25 years'}</td></tr>
             <tr><td><strong>25-Year ROI:</strong></td><td class="highlight">KES ${(costAnalysis.roi25Years / 1000000).toFixed(1)} Million</td></tr>
           </table>
         </div>
@@ -956,10 +960,11 @@ export default function SolarBibleEngine() {
               </div>
 
               {/* ROI */}
+              {costAnalysis.warning && <p className="mb-3 text-sm text-amber-400">⚠ {costAnalysis.warning}</p>}
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-center">
                   <TrendingUp className="w-6 h-6 text-green-500 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-white">{costAnalysis.paybackPeriod.toFixed(1)} yrs</div>
+                  <div className="text-2xl font-bold text-white">{Number.isFinite(costAnalysis.paybackPeriod) && costAnalysis.paybackPeriod <= 25 ? `${costAnalysis.paybackPeriod.toFixed(1)} yrs` : 'Not within 25 yrs'}</div>
                   <p className="text-xs text-gray-400">Payback Period</p>
                 </div>
                 <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-center">

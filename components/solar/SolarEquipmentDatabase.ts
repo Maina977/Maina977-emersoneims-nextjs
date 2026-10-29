@@ -5,6 +5,9 @@
  * @copyright 2026 EmersonEIMS - Solar Bible
  */
 
+import { DIESEL_L_PER_KWH, DEFAULT_DIESEL_KES_PER_LITRE } from '@/lib/solar/sizing';
+import { proposalFinance } from '@/components/solar-modules/crc/src/services/proposalFinance';
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPE DEFINITIONS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -680,6 +683,8 @@ export interface OptimizationResult {
     paybackYears: number;
     twentyFiveYearSavings: number;
   };
+  /** Set when no catalogue inverter covers the peak load. */
+  warning?: string;
 }
 
 export function findOptimalSystem(
@@ -730,7 +735,11 @@ export function findOptimalSystem(
       const batteryKwh = (battery.capacity * battery.voltage) / 1000;
       const batteryCount = Math.ceil(requiredBatteryKwh / batteryKwh);
 
-      const inverter = inverterPool.find(inv => inv.ratedPower >= requiredInverterKw) || inverterPool[0];
+      // The smallest inverter that covers the peak; if none does, the largest,
+      // with a warning (it fell back to the cheapest, unnoticed; 2026-10-29 audit).
+      const fitting = inverterPool.find(inv => inv.ratedPower >= requiredInverterKw);
+      const inverter = fitting || inverterPool.reduce((a, b) => (b.ratedPower > a.ratedPower ? b : a), inverterPool[0]);
+      const warning = fitting ? undefined : `No catalogue inverter covers the ${requiredInverterKw.toFixed(1)} kW peak: the largest (${inverter.ratedPower} kW) is shown. Use several in parallel or reduce the peak.`;
 
       // Calculate costs
       const panelCost = panel.priceKES * panelCount;
@@ -740,11 +749,23 @@ export function findOptimalSystem(
       const installationCost = (panelCost + batteryCost + inverterCost) * 0.18;
       const totalCost = panelCost + batteryCost + inverterCost + accessoriesCost + installationCost;
 
-      // Calculate ROI
+      // Savings from the solar energy actually used, not a share of the bill
+      // (2026-10-29 audit: 75% of the bill whatever the array produced, and
+      // off-grid valued against the grid instead of diesel).
       const monthlyConsumption = dailyConsumption * 30;
       const monthlyGridCost = calculateElectricityCost(monthlyConsumption);
-      const monthlySavings = monthlyGridCost * (gridConnected ? 0.75 : 1);
-      const paybackYears = totalCost / (monthlySavings * 12);
+      const dailyProduction = (panel.wattage * panelCount * climate.avgSunHours * efficiencyLoss) / 1000;
+      const usedShare = backupHours > 0 ? 0.9 : 0.75; // with a battery about 90% is used on site, without about 75%
+      const usedKwhMonth = Math.min(dailyProduction, dailyConsumption) * 30 * usedShare;
+      const monthlySavings = gridConnected
+        ? usedKwhMonth * (monthlyGridCost / Math.max(monthlyConsumption, 1)) // the bill's own effective rate
+        : usedKwhMonth * DIESEL_L_PER_KWH * DEFAULT_DIESEL_KES_PER_LITRE;      // diesel displaced
+      const paybackYears = monthlySavings > 0 ? totalCost / (monthlySavings * 12) : Infinity;
+      // 25 years on the proposal's cash flow: O&M 1%/yr, panels -0.5%/yr and,
+      // with a battery, one replacement in year 12 at today's price.
+      const fin = proposalFinance({ capexKes: totalCost, year1SavingsKes: monthlySavings * 12,
+        batteryReplacement: batteryCost > 0 ? { year: 12, costKes: batteryCost } : null });
+      const twentyFiveYearNet = fin.cashFlowTable[fin.cashFlowTable.length - 1][2];
 
       results.push({
         panels: [{ panel, quantity: panelCount }],
@@ -762,15 +783,16 @@ export function findOptimalSystem(
         systemSpecs: {
           totalWattage: panel.wattage * panelCount,
           totalBatteryKwh: batteryKwh * batteryCount,
-          dailyProduction: (panel.wattage * panelCount * climate.avgSunHours * efficiencyLoss) / 1000,
+          dailyProduction,
           autonomyDays: (batteryKwh * batteryCount) / dailyConsumption,
           systemVoltage: battery.voltage,
         },
         roi: {
           monthlySavings,
           paybackYears,
-          twentyFiveYearSavings: (monthlySavings * 12 * 25) - totalCost,
+          twentyFiveYearSavings: twentyFiveYearNet,
         },
+        ...(warning ? { warning } : {}),
       });
     }
   }

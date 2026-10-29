@@ -8,6 +8,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useSolarStore } from '../src/services/store';
+import { proposalFinance } from '../src/services/proposalFinance';
+import { PERFORMANCE_RATIO, BATTERY_KES_PER_KWH } from '@/lib/solar/sizing';
 import { finance, sustain, research, biz, core, bos, eng, engPro, engElite, engGlobal, engApproval, archApproval } from '../src/services/api';
 
 // ============== STYLES ==============
@@ -189,7 +191,7 @@ const FEATURES: FeatureCfg[] = [
   { id: 'grid-intel',        icon: '🌐', title: 'Grid Intelligence', tier: 'iot', desc: 'KPLC tariff bill estimator', status: 'Run live', open: { kind: 'drawer', runner: 'tariff' } },
   { id: 'fleet',             icon: '👥', title: 'Fleet Management', tier: 'iot', desc: 'Live portfolio across all installed sites', status: 'Run live', open: { kind: 'drawer', runner: 'portfolio' } },
   { id: 'ev-charging',       icon: '🚗', title: 'EV Charging', tier: 'iot', desc: 'Annual EV kWh, CO₂ avoided & savings vs petrol/diesel', status: 'Run live', open: { kind: 'drawer', runner: 'ev-charging' } },
-  { id: 'water-heater',      icon: '💧', title: 'Diesel vs Solar TCO', tier: 'iot', desc: 'Diesel boiler vs solar-thermal TCO + payback', status: 'Run live', open: { kind: 'drawer', runner: 'diesel-vs-solar' } },
+  { id: 'water-heater',      icon: '💧', title: 'Diesel vs Solar TCO', tier: 'iot', desc: 'Diesel generator vs solar PV: total cost of ownership + payback', status: 'Run live', open: { kind: 'drawer', runner: 'diesel-vs-solar' } },
   { id: 'mqtt-status',       icon: '📡', title: 'IoT MQTT Status', tier: 'iot', desc: 'MQTT broker bridge status for live inverter telemetry', status: 'Live', open: { kind: 'drawer', runner: 'mqtt' } },
   { id: 'carbon-footprint',  icon: '🌱', title: 'Carbon Footprint', tier: 'sustainability', desc: 'IEA 2024 country grid factors — annual tCO₂', status: 'Run live', open: { kind: 'drawer', runner: 'carbon-footprint' } },
   { id: 'solar-offset',      icon: '🌳', title: '25-yr Solar CO₂ Offset', tier: 'sustainability', desc: 'Lifetime grid emissions avoided + tree-equivalent', status: 'Run live', open: { kind: 'drawer', runner: 'solar-offset' } },
@@ -361,7 +363,7 @@ const AdvancedFeaturesDashboard: React.FC = () => {
             <Kpi>
               <div className="l">Annual CO₂ Offset</div>
               <div className="v">{hasProject ? `${Math.round(metrics.carbonOffsetKg).toLocaleString()} kg` : '—'}</div>
-              <div className="s">{hasProject ? 'KE grid 0.82 kgCO₂/kWh' : 'Awaiting project'}</div>
+              <div className="s">{hasProject ? (metrics.carbonOffsetKg > 0 ? (designData?.systemType === 'off-grid' ? 'Diesel displaced, 2.68 kg CO₂/L' : 'Kenya grid 0.213 kg CO₂/kWh (mostly renewable)') : 'Run the calculator for a CO₂ figure') : 'Awaiting project'}</div>
             </Kpi>
             <Kpi>
               <div className="l">Monthly Saving</div>
@@ -433,6 +435,8 @@ const NOT_ONLINE_RUNNERS = new Set([
   'tou-dispatch', 'fault-prediction', 'load-forecast', 'nlp-advisor', 'permit-pack', 'mqtt', 'panel-counter', 'pilot',
   'sld-svg', 'arc-rsd', 'cable-derated', 'faa-glare', 'sign-off-package',
   'wind-uplift', 'snow-load', 'ballast-schedule', 'roof-reserve', 'fire-setback', 'flashing', 'neighbour-shadow', 'ifc-export',
+  // /api/archapproval/planning-narrative answers 404 (2026-10-29 audit).
+  'planning-narrative',
   // CRM-backed (/api/biz is admin-only) and /api/market/suppliers (404).
   'portfolio', 'suppliers',
 ]);
@@ -788,13 +792,17 @@ const IndependenceRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
 const BenchmarkRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   if (!ctx.hasProject) return <Hint>Run the Solar Calculator first to compare against medians.</Hint>;
   const specYield = ctx.metrics.systemSizeKw > 0 ? ctx.metrics.annualProduction / ctx.metrics.systemSizeKw : 0;
-  const median = 1750;
+  // Compared with what this site should give, not an unsourced regional
+  // median (2026-10-29 audit: "IRENA median 1,750" could not be verified).
+  const psh = Number(ctx.site?.irradianceKwhPerM2Day) || 0;
+  const expected = psh > 0 ? psh * 365 * PERFORMANCE_RATIO : 0;
+  if (!expected) return <Hint>No sun-hour figure for this site yet: run the Solar Calculator with a location first.</Hint>;
   return (
     <SmartResult data={{
       yourSpecificYieldKwhPerKwp: Math.round(specYield),
-      kenyaMedianKwhPerKwp: median,
-      deltaPct: Math.round((specYield - median) / median * 100),
-      source: 'IRENA East-Africa solar atlas + NREL PVWatts regional medians',
+      expectedAtThisSiteKwhPerKwp: Math.round(expected),
+      deltaPct: Math.round((specYield - expected) / expected * 100),
+      source: `NASA POWER sun-hours for this site (${psh} kWh/m²/day) × 365 × the calculator's ${Math.round(PERFORMANCE_RATIO * 100)}% performance ratio`,
     }} />
   );
 };
@@ -805,18 +813,23 @@ const FinanceRoiRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const yr1 = ctx.financial?.year1SavingsKes || (ctx.metrics?.monthlySaving || 0) * 12 || 240000;
   const [discount, setDiscount] = useState(0.10);
   const [years, setYears] = useState(25);
+  // The same engine and assumptions as the proposal (2026-10-29 audit: this
+  // tile used +2.5%/yr and no O&M, degradation or battery replacement, so its
+  // NPV was 663,775 against the proposal's 448,274).
+  const batteryKes = Math.round((Number(ctx.design?.batteryKwh) || 0) * BATTERY_KES_PER_KWH);
   return (
     <>
-      <Hint>NPV + IRR using capex KSh {capex.toLocaleString()} and yr-1 saving KSh {yr1.toLocaleString()}, +2.5%/yr escalation.</Hint>
+      <Hint>NPV and IRR on the proposal's cash flow: capex KSh {capex.toLocaleString()}, year-1 saving KSh {yr1.toLocaleString()}, tariff held flat, panels -0.5%/yr, O&amp;M 1% of capex/yr{batteryKes > 0 ? `, battery replaced in year 12 (KSh ${batteryKes.toLocaleString()})` : ''}.</Hint>
       <Field><span className="l">Discount rate</span>
         <input type="number" step="0.005" value={discount} onChange={e => setDiscount(+e.target.value)} /></Field>
       <Field><span className="l">Years</span>
         <input type="number" min={5} max={30} value={years} onChange={e => setYears(+e.target.value)} /></Field>
       <Run disabled={r.loading} onClick={async () => {
         try {
-          const cashFlows = [-capex, ...Array.from({length: years}, (_,i) => Math.round(yr1 * Math.pow(1.025, i)))];
-          const [npv, irr] = await Promise.all([finance.npv(discount, cashFlows), finance.irr(cashFlows)]);
-          r.setData({ inputs: { capex, year1Saving: yr1, discount, years }, npv: (npv as any).data ?? npv, irr: (irr as any).data ?? irr });
+          const f = proposalFinance({ capexKes: capex, year1SavingsKes: yr1, years, discountRatePct: discount * 100,
+            batteryReplacement: batteryKes > 0 && years >= 12 ? { year: 12, costKes: batteryKes } : null });
+          r.setData({ inputs: { capex, year1Saving: yr1, discount, years }, npvKes: f.npvKes, irrPct: f.irrPct, paybackYears: f.paybackYears,
+            assumptions: f.assumptions });
         } catch (e: any) { r.setError(e?.message || 'Failed'); }
       }}>{r.loading ? 'Computing…' : 'Run NPV + IRR'}</Run>
       <ResultBlock {...r} />

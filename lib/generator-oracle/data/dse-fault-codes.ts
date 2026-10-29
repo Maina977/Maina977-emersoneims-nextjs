@@ -45,6 +45,127 @@ const DSE_MODELS = [
   'DSE 7320', 'DSE 7510', 'DSE 7560', 'DSE 8610', 'DSE 8660'
 ];
 
+/**
+ * Safety notes, checks and tools by what the alarm concerns (2026-10-29 audit:
+ * they came from severity, so an earth fault - a shock hazard - only said
+ * "Follow standard electrical safety procedures", and every alarm listed the
+ * same four checks).
+ */
+function topicOf(category: string, subcategory: string, title: string): string {
+  const s = `${category} ${subcategory} ${title}`.toLowerCase();
+  if (/earth|insulation/.test(s)) return 'earth';
+  if (/overspeed|speed/.test(s)) return 'speed';
+  if (/coolant|temperature/.test(s)) return 'coolant';
+  if (/oil/.test(s)) return 'oil';
+  if (/battery|charg/.test(s)) return 'battery';
+  if (/fuel/.test(s)) return 'fuel';
+  if (/emergency/.test(s)) return 'estop';
+  if (/sync|breaker|load shar|var shar|bus/.test(s)) return 'parallel';
+  if (/^mains/.test(s)) return 'mains';
+  if (/^electrical/.test(s)) return 'electrical';
+  return 'control';
+}
+const ISOLATE = 'Before touching any wiring or terminals: stop the set, select OFF/STOP, isolate and lock off the battery and the controller supply, and confirm the generator and mains terminals are dead with an approved voltage tester.';
+const TOPIC: Record<string, { safety: string[]; checks: { action: string; expected: string }[]; tools: string[] }> = {
+  earth: {
+    safety: [ISOLATE, 'An earth fault can leave exposed metalwork live: treat the frame, panel and connected equipment as live until tested.', 'Insulation testing applies high voltage: disconnect the AVR, controller sensing and any electronics first, and discharge the windings to earth afterwards.'],
+    checks: [
+      { action: 'With the set isolated, look for damaged cables, water or dust in the terminal box and alternator', expected: 'No visible damage, moisture or tracking' },
+      { action: 'Disconnect the AVR and sensing leads, then measure stator winding insulation to earth with an insulation tester (500 V for LV machines)', expected: 'Well above 1 MΩ (consult the alternator manual for the acceptance value)' },
+      { action: 'Check the earth-fault relay or CT wiring and its setting in the controller configuration', expected: 'Wiring intact; setting matches the protection study' },
+    ],
+    tools: ['Insulation resistance tester (500 V)', 'Approved voltage tester', 'Lock-out kit', 'DSE Configuration Suite'],
+  },
+  speed: {
+    safety: ['Overspeed can destroy the engine and alternator: keep clear of the set and do not restart until the fuel/governor cause is found.', 'Never bypass or re-set the overspeed protection to restart.', ISOLATE],
+    checks: [
+      { action: 'Read the overspeed value and time in the event log', expected: 'Peak speed and trip time recorded' },
+      { action: 'Check the speed (magnetic pickup or ECU) signal and its air gap and wiring', expected: 'Signal steady at rated speed; air gap to the engine manual' },
+      { action: 'Check the governor or ECU speed settings and actuator/linkage for sticking', expected: 'Settings correct; linkage moves freely' },
+    ],
+    tools: ['Multimeter', 'Feeler gauges', 'DSE Configuration Suite'],
+  },
+  coolant: {
+    safety: ['Do not open the radiator or expansion cap while hot: pressurised coolant can scald. Let the engine cool first.', 'Keep hands and tools clear of the fan and belts; isolate before working near them.'],
+    checks: [
+      { action: 'When cool, check the coolant level and look for leaks', expected: 'Level correct, no leaks' },
+      { action: 'Check radiator air flow (blocked core, fan belt tension)', expected: 'Core clean; belt tension to spec' },
+      { action: 'Compare the sender reading with an infrared thermometer at the thermostat housing', expected: 'Readings agree within a few °C' },
+    ],
+    tools: ['Infrared thermometer', 'Multimeter', 'Belt tension gauge'],
+  },
+  oil: {
+    safety: ['Stop the engine at once on low oil pressure: running on will damage the bearings.', 'Hot oil can burn: let the engine cool before checking.'],
+    checks: [
+      { action: 'Check the oil level on the dipstick with the engine stopped and level', expected: 'Between the marks' },
+      { action: 'Fit a mechanical test gauge and compare with the sender reading', expected: 'Gauge and controller agree' },
+      { action: 'Check the sender wiring and the oil filter', expected: 'Wiring sound; filter not blocked' },
+    ],
+    tools: ['Mechanical oil pressure gauge', 'Multimeter'],
+  },
+  battery: {
+    safety: ['Batteries give off explosive hydrogen: no sparks or flames near them, and disconnect the negative lead first.', 'Battery acid burns: wear eye protection and gloves.'],
+    checks: [
+      { action: 'Measure battery voltage at rest and while cranking', expected: 'About 12.6/25.2 V at rest; not below about 9.6/19.2 V while cranking' },
+      { action: 'Check terminals, earth strap and charge alternator belt', expected: 'Clean, tight; belt tension to spec' },
+      { action: 'With the engine running, measure charging voltage', expected: 'About 13.8-14.4 V (12 V system) or 27.6-28.8 V (24 V)' },
+    ],
+    tools: ['Multimeter', 'Battery tester', 'Belt tension gauge'],
+  },
+  fuel: {
+    safety: ['No smoking or naked flames near fuel; clean spills at once.', 'Diesel under pressure can penetrate skin: never feel for leaks with your hands.'],
+    checks: [
+      { action: 'Dip or sight the tank and compare with the level reading', expected: 'Reading matches the actual level' },
+      { action: 'Check the level sender wiring and float', expected: 'Sender moves freely; wiring sound' },
+      { action: 'Check for leaks and water in the fuel', expected: 'No leaks; no water in the separator bowl' },
+    ],
+    tools: ['Dipstick or sight gauge', 'Multimeter'],
+  },
+  estop: {
+    safety: ['Find out why the emergency stop was pressed before releasing it: it may have been pressed for someone\'s safety.', ISOLATE],
+    checks: [
+      { action: 'Check every emergency-stop station', expected: 'All released' },
+      { action: 'Check continuity of the e-stop loop with the set isolated', expected: 'Loop continuous' },
+    ],
+    tools: ['Multimeter'],
+  },
+  parallel: {
+    safety: ['Paralleling faults can close a breaker out of phase: keep the set in MANUAL with the breaker open until the cause is found.', ISOLATE],
+    checks: [
+      { action: 'Compare generator and bus voltage, frequency and phase rotation', expected: 'Within the synchroniser\'s windows; same rotation' },
+      { action: 'Check breaker close/open circuits and auxiliary contacts', expected: 'Breaker operates and its status matches the controller' },
+      { action: 'Review the load-sharing and sync settings', expected: 'Settings as commissioned' },
+    ],
+    tools: ['Multimeter', 'Phase rotation meter', 'DSE Configuration Suite'],
+  },
+  mains: {
+    safety: [ISOLATE, 'Mains sensing terminals stay live from the utility even with the set stopped.'],
+    checks: [
+      { action: 'Measure mains voltage and frequency at the controller sensing terminals', expected: 'Matches the utility supply' },
+      { action: 'Check the sensing fuses and wiring', expected: 'Fuses intact; wiring sound' },
+    ],
+    tools: ['Multimeter', 'Phase rotation meter'],
+  },
+  electrical: {
+    safety: [ISOLATE, 'Generator output terminals are lethal while the set runs: measure only with approved, rated instruments.'],
+    checks: [
+      { action: 'Measure output voltage, current and frequency with a meter and compare with the controller', expected: 'Readings agree' },
+      { action: 'Check the load for faults or overload', expected: 'Load within the set rating; no faulty circuit' },
+      { action: 'Check sensing and CT wiring and the alarm settings', expected: 'Wiring sound; settings correct' },
+    ],
+    tools: ['Multimeter (CAT III)', 'Clamp meter', 'DSE Configuration Suite'],
+  },
+  control: {
+    safety: [ISOLATE],
+    checks: [
+      { action: 'Record the alarm and check the event log', expected: 'Alarm details documented' },
+      { action: 'Check the controller supply voltage and earth', expected: 'Supply within range; earth sound' },
+      { action: 'Check the related wiring and configuration', expected: 'No wiring fault; settings correct' },
+    ],
+    tools: ['Multimeter', 'DSE Configuration Suite'],
+  },
+};
+
 function createDSECode(
   code: number,
   title: string,
@@ -58,6 +179,7 @@ function createDSECode(
   resetMethod: string,
   applicableModels: string[] = DSE_MODELS
 ): Partial<ControllerFaultCode>[] {
+  const topic = TOPIC[topicOf(category, subcategory, title)];
   return applicableModels.map(model => ({
     id: `DSE-${model.replace(/\s+/g, '')}-${code}`,
     code: code.toString(),
@@ -73,19 +195,20 @@ function createDSECode(
     symptoms,
     possibleCauses: causes,
     diagnosticSteps: [
-      { step: 1, action: 'Record alarm code and check event log for timestamp', expectedResult: 'Alarm details documented' },
-      { step: 2, action: 'Verify actual condition using external instruments', expectedResult: 'Independent measurement obtained' },
-      { step: 3, action: 'Check related sensor wiring and connections', expectedResult: 'No wiring faults found' },
-      { step: 4, action: 'Review configuration settings for this alarm', expectedResult: 'Settings verified correct' },
+      { step: 1, action: 'Record the alarm and check the event log for its time and value', expectedResult: 'Alarm details documented' },
+      ...topic.checks.map((c, i) => ({ step: i + 2, action: c.action, expectedResult: c.expected })),
     ],
     resetPathways: [{
       method: resetMethod.includes('software') ? 'software' : resetMethod.includes('auto') ? 'auto' : 'keypad',
       applicableFirmware: ['All'],
-      requiresCondition: severity === 'shutdown' ? ['engine_stopped', 'fault_investigated'] : ['fault_cleared'],
+      // Plain words, and AUTO only after the cause is fixed, with its warning
+      // (2026-10-29 audit: the steps ended in "Select AUTO" after any shutdown).
+      requiresCondition: severity === 'shutdown' ? ['Engine stopped', 'Cause found and fixed'] : ['Cause found and fixed'],
       steps: resetMethod.includes('keypad') ? [
-        { stepNumber: 1, action: 'Ensure engine is stopped', keySequence: ['STOP'], expectedResponse: 'Engine stops' },
-        { stepNumber: 2, action: 'Press and hold RESET for 3 seconds', keySequence: ['RESET (3s)'], expectedResponse: 'Alarm clears' },
-        { stepNumber: 3, action: 'Select operating mode', keySequence: ['AUTO'], expectedResponse: 'Ready for operation' }
+        { stepNumber: 1, action: 'Stop the engine (select STOP/OFF)', keySequence: ['STOP'], expectedResponse: 'Engine stopped' },
+        { stepNumber: 2, action: 'Only after the cause is found and fixed: press and hold RESET for 3 seconds', keySequence: ['RESET (3s)'], expectedResponse: 'Alarm clears' },
+        { stepNumber: 3, action: 'Test in MANUAL first and watch the reading that caused the alarm', keySequence: ['MANUAL', 'START'], expectedResponse: 'Runs normally with no alarm' },
+        { stepNumber: 4, action: 'Warn anyone near the set, then select AUTO: in AUTO it can start and take load at any moment without warning', keySequence: ['AUTO'], expectedResponse: 'Ready for automatic operation' }
       ] : [
         { stepNumber: 1, action: 'Fault condition clears automatically', expectedResponse: 'Alarm resets when condition normalizes' }
       ],
@@ -95,14 +218,14 @@ function createDSECode(
       difficulty: severity === 'shutdown' ? 'advanced' : severity === 'critical' ? 'moderate' : 'easy',
       timeEstimate: severity === 'shutdown' ? '1-4 hours' : '15-60 minutes',
       procedureSteps: solutions,
-      tools: ['Multimeter', 'DSE Configuration Suite', 'Hand tools'],
+      tools: topic.tools,
       parts: [],
       estimatedCost: { min: 0, max: severity === 'shutdown' ? 500 : 200, currency: 'USD' }
     }],
-    safetyWarnings: severity === 'shutdown' ? [
-      'Do not attempt restart until fault cause is identified',
-      'Risk of equipment damage if underlying issue not resolved'
-    ] : ['Follow standard electrical safety procedures'],
+    safetyWarnings: [
+      ...(severity === 'shutdown' ? ['Do not restart until the cause is found and fixed.'] : []),
+      ...topic.safety,
+    ],
     preventiveMeasures: ['Regular maintenance per DSE recommendations', 'Periodic sensor calibration checks'],
     verified: false, // independently written guide, not checked line-by-line against the OEM manual (2026-10-20)
     lastUpdated: '2024-01-15'

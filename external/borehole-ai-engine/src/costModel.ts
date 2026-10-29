@@ -23,8 +23,22 @@ export const DRILL_RATE_USD_PER_M: Record<string, number> = {
  * Per-metre rate for the ground type, kept inside the county's recorded rate
  * band where the county record has one.
  */
-export function drillRatePerM(soilType: string | undefined, countyBand?: [number, number] | null): number {
-  const base = DRILL_RATE_USD_PER_M[(soilType || 'unknown').toLowerCase()] ?? DRILL_RATE_USD_PER_M.unknown;
+/** USD per metre by formation, i.e. by drilling method: the midpoints of the
+ *  report's own B.3 table (DTH in hard rock 62-72, mud rotary in sediments
+ *  82-100). The formation sets the method and the rate; the topsoil, which
+ *  was the key, was almost always unknown, so every site got 75 (2026-10-29 audit). */
+export function formationRatePerM(rockType: string | undefined): number | null {
+  const r = String(rockType || '').toLowerCase();
+  if (!r || /unknown/.test(r)) return null;
+  if (/basalt|phonolite|trachyte|tuff|volcanic|lava|rhyolite|andesite|nephelinite|granite|gneiss|schist|quartzite|migmatite|basement|crystalline|dolerite/.test(r)) return 67;
+  if (/limestone|coral|karst|dolomite|marble|chalk/.test(r)) return 80;
+  if (/sand|shale|mud|silt|alluv|sediment|clay|gravel|laterite/.test(r)) return 91;
+  return null;
+}
+
+export function drillRatePerM(soilType: string | undefined, countyBand?: [number, number] | null, rockType?: string): number {
+  const base = formationRatePerM(rockType)
+    ?? DRILL_RATE_USD_PER_M[(soilType || 'unknown').toLowerCase()] ?? DRILL_RATE_USD_PER_M.unknown;
   if (!countyBand || !(countyBand[0] > 0) || !(countyBand[1] >= countyBand[0])) return base;
   return Math.min(countyBand[1], Math.max(countyBand[0], base));
 }

@@ -8,7 +8,8 @@ import { AnalysisResult, FieldValidationData } from './types';
 import { calculateLocationConfidence } from './locationVerifier';
 import { fetchRemoteSensingData } from './remoteSensing';
 import { fetchHistoricalData, estimateGroundwaterTrend } from './historicalData';
-import { getRegionalBoreholeStats, geocodeLocationForm, GEOLOGICAL_FORMATIONS, getKenyaCountyBoreholeStats, getKenyaCountyFromCoords } from './boreholeDatabase';
+import { measuredGroundwaterNear } from './openGroundwaterData';
+import { getRegionalBoreholeStats, geocodeLocationForm, GEOLOGICAL_FORMATIONS, getKenyaCountyBoreholeStats, getKenyaCountyFromCoords, getKenyaCountyBoreholeStatsByName } from './boreholeDatabase';
 import { fetchGLDASGroundwaterData } from './gldasGroundwater';
 import { budykoWaterBalance } from './hydroPhysics';
 import { fetchSatelliteActualET, reconcileRechargeWithMeasuredET } from './satelliteETEngine';
@@ -93,6 +94,42 @@ async function fieldRecordsWithin(lat: number, lon: number, km: number): Promise
 }
 import { getKenyaHydroPrior } from './kenyaHydroPriors';
 import { nearestKenyaBaseline } from './kenyaBaseline';
+
+/**
+ * One chemistry model (2026-10-29 audit: the PDF printed the rock-type model's
+ * TDS 240 beside the water-quality model's 1,100 for the same site). The
+ * water-quality model governs the parameters both predict; the rock-type
+ * model keeps the ones only it predicts (chloride, sulfate, manganese ...).
+ */
+function harmonizeHydrochem(hc: any, wq: any): any {
+  if (!hc || !wq || !Array.isArray(hc.predictions)) return hc;
+  const governing: Record<string, number | undefined> = {
+    pH: wq.pH, TDS: wq.tds, hardness: wq.hardness, iron: wq.iron, fluoride: wq.fluoride, nitrate: wq.nitrate,
+    arsenic: wq.arsenic != null ? wq.arsenic * 1000 : undefined, // mg/L -> µg/L
+    turbidity: wq.turbidity,
+  };
+  const predictions = hc.predictions.map((p: any) => {
+    const v = governing[p.parameter];
+    if (v == null || !Number.isFinite(v)) return p;
+    const exceeds = p.parameter === 'pH' ? v > 8.5 || v < 6.5 : p.whoGuideline ? v > p.whoGuideline : false;
+    return { ...p, predictedValue: v, exceedsGuideline: exceeds, reasoning: `${p.reasoning} (value from the site water-quality model)` };
+  });
+  return { ...hc, predictions };
+}
+
+/**
+ * Monthly split of an annual rainfall total when only the annual figure is
+ * known: Kenya's two rainy seasons (long rains Mar-May, short rains Oct-Dec),
+ * from the national ERA5 monthly climatology. It is a shape, not a measurement
+ * for the site (2026-10-29: the single sine wave it replaces had one wet season).
+ */
+const KENYA_MONTHLY_SHARE = [0.045, 0.045, 0.09, 0.19, 0.14, 0.045, 0.025, 0.025, 0.035, 0.08, 0.175, 0.10];
+function kenyaMonthlyRain(annualP: number): number[] {
+  const sum = KENYA_MONTHLY_SHARE.reduce((a, b) => a + b, 0);
+  return KENYA_MONTHLY_SHARE.map((s) => Math.round(annualP * s / sum));
+}
+/** Kenya's national mean annual rainfall (~630 mm, World Bank CCKP), used only when no climate source answers. */
+const KENYA_NATIONAL_RAIN_MM = 630;
 
 export type PipelineStep = 0|1|2|3|4|5|6|7|8|9|10|11;
 export type ProgressCallback = (step: PipelineStep, label: string) => void;
@@ -304,7 +341,8 @@ export class BoreholeAnalyzer {
     // sea off Mombasa all got full results).
     if (hasCoords) {
       const refusal = await siteRefusal(effectiveLat as number, effectiveLon as number);
-      if (refusal) throw new Error(refusal);
+      // Prefixed so the page shows the reason, not "a data service did not answer" (2026-10-29 audit).
+      if (refusal) throw new Error(`Location problem: ${refusal}`);
     }
 
     // ═══ GPS / MANUAL LOCATION PRIORITY OVERRIDE ═══
@@ -405,13 +443,16 @@ export class BoreholeAnalyzer {
       // Wrap each call with timing + individual 60s safety net
       const timed = <T>(name: string, p: Promise<T>): Promise<T> => {
         const start = Date.now();
+        // The timer is cleared when the call settles (2026-10-29 audit: it
+        // fired for every source and logged a false "TIMEOUT 60s").
+        let timer: ReturnType<typeof setTimeout> | undefined;
         return Promise.race([
-          p.then(v => { console.log(`[Step2] ${name} ✓ ${Date.now() - start}ms`); return v; },
-                 e => { console.log(`[Step2] ${name} ✗ ${Date.now() - start}ms: ${e?.message ?? e}`); throw e; }),
-          new Promise<never>((_, rej) => setTimeout(() => {
+          p.then(v => { clearTimeout(timer); console.log(`[Step2] ${name} ✓ ${Date.now() - start}ms`); return v; },
+                 e => { clearTimeout(timer); console.log(`[Step2] ${name} ✗ ${Date.now() - start}ms: ${e?.message ?? e}`); throw e; }),
+          new Promise<never>((_, rej) => { timer = setTimeout(() => {
             console.warn(`[Step2] ${name} TIMEOUT 60s`);
             rej(new Error(`${name} timed out after 60s`));
-          }, 60000)),
+          }, 60000); }),
         ]);
       };
 
@@ -531,7 +572,7 @@ export class BoreholeAnalyzer {
         const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
         remoteSensing.climate = {
           annualPrecipitation: annualP,
-          monthlyPrecipitation: Array.from({ length: 12 }, (_, i) => Math.round(annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6)))),
+          monthlyPrecipitation: kenyaMonthlyRain(annualP),
           meanTemperature: kbClimate.climate?.temp_mean_c ?? 22,
           monthlyTemperature: Array.from({ length: 12 }, () => kbClimate.climate?.temp_mean_c ?? 22),
           aridity: annualP > 1000 ? 'Humid' : annualP > 500 ? 'Sub-humid' : annualP > 200 ? 'Semi-arid' : 'Arid',
@@ -541,13 +582,13 @@ export class BoreholeAnalyzer {
       }
     }
     if (remoteSensing && !remoteSensing.climate) {
-      fallbacksUsed.push('Climate data (NASA POWER API failed — using latitude-based estimate)');
+      fallbacksUsed.push(`Climate data unavailable (ERA5, NASA POWER and the stored baseline all failed) — Kenya's national mean rainfall (${KENYA_NATIONAL_RAIN_MM} mm/yr) used; rainfall for this site is NOT known`);
       const lat = effectiveLat ?? 0;
-      const annualP = lat > 30 || lat < -30 ? 650 : lat > 15 || lat < -15 ? 900 : 1400;
+      const annualP = KENYA_NATIONAL_RAIN_MM;
       const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
       remoteSensing.climate = {
         annualPrecipitation: annualP,
-        monthlyPrecipitation: Array.from({ length: 12 }, (_, i) => Math.round(annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6)))),
+        monthlyPrecipitation: kenyaMonthlyRain(annualP),
         meanTemperature: Math.abs(lat) > 40 ? 10 : Math.abs(lat) > 20 ? 20 : 26,
         monthlyTemperature: Array.from({ length: 12 }, (_, i) => {
           const base = Math.abs(lat) > 40 ? 10 : Math.abs(lat) > 20 ? 20 : 26;
@@ -592,7 +633,7 @@ export class BoreholeAnalyzer {
           elevation: kb.elevation_m != null ? { elevation: kb.elevation_m, source: `EmersonEIMS baseline — SRTM measured at ${kb.name}` } : null,
           climate: {
             annualPrecipitation: annualP,
-            monthlyPrecipitation: Array.from({ length: 12 }, (_, i) => Math.round(annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6)))),
+            monthlyPrecipitation: kenyaMonthlyRain(annualP),
             meanTemperature: kb.climate?.temp_mean_c ?? 22,
             monthlyTemperature: Array.from({ length: 12 }, () => kb.climate?.temp_mean_c ?? 22),
             aridity: annualP > 1000 ? 'Humid' : annualP > 500 ? 'Sub-humid' : annualP > 200 ? 'Semi-arid' : 'Arid',
@@ -608,19 +649,16 @@ export class BoreholeAnalyzer {
       }
     }
     if (!remoteSensing) {
-      fallbacksUsed.push('All remote sensing (SoilGrids + Climate + Elevation APIs all failed — using latitude estimates)');
+      fallbacksUsed.push(`All remote sensing failed (SoilGrids, climate and elevation) — Kenya's national mean rainfall (${KENYA_NATIONAL_RAIN_MM} mm/yr) used and elevation left unknown; site values are NOT known`);
       const lat = effectiveLat ?? 0;
-      const annualP = lat > 30 || lat < -30 ? 650 : lat > 15 || lat < -15 ? 900 : 1400;
+      const annualP = KENYA_NATIONAL_RAIN_MM;
       const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
       remoteSensing = {
         soilGrids: null,
-        elevation: {
-          elevation: Math.abs(lat) > 40 ? 350 : Math.abs(lat) > 20 ? 650 : 450,
-          source: 'Latitude-based elevation estimate (API fallback)',
-        },
+        elevation: null,
         climate: {
           annualPrecipitation: annualP,
-          monthlyPrecipitation: Array.from({ length: 12 }, (_, i) => Math.round(annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6)))),
+          monthlyPrecipitation: kenyaMonthlyRain(annualP),
           meanTemperature: Math.abs(lat) > 40 ? 10 : Math.abs(lat) > 20 ? 20 : 26,
           monthlyTemperature: Array.from({ length: 12 }, (_, i) => {
             const base = Math.abs(lat) > 40 ? 10 : Math.abs(lat) > 20 ? 20 : 26;
@@ -628,7 +666,7 @@ export class BoreholeAnalyzer {
           }),
           aridity: annualP > 1000 ? 'Humid' : annualP > 500 ? 'Sub-humid' : annualP > 200 ? 'Semi-arid' : 'Arid',
           rechargeEstimate: Math.round(annualP * rechargePct),
-          source: 'Latitude-based climate model (API fallback)',
+          source: `Kenya national mean rainfall (${KENYA_NATIONAL_RAIN_MM} mm/yr) with a two-season monthly shape — no climate source answered; not measured for this site`,
         },
         waterIndices: null,
         surfaceWater: null,
@@ -790,6 +828,46 @@ export class BoreholeAnalyzer {
       waterQuality.dataSource = `${waterQuality.dataSource} + Regional: ${regionalWQ.province}`;
     }
 
+    // ═══ MEASURED CHEMISTRY NEAR THE SITE GOVERNS (2026-10-29) ═══
+    // Laboratory and field measurements at real boreholes within 25 km (open
+    // UNESCO IHP-WINS / NERC data) replace the modelled figure for that
+    // parameter when at least three exist. TDS comes from measured TDS, or
+    // from EC x 0.65 where only EC was measured.
+    if (waterQuality && effectiveLat != null && effectiveLon != null) {
+      try {
+        const mq = await measuredGroundwaterNear(effectiveLat, effectiveLon, 25);
+        if (mq) {
+          const used: string[] = [];
+          const warns: string[] = [];
+          if (mq.ec && mq.ec.n >= 3 && mq.tdsMedian_mgL != null) {
+            waterQuality.tds = mq.tdsMedian_mgL;
+            used.push(`TDS ${mq.tdsMedian_mgL} mg/L (median of ${mq.ec.n} boreholes; EC median ${mq.ec.median} µS/cm, ${mq.ec.over1500} of ${mq.ec.n} above 1,500)`);
+            if (mq.ec.over3000 > 0) warns.push(`MEASURED: ${mq.ec.over3000} of ${mq.ec.n} boreholes within 25 km have EC above 3,000 µS/cm (saline). Test salinity before equipping.`);
+          }
+          if (mq.fluoride && mq.fluoride.n >= 3 && mq.fluoride.median != null) {
+            waterQuality.fluoride = mq.fluoride.median;
+            used.push(`fluoride ${mq.fluoride.median} mg/L (median of ${mq.fluoride.n}; max ${mq.fluoride.max})`);
+            if (mq.fluoride.over1_5 > 0) warns.push(`MEASURED: ${mq.fluoride.over1_5} of ${mq.fluoride.n} boreholes within 25 km exceed the WHO fluoride guideline (1.5 mg/L).`);
+          }
+          if (mq.nitrate && mq.nitrate.n >= 3 && mq.nitrate.median != null) {
+            waterQuality.nitrate = mq.nitrate.median;
+            used.push(`nitrate ${mq.nitrate.median} mg/L (median of ${mq.nitrate.n})`);
+          }
+          for (const a of mq.areaSurveys) {
+            const s = a.shallowWellsAndSprings, b = a.boreholes;
+            warns.push(`MEASURED (${a.name.split(' (')[0]}, ${a.sampled}): of ${s.n} shallow wells and springs, ${s.faecalColiformPositive} had faecal coliforms, ${s.nitrateOver50} exceeded 50 mg/L nitrate and ${s.fluorideOver1_5} exceeded 1.5 mg/L fluoride${b.n ? `; the ${b.n} boreholes sampled had fluoride ${b.fluoride_mgL.join(' and ')} mg/L` : ''}. A laboratory test is essential.`);
+            if (b.n && b.fluoride_mgL.length) waterQuality.fluoride = Math.max(waterQuality.fluoride, Math.min(...b.fluoride_mgL));
+          }
+          if (used.length || warns.length) {
+            this.waterQualityAnalyzer.refreshDerived(waterQuality);
+            (waterQuality as any).measuredNearby = mq;
+            (waterQuality as any).regionalWarnings = [...warns, ...((waterQuality as any).regionalWarnings ?? [])];
+            if (used.length) waterQuality.dataSource = `MEASURED at boreholes within 25 km: ${used.join('; ')} [${mq.sources.join('; ')}]. Other parameters: ${waterQuality.dataSource}`;
+          }
+        }
+      } catch (e) { console.warn('[Pipeline] Measured groundwater lookup failed:', e); }
+    }
+
     // ═══ SUBSYSTEM 7: RISK ASSESSMENT ═══
     report(6, 'Risk assessment — geological, contamination, financial, technical risks...');
     const riskRealData = hasCoords ? {
@@ -919,9 +997,9 @@ export class BoreholeAnalyzer {
         // "variation") and then turned into an outcome, so springs and dug
         // wells showed as successful drilled boreholes.
         void regionalAvgDepth; void regionalAvgYield; void _isSpringRec;
-        if (!w.lithology) {
-          w.lithology = geoLithology;
-        }
+        // A missing lithology stays missing, like depth and yield (2026-10-29
+        // audit: the site's own soil label was written onto every record).
+        void geoLithology;
         // Outcome only from a MEASURED yield on a drilled borehole.
         const _isDrilled = !/spring|dug well/i.test(String(w.aquiferType ?? '') + ' ' + String(w.id ?? ''));
         if (_isDrilled && w.outcome === 'Unknown' && w.yield_m3h > 0) {
@@ -1031,6 +1109,7 @@ export class BoreholeAnalyzer {
       boreholeSuccessRate: countyData?.successRate ?? boreholeRecords?.successRate,
       boreholeCount: countyData?.estimatedBoreholes ?? (boreholeRecords?.totalBoreholesDrilled ? parseInt(boreholeRecords.totalBoreholesDrilled.replace(/[^\d]/g, '')) || 0 : 0),
       graceStatus: graceData?.status,
+      graceIsSatellite: graceData ? graceData.isSatelliteGravity !== false : undefined,
       graceTrend: graceData?.trend_cm_per_year,
       demFavorability: demHydrology?.groundwaterFavorability,
       demTWI: demHydrology?.twi,
@@ -1040,6 +1119,9 @@ export class BoreholeAnalyzer {
       nearbyWellAvgYield: nearbyWells?.averageYield,
       nearbyWellCount: nearbyWells?.sampleSize,
       nearbyWellFieldShare: (nearbyWells as any)?.fieldMeasuredShare,
+      // Recorded drilling outcomes of nearby boreholes (success/moderate vs failed or dry).
+      nearbyOutcomeSuccess: ((nearbyWells as any)?.nearbyWells ?? []).filter((w: any) => w.outcome === 'Success' || w.outcome === 'Moderate').length,
+      nearbyOutcomeKnown: ((nearbyWells as any)?.nearbyWells ?? []).filter((w: any) => w.outcome === 'Success' || w.outcome === 'Moderate' || w.outcome === 'Fail').length,
       vegGWDependence: vegetationGWProxy?.groundwaterDependence,
       shallowWTLikelihood: vegetationGWProxy?.shallowWaterTableLikelihood,
       weightedProbability: weightedProb.success_probability,
@@ -1205,7 +1287,12 @@ export class BoreholeAnalyzer {
         const rk = PROVINCE_ROCK[provPrior.province];
         const props = ROCK_PROPERTIES[rk];
         if (rk && props) {
+          // The county's mapped geology is the name shown ("Nairobi phonolite +
+          // Athi tuffs + basement"); rk only picks the rock properties.
+          const countyGeology = getKenyaCountyBoreholeStatsByName(provPrior.county)?.primaryGeology;
+          const rockLabel = countyGeology ? `${countyGeology} (${rk} properties used)` : rk;
           rockClassification = {
+            rockLabel,
             primaryRockType: rk,
             secondaryRockType: rockClassification?.primaryRockType !== rk ? rockClassification?.primaryRockType : undefined,
             confidence: 0.8,
@@ -1216,11 +1303,11 @@ export class BoreholeAnalyzer {
             typicalKsat_m_day: props.ksat_m_day,
             typicalPorosity: props.porosity,
             methodology: `Regional hydrogeological province for ${provPrior.county} County (${provPrior.province.replace('_', ' ').toLowerCase()})`,
-          };
+          } as any;
           const precipP = historicalData?.weather?.averageAnnualPrecipitation ?? 800;
           const tempP = historicalData?.weather?.averageTemperature ?? 22;
           weatheringProfile = estimateWeatheringProfile(rk, precipP, tempP, remoteSensing?.elevation?.elevation ?? 500, demHydrology?.slope_degrees ?? 5);
-          if (advancedRockResult) (advancedRockResult as any).primaryRockType = rk;
+          if (advancedRockResult) { (advancedRockResult as any).primaryRockType = rk; (advancedRockResult as any).rockLabel = rockLabel; }
           (this as any)._hydroProvince = provPrior.province;
         }
       }
@@ -1482,7 +1569,7 @@ export class BoreholeAnalyzer {
     // Field depth band: drilled depths of productive boreholes within 20 km.
     // With >=3 records the depth stays between their lower and upper quartiles
     // and the county band is not applied on top (the local records are better).
-    let fieldDepthBand: { lq: number; med: number; uq: number; n: number } | null = null;
+    let fieldDepthBand: { lq: number; med: number; uq: number; p90?: number; n: number } | null = null;
     if (!isFieldValidated && effectiveLat != null && effectiveLon != null) {
       try {
         const ds = (await fieldRecordsWithin(effectiveLat, effectiveLon, 20))
@@ -1490,7 +1577,7 @@ export class BoreholeAnalyzer {
           .map((b) => Number(b.depth_m)).sort((a, b) => a - b);
         if (ds.length >= 3) {
           const q = (p: number) => ds[Math.floor((ds.length - 1) * p)];
-          fieldDepthBand = { lq: q(0.25), med: q(0.5), uq: q(0.75), n: ds.length };
+          fieldDepthBand = { lq: q(0.25), med: q(0.5), uq: q(0.75), p90: q(0.9), n: ds.length };
           // Anchor to the local median like the county anchor (70% with >=5 records,
           // 50% with 3-4), then keep inside the quartiles.
           const w = ds.length >= 5 ? 0.7 : 0.5;
@@ -1522,7 +1609,7 @@ export class BoreholeAnalyzer {
           .map((t: any[]) => Number(t[3])).sort((a: number, b: number) => a - b);
         if (ds.length >= 5) {
           const q = (p: number) => ds[Math.floor((ds.length - 1) * p)];
-          fieldDepthBand = { lq: q(0.25), med: q(0.5), uq: q(0.75), n: ds.length };
+          fieldDepthBand = { lq: q(0.25), med: q(0.5), uq: q(0.75), p90: q(0.9), n: ds.length };
           (fieldDepthBand as any).basis = `${ds.length} drilled boreholes within 30 km in the government water-point registry`;
           const kept = Math.round(Math.min(fieldDepthBand.uq, Math.max(fieldDepthBand.lq, 0.7 * fieldDepthBand.med + 0.3 * calibratedDepth)));
           if (kept !== calibratedDepth) {
@@ -1641,7 +1728,7 @@ export class BoreholeAnalyzer {
         hasSoilGrids: !!remoteSensing?.soilGrids?.clay,
         hasElevation: !!remoteSensing?.elevation?.elevation,
         hasGLDAS: !!gldasGroundwater?.waterBudget?.precipitation,
-        hasGRACE: !!graceData,
+        hasGRACE: !!graceData && graceData.isSatelliteGravity !== false,
         hasNASAPower: !!nasaPowerET,
         hasHistoricalWeather: !!historicalData?.weather?.averageAnnualPrecipitation,
         hasBoreholeDB: !!boreholeRecords,
@@ -1687,10 +1774,16 @@ export class BoreholeAnalyzer {
       // defaulting to "sedimentary" produced a contradictory hypothetical (Rotary
       // Mud drilling + inflated yield) that fought the governing basement model
       // (re-audit #9). Depart from the basement default only on positive evidence.
-      const _geoHint = `${rockClassification?.primaryRockType ?? ''} ${(boreholeRecords?.commonAquiferTypes ?? []).join(' ')}`;
-      const isKarst = /karst|limestone|dolomite|marble|chalk|coral/i.test(_geoHint);
-      const isSedimentary = !isKarst && /sandstone|shale|mudstone|siltstone|alluvial|sediment|coastal/i.test(_geoHint);
-      const isCrystalline = !isKarst && !isSedimentary; // basement/volcanic/unknown → basement
+      // The site's own rock type governs; the county's aquifer types only when
+      // it is unknown (2026-10-29 audit: Nairobi's "basalt" plus a regional
+      // "sedimentary" aquifer gave "basalt (sedimentary)" and mud rotary while
+      // the rest of the report said DTH). Volcanics are hard rock (DTH).
+      const _rock = String(rockClassification?.primaryRockType ?? '');
+      const _hardRock = /basalt|phonolite|trachyte|tuff|volcanic|lava|rhyolite|andesite|nephelinite|granite|gneiss|schist|quartzite|migmatite|basement|crystalline/i;
+      const _geoHint = _rock && !/unknown/i.test(_rock) ? _rock : `${_rock} ${(boreholeRecords?.commonAquiferTypes ?? []).join(' ')}`;
+      const isKarst = !_hardRock.test(_rock) && /karst|limestone|dolomite|marble|chalk|coral/i.test(_geoHint);
+      const isSedimentary = !isKarst && !_hardRock.test(_rock) && /sandstone|shale|mudstone|siltstone|alluvial|sediment|coastal/i.test(_geoHint);
+      const isCrystalline = !isKarst && !isSedimentary; // basement/volcanic/unknown → hard rock
 
       advancedGeophysicsResult = computeAdvancedGeophysics({
         lat: effectiveLat ?? 0,
@@ -1731,7 +1824,7 @@ export class BoreholeAnalyzer {
     const hasBoreholeDB = !!boreholeRecords;
     const hasHistorical = !!historicalData?.weather?.averageAnnualPrecipitation;
     const hasElevation = !!remoteSensing?.elevation?.elevation && !isFb(remoteSensing?.elevation);
-    const hasGRACE = !!graceData && !isFb(graceData);
+    const hasGRACE = !!graceData && graceData.isSatelliteGravity !== false && !isFb(graceData); // the soil-moisture stand-in is not GRACE data
     const hasNearbyWells = !!nearbyWells && nearbyWells.sampleSize > 0;
     const hasDEM = !!demHydrology;
     const hasLineaments = !!lineamentAnalysis;
@@ -2081,7 +2174,7 @@ export class BoreholeAnalyzer {
       // (1 - ET - runoff) ~= 0.30, so the 12 monthly rows summed to ~2x the
       // stated annual — a self-contradiction on a single page.
       const monthlyRecharge = Array.from({ length: 12 }, (_, i) => {
-        const precip = annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6));
+        const precip = kenyaMonthlyRain(annualP)[i];
         const et = precip * etFactor;
         const runoff = precip * runoffFactor;
         const net = Math.max(0, precip - et - runoff);
@@ -2575,7 +2668,7 @@ export class BoreholeAnalyzer {
       multiSourceAgreement: multiSourceAgreement ?? undefined,
       kenyaHydroPrior: (this as any)._kenyaPrior ?? undefined,
       temporalDrought: temporalDrought ?? undefined,
-      hydrochemPrediction: hydrochemPrediction ?? undefined,
+      hydrochemPrediction: harmonizeHydrochem(hydrochemPrediction, waterQuality) ?? undefined,
       // ═══ PHASE 8 ACCURACY ENGINE RESULTS ═══
       dataQualityScore: dataQualityScore ?? undefined,
       drillingPrediction: drillingPrediction ?? undefined,
@@ -3486,12 +3579,14 @@ export class BoreholeAnalyzer {
       result.pathTo97 = computePathTo97(result);
     } catch (e) { console.warn('[Pipeline] Path-to-97 engine failed:', e); }
 
-    // ─── ENSURE CORE PREDICTIONS EXIST — fallback defaults if engines failed ───
-    if (result.probability == null) result.probability = 0.5;
-    if (result.recommendedDepth == null) result.recommendedDepth = 80;
-    if (result.estimatedYield == null) result.estimatedYield = 2.0;
-    if (!result.waterQuality) result.waterQuality = { score: 0.6, turbidity: 5, tds: 500, hardness: 200, fluoride: 0.5, iron: 0.1, arsenic: 0.005, nitrate: 5, pH: 7, isPotable: true, treatmentRequired: [] };
-    if (!result.risk) result.risk = { overallRisk: 0.3, viability: 'medium', categories: { geological: 0.3, contamination: 0.2, depth: 0.3, financial: 0.3, technical: 0.3 } } as any;
+    // ─── CORE PREDICTIONS MUST EXIST ───
+    // No invented stand-ins (2026-10-29 audit: a failed engine produced 50%,
+    // 80 m, 2 m³/h and "potable" water as if measured). The run stops instead.
+    if (result.probability == null || result.recommendedDepth == null || result.estimatedYield == null || !result.waterQuality || !result.risk) {
+      throw new Error('The analysis could not complete one of its core estimates (probability, depth, yield, water quality or risk). Please run it again; if it keeps failing, contact us.');
+    }
+    // Final values after every regional adjustment: one chemistry model everywhere.
+    (result as any).hydrochemPrediction = harmonizeHydrochem((result as any).hydrochemPrediction, result.waterQuality);
     // Ensure GPS coordinates propagate to ALL possible storage paths
     if (effectiveLat != null && effectiveLon != null) {
       if (!result.clientLocation) result.clientLocation = {};

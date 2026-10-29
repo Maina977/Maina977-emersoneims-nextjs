@@ -99,6 +99,8 @@ const MODULES = [
       {k:'exposure', label:'Exposure', type:'select', opts:['B','C','D'], def:'C'},
       {k:'enclosure', label:'Enclosure', type:'select',
         opts:['enclosed','partially_enclosed','partially_open','open'], def:'enclosed'},
+      {k:'Ke', label:'Ground elevation factor Ke (1.0 sea level; about 0.82 at Nairobi)', type:'number', def:1, step:'0.01'},
+      {k:'Kzt', label:'Topographic factor Kzt (1.0 flat site)', type:'number', def:1, step:'0.01'},
     ]},
 
   { id:'wind_ec', group:'Engineering', tag:'b-eng',
@@ -1254,6 +1256,8 @@ function readForm(m){
   for(const f of m.fields){
     const el = $(`#f_${f.k}`); if(!el) continue;
     let v = el.value;
+    // Mistyped numbers were sent as null and their check vanished (2026-10-29 audit).
+    if(f.type==='number' && el.validity && el.validity.badInput) throw new Error(`Field "${f.label||f.k}" is not a valid number. Correct it or clear it.`);
     if(f.type==='number') v = v===''?null:Number(v);
     else if(f.type==='textarea'){ try{ v = JSON.parse(v); }catch(e){ /* leave string */ } }
     else if(f.type==='select' && (v==='true'||v==='false')) v = (v==='true');
@@ -1263,7 +1267,9 @@ function readForm(m){
 }
 
 async function execute(m){
-  const {body, qs} = readForm(m);
+  let body, qs;
+  try { ({body, qs} = readForm(m)); }
+  catch(e){ $('#out').innerHTML = `<div class="stat"><span class="chip bad">Check the inputs</span></div><div class="note">${proEscape(e.message)}</div>`; return; }
   let url = m.endpoint;
   const qstr = new URLSearchParams(qs).toString();
   if(qstr){ url += (url.includes('?')?'&':'?') + qstr; }

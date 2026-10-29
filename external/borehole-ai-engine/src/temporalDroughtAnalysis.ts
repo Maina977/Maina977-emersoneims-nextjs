@@ -203,7 +203,7 @@ function linearTrend(x: number[], y: number[]): { slope: number; r2: number } {
 
 // ═══ MAIN ANALYSIS ═══
 export function analyzeTemporalDrought(input: TemporalAnalysisInput): TemporalAnalysisResult {
-  const { monthlyData, latitude } = input;
+  const { monthlyData } = input;
   const currentYear = input.currentYear || new Date().getFullYear();
   
   if (monthlyData.length < 24) {
@@ -315,9 +315,9 @@ export function analyzeTemporalDrought(input: TemporalAnalysisInput): TemporalAn
   
   // ═══ RECHARGE ESTIMATION ═══
   // Simplified recharge = rainfall × recharge fraction (climate-adjusted)
-  const rechargeFraction = latitude > 0 
-    ? Math.max(0.02, 0.25 - Math.abs(latitude) * 0.003) 
-    : Math.max(0.02, 0.25 - Math.abs(latitude) * 0.003);
+  // By how wet the site is (the analyzer's bands). It was set from latitude,
+  // which gave ~24% everywhere in Kenya, the arid north included.
+  const rechargeFraction = meanAnnual > 1000 ? 0.15 : meanAnnual > 500 ? 0.10 : 0.05;
   
   const avgRecharge = meanAnnual * rechargeFraction;
   

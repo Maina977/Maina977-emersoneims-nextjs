@@ -141,7 +141,7 @@ export const metadata: Metadata = {
    * sales-intent generator queries earned 52 impressions in total. 55 characters.
    */
   title: "Generators for Sale in Kenya | New & Used | EmersonEIMS",
-  description: "New VOLTKA Cummins-powered generators, 10–3000 kVA, from KES 280,000, plus used Cummins, Perkins & CAT sets. Installed and serviced Kenya-wide. Call +254768860665.",
+  description: "New VOLTKA Cummins-powered generators, 10–3000 kVA, from KES 280,000, plus used Cummins, Perkins & CAT sets. Installed and serviced Kenya-wide.",
   openGraph: {
     title: "Generators for Sale in Kenya | New VOLTKA & Used Sets | EmersonEIMS",
     description: "New VOLTKA Cummins-powered generators from 10 to 3000 kVA, open or canopied, from KES 280,000, plus used Cummins, Perkins and Caterpillar sets. Supplied, installed and serviced in all 47 counties, with solar, UPS and 24/7 emergency repair.",

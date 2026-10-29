@@ -16,9 +16,9 @@ export const metadata: Metadata = {
    * incinerators and industrial electronics were all absent from the search
    * result for the page that indexes them.
    */
-  title: 'Engineering Services Kenya | Power, Water & Building Systems',
+  title: 'Power, Water & Building Engineering',
   description:
-    'EmersonEIMS provides generators, solar, UPS, electrical, plumbing, boreholes, HVAC, motor rewinding, fabrication, incinerators and industrial repair services across all 47 counties of Kenya.',
+    'Generators, solar, UPS, electrical, plumbing, boreholes, HVAC, motor rewinding, fabrication, incinerators and industrial repair in all 47 Kenyan counties.',
   keywords: [
     // Generator Keywords
     'generator services Kenya',

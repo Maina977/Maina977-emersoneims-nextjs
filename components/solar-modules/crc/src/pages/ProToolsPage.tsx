@@ -82,26 +82,53 @@ const Row = styled.div`
   flex-wrap: wrap;
 `;
 
-const Input = styled.input`
-  flex: 1;
-  min-width: 100px;
+// Phones: 44 px touch targets and 16 px text (iOS zooms into smaller fields);
+// 2026-10-29 audit found 110 targets under 32 px at 390 px.
+const touch = `
+  @media (max-width: 768px) {
+    min-height: 44px;
+    font-size: 16px;
+  }
+`;
+
+const InputBase = styled.input`
+  width: 100%;
   padding: 0.45rem 0.6rem;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 217, 255, 0.25);
   color: #e6f1ff;
   border-radius: 6px;
   font-size: 0.9rem;
+  ${touch}
 `;
 
-const Select = styled.select`
-  flex: 1;
-  min-width: 100px;
+const SelectBase = styled.select`
+  width: 100%;
   padding: 0.45rem 0.6rem;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 217, 255, 0.25);
   color: #e6f1ff;
   border-radius: 6px;
+  ${touch}
 `;
+
+const FieldLabel = styled.label`
+  flex: 1;
+  min-width: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  & > span { font-size: 0.72rem; opacity: 0.75; }
+`;
+
+// Every field shows its name above it (the 2026-10-29 audit found fields
+// labelled only by placeholder text, which disappears once you type).
+const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+  <FieldLabel><span>{props['aria-label']}</span><InputBase {...props} /></FieldLabel>
+);
+const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
+  <FieldLabel><span>{props['aria-label']}</span><SelectBase {...props} /></FieldLabel>
+);
 
 const Btn = styled.button`
   padding: 0.5rem 1rem;
@@ -112,6 +139,7 @@ const Btn = styled.button`
   cursor: pointer;
   font-weight: 700;
   &:disabled { opacity: 0.5; cursor: wait; }
+  ${touch}
 `;
 
 const Out = styled.pre`
@@ -244,7 +272,7 @@ const TariffTool = () => {
       <CardH>KPLC Tariff Bill</CardH>
       <CardSub>Indicative bill from the EPRA consumption bands; check the rates on your latest KPLC bill</CardSub>
       <Row>
-        <Select value={cat} onChange={(e) => setCat(e.target.value)}>
+        <Select aria-label="Tariff category" value={cat} onChange={(e) => setCat(e.target.value)}>
           <option value="DC">Domestic lifeline (0–30 kWh)</option>
           <option value="DC1">Domestic ordinary (31–100 kWh)</option>
           <option value="DC2">Domestic ordinary (over 100 kWh)</option>
@@ -268,9 +296,9 @@ const FxTool = () => {
       <CardH>Currency Conversion</CardH>
       <CardSub>Frankfurter (ECB reference rates), open.er-api.com as fallback</CardSub>
       <Row>
-        <Input type="number" value={a} onChange={(e) => setA(+e.target.value)} />
-        <Input value={from} onChange={(e) => setFrom(e.target.value.toUpperCase())} />
-        <Input value={to} onChange={(e) => setTo(e.target.value.toUpperCase())} />
+        <Input aria-label="Amount" type="number" value={a} onChange={(e) => setA(+e.target.value)} />
+        <Input aria-label="From currency (ISO code)" value={from} onChange={(e) => setFrom(e.target.value.toUpperCase())} />
+        <Input aria-label="To currency (ISO code)" value={to} onChange={(e) => setTo(e.target.value.toUpperCase())} />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => finance.currency(a, from, to))}>Convert</Btn>
       <Result {...t} />
@@ -288,8 +316,8 @@ const SunPosTool = () => {
       <CardH>Sun Position</CardH>
       <CardSub>Michalsky 1988, ±0.01°</CardSub>
       <Row>
-        <Input type="number" value={lat} onChange={(e) => setLat(+e.target.value)} />
-        <Input type="number" value={lon} onChange={(e) => setLon(+e.target.value)} />
+        <Input aria-label="Latitude (decimal degrees)" type="number" value={lat} onChange={(e) => setLat(+e.target.value)} />
+        <Input aria-label="Longitude (decimal degrees)" type="number" value={lon} onChange={(e) => setLon(+e.target.value)} />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => solar.sunPosition(lat, lon))}>Get Position Now</Btn>
       <Result {...t} />
@@ -385,7 +413,7 @@ const CarbonFootprintTool = () => {
       <CardSub>Grid emission factors for 10 African countries plus a world average</CardSub>
       <Row>
         <Input type="number" value={k} onChange={(e) => setK(+e.target.value)} placeholder="Annual kWh" aria-label="Annual kWh" />
-        <Select value={c} onChange={(e) => setC(e.target.value)}>
+        <Select aria-label="Country" value={c} onChange={(e) => setC(e.target.value)}>
           {['KE','UG','TZ','RW','ET','NG','ZA','EG','MA','GH','GLOBAL_AVG'].map((x) => <option key={x}>{x}</option>)}
         </Select>
       </Row>
@@ -406,7 +434,7 @@ const SolarOffsetTool = () => {
       <CardSub>Net of UNECE PV LCA</CardSub>
       <Row>
         <Input type="number" value={k} onChange={(e) => setK(+e.target.value)} placeholder="Annual PV kWh" aria-label="Annual PV kWh" />
-        <Select value={c} onChange={(e) => setC(e.target.value)}>
+        <Select aria-label="Country" value={c} onChange={(e) => setC(e.target.value)}>
           {['KE','UG','TZ','ZA','GLOBAL_AVG'].map((x) => <option key={x}>{x}</option>)}
         </Select>
         <Input type="number" value={y} onChange={(e) => setY(+e.target.value)} placeholder="Years" aria-label="Years" />
@@ -426,7 +454,7 @@ const EvTool = () => {
       <CardH>EV Charging Sizing</CardH>
       <CardSub>EV-Database 2024 efficiencies</CardSub>
       <Row>
-        <Select value={v} onChange={(e) => setV(e.target.value)}>
+        <Select aria-label="Vehicle type" value={v} onChange={(e) => setV(e.target.value)}>
           {['compact_ev','sedan_ev','suv_ev','pickup_ev','twowheel_ev','tuktuk_ev','minibus_ev','matatu_ev'].map((x) => <option key={x}>{x}</option>)}
         </Select>
         <Input type="number" value={km} onChange={(e) => setKm(+e.target.value)} placeholder="km/day" aria-label="km/day" />
@@ -529,20 +557,21 @@ const XlsxTool = () => {
   const generate = async () => {
     const blob = await reports.xlsxBlob({
       sheets: [
-        { name: 'CashFlow', aoa: [['Year', 'Net (KES)'], ...[1,2,3,4,5].map(y => [y, 240000])] },
-        { name: 'BOM', rows: [
+        // A format sample, labelled as such (2026-10-29 audit: fixed figures with no label).
+        { name: 'SAMPLE - not your project', aoa: [['This file shows the export format with example figures. Use the Report page for your own project.'], [], ['Year', 'Net (KES) - example'], ...[1,2,3,4,5].map(y => [y, 240000])] },
+        { name: 'BOM (example)', rows: [
           { item: 'Panel 485W', qty: 14, unit: 12500, total: 175000 },
           { item: 'Inverter 5kW', qty: 1, unit: 180000, total: 180000 }
         ]}
       ]
     });
-    downloadBlob(blob as any, `report-${Date.now()}.xlsx`);
-    return { ok: true, message: 'Excel downloaded' };
+    downloadBlob(blob as any, `sample-export-${Date.now()}.xlsx`);
+    return { ok: true, message: 'Sample Excel downloaded (example figures, not your project)' };
   };
   return (
     <Card>
       <CardH>Excel Export</CardH>
-      <CardSub>xlsx (multi-sheet)</CardSub>
+      <CardSub>Sample xlsx showing the export format (example figures)</CardSub>
       <Btn disabled={t.busy} onClick={() => t.run(generate)}>Download Excel</Btn>
       <Result {...t} />
     </Card>
@@ -756,7 +785,7 @@ const PermitTool = () => {
       <CardH>Permit Pack</CardH>
       <CardSub>Free: KE/UG/TZ/RW regulator checklists</CardSub>
       <Row>
-        <Select value={p.country} onChange={(e) => setP({ ...p, country: e.target.value })}>
+        <Select aria-label="Country" value={p.country} onChange={(e) => setP({ ...p, country: e.target.value })}>
           {['KE','UG','TZ','RW'].map(x=><option key={x}>{x}</option>)}
         </Select>
         <Input type="number" value={p.projectKw} onChange={(e) => setP({ ...p, projectKw: +e.target.value })} placeholder="kWp" aria-label="kWp" />
@@ -797,7 +826,7 @@ const SoilingTool = () => {
         <Input type="number" value={p.lon} onChange={(e) => setP({ ...p, lon: +e.target.value })} placeholder="lon" aria-label="lon" />
       </Row>
       <Row>
-        <Select value={p.climate} onChange={(e) => setP({ ...p, climate: e.target.value })}>
+        <Select aria-label="Climate zone" value={p.climate} onChange={(e) => setP({ ...p, climate: e.target.value })}>
           {['arid','semiarid','tropical','temperate'].map(x=><option key={x}>{x}</option>)}
         </Select>
         <Input type="number" value={p.days} onChange={(e) => setP({ ...p, days: +e.target.value })} placeholder="days" aria-label="days" />

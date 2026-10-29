@@ -196,7 +196,10 @@ const DEFAULT_REGIONS: RegionalModel[] = [
     geologicalProvince: 'arid_sedimentary_basement',
     climateZone: 'arid',
     countryCode: 'KE',
-    bounds: { minLat: 0.5, maxLat: 5.0, minLon: 34.0, maxLon: 42.0 },
+    // Down to -1.5 so the north-eastern sedimentary basin (Garissa, Ijara, Tana
+    // River) is not given the nearest centroid, Eastern Basement (2026-10-29
+    // audit). Regions listed earlier keep their own areas (first match wins).
+    bounds: { minLat: -1.5, maxLat: 5.0, minLon: 34.0, maxLon: 42.0 },
     depthBias_m: 25,
     yieldBias_m3h: -1.2,
     successRateAdjust: -0.15,

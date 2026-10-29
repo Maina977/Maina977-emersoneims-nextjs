@@ -119,7 +119,8 @@ export default function SolarROICalculator() {
     const lifetimeSavings = cumulativeSavings - totalSystemCost;
 
     // Carbon offset at the Kenya grid factor
-    const annualCO2Offset = annualProduction * KENYA_SOLAR.gridKgCo2PerKwh;
+    // On the grid energy actually replaced, as the calculator (2026-10-29 audit).
+    const annualCO2Offset = energySaved * 12 * KENYA_SOLAR.gridKgCo2PerKwh;
     const lifetimeCO2Offset = annualCO2Offset * 25;
 
     return {

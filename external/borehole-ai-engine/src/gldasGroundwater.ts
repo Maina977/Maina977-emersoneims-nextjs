@@ -632,7 +632,7 @@ export async function fetchGLDASGroundwaterData(
     // BEST: 5-year ERA5-Land archive deep soil moisture trend
     storageTrend = { anomaly: era5Archive.anomalyCm, rate: era5Archive.trendCmPerYear };
     trendPeriod = `${era5Archive.monthlyDeepMoisture[0]?.month ?? '?'} – ${era5Archive.monthlyDeepMoisture[era5Archive.monthlyDeepMoisture.length - 1]?.month ?? '?'} (${era5Archive.monthCount} months)`;
-    trendSource = `ERA5-Land 5yr Archive deep soil moisture trend (${era5Archive.monthCount} months, ECMWF reanalysis → GRACE TWS proxy, R²≈0.85)`;
+    trendSource = `ERA5-Land deep soil moisture trend (${era5Archive.monthCount} months, ECMWF reanalysis): a soil-moisture indicator, not GRACE data (see the GRACE / GRACE-FO section for satellite gravity)`;
     // Cross-validate with NASA POWER if available
     if (power && Object.keys(power.gwetprof).length >= 12) {
       const powerTrend = computeStorageTrend(power.gwetprof);
@@ -645,7 +645,7 @@ export async function fetchGLDASGroundwaterData(
     const startYr = sortedKeys[0]?.slice(0, 4) ?? '?';
     const endYr = sortedKeys[sortedKeys.length - 1]?.slice(0, 4) ?? '?';
     trendPeriod = `${startYr}–${endYr} (${sortedKeys.length} months)`;
-    trendSource = `NASA POWER GWETPROF trend (${sortedKeys.length} months, GLDAS/MERRA-2 → GRACE TWS proxy, R≈0.80)`;
+    trendSource = `NASA POWER GWETPROF root-zone wetness trend (${sortedKeys.length} months, MERRA-2): a soil-moisture indicator, not GRACE data`;
   }
 
   let trend: GRACEGroundwaterAnomaly['trend'];
@@ -709,7 +709,7 @@ export async function fetchGLDASGroundwaterData(
     findings.push(`Water budget (real NASA data): P=${annualPrecipMm} − ET=${annualETMm} − Qs=${surfaceRunoff} → Recharge≈${baseflow} mm/yr (${Math.round(rechargeFraction * 100)}%)`);
   }
   if (storageTrend.rate !== 0) {
-    findings.push(`Storage trend: ${storageTrend.anomaly > 0 ? '+' : ''}${storageTrend.anomaly} cm anomaly, ${storageTrend.rate > 0 ? '+' : ''}${storageTrend.rate} cm/yr (${era5Archive ? 'ERA5-Land 5yr Archive' : 'GWETPROF GRACE proxy'})`);
+    findings.push(`Storage trend: ${storageTrend.anomaly > 0 ? '+' : ''}${storageTrend.anomaly} cm anomaly, ${storageTrend.rate > 0 ? '+' : ''}${storageTrend.rate} cm/yr (${era5Archive ? 'ERA5-Land soil moisture' : 'NASA POWER GWETPROF'}; soil-moisture indicator)`);
   }
   if (era5Archive) {
     findings.push(`ERA5-Land 5yr deep moisture: ${era5Archive.monthCount} months analyzed, seasonal amplitude ${era5Archive.seasonalAmplitude} cm`);
@@ -763,10 +763,11 @@ export async function fetchGLDASGroundwaterData(
       geeCollection: 'NASA/GLDAS/V021/NOAH/G025/T3H',
     },
     accuracy: {
-      soilMoisture: '85–95% (ERA5-Land validated vs ISMN stations, Muñoz-Sabater et al. 2021)',
-      waterBudget: '80–90% (NASA POWER GLDAS/MERRA-2 real P and ET, Reichle et al. 2017)',
-      storageTrend: '75–85% (GWETPROF trend → GRACE TWS proxy, Rodell et al. 2018)',
-      overall: '80–92%',
+      // Qualitative: no site validation backs a percentage (2026-10-29).
+      soilMoisture: 'Reanalysis soil moisture (ERA5-Land, validated against ISMN stations by Muñoz-Sabater et al. 2021); not measured at the site',
+      waterBudget: 'Reanalysis rainfall and evaporation (NASA POWER / ERA5); not measured at the site',
+      storageTrend: 'Soil-moisture indicator only; GRACE satellite gravity is reported in its own section',
+      overall: 'Regional reanalysis context, not a site measurement',
     },
     fetchedAt: new Date().toISOString(),
   };

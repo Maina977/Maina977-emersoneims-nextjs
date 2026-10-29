@@ -10,7 +10,7 @@ const COUNTY_SERVICE_PAGE = new Set(COUNTY_SERVICE_SLUGS);
 
 export const metadata: Metadata = {
   title: 'Generator Services Across Kenya',
-  description: 'Professional generator installation, repair, maintenance, and rental services across all 47 counties in Kenya. Find generator companies, diesel generators, spare parts, and 24/7 emergency support in your area. Call +254768860665',
+  description: 'Generator installation, repair, maintenance and rental across all 47 Kenyan counties, with spare parts and 24/7 emergency support. Call +254768860665',
   keywords: [
     'generator services kenya',
     'generator companies kenya',

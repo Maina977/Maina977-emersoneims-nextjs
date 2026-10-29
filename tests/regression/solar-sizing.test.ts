@@ -32,9 +32,12 @@ describe('sizeSolar', () => {
     const r = sizeSolar({ monthlyKwh: 4500, pshAnnual: 5.71, systemType: 'grid-tied', daytimeUsePct: 70, tariffKesPerKwh: 25 });
     expect(r.pvKwp).toBe(23.7);
     expect(r.batteryKwh).toBe(0);
-    expect(r.cost.midKes).toBeGreaterThan(2_150_000);
-    expect(r.cost.midKes).toBeLessThan(2_210_000);
-    expect(r.paybackYears!).toBeGreaterThan(2.9);
+    // 20 kW inverter: DC/AC 1.185, inside 1.0-1.3 (was 25 kW, DC/AC 0.95).
+    // (10×70k + 13.7×60k + 10×20k + 10×15k) × 1.12 = 2,096,640.
+    expect(r.inverterKw).toBe(20);
+    expect(r.cost.midKes).toBe(2_097_000);
+    // 4,500 × 365/30 × 0.7 × 0.75 × 25 = KES 718,594/yr → 2,097,000 / 718,594 = 2.9 yr.
+    expect(r.paybackYears!).toBeGreaterThan(2.85);
     expect(r.paybackYears!).toBeLessThan(3.15);
   });
 

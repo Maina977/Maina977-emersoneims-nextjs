@@ -87,12 +87,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `${k} must be between ${lo} and ${hi} ${unit}` }, { status: 400 });
     }
   }
-  // A peak that could not run even 15 minutes a day on the stated monthly use
-  // is a typing error (2026-10-27 audit: 5,000 kW on a home gave a
-  // 1,597-year payback).
-  if (given('peakLoadKw') && Number(body.peakLoadKw) * 0.25 * 30 > monthlyKwh) {
+  // A peak that could not run even 30 minutes a day on the stated monthly use
+  // is a typing error (2026-10-27 audit: 5,000 kW on a home gave a 1,597-year
+  // payback; 2026-10-29: 60 kW on 450 kWh/month still passed at 15 minutes).
+  if (given('peakLoadKw') && Number(body.peakLoadKw) * 0.5 * 30 > monthlyKwh) {
     return NextResponse.json({
-      error: `peakLoadKw ${Number(body.peakLoadKw)} kW does not fit ${monthlyKwh} kWh a month: it could not run even 15 minutes a day. Check both figures (the most for this consumption is ${Math.floor(monthlyKwh / 7.5)} kW).`,
+      error: `peakLoadKw ${Number(body.peakLoadKw)} kW does not fit ${monthlyKwh} kWh a month: it could not run even 30 minutes a day. Check both figures (the most for this consumption is ${Math.floor(monthlyKwh / 15)} kW).`,
     }, { status: 400 });
   }
   const systemType = given('systemType') ? (body.systemType as SystemType) : 'hybrid';

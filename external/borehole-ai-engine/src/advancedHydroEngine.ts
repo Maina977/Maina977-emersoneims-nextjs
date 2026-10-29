@@ -1,6 +1,7 @@
 import { loadLocalJson } from './localData';
 import { nasaMonthlyYears, nasaMonthlyValues } from './nasaPowerMonthly';
 import { fetchElevations } from './elevationService';
+import { bgsGroundwaterMaps, measuredGroundwaterNear, fetchWosisProfiles, fetchIgracWells, type BgsGroundwaterMaps, type MeasuredGroundwater, type WosisProfile, type IgracWell } from './openGroundwaterData';
 /**
  * ADVANCED HYDROGEOLOGICAL ENGINE
  * 
@@ -41,6 +42,25 @@ import { fetchElevations } from './elevationService';
 // 1. GRACE-FO TERRESTRIAL WATER STORAGE (TWS)
 // ═══════════════════════════════════════════════════════
 
+/**
+ * External endpoints found retired on 2026-10-29 (tested server-side, so not a
+ * browser/CORS problem), and what each was replaced with the same day:
+ *   bgsWfs          ogc.bgs.ac.uk WFS - covers Great Britain only; not queried for Kenya
+ *   igrac           old layer gone -> IGRAC GGIS groundwater:Groundwater_Well (live)
+ *   wosis           REST retired -> ISRIC WoSIS GraphQL (live)
+ *   bgsAfricaAtlas  ArcGIS service gone -> BGS/MacDonald Africa maps (shipped grid)
+ *   gemstat         account needed -> measured Kenyan groundwater chemistry (shipped)
+ *   mWater          account needed -> mWater/UNESCO Kenya extract (shipped registry)
+ * See openGroundwaterData.ts. The old URLs are not called.
+ */
+const SOURCE_ENABLED: Record<string, boolean> = {
+  bgsWfs: false, igrac: false, wosis: false, bgsAfricaAtlas: false, gemstat: false, mWater: false,
+};
+async function sourceFetch(key: string, url: string, timeoutMs: number): Promise<Response> {
+  if (!SOURCE_ENABLED[key]) throw new Error(`${key}: public endpoint retired (see SOURCE_ENABLED)`);
+  return fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+}
+
 export interface GRACEData {
   twsAnomaly_cm: number;           // Terrestrial water storage anomaly (cm equivalent water height)
   trend_cm_per_year: number;       // Linear trend
@@ -49,14 +69,151 @@ export interface GRACEData {
   aquiferStress: 'none' | 'low' | 'moderate' | 'high' | 'critical';
   dataSource: string;
   period: string;
+  /** True when the figures are real GRACE/GRACE-FO data, false for the soil-moisture stand-in. */
+  isSatelliteGravity?: boolean;
+  /** Groundwater storage (G3P): trend, its standard error, period, latest-12-month anomaly. */
+  groundwater?: { trend_cm_per_year: number; trendStdErr_cm_per_year: number; trend10yr_cm_per_year: number | null; anomalyLast12_cm: number; period: string; months: number; citation: string; monthlyUncertainty_cm: number | null };
+  /** Total water storage (GFZ GravIS): trends over the whole record and the GRACE-FO years. */
+  totalStorage?: { trend_cm_per_year: number; trendStdErr_cm_per_year: number; trendGraceFO_cm_per_year: number | null; anomalyLast12_cm: number; period: string; months: number; citation: string };
+  /** Monthly series at the site's cell, for charts: [YYYY-MM, groundwater cm | null, total cm | null]. */
+  series?: [string, number | null, number | null][];
+  footprint_km?: number;
+}
+
+/** Ordinary least-squares trend (per year) and its standard error. */
+function olsTrend(months: string[], values: (number | null)[]): { slope: number; se: number; n: number } | null {
+  const x: number[] = [], y: number[] = [];
+  months.forEach((m, i) => {
+    const v = values[i];
+    if (typeof v !== 'number' || !Number.isFinite(v)) return;
+    x.push(Number(m.slice(0, 4)) + (Number(m.slice(5, 7)) - 0.5) / 12);
+    y.push(v);
+  });
+  const n = x.length;
+  if (n < 24) return null;
+  const mx = x.reduce((a, b) => a + b, 0) / n, my = y.reduce((a, b) => a + b, 0) / n;
+  let sxx = 0, sxy = 0;
+  for (let i = 0; i < n; i++) { sxx += (x[i] - mx) ** 2; sxy += (x[i] - mx) * (y[i] - my); }
+  const slope = sxy / sxx;
+  let sse = 0;
+  for (let i = 0; i < n; i++) sse += (y[i] - (my + slope * (x[i] - mx))) ** 2;
+  return { slope, se: Math.sqrt(sse / (n - 2) / sxx), n };
 }
 
 /**
- * Fetch GRACE-FO TWS anomaly from NASA Giovanni / PODAAC proxy
- * Uses Open-Meteo's soil moisture archive as a GRACE-correlated proxy (R²≈0.85)
- * and NASA POWER GWETPROF for deep profile moisture trend
+ * Real GRACE / GRACE-FO data at the site, from public/data/kenya-grace.json
+ * (built by scripts/grace/build-kenya-grace.py from G3P v1.12 groundwater and
+ * GFZ GravIS RL06 total water storage, both open with no token). Null outside
+ * Kenya's grid or when the file cannot be read.
+ */
+async function realGraceAt(lat: number, lon: number): Promise<GRACEData | null> {
+  const { loadLocalJson } = await import('./localData');
+  const g = await loadLocalJson<any>('/data/kenya-grace.json');
+  if (!g?.gwsa?.cells || !g?.tws?.cells) return null;
+  // The site's 1-degree cell; on the coast that cell is mostly sea and has no
+  // land value, so the nearest land cell within one cell is used and named.
+  // Each product picks its own cell: G3P's finer land mask can cover a coastal
+  // cell that GravIS leaves empty (Mombasa).
+  const cellKey = (la: number, lo: number) => `${(Math.floor(la) + 0.5).toFixed(1)},${(Math.floor(lo) + 0.5).toFixed(1)}`;
+  const own = cellKey(lat, lon);
+  const pickCell = (cells: Record<string, unknown>): string | null => {
+    if (cells[own]) return own;
+    let best: string | null = null, bestD = Infinity;
+    for (const dla of [-1, 0, 1]) for (const dlo of [-1, 0, 1]) {
+      const k = cellKey(lat + dla, lon + dlo);
+      if (!cells[k]) continue;
+      const [cla, clo] = k.split(',').map(Number);
+      const d = Math.hypot(cla - lat, (clo - lon) * Math.cos((lat * Math.PI) / 180));
+      if (d < bestD) { bestD = d; best = k; }
+    }
+    return best;
+  };
+  const gKey = pickCell(g.gwsa.cells), tKey = pickCell(g.tws.cells);
+  const gw: (number | null)[] | undefined = gKey ? g.gwsa.cells[gKey] : undefined;
+  const tw: (number | null)[] | undefined = tKey ? g.tws.cells[tKey] : undefined;
+  if (!gw && !tw) return null;
+  const key = gKey ?? tKey!;
+  const neighbour = (gKey != null && gKey !== own) || (tKey != null && tKey !== own);
+  // Big lakes move GRACE's signal: Lake Victoria rose about 1.2 m in 2019-20.
+  // G3P removes surface water, but the total-storage figure includes the lake.
+  const nearLake = (lat > -1.6 && lat < 0.6 && lon < 35.0) || (lat > 2.3 && lat < 4.8 && lon > 35.5 && lon < 36.9);
+  const r1 = (v: number) => Math.round(v * 100) / 100;
+  const mean = (a: number[]) => a.reduce((s, v) => s + v, 0) / a.length;
+  const nums = (a: (number | null)[]) => a.filter((v): v is number => typeof v === 'number');
+  const last12 = (a: (number | null)[]) => mean(nums(a).slice(-12)) - mean(nums(a));
+
+  let groundwater: GRACEData['groundwater'];
+  if (gw) {
+    const t = olsTrend(g.gwsa.months, gw);
+    const m = g.gwsa.months as string[];
+    const i10 = m.length - 120;
+    const t10 = i10 > 0 ? olsTrend(m.slice(i10), gw.slice(i10)) : null;
+    if (t) groundwater = { trend_cm_per_year: r1(t.slope), trendStdErr_cm_per_year: r1(t.se), trend10yr_cm_per_year: t10 ? r1(t10.slope) : null, anomalyLast12_cm: r1(last12(gw)), period: `${m[0]} to ${m[m.length - 1]}`, months: t.n, citation: g.gwsa.citation, monthlyUncertainty_cm: g.gwsa.meanUncertainty_cm?.[key] ?? null };
+  }
+  let totalStorage: GRACEData['totalStorage'];
+  let seasonal = 0;
+  if (tw) {
+    const m = g.tws.months as string[];
+    const t = olsTrend(m, tw);
+    const fo = m.findIndex((x) => x >= '2018-06');
+    const tFo = fo >= 0 ? olsTrend(m.slice(fo), tw.slice(fo)) : null;
+    if (t) totalStorage = { trend_cm_per_year: r1(t.slope), trendStdErr_cm_per_year: r1(t.se), trendGraceFO_cm_per_year: tFo ? r1(tFo.slope) : null, anomalyLast12_cm: r1(last12(tw)), period: `${m[0]} to ${m[m.length - 1]}`, months: t.n, citation: g.tws.citation };
+    // Seasonal amplitude: half the range of the mean annual cycle, after the trend is removed.
+    const sum = Array(12).fill(0), cnt = Array(12).fill(0);
+    m.forEach((mo, i) => {
+      const v = tw[i];
+      if (typeof v !== 'number' || !t) return;
+      const x = Number(mo.slice(0, 4)) + (Number(mo.slice(5, 7)) - 0.5) / 12;
+      const k = Number(mo.slice(5, 7)) - 1;
+      sum[k] += v - t.slope * (x - 2010); cnt[k]++;
+    });
+    const clim = sum.map((s, k) => (cnt[k] ? s / cnt[k] : NaN)).filter(Number.isFinite);
+    if (clim.length >= 10) seasonal = (Math.max(...clim) - Math.min(...clim)) / 2;
+  }
+  if (!groundwater && !totalStorage) return null;
+
+  // Status from the groundwater trend where G3P covers the cell, else total storage.
+  const trend = groundwater?.trend_cm_per_year ?? totalStorage!.trend_cm_per_year;
+  const se = groundwater?.trendStdErr_cm_per_year ?? totalStorage!.trendStdErr_cm_per_year;
+  // A trend within two standard errors of zero is "stable", however it reads.
+  const status: GRACEData['status'] = Math.abs(trend) < 2 * se || Math.abs(trend) <= 0.3 ? 'stable'
+    : trend > 0 ? 'gaining' : trend > -1.0 ? 'losing' : 'critically_depleting';
+  const anomaly = totalStorage?.anomalyLast12_cm ?? groundwater!.anomalyLast12_cm;
+  const aquiferStress: GRACEData['aquiferStress'] = anomaly > 2 ? 'none' : anomaly > 0 ? 'low' : anomaly > -2 ? 'moderate' : anomaly > -5 ? 'high' : 'critical';
+
+  // Monthly series for charts (union of both month lists).
+  const allMonths = Array.from(new Set([...(g.gwsa.months as string[]), ...(g.tws.months as string[])])).sort();
+  const gi = new Map((g.gwsa.months as string[]).map((m: string, i: number) => [m, gw?.[i] ?? null]));
+  const ti = new Map((g.tws.months as string[]).map((m: string, i: number) => [m, tw?.[i] ?? null]));
+  const series = allMonths.map((m) => [m, gi.get(m) ?? null, ti.get(m) ?? null] as [string, number | null, number | null]);
+
+  return {
+    twsAnomaly_cm: anomaly,
+    trend_cm_per_year: trend,
+    seasonalAmplitude_cm: r1(seasonal),
+    status,
+    aquiferStress,
+    isSatelliteGravity: true,
+    groundwater,
+    totalStorage,
+    series,
+    footprint_km: 300,
+    period: [groundwater && `groundwater ${groundwater.period}`, totalStorage && `total storage ${totalStorage.period}`].filter(Boolean).join('; '),
+    dataSource: `GRACE / GRACE-FO satellite gravity, 1-degree cell ${own}${neighbour ? ` (nearest land cell used where the site's own cell is mostly sea: groundwater ${gKey ?? 'n/a'}, total storage ${tKey ?? 'n/a'})` : ''} (signal resolution about 250-300 km: a regional figure, not the aquifer under the site).${nearLake ? ' Near Lake Victoria / Lake Turkana: lake-level changes affect the total-storage figure; the groundwater figure has surface water removed.' : ''} Groundwater: ${g.gwsa.citation}. Total water storage: ${g.tws.citation}.`,
+  };
+}
+
+/**
+ * GRACE / GRACE-FO water storage at the site: real satellite-gravity data
+ * (G3P groundwater + GFZ GravIS total storage) wherever the shipped Kenya grid
+ * covers the site; only outside it, a clearly labelled stand-in built from
+ * ERA5-Land deep soil moisture.
  */
 export async function fetchGRACETWSData(lat: number, lon: number): Promise<GRACEData | null> {
+  try {
+    const real = await realGraceAt(lat, lon);
+    if (real) return real;
+  } catch { /* fall through to the stand-in */ }
   try {
     // Fetch 5-year deep soil moisture trend as GRACE TWS proxy. The window
     // ends at the last complete month (fixed all month, so the relay's cached
@@ -136,7 +293,10 @@ export async function fetchGRACETWSData(lat: number, lon: number): Promise<GRACE
       seasonalAmplitude_cm: Math.round(amplitude * 100) / 100,
       status,
       aquiferStress,
-      dataSource: 'ERA5-Land deep soil moisture (100-255cm) as GRACE-FO TWS proxy (R²≈0.85). 5-year daily archive. Cross-validated with NASA POWER GWETPROF (root-zone wetness).',
+      // Named as what it is (2026-10-29 audit): a stand-in for GRACE-FO built
+      // from deep soil moisture, not GRACE-FO gravity data; no R² is claimed.
+      isSatelliteGravity: false,
+      dataSource: 'STAND-IN, not GRACE data: ERA5-Land deep soil moisture (100-255 cm), 5-year daily archive. Used only where the shipped GRACE grid does not cover the site.',
       period: `${start} to ${end}`,
     };
   } catch {
@@ -222,6 +382,13 @@ export interface NearbyBoreholeData {
   };
   searchRadius_km: number;
   dataSources: string[];
+  /** Open groundwater evidence that replaced the retired endpoints (2026-10-29). */
+  openData?: {
+    bgsMaps: BgsGroundwaterMaps | null;
+    measured: MeasuredGroundwater | null;
+    soilProfiles: WosisProfile[] | null;
+    igracWells: IgracWell[] | null;
+  };
   // Borehole density analysis
   densityAnalysis?: {
     totalFound: number;
@@ -498,7 +665,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
           });
           unCount++;
         }
-        if (unCount > 0) dataSources.push(`UNESCO IHP-WINS Kenya registry (${unCount} of ${unMatches.length} named wells within ${searchRadius} km — nearest listed)`);
+        if (unCount > 0) dataSources.push(`UNESCO IHP-WINS Kenya registry incl. mWater (${unCount} of ${unMatches.length} named wells within ${searchRadius} km — nearest listed)`);
       }
     }
   } catch { /* registry unreachable — other sources still apply */ }
@@ -562,12 +729,15 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   })());
 
   // ────────────────────────────────────────────────────────
-  // 4. BGS GeoIndex (UK & some Africa coverage)
+  // 4. BGS GeoIndex: its WFS covers Great Britain only, so it is queried only
+  //    there (it can say nothing about a Kenyan site).
   // ────────────────────────────────────────────────────────
+  const inGreatBritain = lat >= 49.8 && lat <= 60.9 && lon >= -8.7 && lon <= 1.9;
   tasks.push((async () => {
+  if (!inGreatBritain) return;
   try {
     const wfsUrl = `https://ogc.bgs.ac.uk/dppp/wfs?service=WFS&version=2.0.0&request=GetFeature&typeName=GBR_BGS_625k_BLT&bbox=${lat-degOffset},${lon-degOffset},${lat+degOffset},${lon+degOffset},urn:ogc:def:crs:EPSG::4326&count=10&outputFormat=application/json`;
-    const resp = await fetch(wfsUrl, { signal: AbortSignal.timeout(10000) });
+    const resp = await sourceFetch('bgsWfs', wfsUrl, 10000);
     if (resp.ok) {
       const data = await resp.json();
       if (data.features?.length > 0) {
@@ -630,47 +800,16 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //    Government & research institute monitoring wells worldwide
   //    https://ggis.un-igrac.org/
   // ────────────────────────────────────────────────────────
+  let igracWells: IgracWell[] | null = null;
   tasks.push((async () => {
-  try {
-    const igracBbox = `${(lon - degOffset).toFixed(4)},${(lat - degOffset).toFixed(4)},${(lon + degOffset).toFixed(4)},${(lat + degOffset).toFixed(4)}`;
-    const igracUrl = `https://ggis.un-igrac.org/geoserver/ggis/wfs?service=WFS&version=2.0.0&request=GetFeature&typeName=ggis:groundwater_monitoring_stations&bbox=${igracBbox},EPSG:4326&count=30&outputFormat=application/json`;
-    const resp = await fetch(igracUrl, { signal: AbortSignal.timeout(15000) });
-    if (resp.ok) {
-      const ct = resp.headers.get('content-type') ?? '';
-      if (ct.includes('json') || ct.includes('geo')) {
-        const data = await resp.json();
-        const features: any[] = data.features ?? [];
-        features.forEach((f: any) => {
-          const coords = f.geometry?.coordinates;
-          if (!coords || coords.length < 2) return;
-          const wLat = coords[1], wLon = coords[0];
-          const dist = haversineDistance(lat, lon, wLat, wLon);
-          if (dist <= searchRadius) {
-            const p = f.properties ?? {};
-            const depth = parseFloat(p.well_depth ?? p.depth ?? p.borehole_depth ?? '0') || 0;
-            const yv = parseFloat(p.yield_value ?? p.discharge ?? p.pumping_rate ?? '0') || 0;
-            const wl = parseFloat(p.water_level ?? p.gwl ?? p.static_water_level ?? '0') || 0;
-            wells.push({
-              id: p.station_id ?? p.monitoring_id ?? `IGRAC-${wells.length + 1}`,
-              lat: wLat, lon: wLon,
-              distance_km: Math.round(dist * 10) / 10,
-              depth_m: depth,
-              yield_m3h: yv > 0 ? yv : undefined,
-              waterLevel_m: wl > 0 ? wl : undefined,
-              aquiferType: p.aquifer_type ?? p.aquifer_name ?? p.hydrogeological_unit ?? undefined,
-              lithology: p.lithology ?? p.geology ?? p.geological_formation ?? undefined,
-              outcome: (p.status === 'active' || p.operational === 'yes' || p.monitoring_status === 'active')
-                ? 'Success'
-                : (p.status === 'inactive' || p.status === 'abandoned' || p.monitoring_status === 'closed')
-                  ? 'Fail' : 'Unknown' as any,
-              source: 'IGRAC GGMN (UN)',
-            });
-          }
-        });
-        if (features.length > 0) dataSources.push('IGRAC Global Groundwater Monitoring Network (UN)');
-      }
+    if (opts?.localOnly) return;
+    igracWells = await fetchIgracWells(lat, lon, searchRadius);
+    if (igracWells && igracWells.length > 0) {
+      // Monitoring wells: their "Active" status is the monitoring, not a
+      // drilling result, so they add no success/failure and no depth.
+      const withLevels = igracWells.filter((w) => w.levelRecords > 0).length;
+      dataSources.push(`IGRAC GGIS (UN): ${igracWells.length} groundwater monitoring well(s) within ${searchRadius} km, ${withLevels} with water-level records (nearest ${igracWells[0].distance_km} km)`);
     }
-  } catch { /* IGRAC may be unreachable or CORS-restricted */ }
   })());
 
   // ────────────────────────────────────────────────────────
@@ -679,38 +818,17 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //    Contains drilling logs, horizon descriptions, measured depth data
   //    https://www.isric.org/explore/wosis
   // ────────────────────────────────────────────────────────
+  let soilProfiles: WosisProfile[] | null = null;
   tasks.push((async () => {
-  try {
-    const wosisUrl = `https://rest.isric.org/wosis/latest/profiles?lat=${lat}&lon=${lon}&within=${searchRadius * 1000}&limit=20`;
-    const resp = await fetch(wosisUrl, { signal: AbortSignal.timeout(12000) });
-    if (resp.ok) {
-      const ct = resp.headers.get('content-type') ?? '';
-      if (ct.includes('json')) {
-        const data = await resp.json();
-        const profiles: any[] = Array.isArray(data) ? data : (data.profiles ?? data.features ?? data.items ?? []);
-        profiles.slice(0, 20).forEach((p: any) => {
-          const pLat = p.latitude ?? p.lat ?? p.geometry?.coordinates?.[1];
-          const pLon = p.longitude ?? p.lon ?? p.geometry?.coordinates?.[0];
-          if (!pLat || !pLon) return;
-          const dist = haversineDistance(lat, lon, parseFloat(pLat), parseFloat(pLon));
-          if (dist <= searchRadius) {
-            const maxDepthCm = parseFloat(p.max_depth ?? p.profile_depth ?? p.depth_max ?? '0') || 0;
-            wells.push({
-              id: p.profile_id ?? p.dataset_id ?? `WoSIS-${wells.length + 1}`,
-              lat: parseFloat(pLat), lon: parseFloat(pLon),
-              distance_km: Math.round(dist * 10) / 10,
-              depth_m: maxDepthCm > 0 ? maxDepthCm / 100 : 0,
-              lithology: p.wrb_class ?? p.soil_class ?? p.classification ?? undefined,
-              aquiferType: p.drainage_class ?? undefined,
-              outcome: 'Unknown' as any,
-              source: `WoSIS ${p.dataset ?? p.source_database ?? '(ISRIC/university)'}`,
-            });
-          }
-        });
-        if (profiles.length > 0) dataSources.push('ISRIC World Soil Information Service (WoSIS — research/university profiles)');
-      }
+    // Soil profiles are about 2 m deep: soil evidence, never counted as wells
+    // (before 2026-10-29 they were added to the well list with their profile
+    // depth as a "borehole depth").
+    if (opts?.localOnly) return;
+    soilProfiles = await fetchWosisProfiles(lat, lon, 25);
+    if (soilProfiles && soilProfiles.length > 0) {
+      const p = soilProfiles[0];
+      dataSources.push(`ISRIC WoSIS: ${soilProfiles.length} measured soil profile(s) within 25 km (nearest ${p.distance_km} km${p.soilGroup ? `, ${p.soilGroup}` : ''})`);
     }
-  } catch { /* WoSIS endpoint may not be publicly accessible */ }
   })());
 
   // ────────────────────────────────────────────────────────
@@ -719,48 +837,12 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //    Aquifer productivity, depth to water, borehole yields
   //    https://www2.bgs.ac.uk/groundwater/international/africanGroundwater/
   // ────────────────────────────────────────────────────────
-  const inAfrica = lat >= -35 && lat <= 37 && lon >= -25 && lon <= 55;
+  let bgsMaps: BgsGroundwaterMaps | null = null;
   tasks.push((async () => {
-  if (inAfrica) {
-    try {
-      const africaBbox = `${(lon - degOffset).toFixed(4)},${(lat - degOffset).toFixed(4)},${(lon + degOffset).toFixed(4)},${(lat + degOffset).toFixed(4)}`;
-      const africaUrl = `https://map.bgs.ac.uk/arcgis/rest/services/IGRAC/AfricaGroundwaterAtlas_Boreholes/MapServer/0/query?geometry=${africaBbox}&geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&outFields=*&f=json&inSR=4326&outSR=4326`;
-      const resp = await fetch(africaUrl, { signal: AbortSignal.timeout(12000) });
-      if (resp.ok) {
-        const ct = resp.headers.get('content-type') ?? '';
-        if (ct.includes('json')) {
-          const data = await resp.json();
-          (data.features ?? []).slice(0, 30).forEach((f: any) => {
-            const p = f.attributes ?? {};
-            const geom = f.geometry;
-            if (!geom) return;
-            const wLat = geom.y ?? geom.latitude;
-            const wLon = geom.x ?? geom.longitude;
-            if (!isFinite(wLat) || !isFinite(wLon)) return;
-            const dist = haversineDistance(lat, lon, wLat, wLon);
-            if (dist <= searchRadius) {
-              wells.push({
-                id: p.OBJECTID ? `BGS-Afr-${p.OBJECTID}` : `BGS-Afr-${wells.length + 1}`,
-                lat: wLat, lon: wLon,
-                distance_km: Math.round(dist * 10) / 10,
-                depth_m: parseFloat(p.DEPTH ?? p.Well_Depth ?? p.Borehole_Depth ?? '0') || 0,
-                yield_m3h: (parseFloat(p.YIELD ?? p.Discharge ?? p.Borehole_Yield ?? '0') || undefined),
-                waterLevel_m: (parseFloat(p.SWL ?? p.Water_Level ?? p.Static_WL ?? '0') || undefined),
-                aquiferType: p.AQUIFER ?? p.Aquifer_Type ?? p.Hydrogeology ?? undefined,
-                lithology: p.LITHOLOGY ?? p.Geology ?? p.Rock_Type ?? p.Formation ?? undefined,
-                outcome: (p.STATUS === 'Success' || p.Functional === 'Yes' || p.Success === 1)
-                  ? 'Success'
-                  : (p.STATUS === 'Fail' || p.Functional === 'No' || p.Dry === 1)
-                    ? 'Fail' : 'Unknown' as any,
-                source: 'BGS Africa Groundwater Atlas',
-              });
-            }
-          });
-          if (data.features?.length > 0) dataSources.push('British Geological Survey — Africa Groundwater Atlas');
-        }
-      }
-    } catch { /* BGS Africa endpoint may not be accessible */ }
-  }
+    bgsMaps = await bgsGroundwaterMaps(lat, lon);
+    if (bgsMaps) {
+      dataSources.push(`BGS Africa groundwater maps (MacDonald et al. 2012, 5 km): depth to groundwater ${bgsMaps.depthToGroundwater ?? 'n/a'}, productivity ${bgsMaps.productivity ?? 'n/a'}, storage ${bgsMaps.storage ?? 'n/a'}${bgsMaps.cellOffset_km > 3 ? ` (nearest mapped cell, ${bgsMaps.cellOffset_km} km)` : ''}`);
+    }
   })());
 
   // ────────────────────────────────────────────────────────
@@ -813,37 +895,17 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //     Operated by Federal Institute of Hydrology (BfG), Germany
   //     https://gemstat.org/
   // ────────────────────────────────────────────────────────
+  let measured: MeasuredGroundwater | null = null;
   tasks.push((async () => {
-  try {
-    const gemBbox = `${(lon - degOffset).toFixed(4)},${(lat - degOffset).toFixed(4)},${(lon + degOffset).toFixed(4)},${(lat + degOffset).toFixed(4)}`;
-    const gemstatUrl = `https://gemstat.bafg.de/applications/public.html/api/stations?bbox=${gemBbox}&type=groundwater&format=json`;
-    const resp = await fetch(gemstatUrl, { signal: AbortSignal.timeout(10000) });
-    if (resp.ok) {
-      const ct = resp.headers.get('content-type') ?? '';
-      if (ct.includes('json')) {
-        const data = await resp.json();
-        const stations: any[] = Array.isArray(data) ? data : (data.stations ?? data.features ?? []);
-        stations.slice(0, 15).forEach((s: any) => {
-          const sLat = parseFloat(s.latitude ?? s.lat ?? s.geometry?.coordinates?.[1] ?? '0');
-          const sLon = parseFloat(s.longitude ?? s.lon ?? s.geometry?.coordinates?.[0] ?? '0');
-          if (!isFinite(sLat) || !isFinite(sLon) || sLat === 0) return;
-          const dist = haversineDistance(lat, lon, sLat, sLon);
-          if (dist <= searchRadius) {
-            wells.push({
-              id: s.station_id ?? s.gems_station_number ?? `GEMStat-${wells.length + 1}`,
-              distance_km: Math.round(dist * 10) / 10,
-              depth_m: parseFloat(s.depth ?? s.well_depth ?? '0') || 0,
-              waterLevel_m: (parseFloat(s.water_level ?? '0') || undefined),
-              aquiferType: s.aquifer ?? s.hydrogeological_unit ?? undefined,
-              outcome: s.status === 'active' ? 'Success' : 'Unknown' as any,
-              source: 'GEMStat (UNEP/BfG)',
-            });
-          }
-        });
-        if (stations.length > 0) dataSources.push('GEMStat — UNEP Global Water Quality Monitoring');
-      }
+    measured = await measuredGroundwaterNear(lat, lon, 25);
+    if (measured && measured.boreholes > 0) {
+      const parts: string[] = [];
+      if (measured.ec) parts.push(`EC at ${measured.ec.n}`);
+      if (measured.fluoride) parts.push(`fluoride at ${measured.fluoride.n}`);
+      if (measured.restWaterLevel) parts.push(`rest water level at ${measured.restWaterLevel.n}`);
+      dataSources.push(`Measured groundwater (UNESCO IHP-WINS open data): ${measured.boreholes} borehole(s) within 25 km${parts.length ? ` - ${parts.join(', ')}` : ''}`);
     }
-  } catch { /* GEMStat may not have public API accessible from browser */ }
+    if (measured && measured.areaSurveys.length > 0) dataSources.push(`City groundwater survey: ${measured.areaSurveys.map((a: any) => a.name.split(' (')[0]).join('; ')}`);
   })());
 
   // ────────────────────────────────────────────────────────
@@ -852,40 +914,9 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
   //     Used by UNICEF, WaterAid, World Vision, and national WASH depts
   //     https://www.mwater.co/
   // ────────────────────────────────────────────────────────
-  tasks.push((async () => {
-  try {
-    const mwFilter = JSON.stringify({
-      geo: { $near: { $geometry: { type: 'Point', coordinates: [lon, lat] }, $maxDistance: searchRadius * 1000 } },
-    });
-    const mwFields = JSON.stringify({ name: 1, type: 1, geo: 1, status: 1, depth: 1, yield: 1, year: 1, source_type: 1, org: 1 });
-    const mWaterUrl = `https://api.mwater.co/v3/entities/water_point?filter=${encodeURIComponent(mwFilter)}&limit=30&fields=${encodeURIComponent(mwFields)}`;
-    const resp = await fetch(mWaterUrl, { signal: AbortSignal.timeout(12000) });
-    if (resp.ok) {
-      const ct = resp.headers.get('content-type') ?? '';
-      if (ct.includes('json')) {
-        const data = await resp.json();
-        const items: any[] = Array.isArray(data) ? data : (data.entities ?? data.results ?? []);
-        items.forEach((wp: any) => {
-          const coords = wp.geo?.coordinates;
-          if (!coords || coords.length < 2) return;
-          const dist = haversineDistance(lat, lon, coords[1], coords[0]);
-          if (dist <= searchRadius) {
-            wells.push({
-              id: wp._id ?? `mWater-${wells.length + 1}`,
-              distance_km: Math.round(dist * 10) / 10,
-              depth_m: parseFloat(wp.depth ?? '0') || 0,
-              yield_m3h: (parseFloat(wp.yield ?? '0') || undefined),
-              aquiferType: wp.source_type ?? undefined,
-              outcome: wp.status === 'functional' ? 'Success' : wp.status === 'not functional' ? 'Fail' : 'Unknown' as any,
-              source: `mWater${wp.org ? ` (${wp.org})` : ''}${wp.year ? ` ${wp.year}` : ''}`,
-            });
-          }
-        });
-        if (items.length > 0) dataSources.push('mWater Mobile Water Monitoring (NGO field data)');
-      }
-    }
-  } catch { /* mWater may require auth or CORS-restricted */ }
-  })());
+  //     mWater's Kenya groundwater sources are read from the mWater -> UNESCO
+  //     IHP-WINS extract in /data/gov-wells-kenya.json (source 3 above); the
+  //     live API needs an account and holds the same Kenya records.
 
   // ────────────────────────────────────────────────────────
   // ADAPTIVE RADIUS — if very few wells found in 25 km, try 50 km
@@ -1129,6 +1160,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
     },
     searchRadius_km: searchRadius,
     dataSources,
+    openData: { bgsMaps, measured, soilProfiles, igracWells },
     densityAnalysis: {
       totalFound: dedupWells.length,
       wellsWithDepth: validDepths.length,
@@ -1179,7 +1211,7 @@ export async function computeDEMHydrology(lat: number, lon: number): Promise<DEM
       }
     }
 
-    // Batch fetch elevations (Open-Elevation, else Open-Meteo / Copernicus DEM).
+    // Batch fetch elevations (Open-Meteo / Copernicus DEM, else Open-Elevation / SRTM).
     const lookup = await fetchElevations(points, 20000);
     if (!lookup) return null;
     const elevations: number[] = lookup.elevations;
@@ -1291,7 +1323,7 @@ export async function computeDEMHydrology(lat: number, lon: number): Promise<DEM
       drainageDensity,
       relativePosition,
       groundwaterFavorability: favorability,
-      methodology: 'SRTM 30m DEM, 5×5 grid (500m spacing). Slope/aspect: Horn\'s method. TWI: ln(upslope_area/tan(slope)). Position: relative elevation percentile.',
+      methodology: `${lookup.source}, 5×5 grid (500m spacing). Slope/aspect: Horn's method. TWI: ln(upslope_area/tan(slope)). Position: relative elevation percentile.`,
     };
   } catch {
     return null;
@@ -1644,6 +1676,8 @@ export interface EnsembleInput {
   boreholeCount?: number;
   // From GRACE-FO
   graceStatus?: GRACEData['status'];
+  /** False when the storage figures are the soil-moisture stand-in, not GRACE data. */
+  graceIsSatellite?: boolean;
   graceTrend?: number;
   // From DEM hydrology
   demFavorability?: number;
@@ -1658,6 +1692,9 @@ export interface EnsembleInput {
   /** 0..1 -- share of nearby records whose depth/yield are field/registry
    *  measurements rather than regional estimates (springs etc.). */
   nearbyWellFieldShare?: number;
+  /** Nearby boreholes with a recorded outcome, and how many of them succeeded. */
+  nearbyOutcomeKnown?: number;
+  nearbyOutcomeSuccess?: number;
   // From vegetation proxy
   vegGWDependence?: VegetationGroundwaterProxy['groundwaterDependence'];
   shallowWTLikelihood?: number;
@@ -1717,13 +1754,16 @@ export function runBayesianEnsemble(input: EnsembleInput): EnsembleResult {
 
   // Source 3: Regional borehole statistics
   if (input.boreholeSuccessRate != null && input.boreholeCount && input.boreholeCount > 0) {
+    // County profiles are estimates for most counties, so their reliability does
+    // not grow with the estimated borehole count (2026-10-29 audit: Nairobi's
+    // "~4,200 boreholes" gave 0.90). Nearby field records carry the measured evidence.
     estimates.push({
-      source: 'Regional Borehole Database',
+      source: 'County profile (estimates)',
       probability: input.boreholeSuccessRate,
       depth_m: input.boreholeAvgDepth,
       yield_m3h: input.boreholeAvgYield,
       weight: 0.20,
-      reliability: Math.min(0.90, 0.60 + (input.boreholeCount / 100)),
+      reliability: 0.60,
     });
   }
 
@@ -1745,9 +1785,16 @@ export function runBayesianEnsemble(input: EnsembleInput): EnsembleResult {
         : `Nearby Water Points (${Math.round(fieldShare * 100)}% field-measured)`,
       depth_m: input.nearbyWellAvgDepth,
       yield_m3h: input.nearbyWellAvgYield,
-      probability: input.nearbyWellCount >= 3 ? 0.85 : 0.70, // presence of nearby water points is strong occurrence evidence
+      // From recorded drilling outcomes when there are enough of them: the
+      // success share shrunk towards 0.70 by four pseudo-records. Otherwise the
+      // presence of water points is weaker occurrence evidence. (2026-10-29
+      // audit: a fixed 0.85 for any 3+ water points - springs and dug wells
+      // included - kept every site between 61% and 74%.)
+      probability: (input.nearbyOutcomeKnown ?? 0) >= 5
+        ? ((input.nearbyOutcomeSuccess ?? 0) + 0.70 * 4) / ((input.nearbyOutcomeKnown ?? 0) + 4)
+        : input.nearbyWellCount >= 3 ? 0.72 : 0.65,
       weight: 0.20,
-      reliability: valueReliability,
+      reliability: (input.nearbyOutcomeKnown ?? 0) >= 5 ? valueReliability : Math.min(valueReliability, 0.6),
     });
   }
 
@@ -1761,11 +1808,13 @@ export function runBayesianEnsemble(input: EnsembleInput): EnsembleResult {
     else if (input.graceStatus === 'losing') graceProb = 0.40;
     else graceProb = 0.20; // critical
 
+    // A regional (~300 km) storage trend says little about one borehole, so its
+    // reliability is modest; the soil-moisture stand-in less again.
     estimates.push({
-      source: 'GRACE-FO TWS Trend',
+      source: input.graceIsSatellite === false ? 'Storage trend stand-in (ERA5-Land deep soil moisture)' : 'GRACE / GRACE-FO storage trend (G3P groundwater, ~300 km)',
       probability: graceProb,
       weight: 0.15,
-      reliability: 0.75,
+      reliability: input.graceIsSatellite === false ? 0.45 : 0.6,
     });
   }
 

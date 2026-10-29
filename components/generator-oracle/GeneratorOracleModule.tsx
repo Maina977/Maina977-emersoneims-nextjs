@@ -865,7 +865,7 @@ function SubTabNav<T extends string>({
   };
 
   return (
-    <div role="tablist" className="flex flex-nowrap sm:flex-wrap overflow-x-auto items-center gap-2 p-2 bg-slate-900/50 rounded-xl border border-slate-700/50 mb-4 sm:mb-6">
+    <div role="tablist" className="flex flex-nowrap sm:flex-wrap overflow-x-auto items-center gap-2 p-2 pr-8 sm:pr-2 bg-slate-900/50 rounded-xl border border-slate-700/50 mb-4 sm:mb-6 [mask-image:linear-gradient(to_right,black_85%,transparent)] sm:[mask-image:none] [scrollbar-width:thin] [-webkit-overflow-scrolling:touch]">
       {tabs.map((tab) => (
         <motion.button
           key={tab.id}
@@ -1646,13 +1646,13 @@ export default function GeneratorOracleModule() {
                         <HolographicGlassPanel title={t.needHelp} icon="💬" accentColor="green">
                           <div className="space-y-3">
                             <a
-                              href="tel:+254782914717"
+                              href="tel:+254768860665"
                               className="flex items-center gap-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl hover:bg-blue-500/20 transition-colors"
                             >
                               <span className="text-xl">📞</span>
                               <div className="flex-1">
                                 <div className="text-sm text-blue-400 font-medium">{t.callSupport}</div>
-                                <div className="text-xs text-slate-500">+254 782 914 717</div>
+                                <div className="text-xs text-slate-500">+254 768 860 665</div>
                               </div>
                             </a>
                             <a

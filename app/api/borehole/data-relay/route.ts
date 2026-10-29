@@ -1,12 +1,12 @@
 /**
  * Data relay for AquaScan's public scientific sources (2026-10-29).
  *
- * Open-Meteo (ERA5 / ERA5-Land, including the GRACE-FO storage proxy), NASA
- * POWER and the ORNL MODIS service rate-limit bursts of large requests (HTTP
- * 429) and sometimes time out. Called straight from the browser, a source
+ * Open-Meteo (ECMWF IFS / ERA5 / ERA5-Land), NASA POWER, the ORNL MODIS
+ * service, ISRIC SoilGrids and IGRAC GGIS rate-limit bursts of large requests
+ * (HTTP 429) and sometimes time out. Called straight from the browser, a source
  * answered on one run and not the next, so the same site gave different
  * results. This relay:
- *   - accepts only those four hosts over https (no open proxy),
+ *   - accepts only the hosts listed below, over https (no open proxy),
  *   - retries 429 / 5xx / timeouts with back-off (honouring Retry-After),
  *   - caches each successful answer for a day, in memory and at the CDN,
  *     so the same request gets the same data every time.
@@ -22,13 +22,34 @@ const ALLOWED_HOSTS = new Set([
   'api.open-meteo.com',
   'power.larc.nasa.gov',
   'modis.ornl.gov',
+  'rest.isric.org', // SoilGrids (2026-10-29 audit: aborted on every run, so soil was always Unknown)
+  'ggis.un-igrac.org', // IGRAC GGIS groundwater wells (WFS)
 ]);
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_ENTRIES = 500;
+// Memory bounds: 40 MB of cached bodies in all, none over 4 MB cached, and
+// nothing over 15 MB relayed (the largest real answer, 20 years of daily
+// rainfall from two models, is about 0.5 MB).
+const MAX_CACHE_BYTES = 40 * 1024 * 1024;
+const MAX_CACHED_BODY = 4 * 1024 * 1024;
+const MAX_BODY = 15 * 1024 * 1024;
+let cacheBytes = 0;
 const cache = new Map<string, { at: number; status: number; type: string; body: string }>();
 const inflight = new Map<string, Promise<{ status: number; type: string; body: string }>>();
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Open-Meteo's free API is for non-commercial use only. With a paid plan the
+// same requests go to its customer-* hosts with the key, which stays here on
+// the server (set OPEN_METEO_API_KEY). Without a key nothing changes.
+const OPEN_METEO_KEY = process.env.OPEN_METEO_API_KEY?.trim();
+function upstreamUrl(u: URL): string {
+  if (!OPEN_METEO_KEY || !u.hostname.endsWith('open-meteo.com') || u.hostname.startsWith('customer-')) return u.toString();
+  const x = new URL(u.toString());
+  x.hostname = `customer-${u.hostname}`;
+  x.searchParams.set('apikey', OPEN_METEO_KEY);
+  return x.toString();
+}
 
 async function fetchWithRetry(url: string): Promise<{ status: number; type: string; body: string }> {
   let last: { status: number; type: string; body: string } = { status: 502, type: 'application/json', body: '{"error":"source did not answer"}' };
@@ -39,7 +60,10 @@ async function fetchWithRetry(url: string): Promise<{ status: number; type: stri
     if (left < 3_000) break;
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(left), headers: { 'User-Agent': 'EmersonEIMS-AquaScan/1.0 (+https://emersoneims.com)' } });
+      const declared = Number(res.headers.get('content-length'));
+      if (Number.isFinite(declared) && declared > MAX_BODY) return { status: 502, type: 'application/json', body: '{"error":"source answer too large to relay"}' };
       const body = await res.text();
+      if (body.length > MAX_BODY) return { status: 502, type: 'application/json', body: '{"error":"source answer too large to relay"}' };
       last = { status: res.status, type: res.headers.get('content-type') || 'application/json', body };
       if (res.ok) return last;
       // Client errors other than rate limiting are final (a bad request stays bad).
@@ -66,11 +90,19 @@ export async function GET(req: NextRequest) {
   if (!out) {
     // Concurrent identical requests share one upstream call.
     let p = inflight.get(key);
-    if (!p) { p = fetchWithRetry(key); inflight.set(key, p); }
+    if (!p) { p = fetchWithRetry(upstreamUrl(target)); inflight.set(key, p); }
     try { out = { at: Date.now(), ...(await p) }; } finally { inflight.delete(key); }
-    if (out.status === 200) {
-      if (cache.size >= MAX_ENTRIES) cache.delete(cache.keys().next().value as string);
+    if (out.status === 200 && out.body.length <= MAX_CACHED_BODY) {
+      const old = cache.get(key);
+      if (old) { cacheBytes -= old.body.length; cache.delete(key); }
+      // Oldest entries go first until the new one fits.
+      while (cache.size > 0 && (cache.size >= MAX_ENTRIES || cacheBytes + out.body.length > MAX_CACHE_BYTES)) {
+        const oldestKey = cache.keys().next().value as string;
+        cacheBytes -= cache.get(oldestKey)!.body.length;
+        cache.delete(oldestKey);
+      }
       cache.set(key, out);
+      cacheBytes += out.body.length;
     }
   }
   return new NextResponse(out.body, {

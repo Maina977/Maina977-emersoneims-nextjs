@@ -159,7 +159,10 @@ export default function SolarDesignStudioPro() {
   const annualProduction = dailyProduction * 365;
   const installedCost = estimateInstalledCost(totalKW, inverterSize, batteryCapacity, batteryCapacity > 0 ? 'hybrid' : 'grid-tied');
   const TARIFF_KES = DEFAULT_TARIFF_KES_PER_KWH;
-  const annualSavingKes = annualProduction * TARIFF_KES;
+  // The calculator's use rule: about 90% of the solar used on site with a
+  // battery, about 75% without (2026-10-29 audit: 100% of production was valued).
+  const usedShare = batteryCapacity > 0 ? 0.9 : 0.75;
+  const annualSavingKes = annualProduction * usedShare * TARIFF_KES;
 
   // Wire sizing from typical module data: modern 400 W+ half-cell modules
   // run ~41.5 V Vmp / ~49.5 V Voc; smaller 60/72-cell ~34 / ~41 V.
@@ -355,7 +358,23 @@ export default function SolarDesignStudioPro() {
     }
 
     setPanels(newPanels);
-  }, [roofSegments, panelWatts, panelWidth, panelHeight]);
+    // A string plan for the panels placed, inside the same MPPT window and
+    // temperature factors as the check below (2026-10-29 audit: the plan
+    // stayed 2S x 2P after Auto-Fill placed 14 panels).
+    const n = newPanels.length;
+    if (n > 0) {
+      const w = inverterSize > 10 ? { min: 200, max: 850, maxDc: 1000 } : { min: 125, max: 425, maxDc: 500 };
+      const okS = (s: number) => s * panelVmp * (1 - 0.004 * 45) >= w.min && s * panelVoc * (1 + 0.0027 * 15) <= w.maxDc && s * panelVmp * (1 + 0.004 * 15) <= w.max;
+      let best: { s: number; p: number; left: number } | null = null;
+      for (let s = 1; s <= n; s++) {
+        if (!okS(s)) continue;
+        const p = Math.floor(n / s);
+        const left = n - s * p;
+        if (!best || left < best.left || (left === best.left && s > best.s)) best = { s, p, left };
+      }
+      if (best) setStringConfig({ series: best.s, parallel: best.p });
+    }
+  }, [roofSegments, panelWatts, panelWidth, panelHeight, inverterSize, panelVmp, panelVoc]);
 
   // Point in polygon check
   function isPointInPolygon(point: Point, polygon: Point[]): boolean {
@@ -1132,11 +1151,11 @@ EARTHING:
                           <td className="text-right">KSh {installedCost.lowKes.toLocaleString()} – {installedCost.highKes.toLocaleString()}</td>
                         </tr>
                         <tr className="border-b border-slate-700/50">
-                          <td className="py-2">Maximum annual saving (only if every kWh is used on site, KSh {TARIFF_KES}/kWh)</td>
+                          <td className="py-2">Estimated annual saving (about {Math.round(usedShare * 100)}% of the solar used on site, KSh {TARIFF_KES}/kWh)</td>
                           <td className="text-right text-emerald-400">KSh {Math.round(annualSavingKes).toLocaleString()}</td>
                         </tr>
                         <tr>
-                          <td className="py-2">Fastest simple payback (real payback is longer if power is exported or wasted)</td>
+                          <td className="py-2">Simple payback (longer if less of the solar is used on site)</td>
                           <td className="text-right text-amber-400">{annualSavingKes > 0 ? `${(installedCost.midKes / annualSavingKes).toFixed(1)} years` : '—'}</td>
                         </tr>
                       </tbody>
@@ -1238,14 +1257,16 @@ EARTHING:
           </div>
 
           {/* Warnings */}
-          {(inverterSize < totalKW || avgShading > 25) && (
+          {(totalKW / Math.max(inverterSize, 0.1) > 1.3 || avgShading > 25) && (
             <div className="mt-4 space-y-2">
               <h4 className="text-amber-400 font-medium text-sm flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" /> Warnings
               </h4>
-              {inverterSize < totalKW && (
+              {/* DC/AC up to about 1.3 is normal practice (some clipping at peak
+                  sun); it was flagged as soon as the array exceeded the inverter. */}
+              {totalKW / Math.max(inverterSize, 0.1) > 1.3 && (
                 <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-2 text-red-400 text-xs">
-                  Inverter undersized by {(totalKW - inverterSize).toFixed(1)}kW
+                  DC/AC ratio {(totalKW / inverterSize).toFixed(2)} is above 1.3: expect heavy clipping. A {Math.ceil(totalKW / 1.15)} kW inverter or larger suits this array.
                 </div>
               )}
               {avgShading > 25 && (

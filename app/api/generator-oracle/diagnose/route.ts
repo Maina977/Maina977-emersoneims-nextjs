@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { diagnoseFromSymptoms, searchIndex, type DiagnoseResponse } from '@/lib/generator-oracle/server/faultIndex';
+import { diagnoseFromSymptoms, searchIndex, codeLikeQuery, type DiagnoseResponse } from '@/lib/generator-oracle/server/faultIndex';
 
 /**
  * A code goes to the code index first (2026-10-19 re-audit): passed only as
@@ -60,7 +60,10 @@ export async function POST(req: NextRequest) {
       category: clampString(body.category),
       topN,
     });
-    return jsonOk(withCodeMatches(result, faultCode, clampString(body.brand) || undefined, topN));
+    // A code typed into the symptom or alarm box is looked up as a code too
+    // (2026-10-29 audit: "Cummins 151" in the Assistant's box returned no alarm).
+    const codeText = faultCode || codeLikeQuery(clampString(body.alarmText, 500)) || (symptoms.length === 1 ? codeLikeQuery(symptoms[0]) : null) || undefined;
+    return jsonOk(withCodeMatches(result, codeText, clampString(body.brand) || undefined, topN));
   } catch (e) {
     return jsonError('diagnose_failed', 500, e instanceof Error ? e.message : 'unknown');
   }
@@ -85,7 +88,9 @@ export async function GET(req: NextRequest) {
       category: clampString(sp.get('category')),
       topN,
     });
-    return jsonOk(withCodeMatches(result, code, clampString(sp.get('brand')) || undefined, topN));
+    // ?q=100-1 is a code, not a symptom (2026-10-29 audit: it returned a derating guide).
+    const codeText = code || codeLikeQuery(q) || undefined;
+    return jsonOk(withCodeMatches(result, codeText, clampString(sp.get('brand')) || undefined, topN));
   } catch (e) {
     return jsonError('diagnose_failed', 500, e instanceof Error ? e.message : 'unknown');
   }

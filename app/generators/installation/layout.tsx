@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Generator Installation Services Kenya',
-  description: 'Professional generator installation services across all 47 Kenya counties. Complete eight-stage installation process: site assessment, engineering design, civil works, electrical installation, commissioning. KEBS certified. All brands: Cummins, Caterpillar, Perkins, FG Wilson.',
+  description: 'Generator installation in all 47 Kenyan counties: site assessment, design, civil works, electrical installation and commissioning. All major brands.',
   keywords: [
     // Primary Installation Keywords
     'generator installation Kenya',

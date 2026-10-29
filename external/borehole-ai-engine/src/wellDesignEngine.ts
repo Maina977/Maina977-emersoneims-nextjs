@@ -1294,7 +1294,10 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   // ─── DRILLING COST (adjusted) ───
   const baseCost: [number, number] = isRock ? [80, 150] : [40, 90];
   const adjCost: [number, number] = [Math.round(baseCost[0] * costAdj.multiplier), Math.round(baseCost[1] * costAdj.multiplier)];
-  const drillRate = isRock ? [3, 8] : [8, 20];
+  // Metres per 8-hour drilling day: DTH in rock 3-8 m/h, mud rotary in
+  // unconsolidated ground 5-15 m/h (the drilling plan's rates). It was 3-8 m
+  // a DAY, which gave 20-53 days for a 158 m hole (2026-10-29 audit).
+  const drillRate = isRock ? [24, 64] : [40, 120];
   const drillDays: [number, number] = [Math.round((depth + ratHole) / drillRate[1]), Math.round((depth + ratHole) / drillRate[0])];
 
   // ─── CONFIDENCE (strict scoring) ───

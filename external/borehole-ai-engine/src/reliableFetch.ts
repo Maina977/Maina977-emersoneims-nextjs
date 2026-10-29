@@ -12,7 +12,7 @@
  * data is passed through unchanged.
  */
 
-const HOSTS = new Set(['archive-api.open-meteo.com', 'api.open-meteo.com', 'power.larc.nasa.gov', 'modis.ornl.gov']);
+const HOSTS = new Set(['archive-api.open-meteo.com', 'api.open-meteo.com', 'power.larc.nasa.gov', 'modis.ornl.gov', 'rest.isric.org', 'ggis.un-igrac.org']);
 const RELAY = '/api/borehole/data-relay?u=';
 
 type Answer = { status: number; type: string; body: string };

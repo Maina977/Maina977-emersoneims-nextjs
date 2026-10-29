@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useSolarStore } from '../services/store';
 import { core } from '../services/api';
-import { DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
+import { DEFAULT_TARIFF_KES_PER_KWH, DEFAULT_DIESEL_KES_PER_LITRE } from '@/lib/solar/sizing';
 
 const Container = styled.div`
   background: #0A0E27;
@@ -206,7 +206,7 @@ export default function CalculatorPage() {
   const [daytimeUse, setDaytimeUse] = useState('50');
   const [nightUse, setNightUse] = useState('50');
   const [autonomy, setAutonomy] = useState('1');
-  const [diesel, setDiesel] = useState('175');
+  const [diesel, setDiesel] = useState(String(DEFAULT_DIESEL_KES_PER_LITRE));
   const [peakLoad, setPeakLoad] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -243,7 +243,13 @@ export default function CalculatorPage() {
       });
       updateDesign({ systemKw: data.pvKwp, panelCount: data.panels, panelW: data.panelWatt, inverterKw: data.inverterKw, batteryKwh: data.batteryKwh, systemType });
       updateFinancial({ capexKes: data.cost.midKes, year1SavingsKes: data.monthlySavingKes * 12, paybackYears: data.paybackYears ?? 0 });
-      updateSite({ monthlyConsumptionKwh: cons, irradianceKwhPerM2Day: data.sunHours.annual });
+      // The proposal shows the tariff and diesel price this calculation used
+      // (2026-10-29 audit: it said KES 25 "entered by the client" after 30 was entered).
+      updateSite({
+        monthlyConsumptionKwh: cons, irradianceKwhPerM2Day: data.sunHours.annual,
+        tariffKesPerKwh: Number(tariff) > 0 ? Number(tariff) : DEFAULT_TARIFF_KES_PER_KWH,
+        dieselKesPerLitre: Number(diesel) > 0 ? Number(diesel) : DEFAULT_DIESEL_KES_PER_LITRE,
+      });
       saveProject();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Calculation failed. Please try again.');

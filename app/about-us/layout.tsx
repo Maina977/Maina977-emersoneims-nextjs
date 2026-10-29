@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   // the sections deliberately left alone: app/ai-tools/layout.tsx.
   title: { default: 'About Us | Power & Engineering in Kenya', template: "%s | EmersonEIMS Kenya" },
   description:
-    'EmersonEIMS — Nairobi-based B2B power & engineering partner. Cummins, Perkins & FG Wilson generator sales & maintenance specialist. 47 Kenya counties coverage. SLA-backed maintenance and 24/7 emergency response.',
+    'EmersonEIMS is a Nairobi-based power and engineering partner: generator sales and maintenance, solar and UPS in all 47 counties, with 24/7 response.',
   alternates: { canonical: `${siteUrl}/about-us` },
   openGraph: {
     title: 'About EmersonEIMS | B2B Generator, Solar & Engineering Partner — Kenya',

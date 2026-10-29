@@ -22,6 +22,7 @@ interface SearchPayload {
   ok: boolean;
   query: string;
   interpretedAs?: string | null;
+  notice?: string;
   total: number;
   totalPages: number;
   page: number;
@@ -186,7 +187,8 @@ export default function LiveFaultLookup({ className = '', compact = false }: Pro
 
         {!error && data && data.results.length === 0 && (
           <div className="rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-3 text-sm text-slate-300">
-            <div className="font-semibold text-white mb-1">No matches for &ldquo;{data.query}&rdquo;.</div>
+            <div className="font-semibold text-white mb-1">{data.notice ? <>&ldquo;{data.query}&rdquo; is not a valid code.</> : <>No matches for &ldquo;{data.query}&rdquo;.</>}</div>
+            {data.notice && <div className="text-amber-300 text-xs mb-1">{data.notice}</div>}
             <div className="text-slate-400 text-xs">
               Try the code exactly as shown on the display (e.g. <span className="font-mono">SPN 100 FMI 1</span>) or the
               alarm wording (e.g. <span className="font-mono">low oil pressure</span>).{' '}

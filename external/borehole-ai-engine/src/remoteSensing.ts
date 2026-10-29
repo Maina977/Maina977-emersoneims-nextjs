@@ -28,6 +28,7 @@
  */
 
 import { fetchElevations } from './elevationService';
+import { spliceEra5ToIfs } from './historicalData';
 
 export interface SoilGridsData {
   available: boolean;
@@ -177,7 +178,9 @@ export async function fetchClimateData(lat: number, lon: number): Promise<Climat
     // the same source and period as the bundled county baseline. The climate
     // API used before does not serve "monthly" data, so it failed on every
     // call (2026-10-27 audit), and one simulated year is not a climate.
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=2015-01-01&end_date=2024-12-31&daily=precipitation_sum,temperature_2m_mean&timezone=UTC`;
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=2015-01-01&end_date=2024-12-31&daily=precipitation_sum,temperature_2m_mean&models=ecmwf_ifs,era5&timezone=UTC`;
+    // Two named models joined on one footing (see spliceEra5ToIfs): the default
+    // series switches from ERA5 to IFS in 2017 with no adjustment (2026-10-29).
 
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) {
@@ -186,6 +189,7 @@ export async function fetchClimateData(lat: number, lon: number): Promise<Climat
     }
 
     const data = await res.json();
+    if (data?.daily) data.daily = spliceEra5ToIfs(data.daily);
     const days: string[] = data?.daily?.time ?? [];
     const dp: (number | null)[] = data?.daily?.precipitation_sum ?? [];
     const dt: (number | null)[] = data?.daily?.temperature_2m_mean ?? [];
@@ -221,7 +225,7 @@ export async function fetchClimateData(lat: number, lon: number): Promise<Climat
       monthlyTemperature: monthlyTemp.map((v: number) => Math.round(v * 10) / 10),
       aridity,
       rechargeEstimate,
-      source: 'ERA5 reanalysis 2015-2024 mean year (Open-Meteo archive)',
+      source: 'ECMWF reanalysis 2015-2024 mean year (Open-Meteo archive: IFS 9 km from 2017, ERA5 before, scaled to IFS)',
     };
   } catch (err) {
     console.log('[Climate] Error:', err);

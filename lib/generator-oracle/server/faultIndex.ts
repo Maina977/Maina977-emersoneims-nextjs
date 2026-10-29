@@ -106,6 +106,35 @@ function j1939Rows(): ControllerFaultCode[] {
  * warning to let the engine cool; low oil pressure did not say stop).
  */
 const J1939_SEVERITY = new Map<string, J1939FaultCode['severity']>(J1939_FAULT_CODES.map((j) => [`SPN${j.spn}-FMI${j.fmi}`, j.severity]));
+// The J1939 reference's safety notes by code, so a controller entry for the same
+// SPN/FMI carries them too (2026-10-29 audit: PowerWizard SPN 168 had no battery
+// gas warning and SPN 190 no overspeed note, while the J1939 rows did).
+const J1939_SAFETY = new Map<string, string[]>(J1939_FAULT_CODES.map((j) => [`SPN${j.spn}-FMI${j.fmi}`, (j as { safety?: string[] }).safety || []]));
+const ISOLATE = 'Before touching wiring or terminals: stop the set, select OFF/STOP, isolate and lock off the battery and controller supply, and prove the terminals dead with an approved voltage tester.';
+const TOPIC_SAFETY: Array<[RegExp, string[]]> = [
+  [/earth|insulation/i, [ISOLATE, 'An earth fault can leave exposed metalwork live: treat the frame and panel as live until tested. Insulation testing needs an insulation tester with the AVR and controller disconnected first.']],
+  [/overspeed|over speed|over-speed/i, ['Overspeed can destroy the engine and alternator: keep clear and do not restart until the governor, actuator and fuel control are checked. Never bypass the overspeed protection.']],
+  [/batter|charg/i, ['Batteries give off explosive gas: no sparks or flames near them, and disconnect the negative lead first. Wear eye protection.']],
+  [/fuel|diesel/i, ['No flames near fuel; clean spills at once. Diesel under pressure can penetrate skin: never feel for leaks with your hands.']],
+  [/voltage|current|frequency|phase|power|breaker|alternator|avr|excit|sync|mains|bus/i, [ISOLATE, 'Generator and mains terminals are lethal while live: measure only with approved, rated instruments.']],
+];
+const GENERIC_SAFETY = /^follow standard (electrical )?safety procedures\.?$/i;
+const CONDITION_WORDS: Record<string, string> = {
+  engine_stopped: 'Engine stopped', fault_investigated: 'Cause found and fixed', fault_cleared: 'Cause found and fixed',
+  cooldown_complete: 'Engine cooled down', breaker_open: 'Breaker open', mains_restored: 'Mains restored',
+};
+const conditionText = (c: string) => CONDITION_WORDS[c] ?? (/_/.test(c) ? c.replace(/_/g, ' ').replace(/^./, (x) => x.toUpperCase()) : c);
+/** No reset sequence ends by selecting AUTO without a MANUAL test and a warning (2026-10-29 audit). */
+function safeResetSteps<T extends { stepNumber?: number; action: string; keySequence?: string[]; expectedResponse?: string }>(steps: T[]): T[] {
+  const autoAt = steps.findIndex((s) => (s.keySequence || []).some((k) => /^auto$/i.test(k.trim())) || /\bselect (the )?auto\b|\bauto mode\b/i.test(s.action));
+  if (autoAt < 0) return steps;
+  const out = steps.slice(0, autoAt);
+  const hasManualTest = out.some((s) => /manual/i.test(s.action));
+  if (!hasManualTest) out.push({ ...steps[autoAt], action: 'Only after the cause is found and fixed: test in MANUAL and watch the reading that caused the alarm', keySequence: ['MANUAL', 'START'], expectedResponse: 'Runs normally with no alarm' });
+  out.push({ ...steps[autoAt], action: 'Warn anyone near the set, then select AUTO: in AUTO it can start and take load at any moment without warning', keySequence: ['AUTO'], expectedResponse: 'Ready for automatic operation' });
+  out.push(...steps.slice(autoAt + 1));
+  return out.map((s, i) => ('stepNumber' in s ? { ...s, stepNumber: i + 1 } : s));
+}
 const OIL_STOP = 'Stop the engine: running with low oil pressure can destroy the bearings in minutes. Do not restart until the cause is found.';
 function withSafety(c: ControllerFaultCode): ControllerFaultCode {
   const text = `${c.title} ${c.subcategory}`.toLowerCase();
@@ -115,6 +144,9 @@ function withSafety(c: ControllerFaultCode): ControllerFaultCode {
   const has = (re: RegExp) => (c.safetyWarnings || []).some((w) => re.test(w));
   if (coolant && !has(/cap|cool (down|first)|let it cool/i)) add.push(COOL_DOWN);
   if (lowOil && !has(/stop the engine/i)) add.push(OIL_STOP);
+  for (const w of J1939_SAFETY.get(c.code.toUpperCase()) || []) if (!has(new RegExp(w.slice(0, 24).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')) && !add.includes(w)) add.push(w);
+  const topic = TOPIC_SAFETY.find(([re]) => re.test(`${c.title} ${c.subcategory} ${c.category}`));
+  if (topic) for (const w of topic[1]) if (!has(new RegExp(w.slice(0, 24).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')) && !add.includes(w)) add.push(w);
   const touchesCoolant = (s: string) => /coolant level|top up|radiator cap|expansion tank|add coolant/i.test(s) && !/\bcool(ed)?\b.*(engine|first)|engine.*\bcool(ed)?\b|let .* cool/i.test(s);
   const steps = (c.diagnosticSteps || []).map((st) => (touchesCoolant(st.action) ? { ...st, action: `With the engine stopped and cool: ${st.action}` } : st));
   // One severity per J1939 code: a controller entry written as an SPN/FMI
@@ -124,9 +156,14 @@ function withSafety(c: ControllerFaultCode): ControllerFaultCode {
   return {
     ...c,
     ...(j1939Severity ? { severity: j1939Severity } : {}),
-    safetyWarnings: [...add, ...(c.safetyWarnings || [])],
+    // The generic one-liner goes once a specific warning is present.
+    safetyWarnings: [...add, ...(c.safetyWarnings || []).filter((w) => !(add.length && GENERIC_SAFETY.test(w.trim())))],
     diagnosticSteps: steps,
-    resetPathways: (c.resetPathways || []).map((p) => ({ ...p, steps: (p.steps || []).map((s) => cleanResetStep(s, c.brand)) })),
+    resetPathways: (c.resetPathways || []).map((p) => ({
+      ...p,
+      ...(p.requiresCondition ? { requiresCondition: p.requiresCondition.map(conditionText) } : {}),
+      steps: safeResetSteps((p.steps || []).map((s) => cleanResetStep(s, c.brand))),
+    })),
     // Repair times, difficulty and costs in the brand files were generated
     // from severity ("1-4 hours" for every shutdown), not from the fault, so
     // they are not shown (2026-10-27 audit).
@@ -198,6 +235,9 @@ const TITLE_EQUIV: Record<string, string[]> = {
   lost: ['loss', 'lost', 'fail'],
   high: ['high', 'over'],
   low: ['low', 'under'],
+  // "voltage drops / dips" is an under-voltage (2026-10-29 audit).
+  drop: ['low', 'under'],
+  dip: ['low', 'under'],
   speed: ['speed', 'rpm'],
   smoke: ['smoke', 'exhaust'],
 };
@@ -383,6 +423,9 @@ function matchesQuery(c: ControllerFaultCode, q: string, canonical: string | nul
   // Whole code or a whole segment of it, never a substring: "12" matched
   // "MID128" and answered with an oil-pressure shutdown (2026-10-27 audit).
   const codeHit = codeKindOf(c) !== 'reference' && (code === q || code.split('-').includes(q));
+  // A number is a code, not text: "42" matched the model name "HGM420" and
+  // listed 44 SmartGen alarms (2026-10-29 audit).
+  if (/^\d+$/.test(q)) return codeHit;
   return (
     codeHit ||
     c.title.toLowerCase().includes(q) ||
@@ -442,6 +485,8 @@ export interface SearchResponse {
   totalPages: number;
   results: SearchResultItem[];
   source: 'index';
+  /** Why nothing was searched, when the code cannot exist (e.g. FMI above 31). */
+  notice?: string;
 }
 
 // Words technicians type that the alarm titles do not use (2026-10-20 audit):
@@ -493,7 +538,50 @@ const MAKER_CODE_TO_J1939: Record<string, string> = (() => {
   return out;
 })();
 
+/** A 1-2 digit number or a negative number is not a fault code (as the chat says; 2026-10-29 audit). */
+function tooShortCode(q: string): boolean {
+  return /^-\d+$/.test(q) || /^\d{1,2}$/.test(q);
+}
+/**
+ * Why a J1939 / J1587 code cannot exist, or null. SAE J1939 SPNs are 19-bit
+ * (0-524287) and FMIs run 0-31; neither is ever negative. "SPN -5" was read
+ * as SPN 5 and FMI 45 quietly found nothing (2026-10-29 audit).
+ */
+export function invalidCodeReason(q: string): string | null {
+  const s = (q || '').trim().toUpperCase();
+  if (/\b(SPN|FMI|PID|MID)\s+-\s*\d/.test(s) || /\b(SPN|FMI|PID|MID)\s*[:#]\s*-\s*\d/.test(s)) {
+    return 'SPN, FMI, PID and MID numbers are never negative. Check the code on the display.';
+  }
+  const n = normalizeCodeQuery(q);
+  const m = n ? /^SPN(\d+)-(?:FMI(\d+))?$/.exec(n) : null;
+  if (m && Number(m[1]) > 524287) return `SPN ${m[1]} is not possible: J1939 SPNs run from 0 to 524287. Check the code on the display.`;
+  if (m && m[2] != null && Number(m[2]) > 31) return `FMI ${m[2]} is not possible: J1939 FMIs run from 0 to 31. Check the code on the display.`;
+  const j = n ? /^MID\d+-PID\d+-FMI(\d+)$/.exec(n) : null;
+  if (j && Number(j[1]) > 31) return `FMI ${j[1]} is not possible: FMIs run from 0 to 31. Check the code on the display.`;
+  return null;
+}
+/** The text when it is a fault code (J1939/J1587 forms, maker numbers, controller codes), else null. */
+export function codeLikeQuery(text: string | undefined | null): string | null {
+  const t = (text || '').trim();
+  if (!t || t.length > 40 || tooShortCode(t) || invalidCodeReason(t)) return null;
+  if (normalizeCodeQuery(t)) return t;
+  if (/^(cummins|perkins)\s*(?:fault\s*)?(?:code\s*)?\d{2,4}$/i.test(t)) return t;
+  if (/^[a-z]{0,3}[- ]?\d{3,5}$/i.test(t)) return t;
+  return null;
+}
+function emptySearch(opts: SearchOptions): SearchResponse {
+  const pageSize = Math.max(1, Math.min(100, Math.floor(opts.pageSize ?? 20)));
+  return {
+    query: (opts.query || '').trim(), interpretedAs: null,
+    filters: { brand: opts.brand, model: opts.model, severity: opts.severity, category: opts.category, verifiedOnly: opts.verifiedOnly },
+    page: 1, pageSize, total: 0, totalPages: 1, results: [], source: 'index',
+  };
+}
+
 export function searchIndex(opts: SearchOptions): SearchResponse {
+  if (tooShortCode((opts.query || '').trim())) return emptySearch(opts);
+  const invalid = invalidCodeReason(opts.query || '');
+  if (invalid) return { ...emptySearch(opts), notice: invalid };
   const maker = /^(cummins|perkins)\s*(?:fault\s*)?(?:code\s*)?(\d{2,4})$/i.exec((opts.query || '').trim());
   if (maker) {
     const mapped = MAKER_CODE_TO_J1939[`${maker[1].toLowerCase()} ${maker[2]}`];
@@ -513,7 +601,14 @@ export function searchIndex(opts: SearchOptions): SearchResponse {
   // (2026-10-27 audit: "generator overheating" was right in chat and listed
   // electrical alarms on the page; "Fail to start" the other way round).
   if (typed && /[a-z]/i.test(typed) && !/\d/.test(typed) && !normalizeCodeQuery(typed)) {
-    return searchByWords(typed, opts);
+    const byWords = searchByWords(typed, opts);
+    if (byWords.total > 0) return byWords;
+    // Technicians' words the titles do not use ("surging", "overcrank"): retry
+    // with the synonym (2026-10-29 audit: "surging" found nothing anywhere).
+    const lower = typed.toLowerCase();
+    const alt = SEARCH_SYNONYMS[lower] ?? lower.split(/\s+/).map((w) => SEARCH_SYNONYMS[w] ?? w).join(' ');
+    if (alt !== lower) return { ...searchByWords(alt, opts), query: typed, interpretedAs: `read as "${alt}"` };
+    return byWords;
   }
   const syn = SEARCH_SYNONYMS[typed.toLowerCase()];
   if (syn && opts.query !== syn && searchIndexRaw({ ...opts, page: 1, pageSize: 1 }).total === 0) {
@@ -667,8 +762,18 @@ export interface FaultLookupResponse {
 }
 
 export function lookupFaultCode(code: string, brand?: string): FaultLookupResponse {
-  const raw = code.trim();
-  if (!raw) return { found: false, exactMatches: [], partialMatches: [], matchType: 'none', interpretedAs: null };
+  let raw = code.trim();
+  if (!raw || tooShortCode(raw) || invalidCodeReason(raw)) return { found: false, exactMatches: [], partialMatches: [], matchType: 'none', interpretedAs: null };
+  // The same maker-number reading as search and chat (2026-10-29 audit:
+  // "Cummins 151" found nothing here while search answered SPN 110 FMI 0).
+  const maker = /^(cummins|perkins)\s*(?:fault\s*)?(?:code\s*)?(\d{2,4})$/i.exec(raw);
+  let makerNote: string | null = null;
+  if (maker) {
+    const mapped = MAKER_CODE_TO_J1939[`${maker[1].toLowerCase()} ${maker[2]}`];
+    if (!mapped) return { found: false, exactMatches: [], partialMatches: [], matchType: 'none', interpretedAs: null };
+    makerNote = `${maker[1]} ${maker[2]} = ${mapped}`;
+    raw = mapped;
+  }
   const canonical = normalizeCodeQuery(raw);
   const wanted = (canonical && !canonical.endsWith('-') ? canonical : raw).toLowerCase();
   const withKind = (c: ControllerFaultCode) => ({ ...c, codeKind: codeKindOf(c) });
@@ -678,16 +783,21 @@ export function lookupFaultCode(code: string, brand?: string): FaultLookupRespon
   const byId = pool.find((c) => c.id.toLowerCase() === raw.toLowerCase());
   if (byId) return { found: true, exactMatches: [withKind(byId)], partialMatches: [], matchType: 'exact', interpretedAs: canonical };
 
-  const exact = pool.filter((c) => c.code.toLowerCase() === wanted);
+  // Our own reference numbers (E001 ...) are not on any display, so they are
+  // never "exact" matches; partial matches are whole code segments, never
+  // substrings (2026-10-29 audit: E001 gave 4 brands; "42" matched SPN3242).
+  const real = pool.filter((c) => codeKindOf(c) !== 'reference');
+  const exact = real.filter((c) => c.code.toLowerCase() === wanted);
+  const interpretedAs = makerNote ?? canonical;
   if (exact.length > 0) {
     // Brand-specific descriptions before the generic J1939 reference.
     exact.sort((a, b) => Number(a.brand === J1939_BRAND) - Number(b.brand === J1939_BRAND));
-    return { found: true, exactMatches: exact.slice(0, 25).map(withKind), partialMatches: [], matchType: 'exact', interpretedAs: canonical };
+    return { found: true, exactMatches: exact.slice(0, 25).map(withKind), partialMatches: [], matchType: 'exact', interpretedAs };
   }
 
   const prefix = canonical && canonical.endsWith('-') ? canonical.toLowerCase() : null;
-  const partial = pool
-    .filter((c) => (prefix ? c.code.toLowerCase().startsWith(prefix) : c.code.toLowerCase().includes(wanted)))
+  const partial = real
+    .filter((c) => (prefix ? c.code.toLowerCase().startsWith(prefix) : c.code.toLowerCase().split('-').includes(wanted)))
     .slice(0, 25)
     .map(SLIM_FIELDS);
 
@@ -696,7 +806,7 @@ export function lookupFaultCode(code: string, brand?: string): FaultLookupRespon
     exactMatches: [],
     partialMatches: partial,
     matchType: partial.length > 0 ? 'partial' : 'none',
-    interpretedAs: canonical,
+    interpretedAs,
   };
 }
 
@@ -779,6 +889,8 @@ export interface RankedGuide {
   summary: string;
   score: number;
   matchedTerms: string[];
+  /** Every specific word in the title or symptom list (not only the body). */
+  allKeyStrong?: boolean;
 }
 
 export interface DiagnoseResponse {
@@ -915,6 +1027,10 @@ function rankGuides(terms: string[], pairs: [string, string][], expanded: Set<st
         score,
         matchedTerms: matched,
         titleHit,
+        // Every specific word is in the title or the symptom list, not only the body.
+        allKeyStrong: key.every((x) => titleSet.has(x) || symSet.has(x))
+          // ...and the title is about the question: one specific word or synonym in it.
+          && (key.some((x) => titleSet.has(x)) || [...expanded].some((x) => titleSet.has(x))),
       });
     }
   }
@@ -947,6 +1063,10 @@ const PHRASES: [RegExp, string][] = [
   [/\b(won'?t|wont|will\s+not|cannot|can'?t|does\s+not|doesn'?t|not)\s+start(ing)?\b/gi, 'fail to start crank'],
   [/\bfail(s|ed|ure)?\s+to\s+start\b/gi, 'fail to start crank'],
   [/\b(won'?t|wont|will\s+not|does\s+not|doesn'?t)\s+stop\b/gi, 'fail to stop'],
+  // Words technicians use that the guides and alarm titles do not (2026-10-29 audit:
+  // "surging" found nothing anywhere).
+  [/\bsurg(e|es|ing)\b/gi, 'hunting speed unstable'],
+  [/\b(keeps?\s+)?(dying|dies|dead|flat)\b/gi, 'not charging low'],
 ];
 function rewritePhrases(s: string): string {
   let out = s;
@@ -981,6 +1101,10 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
     unstabl: ['frequency', 'regulation', 'regulator', 'hunt'],
     hunt: ['speed', 'governor', 'unstabl'],
     surg: ['speed', 'governor', 'unstabl'],
+    // "voltage drops / dips when a load starts" is an under-voltage (2026-10-29
+    // audit: it led with Battery Voltage Low, then Mains Under Voltage).
+    drop: ['under', 'low'],
+    dip: ['under', 'low'],
   };
   const expanded = new Set<string>();
   for (const t of terms) for (const e of EXPAND[t] || []) if (!terms.includes(e)) expanded.add(e);
@@ -1060,7 +1184,20 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
       // generator's output first.
       // Titles are stemmed ("mains" -> "main"), so test the raw title text.
       const rawTitle = c.title.toLowerCase();
-      if (wantsGenVoltage && /\bbattery\b/.test(rawTitle)) score -= 10;
+      // Battery and starting alarms answer a starting problem, not a running
+      // voltage dip; a fixed -10 still left "Battery Voltage Low" first for
+      // "voltage drops when AC starts" (2026-10-29 audit), so scale it down.
+      if (wantsGenVoltage && /\b(battery|charge|fail to start|crank)/.test(rawTitle)) score = score * 0.2 - 10;
+      // A voltage question is answered by voltage alarms first (2026-10-29 audit:
+      // "voltage drops when AC starts" led with Battery Low and Fail to Start).
+      if (wantsGenVoltage && !/\bvoltag/.test(rawTitle)) score *= 0.4;
+      // "Power Supply Voltage" is the controller's DC supply, not the
+      // generator's output (2026-10-29: it led "generator voltage low").
+      if (wantsGenVoltage && /\bsupply\b/.test(rawTitle) && !/\bsupply\b/.test(typedText)) score *= 0.4;
+      // Transformer, turbine and steam alarms are not diesel-genset faults unless
+      // asked about (2026-10-29 audit: "high oil consumption" led with a Siemens
+      // transformer oil alarm).
+      if (/\b(transformer|turbine|steam)\b/.test(rawTitle) && !/\b(transformer|turbine|steam)\b/.test(typedText)) score -= 20;
       // Nor about the mains or synchronising bus unless the user says so
       // (2026-10-25 audit: "voltage too high" led with Sync / Mains Over Voltage).
       if (!mentionsGrid && /\b(mains|sync\w*|bus|utility|grid)\b/.test(rawTitle)) score -= 10;
@@ -1087,7 +1224,22 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   for (const p of phrases) for (const w of p.toLowerCase().split(/[^a-z0-9]+/g)) if (w && !typed.has(stem(w))) typed.set(stem(w), w);
   const show = (list: string[]) => list.map((t) => typed.get(t) ?? t);
 
-  const guides = rankGuides(terms, pairs, expanded, wantsHighDir ? 'high' : wantsLowDir ? 'low' : null).map((g) => ({ ...g, matchedTerms: show(g.matchedTerms) }));
+  // Only guides that really answer the question: a weak top match (below 11)
+  // and runners-up under 70% of the best are left out (2026-10-29 audit:
+  // "earth fault" got a CAN-bus guide at 10, "fuel leak" a contamination guide
+  // at 9, and a turbocharger guide rode along with oil and charging alarms).
+  const guidesAll = rankGuides(terms, pairs, expanded, wantsHighDir ? 'high' : wantsLowDir ? 'low' : null);
+  const GENERIC = /^(fault|failur|fail|problem|generat|engin|low|high|alarm|error|warn|issu|keep|not|no)/;
+  const specific = terms.filter((x) => !GENERIC.test(x));
+  const top = guidesAll[0];
+  const topMatched = new Set(top?.matchedTerms ?? []);
+  // A weak match must name every specific word in its title: body text alone
+  // ("earth" in a CAN-bus guide, "leak" in a contamination guide) is not enough.
+  void specific;
+  const topOk = !!top && [...topMatched].some((x) => !GENERIC.test(x)) &&
+    (top.score >= 11 || !!(top as { allKeyStrong?: boolean }).allKeyStrong);
+  const guides = (topOk ? guidesAll.filter((g, i) => i === 0 || g.score >= 0.7 * top!.score) : [])
+    .map((g) => ({ ...g, matchedTerms: show(g.matchedTerms) }));
   let ranked = rankPool(filtered).map((r) => ({ ...r, matchedTerms: show(r.matchedTerms) }));
   let considered = filtered.length;
   const notes = [

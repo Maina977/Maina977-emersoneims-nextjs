@@ -372,7 +372,18 @@ export function sanitizeAnalysisResult(result: any): void {
     // productive boreholes within 20 km (2026-10-20 audit: Garissa 86-130 m against
     // a 150 m field median).
     const fb = r.fieldDepthBand;
-    if (fb && Number(fb.lq) > 0 && Number(fb.uq) > 0) { d[0] = Math.min(d[0], Math.round(fb.lq)); d[1] = Math.max(d[1], Math.round(fb.uq)); }
+    // Up to the 90th percentile, so the deep wells nearby are inside the range
+    // (2026-10-29 audit: Garissa stopped at 150 m with records at 200-300 m).
+    if (fb && Number(fb.lq) > 0 && Number(fb.uq) > 0) { d[0] = Math.min(d[0], Math.round(fb.lq)); d[1] = Math.max(d[1], Math.round(Number(fb.p90) > 0 ? fb.p90 : fb.uq)); }
+    // No nearby drilled records: the range spans the province's typical depths
+    // (2026-10-29 audit: Nairobi CBD 109-165 m where wells are commonly 150-300 m).
+    else {
+      const prior = r.kenyaHydroPrior?.typicalDepthM;
+      if (Array.isArray(prior) && Number(prior[0]) > 0 && Number(prior[1]) > Number(prior[0])) {
+        d[0] = Math.min(d[0], Math.round(prior[0]));
+        d[1] = Math.max(d[1], Math.round(prior[1]));
+      }
+    }
     fc.depthRange = d;
     fc.yieldRange = fc.yieldRange.map((v: number) => Math.round(v * 10) / 10);
     // With tested yields nearby, the range IS their spread (2026-10-25 audit:

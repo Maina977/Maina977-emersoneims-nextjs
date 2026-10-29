@@ -1286,7 +1286,7 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
       ],
       expectedYield_m3hr: Math.round((ertInversion.aquiferTarget.estimatedYield_m3hr || input.predictedYield_m3hr) * 10) / 10,
       successProbability_pct: expectedSuccessRate,
-      drillingMethod: isCrystalline ? 'DTH Air Hammer (for basement rock)' : 'Rotary Mud Drilling',
+      drillingMethod: isCrystalline ? 'DTH Air Hammer (hard rock: basement or volcanics)' : 'Rotary Mud Drilling',
       estimatedCost_usd: Math.round(drillSpecDepth * (isCrystalline ? 115 : 65) + 3500),
     },
     totalCost_usd: optimalPackage.cost_usd,
@@ -1325,7 +1325,7 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
 
   const technicalSummary = [
     `Site: ${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}° | Elevation: ${input.elevationM}m`,
-    `Geology: ${rockType} (${isCrystalline ? 'crystalline basement' : isSedimentary ? 'sedimentary' : isKarst ? 'karst' : 'mixed'})`,
+    `Geology: ${rockType} (${isCrystalline ? (/basalt|phonolite|trachyte|tuff|volcanic|lava/i.test(rockType) ? 'volcanic hard rock' : 'crystalline basement') : isSedimentary ? 'sedimentary' : isKarst ? 'karst' : 'mixed'})`,
     `desktop prediction: ${predictedDepth_m}m depth, ${input.predictedYield_m3hr} m³/hr yield, ${aiOnlySuccess}% probability`,
     `Weathering: ${weatheringDepth_m}m | Water table: ${waterTableDepth_m}m | Bedrock: ${input.bedrockDepth_m}m`,
     `Optimal survey: ${optimalPackage.name} (${methodCount} methods, $${optimalPackage.cost_usd.toLocaleString()})`,

@@ -286,7 +286,9 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     parameter: 'Recommended Drilling Depth',
     value: r.recommendedDepth ?? 0,
     unit: 'm',
-    tier: hasERT ? 'MEASURED' : hasModelledERT ? 'ESTIMATED' : (hasEnsemble && hasNearby) ? 'CALIBRATED' : (hasEnsemble || satelliteSourceCount >= 3) ? 'CALIBRATED' : hasNearby ? 'ESTIMATED' : 'INFERRED',
+    // CALIBRATED needs field data at the site; desktop sources, however many,
+    // are ESTIMATED (2026-10-29 audit).
+    tier: hasERT ? 'MEASURED' : hasModelledERT ? 'ESTIMATED' : (hasEnsemble || hasNearby || satelliteSourceCount >= 3) ? 'ESTIMATED' : 'INFERRED',
     category: hasERT ? 'field_measurement' : hasModelledERT ? 'model_derived' : (hasEnsemble || satelliteSourceCount >= 3) ? 'satellite' : hasNearby ? 'database' : 'model_derived',
     // Name the depth evidence actually used (2026-10-27 audit: "drilled depths
     // of boreholes nearby" was printed where no nearby record had a depth).
@@ -1029,13 +1031,13 @@ function generateMethodologyReport(r: any): MethodologyReport {
   steps.push({
     step: hasERT ? 9 : 8,
     name: 'Cross-Validation & Quality Assurance',
-    method: 'Leave-one-out cross-validation against nearby wells. RMSE/MAE/R2/MAPE statistics. 14-step audit gate. Data provenance tagging.',
+    method: 'Comparison with nearby well records where they exist, a 14-step audit gate and data provenance tagging. Not a calibration: the model is not fitted to local outcomes.',
     reference: 'Stone (1974) Cross-validatory choice of statistical predictions',
     inputs: ['Predictions', 'Nearby well outcomes'],
     outputs: ['Prediction accuracy metrics', 'Audit score', 'Data quality grade', 'Engineer trust score'],
     assumptions: ['Nearby wells representative of target', 'Well records accurate'],
     limitations: ['Small sample sizes may give misleading statistics', 'Some well records may be incomplete or outdated'],
-    dataTier: 'CALIBRATED',
+    dataTier: hasERT ? 'CALIBRATED' : 'ESTIMATED',
   });
 
   const standards = [

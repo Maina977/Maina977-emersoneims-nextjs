@@ -598,7 +598,7 @@ MANUAL CHANGEOVER: Cost-effective solution for applications where brief manual i
     ],
 
     metaTitle: 'Automatic Transfer Switch (ATS) Kenya | EmersonEIMS',
-    metaDescription: 'Automatic Transfer Switch (ATS) installation in Kenya. Seamless generator changeover. Manual & automatic options. 40A-4000A. Professional installation. Call +254768860665',
+    metaDescription: 'Automatic transfer switch (ATS) installation in Kenya for seamless generator changeover. Manual and automatic, 40A–4000A. Call +254768860665',
     keywords: [
       'automatic transfer switch Kenya',
       'ATS Kenya',

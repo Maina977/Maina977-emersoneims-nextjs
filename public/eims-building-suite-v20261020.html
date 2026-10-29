@@ -242,6 +242,12 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
   .fpe-el{min-height:44px}
   .fpe-toolbar{left:8px;transform:none;max-width:calc(100% - 16px);justify-content:flex-start}
   .fpe-toolbar.fpe-collapsed>:not(.fpe-tb-toggle){display:none}
+  /* Open toolbar: one scrolling row, not a block over a third of the plan. */
+  .fpe-toolbar:not(.fpe-collapsed){flex-wrap:nowrap;overflow-x:auto;max-height:56px}
+  .pro-headline .rl,.pro-headline .rb,.pro-output,.pro-output *{font-size:12px!important}
+  .pro-headline .rv{font-size:15px!important}
+  input,select,textarea{min-height:44px;font-size:14px!important}
+  .top a,.top button,.logo span{font-size:12px!important}
   .fpe-status{left:8px;right:8px;bottom:48px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .fpe-dims{left:8px;right:auto;bottom:8px;max-width:calc(100% - 16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .fpe-dims:empty{display:none}
@@ -1236,7 +1242,7 @@ function repRender(report, quote, drawings, render, p, extras){
             const qu = g.qu_kPa ?? g.qult_kPa ?? g.ultimate_bearing_kPa;
             const qa = g.qa_kPa ?? g.qa_FS3_kPa ?? g.allowable_bearing_kPa ?? g.qa;
             eng += card('7.2 Foundation Bearing Capacity (Terzaghi form; Nc, Nq Prandtl–Reissner, Nγ Vesić)',
-                `Strip footing B = 0.6 m, D<sub>f</sub> = 1.2 m · Soil c′ = 15 kPa, φ′ = 28°, γ = 18 kN/m³<br>Ultimate bearing pressure q<sub>u</sub>: <strong>${fmt(qu)} kPa</strong><br>Allowable bearing (FS=3): <strong>${fmt(qa)} kPa</strong><br>Recommendation: confirm with site-specific SPT/CPT before final design.`);
+                `Soil and footing as entered in the bearing check (c = ${fmt(g.c_kPa)} kPa, φ = ${fmt(g.phi_deg)}°, B = ${fmt(g.B_m)} m)<br>Ultimate bearing pressure q<sub>u</sub>: <strong>${fmt(qu)} kPa</strong><br>Allowable bearing (FS=3): <strong>${fmt(qa)} kPa</strong><br>Recommendation: confirm with site-specific SPT/CPT before final design.`);
         }
         // 7.3 RC beam design
         if(ok(extras.rcbeam)){
@@ -1673,12 +1679,14 @@ function repRender(report, quote, drawings, render, p, extras){
 
     // ---------- 17. Geotechnical Report Status ----------
     {
-        const g = extras.geotech || {};
-        const ok = g && g.success !== false;
+        // No soil values without a soil test (2026-10-29 audit: c′ 15 / φ′ 28 were
+        // printed whenever this section was reached).
+        const g = extras.geotech;
+        const ok = !!g && g.success !== false && g.qu_kPa != null;
         const tableRows = ok ? [
-            ['Cohesion c′', `${fmt(g.c_kPa ?? 15)} kPa`, 'Assumed (preliminary)'],
-            ['Friction angle φ′', `${fmt(g.phi_deg ?? 28)}°`, 'Assumed (preliminary)'],
-            ['Unit weight γ', `${fmt(g.gamma_kN_m3 ?? 18)} kN/m³`, 'Assumed (preliminary)'],
+            ['Cohesion c′', `${fmt(g.c_kPa)} kPa`, 'As entered'],
+            ['Friction angle φ′', `${fmt(g.phi_deg)}°`, 'As entered'],
+            ['Unit weight γ', `${fmt(g.gamma_kN_m3)} kN/m³`, 'As entered'],
             ['Ultimate bearing qᵤ', `${fmt(g.qu_kPa)} kPa`, 'Computed (Terzaghi form, Vesić Nγ)'],
             ['Allowable bearing qₐ (FS=3)', `${fmt(g.qa_kPa ?? g.qa_FS3_kPa)} kPa`, 'Computed (Terzaghi form, Vesić Nγ)']
         ] : [];
@@ -7244,6 +7252,8 @@ const PRO_CATALOG = [
       {k:'height_m',type:'number',def:9.1,step:'0.1',l:'Mean roof height (m)'},
       {k:'exposure',type:'select',opts:['B','C','D'],def:'C',l:'Exposure'},
       {k:'enclosure',type:'select',opts:['enclosed','partially_enclosed','partially_open','open'],def:'enclosed',l:'Enclosure'},
+      {k:'Ke',type:'number',def:1,step:'0.01',l:'Ground elevation factor Ke (1.0 sea level; about 0.82 at Nairobi, Table 26.9-1)'},
+      {k:'Kzt',type:'number',def:1,step:'0.01',l:'Topographic factor Kzt (1.0 flat site)'},
     ]},
   {id:'en_wind_ec', grp:'Engineering+', title:'Wind — peak velocity pressure (EN 1991-1-4)',
     ep:'/api/loads/wind/eurocode', mth:'POST',
@@ -7643,6 +7653,10 @@ function proReadForm(calc){
   for(const f of calc.f){
     const el=document.getElementById(`pf_${f.k}`); if(!el) continue;
     let v=el.value;
+    // A mistyped number ("5e", "12,5") reads as "" with validity.badInput: it
+    // was sent as null, so its check vanished and the result said PASS
+    // (2026-10-29 audit). Refuse it and name the field.
+    if(f.type==='number' && el.validity && el.validity.badInput) throw new Error(`Field "${f.l||f.k}" is not a valid number. Correct it or clear it.`);
     if(f.type==='number') v=v===''?null:Number(v);
     else if(f.type==='textarea'){
       const trimmed=(v||'').trim();
@@ -7676,6 +7690,13 @@ const PRO_UNIT_SUFFIXES = {'_kNm':'kNm','_kN':'kN','_MPa':'MPa','_kPa':'kPa','_p
   '_lux':'lux','_s':'s','_dB':'dB','_y_in':'in','_lbf':'lbf'};
 
 const PRO_LABELS = {
+  // 2026-10-29 audit: suffix parsing produced "Rho kg 1.25 m³", "D 434 mm"
+  // and "Asw over s required mm2 per 0.454 mm".
+  rho_kg_m3:'Air density ρ', co:'Orography factor co', z_used_m:'Height used z', d_mm:'Effective depth d',
+  Asw_over_s_required_mm2_per_mm:'Links required Asw/s', Asw_over_s_min_mm2_per_mm:'Minimum links Asw/s',
+  size_factor_k:'Size factor k', structural_system_K:'Structural system factor K', rho_l:'Tension steel ratio ρl',
+  M_Ed_kNm_per_m:'Moment at column face (per metre)', As_required_mm2_per_m:'Steel required (per metre)', As_min_mm2_per_m:'Minimum steel (per metre)',
+  punching_perimeter_a_mm:'Worst punching perimeter a', not_checked:'Not checked',
   Bp_Rd_kN:'Punching resistance Bp,Rd', C_min:'C min', C_max:'C max', T60_s:'Reverberation time T60', total_absorption_m2_sabin:'Total absorption', mean_alpha:'Mean absorption ᾱ', datetime_utc:'Date/time (UTC)',
   qz_psf:'Velocity pressure qz', qz_Pa:'Velocity pressure qz', qp_Pa:'Peak velocity pressure qp', qp_kPa:'Peak velocity pressure qp',
   Kz:'Exposure coefficient Kz', GCpi:'Internal pressure coefficient GCpi', Kd_for_pressure_equations:'Kd (for pressure equations)',
@@ -7703,7 +7724,9 @@ function proLabel(k){
 }
 // Exact keys win, then the longest suffix: "Q_L_s" was shown in seconds and
 // "C_min" in minutes because "_s"/"_min" matched first (2026-10-19 audit).
-const PRO_KEY_UNITS = {Q_L_s:'L/s', qz_Pa:'Pa', qp_Pa:'Pa', C_min:'', C_max:'', R_total_m2K_W:'m²K/W', R_m2K_W:'m²K/W',
+const PRO_KEY_UNITS = {rho_kg_m3:'kg/m³', d_mm:'mm', z_used_m:'m', Asw_over_s_required_mm2_per_mm:'mm²/mm', Asw_over_s_min_mm2_per_mm:'mm²/mm',
+  M_Ed_kNm_per_m:'kNm/m', As_required_mm2_per_m:'mm²/m', As_min_mm2_per_m:'mm²/m', punching_perimeter_a_mm:'mm', size_factor_k:'', structural_system_K:'', co:'', rho_l:'',
+  Q_L_s:'L/s', qz_Pa:'Pa', qp_Pa:'Pa', C_min:'', C_max:'', R_total_m2K_W:'m²K/W', R_m2K_W:'m²K/W',
   total_absorption_m2_sabin:'m² Sabine', vb_ms:'m/s', vm_ms:'m/s', T_s:'s', Kz:'', Cs:''};
 Object.assign(PRO_UNIT_SUFFIXES, {'_Pa':'Pa','_L_s':'L/s','_m2K_W':'m²K/W','_kN_m3':'kN/m³','_ms':'m/s','_mm2':'mm²','_m3_s':'m³/s'});
 function proExtractUnit(k){
@@ -8573,7 +8596,7 @@ function proNotOnlineCard(c){
     <div style="color:#ffb74d;font-weight:600;margin:6px 0 8px">Not available online yet</div>
     <div style="color:#b0bec5;font-size:12px;line-height:1.6">This calculation is not built into the online suite. Our engineers do it as part of a design job.
       Call or WhatsApp <a href="https://wa.me/254768860665" target="_blank" rel="noopener noreferrer" style="color:#64b5f6">0768 860 665</a>.</div>
-    <div style="color:#7986cb;font-size:11px;margin-top:10px">Working online now: daylight factor, reverberation time, U-value, sun position, wind (ASCE 7 / Eurocode), seismic ELF, RC beam, steel bolt, bearing capacity, rational runoff and Kirpich.</div>
+    <div style="color:#7986cb;font-size:11px;margin-top:10px">Working online now: daylight factor, reverberation time, U-value, sun position, wind (ASCE 7 / Eurocode), seismic (ASCE 7 ELF / EN 1998-1), RC beam bending and shear, span/depth deflection, steel bolt, bearing capacity (classical and EC7), pad footing, rational runoff and Kirpich.</div>
   </div></div></div>`;
 }
 function proShowCalc(calcId){

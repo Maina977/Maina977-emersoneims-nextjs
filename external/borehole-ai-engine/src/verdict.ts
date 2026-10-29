@@ -24,8 +24,25 @@ export function finalVerdict(result: AnalysisResult): FinalVerdict {
   const prob = result.probability ?? 0.5;
   const risk = (result as any).risk?.overallRisk ?? 0.5;
   const field = (result as any).fieldValidated === true;
-  const level: FinalVerdict['level'] = prob >= 0.65 && risk < 0.5 ? 'favourable' : prob >= 0.5 && risk < 0.65 ? 'mixed' : 'unfavourable';
+  let level: FinalVerdict['level'] = prob >= 0.65 && risk < 0.5 ? 'favourable' : prob >= 0.5 && risk < 0.65 ? 'mixed' : 'unfavourable';
+  // Water quality gates the verdict (2026-10-29 audit: Mombasa island was
+  // FAVOURABLE while the same page said "likely too salty"). Limits: TDS 1,000
+  // mg/L (KS EAS 12 / WHO taste), nitrate 50 mg/L and fluoride 1.5 mg/L (WHO).
+  const wq = (result as any).waterQuality as { tds?: number; nitrate?: number; fluoride?: number } | undefined;
+  const tds = Number(wq?.tds), no3 = Number(wq?.nitrate), f = Number(wq?.fluoride);
+  const quality: string[] = [];
+  if (tds >= 3000) { level = 'unfavourable'; quality.push(`Expected salinity (TDS about ${Math.round(tds)} mg/L) is too high for drinking without desalination`); }
+  else if (tds >= 1000) { if (level === 'favourable') level = 'mixed'; quality.push(`Expected salinity (TDS about ${Math.round(tds)} mg/L) is above the 1,000 mg/L drinking limit: budget for reverse osmosis`); }
+  if (no3 > 50) { if (level === 'favourable') level = 'mixed'; quality.push(`Nitrate may exceed 50 mg/L (pollution from latrines or farming): site the borehole away from them and test the water`); }
+  if (f > 4) { if (level === 'favourable') level = 'mixed'; quality.push(`Fluoride may be well above 1.5 mg/L: defluoridation is needed for drinking`); }
+  else if (f > 1.5) quality.push(`Fluoride may exceed 1.5 mg/L: plan defluoridation for drinking water`);
+  const qualityNote = quality.length ? ` Water quality: ${quality.join('; ')}. A laboratory test of the first water confirms it.` : '';
   const color: [number, number, number] = level === 'favourable' ? [22, 163, 74] : level === 'mixed' ? [217, 119, 6] : [220, 38, 38];
+  const withQuality = (v: FinalVerdict): FinalVerdict => ({ ...v, next: v.next + qualityNote });
+  return withQuality(baseVerdict(prob, risk, level, color, field));
+}
+
+function baseVerdict(prob: number, risk: number, level: FinalVerdict['level'], color: [number, number, number], field: boolean): FinalVerdict {
   if (field) {
     return level === 'favourable'
       ? { prob, risk, level, color, verdict: 'DRILL -- PROCEED', next: 'Field data supports drilling at the surveyed point. Obtain the WRA permit and drill to the recommended depth.' }

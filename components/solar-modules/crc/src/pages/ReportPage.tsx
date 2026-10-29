@@ -322,10 +322,9 @@ export default function ReportPage() {
           'Installation, testing and commissioning',
           'Workmanship warranty: 2 years from commissioning'
         ],
-        excluded: [
-          'Civil and building works',
-          'Kenya Power connection or metering fees'
-        ],
+        excluded: offGrid
+          ? ['Civil and building works', 'Generator supply or servicing (unless quoted separately)']
+          : ['Civil and building works', 'Kenya Power connection or metering fees'],
         deliverables: [
           'Single-line diagram',
           'As-built drawings',
@@ -334,23 +333,27 @@ export default function ReportPage() {
         ]
       },
       env: {
-        lifetimeMwh: Math.round((annualProduction * 25) / 1000),
-        // CO2 only when the calculator measured it (off-grid, diesel displaced).
-        // A flat 0.82 kg/kWh grid factor overstated Kenya's largely renewable
-        // grid several times over (2026-10-18 tool audit).
+        // 25 years with the cash flow's 0.5%/yr panel degradation.
+        lifetimeMwh: Math.round(annualProduction * (a.panelDegradationPct > 0 ? (1 - Math.pow(1 - a.panelDegradationPct / 100, 25)) / (a.panelDegradationPct / 100) : 25) / 1000),
+        // The calculator's CO2: diesel displaced (2.68 kg/L) or grid energy
+        // replaced (0.213 kg/kWh, Kenya's mostly renewable grid). A flat 0.82
+        // kg/kWh overstated it several times over (2026-10-18 tool audit).
         co2AvoidedTonnes: metrics.carbonOffsetKg > 0 ? Math.round((metrics.carbonOffsetKg * 25) / 1000) : null,
         treesEquivalent: null,
         carsEquivalent: null
       },
       provenance: [
-        { label: 'Tariff KSh ' + site.tariffKesPerKwh + '/kWh', source: 'Entered by the client (total bill ÷ kWh)',
-          url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
+        offGrid
+          ? { label: 'Diesel KSh ' + (site.dieselKesPerLitre ?? '-') + '/L', source: 'Used by the calculator for the diesel displaced (entered by the client, or the stated default)',
+              url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) }
+          : { label: 'Tariff KSh ' + site.tariffKesPerKwh + '/kWh', source: 'Used by the calculator (entered by the client as total bill ÷ kWh, or the stated default)',
+              url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
         { label: 'Equipment pricing', source: 'Typical Kenyan installed prices (estimate, not a quotation)',
           url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
         { label: 'Cash flow assumptions',
-          source: `Tariff +${a.tariffEscalationPct}%/yr, panel output -${a.panelDegradationPct}%/yr, O&M ${a.omPctOfCapex}% of capex/yr`
+          source: `${offGrid ? 'Diesel price' : 'Tariff'} held flat (+${a.tariffEscalationPct}%/yr), panel output -${a.panelDegradationPct}%/yr, O&M ${a.omPctOfCapex}% of capex/yr`
             + (batteryLineKes > 0 ? ', one battery replacement in year 12 at today\'s price' : '')
-            + `, NPV at ${a.discountRatePct}%. Loan rates are illustrative.`,
+            + `, NPV at ${a.discountRatePct}%.`,
           url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) }
       ]
     };
@@ -429,47 +432,47 @@ export default function ReportPage() {
           <Row2>
             <Field>
               <Label>Client / company name</Label>
-              <Input value={client.name} onChange={(e) => updateClient({ name: e.target.value })} />
+              <Input aria-label="Client name" value={client.name} onChange={(e) => updateClient({ name: e.target.value })} />
             </Field>
             <Field>
               <Label>Reference no.</Label>
-              <Input value={client.referenceNo} onChange={(e) => updateClient({ referenceNo: e.target.value })} />
+              <Input aria-label="Client reference" value={client.referenceNo} onChange={(e) => updateClient({ referenceNo: e.target.value })} />
             </Field>
           </Row2>
           <Row2>
             <Field>
               <Label>Email</Label>
-              <Input type="email" value={client.email} onChange={(e) => updateClient({ email: e.target.value })} />
+              <Input type="email" aria-label="Client email" value={client.email} onChange={(e) => updateClient({ email: e.target.value })} />
             </Field>
             <Field>
               <Label>Phone</Label>
-              <Input value={client.phone} onChange={(e) => updateClient({ phone: e.target.value })} />
+              <Input aria-label="Client phone" value={client.phone} onChange={(e) => updateClient({ phone: e.target.value })} />
             </Field>
           </Row2>
           <Field>
             <Label>Site / installation address</Label>
-            <Input value={client.address} onChange={(e) => updateClient({ address: e.target.value })} />
+            <Input aria-label="Site address" value={client.address} onChange={(e) => updateClient({ address: e.target.value })} />
           </Field>
 
           <Section>Brand (yours)</Section>
           <Row2>
             <Field>
               <Label>Company name</Label>
-              <Input value={brand.companyName} onChange={(e) => updateBrand({ companyName: e.target.value })} />
+              <Input aria-label="Company name" value={brand.companyName} onChange={(e) => updateBrand({ companyName: e.target.value })} />
             </Field>
             <Field>
               <Label>Tagline</Label>
-              <Input value={brand.tagline} onChange={(e) => updateBrand({ tagline: e.target.value })} />
+              <Input aria-label="Tagline" value={brand.tagline} onChange={(e) => updateBrand({ tagline: e.target.value })} />
             </Field>
           </Row2>
           <Row2>
             <Field>
               <Label>Contact email</Label>
-              <Input value={brand.contactEmail} onChange={(e) => updateBrand({ contactEmail: e.target.value })} />
+              <Input aria-label="Contact email" value={brand.contactEmail} onChange={(e) => updateBrand({ contactEmail: e.target.value })} />
             </Field>
             <Field>
               <Label>Contact phone</Label>
-              <Input value={brand.contactPhone} onChange={(e) => updateBrand({ contactPhone: e.target.value })} />
+              <Input aria-label="Contact phone" value={brand.contactPhone} onChange={(e) => updateBrand({ contactPhone: e.target.value })} />
             </Field>
           </Row2>
 
@@ -477,31 +480,31 @@ export default function ReportPage() {
           <Row2>
             <Field>
               <Label>Panel make</Label>
-              <Input value={design.panelMake} onChange={(e) => updateDesign({ panelMake: e.target.value })} placeholder="JA Solar" />
+              <Input aria-label="Panel make" value={design.panelMake} onChange={(e) => updateDesign({ panelMake: e.target.value })} placeholder="JA Solar" />
             </Field>
             <Field>
               <Label>Panel model</Label>
-              <Input value={design.panelModel} onChange={(e) => updateDesign({ panelModel: e.target.value })} placeholder="JAM72D40-580" />
+              <Input aria-label="Panel model" value={design.panelModel} onChange={(e) => updateDesign({ panelModel: e.target.value })} placeholder="JAM72D40-580" />
             </Field>
           </Row2>
           <Row2>
             <Field>
               <Label>Inverter make</Label>
-              <Input value={design.inverterMake} onChange={(e) => updateDesign({ inverterMake: e.target.value })} placeholder="Sungrow" />
+              <Input aria-label="Inverter make" value={design.inverterMake} onChange={(e) => updateDesign({ inverterMake: e.target.value })} placeholder="Sungrow" />
             </Field>
             <Field>
               <Label>Inverter model</Label>
-              <Input value={design.inverterModel} onChange={(e) => updateDesign({ inverterModel: e.target.value })} placeholder="SG5K-D" />
+              <Input aria-label="Inverter model" value={design.inverterModel} onChange={(e) => updateDesign({ inverterModel: e.target.value })} placeholder="SG5K-D" />
             </Field>
           </Row2>
           <Row2>
             <Field>
               <Label>Battery make</Label>
-              <Input value={design.batteryMake} onChange={(e) => updateDesign({ batteryMake: e.target.value })} placeholder="BYD" />
+              <Input aria-label="Battery make" value={design.batteryMake} onChange={(e) => updateDesign({ batteryMake: e.target.value })} placeholder="BYD" />
             </Field>
             <Field>
               <Label>Battery model</Label>
-              <Input value={design.batteryModel} onChange={(e) => updateDesign({ batteryModel: e.target.value })} placeholder="HVS 10.2" />
+              <Input aria-label="Battery model" value={design.batteryModel} onChange={(e) => updateDesign({ batteryModel: e.target.value })} placeholder="HVS 10.2" />
             </Field>
           </Row2>
 
@@ -509,16 +512,16 @@ export default function ReportPage() {
           <Row2>
             <Field>
               <Label>Proposal no.</Label>
-              <Input value={proposalNo} onChange={(e) => setProposalNo(e.target.value)} />
+              <Input aria-label="Proposal number" value={proposalNo} onChange={(e) => setProposalNo(e.target.value)} />
             </Field>
             <Field>
               <Label>Prepared by</Label>
-              <Input value={preparedBy} onChange={(e) => setPreparedBy(e.target.value)} />
+              <Input aria-label="Prepared by" value={preparedBy} onChange={(e) => setPreparedBy(e.target.value)} />
             </Field>
           </Row2>
           <Field>
             <Label>Notes (optional)</Label>
-            <TextArea value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <TextArea aria-label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
           </Field>
 
           <div style={{

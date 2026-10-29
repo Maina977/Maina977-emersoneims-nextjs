@@ -91,8 +91,11 @@ export function runCalc(fn: (b: Body) => unknown, b: Body): unknown {
       const o = out as Record<string, unknown>;
       const checks = Array.isArray(o.checks) ? (o.checks as Array<{ check?: string; pass?: unknown }>).filter((c) => typeof c?.pass === 'boolean') : [];
       const failed = checks.filter((c) => c.pass === false).map((c) => String(c.check));
+      // A blank demand (M_Ed, Fv,Ed ...) leaves its check out: say so beside the
+      // verdict (2026-10-29 audit: a blank M_Ed showed a bare "PASS").
+      const notChecked = Array.isArray(o.not_checked) && o.not_checked.length ? ` — not checked: ${(o.not_checked as string[]).join('; ')}` : '';
       const overall = checks.length
-        ? { overall: failed.length ? `FAIL: ${failed.length} of ${checks.length} checks fail (${failed.join('; ')})` : `PASS: all ${checks.length} checks pass`, all_checks_pass: !failed.length }
+        ? { overall: (failed.length ? `FAIL: ${failed.length} of ${checks.length} checks fail (${failed.join('; ')})` : `PASS: all ${checks.length} checks pass`) + notChecked, all_checks_pass: !failed.length }
         : {};
       return { ...overall, ...o, disclaimer: CALC_DISCLAIMER };
     }
@@ -134,6 +137,8 @@ export function daylightAdf(b: Body) {
   if (err) return err;
   const ff = opt(b, 'frame_factor', 1, (x) => x > 0 && x <= 1, 'between 0 and 1');
   if (!(A! > 0) || !(R! >= 0 && R! < 1)) return bad('total_internal_surface_m2 must be > 0 and avg_reflectance between 0 and 1');
+  // 2026-10-29 audit: R = 0.99 gave ADF 82%. White-painted rooms average about 0.6-0.7.
+  if (R! > 0.85) return bad('avg_reflectance above 0.85 is not a real room (all-white rooms average about 0.6-0.7)');
   if (!(T! > 0 && T! <= 1)) return bad('T_glass is a light transmittance: between 0 and 1 (clear glazing about 0.7–0.8)');
   if (!(theta! > 0 && theta! <= 90)) return bad('sky_angle_deg is the visible sky angle: between 0 and 90 degrees');
   if (!(M! > 0 && M! <= 1)) return bad('maintenance_factor must be between 0 and 1');
@@ -158,6 +163,7 @@ export function reverberation(b: Body) {
   const legacyA = pick(b, 'absorption_m2_sabin');
   if (V === undefined) return missing({ volume_m3: V })!;
   if (!(V > 0)) return bad('volume_m3 must be > 0');
+  if (V < 1) return bad('volume_m3 below 1 m³ is not a room; check the units');
   // 2026-10-27 audit: 1e9 m³ returned T60 = 1.6e8 s with only a warning.
   if (V > 1e6) return bad('volume_m3 above 1,000,000 m³ is not a room (the largest concert halls and arenas are about 100,000-600,000 m³); check the units');
   let S = 0, A = 0;
@@ -177,6 +183,14 @@ export function reverberation(b: Body) {
     return { error: 'Missing or invalid input: surfaces (array of {area_m2, alpha})', missing: ['surfaces'] };
   }
   if (!(A > 0)) return bad('Total absorption must be > 0');
+  // Geometry check (2026-10-29 audit: V 0.001 m³ with S 90,000 m² gave T60 = 0).
+  // No room has less surface than a sphere of its volume; long, thin spaces
+  // stay well under 60·V^(2/3).
+  if (S > 0) {
+    const sMin = Math.cbrt(36 * Math.PI * V * V);
+    if (S < sMin * 0.99) return bad(`Total surface ${r(S, 1)} m² is less than any room of ${V} m³ can have (a sphere has ${r(sMin, 1)} m²); check the areas`);
+    if (S > 60 * Math.pow(V, 2 / 3)) return bad(`Total surface ${r(S, 0)} m² is far too large for a ${V} m³ room; check the areas and the volume`);
+  }
   let T: number;
   let used = 'Sabine';
   if (method === 'eyring' && S > 0) {
@@ -262,8 +276,15 @@ export function sunPosition(b: Body) {
   if (err) return err;
   if (Math.abs(lat!) > 90 || Math.abs(lon!) > 180) return bad('lat must be within ±90 and lng within ±180');
   const raw = b.datetime_utc ?? b.time;
-  const when = raw ? new Date(String(raw)) : null;
-  if (!when || Number.isNaN(when.getTime())) return { error: 'Missing or invalid input: datetime_utc (ISO 8601, e.g. 2026-06-21T12:00:00Z)', missing: ['datetime_utc'] };
+  // Strict ISO 8601 (2026-10-29 audit: "2026-02-31" became 3 March and the
+  // number 12 became the year 2001).
+  const m = typeof raw === 'string' ? raw.trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?(Z|[+-]\d{2}:?\d{2})?$/) : null;
+  const when = m ? new Date(String(raw)) : null;
+  const bad8601 = { error: 'Missing or invalid input: datetime_utc (ISO 8601, e.g. 2026-06-21T12:00:00Z)', missing: ['datetime_utc'] };
+  if (!m || !when || Number.isNaN(when.getTime())) return bad8601;
+  const [Y, Mo, D, h = '0', mi = '0', s = '0'] = m.slice(1, 7);
+  const dim = new Date(Date.UTC(+Y, +Mo, 0)).getUTCDate();
+  if (+Mo < 1 || +Mo > 12 || +D < 1 || +D > dim || +h > 23 || +mi > 59 || +s > 59) return bad8601;
   return { ...sunPositionAt(lat!, lon!, when), datetime_utc: when.toISOString() };
 }
 
@@ -511,6 +532,7 @@ export function rcBeam(b: Body) {
     x_mm: r(x, 1), z_mm: r(z, 1), fcd_MPa: r(fcd), fyd_MPa: r(fyd, 1),
     As_min_mm2: Math.ceil(AsMin),
     checks,
+    ...(Med === undefined ? { not_checked: ['M_Ed not given, so the moment demand was not checked'] } : {}),
     assumptions: ['Singly reinforced; compression steel ignored', 'αcc = 0.85 (UK/Kenya practice; recommended value is 1.0)', 'Shear and deflection are separate checks (EC2 shear, span/depth); crack width not checked'],
     method: 'EN 1992-1-1 §3.1.7 rectangular stress block, §6.1',
   };
@@ -632,7 +654,11 @@ export function steelBolt(b: Body) {
     const inter = FvEd / FvRd + FtEd / (1.4 * FtRd);
     checks.push({ check: 'Combined Fv,Ed/Fv,Rd + Ft,Ed/(1.4·Ft,Rd) ≤ 1', value: r(inter, 3).toString(), pass: inter <= 1 });
   }
-  return { ...out, checks, assumptions, method: 'EN 1993-1-8 Table 3.4 (γM2 = 1.25)' };
+  const notChecked = [
+    FvEd === undefined ? 'Fv,Ed not given, so shear/bearing demand was not checked' : null,
+    FtEd === undefined ? 'Ft,Ed not given, so tension demand was not checked' : null,
+  ].filter(Boolean);
+  return { ...out, checks, ...(notChecked.length ? { not_checked: notChecked } : {}), assumptions, method: 'EN 1993-1-8 Table 3.4 (γM2 = 1.25)' };
 }
 
 // ───────────────────────────── Geotechnics ──────────────────────────────
@@ -697,7 +723,8 @@ export function bearingEc7(b: Body) {
   const BL = strip ? 0 : B! / L;
   const gw = 9.81;
   // Effective stresses (§2.4.6.1, Annex D): overburden q′ and γ′ below the base.
-  let q = gamma! * Df!, gEff = gamma!;
+  const qTotal = gamma! * Df!; // undrained (Annex D.3) uses the total overburden
+  let q = qTotal, gEff = gamma!;
   if (dw !== undefined) {
     if (dw <= Df!) { q = gamma! * dw + (gamma! - gw) * (Df! - dw); gEff = gamma! - gw; }
     else if (dw < Df! + B!) gEff = (gamma! - gw) + ((dw - Df!) / B!) * gw;
@@ -729,6 +756,9 @@ export function bearingEc7(b: Body) {
   for (const k of combos) {
     const Vd = Gk !== undefined ? k.gG * Gk + k.gQ * Qk : undefined;
     const Hd = Hk ? k.gG * Hk : 0; // horizontal load treated as permanent
+    // Inclination factors with the MINIMUM vertical load (G only, γ = 1.0):
+    // the full factored V made them favourable (2026-10-29 audit).
+    const Vmin = Gk !== undefined ? Gk : undefined;
     let qult: number;
     const f: Record<string, number> = {};
     if (cond === 'drained') {
@@ -739,9 +769,9 @@ export function bearingEc7(b: Body) {
       const Ng = 2 * (Nq - 1) * Math.tan(phi);
       const sq = 1 + BL * Math.sin(phi), sg = 1 - 0.3 * BL, sc = (sq * Nq - 1) / (Nq - 1);
       let iq = 1, ig = 1, ic = 1;
-      if (Hd > 0 && Vd !== undefined) {
+      if (Hd > 0 && Vmin !== undefined) {
         const m = strip ? 2 : (2 + BL) / (1 + BL);
-        const base = 1 - Hd / (Vd + A * c / Math.tan(phi));
+        const base = 1 - Hd / (Vmin! + A * c / Math.tan(phi));
         if (!(base > 0)) return bad(`${k.name}: the horizontal load exceeds the sliding resistance; check H_kN`);
         iq = Math.pow(base, m); ig = Math.pow(base, m + 1); ic = iq - (1 - iq) / (Nc * Math.tan(phi));
       }
@@ -755,7 +785,7 @@ export function bearingEc7(b: Body) {
         if (Hd > A * cu) return bad(`${k.name}: the horizontal load exceeds A′·cu; check H_kN`);
         ic = 0.5 * (1 + Math.sqrt(1 - Hd / (A * cu)));
       }
-      qult = (Math.PI + 2) * cu * sc * ic + q;
+      qult = (Math.PI + 2) * cu * sc * ic + qTotal;
       Object.assign(f, { cu_d_kPa: r(cu, 1), sc: r(sc, 3), ic: r(ic, 3) });
     }
     const Rd = qult * A; // γR,v = 1.0
@@ -866,7 +896,7 @@ export function ec2Shear(b: Body) {
   const VRdmax = (cot: number) => (bw! * z * nu1 * fcd) / (cot + 1 / cot) / 1000;
   let cot = 2.5;
   const checks: Array<{ check: string; value: string; pass: boolean }> = [];
-  const out: Record<string, unknown> = { V_Rd_c_kN: r(VRdc, 1), k: r(k, 3), rho_l: r(rhoL, 4) };
+  const out: Record<string, unknown> = { V_Rd_c_kN: r(VRdc, 1), size_factor_k: r(k, 3), rho_l: r(rhoL, 4) };
   if (VEd !== undefined) {
     const X = (bw! * z * nu1 * fcd) / (VEd * 1000);
     if (X < 2) {
@@ -877,7 +907,11 @@ export function ec2Shear(b: Body) {
     out.cot_theta = r(cot, 3);
     out.V_Rd_max_kN = r(VRdmax(cot), 1);
     out.Asw_over_s_required_mm2_per_mm = VEd > VRdc ? r((VEd * 1000) / (z * fywd * cot), 3) : 0;
-    checks.push({ check: 'V_Ed ≤ V_Rd,c (no design links needed)', value: `${VEd} ≤ ${r(VRdc, 1)} kN`, pass: VEd <= VRdc });
+    // Without links V_Rd,c is the check; with links it is information only and
+    // the verdict is V_Rd,s (2026-10-29 audit: adequate links showed FAIL).
+    if (Asw === undefined) checks.push({ check: 'V_Ed ≤ V_Rd,c (no design links)', value: `${VEd} ≤ ${r(VRdc, 1)} kN`, pass: VEd <= VRdc });
+    else out.V_Ed_over_V_Rd_c = VEd <= VRdc ? 'V_Ed ≤ V_Rd,c: minimum links suffice' : 'V_Ed > V_Rd,c: design links required (checked below)';
+    checks.push({ check: 'V_Ed ≤ V_Rd,max (strut crushing)', value: `${VEd} ≤ ${r(VRdmax(cot), 1)} kN`, pass: VEd <= VRdmax(cot) });
   } else {
     out.V_Rd_max_kN = r(VRdmax(cot), 1);
   }
@@ -889,7 +923,7 @@ export function ec2Shear(b: Body) {
     out.V_Rd_kN = r(Math.min(VRds, VRdmax(cot)), 1);
     checks.push({ check: 'Links ≥ minimum ρw,min = 0.08√fck/fyk (§9.2.2)', value: `${r(Asw / s!, 3)} ≥ ${r(rhoWmin * bw!, 3)} mm²/mm`, pass: Asw / s! >= rhoWmin * bw! });
     checks.push({ check: 'Link spacing s ≤ 0.75·d (§9.2.2)', value: `${s} ≤ ${r(0.75 * d!, 0)} mm`, pass: s! <= 0.75 * d! });
-    if (VEd !== undefined && VEd > VRdc) checks.push({ check: 'V_Ed ≤ V_Rd,s (links)', value: `${VEd} ≤ ${r(VRds, 1)} kN`, pass: VEd <= VRds });
+    if (VEd !== undefined) checks.push({ check: 'V_Ed ≤ V_Rd,s (links)', value: `${VEd} ≤ ${r(VRds, 1)} kN`, pass: VEd <= VRds });
   }
   return {
     ...out,
@@ -925,7 +959,11 @@ export function ec2Deflection(b: Body) {
   if (AsProv < AsReq!) return bad('As_prov_mm2 must be at least As_req_mm2');
   if (Asc < 0 || flange < 1) return bad('Asc_mm2 must be 0 or more and beff_over_bw at least 1');
   const rho0 = Math.sqrt(fck!) / 1000;
-  const rho = AsReq! / (bw! * d!);
+  // ρ is at least the §9.2.1.1 minimum (2026-10-29 audit: As,req 50 mm² gave
+  // an allowed l/d of 1867).
+  const rhoMin = Math.max(0.26 * (0.3 * Math.pow(fck!, 2 / 3)) / fyk, 0.0013);
+  const rhoRaw = AsReq! / (bw! * d!);
+  const rho = Math.max(rhoRaw, rhoMin);
   const rhoC = Asc / (bw! * d!);
   const sf = Math.sqrt(fck!);
   const basic = rho <= rho0
@@ -940,7 +978,11 @@ export function ec2Deflection(b: Body) {
     l_over_d_allowed: r(allowed, 1),
     l_over_d_actual: r(actual, 1),
     basic_l_over_d: r(basic, 1),
-    factors: { K, steel_stress: r(steel, 3), long_span: r(longSpan, 3), flanged },
+    factors: { structural_system_K: K, steel_stress: r(steel, 3), long_span: r(longSpan, 3), flanged },
+    ...(rhoRaw < rhoMin || rho < 0.003 ? { warning: [
+      rhoRaw < rhoMin ? `As,req is below As,min (${Math.ceil(rhoMin * bw! * d!)} mm²): the minimum steel ratio was used.` : '',
+      rho < 0.003 ? 'At steel ratios below 0.3% Eq. 7.16 gives very large span/depth limits: for a lightly reinforced member check a calculated deflection (§7.4.3).' : '',
+    ].filter(Boolean).join(' ') } : {}),
     rho_pct: r(rho * 100, 3), rho0_pct: r(rho0 * 100, 3),
     checks: [{ check: 'Span/d ≤ allowed (§7.4.2)', value: `${r(actual, 1)} ≤ ${r(allowed, 1)}`, pass: actual <= allowed }],
     assumptions: [
@@ -974,6 +1016,7 @@ export function padFooting(b: Body) {
   const net = q! - selfW - backfill;
   if (!(net > 0)) return bad('The footing and backfill weight use all of q_allow_kPa: check the inputs');
   const B = Math.max(Math.ceil(Math.sqrt(Ns! / net) / 0.05) * 0.05, (c! / 1000) + 0.3);
+  if (h! / 1000 > B) return bad(`h_mm = ${h} is deeper than the ${r(B, 2)} m footing is wide: check h_mm and the loads`);
   const pSls = Ns! / (B * B) + selfW + backfill;
   const out: Record<string, unknown> = { B_m: r(B, 2), plan_area_m2: r(B * B, 2), bearing_pressure_sls_kPa: r(pSls, 1), d_mm: d };
   const checks: Array<{ check: string; value: string; pass: boolean }> = [
@@ -1004,11 +1047,23 @@ export function padFooting(b: Body) {
     const vRdc = Math.max(0.12 * k * Math.cbrt(100 * rho * fck!), 0.035 * Math.pow(k, 1.5) * Math.sqrt(fck!));
     // One-way shear at d from the column face, per metre width.
     const vOne = l > dM ? (pu * (l - dM) * 1000) / (1000 * d) : 0; // MPa
-    // Punching at the basic control perimeter, 2d from the face (§6.4.2).
-    const u1 = 4 * c! + 2 * Math.PI * 2 * d;
-    const A1 = cM * cM + 4 * cM * 2 * dM + Math.PI * Math.pow(2 * dM, 2);
-    const Vred = Math.max(0, Nu - pu * Math.min(A1, B * B));
-    const vPunch = (Vred * 1000) / (u1 * d);
+    // Punching, EN 1992-1-1 §6.4.4(2) for footings: every perimeter a from the
+    // column face out to 2d, with vRd = vRd,c·2d/a and the soil pressure inside
+    // the perimeter deducted; perimeters beyond the footing edge are skipped
+    // (2026-10-29 audit: only 2d was checked, up to 6% unconservative).
+    let worst = { ratio: 0, a: 2 * d, vEd: 0, vRd: vRdc };
+    for (let i = 1; i <= 40; i++) {
+      const a = (2 * d * i) / 40; // mm
+      if (c! + 2 * a > B * 1000) break;
+      const aM = a / 1000;
+      const u = 4 * c! + 2 * Math.PI * a;
+      const area = cM * cM + 4 * cM * aM + Math.PI * aM * aM;
+      const vEdA = (Math.max(0, Nu - pu * area) * 1000) / (u * d);
+      const vRdA = vRdc * (2 * d) / a;
+      if (vEdA / vRdA > worst.ratio) worst = { ratio: vEdA / vRdA, a, vEd: vEdA, vRd: vRdA };
+    }
+    const punchingChecked = worst.ratio > 0;
+    const vPunch = worst.vEd;
     const u0 = 4 * c!;
     const vFace = (Nu * 1000) / (u0 * d);
     // EN 1992-1-1 §6.4.5(3) recommended 0.4·ν·fcd (the UK NA allows 0.5): the
@@ -1020,16 +1075,16 @@ export function padFooting(b: Body) {
       As_min_mm2_per_m: Math.ceil(AsMin),
       v_Rd_c_MPa: r(vRdc, 3),
       v_Ed_one_way_MPa: r(vOne, 3),
-      v_Ed_punching_2d_MPa: r(vPunch, 3),
+      ...(punchingChecked ? { v_Ed_punching_MPa: r(vPunch, 3), v_Rd_punching_MPa: r(worst.vRd, 3), punching_perimeter_a_mm: Math.round(worst.a) } : {}),
       v_Ed_column_face_MPa: r(vFace, 3),
       v_Rd_max_MPa: r(vRdMax, 3),
     });
     if (Kf > 0.167) checks.push({ check: "K ≤ K' = 0.167 (no compression steel): deepen the footing", value: r(Kf, 3).toString(), pass: false });
     checks.push({ check: 'One-way shear at d: v_Ed ≤ v_Rd,c', value: `${r(vOne, 3)} ≤ ${r(vRdc, 3)} MPa`, pass: vOne <= vRdc });
-    checks.push({ check: 'Punching at 2d: v_Ed ≤ v_Rd,c (§6.4.4)', value: `${r(vPunch, 3)} ≤ ${r(vRdc, 3)} MPa`, pass: vPunch <= vRdc });
+    if (punchingChecked) checks.push({ check: `Punching, worst perimeter a = ${Math.round(worst.a)} mm: v_Ed ≤ v_Rd,c·2d/a (§6.4.4(2))`, value: `${r(vPunch, 3)} ≤ ${r(worst.vRd, 3)} MPa`, pass: vPunch <= worst.vRd });
     checks.push({ check: 'Column face: v_Ed ≤ v_Rd,max = 0.4·ν·fcd (§6.4.5, recommended value)', value: `${r(vFace, 3)} ≤ ${r(vRdMax, 3)} MPa`, pass: vFace <= vRdMax });
     if (AsGiven !== undefined && AsReq !== null) checks.push({ check: 'As,prov ≥ As,req (bending at the column face)', value: `${AsGiven} ≥ ${Math.ceil(AsReq)} mm²/m`, pass: AsGiven >= AsReq });
-    assumptions.push('ULS: net upward pressure N_uls/B²; punching checked at the basic perimeter 2d (β = 1, central load); closer perimeters (a < 2d, §6.4.4(2)) not checked');
+    assumptions.push(punchingChecked ? 'ULS: net upward pressure N_uls/B²; punching scanned over perimeters 0 < a ≤ 2d inside the footing (β = 1, central load)' : 'ULS: net upward pressure N_uls/B²; every punching perimeter lies outside this footing, so punching does not govern (column-face check below)');
     assumptions.push(AsGiven === undefined ? 'ρl for shear taken from the required steel (give As_prov_mm2_per_m for the bars you will use)' : 'ρl for shear from the steel provided');
   } else {
     assumptions.push('Give N_uls_kN (factored load) for the bending, shear and punching checks');
@@ -1064,7 +1119,8 @@ export function seismicEc8(b: Body) {
   const struct = String(b.structure_type ?? 'other');
   const Ct = EC8_CT[struct];
   if (Ct === undefined) return { error: `Invalid input: structure_type (${Object.keys(EC8_CT).join(', ')})`, missing: ['structure_type'] };
-  const storeys = opt(b, 'storeys', 3, (x) => Number.isInteger(x) && x >= 1 && x <= 100, 'a whole number from 1 to 100');
+  const storeysGiven = optN(b, 'storeys');
+  if (storeysGiven !== undefined && !(Number.isInteger(storeysGiven) && storeysGiven >= 1 && storeysGiven <= 100)) return bad('storeys must be a whole number from 1 to 100');
   const H = optN(b, 'height_m');
   const Tgiven = optN(b, 'T1_s');
   if (H !== undefined && !(H > 0 && H <= 300)) return bad('height_m must be between 0 and 300 m');
@@ -1085,7 +1141,12 @@ export function seismicEc8(b: Body) {
     : T <= TC ? ag * S * 2.5 / qf!
     : T <= TD ? Math.max(ag * S * 2.5 / qf! * (TC / T), beta * ag)
     : Math.max(ag * S * 2.5 / qf! * (TC * TD) / (T * T), beta * ag);
-  const lambda = T <= 2 * TC && storeys > 2 ? 0.85 : 1.0;
+  // λ = 0.85 only when T1 ≤ 2·TC and there are more than two storeys; without
+  // a storey count the safe value 1.0 is used (2026-10-29 audit).
+  const lambda = storeysGiven !== undefined && T <= 2 * TC && storeysGiven > 2 ? 0.85 : 1.0;
+  assumptions.push(storeysGiven === undefined
+    ? 'λ = 1.0: storeys not given (λ = 0.85 applies only to buildings of more than two storeys with T1 ≤ 2·TC)'
+    : `λ = ${lambda} (${storeysGiven} storeys, T1 ${T <= 2 * TC ? '≤' : '>'} 2·TC = ${r(2 * TC, 2)} s; §4.3.3.2.2)`);
   const Fb = Sd * W! * lambda;
   const limit = Math.min(4 * TC, 2.0);
   return {

@@ -90,11 +90,8 @@ function MaintenanceItemCard({ item }: { item: MaintenanceItem }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {item.failureRisk !== undefined && item.failureRisk > 20 && (
-            <span className="px-2 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400 border border-red-500/30">
-              {item.failureRisk}% RISK
-            </span>
-          )}
+          {/* No failure-risk % on sample data: it read as a prediction for the
+              visitor's set (2026-10-29 audit). */}
           <span className={`px-2 py-0.5 rounded text-[10px] uppercase ${colors.bg} ${colors.text} border ${colors.border}`}>
             {item.status.replace('_', ' ')}
           </span>
@@ -128,8 +125,8 @@ function MaintenanceItemCard({ item }: { item: MaintenanceItem }) {
           <div className="text-slate-500">Current</div>
         </div>
         <div>
-          <div className="text-amber-400 font-mono">KES {item.cost.toLocaleString()}</div>
-          <div className="text-slate-500">Est. Cost</div>
+          <div className="text-amber-400 font-mono">On quotation</div>
+          <div className="text-slate-500">Cost</div>
         </div>
         {item.componentLifespan && (
           <div>
@@ -211,7 +208,7 @@ function MaintenanceItemCard({ item }: { item: MaintenanceItem }) {
 
       {/* Next Service Date & Expand Hint */}
       <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center justify-between text-xs">
-        <span className="text-slate-500">Next Service: <span className={colors.text}>{item.nextService}</span></span>
+        <span className="text-slate-500">Next service: <span className={colors.text}>in {item.hoursRemaining} running hours</span></span>
         <span className="text-slate-600">{expanded ? '▲ Less' : '▼ More'}</span>
       </div>
     </motion.div>
@@ -453,65 +450,13 @@ function MaintenanceCalendar({ events }: { events: CalendarEvent[] }) {
 
 // ==================== COST PROJECTION ====================
 function CostProjection({ items }: { items: MaintenanceItem[] }) {
-  const monthlyProjections = [
-    { month: 'Jan', cost: 25000 },
-    { month: 'Feb', cost: 8500 },
-    { month: 'Mar', cost: 45000 },
-    { month: 'Apr', cost: 12000 },
-    { month: 'May', cost: 78000 },
-    { month: 'Jun', cost: 15000 },
-  ];
-
-  const maxCost = Math.max(...monthlyProjections.map(p => p.cost));
-
+  // The six-month KES chart was invented sample figures (2026-10-29 audit):
+  // costs depend on the set, its hours and current parts prices.
   return (
     <div className="p-6 bg-slate-900/50 rounded-xl border border-green-500/30">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-          <span className="text-2xl">💰</span>
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-green-400 uppercase tracking-wider">Cost Projection</h3>
-          <p className="text-xs text-slate-500">6-month maintenance forecast</p>
-        </div>
-      </div>
-
-      {/* Bar Chart */}
-      <div className="h-40 flex items-end justify-between gap-2 mb-4">
-        {monthlyProjections.map((proj, idx) => (
-          <div key={proj.month} className="flex-1 flex flex-col items-center">
-            <motion.div
-              className="w-full bg-gradient-to-t from-green-500 to-emerald-400 rounded-t"
-              initial={{ height: 0 }}
-              animate={{ height: `${(proj.cost / maxCost) * 100}%` }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-            />
-            <span className="text-[10px] text-slate-500 mt-2">{proj.month}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Totals */}
-      <div className="grid grid-cols-3 gap-4 text-center pt-4 border-t border-slate-700/50">
-        <div>
-          <div className="text-xl font-mono font-bold text-green-400">
-            KES {monthlyProjections.reduce((acc, p) => acc + p.cost, 0).toLocaleString()}
-          </div>
-          <div className="text-xs text-slate-500">6-Month Total</div>
-        </div>
-        <div>
-          <div className="text-xl font-mono font-bold text-amber-400">
-            KES {Math.round(monthlyProjections.reduce((acc, p) => acc + p.cost, 0) / 6).toLocaleString()}
-          </div>
-          <div className="text-xs text-slate-500">Monthly Avg</div>
-        </div>
-        <div>
-          <div className="text-xl font-mono font-bold text-cyan-400">
-            {items.filter(i => i.status === 'overdue' || i.status === 'critical').length}
-          </div>
-          <div className="text-xs text-slate-500">Urgent Items</div>
-        </div>
-      </div>
+      <h3 className="text-lg font-bold text-green-400 uppercase tracking-wider mb-2">Service costs</h3>
+      <p className="text-sm text-slate-300">Costs depend on your set, its running hours and current parts prices, so none are shown here. Send us the set's make, model and hours for a service quotation.</p>
+      <p className="text-xs text-slate-500 mt-3">Items due or overdue in this example: {items.filter(i => i.status === 'overdue' || i.status === 'critical' || i.status === 'due_soon').length}</p>
     </div>
   );
 }
@@ -532,15 +477,8 @@ export default function PredictiveMaintenancePanel() {
       criticalValues: { min: 15, max: 65, unit: 'PSI' },
       componentLifespan: 250, failureRisk: 15
     },
-    {
-      id: '1b', name: 'Hydraulic Fluid Check', category: 'fluids',
-      lastService: '2023-12-01', nextService: '2024-06-01',
-      intervalHours: 1000, currentHours: 650, hoursRemaining: 350,
-      status: 'ok', cost: 12000, parts: ['Hydraulic Fluid (10L)', 'Filter Element'], icon: '🛢️',
-      failureSigns: ['Slow actuator response', 'Fluid foaming', 'High operating temperature'],
-      testProcedure: ['Check fluid level', 'Inspect for contamination', 'Test viscosity'],
-      componentLifespan: 2000, failureRisk: 5
-    },
+    // (A "Hydraulic Fluid Check" was listed here; a diesel genset has no
+    // hydraulic system - 2026-10-29 audit.)
 
     // ========== FILTERS ==========
     {

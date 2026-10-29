@@ -643,7 +643,9 @@ export function computeDrillingPlan(
   const soil = soilType.toLowerCase();
 
   // Rock hardness classification
-  const isHardRock = ['granite', 'basalt', 'gneiss', 'quartzite', 'dolerite', 'rhyolite', 'diorite', 'gabbro'].some(r => rock.includes(r));
+  // Kenya's Rift volcanics (phonolite, trachyte, tuff, nephelinite) drill as hard
+  // rock too; without them Nairobi phonolite was given mud rotary.
+  const isHardRock = ['granite', 'basalt', 'gneiss', 'quartzite', 'dolerite', 'rhyolite', 'diorite', 'gabbro', 'phonolite', 'trachyte', 'tuff', 'nephelinite', 'andesite', 'volcanic', 'basement', 'migmatite', 'schist'].some(r => rock.includes(r));
   const isMediumRock = ['sandstone', 'limestone', 'dolomite', 'schist', 'marble', 'slate', 'shale'].some(r => rock.includes(r));
   const isSoft = ['alluvium', 'sand', 'clay', 'laterite', 'silt', 'gravel', 'loam'].some(r => rock.includes(r) || soil.includes(r));
   const isKarst = ['limestone', 'dolomite', 'karst', 'chalk'].some(r => rock.includes(r));
@@ -661,7 +663,7 @@ export function computeDrillingPlan(
     rigCap = depth_m > 150 ? 300 : 200;
     bitType = `DTH hammer bit ${boreholeDiameter_mm}mm (carbide button — flat face for granite, concave for weathered rock)`;
     fluid = 'Compressed air (oil-free). Add foam (0.5-1% biodegradable surfactant) if water ingress significant.';
-    penRate = [2, 8]; // m/hr in hard rock
+    penRate = [3, 8]; // m/hr in hard rock
   } else if (isMediumRock) {
     method = 'Rotary (tricone roller cone)';
     altMethod = 'DTH if formation very hard or abrasive';

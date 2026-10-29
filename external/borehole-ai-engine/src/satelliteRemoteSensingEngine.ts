@@ -113,21 +113,27 @@ async function fetchModisNDVI(lat: number, lon: number): Promise<{
   monthlyProfile: number[]; trend: number; source: string;
 } | null> {
   try {
-    const end = new Date();
-    const start = new Date();
-    start.setFullYear(end.getFullYear() - 3);
-    const url = `https://modis.ornl.gov/rst/api/v1/MOD13A2/subset?latitude=${lat}&longitude=${lon}&startDate=A${start.getFullYear()}001&endDate=A${end.getFullYear() - 1}365&kmAboveBelow=0&kmLeftRight=0`;
-    const res = await fetch(url, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(20000),
+    // The previous full calendar year, fixed so the relay's cached answer is
+    // reused; the band named; windows of 9 composites (2026-10-29 audit: no
+    // band and a 3-year span answered 404 on every run).
+    const year = new Date().getFullYear() - 1;
+    const windows: [number, number][] = [[1, 144], [145, 288], [289, 366]]; // 9 sixteen-day composites each
+    const parts = await Promise.all(windows.map(async ([a, b]) => {
+      const url = `https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=${lat}&longitude=${lon}&band=250m_16_days_NDVI&startDate=A${year}${String(a).padStart(3, '0')}&endDate=A${year}${String(b).padStart(3, '0')}&kmAboveBelow=0&kmLeftRight=0`;
+      const res = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(60000) }).catch(() => null);
+      if (!res || !res.ok) return [];
+      const data = await res.json().catch(() => null);
+      return Array.isArray(data?.subset) ? data.subset : [];
+    }));
+    const subset = parts.flat().filter((s: any) => s.data?.[0] != null && s.data[0] > -2000);
+    if (subset.length === 0) return null;
+    const months: number[] = subset.map((s: any) => {
+      const d = new Date(String(s.calendar_date ?? ''));
+      return Number.isNaN(d.getTime()) ? -1 : d.getUTCMonth();
     });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const ndviRaw = data.subset?.map((s: any) => s.data?.[0])?.filter((v: any) => v != null && v > -2000) ?? [];
-    if (ndviRaw.length === 0) return null;
 
     // MODIS NDVI scale factor: 0.0001
-    const ndviValues = ndviRaw.map((v: number) => v * 0.0001);
+    const ndviValues = subset.map((s: any) => s.data[0] * 0.0001);
     const mean = ndviValues.reduce((a: number, b: number) => a + b, 0) / ndviValues.length;
     const max = Math.max(...ndviValues);
     const min = Math.min(...ndviValues);
@@ -137,7 +143,7 @@ async function fetchModisNDVI(lat: number, lon: number): Promise<{
     const monthlyProfile: number[] = Array(12).fill(0);
     const monthlyCounts: number[] = Array(12).fill(0);
     ndviValues.forEach((v: number, i: number) => {
-      const monthIdx = Math.floor((i % 23) * 12 / 23); // 23 composites per year
+      const monthIdx = months[i] >= 0 ? months[i] : Math.floor((i % 23) * 12 / 23);
       monthlyProfile[monthIdx] += v;
       monthlyCounts[monthIdx]++;
     });
@@ -166,7 +172,7 @@ async function fetchModisNDVI(lat: number, lon: number): Promise<{
       // AUDIT FIX (2026-07-16 external review): MOD13A2 is the 1 km, 16-day
       // product (MOD13Q1 is the 250 m one) — the label must match the product
       // actually queried above.
-      source: 'ORNL DAAC MOD13A2 (1 km, 16-day composite)',
+      source: 'ORNL DAAC MOD13Q1 (250 m, 16-day composite; MOD13A2 is no longer served)',
     };
   } catch {
     return null;
@@ -301,7 +307,7 @@ function analyzeMultispectral(
     confidence: hasRS && hasNdvi ? 0.78 : hasRS ? 0.6 : 0.4,
     groundwaterScore: Math.min(100, Math.max(0, score)),
     keyFindings: findings,
-    dataSource: `ISRIC SoilGrids v2.0 (250m)${hasNdvi ? ', ORNL DAAC MOD13A2 (1 km, 16-day)' : ''}, Sentinel-2 spectral proxy`,
+    dataSource: `ISRIC SoilGrids v2.0 (250m)${hasNdvi ? ', ORNL DAAC MOD13Q1 (250 m, 16-day)' : ''}, Sentinel-2 spectral proxy`,
     metrics: {
       clayPercent: clay, sandPercent: sand, lineamentDensity,
       drainageDensity, drySeasonNDVI: ndviMin,
@@ -421,13 +427,13 @@ function analyzeGRACE(
 
   return {
     method: '3. GRACE / GRACE-FO Gravity',
-    platform: 'NASA GRACE-FO, JPL Mascon',
+    platform: 'GRACE / GRACE-FO (G3P groundwater, GFZ GravIS total storage)',
     resolution: '~300 km (regional screening)',
     status: hasGrace ? 'available' : hasGldas ? 'partial' : 'unavailable',
     confidence: hasGrace ? 0.72 : hasGldas ? 0.55 : 0.2,
     groundwaterScore: score,
     keyFindings: findings,
-    dataSource: hasGrace ? graceData.dataSource || 'NASA GRACE-FO JPL Mascon RL06' : hasGldas ? 'GLDAS v2.1 GRACE proxy' : 'N/A',
+    dataSource: hasGrace ? graceData.dataSource || 'GRACE / GRACE-FO (G3P, GFZ GravIS)' : hasGldas ? 'Soil-moisture indicator (not GRACE data)' : 'N/A',
     metrics: {
       twsAnomaly_cm: twsAnomaly,
       trendCmPerYear: trend,
@@ -657,8 +663,8 @@ function analyzeNDVI(
 
   return {
     method: '7. NDVI & Vegetation Indices',
-    platform: 'MODIS (MOD13A2, 1 km 16-day), Sentinel-2 NDVI',
-    resolution: '1 km (MOD13A2, 16-day composite)',
+    platform: 'MODIS (MOD13Q1, 250 m 16-day), Sentinel-2 NDVI',
+    resolution: '250 m (MOD13Q1, 16-day composite)',
     status: hasModis ? 'available' : hasProxy || hasSatVeg ? 'partial' : 'modeled',
     confidence: hasModis ? 0.8 : hasProxy ? 0.65 : 0.4,
     groundwaterScore: score,

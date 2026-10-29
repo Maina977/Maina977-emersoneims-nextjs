@@ -203,7 +203,7 @@ const ENKO_FAULT_CODES: Partial<ControllerFaultCode>[] = [
     ['Fuel supply problem', 'Air in fuel system', 'Glow plug failure', 'Injection timing incorrect', 'Low compression', 'Starter motor weak'],
     ['Check fuel level and supply', 'Bleed air from fuel system', 'Test glow plug operation', 'Verify fuel filter is clean', 'Check starting battery condition', 'Verify compression'],
     'Address starting issue and reset',
-    'warning',
+    'critical', // the set is locked out until reset, as other brands' fail-to-start (2026-10-29 audit)
     'Engine'
   ),
 
@@ -434,7 +434,7 @@ const ENKO_FAULT_CODES: Partial<ControllerFaultCode>[] = [
     ['Engine fuel exhausted', 'Fuel solenoid activated', 'Governor failure', 'Engine mechanical failure', 'Intentional shutdown'],
     ['Check engine condition', 'Verify fuel supply', 'Check governor operation', 'Review sequence of events', 'Verify protection settings'],
     'Investigate cause and reset',
-    'warning',
+    'critical', // a trip that opens the breaker, not a warning (2026-10-29 audit)
     'Synchronization'
   ),
 

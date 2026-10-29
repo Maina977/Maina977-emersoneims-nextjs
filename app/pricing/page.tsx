@@ -14,7 +14,7 @@ export const metadata: Metadata = {
    */
   title: 'Service Prices & Costs in Kenya (2026)',
   description:
-    'What our work costs in Kenya: generator installation and servicing, solar, UPS, borehole pumps, motor rewinding and incinerators — published ranges in KES, no hidden fees.',
+    'What our work costs in Kenya: generator installation and servicing, solar, UPS, borehole pumps, motor rewinding and incinerators. Published KES ranges.',
   alternates: {
     canonical: 'https://www.emersoneims.com/pricing',
   },

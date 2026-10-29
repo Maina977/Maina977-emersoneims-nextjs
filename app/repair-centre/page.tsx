@@ -9,7 +9,7 @@ export const metadata: Metadata = {
      the brand were both written and never seen. */
   title: 'Generator, Inverter & UPS Repair Centre',
   description:
-    'Technical fault diagnosis and repair guidance for diesel generators, inverters, UPS systems and generator controllers. Ranked causes, ordered diagnostic steps with expected readings, and the safety constraints stated rather than assumed.',
+    'Fault diagnosis and repair guidance for diesel generators, inverters, UPS and controllers: ranked causes, checks with expected readings, safety notes.',
   keywords: [
     'generator repair Kenya', 'generator troubleshooting', 'inverter repair Kenya',
     'UPS repair Nairobi', 'generator fault diagnosis', 'generator will not start',

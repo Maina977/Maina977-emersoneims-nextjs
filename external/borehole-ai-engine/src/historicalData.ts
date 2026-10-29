@@ -58,6 +58,44 @@ export interface HistoricalDataResult {
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 /**
+ * One consistent daily series from the two models Open-Meteo returns.
+ * ECMWF IFS (9 km, from 2017) is used where it exists. Earlier days come from
+ * ERA5, scaled by the calendar-month ratio IFS/ERA5 over the years both cover
+ * (linear-scaling bias correction), so the record is on one footing and the
+ * trend and drought years are not artefacts of the change of model.
+ * Temperature is ERA5 throughout. With no IFS overlap, ERA5 is used as it is.
+ */
+export function spliceEra5ToIfs(daily: any): any {
+  const time: string[] = daily?.time ?? [];
+  const ifs: (number | null)[] | undefined = daily?.precipitation_sum_ecmwf_ifs;
+  const era: (number | null)[] | undefined = daily?.precipitation_sum_era5;
+  if (!Array.isArray(ifs) && !Array.isArray(era)) return daily; // single-model shape
+  const tEra: (number | null)[] = daily?.temperature_2m_mean_era5 ?? [];
+  const tIfs: (number | null)[] = daily?.temperature_2m_mean_ecmwf_ifs ?? [];
+  const sumI = Array(12).fill(0), sumE = Array(12).fill(0);
+  let totI = 0, totE = 0;
+  time.forEach((d, i) => {
+    const a = ifs?.[i], b = era?.[i];
+    if (typeof a === 'number' && typeof b === 'number') {
+      const m = Number(d.slice(5, 7)) - 1;
+      sumI[m] += a; sumE[m] += b; totI += a; totE += b;
+    }
+  });
+  const overall = totE > 0 ? totI / totE : 1;
+  // A month with almost no ERA5 rain in the overlap gives an unstable ratio;
+  // the overall ratio is used for it instead.
+  const factor = sumE.map((e, m) => (e >= 20 ? sumI[m] / e : overall));
+  const precipitation_sum = time.map((d, i) => {
+    const a = ifs?.[i];
+    if (typeof a === 'number') return a;
+    const b = era?.[i];
+    return typeof b === 'number' ? b * (totE > 0 ? factor[Number(d.slice(5, 7)) - 1] : 1) : null;
+  });
+  const temperature_2m_mean = time.map((_, i) => (typeof tEra[i] === 'number' ? tEra[i] : tIfs[i] ?? null));
+  return { time, precipitation_sum, temperature_2m_mean, era5ScaleToIfs: Math.round(overall * 100) / 100 };
+}
+
+/**
  * Fetch 20-year historical weather data from Open-Meteo Archive API
  * and cross-validate with NASA POWER MERRA-2/IMERG satellite precipitation.
  * Two independent sources: ERA5-Land (ECMWF) + MERRA-2 (NASA).
@@ -70,7 +108,13 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
 
     // DAILY, summed to months below: the archive API answers HTTP 400 to
     // "monthly=" (measured 2026-10-19), so the Climate tab was always empty.
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum,temperature_2m_mean&timezone=auto`;
+    // Two named models (2026-10-29): the default "best_match" series is ERA5
+    // (0.25 deg) up to 2016 and ECMWF IFS (9 km) from 2017, joined with no
+    // adjustment. In the Kenyan highlands ERA5 rains far more (Eldoret ~1,930
+    // mm/yr against ~1,015 from IFS and a station normal near 1,100), so the
+    // 20-year mean was inflated and the "trend" was the join. See
+    // spliceEra5ToIfs below.
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum,temperature_2m_mean&models=ecmwf_ifs,era5&timezone=auto`;
 
     // NASA POWER cross-validation: independent satellite-gauge-merged precipitation
     const nasaUrl = `https://power.larc.nasa.gov/api/temporal/monthly/point`
@@ -98,6 +142,7 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
     let data: any = null;
     if (res && res.ok) {
       data = await res.json().catch(() => null);
+      if (data?.daily) data.daily = spliceEra5ToIfs(data.daily);
     } else {
       console.log(`[HistoricalWeather] Open-Meteo HTTP ${res?.status ?? 'FAILED'} — trying NASA POWER monthly instead`);
     }
@@ -265,7 +310,7 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
             nasaAvgForCheck = nasaAvg;
             const diff = Math.abs(nasaAvg - avgAnnualPrecip);
             const pctDiff = Math.round((diff / Math.max(avgAnnualPrecip, 1)) * 100);
-            crossValidation = ` | NASA POWER MERRA-2 cross-validation: ${nasaAvg}mm/yr avg (${pctDiff}% ${nasaAvg > avgAnnualPrecip ? 'higher' : 'lower'} — ${pctDiff <= 15 ? 'good agreement' : 'moderate divergence'})`;
+            crossValidation = ` | NASA POWER MERRA-2 cross-validation: ${nasaAvg}mm/yr avg (${pctDiff}% ${nasaAvg > avgAnnualPrecip ? 'higher' : 'lower'} — ${pctDiff <= 15 ? 'good agreement' : pctDiff <= 35 ? 'moderate divergence' : 'large divergence: the two sources disagree, so rainfall here is uncertain'})`;
             console.log(`[HistoricalWeather] NASA POWER cross-validation: ${nasaAvg}mm/yr (ERA5: ${avgAnnualPrecip}mm/yr, diff: ${pctDiff}%)`);
           }
         }
@@ -282,7 +327,7 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
     if (nasaAvgForCheck > 0 && avgAnnualPrecip > 0 && Math.max(nasaAvgForCheck, avgAnnualPrecip) / Math.min(nasaAvgForCheck, avgAnnualPrecip) > 1.3) {
       const lo = Math.min(nasaAvgForCheck, avgAnnualPrecip);
       scale = lo / avgAnnualPrecip;
-      precipitationNote = `Rainfall sources disagree: ERA5 reanalysis ${avgAnnualPrecip} mm/yr, NASA POWER ${nasaAvgForCheck} mm/yr. Long-term rainfall here is probably between ${lo} and ${Math.max(nasaAvgForCheck, avgAnnualPrecip)} mm/yr; the lower figure is used for recharge as the cautious choice.${lo < 450 ? ' In arid areas both can overstate rainfall; a local weather-station record is the better reference.' : ''}`;
+      precipitationNote = `Rainfall sources disagree: ECMWF reanalysis ${avgAnnualPrecip} mm/yr, NASA POWER ${nasaAvgForCheck} mm/yr. Long-term rainfall here is probably between ${lo} and ${Math.max(nasaAvgForCheck, avgAnnualPrecip)} mm/yr; the lower figure is used for recharge as the cautious choice.${lo < 450 ? ' In arid areas both can overstate rainfall; a local weather-station record is the better reference.' : ''}`;
     }
     const sc = (v: number) => Math.round(v * scale);
     const avgP = sc(avgAnnualPrecip);
@@ -295,8 +340,8 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
       maxAnnualPrecip: sc(maxAnnualPrecip), minAnnualPrecip: sc(minAnnualPrecip),
       rainySeasonMonths, drySeasonMonths, bestDrillingSeason,
       source: usedNasaOnly
-        ? `NASA POWER monthly (${startYear}–${endYear}); Open-Meteo ERA5-Land did not answer`
-        : `Open-Meteo Historical ERA5-Land (${startYear}–${endYear})${crossValidation}`,
+        ? `NASA POWER monthly (${startYear}–${endYear}); Open-Meteo ECMWF reanalysis did not answer`
+        : `Open-Meteo ECMWF reanalysis (${startYear}–${endYear}): IFS 9 km from 2017; ERA5 before 2017, scaled to IFS month by month${daily.era5ScaleToIfs != null ? ` (ERA5 x${daily.era5ScaleToIfs} here)` : ''}${crossValidation}`,
     };
   } catch (err) {
     console.log('[HistoricalWeather] Error:', err);

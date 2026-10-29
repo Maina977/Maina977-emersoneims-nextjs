@@ -11,8 +11,8 @@
  *
  * Every assumption is returned in `assumptions` and shown to the customer.
  * Hand-checked against the 2026-10-18 audit cases:
- *   Nairobi home 450 kWh/mo hybrid  -> ~3.9 kWp, ~8.8 kWh battery, ~KES 0.9M, ~7-8 yr
- *   Mombasa hotel 4,500 kWh/mo grid -> ~34 kWp, no battery, ~KES 2.9M, ~3 yr
+ *   Nairobi home 450 kWh/mo hybrid  -> ~3.9 kWp, ~8.8 kWh battery, ~KES 0.74M, ~6 yr
+ *   Mombasa hotel 4,500 kWh/mo grid -> ~23.7 kWp on 20 kW, no battery, ~KES 2.1M, ~2.9 yr
  *   Machakos farm 600 kWh/mo off-grid -> ~6 kWp, ~23 kWh battery, ~KES 37k/mo diesel saved
  */
 
@@ -71,6 +71,9 @@ export const BATTERY_DOD = 0.9; // LiFePO4 usable depth of discharge
 export const BATTERY_EFFICIENCY = 0.95; // round trip
 export const DIESEL_L_PER_KWH = 0.35; // small genset at part load
 export const DIESEL_CO2_KG_PER_L = 2.68;
+/** Kenya grid emission factor (kg CO2/kWh; Climate Watch / KPLC 2023, mostly
+ *  geothermal and hydro). One CO2 policy for every solar tool (2026-10-29 audit). */
+export const GRID_CO2_KG_PER_KWH = 0.213;
 /** Diesel pump price (KES/L) when the client gives none: an assumption, shown with every
  *  result, and one value for every solar tool (2026-10-27 audit: 175, 195 and 210 were used). */
 export const DEFAULT_DIESEL_KES_PER_LITRE = 175;
@@ -182,7 +185,10 @@ export function sizeSolar(input: SizingInput): SizingResult {
   if (type === 'grid-tied') {
     // DC/AC about 1.1-1.2, the range the inverter-match tool calls a good
     // match (2026-10-25 audit: 0.95 x PV put 27.5 kWp on a 30 kW inverter).
-    inverterKw = nextStandardInverter(pvKwp / GRID_DC_AC);
+    // The standard size nearest DC/AC 1.15 within 1.0-1.3 (2026-10-29 audit:
+    // rounding up to the next size gave 18.2 kWp on 20 kW, DC/AC 0.91).
+    const fits = STANDARD_INVERTERS_KW.filter((s) => pvKwp / s >= 1.0 && pvKwp / s <= 1.3);
+    inverterKw = fits.length ? fits.reduce((a, s) => (Math.abs(pvKwp / s - GRID_DC_AC) < Math.abs(pvKwp / a - GRID_DC_AC) ? s : a)) : nextStandardInverter(pvKwp / GRID_DC_AC);
     inverterBasis = 'array';
     assumptions.push(`Grid-tied inverter sized for a DC/AC ratio of about ${GRID_DC_AC} (array ${pvKwp} kWp, inverter ${inverterKw} kW).`);
   } else {
@@ -195,7 +201,7 @@ export function sizeSolar(input: SizingInput): SizingResult {
     inverterBasis = input.peakLoadKw && input.peakLoadKw > 0 ? 'peak-load' : 'estimated-peak';
     inverterKw = nextStandardInverter(Math.max(peak * 1.25, pvKwp * 0.8));
     if (inverterBasis === 'estimated-peak') assumptions.push('Inverter sized on an estimated peak of 4x your average load (at least 2.4 kW). Enter your largest load (pumps, welders, AC) for a firmer figure.');
-    if (pvKwp / inverterKw < 0.8) assumptions.push(`A battery inverter is sized for your largest load, not the array, so it is larger than the ${pvKwp} kWp array (DC/AC ${round1(pvKwp / inverterKw)}). That is normal for a hybrid or off-grid system.`);
+    if (pvKwp / inverterKw < 0.8) assumptions.push(`A battery inverter is sized for your largest load, not the array, so it is larger than the ${pvKwp} kWp array (DC/AC ${(pvKwp / inverterKw).toFixed(2)}). That is normal for a hybrid or off-grid system.`);
   }
 
   // ── Energy and saving ───────────────────────────────────────────────────
@@ -214,9 +220,22 @@ export function sizeSolar(input: SizingInput): SizingResult {
     annualSavingKes = energyUsedKwh * tariff;
     assumptions.push(`Without a battery you only save on power used while the sun is up: ${Math.round(day * 100)}% of your use. Surplus is not paid for (no net metering assumed), and about 75% of the daytime solar is assumed to be used.`);
   } else if (type === 'hybrid') {
-    energyUsedKwh = Math.min(annualEnergyKwh, annualConsumption) * 0.9;
+    // Daytime use is met directly (~75%, as grid-tied); the battery moves the
+    // surplus into the evening, but no more per day than its usable capacity;
+    // overall at most 90%. The ROI tool's model (2026-10-29 audit: night share
+    // 0%, 50% and 100% all gave the same saving, and a 0 kWh battery a
+    // 3.3-year payback).
+    const night = clamp(input.nightUsePct ?? 50, 0, 100) / 100;
+    const day = clamp(input.daytimeUsePct ?? (1 - night) * 100, 0, 100) / 100;
+    const direct = Math.min(annualEnergyKwh, annualConsumption * day) * 0.75;
+    const stored = Math.max(0, Math.min(
+      (annualEnergyKwh - direct) * BATTERY_EFFICIENCY,
+      annualConsumption - direct,
+      batteryKwh * BATTERY_DOD * 365,
+    ));
+    energyUsedKwh = Math.min(direct + stored, Math.min(annualEnergyKwh, annualConsumption) * 0.9);
     annualSavingKes = energyUsedKwh * tariff;
-    assumptions.push('About 90% of the solar energy is used on site; the rest is lost in storage or curtailed.');
+    assumptions.push(`Daytime use (${Math.round(day * 100)}%) is met directly, about 75% of it; the battery covers evening use up to its usable capacity each day; at most 90% of the solar is used on site.`);
   } else {
     savingBasis = 'diesel';
     energyUsedKwh = Math.min(annualEnergyKwh, annualConsumption);
@@ -226,7 +245,11 @@ export function sizeSolar(input: SizingInput): SizingResult {
     co2 = Math.round(dieselLitres * DIESEL_CO2_KG_PER_L);
     assumptions.push(`Saving compared with a diesel generator at ${DIESEL_L_PER_KWH} L/kWh and KES ${dieselPrice}/L; CO₂ at ${DIESEL_CO2_KG_PER_L} kg per litre burned.`);
   }
-  if (type !== 'off-grid') assumptions.push(`Your tariff: KES ${tariff}/kWh (your total bill divided by the kWh on it).`);
+  if (type !== 'off-grid') {
+    assumptions.push(`Your tariff: KES ${tariff}/kWh (your total bill divided by the kWh on it).`);
+    co2 = Math.round(energyUsedKwh * GRID_CO2_KG_PER_KWH);
+    assumptions.push(`CO₂ avoided: the grid energy replaced × ${GRID_CO2_KG_PER_KWH} kg/kWh (Kenya's grid is mostly geothermal and hydro).`);
+  }
 
   // ── Cost and payback ────────────────────────────────────────────────────
   const mid = costKes(pvKwp, inverterKw, batteryKwh, type);

@@ -266,7 +266,7 @@ export function computeDesktopDrillTargetReadiness(
     .sort((a, b) => a - b);
   const medianDepth = measuredDepths.length > 0 ? measuredDepths[Math.floor(measuredDepths.length / 2)] : 0;
   const recDepth = Number(r.recommendedDepth ?? 0);
-  const depthConcordant = medianDepth > 0 && recDepth >= medianDepth * 0.5 && recDepth <= medianDepth * 1.6;
+  const depthConcordant = medianDepth > 0 && recDepth >= medianDepth * 0.75 && recDepth <= medianDepth * 1.35;
   // Regional drilled-borehole intelligence (county database — REAL aggregate
   // drilling statistics for the same region: count, success rate, depth band).
   // These are drilled, tested boreholes in the same hydrogeological unit — the
@@ -286,7 +286,7 @@ export function computeDesktopDrillTargetReadiness(
   if (bt) analogScore += 2;
   add('Historical analogue & depth calibration', analogScore, 11, 'Borehole outcomes',
     `${drilledOutcomes.length} drilled-outcome analogue(s); ${measuredDepths.length} offset record(s) with measured depth` +
-    (measuredDepths.length >= 5 ? ` (median ${medianDepth} m — model depth ${recDepth} m ${depthConcordant ? 'CONCORDANT' : 'NOT concordant'})` : '') +
+    (measuredDepths.length >= 5 ? ` (median ${medianDepth} m — model depth ${recDepth} m ${depthConcordant ? 'within 25-35% of the measured median' : 'differs from the measured median by more than 25-35%'})` : '') +
     (countyHasDrilled ? `; regional drilled-borehole intelligence: ~${countyIntel.estimatedBoreholes} boreholes (${countyIntel.county ?? 'county'}), success rate ${(Number(countyIntel.successRate) * 100).toFixed(0)}%, drilled depths ${Number.isFinite(countyDepthLo) ? `${countyDepthLo}-${countyDepthHi} m` : 'n/a'}${countyConcordant ? ' — model depth INSIDE the drilled band' : ''}` : '') +
     `${bt ? '; intelligence/back-test module present' : ''}.`,
     'Add REAL successful AND failed borehole outcomes in the same geological/structural unit; calibrate probability against them (§6).');

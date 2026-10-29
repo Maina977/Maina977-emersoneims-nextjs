@@ -31,7 +31,14 @@ export default function ClientSideComponents() {
   const isHub = pathname === '/hub' || pathname.startsWith('/hub/');
   // The Generator Oracle has its own "send to an engineer" WhatsApp links on
   // every result; the floating bubble covered its search button (2026-10-20).
-  const hideWhatsApp = isHub || pathname === '/generator-oracle' || pathname.startsWith('/generator-oracle/');
+  // The Building Suite and its console are full-screen calculators with their
+  // own WhatsApp contact; on phones the bubble covered results (2026-10-29 audit).
+  const isBuildingSuite = pathname === '/pro-building-suite' || pathname.startsWith('/pro-building-suite/') ||
+    pathname === '/solutions/building' || pathname === '/console';
+  // SolarGenius Pro's calculators carry their own WhatsApp contact; at 390 px
+  // the bubble and the accessibility button covered fields (2026-10-29 audit).
+  const isSolarGeniusPro = pathname === '/solar-genius-pro' || pathname.startsWith('/solar-genius-pro/') || pathname.startsWith('/solar-genius-pro-');
+  const hideWhatsApp = isHub || isBuildingSuite || isSolarGeniusPro || pathname === '/generator-oracle' || pathname.startsWith('/generator-oracle/');
 
   const [tier1, setTier1] = useState(false); // Essential (1s)
   const [tier2, setTier2] = useState(false); // Nice-to-have (3s)

@@ -28,7 +28,7 @@ const PARTS_CATEGORIES = totalPartCategories();
 
 export const metadata: Metadata = {
   title: `Generator Spare Parts Kenya | ${PARTS_TOTAL.toLocaleString('en-KE')} Parts Catalogued`,
-  description: `Generator spare parts in Kenya: ${PARTS_TOTAL.toLocaleString('en-KE')} parts across ${PARTS_CATEGORIES} categories — filters, engine parts, AVRs and controllers for Cummins, Caterpillar and Perkins. Pay via M-Pesa. Call +254 768 860 665.`,
+  description: `Generator spare parts in Kenya: ${PARTS_TOTAL.toLocaleString('en-KE')} parts in ${PARTS_CATEGORIES} categories, from filters and engine parts to AVRs and controllers for Cummins, CAT and Perkins.`,
   keywords: [
     'generator oil filter Kenya', 'generator fuel filter', 'generator air filter', 'oil filter Cummins',
     'fuel filter Perkins', 'air filter Caterpillar', 'coolant filter generator', 'hydraulic filter',

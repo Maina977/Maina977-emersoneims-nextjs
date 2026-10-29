@@ -111,7 +111,10 @@ describe('EC2 shear', () => {
     const r = run(c.ec2Shear, { bw_mm: 300, d_mm: 450, fck_MPa: 30, Asl_mm2: 942, VEd_kN: 200, Asw_mm2: 157, s_mm: 200 });
     expect(num(r.cot_theta)).toBe(2.5);
     expect(num(r.V_Rd_s_kN)).toBeCloseTo(157 / 200 * 405 * (500 / 1.15) * 2.5 / 1000, 0);
-    expect(r.all_checks_pass).toBe(false); // V_Ed > V_Rd,c is reported as failing that row
+    // Links are adequate (345.6 ≥ 200 kN, V_Rd,max 442 kN): the verdict is PASS
+    // and V_Rd,c is information only (2026-10-29 audit: it was a false FAIL).
+    expect(r.all_checks_pass).toBe(true);
+    expect(String(r.V_Ed_over_V_Rd_c)).toMatch(/design links required/);
   });
 });
 

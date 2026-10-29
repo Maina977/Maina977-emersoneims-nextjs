@@ -201,20 +201,19 @@ export function CompatibilityNotice({ brandNames }: { brandNames: string[] }) {
 
 // Acknowledgment that user has read disclaimer
 export function DisclaimerAcknowledgment({ onAccept }: { onAccept: () => void }) {
-  const [accepted, setAccepted] = useState(() => {
-    // Check localStorage on initial render
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('oracle_disclaimer_accepted') === 'true';
-    }
-    return false;
-  });
+  // Read after mount, not during render: the server always rendered "not
+  // accepted", so the first browser render disagreed with the server HTML and
+  // the notice could stay up after "I understand" (2026-10-29 audit, 390 px).
+  // Storage can throw (private browsing), so the read is guarded.
+  const [accepted, setAccepted] = useState(false);
+  const [checked, setChecked] = useState(false);
 
-  // Call onAccept if already accepted on mount
   useEffect(() => {
-    if (accepted) {
-      onAccept();
-    }
-     
+    let stored = false;
+    try { stored = localStorage.getItem('oracle_disclaimer_accepted') === 'true'; } catch { /* storage blocked */ }
+    if (stored) { setAccepted(true); onAccept(); }
+    setChecked(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAccept = () => {
@@ -227,7 +226,7 @@ export function DisclaimerAcknowledgment({ onAccept }: { onAccept: () => void })
     onAccept();
   };
 
-  if (accepted) return null;
+  if (accepted || !checked) return null;
 
   /*
    * 2026-10-18 audit: this was a full-screen, scroll-to-accept legal wall with

@@ -70,7 +70,7 @@ const SOURCE_CATALOG: Omit<DataSourceEntry, 'available'>[] = [
   { name: 'Sentinel-2 NDVI', category: 'satellite', quality: 'calibrated', weight: 0.6, accuracy_pct: 85, description: 'Vegetation index from multispectral satellite imagery (satellite-observed)' },
   { name: 'NASA POWER Climate', category: 'satellite', quality: 'calibrated', weight: 0.7, accuracy_pct: 80, description: 'Precipitation, temperature, evapotranspiration reanalysis' },
   { name: 'GLDAS Soil Moisture', category: 'satellite', quality: 'calibrated', weight: 0.65, accuracy_pct: 70, description: 'Land surface model soil moisture and water budget' },
-  { name: 'GRACE-FO TWS', category: 'satellite', quality: 'calibrated', weight: 0.75, accuracy_pct: 85, description: 'Total water storage anomaly from gravity field (satellite-observed)' },
+  { name: 'GRACE-FO TWS', category: 'satellite', quality: 'measured', weight: 0.75, accuracy_pct: 70, description: 'GRACE / GRACE-FO satellite gravity: G3P groundwater storage and GFZ GravIS total water storage (regional, ~300 km)' },
   { name: 'Sentinel-1 InSAR', category: 'satellite', quality: 'calibrated', weight: 0.6, accuracy_pct: 80, description: 'Ground deformation / subsidence from SAR interferometry (satellite-observed)' },
   { name: 'Landsat Time Series', category: 'satellite', quality: 'calibrated', weight: 0.5, accuracy_pct: 80, description: 'Multi-decadal vegetation and land use change (satellite-observed)' },
 
