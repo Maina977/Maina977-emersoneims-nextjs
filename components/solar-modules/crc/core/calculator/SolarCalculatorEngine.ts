@@ -1,24 +1,30 @@
 /**
- * 🌟 INTELLIGENT SOLAR CALCULATOR ENGINE
- * 
- * Harvard-level solar system sizing and configuration engine
- * - Location-based irradiance calculations
- * - Load profiling and system sizing
- * - Equipment recommendation AI
- * - Cost calculation engine
- * - Labour and miscellaneous estimations
- * 
- * This engine powers the market-disrupting solar calculator
+ * Appliance calculator engine (rewritten 2026-10-30 after an audit).
+ *
+ * The old engine set sun-hours to GHI/1000 for any city but Nairobi (5,188
+ * panels for a Mombasa home), sized cable at 2.5 mm² whenever the current was
+ * off its chart (153 A on 2.5 mm²), sized the inverter on the single largest
+ * appliance and priced everything at a flat KES 250,000 per kW.
+ *
+ * Now it only turns the appliance list into a daily energy and a peak demand.
+ * Sizing, sun-hours (NASA POWER), prices and payback come from the shared
+ * calculator (lib/solar/sizing.ts through /api/solar/calculate), so this tab
+ * and the main calculator always agree. Cables are sized here from IEC
+ * 60364-5-52 current ratings and a voltage-drop limit.
  */
+import {
+  PANEL_KES_PER_W, PV_KES_PER_KWP_BANDS, BATTERY_KES_PER_KWH, INSTALLATION_FACTOR,
+  tieredKes, inverterBands, type SizingResult, type SystemType,
+} from '@/lib/solar/sizing';
 
-// ==================== TYPES & INTERFACES ====================
+// ==================== TYPES ====================
 
 export interface Location {
   latitude: number;
   longitude: number;
   country: string;
   city: string;
-  altitude: number; // meters
+  altitude: number; // metres
 }
 
 export interface Appliance {
@@ -31,64 +37,52 @@ export interface Appliance {
 
 export interface LoadProfile {
   totalDailyEnergy: number; // kWh/day
-  peakLoad: number; // kW
+  /** Simultaneous peak demand, kW (largest load plus half of the rest). */
+  peakLoad: number;
   averageLoad: number; // kW
-  nightLoad: number; // kW
   appliances: Appliance[];
 }
 
-export interface SolarIrradiance {
-  location: Location;
-  ghi: number; // Global Horizontal Irradiance (kWh/m²/day)
-  dni: number; // Direct Normal Irradiance
-  gti: number; // Global Tilted Irradiance
-  peakSunHours: number; // equivalent peak sun hours
-  clearSkyIndex: number; // 0-1, cloud factor
-}
-
 export interface SystemRecommendation {
+  systemType: SystemType;
   systemSizeKW: number;
   panelCount: number;
   panelWattage: number;
   panelType: string;
   inverterSize: number; // kW
-  inverterType: string; // string, hybrid, grid-tie
-  batteryCapacityKWh: number;
-  batteryType: string; // LiFePO4, AGM, Gel
-  batteryVoltage: number; // 24V, 48V, 96V
-  cableMainSize: string; // mm² (e.g., "6", "10", "16")
-  cableSubSize: string;
-  estimatedROI: number; // years
+  inverterType: string;
+  batteryCapacityKWh: number; // nominal
+  batteryUsableKWh: number;
+  batteryType: string;
+  batteryVoltage: number;
   estimatedProduction: number; // kWh/year
-  paybackPeriod: number; // months
+  paybackYears: number | null;
+  sunHours: number;
+  sunHoursSource: string;
 }
 
 export interface CostEstimate {
-  panels: number;
+  pvArray: number;       // panels, mounting and DC cabling
   inverter: number;
   battery: number;
-  cables: number;
-  breakers: number;
-  disconnects: number;
-  miscellaneous: number; // conduit, fittings, etc
-  installation: number; // labour
-  permitting: number;
-  subtotal: number;
-  contingency: number; // 10% buffer
+  installation: number;  // installation, AC cabling and protection
   total: number;
-  costPerKW: number;
-  currency: string;
+  low: number;
+  high: number;
+  panelsAlone: number;   // panel equipment only, for comparing quotes
+  currency: 'KES';
+  basis: string;
 }
 
 export interface WiringSpec {
-  segment: string; // "PV Array to Combiner", "Combiner to Inverter", etc
-  voltage: number; // volts
-  current: number; // amps
-  distance: number; // meters
-  cableSize: string; // mm² (AWG equivalent)
-  cableType: string; // PV-rated, etc
-  colors: string[]; // positive, negative, ground
-  breaker: string; // 20A, 30A, etc
+  segment: string;
+  voltage: number;
+  current: number;   // design current, A
+  distance: number;  // one-way, m
+  cableSize: string; // mm², or '—' when beyond a single cable
+  cableType: string;
+  colors: string[];
+  breaker: string;
   disconnect: boolean;
   notes: string;
 }
@@ -96,425 +90,187 @@ export interface WiringSpec {
 export interface CalculationResult {
   location: Location;
   loadProfile: LoadProfile;
-  irradiance: SolarIrradiance;
   recommendation: SystemRecommendation;
   costEstimate: CostEstimate;
   wiringSpecs: WiringSpec[];
+  assumptions: string[];
   qualityWarnings: string[];
   safetyNotes: string[];
 }
 
-// ==================== SOLAR IRRADIANCE DATABASE ====================
+/** What /api/solar/calculate returns (SizingResult plus the sun-hours used). */
+export type SizingResponse = SizingResult & { sunHours: { annual: number; source: string; note: string }; warning?: string };
 
-const IRRADIANCE_DATABASE: Record<string, SolarIrradiance> = {
-  'Nairobi, Kenya': {
-    location: { latitude: -1.2921, longitude: 36.8219, country: 'Kenya', city: 'Nairobi', altitude: 1661 },
-    ghi: 5.2,
-    gti: 6.1,
-    peakSunHours: 5.0,
-    clearSkyIndex: 0.85,
-  } as any,
-  'Dar es Salaam, Tanzania': {
-    location: { latitude: -6.8, longitude: 39.2833, country: 'Tanzania', city: 'Dar es Salaam', altitude: 14 },
-    ghi: 5.0,
-    gti: 5.8,
-    peakSunHours: 4.8,
-    clearSkyIndex: 0.80,
-  } as any,
-  'Lagos, Nigeria': {
-    location: { latitude: 6.5244, longitude: 3.3792, country: 'Nigeria', city: 'Lagos', altitude: 0 },
-    ghi: 4.8,
-    gti: 5.4,
-    peakSunHours: 4.5,
-    clearSkyIndex: 0.75,
-  } as any,
-  'Cape Town, South Africa': {
-    location: { latitude: -33.9249, longitude: 18.4241, country: 'South Africa', city: 'Cape Town', altitude: 42 },
-    ghi: 5.5,
-    gti: 6.3,
-    peakSunHours: 5.2,
-    clearSkyIndex: 0.88,
-  } as any,
-};
+// ==================== APPLIANCES ====================
 
-// ==================== APPLIANCE DATABASE ====================
-
+/** Typical appliance draws. Fridges and freezers cycle: the hours are compressor running time. */
 export const APPLIANCE_DATABASE = {
   lights: [
     { name: 'LED Light (10W)', wattage: 10, dailyHours: 4 },
     { name: 'LED Light (20W)', wattage: 20, dailyHours: 4 },
-    { name: 'Fluorescent Tube (40W)', wattage: 40, dailyHours: 6 },
   ],
   kitchen: [
-    { name: 'Electric Kettle (2000W)', wattage: 2000, dailyHours: 0.5 },
-    { name: 'Refrigerator (500W)', wattage: 500, dailyHours: 24 },
-    { name: 'Microwave (1000W)', wattage: 1000, dailyHours: 0.5 },
-    { name: 'Electric Stove (3000W)', wattage: 3000, dailyHours: 1 },
-    { name: 'Blender (500W)', wattage: 500, dailyHours: 0.25 },
+    { name: 'Electric Kettle (2000W)', wattage: 2000, dailyHours: 0.25 },
+    { name: 'Refrigerator (150W, compressor ~10 h/day)', wattage: 150, dailyHours: 10 },
+    { name: 'Chest Freezer (120W, compressor ~12 h/day)', wattage: 120, dailyHours: 12 },
+    { name: 'Microwave (1000W)', wattage: 1000, dailyHours: 0.25 },
+    { name: 'Blender (500W)', wattage: 500, dailyHours: 0.1 },
   ],
   entertainment: [
-    { name: 'TV 32" (100W)', wattage: 100, dailyHours: 5 },
-    { name: 'TV 55" (150W)', wattage: 150, dailyHours: 5 },
-    { name: 'Radio (20W)', wattage: 20, dailyHours: 4 },
-    { name: 'Computer (200W)', wattage: 200, dailyHours: 6 },
+    { name: 'TV 32" (60W)', wattage: 60, dailyHours: 5 },
+    { name: 'TV 55" (120W)', wattage: 120, dailyHours: 5 },
+    { name: 'Laptop (65W)', wattage: 65, dailyHours: 6 },
+    { name: 'Wi-Fi router (12W)', wattage: 12, dailyHours: 24 },
   ],
   climate: [
-    { name: 'Air Conditioner 1.5 ton (1200W)', wattage: 1200, dailyHours: 8 },
-    { name: 'Fan (100W)', wattage: 100, dailyHours: 8 },
-    { name: 'Water Heater (1500W)', wattage: 1500, dailyHours: 2 },
+    { name: 'Air Conditioner 12,000 BTU (1100W)', wattage: 1100, dailyHours: 6 },
+    { name: 'Fan (60W)', wattage: 60, dailyHours: 8 },
+    { name: 'Instant shower (3000W)', wattage: 3000, dailyHours: 0.3 },
   ],
   other: [
-    { name: 'Washing Machine (1000W)', wattage: 1000, dailyHours: 1.5 },
-    { name: 'Iron (1500W)', wattage: 1500, dailyHours: 1 },
-    { name: 'Water Pump (750W)', wattage: 750, dailyHours: 2 },
+    { name: 'Washing Machine (500W)', wattage: 500, dailyHours: 1 },
+    { name: 'Iron (1200W)', wattage: 1200, dailyHours: 0.5 },
+    { name: 'Water Pump (750W)', wattage: 750, dailyHours: 1.5 },
   ],
 };
 
-// ==================== EQUIPMENT DATABASE ====================
+// ==================== CABLES ====================
 
-export const EQUIPMENT_DATABASE = {
-  panels: [
-    { model: 'JA Solar 550W Mono', wattage: 550, efficiency: 0.215, price: 15000, authenticity: 'high', lifespan: 25 },
-    { model: 'Canadian Solar 545W', wattage: 545, efficiency: 0.213, price: 14500, authenticity: 'high', lifespan: 25 },
-    { model: 'JinkoSolar 550W', wattage: 550, efficiency: 0.216, price: 14800, authenticity: 'high', lifespan: 25 },
-    { model: 'Trina Solar 545W', wattage: 545, efficiency: 0.212, price: 13500, authenticity: 'high', lifespan: 25 },
-    { model: 'Generic 400W', wattage: 400, efficiency: 0.18, price: 8000, authenticity: 'low', lifespan: 15 },
-  ],
-  inverters: [
-    { model: 'Deye SUN5K-G03 5kW Hybrid', wattage: 5000, type: 'hybrid', voltage: '48V', price: 85000, authenticity: 'high', warranty: 5 },
-    { model: 'Solis 5kW Hybrid', wattage: 5000, type: 'hybrid', voltage: '48V', price: 88000, authenticity: 'high', warranty: 5 },
-    { model: 'Growatt SPH 6000TL3 6kW', wattage: 6000, type: 'hybrid', voltage: '48V', price: 92000, authenticity: 'high', warranty: 5 },
-    { model: 'Victron Multiplus II 5kW', wattage: 5000, type: 'hybrid', voltage: '48V', price: 110000, authenticity: 'high', warranty: 5 },
-    { model: 'Generic 5kW Inverter', wattage: 5000, type: 'hybrid', voltage: '48V', price: 35000, authenticity: 'low', warranty: 1 },
-  ],
-  batteries: [
-    { model: 'LiFePO4 48V 200Ah (9.6kWh)', capacity: 9.6, voltage: 48, type: 'LiFePO4', price: 450000, authenticity: 'high', cycles: 6000 },
-    { model: 'LiFePO4 48V 100Ah (4.8kWh)', capacity: 4.8, voltage: 48, type: 'LiFePO4', price: 250000, authenticity: 'high', cycles: 6000 },
-    { model: 'AGM 48V 100Ah (4.8kWh)', capacity: 4.8, voltage: 48, type: 'AGM', price: 180000, authenticity: 'medium', cycles: 1000 },
-    { model: 'Gel 48V 100Ah (4.8kWh)', capacity: 4.8, voltage: 48, type: 'Gel', price: 150000, authenticity: 'medium', cycles: 800 },
-    { model: 'Generic Lead-Acid 48V 100Ah', capacity: 4.8, voltage: 48, type: 'Lead-Acid', price: 80000, authenticity: 'low', cycles: 300 },
-  ],
-};
+/** Copper, PVC, two loaded conductors, IEC 60364-5-52 Table B.52.4 method C (A). */
+const AMPACITY_A: [number, number][] = [
+  [1.5, 19.5], [2.5, 27], [4, 36], [6, 46], [10, 63], [16, 85], [25, 112], [35, 138],
+  [50, 168], [70, 213], [95, 258], [120, 299], [150, 344], [185, 392], [240, 461],
+];
+const RHO_70C = 0.0225; // Ω·mm²/m, copper at 70 °C operating temperature
+const BREAKERS_A = [10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630];
 
-// ==================== CABLE SIZING CHART ====================
+/** Smallest conductor carrying the current with the drop within the limit, or null. */
+export function sizeConductor(currentA: number, oneWayM: number, volts: number, maxDropPct: number): { mm2: number; dropPct: number } | null {
+  for (const [mm2, amp] of AMPACITY_A) {
+    if (amp < currentA) continue;
+    const dropPct = ((2 * oneWayM * currentA * RHO_70C) / mm2 / volts) * 100;
+    if (dropPct <= maxDropPct) return { mm2, dropPct: Math.round(dropPct * 100) / 100 };
+  }
+  return null;
+}
+const breakerFor = (designA: number) => BREAKERS_A.find((b) => b >= designA) ?? null;
 
-const CABLE_SIZING_CHART: Record<string, { amps: number; size: string }[]> = {
-  'DC Circuit': [
-    { amps: 0, size: '2.5' },
-    { amps: 20, size: '4' },
-    { amps: 35, size: '6' },
-    { amps: 50, size: '10' },
-    { amps: 70, size: '16' },
-    { amps: 100, size: '25' },
-    { amps: 150, size: '35' },
-  ],
-  'AC Circuit': [
-    { amps: 0, size: '2.5' },
-    { amps: 16, size: '4' },
-    { amps: 25, size: '6' },
-    { amps: 32, size: '10' },
-    { amps: 50, size: '16' },
-    { amps: 63, size: '25' },
-    { amps: 100, size: '35' },
-  ],
-};
-
-// ==================== CORE CALCULATOR CLASS ====================
+// ==================== ENGINE ====================
 
 export class SolarCalculatorEngine {
-  /**
-   * Calculate load profile from appliances
-   */
+  /** Daily energy and a simultaneous peak (largest load plus half of the others). */
   calculateLoadProfile(appliances: Appliance[]): LoadProfile {
-    let totalDailyEnergy = 0;
-    let peakLoad = 0;
-    let nightLoad = 0;
+    const bad = appliances.find((a) => !(a.wattage > 0 && a.wattage <= 50_000) || !(a.dailyHours >= 0 && a.dailyHours <= 24) || !(Number.isInteger(a.quantity) && a.quantity >= 1 && a.quantity <= 500));
+    if (bad) throw new Error(`Check "${bad.name}": watts must be 1 to 50,000, hours 0 to 24 and quantity a whole number from 1 to 500.`);
+    const loads = appliances.map((a) => (a.wattage * a.quantity) / 1000);
+    const totalDailyEnergy = appliances.reduce((s, a) => s + (a.wattage * a.dailyHours * a.quantity) / 1000, 0);
+    const largest = Math.max(0, ...loads);
+    const peakLoad = largest + 0.5 * (loads.reduce((s, x) => s + x, 0) - largest);
+    return { totalDailyEnergy, peakLoad, averageLoad: totalDailyEnergy / 24, appliances };
+  }
 
-    for (const appliance of appliances) {
-      const dailyEnergy = (appliance.wattage * appliance.dailyHours * appliance.quantity) / 1000;
-      totalDailyEnergy += dailyEnergy;
-
-      const totalWattage = appliance.wattage * appliance.quantity;
-      if (totalWattage > peakLoad) {
-        peakLoad = totalWattage;
-      }
-
-      // If appliance runs during night (evening/night hours), add to night load
-      if (appliance.dailyHours > 4) {
-        nightLoad += totalWattage * 0.4; // 40% during night
-      }
-    }
-
-    const averageLoad = (totalDailyEnergy * 1000) / 24; // Watts
-
+  /** Request body for /api/solar/calculate. */
+  sizingRequest(location: Location, load: LoadProfile, systemType: SystemType, tariffKes?: number) {
     return {
-      totalDailyEnergy,
-      peakLoad: peakLoad / 1000, // kW
-      averageLoad: averageLoad / 1000,
-      nightLoad: nightLoad / 1000,
-      appliances,
+      consumption: Math.round(load.totalDailyEnergy * 30 * 10) / 10,
+      lat: location.latitude,
+      lon: location.longitude,
+      systemType,
+      peakLoadKw: Math.round(load.peakLoad * 100) / 100,
+      ...(tariffKes ? { tariff: tariffKes } : {}),
     };
   }
 
-  /**
-   * Get solar irradiance for location (API simulation)
-   */
-  getIrradiance(location: Location): SolarIrradiance {
-    const key = `${location.city}, ${location.country}`;
-    if (IRRADIANCE_DATABASE[key]) {
-      return IRRADIANCE_DATABASE[key];
-    }
-
-    // Fallback: Calculate based on latitude (simplified)
-    const latitude = Math.abs(location.latitude);
-    const ghi = latitude < 15 ? 5.2 : latitude < 30 ? 5.0 : 4.5;
-    const peakSunHours = ghi / 1000;
-
+  /** Cost split on the calculator's own price list (before VAT). */
+  costFrom(s: SizingResponse): CostEstimate {
+    const pvArray = tieredKes(s.pvKwp, PV_KES_PER_KWP_BANDS);
+    const inverter = tieredKes(s.inverterKw, inverterBands(s.systemType));
+    const battery = s.batteryKwh * BATTERY_KES_PER_KWH;
+    const equipment = pvArray + inverter + battery;
+    const round = (x: number) => Math.round(x / 1000) * 1000;
     return {
-      location,
-      ghi,
-      gti: ghi * 1.15, // Tilted is 15% higher
-      peakSunHours: ghi / 1000,
-      clearSkyIndex: 0.82,
-    } as any;
-  }
-
-  /**
-   * Recommend system configuration
-   */
-  recommendSystem(
-    loadProfile: LoadProfile,
-    irradiance: SolarIrradiance,
-    daysAutonomy: number = 3, // days of backup
-    systemLosses: number = 0.15 // 15% losses
-  ): SystemRecommendation {
-    // Panel sizing
-    const panelArraySize = (loadProfile.totalDailyEnergy * (1 + systemLosses)) / irradiance.peakSunHours;
-    const panelWattage = 550;
-    const panelCount = Math.ceil(panelArraySize * 1000 / panelWattage);
-    const systemSizeKW = (panelCount * panelWattage) / 1000;
-
-    // Inverter sizing (typically 1.25x peak load)
-    const inverterSize = Math.ceil(loadProfile.peakLoad * 1.25);
-
-    // Battery sizing
-    const batteryEnergyNeeded = loadProfile.totalDailyEnergy * daysAutonomy;
-    const depthOfDischarge = 0.8; // 80% DoD typical
-    const batteryCapacityKWh = batteryEnergyNeeded / depthOfDischarge;
-    const batteryVoltage = inverterSize > 4 ? 48 : 24;
-
-    // Cable sizing
-    const dcCurrent = (systemSizeKW * 1000) / (batteryVoltage * 0.9); // rough estimate
-    const cableMainSize = this.calculateCableSize(dcCurrent, 'DC Circuit');
-    const acCurrent = inverterSize * 1000 / 230;
-    const cableSubSize = this.calculateCableSize(acCurrent / 2, 'AC Circuit'); // assuming split between sub-circuits
-
-    // ROI Calculation
-    const annualProduction = systemSizeKW * irradiance.peakSunHours * 365 * 0.85; // 85% system efficiency
-    const costPerKW = 250000; // KSH per kW (rough estimate)
-    const totalCost = systemSizeKW * costPerKW;
-    const energyCostPerKWh = 35; // KSH in Kenya
-    const annualSavings = annualProduction * energyCostPerKWh;
-    const roi = totalCost / annualSavings;
-
-    return {
-      systemSizeKW,
-      panelCount,
-      panelWattage,
-      panelType: 'Mono-crystalline 550W',
-      inverterSize,
-      inverterType: 'Hybrid',
-      batteryCapacityKWh: Math.ceil(batteryCapacityKWh * 2) / 2, // round to 0.5
-      batteryType: batteryCapacityKWh > 5 ? 'LiFePO4' : 'AGM',
-      batteryVoltage,
-      cableMainSize,
-      cableSubSize,
-      estimatedROI: Math.ceil(roi * 10) / 10,
-      estimatedProduction: Math.ceil(annualProduction),
-      paybackPeriod: Math.ceil(roi * 12),
+      pvArray: round(pvArray), inverter: round(inverter), battery: round(battery),
+      installation: round(equipment * (INSTALLATION_FACTOR - 1)),
+      total: s.cost.midKes, low: s.cost.lowKes, high: s.cost.highKes,
+      panelsAlone: round(s.panels * s.panelWatt * PANEL_KES_PER_W),
+      currency: 'KES',
+      basis: 'Typical Kenyan installed prices, mid-2026, before VAT; not a quotation.',
     };
   }
 
-  /**
-   * Calculate cable size from current rating
-   */
-  private calculateCableSize(amps: number, circuitType: string): string {
-    const chart = CABLE_SIZING_CHART[circuitType];
-    let selectedSize = '2.5';
-    for (const entry of chart) {
-      if (amps <= entry.amps) {
-        selectedSize = entry.size;
-        break;
-      }
+  /** Wiring for a 48 V battery system: string, battery and AC cables. */
+  generateWiringSpecs(s: SizingResponse): WiringSpec[] {
+    const specs: WiringSpec[] = [];
+    // 550 W module: Isc about 14 A, Vmp about 41.6 V. Up to 9 in series keeps
+    // Voc at 10 °C under a typical 500 V MPPT input.
+    const perString = Math.min(9, Math.max(s.panels >= 4 ? 4 : s.panels, Math.ceil(s.panels / Math.ceil(s.panels / 9))));
+    const strings = Math.ceil(s.panels / perString);
+    const stringA = 14 * 1.25;
+    const pv = sizeConductor(stringA, 25, perString * 41.6, 1.5);
+    specs.push({
+      segment: `PV strings to inverter (${strings} × ${perString} panels)`, voltage: Math.round(perString * 41.6), current: Math.round(stringA * 10) / 10, distance: 25,
+      cableSize: pv ? String(Math.max(pv.mm2, 4)) : '—', cableType: 'PV1-F / H1Z2Z2-K solar cable', colors: ['Red (+)', 'Black (−)'],
+      breaker: strings > 2 ? `${breakerFor(stringA) ?? '—'} A DC fuse per string` : 'DC isolator', disconnect: true,
+      notes: 'UV-rated cable, MC4 connectors of one make; DC isolator at the inverter',
+    });
+    if (s.batteryKwh > 0) {
+      const battA = ((s.inverterKw * 1000) / (48 * 0.9)) * 1.25;
+      const b = sizeConductor(battA, 3, 48, 1);
+      specs.push({
+        segment: 'Battery to inverter (48 V)', voltage: 48, current: Math.round(battA), distance: 3,
+        cableSize: b ? String(b.mm2) : '—', cableType: 'Flexible battery cable', colors: ['Red (+)', 'Black (−)'],
+        breaker: breakerFor(battA) ? `${breakerFor(battA)} A DC breaker or fuse` : '—', disconnect: true,
+        notes: b ? `Voltage drop ${b.dropPct}% over 3 m` : 'Above a single 240 mm² cable: use parallel runs sized by an electrician, or a higher-voltage battery',
+      });
     }
-    return selectedSize;
+    const acA = ((s.inverterKw * 1000) / 230) * 1.25;
+    const ac = sizeConductor(acA, 20, 230, 3);
+    specs.push({
+      segment: 'Inverter AC out to distribution board (single-phase 230 V)', voltage: 230, current: Math.round(acA), distance: 20,
+      cableSize: ac ? String(ac.mm2) : '—', cableType: 'PVC copper', colors: ['Brown (L)', 'Blue (N)', 'Green/Yellow (PE)'],
+      breaker: breakerFor(acA) ? `${breakerFor(acA)} A AC MCB` : '—', disconnect: true,
+      notes: s.inverterKw > 10 ? 'Above about 10 kW use a three-phase inverter and size per phase' : (ac ? `Voltage drop ${ac.dropPct}% over 20 m` : 'Beyond a single cable: engineer to size'),
+    });
+    return specs;
   }
 
-  /**
-   * Estimate costs
-   */
-  estimateCosts(
-    recommendation: SystemRecommendation,
-    location: Location,
-    hasInstallation: boolean = true
-  ): CostEstimate {
-    // Panel costs
-    const panelCost = recommendation.panelCount * 15000; // avg price
-
-    // Inverter cost
-    const inverterCost = recommendation.inverterSize > 5 ? 90000 : 85000;
-
-    // Battery cost
-    const batteryCost = recommendation.batteryCapacityKWh > 5 ? 400000 : 200000;
-
-    // Cable costs (rough estimate)
-    const cableCost = 15000; // installation wiring
-
-    // Breakers, disconnects, etc
-    const breakerCost = 20000;
-    const disconnectCost = 15000;
-
-    // Miscellaneous (conduit, fittings, grounding, etc)
-    const miscCost = 25000;
-
-    // Installation labour (depends on location and system size)
-    const installCost = hasInstallation ? recommendation.systemSizeKW * 30000 : 0;
-
-    // Permitting
-    const permitCost = 5000;
-
-    const subtotal = panelCost + inverterCost + batteryCost + cableCost + breakerCost + disconnectCost + miscCost + permitCost;
-    const contingency = subtotal * 0.1;
-    const total = subtotal + contingency + installCost;
-
-    return {
-      panels: panelCost,
-      inverter: inverterCost,
-      battery: batteryCost,
-      cables: cableCost,
-      breakers: breakerCost,
-      disconnects: disconnectCost,
-      miscellaneous: miscCost,
-      installation: installCost,
-      permitting: permitCost,
-      subtotal,
-      contingency,
-      total,
-      costPerKW: total / recommendation.systemSizeKW,
-      currency: 'KSH',
+  /** Everything the page shows, from the appliance list and the shared calculator's answer. */
+  buildResult(location: Location, load: LoadProfile, s: SizingResponse): CalculationResult {
+    const wiringSpecs = this.generateWiringSpecs(s);
+    const recommendation: SystemRecommendation = {
+      systemType: s.systemType,
+      systemSizeKW: s.pvKwp,
+      panelCount: s.panels,
+      panelWattage: s.panelWatt,
+      panelType: `Monocrystalline ${s.panelWatt} W (tier-1 brand)`,
+      inverterSize: s.inverterKw,
+      inverterType: s.systemType === 'off-grid' ? 'Off-grid inverter-charger' : s.systemType === 'hybrid' ? 'Hybrid inverter' : 'Grid-tie inverter',
+      batteryCapacityKWh: s.batteryKwh,
+      batteryUsableKWh: s.batteryUsableKwh,
+      batteryType: s.batteryKwh > 0 ? 'LiFePO4' : 'None',
+      batteryVoltage: 48,
+      estimatedProduction: s.annualEnergyKwh,
+      paybackYears: s.paybackYears,
+      sunHours: s.sunHours.annual,
+      sunHoursSource: s.sunHours.note,
     };
-  }
-
-  /**
-   * Generate wiring specifications
-   */
-  generateWiringSpecs(recommendation: SystemRecommendation): WiringSpec[] {
-    return [
-      {
-        segment: 'PV Array to Combiner Box',
-        voltage: 600,
-        current: (recommendation.systemSizeKW * 1000) / 600,
-        distance: 20,
-        cableSize: recommendation.cableMainSize,
-        cableType: 'PV Rated',
-        colors: ['Red', 'Black', 'Green'],
-        breaker: '20A DC',
-        disconnect: true,
-        notes: 'Use MC4 connectors, UV-rated cable',
-      },
-      {
-        segment: 'Combiner to MPPT Controller',
-        voltage: 600,
-        current: (recommendation.systemSizeKW * 1000) / 600,
-        distance: 15,
-        cableSize: recommendation.cableMainSize,
-        cableType: 'PV Rated',
-        colors: ['Red', 'Black', 'Green'],
-        breaker: '25A DC',
-        disconnect: true,
-        notes: 'DC disconnect switch required',
-      },
-      {
-        segment: 'MPPT to Battery',
-        voltage: recommendation.batteryVoltage,
-        current: (recommendation.systemSizeKW * 1000) / recommendation.batteryVoltage,
-        distance: 10,
-        cableSize: recommendation.cableMainSize,
-        cableType: 'Multi-strand',
-        colors: ['Red (+)', 'Black (-)', 'Green (GND)'],
-        breaker: '50A DC',
-        disconnect: true,
-        notes: 'Shortest possible run to minimize voltage drop',
-      },
-      {
-        segment: 'Battery to Inverter',
-        voltage: recommendation.batteryVoltage,
-        current: (recommendation.inverterSize * 1000) / recommendation.batteryVoltage,
-        distance: 5,
-        cableSize: '16',
-        cableType: 'Battery Cable',
-        colors: ['Red (+)', 'Black (-)', 'Green (GND)'],
-        breaker: '100A DC',
-        disconnect: true,
-        notes: 'Large gauge, short distance critical',
-      },
-      {
-        segment: 'Inverter AC Out to Load Center',
-        voltage: 230,
-        current: recommendation.inverterSize * 1000 / 230,
-        distance: 30,
-        cableSize: recommendation.cableSubSize,
-        cableType: 'AC Rated',
-        colors: ['Brown (L)', 'Blue (N)', 'Green/Yellow (PE)'],
-        breaker: '40A AC',
-        disconnect: true,
-        notes: 'AC disconnect switch required',
-      },
+    const assumptions = [
+      `Your appliances use ${load.totalDailyEnergy.toFixed(1)} kWh a day (${Math.round(load.totalDailyEnergy * 30)} kWh a month).`,
+      `Peak demand ${load.peakLoad.toFixed(2)} kW: the largest appliance plus half of the others running at once.`,
+      ...s.assumptions,
     ];
-  }
-
-  /**
-   * Complete system calculation
-   */
-  calculateCompleteSystem(
-    location: Location,
-    appliances: Appliance[],
-    daysAutonomy: number = 3
-  ): CalculationResult {
-    const loadProfile = this.calculateLoadProfile(appliances);
-    const irradiance = this.getIrradiance(location);
-    const recommendation = this.recommendSystem(loadProfile, irradiance, daysAutonomy);
-    const costEstimate = this.estimateCosts(recommendation, location);
-    const wiringSpecs = this.generateWiringSpecs(recommendation);
-
-    // Quality warnings
     const qualityWarnings: string[] = [];
-    if (recommendation.panelType.toLowerCase().includes('generic')) {
-      qualityWarnings.push('⚠️ Warning: Check panel authenticity - request certification documents');
-    }
-    if (recommendation.batteryType === 'Lead-Acid') {
-      qualityWarnings.push('⚠️ Warning: Lead-acid batteries have shorter lifespan - consider LiFePO4');
-    }
-
-    // Safety notes
-    const safetyNotes: string[] = [
-      '🔒 Always install DC disconnect between PV array and controller',
-      '🔒 AC disconnect switch required between inverter and load',
-      '🔒 Use breakers on all circuits as specified',
-      '🔒 Ground all metal components',
-      '🔒 Use UV-rated PV cables for outdoor runs',
-      '🔒 Label all connections clearly',
-    ];
-
+    if (wiringSpecs.some((w) => w.cableSize === '—')) qualityWarnings.push('A cable run is beyond a single cable: have a qualified electrician design it.');
+    if (s.warning) qualityWarnings.push(s.warning);
+    if (s.notWorthwhile) qualityWarnings.push(s.assumptions[0]);
     return {
-      location,
-      loadProfile,
-      irradiance,
-      recommendation,
-      costEstimate,
-      wiringSpecs,
-      qualityWarnings,
-      safetyNotes,
+      location, loadProfile: load, recommendation, costEstimate: this.costFrom(s), wiringSpecs, assumptions, qualityWarnings,
+      safetyNotes: [
+        'Installation by an EPRA-licensed solar technician (Energy (Solar Photovoltaic Systems) Regulations 2012).',
+        'DC isolator between the array and the inverter; battery breaker or fuse next to the battery; AC isolator on the output.',
+        'Earth the array frame and the inverter; surge protection on DC and AC sides (lightning is common in Kenya).',
+        'Use UV-rated solar cable and matching MC4 connectors; label every isolator.',
+      ],
     };
   }
 }

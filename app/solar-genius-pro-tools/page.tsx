@@ -1,12 +1,11 @@
-'use client';
+import { redirect } from 'next/navigation';
 
 /**
- * SOLAR GENIUS PRO - TOOLS VERSION
- * All 162+ features with payment gate
+ * Old SolarGenius Pro "tools" route. next.config.ts already sends it to
+ * /solar-genius-pro with a 308; this page does the same if that rule is ever
+ * bypassed. The component it used to render (with fabricated roof, shading,
+ * IRR and incentive figures) was deleted on 2026-10-30.
  */
-
-import SolarGeniusProComplete from '@/components/solar/SolarGeniusProComplete';
-
 export default function SolarGeniusProToolsPage() {
-  return <SolarGeniusProComplete />;
+  redirect('/solar-genius-pro');
 }

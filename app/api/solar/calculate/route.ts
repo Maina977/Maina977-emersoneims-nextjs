@@ -60,8 +60,11 @@ export async function POST(request: NextRequest) {
   const monthlyKwh = Number(body.consumption);
   // Below ~10 kWh/month there is nothing to size (2026-10-25 audit: 1e-9 kWh
   // gave an 887-billion-year payback).
-  if (!Number.isFinite(monthlyKwh) || monthlyKwh < 10 || monthlyKwh > 2_000_000) {
-    return NextResponse.json({ error: 'consumption must be between 10 and 2,000,000 kWh per month' }, { status: 400 });
+  // Up to about a 1 MWp commercial roof; beyond that is a utility-scale plant
+  // needing a site study, not this tool (2026-10-30 audit: 2M kWh/month gave
+  // a KES 14.8 billion "result").
+  if (!Number.isFinite(monthlyKwh) || monthlyKwh < 10 || monthlyKwh > 150_000) {
+    return NextResponse.json({ error: 'consumption must be between 10 and 150,000 kWh per month (larger sites need an engineered design: contact us)' }, { status: 400 });
   }
   // Out-of-range inputs are refused, not silently clamped (tariff -5 became 1
   // and a 244-year payback; systemType "banana" became hybrid).
@@ -95,6 +98,11 @@ export async function POST(request: NextRequest) {
       error: `peakLoadKw ${Number(body.peakLoadKw)} kW does not fit ${monthlyKwh} kWh a month: it could not run even 30 minutes a day. Check both figures (the most for this consumption is ${Math.floor(monthlyKwh / 15)} kW).`,
     }, { status: 400 });
   }
+  // Daytime and night shares describe the same day: together at most 100%
+  // (2026-10-30 audit: both were accepted and the night share was ignored).
+  if (given('daytimeUsePct') && given('nightUsePct') && Number(body.daytimeUsePct) + Number(body.nightUsePct) > 100) {
+    return NextResponse.json({ error: 'daytimeUsePct + nightUsePct must not exceed 100%' }, { status: 400 });
+  }
   const systemType = given('systemType') ? (body.systemType as SystemType) : 'hybrid';
   const roofType = given('roofType') ? (body.roofType as RoofType) : 'pitched';
 
@@ -125,6 +133,9 @@ export async function POST(request: NextRequest) {
   }
 
   const sun = await sunHoursFor(lat!, lon!);
+  // Prices, tariffs and the grid factor are Kenyan (2026-10-30 audit: lat 60
+  // was sized as if in Kenya with no word).
+  const inKenya = lat! >= -4.9 && lat! <= 5.1 && lon! >= 33.8 && lon! <= 42.0;
 
   try {
     const r = sizeSolar({
@@ -146,6 +157,7 @@ export async function POST(request: NextRequest) {
       lat,
       lon,
       sunHours: sun,
+      ...(inKenya ? {} : { warning: 'This location is outside Kenya: the sun hours are for the location, but prices, tariffs and the grid CO₂ factor are Kenyan.' }),
       // Field names the rest of the Solar app already reads (all in kWh / KES).
       systemKw: r.pvKwp,
       totalCost: r.cost.midKes,

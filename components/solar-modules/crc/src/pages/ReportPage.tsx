@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useSolarStore } from '../services/store';
 import { reports, downloadBlob } from '../services/api';
 import { proposalFinance } from '../services/proposalFinance';
-import { BATTERY_KES_PER_KWH } from '@/lib/solar/sizing';
+import { BATTERY_KES_PER_KWH, PANEL_KES_PER_W, PANEL_WATT, tieredKes, inverterBands, type SystemType } from '@/lib/solar/sizing';
 
 // Real proposal generator.
 // Fills in client + brand + site + design + financial from the shared
@@ -205,18 +205,20 @@ export default function ReportPage() {
   // the BOM and the capex come from one price list.
   const offGrid = design.systemType === 'off-grid';
   const batteryLineKes = design.batteryKwh > 0 ? Math.round(design.batteryKwh * BATTERY_KES_PER_KWH) : 0;
+  // The calculator's price list (lib/solar/sizing.ts), not a separate KES
+  // 12,500 per panel (2026-10-30 audit).
   function inverterKes(kw: number): number {
     if (!(kw > 0)) return 0;
-    const [low, high] = design.systemType === 'grid-tied' ? [20000, 15000] : [35000, 28000];
-    return Math.round(Math.min(kw, 10) * low + Math.max(0, kw - 10) * high);
+    return Math.round(tieredKes(kw, inverterBands((design.systemType as SystemType) || 'hybrid')));
   }
+  const panelUnitKes = Math.round((design.panelW || PANEL_WATT) * PANEL_KES_PER_W);
   function buildBom() {
     const panels = design.panelCount || metrics.panelCount;
-    const panelTotalKes = panels * 12500;
+    const panelTotalKes = panels * panelUnitKes;
     const inverterCost = inverterKes(design.inverterKw);
     const rows: Array<[string, number, number, number, null]> = [
       [`${design.panelMake || 'Panel'} ${design.panelModel || ''} ${design.panelW}W`.replace(/\s+/g, ' '),
-        panels, 12500, panelTotalKes, null],
+        panels, panelUnitKes, panelTotalKes, null],
     ];
     if (inverterCost > 0) {
       rows.push([`${design.inverterMake || 'Inverter'} ${design.inverterModel || ''} ${design.inverterKw}kW`.replace(/\s+/g, ' '),
@@ -265,6 +267,7 @@ export default function ReportPage() {
         elevationM: site.elevationM,
         climateZone: 'East Africa',
         irradianceKwhPerM2Day: site.irradianceKwhPerM2Day || metrics.peakSunHours,
+        irradianceSource: site.irradianceSource || (site.irradianceKwhPerM2Day ? 'nasa-power' : 'kenya-typical'),
         monthlyConsumptionKwh: monthlyKwh ?? null,
         peakDemandKw: null,
         // Off-grid savings are against diesel, so no grid tariff is shown.
@@ -301,6 +304,8 @@ export default function ReportPage() {
         paybackYears: finance.paybackYears,
         irrPct: finance.irrPct,
         npvKes: finance.npvKes,
+        // Sent so the server's recomputed cash flow matches this page.
+        batteryReplacement: batteryLineKes > 0 ? { year: 12, costKes: batteryLineKes } : null,
         discountRatePct: a.discountRatePct,
         tariffEscalationPct: a.tariffEscalationPct,
         panelDegradationPct: a.panelDegradationPct,
@@ -338,7 +343,8 @@ export default function ReportPage() {
         // The calculator's CO2: diesel displaced (2.68 kg/L) or grid energy
         // replaced (0.213 kg/kWh, Kenya's mostly renewable grid). A flat 0.82
         // kg/kWh overstated it several times over (2026-10-18 tool audit).
-        co2AvoidedTonnes: metrics.carbonOffsetKg > 0 ? Math.round((metrics.carbonOffsetKg * 25) / 1000) : null,
+        // 25 years with 0.5%/yr panel degradation, as lifetimeMwh (2026-10-30 audit).
+        co2AvoidedTonnes: metrics.carbonOffsetKg > 0 ? Math.round((metrics.carbonOffsetKg * ((1 - Math.pow(0.995, 25)) / 0.005)) / 1000) : null,
         treesEquivalent: null,
         carsEquivalent: null
       },

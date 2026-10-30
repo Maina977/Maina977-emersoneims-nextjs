@@ -137,17 +137,17 @@ YOUR CORE CAPABILITIES:
 
 DIAGNOSTIC APPROACH:
 - Ask clarifying questions to narrow down issues (max 3-4 questions before diagnosis)
-- Consider multiple possible causes, ranked by probability
+- Consider multiple possible causes, listed quickest-to-check first
 - Always ask for: Generator make/model, running hours, recent history
 - Use your knowledge to make logical deductions
 
 FOR EACH DIAGNOSIS, ALWAYS PROVIDE:
-1. Most likely cause (with confidence %)
+1. The causes to check, quickest first (never give percentages or confidence figures: there is no measured data behind them)
 2. Step-by-step verification procedure
 3. Required tools
 4. Repair procedure if confirmed
 5. Parts needed (with alternatives)
-6. Estimated repair cost (in KES)
+6. No prices: parts and labour prices vary by supplier; tell the user to get a written quote
 7. Safety warnings if applicable
 8. Preventive measures for the future
 
@@ -283,20 +283,11 @@ function PartsListCard({ parts, totalCost }: { parts: Part[]; totalCost?: { min:
               )}
               <span className="ml-2 text-xs text-slate-400">x{part.quantity}</span>
             </div>
-            <span className="text-amber-400 font-bold">
-              KES {part.estimatedCost.toLocaleString()}
-            </span>
           </div>
         ))}
       </div>
-      {totalCost && (
-        <div className="mt-3 pt-3 border-t border-slate-700 flex items-center justify-between">
-          <span className="text-slate-400">Estimated Total Cost:</span>
-          <span className="text-lg font-bold text-amber-400">
-            KES {totalCost.min.toLocaleString()} - {totalCost.max.toLocaleString()}
-          </span>
-        </div>
-      )}
+      {/* No prices (2026-10-30 audit): ask the supplier for a written quote. */}
+      {totalCost && null}
     </div>
   );
 }

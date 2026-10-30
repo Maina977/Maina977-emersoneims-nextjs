@@ -146,7 +146,10 @@ function withSafety(c: ControllerFaultCode): ControllerFaultCode {
   if (lowOil && !has(/stop the engine/i)) add.push(OIL_STOP);
   for (const w of J1939_SAFETY.get(c.code.toUpperCase()) || []) if (!has(new RegExp(w.slice(0, 24).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')) && !add.includes(w)) add.push(w);
   const topic = TOPIC_SAFETY.find(([re]) => re.test(`${c.title} ${c.subcategory} ${c.category}`));
-  if (topic) for (const w of topic[1]) if (!has(new RegExp(w.slice(0, 24).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')) && !add.includes(w)) add.push(w);
+  // The isolation line is a duplicate when the entry already says to isolate
+  // or lock off (2026-10-30 audit: two near-identical isolate warnings).
+  const already = (w: string) => w === ISOLATE ? has(/isolat|lock(ed)? off|prove .*dead/i) : has(new RegExp(w.slice(0, 24).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+  if (topic) for (const w of topic[1]) if (!already(w) && !add.includes(w)) add.push(w);
   const touchesCoolant = (s: string) => /coolant level|top up|radiator cap|expansion tank|add coolant/i.test(s) && !/\bcool(ed)?\b.*(engine|first)|engine.*\bcool(ed)?\b|let .* cool/i.test(s);
   const steps = (c.diagnosticSteps || []).map((st) => (touchesCoolant(st.action) ? { ...st, action: `With the engine stopped and cool: ${st.action}` } : st));
   // One severity per J1939 code: a controller entry written as an SPN/FMI
@@ -549,15 +552,28 @@ function tooShortCode(q: string): boolean {
  */
 export function invalidCodeReason(q: string): string | null {
   const s = (q || '').trim().toUpperCase();
-  if (/\b(SPN|FMI|PID|MID)\s+-\s*\d/.test(s) || /\b(SPN|FMI|PID|MID)\s*[:#]\s*-\s*\d/.test(s)) {
-    return 'SPN, FMI, PID and MID numbers are never negative. Check the code on the display.';
+  // ONE validator for search, lookup, diagnose and chat (2026-10-30 audit:
+  // each path treated impossible codes differently).
+  if (/\b(SPN|FMI|PID|MID)\s+-\s*\d/.test(s) || /\b(SPN|FMI|PID|MID)\s*[:#]\s*-\s*\d/.test(s) || /^-\d+$/.test(s)) {
+    return 'Fault code numbers (SPN, FMI, PID, MID) are never negative. Check the code on the display.';
+  }
+  const fmiOk = (n: number) => (n >= 0 && n <= 21) || n === 31; // J1939-73: 22-30 reserved
+  const fmiReason = (n: number) => n > 31
+    ? `FMI ${n} is not possible: J1939 FMIs run from 0 to 31. Check the code on the display.`
+    : `FMI ${n} is not a defined failure mode: SAE J1939-73 uses FMI 0 to 21 and 31 (22-30 are reserved). Check the code on the display.`;
+  const bareFmi = /^FMI\s*[:#-]?\s*(\d+)$/.exec(s);
+  if (bareFmi) {
+    const n = Number(bareFmi[1]);
+    return fmiOk(n)
+      ? `FMI ${n} on its own is only the failure type. Give the SPN as well (for example SPN 110 FMI ${n}).`
+      : fmiReason(n);
   }
   const n = normalizeCodeQuery(q);
   const m = n ? /^SPN(\d+)-(?:FMI(\d+))?$/.exec(n) : null;
   if (m && Number(m[1]) > 524287) return `SPN ${m[1]} is not possible: J1939 SPNs run from 0 to 524287. Check the code on the display.`;
-  if (m && m[2] != null && Number(m[2]) > 31) return `FMI ${m[2]} is not possible: J1939 FMIs run from 0 to 31. Check the code on the display.`;
+  if (m && m[2] != null && !fmiOk(Number(m[2]))) return fmiReason(Number(m[2]));
   const j = n ? /^MID\d+-PID\d+-FMI(\d+)$/.exec(n) : null;
-  if (j && Number(j[1]) > 31) return `FMI ${j[1]} is not possible: FMIs run from 0 to 31. Check the code on the display.`;
+  if (j && !fmiOk(Number(j[1]))) return fmiReason(Number(j[1]));
   return null;
 }
 /** The text when it is a fault code (J1939/J1587 forms, maker numbers, controller codes), else null. */
@@ -579,9 +595,12 @@ function emptySearch(opts: SearchOptions): SearchResponse {
 }
 
 export function searchIndex(opts: SearchOptions): SearchResponse {
-  if (tooShortCode((opts.query || '').trim())) return emptySearch(opts);
   const invalid = invalidCodeReason(opts.query || '');
   if (invalid) return { ...emptySearch(opts), notice: invalid };
+  // Nothing typed and no filter chosen is no search, not the whole library
+  // led by "Emergency Stop" (2026-10-30 audit). Browsing a brand still lists it.
+  if (!(opts.query || '').trim() && !opts.brand && !opts.model && !opts.category && !opts.severity) return emptySearch(opts);
+  if (tooShortCode((opts.query || '').trim())) return emptySearch(opts);
   const maker = /^(cummins|perkins)\s*(?:fault\s*)?(?:code\s*)?(\d{2,4})$/i.exec((opts.query || '').trim());
   if (maker) {
     const mapped = MAKER_CODE_TO_J1939[`${maker[1].toLowerCase()} ${maker[2]}`];
@@ -759,11 +778,15 @@ export interface FaultLookupResponse {
   partialMatches: SearchResultItem[];
   matchType: 'exact' | 'partial' | 'none';
   interpretedAs: string | null;
+  /** Why the code cannot exist, when it cannot (the same reason as search). */
+  notice?: string;
 }
 
 export function lookupFaultCode(code: string, brand?: string): FaultLookupResponse {
   let raw = code.trim();
-  if (!raw || tooShortCode(raw) || invalidCodeReason(raw)) return { found: false, exactMatches: [], partialMatches: [], matchType: 'none', interpretedAs: null };
+  const bad = raw ? invalidCodeReason(raw) : null;
+  if (bad) return { found: false, exactMatches: [], partialMatches: [], matchType: 'none', interpretedAs: null, notice: bad };
+  if (!raw || tooShortCode(raw)) return { found: false, exactMatches: [], partialMatches: [], matchType: 'none', interpretedAs: null };
   // The same maker-number reading as search and chat (2026-10-29 audit:
   // "Cummins 151" found nothing here while search answered SPN 110 FMI 0).
   const maker = /^(cummins|perkins)\s*(?:fault\s*)?(?:code\s*)?(\d{2,4})$/i.exec(raw);
@@ -824,7 +847,13 @@ export interface BrandSummary {
 
 export function listBrandSummaries(): BrandSummary[] {
   const byBrand: Record<string, number> = {};
-  for (const c of getAllFaultCodes()) byBrand[c.brand] = (byBrand[c.brand] || 0) + 1;
+  const verifiedByBrand: Record<string, number> = {};
+  for (const c of getAllFaultCodes()) {
+    byBrand[c.brand] = (byBrand[c.brand] || 0) + 1;
+    // Only entries actually checked against the maker's manual (2026-10-30
+    // audit: every code was reported verified).
+    if (c.verified === true) verifiedByBrand[c.brand] = (verifiedByBrand[c.brand] || 0) + 1;
+  }
 
   return Object.entries(CONTROLLER_BRANDS).map(([key, b]) => ({
     key,
@@ -835,7 +864,7 @@ export function listBrandSummaries(): BrandSummary[] {
     models: [...b.models],
     color: b.color,
     totalCodes: byBrand[b.name] || 0,
-    verifiedCodes: byBrand[b.name] || 0,
+    verifiedCodes: verifiedByBrand[b.name] || 0,
   }));
 }
 
@@ -901,6 +930,8 @@ export interface DiagnoseResponse {
   ranked: RankedFault[];
   considered: number;
   source: 'index';
+  /** Safety lines for the hazard the symptoms point at (fuel, earth, battery, overspeed, coolant, live terminals). */
+  safety?: string[];
   notes: string[];
 }
 
@@ -1067,6 +1098,10 @@ const PHRASES: [RegExp, string][] = [
   // "surging" found nothing anywhere).
   [/\bsurg(e|es|ing)\b/gi, 'hunting speed unstable'],
   [/\b(keeps?\s+)?(dying|dies|dead|flat)\b/gi, 'not charging low'],
+  // 2026-10-30 audit: "over speed" (two words) returned over-frequency and
+  // over-voltage alarms; "overheating" missed most high-temperature alarms.
+  [/\bover[\s-]+speed(ing)?\b/gi, 'overspeed'],
+  [/\b(over[\s-]?heat(ing|s|ed)?|running\s+hot|too\s+hot)\b/gi, 'overheat high coolant temperature'],
 ];
 function rewritePhrases(s: string): string {
   let out = s;
@@ -1194,6 +1229,11 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
       // "Power Supply Voltage" is the controller's DC supply, not the
       // generator's output (2026-10-29: it led "generator voltage low").
       if (wantsGenVoltage && /\bsupply\b/.test(rawTitle) && !/\bsupply\b/.test(typedText)) score *= 0.4;
+      // A sensor-circuit fault ("... Sensor - Voltage Below Normal", J1939 FMI
+      // 3/4) is not the generator's output (2026-10-30 audit: a fuel-pressure
+      // sensor ranked for "generator voltage low").
+      if (wantsGenVoltage && /\bsensor\b|voltage (above|below) normal/.test(rawTitle) && !/\bsensor\b/.test(typedText)) score *= 0.2;
+      if (wantsGenVoltage && /\bunder[\s-]?voltage\b/.test(rawTitle) && /\b(low|drop|dip|under)\b/.test(typedText)) score *= 1.5;
       // Transformer, turbine and steam alarms are not diesel-genset faults unless
       // asked about (2026-10-29 audit: "high oil consumption" led with a Siemens
       // transformer oil alarm).
@@ -1236,7 +1276,12 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   // A weak match must name every specific word in its title: body text alone
   // ("earth" in a CAN-bus guide, "leak" in a contamination guide) is not enough.
   void specific;
-  const topOk = !!top && [...topMatched].some((x) => !GENERIC.test(x)) &&
+  // A problem word the user typed (leak, smoke, earth, knock) must be in the
+  // guide's title: "fuel leak" got the fuel-contamination guide (2026-10-30 audit).
+  // (Knock and vibration are covered by the noise guide's synonyms, so they are not listed.)
+  const problemWords = ['leak', 'smoke', 'earth'].filter((w) => typedText.includes(w));
+  const titleHasProblem = !top || problemWords.every((w) => top.title.toLowerCase().includes(w));
+  const topOk = !!top && [...topMatched].some((x) => !GENERIC.test(x)) && titleHasProblem &&
     (top.score >= 11 || !!(top as { allKeyStrong?: boolean }).allKeyStrong);
   const guides = (topOk ? guidesAll.filter((g, i) => i === 0 || g.score >= 0.7 * top!.score) : [])
     .map((g) => ({ ...g, matchedTerms: show(g.matchedTerms) }));
@@ -1265,12 +1310,22 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
     }
   }
 
+  // Safety lines for the hazard the symptom points at, on every answer, not
+  // only on a code lookup (2026-10-30 audit: "fuel leak" had no fire warning).
+  const safety: string[] = [];
+  const addSafety = (lines: string[]) => { for (const l of lines) if (!safety.includes(l)) safety.push(l); };
+  for (const [re, lines] of TOPIC_SAFETY) if (re.test(typedText) && !/voltage|current|frequency|phase|power/.test(re.source)) addSafety(lines);
+  if (/overheat|coolant|radiator|temperatur|hot/.test(typedText)) addSafety(['Never open a hot radiator or expansion-tank cap: scalding coolant under pressure. Stop the engine and let it cool first.']);
+  if (/no voltage|voltage|output|alternator|avr|breaker/.test(typedText)) addSafety([ISOLATE]);
+  if (/\bleak/.test(typedText)) notes.unshift('No controller alarm detects a leak directly: find it by inspection (dry the area, run the engine, look for fresh wetting). Alarms below are what a leak can eventually cause, such as a low fuel or coolant level.');
+
   return {
     input: { ...input, topN },
     guides,
     ranked: ranked.slice(0, topN),
     considered,
     source: 'index',
+    safety,
     notes,
   };
 }

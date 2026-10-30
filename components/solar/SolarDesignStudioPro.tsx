@@ -15,7 +15,7 @@ import {
   Sun, Zap, Battery, Calculator, FileText, Play, Pause, Trash2, Plus, Grid, Layers, Cable,
   AlertTriangle, CheckCircle2, Settings, Box, MapPin, Printer, Share2, Activity
 } from 'lucide-react';
-import { estimateInstalledCost, DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
+import { estimateInstalledCost, DEFAULT_TARIFF_KES_PER_KWH, gridSaving } from '@/lib/solar/sizing';
 
 // Roof drawing scale and module size (metres). See the panel size state below.
 const PX_PER_M = 20;
@@ -85,6 +85,11 @@ export default function SolarDesignStudioPro() {
   const [currentPoints, setCurrentPoints] = useState<Point[]>([]);
   const [roofTilt, setRoofTilt] = useState(15);
   const [roofAzimuth, setRoofAzimuth] = useState(0);
+  // What the site uses and pays: the saving depends on them, not only on the
+  // array drawn (2026-10-30 audit: 90% of any array was valued at KES 25).
+  const [monthlyUseKwh, setMonthlyUseKwh] = useState(450);
+  const [tariffInput, setTariffInput] = useState('');
+  const [daytimeUsePct, setDaytimeUsePct] = useState(50);
 
   // Panels
   const [panels, setPanels] = useState<Panel[]>([]);
@@ -114,13 +119,14 @@ export default function SolarDesignStudioPro() {
   useEffect(() => {
     let cancelled = false;
     const t = setTimeout(() => {
-      fetch(`/api/site/pvwatts?lat=${latitude}&lon=${longitude}&kw=1`)
+      // Sun-hours on the panel plane: the roof's tilt and azimuth (2026-10-30 audit).
+      fetch(`/api/site/pvwatts?lat=${latitude}&lon=${longitude}&kw=1&tilt=${Math.min(90, Math.max(0, roofTilt || 0))}&az=${((roofAzimuth % 360) + 360) % 360}`)
         .then((r) => r.json())
         .then((j) => {
           if (cancelled) return;
           if (j?.success && j.data?.solradAnnualKwhM2) {
             setSunHours(j.data.solradAnnualKwhM2);
-            setSunSource(`NASA POWER long-term average for ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+            setSunSource(`NASA POWER long-term average for ${latitude.toFixed(2)}, ${longitude.toFixed(2)}${j.data.tiltDeg != null ? `, on a ${j.data.tiltDeg}° panel facing ${j.data.azimuthDeg}° (${Math.round((j.data.gainVsHorizontal - 1) * 100)}% vs flat)` : ', flat panel'}`);
           } else {
             setSunHours(5.5);
             setSunSource('Kenya typical value (NASA unavailable)');
@@ -129,7 +135,7 @@ export default function SolarDesignStudioPro() {
         .catch(() => { if (!cancelled) { setSunHours(5.5); setSunSource('Kenya typical value (NASA unavailable)'); } });
     }, 600);
     return () => { cancelled = true; clearTimeout(t); };
-  }, [latitude, longitude]);
+  }, [latitude, longitude, roofTilt, roofAzimuth]);
 
   // Canvas refs
   const roofCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -158,11 +164,19 @@ export default function SolarDesignStudioPro() {
   const monthlyProduction = dailyProduction * 30;
   const annualProduction = dailyProduction * 365;
   const installedCost = estimateInstalledCost(totalKW, inverterSize, batteryCapacity, batteryCapacity > 0 ? 'hybrid' : 'grid-tied');
-  const TARIFF_KES = DEFAULT_TARIFF_KES_PER_KWH;
-  // The calculator's use rule: about 90% of the solar used on site with a
-  // battery, about 75% without (2026-10-29 audit: 100% of production was valued).
-  const usedShare = batteryCapacity > 0 ? 0.9 : 0.75;
-  const annualSavingKes = annualProduction * usedShare * TARIFF_KES;
+  const TARIFF_KES = Number(tariffInput) > 0 ? Number(tariffInput) : DEFAULT_TARIFF_KES_PER_KWH;
+  // The calculator's own rule (gridSaving in lib/solar/sizing.ts): only the
+  // solar the site can use is valued, against its consumption and tariff.
+  const saving = gridSaving({
+    type: batteryCapacity > 0 ? 'hybrid' : 'grid-tied',
+    annualEnergyKwh: annualProduction,
+    annualConsumptionKwh: Math.max(0, monthlyUseKwh) * 12,
+    daytimeUsePct,
+    batteryKwh: batteryCapacity,
+    tariffKesPerKwh: TARIFF_KES,
+  });
+  const annualSavingKes = saving.annualSavingKes;
+  const usedShare = annualProduction > 0 ? saving.energyUsedKwh / annualProduction : 0;
 
   // Wire sizing from typical module data: modern 400 W+ half-cell modules
   // run ~41.5 V Vmp / ~49.5 V Voc; smaller 60/72-cell ~34 / ~41 V.
@@ -590,6 +604,7 @@ export default function SolarDesignStudioPro() {
               <MapPin className="w-4 h-4 text-amber-400" />
               <input
                 type="text"
+                aria-label="Location name"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="bg-transparent text-white text-sm flex-1 outline-none"
@@ -601,7 +616,7 @@ export default function SolarDesignStudioPro() {
                 aria-label="Latitude"
                 value={latitude}
                 onChange={(e) => setLatitude(parseFloat(e.target.value))}
-                className="bg-slate-700/50 text-white text-sm rounded px-2 py-1"
+                className="bg-slate-700/50 text-white text-sm rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0"
                 placeholder="Lat"
                 step="0.0001"
               />
@@ -610,7 +625,7 @@ export default function SolarDesignStudioPro() {
                 aria-label="Longitude"
                 value={longitude}
                 onChange={(e) => setLongitude(parseFloat(e.target.value))}
-                className="bg-slate-700/50 text-white text-sm rounded px-2 py-1"
+                className="bg-slate-700/50 text-white text-sm rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0"
                 placeholder="Lng"
                 step="0.0001"
               />
@@ -646,18 +661,20 @@ export default function SolarDesignStudioPro() {
                       <label className="text-slate-500 text-xs">Tilt (°)</label>
                       <input
                         type="number"
+                        aria-label="Roof tilt in degrees"
                         value={roofTilt}
                         onChange={(e) => setRoofTilt(parseInt(e.target.value))}
-                        className="w-full bg-slate-700 text-white text-sm rounded px-2 py-1"
+                        className="w-full bg-slate-700 text-white text-sm rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-500 text-xs">Azimuth (°)</label>
+                      <label className="text-slate-500 text-xs">Azimuth (° from north, clockwise)</label>
                       <input
                         type="number"
+                        aria-label="Roof azimuth in degrees from north, clockwise"
                         value={roofAzimuth}
                         onChange={(e) => setRoofAzimuth(parseInt(e.target.value))}
-                        className="w-full bg-slate-700 text-white text-sm rounded px-2 py-1"
+                        className="w-full bg-slate-700 text-white text-sm rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0"
                       />
                     </div>
                   </div>
@@ -693,9 +710,10 @@ export default function SolarDesignStudioPro() {
                   <div className="mt-3">
                     <label className="text-slate-500 text-xs">Panel Watts</label>
                     <select
+                      aria-label="Panel watts"
                       value={panelWatts}
                       onChange={(e) => setPanelWatts(parseInt(e.target.value))}
-                      className="w-full bg-slate-700 text-white text-sm rounded px-2 py-1 mt-1"
+                      className="w-full bg-slate-700 text-white text-sm rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0 mt-1"
                     >
                       <option value={450}>450W Standard</option>
                       <option value={550}>550W Premium</option>
@@ -722,6 +740,7 @@ export default function SolarDesignStudioPro() {
                     </div>
                     <input
                       type="range"
+                      aria-label="Hour of day for the sun view"
                       min="5"
                       max="19"
                       step="0.1"
@@ -762,9 +781,10 @@ export default function SolarDesignStudioPro() {
                     <label className="text-slate-500 text-xs">Date</label>
                     <input
                       type="date"
+                    aria-label="Date for the sun view"
                       value={currentDate.toISOString().split('T')[0]}
                       onChange={(e) => setCurrentDate(new Date(e.target.value))}
-                      className="w-full bg-slate-700 text-white text-sm rounded px-2 py-1 mt-1"
+                      className="w-full bg-slate-700 text-white text-sm rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0 mt-1"
                     />
                   </div>
                 </div>
@@ -802,7 +822,7 @@ export default function SolarDesignStudioPro() {
                       type="number"
                       value={stringConfig.series}
                       onChange={(e) => setStringConfig(s => ({ ...s, series: parseInt(e.target.value) || 1 }))}
-                      className="w-full bg-slate-700 text-white rounded px-2 py-1 mt-1"
+                      className="w-full bg-slate-700 text-white rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0 mt-1"
                       min="1"
                     />
                   </div>
@@ -813,7 +833,7 @@ export default function SolarDesignStudioPro() {
                       type="number"
                       value={stringConfig.parallel}
                       onChange={(e) => setStringConfig(s => ({ ...s, parallel: parseInt(e.target.value) || 1 }))}
-                      className="w-full bg-slate-700 text-white rounded px-2 py-1 mt-1"
+                      className="w-full bg-slate-700 text-white rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0 mt-1"
                       min="1"
                     />
                   </div>
@@ -838,9 +858,10 @@ export default function SolarDesignStudioPro() {
                   <Zap className="w-4 h-4 text-yellow-400" /> Inverter
                 </h3>
                 <select
+                  aria-label="Inverter size"
                   value={inverterSize}
                   onChange={(e) => setInverterSize(parseInt(e.target.value))}
-                  className="w-full bg-slate-700 text-white rounded px-2 py-1"
+                  className="w-full bg-slate-700 text-white rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0"
                 >
                   <option value={3}>3kW Hybrid</option>
                   <option value={5}>5kW Hybrid</option>
@@ -856,9 +877,10 @@ export default function SolarDesignStudioPro() {
                   <Battery className="w-4 h-4 text-green-400" /> Battery
                 </h3>
                 <select
+                  aria-label="Battery capacity"
                   value={batteryCapacity}
                   onChange={(e) => setBatteryCapacity(parseInt(e.target.value))}
-                  className="w-full bg-slate-700 text-white rounded px-2 py-1"
+                  className="w-full bg-slate-700 text-white rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0"
                 >
                   <option value={5}>5kWh (1x 48V 100Ah)</option>
                   <option value={10}>10kWh (2x 48V 100Ah)</option>
@@ -1144,6 +1166,17 @@ EARTHING:
 
                   <div>
                     <h3 className="text-white font-medium mb-3">Financial Summary</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+                      <label className="text-slate-400 text-xs flex flex-col gap-1">Site use (kWh/month)
+                        <input type="number" min={10} value={monthlyUseKwh} onChange={(e) => setMonthlyUseKwh(Number(e.target.value))} className="bg-slate-700 text-white text-sm rounded px-2 py-2 min-h-[44px]" />
+                      </label>
+                      <label className="text-slate-400 text-xs flex flex-col gap-1">Tariff (KES/kWh, blank = {DEFAULT_TARIFF_KES_PER_KWH})
+                        <input type="number" min={1} value={tariffInput} onChange={(e) => setTariffInput(e.target.value)} placeholder="bill ÷ kWh" className="bg-slate-700 text-white text-sm rounded px-2 py-2 min-h-[44px]" />
+                      </label>
+                      <label className="text-slate-400 text-xs flex flex-col gap-1">Use while the sun is up (%)
+                        <input type="number" min={0} max={100} value={daytimeUsePct} onChange={(e) => setDaytimeUsePct(Math.min(100, Math.max(0, Number(e.target.value))))} className="bg-slate-700 text-white text-sm rounded px-2 py-2 min-h-[44px]" />
+                      </label>
+                    </div>
                     <table className="w-full text-sm">
                       <tbody className="text-slate-300">
                         <tr className="border-b border-slate-700/50">
@@ -1151,7 +1184,7 @@ EARTHING:
                           <td className="text-right">KSh {installedCost.lowKes.toLocaleString()} – {installedCost.highKes.toLocaleString()}</td>
                         </tr>
                         <tr className="border-b border-slate-700/50">
-                          <td className="py-2">Estimated annual saving (about {Math.round(usedShare * 100)}% of the solar used on site, KSh {TARIFF_KES}/kWh)</td>
+                          <td className="py-2">Estimated annual saving ({Math.round(usedShare * 100)}% of the solar used on site at {monthlyUseKwh} kWh/month, KSh {TARIFF_KES}/kWh{batteryCapacity > 0 ? '' : '; no battery, so no power during KPLC cuts'})</td>
                           <td className="text-right text-emerald-400">KSh {Math.round(annualSavingKes).toLocaleString()}</td>
                         </tr>
                         <tr>

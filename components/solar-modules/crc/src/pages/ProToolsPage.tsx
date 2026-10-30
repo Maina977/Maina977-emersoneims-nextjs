@@ -352,13 +352,16 @@ const StringConfigTool = () => {
   const t = useTool();
   const [p, setP] = useState({
     panelVocStc: 49.5, panelVmppStc: 41.5, panelImppStc: 11.7, panelIscStc: 12.4,
-    inverterMaxDcV: 600, inverterMpptMinV: 150, inverterMpptMaxV: 500, inverterMaxInputA: 25, inverterMpptCount: 2
+    inverterMaxDcV: 600, inverterMpptMinV: 150, inverterMpptMaxV: 500, inverterMaxInputA: 25, inverterMpptCount: 2,
+    // Coldest morning on the panels: highland sites (Nyahururu, Timau) reach
+    // about 0-5 °C; it sets the highest string voltage (2026-10-30 audit).
+    siteTempMinC: 5,
   });
   const upd = (k: string) => (e: any) => setP({ ...p, [k]: +e.target.value });
   return (
     <Card>
       <CardH>String Configuration</CardH>
-      <CardSub>IEC 62548: cold Voc under the inverter maximum, cold Vmp inside the MPPT window, 1.25 × Isc per string</CardSub>
+      <CardSub>IEC 62548: cold Voc under the inverter maximum, cold Vmp inside the MPPT window; operating current (Impp) within the input limit (up to 10% over only clips), Isc within the inverter's short-circuit rating</CardSub>
       <Row>
         <Input type="number" value={p.panelVocStc} onChange={upd('panelVocStc')} placeholder="Panel Voc" aria-label="Panel Voc" />
         <Input type="number" value={p.panelVmppStc} onChange={upd('panelVmppStc')} placeholder="Panel Vmpp" aria-label="Panel Vmpp" />
@@ -371,6 +374,8 @@ const StringConfigTool = () => {
       </Row>
       <Row>
         <Input type="number" value={p.inverterMaxInputA} onChange={upd('inverterMaxInputA')} placeholder="Max input A per MPPT" aria-label="Max input A per MPPT" />
+        <Input type="number" value={p.panelImppStc} onChange={upd('panelImppStc')} placeholder="Panel Impp" aria-label="Panel Impp" />
+        <Input type="number" value={p.siteTempMinC} onChange={upd('siteTempMinC')} placeholder="Coldest module °C" aria-label="Coldest module temperature (°C; highlands 0-5)" />
       </Row>
       <Btn disabled={t.busy} onClick={() => t.run(() => solar.stringConfig(p))}>Compute</Btn>
       <Result {...t} />

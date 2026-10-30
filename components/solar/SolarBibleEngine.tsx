@@ -8,7 +8,7 @@
  */
 
 import { useState, useCallback, useMemo, useRef } from 'react';
-import { DIESEL_L_PER_KWH, DEFAULT_DIESEL_KES_PER_LITRE } from '@/lib/solar/sizing';
+import { DIESEL_L_PER_KWH, DEFAULT_DIESEL_KES_PER_LITRE, DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sun, Battery, Zap, Calculator, TrendingUp, Thermometer,
@@ -18,7 +18,7 @@ import {
   Heart, Brain, FileDown, AlertCircle
 } from 'lucide-react';
 import { KENYA_CLIMATE,
-  findOptimalSystem, calculateElectricityCost,
+  findOptimalSystem,
   type SolarPanel, type BatteryUnit, type Inverter
 } from './SolarEquipmentDatabase';
 import {
@@ -313,7 +313,9 @@ export default function SolarBibleEngine() {
 
       // Calculate accurate electricity costs
       const monthlyConsumption = dailyConsumption * 30;
-      const monthlyGridCost = calculateElectricityCost(monthlyConsumption);
+      // The calculator's default effective tariff, so the comparison matches
+      // the savings (2026-10-30 audit: a separate lifeline-tariff model).
+      const monthlyGridCost = monthlyConsumption * DEFAULT_TARIFF_KES_PER_KWH;
       // The calculator's diesel basis (lib/solar/sizing.ts): 0.35 L/kWh at KES 175/L.
       const monthlyGeneratorCost = dailyConsumption * 30 * DIESEL_L_PER_KWH * DEFAULT_DIESEL_KES_PER_LITRE;
 
@@ -352,7 +354,7 @@ export default function SolarBibleEngine() {
 
       setIsCalculating(false);
       setStep(5);
-    }, 1500);
+    }, 0); // was a 1.5 s artificial delay (2026-10-30 audit)
   }, [dailyConsumption, peakLoad, location, backupHours, budget, gridConnected]);
 
   // ═══════════════════════════════════════════════════════════════════════════════
@@ -399,7 +401,7 @@ export default function SolarBibleEngine() {
           <table>
             <tr><td><strong>Property Type:</strong></td><td>${propertyType}</td></tr>
             <tr><td><strong>Location:</strong></td><td>${location}, Kenya</td></tr>
-            <tr><td><strong>System Type:</strong></td><td>${gridConnected ? 'Hybrid (Grid-Tied)' : 'Off-Grid'}</td></tr>
+            <tr><td><strong>System Type:</strong></td><td>${!gridConnected ? 'Off-Grid' : backupHours > 0 ? 'Hybrid (grid + battery)' : 'Grid-tied, no battery (no power during KPLC cuts)'}</td></tr>
             <tr><td><strong>Daily Consumption:</strong></td><td>${dailyConsumption.toFixed(1)} kWh</td></tr>
             <tr><td><strong>Backup Required:</strong></td><td>${backupHours} hours</td></tr>
           </table>
@@ -414,11 +416,11 @@ export default function SolarBibleEngine() {
               <td>${systemDesign.panels[0]?.panel.brand} ${systemDesign.panels[0]?.panel.model} (${systemDesign.panels[0]?.panel.wattage}W)</td>
               <td>${systemDesign.panels[0]?.quantity} pcs</td>
             </tr>
-            <tr>
+${systemDesign.batteries[0] ? `            <tr>
               <td>Battery Bank</td>
               <td>${systemDesign.batteries[0]?.battery.brand} ${systemDesign.batteries[0]?.battery.model} (${systemDesign.batteries[0]?.battery.capacity}Ah ${systemDesign.batteries[0]?.battery.voltage}V)</td>
               <td>${systemDesign.batteries[0]?.quantity} pcs</td>
-            </tr>
+            </tr>` : ''}
             <tr>
               <td>Inverter</td>
               <td>${systemDesign.inverter.brand} ${systemDesign.inverter.model} (${systemDesign.inverter.ratedPower}kW ${systemDesign.inverter.type})</td>

@@ -6,7 +6,7 @@
  * DeepSea "Battery Voltage Low" labelled "Exact match" in another and a
  * greeting in the third. All three now ask the fault index.
  */
-import { searchIndex, diagnoseFromSymptoms, normalizeCodeQuery, lookupFaultCode, type SearchResultItem, type RankedFault, type RankedGuide } from './faultIndex';
+import { searchIndex, diagnoseFromSymptoms, normalizeCodeQuery, lookupFaultCode, invalidCodeReason, type SearchResultItem, type RankedFault, type RankedGuide } from './faultIndex';
 
 /** A typed code (J1939, maker number, controller code) rather than a sentence. */
 export function looksLikeCode(text: string): boolean {
@@ -34,8 +34,6 @@ export interface OracleAnswer {
 
 const ENGINEER = 'WhatsApp an engineer on 0768 860 665 with the controller make, model and the exact wording on the display.';
 
-/** J1939-73 defines FMI 0-21 and 31; 22-30 are reserved. */
-const VALID_FMI = (n: number) => (n >= 0 && n <= 21) || n === 31;
 
 export function answerOracle(message: string): OracleAnswer {
   const q = message.trim();
@@ -51,10 +49,12 @@ export function answerOracle(message: string): OracleAnswer {
       text: `"${q}" on its own could be many different faults. Tell us the controller or engine make and the full code or message (for example "DSE low oil pressure", "Cummins 151" or "SPN 110 FMI 0"). ${ENGINEER}` };
   }
   const canonical = normalizeCodeQuery(q);
-  const fmi = canonical && /FMI(\d+)$/.exec(canonical);
-  if (fmi && !VALID_FMI(Number(fmi[1]))) {
+  // The same validator as search and lookup (2026-10-30 audit: "SPN -5" was
+  // read here as SPN 5).
+  const bad = invalidCodeReason(q);
+  if (bad) {
     return { kind: 'code', found: false, results: [], guides: [], interpretedAs: canonical,
-      text: `FMI ${fmi[1]} is not a defined failure mode: SAE J1939-73 uses FMI 0 to 21 and 31. Check the number on the display again. ${ENGINEER}` };
+      text: `${bad} ${ENGINEER}` };
   }
   if (looksLikeCode(q)) {
     const r = searchIndex({ query: q, pageSize: 5 });
@@ -64,7 +64,9 @@ export function answerOracle(message: string): OracleAnswer {
       // Causes, checks and safety for the top match, not only its meaning
       // (2026-10-27 audit: chat gave the meaning and nothing to do next).
       const full = lookupFaultCode(top.id).exactMatches[0];
-      const safety = full?.safetyWarnings?.length ? `⚠️ ${full.safetyWarnings.join(' ')}` : '';
+      // Each warning ends with a full stop (2026-10-30 audit: "...before restart Check for...").
+      const sentence = (s: string) => { const x = s.trim(); return /[.!?]$/.test(x) ? x : `${x}.`; };
+      const safety = full?.safetyWarnings?.length ? `⚠️ ${full.safetyWarnings.map(sentence).join(' ')}` : '';
       const causes = full?.possibleCauses?.length ? `Likely causes: ${full.possibleCauses.slice(0, 4).map((c) => c.cause).join('; ')}.` : '';
       const checks = full?.diagnosticSteps?.length ? `Checks: ${full.diagnosticSteps.slice(0, 4).map((s) => s.action).join('; ')}.` : '';
       const text = [
@@ -88,6 +90,9 @@ export function answerOracle(message: string): OracleAnswer {
   const alarms: RankedFault[] = d.ranked.slice(0, 3);
   if (d.guides.length || alarms.length) {
     const parts: string[] = [];
+    // Safety first, the same lines the page shows (2026-10-30 audit).
+    if (d.safety?.length) parts.push(`⚠️ Safety: ${d.safety.join(' ')}`);
+    if (/\bleak/i.test(q)) parts.push(d.notes[0]);
     if (d.guides.length) parts.push(`Repair guides that cover this: ${d.guides.map((g) => `${g.title} (${g.url})`).join('; ')}.`);
     if (alarms.length) parts.push(`Alarms that mention these symptoms: ${alarms.map((a) => `${codeLabel(a)} — ${a.title}`).join('; ')}.`);
     parts.push('These are matched on the words you used, not a diagnosis. Start with the guide, and stop the set if there is a safety risk.');

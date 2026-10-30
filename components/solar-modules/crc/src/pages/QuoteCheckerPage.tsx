@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { equipment, core } from '../services/api';
-import { BATTERY_KES_PER_KWH } from '@/lib/solar/sizing'; // one battery price for every tool (2026-10-19)
+import { BATTERY_KES_PER_KWH, PANEL_KES_PER_W, tieredKes, inverterBands } from '@/lib/solar/sizing'; // one battery price for every tool (2026-10-19)
 
 // Self-quote checker.
 // Paste any quotation BOM. We parse rows, identify the equipment in the
@@ -163,12 +163,9 @@ interface VerdictRow {
 // (lib/solar/sizing.ts): panels KES 21.5/W; grid-tie inverters KES 20,000/kW to
 // 10 kW then 15,000/kW; hybrid/off-grid KES 35,000/kW to 10 kW then 28,000/kW;
 // batteries at the site-wide rate per usable kWh.
-const PANEL_KES_PER_W = 21.5;
+// The calculator's own rates (one price list, 2026-10-30 audit).
 function inverterRefKes(kw: number, gridTie = false, offGrid = false): number {
-  // Off-grid-only inverters sell for about KES 15-20k/kW in Kenya (2026-10-25
-  // audit: a 3.5 kVA off-grid unit at 65k was called "well below typical").
-  const [a, b] = gridTie ? [20000, 15000] : offGrid ? [20000, 15000] : [35000, 28000];
-  return Math.round(a * Math.min(kw, 10) + b * Math.max(0, kw - 10));
+  return Math.round(tieredKes(kw, inverterBands(gridTie ? 'grid-tied' : offGrid ? 'off-grid' : 'hybrid')));
 }
 
 /** What a quote line says it is: category and rating, read from its text. */

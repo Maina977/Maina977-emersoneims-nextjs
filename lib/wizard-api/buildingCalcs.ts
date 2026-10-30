@@ -143,6 +143,10 @@ export function daylightAdf(b: Body) {
   if (!(theta! > 0 && theta! <= 90)) return bad('sky_angle_deg is the visible sky angle: between 0 and 90 degrees');
   if (!(M! > 0 && M! <= 1)) return bad('maintenance_factor must be between 0 and 1');
   if (!(W! > 0) || W! >= A!) return bad('window_area_m2 must be > 0 and smaller than total_internal_surface_m2');
+  // A real room has at least the window wall, its opposite wall, floor and
+  // ceiling, so its total internal surface is several times the window
+  // (2026-10-29 audit: 5 m² of surface around a 4 m² window gave ADF 43.7%).
+  if (A! < 3 * W!) return bad('total_internal_surface_m2 (all walls, floor and ceiling, including windows) must be at least 3 × window_area_m2: check the room surface area');
   const Aw = W! * ff;
   const ADF = (T! * Aw * theta! * M!) / (A! * (1 - R! * R!));
   return {
@@ -201,6 +205,9 @@ export function reverberation(b: Body) {
   } else {
     T = (0.161 * V) / A;
   }
+  // 2026-10-29 audit: 0.5 m² Sabine in 200 m³ returned 64 s as a result.
+  // No real room reverberates for more than about 15 s: refuse rather than warn.
+  if (T > 15) return bad(`T60 = ${r(T, 1)} s is longer than any real room (cathedrals reach about 8-10 s): the absorption is far too low for this volume; check the areas, coefficients and volume`);
   const notes: string[] = [];
   if (method === 'eyring' && used !== 'Eyring') notes.push('Eyring needs the surfaces (area and alpha of each); with a total absorption only, Sabine was used.');
   const warning = T > 10 ? `T60 = ${r(T, 1)} s is longer than any furnished room (cathedrals reach about 8-10 s): check the absorption and volume.` : undefined;
@@ -710,13 +717,19 @@ export function bearingEc7(b: Body) {
   const B = pick(b, 'B_m'), Df = pick(b, 'Df_m'), gamma = pick(b, 'gamma_kN_m3');
   const err = missing({ B_m: B, Df_m: Df, gamma_kN_m3: gamma });
   if (err) return err;
-  const L = optN(b, 'L_m') ?? (String(b.shape ?? '') === 'strip' ? Infinity : B!);
+  // shape "strip" wins over any L_m the form also sent (strip = per metre run).
+  const isStrip = String(b.shape ?? '') === 'strip';
+  const Lgiven = isStrip ? undefined : optN(b, 'L_m');
+  const L = Lgiven ?? (isStrip ? Infinity : B!);
   if (!(B! > 0 && B! <= 50) || !(L >= B!) || !(Df! >= 0 && Df! <= 20)) return bad('Need 0 < B_m ≤ 50, L_m ≥ B_m (B is the shorter side) and 0 ≤ Df_m ≤ 20');
+  // Upper bounds (2026-10-29 audit: L_m 1e9 and Gk 1e12 were accepted).
+  if (Lgiven !== undefined && Lgiven > 200) return bad('L_m must be at most 200 m (for a long footing use shape: "strip")');
   if (!(gamma! >= 10 && gamma! <= 25)) return bad('gamma_kN_m3 (bulk unit weight) must be between 10 and 25 kN/m³');
   const dw = optN(b, 'water_depth_m');
   if (dw !== undefined && dw < 0) return bad('water_depth_m (depth of the water table below ground) must be 0 or more');
   const Gk = optN(b, 'Gk_kN'), Qk = optN(b, 'Qk_kN') ?? 0, Hk = optN(b, 'H_kN') ?? 0;
   if ((Gk !== undefined && Gk < 0) || Qk < 0 || Hk < 0) return bad('Gk_kN, Qk_kN and H_kN are load magnitudes: 0 or more');
+  if ((Gk ?? 0) > 1e6 || Qk > 1e6 || Hk > 1e6) return bad('Gk_kN, Qk_kN and H_kN must each be at most 1,000,000 kN');
   if (Hk > 0 && Gk === undefined) return bad('A horizontal load H_kN needs the vertical loads Gk_kN (and Qk_kN) for the inclination factors');
   const strip = !Number.isFinite(L);
   const A = strip ? B! : B! * L;        // per metre run for a strip
@@ -734,12 +747,13 @@ export function bearingEc7(b: Body) {
     dw === undefined ? 'Water table assumed deeper than Df + B (give water_depth_m if not)' : `Water table ${dw} m below ground: effective stresses used`,
     'No depth factors (EN 1997-1 Annex D has none); settlement is a separate check',
     'Design Approach 1 (UK/Kenya practice): C1 = A1+M1+R1, C2 = A2+M2+R1; γR,v = 1.0',
+    ...(Lgiven === undefined && Number.isFinite(L) ? ['L_m not given: a square footing (L = B) was assumed'] : []),
   ];
   const combos = [
     { name: 'DA1-C1', gG: 1.35, gQ: 1.5, gPhi: 1.0, gC: 1.0, gCu: 1.0 },
     { name: 'DA1-C2', gG: 1.0, gQ: 1.3, gPhi: 1.25, gC: 1.25, gCu: 1.4 },
   ];
-  const results = [];
+  const results: Array<Record<string, any>> = [];
   let cKc = 0, phiK = 0, cuK = 0;
   if (cond === 'drained') {
     const c = pick(b, 'c_kPa'), phi = pick(b, 'phi_deg');
@@ -789,20 +803,42 @@ export function bearingEc7(b: Body) {
       Object.assign(f, { cu_d_kPa: r(cu, 1), sc: r(sc, 3), ic: r(ic, 3) });
     }
     const Rd = qult * A; // γR,v = 1.0
+    // Sliding, EN 1997-1 §6.5.3 (γR,h = 1.0 in DA1): drained R = V′·tan δd with
+    // δ = φ′d for cast-in-place concrete (§6.5.3(10)); undrained R = A·cu,d.
+    // The vertical load is favourable here, so G only with γ = 1.0.
+    let sliding: Record<string, unknown> = {};
+    if (Hd > 0 && Vmin !== undefined) {
+      const RhD = cond === 'drained'
+        ? Vmin * Math.tan(Math.atan(Math.tan(phiK * DEG) / k.gPhi))
+        : A * (cuK / k.gCu);
+      sliding = { H_Ed_kN: r(Hd, 1), sliding_R_d_kN: r(RhD, 1), sliding_utilisation: r(Hd / RhD, 3) };
+    }
     results.push({
       combination: k.name,
       q_Rd_kPa: r(qult, 1),
       R_Rd_kN: r(Rd, 1),
       ...(Vd !== undefined ? { V_Ed_kN: r(Vd, 1), utilisation: r(Vd / Rd, 3) } : {}),
+      ...sliding,
       ...f,
     });
   }
-  const gov = results.reduce((a, x) => (x.q_Rd_kPa < a.q_Rd_kPa ? x : a));
+  // With loads, the governing combination is the one with the highest
+  // utilisation (2026-10-29 audit: the lowest resistance was named governing
+  // while the other combination was more highly utilised); without loads,
+  // the lowest design resistance.
+  const gov = Gk !== undefined
+    ? results.reduce((a, x) => ((x.utilisation as number) > (a.utilisation as number) ? x : a))
+    : results.reduce((a, x) => (x.q_Rd_kPa < a.q_Rd_kPa ? x : a));
   const checks = Gk !== undefined ? results.map((x) => ({ check: `V_Ed ≤ R_d (${x.combination})`, value: `${x.V_Ed_kN} ≤ ${x.R_Rd_kN} kN${strip ? '/m' : ''}`, pass: (x.V_Ed_kN as number) <= x.R_Rd_kN })) : [];
+  for (const x of results) {
+    if (x.sliding_R_d_kN !== undefined) checks.push({ check: `Sliding H_Ed ≤ R_h,d (${x.combination}, §6.5.3)`, value: `${x.H_Ed_kN} ≤ ${x.sliding_R_d_kN} kN${strip ? '/m' : ''}`, pass: (x.H_Ed_kN as number) <= (x.sliding_R_d_kN as number) });
+  }
+  if (Hk > 0) assumptions.push(cond === 'drained' ? 'Sliding: R_h,d = G_k·tan δd with δ = φ′d (cast-in-place base), passive resistance ignored' : 'Sliding: R_h,d = A·cu,d, passive resistance ignored');
   if (Gk === undefined) assumptions.push('No loads given: design resistances only. Give Gk_kN and Qk_kN (characteristic, including the footing and backfill) to check the footing.');
   return {
     q_Rd_kPa: gov.q_Rd_kPa,
     governing_combination: gov.combination,
+    ...(gov.utilisation !== undefined ? { utilisation: gov.utilisation } : {}),
     footing: strip ? `Strip, B = ${B} m (per metre run)` : `${B} × ${L} m`,
     q_overburden_kPa: r(q, 1),
     combinations: results,
@@ -918,7 +954,13 @@ export function ec2Shear(b: Body) {
   const rhoWmin = (0.08 * Math.sqrt(fck!)) / fywk;
   out.Asw_over_s_min_mm2_per_mm = r(rhoWmin * bw!, 3);
   if (Asw !== undefined) {
-    const VRds = (Asw / s!) * z * fywd * cot / 1000;
+    // Eq. 6.12: links beyond Asw,max·fywd/(bw·s) = ½ν1·fcd add nothing (the
+    // struts govern); Asw 1e9 mm² gave V_Rd,s = 4.9e9 kN (2026-10-29 audit).
+    const AswMax = (0.5 * nu1 * fcd * bw! * s!) / fywd;
+    if (Asw > 20 * AswMax) return bad(`Asw_mm2 is not a realistic link area for this section (Eq. 6.12 maximum effective area ${Math.round(AswMax)} mm² at s = ${s} mm)`);
+    const AswEff = Math.min(Asw, AswMax);
+    if (Asw > AswMax) out.warning = `Asw exceeds the Eq. 6.12 maximum effective area (${Math.round(AswMax)} mm²): only that area is counted.`;
+    const VRds = (AswEff / s!) * z * fywd * cot / 1000;
     out.V_Rd_s_kN = r(VRds, 1);
     out.V_Rd_kN = r(Math.min(VRds, VRdmax(cot)), 1);
     checks.push({ check: 'Links ≥ minimum ρw,min = 0.08√fck/fyk (§9.2.2)', value: `${r(Asw / s!, 3)} ≥ ${r(rhoWmin * bw!, 3)} mm²/mm`, pass: Asw / s! >= rhoWmin * bw! });
@@ -958,6 +1000,12 @@ export function ec2Deflection(b: Body) {
   const flange = optN(b, 'beff_over_bw') ?? 1;
   if (AsProv < AsReq!) return bad('As_prov_mm2 must be at least As_req_mm2');
   if (Asc < 0 || flange < 1) return bad('Asc_mm2 must be 0 or more and beff_over_bw at least 1');
+  // §9.2.1.1(3): steel outside laps is at most 4% of the section (2026-10-29
+  // audit: As,req 1e9 mm² gave ρ = 740,741%).
+  if (AsProv / (bw! * d!) > 0.04 || Asc / (bw! * d!) > 0.04) return bad('As_req_mm2, As_prov_mm2 and Asc_mm2 must each be at most 4% of b·d (EN 1992-1-1 §9.2.1.1(3))');
+  // Eq. 7.16b divides by (ρ − ρ′): with compression steel at or above the
+  // tension steel the limit is undefined (it read "13.3 ≤ Infinity", PASS).
+  if (Asc >= AsReq!) return bad('Asc_mm2 (compression steel) must be less than As_req_mm2: Eq. 7.16b is not defined when ρ′ ≥ ρ. Check this member by a calculated deflection (§7.4.3).');
   const rho0 = Math.sqrt(fck!) / 1000;
   // ρ is at least the §9.2.1.1 minimum (2026-10-29 audit: As,req 50 mm² gave
   // an allowed l/d of 1867).
@@ -974,6 +1022,7 @@ export function ec2Deflection(b: Body) {
   const flanged = flange > 3 ? 0.8 : 1;
   const allowed = basic * steel * longSpan * flanged;
   const actual = (span! * 1000) / d!;
+  if (!Number.isFinite(allowed) || allowed <= 0) return bad('The span/depth limit could not be evaluated for these inputs; check this member by a calculated deflection (§7.4.3).');
   return {
     l_over_d_allowed: r(allowed, 1),
     l_over_d_actual: r(actual, 1),
@@ -1018,10 +1067,11 @@ export function padFooting(b: Body) {
   const B = Math.max(Math.ceil(Math.sqrt(Ns! / net) / 0.05) * 0.05, (c! / 1000) + 0.3);
   if (h! / 1000 > B) return bad(`h_mm = ${h} is deeper than the ${r(B, 2)} m footing is wide: check h_mm and the loads`);
   const pSls = Ns! / (B * B) + selfW + backfill;
-  const out: Record<string, unknown> = { B_m: r(B, 2), plan_area_m2: r(B * B, 2), bearing_pressure_sls_kPa: r(pSls, 1), d_mm: d };
-  const checks: Array<{ check: string; value: string; pass: boolean }> = [
-    { check: 'Bearing pressure ≤ q_allow (SLS)', value: `${r(pSls, 1)} ≤ ${q} kPa`, pass: pSls <= q! + 1e-9 },
-  ];
+  // B is sized FROM the bearing pressure, so that comparison cannot fail and is
+  // reported as the sizing basis, not as a check (2026-10-29 audit: "PASS: all
+  // 1 checks pass" with nothing structural checked).
+  const out: Record<string, unknown> = { B_m: r(B, 2), plan_area_m2: r(B * B, 2), bearing_pressure_sls_kPa: r(pSls, 1), sizing_basis: `B chosen so the SLS bearing pressure ${r(pSls, 1)} kPa ≤ q_allow ${q} kPa`, d_mm: d };
+  const checks: Array<{ check: string; value: string; pass: boolean }> = [];
   const assumptions = [
     'Square footing, central axial load, no moment; q_allow is the gross allowable pressure from the site investigation',
     `Footing self-weight 24 kN/m³ × h${backfill ? ` and backfill ${backfill} kPa` : ''} included in the SLS bearing check`,
@@ -1041,6 +1091,8 @@ export function padFooting(b: Body) {
       AsReq = Math.max((m * 1e6) / ((fyk / 1.15) * zz), AsMin);
     }
     const AsGiven = optN(b, 'As_prov_mm2_per_m');
+    // 2026-10-29 audit: −5 mm²/m was accepted and fed ρl into the shear check.
+    if (AsGiven !== undefined && !(AsGiven > 0 && AsGiven <= 0.04 * 1000 * d)) return bad(`As_prov_mm2_per_m must be greater than 0 and at most 4% of the section (${Math.round(0.04 * 1000 * d)} mm²/m)`);
     const AsProv = AsGiven ?? AsReq ?? AsMin;
     const rho = Math.min(AsProv / (1000 * d), 0.02);
     const k = Math.min(1 + Math.sqrt(200 / d), 2);
@@ -1088,6 +1140,13 @@ export function padFooting(b: Body) {
     assumptions.push(AsGiven === undefined ? 'ρl for shear taken from the required steel (give As_prov_mm2_per_m for the bars you will use)' : 'ρl for shear from the steel provided');
   } else {
     assumptions.push('Give N_uls_kN (factored load) for the bending, shear and punching checks');
+    return {
+      ...out, checks, assumptions,
+      overall: 'SIZED ONLY: plan size from the allowable bearing pressure; bending, shear and punching NOT checked (give N_uls_kN)',
+      all_checks_pass: false,
+      not_checked: ['bending at the column face', 'one-way shear', 'punching', 'column-face crushing'],
+      method: 'Plan size from allowable bearing',
+    };
   }
   return { ...out, checks, assumptions, method: 'Plan size from allowable bearing; EN 1992-1-1 §6.1, §6.2.2 and §6.4 (punching)' };
 }
@@ -1127,7 +1186,12 @@ export function seismicEc8(b: Body) {
   if (Tgiven !== undefined && !(Tgiven > 0 && Tgiven <= 10)) return bad('T1_s must be between 0 and 10 s');
   const [S, TB, TC, TD] = g;
   const ag = gI * agR!;
-  const assumptions: string[] = [];
+  // Defaults are stated, never silent (2026-10-29 audit).
+  const assumptions: string[] = [
+    ...(b.spectrum_type == null ? ['spectrum_type not given: Type 1 used (recommended where the surface-wave magnitude Ms > 5.5)'] : []),
+    ...(b.importance_class == null ? ['importance_class not given: class II (ordinary buildings) used'] : []),
+    ...(b.structure_type == null ? [`structure_type not given: "other" used (Ct = ${Ct})`] : []),
+  ];
   let T: number;
   if (Tgiven !== undefined) { T = Tgiven; assumptions.push('T1 given by the user'); }
   else {
@@ -1149,14 +1213,22 @@ export function seismicEc8(b: Body) {
     : `λ = ${lambda} (${storeysGiven} storeys, T1 ${T <= 2 * TC ? '≤' : '>'} 2·TC = ${r(2 * TC, 2)} s; §4.3.3.2.2)`);
   const Fb = Sd * W! * lambda;
   const limit = Math.min(4 * TC, 2.0);
+  // §4.3.3.2.1(2): the method applies only with T1 ≤ min(4·TC, 2 s). Beyond
+  // that no base shear is given (2026-10-29 audit: F_b was returned with only
+  // a warning).
+  const permitted = T <= limit;
   return {
     T1_s: r(T, 3),
     Sd_g: r(Sd, 4),
     lambda,
-    F_b_kN: r(Fb, 1),
+    method_permitted: permitted,
+    ...(permitted ? { F_b_kN: r(Fb, 1) } : {
+      overall: `NOT PERMITTED: T1 = ${r(T, 2)} s exceeds min(4·TC, 2 s) = ${r(limit, 2)} s; the lateral force method does not apply (§4.3.3.2.1). Use modal response spectrum analysis.`,
+      all_checks_pass: false,
+    }),
     ag_g: r(ag, 3),
     spectrum: { type: Number(st), ground_type: gt, S, TB_s: TB, TC_s: TC, TD_s: TD },
-    ...(T > limit ? { warning: `T1 = ${r(T, 2)} s exceeds min(4·TC, 2 s) = ${r(limit, 2)} s: the lateral force method is not permitted (§4.3.3.2.1); use modal response spectrum analysis.` } : {}),
+    checks: [{ check: 'Lateral force method applicable: T1 ≤ min(4·TC, 2 s) (§4.3.3.2.1)', value: `${r(T, 3)} ≤ ${r(limit, 2)} s`, pass: permitted }],
     assumptions: [
       ...assumptions,
       `γI = ${gI} (importance class ${ic}); ag = γI·agR = ${r(ag, 3)} g`,

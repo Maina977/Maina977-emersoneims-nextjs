@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 // `headers` is deliberately NOT imported. Calling it in this root layout opted
 // every page into dynamic rendering — see the note in generateMetadata below.
 import PerformanceBoot from "@/components/performance/PerformanceBoot";
@@ -83,6 +83,9 @@ const yandexVerification = process.env.NEXT_PUBLIC_YANDEX_VERIFICATION;
 // real token from Bing Webmaster Tools. Until then we emit nothing — a fake
 // placeholder token previously shipped here and never verified the site.
 const bingSiteVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
+
+// One viewport tag per page; pinch zoom allowed (WCAG 1.4.4).
+export const viewport: Viewport = { width: "device-width", initialScale: 1, maximumScale: 5, viewportFit: "cover" };
 
 export async function generateMetadata(): Promise<Metadata> {
   // Self-referential canonical derived from the request path (middleware sets
@@ -740,8 +743,8 @@ export default async function RootLayout({
             documents on every page load (heavy on mobile data). next/link prefetch on
             hover already covers in-app navigation. */}
 
-        {/* Performance Optimization Meta - Mobile & Desktop */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+        {/* Viewport: from the `viewport` export (a hand-written tag here plus
+            Next.js's default gave every page two; 2026-10-30 audit). */}
 
         {/* Mobile Performance Hints */}
         <meta name="format-detection" content="telephone=yes" />

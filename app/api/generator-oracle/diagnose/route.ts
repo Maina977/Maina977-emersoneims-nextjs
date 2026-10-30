@@ -1,5 +1,14 @@
 import { NextRequest } from 'next/server';
-import { diagnoseFromSymptoms, searchIndex, codeLikeQuery, type DiagnoseResponse } from '@/lib/generator-oracle/server/faultIndex';
+import { diagnoseFromSymptoms, searchIndex, codeLikeQuery, invalidCodeReason, type DiagnoseResponse } from '@/lib/generator-oracle/server/faultIndex';
+
+/** An impossible code answers with its reason, as search, lookup and chat do (2026-10-30 audit). */
+function refusal(texts: (string | undefined)[]) {
+  for (const s of texts) {
+    const why = s ? invalidCodeReason(s) : null;
+    if (why) return jsonOk({ input: { alarmText: s }, guides: [], ranked: [], considered: 0, source: 'index', notes: [why], notice: why });
+  }
+  return null;
+}
 
 /**
  * A code goes to the code index first (2026-10-19 re-audit): passed only as
@@ -21,8 +30,12 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    const symptoms = clampStringList(body.symptoms, 20, 200);
+    // Bad JSON is named as such; one symptom sent as a string is accepted
+    // (2026-10-30 audit).
+    const parsed = await req.json().catch(() => undefined);
+    if (parsed === undefined || parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) return jsonError('invalid_json');
+    const body = parsed as Record<string, unknown>;
+    const symptoms = clampStringList(typeof body.symptoms === 'string' ? [body.symptoms] : body.symptoms, 20, 200);
 
     /*
      * ACCEPT A FAULT CODE, NOT JUST A DESCRIPTION.
@@ -51,6 +64,8 @@ export async function POST(req: NextRequest) {
     if (symptoms.length === 0 && !alarmText) {
       return jsonError('missing_symptoms_alarm_text_or_code');
     }
+    const refused = refusal([faultCode, clampString(body.alarmText, 500), ...(symptoms.length === 1 ? [symptoms[0]] : [])]);
+    if (refused) return refused;
     const topN = clampInt(body.topN, 1, 50, 10);
     const result = diagnoseFromSymptoms({
       symptoms,
@@ -79,6 +94,8 @@ export async function GET(req: NextRequest) {
     // asks. Falls through to the identical matcher.
     const code = clampString(sp.get('code') ?? sp.get('faultCode'), 64);
     if (symptoms.length === 0 && !code) return jsonError('missing_q_or_code');
+    const refused = refusal([code, q]);
+    if (refused) return refused;
     const topN = clampInt(sp.get('topN'), 1, 50, 10);
     const result = diagnoseFromSymptoms({
       symptoms,

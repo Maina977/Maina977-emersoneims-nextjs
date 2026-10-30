@@ -69,7 +69,7 @@ export const RoofAnalyzer: React.FC<RoofAnalyzerProps> = ({ image, onRoofPitchDe
 
   return (
     <div className="roof-analyzer" style={{ padding: '1rem', background: '#0f1432', borderRadius: 8 }}>
-      <h3>🏠 Roof Pitch Analysis</h3>
+      <h3>🏠 Roof Pitch (rough guess from the photo)</h3>
       <canvas ref={canvasRef} className="roof-canvas" style={{ maxWidth: '100%', borderRadius: 6 }} />
       {loading && <p style={{ color: '#9ad' }}>Running Sobel edge detection on backend…</p>}
       {error && <p style={{ color: '#f66' }}>Error: {error}</p>}
@@ -77,10 +77,12 @@ export const RoofAnalyzer: React.FC<RoofAnalyzerProps> = ({ image, onRoofPitchDe
         <div className="analysis-results" style={{ marginTop: '0.75rem', color: '#cde' }}>
           {result.pitchDeg !== null ? (
             <>
-              <div>Estimated pitch: <strong style={{ color: '#0fc' }}>{result.pitchDeg}°</strong></div>
+              {/* A 2-D photo cannot measure pitch: perspective and camera angle change
+                  the edge angles (2026-10-30 audit). A rough guess to confirm on site. */}
+              <div>Rough pitch guess: <strong style={{ color: '#0fc' }}>{result.pitchDeg}°</strong> <span style={{ color: '#fa3' }}>(confirm on site with an inclinometer or phone level)</span></div>
               <div>Dominant edge orientation: {result.dominantEdgeAngleDeg}°</div>
               <div>Edge pixels analysed: {result.edgePixels}</div>
-              <div>Confidence: {((result.confidence ?? 0) * 100).toFixed(0)}%</div>
+              <div>Edge clarity in the photo: {((result.confidence ?? 0) * 100).toFixed(0)}% (how clear the edges are, not how accurate the pitch is)</div>
             </>
           ) : (
             <div style={{ color: '#fa3' }}>Inconclusive — {result.reason}</div>

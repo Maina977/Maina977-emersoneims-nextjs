@@ -94,7 +94,7 @@ const MODULES = [
     endpoint:'/api/loads/wind/asce7', method:'POST',
     refs:['ASCE 7-22 §26.10 (velocity pressure)'],
     fields:[
-      {k:'V_mph', label:'Basic wind speed (mph)', type:'number', def:115},
+      {k:'V_mph', label:'Basic wind speed (mph, from the ASCE 7 map; in Kenya use EN 1991-1-4)', type:'number', def:''},
       {k:'height_ft', label:'Mean roof height (ft)', type:'number', def:30},
       {k:'exposure', label:'Exposure', type:'select', opts:['B','C','D'], def:'C'},
       {k:'enclosure', label:'Enclosure', type:'select',
@@ -176,8 +176,10 @@ const MODULES = [
       {k:'L_m', label:'Length L (m)', type:'number', def:2, step:'0.05'},
       {k:'Df_m', label:'Founding depth Df (m)', type:'number', def:1.2, step:'0.1'},
       {k:'water_depth_m', label:'Water table depth (m; blank = deep)', type:'number', def:''},
-      {k:'Gk_kN', label:'Permanent load Gk (kN)', type:'number', def:''},
+      {k:'Gk_kN', label:'Permanent load Gk (kN; incl. footing and backfill)', type:'number', def:''},
       {k:'Qk_kN', label:'Variable load Qk (kN)', type:'number', def:''},
+      {k:'H_kN', label:'Horizontal load H (kN, along B; blank = none)', type:'number', def:''},
+      {k:'shape', label:'Shape (strip: leave L blank, per metre run)', type:'select', opts:['rectangular','strip'], def:'rectangular'},
     ]},
 
   { id:'pad_footing', group:'Engineering', tag:'b-eng',
@@ -192,6 +194,10 @@ const MODULES = [
       {k:'h_mm', label:'Footing depth h (mm)', type:'number', def:500},
       {k:'fck_MPa', label:'fck (MPa)', type:'number', def:25},
       {k:'As_prov_mm2_per_m', label:'Bottom steel provided (mm²/m; blank = required)', type:'number', def:''},
+      {k:'cover_mm', label:'Cover (mm)', type:'number', def:50},
+      {k:'bar_mm', label:'Bar diameter (mm)', type:'select', opts:['10','12','16','20','25','32'], def:'16'},
+      {k:'fyk_MPa', label:'fyk (MPa)', type:'number', def:500},
+      {k:'backfill_kPa', label:'Backfill on the footing (kPa)', type:'number', def:0},
     ]},
 
   { id:'rc_beam', group:'Engineering', tag:'b-eng',
@@ -220,6 +226,7 @@ const MODULES = [
       {k:'VEd_kN', label:'Design shear V_Ed (kN)', type:'number', def:200},
       {k:'Asw_mm2', label:'Link legs area Asw (mm²)', type:'number', def:157},
       {k:'s_mm', label:'Link spacing s (mm)', type:'number', def:200},
+      {k:'fywk_MPa', label:'Link steel fywk (MPa)', type:'number', def:500},
     ]},
 
   { id:'rc_defl', group:'Engineering', tag:'b-eng',
@@ -233,7 +240,10 @@ const MODULES = [
       {k:'b_mm', label:'Width b (mm)', type:'number', def:300},
       {k:'As_req_mm2', label:'Steel required (mm²)', type:'number', def:900},
       {k:'As_prov_mm2', label:'Steel provided (mm²)', type:'number', def:942},
+      {k:'Asc_mm2', label:'Compression steel Asc (mm²)', type:'number', def:0},
       {k:'fck_MPa', label:'fck (MPa)', type:'number', def:30},
+      {k:'fyk_MPa', label:'fyk (MPa)', type:'number', def:500},
+      {k:'beff_over_bw', label:'Flange ratio beff/bw (1 = rectangular)', type:'number', def:1, step:'0.1'},
     ]},
 
   { id:'steel_bolt', group:'Engineering', tag:'b-eng',
@@ -1335,11 +1345,13 @@ function formatValue(v){
 function renderArray(arr){
   if (!arr.length) return '<div class="note">None</div>';
   if (arr.every(v => !isPlainObject(v))){
-    return `<div>${arr.slice(0, 40).map(v => `<span class="chip">${proEscape(formatValue(v))}</span>`).join(' ')}</div>`;
+    return `<div>${arr.map(v => `<span class="chip">${proEscape(formatValue(v))}</span>`).join(' ')}</div>`;
   }
-  const keys = [...new Set(arr.slice(0, 12).flatMap(o => Object.keys(o || {})))].slice(0, 8);
+  // Every column and row (2026-10-30 audit: 8 columns / 24 rows hid the EC7
+  // factors); wide tables scroll inside .tblwrap.
+  const keys = [...new Set(arr.flatMap(o => Object.keys(o || {})))];
   const head = keys.map(k => `<th>${proEscape(toLabel(k))}</th>`).join('');
-  const rows = arr.slice(0, 24).map(row => `<tr>${keys.map(k => `<td>${proEscape(formatValue(row?.[k]))}</td>`).join('')}</tr>`).join('');
+  const rows = arr.map(row => `<tr>${keys.map(k => `<td>${proEscape(formatValue(row?.[k]))}</td>`).join('')}</tr>`).join('');
   return `<div class="tblwrap"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
@@ -1381,10 +1393,10 @@ function renderObject(obj, profile){
   const metrics = [...picked, ...extra]
     .map(([k,v]) => `<div class="metric"><b>${proEscape(toLabel(k))}</b><span>${proEscape(formatValue(v))}</span></div>`)
     .join('');
-  const nested = entries.filter(([,v]) => typeof v === 'object' && v !== null).slice(0, 8).map(([k,v])=>{
+  const nested = entries.filter(([,v]) => typeof v === 'object' && v !== null).map(([k,v])=>{
     const sectionTitle = `<div style="margin:10px 0 6px;color:#a8b8d8;font-weight:600">${proEscape(toLabel(k))}</div>`;
     if (Array.isArray(v)) return sectionTitle + renderArray(v);
-    const rows = Object.entries(v).slice(0, 20).map(([ik,iv]) => `<tr><th>${proEscape(toLabel(ik))}</th><td>${proEscape(formatValue(iv))}</td></tr>`).join('');
+    const rows = Object.entries(v).map(([ik,iv]) => `<tr><th>${proEscape(toLabel(ik))}</th><td>${proEscape(formatValue(iv))}</td></tr>`).join('');
     return sectionTitle + `<div class="tblwrap"><table><tbody>${rows}</tbody></table></div>`;
   }).join('');
   return (metrics ? `<div>${metrics}</div>` : '') + nested + prose;

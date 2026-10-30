@@ -1,7 +1,7 @@
 'use client';
 
 // Wired to the NEW Solar Genius Pro from G:\EMERSONEIMS-SolarGeniusPro (May 2026 source)
-// Old SolarGeniusProComplete preserved at components/solar/SolarGeniusProComplete.tsx as fallback.
+// (The old SolarGeniusProComplete component was deleted on 2026-10-30: it was unreachable and showed fabricated figures.)
 import dynamic from 'next/dynamic';
 import { ToolAppShell, ToolLoadingState } from '@/components/tools/ToolAppShell';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';

@@ -98,6 +98,8 @@ export default function RuleBasedAssistantPanel({
   const [faultCode, setFaultCode] = useState('');
   const [ranked, setRanked] = useState<RankedFault[] | null>(null);
   const [guides, setGuides] = useState<RankedGuide[]>([]);
+  const [safety, setSafety] = useState<string[]>([]);
+  const [diagNotice, setDiagNotice] = useState<string | null>(null);
   const [lookup, setLookup] = useState<FaultLookupResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +121,8 @@ export default function RuleBasedAssistantPanel({
         });
         setRanked(res.ranked);
         setGuides(res.guides ?? []);
+        setSafety((res as { safety?: string[] }).safety ?? []);
+        setDiagNotice((res as { notice?: string }).notice ?? null);
       } catch (e) {
         const msg =
           e instanceof OracleApiError
@@ -331,6 +335,18 @@ export default function RuleBasedAssistantPanel({
         </div>
       )}
 
+      {/* Safety for the hazard the symptoms point at, before anything else
+          (2026-10-30 audit), and the reason when a code cannot exist. */}
+      {ranked && diagNotice && (
+        <div role="alert" className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">{diagNotice}</div>
+      )}
+      {ranked && safety.length > 0 && (
+        <div role="note" className="mt-4 rounded-lg border border-red-500/40 bg-red-950/40 p-3">
+          <div className="text-xs font-bold uppercase text-red-300 mb-1">⚠️ Safety</div>
+          <ul className="list-disc list-inside text-sm text-red-100 space-y-1">{safety.map((s, i) => <li key={i}>{s}</li>)}</ul>
+        </div>
+      )}
+
       {/* Diagnostic guides — the primary answer for mechanical symptoms */}
       {ranked && guides.length > 0 && (
         <div className="mt-6">
@@ -403,8 +419,9 @@ export default function RuleBasedAssistantPanel({
           </h3>
           {!lookup.found ? (
             <p className="text-sm text-slate-400">
-              This code is not in our library. Check it against the engine or controller
-              service manual, or send it to one of our engineers below.
+              {(lookup as { notice?: string }).notice
+                ? <span className="text-amber-300">{(lookup as { notice?: string }).notice}</span>
+                : 'This code is not in our library. Check it against the engine or controller service manual, or send it to one of our engineers below.'}
             </p>
           ) : (
             <div className="space-y-2">
@@ -420,6 +437,40 @@ export default function RuleBasedAssistantPanel({
                     {codeLabel(m)} — {m.title}
                   </div>
                   <p className="text-xs text-slate-300 mt-1 leading-relaxed">{m.description}</p>
+                  {/* Safety first, then causes, checks and reset, as the Fault Center
+                      shows them (2026-10-30 audit: only title and description). */}
+                  {m.safetyWarnings?.length > 0 && (
+                    <div role="note" className="mt-2 rounded bg-red-950/40 border border-red-500/40 p-2">
+                      <div className="text-[11px] font-bold uppercase text-red-300 mb-1">⚠️ Safety</div>
+                      <ul className="list-disc list-inside text-xs text-red-100 space-y-0.5">
+                        {m.safetyWarnings.map((w, i) => <li key={i}>{w}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {m.possibleCauses?.length > 0 && (
+                    <div className="mt-2">
+                      <div className="text-[11px] font-bold uppercase text-slate-400 mb-1">Possible causes (not ranked)</div>
+                      <ul className="list-disc list-inside text-xs text-slate-200 space-y-0.5">
+                        {m.possibleCauses.map((c, i) => <li key={i}>{c.cause}{c.verification ? <span className="text-slate-400"> — check: {c.verification}</span> : null}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {m.diagnosticSteps?.length > 0 && (
+                    <div className="mt-2">
+                      <div className="text-[11px] font-bold uppercase text-slate-400 mb-1">Checks</div>
+                      <ol className="list-decimal list-inside text-xs text-slate-200 space-y-0.5">
+                        {m.diagnosticSteps.map((s, i) => <li key={i}>{s.action}{s.expectedResult ? <span className="text-slate-400"> (expect: {s.expectedResult})</span> : null}</li>)}
+                      </ol>
+                    </div>
+                  )}
+                  {m.resetPathways?.[0]?.steps?.length > 0 && (
+                    <div className="mt-2">
+                      <div className="text-[11px] font-bold uppercase text-slate-400 mb-1">Reset (after the cause is fixed)</div>
+                      <ol className="list-decimal list-inside text-xs text-slate-200 space-y-0.5">
+                        {m.resetPathways[0].steps.map((s, i) => <li key={i}>{s.action}</li>)}
+                      </ol>
+                    </div>
+                  )}
                 </div>
               ))}
               {lookup.partialMatches.slice(0, 5).map((p) => (

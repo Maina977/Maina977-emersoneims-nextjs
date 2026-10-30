@@ -813,7 +813,8 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
 
     setDiagnosticGuidance(guidance);
 
-    // Calculate confidence score based on completeness of information
+    // How much of the form is filled in. Shown as "form completeness": it is not
+    // a measure of how right the diagnosis is (2026-10-30 audit).
     let completeness = 0;
     if (techInput.problemDescription.length > 20) completeness += 15;
     if (techInput.symptoms.length > 0) completeness += 15;
@@ -1525,8 +1526,8 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
         {analysisComplete && (
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <div className="text-xs" style={{ color: tool.textColor + '60' }}>Diagnostic Confidence</div>
-              <div className="text-2xl font-bold" style={{ color: confidenceScore > 80 ? '#22c55e' : confidenceScore > 50 ? '#f59e0b' : '#ef4444' }}>
+              <div className="text-xs" style={{ color: tool.textColor + '60' }}>Form completeness (how much you have entered, not how sure the diagnosis is)</div>
+              <div className="text-2xl font-bold" style={{ color: '#38bdf8' }}>
                 {confidenceScore.toFixed(0)}%
               </div>
             </div>
@@ -1535,7 +1536,7 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
                 <circle cx="18" cy="18" r="16" fill="none" stroke="#334155" strokeWidth="3" />
                 <circle
                   cx="18" cy="18" r="16" fill="none"
-                  stroke={confidenceScore > 80 ? '#22c55e' : confidenceScore > 50 ? '#f59e0b' : '#ef4444'}
+                  stroke={'#38bdf8'}
                   strokeWidth="3"
                   strokeDasharray={`${confidenceScore} 100`}
                   strokeLinecap="round"

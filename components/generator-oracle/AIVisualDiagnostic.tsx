@@ -61,7 +61,6 @@ import {
   Volume2,
   VolumeX,
   Clock,
-  DollarSign,
   AlertCircle,
   Info,
   Maximize2,
@@ -2980,21 +2979,8 @@ function AIVisualDiagnosticImpl({ onAnalysisComplete, onClose, card }: AIVisualD
                             </div>
                           </div>
 
-                          {/* Pricing */}
-                          <div className="grid grid-cols-2 gap-3 mb-4">
-                            <div className="p-3 bg-emerald-900/30 border border-emerald-500/30 rounded-lg">
-                              <p className="text-xs text-emerald-400 mb-1">OEM Price Range</p>
-                              <p className="text-lg font-bold text-white">
-                                {part.pricing.oem.min.toLocaleString()}-{part.pricing.oem.max.toLocaleString()} {part.pricing.oem.currency}
-                              </p>
-                            </div>
-                            <div className="p-3 bg-cyan-900/30 border border-cyan-500/30 rounded-lg">
-                              <p className="text-xs text-cyan-400 mb-1">Aftermarket Price Range</p>
-                              <p className="text-lg font-bold text-white">
-                                {part.pricing.aftermarket.min.toLocaleString()}-{part.pricing.aftermarket.max.toLocaleString()} {part.pricing.aftermarket.currency}
-                              </p>
-                            </div>
-                          </div>
+                          {/* No price ranges: Kenyan parts prices vary by supplier and month;
+                              ask for a written quote (2026-10-30 audit). */}
 
                           {/* Availability */}
                           <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg mb-4">
@@ -3129,7 +3115,6 @@ function AIVisualDiagnosticImpl({ onAnalysisComplete, onClose, card }: AIVisualD
 
                           <div className="flex gap-4 mb-3 text-xs text-slate-400">
                             <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {repair.estimatedTime}</span>
-                            <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" /> {repair.estimatedCost.min.toLocaleString()}-{repair.estimatedCost.max.toLocaleString()} {repair.estimatedCost.currency}</span>
                           </div>
 
                           <ol className="space-y-2 mb-3">
@@ -3211,9 +3196,6 @@ function AIVisualDiagnosticImpl({ onAnalysisComplete, onClose, card }: AIVisualD
                               <p className="text-xs text-cyan-400 font-mono">P/N: {part.partNumber}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-green-400 font-bold">
-                                {part.estimatedCost.min.toLocaleString()}-{part.estimatedCost.max.toLocaleString()} {part.estimatedCost.currency}
-                              </p>
                               <p className="text-xs text-slate-400">Qty: {part.quantity} | {part.leadTime}</p>
                             </div>
                           </div>

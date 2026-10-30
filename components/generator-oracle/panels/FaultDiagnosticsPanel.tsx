@@ -863,10 +863,13 @@ export default function FaultDiagnosticsPanel({
   onSearch,
   searchResults,
   isSearching,
+  notice,
 }: {
   onSearch: (query: string) => void;
   searchResults: ExtendedFaultCode[];
   isSearching: boolean;
+  /** Why the code cannot exist, from the search API. */
+  notice?: string | null;
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFault, setSelectedFault] = useState<ExtendedFaultCode | null>(null);
@@ -961,7 +964,8 @@ export default function FaultDiagnosticsPanel({
 
             {displayResults.length === 0 && !isSearching && lastSearched && (
               <div className="text-center py-10">
-                <div className="text-lg font-bold text-white mb-2">No matches for &ldquo;{lastSearched}&rdquo;</div>
+                <div className="text-lg font-bold text-white mb-2">{notice ? <>&ldquo;{lastSearched}&rdquo; is not a valid code</> : <>No matches for &ldquo;{lastSearched}&rdquo;</>}</div>
+                {notice && <div role="alert" className="text-amber-300 text-sm max-w-md mx-auto mb-2">{notice}</div>}
                 <div className="text-slate-400 max-w-md mx-auto text-sm">
                   Try the code exactly as it shows on the display (for example <span className="text-cyan-400 font-mono">SPN 110 FMI 0</span>)
                   or the alarm wording. Not in our library?{' '}
@@ -991,10 +995,12 @@ export default function FaultDiagnosticsPanel({
                   whileHover={{ scale: 1.01 }}
                   onClick={() => setSelectedFault(fault)}
                 >
+                  {/* Phones: code above the title, meta wraps, no right column
+                      (2026-10-30 audit: cards overflowed at 390 px). */}
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4 flex-1">
+                    <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 flex-1 min-w-0">
                       <span
-                        className="flex-shrink-0 px-3 py-1 bg-slate-800 rounded-lg font-mono text-lg text-cyan-400 border border-cyan-500/30"
+                        className="flex-shrink-0 max-w-full break-all px-3 py-1 bg-slate-800 rounded-lg font-mono text-base sm:text-lg text-cyan-400 border border-cyan-500/30"
                         style={{ textShadow: '0 0 10px rgba(6,182,212,0.3)' }}
                       >
                         {codeLabel(fault as { code: string; codeKind?: CodeKind })}
@@ -1005,7 +1011,7 @@ export default function FaultDiagnosticsPanel({
                           <SeverityBadge severity={fault.severity} />
                         </div>
                         <p className="text-sm text-slate-500 mt-1 line-clamp-2">{fault.description}</p>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-slate-600">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-slate-600 min-w-0 break-words">
                           <span>{fault.brand}</span>
                           <span>•</span>
                           <span>{modelsLabel(fault)}</span>
@@ -1015,7 +1021,7 @@ export default function FaultDiagnosticsPanel({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
                       <span className="text-xs text-slate-500">
                         {fault.solutions?.[0]?.timeEstimate || 'View details'}
                       </span>

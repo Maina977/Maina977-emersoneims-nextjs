@@ -87,7 +87,7 @@ For mechanical low pressure issues, systematically work through the oil system f
 
 Once you have confirmed that oil pressure is now within normal parameters (verified with a mechanical gauge if any doubt exists), you can reset the alarm using the following procedures. On most controllers, this is classified as a "shutdown" or "lockout" alarm that requires a specific reset sequence rather than simply pressing the stop button. First, ensure the engine is stopped and the cause has been corrected. The reset sequence depends on the controller make and model (DSE, ComAp, Cummins PowerCommand, CAT EMCP/PowerWizard and others each differ), so follow your controller's manual. Most panels clear a shutdown from the alarm or event list, or with the stop/reset key, only once the condition has gone. Some controllers require that oil pressure be above the minimum threshold before they will allow a reset - if the engine won't restart after reset, verify actual oil pressure again and check that the oil pressure sender is correctly reading the actual pressure.`,
 
-    solutionGuide: `The solution to error 100-1 depends entirely on correctly diagnosing the root cause. The most common causes in order of frequency are: insufficient oil level, failed oil pressure sender/wiring, degraded oil condition, clogged oil filter, failed oil pump, worn engine bearings, and failed oil pressure relief valve. Each requires a different repair approach.
+    solutionGuide: `The solution to error 100-1 depends entirely on correctly diagnosing the root cause. The causes to check are: insufficient oil level, failed oil pressure sender/wiring, degraded oil condition, clogged oil filter, failed oil pump, worn engine bearings, and failed oil pressure relief valve. Each requires a different repair approach.
 
 For low oil level issues, simply add the correct grade of oil until the dipstick reads between MIN and MAX marks. However, also investigate WHY the oil level was low - check for external leaks at gaskets, seals, and fittings, and check for internal consumption indicated by blue/white exhaust smoke. For sender/wiring issues, replace the oil pressure sender and inspect the wiring harness for damage, corrosion, or loose connections. Use manufacturer-specified genuine parts, as aftermarket sensors often have incorrect calibration. For degraded oil, perform a complete oil and filter change using the manufacturer-recommended oil grade and genuine filters. For a clogged filter, replace with a genuine part and consider reducing the change interval if this recurs. For oil pump failure, the oil pump must be replaced - this typically requires significant disassembly and is a moderate to advanced repair. For worn bearings, this indicates the engine needs a major overhaul or replacement - bearing wear cannot be corrected without complete engine disassembly. For relief valve problems, the valve can often be cleaned, inspected, and reinstalled, or replaced if the spring is weak or the valve is damaged. Always verify the repair was successful by running the engine and confirming normal oil pressure readings on both the mechanical gauge and the controller before returning the generator to service.`,
 
@@ -533,20 +533,15 @@ export default function DetailedFaultDisplay({ faultCode, onReset, className = '
 
               {/* Possible Causes */}
               <CollapsibleSection
-                title="Possible Causes"
+                title="Possible Causes (not ranked: start with the quickest checks)"
                 expanded={expandedSections.includes('causes')}
                 onToggle={() => toggleSection('causes')}
               >
                 <div className="space-y-2">
                   {faultCode.possibleCauses.map((cause, idx) => (
                     <div key={idx} className="flex items-start gap-3 p-2 bg-slate-800 rounded">
-                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                        cause.likelihood === 'high' ? 'bg-red-500/30 text-red-400' :
-                        cause.likelihood === 'medium' ? 'bg-yellow-500/30 text-yellow-400' :
-                        'bg-green-500/30 text-green-400'
-                      }`}>
-                        {cause.likelihood.toUpperCase()}
-                      </span>
+                      {/* No likelihood badge: these are worked-example causes, not
+                          measured frequencies (2026-10-30 audit). */}
                       <div className="flex-1">
                         <div className="text-white font-medium">{cause.cause}</div>
                         <div className="text-slate-400 text-sm">{cause.testMethod}</div>
@@ -705,9 +700,8 @@ export default function DetailedFaultDisplay({ faultCode, onReset, className = '
                           <span className="text-slate-400 text-sm">{solution.timeEstimate}</span>
                         </div>
                       </div>
-                      <div className="mt-2 text-amber-400 font-medium">
-                        Est. Cost: {solution.costEstimate.currency} {solution.costEstimate.min.toLocaleString()} - {solution.costEstimate.max.toLocaleString()}
-                      </div>
+                      {/* No cost figure: parts and labour prices vary by make,
+                          supplier and site, so none is shown (2026-10-30 audit). */}
                     </div>
                     <div className="p-4 space-y-3">
                       <div>

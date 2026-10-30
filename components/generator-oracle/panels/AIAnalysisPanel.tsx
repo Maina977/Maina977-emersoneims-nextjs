@@ -259,7 +259,7 @@ function IssueCard({
                   </div>
 
                   <h5 className="text-sm font-bold text-white flex items-center gap-2">
-                    <span>🎯</span> Possible Root Causes (Ranked by Probability)
+                    <span>🎯</span> Possible Root Causes (to check; not ranked by measured likelihood)
                   </h5>
 
                   <div className="space-y-3">
@@ -268,7 +268,8 @@ function IssueCard({
                         <div className="flex items-start justify-between gap-4 mb-3">
                           <div className="flex-1">
                             <h6 className="text-white font-semibold">{cause.cause}</h6>
-                            <ProbabilityBar probability={cause.probability} />
+                            {/* No probability bar: the model's percentages are not measured
+                                frequencies (2026-10-30 audit). */}
                           </div>
                           <span className="text-xs text-slate-500 whitespace-nowrap">
                             {cause.timeToVerify}
@@ -880,20 +881,16 @@ function AIAnalysisPanelImpl({ className = '', card }: AIAnalysisPanelProps) {
             {analysisResult.predictedFailures.length > 0 && (
               <div className="p-6 bg-slate-900/50 rounded-xl border border-purple-500/30">
                 <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <span>🔮</span> Predicted Failures (AI Insights)
+                  <span>🔮</span> Possible Future Problems (AI suggestion, unverified)
                 </h4>
                 <div className="space-y-4">
                   {analysisResult.predictedFailures.map((pred, idx) => (
                     <div key={idx} className="p-4 bg-slate-800/50 rounded-lg">
                       <div className="flex items-start justify-between mb-2">
                         <h5 className="text-white font-semibold">{pred.component}</h5>
-                        <span className="text-red-400 text-sm">
-                          Cost if ignored: KES {pred.costIfIgnored.toLocaleString()}
-                        </span>
                       </div>
                       <div className="flex items-center gap-4 mb-2">
-                        <span className="text-slate-400 text-sm">Timeframe: {pred.timeframe}</span>
-                        <ProbabilityBar probability={pred.probability} />
+                        <span className="text-slate-400 text-sm">Possible timeframe: {pred.timeframe}</span>
                       </div>
                       <p className="text-green-400 text-sm">
                         <strong>Preventive Action:</strong> {pred.preventiveAction}

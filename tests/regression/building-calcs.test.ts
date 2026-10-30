@@ -299,7 +299,8 @@ describe('Building Suite audit round 4 (2026-10-25)', () => {
   });
   it('warns when ELF may not be permitted and when T60 is implausible', () => {
     expect(String(run(c.seismicElf, { SDS: 1, SD1: 0.6, R: 8, Ie: 1, W_kN: 1000, height_ft: 900 }).warning)).toMatch(/3\.5·Ts/);
-    expect(String(run(c.reverberation, { volume_m3: 200, absorption_m2_sabin: 1 }).warning)).toMatch(/longer than any furnished room/);
+    // 2026-10-29: an impossible T60 (here 32 s) is refused, not returned with a warning.
+    expect(String(run(c.reverberation, { volume_m3: 200, absorption_m2_sabin: 1 }).error)).toMatch(/longer than any real room/);
     expect(String(run(c.reverberation, { volume_m3: 200, absorption_m2_sabin: 46, method: 'eyring' }).note)).toMatch(/Sabine was used/);
   });
   it('checks bolt punching shear and the Table 3.3 maxima', () => {

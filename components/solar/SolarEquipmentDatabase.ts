@@ -5,7 +5,7 @@
  * @copyright 2026 EmersonEIMS - Solar Bible
  */
 
-import { DIESEL_L_PER_KWH, DEFAULT_DIESEL_KES_PER_LITRE } from '@/lib/solar/sizing';
+import { sizeSolar, tieredKes, inverterBands, PV_KES_PER_KWP_BANDS, BATTERY_KES_PER_KWH, INSTALLATION_FACTOR, type SizingResult, type SystemType } from '@/lib/solar/sizing';
 import { proposalFinance } from '@/components/solar-modules/crc/src/services/proposalFinance';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -687,6 +687,17 @@ export interface OptimizationResult {
   warning?: string;
 }
 
+/**
+ * Up to three equipment choices for one system design.
+ *
+ * Rewritten 2026-10-30 after an audit: it picked generic 280 W panels and
+ * 12 V AGM banks by "value", put an on-grid inverter (which cannot charge
+ * batteries) with 66 batteries, ran the system at one battery's voltage and
+ * showed 1.1-2.2 year paybacks against the calculator's 5.7. Now the size,
+ * price, saving and payback come from the shared calculator (sizeSolar, the
+ * same as /api/solar/calculate); the catalogue only names real products that
+ * match it: tier-1 panels, a 48 V LiFePO4 bank, an inverter of the right type.
+ */
 export function findOptimalSystem(
   dailyConsumption: number,  // kWh
   peakLoad: number,         // Watts
@@ -696,109 +707,89 @@ export function findOptimalSystem(
   gridConnected: boolean
 ): OptimizationResult[] {
   const climate = KENYA_CLIMATE[location] || KENYA_CLIMATE['Default'];
+  const systemType: SystemType = !gridConnected ? 'off-grid' : backupHours > 0 ? 'hybrid' : 'grid-tied';
+  let s: SizingResult;
+  try {
+    s = sizeSolar({
+      monthlyKwh: dailyConsumption * 30,
+      pshAnnual: climate.avgSunHours,
+      systemType,
+      peakLoadKw: peakLoad > 0 ? peakLoad / 1000 : undefined,
+      ...(systemType === 'hybrid' ? { nightUsePct: Math.min(100, (backupHours / 24) * 100) } : {}),
+      ...(systemType === 'off-grid' ? { autonomyDays: Math.min(5, Math.max(0.5, backupHours / 24)) } : {}),
+    });
+  } catch {
+    return [];
+  }
+
+  // Panels: tier 1 only for standard and premium; never "Generic".
+  const panels = SOLAR_PANELS
+    .filter((p) => !/generic/i.test(`${p.brand} ${p.model}`) && p.wattage >= 400)
+    .filter((p) => (budget === 'economy' ? p.tier <= 2 : p.tier === 1))
+    .filter((p) => (budget === 'premium' ? p.efficiency >= 21 : true))
+    .sort((a, b) => Math.abs(a.wattage - s.panelWatt) - Math.abs(b.wattage - s.panelWatt) || a.priceKES / a.wattage - b.priceKES / b.wattage);
+  // Inverter of the right kind: grid-tie for grid-tied, hybrid with a battery
+  // on the grid, off-grid or hybrid without a grid.
+  const okType = (i: Inverter) => systemType === 'grid-tied' ? i.type === 'On-Grid' || i.type === 'String'
+    : systemType === 'hybrid' ? i.type === 'Hybrid' : i.type === 'Off-Grid' || i.type === 'Hybrid';
+  const inverters = INVERTERS.filter(okType).sort((a, b) => a.ratedPower - b.ratedPower || a.priceKES - b.priceKES);
+  // 48 V (48-51.2 V) LiFePO4 only: the sizing assumes LiFePO4 depth and life.
+  const batteries = BATTERIES
+    .filter((b) => b.type === 'LiFePO4' && b.voltage >= 48 && b.voltage <= 51.2)
+    .sort((a, b) => a.priceKES / ((a.capacity * a.voltage) / 1000) - b.priceKES / ((b.capacity * b.voltage) / 1000));
+
   const results: OptimizationResult[] = [];
+  const brandsSeen = new Set<string>();
+  for (const panel of panels) {
+    if (results.length >= 3) break;
+    if (brandsSeen.has(panel.brand)) continue; // three different panel brands
+    brandsSeen.add(panel.brand);
+    const panelCount = Math.max(1, Math.ceil((s.pvKwp * 1000) / panel.wattage - 0.03));
 
-  // Calculate requirements
-  const efficiencyLoss = 0.80;
-  const tempDerate = 1 - ((climate.avgTemp - 25) * 0.004);
-  const requiredPanelWattage = (dailyConsumption / (climate.avgSunHours * efficiencyLoss * tempDerate)) * 1000;
-  const requiredBatteryKwh = dailyConsumption * (backupHours / 24) / 0.8;
-  const requiredInverterKw = (peakLoad / 1000) * 1.25;
+    const fitting = inverters.find((i) => i.ratedPower >= s.inverterKw);
+    const inverter = fitting || inverters[inverters.length - 1];
+    if (!inverter) break;
+    const inverterUnits = fitting ? 1 : Math.ceil(s.inverterKw / inverter.ratedPower);
+    const warning = fitting ? undefined : `No single catalogue inverter reaches ${s.inverterKw} kW: ${inverterUnits} × ${inverter.ratedPower} kW in parallel, or a three-phase unit, is needed.`;
 
-  // Filter equipment by budget
-  let panelPool = [...SOLAR_PANELS];
-  let batteryPool = [...BATTERIES];
-  let inverterPool = [...INVERTERS];
-
-  if (budget === 'economy') {
-    panelPool = panelPool.filter(p => p.tier >= 2 || p.priceKES < 22000);
-    batteryPool = batteryPool.filter(b => b.type !== 'LiFePO4' || b.priceKES < 100000);
-    inverterPool = inverterPool.filter(i => i.type === 'Off-Grid' || i.priceKES < 100000);
-  } else if (budget === 'premium') {
-    panelPool = panelPool.filter(p => p.tier === 1 && p.efficiency > 21);
-    batteryPool = batteryPool.filter(b => b.type === 'LiFePO4' && b.cycles >= 5000);
-    inverterPool = inverterPool.filter(i => (i.type === 'Hybrid' || i.type === 'On-Grid') && i.efficiency > 97);
-  }
-
-  // Sort by value (performance/price ratio)
-  panelPool.sort((a, b) => (b.efficiency / b.priceKES) - (a.efficiency / a.priceKES));
-  batteryPool.sort((a, b) => (b.cycles / b.priceKES) - (a.cycles / a.priceKES));
-  inverterPool.sort((a, b) => a.priceKES - b.priceKES);
-
-  // Generate top 3 combinations
-  for (let i = 0; i < Math.min(3, panelPool.length); i++) {
-    const panel = panelPool[i];
-    const panelCount = Math.ceil(requiredPanelWattage / panel.wattage);
-
-    for (let j = 0; j < Math.min(2, batteryPool.length); j++) {
-      const battery = batteryPool[j];
-      const batteryKwh = (battery.capacity * battery.voltage) / 1000;
-      const batteryCount = Math.ceil(requiredBatteryKwh / batteryKwh);
-
-      // The smallest inverter that covers the peak; if none does, the largest,
-      // with a warning (it fell back to the cheapest, unnoticed; 2026-10-29 audit).
-      const fitting = inverterPool.find(inv => inv.ratedPower >= requiredInverterKw);
-      const inverter = fitting || inverterPool.reduce((a, b) => (b.ratedPower > a.ratedPower ? b : a), inverterPool[0]);
-      const warning = fitting ? undefined : `No catalogue inverter covers the ${requiredInverterKw.toFixed(1)} kW peak: the largest (${inverter.ratedPower} kW) is shown. Use several in parallel or reduce the peak.`;
-
-      // Calculate costs
-      const panelCost = panel.priceKES * panelCount;
-      const batteryCost = battery.priceKES * batteryCount;
-      const inverterCost = inverter.priceKES;
-      const accessoriesCost = (panelCost + batteryCost + inverterCost) * 0.12;
-      const installationCost = (panelCost + batteryCost + inverterCost) * 0.18;
-      const totalCost = panelCost + batteryCost + inverterCost + accessoriesCost + installationCost;
-
-      // Savings from the solar energy actually used, not a share of the bill
-      // (2026-10-29 audit: 75% of the bill whatever the array produced, and
-      // off-grid valued against the grid instead of diesel).
-      const monthlyConsumption = dailyConsumption * 30;
-      const monthlyGridCost = calculateElectricityCost(monthlyConsumption);
-      const dailyProduction = (panel.wattage * panelCount * climate.avgSunHours * efficiencyLoss) / 1000;
-      const usedShare = backupHours > 0 ? 0.9 : 0.75; // with a battery about 90% is used on site, without about 75%
-      const usedKwhMonth = Math.min(dailyProduction, dailyConsumption) * 30 * usedShare;
-      const monthlySavings = gridConnected
-        ? usedKwhMonth * (monthlyGridCost / Math.max(monthlyConsumption, 1)) // the bill's own effective rate
-        : usedKwhMonth * DIESEL_L_PER_KWH * DEFAULT_DIESEL_KES_PER_LITRE;      // diesel displaced
-      const paybackYears = monthlySavings > 0 ? totalCost / (monthlySavings * 12) : Infinity;
-      // 25 years on the proposal's cash flow: O&M 1%/yr, panels -0.5%/yr and,
-      // with a battery, one replacement in year 12 at today's price.
-      const fin = proposalFinance({ capexKes: totalCost, year1SavingsKes: monthlySavings * 12,
-        batteryReplacement: batteryCost > 0 ? { year: 12, costKes: batteryCost } : null });
-      const twentyFiveYearNet = fin.cashFlowTable[fin.cashFlowTable.length - 1][2];
-
-      results.push({
-        panels: [{ panel, quantity: panelCount }],
-        batteries: [{ battery, quantity: batteryCount }],
-        inverter,
-        accessories: [],
-        totalCost,
-        costBreakdown: {
-          panels: panelCost,
-          batteries: batteryCost,
-          inverter: inverterCost,
-          accessories: accessoriesCost,
-          installation: installationCost,
-        },
-        systemSpecs: {
-          totalWattage: panel.wattage * panelCount,
-          totalBatteryKwh: batteryKwh * batteryCount,
-          dailyProduction,
-          autonomyDays: (batteryKwh * batteryCount) / dailyConsumption,
-          systemVoltage: battery.voltage,
-        },
-        roi: {
-          monthlySavings,
-          paybackYears,
-          twentyFiveYearSavings: twentyFiveYearNet,
-        },
-        ...(warning ? { warning } : {}),
-      });
+    let battery: BatteryUnit | undefined;
+    let batteryCount = 0;
+    if (s.batteryKwh > 0) {
+      battery = batteries[results.length % Math.max(1, Math.min(3, batteries.length))];
+      if (battery) batteryCount = Math.ceil(s.batteryKwh / ((battery.capacity * battery.voltage) / 1000) - 0.03);
     }
+
+    // One price list: the calculator's (lib/solar/sizing.ts), before VAT.
+    const pvCost = tieredKes(s.pvKwp, PV_KES_PER_KWP_BANDS);
+    const invCost = tieredKes(s.inverterKw, inverterBands(systemType));
+    const batCost = s.batteryKwh * BATTERY_KES_PER_KWH;
+    const equipment = pvCost + invCost + batCost;
+    const installation = equipment * (INSTALLATION_FACTOR - 1);
+    const fin = proposalFinance({ capexKes: s.cost.midKes, year1SavingsKes: s.annualSavingKes,
+      batteryReplacement: batCost > 0 ? { year: 12, costKes: batCost } : null });
+    const twentyFiveYearNet = fin.cashFlowTable[fin.cashFlowTable.length - 1][2];
+
+    results.push({
+      panels: [{ panel, quantity: panelCount }],
+      batteries: battery ? [{ battery, quantity: batteryCount }] : [],
+      inverter,
+      accessories: [],
+      totalCost: s.cost.midKes,
+      costBreakdown: { panels: pvCost, batteries: batCost, inverter: invCost, accessories: 0, installation },
+      systemSpecs: {
+        totalWattage: panel.wattage * panelCount,
+        totalBatteryKwh: battery ? (battery.capacity * battery.voltage * batteryCount) / 1000 : 0,
+        dailyProduction: s.annualEnergyKwh / 365,
+        autonomyDays: s.batteryUsableKwh / Math.max(dailyConsumption, 0.1),
+        systemVoltage: battery ? 48 : 0,
+      },
+      roi: {
+        monthlySavings: s.monthlySavingKes,
+        paybackYears: s.paybackYears ?? Infinity,
+        twentyFiveYearSavings: twentyFiveYearNet,
+      },
+      ...(warning ? { warning } : {}),
+    });
   }
-
-  // Sort by total cost (cheapest first)
-  results.sort((a, b) => a.totalCost - b.totalCost);
-
   return results.slice(0, 3);
 }

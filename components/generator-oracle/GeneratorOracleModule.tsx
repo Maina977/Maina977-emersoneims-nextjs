@@ -69,9 +69,11 @@ import {
 import LicenseGate from './LicenseGate';
 import InstallPrompt from './InstallPrompt';
 import { DisclaimerAcknowledgment, FooterDisclaimer } from './DisclaimerBanner';
-import ControllerSimulator, { CONTROLLER_TYPES } from './ControllerSimulator';
-import DetailedFaultDisplay, { DETAILED_FAULT_CODES } from './DetailedFaultDisplay';
-import SpeechController from './SpeechController';
+import { CONTROLLER_TYPES } from './controllerTypes';
+// Heavy parts load only when opened (2026-10-30 audit: one 452 KB chunk).
+const ControllerSimulator = dynamic(() => import('./ControllerSimulator'), { ssr: false });
+const DetailedFaultExample = dynamic(() => import('./DetailedFaultExample'), { ssr: false });
+const SpeechController = dynamic(() => import('./SpeechController'), { ssr: false });
 import BackToCommand from './BackToCommand';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -863,9 +865,16 @@ function SubTabNav<T extends string>({
     amber: 'from-amber-500/20 to-amber-600/10 border-amber-500/50 text-amber-400',
     red: 'from-red-500/20 to-red-600/10 border-red-500/50 text-red-400',
   };
+  // The fade shows there is more to the right; it goes once the strip is
+  // scrolled to the end, so the last tab is not left faded (2026-10-30 audit).
+  const [atEnd, setAtEnd] = useState(false);
 
   return (
-    <div role="tablist" className="flex flex-nowrap sm:flex-wrap overflow-x-auto items-center gap-2 p-2 pr-8 sm:pr-2 bg-slate-900/50 rounded-xl border border-slate-700/50 mb-4 sm:mb-6 [mask-image:linear-gradient(to_right,black_85%,transparent)] sm:[mask-image:none] [scrollbar-width:thin] [-webkit-overflow-scrolling:touch]">
+    <div
+      role="tablist"
+      onScroll={(e) => { const el = e.currentTarget; setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 4); }}
+      className={`flex flex-nowrap sm:flex-wrap overflow-x-auto items-center gap-2 p-2 pr-8 sm:pr-2 bg-slate-900/50 rounded-xl border border-slate-700/50 mb-4 sm:mb-6 ${atEnd ? '' : '[mask-image:linear-gradient(to_right,black_85%,transparent)]'} sm:[mask-image:none] [scrollbar-width:thin] [-webkit-overflow-scrolling:touch]`}
+    >
       {tabs.map((tab) => (
         <motion.button
           key={tab.id}
@@ -929,6 +938,8 @@ export default function GeneratorOracleModule() {
   // Search
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<ControllerFaultCode[]>([]);
+  // The search API's reason when a code cannot exist (2026-10-30 audit: it was dropped here).
+  const [searchNotice, setSearchNotice] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
   // System
@@ -940,12 +951,10 @@ export default function GeneratorOracleModule() {
   const [diagnosisHistory, setDiagnosisHistory] = useState<DiagnosisHistoryEntry[]>([]);
 
   // Legal Disclaimer Acknowledgment - Check localStorage on init
-  const [disclaimerAccepted, setDisclaimerAccepted] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('oracle_disclaimer_accepted') === 'true';
-    }
-    return false;
-  });
+  // Set by DisclaimerAcknowledgment (it reads storage after mount, guarded);
+  // reading it here during render threw where storage is blocked and differed
+  // between server and browser (2026-10-30 audit).
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
   // TRAINING SIMULATOR: the 'command' dashboard animates plausible readings so
   // technicians can practise reading a running set. It is NOT connected to any
@@ -1041,6 +1050,7 @@ export default function GeneratorOracleModule() {
   const searchAbortRef = useRef<AbortController | null>(null);
   const handleSearch = useCallback(async (query: string) => {
     setSearchQuery(query);
+    setSearchNotice(null);
     if (!query.trim()) {
       setSearchResults([]);
       return;
@@ -1091,6 +1101,7 @@ export default function GeneratorOracleModule() {
         lastUpdated: '',
       }));
       setSearchResults(stubs);
+      setSearchNotice(data.notice ?? null);
     } catch (e) {
       if ((e as { name?: string })?.name === 'AbortError') return;
       console.error('Fault search failed:', e);
@@ -1748,9 +1759,10 @@ export default function GeneratorOracleModule() {
                         onSearch={handleSearch}
                         searchResults={searchResults as any}
                         isSearching={isSearching}
+                        notice={searchNotice}
                       />
                     )}
-                    {faultsSubTab === 'analysis' && <DetailedFaultDisplay faultCode={DETAILED_FAULT_CODES['100-1']} />}
+                    {faultsSubTab === 'analysis' && <DetailedFaultExample />}
                     {faultsSubTab === 'troubleshoot' && <InteractiveTroubleshooter />}
                   </motion.div>
                 )}

@@ -75,6 +75,8 @@ export interface SearchResponse {
   totalPages: number;
   results: SearchResultItem[];
   source: 'index';
+  /** Why nothing was searched, when the code cannot exist (e.g. FMI 45). */
+  notice?: string;
 }
 
 export interface FaultLookupResponse {

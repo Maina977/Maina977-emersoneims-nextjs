@@ -19,6 +19,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchOsmSite } from '@/lib/site/osmSite';
 import { fetchNasaSun, DAYS_IN_MONTH } from '@/lib/solar/nasa';
+import { poaMonthly } from '@/lib/solar/poa';
 import * as calcs from './buildingCalcs';
 
 /** Run a calculator: 400 naming the missing/invalid input, else ok(). */
@@ -103,10 +104,28 @@ const num = (v: unknown, d = 0): number => {
 // honest empty envelope with a `note` field — never fabricated values.
 // ──────────────────────────────────────────────────────────────────────────
 
+/** A required number within a range, else a 400 naming the field (thrown as
+ *  BadInput and turned into the 400 by calc()). These used to fall back to
+ *  defaults such as a 12% loan rate or a 10 m / 10 A cable (2026-10-30 audit). */
+function need(b: Record<string, unknown>, key: string, ok: (x: number) => boolean, rule: string): number {
+  const v = b[key];
+  const x = typeof v === 'number' ? v : typeof v === 'string' && /^\s*[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?\s*$/.test(v) ? Number(v) : NaN;
+  if (v === undefined || v === null || v === '') throw new calcs.BadInput(key, `Missing input: ${key} (${rule})`);
+  if (!Number.isFinite(x) || !ok(x)) throw new calcs.BadInput(key, `Invalid input: ${key} must be ${rule}`);
+  return x;
+}
+function cashFlows(b: Record<string, unknown>): number[] {
+  const cf = b.cashFlows;
+  if (!Array.isArray(cf) || cf.length < 1 || cf.length > 200 || !cf.every((x) => typeof x === 'number' && Number.isFinite(x) && Math.abs(x) < 1e13)) {
+    throw new calcs.BadInput('cashFlows', 'Invalid input: cashFlows must be an array of 1 to 200 numbers (year 0 first)');
+  }
+  return cf as number[];
+}
+
 /** Net Present Value: NPV = Σ CF_t / (1+r)^t  (t = 0..n). */
 function financeNpv(b: Record<string, unknown>) {
-  const r = num(b.discountRate, 0.1);
-  const cf = (b.cashFlows as number[]) || [];
+  const r = need(b, 'discountRate', (x) => x > -0.99 && x <= 1, 'a decimal rate between -0.99 and 1 (0.10 = 10%)');
+  const cf = cashFlows(b);
   let npv = 0;
   for (let t = 0; t < cf.length; t++) npv += num(cf[t], 0) / Math.pow(1 + r, t);
   return { npv: +npv.toFixed(2), discountRate: r, periods: cf.length, source: 'Standard NPV (textbook)' };
@@ -114,7 +133,7 @@ function financeNpv(b: Record<string, unknown>) {
 
 /** Internal Rate of Return via bisection on NPV(r)=0. Bracket [-0.99, 10]. */
 function financeIrr(b: Record<string, unknown>) {
-  const cf = (b.cashFlows as number[]) || [];
+  const cf = cashFlows(b);
   if (cf.length < 2) return { irr: null, note: 'Need at least two cash flows' };
   const npv = (r: number) => {
     let s = 0;
@@ -134,9 +153,9 @@ function financeIrr(b: Record<string, unknown>) {
 
 /** Standard amortizing loan: M = P*r/(1-(1+r)^-n)  (r monthly). */
 function financeLoan(b: Record<string, unknown>) {
-  const P = num(b.principal, 0);
-  const annual = num(b.annualRate, 0.12);
-  const years = num(b.years, 5);
+  const P = need(b, 'principal', (x) => x > 0 && x <= 1e12, 'a loan amount greater than 0');
+  const annual = need(b, 'annualRate', (x) => x >= 0 && x <= 1, 'a decimal annual rate between 0 and 1 (0.14 = 14%)');
+  const years = need(b, 'years', (x) => x > 0 && x <= 40, 'a term between 0 and 40 years');
   const r = annual / 12;
   const n = years * 12;
   const M = r === 0 ? P / n : (P * r) / (1 - Math.pow(1 + r, -n));
@@ -152,17 +171,17 @@ function financeLoan(b: Record<string, unknown>) {
 
 /** Inflation: future = base * (1+i)^n. */
 function financeInflation(b: Record<string, unknown>) {
-  const base = num(b.baseAmount, 0);
-  const i = num(b.inflationRate, 0.05);
-  const n = num(b.years, 1);
+  const base = need(b, 'baseAmount', (x) => x >= 0 && x <= 1e13, 'an amount of 0 or more');
+  const i = need(b, 'inflationRate', (x) => x > -0.5 && x <= 1, 'a decimal rate between -0.5 and 1');
+  const n = need(b, 'years', (x) => x >= 0 && x <= 100, 'between 0 and 100 years');
   const future = base * Math.pow(1 + i, n);
   return { future: +future.toFixed(2), base, rate: i, years: n, source: 'Compound inflation formula' };
 }
 
 /** Margin: (price - cost) / price * 100. */
 function financeMargin(b: Record<string, unknown>) {
-  const cost = num(b.cost, 0);
-  const price = num(b.sellingPrice, 0);
+  const cost = need(b, 'cost', (x) => x >= 0 && x <= 1e13, 'an amount of 0 or more');
+  const price = need(b, 'sellingPrice', (x) => x > 0 && x <= 1e13, 'an amount greater than 0');
   const margin = price > 0 ? ((price - cost) / price) * 100 : 0;
   const markup = cost > 0 ? ((price - cost) / cost) * 100 : 0;
   return { marginPct: +margin.toFixed(2), markupPct: +markup.toFixed(2), profit: +(price - cost).toFixed(2) };
@@ -170,10 +189,11 @@ function financeMargin(b: Record<string, unknown>) {
 
 /** DC voltage drop: Vd = 2 * L * I * ρ / A  (single conductor pair). */
 function solarVoltageDrop(b: Record<string, unknown>) {
-  const L = num(b.length_m, 10);          // one-way length
-  const I = num(b.current_A, 10);
-  const A_mm2 = num(b.area_mm2, 4);
-  const rho = num(b.resistivity_ohm_mm2_per_m, 0.0175); // copper @ 20°C
+  const L = need(b, 'length_m', (x) => x > 0 && x <= 5000, 'the one-way cable length in m (0 to 5,000)');
+  const I = need(b, 'current_A', (x) => x > 0 && x <= 5000, 'the current in A (0 to 5,000)');
+  const A_mm2 = need(b, 'area_mm2', (x) => x >= 0.5 && x <= 1000, 'the conductor area in mm² (0.5 to 1,000)');
+  // Copper at 20 °C unless stated (said in the source line below).
+  const rho = b.resistivity_ohm_mm2_per_m == null ? 0.0175 : need(b, 'resistivity_ohm_mm2_per_m', (x) => x > 0.01 && x < 0.1, 'between 0.01 and 0.1 Ω·mm²/m');
   const isThreePhase = !!b.threePhase;
   const factor = isThreePhase ? Math.sqrt(3) : 2;
   const A_m2 = A_mm2 / 1e6;
@@ -209,7 +229,7 @@ const COUNTRY_GRID_EF_KG_PER_KWH: Record<string, number> = {
 };
 
 function sustainCarbonFootprint(b: Record<string, unknown>) {
-  const annualKwh = num(b.annualKwh, 0);
+  const annualKwh = need(b, 'annualKwh', (x) => x >= 0 && x <= 1e10, 'annual kWh, 0 or more');
   const country = (b.country as string) || 'KE';
   const ef = COUNTRY_GRID_EF_KG_PER_KWH[country] ?? COUNTRY_GRID_EF_KG_PER_KWH.KE;
   const kgCO2 = annualKwh * ef;
@@ -223,9 +243,9 @@ function sustainCarbonFootprint(b: Record<string, unknown>) {
 }
 
 function sustainSolarOffset(b: Record<string, unknown>) {
-  const annualPvKwh = num(b.annualPvKwh, 0);
+  const annualPvKwh = need(b, 'annualPvKwh', (x) => x >= 0 && x <= 1e10, 'annual PV kWh, 0 or more');
   const country = (b.country as string) || 'KE';
-  const years = num(b.projectYears, 25);
+  const years = need(b, 'projectYears', (x) => x > 0 && x <= 50, 'between 0 and 50 years');
   const ef = COUNTRY_GRID_EF_KG_PER_KWH[country] ?? COUNTRY_GRID_EF_KG_PER_KWH.KE;
   const annualKgOffset = annualPvKwh * ef;
   return {
@@ -361,17 +381,30 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
     const kw = Number(sp.get('kw') ?? body.kw ?? 1);
     if (!(Math.abs(lat) <= 90 && Math.abs(lon) <= 180)) return fail('lat and lon must be valid coordinates (lat ±90, lon ±180)', 400);
     if (!(kw > 0 && kw < 100_000)) return fail('kw must be a positive system size in kWp', 400);
+    // Panel orientation (2026-10-30 audit: a flat roof and a vertical east wall
+    // both gave 5,468 kWh). tilt 0-90°, azimuth clockwise from north.
+    const tiltRaw = sp.get('tilt') ?? body.tilt, azRaw = sp.get('az') ?? body.az;
+    const tilt = tiltRaw == null || tiltRaw === '' ? null : Number(tiltRaw);
+    const az = azRaw == null || azRaw === '' ? null : Number(azRaw);
+    if (tilt !== null && !(tilt >= 0 && tilt <= 90)) return fail('tilt must be between 0 and 90 degrees', 400);
+    if (az !== null && !(az >= 0 && az <= 360)) return fail('az must be between 0 and 360 degrees (0 = north, 180 = south)', 400);
     try {
       const sun = await fetchNasaSun(lat, lon);
       const PR = 0.78;
-      const monthlyKwh = sun.monthly.map((psh, i) => Math.round(kw * psh * DAYS_IN_MONTH[i] * PR));
+      const plane = tilt !== null && tilt > 0 ? poaMonthly(lat, tilt, az ?? (lat < 0 ? 0 : 180), sun.monthly) : null;
+      const psh = plane ? plane.monthly : sun.monthly;
+      const monthlyKwh = psh.map((v, i) => Math.round(kw * v * DAYS_IN_MONTH[i] * PR));
       return ok({
         annualKwh: monthlyKwh.reduce((s, v) => s + v, 0),
         monthlyKwh,
-        solradAnnualKwhM2: sun.annual,
+        solradAnnualKwhM2: plane ? plane.annual : sun.annual,
+        horizontalAnnualKwhM2: sun.annual,
+        ...(plane ? { tiltDeg: tilt, azimuthDeg: az ?? (lat < 0 ? 0 : 180), gainVsHorizontal: plane.gainVsHorizontal } : {}),
         performanceRatio: PR,
         provenance: {
-          source: 'NASA POWER long-term irradiance × 78% performance ratio (EmersonEIMS estimate, horizontal plane)',
+          source: plane
+            ? `NASA POWER long-term irradiance on the panel plane (tilt ${tilt}°, azimuth ${az ?? (lat < 0 ? 0 : 180)}°; Erbs diffuse split, isotropic sky) × 78% performance ratio (EmersonEIMS estimate)`
+            : 'NASA POWER long-term irradiance × 78% performance ratio (EmersonEIMS estimate, horizontal plane: orientation not given)',
         },
       });
     } catch (e) {
@@ -397,15 +430,13 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
   // ──────────────────────────────────────────────────────────────────────
 
   // Finance — REAL math
-  if (path.endsWith('/finance/npv')) return ok(financeNpv(body));
-  if (path.endsWith('/finance/irr')) return ok(financeIrr(body));
-  if (path.endsWith('/finance/loan')) return ok(financeLoan(body));
-  if (path.endsWith('/finance/inflation')) return ok(financeInflation(body));
-  if (path.endsWith('/finance/margin')) return ok(financeMargin(body));
+  if (path.endsWith('/finance/npv')) return calc(financeNpv, body);
+  if (path.endsWith('/finance/irr')) return calc(financeIrr, body);
+  if (path.endsWith('/finance/loan')) return calc(financeLoan, body);
+  if (path.endsWith('/finance/inflation')) return calc(financeInflation, body);
+  if (path.endsWith('/finance/margin')) return calc(financeMargin, body);
   if (path.endsWith('/finance/loan-vs-cash')) {
-    const cashOutlay = num(body.cashOutlay, 0);
-    const loan = financeLoan(body);
-    return ok({ cashOutlay, loan, note: 'Compare totalPaid vs cashOutlay for break-even.' });
+    return calc((b) => ({ cashOutlay: need(b, 'cashOutlay', (x) => x > 0 && x <= 1e12, 'an amount greater than 0'), loan: financeLoan(b), note: 'Compare totalPaid vs cashOutlay for break-even.' }), body);
   }
   if (path.startsWith('/api/finance/tariff/')) {
     return ok({
@@ -441,7 +472,7 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
     return ok({ date: segments[1] || '', samples: [], note: 'Hourly sun-path generator pending — use /sun-position per hour as workaround.' });
   }
   if (path.endsWith('/solar/seasonal')) return stub(path, { seasons: [] });
-  if (path.endsWith('/solar/voltage-drop')) return ok(solarVoltageDrop(body));
+  if (path.endsWith('/solar/voltage-drop')) return calc(solarVoltageDrop, body);
   if (path.endsWith('/solar/poa') || path.endsWith('/solar/poa-haydavies') || path.endsWith('/solar/poa-perez'))
     return stub(path, { poa_W_m2: null });
   if (path.endsWith('/solar/hourly')) return stub(path, { hours: [] });
@@ -459,8 +490,8 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
     return ok({ items: [] }, { note: 'Equipment library pending data import.' });
 
   // Sustainability — REAL grid factors, stub for complex models
-  if (path.endsWith('/sustain/carbon-footprint')) return ok(sustainCarbonFootprint(body));
-  if (path.endsWith('/sustain/solar-offset')) return ok(sustainSolarOffset(body));
+  if (path.endsWith('/sustain/carbon-footprint')) return calc(sustainCarbonFootprint, body);
+  if (path.endsWith('/sustain/solar-offset')) return calc(sustainSolarOffset, body);
   if (path.endsWith('/sustain/emission-factors')) return ok(sustainEmissionFactors());
   if (path.endsWith('/sustain/carbon-credits')) {
     const t = num(body.tonnesCO2, 0);

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import SolarCalculatorEngine, { Location, Appliance, CalculationResult } from '../../core/calculator/SolarCalculatorEngine';
+import SolarCalculatorEngine, { Location, Appliance, CalculationResult, SizingResponse } from '../../core/calculator/SolarCalculatorEngine';
+import { core } from '../../src/services/api';
+import { KENYA_TOWNS, type SystemType } from '@/lib/solar/sizing';
 import { DiagnosticEngine } from '../../core/calculator/DiagnosticEngine';
 import { QualityAssessmentEngine } from '../../core/calculator/QualityAssessmentEngine';
 import SunWeatherEngine, { WeatherData, SunPosition } from '../../core/calculator/SunWeatherEngine';
@@ -30,9 +32,15 @@ export const AdvancedSolarCalculator: React.FC = () => {
   });
   const [appliances, setAppliances] = useState<Appliance[]>([
     { name: 'LED Lights', wattage: 20, dailyHours: 4, quantity: 5, priority: 'essential' },
-    { name: 'Refrigerator', wattage: 500, dailyHours: 24, quantity: 1, priority: 'essential' },
-    { name: 'TV', wattage: 100, dailyHours: 5, quantity: 1, priority: 'important' },
+    // A fridge's compressor runs about 10 h a day; 500 W x 24 h (12 kWh/day)
+    // was the old default (2026-10-30 audit).
+    { name: 'Refrigerator (compressor hours)', wattage: 150, dailyHours: 10, quantity: 1, priority: 'essential' },
+    { name: 'TV', wattage: 60, dailyHours: 5, quantity: 1, priority: 'important' },
   ]);
+  const [systemType, setSystemType] = useState<SystemType>('hybrid');
+  const [tariff, setTariff] = useState('');
+  const [calcBusy, setCalcBusy] = useState(false);
+  const [calcError, setCalcError] = useState<string | null>(null);
 
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
   const [symptom, setSymptom] = useState('');
@@ -92,9 +100,24 @@ export const AdvancedSolarCalculator: React.FC = () => {
     setAppliances(updated);
   };
 
-  const handleCalculate = () => {
-    const result = calculator.calculateCompleteSystem(location, appliances);
-    setCalculationResult(result);
+  // Sizing, sun-hours and prices come from the shared calculator, so this tab
+  // and the main calculator always agree (2026-10-30 audit).
+  const handleCalculate = async () => {
+    setCalcError(null);
+    setCalculationResult(null);
+    try {
+      if (!(Number.isFinite(location.latitude) && Number.isFinite(location.longitude))) throw new Error('Choose a town or enter the latitude and longitude.');
+      const load = calculator.calculateLoadProfile(appliances);
+      if (load.totalDailyEnergy * 30 < 10) throw new Error('These appliances use under 10 kWh a month: a small solar home kit suits better than a full system.');
+      setCalcBusy(true);
+      const s = (await core.calculate(calculator.sizingRequest(location, load, systemType, Number(tariff) > 0 ? Number(tariff) : undefined))) as SizingResponse;
+      if (!s || typeof s.pvKwp !== 'number') throw new Error((s as any)?.error || 'The calculator did not answer. Try again.');
+      setCalculationResult(calculator.buildResult(location, load, s));
+    } catch (e: any) {
+      setCalcError(e?.message || String(e));
+    } finally {
+      setCalcBusy(false);
+    }
   };
 
   // ==================== DIAGNOSTIC TAB ====================
@@ -160,22 +183,30 @@ export const AdvancedSolarCalculator: React.FC = () => {
         <h3>📍 Location</h3>
         <div className="form-grid">
           <div className="form-group">
-            <label>City</label>
-            <input
-              type="text"
-              value={location.city}
-              onChange={(e) => setLocation({ ...location, city: e.target.value })}
-              placeholder="e.g., Nairobi"
-            />
+            <label htmlFor="ac-town">Town</label>
+            <select
+              id="ac-town"
+              value={KENYA_TOWNS.find((tw) => tw.name === location.city)?.key ?? ''}
+              onChange={(e) => {
+                const tw = KENYA_TOWNS.find((x) => x.key === e.target.value);
+                if (tw) setLocation({ ...location, city: tw.name, country: 'Kenya', latitude: tw.lat, longitude: tw.lon });
+              }}
+            >
+              <option value="">Custom (enter coordinates)</option>
+              {KENYA_TOWNS.map((tw) => <option key={tw.key} value={tw.key}>{tw.name}</option>)}
+            </select>
           </div>
           <div className="form-group">
-            <label>Country</label>
-            <input
-              type="text"
-              value={location.country}
-              onChange={(e) => setLocation({ ...location, country: e.target.value })}
-              placeholder="e.g., Kenya"
-            />
+            <label htmlFor="ac-type">System type</label>
+            <select id="ac-type" value={systemType} onChange={(e) => setSystemType(e.target.value as SystemType)}>
+              <option value="hybrid">Hybrid: solar + battery + grid</option>
+              <option value="off-grid">Off-grid: no grid</option>
+              <option value="grid-tied">Grid-tied: no battery, no power during KPLC cuts</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="ac-tariff">Tariff (KES/kWh, blank = 25)</label>
+            <input id="ac-tariff" type="number" min="1" value={tariff} onChange={(e) => setTariff(e.target.value)} placeholder="bill total ÷ kWh" />
           </div>
           <div className="form-group">
             <label>Latitude</label>
@@ -183,7 +214,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
               type="number"
               step="0.001"
               value={location.latitude}
-              onChange={(e) => setLocation({ ...location, latitude: parseFloat(e.target.value) })}
+              onChange={(e) => setLocation({ ...location, city: 'Custom', latitude: parseFloat(e.target.value) })}
               placeholder="-1.2921"
             />
           </div>
@@ -193,7 +224,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
               type="number"
               step="0.001"
               value={location.longitude}
-              onChange={(e) => setLocation({ ...location, longitude: parseFloat(e.target.value) })}
+              onChange={(e) => setLocation({ ...location, city: 'Custom', longitude: parseFloat(e.target.value) })}
               placeholder="36.8219"
             />
           </div>
@@ -264,9 +295,10 @@ export const AdvancedSolarCalculator: React.FC = () => {
       </div>
 
       {/* Calculate Button */}
-      <button onClick={handleCalculate} className="btn-calculate">
-        ⚡ CALCULATE SYSTEM
+      <button onClick={handleCalculate} className="btn-calculate" disabled={calcBusy}>
+        {calcBusy ? 'Calculating…' : '⚡ CALCULATE SYSTEM'}
       </button>
+      {calcError && <div role="alert" className="warnings-section" style={{ marginTop: 12 }}>{calcError}</div>}
 
       {/* Results */}
       {calculationResult && <RenderCalculationResults result={calculationResult} />}
@@ -1068,147 +1100,79 @@ export const AdvancedSolarCalculator: React.FC = () => {
 
 // ==================== CALCULATION RESULTS COMPONENT ====================
 
-const RenderCalculationResults: React.FC<{ result: CalculationResult }> = ({ result }) => (
+const RenderCalculationResults: React.FC<{ result: CalculationResult }> = ({ result }) => {
+  const r = result.recommendation, c = result.costEstimate;
+  const kes = (n: number) => `KES ${Math.round(n).toLocaleString('en-KE')}`;
+  return (
   <div className="calculation-results">
     <h2>📊 System Design Recommendation</h2>
+    {result.qualityWarnings.length > 0 && (
+      <div className="warnings-section" role="alert">
+        <ul>{result.qualityWarnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
+      </div>
+    )}
 
-    {/* Summary Cards */}
     <div className="results-grid">
       <div className="result-card highlight">
-        <div className="card-value">{result.recommendation.systemSizeKW.toFixed(1)} kW</div>
-        <div className="card-label">System Size</div>
+        <div className="card-value">{r.systemSizeKW} kWp</div>
+        <div className="card-label">{r.panelCount} × {r.panelWattage} W panels</div>
       </div>
       <div className="result-card highlight">
-        <div className="card-value">{result.recommendation.panelCount}</div>
-        <div className="card-label">Solar Panels @ {result.recommendation.panelWattage}W</div>
+        <div className="card-value">{r.inverterSize} kW</div>
+        <div className="card-label">{r.inverterType}</div>
       </div>
       <div className="result-card highlight">
-        <div className="card-value">{result.recommendation.inverterSize} kW</div>
-        <div className="card-label">Inverter Size</div>
+        <div className="card-value">{r.batteryCapacityKWh > 0 ? `${r.batteryCapacityKWh} kWh` : 'None'}</div>
+        <div className="card-label">{r.batteryCapacityKWh > 0 ? `${r.batteryType}, ${r.batteryUsableKWh} kWh usable` : 'Battery'}</div>
       </div>
       <div className="result-card highlight">
-        <div className="card-value">{result.recommendation.batteryCapacityKWh} kWh</div>
-        <div className="card-label">Battery Storage</div>
+        <div className="card-value">{r.paybackYears !== null ? `${r.paybackYears} yrs` : '—'}</div>
+        <div className="card-label">Simple payback</div>
       </div>
     </div>
 
-    {/* Detailed Specs */}
     <div className="specs-section">
       <h3>⚙️ System Specifications</h3>
       <div className="specs-grid">
-        <div className="spec-item">
-          <span className="spec-label">Panel Type:</span>
-          <span className="spec-value">{result.recommendation.panelType}</span>
-        </div>
-        <div className="spec-item">
-          <span className="spec-label">Inverter Type:</span>
-          <span className="spec-value">{result.recommendation.inverterType}</span>
-        </div>
-        <div className="spec-item">
-          <span className="spec-label">Battery Type:</span>
-          <span className="spec-value">{result.recommendation.batteryType} @ {result.recommendation.batteryVoltage}V</span>
-        </div>
-        <div className="spec-item">
-          <span className="spec-label">Main Cable Size:</span>
-          <span className="spec-value">{result.recommendation.cableMainSize} mm²</span>
-        </div>
-        <div className="spec-item">
-          <span className="spec-label">Annual Production:</span>
-          <span className="spec-value">{result.recommendation.estimatedProduction.toLocaleString()} kWh/year</span>
-        </div>
-        <div className="spec-item">
-          <span className="spec-label">Payback Period:</span>
-          <span className="spec-value">{result.recommendation.paybackPeriod} months</span>
-        </div>
+        <div className="spec-item"><span className="spec-label">Daily use:</span><span className="spec-value">{result.loadProfile.totalDailyEnergy.toFixed(1)} kWh</span></div>
+        <div className="spec-item"><span className="spec-label">Peak demand:</span><span className="spec-value">{result.loadProfile.peakLoad.toFixed(2)} kW</span></div>
+        <div className="spec-item"><span className="spec-label">Sun-hours:</span><span className="spec-value">{r.sunHours} kWh/m²/day ({r.sunHoursSource})</span></div>
+        <div className="spec-item"><span className="spec-label">Solar energy per year:</span><span className="spec-value">{r.estimatedProduction.toLocaleString('en-KE')} kWh</span></div>
+        <div className="spec-item"><span className="spec-label">Panels:</span><span className="spec-value">{r.panelType}</span></div>
+        {r.batteryCapacityKWh > 0 && <div className="spec-item"><span className="spec-label">Battery voltage:</span><span className="spec-value">{r.batteryVoltage} V</span></div>}
       </div>
     </div>
 
-    {/* Cost Estimate */}
     <div className="cost-section">
-      <h3>💰 Cost Estimate (KSH)</h3>
+      <h3>💰 Typical installed cost</h3>
       <div className="cost-breakdown">
-        <div className="cost-row">
-          <span>Solar Panels ({result.recommendation.panelCount} × {result.recommendation.panelWattage}W)</span>
-          <span>{result.costEstimate.panels.toLocaleString()}</span>
-        </div>
-        <div className="cost-row">
-          <span>Inverter ({result.recommendation.inverterSize} kW)</span>
-          <span>{result.costEstimate.inverter.toLocaleString()}</span>
-        </div>
-        <div className="cost-row">
-          <span>Battery ({result.recommendation.batteryCapacityKWh} kWh)</span>
-          <span>{result.costEstimate.battery.toLocaleString()}</span>
-        </div>
-        <div className="cost-row">
-          <span>Cables & Wiring</span>
-          <span>{result.costEstimate.cables.toLocaleString()}</span>
-        </div>
-        <div className="cost-row">
-          <span>Breakers & Disconnects</span>
-          <span>{(result.costEstimate.breakers + result.costEstimate.disconnects).toLocaleString()}</span>
-        </div>
-        <div className="cost-row">
-          <span>Miscellaneous</span>
-          <span>{result.costEstimate.miscellaneous.toLocaleString()}</span>
-        </div>
-        <div className="cost-row">
-          <span>Installation Labour</span>
-          <span>{result.costEstimate.installation.toLocaleString()}</span>
-        </div>
-        <div className="cost-row">
-          <span>Permitting</span>
-          <span>{result.costEstimate.permitting.toLocaleString()}</span>
-        </div>
-        <div className="cost-row total">
-          <span>SUBTOTAL</span>
-          <span>{result.costEstimate.subtotal.toLocaleString()}</span>
-        </div>
-        <div className="cost-row">
-          <span>Contingency (10%)</span>
-          <span>{result.costEstimate.contingency.toLocaleString()}</span>
-        </div>
-        <div className="cost-row grand-total">
-          <span>TOTAL INVESTMENT</span>
-          <span className="total-value">KSH {result.costEstimate.total.toLocaleString()}</span>
-        </div>
-        <div className="cost-row">
-          <span>Cost per kW</span>
-          <span>KSH {Math.round(result.costEstimate.costPerKW).toLocaleString()}</span>
-        </div>
+        <div className="cost-row"><span>PV array: panels, mounting, DC cabling</span><span>{kes(c.pvArray)}</span></div>
+        <div className="cost-row"><span>Inverter ({r.inverterSize} kW)</span><span>{kes(c.inverter)}</span></div>
+        {c.battery > 0 && <div className="cost-row"><span>Battery ({r.batteryCapacityKWh} kWh)</span><span>{kes(c.battery)}</span></div>}
+        <div className="cost-row"><span>Installation, AC cabling and protection</span><span>{kes(c.installation)}</span></div>
+        <div className="cost-row grand-total"><span>TOTAL (range {kes(c.low)} – {kes(c.high)})</span><span className="total-value">{kes(c.total)}</span></div>
+        <div className="cost-row"><span>Of which the panels alone (for comparing quotes)</span><span>{kes(c.panelsAlone)}</span></div>
       </div>
+      <p style={{ fontSize: '0.8rem', opacity: 0.75 }}>{c.basis}</p>
     </div>
 
-    {/* Quality Warnings */}
-    {result.qualityWarnings.length > 0 && (
-      <div className="warnings-section">
-        <h3>⚠️ Quality Recommendations</h3>
-        <ul>
-          {result.qualityWarnings.map((warning, i) => (
-            <li key={i}>{warning}</li>
-          ))}
-        </ul>
-      </div>
-    )}
+    <div className="specs-section">
+      <h3>Assumptions</h3>
+      <ul>{result.assumptions.map((a, i) => <li key={i}>{a}</li>)}</ul>
+    </div>
 
-    {/* Safety Notes */}
     {result.safetyNotes.length > 0 && (
       <div className="safety-section">
         <h3>🔒 Safety Requirements</h3>
-        <ul>
-          {result.safetyNotes.map((note, i) => (
-            <li key={i}>{note}</li>
-          ))}
-        </ul>
+        <ul>{result.safetyNotes.map((note, i) => <li key={i}>{note}</li>)}</ul>
       </div>
     )}
 
-    {/* Export Button */}
     <div className="export-section">
-      <button className="btn-export" onClick={() => window.print()}>
-        📄 Export as PDF
-      </button>
+      <button className="btn-export" onClick={() => window.print()}>📄 Print or save as PDF</button>
     </div>
   </div>
-);
+  );
+};
 
 export default AdvancedSolarCalculator;

@@ -59,6 +59,8 @@ export interface SizingResult {
   co2AvoidedKgPerYear?: number;
   cost: { lowKes: number; midKes: number; highKes: number };
   paybackYears: number | null;
+  /** True when the saving cannot repay the system within the panels' 25-year life. */
+  notWorthwhile?: boolean;
   assumptions: string[];
 }
 
@@ -109,13 +111,30 @@ function tiered(kw: number, bands: [number, number][]): number {
   }
   return cost;
 }
+// ONE price list for every solar tool (2026-10-30 audit: panels were priced at
+// KES 7.5k, 11.8k, 12.5k, 14k and 15k in different tools). KES, mid-2026,
+// before VAT. Tiers are marginal: [up to kW, KES per kW].
+/** Panel equipment alone, KES per watt (a 550 W panel ≈ KES 11,800). */
+export const PANEL_KES_PER_W = 21.5;
+/** PV array installed on the roof: panels, mounting and DC cabling, per kWp. */
+export const PV_KES_PER_KWP_BANDS: [number, number][] = [[10, 70_000], [50, 60_000], [Infinity, 52_000]];
+export const INVERTER_GRID_TIE_BANDS: [number, number][] = [[10, 20_000], [Infinity, 15_000]];
+export const INVERTER_HYBRID_BANDS: [number, number][] = [[10, 35_000], [Infinity, 28_000]];
+/** Off-grid-only inverters (no grid export) cost less than hybrids (about KES 15-20k/kW). */
+export const INVERTER_OFF_GRID_BANDS: [number, number][] = [[10, 20_000], [Infinity, 15_000]];
+/** Installation, AC cabling and protection, on top of the equipment. */
+export const INSTALLATION_FACTOR = 1.12;
+/** VAT policy: every price in the solar tools is BEFORE VAT; VAT on solar equipment depends on the Finance Act in force. */
+export const VAT_NOTE = 'Prices are before VAT: VAT on solar equipment depends on the Finance Act in force, so ask the installer to show it separately.';
+export function tieredKes(kw: number, bands: [number, number][]): number { return tiered(kw, bands); }
+export function inverterBands(type: SystemType): [number, number][] {
+  return type === 'grid-tied' ? INVERTER_GRID_TIE_BANDS : type === 'off-grid' ? INVERTER_OFF_GRID_BANDS : INVERTER_HYBRID_BANDS;
+}
 function costKes(pvKwp: number, inverterKw: number, batteryKwh: number, type: SystemType): number {
-  const pv = tiered(pvKwp, [[10, 70_000], [50, 60_000], [Infinity, 52_000]]); // panels + mounting + DC
-  const inv = type === 'grid-tied'
-    ? tiered(inverterKw, [[10, 20_000], [Infinity, 15_000]])
-    : tiered(inverterKw, [[10, 35_000], [Infinity, 28_000]]);
+  const pv = tiered(pvKwp, PV_KES_PER_KWP_BANDS);
+  const inv = tiered(inverterKw, inverterBands(type));
   const equipment = pv + inv + batteryKwh * BATTERY_KES_PER_KWH;
-  return equipment * 1.12; // installation, cabling and protection
+  return equipment * INSTALLATION_FACTOR;
 }
 
 /** Same price basis as sizeSolar, for tools that size the system themselves (e.g. the design studio). */
@@ -126,6 +145,35 @@ export function estimateInstalledCost(pvKwp: number, inverterKw: number, battery
     midKes: Math.round(mid / 1000) * 1000,
     highKes: Math.round((mid * 1.15) / 1000) * 1000,
   };
+}
+
+/**
+ * Energy used on site and the bill saving for a given array, the ONE rule for
+ * every tool (2026-10-30 audit: the design studio valued 90% of any array at
+ * KES 25 whatever the consumption). Grid-tied: daytime use met at about 75%.
+ * Hybrid: daytime use direct, the battery moves surplus to the evening up to
+ * its usable capacity, at most 90% overall.
+ */
+export function gridSaving(o: {
+  type: 'grid-tied' | 'hybrid'; annualEnergyKwh: number; annualConsumptionKwh: number;
+  daytimeUsePct?: number; nightUsePct?: number; batteryKwh?: number; tariffKesPerKwh?: number;
+}): { energyUsedKwh: number; annualSavingKes: number; dayShare: number } {
+  const tariff = clamp(o.tariffKesPerKwh ?? DEFAULT_TARIFF_KES_PER_KWH, 1, 200);
+  if (o.type === 'grid-tied') {
+    const day = clamp(o.daytimeUsePct ?? 50, 0, 100) / 100;
+    const used = Math.min(o.annualEnergyKwh, o.annualConsumptionKwh * day) * 0.75;
+    return { energyUsedKwh: used, annualSavingKes: used * tariff, dayShare: day };
+  }
+  const night = clamp(o.nightUsePct ?? 50, 0, 100) / 100;
+  const day = clamp(o.daytimeUsePct ?? (1 - night) * 100, 0, 100) / 100;
+  const direct = Math.min(o.annualEnergyKwh, o.annualConsumptionKwh * day) * 0.75;
+  const stored = Math.max(0, Math.min(
+    (o.annualEnergyKwh - direct) * BATTERY_EFFICIENCY,
+    o.annualConsumptionKwh - direct,
+    (o.batteryKwh ?? 0) * BATTERY_DOD * 365,
+  ));
+  const used = Math.min(direct + stored, Math.min(o.annualEnergyKwh, o.annualConsumptionKwh) * 0.9);
+  return { energyUsedKwh: used, annualSavingKes: used * tariff, dayShare: day };
 }
 
 export function sizeSolar(input: SizingInput): SizingResult {
@@ -162,7 +210,11 @@ export function sizeSolar(input: SizingInput): SizingResult {
   const pvKwp = round1((panels * PANEL_WATT) / 1000);
   assumptions.push(`${PANEL_WATT} W panels; ${Math.round(PERFORMANCE_RATIO * 100)}% performance ratio (wiring, inverter, heat and dust losses).`);
   if (neededPanels < MIN_PANELS) assumptions.push(`Your use needs fewer than ${MIN_PANELS} panels, but ${MIN_PANELS} is the smallest string that reaches a typical inverter's MPPT voltage, so the array is rounded up.`);
-  if (type === 'grid-tied') assumptions.push(`Grid-tied array sized to cover the ${Math.round(dayShare * 100)}% of your use that happens in daylight; the grid supplies the rest.`);
+  if (type === 'grid-tied') {
+    assumptions.push(`Grid-tied array sized to cover the ${Math.round(dayShare * 100)}% of your use that happens in daylight; the grid supplies the rest.`);
+    // 2026-10-30 audit: nothing told buyers this (anti-islanding, IEC 62116).
+    assumptions.push('NO BACKUP: a grid-tied system without a battery switches off during KPLC power cuts (anti-islanding protection), even in full sun. Choose hybrid for backup.');
+  }
   if (type === 'off-grid') assumptions.push(`Off-grid array sized on the cloudiest month (${pshWorst.toFixed(2)} sun-hours), not the yearly average.`);
 
   // ── Battery ─────────────────────────────────────────────────────────────
@@ -177,6 +229,9 @@ export function sizeSolar(input: SizingInput): SizingResult {
     assumptions.push(`Battery carries the full load for ${days} day${days === 1 ? '' : 's'} without sun.`);
   }
   const batteryKwh = batteryUsableKwh > 0 ? round1(batteryUsableKwh / (BATTERY_DOD * BATTERY_EFFICIENCY)) : 0;
+  // 2026-10-30 audit: a hybrid with 0% night use was sized with no battery
+  // but a hybrid inverter's price, without comment.
+  if (type === 'hybrid' && batteryKwh === 0) assumptions.unshift('No use after dark was entered, so no battery is needed: a grid-tied system would cost less (but gives no backup during KPLC cuts).');
   if (batteryKwh > 0) assumptions.push(`LiFePO4 battery: ${Math.round(BATTERY_DOD * 100)}% usable depth, ${Math.round(BATTERY_EFFICIENCY * 100)}% round-trip efficiency, about KES ${BATTERY_KES_PER_KWH.toLocaleString('en-KE')} per kWh for the battery itself, plus installation.`);
 
   // ── Inverter ────────────────────────────────────────────────────────────
@@ -212,12 +267,13 @@ export function sizeSolar(input: SizingInput): SizingResult {
   let co2: number | undefined;
   let savingBasis: SizingResult['savingBasis'] = 'grid-tariff';
   if (type === 'grid-tied') {
-    const day = clamp(input.daytimeUsePct ?? 50, 0, 100) / 100;
     // ~75% of daytime solar is used on site: load does not track the sun, and
     // weekends and cloudy mornings waste some (2026-10-20 audit: 90% gave
     // 2.4-year paybacks; Kenyan commercial projects typically see 3-5).
-    energyUsedKwh = Math.min(annualEnergyKwh, annualConsumption * day) * 0.75;
-    annualSavingKes = energyUsedKwh * tariff;
+    const g = gridSaving({ type: 'grid-tied', annualEnergyKwh, annualConsumptionKwh: annualConsumption, daytimeUsePct: input.daytimeUsePct, tariffKesPerKwh: tariff });
+    const day = g.dayShare;
+    energyUsedKwh = g.energyUsedKwh;
+    annualSavingKes = g.annualSavingKes;
     assumptions.push(`Without a battery you only save on power used while the sun is up: ${Math.round(day * 100)}% of your use. Surplus is not paid for (no net metering assumed), and about 75% of the daytime solar is assumed to be used.`);
   } else if (type === 'hybrid') {
     // Daytime use is met directly (~75%, as grid-tied); the battery moves the
@@ -225,16 +281,10 @@ export function sizeSolar(input: SizingInput): SizingResult {
     // overall at most 90%. The ROI tool's model (2026-10-29 audit: night share
     // 0%, 50% and 100% all gave the same saving, and a 0 kWh battery a
     // 3.3-year payback).
-    const night = clamp(input.nightUsePct ?? 50, 0, 100) / 100;
-    const day = clamp(input.daytimeUsePct ?? (1 - night) * 100, 0, 100) / 100;
-    const direct = Math.min(annualEnergyKwh, annualConsumption * day) * 0.75;
-    const stored = Math.max(0, Math.min(
-      (annualEnergyKwh - direct) * BATTERY_EFFICIENCY,
-      annualConsumption - direct,
-      batteryKwh * BATTERY_DOD * 365,
-    ));
-    energyUsedKwh = Math.min(direct + stored, Math.min(annualEnergyKwh, annualConsumption) * 0.9);
-    annualSavingKes = energyUsedKwh * tariff;
+    const g = gridSaving({ type: 'hybrid', annualEnergyKwh, annualConsumptionKwh: annualConsumption, daytimeUsePct: input.daytimeUsePct, nightUsePct: input.nightUsePct, batteryKwh, tariffKesPerKwh: tariff });
+    const day = g.dayShare;
+    energyUsedKwh = g.energyUsedKwh;
+    annualSavingKes = g.annualSavingKes;
     assumptions.push(`Daytime use (${Math.round(day * 100)}%) is met directly, about 75% of it; the battery covers evening use up to its usable capacity each day; at most 90% of the solar is used on site.`);
   } else {
     savingBasis = 'diesel';
@@ -255,6 +305,12 @@ export function sizeSolar(input: SizingInput): SizingResult {
   const mid = costKes(pvKwp, inverterKw, batteryKwh, type);
   const cost = { lowKes: Math.round((mid * 0.85) / 1000) * 1000, midKes: Math.round(mid / 1000) * 1000, highKes: Math.round((mid * 1.15) / 1000) * 1000 };
   const paybackYears = annualSavingKes > 0 ? round1(cost.midKes / annualSavingKes) : null;
+  // 2026-10-30 audit: 10 kWh/month was sized with a 108-year payback, and a 0%
+  // daytime share with no saving at all, without comment.
+  const notWorthwhile = paybackYears === null || paybackYears > 25;
+  if (notWorthwhile) assumptions.unshift(paybackYears === null
+    ? 'NOT WORTHWHILE: with these inputs the system saves nothing (no use while the sun is up). Check the daytime share, or choose hybrid.'
+    : `NOT WORTHWHILE: the saving would take ${paybackYears} years to repay the system, longer than the panels' 25-year life. For very small use a solar home kit is usually the better buy.`);
   if (annualSavingKes > 0) assumptions.push(`Payback range: ${round1(cost.lowKes / annualSavingKes)}-${round1(cost.highKes / annualSavingKes)} years across the price range, longer if less of the solar is used on site.`);
   assumptions.push('Prices are typical Kenyan installed ranges (mid-2026), before VAT, not a quotation. A site survey fixes the real price.');
   if (batteryKwh > 0) assumptions.push('LiFePO4 batteries usually need replacing after 10–12 years; that cost is not in the payback.');
@@ -277,6 +333,7 @@ export function sizeSolar(input: SizingInput): SizingResult {
     ...(co2 !== undefined ? { co2AvoidedKgPerYear: co2 } : {}),
     cost,
     paybackYears,
+    ...(notWorthwhile ? { notWorthwhile: true } : {}),
     assumptions,
   };
 }

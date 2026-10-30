@@ -385,13 +385,8 @@ function DiagnosisResultCard({ result }: { result: DiagnosisResult }) {
               className="flex items-center justify-between p-2 bg-slate-950/50 rounded-lg"
             >
               <span className="text-sm text-slate-300">{cause.cause}</span>
-              <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                cause.likelihood === 'high' ? 'bg-red-500/20 text-red-400' :
-                cause.likelihood === 'medium' ? 'bg-amber-500/20 text-amber-400' :
-                'bg-blue-500/20 text-blue-400'
-              }`}>
-                {cause.likelihood.toUpperCase()}
-              </span>
+              {/* No HIGH/MEDIUM/LOW badge: these are rule-based checks, not
+                  measured likelihoods (2026-10-30 audit). */}
             </div>
           ))}
         </div>
@@ -538,7 +533,6 @@ export default function TechnicianAssistantPanel() {
         recommendations.push('Inspect all coolant hoses for cracks or loose clamps');
         recommendations.push('Check radiator for leaks or damage');
         recommendations.push('Verify water pump operation');
-        relatedCodes.push('E1001', 'W2015', 'E1003');
         urgency = 'immediate';
       }
       if (selectedSymptoms.includes('Radiator fan not working')) {
@@ -547,8 +541,10 @@ export default function TechnicianAssistantPanel() {
         recommendations.push('Test fan motor electrically');
         recommendations.push('Verify fan thermostat switch');
       }
-      if (readings.loadPercent && parseFloat(readings.loadPercent) > 80) {
-        causes.push({ cause: 'Generator overloaded - load exceeds safe capacity', likelihood: 'medium' });
+      // A standby or prime set is rated to 100% of its nameplate; above that it
+      // is overloaded (2026-10-30 audit: "> 80% = overloaded" was wrong).
+      if (readings.loadPercent && parseFloat(readings.loadPercent) > 100) {
+        causes.push({ cause: 'Generator overloaded - load above its rating', likelihood: 'medium' });
         recommendations.push('Reduce electrical load on the generator');
         recommendations.push('Check if load calculation matches generator rating');
       }
@@ -562,7 +558,6 @@ export default function TechnicianAssistantPanel() {
         recommendations.push('Perform compression test on all cylinders');
         recommendations.push('Check turbo for oil leaks if equipped');
         recommendations.push('Measure oil consumption over defined period');
-        relatedCodes.push('E2001', 'W3012');
         urgency = 'soon';
       }
       if (readings.oilPressure && parseFloat(readings.oilPressure) < 20) {
@@ -582,7 +577,6 @@ export default function TechnicianAssistantPanel() {
         recommendations.push('Check AVR settings and connections');
         recommendations.push('Verify governor actuator response');
         recommendations.push('Test exciter output voltage');
-        relatedCodes.push('E4001', 'E4002', 'W4010');
       }
       if (selectedSymptoms.includes('Phase imbalance')) {
         causes.push({ cause: 'Unbalanced load across phases', likelihood: 'high' });
@@ -602,7 +596,6 @@ export default function TechnicianAssistantPanel() {
         recommendations.push('Check fuel solenoid operation');
         recommendations.push('Verify fuel pump is delivering fuel');
         recommendations.push('Inspect fuel filters for blockage');
-        relatedCodes.push('E5001', 'E5002', 'W5015');
       }
       if (selectedSymptoms.includes('Slow cranking')) {
         causes.push({ cause: 'Battery weak or failing', likelihood: 'high' });
@@ -630,7 +623,6 @@ export default function TechnicianAssistantPanel() {
         recommendations.push('Check coolant level for unexplained loss');
         recommendations.push('Inspect oil for milky appearance (coolant contamination)');
         recommendations.push('Drain fuel water separator');
-        relatedCodes.push('E1005', 'E6001');
         urgency = 'immediate';
       }
     }

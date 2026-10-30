@@ -149,12 +149,8 @@ const SCENARIOS: TroubleshootingScenario[] = [
         instruction: `
 You cannot properly diagnose ECM communication issues without voltage testing.
 
-**Recommended Multimeters:**
-| Model | Price (KES) | Features |
-|-------|-------------|----------|
-| Fluke 87V | 45,000 | Professional grade, True RMS |
-| UNI-T UT61E | 8,500 | Good budget option |
-| Mastech MS8268 | 4,500 | Basic but adequate |
+**What to look for in a multimeter:** True RMS, CAT III 600 V or better, DC volts to 0.01 V, continuity buzzer.
+Examples: Fluke 87V (professional), UNI-T UT61E (budget), Mastech MS8268 (basic).
 
 **Where to buy in Kenya:**
 - Nairobi: Luthuli Avenue electronics shops
@@ -388,11 +384,11 @@ Measure resistance between CAN H and CAN L:
         instruction: `
 **ECM Replacement Options:**
 
-| Option | Cost (KES) | Turnaround |
-|--------|------------|------------|
-| New OEM ECM | 150,000 - 850,000 | 1-4 weeks |
-| Remanufactured ECM | 80,000 - 400,000 | 1-2 weeks |
-| ECM Repair Service | 35,000 - 150,000 | 3-7 days |
+- New OEM ECM (from the engine dealer)
+- Remanufactured ECM (exchange unit)
+- ECM repair service (board-level repair)
+
+Prices and lead times depend on the engine model and supplier: ask for a written quote.
 
 **EmersonEIMS Services:**
 - ECM diagnosis and repair
@@ -404,11 +400,8 @@ Measure resistance between CAN H and CAN L:
 2. Record all fault codes before removal
 3. New ECM needs programming with engine serial number
         `,
-        partNumbers: [
-          { brand: 'Cummins QSB6.7', partNo: '4921684', price: '380,000' },
-          { brand: 'Cummins QSX15', partNo: '4963807', price: '650,000' },
-          { brand: 'CAT C9', partNo: '349-9425', price: '520,000' },
-        ],
+        // Part numbers and prices removed (2026-10-30 audit): ECM part numbers
+        // depend on the engine serial and calibration; the dealer looks them up.
         options: [
           { label: '📞 Contact EmersonEIMS for ECM service', nextStep: 'contact-support' },
           { label: '✅ I have a replacement ECM', nextStep: 'new-ecm-check' },
@@ -718,9 +711,9 @@ Common shutdown fault codes:
       },
       'low-load-trip': {
         id: 'low-load-trip',
-        question: 'Trip at 25-30% load usually indicates FUEL SUPPLY issues.',
+        question: 'A trip at about 25-30% load: check the fuel supply first.',
         instruction: `
-**Likely Causes (in order of probability):**
+**Causes to check (quickest first; not ranked by likelihood):**
 
 1. **Restricted fuel supply** - Cannot deliver enough fuel
    - Clogged fuel filter
@@ -804,9 +797,9 @@ Install fuel pressure gauge AFTER fuel filter:
       },
       'mid-load-trip': {
         id: 'mid-load-trip',
-        question: 'Trip at 50% load often indicates GOVERNOR or TURBO issues.',
+        question: 'A trip at about 50% load: check the governor, actuator and turbo.',
         instruction: `
-**50% Load Trip Causes:**
+**Causes to check (not ranked by likelihood):**
 
 1. **Governor not responding fast enough**
    - Actuator sluggish
@@ -1085,11 +1078,12 @@ If no = mechanical/fuel issue
         id: 'avr-replacement',
         question: 'AVR may need replacement.',
         instruction: `
-**Common AVR Part Numbers:**
-- Stamford AS440: 8,500 KES
-- Stamford SX460: 12,000 KES
-- Leroy Somer R448: 15,000 KES
-- Mecc Alte DSR: 10,000 KES
+**AVR models often fitted (match the one on your alternator's nameplate):**
+- Stamford AS440 / SX460
+- Leroy Somer R448
+- Mecc Alte DSR
+
+Use a genuine or approved replacement: ask for a written quote.
         `,
         options: [
           { label: '📞 Order AVR from EmersonEIMS', nextStep: 'contact-support-load' },
@@ -1342,8 +1336,7 @@ This electromagnetic valve must OPEN to allow fuel.
 - Replace if won't hold charge
 
 **Battery sizes:**
-- Typical generator: 100Ah - 200Ah
-- Price: 18,000 - 45,000 KES
+- Typical generator: 100Ah - 200Ah (check the cold-cranking amps the engine needs)
         `,
         options: [
           { label: '✅ Battery charged/replaced', nextStep: 'crank-check' },
@@ -1769,7 +1762,6 @@ export default function InteractiveTroubleshooter() {
                           <tr className="text-slate-400 text-left">
                             <th className="pb-2">Brand/Model</th>
                             <th className="pb-2">Part Number</th>
-                            <th className="pb-2">Price (KES)</th>
                           </tr>
                         </thead>
                         <tbody className="text-slate-300">
@@ -1777,7 +1769,6 @@ export default function InteractiveTroubleshooter() {
                             <tr key={i} className="border-t border-slate-700/50">
                               <td className="py-2">{part.brand}</td>
                               <td className="py-2 font-mono">{part.partNo}</td>
-                              <td className="py-2">{part.price}</td>
                             </tr>
                           ))}
                         </tbody>

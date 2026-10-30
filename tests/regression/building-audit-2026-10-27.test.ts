@@ -135,7 +135,9 @@ describe('pad footing', () => {
     expect(num(r.B_m)).toBeCloseTo(2.1, 2);
     // pu = 1120/4.41 = 254.0; l = 0.9; m = 254·0.81/2 = 102.9 kNm/m.
     expect(num(r.M_Ed_kNm_per_m)).toBeCloseTo(102.9, 0);
-    expect((r.checks as unknown[]).length).toBeGreaterThanOrEqual(4);
+    // The SLS bearing comparison is the sizing basis (it cannot fail), not a check: 3 ULS checks.
+    expect((r.checks as unknown[]).length).toBeGreaterThanOrEqual(3);
+    expect(String(r.sizing_basis)).toMatch(/q_allow/);
   });
 });
 

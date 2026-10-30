@@ -16,12 +16,28 @@
      malicious payload — the browser will refuse to execute any file whose
      hash does not match. crossorigin=anonymous is required for the browser
      to apply the integrity check at all. -->
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
-        integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"
-        integrity="sha384-wagZhIFgY4hD+7awjQjR4e2E294y6J2HSnd8eTNc15ZubTeQeVRZwhQJ+W6hnBsf"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- three.js (about 600 KB) loads after the page, not before it: most visits
+     use the calculators, not the 3D views (2026-10-30 audit, page weight).
+     Same files and integrity hashes as before. -->
+<script>
+function __loadScript(src, integrity){
+  return new Promise(function(res, rej){
+    var s=document.createElement('script'); s.src=src; s.integrity=integrity;
+    s.crossOrigin='anonymous'; s.referrerPolicy='no-referrer';
+    s.onload=res; s.onerror=rej; document.head.appendChild(s);
+  });
+}
+function ensureThree(){
+  if (window.THREE && window.THREE.OrbitControls) return Promise.resolve();
+  if (!window.__threeP){
+    window.__threeP = __loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js','sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu')
+      .then(function(){ return __loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js','sha384-wagZhIFgY4hD+7awjQjR4e2E294y6J2HSnd8eTNc15ZubTeQeVRZwhQJ+W6hnBsf'); })
+      .catch(function(e){ window.__threeP=null; throw e; });
+  }
+  return window.__threeP;
+}
+window.addEventListener('load', function(){ setTimeout(function(){ ensureThree().catch(function(){}); }, 4000); });
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0e27;color:#e0e0e0;font-size:13px;overflow:hidden;height:100vh}
@@ -225,13 +241,28 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
 .pro-headline{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-bottom:10px}
 .pro-output .err{background:rgba(244,67,54,.1);border:1px solid #ef5350;color:#ef9a9a;padding:10px;border-radius:4px;font-size:11px;margin-bottom:10px}
 @media(max-width:900px){.pro-page{grid-template-columns:1fr;height:auto}#pro-pane{overflow:auto!important;-webkit-overflow-scrolling:touch}}
+/* Printing a calculation (2026-10-30 audit): the scroll containers clipped the
+   sheet after the headline, losing the checks, assumptions and disclaimer.
+   Print everything, inputs first, with no navigation and dark text on white. */
+@media print{
+  html,body{background:#fff!important;color:#000!important;height:auto!important;overflow:visible!important}
+  .mode-tabs,.top-actions,.pro-sub-tabs,.nav,button{display:none!important}
+  .pro-page{display:block!important;height:auto!important;overflow:visible!important}
+  #pro-pane,.pro-inputs,.pro-output{overflow:visible!important;height:auto!important;max-height:none!important;flex:none!important}
+  .pro-output{background:#fff!important;border:1px solid #999!important;page-break-inside:auto}
+  .pro-output pre,.pro-output .k,.pro-output .s,.pro-output .n,.pro-output .b,.pro-output .hd,.pro-refs,.pro-refs b{color:#000!important}
+  .pro-inputs input,.pro-inputs select{border:1px solid #999!important;background:#fff!important;color:#000!important}
+}
 /* Phones (2026-10-20 audit): the tab strip showed 2 of 5 tabs and the
    sub-tabs scrolled 1,600 px sideways with no cue; small result text. */
 @media(max-width:700px){
   body{overflow:auto;height:auto}
   .app{height:auto;min-height:calc(100vh - 80px)}
   .top{height:auto;flex-wrap:wrap;row-gap:4px;padding:6px 10px}
-  .mode-tabs{order:3;flex-basis:100%;margin-left:0;flex-wrap:wrap;gap:4px;overflow:visible}
+  /* One scrolling row with a fade cue, not a 153 px block of 24 wrapped tabs
+     above the results (2026-10-30 audit). */
+  .mode-tabs{order:3;flex-basis:100%;margin-left:0;flex-wrap:nowrap;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-right:28px;-webkit-mask-image:linear-gradient(to right,#000 85%,transparent);mask-image:linear-gradient(to right,#000 85%,transparent)}
+  .mode-tab{flex:0 0 auto;white-space:nowrap}
   .mode-tab{font-size:12px;padding:6px 10px;border-radius:4px}
   .pro-sub-tabs{flex-wrap:wrap;overflow:visible}
   [style*="font-size:9px"],[style*="font-size:10px"]{font-size:12px!important}
@@ -1829,7 +1860,7 @@ if(typeof window._repPaywallState==='undefined') window._repPaywallState = { unl
 
 async function repFetchPaywallConfig(){
   try{
-    const r = await fetch(API+'/api/pay/report-unlock/config', {credentials:'same-origin'});
+    const r = await fetch(API+'/pay/report-unlock/config', {credentials:'same-origin'});
     const j = await r.json();
     return j && j.success ? j : { success:false, enabled:false };
   }catch(_e){ return { success:false, enabled:false }; }
@@ -1837,7 +1868,7 @@ async function repFetchPaywallConfig(){
 
 async function repSyncReportUnlockSession(){
   try{
-    const r = await fetch(API+'/api/pay/report-unlock/session', {credentials:'same-origin'});
+    const r = await fetch(API+'/pay/report-unlock/session', {credentials:'same-origin'});
     const j = await r.json();
     if(j && j.unlocked){
       window._repPaywallState.unlocked = true;
@@ -1904,7 +1935,7 @@ function repStartReportPayment(){
     if(!cfg.enabled){ alert('Online payments are not enabled on this server yet.'); return; }
     try{
       const bare = window.location.href.split('#')[0].split('?')[0];
-      const r = await fetch(API+'/api/pay/report-unlock/init', {
+      const r = await fetch(API+'/pay/report-unlock/init', {
         method:'POST', credentials:'same-origin',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ email: em, callback_url: bare })
@@ -1929,7 +1960,7 @@ async function repPollReportUnlockStatus(){
     const r = await fetch(API+`/api/pay/report-unlock/status?lock_id=${encodeURIComponent(lock)}`, {credentials:'same-origin'});
     const j = await r.json();
     if(j && j.paid){
-      await fetch(API+'/api/pay/report-unlock/activate', { method:'POST', credentials:'same-origin',
+      await fetch(API+'/pay/report-unlock/activate', { method:'POST', credentials:'same-origin',
         headers:{'Content-Type':'application/json'}, body: JSON.stringify({ lock_id: lock }) });
       await repSyncReportUnlockSession();
       if(window._repPaywallState.pollTimer){ clearInterval(window._repPaywallState.pollTimer); window._repPaywallState.pollTimer = null; }
@@ -2370,6 +2401,14 @@ function initInlineV3D(containerId){
 }
 
 function initThreeScene(el,tag){
+    if (typeof THREE === 'undefined'){
+        el.innerHTML='<div style="padding:14px;color:#7986cb;font-size:12px">Loading the 3D viewer…</div>';
+        ensureThree().then(function(){
+            el.innerHTML=''; initThreeScene(el,tag);
+            if (tag==='builder') updateBuildPreview();
+        }).catch(function(){ el.innerHTML='<div class="err" style="padding:14px">The 3D viewer could not load (check the connection) and try again.</div>'; });
+        return;
+    }
     scene3d=new THREE.Scene();
     scene3d.background=new THREE.Color(0x060818);
     scene3d.fog=new THREE.FogExp2(0x060818,0.008);
@@ -3851,8 +3890,11 @@ async function bimRender3D(){
     if (!b) return;
     if (typeof THREE === 'undefined'){
         document.getElementById('bimRight').innerHTML =
-            `<div class="err" style="padding:14px">three.js not loaded yet — wait a moment and click 3D again.</div>`;
-        return;
+            `<div style="padding:14px;color:#7986cb;font-size:12px">Loading the 3D viewer…</div>`;
+        try { await ensureThree(); } catch (e) {
+            document.getElementById('bimRight').innerHTML = `<div class="err" style="padding:14px">The 3D viewer could not load (check the connection) and try again.</div>`;
+            return;
+        }
     }
     document.getElementById('bimRight').innerHTML = `
       <div style="position:relative;height:600px;background:#0a0e27;border:1px solid #1e2560;border-radius:6px;overflow:hidden">
@@ -7248,7 +7290,7 @@ const PRO_CATALOG = [
     ep:'/api/loads/wind/asce7', mth:'POST',
     refs:['ASCE 7-22 §26.10 (velocity pressure)'],
     f:[
-      {k:'V_ms',type:'number',def:51.4,step:'0.1',l:'Basic wind speed (m/s)'},
+      {k:'V_ms',type:'number',def:'',step:'0.1',l:'Basic wind speed (m/s, from the ASCE 7 map for the site; in Kenya use the EN 1991-1-4 tile)'},
       {k:'height_m',type:'number',def:9.1,step:'0.1',l:'Mean roof height (m)'},
       {k:'exposure',type:'select',opts:['B','C','D'],def:'C',l:'Exposure'},
       {k:'enclosure',type:'select',opts:['enclosed','partially_enclosed','partially_open','open'],def:'enclosed',l:'Enclosure'},
@@ -7334,6 +7376,8 @@ const PRO_CATALOG = [
       {k:'water_depth_m',type:'number',def:'',step:'0.1',l:'Water table depth (m; blank = deep)'},
       {k:'Gk_kN',type:'number',def:'',l:'Permanent load Gk (kN; incl. footing and backfill)'},
       {k:'Qk_kN',type:'number',def:'',l:'Variable load Qk (kN)'},
+      {k:'H_kN',type:'number',def:'',l:'Horizontal load H (kN, along B; blank = none)'},
+      {k:'shape',type:'select',opts:['rectangular','strip'],def:'rectangular',l:'Shape (strip: leave L blank, per metre run)'},
     ]},
   {id:'en_pad', grp:'Engineering+', title:'Pad footing (size, bending, shear, punching)',
     ep:'/api/geotech/pad-footing', mth:'POST',
@@ -7346,6 +7390,10 @@ const PRO_CATALOG = [
       {k:'h_mm',type:'number',def:500,l:'Footing depth h (mm)'},
       {k:'fck_MPa',type:'number',def:25,l:'fck (MPa)'},
       {k:'As_prov_mm2_per_m',type:'number',def:'',l:'Bottom steel provided (mm²/m; blank = required)'},
+      {k:'cover_mm',type:'number',def:50,l:'Cover (mm)'},
+      {k:'bar_mm',type:'select',opts:['10','12','16','20','25','32'],def:'16',l:'Bar diameter (mm)'},
+      {k:'fyk_MPa',type:'number',def:500,l:'fyk (MPa)'},
+      {k:'backfill_kPa',type:'number',def:0,l:'Backfill on the footing (kPa)'},
     ]},
   {id:'en_shear', grp:'Engineering+', title:'RC shear (EN 1992-1-1 §6.2)',
     ep:'/api/rc/beam/shear', mth:'POST',
@@ -7358,6 +7406,7 @@ const PRO_CATALOG = [
       {k:'VEd_kN',type:'number',def:200,l:'Design shear V_Ed (kN)'},
       {k:'Asw_mm2',type:'number',def:157,l:'Link legs area Asw (mm²; blank = none)'},
       {k:'s_mm',type:'number',def:200,l:'Link spacing s (mm)'},
+      {k:'fywk_MPa',type:'number',def:500,l:'Link steel fywk (MPa)'},
     ]},
   {id:'en_defl', grp:'Engineering+', title:'Deflection, span/depth (EN 1992-1-1 §7.4.2)',
     ep:'/api/rc/deflection/span-depth', mth:'POST',
@@ -7369,7 +7418,10 @@ const PRO_CATALOG = [
       {k:'b_mm',type:'number',def:300,l:'Width b (mm; 1000 for a slab strip)'},
       {k:'As_req_mm2',type:'number',def:900,l:'Steel required at mid-span (mm²)'},
       {k:'As_prov_mm2',type:'number',def:942,l:'Steel provided (mm²)'},
+      {k:'Asc_mm2',type:'number',def:0,l:'Compression steel Asc (mm²)'},
       {k:'fck_MPa',type:'number',def:30,l:'fck (MPa)'},
+      {k:'fyk_MPa',type:'number',def:500,l:'fyk (MPa)'},
+      {k:'beff_over_bw',type:'number',def:1,step:'0.1',l:'Flange ratio beff/bw (1 = rectangular)'},
     ]},
   {id:'en_seis_ec8', grp:'Engineering+', title:'Seismic lateral force (EN 1998-1 §4.3.3.2)',
     ep:'/api/loads/seismic/ec8-lfm', mth:'POST',
@@ -7702,7 +7754,17 @@ const PRO_LABELS = {
   Kz:'Exposure coefficient Kz', GCpi:'Internal pressure coefficient GCpi', Kd_for_pressure_equations:'Kd (for pressure equations)',
   vb_ms:'Basic wind velocity vb', vm_ms:'Mean wind velocity vm', Iv:'Turbulence intensity Iv', cr:'Roughness factor cr', kr:'Terrain factor kr',
   T_s:'Period T', Cs:'Seismic response coefficient Cs', V_kN:'Base shear V', governing:'Governing equation',
-  M_Rd_kNm:'Moment resistance M_Rd', utilisation:'Utilisation M_Ed/M_Rd', As_required_mm2:'Steel required As,req', As_min_mm2:'Minimum steel As,min',
+  // One label for every utilisation (bending M_Ed/M_Rd, bearing V_Ed/R_d);
+  // "M_Ed/M_Rd" was shown on bearing results (2026-10-30 audit).
+  M_Rd_kNm:'Moment resistance M_Rd', utilisation:'Utilisation (design effect / resistance)', As_required_mm2:'Steel required As,req', As_min_mm2:'Minimum steel As,min',
+  B_m:'Footing width B', plan_area_m2:'Plan area', bearing_pressure_sls_kPa:'Bearing pressure (SLS)', sizing_basis:'Sizing basis',
+  v_Rd_c_MPa:'Concrete shear stress resistance v_Rd,c', v_Ed_one_way_MPa:'One-way shear stress v_Ed', v_Ed_punching_MPa:'Punching shear stress v_Ed',
+  v_Rd_punching_MPa:'Punching resistance v_Rd (2d/a)', v_Ed_column_face_MPa:'Shear stress at column face v_Ed', v_Rd_max_MPa:'Maximum shear stress v_Rd,max',
+  q_Rd_kPa:'Design bearing resistance q_Rd', R_Rd_kN:'Design resistance R_d', V_Ed_kN:'Design vertical load V_Ed', H_Ed_kN:'Design horizontal load H_Ed',
+  sliding_R_d_kN:'Sliding resistance R_h,d', sliding_utilisation:'Sliding utilisation H_Ed/R_h,d', governing_combination:'Governing combination',
+  q_overburden_kPa:'Overburden pressure q′', phi_d_deg:'Design friction angle φ′d', c_d_kPa:'Design cohesion c′d', cu_d_kPa:'Design undrained strength cu,d',
+  Nc:'Nc', Nq:'Nq', sc:'Shape factor sc', sq:'Shape factor sq', sgamma:'Shape factor sγ', ic:'Inclination factor ic', iq:'Inclination factor iq', igamma:'Inclination factor iγ',
+  method_permitted:'Lateral force method permitted', F_b_kN:'Base shear F_b', Sd_g:'Design spectral acceleration Sd(T1)', T1_s:'Fundamental period T1', lambda:'Correction factor λ', ag_g:'Design ground acceleration ag',
   x_mm:'Neutral axis depth x', z_mm:'Lever arm z', fcd_MPa:'Design concrete strength fcd', fyd_MPa:'Design steel strength fyd', K:'K = M/(b·d²·fck)',
   Fv_Rd_kN:'Shear resistance Fv,Rd', Ft_Rd_kN:'Tension resistance Ft,Rd', Fb_Rd_kN:'Bearing resistance Fb,Rd', alpha_v:'αv', alpha_b:'αb',
   shear_area_mm2:'Shear area', shear_planes:'Shear planes',
@@ -7724,7 +7786,7 @@ function proLabel(k){
 }
 // Exact keys win, then the longest suffix: "Q_L_s" was shown in seconds and
 // "C_min" in minutes because "_s"/"_min" matched first (2026-10-19 audit).
-const PRO_KEY_UNITS = {rho_kg_m3:'kg/m³', d_mm:'mm', z_used_m:'m', Asw_over_s_required_mm2_per_mm:'mm²/mm', Asw_over_s_min_mm2_per_mm:'mm²/mm',
+const PRO_KEY_UNITS = {rho_kg_m3:'kg/m³', d_mm:'mm', B_m:'m', plan_area_m2:'m²', Sd_g:'g', ag_g:'g', lambda:'', Nc:'', Nq:'', sc:'', sq:'', sgamma:'', ic:'', iq:'', igamma:'', z_used_m:'m', Asw_over_s_required_mm2_per_mm:'mm²/mm', Asw_over_s_min_mm2_per_mm:'mm²/mm',
   M_Ed_kNm_per_m:'kNm/m', As_required_mm2_per_m:'mm²/m', As_min_mm2_per_m:'mm²/m', punching_perimeter_a_mm:'mm', size_factor_k:'', structural_system_K:'', co:'', rho_l:'',
   Q_L_s:'L/s', qz_Pa:'Pa', qp_Pa:'Pa', C_min:'', C_max:'', R_total_m2K_W:'m²K/W', R_m2K_W:'m²K/W',
   total_absorption_m2_sabin:'m² Sabine', vb_ms:'m/s', vm_ms:'m/s', T_s:'s', Kz:'', Cs:''};

@@ -3,6 +3,9 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { useSolarStore } from "../services/store";
 import { solar } from "../services/api";
+import { PERFORMANCE_RATIO } from "@/lib/solar/sizing";
+
+const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 /**
  * AnalyticsPage — reads the live project (calculator results + site assessment)
@@ -123,7 +126,7 @@ export default function AnalyticsPage() {
         const data = r?.data || r;
         const sourceLabel = data?.source || r?.provenance?.source;
         const annualKwh = metrics.annualProduction
-          || metrics.systemSizeKw * (site.irradianceKwhPerM2Day || 5.5) * 365 * 0.8;
+          || metrics.systemSizeKw * (site.irradianceKwhPerM2Day || 5.5) * 365 * PERFORMANCE_RATIO;
         const psh = site.irradianceKwhPerM2Day || 5.5;
         let monthlyKwh: number[] | null = null;
         let usedSource = '';
@@ -134,28 +137,28 @@ export default function AnalyticsPage() {
             Number(m.relativeYield ?? m.yieldFactor ?? m.factor ?? 1)
           );
           if (yields.every((v: number) => Number.isFinite(v) && v > 0)) {
-            // monthlyKwh = systemKw × PSH × relativeYield × 30 × 0.80
-            monthlyKwh = yields.map((y: number) =>
-              Math.round(metrics.systemSizeKw * psh * y * 30 * 0.8)
+            // monthlyKwh = systemKw × PSH × relativeYield × days in month × 0.78 (PERFORMANCE_RATIO)
+            monthlyKwh = yields.map((y: number, i: number) =>
+              Math.round(metrics.systemSizeKw * psh * y * DAYS[i] * PERFORMANCE_RATIO)
             );
-            usedSource = `${sourceLabel || 'Seasonal model'} × site PSH ${psh.toFixed(2)} × 0.80 derate`;
+            usedSource = `${sourceLabel || 'Seasonal model'} × site PSH ${psh.toFixed(2)} × 0.78 performance ratio, as the calculator`;
           }
         }
         // Shape B: { monthlyPeakSunHours: number[12] }
         if (!monthlyKwh && Array.isArray(data?.monthlyPeakSunHours) && data.monthlyPeakSunHours.length === 12) {
-          monthlyKwh = data.monthlyPeakSunHours.map((p: number) =>
-            Math.round(metrics.systemSizeKw * p * 30 * 0.8)
+          monthlyKwh = data.monthlyPeakSunHours.map((p: number, i: number) =>
+            Math.round(metrics.systemSizeKw * p * DAYS[i] * PERFORMANCE_RATIO)
           );
-          usedSource = 'NASA POWER monthly mean PSH × system kW × 0.80 derate';
+          usedSource = 'NASA POWER monthly mean PSH × system kW × 0.78 performance ratio, as the calculator';
         }
         // Shape C: { months: [{ psh|peakSunHours|value }, ...] }
         if (!monthlyKwh && Array.isArray(data?.months) && data.months.length === 12) {
           const arr = data.months.map((m: any) => Number(m.psh ?? m.peakSunHours ?? m.value));
           if (arr.every((v: number) => Number.isFinite(v) && v > 0)) {
-            monthlyKwh = arr.map((p: number) =>
-              Math.round(metrics.systemSizeKw * p * 30 * 0.8)
+            monthlyKwh = arr.map((p: number, i: number) =>
+              Math.round(metrics.systemSizeKw * p * DAYS[i] * PERFORMANCE_RATIO)
             );
-            usedSource = 'NASA POWER monthly mean PSH × system kW × 0.80 derate';
+            usedSource = 'NASA POWER monthly mean PSH × system kW × 0.78 performance ratio, as the calculator';
           }
         }
         // Shape D: { monthly: { Jan: psh, Feb: psh, ... } }
@@ -164,8 +167,8 @@ export default function AnalyticsPage() {
           if (keys.length === 12) {
             const arr = keys.map(k => Number((data.monthly as any)[k]));
             if (arr.every(v => Number.isFinite(v) && v > 0)) {
-              monthlyKwh = arr.map(p => Math.round(metrics.systemSizeKw * p * 30 * 0.8));
-              usedSource = 'NASA POWER monthly mean PSH × system kW × 0.80 derate';
+              monthlyKwh = arr.map((p, i) => Math.round(metrics.systemSizeKw * p * DAYS[i] * PERFORMANCE_RATIO));
+              usedSource = 'NASA POWER monthly mean PSH × system kW × 0.78 performance ratio, as the calculator';
             }
           }
         }
@@ -248,7 +251,7 @@ export default function AnalyticsPage() {
             <StatRow><StatLabel>Year-1 Savings</StatLabel><StatValue>KSh {Math.round(annualSavings).toLocaleString()}</StatValue></StatRow>
             <StatRow><StatLabel>Monthly Saving</StatLabel><StatValue>KSh {Math.round(metrics.monthlySaving).toLocaleString()}</StatValue></StatRow>
             <StatRow><StatLabel>Payback</StatLabel><StatValue>{(financial.paybackYears || metrics.paybackPeriods).toFixed(1)} yrs</StatValue></StatRow>
-            <StatRow><StatLabel>Tariff (EPRA)</StatLabel><StatValue>KSh {site.tariffKesPerKwh.toFixed(2)}/kWh</StatValue></StatRow>
+            {design.systemType !== 'off-grid' && <StatRow><StatLabel>Tariff used (your bill ÷ kWh)</StatLabel><StatValue>KSh {site.tariffKesPerKwh.toFixed(2)}/kWh</StatValue></StatRow>}
             {co2 > 0 && <StatRow><StatLabel>CO₂ Avoided / yr</StatLabel><StatValue>{Math.round(co2)} kg</StatValue></StatRow>}
           </Card>
 

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useSolarStore } from '../services/store';
@@ -178,6 +178,8 @@ interface CalcResult {
   co2AvoidedKgPerYear?: number;
   cost: { lowKes: number; midKes: number; highKes: number };
   paybackYears: number | null;
+  notWorthwhile?: boolean;
+  warning?: string;
   assumptions: string[];
   location: string;
   sunHours: { annual: number; worstMonth: number; source: 'nasa-power' | 'kenya-typical'; note: string };
@@ -212,6 +214,7 @@ export default function CalculatorPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CalcResult | null>(null);
 
+  const resultsRef = useRef<HTMLDivElement | null>(null);
   async function calculate() {
     setError(null);
     setResult(null);
@@ -220,16 +223,31 @@ export default function CalculatorPage() {
       setError('Enter a positive monthly consumption (kWh). It is on your KPLC bill.');
       return;
     }
+    // A tariff typed as 0 is a mistake, not "use the default" (2026-10-30 audit:
+    // it silently became KES 25).
+    if (String(tariff).trim() !== '' && !(Number(tariff) > 0)) {
+      setError('The tariff must be more than 0 KES/kWh (your bill total divided by the kWh on it), or leave it blank for the default.');
+      return;
+    }
     setLoading(true);
     try {
+      // Each share goes only with the system it describes: the hidden 50%
+      // daytime share was sent for hybrids too and overrode the night share
+      // the customer entered (2026-10-30 audit).
       const payload: Record<string, unknown> = {
         consumption: cons, location, systemType, roofType, tariff: Number(tariff) || undefined,
-        daytimeUsePct: Number(daytimeUse), nightUsePct: Number(nightUse), autonomyDays: Number(autonomy),
-        dieselKesPerLitre: Number(diesel) || undefined, peakLoadKw: Number(peakLoad) || undefined,
+        ...(systemType === 'grid-tied' ? { daytimeUsePct: Number(daytimeUse) } : {}),
+        ...(systemType === 'hybrid' ? { nightUsePct: Number(nightUse) } : {}),
+        ...(systemType === 'off-grid' ? { autonomyDays: Number(autonomy) } : {}),
+        dieselKesPerLitre: systemType === 'off-grid' ? Number(diesel) || undefined : undefined,
+        peakLoadKw: Number(peakLoad) || undefined,
       };
       const data = (await core.calculate(payload)) as CalcResult;
       if (!data || typeof data.pvKwp !== 'number') throw new Error('Empty response from the calculator.');
       setResult(data);
+      // On a phone the results render below the form: bring them into view
+      // (2026-10-30 audit).
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
 
       updateMetrics({
         systemSizeKw: data.pvKwp,
@@ -246,7 +264,7 @@ export default function CalculatorPage() {
       // The proposal shows the tariff and diesel price this calculation used
       // (2026-10-29 audit: it said KES 25 "entered by the client" after 30 was entered).
       updateSite({
-        monthlyConsumptionKwh: cons, irradianceKwhPerM2Day: data.sunHours.annual,
+        monthlyConsumptionKwh: cons, irradianceKwhPerM2Day: data.sunHours.annual, irradianceSource: data.sunHours.source,
         tariffKesPerKwh: Number(tariff) > 0 ? Number(tariff) : DEFAULT_TARIFF_KES_PER_KWH,
         dieselKesPerLitre: Number(diesel) > 0 ? Number(diesel) : DEFAULT_DIESEL_KES_PER_LITRE,
       });
@@ -287,7 +305,7 @@ export default function CalculatorPage() {
           <Label htmlFor="sc-type">System type</Label>
           <Select id="sc-type" value={systemType} onChange={(e) => setSystemType(e.target.value as SystemType)}>
             <option value="hybrid">Hybrid — solar + battery + grid</option>
-            <option value="grid-tied">Grid-tied — solar + grid, no battery</option>
+            <option value="grid-tied">Grid-tied — solar + grid, no battery (no power during KPLC cuts)</option>
             <option value="off-grid">Off-grid — no grid (replaces a generator)</option>
           </Select>
 
@@ -356,6 +374,13 @@ export default function CalculatorPage() {
           {!result && !loading && <Banner $kind="info">Fill in the form and press Calculate.</Banner>}
           {result && (
             <>
+              <div ref={resultsRef} />
+              {(result.notWorthwhile || result.warning) && (
+                <div role="alert" style={{ margin: '0 0 1rem', padding: '0.75rem 1rem', borderRadius: 10, border: '1px solid rgba(255,170,0,0.6)', background: 'rgba(255,170,0,0.1)', color: '#ffd27a', fontSize: '0.9rem' }}>
+                  {result.notWorthwhile && <div><strong>Not worthwhile as entered.</strong> {result.assumptions[0]?.replace(/^NOT WORTHWHILE:\s*/, '')}</div>}
+                  {result.warning && <div>{result.warning}</div>}
+                </div>
+              )}
               <ResultsGrid>
                 <ResultCard initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                   <ResultValue>{result.pvKwp} kWp</ResultValue>
