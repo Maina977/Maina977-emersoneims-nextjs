@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   // on the root layout reading headers() — that call forced the whole site
   // to render dynamically and disabled browser caching everywhere.
   alternates: { canonical: 'https://www.emersoneims.com/case-studies' },
-  title: 'Case Studies — Real Power Solutions Across Kenya',
-  description: 'Verified power generation projects with measurable ROI: St. Austin Academy (50kVA Perkins), Bigot Flowers (cold-chain export), NTSA (critical infrastructure), Greenheart Kilifi (real estate), Kivukoni School (coastal). SLA-backed solutions, client testimonials, financial impact analysis.',
+  title: 'Case Studies: Power Projects in Kenya',
+  description: 'Power projects we have delivered in Kenya: St. Austin Academy, Bigot Flowers, NTSA, Greenheart Kilifi and Kivukoni School, and what each one needed.',
   keywords: 'generator case studies Kenya, real projects, verified results, power solutions, Cummins installation, Perkins generators, commercial power systems',
   openGraph: {
     title: 'Real Case Studies — Power Solutions That Work in Kenya',

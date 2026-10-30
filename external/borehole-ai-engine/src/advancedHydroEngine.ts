@@ -80,24 +80,39 @@ export interface GRACEData {
   footprint_km?: number;
 }
 
-/** Ordinary least-squares trend (per year) and its standard error. */
-function olsTrend(months: string[], values: (number | null)[]): { slope: number; se: number; n: number } | null {
-  const x: number[] = [], y: number[] = [];
+/**
+ * Least-squares trend (per year) and its standard error, on the deseasonalised
+ * series (each calendar month's mean removed), with the error widened for
+ * lag-1 autocorrelation of the residuals (effective n = n(1-r1)/(1+r1)).
+ * 2026-10-30 audit: plain OLS on raw monthly GRACE treated 200+ correlated,
+ * seasonal months as independent and understated the error several-fold.
+ */
+export function olsTrend(months: string[], values: (number | null)[]): { slope: number; se: number; n: number; nEff: number } | null {
+  const x: number[] = [], y: number[] = [], mo: number[] = [];
   months.forEach((m, i) => {
     const v = values[i];
     if (typeof v !== 'number' || !Number.isFinite(v)) return;
     x.push(Number(m.slice(0, 4)) + (Number(m.slice(5, 7)) - 0.5) / 12);
     y.push(v);
+    mo.push(Number(m.slice(5, 7)) - 1);
   });
   const n = x.length;
   if (n < 24) return null;
-  const mx = x.reduce((a, b) => a + b, 0) / n, my = y.reduce((a, b) => a + b, 0) / n;
+  const sum = new Array(12).fill(0), cnt = new Array(12).fill(0);
+  for (let i = 0; i < n; i++) { sum[mo[i]] += y[i]; cnt[mo[i]]++; }
+  const yd = y.map((v, i) => v - sum[mo[i]] / cnt[mo[i]]);
+  const mx = x.reduce((a, b) => a + b, 0) / n, my = yd.reduce((a, b) => a + b, 0) / n;
   let sxx = 0, sxy = 0;
-  for (let i = 0; i < n; i++) { sxx += (x[i] - mx) ** 2; sxy += (x[i] - mx) * (y[i] - my); }
+  for (let i = 0; i < n; i++) { sxx += (x[i] - mx) ** 2; sxy += (x[i] - mx) * (yd[i] - my); }
   const slope = sxy / sxx;
-  let sse = 0;
-  for (let i = 0; i < n; i++) sse += (y[i] - (my + slope * (x[i] - mx))) ** 2;
-  return { slope, se: Math.sqrt(sse / (n - 2) / sxx), n };
+  const res = yd.map((v, i) => v - (my + slope * (x[i] - mx)));
+  const sse = res.reduce((a, r) => a + r * r, 0);
+  let c1 = 0;
+  for (let i = 1; i < n; i++) c1 += res[i] * res[i - 1];
+  const r1 = Math.min(0.95, Math.max(0, sse > 0 ? c1 / sse : 0));
+  const nEff = Math.max(3, n * (1 - r1) / (1 + r1));
+  const se = Math.sqrt(sse / (n - 2) / sxx) * Math.sqrt((n - 2) / Math.max(1, nEff - 2));
+  return { slope, se, n, nEff: Math.round(nEff) };
 }
 
 /**
@@ -361,8 +376,11 @@ export interface NearbyBoreholeData {
     outcome?: 'Success' | 'Moderate' | 'Fail' | 'Unknown';
     source: string;
   }[];
-  averageDepth: number;
-  averageYield: number;
+  /** Mean of recorded depths; null with fewer than three. */
+  averageDepth: number | null;
+  averageYield: number | null;
+  averageDepthN?: number;
+  averageYieldN?: number;
   averageWaterLevel: number;
   successRate: number;
   sampleSize: number;
@@ -557,17 +575,26 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
       const wraData = await loadLocalJson<any[]>('/data/wra-boreholes.json');
       if (Array.isArray(wraData)) {
         let wraCount = 0;
+        // Many records were geocoded to a town centre, so several share one
+        // point and read "0 km away" (2026-10-30 audit). Points shared by five
+        // or more records are flagged as approximate.
+        const shared = new Map<string, number>();
+        for (const r of wraData) { const k = `${Number(r.lat).toFixed(4)},${Number(r.lon).toFixed(4)}`; shared.set(k, (shared.get(k) ?? 0) + 1); }
         for (const b of wraData) {
           const bLat = Number(b.lat), bLon = Number(b.lon);
           if (!isFinite(bLat) || !isFinite(bLon)) continue;
           const dist = haversineDistance(lat, lon, bLat, bLon);
           if (dist > searchRadius) continue;
+          const approx = (shared.get(`${bLat.toFixed(4)},${bLon.toFixed(4)}`) ?? 0) >= 5;
+          // A yield of 0 on a "Success" or "Moderate" record is a missing value, not a dry hole.
+          const y = b.yield_m3h != null ? Number(b.yield_m3h) : NaN;
+          const yieldKnown = Number.isFinite(y) && (y > 0 || b.outcome === 'Fail');
           wells.push({
-            id: `${b.name ?? 'Unnamed borehole'}${b.permit ? ` (${b.permit})` : ''}`,
+            id: `${b.name ?? 'Unnamed borehole'}${b.permit ? ` (${b.permit})` : ''}${approx ? ' (location approximate: town centre)' : ''}`,
             lat: bLat, lon: bLon,
             distance_km: Math.round(dist * 10) / 10,
-            depth_m: Number(b.depth_m) || 0,
-            yield_m3h: b.yield_m3h != null ? Number(b.yield_m3h) : undefined,
+            depth_m: Number(b.depth_m) || 0, // 0 = depth not recorded
+            yield_m3h: yieldKnown ? y : undefined,
             waterLevel_m: b.swl_m != null ? Number(b.swl_m) : undefined,
             aquiferType: b.aquiferType ?? undefined,
             lithology: b.lithology ?? undefined,
@@ -1144,8 +1171,10 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
     // are computed over the full deduped set. Owner requirement: the report
     // must show 50+ boreholes around the site wherever the registries have them.
     nearbyWells: dedupWells.slice(0, 150),
-    averageDepth: validDepths.length > 0 ? Math.round(validDepths.reduce((a, b) => a + b, 0) / validDepths.length) : 0,
-    averageYield: validYields.length > 0 ? Math.round(validYields.reduce((a, b) => a + b, 0) / validYields.length * 10) / 10 : 0,
+    averageDepth: validDepths.length >= 3 ? Math.round(validDepths.reduce((a, b) => a + b, 0) / validDepths.length) : null,
+    averageYield: validYields.length >= 3 ? Math.round(validYields.reduce((a, b) => a + b, 0) / validYields.length * 10) / 10 : null,
+    averageDepthN: validDepths.length,
+    averageYieldN: validYields.length,
     averageWaterLevel: validWL.length > 0 ? Math.round(validWL.reduce((a, b) => a + b, 0) / validWL.length * 10) / 10 : 0,
     successRate,
     sampleSize: dedupWells.length,

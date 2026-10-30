@@ -1048,6 +1048,8 @@ function rankGuides(terms: string[], pairs: [string, string][], expanded: Set<st
     const titleFluids = FLUIDS.filter((fl) => new RegExp(`\\b${fl}\\b`).test(rawTitle));
     if (askedFluids.length && titleFluids.length && !titleFluids.some((fl) => askedFluids.includes(fl))) continue;
     if (dir === 'high' && /\b(no|low|under|loss)\b/.test(rawTitle)) { titleHit = false; score -= 6; }
+    // A dip or drop is not "no voltage" (2026-10-30 re-audit m6).
+    if (terms.some((x) => /^(drop|dip)/.test(x)) && /\bno voltage\b|produces no\b/.test(rawTitle)) { titleHit = false; score -= 6; }
     if (dir === 'low' && /\b(over|high)\b/.test(rawTitle)) { titleHit = false; score -= 6; }
     if (score > 0 && enough && strong && enoughKey) {
       out.push({
@@ -1228,7 +1230,7 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
       if (wantsGenVoltage && !/\bvoltag/.test(rawTitle)) score *= 0.4;
       // "Power Supply Voltage" is the controller's DC supply, not the
       // generator's output (2026-10-29: it led "generator voltage low").
-      if (wantsGenVoltage && /\bsupply\b/.test(rawTitle) && !/\bsupply\b/.test(typedText)) score *= 0.4;
+      if (wantsGenVoltage && /\bsupply\b/.test(rawTitle) && !/\bsupply\b/.test(typedText)) score = score * 0.2 - 5;
       // A sensor-circuit fault ("... Sensor - Voltage Below Normal", J1939 FMI
       // 3/4) is not the generator's output (2026-10-30 audit: a fuel-pressure
       // sensor ranked for "generator voltage low").
@@ -1240,7 +1242,12 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
       if (/\b(transformer|turbine|steam)\b/.test(rawTitle) && !/\b(transformer|turbine|steam)\b/.test(typedText)) score -= 20;
       // Nor about the mains or synchronising bus unless the user says so
       // (2026-10-25 audit: "voltage too high" led with Sync / Mains Over Voltage).
-      if (!mentionsGrid && /\b(mains|sync\w*|bus|utility|grid)\b/.test(rawTitle)) score -= 10;
+      // Proportional, so a high-scoring mains alarm cannot outrank the
+      // generator's own (2026-10-30 re-audit: mains alarms 5th-8th).
+      if (!mentionsGrid && /\b(mains|sync\w*|bus|utility|grid)\b/.test(rawTitle)) score = score * 0.3 - 10;
+      // A sensor-circuit fault is not the condition itself unless the user
+      // says sensor (re-audit m5: "Temperature Sensor Fault" for overheating).
+      if (/\bsensor\b/.test(rawTitle) && !/\bsensor\b/.test(typedText) && /temperatur|overheat|pressure|voltage|speed/.test(typedText)) score *= 0.4;
       // "Reverse power" is a specific protection, not "no power" (2026-10-27).
       if (/\breverse\b/.test(rawTitle) && !/\breverse\b/.test(typedText)) score -= 10;
       // "high" favours over-/high- titles and "low" under-/low- titles.
@@ -1317,6 +1324,17 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   for (const [re, lines] of TOPIC_SAFETY) if (re.test(typedText) && !/voltage|current|frequency|phase|power/.test(re.source)) addSafety(lines);
   if (/overheat|coolant|radiator|temperatur|hot/.test(typedText)) addSafety(['Never open a hot radiator or expansion-tank cap: scalding coolant under pressure. Stop the engine and let it cool first.']);
   if (/no voltage|voltage|output|alternator|avr|breaker/.test(typedText)) addSafety([ISOLATE]);
+  // Low oil pressure, starting and speed problems (2026-10-30 re-audit: no
+  // safety line at all for "low oil pressure", the most damaging to run on).
+  if (/\boil\b/.test(typedText) && /low|pressure|drop|under/.test(typedText)) addSafety([OIL_STOP]);
+  if (/start|crank/.test(typedText)) addSafety(['The set can crank or start at any moment: keep hands and clothing clear of the fan and belts, and select OFF before working on it. Batteries give off explosive gas: no sparks near them.']);
+  if (/surg|hunt|speed|rpm/.test(typedText)) addSafety(['If the speed runs away (overspeed), shut down at once with the emergency stop and do not restart until the governor and fuel control are checked.']);
+  if (/burn|scorch|melt|smell/.test(typedText) && /wir|cable|harness/.test(typedText)) addSafety([ISOLATE, 'Burnt wiring is a fire risk: isolate, keep a CO2 or dry-powder extinguisher at hand, and replace the damaged section before running.']);
+  if (/\bleak/.test(typedText)) addSafety(['Hot oil, coolant and fuel burn and can catch fire on a hot exhaust: stop the engine and let it cool before tracing a leak, and clean spills at once.']);
+  // Smoke is read from its colour (the guide), not from controller alarms:
+  // only alarms about the exhaust, air intake or boost are kept (2026-10-30
+  // re-audit: an unrelated fuel-rail alarm was the only "match").
+  if (/\bsmoke/.test(typedText)) ranked = ranked.filter((r) => /smoke|exhaust|air filter|intake|boost|turbo/i.test(`${r.title} ${r.description}`));
   if (/\bleak/.test(typedText)) notes.unshift('No controller alarm detects a leak directly: find it by inspection (dry the area, run the engine, look for fresh wetting). Alarms below are what a leak can eventually cause, such as a low fuel or coolant level.');
 
   return {

@@ -268,9 +268,7 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
     const trendDirection: HistoricalWeather['trendDirection'] =
       trendPerDecade > 15 ? 'increasing' : trendPerDecade < -15 ? 'decreasing' : 'stable';
 
-    // Seasons
-    const rainySeasonMonths = MONTHS.filter((_, i) => monthlyAvgPrecip[i] >= 80);
-    const drySeasonMonths = MONTHS.filter((_, i) => monthlyAvgPrecip[i] < 30);
+    // Seasons (rainy/dry month lists are set after reconciliation, below).
     // The four driest months, listed — the same rule as the web page. A
     // first-to-last range ("Jan-Oct") swallowed the rains between them
     // (2026-10-25 audit).
@@ -306,11 +304,15 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
             if (months.length >= 10) nasaAnnuals.push(Math.round(months.reduce((a, b) => a + b, 0)));
           }
           if (nasaAnnuals.length >= 5) {
-            const nasaAvg = Math.round(nasaAnnuals.reduce((a, b) => a + b, 0) / nasaAnnuals.length);
+            // Median, not mean: single NASA years of 2,150-2,264 mm at semi-arid
+            // sites dragged the mean far above the reanalysis (2026-10-30 audit).
+            const sorted = [...nasaAnnuals].sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            const nasaAvg = Math.round(sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2);
             nasaAvgForCheck = nasaAvg;
             const diff = Math.abs(nasaAvg - avgAnnualPrecip);
             const pctDiff = Math.round((diff / Math.max(avgAnnualPrecip, 1)) * 100);
-            crossValidation = ` | NASA POWER MERRA-2 cross-validation: ${nasaAvg}mm/yr avg (${pctDiff}% ${nasaAvg > avgAnnualPrecip ? 'higher' : 'lower'} — ${pctDiff <= 15 ? 'good agreement' : pctDiff <= 35 ? 'moderate divergence' : 'large divergence: the two sources disagree, so rainfall here is uncertain'})`;
+            crossValidation = ` | NASA POWER MERRA-2 cross-check: ${nasaAvg} mm/yr median year (${pctDiff}% ${nasaAvg > avgAnnualPrecip ? 'higher' : 'lower'} — ${pctDiff <= 15 ? 'good agreement' : pctDiff <= 35 ? 'moderate divergence' : 'large divergence: the two sources disagree, so rainfall here is uncertain'})`;
             console.log(`[HistoricalWeather] NASA POWER cross-validation: ${nasaAvg}mm/yr (ERA5: ${avgAnnualPrecip}mm/yr, diff: ${pctDiff}%)`);
           }
         }
@@ -327,18 +329,27 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
     if (nasaAvgForCheck > 0 && avgAnnualPrecip > 0 && Math.max(nasaAvgForCheck, avgAnnualPrecip) / Math.min(nasaAvgForCheck, avgAnnualPrecip) > 1.3) {
       const lo = Math.min(nasaAvgForCheck, avgAnnualPrecip);
       scale = lo / avgAnnualPrecip;
-      precipitationNote = `Rainfall sources disagree: ECMWF reanalysis ${avgAnnualPrecip} mm/yr, NASA POWER ${nasaAvgForCheck} mm/yr. Long-term rainfall here is probably between ${lo} and ${Math.max(nasaAvgForCheck, avgAnnualPrecip)} mm/yr; the lower figure is used for recharge as the cautious choice.${lo < 450 ? ' In arid areas both can overstate rainfall; a local weather-station record is the better reference.' : ''}`;
+      const hi = Math.max(nasaAvgForCheck, avgAnnualPrecip);
+      // Beyond 1.6x the higher figure is not offered as a plausible bound
+      // (2026-10-30 audit: Kisumu's NASA 2,264 mm was shown as one).
+      precipitationNote = `Rainfall sources disagree: ECMWF reanalysis ${avgAnnualPrecip} mm/yr, NASA POWER ${nasaAvgForCheck} mm/yr (median year). ${hi / lo > 1.6 ? `The higher figure is likely an overestimate here; ${lo} mm/yr is used` : `Long-term rainfall here is probably between ${lo} and ${hi} mm/yr; the lower figure is used for recharge as the cautious choice`}.${lo < 450 ? ' In arid areas both can overstate rainfall; a local weather-station record is the better reference.' : ''}`;
     }
     const sc = (v: number) => Math.round(v * scale);
     const avgP = sc(avgAnnualPrecip);
+    // Rainy and dry months from the reconciled series (2026-10-30 audit: the
+    // 80/30 mm thresholds were applied before scaling, so a month the page
+    // showed at 60 mm was listed as rainy).
+    const scaledMonthly = monthlyAvgPrecip.map(sc);
     return {
       years, annualPrecipitation: annualPrecipitation.map(sc), annualMeanTemp,
-      monthlyAvgPrecip: monthlyAvgPrecip.map(sc), monthlyAvgTemp,
+      monthlyAvgPrecip: scaledMonthly, monthlyAvgTemp,
       droughtYears, wetYears,
       trendDirection, trendPerDecade: sc(trendPerDecade), avgAnnualPrecip: avgP, avgAnnualTemp,
       averageAnnualPrecipitation: avgP, averageTemperature: avgAnnualTemp, precipitationNote,
       maxAnnualPrecip: sc(maxAnnualPrecip), minAnnualPrecip: sc(minAnnualPrecip),
-      rainySeasonMonths, drySeasonMonths, bestDrillingSeason,
+      rainySeasonMonths: MONTHS.filter((_, i) => scaledMonthly[i] >= 80),
+      drySeasonMonths: MONTHS.filter((_, i) => scaledMonthly[i] < 30),
+      bestDrillingSeason,
       source: usedNasaOnly
         ? `NASA POWER monthly (${startYear}–${endYear}); Open-Meteo ECMWF reanalysis did not answer`
         : `Open-Meteo ECMWF reanalysis (${startYear}–${endYear}): IFS 9 km from 2017; ERA5 before 2017, scaled to IFS month by month${daily.era5ScaleToIfs != null ? ` (ERA5 x${daily.era5ScaleToIfs} here)` : ''}${crossValidation}`,

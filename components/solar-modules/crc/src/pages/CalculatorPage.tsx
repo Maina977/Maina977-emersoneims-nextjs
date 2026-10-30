@@ -374,7 +374,7 @@ export default function CalculatorPage() {
           {!result && !loading && <Banner $kind="info">Fill in the form and press Calculate.</Banner>}
           {result && (
             <>
-              <div ref={resultsRef} />
+              <div ref={resultsRef} style={{ scrollMarginTop: 80 }} />
               {(result.notWorthwhile || result.warning) && (
                 <div role="alert" style={{ margin: '0 0 1rem', padding: '0.75rem 1rem', borderRadius: 10, border: '1px solid rgba(255,170,0,0.6)', background: 'rgba(255,170,0,0.1)', color: '#ffd27a', fontSize: '0.9rem' }}>
                   {result.notWorthwhile && <div><strong>Not worthwhile as entered.</strong> {result.assumptions[0]?.replace(/^NOT WORTHWHILE:\s*/, '')}</div>}

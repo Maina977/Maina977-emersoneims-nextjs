@@ -70,14 +70,14 @@ const MODE_HEADERS: Record<RuleBasedMode, { title: string; subtitle: string; emo
 };
 
 const VISUAL_CHECKLIST: { id: string; label: string; mapsTo: string }[] = [
-  { id: 'leak-fluid', label: 'Visible fluid leak (oil / coolant / fuel)', mapsTo: 'leak fluid drip stain' },
-  { id: 'smoke', label: 'Smoke from exhaust or engine bay', mapsTo: 'smoke exhaust black white blue' },
-  { id: 'corrosion', label: 'Battery / terminal corrosion', mapsTo: 'battery terminal corrosion' },
-  { id: 'belt', label: 'Belt cracked / glazed / loose', mapsTo: 'belt cracked glazed slipping' },
-  { id: 'wiring-damage', label: 'Wiring chafed, burnt or disconnected', mapsTo: 'wiring harness burnt chafed' },
+  { id: 'leak-fluid', label: 'Visible fluid leak (oil / coolant / fuel)', mapsTo: 'oil leak coolant leak fuel leak' },
+  { id: 'smoke', label: 'Smoke from exhaust or engine bay', mapsTo: 'black smoke white smoke blue smoke' },
+  { id: 'corrosion', label: 'Battery / terminal corrosion', mapsTo: 'battery not charging corrosion' },
+  { id: 'belt', label: 'Belt cracked / glazed / loose', mapsTo: 'fan belt slipping' },
+  { id: 'wiring-damage', label: 'Wiring chafed, burnt or disconnected', mapsTo: 'burnt wiring harness' },
   { id: 'fault-display', label: 'Fault code on controller display', mapsTo: 'controller fault code alarm display' },
-  { id: 'overheat-signs', label: 'Discoloration / heat damage on component', mapsTo: 'overheat discoloration heat damage' },
-  { id: 'hose-damage', label: 'Hose swollen, cracked, or weeping', mapsTo: 'hose cracked swollen weeping' },
+  { id: 'overheat-signs', label: 'Discoloration / heat damage on component', mapsTo: 'overheating' },
+  { id: 'hose-damage', label: 'Hose swollen, cracked, or weeping', mapsTo: 'coolant hose leak' },
 ];
 
 const SEVERITY_COLOR: Record<string, string> = {
@@ -99,6 +99,7 @@ export default function RuleBasedAssistantPanel({
   const [ranked, setRanked] = useState<RankedFault[] | null>(null);
   const [guides, setGuides] = useState<RankedGuide[]>([]);
   const [safety, setSafety] = useState<string[]>([]);
+  const [notes, setNotes] = useState<string[]>([]);
   const [diagNotice, setDiagNotice] = useState<string | null>(null);
   const [lookup, setLookup] = useState<FaultLookupResponse | null>(null);
   const [busy, setBusy] = useState(false);
@@ -122,6 +123,7 @@ export default function RuleBasedAssistantPanel({
         setRanked(res.ranked);
         setGuides(res.guides ?? []);
         setSafety((res as { safety?: string[] }).safety ?? []);
+        setNotes(res.notes ?? []);
         setDiagNotice((res as { notice?: string }).notice ?? null);
       } catch (e) {
         const msg =
@@ -161,6 +163,14 @@ export default function RuleBasedAssistantPanel({
     setLookup(null);
     try {
       const res = await lookupFaultCode(code, card?.make);
+      // Alarm wording ("DSE low oil pressure", as the placeholder suggests)
+      // is not a code: run it through the symptom diagnosis instead
+      // (2026-10-30 re-audit: it answered "not in our library").
+      if (!res.found && !(res as { notice?: string }).notice && /[a-z]/i.test(code) && !/\d/.test(code)) {
+        setBusy(false);
+        await runDiagnose([code]);
+        return;
+      }
       setLookup(res);
     } catch (e) {
       const msg =
@@ -173,7 +183,7 @@ export default function RuleBasedAssistantPanel({
     } finally {
       setBusy(false);
     }
-  }, [faultCode, card?.make]);
+  }, [faultCode, card?.make, runDiagnose]);
 
   const toggleCheck = useCallback((id: string) => {
     setChecked((prev) => {
@@ -339,6 +349,11 @@ export default function RuleBasedAssistantPanel({
           (2026-10-30 audit), and the reason when a code cannot exist. */}
       {ranked && diagNotice && (
         <div role="alert" className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">{diagNotice}</div>
+      )}
+      {ranked && notes.some((n) => /leak|not indexed|No fault codes/i.test(n)) && (
+        <div className="mt-4 rounded-lg border border-slate-600 bg-slate-800/60 p-3 text-sm text-slate-200">
+          {notes.filter((n) => /leak|not indexed|No fault codes/i.test(n)).map((n, i) => <p key={i}>{n}</p>)}
+        </div>
       )}
       {ranked && safety.length > 0 && (
         <div role="note" className="mt-4 rounded-lg border border-red-500/40 bg-red-950/40 p-3">

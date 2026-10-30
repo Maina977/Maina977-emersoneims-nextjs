@@ -13,6 +13,9 @@
  * It changes no data: the body is passed through exactly as the source sent it.
  */
 import { NextRequest, NextResponse } from 'next/server';
+import { limiter } from '@/lib/rate-limiter';
+
+const RELAY_UPSTREAM_PER_MIN = 120;
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -43,8 +46,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // same requests go to its customer-* hosts with the key, which stays here on
 // the server (set OPEN_METEO_API_KEY). Without a key nothing changes.
 const OPEN_METEO_KEY = process.env.OPEN_METEO_API_KEY?.trim();
-function upstreamUrl(u: URL): string {
-  if (!OPEN_METEO_KEY || !u.hostname.endsWith('open-meteo.com') || u.hostname.startsWith('customer-')) return u.toString();
+function upstreamUrl(u: URL, useKey: boolean): string {
+  if (!useKey || !OPEN_METEO_KEY || !u.hostname.endsWith('open-meteo.com') || u.hostname.startsWith('customer-')) return u.toString();
   const x = new URL(u.toString());
   x.hostname = `customer-${u.hostname}`;
   x.searchParams.set('apikey', OPEN_METEO_KEY);
@@ -90,7 +93,19 @@ export async function GET(req: NextRequest) {
   if (!out) {
     // Concurrent identical requests share one upstream call.
     let p = inflight.get(key);
-    if (!p) { p = fetchWithRetry(upstreamUrl(target)); inflight.set(key, p); }
+    if (!p) {
+      // Upstream calls (cache misses) are limited per client, so no one can
+      // spend the sources' quotas or the paid key through this relay; one
+      // analysis needs a few dozen (2026-10-30 audit).
+      const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
+      if (!limiter.check(RELAY_UPSTREAM_PER_MIN, `relay:${ip}`).success) {
+        return NextResponse.json({ error: 'Too many requests; try again in a minute' }, { status: 429, headers: { 'Retry-After': '60' } });
+      }
+      // The paid key is used only for this site's own pages.
+      const sameSite = req.headers.get('sec-fetch-site') === 'same-origin' || req.headers.get('sec-fetch-site') === 'same-site';
+      p = fetchWithRetry(upstreamUrl(target, sameSite));
+      inflight.set(key, p);
+    }
     try { out = { at: Date.now(), ...(await p) }; } finally { inflight.delete(key); }
     if (out.status === 200 && out.body.length <= MAX_CACHED_BODY) {
       const old = cache.get(key);

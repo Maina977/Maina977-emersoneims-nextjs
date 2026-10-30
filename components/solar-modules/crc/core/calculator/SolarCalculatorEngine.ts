@@ -205,30 +205,37 @@ export class SolarCalculatorEngine {
     // Voc at 10 °C under a typical 500 V MPPT input.
     const perString = Math.min(9, Math.max(s.panels >= 4 ? 4 : s.panels, Math.ceil(s.panels / Math.ceil(s.panels / 9))));
     const strings = Math.ceil(s.panels / perString);
+    // Breaker first, then a cable that carries it (In ≤ Iz) within the drop
+    // limit (2026-10-30 re-audit: 50 A MCB on 6 mm², Iz 46 A).
     const stringA = 14 * 1.25;
-    const pv = sizeConductor(stringA, 25, perString * 41.6, 1.5);
+    // IEC 62548: string fuse at least 1.5 × Isc (21 A for Isc 14 A) and not
+    // above the module's maximum series fuse (typically 25-30 A).
+    const stringFuse = BREAKERS_A.find((b) => b >= 14 * 1.5) ?? 25;
+    const pv = sizeConductor(Math.max(stringA, stringFuse), 25, perString * 41.6, 1.5);
     specs.push({
       segment: `PV strings to inverter (${strings} × ${perString} panels)`, voltage: Math.round(perString * 41.6), current: Math.round(stringA * 10) / 10, distance: 25,
       cableSize: pv ? String(Math.max(pv.mm2, 4)) : '—', cableType: 'PV1-F / H1Z2Z2-K solar cable', colors: ['Red (+)', 'Black (−)'],
-      breaker: strings > 2 ? `${breakerFor(stringA) ?? '—'} A DC fuse per string` : 'DC isolator', disconnect: true,
+      breaker: strings > 2 ? `${stringFuse} A gPV fuse per string (≥ 1.5 × Isc; check the module's maximum series fuse)` : 'DC isolator', disconnect: true,
       notes: 'UV-rated cable, MC4 connectors of one make; DC isolator at the inverter',
     });
     if (s.batteryKwh > 0) {
       const battA = ((s.inverterKw * 1000) / (48 * 0.9)) * 1.25;
-      const b = sizeConductor(battA, 3, 48, 1);
+      const battBreaker = breakerFor(battA);
+      const b = battBreaker ? sizeConductor(battBreaker, 3, 48, 1) : null;
       specs.push({
         segment: 'Battery to inverter (48 V)', voltage: 48, current: Math.round(battA), distance: 3,
         cableSize: b ? String(b.mm2) : '—', cableType: 'Flexible battery cable', colors: ['Red (+)', 'Black (−)'],
-        breaker: breakerFor(battA) ? `${breakerFor(battA)} A DC breaker or fuse` : '—', disconnect: true,
+        breaker: battBreaker && b ? `${battBreaker} A DC breaker or fuse` : '—', disconnect: true,
         notes: b ? `Voltage drop ${b.dropPct}% over 3 m` : 'Above a single 240 mm² cable: use parallel runs sized by an electrician, or a higher-voltage battery',
       });
     }
     const acA = ((s.inverterKw * 1000) / 230) * 1.25;
-    const ac = sizeConductor(acA, 20, 230, 3);
+    const acBreaker = breakerFor(acA);
+    const ac = acBreaker ? sizeConductor(acBreaker, 20, 230, 3) : null;
     specs.push({
       segment: 'Inverter AC out to distribution board (single-phase 230 V)', voltage: 230, current: Math.round(acA), distance: 20,
       cableSize: ac ? String(ac.mm2) : '—', cableType: 'PVC copper', colors: ['Brown (L)', 'Blue (N)', 'Green/Yellow (PE)'],
-      breaker: breakerFor(acA) ? `${breakerFor(acA)} A AC MCB` : '—', disconnect: true,
+      breaker: acBreaker && ac ? `${acBreaker} A AC MCB` : '—', disconnect: true,
       notes: s.inverterKw > 10 ? 'Above about 10 kW use a three-phase inverter and size per phase' : (ac ? `Voltage drop ${ac.dropPct}% over 20 m` : 'Beyond a single cable: engineer to size'),
     });
     return specs;

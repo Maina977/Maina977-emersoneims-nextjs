@@ -291,7 +291,16 @@ export default function SolarBibleEngine() {
   const calculateSystemSize = useCallback(() => {
     setIsCalculating(true);
 
-    setTimeout(() => {
+    // NASA POWER sun-hours for the town (annual and cloudiest month) through
+    // the calculator API, so this tool sizes on the same sun as the
+    // calculator (2026-10-30 re-audit). Falls back to the table if it fails.
+    const key = location.toLowerCase().replace(/[^a-z]/g, '');
+    fetch('/api/solar/calculate', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ consumption: Math.max(10, Math.round(dailyConsumption * 30)), location: key, systemType: 'hybrid' }) })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((j) => {
+      const sun = j?.sunHours?.source === 'nasa-power' ? { annual: Number(j.sunHours.annual), worstMonth: Number(j.sunHours.worstMonth) } : undefined;
       // Use the advanced optimization algorithm from SolarEquipmentDatabase
       const optimizedSystems = findOptimalSystem(
         dailyConsumption,
@@ -299,7 +308,8 @@ export default function SolarBibleEngine() {
         backupHours,
         location,
         budget,
-        gridConnected
+        gridConnected,
+        sun,
       );
 
       if (optimizedSystems.length === 0) {
@@ -354,7 +364,7 @@ export default function SolarBibleEngine() {
 
       setIsCalculating(false);
       setStep(5);
-    }, 0); // was a 1.5 s artificial delay (2026-10-30 audit)
+    });
   }, [dailyConsumption, peakLoad, location, backupHours, budget, gridConnected]);
 
   // ═══════════════════════════════════════════════════════════════════════════════
@@ -940,21 +950,21 @@ ${systemDesign.batteries[0] ? `            <tr>
                   <div className="flex items-center gap-3">
                     <div className="w-24 text-gray-400 text-sm">Grid (KPLC)</div>
                     <div className="flex-1 h-6 bg-red-500/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-red-500" style={{ width: '100%' }} />
+                      <div className="h-full bg-red-500" style={{ width: `${Math.min(100, (costAnalysis.gridCostPerMonth / Math.max(costAnalysis.gridCostPerMonth, costAnalysis.generatorCostPerMonth, 1)) * 100)}%` }} />
                     </div>
                     <span className="text-red-400 font-medium">KES {costAnalysis.gridCostPerMonth.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-24 text-gray-400 text-sm">Generator</div>
                     <div className="flex-1 h-6 bg-orange-500/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-orange-500" style={{ width: `${(costAnalysis.generatorCostPerMonth / costAnalysis.gridCostPerMonth) * 100}%` }} />
+                      <div className="h-full bg-orange-500" style={{ width: `${Math.min(100, (costAnalysis.generatorCostPerMonth / Math.max(costAnalysis.gridCostPerMonth, costAnalysis.generatorCostPerMonth, 1)) * 100)}%` }} />
                     </div>
                     <span className="text-orange-400 font-medium">KES {costAnalysis.generatorCostPerMonth.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-24 text-gray-400 text-sm">Solar</div>
                     <div className="flex-1 h-6 bg-green-500/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-green-500" style={{ width: `${(costAnalysis.solarCostPerMonth / costAnalysis.gridCostPerMonth) * 100}%` }} />
+                      <div className="h-full bg-green-500" style={{ width: `${Math.min(100, (costAnalysis.solarCostPerMonth / Math.max(costAnalysis.gridCostPerMonth, costAnalysis.generatorCostPerMonth, 1)) * 100)}%` }} />
                     </div>
                     <span className="text-green-400 font-medium">KES {Math.round(costAnalysis.solarCostPerMonth).toLocaleString()}</span>
                   </div>

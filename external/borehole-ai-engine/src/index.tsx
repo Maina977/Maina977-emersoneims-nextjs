@@ -1,5 +1,7 @@
 ﻿import { inKenya } from './kenyaLand';
 import { finalVerdict } from './verdict';
+import { governingSummary, last12Months, probabilityBand } from './governingSummary';
+import { parseCoordPair } from './coordParse';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { drillRatePerM, mobilisationUSD, countyRateBand, KES_PER_USD } from './costModel';
 import { BoreholeAnalyzer } from './boreholeAnalyzer';
@@ -551,11 +553,20 @@ function genProbability(prob: number, _depth: number, r?: any) {
   const rechargePotential = rs?.governing_mm != null
     ? `~${rs.governing_mm} mm/yr (${rs.governing_mm >= 100 ? 'high' : rs.governing_mm >= 30 ? 'moderate' : 'low'})`
     : 'Not estimated';
+  // GRACE satellite gravity governs where it covers the site (2026-10-30 audit:
+  // the card showed the soil-moisture proxy while GRACE said otherwise).
+  const gw = r?.graceData?.isSatelliteGravity !== false ? r?.graceData?.groundwater : null;
   const ga = r?.gldasGroundwater?.graceAnomaly;
   const proxyOk = ga?.trend && /NASA POWER|GWETPROF/i.test(String(ga?.dataSource ?? ''));
-  const storageTrend = proxyOk
-    ? (ga.trend === 'gaining' ? 'Rising (soil-moisture proxy)' : ga.trend === 'stable' ? 'Steady (soil-moisture proxy)' : 'Falling (soil-moisture proxy)')
-    : 'Not measured';
+  const storageTrend = gw && Number.isFinite(gw.trend_cm_per_year)
+    ? (() => {
+        const t = gw.trend_cm_per_year, se = Number.isFinite(gw.trendStdErr_cm_per_year) ? gw.trendStdErr_cm_per_year : 0;
+        const word = Math.abs(t) <= 2 * se ? 'No clear trend' : t > 0 ? 'Rising' : 'Falling';
+        return `${word}: ${t > 0 ? '+' : ''}${t.toFixed(2)} ± ${se.toFixed(2)} cm/yr (GRACE, regional ~300 km)`;
+      })()
+    : proxyOk
+      ? (ga.trend === 'gaining' ? 'Rising (soil-moisture proxy)' : ga.trend === 'stable' ? 'Steady (soil-moisture proxy)' : 'Falling (soil-moisture proxy)')
+      : 'Not measured';
   const wt = r?.waterTableDepth;
   return {
     success: Math.round(prob * 100),
@@ -948,24 +959,18 @@ const AIBoreholeAnalyzer: React.FC = () => {
    * 2026-07-09). NEVER fail silently here.
    */
   const parseManualCoordinates = (rawLat: string, rawLon: string): { lat: number; lon: number } | { error: string } => {
-    const clean = (s: string) => s.trim().replace(/[°º]/g, '');
-    let a = clean(rawLat);
-    let b = clean(rawLon);
+    const a = rawLat.trim();
+    const b = rawLon.trim();
     // Plus Code pasted? (e.g. "2JGW+JWV") — explain how to get decimals instead.
     const plusCode = /^[23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,3}$/i;
     if (plusCode.test(a) || plusCode.test(b) || plusCode.test(a.split(/[\s,]+/)[0] ?? '')) {
       return { error: 'That looks like a Plus Code (e.g. 2JGW+JWV) — it can’t be used directly. In Google Maps, PRESS AND HOLD on the exact spot until a pin drops, then copy the two decimal numbers that appear (e.g. 0.026677, 34.647174) and paste them here. Or use the place-name search above.' };
     }
-    // "lat, lon" pasted into a single field
-    if (!b && /[,;\s]/.test(a)) {
-      const parts = a.split(/[,;\s]+/).filter(Boolean);
-      if (parts.length >= 2) { b = parts[1]; a = parts[0]; }
-    }
-    const lat = parseFloat(a);
-    const lon = parseFloat(b);
-    if (isNaN(lat) || isNaN(lon)) {
-      return { error: 'Coordinates must be two decimal numbers, e.g. latitude 0.026677 and longitude 34.647174. In Google Maps, press and hold on the site until a pin drops and copy the numbers shown. Or search the place by name above.' };
-    }
+    // Strict: hemisphere letters, comma decimals and DMS are read; trailing
+    // text is refused, never ignored (coordParse.ts).
+    const pair = parseCoordPair(a, b);
+    if ('error' in pair) return { error: `${pair.error} In Google Maps, press and hold on the site until a pin drops and copy the numbers shown, or search the place by name above.` };
+    const { lat, lon } = pair;
     if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
       return { error: `Those numbers are out of range (latitude ${lat}, longitude ${lon}). Latitude must be -90..90 and longitude -180..180 — they may be swapped.` };
     }
@@ -1478,7 +1483,13 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         {k:'bicarbonate',p:'mg/L',u:'mg/L'},
                         {k:'electricalConductivity',p:'µS/cm',u:'µS/cm'},
                       ].map(({k,p})=>(
-                        <label key={k} style={{fontSize:11}}>{k==='pH'?'pH':k==='tds'?'TDS':k==='dissolvedOxygen'?'Dissolved O₂':k==='electricalConductivity'?'EC':k==='h2s'?'H₂S':k.charAt(0).toUpperCase()+k.slice(1)}<input type="number" step="0.01" placeholder={p} style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(!isNaN(v))setFieldDataInput((prev: any)=>{const lab={...(prev.labWaterAnalysis || {}),labName:prev.labWaterAnalysis?.labName??'',sampleDate:prev.labWaterAnalysis?.sampleDate??new Date().toISOString().split('T')[0],pH:prev.labWaterAnalysis?.pH??7,tds:prev.labWaterAnalysis?.tds??0,iron:prev.labWaterAnalysis?.iron??0,fluoride:prev.labWaterAnalysis?.fluoride??0,arsenic:prev.labWaterAnalysis?.arsenic??0,nitrate:prev.labWaterAnalysis?.nitrate??0,turbidity:prev.labWaterAnalysis?.turbidity??0,coliform:prev.labWaterAnalysis?.coliform??0,hardness:prev.labWaterAnalysis?.hardness??0,[k]:v};return{...prev,labWaterAnalysis:lab}})}}/></label>
+                        <label key={k} style={{fontSize:11}}>{k==='pH'?'pH':k==='tds'?'TDS':k==='dissolvedOxygen'?'Dissolved O₂':k==='electricalConductivity'?'EC':k==='h2s'?'H₂S':k.charAt(0).toUpperCase()+k.slice(1)}<input type="number" step="0.01" placeholder={p} style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value.replace(',','.'));setFieldDataInput((prev: any)=>{
+                        // Only what the laboratory reported (2026-10-30 audit: one
+                        // entry filled every other parameter with 0, so an untested
+                        // coliform read as a pass).
+                        const lab: any={...(prev.labWaterAnalysis || {}),labName:prev.labWaterAnalysis?.labName??'',sampleDate:prev.labWaterAnalysis?.sampleDate??new Date().toISOString().split('T')[0]};
+                        if(Number.isFinite(v)&&v>=0)lab[k]=v;else delete lab[k];
+                        return{...prev,labWaterAnalysis:lab}})}}/></label>
                       ))}
                       <label style={{fontSize:11}}>H₂S Detected<select style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>setFieldDataInput((prev: any)=>({...prev,labWaterAnalysis:{...(prev.labWaterAnalysis||{}),...{h2s:e.target.value==='yes'}}}))}><option value="no">No</option><option value="yes">Yes</option></select></label>
                       <label style={{fontSize:11}}>Lab Name<input type="text" placeholder="Lab name" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.labWaterAnalysis)setFieldDataInput((p: any)=>({...p,labWaterAnalysis:{...(p.labWaterAnalysis || {}),labName:e.target.value}}))}}/></label>
@@ -2194,7 +2205,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
         {/* Summary Cards */}
         <div className="results-summary-cards">
-          <div className="summary-card success"><div className="summary-value">{(result.probability*100).toFixed(1)}%</div><div className="summary-label">Success Probability</div></div>
+          <div className="summary-card success"><div className="summary-value">{probabilityBand(result.probability)}</div><div className="summary-label">Chance of a productive borehole (planning estimate)</div></div>
           <div className="summary-card depth"><div className="summary-value">{result.recommendedDepth.toFixed(0)}m</div><div className="summary-label">Recommended Depth</div></div>
           <div className="summary-card yield-card"><div className="summary-value">{result.estimatedYield.toFixed(1)}</div><div className="summary-label">Yield (m³/h)</div></div>
           <div className="summary-card cost-card"><div className="summary-value">{fmtUSD(ecoTotal)}</div><div className="summary-label">Total project cost</div></div>
@@ -2375,7 +2386,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
         {/* Tabs */}
         <div className="result-tabs">
           {visibleTabs.map(tab => (
-            <button key={tab} onClick={()=>{setActiveResultTab(tab); if (typeof window !== 'undefined' && window.innerWidth < 700) setTimeout(()=>document.querySelector('.result-tab-content')?.scrollIntoView({behavior:'smooth',block:'start'}),60);}} className={`result-tab ${activeResultTab===tab?'active':''}`}>
+            <button key={tab} onClick={()=>{setActiveResultTab(tab); if (typeof window !== 'undefined' && window.innerWidth < 700) setTimeout(()=>document.querySelector('.result-tab-content')?.scrollIntoView({behavior:'smooth',block:'start'}),120);}} className={`result-tab ${activeResultTab===tab?'active':''}`}>
               {tabLabel(tab)}
             </button>
           ))}
@@ -2452,7 +2463,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div style={{fontWeight:700,marginBottom:6,color:'var(--text-primary)',fontSize:14}}>{'\u{1F4E1}'} Data Source Transparency</div>
                 <div><strong>Photo:</strong> {(result as any).noPhoto ? 'None supplied (coordinates-only run).' : result.pixelAnalysis?.isOutdoorScene ? 'Looks like an outdoor scene (automatic colour check — it can be wrong).' : 'Does not look like an outdoor site photo.'} {(result.geoEstimate as any)?.source === 'user-coordinates' || (result.clientLocation as any)?.latitude != null ? 'Not used for depth or yield because you entered coordinates.' : 'Used only as a weak hint; enter coordinates for a better result.'}</div>
                 <div><strong>Location:</strong> {result.locationMethod==='exif-gps' ? '\u{1F4E1} Photo EXIF GPS (±10m) — Location extracted FROM THE IMAGE' : result.locationMethod==='filename-geocode' ? `\u{1F4C1} Filename Geocode — "${result.locationContext?.filenameHint?.split(' → ')[0] || 'filename'}" matched to real place via OpenStreetMap` : result.locationMethod==='iptc-geocode' ? '\u{1F3F7}\uFE0F IPTC/XMP Geocode — Photo metadata text matched to real place' : result.gpsSource==='device' ? '\u{1F4F1} Device GPS — You confirmed you are at the borehole site' + (result.gpsAccuracy ? ` (±${Math.round(result.gpsAccuracy)}m)` : '') : result.gpsSource==='manual' ? '\u{1F4DD} Manual Entry — Coordinates entered by user' : result.locationMethod==='visual-estimate' ? '\u{1F30D} Visual Terrain Estimate — Location estimated from soil color, vegetation, and terrain' : '\u274C No location found — use your device location or enter coordinates below'}</div>
-                {result.geoEstimate?.bestEstimate && (
+                {/* No region means no estimate (coordinates-only runs): never an empty line. */}
+                {result.geoEstimate?.bestEstimate?.region && (
                   (result.geoEstimate.bestEstimate as { source?: string }).source === 'user-coordinates'
                     ? <div><strong>{'\u{1F4CD}'} Area:</strong> <span style={{color:'var(--accent-amber)',fontWeight:600}}>{result.geoEstimate.bestEstimate.region}, {result.geoEstimate.bestEstimate.country}</span> <span style={{opacity:0.6,fontSize:11}}>— from the coordinates you entered</span></div>
                     : <div><strong>{'\u{1F30D}'} Visual Geo-Estimate:</strong> <span style={{color:'var(--accent-amber)',fontWeight:600}}>{result.geoEstimate.bestEstimate.region}, {result.geoEstimate.bestEstimate.country}</span> ({Math.round(result.geoEstimate.bestEstimate.confidence*100)}% match) <span style={{opacity:0.6,fontSize:11}}>— a rough guess from the photo&apos;s soil and vegetation; enter coordinates for a real location</span></div>
@@ -3263,7 +3275,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   </table>
                   {result.nearbyWells && (
                     <div className="map-note">
-                      <strong>Summary:</strong> Avg depth: {result.nearbyWells.averageDepth != null ? `${Math.round(result.nearbyWells.averageDepth)}m` : 'No data'} | Avg yield: {result.nearbyWells.averageYield != null ? `${result.nearbyWells.averageYield.toFixed(1)} m³/h` : 'No data'} | Sample: {result.nearbyWells.sampleSize} wells | Success rate: {Math.round((result.nearbyWells.successRate ?? 0) * 100)}%<br/>
+                      <strong>Summary:</strong> Avg depth: {result.nearbyWells.averageDepth != null ? `${Math.round(result.nearbyWells.averageDepth)} m (${(result.nearbyWells as any).averageDepthN} records)` : 'fewer than 3 records with a depth'} | Avg yield: {result.nearbyWells.averageYield != null ? `${result.nearbyWells.averageYield.toFixed(1)} m³/h (${(result.nearbyWells as any).averageYieldN} records)` : 'fewer than 3 records with a yield'} | Sample: {result.nearbyWells.sampleSize} wells | Success rate: {Math.round((result.nearbyWells.successRate ?? 0) * 100)}%<br/>
                       <strong>Data sources:</strong> {result.nearbyWells.dataSources.join(', ')}
                     </div>
                   )}
@@ -3358,7 +3370,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     {result.remoteSensing.soilGrids.phH2O != null && <div className="result-item"><span className="rl">Soil pH</span><span className="rv">{(result.remoteSensing.soilGrids.phH2O/10).toFixed(1)}</span></div>}
                     {result.remoteSensing.soilGrids.organicCarbon != null && <div className="result-item"><span className="rl">Organic Carbon</span><span className="rv">{result.remoteSensing.soilGrids.organicCarbon} dg/kg</span></div>}
                     {result.remoteSensing.soilGrids.bulkDensity != null && <div className="result-item"><span className="rl">Bulk Density</span><span className="rv">{(result.remoteSensing.soilGrids.bulkDensity/100).toFixed(2)} g/cm³</span></div>}
-                    {result.remoteSensing.soilGrids.cec != null && <div className="result-item"><span className="rl">CEC (Cation Exchange)</span><span className="rv">{result.remoteSensing.soilGrids.cec} cmol(c)/kg</span></div>}
+                    {result.remoteSensing.soilGrids.cec != null && <div className="result-item"><span className="rl">CEC (Cation Exchange)</span><span className="rv">{(result.remoteSensing.soilGrids.cec / 10).toFixed(1)} cmol(c)/kg</span></div>}
                     {result.remoteSensing.soilGrids.nitrogen != null && <div className="result-item"><span className="rl">Nitrogen</span><span className="rv">{result.remoteSensing.soilGrids.nitrogen} cg/kg</span></div>}
                   </div>
                   <div style={{fontSize:11,color:'var(--text-tertiary)',marginTop:6}}>Source: {result.remoteSensing.soilGrids.source} | Depth: {result.remoteSensing.soilGrids.depth}</div>
@@ -3747,7 +3759,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             return (
             <div>
               <h4 className="tab-title">{'\u{1F6F0}\uFE0F'} Satellite Remote Sensing — 10-Method Non-Invasive Analysis</h4>
-              <p className="tab-desc">Comprehensive satellite-based groundwater exploration using 10 independent remote sensing methods fused via GIS weighted overlay analysis. Methods include multispectral (Landsat/Sentinel-2), SAR/InSAR (Sentinel-1), GRACE gravity, thermal IR (MODIS), hyperspectral proxy, SRTM DEM, NDVI vegetation indices, SMAP soil moisture, multi-sensor fusion, and LiDAR-derived products.</p>
+              <p className="tab-desc">Satellite and reanalysis layers combined by weighted overlay: GRACE / GRACE-FO gravity (G3P and GFZ GravIS), MODIS vegetation and land-surface temperature, the Copernicus DEM / SRTM terrain, ERA5-Land soil moisture and NASA POWER climate. Several scores here are proxies derived from these layers (marked as such); no Sentinel-1 radar, hyperspectral or LiDAR data is fetched. A hydrogeological survey on the ground is still required.</p>
 
               {/* GPI Summary Banner */}
               <div style={{background:'rgba(56,189,248,0.08)',border:`2px solid ${gpiColor}`,borderRadius:12,padding:'18px 22px',marginBottom:20,display:'flex',alignItems:'center',gap:24}}>
@@ -4033,7 +4045,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     </div>
                     <div className="result-grid">
                       <div className="result-item"><span className="rl">Precipitation (P)</span><span className="rv" style={{fontWeight:700,color:'#2196F3'}}>{result.gldasGroundwater.waterBudget.precipitation} mm/yr</span></div>
-                      <div className="result-item"><span className="rl">Evapotranspiration (ET)</span><span className="rv" style={{color:'#f97316'}}>{result.gldasGroundwater.waterBudget.evapotranspiration} mm/yr</span></div>
+                      <div className="result-item"><span className="rl">Evapotranspiration (ET, model estimate)</span><span className="rv" style={{color:'#f97316'}}>{result.gldasGroundwater.waterBudget.evapotranspiration} mm/yr</span></div>
                       <div className="result-item"><span className="rl">Surface Runoff (Qs)</span><span className="rv">{result.gldasGroundwater.waterBudget.surfaceRunoff} mm/yr</span></div>
                       <div className="result-item"><span className="rl">Baseflow (Qsb)</span><span className="rv" style={{color:'#00BCD4'}}>{result.gldasGroundwater.waterBudget.baseflow} mm/yr</span></div>
                       {/* Governing recharge, the same figure as the PDF; this budget's own value is shown as the cross-check. */}
@@ -4161,7 +4173,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         );
                       })()}
                       <div className="result-grid">
-                        <div className="result-item"><span className="rl">Storage, last 12 months vs record</span><span className="rv" style={{fontWeight:700,color:(result.graceData as any).twsAnomaly_cm>0?'#22c55e':'#ef4444'}}>{(result.graceData as any).twsAnomaly_cm > 0 ? '+' : ''}{(result.graceData as any).twsAnomaly_cm} cm</span></div>
+                        <div className="result-item"><span className="rl">Storage, {last12Months((result.graceData as any).totalStorage?.period ?? (result.graceData as any).period) ?? 'last 12 months'} vs record</span><span className="rv" style={{fontWeight:700,color:(result.graceData as any).twsAnomaly_cm>0?'#22c55e':'#ef4444'}}>{(result.graceData as any).twsAnomaly_cm > 0 ? '+' : ''}{(result.graceData as any).twsAnomaly_cm} cm</span></div>
                         {(result.graceData as any).isSatelliteGravity === false && <div className="result-item"><span className="rl">Trend</span><span className="rv" style={{fontWeight:700,color:(result.graceData as any).trend_cm_per_year>0?'#22c55e':'#ef4444'}}>{(result.graceData as any).trend_cm_per_year > 0 ? '+' : ''}{(result.graceData as any).trend_cm_per_year} cm/yr</span></div>}
                         <div className="result-item"><span className="rl">Seasonal Amplitude</span><span className="rv">{(result.graceData as any).seasonalAmplitude_cm} cm</span></div>
                         <div className="result-item"><span className="rl">Status</span><span className="rv" style={{fontWeight:700,textTransform:'uppercase',color:(result.graceData as any).status==='gaining'?'#22c55e':(result.graceData as any).status==='stable'?'#38bdf8':(result.graceData as any).status==='losing'?'#f97316':'#ef4444'}}>{(result.graceData as any).status}</span></div>
@@ -4226,7 +4238,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   )}
 
                   <div className="geo-note">
-                    <strong>Methodology:</strong> Soil moisture from <strong>ERA5-Land reanalysis</strong> (ECMWF, 9km, 92-day average) at true depths: 0-7cm, 7-28cm, 28-100cm, 100-255cm. Water budget from <strong>NASA POWER API</strong> (real GLDAS/MERRA-2 derived precipitation and evapotranspiration). Storage trend from multi-year <strong>NASA POWER GWETPROF</strong> linear regression (GRACE TWS proxy, R≈0.80). <em>No lookup tables or hardcoded formulas are used.</em> For full GLDAS time-series, use GEE collection <code style={{background:'rgba(0,188,212,0.1)',padding:'1px 4px',borderRadius:3}}>NASA/GLDAS/V021/NOAH/G025/T3H</code>.
+                    <strong>Methodology:</strong> Soil moisture from <strong>ERA5-Land reanalysis</strong> (ECMWF, 9km, 92-day average) at true depths: 0-7cm, 7-28cm, 28-100cm, 100-255cm. Water budget from <strong>NASA POWER API</strong> (real GLDAS/MERRA-2 derived precipitation and evapotranspiration). Groundwater storage trend from <strong>GRACE / GRACE-FO</strong> (G3P groundwater and GFZ GravIS total storage, ~300 km regional); the NASA POWER GWETPROF soil-moisture trend is shown only where GRACE does not cover the site, and it is soil moisture, not groundwater. Some steps use published lookup tables (rock-type properties, county drilling depths), named where they are used. For full GLDAS time-series, use GEE collection <code style={{background:'rgba(0,188,212,0.1)',padding:'1px 4px',borderRadius:3}}>NASA/GLDAS/V021/NOAH/G025/T3H</code>.
                   </div>
                 </div>
               ) : (
@@ -5792,23 +5804,28 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {activeResultTab==='water' && (
             <div>
               <h4 className="tab-title">{'\u{1F4A7}'} Water Quality Risk (screening, not a test)</h4>
-              <p className="tab-desc">These are risk levels typical of the rock type and climate at this site, not a measurement of its water. Only a laboratory analysis of a sample from the finished borehole tells you whether the water is safe to drink.</p>
+              <p className="tab-desc">Measured values come from tested boreholes near the site; the rest are regional estimates or need a laboratory test. Only a laboratory analysis of a sample from the finished borehole tells you whether the water is safe to drink.</p>
               {(() => {
-                const band = (v: number, lo: number, hi: number) => (v >= hi ? 'High' : v >= lo ? 'Moderate' : 'Low');
-                const col = (s: string) => (s === 'High' ? '#F44336' : s === 'Moderate' ? '#FF9800' : '#4CAF50');
-                const rows: [string, string, string][] = [
-                  ['Fluoride', band(wqExpanded.fluoride, 1.0, 1.5), 'WHO limit 1.5 mg/L. Volcanic and Rift Valley rocks are the main source in Kenya.'],
-                  ['Salinity (TDS)', band(wqExpanded.tds, 600, 1000), 'Salty taste above about 1,000 mg/L; common in arid north-eastern Kenya.'],
-                  ['Iron / manganese', band(wqExpanded.iron, 0.3, 1.0), 'Stains and taste; removed by aeration and filtration.'],
-                  ['Arsenic', band(wqExpanded.arsenic, 0.005, 0.01), 'WHO limit 0.01 mg/L; rare in Kenya but tested in every full panel.'],
-                  ['Nitrate', band(wqExpanded.nitrate, 25, 50), 'From pit latrines and fertiliser; keep the borehole well away from both.'],
-                ];
+                // The same section as the PDF, Word, Excel and CSV (2026-10-30
+                // audit: the web tab showed constant chemistry as site values and
+                // hid the measured data and regional warnings).
+                const sec = governingSummary(result, '').find((s) => s.title === 'Water quality');
+                if (!sec) return null;
+                const col = (basis: string) => (/^(Measured|Laboratory)/.test(basis) ? '#22c55e' : /Regional estimate/.test(basis) ? '#FF9800' : 'var(--text-secondary)');
                 return (
-                  <div className="result-grid">
-                    {rows.map(([k, s, note]) => (
-                      <div key={k} className="result-item"><span className="rl">{k}</span><span className="rv" style={{color:col(s),fontWeight:700}}>{s} risk</span><span style={{fontSize:11,color:'var(--text-tertiary)',display:'block',marginTop:2}}>{note}</span></div>
-                    ))}
-                  </div>
+                  <>
+                    <div className="result-grid">
+                      {sec.rows.map(([k, v, basis]) => (
+                        <div key={k} className="result-item"><span className="rl">{k}</span><span className="rv" style={{fontWeight:700}}>{v}</span><span style={{fontSize:11,color:col(basis),display:'block',marginTop:2}}>{basis}</span></div>
+                      ))}
+                    </div>
+                    {(sec.notes ?? []).length > 0 && (
+                      <div className="treatment-box" style={{borderColor:'#f59e0b'}}>
+                        <div className="treatment-header">Regional warnings for this area</div>
+                        <ul className="rec-list">{sec.notes!.map((t, i) => <li key={i}>{t}</li>)}</ul>
+                      </div>
+                    )}
+                  </>
                 );
               })()}
               <div className="treatment-box">
@@ -5906,7 +5923,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div className="result-item"><span className="rl">Yearly operation &amp; maintenance</span><span className="rv">{fmtUSD(eco.annualOM)}</span></div>
                 </div>
                 <div className="roi-note">{ecoPayback >= 240
-                  ? 'At this yield and water value the borehole does not pay back within 20 years. A household or farm may still need the water, but it should not be justified on water sales alone.'
+                  ? eco?.paybackWithheld ? 'No payback is given: the desktop screen calls this site unfavourable, so survey alternative sites before costing water sales.' : 'At this yield and water value the borehole does not pay back within 20 years. A household or farm may still need the water, but it should not be justified on water sales alone.'
                   : `At this yield and water value the borehole pays for itself in about ${(ecoPayback / 12).toFixed(1)} years. If costs come in 25% higher, expect roughly a quarter longer.`}{' '}
                   The water value is an assumption; replace it with what you pay today for a firmer figure.</div>
               </>) : <p className="tab-desc">Payback could not be calculated for this result.</p>}
@@ -5971,7 +5988,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div>
               <h4 className="tab-title">{'\u{1F4CA}'} Probability Breakdown</h4>
               <div className="prob-cards">
-                <div className="prob-card"><div className="prob-value">{prob.success}%</div><div className="prob-label">Success Probability</div></div>
+                <div className="prob-card"><div className="prob-value">{probabilityBand(prob.success / 100)}</div><div className="prob-label">Chance of a productive borehole (planning estimate)</div></div>
                 {result.uncertainty?.probabilityRange && <div className="prob-card"><div className="prob-value">{Math.round(result.uncertainty.probabilityRange[0] * 100)}–{Math.round(result.uncertainty.probabilityRange[1] * 100)}%</div><div className="prob-label">Range across the models</div></div>}
               </div>
               <div className="result-grid">
@@ -6289,7 +6306,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               {result.rechargeModel ? (
                 <div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:8,marginBottom:16}}>
-                    <div className="result-item"><span className="rl">Annual Recharge</span><span className="rv">{result.rechargeModel.annualRecharge_mm?.toFixed(0)} mm/yr</span></div>
+                    <div className="result-item"><span className="rl">Recharge, this model alone</span><span className="rv">{result.rechargeModel.annualRecharge_mm?.toFixed(0)} mm/yr</span>{(result as any).rechargeSummary?.governing_mm != null && <span style={{fontSize:11,color:'var(--text-tertiary)',display:'block'}}>Planning figure: {(result as any).rechargeSummary.governing_mm} mm/yr</span>}</div>
                     <div className="result-item"><span className="rl">Recharge Fraction</span><span className="rv">{((result.rechargeModel.rechargeFraction ?? 0)*100).toFixed(1)}%</span></div>
                     <div className="result-item"><span className="rl">Sustainable Yield</span><span className="rv">{result.rechargeModel.sustainableYield_m3day?.toFixed(1)} m³/day</span></div>
                     <div className="result-item"><span className="rl">Annual Runoff</span><span className="rv">{result.rechargeModel.annualRunoff_mm?.toFixed(0)} mm</span></div>
@@ -8120,7 +8137,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   </div>
                   <div style={{background:'rgba(168,85,247,0.06)',padding:14,borderRadius:12}}>
                     <div style={{fontSize:12,color:'var(--text-secondary)',marginBottom:6}}>SUCCESS PROBABILITY</div>
-                    <div style={{fontSize:11}}>Desktop: <strong>{(result.probability*100).toFixed(1)}%</strong></div>
+                    <div style={{fontSize:11}}>Desktop: <strong>{probabilityBand(result.probability)}</strong></div>
                     {result.drillingPrediction && <div style={{fontSize:11}}>Desktop model: <strong>{result.drillingPrediction.successProbability}%</strong></div>}
                     {result.regionalModel?.correctedProbability && <div style={{fontSize:11}}>Regional: <strong>{result.regionalModel.correctedProbability}%</strong></div>}
                   </div>
@@ -8924,7 +8941,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               {site.analyzing && <div className="compare-status"><div className="mini-spinner"></div> Analyzing...</div>}
               {site.result && (
                 <div className="compare-results">
-                  <div className="cr-row"><span>Success</span><span style={{color:'#4CAF50'}}>{(site.result.probability*100).toFixed(1)}%</span></div>
+                  <div className="cr-row"><span>Chance of success</span><span style={{color:'#4CAF50'}}>{probabilityBand(site.result.probability)}</span></div>
                   <div className="cr-row"><span>Depth</span><span>{site.result.recommendedDepth.toFixed(0)}m</span></div>
                   <div className="cr-row"><span>Yield</span><span>{site.result.estimatedYield.toFixed(1)} m&sup3;/h</span></div>
                   <div className="cr-row"><span>Risk</span><span style={{color:getRiskColor(site.result.risk.overallRisk)}}>{(site.result.risk.overallRisk*100).toFixed(0)}%</span></div>
@@ -9060,7 +9077,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             </div>
             <p>
               <strong>{best.name}</strong> is the recommended drilling site with a composite score of <strong>{scored[0].score.total}/100</strong>.
-              It achieves {(best.result!.probability*100).toFixed(1)}% success probability with an estimated yield of {best.result!.estimatedYield.toFixed(1)} m&sup3;/h
+              It has {probabilityBand(best.result!.probability)} chance of success (planning estimate) with an estimated yield of {best.result!.estimatedYield.toFixed(1)} m&sup3;/h
               at {best.result!.recommendedDepth.toFixed(0)}m depth. Overall risk is {(best.result!.risk.overallRisk*100).toFixed(0)}% ({best.result!.risk.viability}).
             </p>
             {scored.length > 1 && scored[1].site.result && (

@@ -143,8 +143,9 @@ function extractFeatures(r: AnalysisResult): FeatureSet {
   const grace = r.graceData;
   const hist = r.historicalData;
 
-  const clay = gs?.soilRecognition?.clay_pct ?? rs?.soilGrids?.clay ?? (r.soil as any)?.clayContent ?? 25;
-  const sand = gs?.soilRecognition?.sand_pct ?? rs?.soilGrids?.sand ?? 40;
+  // SoilGrids texture is g/kg; this model takes per cent.
+  const clay = gs?.soilRecognition?.clay_pct ?? (rs?.soilGrids?.clay != null ? rs.soilGrids.clay / 10 : undefined) ?? (r.soil as any)?.clayContent ?? 25;
+  const sand = gs?.soilRecognition?.sand_pct ?? (rs?.soilGrids?.sand != null ? rs.soilGrids.sand / 10 : undefined) ?? 40;
   const ksat = gs?.hydraulicProperties?.ksat_mm_hr ?? estimateKsat(clay, sand);
 
   // Porosity from texture (Saxton & Rawls 2006, Table 2)

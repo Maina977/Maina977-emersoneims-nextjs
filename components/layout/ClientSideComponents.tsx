@@ -38,7 +38,9 @@ export default function ClientSideComponents() {
   // SolarGenius Pro's calculators carry their own WhatsApp contact; at 390 px
   // the bubble and the accessibility button covered fields (2026-10-29 audit).
   const isSolarGeniusPro = pathname === '/solar-genius-pro' || pathname.startsWith('/solar-genius-pro/') || pathname.startsWith('/solar-genius-pro-');
-  const hideWhatsApp = isHub || isBuildingSuite || isSolarGeniusPro || pathname === '/generator-oracle' || pathname.startsWith('/generator-oracle/');
+  // AquaScan Pro: the bubble covered result tables at 390 px (2026-10-30 audit).
+  const isAquaScan = pathname === '/aquascan-pro-v3' || pathname.startsWith('/aquascan-pro-v3/');
+  const hideWhatsApp = isHub || isBuildingSuite || isSolarGeniusPro || isAquaScan || pathname === '/generator-oracle' || pathname.startsWith('/generator-oracle/');
 
   const [tier1, setTier1] = useState(false); // Essential (1s)
   const [tier2, setTier2] = useState(false); // Nice-to-have (3s)

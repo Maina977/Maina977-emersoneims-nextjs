@@ -26,7 +26,7 @@ function BuildingSuiteEmbed() {
   // Fall back to the same-origin Building Suite instead.
   const src = useMemo(() => {
     const raw = process.env.NEXT_PUBLIC_EIMS_BUILDING_SUITE_URL;
-    return raw ? `${normalizeBase(raw)}/` : '/eims-building-suite-v20261020.html';
+    return raw ? `${normalizeBase(raw)}/` : '/eims-building-suite-v20261030.html';
   }, []);
 
   const onFrameLoad = useCallback(() => {

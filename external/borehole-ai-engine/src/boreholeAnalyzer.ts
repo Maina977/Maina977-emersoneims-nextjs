@@ -114,7 +114,28 @@ function harmonizeHydrochem(hc: any, wq: any): any {
     const exceeds = p.parameter === 'pH' ? v > 8.5 || v < 6.5 : p.whoGuideline ? v > p.whoGuideline : false;
     return { ...p, predictedValue: v, exceedsGuideline: exceeds, reasoning: `${p.reasoning} (value from the site water-quality model)` };
   });
-  return { ...hc, predictions };
+  // Quality and score recomputed from the governing values, with the
+  // predictor's own rule (2026-10-30 audit: "79/100" for undrinkable water).
+  // TDS is a health-relevant exceedance here, since above 1,000 mg/L the water
+  // is not acceptable for drinking without treatment.
+  const tdsGov = governing.TDS;
+  const health = predictions.filter((p: any) => p.exceedsGuideline && ((p.healthRisk !== 'none' && p.healthRisk !== 'low') || p.parameter === 'TDS'));
+  const aesthetic = predictions.filter((p: any) => p.exceedsGuideline && !health.includes(p) && p.healthRisk === 'low');
+  const overallQuality = health.length >= 2 ? 'non_potable' : health.length === 1 ? 'poor' : aesthetic.length >= 3 ? 'acceptable' : aesthetic.length >= 1 ? 'good' : 'excellent';
+  const potabilityScore = Math.max(0, 100 - health.length * 25 - aesthetic.length * 10);
+  // Water type follows the governing salinity (2026-10-30 audit: Garissa was
+  // typed "Ca-HCO3", fresh calcium bicarbonate water, at TDS 8,495 mg/L).
+  let waterType = hc.waterType, waterTypeDescription = hc.waterTypeDescription;
+  if (tdsGov != null && tdsGov >= 3000) {
+    waterType = 'Na-Cl (saline)';
+    waterTypeDescription = `Sodium chloride type is expected at a salinity of about ${Math.round(tdsGov).toLocaleString('en-KE')} mg/L. Not drinkable without desalination; a laboratory test fixes the type.`;
+  } else if (tdsGov != null && tdsGov >= 1000) {
+    waterType = 'Mixed, brackish (Na-HCO3-Cl)';
+    waterTypeDescription = `Brackish water (about ${Math.round(tdsGov).toLocaleString('en-KE')} mg/L) is usually sodium-rich with chloride. Above the 1,000 mg/L drinking limit; a laboratory test fixes the type.`;
+  } else if (waterType) {
+    waterTypeDescription = `${waterTypeDescription ?? ''} Expected from the rock type, not measured; a laboratory test fixes it.`.trim();
+  }
+  return { ...hc, predictions, overallQuality, potabilityScore, waterType, waterTypeDescription };
 }
 
 /**
@@ -179,16 +200,12 @@ export class BoreholeAnalyzer {
     return this.imageDetector.reverseGeocode(latitude, longitude);
   }
 
-  async initialize() {
-    try {
-      await Promise.race([
-        this.imageDetector.loadModel(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Model load timeout')), 30000))
-      ]);
-    } catch (e) {
-      console.warn('[Pipeline] TF.js model init failed/timed out — pixel analysis will still work:', (e as Error).message);
-    }
-  }
+  /**
+   * Nothing to preload: the photo classifier loads on the first real photo
+   * (2026-10-30 audit: waiting up to 30 s for TF.js before the tool was usable
+   * made it slow to open, and most runs use coordinates only).
+   */
+  async initialize() {}
 
   async analyzeImage(
     imageFile: File,
@@ -325,7 +342,7 @@ export class BoreholeAnalyzer {
       if (clientLocation.country) locationHints.push(clientLocation.country);
     }
     const features = await Promise.race([
-      this.imageDetector.analyzeImage(imageFile, locationHints.length > 0 ? locationHints : undefined),
+      this.imageDetector.analyzeImage(imageFile, locationHints.length > 0 ? locationHints : undefined, { skipModel: noPhoto }),
       new Promise<any>((resolve) => setTimeout(() => {
         console.warn('[Pipeline] Image analysis timed out (60s) — using pixel-only fallback');
         resolve({ metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {} });
@@ -523,9 +540,18 @@ export class BoreholeAnalyzer {
             const sc = (v: any) => (typeof v === 'number' ? Math.round(v * k) : v);
             w.averageAnnualPrecipitation = lo; w.avgAnnualPrecip = lo;
             if (Array.isArray(w.annualPrecipitation)) w.annualPrecipitation = w.annualPrecipitation.map((r: any) => (typeof r === 'number' ? sc(r) : { ...r, total: sc(r.total) }));
-            if (Array.isArray(w.monthlyAvgPrecip)) w.monthlyAvgPrecip = w.monthlyAvgPrecip.map(sc);
+            if (Array.isArray(w.monthlyAvgPrecip)) {
+              w.monthlyAvgPrecip = w.monthlyAvgPrecip.map(sc);
+              // Season lists follow the rescaled months (2026-10-30 audit).
+              const MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              if (w.monthlyAvgPrecip.length === 12) {
+                w.rainySeasonMonths = MN.filter((_, i) => w.monthlyAvgPrecip[i] >= 80);
+                w.drySeasonMonths = MN.filter((_, i) => w.monthlyAvgPrecip[i] < 30);
+              }
+            }
             if (Array.isArray(w.seasonalAnalysis)) w.seasonalAnalysis = w.seasonalAnalysis.map((s: any) => ({ ...s, avgPrecipitation: sc(s.avgPrecipitation) }));
-            w.precipitationNote = `Rainfall sources disagree: NASA POWER ${Math.round(pN)} mm/yr, ERA5 2015-2024 baseline for ${kb!.name} (${kb!.distance_km} km) ${Math.round(pB)} mm/yr. Long-term rainfall here is probably between ${lo} and ${Math.round(Math.max(pB, pN))} mm/yr; the lower figure is used for recharge as the cautious choice.`;
+            const hi = Math.round(Math.max(pB, pN));
+            w.precipitationNote = `Rainfall sources disagree: NASA POWER ${Math.round(pN)} mm/yr, ERA5 2015-2024 baseline for ${kb!.name} (${kb!.distance_km} km) ${Math.round(pB)} mm/yr. ${hi / lo > 1.6 ? `The higher figure is likely an overestimate here; ${lo} mm/yr is used` : `Long-term rainfall here is probably between ${lo} and ${hi} mm/yr; the lower figure is used for recharge as the cautious choice`}.`;
             console.warn('[Pipeline] ' + w.precipitationNote);
           }
         }
@@ -1012,12 +1038,10 @@ export class BoreholeAnalyzer {
       // Recompute averages now that wells have data
       const enrichedDepths = nearbyWells.nearbyWells.filter((w: any) => w.depth_m > 0).map((w: any) => w.depth_m);
       const enrichedYields = nearbyWells.nearbyWells.filter((w: any) => w.yield_m3h > 0).map((w: any) => w.yield_m3h);
-      if (enrichedDepths.length > 0) {
-        nearbyWells.averageDepth = Math.round(enrichedDepths.reduce((a: number, b: number) => a + b, 0) / enrichedDepths.length);
-      }
-      if (enrichedYields.length > 0) {
-        nearbyWells.averageYield = Math.round(enrichedYields.reduce((a: number, b: number) => a + b, 0) / enrichedYields.length * 10) / 10;
-      }
+      nearbyWells.averageDepth = enrichedDepths.length >= 3 ? Math.round(enrichedDepths.reduce((a: number, b: number) => a + b, 0) / enrichedDepths.length) : null;
+      nearbyWells.averageYield = enrichedYields.length >= 3 ? Math.round(enrichedYields.reduce((a: number, b: number) => a + b, 0) / enrichedYields.length * 10) / 10 : null;
+      (nearbyWells as any).averageDepthN = enrichedDepths.length;
+      (nearbyWells as any).averageYieldN = enrichedYields.length;
       // Recompute success rate
       const successful = nearbyWells.nearbyWells.filter((w: any) => w.outcome === 'Success').length;
       const moderate = nearbyWells.nearbyWells.filter((w: any) => w.outcome === 'Moderate').length;
@@ -1085,7 +1109,7 @@ export class BoreholeAnalyzer {
     const weightedProb = this.siteLocator.calculateWeightedSuccessProbability({
       geology_probability: globalSoilAnalysis?.wrbClassification
         ? ({'excellent':0.85,'good':0.72,'moderate':0.55,'poor':0.35,'very_poor':0.20}[globalSoilAnalysis.wrbClassification.aquiferSuitability] ?? 0.50)
-        : (soilGridsData?.clay != null) ? (1 - Math.min(1, (soilGridsData.clay ?? 30) / 60)) * 0.7 + 0.3 : 0.50,
+        : (soilGridsData?.clay != null) ? (1 - Math.min(1, (soilGridsData.clay / 10) / 60)) * 0.7 + 0.3 : 0.50, // clay is g/kg; the scale is per cent
       structure_probability: demHydrology ? demHydrology.groundwaterFavorability / 100 : 0.50,
       topography_probability: noPhoto ? 0.5 : site.siteType === 'valley' ? 0.85 : site.siteType === 'drainage' ? 0.75 : site.siteType === 'flat' ? 0.55 : 0.35,
       vegetation_probability: satelliteWaterAnalysis?.vegetation
@@ -1213,8 +1237,11 @@ export class BoreholeAnalyzer {
       const elevForRock = remoteSensing?.elevation?.elevation ?? 500;
       try {
         rockClassification = classifyRockType(
-          soilGridsData.clay ?? 30, soilGridsData.sand ?? 40, soilGridsData.silt ?? 30,
-          soilGridsData.pH ?? 6.5, soilGridsData.soc ?? 10, soilGridsData.bd ?? 1400,
+          // SoilGrids' mapped units converted to what the classifier takes (per
+          // cent, pH, g/kg, kg/m3). 2026-10-30: these read fields that do not exist
+          // and took g/kg as per cent, hidden while the soil request returned nothing.
+          (soilGridsData.clay ?? 300) / 10, (soilGridsData.sand ?? 400) / 10, (soilGridsData.silt ?? 300) / 10,
+          (soilGridsData.phH2O ?? 65) / 10, (soilGridsData.organicCarbon ?? 100) / 10, (soilGridsData.bulkDensity ?? 140) * 10,
           elevForRock, precipMmForRock, effectiveLat!,
         );
         weatheringProfile = estimateWeatheringProfile(
@@ -1230,12 +1257,12 @@ export class BoreholeAnalyzer {
           lat: effectiveLat!,
           lon: effectiveLon!,
           soilGrids: {
-            clay: soilGridsData.clay ?? 30,
-            sand: soilGridsData.sand ?? 40,
-            silt: soilGridsData.silt ?? 30,
-            phH2O: soilGridsData.pH ? soilGridsData.pH * 10 : 65,
-            organicCarbon: soilGridsData.soc ? soilGridsData.soc * 10 : 100,
-            bulkDensity: soilGridsData.bd ? Math.round(soilGridsData.bd / 10) : 140,
+            clay: soilGridsData.clay ?? 300,
+            sand: soilGridsData.sand ?? 400,
+            silt: soilGridsData.silt ?? 300,
+            phH2O: soilGridsData.phH2O ?? 65,
+            organicCarbon: soilGridsData.organicCarbon ?? 100,
+            bulkDensity: soilGridsData.bulkDensity ?? 140,
             cec: soilGridsData.cec,
           },
           elevation_m: elevForRock,
@@ -1659,9 +1686,11 @@ export class BoreholeAnalyzer {
         rechargeEstimate_mm_yr: gldasGroundwater?.waterBudget?.rechargeEstimate,
         fieldData,
         nearbyBoreholes: nearbyWells?.nearbyWells?.map((w: any) => ({
-          depth_m: w.depth_m ?? w.wellDepth ?? 50,
-          yield_m3hr: w.yield_m3hr ?? w.discharge ?? 1,
-          waterLevel_m: w.waterLevel_m ?? w.staticLevel ?? 10,
+          // The record's own values or null; never a default (2026-10-30 audit:
+          // 50 m / 1 m³/h / 10 m stood in for every missing value).
+          depth_m: w.depth_m > 0 ? w.depth_m : null,
+          yield_m3hr: w.yield_m3h > 0 ? w.yield_m3h : null,
+          waterLevel_m: w.waterLevel_m > 0 ? w.waterLevel_m : null,
         })),
         graceTrend_cm_yr: graceData?.trend_cm_per_year,
       });
@@ -2019,18 +2048,20 @@ export class BoreholeAnalyzer {
           slopeMap: undefined,
           // twiGrid not in DrillMapInput
           twiAtCenter: undefined,
-          fractureIntersections: fractureAI?.lineaments?.map((l: any) => ({
-            latitude: l.centerLat ?? effectiveLat!, longitude: l.centerLon ?? effectiveLon!, permeabilityScore: l.confidence ?? 0.5,
+          fractureIntersections: fractureAI?.lineaments?.filter((l: any) => Number.isFinite(l.centerLat) && Number.isFinite(l.centerLon)).map((l: any) => ({
+            latitude: l.centerLat, longitude: l.centerLon, permeabilityScore: l.confidence ?? 0.5,
           })),
           // HONESTY FIX (2026-07-11): only wells with a KNOWN outcome may move the
           // drill-map probability — a recorded failure must penalise, an unknown
           // must stay neutral. Previously every well was hardcoded success:true,
           // so failed/unknown wells wrongly BOOSTED the map (+15%).
           nearbyBoreholes: nearbyWells?.nearbyWells
-            ?.filter((w: any) => w.outcome === 'Success' || w.outcome === 'Fail')
+            // Records carry lat/lon; a well without coordinates is left out
+            // rather than placed on the site (2026-10-30 audit).
+            ?.filter((w: any) => (w.outcome === 'Success' || w.outcome === 'Fail') && Number.isFinite(w.lat) && Number.isFinite(w.lon))
             .map((w: any) => ({
-              latitude: w.latitude ?? effectiveLat!, longitude: w.longitude ?? effectiveLon!,
-              success: w.outcome === 'Success', depth_m: w.depth_m ?? 50, yield_m3hr: w.yield_m3h ?? 1,
+              latitude: w.lat, longitude: w.lon,
+              success: w.outcome === 'Success', depth_m: w.depth_m > 0 ? w.depth_m : 0, yield_m3hr: w.yield_m3h > 0 ? w.yield_m3h : 0,
             })),
           vegetationIndex: vegetationGWProxy?.ndviMean,
           drainageDensity: demHydrology?.drainageDensity,
@@ -2313,7 +2344,7 @@ export class BoreholeAnalyzer {
 
           // Build AI layers for hybrid model
           const aiLayersInput: ExistingAILayers = {
-            soilType: soilGridsData ? `clay:${soilGridsData.clay ?? 30} sand:${soilGridsData.sand ?? 40}` : undefined,
+            soilType: soilGridsData ? `clay:${(soilGridsData.clay ?? 300) / 10} sand:${(soilGridsData.sand ?? 400) / 10}` : undefined,
             annualRainfall_mm: historicalData?.weather?.averageAnnualPrecipitation,
             lineamentDistance_m: lineamentAnalysis?.nearestLineamentDistance_m,
             lineamentDensity: lineamentAnalysis?.density,
@@ -3058,9 +3089,16 @@ export class BoreholeAnalyzer {
           const canon = (result as any).canonicalHydroClimate;
           if (satET && canon && canon.precipitation_mm > 0) {
             const runoff = (wb?.surfaceRunoff ?? Math.round(canon.precipitation_mm * 0.15));
-            const measuredBalance = reconcileRechargeWithMeasuredET(canon.precipitation_mm, satET.actualET_mm_yr, runoff);
+            // Reanalysis ET can exceed the site's rainfall (irrigation, lakes,
+            // grid-cell mismatch); over a year ET cannot exceed P without an
+            // outside water source, so the balance uses ET capped at P and the
+            // report says so (2026-10-30 audit).
+            const etCapped = Math.min(satET.actualET_mm_yr, canon.precipitation_mm);
+            const measuredBalance = reconcileRechargeWithMeasuredET(canon.precipitation_mm, etCapped, runoff);
             (result as any).satelliteET = {
               ...satET,
+              exceedsRainfall: satET.actualET_mm_yr > canon.precipitation_mm,
+              etUsed_mm: etCapped,
               modelledActualET_mm: canon.actualET_mm,
               modelledRecharge_mm: canon.recharge_mm,
               measuredBalance,
@@ -3068,7 +3106,7 @@ export class BoreholeAnalyzer {
             };
             // Prefer the measured-ET recharge as the canonical value (still shown
             // beside the modelled one for transparency in the report).
-            canon.measuredActualET_mm = satET.actualET_mm_yr;
+            canon.measuredActualET_mm = etCapped;
             canon.rechargeFromMeasuredET_mm = measuredBalance.recharge_mm;
           }
         } catch { /* satellite ET is best-effort — never blocks the pipeline */ }

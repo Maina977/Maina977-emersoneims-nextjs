@@ -393,7 +393,7 @@ export default async function CountyPage({ params }: Props) {
                 no maintenance. (A computed `new Date()` was rejected: the
                 hydration guard blocks non-deterministic server renders.)
               */}
-              <div className="text-4xl font-bold text-cyan-400 mb-2">2012</div>
+              <div className="text-4xl font-bold text-cyan-400 mb-2">2011</div>
               <div className="text-gray-400">Operating in Kenya since</div>
               <p className="text-xs text-gray-500 mt-2">Engineering-led, owner-run</p>
             </div>

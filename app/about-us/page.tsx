@@ -372,7 +372,7 @@ function GeneratorBrands() {
             </h2>
           </div>
           <p className="mt-6 md:mt-0 max-w-sm text-gray-400">
-            We supply and service all major generator brands — both NEW and quality USED units. 12+ years of expertise across every manufacturer.
+            We supply and service all major generator brands — both NEW and quality USED units. 15 years of expertise across every manufacturer.
           </p>
         </Reveal>
 

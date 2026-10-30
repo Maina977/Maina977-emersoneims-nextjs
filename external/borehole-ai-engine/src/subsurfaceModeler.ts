@@ -373,13 +373,14 @@ const SOILGRIDS_DEPTHS = [
 function buildSoilGridsLayers(soilGrids: SoilGridsData | null): GeologicalLayer[] {
   if (!soilGrids?.available) return [];
 
-  const baseClay = soilGrids.clay ?? 25;
-  const baseSand = soilGrids.sand ?? 40;
-  const baseSilt = soilGrids.silt ?? 35;
-  const baseOC = soilGrids.organicCarbon ?? 15;
-  const baseBD = soilGrids.bulkDensity ?? 1400;
-  const basePH = soilGrids.phH2O ?? 6.5;
-  const baseCEC = soilGrids.cec ?? 15;
+  // SoilGrids' mapped units to per cent, g/kg, kg/m3, pH and cmol/kg.
+  const baseClay = soilGrids.clay != null ? soilGrids.clay / 10 : 25;
+  const baseSand = soilGrids.sand != null ? soilGrids.sand / 10 : 40;
+  const baseSilt = soilGrids.silt != null ? soilGrids.silt / 10 : 35;
+  const baseOC = soilGrids.organicCarbon != null ? soilGrids.organicCarbon / 10 : 15;
+  const baseBD = soilGrids.bulkDensity != null ? soilGrids.bulkDensity * 10 : 1400;
+  const basePH = soilGrids.phH2O != null ? soilGrids.phH2O / 10 : 6.5;
+  const baseCEC = soilGrids.cec != null ? soilGrids.cec / 10 : 15;
 
   const layers: GeologicalLayer[] = [];
 

@@ -209,8 +209,9 @@ export const AdvancedSolarCalculator: React.FC = () => {
             <input id="ac-tariff" type="number" min="1" value={tariff} onChange={(e) => setTariff(e.target.value)} placeholder="bill total ÷ kWh" />
           </div>
           <div className="form-group">
-            <label>Latitude</label>
+            <label htmlFor="ac-lat">Latitude</label>
             <input
+              id="ac-lat"
               type="number"
               step="0.001"
               value={location.latitude}
@@ -219,8 +220,9 @@ export const AdvancedSolarCalculator: React.FC = () => {
             />
           </div>
           <div className="form-group">
-            <label>Longitude</label>
+            <label htmlFor="ac-lon">Longitude</label>
             <input
+              id="ac-lon"
               type="number"
               step="0.001"
               value={location.longitude}
@@ -241,6 +243,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
                 <div className="form-group">
                   <label>Device Name</label>
                   <input
+                    aria-label={`Appliance ${index + 1} name`}
                     type="text"
                     value={appliance.name}
                     onChange={(e) => handleUpdateAppliance(index, 'name', e.target.value)}
@@ -249,6 +252,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
                 <div className="form-group">
                   <label>Wattage (W)</label>
                   <input
+                    aria-label={`Appliance ${index + 1} watts`}
                     type="number"
                     value={appliance.wattage}
                     onChange={(e) => handleUpdateAppliance(index, 'wattage', parseInt(e.target.value))}
@@ -257,6 +261,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
                 <div className="form-group">
                   <label>Hours/Day</label>
                   <input
+                    aria-label={`Appliance ${index + 1} hours per day`}
                     type="number"
                     step="0.5"
                     value={appliance.dailyHours}
@@ -266,6 +271,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
                 <div className="form-group">
                   <label>Quantity</label>
                   <input
+                    aria-label={`Appliance ${index + 1} quantity`}
                     type="number"
                     value={appliance.quantity}
                     onChange={(e) => handleUpdateAppliance(index, 'quantity', parseInt(e.target.value))}
@@ -274,6 +280,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
                 <div className="form-group">
                   <label>Priority</label>
                   <select
+                    aria-label={`Appliance ${index + 1} priority`}
                     value={appliance.priority}
                     onChange={(e) => handleUpdateAppliance(index, 'priority', e.target.value)}
                   >

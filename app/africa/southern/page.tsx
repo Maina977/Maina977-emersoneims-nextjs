@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Power Solutions Southern Africa',
-  description: 'Reliable power across Southern Africa. South Africa mining powerhouse, Botswana diamonds, Zimbabwe gold. Industrial generators, UPS, remote monitoring. Call +27118876543.',
+  description: 'Reliable power across Southern Africa. South Africa mining powerhouse, Botswana diamonds, Zimbabwe gold. Industrial generators, UPS, remote monitoring. Call +254 768 860 665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/africa/southern',
   },
@@ -38,13 +38,13 @@ export default function SouthernAfricaPage() {
                 country: '🇿🇦 South Africa',
                 profile: 'Mining superpower (gold, platinum, diamonds)',
                 economy: 'KES 400B+ mining value annual',
-                coverage: 'Premium (HQ location)',
+                coverage: 'Premium (response time confirmed when you call)',
               },
               {
                 country: '🇧🇼 Botswana',
                 profile: 'Diamond mining center',
                 economy: 'KES 120B+ mining value annual',
-                coverage: 'Premium (24-hour response)',
+                coverage: 'Premium (response time confirmed when you call)',
               },
               {
                 country: '🇿🇼 Zimbabwe',
@@ -168,12 +168,12 @@ export default function SouthernAfricaPage() {
 
           <div className="grid md:grid-cols-3 gap-6">
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-yellow-500/20 rounded-lg">
-              <h3 className="text-xl font-bold text-yellow-400 mb-6">South Africa HQ</h3>
+              <h3 className="text-xl font-bold text-yellow-400 mb-6">South Africa</h3>
               <ul className="space-y-3 text-gray-300">
-                <li>✓ Johannesburg office & workshop</li>
-                <li>✓ Same-day response for Gauteng</li>
+                <li>✓ Site visits arranged from our Kenya team</li>
+                <li>✓ Response time confirmed when you call</li>
                 <li>✓ 24/7 emergency support</li>
-                <li>✓ Parts inventory & fuel supply</li>
+                <li>✓ Parts sourced for the job</li>
                 <li>✓ Industrial expertise network</li>
               </ul>
             </div>

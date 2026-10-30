@@ -704,15 +704,22 @@ export function findOptimalSystem(
   backupHours: number,
   location: string,
   budget: 'economy' | 'standard' | 'premium',
-  gridConnected: boolean
+  gridConnected: boolean,
+  /** NASA POWER sun-hours for the site (annual, worst month), when the page fetched them. */
+  sun?: { annual: number; worstMonth: number },
 ): OptimizationResult[] {
   const climate = KENYA_CLIMATE[location] || KENYA_CLIMATE['Default'];
+  // NASA sun-hours when given; otherwise the table value with the cloudiest
+  // month at about 0.8 of the year (2026-10-30 re-audit: off-grid sized on the annual).
+  const pshAnnual = sun && sun.annual > 0 ? sun.annual : climate.avgSunHours;
+  const pshWorst = sun && sun.worstMonth > 0 ? sun.worstMonth : climate.avgSunHours * 0.8;
   const systemType: SystemType = !gridConnected ? 'off-grid' : backupHours > 0 ? 'hybrid' : 'grid-tied';
   let s: SizingResult;
   try {
     s = sizeSolar({
       monthlyKwh: dailyConsumption * 30,
-      pshAnnual: climate.avgSunHours,
+      pshAnnual,
+      pshWorstMonth: pshWorst,
       systemType,
       peakLoadKw: peakLoad > 0 ? peakLoad / 1000 : undefined,
       ...(systemType === 'hybrid' ? { nightUsePct: Math.min(100, (backupHours / 24) * 100) } : {}),
@@ -744,7 +751,9 @@ export function findOptimalSystem(
     if (results.length >= 3) break;
     if (brandsSeen.has(panel.brand)) continue; // three different panel brands
     brandsSeen.add(panel.brand);
-    const panelCount = Math.max(1, Math.ceil((s.pvKwp * 1000) / panel.wattage - 0.03));
+    // The same watts as the design (panels × panel watt), not the rounded kWp.
+    const panelCount = Math.max(1, Math.ceil((s.panels * s.panelWatt) / panel.wattage - 0.03));
+    const listedKwp = (panelCount * panel.wattage) / 1000;
 
     const fitting = inverters.find((i) => i.ratedPower >= s.inverterKw);
     const inverter = fitting || inverters[inverters.length - 1];
@@ -759,13 +768,18 @@ export function findOptimalSystem(
       if (battery) batteryCount = Math.ceil(s.batteryKwh / ((battery.capacity * battery.voltage) / 1000) - 0.03);
     }
 
-    // One price list: the calculator's (lib/solar/sizing.ts), before VAT.
-    const pvCost = tieredKes(s.pvKwp, PV_KES_PER_KWP_BANDS);
-    const invCost = tieredKes(s.inverterKw, inverterBands(systemType));
-    const batCost = s.batteryKwh * BATTERY_KES_PER_KWH;
+    // Priced on the hardware LISTED (2026-10-30 re-audit: 8 panels shown, 3.9
+    // kWp priced; 30.7 kWh of batteries shown, 23.4 kWh priced). The
+    // calculator's price list, before VAT.
+    const listedBatKwh = battery ? (battery.capacity * battery.voltage * batteryCount) / 1000 : 0;
+    const pvCost = tieredKes(listedKwp, PV_KES_PER_KWP_BANDS);
+    const invCost = tieredKes(inverter.ratedPower * inverterUnits, inverterBands(systemType));
+    const batCost = listedBatKwh * BATTERY_KES_PER_KWH;
     const equipment = pvCost + invCost + batCost;
     const installation = equipment * (INSTALLATION_FACTOR - 1);
-    const fin = proposalFinance({ capexKes: s.cost.midKes, year1SavingsKes: s.annualSavingKes,
+    const totalCost = Math.round((equipment + installation) / 1000) * 1000;
+    const paybackYears = s.annualSavingKes > 0 ? Math.round((totalCost / s.annualSavingKes) * 10) / 10 : Infinity;
+    const fin = proposalFinance({ capexKes: totalCost, year1SavingsKes: s.annualSavingKes,
       batteryReplacement: batCost > 0 ? { year: 12, costKes: batCost } : null });
     const twentyFiveYearNet = fin.cashFlowTable[fin.cashFlowTable.length - 1][2];
 
@@ -774,18 +788,18 @@ export function findOptimalSystem(
       batteries: battery ? [{ battery, quantity: batteryCount }] : [],
       inverter,
       accessories: [],
-      totalCost: s.cost.midKes,
+      totalCost,
       costBreakdown: { panels: pvCost, batteries: batCost, inverter: invCost, accessories: 0, installation },
       systemSpecs: {
         totalWattage: panel.wattage * panelCount,
-        totalBatteryKwh: battery ? (battery.capacity * battery.voltage * batteryCount) / 1000 : 0,
+        totalBatteryKwh: listedBatKwh,
         dailyProduction: s.annualEnergyKwh / 365,
         autonomyDays: s.batteryUsableKwh / Math.max(dailyConsumption, 0.1),
         systemVoltage: battery ? 48 : 0,
       },
       roi: {
         monthlySavings: s.monthlySavingKes,
-        paybackYears: s.paybackYears ?? Infinity,
+        paybackYears,
         twentyFiveYearSavings: twentyFiveYearNet,
       },
       ...(warning ? { warning } : {}),

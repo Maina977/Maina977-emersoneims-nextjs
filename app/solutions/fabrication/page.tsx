@@ -987,7 +987,7 @@ const FabricationPage = () => {
                       </p>
 
                       <p>
-                        Operating in Kenya since 2012, and drawing on a fabrication team with far longer combined experience in East Africa's industrial sector, we
+                        Operating in Kenya since 2011, and drawing on a fabrication team with far longer combined experience in East Africa's industrial sector, we
                         have built a reputation for quality, reliability, and on-time delivery. Our
                         ISO 9001:2015 certified quality management system ensures consistent standards
                         across all projects.

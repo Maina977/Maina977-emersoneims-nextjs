@@ -3,7 +3,7 @@ import EastAfricaCityLinks from '@/components/east-africa/EastAfricaCityLinks';
 
 export const metadata: Metadata = {
   title: 'Power Solutions Uganda',
-  description: 'Reliable generator and power solutions across Uganda. Kampala tech hub, Jinja industrial park, telecom tower backup. 24/7 support in UGX. Call +256701234567.',
+  description: 'Reliable generator and power solutions across Uganda. Kampala tech hub, Jinja industrial park, telecom tower backup. 24/7 support in UGX. Call +254 768 860 665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/east-africa/uganda',
   },
@@ -64,9 +64,9 @@ export default function UgandaPage() {
             <div className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-blue-500/20 rounded-lg">
               <h3 className="text-lg font-bold text-blue-400 mb-4">Kampala Hub</h3>
               <ul className="space-y-2 text-gray-300">
-                <li>✓ Same-day delivery for generators</li>
+                <li>✓ Delivery time confirmed when you call</li>
                 <li>✓ Emergency response time confirmed when you call</li>
-                <li>✓ Full service & parts inventory</li>
+                <li>✓ Full service, with parts sourced for the job</li>
                 <li>✓ Tech startup support specialists</li>
               </ul>
             </div>
@@ -147,70 +147,6 @@ export default function UgandaPage() {
         </div>
       </section>
 
-      {/* Uganda Case Studies */}
-      <section className="py-20 px-4 bg-black">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center">Success Across Uganda</h2>
-
-          <div className="space-y-8">
-            {[
-              {
-                title: 'Kampala Tech Startup Incubator',
-                location: 'Kampala',
-                issue: '50+ startup companies sharing one office, daily outages disrupting operations',
-                solution: '100 kVA generator + UPS for all servers + remote monitoring',
-                result: '99.9% uptime, zero startup churn, attracts top talent',
-                investment: 'UGX 80M (~KES 1.8M)',
-              },
-              {
-                title: 'MTN Uganda Tower Network',
-                location: 'Nationwide (50+ sites)',
-                issue: 'Grid unreliability causing tower drops, revenue loss UGX 50M/month',
-                solution: 'Multi-site 30-50 kVA generator rollout + centralized monitoring',
-                result: '99.7% uptime, zero tower incidents, KES 25M annual ROI',
-                investment: 'UGX 500M (~KES 11.3M)',
-              },
-              {
-                title: 'Jinja Manufacturing Plant',
-                location: 'Jinja Industrial Park',
-                issue: 'Factory downtime losing UGX 2M/hour, export deadlines missed',
-                solution: '250 kVA industrial generator + predictive maintenance',
-                result: '99.6% uptime, zero missed shipments, 3-month ROI',
-                investment: 'UGX 180M (~KES 4.1M)',
-              },
-            ].map((study, idx) => (
-              <div key={idx} className="p-8 bg-gradient-to-r from-slate-800/50 to-slate-900/50 border border-blue-500/20 rounded-lg">
-                <h3 className="text-xl font-bold text-blue-400 mb-2">{study.title}</h3>
-                <p className="text-sm text-gray-400 mb-4">📍 {study.location}</p>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-xs text-gray-400 font-bold mb-1">CHALLENGE</p>
-                      <p className="text-sm text-gray-300">{study.issue}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 font-bold mb-1">SOLUTION</p>
-                      <p className="text-sm text-gray-300">{study.solution}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="bg-green-900/20 border border-green-500/30 p-4 rounded">
-                      <p className="text-xs text-green-400 font-bold mb-1">RESULT</p>
-                      <p className="text-sm text-green-300">{study.result}</p>
-                    </div>
-                    <div className="bg-black/40 p-4 rounded">
-                      <p className="text-xs text-gray-400 font-bold mb-1">Investment</p>
-                      <p className="text-lg font-bold text-blue-400">{study.investment}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Services */}
       <section className="py-20 px-4 bg-slate-900/30">
@@ -251,7 +187,7 @@ export default function UgandaPage() {
               Call: +254 768 860 665
             </a>
             <a
-              href="https://wa.me/256701234567?text=Hi%20EmersonEIMS%2C%20I%20need%20power%20solutions%20in%20Uganda.%20Please%20contact%20me."
+              href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20need%20power%20solutions%20in%20Uganda.%20Please%20contact%20me."
               className="px-8 py-4 border-2 border-blue-500 text-blue-400 font-bold rounded-lg hover:bg-blue-500/10 transition-all"
             >
               WhatsApp Us

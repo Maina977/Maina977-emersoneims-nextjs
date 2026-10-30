@@ -79,7 +79,11 @@ describe('Generator Oracle fault index', () => {
   it('reads "under load" as when the symptom happens, not as under-range', () => {
     const r = diagnoseFromSymptoms({ symptoms: ['black smoke under load'] });
     expect(r.ranked.some((x) => x.matchedTerms.includes('under'))).toBe(false);
-    expect(r.ranked[0]?.matchedTerms).toEqual(expect.arrayContaining(['black', 'smoke']));
+    // Smoke is answered by the Repair Centre guide; controller alarms are kept
+    // only when they concern the exhaust, intake or boost (2026-10-30 re-audit).
+    expect(r.guides[0]?.title).toMatch(/smoke/i);
+    expect(r.guides[0]?.matchedTerms).toEqual(expect.arrayContaining(['black', 'smoke']));
+    for (const x of r.ranked) expect(`${x.title} ${x.description ?? ''}`).toMatch(/smoke|exhaust|air filter|intake|boost|turbo/i);
     const uv = diagnoseFromSymptoms({ symptoms: ['under voltage'] });
     expect(uv.ranked[0]?.title).toMatch(/under ?voltage/i);
   });

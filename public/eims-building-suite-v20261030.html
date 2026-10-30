@@ -36,7 +36,8 @@ function ensureThree(){
   }
   return window.__threeP;
 }
-window.addEventListener('load', function(){ setTimeout(function(){ ensureThree().catch(function(){}); }, 4000); });
+// Loaded only when a 3D or BIM view opens (2026-10-30 re-audit: it was
+// preloaded on every visit).
 </script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -248,6 +249,8 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
   html,body{background:#fff!important;color:#000!important;height:auto!important;overflow:visible!important}
   .mode-tabs,.top-actions,.pro-sub-tabs,.nav,button{display:none!important}
   .pro-page{display:block!important;height:auto!important;overflow:visible!important}
+  /* The outer app containers clipped the sheet too (2026-10-30 re-audit). */
+  #mainArea,.main,.app,.content,body>div{height:auto!important;max-height:none!important;overflow:visible!important;position:static!important}
   #pro-pane,.pro-inputs,.pro-output{overflow:visible!important;height:auto!important;max-height:none!important;flex:none!important}
   .pro-output{background:#fff!important;border:1px solid #999!important;page-break-inside:auto}
   .pro-output pre,.pro-output .k,.pro-output .s,.pro-output .n,.pro-output .b,.pro-output .hd,.pro-refs,.pro-refs b{color:#000!important}
@@ -7764,7 +7767,11 @@ const PRO_LABELS = {
   sliding_R_d_kN:'Sliding resistance R_h,d', sliding_utilisation:'Sliding utilisation H_Ed/R_h,d', governing_combination:'Governing combination',
   q_overburden_kPa:'Overburden pressure q′', phi_d_deg:'Design friction angle φ′d', c_d_kPa:'Design cohesion c′d', cu_d_kPa:'Design undrained strength cu,d',
   Nc:'Nc', Nq:'Nq', sc:'Shape factor sc', sq:'Shape factor sq', sgamma:'Shape factor sγ', ic:'Inclination factor ic', iq:'Inclination factor iq', igamma:'Inclination factor iγ',
-  method_permitted:'Lateral force method permitted', F_b_kN:'Base shear F_b', Sd_g:'Design spectral acceleration Sd(T1)', T1_s:'Fundamental period T1', lambda:'Correction factor λ', ag_g:'Design ground acceleration ag',
+  method_permitted:'Lateral force method permitted', F_b_kN:'Base shear F_b',
+  V_Rd_c_kN:'Shear resistance without links V_Rd,c', V_Rd_max_kN:'Strut crushing limit V_Rd,max', V_Rd_s_kN:'Link resistance V_Rd,s', V_Rd_kN:'Shear resistance V_Rd',
+  cot_theta:'Strut angle cot θ', V_Ed_over_V_Rd_c:'V_Ed against V_Rd,c', Asw_over_s_required_mm2_per_mm:'Links required Asw/s',
+  l_over_d_allowed:'Allowed span/depth', l_over_d_actual:'Actual span/depth', basic_l_over_d:'Basic span/depth (Eq. 7.16)',
+  rho_pct:'Tension steel ratio ρ', rho0_pct:'Reference ratio ρ0', steel_stress:'Steel stress factor', long_span:'Long-span factor', flanged:'Flange factor', Sd_g:'Design spectral acceleration Sd(T1)', T1_s:'Fundamental period T1', lambda:'Correction factor λ', ag_g:'Design ground acceleration ag',
   x_mm:'Neutral axis depth x', z_mm:'Lever arm z', fcd_MPa:'Design concrete strength fcd', fyd_MPa:'Design steel strength fyd', K:'K = M/(b·d²·fck)',
   Fv_Rd_kN:'Shear resistance Fv,Rd', Ft_Rd_kN:'Tension resistance Ft,Rd', Fb_Rd_kN:'Bearing resistance Fb,Rd', alpha_v:'αv', alpha_b:'αb',
   shear_area_mm2:'Shear area', shear_planes:'Shear planes',
@@ -7938,7 +7945,10 @@ function proRenderResult(endpoint,data){
     // One overall verdict when the result has checks (2026-10-27 audit: a failed
     // check was only a small "✗ no" row).
     const _pass = main.all_checks_pass;
-    const _verdict = typeof _pass==='boolean' ? `<div style="margin:0 0 10px;padding:10px 14px;border-radius:6px;font-weight:700;font-size:14px;background:${_pass?'rgba(76,175,80,.15)':'rgba(244,67,54,.15)'};border:1px solid ${_pass?'#66bb6a':'#ef5350'};color:${_pass?'#a5d6a7':'#ef9a9a'}">${_pass?'✓':'✗'} ${proEscape(main.overall||'')}</div>` : '';
+    // Load results and sizings are neither pass nor fail: neutral colours (2026-10-30 re-audit).
+    const _neutral = /^(LOAD RESULT|SIZED ONLY)/.test(String(main.overall||''));
+    const _vc = _neutral ? (/^SIZED/.test(main.overall) ? ['rgba(255,183,77,.15)','#ffb74d','#ffe0b2','ℹ'] : ['rgba(100,181,246,.15)','#64b5f6','#bbdefb','ℹ']) : _pass ? ['rgba(76,175,80,.15)','#66bb6a','#a5d6a7','✓'] : ['rgba(244,67,54,.15)','#ef5350','#ef9a9a','✗'];
+    const _verdict = typeof _pass==='boolean' ? `<div style="margin:0 0 10px;padding:10px 14px;border-radius:6px;font-weight:700;font-size:14px;background:${_vc[0]};border:1px solid ${_vc[1]};color:${_vc[2]}">${_vc[3]} ${proEscape(main.overall||'')}</div>` : '';
     body = _verdict + _warn + proHeadlines(main) + proRenderChecks(main.checks) + proRenderObject(_rest);
   }
   const footer = proRenderFooter(specials);

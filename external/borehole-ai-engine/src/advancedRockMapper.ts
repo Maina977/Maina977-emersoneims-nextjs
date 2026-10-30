@@ -706,8 +706,9 @@ export async function advancedRockMapping(input: RockMappingInput): Promise<Adva
     const oc = sg.organicCarbon ? sg.organicCarbon / 10 : 10;
     const bd = sg.bulkDensity ? sg.bulkDensity / 100 * 1000 : 1400; // cg/cm³ → kg/m³
 
+    // SoilGrids texture is g/kg; the classifier takes per cent.
     const baseResult = baseClassifyRockType(
-      sg.clay ?? 30, sg.sand ?? 40, sg.silt ?? 30,
+      (sg.clay ?? 300) / 10, (sg.sand ?? 400) / 10, (sg.silt ?? 300) / 10,
       pH, oc, bd,
       input.elevation_m ?? 500,
       input.annualPrecipitation_mm ?? 800,
@@ -768,7 +769,7 @@ export async function advancedRockMapping(input: RockMappingInput): Promise<Adva
       clay: input.soilGrids.clay,
       sand: input.soilGrids.sand,
       pH: input.soilGrids.phH2O ? input.soilGrids.phH2O / 10 : undefined,
-      cec: input.soilGrids.cec,
+      cec: input.soilGrids.cec != null ? input.soilGrids.cec / 10 : undefined, // mmol/kg to cmol/kg
     } : undefined,
   );
 

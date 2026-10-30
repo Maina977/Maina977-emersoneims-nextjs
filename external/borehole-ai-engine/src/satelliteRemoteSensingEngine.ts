@@ -518,9 +518,10 @@ function analyzeHyperspectral(
   const hasRock = !!rockData;
 
   // Use SoilGrids mineralogy + rock classification as hyperspectral proxy
-  const clay = soilData?.clay ?? 30;
-  const ph = soilData?.phH2O ?? 6.5;
-  const oc = soilData?.organicCarbon ?? 15;
+  // SoilGrids' mapped units to per cent, pH and g/kg.
+  const clay = soilData?.clay != null ? soilData.clay / 10 : 30;
+  const ph = soilData?.phH2O != null ? soilData.phH2O / 10 : 6.5;
+  const oc = soilData?.organicCarbon != null ? soilData.organicCarbon / 10 : 15;
   const rockType = rockData?.primaryRockType ?? rockData?.rockType ?? 'Unknown';
   const wrbClass = globalSoilData?.wrbClass ?? 'Unknown';
 

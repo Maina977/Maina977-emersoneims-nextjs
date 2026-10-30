@@ -170,7 +170,7 @@ export default function SolarDesignStudioPro() {
   const saving = gridSaving({
     type: batteryCapacity > 0 ? 'hybrid' : 'grid-tied',
     annualEnergyKwh: annualProduction,
-    annualConsumptionKwh: Math.max(0, monthlyUseKwh) * 12,
+    annualConsumptionKwh: (Math.max(0, monthlyUseKwh) / 30) * 365, // as sizeSolar
     daytimeUsePct,
     batteryKwh: batteryCapacity,
     tariffKesPerKwh: TARIFF_KES,

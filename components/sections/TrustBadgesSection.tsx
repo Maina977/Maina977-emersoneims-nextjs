@@ -4,7 +4,7 @@ import { m, LazyMotion, domAnimation } from 'framer-motion';
 
 // Trust badges and certifications - Only factual items
 const capabilities = [
-  { name: 'Generator Specialists', icon: '⚡', description: 'Operating since 2012' },
+  { name: 'Generator Specialists', icon: '⚡', description: 'Operating since 2011' },
   // Nairobi is the headquarters, so a faster Nairobi response is consistent
   // with the 2–4 hours stated for other major towns, not a contradiction of it.
   // Briefly changed on 2026-09-11 on that mistaken assumption and restored the

@@ -70,7 +70,8 @@ interface TwinInputData {
   soilType?: string;
   rechargeEstimate_mm_yr?: number;
   fieldData?: FieldValidationData;
-  nearbyBoreholes?: { depth_m: number; yield_m3hr: number; waterLevel_m: number; litholog?: string }[];
+  /** Missing values are null, never a default (2026-10-30 audit). */
+  nearbyBoreholes?: { depth_m: number | null; yield_m3hr: number | null; waterLevel_m: number | null; litholog?: string }[];
   graceTrend_cm_yr?: number;
 }
 
@@ -356,9 +357,14 @@ function constrainWithFieldData(layers: SubsurfaceLayer[], fd: FieldValidationDa
 }
 
 /* ─── Step 3: Nearby borehole constraint ─── */
-function constrainWithBoreholes(layers: SubsurfaceLayer[], boreholes: { depth_m: number; yield_m3hr: number; waterLevel_m: number }[], sources: string[]) {
-  const avgDepth = boreholes.reduce((s, b) => s + b.depth_m, 0) / boreholes.length;
-  const avgYield = boreholes.reduce((s, b) => s + b.yield_m3hr, 0) / boreholes.length;
+const known = (vals: (number | null | undefined)[]) => vals.filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0);
+const avg = (a: number[]) => a.reduce((s, v) => s + v, 0) / a.length;
+
+function constrainWithBoreholes(layers: SubsurfaceLayer[], boreholes: { depth_m: number | null; yield_m3hr: number | null; waterLevel_m: number | null }[], sources: string[]) {
+  const depths = known(boreholes.map((b) => b.depth_m));
+  const yields = known(boreholes.map((b) => b.yield_m3hr));
+  if (depths.length === 0) return;
+  const avgDepth = avg(depths);
 
   // Use nearby borehole depth to validate model
   const aquiferLayer = layers.find(l => l.isAquifer);
@@ -370,10 +376,10 @@ function constrainWithBoreholes(layers: SubsurfaceLayer[], boreholes: { depth_m:
     aquiferLayer.topDepthM = Math.round((blended - halfThickness) * 10) / 10;
     aquiferLayer.bottomDepthM = Math.round((blended + halfThickness) * 10) / 10;
     aquiferLayer.confidence = Math.min(0.9, aquiferLayer.confidence + 0.15);
-    aquiferLayer.dataSourcesUsed.push(`${boreholes.length} nearby boreholes`);
+    aquiferLayer.dataSourcesUsed.push(`${depths.length} nearby boreholes with a recorded depth`);
   }
 
-  sources.push(`${boreholes.length} nearby boreholes (avg depth ${avgDepth.toFixed(0)}m, avg yield ${avgYield.toFixed(1)} m³/hr)`);
+  sources.push(`${depths.length} nearby boreholes with a recorded depth (average ${avgDepth.toFixed(0)} m${yields.length ? `; ${yields.length} with a yield, average ${avg(yields).toFixed(1)} m³/hr` : ''})`);
 }
 
 /* ─── Helper: Adjust layer boundary to match aquifer ─── */
@@ -447,8 +453,8 @@ function estimateWaterLevel(layers: SubsurfaceLayer[], input: TwinInputData): nu
   
   // Override with nearby borehole data if available
   if (input.nearbyBoreholes && input.nearbyBoreholes.length > 0) {
-    const avgWL = input.nearbyBoreholes.reduce((s, b) => s + b.waterLevel_m, 0) / input.nearbyBoreholes.length;
-    if (avgWL > 0) return estimated * 0.5 + avgWL * 0.5; // blend
+    const wls = known(input.nearbyBoreholes.map((b) => b.waterLevel_m));
+    if (wls.length) return estimated * 0.5 + avg(wls) * 0.5; // blend
   }
 
   return estimated;
@@ -506,7 +512,7 @@ function calculateModelConfidence(sources: string[], input: TwinInputData): numb
   if (input.fieldData?.magneticGravitySurvey) conf += 0.07;
   if (input.fieldData?.nmrSurvey) conf += 0.15; // NMR is the gold standard
   if (input.fieldData?.pumpTest) conf += 0.12;
-  if (input.nearbyBoreholes && input.nearbyBoreholes.length >= 3) conf += 0.10;
+  if (input.nearbyBoreholes && known(input.nearbyBoreholes.map((b) => b.depth_m)).length >= 3) conf += 0.10;
   
   return Math.min(0.95, conf);
 }

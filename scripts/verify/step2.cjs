@@ -25,7 +25,7 @@ const PAGES = [
   '/solar-genius-pro#/report', '/solar-genius-pro#/pro', '/solar-genius-pro#/sun-weather',
   '/solar-genius-pro#/quote-check', '/solar-genius-pro#/advanced', '/generator-oracle', '/faults',
   '/aquascan-pro-v3', '/aquascan-pro-v3/methodology', '/innovations',
-  '/eims-building-suite-v20261020.html', '/eims-pro-console.html',
+  '/eims-building-suite-v20261030.html', '/eims-pro-console.html',
 ];
 
 const failures = [];

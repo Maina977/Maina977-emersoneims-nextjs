@@ -2356,7 +2356,7 @@ When a technician describes a problem:
    - Wire colors, pin numbers, torque specs
 
 5. **Required Tools**: Exactly what they need
-6. **Part Numbers**: OEM and aftermarket with KES prices
+6. **Parts**: names only; no part numbers or prices (they depend on the engine serial and the supplier)
 7. **Safety Warnings**: ⚠️ critical warnings
 
 ENGAGEMENT - ALWAYS ASK:

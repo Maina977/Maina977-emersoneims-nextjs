@@ -1314,7 +1314,9 @@ function proEscape(v){
 // Units keep their case and go in brackets ("qz_psf" → "qz (psf)", "M_Rd_kNm" →
 // "M Rd (kNm)") instead of "Qz Psf" / "M Rd KNm" (2026-10-20).
 const UNIT_LABELS = { psf:'psf', Pa:'Pa', kPa:'kPa', MPa:'MPa', kN:'kN', kNm:'kNm', mm:'mm', mm2:'mm²', m:'m', m2:'m²', m3:'m³', m3_s:'m³/s', L_s:'L/s', s:'s', min:'min', pct:'%', deg:'°', W_m2K:'W/m²K', m2K_W:'m²K/W', ms:'m/s', kWh:'kWh', kW:'kW', ha:'ha', g:'g' };
-const KEY_LABELS = { alpha_v:'αv', alpha_b:'αb', alpha_d:'αd', total_absorption_m2_sabin:'Total absorption (m² Sabine)', datetime_utc:'Date/time (UTC)', x_mm:'x (mm)', z_mm:'z (mm)', qz_psf:'qz (psf)', qz_Pa:'qz (Pa)', qp_Pa:'qp (Pa)', fcd_MPa:'fcd (MPa)', fyd_MPa:'fyd (MPa)', Kz:'Kz', Cs:'Cs', T_s:'T (s)', Fv_Rd_kN:'Fv,Rd (kN)', Ft_Rd_kN:'Ft,Rd (kN)', Fb_Rd_kN:'Fb,Rd (kN)', Bp_Rd_kN:'Bp,Rd (kN)', M_Rd_kNm:'M,Rd (kNm)', As_min_mm2:'As,min (mm²)', As_required_mm2:'As,req (mm²)', mean_alpha:'Mean absorption ᾱ', T60_s:'T60 (s)' };
+const KEY_LABELS = { alpha_v:'αv', alpha_b:'αb', alpha_d:'αd', total_absorption_m2_sabin:'Total absorption (m² Sabine)', datetime_utc:'Date/time (UTC)', x_mm:'x (mm)', z_mm:'z (mm)', qz_psf:'qz (psf)', qz_Pa:'qz (Pa)', qp_Pa:'qp (Pa)', fcd_MPa:'fcd (MPa)', fyd_MPa:'fyd (MPa)', Kz:'Kz', Cs:'Cs', T_s:'T (s)', Fv_Rd_kN:'Fv,Rd (kN)', Ft_Rd_kN:'Ft,Rd (kN)', Fb_Rd_kN:'Fb,Rd (kN)', Bp_Rd_kN:'Bp,Rd (kN)', M_Rd_kNm:'M,Rd (kNm)', As_min_mm2:'As,min (mm²)', As_required_mm2:'As,req (mm²)', mean_alpha:'Mean absorption ᾱ', T60_s:'T60 (s)',
+  // Shear and deflection (2026-10-30 re-audit: "V Rd c", "L over d allowed").
+  V_Rd_c_kN:'V_Rd,c without links (kN)', V_Rd_max_kN:'V_Rd,max strut limit (kN)', V_Rd_s_kN:'V_Rd,s links (kN)', V_Rd_kN:'V_Rd (kN)', cot_theta:'cot θ', l_over_d_allowed:'Allowed span/depth', l_over_d_actual:'Actual span/depth', basic_l_over_d:'Basic span/depth (Eq. 7.16)', rho_pct:'ρ (%)', rho0_pct:'ρ0 (%)', utilisation:'Utilisation (effect / resistance)', B_m:'Footing width B (m)', sizing_basis:'Sizing basis', governing_combination:'Governing combination', sliding_R_d_kN:'Sliding resistance R_h,d (kN)', H_Ed_kN:'H_Ed (kN)', sliding_utilisation:'Sliding utilisation', bearing_not_possible:'Bearing not possible (H too large)' };
 function toLabel(key){
   const k = String(key);
   if (KEY_LABELS[k]) return KEY_LABELS[k];
@@ -1416,8 +1418,12 @@ function renderResponse(status, statusText, payload, moduleInfo){
     const { success: _s, ok: _o, warning, overall, all_checks_pass, ...rest } = payload;
     const warn = warning ? `<div class="note" style="border-color:#f0b35c;color:#f6d08b">⚠ ${proEscape(warning)}</div>` : '';
     // One overall verdict when the result has checks (2026-10-27 audit).
+    // A load result or a sizing is not a pass or a fail: neutral colours
+    // (2026-10-30 re-audit: a green PASS on an EC8 base shear).
+    const neutral = /^(LOAD RESULT|SIZED ONLY)/.test(String(overall || ''));
+    const vc = neutral ? (/^SIZED/.test(overall) ? ['#ffb74d', '#ffe0b2', 'ℹ'] : ['#64b5f6', '#bbdefb', 'ℹ']) : all_checks_pass ? ['#66bb6a', '#a5d6a7', '✓'] : ['#ef5350', '#ef9a9a', '✗'];
     const verdict = typeof all_checks_pass === 'boolean'
-      ? `<div class="note" style="font-weight:700;font-size:14px;border-color:${all_checks_pass ? '#66bb6a' : '#ef5350'};color:${all_checks_pass ? '#a5d6a7' : '#ef9a9a'}">${all_checks_pass ? '✓' : '✗'} ${proEscape(overall || '')}</div>`
+      ? `<div class="note" style="font-weight:700;font-size:14px;border-color:${vc[0]};color:${vc[1]}">${vc[2]} ${proEscape(overall || '')}</div>`
       : '';
     return head + verdict + warn + renderObject(rest, profile);
   }

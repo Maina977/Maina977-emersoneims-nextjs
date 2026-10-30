@@ -942,7 +942,7 @@ const COUNTRY_BOREHOLE_DATA: Record<string, Omit<RegionalBoreholeStats, 'region'
       { name: 'WPDx (Water Point Data Exchange)', url: 'https://www.waterpointdata.org/', description: 'Global water point database — filter by Kenya' },
     ],
     source: 'Kenya Ministry of Water, Water Resources Authority, RWSN borehole cost benchmarking 2020',
-    notes: ['Nairobi basin: 60-150m typical', 'Turkana: typically 25-120m (field-record median 67m); many dry or saline holes', 'Mt Kenya flanks: high yield (volcanic)'],
+    notes: ['Nairobi: about 150 m typical (40-350 m; deeper in the CBD and industrial area)', 'Turkana: typically 25-120m (field-record median 67m); many dry or saline holes', 'Mt Kenya flanks: high yield (volcanic)'],
   },
   UG: {
     country: 'Uganda', countryCode: 'UG',

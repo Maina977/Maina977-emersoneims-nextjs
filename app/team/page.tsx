@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Team | Expert Engineers & Technicians | Kenya',
-  description: 'Meet the team behind EmersonEIMS. 11+ years of expertise. Certified technicians across Kenya. Real credentials, real experience.',
+  description: 'Meet the team behind EmersonEIMS. 15 years of expertise. Certified technicians across Kenya. Real credentials, real experience.',
   alternates: {
     canonical: 'https://www.emersoneims.com/team',
   },
@@ -14,7 +14,7 @@ export default function TeamPage() {
     {
       name: 'Engineering Team',
       role: 'Power Systems & Design',
-      experience: '11+ years average',
+      experience: 'Operating since 2011',
       specialties: [
         'Backup power system design',
         'Load calculation & sizing',
@@ -140,7 +140,7 @@ export default function TeamPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            11+ years of expertise across power systems, solar, water, AC, and industrial solutions. Real qualifications. Real experience. Real accountability.
+            15 years of expertise across power systems, solar, water, AC, and industrial solutions. Real qualifications. Real experience. Real accountability.
           </p>
         </div>
       </section>

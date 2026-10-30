@@ -1187,7 +1187,7 @@ const HighVoltagePage = () => {
                       </p>
 
                       <p>
-                        Operating in Kenya since 2012, with an HV team whose combined experience in the East African power sector runs considerably longer, we have established
+                        Operating in Kenya since 2011, with an HV team whose combined experience in the East African power sector runs considerably longer, we have established
                         ourselves as the region's leading provider of high voltage equipment, installation,
                         testing, and maintenance services. Our team of certified engineers and technicians
                         brings expertise in handling complex power infrastructure projects.

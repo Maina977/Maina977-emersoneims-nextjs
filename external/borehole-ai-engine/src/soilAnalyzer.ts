@@ -99,7 +99,7 @@ export class SoilAnalyzer {
     const silt_pct = (sg.silt ?? 400) / 10;
     const ph = (sg.phH2O ?? 65) / 10;
     const soc = (sg.organicCarbon ?? 10) / 10;    // dg/kg → g/kg
-    const bd = (sg.bulkDensity ?? 1400) / 100;    // cg/cm³ → g/cm³
+    const bd = (sg.bulkDensity ?? 140) / 100;     // cg/cm³ → g/cm³
 
     // Laterite: tropical weathered soil — acidic, high clay, low organic matter
     if (ph < 6.0 && clay_pct > 25 && soc < 1.5 && bd > 1.3) return 'laterite';
@@ -133,7 +133,7 @@ export class SoilAnalyzer {
     const sand_frac = (sg.sand ?? 400) / 1000;
     const soc_gkg = (sg.organicCarbon ?? 10) / 10;  // dg/kg → g/kg
     const ph = (sg.phH2O ?? 65) / 10;
-    const bd = (sg.bulkDensity ?? 1400) / 100;       // cg/cm³ → g/cm³
+    const bd = (sg.bulkDensity ?? 140) / 100;       // cg/cm³ → g/cm³
 
     // Porosity from bulk density: n = 1 - BD/ρs (ρs ≈ 2.65 g/cm³ for quartz)
     const porosity = Math.max(0.10, Math.min(0.65, 1 - bd / 2.65));

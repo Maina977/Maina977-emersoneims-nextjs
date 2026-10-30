@@ -81,7 +81,7 @@ export default function EastAfricaPage() {
               <div className="text-4xl mb-4">🇰🇪</div>
               <h3 className="text-2xl font-bold text-red-400 mb-2">Kenya</h3>
               <p className="text-gray-300 mb-4">
-                EmersonEIMS HQ. 11+ years operating across all 47 counties. Proven expertise in healthcare, manufacturing, telecom, hospitality, and real estate.
+                EmersonEIMS HQ. Operating since 2011 across all 47 counties. Proven expertise in healthcare, manufacturing, telecom, hospitality, and real estate.
               </p>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>✓ Same-day delivery in Nairobi</li>

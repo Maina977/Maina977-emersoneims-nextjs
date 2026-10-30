@@ -1202,11 +1202,7 @@ Use a genuine or approved replacement: ask for a written quote.
 - Crank engine
 - Should see fuel pulses
 
-**Part Numbers:**
-| Engine | Pump Part# | Price |
-|--------|-----------|-------|
-| Cummins 6BT | 3936316 | 18,000 |
-| Perkins 1104 | ULPK0038 | 12,000 |
+**Replacement:** the lift pump part number depends on the engine serial number: get it from the engine plate or the dealer, and ask for a written quote.
         `,
         options: [
           { label: '✅ Pump is working', nextStep: 'check-fuel-shutoff' },
@@ -1361,16 +1357,14 @@ This electromagnetic valve must OPEN to allow fuel.
         id: 'check-starter',
         question: 'Test starter motor directly:',
         instruction: `
-**Direct Starter Test:**
-1. Use jumper wire from battery + to starter solenoid terminal
-2. Starter should engage and crank
-3. If not, starter is failed
+**⚠️ Before this test:** the engine WILL crank and may start. Controller in OFF/STOP, fuel solenoid unplugged if you do not want it to start, everyone clear of the fan and belts, eye protection on, and no sparks near the battery (it gives off explosive gas).
 
-**Starter Part Numbers:**
-| Engine | Starter | Price |
-|--------|---------|-------|
-| Cummins | 3957593 | 45,000 |
-| CAT | 307-7177 | 85,000 |
+**Direct Starter Test:**
+1. Use a fused jumper lead from battery + to the starter solenoid terminal
+2. Starter should engage and crank
+3. If not, the starter (or its solenoid) has failed
+
+**Replacement:** the starter part number depends on the engine serial number: get it from the engine plate or the dealer, and ask for a written quote.
         `,
         options: [
           { label: '✅ Starter works - wiring issue', nextStep: 'check-starter-circuit' },

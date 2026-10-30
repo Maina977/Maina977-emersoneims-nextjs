@@ -718,7 +718,9 @@ export function bearingEc7(b: Body) {
   const err = missing({ B_m: B, Df_m: Df, gamma_kN_m3: gamma });
   if (err) return err;
   // shape "strip" wins over any L_m the form also sent (strip = per metre run).
-  const isStrip = String(b.shape ?? '') === 'strip';
+  const shapeIn = b.shape == null || b.shape === '' ? 'rectangular' : String(b.shape);
+  if (!['rectangular', 'square', 'strip'].includes(shapeIn)) return { error: 'Invalid input: shape must be rectangular or strip', missing: ['shape'] };
+  const isStrip = shapeIn === 'strip';
   const Lgiven = isStrip ? undefined : optN(b, 'L_m');
   const L = Lgiven ?? (isStrip ? Infinity : B!);
   if (!(B! > 0 && B! <= 50) || !(L >= B!) || !(Df! >= 0 && Df! <= 20)) return bad('Need 0 < B_m ≤ 50, L_m ≥ B_m (B is the shorter side) and 0 ≤ Df_m ≤ 20');
@@ -774,6 +776,7 @@ export function bearingEc7(b: Body) {
     // the full factored V made them favourable (2026-10-29 audit).
     const Vmin = Gk !== undefined ? Gk : undefined;
     let qult: number;
+    let incFail = false;
     const f: Record<string, number> = {};
     if (cond === 'drained') {
       const phi = Math.atan(Math.tan(phiK * DEG) / k.gPhi);
@@ -786,20 +789,22 @@ export function bearingEc7(b: Body) {
       if (Hd > 0 && Vmin !== undefined) {
         const m = strip ? 2 : (2 + BL) / (1 + BL);
         const base = 1 - Hd / (Vmin! + A * c / Math.tan(phi));
-        if (!(base > 0)) return bad(`${k.name}: the horizontal load exceeds the sliding resistance; check H_kN`);
-        iq = Math.pow(base, m); ig = Math.pow(base, m + 1); ic = iq - (1 - iq) / (Nc * Math.tan(phi));
+        // H beyond the inclined-load limit is a FAIL, not an input error
+        // (2026-10-30 re-audit): no bearing resistance at that inclination.
+        if (!(base > 0)) { incFail = true; iq = 0; ig = 0; ic = 0; }
+        else { iq = Math.pow(base, m); ig = Math.pow(base, m + 1); ic = Math.max(0, iq - (1 - iq) / (Nc * Math.tan(phi))); }
       }
-      qult = c * Nc * sc * ic + q * Nq * sq * iq + 0.5 * gEff * B! * Ng * sg * ig;
+      qult = incFail ? 0 : c * Nc * sc * ic + q * Nq * sq * iq + 0.5 * gEff * B! * Ng * sg * ig;
       Object.assign(f, { phi_d_deg: r(phi / DEG, 2), c_d_kPa: r(c, 1), Nc: r(Nc), Nq: r(Nq), Ngamma: r(Ng), sc: r(sc, 3), sq: r(sq, 3), sgamma: r(sg, 3), ic: r(ic, 3), iq: r(iq, 3), igamma: r(ig, 3) });
     } else {
       const cu = cuK / k.gCu;
       const sc = 1 + 0.2 * BL;
       let ic = 1;
       if (Hd > 0) {
-        if (Hd > A * cu) return bad(`${k.name}: the horizontal load exceeds A′·cu; check H_kN`);
-        ic = 0.5 * (1 + Math.sqrt(1 - Hd / (A * cu)));
+        if (Hd >= A * cu) { incFail = true; ic = 0; }
+        else ic = 0.5 * (1 + Math.sqrt(1 - Hd / (A * cu)));
       }
-      qult = (Math.PI + 2) * cu * sc * ic + qTotal;
+      qult = incFail ? 0 : (Math.PI + 2) * cu * sc * ic + qTotal;
       Object.assign(f, { cu_d_kPa: r(cu, 1), sc: r(sc, 3), ic: r(ic, 3) });
     }
     const Rd = qult * A; // γR,v = 1.0
@@ -808,16 +813,21 @@ export function bearingEc7(b: Body) {
     // The vertical load is favourable here, so G only with γ = 1.0.
     let sliding: Record<string, unknown> = {};
     if (Hd > 0 && Vmin !== undefined) {
+      // Drained: effective vertical load, less water uplift on the base when
+      // the water table is above it. Undrained: A·cu,d, but at most 0.4·V
+      // (EN 1997-1 §6.5.3(12), where water or air can reach the interface).
+      const uplift = dw !== undefined && dw < Df! ? gw * (Df! - dw) * A : 0;
       const RhD = cond === 'drained'
-        ? Vmin * Math.tan(Math.atan(Math.tan(phiK * DEG) / k.gPhi))
-        : A * (cuK / k.gCu);
+        ? Math.max(0, Vmin - uplift) * Math.tan(Math.atan(Math.tan(phiK * DEG) / k.gPhi))
+        : Math.min(A * (cuK / k.gCu), 0.4 * Vmin);
       sliding = { H_Ed_kN: r(Hd, 1), sliding_R_d_kN: r(RhD, 1), sliding_utilisation: r(Hd / RhD, 3) };
     }
     results.push({
       combination: k.name,
       q_Rd_kPa: r(qult, 1),
       R_Rd_kN: r(Rd, 1),
-      ...(Vd !== undefined ? { V_Ed_kN: r(Vd, 1), utilisation: r(Vd / Rd, 3) } : {}),
+      ...(incFail ? { bearing_not_possible: true } : {}),
+      ...(Vd !== undefined ? (incFail ? { V_Ed_kN: r(Vd, 1) } : { V_Ed_kN: r(Vd, 1), utilisation: r(Vd / Rd, 3) }) : {}),
       ...sliding,
       ...f,
     });
@@ -826,14 +836,19 @@ export function bearingEc7(b: Body) {
   // utilisation (2026-10-29 audit: the lowest resistance was named governing
   // while the other combination was more highly utilised); without loads,
   // the lowest design resistance.
+  const util = (x: Record<string, any>) => (x.bearing_not_possible ? Infinity : (x.utilisation as number));
   const gov = Gk !== undefined
-    ? results.reduce((a, x) => ((x.utilisation as number) > (a.utilisation as number) ? x : a))
+    ? results.reduce((a, x) => (util(x) > util(a) ? x : a))
     : results.reduce((a, x) => (x.q_Rd_kPa < a.q_Rd_kPa ? x : a));
-  const checks = Gk !== undefined ? results.map((x) => ({ check: `V_Ed ≤ R_d (${x.combination})`, value: `${x.V_Ed_kN} ≤ ${x.R_Rd_kN} kN${strip ? '/m' : ''}`, pass: (x.V_Ed_kN as number) <= x.R_Rd_kN })) : [];
+  const checks = Gk !== undefined ? results.map((x) => x.bearing_not_possible
+    ? { check: `Bearing (${x.combination})`, value: 'the horizontal load is beyond the limit for an inclined load: no bearing resistance', pass: false }
+    : { check: `V_Ed ≤ R_d (${x.combination})`, value: `${x.V_Ed_kN} ≤ ${x.R_Rd_kN} kN${strip ? '/m' : ''}`, pass: (x.V_Ed_kN as number) <= x.R_Rd_kN }) : [];
   for (const x of results) {
     if (x.sliding_R_d_kN !== undefined) checks.push({ check: `Sliding H_Ed ≤ R_h,d (${x.combination}, §6.5.3)`, value: `${x.H_Ed_kN} ≤ ${x.sliding_R_d_kN} kN${strip ? '/m' : ''}`, pass: (x.H_Ed_kN as number) <= (x.sliding_R_d_kN as number) });
   }
-  if (Hk > 0) assumptions.push(cond === 'drained' ? 'Sliding: R_h,d = G_k·tan δd with δ = φ′d (cast-in-place base), passive resistance ignored' : 'Sliding: R_h,d = A·cu,d, passive resistance ignored');
+  if (Hk > 0) assumptions.push(cond === 'drained'
+    ? 'Sliding: R_h,d = (G_k − water uplift)·tan δd with δ = φ′d (cast-in-place base); passive resistance ignored'
+    : 'Sliding: R_h,d = A·cu,d, at most 0.4·G_k (§6.5.3(12): water or air may reach the interface); passive resistance ignored');
   if (Gk === undefined) assumptions.push('No loads given: design resistances only. Give Gk_kN and Qk_kN (characteristic, including the footing and backfill) to check the footing.');
   return {
     q_Rd_kPa: gov.q_Rd_kPa,
@@ -1014,6 +1029,10 @@ export function ec2Deflection(b: Body) {
   const rho = Math.max(rhoRaw, rhoMin);
   const rhoC = Asc / (bw! * d!);
   const sf = Math.sqrt(fck!);
+  // Eq. 7.16b divides by (ρ − ρ′): as ρ′ approaches ρ the limit grows without
+  // bound (2026-10-30 re-audit: Asc 1199 on As,req 1200 gave l/d 7471, PASS).
+  // Below ρ − ρ′ = ρ0 the equation is outside its range.
+  if (rho > rho0 && rho - rhoC < rho0) return bad(`Compression steel too close to the tension steel for Eq. 7.16b (ρ − ρ′ = ${r((rho - rhoC) * 100, 3)}% is below ρ0 = ${r(rho0 * 100, 3)}%): check this member by a calculated deflection (§7.4.3)`);
   const basic = rho <= rho0
     ? K * (11 + 1.5 * sf * rho0 / rho + 3.2 * sf * Math.pow(rho0 / rho - 1, 1.5))
     : K * (11 + 1.5 * sf * rho0 / (rho - rhoC) + (sf / 12) * Math.sqrt(rhoC / rho0));
@@ -1222,7 +1241,9 @@ export function seismicEc8(b: Body) {
     Sd_g: r(Sd, 4),
     lambda,
     method_permitted: permitted,
-    ...(permitted ? { F_b_kN: r(Fb, 1) } : {
+    // A base shear is a design load, not a pass of the building (2026-10-30
+    // re-audit: a green "PASS" banner on a load result could be misread).
+    ...(permitted ? { F_b_kN: r(Fb, 1), overall: `LOAD RESULT: base shear F_b = ${r(Fb, 1)} kN for design. The lateral force method applies (T1 ≤ ${r(limit, 2)} s); this is not a check that the building passes.`, all_checks_pass: true } : {
       overall: `NOT PERMITTED: T1 = ${r(T, 2)} s exceeds min(4·TC, 2 s) = ${r(limit, 2)} s; the lateral force method does not apply (§4.3.3.2.1). Use modal response spectrum analysis.`,
       all_checks_pass: false,
     }),

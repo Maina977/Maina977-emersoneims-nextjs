@@ -102,9 +102,11 @@ export class WaterQualityAnalyzer {
     const clay_frac = (sg.clay ?? 200) / 1000;        // g/kg → fraction
     const sand_frac = (sg.sand ?? 400) / 1000;
     const soc = (sg.organicCarbon ?? 10) / 10;         // dg/kg → g/kg
-    const cec = sg.cec ?? 15;                           // cmol(c)/kg
+    // SoilGrids maps CEC in mmol(c)/kg; this model takes cmol(c)/kg (2026-10-30:
+    // read raw, it gave TDS ~2,000 mg/L at Kitale and told a highland site to budget for RO).
+    const cec = sg.cec != null ? sg.cec / 10 : 15;
     const ph = (sg.phH2O ?? 65) / 10;                  // ×10 → actual pH
-    const bd = (sg.bulkDensity ?? 1400) / 100;         // cg/cm³ → g/cm³
+    const bd = (sg.bulkDensity ?? 140) / 100;          // cg/cm³ → g/cm³
     const nit = (sg.nitrogen ?? 10) / 100;             // cg/kg → g/kg
 
     // TDS: Higher in clay-rich, high-CEC soils (more mineral dissolution)

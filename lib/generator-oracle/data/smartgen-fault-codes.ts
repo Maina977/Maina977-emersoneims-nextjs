@@ -74,7 +74,7 @@ function createSmartGenCode(
       steps: [
         { stepNumber: 1, action: 'Press STOP button', keySequence: ['STOP'], expectedResponse: 'Engine stops' },
         { stepNumber: 2, action: 'Press MUTE if alarm sounding', keySequence: ['MUTE'], expectedResponse: 'Alarm silenced' },
-        { stepNumber: 3, action: 'Press RESET button', keySequence: ['RESET'], expectedResponse: 'Alarm clears' },
+        { stepNumber: 3, action: 'Press STOP again to reset the alarm (on HGM controllers the Stop key is the reset key)', keySequence: ['STOP'], expectedResponse: 'Alarm clears' },
         { stepNumber: 4, action: 'Select mode if needed', keySequence: ['AUTO'], expectedResponse: 'Ready' }
       ],
       successIndicator: 'No alarms active'
@@ -379,9 +379,12 @@ export const SMARTGEN_FAULT_CODES: Partial<ControllerFaultCode>[] = [
     'Ground fault current detected.',
     ['Earth current', 'Safety hazard'],
     [
-      { likelihood: 'high', cause: 'Insulation failure', verification: 'Test insulation' }
+      { likelihood: 'high', cause: 'Insulation breakdown in the alternator windings or output cables (moisture, heat, rodent damage)', verification: 'With the set isolated and the AVR and controller disconnected, insulation-resistance test each phase to earth at 500 V or 1,000 V DC; below 1 MΩ needs drying or repair' },
+      { likelihood: 'medium', cause: 'Damaged cable or termination touching the frame or conduit', verification: 'Inspect cables and terminals for chafing, burning or tracking; test each outgoing circuit to earth' },
+      { likelihood: 'medium', cause: 'Neutral-earth link wrong or missing for this installation (or a second link elsewhere)', verification: 'Check the neutral-earth bonding against the site earthing design (TN-S/TN-C-S); there must be one bond only' },
+      { likelihood: 'low', cause: 'Earth-fault CT wired wrongly or in the wrong polarity, or the trip setting too sensitive', verification: 'Check CT orientation and wiring against the controller manual and the protection setting' }
     ],
-    ['Find fault', 'Repair insulation']
+    ['Isolate and lock off before any test', 'Find and repair the insulation or cable fault', 'Correct the neutral-earth bonding if wrong', 'Insulation-test again before returning to service']
   ),
 
   ...createSmartGenCode('G012', 'Phase Sequence', 'Electrical', 'Phase', 'warning',

@@ -391,7 +391,7 @@ const RULES = [
   {
     id: 'company-age-claim',
     /*
-     * BLOCKING. EmersonEIMS has operated in Kenya since 2012 — 14 years as at
+     * BLOCKING. EmersonEIMS has operated in Kenya since 2011 (Google Business Profile opening date 1 March 2011; owner confirmed 15 years, 2026-10-20). Earlier note: 14 years as at
      * 2026. A sweep on 2026-09-27 found the site claiming 10+, 12, 12+, 15+,
      * 30+ and 35+ years. The 30 and 35 figures describe a company founded in
      * 1996 and 1991.
@@ -407,7 +407,7 @@ const RULES = [
      */
     severity: 'error',
     re: /(?<!combined\s)(?<!combined\s\w{0,20}\s)\b(?:1[5-9]|[2-9]\d)\s*\+?\s*years?(?:\s+of)?\s+(?:experience|in\s+business|serving|operating)/i,
-    why: 'EmersonEIMS has operated since 2012. For team experience say "combined"; for the company, state the founding year so it cannot go stale.',
+    why: 'EmersonEIMS has operated since 2011. For team experience say "combined"; for the company, state the founding year so it cannot go stale.',
   },
   {
     id: 'vague-own-warranty',

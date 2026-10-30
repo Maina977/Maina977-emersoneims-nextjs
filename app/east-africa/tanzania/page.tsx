@@ -4,7 +4,7 @@ import EastAfricaCityLinks from '@/components/east-africa/EastAfricaCityLinks';
 
 export const metadata: Metadata = {
   title: 'Power Solutions Tanzania',
-  description: 'Reliable generator and power solutions across Tanzania. Dar es Salaam industrial parks, Arusha hospitals, Mbeya mining operations. 24/7 support in TZS. Call +255754411722.',
+  description: 'Reliable generator and power solutions across Tanzania. Dar es Salaam industrial parks, Arusha hospitals, Mbeya mining operations. 24/7 support in TZS. Call +254 768 860 665.',
   alternates: {
     canonical: 'https://www.emersoneims.com/east-africa/tanzania',
   },
@@ -51,19 +51,19 @@ export default function TanzaniaPage() {
               {
                 region: 'Mbeya',
                 description: 'Mining operations, processing facilities',
-                coverage: 'Premium — 24-hour response',
+                coverage: 'Premium — response time confirmed when you call',
                 icon: '⛏️',
               },
               {
                 region: 'Dodoma',
                 description: 'Government services, administrative hub',
-                coverage: 'Standard — 48-hour response',
+                coverage: 'Standard — response time confirmed when you call',
                 icon: '🏛️',
               },
               {
                 region: 'Zanzibar',
                 description: 'Tourism, hospitality, island operations',
-                coverage: 'Standard — 2-3 day response',
+                coverage: 'Standard — response time confirmed when you call',
                 icon: '🏝️',
               },
               {
@@ -142,80 +142,6 @@ export default function TanzaniaPage() {
         </div>
       </section>
 
-      {/* Tanzania Case Studies */}
-      <section className="py-20 px-4 bg-slate-900/30">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center">Success Stories Across Tanzania</h2>
-
-          <div className="space-y-8">
-            {[
-              {
-                title: 'Dar es Salaam Industrial Park Factory',
-                location: 'Dar es Salaam',
-                issue: 'Food processing plant experiencing 4-6 hour outages daily, spoiling KES 800K+ per incident',
-                solution: '250 kVA generator + solar canopy + predictive maintenance',
-                result: '99.7% uptime, zero spoilage incidents, KES 150M+ product protected annually',
-                investment: 'TZS 45M (~KES 3.2M)',
-              },
-              {
-                title: 'Arusha Regional Hospital',
-                location: 'Arusha',
-                issue: 'ICU equipment vulnerable to 30+ outages/year, patient safety at risk',
-                solution: 'Medical-grade UPS + 200 kVA generator + 24/7 emergency support',
-                result: '99.8% uptime, zero power-related incidents, TANZREC compliance achieved',
-                investment: 'TZS 32M (~KES 2.3M)',
-              },
-              {
-                title: 'Mbeya Mining Operation',
-                location: 'Mbeya',
-                issue: 'Gold extraction site losing TZS 2M/hour per outage, fuel costs KES 800K/month',
-                solution: 'Dual 300 kVA generators + smart load management + fuel optimization',
-                result: '99.5% uptime, 45% fuel cost reduction, 2-year ROI achieved',
-                investment: 'TZS 85M (~KES 6M)',
-              },
-              {
-                title: 'Dar es Salaam Shopping Mall',
-                location: 'Dar es Salaam',
-                issue: 'Power cuts causing retail closures, spoiled cold-chain, KES 500K per incident',
-                solution: '800 kVA redundant generators + smart load management + 24/7 support',
-                result: '99.8% uptime, zero retail disruptions, 40% energy savings',
-                investment: 'TZS 120M (~KES 8.6M)',
-              },
-            ].map((study, idx) => (
-              <div key={idx} className="p-8 bg-gradient-to-r from-slate-800/50 to-slate-900/50 border border-green-500/20 rounded-lg">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-xl font-bold text-green-400 mb-2">{study.title}</h3>
-                    <p className="text-sm text-gray-400 mb-4">📍 {study.location}</p>
-
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs text-gray-400 font-bold mb-1">THE CHALLENGE</p>
-                        <p className="text-sm text-gray-300">{study.issue}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400 font-bold mb-1">OUR SOLUTION</p>
-                        <p className="text-sm text-gray-300">{study.solution}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="bg-green-900/20 border border-green-500/30 p-4 rounded">
-                      <p className="text-xs text-green-400 font-bold mb-2">RESULT</p>
-                      <p className="text-sm text-green-300">{study.result}</p>
-                    </div>
-                    <div className="bg-black/40 p-4 rounded">
-                      <p className="text-xs text-gray-400 font-bold mb-1">Investment (TZS)</p>
-                      <p className="text-lg font-bold text-green-400">{study.investment}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Services in Tanzania */}
       <section className="py-20 px-4 bg-black">
@@ -274,7 +200,7 @@ export default function TanzaniaPage() {
               Call: +254 768 860 665
             </a>
             <a
-              href="https://wa.me/255754411722?text=Hi%20EmersonEIMS%2C%20I%20need%20power%20solutions%20in%20Tanzania.%20Please%20contact%20me."
+              href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20need%20power%20solutions%20in%20Tanzania.%20Please%20contact%20me."
               className="px-8 py-4 border-2 border-green-500 text-green-400 font-bold rounded-lg hover:bg-green-500/10 transition-all"
             >
               WhatsApp Us

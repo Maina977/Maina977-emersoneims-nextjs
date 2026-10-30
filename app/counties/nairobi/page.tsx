@@ -261,7 +261,7 @@ export default function NairobiCountyPage() {
                   certificates have been supplied. Replaced with the founding
                   year used elsewhere on the site.
                 */}
-                <div className="text-4xl font-bold text-brand-gold mb-2">2012</div>
+                <div className="text-4xl font-bold text-brand-gold mb-2">2011</div>
                 <div className="text-sm text-gray-400">Operating in Kenya since</div>
               </div>
               <div>

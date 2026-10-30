@@ -1,5 +1,6 @@
-import * as tf from '@tensorflow/tfjs';
-import * as mobilenet from '@tensorflow-models/mobilenet';
+// TensorFlow.js and MobileNet (several MB) load only when a real photo is
+// analysed (2026-10-30 audit: they loaded on every page open and on
+// coordinates-only runs, where the classifier has nothing to look at).
 import exifr from 'exifr';
 import { estimateGeographicLocation } from './geoEstimator';
 
@@ -30,6 +31,7 @@ export class ImageDetector {
       try {
         await Promise.race([
           (async () => {
+            const [tf, mobilenet] = await Promise.all([import('@tensorflow/tfjs'), import('@tensorflow-models/mobilenet')]);
             await tf.ready();
             // mobilenet.load() defaults to tfhub.dev, whose Kaggle redirect
             // chain drops CORS headers for browser requests from our origin --
@@ -899,8 +901,8 @@ export class ImageDetector {
     };
   }
 
-  async detectTerrainFeatures(imageElement: HTMLImageElement) {
-    const model = await this.loadModel();
+  async detectTerrainFeatures(imageElement: HTMLImageElement, skipModel = false) {
+    const model = skipModel ? null : await this.loadModel();
     const predictions = model ? await model.classify(imageElement) : [];
     
     // Layer 4: Real pixel analysis (does not depend on MobileNet labels)
@@ -1012,14 +1014,14 @@ export class ImageDetector {
     return Math.min(waterScore, 1);
   }
 
-  async analyzeImage(file: File, locationHints?: string[]): Promise<any> {
+  async analyzeImage(file: File, locationHints?: string[], opts?: { skipModel?: boolean }): Promise<any> {
     const img = new Image();
     const imageUrl = URL.createObjectURL(file);
     
     return new Promise((resolve, reject) => {
       img.onload = async () => {
         try {
-          const features = await this.detectTerrainFeatures(img);
+          const features = await this.detectTerrainFeatures(img, opts?.skipModel);
           const metadata = await this.extractMetadata(file);
 
           // Generate unique image fingerprint (works for EVERY image)
@@ -1032,7 +1034,7 @@ export class ImageDetector {
           // Used to bias forward geocoding when filename is ambiguous
           let geoEstimate: any = undefined;
           let visualHintCountryCodes: string[] = [];
-          if (features.pixelAnalysis) {
+          if (features.pixelAnalysis && !opts?.skipModel) { // no visual geo-estimate from the coordinates-only placeholder (2026-10-30 audit)
             const labels = (features.predictions || []).map((p: any) => p.className);
             geoEstimate = estimateGeographicLocation(features.pixelAnalysis, labels, locationHints);
             // Extract country codes from top visual estimates to bias forward geocoding

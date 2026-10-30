@@ -5,25 +5,34 @@
  * Lake Turkana and ~3-4 km offshore got full "drill" results).
  */
 
+import { KENYA_RINGS } from './kenyaOutline';
+
 /**
- * Coarse outline of Kenya's land border (lon, lat) with a ~8 km tolerance:
- * enough to refuse the sea and neighbouring countries (2026-10-20 audit).
- * Checked against all 3,446 shipped field records and 22,820 registry points
- * (none fall outside) and 22 towns including border and coastal ones.
+ * Kenya's land outline (kenyaOutline.ts, ~550 m accuracy) with a ~3 km
+ * tolerance for border wells and the simplification (2026-10-30 audit: the
+ * coarse 40-point outline needed ~8 km and accepted points that far offshore).
+ * Checked 2026-10-30: all 22,820 registry points, 27 border, coastal and
+ * island towns, and 3,445 of 3,446 field records are accepted (the one
+ * refused is geocoded 43 km inside Ethiopia); points 7 km off Mombasa,
+ * Malindi and Lamu, and Tororo, Busia (Uganda side), Arusha, Tanga and Kismayo
+ * are refused.
  */
-const KENYA_OUTLINE: [number, number][] = [[33.95,0.15],[34.09,0.45],[34.24,0.65],[34.4,0.8],[34.6,1.2],[34.58,1.6],[34.97,1.95],[35,2.5],[34.45,2.95],[34.15,3.6],[33.99,4.22],[34.39,4.61],[34.4,4.98],[35,5.1],[35.95,5.45],[36.04,4.45],[37.05,4.36],[38.2,4.2],[38.95,3.6],[39.5,3.55],[39.86,3.84],[40.77,4.27],[41.17,3.94],[41.89,3.98],[41,2.78],[40.99,-0.85],[41.6,-1.65],[41.35,-1.95],[41.1,-2.25],[40.4,-2.62],[40.25,-3.1],[39.95,-3.6],[39.75,-4.05],[39.65,-4.4],[39.4,-4.72],[39.2,-4.68],[38.95,-4.45],[37.6,-3.45],[37.6,-3.05],[33.95,-1]];
+const TOLERANCE_DEG = 0.03;
 
 export function inKenya(lat: number, lon: number): boolean {
-  let inside = false;
   let minD = Infinity;
-  for (let i = 0, j = KENYA_OUTLINE.length - 1; i < KENYA_OUTLINE.length; j = i++) {
-    const [xi, yi] = KENYA_OUTLINE[i], [xj, yj] = KENYA_OUTLINE[j];
-    if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
-    const dx = xi - xj, dy = yi - yj;
-    const s = Math.max(0, Math.min(1, ((lon - xj) * dx + (lat - yj) * dy) / (dx * dx + dy * dy)));
-    minD = Math.min(minD, Math.hypot(lon - (xj + s * dx), lat - (yj + s * dy)));
+  for (const R of KENYA_RINGS) {
+    let inside = false;
+    for (let i = 0, j = R.length - 1; i < R.length; j = i++) {
+      const [xi, yi] = R[i], [xj, yj] = R[j];
+      if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+      const dx = xi - xj, dy = yi - yj;
+      const s = Math.max(0, Math.min(1, ((lon - xj) * dx + (lat - yj) * dy) / (dx * dx + dy * dy)));
+      minD = Math.min(minD, Math.hypot(lon - (xj + s * dx), lat - (yj + s * dy)));
+    }
+    if (inside) return true;
   }
-  return inside || minD < 0.07;
+  return minD < TOLERANCE_DEG;
 }
 
 /**

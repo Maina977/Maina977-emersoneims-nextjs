@@ -11,8 +11,11 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 const SITES = [
   { name: 'Garissa', lat: '-0.4532', lon: '39.6461' },
   { name: 'Nairobi', lat: '-1.2921', lon: '36.8219' },
+  // ISRIC SoilGrids answers here but is blank at the two sites above, so this is
+  // the one that exercises real soil values (2026-10-30).
+  { name: 'Kitale', lat: '1.0000', lon: '35.0000' },
 ];
-const BANNED = [/NaN/, /undefined/, /Infinity/, /\[object Object\]/];
+const BANNED = [/NaN/, /undefined/, /Infinity/, /\[object Object\]/, /Geo-Estimate:\s*,/];
 
 const normalise = (t) => t.split('\n')
   .map((l) => l.trim())
@@ -24,6 +27,9 @@ async function analyse(browser, site) {
   const page = await ctx.newPage();
   const errs = [];
   page.on('pageerror', (e) => errs.push(String(e).slice(0, 160)));
+  // Upstream relay use per analysis, against its per-client limit (data-relay route).
+  let relay = 0, relay429 = 0;
+  page.on('response', (r) => { if (r.url().includes('/api/borehole/data-relay')) { relay++; if (r.status() === 429) relay429++; } });
   await page.goto(BASE + '/aquascan-pro-v3', { waitUntil: 'domcontentloaded', timeout: 120000 });
   const lat = page.locator('input[placeholder^="Latitude"]');
   await lat.waitFor({ timeout: 120000 });
@@ -35,7 +41,7 @@ async function analyse(browser, site) {
   await page.waitForTimeout(15000);
   const text = await page.evaluate(() => document.body.innerText);
   await ctx.close();
-  return { text, errs };
+  return { text, errs, relay, relay429 };
 }
 
 (async () => {
@@ -44,6 +50,8 @@ async function analyse(browser, site) {
   for (const site of SITES) {
     const a = await analyse(browser, site);
     const b = await analyse(browser, site);
+    console.log(`info ${site.name}: relay calls ${a.relay} and ${b.relay}; refused (429) ${a.relay429 + b.relay429}`);
+    if (a.relay429 + b.relay429 > 0) { problems++; console.log(`FAIL ${site.name}: the relay limit refused a normal analysis`); }
     for (const [i, r] of [a, b].entries()) {
       for (const e of r.errs) { problems++; console.log(`FAIL ${site.name} run ${i + 1}: page error ${e}`); }
       for (const re of BANNED) if (re.test(r.text)) { problems++; console.log(`FAIL ${site.name} run ${i + 1}: shows ${re}`); }

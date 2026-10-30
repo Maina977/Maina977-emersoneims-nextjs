@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createRequire } from 'module';
-import { sizeSolar, gridSaving } from '@/lib/solar/sizing';
+import { sizeSolar, gridSaving, tieredKes, PV_KES_PER_KWP_BANDS, BATTERY_KES_PER_KWH } from '@/lib/solar/sizing';
 import { findOptimalSystem } from '@/components/solar/SolarEquipmentDatabase';
 import SolarCalculatorEngine, { sizeConductor } from '@/components/solar-modules/crc/core/calculator/SolarCalculatorEngine';
 
@@ -88,8 +88,15 @@ describe('Solar Bible engine uses the shared calculator', () => {
       expect(r.inverter.type).toBe('Hybrid');
       expect(r.roi.paybackYears).toBeGreaterThan(3);
     }
-    const prices = new Set(res.map((r) => r.totalCost));
-    expect(prices.size).toBe(1); // one price list
+    // Each option is priced on the hardware it lists, on the calculator's price
+    // list (re-audit: listed hardware and price disagreed).
+    for (const r of res) {
+      const kwp = (r.panels[0].quantity * r.panels[0].panel.wattage) / 1000;
+      const batKwh = r.systemSpecs.totalBatteryKwh;
+      expect(r.costBreakdown.panels).toBeCloseTo(tieredKes(kwp, PV_KES_PER_KWP_BANDS), 0);
+      expect(r.costBreakdown.batteries).toBeCloseTo(batKwh * BATTERY_KES_PER_KWH, 0);
+      expect(batKwh).toBeGreaterThanOrEqual(0);
+    }
   });
   it('never pairs an on-grid inverter with batteries', () => {
     const res = findOptimalSystem(150, 20000, 8, 'Nairobi', 'premium', true);
@@ -98,5 +105,31 @@ describe('Solar Bible engine uses the shared calculator', () => {
   it('grid-tied without backup: grid-tie inverter, no battery', () => {
     const res = findOptimalSystem(15, 2500, 0, 'Nairobi', 'standard', true);
     for (const r of res) { expect(['On-Grid', 'String']).toContain(r.inverter.type); expect(r.batteries.length).toBe(0); }
+  });
+});
+
+describe('re-audit (2026-10-30, second pass)', () => {
+  it('the proposal refuses a saving the system cannot make', async () => {
+    const r = await dispatch('reports', ['proposal'], 'POST', { design: { systemKw: 3.3, batteryKwh: 8.8, systemType: 'hybrid' }, site: { irradianceKwhPerM2Day: 5.82, monthlyConsumptionKwh: 450, tariffKesPerKwh: 25 }, financial: { capexKes: 696000, year1SavingsKes: 600000 } }, {});
+    expect(r.status).toBe(400);
+  });
+  it('the proposal holds tariffs flat and takes the battery replacement from the design', async () => {
+    const body: any = { design: { systemKw: 3.3, batteryKwh: 8.8, systemType: 'hybrid' }, site: { irradianceKwhPerM2Day: 5.82, monthlyConsumptionKwh: 450, tariffKesPerKwh: 25 }, financial: { capexKes: 696000, year1SavingsKes: 123000, tariffEscalationPct: 10 } };
+    await dispatch('reports', ['proposal'], 'POST', body, {});
+    expect(body.financial.tariffEscalationPct).toBe(0);
+    expect(body.financial.cashFlowTable[12][1]).toBeLessThan(0); // year 12 battery replacement
+  });
+  it('appliance wiring: every breaker is carried by its cable, string fuse ≥ 1.5 × Isc', () => {
+    const e = new SolarCalculatorEngine();
+    for (const kw of [3.6, 8, 12]) {
+      const specs = e.generateWiringSpecs({ panels: 20, panelWatt: 550, inverterKw: kw, batteryKwh: 10, systemType: 'hybrid' } as any);
+      for (const s of specs) {
+        const m = /(\d+) A/.exec(s.breaker);
+        if (!m || s.cableSize === '—') continue;
+        const amps: Record<string, number> = { '1.5': 19.5, '2.5': 27, '4': 36, '6': 46, '10': 63, '16': 85, '25': 112, '35': 138, '50': 168, '70': 213, '95': 258, '120': 299, '150': 344, '185': 392, '240': 461 };
+        if (/fuse per string/.test(s.breaker)) expect(Number(m[1])).toBeGreaterThanOrEqual(21);
+        else expect(amps[s.cableSize]).toBeGreaterThanOrEqual(Number(m[1]));
+      }
+    }
   });
 });

@@ -51,10 +51,11 @@ export interface DetailedFaultCode {
     solution: string;
     difficulty: 'easy' | 'moderate' | 'advanced' | 'expert';
     timeEstimate: string;
+    /** Not rendered (2026-10-30 audit): prices vary by supplier. */
+    costEstimate?: { min: number; max: number; currency: string };
     partsNeeded: string[];
     toolsRequired: string[];
     procedureSteps: string[];
-    costEstimate: { min: number; max: number; currency: string };
   }>;
 
   // Safety and Prevention
@@ -187,7 +188,6 @@ For low oil level issues, simply add the correct grade of oil until the dipstick
           'Replace filler cap',
           'Start engine and verify pressure',
         ],
-        costEstimate: { min: 500, max: 2000, currency: 'KES' },
       },
       {
         solution: 'Replace Oil Pressure Sender',
@@ -205,7 +205,6 @@ For low oil level issues, simply add the correct grade of oil until the dipstick
           'Reconnect electrical connector',
           'Start engine and verify reading',
         ],
-        costEstimate: { min: 2000, max: 8000, currency: 'KES' },
       },
       {
         solution: 'Oil and Filter Change',
@@ -227,7 +226,6 @@ For low oil level issues, simply add the correct grade of oil until the dipstick
           'Verify oil pressure is normal',
           'Recheck oil level after 5 minutes and top up if needed',
         ],
-        costEstimate: { min: 3000, max: 15000, currency: 'KES' },
       },
       {
         solution: 'Oil Pump Replacement',
@@ -250,7 +248,6 @@ For low oil level issues, simply add the correct grade of oil until the dipstick
           'Prime oil system before starting if possible',
           'Start engine and verify immediate oil pressure',
         ],
-        costEstimate: { min: 25000, max: 80000, currency: 'KES' },
       },
     ],
 
@@ -391,7 +388,6 @@ For low coolant level, top up with the correct coolant mixture (typically 50/50 
           'Top up expansion tank as needed',
           'Check for leaks',
         ],
-        costEstimate: { min: 500, max: 2000, currency: 'KES' },
       },
       {
         solution: 'Replace Thermostat',
@@ -411,7 +407,6 @@ For low coolant level, top up with the correct coolant mixture (typically 50/50 
           'Bleed air from system',
           'Test operation',
         ],
-        costEstimate: { min: 2000, max: 8000, currency: 'KES' },
       },
     ],
 
@@ -697,7 +692,6 @@ export default function DetailedFaultDisplay({ faultCode, onReset, className = '
                           }`}>
                             {solution.difficulty.toUpperCase()}
                           </span>
-                          <span className="text-slate-400 text-sm">{solution.timeEstimate}</span>
                         </div>
                       </div>
                       {/* No cost figure: parts and labour prices vary by make,

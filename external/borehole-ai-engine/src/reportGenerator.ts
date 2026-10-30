@@ -19,6 +19,7 @@
  */
 
 import { finalVerdict } from './verdict';
+import { governingSummary, last12Months } from './governingSummary';
 import { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, getCustomerDetails, computeCanonicalEconomics } from './reportShared';
 export { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, computeCanonicalEconomics };
 import jsPDF from 'jspdf';
@@ -534,7 +535,7 @@ function renderBoreholeColumn(
   ctx.fillStyle = '#ef4444';
   ctx.font = 'bold 10px sans-serif';
   ctx.textAlign = 'right';
-  ctx.fillText(`? Drill to ${recommendedDepth}m`, colX - 22, rdY + 4);
+  ctx.fillText(`- Drill to ${recommendedDepth}m`, colX - 22, rdY + 4);
 
   // Ground surface decoration
   ctx.fillStyle = '#22c55e';
@@ -968,7 +969,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     if (conf >= 70) return 'PRE-FEASIBILITY';
     return 'PRE-FEASIBILITY SCREENING';
   })();
-  doc.text(`${isRegionalPreScreening ? 'REGIONAL PRE-SCREENING' : assessmentGrade} Report  ?  Generated: ${new Date().toLocaleDateString()}`, pageW / 2, 42, { align: 'center' });
+  doc.text(`${isRegionalPreScreening ? 'REGIONAL PRE-SCREENING' : assessmentGrade} Report  -  Generated: ${new Date().toLocaleDateString()}`, pageW / 2, 42, { align: 'center' });
   // Place names (village -> ward -> county -> country) with the GPS numbers on
   // a second line — never one without the other.
   const _coverLoc = isRegionalPreScreening ? `${getLocationString(result)} (regional estimate — Grade ${_locGrade})` : getLocationString(result);
@@ -1004,7 +1005,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   // -- ASSESSMENT CLASSIFICATION BANNER --
   const isFieldValid = (result as any)._auditFlags?.isFieldValidated === true;
   const hasPumpTest = (result as any)._auditFlags?.hasFieldPumpTest === true || !!(result as any).fieldData?.pumpTest;
-  const classLabel = isFieldValid && hasPumpTest ? 'FIELD-VALIDATED ASSESSMENT' : `${assessmentGrade} ? DESKTOP PRE-SCREEN`;
+  const classLabel = isFieldValid && hasPumpTest ? 'FIELD-VALIDATED ASSESSMENT' : `${assessmentGrade} - DESKTOP PRE-SCREEN`;
   const classColor: [number, number, number] = isFieldValid && hasPumpTest ? [22, 163, 74] : [56, 189, 248];
   const classBg: [number, number, number] = isFieldValid && hasPumpTest ? [240, 255, 244] : [240, 249, 255];
 
@@ -1017,7 +1018,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
   if (!isFieldValid || !hasPumpTest) {
     doc.text('Analysis derived from public satellite and climate data, physics models, regional drilling statistics and nearby borehole records.', pageW / 2, y + 17, { align: 'center' });
-    doc.text('Field validation (pump test, sieve analysis) can further elevate the assessment grade to Bankable level.', pageW / 2, y + 22, { align: 'center' });
+    doc.text('Field validation (a pump test and a laboratory water test) firms up these figures.', pageW / 2, y + 22, { align: 'center' });
   } else {
     doc.text('Field-measured parameters available. Engineer should verify provenance table before certification.', pageW / 2, y + 17, { align: 'center' });
   }
@@ -1199,7 +1200,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       { lbl: 'TOTAL INVESTMENT', val: `${eco.kes(eco.totalCost)}`, sub: `$${eco.totalCost.toLocaleString()} · incl. survey, permits, ${(eco.contingencyRate * 100).toFixed(0)}% contingency`, c: [251, 191, 36] as [number, number, number] },
       // "Not viable (sales)" and ">20 yrs" must never disagree across pages —
       // one label, everywhere (external audit item 13).
-      { lbl: 'PAYBACK (WATER SALES)', val: eco.paybackMonths > 0 && eco.paybackMonths <= 240 ? `${(eco.paybackMonths / 12).toFixed(1)} yrs` : 'Not viable as sales', sub: eco.paybackMonths > 0 && eco.paybackMonths <= 240 ? `${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay}h/day • $${eco.waterTariffPerM3.toFixed(2)}/m³` : `value = avoided vendor-water cost${eco.isHandPump ? ' (household hand-pump scheme)' : ''}`, c: [56, 189, 248] as [number, number, number] },
+      { lbl: 'PAYBACK (WATER SALES)', val: eco.paybackMonths > 0 && eco.paybackMonths <= 240 ? `${(eco.paybackMonths / 12).toFixed(1)} yrs` : eco.paybackWithheld ? 'Not given (unfavourable site)' : 'Not viable as sales', sub: eco.paybackMonths > 0 && eco.paybackMonths <= 240 ? `${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay}h/day • $${eco.waterTariffPerM3.toFixed(2)}/m³` : `value = avoided vendor-water cost${eco.isHandPump ? ' (household hand-pump scheme)' : ''}`, c: [56, 189, 248] as [number, number, number] },
     ];
     const tW = (pw - 8) / 3, tH = 23;
     tiles.forEach((t, i) => {
@@ -1345,7 +1346,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           : []),
         ['Contingency', `$${eco.contingency.toLocaleString()}`, eco.kes(eco.contingency), `${(eco.contingencyRate * 100).toFixed(0)}%${eco.isHardRock ? ' (hard rock)' : ''}`],
         ['TOTAL CAPITAL', `$${eco.totalCost.toLocaleString()}`, eco.kes(eco.totalCost), 'Complete functional borehole. Excl. land, storage tank, distribution'],
-        ['Payback', eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : 'Not within 20 yrs', '', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, ${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr${eco.isHandPump ? ' — household use case: the real value is avoided vendor-water cost, not sales' : ''}`],
+        ['Payback', eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : eco.paybackWithheld ? 'Not given: site unfavourable' : 'Not within 20 yrs', '', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, ${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr${eco.isHandPump ? ' — household use case: the real value is avoided vendor-water cost, not sales' : ''}`],
         ['NPV @ 10% / 20 yrs', `$${eco.npv10Rounded.toLocaleString()}`, '', eco.irr === 999 ? 'IRR >100%' : eco.irr === -999 ? 'IRR negative' : `IRR ~${eco.irr}%`],
       ],
       headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
@@ -1368,7 +1369,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
 
     // Field-validation plan
     doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
-    doc.text('UNLOCK BANKABLE GRADE -- YOUR NEXT 3 STEPS', margin, y); y += 3;
+    doc.text('YOUR NEXT 3 STEPS', margin, y); y += 3;
     autoTable(doc, {
       startY: y,
       head: [['Step', 'Status', 'What it proves', 'Typical cost']],
@@ -1797,9 +1798,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       ['Overall Confidence', result.confidenceMetrics ? `${result.confidenceMetrics.overall}%` : 'N/A', result.confidenceMetrics ? `Geo ${result.confidenceMetrics.geological}% | Terrain ${result.confidenceMetrics.terrain}% | Veg ${result.confidenceMetrics.vegetation}% | Data ${result.confidenceMetrics.dataDensity}%` : ''],
       ['Confidence Tier', result.confidenceMetrics ? (
         result.confidenceMetrics.overall >= 90 ? 'BANKABLE (=90%)' :
-        result.confidenceMetrics.overall >= 80 ? 'ENGINEERING GRADE (80?89%)' :
-        result.confidenceMetrics.overall >= 70 ? 'PRE-FEASIBILITY (70?79%)' :
-        result.confidenceMetrics.overall >= 50 ? 'STANDARD ASSESSMENT (50?69%)' : 'PRELIMINARY (<50%)'
+        result.confidenceMetrics.overall >= 80 ? 'ENGINEERING GRADE (80-89%)' :
+        result.confidenceMetrics.overall >= 70 ? 'PRE-FEASIBILITY (70-79%)' :
+        result.confidenceMetrics.overall >= 50 ? 'STANDARD ASSESSMENT (50-69%)' : 'PRELIMINARY (<50%)'
       ) : 'N/A', result.confidenceMetrics?.overall && result.confidenceMetrics.overall < 90 ? 'EmersonEIMS internal grading of how complete the evidence is — not a measured accuracy' : 'Field data integration achieved'],
       ['Assessment Type', result.assessmentType === 'FIELD_VALIDATED' ? 'FIELD VALIDATED' : 'DESKTOP PRE-SCREEN', result.assessmentType === 'FIELD_VALIDATED' ? 'Includes field measurements' : `Combination of ${(result as any).apiSuccessCount ?? (result as any).dataSources ?? 'multiple'} independent data sources`],
       ['Data Basis', 'Public data + physics models + borehole records', answeredSources(result)],
@@ -2083,9 +2084,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setDrawColor(_bkBorder[0], _bkBorder[1], _bkBorder[2]); doc.setLineWidth(0.8);
     doc.roundedRect(margin, y, pageW - margin * 2, 22, 3, 3, 'S');
     doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(_bkBorder[0], _bkBorder[1], _bkBorder[2]);
-    doc.text(_bankable ? '\u2714 BANKABLE GRADE ACHIEVED -- All upgrade path items complete. Eligible for institutional finance submission.' : '\u26a0 PRE-FEASIBILITY REPORT -- Upgrade path to bankable: ERT survey + 24-hr pump test + ISO lab analysis', margin + 6, y + 9);
+    doc.text(_bankable ? '\u2714 FIELD STEPS COMPLETE -- survey, pump test and laboratory analysis are included.' : '\u26a0 PRE-FEASIBILITY REPORT -- next steps: hydrogeological survey (ERT) + 24-hr pump test + laboratory water analysis', margin + 6, y + 9);
     doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(80,80,80);
-    doc.text(_bankable ? 'Upgrade path complete. May support a financing submission — eligibility remains subject to the institution\'s own requirements and due diligence.' : 'This report filters out poor sites before fieldwork costs are incurred. It does not replace the final validation step -- it reduces the risk of reaching that step on a bad site.', margin + 6, y + 17);
+    doc.text(_bankable ? 'Whether a lender or donor accepts this report is their decision, under their own requirements and due diligence.' : 'This report filters out poor sites before fieldwork costs are incurred. It does not replace the final validation step -- it reduces the risk of reaching that step on a bad site.', margin + 6, y + 17);
     y += 28;
   } catch (_invErr) { console.warn('[PDF] Investor page error:', _invErr); }
   // Technical sections: Professional and Comprehensive tiers only (2026-10-20).
@@ -2440,11 +2441,11 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(56, 189, 248);
-    doc.text('Satellite Remote Sensing ? 10-Method Analysis', margin, y); y += 4;
+    doc.text('Satellite and Reanalysis Layers - Weighted Overlay', margin, y); y += 4;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(100, 100, 140);
-    doc.text('Comprehensive non-invasive satellite-based groundwater exploration using 10 independent methods with GIS weighted overlay fusion.', margin, y); y += 8;
+    doc.text('Weighted overlay of fetched layers (GRACE, MODIS, DEM, ERA5-Land, NASA POWER); several scores are proxies. No radar, hyperspectral or LiDAR data is fetched.', margin, y, { maxWidth: pw }); y += 10;
 
     // GPI Summary Box
     doc.setFillColor(srs.fusion.groundwaterPotentialIndex >= 70 ? 34 : srs.fusion.groundwaterPotentialIndex >= 50 ? 245 : 239,
@@ -2454,7 +2455,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text(`Groundwater Potential Index: ${srs.fusion.groundwaterPotentialIndex}/100 ? ${srs.fusion.potentialClass}`, margin + 6, y + 9);
+    doc.text(`Groundwater Potential Index: ${srs.fusion.groundwaterPotentialIndex}/100 - ${srs.fusion.potentialClass}`, margin + 6, y + 9);
     doc.setFontSize(8);
     doc.text(`${srs.totalMethodsUsed} of ${srs.totalMethodsAvailable} methods assessed — measured-data completeness varies by method (several are PARTIAL or MODELED, see status column)`, margin + 6, y + 17);
     y += 28;
@@ -2648,7 +2649,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.setTextColor(150, 150, 160);
         doc.text(`$${ph.costUSD[0].toLocaleString()}-$${ph.costUSD[1].toLocaleString()} | ${ph.timeHrs[0]}-${ph.timeHrs[1]} hrs`, margin + 80, y);
         y += 4;
-        const phLines = doc.splitTextToSize(`${ph.purpose} ? Methods: ${ph.methods.join(', ')}`, pageW - margin * 2 - 6);
+        const phLines = doc.splitTextToSize(`${ph.purpose} - Methods: ${ph.methods.join(', ')}`, pageW - margin * 2 - 6);
         doc.setFontSize(8);
         doc.text(phLines, margin + 4, y);
         y += phLines.length * 3 + 3;
@@ -2707,7 +2708,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(34, 197, 94);
-      doc.text('Essential Methods ? Detailed Recommendations', margin, y);
+      doc.text('Essential Methods - Detailed Recommendations', margin, y);
       y += 6;
 
       for (const m of plan.essentialMethods) {
@@ -2717,7 +2718,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(34, 197, 94);
-        doc.text(`${m.id}. ${m.name} ? Score: ${m.applicabilityScore}/100`, margin + 3, y + 5);
+        doc.text(`${m.id}. ${m.name} - Score: ${m.applicabilityScore}/100`, margin + 3, y + 5);
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(180, 200, 180);
@@ -3219,7 +3220,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         { name: 'Worst Case', values: [worstCost, worstAnnual > 0 ? worstAnnual : 0], color: '#ef4444' },
       ],
       ['Total Cost', 'Net Annual Return'],
-      'Sensitivity Analysis ? Cost vs Return by Scenario',
+      'Sensitivity Analysis - Cost vs Return by Scenario',
       500, 240,
     );
     doc.addImage(sensChart, 'PNG', margin, y, pageW - margin * 2, 62);
@@ -3271,7 +3272,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const smChart = renderBarChart(
         ['0-7cm', '7-28cm', '28-100cm', '100-255cm'],
         [sm.layer_0_7cm, sm.layer_7_28cm, sm.layer_28_100cm, sm.layer_100_255cm],
-        'Soil Moisture by Depth (m³/m³)', 500, 230
+        'Soil water by depth (kg/m², i.e. mm of water in each layer)', 500, 230
       );
       doc.addImage(smChart, 'PNG', margin, y, pageW - margin * 2, 60);
       y += 65;
@@ -3485,7 +3486,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       if (cone.drawdownProfile?.length) {
         const coneLabels = cone.drawdownProfile.map((p: any) => `${p.distanceM}m`);
         const coneVals = cone.drawdownProfile.map((p: any) => p.drawdownM);
-        const coneChart = renderBarChart(coneLabels, coneVals, 'Cone of Depression ? Drawdown vs Distance', 500, 200);
+        const coneChart = renderBarChart(coneLabels, coneVals, 'Cone of Depression - Drawdown vs Distance', 500, 200);
         doc.addImage(coneChart, 'PNG', margin, y, pageW - margin * 2, 52);
         y += 58;
       }
@@ -3583,12 +3584,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     if (g.groundwater) {
       const w = g.groundwater;
       body.push(['Groundwater storage trend', `${sgn(w.trend_cm_per_year)} cm/yr (+/- ${w.trendStdErr_cm_per_year})`, `${w.period}, ${w.months} months; last 10 years ${w.trend10yr_cm_per_year != null ? sgn(w.trend10yr_cm_per_year) + ' cm/yr' : 'n/a'}`]);
-      body.push(['Groundwater, last 12 months', `${sgn(w.anomalyLast12_cm)} cm`, `against the record mean${w.monthlyUncertainty_cm != null ? `; each monthly value +/- ${w.monthlyUncertainty_cm} cm (G3P, 1 sigma)` : ''}`]);
+      body.push([`Groundwater, ${last12Months(w.period) ?? 'last 12 months'}`, `${sgn(w.anomalyLast12_cm)} cm`, `against the record mean${w.monthlyUncertainty_cm != null ? `; each monthly value +/- ${w.monthlyUncertainty_cm} cm (G3P, 1 sigma)` : ''}`]);
     }
     if (g.totalStorage) {
       const t = g.totalStorage;
       body.push(['Total water storage trend', `${sgn(t.trend_cm_per_year)} cm/yr (+/- ${t.trendStdErr_cm_per_year})`, `${t.period}; GRACE-FO years (2018-) ${t.trendGraceFO_cm_per_year != null ? sgn(t.trendGraceFO_cm_per_year) + ' cm/yr' : 'n/a'}`]);
-      body.push(['Total storage, last 12 months', `${sgn(t.anomalyLast12_cm)} cm`, 'against the record mean']);
+      body.push([`Total storage, ${last12Months(t.period) ?? 'last 12 months'}`, `${sgn(t.anomalyLast12_cm)} cm`, 'against the record mean']);
     }
     if (!real) {
       body.push(['Storage anomaly (stand-in)', `${sgn(g.twsAnomaly_cm)} cm`, 'deep soil moisture, not satellite gravity']);
@@ -3624,7 +3625,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60, 60, 60);
     // Wrapped: with every source named, one line ran off the page (2026-10-29).
-    const nwLines: string[] = doc.splitTextToSize(`Average depth: ${nw.averageDepth != null ? Math.round(nw.averageDepth) + 'm' : 'N/A'} | Average yield: ${nw.averageYield != null ? (nw.averageYield ?? 0).toFixed(1) + ' m³/h' : 'N/A'} | Sources: ${nw.dataSources.join('; ')}`, pw);
+    const nwLines: string[] = doc.splitTextToSize(`Average depth: ${nw.averageDepth != null ? `${Math.round(nw.averageDepth)} m (${(nw as any).averageDepthN} records)` : 'fewer than 3 records with a depth'} | Average yield: ${nw.averageYield != null ? `${nw.averageYield.toFixed(1)} m³/h (${(nw as any).averageYieldN} records)` : 'fewer than 3 records with a yield'} | Sources: ${nw.dataSources.join('; ')}`, pw);
     checkSpace(nwLines.length * 4 + 4);
     doc.text(nwLines, margin, y); y += nwLines.length * 4 + 1;
     const od = nw.openData;
@@ -3922,7 +3923,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const lin = (result as any).lineamentAnalysis;
     const demRows: string[][] = [
       ['Elevation', `${dem.elevation_m}m ASL`, 'Copernicus DEM 90m (Open-Meteo); SRTM 30m (Open-Elevation) when it does not answer'],
-      ['Slope', `${sf(dem.slope_degrees, 2)}?`, "Horn's method (3?3 kernel)"],
+      ['Slope', `${sf(dem.slope_degrees, 2)} deg`, "Horn's method (3x3 kernel)"],
       ['Aspect', `${dem.aspect_degrees}?`, 'Compass bearing of steepest descent'],
       ['Topographic Wetness Index', `${sf(dem.twi, 2)} (${dem.twiClass.replace('_', ' ')})`, 'ln(upslope_area / tan(slope))'],
       ['Drainage Density', `${sf(dem.drainageDensity, 2)} km/km²`, 'Channel cell ratio in 5×5 grid'],
@@ -4020,7 +4021,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(`Source agreement: ${(ens.sourceAgreement ?? '').toUpperCase()} | Ensemble confidence: ${ens.confidence}%`, margin, y); y += 5;
     doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 30);
     doc.text('Note: "Regional Borehole Database" = country-level statistics (separate from "Nearby Wells" which are USGS/OSM wells within search radius).', margin, y); y += 4;
-    doc.text('Only sources with available data are included. Reliability weights are dynamic ? not hardcoded.', margin, y); y += 7;
+    doc.text('Only sources with available data are included. Reliability weights are dynamic - not hardcoded.', margin, y); y += 7;
     doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
 
     // Summary table
@@ -4135,7 +4136,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     addPage();
     const arm = result.advancedRockMapping as any;
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(139, 92, 246);
-    doc.text('16. Advanced Rock Mapping ? 8-Classifier Ensemble', margin, y); y += 8;
+    doc.text('16. Advanced Rock Mapping - 8-Classifier Ensemble', margin, y); y += 8;
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
     doc.text('Multi-classifier fusion: Macrostrat, SoilGrids texture, DEM geomorphology, climate, spectral, lineament, vegetation, and regional priors.', margin, y); y += 7;
 
@@ -4416,7 +4417,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           ['Network Density', fmt(fc.networkDensity)],
           ['Longest Connected Path', `${fmt(fc.longestPathKm)} km`],
           ['Cluster Count', `${fc.clusterCount ?? 0}`],
-          ['Percolation Threshold', fc.percolationThreshold ? 'REACHED ? Connected network' : 'NOT REACHED'],
+          ['Percolation Threshold', fc.percolationThreshold ? 'REACHED - Connected network' : 'NOT REACHED'],
           ['Effective Transmissivity', `${fmt(fc.effectiveTransmissivity_m2d)} m²/day`],
         ],
         headStyles: { fillColor: [180, 30, 30], textColor: 255, fontStyle: 'bold', fontSize: 8 },
@@ -4436,7 +4437,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         body: [
           ['Max Horizontal Stress (SHmax)', `${fmt(fa.stressField.maxHorizontalStress_deg, 0)}?`],
           ['Open Fracture Azimuths', (fa.stressField.openFractureAzimuths || []).map((a: number) => `${a}?`).join(', ') || 'None'],
-          ['Critically Stressed Fractures', fa.stressField.criticallyStressed ? 'YES ? Enhanced permeability' : 'NO'],
+          ['Critically Stressed Fractures', fa.stressField.criticallyStressed ? 'YES - Enhanced permeability' : 'NO'],
         ],
         headStyles: { fillColor: [180, 30, 30], textColor: 255, fontStyle: 'bold', fontSize: 8 },
         bodyStyles: { fontSize: 7.5 },
@@ -4524,7 +4525,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Avg Annual Precipitation', `${fmt(rm.avgAnnualPrecipitation_mm, 0)} mm`],
         ['Avg Annual ET', `${fmt(rm.avgAnnualET_mm, 0)} mm`],
         ['Avg Annual Runoff', `${fmt(rm.avgAnnualRunoff_mm, 0)} mm`],
-        ['Avg Annual Recharge', `${fmt(rm.avgAnnualRecharge_mm, 0)} mm`],
+        ['Avg Annual Recharge (this model alone)', `${fmt(rm.avgAnnualRecharge_mm, 0)} mm (planning figure ${(result as any).rechargeSummary?.governing_mm ?? '—'} mm/yr)`],
         ['Recharge Fraction', `${((rm.rechargeFraction ?? 0) * 100).toFixed(1)}%`],
         ['Peak Recharge Month', rm.peakRechargeMonth ? new Date(2024, (rm.peakRechargeMonth ?? 1) - 1).toLocaleString('en', { month: 'long' }) : 'N/A'],
         ['Recharge Trend', `${rm.rechargeTrend_mm_per_decade > 0 ? '+' : ''}${fmt(rm.rechargeTrend_mm_per_decade)} mm/decade (${rm.trendDirection})`],
@@ -4822,7 +4823,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     addPage();
     const ms = result.microSiting;
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 185, 129);
-    doc.text('26. Micro-Siting Optimizer ? Precision Drilling Point', margin, y); y += 8;
+    doc.text('26. Micro-Siting Optimizer - Precision Drilling Point', margin, y); y += 8;
 
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 83, 9);
     doc.text('DESKTOP CANDIDATE ONLY — computed from terrain/drainage rasters, NOT field-surveyed and NOT a drilling coordinate. The governing site coordinate is in the Executive Summary; the final peg is set on site after ERT.', margin, y, { maxWidth: pageW - margin * 2 }); y += 8;
@@ -5083,20 +5084,20 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   if (sET && typeof sET.actualET_mm_yr === 'number') {
     checkSpace(60);
     doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(2, 132, 199);
-    doc.text('Satellite Measured Evapotranspiration (Empirical Water Balance)', margin, y); y += 6;
+    doc.text('Evapotranspiration from reanalysis (water-balance cross-check)', margin, y); y += 6;
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(90, 110, 130);
-    doc.text(doc.splitTextToSize('The recharge term below uses MEASURED actual ET from satellite (MERRA-2), not a modelled ET assumption — making the water balance empirical.', pw), margin, y); y += 8;
+    doc.text(doc.splitTextToSize(`Actual ET here is a MERRA-2 reanalysis estimate (a weather model with satellite data assimilated, ~50 km cells), not a measurement at the site. The recharge it implies is a cross-check; the planning figure is ${(result as any).rechargeSummary?.governing_mm ?? '—'} mm/yr.${sET.exceedsRainfall ? ` The reanalysis ET (${sET.actualET_mm_yr} mm/yr) is above the site's rainfall, which a year's water balance cannot allow without an outside source, so it is capped at the rainfall.` : ''}`, pw), margin, y); y += 12;
 
     const mb = sET.measuredBalance ?? {};
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
       head: [['Water-balance term', 'Value', 'Basis']],
       body: [
-        ['Actual ET (measured)', `${sET.actualET_mm_yr} mm/yr (${sET.actualET_mm_day} mm/day)`, sET.source],
+        ['Actual ET (reanalysis estimate)', `${sET.etUsed_mm ?? sET.actualET_mm_yr} mm/yr${sET.exceedsRainfall ? ` (raw ${sET.actualET_mm_yr}, capped at rainfall)` : ''}`, sET.source],
         ...(typeof sET.modelledActualET_mm === 'number' ? [['Actual ET (modelled, for comparison)', `${Math.round(sET.modelledActualET_mm)} mm/yr`, 'Budyko framework (hydroPhysics)']] : []),
         ['Precipitation', `${mb.precipitation_mm ?? '—'} mm/yr`, 'Canonical measured/model precipitation'],
         ['Surface runoff', `${mb.runoff_mm ?? '—'} mm/yr`, 'SCS-CN partition'],
-        ['RECHARGE (from measured ET)', `${mb.recharge_mm ?? '—'} mm/yr`, `P − AET − runoff (mass-conserving); regime ${mb.regime ?? '—'}`],
+        ['Recharge, this method alone', `${mb.recharge_mm ?? '—'} mm/yr`, `P − ET − runoff; cross-check only, regime ${mb.regime ?? '—'}`],
         ...(typeof sET.modelledRecharge_mm === 'number' ? [['Recharge (modelled ET, for comparison)', `${Math.round(sET.modelledRecharge_mm)} mm/yr`, 'For transparency']] : []),
       ],
       headStyles: { fillColor: [2, 132, 199], textColor: 255, fontStyle: 'bold', fontSize: 8 },
@@ -5104,7 +5105,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       columnStyles: { 2: { cellWidth: 70 } },
       theme: 'grid',
       didParseCell: (d: any) => {
-        if (d.section === 'body' && String(d.row.raw?.[0]).startsWith('RECHARGE')) {
+        if (d.section === 'body' && String(d.row.raw?.[0]).startsWith('Recharge, this')) {
           d.cell.styles.fontStyle = 'bold'; d.cell.styles.fillColor = [236, 253, 245];
         }
       },
@@ -5112,7 +5113,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y = lastY(4);
     if (sET.divergesFromModel) {
       doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
-      doc.text(doc.splitTextToSize('Note: measured ET differs from the modelled ET by >20% — the measured value is used for the empirical recharge; the difference reflects local land-cover/moisture the Budyko model does not capture.', pw), margin, y);
+      doc.text(doc.splitTextToSize('Note: the reanalysis ET differs from the Budyko model ET by more than 20%, so recharge here is uncertain; a pump test and water-level monitoring settle it.', pw), margin, y);
       y += doc.splitTextToSize('x', pw).length * 3.4 + 6;
     }
     doc.setFontSize(6.8); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
@@ -5344,7 +5345,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           ['Safety Margin', `${fmt(ei.depthOptimization.safetyMargin_m)}m (${ei.depthOptimization.safetyMarginPercent}%)`],
           ['Casing Depth', `${fmt(ei.depthOptimization.casingDepth_m)}m`],
           ['Screen Interval', `${ei.depthOptimization.screenFrom_m}-${ei.depthOptimization.screenTo_m}m`],
-          ['Min?Max Depth Range', `${fmt(ei.depthOptimization.minimumDepth_m)}-${fmt(ei.depthOptimization.maximumDepth_m)}m`],
+          ['Min-Max Depth Range', `${fmt(ei.depthOptimization.minimumDepth_m)}-${fmt(ei.depthOptimization.maximumDepth_m)}m`],
         ],
         headStyles: { fillColor: [56, 189, 248], textColor: 255, fontStyle: 'bold', fontSize: 8 },
         bodyStyles: { fontSize: 8 },
@@ -6188,27 +6189,27 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.roundedRect(margin, y, gaugeW * (credPct / 100), gaugeH, 3, 3, 'F');
   // Label
   doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
-  doc.text(`${credPct}% ? ${credGrade}`, margin + 6, y + 8);
+  doc.text(`${credPct}% - ${credGrade}`, margin + 6, y + 8);
   // Target line at 90% (BANKABLE)
   doc.setDrawColor(200, 30, 30); doc.setLineWidth(0.8);
   const targetX = margin + gaugeW * 0.90;
   doc.line(targetX, y - 2, targetX, y + gaugeH + 2);
   doc.setFontSize(7); doc.setTextColor(200, 30, 30);
-  doc.text('90% Bankable', targetX + 1, y - 3);
+  doc.text('90% target', targetX + 1, y - 3);
   y += gaugeH + 10;
 
   // Path to bankable ? actionable table with costs and impact
   doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(50, 50, 50);
-  doc.text('Upgrade Path to Bankable Grade (\u226590%) -- Expert-Level Screening, Accessible to Non-Experts:', margin, y); y += 6;
+  doc.text('Field steps that firm up this assessment:', margin, y); y += 6;
 
   autoTable(doc, {
     startY: y,
     head: [['Step', 'Action', 'Est. Cost', 'Confidence Impact', 'Running Total']],
     body: [
-      ['1', 'ERT + Seismic Refraction Survey', '$3,000?5,000', '+15?20%', `${Math.min(credPct + 18, 90)}%`],
-      ['2', '24-Hour Pumping Test (Theis/Cooper-Jacob)', '$2,000?3,500', '+10?15%', `${Math.min(credPct + 31, 95)}%`],
-      ['3', 'Laboratory Water Analysis (WHO panel)', '$500?1,200', '+5?10%', `${Math.min(credPct + 39, 96)}%`],
-      ['4', 'Local Borehole Records (20+ wells)', '$0?500', '+5?10%', `${Math.min(credPct + 47, 98)}%`],
+      ['1', 'ERT + Seismic Refraction Survey', '$3,000-5,000', '+15-20%', `${Math.min(credPct + 18, 90)}%`],
+      ['2', '24-Hour Pumping Test (Theis/Cooper-Jacob)', '$2,000-3,500', '+10-15%', `${Math.min(credPct + 31, 95)}%`],
+      ['3', 'Laboratory Water Analysis (WHO panel)', '$500-1,200', '+5-10%', `${Math.min(credPct + 39, 96)}%`],
+      ['4', 'Local Borehole Records (20+ wells)', '$0-500', '+5-10%', `${Math.min(credPct + 47, 98)}%`],
       ['5', 'Re-run the analysis with the field data', 'Included', 'Recalibrates all estimates', 'Set by the field data'],
     ],
     headStyles: { fillColor: [34, 197, 94], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
@@ -6309,11 +6310,11 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   } else if (result.siteSelection && result.siteSelection.topSites.length > 0) {
     checkSpace(100);
     doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 185, 129);
-    doc.text('Smart Drilling Site Selection ? Alternative Ranked Points', margin, y); y += 8;
+    doc.text('Smart Drilling Site Selection - Alternative Ranked Points', margin, y); y += 8;
 
     doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(200, 60, 60);
     doc.text('NOTE: These are ALTERNATIVE sites evaluated by spatial feature analysis. The PRIMARY drilling recommendation (above) uses the full', margin, y); y += 3.5;
-    doc.text('multi-source ensemble pipeline (11+ data sources). Alternative site depth/yield are rapid spatial estimates only ? NOT full-pipeline values.', margin, y); y += 5;
+    doc.text('multi-source ensemble pipeline (11+ data sources). Alternative site depth/yield are rapid spatial estimates only - NOT full-pipeline values.', margin, y); y += 5;
 
     doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
     doc.text(`${result.siteSelection.candidatesEvaluated} candidate points evaluated within ${result.siteSelection.searchRadius_m}m radius using 8-layer feature fusion`, margin, y);
@@ -6390,7 +6391,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
 
     // Report Level badge
     const lvlColor = cal.reportLevel === 3 ? [220, 38, 38] : cal.reportLevel === 2 ? [245, 158, 11] : [59, 130, 246];
-    const lvlLabel = cal.reportLevel === 3 ? 'LEVEL 3 ? BANKABLE REPORT' : cal.reportLevel === 2 ? 'LEVEL 2 ? DESKTOP + FIELD VALIDATION' : 'LEVEL 1 ? DESKTOP SCREENING';
+    const lvlLabel = cal.reportLevel === 3 ? 'LEVEL 3 - FIELD-VALIDATED REPORT' : cal.reportLevel === 2 ? 'LEVEL 2 - DESKTOP + FIELD VALIDATION' : 'LEVEL 1 - DESKTOP SCREENING';
     doc.setFillColor(lvlColor[0], lvlColor[1], lvlColor[2]);
     doc.roundedRect(margin, y, 170, 10, 3, 3, 'F');
     doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
@@ -6403,7 +6404,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const calRows = [
       ['Calibrated Depth', `${cal.calibratedDepth_m}m`],
       ['Calibrated Yield', `${cal.calibratedYield_m3h} m³/hr`],
-      ['Confidence', `${sf((cal.confidence ?? 0) * 100)}% ? ${cal.confidenceTier}`],
+      ['Confidence', `${sf((cal.confidence ?? 0) * 100)}% - ${cal.confidenceTier}`],
       ['Field Data Sources', cal.fieldDataSources.join(', ')],
       ['Assessment Type', cal.assessmentType ?? 'FIELD_VALIDATED'],
     ];
@@ -6431,7 +6432,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const aq = cal.aquiferParameters;
       checkSpace(80);
       doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
-      doc.text('Bankable Aquifer Parameters (Pump Test Confirmed)', margin, y); y += 8;
+      doc.text('Aquifer Parameters (Pump Test Confirmed)', margin, y); y += 8;
 
       const aqRows = [
         ['Transmissivity (T)', `${aq.transmissivity_m2day} m²/day`],
@@ -6457,7 +6458,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(60, 60, 60);
       doc.text(`This borehole has been confirmed by field investigation (ERT + pumping test) with ${sf((cal.confidence ?? 0) * 100)}% confidence.`, margin, y, { maxWidth: 170 }); y += 4;
       doc.text(`Sustainable yield of ${aq.sustainableYield_m3hr} m³/hr has been verified by a ${cal.fieldDataSources.length}-source field validation program.`, margin, y, { maxWidth: 170 }); y += 4;
-      doc.text('This report meets the requirements for loan applications, donor proposals, and regulatory submissions.', margin, y, { maxWidth: 170 }); y += 8;
+      doc.text('Lenders, donors and WRA decide what they accept; this report sets out the field evidence they will ask for.', margin, y, { maxWidth: 170 }); y += 8;
     }
 
     // Lab water quality (if present)
@@ -6467,14 +6468,18 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 185, 129);
       doc.text('Laboratory Water Quality Analysis (Field-Confirmed)', margin, y); y += 6;
 
+      // A parameter the laboratory did not report is "not tested", never a
+      // pass or a fail (2026-10-30 audit).
+      const labRow = (name: string, v: unknown, limit: string, ok: (x: number) => boolean): string[] =>
+        typeof v === 'number' && Number.isFinite(v) ? [name, String(v), limit, ok(v) ? 'Within limit' : 'Exceeds limit'] : [name, 'not tested', limit, 'Not tested'];
       const wqRows = [
-        ['pH', String(wq.pH), '6.5?8.5', wq.pH >= 6.5 && wq.pH <= 8.5 ? 'Within Limits' : 'Exceeds Limits'],
-        ['TDS (mg/L)', String(wq.tds), '<1000', wq.tds < 1000 ? 'Within Limits' : 'Exceeds Limits'],
-        ['Iron (mg/L)', String(wq.iron), '<0.3', wq.iron < 0.3 ? 'Within Limits' : 'Exceeds Limits'],
-        ['Fluoride (mg/L)', String(wq.fluoride), '<1.5', wq.fluoride < 1.5 ? 'Within Limits' : 'Exceeds Limits'],
-        ['Arsenic (mg/L)', String(wq.arsenic), '<0.01', wq.arsenic < 0.01 ? 'Within Limits' : 'Exceeds Limits'],
-        ['Nitrate (mg/L)', String(wq.nitrate), '<50', wq.nitrate < 50 ? 'Within Limits' : 'Exceeds Limits'],
-        ['Coliform (CFU/100mL)', String(wq.coliform), '0', wq.coliform === 0 ? 'Within Limits' : 'Exceeds Limits'],
+        labRow('pH', wq.pH, '6.5-8.5', (x) => x >= 6.5 && x <= 8.5),
+        labRow('TDS (mg/L)', wq.tds, '<1000', (x) => x < 1000),
+        labRow('Iron (mg/L)', wq.iron, '<0.3', (x) => x < 0.3),
+        labRow('Fluoride (mg/L)', wq.fluoride, '<1.5', (x) => x <= 1.5),
+        labRow('Arsenic (mg/L)', wq.arsenic, '<0.01', (x) => x <= 0.01),
+        labRow('Nitrate (mg/L)', wq.nitrate, '<50', (x) => x <= 50),
+        labRow('Coliform (CFU/100mL)', wq.coliform, '0', (x) => x === 0),
       ];
       autoTable(doc, {
         startY: y, margin: { left: margin, right: margin },
@@ -6483,14 +6488,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         headStyles: { fillColor: [16, 185, 129], textColor: 255 },
         didParseCell: (data: any) => {
           if (data.column.index === 3 && data.section === 'body') {
-            data.cell.styles.textColor = data.cell.raw === 'PASS' ? [22, 163, 74] : [220, 38, 38];
+            data.cell.styles.textColor = data.cell.raw === 'Within limit' ? [22, 163, 74] : data.cell.raw === 'Not tested' ? [180, 120, 0] : [220, 38, 38];
             data.cell.styles.fontStyle = 'bold';
           }
         },
       });
       y = lastY(4);
       doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-      doc.text(`Source: ${wq.source} | Potable: ${wq.isPotable ? 'YES' : 'NO ? treatment required'}`, margin, y);
+      doc.text(`Source: ${wq.source} | Safe to drink: ${wq.isPotable ? 'YES' : 'NOT CONFIRMED (treatment needed or parameters untested)'}`, margin, y);
       if (wq.treatmentRequired.length > 0) {
         y += 4;
         doc.text(`Treatment: ${wq.treatmentRequired.join('; ')}`, margin, y, { maxWidth: 170 });
@@ -6515,22 +6520,22 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     body: [
       ['Soil Classification', 'USDA Texture Triangle (Saxton & Rawls pedotransfer)', 'ISRIC SoilGrids v2.0 API (250m)', 'Not measured for this tool'],
       ['Water Quality', 'Hydrogeochemistry model from soil/geological context', 'ISRIC SoilGrids + geological inference', 'MODELLED screening, accuracy not measured; laboratory analysis required. Score is our own, not a WHO standard'],
-      ['Recharge Estimate', 'Water balance: R = P - ET - Runoff - ?S', 'NASA POWER API (GLDAS/MERRA-2)', 'Model estimate; not validated against field recharge measurements'],
-      ['Yield Estimation', 'min(T-limited, Recharge-limited, Storage-limited) ? SF', 'Theis equation with estimated T, S', '?30?50%; requires pumping test for validation'],
-      ['Transmissivity (T)', 'T = K ? b (hydraulic conductivity ? aquifer thickness)', 'Rock-type lookup table (10 types)', 'Estimated; field measurement via pump test required'],
-      ['Sustainable Yield', 'Q = T ? i ? W (Darcy); constrained by recharge', 'Geological model + NASA POWER recharge', 'Pre-feasibility estimate only'],
+      ['Recharge Estimate', 'Water balance: R = P - ET - Runoff - dS', 'NASA POWER API (GLDAS/MERRA-2)', 'Model estimate; not validated against field recharge measurements'],
+      ['Yield Estimation', 'min(T-limited, Recharge-limited, Storage-limited) x SF', 'Theis equation with estimated T, S', 'about +/-30-50%; requires a pumping test'],
+      ['Transmissivity (T)', 'T = K x b (hydraulic conductivity x aquifer thickness)', 'Rock-type lookup table (10 types)', 'Estimated; field measurement via pump test required'],
+      ['Sustainable Yield', 'Q = T x i x W (Darcy); constrained by recharge', 'Geological model + NASA POWER recharge', 'Pre-feasibility estimate only'],
       ['Depth Estimation', 'Weighted towards drilled depths of productive boreholes within 20 km, else the county profile (estimates); terrain adjusts it', 'Shipped field borehole records + county drilling records + SRTM', 'Measured: inside the drilled band ~40% of the time (northern Kenya); ERT survey before drilling'],
       ['Risk Assessment', '5-dimensional: geological, contamination, depth, financial, technical', 'Multi-source fusion scoring', 'Probabilistic estimate; field validation improves to <10%'],
-      ['Financial Analysis', 'NPV = -C0 + S[(R?-C?)/(1+r)n]; IRR via bisection', 'Kenya contractor surveys (2024), $0.80/m³ rural tariff', 'Base case; sensitivity analysis included'],
+      ['Financial Analysis', 'NPV = -C0 + sum[(R_t - C_t)/(1+r)^t]; IRR via bisection', 'Kenya contractor surveys (2024), $0.80/m³ rural tariff', 'Base case; sensitivity analysis included'],
       ['Elevation', 'Copernicus DEM 90m; SRTM 30m as backup', 'Open-Meteo; Open-Elevation', 'about 4-10m vertical'],
-      ['Climate Data', 'Temperature, precipitation, ET, aridity index', 'Open-Meteo API (ERA5 reanalysis)', '?5?10% for monthly averages'],
-      ['Soil Moisture', 'ERA5-Land reanalysis at 4 depth layers', 'ECMWF via Open-Meteo (9km resolution)', '?15%; 92-day running average'],
-      ['Groundwater Storage', 'GRACE TWS proxy via NASA POWER GWETPROF', 'NASA POWER API', 'R ? 0.80 correlation; trend-level accuracy'],
+      ['Climate Data', 'Temperature, precipitation, ET, aridity index', 'Open-Meteo API (ERA5 reanalysis)', 'about +/-5-10% for monthly averages'],
+      ['Soil Moisture', 'ERA5-Land reanalysis at 4 depth layers', 'ECMWF via Open-Meteo (9km resolution)', 'about +/-15%; 92-day running average'],
+      ['Soil-moisture storage proxy', 'NASA POWER GWETPROF root-zone wetness, used only where GRACE does not cover the site', 'NASA POWER API', 'Soil moisture, not groundwater; indicative only'],
       ['GRACE / GRACE-FO storage', 'Groundwater storage (G3P v1.12) and total water storage (GFZ GravIS RL06), 1-degree cell', 'GFZ Data Services (open)', 'Regional (~300 km); trend with standard error'],
       ['Nearby Wells', 'USGS NWIS groundwater levels + OpenStreetMap Overpass', 'USGS + OSM (25km radius)', 'Real monitored wells; completeness varies by region'],
       ['DEM Hydrology', "SRTM elevation - Horn's slope, TWI, drainage density", 'Open-Elevation API (5x5 grid, 500m)', '+/-5m elevation; TWI +/-1 unit'],
       ['Lineament Analysis', 'DEM gradient-based fracture detection', 'Derived from elevation grid', 'Proxy only; SAR/optical lineaments more accurate'],
-      ['Vegetation-GW Proxy', 'Dry-season soil moisture as NDVI proxy (Eamus et al.)', 'ERA5-Land 2-year archive', 'R? ? 0.7 with MODIS NDVI; low-res proxy'],
+      ['Vegetation-GW Proxy', 'Dry-season soil moisture as NDVI proxy (Eamus et al.)', 'ERA5-Land 2-year archive', 'Proxy only; not a vegetation measurement'],
       ['Bayesian Ensemble', 'Reliability-weighted multi-source fusion', `${(result as any).ensembleResult?.sourcesUsed ?? 8} independent sources`, 'Agreement-weighted; sources are not fully independent, so spread does not shrink as 1/sqrt(N)'],
       ['Rock Classification', 'Soil texture - lithology mapping (Taylor & Eggleton 2001)', 'ISRIC SoilGrids + Macrostrat API', 'Rule-based classification; upgradeable with ERT survey'],
       ['Weathering Profile', 'Bazilevskaya et al. (2013) depth regression', 'MAP + MAT + rock type', 'Statistical model; ±50% uncertainty range'],
@@ -6560,16 +6565,16 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   const equations = [
-    'Transmissivity: T = K ? b  where K = hydraulic conductivity (m/day), b = saturated thickness (m)',
-    'Sustainable Yield: Q_safe = min(Q_T, Q_recharge, Q_storage) ? safety_factor (0.7)',
-    'Water Balance: P = ET + R + Runoff + ?S  (all terms in mm/year)',
-    'NPV: NPV = -Initial_Cost + S[(Revenue_t - Cost_t) / (1 + r)^t]  for t = 1 to 20 years',
+    'Transmissivity: T = K x b  where K = hydraulic conductivity (m/day), b = saturated thickness (m)',
+    'Sustainable Yield: Q_safe = min(Q_T, Q_recharge, Q_storage) x safety_factor (0.7)',
+    'Water Balance: P = ET + R + Runoff + dS  (all terms in mm/year)',
+    'NPV: NPV = -Initial_Cost + sum[(Revenue_t - Cost_t) / (1 + r)^t]  for t = 1 to 20 years',
     'IRR: Rate r where NPV = 0, solved by bisection method over 20-year horizon',
-    'Drawdown: s(r,t) = Q/(4pT) ? W(u)  where u = r?S/(4Tt)  (Theis, 1935)',
-    'Cone of Influence: R_inf = 1.5 ? v(T ? t / S)  (approximate steady-state radius)',
+    'Drawdown: s(r,t) = Q/(4 pi T) x W(u)  where u = r^2 S/(4Tt)  (Theis, 1935)',
+    'Cone of Influence: R_inf = 1.5 x sqrt(T x t / S)  (approximate steady-state radius)',
   ];
   equations.forEach(eq => {
-    doc.text('? ' + eq, margin + 2, y);
+    doc.text('- ' + eq, margin + 2, y);
     y += 4.5;
   });
   y += 4;
@@ -6595,9 +6600,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       head: [['Parameter', 'Value', 'Interpretation']],
       body: [
         ['Deformation Rate', `${insar.velocityMmYr ?? 'N/A'} mm/yr`, insar.deformationClass ?? 'N/A'],
-        ['Risk Level', insar.subsidenceRisk ?? 'N/A', insar.subsidenceRisk === 'critical' ? 'SUBSIDENCE RISK ? monitor before drilling' : insar.subsidenceRisk === 'moderate' ? 'Moderate ? include in risk assessment' : 'Acceptable'],
+        ['Risk Level', insar.subsidenceRisk ?? 'N/A', insar.subsidenceRisk === 'critical' ? 'SUBSIDENCE RISK - monitor before drilling' : insar.subsidenceRisk === 'moderate' ? 'Moderate - include in risk assessment' : 'Acceptable'],
         ['SAR Coverage', insar.sarCoverageAvailable ? 'Sentinel-1 available' : 'No SAR coverage', insar.dataSource ?? ''],
-        ['Aquifer Compaction Risk', (insar.velocityMmYr ?? 0) < -5 ? 'HIGH' : (insar.velocityMmYr ?? 0) < -2 ? 'MODERATE' : 'LOW', 'Based on GRACE TWS trend ? soil compressibility'],
+        ['Aquifer Compaction Risk', (insar.velocityMmYr ?? 0) < -5 ? 'HIGH' : (insar.velocityMmYr ?? 0) < -2 ? 'MODERATE' : 'LOW', 'Based on GRACE TWS trend - soil compressibility'],
         ['Implication for Drilling', '', (insar.velocityMmYr ?? 0) < -5 ? 'Consider reduced extraction rate to prevent further subsidence' : 'No deformation constraints on extraction'],
       ],
       headStyles: { fillColor: [56, 189, 248], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
@@ -6617,12 +6622,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(56, 189, 248);
-    doc.text('Digital Subsurface Twin ? Layered Earth Model', margin, y); y += 10;
+    doc.text('Digital Subsurface Twin - Layered Earth Model', margin, y); y += 10;
     const twin = result.subsurfaceTwin as any;
     const layerRows = (twin.layers ?? []).map((l: any) => [
       `${l.topDepthM ?? l.topM ?? 0}-${l.bottomDepthM ?? l.bottomM ?? 0}m`,
       l.lithology ?? 'Unknown',
-      l.isAquifer ? 'YES ?' : 'No',
+      l.isAquifer ? 'YES' : 'No',
       l.porosity != null ? `${(l.porosity * 100).toFixed(0)}%` : 'N/A',
       l.hydraulicConductivity_m_day != null ? `${(l.hydraulicConductivity_m_day ?? 0).toFixed(2)}` : 'N/A',
       l.drillingDifficulty ?? 'N/A',
@@ -6674,14 +6679,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(56, 189, 248);
-    doc.text('Smart Survey Plan ? Recommended Field Investigation', margin, y); y += 10;
+    doc.text('Smart Survey Plan - Recommended Field Investigation', margin, y); y += 10;
     const plan = result.surveyPlan as any;
 
     // Tier recommendation
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(34, 197, 94);
-    doc.text(`Recommended: ${plan.tierName ?? 'Tier ' + plan.recommendedTier} ? Total Cost: $${(plan.totalCostUSD ?? 0).toLocaleString()}`, margin, y); y += 8;
+    doc.text(`Recommended: ${plan.tierName ?? 'Tier ' + plan.recommendedTier} - Total Cost: $${(plan.totalCostUSD ?? 0).toLocaleString()}`, margin, y); y += 8;
 
     const methodRows = (plan.surveys ?? plan.methods ?? []).map((m: any) => [
       m.method ?? 'N/A',
@@ -6720,14 +6725,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(59, 130, 246);
-    doc.text('Desktop Screen + Targeted Geophysics ? 5-Step Pipeline', margin, y); y += 10;
+    doc.text('Desktop Screen + Targeted Geophysics - 5-Step Pipeline', margin, y); y += 10;
 
     // DRI summary
     const driColor = hg.drillReadinessLabel === 'DRILL NOW' ? [34, 197, 94] : hg.drillReadinessLabel === 'TARGETED SURVEY' ? [59, 130, 246] : hg.drillReadinessLabel === 'FOCUSED SURVEY' ? [251, 191, 36] : [239, 68, 68];
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(driColor[0], driColor[1], driColor[2]);
-    doc.text(`DRILL READINESS INDEX: ${hg.drillReadinessIndex}% ? ${hg.drillReadinessLabel} (Grade ${hg.driGrade})`, margin, y); y += 8;
+    doc.text(`DRILL READINESS INDEX: ${hg.drillReadinessIndex}% - ${hg.drillReadinessLabel} (Grade ${hg.driGrade})`, margin, y); y += 8;
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
@@ -6780,14 +6785,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       });
       y = lastY(4);
       doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-      doc.text('Only Point #1 receives ERT survey ? Points #2 and #3 are backup if ERT disqualifies Point #1.', margin, y); y += 6;
+      doc.text('Only Point #1 receives ERT survey - Points #2 and #3 are backup if ERT disqualifies Point #1.', margin, y); y += 6;
     }
 
     // ERT Specification
     if (hg.ertSpec) {
       checkSpace(50);
       doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(251, 191, 36);
-      doc.text('ERT Survey Specification ? Point #1 Only', margin, y); y += 6;
+      doc.text('ERT Survey Specification - Point #1 Only', margin, y); y += 6;
       autoTable(doc, {
         startY: y,
         head: [['Parameter', 'Value']],
@@ -7054,7 +7059,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           ['Screen Interval', `${integrated.drillSpec.screenInterval_m[0]}-${integrated.drillSpec.screenInterval_m[1]}m`],
           ['Expected Yield', `${integrated.drillSpec.expectedYield_m3hr} m\u00B3/hr`],
           ['Projected Siting Confidence', `${integrated.drillSpec.successProbability_pct}% (hypothetical, post-survey; governing site probability: ${pct(result.probability)})`],
-          ['Drilling Method', `${integrated.drillSpec.drillingMethod} (final method selected by contractor after ERT)`],
+          ['Drilling Method', `${computeCanonicalEconomics(result).drillMethod} (as the cost table; final method selected by the contractor after the survey)`],
           ['Estimated Drilling Cost', `$${(integrated.drillSpec.estimatedCost_usd ?? 0).toLocaleString()} (indicative; Section 5.1 governs)`],
           ['Geophysics survey cost (optional; separate from the required survey in Section 5.1)', `$${(integrated.totalCost_usd ?? 0).toLocaleString()}`],
         ],
@@ -7109,7 +7114,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     addPage();
     const px = result.pixelAnalysis;
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(124, 58, 237);
-    doc.text('Image Pixel Analysis ? Spectral Decomposition', margin, y); y += 10;
+    doc.text('Image Pixel Analysis - Spectral Decomposition', margin, y); y += 10;
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
     doc.text('RGB channel decomposition of the uploaded site photograph, used to estimate vegetation, water, soil, and rock exposure indices.', margin, y, { maxWidth: 170 }); y += 8;
 
@@ -7127,8 +7132,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Red Channel Ratio', `${(px.redRatio * 100).toFixed(1)}%`, ''],
         ['Brightness', (px.brightness ?? 0).toFixed(1), px.brightness > 180 ? 'Bright/arid terrain' : px.brightness > 100 ? 'Normal exposure' : 'Dark/shadowed'],
         ['Texture Variance', (px.textureVariance ?? 0).toFixed(1), px.textureVariance > 2000 ? 'High texture (complex terrain)' : 'Smooth/uniform surface'],
-        ['Edge Density', (px.edgeDensity ?? 0).toFixed(3), px.edgeDensity > 0.1 ? 'Many features/structures' : 'Few edges ? open terrain'],
-        ['Scene Confidence', `${(px.sceneConfidence * 100).toFixed(0)}%`, px.sceneConfidence > 0.7 ? 'High reliability' : 'Low ? results less certain'],
+        ['Edge Density', (px.edgeDensity ?? 0).toFixed(3), px.edgeDensity > 0.1 ? 'Many features/structures' : 'Few edges - open terrain'],
+        ['Scene Confidence', `${(px.sceneConfidence * 100).toFixed(0)}%`, px.sceneConfidence > 0.7 ? 'High reliability' : 'Low - results less certain'],
       ],
       headStyles: { fillColor: [124, 58, 237], textColor: 255, fontStyle: 'bold', fontSize: 8 },
       bodyStyles: { fontSize: 8 },
@@ -7183,7 +7188,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   if (result.geoEstimate && result.geoEstimate.estimates?.length > 0) {
     checkSpace(80);
     doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(124, 58, 237);
-    doc.text('Visual Geo-Estimation ? Image-Based Location Intelligence', margin, y); y += 8;
+    doc.text('Visual Geo-Estimation - Image-Based Location Intelligence', margin, y); y += 8;
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
     doc.text(`Method: ${result.geoEstimate.method ?? 'RGB spectral + terrain analysis'} | Climate zone: ${result.geoEstimate.climateZone ?? 'Unknown'}`, margin, y); y += 6;
 
@@ -7215,7 +7220,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     checkSpace(60);
     const fid = result.imageForensicId;
     doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(100, 60, 20);
-    doc.text('Image Forensic Identity ? Provenance & Integrity', margin, y); y += 8;
+    doc.text('Image Forensic Identity - Provenance & Integrity', margin, y); y += 8;
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
     doc.text('Extracted from EXIF/XMP metadata and perceptual hashing. Used to prevent duplicate submissions and track image origin.', margin, y, { maxWidth: 170 }); y += 6;
 
@@ -7250,14 +7255,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     checkSpace(90);
     const sv = result.satelliteVegetation;
     doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(34, 150, 60);
-    doc.text('Satellite Vegetation Index ? NDVI Analysis', margin, y); y += 8;
+    doc.text('Satellite Vegetation Index - NDVI Analysis', margin, y); y += 8;
 
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
       head: [['Parameter', 'Value', 'Interpretation']],
       body: [
         ['NDVI Estimate', (sv.ndviEstimate ?? 0).toFixed(3), sv.vegetationVigor],
-        ['Vegetation Vigor', sv.vegetationVigor, sv.ndviEstimate > 0.5 ? 'Dense ? possible phreatophytes' : sv.ndviEstimate > 0.3 ? 'Moderate vegetation' : 'Sparse/arid'],
+        ['Vegetation Vigor', sv.vegetationVigor, sv.ndviEstimate > 0.5 ? 'Dense - possible phreatophytes' : sv.ndviEstimate > 0.3 ? 'Moderate vegetation' : 'Sparse/arid'],
         ['Data Source', sv.dataSource, ''],
       ],
       headStyles: { fillColor: [34, 150, 60], textColor: 255, fontStyle: 'bold', fontSize: 9 },
@@ -7311,8 +7316,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       startY: y, margin: { left: margin, right: margin },
       head: [['Parameter', 'Value', 'Interpretation']],
       body: [
-        ['Mean Profile Moisture', `${(np.gwetprofMean * 100).toFixed(1)}%`, np.gwetprofMean > 0.5 ? 'Wet zone ? favorable' : np.gwetprofMean > 0.3 ? 'Moderate moisture' : 'Dry ? deeper drilling likely'],
-        ['Moisture Trend', np.gwetprofTrend > 0 ? `+${(np.gwetprofTrend * 100).toFixed(2)}%/yr (wetting)` : `${(np.gwetprofTrend * 100).toFixed(2)}%/yr (drying)`, np.gwetprofTrend >= 0 ? 'Stable/improving' : 'Declining ? aquifer stress risk'],
+        ['Mean Profile Moisture', `${(np.gwetprofMean * 100).toFixed(1)}%`, np.gwetprofMean > 0.5 ? 'Wet zone - favorable' : np.gwetprofMean > 0.3 ? 'Moderate moisture' : 'Dry - deeper drilling likely'],
+        ['Moisture Trend', np.gwetprofTrend > 0 ? `+${(np.gwetprofTrend * 100).toFixed(2)}%/yr (wetting)` : `${(np.gwetprofTrend * 100).toFixed(2)}%/yr (drying)`, np.gwetprofTrend >= 0 ? 'Stable/improving' : 'Declining - aquifer stress risk'],
         ['Data Source', np.dataSource, ''],
       ],
       headStyles: { fillColor: [16, 100, 180], textColor: 255, fontStyle: 'bold', fontSize: 9 },
@@ -7358,7 +7363,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     addPage();
     const br = result.boreholeRecords;
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 100, 60);
-    doc.text(`Regional Borehole Database ? ${br.country}`, margin, y); y += 8;
+    doc.text(`Regional Borehole Database - ${br.country}`, margin, y); y += 8;
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
     doc.text(`Source: ${br.source} | Region: ${br.region ?? br.country}`, margin, y); y += 6;
 
@@ -7446,20 +7451,20 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     checkSpace(80);
     const rs = result.remoteSensing as any;
     doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(56, 189, 248);
-    doc.text('Remote Sensing Data ? Satellite APIs', margin, y); y += 8;
+    doc.text('Remote Sensing Data - Satellite APIs', margin, y); y += 8;
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
     doc.text(`Data fetched: ${rs.fetchedAt ?? 'During analysis'}`, margin, y); y += 6;
 
     const rsRows: string[][] = [];
     if (rs.soilGrids) {
       const sg = rs.soilGrids;
-      if (sg.clay != null) rsRows.push(['SoilGrids Clay', `${sg.clay}%`, 'ISRIC SoilGrids v2.0']);
-      if (sg.sand != null) rsRows.push(['SoilGrids Sand', `${sg.sand}%`, 'ISRIC SoilGrids v2.0']);
-      if (sg.silt != null) rsRows.push(['SoilGrids Silt', `${sg.silt}%`, 'ISRIC SoilGrids v2.0']);
+      if (sg.clay != null) rsRows.push(['SoilGrids Clay (0-30 cm)', `${(sg.clay / 10).toFixed(1)}%`, 'ISRIC SoilGrids v2.0']);
+      if (sg.sand != null) rsRows.push(['SoilGrids Sand (0-30 cm)', `${(sg.sand / 10).toFixed(1)}%`, 'ISRIC SoilGrids v2.0']);
+      if (sg.silt != null) rsRows.push(['SoilGrids Silt (0-30 cm)', `${(sg.silt / 10).toFixed(1)}%`, 'ISRIC SoilGrids v2.0']);
       if (sg.phH2O != null) rsRows.push(['SoilGrids pH', (sg.phH2O / 10).toFixed(1), 'ISRIC SoilGrids v2.0']);
-      if (sg.organicCarbon != null) rsRows.push(['Organic Carbon', `${sg.organicCarbon} g/kg`, 'ISRIC SoilGrids v2.0']);
-      if (sg.bulkDensity != null) rsRows.push(['Bulk Density', `${sg.bulkDensity} kg/m³`, 'ISRIC SoilGrids v2.0']);
-      if (sg.cec != null) rsRows.push(['CEC', `${sg.cec} cmol/kg`, 'ISRIC SoilGrids v2.0']);
+      if (sg.organicCarbon != null) rsRows.push(['Organic Carbon', `${(sg.organicCarbon / 10).toFixed(1)} g/kg`, 'ISRIC SoilGrids v2.0']);
+      if (sg.bulkDensity != null) rsRows.push(['Bulk Density', `${(sg.bulkDensity / 100).toFixed(2)} g/cm³`, 'ISRIC SoilGrids v2.0']);
+      if (sg.cec != null) rsRows.push(['CEC', `${(sg.cec / 10).toFixed(1)} cmol/kg`, 'ISRIC SoilGrids v2.0']);
     }
     if (rs.elevation) {
       const el = rs.elevation;
@@ -7473,8 +7478,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     }
     if (rs.waterIndices) {
       const wi = rs.waterIndices;
-      if (wi.ndwi != null) rsRows.push(['NDWI (proxy)', (wi.ndwi ?? 0).toFixed(3), 'From RGB ? satellite verification recommended']);
-      if (wi.mndwi != null) rsRows.push(['MNDWI (proxy)', (wi.mndwi ?? 0).toFixed(3), 'From RGB ? satellite verification recommended']);
+      if (wi.ndwi != null) rsRows.push(['NDWI (proxy)', (wi.ndwi ?? 0).toFixed(3), 'From RGB - satellite verification recommended']);
+      if (wi.mndwi != null) rsRows.push(['MNDWI (proxy)', (wi.mndwi ?? 0).toFixed(3), 'From RGB - satellite verification recommended']);
     }
     if (rsRows.length === 0) rsRows.push(['Status', 'No satellite data fetched', '']);
 
@@ -7805,7 +7810,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   // -- COMPLETE TEST SUMMARY ? ALL ANALYSES PERFORMED --
   addPage();
   doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
-  doc.text('Complete Analysis Summary ? All Tests Performed', margin, y); y += 8;
+  doc.text('Complete Analysis Summary - All Tests Performed', margin, y); y += 8;
   doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
   doc.text('This table documents every test, analysis, and calculation executed during the automated borehole assessment.', margin, y, { maxWidth: 170 }); y += 6;
 
@@ -7849,7 +7854,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     ['37', 'Cost & ROI Analysis', 'COMPLETED', 'NPV, IRR, payback, 20-year cash flow projection'],
     ['38', 'Location Verification', result.locationConfidence ? 'COMPLETED' : 'SKIPPED', 'GPS confidence grade (A-F), drilling reliability'],
     ['39', 'Data Availability Metrics', result.confidenceMetrics ? 'COMPLETED' : 'SKIPPED', 'How much data each topic rests on (not accuracy)'],
-    ['40', 'Uncertainty Ranges', result.uncertainty ? 'COMPLETED' : 'SKIPPED', '? bounds for depth, yield, probability'],
+    ['40', 'Uncertainty Ranges', result.uncertainty ? 'COMPLETED' : 'SKIPPED', '+/- bounds for depth, yield, probability'],
     ['41', 'Advanced Rock Mapping', result.advancedRockMapping ? 'COMPLETED' : 'SKIPPED', '8-classifier ensemble: Macrostrat, texture, DEM, climate, spectral, lineament, vegetation, regional'],
     ['42', 'Multi-Geophysics Fusion', !result.geophysicsFusion ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldERT ? 'COMPLETED' : 'MODELLED'), 'ERT + TDEM + Seismic + GPR + NMR data fusion with aquifer zone identification'],
     ['43', 'Borehole Intelligence DB', result.boreholeIntelligence ? 'COMPLETED' : 'SKIPPED', 'Regional drilling outcome statistics, predictive factors, rock-yield correlation'],
@@ -8218,11 +8223,11 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   if (result.bankableChecklist?.length) {
     addPage();
     doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
-    doc.text('BANKABLE READINESS CHECKLIST', margin, y); y += 4;
+    doc.text('FIELD EVIDENCE CHECKLIST', margin, y); y += 4;
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-    doc.text('Upgrade path checklist: items marked PLANNED are the field steps required to elevate this pre-feasibility report to bankable grade (\u226590% confidence).', margin, y); y += 4;
+    doc.text('Items marked PLANNED are the field steps still to do; each replaces a desktop estimate with a measurement.', margin, y); y += 4;
     doc.setFont('helvetica', 'bolditalic'); doc.setTextColor(180, 60, 60);
-    doc.text('NOTE: PARTIAL items reflect desktop-modelled data only. World Bank / IDA / AfDB bankability requires field verification of all PARTIAL items.', margin, y); y += 8;
+    doc.text('NOTE: PARTIAL items are desktop-modelled only and need field verification.', margin, y); y += 8;
 
     const presentCount = result.bankableChecklist.filter(c => c.status === 'PRESENT').length;
     const totalRequired = result.bankableChecklist.filter(c => c.requiredForBankable).length;
@@ -8293,7 +8298,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     // -- PAGE 1: BOREHOLE SPECIFICATIONS + CASING + SCREEN --
     addPage();
     doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
-    doc.text('WELL DESIGN ? ENGINEERING SPECIFICATIONS', margin, y); y += 4;
+    doc.text('WELL DESIGN - ENGINEERING SPECIFICATIONS', margin, y); y += 4;
     doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(200, 60, 60);
     doc.text(`Design confidence: ${wd.designConfidence}. ${wd.confidenceNote.substring(0, 120)}`, margin, y); y += 7;
 
@@ -8335,10 +8340,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       startY: y, margin: { left: margin, right: margin },
       head: [['Parameter', 'Value', 'Notes']],
       body: [
-        ['Drilling Method', wd.boreholeSpecifications.drillingMethod, 'Based on rock type assessment'],
+        ['Drilling Method', computeCanonicalEconomics(result).drillMethod, 'Same as the cost table; the contractor confirms after the survey'],
         ['Borehole Diameter', `${wd.boreholeSpecifications.drillingDiameter_mm}mm (${wd.boreholeSpecifications.drillingDiameter_inches})`, 'Allows for casing + gravel pack'],
         ['Total Depth', `${wd.boreholeSpecifications.totalDepth_m}m`, `Includes ${wd.boreholeSpecifications.ratHole_m}m rat hole`],
-        ['Pilot Hole', wd.boreholeSpecifications.pilotHole ? 'YES ? drill pilot first' : 'Not required', ''],
+        ['Pilot Hole', wd.boreholeSpecifications.pilotHole ? 'YES - drill pilot first' : 'Not required', ''],
         ['Est. Drilling Duration', `${wd.boreholeSpecifications.estimatedDrillingDays[0]}-${wd.boreholeSpecifications.estimatedDrillingDays[1]} days`, 'Excludes mobilization'],
         ['Cost per Meter', `$${wd.boreholeSpecifications.drillingCostPerMeter_usd[0]}-${wd.boreholeSpecifications.drillingCostPerMeter_usd[1]}`, 'Varies by contractor/access'],
       ],
@@ -8583,7 +8588,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     if (wd.dataProvenance && wd.dataProvenance.length > 0) {
       checkSpace(50);
       doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(50, 50, 50);
-      doc.text('Data Provenance ? Parameter Source Tracking', margin, y); y += 2;
+      doc.text('Data Provenance - Parameter Source Tracking', margin, y); y += 2;
       doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(150, 50, 50);
       doc.text('Engineer must verify all "ESTIMATED" parameters before signing off on this design.', margin, y); y += 4;
       autoTable(doc, {
@@ -8626,7 +8631,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     // -- PAGE 4: BOREHOLE LOG TEMPLATE --
     addPage();
     doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
-    doc.text('BOREHOLE DRILLING LOG ? FIELD TEMPLATE', margin, y); y += 4;
+    doc.text('BOREHOLE DRILLING LOG - FIELD TEMPLATE', margin, y); y += 4;
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
     doc.text('Print this page and complete during drilling. Record all observations at 1m intervals.', margin, y); y += 7;
 
@@ -8707,7 +8712,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const wci = wd.waterChemistryIndices;
       addPage();
       doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
-      doc.text('WATER CHEMISTRY INDICES ? CORROSION & SCALING ASSESSMENT', margin, y); y += 4;
+      doc.text('WATER CHEMISTRY INDICES - CORROSION & SCALING ASSESSMENT', margin, y); y += 4;
       doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
       doc.text('Langelier (1936), Ryznar (1944). Critical for pipe material selection and borehole design life.', margin, y); y += 7;
 
@@ -8796,7 +8801,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const npsh = wd.npshCheck;
       checkSpace(50);
       doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
-      doc.text('NPSH VERIFICATION (ANSI/HI 9.6.1 ? Pump Cavitation Safety)', margin, y); y += 6;
+      doc.text('NPSH VERIFICATION (ANSI/HI 9.6.1 - Pump Cavitation Safety)', margin, y); y += 6;
       autoTable(doc, {
         startY: y, margin: { left: margin, right: margin },
         body: [
@@ -8838,8 +8843,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           ['Mix Ratio', gd.mixRatio],
           ['Seal Depth', `${gd.sealDepth_m[0]}m to ${gd.sealDepth_m[1]}m`],
           ['Grout Volume', `${gd.groutVolume_m3} m³ (${gd.groutVolume_liters} liters) incl. 25% waste`],
-          ['Cement Required', `${gd.cementBags_50kg} ? 50kg bags`],
-          ['Bentonite Required', `${gd.bentoniteBags_25kg} ? 25kg bags`],
+          ['Cement Required', `${gd.cementBags_50kg} x 50kg bags`],
+          ['Bentonite Required', `${gd.bentoniteBags_25kg} x 25kg bags`],
           ['Water Required', `${gd.waterVolume_liters} liters`],
           ['Compressive Strength (28-day)', `= ${gd.compressiveStrength_28day_MPa} MPa`],
           ['Wait-on-Cement', `${gd.waitOnCement_hours} hours minimum`],
@@ -8860,7 +8865,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const dp = wd.drillingPlan;
       addPage();
       doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
-      doc.text('DRILLING PLAN ? METHOD, EQUIPMENT & TIMELINE', margin, y); y += 7;
+      doc.text('DRILLING PLAN - METHOD, EQUIPMENT & TIMELINE', margin, y); y += 7;
 
       autoTable(doc, {
         startY: y, margin: { left: margin, right: margin },
@@ -8876,7 +8881,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           ['Estimated Duration', `${dp.estimatedDays[0]}-${dp.estimatedDays[1]} days (total project)`],
           ['Crew Size', `${dp.crewSize} persons`],
           ['Fuel Estimate', `${dp.estimatedFuelConsumption_liters} liters`],
-          ['Artesian Risk', dp.artesianRisk ? 'YES ? flow control required' : 'No'],
+          ['Artesian Risk', dp.artesianRisk ? 'YES - flow control required' : 'No'],
         ],
         bodyStyles: { fontSize: 7.5 },
         columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } },
@@ -9101,7 +9106,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
 
       // Step test
       doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(59, 130, 246);
-      doc.text(`Step Test: ${pt.stepTest.numberOfSteps} steps ? ${pt.stepTest.stepDuration_min} min`, margin, y); y += 5;
+      doc.text(`Step Test: ${pt.stepTest.numberOfSteps} steps - ${pt.stepTest.stepDuration_min} min`, margin, y); y += 5;
       autoTable(doc, {
         startY: y, margin: { left: margin, right: margin },
         head: [['Step', 'Rate (m³/hr)', '% of Est. Yield']],
@@ -9115,7 +9120,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       // Constant rate test measurement schedule
       checkSpace(40);
       doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(59, 130, 246);
-      doc.text(`Constant-Rate Test: ${pt.constantRateTest.rate_m3hr} m³/hr ? ${pt.constantRateTest.duration_hr} hours`, margin, y); y += 5;
+      doc.text(`Constant-Rate Test: ${pt.constantRateTest.rate_m3hr} m³/hr - ${pt.constantRateTest.duration_hr} hours`, margin, y); y += 5;
       autoTable(doc, {
         startY: y, margin: { left: margin, right: margin },
         head: [['Time Period', 'Measurement Frequency']],
@@ -9166,7 +9171,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           ['Fencing', `${wh.fencing.type}, ${wh.fencing.radius_m}m radius, ${wh.fencing.height_m}m height`],
           ['Lockable Cap', wh.lockableCap],
           ['Vent Pipe', wh.ventPipe],
-          ['Non-Return Valve', wh.nonReturnValve ? 'Yes ? installed on discharge' : 'No'],
+          ['Non-Return Valve', wh.nonReturnValve ? 'Yes - installed on discharge' : 'No'],
           ['Sampling Port', wh.samplingPort ? 'Yes' : 'No'],
           ['Flow Meter', wh.flowMeter ? 'Yes' : 'Not required at this yield'],
         ],
@@ -10169,9 +10174,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(14, 50, 100);
   doc.text('DATA PROVENANCE & SOURCE REGISTRY', margin, y); y += 8;
   doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 90);
-  doc.text('Every data point in this report is traceable to an authoritative source. No data is fabricated or estimated without explicit labelling.', margin, y); y += 6;
+  doc.text(doc.splitTextToSize('The sources the tool queries. A source that did not answer, or does not cover this site, contributes nothing; the sections above name the source of each figure, and estimates are labelled as estimates.', pageW - margin * 2), margin, y); y += 9;
 
-  // Build the provenance table dynamically from actual data sources used
+  // The sources queried (not all answer, or cover, every site)
   const provenanceRows: string[][] = [];
   // Satellite & Climate sources
   provenanceRows.push(['Soil Properties', 'ISRIC SoilGrids v2.0', 'Research Institute (ISRIC/WUR)', '250m global', 'https://soilgrids.org']);
@@ -10190,8 +10195,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   provenanceRows.push(['InSAR Ground Motion', 'COMET LiCSAR / ESA EGMS', 'Government (ESA/NERC)', 'Variable', 'https://comet.nerc.ac.uk']);
   provenanceRows.push(['Sentinel-1 SAR', 'ASF DAAC (Alaska Satellite Facility)', 'Government (NASA)', '~20m', 'https://asf.alaska.edu']);
   // Geological sources
+  provenanceRows.push(['Kenya land outline (site check)', 'geoBoundaries gbOpen KEN ADM0, CC BY 4.0 (Runfola et al. 2020)', 'Research (William & Mary geoLab)', '~550 m', 'https://www.geoboundaries.org']);
   provenanceRows.push(['Lithology/Formations', 'Macrostrat', 'University (UW-Madison)', 'Variable', 'https://macrostrat.org']);
-  provenanceRows.push(['US State Geology', 'USGS MRData', 'Government (USGS)', 'Variable', 'https://mrdata.usgs.gov']);
   provenanceRows.push(['Global Geology', 'OneGeology (BRGM/CGS)', 'Government (intl)', 'Variable', 'https://onegeology.org']);
   // Well/Borehole databases
   provenanceRows.push(['Wells (US)', 'USGS NWIS', 'Government (US)', 'Point', 'https://waterservices.usgs.gov']);
@@ -10458,574 +10463,47 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
     data.forEach(row => ws.addRow(row));
   }
 
-  // Sheet 1: Summary
-  addSheet('Summary', [
-    ['EMERSON EIMS AquaScan Pro ? Borehole Analysis Report'],
-    ['Report Tier', tier.toUpperCase()],
-    ['Generated', new Date().toLocaleString()],
-    ['Location', getLocationString(result)],
-    ['Coordinates', getCoords(result)],
+  // The governing figures only, as the page and the PDF summary (2026-10-30
+  // audit: this workbook carried hidden sub-models, "ROI 500%", "Predicted
+  // Yield 30" and "undefined" cells, and had no verdict or cost sheet).
+  const summaryRows: any[][] = [
+    ['EMERSON EIMS AquaScan Pro: borehole pre-screen'],
+    ['Report tier', tier.toUpperCase()],
+    ['Generated', new Date().toLocaleString('en-GB')],
     [''],
-    ['EXECUTIVE SUMMARY'],
-    ['Parameter', 'Value', 'Assessment'],
-    ['Success Probability', pct(result.probability), result.probability > 0.7 ? 'FAVORABLE' : 'MODERATE'],
-    ['Recommended Depth (m)', result.recommendedDepth, ''],
-    ['Estimated Yield (m³/h)', result.estimatedYield, ''],
-    ['Overall Risk', pct(result.risk?.overallRisk), result.risk?.viability?.toUpperCase()],
-    ['Soil Type', soilLabel(result), soilPorosity(result)],
-    ['Water Potable', result.waterQuality?.isPotable ? 'YES' : 'NO', ''],
-  ], [30, 25, 25]);
+  ];
+  for (const sec of governingSummary(result, getLocationString(result))) {
+    summaryRows.push([sec.title.toUpperCase()]);
+    summaryRows.push(['Item', 'Value', 'Basis']);
+    for (const row of sec.rows) summaryRows.push(row);
+    for (const note of sec.notes ?? []) summaryRows.push(['Note', note]);
+    summaryRows.push(['']);
+  }
+  summaryRows.push(['Limits', 'A desktop pre-screen from public data and nearby records. It does not replace the hydrogeological survey, a pump test or a laboratory water test.']);
+  addSheet('Summary', summaryRows, [42, 34, 70]);
 
-  // Sheet 2: Water Quality
-  addSheet('Water Quality', [
-    ['WATER QUALITY ANALYSIS'],
-    ['Parameter', 'Value', 'Unit', 'WHO Guideline', 'Status'],
-    ['pH', result.waterQuality?.pH, '', '6.5-8.5', (result.waterQuality?.pH ?? 7) >= 6.5 ? 'Within Limits' : 'Exceeds Limits'],
-    ['TDS', result.waterQuality?.tds, 'mg/L', '<1000', (result.waterQuality?.tds ?? 0) < 1000 ? 'Within Limits' : 'Exceeds Limits'],
-    ['Hardness', result.waterQuality?.hardness, 'mg/L CaCO3', '<500', (result.waterQuality?.hardness ?? 0) < 500 ? 'Within Limits' : 'Exceeds Limits'],
-    ['Fluoride', result.waterQuality?.fluoride, 'mg/L', '<1.5', (result.waterQuality?.fluoride ?? 0) < 1.5 ? 'Within Limits' : 'Exceeds Limits'],
-    ['Iron', result.waterQuality?.iron, 'mg/L', '<0.3', (result.waterQuality?.iron ?? 0) < 0.3 ? 'Within Limits' : 'Exceeds Limits'],
-    ['Arsenic', result.waterQuality?.arsenic, 'mg/L', '<0.01', (result.waterQuality?.arsenic ?? 0) < 0.01 ? 'Within Limits' : 'Exceeds Limits'],
-    ['Nitrate', result.waterQuality?.nitrate, 'mg/L', '<50', (result.waterQuality?.nitrate ?? 0) < 50 ? 'Within Limits' : 'Exceeds Limits'],
-    ['Turbidity', result.waterQuality?.turbidity, 'NTU', '<5', (result.waterQuality?.turbidity ?? 0) < 5 ? 'Within Limits' : 'Exceeds Limits'],
-    ['Overall Score', (result.waterQuality?.score ?? 0) * 100, '/100', '', ''],
-    ['Potable', result.waterQuality?.isPotable ? 'YES' : 'NO', '', '', ''],
-  ], [20, 15, 15, 15, 10]);
+  // Rainfall by year (the series the climate figures come from).
+  const hw: any = (result as any).historicalData?.weather;
+  if (Array.isArray(hw?.years) && Array.isArray(hw?.annualPrecipitation) && hw.years.length === hw.annualPrecipitation.length) {
+    addSheet('Rainfall by year', [
+      ['Year', 'Rainfall (mm)'],
+      ...hw.years.map((y: number, i: number) => [y, Math.round(Number(hw.annualPrecipitation[i]))]),
+      [''],
+      ['Source', String(hw.source ?? '')],
+    ], [12, 18]);
+  }
 
-  // Sheet 3: Risk
-  addSheet('Risk Assessment', [
-    ['RISK ASSESSMENT'],
-    ['Category', 'Score (%)', 'Level'],
-    ['Overall', (result.risk?.overallRisk ?? 0) * 100, result.risk?.viability?.toUpperCase()],
-    ['Geological', (result.risk?.categories?.geological ?? 0) * 100, ''],
-    ['Contamination', (result.risk?.categories?.contamination ?? 0) * 100, ''],
-    ['Depth', (result.risk?.categories?.depth ?? 0) * 100, ''],
-    ['Financial', (result.risk?.categories?.financial ?? 0) * 100, ''],
-    ['Technical', (result.risk?.categories?.technical ?? 0) * 100, ''],
-    [''],
-    ['Recommendations'],
-    ...(result.risk?.recommendations?.map(r => [r]) || []),
-  ], [30, 15, 15]);
-
-  // Sheet 4: Soil
-  addSheet('Soil Analysis', [
-    ['SOIL ANALYSIS'],
-    ['Property', 'Value'],
-    ['Type', soilLabel(result)],
-    ['Porosity', (result.soil as any)?.realSoilGrids ? result.soil?.porosity : 'not measured'],
-    ['Permeability', result.soil?.permeability],
-    ['Organic Matter', result.soil?.organicMatter],
-    ['pH', result.soil?.pH],
-    ['Moisture', result.soil?.moistureContent],
-    ['Compaction', result.soil?.compaction],
-    ['Suitability', result.soil?.suitability],
-    ['Data Source', result.soil?.dataSource],
-    ['Accuracy', result.soil?.accuracy],
-  ], [20, 25]);
-
-  // Sheet 5: Historical Weather (if available)
-  if (result.historicalData?.weather?.annualPrecipitation?.length) {
-    addSheet('Historical Weather', [
-      ['20-YEAR HISTORICAL WEATHER'],
-      ['Year', 'Precipitation (mm)', 'Temperature (°C)'],
-      ...result.historicalData.weather.annualPrecipitation.map((p, i) => [
-        p.year, p.total,
-        result.historicalData!.weather.annualTemperature?.[i]?.avg ?? '',
+  // Nearby water points: missing values left blank, not 0.
+  const wells: any[] = (result as any).nearbyWells?.nearbyWells ?? [];
+  if (wells.length) {
+    addSheet('Nearby water points', [
+      ['Name / ID', 'Distance (km)', 'Depth (m)', 'Yield (m³/h)', 'Water level (m)', 'Outcome', 'Source'],
+      ...wells.slice(0, 150).map((w) => [
+        String(w.id ?? ''), Number(w.distance_km) || '',
+        Number(w.depth_m) > 0 ? Number(w.depth_m) : '', Number(w.yield_m3h) > 0 ? Number(w.yield_m3h) : '',
+        Number(w.waterLevel_m) > 0 ? Number(w.waterLevel_m) : '', w.outcome && w.outcome !== 'Unknown' ? w.outcome : '', String(w.source ?? ''),
       ]),
-      [''],
-      ['Average Annual Precipitation', result.historicalData.weather.averageAnnualPrecipitation],
-      ['Average Temperature', result.historicalData.weather.averageTemperature],
-      ['Trend', result.historicalData.weather.trendDirection],
-      ['Best Drilling Season', result.historicalData.weather.bestDrillingSeason],
-      ['Drought Years', result.historicalData.weather.droughtYears?.join(', ')],
-    ], [20, 20, 20]);
-  }
-
-  // Sheet 6: GLDAS
-  if (result.gldasGroundwater) {
-    const sm = result.gldasGroundwater.soilMoisture;
-    const wb2 = result.gldasGroundwater.waterBudget;
-    addSheet('GLDAS Groundwater', [
-      ['GLDAS GROUNDWATER MONITORING'],
-      ['Parameter', 'Value', 'Unit'],
-      ['Soil Moisture 0-7cm', sm?.layer_0_7cm, 'm³/m³'],
-      ['Soil Moisture 7-28cm', sm?.layer_7_28cm, 'm³/m³'],
-      ['Soil Moisture 28-100cm', sm?.layer_28_100cm, 'm³/m³'],
-      ['Soil Moisture 100-255cm', sm?.layer_100_255cm, 'm³/m³'],
-      ['Classification', sm?.classification, ''],
-      ['Precipitation', wb2?.precipitation, 'mm/yr'],
-      ['Evapotranspiration', wb2?.evapotranspiration, 'mm/yr'],
-      ['Recharge (planning figure)', (result as any).rechargeSummary?.governing_mm ?? wb2?.estimatedRecharge, 'mm/yr'],
-      ['GW Potential', result.gldasGroundwater.groundwaterPotential, ''],
-      ['Drilling Favorability', result.gldasGroundwater.drillingFavorability, ''],
-    ], [25, 20, 10]);
-  }
-
-  // Sheet 7: Subsurface Model
-  if (tier !== 'basic' && result.subsurfaceModel?.lithologicalColumn?.layers?.length) {
-    const layers = result.subsurfaceModel.lithologicalColumn.layers;
-    addSheet('Subsurface Model', [
-      ['SUBSURFACE GEOLOGICAL MODEL'],
-      ['Layer', 'Top (m)', 'Bottom (m)', 'Lithology', 'K (m/d)', 'Porosity', 'Aquifer', 'Clay%', 'Sand%', 'Silt%'],
-      ...layers.map((l: any) => [
-        l.name, l.topDepthM, l.bottomDepthM, l.lithology,
-        l.hydraulicConductivity, l.porosity, l.isAquifer ? 'YES' : 'No',
-        l.clay, l.sand, l.silt,
-      ]),
-    ], Array(10).fill(14));
-  }
-
-  // Sheet 8: Aquifer Simulation
-  if (tier !== 'basic' && result.aquiferSimulation) {
-    const pt = result.aquiferSimulation.pumpTest;
-    const gb = result.aquiferSimulation.groundwaterBudget;
-    const cone = result.aquiferSimulation.coneOfDepression;
-    addSheet('Aquifer Simulation', [
-      ['AQUIFER PHYSICS SIMULATION'],
-      [''],
-      ['PUMP TEST ANALYSIS'],
-      ['Method', 'Transmissivity (m²/d)', 'Storativity', 'Key Result'],
-      ['Theis', pt?.theis?.transmissivity, pt?.theis?.storativity, `Drawdown: ${fmt(pt?.theis?.drawdownAtWell)}m`],
-      ['Cooper-Jacob', pt?.cooperJacob?.transmissivity, pt?.cooperJacob?.storativity, `Slope: ${fmt(pt?.cooperJacob?.slopePerLogCycle)}m`],
-      ['Hvorslev', '', '', `K = ${fmt(pt?.hvorslev?.hydraulicConductivity)} m/d`],
-      [''],
-      ['CONE OF DEPRESSION'],
-      ['Max Drawdown (m)', cone?.maxDrawdownM],
-      ['Radius of Influence (m)', cone?.radiusOfInfluenceM],
-      ['Pumping Rate (m³/day)', cone?.pumpingRateM3day],
-      [''],
-      ['GROUNDWATER BUDGET'],
-      ['Component', 'Value'],
-      ['Precipitation (mm/yr)', gb?.inflows?.precipitation],
-      ['Recharge (mm/yr)', gb?.inflows?.rechargeFromPrecipitation],
-      ['ET (mm/yr)', gb?.outflows?.evapotranspiration],
-      ['Storage Change (mm/yr)', gb?.balance?.storageChange],
-      ['Safe Yield (m³/day)', gb?.balance?.safeYieldM3day],
-      ['Max Sustainable (m³/hr)', gb?.balance?.maxSustainablePumping],
-      ['Depletion Risk', (() => {
-        const val = gb?.balance?.depletionRisk;
-        if (val === 'NONE' || val === 'None') {
-          const storage = gb?.balance?.storageChange;
-          if (typeof storage === 'number' && Math.abs(storage) <= 3) return 'NEGLIGIBLE';
-          return 'LOW';
-        }
-        return val;
-      })()],
-    ], [28, 22, 18, 30]);
-  }
-
-  // --- PHASE 5-8 ADVANCED ENGINE SHEETS ---
-
-  // Sheet: Advanced Rock Mapping
-  if (result.advancedRockMapping) {
-    const arm = result.advancedRockMapping as any;
-    addSheet('Advanced Rock Mapping', [
-      ['ADVANCED ROCK MAPPING ? 8-CLASSIFIER ENSEMBLE'],
-      ['Parameter', 'Value'],
-      ['Primary Rock Type', arm.rockLabel ?? arm.primaryRockType],
-      ['Secondary Rock Type', arm.secondaryRockType || 'N/A'],
-      ['Confidence', `${((arm.confidence ?? 0) * 100).toFixed(0)}%`],
-      ['Model Agreement (desktop concordance)', `${((arm.estimatedAccuracy ?? 0) * 100).toFixed(0)}%`],
-      ['Source Agreement', `${((arm.sourceAgreement ?? 0) * 100).toFixed(0)}%`],
-      ['Geological Province', arm.geologicalProvince],
-      ['Tectonic Setting', arm.tectonicSetting],
-      ['Geological Age', arm.geologicalAge],
-      ['Formation Name', arm.formationName],
-      ['Aquifer Type', arm.aquiferType],
-      ['Aquifer Productivity', arm.aquiferProductivity],
-      ['Fusion Method', arm.fusionMethod],
-      ...(arm.classifiers?.map((c: any) => [`Classifier: ${c.name}`, `${c.available ? c.topPredictions?.[0]?.rockType : 'N/A'} (${((c.confidence ?? 0) * 100).toFixed(0)}%)`]) || []),
-    ], [30, 30]);
-  }
-
-  // Sheet: Fracture AI
-  if (result.fractureAI) {
-    const fa = result.fractureAI;
-    addSheet('Fracture analysis', [
-      ['FRACTURE & LINEAMENT ANALYSIS'],
-      ['Parameter', 'Value'],
-      ['Total Lineaments', fa.totalLineamentCount],
-      ['Lineament Density', `${fa.lineamentDensity_km_per_km2} km/km²`],
-      ['Dominant Orientation', `${fa.dominantOrientation_deg}°`],
-      ['Overall Fracture Score', `${fa.overallFractureScore}/100`],
-      ['Fracture Permeability', fa.estimatedFracturePermeability],
-      ['Yield Multiplier', `${fa.yieldMultiplier}?`],
-      ['Drilling Azimuth', `${fa.preferredDrillingAzimuth_deg}°`],
-      ['Fracture Aquifer Likelihood', `${((fa.fractureAquiferLikelihood ?? 0) * 100).toFixed(0)}%`],
-      ['Structural Complexity', fa.structuralComplexity],
-      ['Collapse Risk', fa.collapsRisk],
-      ['Anisotropy Ratio', fa.anisotropyRatio],
-      ['Network Density', fa.fractureConnectivity?.networkDensity],
-      ['Percolation Threshold', fa.fractureConnectivity?.percolationThreshold ? 'Reached' : 'Not reached'],
-      ['Effective Transmissivity', `${fa.fractureConnectivity?.effectiveTransmissivity_m2d} m²/day`],
-      ['SHmax Direction', `${fa.stressField?.maxHorizontalStress_deg}°`],
-      ['Critically Stressed', fa.stressField?.criticallyStressed ? 'Yes' : 'No'],
-      ['Confidence', `${((fa.confidence ?? 0) * 100).toFixed(0)}%`],
-    ], [30, 30]);
-  }
-
-  // Sheet: Aquifer Classification
-  if (result.aquiferClassification) {
-    const ac = result.aquiferClassification;
-    addSheet('Aquifer Classification', [
-      ['BAYESIAN AQUIFER CLASSIFICATION'],
-      ['Parameter', 'Value'],
-      ['Primary Type', ac.primaryType?.type],
-      ['Primary Probability', `${((ac.primaryType?.probability ?? 0) * 100).toFixed(0)}%`],
-      ['Secondary Type', ac.secondaryType?.type || 'N/A'],
-      ['Depth Range', ac.recommendedDepth_m ? `${ac.recommendedDepth_m[0]}-${ac.recommendedDepth_m[1]}m` : ''],
-      ['Yield Range', ac.expectedYield_m3hr ? `${ac.expectedYield_m3hr[0]}-${ac.expectedYield_m3hr[1]} m³/hr` : ''],
-      ['Drilling Strategy', ac.drillingStrategy],
-      ['Recharge Rate', ac.characteristics?.rechargeRate],
-      ['Depletion Risk', ac.characteristics?.depletionRisk],
-      ['Contamination Vulnerability', ac.characteristics?.vulnerabilityToContamination],
-      ['Confidence', `${((ac.overallConfidence ?? 0) * 100).toFixed(0)}%`],
-      ['Conceptual Model', ac.conceptualModel],
-    ], [30, 40]);
-  }
-
-  // Sheet: Recharge Model
-  if (result.rechargeModel) {
-    const rm = result.rechargeModel;
-    addSheet('Recharge Model', [
-      ['DYNAMIC RECHARGE MODEL'],
-      ['Parameter', 'Value'],
-      ['Avg Precipitation', `${fmt(rm.avgAnnualPrecipitation_mm, 0)} mm/yr`],
-      ['Avg ET', `${fmt(rm.avgAnnualET_mm, 0)} mm/yr`],
-      ['Avg Recharge', `${fmt(rm.avgAnnualRecharge_mm, 0)} mm/yr`],
-      ['Recharge Fraction', `${((rm.rechargeFraction ?? 0) * 100).toFixed(1)}%`],
-      ['Sustainable Yield', `${fmt(rm.sustainableYield_m3hr, 1)} m³/hr`],
-      ['Depletion Risk', rm.depletionRisk],
-      ['Climate Risk', rm.climateRiskLevel],
-      ['Projected 2050', `${fmt(rm.projectedRecharge2050_mm, 0)} mm/yr`],
-      ['Confidence', `${((rm.confidence ?? 0) * 100).toFixed(0)}%`],
-      [''],
-      ['MONTHLY WATER BALANCE'],
-      ['Month', 'Precip (mm)', 'ET (mm)', 'Runoff (mm)', 'Recharge (mm)'],
-      ...(rm.monthlyRecharge?.map((m: any) => [m.monthName, m.precipitation_mm?.toFixed(0), m.et_mm?.toFixed(0), m.runoff_mm?.toFixed(0), m.netRecharge_mm?.toFixed(1)]) || []),
-    ], [20, 18, 18, 18, 18]);
-  }
-
-  // Sheet: Risk Decision
-  if (result.riskDecision) {
-    const rd = result.riskDecision;
-    addSheet('Risk Decision', [
-      ['PROBABILISTIC RISK DECISION ENGINE'],
-      ['Metric', 'Value'],
-      ['Success Probability', `${(rd.successProbability ?? 0).toFixed(1)}%`],
-      ['Dry Borehole Risk', `${(rd.dryBoreholeProbability ?? 0).toFixed(1)}%`],
-      ['Low Yield Risk', `${(rd.lowYieldProbability ?? 0).toFixed(1)}%`],
-      ['Poor Quality Risk', `${(rd.poorQualityProbability ?? 0).toFixed(1)}%`],
-      ['Overall Risk Level', rd.overallRiskLevel],
-      ['Risk Score', `${rd.riskScore}/100`],
-      ['Decision', rd.recommendation?.action],
-      ['Expected Value', `$${(rd.expectedValue_USD ?? 0).toLocaleString()}`],
-      ['ROI', `${((rd.roi ?? 0) * 100).toFixed(0)}%`],
-      ['Payback', `${rd.paybackMonths} months`],
-      ['Confidence Grade', rd.confidenceGrade],
-    ], [25, 25]);
-  }
-
-  // Sheet: Multi-Source Agreement
-  if (result.multiSourceAgreement) {
-    const msa = result.multiSourceAgreement;
-    addSheet('Source Agreement', [
-      ['MULTI-SOURCE CROSS-VALIDATION'],
-      ['Parameter', 'Value'],
-      ['Agreement Score', `${((msa.overallAgreementScore ?? 0) * 100).toFixed(0)}%`],
-      ['Confidence', `${((msa.overallConfidence ?? 0) * 100).toFixed(0)}%`],
-      ['Confidence Gain', `+${msa.confidenceGain_pct}%`],
-      ['Source Count', `${msa.sourceCount}`],
-      ['Consensus Depth', `${msa.consensusDepth_m}m`],
-      ['Consensus Yield', `${msa.consensusYield_m3hr} m³/hr`],
-      ['Consensus Probability', `${((msa.consensusProbability ?? 0) * 100).toFixed(0)}%`],
-      ['Conflict Severity', msa.conflictSeverity],
-      ['Strongest Agreement', msa.strongestAgreement],
-      ['Weakest Agreement', msa.weakestAgreement],
-    ], [25, 30]);
-  }
-
-  // Sheet: Temporal Drought
-  if (result.temporalDrought) {
-    const td = result.temporalDrought;
-    addSheet('Drought Analysis', [
-      ['TEMPORAL DROUGHT & CLIMATE RESILIENCE'],
-      ['Parameter', 'Value'],
-      ['Years Analyzed', td.yearsAnalyzed],
-      ['Mean Rainfall', `${fmt(td.meanAnnualRainfall_mm, 0)} mm/yr`],
-      ['Current SPI', fmt(td.currentSPI)],
-      ['Drought Status', td.currentDroughtStatus],
-      ['Drought Frequency', `${td.droughtFrequency_perDecade} per decade`],
-      ['Avg Duration', `${td.averageDroughtDuration_months} months`],
-      ['Sustainable Yield', `${td.sustainableYield_m3day} m³/day`],
-      ['Yield During Drought', `${td.yieldDuringDrought_m3day} m³/day`],
-      ['Yield Reliability', `${td.yieldReliability_pct}%`],
-      ['Depletion Risk', td.depletionRiskUnderDrought],
-      ['Projected 2050 Rainfall', `${fmt(td.projectedRainfall2050_mm, 0)} mm`],
-    ], [25, 25]);
-  }
-
-  // Sheet: Hydrochemistry
-  if (result.hydrochemPrediction) {
-    const hc = result.hydrochemPrediction;
-    addSheet('Hydrochemistry', [
-      ['HYDROCHEMISTRY PREDICTION'],
-      ['Parameter', 'Value'],
-      ['Overall Quality', hc.overallQuality],
-      ['Potability Score', `${hc.potabilityScore}/100`],
-      ['Water Type', hc.waterType],
-      ['Treatment Cost', hc.treatmentCost],
-      ['Confidence', `${((hc.confidence ?? 0) * 100).toFixed(0)}%`],
-      [''],
-      ['PARAMETER PREDICTIONS'],
-      ['Parameter', 'Predicted', 'Unit', 'WHO Limit', 'Exceeds?', 'Health Risk'],
-      ...(hc.predictions?.map((p: any) => [p.parameter, p.predictedValue, p.unit, p.whoGuideline, p.exceedsGuideline ? 'YES' : 'No', p.healthRisk]) || []),
-    ], [18, 15, 10, 15, 10, 12]);
-  }
-
-  // Sheet: Data Quality
-  if (result.dataQualityScore) {
-    const dq = result.dataQualityScore;
-    addSheet('Data Quality', [
-      ['DATA QUALITY & TRANSPARENCY'],
-      ['Parameter', 'Value'],
-      ['Bankability Status', dq.bankabilityStatus],
-      ['Overall Quality Score', `${dq.overallQualityScore}/100`],
-      ['Data Completeness', `${dq.dataCompleteness_pct}%`],
-      ['Reliability Grade', dq.reliabilityGrade],
-      ['Satellite Data', `${dq.satelliteData_pct}%`],
-      ['Field Measurements', `${dq.fieldMeasurement_pct}%`],
-      ['Laboratory Data', `${dq.laboratoryData_pct}%`],
-      ['Model-Inferred', `${dq.modelInferred_pct}%`],
-      ['Database', `${dq.databaseData_pct}%`],
-      ['User Input', `${dq.userInput_pct}%`],
-      ['Depth Prediction Quality', `${dq.depthPredictionQuality}/100`],
-      ['Yield Prediction Quality', `${dq.yieldPredictionQuality}/100`],
-      ['WQ Prediction Quality', `${dq.waterQualityPredictionQuality}/100`],
-      ['Independent Sources', dq.independentSourceCount],
-      ['Field Ground Truth', dq.fieldGroundTruthSources],
-    ], [25, 25]);
-  }
-
-  // Sheet: Drilling Prediction
-  if (result.drillingPrediction) {
-    const dp = result.drillingPrediction;
-    addSheet('Drilling Prediction', [
-      ['DRILLING SUCCESS PREDICTION'],
-      ['Parameter', 'Value'],
-      ['Success Probability', `${dp.successProbability}%`],
-      ['Predicted Depth', `${dp.predictedDepth_m}m`],
-      ['Predicted Yield', `${dp.predictedYield_m3h} m³/hr`],
-      ['Dry Hole Risk', `${dp.dryHoleRisk_pct}%`],
-      ['Low Yield Risk', `${dp.lowYieldRisk_pct}%`],
-      ['Expected Cost', `$${(dp.expectedDrillingCost_usd ?? 0).toLocaleString()}`],
-      ['Payback', `${dp.paybackPeriod_years} years`],
-      ['ROI', `${dp.roi_pct}%`],
-      ['Model Confidence', `${(dp.modelConfidence ?? 0).toFixed(0)}%`],
-      ['Dominant Factor', dp.dominantFactor],
-    ], [25, 25]);
-  }
-
-  // Sheet: Regional Model
-  if (result.regionalModel) {
-    const rl = result.regionalModel;
-    const am = rl.activeModel;
-    addSheet('Regional Model', [
-      ['REGIONAL LEARNING MODEL'],
-      ['Parameter', 'Value'],
-      ['Active Region', am?.regionName || 'Global default'],
-      ['Geological Province', am?.geologicalProvince || 'N/A'],
-      ['Climate Zone', am?.climateZone || 'N/A'],
-      ['Sub-model depth', `${rl.correctedDepth_m}m (governing: ${result.recommendedDepth}m)`],
-      ['Sub-model yield', `${rl.correctedYield_m3h} m³/hr (governing: ${result.estimatedYield} m³/hr)`],
-      ['Sub-model probability', `${(rl.correctedProbability ?? 0).toFixed(0)}% (governing: ${Math.round((result.probability ?? 0) * 100)}%)`],
-      ['Seasonal Adjustment', `${((rl.seasonalAdjustment ?? 0) * 100).toFixed(0)}%`],
-      ['Regional Confidence', `${(rl.regionalConfidence ?? 0).toFixed(0)}%`],
-      ['Best Month', am?.bestDrillingMonth || 'N/A'],
-      ['Worst Month', am?.worstDrillingMonth || 'N/A'],
-      ['Model Accuracy', 'Not measured (built-in regional prior, not trained on recorded drilling outcomes)'],
-    ], [25, 25]);
-  }
-
-  // Sheet: Micro-Siting
-  if (result.microSiting) {
-    const ms = result.microSiting;
-    const bp = ms.bestPoint || {};
-    addSheet('Micro-Siting', [
-      ['MICRO-SITING OPTIMIZER'],
-      ['Parameter', 'Value'],
-      ['Best Point', `${bp.latitude?.toFixed(6)}, ${bp.longitude?.toFixed(6)}`],
-      ['GPS Output', ms.gpsCoordinates ? `${ms.gpsCoordinates.lat}, ${ms.gpsCoordinates.lon}` : 'N/A'],
-      ['GPS Accuracy', ms.gpsCoordinates ? `?${ms.gpsCoordinates.accuracy_m}m` : 'N/A'],
-      ['Confidence Radius', `${ms.confidenceRadius_m}m`],
-      ['Score', `${bp.score}/100`],
-      ['Improvement', `+${ms.improvementOverCenter_pct}%`],
-      ['Shift Distance', `${ms.shiftDistance_m}m ${ms.shiftDirection}`],
-      ['ERT Overlay Score', ms.ertOverlayScore ?? 'N/A'],
-      ['Candidates Evaluated', ms.candidatesEvaluated],
-      [''],
-      ['TOP CANDIDATES'],
-      ['Rank', 'Lat', 'Lon', 'Score', 'Terrain', 'Fracture', 'Drainage'],
-      ...(ms.allCandidates?.slice(0, 5).map((c: any) => [c.rank, c.latitude?.toFixed(5), c.longitude?.toFixed(5), c.score, c.terrainFlowScore, c.fractureProximityScore, c.drainageScore]) || []),
-    ], [10, 15, 15, 10, 12, 12, 12]);
-  }
-
-  // Sheet: Geophysics Fusion
-  if (result.geophysicsFusion) {
-    const gf = result.geophysicsFusion;
-    addSheet('Geophysics Fusion', [
-      ['MULTI-GEOPHYSICS FUSION'],
-      ['Parameter', 'Value'],
-      ['Methods Used', (gf.methodsUsed || []).join(', ')],
-      ['Method Agreement', `${((gf.methodAgreement ?? 0) * 100).toFixed(0)}%`],
-      ['Fusion Quality', gf.fusionQuality],
-      ['Confidence', `${((gf.overallConfidence ?? 0) * 100).toFixed(0)}%`],
-      ['Bedrock Depth', `${gf.bedrockDepth_m}m`],
-      ['Water Table', `${gf.waterTableDepth_m} m (assumed: about 30% of the drilling depth, not measured)`],
-      ['Drilling Depth', `${gf.recommendedDrillingDepth_m}m`],
-      ['Casing Depth', `${gf.recommendedCasingDepth_m}m`],
-      ['Expected Yield', gf.expectedYield_m3hr ? `${gf.expectedYield_m3hr[0]}-${gf.expectedYield_m3hr[1]} m³/hr` : ''],
-    ], [25, 30]);
-  }
-
-  // Sheet: Borehole Intelligence
-  if (result.boreholeIntelligence) {
-    const bi = result.boreholeIntelligence;
-    addSheet('Borehole Intelligence', [
-      ['BOREHOLE INTELLIGENCE DATABASE'],
-      ['Parameter', 'Value'],
-      ['Total Records', bi.totalRecords],
-      ['Average Depth', `${bi.avgDepth_m}m`],
-      ['Average Yield', `${bi.avgYield_m3hr} m³/hr`],
-      ['Success Rate', `${((bi.successRate ?? 0) * 100).toFixed(0)}%`],
-      [''],
-      ['COMMON ROCK TYPES'],
-      ['Rock', 'Count', 'Avg Yield'],
-      ...(bi.commonRockTypes?.map((r: any) => [r.rock, r.count, r.avgYield]) || []),
-    ], [25, 15, 15]);
-  }
-
-  // Sheet: Pump Test
-  if (result.pumpTestAnalysis) {
-    const pt = result.pumpTestAnalysis;
-    addSheet('Pump Test', [
-      ['PUMP TEST ANALYSIS'],
-      ['Parameter', 'Value'],
-      ['Transmissivity', `${pt.transmissivity_m2day} m²/day`],
-      ['Storativity', pt.storativity],
-      ['Hydraulic Conductivity', `${pt.hydraulicConductivity_m_day} m/day`],
-      ['Specific Capacity', `${pt.specificCapacity_m3hr_m} m³/hr/m`],
-      ['Well Efficiency', `${pt.wellEfficiency_pct}%`],
-      ['Sustainable Yield', `${pt.sustainableYield_m3hr} m³/hr`],
-      ['Safe Yield', `${pt.safeYield_m3hr} m³/hr`],
-      ['Aquifer Type', pt.aquiferType],
-      ['Sustainability', pt.sustainabilityRating],
-      ['Data Quality', pt.dataQuality],
-      ['Confidence', `${((pt.confidence ?? 0) * 100).toFixed(0)}%`],
-    ], [25, 25]);
-  }
-
-  // Sheet: Lithology
-  if (result.lithologyAnalysis) {
-    const la = result.lithologyAnalysis;
-    addSheet('Lithology', [
-      ['LITHOLOGY & STRATIGRAPHY'],
-      ['Parameter', 'Value'],
-      ['Total Layers', la.totalLayers],
-      ['Total Depth', `${la.totalDepth_m}m`],
-      ['Dominant Rock', `${la.dominantRockType} (${la.dominantRockPct}%)`],
-      ['Primary Aquifer Depth', `${la.primaryAquiferDepth_m}m`],
-      ['Primary Aquifer Thickness', `${la.primaryAquiferThickness_m}m`],
-      ['Total Yield', `${la.totalYield_m3hr} m³/hr`],
-      ['Fracture Density', `${la.fractureDensity_per_m} /m`],
-      ['Bedrock Depth', `${la.bedrockDepth_m}m`],
-      ['Predicted Sustainability', la.predictedSustainability],
-      [''],
-      ['WATER STRIKES'],
-      ['Depth (m)', 'Yield (m³/hr)', 'Rock Type', 'Major?'],
-      ...(la.waterStrikes?.map((w: any) => [w.depth_m, w.yield_m3hr, w.rockType, w.isMajor ? 'YES' : 'No']) || []),
-    ], [15, 18, 15, 10]);
-  }
-
-  // Sheet: ERT Intelligence Pipeline
-  if (result.ertInterpretation) {
-    const ei = result.ertInterpretation;
-    const rows: any[][] = [
-      [ertIsFieldData(result) ? 'ERT INTERPRETATION (FIELD DATA)' : 'ERT SURVEY - PROPOSED DESIGN (MODELLED, NOT FIELD DATA)'],
-      ['Parameter', 'Value'],
-      ['Pipeline Version', `v${ei.pipelineVersion || '2.0'}`],
-      ['Data Source', (ei.dataSource || 'modelled').toUpperCase()],
-      ['Steps Executed', `${ei.executedSteps?.length || 0}/10`],
-      ['Drill Decision', ertDecisionLabel(result, ei)],
-      ['Decision Reasoning', ei.drillDecisionReasoning || '?'],
-    ];
-    if (ei.confidence) {
-      rows.push([''], ['CONFIDENCE ENGINE']);
-      rows.push(['Before ERT', `${((ei.confidence.beforeERT ?? 0) * 100).toFixed(0)}%`]);
-      rows.push(['After ERT', `${((ei.confidence.afterERT ?? 0) * 100).toFixed(0)}%`]);
-      rows.push(['Improvement', `+${fmt(ei.confidence.improvementPercent)}%`]);
-      (ei.confidence.componentBreakdown || []).forEach((c: any) => rows.push([c.name, `${((c.score ?? 0) * 100).toFixed(0)}% (w=${((c.weight ?? 0) * 100).toFixed(0)}%)`]));
-    }
-    if (ei.depthOptimization) {
-      rows.push([''], ['DEPTH OPTIMIZATION']);
-      rows.push(['Recommended Depth', `${fmt(ei.depthOptimization.recommendedDrillingDepth_m)}m`]);
-      rows.push(['Aquifer Center', `${fmt(ei.depthOptimization.aquiferCenter_m)}m`]);
-      rows.push(['Aquifer Thickness', `${fmt(ei.depthOptimization.aquiferThickness_m)}m`]);
-      rows.push(['Casing Depth', `${fmt(ei.depthOptimization.casingDepth_m)}m`]);
-      rows.push(['Screen Interval', `${ei.depthOptimization.screenFrom_m}-${ei.depthOptimization.screenTo_m}m`]);
-    }
-    if (ei.yieldEstimation) {
-      rows.push([''], ['YIELD ESTIMATION']);
-      rows.push(['Estimated Yield', `${fmt(ei.yieldEstimation.estimatedYield_m3hr)} m³/hr (${fmt(ei.yieldEstimation.estimatedYield_Lmin)} L/min)`]);
-      rows.push(['Sustainable Yield', `${fmt(ei.yieldEstimation.sustainableYield_m3hr)} m³/hr`]);
-      rows.push(['Category', ei.yieldEstimation.yieldCategory || '?']);
-      rows.push(['Transmissivity', `${fmt(ei.yieldEstimation.transmissivity_m2day)} m²/day`]);
-      rows.push(['Hydraulic Conductivity', `${ei.yieldEstimation.hydraulicConductivity_mday} m/day`]);
-      rows.push(['Confidence', `${fmt(ei.yieldEstimation.confidenceInterval?.lower)}-${fmt(ei.yieldEstimation.confidenceInterval?.upper)} m³/hr`]);
-    }
-    if (ei.hybridInterpretation) {
-      rows.push([''], ['HYBRID INTERPRETATION']);
-      rows.push(['Success Probability', `${((ei.hybridInterpretation.successProbability ?? 0) * 100).toFixed(0)}%`]);
-      rows.push(['Aquifer Type', (ei.hybridInterpretation.aquiferType || '').replace(/_/g, ' ')]);
-      rows.push(['Lithology', ei.hybridInterpretation.lithology || '?']);
-      rows.push(['Water Quality', (ei.hybridInterpretation.waterQuality || '').toUpperCase()]);
-      rows.push(['Risk Factors', (ei.hybridInterpretation.riskFactors || []).join('; ') || 'None']);
-    }
-    if (ei.features) {
-      rows.push([''], ['FEATURE EXTRACTION']);
-      rows.push(['Target Depth', `${fmt(ei.features.depthToTarget_m)}m`]);
-      rows.push(['Continuity', `${((ei.features.overallContinuity ?? 0) * 100).toFixed(0)}%`]);
-      rows.push(['Anomalies', `${ei.features.anomalyCount ?? 0}`]);
-      rows.push(['Fracture Indicators', `${ei.features.fractureIndicators ?? 0}`]);
-    }
-    if (ei.interpretation1D?.layers?.length) {
-      rows.push([''], ['1D LAYERED EARTH MODEL'], ['Depth Range', 'Interpretation', 'Resistivity', 'Water-Bearing']);
-      ei.interpretation1D.layers.forEach((l: any) => rows.push([`${fmt(l.depthTop_m)}-${fmt(l.depthBottom_m)}m`, l.interpretation, `${fmt(l.resistivity_ohmm)} Om`, l.waterBearing ? 'YES' : 'NO']));
-    }
-    if (ei.invertedModel) {
-      rows.push([''], ['2D INVERSION MODEL']);
-      rows.push(['Grid', `${ei.invertedModel.nx}-${ei.invertedModel.nz}`]);
-      rows.push(['RMS Error', `${ei.invertedModel.rmsError_pct}%`]);
-      rows.push(['Profile Length', `${fmt(ei.invertedModel.profileLength_m)}m`]);
-    }
-    addSheet('ERT Intelligence', rows, [30, 30]);
-  }
-
-  // Sheet: Confidence Weighting
-  if (result.confidenceWeighted) {
-    const cw = result.confidenceWeighted;
-    addSheet('Confidence Weighting', [
-      ['CONFIDENCE-WEIGHTED PREDICTIONS'],
-      ['Parameter', 'Value'],
-      ['Overall Confidence', `${((cw.overallConfidence ?? 0) * 100).toFixed(0)}%`],
-      ['Confidence Grade', `${cw.confidenceGrade} | ${cw.gradeDescription}`],
-      ['Data Quality', `${((cw.dataQualityScore ?? 0) * 100).toFixed(0)}%`],
-      ['Data Completeness', `${((cw.dataCompletenessScore ?? 0) * 100).toFixed(0)}%`],
-      ['Source Agreement', `${((cw.sourceAgreementScore ?? 0) * 100).toFixed(0)}%`],
-      ['Adjusted Probability', `${((cw.adjustedProbability ?? 0) * 100).toFixed(0)}%`],
-      ['Adjusted Depth', `${cw.adjustedDepth_m}m`],
-      ['Adjusted Yield', `${cw.adjustedYield_m3hr} m³/hr`],
-    ], [25, 25]);
+    ], [34, 14, 12, 14, 16, 12, 44]);
   }
 
   } catch (xlErr) {
@@ -11091,327 +10569,37 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
     alignment: AlignmentType.CENTER,
     spacing: { after: 100 },
   }));
-  sections.push(para(`${tier.toUpperCase()} Report  ?  ${new Date().toLocaleDateString()}  ?  ${getLocationString(result)}`, false, '888888'));
+  sections.push(para(`${tier.toUpperCase()} report  |  ${new Date().toLocaleDateString('en-GB')}  |  ${getLocationString(result)}`, false, '888888'));
   sections.push(new Paragraph({ children: [], spacing: { after: 200 } }));
 
-  // Summary Table
-  sections.push(heading('1. Executive Summary'));
-  const summaryTable = new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    rows: [
-      makeRow([
-        { text: 'Parameter', bold: true, color: 'FFFFFF', shading: BLUE },
-        { text: 'Value', bold: true, color: 'FFFFFF', shading: BLUE },
-        { text: 'Assessment', bold: true, color: 'FFFFFF', shading: BLUE },
-      ]),
-      makeRow([{ text: 'Success Probability' }, { text: pct(result.probability), bold: true }, { text: result.probability > 0.7 ? 'FAVORABLE' : 'MODERATE' }]),
-      makeRow([{ text: 'Recommended Depth' }, { text: `${fmt(result.recommendedDepth, 0)} meters${result.uncertainty ? ` (range: ${result.uncertainty.depthRange[0]}-${result.uncertainty.depthRange[1]}m)` : ''}`, bold: true }, { text: '' }]),
-      makeRow([{ text: 'Estimated Yield' }, { text: `${fmt(result.estimatedYield, 1)} m\u00b3/hour${result.uncertainty ? ` (range: ${result.uncertainty.yieldRange[0]}-${result.uncertainty.yieldRange[1]})` : ''}`, bold: true }, { text: '' }]),
-      makeRow([{ text: 'Overall Risk' }, { text: pct(result.risk?.overallRisk) }, { text: result.risk?.viability?.toUpperCase() || '' }]),
-      makeRow([{ text: 'Soil Type' }, { text: soilLabel(result) }, { text: soilPorosity(result) }]),
-      makeRow([{ text: 'Water Quality' }, { text: `${fmt((result.waterQuality?.score ?? 0) * 100, 0)}/100` }, { text: result.waterQuality?.isPotable ? 'POTABLE' : 'TREATMENT NEEDED' }]),
-      makeRow([{ text: 'Assessment Type' }, { text: 'DESKTOP PRE-SCREEN' }, { text: 'ERT integration available for field validation' }]),
-      makeRow([{ text: 'Coordinates' }, { text: getCoords(result) }, { text: `GPS: ${result.gpsSource?.toUpperCase()}` }]),
-      makeRow([{ text: 'Location Grade' }, { text: result.locationConfidence?.grade || 'N/A' }, { text: result.locationConfidence?.drillingReliability || '' }]),
-    ],
+  // The governing figures only: the same verdict, depth, yield, water quality,
+  // costs and payback as the page and the PDF summary (2026-10-30 audit: this
+  // export printed sub-models hidden from the page as misleading, "undefined"
+  // fields, pH 0.00 FAIL and no verdict or costs).
+  const body: (Paragraph | Table)[] = [];
+  governingSummary(result, getLocationString(result)).forEach((sec, i) => {
+    body.push(heading(`${i + 1}. ${sec.title}`));
+    body.push(new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        makeRow([
+          { text: 'Item', bold: true, color: 'FFFFFF', shading: BLUE },
+          { text: 'Value', bold: true, color: 'FFFFFF', shading: BLUE },
+          { text: 'Basis', bold: true, color: 'FFFFFF', shading: BLUE },
+        ]),
+        ...sec.rows.map((row) => makeRow([{ text: row[0] }, { text: row[1], bold: true }, { text: row[2] }])),
+      ],
+    }));
+    for (const note of sec.notes ?? []) body.push(para(note, false, '7C2D12'));
+    body.push(new Paragraph({ children: [] }));
   });
-  sections.push(new Paragraph({ children: [] }));
-
-  // Water Quality
-  sections.push(heading('2. Water Quality Analysis'));
-  const wqTable = new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    rows: [
-      makeRow([
-        { text: 'Parameter', bold: true, color: 'FFFFFF', shading: GREEN },
-        { text: 'Value', bold: true, color: 'FFFFFF', shading: GREEN },
-        { text: 'WHO Limit', bold: true, color: 'FFFFFF', shading: GREEN },
-        { text: 'Status', bold: true, color: 'FFFFFF', shading: GREEN },
-      ]),
-      ...['pH', 'TDS', 'Hardness', 'Fluoride', 'Iron', 'Arsenic', 'Nitrate'].map(param => {
-        const val = (result.waterQuality as any)?.[param.toLowerCase()] ?? 0;
-        const limits: Record<string, number> = { ph: 8.5, tds: 1000, hardness: 500, fluoride: 1.5, iron: 0.3, arsenic: 0.01, nitrate: 50 };
-        const pass = param.toLowerCase() === 'ph' ? val >= 6.5 && val <= 8.5 : val < (limits[param.toLowerCase()] ?? 999);
-        return makeRow([
-          { text: param },
-          { text: fmt(val, param === 'Arsenic' ? 4 : 2) },
-          { text: `< ${limits[param.toLowerCase()] ?? ''}` },
-          { text: pass ? '? PASS' : '? FAIL', color: pass ? GREEN : RED, bold: true },
-        ]);
-      }),
-    ],
-  });
-
-  // Risk
-  sections.push(heading('3. Risk Assessment'));
-  if (result.risk?.recommendations?.length) {
-    for (const rec of result.risk.recommendations) {
-      sections.push(para(`• ${rec}`));
-    }
-  }
-
-  // InSAR Ground Deformation
-  if (result.insarDeformation) {
-    const insar = result.insarDeformation as any;
-    sections.push(heading('4. InSAR Ground Deformation'));
-    sections.push(para(`Deformation Rate: ${insar.velocityMmYr ?? 'N/A'} mm/yr (${insar.deformationClass ?? 'N/A'})`));
-    sections.push(para(`Subsidence Risk: ${insar.subsidenceRisk ?? 'N/A'}`, insar.subsidenceRisk === 'critical'));
-    sections.push(para(`SAR Coverage: ${insar.sarCoverageAvailable ? 'Sentinel-1 available' : 'No coverage'}`));
-    sections.push(para(`Aquifer Compaction Risk: ${(insar.velocityMmYr ?? 0) < -5 ? 'HIGH' : (insar.velocityMmYr ?? 0) < -2 ? 'MODERATE' : 'LOW'}`));
-  }
-
-  // Digital Subsurface Twin
-  if (result.subsurfaceTwin) {
-    const twin = result.subsurfaceTwin as any;
-    sections.push(heading('5. Digital Subsurface Twin'));
-    sections.push(para(`Model Confidence: ${((twin.modelConfidence ?? 0) * 100).toFixed(0)}%`, true));
-    for (const l of (twin.layers ?? [])) {
-      sections.push(para(`${l.topM ?? 0}-${l.bottomM ?? 0}m: ${l.lithology ?? 'Unknown'} ${l.isAquifer ? '? AQUIFER' : ''} (K=${l.hydraulicConductivity_m_day?.toFixed(2) ?? 'N/A'} m/day, Porosity=${l.porosity != null ? (l.porosity * 100).toFixed(0) + '%' : 'N/A'})`));
-    }
-    if (twin.drillingPrognosis) {
-      sections.push(para(`Drilling Prognosis: ${twin.drillingPrognosis.totalDepthM ?? 'N/A'}m, ${twin.drillingPrognosis.estimatedDays ?? 'N/A'} days, Yield ${twin.drillingPrognosis.predictedYield_m3h ?? 'N/A'} m³/hr`, true));
-    }
-  }
-
-  // Smart Survey Plan
-  if (result.surveyPlan) {
-    const plan = result.surveyPlan as any;
-    sections.push(heading('6. Smart Survey Plan'));
-    sections.push(para(`Recommended: ${plan.tierName ?? 'Tier ' + plan.recommendedTier} ? Total Cost: $${(plan.totalCostUSD ?? 0).toLocaleString()}`, true, '16A34A'));
-    for (const m of (plan.methods ?? [])) {
-      sections.push(para(`• ${m.method}: ${m.priority} | $${(m.costUSD ?? 0).toLocaleString()} (+${m.confidenceGainPercent ?? 0}% confidence) ? ${m.rationale ?? ''}`));
-    }
-    if (plan.costSavingsPercent != null) {
-      sections.push(para(`Cost savings vs full investigation: ${plan.costSavingsPercent}%`));
-    }
-  }
-
-  // --- PHASE 5-8 ADVANCED ENGINE SECTIONS ---
-
-  let sectionNum = 7;
-
-  // Advanced Rock Mapping
-  if (result.advancedRockMapping) {
-    const arm = result.advancedRockMapping as any;
-    sections.push(heading(`${sectionNum}. Advanced Rock Mapping (8-Classifier Ensemble)`)); sectionNum++;
-    sections.push(para(`Primary: ${arm.rockLabel ?? arm.primaryRockType} | Secondary: ${arm.secondaryRockType || 'N/A'} | Confidence: ${((arm.confidence ?? 0) * 100).toFixed(0)}%`, true));
-    sections.push(para(`Geological Province: ${arm.geologicalProvince} | Tectonic: ${arm.tectonicSetting} | Age: ${arm.geologicalAge}`));
-    sections.push(para(`Aquifer Type: ${arm.aquiferType} | Productivity: ${arm.aquiferProductivity} | Formation: ${arm.formationName}`));
-    sections.push(para(`Source Agreement: ${((arm.sourceAgreement ?? 0) * 100).toFixed(0)}% | Model agreement (desktop concordance, not a validated hit-rate): ${((arm.estimatedAccuracy ?? 0) * 100).toFixed(0)}%`));
-    for (const c of (arm.classifiers || [])) {
-      sections.push(para(`  ? ${c.name}: ${c.available ? c.topPredictions?.[0]?.rockType : 'N/A'} (${((c.confidence ?? 0) * 100).toFixed(0)}%)`));
-    }
-  }
-
-  // Fracture AI
-  if (result.fractureAI) {
-    const fa = result.fractureAI as any;
-    sections.push(heading(`${sectionNum}. Fracture & Lineament Analysis`)); sectionNum++;
-    sections.push(para(`Lineaments: ${fa.totalLineamentCount} | Density: ${fa.lineamentDensity_km_per_km2} km/km² | Dominant: ${fa.dominantOrientation_deg}°`, true));
-    sections.push(para(`Score: ${fa.overallFractureScore}/100 | Permeability: ${fa.estimatedFracturePermeability} | Yield Multiplier: ${fa.yieldMultiplier}?`));
-    sections.push(para(`Drilling Azimuth: ${fa.preferredDrillingAzimuth_deg}° | Aquifer Likelihood: ${((fa.fractureAquiferLikelihood ?? 0) * 100).toFixed(0)}%`));
-    sections.push(para(`Network Density: ${fa.fractureConnectivity?.networkDensity} | Transmissivity: ${fa.fractureConnectivity?.effectiveTransmissivity_m2d} m²/day`));
-    sections.push(para(`Stress: SHmax ${fa.stressField?.maxHorizontalStress_deg}° | Critically Stressed: ${fa.stressField?.criticallyStressed ? 'Yes' : 'No'}`));
-  }
-
-  // Aquifer Classification
-  if (result.aquiferClassification) {
-    const ac = result.aquiferClassification as any;
-    sections.push(heading(`${sectionNum}. Bayesian Aquifer Classification`)); sectionNum++;
-    sections.push(para(`Primary: ${ac.primaryType?.type} (${((ac.primaryType?.probability ?? 0) * 100).toFixed(0)}%) | Secondary: ${ac.secondaryType?.type || 'N/A'}`, true));
-    sections.push(para(`Depth: ${ac.recommendedDepth_m?.[0]}-${ac.recommendedDepth_m?.[1]}m | Yield: ${ac.expectedYield_m3hr?.[0]}-${ac.expectedYield_m3hr?.[1]} m³/hr`));
-    sections.push(para(`Strategy: ${ac.drillingStrategy} | Recharge: ${ac.characteristics?.rechargeRate} | Depletion Risk: ${ac.characteristics?.depletionRisk}`));
-    sections.push(para(`Confidence: ${((ac.overallConfidence ?? 0) * 100).toFixed(0)}%`));
-  }
-
-  // Recharge Model
-  if (result.rechargeModel) {
-    const rm = result.rechargeModel as any;
-    sections.push(heading(`${sectionNum}. Dynamic Recharge Model`)); sectionNum++;
-    sections.push(para(`Precip: ${fmt(rm.avgAnnualPrecipitation_mm, 0)} mm/yr | ET: ${fmt(rm.avgAnnualET_mm, 0)} mm/yr | Recharge: ${fmt(rm.avgAnnualRecharge_mm, 0)} mm/yr`, true));
-    sections.push(para(`Recharge Fraction: ${((rm.rechargeFraction ?? 0) * 100).toFixed(1)}% | Sustainable Yield: ${fmt(rm.sustainableYield_m3hr, 1)} m³/hr`));
-    sections.push(para(`Depletion Risk: ${rm.depletionRisk} | Climate Risk: ${rm.climateRiskLevel} | 2050 Projection: ${fmt(rm.projectedRecharge2050_mm, 0)} mm/yr`));
-  }
-
-  // Drill Map
-  if (result.drillMap) {
-    const dm = result.drillMap as any;
-    sections.push(heading(`${sectionNum}. Probabilistic Drill Map`)); sectionNum++;
-    sections.push(para(`Max Probability: ${((dm.maxProbability ?? 0) * 100).toFixed(0)}% | Mean: ${((dm.meanProbability ?? 0) * 100).toFixed(0)}%`, true));
-    for (const pt of (dm.topDrillingPoints?.slice(0, 3) || [])) {
-      sections.push(para(`  ? Rank ${pt.rank}: ${pt.lat?.toFixed(5)}, ${pt.lon?.toFixed(5)} ? Score: ${pt.score} | ${pt.primaryReason}`));
-    }
-  }
-
-  // Calibration Correction
-  if (result.calibrationCorrection) {
-    const cc = result.calibrationCorrection as any;
-    sections.push(heading(`${sectionNum}. Real-Time Calibration`)); sectionNum++;
-    sections.push(para(`Corrected Depth: ${cc.correctedDepth_m}m | Yield: ${cc.correctedYield_m3hr} m³/hr | Probability: ${((cc.correctedProbability ?? 0) * 100).toFixed(0)}%`, true));
-    sections.push(para(`Calibration Sources: ${cc.calibrationSources} | Performance: ${cc.calibrationPerformance}`));
-    for (const cor of (cc.corrections || [])) {
-      sections.push(para(`  ? ${cor.parameter}: ${cor.originalValue} | ${cor.correctedValue} (${cor.reason})`));
-    }
-  }
-
-  // Risk Decision Engine
-  if (result.riskDecision) {
-    const rd = result.riskDecision as any;
-    sections.push(heading(`${sectionNum}. Risk Decision Engine`)); sectionNum++;
-    sections.push(para(`Success: ${(rd.successProbability ?? 0).toFixed(1)}% | Dry: ${(rd.dryBoreholeProbability ?? 0).toFixed(1)}% | Low Yield: ${(rd.lowYieldProbability ?? 0).toFixed(1)}%`, true));
-    sections.push(para(`Decision: ${rd.recommendation?.action} | Risk Level: ${rd.overallRiskLevel} | Score: ${rd.riskScore}/100`));
-    sections.push(para(`Expected Value: $${(rd.expectedValue_USD ?? 0).toLocaleString()} | ROI: ${((rd.roi ?? 0) * 100).toFixed(0)}% | Payback: ${rd.paybackMonths} months`));
-  }
-
-  // Confidence Weighting
-  if (result.confidenceWeighted) {
-    const cw = result.confidenceWeighted as any;
-    sections.push(heading(`${sectionNum}. Confidence-Weighted Predictions`)); sectionNum++;
-    sections.push(para(`Grade: ${cw.confidenceGrade} | ${cw.gradeDescription}`, true));
-    sections.push(para(`Adjusted: Depth ${cw.adjustedDepth_m}m | Yield ${cw.adjustedYield_m3hr} m³/hr | Probability ${((cw.adjustedProbability ?? 0) * 100).toFixed(0)}%`));
-    sections.push(para(`Quality: ${((cw.dataQualityScore ?? 0) * 100).toFixed(0)}% | Completeness: ${((cw.dataCompletenessScore ?? 0) * 100).toFixed(0)}% | Agreement: ${((cw.sourceAgreementScore ?? 0) * 100).toFixed(0)}%`));
-  }
-
-  // Micro-Siting
-  if (result.microSiting) {
-    const ms = result.microSiting as any;
-    const bp = ms.bestPoint || {};
-    sections.push(heading(`${sectionNum}. Micro-Siting Optimizer`)); sectionNum++;
-    sections.push(para(`Best Point: ${bp.latitude?.toFixed(6)}, ${bp.longitude?.toFixed(6)} | Score: ${bp.score}/100`, true));
-    sections.push(para(`GPS: ${ms.gpsCoordinates ? `${ms.gpsCoordinates.lat}, ${ms.gpsCoordinates.lon} ?${ms.gpsCoordinates.accuracy_m}m` : 'N/A'}`));
-    sections.push(para(`Confidence Radius: ${ms.confidenceRadius_m}m | Improvement: +${ms.improvementOverCenter_pct}% | Shift: ${ms.shiftDistance_m}m ${ms.shiftDirection}`));
-  }
-
-  // Geophysics Fusion
-  if (result.geophysicsFusion) {
-    const gf = result.geophysicsFusion as any;
-    sections.push(heading(`${sectionNum}. Multi-Geophysics Fusion`)); sectionNum++;
-    sections.push(para(`Methods: ${(gf.methodsUsed || []).join(', ')} | Agreement: ${((gf.methodAgreement ?? 0) * 100).toFixed(0)}%`, true));
-    sections.push(para(`Bedrock: ${gf.bedrockDepth_m}m | Water Table: ${gf.waterTableDepth_m}m | Drill Depth: ${gf.recommendedDrillingDepth_m}m`));
-  }
-
-  // Borehole Intelligence
-  if (result.boreholeIntelligence) {
-    const bi = result.boreholeIntelligence as any;
-    sections.push(heading(`${sectionNum}. Borehole Intelligence Database`)); sectionNum++;
-    sections.push(para(`Records: ${bi.totalRecords} | Avg Depth: ${bi.avgDepth_m}m | Avg Yield: ${bi.avgYield_m3hr} m³/hr | Success Rate: ${((bi.successRate ?? 0) * 100).toFixed(0)}%`, true));
-  }
-
-  // Pump Test
-  if (result.pumpTestAnalysis) {
-    const pt = result.pumpTestAnalysis as any;
-    sections.push(heading(`${sectionNum}. Pump Test Analysis`)); sectionNum++;
-    sections.push(para(`T: ${pt.transmissivity_m2day} m²/day | S: ${pt.storativity} | K: ${pt.hydraulicConductivity_m_day} m/day`, true));
-    sections.push(para(`Sustainable Yield: ${pt.sustainableYield_m3hr} m³/hr | Safe Yield: ${pt.safeYield_m3hr} m³/hr | Efficiency: ${pt.wellEfficiency_pct}%`));
-  }
-
-  // Lithology
-  if (result.lithologyAnalysis) {
-    const la = result.lithologyAnalysis as any;
-    sections.push(heading(`${sectionNum}. Lithology & Stratigraphy`)); sectionNum++;
-    sections.push(para(`Layers: ${la.totalLayers} | Depth: ${la.totalDepth_m}m | Dominant: ${la.dominantRockType} (${la.dominantRockPct}%)`, true));
-    sections.push(para(`Aquifer: ${la.primaryAquiferDepth_m}m depth ? ${la.primaryAquiferThickness_m}m thick | Yield: ${la.totalYield_m3hr} m³/hr`));
-    for (const w of (la.waterStrikes || [])) {
-      sections.push(para(`  ? Water Strike: ${w.depth_m}m ? ${w.yield_m3hr} m³/hr (${w.rockType})${w.isMajor ? ' ? MAJOR' : ''}`));
-    }
-  }
-
-  // ERT Intelligence Pipeline
-  if (result.ertInterpretation) {
-    const ei = result.ertInterpretation as any;
-    sections.push(heading(ertSectionTitle(result, `${sectionNum}. `))); sectionNum++;
-    sections.push(para(`Decision: ${ertDecisionLabel(result, ei)} | Pipeline v${ei.pipelineVersion || '2.0'} | Steps: ${ei.executedSteps?.length || 0}/10`, true));
-    if (ei.drillDecisionReasoning) sections.push(para(ei.drillDecisionReasoning));
-    if (ei.confidence) {
-      sections.push(para(`Confidence: Before ${((ei.confidence.beforeERT ?? 0) * 100).toFixed(0)}% ? After ${((ei.confidence.afterERT ?? 0) * 100).toFixed(0)}% (+${fmt(ei.confidence.improvementPercent)}%)`, true));
-    }
-    if (ei.depthOptimization) {
-      sections.push(para(`Depth: ${fmt(ei.depthOptimization.recommendedDrillingDepth_m)}m | Casing: ${fmt(ei.depthOptimization.casingDepth_m)}m | Screen: ${ei.depthOptimization.screenFrom_m}-${ei.depthOptimization.screenTo_m}m`));
-    }
-    if (ei.yieldEstimation) {
-      sections.push(para(`Yield: ${fmt(ei.yieldEstimation.estimatedYield_m3hr)} m³/hr (${ei.yieldEstimation.yieldCategory}) | Sustainable: ${fmt(ei.yieldEstimation.sustainableYield_m3hr)} m³/hr | T=${fmt(ei.yieldEstimation.transmissivity_m2day)} m²/day`));
-    }
-    if (ei.hybridInterpretation) {
-      sections.push(para(`Desktop model: Success ${((ei.hybridInterpretation.successProbability ?? 0) * 100).toFixed(0)}% | Type: ${(ei.hybridInterpretation.aquiferType || '').replace(/_/g, ' ')} | WQ: ${(ei.hybridInterpretation.waterQuality || '').toUpperCase()} | Risks: ${(ei.hybridInterpretation.riskFactors || []).join(', ') || 'None'}`));
-    }
-    if (ei.features) {
-      sections.push(para(`Features: Depth ${fmt(ei.features.depthToTarget_m)}m | Continuity ${((ei.features.overallContinuity ?? 0) * 100).toFixed(0)}% | Anomalies: ${ei.features.anomalyCount ?? 0} | Fractures: ${ei.features.fractureIndicators ?? 0}`));
-    }
-    if (ei.interpretation1D?.layers?.length) {
-      for (const l of ei.interpretation1D.layers) {
-        sections.push(para(`  ? ${fmt(l.depthTop_m)}-${fmt(l.depthBottom_m)}m: ${l.interpretation} (${fmt(l.resistivity_ohmm)} Om)${l.waterBearing ? ' ??' : ''}`));
-      }
-    }
-    if (ei.executiveSummary) sections.push(para(ei.executiveSummary));
-  }
-
-  // Multi-Source Agreement
-  if (result.multiSourceAgreement) {
-    const msa = result.multiSourceAgreement as any;
-    sections.push(heading(`${sectionNum}. Multi-Source Cross-Validation`)); sectionNum++;
-    sections.push(para(`Agreement: ${((msa.overallAgreementScore ?? 0) * 100).toFixed(0)}% | Sources: ${msa.sourceCount} | Confidence Gain: +${msa.confidenceGain_pct}%`, true));
-    sections.push(para(`Consensus: Depth ${msa.consensusDepth_m}m | Yield ${msa.consensusYield_m3hr} m³/hr | Probability ${((msa.consensusProbability ?? 0) * 100).toFixed(0)}%`));
-  }
-
-  // Temporal Drought
-  if (result.temporalDrought) {
-    const td = result.temporalDrought as any;
-    sections.push(heading(`${sectionNum}. Temporal Drought & Climate Resilience`)); sectionNum++;
-    sections.push(para(`SPI: ${fmt(td.currentSPI)} (${td.currentDroughtStatus}) | Mean Rainfall: ${fmt(td.meanAnnualRainfall_mm, 0)} mm/yr`, true));
-    sections.push(para(`Yield: ${td.sustainableYield_m3day} m³/day | During Drought: ${td.yieldDuringDrought_m3day} m³/day | Reliability: ${td.yieldReliability_pct}%`));
-  }
-
-  // Hydrochemistry
-  if (result.hydrochemPrediction) {
-    const hc = result.hydrochemPrediction as any;
-    sections.push(heading(`${sectionNum}. Hydrochemistry Prediction`)); sectionNum++;
-    sections.push(para(`Quality: ${hc.overallQuality} | Potability: ${hc.potabilityScore}/100 | Type: ${hc.waterType}`, true));
-    sections.push(para(`Treatment Cost: ${hc.treatmentCost} | Confidence: ${((hc.confidence ?? 0) * 100).toFixed(0)}%`));
-    for (const p of (hc.predictions?.filter((p: any) => p.exceedsGuideline) || [])) {
-      sections.push(para(`  ? ${p.parameter}: ${p.predictedValue} ${p.unit} (WHO: ${p.whoGuideline}) ? ${p.healthRisk}`, true));
-    }
-  }
-
-  // Data Quality
-  if (result.dataQualityScore) {
-    const dq = result.dataQualityScore as any;
-    sections.push(heading(`${sectionNum}. Data Quality & Transparency`)); sectionNum++;
-    sections.push(para(`Bankability: ${dq.bankabilityStatus} | Score: ${dq.overallQualityScore}/100 | Grade: ${dq.reliabilityGrade}`, true));
-    sections.push(para(`Completeness: ${dq.dataCompleteness_pct}% | Satellite: ${dq.satelliteData_pct}% | Field: ${dq.fieldMeasurement_pct}% | Lab: ${dq.laboratoryData_pct}%`));
-  }
-
-  // Drilling Prediction
-  if (result.drillingPrediction) {
-    const dp = result.drillingPrediction as any;
-    sections.push(heading(`${sectionNum}. Drilling Success Prediction`)); sectionNum++;
-    sections.push(para(`Success: ${dp.successProbability}% | Depth: ${dp.predictedDepth_m}m | Yield: ${dp.predictedYield_m3h} m³/hr`, true));
-    sections.push(para(`Dry Risk: ${dp.dryHoleRisk_pct}% | Cost: $${(dp.expectedDrillingCost_usd ?? 0).toLocaleString()} | ROI: ${dp.roi_pct}% | Payback: ${dp.paybackPeriod_years}yr`));
-    sections.push(para(`Dominant Factor: ${dp.dominantFactor} | Confidence: ${(dp.modelConfidence ?? 0).toFixed(0)}%`));
-  }
-
-  // Regional Model
-  if (result.regionalModel) {
-    const rl = result.regionalModel as any;
-    const am = rl.activeModel;
-    sections.push(heading(`${sectionNum}. Regional Learning Model`)); sectionNum++;
-    sections.push(para(`Region: ${am?.regionName || 'Global'} | Province: ${am?.geologicalProvince || 'N/A'} | Climate: ${am?.climateZone || 'N/A'}`, true));
-    sections.push(para(`Corrected: Depth ${rl.correctedDepth_m}m | Yield ${rl.correctedYield_m3h} m³/hr | Probability ${(rl.correctedProbability ?? 0).toFixed(0)}%`));
-    sections.push(para(`Seasonal Adjustment: ${((rl.seasonalAdjustment ?? 0) * 100).toFixed(0)}% | Regional Confidence: ${(rl.regionalConfidence ?? 0).toFixed(0)}%`));
-  }
+  body.push(heading('Limits of this report'));
+  body.push(para('A desktop pre-screen from public data and nearby records. It does not replace the hydrogeological survey the law requires before drilling, a pump test, or a laboratory test of the water. Figures marked as estimates are not measurements.'));
 
   doc = new Document({
     sections: [{
       properties: {},
-      children: [
-        ...sections.slice(0, 4), // Title + date
-        ...sections.slice(4, 6), // Heading
-        summaryTable,
-        new Paragraph({ children: [] }),
-        ...sections.slice(6, 8), // Water Quality heading
-        wqTable,
-        new Paragraph({ children: [] }),
-        ...sections.slice(8),    // Risk + rest
-      ],
+      children: [...sections, ...body],
     }],
   });
 
@@ -11441,292 +10629,19 @@ export function generateCSVReport(result: AnalysisResult): void {
   // --- VERIFICATION GATE ---
   enforceVerificationGate(result);
 
+  // The governing figures, as the page and the PDF summary (2026-10-30 audit:
+  // this export carried hidden sub-models and "undefined" values).
   const rows: string[][] = [
-    ['EMERSON EIMS AquaScan Pro ? Borehole Analysis Data Export'],
-    ['Generated', new Date().toLocaleString()],
-    ['Location', getLocationString(result)],
-    ['Coordinates', getCoords(result)],
+    ['EMERSON EIMS AquaScan Pro: borehole pre-screen data'],
+    ['Generated', new Date().toLocaleString('en-GB')],
     [''],
-    ['PARAMETER', 'VALUE', 'UNIT', 'NOTES'],
-    ['Success Probability', pct(result.probability), '', ''],
-    ['Recommended Depth', fmt(result.recommendedDepth, 0), 'meters', ''],
-    ['Estimated Yield', fmt(result.estimatedYield, 1), 'm³/hour', ''],
-    ['Overall Risk', pct(result.risk?.overallRisk), '', result.risk?.viability || ''],
-    ['Geological Risk', pct(result.risk?.categories?.geological), '', ''],
-    ['Contamination Risk', pct(result.risk?.categories?.contamination), '', ''],
-    ['Depth Risk', pct(result.risk?.categories?.depth), '', ''],
-    ['Financial Risk', pct(result.risk?.categories?.financial), '', ''],
-    ['Technical Risk', pct(result.risk?.categories?.technical), '', ''],
-    [''],
-    ['SOIL ANALYSIS'],
-    ['Soil Type', soilLabel(result), '', ''],
-    ['Porosity', (result.soil as any)?.realSoilGrids ? fmt(result.soil?.porosity) : 'not measured', '', ''],
-    ['Permeability', fmt(result.soil?.permeability), '', ''],
-    ['pH', fmt(result.soil?.pH), '', ''],
-    ['Moisture', fmt(result.soil?.moistureContent), '', ''],
-    [''],
-    ['WATER QUALITY'],
-    ['pH', fmt(result.waterQuality?.pH), '', ''],
-    ['TDS', fmt(result.waterQuality?.tds, 0), 'mg/L', ''],
-    ['Hardness', fmt(result.waterQuality?.hardness, 0), 'mg/L', ''],
-    ['Fluoride', fmt(result.waterQuality?.fluoride), 'mg/L', ''],
-    ['Iron', fmt(result.waterQuality?.iron, 3), 'mg/L', ''],
-    ['Arsenic', fmt(result.waterQuality?.arsenic, 4), 'mg/L', ''],
-    ['Nitrate', fmt(result.waterQuality?.nitrate, 1), 'mg/L', ''],
-    ['Potable', result.waterQuality?.isPotable ? 'YES' : 'NO', '', ''],
-    ['Score', fmt((result.waterQuality?.score ?? 0) * 100, 0), '/100', ''],
   ];
-
-  // Historical
-  if (result.historicalData?.weather?.annualPrecipitation?.length) {
+  for (const sec of governingSummary(result, getLocationString(result))) {
+    rows.push([sec.title.toUpperCase()]);
+    rows.push(['Item', 'Value', 'Basis']);
+    for (const row of sec.rows) rows.push(row);
+    for (const note of sec.notes ?? []) rows.push(['Note', note]);
     rows.push(['']);
-    rows.push(['HISTORICAL WEATHER (20 YEARS)']);
-    rows.push(['Year', 'Precipitation (mm)', 'Temperature (°C)']);
-    for (let i = 0; i < result.historicalData.weather.annualPrecipitation.length; i++) {
-      const p = result.historicalData.weather.annualPrecipitation[i];
-      const t = result.historicalData.weather.annualTemperature?.[i];
-      rows.push([String(p.year), fmt(p.total, 0), t ? fmt(t.avg, 1) : '']);
-    }
-  }
-
-  // --- PHASE 5-8 ADVANCED ENGINE DATA ---
-
-  if (result.advancedRockMapping) {
-    const arm = result.advancedRockMapping as any;
-    rows.push([''], ['ADVANCED ROCK MAPPING']);
-    rows.push(['Primary Rock', arm.rockLabel ?? arm.primaryRockType, '', '']);
-    rows.push(['Secondary Rock', arm.secondaryRockType || 'N/A', '', '']);
-    rows.push(['Confidence', pct(arm.confidence), '', '']);
-    rows.push(['Model Agreement (desktop)', pct(arm.estimatedAccuracy), '', '']);
-    rows.push(['Province', arm.geologicalProvince, '', '']);
-    rows.push(['Tectonic Setting', arm.tectonicSetting, '', '']);
-    rows.push(['Aquifer Type', arm.aquiferType, '', '']);
-    rows.push(['Aquifer Productivity', arm.aquiferProductivity, '', '']);
-  }
-
-  if (result.fractureAI) {
-    const fa = result.fractureAI as any;
-    rows.push([''], ['FRACTURE & LINEAMENT ANALYSIS']);
-    rows.push(['Total Lineaments', String(fa.totalLineamentCount), '', '']);
-    rows.push(['Density', String(fa.lineamentDensity_km_per_km2), 'km/km²', '']);
-    rows.push(['Dominant Orientation', String(fa.dominantOrientation_deg), 'degrees', '']);
-    rows.push(['Fracture Score', String(fa.overallFractureScore), '/100', '']);
-    rows.push(['Yield Multiplier', `${fa.yieldMultiplier}?`, '', '']);
-    rows.push(['Drilling Azimuth', String(fa.preferredDrillingAzimuth_deg), 'degrees', '']);
-    rows.push(['Fracture Aquifer Likelihood', pct(fa.fractureAquiferLikelihood), '', '']);
-  }
-
-  if (result.aquiferClassification) {
-    const ac = result.aquiferClassification as any;
-    rows.push([''], ['AQUIFER CLASSIFICATION']);
-    rows.push(['Primary Type', ac.primaryType?.type, '', pct(ac.primaryType?.probability)]);
-    rows.push(['Depth Range', `${ac.recommendedDepth_m?.[0]}-${ac.recommendedDepth_m?.[1]}`, 'meters', '']);
-    rows.push(['Yield Range', `${ac.expectedYield_m3hr?.[0]}-${ac.expectedYield_m3hr?.[1]}`, 'm³/hr', '']);
-    rows.push(['Strategy', ac.drillingStrategy, '', '']);
-    rows.push(['Confidence', pct(ac.overallConfidence), '', '']);
-  }
-
-  if (result.rechargeModel) {
-    const rm = result.rechargeModel as any;
-    rows.push([''], ['RECHARGE MODEL']);
-    rows.push(['Avg Precipitation', fmt(rm.avgAnnualPrecipitation_mm, 0), 'mm/yr', '']);
-    rows.push(['Avg ET', fmt(rm.avgAnnualET_mm, 0), 'mm/yr', '']);
-    rows.push(['Avg Recharge', fmt(rm.avgAnnualRecharge_mm, 0), 'mm/yr', '']);
-    rows.push(['Recharge Fraction', `${((rm.rechargeFraction ?? 0) * 100).toFixed(1)}`, '%', '']);
-    rows.push(['Sustainable Yield', fmt(rm.sustainableYield_m3hr, 1), 'm³/hr', '']);
-    rows.push(['Depletion Risk', rm.depletionRisk, '', '']);
-    rows.push(['Climate Risk', rm.climateRiskLevel, '', '']);
-  }
-
-  if (result.riskDecision) {
-    const rd = result.riskDecision as any;
-    rows.push([''], ['RISK DECISION ENGINE']);
-    rows.push(['Success Probability', `${(rd.successProbability ?? 0).toFixed(1)}%`, '', '']);
-    rows.push(['Dry Borehole Risk', `${(rd.dryBoreholeProbability ?? 0).toFixed(1)}%`, '', '']);
-    rows.push(['Low Yield Risk', `${(rd.lowYieldProbability ?? 0).toFixed(1)}%`, '', '']);
-    rows.push(['Risk Level', rd.overallRiskLevel, '', '']);
-    rows.push(['Decision', rd.recommendation?.action, '', '']);
-    rows.push(['Expected Value', `$${(rd.expectedValue_USD ?? 0).toLocaleString()}`, 'USD', '']);
-    rows.push(['ROI', pct(rd.roi), '', '']);
-  }
-
-  if (result.multiSourceAgreement) {
-    const msa = result.multiSourceAgreement as any;
-    rows.push([''], ['MULTI-SOURCE AGREEMENT']);
-    rows.push(['Agreement Score', pct(msa.overallAgreementScore), '', '']);
-    rows.push(['Source Count', String(msa.sourceCount), '', '']);
-    rows.push(['Consensus Depth', fmt(msa.consensusDepth_m, 0), 'meters', '']);
-    rows.push(['Consensus Yield', fmt(msa.consensusYield_m3hr, 1), 'm³/hr', '']);
-    rows.push(['Consensus Probability', pct(msa.consensusProbability), '', '']);
-    rows.push(['Conflict Severity', msa.conflictSeverity, '', '']);
-  }
-
-  if (result.temporalDrought) {
-    const td = result.temporalDrought as any;
-    rows.push([''], ['TEMPORAL DROUGHT / SPI']);
-    rows.push(['Years Analyzed', String(td.yearsAnalyzed), '', '']);
-    rows.push(['Mean Rainfall', fmt(td.meanAnnualRainfall_mm, 0), 'mm/yr', '']);
-    rows.push(['Current SPI', fmt(td.currentSPI), '', '']);
-    rows.push(['Drought Status', td.currentDroughtStatus, '', '']);
-    rows.push(['Sustainable Yield', fmt(td.sustainableYield_m3day), 'm³/day', '']);
-    rows.push(['Yield During Drought', fmt(td.yieldDuringDrought_m3day), 'm³/day', '']);
-    rows.push(['Yield Reliability', `${td.yieldReliability_pct}`, '%', '']);
-  }
-
-  if (result.hydrochemPrediction) {
-    const hc = result.hydrochemPrediction as any;
-    rows.push([''], ['HYDROCHEMISTRY PREDICTION']);
-    rows.push(['Overall Quality', hc.overallQuality, '', '']);
-    rows.push(['Potability Score', `${hc.potabilityScore}`, '/100', '']);
-    rows.push(['Water Type', hc.waterType, '', '']);
-    rows.push(['Treatment Cost', hc.treatmentCost, '', '']);
-    for (const p of (hc.predictions || [])) {
-      rows.push([`  ${p.parameter}`, String(p.predictedValue), p.unit, p.exceedsGuideline ? 'EXCEEDS WHO' : 'OK']);
-    }
-  }
-
-  if (result.dataQualityScore) {
-    const dq = result.dataQualityScore as any;
-    rows.push([''], ['DATA QUALITY SCORING']);
-    rows.push(['Bankability', dq.bankabilityStatus, '', '']);
-    rows.push(['Overall Score', `${dq.overallQualityScore}`, '/100', '']);
-    rows.push(['Completeness', `${dq.dataCompleteness_pct}`, '%', '']);
-    rows.push(['Reliability', dq.reliabilityGrade, '', '']);
-    rows.push(['Satellite Data', `${dq.satelliteData_pct}`, '%', '']);
-    rows.push(['Field Measurement', `${dq.fieldMeasurement_pct}`, '%', '']);
-    rows.push(['Lab Data', `${dq.laboratoryData_pct}`, '%', '']);
-  }
-
-  if (result.drillingPrediction) {
-    const dp = result.drillingPrediction as any;
-    rows.push([''], ['DRILLING SUCCESS MODEL']);
-    rows.push(['Success Probability', `${dp.successProbability}`, '%', '']);
-    rows.push(['Predicted Depth', `${dp.predictedDepth_m}`, 'meters', '']);
-    rows.push(['Predicted Yield', `${dp.predictedYield_m3h}`, 'm³/hr', '']);
-    rows.push(['Dry Hole Risk', `${dp.dryHoleRisk_pct}`, '%', '']);
-    rows.push(['Expected Cost', `$${(dp.expectedDrillingCost_usd ?? 0).toLocaleString()}`, 'USD', '']);
-    rows.push(['ROI', `${dp.roi_pct}`, '%', '']);
-    rows.push(['Dominant Factor', dp.dominantFactor, '', '']);
-  }
-
-  if (result.regionalModel) {
-    const rl = result.regionalModel as any;
-    rows.push([''], ['REGIONAL LEARNING MODEL']);
-    rows.push(['Region', rl.activeModel?.regionName || 'Global', '', '']);
-    rows.push(['Corrected Depth', `${rl.correctedDepth_m}`, 'meters', '']);
-    rows.push(['Corrected Yield', `${rl.correctedYield_m3h}`, 'm³/hr', '']);
-    rows.push(['Corrected Probability', `${(rl.correctedProbability ?? 0).toFixed(0)}%`, '', '']);
-    rows.push(['Seasonal Adjustment', pct(rl.seasonalAdjustment), '', '']);
-    rows.push(['Regional Confidence', `${(rl.regionalConfidence ?? 0).toFixed(0)}%`, '', '']);
-  }
-
-  if (result.microSiting) {
-    const ms = result.microSiting as any;
-    rows.push([''], ['MICRO-SITING']);
-    rows.push(['Best Lat', ms.bestPoint?.latitude?.toFixed(6), '', '']);
-    rows.push(['Best Lon', ms.bestPoint?.longitude?.toFixed(6), '', '']);
-    rows.push(['Score', `${ms.bestPoint?.score}`, '/100', '']);
-    rows.push(['Confidence Radius', `${ms.confidenceRadius_m}`, 'meters', '']);
-    rows.push(['Improvement', `+${ms.improvementOverCenter_pct}`, '%', '']);
-  }
-
-  if (result.geophysicsFusion) {
-    const gf = result.geophysicsFusion as any;
-    rows.push([''], ['GEOPHYSICS FUSION']);
-    rows.push(['Methods', (gf.methodsUsed || []).join(', '), '', '']);
-    rows.push(['Agreement', pct(gf.methodAgreement), '', '']);
-    rows.push(['Bedrock Depth', `${gf.bedrockDepth_m}`, 'meters', '']);
-    rows.push(['Water Table', `${gf.waterTableDepth_m}`, 'meters', 'assumed ~30% of drilling depth, not measured']);
-    rows.push(['Drill Depth', `${gf.recommendedDrillingDepth_m}`, 'meters', '']);
-  }
-
-  if (result.pumpTestAnalysis) {
-    const pt = result.pumpTestAnalysis as any;
-    rows.push([''], ['PUMP TEST ANALYSIS']);
-    rows.push(['Transmissivity', `${pt.transmissivity_m2day}`, 'm²/day', '']);
-    rows.push(['Storativity', `${pt.storativity}`, '', '']);
-    rows.push(['Hydraulic Conductivity', `${pt.hydraulicConductivity_m_day}`, 'm/day', '']);
-    rows.push(['Sustainable Yield', `${pt.sustainableYield_m3hr}`, 'm³/hr', '']);
-  }
-
-  if (result.lithologyAnalysis) {
-    const la = result.lithologyAnalysis as any;
-    rows.push([''], ['LITHOLOGY']);
-    rows.push(['Total Layers', `${la.totalLayers}`, '', '']);
-    rows.push(['Total Depth', `${la.totalDepth_m}`, 'meters', '']);
-    rows.push(['Dominant Rock', la.dominantRockType, '', `${la.dominantRockPct}%`]);
-    rows.push(['Aquifer Depth', `${la.primaryAquiferDepth_m}`, 'meters', '']);
-    rows.push(['Total Yield', `${la.totalYield_m3hr}`, 'm³/hr', '']);
-  }
-
-  if (result.ertInterpretation) {
-    const ei = result.ertInterpretation as any;
-    rows.push([''], [ertIsFieldData(result) ? 'ERT INTERPRETATION (FIELD DATA)' : 'ERT SURVEY - PROPOSED DESIGN (MODELLED, NOT FIELD DATA)']);
-    rows.push(['Decision', ertDecisionLabel(result, ei), '', ei.drillDecisionReasoning || '']);
-    rows.push(['Pipeline Version', `v${ei.pipelineVersion || '2.0'}`, '', '']);
-    rows.push(['Steps Executed', `${ei.executedSteps?.length || 0}`, '/10', '']);
-    if (ei.confidence) {
-      rows.push(['Confidence Before ERT', `${((ei.confidence.beforeERT ?? 0) * 100).toFixed(0)}`, '%', '']);
-      rows.push(['Confidence After ERT', `${((ei.confidence.afterERT ?? 0) * 100).toFixed(0)}`, '%', `+${fmt(ei.confidence.improvementPercent)}%`]);
-    }
-    if (ei.depthOptimization) {
-      rows.push(['Recommended Depth', `${fmt(ei.depthOptimization.recommendedDrillingDepth_m)}`, 'meters', '']);
-      rows.push(['Casing Depth', `${fmt(ei.depthOptimization.casingDepth_m)}`, 'meters', '']);
-      rows.push(['Screen Interval', `${ei.depthOptimization.screenFrom_m}-${ei.depthOptimization.screenTo_m}`, 'meters', '']);
-    }
-    if (ei.yieldEstimation) {
-      rows.push(['Estimated Yield', `${fmt(ei.yieldEstimation.estimatedYield_m3hr)}`, 'm³/hr', ei.yieldEstimation.yieldCategory || '']);
-      rows.push(['Sustainable Yield', `${fmt(ei.yieldEstimation.sustainableYield_m3hr)}`, 'm³/hr', '']);
-      rows.push(['Transmissivity', `${fmt(ei.yieldEstimation.transmissivity_m2day)}`, 'm²/day', '']);
-    }
-    if (ei.hybridInterpretation) {
-      rows.push(['Success Probability', `${((ei.hybridInterpretation.successProbability ?? 0) * 100).toFixed(0)}`, '%', '']);
-      rows.push(['Aquifer Type', (ei.hybridInterpretation.aquiferType || '').replace(/_/g, ' '), '', '']);
-      rows.push(['Water Quality', (ei.hybridInterpretation.waterQuality || '').toUpperCase(), '', '']);
-    }
-    if (ei.features) {
-      rows.push(['Target Depth', `${fmt(ei.features.depthToTarget_m)}`, 'meters', '']);
-      rows.push(['Continuity', `${((ei.features.overallContinuity ?? 0) * 100).toFixed(0)}`, '%', '']);
-      rows.push(['Anomalies', `${ei.features.anomalyCount ?? 0}`, '', '']);
-    }
-  }
-
-  if (result.confidenceWeighted) {
-    const cw = result.confidenceWeighted as any;
-    rows.push([''], ['CONFIDENCE WEIGHTING']);
-    rows.push(['Overall Confidence', pct(cw.overallConfidence), '', '']);
-    rows.push(['Grade', cw.confidenceGrade, '', cw.gradeDescription]);
-    rows.push(['Adjusted Depth', `${cw.adjustedDepth_m}`, 'meters', '']);
-    rows.push(['Adjusted Yield', `${cw.adjustedYield_m3hr}`, 'm³/hr', '']);
-    rows.push(['Adjusted Probability', pct(cw.adjustedProbability), '', '']);
-  }
-
-  if (result.boreholeIntelligence) {
-    const bi = result.boreholeIntelligence as any;
-    rows.push([''], ['BOREHOLE INTELLIGENCE DB']);
-    rows.push(['Total Records', `${bi.totalRecords}`, '', '']);
-    rows.push(['Avg Depth', `${bi.avgDepth_m}`, 'meters', '']);
-    rows.push(['Avg Yield', `${bi.avgYield_m3hr}`, 'm³/hr', '']);
-    rows.push(['Success Rate', pct(bi.successRate), '', '']);
-  }
-
-  if (result.calibrationCorrection) {
-    const cc = result.calibrationCorrection as any;
-    rows.push([''], ['CALIBRATION CORRECTION']);
-    rows.push(['Corrected Depth', `${cc.correctedDepth_m}`, 'meters', '']);
-    rows.push(['Corrected Yield', `${cc.correctedYield_m3hr}`, 'm³/hr', '']);
-    rows.push(['Corrected Probability', pct(cc.correctedProbability), '', '']);
-    rows.push(['Sources', `${cc.calibrationSources}`, '', '']);
-  }
-
-  if (result.drillMap) {
-    const dm = result.drillMap as any;
-    rows.push([''], ['PROBABILISTIC DRILL MAP']);
-    rows.push(['Max Probability', pct(dm.maxProbability), '', '']);
-    rows.push(['Mean Probability', pct(dm.meanProbability), '', '']);
-    for (const pt of (dm.topDrillingPoints?.slice(0, 3) || [])) {
-      rows.push([`  Point ${pt.rank}`, `${pt.lat?.toFixed(5)}, ${pt.lon?.toFixed(5)}`, `Score: ${pt.score}`, pt.primaryReason]);
-    }
   }
 
   const csvContent = rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -11748,7 +10663,7 @@ export function generateJSONReport(result: AnalysisResult): void {
 
   const exportData = {
     report: {
-      title: 'EMERSON EIMS AquaScan Pro ? Borehole Pre-Screen',
+      title: 'EMERSON EIMS AquaScan Pro - Borehole Pre-Screen',
       generated: new Date().toISOString(),
       location: getLocationString(result),
       coordinates: getCoords(result),
@@ -11825,7 +10740,7 @@ export async function generateComparisonReport(sites: Array<{ name: string; resu
     doc.setTextColor(255, 255, 255);
     doc.text(`${i + 1}`, margin + 4, y + 6, { align: 'center' });
     doc.setTextColor(30, 30, 30);
-    doc.text(`${s.name} ? Score: ${s.score}/100`, margin + 12, y + 6);
+    doc.text(`${s.name} - Score: ${s.score}/100`, margin + 12, y + 6);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(100, 100, 100);

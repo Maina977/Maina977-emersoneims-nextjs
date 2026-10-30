@@ -11,7 +11,7 @@ import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 
 // VERIFIED COMPANY STATISTICS - Real achievements only
 const VERIFIED_STATS = {
-  projectsCompleted: 500,      // Actual completed projects since 2012
+  projectsCompleted: 500,      // Actual completed projects since 2011
   yearsExperience: 12,         // Years in business
   countiesServed: 47,          // All Kenya counties
   generatorBrands: 12,         // Brands we service

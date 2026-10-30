@@ -54,3 +54,28 @@ describe('honest counts and empty searches', () => {
     expect(searchIndex({ query: '' }).total).toBe(0);
   });
 });
+
+describe('re-audit (2026-10-30, second pass)', () => {
+  it('low oil pressure carries the stop-the-engine warning', () => {
+    expect(diagnoseFromSymptoms({ symptoms: ['low oil pressure'] }).safety?.join(' ')).toMatch(/Stop the engine/);
+  });
+  it('"generator voltage low": no mains or supply alarms in the top eight', () => {
+    const t = diagnoseFromSymptoms({ symptoms: ['generator voltage low'], topN: 8 }).ranked.map((r) => r.title).join(' | ');
+    expect(t).not.toMatch(/mains|supply|sensor/i);
+  });
+  it('every visual checklist phrase returns a guide or a safety line', () => {
+    for (const q of ['oil leak coolant leak fuel leak', 'black smoke white smoke blue smoke', 'battery not charging corrosion', 'fan belt slipping', 'burnt wiring harness', 'overheating', 'coolant hose leak']) {
+      const d = diagnoseFromSymptoms({ symptoms: [q] });
+      expect(d.guides.length + (d.safety?.length ?? 0), q).toBeGreaterThan(0);
+    }
+  });
+  it('smoke shows no unrelated alarms', () => {
+    const d = diagnoseFromSymptoms({ symptoms: ['black smoke'] });
+    for (const r of d.ranked) expect(`${r.title} ${r.description}`).toMatch(/smoke|exhaust|air filter|intake|boost|turbo/i);
+  });
+  it('no price left in Interactive Troubleshoot', async () => {
+    const { readFileSync } = await import('fs');
+    const src = readFileSync('components/generator-oracle/InteractiveTroubleshooter.tsx', 'utf8');
+    expect(src).not.toMatch(/\| *Price *\||KES \d|\d{2},\d{3} KES/);
+  });
+});

@@ -116,8 +116,13 @@ export interface RemoteSensingResult {
  */
 export async function fetchSoilGrids(lat: number, lon: number): Promise<SoilGridsData | null> {
   try {
-    const properties = ['clay', 'sand', 'silt', 'phh2o', 'ocd', 'bdod', 'cec', 'nitrogen'];
-    const url = `https://rest.isric.org/soilgrids/v2.0/properties/query?lon=${lon}&lat=${lat}&property=${properties.join('&property=')}&depth=0-30cm&value=mean`;
+    const properties = ['clay', 'sand', 'silt', 'phh2o', 'soc', 'bdod', 'cec', 'nitrogen'];
+    // SoilGrids serves standard depths only (0-5, 5-15, 15-30 cm); "0-30cm" is
+    // not one, so every value came back undefined (2026-10-30 audit). The 0-30 cm
+    // figure is the thickness-weighted mean of the three, in SoilGrids' mapped
+    // units (clay/sand/silt g/kg, pH x10, bulk density cg/cm³).
+    const SG_DEPTHS: [string, number][] = [['0-5cm', 5], ['5-15cm', 10], ['15-30cm', 15]];
+    const url = `https://rest.isric.org/soilgrids/v2.0/properties/query?lon=${lon}&lat=${lat}&property=${properties.join('&property=')}${SG_DEPTHS.map(([d]) => `&depth=${d}`).join('')}&value=mean`;
 
     const res = await fetch(url, {
       headers: { 'Accept': 'application/json' },
@@ -134,9 +139,15 @@ export async function fetchSoilGrids(lat: number, lon: number): Promise<SoilGrid
 
     const getValue = (propName: string): number | undefined => {
       const layer = layers.find((l: any) => l.name === propName);
-      const depth = layer?.depths?.find((d: any) => d.label === '0-30cm');
-      return depth?.values?.mean;
+      let sum = 0, w = 0;
+      for (const [label, thick] of SG_DEPTHS) {
+        const v = layer?.depths?.find((d: any) => d.label === label)?.values?.mean;
+        if (typeof v === 'number' && Number.isFinite(v)) { sum += v * thick; w += thick; }
+      }
+      return w > 0 ? Math.round(sum / w) : undefined;
     };
+
+    if (getValue('clay') === undefined && getValue('sand') === undefined) return null; // no soil mapped here (water, rock, urban mask)
 
     return {
       available: true,
@@ -144,7 +155,7 @@ export async function fetchSoilGrids(lat: number, lon: number): Promise<SoilGrid
       sand: getValue('sand'),
       silt: getValue('silt'),
       phH2O: getValue('phh2o'),
-      organicCarbon: getValue('ocd'),
+      organicCarbon: getValue('soc'),
       bulkDensity: getValue('bdod'),
       cec: getValue('cec'),
       nitrogen: getValue('nitrogen'),

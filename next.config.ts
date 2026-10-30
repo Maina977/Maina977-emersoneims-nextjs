@@ -199,7 +199,7 @@ const nextConfig: NextConfig = {
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
       img-src 'self' blob: data: https: http:;
       font-src 'self' https://fonts.gstatic.com data: https://cdnjs.cloudflare.com;
-      connect-src 'self' https://www.google-analytics.com https://vitals.vercel-insights.com https://*.vercel.app wss://*.vercel.app http://127.0.0.1:5000 http://localhost:5000 ws://127.0.0.1:5000 ws://localhost:5000 https://image.pollinations.ai https://tfhub.dev https://www.kaggle.com https://storage.googleapis.com https://nominatim.openstreetmap.org https://api.bigdatacloud.net https://api.open-elevation.com https://api.open-meteo.com https://archive-api.open-meteo.com https://climate-api.open-meteo.com https://flood-api.open-meteo.com https://power.larc.nasa.gov https://rest.isric.org https://maps.isric.org https://modis.ornl.gov https://waterservices.usgs.gov https://overpass-api.de https://data.waterpointdata.org https://api.mwater.co https://macrostrat.org https://gibs.earthdata.nasa.gov https://tile.openstreetmap.org https://tile.opentopomap.org https://global-surface-water.appspot.com https://ggis.un-igrac.org https://gws-access.jasmin.ac.uk https://api.daac.asf.alaska.edu https://mrdata.usgs.gov https://map.bgs.ac.uk https://ogc.bgs.ac.uk https://gemstat.bafg.de https://egms.land.copernicus.eu https://onegeology-geonetwork.brgm.fr https://www.dws.gov.za;
+      connect-src 'self' https://www.google-analytics.com https://vitals.vercel-insights.com https://*.vercel.app wss://*.vercel.app http://127.0.0.1:5000 http://localhost:5000 ws://127.0.0.1:5000 ws://localhost:5000 https://image.pollinations.ai https://tfhub.dev https://www.kaggle.com https://storage.googleapis.com https://nominatim.openstreetmap.org https://api.bigdatacloud.net https://api.open-elevation.com https://api.open-meteo.com https://archive-api.open-meteo.com https://climate-api.open-meteo.com https://flood-api.open-meteo.com https://power.larc.nasa.gov https://rest.isric.org https://graphql.isric.org https://maps.isric.org https://modis.ornl.gov https://waterservices.usgs.gov https://overpass-api.de https://data.waterpointdata.org https://api.mwater.co https://macrostrat.org https://gibs.earthdata.nasa.gov https://tile.openstreetmap.org https://tile.opentopomap.org https://global-surface-water.appspot.com https://ggis.un-igrac.org https://gws-access.jasmin.ac.uk https://api.daac.asf.alaska.edu https://mrdata.usgs.gov https://map.bgs.ac.uk https://ogc.bgs.ac.uk https://gemstat.bafg.de https://egms.land.copernicus.eu https://onegeology-geonetwork.brgm.fr https://www.dws.gov.za;
       media-src 'self' blob: https:;
       object-src 'none';
       base-uri 'self';
@@ -422,7 +422,7 @@ const nextConfig: NextConfig = {
       // NOTE: bump the date suffix here whenever a new wizard version is deployed
       // (see memory: project_building_suite_pro_wizard_sync.md).
       {
-        source: '/eims-building-suite-v20261020.html',
+        source: '/eims-building-suite-v20261030.html',
         headers: [
           {
             key: 'Cache-Control',
@@ -546,12 +546,15 @@ const nextConfig: NextConfig = {
       { source: '/faults/engine/:brand', destination: '/faults', permanent: true },
       // Building Suite file renamed 2026-10-19 and again 2026-10-20: each old name was served
       // "immutable" for a year, so the fixed suite needed a new URL.
-      { source: '/eims-building-suite-v20260503.html', destination: '/eims-building-suite-v20261020.html', permanent: true },
-      { source: '/eims-building-suite-v20261019.html', destination: '/eims-building-suite-v20261020.html', permanent: true },
+      // ... and on 2026-10-30 (audit fixes: print, labels, inputs).
+      { source: '/eims-building-suite-v20260503.html', destination: '/eims-building-suite-v20261030.html', permanent: true },
+      { source: '/eims-building-suite-v20261019.html', destination: '/eims-building-suite-v20261030.html', permanent: true },
+      { source: '/eims-building-suite-v20261020.html', destination: '/eims-building-suite-v20261030.html', permanent: true },
       // Vercel serves public .html files at their clean path too (.html -> 308 -> no
       // extension), so the old clean address needs its own redirect.
-      { source: '/eims-building-suite-v20260503', destination: '/eims-building-suite-v20261020', permanent: true },
-      { source: '/eims-building-suite-v20261019', destination: '/eims-building-suite-v20261020', permanent: true },
+      { source: '/eims-building-suite-v20260503', destination: '/eims-building-suite-v20261030', permanent: true },
+      { source: '/eims-building-suite-v20261019', destination: '/eims-building-suite-v20261030', permanent: true },
+      { source: '/eims-building-suite-v20261020', destination: '/eims-building-suite-v20261030', permanent: true },
       // Solar duplicates: -tools crashed on every real coordinate (float index
       // into an array) and invented roof analysis from a coordinate hash;
       // -futuristic was a static mock with fixed "28% ROI / 3.5 years".

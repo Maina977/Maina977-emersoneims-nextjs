@@ -96,7 +96,7 @@ export class RiskAnalyzer {
     const sg = data.soilGrids!;
     const clay_pct = (sg.clay ?? 200) / 10;
     const sand_pct = (sg.sand ?? 400) / 10;
-    const bd = (sg.bulkDensity ?? 1400) / 100;
+    const bd = (sg.bulkDensity ?? 140) / 100;
     const ph = (sg.phH2O ?? 65) / 10;
     const elev = data.elevation?.elevation ?? 500;
 
@@ -143,7 +143,7 @@ export class RiskAnalyzer {
   private calculateTechnicalRiskFromRealData(data: any, depth: number, terrain: string): number {
     const sg = data.soilGrids!;
     const clay_pct = (sg.clay ?? 200) / 10;
-    const bd = (sg.bulkDensity ?? 1400) / 100;
+    const bd = (sg.bulkDensity ?? 140) / 100;
 
     let risk = 0.15; // Base technical risk
 

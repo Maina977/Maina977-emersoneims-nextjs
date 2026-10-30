@@ -177,28 +177,31 @@ export function calibrateWithFieldData(
     sources.push(`Lab analysis (${lab.labName}, ${lab.sampleDate})`);
 
     // Lab results = ground truth for water quality
+    // A parameter the laboratory did not report is untested, never a pass
+    // (2026-10-30 audit: missing values were 0, so untested coliform passed).
+    const has = (k: string) => Number.isFinite((lab as any)[k]);
     const treatmentRequired: string[] = [];
-    if (lab.iron > 0.3) treatmentRequired.push('Iron removal (aeration + sand filter)');
-    if (lab.fluoride > 1.5) treatmentRequired.push('Defluoridation (activated alumina/bone char)');
-    if (lab.arsenic > 0.01) treatmentRequired.push('Arsenic removal (activated alumina/iron-based)');
-    if (lab.nitrate > 50) treatmentRequired.push('Nitrate removal (ion exchange/RO)');
-    if (lab.coliform > 0) treatmentRequired.push('Disinfection (chlorination/UV)');
-    if (lab.tds > 1000) treatmentRequired.push('Desalination (RO)');
-    if (lab.turbidity > 5) treatmentRequired.push('Turbidity removal (sand filter)');
+    if (has('iron') && lab.iron > 0.3) treatmentRequired.push('Iron removal (aeration + sand filter)');
+    if (has('fluoride') && lab.fluoride > 1.5) treatmentRequired.push('Defluoridation (activated alumina/bone char)');
+    if (has('arsenic') && lab.arsenic > 0.01) treatmentRequired.push('Arsenic removal (activated alumina/iron-based)');
+    if (has('nitrate') && lab.nitrate > 50) treatmentRequired.push('Nitrate removal (ion exchange/RO)');
+    if (has('coliform') && lab.coliform > 0) treatmentRequired.push('Disinfection (chlorination/UV)');
+    if (has('tds') && lab.tds > 1000) treatmentRequired.push('Desalination (RO)');
+    if (has('turbidity') && lab.turbidity > 5) treatmentRequired.push('Turbidity removal (sand filter)');
+    const untested = ['coliform', 'fluoride', 'nitrate', 'arsenic', 'tds'].filter((k) => !has(k));
+    if (untested.length) notes.push(`Not yet tested: ${untested.join(', ')}. The water is not confirmed safe to drink until these are.`);
 
     calibratedWQ = {
       ...lab,
-      isPotable: treatmentRequired.length === 0,
+      isPotable: treatmentRequired.length === 0 && untested.length === 0,
       treatmentRequired,
       source: 'LABORATORY',
     };
 
     // Compare desktop prediction vs lab reality
     const wqDesktop = desktopResult.waterQuality;
-    const tdsDelta = Math.abs(wqDesktop.tds - lab.tds);
-    const pHDelta = Math.abs(wqDesktop.pH - lab.pH);
-    notes.push(`Lab TDS: ${lab.tds} mg/L (desktop predicted ${wqDesktop.tds}, delta ${tdsDelta.toFixed(0)})`);
-    notes.push(`Lab pH: ${lab.pH} (desktop predicted ${wqDesktop.pH}, delta ${pHDelta.toFixed(1)})`);
+    if (has('tds') && Number.isFinite(wqDesktop?.tds)) notes.push(`Lab TDS: ${lab.tds} mg/L (desktop predicted ${wqDesktop.tds}, delta ${Math.abs(wqDesktop.tds - lab.tds).toFixed(0)})`);
+    if (has('pH') && Number.isFinite(wqDesktop?.pH)) notes.push(`Lab pH: ${lab.pH} (desktop predicted ${wqDesktop.pH}, delta ${Math.abs(wqDesktop.pH - lab.pH).toFixed(1)})`);
     if (lab.fluoride > 1.5) notes.push(`⚠ Fluoride ${lab.fluoride} mg/L EXCEEDS WHO limit 1.5 mg/L`);
     if (lab.arsenic > 0.01) notes.push(`⚠ Arsenic ${lab.arsenic} mg/L EXCEEDS WHO limit 0.01 mg/L`);
 

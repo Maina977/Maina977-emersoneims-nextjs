@@ -4,6 +4,7 @@
  * only when a report is downloaded - much faster page load).
  */
 import type { AnalysisResult } from './types';
+import { finalVerdict } from './verdict';
 import { auditReport, type AuditReport } from './reportAuditor';
 import type { VerificationReport } from './preReportVerification';
 import { drillRatePerM, mobilisationUSD, countyRateBand, costSoilType, KES_PER_USD } from './costModel';
@@ -143,8 +144,11 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   const _tds = Number(result.waterQuality?.tds ?? 0);
   const needsRO = _tds >= 1000 && !isHandPump;
   const roDailyM3 = Math.round(yieldVal * 6);
+  // Small brackish RO plants cost about $450 per m³/day of capacity, more
+  // above 3,000 mg/L (higher pressure, more pre-treatment). 2026-10-30 audit:
+  // $300 per m³/day understated the plant.
   const wqTreatmentCost = needsRO
-    ? Math.max(6000, Math.round((300 * roDailyM3) / 100) * 100)
+    ? Math.max(8000, Math.round(((_tds >= 3000 ? 700 : 450) * roDailyM3) / 100) * 100)
     : !result.waterQuality?.isPotable
       ? (wqTreatments.length > 2 ? 4000 : _ironMinor && isHandPump ? 400 : _ironOnly ? 1500 : 2500)
       : 0;
@@ -168,6 +172,13 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   // defluoridation media ($/yr) is a real operating cost separate from the 4.5%
   // maintenance rate; omitting it from the "steady net return" but including it
   // in the scenario table produced the $450 discrepancy (-$193 vs -$643).
+  // Desalination running cost (2026-10-30 re-audit: a salty borehole "paid
+  // back in 6 years" as if every m³ were sellable). Brackish RO recovers about
+  // 55% as product water at TDS 3,000+ (about 70% below that) and costs about
+  // $0.40 per m³ of product for energy, membranes and chemicals.
+  const roRecovery = needsRO ? (_tds >= 3000 ? 0.55 : 0.7) : 1;
+  // Membranes and chemicals (~$0.3-0.4/m³) plus 1-2 kWh/m³ of power at ~$0.2/kWh.
+  const roOpexPerM3 = needsRO ? (_tds >= 3000 ? 0.75 : 0.55) : 0;
   const annualOM = annualMaintenance + annualDefluoridation;
 
   // Realistic revenue model: solar pump ~6 h/day (hand pump: ~4 h/day of
@@ -177,8 +188,9 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   const pumpHoursPerDay = isHandPump ? 4 : 6;
   const operatingDaysPerYear = 300;
   const waterTariffPerM3 = 0.80;
-  const dailyWaterM3 = yieldVal * pumpHoursPerDay;
-  const maxAnnualRevenue = Math.round(dailyWaterM3 * operatingDaysPerYear * waterTariffPerM3);
+  // Only the product water is sold when RO is needed; its cost per m³ comes off the tariff.
+  const dailyWaterM3 = yieldVal * pumpHoursPerDay * roRecovery;
+  const maxAnnualRevenue = Math.round(dailyWaterM3 * operatingDaysPerYear * (waterTariffPerM3 - roOpexPerM3));
   const yr1Utilization = 0.60, yr2Utilization = 0.75, yr3PlusUtilization = 0.85;
   const yr1Revenue = Math.round(maxAnnualRevenue * yr1Utilization);
   const yr3Revenue = Math.round(maxAnnualRevenue * yr3PlusUtilization);
@@ -214,7 +226,10 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   }
   let cumCF = -totalCost;
   let paybackMonths = -1;
-  for (let t = 1; t <= projectYears; t++) {
+  // No payback for a site the verdict calls unfavourable (2026-10-30 audit:
+  // Garissa, UNFAVOURABLE at TDS 8,495, "paid for itself in 6.1 years").
+  const paybackWithheld = /^UNFAVOURABLE/.test(finalVerdict(result).verdict);
+  for (let t = 1; t <= projectYears && !paybackWithheld; t++) {
     cumCF += cashFlows[t];
     if (cumCF >= 0) {
       const prevCum = cumCF - cashFlows[t];
@@ -237,7 +252,7 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
     pumpHoursPerDay, operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,
     maxAnnualRevenue, yr1Utilization, yr2Utilization, yr3PlusUtilization,
     yr1Revenue, yr3Revenue, baseAnnualRevenue, netAnnual, cashFlows,
-    irr, paybackMonths, npv10Rounded,
+    irr, paybackMonths, npv10Rounded, roRecovery, roOpexPerM3, paybackWithheld,
     // Kenya market calibration (July 2026)
     drillMethod, surveyCost, permitCost,
     kesPerUsd: KES_PER_USD,
