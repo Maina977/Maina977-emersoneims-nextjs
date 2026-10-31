@@ -153,7 +153,7 @@ export const B2B_PROFILES = {
     trust: [
       'Engineer-led design, not sales-led',
       'Tier-1 panel & inverter brands only',
-      'Bankable proposals for finance review',
+      'Written proposals your finance team can review',
       'O&M contracts with response SLAs',
     ],
     ctas: [
@@ -531,11 +531,11 @@ export const B2B_PROFILES = {
       'From feasibility and design to installation, monitoring and inverter fault recovery. For commercial buyers who need solar to deliver, not just be installed.',
     whoFor: ['Commercial buildings', 'Manufacturers', 'Hotels & resorts', 'Schools & campuses', 'Agribusiness', 'Telecom & ICT'],
     pso: [
-      { problem: 'Solar quote was a price, not a design.', solution: 'Load profile + irradiance + bankable yield model.', outcome: 'A proposal you can defend to finance and the board.' },
+      { problem: 'Solar quote was a price, not a design.', solution: 'Load profile + irradiance + yield model with its uncertainty.', outcome: 'A proposal you can defend to finance and the board.' },
       { problem: 'Inverter fault codes and nobody to call.', solution: 'Multi-brand inverter diagnostics and parts support.', outcome: 'Faster restoration, less generation lost.' },
       { problem: 'Battery system underperforming after a year.', solution: 'BMS audit, capacity test, charge-strategy review.', outcome: 'Restored autonomy or a clear replacement plan.' },
     ],
-    trust: ['Engineer-led design', 'Multi-brand inverter & BMS support', 'Bankable proposals', 'O&M & monitoring contracts'],
+    trust: ['Engineer-led design', 'Multi-brand inverter & BMS support', 'Written proposals', 'O&M & monitoring contracts'],
     ctas: [
       { label: 'Request a Solar Proposal', href: '/contact?topic=solar-proposal', variant: 'primary' },
       { label: 'Book a Solar Site Audit', href: '/booking?service=solar-audit', variant: 'secondary' },
@@ -548,7 +548,7 @@ export const B2B_PROFILES = {
     eyebrow: 'Solar Sizing • Engineering Tools',
     headline: 'Engineer-grade solar sizing — load, panels, batteries and inverters, done properly.',
     subtitle:
-      'Use the sizing hub to get realistic numbers, then escalate to EmersonEIMS for a bankable design and supervised install.',
+      'Use the sizing hub to get realistic numbers, then escalate to EmersonEIMS for a written design and supervised install.',
     whoFor: ['Commercial buyers', 'Procurement & technical teams', 'Architects & MEP consultants', 'Off-grid sites & lodges', 'Estates & developments', 'NGO & institutional projects'],
     pso: [
       { problem: 'Sizing based on a single brochure number = systems that miss spec.', solution: 'Load profile, PSH, derating and reserve factored in.', outcome: 'Sizing you can sign off on.' },
@@ -636,7 +636,7 @@ export const B2B_PROFILES = {
       'Sizing, fault diagnosis, ROI and audit-grade reports — used by EPC contractors, facility managers and consulting engineers across Kenya. Free to try, real engineers behind every recommendation.',
     whoFor: ['Facility managers', 'EPC & MEP contractors', 'Consulting engineers', 'Hospitals & data centres', 'Manufacturing & agribusiness', 'Government & NGOs'],
     pso: [
-      { problem: 'Generic online calculators give answers you cannot defend in a tender.', solution: 'EmersonEIMS AI tools use real load profiles and authoritative datasets.', outcome: 'Bankable numbers, audit-ready reports, fewer redesigns.' },
+      { problem: 'Generic online calculators give answers you cannot defend in a tender.', solution: 'EmersonEIMS AI tools use real load profiles and authoritative datasets.', outcome: 'Numbers with their assumptions shown, and clear reports, fewer redesigns.' },
       { problem: 'No in-house engineer to vet vendor specs.', solution: 'AI sizing + human escalation to a Kenya-based engineering desk.', outcome: 'Right-sized systems, fewer over-spec / under-spec costs.' },
       { problem: 'Reports look pretty but lack provenance.', solution: 'Every figure cites its source; PDFs include a Data Provenance appendix.', outcome: 'Reports that survive board review and lender due diligence.' },
     ],
