@@ -123,7 +123,7 @@ export const B2B_PROFILES = {
     eyebrow: 'Renewable Energy • Solar PV & Storage',
     headline: 'Commercial & industrial solar PV, hybrid and battery systems — engineered for ROI, not slogans.',
     subtitle:
-      'Solar design, supply, installation and O&M for businesses that need to cut energy cost without risking uptime. Backed by independent sizing, bankable proposals and post-install monitoring.',
+      'Solar design, supply, installation and O&M for businesses that need to cut energy cost without risking uptime. Backed by independent sizing, clear written proposals and post-install monitoring.',
     whoFor: [
       'Manufacturers',
       'Hotels & resorts',
@@ -555,7 +555,7 @@ export const B2B_PROFILES = {
       { problem: 'Battery autonomy collapses in cloudy weeks.', solution: 'Realistic DOD, ambient and ageing assumptions.', outcome: 'Autonomy that holds in the worst week, not the best.' },
       { problem: 'Inverter undersized for surge / motor loads.', solution: 'Surge-aware inverter selection with margin.', outcome: 'No nuisance shutdowns at compressor start-up.' },
     ],
-    trust: ['PSH & load-profile based design', 'Realistic battery & inverter sizing', 'Engineer review on request', 'Bridges to bankable proposals'],
+    trust: ['PSH & load-profile based design', 'Realistic battery & inverter sizing', 'Engineer review on request', 'Bridges to clear written proposals'],
     ctas: [
       { label: 'Request an Engineered Solar Design', href: '/contact?topic=solar-design', variant: 'primary' },
       { label: 'Book a Solar Sizing Review', href: '/booking?service=solar-sizing', variant: 'secondary' },

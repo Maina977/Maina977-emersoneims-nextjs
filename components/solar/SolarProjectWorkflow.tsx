@@ -674,7 +674,7 @@ const WORKFLOW_STEPS = [
       'Factor wiring and inverter losses',
       'Model long-term degradation',
       'Generate uncertainty ranges',
-      'Create bankable yield projections'
+      'Create yield projections with their uncertainty'
     ]
   },
   {
@@ -1523,7 +1523,7 @@ const Step3EnergyYield: React.FC<{
 
           {/* Uncertainty Range */}
           <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-xl p-4 border border-blue-700/30">
-            <h4 className="text-white font-semibold mb-2">Bankable Yield Range (P90/P50/P10)</h4>
+            <h4 className="text-white font-semibold mb-2">Yield Range (P90/P50/P10)</h4>
             <div className="flex items-center justify-between">
               <span className="text-blue-400">{(yieldData.uncertaintyRange.low / 1000).toFixed(1)} MWh</span>
               <div className="flex-1 mx-4 h-4 bg-slate-700 rounded-full relative overflow-hidden">
