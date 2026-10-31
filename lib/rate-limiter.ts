@@ -6,7 +6,7 @@
 
 import { LRUCache } from 'lru-cache';
 
-const rateLimit = (options: {
+export const rateLimit = (options: {
   interval: number; // seconds
   uniqueTokenPerInterval: number;
 }) => {
