@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
   const RANGES: Record<string, [number, number, string]> = {
     // Kenyan all-in tariffs run about KES 15-35/kWh: a higher one was accepted and
     // gave a 0.7-year payback with no warning (audit 2026-10-31).
-    tariff: [5, 60, 'KES per kWh'],
+    tariff: [5, 45, 'KES per kWh'],
     daytimeUsePct: [0, 100, '%'],
     nightUsePct: [0, 100, '%'],
     autonomyDays: [0.5, 5, 'days'],

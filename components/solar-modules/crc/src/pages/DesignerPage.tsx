@@ -143,7 +143,11 @@ const DesignerPage: React.FC = () => {
       });
       const raw = r?.data || r;
       const s = raw?.summary;
-      const d = s ? { ...raw, systemKw: s.arrayKwp, panelCount: s.panelCount, inverterKw: s.inverterTotalAcKw ?? s.inverterAcKw, batteryKwh: s.batteryKwh, annualKwh: s.estimatedAnnualYieldKwh } : raw;
+      const d = s ? { ...raw, systemKw: s.arrayKwp, panelCount: s.panelCount, panelW: s.panelCount > 0 ? Math.round((s.arrayKwp * 1000) / s.panelCount) : undefined, inverterKw: s.inverterTotalAcKw ?? s.inverterAcKw, batteryKwh: s.batteryKwh, annualKwh: s.estimatedAnnualYieldKwh } : raw;
+      // Auto-design returns equipment, not prices: keep the calculator's cost and
+      // saving rather than overwrite them with 0, which blocked every proposal
+      // export (re-audit 2026-10-31).
+      const priced = Number(d?.capexKes) > 0;
       const bomLines = d?.bom || d?.bill || [];
       setBom(Array.isArray(bomLines) ? bomLines : []);
 
@@ -158,7 +162,7 @@ const DesignerPage: React.FC = () => {
           inverterKw: d.inverterKw || 0,
           inverterMake: d.inverter?.manufacturer || design.inverterMake,
           inverterModel: d.inverter?.model || design.inverterModel,
-          batteryKwh: d.batteryKwh || 0,
+          batteryKwh: d.batteryKwh ?? design.batteryKwh ?? 0,
           batteryMake: d.battery?.manufacturer || design.batteryMake,
           batteryModel: d.battery?.model || design.batteryModel,
           tiltDeg: design.tiltDeg,
@@ -167,17 +171,17 @@ const DesignerPage: React.FC = () => {
         updateMetrics({
           systemSizeKw: d.systemKw,
           panelCount: d.panelCount || 0,
-          totalCost: d.capexKes || 0,
-          monthlySaving: d.monthlySavingKes || 0,
-          paybackPeriods: d.paybackYears || 0,
+          totalCost: priced ? d.capexKes : metrics.totalCost,
+          monthlySaving: priced ? (d.monthlySavingKes || 0) : metrics.monthlySaving,
+          paybackPeriods: priced ? (d.paybackYears || 0) : metrics.paybackPeriods,
           annualProduction: d.annualKwh || 0,
           // No flat grid factor: Kenya's grid is largely renewable, so a fixed
           // 0.45 kg/kWh overstated CO2 several times (same rule as the Report page).
           carbonOffsetKg: 0,
           peakSunHours: site.irradianceKwhPerM2Day ?? metrics.peakSunHours
         });
-        updateFinancial({
-          capexKes: d.capexKes || 0,
+        if (priced) updateFinancial({
+          capexKes: d.capexKes,
           year1SavingsKes: (d.monthlySavingKes || 0) * 12,
           paybackYears: d.paybackYears || 0,
           irrPct: d.irrPct || 0,

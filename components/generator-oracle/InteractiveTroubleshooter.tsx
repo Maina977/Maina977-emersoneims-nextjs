@@ -783,7 +783,7 @@ Install fuel pressure gauge AFTER fuel filter:
 4. Clear plastic fuel line helps visualize air bubbles
 
 **Fuel Tank Vent:**
-- Open fuel cap while running
+- With the engine stopped and cool, open the fuel cap and listen for a vacuum hiss (no flames or sparks near fuel)
 - If engine runs better = blocked vent
 
 **What did you find?**
@@ -1263,7 +1263,7 @@ This electromagnetic valve must OPEN to allow fuel.
 3. Failed starter motor
 4. Engine seized
 
-**Test:** Jump battery with known good battery or booster.
+**Test:** Jump battery with a known good battery or booster: positive to positive, negative last and away from the battery, eye protection on. Batteries give off explosive gas.
         `,
         options: [
           { label: '✅ Jumping helped - battery issue', nextStep: 'charge-battery' },
@@ -1330,7 +1330,7 @@ This electromagnetic valve must OPEN to allow fuel.
         question: 'Charge or replace battery:',
         instruction: `
 **Battery Service:**
-- Charge for 8+ hours
+- Charge for 8+ hours in a ventilated space, away from sparks and flames
 - Test under load after charging
 - Replace if won't hold charge
 

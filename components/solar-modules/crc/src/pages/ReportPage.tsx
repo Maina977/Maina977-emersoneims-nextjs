@@ -358,7 +358,7 @@ export default function ReportPage() {
           url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
         { label: 'Cash flow assumptions',
           source: `${offGrid ? 'Diesel price' : 'Tariff'} held flat (+${a.tariffEscalationPct}%/yr), panel output -${a.panelDegradationPct}%/yr, O&M ${a.omPctOfCapex}% of capex/yr`
-            + (batteryLineKes > 0 ? ', one battery replacement in year 12 at today\'s price' : '')
+            + (batteryLineKes > 0 ? ', one inverter replacement in year 13, a second battery in year 24 and one battery replacement in year 12 at today\'s price' : '')
             + `, NPV at ${a.discountRatePct}%.`,
           url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) }
       ]

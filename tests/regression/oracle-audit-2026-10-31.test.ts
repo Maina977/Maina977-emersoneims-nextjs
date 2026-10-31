@@ -65,3 +65,47 @@ describe('first steps fit the fault', () => {
   });
   it('an alarm with no specific rule is left as written', () => expect(steps('Maintenance Due').length).toBe(1));
 });
+
+describe('re-audit: no loose matching', () => {
+  const full = (title: string, code = 'E1', severity = 'warning') => withSafety({ id: 'x', code, title, subcategory: '', category: '', brand: 'ComAp', model: '', description: '', severity, safetyWarnings: [], diagnosticSteps: [], resetPathways: [] } as any);
+  const steps = (title: string, code = 'E1') => full(title, code).diagnosticSteps.map((s: any) => s.action).join(' ');
+  const warn = (title: string, code = 'E1') => full(title, code).safetyWarnings.join(' ');
+  it('crankcase is not cranking, turbocharger is not charging', () => {
+    expect(steps('High Crankcase Pressure')).not.toMatch(/battery/i);
+    expect(steps('Turbocharger Speed High')).not.toMatch(/battery/i);
+    expect(warn('Turbocharger Speed High')).not.toMatch(/explosive gas/);
+  });
+  it('mains alarms do not send you to the alternator', () => {
+    expect(steps('Mains Over Voltage')).not.toMatch(/alternator terminals/);
+    expect(steps('Mains Under Frequency')).not.toMatch(/fuel filters/);
+  });
+  it('high fuel level is not told to refuel', () => expect(steps('High Fuel Level')).not.toMatch(/Refuel/));
+  it('battery low voltage goes to the battery; a clock battery does not', () => {
+    expect(steps('Battery Low Voltage')).toMatch(/Measure battery voltage/);
+    expect(steps('Real Time Clock Battery')).not.toMatch(/charge alternator/);
+  });
+  it('J1939 rows: the failure mode does not pick the warning', () => {
+    expect(warn('Engine Oil Pressure - Voltage Above Normal', 'SPN100-FMI3')).not.toMatch(/lethal/i);
+    expect(warn('Injector 1 - Grounded Circuit', 'SPN651-FMI6')).not.toMatch(/exposed metalwork/);
+    expect(warn('Injector 1 - Grounded Circuit', 'SPN651-FMI6')).toMatch(/penetrates skin/);
+    expect(steps('Crankcase Pressure - Above Normal', 'SPN101-FMI0')).not.toMatch(/battery/i);
+  });
+  it('a critical J1939 row always says something', () => {
+    expect(full('Some Component - Above Normal', 'SPN9999-FMI0', 'critical').safetyWarnings.length).toBeGreaterThan(0);
+  });
+});
+
+describe('re-audit: real emergencies only', () => {
+  const hazard = (s: string) => safety(s);
+  it("everyday wording raises no alarm", () => {
+    for (const s of ["cranks but won't fire", 'no fire', 'fire pump generator']) expect(hazard(s)).not.toMatch(/FIRE:/);
+    for (const s of ['shock absorber broken', 'anti vibration mount shock']) expect(hazard(s)).not.toMatch(/SHOCK/);
+  });
+  it('real ones do, and list no fault rows', () => {
+    expect(hazard('engine ran away')).toMatch(/RUNAWAY/);
+    expect(diagnoseFromSymptoms({ symptoms: ['fire in generator'] }).ranked.length).toBe(0);
+  });
+  it('a fuel leak warns in the lookup too', () => {
+    expect((searchIndex({ query: 'fuel leak', page: 1, pageSize: 10 }) as { notice?: string }).notice).toMatch(/^SAFETY FIRST/);
+  });
+});

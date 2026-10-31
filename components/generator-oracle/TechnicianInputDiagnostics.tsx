@@ -179,12 +179,13 @@ const IMPOSSIBLE: Record<string, (v: number) => boolean> = {
   oilPressure: (v) => v < 0, coolantTemp: (v) => v < -40 || v > 300, batteryVoltage: (v) => v < 0 || v > 60,
   rpm: (v) => v < 0 || v > 5000, powerFactor: (v) => v < 0 || v > 1, loadPercent: (v) => v < 0 || v > 200,
 };
-function analyzeParameter(paramKey: string, value: number): DiagnosticResult | null {
+function analyzeParameter(paramKey: string, value: number, batterySystem: '12' | '24' = '24'): DiagnosticResult | null {
   let spec = PARAMETER_SPECS[paramKey];
   if (!spec || value === null || value === undefined || isNaN(value)) return null;
   if (IMPOSSIBLE[paramKey]?.(value)) return null;
-  // A 12 V system is not a flat 24 V battery: read the bank from the voltage.
-  if (paramKey === 'batteryVoltage' && value <= 16) {
+  // The technician says which bank it is: guessing from the voltage called 12.6 V
+  // normal on a badly discharged 24 V set (re-audit 2026-10-31).
+  if (paramKey === 'batteryVoltage' && batterySystem === '12') {
     spec = { ...spec, normalMin: 12.4, normalMax: 14.6, warningLow: 12, warningHigh: 15, criticalLow: 10.5, criticalHigh: 16, description: 'Starting battery voltage (12V system)' };
   }
 
@@ -711,9 +712,22 @@ interface TechnicianInputDiagnosticsProps {
   className?: string;
 }
 
+// Readings where the first action is to stop (re-audit 2026-10-31).
+function withStopAdvice(key: string, value: number, r: DiagnosticResult | null): DiagnosticResult | null {
+  if (!r) return r;
+  if (key === 'rpm' && value > 1600) {
+    return { ...r, message: `Engine speed ${value} RPM is above a 50 Hz set's 1500 RPM. On a 60 Hz set, 1800 RPM is normal; on a 50 Hz set this is overspeed.`, immediateActions: ['On a 50 Hz set: stop the engine with the emergency stop and do not restart until the governor and fuel control are checked.', 'Keep clear of the engine and alternator while it is running fast.'] };
+  }
+  if (/^voltage/.test(key) && value === 0) {
+    return { ...r, message: 'No output voltage.', immediateActions: ['Isolate the load before testing: lethal voltage can return without warning.', 'Check engine speed, the breaker and fuses, then the AVR and residual magnetism. Qualified electrician only.'] };
+  }
+  return r;
+}
+
 export default function TechnicianInputDiagnostics({ className = '' }: TechnicianInputDiagnosticsProps) {
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [showResults, setShowResults] = useState(false);
+  const [batterySystem, setBatterySystem] = useState<'12' | '24'>('24');
 
   const handleInputChange = (key: string, value: string) => {
     setInputs(prev => ({ ...prev, [key]: value }));
@@ -734,7 +748,7 @@ export default function TechnicianInputDiagnostics({ className = '' }: Technicia
       .map(([key, value]) => {
         const numValue = parseFloat(value);
         if (isNaN(numValue)) return null;
-        return analyzeParameter(key, numValue);
+        return withStopAdvice(key, numValue, analyzeParameter(key, numValue, batterySystem));
       })
       .filter((r): r is DiagnosticResult => r !== null);
   }, [inputs, showResults]);
@@ -764,6 +778,12 @@ export default function TechnicianInputDiagnostics({ className = '' }: Technicia
       {/* Input Section */}
       <div className="p-4 border-b border-slate-700">
         <h3 className="text-white font-bold mb-3">Enter Your Readings</h3>
+        <label className="block text-sm text-slate-300 mb-3">Starting battery system{' '}
+          <select value={batterySystem} onChange={(e) => setBatterySystem(e.target.value as '12' | '24')} className="ml-2 bg-slate-800 text-white rounded px-2 py-1">
+            <option value="24">24 V</option>
+            <option value="12">12 V</option>
+          </select>
+        </label>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {Object.entries(PARAMETER_SPECS).map(([key, spec]) => (
             <div key={key} className="bg-slate-800 rounded-lg p-3">

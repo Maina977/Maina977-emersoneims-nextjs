@@ -260,6 +260,15 @@ export function sizeSolar(input: SizingInput): SizingResult {
     if (pvKwp / inverterKw < 0.8) assumptions.push(`A battery inverter is sized for your largest load, not the array, so it is larger than the ${pvKwp} kWp array (DC/AC ${(pvKwp / inverterKw).toFixed(2)}). That is normal for a hybrid or off-grid system.`);
   }
 
+  // A battery must be able to supply the inverter's load, and comes in modules
+  // (re-audit 2026-10-31: 8.8 kWh behind a 30 kW load, 3.4C, with no warning).
+  if (batteryKwh > 0) {
+    const modules = Math.ceil(batteryKwh / 5.12);
+    assumptions.push(`LiFePO4 batteries come in modules of about 5 kWh: ${batteryKwh} kWh means ${modules} x 5.12 kWh = ${(modules * 5.12).toFixed(1)} kWh in practice, so the cost rises a little.`);
+    const peakForBattery = input.peakLoadKw && input.peakLoadKw > 0 ? input.peakLoadKw : 0;
+    if (peakForBattery > batteryKwh) assumptions.unshift(`BATTERY TOO SMALL FOR THE LOAD: a ${peakForBattery} kW load draws more than ${batteryKwh} kWh of LiFePO4 can safely supply (about 1C at most). Add battery capacity or reduce the load on the battery.`);
+  }
+
   // ── Energy and saving ───────────────────────────────────────────────────
   const annualEnergyKwh = Math.round(pvKwp * psh * 365 * PERFORMANCE_RATIO * roofFactor);
   let energyUsedKwh: number;

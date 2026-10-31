@@ -40,7 +40,6 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
       'J1939 SPN/FMI engine code reference',
       'Step-by-Step Repair Guides',
       'J1939/CAN Protocol Support',
-      'Training simulators for controller displays',
       'One-tap escalation to an EmersonEIMS engineer',
     ],
   };

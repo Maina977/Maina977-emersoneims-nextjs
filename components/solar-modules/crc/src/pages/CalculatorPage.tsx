@@ -235,9 +235,12 @@ export default function CalculatorPage() {
       // daytime share was sent for hybrids too and overrode the night share
       // the customer entered (2026-10-30 audit).
       const payload: Record<string, unknown> = {
-        consumption: cons, location, systemType, roofType, tariff: Number(tariff) || undefined,
-        ...(systemType === 'grid-tied' ? { daytimeUsePct: Number(daytimeUse) } : {}),
-        ...(systemType === 'hybrid' ? { nightUsePct: Number(nightUse) } : {}),
+        // A big user who left the domestic default gets the commercial rate on the
+        // server: the pre-filled 25 showed a 2.3-year payback (re-audit 2026-10-31).
+        consumption: cons, location, systemType, roofType, tariff: cons > 15000 && Number(tariff) === DEFAULT_TARIFF_KES_PER_KWH ? undefined : Number(tariff) || undefined,
+        // A blank share is "use the default", never 0% (re-audit 2026-10-31).
+        ...(systemType === 'grid-tied' && String(daytimeUse).trim() !== '' ? { daytimeUsePct: Number(daytimeUse) } : {}),
+        ...(systemType === 'hybrid' && String(nightUse).trim() !== '' ? { nightUsePct: Number(nightUse) } : {}),
         ...(systemType === 'off-grid' ? { autonomyDays: Number(autonomy) } : {}),
         dieselKesPerLitre: systemType === 'off-grid' ? Number(diesel) || undefined : undefined,
         peakLoadKw: Number(peakLoad) || undefined,

@@ -1291,7 +1291,7 @@ export default function GeneratorOracleModule() {
           {/* ==================== MAIN CONTENT ==================== */}
           <div className="flex-1 p-4 lg:p-6">
             <div className="max-w-[1920px] mx-auto pb-10">
-              <ErrorBoundary fallbackTitle="Panel Error" onReset={() => setActiveScreen('command')}>
+              <ErrorBoundary fallbackTitle="Panel Error" onReset={() => setActiveScreen('faults')}>
               <AnimatePresence mode="wait">
                 {/* COMMAND CENTER */}
                 {activeScreen === 'command' && (

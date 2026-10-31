@@ -117,32 +117,37 @@ const FAIL_TO_STOP = 'The engine is not stopping: keep clear, shut the fuel supp
 const TOPIC_SAFETY: Array<[RegExp, string[]]> = [
   [/fail(ed|ure|s)?\s*to\s*stop/i, [FAIL_TO_STOP]],
   [/crankcase/i, ['Crankcase pressure faults can mean a hot-spot and explosion risk: stop the engine, let it cool for at least 10 minutes, and never open a crankcase door on a hot engine.']],
-  [/earth|ground|insulation/i, [ISOLATE, 'An earth fault can leave exposed metalwork live: treat the frame and panel as live until tested. Insulation testing needs an insulation tester with the AVR and controller disconnected first.']],
+  [/\b(injector|fuel\s+rail|rail\s+pressure)\b/i, ['Fuel at injection pressure penetrates skin and can kill: never loosen an injector line or rail fitting with the engine running, and never feel for leaks by hand.']],
+  [/\bearth\b|\bground\s+fault\b|\binsulation\b/i, [ISOLATE, 'An earth fault can leave exposed metalwork live: treat the frame and panel as live until tested. Insulation testing needs an insulation tester with the AVR and controller disconnected first.']],
   [/overspeed|over speed|over-speed/i, ['Overspeed can destroy the engine and alternator: keep clear and do not restart until the governor, actuator and fuel control are checked. Never bypass the overspeed protection.']],
-  [/batter|charg/i, ['Batteries give off explosive gas: no sparks or flames near them, and disconnect the negative lead first. Wear eye protection.']],
+  [/\bbatter(y|ies)\b|\bcharg(e|ing|er)\b/i, ['Batteries give off explosive gas: no sparks or flames near them, and disconnect the negative lead first. Wear eye protection.']],
   [/fuel|diesel/i, ['No flames near fuel; clean spills at once. Diesel under pressure can penetrate skin: never feel for leaks with your hands.']],
   [/voltage|current|frequency|phase|power|breaker|alternator|avr|excit|sync|mains|bus/i, [ISOLATE, 'Generator and mains terminals are lethal while live: measure only with approved, rated instruments.']],
 ];
 const EMERGENCIES: Array<[RegExp, string]> = [
-  [/run\s?-?away|racing\s+out\s+of\s+control/, 'ENGINE RUNAWAY: clear everyone from the area. If you can do it safely from a distance, shut the fuel supply and block the air intake with a proper shut-off. Do not stand in line with the engine or alternator: it can fail violently.'],
-  [/\bfire\b|\bflames?\b|on\s+fire/, 'FIRE: press the emergency stop if you can reach it safely, shut the fuel supply, get everyone out and call the fire service. Use a CO2 or dry-powder extinguisher only on a small fire, and never water on live equipment.'],
-  [/\bshock\b|electrocut|tingl|frame.*\blive\b|\blive\b.*frame/, 'ELECTRIC SHOCK RISK: treat the frame and panel as live. Keep everyone clear, stop the set and isolate it from a safe point before anyone touches it. If someone is being shocked, cut the power first; do not touch them.'],
+  [/run\s?-?away|ran\s+away|racing\s+out\s+of\s+control/, 'ENGINE RUNAWAY: clear everyone from the area. If you can do it safely from a distance, shut the fuel supply and block the air intake with a proper shut-off. Do not stand in line with the engine or alternator: it can fail violently.'],
+  // "cranks but won't fire" is everyday diesel language; a fire pump is a load.
+  [/(?<!(won'?t|wont|not|no|doesn'?t|never|fails?\s+to|mis)\s)\bfire\b(?!\s+pump)|\bflames?\b/, 'FIRE: press the emergency stop if you can reach it safely, shut the fuel supply, get everyone out and call the fire service. Use a CO2 or dry-powder extinguisher only on a small fire, and never water on live equipment.'],
+  [/electric(al)?\s+shock|shock\s+from|\bshocked\b|got\s+a?\s*shock|electrocut|tingl|frame.*\blive\b|\blive\b.*frame/, 'ELECTRIC SHOCK RISK: treat the frame and panel as live. Keep everyone clear, stop the set and isolate it from a safe point before anyone touches it. If someone is being shocked, cut the power first; do not touch them.'],
   [/carbon\s+monoxide|\bco\s+(alarm|poison|leak)|\bfumes?\b|exhaust\s+(gas\s+)?leak/, 'EXHAUST GAS IS DEADLY: carbon monoxide has no smell. Stop the engine, get everyone out into fresh air and ventilate the room before going back in. Seek medical help for headache, dizziness or nausea. Repair the leak before running again.'],
+  [/\b(fuel|diesel|oil)\s+(leak|spill)/, 'Hot oil and fuel burn and can catch fire on a hot exhaust: stop the engine and let it cool before tracing the leak, and clean spills at once.'],
 ];
 // Checks a technician makes first for the fault itself, ahead of each controller
 // file's menu steps (audit 2026-10-31: 50 ComAp alarms shared one step list, and a
 // low-oil shutdown had no dipstick step).
 const FAULT_FIRST_STEPS: Array<[RegExp, string[]]> = [
-  [/oil\s*press.*\b(low|under|below)|\b(low|under)\b.*oil\s*press/i, ['Engine stopped: check the oil level on the dipstick and look for leaks.', 'Check the oil grade and filter, then confirm the pressure with a mechanical gauge before believing the sender.']],
-  [/coolant|water temp|engine temp|overheat|high temp/i, ['Engine stopped and cool: check the coolant level, fan belt and radiator core for blockage.', 'Compare the reading with an infrared thermometer at the sender before replacing parts.']],
-  [/fail(ed|ure|s)?\s*to\s*start|start\s*fail|crank/i, ['Check battery voltage while cranking: it should stay above about 9.5 V on 12 V or 19 V on 24 V.', 'Check there is fuel, the fuel solenoid energises, and the filters are not blocked; bleed air if the fuel system was opened.']],
-  [/fail(ed|ure|s)?\s*to\s*stop/i, ['Shut the fuel supply by hand if the engine is still running.', 'With the engine stopped: test the fuel solenoid and the stop circuit from the controller output.']],
-  [/over\s?-?speed/i, ['Do not restart until checked: inspect the actuator, governor linkage and fuel control for sticking.', 'Compare the speed sensor reading with a hand tachometer on the next controlled run.']],
-  [/under\s?-?speed|under\s?-?frequency|low frequency/i, ['Check the load against the set rating, then the fuel filters and air filter.', 'Check the governor or actuator response under a stepped load.']],
-  [/over\s?-?volt|under\s?-?volt|high volt|low volt|loss of excit|excitation/i, ['Measure the voltage at the alternator terminals with a meter rated for it, compared with the controller reading.', 'Check engine speed first, since voltage follows speed, then the AVR sensing leads and supply. Qualified electrician only: lethal voltage.']],
-  [/over\s?-?(current|load)|short circuit|overload/i, ['Reduce the load and measure the current on each phase: look for imbalance or a shorted circuit.', 'Find the cause before resetting the breaker. Do not raise the trip setting to clear the alarm.']],
-  [/batter|charge/i, ['Measure battery voltage engine off, then running: about 13.5-14.5 V on 12 V or 27-29 V on 24 V when charging.', 'Check terminals, the charge alternator belt and the mains charger.']],
-  [/fuel\s*level|low fuel/i, ['Dip the tank to confirm the level before trusting the sender.', 'Refuel with the engine stopped; check for leaks if the level dropped unexpectedly.']],
+  [/\boil\s*press(ure)?\b.*\b(low|under|below)\b|\b(low|under)\b.*\boil\s*press(ure)?\b/i, ['Engine stopped: check the oil level on the dipstick and look for leaks.', 'Check the oil grade and filter, then confirm the pressure with a mechanical gauge before believing the sender.']],
+  [/\b(high|over)\b.*\b(coolant|water|engine)\s*temp|\b(coolant|water|engine)\s*temp\w*\b.*\b(high|over)\b|\boverheat/i, ['Engine stopped and cool: check the coolant level, fan belt and radiator core for blockage.', 'Compare the reading with an infrared thermometer at the sender before replacing parts.']],
+  [/\bfail(ed|ure|s)?\s*to\s*(start|crank)\b|\bstart(ing)?\s*fail/i, ['Check battery voltage while cranking: it should stay above about 9.5 V on 12 V or 19 V on 24 V.', 'Check there is fuel, the fuel solenoid energises, and the filters are not blocked; bleed air if the fuel system was opened.']],
+  [/\bfail(ed|ure|s)?\s*to\s*stop\b/i, ['Shut the fuel supply by hand if the engine is still running.', 'With the engine stopped: test the fuel solenoid and the stop circuit from the controller output.']],
+  [/\bover\s?-?speed\b/i, ['Do not restart until checked: inspect the actuator, governor linkage and fuel control for sticking.', 'Compare the speed sensor reading with a hand tachometer on the next controlled run.']],
+  [/\bunder\s?-?speed\b/i, ['Check the load against the set rating, then the fuel filters and air filter.', 'Check the governor or actuator response under a stepped load.']],
+  // The starting battery only: a controller's clock battery is another part.
+  [/^(?!.*\b(clock|rtc|real.?time)\b).*\b(battery|charge\s*(fail|alternator)|charging)\b/i, ['Measure battery voltage engine off, then running: about 13.5-14.5 V on 12 V or 27-29 V on 24 V when charging.', 'Check terminals, the charge alternator belt and the mains charger.']],
+  // The generator's own output: mains and bus alarms are about the grid.
+  [/^(?!.*\b(mains|utility|grid|bus)\b).*(\bover\s?-?volt|\bunder\s?-?volt|\bhigh\s+volt|\blow\s+volt|\bloss\s+of\s+excit)/i, ['Measure the voltage at the alternator terminals with a meter rated for it, compared with the controller reading.', 'Check engine speed first, since voltage follows speed, then the AVR sensing leads and supply. Qualified electrician only: lethal voltage.']],
+  [/\bover\s?-?current\b|\bshort\s+circuit\b|\boverload\b/i, ['Reduce the load and measure the current on each phase: look for imbalance or a shorted circuit.', 'Find the cause before resetting the breaker. Do not raise the trip setting to clear the alarm.']],
+  [/\blow\s+fuel\b|\bfuel\s+level\s+(low|warning)\b/i, ['Dip the tank to confirm the level before trusting the sender.', 'Refuel with the engine stopped; check for leaks if the level dropped unexpectedly.']],
 ];
 const GENERIC_SAFETY = /^follow standard (electrical )?safety procedures\.?$/i;
 const CONDITION_WORDS: Record<string, string> = {
@@ -163,6 +168,9 @@ function safeResetSteps<T extends { stepNumber?: number; action: string; keySequ
 }
 const OIL_STOP = 'Stop the engine: running with low oil pressure can destroy the bearings in minutes. Do not restart until the cause is found.';
 function faultFirst(c: ControllerFaultCode, steps: ControllerFaultCode['diagnosticSteps']): ControllerFaultCode['diagnosticSteps'] {
+  // J1939 rows carry their own remedies, keyed to the SPN; loose words in their
+  // titles gave "check the battery" on a crankcase fault (re-audit 2026-10-31).
+  if (/^SPN\d+/i.test(c.code)) return steps;
   const hit = FAULT_FIRST_STEPS.find(([re]) => re.test(c.title));
   if (!hit) return steps;
   const first = hit[1].map((action) => ({ action, expectedResult: '' }));
@@ -178,7 +186,13 @@ export function withSafety(c: ControllerFaultCode): ControllerFaultCode {
   if (coolant && !has(/cap|cool (down|first)|let it cool/i)) add.push(COOL_DOWN);
   if (lowOil && !has(/stop the engine/i)) add.push(OIL_STOP);
   for (const w of J1939_SAFETY.get(c.code.toUpperCase()) || []) if (!has(new RegExp(w.slice(0, 24).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')) && !add.includes(w)) add.push(w);
-  const topic = TOPIC_SAFETY.find(([re]) => re.test(`${c.title} ${c.subcategory} ${c.category}`));
+  // "Voltage Above Normal" and "Grounded Circuit" on a J1939 row describe the
+  // sensor signal, not a lethal terminal (re-audit 2026-10-31: 148 rows warned of
+  // mains voltage, 33 of a live frame). Only the component name picks the topic.
+  const isJ1939 = /^SPN\d+/i.test(c.code);
+  const topicText = isJ1939 ? c.title.split(/\s+[-\u2013\u2014]\s+/)[0] : `${c.title} ${c.subcategory} ${c.category}`;
+  const topic = TOPIC_SAFETY.filter(([re]) => !(isJ1939 && /voltage\|current/.test(re.source))).find(([re]) => re.test(topicText));
+  if (isJ1939 && !topic && !(c.safetyWarnings || []).length && !add.length && (c.severity === 'critical' || c.severity === 'shutdown')) add.push('Stop the engine and find the cause before restarting: running on with this fault can destroy the engine.');
   // The isolation line is a duplicate when the entry already says to isolate
   // or lock off (2026-10-30 audit: two near-identical isolate warnings).
   const already = (w: string) => w === ISOLATE ? has(/isolat|lock(ed)? off|prove .*dead/i) : has(new RegExp(w.slice(0, 24).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
@@ -695,7 +709,7 @@ function searchByWords(typed: string, opts: SearchOptions): SearchResponse {
   if (core && !pw.brand) {
     const raw = searchIndexRaw({ ...opts, query: core, page: 1, pageSize: 100 });
     // Smoke is answered by colour, not by J1939 rows that merely mention it.
-    if (!/\bsmoke/.test(words)) for (const r of raw.results) if (r.source === 'j1939-reference' && !seen.has(r.id)) { merged.push(r); seen.add(r.id); }
+    if (!/\bsmoke|alternator|winding|oil\s+in\s+(the\s+)?coolant|coolant\s+in\s+(the\s+)?oil/.test(words) && !EMERGENCIES.some(([re]) => re.test(words))) for (const r of raw.results) if (r.source === 'j1939-reference' && !seen.has(r.id)) { merged.push(r); seen.add(r.id); }
   }
   const filtered = opts.severity ? merged.filter((r) => r.severity === opts.severity) : merged;
   const total = filtered.length;
@@ -1388,7 +1402,7 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   // only alarms about the exhaust, air intake or boost are kept (2026-10-30
   // re-audit: an unrelated fuel-rail alarm was the only "match").
   if (/\bsmoke/.test(typedText)) ranked = ranked.filter((r) => /smoke|exhaust|air filter|intake|boost|turbo/i.test(r.title));
-  if (/\bfire\b/.test(typedText)) ranked = ranked.filter((r) => !/misfire/i.test(r.title));
+  if (emergency.length && !/leak|spill/.test(typedText)) ranked = []; // an emergency is not a fault-finding exercise
   if (/alternator|winding/.test(typedText) && /overheat|hot|temperatur/.test(typedText)) {
     ranked = ranked.filter((r) => /alternator|winding|generator (over|high) ?temp/i.test(r.title));
     notes.unshift('Alternator overheating: check the load against the rating, blocked air inlets and screens, the cooling fan and the winding temperature sensor. Engine coolant alarms are a different fault.');

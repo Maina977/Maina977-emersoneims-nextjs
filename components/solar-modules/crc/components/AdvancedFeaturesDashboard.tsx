@@ -1140,9 +1140,10 @@ const VoltageDropRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const [lengthM, setLengthM] = useState(25);
   const [material, setMaterial] = useState<'copper'|'aluminium'>('copper');
   const [maxDropPct, setMaxDropPct] = useState(3);
+  const [breakerA, setBreakerA] = useState('');
   return (
     <>
-      <Hint>Computes the smallest IEC 60228 conductor that meets the voltage-drop limit AND ampacity (PVC, free-air, 30 °C).</Hint>
+      <Hint>Computes the smallest IEC 60228 conductor that meets the voltage-drop limit AND ampacity (PVC in conduit, 30 °C; PV strings in free air). Enter the breaker so the cable is sized to be protected by it.</Hint>
       <Field><span className="l">Run type</span>
         <select value={systemType} onChange={e=>setSystemType(e.target.value as any)}>
           <option value="dc">DC string (enter panel Isc)</option>
@@ -1158,11 +1159,13 @@ const VoltageDropRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
           <option value="aluminium">Aluminium</option>
         </select></Field>
       <Field><span className="l">Max voltage drop (%)</span><input type="number" step="0.1" value={maxDropPct} onChange={e=>setMaxDropPct(+e.target.value)} /></Field>
+      <Field><span className="l">Breaker protecting this cable (A)</span><input type="number" value={breakerA} onChange={e=>setBreakerA(e.target.value)} placeholder="from the breaker tool" /></Field>
       <Run disabled={r.loading} onClick={() => r.run(() => bos.voltageDrop({
         systemType, currentA, voltageV, oneWayLengthM: lengthM,
         conductorMaterial: material, ambientTempC: 30, maxVoltDropPct: maxDropPct,
         // "DC string" gets the string rules: 1.25 x Isc, rooftop heat, 4 mm² minimum.
         pvString: systemType === 'dc',
+        ...(Number(breakerA) > 0 ? { breakerA: Number(breakerA) } : {}),
       }))}>{r.loading ? 'Sizing…' : 'Recommend conductor'}</Run>
       <ResultBlock {...r} />
     </>

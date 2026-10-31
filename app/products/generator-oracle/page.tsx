@@ -39,11 +39,6 @@ const FEATURES = [
     description: 'Likely causes, what to check first, and how to clear the alarm once the cause is fixed.',
   },
   {
-    icon: '🖥️',
-    title: 'Training Simulators',
-    description: 'Practise on simulated controller displays and a simulated running set before you touch the real one.',
-  },
-  {
     icon: '📱',
     title: 'Built for the Phone',
     description: 'Look up a code standing at the generator, on a phone, with no sign-up.',
