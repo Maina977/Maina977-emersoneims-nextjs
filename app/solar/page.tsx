@@ -817,7 +817,7 @@ export default function SolarBible() {
               Solar Panel <span className="text-amber-400">Brand Comparison</span>
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              We only stock Tier-1 panels with proven performance and bankable warranties
+              We only stock Tier-1 panels with proven performance and strong manufacturer warranties
             </p>
           </motion.div>
 

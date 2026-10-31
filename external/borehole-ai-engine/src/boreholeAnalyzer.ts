@@ -341,11 +341,15 @@ export class BoreholeAnalyzer {
       if (clientLocation.region) locationHints.push(clientLocation.region);
       if (clientLocation.country) locationHints.push(clientLocation.country);
     }
-    const features = await Promise.race([
-      this.imageDetector.analyzeImage(imageFile, locationHints.length > 0 ? locationHints : undefined, { skipModel: noPhoto }),
+    // A coordinates-only run has no photo to analyse: use the neutral result at
+    // once. Waiting cost up to 60 s on every run, and because that wait could end
+    // either way, two runs of one site could differ (2026-10-31).
+    const neutralFeatures = (): any => ({ metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {} });
+    const features = noPhoto ? neutralFeatures() : await Promise.race([
+      this.imageDetector.analyzeImage(imageFile, locationHints.length > 0 ? locationHints : undefined),
       new Promise<any>((resolve) => setTimeout(() => {
         console.warn('[Pipeline] Image analysis timed out (60s) — using pixel-only fallback');
-        resolve({ metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {} });
+        resolve(neutralFeatures());
       }, 60000))
     ]);
 
