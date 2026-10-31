@@ -957,9 +957,9 @@ export function getPartsContactInfo(): {
   partsPageUrl: string;
 } {
   return {
-    phone: '+254-XXX-XXX-XXX', // Update with actual
+    phone: '+254 768 860 665',
     email: 'parts@emersoneims.com',
-    whatsapp: '+254-XXX-XXX-XXX',
+    whatsapp: '+254 768 860 665',
     partsPageUrl: '/parts'
   };
 }

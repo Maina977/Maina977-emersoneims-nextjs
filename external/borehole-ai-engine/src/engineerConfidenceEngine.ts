@@ -486,7 +486,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     tier: hasERA5Land ? 'CALIBRATED' : 'ESTIMATED',
     category: 'model_derived',
     source: hasERA5Land ? 'ERA5-Land water balance (P − ET₀ − Runoff) + Simmers 1988/Scanlon 2006 recharge fraction' : 'Soil moisture balance + GRACE-FO trend',
-    method: 'R = P - ET - Ro - dS/dt (water balance), calibrated against GRACE TWS anomaly trend',
+    method: 'Water balance R = P - ET - Ro; the planning figure shown on the page',
     accuracy_pct: hasERA5Land ? 60 : 55,
     reference: 'Scanlon et al. (2006) Global synthesis of groundwater recharge in semiarid and arid regions',
     limitations: ['No lysimeter or tracer data', 'Water balance method averages over large area', 'GRACE resolution ~300km'],

@@ -319,20 +319,19 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
       } catch { /* NASA POWER parse error — non-critical */ }
     }
 
-    // Two sources, one figure (2026-10-20 audit: Lodwar showed 442 mm/yr from
-    // ERA5 while NASA POWER gave 297; the long-term mean is near 200). When they
-    // differ by more than 30%, the LOWER is used — rainfall drives recharge and
-    // the sustainable yield, so the cautious figure is the safe one — and the
-    // spread is stated. The yearly and monthly series are scaled to match.
+    // Two sources, one figure. ECMWF (9 km) governs over NASA POWER (~50 km), which
+    // misses Kenya's relief: the "take the lower" rule put Nairobi at 549 mm against
+    // about 900 and called the right figure an overestimate (audit 2026-10-31). In
+    // arid areas both overstate rain (Lodwar 442 and 297 against about 200), so
+    // there the lower one is used. The yearly and monthly series scale to match.
     let scale = 1;
     let precipitationNote: string | undefined;
     if (nasaAvgForCheck > 0 && avgAnnualPrecip > 0 && Math.max(nasaAvgForCheck, avgAnnualPrecip) / Math.min(nasaAvgForCheck, avgAnnualPrecip) > 1.3) {
       const lo = Math.min(nasaAvgForCheck, avgAnnualPrecip);
-      scale = lo / avgAnnualPrecip;
-      const hi = Math.max(nasaAvgForCheck, avgAnnualPrecip);
-      // Beyond 1.6x the higher figure is not offered as a plausible bound
-      // (2026-10-30 audit: Kisumu's NASA 2,264 mm was shown as one).
-      precipitationNote = `Rainfall sources disagree: ECMWF reanalysis ${avgAnnualPrecip} mm/yr, NASA POWER ${nasaAvgForCheck} mm/yr (median year). ${hi / lo > 1.6 ? `The higher figure is likely an overestimate here; ${lo} mm/yr is used` : `Long-term rainfall here is probably between ${lo} and ${hi} mm/yr; the lower figure is used for recharge as the cautious choice`}.${lo < 450 ? ' In arid areas both can overstate rainfall; a local weather-station record is the better reference.' : ''}`;
+      const arid = lo < 450;
+      const used = arid ? lo : avgAnnualPrecip;
+      scale = used / avgAnnualPrecip;
+      precipitationNote = `Rainfall sources disagree: ECMWF reanalysis ${avgAnnualPrecip} mm/yr, NASA POWER ${nasaAvgForCheck} mm/yr (median year). ${arid ? `${used} mm/yr is used: in arid areas both can overstate rainfall, and a local weather-station record is the better reference.` : `${used} mm/yr (ECMWF, the finer 9 km model) is used. A local weather-station record is the better reference.`}`;
     }
     const sc = (v: number) => Math.round(v * scale);
     const avgP = sc(avgAnnualPrecip);

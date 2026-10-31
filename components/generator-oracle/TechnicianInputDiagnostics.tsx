@@ -174,9 +174,19 @@ interface DiagnosticResult {
   relatedParameters: string[];
 }
 
+// Readings no gauge can show are a typing error, not a diagnosis (audit 2026-10-31).
+const IMPOSSIBLE: Record<string, (v: number) => boolean> = {
+  oilPressure: (v) => v < 0, coolantTemp: (v) => v < -40 || v > 300, batteryVoltage: (v) => v < 0 || v > 60,
+  rpm: (v) => v < 0 || v > 5000, powerFactor: (v) => v < 0 || v > 1, loadPercent: (v) => v < 0 || v > 200,
+};
 function analyzeParameter(paramKey: string, value: number): DiagnosticResult | null {
-  const spec = PARAMETER_SPECS[paramKey];
+  let spec = PARAMETER_SPECS[paramKey];
   if (!spec || value === null || value === undefined || isNaN(value)) return null;
+  if (IMPOSSIBLE[paramKey]?.(value)) return null;
+  // A 12 V system is not a flat 24 V battery: read the bank from the voltage.
+  if (paramKey === 'batteryVoltage' && value <= 16) {
+    spec = { ...spec, normalMin: 12.4, normalMax: 14.6, warningLow: 12, warningHigh: 15, criticalLow: 10.5, criticalHigh: 16, description: 'Starting battery voltage (12V system)' };
+  }
 
   let status: 'normal' | 'warning' | 'critical' = 'normal';
   let message = '';

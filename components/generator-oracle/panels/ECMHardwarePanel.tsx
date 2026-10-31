@@ -758,7 +758,7 @@ export default function ECMHardwarePanel({
               <span>🔌</span> ECM Hardware Communication
             </h2>
             <p className="text-xs text-gray-300 mt-1">
-              Connect to real ECMs via USB-CAN or Bluetooth adapters
+              Reference for USB-CAN and Bluetooth adapters. This page does not connect to an ECM
             </p>
           </div>
           <div className="flex items-center gap-2">

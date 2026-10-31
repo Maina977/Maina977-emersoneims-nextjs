@@ -1140,8 +1140,8 @@ export const PARTS_ORDER_INFO = {
   mainPage: '/spare-parts',
   quotePage: '/spare-parts/quote',
   contactPage: '/contact',
-  phone: '+254 XXX XXX XXX',  // Your company phone
-  whatsapp: '+254 XXX XXX XXX',  // Your WhatsApp
+  phone: '+254 768 860 665',  // Your company phone
+  whatsapp: '+254 768 860 665',  // Your WhatsApp
   email: 'parts@emersoneims.com'  // Your parts email
 };
 

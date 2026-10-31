@@ -1239,9 +1239,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     {
       const wq = result.waterQuality;
       const healthFails = [
-        (wq?.arsenic ?? 0) > 0.01 ? 'Arsenic' : '',
         (wq?.fluoride ?? 0) > 1.5 ? 'Fluoride' : '',
-        (wq?.nitrate ?? 0) > 50 ? 'Nitrate' : '',
+        (wq as any)?.measuredNearby?.nitrate?.n >= 3 && (wq?.nitrate ?? 0) > 50 ? 'Nitrate' : '',
       ].filter(Boolean);
       const wqOk = !!wq?.isPotable;
       const wqLine = wqOk
@@ -1766,9 +1765,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         if (result.waterQuality?.isPotable) return 'POTABLE (modelled) -- Verify with ISO 17025 lab analysis';
         const wq = result.waterQuality;
         const healthFails = [
-          (wq?.arsenic ?? 0) > 0.01 ? 'Arsenic' : '',
           (wq?.fluoride ?? 0) > 1.5 ? 'Fluoride' : '',
-          (wq?.nitrate ?? 0) > 50 ? 'Nitrate' : '',
+          (wq as any)?.measuredNearby?.nitrate?.n >= 3 && (wq?.nitrate ?? 0) > 50 ? 'Nitrate' : '',
         ].filter(Boolean);
         const aestheticFails = [
           (wq?.iron ?? 0) > 0.3 ? 'Iron' : '',
@@ -1997,9 +1995,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       { name: 'Community Kiosk', rate: 0.50, util: 0.70 },
       { name: 'Subsidised / NGO', rate: 0.30, util: 0.60 },
     ].map(t => {
-      const rev = Math.round(eco.dailyWaterM3 * eco.operatingDaysPerYear * t.rate * t.util);
+      const rev = Math.round(eco.dailyWaterM3 * eco.operatingDaysPerYear * (t.rate - eco.roOpexPerM3) * t.util);
       const net = rev - eco.annualOM; // single O&M definition (maint + media)
-      const pb = net > 0 ? (_totalCap / net).toFixed(1) : 'Never';
+      const pb = eco.paybackWithheld ? 'Not given' : net > 0 ? (_totalCap / net).toFixed(1) : 'Never';
       return { ...t, rev, net, pb };
     });
 
@@ -2773,7 +2771,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(100, 100, 140);
-  doc.text('Values derived from ISRIC SoilGrids v2.0 pedotransfer models + regional hydrogeochemical inference. Laboratory analysis recommended for commissioning.', margin, y); y += 4;
+  doc.text('Salinity and fluoride: measured nearby where stated, otherwise regional estimates. The rest needs a laboratory test of the finished borehole.', margin, y); y += 4;
   doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
   doc.text('NOTE: The Water Quality Score is a proprietary health-impact index based on WHO Guidelines for Drinking-water Quality (4th ed. incl. addenda; 2026 consolidated) exceedance penalties. It is NOT a WHO-endorsed standard.', margin, y); y += 3;
   doc.text('For bankable/regulatory reports, use binary potability assessment (Meets/Exceeds WHO limits per parameter) confirmed by ISO 17025 accredited laboratory.', margin, y); y += 3;
@@ -2790,19 +2788,22 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   // turbidity and pH 6.5-8.5 are AESTHETIC/OPERATIONAL reference levels — WHO
   // proposes NO health-based guideline for them. An iron exceedance is an
   // appearance/taste/staining concern, never a "FAIL" implying non-potability.
-  const _wqStatus = (ok: boolean, aesthetic: boolean) => (ok ? 'PASS' : aesthetic ? 'AESTHETIC CONCERN' : 'HEALTH EXCEEDANCE');
+  const _wqStatus = (ok: boolean, aesthetic: boolean) => (ok ? 'Within limit (estimate)' : aesthetic ? 'AESTHETIC CONCERN' : 'HEALTH EXCEEDANCE');
+  // Soil-model chemistry is not printed as a value or a pass (audit 2026-10-31):
+  // the same answer as the page and the other exports.
+  const _lab = ['laboratory test needed', 'LAB TEST NEEDED'] as const;
   autoTable(doc, {
     startY: y,
     head: [['Parameter', 'Value', 'WHO GDWQ reference', 'Basis', 'Status', 'Data Source']],
     body: [
-      ['pH', fmt(result.waterQuality?.pH), '6.5 - 8.5', 'Operational', _wqStatus((result.waterQuality?.pH ?? 7) >= 6.5 && (result.waterQuality?.pH ?? 7) <= 8.5, true), 'Modelled (regional) — lab test decides'],
+      ['pH', _lab[0], '6.5 - 8.5', 'Operational', _lab[1], 'Modelled (regional) — lab test decides'],
       ['TDS (mg/L)', fmt(result.waterQuality?.tds, 0), '< 1000', 'Palatability', _wqStatus((result.waterQuality?.tds ?? 0) < 1000, true), 'SoilGrids + Geology'],
-      ['Hardness (mg/L)', fmt(result.waterQuality?.hardness, 0), '< 500', 'Aesthetic', _wqStatus((result.waterQuality?.hardness ?? 0) < 500, true), 'Geochemical Model'],
+      ['Hardness (mg/L)', _lab[0], '< 500', 'Aesthetic', _lab[1], 'Geochemical Model'],
       ['Fluoride (mg/L)', fmt(result.waterQuality?.fluoride, 2), '< 1.5', 'HEALTH', _wqStatus((result.waterQuality?.fluoride ?? 0) < 1.5, false), 'Regional Database'],
-      ['Iron (mg/L)', fmt(result.waterQuality?.iron, 3), '< 0.3', 'Aesthetic (no health guideline)', _wqStatus((result.waterQuality?.iron ?? 0) < 0.3, true), 'Soil Chemistry Model'],
-      ['Arsenic (mg/L)', fmt(result.waterQuality?.arsenic, 4), '< 0.01', 'HEALTH', _wqStatus((result.waterQuality?.arsenic ?? 0) < 0.01, false), 'Geogenic Risk Model'],
-      ['Nitrate (mg/L)', fmt(result.waterQuality?.nitrate, 1), '< 50', 'HEALTH', _wqStatus((result.waterQuality?.nitrate ?? 0) < 50, false), 'Land Use Model'],
-      ['Turbidity (NTU)', fmt(result.waterQuality?.turbidity, 1), '< 5', 'Operational', _wqStatus((result.waterQuality?.turbidity ?? 0) < 5, true), 'Sediment Model'],
+      ['Iron (mg/L)', _lab[0], '< 0.3', 'Aesthetic (no health guideline)', _lab[1], 'Soil Chemistry Model'],
+      ['Arsenic (mg/L)', _lab[0], '< 0.01', 'HEALTH', _lab[1], 'Geogenic Risk Model'],
+      ['Nitrate (mg/L)', (result.waterQuality as any)?.measuredNearby?.nitrate?.n >= 3 ? fmt(result.waterQuality?.nitrate, 1) : _lab[0], '< 50', 'HEALTH', (result.waterQuality as any)?.measuredNearby?.nitrate?.n >= 3 ? _wqStatus((result.waterQuality?.nitrate ?? 0) < 50, false) : _lab[1], 'Land Use Model'],
+      ['Turbidity (NTU)', _lab[0], '< 5', 'Operational', _lab[1], 'Sediment Model'],
     ],
     headStyles: { fillColor: [34, 197, 94], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
     bodyStyles: { fontSize: 8 },
@@ -2813,7 +2814,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       if (d.section === 'body' && d.column.index === 4) {
         const raw = String(d.cell.raw);
         d.cell.styles.fontStyle = 'bold';
-        d.cell.styles.textColor = raw === 'PASS' ? [22, 163, 74] : raw === 'AESTHETIC CONCERN' ? [180, 83, 9] : [220, 38, 38];
+        d.cell.styles.textColor = /^Within/.test(String(raw)) ? [22, 163, 74] : raw === 'LAB TEST NEEDED' ? [100, 100, 120] : raw === 'AESTHETIC CONCERN' ? [180, 83, 9] : [220, 38, 38];
       }
     },
   });
@@ -3134,9 +3135,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         startY: y, margin: { left: margin, right: margin },
         head: [['Scenario', 'Tariff ($/m\u00B3)', 'Utilization', 'Annual Revenue', 'Net Annual', 'Payback (yrs)', 'Viable?']],
         body: tariffs.map(t => {
-          const rev = Math.round(dailyWaterM3 * operatingDaysPerYear * t.rate * t.util);
+          const rev = Math.round(dailyWaterM3 * operatingDaysPerYear * (t.rate - computeCanonicalEconomics(result).roOpexPerM3) * t.util);
           const net = rev - totalAnnualMaint;
-          const pb = net > 0 ? (totalCost / net).toFixed(1) : 'Never';
+          const pb = computeCanonicalEconomics(result).paybackWithheld ? 'Not given' : net > 0 ? (totalCost / net).toFixed(1) : 'Never';
           return [t.name, `$${t.rate.toFixed(2)}`, `${Math.round(t.util * 100)}%`, `$${rev.toLocaleString()}`, `$${net.toLocaleString()}`, pb, net > 0 && +pb < 15 ? 'YES' : 'NO'];
         }),
         headStyles: { fillColor: [139, 92, 246], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },

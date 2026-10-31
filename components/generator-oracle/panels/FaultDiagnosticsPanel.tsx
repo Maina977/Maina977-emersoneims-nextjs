@@ -962,10 +962,13 @@ export default function FaultDiagnosticsPanel({
               {displayResults.length > 0 ? `Results (${displayResults.length} found)` : lastSearched ? 'Results' : 'Search for a fault code to see detailed troubleshooting'}
             </h3>
 
+            {notice && /^(SAFETY FIRST|GUIDE):/.test(notice) && (
+              <div role="alert" className="mb-4 p-3 rounded-lg border border-amber-500/50 bg-amber-500/10 text-amber-200 text-sm">{notice}</div>
+            )}
             {displayResults.length === 0 && !isSearching && lastSearched && (
               <div className="text-center py-10">
-                <div className="text-lg font-bold text-white mb-2">{notice ? <>&ldquo;{lastSearched}&rdquo; is not a valid code</> : <>No matches for &ldquo;{lastSearched}&rdquo;</>}</div>
-                {notice && <div role="alert" className="text-amber-300 text-sm max-w-md mx-auto mb-2">{notice}</div>}
+                <div className="text-lg font-bold text-white mb-2">{notice && !/^(SAFETY FIRST|GUIDE):/.test(notice) ? <>&ldquo;{lastSearched}&rdquo; is not a valid code</> : <>No alarm matches &ldquo;{lastSearched}&rdquo;</>}</div>
+                {notice && !/^(SAFETY FIRST|GUIDE):/.test(notice) && <div role="alert" className="text-amber-300 text-sm max-w-md mx-auto mb-2">{notice}</div>}
                 <div className="text-slate-400 max-w-md mx-auto text-sm">
                   Try the code exactly as it shows on the display (for example <span className="text-cyan-400 font-mono">SPN 110 FMI 0</span>)
                   or the alarm wording. Not in our library?{' '}

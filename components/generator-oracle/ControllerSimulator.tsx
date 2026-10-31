@@ -2982,7 +2982,7 @@ export default function ControllerSimulator({
           { step: 1, action: 'Press ▼ to enter menu', display: 'Main Menu' },
           { step: 2, action: 'Navigate to ALARMS', display: 'ALARMS selected' },
           { step: 3, action: 'Press ✓ Enter', display: 'Active alarms shown' },
-          { step: 4, action: 'View alarm details', display: 'Oil Pressure Low - Code 121' },
+          { step: 4, action: 'View alarm details', display: 'Oil Pressure Low' },
           { step: 5, action: 'Fix issue, then hold RESET 3 sec', display: 'Alarm cleared' }
         ],
         verificationSteps: [
@@ -3032,7 +3032,7 @@ export default function ControllerSimulator({
           { step: 1, action: 'View engine screen (◄/► to navigate)', display: 'Engine parameters' },
           { step: 2, action: 'Check COOLANT TEMP reading', display: 'Current temp °C' },
           { step: 3, action: 'Press ▼ → ALARMS', display: 'Alarm list' },
-          { step: 4, action: 'View high temp alarm code', display: 'High Coolant Temp - Code 130' },
+          { step: 4, action: 'View high temp alarm code', display: 'High Coolant Temp' },
           { step: 5, action: 'After fix: MODE OFF → RESET 3 sec', display: 'Alarm cleared' }
         ],
         verificationSteps: [

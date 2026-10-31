@@ -562,7 +562,9 @@ function genProbability(prob: number, _depth: number, r?: any) {
     ? (() => {
         const t = gw.trend_cm_per_year, se = Number.isFinite(gw.trendStdErr_cm_per_year) ? gw.trendStdErr_cm_per_year : 0;
         const word = Math.abs(t) <= 2 * se ? 'No clear trend' : t > 0 ? 'Rising' : 'Falling';
-        return `${word}: ${t > 0 ? '+' : ''}${t.toFixed(2)} ± ${se.toFixed(2)} cm/yr (GRACE, regional ~300 km)`;
+        // Regional, and near a big lake mostly the lake (audit 2026-10-31).
+        const nearLake = /lake/i.test(String(r?.graceData?.dataSource ?? r?.graceData?.note ?? ''));
+        return `${word}: ${t > 0 ? '+' : ''}${t.toFixed(2)} ± ${se.toFixed(2)} cm/yr (GRACE, regional ~300 km, fit error only, record to ${String(gw.period ?? '').split(' to ')[1] ?? 'latest'}${nearLake ? '; a nearby lake affects this' : ''}). Not the water level at this site.`;
       })()
     : proxyOk
       ? (ga.trend === 'gaining' ? 'Rising (soil-moisture proxy)' : ga.trend === 'stable' ? 'Steady (soil-moisture proxy)' : 'Falling (soil-moisture proxy)')
@@ -5784,7 +5786,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {/* SCENARIO SIMULATION (#15) */}
           {activeResultTab==='scenarios' && (
             <div>
-              <h4 className="tab-title">{'\u{1F3AF}'} Scenario Simulation</h4>
+              <h4 className="tab-title">{'\u{1F3AF}'} Depth options (rule of thumb)</h4>
+              <p className="tab-desc">Fixed proportions of the planned depth and yield, for budgeting only: they are not site evidence. Only the survey and the drilled hole tell you what a deeper hole would give.</p>
               <div className="scenario-cards">
                 {scenarios.map((sc,i) => (
                   <div key={i} className={`scenario-card ${i===1?'recommended':''}`}>

@@ -343,7 +343,7 @@ const SENSOR_DATABASE: SensorData[] = [
       { brand: 'DSE', oem: 'DSE855-010', aftermarket: ['VDO 323-801-001-003N', 'Datcon 06390-01'] },
       { brand: 'ComAp', oem: 'IC-NT-TEMP', aftermarket: ['Bosch 0280130026', 'Delphi TS10275'] },
       { brand: 'Cummins', oem: '3865312', aftermarket: ['PAI 450650', 'Alliant Power AP63462'] },
-      { brand: 'Perkins', oem: '2848A127', aftermarket: ['Europarts 61.125.01', '?"FG Wilson 10000-17460'] },
+      { brand: 'Perkins', oem: '2848A127', aftermarket: ['Europarts 61.125.01', 'FG Wilson 10000-17460'] },
       { brand: 'CAT', oem: '1979325', aftermarket: ['Interstate McBee M-1979325', 'Costex C1979325'] }
     ]
   },
@@ -1826,7 +1826,7 @@ export default function SensorDiagnosticsPanel() {
                       {sensor.range}
                     </span>
                     <span className="px-2 py-0.5 bg-green-500/20 rounded text-[10px] text-green-400">
-                      {sensor.faultCodes.length} fault codes
+                      {sensor.faultCodes.length} related alarms
                     </span>
                   </div>
                 </div>
@@ -1937,7 +1937,8 @@ export default function SensorDiagnosticsPanel() {
 
                       {/* Fault Codes */}
                       <div>
-                        <h3 className="text-lg font-bold text-white mb-3">Related Fault Codes</h3>
+                        <h3 className="text-lg font-bold text-white mb-1">Related alarms</h3>
+                        <p className="text-xs text-slate-400 mb-3">Code numbers differ by controller, so none are listed here: look the alarm up by its wording in the Fault Center.</p>
                         <div className="grid gap-2">
                           {selectedSensor.faultCodes.map((fault, i) => (
                             <div
@@ -1949,7 +1950,7 @@ export default function SensorDiagnosticsPanel() {
                               }`}
                             >
                               <div className="flex items-center justify-between">
-                                <span className="font-mono font-bold text-white">{fault.code}</span>
+                                <span className="font-bold text-white">Match the wording on your display</span>
                                 <span className={`px-2 py-0.5 rounded text-xs ${
                                   fault.severity === 'shutdown' ? 'bg-red-500/20 text-red-400' :
                                   fault.severity === 'critical' ? 'bg-orange-500/20 text-orange-400' :
@@ -2148,7 +2149,7 @@ export default function SensorDiagnosticsPanel() {
           <div className="text-2xl font-black text-amber-400">
             {SENSOR_DATABASE.reduce((sum, s) => sum + s.faultCodes.length, 0)}
           </div>
-          <div className="text-xs text-slate-500">Fault Codes</div>
+          <div className="text-xs text-slate-500">Related alarms</div>
         </div>
         <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50 text-center">
           <div className="text-3xl mb-2">🔧</div>

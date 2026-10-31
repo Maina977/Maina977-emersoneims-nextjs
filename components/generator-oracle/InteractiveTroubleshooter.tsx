@@ -472,7 +472,7 @@ Your feedback helps us improve. Consider:
 - Bookmarking Generator Oracle for future diagnostics
 
 **Need generator parts or professional service?**
-📞 Call: +254 XXX XXX XXX
+📞 Call: +254 768 860 665
 📧 Email: info@emersoneims.com
 🌐 Web: www.emersoneims.com
         `,
@@ -488,7 +488,7 @@ Your feedback helps us improve. Consider:
 **We're here to help!**
 
 **Contact EmersonEIMS:**
-📞 Phone: +254 XXX XXX XXX
+📞 Phone: +254 768 860 665
 📧 Email: support@emersoneims.com
 🌐 Website: www.emersoneims.com
 
@@ -851,7 +851,7 @@ If no = mechanical/fuel issue
    - High altitude = less power
    - High ambient temp = derate
 
-**What's your exhaust backpressure? (should be <3" H2O)**
+**What's your exhaust backpressure? (typically below about 10 kPa / 3 in Hg: use the engine datasheet limit)**
         `,
         options: [
           { label: '💨 Exhaust seems restricted', nextStep: 'exhaust-restriction' },
@@ -895,7 +895,7 @@ If no = mechanical/fuel issue
 **Under Voltage:**
 - AVR not responding to load
 - Check AVR sensing wires
-- Verify AVR adjustment (increase voltage droop compensation)
+- Verify AVR adjustment. Droop lowers voltage with load and is only for parallel sharing: on a single set it should be off. **Lethal voltage: insulated tools, one hand, no contact with terminals.**
 - Exciter field circuit issue
 
 **Over Voltage:**
@@ -904,6 +904,7 @@ If no = mechanical/fuel issue
 - AVR adjustment needed
 
 **AVR Adjustment:**
+**DANGER: the AVR terminals are at lethal voltage while running. Qualified electricians only, with insulated tools and rated gloves.**
 1. Locate AVR potentiometers
 2. VOLT pot - sets no-load voltage
 3. STAB pot - stability/hunting
@@ -978,7 +979,7 @@ If no = mechanical/fuel issue
 - Professional service
 - 24/7 emergency support
 
-📞 +254 XXX XXX XXX
+📞 +254 768 860 665
         `,
         options: [
           { label: '🔄 Start new troubleshooting', nextStep: 'load-percentage' },
@@ -994,7 +995,7 @@ If no = mechanical/fuel issue
 - On-site inspection
 
 **Contact EmersonEIMS:**
-📞 +254 XXX XXX XXX
+📞 +254 768 860 665
 📧 support@emersoneims.com
 
 **We offer:**
@@ -1018,7 +1019,7 @@ If no = mechanical/fuel issue
       'oil-pressure': {
         id: 'oil-pressure',
         question: 'Low oil pressure under load:',
-        instruction: 'Check oil level, oil viscosity, oil filter, and oil pump.',
+        instruction: 'STOP the engine and do not restart it on low oil pressure. With the engine stopped, check the oil level, oil grade, oil filter and sender, then confirm with a mechanical gauge before any further run.',
         options: [
           { label: '✅ Fixed oil issue', nextStep: 'resolved-positive' },
           { label: '📞 Need help', nextStep: 'contact-support-load' },
@@ -1140,9 +1141,11 @@ Use a genuine or approved replacement: ask for a written quote.
         instruction: `
 **Fuel System Diagnosis:**
 
-1. **Loosen injector line at one injector**
+**Mechanical injection pumps only. NEVER crack a line on a common-rail engine (QSB, C9 and most modern engines): rail pressure can inject fuel through skin. On those, read rail pressure with the service tool instead.**
+
+1. **Loosen injector line at one injector, wrapped in a rag, standing clear of the spray**
 2. **Crank engine for 5 seconds**
-3. **Watch for fuel spray**
+3. **Watch for fuel at the joint, never with your hand**
 
 | Result | Meaning |
 |--------|---------|
@@ -1153,7 +1156,7 @@ Use a genuine or approved replacement: ask for a written quote.
 
 **What did you observe?**
         `,
-        safetyWarning: 'Fuel spray is under pressure. Wear eye protection!',
+        safetyWarning: 'Fuel under pressure can penetrate skin and blind: eye protection and gloves, hands away from the spray, and seek medical help at once for any injection injury. Never on a common-rail engine.',
         options: [
           { label: '💪 Strong fuel spray', nextStep: 'check-timing' },
           { label: '💧 Weak or no fuel', nextStep: 'bleed-fuel' },
@@ -1453,7 +1456,7 @@ This electromagnetic valve must OPEN to allow fuel.
         question: '📞 Professional assistance needed.',
         instruction: `
 **Contact EmersonEIMS:**
-📞 +254 XXX XXX XXX
+📞 +254 768 860 665
 📧 support@emersoneims.com
 
 We have mobile service units with full diagnostic capability.

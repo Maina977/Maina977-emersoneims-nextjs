@@ -96,7 +96,9 @@ function j1939AsFaultCode(c: J1939FaultCode): ControllerFaultCode {
 
 let _j1939Rows: ControllerFaultCode[] | null = null;
 function j1939Rows(): ControllerFaultCode[] {
-  if (!_j1939Rows) _j1939Rows = J1939_FAULT_CODES.map(j1939AsFaultCode);
+  // The same safety lines as controller alarms (audit 2026-10-31: 848 of 898
+  // J1939 rows had none, including rail pressure and crankcase pressure).
+  if (!_j1939Rows) _j1939Rows = J1939_FAULT_CODES.map(j1939AsFaultCode).map(withSafety);
   return _j1939Rows;
 }
 
@@ -111,12 +113,21 @@ const J1939_SEVERITY = new Map<string, J1939FaultCode['severity']>(J1939_FAULT_C
 // gas warning and SPN 190 no overspeed note, while the J1939 rows did).
 const J1939_SAFETY = new Map<string, string[]>(J1939_FAULT_CODES.map((j) => [`SPN${j.spn}-FMI${j.fmi}`, (j as { safety?: string[] }).safety || []]));
 const ISOLATE = 'Before touching wiring or terminals: stop the set, select OFF/STOP, isolate and lock off the battery and controller supply, and prove the terminals dead with an approved voltage tester.';
+const FAIL_TO_STOP = 'The engine is not stopping: keep clear, shut the fuel supply valve by hand or use the emergency stop, and do not restart until the stop circuit and fuel solenoid are found and fixed.';
 const TOPIC_SAFETY: Array<[RegExp, string[]]> = [
-  [/earth|insulation/i, [ISOLATE, 'An earth fault can leave exposed metalwork live: treat the frame and panel as live until tested. Insulation testing needs an insulation tester with the AVR and controller disconnected first.']],
+  [/fail(ed|ure|s)?\s*to\s*stop/i, [FAIL_TO_STOP]],
+  [/crankcase/i, ['Crankcase pressure faults can mean a hot-spot and explosion risk: stop the engine, let it cool for at least 10 minutes, and never open a crankcase door on a hot engine.']],
+  [/earth|ground|insulation/i, [ISOLATE, 'An earth fault can leave exposed metalwork live: treat the frame and panel as live until tested. Insulation testing needs an insulation tester with the AVR and controller disconnected first.']],
   [/overspeed|over speed|over-speed/i, ['Overspeed can destroy the engine and alternator: keep clear and do not restart until the governor, actuator and fuel control are checked. Never bypass the overspeed protection.']],
   [/batter|charg/i, ['Batteries give off explosive gas: no sparks or flames near them, and disconnect the negative lead first. Wear eye protection.']],
   [/fuel|diesel/i, ['No flames near fuel; clean spills at once. Diesel under pressure can penetrate skin: never feel for leaks with your hands.']],
   [/voltage|current|frequency|phase|power|breaker|alternator|avr|excit|sync|mains|bus/i, [ISOLATE, 'Generator and mains terminals are lethal while live: measure only with approved, rated instruments.']],
+];
+const EMERGENCIES: Array<[RegExp, string]> = [
+  [/run\s?-?away|racing\s+out\s+of\s+control/, 'ENGINE RUNAWAY: clear everyone from the area. If you can do it safely from a distance, shut the fuel supply and block the air intake with a proper shut-off. Do not stand in line with the engine or alternator: it can fail violently.'],
+  [/\bfire\b|\bflames?\b|on\s+fire/, 'FIRE: press the emergency stop if you can reach it safely, shut the fuel supply, get everyone out and call the fire service. Use a CO2 or dry-powder extinguisher only on a small fire, and never water on live equipment.'],
+  [/\bshock\b|electrocut|tingl|frame.*\blive\b|\blive\b.*frame/, 'ELECTRIC SHOCK RISK: treat the frame and panel as live. Keep everyone clear, stop the set and isolate it from a safe point before anyone touches it. If someone is being shocked, cut the power first; do not touch them.'],
+  [/carbon\s+monoxide|\bco\s+(alarm|poison|leak)|\bfumes?\b|exhaust\s+(gas\s+)?leak/, 'EXHAUST GAS IS DEADLY: carbon monoxide has no smell. Stop the engine, get everyone out into fresh air and ventilate the room before going back in. Seek medical help for headache, dizziness or nausea. Repair the leak before running again.'],
 ];
 const GENERIC_SAFETY = /^follow standard (electrical )?safety procedures\.?$/i;
 const CONDITION_WORDS: Record<string, string> = {
@@ -136,7 +147,7 @@ function safeResetSteps<T extends { stepNumber?: number; action: string; keySequ
   return out.map((s, i) => ('stepNumber' in s ? { ...s, stepNumber: i + 1 } : s));
 }
 const OIL_STOP = 'Stop the engine: running with low oil pressure can destroy the bearings in minutes. Do not restart until the cause is found.';
-function withSafety(c: ControllerFaultCode): ControllerFaultCode {
+export function withSafety(c: ControllerFaultCode): ControllerFaultCode {
   const text = `${c.title} ${c.subcategory}`.toLowerCase();
   const coolant = /coolant|radiator|water temp|engine temp|overheat|high temp/.test(text);
   const lowOil = /oil pressure/.test(text) && /\b(low|under|below)/.test(text);
@@ -156,9 +167,13 @@ function withSafety(c: ControllerFaultCode): ControllerFaultCode {
   // takes the reference row's severity (2026-10-27 audit: SPN 94 FMI 1 and
   // SPN 96 FMI 17/18 showed two severities in one result list).
   const j1939Severity = /^SPN\d+-FMI\d+$/i.test(c.code) ? J1939_SEVERITY.get(c.code.toUpperCase()) : undefined;
+  // An engine that will not stop is critical on every controller (audit
+  // 2026-10-31: DSE, ComAp and SmartGen rated it "warning").
+  const failToStop = /fail(ed|ure|s)?\s*to\s*stop/i.test(c.title);
   return {
     ...c,
     ...(j1939Severity ? { severity: j1939Severity } : {}),
+    ...(failToStop ? { severity: 'critical' as typeof c.severity } : {}),
     // The generic one-liner goes once a specific warning is present.
     safetyWarnings: [...add, ...(c.safetyWarnings || []).filter((w) => !(add.length && GENERIC_SAFETY.test(w.trim())))],
     diagnosticSteps: steps,
@@ -657,11 +672,18 @@ function searchByWords(typed: string, opts: SearchOptions): SearchResponse {
   const merged: SearchResultItem[] = ranked.map(({ score: _s, matchedTerms: _m, ...r }) => r);
   if (core && !pw.brand) {
     const raw = searchIndexRaw({ ...opts, query: core, page: 1, pageSize: 100 });
-    for (const r of raw.results) if (r.source === 'j1939-reference' && !seen.has(r.id)) { merged.push(r); seen.add(r.id); }
+    // Smoke is answered by colour, not by J1939 rows that merely mention it.
+    if (!/\bsmoke/.test(words)) for (const r of raw.results) if (r.source === 'j1939-reference' && !seen.has(r.id)) { merged.push(r); seen.add(r.id); }
   }
   const filtered = opts.severity ? merged.filter((r) => r.severity === opts.severity) : merged;
   const total = filtered.length;
+  // The lookup box carries what the assistant says about a hazard, and points to
+  // the guide for symptoms alarms do not answer (audit 2026-10-31).
+  const hazard = EMERGENCIES.filter(([re]) => re.test(words)).map(([, l]) => l);
+  const guideTitle = d.guides[0]?.title;
+  const notice = hazard.length ? `SAFETY FIRST: ${hazard.join(' ')}` : guideTitle ? `GUIDE: see "${guideTitle}" in the Assistant tab for this symptom.` : undefined;
   return {
+    ...(notice ? { notice } : {}),
     query: typed,
     interpretedAs: null,
     filters: { brand: opts.brand, model: opts.model, severity: opts.severity, category: opts.category, verifiedOnly: opts.verifiedOnly },
@@ -693,7 +715,8 @@ function searchIndexRaw(opts: SearchOptions): SearchResponse {
     const scored = pool.map((c) => {
       const h = haystack(c);
       const t = c.title.toLowerCase();
-      return { c, hits: parsed.words.filter((w) => h.includes(w)).length, titleHits: wordRes.filter((re) => re.test(t)).length };
+      // At a word start: "fire" must not match "misfire" (audit 2026-10-31).
+      return { c, hits: wordRes.filter((re) => re.test(h)).length, titleHits: wordRes.filter((re) => re.test(t)).length };
     });
     const need = parsed.words.length;
     const byTitle = (a: { hits: number; titleHits: number }, b: { hits: number; titleHits: number }) => b.titleHits - a.titleHits || b.hits - a.hits;
@@ -1092,6 +1115,10 @@ function rankGuides(terms: string[], pairs: [string, string][], expanded: Set<st
  * "fail to start" found Fail to Stop first, "knocking" missed Abnormal Noise).
  */
 const PHRASES: [RegExp, string][] = [
+  // Wording on ComAp displays (audit 2026-10-31).
+  [/\bwrn\s+oil\s+press\b/gi, 'low oil pressure warning'],
+  [/\bsd\s+oil\s+press\b/gi, 'low oil pressure shutdown'],
+  [/\bsd\s+water\s+temp\b/gi, 'high coolant temperature shutdown'],
   [/\b(no|zero)\s+(power|output|electricity)\b/gi, 'no voltage output excitation'],
   [/\b(won'?t|wont|will\s+not|cannot|can'?t|does\s+not|doesn'?t|not)\s+start(ing)?\b/gi, 'fail to start crank'],
   [/\bfail(s|ed|ure)?\s+to\s+start\b/gi, 'fail to start crank'],
@@ -1320,6 +1347,10 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   // Safety lines for the hazard the symptom points at, on every answer, not
   // only on a code lookup (2026-10-30 audit: "fuel leak" had no fire warning).
   const safety: string[] = [];
+  // Emergencies come first and are not left to keyword matching (audit
+  // 2026-10-31: "runaway engine" and "fire in generator" had no warning).
+  const emergency = EMERGENCIES.filter(([re]) => re.test(typedText));
+  for (const [, line] of emergency) if (!safety.includes(line)) safety.push(line);
   const addSafety = (lines: string[]) => { for (const l of lines) if (!safety.includes(l)) safety.push(l); };
   for (const [re, lines] of TOPIC_SAFETY) if (re.test(typedText) && !/voltage|current|frequency|phase|power/.test(re.source)) addSafety(lines);
   if (/overheat|coolant|radiator|temperatur|hot/.test(typedText)) addSafety(['Never open a hot radiator or expansion-tank cap: scalding coolant under pressure. Stop the engine and let it cool first.']);
@@ -1334,7 +1365,16 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   // Smoke is read from its colour (the guide), not from controller alarms:
   // only alarms about the exhaust, air intake or boost are kept (2026-10-30
   // re-audit: an unrelated fuel-rail alarm was the only "match").
-  if (/\bsmoke/.test(typedText)) ranked = ranked.filter((r) => /smoke|exhaust|air filter|intake|boost|turbo/i.test(`${r.title} ${r.description}`));
+  if (/\bsmoke/.test(typedText)) ranked = ranked.filter((r) => /smoke|exhaust|air filter|intake|boost|turbo/i.test(r.title));
+  if (/\bfire\b/.test(typedText)) ranked = ranked.filter((r) => !/misfire/i.test(r.title));
+  if (/alternator|winding/.test(typedText) && /overheat|hot|temperatur/.test(typedText)) {
+    ranked = ranked.filter((r) => /alternator|winding|generator (over|high) ?temp/i.test(r.title));
+    notes.unshift('Alternator overheating: check the load against the rating, blocked air inlets and screens, the cooling fan and the winding temperature sensor. Engine coolant alarms are a different fault.');
+  }
+  if (/oil\s+in\s+(the\s+)?coolant|coolant\s+in\s+(the\s+)?oil|mayonnaise|milky\s+oil/.test(typedText)) {
+    ranked = [];
+    notes.unshift('Oil and coolant mixing usually means a failed oil cooler or head gasket. Stop the engine, do not run it until the source is found, and have the oil and coolant changed after repair.');
+  }
   if (/\bleak/.test(typedText)) notes.unshift('No controller alarm detects a leak directly: find it by inspection (dry the area, run the engine, look for fresh wetting). Alarms below are what a leak can eventually cause, such as a low fuel or coolant level.');
 
   return {

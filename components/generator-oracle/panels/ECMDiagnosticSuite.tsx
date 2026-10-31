@@ -302,7 +302,7 @@ const SYSTEM_CATEGORIES: SystemCategory[] = [
           { id: 'water-in-fuel', name: 'Water in Fuel', value: 0, unit: '', min: 0, max: 1, status: 'normal', spn: 97 },
         ],
         faultCodes: [
-          { code: 'SPN 97 / FMI 15', spn: 97, fmi: 15, description: 'Water In Fuel Indicator - High Most Severe', severity: 'critical', status: 'active', causes: ['Water contamination in fuel tank', 'Fuel/water separator full', 'Condensation in tank'], repairs: ['Drain fuel/water separator', 'Test fuel sample', 'Replace filter', 'Drain and clean tank'] },
+          { code: 'SPN 97 / FMI 15', spn: 97, fmi: 15, description: 'Water In Fuel Indicator - Above Normal, Least Severe', severity: 'critical', status: 'active', causes: ['Water contamination in fuel tank', 'Fuel/water separator full', 'Condensation in tank'], repairs: ['Drain fuel/water separator', 'Test fuel sample', 'Replace filter', 'Drain and clean tank'] },
           { code: 'SPN 157 / FMI 1', spn: 157, fmi: 1, description: 'Fuel Rail Pressure - Data Valid But Below Normal', severity: 'warning', status: 'active', causes: ['Fuel filter clogged', 'Lift pump failure', 'Fuel line restriction', 'Injector leak'], repairs: ['Replace fuel filters', 'Check lift pump operation', 'Inspect fuel lines', 'Perform injector leak-off test'] },
         ],
         activeTests: [
@@ -487,7 +487,7 @@ const SYSTEM_CATEGORIES: SystemCategory[] = [
           { id: 'compressor-outlet-temp', name: 'Compressor Outlet Temp', value: 165, unit: '°C', min: 0, max: 250, status: 'normal' },
         ],
         faultCodes: [
-          { code: 'SPN 1209 / FMI 7', spn: 1209, fmi: 7, description: 'VGT Actuator - Not Responding', severity: 'critical', status: 'active', causes: ['VGT actuator failure', 'Sticking vanes', 'Electrical fault'], repairs: ['Check actuator operation', 'Clean VGT vanes', 'Inspect wiring'] },
+          { code: 'SPN 1209 / FMI 7', spn: 1209, fmi: 7, description: 'Exhaust Gas Pressure - Not Responding', severity: 'critical', status: 'active', causes: ['VGT actuator failure', 'Sticking vanes', 'Electrical fault'], repairs: ['Check actuator operation', 'Clean VGT vanes', 'Inspect wiring'] },
         ],
         activeTests: [
           { id: 'vgt-sweep', name: 'VGT Sweep Test', description: 'Move VGT vanes through full range', duration: 30 },
@@ -558,7 +558,7 @@ const SYSTEM_CATEGORIES: SystemCategory[] = [
           { id: 'regen-status', name: 'Regeneration Status', value: 0, unit: '', min: 0, max: 3, status: 'normal' },
         ],
         faultCodes: [
-          { code: 'SPN 3251 / FMI 0', spn: 3251, fmi: 0, description: 'DPF Soot Load - Above Normal', severity: 'warning', status: 'active', causes: ['Failed regeneration', 'Excessive idle time', 'Faulty sensors', 'Injector issues'], repairs: ['Force regeneration', 'Check sensors', 'Inspect injectors', 'Verify exhaust temperatures'] },
+          { code: 'SPN 3251 / FMI 0', spn: 3251, fmi: 0, description: 'DPF Differential Pressure - Above Normal', severity: 'warning', status: 'active', causes: ['Failed regeneration', 'Excessive idle time', 'Faulty sensors', 'Injector issues'], repairs: ['Force regeneration', 'Check sensors', 'Inspect injectors', 'Verify exhaust temperatures'] },
           { code: 'SPN 3251 / FMI 16', spn: 3251, fmi: 16, description: 'DPF Differential Pressure - High', severity: 'critical', status: 'logged', causes: ['Blocked DPF', 'Ash accumulation', 'Failed regen cycles'], repairs: ['Perform forced regen', 'DPF cleaning required', 'Check ash load', 'May need replacement'] },
         ],
         activeTests: [
@@ -584,7 +584,7 @@ const SYSTEM_CATEGORIES: SystemCategory[] = [
         faultCodes: [
           { code: 'SPN 1761 / FMI 17', spn: 1761, fmi: 17, description: 'DEF Tank Level - Low Warning', severity: 'warning', status: 'active', causes: ['Low DEF level', 'Level sensor fault'], repairs: ['Fill DEF tank', 'Check sensor operation'] },
           { code: 'SPN 3364 / FMI 0', spn: 3364, fmi: 0, description: 'DEF Quality - Out of Range', severity: 'critical', status: 'logged', causes: ['Contaminated DEF', 'Wrong fluid used', 'Sensor fault'], repairs: ['Drain and refill with quality DEF', 'Check DEF quality sensor', 'Verify DEF source'] },
-          { code: 'SPN 3719 / FMI 31', spn: 3719, fmi: 31, description: 'NOx Conversion Efficiency - Below Threshold', severity: 'warning', status: 'active', causes: ['DEF quality issue', 'SCR catalyst degradation', 'NOx sensor fault', 'Low SCR temperature'], repairs: ['Verify DEF quality', 'Check NOx sensors', 'Inspect catalyst', 'Review duty cycle'] },
+          { code: 'SPN 3719 / FMI 31', spn: 3719, fmi: 31, description: 'DPF Soot Load - Condition Exists', severity: 'warning', status: 'active', causes: ['DEF quality issue', 'SCR catalyst degradation', 'NOx sensor fault', 'Low SCR temperature'], repairs: ['Verify DEF quality', 'Check NOx sensors', 'Inspect catalyst', 'Review duty cycle'] },
         ],
         activeTests: [
           { id: 'def-dosing-test', name: 'DEF Dosing Test', description: 'Verify DEF injection quantity and timing', duration: 60 },
@@ -610,7 +610,7 @@ const SYSTEM_CATEGORIES: SystemCategory[] = [
           { id: 'high-coolant-status', name: 'High Coolant Temp Protection', value: 1, unit: '', min: 0, max: 1, status: 'normal' },
         ],
         faultCodes: [
-          { code: 'SPN 1569 / FMI 31', spn: 1569, fmi: 31, description: 'Engine Protection System - Shutdown Active', severity: 'critical', status: 'active', causes: ['Protection limit exceeded', 'Multiple fault conditions'], repairs: ['Identify root cause', 'Clear faults after repair', 'Verify protection systems'] },
+          { code: 'SPN 1569 / FMI 31', spn: 1569, fmi: 31, description: 'Engine Protection Torque Derate - Condition Exists', severity: 'critical', status: 'active', causes: ['Protection limit exceeded', 'Multiple fault conditions'], repairs: ['Identify root cause', 'Clear faults after repair', 'Verify protection systems'] },
         ],
         activeTests: [],
         calibrations: [
@@ -802,7 +802,7 @@ export default function ECMDiagnosticSuite() {
 
               <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${isConnected ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-400'}`}>
                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
-                <span className="text-sm font-medium">{isConnected ? `${selectedBrand.name} Connected` : 'Disconnected'}</span>
+                <span className="text-sm font-medium">{isConnected ? `${selectedBrand.name}: simulation only, no ECM connected` : 'Simulation (no ECM connected)'}</span>
               </div>
 
               <button

@@ -536,7 +536,8 @@ export class BoreholeAnalyzer {
           const kb = await nearestKenyaBaseline(effectiveLat, effectiveLon, 50);
           const pB = Number(kb?.climate?.precip_mm_yr), pN = Number(w.averageAnnualPrecipitation);
           if (pB > 0 && pN > 0 && Math.max(pB, pN) / Math.min(pB, pN) > 1.3) {
-            const lo = Math.round(Math.min(pB, pN)); const k = lo / pN;
+            // ERA5 baseline over NASA unless the site is arid, as in historicalData.
+            const lo = Math.round(Math.min(pB, pN) < 450 ? Math.min(pB, pN) : pB); const k = lo / pN;
             const sc = (v: any) => (typeof v === 'number' ? Math.round(v * k) : v);
             w.averageAnnualPrecipitation = lo; w.avgAnnualPrecip = lo;
             if (Array.isArray(w.annualPrecipitation)) w.annualPrecipitation = w.annualPrecipitation.map((r: any) => (typeof r === 'number' ? sc(r) : { ...r, total: sc(r.total) }));
@@ -550,8 +551,7 @@ export class BoreholeAnalyzer {
               }
             }
             if (Array.isArray(w.seasonalAnalysis)) w.seasonalAnalysis = w.seasonalAnalysis.map((s: any) => ({ ...s, avgPrecipitation: sc(s.avgPrecipitation) }));
-            const hi = Math.round(Math.max(pB, pN));
-            w.precipitationNote = `Rainfall sources disagree: NASA POWER ${Math.round(pN)} mm/yr, ERA5 2015-2024 baseline for ${kb!.name} (${kb!.distance_km} km) ${Math.round(pB)} mm/yr. ${hi / lo > 1.6 ? `The higher figure is likely an overestimate here; ${lo} mm/yr is used` : `Long-term rainfall here is probably between ${lo} and ${hi} mm/yr; the lower figure is used for recharge as the cautious choice`}.`;
+            w.precipitationNote = `Rainfall sources disagree: NASA POWER ${Math.round(pN)} mm/yr, ERA5 2015-2024 baseline for ${kb!.name} (${kb!.distance_km} km) ${Math.round(pB)} mm/yr. ${lo} mm/yr is used. A local weather-station record is the better reference.`;
             console.warn('[Pipeline] ' + w.precipitationNote);
           }
         }
@@ -3355,7 +3355,20 @@ export class BoreholeAnalyzer {
         // Planning yield sits between the cautious floor and the typical yield of real
         // boreholes for this site — never below the floor, never above typical (2026-10-20).
         estimatedYield_m3hr: evidenceBand ? Math.min(Math.max(calibratedYield, evidenceBand.lo), Math.max(evidenceBand.lo, evidenceBand.typical || calibratedYield)) : calibratedYield,
-        staticWaterLevel_m: realTimeWaterData?.usgsGroundwater?.averageDepthToWaterM ?? calibratedDepth * 0.3,
+        // Pump head and solar size follow from this. Measured levels near the site
+        // first; with none, half the planned depth as a stated planning assumption
+        // (audit 2026-10-31: 30% of the depth read 45 m in central Nairobi, where
+        // about 100 m is common, and was printed as modelled).
+        staticWaterLevel_m: await (async () => {
+          const f = Number(fieldData?.stepDrawdownTest?.staticWaterLevel_m ?? fieldData?.gprSurvey?.waterTableDepthM);
+          if (Number.isFinite(f) && f > 0) return f;
+          if (effectiveLat != null && effectiveLon != null) {
+            const mq = await measuredGroundwaterNear(effectiveLat, effectiveLon, 25).catch(() => null);
+            if (mq?.restWaterLevel && mq.restWaterLevel.n >= 3 && mq.restWaterLevel.median != null) return mq.restWaterLevel.median;
+          }
+          (result as any).pumpHeadAssumption = `No water level has been measured near this site: the pump and solar costs assume about ${Math.round(calibratedDepth * 0.5)} m (half the planned depth). A survey or the drilled hole sets the real figure.`;
+          return calibratedDepth * 0.5;
+        })(),
         aquiferType: aqClass?.aquiferType ?? subsurfaceModel?.lithologicalColumn?.aquifers?.[0]?.type ?? 'unknown',
         primaryRockType: rockClassification?.primaryRockType ?? soil?.type ?? 'unknown',
         soilType: soil?.type ?? 'unknown',
@@ -3556,7 +3569,7 @@ export class BoreholeAnalyzer {
     try {
       let wt: number | null = null;
       let kind: 'field' | 'nearby' | null = null;
-      let basis = 'Not measured: no field reading and too few recorded water levels nearby. An ERT survey or the drilled hole sets it.';
+      let basis = (result as any).pumpHeadAssumption ?? 'Not measured: no field reading and too few recorded water levels nearby. An ERT survey or the drilled hole sets it.';
       const fieldSwl = Number(fieldData?.stepDrawdownTest?.staticWaterLevel_m ?? fieldData?.gprSurvey?.waterTableDepthM);
       if (Number.isFinite(fieldSwl) && fieldSwl > 0) {
         wt = fieldSwl; kind = 'field'; basis = 'Measured on site (field data you entered).';
@@ -3569,6 +3582,15 @@ export class BoreholeAnalyzer {
         if (levels.length >= 3) {
           wt = levels[Math.floor((levels.length - 1) / 2)]; kind = 'nearby';
           basis = `Median static water level of ${levels.length} drilled boreholes within 20 km (range ${levels[0]}-${levels[levels.length - 1]} m). Confirm on site.`;
+        } else {
+          // The measured file as well as the field records (audit 2026-10-31:
+          // Lodwar said "too few" with 35 levels loaded).
+          const mq = await measuredGroundwaterNear(effectiveLat, effectiveLon, 25).catch(() => null);
+          const rw = mq?.restWaterLevel;
+          if (rw && rw.n >= 3 && rw.median != null) {
+            wt = rw.median; kind = 'nearby';
+            basis = `Median rest water level of ${rw.n} boreholes within 25 km (quartiles ${rw.p25}-${rw.p75} m). Confirm on site.`;
+          }
         }
       }
       (result as any).waterTableDepth = wt;
@@ -3576,7 +3598,12 @@ export class BoreholeAnalyzer {
       (result as any).waterTableBasis = basis;
       if (result.geophysicsFusion && !isFieldValidated) (result.geophysicsFusion as any).waterTableDepth_m = wt ?? undefined;
       // The web's data-sources list shows the same value and basis.
-      const swlItem = ((result as any).engineerConfidence?.provenance?.items ?? []).find((i: any) => i?.parameter === 'Static Water Level');
+      const provItems = (result as any).engineerConfidence?.provenance?.items ?? [];
+      // One recharge figure: the Data sources tab showed 11 beside the page's 55
+      // (audit 2026-10-31).
+      const rechargeItem = provItems.find((i: any) => i?.parameter === 'Annual Recharge Rate');
+      if (rechargeItem && (result as any).rechargeSummary?.governing_mm != null) rechargeItem.value = (result as any).rechargeSummary.governing_mm;
+      const swlItem = provItems.find((i: any) => i?.parameter === 'Static Water Level');
       if (swlItem && kind !== 'field') {
         const modelled = Number(swlItem.value);
         swlItem.value = wt ?? 'Not measured';
@@ -3625,6 +3652,15 @@ export class BoreholeAnalyzer {
     }
     // Final values after every regional adjustment: one chemistry model everywhere.
     (result as any).hydrochemPrediction = harmonizeHydrochem((result as any).hydrochemPrediction, result.waterQuality);
+    // Treatment and the screening verdict rest on salinity and fluoride, the two
+    // with regional or measured evidence. Arsenic, iron and pH from soil models
+    // are not evidence and must not buy a $4,000 plant (audit 2026-10-31: Kitale).
+    if (result.waterQuality && !fieldData?.labWaterAnalysis) {
+      const wqG: any = result.waterQuality;
+      wqG.treatmentRequired = (wqG.treatmentRequired ?? []).filter((t: string) => /desalin|reverse osmosis|\bro\b|salin|fluorid/i.test(String(t)));
+      wqG.isPotable = Number(wqG.tds ?? 0) < 1000 && Number(wqG.fluoride ?? 0) <= 1.5;
+      delete wqG.accuracy;
+    }
     // Ensure GPS coordinates propagate to ALL possible storage paths
     if (effectiveLat != null && effectiveLon != null) {
       if (!result.clientLocation) result.clientLocation = {};

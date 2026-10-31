@@ -375,7 +375,7 @@ const generateLiveParameters = (): LiveParameter[] => [
 const SAMPLE_FAULTS: FaultCode[] = [
   // Active Faults
   { code: 'SPN 110 FMI 16', spn: 110, fmi: 16, description: 'Engine Coolant Temperature - High Warning', severity: 'warning', status: 'active', count: 1, firstOccurrence: '2026-03-20 11:45', lastOccurrence: '2026-03-20 11:45' },
-  { code: 'SPN 3226 FMI 0', spn: 3226, fmi: 0, description: 'Aftertreatment DPF Soot Load - Above Normal', severity: 'warning', status: 'active', count: 1, firstOccurrence: '2026-03-21 08:30', lastOccurrence: '2026-03-21 08:30' },
+  { code: 'SPN 3226 FMI 0', spn: 3226, fmi: 0, description: 'Aftertreatment Outlet NOx - Above Normal', severity: 'warning', status: 'active', count: 1, firstOccurrence: '2026-03-21 08:30', lastOccurrence: '2026-03-21 08:30' },
 
   // Logged Faults (History)
   { code: 'SPN 100 FMI 4', spn: 100, fmi: 4, description: 'Engine Oil Pressure - Voltage Below Normal', severity: 'warning', status: 'logged', count: 2, firstOccurrence: '2026-03-15 14:32', lastOccurrence: '2026-03-18 09:15' },
@@ -385,7 +385,7 @@ const SAMPLE_FAULTS: FaultCode[] = [
   { code: 'SPN 168 FMI 18', spn: 168, fmi: 18, description: 'Battery Potential - Low Warning', severity: 'info', status: 'logged', count: 4, firstOccurrence: '2026-02-28 06:00', lastOccurrence: '2026-03-15 06:30' },
   { code: 'SPN 91 FMI 3', spn: 91, fmi: 3, description: 'Throttle Position Sensor - Voltage Above Normal', severity: 'warning', status: 'logged', count: 1, firstOccurrence: '2026-03-01 09:00', lastOccurrence: '2026-03-01 09:00' },
   { code: 'SPN 1569 FMI 31', spn: 1569, fmi: 31, description: 'Engine Protection Torque Derate - Active', severity: 'info', status: 'logged', count: 2, firstOccurrence: '2026-03-10 08:05', lastOccurrence: '2026-03-15 14:40' },
-  { code: 'SPN 3719 FMI 16', spn: 3719, fmi: 16, description: 'Aftertreatment Exhaust Gas Temp - High Warning', severity: 'warning', status: 'logged', count: 1, firstOccurrence: '2026-03-18 13:20', lastOccurrence: '2026-03-18 13:20' },
+  { code: 'SPN 3719 FMI 16', spn: 3719, fmi: 16, description: 'Aftertreatment DPF Soot Load - Above Normal', severity: 'warning', status: 'logged', count: 1, firstOccurrence: '2026-03-18 13:20', lastOccurrence: '2026-03-18 13:20' },
 
   // Pending Faults
   { code: 'SPN 105 FMI 15', spn: 105, fmi: 15, description: 'Intake Manifold Temperature - High Caution', severity: 'info', status: 'pending', count: 1, firstOccurrence: '2026-03-21 10:00', lastOccurrence: '2026-03-21 10:00' },
@@ -2954,7 +2954,7 @@ export default function ProfessionalDiagnosticTools({ generatorInfo }: Professio
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white mb-1">Professional Diagnostic Tools</h2>
-          <p className="text-slate-400">10 dealer-level diagnostic interfaces with full functionality</p>
+          <p className="text-slate-400">Training simulations of 10 dealer tools. Nothing here connects to a real controller</p>
         </div>
         <div className="flex items-center gap-3">
           {/* ECM Hardware Connection Button */}

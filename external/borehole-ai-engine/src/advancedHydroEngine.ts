@@ -528,11 +528,17 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number, opts?: {
               (wp.water_source_category ?? '').toLowerCase().includes('groundwater');
             // Include boreholes and other groundwater points
             if (isBoreholeType || (wp.water_source_category ?? '').toLowerCase().includes('groundwater') || !wp.water_source_category) {
-              const statusId = (wp.status_clean ?? wp.status_id ?? '').toLowerCase();
+              // WPDx's two status fields often disagree: 3,901 of 3,989 records near
+              // Kitale have status_id Yes and status_clean Non-Functional. A conflict
+              // is Unknown, never a failed borehole (audit 2026-10-31).
+              const sId = String(wp.status_id ?? '').toLowerCase(), sClean = String(wp.status_clean ?? '').toLowerCase();
+              const says = (s: string) => (/non|^no\b/.test(s) ? 'fail' : /partial/.test(s) ? 'partial' : /yes|functional/.test(s) ? 'ok' : '');
+              const a = says(sId), c = says(sClean);
               let outcome: 'Success' | 'Moderate' | 'Fail' | 'Unknown' = 'Unknown';
-              if (statusId.includes('non')) outcome = 'Fail';
-              else if (statusId.includes('yes') || statusId.includes('functional')) outcome = 'Success';
-              else if (statusId.includes('partial')) outcome = 'Moderate';
+              if (a && c && a !== c) outcome = 'Unknown';
+              else if ((a || c) === 'fail') outcome = 'Fail';
+              else if ((a || c) === 'ok') outcome = 'Success';
+              else if ((a || c) === 'partial') outcome = 'Moderate';
               // Human-readable name from the registry's admin hierarchy —
               // e.g. "Kiuu, Ruiru — Borehole/Tubewell (Water Mission, 2011)"
               const wpName = [wp.clean_adm3, wp.clean_adm2].filter(Boolean).join(', ');

@@ -102,6 +102,7 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   if (eco.defluoridationCost > 0) costRows.push(['Defluoridation', usd(eco.defluoridationCost), eco.kes(eco.defluoridationCost)]);
   costRows.push([`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, usd(eco.contingency), eco.kes(eco.contingency)]);
   costRows.push(['TOTAL', usd(eco.totalCost), eco.kes(eco.totalCost)]);
+  if (r.pumpHeadAssumption) costRows.push(['Water level behind the pump cost', 'assumed, not measured', String(r.pumpHeadAssumption)]);
   const paybackYears = n(eco.paybackMonths) !== null && eco.paybackMonths > 0 ? eco.paybackMonths / 12 : null;
   costRows.push(['Payback if water is sold', eco.paybackWithheld ? 'not given: the site screens as unfavourable' : paybackYears !== null ? `about ${f(paybackYears, 1)} years` : 'does not pay back from water sales', `$${eco.waterTariffPerM3}/m³, ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} days/yr${eco.needsRO ? `; only ${Math.round(eco.roRecovery * 100)}% is product water after reverse osmosis, which costs about $${eco.roOpexPerM3}/m³` : ''}`]);
   sections.push({ title: 'Costs (typical Kenyan prices, not a quotation)', rows: costRows, notes: ['Prices are estimates for planning; the drilling contractor and the hydrogeological survey fix the real cost.'] });
