@@ -303,6 +303,7 @@ Payment: M-Pesa to 0768860665`
                   <span className="text-xl font-bold text-amber-400">
                     KES {product.price.toLocaleString()}
                   </span>
+                  <span className="text-xs text-slate-400">indicative; your quote confirms</span>
                 </div>
 
                 {/* Stock */}

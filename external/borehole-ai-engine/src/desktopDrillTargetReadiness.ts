@@ -1,3 +1,4 @@
+import { finalVerdict } from './verdict';
 /**
  * desktopDrillTargetReadiness.ts — THREE-SCORE STATUS ARCHITECTURE
  * ════════════════════════════════════════════════════════════════════════════
@@ -139,8 +140,10 @@ export function computeDesktopDrillTargetReadiness(
   // A "drilled outcome" must be a REAL recorded outcome — wells whose outcome
   // was back-filled from regional-estimated yields are calibration aids, not
   // validation evidence (no synthetic outcomes may earn analogue credit).
+  // A functional-status record in a water-point registry is not a drilled result
+  // (audit 2026-10-31: "118 drilled-outcome analogues" at Nairobi).
   const drilledOutcomes = wells.filter((w) => (w?.outcome === 'Success' || w?.outcome === 'Fail')
-    && !/sp?ring/i.test(String(w?.id ?? '')) && !/regional est/i.test(String(w?.source ?? '')));
+    && !/sp?ring/i.test(String(w?.id ?? '')) && !/regional est|wpdx|osm|openstreetmap|registry|water ?point|mwater/i.test(String(w?.source ?? '')));
   const successRate = Number(r.nearbyWells?.successRate ?? 0);
   let wpScore = 0;
   if (sampleSize > 0) wpScore += Math.min(6, Math.ceil(sampleSize / 15));        // volume of registry records (max 6)
@@ -218,18 +221,17 @@ export function computeDesktopDrillTargetReadiness(
     `${rech ? 'Recharge model present' : 'No recharge model'}; ${hasMultiYear ? 'multi-year climate record' : 'single-period climate'}.`,
     'Add a second and third recharge approach (water-balance + coefficient + land-surface model) and show their agreement/disagreement (§3F).');
 
-  // ── 7. Optical, radar & multi-temporal agreement (8) ──
+  // ── 7. Satellite evidence actually fetched (8). No radar or Landsat is fetched,
+  //    so a module merely existing earns nothing (audit 2026-10-31). ──
   const srs = r.satelliteRemoteSensing;
   const seasonalVeg = !!(r.vegetationGWProxy?.ndviSeasonalRange != null || r.satelliteVegetation);
   let rsScore = 0;
-  if (srs) {
-    rsScore += 3;
-    const used = Number(srs.totalMethodsUsed ?? 0);
-    rsScore += Math.min(3, Math.round(used / 3));
-  }
-  if (seasonalVeg) rsScore += 2; // multi-season vegetation comparison
-  add('Optical, radar & multi-temporal agreement', rsScore, 8, 'Remote sensing',
-    `${srs ? `${srs.totalMethodsUsed ?? 0} satellite method(s)` : 'No satellite fusion'}; multi-season vegetation ${seasonalVeg ? 'assessed' : 'not assessed'}.`,
+  const realGrace = r.graceData?.isSatelliteGravity !== false && !!(r.graceData?.groundwater || r.graceData?.totalStorage);
+  if (realGrace) rsScore += 3;
+  if (seasonalVeg) rsScore += 3; // multi-season vegetation comparison
+  if (r.gldasGroundwater?.soilMoisture) rsScore += 2; // ERA5-Land soil moisture by depth
+  add('Satellite evidence fetched (GRACE, vegetation, soil moisture)', rsScore, 8, 'Remote sensing',
+    `GRACE ${realGrace ? 'used' : 'not available here'}; multi-season vegetation ${seasonalVeg ? 'assessed' : 'not assessed'}. No radar or Landsat imagery is fetched.`,
     'Add genuine multi-DATE Sentinel-2 + Sentinel-1 retrieval (wet vs dry season) and require cross-sensor lineament/wetness agreement (§3B/§3C).');
 
   // ── 8. Soil, infiltration & land-cover suitability (6) ──
@@ -267,10 +269,7 @@ export function computeDesktopDrillTargetReadiness(
   const medianDepth = measuredDepths.length > 0 ? measuredDepths[Math.floor(measuredDepths.length / 2)] : 0;
   const recDepth = Number(r.recommendedDepth ?? 0);
   const depthConcordant = medianDepth > 0 && recDepth >= medianDepth * 0.75 && recDepth <= medianDepth * 1.35;
-  // Regional drilled-borehole intelligence (county database — REAL aggregate
-  // drilling statistics for the same region: count, success rate, depth band).
-  // These are drilled, tested boreholes in the same hydrogeological unit — the
-  // strongest analogue evidence available before completion records arrive.
+  // County profiles: compiled estimates of count, success rate and depth band.
   const countyIntel = r.boreholeRecords?.countyIntelligence;
   const countyHasDrilled = Number(countyIntel?.estimatedBoreholes ?? 0) > 0 && Number(countyIntel?.successRate ?? 0) > 0;
   const countyDepthLo = Number(countyIntel?.depthRange?.[0] ?? NaN);
@@ -281,8 +280,9 @@ export function computeDesktopDrillTargetReadiness(
   if (drilledOutcomes.length >= 3) analogScore += Math.min(4, drilledOutcomes.length); // real drilled analogues nearby
   if (measuredDepths.length >= 5) analogScore += 2;                                     // measured offset depths available
   if (measuredDepths.length >= 5 && depthConcordant) analogScore += 2;                  // model depth inside the measured band
-  if (countyHasDrilled) analogScore += 2;                                               // regional drilled-borehole statistics
-  if (countyConcordant) analogScore += 1;                                               // model depth inside the county drilled band
+  // County profiles are compiled estimates, not drilled records: they earn no
+  // drilled-outcome credit (the methodology page says so; audit 2026-10-31).
+  void countyConcordant;
   if (bt) analogScore += 2;
   add('Historical analogue & depth calibration', analogScore, 11, 'Borehole outcomes',
     `${drilledOutcomes.length} drilled-outcome analogue(s); ${measuredDepths.length} offset record(s) with measured depth` +
@@ -336,7 +336,7 @@ export function computeDesktopDrillTargetReadiness(
     ddtr = Math.min(ddtr, 89);
   }
 
-  const ddtrClass = classifyDDTR(ddtr);
+  const ddtrClass = (/^UNFAVOURABLE/.test(finalVerdict(r as any).verdict) ? 'DESKTOP TARGET REJECTED' as DDTRClass : classifyDDTR(ddtr));
 
   // ══ B — FIELD & REGULATORY READINESS (0-100) ══
   const f = r._auditFlags ?? {};

@@ -300,14 +300,16 @@ function analyzeMultispectral(
   if (hasNdvi) findings.push(`Dry-season NDVI ${ndviMin.toFixed(2)} — ${ndviMin > 0.3 ? 'phreatophyte vegetation detected (GW access likely)' : ndviMin > 0.15 ? 'moderate vegetation persistence' : 'sparse dry-season cover'}`);
 
   return {
-    method: '1. Multispectral Optical Remote Sensing',
-    platform: 'Landsat-8/9, Sentinel-2',
-    resolution: '10-30m',
-    status: hasRS && hasNdvi ? 'available' : hasRS ? 'partial' : 'modeled',
-    confidence: hasRS && hasNdvi ? 0.78 : hasRS ? 0.6 : 0.4,
+    // No Landsat or Sentinel imagery is fetched: a soil and MODIS proxy, and it
+    // says so (audit 2026-10-31: printed "Landsat-8/9, AVAILABLE, 78%").
+    method: '1. Vegetation and soil proxy (no optical imagery fetched)',
+    platform: hasNdvi ? 'MODIS MOD13Q1 + ISRIC SoilGrids' : 'ISRIC SoilGrids',
+    resolution: '250m',
+    status: 'modeled',
+    confidence: hasNdvi ? 0.5 : 0.35,
     groundwaterScore: Math.min(100, Math.max(0, score)),
     keyFindings: findings,
-    dataSource: `ISRIC SoilGrids v2.0 (250m)${hasNdvi ? ', ORNL DAAC MOD13Q1 (250 m, 16-day)' : ''}, Sentinel-2 spectral proxy`,
+    dataSource: `ISRIC SoilGrids v2.0 (250m)${hasNdvi ? ', ORNL DAAC MOD13Q1 (250 m, 16-day)' : ''}; proxy only`,
     metrics: {
       clayPercent: clay, sandPercent: sand, lineamentDensity,
       drainageDensity, drySeasonNDVI: ndviMin,

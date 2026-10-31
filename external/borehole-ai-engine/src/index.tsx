@@ -2308,7 +2308,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div style={{fontWeight:700,fontSize:14,color:tierColor}}>{isField ? '\u2705' : '\uD83D\uDCCA'} {tierLabel} — {confOv}% Confidence</div>
             <div style={{fontSize:11,padding:'2px 8px',borderRadius:6,background:tierColor,color:'#fff',fontWeight:600}}>{(result as any).dataSources || 11} Data Sources</div>
           </div>
-          <div style={{fontSize:12,color:'var(--text-secondary)',lineHeight:1.6}}>Rule-based desktop scoring that combines satellite, geological, and hydrological data. Predictions derived from physics-based models (Thiem, Cooper-Jacob, Dar Zarrouk) constrained by {(result as any).dataSources || 11} independent sources. {confOv < 90 ? 'ERT integration and pump test calibration available to upgrade confidence.' : ''}</div>
+          <div style={{fontSize:12,color:'var(--text-secondary)',lineHeight:1.6}}>Rule-based desktop scoring that combines satellite, geological, and hydrological data. Predictions derived from physics-based models (Thiem, Cooper-Jacob, Dar Zarrouk) constrained by {(result as any).dataSources || 11} sources, not all independent. {confOv < 90 ? 'ERT integration and pump test calibration available to upgrade confidence.' : ''}</div>
           {result.uncertainty && (
             <div style={{marginTop:10,display:'flex',gap:12,flexWrap:'wrap'}}>
               <div style={{padding:'6px 12px',borderRadius:8,background:'rgba(56,189,248,0.1)',fontSize:12}}>
@@ -8224,7 +8224,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               </div>
 
               {/* Dempster-Shafer */}
-              <h4 style={{marginBottom:10}}>Dempster-Shafer Belief Fusion ({pinn.dempsterShafer.sourceBeliefs.length} independent sources)</h4>
+              <h4 style={{marginBottom:10}}>Dempster-Shafer Belief Fusion ({pinn.dempsterShafer.sourceBeliefs.length} sources, not all independent)</h4>
               <div style={{display:'flex',gap:16,marginBottom:12,flexWrap:'wrap'}}>
                 <div style={{background:'rgba(34,197,94,0.08)',padding:'10px 16px',borderRadius:10}}>
                   <div style={{fontSize:10,color:'var(--text-secondary)'}}>BELIEF (Bel)</div>

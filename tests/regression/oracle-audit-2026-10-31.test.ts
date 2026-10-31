@@ -55,3 +55,13 @@ describe('alarm safety', () => {
     expect(r.notes.join(' ')).toMatch(/head gasket/);
   });
 });
+
+describe('first steps fit the fault', () => {
+  const steps = (title: string) => withSafety({ id: 'x', code: 'E1', title, subcategory: '', category: '', brand: 'ComAp', model: '', description: '', severity: 'warning', safetyWarnings: [], diagnosticSteps: [{ step: 1, action: 'Review setpoint configuration', expectedResult: '' }], resetPathways: [] } as any).diagnosticSteps;
+  it('a low-oil shutdown starts at the dipstick, and steps are renumbered', () => {
+    const s = steps('Low Oil Pressure Shutdown');
+    expect(s[0].action).toMatch(/dipstick/);
+    expect(s.map((x: any) => x.step)).toEqual([1, 2, 3]);
+  });
+  it('an alarm with no specific rule is left as written', () => expect(steps('Maintenance Due').length).toBe(1));
+});

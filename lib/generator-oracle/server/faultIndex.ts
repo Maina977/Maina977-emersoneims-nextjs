@@ -129,6 +129,21 @@ const EMERGENCIES: Array<[RegExp, string]> = [
   [/\bshock\b|electrocut|tingl|frame.*\blive\b|\blive\b.*frame/, 'ELECTRIC SHOCK RISK: treat the frame and panel as live. Keep everyone clear, stop the set and isolate it from a safe point before anyone touches it. If someone is being shocked, cut the power first; do not touch them.'],
   [/carbon\s+monoxide|\bco\s+(alarm|poison|leak)|\bfumes?\b|exhaust\s+(gas\s+)?leak/, 'EXHAUST GAS IS DEADLY: carbon monoxide has no smell. Stop the engine, get everyone out into fresh air and ventilate the room before going back in. Seek medical help for headache, dizziness or nausea. Repair the leak before running again.'],
 ];
+// Checks a technician makes first for the fault itself, ahead of each controller
+// file's menu steps (audit 2026-10-31: 50 ComAp alarms shared one step list, and a
+// low-oil shutdown had no dipstick step).
+const FAULT_FIRST_STEPS: Array<[RegExp, string[]]> = [
+  [/oil\s*press.*\b(low|under|below)|\b(low|under)\b.*oil\s*press/i, ['Engine stopped: check the oil level on the dipstick and look for leaks.', 'Check the oil grade and filter, then confirm the pressure with a mechanical gauge before believing the sender.']],
+  [/coolant|water temp|engine temp|overheat|high temp/i, ['Engine stopped and cool: check the coolant level, fan belt and radiator core for blockage.', 'Compare the reading with an infrared thermometer at the sender before replacing parts.']],
+  [/fail(ed|ure|s)?\s*to\s*start|start\s*fail|crank/i, ['Check battery voltage while cranking: it should stay above about 9.5 V on 12 V or 19 V on 24 V.', 'Check there is fuel, the fuel solenoid energises, and the filters are not blocked; bleed air if the fuel system was opened.']],
+  [/fail(ed|ure|s)?\s*to\s*stop/i, ['Shut the fuel supply by hand if the engine is still running.', 'With the engine stopped: test the fuel solenoid and the stop circuit from the controller output.']],
+  [/over\s?-?speed/i, ['Do not restart until checked: inspect the actuator, governor linkage and fuel control for sticking.', 'Compare the speed sensor reading with a hand tachometer on the next controlled run.']],
+  [/under\s?-?speed|under\s?-?frequency|low frequency/i, ['Check the load against the set rating, then the fuel filters and air filter.', 'Check the governor or actuator response under a stepped load.']],
+  [/over\s?-?volt|under\s?-?volt|high volt|low volt|loss of excit|excitation/i, ['Measure the voltage at the alternator terminals with a meter rated for it, compared with the controller reading.', 'Check engine speed first, since voltage follows speed, then the AVR sensing leads and supply. Qualified electrician only: lethal voltage.']],
+  [/over\s?-?(current|load)|short circuit|overload/i, ['Reduce the load and measure the current on each phase: look for imbalance or a shorted circuit.', 'Find the cause before resetting the breaker. Do not raise the trip setting to clear the alarm.']],
+  [/batter|charge/i, ['Measure battery voltage engine off, then running: about 13.5-14.5 V on 12 V or 27-29 V on 24 V when charging.', 'Check terminals, the charge alternator belt and the mains charger.']],
+  [/fuel\s*level|low fuel/i, ['Dip the tank to confirm the level before trusting the sender.', 'Refuel with the engine stopped; check for leaks if the level dropped unexpectedly.']],
+];
 const GENERIC_SAFETY = /^follow standard (electrical )?safety procedures\.?$/i;
 const CONDITION_WORDS: Record<string, string> = {
   engine_stopped: 'Engine stopped', fault_investigated: 'Cause found and fixed', fault_cleared: 'Cause found and fixed',
@@ -147,6 +162,13 @@ function safeResetSteps<T extends { stepNumber?: number; action: string; keySequ
   return out.map((s, i) => ('stepNumber' in s ? { ...s, stepNumber: i + 1 } : s));
 }
 const OIL_STOP = 'Stop the engine: running with low oil pressure can destroy the bearings in minutes. Do not restart until the cause is found.';
+function faultFirst(c: ControllerFaultCode, steps: ControllerFaultCode['diagnosticSteps']): ControllerFaultCode['diagnosticSteps'] {
+  const hit = FAULT_FIRST_STEPS.find(([re]) => re.test(c.title));
+  if (!hit) return steps;
+  const first = hit[1].map((action) => ({ action, expectedResult: '' }));
+  return [...first, ...steps].map((st, i) => ({ ...st, step: i + 1 })) as ControllerFaultCode['diagnosticSteps'];
+}
+
 export function withSafety(c: ControllerFaultCode): ControllerFaultCode {
   const text = `${c.title} ${c.subcategory}`.toLowerCase();
   const coolant = /coolant|radiator|water temp|engine temp|overheat|high temp/.test(text);
@@ -176,7 +198,7 @@ export function withSafety(c: ControllerFaultCode): ControllerFaultCode {
     ...(failToStop ? { severity: 'critical' as typeof c.severity } : {}),
     // The generic one-liner goes once a specific warning is present.
     safetyWarnings: [...add, ...(c.safetyWarnings || []).filter((w) => !(add.length && GENERIC_SAFETY.test(w.trim())))],
-    diagnosticSteps: steps,
+    diagnosticSteps: faultFirst(c, steps),
     resetPathways: (c.resetPathways || []).map((p) => ({
       ...p,
       ...(p.requiresCondition ? { requiresCondition: p.requiresCondition.map(conditionText) } : {}),

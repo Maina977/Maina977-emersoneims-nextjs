@@ -126,7 +126,7 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   // the same BOQ, and priced water sales on solar pumping hours.
   const isHandPump = /hand\s*pump|afridev|india\s*mk/i.test(String(_wdPump?.make_model_suggestion ?? pumpNote ?? ''));
   const solarKW = isHandPump ? 0
-    : _wdPump?.solarPanels_kW != null
+    : Number.isFinite(_wdPump?.solarPanels_kW)
       ? _wdPump.solarPanels_kW
       : Math.max(1, Math.round(pumpKW / 0.85 * 1.2 * 10) / 10);
   const solarCost = Math.round(solarKW * 1500);

@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'nasaPowerMonthly.ts', 'elevationService.ts', 'localData.ts', 'openGroundwaterData.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts', 'validationBenchmark.ts', 'desktopDrillTargetReadiness.ts', 'sanitizeOutputs.ts', 'reportAuditor.ts', 'boreholeDatabase.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'nasaPowerMonthly.ts', 'elevationService.ts', 'localData.ts', 'openGroundwaterData.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts', 'validationBenchmark.ts', 'desktopDrillTargetReadiness.ts', 'verdict.ts', 'sanitizeOutputs.ts', 'reportAuditor.ts', 'boreholeDatabase.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -668,6 +668,12 @@ console.log('\nS. Desktop drill-target readiness (DDTR / FRR / MAG)');
     ],
   };
   rich.boreholeRecords = { countyIntelligence: { county: 'Vihiga', estimatedBoreholes: 250, successRate: 0.72, avgDepth_m: 40, depthRange: [10, 90], avgYield_m3h: 4.0, yieldRange: [0.3, 12], primaryGeology: 'Precambrian basement' } };
+  // Evidence-rich means real evidence: county profiles are estimates and earn no
+  // drilled-outcome credit (independent audit 2026-10-31), so the study carries
+  // real drilled records, GRACE and soil moisture.
+  rich.nearbyWells.nearbyWells.push(...Array.from({ length: 8 }, (_, i) => ({ id: `Drilled BH ${i}`, outcome: i % 4 ? 'Success' : 'Fail', depth_m: 50 + i, yield_m3h: 5, source: 'IHP-WINS completion record (FIELD)' })));
+  rich.graceData = { isSatelliteGravity: true, groundwater: { trend_cm_per_year: 0.2 } };
+  rich.gldasGroundwater = { ...(rich.gldasGroundwater || {}), soilMoisture: { layer_0_7cm: 20 } };
   rich.risk = { categories: { contamination: 10 }, contaminationRisk: { level: 0.1 } };
   const richR = ddt.computeDesktopDrillTargetReadiness(rich, 0);
   check('evidence-rich COMPLETE desktop study reaches DDTR >= 80 (desktop pre-feasibility earns its 80%+)',

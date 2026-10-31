@@ -345,15 +345,23 @@ export class BoreholeAnalyzer {
     // coordinates-only run (skipping it gave a total cost of NaN, 2026-10-31), so
     // it always runs. The timer is cleared when it finishes: left running, it
     // logged "timed out" even after the step had succeeded.
-    let imageTimer: ReturnType<typeof setTimeout> | undefined;
-    const features = await Promise.race([
-      this.imageDetector.analyzeImage(imageFile, locationHints.length > 0 ? locationHints : undefined, { skipModel: noPhoto }),
-      new Promise<any>((resolve) => { imageTimer = setTimeout(() => {
-        console.warn('[Pipeline] Image analysis timed out (60s) — using pixel-only fallback');
-        resolve({ metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {} });
-      }, 60000); })
-    ]);
-    if (imageTimer) clearTimeout(imageTimer);
+    const hints = locationHints.length > 0 ? locationHints : undefined;
+    const withLimit = async (run: Promise<any>, ms: number) => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        return await Promise.race([run, new Promise<null>((res) => { timer = setTimeout(() => res(null), ms); })]);
+      } catch { return null; } finally { if (timer) clearTimeout(timer); }
+    };
+    // A real photo that takes too long is retried without the classifier, the slow
+    // part, so the rest of the analysis keeps the values it needs. The neutral
+    // object is the last resort, with those values filled in (audit 2026-10-31:
+    // an empty one gave a total cost of NaN).
+    let features: any = await withLimit(this.imageDetector.analyzeImage(imageFile, hints, { skipModel: noPhoto }), 60000);
+    if (!features) {
+      console.warn('[Pipeline] Image analysis timed out (60s): retrying without the photo classifier');
+      features = await withLimit(this.imageDetector.analyzeImage(imageFile, hints, { skipModel: true }), 20000);
+    }
+    if (!features) features = { ...{ metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {} }, vegetationScore: 0.3, waterProbability: 0.3, isReliableTerrainImage: false, locationMethod: 'none', locationContext: {}, gpsSource: 'none', predictions: [] };
 
     // Merge coordinates: client location takes priority over image GPS
     const effectiveLat = clientGeo?.latitude ?? features.metadata?.gps?.latitude;
@@ -3513,7 +3521,7 @@ export class BoreholeAnalyzer {
         yItem.value = result.estimatedYield;
         // Name the whole spread, not just the floor: "the lower quartile (4 m³/h)"
         // beside a 10 m³/h figure read as a contradiction (2026-10-25).
-        yItem.source = `Tested yields of real boreholes: kept between the cautious floor (${evidenceBand.lo} m³/h) and the typical yield (${evidenceBand.typical} m³/h), from ${evidenceBand.basis} (no field survey)`;
+        yItem.source = `Yields recorded near the site or the county profile (estimates): kept between the cautious floor (${evidenceBand.lo} m³/h) and the typical yield (${evidenceBand.typical} m³/h), from ${evidenceBand.basis} (no field survey)`;
         yItem.method = 'Planning yield kept between the lower quartile and the typical tested yield; transmissivity solved so drawdown and pump size agree with it';
       }
     } catch { /* provenance optional */ }
