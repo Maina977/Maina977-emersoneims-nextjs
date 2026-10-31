@@ -76,12 +76,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `roofType must be one of: ${ROOF_TYPES.join(', ')}` }, { status: 400 });
   }
   const RANGES: Record<string, [number, number, string]> = {
-    tariff: [5, 200, 'KES per kWh'],
+    // Kenyan all-in tariffs run about KES 15-35/kWh: a higher one was accepted and
+    // gave a 0.7-year payback with no warning (audit 2026-10-31).
+    tariff: [5, 60, 'KES per kWh'],
     daytimeUsePct: [0, 100, '%'],
     nightUsePct: [0, 100, '%'],
     autonomyDays: [0.5, 5, 'days'],
     peakLoadKw: [0.1, 5000, 'kW'],
-    dieselKesPerLitre: [50, 500, 'KES per litre'],
+    dieselKesPerLitre: [100, 300, 'KES per litre'],
   };
   for (const [k, [lo, hi, unit]] of Object.entries(RANGES)) {
     if (!given(k)) continue;
@@ -144,7 +146,9 @@ export async function POST(request: NextRequest) {
       pshWorstMonth: sun.worstMonth,
       systemType,
       roofType,
-      tariffKesPerKwh: num(body.tariff),
+      // Large users are not on the domestic rate (audit 2026-10-31): 150,000 kWh a
+      // month at KES 25 gave a 2.3-year payback.
+      tariffKesPerKwh: num(body.tariff) ?? (Number(body.consumption) > 15000 ? 18 : undefined),
       daytimeUsePct: num(body.daytimeUsePct),
       nightUsePct: num(body.nightUsePct),
       autonomyDays: num(body.autonomyDays),

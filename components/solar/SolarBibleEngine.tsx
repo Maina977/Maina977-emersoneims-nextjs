@@ -132,7 +132,9 @@ export default function SolarBibleEngine() {
   // USER INPUTS
   const [propertyType, setPropertyType] = useState<string>('home');
   const [location, setLocation] = useState<string>('Nairobi');
-  const [gridConnected, setGridConnected] = useState(false);
+  // Most sites have KPLC: off-grid by default priced a Nairobi home's "saving" in
+  // avoided diesel, 2.5x its whole bill (audit 2026-10-31).
+  const [gridConnected, setGridConnected] = useState(true);
   const [backupHours, setBackupHours] = useState(8);
   const [budget, setBudget] = useState<'economy' | 'standard' | 'premium'>('standard');
 
@@ -897,7 +899,7 @@ ${systemDesign.batteries[0] ? `            <tr>
                   <CheckCircle className="w-8 h-8 text-green-500" />
                 </div>
                 <h3 className="text-xl font-bold text-white">Your Recommended System</h3>
-                <p className="text-gray-400">AI-optimized for {location}</p>
+                <p className="text-gray-400">Sized for {location}</p>
               </div>
 
               {/* System Summary */}
@@ -982,7 +984,7 @@ ${systemDesign.batteries[0] ? `            <tr>
                 <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-center">
                   <DollarSign className="w-6 h-6 text-blue-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-white">KES {(costAnalysis.annualSavings / 1000).toFixed(0)}K</div>
-                  <p className="text-xs text-gray-400">Annual Savings</p>
+                  <p className="text-xs text-gray-400">{gridConnected ? 'Annual saving on KPLC bills' : 'Diesel avoided per year (not a KPLC saving)'}</p>
                 </div>
                 <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl text-center">
                   <Target className="w-6 h-6 text-purple-500 mx-auto mb-2" />

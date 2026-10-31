@@ -13,6 +13,8 @@ export interface FinanceAssumptions {
   discountRatePct?: number;
   /** One battery replacement at today's price, e.g. { year: 12, costKes }. */
   batteryReplacement?: { year: number; costKes: number } | null;
+  /** Other equipment replaced during the 25 years (inverter, second battery). */
+  extraReplacements?: Array<{ year: number; costKes: number }>;
 }
 
 export interface FinanceResult {
@@ -21,7 +23,7 @@ export interface FinanceResult {
   paybackYears: number | null;
   npvKes: number | null;
   irrPct: number | null;
-  assumptions: Required<Omit<FinanceAssumptions, 'batteryReplacement'>> & { batteryReplacement: FinanceAssumptions['batteryReplacement'] };
+  assumptions: Required<Omit<FinanceAssumptions, 'batteryReplacement' | 'extraReplacements'>> & { batteryReplacement: FinanceAssumptions['batteryReplacement'] };
 }
 
 export function proposalFinance(a: FinanceAssumptions): FinanceResult {
@@ -45,8 +47,9 @@ export function proposalFinance(a: FinanceAssumptions): FinanceResult {
   const nets: number[] = [-capex];
   for (let y = 1; y <= years; y++) {
     const saving = s1 * Math.pow(1 + esc, y - 1) * Math.pow(1 - deg, y - 1);
-    const repl = assumptions.batteryReplacement && assumptions.batteryReplacement.year === y
-      ? assumptions.batteryReplacement.costKes : 0;
+    const repl = (assumptions.batteryReplacement && assumptions.batteryReplacement.year === y
+      ? assumptions.batteryReplacement.costKes : 0)
+      + (a.extraReplacements ?? []).filter((x) => x.year === y).reduce((s, x) => s + x.costKes, 0);
     nets.push(Math.round(saving - om - repl));
   }
   let cum = 0;

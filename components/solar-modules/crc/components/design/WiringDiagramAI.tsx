@@ -67,7 +67,8 @@ export const WiringDiagramAI: React.FC<WiringDiagramProps> = ({
         ref={svgRef}
         width={width}
         height={height}
-        style={{ border: '1px solid #ccc', background: 'white' }}
+        viewBox={`0 0 ${width} ${height}`}
+        style={{ border: '1px solid #ccc', background: 'white', maxWidth: '100%', height: 'auto' }}
       >
         {/* Title */}
         <text x={width / 2} y={30} textAnchor="middle" fontSize="24" fontWeight="bold">
@@ -144,7 +145,7 @@ export const WiringDiagramAI: React.FC<WiringDiagramProps> = ({
                 ⚙️ MPPT Controller
               </text>
               <text x={440} y={150} textAnchor="middle" fontSize="10">
-                Max {systemSize * 1.25} A Input
+                Input current: from the string design
               </text>
             </>
           )}
@@ -248,8 +249,8 @@ export const WiringDiagramAI: React.FC<WiringDiagramProps> = ({
         {/* Component Labels */}
         <g id="labels" fontSize="10" fill="#666">
           <text x={margin + 75} y={380}>DC String: {panels.reduce((sum, p) => sum + p.count, 0)} panels</text>
-          <text x={margin + 75} y={400}>DC Voltage: {Math.ceil(panels[0]?.wattage / 100 * 40)}V nominal</text>
-          <text x={350} y={400}>AC Output: 230V/400V 3-phase</text>
+          <text x={margin + 75} y={400}>Schematic only: string voltage and protection come from the string and breaker tools</text>
+          <text x={350} y={420}>AC Output: {systemSize > 10 ? '400 V three-phase' : '230 V single-phase'}</text>
         </g>
 
         {/* Watermark for unpaid */}

@@ -9,7 +9,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sun, Search, Grid, List,
-  ShoppingCart, X, Plus, Minus, Eye, Shield, Package, Star
+  ShoppingCart, X, Plus, Minus, Eye, Shield, Package
 } from 'lucide-react';
 
 // Product Categories
@@ -30,10 +30,7 @@ interface SolarProduct {
   brand: string;
   category: string;
   price: number;
-  originalPrice?: number;
   image?: string;
-  rating: number;
-  reviews: number;
   inStock: boolean;
   specifications: Record<string, string>;
   features: string[];
@@ -43,50 +40,50 @@ interface SolarProduct {
 
 const SOLAR_PRODUCTS: SolarProduct[] = [
   // Solar Panels
-  { id: 'panel-ja-550', name: 'JA Solar 550W Mono PERC Panel', brand: 'JA Solar', category: 'panels', price: 28500, originalPrice: 32000, rating: 4.8, reviews: 156, inStock: true, specifications: { 'Power': '550W', 'Efficiency': '21.3%', 'Type': 'Monocrystalline', 'Voltage': '49.65V', 'Warranty': '25 Years' }, features: ['Half-cell technology', 'Anti-reflective glass', 'PID resistant', 'Salt mist resistant'], warranty: '25 years', tags: ['bestseller', 'premium'] },
-  { id: 'panel-longi-545', name: 'Longi Hi-MO 5 545W Panel', brand: 'Longi', category: 'panels', price: 28000, rating: 4.9, reviews: 203, inStock: true, specifications: { 'Power': '545W', 'Efficiency': '21.1%', 'Type': 'Monocrystalline', 'Voltage': '49.50V' }, features: ['M10 wafer technology', 'Low LID/LETID', 'Excellent low-light performance'], warranty: '25 years', tags: ['premium', 'tier-1'] },
-  { id: 'panel-canadian-550', name: 'Canadian Solar HiKu6 550W', brand: 'Canadian Solar', category: 'panels', price: 27500, rating: 4.7, reviews: 128, inStock: true, specifications: { 'Power': '550W', 'Efficiency': '21.2%', 'Type': 'Monocrystalline' }, features: ['High efficiency cells', 'Excellent durability'], warranty: '25 years', tags: ['value', 'tier-1'] },
-  { id: 'panel-jinko-555', name: 'Jinko Tiger Neo N-type 555W', brand: 'Jinko Solar', category: 'panels', price: 29800, rating: 4.9, reviews: 89, inStock: true, specifications: { 'Power': '555W', 'Efficiency': '21.6%', 'Type': 'N-type Monocrystalline' }, features: ['N-type technology', 'Lower degradation', 'Better temperature coefficient'], warranty: '30 years', tags: ['premium', 'n-type'] },
-  { id: 'panel-risen-450', name: 'Risen 450W Mono Panel', brand: 'Risen', category: 'panels', price: 22000, rating: 4.5, reviews: 94, inStock: true, specifications: { 'Power': '450W', 'Efficiency': '20.5%', 'Type': 'Monocrystalline' }, features: ['Budget-friendly', 'Good performance'], warranty: '25 years', tags: ['value', 'budget'] },
-  { id: 'panel-dmegc-540', name: 'DMEGC 540W Mono Panel', brand: 'DMEGC', category: 'panels', price: 25500, rating: 4.6, reviews: 67, inStock: true, specifications: { 'Power': '540W', 'Efficiency': '21.2%' }, features: ['Cost-effective', 'Reliable performance'], warranty: '25 years', tags: ['value'] },
+  { id: 'panel-ja-550', name: 'JA Solar 550W Mono PERC Panel', brand: 'JA Solar', category: 'panels', price: 28500, inStock: true, specifications: { 'Power': '550W', 'Efficiency': '21.3%', 'Type': 'Monocrystalline', 'Voltage': '49.65V', 'Warranty': '25 Years' }, features: ['Half-cell technology', 'Anti-reflective glass', 'PID resistant', 'Salt mist resistant'], warranty: '25 years', tags: ['bestseller', 'premium'] },
+  { id: 'panel-longi-545', name: 'Longi Hi-MO 5 545W Panel', brand: 'Longi', category: 'panels', price: 28000, inStock: true, specifications: { 'Power': '545W', 'Efficiency': '21.1%', 'Type': 'Monocrystalline', 'Voltage': '49.50V' }, features: ['M10 wafer technology', 'Low LID/LETID', 'Excellent low-light performance'], warranty: '25 years', tags: ['premium', 'tier-1'] },
+  { id: 'panel-canadian-550', name: 'Canadian Solar HiKu6 550W', brand: 'Canadian Solar', category: 'panels', price: 27500, inStock: true, specifications: { 'Power': '550W', 'Efficiency': '21.2%', 'Type': 'Monocrystalline' }, features: ['High efficiency cells', 'Excellent durability'], warranty: '25 years', tags: ['value', 'tier-1'] },
+  { id: 'panel-jinko-555', name: 'Jinko Tiger Neo N-type 555W', brand: 'Jinko Solar', category: 'panels', price: 29800, inStock: true, specifications: { 'Power': '555W', 'Efficiency': '21.6%', 'Type': 'N-type Monocrystalline' }, features: ['N-type technology', 'Lower degradation', 'Better temperature coefficient'], warranty: '30 years', tags: ['premium', 'n-type'] },
+  { id: 'panel-risen-450', name: 'Risen 450W Mono Panel', brand: 'Risen', category: 'panels', price: 22000, inStock: true, specifications: { 'Power': '450W', 'Efficiency': '20.5%', 'Type': 'Monocrystalline' }, features: ['Budget-friendly', 'Good performance'], warranty: '25 years', tags: ['value', 'budget'] },
+  { id: 'panel-dmegc-540', name: 'DMEGC 540W Mono Panel', brand: 'DMEGC', category: 'panels', price: 25500, inStock: true, specifications: { 'Power': '540W', 'Efficiency': '21.2%' }, features: ['Cost-effective', 'Reliable performance'], warranty: '25 years', tags: ['value'] },
 
   // Inverters
-  { id: 'inv-deye-8kw', name: 'Deye 8kW Hybrid Inverter', brand: 'Deye', category: 'inverters', price: 185000, rating: 4.8, reviews: 234, inStock: true, specifications: { 'Power': '8kW', 'Type': 'Hybrid', 'MPPT': '2 Channels', 'Efficiency': '97.6%', 'Battery Voltage': '48V' }, features: ['WiFi monitoring', 'Parallel capability', '3-phase option', 'Battery priority modes'], warranty: '10 years', tags: ['bestseller', 'premium'] },
-  { id: 'inv-deye-5kw', name: 'Deye 5kW Hybrid Inverter', brand: 'Deye', category: 'inverters', price: 125000, rating: 4.8, reviews: 312, inStock: true, specifications: { 'Power': '5kW', 'Type': 'Hybrid', 'MPPT': '2 Channels' }, features: ['WiFi monitoring', 'Parallel up to 9 units'], warranty: '10 years', tags: ['bestseller'] },
-  { id: 'inv-growatt-sph8', name: 'Growatt SPH 8000TL3 BH', brand: 'Growatt', category: 'inverters', price: 195000, rating: 4.7, reviews: 156, inStock: true, specifications: { 'Power': '8kW', 'Type': 'Hybrid', 'Phase': '3-Phase' }, features: ['Smart energy management', 'Touch screen display'], warranty: '10 years', tags: ['premium', '3-phase'] },
-  { id: 'inv-sunsynk-5kw', name: 'Sunsynk 5kW Hybrid Inverter', brand: 'Sunsynk', category: 'inverters', price: 125000, rating: 4.7, reviews: 189, inStock: true, specifications: { 'Power': '5kW', 'Type': 'Hybrid' }, features: ['Built-in WiFi', 'Smart load management'], warranty: '10 years', tags: ['popular'] },
-  { id: 'inv-must-5kw', name: 'Must PV1800 5kW Off-Grid', brand: 'Must', category: 'inverters', price: 65000, originalPrice: 72000, rating: 4.4, reviews: 267, inStock: true, specifications: { 'Power': '5kW', 'Type': 'Off-Grid', 'MPPT': '80A' }, features: ['Built-in MPPT', 'Pure sine wave', 'Generator support'], warranty: '2 years', tags: ['value', 'budget'] },
-  { id: 'inv-felicity-5kw', name: 'Felicity IVPM 5kW', brand: 'Felicity Solar', category: 'inverters', price: 55000, rating: 4.3, reviews: 198, inStock: true, specifications: { 'Power': '5kW', 'Type': 'Off-Grid', 'MPPT': '80A' }, features: ['Budget-friendly', 'Reliable'], warranty: '2 years', tags: ['budget'] },
+  { id: 'inv-deye-8kw', name: 'Deye 8kW Hybrid Inverter', brand: 'Deye', category: 'inverters', price: 185000, inStock: true, specifications: { 'Power': '8kW', 'Type': 'Hybrid', 'MPPT': '2 Channels', 'Efficiency': '97.6%', 'Battery Voltage': '48V' }, features: ['WiFi monitoring', 'Parallel capability', '3-phase option', 'Battery priority modes'], warranty: '10 years', tags: ['bestseller', 'premium'] },
+  { id: 'inv-deye-5kw', name: 'Deye 5kW Hybrid Inverter', brand: 'Deye', category: 'inverters', price: 125000, inStock: true, specifications: { 'Power': '5kW', 'Type': 'Hybrid', 'MPPT': '2 Channels' }, features: ['WiFi monitoring', 'Parallel up to 9 units'], warranty: '10 years', tags: ['bestseller'] },
+  { id: 'inv-growatt-sph8', name: 'Growatt SPH 8000TL3 BH', brand: 'Growatt', category: 'inverters', price: 195000, inStock: true, specifications: { 'Power': '8kW', 'Type': 'Hybrid', 'Phase': '3-Phase' }, features: ['Smart energy management', 'Touch screen display'], warranty: '10 years', tags: ['premium', '3-phase'] },
+  { id: 'inv-sunsynk-5kw', name: 'Sunsynk 5kW Hybrid Inverter', brand: 'Sunsynk', category: 'inverters', price: 125000, inStock: true, specifications: { 'Power': '5kW', 'Type': 'Hybrid' }, features: ['Built-in WiFi', 'Smart load management'], warranty: '10 years', tags: ['popular'] },
+  { id: 'inv-must-5kw', name: 'Must PV1800 5kW Off-Grid', brand: 'Must', category: 'inverters', price: 65000, inStock: true, specifications: { 'Power': '5kW', 'Type': 'Off-Grid', 'MPPT': '80A' }, features: ['Built-in MPPT', 'Pure sine wave', 'Generator support'], warranty: '2 years', tags: ['value', 'budget'] },
+  { id: 'inv-felicity-5kw', name: 'Felicity IVPM 5kW', brand: 'Felicity Solar', category: 'inverters', price: 55000, inStock: true, specifications: { 'Power': '5kW', 'Type': 'Off-Grid', 'MPPT': '80A' }, features: ['Budget-friendly', 'Reliable'], warranty: '2 years', tags: ['budget'] },
 
   // Batteries
-  { id: 'bat-pylontech-us5000', name: 'Pylontech US5000 4.8kWh', brand: 'Pylontech', category: 'batteries', price: 165000, rating: 4.9, reviews: 287, inStock: true, specifications: { 'Capacity': '4.8kWh', 'Voltage': '48V', 'Type': 'LiFePO4', 'Cycles': '6000+', 'DoD': '95%' }, features: ['Long cycle life', 'Modular design', 'BMS included', 'Excellent communication'], warranty: '10 years', tags: ['bestseller', 'premium'] },
-  { id: 'bat-pylontech-us3000c', name: 'Pylontech US3000C 3.5kWh', brand: 'Pylontech', category: 'batteries', price: 125000, rating: 4.9, reviews: 312, inStock: true, specifications: { 'Capacity': '3.5kWh', 'Voltage': '48V', 'Type': 'LiFePO4' }, features: ['Stack up to 8 units', 'Smart BMS'], warranty: '10 years', tags: ['bestseller'] },
-  { id: 'bat-byd-hvs', name: 'BYD Battery-Box HVS 5.1', brand: 'BYD', category: 'batteries', price: 285000, rating: 4.8, reviews: 89, inStock: true, specifications: { 'Capacity': '5.1kWh', 'Voltage': '51.2V', 'Type': 'LiFePO4', 'Cycles': '8000+' }, features: ['High voltage system', 'Excellent efficiency'], warranty: '10 years', tags: ['premium'] },
-  { id: 'bat-growatt-ark', name: 'Growatt ARK 5.12kWh', brand: 'Growatt', category: 'batteries', price: 155000, rating: 4.7, reviews: 134, inStock: true, specifications: { 'Capacity': '5.12kWh', 'Voltage': '51.2V', 'Type': 'LiFePO4' }, features: ['Perfect Growatt match', 'Easy installation'], warranty: '10 years', tags: ['popular'] },
-  { id: 'bat-felicity-5kwh', name: 'Felicity 5kWh LiFePO4', brand: 'Felicity Solar', category: 'batteries', price: 95000, originalPrice: 105000, rating: 4.5, reviews: 178, inStock: true, specifications: { 'Capacity': '5kWh', 'Voltage': '48V', 'Type': 'LiFePO4', 'Cycles': '4000+' }, features: ['Affordable lithium', 'Good performance'], warranty: '5 years', tags: ['value', 'budget'] },
-  { id: 'bat-ritar-200gel', name: 'Ritar 200Ah Gel Battery', brand: 'Ritar', category: 'batteries', price: 38000, rating: 4.3, reviews: 234, inStock: true, specifications: { 'Capacity': '200Ah', 'Voltage': '12V', 'Type': 'Gel' }, features: ['Maintenance-free', 'Deep cycle'], warranty: '3 years', tags: ['budget', 'gel'] },
+  { id: 'bat-pylontech-us5000', name: 'Pylontech US5000 4.8kWh', brand: 'Pylontech', category: 'batteries', price: 165000, inStock: true, specifications: { 'Capacity': '4.8kWh', 'Voltage': '48V', 'Type': 'LiFePO4', 'Cycles': '6000+', 'DoD': '95%' }, features: ['Long cycle life', 'Modular design', 'BMS included', 'Excellent communication'], warranty: '10 years', tags: ['bestseller', 'premium'] },
+  { id: 'bat-pylontech-us3000c', name: 'Pylontech US3000C 3.5kWh', brand: 'Pylontech', category: 'batteries', price: 125000, inStock: true, specifications: { 'Capacity': '3.5kWh', 'Voltage': '48V', 'Type': 'LiFePO4' }, features: ['Stack up to 8 units', 'Smart BMS'], warranty: '10 years', tags: ['bestseller'] },
+  { id: 'bat-byd-hvs', name: 'BYD Battery-Box HVS 5.1', brand: 'BYD', category: 'batteries', price: 285000, inStock: true, specifications: { 'Capacity': '5.1kWh', 'Voltage': '51.2V', 'Type': 'LiFePO4', 'Cycles': '8000+' }, features: ['High voltage system', 'Excellent efficiency'], warranty: '10 years', tags: ['premium'] },
+  { id: 'bat-growatt-ark', name: 'Growatt ARK 5.12kWh', brand: 'Growatt', category: 'batteries', price: 155000, inStock: true, specifications: { 'Capacity': '5.12kWh', 'Voltage': '51.2V', 'Type': 'LiFePO4' }, features: ['Perfect Growatt match', 'Easy installation'], warranty: '10 years', tags: ['popular'] },
+  { id: 'bat-felicity-5kwh', name: 'Felicity 5kWh LiFePO4', brand: 'Felicity Solar', category: 'batteries', price: 95000, inStock: true, specifications: { 'Capacity': '5kWh', 'Voltage': '48V', 'Type': 'LiFePO4', 'Cycles': '4000+' }, features: ['Affordable lithium', 'Good performance'], warranty: '5 years', tags: ['value', 'budget'] },
+  { id: 'bat-ritar-200gel', name: 'Ritar 200Ah Gel Battery', brand: 'Ritar', category: 'batteries', price: 38000, inStock: true, specifications: { 'Capacity': '200Ah', 'Voltage': '12V', 'Type': 'Gel' }, features: ['Maintenance-free', 'Deep cycle'], warranty: '3 years', tags: ['budget', 'gel'] },
 
   // Charge Controllers
-  { id: 'ctrl-victron-150-70', name: 'Victron SmartSolar 150/70', brand: 'Victron', category: 'controllers', price: 85000, rating: 4.9, reviews: 156, inStock: true, specifications: { 'Max PV Voltage': '150V', 'Charge Current': '70A', 'Type': 'MPPT' }, features: ['Bluetooth built-in', 'Ultra-fast tracking', 'VE.Direct'], warranty: '5 years', tags: ['premium', 'bestseller'] },
-  { id: 'ctrl-victron-100-50', name: 'Victron SmartSolar 100/50', brand: 'Victron', category: 'controllers', price: 45000, rating: 4.9, reviews: 203, inStock: true, specifications: { 'Max PV Voltage': '100V', 'Charge Current': '50A', 'Type': 'MPPT' }, features: ['Bluetooth built-in', 'Programmable'], warranty: '5 years', tags: ['popular'] },
-  { id: 'ctrl-epever-100a', name: 'EPEver Tracer 100A MPPT', brand: 'EPEver', category: 'controllers', price: 28000, rating: 4.5, reviews: 312, inStock: true, specifications: { 'Max Current': '100A', 'Max PV': '150V', 'Type': 'MPPT' }, features: ['LCD display', 'Timer function', 'RS485'], warranty: '2 years', tags: ['value'] },
-  { id: 'ctrl-must-80a', name: 'Must PC18-8015F 80A MPPT', brand: 'Must', category: 'controllers', price: 18000, rating: 4.4, reviews: 267, inStock: true, specifications: { 'Max Current': '80A', 'Type': 'MPPT' }, features: ['Budget MPPT', 'LCD display'], warranty: '1 year', tags: ['budget'] },
+  { id: 'ctrl-victron-150-70', name: 'Victron SmartSolar 150/70', brand: 'Victron', category: 'controllers', price: 85000, inStock: true, specifications: { 'Max PV Voltage': '150V', 'Charge Current': '70A', 'Type': 'MPPT' }, features: ['Bluetooth built-in', 'Ultra-fast tracking', 'VE.Direct'], warranty: '5 years', tags: ['premium', 'bestseller'] },
+  { id: 'ctrl-victron-100-50', name: 'Victron SmartSolar 100/50', brand: 'Victron', category: 'controllers', price: 45000, inStock: true, specifications: { 'Max PV Voltage': '100V', 'Charge Current': '50A', 'Type': 'MPPT' }, features: ['Bluetooth built-in', 'Programmable'], warranty: '5 years', tags: ['popular'] },
+  { id: 'ctrl-epever-100a', name: 'EPEver Tracer 100A MPPT', brand: 'EPEver', category: 'controllers', price: 28000, inStock: true, specifications: { 'Max Current': '100A', 'Max PV': '150V', 'Type': 'MPPT' }, features: ['LCD display', 'Timer function', 'RS485'], warranty: '2 years', tags: ['value'] },
+  { id: 'ctrl-must-80a', name: 'Must PC18-8015F 80A MPPT', brand: 'Must', category: 'controllers', price: 18000, inStock: true, specifications: { 'Max Current': '80A', 'Type': 'MPPT' }, features: ['Budget MPPT', 'LCD display'], warranty: '1 year', tags: ['budget'] },
 
   // Mounting Systems
-  { id: 'mount-roof-kit', name: 'Roof Mounting Kit (10 panels)', brand: 'Generic', category: 'mounting', price: 35000, rating: 4.6, reviews: 89, inStock: true, specifications: { 'Capacity': '10 Panels', 'Material': 'Aluminum', 'Roof Type': 'Iron Sheet' }, features: ['Pre-drilled holes', 'Includes all hardware'], warranty: '10 years', tags: ['essential'] },
-  { id: 'mount-ground-kit', name: 'Ground Mount Kit (10 panels)', brand: 'Generic', category: 'mounting', price: 55000, rating: 4.5, reviews: 67, inStock: true, specifications: { 'Capacity': '10 Panels', 'Material': 'Hot-dip Galvanized', 'Tilt': 'Adjustable 10-60°' }, features: ['Heavy-duty', 'Adjustable angle'], warranty: '15 years', tags: ['ground'] },
+  { id: 'mount-roof-kit', name: 'Roof Mounting Kit (10 panels)', brand: 'Generic', category: 'mounting', price: 35000, inStock: true, specifications: { 'Capacity': '10 Panels', 'Material': 'Aluminum', 'Roof Type': 'Iron Sheet' }, features: ['Pre-drilled holes', 'Includes all hardware'], warranty: '10 years', tags: ['essential'] },
+  { id: 'mount-ground-kit', name: 'Ground Mount Kit (10 panels)', brand: 'Generic', category: 'mounting', price: 55000, inStock: true, specifications: { 'Capacity': '10 Panels', 'Material': 'Hot-dip Galvanized', 'Tilt': 'Adjustable 10-60°' }, features: ['Heavy-duty', 'Adjustable angle'], warranty: '15 years', tags: ['ground'] },
 
   // Cables & Connectors
-  { id: 'cable-solar-6mm', name: 'Solar DC Cable 6mm² (100m)', brand: 'Generic', category: 'cables', price: 12000, rating: 4.7, reviews: 234, inStock: true, specifications: { 'Size': '6mm²', 'Length': '100m', 'Type': 'PV1-F' }, features: ['UV resistant', 'TUV certified'], warranty: '25 years', tags: ['essential'] },
-  { id: 'cable-solar-4mm', name: 'Solar DC Cable 4mm² (100m)', brand: 'Generic', category: 'cables', price: 8500, rating: 4.6, reviews: 189, inStock: true, specifications: { 'Size': '4mm²', 'Length': '100m' }, features: ['UV resistant', 'Double insulated'], warranty: '25 years', tags: ['essential'] },
-  { id: 'mc4-connectors', name: 'MC4 Connectors (10 pairs)', brand: 'Generic', category: 'cables', price: 2500, rating: 4.5, reviews: 456, inStock: true, specifications: { 'Quantity': '10 pairs', 'Rating': '30A' }, features: ['IP67 rated', 'Easy installation'], warranty: '5 years', tags: ['essential', 'budget'] },
-  { id: 'battery-cable-35mm', name: 'Battery Cable 35mm² (5m pair)', brand: 'Generic', category: 'cables', price: 4500, rating: 4.6, reviews: 178, inStock: true, specifications: { 'Size': '35mm²', 'Length': '5m pair' }, features: ['With lugs', 'Flexible copper'], warranty: '5 years', tags: ['essential'] },
+  { id: 'cable-solar-6mm', name: 'Solar DC Cable 6mm² (100m)', brand: 'Generic', category: 'cables', price: 12000, inStock: true, specifications: { 'Size': '6mm²', 'Length': '100m', 'Type': 'PV1-F' }, features: ['UV resistant', 'TUV certified'], warranty: '25 years', tags: ['essential'] },
+  { id: 'cable-solar-4mm', name: 'Solar DC Cable 4mm² (100m)', brand: 'Generic', category: 'cables', price: 8500, inStock: true, specifications: { 'Size': '4mm²', 'Length': '100m' }, features: ['UV resistant', 'Double insulated'], warranty: '25 years', tags: ['essential'] },
+  { id: 'mc4-connectors', name: 'MC4 Connectors (10 pairs)', brand: 'Generic', category: 'cables', price: 2500, inStock: true, specifications: { 'Quantity': '10 pairs', 'Rating': '30A' }, features: ['IP67 rated', 'Easy installation'], warranty: '5 years', tags: ['essential', 'budget'] },
+  { id: 'battery-cable-35mm', name: 'Battery Cable 35mm² (5m pair)', brand: 'Generic', category: 'cables', price: 4500, inStock: true, specifications: { 'Size': '35mm²', 'Length': '5m pair' }, features: ['With lugs', 'Flexible copper'], warranty: '5 years', tags: ['essential'] },
 
   // Accessories
-  { id: 'acc-combiner-4', name: 'PV Combiner Box 4-String', brand: 'Generic', category: 'accessories', price: 8500, rating: 4.5, reviews: 123, inStock: true, specifications: { 'Strings': '4', 'Fuse': '15A per string' }, features: ['IP65 rated', 'Surge protection'], warranty: '2 years', tags: ['essential'] },
-  { id: 'acc-dc-breaker-250a', name: 'DC Circuit Breaker 250A', brand: 'Generic', category: 'accessories', price: 3500, rating: 4.6, reviews: 234, inStock: true, specifications: { 'Rating': '250A', 'Voltage': '48V DC' }, features: ['Manual disconnect', 'Thermal protection'], warranty: '2 years', tags: ['essential'] },
-  { id: 'acc-surge-dc', name: 'DC Surge Protector SPD', brand: 'Generic', category: 'accessories', price: 5500, rating: 4.7, reviews: 156, inStock: true, specifications: { 'Voltage': '500V DC', 'Type': 'Type II' }, features: ['Lightning protection', 'DIN rail mount'], warranty: '5 years', tags: ['safety'] },
-  { id: 'acc-monitor-wifi', name: 'WiFi Monitoring Dongle', brand: 'Generic', category: 'accessories', price: 4500, rating: 4.4, reviews: 289, inStock: true, specifications: { 'Compatibility': 'Most inverters', 'App': 'iOS/Android' }, features: ['Real-time monitoring', 'Push notifications'], warranty: '1 year', tags: ['monitoring'] },
+  { id: 'acc-combiner-4', name: 'PV Combiner Box 4-String', brand: 'Generic', category: 'accessories', price: 8500, inStock: true, specifications: { 'Strings': '4', 'Fuse': '15A per string' }, features: ['IP65 rated', 'Surge protection'], warranty: '2 years', tags: ['essential'] },
+  { id: 'acc-dc-breaker-250a', name: 'DC Circuit Breaker 250A', brand: 'Generic', category: 'accessories', price: 3500, inStock: true, specifications: { 'Rating': '250A', 'Voltage': '48V DC' }, features: ['Manual disconnect', 'Thermal protection'], warranty: '2 years', tags: ['essential'] },
+  { id: 'acc-surge-dc', name: 'DC Surge Protector SPD', brand: 'Generic', category: 'accessories', price: 5500, inStock: true, specifications: { 'Voltage': '500V DC', 'Type': 'Type II' }, features: ['Lightning protection', 'DIN rail mount'], warranty: '5 years', tags: ['safety'] },
+  { id: 'acc-monitor-wifi', name: 'WiFi Monitoring Dongle', brand: 'Generic', category: 'accessories', price: 4500, inStock: true, specifications: { 'Compatibility': 'Most inverters', 'App': 'iOS/Android' }, features: ['Real-time monitoring', 'Push notifications'], warranty: '1 year', tags: ['monitoring'] },
 ];
 
 interface CartItem extends SolarProduct {
@@ -96,7 +93,7 @@ interface CartItem extends SolarProduct {
 export default function SolarProductsShop() {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
+  const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high'>('featured');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -132,9 +129,6 @@ export default function SolarProductsShop() {
         break;
       case 'price-high':
         filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
         break;
       default:
         // Featured - prioritize bestsellers
@@ -254,7 +248,6 @@ Payment: M-Pesa to 0768860665`
             <option value="featured">Featured</option>
             <option value="price-low">Price: Low to High</option>
             <option value="price-high">Price: High to Low</option>
-            <option value="rating">Top Rated</option>
           </select>
           <div className="flex border border-slate-700 rounded-xl overflow-hidden">
             <button
@@ -300,31 +293,16 @@ Payment: M-Pesa to 0768860665`
                   {product.tags.includes('bestseller') && (
                     <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded-full">Bestseller</span>
                   )}
-                  {product.originalPrice && (
-                    <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full">Sale</span>
-                  )}
                 </div>
 
                 <p className="text-amber-400 text-xs font-medium">{product.brand}</p>
                 <h3 className="text-white font-semibold mb-1 line-clamp-2">{product.name}</h3>
-
-                {/* Rating */}
-                <div className="flex items-center gap-1 mb-2">
-                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span className="text-white text-sm">{product.rating}</span>
-                  <span className="text-slate-500 text-sm">({product.reviews})</span>
-                </div>
 
                 {/* Price */}
                 <div className="flex items-baseline gap-2 mb-3">
                   <span className="text-xl font-bold text-amber-400">
                     KES {product.price.toLocaleString()}
                   </span>
-                  {product.originalPrice && (
-                    <span className="text-slate-500 text-sm line-through">
-                      KES {product.originalPrice.toLocaleString()}
-                    </span>
-                  )}
                 </div>
 
                 {/* Stock */}
@@ -491,22 +469,12 @@ Payment: M-Pesa to 0768860665`
                   </button>
                 </div>
 
-                {/* Rating & Price */}
+                {/* Price */}
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-                    <span className="text-white">{selectedProduct.rating}</span>
-                    <span className="text-slate-500">({selectedProduct.reviews} reviews)</span>
-                  </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-amber-400">
                       KES {selectedProduct.price.toLocaleString()}
                     </span>
-                    {selectedProduct.originalPrice && (
-                      <span className="text-slate-500 line-through">
-                        KES {selectedProduct.originalPrice.toLocaleString()}
-                      </span>
-                    )}
                   </div>
                 </div>
 

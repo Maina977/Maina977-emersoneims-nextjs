@@ -187,7 +187,9 @@ export default function SolarDesignStudioPro() {
   const stringDesignA = 1.25 * panelIsc;               // per string (IEC 62548)
   const arrayDesignA = stringDesignA * Math.max(1, stringConfig.parallel);
   const systemCurrent = panelIsc * Math.max(1, stringConfig.parallel);
-  const pickCsa = (amps: number, table: [number, string][]) => (table.find(([a]) => amps <= a) ?? table[table.length - 1])[1];
+  // Nothing fits: say so, never the largest size (audit 2026-10-31: 334 A on 35 mm²).
+  const OVER = 'parallel runs: engineer to size';
+  const pickCsa = (amps: number, table: [number, string][]) => (table.find(([a]) => amps <= a) ?? [0, OVER])[1];
   // PV1-F on a hot roof (derated): 4 mm² to ~22 A, 6 mm² to ~28 A, 10 mm² to ~39 A.
   const wireSize = pickCsa(stringDesignA, [[22, '4mm²'], [28, '6mm²'], [39, '10mm²'], [52, '16mm²']]);
   const combinerWire = pickCsa(arrayDesignA, [[22, '4mm²'], [28, '6mm²'], [39, '10mm²'], [52, '16mm²'], [69, '25mm²'], [86, '35mm²']]);
@@ -203,15 +205,15 @@ export default function SolarDesignStudioPro() {
   // 2026-10-27 audit: the diagram always printed "63A MCB + 6 mm²" (6 mm² is
   // about 41 A, so a 63 A breaker did not protect it) for 3 kW to 15 kW.
   const STD_MCB = [6, 10, 13, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160];
-  const acBreakerA = STD_MCB.find((s) => s >= acAmps * 1.25) ?? 160;
+  const acBreakerA = STD_MCB.find((s) => s >= acAmps * 1.25);
   const CABLE_B1: [number, number][] = threePhase
     ? [[4, 28], [6, 36], [10, 50], [16, 68], [25, 89], [35, 110], [50, 134], [70, 171], [95, 207]]
     : [[4, 32], [6, 41], [10, 57], [16, 76], [25, 101], [35, 125], [50, 151], [70, 192], [95, 232]];
-  const acCsa = (CABLE_B1.find(([, iz]) => iz >= acBreakerA) ?? CABLE_B1[CABLE_B1.length - 1])[0];
-  const acWire = `${acCsa}mm²`;
-  const acBreakerLabel = `${acBreakerA}A ${threePhase ? '4-pole (3P+N)' : 'double-pole'} MCB`;
+  const acCsa = acBreakerA ? CABLE_B1.find(([, iz]) => iz >= acBreakerA)?.[0] : undefined;
+  const acWire = acCsa ? `${acCsa}mm²` : OVER;
+  const acBreakerLabel = acBreakerA ? `${acBreakerA}A ${threePhase ? '4-pole (3P+N)' : 'double-pole'} MCB` : 'Above MCB range: MCCB, engineer to size';
   // Protective earth (IEC 60364-5-54): as the phase up to 16 mm², 16 mm² to 35, half above.
-  const earthCsa = acCsa <= 16 ? acCsa : acCsa <= 35 ? 16 : acCsa / 2;
+  const earthCsa = !acCsa ? 0 : acCsa <= 16 ? acCsa : acCsa <= 35 ? 16 : acCsa / 2;
   const dcAcRatio = inverterSize > 0 ? totalKW / inverterSize : 0;
 
   // MPPT window: typical for this inverter class (check the datasheet). Hot
@@ -955,11 +957,11 @@ export default function SolarDesignStudioPro() {
                  │             │             │
           ┌──────┴─────────────┴─────────────┴──────┐
           │          DC COMBINER BOX                 │
-          │   Voc: ${stringVoc.toFixed(0)}V  |  Isc: ${(systemCurrent * 1.25).toFixed(1)}A              │
+          │   Voc: ${stringVoc.toFixed(0)}V  |  Design: ${arrayDesignA.toFixed(1)}A              │
           │   Surge Protection: Type II              │
           └────────────────┬─────────────────────────┘
                            │
-                           │  DC Cable ${wireSize}
+                           │  DC Cable ${combinerWire}
                            │  Vmp: ${(stringConfig.series * panelVmp).toFixed(0)}V
                            │
                     ┌──────┴──────┐
@@ -1138,8 +1140,10 @@ EARTHING:
                   </div>
                   <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl p-4 border border-purple-500/30">
                     <Calculator className="w-8 h-8 text-purple-400 mb-2" />
-                    <p className="text-slate-400 text-sm">Annual Savings</p>
-                    <p className="text-white text-2xl font-bold">KSh {(annualProduction * 25).toLocaleString()}</p>
+                    {/* The solar actually used, not all that is produced: this read 20x its
+                        own Report figure on a large roof (audit 2026-10-31). */}
+                    <p className="text-slate-400 text-sm">Annual saving ({Math.round(usedShare * 100)}% of the solar used)</p>
+                    <p className="text-white text-2xl font-bold">KSh {Math.round(annualSavingKes).toLocaleString()}</p>
                   </div>
                 </div>
 

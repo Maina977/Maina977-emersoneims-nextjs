@@ -67,10 +67,10 @@ describe('valid input still works', () => {
     expect(r.body.data.feasible).toBe(false);
     expect(r.body.data.verdict).toMatch(/15 A input limit/);
   });
-  it('aluminium conductor does not claim an ampacity check', async () => {
+  it('aluminium gets a screening rating, never none', async () => {
     const r = await call('solar', ['voltage-drop'], { systemType: 'ac_single_phase', currentA: 40, voltageV: 240, oneWayLengthM: 20, conductorMaterial: 'aluminium' });
     expect(r.status).toBe(200);
-    expect(r.body.data.verdict).toMatch(/NOT checked/);
+    expect(r.body.data.verdict).toMatch(/screening aluminium rating/);
   });
 });
 

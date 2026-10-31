@@ -207,7 +207,8 @@ export function sizeSolar(input: SizingInput): SizingResult {
   // most inverters sold in Kenya (2026-10-25 audit: 150 kWh/month got 2 panels).
   const neededPanels = Math.ceil((rawKwp * 1000) / PANEL_WATT - 0.03);
   const panels = Math.max(MIN_PANELS, neededPanels);
-  const pvKwp = round1((panels * PANEL_WATT) / 1000);
+  // Two decimals: 4.95 kWp rounded to 5 added 1% of energy nobody installed.
+  const pvKwp = Math.round((panels * PANEL_WATT) / 10) / 100;
   assumptions.push(`${PANEL_WATT} W panels; ${Math.round(PERFORMANCE_RATIO * 100)}% performance ratio (wiring, inverter, heat and dust losses).`);
   if (neededPanels < MIN_PANELS) assumptions.push(`Your use needs fewer than ${MIN_PANELS} panels, but ${MIN_PANELS} is the smallest string that reaches a typical inverter's MPPT voltage, so the array is rounded up.`);
   if (type === 'grid-tied') {

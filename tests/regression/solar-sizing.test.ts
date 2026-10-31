@@ -30,7 +30,7 @@ describe('sizeSolar', () => {
   // = KES 718,594 → payback 2,181,000 / 718,594 ≈ 3.0 years (2026-10-20: 90% self-use was optimistic).
   it('Mombasa hotel, 4,500 kWh/month, grid-tied, 70% daytime use', () => {
     const r = sizeSolar({ monthlyKwh: 4500, pshAnnual: 5.71, systemType: 'grid-tied', daytimeUsePct: 70, tariffKesPerKwh: 25 });
-    expect(r.pvKwp).toBe(23.7);
+    expect(r.pvKwp).toBe(23.65);
     expect(r.batteryKwh).toBe(0);
     // 20 kW inverter: DC/AC 1.185, inside 1.0-1.3 (was 25 kW, DC/AC 0.95).
     // (10×70k + 13.7×60k + 10×20k + 10×15k) × 1.12 = 2,096,640.

@@ -1145,7 +1145,7 @@ const VoltageDropRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
       <Hint>Computes the smallest IEC 60228 conductor that meets the voltage-drop limit AND ampacity (PVC, free-air, 30 °C).</Hint>
       <Field><span className="l">Run type</span>
         <select value={systemType} onChange={e=>setSystemType(e.target.value as any)}>
-          <option value="dc">DC string</option>
+          <option value="dc">DC string (enter panel Isc)</option>
           <option value="ac_single_phase">AC single-phase</option>
           <option value="ac_three_phase">AC three-phase</option>
         </select></Field>
@@ -1161,6 +1161,8 @@ const VoltageDropRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
       <Run disabled={r.loading} onClick={() => r.run(() => bos.voltageDrop({
         systemType, currentA, voltageV, oneWayLengthM: lengthM,
         conductorMaterial: material, ambientTempC: 30, maxVoltDropPct: maxDropPct,
+        // "DC string" gets the string rules: 1.25 x Isc, rooftop heat, 4 mm² minimum.
+        pvString: systemType === 'dc',
       }))}>{r.loading ? 'Sizing…' : 'Recommend conductor'}</Run>
       <ResultBlock {...r} />
     </>

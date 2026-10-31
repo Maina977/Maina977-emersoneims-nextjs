@@ -123,10 +123,6 @@ const DesignerPage: React.FC = () => {
   }, []);
 
   async function runAutoDesign() {
-    if (site.lat == null || site.lon == null) {
-      setMsg({tone:'err', text: 'No site assessed. Open Mission Control first to set lat/lon and roof.'});
-      return;
-    }
     if (!consumption || consumption <= 0) {
       setMsg({tone:'err', text: 'Enter monthly consumption (kWh).'});
       return;
@@ -134,16 +130,20 @@ const DesignerPage: React.FC = () => {
     setLoading(true);
     setMsg(null);
     try {
+      // The fields auto-design actually reads (audit 2026-10-31: this page sent
+      // others and always failed). Kenyan defaults stand in until a site is set.
+      const psh = Number(site.irradianceKwhPerM2Day) > 0 ? Number(site.irradianceKwhPerM2Day) : 5.5;
       const r: any = await autoDesign({
-        lat: site.lat,
-        lon: site.lon,
-        monthlyKwh: consumption,
-        autonomyDays,
-        roofAreaM2: site.roofAreaM2 ?? null,
-        budgetKes: budget > 0 ? budget : null,
-        tariffKesPerKwh: site.tariffKesPerKwh
+        annualConsumptionKwh: consumption * 12,
+        ambientMinC: 8,
+        ambientMaxC: 35,
+        tiltDeg: design.tiltDeg ?? 10,
+        azimuthDeg: site.roofAzimuthDeg ?? design.azimuthDeg ?? 0,
+        targetSpecificYieldKwhPerKwp: Math.round(psh * 365 * 0.8),
       });
-      const d = r?.data || r;
+      const raw = r?.data || r;
+      const s = raw?.summary;
+      const d = s ? { ...raw, systemKw: s.arrayKwp, panelCount: s.panelCount, inverterKw: s.inverterTotalAcKw ?? s.inverterAcKw, batteryKwh: s.batteryKwh, annualKwh: s.estimatedAnnualYieldKwh } : raw;
       const bomLines = d?.bom || d?.bill || [];
       setBom(Array.isArray(bomLines) ? bomLines : []);
 
