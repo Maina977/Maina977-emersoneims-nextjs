@@ -23,7 +23,15 @@ import { poaMonthly } from '@/lib/solar/poa';
 import * as calcs from './buildingCalcs';
 
 /** Run a calculator: 400 naming the missing/invalid input, else ok(). */
+// Option values index lookup tables, where "constructor" finds a built-in and
+// gave NaN or a 500 (audit 2026-10-31). No real input is one of these names.
+const BUILTIN_NAMES = new Set(Object.getOwnPropertyNames(Object.prototype));
 function calc(fn: (b: calcs.Body) => unknown, body: calcs.Body) {
+  for (const [k, v] of Object.entries(body ?? {})) {
+    if (typeof v === 'string' && BUILTIN_NAMES.has(v)) {
+      return NextResponse.json({ success: false, ok: false, error: `Invalid input: ${k}`, missing: [k] }, { status: 400 });
+    }
+  }
   const out = calcs.runCalc(fn, body);
   if (calcs.isCalcError(out)) {
     return NextResponse.json({ success: false, ok: false, error: out.error, missing: out.missing ?? [] }, { status: 400 });

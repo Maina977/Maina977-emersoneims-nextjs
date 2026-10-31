@@ -35,16 +35,20 @@ function killOldServiceWorkerOnce() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
   const KEY = 'eims-bs-cache-cleared-20261020';
   if (sessionStorage.getItem(KEY)) return;
+  let hadWorker = false;
   Promise.all([
-    navigator.serviceWorker.getRegistrations().then((regs) =>
-      Promise.all(regs.map((r) => r.unregister()))
-    ),
+    navigator.serviceWorker.getRegistrations().then((regs) => {
+      hadWorker = regs.length > 0;
+      return Promise.all(regs.map((r) => r.unregister()));
+    }),
     'caches' in window
       ? caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
       : Promise.resolve(),
   ]).then(() => {
     sessionStorage.setItem(KEY, '1');
-    location.reload();
+    // Only when there was a worker to clear: every new session reloaded for
+    // nothing, discarding anything typed (audit 2026-10-31).
+    if (hadWorker) location.reload();
   });
 }
 
@@ -80,8 +84,16 @@ export default function ProBuildingSuiteClient() {
       // The wizard runs its own start-up (which sets its default mode) after
       // load, so one early call could be overwritten. Apply now and re-apply
       // through the first ~2 s; setMode is idempotent.
+      // Stop once the user has touched the page: a late re-apply reset the tile
+      // they had chosen and removed what they typed (audit 2026-10-31).
+      let touched = false;
+      const markTouched = () => { touched = true; };
+      try {
+        win?.document.addEventListener('pointerdown', markTouched, { once: true });
+        win?.document.addEventListener('keydown', markTouched, { once: true });
+      } catch { /* noop */ }
       [0, 400, 1200, 2200].forEach((ms) =>
-        window.setTimeout(() => { try { win?.setMode?.(mode); } catch { /* noop */ } }, ms),
+        window.setTimeout(() => { if (touched) return; try { win?.setMode?.(mode); } catch { /* noop */ } }, ms),
       );
     } catch { /* ignore — wizard may not yet expose setMode */ }
   }

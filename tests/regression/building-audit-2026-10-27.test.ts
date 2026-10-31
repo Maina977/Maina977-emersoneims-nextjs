@@ -51,8 +51,9 @@ describe('bolt, EN 1993-1-8 Tables 3.3 and 3.4', () => {
   });
   it('k1 from e2: e2 = 1.2·d0 gives k1 = 1.66, Fb,Rd 34% below the k1 = 2.5 value', () => {
     // M20, d0 = 22, e1 = 66 (αd = 1), t 10, fu 430: Fb = k1·1·430·20·10/1.25.
-    const wide = run(c.steelBolt, { ...base, e1_mm: 66 });
-    const edge = run(c.steelBolt, { ...base, e1_mm: 66, e2_mm: 26.4 });
+    // Not a single-lap joint: this test is about k1, not the §3.6.1(10) limit.
+    const wide = run(c.steelBolt, { ...base, e1_mm: 66, single_lap_one_row: 'false' });
+    const edge = run(c.steelBolt, { ...base, e1_mm: 66, e2_mm: 26.4, single_lap_one_row: 'false' });
     expect(num(wide.Fb_Rd_kN)).toBeCloseTo(2.5 * 430 * 20 * 10 / 1.25 / 1000, 1); // 172.0
     expect(num(edge.k1)).toBeCloseTo(1.66, 2);
     expect(num(edge.Fb_Rd_kN)).toBeCloseTo(1.66 * 430 * 20 * 10 / 1.25 / 1000, 1); // 114.2

@@ -255,10 +255,19 @@ canvas.cad{display:block;width:100%;cursor:crosshair;background:#fff}
   .pro-output{background:#fff!important;border:1px solid #999!important;page-break-inside:auto}
   .pro-output pre,.pro-output .k,.pro-output .s,.pro-output .n,.pro-output .b,.pro-output .hd,.pro-refs,.pro-refs b{color:#000!important}
   .pro-inputs input,.pro-inputs select{border:1px solid #999!important;background:#fff!important;color:#000!important}
+  /* Everything prints dark on white (audit 2026-10-31: pale labels on white, navy input card). */
+  .pro-page,.pro-page *{color:#000!important;background:transparent!important;box-shadow:none!important;text-shadow:none!important}
+  .pro-page .card,.pro-page .pro-output{border:1px solid #999!important}
+  .pro-meta input::placeholder{color:transparent!important}
+  .print-only{display:block!important;font-size:10px;margin-top:6px}
 }
+.print-only{display:none}
 /* Phones (2026-10-20 audit): the tab strip showed 2 of 5 tabs and the
    sub-tabs scrolled 1,600 px sideways with no cue; small result text. */
 @media(max-width:700px){
+  /* The sub-tabs took 557 px before the form (audit 2026-10-31): one scrolling row. */
+  .pro-sub-tabs{flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  .pro-sub-tabs button{flex:0 0 auto;white-space:nowrap}
   body{overflow:auto;height:auto}
   .app{height:auto;min-height:calc(100vh - 80px)}
   .top{height:auto;flex-wrap:wrap;row-gap:4px;padding:6px 10px}
@@ -7380,6 +7389,7 @@ const PRO_CATALOG = [
       {k:'Gk_kN',type:'number',def:'',l:'Permanent load Gk (kN; incl. footing and backfill)'},
       {k:'Qk_kN',type:'number',def:'',l:'Variable load Qk (kN)'},
       {k:'H_kN',type:'number',def:'',l:'Horizontal load H (kN, along B; blank = none)'},
+      {k:'H_type',type:'select',opts:['variable','permanent'],def:'variable',l:'Horizontal load type (wind is variable)'},
       {k:'shape',type:'select',opts:['rectangular','strip'],def:'rectangular',l:'Shape (strip: leave L blank, per metre run)'},
     ]},
   {id:'en_pad', grp:'Engineering+', title:'Pad footing (size, bending, shear, punching)',
@@ -7663,6 +7673,39 @@ const PRO_CATALOG = [
 ];
 
 /* -------- GENERIC CALC RUNNER -------- */
+/* A result belongs to the inputs it was run with: any change clears it, so a
+   PASS can never sit on screen or on paper beside different inputs (audit
+   2026-10-31). Inputs are remembered per tool for the session, and section and
+   material values carry between tools on the same member. */
+const PRO_SHARED_KEYS=new Set(['b_mm','bw_mm','d_mm','h_mm','fck_MPa','fyk_MPa','span_m']);
+function proMemGet(){try{return JSON.parse(sessionStorage.getItem('eims-pro-inputs')||'{}')}catch(e){return {}}}
+function proMemSet(m){try{sessionStorage.setItem('eims-pro-inputs',JSON.stringify(m))}catch(e){}}
+function proRestoreInputs(c){
+  const m=proMemGet(), own=m[c.id]||{}, shared=m.__shared||{};
+  for(const f of (c.f||[])){
+    const el=document.getElementById('pf_'+f.k); if(!el||f.type==='textarea') continue;
+    const v=(f.k in own)?own[f.k]:(PRO_SHARED_KEYS.has(f.k)&&f.k in shared?shared[f.k]:undefined);
+    if(v!==undefined) el.value=v;
+  }
+  const meta=m.__meta||{};
+  for(const k of ['project','engineer','reference']){const el=document.getElementById('pm_'+k); if(el&&meta[k]) el.value=meta[k];}
+}
+function proOnInputChange(e){
+  const t=e.target; if(!t||!t.closest) return;
+  if(t.closest('.pro-meta')){const m=proMemGet(); m.__meta=m.__meta||{}; m.__meta[t.id.replace('pm_','')]=t.value; proMemSet(m); return;}
+  if(!t.closest('.pro-inputs')||!t.id||t.id.indexOf('pf_')!==0) return;
+  const c=(typeof proCurrentCalc!=='undefined')?proCurrentCalc:null;
+  if(c&&t.type!=='file'){const m=proMemGet(), k=t.id.slice(3); m[c.id]=m[c.id]||{}; m[c.id][k]=t.value; if(PRO_SHARED_KEYS.has(k)){m.__shared=m.__shared||{}; m.__shared[k]=t.value;} proMemSet(m);}
+  const body=document.getElementById('pro-out-body'), head=document.getElementById('pro-out-head');
+  if(body&&body.getAttribute('data-has-result')==='1'){
+    body.removeAttribute('data-has-result');
+    body.innerHTML='<div style="color:#ffcc80;font-size:12px;padding:8px 0">Inputs changed. Press ▶ Run for a result that matches them.</div>';
+    if(head) head.innerHTML='<span>Response</span><span style="color:#ffcc80">out of date</span>';
+  }
+}
+document.addEventListener('input',proOnInputChange);
+document.addEventListener('change',proOnInputChange);
+let proCurrentCalc=null;
 function proFieldInput(f){
   const id=`pf_${f.k}`;
   if(f.type==='select'){
@@ -7946,8 +7989,8 @@ function proRenderResult(endpoint,data){
     // check was only a small "✗ no" row).
     const _pass = main.all_checks_pass;
     // Load results and sizings are neither pass nor fail: neutral colours (2026-10-30 re-audit).
-    const _neutral = /^(LOAD RESULT|SIZED ONLY)/.test(String(main.overall||''));
-    const _vc = _neutral ? (/^SIZED/.test(main.overall) ? ['rgba(255,183,77,.15)','#ffb74d','#ffe0b2','ℹ'] : ['rgba(100,181,246,.15)','#64b5f6','#bbdefb','ℹ']) : _pass ? ['rgba(76,175,80,.15)','#66bb6a','#a5d6a7','✓'] : ['rgba(244,67,54,.15)','#ef5350','#ef9a9a','✗'];
+    const _neutral = /^(LOAD RESULT|SIZED ONLY|PARTIAL)/.test(String(main.overall||''));
+    const _vc = _neutral ? (/^(SIZED|PARTIAL)/.test(main.overall) ? ['rgba(255,183,77,.15)','#ffb74d','#ffe0b2','ℹ'] : ['rgba(100,181,246,.15)','#64b5f6','#bbdefb','ℹ']) : _pass ? ['rgba(76,175,80,.15)','#66bb6a','#a5d6a7','✓'] : ['rgba(244,67,54,.15)','#ef5350','#ef9a9a','✗'];
     const _verdict = typeof _pass==='boolean' ? `<div style="margin:0 0 10px;padding:10px 14px;border-radius:6px;font-weight:700;font-size:14px;background:${_vc[0]};border:1px solid ${_vc[1]};color:${_vc[2]}">${_vc[3]} ${proEscape(main.overall||'')}</div>` : '';
     body = _verdict + _warn + proHeadlines(main) + proRenderChecks(main.checks) + proRenderObject(_rest);
   }
@@ -8448,6 +8491,7 @@ async function proExecute(calc){
     if(ctype.startsWith('application/json')){
       const j=await r.json();
       outBd.innerHTML=proRenderResult(calc.ep, j);
+      outBd.setAttribute('data-has-result','1');
       // Phones: bring the answer into view after Run (2026-10-20).
       if (window.innerWidth < 900) setTimeout(()=>outBd.scrollIntoView({behavior:'smooth',block:'start'}),60);
       if (calc.mth === 'GET' && r.ok) proCachePut(url, ctype, j);
@@ -8707,6 +8751,12 @@ function proShowCalc(calcId){
             <button class="btn" onclick="document.getElementById('pro-out-body').innerHTML='<div style=color:#555>— cleared —</div>';">Clear</button>
           </div>
           ${refsHtml}
+          <div class="pro-meta" style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px">
+            <input id="pm_project" placeholder="Project" aria-label="Project" style="font-size:11px"/>
+            <input id="pm_engineer" placeholder="Engineer" aria-label="Engineer" style="font-size:11px"/>
+            <input id="pm_reference" placeholder="Reference" aria-label="Reference" style="font-size:11px"/>
+          </div>
+          <div class="print-only">Printed ${new Date().toLocaleDateString('en-GB')}. Check this calculation before relying on it.</div>
         </div>
       </div>
       <div class="pro-output">
@@ -8714,6 +8764,7 @@ function proShowCalc(calcId){
         <div id="pro-out-body"><div style="color:#555;font-size:11px">Press ▶ Run. Results appear here as summaries, tables, or download links.</div></div>
       </div>
     </div>`;
+  proCurrentCalc=c; proRestoreInputs(c);
   // Auto-run GET tiles that have no required inputs (or only optional querystring fields)
   // — the user shouldn't have to click Run just to see a catalog like anchor colours.
   // Defer to the next animation frame so the tab DOM paints FIRST; the user

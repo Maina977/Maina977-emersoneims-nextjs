@@ -50,7 +50,7 @@ describe('round 5', () => {
 
   it('EC7 inclination uses the minimum vertical load (G only)', () => {
     // Drained φ 30, c 0, 2×2, Df 1, Gk 800, Qk 300, H 100: C1 base = 1 − 135/800 (not /1530).
-    const r = run(c.bearingEc7, { condition: 'drained', c_kPa: 0, phi_deg: 30, gamma_kN_m3: 18, B_m: 2, L_m: 2, Df_m: 1, Gk_kN: 800, Qk_kN: 300, H_kN: 100 });
+    const r = run(c.bearingEc7, { condition: 'drained', c_kPa: 0, phi_deg: 30, gamma_kN_m3: 18, B_m: 2, L_m: 2, Df_m: 1, Gk_kN: 800, Qk_kN: 300, H_kN: 100, H_type: 'permanent' });
     const c1 = (r.combinations as Array<Record<string, number>>)[0];
     expect(c1.iq).toBeCloseTo(Math.pow(1 - 135 / 800, 1.5), 3);
   });

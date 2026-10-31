@@ -95,7 +95,7 @@ export function runCalc(fn: (b: Body) => unknown, b: Body): unknown {
       // verdict (2026-10-29 audit: a blank M_Ed showed a bare "PASS").
       const notChecked = Array.isArray(o.not_checked) && o.not_checked.length ? ` — not checked: ${(o.not_checked as string[]).join('; ')}` : '';
       const overall = checks.length
-        ? { overall: (failed.length ? `FAIL: ${failed.length} of ${checks.length} checks fail (${failed.join('; ')})` : `PASS: all ${checks.length} checks pass`) + notChecked, all_checks_pass: !failed.length }
+        ? { overall: (failed.length ? `FAIL: ${failed.length} of ${checks.length} checks fail (${failed.join('; ')})` : notChecked ? `PARTIAL: the ${checks.length} checks made pass, but this is not a full check` : `PASS: all ${checks.length} checks pass`) + notChecked, all_checks_pass: !failed.length }
         : {};
       return { ...overall, ...o, disclaimer: CALC_DISCLAIMER };
     }
@@ -149,6 +149,9 @@ export function daylightAdf(b: Body) {
   if (A! < 3 * W!) return bad('total_internal_surface_m2 (all walls, floor and ceiling, including windows) must be at least 3 × window_area_m2: check the room surface area');
   const Aw = W! * ff;
   const ADF = (T! * Aw * theta! * M!) / (A! * (1 - R! * R!));
+  // Real rooms stay far below this; 40 m² of window in 120 m² of surface with
+  // T = 1, R = 0.85 gave "108%, well daylit" (audit 2026-10-31).
+  if (ADF > 30) return bad(`These inputs give an average daylight factor of ${r(ADF, 0)}%, which no real room reaches: check the transmittance, reflectance and areas`);
   return {
     ADF_pct: r(ADF),
     glazed_area_m2: r(Aw),
@@ -494,6 +497,7 @@ export function rcBeam(b: Body) {
   if (fck! < 12 || fck! > 50) return bad('fck_MPa must be between 12 and 50 MPa (EN 1992-1-1 Table 3.1 classes this check covers)');
   if (fyk! < 400 || fyk! > 600) return bad('fyk_MPa must be between 400 and 600 MPa (EN 1992-1-1 Annex C reinforcement)');
   if (bw! > 5000 || d! > 5000) return bad('b_mm and d_mm above 5,000 mm are not a beam section');
+  if (bw! < 50 || d! < 50) return bad('b_mm and d_mm below 50 mm are not a reinforced concrete section');
   const h = optN(b, 'h_mm');
   if (h !== undefined && !(d! < h)) return bad('d_mm (effective depth) must be smaller than h_mm (overall depth)');
   const fcd = (0.85 * fck!) / 1.5;
@@ -559,9 +563,12 @@ export function steelBolt(b: Body) {
     // 2026-10-27 audit: fub 99999 and As 1e9 gave Fv,Rd = 4.8e10 kN; alpha_v 0.55 was accepted.
     if (fub! < 300 || fub! > 1200) return bad('fub_MPa must be between 300 and 1200 MPa (bolt grades 4.6 to 12.9: 400 to 1200)');
     if (As! < 50 || As! > 1200) return bad('As_mm2 (tensile stress area) must be between 50 and 1200 mm² (M10 to M42)');
-    const av = optN(b, 'alpha_v') ?? 0.6;
+    // Table 3.4 with threads in the shear plane: αv = 0.6 only for 4.6, 5.6 and
+    // 8.8. From fub alone, 400 and 500 could be either, so the lower value is
+    // used; 10.9 at 0.6 read 20% high (audit 2026-10-31).
+    const av = optN(b, 'alpha_v') ?? (fub === 800 ? 0.6 : 0.5);
     if (av !== 0.5 && av !== 0.6) return bad('alpha_v must be 0.5 or 0.6 (EN 1993-1-8 Table 3.4)');
-    return { Fv_Rd_kN: r((av * fub! * As!) / gM2 / 1000), method: 'EN 1993-1-8 Table 3.4, one shear plane' };
+    return { Fv_Rd_kN: r((av * fub! * As!) / gM2 / 1000), alpha_v: av, method: 'EN 1993-1-8 Table 3.4, one shear plane' };
   }
   const desig = String(b.designation ?? '').toUpperCase();
   const grade = String(b.grade ?? '');
@@ -628,6 +635,18 @@ export function steelBolt(b: Body) {
       FbGov = Math.min(FbEnd, FbInner);
       assumptions.push('Bearing governs at the weaker of the end and inner bolts (both shown)');
     }
+    // §3.6.1(10): a single-lap joint with one row of bolts is limited to
+    // 1.5·fu·d·t/γM2 (audit 2026-10-31: M24 10.9 in 10 mm read 196.8 kN against
+    // 118.1). One shear plane with no pitch given is taken as that joint.
+    const lapRaw = b.single_lap_one_row;
+    if (lapRaw !== undefined && lapRaw !== null && lapRaw !== '' && !['true', 'false'].includes(String(lapRaw))) return { error: 'Invalid input: single_lap_one_row must be true or false', missing: ['single_lap_one_row'] };
+    const singleLap = lapRaw === undefined || lapRaw === null || lapRaw === '' ? planes === 1 && p1 === undefined : String(lapRaw) === 'true';
+    if (singleLap) {
+      const lapLimit = (1.5 * fu * dNom * t) / gM2 / 1000;
+      if (lapLimit < FbGov) FbGov = lapLimit;
+      out.Fb_Rd_single_lap_limit_kN = r(lapLimit);
+      assumptions.push(`Single-lap joint with one bolt row: Fb,Rd limited to 1.5·fu·d·t/γM2 = ${r(lapLimit)} kN (§3.6.1(10)). Set single_lap_one_row = false if this is not one.`);
+    }
     out.Fb_Rd_kN = r(FbGov);
   } else {
     assumptions.push('Bearing not checked: give t_ply_mm, fu_ply_MPa and e1_mm (and e2_mm, p1_mm, p2_mm where they apply)');
@@ -663,6 +682,7 @@ export function steelBolt(b: Body) {
   }
   const notChecked = [
     FvEd === undefined ? 'Fv,Ed not given, so shear/bearing demand was not checked' : null,
+    FvEd !== undefined && out.Fb_Rd_kN === undefined ? 'plate bearing (give t_ply_mm, fu_ply_MPa and e1_mm)' : null,
     FtEd === undefined ? 'Ft,Ed not given, so tension demand was not checked' : null,
   ].filter(Boolean);
   return { ...out, checks, ...(notChecked.length ? { not_checked: notChecked } : {}), assumptions, method: 'EN 1993-1-8 Table 3.4 (γM2 = 1.25)' };
@@ -692,7 +712,8 @@ export function bearingCapacity(b: Body) {
   const Ng = 2 * (Nq + 1) * Math.tan(phi);
   const q = gamma! * Df!;
   const qu = s.sc * c! * Nc + q * Nq + s.sg * gamma! * B! * Ng;
-  const FS = opt(b, 'FS', 3, (x) => x >= 1, '1 or more');
+  // FS = 1 made the "allowable" pressure the ultimate (audit 2026-10-31).
+  const FS = opt(b, 'FS', 3, (x) => x >= 1.5 && x <= 10, 'between 1.5 and 10');
   return {
     qu_kPa: r(qu, 1),
     qa_kPa: r(qu / FS, 1),
@@ -726,6 +747,7 @@ export function bearingEc7(b: Body) {
   if (!(B! > 0 && B! <= 50) || !(L >= B!) || !(Df! >= 0 && Df! <= 20)) return bad('Need 0 < B_m ≤ 50, L_m ≥ B_m (B is the shorter side) and 0 ≤ Df_m ≤ 20');
   // Upper bounds (2026-10-29 audit: L_m 1e9 and Gk 1e12 were accepted).
   if (Lgiven !== undefined && Lgiven > 200) return bad('L_m must be at most 200 m (for a long footing use shape: "strip")');
+  if (shapeIn === 'square' && Lgiven !== undefined && Lgiven !== B) return bad('shape "square" needs L_m equal to B_m: use shape "rectangular" for a different length');
   if (!(gamma! >= 10 && gamma! <= 25)) return bad('gamma_kN_m3 (bulk unit weight) must be between 10 and 25 kN/m³');
   const dw = optN(b, 'water_depth_m');
   if (dw !== undefined && dw < 0) return bad('water_depth_m (depth of the water table below ground) must be 0 or more');
@@ -733,6 +755,11 @@ export function bearingEc7(b: Body) {
   if ((Gk !== undefined && Gk < 0) || Qk < 0 || Hk < 0) return bad('Gk_kN, Qk_kN and H_kN are load magnitudes: 0 or more');
   if ((Gk ?? 0) > 1e6 || Qk > 1e6 || Hk > 1e6) return bad('Gk_kN, Qk_kN and H_kN must each be at most 1,000,000 kN');
   if (Hk > 0 && Gk === undefined) return bad('A horizontal load H_kN needs the vertical loads Gk_kN (and Qk_kN) for the inclination factors');
+  // A variable load with no permanent load was ignored: Qk 50,000 kN gave no
+  // check at all (audit 2026-10-31).
+  if (Qk > 0 && Gk === undefined) return bad('Enter the permanent load Gk_kN as well as Qk_kN (0 if there is none; include the footing and backfill)');
+  const hType = String(b.H_type ?? 'variable');
+  if (hType !== 'variable' && hType !== 'permanent') return { error: 'Invalid input: H_type must be variable or permanent', missing: ['H_type'] };
   const strip = !Number.isFinite(L);
   const A = strip ? B! : B! * L;        // per metre run for a strip
   const BL = strip ? 0 : B! / L;
@@ -771,7 +798,10 @@ export function bearingEc7(b: Body) {
   }
   for (const k of combos) {
     const Vd = Gk !== undefined ? k.gG * Gk + k.gQ * Qk : undefined;
-    const Hd = Hk ? k.gG * Hk : 0; // horizontal load treated as permanent
+    // Wind and other variable horizontal loads take γQ. Treated as permanent
+    // without saying so, a wind case read PASS at 0.99 against 1.12 by hand
+    // (audit 2026-10-31).
+    const Hd = Hk ? (hType === 'permanent' ? k.gG : k.gQ) * Hk : 0;
     // Inclination factors with the MINIMUM vertical load (G only, γ = 1.0):
     // the full factored V made them favourable (2026-10-29 audit).
     const Vmin = Gk !== undefined ? Gk : undefined;
@@ -820,7 +850,7 @@ export function bearingEc7(b: Body) {
       const RhD = cond === 'drained'
         ? Math.max(0, Vmin - uplift) * Math.tan(Math.atan(Math.tan(phiK * DEG) / k.gPhi))
         : Math.min(A * (cuK / k.gCu), 0.4 * Vmin);
-      sliding = { H_Ed_kN: r(Hd, 1), sliding_R_d_kN: r(RhD, 1), sliding_utilisation: r(Hd / RhD, 3) };
+      sliding = { H_Ed_kN: r(Hd, 1), sliding_R_d_kN: r(RhD, 1), sliding_utilisation: RhD > 0 ? r(Hd / RhD, 3) : 'no sliding resistance' };
     }
     results.push({
       combination: k.name,
@@ -846,6 +876,7 @@ export function bearingEc7(b: Body) {
   for (const x of results) {
     if (x.sliding_R_d_kN !== undefined) checks.push({ check: `Sliding H_Ed ≤ R_h,d (${x.combination}, §6.5.3)`, value: `${x.H_Ed_kN} ≤ ${x.sliding_R_d_kN} kN${strip ? '/m' : ''}`, pass: (x.H_Ed_kN as number) <= (x.sliding_R_d_kN as number) });
   }
+  if (Hk > 0) assumptions.push(`Horizontal load treated as ${hType} (γ = ${hType === 'permanent' ? '1.35 / 1.0' : '1.5 / 1.3'} in C1 / C2), acting together with Qk with no ψ reduction`);
   if (Hk > 0) assumptions.push(cond === 'drained'
     ? 'Sliding: R_h,d = (G_k − water uplift)·tan δd with δ = φ′d (cast-in-place base); passive resistance ignored'
     : 'Sliding: R_h,d = A·cu,d, at most 0.4·G_k (§6.5.3(12): water or air may reach the interface); passive resistance ignored');
@@ -934,7 +965,9 @@ export function ec2Shear(b: Body) {
   if (VEd !== undefined && !(VEd >= 0 && VEd <= 1e5)) return bad('VEd_kN must be between 0 and 100,000 kN');
   const Asw = optN(b, 'Asw_mm2'), s = optN(b, 's_mm');
   const fywk = opt(b, 'fywk_MPa', 500, (x) => x >= 250 && x <= 600, 'between 250 and 600 MPa');
-  if ((Asw === undefined) !== (s === undefined)) return bad('Give both Asw_mm2 (area of all link legs) and s_mm (link spacing), or neither');
+  // The form keeps its spacing when "blank = no links" is used, so a spacing
+  // alone means no links (audit 2026-10-31). Links without a spacing cannot be checked.
+  if (Asw !== undefined && s === undefined) return bad('Give s_mm (link spacing) with Asw_mm2 (area of all link legs)');
   if (Asw !== undefined && !(Asw > 0 && s! > 0 && s! <= 1000)) return bad('Asw_mm2 must be > 0 and s_mm between 0 and 1,000 mm');
   const k = Math.min(1 + Math.sqrt(200 / d!), 2);
   const rhoL = Math.min(Asl! / (bw! * d!), 0.02);
@@ -985,6 +1018,9 @@ export function ec2Shear(b: Body) {
   return {
     ...out,
     checks,
+    // Only the link detailing is checked without a demand (audit 2026-10-31: a
+    // blank V_Ed showed a bare PASS).
+    ...(VEd === undefined ? { not_checked: ['V_Ed not given, so the shear demand was not checked'] } : {}),
     assumptions: [
       'No axial force (σcp = 0); vertical links; z = 0.9d',
       'CRd,c = 0.18/γc, vmin = 0.035·k^1.5·√fck, αcc = 1.0 for shear, γs = 1.15 (recommended / UK NA)',
@@ -1052,7 +1088,12 @@ export function ec2Deflection(b: Body) {
       rho < 0.003 ? 'At steel ratios below 0.3% Eq. 7.16 gives very large span/depth limits: for a lightly reinforced member check a calculated deflection (§7.4.3).' : '',
     ].filter(Boolean).join(' ') } : {}),
     rho_pct: r(rho * 100, 3), rho0_pct: r(rho0 * 100, 3),
-    checks: [{ check: 'Span/d ≤ allowed (§7.4.2)', value: `${r(actual, 1)} ≤ ${r(allowed, 1)}`, pass: actual <= allowed }],
+    // Eq. 7.16a grows without bound at low ρ: a 6.5 m slab with d = 90 passed at
+    // l/d 72 (audit 2026-10-31). Common UK practice caps the limit at 40·K.
+    checks: [
+      { check: 'Span/d ≤ allowed (§7.4.2)', value: `${r(actual, 1)} ≤ ${r(allowed, 1)}`, pass: actual <= allowed },
+      { check: 'Span/d ≤ 40·K (practical cap for lightly reinforced members)', value: `${r(actual, 1)} ≤ ${r(40 * K, 1)}`, pass: actual <= 40 * K },
+    ],
     assumptions: [
       'Eq. 7.16 with σs from Eq. 7.17 (310/σs = 500/(fyk·As,req/As,prov)), capped at 1.5 (UK NA)',
       'Span over 7 m (8.5 m for flat slabs) × 7/leff; flanged with beff/bw > 3 × 0.8',

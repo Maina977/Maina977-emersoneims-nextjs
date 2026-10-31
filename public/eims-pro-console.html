@@ -54,6 +54,16 @@
   .ref{font-size:11px;color:var(--mute);margin-top:4px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+  /* Printing a calculation (audit 2026-10-31: no print styles, dark, form off the page). */
+  @media print{
+    html,body{height:auto!important;background:#fff!important;color:#000!important}
+    header,#nav,button,.act{display:none!important}
+    main{display:block!important;height:auto!important}
+    main *{color:#000!important;background:transparent!important;box-shadow:none!important;overflow:visible!important;max-height:none!important;max-width:100%!important}
+    .grid2{display:block!important}
+    .card{border:1px solid #999!important;margin-bottom:8px;page-break-inside:auto}
+    input,select,textarea{border:1px solid #999!important;width:100%!important}
+  }
   .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:6px}
   .b-eng{background:#1e3a8a}.b-qs{background:#065f46}.b-arch{background:#7c2d12}.b-plat{background:#4c1d95}
   .b-safe{background:#b45309}.b-land{background:#15803d}.b-int{background:#be185d}.b-ai{background:#0e7490}
@@ -179,6 +189,7 @@ const MODULES = [
       {k:'Gk_kN', label:'Permanent load Gk (kN; incl. footing and backfill)', type:'number', def:''},
       {k:'Qk_kN', label:'Variable load Qk (kN)', type:'number', def:''},
       {k:'H_kN', label:'Horizontal load H (kN, along B; blank = none)', type:'number', def:''},
+      {k:'H_type', label:'Horizontal load type (wind is variable)', type:'select', opts:['variable','permanent'], def:'variable'},
       {k:'shape', label:'Shape (strip: leave L blank, per metre run)', type:'select', opts:['rectangular','strip'], def:'rectangular'},
     ]},
 
@@ -1245,6 +1256,21 @@ function show(id){
       </div>
     </div>`;
   $('#run').onclick = ()=>execute(m);
+  // A result belongs to the inputs it was run with (audit 2026-10-31: a PASS
+  // stayed beside changed inputs). Values are remembered for the session.
+  const memKey = 'eims-console-inputs', shared = new Set(['b_mm','bw_mm','d_mm','h_mm','fck_MPa','fyk_MPa','span_m']);
+  const memGet = ()=>{ try{ return JSON.parse(sessionStorage.getItem(memKey)||'{}'); }catch(e){ return {}; } };
+  const mem = memGet();
+  for(const f of m.fields){ const el = $(`#f_${f.k}`); if(!el || f.type==='textarea') continue;
+    const v = (mem[m.endpoint]||{})[f.k] ?? (shared.has(f.k) ? (mem.__shared||{})[f.k] : undefined);
+    if(v !== undefined) el.value = v; }
+  const onEdit = (e)=>{
+    const k = String(e.target.id||'').replace(/^f_/,''); const s = memGet();
+    if(k){ s[m.endpoint] = s[m.endpoint]||{}; s[m.endpoint][k] = e.target.value; if(shared.has(k)){ s.__shared = s.__shared||{}; s.__shared[k] = e.target.value; }
+      try{ sessionStorage.setItem(memKey, JSON.stringify(s)); }catch(err){} }
+    const out = $('#out'); if(out.getAttribute('data-has-result')==='1'){ out.removeAttribute('data-has-result'); out.innerHTML = '<div class="note">Inputs changed. Press Run for a result that matches them.</div>'; }
+  };
+  $('#frm').addEventListener('input', onEdit); $('#frm').addEventListener('change', onEdit);
   $('#clear').onclick = ()=>{ $('#out').innerHTML = '<div class="note">Cleared.</div>'; };
 }
 
@@ -1302,6 +1328,9 @@ async function execute(m){
     let payload = text;
     try{ payload = JSON.parse(text); }catch(e){}
     out.innerHTML = renderResponse(r.status, r.statusText, payload, {endpoint: m.endpoint, title: m.title});
+    out.setAttribute('data-has-result','1');
+    // Phones: the result sat 1,467 px down with no scroll to it (audit 2026-10-31).
+    if(window.innerWidth < 980) setTimeout(()=>out.scrollIntoView({behavior:'smooth',block:'start'}),60);
   }catch(err){
     out.innerHTML = renderError(err);
   }
@@ -1420,8 +1449,8 @@ function renderResponse(status, statusText, payload, moduleInfo){
     // One overall verdict when the result has checks (2026-10-27 audit).
     // A load result or a sizing is not a pass or a fail: neutral colours
     // (2026-10-30 re-audit: a green PASS on an EC8 base shear).
-    const neutral = /^(LOAD RESULT|SIZED ONLY)/.test(String(overall || ''));
-    const vc = neutral ? (/^SIZED/.test(overall) ? ['#ffb74d', '#ffe0b2', 'ℹ'] : ['#64b5f6', '#bbdefb', 'ℹ']) : all_checks_pass ? ['#66bb6a', '#a5d6a7', '✓'] : ['#ef5350', '#ef9a9a', '✗'];
+    const neutral = /^(LOAD RESULT|SIZED ONLY|PARTIAL)/.test(String(overall || ''));
+    const vc = neutral ? (/^(SIZED|PARTIAL)/.test(overall) ? ['#ffb74d', '#ffe0b2', 'ℹ'] : ['#64b5f6', '#bbdefb', 'ℹ']) : all_checks_pass ? ['#66bb6a', '#a5d6a7', '✓'] : ['#ef5350', '#ef9a9a', '✗'];
     const verdict = typeof all_checks_pass === 'boolean'
       ? `<div class="note" style="font-weight:700;font-size:14px;border-color:${vc[0]};color:${vc[1]}">${vc[2]} ${proEscape(overall || '')}</div>`
       : '';
