@@ -63,6 +63,7 @@
     .grid2{display:block!important}
     .card{border:1px solid #999!important;margin-bottom:8px;page-break-inside:auto}
     input,select,textarea{border:1px solid #999!important;width:100%!important}
+    table{font-size:8px!important;table-layout:fixed;width:100%!important;word-break:break-word}
   }
   .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:6px}
   .b-eng{background:#1e3a8a}.b-qs{background:#065f46}.b-arch{background:#7c2d12}.b-plat{background:#4c1d95}
@@ -272,6 +273,7 @@ const MODULES = [
       {k:'fu_ply_MPa', label:'fu ply (MPa)', type:'number', def:410},
       {k:'e1_mm', label:'e1 (mm)', type:'number', def:30},
       {k:'p1_mm', label:'p1 (mm)', type:'number', def:60},
+      {k:'single_lap_one_row', label:'Single-lap joint with one bolt row? (limits bearing, §3.6.1(10))', type:'select', opts:['false','true'], def:'false'},
       {k:'e2_mm', label:'e2 edge distance (mm; sets k1)', type:'number', def:35},
       {k:'p2_mm', label:'p2 gauge (mm; blank = one line)', type:'number', def:''},
       {k:'exposed_to_weather', label:'Steel exposed to weather', type:'select', opts:[false,true], def:false},
@@ -508,7 +510,7 @@ const MODULES = [
   { id:'acoustics', group:'Architecture', tag:'b-arch',
     title:'Acoustics — Reverberation (Sabine/Eyring)',
     endpoint:'/api/arch/acoustics/reverberation', method:'POST',
-    refs:['BS 8233:2014','BB93:2014'],
+    refs:['Sabine and Eyring reverberation formulas'],
     fields:[
       {k:'volume_m3', label:'Volume (m³)', type:'number', def:200},
       {k:'method', label:'Method', type:'select', opts:['sabine','eyring'], def:'sabine'},
@@ -1248,6 +1250,7 @@ function show(id){
         <form id="frm">${m.fields.map(renderField).join('')}</form>
         <button class="act" id="run">Run</button>
         <button class="act ghost" id="clear">Clear</button>
+        <button class="act ghost" id="resetInputs">Reset inputs</button>
         ${refs}
       </div>
       <div class="card">
@@ -1258,19 +1261,22 @@ function show(id){
   $('#run').onclick = ()=>execute(m);
   // A result belongs to the inputs it was run with (audit 2026-10-31: a PASS
   // stayed beside changed inputs). Values are remembered for the session.
-  const memKey = 'eims-console-inputs', shared = new Set(['b_mm','bw_mm','d_mm','h_mm','fck_MPa','fyk_MPa','span_m']);
+  // Per tool only: carrying a slab strip's width into a beam form turned a FAIL into a PASS.
+  const memKey = 'eims-console-inputs';
   const memGet = ()=>{ try{ return JSON.parse(sessionStorage.getItem(memKey)||'{}'); }catch(e){ return {}; } };
   const mem = memGet();
   for(const f of m.fields){ const el = $(`#f_${f.k}`); if(!el || f.type==='textarea') continue;
-    const v = (mem[m.endpoint]||{})[f.k] ?? (shared.has(f.k) ? (mem.__shared||{})[f.k] : undefined);
+    const v = (mem[m.endpoint]||{})[f.k];
     if(v !== undefined) el.value = v; }
   const onEdit = (e)=>{
     const k = String(e.target.id||'').replace(/^f_/,''); const s = memGet();
-    if(k){ s[m.endpoint] = s[m.endpoint]||{}; s[m.endpoint][k] = e.target.value; if(shared.has(k)){ s.__shared = s.__shared||{}; s.__shared[k] = e.target.value; }
+    if(k){ s[m.endpoint] = s[m.endpoint]||{}; s[m.endpoint][k] = e.target.value;
       try{ sessionStorage.setItem(memKey, JSON.stringify(s)); }catch(err){} }
-    const out = $('#out'); if(out.getAttribute('data-has-result')==='1'){ out.removeAttribute('data-has-result'); out.innerHTML = '<div class="note">Inputs changed. Press Run for a result that matches them.</div>'; }
+    window.__runId = (window.__runId||0) + 1; // a response on its way no longer matches
+    const out = $('#out'); if(out.getAttribute('data-has-result')==='1' || window.__inFlight){ window.__inFlight = false; out.removeAttribute('data-has-result'); out.innerHTML = '<div class="note">Inputs changed. Press Run for a result that matches them.</div>'; }
   };
   $('#frm').addEventListener('input', onEdit); $('#frm').addEventListener('change', onEdit);
+  $('#resetInputs').onclick = ()=>{ const s = memGet(); delete s[m.endpoint]; try{ sessionStorage.setItem(memKey, JSON.stringify(s)); }catch(err){} for(const f of m.fields){ const el = $(`#f_${f.k}`); if(el && f.def !== undefined) el.value = f.def; } const o = $('#out'); o.removeAttribute('data-has-result'); o.innerHTML = '<div class="note">Inputs reset. Press Run.</div>'; };
   $('#clear').onclick = ()=>{ $('#out').innerHTML = '<div class="note">Cleared.</div>'; };
 }
 
@@ -1313,7 +1319,10 @@ async function execute(m){
   try{
     const opts = {method: m.method, headers:{'Content-Type':'application/json'}};
     if(m.method!=='GET') opts.body = JSON.stringify(body);
+    const myRun = window.__runId = (window.__runId||0) + 1; window.__inFlight = true;
     const r = await fetch(url, opts);
+    if(myRun !== window.__runId) return;
+    window.__inFlight = false;
     if(m.binary){
       const blob = await r.blob();
       const a = document.createElement('a');
@@ -1325,6 +1334,7 @@ async function execute(m){
       return;
     }
     const text = await r.text();
+    if(myRun !== window.__runId) return;
     let payload = text;
     try{ payload = JSON.parse(text); }catch(e){}
     out.innerHTML = renderResponse(r.status, r.statusText, payload, {endpoint: m.endpoint, title: m.title});
@@ -1343,7 +1353,7 @@ function proEscape(v){
 // Units keep their case and go in brackets ("qz_psf" → "qz (psf)", "M_Rd_kNm" →
 // "M Rd (kNm)") instead of "Qz Psf" / "M Rd KNm" (2026-10-20).
 const UNIT_LABELS = { psf:'psf', Pa:'Pa', kPa:'kPa', MPa:'MPa', kN:'kN', kNm:'kNm', mm:'mm', mm2:'mm²', m:'m', m2:'m²', m3:'m³', m3_s:'m³/s', L_s:'L/s', s:'s', min:'min', pct:'%', deg:'°', W_m2K:'W/m²K', m2K_W:'m²K/W', ms:'m/s', kWh:'kWh', kW:'kW', ha:'ha', g:'g' };
-const KEY_LABELS = { alpha_v:'αv', alpha_b:'αb', alpha_d:'αd', total_absorption_m2_sabin:'Total absorption (m² Sabine)', datetime_utc:'Date/time (UTC)', x_mm:'x (mm)', z_mm:'z (mm)', qz_psf:'qz (psf)', qz_Pa:'qz (Pa)', qp_Pa:'qp (Pa)', fcd_MPa:'fcd (MPa)', fyd_MPa:'fyd (MPa)', Kz:'Kz', Cs:'Cs', T_s:'T (s)', Fv_Rd_kN:'Fv,Rd (kN)', Ft_Rd_kN:'Ft,Rd (kN)', Fb_Rd_kN:'Fb,Rd (kN)', Bp_Rd_kN:'Bp,Rd (kN)', M_Rd_kNm:'M,Rd (kNm)', As_min_mm2:'As,min (mm²)', As_required_mm2:'As,req (mm²)', mean_alpha:'Mean absorption ᾱ', T60_s:'T60 (s)',
+const KEY_LABELS = { Asw_over_s_required_mm2_per_mm:'Links required Asw/s (mm²/mm)', Asw_over_s_min_mm2_per_mm:'Minimum links Asw/s (mm²/mm)', rho_kg_m3:'Air density ρ (kg/m³)', qp_kPa:'Peak velocity pressure qp (kPa)', alpha_v:'αv', alpha_b:'αb', alpha_d:'αd', total_absorption_m2_sabin:'Total absorption (m² Sabine)', datetime_utc:'Date/time (UTC)', x_mm:'x (mm)', z_mm:'z (mm)', qz_psf:'qz (psf)', qz_Pa:'qz (Pa)', qp_Pa:'qp (Pa)', fcd_MPa:'fcd (MPa)', fyd_MPa:'fyd (MPa)', Kz:'Kz', Cs:'Cs', T_s:'T (s)', Fv_Rd_kN:'Fv,Rd (kN)', Ft_Rd_kN:'Ft,Rd (kN)', Fb_Rd_kN:'Fb,Rd (kN)', Bp_Rd_kN:'Bp,Rd (kN)', M_Rd_kNm:'M,Rd (kNm)', As_min_mm2:'As,min (mm²)', As_required_mm2:'As,req (mm²)', mean_alpha:'Mean absorption ᾱ', T60_s:'T60 (s)',
   // Shear and deflection (2026-10-30 re-audit: "V Rd c", "L over d allowed").
   V_Rd_c_kN:'V_Rd,c without links (kN)', V_Rd_max_kN:'V_Rd,max strut limit (kN)', V_Rd_s_kN:'V_Rd,s links (kN)', V_Rd_kN:'V_Rd (kN)', cot_theta:'cot θ', l_over_d_allowed:'Allowed span/depth', l_over_d_actual:'Actual span/depth', basic_l_over_d:'Basic span/depth (Eq. 7.16)', rho_pct:'ρ (%)', rho0_pct:'ρ0 (%)', utilisation:'Utilisation (effect / resistance)', B_m:'Footing width B (m)', sizing_basis:'Sizing basis', governing_combination:'Governing combination', sliding_R_d_kN:'Sliding resistance R_h,d (kN)', H_Ed_kN:'H_Ed (kN)', sliding_utilisation:'Sliding utilisation', bearing_not_possible:'Bearing not possible (H too large)' };
 function toLabel(key){

@@ -422,7 +422,7 @@ const nextConfig: NextConfig = {
       // NOTE: bump the date suffix here whenever a new wizard version is deployed
       // (see memory: project_building_suite_pro_wizard_sync.md).
       {
-        source: '/eims-building-suite-v20261030.html',
+        source: '/eims-building-suite-v20261031.html',
         headers: [
           {
             key: 'Cache-Control',
@@ -547,14 +547,16 @@ const nextConfig: NextConfig = {
       // Building Suite file renamed 2026-10-19 and again 2026-10-20: each old name was served
       // "immutable" for a year, so the fixed suite needed a new URL.
       // ... and on 2026-10-30 (audit fixes: print, labels, inputs).
-      { source: '/eims-building-suite-v20260503.html', destination: '/eims-building-suite-v20261030.html', permanent: true },
-      { source: '/eims-building-suite-v20261019.html', destination: '/eims-building-suite-v20261030.html', permanent: true },
-      { source: '/eims-building-suite-v20261020.html', destination: '/eims-building-suite-v20261030.html', permanent: true },
+      { source: '/eims-building-suite-v20260503.html', destination: '/eims-building-suite-v20261031.html', permanent: true },
+      { source: '/eims-building-suite-v20261019.html', destination: '/eims-building-suite-v20261031.html', permanent: true },
+      { source: '/eims-building-suite-v20261030.html', destination: '/eims-building-suite-v20261031.html', permanent: true },
+      { source: '/eims-building-suite-v20261030', destination: '/eims-building-suite-v20261031', permanent: true },
+      { source: '/eims-building-suite-v20261020.html', destination: '/eims-building-suite-v20261031.html', permanent: true },
       // Vercel serves public .html files at their clean path too (.html -> 308 -> no
       // extension), so the old clean address needs its own redirect.
-      { source: '/eims-building-suite-v20260503', destination: '/eims-building-suite-v20261030', permanent: true },
-      { source: '/eims-building-suite-v20261019', destination: '/eims-building-suite-v20261030', permanent: true },
-      { source: '/eims-building-suite-v20261020', destination: '/eims-building-suite-v20261030', permanent: true },
+      { source: '/eims-building-suite-v20260503', destination: '/eims-building-suite-v20261031', permanent: true },
+      { source: '/eims-building-suite-v20261019', destination: '/eims-building-suite-v20261031', permanent: true },
+      { source: '/eims-building-suite-v20261020', destination: '/eims-building-suite-v20261031', permanent: true },
       // Solar duplicates: -tools crashed on every real coordinate (float index
       // into an array) and invented roof analysis from a coordinate hash;
       // -futuristic was a static mock with fixed "28% ROI / 3.5 years".

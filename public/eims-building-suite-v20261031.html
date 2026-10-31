@@ -7355,6 +7355,7 @@ const PRO_CATALOG = [
       {k:'fu_ply_MPa',type:'number',def:410,l:'fu ply (MPa)'},
       {k:'e1_mm',type:'number',def:30,l:'e1 (mm)'},
       {k:'p1_mm',type:'number',def:60,l:'p1 (mm)'},
+      {k:'single_lap_one_row',type:'select',opts:['false','true'],def:'false',l:'Single-lap joint with one bolt row? (limits bearing, §3.6.1(10))'},
       {k:'e2_mm',type:'number',def:35,l:'e2 edge distance (mm; sets k1)'},
       {k:'p2_mm',type:'number',def:'',l:'p2 gauge (mm; blank = one line of bolts)'},
       {k:'exposed_to_weather',type:'select',opts:[false,true],def:false,l:'Steel exposed to weather (e1/e2 maximum)'},
@@ -7675,17 +7676,15 @@ const PRO_CATALOG = [
 /* -------- GENERIC CALC RUNNER -------- */
 /* A result belongs to the inputs it was run with: any change clears it, so a
    PASS can never sit on screen or on paper beside different inputs (audit
-   2026-10-31). Inputs are remembered per tool for the session, and section and
-   material values carry between tools on the same member. */
-const PRO_SHARED_KEYS=new Set(['b_mm','bw_mm','d_mm','h_mm','fck_MPa','fyk_MPa','span_m']);
+   2026-10-31). Inputs are remembered per tool for the session and never carried
+   between tools: a slab strip's width in a beam form turned a FAIL into a PASS. */
 function proMemGet(){try{return JSON.parse(sessionStorage.getItem('eims-pro-inputs')||'{}')}catch(e){return {}}}
 function proMemSet(m){try{sessionStorage.setItem('eims-pro-inputs',JSON.stringify(m))}catch(e){}}
 function proRestoreInputs(c){
-  const m=proMemGet(), own=m[c.id]||{}, shared=m.__shared||{};
+  const m=proMemGet(), own=m[c.id]||{};
   for(const f of (c.f||[])){
     const el=document.getElementById('pf_'+f.k); if(!el||f.type==='textarea') continue;
-    const v=(f.k in own)?own[f.k]:(PRO_SHARED_KEYS.has(f.k)&&f.k in shared?shared[f.k]:undefined);
-    if(v!==undefined) el.value=v;
+    if(f.k in own) el.value=own[f.k];
   }
   const meta=m.__meta||{};
   for(const k of ['project','engineer','reference']){const el=document.getElementById('pm_'+k); if(el&&meta[k]) el.value=meta[k];}
@@ -7695,9 +7694,11 @@ function proOnInputChange(e){
   if(t.closest('.pro-meta')){const m=proMemGet(); m.__meta=m.__meta||{}; m.__meta[t.id.replace('pm_','')]=t.value; proMemSet(m); return;}
   if(!t.closest('.pro-inputs')||!t.id||t.id.indexOf('pf_')!==0) return;
   const c=(typeof proCurrentCalc!=='undefined')?proCurrentCalc:null;
-  if(c&&t.type!=='file'){const m=proMemGet(), k=t.id.slice(3); m[c.id]=m[c.id]||{}; m[c.id][k]=t.value; if(PRO_SHARED_KEYS.has(k)){m.__shared=m.__shared||{}; m.__shared[k]=t.value;} proMemSet(m);}
+  if(c&&t.type!=='file'){const m=proMemGet(), k=t.id.slice(3); m[c.id]=m[c.id]||{}; m[c.id][k]=t.value; proMemSet(m);}
+  proRunId++; // a response already on its way no longer matches these inputs
   const body=document.getElementById('pro-out-body'), head=document.getElementById('pro-out-head');
-  if(body&&body.getAttribute('data-has-result')==='1'){
+  if(body&&(body.getAttribute('data-has-result')==='1'||proInFlight)){
+    proInFlight=false;
     body.removeAttribute('data-has-result');
     body.innerHTML='<div style="color:#ffcc80;font-size:12px;padding:8px 0">Inputs changed. Press ▶ Run for a result that matches them.</div>';
     if(head) head.innerHTML='<span>Response</span><span style="color:#ffcc80">out of date</span>';
@@ -7705,7 +7706,9 @@ function proOnInputChange(e){
 }
 document.addEventListener('input',proOnInputChange);
 document.addEventListener('change',proOnInputChange);
-let proCurrentCalc=null;
+let proCurrentCalc=null, proRunId=0, proInFlight=false;
+/* Back to the tool's own defaults: redraws the form with this tool's memory cleared. */
+function proResetInputs(id){const m=proMemGet(); delete m[id]; proMemSet(m); proShowCalc(id);}
 function proFieldInput(f){
   const id=`pf_${f.k}`;
   if(f.type==='select'){
@@ -7810,6 +7813,7 @@ const PRO_LABELS = {
   sliding_R_d_kN:'Sliding resistance R_h,d', sliding_utilisation:'Sliding utilisation H_Ed/R_h,d', governing_combination:'Governing combination',
   q_overburden_kPa:'Overburden pressure q′', phi_d_deg:'Design friction angle φ′d', c_d_kPa:'Design cohesion c′d', cu_d_kPa:'Design undrained strength cu,d',
   Nc:'Nc', Nq:'Nq', sc:'Shape factor sc', sq:'Shape factor sq', sgamma:'Shape factor sγ', ic:'Inclination factor ic', iq:'Inclination factor iq', igamma:'Inclination factor iγ',
+  Fb_Rd_end_bolt_kN:'Bearing resistance, end bolt', Fb_Rd_inner_bolt_kN:'Bearing resistance, inner bolt', Fb_Rd_single_lap_limit_kN:'Single-lap bearing limit', k1:'Factor k1',
   method_permitted:'Lateral force method permitted', F_b_kN:'Base shear F_b',
   V_Rd_c_kN:'Shear resistance without links V_Rd,c', V_Rd_max_kN:'Strut crushing limit V_Rd,max', V_Rd_s_kN:'Link resistance V_Rd,s', V_Rd_kN:'Shear resistance V_Rd',
   cot_theta:'Strut angle cot θ', V_Ed_over_V_Rd_c:'V_Ed against V_Rd,c', Asw_over_s_required_mm2_per_mm:'Links required Asw/s',
@@ -8485,11 +8489,15 @@ async function proExecute(calc){
   try{
     const opts={method:calc.mth,headers:{'Content-Type':'application/json'}};
     if(calc.mth!=='GET') opts.body=JSON.stringify(body);
+    const myRun=++proRunId; proInFlight=true;
     const r=await fetch(url,opts);
+    if(myRun!==proRunId) return; // inputs changed while waiting: the notice is already showing
+    proInFlight=false;
     const ctype=r.headers.get('Content-Type')||'';
     outHd.innerHTML = `<span style="color:#e0e0e0;font-weight:600">${proEscape(calc.title||'Result')}</span><span style="color:${r.ok?'#81c784':'#ef9a9a'}">${r.ok?'Ready':'Unable to complete'}</span>`;
     if(ctype.startsWith('application/json')){
       const j=await r.json();
+      if(myRun!==proRunId) return;
       outBd.innerHTML=proRenderResult(calc.ep, j);
       outBd.setAttribute('data-has-result','1');
       // Phones: bring the answer into view after Run (2026-10-20).
@@ -8748,6 +8756,7 @@ function proShowCalc(calcId){
           ${formHtml||'<div style="color:#7986cb;font-size:11px;margin:12px 0">No inputs required — press Run to fetch.</div>'}
           <div class="btn-row">
             <button class="btn btn-g" onclick="proExecute(PRO_CATALOG.find(x=>x.id==='${calcId}'))">▶ Run</button>
+            <button class="btn" onclick="proResetInputs('${calcId}')">Reset inputs</button>
             <button class="btn" onclick="document.getElementById('pro-out-body').innerHTML='<div style=color:#555>— cleared —</div>';">Clear</button>
           </div>
           ${refsHtml}

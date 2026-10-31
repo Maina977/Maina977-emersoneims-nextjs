@@ -95,7 +95,7 @@ export function runCalc(fn: (b: Body) => unknown, b: Body): unknown {
       // verdict (2026-10-29 audit: a blank M_Ed showed a bare "PASS").
       const notChecked = Array.isArray(o.not_checked) && o.not_checked.length ? ` — not checked: ${(o.not_checked as string[]).join('; ')}` : '';
       const overall = checks.length
-        ? { overall: (failed.length ? `FAIL: ${failed.length} of ${checks.length} checks fail (${failed.join('; ')})` : notChecked ? `PARTIAL: the ${checks.length} checks made pass, but this is not a full check` : `PASS: all ${checks.length} checks pass`) + notChecked, all_checks_pass: !failed.length }
+        ? { overall: (failed.length ? `FAIL: ${failed.length} of ${checks.length} checks fail (${failed.join('; ')})` : notChecked ? `PARTIAL: ${checks.length === 1 ? 'the 1 check made passes' : `the ${checks.length} checks made pass`}, but this is not a full check` : `PASS: all ${checks.length} checks pass`) + notChecked, all_checks_pass: !failed.length && !notChecked }
         : {};
       return { ...overall, ...o, disclaimer: CALC_DISCLAIMER };
     }
