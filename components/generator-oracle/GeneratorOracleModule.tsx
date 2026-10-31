@@ -1246,13 +1246,13 @@ export default function GeneratorOracleModule() {
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                   <div role="tablist" aria-label="Generator Oracle sections" className="flex items-center gap-2 shrink-0 lg:shrink lg:flex-wrap lg:min-w-0">
+                    {/* Controllers & Simulators, Simulator Dashboard, Systems and Monitoring are
+                        hidden until each is verified (independent audit 2026-10-31: simulated
+                        data, invented manual references and unverified sensor figures). The
+                        screens remain below; restore the tab to bring one back. */}
                     <PremiumNavTab icon="🔧" label="Fault Center" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} />
                     <PremiumNavTab icon="🛠️" label="Diagnostic Assistant" active={activeScreen === 'ai'} onClick={() => setActiveScreen('ai')} />
-                    <PremiumNavTab icon="🖥️" label="Controllers & Simulators" active={activeScreen === 'controllers'} onClick={() => setActiveScreen('controllers')} />
-                    <PremiumNavTab icon="🎛️" label="Simulator Dashboard" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
-                    <PremiumNavTab icon="🏭" label="Systems" active={activeScreen === 'systems'} onClick={() => setActiveScreen('systems')} />
                     <PremiumNavTab icon="📐" label="Wiring & Manuals" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
-                    <PremiumNavTab icon="📊" label="Monitoring" active={activeScreen === 'monitoring'} onClick={() => setActiveScreen('monitoring')} />
                     <PremiumNavTab icon="🛠️" label="Tools & Reports" active={activeScreen === 'tools'} onClick={() => setActiveScreen('tools')} />
                   </div>
                 </nav>
@@ -1269,11 +1269,7 @@ export default function GeneratorOracleModule() {
                   >
                     <option value="faults">🔧 Fault Center</option>
                     <option value="ai">🛠️ Diagnostic Assistant</option>
-                    <option value="controllers">🖥️ Controllers & Simulators</option>
-                    <option value="command">🎛️ Simulator Dashboard</option>
-                    <option value="systems">🏭 Systems</option>
                     <option value="wiring">📐 Wiring & Manuals</option>
-                    <option value="monitoring">📊 Monitoring</option>
                     <option value="tools">🛠️ Tools & Reports</option>
                   </select>
                 </div>

@@ -28,7 +28,10 @@ const rateLimit = (options: {
         };
       }
       
-      tokenCache.set(token, tokenCount);
+      // Keep the window's original expiry: refreshing it on every request meant a
+      // steady client's count never reset, so a limit "per minute" became a limit
+      // per session (found 2026-10-31 by the gate: a normal analysis was refused).
+      tokenCache.set(token, tokenCount, { noUpdateTTL: true });
       return {
         success: true,
         remaining: limit - tokenCount,

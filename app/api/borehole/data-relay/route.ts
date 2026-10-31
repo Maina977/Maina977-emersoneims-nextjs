@@ -15,7 +15,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { limiter } from '@/lib/rate-limiter';
 
-const RELAY_UPSTREAM_PER_MIN = 120;
+// One analysis makes about 50 relay calls (measured 2026-10-31): room for an office.
+const RELAY_UPSTREAM_PER_MIN = 300;
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
