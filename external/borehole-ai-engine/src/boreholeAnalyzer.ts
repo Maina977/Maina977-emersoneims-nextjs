@@ -341,17 +341,19 @@ export class BoreholeAnalyzer {
       if (clientLocation.region) locationHints.push(clientLocation.region);
       if (clientLocation.country) locationHints.push(clientLocation.country);
     }
-    // A coordinates-only run has no photo to analyse: use the neutral result at
-    // once. Waiting cost up to 60 s on every run, and because that wait could end
-    // either way, two runs of one site could differ (2026-10-31).
-    const neutralFeatures = (): any => ({ metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {} });
-    const features = noPhoto ? neutralFeatures() : await Promise.race([
-      this.imageDetector.analyzeImage(imageFile, locationHints.length > 0 ? locationHints : undefined),
-      new Promise<any>((resolve) => setTimeout(() => {
+    // The photo step also supplies values the rest of the analysis needs on a
+    // coordinates-only run (skipping it gave a total cost of NaN, 2026-10-31), so
+    // it always runs. The timer is cleared when it finishes: left running, it
+    // logged "timed out" even after the step had succeeded.
+    let imageTimer: ReturnType<typeof setTimeout> | undefined;
+    const features = await Promise.race([
+      this.imageDetector.analyzeImage(imageFile, locationHints.length > 0 ? locationHints : undefined, { skipModel: noPhoto }),
+      new Promise<any>((resolve) => { imageTimer = setTimeout(() => {
         console.warn('[Pipeline] Image analysis timed out (60s) — using pixel-only fallback');
-        resolve(neutralFeatures());
-      }, 60000))
+        resolve({ metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {} });
+      }, 60000); })
     ]);
+    if (imageTimer) clearTimeout(imageTimer);
 
     // Merge coordinates: client location takes priority over image GPS
     const effectiveLat = clientGeo?.latitude ?? features.metadata?.gps?.latitude;
