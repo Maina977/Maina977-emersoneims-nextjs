@@ -85,6 +85,7 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   if (mq?.fluoride?.n >= 3) wqRows.push(['Fluoride', `${f(wq.fluoride, 1)} mg/L`, `Measured: median of ${mq.fluoride.n} boreholes (${mq.fluoride.over1_5} of ${mq.fluoride.n} above 1.5 mg/L; highest ${f(mq.fluoride.max, 1)})`]);
   // One or two tests nearby are measurements too, just too few for a median
   // (audit 2026-11-05: Kisumu's 5.5 mg/L is one of its two tested boreholes).
+  else if (wq.fluorideAreaSurvey?.values?.length) wqRows.push(['Fluoride', `${f(wq.fluoride, 1)} mg/L`, `Measured at ${wq.fluorideAreaSurvey.values.length} borehole${wq.fluorideAreaSurvey.values.length > 1 ? 's' : ''} in ${wq.fluorideAreaSurvey.name}, ${wq.fluorideAreaSurvey.sampled} (${wq.fluorideAreaSurvey.values.map((v: number) => f(v, 1)).join(' and ')} mg/L): too few to rely on. WHO limit 1.5 mg/L`]);
   else if (mq?.fluoride?.n > 0) wqRows.push(['Fluoride', `about ${f(wq.fluoride, 1)} mg/L`, `Measured at only ${mq.fluoride.n} borehole${mq.fluoride.n > 1 ? 's' : ''} within ${mq.radius_km} km (highest ${f(mq.fluoride.max, 1)} mg/L${mq.fluoride.over1_5 ? `; ${mq.fluoride.over1_5} above 1.5 mg/L` : ''}): too few to rely on. WHO limit 1.5 mg/L`]);
   else wqRows.push(['Fluoride', `about ${f(wq.fluoride, 1)} mg/L`, 'Regional estimate, not measured. WHO limit 1.5 mg/L']);
   if (mq?.nitrate?.n >= 3) wqRows.push(['Nitrate', `${f(wq.nitrate)} mg/L`, `Measured: median of ${mq.nitrate.n} boreholes. WHO limit 50 mg/L`]);

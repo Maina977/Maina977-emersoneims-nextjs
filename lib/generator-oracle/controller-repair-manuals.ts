@@ -687,7 +687,7 @@ const DSE_MANUAL: ControllerManual = {
   spareParts: [
     { partNumber: 'DSE7320', description: 'Complete DSE7320 Controller', price: 'KES 165,000', availability: 'in-stock' },
     { partNumber: 'DSE855', description: 'USB to Ethernet communications device', price: 'KES 45,000', availability: 'in-stock' },
-    { partNumber: 'DSE890', description: 'Remote Display Module', price: 'KES 78,000', availability: 'order', leadTime: '2 weeks' },
+    { partNumber: 'DSE890', description: 'Remote communications gateway', price: 'KES 78,000', availability: 'order', leadTime: '2 weeks' },
     { partNumber: '016-145', description: 'USB Programming Cable', price: 'KES 5,500', availability: 'in-stock' },
     { partNumber: '016-156', description: 'Expansion Cable 2m', price: 'KES 3,800', availability: 'in-stock' },
     { partNumber: 'DSE-GASKET', description: 'Front Panel Gasket', price: 'KES 2,200', availability: 'in-stock' },

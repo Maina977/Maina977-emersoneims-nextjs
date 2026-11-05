@@ -55,7 +55,19 @@ function upstreamUrl(u: URL, useKey: boolean): string {
   return x.toString();
 }
 
+/**
+ * A source that says its daily or hourly quota is spent will not recover in a
+ * few seconds: retrying only made every analysis wait out its timeouts
+ * (audit 2026-11-05: Nairobi did not finish in 5 minutes while Open-Meteo
+ * refused). Such a host is answered at once for 10 minutes.
+ */
+const quotaBlockedUntil = new Map<string, number>();
+const QUOTA_MSG = /(daily|hourly|minutely|monthly)?\s*(api\s+)?request\s+limit|limit\s+exceeded|quota/i;
+
 async function fetchWithRetry(url: string): Promise<{ status: number; type: string; body: string }> {
+  const host = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
+  const blocked = quotaBlockedUntil.get(host);
+  if (blocked && blocked > Date.now()) return { status: 429, type: 'application/json', body: '{"error":"source quota spent; try again later"}' };
   let last: { status: number; type: string; body: string } = { status: 502, type: 'application/json', body: '{"error":"source did not answer"}' };
   // All attempts fit inside the function's 60 s limit (ORNL MODIS can take 30-60 s).
   const deadline = Date.now() + 55_000;
@@ -72,6 +84,7 @@ async function fetchWithRetry(url: string): Promise<{ status: number; type: stri
       if (res.ok) return last;
       // Client errors other than rate limiting are final (a bad request stays bad).
       if (res.status !== 429 && res.status < 500) return last;
+      if (res.status === 429 && QUOTA_MSG.test(body)) { quotaBlockedUntil.set(host, Date.now() + 10 * 60_000); return last; }
       const ra = Number(res.headers.get('retry-after'));
       await sleep(Number.isFinite(ra) && ra > 0 ? Math.min(ra * 1000, 10_000) : 1000 * 2 ** attempt);
     } catch {

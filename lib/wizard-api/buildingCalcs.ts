@@ -95,7 +95,7 @@ export function runCalc(fn: (b: Body) => unknown, b: Body): unknown {
       // verdict (2026-10-29 audit: a blank M_Ed showed a bare "PASS").
       const notChecked = Array.isArray(o.not_checked) && o.not_checked.length ? ` — not checked: ${(o.not_checked as string[]).join('; ')}` : '';
       const overall = checks.length
-        ? { overall: (failed.length ? `FAIL: ${failed.length} of ${checks.length} ${checks.length === 1 ? 'check fails' : failed.length === 1 ? 'checks fails' : 'checks fail'} (${failed.join('; ')})` : notChecked ? `PARTIAL: ${checks.length === 1 ? 'the 1 check made passed' : `the ${checks.length} checks made passed`}, but this is not a full check` : `PASS: all ${checks.length} checks pass`) + notChecked, all_checks_pass: !failed.length && !notChecked }
+        ? { overall: (failed.length ? `FAIL: ${failed.length} of ${checks.length} ${checks.length === 1 ? 'check fails' : failed.length === 1 ? 'checks fails' : 'checks fail'} (${failed.join('; ')})` : notChecked ? `PARTIAL: ${checks.length === 1 ? 'the 1 check made passes' : `the ${checks.length} checks made all pass`}, but this is not a full check` : `PASS: all ${checks.length} checks pass`) + notChecked, all_checks_pass: !failed.length && !notChecked }
         : {};
       return { ...overall, ...o, disclaimer: CALC_DISCLAIMER };
     }
@@ -568,6 +568,8 @@ export function steelBolt(b: Body) {
     // used; 10.9 at 0.6 read 20% high (audit 2026-10-31).
     const grade = b.grade == null || b.grade === '' ? null : String(b.grade).trim();
     if (grade !== null && !['4.6', '4.8', '5.6', '5.8', '6.8', '8.8', '10.9'].includes(grade)) return bad('grade must be one of 4.6, 4.8, 5.6, 5.8, 6.8, 8.8, 10.9');
+    // fub is the first number x 100 (4.6 -> 400 MPa, 10.9 -> 1000 MPa).
+    if (grade !== null && Math.round(Number(grade.split('.')[0]) * 100) !== Math.round(fub!)) return bad(`grade ${grade} has fub = ${Number(grade.split('.')[0]) * 100} MPa, not ${fub} MPa`);
     const av = optN(b, 'alpha_v') ?? (grade ? (['4.6', '5.6', '8.8'].includes(grade) ? 0.6 : 0.5) : fub === 800 ? 0.6 : 0.5);
     if (av !== 0.5 && av !== 0.6) return bad('alpha_v must be 0.5 or 0.6 (EN 1993-1-8 Table 3.4)');
     return { Fv_Rd_kN: r((av * fub! * As!) / gM2 / 1000), alpha_v: av, method: 'EN 1993-1-8 Table 3.4, one shear plane' };
@@ -642,7 +644,8 @@ export function steelBolt(b: Body) {
     // 118.1). One shear plane with no pitch given is taken as that joint.
     const lapRaw = b.single_lap_one_row;
     if (lapRaw !== undefined && lapRaw !== null && lapRaw !== '' && !['true', 'false'].includes(String(lapRaw))) return { error: 'Invalid input: single_lap_one_row must be true or false', missing: ['single_lap_one_row'] };
-    const singleLap = lapRaw === undefined || lapRaw === null || lapRaw === '' ? planes === 1 && p1 === undefined : String(lapRaw) === 'true';
+    const singleLap = planes === 1 && (lapRaw === undefined || lapRaw === null || lapRaw === '' ? p1 === undefined : String(lapRaw) === 'true');
+    if (planes > 1 && String(lapRaw) === 'true') assumptions.push('Two or more shear planes: not a single-lap joint, so the §3.6.1(10) limit does not apply');
     if (singleLap) {
       const lapLimit = (1.5 * fu * dNom * t) / gM2 / 1000;
       if (lapLimit < FbGov) FbGov = lapLimit;

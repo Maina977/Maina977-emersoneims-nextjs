@@ -207,7 +207,7 @@ const IMPOSSIBLE: Record<string, (v: number) => boolean> = {
   oilPressure: (v) => v < 0, coolantTemp: (v) => v < -40 || v > 300, batteryVoltage: (v) => v < 0 || v > 60,
   rpm: (v) => v < 0 || v > 5000, powerFactor: (v) => v < 0 || v > 1, loadPercent: (v) => v < 0 || v > 200,
   frequency: (v) => v < 0 || v > 100, voltageL1N: (v) => v < 0 || v > 1000, voltageL1L2: (v) => v < 0 || v > 1500,
-  currentL1: (v) => v < 0, fuelLevel: (v) => v < 0 || v > 100,
+  currentL1: (v) => v < 0, fuelLevel: (v) => v < 0 || v > 100, oilTemperature: (v) => v < -40 || v > 250,
 };
 export function analyzeParameter(paramKey: string, value: number, batterySystem: '12' | '24' = '24', ac: AcSystem = '50-230'): DiagnosticResult | null {
   let spec = PARAMETER_SPECS[paramKey];
@@ -796,7 +796,11 @@ export default function TechnicianInputDiagnostics({ className = '' }: Technicia
 
   const results = useMemo(() => {
     if (!showResults) return [];
+    // With no output voltage, load and power factor say nothing on their own
+    // (audit 2026-11-05: 0 V also flagged "wet stack" and "very poor" PF).
+    const noOutput = ['voltageL1N', 'voltageL1L2'].some((k) => inputs[k] !== undefined && inputs[k] !== '' && parseFloat(inputs[k]) === 0);
     return Object.entries(inputs)
+      .filter(([key]) => !(noOutput && (key === 'loadPercent' || key === 'powerFactor')))
       .map(([key, value]) => {
         const numValue = parseFloat(value);
         if (isNaN(numValue)) return null;

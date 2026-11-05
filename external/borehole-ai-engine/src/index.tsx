@@ -497,9 +497,9 @@ function genROI(boreholeCost: number, solarCost: number, yld: number, runtime?: 
 function genScenarios(depth: number, yld: number, soilType?: string, ctx: CostContext = {}): ScenarioResult[] {
   const opt = (d: number, y: number) => genCostBreakdown(Math.round(d), y, soilType, ctx).total;
   return [
-    { depth:Math.round(depth*0.65), yield:null, cost:opt(depth*0.65, yld), risk:'Medium', recommendation:'Shallow option — lower cost but reduced yield; consider if budget is constrained' },
+    { depth:Math.round(depth*0.65), yield:null, cost:opt(depth*0.65, yld), risk:'', recommendation:'Shallower: lower cost; yield not assessed at this depth' },
     { depth:Math.round(depth), yield:Math.round(yld*10)/10, cost:opt(depth, yld), risk:'Low', recommendation:'Recommended depth — same cost basis as the summary' },
-    { depth:Math.round(depth*1.4), yield:null, cost:opt(depth*1.4, yld), risk:'Medium', recommendation:'Marginal yield gain — higher cost, diminishing returns' },
+    { depth:Math.round(depth*1.4), yield:null, cost:opt(depth*1.4, yld), risk:'', recommendation:'Deeper: higher cost; yield not assessed at this depth' },
   ];
 }
 
@@ -575,7 +575,9 @@ function genProbability(prob: number, _depth: number, r?: any) {
     ? (() => {
         const t = gw.trend_cm_per_year, se = Number.isFinite(gw.trendStdErr_cm_per_year) ? gw.trendStdErr_cm_per_year : 0;
         // A one-off step is said as a step (audit 2026-11-05).
-        if (gw.step) return `No steady trend: one step ${gw.step.jump_cm > 0 ? 'up' : 'down'} of about ${Math.abs(gw.step.jump_cm)} cm around ${gw.step.month}, flat before and after (GRACE, regional ~300 km). Not the water level in a borehole.`;
+        if (gw.step) return gw.step.underlying_cm_per_year != null
+          ? `${gw.step.underlying_cm_per_year > 0 ? 'Rising' : gw.step.underlying_cm_per_year < 0 ? 'Falling' : 'Steady'} about ${gw.step.underlying_cm_per_year > 0 ? '+' : ''}${gw.step.underlying_cm_per_year} cm/yr underneath, plus a one-off step ${gw.step.jump_cm > 0 ? 'up' : 'down'} of about ${Math.abs(gw.step.jump_cm)} cm around ${gw.step.month} (GRACE, regional ~300 km; the ${t > 0 ? '+' : ''}${t.toFixed(2)} cm/yr straight-line figure counts the step as trend). Not the water level in a borehole.`
+          : `No steady trend: one step ${gw.step.jump_cm > 0 ? 'up' : 'down'} of about ${Math.abs(gw.step.jump_cm)} cm around ${gw.step.month}, flat before and after (GRACE, regional ~300 km). Not the water level in a borehole.`;
         const word = Math.abs(t) <= 2 * se ? 'No clear trend' : t > 0 ? 'Rising' : 'Falling';
         // Regional, and near a big lake mostly the lake (audit 2026-10-31).
         const nearLake = /lake/i.test(String(r?.graceData?.dataSource ?? r?.graceData?.note ?? ''));
@@ -2229,7 +2231,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             const cr = Number((result.boreholeRecords as any)?.countyIntelligence?.successRate);
             if (!(cr > 0)) return null;
             const diff = Math.round(result.probability * 100) - Math.round(cr * 100);
-            return <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>County record: {Math.round(cr * 100)}% of boreholes productive.{Math.abs(diff) >= 10 ? ` This point is ${diff > 0 ? 'above' : 'below'} it because of its own terrain, records and storage data; the county rate is the safer planning figure until a survey.` : ''}</span>;
+            return <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>County record: {Math.round(cr * 100)}% of boreholes productive.{Math.abs(diff) >= 10 ? ` This point's estimate is ${diff > 0 ? 'above' : 'below'} it; plan on the lower of the two (${diff > 0 ? 'the county rate' : 'this point'}) until a survey.` : ''}</span>;
           })()}</div></div>
           <div className="summary-card depth"><div className="summary-value">{result.recommendedDepth.toFixed(0)}m</div><div className="summary-label">Recommended Depth</div></div>
           <div className="summary-card yield-card"><div className="summary-value">{result.estimatedYield.toFixed(1)}</div><div className="summary-label">Yield (m³/h)</div></div>

@@ -133,6 +133,7 @@ const EMERGENCIES: Array<[RegExp, string]> = [
   // Smoke or a burning smell from the alternator, AVR, panel or wiring is
   // insulation burning (audit 2026-11-05: "smoke from alternator" gave nothing).
   [/\b(smok\w*|burn\w*|smell\w*|scorch\w*)\b.*\b(alternator|winding|avr|panel|breaker|cable|wiring|terminal)s?\b|\b(alternator|winding|avr|panel|breaker|cable|wiring|terminal)s?\b.*\b(smok\w*|burn\w*|scorch\w*|melt\w*)\b/, 'ELECTRICAL BURNING: stop the set with the emergency stop if it is safe to reach, open the breaker and isolate it. Do not restart or open covers until it has cooled and a qualified electrician has tested the windings and wiring. If there are flames, treat it as a fire and call the fire service.'],
+  [/\b(alternator|winding|stator|generator\s+end)s?\s+(is\s+)?(over[\s-]?heat\w*|hot|running\s+hot)|\b(over[\s-]?heat\w*|hot)\s+(alternator|winding|stator)/, 'HOT ALTERNATOR: reduce the load, check the cooling-air inlet and outlet screens are clear and the room is ventilated, and check for overload or unbalanced phases. A burning smell or smoke means stop the set and isolate it.'],
   [/\b(coolant|radiator|water\s+pump|antifreeze)\s+(leak\w*|spill\w*)|\bleak\w*\s+(coolant|radiator)\b/, 'HOT COOLANT: let the engine cool before opening the cap or touching hoses; coolant is under pressure and scalds. Stop the set if the level is dropping and find the leak.'],
   [/\b(fuel|diesel|oil)\s+(leak|spill)/, 'Hot oil and fuel burn and can catch fire on a hot exhaust: stop the engine and let it cool before tracing the leak, and clean spills at once.'],
 ];
@@ -187,6 +188,7 @@ const FAULT_FIRST_STEPS: Array<[RegExp, string[]]> = [
   [/\bbreaker\b.*\b(fail|trip|open|close)\w*|\b(fail|trip)\w*\b.*\bbreaker\b/i, ['Find why the breaker tripped or failed before resetting it: check the load and look for a short circuit.', 'Check the breaker motor or coil supply and its auxiliary contacts to the controller.']],
   [/\b(can|j1939|ecu|communication|comms?|modbus)\b.*\b(fail|fault|error|loss|lost|timeout)\b|\b(link|data)\s+(loss|lost|fail\w*)\b/i, ['Check the ECU has power and the communication cable connectors are tight and dry.', 'With the bus powered down, measure about 60 ohms between CAN-H and CAN-L (two 120 ohm terminators).']],
   [/\b(sensor|sender|transducer)\b.*\b(open|short|fail\w*|fault|circuit)\b|\b(open|short)\s+circuit\b/i, ['Check the sensor connector and wiring for damage, corrosion or a loose pin.', 'Measure the sensor resistance or signal against its specification; confirm the real value with a gauge.']],
+  [/\bcontroller\s+(fault|fail\w*|error)\b/i, ['Check the controller DC supply at its terminals, including while cranking.', 'Power the controller off and on; if the fault returns, reload the configuration from a backup or return the module for repair.']],
   [/\b(internal|watchdog|memory|checksum|processor|self.?test|configuration|eeprom|firmware)\b/i, ['Check the controller DC supply voltage at its terminals, including while cranking.', 'Power the controller off and on; if the fault returns, reload the configuration from a backup or replace the controller.']],
 ];
 // Menu steps every alarm of a brand shared; dropped once fault-specific checks
@@ -236,13 +238,17 @@ export function withSafety(c: ControllerFaultCode): ControllerFaultCode {
   const isJ1939 = /^SPN\d+/i.test(c.code);
   const topicText = isJ1939 ? c.title.split(/\s+[-\u2013\u2014]\s+/)[0] : `${c.title} ${c.subcategory} ${c.category}`;
   const topic = TOPIC_SAFETY.filter(([re]) => !(isJ1939 && /voltage\|current/.test(re.source))).find(([re]) => re.test(topicText));
-  if (isJ1939 && !topic && !(c.safetyWarnings || []).length && !add.length && (c.severity === 'critical' || c.severity === 'shutdown')) add.push('Stop the engine and find the cause before restarting: running on with this fault can destroy the engine.');
+  if (isJ1939 && !topic && !(c.safetyWarnings || []).length && !add.length && (c.severity === 'critical' || c.severity === 'shutdown')) add.push('Stop and find the cause before restarting: with this fault the engine protection or sensing may not work, and running on can cause damage.');
   // The isolation line is a duplicate when the entry already says to isolate
   // or lock off (2026-10-30 audit: two near-identical isolate warnings).
   const already = (w: string) => w === ISOLATE ? has(/isolat|lock(ed)? off|prove .*dead/i) : has(new RegExp(w.slice(0, 24).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
   if (topic) for (const w of topic[1]) if (!already(w) && !add.includes(w)) add.push(w);
+  if (/\bcontroller\s+(fault|fail\w*|error)\b/i.test(c.title) && !has(/protection|unattended/i)) add.push('The controller protects the engine: with this fault its shutdowns may not work, so do not run the set unattended until it is cleared.');
   const touchesCoolant = (s: string) => /coolant level|top up|radiator cap|expansion tank|add coolant/i.test(s) && !/\bcool(ed)?\b.*(engine|first)|engine.*\bcool(ed)?\b|let .* cool/i.test(s);
-  const steps = (c.diagnosticSteps || []).map((st) => (touchesCoolant(st.action) ? { ...st, action: `With the engine stopped and cool: ${st.action}` } : st));
+  const seenStep = new Set<string>();
+  const steps = (c.diagnosticSteps || [])
+    .filter((st) => { const k = String(st.action || '').trim().toLowerCase(); if (seenStep.has(k)) return false; seenStep.add(k); return true; })
+    .map((st) => (touchesCoolant(st.action) ? { ...st, action: `With the engine stopped and cool: ${st.action}` } : st));
   // One severity per J1939 code: a controller entry written as an SPN/FMI
   // takes the reference row's severity (2026-10-27 audit: SPN 94 FMI 1 and
   // SPN 96 FMI 17/18 showed two severities in one result list).
@@ -769,6 +775,12 @@ function searchByWords(typed: string, opts: SearchOptions): SearchResponse {
     // Smoke is answered by colour, not by J1939 rows that merely mention it.
     if (!/\bsmoke|alternator|winding|oil\s+in\s+(the\s+)?coolant|coolant\s+in\s+(the\s+)?oil/.test(words) && !EMERGENCIES.some(([re]) => re.test(words))) for (const r of raw.results) if (r.source === 'j1939-reference' && !seen.has(r.id)) { merged.push(r); seen.add(r.id); }
   }
+  // A part named in the words leads: "crankcase pressure high" with SPN 101,
+  // not oil or fuel pressure sensors (audit 2026-11-05).
+  if (/\bcrankcase\b/.test(words)) {
+    const cc = searchIndexRaw({ ...opts, query: 'crankcase pressure', page: 1, pageSize: 20 }).results.filter((r) => /crankcase/i.test(r.title));
+    for (const r of cc.reverse()) { const i = merged.findIndex((x) => x.id === r.id); if (i >= 0) merged.splice(i, 1); merged.unshift(r); }
+  }
   const filtered = opts.severity ? merged.filter((r) => r.severity === opts.severity) : merged;
   const total = filtered.length;
   // The lookup box carries what the assistant says about a hazard, and points to
@@ -1226,6 +1238,7 @@ const PHRASES: [RegExp, string][] = [
   // 2026-10-30 audit: "over speed" (two words) returned over-frequency and
   // over-voltage alarms; "overheating" missed most high-temperature alarms.
   [/\bover[\s-]+speed(ing)?\b/gi, 'overspeed'],
+  [/\b(alternator|winding|stator|generator\s+end)s?\s+(is\s+)?(over[\s-]?heat(ing|s|ed)?|hot|running\s+hot|too\s+hot)\b|\b(over[\s-]?heat(ing|s|ed)?|hot)\s+(alternator|winding|stator)s?\b/gi, 'alternator overload over current imbalance'],
   [/\b(over[\s-]?heat(ing|s|ed)?|running\s+hot|too\s+hot)\b/gi, 'overheat high coolant temperature'],
 ];
 function rewritePhrases(s: string): string {

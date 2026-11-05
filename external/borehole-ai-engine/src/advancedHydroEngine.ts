@@ -72,7 +72,7 @@ export interface GRACEData {
   /** True when the figures are real GRACE/GRACE-FO data, false for the soil-moisture stand-in. */
   isSatelliteGravity?: boolean;
   /** Groundwater storage (G3P): trend, its standard error, period, latest-12-month anomaly. */
-  groundwater?: { step?: { month: string; jump_cm: number }; trend_cm_per_year: number; trendStdErr_cm_per_year: number; trend10yr_cm_per_year: number | null; anomalyLast12_cm: number; period: string; months: number; citation: string; monthlyUncertainty_cm: number | null };
+  groundwater?: { step?: { month: string; jump_cm: number; underlying_cm_per_year?: number }; trend_cm_per_year: number; trendStdErr_cm_per_year: number; trend10yr_cm_per_year: number | null; anomalyLast12_cm: number; period: string; months: number; citation: string; monthlyUncertainty_cm: number | null };
   /** Total water storage (GFZ GravIS): trends over the whole record and the GRACE-FO years. */
   totalStorage?: { trend_cm_per_year: number; trendStdErr_cm_per_year: number; trendGraceFO_cm_per_year: number | null; anomalyLast12_cm: number; period: string; months: number; citation: string };
   /** Monthly series at the site's cell, for charts: [YYYY-MM, groundwater cm | null, total cm | null]. */
@@ -94,7 +94,7 @@ export interface GRACEData {
  * split with 24+ months each side; reports the best one only when neither side
  * has a clear trend of its own and the jump is several times the spread.
  */
-export function detectStep(months: string[], values: (number | null)[]): { month: string; jump_cm: number } | null {
+export function detectStep(months: string[], values: (number | null)[]): { month: string; jump_cm: number; underlying_cm_per_year?: number } | null {
   const n = months.length;
   if (n < 60) return null;
   const vals = values.map((v) => (typeof v === 'number' ? v : null));
@@ -108,10 +108,35 @@ export function detectStep(months: string[], values: (number | null)[]): { month
     if (!Number.isFinite(jump) || (best && Math.abs(jump) <= Math.abs(best.jump))) continue;
     if (flat(olsTrend(months.slice(0, i), vals.slice(0, i))) && flat(olsTrend(months.slice(i), vals.slice(i)))) best = { i, jump };
   }
-  if (!best) return null;
-  const spread = Math.max(sdOf(vals.slice(0, best.i)), sdOf(vals.slice(best.i)));
-  if (Math.abs(best.jump) < 2 * spread) return null;
-  return { month: months[best.i], jump_cm: Math.round(best.jump * 10) / 10 };
+  if (best) {
+    const spread = Math.max(sdOf(vals.slice(0, best.i)), sdOf(vals.slice(best.i)));
+    if (Math.abs(best.jump) >= 2 * spread) return { month: months[best.i], jump_cm: Math.round(best.jump * 10) / 10 };
+  }
+  // A step on top of a slower steady trend: fit level + trend + one step at
+  // each split; keep it when the step is large against both the residual
+  // spread and the trend's own change over the record (audit 2026-11-05).
+  let bestT: { i: number; jump: number; slope: number; rss: number } | null = null;
+  const xs: number[] = [], ys: number[] = [], idx: number[] = [];
+  vals.forEach((v, i) => { if (v !== null) { const [y, m] = months[i].split('-').map(Number); xs.push(y + (m - 0.5) / 12); ys.push(v); idx.push(i); } });
+  for (let k = 24; k <= xs.length - 24; k++) {
+    // Least squares for y = a + b x + c s, s = 1 after the split.
+    let n = 0, sx = 0, ss = 0, sy = 0, sxx = 0, sxs = 0, sxy = 0, ssy = 0;
+    for (let j = 0; j < xs.length; j++) { const x = xs[j] - xs[0], s = j >= k ? 1 : 0, y = ys[j]; n++; sx += x; ss += s; sy += y; sxx += x * x; sxs += x * s; sxy += x * y; ssy += s * y; }
+    const A = [[n, sx, ss], [sx, sxx, sxs], [ss, sxs, ss]], B = [sy, sxy, ssy];
+    const det = (M: number[][]) => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+    const D = det(A); if (!D) continue;
+    const col = (c: number) => A.map((row, r) => row.map((v, cc) => (cc === c ? B[r] : v)));
+    const a = det(col(0)) / D, b = det(col(1)) / D, c = det(col(2)) / D;
+    let rss = 0; for (let j = 0; j < xs.length; j++) { const e = ys[j] - (a + b * (xs[j] - xs[0]) + c * (j >= k ? 1 : 0)); rss += e * e; }
+    if (!bestT || rss < bestT.rss) bestT = { i: idx[k], jump: c, slope: b, rss };
+  }
+  if (!bestT) return null;
+  const resid = Math.sqrt(bestT.rss / Math.max(1, xs.length - 3));
+  const span = xs[xs.length - 1] - xs[0];
+  if (Math.abs(bestT.jump) >= 2.5 * resid && Math.abs(bestT.jump) >= 0.5 * Math.abs(bestT.slope) * span) {
+    return { month: months[bestT.i], jump_cm: Math.round(bestT.jump * 10) / 10, underlying_cm_per_year: Math.round(bestT.slope * 100) / 100 };
+  }
+  return null;
 }
 
 export function olsTrend(months: string[], values: (number | null)[]): { slope: number; se: number; n: number; nEff: number } | null {

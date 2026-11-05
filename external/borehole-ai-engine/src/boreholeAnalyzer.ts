@@ -925,7 +925,10 @@ export class BoreholeAnalyzer {
           for (const a of mq.areaSurveys) {
             const s = a.shallowWellsAndSprings, b = a.boreholes;
             warns.push(`MEASURED (${a.name.split(' (')[0]}, ${a.sampled}): of ${s.n} shallow wells and springs, ${s.faecalColiformPositive} had faecal coliforms, ${s.nitrateOver50} exceeded 50 mg/L nitrate and ${s.fluorideOver1_5} exceeded 1.5 mg/L fluoride${b.n ? `; the ${b.n} boreholes sampled had fluoride ${b.fluoride_mgL.join(' and ')} mg/L` : ''}. A laboratory test is essential.`);
-            if (b.n && b.fluoride_mgL.length) waterQuality.fluoride = Math.max(waterQuality.fluoride, Math.min(...b.fluoride_mgL));
+            if (b.n && b.fluoride_mgL.length) {
+              waterQuality.fluoride = Math.max(waterQuality.fluoride, Math.min(...b.fluoride_mgL));
+              (waterQuality as any).fluorideAreaSurvey = { name: a.name.split(' (')[0], sampled: a.sampled, values: [...b.fluoride_mgL] };
+            }
           }
           if (used.length || warns.length) {
             this.waterQualityAnalyzer.refreshDerived(waterQuality);

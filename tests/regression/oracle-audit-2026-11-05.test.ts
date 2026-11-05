@@ -91,3 +91,22 @@ describe('Oracle re-audit 2026-11-05 (second round)', () => {
     expect(JSON.stringify(full)).toMatch(/blow-by/i);
   });
 });
+
+describe('Oracle final round 2026-11-05', () => {
+  it('alternator overheating is load and airflow, not engine coolant', () => {
+    const r = searchIndex({ query: 'alternator overheating' });
+    expect(r.notice || '').toMatch(/HOT ALTERNATOR/);
+    expect(r.notice || '').not.toMatch(/radiator|coolant/i);
+  });
+  it('crankcase pressure leads with the crankcase code', () => {
+    expect(searchIndex({ query: 'crankcase pressure high', pageSize: 3 }).results[0].title).toMatch(/crankcase/i);
+  });
+  it('controller faults warn that protection may not work; no step twice', () => {
+    const all = getAllFaultCodes().map(withSafety);
+    for (const c of all.filter((x) => /\bcontroller\s+fault\b/i.test(x.title))) expect((c.safetyWarnings || []).join(' ')).toMatch(/unattended/);
+    for (const c of all) { const a = (c.diagnosticSteps || []).map((s) => s.action.trim().toLowerCase()); expect(new Set(a).size).toBe(a.length); }
+  });
+  it('oil temperature 999 is refused', () => {
+    expect(analyzeParameter('oilTemperature', 999)).toBeNull();
+  });
+});
