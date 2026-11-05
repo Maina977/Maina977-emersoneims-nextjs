@@ -21,6 +21,7 @@ import {
   CORE_SERVICE_SLUGS,
   isPriorityCounty,
 } from '@/lib/seo/kenyaIndexable';
+import { withLocationIndexPolicy } from '@/lib/seo/locationIndexPolicy';
 import LocationServiceSchema from '@/components/seo/LocationServiceSchema';
 import CountySiteConditions from '@/components/seo/CountySiteConditions';
 import ConstituencySiteConditions from '@/components/seo/ConstituencySiteConditions';
@@ -106,6 +107,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       return { title: 'Not Found', robots: { index: false, follow: false } };
     }
 
+    const path = `/kenya/${resolvedParams.county}/${resolvedParams.slug.join('/')}`;
+    return withLocationIndexPolicy(path, buildMetadata(page));
+  } catch (err) {
+    // Never surface a 5xx to crawlers from metadata generation.
+    console.error('[kenya/[county]/[...slug]] generateMetadata error:', err);
+    return { title: 'Not Found', robots: { index: false, follow: false } };
+  }
+}
+
+function buildMetadata(page: ResolvedPage): Metadata {
     switch (page.type) {
       case 'county-service':
         return generateLocationServiceMetadata(
@@ -142,11 +153,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       default:
         return { title: 'Not Found', robots: { index: false, follow: false } };
     }
-  } catch (err) {
-    // Never surface a 5xx to crawlers from metadata generation.
-    console.error('[kenya/[county]/[...slug]] generateMetadata error:', err);
-    return { title: 'Not Found', robots: { index: false, follow: false } };
-  }
 }
 
 export default async function DynamicLocationPage({ params }: Props) {

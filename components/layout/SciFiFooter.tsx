@@ -219,7 +219,7 @@ export default function SciFiFooter() {
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-gray-400 text-sm font-mono">
-              © 2025 EmersonEIMS. All rights reserved.
+              © {new Date().getFullYear()} EmersonEIMS. All rights reserved.
             </div>
             <div className="flex gap-6 text-sm font-mono">
               <Link href="/privacy" className="text-gray-400 hover:text-cyan-300 transition-colors">

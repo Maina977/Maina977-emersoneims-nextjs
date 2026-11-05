@@ -426,7 +426,7 @@ export default function PurchaseOverlay({
           className="mt-12 text-center space-y-4"
         >
           <p className="text-slate-500 text-sm">
-            © 2025 EmersonEIMS. Generator Oracle is a product of EmersonEIMS.
+            © {new Date().getFullYear()} EmersonEIMS. Generator Oracle is a product of EmersonEIMS.
           </p>
           <p className="text-slate-600 text-xs max-w-2xl mx-auto leading-relaxed">
             <strong>Disclaimer:</strong> This software is an independent diagnostic assistant.

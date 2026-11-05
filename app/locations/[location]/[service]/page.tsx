@@ -24,6 +24,7 @@ import {
 } from '@/lib/seo/kenyaLocations';
 import { notFound } from 'next/navigation';
 import { isIndexedLocationService } from '@/lib/seo/indexedMatrix';
+import { withLocationIndexPolicy } from '@/lib/seo/locationIndexPolicy';
 
 interface Props {
   params: Promise<{ location: string; service: string }>;
@@ -54,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Calling notFound() HERE too makes the 404 status authoritative.
   if (!seo) notFound();
 
-  return {
+  return withLocationIndexPolicy(`/locations/${locationSlug}/${serviceSlug}`, {
     // Drops '| Install & Service', then the brand, if they do not fit.
     title: seoTitleSmart(seo.title),
     description: seo.description,
@@ -67,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: `https://www.emersoneims.com/locations/${locationSlug}/${serviceSlug}`,
     }
-  };
+  });
 }
 
 export default async function ServiceLocationPage({ params }: Props) {

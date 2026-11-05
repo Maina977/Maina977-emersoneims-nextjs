@@ -48,8 +48,18 @@ async function analyse(browser, site) {
   const browser = await chromium.launch({ channel: 'chrome' });
   let problems = 0;
   for (const site of SITES) {
-    const a = await analyse(browser, site);
-    const b = await analyse(browser, site);
+    let a = await analyse(browser, site);
+    let b = await analyse(browser, site);
+    // A free public source (usually ISRIC SoilGrids) sometimes fails one call;
+    // the tool then says so ("did not answer") and some secondary figures move.
+    // That is the tool being honest, not a repeatability fault, so the run that
+    // saw the outage is repeated (up to twice) before comparing (2026-11-05).
+    const outage = (t) => (t.match(/[^\n]*did not answer[^\n]*/g) || []).join('|');
+    for (let k = 0; k < 2 && outage(a.text) !== outage(b.text); k++) {
+      console.log(`note ${site.name}: a public source did not answer in one run; repeating that run`);
+      if (outage(a.text)) a = await analyse(browser, site); else b = await analyse(browser, site);
+    }
+    const outageDiffers = outage(a.text) !== outage(b.text);
     console.log(`info ${site.name}: relay calls ${a.relay} and ${b.relay}; refused (429) ${a.relay429 + b.relay429}`);
     if (a.relay429 + b.relay429 > 0) { problems++; console.log(`FAIL ${site.name}: the relay limit refused a normal analysis`); }
     for (const [i, r] of [a, b].entries()) {
@@ -84,7 +94,22 @@ async function analyse(browser, site) {
     const nb = normalise(b.text).split('\n').filter((l) => !isAddress(l));
     const diffs = [];
     for (let i = 0; i < Math.max(na.length, nb.length); i++) if (na[i] !== nb[i]) diffs.push(`  run1: ${na[i] || '∅'}\n  run2: ${nb[i] || '∅'}`);
-    if (diffs.length) { problems++; console.log(`FAIL ${site.name}: ${diffs.length} line(s) differ between runs\n${diffs.slice(0, 8).join('\n')}`); }
+    // Headline figures a client acts on: yield and its range, chance of
+    // success, drilling depth and costs. These must match even when a source
+    // outage was disclosed in one run.
+    // Dashboard cards print the value on the line above its label.
+    const headline = (t) => {
+      const ls = t.split('\n').map((l) => l.trim());
+      const card = (label) => { const i = ls.findIndex((l) => l.startsWith(label)); return i > 0 ? `${label}=${ls[i - 1]}` : `${label}=missing`; };
+      return [
+        (t.match(/[\d.]+\s*m³\/hr\s*Expected Yield\s*Range:\s*[\d.]+[–-][\d.]+/) || ['yield card missing'])[0],
+        ...['CHANCE OF A PRODUCTIVE BOREHOLE', 'RECOMMENDED DEPTH', 'YIELD (M³/H)', 'TOTAL PROJECT COST', 'PAYBACK PERIOD', 'TREATMENT LIKELY'].map(card),
+        ...ls.filter((l) => /^Planning (depth|yield)\b/.test(l)),
+      ].join('\n');
+    };
+    if (diffs.length && outageDiffers && headline(a.text) === headline(b.text)) {
+      console.log(`ok   ${site.name}: a source outage was disclosed in one run only; ${diffs.length} secondary line(s) moved, headline figures identical`);
+    } else if (diffs.length) { problems++; console.log(`FAIL ${site.name}: ${diffs.length} line(s) differ between runs\n${diffs.slice(0, 8).join('\n')}`); }
     else console.log(`ok   ${site.name}: two runs identical (${na.length} lines)`);
   }
   await browser.close();

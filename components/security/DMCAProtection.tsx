@@ -50,7 +50,7 @@ export default function DMCAProtection({
       watermark.id = 'dmca-watermark';
       watermark.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
       watermark.setAttribute('data-watermark', watermarkId);
-      watermark.setAttribute('data-copyright', '© 2025 EmersonEIMS. All Rights Reserved.');
+      watermark.setAttribute('data-copyright', `© ${new Date().getFullYear()} EmersonEIMS. All Rights Reserved.`);
       watermark.setAttribute('data-dmca', 'Protected Content - 17 U.S.C. § 512(c)');
       document.body.appendChild(watermark);
 
@@ -62,7 +62,7 @@ export default function DMCAProtection({
       if (enableRightClickProtection) {
         e.preventDefault();
         if (showWarnings) {
-          alert('⚠️ COPYRIGHT NOTICE\n\nThis content is protected by copyright law.\n\nUnauthorized copying, reproduction, or distribution is prohibited under the DMCA (Digital Millennium Copyright Act).\n\n© 2025 EmersonEIMS. All Rights Reserved.');
+          alert('⚠️ COPYRIGHT NOTICE\n\nThis content is protected by copyright law.\n\nUnauthorized copying, reproduction, or distribution is prohibited under the DMCA (Digital Millennium Copyright Act).\n\n© ' + new Date().getFullYear() + ' EmersonEIMS. All Rights Reserved.');
         }
         return false;
       }
@@ -75,7 +75,7 @@ export default function DMCAProtection({
         
         // Add copyright notice to clipboard
         const selection = window.getSelection()?.toString() || '';
-        const copyrightNotice = `\n\n---\n© 2025 EmersonEIMS. All Rights Reserved.\nSource: ${window.location.href}\nThis content is protected by copyright law.\n`;
+        const copyrightNotice = `\n\n---\n© ${new Date().getFullYear()} EmersonEIMS. All Rights Reserved.\nSource: ${window.location.href}\nThis content is protected by copyright law.\n`;
         
         if (e.clipboardData) {
           e.clipboardData.setData('text/plain', selection + copyrightNotice);
@@ -190,7 +190,7 @@ export default function DMCAProtection({
           console.log('%cDeveloper Tools Detected', 'color: red; font-size: 16px;');
           console.log('%cThis website is protected by DMCA copyright law.', 'font-size: 14px;');
           console.log('%cUnauthorized access, copying, or reverse engineering is prohibited.', 'font-size: 14px;');
-          console.log('%c© 2025 EmersonEIMS. All Rights Reserved.', 'font-size: 14px; font-weight: bold;');
+          console.log(`%c© ${new Date().getFullYear()} EmersonEIMS. All Rights Reserved.`, 'font-size: 14px; font-weight: bold;');
           
           if (showWarnings) {
             // Optionally redirect or disable functionality
@@ -234,7 +234,7 @@ export default function DMCAProtection({
     style.textContent = `
       /* Copyright Protection Styles */
       body::after {
-        content: '© 2025 EmersonEIMS - All Rights Reserved';
+        content: '© ${new Date().getFullYear()} EmersonEIMS - All Rights Reserved';
         position: fixed;
         bottom: 0;
         right: 0;
@@ -258,7 +258,7 @@ export default function DMCAProtection({
       /* Print watermark */
       @media print {
         body::before {
-          content: 'CONFIDENTIAL - © 2025 EmersonEIMS';
+          content: 'CONFIDENTIAL - © ${new Date().getFullYear()} EmersonEIMS';
           position: fixed;
           top: 50%;
           left: 50%;
@@ -335,7 +335,7 @@ export default function DMCAProtection({
             Unauthorized access, copying, reverse engineering, or distribution of content is prohibited.
           </p>
           <p style={{ fontSize: '14px', marginTop: '40px', fontWeight: 'bold' }}>
-            © 2025 EmersonEIMS. All Rights Reserved.
+            © {new Date().getFullYear()} EmersonEIMS. All Rights Reserved.
           </p>
         </div>
       </div>
@@ -376,7 +376,7 @@ export function DMCANotice() {
         </a>
       </p>
       <p style={{ fontSize: '12px', marginTop: '15px', opacity: 0.7 }}>
-        © 2025 EmersonEIMS. All Rights Reserved. Protected by DMCA.
+        © {new Date().getFullYear()} EmersonEIMS. All Rights Reserved. Protected by DMCA.
       </p>
     </div>
   );

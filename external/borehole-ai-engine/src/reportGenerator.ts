@@ -29,6 +29,37 @@ import { saveAs } from 'file-saver';
 import { drillRatePerM, mobilisationUSD, countyRateBand, costSoilType, KES_PER_USD } from './costModel';
 import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, HeadingLevel, WidthType, BorderStyle, AlignmentType, ShadingType } from 'docx';
 import type { AnalysisResult } from './types';
+
+/**
+ * The PDF uses jsPDF's built-in Helvetica, which only has the WinAnsi
+ * character set. Symbols outside it (warning sign, arrows, approx-equals,
+ * subscripts, emoji) print as garbage such as "&þ". Every string drawn on
+ * the page, including table cells, passes through here (2026-11-05).
+ */
+const PDF_SUBS: Array<[RegExp, string | ((c: string) => string)]> = [
+  [/⚠️?/g, '!'], [/[→➡]/g, '->'], [/←/g, '<-'], [/↑/g, 'up'], [/↓/g, 'down'],
+  [/≈/g, '~'], [/≤/g, '<='], [/≥/g, '>='], [/≠/g, '!='], [/×/g, 'x'],
+  [/[✓✔✅]/g, 'OK'], [/[✗✘❌]/g, 'X'], [/−/g, '-'],
+  [/[₀-₉]/g, (c: string) => String(c.charCodeAt(0) - 0x2080)],
+  [/σ/g, 'sigma'], [/ρ/g, 'rho'], [/Δ/g, 'delta'], [/μ/g, 'µ'], [/′/g, "'"],
+];
+const WIN_ANSI_EXTRA = new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ');
+export function pdfSafeText(s: string): string {
+  let out = s;
+  for (const [re, rep] of PDF_SUBS) out = typeof rep === 'string' ? out.replace(re, rep) : out.replace(re, rep);
+  // Anything else outside WinAnsi (emoji, other symbols) is dropped.
+  return Array.from(out).filter((ch) => ch.charCodeAt(0) <= 0xFF || WIN_ANSI_EXTRA.has(ch)).join('');
+}
+function makePdfSafe(doc: jsPDF): jsPDF {
+  const orig = doc.text.bind(doc) as any;
+  (doc as any).text = (text: any, ...rest: any[]) => {
+    const t = typeof text === 'string' ? pdfSafeText(text) : Array.isArray(text) ? text.map((x) => (typeof x === 'string' ? pdfSafeText(x) : x)) : text;
+    return orig(t, ...rest);
+  };
+  const origSplit = doc.splitTextToSize.bind(doc) as any;
+  (doc as any).splitTextToSize = (text: any, ...rest: any[]) => origSplit(typeof text === 'string' ? pdfSafeText(text) : text, ...rest);
+  return doc;
+}
 import { auditReport, type AuditReport } from './reportAuditor';
 import { recordReport, type ReportFormat } from './reportTracker';
 import { generateReportMaps, renderDrillHereMap, renderWaterTableDepthMap, type ReportMapImages } from './reportMapGenerator';
@@ -896,7 +927,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
   // --- VERIFICATION GATE ---
   enforceVerificationGate(result);
 
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+  const doc = makePdfSafe(new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true }));
   applyPdfTextSanitizer(doc);
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 14;
@@ -1071,7 +1102,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         : 'coordinates estimated from analysis';
       fieldGaps.push(`GPS: Not verified with a survey-grade field receiver (${how} -- location grade ${grade})`);
     }
-    if (!af?.hasFieldERT) fieldGaps.push('ERT: No field survey (all geophysics are SYNTHETIC)');
+    if (!af?.hasFieldERT) fieldGaps.push('ERT: No field survey yet (geophysics shown are modelled from desktop data)');
     if (!af?.hasFieldPumpTest) fieldGaps.push('Pump Test: Not conducted (T, S, yield are ESTIMATES)');
     if (!af?.hasLabWaterAnalysis) fieldGaps.push('Lab Analysis: Not available (water quality is MODELLED)');
     if (fieldGaps.length > 0) {
@@ -5247,7 +5278,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       doc.setDrawColor(220, 38, 38); doc.setLineWidth(1.0);
       doc.roundedRect(margin, y - 2, pageW - margin * 2, 12, 2, 2, 'S');
       doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 28, 28);
-      doc.text('\u26A0 SYNTHETIC -- NO FIELD ERT DATA. DO NOT USE FOR DRILLING DECISIONS WITHOUT FIELD SURVEY.', margin + 4, y + 6);
+      doc.text('MODELLED FROM DESKTOP DATA -- NO FIELD ERT SURVEY YET. A FIELD SURVEY MUST CONFIRM THE POINT BEFORE DRILLING.', margin + 4, y + 6);
       y += 16;
     }
 
@@ -10689,7 +10720,7 @@ export function generateJSONReport(result: AnalysisResult): void {
 export async function generateComparisonReport(sites: Array<{ name: string; result: AnalysisResult }>): Promise<void> {
   if (sites.length < 2) throw new Error('Need at least 2 analyzed sites to compare');
   const jsPDF = (await import('jspdf')).default;
-  const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
+  const doc = makePdfSafe(new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true }));
   applyPdfTextSanitizer(doc);
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 15;
