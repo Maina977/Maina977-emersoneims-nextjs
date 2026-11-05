@@ -751,7 +751,7 @@ export default function TechnicianInputDiagnostics({ className = '' }: Technicia
         return withStopAdvice(key, numValue, analyzeParameter(key, numValue, batterySystem));
       })
       .filter((r): r is DiagnosticResult => r !== null);
-  }, [inputs, showResults]);
+  }, [inputs, showResults, batterySystem]);
 
   const criticalCount = results.filter(r => r.status === 'critical').length;
   const warningCount = results.filter(r => r.status === 'warning').length;
