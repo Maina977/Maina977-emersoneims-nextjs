@@ -20,6 +20,8 @@ export type SystemType = 'grid-tied' | 'hybrid' | 'off-grid';
 export type RoofType = 'pitched' | 'flat' | 'ground';
 
 export interface SizingInput {
+  /** True when the customer gave no tariff and a default is used. */
+  tariffAssumed?: boolean;
   monthlyKwh: number;
   /** Yearly-average peak sun hours (kWh/m²/day). */
   pshAnnual: number;
@@ -306,7 +308,9 @@ export function sizeSolar(input: SizingInput): SizingResult {
     assumptions.push(`Saving compared with a diesel generator at ${DIESEL_L_PER_KWH} L/kWh and KES ${dieselPrice}/L; CO₂ at ${DIESEL_CO2_KG_PER_L} kg per litre burned.`);
   }
   if (type !== 'off-grid') {
-    assumptions.push(`Your tariff: KES ${tariff}/kWh (your total bill divided by the kWh on it).`);
+    assumptions.push((input as any).tariffAssumed
+      ? `Tariff assumed: KES ${tariff}/kWh${tariff === 18 ? ' (a commercial rate, for use above 15,000 kWh a month)' : ''}. Enter yours (your bill total divided by its kWh) for your own figures.`
+      : `Your tariff: KES ${tariff}/kWh (your total bill divided by the kWh on it).`);
     co2 = Math.round(energyUsedKwh * GRID_CO2_KG_PER_KWH);
     assumptions.push(`CO₂ avoided: the grid energy replaced × ${GRID_CO2_KG_PER_KWH} kg/kWh (Kenya's grid is mostly geothermal and hydro).`);
   }

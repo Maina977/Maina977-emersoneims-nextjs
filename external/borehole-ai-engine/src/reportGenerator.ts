@@ -882,7 +882,12 @@ function computeFinalVerdict(result: AnalysisResult) {
 
 // --- PDF REPORT ---
 
-export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 'professional' | 'expert'): Promise<void> {
+export async function generatePDFReport(result: AnalysisResult, requestedTier: 'basic' | 'professional' | 'expert'): Promise<void> {
+  // One governing report for every tier (independent audit 2026-11-05: the
+  // technical annex contradicted the page on rainfall, water level, yield and
+  // probability, and the Comprehensive tier was a copy of Professional).
+  void requestedTier;
+  const tier: 'basic' | 'professional' | 'expert' = 'basic';
   // --- 10-STEP AUDIT GATE ---
   const audit = auditReport(result);
   if (!audit.passed) {
@@ -1113,7 +1118,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(56, 189, 248);
       doc.text(`PAGE ${pageNo} OF 2`, pageW - margin, 11, { align: 'right' });
       doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(148, 163, 184);
-      doc.text((tier as string) === 'basic' ? 'For the decision-maker. Every figure below is the same as on the web page; the Professional report adds the full technical annex.' : 'For the decision-maker. Every figure below traces to the full technical annex that follows this brief.', margin, 18);
+      doc.text((tier as string) === 'basic' ? 'For the decision-maker. Every figure below is the same as on the web page.' : 'For the decision-maker. Every figure below traces to the full technical annex that follows this brief.', margin, 18);
       doc.text(`${isRegionalPreScreening ? 'REGIONAL PRE-SCREENING' : assessmentGrade}  •  Generated ${new Date().toLocaleDateString()}`, margin, 22.5);
       y = 34;
       doc.setTextColor(30, 30, 30);
@@ -2828,9 +2833,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     if ((wq?.fluoride ?? 0) >= 1.5) healthFails.push(`Fluoride ${fmt(wq?.fluoride, 2)} mg/L > 1.5`);
     if ((wq?.arsenic ?? 0) >= 0.01) healthFails.push(`Arsenic ${fmt(wq?.arsenic, 4)} mg/L > 0.01`);
     if ((wq?.nitrate ?? 0) >= 50) healthFails.push(`Nitrate ${fmt(wq?.nitrate, 1)} mg/L > 50`);
-    if ((wq?.iron ?? 0) >= 0.3) aestheticFlags.push(`Iron ${fmt(wq?.iron, 3)} mg/L > 0.3 (taste/staining)`);
     if ((wq?.tds ?? 0) >= 1000) aestheticFlags.push(`TDS ${fmt(wq?.tds, 0)} mg/L > 1000 (palatability)`);
-    if ((wq?.pH ?? 7) < 6.5 || (wq?.pH ?? 7) > 8.5) aestheticFlags.push(`pH ${fmt(wq?.pH)} outside 6.5-8.5 (operational)`);
     checkSpace(20);
     if (healthFails.length > 0) {
       doc.setFillColor(254, 226, 226);
@@ -3400,7 +3403,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         startY: y,
         head: [['Design aquifer (governs)', 'Value', 'Basis']],
         body: [
-          ['Transmissivity T', `${fmt(_Trec, 1)} m²/day`, 'Solved so the yields of real boreholes nearby are sustainable (no field survey)'],
+          ['Transmissivity T', `${fmt(_Trec, 1)} m²/day`, 'Solved so the yields of boreholes on record (or the county profile, an estimate) nearby are sustainable (no field survey)'],
           ['Design pumping rate', `${fmt(_wdD?.designPumpingRate_m3hr, 2)} m³/h`, 'Governing planning yield'],
           ['Drawdown at the design rate', `${fmt(_wdD?.totalDrawdown_m, 1)} m`, 'Aquifer + well losses'],
           ['Available drawdown', `${fmt(_wdD?.availableDrawdown_m, 1)} m`, 'Depth minus static level, minus pump submergence'],
@@ -5210,7 +5213,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setDrawColor(22, 163, 74); doc.setLineWidth(0.5);
     doc.roundedRect(margin, y, pw, 16, 2, 2, 'S');
     doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(21, 128, 61);
-    doc.text(`Backtested on ${Number(vben.nBoreholes).toLocaleString()} real boreholes (${vben.counties.join(', ')})`, margin + 4, y + 6);
+    doc.text(`Backtested on ${Number(vben.nBoreholes).toLocaleString()} boreholes on record (${vben.counties.join(', ')})`, margin + 4, y + 6);
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(40, 70, 50);
     doc.text(`Analog depth prediction within +-20%: ${Math.round(vben.analogDepthWithin20pct * 100)}% of holes   |   Yield: not reliably predictable from the desk (pump test required)`, margin + 4, y + 12);
     y += 20;

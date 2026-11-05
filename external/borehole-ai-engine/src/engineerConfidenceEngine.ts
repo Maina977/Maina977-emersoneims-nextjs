@@ -320,7 +320,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     unit: 'm3/hr',
     tier: hasPumpTest ? 'CALIBRATED' : hasERT ? 'CALIBRATED' : hasModelledERT ? 'ESTIMATED' : (hasEnsemble || hasGeophysics) ? 'CALIBRATED' : 'ESTIMATED',
     category: hasPumpTest ? 'field_measurement' : hasERT ? 'field_measurement' : 'model_derived',
-    source: hasPumpTest ? 'Pump test analysis (Theis/Cooper-Jacob — analytically derived, not raw measurement)' : hasERT ? 'ERT transmissivity + Darcy flow model' : (r as any).governingYieldNote ? 'Tested yields of real boreholes nearby (or the county record), with the aquifer model reconciled to them (no field survey)' : 'Regional yield for the rock type and rainfall (no field survey)',
+    source: hasPumpTest ? 'Pump test analysis (Theis/Cooper-Jacob — analytically derived, not raw measurement)' : hasERT ? 'ERT transmissivity + Darcy flow model' : (r as any).governingYieldNote ? 'Tested yields of boreholes on record (or the county profile, an estimate) nearby (or the county record), with the aquifer model reconciled to them (no field survey)' : 'Regional yield for the rock type and rainfall (no field survey)',
     method: hasPumpTest
       ? 'Cooper-Jacob straight-line: T = 2.303Q/(4pi*delta_s), Q_safe = 0.7 * T * i * A'
       : hasERT

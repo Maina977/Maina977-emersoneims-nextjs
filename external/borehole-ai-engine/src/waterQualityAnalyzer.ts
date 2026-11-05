@@ -555,7 +555,9 @@ export class WaterQualityAnalyzer {
   private determineTreatment(quality: WaterQuality): string[] {
     const treatments: string[] = [];
 
-    if (quality.tds > 500) treatments.push('Reverse osmosis or distillation');
+    // Below 1,000 mg/L the water is palatable; RO above 500 sat under "Treatment
+    // likely: NO" (independent audit 2026-11-05, Lodwar).
+    if (quality.tds >= 1000) treatments.push('Reverse osmosis or distillation');
     if (quality.fluoride > 1.5) treatments.push('Defluoridation (activated alumina)');
     if (quality.arsenic > 0.01) treatments.push('Arsenic removal filtration');
     if (quality.iron > 0.3) treatments.push('Iron removal (aeration + sand filtration)');

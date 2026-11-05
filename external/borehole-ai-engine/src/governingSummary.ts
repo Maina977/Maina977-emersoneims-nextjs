@@ -52,6 +52,7 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
       ['What to do next', v.next, ''],
       ['Chance of a productive borehole', probabilityBand(n(r.probability) ?? 0.5), 'A planning estimate from desktop data; not yet calibrated against drilling outcomes'],
       ['Planned depth', `${f(r.recommendedDepth)} m${Array.isArray(depthRange) ? ` (likely ${f(depthRange[0])}-${f(depthRange[1])} m)` : ''}`, 'Field records nearby where they exist, otherwise the regional model'],
+      ...(((r.fallbacksUsed ?? r.dataProvenance?.fallbacksUsed ?? []) as string[]).length ? [['Sources that did not answer', ((r.fallbacksUsed ?? r.dataProvenance?.fallbacksUsed) as string[]).join('; '), 'A stored baseline or no value was used for these'] as Row] : []),
       ['Expected yield', `${f(r.estimatedYield, 1)} m³/h${Array.isArray(yieldRange) ? ` (likely ${f(yieldRange[0], 1)}-${f(yieldRange[1], 1)} m³/h)` : ''}`, 'Confirmed only by a pump test'],
     ],
   });

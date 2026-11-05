@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
       // Large users are not on the domestic rate (audit 2026-10-31): 150,000 kWh a
       // month at KES 25 gave a 2.3-year payback.
       tariffKesPerKwh: num(body.tariff) ?? (Number(body.consumption) > 15000 ? 18 : undefined),
+      tariffAssumed: num(body.tariff) === undefined,
       daytimeUsePct: num(body.daytimeUsePct),
       nightUsePct: num(body.nightUsePct),
       autonomyDays: num(body.autonomyDays),

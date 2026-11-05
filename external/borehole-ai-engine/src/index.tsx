@@ -2027,7 +2027,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
               <h4 className="tab-title" style={{marginTop:24}}>How yield is estimated</h4>
               <div className="formula-block"><code>{SCI.FORMULAS.yieldEmpirical}</code></div>
-              <p className="tab-desc">The aquifer model is reconciled to the yields of real boreholes within 20 km (or the county record), so yield, drawdown and pump size agree. A pump test sets the real figure.</p>
+              <p className="tab-desc">The aquifer model is reconciled to the yields of boreholes on record (or the county profile, an estimate) within 20 km (or the county record), so yield, drawdown and pump size agree. A pump test sets the real figure.</p>
 
               <h4 className="tab-title" style={{marginTop:24}}>Water quality screening</h4>
               {renderSciTable(['Parameter','How it is screened'], SCI.WQ_PREDICTIONS, ['parameter','method'])}
@@ -2623,7 +2623,6 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 {/* Soil from ISRIC SoilGrids only; photo-derived soil and porosity are not shown (2026-10-19). */}
                 <div className="result-item"><span className="rl">Soil Type</span><span className="rv">{(result.soil as any)?.realSoilGrids ? result.soil.type.toUpperCase() : 'Unknown until drilled'}</span></div>
                 <div className="result-item"><span className="rl">Potability</span><span className="rv">{result.waterQuality.isPotable ? 'Potable' : 'Treatment Required'}</span></div>
-                <div className="result-item"><span className="rl">Quality Score</span><span className="rv">{(result.waterQuality.score*100).toFixed(0)}%</span></div>
                 {(result.soil as any)?.realSoilGrids && <div className="result-item"><span className="rl">Porosity</span><span className="rv">{(result.soil.porosity*100).toFixed(0)}%</span></div>}
               </div>
             </div>
@@ -5795,7 +5794,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div className="scenario-header">Scenario {i+1}: Drill at {sc.depth}m</div>
                     <div className="scenario-row"><span>Yield</span><span>{sc.yield} m&sup3;/h</span></div>
                     <div className="scenario-row"><span>Cost</span><span>{fmtUSD(sc.cost)}</span></div>
-                    <div className="scenario-row"><span>Risk</span><span style={{color:sc.risk==='Low'?'#4CAF50':'#FFC107'}}>{sc.risk}</span></div>
+                    <div className="scenario-row"><span>Basis</span><span>Rule of thumb, not assessed for risk</span></div>
                     <div className="scenario-note">{sc.recommendation}</div>
                   </div>
                 ))}
@@ -7656,7 +7655,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         <tr><td style={{fontWeight:600}}>Type</td><td>{pm.type}</td></tr>
                         <tr><td style={{fontWeight:600}}>Suggested Model</td><td>{pm.make_model_suggestion}</td></tr>
                         <tr><td style={{fontWeight:600}}>Motor Rating</td><td>{pm.motorRating_kW} kW ({pm.motorRating_hp} HP)</td></tr>
-                        <tr><td style={{fontWeight:600}}>Total Dynamic Head</td><td>{pm.totalDynamicHead_m}m</td></tr>
+                        <tr><td style={{fontWeight:600}}>Total Dynamic Head</td><td>{pm.totalDynamicHead_m}m{(result as any).pumpHeadAssumption ? ' (water level assumed, not measured)' : ''}</td></tr>
                         <tr><td style={{fontWeight:600}}>Pump Efficiency</td><td>{pm.pumpEfficiency_pct}% (at operating point from curve)</td></tr>
                         <tr><td style={{fontWeight:600}}>Installation Depth</td><td>{pm.installationDepth_m}m bgl</td></tr>
                         <tr><td style={{fontWeight:600}}>Power Source</td><td>{pm.powerSource}</td></tr>
@@ -8550,8 +8549,6 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <div className="tier-cards">
                 {[
                   { tier:'basic' as ReportTier, name:'Summary', price:'Free', desc:'Summary report — key findings, success probability, depth recommendation, final consensus answer', pages:'About 13 pages' },
-                  { tier:'professional' as ReportTier, name:'Professional', price:'Free', desc:'Full analysis: subsurface model, aquifer physics (Theis/Cooper-Jacob), groundwater budget, cone of depression, water quality, charts', pages:'About 120 pages' },
-                  { tier:'expert' as ReportTier, name:'Comprehensive Assessment', price:'Free', desc:'Full pre-feasibility assessment: all Professional content + drilling strategy, ROI analysis, risk register, pump test protocol, prediction table, engineer confidence', pages:'About 120 pages' },
                 ].map(t => (
                   <div key={t.tier} className={`tier-card ${reportTier===t.tier?'selected':''}`} onClick={()=>setReportTier(t.tier)}>
                     <div className="tier-name">{t.name}</div>
@@ -9208,7 +9205,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
       <div style={{marginBottom:20,padding:16,borderRadius:12,border:'2px solid #0284c7',background:'rgba(2,132,199,0.05)'}}>
         <h4 style={{margin:'0 0 4px',fontSize:15,color:'#0284c7'}}>{'\u{1F5C3}'} WRA / County Borehole Records — Import</h4>
         <p style={{fontSize:11,color:'var(--text-secondary)',margin:'0 0 8px',lineHeight:1.5}}>
-          Nearby real boreholes are the single strongest predictor of success. WRA/county completion records aren&rsquo;t on any public API — paste or upload your spreadsheet (CSV) or JSON here.
+          Nearby boreholes on record are the single strongest predictor of success. WRA/county completion records aren&rsquo;t on any public API — paste or upload your spreadsheet (CSV) or JSON here.
           It validates every row, then you can <strong>use it immediately</strong> (stored on this device) or <strong>download <code>wra-boreholes.json</code></strong> to bundle site-wide. {wraStoredCount > 0 && <span style={{color:'#10b981',fontWeight:700}}> {wraStoredCount} record(s) currently active on this device.</span>}
         </p>
         <p style={{fontSize:10,color:'var(--text-tertiary)',margin:'0 0 6px'}}>Columns (any order, header row required): <code>name, lat, lon, depth_m, yield_m3h, swl_m, outcome, permit, county</code>. Outcome accepts functional/dry/low etc.</p>

@@ -1108,10 +1108,10 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
         const lgR = Math.max(0.3, Math.log10(2.25 * T_recon * (tSec / 86400) / (S_eff * rw * rw)));
         const aR = (2.3 / (4 * Math.PI * T_recon)) * lgR;
         cCoef = Math.max(0, (usableDD - aR * Qd) / (Qd * Qd));
-        notes.push(`WELL LOSS RECONCILED: the empirical well-loss coefficient could not sustain the ${target} m³/hr that real boreholes nearby typically deliver; reduced to ${cCoef.toExponential(2)} day²/m⁵. A step-drawdown test measures the real value.`);
+        notes.push(`WELL LOSS RECONCILED: the empirical well-loss coefficient could not sustain the ${target} m³/hr that boreholes on record nearby typically deliver; reduced to ${cCoef.toExponential(2)} day²/m⁵. A step-drawdown test measures the real value.`);
       }
       notes.push(
-        `TRANSMISSIVITY RECONCILED: the modelled T (${T_eff.toFixed(2)} m²/day) implied only ${qMaxModel.toFixed(2)} m³/hr — below the ${band[0]}–${band[1]} m³/hr yield range of real boreholes for this site. T revised to ${T_recon.toFixed(1)} m²/day so yield, drawdown and pump are consistent with real drilled outcomes. CONFIRM with a 24-h pump test.`,
+        `TRANSMISSIVITY RECONCILED: the modelled T (${T_eff.toFixed(2)} m²/day) implied only ${qMaxModel.toFixed(2)} m³/hr — below the ${band[0]}–${band[1]} m³/hr yield range of boreholes on record for this site. T revised to ${T_recon.toFixed(1)} m²/day so yield, drawdown and pump are consistent with real drilled outcomes. CONFIRM with a 24-h pump test.`,
       );
     }
   }

@@ -794,7 +794,7 @@ export function findOptimalSystem(
         totalWattage: panel.wattage * panelCount,
         totalBatteryKwh: listedBatKwh,
         dailyProduction: s.annualEnergyKwh / 365,
-        autonomyDays: s.batteryUsableKwh / Math.max(dailyConsumption, 0.1),
+        autonomyDays: (listedBatKwh * 0.9) / Math.max(dailyConsumption, 0.1), // usable share of the listed battery
         systemVoltage: battery ? 48 : 0,
       },
       roi: {

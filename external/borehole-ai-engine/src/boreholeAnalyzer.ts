@@ -665,7 +665,7 @@ export class BoreholeAnalyzer {
     if (!remoteSensing) {
       const kb = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0, 300);
       if (kb && kb.climate) {
-        fallbacksUsed.push(`Remote sensing APIs failed — using a stored baseline for ${kb.name} (${kb.level}, ${kb.distance_km} km away; SoilGrids/ERA5/SRTM, fetched ${kb.fetched}) — NOT an estimate`);
+        fallbacksUsed.push(`ISRIC SoilGrids did not answer — using a stored baseline for ${kb.name} (${kb.level}, ${kb.distance_km} km away; SoilGrids/ERA5/SRTM, fetched ${kb.fetched}) — NOT an estimate`);
         const annualP = kb.climate.precip_mm_yr;
         const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
         remoteSensing = {
@@ -3631,7 +3631,7 @@ export class BoreholeAnalyzer {
       }
     } catch (e) { console.warn('[Pipeline] Water table evidence failed:', e); }
     if (evidenceBand && typeof result.estimatedYield === 'number' && result.estimatedYield >= evidenceBand.lo * 0.99) {
-      (result as any).governingYieldNote = `Planning yield is kept between the cautious floor (${evidenceBand.lo} m³/h) and the typical yield (${evidenceBand.typical} m³/h) of real boreholes here, from ${evidenceBand.basis}. The aquifer model was reconciled to that evidence, so yield, drawdown and pump agree. A pump test sets the real figure.`;
+      (result as any).governingYieldNote = `Planning yield is kept between the cautious floor (${evidenceBand.lo} m³/h) and the typical yield (${evidenceBand.typical} m³/h) of boreholes on record here, from ${evidenceBand.basis}. The aquifer model was reconciled to that evidence, so yield, drawdown and pump agree. A pump test sets the real figure.`;
     }
 
     // ─── PINN + EXPLAINABLE AI (runs on full result) ───
