@@ -47,7 +47,8 @@ export const GA4_IDS: string[] = (
  * Ads config is emitted and no conversion is reported — everything else still
  * works.
  */
-export const GOOGLE_ADS_ID: string = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || '';
+// The owner's Google Ads account (tag shared by the Ads team, 2026-11-05).
+export const GOOGLE_ADS_ID: string = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || 'AW-16547857525';
 
 /**
  * The conversion action's label — the part after the slash in
