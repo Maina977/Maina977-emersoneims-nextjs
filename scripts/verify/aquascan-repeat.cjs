@@ -28,8 +28,19 @@ async function analyse(browser, site) {
   const errs = [];
   page.on('pageerror', (e) => errs.push(String(e).slice(0, 160)));
   // Upstream relay use per analysis, against its per-client limit (data-relay route).
-  let relay = 0, relay429 = 0;
-  page.on('response', (r) => { if (r.url().includes('/api/borehole/data-relay')) { relay++; if (r.status() === 429) relay429++; } });
+  let relay = 0, relay429 = 0; const upstream429 = [];
+  // A 429 is either this relay's own per-client limit (its body says "Too many
+  // requests") or the upstream source refusing; the two need different fixes.
+  page.on('response', async (r) => {
+    if (!r.url().includes('/api/borehole/data-relay')) return;
+    relay++;
+    if (r.status() !== 429) return;
+    let own = false;
+    try { own = /Too many requests; try again/.test(await r.text()); } catch { /* body gone */ }
+    let host = '?';
+    try { host = new URL(new URL(r.url()).searchParams.get('u') || '').hostname; } catch { /* keep ? */ }
+    if (own) relay429++; else upstream429.push(host);
+  });
   await page.goto(BASE + '/aquascan-pro-v3', { waitUntil: 'domcontentloaded', timeout: 120000 });
   const lat = page.locator('input[placeholder^="Latitude"]');
   await lat.waitFor({ timeout: 120000 });
@@ -40,14 +51,15 @@ async function analyse(browser, site) {
   await page.waitForFunction(() => /Analysis Complete/.test(document.body.innerText), null, { timeout: 240000 });
   await page.waitForTimeout(15000);
   const text = await page.evaluate(() => document.body.innerText);
+  await page.waitForTimeout(500);
   await ctx.close();
-  return { text, errs, relay, relay429 };
+  return { text, errs, relay, relay429, upstream429 };
 }
 
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome' });
   let problems = 0;
-  for (const site of SITES) {
+  for (const site of SITES.filter((s) => !process.env.AQ_SITE || s.name === process.env.AQ_SITE)) {
     let a = await analyse(browser, site);
     let b = await analyse(browser, site);
     // A free public source (usually ISRIC SoilGrids) sometimes fails one call;
@@ -60,7 +72,7 @@ async function analyse(browser, site) {
       if (outage(a.text)) a = await analyse(browser, site); else b = await analyse(browser, site);
     }
     const outageDiffers = outage(a.text) !== outage(b.text);
-    console.log(`info ${site.name}: relay calls ${a.relay} and ${b.relay}; refused (429) ${a.relay429 + b.relay429}`);
+    console.log(`info ${site.name}: relay calls ${a.relay} and ${b.relay}; refused by the relay's own limit ${a.relay429 + b.relay429}; refused upstream ${[...a.upstream429, ...b.upstream429].join(', ') || 'none'}`);
     if (a.relay429 + b.relay429 > 0) { problems++; console.log(`FAIL ${site.name}: the relay limit refused a normal analysis`); }
     for (const [i, r] of [a, b].entries()) {
       for (const e of r.errs) { problems++; console.log(`FAIL ${site.name} run ${i + 1}: page error ${e}`); }
