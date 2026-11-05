@@ -130,6 +130,9 @@ const EMERGENCIES: Array<[RegExp, string]> = [
   [/(?<!(won'?t|wont|not|no|doesn'?t|never|fails?\s+to|mis)\s)\bfire\b(?!\s+pump)|\bflames?\b/, 'FIRE: press the emergency stop if you can reach it safely, shut the fuel supply, get everyone out and call the fire service. Use a CO2 or dry-powder extinguisher only on a small fire, and never water on live equipment.'],
   [/electric(al)?\s+shock|shock\s+from|\bshocked\b|got\s+a?\s*shock|electrocut|tingl|frame.*\blive\b|\blive\b.*frame/, 'ELECTRIC SHOCK RISK: treat the frame and panel as live. Keep everyone clear, stop the set and isolate it from a safe point before anyone touches it. If someone is being shocked, cut the power first; do not touch them.'],
   [/carbon\s+monoxide|\bco\s+(alarm|poison|leak)|\bfumes?\b|exhaust\s+(gas\s+)?leak/, 'EXHAUST GAS IS DEADLY: carbon monoxide has no smell. Stop the engine, get everyone out into fresh air and ventilate the room before going back in. Seek medical help for headache, dizziness or nausea. Repair the leak before running again.'],
+  // Smoke or a burning smell from the alternator, AVR, panel or wiring is
+  // insulation burning (audit 2026-11-05: "smoke from alternator" gave nothing).
+  [/\b(smok\w*|burn\w*|smell\w*|scorch\w*)\b.*\b(alternator|winding|avr|panel|breaker|cable|wiring|terminal)s?\b|\b(alternator|winding|avr|panel|breaker|cable|wiring|terminal)s?\b.*\b(smok\w*|burn\w*|scorch\w*|melt\w*)\b/, 'ELECTRICAL BURNING: stop the set with the emergency stop if it is safe to reach, open the breaker and isolate it. Do not restart or open covers until it has cooled and a qualified electrician has tested the windings and wiring. If there are flames, treat it as a fire and call the fire service.'],
   [/\b(fuel|diesel|oil)\s+(leak|spill)/, 'Hot oil and fuel burn and can catch fire on a hot exhaust: stop the engine and let it cool before tracing the leak, and clean spills at once.'],
 ];
 // Checks a technician makes first for the fault itself, ahead of each controller
@@ -666,6 +669,13 @@ export function searchIndex(opts: SearchOptions): SearchResponse {
     };
   }
   const typed = (opts.query || '').trim();
+  // Digits that are only a duration ("after 10 minutes") still make a
+  // description, not a code (audit 2026-11-05).
+  const durationFree = typed.replace(/\b\d+(\.\d+)?\s*(-\s*\d+\s*)?(sec\w*|min\w*|hour\w*|hrs?)\b/gi, '');
+  if (typed && /[a-z]/i.test(durationFree) && !/\d/.test(durationFree) && /\d/.test(typed) && !normalizeCodeQuery(typed)) {
+    const r = searchByWords(typed, opts);
+    if (r.total > 0) return r;
+  }
   // Words with no digits are a description, not a code: rank them with the
   // same symptom engine the chat uses, so the page and the chat agree
   // (2026-10-27 audit: "generator overheating" was right in chat and listed
@@ -684,7 +694,14 @@ export function searchIndex(opts: SearchOptions): SearchResponse {
   if (syn && opts.query !== syn && searchIndexRaw({ ...opts, page: 1, pageSize: 1 }).total === 0) {
     return { ...searchIndexRaw({ ...opts, query: syn }), query: typed };
   }
-  return searchIndexRaw(opts);
+  const res = searchIndexRaw(opts);
+  // Controller alarm numbers in this library are our own index numbers, not
+  // what a display shows, so "DSE 200" finds nothing: say what to type instead
+  // of an empty list (audit 2026-11-05).
+  if (res.total === 0 && /\d/.test(typed) && !normalizeCodeQuery(typed) && !res.notice) {
+    return { ...res, notice: 'No alarm with that number. Most controllers (DeepSea, ComAp, SmartGen, Datakom) show the alarm NAME, such as "Low Oil Pressure Shutdown": type the words on the display. Engine ECU codes are found as SPN and FMI, e.g. "SPN 100 FMI 1".' };
+  }
+  return res;
 }
 
 /**
@@ -1156,6 +1173,8 @@ const PHRASES: [RegExp, string][] = [
   [/\bsd\s+oil\s+press\b/gi, 'low oil pressure shutdown'],
   [/\bsd\s+water\s+temp\b/gi, 'high coolant temperature shutdown'],
   [/\b(no|zero)\s+(power|output|electricity)\b/gi, 'no voltage output excitation'],
+  [/\b(no|zero|lost|loss\s+of)\s+(excitation|field)\b/gi, 'loss of excitation no voltage output'],
+  [/\bshut(s|ting)?\s+(down|off)\b/gi, 'shutdown'],
   [/\b(won'?t|wont|will\s+not|cannot|can'?t|does\s+not|doesn'?t|not)\s+start(ing)?\b/gi, 'fail to start crank'],
   [/\bfail(s|ed|ure)?\s+to\s+start\b/gi, 'fail to start crank'],
   [/\b(won'?t|wont|will\s+not|does\s+not|doesn'?t)\s+stop\b/gi, 'fail to stop'],
@@ -1244,6 +1263,14 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   const typedText = phrases.join(' ').toLowerCase();
   const wantsHighDir = /\b(high|over|too high|excess)/.test(typedText) && !/\b(low|under)\b/.test(typedText);
   const wantsLowDir = /\b(low|under(?! load)|too low|drop)/.test(typedText) && !/\b(high|over)\b/.test(typedText);
+  // "No voltage" is a loss of output, not an over-voltage (audit 2026-11-05:
+  // Generator Over Voltage ranked second for "no voltage output").
+  const wantsNoOutput = /\b(no|zero|nil|lost|loss\s+of)\s+(ac\s+)?(voltage|output|power|excitation)\b/.test(typedText);
+  // A shutdown that comes only after running for a while points at heat, fuel
+  // supply, oil or overload, not at alarms that trip within seconds of starting
+  // (audit 2026-11-05: "shuts down after 10 minutes" led with Overspeed).
+  const delayedShutdown = /\b(shut\w*|stop\w*|trip\w*|cut\w*|die\w*|dies)\b.*\b(after|within)\s+(some\s+time|a\s+while|running|warming|\d+\s*(sec\w*|min\w*|hour\w*|hrs?|h)\b)/.test(typedText);
+  if (delayedShutdown) for (const e of ['coolant', 'temperatur', 'fuel', 'overload', 'pressur']) if (!terms.includes(e)) expanded.add(e);
   const rankPool = (codes: ControllerFaultCode[]): RankedFault[] => {
     const out: RankedFault[] = [];
     for (const c of codes) {
@@ -1313,6 +1340,14 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
       if (/\bsensor\b/.test(rawTitle) && !/\bsensor\b/.test(typedText) && /temperatur|overheat|pressure|voltage|speed/.test(typedText)) score *= 0.4;
       // "Reverse power" is a specific protection, not "no power" (2026-10-27).
       if (/\breverse\b/.test(rawTitle) && !/\breverse\b/.test(typedText)) score -= 10;
+      if (wantsNoOutput) {
+        if (/\bover[\s-]?(voltag|excit)/.test(rawTitle)) score = score * 0.3 - 5;
+        if (/\b(loss\s+of|under|fail|excit|sensing|avr|no\s+voltage)/.test(rawTitle)) score += 3;
+      }
+      if (delayedShutdown) {
+        if (/\b(over[\s-]?speed|over[\s-]?voltag|over[\s-]?frequen|fail\s+to\s+start|emergency\s+stop|crank)/.test(rawTitle)) score = score * 0.3 - 3;
+        if (/\b(coolant|temperatur|oil\s+press|fuel|overload|over[\s-]?current|air\s+filter)/.test(rawTitle)) score += 4;
+      }
       // "high" favours over-/high- titles and "low" under-/low- titles.
       const tl = c.title.toLowerCase();
       const titleHigh = /\b(over|high)/.test(tl), titleLow = /\b(under|low)/.test(tl);

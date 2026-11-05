@@ -21,6 +21,13 @@ describe('location index policy', () => {
     expect(meta.title).toBe('x');
   });
 
+  it('leaves a page with a cross-page canonical to its canonical (no mixed signals)', () => {
+    const meta = { title: 'x', alternates: { canonical: 'https://www.emersoneims.com/kenya/baringo/ac-installation' } };
+    expect(withLocationIndexPolicy('/kenya/baringo/ac-companies', meta)).toBe(meta);
+    const self = { title: 'x', alternates: { canonical: 'https://www.emersoneims.com/kenya/nowhere/x' } };
+    expect(withLocationIndexPolicy('/kenya/nowhere/x', self).robots).toEqual({ index: false, follow: true });
+  });
+
   it('keeps a reasonable share and only location paths', () => {
     const list = keep as string[];
     expect(list.length).toBeGreaterThan(500);

@@ -31,5 +31,12 @@ export function isLocationPageKeptIndexed(path: string): boolean {
 /** Adds noindex, follow to a location page's metadata unless it is kept. */
 export function withLocationIndexPolicy(path: string, meta: Metadata): Metadata {
   if (isLocationPageKeptIndexed(path)) return meta;
+  // A page whose canonical already names ANOTHER page is consolidated by that
+  // canonical. Google advises against sending noindex and a cross-page
+  // canonical together (conflicting signals), so only self-canonical pages
+  // get the noindex.
+  const canonical = meta.alternates?.canonical;
+  const canonicalPath = typeof canonical === 'string' ? canonical.replace(/^https?:\/\/[^/]+/, '').replace(/\/$/, '') : null;
+  if (canonicalPath && canonicalPath !== path.replace(/\/$/, '')) return meta;
   return { ...meta, robots: { index: false, follow: true } };
 }
