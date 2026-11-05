@@ -125,6 +125,36 @@ export default function AnalyticsTracker() {
     };
   }, [pathname]);
 
+  // ─── Completed enquiries (2026-11-05) ──────────────────────────────────
+  // Eleven forms post to /api/contact. A click is not a lead; a submission
+  // the server accepted is. This reports `generate_lead` once per accepted
+  // enquiry, with the service category and page only — never the visitor's
+  // name, phone, email or message (Kenya Data Protection Act; GA4 policy).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const w = window as unknown as { fetch: typeof fetch; gtag?: (...a: unknown[]) => void; __eimsLeadHook?: boolean };
+    if (w.__eimsLeadHook) return;
+    w.__eimsLeadHook = true;
+    const orig = w.fetch.bind(window);
+    w.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const res = await orig(input, init);
+      try {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        const method = (init?.method || 'GET').toUpperCase();
+        if (method === 'POST' && /\/api\/contact\/?(\?|$)/.test(new URL(url, location.href).pathname + '?') && res.ok) {
+          let service = 'general', source = 'contact_form';
+          try { const b = JSON.parse(String(init?.body ?? '{}')); service = String(b.service || service).slice(0, 40); source = String(b.source || source).slice(0, 40); } catch { /* not JSON */ }
+          send({ t: 'click', p: location.pathname, h: location.hostname, label: `lead:${service}` });
+          if (typeof w.gtag === 'function') {
+            w.gtag('event', 'generate_lead', { lead_service: service, lead_source: source, page_path: location.pathname });
+            if (GOOGLE_ADS_ID && GOOGLE_ADS_CONTACT_LABEL) w.gtag('event', 'conversion', { send_to: `${GOOGLE_ADS_ID}/${GOOGLE_ADS_CONTACT_LABEL}` });
+          }
+        }
+      } catch { /* tracking never breaks a request */ }
+      return res;
+    }) as typeof fetch;
+  }, []);
+
   // ─── CTA click tracking ─────────────────────────────────────────────────
   // Single capture-phase, passive listener added once on mount. Purely
   // observational — never preventDefault / blocks the click.
