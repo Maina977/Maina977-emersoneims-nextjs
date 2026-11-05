@@ -126,6 +126,142 @@ const DEG = Math.PI / 180;
 
 /** Average daylight factor, BRE / BS 8206-2 (as used with BS EN 17037):
  *  ADF % = T · Aw · θ · M / (A · (1 − R²)), Aw = window area × frame factor. */
+/**
+ * Means of egress, IBC 2021 Chapter 10 (2026-11-05: was "not available").
+ * Occupant load from Table 1004.5 (area per occupant), number of exits from
+ * Table 1006.3.3, required egress width from §1005.3.1 (stairs) and §1005.3.2
+ * (other components), with the reduced factors allowed in buildings fully
+ * sprinklered to NFPA 13/13R AND fitted with an emergency voice/alarm system
+ * (§1005.3.1 Exc. 2, §1005.3.2 Exc. 2). Minimum clear door 813 mm (32 in,
+ * §1010.1.1); minimum corridor 1118 mm (44 in, Table 1020.3). Kenyan
+ * approval follows the Building Code 2024 and county fire officer; IBC is the
+ * stated reference basis here.
+ */
+const IBC_LOAD_FT2: Record<string, { ft2: number; basis: 'gross' | 'net'; label: string }> = {
+  business: { ft2: 150, basis: 'gross', label: 'Business areas' },
+  assembly: { ft2: 15, basis: 'net', label: 'Assembly, unconcentrated (tables and chairs)' },
+  assembly_concentrated: { ft2: 7, basis: 'net', label: 'Assembly, concentrated (chairs only)' },
+  classroom: { ft2: 20, basis: 'net', label: 'Educational, classroom area' },
+  mercantile: { ft2: 60, basis: 'gross', label: 'Mercantile' },
+  industrial: { ft2: 100, basis: 'gross', label: 'Industrial areas' },
+  storage: { ft2: 300, basis: 'gross', label: 'Warehouses / storage' },
+  residential: { ft2: 200, basis: 'gross', label: 'Residential' },
+};
+export function egress(b: Body) {
+  const type = String(b.occupancy_type ?? 'business');
+  const f = IBC_LOAD_FT2[type];
+  if (!f) return bad(`occupancy_type must be one of: ${Object.keys(IBC_LOAD_FT2).join(', ')}`);
+  const A0 = optN(b, 'floor_area_m2');
+  if (A0 === undefined) return missing({ floor_area_m2: A0 })!;
+  if (!(A0 > 0 && A0 <= 1_000_000)) return bad('floor_area_m2 must be between 0 and 1,000,000 m²');
+  const A = A0;
+  const yes = (v: unknown) => v === true || v === 'true';
+  const sprinklered = yes(b.sprinklered), voice = yes(b.voice_notification);
+  const m2PerOcc = f.ft2 * 0.09290304;
+  const occupants = Math.ceil(A / m2PerOcc);
+  const exitsRequired = occupants > 1000 ? 4 : occupants > 500 ? 3 : 2;
+  const reduced = sprinklered && voice;
+  const stairIn = reduced ? 0.2 : 0.3, otherIn = reduced ? 0.15 : 0.2;
+  const stairMm = Math.max(1118, Math.ceil(occupants * stairIn * 25.4));
+  const otherMm = Math.max(813, Math.ceil(occupants * otherIn * 25.4));
+  const checks: { check: string; value: string; pass: boolean }[] = [];
+  const notChecked: string[] = [];
+  const exits = optN(b, 'exits_provided');
+  const doorW = optN(b, 'total_exit_door_width_mm');
+  const stairW = optN(b, 'total_stair_width_mm');
+  if (exits !== undefined) checks.push({ check: 'Number of exits ≥ Table 1006.3.3', value: `${exits} ≥ ${exitsRequired}`, pass: exits >= exitsRequired });
+  else notChecked.push('exits_provided not given, so the number of exits was not checked');
+  if (doorW !== undefined) checks.push({ check: 'Total exit door width ≥ §1005.3.2', value: `${doorW} ≥ ${otherMm} mm`, pass: doorW >= otherMm });
+  else notChecked.push('total_exit_door_width_mm not given, so door width was not checked');
+  if (stairW !== undefined) checks.push({ check: 'Total stair width ≥ §1005.3.1', value: `${stairW} ≥ ${stairMm} mm`, pass: stairW >= stairMm });
+  return {
+    occupant_load: occupants,
+    area_per_occupant_m2: r(m2PerOcc, 2),
+    exits_required: exitsRequired,
+    required_stair_width_mm: stairMm,
+    required_other_egress_width_mm: otherMm,
+    width_factor_stairs_in_per_occupant: stairIn,
+    width_factor_other_in_per_occupant: otherIn,
+    checks,
+    ...(notChecked.length ? { not_checked: notChecked } : {}),
+    assumptions: [
+      `${f.label}: ${f.ft2} ft² (${r(m2PerOcc, 2)} m²) ${f.basis} per occupant, IBC 2021 Table 1004.5${f.basis === 'net' ? ' — enter the NET floor area (excluding walls, corridors, toilets)' : ''}`,
+      reduced ? 'Reduced width factors used: fully sprinklered (NFPA 13/13R) with an emergency voice/alarm system' : 'Standard width factors: reductions need BOTH a full sprinkler system and an emergency voice/alarm system',
+      'Exits must be separated by at least one-half (one-third if sprinklered) of the overall diagonal (§1007.1.1); exits are not checked for travel distance here',
+      'One exit can be enough for small spaces (Table 1006.2.1); this tool applies the general story rule',
+      'Kenya: confirm with the Building Code 2024 and the county fire officer before submission',
+    ],
+    method: 'IBC 2021 §1004.5, §1005.3, §1006.3.3',
+  };
+}
+
+/**
+ * Outdoor air for one zone, ASHRAE 62.1 Ventilation Rate Procedure
+ * (2026-11-05: ventilation was not available). Breathing-zone outdoor air
+ * Vbz = Rp·Pz + Ra·Az (Eq. 6.2.2.1), zone outdoor air Voz = Vbz / Ez
+ * (Eq. 6.2.2.2). Rp, Ra and default occupant densities from the SI version
+ * of Table 6.2.2.1; Ez from Table 6.2.2.2. Single zone only: a multi-zone
+ * system also needs the system ventilation efficiency (§6.2.4).
+ */
+const ASHRAE_621_SI: Record<string, { label: string; Rp: number; Ra: number; density: number }> = {
+  office: { label: 'Office space', Rp: 2.5, Ra: 0.3, density: 5 },
+  conference: { label: 'Conference / meeting', Rp: 2.5, Ra: 0.3, density: 50 },
+  reception: { label: 'Reception area', Rp: 2.5, Ra: 0.3, density: 30 },
+  classroom: { label: 'Classroom (age 9 plus)', Rp: 5, Ra: 0.6, density: 35 },
+  lecture: { label: 'Lecture classroom', Rp: 3.8, Ra: 0.3, density: 65 },
+  retail: { label: 'Retail sales', Rp: 3.8, Ra: 0.6, density: 15 },
+  restaurant: { label: 'Restaurant dining room', Rp: 3.8, Ra: 0.9, density: 70 },
+  hotel_bedroom: { label: 'Hotel bedroom / living room', Rp: 2.5, Ra: 0.3, density: 10 },
+  gym: { label: 'Health club / aerobics room', Rp: 10, Ra: 0.3, density: 40 },
+};
+const EZ: Record<string, { Ez: number; label: string }> = {
+  ceiling_supply_cool: { Ez: 1.0, label: 'Ceiling supply of cool air' },
+  ceiling_supply_warm_ceiling_return: { Ez: 0.8, label: 'Ceiling supply of warm air, ceiling return' },
+  floor_supply_cool_ceiling_return: { Ez: 1.0, label: 'Floor supply of cool air, ceiling return' },
+  displacement: { Ez: 1.2, label: 'Low-velocity displacement ventilation' },
+};
+export function ventilation(b: Body) {
+  const type = String(b.space_type ?? 'office');
+  const t = ASHRAE_621_SI[type];
+  if (!t) return bad(`space_type must be one of: ${Object.keys(ASHRAE_621_SI).join(', ')}`);
+  const A = optN(b, 'floor_area_m2');
+  if (A === undefined) return missing({ floor_area_m2: A })!;
+  if (!(A > 0 && A <= 100_000)) return bad('floor_area_m2 must be between 0 and 100,000 m²');
+  const dist = String(b.air_distribution ?? 'ceiling_supply_cool');
+  const e = EZ[dist];
+  if (!e) return bad(`air_distribution must be one of: ${Object.keys(EZ).join(', ')}`);
+  const pGiven = optN(b, 'occupants');
+  if (pGiven !== undefined && !(pGiven >= 0 && pGiven <= 100_000 && Number.isInteger(pGiven))) return bad('occupants must be a whole number, 0 or more');
+  const P = pGiven ?? Math.ceil((t.density * A) / 100);
+  const Vbz = t.Rp * P + t.Ra * A;
+  const Voz = Vbz / e.Ez;
+  const checks: { check: string; value: string; pass: boolean }[] = [];
+  const supplied = optN(b, 'outdoor_air_supplied_L_s');
+  const notChecked: string[] = [];
+  if (supplied !== undefined) checks.push({ check: 'Outdoor air supplied ≥ Voz', value: `${supplied} ≥ ${r(Voz, 1)} L/s`, pass: supplied >= Voz });
+  else notChecked.push('outdoor_air_supplied_L_s not given, so the design airflow was not checked');
+  return {
+    occupants_used: P,
+    Rp_L_s_per_person: t.Rp,
+    Ra_L_s_per_m2: t.Ra,
+    Vbz_L_s: r(Vbz, 1),
+    Ez: e.Ez,
+    Voz_L_s: r(Voz, 1),
+    Voz_m3_h: r(Voz * 3.6, 0),
+    outdoor_air_per_person_L_s: P > 0 ? r(Voz / P, 1) : null,
+    checks,
+    ...(notChecked.length ? { not_checked: notChecked } : {}),
+    assumptions: [
+      `${t.label}: Rp ${t.Rp} L/s per person, Ra ${t.Ra} L/s per m² (ASHRAE 62.1 Table 6.2.2.1, SI)`,
+      pGiven === undefined ? `Occupants from the table's default density, ${t.density} per 100 m²: enter the design occupancy if known` : 'Occupants as entered',
+      `${e.label}: Ez = ${e.Ez} (Table 6.2.2.2)`,
+      'One zone only. A system serving several zones also needs the system ventilation efficiency (§6.2.4). Exhaust (toilets, kitchens) is separate (Table 6.5).',
+      'Kenya: confirm against the Building Code 2024 and the project mechanical engineer before submission',
+    ],
+    method: 'ASHRAE 62.1 Ventilation Rate Procedure, Eq. 6.2.2.1 and 6.2.2.2',
+  };
+}
+
 export function daylightAdf(b: Body) {
   const T = pick(b, 'T_glass', 'glassT');
   const W = pick(b, 'window_area_m2', 'glazingArea_m2');
