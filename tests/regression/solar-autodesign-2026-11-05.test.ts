@@ -1,6 +1,5 @@
 /** Auto-design supply phase and inverter count (audit 2026-11-05). */
 import { describe, it, expect } from 'vitest';
-// @ts-ignore - plain JS module
 import { autoDesign } from '@/lib/solar-genius/server/autoDesigner.js';
 
 const run = (kwh: number, extra: any = {}) => autoDesign({ annualConsumptionKwh: kwh, ambientMinC: 8, ambientMaxC: 35, tiltDeg: 10, azimuthDeg: 0, targetSpecificYieldKwhPerKwp: 1600, needsBattery: true, ...extra });
