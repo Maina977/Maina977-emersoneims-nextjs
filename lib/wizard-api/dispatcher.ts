@@ -308,7 +308,7 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
   // Shapes no longer carry "compliant: true" — a 501 must not look like a pass.
   if (path.endsWith('/arch/egress')) return calc(calcs.egress, body);
   if (path.endsWith('/arch/ventilation')) return calc(calcs.ventilation, body);
-  if (path.endsWith('/arch/accessibility/check')) return stub(path, { checks: [], passed: null, failed: null });
+  if (path.endsWith('/arch/accessibility/check')) return calc(calcs.accessibility, body);
 
   // ── engineering / loads / rc / steel / geotech / hydro
   if (path.endsWith('/loads/wind/asce7')) return calc(calcs.windAsce7, body);

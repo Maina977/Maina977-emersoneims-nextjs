@@ -562,14 +562,19 @@ const MODULES = [
     ]},
 
   { id:'access', group:'Architecture', tag:'b-arch',
-    title:'Accessibility check (ADA / AD-M / ISO 21542)',
+    title:'Accessibility dimensions (ADA 2010 / UK AD M)',
     endpoint:'/api/arch/accessibility/check', method:'POST',
-    refs:['ADA 2010','AD M (UK)','ISO 21542:2021'],
+    refs:['2010 ADA Standards §§308, 403-405','UK Approved Document M Vol. 2 (2024)'],
     fields:[
-      {k:'jurisdiction', label:'Jurisdiction', type:'select',
-        opts:['strictest','ADA','ApprovedM','ISO_21542'], def:'strictest'},
-      {k:'measurements', label:'Measurements (JSON)', type:'textarea',
-        def:'{\n  "door_clear_width_mm": 850,\n  "corridor_min_width_mm": 1200,\n  "wc_cubicle_width_mm": 1500,\n  "wc_cubicle_depth_mm": 2200,\n  "ramp_max_slope_ratio": 0.0833,\n  "parking_bay_width_mm": 3600\n}'},
+      {k:'jurisdiction', label:'Standard', type:'select', opts:['strictest','ada','ad-m'], def:'strictest'},
+      {k:'building', label:'Building', type:'select', opts:['new','existing'], def:'new'},
+      {k:'door_approach', label:'Door approach (AD M Table 2)', type:'select', opts:['straight_on','right_angle_from_1500','right_angle_from_1200','external_public'], def:'straight_on'},
+      {k:'door_clear_width_mm', label:'Door clear width (mm)', type:'number', def:850},
+      {k:'corridor_min_width_mm', label:'Narrowest corridor (mm)', type:'number', def:1200},
+      {k:'ramp_going_m', label:'Ramp flight length (m)', type:'number', def:''},
+      {k:'ramp_rise_mm', label:'Ramp flight rise (mm)', type:'number', def:''},
+      {k:'ramp_width_mm', label:'Ramp width (mm)', type:'number', def:''},
+      {k:'reach_height_mm', label:'Highest control (mm above floor)', type:'number', def:1100},
     ]},
 
   // ---------------- Platform ----------------

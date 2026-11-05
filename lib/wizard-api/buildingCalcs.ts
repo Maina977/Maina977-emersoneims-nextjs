@@ -262,6 +262,96 @@ export function ventilation(b: Body) {
   };
 }
 
+/**
+ * Accessibility dimension checks (2026-11-05: was "not available").
+ * Figures read from the documents themselves on 2026-11-05:
+ *  - 2010 ADA Standards (access-board.gov/ada): door clear width 815 mm
+ *    (§404.2.3), accessible route 915 mm (§403.5.1), ramp running slope 1:12
+ *    max (§405.2), rise per run 760 mm max (§405.6), landing 1525 mm (§405.7.3),
+ *    forward reach 380-1220 mm (§308.2.1).
+ *  - UK Approved Document M Vol. 2, 2024 edition: door Table 2 (new 800/800/
+ *    825/1000 mm, existing 750/750/775/775 mm), corridors 1200 mm (§3.14b),
+ *    ramp Table 1 (10 m going 1:20 / 500 mm rise; 5 m 1:15 / 333 mm; 2 m 1:12
+ *    / 166 mm; interpolate between), flight going 10 m and rise 500 mm max,
+ *    ramp surface width 1.5 m (§1.26).
+ * ISO 21542 and the Kenya Building Code figures could not be confirmed, so
+ * they are not offered. "strictest" applies the tighter of ADA and AD M.
+ */
+const ADM_DOOR: Record<string, { label: string; neu: number; old: number }> = {
+  straight_on: { label: 'Straight-on approach', neu: 800, old: 750 },
+  right_angle_from_1500: { label: 'At right angles from a route at least 1500 mm wide', neu: 800, old: 750 },
+  right_angle_from_1200: { label: 'At right angles from a route at least 1200 mm wide', neu: 825, old: 775 },
+  external_public: { label: 'External door used by the general public', neu: 1000, old: 775 },
+};
+/** AD M Table 1: maximum gradient (as 1:n) for a flight's going, interpolated. */
+function admMaxGradientN(goingM: number): number {
+  if (goingM <= 2) return 12;
+  if (goingM <= 5) return 12 + ((goingM - 2) / 3) * 3;   // 1:12 at 2 m to 1:15 at 5 m
+  return 15 + ((Math.min(goingM, 10) - 5) / 5) * 5;       // 1:15 at 5 m to 1:20 at 10 m
+}
+export function accessibility(b: Body) {
+  let m: Record<string, unknown> = {};
+  if (typeof b.measurements === 'string' && b.measurements.trim()) { try { m = JSON.parse(b.measurements); } catch { return bad('measurements must be valid JSON'); } }
+  else if (b.measurements && typeof b.measurements === 'object') m = b.measurements as Record<string, unknown>;
+  const all: Body = { ...b, ...m } as Body;
+  const jur = String(all.jurisdiction ?? 'strictest');
+  if (!['strictest', 'ada', 'ad-m'].includes(jur)) return bad('jurisdiction must be strictest, ada or ad-m (ISO 21542 figures could not be confirmed, so it is not offered)');
+  const useAda = jur !== 'ad-m', useAdm = jur !== 'ada';
+  const existing = String(all.building ?? 'new') === 'existing';
+  const approach = String(all.door_approach ?? 'straight_on');
+  const da = ADM_DOOR[approach];
+  if (!da) return bad(`door_approach must be one of: ${Object.keys(ADM_DOOR).join(', ')}`);
+  const door = optN(all, 'door_clear_width_mm');
+  const corridor = optN(all, 'corridor_min_width_mm');
+  const slopePct = optN(all, 'ramp_slope_pct');
+  const going = optN(all, 'ramp_going_m');
+  const rise = optN(all, 'ramp_rise_mm');
+  const rampW = optN(all, 'ramp_width_mm');
+  const landing = optN(all, 'ramp_landing_length_mm');
+  const reach = optN(all, 'reach_height_mm');
+  const checks: { check: string; value: string; pass: boolean }[] = [];
+  const notChecked: string[] = [];
+  if (door !== undefined) {
+    if (useAda) checks.push({ check: 'Door clear width ≥ 815 mm (ADA §404.2.3)', value: `${door} mm`, pass: door >= 815 });
+    if (useAdm) { const need = existing ? da.old : da.neu; checks.push({ check: `Door effective clear width ≥ ${need} mm (AD M Table 2, ${da.label.toLowerCase()}, ${existing ? 'existing' : 'new'} building)`, value: `${door} mm`, pass: door >= need }); }
+  } else notChecked.push('door_clear_width_mm');
+  if (corridor !== undefined) {
+    if (useAda) checks.push({ check: 'Accessible route width ≥ 915 mm (ADA §403.5.1)', value: `${corridor} mm`, pass: corridor >= 915 });
+    if (useAdm) checks.push({ check: 'Corridor unobstructed width ≥ 1200 mm (AD M §3.14b)', value: `${corridor} mm`, pass: corridor >= 1200 });
+  } else notChecked.push('corridor_min_width_mm');
+  const slope = slopePct ?? (going && rise ? (rise / 1000 / going) * 100 : undefined);
+  if (slope !== undefined) {
+    // A route at 1:20 (5%) or flatter is not a ramp under either document.
+    if (slope > 5) {
+      if (useAda) checks.push({ check: 'Ramp running slope ≤ 1:12 = 8.33% (ADA §405.2)', value: `${r(slope, 2)}%`, pass: slope <= 100 / 12 + 1e-9 });
+      if (useAdm) {
+        if (going !== undefined) { const nMax = admMaxGradientN(going); checks.push({ check: `Ramp gradient ≤ 1:${r(nMax, 1)} for a ${going} m going (AD M Table 1)`, value: `${r(slope, 2)}% (1:${r(100 / slope, 1)})`, pass: slope <= 100 / nMax + 1e-9 }); checks.push({ check: 'Flight going ≤ 10 m (AD M §1.26c)', value: `${going} m`, pass: going <= 10 }); }
+        else notChecked.push('ramp_going_m (AD M limits the gradient by the length of the flight)');
+      }
+    }
+    if (rise !== undefined) {
+      if (useAda) checks.push({ check: 'Rise per ramp run ≤ 760 mm (ADA §405.6)', value: `${rise} mm`, pass: rise <= 760 });
+      if (useAdm) checks.push({ check: 'Rise per flight ≤ 500 mm (AD M §1.26c)', value: `${rise} mm`, pass: rise <= 500 });
+    }
+    if (rampW !== undefined && useAdm) checks.push({ check: 'Ramp surface width ≥ 1500 mm (AD M §1.26e)', value: `${rampW} mm`, pass: rampW >= 1500 });
+    if (landing !== undefined && useAda) checks.push({ check: 'Ramp landing clear length ≥ 1525 mm (ADA §405.7.3)', value: `${landing} mm`, pass: landing >= 1525 });
+  } else notChecked.push('ramp (give ramp_slope_pct, or ramp_going_m and ramp_rise_mm)');
+  if (reach !== undefined) {
+    if (useAda) checks.push({ check: 'Control height within forward reach 380-1220 mm (ADA §308.2.1)', value: `${reach} mm`, pass: reach >= 380 && reach <= 1220 });
+  } else notChecked.push('reach_height_mm');
+  if (!checks.length) return bad('Give at least one measurement: door_clear_width_mm, corridor_min_width_mm, ramp_slope_pct (or ramp_going_m and ramp_rise_mm), reach_height_mm');
+  return {
+    jurisdiction: jur,
+    checks,
+    ...(notChecked.length ? { not_checked: notChecked.map((x) => `${x} not given`) } : {}),
+    assumptions: [
+      'Dimensions only: this does not check toilets, lifts, signage, tactile paving or fire evacuation of disabled people',
+      'Kenya: the Persons with Disabilities Act and the Building Code 2024 apply; confirm with the county building officer',
+    ],
+    method: '2010 ADA Standards §§308, 403, 404, 405; UK Approved Document M Vol. 2 (2024) §1.26, §3.14, Tables 1 and 2',
+  };
+}
+
 export function daylightAdf(b: Body) {
   const T = pick(b, 'T_glass', 'glassT');
   const W = pick(b, 'window_area_m2', 'glazingArea_m2');
