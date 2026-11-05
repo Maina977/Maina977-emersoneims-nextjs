@@ -880,6 +880,15 @@ export default function TechnicianInputDiagnostics({ className = '' }: Technicia
         </div>
       </div>
 
+      {/* Readings no gauge can show are named, not silently dropped (audit 2026-11-05). */}
+      {showResults && (() => {
+        const ignored = Object.entries(inputs).filter(([k, v]) => v !== '' && !isNaN(parseFloat(v)) && IMPOSSIBLE[k]?.(parseFloat(v))).map(([k, v]) => `${PARAMETER_SPECS[k]?.name ?? k} ${v}`);
+        return ignored.length ? (
+          <div role="alert" className="mx-4 mt-4 p-3 rounded-lg border border-amber-500/50 bg-amber-500/10 text-amber-200 text-sm">
+            Not analysed, because no working gauge can show these values: {ignored.join('; ')}. Check the reading or the units.
+          </div>
+        ) : null;
+      })()}
       {/* Results Section */}
       <AnimatePresence>
         {showResults && results.length > 0 && (

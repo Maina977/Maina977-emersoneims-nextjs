@@ -536,7 +536,7 @@ const MODULES = [
   { id:'egress', group:'Architecture', tag:'b-arch',
     title:'Egress capacity (IBC 2021)',
     endpoint:'/api/arch/egress', method:'POST',
-    refs:['IBC 2021 §1004-1010','BS 9999','NFPA 101'],
+    refs:['IBC 2021 §1004.5, §1005.3, §1006.3.3, §1010.1.1'],
     fields:[
       {k:'occupancy_type', label:'Occupancy (IBC Table 1004.5)', type:'select',
         opts:['business','assembly','assembly_concentrated','classroom','mercantile','industrial','storage','residential'],
@@ -1227,6 +1227,7 @@ const LIVE_EPS = new Set([
   '/api/loads/wind/asce7','/api/loads/wind/eurocode','/api/loads/seismic/asce7-elf','/api/rc/beam/bending','/api/steel/bolt',
   '/api/geotech/bearing/terzaghi','/api/hydro/rational','/api/hydro/tc/kirpich','/api/hydro/runoff-coefficients',
   '/api/geotech/bearing/ec7','/api/geotech/pad-footing','/api/rc/beam/shear','/api/rc/deflection/span-depth','/api/loads/seismic/ec8-lfm',
+  '/api/arch/egress','/api/arch/ventilation','/api/arch/accessibility/check',
 ]);
 const isLive = (m) => LIVE_EPS.has(m.endpoint);
 function buildNav(){

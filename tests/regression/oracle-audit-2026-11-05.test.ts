@@ -110,3 +110,16 @@ describe('Oracle final round 2026-11-05', () => {
     expect(analyzeParameter('oilTemperature', 999)).toBeNull();
   });
 });
+
+describe('Oracle final scoring fixes', () => {
+  it('the Assistant keeps the HOT ALTERNATOR line', () => {
+    const d: any = diagnoseFromSymptoms({ symptoms: ['alternator overheating'] });
+    expect(JSON.stringify(d.safety || [])).toMatch(/HOT ALTERNATOR/);
+  });
+  it('no near-duplicate steps on DSE rows', () => {
+    for (const c of getAllFaultCodes().map(withSafety)) {
+      const k = (c.diagnosticSteps || []).map((s) => s.action.toLowerCase().replace(/[^a-z ]/g, '').split(/\s+/).slice(0, 7).join(' '));
+      expect(new Set(k).size).toBe(k.length);
+    }
+  });
+});

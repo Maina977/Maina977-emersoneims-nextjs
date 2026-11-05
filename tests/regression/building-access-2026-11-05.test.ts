@@ -26,3 +26,17 @@ describe('accessibility', () => {
     expect(run({}).error).toBeTruthy();
   });
 });
+
+describe('accessibility, second round', () => {
+  it('1:25 is a sloped walkway, not a ramp: no rise FAIL', () => {
+    const r = run({ jurisdiction: 'ad-m', ramp_going_m: 15, ramp_rise_mm: 600 });
+    expect(r.checks.some((c: any) => c.pass === false)).toBe(false);
+  });
+  it('ADA ramp width 915 mm is checked', () => {
+    const r = run({ jurisdiction: 'ada', ramp_going_m: 6, ramp_rise_mm: 450, ramp_width_mm: 800 });
+    expect(r.checks.find((c: any) => /405\.5/.test(c.check)).pass).toBe(false);
+  });
+  it('negative dimensions are refused', () => {
+    expect(run({ door_clear_width_mm: -900 }).error).toBeTruthy();
+  });
+});

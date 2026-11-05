@@ -8730,6 +8730,7 @@ const PRO_LIVE_EPS = new Set([
   '/api/loads/wind/asce7','/api/loads/wind/eurocode','/api/loads/seismic/asce7-elf','/api/rc/beam/bending','/api/steel/bolt',
   '/api/geotech/bearing/terzaghi','/api/hydro/rational','/api/hydro/tc/kirpich','/api/hydro/runoff-coefficients',
   '/api/geotech/bearing/ec7','/api/geotech/pad-footing','/api/rc/beam/shear','/api/rc/deflection/span-depth','/api/loads/seismic/ec8-lfm',
+  '/api/arch/egress','/api/arch/ventilation','/api/arch/accessibility/check',
 ]);
 function proIsLive(c){ return PRO_LIVE_EPS.has(c.ep); }
 function proTabLabel(c){ return c.title + (proIsLive(c) ? '' : ' <span style="color:#ffb74d;font-size:9px">· not online</span>'); }

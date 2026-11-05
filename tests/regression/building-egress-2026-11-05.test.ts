@@ -30,3 +30,18 @@ describe('egress', () => {
     expect((runCalc(egress, { occupancy_type: 'business' }) as any).error).toBeTruthy();
   });
 });
+
+describe('egress, second round', () => {
+  it('two exits need at least 813 mm each: 900 mm total fails', () => {
+    const r: any = runCalc(egress, { occupancy_type: 'business', floor_area_m2: 200, exits_provided: 2, total_exit_door_width_mm: 900 });
+    expect(r.overall).toMatch(/^FAIL/);
+  });
+  it('without stair width the verdict is not a bare PASS', () => {
+    const r: any = runCalc(egress, { occupancy_type: 'business', floor_area_m2: 1500, exits_provided: 2, total_exit_door_width_mm: 2000 });
+    expect(r.overall).toMatch(/^PARTIAL/);
+  });
+  it('impossible exits and widths are refused', () => {
+    expect((runCalc(egress, { occupancy_type: 'business', floor_area_m2: 200, exits_provided: 1.5 }) as any).error).toBeTruthy();
+    expect((runCalc(egress, { occupancy_type: 'business', floor_area_m2: 200, total_exit_door_width_mm: -5 }) as any).error).toBeTruthy();
+  });
+});

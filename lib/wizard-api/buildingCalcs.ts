@@ -169,11 +169,19 @@ export function egress(b: Body) {
   const exits = optN(b, 'exits_provided');
   const doorW = optN(b, 'total_exit_door_width_mm');
   const stairW = optN(b, 'total_stair_width_mm');
+  if (exits !== undefined && !(Number.isInteger(exits) && exits >= 1 && exits <= 100)) return bad('exits_provided must be a whole number from 1 to 100');
+  if (doorW !== undefined && !(doorW > 0 && doorW <= 100000)) return bad('total_exit_door_width_mm must be a positive width in mm');
+  if (stairW !== undefined && !(stairW > 0 && stairW <= 100000)) return bad('total_stair_width_mm must be a positive width in mm');
   if (exits !== undefined) checks.push({ check: 'Number of exits ≥ Table 1006.3.3', value: `${exits} ≥ ${exitsRequired}`, pass: exits >= exitsRequired });
   else notChecked.push('exits_provided not given, so the number of exits was not checked');
-  if (doorW !== undefined) checks.push({ check: 'Total exit door width ≥ §1005.3.2', value: `${doorW} ≥ ${otherMm} mm`, pass: doorW >= otherMm });
-  else notChecked.push('total_exit_door_width_mm not given, so door width was not checked');
+  if (doorW !== undefined) {
+    // Each exit door is at least 813 mm clear (§1010.1.1), so the total must
+    // also cover 813 mm per exit (audit 2026-11-05: 900 mm for 2 exits passed).
+    const need = Math.max(otherMm, 813 * (exits ?? exitsRequired));
+    checks.push({ check: `Total exit door width ≥ §1005.3.2 and 813 mm per door (§1010.1.1)`, value: `${doorW} ≥ ${need} mm`, pass: doorW >= need });
+  } else notChecked.push('total_exit_door_width_mm not given, so door width was not checked');
   if (stairW !== undefined) checks.push({ check: 'Total stair width ≥ §1005.3.1', value: `${stairW} ≥ ${stairMm} mm`, pass: stairW >= stairMm });
+  else notChecked.push(`total_stair_width_mm not given, so stair width was not checked (required ${stairMm} mm where exits use stairs)`);
   return {
     occupant_load: occupants,
     area_per_occupant_m2: r(m2PerOcc, 2),
@@ -237,6 +245,7 @@ export function ventilation(b: Body) {
   const Voz = Vbz / e.Ez;
   const checks: { check: string; value: string; pass: boolean }[] = [];
   const supplied = optN(b, 'outdoor_air_supplied_L_s');
+  if (supplied !== undefined && !(supplied >= 0 && supplied <= 1_000_000)) return bad('outdoor_air_supplied_L_s must be 0 or more');
   const notChecked: string[] = [];
   if (supplied !== undefined) checks.push({ check: 'Outdoor air supplied ≥ Voz', value: `${supplied} ≥ ${r(Voz, 1)} L/s`, pass: supplied >= Voz });
   else notChecked.push('outdoor_air_supplied_L_s not given, so the design airflow was not checked');
@@ -309,6 +318,9 @@ export function accessibility(b: Body) {
   const rampW = optN(all, 'ramp_width_mm');
   const landing = optN(all, 'ramp_landing_length_mm');
   const reach = optN(all, 'reach_height_mm');
+  for (const [k, v] of [['door_clear_width_mm', door], ['corridor_min_width_mm', corridor], ['ramp_going_m', going], ['ramp_rise_mm', rise], ['ramp_width_mm', rampW], ['ramp_landing_length_mm', landing], ['reach_height_mm', reach], ['ramp_slope_pct', slopePct]] as [string, number | undefined][]) {
+    if (v !== undefined && !(v >= 0 && v <= 100000)) return bad(`${k} must be 0 or more`);
+  }
   const checks: { check: string; value: string; pass: boolean }[] = [];
   const notChecked: string[] = [];
   if (door !== undefined) {
@@ -329,12 +341,18 @@ export function accessibility(b: Body) {
         else notChecked.push('ramp_going_m (AD M limits the gradient by the length of the flight)');
       }
     }
-    if (rise !== undefined) {
-      if (useAda) checks.push({ check: 'Rise per ramp run ≤ 760 mm (ADA §405.6)', value: `${rise} mm`, pass: rise <= 760 });
-      if (useAdm) checks.push({ check: 'Rise per flight ≤ 500 mm (AD M §1.26c)', value: `${rise} mm`, pass: rise <= 500 });
-    }
-    if (rampW !== undefined && useAdm) checks.push({ check: 'Ramp surface width ≥ 1500 mm (AD M §1.26e)', value: `${rampW} mm`, pass: rampW >= 1500 });
-    if (landing !== undefined && useAda) checks.push({ check: 'Ramp landing clear length ≥ 1525 mm (ADA §405.7.3)', value: `${landing} mm`, pass: landing >= 1525 });
+    // 1:20 or flatter is not a ramp: no ramp limits apply (audit 2026-11-05).
+    if (slope > 5) {
+      if (rise !== undefined) {
+        if (useAda) checks.push({ check: 'Rise per ramp run ≤ 760 mm (ADA §405.6)', value: `${rise} mm`, pass: rise <= 760 });
+        if (useAdm) checks.push({ check: 'Rise per flight ≤ 500 mm (AD M §1.26c)', value: `${rise} mm`, pass: rise <= 500 });
+      }
+      if (rampW !== undefined) {
+        if (useAda) checks.push({ check: 'Ramp clear width ≥ 915 mm (ADA §405.5)', value: `${rampW} mm`, pass: rampW >= 915 });
+        if (useAdm) checks.push({ check: 'Ramp surface width ≥ 1500 mm (AD M §1.26e)', value: `${rampW} mm`, pass: rampW >= 1500 });
+      } else notChecked.push('ramp_width_mm');
+      if (landing !== undefined && useAda) checks.push({ check: 'Ramp landing clear length ≥ 1525 mm (ADA §405.7.3)', value: `${landing} mm`, pass: landing >= 1525 });
+    } else checks.push({ check: 'Slope 1:20 (5%) or flatter: a sloped walkway, not a ramp; no ramp limits apply', value: `${r(slope, 2)}%`, pass: true });
   } else notChecked.push('ramp (give ramp_slope_pct, or ramp_going_m and ramp_rise_mm)');
   if (reach !== undefined) {
     if (useAda) checks.push({ check: 'Control height within forward reach 380-1220 mm (ADA §308.2.1)', value: `${reach} mm`, pass: reach >= 380 && reach <= 1220 });

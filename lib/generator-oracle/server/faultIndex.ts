@@ -247,7 +247,8 @@ export function withSafety(c: ControllerFaultCode): ControllerFaultCode {
   const touchesCoolant = (s: string) => /coolant level|top up|radiator cap|expansion tank|add coolant/i.test(s) && !/\bcool(ed)?\b.*(engine|first)|engine.*\bcool(ed)?\b|let .* cool/i.test(s);
   const seenStep = new Set<string>();
   const steps = (c.diagnosticSteps || [])
-    .filter((st) => { const k = String(st.action || '').trim().toLowerCase(); if (seenStep.has(k)) return false; seenStep.add(k); return true; })
+    // Near-duplicates too ("Record the alarm and check the event log" twice, worded apart).
+    .filter((st) => { const k = String(st.action || '').trim().toLowerCase().replace(/[^a-z ]/g, '').split(/\s+/).slice(0, 7).join(' '); if (seenStep.has(k)) return false; seenStep.add(k); return true; })
     .map((st) => (touchesCoolant(st.action) ? { ...st, action: `With the engine stopped and cool: ${st.action}` } : st));
   // One severity per J1939 code: a controller entry written as an SPN/FMI
   // takes the reference row's severity (2026-10-27 audit: SPN 94 FMI 1 and
@@ -262,7 +263,8 @@ export function withSafety(c: ControllerFaultCode): ControllerFaultCode {
     ...(failToStop ? { severity: 'critical' as typeof c.severity } : {}),
     // The generic one-liner goes once a specific warning is present.
     safetyWarnings: [...add, ...(c.safetyWarnings || []).filter((w) => !(add.length && GENERIC_SAFETY.test(w.trim())))],
-    diagnosticSteps: faultFirst(c, steps),
+    // Near-duplicates are dropped after the fault-specific checks are merged in.
+    diagnosticSteps: (() => { const seen = new Set<string>(); return (faultFirst(c, steps) || []).filter((st) => { const k = String(st.action || '').toLowerCase().replace(/[^a-z ]/g, '').split(/\s+/).slice(0, 7).join(' '); if (seen.has(k)) return false; seen.add(k); return true; }).map((st, i) => ({ ...st, step: i + 1 })) as ControllerFaultCode['diagnosticSteps']; })(),
     resetPathways: (c.resetPathways || []).map((p) => ({
       ...p,
       ...(p.requiresCondition ? { requiresCondition: p.requiresCondition.map(conditionText) } : {}),
@@ -729,7 +731,8 @@ export function searchIndex(opts: SearchOptions): SearchResponse {
   // electrical alarms on the page; "Fail to start" the other way round).
   if (typed && /[a-z]/i.test(typed) && !/\d/.test(typed) && !normalizeCodeQuery(typed)) {
     const byWords = searchByWords(typed, opts);
-    if (byWords.total > 0) return byWords;
+    // A safety notice is kept even when no alarm matches (audit 2026-11-05).
+    if (byWords.total > 0 || /^SAFETY FIRST/.test(byWords.notice || '')) return byWords;
     // Technicians' words the titles do not use ("surging", "overcrank"): retry
     // with the synonym (2026-10-29 audit: "surging" found nothing anywhere).
     const lower = typed.toLowerCase();
@@ -1249,6 +1252,9 @@ function rewritePhrases(s: string): string {
 
 export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   const topN = Math.max(1, Math.min(50, input.topN ?? 10));
+  // The words as typed, before rewriting: hazards are matched on these (audit
+  // 2026-11-05: "alternator overheating" lost its HOT ALTERNATOR line).
+  const typedRaw = [...(input.symptoms || []), input.alarmText || ''].join(' ').toLowerCase();
   input = { ...input, symptoms: (input.symptoms || []).map(rewritePhrases), alarmText: input.alarmText ? rewritePhrases(input.alarmText) : input.alarmText };
   const terms = Array.from(
     new Set(
@@ -1474,7 +1480,7 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   const safety: string[] = [];
   // Emergencies come first and are not left to keyword matching (audit
   // 2026-10-31: "runaway engine" and "fire in generator" had no warning).
-  const emergency = EMERGENCIES.filter(([re]) => re.test(typedText));
+  const emergency = EMERGENCIES.filter(([re]) => re.test(typedText) || re.test(typedRaw));
   for (const [, line] of emergency) if (!safety.includes(line)) safety.push(line);
   const addSafety = (lines: string[]) => { for (const l of lines) if (!safety.includes(l)) safety.push(l); };
   for (const [re, lines] of TOPIC_SAFETY) if (re.test(typedText) && !/voltage|current|frequency|phase|power/.test(re.source)) addSafety(lines);
