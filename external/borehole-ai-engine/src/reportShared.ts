@@ -275,6 +275,6 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
     drillMethod, surveyCost, permitCost, permitNote, completionCost, completionNote, gravelTons,
     kesPerUsd: KES_PER_USD,
     kes: fmtKESm,
-    cpmKES: kesRound(cpm),
+    cpmKES: Math.round((cpm * KES_PER_USD) / 100) * 100,
   };
 }

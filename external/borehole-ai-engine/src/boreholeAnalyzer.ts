@@ -933,7 +933,11 @@ export class BoreholeAnalyzer {
           if (used.length || warns.length) {
             this.waterQualityAnalyzer.refreshDerived(waterQuality);
             (waterQuality as any).measuredNearby = mq;
-            (waterQuality as any).regionalWarnings = [...warns, ...((waterQuality as any).regionalWarnings ?? [])];
+            // A province note saying fluoride is "not reliably elevated" is dropped
+            // when tests in the area exceed 1.5 mg/L (audit 2026-11-05, Kisumu).
+            const fArea = (waterQuality as any).fluorideAreaSurvey?.values ?? [];
+            const highArea = fArea.some((v: number) => v > 1.5) || (mq.fluoride?.over1_5 ?? 0) > 0;
+            (waterQuality as any).regionalWarnings = [...warns, ...(((waterQuality as any).regionalWarnings ?? []) as string[]).filter((w) => !(highArea && /not reliably elevated/i.test(String(w))))];
             if (used.length) waterQuality.dataSource = `MEASURED at boreholes within 25 km: ${used.join('; ')} [${mq.sources.join('; ')}]. Other parameters: ${waterQuality.dataSource}`;
           }
         }

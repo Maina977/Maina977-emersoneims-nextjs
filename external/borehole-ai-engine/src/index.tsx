@@ -5897,22 +5897,22 @@ const AIBoreholeAnalyzer: React.FC = () => {
               </div>
               {/* P50/P75/P90 Confidence Intervals */}
               <div style={{marginTop:20,background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.18)',borderRadius:12,padding:16}}>
-                <h4 style={{margin:'0 0 12px',color:'#fbbf24',fontSize:14}}>{'📊'} Cost Confidence Intervals (P10 {cost.confidence.p10Pct}% to P90 +{cost.confidence.p90Pct}% of the estimate{(result.soil as any)?.realSoilGrids ? ` for ${result.soil.type} soil (ISRIC SoilGrids)` : ' — soil type unknown until drilling'})</h4>
+                <h4 style={{margin:'0 0 12px',color:'#fbbf24',fontSize:14}}>{'📊'} Planning range around the tender-priced estimate ({cost.confidence.p10Pct}% to +{cost.confidence.p90Pct}%; set allowances, not a statistical spread{(result.soil as any)?.realSoilGrids ? ` for ${result.soil.type} soil (ISRIC SoilGrids)` : ' — soil type unknown until drilling'})</h4>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))',gap:12}}>
                   <div style={{padding:'12px 16px',borderRadius:8,background:'rgba(34,197,94,0.08)',border:'1px solid rgba(34,197,94,0.15)'}}>
-                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>P10 (Optimistic)</div>
+                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>Low (if conditions are easy)</div>
                     <div style={{fontSize:18,fontWeight:700,color:'#22c55e'}}>{fmtUSD(Math.round(ecoTotal * cost.confidence.p10 / cost.total))}</div>
                   </div>
                   <div style={{padding:'12px 16px',borderRadius:8,background:'rgba(56,189,248,0.08)',border:'1px solid rgba(56,189,248,0.15)'}}>
-                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>P50 (Base Estimate)</div>
+                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>Estimate (tender rates)</div>
                     <div style={{fontSize:18,fontWeight:700,color:'#38bdf8'}}>{fmtUSD(Math.round(ecoTotal * cost.confidence.p50 / cost.total))}</div>
                   </div>
                   <div style={{padding:'12px 16px',borderRadius:8,background:'rgba(251,191,36,0.08)',border:'1px solid rgba(251,191,36,0.15)'}}>
-                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>P75 (Likely Maximum)</div>
+                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>Allowance for surprises</div>
                     <div style={{fontSize:18,fontWeight:700,color:'#fbbf24'}}>{fmtUSD(Math.round(ecoTotal * cost.confidence.p75 / cost.total))}</div>
                   </div>
                   <div style={{padding:'12px 16px',borderRadius:8,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.15)'}}>
-                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>P90 (Worst Case)</div>
+                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>High (hard ground, extra depth)</div>
                     <div style={{fontSize:18,fontWeight:700,color:'#ef4444'}}>{fmtUSD(Math.round(ecoTotal * cost.confidence.p90 / cost.total))}</div>
                   </div>
                 </div>
