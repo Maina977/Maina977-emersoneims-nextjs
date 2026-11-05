@@ -31,6 +31,7 @@ import {
   runBayesianEnsemble,
   type EnsembleInput,
 } from './advancedHydroEngine';
+import { realGraceAt } from './advancedHydroEngine';
 import { classifyRockType, estimateWeatheringProfile, ROCK_PROPERTIES, type RockClassification } from './rockClassifier';
 import { advancedRockMapping } from './advancedRockMapper';
 import { applyLearningCorrections } from './feedbackLearningLoop';
@@ -601,6 +602,34 @@ export class BoreholeAnalyzer {
     // physics-based synthetic estimates so the report achieves 40/40 completion.
     // IMPORTANT: We track every fallback used so the UI can warn the user honestly.
     const fallbacksUsed: string[] = [];
+
+    // GRACE storage is a file shipped with the site: a network timeout in the
+    // Step 2 bundle must not drop it (audit 2026-11-05: Garissa lost its trend).
+    if (!graceData && hasCoords) {
+      try { graceData = (await realGraceAt(effectiveLat!, effectiveLon!)) ?? undefined; } catch { /* stays empty */ }
+    }
+    // The 20-year weather call did not answer: rainfall comes from the stored
+    // ERA5 2015-2024 baseline and the report says which service failed (audit
+    // 2026-11-05: rainfall and recharge vanished with no word).
+    if (hasCoords && !(Number(historicalData?.weather?.averageAnnualPrecipitation) > 0)) {
+      const kbW = await nearestKenyaBaseline(effectiveLat!, effectiveLon!, 80).catch(() => null);
+      const pW = Number(kbW?.climate?.precip_mm_yr);
+      if (kbW && pW > 0) {
+        historicalData = {
+          ...(historicalData || {}),
+          weather: {
+            ...(historicalData?.weather || {}),
+            averageAnnualPrecipitation: Math.round(pW), avgAnnualPrecip: Math.round(pW),
+            ...(kbW.climate!.temp_mean_c != null ? { averageTemperature: kbW.climate!.temp_mean_c } : {}),
+            source: `Stored ERA5 baseline for ${kbW.name} (${kbW.distance_km} km, ${kbW.climate!.period}): the live 20-year weather service did not answer`,
+            annualOnly: true,
+          },
+        };
+        fallbacksUsed.push(`20-year weather (ECMWF ERA5 via Open-Meteo) did not answer: rainfall ${Math.round(pW)} mm/yr is the stored ERA5 baseline for ${kbW.name} (${kbW.distance_km} km away, ${kbW.climate!.period}); monthly rainfall and the best season are not shown`);
+      } else {
+        fallbacksUsed.push('20-year weather (ECMWF ERA5 via Open-Meteo) did not answer: rainfall, recharge and the best drilling season are not estimated for this run');
+      }
+    }
 
     if (remoteSensing && !remoteSensing.climate) {
       // NO-GUESSWORK: inside Kenya, a failed climate API falls back to the
@@ -1903,11 +1932,15 @@ export class BoreholeAnalyzer {
       (hasGRACE ? 5 : 0)
     );
     // Data density: count of ALL data sources available (expanded from 7 to 11)
+    // Independent DATA sources only (audit 2026-11-05): the typed coordinates
+    // (GPS) are the question, not a source; SRTM and the DEM hydrology are one
+    // terrain source; the subsurface model is computed from the others.
     const dataSources = [
-      hasRealSoilGrids, hasGLDAS, hasSubsurface, hasBoreholeDB, hasHistorical,
-      hasElevation, gpsQuality > 0.5, hasGRACE, hasNearbyWells, hasDEM, hasVegProxy,
+      hasRealSoilGrids, hasGLDAS, hasBoreholeDB, hasHistorical,
+      hasElevation || hasDEM, hasGRACE, hasNearbyWells, hasVegProxy,
     ].filter(Boolean).length;
-    const dataDensityConf = Math.round(Math.min(100, (dataSources / 11) * 100));
+    const DATA_SOURCE_TOTAL = 8;
+    const dataDensityConf = Math.round(Math.min(100, (dataSources / DATA_SOURCE_TOTAL) * 100));
     // Water quality confidence: expanded with more sources
     const wqConf = Math.round(
       (hasRealSoilGrids ? 30 : 8) +
@@ -1932,8 +1965,9 @@ export class BoreholeAnalyzer {
     // Weight: 60% data-availability score, 40% ensemble score (ensemble has fewer sources evaluated)
     const blendedConfidence = Math.round(overallConf * 0.6 + ensembleConfidence * 0.4);
     // Apply field data boost (if any field measurements were provided)
-    // Desktop cap scales with data density: 8+ sources = 92%, 6-7 = 88%, <6 = 85%
-    desktopCap = dataSources >= 8 ? 92 : dataSources >= 6 ? 88 : 85;
+    // Desktop cap scales with data density: 6+ of 8 sources = 92%, 5 = 88%, fewer = 85%
+    // Same shares of the (now 8) independent sources as the old 8-of-11 and 6-of-11 steps.
+    desktopCap = dataSources >= 6 ? 92 : dataSources >= 5 ? 88 : 85;
     const totalConfidence = Math.min(blendedConfidence + fieldConfidenceBoost, isFieldValidated ? 98 : desktopCap);
 
     const confidenceMetrics = {
@@ -1944,19 +1978,16 @@ export class BoreholeAnalyzer {
       waterQuality: Math.min(wqConf + (fieldData?.labWaterAnalysis ? 30 : 0), isFieldValidated ? 98 : desktopCap),
       // Desktop cap scales with data density. Field validated = up to 98%.
       overall: totalConfidence,
-      methodology: `Confidence draws on ${dataSources} of 11 data sources that answered for this site: ${[
+      methodology: `Confidence draws on ${dataSources} of ${DATA_SOURCE_TOTAL} data sources that answered for this site: ${[
         hasRealSoilGrids ? 'SoilGrids' : null,
         hasGLDAS ? 'GLDAS/ERA5' : null,
-        hasSubsurface ? 'SubsurfaceModel' : null,
         hasBoreholeDB ? 'BoreholeDB' : null,
         hasHistorical ? 'ERA5/NASA rainfall' : null,
-        hasElevation ? 'SRTM' : null,
-        gpsQuality > 0.5 ? 'GPS' : null,
+        hasElevation || hasDEM ? 'terrain (elevation and drainage)' : null,
         hasGRACE ? 'GRACE-FO' : null,
         hasNearbyWells ? 'NearbyWells(field records/OSM/WPDx)' : null,
-        hasDEM ? 'DEM-Hydrology' : null,
         hasVegProxy ? 'VegetationGW' : null,
-      ].filter(Boolean).join(', ')}. ${ensembleResult ? `Data-source agreement: ${ensembleResult.sourceAgreement}.` : ''} Desktop analysis capped at ${desktopCap}% (scales with data density: 8+ sources=92%, 6-7=88%, <6=85%). Field data required for >92%.`,
+      ].filter(Boolean).join(', ')}. ${ensembleResult ? `Data-source agreement: ${ensembleResult.sourceAgreement}.` : ''} Desktop analysis capped at ${desktopCap}% (scales with data density: 6+ of 8 sources=92%, 5=88%, fewer=85%). Field data required for >92%.`,
     };
 
     // ═══ 10 ADVANCED FEATURE ENGINES ═══
@@ -2006,6 +2037,7 @@ export class BoreholeAnalyzer {
     try {
       if (hasCoords) {
         aquiferClassification = classifyAquiferType({
+          hydroProvince: (this as any)._hydroProvince,
           rockType: rockClassification?.primaryRockType,
           waterTableDepth_m: calibratedDepth,
           resistivity_ohmM: fieldData?.ertSurvey?.resistivityOhmM,

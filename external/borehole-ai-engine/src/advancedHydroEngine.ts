@@ -72,7 +72,7 @@ export interface GRACEData {
   /** True when the figures are real GRACE/GRACE-FO data, false for the soil-moisture stand-in. */
   isSatelliteGravity?: boolean;
   /** Groundwater storage (G3P): trend, its standard error, period, latest-12-month anomaly. */
-  groundwater?: { trend_cm_per_year: number; trendStdErr_cm_per_year: number; trend10yr_cm_per_year: number | null; anomalyLast12_cm: number; period: string; months: number; citation: string; monthlyUncertainty_cm: number | null };
+  groundwater?: { step?: { month: string; jump_cm: number }; trend_cm_per_year: number; trendStdErr_cm_per_year: number; trend10yr_cm_per_year: number | null; anomalyLast12_cm: number; period: string; months: number; citation: string; monthlyUncertainty_cm: number | null };
   /** Total water storage (GFZ GravIS): trends over the whole record and the GRACE-FO years. */
   totalStorage?: { trend_cm_per_year: number; trendStdErr_cm_per_year: number; trendGraceFO_cm_per_year: number | null; anomalyLast12_cm: number; period: string; months: number; citation: string };
   /** Monthly series at the site's cell, for charts: [YYYY-MM, groundwater cm | null, total cm | null]. */
@@ -87,6 +87,33 @@ export interface GRACEData {
  * 2026-10-30 audit: plain OLS on raw monthly GRACE treated 200+ correlated,
  * seasonal months as independent and understated the error several-fold.
  */
+/**
+ * A record that is flat, jumps once, and is flat again is a step, not a steady
+ * trend (audit 2026-11-05: Nairobi read "Rising +0.72 cm/yr" from a ~13 cm
+ * jump after the 2019 rains, while the record before was flat). Tries every
+ * split with 24+ months each side; reports the best one only when neither side
+ * has a clear trend of its own and the jump is several times the spread.
+ */
+export function detectStep(months: string[], values: (number | null)[]): { month: string; jump_cm: number } | null {
+  const n = months.length;
+  if (n < 60) return null;
+  const vals = values.map((v) => (typeof v === 'number' ? v : null));
+  const meanOf = (a: (number | null)[]) => { const x = a.filter((v): v is number => v !== null); return x.length ? x.reduce((s, v) => s + v, 0) / x.length : NaN; };
+  const sdOf = (a: (number | null)[]) => { const x = a.filter((v): v is number => v !== null); const mu = meanOf(x); return Math.sqrt(x.reduce((s, v) => s + (v - mu) ** 2, 0) / Math.max(1, x.length - 1)); };
+  const flat = (t: { slope: number; se: number } | null) => !!t && Math.abs(t.slope) <= 2 * t.se;
+  // The largest jump among splits where BOTH sides are flat.
+  let best: { i: number; jump: number } | null = null;
+  for (let i = 24; i <= n - 24; i++) {
+    const jump = meanOf(vals.slice(i)) - meanOf(vals.slice(0, i));
+    if (!Number.isFinite(jump) || (best && Math.abs(jump) <= Math.abs(best.jump))) continue;
+    if (flat(olsTrend(months.slice(0, i), vals.slice(0, i))) && flat(olsTrend(months.slice(i), vals.slice(i)))) best = { i, jump };
+  }
+  if (!best) return null;
+  const spread = Math.max(sdOf(vals.slice(0, best.i)), sdOf(vals.slice(best.i)));
+  if (Math.abs(best.jump) < 2 * spread) return null;
+  return { month: months[best.i], jump_cm: Math.round(best.jump * 10) / 10 };
+}
+
 export function olsTrend(months: string[], values: (number | null)[]): { slope: number; se: number; n: number; nEff: number } | null {
   const x: number[] = [], y: number[] = [], mo: number[] = [];
   months.forEach((m, i) => {
@@ -121,7 +148,7 @@ export function olsTrend(months: string[], values: (number | null)[]): { slope: 
  * GFZ GravIS RL06 total water storage, both open with no token). Null outside
  * Kenya's grid or when the file cannot be read.
  */
-async function realGraceAt(lat: number, lon: number): Promise<GRACEData | null> {
+export async function realGraceAt(lat: number, lon: number): Promise<GRACEData | null> {
   const { loadLocalJson } = await import('./localData');
   const g = await loadLocalJson<any>('/data/kenya-grace.json');
   if (!g?.gwsa?.cells || !g?.tws?.cells) return null;
@@ -163,7 +190,8 @@ async function realGraceAt(lat: number, lon: number): Promise<GRACEData | null> 
     const m = g.gwsa.months as string[];
     const i10 = m.length - 120;
     const t10 = i10 > 0 ? olsTrend(m.slice(i10), gw.slice(i10)) : null;
-    if (t) groundwater = { trend_cm_per_year: r1(t.slope), trendStdErr_cm_per_year: r1(t.se), trend10yr_cm_per_year: t10 ? r1(t10.slope) : null, anomalyLast12_cm: r1(last12(gw)), period: `${m[0]} to ${m[m.length - 1]}`, months: t.n, citation: g.gwsa.citation, monthlyUncertainty_cm: g.gwsa.meanUncertainty_cm?.[key] ?? null };
+    const step = t ? detectStep(m, gw) : null;
+    if (t) groundwater = { ...(step ? { step } : {}), trend_cm_per_year: r1(t.slope), trendStdErr_cm_per_year: r1(t.se), trend10yr_cm_per_year: t10 ? r1(t10.slope) : null, anomalyLast12_cm: r1(last12(gw)), period: `${m[0]} to ${m[m.length - 1]}`, months: t.n, citation: g.gwsa.citation, monthlyUncertainty_cm: g.gwsa.meanUncertainty_cm?.[key] ?? null };
   }
   let totalStorage: GRACEData['totalStorage'];
   let seasonal = 0;

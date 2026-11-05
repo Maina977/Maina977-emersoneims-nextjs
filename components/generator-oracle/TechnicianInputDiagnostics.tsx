@@ -174,15 +174,46 @@ interface DiagnosticResult {
   relatedParameters: string[];
 }
 
+export type AcSystem = '50-230' | '50-220' | '60-120' | '60-127' | '60-277';
+export const AC_SYSTEMS: Record<AcSystem, { label: string; hz: number; ln: number; ll: number }> = {
+  '50-230': { label: '50 Hz, 230/400 V (Kenya, East Africa)', hz: 50, ln: 230, ll: 400 },
+  '50-220': { label: '50 Hz, 220/380 V', hz: 50, ln: 220, ll: 380 },
+  '60-120': { label: '60 Hz, 120/208 V', hz: 60, ln: 120, ll: 208 },
+  '60-127': { label: '60 Hz, 127/220 V', hz: 60, ln: 127, ll: 220 },
+  '60-277': { label: '60 Hz, 277/480 V', hz: 60, ln: 277, ll: 480 },
+};
+/** Bands around the chosen system's nominal: normal +/-4 %, warning +/-8 %, critical +/-13 %. */
+function band(nom: number) {
+  const r = (x: number) => Math.round(x * 10) / 10;
+  return { normalMin: r(nom * 0.96), normalMax: r(nom * 1.04), warningLow: r(nom * 0.92), warningHigh: r(nom * 1.08), criticalLow: r(nom * 0.87), criticalHigh: r(nom * 1.13) };
+}
+function specFor(key: string, spec: ParameterSpec, ac: AcSystem): ParameterSpec {
+  const sys = AC_SYSTEMS[ac];
+  if (key === 'frequency') {
+    const f = sys.hz;
+    return { ...spec, normalMin: f - 0.5, normalMax: f + 0.5, warningLow: f - 1, warningHigh: f + 1, criticalLow: f - 3, criticalHigh: f + 3, description: `Generator output frequency (${f} Hz system)` };
+  }
+  if (key === 'rpm') {
+    const n = sys.hz === 60 ? 1800 : 1500;
+    return { ...spec, normalMin: n - 20, normalMax: n + 20, warningLow: n - 50, warningHigh: n + 50, criticalLow: n - 100, criticalHigh: n + 100, description: `Engine speed (${n} RPM for a 4-pole ${sys.hz} Hz set)` };
+  }
+  if (key === 'voltageL1N') return { ...spec, ...band(sys.ln), description: `Phase to neutral voltage (${sys.ln} V nominal)` };
+  if (key === 'voltageL1L2') return { ...spec, ...band(sys.ll), description: `Phase to phase voltage (${sys.ll} V nominal)` };
+  return spec;
+}
+
 // Readings no gauge can show are a typing error, not a diagnosis (audit 2026-10-31).
 const IMPOSSIBLE: Record<string, (v: number) => boolean> = {
   oilPressure: (v) => v < 0, coolantTemp: (v) => v < -40 || v > 300, batteryVoltage: (v) => v < 0 || v > 60,
   rpm: (v) => v < 0 || v > 5000, powerFactor: (v) => v < 0 || v > 1, loadPercent: (v) => v < 0 || v > 200,
+  frequency: (v) => v < 0 || v > 100, voltageL1N: (v) => v < 0 || v > 1000, voltageL1L2: (v) => v < 0 || v > 1500,
+  currentL1: (v) => v < 0, fuelLevel: (v) => v < 0 || v > 100,
 };
-function analyzeParameter(paramKey: string, value: number, batterySystem: '12' | '24' = '24'): DiagnosticResult | null {
+export function analyzeParameter(paramKey: string, value: number, batterySystem: '12' | '24' = '24', ac: AcSystem = '50-230'): DiagnosticResult | null {
   let spec = PARAMETER_SPECS[paramKey];
   if (!spec || value === null || value === undefined || isNaN(value)) return null;
   if (IMPOSSIBLE[paramKey]?.(value)) return null;
+  spec = specFor(paramKey, spec, ac);
   // The technician says which bank it is: guessing from the voltage called 12.6 V
   // normal on a badly discharged 24 V set (re-audit 2026-10-31).
   if (paramKey === 'batteryVoltage' && batterySystem === '12') {
@@ -675,6 +706,26 @@ function analyzeParameter(paramKey: string, value: number, batterySystem: '12' |
       }
       break;
 
+    case 'rpm': {
+      const nominal = (spec.normalMin + spec.normalMax) / 2;
+      if (status === 'normal') {
+        message = `NORMAL: Engine speed ${value} RPM is right for this ${nominal === 1800 ? '60' : '50'} Hz set.`;
+        immediateActions = ['No action required'];
+      } else if (value > nominal) {
+        message = `${status === 'critical' ? 'CRITICAL' : 'WARNING'}: Engine speed ${value} RPM is above the ${nominal} RPM this set should run at.`;
+        possibleCauses = ['Governor or actuator set too high or sticking', 'Speed sensor (MPU) reading wrong', 'Load rejected suddenly', 'Wrong frequency selected on the controller'];
+        immediateActions = status === 'critical' ? ['Stop the engine with the emergency stop and keep clear of the engine and alternator', 'Do not restart until the governor and fuel control are checked'] : ['Check the governor speed setting and actuator linkage', 'Compare with a hand tachometer'];
+        longTermFixes = ['Calibrate the governor', 'Check the speed sensor gap and signal'];
+      } else {
+        message = `${status === 'critical' ? 'CRITICAL' : 'WARNING'}: Engine speed ${value} RPM is below the ${nominal} RPM this set should run at.`;
+        possibleCauses = ['Load above the set rating', 'Blocked fuel or air filters', 'Air in the fuel', 'Governor or actuator weak or mis-set'];
+        immediateActions = ['Reduce the load', 'Check fuel and air filters', 'Check the governor response'];
+        longTermFixes = ['Service the fuel system', 'Review the load against the rating'];
+      }
+      relatedParameters = ['frequency', 'loadPercent'];
+      break;
+    }
+
     default:
       if (status === 'normal') {
         message = `NORMAL: ${spec.name} at ${value} ${spec.unit} is within operating range.`;
@@ -713,10 +764,10 @@ interface TechnicianInputDiagnosticsProps {
 }
 
 // Readings where the first action is to stop (re-audit 2026-10-31).
-function withStopAdvice(key: string, value: number, r: DiagnosticResult | null): DiagnosticResult | null {
+function withStopAdvice(key: string, value: number, r: DiagnosticResult | null, ac: AcSystem = '50-230'): DiagnosticResult | null {
   if (!r) return r;
-  if (key === 'rpm' && value > 1600) {
-    return { ...r, message: `Engine speed ${value} RPM is above a 50 Hz set's 1500 RPM. On a 60 Hz set, 1800 RPM is normal; on a 50 Hz set this is overspeed.`, immediateActions: ['On a 50 Hz set: stop the engine with the emergency stop and do not restart until the governor and fuel control are checked.', 'Keep clear of the engine and alternator while it is running fast.'] };
+  if (key === 'rpm' && AC_SYSTEMS[ac].hz === 50 && value > 1600) {
+    return { ...r, message: `Engine speed ${value} RPM is above a 50 Hz set's 1500 RPM: this is overspeed. (If this is really a 60 Hz set, choose 60 Hz above.)`, possibleCauses: ['Governor or actuator set too high or sticking', 'Speed sensor (MPU) reading wrong', 'Wrong frequency selected on the controller'], immediateActions: ['On a 50 Hz set: stop the engine with the emergency stop and do not restart until the governor and fuel control are checked.', 'Keep clear of the engine and alternator while it is running fast.'] };
   }
   if (/^voltage/.test(key) && value === 0) {
     return { ...r, message: 'No output voltage.', immediateActions: ['Isolate the load before testing: lethal voltage can return without warning.', 'Check engine speed, the breaker and fuses, then the AVR and residual magnetism. Qualified electrician only.'] };
@@ -728,6 +779,7 @@ export default function TechnicianInputDiagnostics({ className = '' }: Technicia
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [batterySystem, setBatterySystem] = useState<'12' | '24'>('24');
+  const [acSystem, setAcSystem] = useState<AcSystem>('50-230');
 
   const handleInputChange = (key: string, value: string) => {
     setInputs(prev => ({ ...prev, [key]: value }));
@@ -748,10 +800,10 @@ export default function TechnicianInputDiagnostics({ className = '' }: Technicia
       .map(([key, value]) => {
         const numValue = parseFloat(value);
         if (isNaN(numValue)) return null;
-        return withStopAdvice(key, numValue, analyzeParameter(key, numValue, batterySystem));
+        return withStopAdvice(key, numValue, analyzeParameter(key, numValue, batterySystem, acSystem), acSystem);
       })
       .filter((r): r is DiagnosticResult => r !== null);
-  }, [inputs, showResults, batterySystem]);
+  }, [inputs, showResults, batterySystem, acSystem]);
 
   const criticalCount = results.filter(r => r.status === 'critical').length;
   const warningCount = results.filter(r => r.status === 'warning').length;
@@ -782,6 +834,11 @@ export default function TechnicianInputDiagnostics({ className = '' }: Technicia
           <select value={batterySystem} onChange={(e) => setBatterySystem(e.target.value as '12' | '24')} className="ml-2 bg-slate-800 text-white rounded px-2 py-1">
             <option value="24">24 V</option>
             <option value="12">12 V</option>
+          </select>
+        </label>
+        <label className="block text-sm text-slate-300 mb-3">Generator output system{' '}
+          <select value={acSystem} onChange={(e) => setAcSystem(e.target.value as AcSystem)} className="ml-2 bg-slate-800 text-white rounded px-2 py-1">
+            {(Object.keys(AC_SYSTEMS) as AcSystem[]).map((k) => <option key={k} value={k}>{AC_SYSTEMS[k].label}</option>)}
           </select>
         </label>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">

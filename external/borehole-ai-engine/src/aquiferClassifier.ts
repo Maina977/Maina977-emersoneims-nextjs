@@ -7,6 +7,8 @@
 /* ── Types ─────────────────────────────────────────────────── */
 
 export interface AquiferClassificationInput {
+  /** Kenya hydrogeological province (kenyaHydroPriors): BASEMENT, VOLCANIC, COASTAL, SEDIMENT_NE, ALLUVIAL. */
+  hydroProvince?: string;
   latitude: number;
   longitude: number;
   rockType?: string;
@@ -235,6 +237,18 @@ export function classifyAquiferType(input: AquiferClassificationInput): AquiferC
   const scores: Record<AquiferType['type'], number> = {
     unconfined: 0, confined: 0, 'semi-confined': 0, fractured_rock: 0, perched: 0, karst: 0,
   };
+
+  // ── 0. Hydrogeological province (audit 2026-11-05: every site read
+  // "fractured_rock", including Lodwar's alluvium, Garissa's sands and the
+  // coral limestone at Mombasa). The province seeds the classification; rock
+  // and geophysics evidence below then refine it.
+  const prov = String(input.hydroProvince || '').toUpperCase();
+  if (prov === 'ALLUVIAL') { scores.unconfined += 8; scores['semi-confined'] += 2; }
+  else if (prov === 'SEDIMENT_NE') { scores.unconfined += 5; scores['semi-confined'] += 4; }
+  else if (prov === 'COASTAL') { scores.karst += 6; scores.unconfined += 4; }
+  else if (prov === 'BASEMENT') scores.fractured_rock += 3;
+  else if (prov === 'VOLCANIC') scores.fractured_rock += 2;
+  if (prov) evidence.push({ source: 'Hydrogeological province', supports: prov === 'ALLUVIAL' ? 'unconfined (alluvium)' : prov === 'SEDIMENT_NE' ? 'unconfined/semi-confined (sediments)' : prov === 'COASTAL' ? 'karst/unconfined (coastal limestone and sands)' : 'fractured_rock (crystalline or volcanic)', weight: prov === 'ALLUVIAL' ? 8 : prov === 'COASTAL' ? 6 : prov === 'SEDIMENT_NE' ? 5 : 3 });
 
   // ── 1. Rock type evidence ──────────────────────────────
   const rock = (input.rockType || '').toLowerCase();

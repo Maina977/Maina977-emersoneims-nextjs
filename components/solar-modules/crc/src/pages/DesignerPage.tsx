@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useRouter } from 'next/navigation';
 import { useSolarStore } from '../services/store';
 import { autoDesign, equipment } from '../services/api';
+import { estimateInstalledCost, gridSaving } from '@/lib/solar/sizing';
 
 /**
  * DesignerPage — real auto-designer. Pulls site + monthly consumption from the
@@ -90,6 +91,7 @@ const DesignerPage: React.FC = () => {
   const site = useSolarStore(s => s.site);
   const metrics = useSolarStore(s => s.metrics);
   const design = useSolarStore(s => s.design);
+  const financial = useSolarStore(s => s.financial);
   const updateDesign = useSolarStore(s => s.updateDesign);
   const updateSite = useSolarStore(s => s.updateSite);
   const updateMetrics = useSolarStore(s => s.updateMetrics);
@@ -140,13 +142,29 @@ const DesignerPage: React.FC = () => {
         tiltDeg: design.tiltDeg ?? 10,
         azimuthDeg: site.roofAzimuthDeg ?? design.azimuthDeg ?? 0,
         targetSpecificYieldKwhPerKwp: Math.round(psh * 365 * 0.8),
+        needsBattery: (design.systemType ?? (design.batteryKwh > 0 ? 'hybrid' : 'grid-tied')) !== 'grid-tied',
       });
       const raw = r?.data || r;
       const s = raw?.summary;
       const d = s ? { ...raw, systemKw: s.arrayKwp, panelCount: s.panelCount, panelW: s.panelCount > 0 ? Math.round((s.arrayKwp * 1000) / s.panelCount) : undefined, inverterKw: s.inverterTotalAcKw ?? s.inverterAcKw, batteryKwh: s.batteryKwh, annualKwh: s.estimatedAnnualYieldKwh } : raw;
-      // Auto-design returns equipment, not prices: keep the calculator's cost and
-      // saving rather than overwrite them with 0, which blocked every proposal
-      // export (re-audit 2026-10-31).
+      // Auto-design returns equipment, not prices. The new equipment is priced on
+      // the calculator's own rates and its saving recalculated, so the proposal
+      // never shows one system's price beside another's equipment (audit
+      // 2026-11-05: 3.48 kWp kept the calculator's KES 696,000).
+      const type = design.systemType ?? (design.batteryKwh > 0 ? 'hybrid' : 'grid-tied');
+      const battKwh = d?.batteryKwh ?? design.batteryKwh ?? 0;
+      if (d?.systemKw && !(Number(d?.capexKes) > 0)) {
+        d.capexKes = estimateInstalledCost(Number(d.systemKw), Number(d.inverterKw) || 0, Number(battKwh) || 0, type).midKes;
+        const annualKwh = Number(d.annualKwh) || 0;
+        const oldAnnual = Number(metrics.annualProduction) || 0;
+        const tariff = Number(site.tariffKesPerKwh) || undefined;
+        const yearSaving = type === 'off-grid'
+          // Diesel displaced scales with the energy delivered.
+          ? (oldAnnual > 0 ? (Number(financial.year1SavingsKes) || 0) * Math.min(1.5, annualKwh / oldAnnual) : Number(financial.year1SavingsKes) || 0)
+          : gridSaving({ type, annualEnergyKwh: annualKwh, annualConsumptionKwh: consumption * 12, batteryKwh: Number(battKwh) || 0, tariffKesPerKwh: tariff }).annualSavingKes;
+        d.monthlySavingKes = Math.round(yearSaving / 12);
+        d.paybackYears = yearSaving > 0 ? Math.round((d.capexKes / yearSaving) * 10) / 10 : 0;
+      }
       const priced = Number(d?.capexKes) > 0;
       const bomLines = d?.bom || d?.bill || [];
       setBom(Array.isArray(bomLines) ? bomLines : []);

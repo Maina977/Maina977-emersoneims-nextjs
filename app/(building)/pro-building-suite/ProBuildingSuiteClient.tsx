@@ -145,7 +145,7 @@ export default function ProBuildingSuiteClient() {
       )}
       <iframe
         ref={iframeRef}
-        src="/eims-building-suite-v20261031.html"
+        src="/eims-building-suite-v20261105.html"
         title="EMERSON EIMS Building Suite Pro"
         onLoad={handleIframeLoad}
         loading="eager"

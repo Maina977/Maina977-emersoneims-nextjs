@@ -53,7 +53,9 @@
   .note{padding:10px;border:1px solid var(--line);background:#101b33;border-radius:8px;white-space:pre-wrap;line-height:1.5}
   .ref{font-size:11px;color:var(--mute);margin-top:4px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+  @media(max-width:980px){.grid2{grid-template-columns:minmax(0,1fr)}}
+  .grid2>.card{min-width:0}
+  @media(max-width:700px){nav button{min-height:44px}}
   /* Printing a calculation (audit 2026-10-31: no print styles, dark, form off the page). */
   @media print{
     html,body{height:auto!important;background:#fff!important;color:#000!important}
@@ -61,6 +63,8 @@
     main{display:block!important;height:auto!important}
     main *{color:#000!important;background:transparent!important;box-shadow:none!important;overflow:visible!important;max-height:none!important;max-width:100%!important}
     .grid2{display:block!important}
+    .pmeta{display:none!important}
+    .printhead{display:block!important;font-size:11px;margin-bottom:6px;white-space:pre-wrap}
     .card{border:1px solid #999!important;margin-bottom:8px;page-break-inside:auto}
     input,select,textarea{border:1px solid #999!important;width:100%!important}
     table{font-size:8px!important;table-layout:fixed;width:100%!important;word-break:break-word}
@@ -273,7 +277,7 @@ const MODULES = [
       {k:'fu_ply_MPa', label:'fu ply (MPa)', type:'number', def:410},
       {k:'e1_mm', label:'e1 (mm)', type:'number', def:30},
       {k:'p1_mm', label:'p1 (mm)', type:'number', def:60},
-      {k:'single_lap_one_row', label:'Single-lap joint with one bolt row? (limits bearing, §3.6.1(10))', type:'select', opts:['false','true'], def:'false'},
+      {k:'single_lap_one_row', label:'Single-lap joint with one bolt row? (limits bearing, §3.6.1(10); choose false only for double-lap or several rows)', type:'select', opts:['true','false'], def:'true'},
       {k:'e2_mm', label:'e2 edge distance (mm; sets k1)', type:'number', def:35},
       {k:'p2_mm', label:'p2 gauge (mm; blank = one line)', type:'number', def:''},
       {k:'exposed_to_weather', label:'Steel exposed to weather', type:'select', opts:[false,true], def:false},
@@ -1247,6 +1251,10 @@ function show(id){
     <p class="sub"><span class="badge ${m.tag}">${m.group}</span><span class="tool-hint">Enter your parameters, then Run.</span></p>
     <div class="grid2">
       <div class="card">
+        <div class="pmeta" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:8px">
+          <input id="meta_project" placeholder="Project" aria-label="Project"><input id="meta_engineer" placeholder="Engineer" aria-label="Engineer"><input id="meta_ref" placeholder="Reference" aria-label="Reference">
+        </div>
+        <div class="printhead" style="display:none"></div>
         <form id="frm">${m.fields.map(renderField).join('')}</form>
         <button class="act" id="run">Run</button>
         <button class="act ghost" id="clear">Clear</button>
@@ -1276,10 +1284,16 @@ function show(id){
     const out = $('#out'); if(out.getAttribute('data-has-result')==='1' || window.__inFlight){ window.__inFlight = false; out.removeAttribute('data-has-result'); out.innerHTML = '<div class="note">Inputs changed. Press Run for a result that matches them.</div>'; }
   };
   $('#frm').addEventListener('input', onEdit); $('#frm').addEventListener('change', onEdit);
-  $('#resetInputs').onclick = ()=>{ const s = memGet(); delete s[m.endpoint]; try{ sessionStorage.setItem(memKey, JSON.stringify(s)); }catch(err){} for(const f of m.fields){ const el = $(`#f_${f.k}`); if(el && f.def !== undefined) el.value = f.def; } const o = $('#out'); o.removeAttribute('data-has-result'); o.innerHTML = '<div class="note">Inputs reset. Press Run.</div>'; };
+  $('#resetInputs').onclick = ()=>{ window.__runId = (window.__runId||0) + 1; window.__inFlight = false; const s = memGet(); delete s[m.endpoint]; try{ sessionStorage.setItem(memKey, JSON.stringify(s)); }catch(err){} for(const f of m.fields){ const el = $(`#f_${f.k}`); if(el && f.def !== undefined) el.value = f.def; } const o = $('#out'); o.removeAttribute('data-has-result'); o.innerHTML = '<div class="note">Inputs reset. Press Run.</div>'; };
   $('#clear').onclick = ()=>{ $('#out').innerHTML = '<div class="note">Cleared.</div>'; };
+  // Project details are kept for the visit and printed at the top (audit 2026-11-05).
+  for (const id of ['meta_project','meta_engineer','meta_ref']) { const el = $('#'+id); if(!el) continue; try{ el.value = localStorage.getItem('eims-console-'+id) || ''; }catch(err){} el.addEventListener('input', ()=>{ try{ localStorage.setItem('eims-console-'+id, el.value); }catch(err){} }); }
 }
 
+window.addEventListener('beforeprint', ()=>{
+  const v = (id)=>{ const el=document.getElementById(id); return el && el.value.trim() ? el.value.trim() : '-'; };
+  document.querySelectorAll('.printhead').forEach((h)=>{ h.textContent = 'Project: '+v('meta_project')+'    Engineer: '+v('meta_engineer')+'    Reference: '+v('meta_ref')+'\nPrinted '+new Date().toLocaleString()+'. Check this calculation before relying on it.'; });
+});
 function renderField(f){
   const id = `f_${f.k}`;
   if(f.type==='select'){
@@ -1356,9 +1370,50 @@ const UNIT_LABELS = { psf:'psf', Pa:'Pa', kPa:'kPa', MPa:'MPa', kN:'kN', kNm:'kN
 const KEY_LABELS = { Asw_over_s_required_mm2_per_mm:'Links required Asw/s (mm²/mm)', Asw_over_s_min_mm2_per_mm:'Minimum links Asw/s (mm²/mm)', rho_kg_m3:'Air density ρ (kg/m³)', qp_kPa:'Peak velocity pressure qp (kPa)', alpha_v:'αv', alpha_b:'αb', alpha_d:'αd', total_absorption_m2_sabin:'Total absorption (m² Sabine)', datetime_utc:'Date/time (UTC)', x_mm:'x (mm)', z_mm:'z (mm)', qz_psf:'qz (psf)', qz_Pa:'qz (Pa)', qp_Pa:'qp (Pa)', fcd_MPa:'fcd (MPa)', fyd_MPa:'fyd (MPa)', Kz:'Kz', Cs:'Cs', T_s:'T (s)', Fv_Rd_kN:'Fv,Rd (kN)', Ft_Rd_kN:'Ft,Rd (kN)', Fb_Rd_kN:'Fb,Rd (kN)', Bp_Rd_kN:'Bp,Rd (kN)', M_Rd_kNm:'M,Rd (kNm)', As_min_mm2:'As,min (mm²)', As_required_mm2:'As,req (mm²)', mean_alpha:'Mean absorption ᾱ', T60_s:'T60 (s)',
   // Shear and deflection (2026-10-30 re-audit: "V Rd c", "L over d allowed").
   V_Rd_c_kN:'V_Rd,c without links (kN)', V_Rd_max_kN:'V_Rd,max strut limit (kN)', V_Rd_s_kN:'V_Rd,s links (kN)', V_Rd_kN:'V_Rd (kN)', cot_theta:'cot θ', l_over_d_allowed:'Allowed span/depth', l_over_d_actual:'Actual span/depth', basic_l_over_d:'Basic span/depth (Eq. 7.16)', rho_pct:'ρ (%)', rho0_pct:'ρ0 (%)', utilisation:'Utilisation (effect / resistance)', B_m:'Footing width B (m)', sizing_basis:'Sizing basis', governing_combination:'Governing combination', sliding_R_d_kN:'Sliding resistance R_h,d (kN)', H_Ed_kN:'H_Ed (kN)', sliding_utilisation:'Sliding utilisation', bearing_not_possible:'Bearing not possible (H too large)' };
+const SUITE_LABELS = {
+  // 2026-10-29 audit: suffix parsing produced "Rho kg 1.25 m³", "D 434 mm"
+  // and "Asw over s required mm2 per 0.454 mm".
+  rho_kg_m3:'Air density ρ', co:'Orography factor co', z_used_m:'Height used z', d_mm:'Effective depth d',
+  Asw_over_s_required_mm2_per_mm:'Links required Asw/s', Asw_over_s_min_mm2_per_mm:'Minimum links Asw/s',
+  size_factor_k:'Size factor k', structural_system_K:'Structural system factor K', rho_l:'Tension steel ratio ρl',
+  M_Ed_kNm_per_m:'Moment at column face (per metre)', As_required_mm2_per_m:'Steel required (per metre)', As_min_mm2_per_m:'Minimum steel (per metre)',
+  punching_perimeter_a_mm:'Worst punching perimeter a', not_checked:'Not checked',
+  Bp_Rd_kN:'Punching resistance Bp,Rd', C_min:'C min', C_max:'C max', T60_s:'Reverberation time T60', total_absorption_m2_sabin:'Total absorption', mean_alpha:'Mean absorption ᾱ', datetime_utc:'Date/time (UTC)',
+  qz_psf:'Velocity pressure qz', qz_Pa:'Velocity pressure qz', qp_Pa:'Peak velocity pressure qp', qp_kPa:'Peak velocity pressure qp',
+  Kz:'Exposure coefficient Kz', GCpi:'Internal pressure coefficient GCpi', Kd_for_pressure_equations:'Kd (for pressure equations)',
+  vb_ms:'Basic wind velocity vb', vm_ms:'Mean wind velocity vm', Iv:'Turbulence intensity Iv', cr:'Roughness factor cr', kr:'Terrain factor kr',
+  T_s:'Period T', Cs:'Seismic response coefficient Cs', V_kN:'Base shear V', governing:'Governing equation',
+  // One label for every utilisation (bending M_Ed/M_Rd, bearing V_Ed/R_d);
+  // "M_Ed/M_Rd" was shown on bearing results (2026-10-30 audit).
+  M_Rd_kNm:'Moment resistance M_Rd', utilisation:'Utilisation (design effect / resistance)', As_required_mm2:'Steel required As,req', As_min_mm2:'Minimum steel As,min',
+  B_m:'Footing width B', plan_area_m2:'Plan area', bearing_pressure_sls_kPa:'Bearing pressure (SLS)', sizing_basis:'Sizing basis',
+  v_Rd_c_MPa:'Concrete shear stress resistance v_Rd,c', v_Ed_one_way_MPa:'One-way shear stress v_Ed', v_Ed_punching_MPa:'Punching shear stress v_Ed',
+  v_Rd_punching_MPa:'Punching resistance v_Rd (2d/a)', v_Ed_column_face_MPa:'Shear stress at column face v_Ed', v_Rd_max_MPa:'Maximum shear stress v_Rd,max',
+  q_Rd_kPa:'Design bearing resistance q_Rd', R_Rd_kN:'Design resistance R_d', V_Ed_kN:'Design vertical load V_Ed', H_Ed_kN:'Design horizontal load H_Ed',
+  sliding_R_d_kN:'Sliding resistance R_h,d', sliding_utilisation:'Sliding utilisation H_Ed/R_h,d', governing_combination:'Governing combination',
+  q_overburden_kPa:'Overburden pressure q′', phi_d_deg:'Design friction angle φ′d', c_d_kPa:'Design cohesion c′d', cu_d_kPa:'Design undrained strength cu,d',
+  Nc:'Nc', Nq:'Nq', sc:'Shape factor sc', sq:'Shape factor sq', sgamma:'Shape factor sγ', ic:'Inclination factor ic', iq:'Inclination factor iq', igamma:'Inclination factor iγ',
+  Fb_Rd_end_bolt_kN:'Bearing resistance, end bolt', Fb_Rd_inner_bolt_kN:'Bearing resistance, inner bolt', Fb_Rd_single_lap_limit_kN:'Single-lap bearing limit', k1:'Factor k1',
+  method_permitted:'Lateral force method permitted', F_b_kN:'Base shear F_b',
+  V_Rd_c_kN:'Shear resistance without links V_Rd,c', V_Rd_max_kN:'Strut crushing limit V_Rd,max', V_Rd_s_kN:'Link resistance V_Rd,s', V_Rd_kN:'Shear resistance V_Rd',
+  cot_theta:'Strut angle cot θ', V_Ed_over_V_Rd_c:'V_Ed against V_Rd,c', Asw_over_s_required_mm2_per_mm:'Links required Asw/s',
+  l_over_d_allowed:'Allowed span/depth', l_over_d_actual:'Actual span/depth', basic_l_over_d:'Basic span/depth (Eq. 7.16)',
+  rho_pct:'Tension steel ratio ρ', rho0_pct:'Reference ratio ρ0', steel_stress:'Steel stress factor', long_span:'Long-span factor', flanged:'Flange factor', Sd_g:'Design spectral acceleration Sd(T1)', T1_s:'Fundamental period T1', lambda:'Correction factor λ', ag_g:'Design ground acceleration ag',
+  x_mm:'Neutral axis depth x', z_mm:'Lever arm z', fcd_MPa:'Design concrete strength fcd', fyd_MPa:'Design steel strength fyd', K:'K = M/(b·d²·fck)',
+  Fv_Rd_kN:'Shear resistance Fv,Rd', Ft_Rd_kN:'Tension resistance Ft,Rd', Fb_Rd_kN:'Bearing resistance Fb,Rd', alpha_v:'αv', alpha_b:'αb',
+  shear_area_mm2:'Shear area', shear_planes:'Shear planes',
+  qu_kPa:'Ultimate bearing capacity qu', qa_kPa:'Allowable bearing pressure qa', factor_of_safety:'Factor of safety', Ngamma:'Nγ',
+  Q_m3_s:'Peak runoff Q', Q_L_s:'Peak runoff Q', Tc_min:'Time of concentration Tc',
+  U_W_m2K:'U-value', R_total_m2K_W:'Total thermal resistance R', surface_resistances:'Surface resistances',
+  ADF_pct:'Average daylight factor', glazed_area_m2:'Glazed area', assessment:'Assessment',
+  T60_s:'Reverberation time T60', total_absorption_m2_sabin:'Total absorption', total_surface_m2:'Total surface area', mean_alpha:'Mean absorption coefficient',
+  altitude_deg:'Sun altitude', azimuth_deg:'Sun azimuth (from north)', declination_deg:'Solar declination', equation_of_time_min:'Equation of time',
+  datetime_utc:'Time (UTC)', method:'Method', assumptions:'Assumptions', checks:'Checks', warning:'Warning',
+};
 function toLabel(key){
   const k = String(key);
   if (KEY_LABELS[k]) return KEY_LABELS[k];
+  if (SUITE_LABELS[k]) { const u = Object.keys(UNIT_LABELS).sort((a,b)=>b.length-a.length).find((x)=>k.endsWith('_'+x)); return u ? SUITE_LABELS[k]+' ('+UNIT_LABELS[u]+')' : SUITE_LABELS[k]; }
   for (const u of Object.keys(UNIT_LABELS).sort((a,b)=>b.length-a.length)) {
     if (k.endsWith('_' + u)) {
       const base = k.slice(0, -(u.length + 1)).replace(/_/g,' ');

@@ -159,6 +159,64 @@ interface SpnDef {
  */
 interface SpnGuidance { causes: string[]; checks: string[] }
 const SPN_GUIDANCE: Record<number, { high?: SpnGuidance; low?: SpnGuidance }> = {
+  // Critical and shutdown readings that still showed the FMI's generic causes
+  // (audit 2026-11-05). Standard diesel-generator practice, in our own words.
+  98: { low: {
+    causes: ['Oil leak: sump plug, filter seal, gaskets, turbo oil lines', 'Oil burnt through worn rings, valve guides or the turbo seals', 'Oil not topped up after a service', 'Level sensor dirty or failed'],
+    checks: ['Stop the engine, wait a few minutes, then read the dipstick with the set level', 'Look under and around the engine for leaks', 'Compare oil added against running hours to measure consumption'],
+  } },
+  175: { high: {
+    causes: ['Engine overloaded or running hot', 'Oil cooler blocked or its coolant side fouled', 'Low oil level or the wrong grade', 'Coolant temperature also high (cooling system problem)'],
+    checks: ['Reduce the load and compare with coolant temperature', 'Check the oil level and grade', 'Inspect and clean the oil cooler'],
+  } },
+  109: { low: {
+    causes: ['Coolant leak: hoses, clamps, radiator core or pump seal', 'Pressure cap not sealing', 'Head gasket leak pushing gas into the coolant', 'Low coolant level'],
+    checks: ['Let the engine cool before opening the cap; then check the level', 'Pressure-test the cooling system and the cap', 'Look for bubbles in the expansion tank (gasket leak)'],
+  } },
+  157: { low: {
+    causes: ['Blocked fuel filters or water in the fuel', 'Air in the fuel or a failing lift pump', 'Low tank or a restricted fuel pickup', 'High-pressure pump worn, or rail pressure relief valve leaking', 'Injector leaking back to the return'],
+    checks: ['Check the tank level and the water separator', 'Change the fuel filters and bleed the system', 'Measure supply pressure to the high-pressure pump', 'Have the injector back-leak tested by a fuel-system specialist'],
+  } },
+  1349: { low: {
+    causes: ['Blocked fuel filters or air in the fuel', 'High-pressure pump worn on this bank', 'Rail pressure relief valve leaking', 'Injector on this bank leaking back'],
+    checks: ['Change the filters and bleed the system', 'Compare rail 1 and rail 2 pressures', 'Have the injector back-leak tested by a fuel-system specialist'],
+  } },
+  164: { low: {
+    causes: ['Low oil level or aerated oil feeding the injection pump', 'Injection pressure regulator valve sticking', 'High-pressure oil pump worn', 'Leak in the high-pressure oil rail or an injector O-ring'],
+    checks: ['Check the oil level and condition', 'Check the injection pressure regulator', 'Leak-test the high-pressure oil circuit with a specialist tool'],
+  } },
+  173: { high: {
+    causes: ['Engine overloaded', 'Air filter or intake restricted', 'Exhaust restricted (silencer, aftertreatment)', 'Injector or timing fault causing poor combustion', 'Turbocharger or intercooler fault'],
+    checks: ['Reduce the load and compare with the rating', 'Check the air filter restriction indicator', 'Check exhaust back-pressure', 'Compare cylinder exhaust temperatures to find a bad injector'],
+  } },
+  1180: { high: {
+    causes: ['Engine overloaded', 'Air filter or intake restricted', 'Intercooler blocked or leaking boost', 'Poor combustion from injectors or timing', 'Exhaust restricted'],
+    checks: ['Reduce the load', 'Check the air filter and intake for restriction', 'Check boost pressure and the intercooler', 'Check exhaust back-pressure'],
+  } },
+  3251: { high: {
+    causes: ['Particulate filter loaded with soot (regeneration not completing)', 'Long running at light load, so the filter never gets hot enough', 'Ash build-up needing filter cleaning', 'Pressure sensor lines blocked or swapped'],
+    checks: ['Run a controlled regeneration under load if the controller allows it', 'Check the sensor lines for blockage', 'Have the filter cleaned or replaced if regeneration does not clear it'],
+  } },
+  3719: { high: {
+    causes: ['Regeneration not completing: too little load or too short running', 'Excess soot from poor combustion (injectors, air filter)', 'Regeneration inhibited by a switch or another fault'],
+    checks: ['Run the set under load, or start a manual regeneration', 'Clear any fault that inhibits regeneration first', 'Check the air filter and injectors if soot builds quickly'],
+  } },
+  1136: { high: {
+    causes: ['Engine room or canopy too hot (poor ventilation)', 'ECU mounted near a hot surface or its cooling plate blocked', 'Fuel used to cool the ECU running hot or low'],
+    checks: ['Check room ventilation and canopy louvres', 'Check the ECU cooling plate and mounting', 'Check fuel level and fuel temperature'],
+  } },
+  412: { high: {
+    causes: ['EGR cooler fouled with soot', 'EGR cooler coolant flow low', 'EGR valve stuck open'],
+    checks: ['Check coolant flow and level', 'Inspect and clean the EGR cooler', 'Check the EGR valve for sticking'],
+  } },
+  101: { high: {
+    causes: ['Blow-by from worn piston rings or liners', 'Crankcase breather blocked or frozen', 'Turbocharger seal leaking into the crankcase', 'Overheating or a hot spot causing scuffing'],
+    checks: ['Stop the engine if the pressure keeps rising: there is a risk of a crankcase explosion', 'Check and clear the breather', 'Measure blow-by and check the turbo for oil leaks', 'Do a compression or leak-down test'],
+  } },
+  104: { low: {
+    causes: ['Low engine oil level or pressure', 'Turbo oil feed line blocked, kinked or leaking', 'Oil filter blocked', 'Sensor or wiring fault'],
+    checks: ['Stop the engine: a turbo without oil fails in seconds', 'Check engine oil level and pressure', 'Inspect the turbo oil feed and drain lines'],
+  } },
   110: {
     high: {
       causes: ['Radiator core blocked by dust or debris, or hot air recirculating to the radiator', 'Low coolant from a leak (hoses, pump seal, core)', 'Fan belt slipping or broken, or fan not engaging', 'Thermostat stuck closed or water pump failing', 'Engine overloaded, or a hot enclosure with poor ventilation'],

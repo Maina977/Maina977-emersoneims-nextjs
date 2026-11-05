@@ -133,12 +133,32 @@ const EMERGENCIES: Array<[RegExp, string]> = [
   // Smoke or a burning smell from the alternator, AVR, panel or wiring is
   // insulation burning (audit 2026-11-05: "smoke from alternator" gave nothing).
   [/\b(smok\w*|burn\w*|smell\w*|scorch\w*)\b.*\b(alternator|winding|avr|panel|breaker|cable|wiring|terminal)s?\b|\b(alternator|winding|avr|panel|breaker|cable|wiring|terminal)s?\b.*\b(smok\w*|burn\w*|scorch\w*|melt\w*)\b/, 'ELECTRICAL BURNING: stop the set with the emergency stop if it is safe to reach, open the breaker and isolate it. Do not restart or open covers until it has cooled and a qualified electrician has tested the windings and wiring. If there are flames, treat it as a fire and call the fire service.'],
+  [/\b(coolant|radiator|water\s+pump|antifreeze)\s+(leak\w*|spill\w*)|\bleak\w*\s+(coolant|radiator)\b/, 'HOT COOLANT: let the engine cool before opening the cap or touching hoses; coolant is under pressure and scalds. Stop the set if the level is dropping and find the leak.'],
   [/\b(fuel|diesel|oil)\s+(leak|spill)/, 'Hot oil and fuel burn and can catch fire on a hot exhaust: stop the engine and let it cool before tracing the leak, and clean spills at once.'],
 ];
 // Checks a technician makes first for the fault itself, ahead of each controller
 // file's menu steps (audit 2026-10-31: 50 ComAp alarms shared one step list, and a
 // low-oil shutdown had no dipstick step).
 const FAULT_FIRST_STEPS: Array<[RegExp, string[]]> = [
+  // The controller's clock cell, not the starter battery (audit 2026-11-05).
+  [/\b(clock|rtc|real.?time)\b/i, ['This is the small cell that keeps the controller clock, not the starting battery.', 'Replace the controller backup cell (see the controller manual for its type), then set the date and time.']],
+  // Families that still shared one brand template (audit 2026-11-05, second pass).
+  [/\b(sync\w*|synchron\w*|load\s*shar\w*|var\s*shar\w*|bus\s+(voltage|sensing)\w*|phase\s+angle)\b/i, ['Compare generator and bus voltage, frequency and phase rotation with a meter or sync scope before any further close attempt.', 'Check the governor and AVR respond to the controller (speed and voltage bias outputs), and the bus sensing fuses and wiring.', 'For load or VAr sharing: check the sharing lines or the communication link between sets, and that every set has the same droop or sharing settings.']],
+  [/\b(mains|utility|grid)\b/i, ['Measure the mains voltage and frequency at the changeover with a meter to confirm the controller reading.', 'Check the mains sensing fuses and wiring, then the utility supply itself; this alarm is about the incoming supply, not the generator.']],
+  [/\b(transfer\s+switch|ats|changeover)\b.*\b(fail\w*|fault)\b|\b(transfer\s+to\s+generator|return\s+to\s+mains)\b/i, ['Check the changeover position matches what the controller reports.', 'Check the changeover motor or coil supply, its auxiliary contacts and the interlock. Isolate both supplies before working on it.']],
+  [/\b(cb|circuit\s+breaker)\b.*\b(close|open|trip)\w*\s*fail\w*|\b(trip|close)\s+circuit\s+supervision\b|\bbreaker\s+wear\b/i, ['Check the breaker control supply, closing coil or motor, and the shunt-trip circuit.', 'Check the breaker auxiliary contacts and wiring back to the controller; service the breaker if its operation counter is high.']],
+  [/\bcranking\s+fail\w*|\bcrank\w*\s+fail\w*/i, ['Check battery voltage while cranking: it should stay above about 9.5 V on 12 V or 19 V on 24 V.', 'Check the starter motor, its solenoid and the crank relay output; then fuel and the fuel solenoid if it cranks but will not fire.']],
+  [/\bcharge\s*alt\w*\s*fail\w*|\bcharging\s+fail\w*/i, ['Check the charge alternator belt and the D+/WL excitation wire to the controller.', 'Measure battery voltage running: about 13.5-14.5 V on 12 V or 27-29 V on 24 V when charging.']],
+  [/\bmaintenance\s+(due|alarm|reminder)\b/i, ['Carry out the scheduled service (oil, filters, belts, coolant) for the running hours shown.', 'Reset the maintenance counter only after the service is done and recorded.']],
+  [/\becu\b.*\b(warning|shutdown|alarm|fault)\b/i, ['Read the engine ECU fault code (SPN and FMI) on the controller or with the engine service tool, then look up that code.', 'Fix the cause the ECU reports; clearing this alarm without its code hides the real fault.']],
+  [/\b(differential|distance|negative\s+sequence|over.?excitation|loss\s+of\s+field|protection)\b.*\b(trip|detect\w*|alarm|current)\b|\b(current|voltage)\s+transformer\b/i, ['Do not reset and reclose until the trip is understood: this protection operates on a real electrical fault.', 'Have a protection engineer read the relay fault record and test the CT and VT circuits and the protected plant.']],
+  [/\btransformer\b|\bbuchholz\b/i, ['Isolate the transformer before inspection: gas, oil temperature and winding alarms can mean an internal fault.', 'Check oil level and temperature, cooling fans and the Buchholz gas collection; get the oil tested if gas has collected.']],
+  [/\b(power\s+supply|supply)\s+(voltage\s+)?(low|fail\w*)\b|\bcontroller\s+power\b/i, ['Measure the controller DC supply at its terminals, including while cranking.', 'Check the battery, the supply fuse and the wiring to the controller.']],
+  [/\b(binary|digital|analog(ue)?)\s+(input|output)\b.*\b(fail\w*|fault)\b|\boutput\s+relay\b.*\bfail\w*/i, ['Check the module supply and its connector; reseat the module with the controller powered off.', 'Test the affected input or output with a meter; replace the module if it does not respond.']],
+  [/\b(heater|fuel\s+pump|ventilation|fan|louvre)\b.*\b(fail\w*|fault)\b/i, ['Check the supply and the breaker or fuse for that auxiliary.', 'Check the motor or heater element and its contactor; confirm the control signal reaches it.']],
+  [/\b(time\s+sync\w*|iec\s*61850|rs485|ethernet|modbus)\b/i, ['Check the communication cable, connectors and network switch for that port.', 'Check the address and settings at both ends of the link.']],
+  [/\b(over.?temperature|temperature\s+alarm)\b/i, ['Check what is hot: the controller or panel, or the engine. Check panel ventilation and filters.', 'Compare with an independent thermometer before replacing a sensor.']],
+  [/\bfrequen\w*\s+(out\s+of\s+range|abnormal)\b/i, ['Measure the engine speed with a hand tachometer and compare with the controller.', 'Check the governor and actuator, and the load.']],
   [/\boil\s*press(ure)?\b.*\b(low|under|below)\b|\b(low|under)\b.*\boil\s*press(ure)?\b/i, ['Engine stopped: check the oil level on the dipstick and look for leaks.', 'Check the oil grade and filter, then confirm the pressure with a mechanical gauge before believing the sender.']],
   [/\b(high|over)\b.*\b(coolant|water|engine)\s*temp|\b(coolant|water|engine)\s*temp\w*\b.*\b(high|over)\b|\boverheat/i, ['Engine stopped and cool: check the coolant level, fan belt and radiator core for blockage.', 'Compare the reading with an infrared thermometer at the sender before replacing parts.']],
   [/\bfail(ed|ure|s)?\s*to\s*(start|crank)\b|\bstart(ing)?\s*fail/i, ['Check battery voltage while cranking: it should stay above about 9.5 V on 12 V or 19 V on 24 V.', 'Check there is fuel, the fuel solenoid energises, and the filters are not blocked; bleed air if the fuel system was opened.']],
@@ -151,7 +171,27 @@ const FAULT_FIRST_STEPS: Array<[RegExp, string[]]> = [
   [/^(?!.*\b(mains|utility|grid|bus)\b).*(\bover\s?-?volt|\bunder\s?-?volt|\bhigh\s+volt|\blow\s+volt|\bloss\s+of\s+excit)/i, ['Measure the voltage at the alternator terminals with a meter rated for it, compared with the controller reading.', 'Check engine speed first, since voltage follows speed, then the AVR sensing leads and supply. Qualified electrician only: lethal voltage.']],
   [/\bover\s?-?current\b|\bshort\s+circuit\b|\boverload\b/i, ['Reduce the load and measure the current on each phase: look for imbalance or a shorted circuit.', 'Find the cause before resetting the breaker. Do not raise the trip setting to clear the alarm.']],
   [/\blow\s+fuel\b|\bfuel\s+level\s+(low|warning)\b/i, ['Dip the tank to confirm the level before trusting the sender.', 'Refuel with the engine stopped; check for leaks if the level dropped unexpectedly.']],
+  // More alarm families with their own first checks (audit 2026-11-05: about half
+  // the controller alarms shared one brand template of menu steps).
+  [/\b(ground|earth)\s*(fault|leak\w*)\b/i, ['Isolate and lock off the set before touching anything: an earth fault can make metal parts live.', 'Insulation-test the alternator windings and each outgoing circuit with a megohmmeter (qualified electrician).', 'Inspect cables, glands and terminal boxes for damage, moisture or tracking.']],
+  [/\bhigh\s+fuel\b|\bfuel\s+(level\s+high|overflow)\b/i, ['Stop the fuel transfer pump and check the day-tank float switch and overflow.', 'Dip the tank to confirm the level before trusting the sender.']],
+  [/\b(coolant|water)\s+level\b/i, ['Let the engine cool before opening the cap; then check the coolant level.', 'Look for the leak (hoses, radiator, pump seal) and check the oil for a milky colour before topping up.']],
+  [/\bemergency\s+stop\b|\be-?stop\b/i, ['Find which emergency stop was pressed and why before releasing it.', 'Release the button, then check the stop circuit wiring and the controller input if the alarm stays.']],
+  [/\b(loss\s+of\s+)?(speed\s+signal|mpu|magnetic\s+pick.?up|speed\s+sensor)\b/i, ['Engine stopped: check the speed sensor gap to the flywheel teeth and its wiring.', 'Measure the sensor resistance and its AC output while cranking.']],
+  [/\b(phase\s+(sequence|rotation)|rotation)\b/i, ['Do not close the breaker onto the load until the phase rotation is confirmed with a phase-rotation meter.', 'Check the alternator output and sensing connections after any rewiring. Qualified electrician only.']],
+  [/\breverse\s+power\b/i, ['Check the engine is producing power: fuel supply, governor and actuator.', 'On paralleled sets check load sharing and the breaker; the set is being driven as a motor.']],
+  [/\b(over|under)[\s-]?frequen\w*\b/i, ['Measure the engine speed with a hand tachometer and compare with the controller.', 'Check the governor and actuator, and the load: a large load step can pull frequency down.']],
+  [/\b(loss\s+of\s+excitation|excitation|avr|field\s+fail\w*)\b/i, ['Isolate the load before testing: lethal voltage can return without warning.', 'Check the AVR supply and sensing fuses, the exciter field and residual magnetism. Qualified electrician only.']],
+  [/\b(voltage\s+sensing|sensing\s+(fail|loss))\b/i, ['Check the voltage sensing fuses and wiring to the controller with the set isolated.', 'Compare the controller reading with a meter at the alternator terminals.']],
+  [/\b(phase\s+)?(imbalance|unbalance\w*)\b/i, ['Measure the current in each phase and compare: move single-phase loads to balance them.', 'Check for an open phase or a loose connection at the breaker or terminals.']],
+  [/\bbreaker\b.*\b(fail|trip|open|close)\w*|\b(fail|trip)\w*\b.*\bbreaker\b/i, ['Find why the breaker tripped or failed before resetting it: check the load and look for a short circuit.', 'Check the breaker motor or coil supply and its auxiliary contacts to the controller.']],
+  [/\b(can|j1939|ecu|communication|comms?|modbus)\b.*\b(fail|fault|error|loss|lost|timeout)\b|\b(link|data)\s+(loss|lost|fail\w*)\b/i, ['Check the ECU has power and the communication cable connectors are tight and dry.', 'With the bus powered down, measure about 60 ohms between CAN-H and CAN-L (two 120 ohm terminators).']],
+  [/\b(sensor|sender|transducer)\b.*\b(open|short|fail\w*|fault|circuit)\b|\b(open|short)\s+circuit\b/i, ['Check the sensor connector and wiring for damage, corrosion or a loose pin.', 'Measure the sensor resistance or signal against its specification; confirm the real value with a gauge.']],
+  [/\b(internal|watchdog|memory|checksum|processor|self.?test|configuration|eeprom|firmware)\b/i, ['Check the controller DC supply voltage at its terminals, including while cranking.', 'Power the controller off and on; if the fault returns, reload the configuration from a backup or replace the controller.']],
 ];
+// Menu steps every alarm of a brand shared; dropped once fault-specific checks
+// lead the list (audit 2026-11-05).
+const TEMPLATE_STEP = /^(navigate to|go to|open|access)\b.*\b(alarm|event|fault)\b.*\b(menu|list|log|page|screen)\b|^note (the )?(alarm|fault) (code|number|message)|^check (the )?relevant (sensor|input|output)|^review\b.*\b(software|toolkit|setpoint|configuration|parameters?)\b|^record the alarm and check the event log/i;
 const GENERIC_SAFETY = /^follow standard (electrical )?safety procedures\.?$/i;
 const CONDITION_WORDS: Record<string, string> = {
   engine_stopped: 'Engine stopped', fault_investigated: 'Cause found and fixed', fault_cleared: 'Cause found and fixed',
@@ -177,7 +217,8 @@ function faultFirst(c: ControllerFaultCode, steps: ControllerFaultCode['diagnost
   const hit = FAULT_FIRST_STEPS.find(([re]) => re.test(c.title));
   if (!hit) return steps;
   const first = hit[1].map((action) => ({ action, expectedResult: '' }));
-  return [...first, ...steps].map((st, i) => ({ ...st, step: i + 1 })) as ControllerFaultCode['diagnosticSteps'];
+  const rest = (steps || []).filter((st) => !TEMPLATE_STEP.test(String(st.action || '').trim()));
+  return [...first, ...rest, { action: "Read the controller's event log for what happened just before the alarm.", expectedResult: '' }].map((st, i) => ({ ...st, step: i + 1 })) as ControllerFaultCode['diagnosticSteps'];
 }
 
 export function withSafety(c: ControllerFaultCode): ControllerFaultCode {
@@ -1429,7 +1470,8 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   // Low oil pressure, starting and speed problems (2026-10-30 re-audit: no
   // safety line at all for "low oil pressure", the most damaging to run on).
   if (/\boil\b/.test(typedText) && /low|pressure|drop|under/.test(typedText)) addSafety([OIL_STOP]);
-  if (/start|crank/.test(typedText)) addSafety(['The set can crank or start at any moment: keep hands and clothing clear of the fan and belts, and select OFF before working on it. Batteries give off explosive gas: no sparks near them.']);
+  // "crankcase" is not "crank" (audit 2026-11-05).
+  if (/\b(start\w*|crank(s|ing|ed)?)\b/.test(typedText) && !/\bcrankcase\b/.test(typedText)) addSafety(['The set can crank or start at any moment: keep hands and clothing clear of the fan and belts, and select OFF before working on it. Batteries give off explosive gas: no sparks near them.']);
   if (/surg|hunt|speed|rpm/.test(typedText)) addSafety(['If the speed runs away (overspeed), shut down at once with the emergency stop and do not restart until the governor and fuel control are checked.']);
   if (/burn|scorch|melt|smell/.test(typedText) && /wir|cable|harness/.test(typedText)) addSafety([ISOLATE, 'Burnt wiring is a fire risk: isolate, keep a CO2 or dry-powder extinguisher at hand, and replace the damaged section before running.']);
   if (/\bleak/.test(typedText)) addSafety(['Hot oil, coolant and fuel burn and can catch fire on a hot exhaust: stop the engine and let it cool before tracing a leak, and clean spills at once.']);

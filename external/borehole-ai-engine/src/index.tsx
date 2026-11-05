@@ -145,7 +145,7 @@ interface SubsurfaceLayer {
 }
 
 interface ScenarioResult {
-  depth: number; yield: number; cost: number; risk: string; recommendation: string;
+  depth: number; yield: number | null; cost: number; risk: string; recommendation: string;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -497,9 +497,9 @@ function genROI(boreholeCost: number, solarCost: number, yld: number, runtime?: 
 function genScenarios(depth: number, yld: number, soilType?: string, ctx: CostContext = {}): ScenarioResult[] {
   const opt = (d: number, y: number) => genCostBreakdown(Math.round(d), y, soilType, ctx).total;
   return [
-    { depth:Math.round(depth*0.65), yield:Math.round(yld*0.4*10)/10, cost:opt(depth*0.65, yld*0.4), risk:'Medium', recommendation:'Shallow option — lower cost but reduced yield; consider if budget is constrained' },
+    { depth:Math.round(depth*0.65), yield:null, cost:opt(depth*0.65, yld), risk:'Medium', recommendation:'Shallow option — lower cost but reduced yield; consider if budget is constrained' },
     { depth:Math.round(depth), yield:Math.round(yld*10)/10, cost:opt(depth, yld), risk:'Low', recommendation:'Recommended depth — same cost basis as the summary' },
-    { depth:Math.round(depth*1.4), yield:Math.round(yld*1.15*10)/10, cost:opt(depth*1.4, yld*1.15), risk:'Medium', recommendation:'Marginal yield gain — higher cost, diminishing returns' },
+    { depth:Math.round(depth*1.4), yield:null, cost:opt(depth*1.4, yld), risk:'Medium', recommendation:'Marginal yield gain — higher cost, diminishing returns' },
   ];
 }
 
@@ -531,12 +531,25 @@ function genClimate(historicalData: any, gldasData: any, rechargeSummary?: any) 
       rechargeRate, waterTableStability: gldasData?.graceAnomaly?.trend === 'gaining' ? 'Stable/Rising' : gldasData?.graceAnomaly?.trend === 'losing' ? 'Declining' : 'Variable',
       dataSource: w.source || 'Long-term monthly rainfall archive' };
   }
+  // Annual rainfall only (the stored ERA5 baseline, when the live archive did not
+  // answer): show the year's figure, no invented months (audit 2026-11-05).
+  if (Number(w?.averageAnnualPrecipitation) > 0) {
+    const p = Math.round(Number(w.averageAnnualPrecipitation));
+    const rechargeRate = rechargeSummary?.governing_mm != null
+      ? `~${rechargeSummary.governing_mm} mm/yr (${Math.round(rechargeSummary.fraction * 100)}% of rainfall)`
+      : 'Not estimated for this run';
+    return { rainfall: months.map(m => ({ month: m, mm: 0 })), annualOnlyMm: p,
+      bestDrillingSeason: 'Monthly rainfall not available this run: use the local dry season',
+      aquiferRechargeRisk: p < 500 ? 'High — arid zone' : p < 800 ? 'Moderate' : 'Low',
+      rechargeRate, waterTableStability: 'Unknown',
+      dataSource: `${p} mm/yr — ${w.source || 'stored rainfall baseline'}` };
+  }
   // No historical data — return empty with disclaimer instead of fabricating values
   return { rainfall: months.map(m => ({ month: m, mm: 0 })),
     bestDrillingSeason: 'No data — consult local meteorological service',
     aquiferRechargeRisk: 'Unknown — no precipitation data available',
     rechargeRate: 'No data', waterTableStability: 'Unknown',
-    dataSource: 'NO DATA AVAILABLE — NASA POWER API did not return results for this location' };
+    dataSource: 'NO DATA AVAILABLE — the rainfall services (ECMWF ERA5 and NASA POWER) did not answer and no stored baseline covers this point' };
 }
 
 /**
@@ -561,6 +574,8 @@ function genProbability(prob: number, _depth: number, r?: any) {
   const storageTrend = gw && Number.isFinite(gw.trend_cm_per_year)
     ? (() => {
         const t = gw.trend_cm_per_year, se = Number.isFinite(gw.trendStdErr_cm_per_year) ? gw.trendStdErr_cm_per_year : 0;
+        // A one-off step is said as a step (audit 2026-11-05).
+        if (gw.step) return `No steady trend: one step ${gw.step.jump_cm > 0 ? 'up' : 'down'} of about ${Math.abs(gw.step.jump_cm)} cm around ${gw.step.month}, flat before and after (GRACE, regional ~300 km). Not the water level in a borehole.`;
         const word = Math.abs(t) <= 2 * se ? 'No clear trend' : t > 0 ? 'Rising' : 'Falling';
         // Regional, and near a big lake mostly the lake (audit 2026-10-31).
         const nearLake = /lake/i.test(String(r?.graceData?.dataSource ?? r?.graceData?.note ?? ''));
@@ -2027,7 +2042,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
               <h4 className="tab-title" style={{marginTop:24}}>How yield is estimated</h4>
               <div className="formula-block"><code>{SCI.FORMULAS.yieldEmpirical}</code></div>
-              <p className="tab-desc">The aquifer model is reconciled to the yields of boreholes on record (or the county profile, an estimate) within 20 km (or the county record), so yield, drawdown and pump size agree. A pump test sets the real figure.</p>
+              <p className="tab-desc">The aquifer model is reconciled to the yields of boreholes on record within 20 km (or, where there are none, the county profile, an estimate), so yield, drawdown and pump size agree. A pump test sets the real figure.</p>
 
               <h4 className="tab-title" style={{marginTop:24}}>Water quality screening</h4>
               {renderSciTable(['Parameter','How it is screened'], SCI.WQ_PREDICTIONS, ['parameter','method'])}
@@ -2168,7 +2183,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
     // Depth options keep their relative costs, on the same total as the report.
     const scenariosRaw = genScenarios(result.recommendedDepth, result.estimatedYield, costSoil, costCtx);
     const recRaw = scenariosRaw[1]?.cost || 1;
-    const scenarios = scenariosRaw.map((s) => ({ ...s, cost: Math.round(s.cost * ecoTotal / recRaw) }));
+    // The report's total plus (or minus) only the drilling difference: scaling
+    // by a ratio also scaled treatment, solar and contingency.
+    const scenarios = scenariosRaw.map((s) => ({ ...s, cost: Math.round(ecoTotal + (s.cost - recRaw)) }));
     const climate = genClimate(result.historicalData, result.gldasGroundwater, (result as any).rechargeSummary);
     const prob = genProbability(result.probability, result.recommendedDepth, result);
     const wqExpanded = genWaterQualityExpanded(result.waterQuality, result.recommendedDepth);
@@ -2207,11 +2224,17 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
         {/* Summary Cards */}
         <div className="results-summary-cards">
-          <div className="summary-card success"><div className="summary-value">{probabilityBand(result.probability)}</div><div className="summary-label">Chance of a productive borehole (planning estimate)</div></div>
+          <div className="summary-card success"><div className="summary-value">{probabilityBand(result.probability)}</div><div className="summary-label">Chance of a productive borehole (planning estimate){(() => {
+            // The county's recorded rate beside it, so a higher figure is explained (audit 2026-11-05).
+            const cr = Number((result.boreholeRecords as any)?.countyIntelligence?.successRate);
+            if (!(cr > 0)) return null;
+            const diff = Math.round(result.probability * 100) - Math.round(cr * 100);
+            return <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>County record: {Math.round(cr * 100)}% of boreholes productive.{Math.abs(diff) >= 10 ? ` This point is ${diff > 0 ? 'above' : 'below'} it because of its own terrain, records and storage data; the county rate is the safer planning figure until a survey.` : ''}</span>;
+          })()}</div></div>
           <div className="summary-card depth"><div className="summary-value">{result.recommendedDepth.toFixed(0)}m</div><div className="summary-label">Recommended Depth</div></div>
           <div className="summary-card yield-card"><div className="summary-value">{result.estimatedYield.toFixed(1)}</div><div className="summary-label">Yield (m³/h)</div></div>
           <div className="summary-card cost-card"><div className="summary-value">{fmtUSD(ecoTotal)}</div><div className="summary-label">Total project cost</div></div>
-          <div className="summary-card solar-card"><div className="summary-value">{fmtUSD(eco ? eco.solarCost : solar.totalSolar)}</div><div className="summary-label">of which solar pump power</div></div>
+          <div className="summary-card solar-card"><div className="summary-value">{fmtUSD(eco ? eco.solarCost : solar.totalSolar)}</div><div className="summary-label">of which solar pump power{(result as any).pumpHeadAssumption ? ' (water level assumed)' : ''}</div></div>
           <div className="summary-card roi-card"><div className="summary-value">{ecoPayback >= 240 ? 'None' : `${ecoPayback}mo`}</div><div className="summary-label">Payback Period</div></div>
           <div className="summary-card risk-sc" style={{borderColor:getRiskColor(result.risk.overallRisk)}}><div className="summary-value" style={{color:getRiskColor(result.risk.overallRisk)}}>{(result.risk.overallRisk*100).toFixed(0)}%</div><div className="summary-label">Overall Risk</div></div>
           <div className="summary-card wq-card"><div className="summary-value">{wqExpanded.treatmentRequired}</div><div className="summary-label">Treatment likely (screening)</div></div>
@@ -2230,7 +2253,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <span style={{fontSize:20}}>{'\u2B50'}</span>
                 <div style={{fontSize:16,fontWeight:800,color:fcColor}}>FINAL RECOMMENDATION</div>
                 <span style={{fontSize:11,padding:'2px 10px',borderRadius:6,background:fcColor,color:'#fff',fontWeight:700}}>{fc.assessmentGrade}</span>
-                <span style={{fontSize:11,padding:'2px 10px',borderRadius:6,background:agrColor,color:'#fff',fontWeight:600}}>Sub-model spread: {fc.agreementLevel}</span>
+                <span style={{fontSize:11,padding:'2px 10px',borderRadius:6,background:agrColor,color:'#fff',fontWeight:600}}>Model internal consistency: {fc.agreementLevel} (not the agreement between data sources)</span>
               </div>
               {/* The same verdict as the PDF (verdict.ts); before 2026-10-27 the
                   web page never showed it and the PDF said PROCEED from desktop data. */}
@@ -2281,8 +2304,13 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div style={{fontSize:13,fontWeight:700,color:'#d97706',marginBottom:8}}>
               {'\u{1F4E1}'} {result.fallbacksUsed.length} data source{result.fallbacksUsed.length > 1 ? 's' : ''} did not answer or used a stored baseline
             </div>
+            {result.fallbacksUsed.some((f: string) => /did not answer|failed|timed out/i.test(f)) && (
+              <div style={{fontSize:12,fontWeight:700,color:'#b45309',marginBottom:8}}>
+                This run is incomplete: the chance of success and the verdict can change when these sources answer. Run the analysis again in a few minutes before relying on it.
+              </div>
+            )}
             <div style={{fontSize:11,color:'var(--text-secondary)',marginBottom:8}}>
-              Public data services sometimes do not answer. Where one did not, its value is either a stored measured baseline (named below, with its distance) or left out of the result. Nothing is estimated from latitude. Adding field data (ERT, pump test) upgrades accuracy.
+              Public data services sometimes do not answer. Where one did not, its value is either a stored measured baseline (named below, with its distance) or left out of the result. Inside Kenya nothing is estimated from latitude; beyond the stored baseline's reach, elevation and temperature fall back to a latitude estimate, which is named below. Adding field data (ERT, pump test) upgrades accuracy.
             </div>
             {result.fallbacksUsed.map((fb: string, i: number) => (
               <div key={i} style={{fontSize:11,color:'var(--text-muted)',padding:'3px 0',borderBottom:'1px solid rgba(255,255,255,0.03)'}}>
@@ -5792,7 +5820,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div key={i} className={`scenario-card ${i===1?'recommended':''}`}>
                     {i===1 && <div className="scenario-badge">RECOMMENDED</div>}
                     <div className="scenario-header">Scenario {i+1}: Drill at {sc.depth}m</div>
-                    <div className="scenario-row"><span>Yield</span><span>{sc.yield} m&sup3;/h</span></div>
+                    <div className="scenario-row"><span>Yield</span><span>{sc.yield == null ? 'Not assessed at this depth (a pump test decides)' : `${sc.yield} m³/h`}</span></div>
                     <div className="scenario-row"><span>Cost</span><span>{fmtUSD(sc.cost)}</span></div>
                     <div className="scenario-row"><span>Basis</span><span>Rule of thumb, not assessed for risk</span></div>
                     <div className="scenario-note">{sc.recommendation}</div>
@@ -5897,7 +5925,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div>
               <h4 className="tab-title">{'\u2600\uFE0F'} Solar Pump Power (same figures as the PDF report)</h4>
               <div className="result-grid">
-                <div className="result-item"><span className="rl">Pump</span><span className="rv">{eco ? `about ${Number(eco.pumpKW).toFixed(2)} kW at ${eco.pumpHead} m head` : `${solar.pumpKw} kW`} (until the pump test sets the duty point)</span></div>
+                <div className="result-item"><span className="rl">Pump</span><span className="rv">{eco ? `about ${Number(eco.pumpKW).toFixed(2)} kW at ${eco.pumpHead} m head` : `${solar.pumpKw} kW`} (until the pump test sets the duty point){(result as any).pumpHeadAssumption ? '. The water level is assumed, not measured: ' + String((result as any).pumpHeadAssumption) : ''}</span></div>
                 <div className="result-item"><span className="rl">Pumping hours</span><span className="rv">{eco ? eco.pumpHoursPerDay : solar.runtime} h/day</span></div>
                 <div className="result-item"><span className="rl">Solar array</span><span className="rv">{eco ? (eco.solarKW > 0 ? `${eco.solarKW} kW` : 'None (hand pump)') : `${solar.panelKwp} kWp`}</span></div>
                 <div className="result-item"><span className="rl">Battery</span><span className="rv">None — the pump fills a storage tank in daylight</span></div>

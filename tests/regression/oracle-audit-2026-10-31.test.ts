@@ -63,7 +63,9 @@ describe('first steps fit the fault', () => {
     expect(s[0].action).toMatch(/dipstick/);
     expect(s.map((x: any) => x.step)).toEqual([1, 2, 3]);
   });
-  it('an alarm with no specific rule is left as written', () => expect(steps('Maintenance Due').length).toBe(1));
+  // "Maintenance Due" gained its own service steps on 2026-11-05; an
+  // auxiliary input still has no rule of its own.
+  it('an alarm with no specific rule is left as written', () => expect(steps('Auxiliary Input 3 Active').length).toBe(1));
 });
 
 describe('re-audit: no loose matching', () => {

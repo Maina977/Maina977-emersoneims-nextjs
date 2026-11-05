@@ -230,7 +230,7 @@ const DSE_MANUAL: ControllerManual = {
     protection: 'IP65 front panel (with seal)',
     dimensions: '240mm x 181mm x 50mm (DSE7320)',
     weight: '850g',
-    display: 'Color TFT LCD with LED backlight',
+    display: 'Backlit LCD',
     communication: ['RS232', 'RS485', 'Ethernet', 'USB', 'CAN Bus'],
     inputs: [
       { type: 'Configurable digital inputs', quantity: 8, description: 'Voltage-free contact or +ve voltage' },
@@ -686,7 +686,7 @@ const DSE_MANUAL: ControllerManual = {
   ],
   spareParts: [
     { partNumber: 'DSE7320', description: 'Complete DSE7320 Controller', price: 'KES 165,000', availability: 'in-stock' },
-    { partNumber: 'DSE855', description: 'Expansion I/O Module', price: 'KES 45,000', availability: 'in-stock' },
+    { partNumber: 'DSE855', description: 'USB to Ethernet communications device', price: 'KES 45,000', availability: 'in-stock' },
     { partNumber: 'DSE890', description: 'Remote Display Module', price: 'KES 78,000', availability: 'order', leadTime: '2 weeks' },
     { partNumber: '016-145', description: 'USB Programming Cable', price: 'KES 5,500', availability: 'in-stock' },
     { partNumber: '016-156', description: 'Expansion Cable 2m', price: 'KES 3,800', availability: 'in-stock' },

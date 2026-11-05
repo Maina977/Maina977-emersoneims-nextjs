@@ -57,7 +57,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Send a JSON object, for example {"consumption": 300}.' }, { status: 400 });
   }
 
-  const monthlyKwh = Number(body.consumption);
+  // A list or text is not a number of kWh (audit 2026-11-05: [450] was accepted).
+  const monthlyKwh = typeof body.consumption === 'number' || (typeof body.consumption === 'string' && body.consumption.trim() !== '') ? Number(body.consumption) : NaN;
   // Below ~10 kWh/month there is nothing to size (2026-10-25 audit: 1e-9 kWh
   // gave an 887-billion-year payback).
   // Up to about a 1 MWp commercial roof; beyond that is a utility-scale plant

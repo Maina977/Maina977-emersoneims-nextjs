@@ -7355,7 +7355,7 @@ const PRO_CATALOG = [
       {k:'fu_ply_MPa',type:'number',def:410,l:'fu ply (MPa)'},
       {k:'e1_mm',type:'number',def:30,l:'e1 (mm)'},
       {k:'p1_mm',type:'number',def:60,l:'p1 (mm)'},
-      {k:'single_lap_one_row',type:'select',opts:['false','true'],def:'false',l:'Single-lap joint with one bolt row? (limits bearing, §3.6.1(10))'},
+      {k:'single_lap_one_row',type:'select',opts:['true','false'],def:'true',l:'Single-lap joint with one bolt row? (limits bearing, §3.6.1(10); choose false only for double-lap or several rows)'},
       {k:'e2_mm',type:'number',def:35,l:'e2 edge distance (mm; sets k1)'},
       {k:'p2_mm',type:'number',def:'',l:'p2 gauge (mm; blank = one line of bolts)'},
       {k:'exposed_to_weather',type:'select',opts:[false,true],def:false,l:'Steel exposed to weather (e1/e2 maximum)'},
@@ -8726,6 +8726,8 @@ function proNotOnlineCard(c){
 function proShowCalc(calcId){
   const c=PRO_CATALOG.find(x=>x.id===calcId); if(!c) return;
   document.querySelectorAll('.pro-sub-tab').forEach(b=>b.classList.toggle('active',b.dataset.cid===calcId));
+  // The open tool's tab stays visible in the scrolling strip on phones (audit 2026-11-05).
+  try{ const at=document.querySelector('.pro-sub-tab.active'); if(at) at.scrollIntoView({block:'nearest',inline:'center'}); }catch(e){}
   if(c.embed||c.openInTab){
     const pane=document.getElementById('pro-pane');
     const refsHtml=c.refs&&c.refs.length?`<div style="color:#7986cb;font-size:10px;margin-top:6px"><b>Includes:</b> ${c.refs.join(' · ')}</div>`:'';

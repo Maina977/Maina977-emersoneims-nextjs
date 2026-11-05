@@ -44,6 +44,24 @@ const PDF_SUBS: Array<[RegExp, string | ((c: string) => string)]> = [
   [/σ/g, 'sigma'], [/ρ/g, 'rho'], [/Δ/g, 'delta'], [/μ/g, 'µ'], [/′/g, "'"],
 ];
 const WIN_ANSI_EXTRA = new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ');
+/**
+ * Chemistry that may drive a finding: TDS and nitrate only when measured at 3
+ * or more nearby boreholes, fluoride when measured or as the labelled regional
+ * estimate. Arsenic, iron, pH and turbidity are modelled from soil and geology,
+ * so they never decide a verdict (audit 2026-11-05: modelled arsenic printed a
+ * health exceedance beside "Treatment likely: NO").
+ */
+export function screeningValues(wq: any): { fluoride: number | null; tds: number | null; nitrate: number | null } {
+  const mn = wq?.measuredNearby || {};
+  const measured = (k: string) => Number(mn?.[k]?.n) >= 3;
+  const num = (v: any) => (Number.isFinite(Number(v)) ? Number(v) : null);
+  return {
+    fluoride: num(wq?.fluoride),
+    tds: measured('ec') ? num(wq?.tds) : null, // measured salinity is stored as EC
+    nitrate: measured('nitrate') ? num(wq?.nitrate) : null,
+  };
+}
+
 export function pdfSafeText(s: string): string {
   let out = s;
   for (const [re, rep] of PDF_SUBS) out = typeof rep === 'string' ? out.replace(re, rep) : out.replace(re, rep);
@@ -1791,31 +1809,28 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         // Potability verdict FIRST -- a high index number beside a WHO
         // failure reads as good news (review finding).
         const wqv = result.waterQuality;
-        const fails = (wqv?.fluoride ?? 0) > 1.5 || (wqv?.arsenic ?? 0) > 0.01 || (wqv?.nitrate ?? 0) > 50 || (wqv?.iron ?? 0) > 0.3;
+        const sv = screeningValues(wqv);
+        const fails = (sv.fluoride ?? 0) > 1.5 || (sv.nitrate ?? 0) > 50 || (sv.tds ?? 0) >= 1000;
         // No proprietary index number in the executive summary -- "index
         // 94/100" beside a guideline exceedance confused every reviewer.
-        return wqv?.isPotable && !fails
-          ? 'Meets WHO guidelines (modelled) -- lab confirmation required'
-          : 'LIKELY GUIDELINE EXCEEDANCE (modelled) -- lab test and treatment budget required';
+        return !fails
+          ? 'No exceedance in the values measured nearby -- lab test required before drinking'
+          : 'LIKELY GUIDELINE EXCEEDANCE -- lab test and treatment budget required';
       })(), (() => {
-        if (result.waterQuality?.isPotable) return 'POTABLE (modelled) -- Verify with ISO 17025 lab analysis';
         const wq = result.waterQuality;
+        const sv = screeningValues(wq);
         const healthFails = [
-          (wq?.fluoride ?? 0) > 1.5 ? 'Fluoride' : '',
-          (wq as any)?.measuredNearby?.nitrate?.n >= 3 && (wq?.nitrate ?? 0) > 50 ? 'Nitrate' : '',
+          (sv.fluoride ?? 0) > 1.5 ? 'Fluoride' : '',
+          (sv.nitrate ?? 0) > 50 ? 'Nitrate' : '',
         ].filter(Boolean);
-        const aestheticFails = [
-          (wq?.iron ?? 0) > 0.3 ? 'Iron' : '',
-          (wq?.tds ?? 0) > 1000 ? 'TDS' : '',
-          (wq?.pH ?? 7) < 6.5 || (wq?.pH ?? 7) > 8.5 ? 'pH' : '',
-          (wq?.turbidity ?? 0) > 5 ? 'Turbidity' : '',
-        ].filter(Boolean);
+        const aestheticFails = [(sv.tds ?? 0) > 1000 ? 'TDS' : ''].filter(Boolean);
+        if (!healthFails.length && !aestheticFails.length) return 'Verify with an ISO 17025 laboratory analysis before use';
         // A numeric "score" beside a health failure reads as good news — say
         // the operative fact first (review finding: "94/100 looks too
         // optimistic unless it clearly means treatable after defluoridation").
         if (healthFails.length > 0) return `Modelled ${healthFails.join(', ')} above WHO guideline -- treatment likely required; lab-confirm before drinking`;
         if (aestheticFails.length > 0) return (wq?.tds ?? 0) >= 1000
-          ? `SALTY: ${aestheticFails.join(', ')} -- reverse osmosis likely; lab-confirm`
+          ? `SALTY: TDS ${Math.round(sv.tds ?? 0)} mg/L measured nearby -- reverse osmosis likely; lab-confirm`
           : `AESTHETIC TREATMENT: ${aestheticFails.join(', ')} (minor)`;
         return 'TREATMENT NEEDED';
       })()],
@@ -2824,21 +2839,24 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
   // turbidity and pH 6.5-8.5 are AESTHETIC/OPERATIONAL reference levels — WHO
   // proposes NO health-based guideline for them. An iron exceedance is an
   // appearance/taste/staining concern, never a "FAIL" implying non-potability.
-  const _wqStatus = (ok: boolean, aesthetic: boolean) => (ok ? 'Within limit (estimate)' : aesthetic ? 'AESTHETIC CONCERN' : 'HEALTH EXCEEDANCE');
   // Soil-model chemistry is not printed as a value or a pass (audit 2026-10-31):
   // the same answer as the page and the other exports.
   const _lab = ['laboratory test needed', 'LAB TEST NEEDED'] as const;
+  const _mn = (result.waterQuality as any)?.measuredNearby || {};
+  const _meas = (k: string) => Number(_mn?.[k]?.n) >= 3;
+  const _st = (k: string, ok: boolean, aesthetic: boolean) => (ok ? (_meas(k) ? 'Within limit (measured nearby)' : 'Within limit (estimate)') : aesthetic ? 'AESTHETIC CONCERN' : 'HEALTH EXCEEDANCE');
+  const _src = (k: string, otherwise: string) => (_meas(k) ? `Measured nearby: median of ${_mn[k].n} boreholes (UNESCO IHP-WINS)` : otherwise);
   autoTable(doc, {
     startY: y,
     head: [['Parameter', 'Value', 'WHO GDWQ reference', 'Basis', 'Status', 'Data Source']],
     body: [
       ['pH', _lab[0], '6.5 - 8.5', 'Operational', _lab[1], 'Modelled (regional) — lab test decides'],
-      ['TDS (mg/L)', fmt(result.waterQuality?.tds, 0), '< 1000', 'Palatability', _wqStatus((result.waterQuality?.tds ?? 0) < 1000, true), 'SoilGrids + Geology'],
+      ['TDS (mg/L)', _meas('ec') ? fmt(result.waterQuality?.tds, 0) : `${fmt(result.waterQuality?.tds, 0)} (modelled)`, '< 1000', 'Palatability', _meas('ec') ? _st('ec', (result.waterQuality?.tds ?? 0) < 1000, true) : _lab[1], _src('ec', 'Modelled from soil and geology: lab test decides')],
       ['Hardness (mg/L)', _lab[0], '< 500', 'Aesthetic', _lab[1], 'Geochemical Model'],
-      ['Fluoride (mg/L)', fmt(result.waterQuality?.fluoride, 2), '< 1.5', 'HEALTH', _wqStatus((result.waterQuality?.fluoride ?? 0) < 1.5, false), 'Regional Database'],
+      ['Fluoride (mg/L)', fmt(result.waterQuality?.fluoride, 2), '< 1.5', 'HEALTH', _st('fluoride', (result.waterQuality?.fluoride ?? 0) < 1.5, false), _src('fluoride', 'Regional estimate (not measured here)')],
       ['Iron (mg/L)', _lab[0], '< 0.3', 'Aesthetic (no health guideline)', _lab[1], 'Soil Chemistry Model'],
       ['Arsenic (mg/L)', _lab[0], '< 0.01', 'HEALTH', _lab[1], 'Geogenic Risk Model'],
-      ['Nitrate (mg/L)', (result.waterQuality as any)?.measuredNearby?.nitrate?.n >= 3 ? fmt(result.waterQuality?.nitrate, 1) : _lab[0], '< 50', 'HEALTH', (result.waterQuality as any)?.measuredNearby?.nitrate?.n >= 3 ? _wqStatus((result.waterQuality?.nitrate ?? 0) < 50, false) : _lab[1], 'Land Use Model'],
+      ['Nitrate (mg/L)', _meas('nitrate') ? fmt(result.waterQuality?.nitrate, 1) : _lab[0], '< 50', 'HEALTH', _meas('nitrate') ? _st('nitrate', (result.waterQuality?.nitrate ?? 0) < 50, false) : _lab[1], _src('nitrate', 'Land-use model: lab test decides')],
       ['Turbidity (NTU)', _lab[0], '< 5', 'Operational', _lab[1], 'Sediment Model'],
     ],
     headStyles: { fillColor: [34, 197, 94], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
@@ -2859,12 +2877,12 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
   // Binary WHO screening verdict — health-based vs aesthetic, kept separate
   {
     const wq = result.waterQuality;
+    const sv = screeningValues(wq);
     const healthFails: string[] = [];
     const aestheticFlags: string[] = [];
-    if ((wq?.fluoride ?? 0) >= 1.5) healthFails.push(`Fluoride ${fmt(wq?.fluoride, 2)} mg/L > 1.5`);
-    if ((wq?.arsenic ?? 0) >= 0.01) healthFails.push(`Arsenic ${fmt(wq?.arsenic, 4)} mg/L > 0.01`);
-    if ((wq?.nitrate ?? 0) >= 50) healthFails.push(`Nitrate ${fmt(wq?.nitrate, 1)} mg/L > 50`);
-    if ((wq?.tds ?? 0) >= 1000) aestheticFlags.push(`TDS ${fmt(wq?.tds, 0)} mg/L > 1000 (palatability)`);
+    if ((sv.fluoride ?? 0) >= 1.5) healthFails.push(`Fluoride ${fmt(sv.fluoride, 2)} mg/L > 1.5`);
+    if ((sv.nitrate ?? 0) >= 50) healthFails.push(`Nitrate ${fmt(sv.nitrate, 1)} mg/L > 50 (measured nearby)`);
+    if ((sv.tds ?? 0) >= 1000) aestheticFlags.push(`TDS ${fmt(sv.tds, 0)} mg/L > 1000 (palatability, measured nearby)`);
     checkSpace(20);
     if (healthFails.length > 0) {
       doc.setFillColor(254, 226, 226);
@@ -2872,9 +2890,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       doc.setDrawColor(220, 38, 38);
       doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'S');
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 28, 28);
-      doc.text('MODELLED WHO SCREENING: LIKELY HEALTH-GUIDELINE EXCEEDANCE', margin + 3, y + 4);
+      doc.text('WHO SCREENING: LIKELY HEALTH-GUIDELINE EXCEEDANCE', margin + 3, y + 4);
       doc.setFontSize(7); doc.setFont('helvetica', 'normal');
-      doc.text(`Modelled health exceedances: ${healthFails.join('; ')}. Do not use for drinking until an accredited laboratory confirms actual chemistry; budget treatment accordingly.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
+      doc.text(`Exceedances from nearby measurements or the regional fluoride estimate: ${healthFails.join('; ')}. Do not use for drinking until an accredited laboratory confirms actual chemistry; budget treatment accordingly.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
       y += 18;
     } else if (aestheticFlags.length > 0) {
       doc.setFillColor(255, 247, 230);

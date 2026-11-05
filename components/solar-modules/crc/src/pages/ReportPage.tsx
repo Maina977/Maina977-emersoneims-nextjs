@@ -187,7 +187,8 @@ export default function ReportPage() {
   } = useSolarStore();
 
   const [proposalNo, setProposalNo] = useState(() => 'SGP-' + Date.now().toString().slice(-6));
-  const [preparedBy, setPreparedBy] = useState('Eng. Lead');
+  // No invented author: blank prints the company name (audit 2026-11-05).
+  const [preparedBy, setPreparedBy] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -287,10 +288,11 @@ export default function ReportPage() {
         batteryKwh: design.batteryKwh,
         batteryMake: design.batteryMake,
         batteryModel: design.batteryModel,
-        tiltDeg: design.tiltDeg,
-        azimuthDeg: design.azimuthDeg,
+        // 10° / 0° are store defaults, not a survey: shown as "set at the site survey".
+        tiltDeg: design.tiltDeg === 10 && design.azimuthDeg === 0 ? null : design.tiltDeg,
+        azimuthDeg: design.tiltDeg === 10 && design.azimuthDeg === 0 ? null : design.azimuthDeg,
         systemType: design.systemType,
-        stringConfig: 'auto-sized by Calculator',
+        stringConfig: 'Set at detailed design (the calculator sizes the array, not the strings)',
         specificYieldKwhPerKwp:
           metrics.systemSizeKw > 0
             ? Math.round(metrics.annualProduction / metrics.systemSizeKw)
@@ -358,7 +360,7 @@ export default function ReportPage() {
           url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
         { label: 'Cash flow assumptions',
           source: `${offGrid ? 'Diesel price' : 'Tariff'} held flat (+${a.tariffEscalationPct}%/yr), panel output -${a.panelDegradationPct}%/yr, O&M ${a.omPctOfCapex}% of capex/yr`
-            + (batteryLineKes > 0 ? ', one inverter replacement in year 13, a second battery in year 24 and one battery replacement in year 12 at today\'s price' : '')
+            + (batteryLineKes > 0 ? ', one inverter replacement in year 13, a second battery in year 24 and one battery replacement in year 12 at today\'s price' : ', one inverter replacement in year 13 at today\'s price')
             + `, NPV at ${a.discountRatePct}%.`,
           url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) }
       ]

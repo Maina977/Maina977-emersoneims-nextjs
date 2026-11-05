@@ -967,7 +967,7 @@ export default function FaultDiagnosticsPanel({
             )}
             {displayResults.length === 0 && !isSearching && lastSearched && (
               <div className="text-center py-10">
-                <div className="text-lg font-bold text-white mb-2">{notice && !/^(SAFETY FIRST|GUIDE):/.test(notice) ? <>&ldquo;{lastSearched}&rdquo; is not a valid code</> : <>No alarm matches &ldquo;{lastSearched}&rdquo;</>}</div>
+                <div className="text-lg font-bold text-white mb-2">{notice && /^No alarm with that number/.test(notice) ? <>&ldquo;{lastSearched}&rdquo; is not in our library</> : notice && !/^(SAFETY FIRST|GUIDE):/.test(notice) ? <>&ldquo;{lastSearched}&rdquo; is not a valid code</> : <>No alarm matches &ldquo;{lastSearched}&rdquo;</>}</div>
                 {notice && !/^(SAFETY FIRST|GUIDE):/.test(notice) && <div role="alert" className="text-amber-300 text-sm max-w-md mx-auto mb-2">{notice}</div>}
                 <div className="text-slate-400 max-w-md mx-auto text-sm">
                   Try the code exactly as it shows on the display (for example <span className="text-cyan-400 font-mono">SPN 110 FMI 0</span>)

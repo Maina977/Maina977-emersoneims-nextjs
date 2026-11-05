@@ -95,7 +95,7 @@ export function runCalc(fn: (b: Body) => unknown, b: Body): unknown {
       // verdict (2026-10-29 audit: a blank M_Ed showed a bare "PASS").
       const notChecked = Array.isArray(o.not_checked) && o.not_checked.length ? ` — not checked: ${(o.not_checked as string[]).join('; ')}` : '';
       const overall = checks.length
-        ? { overall: (failed.length ? `FAIL: ${failed.length} of ${checks.length} checks fail (${failed.join('; ')})` : notChecked ? `PARTIAL: ${checks.length === 1 ? 'the 1 check made passes' : `the ${checks.length} checks made pass`}, but this is not a full check` : `PASS: all ${checks.length} checks pass`) + notChecked, all_checks_pass: !failed.length && !notChecked }
+        ? { overall: (failed.length ? `FAIL: ${failed.length} of ${checks.length} ${checks.length === 1 ? 'check fails' : failed.length === 1 ? 'checks fails' : 'checks fail'} (${failed.join('; ')})` : notChecked ? `PARTIAL: ${checks.length === 1 ? 'the 1 check made passed' : `the ${checks.length} checks made passed`}, but this is not a full check` : `PASS: all ${checks.length} checks pass`) + notChecked, all_checks_pass: !failed.length && !notChecked }
         : {};
       return { ...overall, ...o, disclaimer: CALC_DISCLAIMER };
     }
@@ -566,7 +566,9 @@ export function steelBolt(b: Body) {
     // Table 3.4 with threads in the shear plane: αv = 0.6 only for 4.6, 5.6 and
     // 8.8. From fub alone, 400 and 500 could be either, so the lower value is
     // used; 10.9 at 0.6 read 20% high (audit 2026-10-31).
-    const av = optN(b, 'alpha_v') ?? (fub === 800 ? 0.6 : 0.5);
+    const grade = b.grade == null || b.grade === '' ? null : String(b.grade).trim();
+    if (grade !== null && !['4.6', '4.8', '5.6', '5.8', '6.8', '8.8', '10.9'].includes(grade)) return bad('grade must be one of 4.6, 4.8, 5.6, 5.8, 6.8, 8.8, 10.9');
+    const av = optN(b, 'alpha_v') ?? (grade ? (['4.6', '5.6', '8.8'].includes(grade) ? 0.6 : 0.5) : fub === 800 ? 0.6 : 0.5);
     if (av !== 0.5 && av !== 0.6) return bad('alpha_v must be 0.5 or 0.6 (EN 1993-1-8 Table 3.4)');
     return { Fv_Rd_kN: r((av * fub! * As!) / gM2 / 1000), alpha_v: av, method: 'EN 1993-1-8 Table 3.4, one shear plane' };
   }

@@ -309,6 +309,7 @@ function CommonFaultsSection({ manual }: { manual: ControllerManual }) {
 
   return (
     <div className="space-y-3">
+      <p className="text-xs text-slate-400">Numbers such as {manual.commonFaults[0]?.code || 'DSE-001'} are our reference numbers for this list. The controller display shows the alarm name: match it by the title.</p>
       {manual.commonFaults.map((fault) => (
         <div
           key={fault.code}
@@ -328,7 +329,7 @@ function CommonFaultsSection({ manual }: { manual: ControllerManual }) {
                 fault.severity === 'shutdown' ? 'bg-orange-500/20 text-orange-400' :
                 'bg-yellow-500/20 text-yellow-400'
               }`}>
-                {fault.code}
+                <span className="sr-only">Reference </span>{fault.code}
               </span>
               <div>
                 <div className="text-white font-medium">{fault.title}</div>
@@ -405,15 +406,15 @@ function CommonFaultsSection({ manual }: { manual: ControllerManual }) {
 function SparePartsSection({ manual }: { manual: ControllerManual }) {
   return (
     <div className="bg-slate-800/50 rounded-xl p-4 border border-amber-500/30">
-      <h4 className="text-lg font-bold text-amber-400 mb-4">📦 Spare Parts Catalog</h4>
+      <h4 className="text-lg font-bold text-amber-400 mb-1">📦 Spare Parts</h4>
+      <p className="text-xs text-slate-400 mb-4">Part numbers for reference. Check the part number against your controller's label before ordering; we confirm price and stock when you ask.</p>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-700">
               <th className="text-left py-2 px-3 text-slate-400">Part Number</th>
               <th className="text-left py-2 px-3 text-slate-400">Description</th>
-              <th className="text-left py-2 px-3 text-slate-400">Price</th>
-              <th className="text-left py-2 px-3 text-slate-400">Availability</th>
+              <th className="text-left py-2 px-3 text-slate-400">Price and availability</th>
             </tr>
           </thead>
           <tbody>
@@ -421,16 +422,10 @@ function SparePartsSection({ manual }: { manual: ControllerManual }) {
               <tr key={i} className="border-b border-slate-700/50 hover:bg-slate-700/30">
                 <td className="py-2 px-3 text-cyan-400 font-mono">{part.partNumber}</td>
                 <td className="py-2 px-3 text-white">{part.description}</td>
-                <td className="py-2 px-3 text-amber-400 font-bold">{part.price}</td>
-                <td className="py-2 px-3">
-                  <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                    part.availability === 'in-stock' ? 'bg-green-500/20 text-green-400' :
-                    part.availability === 'order' ? 'bg-amber-500/20 text-amber-400' :
-                    'bg-red-500/20 text-red-400'
-                  }`}>
-                    {part.availability === 'in-stock' ? 'In Stock' :
-                     part.availability === 'order' ? `Order (${part.leadTime || '2-4 weeks'})` : 'Discontinued'}
-                  </span>
+                <td className="py-2 px-3 text-slate-300">
+                  {part.availability === 'discontinued' ? 'Discontinued' : (
+                    <a href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi EmersonEIMS, please quote ${part.partNumber} (${part.description})`)}`} target="_blank" rel="noopener noreferrer" className="text-green-400 underline">Ask for a quote</a>
+                  )}
                 </td>
               </tr>
             ))}

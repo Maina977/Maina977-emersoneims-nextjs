@@ -164,6 +164,9 @@ const CtaLink = styled.a<{ $primary?: boolean }>`
 type SystemType = 'grid-tied' | 'hybrid' | 'off-grid';
 
 interface CalcResult {
+  /** Where the sizing was done: the town or "Custom location", and its coordinates. */
+  lat?: number;
+  lon?: number;
   systemType: SystemType;
   pvKwp: number;
   panels: number;
@@ -268,6 +271,8 @@ export default function CalculatorPage() {
       // (2026-10-29 audit: it said KES 25 "entered by the client" after 30 was entered).
       updateSite({
         monthlyConsumptionKwh: cons, irradianceKwhPerM2Day: data.sunHours.annual, irradianceSource: data.sunHours.source,
+        ...(Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon)) ? { lat: Number(data.lat), lon: Number(data.lon) } : {}),
+        ...(data.location ? { displayName: String(data.location).replace(/ \(no location given\)$/, '') } : {}),
         tariffKesPerKwh: Number(tariff) > 0 ? Number(tariff) : DEFAULT_TARIFF_KES_PER_KWH,
         dieselKesPerLitre: Number(diesel) > 0 ? Number(diesel) : DEFAULT_DIESEL_KES_PER_LITRE,
       });
