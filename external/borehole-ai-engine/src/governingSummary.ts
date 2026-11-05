@@ -100,6 +100,7 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
     [`Drilling (${f(eco.depthVal)} m, ${eco.drillMethod})`, usd(eco.drillingCost), eco.kes(eco.drillingCost)],
     ['Mobilisation', usd(eco.mobilisationCost), eco.kes(eco.mobilisationCost)],
     ['Casing and screen', usd(eco.casingCost + eco.screenCost), eco.kes(eco.casingCost + eco.screenCost)],
+    ['Completion: gravel pack, development, 24 h test pumping, lab test, cap', usd(eco.completionCost), eco.kes(eco.completionCost)],
     ['Pump and installation', usd(eco.pumpCost + eco.installCost), eco.kes(eco.pumpCost + eco.installCost)],
   ];
   if (eco.solarCost > 0) costRows.push([`Solar pump power (${f(eco.solarKW, 1)} kW)`, usd(eco.solarCost), eco.kes(eco.solarCost)]);

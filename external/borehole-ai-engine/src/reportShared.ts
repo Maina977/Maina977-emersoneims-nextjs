@@ -7,7 +7,7 @@ import type { AnalysisResult } from './types';
 import { finalVerdict } from './verdict';
 import { auditReport, type AuditReport } from './reportAuditor';
 import type { VerificationReport } from './preReportVerification';
-import { drillRatePerM, mobilisationUSD, countyRateBand, costSoilType, KES_PER_USD } from './costModel';
+import { drillRatePerM, mobilisationUSD, countyRateBand, costSoilType, KES_PER_USD, drillingCostKES, EIMS_RATES_KES } from './costModel';
 
 export class AuditBlockError extends Error {
   public audit: AuditReport;
@@ -58,8 +58,8 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   // Same basis as the on-screen cost card (costModel.ts, 2026-10-20): measured
   // soil type only, kept inside the county's recorded rate band.
   const soilType = (costSoilType(result) || 'unknown').toLowerCase();
-  const cpm = drillRatePerM(soilType, countyRateBand(result), (result as any).rockClassification?.primaryRockType);
-  const drillingCost = Math.round(depthVal * cpm);
+  const cpm = drillRatePerM(soilType, countyRateBand(result), (result as any).rockClassification?.primaryRockType, depthVal);
+  const drillingCost = Math.round(drillingCostKES(depthVal, (result as any).rockClassification?.primaryRockType) / KES_PER_USD);
   const mobilisationCost = mobilisationUSD(result.site?.latitude, result.site?.longitude);
   // Sediments (Garissa's Merti beds, Lodwar alluvium) are drilled mud-rotary
   // whatever the topsoil (2026-10-25 audit: every site was priced air/DTH).
@@ -73,7 +73,9 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
 
   const wci = (result as any).waterDesign?.waterChemistryIndices;
   const isCorrosive = wci && (wci.langelierSaturationIndex ?? 0) < -1.5;
-  const casingRatePerM = isCorrosive ? 32 : 18; // HDPE/SS316L vs standard steel
+  // 6-inch steel casing at the EmersonEIMS tender rate (KES 4,200/m); corrosion-
+  // resistant casing is priced at the same rate until a supplier quotes it.
+  const casingRatePerM = Math.round(EIMS_RATES_KES.steelCasing6inPerM / KES_PER_USD);
 
   const aqZone = (result as any).subsurfaceModel?.aquiferZones?.[0] ?? (result as any).geophysicsFusion?.aquiferZones?.[0];
   const aquiferThickness = aqZone ? Math.round(aqZone.bottomM - aqZone.topM) : 0;
@@ -159,10 +161,26 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   // Regulations): hydrogeological survey report — REQUIRED for motorised
   // boreholes — runs ≈ KSh 40,000–110,000 (July 2026 market), plus WRA
   // groundwater abstraction approval and post-completion water use permit.
-  // Budgeted at KSh 75,000 survey (midpoint) + KSh 25,000 approvals.
-  const surveyCost = Math.round(75000 / KES_PER_USD);
-  const permitCost = Math.round(25000 / KES_PER_USD);
-  const subtotalCost = surveyCost + permitCost + drillingCost + mobilisationCost + casingCost + screenCost + pumpCost + installCost + solarCost + wqTreatmentCost + defluoridationCost;
+  // Now priced at the EmersonEIMS tender rates below (2026-11-05).
+  // EmersonEIMS tender rates (Baringo, 16 Oct 2026): survey KES 85,000; WRA
+  // drilling permit 80,000 + abstraction permit 30,000 + county fees 25,000;
+  // NEMA report 105,000 for institutional or commercial abstraction (taken as
+  // a planned yield of 5 m3/h or more).
+  const needsNema = yieldVal >= 5;
+  const surveyCost = Math.round(EIMS_RATES_KES.hydrogeologicalSurvey / KES_PER_USD);
+  const permitKES = EIMS_RATES_KES.wraDrillingPermit + EIMS_RATES_KES.abstractionPermit + EIMS_RATES_KES.countyFees + (needsNema ? EIMS_RATES_KES.nemaReport : 0);
+  const permitCost = Math.round(permitKES / KES_PER_USD);
+  const permitNote = `WRA drilling permit KSh 80,000 + abstraction permit KSh 30,000 + county fees KSh 25,000${needsNema ? ' + NEMA report KSh 105,000 (institutional/commercial yield)' : ''} (${EIMS_RATES_KES.source})`;
+  // Completion works the tender prices separately: gravel pack, 12 h
+  // development, 24 h test pumping, laboratory water test, cap and site finishing.
+  const gravelTons = Math.max(1, Math.round(depthVal * EIMS_RATES_KES.gravelTonsPerMetre));
+  const completionKES = gravelTons * EIMS_RATES_KES.gravelPackPerTon
+    + EIMS_RATES_KES.developmentPerHour * EIMS_RATES_KES.developmentHours
+    + EIMS_RATES_KES.testPumpingPerHour * EIMS_RATES_KES.testPumpingHours
+    + EIMS_RATES_KES.waterQualityLab + EIMS_RATES_KES.capAndSiteFinishing;
+  const completionCost = Math.round(completionKES / KES_PER_USD);
+  const completionNote = `Gravel pack ${gravelTons} t x KSh 6,500, development 12 h x KSh 12,500, 24 h test pumping x KSh 9,500, laboratory water test KSh 28,000, cap and site finishing KSh 85,000 (${EIMS_RATES_KES.source})`;
+  const subtotalCost = surveyCost + permitCost + drillingCost + mobilisationCost + casingCost + screenCost + completionCost + pumpCost + installCost + solarCost + wqTreatmentCost + defluoridationCost;
   const isHardRock = /gneiss|granite|basalt|quartzite|dolerite/i.test(soilType) || /rocky/i.test(soilType);
   const contingencyRate = isHardRock ? 0.25 : 0.15;
   const contingency = Math.round(subtotalCost * contingencyRate);
@@ -254,7 +272,7 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
     yr1Revenue, yr3Revenue, baseAnnualRevenue, netAnnual, cashFlows,
     irr, paybackMonths, npv10Rounded, roRecovery, roOpexPerM3, paybackWithheld,
     // Kenya market calibration (July 2026)
-    drillMethod, surveyCost, permitCost,
+    drillMethod, surveyCost, permitCost, permitNote, completionCost, completionNote, gravelTons,
     kesPerUsd: KES_PER_USD,
     kes: fmtKESm,
     cpmKES: kesRound(cpm),

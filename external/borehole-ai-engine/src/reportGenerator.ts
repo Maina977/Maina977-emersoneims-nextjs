@@ -1389,8 +1389,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       body: [
         ['Survey + statutory approvals', `$${(eco.surveyCost + eco.permitCost).toLocaleString()}`, eco.kes(eco.surveyCost + eco.permitCost), 'Hydrogeological survey report (required for motorised boreholes, KSh 40k-110k market) + WRA abstraction approval'],
         ['Drilling', `$${eco.drillingCost.toLocaleString()}`, eco.kes(eco.drillingCost), `${eco.depthVal} m × ~KSh ${eco.cpmKES.toLocaleString()}/m — ${eco.drillMethod}, ${eco.soilType} ground (Kenya 2026 market)`],
-        ...(eco.mobilisationCost > 0 ? [['Mobilisation', `$${eco.mobilisationCost.toLocaleString()}`, eco.kes(eco.mobilisationCost), 'Rig and support trucks beyond 50 km of Nairobi (~$3/km); nearer sites are covered by the per-metre rate'] as string[]] : []),
+        ...(eco.mobilisationCost > 0 ? [['Mobilisation', `$${eco.mobilisationCost.toLocaleString()}`, eco.kes(eco.mobilisationCost), 'Rig and crew mobilisation: about $3/km beyond 50 km of Nairobi, at least KSh 240,000 beyond 100 km (EmersonEIMS tender rate); nearer sites are covered by the per-metre rate'] as string[]] : []),
         ['Casing + screen', `$${(eco.casingCost + eco.screenCost).toLocaleString()}`, eco.kes(eco.casingCost + eco.screenCost), `Casing ${eco.casingNote} = $${eco.casingCost.toLocaleString()}; provisional screen ${Math.round(eco.screenLength)}m x $35/m = $${eco.screenCost.toLocaleString()}`],
+        ['Completion works', `$${eco.completionCost.toLocaleString()}`, eco.kes(eco.completionCost), eco.completionNote],
         ['Pump + installation', `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.kes(eco.pumpCost + eco.installCost), eco.pumpNote],
         // Hand-pump systems need no solar array — omit the row entirely (audit #9)
         ...(eco.solarCost > 0 ? [['Solar power system', `$${eco.solarCost.toLocaleString()}`, eco.kes(eco.solarCost), `${eco.solarKW.toFixed(1)} kW array`] as string[]] : []),
@@ -2063,7 +2064,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       body: [
         ['Survey + statutory approvals', `$${(eco.surveyCost + eco.permitCost).toLocaleString()}`, 'Hydrogeological survey report + WRA abstraction approval (required)'],
         ['Drilling, casing & screen',  `$${(eco.drillingCost + eco.casingCost + eco.screenCost).toLocaleString()}`, `${eco.depthVal}m at ~KSh ${eco.cpmKES.toLocaleString()}/m (${eco.drillMethod}, ${eco.soilType}) + casing + screen`],
-        ...(eco.mobilisationCost > 0 ? [['Mobilisation', `$${eco.mobilisationCost.toLocaleString()}`, 'Rig and support trucks beyond 50 km of Nairobi (~$3/km); nearer sites are covered by the per-metre rate'] as [string, string, string]] : []),
+        ['Completion works', `$${eco.completionCost.toLocaleString()}`, eco.completionNote],
+        ...(eco.mobilisationCost > 0 ? [['Mobilisation', `$${eco.mobilisationCost.toLocaleString()}`, 'Rig and crew mobilisation: about $3/km beyond 50 km of Nairobi, at least KSh 240,000 beyond 100 km (EmersonEIMS tender rate); nearer sites are covered by the per-metre rate'] as [string, string, string]] : []),
         ['Pump & installation',        `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.pumpNote],
         ...(eco.solarCost > 0 ? [['Solar power system', `$${eco.solarCost.toLocaleString()}`, `${eco.solarKW} kW array + controller`] as [string, string, string]] : []),
         ...((eco.wqTreatmentCost + eco.defluoridationCost) > 0
@@ -3091,7 +3093,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,
       yr1Utilization, yr3PlusUtilization, yr1Revenue, yr3Revenue,
       netAnnual, cashFlows, irr, paybackMonths, npv10Rounded,
-      drillMethod, surveyCost, permitCost, kesPerUsd, kes, cpmKES,
+      drillMethod, surveyCost, permitCost, permitNote, completionCost, completionNote, kesPerUsd, kes, cpmKES,
     } = computeCanonicalEconomics(result);
 
     autoTable(doc, {
@@ -3099,11 +3101,12 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       head: [['Cost Item', 'Amount (USD)', 'Notes']],
       body: [
         ['Hydrogeological Survey + ERT', `$${surveyCost.toLocaleString()}`, 'Statutory requirement for motorised boreholes (Kenya Water Resources Regulations) -- KSh 40,000-110,000 market range, July 2026'],
-        ['WRA Approvals & Permits', `$${permitCost.toLocaleString()}`, 'Groundwater abstraction approval before drilling + water use permit after completion'],
-        ['Drilling', `$${drillingCost.toLocaleString()}`, `${depthVal}m x $${cpm}/m (~KSh ${cpmKES.toLocaleString()}/m) -- ${drillMethod}, ${soilType} ground. Kenya market July 2026: KSh 6,500-9,500/m standard (air), up to ~KSh 13,000/m mud drilling in loose formations`],
-        ...(mobilisationCost > 0 ? [['Mobilisation', `$${mobilisationCost.toLocaleString()}`, 'Rig and support trucks beyond 50 km of Nairobi (~$3/km); nearer sites are covered by the per-metre rate']] : []),
+        ['WRA, county and NEMA approvals', `$${permitCost.toLocaleString()}`, permitNote],
+        ['Drilling', `$${drillingCost.toLocaleString()}`, `${depthVal}m x $${cpm}/m (~KSh ${cpmKES.toLocaleString()}/m) -- ${drillMethod}, ${soilType} ground. EmersonEIMS rates: KSh 6,800/m to 100 m, 7,300/m to 200 m, 8,200/m to 300 m, 9,500/m beyond; hard rock KSh 10,500/m`],
+        ...(mobilisationCost > 0 ? [['Mobilisation', `$${mobilisationCost.toLocaleString()}`, 'Rig and crew mobilisation: about $3/km beyond 50 km of Nairobi, at least KSh 240,000 beyond 100 km (EmersonEIMS tender rate); nearer sites are covered by the per-metre rate']] : []),
         ['Casing & Grouting', `$${casingCost.toLocaleString()}`, casingNote],
         ['Well Screen', `$${screenCost.toLocaleString()}`, screenNote],
+        ['Completion Works', `$${completionCost.toLocaleString()}`, completionNote],
         ['Pump Unit', `$${pumpCost.toLocaleString()}`, pumpNote],
         ['Installation & Pipe', `$${installCost.toLocaleString()}`, 'Rising main, fittings, civil works'],
         ...(solarCost > 0 ? [['Solar Power System', `$${solarCost.toLocaleString()}`, `${solarKW} kW solar array + controller (~$1,500/kW, IRENA 2023)`]] : []),
@@ -10133,11 +10136,12 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     startY: y, margin: { left: margin, right: margin },
     head: [['Parameter', 'Value', 'Source', 'Status']],
     body: [
-      ['Drilling rate (loose ground, mud rotary)', '$82-100/m', 'Kenya contractor rates, July 2026', 'Regional est.'],
-      ['Drilling rate (consolidated, air/DTH)', '$62-72/m', 'Kenya contractor rates, July 2026 (KSh 6,500-9,500/m)', 'Regional est.'],
-      ['Steel casing', '$18/m', 'Kenya contractor survey (2024)', 'Regional est.'],
-      ['HDPE/SS316L casing (corrosive)', '$32/m', 'Kenya contractor survey (2024)', 'Regional est.'],
-      ['Mobilisation', '~$3/km beyond 50 km of Nairobi', 'Rig and support trucks out and back', 'Regional est.'],
+      ['Drilling, soft formation', 'KSh 6,800 / 7,300 / 8,200 / 9,500 per m (0-100 / 100-200 / 200-300 / over 300 m)', 'EmersonEIMS signed tender, Baringo, 16 Oct 2026', 'Company rate'],
+      ['Drilling, hard rock', 'KSh 10,500/m', 'EmersonEIMS pricing schedule, 16 Oct 2026', 'Company rate'],
+      ['Steel casing 152 mm (6 in)', 'KSh 4,200/m', 'EmersonEIMS signed tender, Baringo, 16 Oct 2026', 'Company rate'],
+      ['Gravel pack, development, test pumping', 'KSh 6,500/t; KSh 12,500/h x 12 h; KSh 9,500/h x 24 h', 'EmersonEIMS signed tender, Baringo, 16 Oct 2026', 'Company rate'],
+      ['Survey, approvals, lab test', 'Survey KSh 85,000; WRA 80,000 + abstraction 30,000 + county 25,000 (+ NEMA 105,000 at 5 m3/h or more); lab KSh 28,000', 'EmersonEIMS signed tender, Baringo, 16 Oct 2026', 'Company rate'],
+      ['Mobilisation', 'About $3/km beyond 50 km of Nairobi; at least KSh 240,000 beyond 100 km', 'EmersonEIMS signed tender, Baringo, 16 Oct 2026', 'Company rate'],
       ['Solar pump system', '$1,500/kW', 'IRENA Renewable Power Generation Costs (2023)', 'Peer-reviewed'],
       ['Water tariff', '$0.80/m\u00B3 (base case)', 'WHO/UNICEF JMP rural Africa range; see 3-scenario comparison', 'Regional est.'],
       ['Maintenance rate', '4.5% of CAPEX/yr', 'World Bank WASH O&M Benchmark (2019)', 'Peer-reviewed'],

@@ -334,7 +334,7 @@ function genCostBreakdown(depth: number, yld: number, soilType?: string, ctx: Co
   };
   // Same per-metre basis as the PDF report (costModel.ts), kept inside the
   // county's recorded drilling-rate band.
-  const ratePerM = drillRatePerM(soilType, ctx.countyRatePerM, ctx.rockType);
+  const ratePerM = drillRatePerM(soilType, ctx.countyRatePerM, ctx.rockType, depth);
   const unc = uncertaintyBySoil[soilType || 'loamy'] || 0.20;
   const drilling = Math.round(depth * ratePerM);
   const casing = Math.round(depth * 0.35 * 45);
@@ -5881,8 +5881,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     {eco ? (<>
                       <tr><td>Hydrogeological survey + WRA approvals (required)</td><td>{fmtUSD(eco.surveyCost + eco.permitCost)}</td><td>{fmtKSH(eco.surveyCost + eco.permitCost)}</td></tr>
                       <tr><td>Drilling ({eco.depthVal} m at about KSh {eco.cpmKES.toLocaleString()}/m, {eco.drillMethod})</td><td>{fmtUSD(eco.drillingCost)}</td><td>{fmtKSH(eco.drillingCost)}</td></tr>
-                      {eco.mobilisationCost > 0 && <tr><td>Mobilisation (beyond 50 km of Nairobi)</td><td>{fmtUSD(eco.mobilisationCost)}</td><td>{fmtKSH(eco.mobilisationCost)}</td></tr>}
+                      {eco.mobilisationCost > 0 && <tr><td>Mobilisation (rig and crew; at least KSh 240,000 beyond 100 km)</td><td>{fmtUSD(eco.mobilisationCost)}</td><td>{fmtKSH(eco.mobilisationCost)}</td></tr>}
                       <tr><td>Casing &amp; screen</td><td>{fmtUSD(eco.casingCost + eco.screenCost)}</td><td>{fmtKSH(eco.casingCost + eco.screenCost)}</td></tr>
+                      <tr><td>Completion: gravel pack, development, 24 h test pumping, lab test, cap</td><td>{fmtUSD(eco.completionCost)}</td><td>{fmtKSH(eco.completionCost)}</td></tr>
                       <tr><td>Pump + installation</td><td>{fmtUSD(eco.pumpCost + eco.installCost)}</td><td>{fmtKSH(eco.pumpCost + eco.installCost)}</td></tr>
                       {eco.solarCost > 0 && <tr><td>Solar pump power ({eco.solarKW} kW)</td><td>{fmtUSD(eco.solarCost)}</td><td>{fmtKSH(eco.solarCost)}</td></tr>}
                       {eco.wqTreatmentCost + eco.defluoridationCost > 0 && <tr><td>Water treatment allowance (a lab test decides)</td><td>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</td><td>{fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}</td></tr>}
