@@ -33,11 +33,12 @@ export function VoltkaBillboard() {
           <h2 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.05] max-w-3xl">
             Blackout Tonight.
             <br />
-            Powered by Morning.
+            We Answer Tonight.
           </h2>
           <p className="mt-4 text-sm sm:text-lg text-white/85 font-light max-w-xl">
-            When a client calls at midnight, our crews deliver, install and
-            commission overnight — anywhere in Kenya&apos;s 47 counties.
+            The emergency line is answered round the clock. Engineers reach
+            Nairobi metro sites in under 4 hours; other counties by mobile
+            workshop, depending on distance.
           </p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Link

@@ -36,7 +36,7 @@ const SERVICES_ORBIT = [
   { src: '/images/desktop/hvac/air-conditioner-1.png', title: 'Air Conditioning & HVAC', subtitle: 'Split, VRF & cold rooms' },
   { src: '/images/desktop/borehole/drilling-1.png', title: 'Borehole Drilling', subtitle: 'Survey to commissioning' },
   { src: '/images/desktop/borehole/pumps-1.png', title: 'Borehole Pumps', subtitle: 'Solar-ready submersibles' },
-  { src: '/images/desktop/incinerator/incinerator-1.png', title: 'Incinerators', subtitle: 'NEMA-compliant, medical-grade' },
+  { src: '/images/desktop/incinerator/incinerator-1.png', title: 'Incinerators', subtitle: 'Medical-grade, built for NEMA emission limits' },
   { src: '/images/desktop/waterheaters/heater-1.png', title: 'Water Heating', subtitle: 'Solar & commercial systems' },
   { src: '/images/desktop/overhaul/engine-liner-overhaul.jpg', title: 'Generator Overhauls', subtitle: 'Factory-spec engine rebuilds' },
   { src: '/images/steel-fabrication-workshop.png', title: 'Steel Fabrication', subtitle: 'Canopies, frames & enclosures' },
@@ -164,7 +164,7 @@ export default function ServicesPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
               { href: '/industries/manufacturing', icon: '🏭', name: 'Manufacturing', tag: 'Production-line uptime, motor & VFD support' },
-              { href: '/industries/hospitals-healthcare', icon: '🏥', name: 'Hospitals & Healthcare', tag: 'Critical-care backup, NEMA-compliant incineration' },
+              { href: '/industries/hospitals-healthcare', icon: '🏥', name: 'Hospitals & Healthcare', tag: 'Critical-care backup, medical-waste incineration' },
               { href: '/industries/banks-financial', icon: '🏦', name: 'Telecom & Financial', tag: 'Branch UPS, data-room cooling, ATM uptime' },
               // Was /industries/real-estate — not a real slug, served "Industry
               // Not Found" at HTTP 200. /industries/commercial-property is a

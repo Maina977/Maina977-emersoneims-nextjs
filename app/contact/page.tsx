@@ -191,28 +191,8 @@ function HoloCard({ children, className = '', delay = 0 }: { children: React.Rea
   );
 }
 
-// Glitch Text Effect
-function GlitchText({ children, className = '' }: { children: string; className?: string }) {
-  return (
-    <span className={`relative inline-block ${className}`}>
-      <span className="relative z-10">{children}</span>
-      <span 
-        className="absolute top-0 left-0 text-cyan-400 opacity-70 animate-pulse"
-        style={{ clipPath: 'inset(0 0 50% 0)', transform: 'translate(-2px, -1px)' }}
-        aria-hidden="true"
-      >
-        {children}
-      </span>
-      <span 
-        className="absolute top-0 left-0 text-red-400 opacity-70 animate-pulse"
-        style={{ clipPath: 'inset(50% 0 0 0)', transform: 'translate(2px, 1px)' }}
-        aria-hidden="true"
-      >
-        {children}
-      </span>
-    </span>
-  );
-}
+// GlitchText removed 2026-11-06: it rendered its text in three layers, so the
+// h1 read "CONTACT CONTACT CONTACT" to Google and screen readers.
 
 // Typing Animation
 function TypeWriter({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -859,11 +839,11 @@ function SciFiContactPageInner() {
             transition={{ delay: 0.3 }}
             className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6"
           >
-            <GlitchText className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
               CONTACT
-            </GlitchText>
+            </span>
             <br />
-            <span className="text-white">COMMAND CENTER</span>
+            <span className="text-white">EMERSONEIMS</span>
           </m.h1>
 
           {/* Subtitle with typing effect */}

@@ -8,6 +8,9 @@
 
 import Link from 'next/link';
 import { Shield, Wrench, Award, Zap, Phone, ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
+import { confirmedPriceFor, kesMillions, VOLTKA_PRICE_BASIS_SHORT } from '@/lib/pricing/voltkaConfirmedPrices';
+
+const BANNER_SIZES = [100, 200, 250, 375, 500, 750];
 
 interface CumminsBannerProps {
   variant?: 'hero' | 'compact' | 'sidebar' | 'footer';
@@ -245,14 +248,17 @@ function CumminsBannerInner({
                    
                     className="mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"
                   >
-                    {[
-                      { kva: '20KVA', price: 'KES 500K' },
-                      { kva: '50KVA', price: 'KES 1.6M' },
-                      { kva: '100KVA', price: 'KES 2.3M' },
-                      { kva: '250KVA', price: 'KES 5.5M' },
-                      { kva: '500KVA', price: 'KES 9.5M' },
-                      { kva: '1000KVA', price: 'KES 16M' },
-                    ].map((item, i) => (
+                    {/* Owner-confirmed VOLTKA prices only (lib/pricing/voltkaConfirmedPrices.ts).
+                        The six figures here before 2026-11-06 (20 kVA 500K ... 1000 kVA 16M)
+                        were never confirmed and contradicted the price list on the same page. */}
+                    {BANNER_SIZES.map((kva) => {
+                      const p = confirmedPriceFor(kva)!;
+                      return {
+                        kva: `${kva}KVA`,
+                        price: kesMillions((p.openKes ?? p.silentKes)!),
+                        label: p.openKes ? 'open frame' : 'silent',
+                      };
+                    }).map((item, i) => (
                       <div
                         key={i}
                        
@@ -261,9 +267,13 @@ function CumminsBannerInner({
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
                         <p className="relative text-white font-bold text-lg group-hover:text-cyan-300 transition-colors">{item.kva}</p>
-                        <p className="relative text-amber-400 text-sm font-semibold">From {item.price}</p>
+                        <p className="relative text-amber-400 text-sm font-semibold">{item.price}</p>
+                        <p className="relative text-gray-400 text-xs">{item.label}</p>
                       </div>
                     ))}
+                    <p className="col-span-full text-center text-xs text-gray-400">
+                      New VOLTKA, {VOLTKA_PRICE_BASIS_SHORT}. Other sizes: request current price.
+                    </p>
                   </div>
                 )}
               </div>

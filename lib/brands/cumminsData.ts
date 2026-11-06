@@ -19,7 +19,9 @@ export const CUMMINS_BRAND_INFO = {
     unit: 'KVA'
   },
   warranty: {
-    years: 3,
+    // Was 3 while the description said 2; size pages rendered "3 years".
+    // Owner-confirmed warranty is 2 years (2026-11-06 fix).
+    years: 2,
     description: '2 Years Comprehensive Warranty'
   },
   freeService: {

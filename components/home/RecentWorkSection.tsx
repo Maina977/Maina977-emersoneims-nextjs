@@ -42,7 +42,7 @@ export default function RecentWorkSection() {
           id="recent-work-heading"
           className="mt-4 text-balance text-4xl font-semibold tracking-tight text-white lg:text-6xl"
         >
-          Two jobs from this month
+          Two recent jobs
         </h2>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/60">
           Photographs from our own sites and bench &mdash; the machines, panels and

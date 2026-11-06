@@ -2489,7 +2489,7 @@ export default function GeneratorPage() {
                   'Cummins engine components and factory defects',
                   'Alternator and starter motor coverage',
                   'Control panel and electrical wiring',
-                  'Free maintenance for first 6 months',
+                  '1 year free servicing on new sets',
                   '24/7 emergency breakdown support'
                 ].map((item, i) => (
                   <li

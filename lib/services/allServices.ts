@@ -2216,8 +2216,8 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
     slug: 'hospital-incinerators',
     name: 'Hospital Incinerators',
     shortName: 'Incinerators',
-    tagline: 'Safe Medical Waste Disposal | NEMA Compliant',
-    description: 'Hospital and medical waste incinerator installation and maintenance in Kenya. NEMA compliant systems. Safe disposal of infectious and hazardous waste.',
+    tagline: 'Safe Medical Waste Disposal | NEMA Licensing Support',
+    description: 'Hospital and medical waste incinerator installation and maintenance in Kenya. Systems designed for NEMA emission limits. Safe disposal of infectious and hazardous waste.',
     longDescription: `Ensure safe, compliant disposal of medical waste with professional incinerator solutions from EmersonEIMS. We design, install, and maintain incinerator systems that meet Kenya's environmental regulations.
 
 Medical waste requires specialized handling and destruction to prevent disease spread and environmental contamination. Our incinerators provide complete destruction of:
@@ -2243,7 +2243,7 @@ WE PROVIDE:
     ],
 
     metaTitle: 'Hospital Incinerators Kenya | Medical Waste | EmersonEIMS',
-    metaDescription: 'Hospital incinerators in Kenya. Medical waste disposal systems. NEMA compliant. Installation, maintenance, compliance support. Professional service. Call +254768860665',
+    metaDescription: 'Hospital incinerators in Kenya. Medical waste disposal systems designed for NEMA emission limits. Installation, maintenance, licensing support. Professional service. Call +254768860665',
     keywords: [
       'hospital incinerator Kenya',
       'medical waste incinerator Kenya',
@@ -2256,8 +2256,8 @@ WE PROVIDE:
 
     benefits: [
       {
-        title: 'NEMA Compliant',
-        description: 'Systems designed to meet Kenya environmental regulations and emission standards.',
+        title: 'Designed for NEMA Limits',
+        description: 'Systems designed to meet Kenya emission standards. The NEMA licence is site-specific; we support the application, monitoring and reporting.',
         icon: '📋'
       },
       {
