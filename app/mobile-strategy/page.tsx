@@ -291,17 +291,17 @@ export default function MobileStrategyPage() {
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
-              <h3 className="text-xl font-bold text-emerald-400 mb-4">Urban Hubs (4-hour response)</h3>
+              <h3 className="text-xl font-bold text-emerald-400 mb-4">Nairobi Metro (under 4-hour response)</h3>
               <p className="text-gray-300 text-sm mb-4">
                 Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, and other major cities benefit from dense technician networks and real-time dispatch optimization.
               </p>
               <p className="text-gray-400 text-sm">
-                <strong>Coverage:</strong> 12 cities with sub-4-hour emergency response via mobile coordination.
+                <strong>Response:</strong> under 4 hours in the Nairobi metro. Other cities are served by mobile workshop; the time depends on distance.
               </p>
             </div>
 
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
-              <h3 className="text-xl font-bold text-cyan-400 mb-4">Regional Centers (8-14 hour response)</h3>
+              <h3 className="text-xl font-bold text-cyan-400 mb-4">Regional Centers (mobile workshop)</h3>
               <p className="text-gray-300 text-sm mb-4">
                 Secondary towns and regional centers leverage mobile coordination for scheduled maintenance and emergency dispatch across larger distances.
               </p>

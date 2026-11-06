@@ -107,7 +107,7 @@ export default function HealthcareIndustriesPage() {
       facility: 'Level 6 referral hospital (Nairobi)',
       issue: 'Generator failure during critical surgery caused 2-hour emergency evacuation',
       solution: 'Installed dual-redundant 300kVA + 200kVA generators with automatic failover',
-      result: '2-hour emergency response, 99.8% uptime, zero patient incidents in 2 years',
+      result: 'Automatic failover between the two sets, 99.8% uptime, zero patient incidents in 2 years',
       location: 'Nairobi',
       investment: 'KES 2.8M',
     },

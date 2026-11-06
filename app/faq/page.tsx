@@ -60,7 +60,7 @@ const FAQ_DATA = [
     id: 'gen-8',
     category: 'Generators',
     question: 'Do you provide emergency generator repair services?',
-    answer: 'Yes! We offer 24/7 emergency response with <2 hour response time in Nairobi and <24 hours across all 47 Kenya counties. Call +254768860665 for immediate assistance.',
+    answer: 'Yes. We offer 24/7 emergency response: under 4 hours in the Nairobi metro; other counties by mobile workshop, with the time depending on distance. Call +254768860665 for immediate assistance.',
     tags: ['emergency', 'repair', '24/7', 'response']
   },
 
@@ -143,7 +143,7 @@ const FAQ_DATA = [
     id: 'srv-1',
     category: 'Services',
     question: 'What areas do you cover in Kenya?',
-    answer: 'We serve all 47 counties in Kenya with headquarters in Nairobi. Response times: Nairobi <2 hours, Central Kenya <4 hours, other regions <24 hours. We also serve Uganda, Tanzania, Rwanda, and Somalia.',
+    answer: 'We serve all 47 counties in Kenya with headquarters in Nairobi. Emergency response: under 4 hours in the Nairobi metro; other counties by mobile workshop, with the time depending on distance. We also serve Uganda, Tanzania, Rwanda, and Somalia.',
     tags: ['coverage', 'counties', 'nairobi', 'east africa']
   },
   {

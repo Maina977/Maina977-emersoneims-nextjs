@@ -179,7 +179,7 @@ export default function Phase5Page() {
                 <div className="text-4xl">🏆</div>
                 <div>
                   <h3 className="text-2xl font-bold text-amber-400 mb-3">Competitive Differentiation</h3>
-                  <p className="text-gray-300">Service bundles, guaranteed response times, transparent pricing matrices, and performance warranties across all 15 services.</p>
+                  <p className="text-gray-300">Service bundles, written response commitments, transparent pricing matrices, and performance warranties across all 15 services.</p>
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-6 ml-16">
@@ -196,7 +196,7 @@ export default function Phase5Page() {
                 <div>
                   <h4 className="text-amber-400 font-bold mb-3">Guarantees & SLAs</h4>
                   <ul className="space-y-2 text-gray-300 text-sm">
-                    <li>• Response time SLAs (4-24hr)</li>
+                    <li>• Written response commitments (under 4 h Nairobi metro)</li>
                     <li>• Quality guarantees</li>
                     <li>• Performance warranties</li>
                     <li>• Transparent pricing</li>
@@ -249,7 +249,7 @@ export default function Phase5Page() {
                 <div className="text-3xl">👑</div>
                 <div>
                   <h3 className="text-xl font-bold text-emerald-400 mb-2">Tier 4: Market Dominance</h3>
-                  <p className="text-gray-300 text-sm">Competitive matrix showing how each service outperforms alternatives. Guaranteed response times. Transparent total-cost-of-ownership analysis.</p>
+                  <p className="text-gray-300 text-sm">Competitive matrix showing how each service outperforms alternatives. Written response commitments. Transparent total-cost-of-ownership analysis.</p>
                 </div>
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function Phase5Page() {
                 </li>
                 <li className="flex gap-3">
                   <span className="text-emerald-400 font-bold">✓</span>
-                  <span>Response time guarantees (4-24hr tiers)</span>
+                  <span>Response commitment: under 4 h Nairobi metro; other counties by mobile workshop</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-emerald-400 font-bold">✓</span>

@@ -129,7 +129,7 @@ export default function CompetitivePositioningPage() {
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
               <h3 className="text-2xl font-bold text-emerald-400 mb-4">5. Written SLAs, Not Verbal Promises</h3>
               <p className="text-gray-300 mb-4">
-                Our maintenance contracts include measurable SLAs: emergency response times written into the contract, 99%+ uptime guarantees, automatic compensation for SLA misses. Enforceable commitments.
+                Our maintenance contracts put the service schedule, response commitment and pricing in writing, so both sides know what was agreed. The terms for your site are set out in the contract itself.
               </p>
               <p className="text-gray-400 text-sm">
                 <strong>Why it matters:</strong> Competitors say "we'll help you," we say "we guarantee this, or we pay you." Real accountability.
@@ -248,7 +248,7 @@ export default function CompetitivePositioningPage() {
             </div>
 
             <p className="text-gray-300 text-sm border-t border-emerald-500/30 pt-6">
-              <strong>Result:</strong> Customers choose EmersonEIMS not just for one advantage, but because we eliminate every source of risk and friction. One contract covers 15 services across 47 counties with guaranteed response times and transparent pricing. That integrated, risk-free value proposition is unmatched.
+              <strong>Result:</strong> Customers choose EmersonEIMS not just for one advantage, but because we eliminate every source of risk and friction. One contract covers 15 services across 47 counties with response commitments in writing and transparent pricing. That integrated, risk-free value proposition is unmatched.
             </p>
           </div>
         </div>

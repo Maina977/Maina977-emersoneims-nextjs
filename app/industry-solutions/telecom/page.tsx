@@ -165,9 +165,8 @@ export default function TelecomSolutionsPage() {
                 <h4 className="text-cyan-400 font-bold mb-4">Coverage</h4>
                 <ul className="space-y-2 text-gray-300 text-sm">
                   <li>✓ 47 county coverage across Kenya</li>
-                  <li>✓ 4-7 hour urban response time</li>
-                  <li>✓ 8-14 hour regional response time</li>
-                  <li>✓ 16-20 hour remote response time</li>
+                  <li>✓ Emergency response under 4 hours in the Nairobi metro</li>
+                  <li>✓ Other counties by mobile workshop: time depends on distance</li>
                   <li>✓ Fuel supply coordination nationwide</li>
                 </ul>
               </div>

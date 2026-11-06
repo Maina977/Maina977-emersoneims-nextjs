@@ -25,6 +25,21 @@ describe('re-audit 6 Nov 2026', () => {
     expect(read('app/generators/used/page.tsx')).toMatch(/Typical range across this brand&apos;s stock/);
   });
 
+  it('E: live pages carry no unconfirmed or guaranteed emergency response times', () => {
+    const live = [
+      'app/faq/page.tsx', 'app/customer-success/page.tsx', 'app/competitive-positioning/page.tsx',
+      'app/generators/rental/page.tsx', 'app/industries/healthcare/page.tsx',
+      'app/industries/telecommunications/page.tsx', 'app/industry-solutions/telecom/page.tsx',
+      'app/pricing/page.tsx', 'app/phase-5/page.tsx', 'app/mobile-strategy/page.tsx',
+    ];
+    for (const f of live) {
+      const s = read(f);
+      expect(s, f).not.toMatch(/guaranteed response|response time guarantee|Response Time SLA/i);
+      expect(s, f).not.toMatch(/<\s?2 hour|2-hour emergency response|arrive within 2-4 hours/i);
+      expect(s, f).not.toMatch(/\b(4|12|24)-hour emergency response|4-24h|4-7 hour urban|8-14 hour regional|16-20 hour remote|1-hour emergency|Regional Centers \(8-14|SLAs \(4-24hr\)/);
+    }
+  });
+
   it('D: the booking page does not say free AI tools are as accurate as a site assessment', () => {
     const b = read('app/booking/page.tsx');
     expect(b).not.toMatch(/just as\s+accurate/);

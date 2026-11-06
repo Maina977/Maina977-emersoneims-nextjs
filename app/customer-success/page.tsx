@@ -184,9 +184,9 @@ export default function CustomerSuccessPage() {
             </div>
 
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
-              <h3 className="text-5xl font-bold text-emerald-400 mb-3">4-24h</h3>
-              <p className="text-gray-300 mb-4"><strong>Response Time SLA</strong></p>
-              <p className="text-gray-400 text-sm">Guaranteed response based on region and service type. Emergency response proven in real scenarios.</p>
+              <h3 className="text-5xl font-bold text-emerald-400 mb-3">&lt;4h</h3>
+              <p className="text-gray-300 mb-4"><strong>Emergency Response, Nairobi Metro</strong></p>
+              <p className="text-gray-400 text-sm">Other counties by mobile workshop; the time depends on distance and is confirmed when you call.</p>
             </div>
 
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">

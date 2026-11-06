@@ -266,7 +266,7 @@ export default function PricingPage() {
                   <span>✓</span> Quarterly maintenance
                 </p>
                 <p className="text-gray-300 flex items-center gap-3">
-                  <span>✓</span> 24-hour emergency response
+                  <span>✓</span> 24/7 emergency response: under 4 h Nairobi metro, other counties by mobile workshop
                 </p>
                 <p className="text-gray-300 flex items-center gap-3">
                   <span>✓</span> 10% discount on repairs
@@ -292,7 +292,7 @@ export default function PricingPage() {
                   <span>✓</span> Monthly maintenance
                 </p>
                 <p className="text-gray-300 flex items-center gap-3">
-                  <span>✓</span> 12-hour emergency response
+                  <span>✓</span> 24/7 emergency response: under 4 h Nairobi metro, other counties by mobile workshop
                 </p>
                 <p className="text-gray-300 flex items-center gap-3">
                   <span>✓</span> 15% discount on repairs
@@ -318,7 +318,7 @@ export default function PricingPage() {
                   <span>✓</span> Weekly maintenance + monitoring
                 </p>
                 <p className="text-gray-300 flex items-center gap-3">
-                  <span>✓</span> 4-hour emergency response
+                  <span>✓</span> 24/7 emergency response: under 4 h Nairobi metro, other counties by mobile workshop
                 </p>
                 <p className="text-gray-300 flex items-center gap-3">
                   <span>✓</span> 20% discount on all work

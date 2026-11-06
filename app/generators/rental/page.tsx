@@ -207,7 +207,7 @@ const rentalFAQs = [
   },
   {
     question: 'What happens if the generator breaks down?',
-    answer: 'We provide 24/7 breakdown support. Within Nairobi, a technician will arrive within 2-4 hours. For critical applications, we can position a standby unit on site. If repair takes longer than 4 hours, we\'ll replace the unit at no extra cost.',
+    answer: 'We provide 24/7 breakdown support. Emergency response is under 4 hours in the Nairobi metro; other counties are served by mobile workshop, with the time depending on distance. For critical applications, we can position a standby unit on site. Replacement-unit terms are set out in your rental agreement.',
   },
   {
     question: 'Who is responsible for fuel?',
