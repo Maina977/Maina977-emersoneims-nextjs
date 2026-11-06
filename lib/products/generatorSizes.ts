@@ -163,8 +163,8 @@ const ATS: ProductPhoto = {
  *
  *   10-20 kVA   OPEN_FRAME, CONTROLLER, ATS      no model named
  *   30-60 kVA   CANOPY, VKS44, ENGINE            VKS44 = 44 kVA, in band
- *   80-125 kVA  CANOPY, ENGINE, ATS              no model named (VKS165 would overstate 125)
- *   150-200 kVA STOCK, ENGINE, CRANE             VKS165 = 165 kVA, in band
+ *   80-150 kVA  CANOPY, ENGINE, ATS              no model named (VKS165 would overstate)
+ *   165-200 kVA STOCK, ENGINE, CRANE             VKS165 = 165 kVA, in band
  *   250-300 kVA CRANE, FLEET, CONTROLLER         no model named
  *   500 kVA+    FLEET, CRANE, ENGINE             no model named
  *
@@ -175,7 +175,7 @@ const ATS: ProductPhoto = {
 export function photosForSize(kva: number): ProductPhoto[] {
   if (kva <= 20) return [OPEN_FRAME, CONTROLLER, ATS];
   if (kva <= 60) return [CANOPY, VKS44, ENGINE];
-  if (kva < 150) return [CANOPY, ENGINE, ATS]; // 80-125 kVA: no model named
+  if (kva < 165) return [CANOPY, ENGINE, ATS]; // 80-150 kVA: no model named
   if (kva <= 200) return [STOCK, ENGINE, CRANE];
   if (kva <= 300) return [CRANE, FLEET, CONTROLLER];
   return [FLEET, CRANE, ENGINE];
