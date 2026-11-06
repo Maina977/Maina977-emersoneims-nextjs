@@ -114,80 +114,44 @@ const MEGA_MENUS = {
     ],
     cta: { href: '/contact', label: 'Talk to an Engineer', phone: '+254 768 860 665' },
   },
-  generators: {
-    title: 'Generator Solutions',
-    description: 'Sales, service & support — from spec to lifecycle',
+  // PRODUCTS (2026-11-06, external audit P4): what customers buy, in one menu.
+  // Replaces the separate GENERATORS and SOLAR menus; their service and tool
+  // links moved to SERVICES and ENGINEERING TOOLS.
+  products: {
+    title: 'Products',
+    description: 'Equipment we supply, with published prices where we have them',
     sections: [
       {
-        title: 'Buy & Lease',
+        title: 'Generators',
         items: [
-          { href: '/generators', label: 'All Generators', icon: '⚡', desc: 'Full lineup' },
-          { href: '/generators/used', label: 'Used Generators', icon: '♻️', desc: 'Certified pre-owned' },
-          { href: '/generators/leasing', label: 'Leasing Programs', icon: '💰', desc: 'Flexible terms' },
-          { href: '/generators/rental', label: 'Rental', icon: '📦', desc: '7.5kVA – 2MVA' },
+          { href: '/generators', label: 'New Generators', icon: '⚡', desc: 'VOLTKA, 10–3000 kVA' },
+          { href: '/generators/used', label: 'Used Generators', icon: '♻️', desc: 'Inspected, 2-year warranty' },
+          { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'Filters, controllers, AVRs' },
           { href: '/brands', label: 'Brands', icon: '🏷️', desc: 'Cummins, Perkins, CAT' },
+          { href: '/generators/leasing', label: 'Leasing Programs', icon: '💰', desc: 'Flexible terms' },
+          { href: '/generators/rental', label: 'Rental', icon: '📦', desc: 'Short and long term' },
         ],
       },
       {
-        title: 'Service & Parts',
+        title: 'Solar & Power',
         items: [
-          { href: '/generators/installation', label: 'Installation', icon: '🔧', desc: 'Eight-stage setup' },
-          { href: '/generators/maintenance', label: 'Maintenance', icon: '🛠️', desc: 'Preventive & repair' },
-          { href: '/generators/workshop-services', label: 'Workshop Repairs & Fabrication', icon: '🏭', desc: 'Rebuilds & custom steel' },
-          { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'OEM & aftermarket' },
-          { href: '/generators/spare-parts', label: 'Parts Catalog', icon: '📦', desc: '1,560+ SKUs' },
-          { href: '/generators/systems', label: 'Systems Guide', icon: '📚', desc: 'Educational hub' },
+          { href: '/solar', label: 'Solar Systems', icon: '☀️', desc: 'Home, commercial, hybrid' },
+          { href: '/services/solar-inverters', label: 'Solar Inverters', icon: '🔌', desc: 'Hybrid and off-grid' },
+          { href: '/services/ups-systems', label: 'UPS Systems', icon: '🔋', desc: 'Sizing and batteries' },
+          { href: '/services/ats-changeover', label: 'ATS / Changeover', icon: '🔀', desc: 'Automatic transfer' },
+          { href: '/services/distribution-boards', label: 'Distribution Boards', icon: '🗄️', desc: 'Panels and switchgear' },
         ],
       },
       {
-        title: 'Diagnostics',
+        title: 'Water & Waste',
         items: [
-          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: 'Fault codes & diagnosis', badge: 'FREE' },
-          { href: '/plant-equipment-oracle', label: 'Plant & Equipment Oracle', icon: '🚜', desc: 'Excavator & loader codes', badge: 'NEW' },
-          { href: '/maintenance-hub/generators', label: 'Maintenance Hub', icon: '🏭', desc: 'Engine room HQ' },
-          { href: '/generators/maintenance-companion', label: 'Repair Companion', icon: '🤖', desc: 'AI step-by-step' },
-          { href: '/generator-problems', label: 'Common Problems', icon: '⚠️', desc: 'Diagnose & resolve' },
-          { href: '/faults', label: 'Fault Code Library', icon: '📖', desc: 'Curated codes' },
+          { href: '/services/borehole-pumps', label: 'Borehole Pumps', icon: '💧', desc: 'Submersible and solar' },
+          { href: '/services/hospital-incinerators', label: 'Incinerators', icon: '🔥', desc: 'Medical and industrial' },
+          { href: '/pricing', label: 'Price Guides', icon: '🏷️', desc: 'What things cost' },
         ],
       },
     ],
-    cta: { href: '/contact', label: 'Get a Quote', phone: '+254 768 860 665' },
-  },
-  solar: {
-    title: 'Solar Solutions',
-    description: 'Clean energy for homes, businesses & industries',
-    sections: [
-      {
-        title: 'Systems & Design',
-        items: [
-          { href: '/solar', label: 'Solar Overview', icon: '☀️', desc: 'Complete solutions' },
-          { href: '/solar', label: 'Commercial Solar', icon: '🏢', desc: 'Business & industrial' },
-          { href: '/solar-genius-pro/design-studio', label: 'AI Design Studio', icon: '🎨', desc: 'Leaflet map · real irradiance', badge: 'NEW' },
-          { href: '/solutions/solar-sizing', label: 'System Sizing', icon: '📐', desc: 'Right-size every kWh' },
-        ],
-      },
-      {
-        title: 'Solar Genius Pro Suite',
-        items: [
-          { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '🧠', desc: 'Free solar sizing estimate', badge: 'FREE' },
-          { href: '/solar-genius-pro/solar-dashboard', label: 'Site & System Dashboard', icon: '📡', desc: 'NASA + OSM live data', badge: 'NEW' },
-          { href: '/solar-genius-pro/calculator-advanced', label: 'Solar System Calculator', icon: '⚡', desc: 'Size, cost & payback', badge: 'NEW' },
-          { href: '/solar-genius-pro/fault-codes', label: 'Inverter Fault Codes', icon: '🔍', desc: 'Sourced from manufacturer manuals' },
-          { href: '/calculators', label: 'Power Calculators', icon: '🧮', desc: 'ROI, load, payback' },
-        ],
-      },
-      {
-        title: 'Service & Coverage',
-        items: [
-          { href: '/hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace + simulators' },
-          { href: '/hub/ups-lab', label: 'UPS Lab', icon: '🔋', desc: 'Battery + load tests' },
-          { href: '/maintenance-hub/solar', label: 'Solar Maintenance Hub', icon: '🛠️', desc: 'Diagnostics & repair' },
-          { href: '/kenya', label: '47 Counties', icon: '📍', desc: 'Nationwide service' },
-          { href: '/booking', label: 'Book a Site Visit', icon: '📅', desc: 'Schedule today' },
-        ],
-      },
-    ],
-    cta: { href: '/contact', label: 'Free Consultation', phone: '+254 782 914 717' },
+    cta: { href: '/contact', label: 'Request a Quote', phone: '+254 768 860 665' },
   },
   aiPowerhouse: {
     title: 'AI Powerhouse',
@@ -217,6 +181,25 @@ const MEGA_MENUS = {
         ],
       },
       {
+        title: 'Solar Genius Pro Suite',
+        items: [
+          { href: '/solar-genius-pro/design-studio', label: 'AI Design Studio', icon: '🎨', desc: 'Lay out a system' },
+          { href: '/solar-genius-pro/solar-dashboard', label: 'Site & System Dashboard', icon: '📊', desc: 'Yield and status' },
+          { href: '/solar-genius-pro/calculator-advanced', label: 'Solar System Calculator', icon: '🧮', desc: 'Size panels and batteries' },
+          { href: '/solar-genius-pro/fault-codes', label: 'Inverter Fault Codes', icon: '⚠️', desc: 'Look up an inverter alarm' },
+          { href: '/solutions/solar-sizing', label: 'System Sizing', icon: '📐', desc: 'How sizing works' },
+        ],
+      },
+      {
+        title: 'Maintenance Hubs',
+        items: [
+          { href: '/maintenance-hub/generators', label: 'Generator Maintenance Hub', icon: '🛠️', desc: 'Schedules and checks' },
+          { href: '/maintenance-hub/solar', label: 'Solar Maintenance Hub', icon: '🔆', desc: 'Panels, inverters, batteries' },
+          { href: '/generators/maintenance-companion', label: 'Repair Companion', icon: '🧰', desc: 'Step-by-step repair aid' },
+          { href: '/generator-problems', label: 'Common Problems', icon: '❓', desc: 'Symptoms and causes' },
+        ],
+      },
+      {
         title: 'Hub & Capabilities',
         items: [
           { href: '/ai-tools', label: 'All AI Tools', icon: '🤖', desc: 'Central hub' },
@@ -239,6 +222,15 @@ const MEGA_MENUS = {
           { href: '/services/cummins-generators', label: 'Cummins-Powered Generators', icon: '⚡', desc: 'New VOLTKA · used Cummins · service', badge: '2-YR' },
           { href: '/services/generator-repairs', label: 'Generator Repairs', icon: '🔧', desc: 'Service & overhaul' },
           { href: '/services/ats-changeover', label: 'ATS / Changeover', icon: '🔁', desc: 'Auto transfer switches' },
+        ],
+      },
+      {
+        title: 'Generator Service',
+        items: [
+          { href: '/generators/installation', label: 'Generator Installation', icon: '🔧', desc: 'Eight-stage setup' },
+          { href: '/generators/maintenance', label: 'Generator Maintenance', icon: '🛠️', desc: 'Preventive and repair' },
+          { href: '/generators/workshop-services', label: 'Workshop Repairs & Fabrication', icon: '🏭', desc: 'Rebuilds and custom steel' },
+          { href: '/generators/systems', label: 'Systems Guide', icon: '📘', desc: 'How the parts fit together' },
         ],
       },
       {
@@ -369,12 +361,13 @@ const NAV_ITEMS = [
   // the owner wants it explicit and that is the call that stands. It costs roughly
   // one slot on the bar, which Priority+ absorbs into MORE from the bottom of this
   // list rather than by dropping anything.
+  // 2026-11-06 (external audit P4): built around what customers buy.
+  // PRODUCTS replaces GENERATORS + SOLAR; AI SOLUTIONS is ENGINEERING TOOLS.
   { key: 'home', label: 'HOME', type: 'mega' },
-  { key: 'repairCentre', label: 'REPAIR CENTRE', type: 'mega', featured: true },
+  { key: 'products', label: 'PRODUCTS', type: 'mega' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
-  { key: 'generators', label: 'GENERATORS', type: 'mega' },
-  { key: 'solar', label: 'SOLAR', type: 'mega' },
-  { key: 'aiPowerhouse', label: 'AI SOLUTIONS', type: 'mega', featured: true },
+  { key: 'repairCentre', label: 'REPAIR CENTRE', type: 'mega', featured: true },
+  { key: 'aiPowerhouse', label: 'ENGINEERING TOOLS', type: 'mega', featured: true },
   // INDUSTRIES — direct link to the live B2B sector hub at /industries.
   // (A parallel /solutions/<sector> system was retired to avoid duplicating it.)
   { href: '/industries', label: 'INDUSTRIES', type: 'link' },
