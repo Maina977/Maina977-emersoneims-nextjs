@@ -31,19 +31,13 @@ import { RECENT_PROJECTS } from '@/lib/projects/recentWork';
 export default function RecentWorkSection() {
   return (
     <section
-      aria-labelledby="recent-work-heading"
+      aria-label="Recent work"
       className="relative bg-black py-20 lg:py-32"
     >
       <div className="mx-auto max-w-[1600px] px-6 lg:px-12">
         <p className="text-xs uppercase tracking-[0.24em] text-white/50">
           Recent work · August 2026
         </p>
-        <h2
-          id="recent-work-heading"
-          className="mt-4 text-balance text-4xl font-semibold tracking-tight text-white lg:text-6xl"
-        >
-          Two recent jobs
-        </h2>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/60">
           Photographs from our own sites and bench &mdash; the machines, panels and
           boards we actually worked on, for clients who agreed to be named.
