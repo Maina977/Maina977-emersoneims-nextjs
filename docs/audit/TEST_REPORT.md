@@ -39,3 +39,16 @@ Pages: `/`, `/generators`, `/voltka`, size pages for 10, 100, 300 and 500 kVA, `
 ## Not tested here
 - Live production (nothing pushed yet). After the push: the spaced live check (9 s between requests).
 - Inbox delivery of the test enquiry (owner to confirm).
+
+## Speed (Lighthouse 12.6, mobile, simulated 4G), 2026-11-06
+Method: previous and new Vercel deployments tested back-to-back, alternating, median of 3, so the test machine's state applies to both.
+
+| Page | Before | After (live 06e4509a) |
+|---|---|---|
+| /generators | score 59, LCP 4.6 s, TBT 879 ms | score 65, LCP 4.3 s, TBT 888 ms |
+| /contact (run A) | score 73, LCP 2.6 s, TBT 882 ms | score 73, LCP 3.5 s, TBT 639 ms |
+| /contact (run B, busier machine) | score 54, LCP 3.8 s, TBT 2,697 ms | score 60, LCP 3.7 s, TBT 1,374 ms |
+| / | score 77, LCP 3.3 s, TBT 485 ms | score 76, LCP 3.7 s, TBT 446 ms |
+
+CLS passes everywhere (0.007-0.027). LCP is still above 2.5 s on all three pages; the remaining cost is React hydration of the large client pages and Google's two tags (~0.6 s, not changed: removing either tag would lose Ads or Analytics data). A 2.5 s delay on the /contact CSS loops was tested on a preview deployment, showed no gain, and was reverted unshipped.
+
