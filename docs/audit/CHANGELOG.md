@@ -2,6 +2,8 @@
 
 | Commit | Change |
 |---|---|
+| eff89b73, fdce94e5 | Size pages for 125, 312, 375, 750 kVA with confirmed prices; 150 kVA page no longer opens with a 165 kVA photo |
+| 722ecaf5 | /generators JSON-LD on that page only (was inherited by every child route) |
 | 9b8a1ff3 | Generator prices: owner-confirmed VOLTKA list only (100–750 kVA, open/silent, prime, ex-warehouse, excl. VAT), one source file; "from KES 280,000", unconfirmed brand ranges and size bands, "prices include delivery/installation", "Free Delivery" and invented PDF sizes removed; other sizes "Request current price" |
 | 8f8882c7 | Next.js 16.4.2, DOMPurify 3.4.17 (critical advisories cleared); `generate_lead` on accepted enquiries |
 | 34f598cb, 151660ab, 5f142625 | Final scoring fixes: Building egress/ventilation/accessibility runnable in Suite and Console, per-door egress width, stair "not checked", gentle slopes not ramps, ADA ramp width; Solar single-phase homes and inverter count; Oracle hot-alternator line, near-duplicate steps, ignored readings named; AquaScan tender wording, honest cost range labels, Kisumu fluoride note |

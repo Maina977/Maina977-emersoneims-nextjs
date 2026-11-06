@@ -3,9 +3,9 @@
 | Pri | Item | Files | Blocked on | State |
 |---|---|---|---|---|
 | P0 | Critical Next.js/DOMPurify advisories | `package.json`, lockfile | — | Done (8f8882c7), gated |
-| P0 | Generator prices match the owner's confirmed list | `lib/pricing/voltkaConfirmedPrices.ts` and 22 consumers | — | Done (9b8a1ff3, 722ecaf5), gated |
+| P0 | Generator prices match the owner's confirmed list | `lib/pricing/voltkaConfirmedPrices.ts` and 22 consumers | — | Done (9b8a1ff3, 722ecaf5), live 2026-11-06; size pages 125/312/375/750 kVA (eff89b73) |
 | P0 | Near-duplicate location pages | `lib/seo/locationIndexPolicy.ts` | — | Done, live |
-| P0 | Enquiry delivery proven | `/api/contact` | owner inbox check | Sent; awaiting owner |
+| P0 | Enquiry delivery proven | `/api/contact` | — | Done: test enquiry #34 received (owner, 2026-11-06) |
 | P0 | Crawler 403s | Vercel Firewall | owner (dashboard) | Diagnosed; watch Traffic for Googlebot |
 | P1 | Lead conversion event | `components/AnalyticsTracker.tsx` | — | Done (8f8882c7) |
 | P1 | Ads conversion labels | `lib/analytics/ids.ts` | owner labels | Waiting |
