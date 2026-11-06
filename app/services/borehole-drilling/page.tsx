@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   // to render dynamically and disabled browser caching everywhere.
   alternates: { canonical: 'https://www.emersoneims.com/services/borehole-drilling' },
   title: 'Borehole Drilling: Complete Technical Guide',
-  description: 'Professional borehole engineering guide: hydrogeology, transmissivity, aquifer testing, drilling methods, yield assessment, water quality, 30+ error codes, troubleshooting, maintenance for Kenya aquifers.',
+  description: 'Professional borehole engineering guide: hydrogeology, transmissivity, aquifer testing, drilling methods, yield assessment, water quality, common drilling problems, troubleshooting and maintenance for Kenya aquifers.',
   keywords: [
     'borehole drilling Kenya', 'water well drilling', 'aquifer testing', 'transmissivity',
     'borehole yield', 'water quality analysis', 'drilling contractors', 'groundwater',
@@ -27,7 +27,7 @@ export default function BoreholeDrillingPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl">
-            Professional hydrogeology guide: aquifer types, transmissivity calculations, drilling methods, yield assessment, water quality, 30+ error codes, troubleshooting, maintenance for Kenya's diverse aquifer systems.
+            Professional hydrogeology guide: aquifer types, transmissivity calculations, drilling methods, yield assessment, water quality, common drilling problems, troubleshooting and maintenance for Kenya's diverse aquifer systems.
           </p>
         </div>
       </section>
@@ -39,7 +39,7 @@ export default function BoreholeDrillingPage() {
 
           <div className="space-y-8 text-gray-300">
             <p className="text-lg leading-relaxed">
-              Boreholes access groundwater in aquifers—porous rock formations containing water. Kenya has diverse hydrogeology: volcanic highlands have high-yield aquifers (transmissivity 1-5×10⁻² m²/s), excellent for large boreholes; coastal sedimentary aquifers have lower yield (1-10×10⁻⁴ m²/s) but greater thickness. A hydrogeological survey reduces the risk of a dry or low-yield hole, but no survey can guarantee water: yield is known only after drilling and test pumping.
+              Boreholes access groundwater in aquifers: porous or fractured rock that holds and passes water. Kenya's hydrogeology is varied. Volcanic aquifers around Nairobi and in the Rift can be productive; the crystalline basement that covers much of eastern and northern Kenya usually yields water only from fractures and weathered zones, so yields range from very low to moderate. Local borehole records are the best guide to what a site can give. A hydrogeological survey reduces the risk of a dry or low-yield hole, but no survey can guarantee water: yield is known only after drilling and test pumping.
             </p>
 
             <p className="text-lg leading-relaxed">
@@ -47,39 +47,39 @@ export default function BoreholeDrillingPage() {
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Drilling Methods Affect Yield & Longevity:</strong> Percussion drilling fractures rock but creates damaging stress in borehole walls. Rotary drilling with mud circulation minimizes stress and creates cleaner boreholes. Air percussion is fastest (300m/day in hard rock) but requires larger casing. Professional design selects method based on geology, depth target, and yield requirements. Deep boreholes (&gt;200m) use rotary drilling exclusively.
+              <strong>Drilling Methods Affect Yield & Longevity:</strong> In hard rock, most Kenyan boreholes are drilled with down-the-hole (DTH) air hammers, which are fast and keep the hole clean. Mud rotary drilling suits loose sediments that need support while drilling, but the mud must be removed afterwards or it clogs the aquifer. Penetration rate depends on the rock and the rig. The method is chosen for the geology, the target depth and the yield required.
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Well Development Removes Drilling Damage:</strong> Backflushing (high-velocity water through borehole) removes drilling mud and fine particles that reduce yield. Proper development increases yield 50-100%. Most rural boreholes are under-developed due to time pressure; professional development requires 3-7 days, not 2-3 hours.
+              <strong>Well Development Removes Drilling Damage:</strong> Development (air-lifting, surging or backflushing) removes drilling mud and fine particles from around the screen. It continues until the water runs clear and sand-free; our signed 2026 tender specification allows 12 hours. Under-developed boreholes give less water and wear pumps faster.
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Seasonal Variations Are Critical:</strong> Kenya water levels drop 1-3m annually in unconfined aquifers under pumping stress. Boreholes drilled to static water level fail during dry season when levels drop additional 2-5m. Professional design accounts for lowest-expected-water-level (LEWL), ensuring year-round reliability.
+              <strong>Seasonal Variations Are Critical:</strong> Water levels fall in the dry season and under heavy pumping, and in some areas they decline year on year. A borehole and pump set for the wet-season level can fail in the dry season. Design for the lowest expected water level, with the pump set safely below it.
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Quality Contamination Threats:</strong> Confined aquifers trapped between clay layers exhibit artesian flow (water rises above aquifer level). Unconfined aquifers rely on rainfall recharge. In Kenya's arid regions, annual recharge may be &lt;100mm, limiting sustainable extraction. Salinity intrusion (coastal areas) can make boreholes unusable within 10-15 years as seawater penetrates kilometers inland. Iron and manganese precipitation (water mixing with oxygen) causes staining; typically &lt;3mg/L is acceptable but &gt;15mg/L requires filtration.
+              <strong>Quality Contamination Threats:</strong> Confined aquifers trapped between clay layers exhibit artesian flow (water rises above aquifer level). Unconfined aquifers rely on rainfall recharge. In Kenya's arid regions recharge can be very low, which limits how much can be pumped sustainably. Near the coast, over-pumping can draw saline water into the aquifer. Iron and manganese come out of solution when the water meets air and cause staining and taste problems: drinking-water standards put iron at about 0.3 mg/L and manganese lower still, so water above these needs treatment such as aeration and filtration.
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Hardness (calcium + magnesium salts):</strong> &gt;500 mg/L CaCO3 causes scaling in pipes and boilers; most Kenyan groundwater is moderately hard (100-400 mg/L), usually acceptable without softening. Soft water (&lt;50 mg/L) is corrosive to metal pipes—pH adjustment prevents corrosion.
+              <strong>Hardness (calcium + magnesium salts):</strong> WHO notes that hardness above about 200 mg/L as CaCO3 tends to scale pipes, heaters and boilers, while very soft water (below about 100 mg/L) can be corrosive to metal pipes. Hardness has no health-based limit; a laboratory test tells you whether softening or pH adjustment is worth it.
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Aquifer Testing (Pumping Test) is Definitive:</strong> 72-hour test costs KES 150-300K but prevents multimillion-shilling failures. Measures transmissivity, storativity, specific capacity, and aquifer boundaries. Professional reports provide sustainable yield recommendations—extraction exceeding these causes water-level decline and eventual well failure.
+              <strong>Aquifer Testing (Pumping Test) is Definitive:</strong> A constant-rate test, typically 24 hours and longer for large or public supplies, followed by recovery measurements. Our signed 2026 tender priced 24-hour test pumping at about KES 228,000. It measures transmissivity, specific capacity and, with observation wells, storativity and aquifer boundaries. Professional reports provide sustainable yield recommendations—extraction exceeding these causes water-level decline and eventual well failure.
             </p>
           </div>
         </section>
 
         {/* ERROR CODES */}
         <section className="mb-20">
-          <h2 className="text-5xl font-bold mb-12 text-emerald-400">2. Error Code & Diagnostic Database (30+ Codes)</h2>
+          <h2 className="text-5xl font-bold mb-12 text-emerald-400">2. Common Drilling and Borehole Problems</h2>
 
           <div className="space-y-8">
             {[
-              { cat: 'Drilling Equipment (D01-D10)', codes: ['Drill Bit Wear/Dulling - Replace immediately, check for chipping', 'Stuck Pipe (Tool Pinning) - Apply careful overpull, may need fishing', 'Pump Pressure Loss - Check hose integrity, measure outlet pressure', 'Pipe Connection Leak - Tighten, replace O-rings, inspect threads', 'Cable Fraying - Replace immediately if strands broken', 'Compressor Failure - Check oil, verify filter, test discharge pressure', 'Hose Rupture - Depressurize, replace hose section', 'Motor Overheating - Check load, improve ventilation, verify fuel quality', 'Swivel Bearing Wear - Listen for grinding, replace if worn, lubricate', 'Drilling String Torque Overload - Reduce weight-on-bit, verify hole straight'] },
-              { cat: 'Hydrogeology Issues (H01-H10)', codes: ['Lost Circulation/Mud Loss - Inject LCM, reduce pressure, indicates fractured formation', 'Artesian Flow Too High - Verify static head, install regulator valve', 'Water Table Lower Than Expected - Investigate regional hydrogeology, may need deeper drilling', 'Sand Formation Collapse - Reduce velocity, install screens, may need abandonment', 'Saline Water Encountered - Test quality, may require desalination', 'Clay Sealing Formation - Drill through carefully, may trap water above', 'Fractured Rock Yield Poor - Perform aquifer test, may need deeper drilling', 'Iron Oxide Staining - Normal in red soil, install filter if &gt;3mg/L', 'Bacterial Contamination - Shock-chlorinate, perform water quality testing', 'Yield Declining Annually - Indicates recharge deficit, reduce extraction'] },
+              { cat: 'Drilling equipment', codes: ['Drill Bit Wear/Dulling - Replace immediately, check for chipping', 'Stuck Pipe (Tool Pinning) - Apply careful overpull, may need fishing', 'Pump Pressure Loss - Check hose integrity, measure outlet pressure', 'Pipe Connection Leak - Tighten, replace O-rings, inspect threads', 'Cable Fraying - Replace immediately if strands broken', 'Compressor Failure - Check oil, verify filter, test discharge pressure', 'Hose Rupture - Depressurize, replace hose section', 'Motor Overheating - Check load, improve ventilation, verify fuel quality', 'Swivel Bearing Wear - Listen for grinding, replace if worn, lubricate', 'Drilling String Torque Overload - Reduce weight-on-bit, verify hole straight'] },
+              { cat: 'Hydrogeology', codes: ['Lost Circulation/Mud Loss - Inject LCM, reduce pressure, indicates fractured formation', 'Artesian Flow Too High - Verify static head, install regulator valve', 'Water Table Lower Than Expected - Investigate regional hydrogeology, may need deeper drilling', 'Sand Formation Collapse - Reduce velocity, install screens, may need abandonment', 'Saline Water Encountered - Test quality, may require desalination', 'Clay Sealing Formation - Drill through carefully, may trap water above', 'Fractured Rock Yield Poor - Perform aquifer test, may need deeper drilling', 'Iron Oxide Staining - Normal in red soil, install filter if &gt;3mg/L', 'Bacterial Contamination - Shock-chlorinate, perform water quality testing', 'Yield Declining Annually - Indicates recharge deficit, reduce extraction'] },
             ].map((section, i) => (
               <div key={i}>
                 <h3 className="text-xl font-bold text-emerald-300 mb-4">{section.cat}</h3>

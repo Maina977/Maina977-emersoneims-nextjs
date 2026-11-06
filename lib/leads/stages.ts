@@ -14,6 +14,10 @@ export const LEAD_STAGES = [
   { id: 'negotiating', label: 'Negotiating' },
   { id: 'won', label: 'Won' },
   { id: 'lost', label: 'Lost' },
+  // Written by /api/contact's spam and duplicate filter; kept selectable so a
+  // wrongly flagged lead can be moved back.
+  { id: 'duplicate', label: 'Duplicate' },
+  { id: 'spam', label: 'Spam' },
 ] as const;
 
 export type LeadStage = (typeof LEAD_STAGES)[number]['id'];

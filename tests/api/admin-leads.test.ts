@@ -11,7 +11,7 @@ const KEY = 'test-admin-key-0123456789abcdef';
 
 describe('lead stages', () => {
   it('has the brief stages, all fitting the VARCHAR(20) column', () => {
-    expect(LEAD_STAGES.map((s) => s.id)).toEqual(['new', 'contacted', 'qualified', 'site_survey', 'quoting', 'quoted', 'follow_up', 'negotiating', 'won', 'lost']);
+    expect(LEAD_STAGES.map((s) => s.id)).toEqual(['new', 'contacted', 'qualified', 'site_survey', 'quoting', 'quoted', 'follow_up', 'negotiating', 'won', 'lost', 'duplicate', 'spam']);
     for (const s of LEAD_STAGES) expect(s.id.length).toBeLessThanOrEqual(20);
     expect(isLeadStage('won')).toBe(true);
     expect(isLeadStage('deleted')).toBe(false);
