@@ -95,6 +95,20 @@ describe('confirmed VOLTKA prices', () => {
     }
   });
 
+  it('every confirmed size has its own page, priced, with honest photos', async () => {
+    const { GENERATOR_SIZES, photosForSize } = await import('@/lib/products/generatorSizes');
+    for (const [kva, open, silent] of OWNER_LIST) {
+      const g = GENERATOR_SIZES.find((s) => s.kva === kva);
+      expect(g, `${kva} kVA page`).toBeDefined();
+      expect([g!.openKes, g!.silentKes]).toEqual([open, silent]);
+      // A caption naming VKS<n> claims an n kVA machine; never more than the page size.
+      for (const ph of photosForSize(kva)) {
+        const m = /VKS(\d+)/.exec(ph.caption);
+        if (m) expect(Number(m[1]), `${kva} kVA photo ${ph.caption}`).toBeLessThanOrEqual(kva);
+      }
+    }
+  });
+
   it('the /generators price offer is not inherited by child routes', () => {
     const root = join(__dirname, '..', '..');
     const layout = readFileSync(join(root, 'app/generators/layout.tsx'), 'utf8');

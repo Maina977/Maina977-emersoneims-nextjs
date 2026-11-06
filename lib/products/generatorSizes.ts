@@ -163,7 +163,7 @@ const ATS: ProductPhoto = {
  *
  *   10-20 kVA   OPEN_FRAME, CONTROLLER, ATS      no model named
  *   30-60 kVA   CANOPY, VKS44, ENGINE            VKS44 = 44 kVA, in band
- *   80-100 kVA  CANOPY, ENGINE, ATS              no model named
+ *   80-125 kVA  CANOPY, ENGINE, ATS              no model named (VKS165 would overstate 125)
  *   150-200 kVA STOCK, ENGINE, CRANE             VKS165 = 165 kVA, in band
  *   250-300 kVA CRANE, FLEET, CONTROLLER         no model named
  *   500 kVA+    FLEET, CRANE, ENGINE             no model named
@@ -175,7 +175,7 @@ const ATS: ProductPhoto = {
 export function photosForSize(kva: number): ProductPhoto[] {
   if (kva <= 20) return [OPEN_FRAME, CONTROLLER, ATS];
   if (kva <= 60) return [CANOPY, VKS44, ENGINE];
-  if (kva <= 100) return [CANOPY, ENGINE, ATS];
+  if (kva < 150) return [CANOPY, ENGINE, ATS]; // 80-125 kVA: no model named
   if (kva <= 200) return [STOCK, ENGINE, CRANE];
   if (kva <= 300) return [CRANE, FLEET, CONTROLLER];
   return [FLEET, CRANE, ENGINE];
@@ -225,6 +225,11 @@ const SIZE_BASE: readonly SizeBase[] = [
     loadExample: 'A hospital wing, a factory with a compressor and several motors, or a hotel with full back-of-house.',
   },
   {
+    slug: '125-kva', kva: 125, phase: 'three',
+    suits: 'Hotels, hospitals and factories',
+    loadExample: 'A mid-size hotel with kitchen, laundry and a lift, or a factory line where one large motor sets the size.',
+  },
+  {
     slug: '150-kva', kva: 150, phase: 'three',
     suits: 'Industrial and institutional',
     loadExample: 'A processing plant, or a campus building with lifts, HVAC and laboratories.',
@@ -245,9 +250,24 @@ const SIZE_BASE: readonly SizeBase[] = [
     loadExample: 'A medium manufacturing plant running its full line on standby power.',
   },
   {
+    slug: '312-kva', kva: 312, phase: 'three',
+    suits: 'Large industrial and institutional',
+    loadExample: 'A processing plant or a hospital carrying its full essential load, with two or three large motors starting on the same set.',
+  },
+  {
+    slug: '375-kva', kva: 375, phase: 'three',
+    suits: 'Large industrial',
+    loadExample: 'A manufacturing plant with compressors and chillers, or a shopping centre carrying common areas and cold rooms.',
+  },
+  {
     slug: '500-kva', kva: 500, phase: 'three',
     suits: 'Major industrial facilities',
     loadExample: 'A large plant, a shopping centre, or a facility running several buildings from one set.',
+  },
+  {
+    slug: '750-kva', kva: 750, phase: 'three',
+    suits: 'Major industrial and campus sites',
+    loadExample: 'A large factory or a hospital campus on one set. At this size, two smaller sets in parallel are worth pricing too.',
   },
 ];
 

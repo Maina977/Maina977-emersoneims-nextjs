@@ -955,7 +955,7 @@ export function middleware(request: NextRequest) {
   // ─────────────────────────────────────────────────────────────────────────────
   {
     if (pathname.startsWith('/generators/sizes/') && pathname !== '/generators/sizes/') {
-      const OK_GEN_SIZES = new Set(['10-kva','15-kva','20-kva','30-kva','50-kva','60-kva','80-kva','100-kva','150-kva','200-kva','250-kva','300-kva','500-kva']);
+      const OK_GEN_SIZES = new Set(['10-kva','15-kva','20-kva','30-kva','50-kva','60-kva','80-kva','100-kva','125-kva','150-kva','200-kva','250-kva','300-kva','312-kva','375-kva','500-kva','750-kva']);
       let sizeSlug = pathname.slice('/generators/sizes/'.length).replace(/\/$/, '');
       try { sizeSlug = decodeURIComponent(sizeSlug); } catch { /* keep raw */ }
       if (sizeSlug.includes('/') || !OK_GEN_SIZES.has(sizeSlug.toLowerCase())) {
