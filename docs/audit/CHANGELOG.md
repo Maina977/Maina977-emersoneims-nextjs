@@ -2,6 +2,17 @@
 
 | Commit | Change |
 |---|---|
+| 9fd41d50 | Speed: homepage hero no longer content-visibility:auto; /contact h1 visible on first paint; /generators hero mounts only current and next slide |
+| 8ef96972 | Lead stages: /admin/leads pipeline, /admin/login (rate-limited, HttpOnly cookie), /api/admin/leads (admin only, never deletes). Needs ADMIN_API_KEY in Vercel |
+| 4acad138 | Articles link to their product and service pages (template + 17 hand-written articles) |
+| 1224f3b2 | Menu: HOME, PRODUCTS, SERVICES, REPAIR CENTRE, ENGINEERING TOOLS, INDUSTRIES, RESOURCES, CONTACT; no link lost |
+| 62dc6984 | Category forms: service request, spare parts, borehole site assessment, UPS sizing; removed stock and reply-time claims and borehole guarantees |
+| 379ff212 | Generator Oracle: "Need an engineer for this fault?" with booking pre-filled |
+| 8620b328 | Homepage "What are you looking for?" directory |
+| 91694808, 99ed0281 | Installation warranty 1 year (solar, plumbing, AC, incinerators, UPS, borehole pumps, distribution boards) |
+| 3d8bee57 | Founding year 2011; generators@ routing; 2-year warranty on all generators sold (new and used) |
+| 81ac1973 | External audit fixes: banner prices, 3-year warranty bug, 6-month servicing, overnight promise, "this month", tripled CONTACT h1, NEMA wording |
+| 27ab64e1 | Generator quotation form on /generators and size pages |
 | 78a1067b | Enquiry reference (EIMS-000034) shown to customers and in lead emails; unconfirmed promises removed (2-hour/30-minute/24-hour response, KES 15,000 free assessment, fake 24-hour offer deadline, 98.7% uptime guarantee, "Booking Confirmed!", "50+ vetted partners", "Branch finder"); exit popup and sizing calculator report failures |
 | eff89b73, fdce94e5 | Size pages for 125, 312, 375, 750 kVA with confirmed prices; 150 kVA page no longer opens with a 165 kVA photo |
 | 722ecaf5 | /generators JSON-LD on that page only (was inherited by every child route) |

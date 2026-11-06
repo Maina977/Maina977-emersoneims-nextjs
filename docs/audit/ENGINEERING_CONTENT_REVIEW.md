@@ -14,3 +14,7 @@ Every major finding of the final round was fixed and pushed (34f598cb). Safety: 
 Sources used for new calculations, read on 2026-11-05: IBC 2021 Ch. 10 values (egress), ASHRAE 62.1 SI tables (ventilation), 2010 ADA Standards and UK Approved Document M Vol. 2 (2024) (accessibility), Deye SUN-3/3.6/5/6K-SG04LP1-EU datasheet (inverters), EmersonEIMS signed Baringo tender 16 Oct 2026 (borehole costs).
 
 Not reviewed in this pass: the long-form articles in `/blog`, `/guides` and `/technical-bible` for regulatory currency (needs a dated review per article).
+
+## Flagged for a dated review (2026-11-06)
+`/services/borehole-drilling`: the two guarantees ("No dry holes", "predicts yield before drilling") and the "500+ boreholes" figure were removed. Still to review: "Deep boreholes (>200 m) use rotary drilling exclusively" (DTH air drilling is common), "300 m/day in hard rock", "development requires 3-7 days" (the signed Baringo tender priced 12 hours), and the transmissivity ranges quoted for Kenyan aquifers.
+
