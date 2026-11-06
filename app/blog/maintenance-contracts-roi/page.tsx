@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import ArticleServiceLinks from '@/components/blog/ArticleServiceLinks';
 
 export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend
@@ -209,7 +210,8 @@ export default function MaintenanceContractsROIBlogPage() {
             </Link>
           </div>
         </div>
-      </article>
+        <ArticleServiceLinks keys={['generator-maintenance', 'generator-repairs']} />
+    </article>
     </div>
   );
 }

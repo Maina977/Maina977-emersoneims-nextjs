@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import ArticleServiceLinks from '@/components/blog/ArticleServiceLinks';
 
 export const metadata: Metadata = {
   title: 'Grid Reliability Across Africa: Hidden Cost of Downtime',
@@ -164,6 +165,7 @@ export default function GridReliabilityPost() {
           </Link>
         </div>
       </section>
+      <ArticleServiceLinks keys={['generators', 'ups-systems', 'solar-installation']} />
     </article>
   );
 }

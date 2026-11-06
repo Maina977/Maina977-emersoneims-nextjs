@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import ArticleServiceLinks from '@/components/blog/ArticleServiceLinks';
 
 export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend
@@ -225,7 +226,8 @@ export default function GeneratorWontStartBlogPage() {
             Generators are like cars—neglect them, they'll fail when you need them most. Maintain them, they'll start reliably every time.
           </p>
         </div>
-      </article>
+        <ArticleServiceLinks keys={['generator-repairs', 'spare-parts']} />
+    </article>
     </div>
   );
 }

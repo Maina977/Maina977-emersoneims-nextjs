@@ -3,9 +3,7 @@ import { seoTitleSmart } from '@/lib/seo/pageTitle';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getArticleBySlug, getRelatedArticles, BLOG_ARTICLES } from '@/lib/data/blog-articles';
-import { COUNTY_SERVICE_SLUGS } from '@/lib/seo/kenyaIndexable';
-
-const COUNTY_SERVICE_PAGE = new Set(COUNTY_SERVICE_SLUGS);
+import { articleServiceLinks } from '@/lib/content/serviceLinks';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -357,33 +355,24 @@ export default async function BlogArticlePage({ params }: Props) {
         </section>
       )}
 
-      {/* Related Services */}
-      {article.relatedServices && article.relatedServices.length > 0 && (
+      {/* Related products and services (external audit §6.4): each key links to
+          the main commercial page, not a Nairobi location page. Keys with no
+          page in lib/content/serviceLinks.ts are left out rather than shown as
+          dead text. */}
+      {articleServiceLinks(article.relatedServices ?? []).length > 0 && (
         <section className="py-12 px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-xl font-bold mb-6">Related Services</h2>
+            <h2 className="text-xl font-bold mb-6">Related products and services</h2>
             <div className="flex flex-wrap gap-3">
-              {/* Only services with a real /kenya/nairobi/<service> page are
-                  links; the rest 308'd back to /kenya/nairobi (2026-10-16). */}
-              {article.relatedServices.map(service => {
-                const label = service.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                return COUNTY_SERVICE_PAGE.has(service) ? (
-                  <Link
-                    key={service}
-                    href={`/kenya/nairobi/${service}`}
-                    className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-500/20 transition-colors"
-                  >
-                    {label}
-                  </Link>
-                ) : (
-                  <span
-                    key={service}
-                    className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400"
-                  >
-                    {label}
-                  </span>
-                );
-              })}
+              {articleServiceLinks(article.relatedServices ?? []).map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-500/20 transition-colors"
+                >
+                  {l.label}
+                </Link>
+              ))}
             </div>
           </div>
         </section>

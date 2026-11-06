@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import ArticleServiceLinks from '@/components/blog/ArticleServiceLinks';
 
 export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend
@@ -146,7 +147,8 @@ export default function ThreePhasePowerBlogPage() {
             </Link>
           </div>
         </div>
-      </article>
+        <ArticleServiceLinks keys={['electrical-installation', 'generators']} />
+    </article>
     </div>
   );
 }
