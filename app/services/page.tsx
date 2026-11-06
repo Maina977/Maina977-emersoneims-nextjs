@@ -359,7 +359,7 @@ export default function ServicesPage() {
       {/* Quick Service CTA */}
       <ServiceCTASection
         title="What Service Do You Need?"
-        subtitle="Generators, Solar, UPS, Maintenance, Installation, Fabrication, and more — pick your service and get a quote within 2 hours."
+        subtitle="Generators, Solar, UPS, Maintenance, Installation, Fabrication, and more — pick your service and request a quote."
         primaryService="General Inquiry"
         primaryLabel="Get Started"
         secondaryServices={[

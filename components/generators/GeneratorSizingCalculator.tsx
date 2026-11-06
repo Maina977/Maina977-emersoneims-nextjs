@@ -8,6 +8,7 @@ import {
   MessageCircle, CheckCircle, ArrowRight, Lightbulb,
   AirVent, Refrigerator, Tv, Computer, Droplets
 } from 'lucide-react';
+import { referenceFromResponse } from '@/lib/leads/reference';
 
 /**
  * GENERATOR SIZING CALCULATOR - LEAD MAGNET
@@ -81,6 +82,8 @@ export default function GeneratorSizingCalculator() {
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [leadRef, setLeadRef] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   const COMPANY_PHONE = '+254768860665';
   const COMPANY_WHATSAPP = '254768860665';
@@ -128,7 +131,7 @@ export default function GeneratorSizingCalculator() {
     setIsSubmitting(true);
 
     try {
-      await fetch('/api/contact', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -141,9 +144,14 @@ export default function GeneratorSizingCalculator() {
         }),
       });
 
+      // Only claim success when the server accepted the lead.
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      setLeadRef(referenceFromResponse(await res.json().catch(() => null)));
+      setFailed(false);
       setSubmitted(true);
     } catch (error) {
       console.error('Failed to submit:', error);
+      setFailed(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -328,9 +336,19 @@ export default function GeneratorSizingCalculator() {
                 <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4">
                   <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
                   <p className="text-green-400 font-medium">We'll call you shortly!</p>
+                  {leadRef && (
+                    <p className="mt-1 text-sm text-gray-300">
+                      Your reference: <span className="font-mono font-semibold text-amber-400">{leadRef}</span>
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {failed && (
+                    <p className="text-sm text-red-400" role="alert">
+                      We couldn&apos;t send that just now. Please call or WhatsApp us instead.
+                    </p>
+                  )}
                   <input
                     type="text"
                     value={name}

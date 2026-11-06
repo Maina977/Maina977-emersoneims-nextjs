@@ -2,6 +2,8 @@
 
 import { useState, FormEvent } from 'react';
 import { motion } from 'framer-motion';
+import { referenceFromResponse } from '@/lib/leads/reference';
+import { CALLBACK_PROMISE } from '@/lib/business/responseTime';
 
 interface QuickInquiryFormProps {
   service?: string;
@@ -35,6 +37,7 @@ export default function QuickInquiryForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [leadRef, setLeadRef] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -89,12 +92,15 @@ export default function QuickInquiryForm({
 
       if (!response.ok) throw new Error('Failed to submit');
 
+      setLeadRef(referenceFromResponse(await response.json().catch(() => null)));
       setSuccess(true);
+      // 12 s, not 2: the customer needs time to note the reference.
       setTimeout(() => {
         onSuccess?.();
         setFormData({ name: '', company: '', phone: '', location: '', service });
         setSuccess(false);
-      }, 2000);
+        setLeadRef(null);
+      }, 12000);
     } catch {
       setError('Failed to send. Please try calling +254 768 860 665');
     } finally {
@@ -111,7 +117,12 @@ export default function QuickInquiryForm({
       >
         <div className="text-4xl mb-3">✅</div>
         <h3 className="text-lg font-bold text-green-400 mb-2">Inquiry Received!</h3>
-        <p className="text-gray-300 text-sm">We'll contact you within 2 hours (business hours)</p>
+        <p className="text-gray-300 text-sm">{CALLBACK_PROMISE}</p>
+        {leadRef && (
+          <p className="mt-2 text-gray-300 text-sm">
+            Your reference: <span className="font-mono font-semibold text-amber-400">{leadRef}</span>
+          </p>
+        )}
       </motion.div>
     );
   }

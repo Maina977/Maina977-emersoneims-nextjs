@@ -326,8 +326,8 @@ const MEGA_MENUS = {
         title: 'Coverage & Marketplace',
         items: [
           { href: '/kenya', label: '47 Counties', icon: '📍', desc: 'Kenya nationwide' },
-          { href: '/locations', label: 'Service Locations', icon: '🗺️', desc: 'Branch finder' },
-          { href: '/marketplace', label: 'Partner Marketplace', icon: '🤝', desc: '50+ vetted partners', badge: 'NEW' },
+          { href: '/locations', label: 'Service Locations', icon: '🗺️', desc: 'Areas we serve' },
+          { href: '/marketplace', label: 'Partner Marketplace', icon: '🤝', desc: 'Partner programme' },
           { href: '/kenya', label: 'Kenya Hub', icon: '🇰🇪', desc: 'Country-wide' },
           { href: '/guides/emergency-response', label: 'Emergency Guide', icon: '🚨', desc: '24/7 response' },
         ],

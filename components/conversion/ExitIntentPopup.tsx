@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Phone, MessageCircle, Gift, Clock } from 'lucide-react';
+import { X, Phone, MessageCircle, Gift } from 'lucide-react';
+import { referenceFromResponse } from '@/lib/leads/reference';
+import { CALLBACK_PROMISE } from '@/lib/business/responseTime';
 
 /**
  * EXIT INTENT POPUP - CAPTURE LEAVING VISITORS
@@ -17,6 +19,8 @@ export default function ExitIntentPopup() {
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [leadRef, setLeadRef] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   const COMPANY_PHONE = '+254768860665';
   const COMPANY_WHATSAPP = '254768860665';
@@ -82,7 +86,7 @@ export default function ExitIntentPopup() {
     setIsSubmitting(true);
 
     try {
-      await fetch('/api/contact', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,9 +99,14 @@ export default function ExitIntentPopup() {
         }),
       });
 
+      // Only claim success when the server accepted the lead.
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      setLeadRef(referenceFromResponse(await res.json().catch(() => null)));
+      setFailed(false);
       setSubmitted(true);
     } catch (error) {
       console.error('Failed to submit:', error);
+      setFailed(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -157,15 +166,11 @@ export default function ExitIntentPopup() {
                     <h3 className="text-2xl font-bold text-white mb-2">
                       FREE Quotation
                     </h3>
+                    {/* 2026-11-06: removed "worth KES 15,000" and "Offer expires in
+                        24 hours" — neither value nor deadline was ever confirmed. */}
                     <p className="text-gray-400">
-                      Get a professional power assessment worth <span className="text-amber-500 font-bold">KES 15,000</span> absolutely FREE!
+                      Leave your number and an engineer will call you back about your power needs.
                     </p>
-                  </div>
-
-                  {/* Urgency */}
-                  <div className="flex items-center justify-center gap-2 mb-6 text-red-400">
-                    <Clock className="w-4 h-4 animate-pulse" />
-                    <span className="text-sm font-medium">Offer expires in 24 hours</span>
                   </div>
 
                   {/* Quick callback form */}
@@ -195,6 +200,11 @@ export default function ExitIntentPopup() {
                         </>
                       )}
                     </button>
+                    {failed && (
+                      <p className="text-sm text-red-400" role="alert">
+                        We couldn&apos;t send that just now. Please call or WhatsApp us below.
+                      </p>
+                    )}
                   </form>
 
                   {/* Or call directly */}
@@ -209,7 +219,7 @@ export default function ExitIntentPopup() {
                         Call
                       </a>
                       <a
-                        href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent("Hi! I saw your special offer. I'm interested in a quotation.")}`}
+                        href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent("Hi! I'm interested in a quotation.")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#25D366] text-white font-semibold rounded-lg hover:bg-[#22c55e]"
@@ -223,7 +233,7 @@ export default function ExitIntentPopup() {
                   {/* Trust signals */}
                   <div className="mt-6 pt-4 border-t border-gray-700 text-center">
                     <p className="text-xs text-gray-500">
-                      Trusted by 500+ businesses across Kenya
+                      500+ projects completed across Kenya
                     </p>
                     <div className="flex items-center justify-center gap-4 mt-2">
                       <span className="text-xs text-gray-400">Warranty in writing</span>
@@ -245,10 +255,15 @@ export default function ExitIntentPopup() {
                   >
                     <span className="text-4xl">✓</span>
                   </motion.div>
-                  <h3 className="text-2xl font-bold text-white mb-2">We'll Call You!</h3>
+                  <h3 className="text-2xl font-bold text-white mb-2">Request received</h3>
                   <p className="text-gray-400 mb-4">
-                    Our team will contact you within 30 minutes
+                    {CALLBACK_PROMISE}
                   </p>
+                  {leadRef && (
+                    <p className="text-gray-300 mb-4">
+                      Your reference: <span className="font-mono font-semibold text-amber-400">{leadRef}</span>
+                    </p>
+                  )}
                   <button
                     onClick={handleClose}
                     className="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"

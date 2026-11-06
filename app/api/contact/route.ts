@@ -13,6 +13,7 @@ import { getPostgresPool } from '@/lib/db';
 import { limiter } from '@/lib/rate-limiter';
 import { timingSafeEqual } from 'crypto';
 import nodemailer from 'nodemailer';
+import { leadReference } from '@/lib/leads/reference';
 
 // Sales team notification settings
 const SALES_EMAIL = process.env.SALES_EMAIL || 'emersoneimservices@gmail.com';
@@ -340,6 +341,8 @@ export async function POST(request: NextRequest) {
         ? 'Thank you! Our team will contact you shortly.'
         : 'Thank you! For the fastest response, message us directly on WhatsApp.',
       leadId,
+      // Customer-facing reference (EIMS-000034); null if the lead was not stored.
+      reference: leadReference(leadId),
       whatsappFallback,
       phone: SALES_PHONE,
       email: SALES_EMAIL,
@@ -566,7 +569,7 @@ function buildLeadEmailHtml(data: ContactFormData, leadId: number): string {
 
             <div style="padding: 20px; background: #1f2937; text-align: center;">
               <p style="color: #9ca3af; margin: 0; font-size: 14px;">
-                Lead ID: #${leadId} | Received: ${new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' })}
+                Reference: ${leadReference(leadId) ?? 'not stored'} (lead #${leadId}) | Received: ${new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' })}
               </p>
               <div style="margin-top: 15px;">
                 ${data.phone ? `
@@ -621,7 +624,7 @@ async function sendSmtpNotification(data: ContactFormData, leadId: number): Prom
       to: LEAD_RECIPIENTS.join(', '),
       cc: ccList,
       replyTo: data.email, // team can reply straight to the customer
-      subject: `🔥 NEW WEBSITE LEAD: ${data.name} — ${serviceLabel(data.service)}`,
+      subject: `🔥 NEW WEBSITE LEAD ${leadReference(leadId) ?? ''}: ${data.name} — ${serviceLabel(data.service)}`,
       html: buildLeadEmailHtml(data, leadId),
       text:
         `NEW WEBSITE LEAD #${leadId || '-'}\n` +

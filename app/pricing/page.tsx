@@ -344,7 +344,7 @@ export default function PricingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6">Need a Custom Quote?</h2>
           <p className="text-lg text-gray-300 mb-10">
-            Contact us with your specific needs. We'll provide an honest estimate within 24 hours.
+            Contact us with your specific needs and we'll reply with an honest estimate.
           </p>
 
           {/*

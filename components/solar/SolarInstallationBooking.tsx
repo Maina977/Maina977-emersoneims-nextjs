@@ -115,9 +115,9 @@ Please schedule a site assessment.`
         >
           <CheckCircle className="w-10 h-10 text-green-500" />
         </motion.div>
-        <h2 className="text-2xl font-bold text-white mb-2">Booking Submitted!</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Booking request received</h2>
         <p className="text-slate-400 mb-6">
-          Our team will contact you within 24 hours to confirm your site assessment.
+          Our team will contact you shortly to confirm your site assessment.
         </p>
         <div className="bg-slate-900 rounded-xl p-4 mb-6">
           <p className="text-slate-300 text-sm">

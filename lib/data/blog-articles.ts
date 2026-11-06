@@ -3101,7 +3101,7 @@ While cheaper alternatives exist, genuine parts:
 - **Genuine parts** - Full warranty
 - **Specialist technicians** - Experienced across all major brands
 - **All 47 counties** - Kenya-wide coverage
-- **24/7 emergency** - 2-hour response in Nairobi
+- **24/7 emergency** - under 4 hours in the Nairobi metro
 
 ### Contact for Quote
 - **Phone:** +254 768 860 665

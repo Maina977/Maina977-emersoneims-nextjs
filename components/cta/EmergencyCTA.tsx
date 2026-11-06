@@ -188,10 +188,10 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
               className="grid grid-cols-2 gap-4 mb-8"
             >
               {[
-                { icon: Clock, text: '2-Hour Response', sub: 'In Nairobi' },
+                { icon: Clock, text: 'Under 4 Hours', sub: 'Nairobi metro' },
                 { icon: Truck, text: 'Mobile Workshop', sub: 'All 47 Counties' },
                 { icon: Shield, text: '24/7 Availability', sub: 'Never Closed' },
-                { icon: Award, text: '98.7% Uptime', sub: 'Guaranteed' },
+                { icon: Award, text: '2-Year Warranty', sub: 'On workmanship' },
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3 p-3 bg-slate-900/50 border border-slate-700/50 rounded-xl">
                   <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center">

@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import SiteSurveyPolicy from '@/components/trust/SiteSurveyPolicy';
-import { RESPONSE_NAIROBI, RESPONSE_NAIROBI_SHORT, RESPONSE_ELSEWHERE, RESPONSE_SUMMARY } from '@/lib/business/responseTime';
+import { RESPONSE_NAIROBI, RESPONSE_NAIROBI_SHORT, RESPONSE_ELSEWHERE, RESPONSE_SUMMARY, CALLBACK_PROMISE } from '@/lib/business/responseTime';
 import { m, useScroll, useTransform, LazyMotion, domAnimation } from 'framer-motion';
 import HolographicMap from '@/components/map/HolographicMap';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import { TEAM_EMAILS } from '@/lib/contact/emails';
+import { referenceFromResponse } from '@/lib/leads/reference';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🚀 SCI-FI PREMIUM CONTACT PAGE - AWWWARD SOTD WORTHY
@@ -293,6 +294,7 @@ function SciFiContactForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [whatsappLink, setWhatsappLink] = useState('');
+  const [leadRef, setLeadRef] = useState<string | null>(null);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   // Service Connect / header links arrive as /contact?type=quote|engineer|emergency
@@ -364,11 +366,12 @@ function SciFiContactForm() {
         }),
       });
       const json = await res.json().catch(() => null) as
-        | { success?: boolean; whatsappFallback?: string }
+        | { success?: boolean; whatsappFallback?: string; reference?: string; leadId?: number }
         | null;
 
       if (res.ok && json?.success) {
         setWhatsappLink(json.whatsappFallback || fallback);
+        setLeadRef(referenceFromResponse(json));
         setSubmitStatus('success');
       } else {
         throw new Error('delivery_unconfirmed');
@@ -407,10 +410,15 @@ function SciFiContactForm() {
         </div>
         <h3 className="text-2xl font-bold text-white mb-2">Message received</h3>
         <p className="text-gray-300 max-w-md mx-auto mb-8">
-          Thank you, {formData.name.split(' ')[0] || 'there'}. Our engineering team will respond
-          within <span className="text-amber-400 font-semibold">2 working hours</span>. For an
+          Thank you, {formData.name.split(' ')[0] || 'there'}. {CALLBACK_PROMISE} For an
           immediate response, reach us directly:
         </p>
+        {leadRef && (
+          <p className="text-gray-300 max-w-md mx-auto -mt-4 mb-8">
+            Your reference: <span className="font-mono font-semibold text-amber-400">{leadRef}</span>.
+            Quote it when you call or message us.
+          </p>
+        )}
         <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
           <a
             href={whatsappLink || buildWhatsAppLink()}

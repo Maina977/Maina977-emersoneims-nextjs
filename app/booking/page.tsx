@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import { referenceFromResponse } from '@/lib/leads/reference';
 
 // Service types available for booking
 const SERVICE_TYPES = [
@@ -56,6 +57,7 @@ export default function BookingPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [leadRef, setLeadRef] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState('');
 
   // Service Connect links arrive as /booking?type=<service id> (lib/serviceConnect/
@@ -127,6 +129,7 @@ export default function BookingPage() {
         setIsSubmitting(false);
         return;
       }
+      setLeadRef(referenceFromResponse(await res.json().catch(() => null)));
     } catch (err) {
       console.error('Booking delivery error:', err);
       setSubmitError('Your booking could not be sent — please check your connection.');
@@ -157,7 +160,8 @@ export default function BookingPage() {
           className="max-w-lg w-full bg-white/5 border border-white/10 rounded-2xl p-8 text-center"
         >
           <div className="text-6xl mb-4">✅</div>
-          <h1 className="text-3xl font-bold text-white mb-4">Booking Confirmed!</h1>
+          {/* A request, not a confirmed slot: the team confirms the time by phone. */}
+          <h1 className="text-3xl font-bold text-white mb-4">Booking request received</h1>
           <p className="text-gray-300 mb-6">
             Thank you, {formData.name}! We've received your booking request for{' '}
             <span className="text-orange-400 font-semibold">{selectedService?.label}</span>.
@@ -166,6 +170,7 @@ export default function BookingPage() {
           <div className="bg-white/10 rounded-xl p-6 mb-6 text-left">
             <h3 className="font-semibold text-white mb-4">Booking Details:</h3>
             <div className="space-y-2 text-gray-300">
+              {leadRef && <p><span className="text-gray-500">Reference:</span> <span className="font-mono text-orange-400">{leadRef}</span></p>}
               <p><span className="text-gray-500">Service:</span> {selectedService?.label}</p>
               <p><span className="text-gray-500">Date:</span> {formData.date}</p>
               <p><span className="text-gray-500">Time:</span> {formData.time}</p>
@@ -187,7 +192,7 @@ export default function BookingPage() {
               Back to Home
             </Link>
             <a
-              href={`https://wa.me/254768860665?text=Hi! I just submitted a booking for ${selectedService?.label} on ${formData.date} at ${formData.time}. My name is ${formData.name}.`}
+              href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi! I just submitted a booking${leadRef ? ` (${leadRef})` : ''} for ${selectedService?.label} on ${formData.date} at ${formData.time}. My name is ${formData.name}.`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition-colors"
