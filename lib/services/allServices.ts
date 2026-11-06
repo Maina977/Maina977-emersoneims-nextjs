@@ -1833,7 +1833,7 @@ WE PROVIDE:
     ],
 
     warranties: [
-      '6-month EmersonEIMS warranty on installation and workmanship',
+      '1-year EmersonEIMS warranty on installation; 6 months on service work',
       'Manufacturer warranty on the UPS itself (2-5 years, varies by model)',
       'Battery warranty per battery manufacturer'
     ],
@@ -2040,7 +2040,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
     ],
 
     warranties: [
-      '6-month EmersonEIMS warranty on installation and workmanship',
+      '1-year EmersonEIMS warranty on installation; 6 months on service work',
       'Manufacturer warranty on the pump itself, per its maker',
       'Motor rewinding warranty per our rewinding terms'
     ],

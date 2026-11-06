@@ -95,6 +95,16 @@ describe('installation warranty (owner 2026-11-06: solar, plumbing, AC, incinera
     expect(seo).toMatch(/Our installation workmanship in \{location\} carries a 1-year warranty/);
     expect(seo).toMatch(/burst pipes, blocked drains[^']*6-month warranty on our workmanship/);
   });
+
+  it('UPS, borehole-pump and distribution-board installations also 1 year', () => {
+    const svc = code('lib/services/allServices.ts');
+    expect(svc).not.toMatch(/6-month EmersonEIMS warranty on installation/);
+    const bibles = code('lib/services/serviceBibles.ts');
+    expect(bibles).toMatch(/'Workmanship warranty 1 year on installations, 6 months on repairs'/);
+    expect(bibles).not.toMatch(/'Workmanship 6 months',/);
+    expect(code('lib/maintenance-hub/enhanced-services-part3.ts')).toMatch(/1 year on installations, 6 months on repairs, manufacturer warranty on materials/);
+    expect(code('app/maintenance-hub/general/page.tsx')).toMatch(/'1-year installation warranty'/);
+  });
 });
 
 describe('generator warranty (owner 2026-11-06: 2 years on all generators sold)', () => {

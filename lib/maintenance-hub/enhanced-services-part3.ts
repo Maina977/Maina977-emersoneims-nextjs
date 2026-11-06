@@ -747,7 +747,7 @@ Work on energized circuits should only be performed when absolutely necessary an
       }
     ],
     certifications: ['EPRA Electrical Contractor License Class A', 'Kenya Bureau of Standards Certified'],
-    warranty: '6 months on workmanship, manufacturer warranty on materials'
+    warranty: '1 year on installations, 6 months on repairs, manufacturer warranty on materials'
   }
 ];
 

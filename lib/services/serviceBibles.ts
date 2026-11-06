@@ -487,7 +487,7 @@ const DISTRIBUTION_BIBLE: ServiceBible = {
   ],
   warrantyOptions: [
     'OEM 24-month component warranty',
-    'Workmanship warranty 6 months',
+    'Workmanship warranty 1 year on installations, 6 months on repairs',
     'Annual inspection contracts available',
   ],
   qualityChecks: [
@@ -1325,7 +1325,7 @@ const UPS_BIBLE: ServiceBible = {
   warrantyOptions: [
     'UPS hardware 2–3 yr standard',
     'VRLA batteries 1–2 yr; LFP 5–10 yr',
-    'Workmanship 6 months',
+    'Workmanship 1 year on installations, 6 months on repairs',
   ],
   qualityChecks: [
     'Battery impedance log per cell at commissioning',
