@@ -18,7 +18,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
+import GeneratorQuoteForm from '@/components/forms/GeneratorQuoteForm';
 import {
   GENERATOR_SIZES,
   getGeneratorSize,
@@ -347,12 +347,8 @@ export default async function GeneratorSizePage({ params }: Props) {
             Tell us the load and the location. You get a specific figure and the datasheet for the
             actual machine, from an engineer.
           </p>
-          <div className="mt-7 max-w-xl">
-            <QuickInquiryForm
-              service={`${g.kva} kVA Generator`}
-              ctaLabel="Request my quotation"
-              source={`generator-size-${g.slug}`}
-            />
+          <div className="mt-7 max-w-3xl">
+            <GeneratorQuoteForm defaultKva={g.kva} source={`generator-size-${g.slug}`} />
           </div>
           <p className="mt-6 text-sm text-white/50">
             Or call{' '}

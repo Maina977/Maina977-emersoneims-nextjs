@@ -55,7 +55,7 @@ import RepairSyncShowcase from '@/components/generators/RepairSyncShowcase';
 // Lead capture for the #quote section. Imported statically rather than lazily:
 // it is the page's only form and sits directly under the hero, so it must be
 // present the moment the primary CTA is clicked.
-import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
+import GeneratorQuoteForm from '@/components/forms/GeneratorQuoteForm';
 import { RESPONSE_NAIROBI } from '@/lib/business/responseTime';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2347,7 +2347,7 @@ export default function GeneratorPage() {
                 </li>
                 <li className="flex gap-3">
                   <span className="text-brand-gold font-bold">✓</span>
-                  <span>Genuine spare parts held in stock, not ordered after a breakdown</span>
+                  <span>Genuine spare parts for the engines we service</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-brand-gold font-bold">✓</span>
@@ -2365,13 +2365,12 @@ export default function GeneratorPage() {
 
             <div className="rounded-2xl border border-amber-500/30 bg-black/60 p-6 md:p-8 backdrop-blur">
               <h3 className="text-xl font-bold text-white mb-1">Request a generator quote</h3>
+              {/* "We reply the same working day" removed 2026-11-06: no reply
+                  time is owner-confirmed (lib/business/responseTime.ts). */}
               <p className="text-white/60 text-sm mb-6">
-                We reply the same working day.
+                Answer what you can; an engineer fills in the rest with you.
               </p>
-              <QuickInquiryForm
-                service="Generator supply"
-                ctaLabel="Get My Quote"
-              />
+              <GeneratorQuoteForm source="generators-page" />
             </div>
           </div>
         </div>
@@ -2382,7 +2381,7 @@ export default function GeneratorPage() {
       ════════════════════════════════════════════════════════════════ */}
       <CumminsBanner variant="hero" showPricing={true} showCTA={true} />
 
-      {/* Cummins Product structured data is declared once in app/generators/layout.tsx
+      {/* Cummins Product structured data is declared once in app/generators/generatorsJsonLd.ts
           (Product @id .../generators/#product). A second Product block here
           duplicated it and carried a separate aggregateRating, which produced
           Search Console's "Review has multiple aggregate ratings" error. */}

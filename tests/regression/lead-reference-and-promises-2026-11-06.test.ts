@@ -82,6 +82,15 @@ describe('response promises on live pages', () => {
     }
   });
 
+  it('/generators and size pages use the generator quotation form, without reply-time or stock claims', () => {
+    const gen = readFileSync(join(root, 'app/generators/page.tsx'), 'utf8');
+    expect(gen).toMatch(/<GeneratorQuoteForm source="generators-page" \/>/);
+    expect(gen).not.toMatch(/We reply the same working day\./);
+    expect(gen).not.toMatch(/held in stock/);
+    const size = readFileSync(join(root, 'app/generators/sizes/[size]/page.tsx'), 'utf8');
+    expect(size).toMatch(/<GeneratorQuoteForm defaultKva=\{g\.kva\}/);
+  });
+
   it('the exit popup only reports success when the server accepted the lead', () => {
     const src = readFileSync(join(root, 'components/conversion/ExitIntentPopup.tsx'), 'utf8');
     expect(src).toMatch(/if \(!res\.ok\) throw/);
