@@ -95,6 +95,15 @@ describe('confirmed VOLTKA prices', () => {
     }
   });
 
+  it('the /generators price offer is not inherited by child routes', () => {
+    const root = join(__dirname, '..', '..');
+    const layout = readFileSync(join(root, 'app/generators/layout.tsx'), 'utf8');
+    expect(layout).not.toMatch(/application\/ld\+json/);
+    expect(layout).not.toMatch(/AggregateOffer/);
+    const page = readFileSync(join(root, 'app/generators/page.tsx'), 'utf8');
+    expect(page).toMatch(/JSON\.stringify\(generatorsJsonLd\)/);
+  });
+
   it('meta description for /generators fits what Google shows', () => {
     const src = readFileSync(join(__dirname, '..', '..', 'app/generators/layout.tsx'), 'utf8');
     const m = /\n {2}description: "([^"]+)"/.exec(src);

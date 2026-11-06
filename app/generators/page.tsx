@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
 import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
+import { generatorsJsonLd } from './generatorsJsonLd';
 import {
   VOLTKA_CONFIRMED_PRICES,
   VOLTKA_PRICE_BASIS,
@@ -2201,6 +2202,11 @@ export default function GeneratorPage() {
 
   return (
     <div ref={containerRef} className="eims-section min-h-screen relative">
+      {/* /generators-only JSON-LD (moved from layout.tsx 2026-11-05 so child routes do not inherit it). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(generatorsJsonLd) }}
+      />
       {/* VideoObject Schema - Fixes Google Search Console video indexing */}
       <script
         type="application/ld+json"
