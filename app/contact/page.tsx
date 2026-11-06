@@ -84,7 +84,7 @@ function ParticleField() {
             left: `${p.x}%`,
             top: `${p.y}%`,
             animationDuration: `${p.duration}s`,
-            animationDelay: `${p.delay + 2.5}s`,
+            animationDelay: `${p.delay}s`,
           }}
         />
       ))}
