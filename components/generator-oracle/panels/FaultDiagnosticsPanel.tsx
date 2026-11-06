@@ -15,6 +15,7 @@ import type { ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta'
 import type { EnhancedFaultCode } from '@/lib/generator-oracle/enhanced-fault-database';
 import { lookupFaultCode, codeLabel, modelsLabel, type CodeKind } from '@/lib/generator-oracle/client/oracleClient';
 import { waLink } from '@/lib/serviceConnect/actions';
+import EngineerEscalation, { bookingHrefForFault } from '@/components/generator-oracle/EngineerEscalation';
 // `getFaultByCode` only resolves a static set of 6 enriched records — keeping
 // it dynamically imported in this client component means the 1.9k-line module
 // is fetched only when the modal mounts, not on initial page render.
@@ -177,6 +178,12 @@ function FaultDetailModal({
                   className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-green-400 hover:text-green-300"
                 >
                   💬 Ask an engineer about this fault →
+                </a>
+                <a
+                  href={bookingHrefForFault(`${fault.brand} ${codeLabel(fault as { code: string; codeKind?: CodeKind })}`, fault.title)}
+                  className="mt-3 ml-4 inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200"
+                >
+                  🛠️ Book an engineer →
                 </a>
               </div>
             </div>
@@ -1040,6 +1047,9 @@ export default function FaultDiagnosticsPanel({
                 </div>
               )}
             </div>
+            {displayResults.length > 0 && lastSearched && (
+              <EngineerEscalation code={lastSearched} title={displayResults.length === 1 ? displayResults[0].title : undefined} />
+            )}
           </div>
         </div>
 

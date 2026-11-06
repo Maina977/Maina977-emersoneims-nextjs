@@ -64,9 +64,16 @@ export default function BookingPage() {
   // actions.ts). Read once after mount — window, not useSearchParams, so the
   // page stays statically rendered without a Suspense boundary.
   useEffect(() => {
-    const type = new URLSearchParams(window.location.search).get('type');
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type');
     if (type && SERVICE_TYPES.some((s) => s.id === type)) {
       setFormData((f) => ({ ...f, serviceType: type }));
+    }
+    // Generator Oracle hands over the fault it diagnosed (EngineerEscalation).
+    const fault = params.get('fault');
+    if (fault) {
+      const clean = fault.replace(/[<>]/g, '').slice(0, 160);
+      setFormData((f) => (f.problemDescription ? f : { ...f, problemDescription: `Generator Oracle fault: ${clean}` }));
     }
   }, []);
 
