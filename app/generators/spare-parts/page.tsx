@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState, useCallback } from 'react';
 import { formatKES } from '@/lib/format/currency';
 import Link from 'next/link';
-import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
+import RfqForm from '@/components/forms/RfqForm';
 
 interface Part {
   id?: string;
@@ -720,11 +720,7 @@ export default function SparePartsPage() {
             three buttons below are untouched; this adds the fourth option.
           */}
           <div className="max-w-xl mx-auto mb-10 text-left">
-            <QuickInquiryForm
-              service="Generator Spare Parts"
-              ctaLabel="Ask about this part"
-              source="spare-parts"
-            />
+            <RfqForm kind="spare-parts" source="spare-parts" />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

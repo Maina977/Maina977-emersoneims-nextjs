@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import RfqForm from '@/components/forms/RfqForm';
 
 export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend
@@ -38,7 +39,7 @@ export default function BoreholeDrillingPage() {
 
           <div className="space-y-8 text-gray-300">
             <p className="text-lg leading-relaxed">
-              Boreholes access groundwater in aquifers—porous rock formations containing water. Kenya has diverse hydrogeology: volcanic highlands have high-yield aquifers (transmissivity 1-5×10⁻² m²/s), excellent for large boreholes; coastal sedimentary aquifers have lower yield (1-10×10⁻⁴ m²/s) but greater thickness. Professional site selection predicts yield before drilling. A 500m dry hole costs KES 3-5M; aquifer testing (KES 1M) often prevents catastrophic failure.
+              Boreholes access groundwater in aquifers—porous rock formations containing water. Kenya has diverse hydrogeology: volcanic highlands have high-yield aquifers (transmissivity 1-5×10⁻² m²/s), excellent for large boreholes; coastal sedimentary aquifers have lower yield (1-10×10⁻⁴ m²/s) but greater thickness. A hydrogeological survey reduces the risk of a dry or low-yield hole, but no survey can guarantee water: yield is known only after drilling and test pumping.
             </p>
 
             <p className="text-lg leading-relaxed">
@@ -146,8 +147,12 @@ export default function BoreholeDrillingPage() {
         <section className="bg-gradient-to-r from-emerald-900/30 to-teal-900/20 border border-emerald-600/30 rounded-lg p-16 text-center">
           <h2 className="text-4xl font-bold mb-4">Professional Borehole Drilling & Assessment</h2>
           <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-            500+ boreholes across Kenya. We perform aquifer testing before drilling, ensuring yield predictions are real. No dry holes, no surprises.
+            We survey before you commit and test-pump after drilling, so you know the yield before the pump is sized.
+            A desktop assessment is preliminary; siting, depth and yield are confirmed in the field.
           </p>
+          <div className="mx-auto mb-8 max-w-2xl text-left">
+            <RfqForm kind="borehole-assessment" source="service-borehole-drilling" />
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact" className="px-8 py-4 bg-emerald-500 text-black font-bold rounded-lg hover:bg-emerald-400 transition">
               Request Borehole Assessment

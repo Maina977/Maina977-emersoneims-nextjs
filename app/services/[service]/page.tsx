@@ -27,6 +27,16 @@ import ServiceDetailClient from './ServiceDetailClient';
 // Lead capture for the #quote section below. All ten service pages previously
 // shipped ZERO forms while publishing 4,700-7,300 words and 26-42 real prices.
 import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
+import RfqForm from '@/components/forms/RfqForm';
+import type { RfqConfig } from '@/lib/forms/rfqConfigs';
+
+/** Service pages that use a category-specific form instead of the four-question one. */
+const RFQ_BY_SLUG: Record<string, RfqConfig['id']> = {
+  'generator-repairs': 'service-request',
+  'motor-rewinding': 'service-request',
+  'ups-systems': 'ups-sizing',
+  'borehole-pumps': 'borehole-assessment',
+};
 
 interface Props {
   params: Promise<{ service: string }>;
@@ -287,7 +297,7 @@ export default async function ServiceDetailPage({ params }: Props) {
                 </li>
                 <li className="flex gap-3">
                   <span className="text-brand-gold font-bold">✓</span>
-                  <span>Genuine spare parts held in stock</span>
+                  <span>Genuine spare parts for the equipment we service</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-brand-gold font-bold">✓</span>
@@ -320,14 +330,24 @@ export default async function ServiceDetailPage({ params }: Props) {
               <h3 className="text-xl font-bold text-white mb-1">
                 Request a {service.shortName.toLowerCase()} quote
               </h3>
-              <p className="text-white/60 text-sm mb-6">
-                Four questions. We reply the same working day.
-              </p>
-              <QuickInquiryForm
-                service={service.name}
-                ctaLabel="Get My Quote"
-                source={`service-${service.slug}`}
-              />
+              {/* No reply time: none is owner-confirmed (lib/business/responseTime.ts).
+                  Repairs and UPS get their category form (external audit §4). */}
+              {RFQ_BY_SLUG[service.slug] ? (
+                <div className="mt-4">
+                  <RfqForm kind={RFQ_BY_SLUG[service.slug]} source={`service-${service.slug}`} />
+                </div>
+              ) : (
+                <>
+                  <p className="text-white/60 text-sm mb-6">
+                    Four questions; an engineer comes back to you.
+                  </p>
+                  <QuickInquiryForm
+                    service={service.name}
+                    ctaLabel="Get My Quote"
+                    source={`service-${service.slug}`}
+                  />
+                </>
+              )}
             </div>
           </div>
         </div>
