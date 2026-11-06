@@ -485,6 +485,9 @@ function constantTimeEqual(a: string, b: string): boolean {
 }
 
 function isAdminPath(pathname: string): boolean {
+  // The sign-in page is the one admin URL served without a session (it is how
+  // the session is obtained). Added 2026-11-06 with /admin/leads.
+  if (pathname === '/admin/login' || pathname === '/admin/login/') return false;
   return (
     pathname === '/admin' || pathname.startsWith('/admin/') ||
     // /dashboard/* (analytics, review moderation) had no access control at all;
