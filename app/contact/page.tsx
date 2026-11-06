@@ -833,18 +833,16 @@ function SciFiContactPageInner() {
           </m.div>
 
           {/* Main Title */}
-          <m.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6"
-          >
+          {/* Plain h1, visible on first paint (2026-11-06): it was the page's
+              LCP element and started at opacity 0, so LCP waited 3.3 s for
+              JavaScript to fade it in. */}
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6">
             <span className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
               CONTACT
             </span>
             <br />
             <span className="text-white">EMERSONEIMS</span>
-          </m.h1>
+          </h1>
 
           {/* Subtitle with typing effect */}
           <m.div

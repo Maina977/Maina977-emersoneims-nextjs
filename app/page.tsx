@@ -180,7 +180,10 @@ export const metadata: Metadata = {
 
 function StaticHeroFallback() {
   return (
-    <section className="hero-full relative min-h-screen bg-black overflow-hidden content-auto">
+    // No `content-auto` here (2026-11-06): content-visibility:auto on the
+    // first screen delayed the hero's paint (Lighthouse: 1.2 s render delay on
+    // the LCP image). It stays on the sections below the fold.
+    <section className="hero-full relative min-h-screen bg-black overflow-hidden">
       {/* Cinematic background — video plays inline + autoplay-muted (HTML5 native,
           no JS needed). Image stays as poster + fallback for slow connections,
           reduced-data, and SEO. Renders at SSR so the client sees the video

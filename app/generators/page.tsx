@@ -2118,13 +2118,22 @@ const GENERATOR_HERO_IMAGES = [
 
 const GeneratorHeroSlides = () => {
   const [index, setIndex] = useState(0);
+  // Highest slide shown so far. Only slides up to one past it are mounted, so
+  // on load the first photo is not competing with five other full-screen
+  // JPGs (2026-11-06: LCP 4.8 s, image load 2.1 s). Rotation starts after 6 s
+  // instead of 4 s so the first slide settles first.
+  const [shown, setShown] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setIndex((i) => (i + 1) % GENERATOR_HERO_IMAGES.length), 4000);
-    return () => clearInterval(t);
+    let t: ReturnType<typeof setInterval> | undefined;
+    const start = setTimeout(() => {
+      t = setInterval(() => setIndex((i) => (i + 1) % GENERATOR_HERO_IMAGES.length), 4000);
+    }, 6000);
+    return () => { clearTimeout(start); if (t) clearInterval(t); };
   }, []);
+  useEffect(() => { setShown((m) => Math.max(m, index)); }, [index]);
   return (
     <>
-      {GENERATOR_HERO_IMAGES.map((src, i) => (
+      {GENERATOR_HERO_IMAGES.map((src, i) => i > shown + 1 ? null : (
         <div
           key={src}
           className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${i === index ? 'opacity-100' : 'opacity-0'}`}
