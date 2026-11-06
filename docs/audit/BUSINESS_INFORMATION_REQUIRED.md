@@ -21,5 +21,4 @@ Nothing below is published until the owner supplies it. Each item says what it u
 
 ## Status 2026-11-06
 - ADMIN_API_KEY: set in Vercel production (secret) and verified live; the key is in a private file on the owner's Desktop.
-- Certificates: searched IAF CertSearch, KEBS and the web for 'Emerson Industrial Maintenance Service' / 'EmersonEIMS'; no public record found. Numbers must come from the owner's certificates.
 - Product data, unconfirmed generator prices and Google Ads conversion labels cannot be taken from the internet: they are the company's own stock, prices and Ads account.
