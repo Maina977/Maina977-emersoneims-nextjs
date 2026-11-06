@@ -14,7 +14,7 @@ export default function TeamPage() {
     {
       name: 'Engineering Team',
       role: 'Power Systems & Design',
-      experience: 'Operating since 2011',
+      experience: 'Operating since 2013',
       specialties: [
         'Backup power system design',
         'Load calculation & sizing',

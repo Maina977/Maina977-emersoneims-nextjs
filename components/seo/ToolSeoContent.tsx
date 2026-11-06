@@ -202,7 +202,7 @@ const TOOLS: Record<string, ToolCopy> = {
       'Battery storage and backup integration with existing generators and UPS',
       'O&M: cleaning regimes, string testing, inverter service and monitoring',
     ],
-    coverage: 'Installations across Kenya and East Africa with county-level service reach and 2-year workmanship warranty.',
+    coverage: 'Installations across Kenya and East Africa with county-level service reach, a 2-year warranty on new generators and 6 months on service work.',
     faqs: [
       { q: 'Is solar worth it in Kenya?', a: 'Usually yes: with 4.5–6.5 kWh/m²/day of irradiance, commercial systems commonly pay back in 3–5 years against KPLC tariffs, faster where diesel generation is being displaced.' },
       { q: 'Can solar work with my existing generator?', a: 'Yes — hybrid controllers let solar carry the day load and the generator top up, which cuts run-hours and fuel; how much depends on how much of the load falls in daylight. We design the integration properly, including reverse-power protection.' },

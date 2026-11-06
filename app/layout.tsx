@@ -410,13 +410,13 @@ export default async function RootLayout({
       "https://www.tiktok.com/@emersoneims"
     ],
     /*
-     * From the verified Google Business Profile: opening date 1 March 2011.
+     * From the verified Google Business Profile: founding year 2013 (owner-confirmed 2026-11-06; the Google Business Profile still shows 1 March 2011 and should be updated).
      * Publishing it lets Google reconcile the listing with the site instead of
      * inferring an age, and it settles a figure the site could not previously
      * agree on — "12+ years", "15 years", "15+ years" and "18 years" were all
      * in circulation. Fifteen years as of 2026 is the one that is true.
      */
-    "foundingDate": "2011-03-01",
+    "foundingDate": "2013",
     "contactPoint": [
       {
         "@type": "ContactPoint",

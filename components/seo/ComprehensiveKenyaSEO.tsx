@@ -99,7 +99,7 @@ export default function ComprehensiveKenyaSEO() {
       "eligibleCustomerType": industry.industry
     })),
     // Awards and reviews will be added when earned/received
-    "slogan": "2-Year Warranty | Nationwide Service | 24/7 Emergency Support"
+    "slogan": "2-Year Generator Warranty | Nationwide Service | 24/7 Emergency Support"
   };
 
   // Service Area Schema for each county

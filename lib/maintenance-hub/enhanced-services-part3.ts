@@ -293,7 +293,7 @@ High-frequency components in modern UPS designs can create shock hazards that ar
       }
     ],
     certifications: ['APC Certified Partner', 'Eaton Service Partner', 'Schneider Electric Qualified'],
-    warranty: '90 days on repairs, manufacturer warranty on batteries'
+    warranty: '6 months on repairs, manufacturer warranty on batteries'
   },
   {
     id: 'ac-refrigeration',
@@ -546,7 +546,7 @@ High-temperature decomposition of certain refrigerants produces toxic gases incl
       }
     ],
     certifications: ['F-Gas Certified', 'Daikin Proshop Partner', 'Carrier Certified Technicians'],
-    warranty: '90 days on repairs, manufacturer warranty on parts'
+    warranty: '6 months on repairs, manufacturer warranty on parts'
   },
   {
     id: 'electrical',
@@ -747,7 +747,7 @@ Work on energized circuits should only be performed when absolutely necessary an
       }
     ],
     certifications: ['EPRA Electrical Contractor License Class A', 'Kenya Bureau of Standards Certified'],
-    warranty: '12 months on workmanship, manufacturer warranty on materials'
+    warranty: '6 months on workmanship, manufacturer warranty on materials'
   }
 ];
 

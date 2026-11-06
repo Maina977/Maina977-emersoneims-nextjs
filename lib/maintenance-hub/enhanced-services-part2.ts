@@ -39,7 +39,7 @@ Special purpose motors including brake motors, variable speed motors, high slip 
 
       whyChooseUs: `Our investment in quality equipment and training sets us apart from competitors who offer "bargain" rewinds that fail prematurely. The motor rewinding industry unfortunately includes operators who cut corners - using substandard wire, omitting proper varnish treatment, or skipping critical tests. These inferior rewinds may cost less initially but fail within months, costing far more in the long run through repeated repairs and production downtime.
 
-Every motor rewound at Emerson EiMS is backed by our comprehensive warranty. We guarantee our workmanship and materials for 12 months under normal operating conditions. Our warranty covers return, diagnosis, and repair at no charge if the motor fails due to winding defects. This warranty reflects our confidence in our quality processes and our commitment to customer satisfaction.
+Every motor rewound at Emerson EiMS is backed by our comprehensive warranty. We guarantee our workmanship and materials for 6 months under normal operating conditions. Our warranty covers return, diagnosis, and repair at no charge if the motor fails due to winding defects. This warranty reflects our confidence in our quality processes and our commitment to customer satisfaction.
 
 Our turnaround time for standard rewinds is typically 2-3 working days, with express service available for critical motors. We maintain inventory of common wire gauges and insulation materials to avoid delays waiting for supplies. Our workshop operates extended hours during peak seasons to accommodate urgent customer needs. For planned maintenance shutdowns, we can arrange pickup, rewind, and delivery to minimize motor downtime.
 
@@ -56,7 +56,7 @@ Building management and HVAC systems use numerous motors for fans, pumps, and co
     href: '/services#motors',
     color: 'from-green-600/20 to-emerald-700/20',
     glowColor: 'shadow-green-500/20',
-    features: ['AC Motor Rewinding', 'DC Motor Repair', 'Submersible Motors', 'VFD Compatible', 'Dynamic Balancing', 'Vacuum Impregnation', 'Core Testing', '12-Month Warranty'],
+    features: ['AC Motor Rewinding', 'DC Motor Repair', 'Submersible Motors', 'VFD Compatible', 'Dynamic Balancing', 'Vacuum Impregnation', 'Core Testing', '6-Month Warranty'],
     stats: { value: '500+', label: 'Motors Monthly' },
     subServices: [
       {

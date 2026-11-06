@@ -68,8 +68,8 @@ export function OrganizationSchema() {
     // "Leading" is a market-position claim with nothing behind it.
     description: 'Power and energy solutions in Kenya and East Africa. Generators, Solar, UPS, Electrical Services.',
     // 2010 contradicted the verified Google Business Profile, which gives the
-    // opening date as 1 March 2011. Google reads both; they must agree.
-    foundingDate: '2011-03-01',
+    // founding year as 2013 (owner-confirmed 2026-11-06). Google reads both; they must agree.
+    foundingDate: '2013',
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Embakasi, off Airport North Road',
@@ -828,7 +828,7 @@ export function AboutPageSchema() {
     '@type': 'AboutPage',
     name: 'About EmersonEIMS',
     // "Kenya's leading" is a market-position claim with nothing behind it, and
-    // "12+ years" understated the verified 1 March 2011 opening date.
+    // "12+ years" understated the owner-confirmed 2013 founding year.
     description: 'Learn about EmersonEIMS - a Kenyan power solutions company with 15 years\' experience in generators, solar, UPS, and electrical services.',
     url: 'https://www.emersoneims.com/about-us',
     mainEntity: {

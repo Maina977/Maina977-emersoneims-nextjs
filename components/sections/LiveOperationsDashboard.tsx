@@ -95,7 +95,7 @@ function LiveOperationsDashboardInner() {
               {COMPANY_STATS.projectsCompleted}+
             </div>
             <div className="text-sm text-gray-500">
-              Since 2011
+              Since 2013
             </div>
           </m.div>
 

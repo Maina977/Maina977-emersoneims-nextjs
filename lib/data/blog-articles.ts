@@ -1812,7 +1812,7 @@ For hybrid systems:
 - Registered engineers design and install every system
 - Tier-1 panel brands only
 - Premium LiFePO4 batteries
-- Comprehensive 2-year installation warranty
+- 6-month warranty on installation workmanship
 - 24/7 monitoring and support
 - Nationwide coverage (47 counties)
 

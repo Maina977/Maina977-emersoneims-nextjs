@@ -1187,7 +1187,7 @@ const LiveStatisticsCounter = () => {
             the year it started and the counties it reaches.
           */}
           <h2 className="text-3xl md:text-4xl font-bold text-white">
-            Supplying and Servicing Generators in Kenya Since 2011
+            Supplying and Servicing Generators in Kenya Since 2013
           </h2>
         </div>
 

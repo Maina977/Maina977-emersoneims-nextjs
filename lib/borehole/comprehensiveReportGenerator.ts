@@ -1567,7 +1567,7 @@ export class ComprehensiveReportGenerator {
     <p>3. Drilling success is not guaranteed; this is a pre-assessment tool.</p>
     <p>4. Client is responsible for obtaining all necessary permits.</p>
     <p>5. Payment terms: 50% deposit, 30% on drilling completion, 20% on commissioning.</p>
-    <p>6. Warranty: 12 months on pump, 24 months on workmanship.</p>
+    <p>6. Warranty: pump per manufacturer; 6 months on workmanship.</p>
   </div>
 
   <h2>D. Contact Information</h2>

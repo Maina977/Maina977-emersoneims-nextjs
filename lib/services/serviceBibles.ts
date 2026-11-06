@@ -487,8 +487,8 @@ const DISTRIBUTION_BIBLE: ServiceBible = {
   ],
   warrantyOptions: [
     'OEM 24-month component warranty',
-    'Workmanship warranty 12 months',
-    'Annual inspection contracts that extend OEM warranty by 12 months',
+    'Workmanship warranty 6 months',
+    'Annual inspection contracts available',
   ],
   qualityChecks: [
     'Continuity of conductors (R1 + R2)',
@@ -897,7 +897,7 @@ const MOTOR_BIBLE: ServiceBible = {
     { scenario: 'Condition-monitoring programme across a 40-motor plant', capex: 'KES 600k – 900k / yr for quarterly vibration and thermography rounds', annualSaving: 'One avoided unplanned line stop ≈ KES 1.5M – 3M', payback: 'First avoided stoppage', notes: 'The value is in catching bearing degradation while it is still a planned overnight bearing change instead of a burnt stator and a three-day outage.' },
   ],
   warrantyOptions: [
-    'Workmanship 12 months on rewinds',
+    'Workmanship 6 months on rewinds',
     '6 months on re-bearing only',
     'Full insurance-backed rebuild for HV motors > 1 MW',
   ],
@@ -1114,8 +1114,8 @@ const AC_BIBLE: ServiceBible = {
   warrantyOptions: [
     'Compressor warranty 5 yr standard',
     'PCB / parts 1–2 yr standard',
-    'Workmanship 12 months',
-    'Annual maintenance contract extends compressor warranty by 12 months',
+    'Workmanship 6 months',
+    'Annual maintenance contract available',
   ],
   qualityChecks: [
     'Pressure-test 350 PSI nitrogen 24 h before refrigerant',
@@ -1325,8 +1325,7 @@ const UPS_BIBLE: ServiceBible = {
   warrantyOptions: [
     'UPS hardware 2–3 yr standard',
     'VRLA batteries 1–2 yr; LFP 5–10 yr',
-    'Workmanship 12 months',
-    'Service contracts extend warranty up to 5 yr',
+    'Workmanship 6 months',
   ],
   qualityChecks: [
     'Battery impedance log per cell at commissioning',
@@ -2045,7 +2044,7 @@ const PLUMBING_BIBLE: ServiceBible = {
   roi: [],
 
   warrantyOptions: [
-    'Two-year EmersonEIMS warranty on installation and workmanship',
+    '6-month EmersonEIMS warranty on installation and workmanship',
     'Manufacturer warranty on fittings, heaters, pumps and sanitaryware, per the maker and stated on the quotation',
     'Scheduled maintenance contracts available for hotels and commercial properties',
   ],

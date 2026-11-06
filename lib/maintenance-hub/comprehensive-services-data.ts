@@ -196,7 +196,7 @@ We stand behind our work with comprehensive warranties on parts and labor. Our g
 
 We handle all aspects of installation including civil works coordination, electrical connections to your distribution system, automatic transfer switch installation, fuel tank placement and piping, exhaust system installation, and control system configuration. Our installations comply with all relevant Kenya Power requirements, local regulations, and manufacturer specifications.
 
-After physical installation, we perform comprehensive commissioning including control system programming, protection relay settings, load testing, and customer training. You receive complete documentation including as-built drawings, test certificates, and operation manuals. Our installations are backed by a 12-month workmanship warranty.`,
+After physical installation, we perform comprehensive commissioning including control system programming, protection relay settings, load testing, and customer training. You receive complete documentation including as-built drawings, test certificates, and operation manuals. Our installations are backed by a 6-month workmanship warranty.`,
       benefits: [
         'Turnkey project management',
         'Compliance with all regulations',
@@ -204,7 +204,7 @@ After physical installation, we perform comprehensive commissioning including co
         'Integration with existing systems',
         'Complete documentation package',
         'Staff training included',
-        '12-month installation warranty'
+        '6-month installation warranty'
       ],
       process: [
         'Site survey and load analysis',

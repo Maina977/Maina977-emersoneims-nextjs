@@ -14,6 +14,7 @@ import { limiter } from '@/lib/rate-limiter';
 import { timingSafeEqual } from 'crypto';
 import nodemailer from 'nodemailer';
 import { leadReference } from '@/lib/leads/reference';
+import { routedRecipients } from '@/lib/leads/routing';
 
 // Sales team notification settings
 const SALES_EMAIL = process.env.SALES_EMAIL || 'emersoneimservices@gmail.com';
@@ -619,9 +620,11 @@ async function sendSmtpNotification(data: ContactFormData, leadId: number): Prom
     // monitored inbox alongside the primary mailboxes (info@ + sally@).
     const ccList = SALES_EMAIL && !LEAD_RECIPIENTS.includes(SALES_EMAIL) ? SALES_EMAIL : undefined;
 
+    // Department routing (owner, 2026-11-06): generator@ / solar@ are ADDED
+    // to the existing recipients, so info@ still receives every lead.
     await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
-      to: LEAD_RECIPIENTS.join(', '),
+      to: routedRecipients(LEAD_RECIPIENTS, data).join(', '),
       cc: ccList,
       replyTo: data.email, // team can reply straight to the customer
       subject: `🔥 NEW WEBSITE LEAD ${leadReference(leadId) ?? ''}: ${data.name} — ${serviceLabel(data.service)}`,

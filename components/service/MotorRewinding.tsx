@@ -131,8 +131,8 @@ export default function MotorRewinding({ performanceTier }: MotorRewindingProps)
           <div className="flex items-center gap-4">
             <span className="text-5xl">🏆</span>
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">12-Month Warranty on All Rewinding Work</h3>
-              <p className="text-slate-300">Every motor we rewind comes with a comprehensive 12-month warranty covering materials and workmanship. We stand behind our quality.</p>
+              <h3 className="text-xl font-bold text-white mb-2">6-Month Warranty on All Rewinding Work</h3>
+              <p className="text-slate-300">Every motor we rewind comes with a 6-month warranty covering materials and workmanship. We stand behind our quality.</p>
             </div>
           </div>
         </motion.div>

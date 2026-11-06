@@ -387,13 +387,13 @@ export default async function CountyPage({ params }: Props) {
             <div className="text-center p-6 rounded-xl bg-white/5 border border-white/10">
               {/*
                 Was "15+ Years Experience". EmersonEIMS has operated in Kenya
-                since 2012, which is 14 years as at 2026 — so "15+" was not
+                since 2013, which is 14 years as at 2026 — so "15+" was not
                 true, and any hard-coded countdown goes stale the moment it is
                 written. The founding year states more, cannot drift, and needs
                 no maintenance. (A computed `new Date()` was rejected: the
                 hydration guard blocks non-deterministic server renders.)
               */}
-              <div className="text-4xl font-bold text-cyan-400 mb-2">2011</div>
+              <div className="text-4xl font-bold text-cyan-400 mb-2">2013</div>
               <div className="text-gray-400">Operating in Kenya since</div>
               <p className="text-xs text-gray-500 mt-2">Engineering-led, owner-run</p>
             </div>

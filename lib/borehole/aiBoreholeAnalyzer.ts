@@ -4215,7 +4215,7 @@ export class AIBoreholeAnalyzer {
         'Force majeure conditions apply',
       ],
       warranty: {
-        drilling: '12 months workmanship guarantee',
+        drilling: '6 months workmanship warranty',
         pump: '24 months manufacturer warranty',
         solar: '25 years panel warranty, 5 years inverter warranty',
         structure: '5 years structural warranty',

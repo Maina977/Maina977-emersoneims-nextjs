@@ -155,10 +155,10 @@ export const ALL_SERVICES: Service[] = [
     // claim. Both used to appear here, and this block feeds the Service schema
     // rendered on /generators — so it was asserting the claim to Google as
     // structured data. See app/why-emersoneims/page.tsx for the full policy.
-    description: 'Cummins-powered generators in Kenya: new VOLTKA sets built on Cummins engines (10-3000 kVA, open or canopied), used and slightly used Cummins sets, and servicing for both. 2-year workmanship warranty.',
+    description: 'Cummins-powered generators in Kenya: new VOLTKA sets built on Cummins engines (10-3000 kVA, open or canopied), used and slightly used Cummins sets, and servicing for both. 2-year warranty on new generators; 6 months on repairs and servicing.',
     longDescription: `EmersonEIMS supplies, installs and maintains Cummins-powered generators across Kenya. We are an independent power engineering firm, not a Cummins dealer, so the set we recommend is the one that fits your load, your fuel budget and your site.
 
-New sets are VOLTKA, our own make built on Cummins engines, from 10 kVA to 3000 kVA, open or in a closed canopy. We also sell used and slightly used Cummins generators, each inspected and load-tested before sale, and we service and repair Cummins sets whoever supplied them. Our workmanship carries a 2-year warranty; terms are set out in your written quotation.
+New sets are VOLTKA, our own make built on Cummins engines, from 10 kVA to 3000 kVA, open or in a closed canopy. We also sell used and slightly used Cummins generators, each inspected and load-tested before sale, and we service and repair Cummins sets whoever supplied them. New generators carry a 2-year warranty; repairs and servicing carry 6 months. Terms are set out in your written quotation.
 
 Support does not stop at the gate. Our mobile workshop reaches all 47 counties, so a set in Kisumu, Eldoret or Mombasa is serviced to the same standard as one in Nairobi — and we hold genuine spare parts rather than sourcing them after your set has already stopped.
 
@@ -173,7 +173,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
     ],
 
     metaTitle: 'Cummins-Engine Generators Kenya: New VOLTKA, Used Cummins', // 57 chars: shown whole in search (2026-10-27)
-    metaDescription: 'New VOLTKA generators on Cummins engines (10-3000 kVA), used Cummins sets, and Cummins servicing in all 47 counties. 2-year workmanship warranty. Call +254768860665',
+    metaDescription: 'New VOLTKA generators on Cummins engines (10-3000 kVA), used Cummins sets, and Cummins servicing in all 47 counties. 2-year warranty on new sets. Call +254768860665',
     keywords: [
       'Cummins generators Kenya',
       'used Cummins generator Kenya',
@@ -188,7 +188,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
     benefits: [
       {
         title: '2-YEAR WARRANTY',
-        description: 'Our workmanship on supply, installation and service carries a 2-year warranty, on the terms in your quotation.',
+        description: 'New generators carry a 2-year warranty; our repair and service work carries 6 months, on the terms in your quotation.',
         icon: '🛡️'
       },
       {
@@ -256,7 +256,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
         features: [
           'Perfect for small offices & shops',
           'Single-phase or three-phase options',
-          '2-year workmanship warranty',
+          '2-year warranty on new sets, 6 months on service work',
           'Professional installation',
           'ATS quoted to suit the site'
         ]
@@ -268,7 +268,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
         features: [
           'Ideal for factories & hotels',
           'Sound attenuated canopy',
-          '2-year workmanship warranty',
+          '2-year warranty on new sets, 6 months on service work',
           'Automatic Transfer Switch',
           'Remote monitoring option',
           'Extended fuel tank'
@@ -282,7 +282,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
         features: [
           'For hospitals, data centers, large industries',
           'Premium sound attenuation',
-          '2-year workmanship warranty',
+          '2-year warranty on new sets, 6 months on service work',
           'Fully automatic operation',
           'Remote monitoring & control',
           'Parallel operation ready',
@@ -294,7 +294,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
     faqs: [
       {
         question: 'Do you sell new Cummins generators?',
-        answer: 'Our new sets are VOLTKA, our own make built on Cummins engines, from 10 kVA to 3000 kVA. We also sell used and slightly used Cummins generators, and we service Cummins sets whoever supplied them. We are not a Cummins dealer. Our workmanship carries a two-year warranty on the terms in your quotation.'
+        answer: 'Our new sets are VOLTKA, our own make built on Cummins engines, from 10 kVA to 3000 kVA. We also sell used and slightly used Cummins generators, and we service Cummins sets whoever supplied them. We are not a Cummins dealer. New generators carry a 2-year warranty and our repair and service work 6 months, on the terms in your quotation.'
       },
       {
         question: 'What size Cummins generator do I need?',
@@ -302,7 +302,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
       },
       {
         question: 'What is included in the 2-Year Warranty?',
-        answer: 'Our warranty is 2 years on workmanship: the supply, installation and service work we do. Cover for the equipment itself depends on whether the set is new or used and is written into your quotation before you pay.'
+        answer: 'New generators carry a 2-year warranty. Repairs, servicing and other work we do carry a 6-month warranty on workmanship. Cover for a used set is written into your quotation before you pay.'
       },
       {
         question: 'How long does generator installation take?',
@@ -527,7 +527,7 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
       },
       {
         question: 'Do you provide warranty on repair work?',
-        answer: 'Yes, all our repair work carries a warranty. Minor repairs have a 30-day warranty, major repairs 90 days, and engine overhauls have a 6-month warranty. Genuine parts carry manufacturer warranty.'
+        answer: 'Yes. All our repair and service work, including engine overhauls, carries a 6-month warranty on workmanship. Genuine parts carry the manufacturer warranty.'
       },
       {
         question: 'Can you repair generator controllers (DeepSea, ComAp)?',
@@ -1833,7 +1833,7 @@ WE PROVIDE:
     ],
 
     warranties: [
-      'Two-year EmersonEIMS warranty on installation and workmanship',
+      '6-month EmersonEIMS warranty on installation and workmanship',
       'Manufacturer warranty on the UPS itself (2-5 years, varies by model)',
       'Battery warranty per battery manufacturer'
     ],
@@ -2040,7 +2040,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
     ],
 
     warranties: [
-      'Two-year EmersonEIMS warranty on installation and workmanship',
+      '6-month EmersonEIMS warranty on installation and workmanship',
       'Manufacturer warranty on the pump itself, per its maker',
       'Motor rewinding warranty per our rewinding terms'
     ],
@@ -2081,7 +2081,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
 
     metaTitle: 'Plumbing Services Kenya | Hotels, Homes & Hot Water',
     metaDescription:
-      'Plumbing and hot-water systems across Kenya: hotel and commercial plumbing, bathrooms, kitchens, water pumps, drainage and emergency repairs. Two-year warranty on our workmanship.',
+      'Plumbing and hot-water systems across Kenya: hotel and commercial plumbing, bathrooms, kitchens, water pumps, drainage and emergency repairs. 6-month warranty on our workmanship.',
     keywords: [
       'plumbing services Kenya',
       'plumber Nairobi',
@@ -2170,7 +2170,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
       {
         question: 'What warranty applies to plumbing work?',
         answer:
-          'Our workmanship carries a two-year warranty. Fittings, heaters and pumps carry their own manufacturer warranties, which vary by product and are stated on the quotation.',
+          'Our workmanship carries a 6-month warranty. Fittings, heaters and pumps carry their own manufacturer warranties, which vary by product and are stated on the quotation.',
       },
       {
         question: 'Do you install solar hot water?',
@@ -2193,7 +2193,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
     ],
 
     warranties: [
-      'Two-year warranty on our workmanship',
+      '6-month warranty on our workmanship',
       'Manufacturer warranty on fittings, heaters and pumps, stated on the quotation',
     ],
     certifications: [],
@@ -2398,7 +2398,7 @@ WE PROVIDE:
     ],
 
     warranties: [
-      'Two-year EmersonEIMS warranty on installation and workmanship',
+      '6-month EmersonEIMS warranty on installation and workmanship',
       'One-year manufacturer warranty on the incinerator unit',
       'Refractory warranty per the lining supplier'
     ],

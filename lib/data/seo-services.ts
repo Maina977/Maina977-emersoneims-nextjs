@@ -804,7 +804,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'Do your solar technicians offer warranty on installation in {location}?',
-        answer: 'Yes, we provide 2-year workmanship warranty on all solar installations in {location}.'
+        answer: 'Yes. Our installation workmanship in {location} carries a 6-month warranty; panels, inverters and batteries carry their manufacturers\' warranties.'
       }
     ]
   },
@@ -1928,7 +1928,7 @@ export const SEO_SERVICES: SEOService[] = [
     category: 'plumbing',
     metaTemplate: {
       title: 'Plumbing Repairs in {location}',
-      description: 'Plumbing repairs in {location}: burst pipes, blocked drains, leaks, low pressure and hot-water faults. Two-year warranty on our workmanship. Call +254768860665',
+      description: 'Plumbing repairs in {location}: burst pipes, blocked drains, leaks, low pressure and hot-water faults. 6-month warranty on our workmanship. Call +254768860665',
       h1: 'Plumbing Repairs in {location}'
     },
     features: [
@@ -1955,7 +1955,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'What warranty applies to plumbing repairs?',
-        answer: 'Our workmanship carries a two-year warranty. Any parts fitted carry their own manufacturer warranty, which varies by product and is stated on the invoice.'
+        answer: 'Our workmanship carries a 6-month warranty. Any parts fitted carry their own manufacturer warranty, which varies by product and is stated on the invoice.'
       }
     ]
   },
@@ -1970,7 +1970,7 @@ export const SEO_SERVICES: SEOService[] = [
     category: 'plumbing',
     metaTemplate: {
       title: 'Plumbing Installation in {location}',
-      description: 'Plumbing installation in {location} for hotels, homes and commercial buildings: pipework, bathrooms, kitchens, hot water and storage. Two-year warranty. Call +254768860665',
+      description: 'Plumbing installation in {location} for hotels, homes and commercial buildings: pipework, bathrooms, kitchens, hot water and storage. 6-month workmanship warranty. Call +254768860665',
       h1: 'Plumbing Installation in {location}'
     },
     features: [
@@ -1997,7 +1997,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'What warranty applies to a plumbing installation?',
-        answer: 'Two years on our installation and workmanship. Fittings, heaters and pumps carry their own manufacturer warranties, stated on the quotation.'
+        answer: '6 months on our installation and workmanship. Fittings, heaters and pumps carry their own manufacturer warranties, stated on the quotation.'
       }
     ]
   },

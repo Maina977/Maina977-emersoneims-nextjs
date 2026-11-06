@@ -463,7 +463,7 @@ export const PAGE_META = {
   },
   maintenanceHub: {
     title: "Maintenance Hub | Curated Fault Codes | 47 Counties",
-    description: "Kenya's most comprehensive maintenance guide. manufacturer-curated fault codes, 9 service categories, all 47 counties. Generator, solar, motor, AC, borehole, electrical services. 2-year warranty."
+    description: "Kenya's most comprehensive maintenance guide. manufacturer-curated fault codes, 9 service categories, all 47 counties. Generator, solar, motor, AC, borehole, electrical services. 2-year warranty on new generators."
   },
   services: {
     title: "9 Power Solutions Services | 2-Year Warranty | 47 Counties",

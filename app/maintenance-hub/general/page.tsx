@@ -488,7 +488,7 @@ const KENYA_SERVICE_AREAS = [
 const COMPREHENSIVE_FAQ = [
   { category: 'General', q: 'Do you offer emergency services?', a: 'Yes, we provide 24/7 emergency services for critical equipment failures. Call our emergency line for immediate response.' },
   { category: 'General', q: 'What areas do you cover?', a: 'We serve all 47 counties in Kenya, with fastest response times in Nairobi, Mombasa, Kisumu, and Nakuru.' },
-  { category: 'General', q: 'Do you provide warranties?', a: 'Yes, all our work comes with warranty: 1 year for repairs, 2 years for new installations, and varies by product for equipment.' },
+  { category: 'General', q: 'Do you provide warranties?', a: 'Yes. New generators carry a 2-year warranty; repairs, servicing and motor rewinding carry 6 months; other equipment carries its manufacturer warranty.' },
   { category: 'General', q: 'Can I get a quotation before committing?', a: 'Absolutely. We provide free quotations for all jobs. Site visits are free within Nairobi; transport charges apply elsewhere.' },
   { category: 'Payments', q: 'What payment methods do you accept?', a: 'We accept M-Pesa, bank transfer, cheque, and cash. For large projects, we offer payment plans.' },
   { category: 'Payments', q: 'Do you require deposits?', a: 'For equipment purchases, 50% deposit is required. For service work, payment is on completion.' },
