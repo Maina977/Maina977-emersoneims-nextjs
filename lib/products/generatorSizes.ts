@@ -1,3 +1,5 @@
+import { VOLTKA_CONFIRMED_PRICES, confirmedPriceFor, confirmedBoundsFor, priceTextFor } from '@/lib/pricing/voltkaConfirmedPrices';
+
 /**
  * PER-SIZE GENERATOR PAGES — the commercial gap an external audit identified.
  *
@@ -12,7 +14,8 @@
  *
  * WHAT IS REAL HERE AND WHAT IS DELIBERATELY ABSENT
  * Real, and sourced:
- *   - kVA, phase and price range — published on /generators, verified by value
+ *   - kVA and phase; prices only where the owner confirmed them (2026-11-05,
+ *     lib/pricing/voltkaConfirmedPrices.ts), otherwise "Request current price"
  *   - kW at 0.8 power factor — arithmetic, the standard genset convention
  *   - Brand and supply route (Cummins via Voltka) and warranty terms — from
  *     lib/brands/cumminsData.ts, which the owner maintains
@@ -35,8 +38,12 @@ export interface GeneratorSize {
   slug: string;
   kva: number;
   phase: 'single' | 'three';
-  /** Exactly as published on /generators. */
+  /** Display text from voltkaConfirmedPrices: open/silent figures, or "Request current price". */
   priceRange: string;
+  /** Confirmed open-frame price, KES excl. VAT. */
+  openKes?: number;
+  /** Confirmed silent-set price, KES excl. VAT. */
+  silentKes?: number;
   /** Who the source page says it suits. */
   suits: string;
   /** Flagged on the source page as a common choice. */
@@ -174,73 +181,86 @@ export function photosForSize(kva: number): ProductPhoto[] {
   return [FLEET, CRANE, ENGINE];
 }
 
-export const GENERATOR_SIZES: readonly GeneratorSize[] = [
+type SizeBase = Omit<GeneratorSize, 'priceRange' | 'openKes' | 'silentKes'>;
+
+const SIZE_BASE: readonly SizeBase[] = [
   {
-    slug: '10-kva', kva: 10, phase: 'single', priceRange: 'KES 280,000 – 350,000',
+    slug: '10-kva', kva: 10, phase: 'single',
     suits: 'Shops, small offices and homes',
     loadExample: 'Lighting, a few computers, a fridge and a small pump — not an electric cooker or a welding set.',
   },
   {
-    slug: '15-kva', kva: 15, phase: 'three', priceRange: 'KES 380,000 – 450,000',
+    slug: '15-kva', kva: 15, phase: 'three',
     suits: 'Small offices and workshops',
     loadExample: 'A small workshop with a single three-phase machine, or an office floor with servers.',
   },
   {
-    slug: '20-kva', kva: 20, phase: 'three', priceRange: 'KES 480,000 – 580,000',
+    slug: '20-kva', kva: 20, phase: 'three',
     suits: 'Small commercial premises',
     loadExample: 'A restaurant kitchen, a small clinic, or a borehole pump plus lighting.',
   },
   {
-    slug: '30-kva', kva: 30, phase: 'three', priceRange: 'KES 650,000 – 780,000', popular: true,
+    slug: '30-kva', kva: 30, phase: 'three', popular: true,
     suits: 'Small business and clinics',
     loadExample: 'A clinic with theatre lighting and sterilisers, or a supermarket with cold rooms.',
   },
   {
-    slug: '50-kva', kva: 50, phase: 'three', priceRange: 'KES 950,000 – 1,150,000',
+    slug: '50-kva', kva: 50, phase: 'three',
     suits: 'Medium business, schools',
     loadExample: 'A school with a computer lab and kitchen, or a small hotel with lifts.',
   },
   {
-    slug: '60-kva', kva: 60, phase: 'three', priceRange: 'KES 1,100,000 – 1,350,000',
+    slug: '60-kva', kva: 60, phase: 'three',
     suits: 'Medium commercial',
     loadExample: 'A mid-size office block, or a workshop with several motors starting on the same feed.',
   },
   {
-    slug: '80-kva', kva: 80, phase: 'three', priceRange: 'KES 1,400,000 – 1,700,000',
+    slug: '80-kva', kva: 80, phase: 'three',
     suits: 'Larger commercial premises',
     loadExample: 'A hotel with laundry and kitchen, or a light manufacturing line.',
   },
   {
-    slug: '100-kva', kva: 100, phase: 'three', priceRange: 'KES 1,750,000 – 2,100,000', popular: true,
+    slug: '100-kva', kva: 100, phase: 'three', popular: true,
     suits: 'Hotels, schools, factories',
     loadExample: 'A hospital wing, a factory with a compressor and several motors, or a hotel with full back-of-house.',
   },
   {
-    slug: '150-kva', kva: 150, phase: 'three', priceRange: 'KES 2,400,000 – 2,900,000',
+    slug: '150-kva', kva: 150, phase: 'three',
     suits: 'Industrial and institutional',
     loadExample: 'A processing plant, or a campus building with lifts, HVAC and laboratories.',
   },
   {
-    slug: '200-kva', kva: 200, phase: 'three', priceRange: 'KES 3,200,000 – 3,800,000',
+    slug: '200-kva', kva: 200, phase: 'three',
     suits: 'Industrial',
     loadExample: 'A factory floor with multiple large motors, or a data room with full cooling.',
   },
   {
-    slug: '250-kva', kva: 250, phase: 'three', priceRange: 'KES 4,000,000 – 4,800,000',
+    slug: '250-kva', kva: 250, phase: 'three',
     suits: 'Large industrial',
     loadExample: 'A cold-storage facility, or a hospital carrying theatres and imaging on standby.',
   },
   {
-    slug: '300-kva', kva: 300, phase: 'three', priceRange: 'KES 4,800,000 – 5,800,000',
+    slug: '300-kva', kva: 300, phase: 'three',
     suits: 'Large industrial',
     loadExample: 'A medium manufacturing plant running its full line on standby power.',
   },
   {
-    slug: '500-kva', kva: 500, phase: 'three', priceRange: 'KES 7,500,000 – 9,000,000',
+    slug: '500-kva', kva: 500, phase: 'three',
     suits: 'Major industrial facilities',
     loadExample: 'A large plant, a shopping centre, or a facility running several buildings from one set.',
   },
-] as const;
+];
+
+/**
+ * Prices are NOT stored here. They come from lib/pricing/voltkaConfirmedPrices.ts
+ * (owner-confirmed 2026-11-05: VOLTKA new, prime, ex-warehouse, excl. VAT).
+ * A size with no confirmed figure reads "Request current price" and carries
+ * no numbers, so no page or schema can show a price for it.
+ */
+export const GENERATOR_SIZES: readonly GeneratorSize[] = SIZE_BASE.map((b) => {
+  const p = confirmedPriceFor(b.kva);
+  return { ...b, priceRange: priceTextFor(b.kva), openKes: p?.openKes, silentKes: p?.silentKes };
+});
 
 export function getGeneratorSize(slug: string): GeneratorSize | undefined {
   return GENERATOR_SIZES.find((g) => g.slug === slug);
@@ -275,22 +295,16 @@ export function nextSizeUp(g: GeneratorSize): GeneratorSize | undefined {
  * quoting a price we do not publish.
  */
 export function publishedPriceRange(): { low: number; high: number; count: number } | null {
-  const bounds: number[] = [];
-
-  for (const size of GENERATOR_SIZES) {
-    // "KES 280,000 – 350,000" — en dash in the data, hyphen tolerated.
-    const m = /KES\s*([\d,]+)\s*[–-]\s*([\d,]+)/.exec(size.priceRange);
-    if (!m) continue;
-    const from = Number(m[1].replace(/,/g, ''));
-    const to = Number(m[2].replace(/,/g, ''));
-    if (Number.isFinite(from) && Number.isFinite(to)) bounds.push(from, to);
-  }
-
+  // All confirmed sizes (the /generators price table lists every one), not
+  // only those with a size page.
+  const bounds = VOLTKA_CONFIRMED_PRICES.map((p) => confirmedBoundsFor(p.kva)).filter(
+    (b): b is { low: number; high: number } => b !== null,
+  );
   if (!bounds.length) return null;
-
   return {
-    low: Math.min(...bounds),
-    high: Math.max(...bounds),
-    count: GENERATOR_SIZES.length,
+    low: Math.min(...bounds.map((b) => b.low)),
+    high: Math.max(...bounds.map((b) => b.high)),
+    // Sizes with a confirmed price.
+    count: bounds.length,
   };
 }

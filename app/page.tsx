@@ -141,10 +141,10 @@ export const metadata: Metadata = {
    * sales-intent generator queries earned 52 impressions in total. 55 characters.
    */
   title: "Generators for Sale in Kenya | New & Used | EmersonEIMS",
-  description: "New VOLTKA Cummins-powered generators, 10–3000 kVA, from KES 280,000, plus used Cummins, Perkins & CAT sets. Installed and serviced Kenya-wide.",
+  description: "New VOLTKA Cummins-powered generators, 10–3000 kVA, open or silent, plus used Cummins, Perkins & CAT sets. Installed and serviced Kenya-wide.",
   openGraph: {
     title: "Generators for Sale in Kenya | New VOLTKA & Used Sets | EmersonEIMS",
-    description: "New VOLTKA Cummins-powered generators from 10 to 3000 kVA, open or canopied, from KES 280,000, plus used Cummins, Perkins and Caterpillar sets. Supplied, installed and serviced in all 47 counties, with solar, UPS and 24/7 emergency repair.",
+    description: "New VOLTKA Cummins-powered generators from 10 to 3000 kVA, open or canopied, plus used Cummins, Perkins and Caterpillar sets. Supplied, installed and serviced in all 47 counties, with solar, UPS and 24/7 emergency repair.",
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
     type: 'website',
     locale: 'en_KE',
@@ -154,7 +154,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Generators for Sale in Kenya | EmersonEIMS',
-    description: 'New VOLTKA Cummins-powered generators, 10–3000 kVA, from KES 280,000, plus used sets. Installed and serviced in all 47 counties. Call +254768860665',
+    description: 'New VOLTKA Cummins-powered generators, 10–3000 kVA, open or silent, plus used sets. Installed and serviced in all 47 counties. Call +254768860665',
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
   },
   alternates: {
@@ -315,8 +315,8 @@ function StaticHeroFallback() {
               tools keep their homepage link equity, they simply no longer
               open the pitch. */}
           <p className="apple-subheadline text-gray-200 mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
-            New VOLTKA Cummins-powered generators from 10 to 3000 kVA, open or canopied,
-            <span className="text-amber-400 font-medium"> from KES 280,000</span> — plus used
+            New VOLTKA Cummins-powered generators from 10 to 3000 kVA, open or canopied{' '}
+            (<Link href="/generators#prices" className="text-amber-400 font-medium underline underline-offset-4">published prices</Link>) — plus used
             Cummins, Perkins and Caterpillar sets. Supplied, installed and serviced in all 47
             counties, with solar, UPS, boreholes and 24/7 emergency repair from the same team.
           </p>

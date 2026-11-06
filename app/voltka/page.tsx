@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getEngineIndex } from '@/lib/parts/engineIndex';
-import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
+import { VOLTKA_CONFIRMED_PRICES, confirmedSpan, kesMillions, VOLTKA_PRICE_BASIS_SHORT } from '@/lib/pricing/voltkaConfirmedPrices';
 
 /**
  * VOLTKA — the only generator brand EmersonEIMS actually sells.
@@ -104,11 +104,13 @@ import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
  */
 
 /**
- * Largest capacity we publish a price against, read from the price table in
- * lib/brands/cumminsData.ts rather than typed here. VOLTKA covers 10-3000 kVA;
- * the table covers 10-2000. Those are different statements and both are true.
+ * The sizes and prices we publish, from the owner-confirmed list
+ * (lib/pricing/voltkaConfirmedPrices.ts, 2026-11-05). VOLTKA covers
+ * 10-3000 kVA; prices are published for 100-750 kVA and every other size is
+ * quoted on request. The earlier "from KES 280,000" was not in that list.
  */
-const PUBLISHED_MAX_KVA = Math.max(...CUMMINS_BRAND_INFO.models.map((m) => m.kva));
+const SPAN = confirmedSpan();
+const VOLTKA_CONFIRMED_COUNT = VOLTKA_CONFIRMED_PRICES.length;
 
 export const metadata: Metadata = {
   /*
@@ -127,7 +129,7 @@ export const metadata: Metadata = {
    */
   title: 'VOLTKA Generators Kenya — 10 to 3000 kVA',
   description:
-    'VOLTKA is the generator brand EmersonEIMS builds and sells: Cummins-powered diesel sets from 10 kVA to 3000 kVA, open or canopied, from KES 280,000 with a two-year warranty. Installed and commissioned across all 47 counties.',
+    'VOLTKA is the generator brand EmersonEIMS builds and sells: Cummins-powered diesel sets from 10 kVA to 3000 kVA, open or canopied, with a two-year warranty. Published prices for 100–750 kVA; other sizes on request. Installed across all 47 counties.',
   keywords: [
     'VOLTKA generators',
     'VOLTKA generator Kenya',
@@ -141,7 +143,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'VOLTKA Generators — Cummins-Powered, Built and Sold by EmersonEIMS',
     description:
-      'Our own generator brand: Cummins-powered diesel sets from KES 280,000, delivered and commissioned across Kenya.',
+      'Our own generator brand: Cummins-powered diesel sets, open or silent, delivered and commissioned across Kenya.',
     type: 'website',
     locale: 'en_KE',
     url: 'https://www.emersoneims.com/voltka',
@@ -225,14 +227,15 @@ export default function VoltkaPage() {
         image:
           'https://www.emersoneims.com/images/voltka/voltka-vks44-hero-profile.webp',
         /*
-         * lowPrice only. An AggregateOffer highPrice would need a top-of-range
-         * figure nobody has confirmed, and inventing one to complete the shape
-         * of the markup is the same error as inventing a kVA rating.
+         * Owner-confirmed span only (100-750 kVA, prime, ex-warehouse,
+         * excl. VAT). Other sizes have no published price and are not counted.
          */
         offers: {
           '@type': 'AggregateOffer',
           priceCurrency: 'KES',
-          lowPrice: 280000,
+          lowPrice: SPAN.lowKes,
+          highPrice: SPAN.highKes,
+          offerCount: VOLTKA_CONFIRMED_COUNT,
           seller: { '@id': 'https://www.emersoneims.com/#organization' },
           areaServed: { '@type': 'Country', name: 'Kenya' },
         },
@@ -281,9 +284,11 @@ export default function VoltkaPage() {
                 Generators
               </h1>
               <p className="mx-auto mb-4 max-w-2xl text-xl leading-relaxed text-gray-300">
-                Cummins-powered diesel generating sets from 10 kVA to 3000 kVA, starting at KES
-                280,000, with a two-year warranty. VOLTKA is the brand EmersonEIMS sells. Every
-                other make on this site we maintain, repair and stock parts for.
+                Cummins-powered diesel generating sets from 10 kVA to 3000 kVA, with a two-year
+                warranty. Published prices: {kesMillions(SPAN.lowKes)} ({SPAN.minKva} kVA open frame) to{' '}
+                {kesMillions(SPAN.highKes)} ({SPAN.maxKva} kVA silent), {VOLTKA_PRICE_BASIS_SHORT}; other
+                sizes on request. VOLTKA is the brand EmersonEIMS sells. Every other make on this
+                site we maintain, repair and stock parts for.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link
@@ -316,7 +321,7 @@ export default function VoltkaPage() {
               </div>
               <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900 to-gray-950 p-7">
                 <h2 className="mb-3 text-lg font-semibold text-amber-400">
-                  10 kVA to 3000 kVA, from KES 280,000
+                  10 kVA to 3000 kVA
                 </h2>
                 <p className="leading-relaxed text-gray-400">
                   A shop standby set through to prime power for a factory or a mine. What your own
@@ -361,9 +366,9 @@ export default function VoltkaPage() {
               places before 2026-09-29.
             */}
             <p className="mx-auto mb-10 max-w-2xl text-center text-sm text-gray-500">
-              Prices are published up to {PUBLISHED_MAX_KVA.toLocaleString('en-KE')} kVA. Above
-              that the engine, alternator and canopy are specified against your site, so those
-              sets are quoted on application rather than listed.
+              Prices are published for {SPAN.minKva} to {SPAN.maxKva} kVA (see the{' '}
+              <Link href="/generators#prices" className="text-amber-400 underline underline-offset-4">price list</Link>).
+              Every other size is quoted on request, against your load and site.
             </p>
             <ul className="mx-auto flex max-w-3xl flex-wrap justify-center gap-3">
               {MODELS.map((m) => (

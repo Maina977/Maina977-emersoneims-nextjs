@@ -1,3 +1,5 @@
+import { VOLTKA_CONFIRMED_PRICES, confirmedSpan, priceTextFor } from '@/lib/pricing/voltkaConfirmedPrices';
+
 /**
  * CUMMINS GENERATORS BY VOLTKA - BRAND DATA
  * EmersonEIMS sells and services Cummins generators supplied by Voltka in Kenya
@@ -84,28 +86,14 @@ export const CUMMINS_BRAND_INFO = {
     'generator 2 Years warranty',
     'Voltka Kenya dealer'
   ],
-  models: [
-    { kva: 10, price: 'KES 280,000', application: 'Small Office/Home' },
-    { kva: 15, price: 'KES 430,000', application: 'Small Business' },
-    { kva: 20, price: 'KES 500,000', application: 'Retail/Office' },
-    { kva: 30, price: 'KES 850,000', application: 'Medium Business' },
-    { kva: 50, price: 'KES 1,600,000', application: 'Large Office' },
-    { kva: 60, price: 'KES 1,850,000', application: 'Small Factory' },
-    { kva: 80, price: 'KES 2,100,000', application: 'Factory/Hotel' },
-    { kva: 100, price: 'KES 2,300,000', application: 'Industrial' },
-    { kva: 150, price: 'KES 2,800,000', application: 'Large Industrial' },
-    { kva: 200, price: 'KES 3,200,000', application: 'Manufacturing' },
-    { kva: 250, price: 'KES 3,500,000', application: 'Heavy Industry' },
-    { kva: 300, price: 'KES 4,300,000', application: 'Large Factory' },
-    { kva: 400, price: 'KES 5,200,000', application: 'Industrial Complex' },
-    { kva: 500, price: 'KES 6,000,000', application: 'Power Plant' },
-    { kva: 600, price: 'KES 7,000,000', application: 'Data Center' },
-    { kva: 750, price: 'KES 9,000,000', application: 'Hospital/Mall' },
-    { kva: 1000, price: 'KES 12,000,000', application: 'Major Industrial' },
-    { kva: 1250, price: 'KES 14,500,000', application: 'Power Station' },
-    { kva: 1500, price: 'KES 17,000,000', application: 'Grid Support' },
-    { kva: 2000, price: 'KES 22,000,000', application: 'Utility Scale' },
-  ],
+  // Owner-confirmed VOLTKA prices (2026-11-05), read from the one source.
+  // Only confirmed sizes are listed; every other size is "Request current
+  // price". `price` is display text; the numbers live in voltkaConfirmedPrices.
+  models: VOLTKA_CONFIRMED_PRICES.map((p) => ({
+    kva: p.kva,
+    price: priceTextFor(p.kva),
+    application: p.kva <= 150 ? 'Commercial / institutional' : p.kva <= 375 ? 'Industrial' : 'Large industrial',
+  })),
   contact: {
     phone: '+254 768 860 665',
     whatsapp: '254768860665',
@@ -126,9 +114,9 @@ export const CUMMINS_BRAND_INFO = {
     "offers": {
       "@type": "AggregateOffer",
       "priceCurrency": "KES",
-      "lowPrice": "350000",
-      "highPrice": "22000000",
-      "offerCount": "20"
+      "lowPrice": String(confirmedSpan().lowKes),
+      "highPrice": String(confirmedSpan().highKes),
+      "offerCount": String(VOLTKA_CONFIRMED_PRICES.length)
     }
     /*
      * A fabricated aggregateRating was removed here (2026-08-29):

@@ -3,6 +3,13 @@
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
 import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
+import {
+  VOLTKA_CONFIRMED_PRICES,
+  VOLTKA_PRICE_BASIS,
+  VOLTKA_PRICES_AS_OF_LABEL,
+  confirmedBoundsFor,
+  kesMillions,
+} from '@/lib/pricing/voltkaConfirmedPrices';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 /*
@@ -619,133 +626,102 @@ const AIVisualDiagnosticSection = () => {
 // Trust Signals, Social Proof, Testimonials, Guarantees, Urgency
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// 💰 TRANSPARENT PRICING SECTION - Show Starting Prices
+// 💰 PRICING SECTION — owner-confirmed VOLTKA prices only (2026-11-05).
+//
+// Replaced 2026-11-05. The old section showed six kVA bands up to KES 65M
+// "for premium imported brands", a VOLTKA "from KES 280,000" line, and said
+// prices included delivery, installation, ATS and commissioning. None of that
+// was in the owner's confirmed list, and the confirmed prices are ex-warehouse.
+// Every figure now comes from lib/pricing/voltkaConfirmedPrices.ts.
 const TransparentPricing = () => {
-  const priceRanges = [
-    { kva: '10-30 kVA', priceFrom: 350000, priceTo: 850000, ideal: 'Small business, homes', popular: false },
-    { kva: '40-80 kVA', priceFrom: 900000, priceTo: 1800000, ideal: 'Medium business, schools', popular: true },
-    { kva: '100-200 kVA', priceFrom: 2000000, priceTo: 4500000, ideal: 'Hotels, factories', popular: false },
-    { kva: '250-500 kVA', priceFrom: 5000000, priceTo: 12000000, ideal: 'Large industrial', popular: false },
-    { kva: '600-1000 kVA', priceFrom: 15000000, priceTo: 28000000, ideal: 'Major facilities', popular: false },
-    { kva: '1000+ kVA', priceFrom: 30000000, priceTo: 65000000, ideal: 'Power plants, data centers', popular: false },
-  ];
-
   return (
     <section id="pricing" className="py-20 bg-gradient-to-b from-black via-amber-900/10 to-black">
       <div className="max-w-7xl mx-auto px-6">
-        <div
-          
-          
-          
-          className="text-center mb-12"
-        >
+        <div className="text-center mb-12">
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
-            💰 Transparent Pricing
+            Published prices
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Generator Prices in Kenya 2026
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            No hidden costs. Prices include delivery, installation, ATS and commissioning, and new sets carry 1 year of free servicing.
+            {VOLTKA_PRICE_BASIS}
           </p>
         </div>
 
-        {/* VOLTKA house-brand value band — anchored to real EmersonEIMS pricing */}
-        <div
-          
-          
-          
-          className="mb-10 p-6 md:p-8 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-orange-500/5 text-center"
-        >
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full mb-3">
-            ⚡ VOLTKA — OUR OWN BRAND, BEST VALUE
-          </span>
-          <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
-            VOLTKA Generators from KES 280,000
-          </h3>
-          <p className="text-gray-300 max-w-3xl mx-auto">
-            New VOLTKA diesel generators start at <strong>KES 280,000 for 10&nbsp;kVA</strong> and scale across the
-            full <strong>10–3000&nbsp;kVA</strong> range — priced per model (see the price list below). Every unit is
-            supplied, installed and backed by our warranty on both the job and the parts used. Figures are indicative;
-            your exact figure is generated on our ERP.
-          </p>
-          <a
-            href="/contact?generator=VOLTKA"
-            className="inline-block mt-4 px-6 py-2.5 bg-amber-500 text-black font-semibold rounded-lg hover:bg-amber-400 transition-all"
-          >
-            Get my VOLTKA quote
-          </a>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {priceRanges.map((range, index) => (
-            <div
-              key={range.kva}
-              
-              
-              
-              
-              className={`relative p-6 rounded-2xl border transition-all ${
-                range.popular
-                  ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/10 border-amber-500/50'
-                  : 'bg-slate-900/50 border-slate-800 hover:border-amber-500/30'
-              }`}
-            >
-              {range.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full">
-                  MOST POPULAR
+        <div className="mb-10 p-6 md:p-8 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-orange-500/5">
+          <div className="text-center">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full mb-3">
+              VOLTKA — NEW, OUR OWN BRAND
+            </span>
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              VOLTKA prices, {VOLTKA_CONFIRMED_PRICES[0].kva}–{VOLTKA_CONFIRMED_PRICES[VOLTKA_CONFIRMED_PRICES.length - 1].kva} kVA
+            </h3>
+            <p className="text-gray-300 max-w-3xl mx-auto">
+              Open frame and silent (canopied) sets, prime rated. Confirmed {VOLTKA_PRICES_AS_OF_LABEL}.
+              Other sizes from 10 kVA to 3000 kVA: request the current price.
+            </p>
+          </div>
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {VOLTKA_CONFIRMED_PRICES.map((p) => (
+              <div key={p.kva} className="rounded-lg border border-white/10 bg-black/30 px-3 py-3 text-center">
+                <span className="block font-bold text-white">{p.kva} kVA</span>
+                <span className="mt-1 block text-xs text-gray-300">
+                  {p.openKes ? `Open ${kesMillions(p.openKes)}` : 'Silent only'}
                 </span>
-              )}
-              <h3 className="text-2xl font-bold text-amber-400 mb-2">{range.kva}</h3>
-              <div className="mb-3">
-                <span className="text-gray-400 text-sm">Starting from</span>
-                <div className="text-3xl font-bold text-white">
-                  KES {(range.priceFrom / 1000000).toFixed(1)}M
-                </div>
-                <span className="text-gray-500 text-sm">to KES {(range.priceTo / 1000000).toFixed(1)}M</span>
+                {p.silentKes && (
+                  <span className="block text-xs text-gray-300">Silent {kesMillions(p.silentKes)}</span>
+                )}
               </div>
-              <p className="text-gray-400 text-sm mb-4">Ideal for: {range.ideal}</p>
-              <a
-                href={`/contact?generator=${range.kva}`}
-                className="block text-center px-4 py-2 bg-amber-500 text-black font-semibold rounded-lg hover:bg-amber-400 transition-all"
-              >
-                Get Exact Quote
-              </a>
-            </div>
-          ))}
-        </div>
-
-        {/*
-          Per-size pages, added 2026-08-26.
-          An external audit found the site had no product-level URLs while every
-          ranking competitor publishes one page per set. Buyers search "30 kva
-          generator price in kenya", not "generator range". These links are the
-          internal path to those pages — the sitemap gives discovery, links pass
-          authority.
-        */}
-        <div className="mb-10">
-          <h3 className="text-center text-lg font-semibold text-white mb-2">Price by exact size</h3>
-          <p className="text-center text-gray-400 text-sm mb-6">
-            What each size costs, what it runs, and how site altitude changes the answer.
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl mx-auto">
-            {GENERATOR_SIZES.map((g) => (
-              <a
-                key={g.slug}
-                href={`/generators/sizes/${g.slug}`}
-                className="block rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-center transition hover:border-amber-400/40"
-              >
-                <span className="block font-bold text-white">{g.kva} kVA</span>
-                <span className="mt-1 block text-xs text-gray-400">{g.priceRange.replace('KES ', '')}</span>
-              </a>
             ))}
+          </div>
+          <div className="mt-6 text-center">
+            <a
+              href="/contact?generator=VOLTKA"
+              className="inline-block px-6 py-2.5 bg-amber-500 text-black font-semibold rounded-lg hover:bg-amber-400 transition-all"
+            >
+              Get my VOLTKA quote
+            </a>
           </div>
         </div>
 
-        <div className="text-center text-gray-400 text-sm">
-          <p>* Ranges above are for premium imported brands (Cummins, Perkins, CAT); our VOLTKA house brand is more affordable — from KES 280,000.</p>
-          <p>* All prices include: Delivery + Installation + ATS + Commissioning + 1-Year Service + Warranty on job &amp; parts</p>
-          <p>* Indicative only — every exact quote is generated on our ERP.</p>
+        {/*
+          Per-size pages, added 2026-08-26. Buyers search "30 kva generator
+          price in kenya", not "generator range". Each tile shows the confirmed
+          price, or says the price is on request.
+        */}
+        <div className="mb-10">
+          <h3 className="text-center text-lg font-semibold text-white mb-2">By exact size</h3>
+          <p className="text-center text-gray-400 text-sm mb-6">
+            What each size runs, how site altitude changes the answer, and the price where we publish one.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl mx-auto">
+            {GENERATOR_SIZES.map((g) => {
+              const b = confirmedBoundsFor(g.kva);
+              return (
+                <a
+                  key={g.slug}
+                  href={`/generators/sizes/${g.slug}`}
+                  className="block rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-center transition hover:border-amber-400/40"
+                >
+                  <span className="block font-bold text-white">{g.kva} kVA</span>
+                  <span className="mt-1 block text-xs text-gray-400">
+                    {b
+                      ? b.high > b.low
+                        ? `${kesMillions(b.low)} – ${kesMillions(b.high).replace('KES ', '')}`
+                        : kesMillions(b.low)
+                      : 'Price on request'}
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="text-center text-gray-400 text-sm space-y-1">
+          <p>* Prices are for the generator only, ex-warehouse, excluding VAT (16%).</p>
+          <p>* Delivery, installation, ATS, cabling, civil works and commissioning are quoted separately.</p>
+          <p>* Used Cummins, Perkins and Caterpillar sets are priced per machine.</p>
         </div>
       </div>
     </section>
@@ -1073,7 +1049,8 @@ const BrandComparisonTable = () => {
           </p>
           <h3 className="mt-3 text-2xl font-bold text-white">VOLTKA — our own brand, Cummins-powered</h3>
           <p className="mx-auto mt-3 max-w-2xl text-gray-400 leading-relaxed">
-            From KES 280,000, supplied, delivered and commissioned across all 47 counties.
+            New sets, open frame or silent. Published prices for 100–750 kVA; other sizes on request.
+            Delivered and commissioned across all 47 counties.
           </p>
           <Link
             href="/voltka"
@@ -1115,12 +1092,12 @@ const formatKES = (n: number): string =>
 // 📄 PDF DOWNLOADS SECTION
 const DownloadsSection = () => {
   const downloads = [
-    { name: 'Cummins Generator Catalog 2026', type: 'PDF', size: '4.2 MB', icon: '📕' },
-    { name: 'Voltka Price List March 2026', type: 'PDF', size: '1.8 MB', icon: '💰' },
-    { name: 'Generator Sizing Guide', type: 'PDF', size: '2.1 MB', icon: '📐' },
-    { name: 'Maintenance Schedule Template', type: 'PDF', size: '890 KB', icon: '🔧' },
-    { name: 'ATS Installation Manual', type: 'PDF', size: '3.4 MB', icon: '🔀' },
-    { name: 'Warranty Terms & Conditions', type: 'PDF', size: '520 KB', icon: '🛡️' },
+    { name: 'Cummins Generator Catalog 2026', type: 'PDF', size: 'Sent on request', icon: '📕' },
+    { name: 'VOLTKA price list (November 2026)', type: 'PDF', size: 'Sent on request', icon: '💰' },
+    { name: 'Generator Sizing Guide', type: 'PDF', size: 'Sent on request', icon: '📐' },
+    { name: 'Maintenance Schedule Template', type: 'PDF', size: 'Sent on request', icon: '🔧' },
+    { name: 'ATS Installation Manual', type: 'PDF', size: 'Sent on request', icon: '🔀' },
+    { name: 'Warranty Terms & Conditions', type: 'PDF', size: 'Sent on request', icon: '🛡️' },
   ];
 
   return (
@@ -1716,7 +1693,7 @@ const FAQSection = () => {
     },
     {
       question: 'What\'s included in the price?',
-      answer: 'Our quoted prices include: Generator unit, delivery anywhere in Kenya, professional installation, ATS (automatic transfer switch), commissioning and testing, operator training, 1-year free maintenance, and 2-year warranty. No hidden costs.'
+      answer: 'Published VOLTKA prices are for the generator only, ex-warehouse and excluding VAT. Your written quotation adds what the site needs: delivery, installation, ATS (automatic transfer switch), cabling, commissioning and testing, and operator training. New sets carry a 2-year warranty.'
     },
   ];
 
@@ -3133,10 +3110,10 @@ export default function GeneratorPage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">
-              Full price list — by model and capacity
+              Full VOLTKA price list
             </h2>
             <p className="text-xl text-white/70">
-              Every size we supply, with the figure we quote from — Cummins, Perkins, FG Wilson
+              New VOLTKA sets, open frame and silent, prime rated, ex-warehouse, excluding VAT
             </p>
           </div>
           <GeneratorPriceList />

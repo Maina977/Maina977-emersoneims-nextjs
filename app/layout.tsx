@@ -148,11 +148,11 @@ export async function generateMetadata(): Promise<Metadata> {
    *
    * What replaces it leads with the three things people actually search for,
    * then the two facts that decide a B2B purchase: the price floor and the
-   * warranty. Every figure is verifiable elsewhere on this site \u2014 the opening
-   * price is the lowest in GENERATOR_SIZES, and the warranty is the
-   * owner-confirmed two years.
+   * warranty. 2026-11-05: the "From KES 280,000" price floor was removed; it
+   * was not in the owner-confirmed price list (lib/pricing/voltkaConfirmedPrices.ts).
+   * The warranty is the owner-confirmed two years.
    */
-  description: "Generators, solar and UPS for Kenyan industry \u2014 supplied, installed and serviced in all 47 counties. From KES 280,000. 24/7 callout.",
+  description: "Generators, solar and UPS for Kenyan industry \u2014 supplied, installed and serviced in all 47 counties. 2-year warranty on new sets. 24/7 callout.",
   // NOTE: Keywords meta tag removed - Google has ignored this tag since 2009
   // SEO is achieved through quality content, proper H1-H6 structure, and semantic HTML
   authors: [{ name: "EmersonEIMS" }],

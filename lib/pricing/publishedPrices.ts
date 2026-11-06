@@ -1,3 +1,4 @@
+import { VOLTKA_CONFIRMED_PRICES, priceTextFor, REQUEST_CURRENT_PRICE } from '@/lib/pricing/voltkaConfirmedPrices';
 /**
  * PUBLISHED PRICES — every figure here traces to a source we can point at.
  *
@@ -116,33 +117,26 @@ const VAT_NOTE =
 export const PRICE_GUIDES: readonly PriceGuide[] = [
   {
     slug: 'generator-prices-kenya',
-    cardNote: 'Sets from KES 280,000',
+    cardNote: 'VOLTKA 100–750 kVA, open and silent',
     title: 'Generator Prices in Kenya (2026)',
     h1: 'Generator prices in Kenya',
     description:
-      'What a diesel generator actually costs in Kenya in 2026, by kVA — 10 kVA to 500 kVA, with real price ranges, what moves the price, and what a quotation excludes.',
+      'New VOLTKA generator prices in Kenya, 100 kVA to 750 kVA, open frame and silent: prime rated, ex-warehouse, excluding VAT. What moves the price and what it excludes.',
     service: 'Generators',
     source: '/generators',
     sourceLabel: 'our generator range',
     intro:
-      'These are the ranges we quote from, not indicative figures collected elsewhere. A range rather than one number is honest: the same kVA varies with brand, enclosure, controller and whether the set is standby or prime-rated.',
+      'These are our own VOLTKA prices, confirmed on 5 November 2026: new sets, prime rated, ex-warehouse, excluding VAT. The open-frame and silent (canopied) figures are both shown. Sizes not listed are priced on request.',
     rows: [
-      { item: '10 kVA — single phase', price: 'KES 280,000 – 350,000', note: 'Shops, small offices, homes' },
-      { item: '15 kVA — three phase', price: 'KES 380,000 – 450,000' },
-      { item: '20 kVA — three phase', price: 'KES 480,000 – 580,000' },
-      { item: '30 kVA — three phase', price: 'KES 650,000 – 780,000', note: 'Small business, clinics', popular: true },
-      { item: '50 kVA — three phase', price: 'KES 950,000 – 1,150,000' },
-      { item: '60 kVA — three phase', price: 'KES 1,100,000 – 1,350,000' },
-      { item: '80 kVA — three phase', price: 'KES 1,400,000 – 1,700,000' },
-      { item: '100 kVA — three phase', price: 'KES 1,750,000 – 2,100,000', note: 'Hotels, schools, factories', popular: true },
-      { item: '150 kVA — three phase', price: 'KES 2,400,000 – 2,900,000' },
-      { item: '200 kVA — three phase', price: 'KES 3,200,000 – 3,800,000' },
-      { item: '250 kVA — three phase', price: 'KES 4,000,000 – 4,800,000' },
-      { item: '300 kVA — three phase', price: 'KES 4,800,000 – 5,800,000' },
-      { item: '500 kVA — three phase', price: 'KES 7,500,000 – 9,000,000', note: 'Large industrial' },
+      ...VOLTKA_CONFIRMED_PRICES.map((p) => ({
+        item: `${p.kva} kVA — three phase`,
+        price: priceTextFor(p.kva),
+        ...(p.kva === 100 ? { note: 'Hotels, schools, factories', popular: true } : {}),
+      })),
+      { item: 'Other sizes (10 kVA to 3000 kVA)', price: REQUEST_CURRENT_PRICE, note: 'Sent in writing for your size' },
     ],
     drivers: [
-      'Brand. VOLTKA sets start at KES 280,000 for 10 kVA; Cummins, Perkins and FG Wilson sit higher for the same output.',
+      'Make. VOLTKA is the only make we sell new; used Cummins, Perkins and Caterpillar sets are priced per machine.',
       'Enclosure. A sound-attenuated canopy costs more than an open set and is usually non-negotiable in a built-up area.',
       'Controller. A basic auto-start panel is far cheaper than an AMF or synchronising controller.',
       'Rating. A standby-rated set is cheaper than a prime-rated one of the same kVA, and is the wrong choice if it will run daily.',
@@ -152,7 +146,7 @@ export const PRICE_GUIDES: readonly PriceGuide[] = [
       'Civil works — base, plinth, bunding',
       'Cabling from the set to your changeover or board',
       'Fuel tank beyond the base tank supplied',
-      'Transport and offloading outside Nairobi',
+      'Delivery and offloading (prices are ex-warehouse)',
       'Installation labour and commissioning — priced separately on our service pricing page',
       VAT_NOTE,
     ],

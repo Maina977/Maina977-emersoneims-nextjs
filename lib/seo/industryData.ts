@@ -153,7 +153,7 @@ export const INDUSTRIES: Industry[] = [
           'Genuine spare parts supply',
           'Emergency breakdown service'
         ],
-        price: 'From Ksh 450,000 (20kVA)'
+        price: 'Request current price'
       },
       {
         title: 'Hospitality Maintenance Contract',
@@ -273,7 +273,7 @@ export const INDUSTRIES: Industry[] = [
           'Remote monitoring dashboard',
           'Meets IEC 60601 medical standards'
         ],
-        price: 'From Ksh 350,000 (20kVA system)'
+        price: 'Request current price'
       },
       {
         title: 'Hospital Generator Package',
@@ -286,7 +286,7 @@ export const INDUSTRIES: Industry[] = [
           'Automatic exercising system',
           'KEBS and medical compliance'
         ],
-        price: 'From Ksh 1,200,000 (100kVA)'
+        price: 'VOLTKA 100 kVA from KES 2,100,000 (open frame, ex-warehouse, excl. VAT)'
       },
       {
         title: 'Critical Care Maintenance Contract',
@@ -406,7 +406,7 @@ export const INDUSTRIES: Industry[] = [
           'Training for school caretakers',
           '2-year warranty'
         ],
-        price: 'From Ksh 280,000 (15kVA)'
+        price: 'Request current price'
       },
       {
         title: 'Computer Lab UPS System',
@@ -672,7 +672,7 @@ export const INDUSTRIES: Industry[] = [
           'Multi-generator synchronization',
           'Extended 1000L fuel tanks'
         ],
-        price: 'From Ksh 1,500,000 (100kVA)'
+        price: 'VOLTKA 100 kVA from KES 2,100,000 (open frame, ex-warehouse, excl. VAT)'
       },
       {
         title: 'Power Factor Correction',

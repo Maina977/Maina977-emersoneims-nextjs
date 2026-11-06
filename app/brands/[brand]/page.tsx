@@ -108,7 +108,11 @@ export default async function BrandPage({ params }: Props) {
 
   const faqs = generateBrandFAQs(brand, 'Kenya');
   // Published price band, parsed from the table this site renders.
-  const priceBand = publishedPriceRange();
+  // VOLTKA prices only (owner-confirmed 2026-11-05). VOLTKA sets are
+  // Cummins-powered, so the Cummins page may carry them; every other make is
+  // sold used or serviced, and a VOLTKA price on a "Perkins Generators"
+  // Product would state a price we do not offer for that make.
+  const priceBand = brand.name === 'Cummins' ? publishedPriceRange() : null;
 
   /*
    * Engine families this brand is the make of, read from the parts catalogue.

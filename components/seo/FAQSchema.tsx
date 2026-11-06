@@ -40,7 +40,7 @@ export default function FAQSchema() {
         "name": "How much does a generator installation cost in Kenya?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Generator installation costs vary based on capacity and complexity. A 10kVA home backup generator installation starts from KES 350,000 (including generator, ATS, installation, and commissioning). Commercial 100kVA systems start from KES 2.5M. Contact us at +254 768 860 665 for a detailed quotation tailored to your power requirements."
+          "text": "The generator and its installation are priced separately. A new VOLTKA 100 kVA set is KES 2.1M open frame or KES 2.5M silent (prime rated, ex-warehouse, excluding VAT); delivery, ATS, cabling, installation and commissioning are added in a written quotation for your site. Other sizes are priced on request. Call +254 768 860 665."
         }
       },
       {

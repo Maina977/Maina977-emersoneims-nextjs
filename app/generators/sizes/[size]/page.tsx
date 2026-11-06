@@ -28,6 +28,12 @@ import {
   type GeneratorSize,
 } from '@/lib/products/generatorSizes';
 import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
+import {
+  confirmedBoundsFor,
+  VOLTKA_PRICE_BASIS,
+  VOLTKA_PRICE_BASIS_SHORT,
+  VOLTKA_PRICES_AS_OF_LABEL,
+} from '@/lib/pricing/voltkaConfirmedPrices';
 
 interface Props {
   params: Promise<{ size: string }>;
@@ -42,36 +48,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const g = getGeneratorSize(size);
   if (!g) notFound();
 
+  const priced = confirmedBoundsFor(g.kva) !== null;
+  // A page with no confirmed price must not be titled as a price page.
+  const title = priced
+    ? `${g.kva} kVA Generator Price in Kenya (2026)`
+    : `${g.kva} kVA Generator in Kenya: Sizing and Quotation`;
+  const description = priced
+    ? `${g.kva} kVA VOLTKA generator price in Kenya: ${g.priceRange} (${VOLTKA_PRICE_BASIS_SHORT}). ` +
+      `${kwFromKva(g.kva)} kW at 0.8 power factor, ${g.phase}-phase. What it runs and what the price excludes.`
+    : `${g.kva} kVA diesel generator in Kenya: ${kwFromKva(g.kva)} kW at 0.8 power factor, ${g.phase}-phase. ` +
+      `What it runs, what derating does to it, and how to request the current price.`;
   return {
     // No brand suffix — the root layout appends "| EmersonEIMS Kenya".
-    title: `${g.kva} kVA Generator Price in Kenya (2026)`,
-    description:
-      `What a ${g.kva} kVA diesel generator costs in Kenya: ${g.priceRange}. ` +
-      `${kwFromKva(g.kva)} kW at 0.8 power factor, ${g.phase}-phase. What it runs, ` +
-      `what derating does to it, and what the price excludes.`,
+    title,
+    description,
     alternates: { canonical: `https://www.emersoneims.com/generators/sizes/${g.slug}` },
     openGraph: {
-      title: `${g.kva} kVA Generator Price in Kenya (2026)`,
-      description: `${g.priceRange} — ${g.suits}. Supply, installation and 2-year warranty.`,
+      title,
+      description: priced
+        ? `${g.priceRange}: ${VOLTKA_PRICE_BASIS_SHORT}. ${g.suits}.`
+        : `${g.suits}. Request the current price for a ${g.kva} kVA set.`,
       type: 'website',
       url: `https://www.emersoneims.com/generators/sizes/${g.slug}`,
     },
   };
-}
-
-/**
- * Pull the two figures out of a published range like
- * "KES 1,750,000 – 2,100,000". Returns null rather than guessing if the string
- * is not that shape, so a malformed entry omits the offer instead of
- * publishing an invented price.
- */
-function priceBounds(priceRange: string): { low: number; high: number } | null {
-  const nums = [...priceRange.matchAll(/([\d,]{4,})/g)].map((m) => Number(m[1].replace(/,/g, '')));
-  const valid = nums.filter((n) => Number.isFinite(n) && n > 0);
-  if (valid.length < 2) return null;
-  const low = Math.min(...valid);
-  const high = Math.max(...valid);
-  return high > low ? { low, high } : null;
 }
 
 /**
@@ -103,7 +103,7 @@ function priceBounds(priceRange: string): { low: number; high: number } | null {
  */
 function jsonLd(g: GeneratorSize) {
   const url = `https://www.emersoneims.com/generators/sizes/${g.slug}`;
-  const bounds = priceBounds(g.priceRange);
+  const bounds = confirmedBoundsFor(g.kva);
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -117,9 +117,9 @@ function jsonLd(g: GeneratorSize) {
         description: `${g.kva} kVA (${kwFromKva(g.kva)} kW at 0.8 power factor), ${g.phase}-phase diesel generator for ${g.suits.charAt(0).toLowerCase()}${g.suits.slice(1)}. Supplied, installed and commissioned in Kenya with a 2-year warranty.`,
         category: 'Diesel generator',
         url,
-        // A price BAND, not a single figure: these sizes span several brands
-        // and enclosure options. Omitted entirely if the published range
-        // cannot be parsed, rather than shipping a guessed number.
+        // Owner-confirmed VOLTKA prices only (open frame to silent set,
+        // prime, ex-warehouse, excl. VAT). Sizes without a confirmed figure
+        // carry no offer at all rather than a guessed number.
         ...(bounds
           ? {
               offers: {
@@ -128,10 +128,9 @@ function jsonLd(g: GeneratorSize) {
                 lowPrice: bounds.low,
                 highPrice: bounds.high,
                 // Search Console flagged the missing offerCount on 2026-09-06.
-                // One offer: this page publishes a band for ONE size, not a
-                // catalogue, so the honest count is 1 rather than the number of
-                // sizes the site sells.
-                offerCount: '1',
+                // Open frame and silent set are two offers; a size sold only
+                // as a silent set is one.
+                offerCount: bounds.high > bounds.low ? '2' : '1',
                 seller: { '@id': 'https://www.emersoneims.com/#organization' },
                 areaServed: { '@type': 'Country', name: 'Kenya' },
               },
@@ -154,7 +153,9 @@ function jsonLd(g: GeneratorSize) {
             name: `How much does a ${g.kva} kVA generator cost in Kenya?`,
             acceptedAnswer: {
               '@type': 'Answer',
-              text: `A ${g.kva} kVA diesel generator runs ${g.priceRange} depending on brand, enclosure and controller. That is the set itself; installation, cabling and civil works are quoted separately.`,
+              text: bounds
+                ? `A new ${g.kva} kVA VOLTKA generator is ${g.priceRange}. ${VOLTKA_PRICE_BASIS}`
+                : `We do not publish a fixed price for ${g.kva} kVA. Ask for the current price and an engineer sends a written quotation for the set; delivery and installation are quoted separately.`,
             },
           },
           {
@@ -201,10 +202,18 @@ export default async function GeneratorSizePage({ params }: Props) {
         </nav>
 
         <p className="eims-kicker mt-8">Diesel generator · {g.phase}-phase</p>
-        <h1 className="eims-title">{g.kva} kVA generator price in Kenya</h1>
+        <h1 className="eims-title">
+          {g.openKes || g.silentKes ? `${g.kva} kVA generator price in Kenya` : `${g.kva} kVA generator in Kenya`}
+        </h1>
 
         <div className="mt-8 flex flex-wrap items-baseline gap-x-6 gap-y-2">
-          <p className="text-3xl font-semibold text-amber-300">{g.priceRange}</p>
+          {g.openKes || g.silentKes ? (
+            <p className="text-3xl font-semibold text-amber-300">{g.priceRange}</p>
+          ) : (
+            <a href="#quote" className="text-3xl font-semibold text-amber-300 underline underline-offset-8">
+              {g.priceRange}
+            </a>
+          )}
           {g.popular && (
             <span className="rounded-full bg-amber-400/15 px-3 py-1 text-xs uppercase tracking-wider text-amber-300">
               Common choice
@@ -212,7 +221,10 @@ export default async function GeneratorSizePage({ params }: Props) {
           )}
         </div>
         <p className="mt-3 text-sm text-white/50">
-          Price of the set. Installation, cabling and civil works are quoted separately &mdash; see{' '}
+          {g.openKes || g.silentKes
+            ? `${VOLTKA_PRICE_BASIS} Prices confirmed ${VOLTKA_PRICES_AS_OF_LABEL}.`
+            : 'We do not publish a fixed price for this size. Ask and an engineer sends the current price in writing.'}{' '}
+          Installation costs: see{' '}
           <Link href="/pricing/generator-service-cost-kenya" className="text-amber-400 underline underline-offset-4">
             installation and servicing costs
           </Link>

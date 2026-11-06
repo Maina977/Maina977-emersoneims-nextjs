@@ -1,5 +1,5 @@
 import type { PriceItem } from './types';
-import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
+import { VOLTKA_CONFIRMED_PRICES, VOLTKA_PRICES_AS_OF } from '@/lib/pricing/voltkaConfirmedPrices';
 import { SOLAR_PANELS, INVERTERS, BATTERIES } from '@/lib/solar-data';
 import { PUMP_PRICING } from '@/lib/data/pumpPricing';
 
@@ -7,30 +7,36 @@ import { PUMP_PRICING } from '@/lib/data/pumpPricing';
 const toKes = (s: string): number => Number(String(s).replace(/[^\d]/g, '')) || 0;
 const slug = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-// VOLTKA / Cummins generator range — sourced LIVE from the authoritative
-// price table already maintained in lib/brands/cumminsData.ts (the same data
-// shown on the brand pages). Single source of truth — no duplicated numbers.
-const VOLTKA_GENERATORS: PriceItem[] = CUMMINS_BRAND_INFO.models.map((m) => ({
-  id: `voltka-${m.kva}kva`,
-  category: 'generator-new' as const,
-  brand: 'VOLTKA',
-  name: `VOLTKA ${m.kva} kVA diesel generator`,
-  spec: `${m.kva} kVA`,
-  priceFromKes: toKes(m.price),
-  unit: 'each' as const,
-  indicative: true,
-  asOf: '2026-06',
-  source: 'repo-seed' as const,
-}));
+// VOLTKA generators: owner-confirmed prices only (2026-11-05; new, prime,
+// ex-warehouse, excl. VAT), from lib/pricing/voltkaConfirmedPrices.ts.
+// priceFromKes is the open-frame set where one exists, priceToKes the silent
+// set. Sizes not listed are "Request current price" and have no entry.
+const VOLTKA_GENERATORS: PriceItem[] = VOLTKA_CONFIRMED_PRICES.map((p) => {
+  const from = p.openKes ?? p.silentKes;
+  const to = p.openKes && p.silentKes ? p.silentKes : undefined;
+  return {
+    id: `voltka-${p.kva}kva`,
+    category: 'generator-new' as const,
+    brand: 'VOLTKA',
+    name: `VOLTKA ${p.kva} kVA diesel generator (prime, ex-warehouse, excl. VAT)`,
+    spec: p.openKes ? `${p.kva} kVA, open frame to silent` : `${p.kva} kVA, silent`,
+    priceFromKes: from,
+    ...(to ? { priceToKes: to } : {}),
+    unit: 'each' as const,
+    indicative: false,
+    asOf: VOLTKA_PRICES_AS_OF.slice(0, 7),
+    source: 'repo-seed' as const,
+  };
+});
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SEED / FALLBACK PRICE CATALOG
 //
 // This is the local source-of-truth used when the ERP price feed is not
 // configured or is unreachable. Numbers are consolidated from values already in
-// the site plus the owner's confirmed anchors (VOLTKA from KES 500k @ 20 kVA up
-// to 5M @ 500 kVA; used generators from KES 200k). All entries are marked
-// `indicative` — the binding figure is always the ERP quotation.
+// the site. New VOLTKA generators use the owner-confirmed list (2026-11-05);
+// the other entries are marked `indicative` and the binding figure is always
+// the quotation.
 //
 // To make the site show LIVE ERP prices, set ERP_PRICE_ENDPOINT (see source.ts
 // and docs/PRICING-AND-ERP.md). ERP items override seed items with the same id.
@@ -70,7 +76,7 @@ const PUMP_ITEMS: PriceItem[] = PUMP_PRICING.map((row) => {
 });
 
 export const SEED_CATALOG: PriceItem[] = [
-  // ── New generators — VOLTKA full range, from lib/brands/cumminsData.ts ─────────
+  // ── New generators — VOLTKA, owner-confirmed sizes only ─────────────────────
   ...VOLTKA_GENERATORS,
 
   // ── Used / pre-owned generators (owner: from KES 200,000) ─────────────────────

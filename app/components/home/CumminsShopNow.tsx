@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
+import { confirmedPriceFor, kes, VOLTKA_PRICE_BASIS_SHORT } from '@/lib/pricing/voltkaConfirmedPrices';
 
 /*
  * PRICES COME FROM GENERATOR_SIZES, NOT FROM THIS FILE.
@@ -16,12 +16,12 @@ import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
  * so this section and /generators cannot drift apart. If a figure is wrong it
  * is corrected once, in generatorSizes.ts, and both places follow.
  */
-function publishedRangeFor(kva: number): { range: string; slug: string } {
-  const nearest = GENERATOR_SIZES.reduce((best, s) =>
-    Math.abs(s.kva - kva) < Math.abs(best.kva - kva) ? s : best
-  );
-  return { range: nearest.priceRange, slug: nearest.slug };
-}
+/*
+ * 2026-11-05: EXACT size only, from the owner-confirmed list. The nearest-band
+ * lookup above showed a 60 kVA band on a 62 kVA card; with confirmed prices
+ * for specific sizes only, a size without its own figure says "Request current
+ * price" rather than borrowing a neighbour's.
+ */
 
 export default function CumminsShopNow() {
   const models = [
@@ -53,7 +53,7 @@ export default function CumminsShopNow() {
       popular: true,
     },
     {
-      model: 'CUMMINS C62D',
+      model: 'VOLTKA 62 kVA',
       kva: '62 kVA',
       price: 'KES 1,580,000',
       priceUsd: '$11,850',
@@ -62,7 +62,7 @@ export default function CumminsShopNow() {
       popular: false,
     },
     {
-      model: 'CUMMINS C125',
+      model: 'VOLTKA 125 kVA',
       kva: '125 kVA',
       price: 'KES 2,890,000',
       priceUsd: '$21,675',
@@ -148,12 +148,24 @@ export default function CumminsShopNow() {
                     USD conversion is dropped: it was a fixed number baked into
                     this file, so it silently became wrong the moment the rate
                     moved, and we publish in KES everywhere else. */}
-                <div className="mb-4">
-                  <p className="text-2xl font-bold text-white">
-                    {publishedRangeFor(parseInt(gen.kva, 10)).range}
-                  </p>
-                  <p className="text-xs text-gray-400">Published range · confirmed on quotation</p>
-                </div>
+                {(() => {
+                  const cp = confirmedPriceFor(parseInt(gen.kva, 10));
+                  if (!cp) {
+                    return (
+                      <div className="mb-4">
+                        <p className="text-2xl font-bold text-white">Request current price</p>
+                        <p className="text-xs text-gray-400">Written quotation for this size</p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="mb-4">
+                      {cp.openKes && <p className="text-lg font-bold text-white">Open frame {kes(cp.openKes)}</p>}
+                      {cp.silentKes && <p className="text-lg font-bold text-white">Silent {kes(cp.silentKes)}</p>}
+                      <p className="text-xs text-gray-400">{VOLTKA_PRICE_BASIS_SHORT}</p>
+                    </div>
+                  );
+                })()}
 
                 {/* A "Financing: 12/24 months" line stood here on every card.
                     We do not lend and we set no terms, so stating a term per

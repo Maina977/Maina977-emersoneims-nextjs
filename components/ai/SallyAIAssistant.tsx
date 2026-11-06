@@ -402,7 +402,7 @@ export default function SallyAIAssistant() {
         `**Generator Services:**\n` +
         `- Service calls: From KSh 5,000\n` +
         `- Major repairs: Quote-based\n` +
-        `- New generators: From KSh 150,000 (5kVA)\n\n` +
+        `- New VOLTKA generators: 100 kVA to 750 kVA from KSh 2.1M to 9.1M (ex-warehouse, excl. VAT); other sizes on request\n\n` +
         `**Solar Systems:**\n` +
         `- 3kW residential: From KSh 350,000\n` +
         `- 10kW commercial: From KSh 1,200,000\n\n` +

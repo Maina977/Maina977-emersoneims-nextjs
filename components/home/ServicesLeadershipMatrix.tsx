@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { GENERATOR_SIZES } from '@/lib/products/generatorSizes';
-import { formatKESWithUnit } from '@/lib/format/currency';
+import { confirmedSpan, kesMillions } from '@/lib/pricing/voltkaConfirmedPrices';
 
 /**
  * WHAT WE SUPPLY — the homepage's route into the commercial pages.
@@ -46,12 +46,10 @@ import { formatKESWithUnit } from '@/lib/format/currency';
  * hydration mismatch on this site. This helper is byte-identical everywhere.
  */
 function openingGeneratorPrice(): string | null {
-  const figures = GENERATOR_SIZES.map((s) => {
-    const match = /([\d,]{5,})/.exec(s.priceRange);
-    return match ? Number(match[1].replace(/,/g, '')) : NaN;
-  }).filter((n) => Number.isFinite(n) && n > 0);
-  if (figures.length === 0) return null;
-  return formatKESWithUnit(Math.min(...figures));
+  // 2026-11-05: owner-confirmed prices start at 100 kVA, so a bare "from"
+  // figure would imply nothing smaller is sold. State the span instead.
+  const s = confirmedSpan();
+  return `${s.minKva}–${s.maxKva} kVA ${kesMillions(s.lowKes)}–${kesMillions(s.highKes).replace('KES ', '')}, ex-VAT`;
 }
 
 export default function ServicesLeadershipMatrix() {
@@ -70,7 +68,7 @@ export default function ServicesLeadershipMatrix() {
       href: '/generators',
       title: 'Generators',
       detail: `${sizeCount} sizes from ${smallest.kva} kVA to ${largest.kva} kVA, single and three phase, with the changeover panel and commissioning.`,
-      meta: from ? `from ${from}` : undefined,
+      meta: from ?? undefined,
     },
     {
       href: '/solar',

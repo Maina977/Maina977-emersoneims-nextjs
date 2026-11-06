@@ -351,7 +351,7 @@ export default function AdvancedSEO() {
             name: 'How much does a generator cost in Kenya?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Generator prices in Kenya range from KES 280,000 for a 10kVA set to KES 15,000,000+ for large 2000kVA industrial generators. EmersonEIMS offers competitive prices with financing options. Call for a free quote.',
+              text: 'New VOLTKA generators from EmersonEIMS run from KES 2.1M for a 100 kVA open-frame set to KES 9.1M for a 750 kVA silent set (prime rated, ex-warehouse, excluding VAT). Other sizes are priced on request.',
             },
           },
         ],

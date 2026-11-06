@@ -1,296 +1,118 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { Phone, MessageCircle, Shield, Clock, CheckCircle } from 'lucide-react';
 import {
-  Phone, MessageCircle, ChevronDown, ChevronUp,
-  Shield, Truck, Clock, CheckCircle, Star, Filter
-} from 'lucide-react';
+  VOLTKA_CONFIRMED_PRICES,
+  VOLTKA_PRICE_BASIS,
+  VOLTKA_PRICES_AS_OF_LABEL,
+  kes,
+} from '@/lib/pricing/voltkaConfirmedPrices';
 
 /**
- * GENERATOR PRICE LIST - TRANSPARENT PRICING
+ * GENERATOR PRICE LIST — owner-confirmed VOLTKA prices only (2026-11-05).
  *
- * People search "generator price Kenya" - give them prices!
- * Transparency builds trust and captures leads
+ * Replaced 2026-11-05. The old list showed a VOLTKA column from 10 to 2000 kVA
+ * plus price ranges for new Cummins, Perkins and FG Wilson sets. None of those
+ * figures was in the owner's confirmed list, and VOLTKA is the only make sold
+ * new (other makes are sold used and serviced). Every figure now comes from
+ * lib/pricing/voltkaConfirmedPrices.ts; sizes not listed are priced on request.
+ *
+ * Formatting is locale-independent (kes()), so the server and the browser
+ * render identical text and the table cannot hydrate differently.
  */
 
-import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
-import { formatKESRange } from '@/lib/format/currency';
+const COMPANY_PHONE = '+254768860665';
+const COMPANY_WHATSAPP = '254768860665';
 
-interface GeneratorListing {
-  brand: string;
-  models: {
-    kva: number;
-    phase: '1-Phase' | '3-Phase';
-    priceRange: { min: number; max: number };
-    popular?: boolean;
-  }[];
+function waLink(text: string): string {
+  return `https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent(text)}`;
 }
 
-// VOLTKA house brand — built LIVE from the authoritative price table in
-// lib/brands/cumminsData.ts so there is one source of truth for VOLTKA prices.
-const VOLTKA_POPULAR = new Set([20, 30, 100, 250]);
-const VOLTKA_LISTING: GeneratorListing = {
-  brand: 'VOLTKA',
-  models: CUMMINS_BRAND_INFO.models.map((m) => {
-    const price = Number(String(m.price).replace(/[^\d]/g, '')) || 0;
-    return {
-      kva: m.kva,
-      phase: (m.kva <= 15 ? '1-Phase' : '3-Phase') as '1-Phase' | '3-Phase',
-      priceRange: { min: price, max: price },
-      popular: VOLTKA_POPULAR.has(m.kva),
-    };
-  }),
-};
-
-/*
- * Largest VOLTKA capacity with a published figure. Derived, not typed: the
- * footnote below tells a reader where the table stops, and a hardcoded number
- * here would be a second place for it to go stale.
- */
-const VOLTKA_MAX_KVA = Math.max(...VOLTKA_LISTING.models.map((m) => m.kva));
-
-const GENERATOR_PRICES: GeneratorListing[] = [
-  VOLTKA_LISTING,
-  {
-    brand: 'Cummins',
-    models: [
-      { kva: 10, phase: '1-Phase', priceRange: { min: 280000, max: 350000 } },
-      { kva: 15, phase: '3-Phase', priceRange: { min: 380000, max: 450000 } },
-      { kva: 20, phase: '3-Phase', priceRange: { min: 480000, max: 580000 } },
-      { kva: 30, phase: '3-Phase', priceRange: { min: 650000, max: 780000 }, popular: true },
-      { kva: 50, phase: '3-Phase', priceRange: { min: 950000, max: 1150000 } },
-      { kva: 60, phase: '3-Phase', priceRange: { min: 1100000, max: 1350000 } },
-      { kva: 80, phase: '3-Phase', priceRange: { min: 1400000, max: 1700000 } },
-      { kva: 100, phase: '3-Phase', priceRange: { min: 1750000, max: 2100000 }, popular: true },
-      { kva: 150, phase: '3-Phase', priceRange: { min: 2400000, max: 2900000 } },
-      { kva: 200, phase: '3-Phase', priceRange: { min: 3200000, max: 3800000 } },
-      { kva: 250, phase: '3-Phase', priceRange: { min: 4000000, max: 4800000 } },
-      { kva: 300, phase: '3-Phase', priceRange: { min: 4800000, max: 5800000 } },
-      { kva: 500, phase: '3-Phase', priceRange: { min: 7500000, max: 9000000 } },
-    ],
-  },
-  {
-    brand: 'Perkins',
-    models: [
-      { kva: 10, phase: '1-Phase', priceRange: { min: 250000, max: 320000 } },
-      { kva: 15, phase: '3-Phase', priceRange: { min: 350000, max: 420000 } },
-      { kva: 20, phase: '3-Phase', priceRange: { min: 450000, max: 550000 } },
-      { kva: 30, phase: '3-Phase', priceRange: { min: 600000, max: 720000 }, popular: true },
-      { kva: 45, phase: '3-Phase', priceRange: { min: 850000, max: 1000000 } },
-      { kva: 60, phase: '3-Phase', priceRange: { min: 1050000, max: 1280000 }, popular: true },
-      { kva: 80, phase: '3-Phase', priceRange: { min: 1350000, max: 1600000 } },
-      { kva: 100, phase: '3-Phase', priceRange: { min: 1650000, max: 2000000 } },
-      { kva: 150, phase: '3-Phase', priceRange: { min: 2300000, max: 2750000 } },
-      { kva: 200, phase: '3-Phase', priceRange: { min: 3000000, max: 3600000 } },
-      { kva: 300, phase: '3-Phase', priceRange: { min: 4500000, max: 5500000 } },
-      { kva: 400, phase: '3-Phase', priceRange: { min: 6000000, max: 7200000 } },
-    ],
-  },
-  {
-    brand: 'FG Wilson',
-    models: [
-      { kva: 14, phase: '3-Phase', priceRange: { min: 400000, max: 480000 } },
-      { kva: 22, phase: '3-Phase', priceRange: { min: 550000, max: 650000 } },
-      { kva: 33, phase: '3-Phase', priceRange: { min: 700000, max: 850000 }, popular: true },
-      { kva: 50, phase: '3-Phase', priceRange: { min: 1000000, max: 1200000 } },
-      { kva: 65, phase: '3-Phase', priceRange: { min: 1200000, max: 1450000 } },
-      { kva: 88, phase: '3-Phase', priceRange: { min: 1500000, max: 1800000 } },
-      { kva: 110, phase: '3-Phase', priceRange: { min: 1900000, max: 2300000 }, popular: true },
-      { kva: 150, phase: '3-Phase', priceRange: { min: 2500000, max: 3000000 } },
-      { kva: 200, phase: '3-Phase', priceRange: { min: 3300000, max: 4000000 } },
-      { kva: 275, phase: '3-Phase', priceRange: { min: 4500000, max: 5400000 } },
-      { kva: 350, phase: '3-Phase', priceRange: { min: 5800000, max: 7000000 } },
-      { kva: 500, phase: '3-Phase', priceRange: { min: 8000000, max: 9500000 } },
-    ],
-  },
-];
-
 export default function GeneratorPriceList() {
-  const [expandedBrand, setExpandedBrand] = useState<string | null>('Cummins');
-  const [filterKVA, setFilterKVA] = useState<'all' | 'small' | 'medium' | 'large'>('all');
-
-  const COMPANY_PHONE = '+254768860665';
-  const COMPANY_WHATSAPP = '254768860665';
-
-  const filterModels = (models: GeneratorListing['models']) => {
-    switch (filterKVA) {
-      case 'small': return models.filter(m => m.kva <= 30);
-      case 'medium': return models.filter(m => m.kva > 30 && m.kva <= 100);
-      case 'large': return models.filter(m => m.kva > 100);
-      default: return models;
-    }
-  };
-
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl border border-amber-500/30 overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-amber-600 to-orange-600 p-4">
-        <h3 className="text-xl font-bold text-white">Generator Price List Kenya 2026</h3>
-        <p className="text-amber-100 text-sm">All prices in KES - Updated March 2026</p>
+        <h3 className="text-xl font-bold text-white">VOLTKA generator prices, Kenya</h3>
+        <p className="text-amber-100 text-sm">KES, excluding VAT. Confirmed {VOLTKA_PRICES_AS_OF_LABEL}.</p>
       </div>
 
-      {/* Filters */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Filter className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-400 mr-2">Size:</span>
-          {[
-            { id: 'all', label: 'All Sizes' },
-            { id: 'small', label: '≤30 KVA' },
-            { id: 'medium', label: '31-100 KVA' },
-            { id: 'large', label: '>100 KVA' },
-          ].map(filter => (
-            <button
-              key={filter.id}
-              onClick={() => setFilterKVA(filter.id as any)}
-              className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                filterKVA === filter.id
-                  ? 'bg-amber-500 text-black font-medium'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-700 text-left text-gray-400">
+              <th scope="col" className="p-3 font-medium">Size</th>
+              <th scope="col" className="p-3 font-medium text-right">Open frame</th>
+              <th scope="col" className="p-3 font-medium text-right">Silent set</th>
+              <th scope="col" className="p-3 font-medium"><span className="sr-only">Quote</span></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700/70">
+            {VOLTKA_CONFIRMED_PRICES.map((p) => (
+              <tr key={p.kva}>
+                <th scope="row" className="p-3 text-left font-bold text-white whitespace-nowrap">
+                  {p.kva} kVA
+                  <span className="block text-xs font-normal text-gray-400">{Math.round(p.kva * 0.8)} kW, 3-phase</span>
+                </th>
+                <td className="p-3 text-right text-white whitespace-nowrap">
+                  {p.openKes ? kes(p.openKes) : <span className="text-gray-500">Silent only</span>}
+                </td>
+                <td className="p-3 text-right text-white whitespace-nowrap">
+                  {p.silentKes ? kes(p.silentKes) : <span className="text-gray-500">On request</span>}
+                </td>
+                <td className="p-3 text-right">
+                  <a
+                    href={waLink(`Hi, I'm interested in a VOLTKA ${p.kva} kVA generator. Please confirm availability and a delivered, installed price.`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-3 py-2 bg-[#25D366] text-white text-sm font-medium rounded-lg hover:bg-[#22c55e]"
+                  >
+                    <MessageCircle className="w-4 h-4" aria-hidden="true" />
+                    Quote
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      {/* Price Lists */}
-      <div className="divide-y divide-gray-700">
-        {GENERATOR_PRICES.map(brand => {
-          const filteredModels = filterModels(brand.models);
-          const isExpanded = expandedBrand === brand.brand;
-
-          return (
-            <div key={brand.brand}>
-              {/* Brand Header */}
-              <button
-                onClick={() => setExpandedBrand(isExpanded ? null : brand.brand)}
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-800/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-lg font-bold text-white">{brand.brand}</span>
-                  <span className="text-sm text-gray-400">
-                    {filteredModels.length} models
-                  </span>
-                </div>
-                {isExpanded ? (
-                  <ChevronUp className="w-5 h-5 text-gray-400" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
-                )}
-              </button>
-
-              {/* Models */}
-              {isExpanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  className="bg-gray-800/30"
-                >
-                  <div className="grid gap-2 p-4">
-                    {filteredModels.map(model => (
-                      <div
-                        key={`${brand.brand}-${model.kva}`}
-                        className={`flex items-center justify-between p-3 rounded-lg ${
-                          model.popular ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-gray-800/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-white">{model.kva} KVA</span>
-                              {model.popular && (
-                                <span className="flex items-center gap-1 text-xs bg-amber-500 text-black px-2 py-0.5 rounded-full font-medium">
-                                  <Star className="w-3 h-3" /> Popular
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-xs text-gray-400">{model.phase}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <div className="text-white font-medium">
-                              {/*
-                                Locale-independent on purpose. This component is
-                                server-rendered so Google can see the prices, and
-                                a bare toLocaleString() would emit "600,000" on
-                                the server and "600.000" in a browser using dot
-                                separators — a hydration mismatch that makes the
-                                whole price table flicker or disappear.
-                                See lib/format/currency.ts.
-                              */}
-                              {formatKESRange(model.priceRange.min, model.priceRange.max)}
-                            </div>
-                          </div>
-                          <a
-                            href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent(`Hi! I'm interested in a ${model.kva}KVA ${brand.brand} generator. What's the exact price and availability?`)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 px-3 py-2 bg-[#25D366] text-white text-sm font-medium rounded-lg hover:bg-[#22c55e]"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                            Quote
-                          </a>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Footer CTA */}
       <div className="p-4 bg-gray-800/50 border-t border-gray-700">
-        <div className="flex flex-col sm:flex-row gap-3">
+        <p className="text-sm text-gray-300">{VOLTKA_PRICE_BASIS} Kenyan VAT is 16%.</p>
+        <p className="mt-2 text-sm text-gray-300">
+          Other sizes, from 10 kVA up to 3000 kVA: <strong className="text-white">request current price</strong>.
+          Used Cummins, Perkins and Caterpillar sets are priced per machine; see{' '}
+          <Link href="/generators/used" className="text-amber-400 underline underline-offset-4">used generators</Link>.
+        </p>
+
+        <div className="mt-4 flex flex-col sm:flex-row gap-3">
           <a
             href={`tel:${COMPANY_PHONE}`}
             className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-500"
           >
-            <Phone className="w-5 h-5" />
-            Call for Best Price
+            <Phone className="w-5 h-5" aria-hidden="true" />
+            Call for current price
           </a>
           <a
-            href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent("Hi! I'd like to get a quote for generators. Can you share your current prices?")}`}
+            href={waLink("Hi, I'd like the current price for a VOLTKA generator. Size / load:")}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#25D366] text-white font-bold rounded-xl hover:bg-[#22c55e]"
           >
-            <MessageCircle className="w-5 h-5" />
-            WhatsApp for Quote
+            <MessageCircle className="w-5 h-5" aria-hidden="true" />
+            WhatsApp for a quote
           </a>
         </div>
 
-        {/*
-          WHERE THE TABLE STOPS. VOLTKA is supplied to 3000 kVA but priced here
-          only to VOLTKA_MAX_KVA, and a buyer above that was previously left to
-          guess whether we simply do not build it.
-        */}
-        <p className="mt-6 text-center text-xs text-gray-500">
-          Prices shown run to {VOLTKA_MAX_KVA.toLocaleString('en-KE')} kVA. Larger sets are
-          built to the site and quoted on application &mdash; call or send your load figures and
-          we will price it.
-        </p>
-
-        {/* Trust signals */}
         <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs text-gray-400">
           <span className="flex items-center gap-1">
-            <Shield className="w-3 h-3 text-green-500" /> 2-Year Warranty
+            <Shield className="w-3 h-3 text-green-500" aria-hidden="true" /> 2-year warranty on new sets
           </span>
           <span className="flex items-center gap-1">
-            <Truck className="w-3 h-3 text-blue-500" /> Free Delivery
+            <Clock className="w-3 h-3 text-amber-500" aria-hidden="true" /> 24/7 support
           </span>
           <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3 text-amber-500" /> 24/7 Support
-          </span>
-          <span className="flex items-center gap-1">
-            <CheckCircle className="w-3 h-3 text-purple-500" /> Genuine Parts
+            <CheckCircle className="w-3 h-3 text-purple-500" aria-hidden="true" /> Genuine parts
           </span>
         </div>
       </div>

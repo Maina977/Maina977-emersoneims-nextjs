@@ -41,7 +41,10 @@ export const metadata: Metadata = {
    * prices for the same range on one website. Overstating the floor by 70,000
    * loses the click before the buyer ever sees the page.
    */
-  description: "Diesel generators in Kenya, 10kVA-3000kVA, from KES 280,000. New sets: 2-year warranty, 1 year free servicing. Serviced in all 47 counties.",
+  // 2026-11-05: owner-confirmed VOLTKA prices only (100-750 kVA, prime,
+  // ex-warehouse, excl. VAT). "from KES 280,000" removed: not confirmed, and
+  // "from 2.1M" alone would imply nothing smaller is sold.
+  description: "New VOLTKA generators, 10-3000kVA, open or silent. 100-750kVA KES 2.1M-9.1M (prime, ex-warehouse, excl. VAT); other sizes on request.",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: 'Cummins & Voltka Generators Kenya | 10-3000kVA',
