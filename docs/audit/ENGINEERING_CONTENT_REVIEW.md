@@ -18,3 +18,4 @@ Not reviewed in this pass: the long-form articles in `/blog`, `/guides` and `/te
 ## Flagged for a dated review (2026-11-06)
 `/services/borehole-drilling`: the two guarantees ("No dry holes", "predicts yield before drilling") and the "500+ boreholes" figure were removed. Still to review: "Deep boreholes (>200 m) use rotary drilling exclusively" (DTH air drilling is common), "300 m/day in hard rock", "development requires 3-7 days" (the signed Baringo tender priced 12 hours), and the transmissivity ranges quoted for Kenyan aquifers.
 
+Done 2026-11-06 (commit after ac433d4a): the borehole page items above were corrected or removed; see CHANGELOG. Sources: WHO Guidelines for Drinking-water Quality (iron acceptability ~0.3 mg/L; hardness scaling >~200 mg/L), BGS Africa Groundwater Atlas (yield as transmissivity proxy; Kenyan volcanic and basement settings), EmersonEIMS signed Baringo tender 16 Oct 2026 (24-h test pumping, 12-h development).
