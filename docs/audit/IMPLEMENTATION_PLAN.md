@@ -9,7 +9,8 @@
 | P0 | Crawler 403s | Vercel Firewall | owner (dashboard) | Diagnosed; watch Traffic for Googlebot |
 | P1 | Lead conversion event | `components/AnalyticsTracker.tsx` | — | Done (8f8882c7) |
 | P1 | Ads conversion labels | `lib/analytics/ids.ts` | owner labels | Waiting |
-| P1 | Lead reference shown to customer | `app/api/contact/route.ts`, forms | — | Next |
+| P1 | Lead reference shown to customer | `lib/leads/reference.ts`, `app/api/contact/route.ts`, 5 live forms | — | Done (78a1067b): EIMS-000034 on contact, quick enquiry, booking, exit popup, sizing calculator, and in the lead email |
+| P0 | Unconfirmed response promises and offers | live forms, EmergencyCTA, solar booking, /services, /pricing, nav | — | Done (78a1067b): only owner-confirmed wording; exit popup and calculator no longer report failed sends as success |
 | P1 | Department routing | `app/api/contact/route.ts` | owner routing list | Waiting |
 | P1 | Product catalogue | `lib/pricing/catalog.ts`, new `app/products/*` | verified product data | Spec ready |
 | P1 | Founding date consistency | site-wide | owner: 2011 or 2013 | Waiting |

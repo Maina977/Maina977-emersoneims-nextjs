@@ -2,6 +2,7 @@
 
 | Commit | Change |
 |---|---|
+| 78a1067b | Enquiry reference (EIMS-000034) shown to customers and in lead emails; unconfirmed promises removed (2-hour/30-minute/24-hour response, KES 15,000 free assessment, fake 24-hour offer deadline, 98.7% uptime guarantee, "Booking Confirmed!", "50+ vetted partners", "Branch finder"); exit popup and sizing calculator report failures |
 | eff89b73, fdce94e5 | Size pages for 125, 312, 375, 750 kVA with confirmed prices; 150 kVA page no longer opens with a 165 kVA photo |
 | 722ecaf5 | /generators JSON-LD on that page only (was inherited by every child route) |
 | 9b8a1ff3 | Generator prices: owner-confirmed VOLTKA list only (100–750 kVA, open/silent, prime, ex-warehouse, excl. VAT), one source file; "from KES 280,000", unconfirmed brand ranges and size bands, "prices include delivery/installation", "Free Delivery" and invented PDF sizes removed; other sizes "Request current price" |
