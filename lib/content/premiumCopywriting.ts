@@ -53,7 +53,7 @@ export const valuePropositions = {
   },
   expertise: {
     title: "A Decade of Excellence",
-    description: "Since 2013, we've been solving Kenya's most complex energy challenges. Our team of certified engineers brings unmatched expertise to every project, from design to deployment.",
+    description: "Since 2011, we've been solving Kenya's most complex energy challenges. Our team of certified engineers brings unmatched expertise to every project, from design to deployment.",
   },
   coverage: {
     title: "Nationwide Service Network",

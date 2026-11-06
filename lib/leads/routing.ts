@@ -1,6 +1,6 @@
 /**
  * Department routing for website leads (owner, 2026-11-06):
- *   generator enquiries -> generator@emersoneims.com
+ *   generator enquiries -> generators@emersoneims.com (owner corrected 2026-11-06)
  *   solar enquiries     -> solar@emersoneims.com
  *   info@emersoneims.com receives ALL enquiries (it is already in
  *   LEAD_RECIPIENTS in /api/contact).
@@ -10,7 +10,7 @@
  * never lose a lead.
  */
 export const DEPARTMENT_EMAILS = {
-  generators: 'generator@emersoneims.com',
+  generators: 'generators@emersoneims.com',
   solar: 'solar@emersoneims.com',
 } as const;
 

@@ -148,6 +148,25 @@ export const PRODUCT_WARRANTY: Record<string, ProductWarranty> = {
     maintenanceRequired: 'Serviced at the intervals stated in the quotation, with the service record kept',
     exclusions: ['Used and refurbished sets', 'Solar, UPS, inverters, motors and pumps', 'Repair labour on third-party equipment'],
   },
+  /*
+   * Owner-confirmed 2026-11-06: "kindly change the warranty cover for all the
+   * generators sold to 2 years". Used sets were 1 year (6 months for some
+   * makes) until then.
+   */
+  'used-generator': {
+    duration: '2 years',
+    provider: 'EmersonEIMS',
+    partsCovered: 'Major engine components, alternator and control system',
+    startsFrom: 'Commissioning',
+    maintenanceRequired: 'Serviced at the intervals stated in the quotation, with the service record kept',
+  },
+  /* Owner-confirmed 2026-11-06: 6 months on motor rewinding and all other repairs and services. */
+  'repairs-and-services': {
+    duration: '6 months',
+    provider: 'EmersonEIMS',
+    partsCovered: 'Our workmanship; parts fitted carry their manufacturer warranty',
+    startsFrom: 'Completion of the job',
+  },
 };
 
 /**

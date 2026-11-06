@@ -21,7 +21,7 @@ export default function AboutCapabilityDeepDive() {
       accent="amber"
       intro="Reliability is not a slogan — it is workshops, test gear, vehicles, parts on the shelf and engineers who have done the job before. Here is the operational depth that lets us stand behind every system we install, anywhere in Kenya."
     >
-      <DeepDiveBlock heading="Depth earned since 2013" accent="amber">
+      <DeepDiveBlock heading="Depth earned since 2011" accent="amber">
         <p>
           EmersonEIMS has spent over a decade doing the unglamorous work that builds real competence: hundreds of generator
           installations and repairs, solar and UPS deployments, motor rewinds, fabrication jobs and emergency call-outs across

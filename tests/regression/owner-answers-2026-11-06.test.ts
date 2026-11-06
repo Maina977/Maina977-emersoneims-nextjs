@@ -22,17 +22,17 @@ describe('lead routing', () => {
   it('sends generator and solar leads to their desk, info@ always kept', () => {
     const base = ['info@emersoneims.com', 'sally@emersoneims.com'];
     expect(routedRecipients(base, { service: 'generators', source: 'generator-size-100-kva' }))
-      .toEqual([...base, 'generator@emersoneims.com']);
+      .toEqual([...base, 'generators@emersoneims.com']);
     expect(routedRecipients(base, { service: 'Solar Installation' })).toEqual([...base, 'solar@emersoneims.com']);
     expect(routedRecipients(base, { service: 'UPS Systems' })).toEqual(base);
     expect(routedRecipients(base, { service: 'Motor Rewinding' })).toEqual(base);
   });
 
   it('reads the message only on general forms', () => {
-    expect(departmentRecipients({ service: 'general', message: 'Need a 200 kVA set for a school' })).toEqual(['generator@emersoneims.com']);
+    expect(departmentRecipients({ service: 'general', message: 'Need a 200 kVA set for a school' })).toEqual(['generators@emersoneims.com']);
     expect(departmentRecipients({ service: 'Plumbing', message: 'pipe to the generator room' })).toEqual([]);
     expect(departmentRecipients({ service: 'general', message: 'solar with generator backup' }))
-      .toEqual(['generator@emersoneims.com', 'solar@emersoneims.com']);
+      .toEqual(['generators@emersoneims.com', 'solar@emersoneims.com']);
   });
 
   it('never duplicates an address already in the list', () => {
@@ -50,6 +50,7 @@ describe('warranty terms', () => {
     'lib/services/allServices.ts', 'lib/data/seo-services.ts', 'lib/b2b/pageProfiles.ts',
     'components/seo/ToolSeoContent.tsx', 'app/services/layout.tsx', 'app/solar/page.tsx',
     'app/maintenance-hub/general/page.tsx', 'app/solutions/ac/page.tsx', 'components/service/MotorRewinding.tsx',
+    'app/generators/maintenance/page.tsx', 'components/service/CrossServiceOptimizers.tsx',
     'lib/maintenance-hub/comprehensive-services-data.ts', 'lib/maintenance-hub/enhanced-services-part2.ts',
     'lib/maintenance-hub/enhanced-services-part3.ts', 'lib/services/serviceBibles.ts', 'components/cta/EmergencyCTA.tsx',
   ];
@@ -64,14 +65,25 @@ describe('warranty terms', () => {
   });
 });
 
-describe('founding year', () => {
-  it('2013 everywhere the site states it', () => {
+describe('founding year (owner corrected 2026-11-06: 2011)', () => {
+  it('2011 everywhere the site states it; no 2012 or 2013', () => {
     for (const f of ['app/layout.tsx', 'components/seo/StructuredData.tsx', 'app/generators/page.tsx',
       'components/cta/UnifiedCTA.tsx', 'components/sections/TrustBadgesSection.tsx', 'app/team/page.tsx',
-      'app/kenya/[county]/page.tsx', 'app/east-africa/page.tsx']) {
+      'app/east-africa/page.tsx', 'app/about-us/page.tsx', 'components/layout/SciFiFooter.tsx',
+      'app/calculators/page.tsx', 'lib/content/premiumCopywriting.ts', 'components/about/AboutCapabilityDeepDive.tsx']) {
       const c = code(f);
-      expect(/[Ss]ince 201[12]\b|>2011<|2011-03-01/.test(c), f).toBe(false);
+      expect(/[Ss]ince 201[23]\b|>201[23]<|"2013", event: "Founded"|foundingDate.{0,4}2013/.test(c), f).toBe(false);
     }
-    expect(code('app/layout.tsx')).toMatch(/"foundingDate": "2013"/);
+    expect(code('app/layout.tsx')).toMatch(/"foundingDate": "2011-03-01"/);
+  });
+});
+
+describe('generator warranty (owner 2026-11-06: 2 years on all generators sold)', () => {
+  it('used generators carry 2 years too', async () => {
+    expect(code('app/generators/used/page.tsx')).not.toMatch(/warranty: "(1 year|6 months)/);
+    expect(code('app/generators/used/layout.tsx')).toMatch(/2-year warranty/);
+    expect(code('app/resources/buying-guides/page.tsx')).not.toMatch(/1-year comprehensive warranty/);
+    const { GENERATOR_WARRANTIES } = await import('@/lib/data/warranties');
+    expect(GENERATOR_WARRANTIES.used[0].duration).toBe('2 Years');
   });
 });

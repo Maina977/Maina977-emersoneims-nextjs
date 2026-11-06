@@ -263,7 +263,7 @@ function StorySection() {
 
         <Reveal delay={0.15}>
           <p className="mt-8 text-center text-sm md:text-base tracking-[0.3em] uppercase text-amber-400/90">
-            Serving all 47 counties across Kenya with excellence since 2013
+            Serving all 47 counties across Kenya with excellence since 2011
           </p>
         </Reveal>
 
@@ -424,7 +424,7 @@ function GeneratorBrands() {
 // ==================== COMPANY TIMELINE (content preserved, editorial) ====================
 function CompanyTimeline({ reducedMotion }: { reducedMotion: boolean }) {
   const timeline = [
-    { year: "2013", event: "Founded", description: "EmersonEIMS established in Nairobi, Kenya" },
+    { year: "2011", event: "Founded", description: "EmersonEIMS established in Nairobi, Kenya" },
     { year: "2015", event: "Expansion", description: "Expanded to 10 counties across Kenya" },
     { year: "2017", event: "Solar Division", description: "Launched comprehensive solar solutions" },
     { year: "2019", event: "Award Recognition", description: "Recognized as top energy solutions provider" },

@@ -155,10 +155,10 @@ export const ALL_SERVICES: Service[] = [
     // claim. Both used to appear here, and this block feeds the Service schema
     // rendered on /generators — so it was asserting the claim to Google as
     // structured data. See app/why-emersoneims/page.tsx for the full policy.
-    description: 'Cummins-powered generators in Kenya: new VOLTKA sets built on Cummins engines (10-3000 kVA, open or canopied), used and slightly used Cummins sets, and servicing for both. 2-year warranty on new generators; 6 months on repairs and servicing.',
+    description: 'Cummins-powered generators in Kenya: new VOLTKA sets built on Cummins engines (10-3000 kVA, open or canopied), used and slightly used Cummins sets, and servicing for both. 2-year warranty on every generator we sell, new or used; 6 months on repairs and servicing.',
     longDescription: `EmersonEIMS supplies, installs and maintains Cummins-powered generators across Kenya. We are an independent power engineering firm, not a Cummins dealer, so the set we recommend is the one that fits your load, your fuel budget and your site.
 
-New sets are VOLTKA, our own make built on Cummins engines, from 10 kVA to 3000 kVA, open or in a closed canopy. We also sell used and slightly used Cummins generators, each inspected and load-tested before sale, and we service and repair Cummins sets whoever supplied them. New generators carry a 2-year warranty; repairs and servicing carry 6 months. Terms are set out in your written quotation.
+New sets are VOLTKA, our own make built on Cummins engines, from 10 kVA to 3000 kVA, open or in a closed canopy. We also sell used and slightly used Cummins generators, each inspected and load-tested before sale, and we service and repair Cummins sets whoever supplied them. Every generator we sell, new or used, carries a 2-year warranty; repairs and servicing carry 6 months. Terms are set out in your written quotation.
 
 Support does not stop at the gate. Our mobile workshop reaches all 47 counties, so a set in Kisumu, Eldoret or Mombasa is serviced to the same standard as one in Nairobi — and we hold genuine spare parts rather than sourcing them after your set has already stopped.
 
@@ -173,7 +173,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
     ],
 
     metaTitle: 'Cummins-Engine Generators Kenya: New VOLTKA, Used Cummins', // 57 chars: shown whole in search (2026-10-27)
-    metaDescription: 'New VOLTKA generators on Cummins engines (10-3000 kVA), used Cummins sets, and Cummins servicing in all 47 counties. 2-year warranty on new sets. Call +254768860665',
+    metaDescription: 'New VOLTKA generators on Cummins engines (10-3000 kVA), used Cummins sets, and Cummins servicing in all 47 counties. 2-year warranty on sets sold. Call +254768860665',
     keywords: [
       'Cummins generators Kenya',
       'used Cummins generator Kenya',
@@ -188,7 +188,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
     benefits: [
       {
         title: '2-YEAR WARRANTY',
-        description: 'New generators carry a 2-year warranty; our repair and service work carries 6 months, on the terms in your quotation.',
+        description: 'Generators we sell carry a 2-year warranty; our repair and service work carries 6 months, on the terms in your quotation.',
         icon: '🛡️'
       },
       {
@@ -256,7 +256,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
         features: [
           'Perfect for small offices & shops',
           'Single-phase or three-phase options',
-          '2-year warranty on new sets, 6 months on service work',
+          '2-year warranty on sets sold, 6 months on service work',
           'Professional installation',
           'ATS quoted to suit the site'
         ]
@@ -268,7 +268,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
         features: [
           'Ideal for factories & hotels',
           'Sound attenuated canopy',
-          '2-year warranty on new sets, 6 months on service work',
+          '2-year warranty on sets sold, 6 months on service work',
           'Automatic Transfer Switch',
           'Remote monitoring option',
           'Extended fuel tank'
@@ -282,7 +282,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
         features: [
           'For hospitals, data centers, large industries',
           'Premium sound attenuation',
-          '2-year warranty on new sets, 6 months on service work',
+          '2-year warranty on sets sold, 6 months on service work',
           'Fully automatic operation',
           'Remote monitoring & control',
           'Parallel operation ready',
@@ -294,7 +294,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
     faqs: [
       {
         question: 'Do you sell new Cummins generators?',
-        answer: 'Our new sets are VOLTKA, our own make built on Cummins engines, from 10 kVA to 3000 kVA. We also sell used and slightly used Cummins generators, and we service Cummins sets whoever supplied them. We are not a Cummins dealer. New generators carry a 2-year warranty and our repair and service work 6 months, on the terms in your quotation.'
+        answer: 'Our new sets are VOLTKA, our own make built on Cummins engines, from 10 kVA to 3000 kVA. We also sell used and slightly used Cummins generators, and we service Cummins sets whoever supplied them. We are not a Cummins dealer. Generators we sell carry a 2-year warranty and our repair and service work 6 months, on the terms in your quotation.'
       },
       {
         question: 'What size Cummins generator do I need?',
@@ -302,7 +302,7 @@ Why a Cummins engine? Cummins engines are widely used in Kenya, so parts and tra
       },
       {
         question: 'What is included in the 2-Year Warranty?',
-        answer: 'New generators carry a 2-year warranty. Repairs, servicing and other work we do carry a 6-month warranty on workmanship. Cover for a used set is written into your quotation before you pay.'
+        answer: 'Every generator we sell, new or used, carries a 2-year warranty. Repairs, servicing and other work we do carry a 6-month warranty on workmanship. The terms are written into your quotation before you pay.'
       },
       {
         question: 'How long does generator installation take?',

@@ -937,7 +937,7 @@ function PMICalculator() {
                 <div className="bg-white/5 rounded-xl p-4 border border-amber-500/30">
                   <p className="text-xs text-gray-400 text-center">
                     PMI™ Algorithm: proprietary in-house model<br/>
-                    Developed from field data across 47 Kenyan counties since 2013
+                    Developed from field data across 47 Kenyan counties since 2011
                   </p>
                 </div>
               </div>

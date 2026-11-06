@@ -131,7 +131,7 @@ const servicePackages = [
   {
     name: 'Complete Overhaul',
     interval: 'Every 10,000+ Hours',
-    includes: ['Complete engine disassembly', 'Crankshaft inspection/grinding', 'Cylinder liner replacement', 'Piston & ring replacement', 'Bearing replacement', 'Valve & seat reconditioning', 'Cylinder head overhaul', 'Turbocharger rebuild', 'Injector pump overhaul', 'Alternator rewinding', 'Control panel upgrade', 'Full load testing certification', '12-month warranty'],
+    includes: ['Complete engine disassembly', 'Crankshaft inspection/grinding', 'Cylinder liner replacement', 'Piston & ring replacement', 'Bearing replacement', 'Valve & seat reconditioning', 'Cylinder head overhaul', 'Turbocharger rebuild', 'Injector pump overhaul', 'Alternator rewinding', 'Control panel upgrade', 'Full load testing certification', '6-month warranty'],
   },
 ];
 
@@ -139,8 +139,8 @@ const servicePackages = [
 const overhaulTypes = [
   { name: 'Top-End Overhaul', description: 'Cylinder head, valves, gaskets, and upper engine components', duration: '3-5 days', warranty: '6 months', suitable: 'Generators with valve issues, head gasket failures, or compression loss' },
   { name: 'In-Frame Overhaul', description: 'Pistons, rings, liners, bearings without removing engine', duration: '5-7 days', warranty: '9 months', suitable: 'Generators with oil consumption, blow-by, or bearing noise' },
-  { name: 'Complete Overhaul', description: 'Full engine rebuild including crankshaft, block, and all components', duration: '10-14 days', warranty: '12 months', suitable: 'High-hour generators, seized engines, or major failures' },
-  { name: 'Exchange Program', description: 'Factory-rebuilt engine exchange for minimal downtime', duration: '1-2 days', warranty: '12 months', suitable: 'Critical operations requiring minimal downtime' },
+  { name: 'Complete Overhaul', description: 'Full engine rebuild including crankshaft, block, and all components', duration: '10-14 days', warranty: '6 months', suitable: 'High-hour generators, seized engines, or major failures' },
+  { name: 'Exchange Program', description: 'Factory-rebuilt engine exchange for minimal downtime', duration: '1-2 days', warranty: '6 months', suitable: 'Critical operations requiring minimal downtime' },
 ];
 
 // Common Issues with Detailed Information

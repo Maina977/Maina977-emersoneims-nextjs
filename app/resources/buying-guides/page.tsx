@@ -240,7 +240,7 @@ export default function BuyingGuidesPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-cyan-400">✓</span>
-                <span>1-year comprehensive warranty</span>
+                <span>2-year warranty</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-cyan-400">✓</span>

@@ -23,7 +23,7 @@ const usedGenerators = [
   {
     brand: "Cummins",
     kvaRange: "50–2000 kVA",
-    warranty: "1 year comprehensive",
+    warranty: "2 years",
     priceRange: "KSh 800,000 – 15M",
     features: ["Fully serviced", "Load tested", "OEM parts", "6-month service history"],
     status: "Confirm availability",
@@ -48,7 +48,7 @@ const usedGenerators = [
   {
     brand: "Perkins",
     kvaRange: "20–1000 kVA",
-    warranty: "1 year engine & alternator",
+    warranty: "2 years",
     priceRange: "KSh 500,000 – 8M",
     features: ["Fuel efficient", "Low hours", "New filters", "Painted"],
     status: "Confirm availability",
@@ -72,7 +72,7 @@ const usedGenerators = [
   {
     brand: "Caterpillar",
     kvaRange: "100–2000 kVA",
-    warranty: "1 year comprehensive",
+    warranty: "2 years",
     priceRange: "KSh 1.2M – 20M",
     features: ["Heavy-duty", "Low hours", "Full service", "Canopy available"],
     status: "Confirm availability",
@@ -97,7 +97,7 @@ const usedGenerators = [
   {
     brand: "Volvo Penta",
     kvaRange: "50–1500 kVA",
-    warranty: "1 year engine",
+    warranty: "2 years",
     priceRange: "KSh 700,000 – 12M",
     features: ["Low emissions", "Advanced controls", "Soundproofed", "Containerized"],
     status: "Confirm availability",
@@ -121,7 +121,7 @@ const usedGenerators = [
   {
     brand: "SDMO",
     kvaRange: "30–1200 kVA",
-    warranty: "1 year",
+    warranty: "2 years",
     priceRange: "KSh 400,000 – 10M",
     features: ["French engineered", "Robust design", "Easy maintenance", "Export ready"],
     status: "Confirm availability",
@@ -145,7 +145,7 @@ const usedGenerators = [
   {
     brand: "Wei Chai",
     kvaRange: "30–1000 kVA",
-    warranty: "6 months",
+    warranty: "2 years",
     priceRange: "KSh 200,000 – 6M",
     features: ["Cost effective", "Fully tested", "New batteries", "Serviced"],
     status: "Confirm availability",
@@ -505,7 +505,7 @@ export default function UsedGeneratorsPage() {
               transition={{ duration: 0.8, delay: 0.7 }}
               className="text-lg md:text-xl lg:text-2xl text-gray-200/90 max-w-3xl mx-auto leading-relaxed mb-8"
             >
-              Fully Tested • 1 Year Warranty • Premium Brands • Best Value in Kenya
+              Fully Tested • 2-Year Warranty • Premium Brands • Best Value in Kenya
             </motion.p>
 
             {/* Decorative Line */}

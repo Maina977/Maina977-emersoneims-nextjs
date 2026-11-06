@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `Generator & Solar Services in ${locationName}`,
       !isCounty && countyName ? `, ${countyName}` : undefined,
     ),
-    description: `Generators, solar, UPS and electrical services in ${locationName}. 2-year warranty on new generators, 24/7 emergency response, engineers on site. Call +254768860665.`,
+    description: `Generators, solar, UPS and electrical services in ${locationName}. 2-year warranty on generators sold, 24/7 emergency response, engineers on site. Call +254768860665.`,
     keywords: [
       `generator company ${locationName}`,
       `solar installation ${locationName}`,
@@ -84,7 +84,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       // Credibility audit 2026-07-18: replaced the unsubstantiated "Kenya's #1"
       // superiority claim (it appeared on ~190 indexed location pages and in
       // Google results). Kept only verifiable facts: services, warranty, phone.
-      description: `Generator, solar, UPS and electrical engineering services in ${locationName}. 2-year warranty on new generators. 24/7 emergency response. Call +254768860665`,
+      description: `Generator, solar, UPS and electrical engineering services in ${locationName}. 2-year warranty on generators sold. 24/7 emergency response. Call +254768860665`,
       type: 'website',
     },
     alternates: {

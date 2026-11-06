@@ -1187,7 +1187,7 @@ const LiveStatisticsCounter = () => {
             the year it started and the counties it reaches.
           */}
           <h2 className="text-3xl md:text-4xl font-bold text-white">
-            Supplying and Servicing Generators in Kenya Since 2013
+            Supplying and Servicing Generators in Kenya Since 2011
           </h2>
         </div>
 
@@ -1442,7 +1442,7 @@ const WhyChooseUs = () => {
     {
       icon: '🔧',
       title: '11+ Years Track Record',
-      description: 'Our senior technicians have serviced generators across Kenya since 2013, on Cummins, Perkins, Caterpillar and 10+ other brands.',
+      description: 'Our senior technicians have serviced generators across Kenya since 2011, on Cummins, Perkins, Caterpillar and 10+ other brands.',
       highlight: 'PROVEN EXPERTISE'
     },
     {

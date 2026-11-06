@@ -418,7 +418,7 @@ export default async function IndustryPage({ params }: Props) {
           </div>
 
           <p className="text-slate-400 text-sm">
-            <strong className="text-white">2-Year Warranty</strong> on new generators |
+            <strong className="text-white">2-Year Warranty</strong> on generators sold |
             <strong className="text-white"> 24/7 Emergency Support</strong> |
             <strong className="text-white"> 47 Counties Covered</strong>
           </p>

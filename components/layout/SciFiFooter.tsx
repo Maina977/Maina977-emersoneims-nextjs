@@ -114,7 +114,7 @@ export default function SciFiFooter() {
                 </div>
               </div>
               <p className="text-gray-400 text-sm mb-4 leading-relaxed">
-                Powering Kenya with intelligent energy infrastructure solutions since 2013.
+                Powering Kenya with intelligent energy infrastructure solutions since 2011.
               </p>
               <div className="flex gap-3">
                 {SOCIAL_LINKS.map((social) => (

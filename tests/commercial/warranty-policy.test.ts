@@ -47,7 +47,8 @@ describe('scope — the half that caused the original defect', () => {
 
   it('does NOT extend the new-set term to anything else', () => {
     // warrantyFor() must fall back to the mechanism for every other product.
-    for (const slug of ['used-generator', 'solar', 'ups', 'inverter', 'motor-rewinding', 'repairs']) {
+    // ('used-generator' left this list 2026-11-06: owner set it to 2 years.)
+    for (const slug of ['solar', 'ups', 'inverter', 'motor-rewinding', 'repairs']) {
       expect(warrantyFor(slug).short, slug).toBe(COMMERCIAL_POLICY.warrantyShort);
       expect(warrantyFor(slug).short, slug).not.toMatch(/2 years/i);
     }
@@ -63,12 +64,11 @@ describe('scope — the half that caused the original defect', () => {
     expect(ex).toContain('solar');
   });
 
-  it('gives used generators their own, shorter term', () => {
-    // Used sets are 1 year in the schedule — proof the terms really do differ
-    // by product, which is why a single site-wide figure was wrong.
-    expect(GENERATOR_WARRANTIES.used[0]?.duration).toBe('1 Year');
-    expect(GENERATOR_WARRANTIES.used[0]?.duration).not.toBe(
-      GENERATOR_WARRANTIES.new.find((w) => w.type === 'product')?.duration,
-    );
+  it('gives every generator sold 2 years, and repairs and services 6 months', () => {
+    // Owner, 2026-11-06: 2 years on all generators sold (new and used);
+    // 6 months on motor rewinding and all other repairs and services.
+    expect(GENERATOR_WARRANTIES.used[0]?.duration).toBe('2 Years');
+    expect(PRODUCT_WARRANTY['used-generator']?.duration).toBe('2 years');
+    expect(PRODUCT_WARRANTY['repairs-and-services']?.duration).toBe('6 months');
   });
 });

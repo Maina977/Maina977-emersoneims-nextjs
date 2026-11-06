@@ -70,7 +70,7 @@ const serviceGallery = [
     title: 'Industrial Motor Rewinding',
     description: '200 HP motor complete rewind with Class H insulation and dynamic balancing for cement factory.',
     category: 'Motor Services',
-    stats: { power: '200 HP', duration: '4 Days', warranty: '12 Months' },
+    stats: { power: '200 HP', duration: '4 Days', warranty: '6 Months' },
   },
   {
     image: '/images/solar power for farms.png',
@@ -204,7 +204,7 @@ const serviceGallery = [
     title: 'Generator Parts Replacement',
     description: 'Major component replacement including injectors and turbocharger for 600 kVA unit.',
     category: 'Parts',
-    stats: { power: '600 kVA', parts: 'OEM', warranty: '12 Months' },
+    stats: { power: '600 kVA', parts: 'OEM', warranty: '6 Months' },
   },
   {
     image: '/images/923.png',

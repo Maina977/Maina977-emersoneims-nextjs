@@ -67,7 +67,7 @@ export const GENERATOR_WARRANTIES: {
   ],
   used: [
     {
-      duration: "1 Year",
+      duration: "2 Years",
       coverage: [
         "Major engine components (block, head, pistons)",
         "Alternator and control system",
@@ -75,7 +75,7 @@ export const GENERATOR_WARRANTIES: {
         "3-month free maintenance"
       ],
       type: "product",
-      details: "All used generators undergo rigorous testing and come with 1-year warranty"
+      details: "All used generators undergo rigorous testing and come with a 2-year warranty"
     }
   ],
   rental: {

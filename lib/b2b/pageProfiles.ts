@@ -665,7 +665,7 @@ export const B2B_PROFILES = {
       { problem: 'Batteries sized far too big or too small.', solution: 'Battery size follows the backup you actually want, not a rule of thumb.', outcome: 'You pay for the backup you need, not more.' },
       { problem: 'Designs ignore the generator, changeover and grid.', solution: 'Our engineers design hybrid solar, battery, generator and changeover systems.', outcome: 'A system that keeps the power on, not just panels on a roof.' },
     ],
-    trust: ['Free estimate, no sign-up', 'Checked by registered engineers on request', 'ISO 9001 & KEBS registered', '2-yr warranty on new generators, 6 months on service'],
+    trust: ['Free estimate, no sign-up', 'Checked by registered engineers on request', 'ISO 9001 & KEBS registered', '2-yr warranty on generators sold, 6 months on service'],
     ctas: [
       { label: 'Request a Solar Design', href: '/contact?topic=solar-design', variant: 'primary' },
       { label: 'Book a Site Survey', href: '/booking?type=site-survey', variant: 'secondary' },
@@ -765,7 +765,7 @@ export const B2B_PROFILES = {
       { problem: 'Engineers waste hours guessing fault codes.', solution: 'Structured fault-code path with brand-specific guidance.', outcome: 'Faster diagnosis, fewer parts swapped on guess.' },
       { problem: 'Recurring trips never properly closed out.', solution: 'Our engineers find the root cause on site and explain what they found.', outcome: 'Fault closed out, not reset and forgotten.' },
     ],
-    trust: ['ISO 9001 & KEBS registered', 'Registered engineers', 'Under 4 h response in the Nairobi metro', '2-yr warranty on new generators, 6 months on service'],
+    trust: ['ISO 9001 & KEBS registered', 'Registered engineers', 'Under 4 h response in the Nairobi metro', '2-yr warranty on generators sold, 6 months on service'],
     ctas: [
       { label: 'Call the Emergency Desk', href: TEL, variant: 'primary' },
       { label: 'WhatsApp an Engineer Now', href: WHATSAPP, variant: 'secondary' },

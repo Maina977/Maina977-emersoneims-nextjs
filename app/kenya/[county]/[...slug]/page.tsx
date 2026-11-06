@@ -333,9 +333,9 @@ function CountyServicePage({
               <div className="text-gray-400">Emergency Support</div>
             </div>
             <div className="text-center">
-              {/* "15+ Years Experience" was not true: operating since 2013 is
+              {/* "15+ Years Experience" was not true: operating since 2012 is
                   14 years as at 2026. The founding year cannot go stale. */}
-              <div className="text-4xl font-bold text-cyan-400 mb-2">2013</div>
+              <div className="text-4xl font-bold text-cyan-400 mb-2">2011</div>
               <div className="text-gray-400">Operating in Kenya since</div>
             </div>
             <div className="text-center">
