@@ -28,7 +28,7 @@ describe('external audit, November 2026', () => {
   it('P2: one warranty and one free-servicing period', () => {
     expect(CUMMINS_BRAND_INFO.warranty.years).toBe(2);
     expect(CUMMINS_BRAND_INFO.freeService.years).toBe(1);
-    expect(code('app/generators/page.tsx')).not.toMatch(/first 6 months/);
+    expect(code('app/generators/GeneratorsPageClient.tsx') + code('app/generators/GeneratorsStaticSections.tsx')).not.toMatch(/first 6 months/);
   });
 
   it('P3: no overnight nationwide delivery-and-commissioning promise', () => {

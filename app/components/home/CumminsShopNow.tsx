@@ -1,5 +1,5 @@
-'use client';
-
+// Server component since 2026-11-06: no state, effects or handlers, so it
+// needs no client JavaScript to hydrate.
 import Link from 'next/link';
 import { confirmedPriceFor, kes, VOLTKA_PRICE_BASIS_SHORT } from '@/lib/pricing/voltkaConfirmedPrices';
 

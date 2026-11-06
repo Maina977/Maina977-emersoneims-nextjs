@@ -19,7 +19,7 @@ describe('render-blocking fixes', () => {
     expect(c).not.toMatch(/<m\.h1/);
   });
   it('the /generators hero mounts only the current and next slide', () => {
-    const g = read('app/generators/page.tsx');
+    const g = read('app/generators/GeneratorsPageClient.tsx');
     expect(g).toMatch(/GENERATOR_HERO_IMAGES\.map\(\(src, i\) => i > shown \+ 1 \? null :/);
     expect(g).toMatch(/\}, 6000\);/);
   });

@@ -74,7 +74,7 @@ describe('confirmed VOLTKA prices', () => {
   it('no rendered copy still says the old "from KES 280,000"', () => {
     const root = join(__dirname, '..', '..');
     const files = [
-      'app/page.tsx', 'app/layout.tsx', 'app/generators/page.tsx', 'app/generators/layout.tsx',
+      'app/page.tsx', 'app/layout.tsx', 'app/generators/GeneratorsPageClient.tsx', 'app/generators/GeneratorsStaticSections.tsx', 'app/generators/layout.tsx',
       'app/voltka/page.tsx', 'components/generators/GeneratorPriceList.tsx', 'lib/pricing/publishedPrices.ts',
       'lib/data/generator-brands.ts', 'components/seo/AdvancedSEO.tsx', 'lib/seo/industryData.ts',
       'components/seo/FAQSchema.tsx', 'components/seo/EnhancedSchemaMarkup.tsx', 'components/ai/SallyAIAssistant.tsx',
@@ -114,7 +114,7 @@ describe('confirmed VOLTKA prices', () => {
     const layout = readFileSync(join(root, 'app/generators/layout.tsx'), 'utf8');
     expect(layout).not.toMatch(/application\/ld\+json/);
     expect(layout).not.toMatch(/AggregateOffer/);
-    const page = readFileSync(join(root, 'app/generators/page.tsx'), 'utf8');
+    const page = readFileSync(join(root, 'app/generators/GeneratorsPageClient.tsx'), 'utf8');
     expect(page).toMatch(/JSON\.stringify\(generatorsJsonLd\)/);
   });
 

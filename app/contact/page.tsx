@@ -75,25 +75,16 @@ function ParticleField() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particles.map((p) => (
-        <m.div
+        <div
           key={p.id}
-          className="absolute rounded-full bg-amber-500/30"
+          className="absolute rounded-full bg-amber-500/30 eims-particle"
           style={{
             width: p.size,
             height: p.size,
             left: `${p.x}%`,
             top: `${p.y}%`,
-          }}
-          animate={{
-            y: [0, -100, 0],
-            opacity: [0, 1, 0],
-            scale: [0, 1, 0],
-          }}
-          transition={{
-            duration: p.duration,
-            repeat: Infinity,
-            delay: p.delay,
-            ease: 'linear',
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
           }}
         />
       ))}
@@ -123,13 +114,11 @@ function CyberGrid() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(251,191,36,0.15)_0%,transparent_70%)]" />
       
       {/* Scan Lines */}
-      <m.div
-        className="absolute inset-0 opacity-[0.03]"
+      <div
+        className="absolute inset-0 opacity-[0.03] eims-scanline"
         style={{
           background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px)',
         }}
-        animate={{ backgroundPositionY: ['0px', '4px'] }}
-        transition={{ duration: 0.1, repeat: Infinity, ease: 'linear' }}
       />
     </div>
   );
@@ -597,11 +586,7 @@ function SciFiContactForm() {
         className="relative w-full py-5 rounded-xl font-bold text-lg overflow-hidden transition-all duration-500 group bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white disabled:opacity-80"
       >
         {!isSubmitting && (
-          <m.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-            animate={{ x: ['-100%', '100%'] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent eims-shimmer-x" />
         )}
         <span className="relative z-10 flex items-center justify-center gap-3">
           {isSubmitting ? (
@@ -894,20 +879,12 @@ function SciFiContactPageInner() {
             transition={{ delay: 1.5 }}
             className="absolute bottom-10 left-1/2 -translate-x-1/2"
           >
-            <m.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="flex flex-col items-center gap-2"
-            >
+            <div className="flex flex-col items-center gap-2 eims-bob-10">
               <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">Scroll Down</span>
               <div className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-2">
-                <m.div 
-                  animate={{ y: [0, 12, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="w-1.5 h-3 bg-amber-500 rounded-full" 
-                />
+                <div className="w-1.5 h-3 bg-amber-500 rounded-full eims-bob-12" />
               </div>
-            </m.div>
+            </div>
           </m.div>
         </m.div>
       </section>

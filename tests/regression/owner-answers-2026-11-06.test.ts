@@ -67,7 +67,7 @@ describe('warranty terms', () => {
 
 describe('founding year (owner corrected 2026-11-06: 2011)', () => {
   it('2011 everywhere the site states it; no 2012 or 2013', () => {
-    for (const f of ['app/layout.tsx', 'components/seo/StructuredData.tsx', 'app/generators/page.tsx',
+    for (const f of ['app/layout.tsx', 'components/seo/StructuredData.tsx', 'app/generators/GeneratorsPageClient.tsx', 'app/generators/GeneratorsStaticSections.tsx',
       'components/cta/UnifiedCTA.tsx', 'components/sections/TrustBadgesSection.tsx', 'app/team/page.tsx',
       'app/east-africa/page.tsx', 'app/about-us/page.tsx', 'components/layout/SciFiFooter.tsx',
       'app/calculators/page.tsx', 'lib/content/premiumCopywriting.ts', 'components/about/AboutCapabilityDeepDive.tsx']) {

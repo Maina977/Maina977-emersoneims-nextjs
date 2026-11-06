@@ -83,7 +83,7 @@ describe('response promises on live pages', () => {
   });
 
   it('/generators and size pages use the generator quotation form, without reply-time or stock claims', () => {
-    const gen = readFileSync(join(root, 'app/generators/page.tsx'), 'utf8');
+    const gen = readFileSync(join(root, 'app/generators/GeneratorsPageClient.tsx'), 'utf8') + readFileSync(join(root, 'app/generators/GeneratorsStaticSections.tsx'), 'utf8');
     expect(gen).toMatch(/<GeneratorQuoteForm source="generators-page" \/>/);
     expect(gen).not.toMatch(/We reply the same working day\./);
     expect(gen).not.toMatch(/held in stock/);

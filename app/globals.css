@@ -2307,3 +2307,20 @@ html[data-hub-route="true"] body {
 .nav-anim-drop-sm { animation: nav-drop-in-sm .16s ease-out both; }
 /* Mobile drawer (was: spring x 100% -> 0, damping 25 / stiffness 200) */
 .nav-anim-slide   { animation: nav-slide-in .28s cubic-bezier(.22, 1, .36, 1) both; }
+
+/* /contact decorative loops, moved from framer-motion (JavaScript every frame)
+   to CSS (2026-11-06). Same motion; the browser runs them without the main
+   thread, and they stop for visitors who ask for reduced motion. */
+@keyframes eims-scanline { from { background-position-y: 0px; } to { background-position-y: 4px; } }
+@keyframes eims-shimmer-x { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@keyframes eims-bob-10 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+@keyframes eims-bob-12 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(12px); } }
+@keyframes eims-particle { 0%, 100% { transform: translateY(0) scale(0); opacity: 0; } 50% { transform: translateY(-100px) scale(1); opacity: 1; } }
+.eims-scanline { animation: eims-scanline 0.1s linear infinite; }
+.eims-shimmer-x { animation: eims-shimmer-x 2s linear infinite; }
+.eims-bob-10 { animation: eims-bob-10 1.5s ease-in-out infinite; }
+.eims-bob-12 { animation: eims-bob-12 1.5s ease-in-out infinite; }
+.eims-particle { animation-name: eims-particle; animation-timing-function: linear; animation-iteration-count: infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .eims-scanline, .eims-shimmer-x, .eims-bob-10, .eims-bob-12, .eims-particle { animation: none; }
+}
