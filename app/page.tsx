@@ -100,6 +100,7 @@ const CumminsShopNowReal = dynamic(() => import('@/app/components/home/CumminsSh
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
 import { COMMERCIAL_POLICY } from '@/lib/commercial/policy';
 import RecentWorkSection from '@/components/home/RecentWorkSection';
+import BuyerDirectory from '@/components/home/BuyerDirectory';
 import ClientTestimonials from '@/components/home/ClientTestimonials';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
@@ -660,6 +661,9 @@ export default function HomePage() {
 
       {/* STATIC CONTENT - Renders instantly (no JS needed) */}
       <StaticHeroFallback />
+      {/* Purchasing directory under the hero (external audit, Nov 2026, §3):
+          buy equipment, get a service, or talk to an engineer. */}
+      <BuyerDirectory />
       {/* VOLTKA Cummins cinematic showcase — flagship product directly
           under the hero so generator buyers see it before anything else. */}
       <VoltkaCinematicShowcase />
