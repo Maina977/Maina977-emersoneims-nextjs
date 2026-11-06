@@ -1114,7 +1114,7 @@ const AC_BIBLE: ServiceBible = {
   warrantyOptions: [
     'Compressor warranty 5 yr standard',
     'PCB / parts 1–2 yr standard',
-    'Workmanship 6 months',
+    'Workmanship 1 year on installations, 6 months on repairs',
     'Annual maintenance contract available',
   ],
   qualityChecks: [
@@ -2044,7 +2044,7 @@ const PLUMBING_BIBLE: ServiceBible = {
   roi: [],
 
   warrantyOptions: [
-    '6-month EmersonEIMS warranty on installation and workmanship',
+    '1-year EmersonEIMS warranty on installation; 6 months on repairs',
     'Manufacturer warranty on fittings, heaters, pumps and sanitaryware, per the maker and stated on the quotation',
     'Scheduled maintenance contracts available for hotels and commercial properties',
   ],

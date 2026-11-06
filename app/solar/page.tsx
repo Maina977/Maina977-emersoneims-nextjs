@@ -216,7 +216,7 @@ const SOLAR_PRICING = [
 ].map((p: { popular?: boolean } & ReturnType<typeof PKG> & { type: string; ideal: string }) => ({
   popular: !!p.popular,
   ...p,
-  includes: [`${p.panels}× ${PANEL_WATT} W panels`, `${p.inv} kW hybrid inverter`, `${p.bat} kWh lithium (LiFePO4) battery`, 'Installation and commissioning', '6-Month Workmanship Warranty'],
+  includes: [`${p.panels}× ${PANEL_WATT} W panels`, `${p.inv} kW hybrid inverter`, `${p.bat} kWh lithium (LiFePO4) battery`, 'Installation and commissioning', '1-Year Workmanship Warranty'],
 }));
 // "about 3-6 years" across the cards above, for the FAQ.
 const PAYBACK_RANGE = (() => {
@@ -318,7 +318,7 @@ const SOLAR_FAQ = [
   },
   {
     question: 'What warranty do I get with solar panels?',
-    answer: 'Tier-1 solar panels typically carry 25-year performance warranties (usually 80% or more of rated output at 25 years); the exact terms are on each manufacturer\'s datasheet. Inverters typically have 5-10 year warranties. Lithium batteries typically carry 10-year warranties, while lead-acid batteries have 2-3 year warranties. Our own installation workmanship carries a 6-month warranty.'
+    answer: 'Tier-1 solar panels typically carry 25-year performance warranties (usually 80% or more of rated output at 25 years); the exact terms are on each manufacturer\'s datasheet. Inverters typically have 5-10 year warranties. Lithium batteries typically carry 10-year warranties, while lead-acid batteries have 2-3 year warranties. Our own installation workmanship carries a 1-year warranty.'
   },
   {
     question: 'How long does solar installation take?',
@@ -646,7 +646,7 @@ export default function SolarBible() {
             {/* Were "500+ systems installed", "2 MW+", "47 counties" and "98% client
                 satisfaction" — none owner-confirmed (2026-10-19 re-audit). These are. */}
             {[
-              ['6 months', 'Installation workmanship warranty'],
+              ['1 year', 'Installation workmanship warranty'],
               ['< 4 h', 'Response in the Nairobi metro'],
               ['ISO 9001', '& KEBS registered'],
               ['Registered', 'Engineers'],

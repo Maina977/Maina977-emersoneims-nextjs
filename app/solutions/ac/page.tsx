@@ -449,7 +449,7 @@ export default function ACPage() {
             </h1>
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.7 }} className="text-lg md:text-xl lg:text-2xl text-gray-200/90 max-w-3xl mx-auto leading-relaxed">
-              Complete AC solutions. Split, Cassette, VRF, Ducted, Chillers. Installation, maintenance, repairs. All major brands. 6-month warranty on service work.
+              Complete AC solutions. Split, Cassette, VRF, Ducted, Chillers. Installation, maintenance, repairs. All major brands. 1-year warranty on installation; 6 months on service work.
             </motion.p>
 
             <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.2, delay: 1 }} className="mt-8 h-1 w-32 mx-auto bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
@@ -604,7 +604,7 @@ export default function ACPage() {
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-3xl p-8 md:p-12 border border-cyan-500/30 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Need AC Solutions?</h2>
-          <p className="text-gray-400 max-w-2xl mx-auto mb-8">Professional AC supply, installation, and maintenance. All types and sizes. All major brands. 6-month warranty on service work.</p>
+          <p className="text-gray-400 max-w-2xl mx-auto mb-8">Professional AC supply, installation, and maintenance. All types and sizes. All major brands. 1-year warranty on installation; 6 months on service work.</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <UnifiedCTA action="custom" href="https://wa.me/254768860665?text=AC%20Quote%20Request" size="lg" label="Get Free Quote" />
             <UnifiedCTA action="custom" href="tel:+254768860665" variant="secondary" size="lg" label="Call Us Now" />

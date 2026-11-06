@@ -2081,7 +2081,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
 
     metaTitle: 'Plumbing Services Kenya | Hotels, Homes & Hot Water',
     metaDescription:
-      'Plumbing and hot-water systems across Kenya: hotel and commercial plumbing, bathrooms, kitchens, water pumps, drainage and emergency repairs. 6-month warranty on our workmanship.',
+      'Plumbing and hot-water systems across Kenya: hotel and commercial plumbing, bathrooms, kitchens, water pumps, drainage and emergency repairs. 1-year warranty on installations, 6 months on repairs.',
     keywords: [
       'plumbing services Kenya',
       'plumber Nairobi',
@@ -2170,7 +2170,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
       {
         question: 'What warranty applies to plumbing work?',
         answer:
-          'Our workmanship carries a 6-month warranty. Fittings, heaters and pumps carry their own manufacturer warranties, which vary by product and are stated on the quotation.',
+          'Installations carry a 1-year warranty on our workmanship and repairs 6 months. Fittings, heaters and pumps carry their own manufacturer warranties, which vary by product and are stated on the quotation.',
       },
       {
         question: 'Do you install solar hot water?',
@@ -2193,7 +2193,7 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
     ],
 
     warranties: [
-      '6-month warranty on our workmanship',
+      '1-year warranty on installations, 6 months on repairs',
       'Manufacturer warranty on fittings, heaters and pumps, stated on the quotation',
     ],
     certifications: [],
@@ -2398,7 +2398,7 @@ WE PROVIDE:
     ],
 
     warranties: [
-      '6-month EmersonEIMS warranty on installation and workmanship',
+      '1-year EmersonEIMS warranty on installation; 6 months on service work',
       'One-year manufacturer warranty on the incinerator unit',
       'Refractory warranty per the lining supplier'
     ],

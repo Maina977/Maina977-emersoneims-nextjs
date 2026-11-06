@@ -804,7 +804,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'Do your solar technicians offer warranty on installation in {location}?',
-        answer: 'Yes. Our installation workmanship in {location} carries a 6-month warranty; panels, inverters and batteries carry their manufacturers\' warranties.'
+        answer: 'Yes. Our installation workmanship in {location} carries a 1-year warranty; panels, inverters and batteries carry their manufacturers\' warranties.'
       }
     ]
   },
@@ -1593,7 +1593,7 @@ export const SEO_SERVICES: SEOService[] = [
     category: 'ac',
     metaTemplate: {
       title: 'AC Installation in {location}',
-      description: 'Professional AC installation in {location}. Split, cassette & central AC. All brands. Quality workmanship. Warranty included. Call +254768860665',
+      description: 'Professional AC installation in {location}. Split, cassette & central AC. All brands. 1-year installation warranty. Call +254768860665',
       h1: 'AC Installation in {location}'
     },
     features: ['Split AC installation', 'Cassette AC installation', 'Central AC systems', 'VRF/VRV systems', 'Ductwork installation', 'Quality copper piping'],
@@ -1970,7 +1970,7 @@ export const SEO_SERVICES: SEOService[] = [
     category: 'plumbing',
     metaTemplate: {
       title: 'Plumbing Installation in {location}',
-      description: 'Plumbing installation in {location} for hotels, homes and commercial buildings: pipework, bathrooms, kitchens, hot water and storage. 6-month workmanship warranty. Call +254768860665',
+      description: 'Plumbing installation in {location} for hotels, homes and commercial buildings: pipework, bathrooms, kitchens, hot water and storage. 1-year workmanship warranty on installations. Call +254768860665',
       h1: 'Plumbing Installation in {location}'
     },
     features: [
@@ -1997,7 +1997,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'What warranty applies to a plumbing installation?',
-        answer: '6 months on our installation and workmanship. Fittings, heaters and pumps carry their own manufacturer warranties, stated on the quotation.'
+        answer: '1 year on our installation workmanship (6 months on repairs). Fittings, heaters and pumps carry their own manufacturer warranties, stated on the quotation.'
       }
     ]
   },

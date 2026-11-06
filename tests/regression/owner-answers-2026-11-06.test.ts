@@ -78,6 +78,25 @@ describe('founding year (owner corrected 2026-11-06: 2011)', () => {
   });
 });
 
+describe('installation warranty (owner 2026-11-06: solar, plumbing, AC, incinerators = 1 year)', () => {
+  it('installations say 1 year; repairs keep 6 months', () => {
+    const solar = code('app/solar/page.tsx');
+    expect(solar).toMatch(/installation workmanship carries a 1-year warranty/);
+    expect(solar).toMatch(/\['1 year', 'Installation workmanship warranty'\]/);
+    expect(solar).not.toMatch(/6-Month Workmanship Warranty/);
+    expect(code('app/solutions/incinerators/page.tsx')).toMatch(/1-year warranty on installation; 6 months on service work/);
+    const svc = code('lib/services/allServices.ts');
+    expect(svc).toMatch(/1-year EmersonEIMS warranty on installation; 6 months on service work/);
+    expect(svc).toMatch(/1-year warranty on installations, 6 months on repairs/);
+    const bibles = code('lib/services/serviceBibles.ts');
+    expect(bibles).toMatch(/Workmanship 1 year on installations, 6 months on repairs/);
+    expect(bibles).toMatch(/1-year EmersonEIMS warranty on installation; 6 months on repairs/);
+    const seo = code('lib/data/seo-services.ts');
+    expect(seo).toMatch(/Our installation workmanship in \{location\} carries a 1-year warranty/);
+    expect(seo).toMatch(/burst pipes, blocked drains[^']*6-month warranty on our workmanship/);
+  });
+});
+
 describe('generator warranty (owner 2026-11-06: 2 years on all generators sold)', () => {
   it('used generators carry 2 years too', async () => {
     expect(code('app/generators/used/page.tsx')).not.toMatch(/warranty: "(1 year|6 months)/);
