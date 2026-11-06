@@ -921,7 +921,7 @@ const FAQSection = () => {
   const faqs = [
     {
       question: 'Why should I buy from EmersonEIMS instead of importing directly?',
-      answer: 'Importing can look cheaper on the invoice, but you carry the warranty, the commissioning and the spare-parts risk yourself. Our pricing includes delivery, installation and commissioning, new sets carry a 2-year warranty, and service-package terms are set out in your quotation.'
+      answer: 'Importing can look cheaper on the invoice, but you carry the warranty, the commissioning and the spare-parts risk yourself. Published VOLTKA prices are ex-warehouse and exclude VAT; your written quotation adds delivery, installation and commissioning as separate lines. Every generator we sell carries a 2-year warranty, and service-package terms are set out in your quotation.'
     },
     {
       question: 'What brands do you carry?',

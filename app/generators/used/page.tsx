@@ -606,6 +606,7 @@ export default function UsedGeneratorsPage() {
               <p className="text-brand-gold font-semibold">{gen.kvaRange}</p>
               <p className="text-white/80 mt-2">Warranty: {gen.warranty}</p>
               <p className="text-white font-bold mt-2">{gen.priceRange}</p>
+              <p className="text-white/50 text-xs mt-1">Typical range across this brand&apos;s stock. Each unit&apos;s price, running hours, fuel use and test results are on its own quotation.</p>
 
               {/* Running Hours & Specs */}
               {gen.specifications && (

@@ -282,10 +282,10 @@ export default function BookingPage() {
               <>
                 {/* Save-money nudge: try the FREE AI tools before booking a paid site survey */}
                 <div className="mb-6 p-5 rounded-xl border border-emerald-500/30 bg-emerald-500/10">
-                  <p className="text-emerald-300 font-semibold mb-1">💡 Save money — try our FREE AI tools first</p>
+                  <p className="text-emerald-300 font-semibold mb-1">💡 Prepare with our free tools</p>
                   <p className="text-sm text-gray-300">
-                    Before booking a paid site survey, let our free AI size or diagnose it for you — often just as
-                    accurate, in minutes:{' '}
+                    Our free tools give a preliminary size or diagnosis so you arrive at the site survey with
+                    better questions. They do not replace an engineer&apos;s inspection, measurements or sign-off:{' '}
                     <a href="/aquascan-pro-v3" className="text-emerald-300 underline">AquaScan Pro</a> (borehole sites),{' '}
                     <a href="/solar-genius-pro" className="text-emerald-300 underline">Solar Genius Pro</a> (solar sizing),{' '}
                     <a href="/diagnostics" className="text-emerald-300 underline">Diagnostic Suite</a> &amp;{' '}

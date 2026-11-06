@@ -74,7 +74,7 @@ export const cumminsGenerators: GeneratorSpec[] = [
   {
     model: "Cummins C20D5",
     kva: 20,
-    phase: "Single",
+    phase: "Three", // D5 = three-phase 50 Hz; corrected 2026-11-06 (re-audit)
     engine: "Cummins X2.5",
     alternator: "Stamford PI144",
     fuelType: "Diesel",
@@ -85,7 +85,7 @@ export const cumminsGenerators: GeneratorSpec[] = [
   {
     model: "Cummins C50D5",
     kva: 50,
-    phase: "Single",
+    phase: "Three", // D5 = three-phase 50 Hz; corrected 2026-11-06 (re-audit)
     engine: "Cummins 4BT3.9-G2",
     alternator: "Stamford UC224",
     fuelType: "Diesel",
@@ -173,7 +173,7 @@ export const cumminsFuelData: CumminsGenerator[] = [
   {
     model: "Cummins C20D5",
     kva: 20,
-    phase: "Single",
+    phase: "Three", // D5 = three-phase 50 Hz; corrected 2026-11-06 (re-audit)
     engine: "Cummins X2.5",
     alternator: "Stamford PI144",
     fuelType: "Diesel",
