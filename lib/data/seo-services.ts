@@ -249,7 +249,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'How quickly can you deliver parts?',
-        answer: 'Stock items ship same-day in {location}. Special orders typically arrive within 1-2 weeks.'
+        answer: 'Confirmed stock orders are dispatched the same day; arrival in {location} depends on transport. Special orders typically arrive within 1-2 weeks.'
       },
       {
         question: 'Do you offer warranty on spare parts?',
@@ -549,7 +549,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'How fast can you deliver parts in {location}?',
-        answer: 'Stock items ship same-day within {location}. Special orders typically arrive within 1-2 weeks.'
+        answer: 'Confirmed stock orders are dispatched the same day; arrival in {location} depends on transport. Special orders typically arrive within 1-2 weeks.'
       }
     ]
   },

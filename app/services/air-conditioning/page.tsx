@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   // to render dynamically and disabled browser caching everywhere.
   alternates: { canonical: 'https://www.emersoneims.com/services/air-conditioning' },
   title: 'Air Conditioning: Complete Technical Guide',
-  description: 'Professional AC engineering guide: refrigeration, SEER/EER, 45°C climate derating, 30+ error codes, troubleshooting, maintenance for split, central, VRF systems Kenya.',
+  description: 'Professional AC engineering guide: refrigeration, SEER/EER, high-ambient derating, 30+ error codes, troubleshooting, maintenance for split, central, VRF systems Kenya.',
   keywords: [
     'air conditioning Kenya', 'AC installation', 'split AC', 'central air', 'VRF',
     'cooling systems', 'HVAC', 'AC maintenance', 'air conditioner troubleshooting',
@@ -25,7 +25,7 @@ export default function AirConditioningPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl">
-            Professional AC engineering guide: refrigeration cycles, efficiency optimization for Kenya's 45°C climate, 30+ error codes, troubleshooting procedures, maintenance schedules.
+            Professional AC engineering guide: refrigeration cycles, efficiency optimization for Kenyan conditions, from Nairobi to the coast, 30+ error codes, troubleshooting procedures, maintenance schedules.
           </p>
         </div>
       </section>
@@ -37,7 +37,7 @@ export default function AirConditioningPage() {
 
           <div className="space-y-8 text-gray-300">
             <p className="text-lg leading-relaxed">
-              Air conditioning operates on the vapor-compression refrigeration cycle: liquid refrigerant evaporates in the indoor coil (absorbing heat), compresses to gas, condenses in outdoor coil (rejecting heat), then expands back to liquid. This cycle repeats 60-120 times per hour. Efficiency depends on temperature difference between indoor and outdoor: a 20°C difference yields COP (Coefficient of Performance) ~3.5; a 35°C difference yields COP ~2.0. In Kenya's 45°C climate, AC operates at inherent efficiency penalty—proper system design accounts for climate stress.
+              Air conditioning operates on the vapor-compression refrigeration cycle: liquid refrigerant evaporates in the indoor coil (absorbing heat), compresses to gas, condenses in outdoor coil (rejecting heat), then expands back to liquid. This cycle repeats 60-120 times per hour. Efficiency depends on temperature difference between indoor and outdoor: a 20°C difference yields COP (Coefficient of Performance) ~3.5; a 35°C difference yields COP ~2.0. Kenyan outdoor design temperatures range from about 28–30°C in Nairobi to 33–35°C at the coast and the high 30s in the northern lowlands, and an outdoor unit on a sunny roof or in a cramped yard breathes air hotter than that. Proper system design uses the local design temperature and the condenser's real location.
             </p>
 
             <p className="text-lg leading-relaxed">
@@ -49,7 +49,7 @@ export default function AirConditioningPage() {
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Thermal Management in 45°C Ambient:</strong> AC capacity derates 10-15% per 5°C above 35°C ambient. A 10kW AC at 35°C provides only 8-9kW at 45°C. Climate derating must be included in load calculations; oversizing by 20-30% ensures adequate capacity in peak summer. Undersized AC never achieves set-point during heat waves.
+              <strong>Thermal Management at High Ambient:</strong> cooling capacity falls as the air entering the outdoor unit gets hotter; the manufacturer&apos;s capacity table gives the figure at each outdoor temperature (ratings are normally stated at 35°C outdoor, ISO 5151 T1). Shade the condenser and keep its discharge air from recirculating. Climate derating must be included in load calculations; oversizing by 20-30% ensures adequate capacity in peak summer. Undersized AC never achieves set-point during heat waves.
             </p>
 
             <p className="text-lg leading-relaxed">

@@ -38,7 +38,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
     id: 'generator-maintenance-tips-kenya',
     slug: 'generator-maintenance-tips-kenya',
     title: 'Essential Generator Maintenance Tips for Kenya: Complete 2025 Guide',
-    excerpt: 'Learn how to maintain your diesel generator in Kenya\'s climate. Expert tips drawn from 15+ years of combined field experience serving 47 counties.',
+    excerpt: 'Learn how to maintain your diesel generator in Kenya\'s climate. Expert tips drawn from our field work since 2011 across 47 counties.',
     description: 'Complete guide to generator maintenance in Kenya. Daily, weekly, monthly checklists. Prevent breakdowns, extend lifespan, and save on repair costs. Expert tips from Emerson EiMS.',
     category: 'Maintenance',
     tags: ['generator maintenance', 'diesel generator', 'maintenance tips', 'Kenya'],
@@ -579,7 +579,7 @@ Serving all 47 counties in Kenya with expert power solutions.
       },
       {
         question: 'How much should I pay for a generator in Kenya?',
-        answer: 'Prices vary by size and brand. Expect to pay: 5kVA diesel (KES 180,000-350,000), 10kVA diesel (KES 300,000-600,000), 20kVA diesel (KES 500,000-1,000,000), 50kVA diesel (KES 1,200,000-2,500,000). Always get 3+ quotes and negotiate.'
+        answer: 'We publish confirmed prices only for new VOLTKA sets from 100 to 750 kVA (prime rated, ex-warehouse, excluding VAT, ATS, delivery, installation and commissioning) on our /generators page. Smaller sizes are priced on request. When you compare quotes, check that each one states the same things: prime or standby rating, VAT, ATS, delivery, installation and commissioning.'
       },
       {
         question: 'Should I buy new or used generator?',
@@ -2584,10 +2584,10 @@ Consider value of:
 ### Initial Investment
 | Item | Typical Cost |
 |------|-------------|
-| 20kVA Generator | KES 600,000-900,000 |
+| 20kVA Generator | Request current price |
 | ATS | KES 60,000-120,000 |
 | Installation | KES 40,000-80,000 |
-| **Total Initial** | **KES 700,000-1,100,000** |
+| **Total Initial** | **KES 100,000-200,000 plus the generator** |
 
 ### Annual Operating Costs
 | Item | Annual Cost |

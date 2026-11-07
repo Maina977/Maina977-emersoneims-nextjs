@@ -1105,7 +1105,7 @@ export function generateQuotation(
     terms: [
       '50% deposit required to confirm order',
       'Balance due before delivery',
-      'Installation within 7-14 days of full payment',
+      'Installation date agreed in writing after full payment',
       'Prices valid for 30 days',
       'Excludes electrical modifications to existing wiring',
       'Subject to site inspection confirmation',

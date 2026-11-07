@@ -1116,7 +1116,7 @@ const HighVoltagePage = () => {
                 { value: "220kV", label: "Maximum Voltage" },
                 { value: "500+", label: "Substations Installed" },
                 { value: "24/7", label: "Emergency Response" },
-                { value: "2012", label: "Operating in Kenya since" }
+                { value: "2011", label: "Operating in Kenya since" }
               ].map((stat, index) => (
                 <motion.div
                   key={index}

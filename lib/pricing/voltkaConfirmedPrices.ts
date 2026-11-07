@@ -43,12 +43,33 @@ export const VOLTKA_CONFIRMED_PRICES: readonly VoltkaConfirmedPrice[] = [
 
 /** Short statement of what the price covers. Shown wherever a price is. */
 export const VOLTKA_PRICE_BASIS =
-  'New VOLTKA, prime rated, ex-warehouse, excluding VAT. Delivery, installation, cabling and civil works are quoted separately.';
+  'New VOLTKA, prime rated, ex-warehouse, excluding VAT (16%). The ATS (automatic changeover), delivery, installation, cabling, civil works and commissioning are not included and are quoted separately.';
+
+/** The exclusions as a list, for tables and FAQ answers. */
+export const VOLTKA_PRICE_EXCLUSIONS: readonly string[] = [
+  'VAT (16%)',
+  'ATS / automatic changeover panel',
+  'Delivery',
+  'Installation, cabling and civil works',
+  'Commissioning',
+];
 
 /** One-line version for meta descriptions and table footers. */
 export const VOLTKA_PRICE_BASIS_SHORT = 'prime rated, ex-warehouse, excl. VAT';
 
 export const REQUEST_CURRENT_PRICE = 'Request current price';
+
+/**
+ * For calculators only: the confirmed list price of the smallest VOLTKA size
+ * at or above `kva` (open frame where published, otherwise silent). Returns
+ * null above the largest confirmed size, so a tool shows "price on request"
+ * instead of extrapolating a figure nobody has confirmed.
+ */
+export function voltkaEstimateKes(kva: number): { kes: number; basisKva: number } | null {
+  const p = VOLTKA_CONFIRMED_PRICES.find((x) => x.kva >= kva);
+  const k = p ? (p.openKes ?? p.silentKes) : undefined;
+  return p && k ? { kes: k, basisKva: p.kva } : null;
+}
 
 export function confirmedPriceFor(kva: number): VoltkaConfirmedPrice | undefined {
   return VOLTKA_CONFIRMED_PRICES.find((p) => p.kva === kva);

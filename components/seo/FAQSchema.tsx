@@ -16,7 +16,7 @@ export default function FAQSchema() {
         "name": "What brands of generators do you sell in Kenya?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "EmersonEIMS supplies premium generators from Cummins, Perkins, Caterpillar, FG Wilson, SDMO, Volvo Penta, Honda, Lister Petter, Iveco, MAN, and Weichai. We offer diesel generators, gas generators, and certified used generators with warranties ranging from 12-24 months."
+          "text": "EmersonEIMS supplies premium generators from Cummins, Perkins, Caterpillar, FG Wilson, SDMO, Volvo Penta, Honda, Lister Petter, Iveco, MAN, and Weichai. New generators we sell are VOLTKA; the other makes are sold used and serviced. Every generator we sell, new or used, carries a 2-year warranty."
         }
       },
       {
@@ -24,7 +24,7 @@ export default function FAQSchema() {
         "name": "Do you provide generator spare parts across Kenya?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! EmersonEIMS maintains a comprehensive spare parts database with 1,560+ genuine parts including filters, engine components (pistons, gaskets, turbos, injectors), electrical parts (AVRs, MPUs, solenoids, sensors), control modules (DeepSea, PowerWizard), and switchgear. We deliver spare parts to all 47 counties in Kenya with same-day availability for stock items in Nairobi."
+          "text": "Yes! EmersonEIMS maintains a comprehensive spare parts database with 1,560+ genuine parts including filters, engine components (pistons, gaskets, turbos, injectors), electrical parts (AVRs, MPUs, solenoids, sensors), control modules (DeepSea, PowerWizard), and switchgear. We deliver spare parts to all 47 counties in Kenya. Confirmed stock orders are dispatched the same day; arrival depends on transport and distance."
         }
       },
       {
@@ -32,7 +32,7 @@ export default function FAQSchema() {
         "name": "What is the warranty on generators sold by EmersonEIMS?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "New generators come with 24-month warranty covering engine, alternator, and control systems, plus 6 months of free maintenance. Certified used generators have 12-month warranty. Solar panels have 25-year performance warranty and 12-year product warranty. All spare parts carry 12-month warranty with performance guarantee."
+          "text": "New generators carry a 2-year warranty covering the engine, alternator and control system, plus 1 year of free servicing from commissioning. Used generators also carry a 2-year warranty; what it covers on each unit is written on that unit's quotation and invoice. Repairs, servicing and motor rewinding carry 6 months on our workmanship. Installations (solar, UPS, borehole pumps, AC, plumbing, distribution boards) carry 1 year on workmanship. Solar panels, inverters and spare parts carry their manufacturer's warranty, stated in the quotation."
         }
       },
       {

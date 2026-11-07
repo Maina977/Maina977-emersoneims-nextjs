@@ -24,7 +24,7 @@ const partners = [
 ];
 
 const stats = [
-  { value: '2012', label: 'Operating in Kenya since', icon: '📅' },
+  { value: '2011', label: 'Operating in Kenya since', icon: '📅' },
   // 523+ PROJECTS — OWNER-CONFIRMED 2026-09-11 ("ITS CORRECT AND CONFIRMED").
   // Briefly swapped for the kVA range that day while unconfirmed, and restored
   // on confirmation. Do not remove it again — see memory rule

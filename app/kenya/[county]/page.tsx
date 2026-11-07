@@ -387,7 +387,7 @@ export default async function CountyPage({ params }: Props) {
             <div className="text-center p-6 rounded-xl bg-white/5 border border-white/10">
               {/*
                 Was "15+ Years Experience". EmersonEIMS has operated in Kenya
-                since 2012, which is 14 years as at 2026 — so "15+" was not
+                since 2011 (owner-confirmed 2026-11-06) — so "15+" was not
                 true, and any hard-coded countdown goes stale the moment it is
                 written. The founding year states more, cannot drift, and needs
                 no maintenance. (A computed `new Date()` was rejected: the

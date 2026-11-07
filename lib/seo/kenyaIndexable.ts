@@ -151,6 +151,9 @@ export function getIndexableKenyaParams(): { county: string; slug: string[] }[] 
  * Same curated set as absolute-path strings, for the XML sitemap.
  * Includes the bare /kenya/<county> pages (owned by app/kenya/[county]).
  */
+/** See the note at the constituency loop below (re-audit 2026-11-07). */
+export const SUBMIT_CONSTITUENCY_PAGES = false;
+
 export function getIndexableKenyaUrls(): string[] {
   const urls: string[] = [];
 
@@ -235,6 +238,27 @@ export function getIndexableKenyaUrls(): string[] {
        * actually rank.
        */
       if (!hasConstituencyData(county.slug, constituency.slug)) continue;
+
+      /*
+       * CONSTITUENCY PAGES NO LONGER SUBMITTED (re-audit, 2026-11-07).
+       *
+       * Measured on the build of c9958d5f, all 44 submitted constituency pages
+       * against the other constituencies of the same county, line by line:
+       * each page had 2-6 lines of its own out of about 68 (Mvita: 2 of 65;
+       * Kabete, Kikuyu, Limuru, Lari: 2 of 68). The rest is one template with
+       * the place name swapped; the 8-word overlap was median 59%, worst 75%
+       * (Kisauni vs Mvita). The only constituency-specific content is the
+       * elevation line and the "nearest constituencies" list. That is the
+       * pattern the owner's no-SEO-shortcuts rule exists to stop.
+       *
+       * Same treatment as the county+service tier above, for the same
+       * reasons: the pages still build, return 200, keep index/follow and
+       * their self-canonical, and stay linked for visitors. They are just not
+       * submitted. Set SUBMIT_CONSTITUENCY_PAGES to true once a constituency
+       * has genuinely local content (projects done there, local conditions
+       * that change the engineering) and list only those.
+       */
+      if (!SUBMIT_CONSTITUENCY_PAGES) continue;
 
       urls.push(`/kenya/${county.slug}/${constituency.slug}`);
       /*

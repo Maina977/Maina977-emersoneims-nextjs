@@ -262,7 +262,7 @@ const GALLERY_DATA = {
       description: 'Genuine Perkins, Cummins, and CAT engine parts for generator maintenance and repair.',
       image: '/images/PERKINS-ENGINE-PARTS.jpg',
       year: 2024,
-      highlights: ['Genuine Parts', 'All Brands', 'Same-Day Delivery', 'Warranty Included']
+      highlights: ['Genuine Parts', 'All Brands', 'Same-Day Dispatch', 'Manufacturer Warranty']
     },
     {
       id: 25,

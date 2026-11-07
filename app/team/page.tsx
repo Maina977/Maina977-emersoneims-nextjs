@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Team | Expert Engineers & Technicians | Kenya',
-  description: 'Meet the team behind EmersonEIMS. 15 years of expertise. Certified technicians across Kenya. Real credentials, real experience.',
+  description: 'The teams behind EmersonEIMS, operating in Kenya since 2011: engineering, installation, maintenance, solar, water and AC.',
   alternates: {
     canonical: 'https://www.emersoneims.com/team',
   },
@@ -33,7 +33,7 @@ export default function TeamPage() {
     {
       name: 'Installation Team',
       role: 'Site Installation & Commissioning',
-      experience: '8+ years average',
+      experience: "Each engineer's experience and qualifications come with your quotation",
       specialties: [
         'Generator installation (10-500 kVA)',
         'Solar panel installation',
@@ -52,7 +52,7 @@ export default function TeamPage() {
     {
       name: 'Maintenance & Support Team',
       role: 'Service & Troubleshooting',
-      experience: '7+ years average',
+      experience: "Each engineer's experience and qualifications come with your quotation",
       specialties: [
         'Generator troubleshooting',
         'Preventive maintenance',
@@ -71,7 +71,7 @@ export default function TeamPage() {
     {
       name: 'Solar & Renewables Team',
       role: 'Solar & Alternative Energy',
-      experience: '6+ years average',
+      experience: "Each engineer's experience and qualifications come with your quotation",
       specialties: [
         'Solar system design & sizing',
         'Panel diagnostics & repair',
@@ -90,7 +90,7 @@ export default function TeamPage() {
     {
       name: 'Water Systems Team',
       role: 'Borehole & Water Solutions',
-      experience: '5+ years average',
+      experience: "Each engineer's experience and qualifications come with your quotation",
       specialties: [
         'Pump installation & repair',
         'Water system diagnostics',
@@ -109,7 +109,7 @@ export default function TeamPage() {
     {
       name: 'AC & Climate Control Team',
       role: 'HVAC Systems',
-      experience: '6+ years average',
+      experience: "Each engineer's experience and qualifications come with your quotation",
       specialties: [
         'AC installation & repair',
         'Refrigeration systems',
@@ -140,7 +140,7 @@ export default function TeamPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            15 years of expertise across power systems, solar, water, AC, and industrial solutions. Real qualifications. Real experience. Real accountability.
+            Operating in Kenya since 2011 across power systems, solar, water, AC and industrial solutions. The engineer assigned to your job, with their qualifications, is named in your quotation.
           </p>
         </div>
       </section>
@@ -179,7 +179,7 @@ export default function TeamPage() {
                     <p className="text-lg text-gray-300 mb-4">{member.role}</p>
                     <div className="space-y-2">
                       <p className="text-gray-400">
-                        <strong>Average Experience:</strong> {member.experience}
+                        <strong>Experience:</strong> {member.experience}
                       </p>
                       <p className="text-gray-400">
                         <strong>Availability:</strong> {member.availability}

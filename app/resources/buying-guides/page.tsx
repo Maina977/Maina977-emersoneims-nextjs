@@ -104,55 +104,25 @@ export default function BuyingGuidesPage() {
               <thead>
                 <tr className="border-b border-slate-700">
                   <th className="text-left p-4 text-cyan-400">Brand</th>
-                  <th className="text-center p-4 text-cyan-400">Fuel Economy</th>
-                  <th className="text-center p-4 text-cyan-400">Reliability</th>
-                  <th className="text-center p-4 text-cyan-400">Cost</th>
-                  <th className="text-center p-4 text-cyan-400">Service Network</th>
-                  <th className="text-left p-4 text-cyan-400">Best For</th>
+                  <th className="text-left p-4 text-cyan-400">Engine</th>
+                  <th className="text-left p-4 text-cyan-400">Parent company</th>
+                  <th className="text-left p-4 text-cyan-400">Check on the datasheet</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  {
-                    brand: 'Cummins',
-                    fuel: '⭐⭐⭐⭐',
-                    reliability: '⭐⭐⭐⭐⭐',
-                    cost: '⭐⭐⭐',
-                    service: 'Global',
-                    best: 'Industrial, Mission-critical',
-                  },
-                  {
-                    brand: 'Perkins',
-                    fuel: '⭐⭐⭐⭐⭐',
-                    reliability: '⭐⭐⭐⭐',
-                    cost: '⭐⭐⭐',
-                    service: 'Global',
-                    best: 'Commercial, Budget-conscious',
-                  },
-                  {
-                    brand: 'Caterpillar',
-                    fuel: '⭐⭐⭐',
-                    reliability: '⭐⭐⭐⭐⭐',
-                    cost: '⭐⭐',
-                    service: 'Global',
-                    best: 'Heavy-duty, Mining',
-                  },
-                  {
-                    brand: 'Volvo Penta',
-                    fuel: '⭐⭐⭐⭐',
-                    reliability: '⭐⭐⭐⭐',
-                    cost: '⭐⭐',
-                    service: 'Limited',
-                    best: 'Modern controls, Containers',
-                  },
+                  // Re-audit 7 Nov 2026: star ratings with no source replaced by
+                  // checkable facts and the datasheet figures that decide it.
+                  { brand: 'Cummins', engine: 'Cummins', parent: 'Cummins Inc. (USA)', check: 'Prime rating (ISO 8528-1), L/h at 75% load, ISO 8528-5 class' },
+                  { brand: 'Perkins', engine: 'Perkins', parent: 'Caterpillar Inc.', check: 'Prime rating (ISO 8528-1), L/h at 75% load, alternator make' },
+                  { brand: 'Caterpillar', engine: 'Cat', parent: 'Caterpillar Inc. (USA)', check: 'Prime rating (ISO 8528-1), L/h at 75% load, ISO 8528-5 class' },
+                  { brand: 'Volvo Penta', engine: 'Volvo Penta', parent: 'AB Volvo (Sweden)', check: 'Prime rating (ISO 8528-1), L/h at 75% load, local parts lead time' },
                 ].map((row, i) => (
                   <tr key={i} className="border-b border-slate-700 hover:bg-slate-800/50">
                     <td className="p-4 font-bold text-white">{row.brand}</td>
-                    <td className="p-4 text-center">{row.fuel}</td>
-                    <td className="p-4 text-center">{row.reliability}</td>
-                    <td className="p-4 text-center">{row.cost}</td>
-                    <td className="p-4 text-center text-gray-300 text-sm">{row.service}</td>
-                    <td className="p-4 text-gray-300 text-sm">{row.best}</td>
+                    <td className="p-4 text-gray-300">{row.engine}</td>
+                    <td className="p-4 text-gray-300">{row.parent}</td>
+                    <td className="p-4 text-gray-300 text-sm">{row.check}</td>
                   </tr>
                 ))}
               </tbody>

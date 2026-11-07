@@ -26,7 +26,7 @@ export const GENERATOR_WARRANTIES: {
     {
       duration: "2 Years",
       coverage: [
-        "Cummins engine components and factory defects",
+        "Engine components and factory defects",
         "Alternator and starter motor coverage",
         "Control panel and electrical wiring",
         "Free service for the first 1 year",
@@ -34,7 +34,7 @@ export const GENERATOR_WARRANTIES: {
       ],
       type: "product",
       highlight: true,
-      details: "Comprehensive 2-year warranty on all new generators with Cummins engines",
+      details: "2-year warranty on every new generator we sell",
       claimProcess: [
         "Call 0768 860 665 or 0782 914 717",
         "Provide serial number and issue description",
@@ -56,10 +56,10 @@ export const GENERATOR_WARRANTIES: {
        */
       duration: "1 Year",
       coverage: [
-        "Free preventive maintenance visits",
-        "Oil and filter changes included",
-        "Performance optimization checks",
-        "Load bank testing"
+        "Scheduled service visits, from commissioning",
+        "Oil and filter changes",
+        "Inspections",
+        "Visit schedule set out in your written quotation"
       ],
       type: "service",
       details: "Complimentary maintenance service for the first year, on new generator sets"
@@ -69,13 +69,11 @@ export const GENERATOR_WARRANTIES: {
     {
       duration: "2 Years",
       coverage: [
-        "Major engine components (block, head, pistons)",
-        "Alternator and control system",
-        "Fully load-tested before delivery",
-        "3-month free maintenance"
+        "What is covered is stated for each unit on its own quotation and invoice",
+        "Ask for the unit's engine hours, service record and load-test report before you buy"
       ],
       type: "product",
-      details: "All used generators undergo rigorous testing and come with a 2-year warranty"
+      details: "Every used generator we sell comes with a 2-year warranty; the cover depends on that unit's condition"
     }
   ],
   rental: {

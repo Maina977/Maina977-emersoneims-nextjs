@@ -195,7 +195,7 @@ Payment: M-Pesa to 0768860665`
       <div className="bg-gradient-to-r from-amber-600 to-orange-600 py-8 px-4">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Solar Equipment Shop</h1>
-          <p className="text-amber-100">Premium solar products with M-Pesa payment | Same-day delivery in Nairobi</p>
+          <p className="text-amber-100">Premium solar products with M-Pesa payment | Same-day dispatch on confirmed stock orders</p>
         </div>
       </div>
 

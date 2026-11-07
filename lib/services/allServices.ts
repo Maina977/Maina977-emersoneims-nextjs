@@ -1187,7 +1187,7 @@ SITE SURVEY: Our solar experts will analyze your energy consumption, roof space,
     technicalGuide: {
       href: '/services/solar-inverters',
       title: 'Solar Inverters: Complete Technical Reference',
-      blurb: 'MPPT algorithms, temperature derating, grid-tie against hybrid topologies, 30+ inverter error codes and maintenance schedules.',
+      blurb: 'MPPT algorithms, temperature derating, grid-tie against hybrid topologies, common inverter fault categories and maintenance schedules.',
     },
 
     primaryCTA: 'Get a Free Quote',

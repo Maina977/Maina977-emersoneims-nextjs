@@ -750,7 +750,7 @@ export default function GeneratorSizingCalculator() {
                   </a>
                 </div>
                 <div className="mt-6 text-center text-gray-400 text-sm">
-                  <p>⚡ Installation within 5-10 days | 🛡️ 2-Year Warranty | 🔧 24/7 emergency support | 📱 Free load bank testing</p>
+                  <p>⚡ Installation date set in your quotation | 🛡️ 2-Year Warranty on new sets | 🔧 24/7 emergency support</p>
                 </div>
               </GlassmorphicCard>
 

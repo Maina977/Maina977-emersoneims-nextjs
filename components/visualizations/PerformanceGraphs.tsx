@@ -74,18 +74,22 @@ export function UPSEfficiencyCurve() {
 
 // Solar Inverter Temperature Derating
 export function SolarInverterTemperatureDerating() {
+  // Re-audit 7 Nov 2026: this showed 110% output at 0 °C and derating from
+  // 25 °C, which confuses PV-module temperature loss with inverter derating.
+  // An inverter cannot exceed its AC rating; typical datasheet curves hold
+  // full power to about 45 °C ambient and derate above it. Illustrative only.
   const data = [
-    { temp: '0°C', output: 110, efficiency: 98.5 },
-    { temp: '15°C', output: 105, efficiency: 98.8 },
-    { temp: '25°C', output: 100, efficiency: 99.0 },
-    { temp: '35°C', output: 92, efficiency: 98.5 },
-    { temp: '45°C', output: 82, efficiency: 97.5 },
-    { temp: '55°C', output: 68, efficiency: 96.0 },
+    { temp: '25°C', output: 100 },
+    { temp: '35°C', output: 100 },
+    { temp: '45°C', output: 100 },
+    { temp: '50°C', output: 85 },
+    { temp: '55°C', output: 70 },
+    { temp: '60°C', output: 50 },
   ];
 
   return (
     <div className="bg-slate-900/50 rounded-lg p-6 border border-slate-800">
-      <h3 className="text-xl font-bold text-amber-400 mb-4">Solar Inverter Temperature Derating</h3>
+      <h3 className="text-xl font-bold text-amber-400 mb-4">Solar Inverter Temperature Derating (Typical Datasheet Shape)</h3>
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
           <defs>
@@ -103,11 +107,13 @@ export function SolarInverterTemperatureDerating() {
           />
           <Legend />
           <Area type="monotone" dataKey="output" stroke="#fbbf24" fillOpacity={1} fill="url(#colorOutput)" name="Output Power %" />
-          <Line type="monotone" dataKey="efficiency" stroke="#10b981" strokeWidth={2} name="Efficiency %" />
         </AreaChart>
       </ResponsiveContainer>
       <p className="text-sm text-gray-400 mt-4">
-        <strong>Critical for Kenya:</strong> In 45°C ambient, solar inverters lose 18-32% capacity. Oversizing by 30% is essential to achieve rated output in peak heat. Proper ventilation (10cm clearance) reduces heatsink temperature by 5-10°C.
+        <strong>Illustrative curve; use your inverter&apos;s own.</strong> Many inverters hold full rated power up to about 45°C ambient
+        (some 40°C, some 50°C) and derate above it. Outdoor air in Kenya rarely gets there: Nairobi afternoons are typically
+        24–29°C and the hottest lowland stations reach the high 30s. An unventilated plant room or a metal enclosure in sun can,
+        so ventilation, shade and the clearances in the installation manual matter more than oversizing.
       </p>
     </div>
   );

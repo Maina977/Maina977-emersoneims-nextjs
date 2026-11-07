@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   // to render dynamically and disabled browser caching everywhere.
   alternates: { canonical: 'https://www.emersoneims.com/services/solar-inverters' },
   title: 'Solar Inverters: Complete Technical Guide',
-  description: 'Professional solar inverter engineering guide: 30+ error codes, MPPT algorithms, temperature management, grid-tie vs hybrid, troubleshooting procedures, maintenance schedules, safety standards. Real specifications and calculations for Kenya climate.',
+  description: 'Solar inverter engineering guide: MPPT, temperature derating, string voltage, grid-tie vs hybrid, common fault categories, troubleshooting and maintenance, with the figures checked for Kenyan conditions.',
   keywords: [
     'solar inverter', 'MPPT inverter', 'hybrid inverter', 'grid-tie inverter',
     'solar power inverter Kenya', 'inverter error codes', 'solar system troubleshooting',
@@ -45,7 +45,7 @@ export default function SolarInvertersPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl">
-            Professional engineering guide covering MPPT algorithms, efficiency optimization, grid-tie vs hybrid systems, 30+ error codes, troubleshooting, and maintenance for Kenya's 40-45°C climate. Real specifications, formulas, and diagnostic procedures from a lead engineer.
+            Engineering guide covering MPPT, efficiency, grid-tie vs hybrid systems, common fault categories, troubleshooting and maintenance. Fault codes differ between manufacturers: always check the code in your inverter&apos;s own manual.
           </p>
         </div>
       </section>
@@ -69,27 +69,27 @@ export default function SolarInvertersPage() {
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Temperature derating in Kenya's 45°C climate is critical.</strong> Inverter efficiency degrades with heat: each 10°C above 25°C reduces output capacity by 3-5%. A 10kW inverter rated at 35°C ambient provides only 8.5-9kW at 45°C peak. Heatsinks and cooling fans are essential; many installations fail because they're sized for temperate climates, not tropical Kenya. Proper installation requires: (1) minimum 10cm clearance on all sides, (2) unrestricted airflow, (3) shaded location if possible, (4) internal fans functioning at load. If not addressed, inverters overheat, derating output or shutting down during peak sunshine—exactly when power is needed most.
+              <strong>Temperature derating depends on where the inverter is mounted, not only on the weather.</strong> Most inverters deliver full rated power up to a stated ambient temperature, commonly about 45°C (check the derating curve on the datasheet), and reduce output above it. Outdoor air in Kenya rarely reaches that: Nairobi afternoons are typically 24–29°C, the coast around 30–33°C and the hottest northern lowlands the high 30s. The air around an inverter in an unventilated plant room, a sealed cabinet or a metal enclosure in direct sun can be 10–15°C hotter than outside, and that is where derating and overheating trips usually come from. PV modules are a separate effect: they lose roughly 0.3–0.4% of power per °C of cell temperature above 25°C, and cells on a sunny roof run 20–30°C above the air. Proper installation requires: (1) minimum 10cm clearance on all sides, (2) unrestricted airflow, (3) shaded location if possible, (4) internal fans functioning at load. If not addressed, inverters overheat, derating output or shutting down during peak sunshine—exactly when power is needed most.
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>String voltage and current configuration directly affects system efficiency.</strong> Solar panels can be connected in series (voltage adds) or parallel (current adds). High-voltage strings (400-500V DC) allow smaller cable sizes and lower resistive losses. A 10kW system using 400V DC strings requires only 25A (cable loss ~3%); the same system at 120V requires 83A (cable loss ~25%). Professional design sizes strings to keep MPPT input voltage within 100-500V, achieving optimal power transfer. Undersized conductors not only lose energy as heat but can also start fires if proper fusing isn't installed.
+              <strong>String voltage and current configuration directly affects system efficiency.</strong> Solar panels can be connected in series (voltage adds) or parallel (current adds). High-voltage strings (400-500V DC) allow smaller cable sizes and lower resistive losses. A 10kW array at 400V DC carries 25A; at 120V it carries 83A. On the same cable the current is 3.3 times higher and the resistive loss (I²R) about 11 times higher. Professional design keeps the string voltage inside the inverter&apos;s MPPT window at the hottest cell temperature, and below its maximum DC input voltage at the coldest (cold mornings raise Voc). Undersized conductors not only lose energy as heat but can also start fires if proper fusing isn't installed.
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Grid-tie inverters include sophisticated anti-islanding protection.</strong> If the grid fails (blackout), the inverter must disconnect within 100ms to prevent backfeed voltage into utility lines—a safety hazard for technicians working on downed lines. Inverters test for grid presence by measuring voltage, frequency, and phase angle. A healthy grid shows stable 230V at 50Hz with tight phase control. If voltage drops below 160V or rises above 275V, or if frequency drifts outside 48-52Hz, the inverter assumes grid failure and disconnects. This protection adds cost but is legally required in Kenya and essential for safety.
+              <strong>Grid-tie inverters include sophisticated anti-islanding protection.</strong> If the grid fails (blackout), the inverter must stop exporting to prevent backfeed into utility lines, a hazard to line workers. The IEC 62116 anti-islanding test requires disconnection within 2 seconds. Inverters test for grid presence by measuring voltage, frequency, and phase angle. A healthy grid shows stable 230V at 50Hz with tight phase control. The voltage and frequency trip settings are set to the utility&apos;s connection requirements (Kenya Power for grid-connected systems), and they must be checked at commissioning.
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Harmonic distortion in inverter output affects utility power quality.</strong> Older square-wave inverters produce 10-15% THD (Total Harmonic Distortion), causing transformer heating and utility penalties. Modern PWM (Pulse Width Modulation) inverters produce 2-5% THD; premium units achieve &lt;3% using sophisticated control algorithms. High THD triggers protective devices in sensitive loads (medical equipment, data centers) and attracts utility penalties for large commercial installations. Kenya regulations now require &lt;5% THD for grid-connected systems, making PWM inverters mandatory for professional installations.
+              <strong>Harmonic distortion in inverter output affects utility power quality.</strong> A square-wave output has roughly 48% THD (Total Harmonic Distortion) and a modified-sine output around 24%. Grid-tie and hybrid inverters produce a PWM pure-sine current, typically under 3% THD at rated output. IEC 61727 and IEEE 1547 limit current THD from grid-connected inverters to 5% at rated output.
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Hybrid inverters add battery management complexity.</strong> Unlike grid-tie inverters that simply maximize power output, hybrid inverters must manage three power sources (solar, battery, grid) and two loads (consumption, charging). During peak sun, excess power charges the battery. At night or cloud cover, the battery supplies power. When battery is full and consumption is low, power flows to the grid. This requires constant load forecasting and battery state estimation. Algorithms prevent excessive battery charge/discharge cycles that reduce lifespan, typically limiting charging to 95% and discharging to 20% of rated capacity (extending 10-year lifespan to 12-15 years).
+              <strong>Hybrid inverters add battery management complexity.</strong> Unlike grid-tie inverters that simply maximize power output, hybrid inverters must manage three power sources (solar, battery, grid) and two loads (consumption, charging). During peak sun, excess power charges the battery. At night or cloud cover, the battery supplies power. When battery is full and consumption is low, power flows to the grid. This requires constant load forecasting and battery state estimation. Charge and discharge limits are set to the battery maker&apos;s figures; a shallower depth of discharge generally gives more cycles, and the battery datasheet states the cycle life at each depth.
             </p>
 
             <p className="text-lg leading-relaxed">
-              <strong>Efficiency ratings (CEC, NRPOT, Euro) are measured under standard conditions (25°C, 50% load) but real-world efficiency is lower.</strong> A "96% efficient" inverter actually operates at 92-94% efficiency in Kenya's hot climate at typical loads. When purchasing, multiply published efficiency by 0.95 to estimate real performance. A 96% inverter provides ~91% real efficiency; over 20 years, this 3-5% efficiency gap translates to thousands of KES in wasted energy compared to a truly high-efficiency unit.
+              <strong>Read the efficiency figure for what it is.</strong> "Maximum efficiency" is the single best point. CEC efficiency and European efficiency (EN 50530) are weighted averages across several load levels at nominal DC voltage, and are usually 0.5–1.5 points below the maximum. Efficiency falls at very light load and changes with DC voltage, so compare the efficiency curve at your typical load and string voltage rather than the headline number.
             </p>
           </div>
 
@@ -102,7 +102,8 @@ export default function SolarInvertersPage() {
 
         {/* SECTION 2: ERROR CODES */}
         <section className="mb-20">
-          <h2 className="text-5xl font-bold mb-12 text-amber-400">2. Error Code Database (30+ Codes with Solutions)</h2>
+          <h2 className="text-5xl font-bold mb-6 text-amber-400">2. Common Fault Categories</h2>
+          <p className="text-gray-400 mb-12 max-w-4xl">The codes below (E001, B001, T001 and so on) are numbered for this guide only; they are not any manufacturer&apos;s codes. Growatt, Deye, Huawei, SMA, Victron and others each use their own numbering, so look up the exact code in your inverter&apos;s manual before acting on it.</p>
 
           <div className="space-y-12">
             {/* MPPT Errors */}
@@ -110,11 +111,11 @@ export default function SolarInvertersPage() {
               <h3 className="text-2xl font-bold text-amber-300 mb-6">MPPT & Input Errors (E001-E008)</h3>
               <div className="grid gap-4">
                 {[
-                  { code: 'E001', title: 'PV Input Voltage Too High (>Vmax)', severity: 'High', solution: 'String voltage exceeds inverter maximum. Reconfigure: reduce panels per string or add parallel strings. Example: 14 panels × 41V each = 574V (too high for 500V inverter). Solution: 8 panels × 41V = 328V (acceptable). Measure with multimeter in sunlight.' },
-                  { code: 'E002', title: 'PV Input Voltage Too Low (<Vmin)', severity: 'Medium', solution: 'Panel output below MPPT minimum (~80V). Check for loose MC4 connections, test panel output with multimeter (should be 30-41V per panel), verify no shading, clean panels if dusty.' },
+                  { code: 'E001', title: 'PV Input Voltage Too High (>Vmax)', severity: 'High', solution: 'String voltage exceeds inverter maximum. Reconfigure: reduce panels per string or add parallel strings. Size the string on Voc at the coldest expected cell temperature, not at 25°C: Voc_max = Voc_STC × (1 + β × (T_min − 25)), with β (the Voc temperature coefficient, typically −0.25 to −0.30 %/°C) from the module datasheet. Example: a 49.5V Voc module at a 5°C highland dawn gives 49.5 × (1 + 0.0028 × 20) ≈ 52.3V, so a 500V inverter takes at most 9 in series. Measure with multimeter in sunlight.' },
+                  { code: 'E002', title: 'PV Input Voltage Too Low (<Vmin)', severity: 'Medium', solution: 'Panel output below MPPT minimum (~80V). Check for loose MC4 connections, test panel output with multimeter (compare with the module&apos;s datasheet Voc), verify no shading, clean panels if dusty.' },
                   { code: 'E003', title: 'MPPT Tracking Failure', severity: 'Medium', solution: 'MPPT algorithm not optimizing power output. Reset inverter (power down 2 min), check firmware version (update if available), verify current sensor reading with external clamp meter, test panel connections for high resistance.' },
                   { code: 'E004', title: 'DC Input Current Excessive (>Imax)', severity: 'High', solution: 'IMMEDIATE SHUTDOWN REQUIRED. Measure DC current with clamp meter—should not exceed rated input current by more than 10%. Indicates internal short circuit or converter failure. Use thermal imaging to locate hot components. Do not restart until professionally inspected.' },
-                  { code: 'E005', title: 'DC Voltage Ripple Abnormal', severity: 'Medium', solution: 'Measured with oscilloscope at DC input. Should show &lt;5V ripple at 400V (1.25%). Higher ripple indicates aging input filter capacitor. Measure capacitor ESR (equivalent series resistance)—replace if &gt;50% of specification.' },
+                  { code: 'E005', title: 'DC Voltage Ripple Abnormal', severity: 'Medium', solution: 'Measured with oscilloscope at DC input. Should show &lt;5V ripple at 400V (1.25%). Higher ripple indicates aging input filter capacitor. Measure capacitor ESR (equivalent series resistance): replace if it has risen to about twice its rated value.' },
                   { code: 'E006', title: 'Boost Converter Failure', severity: 'High', solution: 'Internal power stage failure. Requires factory repair or board replacement. Component-level diagnostics needed: measure MOSFET drain-source resistance (should be &lt;1Ω when on, &gt;MΩ when off), check gate drive voltage signal with oscilloscope.' },
                 ].map((item, i) => (
                   <div key={i} className="bg-slate-900/50 border border-slate-800 rounded-lg p-6 hover:border-amber-600/50 transition">
@@ -152,7 +153,7 @@ export default function SolarInvertersPage() {
             {/* Thermal & Protection */}
             <div>
               <h3 className="text-2xl font-bold text-amber-300 mb-6">Thermal & Protection (T001-O002)</h3>
-              <p className="text-sm text-gray-400">T001: Inverter temperature &gt;75°C (normal limit). In Kenya's 45°C ambient, heatsink can reach 100°C at full load without adequate cooling—automatic derating occurs at ~80°C. Solution: verify fans running, clean intake filters, add external cooling if needed. T002-T004: Transformer and sensor faults (component-level diagnostics). O001-O002: Overcurrent and overvoltage protections (indicate either short circuits or grid disturbances).</p>
+              <p className="text-sm text-gray-400">T001: Over-temperature or thermal derating. The inverter protects itself by reducing output at its internal thermal limit (stated in the manual). It usually means the air around it is too hot: verify fans running, clean intake filters, restore the clearances in the installation manual, and ventilate or shade the location. T002-T004: Transformer and sensor faults (component-level diagnostics). O001-O002: Overcurrent and overvoltage protections (indicate either short circuits or grid disturbances).</p>
             </div>
           </div>
         </section>
@@ -168,7 +169,7 @@ export default function SolarInvertersPage() {
               <h3 className="text-2xl font-bold text-amber-300 mb-6">Efficiency Gauge (Real-World Example)</h3>
               <EfficiencyGauge current={92} optimal={95} />
               <p className="text-sm text-gray-400 mt-6">
-                This 10kW inverter is operating at 92% efficiency in Kenya's 40°C ambient. Rated efficiency at 25°C/50% load is 96%, but real performance is 4% lower. Over 20 years of 8 peak-sun-hours daily (2920 kWh annually), this 4% loss equals 467,200 kWh wasted—equivalent to KES 46.7M at current rates. Premium "96%+ rated" inverters that maintain 94-95% real efficiency are worth the upfront cost premium.
+                Worked example: a 10kW array in Nairobi at about 5.5 peak-sun-hours a day produces roughly 20,000 kWh a year. Two percentage points of inverter efficiency are worth about 400 kWh a year, or 8,000 kWh over 20 years: around KES 200,000 at an assumed KES 25/kWh. That is the scale to weigh a more efficient inverter against.
               </p>
             </div>
           </div>
@@ -197,15 +198,15 @@ export default function SolarInvertersPage() {
                   '1. Check time of day: At 9AM or 3PM, sun angle is lower, output naturally reduces. Check actual irradiance (ideally 800+ W/m² for rated power).',
                   '2. Check for shading: Walk around entire solar array at same time every day for 1 week. Even small shadows (roof edge, trees, poles) reduce output 15-30%. Use shade analysis software or observe shadows on array.',
                   '3. Clean panels: Dust, bird droppings, and pollen reduce output 5-20% depending on density. Use soft brush and distilled water (not tap water, minerals leave residue). Clean panels monthly in dry season, after every rain in rainy season.',
-                  '4. Check panel voltage: Measure with multimeter at peak sun time (11AM-2PM). Should read 30-41V per panel. If below 20V, panel may be damaged (delamination, crack, cell failure).',
+                  '4. Check panel voltage: Measure with multimeter at peak sun time (11AM-2PM). Compare with the module&apos;s datasheet Vmp (times the panels in series); a module far below its neighbours may be damaged (delamination, crack, cell failure).',
                   '5. Check string configuration: Verify series strings are correct length (mismatch causes power loss). Use clamp meter to measure DC current—low current indicates voltage imbalance between strings.',
-                  '6. Temperature check: Inverter temperature should be 50-75°C at full load. If above 80°C, automatic derating occurs. Improve ventilation, clean cooling fins, verify fans running.'
+                  '6. Temperature check: if the display or log shows thermal derating, improve ventilation, clean cooling fins and verify fans running. The derating temperature is in the manual.'
                 ]
               },
               {
-                title: 'High Temperature (Heatsink &gt;85°C) / Derating Occurring',
+                title: 'High Temperature / Derating Occurring',
                 steps: [
-                  '1. Measure ambient temperature with thermometer (not just guessing). 45°C ambient → 100°C heatsink is normal at full load.',
+                  '1. Measure the air temperature right beside the inverter with a thermometer (not the weather forecast) and compare it with the full-power limit on the datasheet derating curve.',
                   '2. Check cooling fans: Listen for fan noise at inverter. If silent during high load, fan motor may have failed. Measure 24V aux power to fan (should read 24V DC±10%).',
                   '3. Clean cooling fins: Dust buildup acts as insulation. Use compressed air to blow out accumulated dust. Check for spider webs or debris blocking airflow.',
                   '4. Verify clearance: Measure distance from inverter to walls/cabinets. Minimum 10cm clearance on all sides required. If enclosed, add external cooling fan blowing ambient air past heatsink.',
@@ -245,7 +246,7 @@ export default function SolarInvertersPage() {
               },
               {
                 period: 'ANNUALLY (Every 12 Months)',
-                tasks: ['Professional electrical inspection (check all connections for corrosion)', 'Thermal imaging of inverter heatsink (identify hot spots)', 'Test anti-islanding protection (grid disconnect function)', 'Check AC breaker and disconnect switches for operation', 'Measure ground resistance (&lt;5Ω required)', 'Full system performance test under rated load']
+                tasks: ['Professional electrical inspection (check all connections for corrosion)', 'Thermal imaging of inverter heatsink (identify hot spots)', 'Test anti-islanding protection (grid disconnect function)', 'Check AC breaker and disconnect switches for operation', 'Measure earth electrode resistance and compare with the design value', 'Full system performance test under rated load']
               }
             ].map((sched, i) => (
               <div key={i} className="bg-slate-900/50 border border-amber-600/30 rounded-lg p-8">
@@ -267,7 +268,7 @@ export default function SolarInvertersPage() {
         <section className="bg-gradient-to-r from-amber-900/30 to-yellow-900/20 border border-amber-600/30 rounded-lg p-16 text-center">
           <h2 className="text-4xl font-bold mb-4">Professional Solar Installation & Support</h2>
           <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-            2000+ solar systems installed across Kenya. Professional design, installation, monitoring, and maintenance. Our engineers understand Kenya's tropical climate and design systems to deliver real performance, not brochure specs.
+            Design, installation, monitoring and maintenance across Kenya, with 1 year on installation workmanship. We size systems for the site&apos;s real temperatures, shading and loads, not brochure conditions.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact" className="px-8 py-4 bg-amber-500 text-black font-bold rounded-lg hover:bg-amber-400 transition text-lg">

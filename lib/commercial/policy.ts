@@ -88,6 +88,19 @@ export const COMMERCIAL_POLICY = {
    */
   freeServicingNewSets: '1 year free servicing on new generator sets',
 
+  /** What the free servicing is. The same wording wherever it is explained. */
+  freeServicingDetail:
+    'One year of free servicing on new generator sets, from commissioning: the scheduled ' +
+    'service visits, oil and filter changes and inspections set out in your written quotation. ' +
+    'Parts replaced because of wear or misuse, and call-outs for faults outside the warranty, are charged.',
+
+  /** New-set warranty plus free servicing, in one line. */
+  newSetTermsLine: '2-year warranty and 1 year free servicing on new generator sets',
+
+  /** Used sets: the term is fixed, the cover is per unit. */
+  usedSetTermsLine:
+    '2-year warranty on every used generator we sell; what it covers on each unit is written on that unit\'s quotation and invoice',
+
   /** Neutral fallback for everything that is NOT a new generator set. */
   servicePackageShort: 'Service package confirmed in quotation',
 
@@ -156,7 +169,9 @@ export const PRODUCT_WARRANTY: Record<string, ProductWarranty> = {
   'used-generator': {
     duration: '2 years',
     provider: 'EmersonEIMS',
-    partsCovered: 'Major engine components, alternator and control system',
+    // Re-audit 7 Nov 2026: a used set's cover depends on that machine's
+    // condition, so it is stated per unit, not as one list for all used stock.
+    partsCovered: "Stated for each unit on its own quotation and invoice, according to that unit's condition",
     startsFrom: 'Commissioning',
     maintenanceRequired: 'Serviced at the intervals stated in the quotation, with the service record kept',
   },

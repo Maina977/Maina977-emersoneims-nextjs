@@ -87,7 +87,7 @@ const LEASING_BENEFITS = [
   {
     icon: '🚀',
     title: 'Fast Deployment',
-    description: 'Get your generator installed within 48-72 hours of approval. No waiting for procurement.'
+    description: 'The installation date is agreed in your lease, after the site survey. No separate procurement process on your side.'
   }
 ];
 
@@ -307,7 +307,7 @@ export default function GeneratorLeasingPage() {
             {[
               { step: '01', title: 'Consultation', desc: 'Discuss your power requirements with our team' },
               { step: '02', title: 'Quote & Approval', desc: 'Receive customized quote and credit approval' },
-              { step: '03', title: 'Installation', desc: 'Professional installation within 48-72 hours' },
+              { step: '03', title: 'Installation', desc: 'Installation on the date agreed in your lease' },
               { step: '04', title: 'Ongoing Support', desc: 'Maintenance and 24/7 support included' },
             ].map((item, index) => (
               <motion.div

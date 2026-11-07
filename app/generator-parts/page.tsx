@@ -125,7 +125,7 @@ export default function GeneratorPartsPage() {
               Generator Parts Kenya
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8">
-              Genuine spare parts for ALL brands. Same-day delivery in Nairobi.
+              Genuine spare parts for all major brands. Confirmed stock orders dispatched the same day.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mb-8">
               <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-6 py-3">
@@ -252,13 +252,13 @@ export default function GeneratorPartsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               { icon: '✓', title: 'Genuine Parts', desc: 'OEM and certified aftermarket only' },
-              { icon: '🚚', title: 'Same-Day Nairobi', desc: 'Order before 2pm, delivered same day' },
+              { icon: '🚚', title: 'Same-Day Dispatch', desc: 'On confirmed stock orders; arrival depends on transport' },
               { icon: '📦', title: 'All Brands', desc: 'Cummins, Perkins, CAT, Volvo, FG Wilson' },
-              { icon: '🛡️', title: 'Warranty', desc: '3-12 months on all parts' },
-              { icon: '💰', title: 'Best Prices', desc: 'Competitive rates, bulk discounts' },
+              { icon: '🛡️', title: 'Warranty', desc: 'Manufacturer warranty, stated on your invoice' },
+              { icon: '💰', title: 'Clear Pricing', desc: 'Every price itemised on your quotation' },
               { icon: '📞', title: '24/7 Support', desc: 'Parts helpline always available' },
-              { icon: '🔧', title: 'Free Installation', desc: 'Buy + install service available' },
-              { icon: '🇰🇪', title: '47 Counties', desc: 'Nationwide delivery within 48hrs' }
+              { icon: '🔧', title: 'Fitting Service', desc: 'Buy + fit service available, quoted separately' },
+              { icon: '🇰🇪', title: '47 Counties', desc: 'Nationwide delivery; time depends on distance' }
             ].map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -292,7 +292,7 @@ export default function GeneratorPartsPage() {
             Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, Thika, Malindi, Kitale, and 39 more counties
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            {['Same-Day Nairobi', 'Next-Day Mombasa', 'Express to Kisumu', '48hr Nationwide'].map(badge => (
+            {['Same-Day Dispatch', 'Nairobi', 'Mombasa', 'Kisumu', 'All 47 Counties'].map(badge => (
               <span key={badge} className="bg-amber-500/10 border border-amber-500/30 px-6 py-3 rounded-lg text-amber-400 font-semibold">
                 {badge}
               </span>

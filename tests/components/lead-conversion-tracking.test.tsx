@@ -56,3 +56,22 @@ describe('lead conversion tracking', () => {
     expect(leadCalls()).toHaveLength(0);
   });
 });
+
+describe('Google Ads conversion', () => {
+  it('fires the Ads conversion with the configured label once an enquiry is accepted', async () => {
+    vi.resetModules();
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_ADS_CONTACT_LABEL', 'TestLabel123');
+    const { default: Tracker } = await import('@/components/AnalyticsTracker');
+    const w = window as W;
+    delete w.__eimsLeadHook;
+    const g = vi.fn();
+    w.gtag = g;
+    window.fetch = vi.fn(async () => new Response('{}', { status: 200 })) as unknown as typeof fetch;
+    render(<Tracker />);
+    await window.fetch('/api/contact', { method: 'POST', body: JSON.stringify({ service: 'solar' }) });
+    const conv = g.mock.calls.filter((c) => c[0] === 'event' && c[1] === 'conversion');
+    expect(conv).toHaveLength(1);
+    expect(conv[0][2]).toEqual({ send_to: 'AW-16547857525/TestLabel123' });
+    vi.unstubAllEnvs();
+  });
+});

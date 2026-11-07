@@ -174,7 +174,7 @@ export const INDUSTRIES: Industry[] = [
     faqs: [
       {
         question: 'How quickly can you install a generator system for my hotel?',
-        answer: 'For standard installations (up to 100kVA), we can complete the full setup including ATS, cabling, and commissioning within 3-5 business days. Larger installations (200kVA+) typically take 7-10 days. Emergency installations can be arranged within 48 hours for an additional fee.'
+        answer: 'The installation and commissioning dates, including the ATS and cabling, are set in your written quotation after the site survey. They depend on the set, the cable runs, civil works and access. Tell us if the job is urgent and we will say what date we can commit to.'
       },
       {
         question: 'What size generator do I need for my hotel?',
@@ -805,7 +805,7 @@ export const INDUSTRIES: Industry[] = [
           'Remote monitoring via SMS',
           'Farm-tough weatherproof installation'
         ],
-        price: 'From Ksh 2,500,000 (200kVA)'
+        price: 'VOLTKA 200 kVA from KES 2,800,000 (open frame, ex-warehouse, excl. VAT)'
       },
       {
         title: 'Cold Room Backup Package',
@@ -818,7 +818,7 @@ export const INDUSTRIES: Industry[] = [
           'Sized for your cooling load',
           'Fuel optimization for 24/7 running'
         ],
-        price: 'From Ksh 850,000 (50kVA)'
+        price: 'Request current price'
       },
       {
         title: 'Solar-Hybrid Irrigation System',
@@ -938,7 +938,7 @@ export const INDUSTRIES: Industry[] = [
           'Upgrade or downgrade as needed',
           'Option to buy at end of project'
         ],
-        price: 'From Ksh 2,500/day (20kVA)'
+        price: 'Request current price'
       },
       {
         title: 'Residential Building Package',
@@ -951,7 +951,7 @@ export const INDUSTRIES: Industry[] = [
           'Water pump protection',
           'Professional installation'
         ],
-        price: 'From Ksh 650,000 (30kVA)'
+        price: 'Request current price'
       },
       {
         title: 'Commercial Building Solution',
@@ -964,7 +964,7 @@ export const INDUSTRIES: Industry[] = [
           'Load shedding capability',
           'Service contract included'
         ],
-        price: 'From Ksh 2,000,000 (100kVA+)'
+        price: 'VOLTKA 100 kVA from KES 2,100,000 (open frame, ex-warehouse, excl. VAT)'
       }
     ],
     // Real testimonials will be added as customers provide feedback
@@ -1071,7 +1071,7 @@ export const INDUSTRIES: Industry[] = [
           'Training for church caretaker',
           '2-year warranty'
         ],
-        price: 'From Ksh 180,000 (10kVA)'
+        price: 'Request current price'
       },
       {
         title: 'Mega-Church Solution',
@@ -1084,7 +1084,7 @@ export const INDUSTRIES: Industry[] = [
           'Remote monitoring option',
           'Dedicated account manager'
         ],
-        price: 'From Ksh 800,000 (50kVA+)'
+        price: 'Request current price'
       },
       {
         title: 'Quality Refurbished Units',
@@ -1094,10 +1094,10 @@ export const INDUSTRIES: Industry[] = [
           'Full testing and certification',
           '2-year warranty',
           'New automatic changeover',
-          'Installation included',
-          'Trade-in accepted'
+          'Installation quoted separately',
+          'Unit-by-unit stock list on request'
         ],
-        price: 'From Ksh 120,000 (10kVA refurb)'
+        price: 'Request current price'
       }
     ],
     // Real testimonials will be added as customers provide feedback
@@ -1204,7 +1204,7 @@ export const INDUSTRIES: Industry[] = [
           'Warranty and maintenance included',
           'Audit-ready records'
         ],
-        price: 'From Ksh 350,000 (20kVA)'
+        price: 'Request current price'
       },
       {
         title: 'County Government Solution',
@@ -1228,9 +1228,9 @@ export const INDUSTRIES: Industry[] = [
           'Container-ready for deployment',
           'Off-grid capability',
           'Remote monitoring',
-          'Rapid deployment (48-72 hours)'
+          'Deployment date agreed in writing'
         ],
-        price: 'From Ksh 250,000 (portable 10kVA)'
+        price: 'Request current price'
       }
     ],
     // Real testimonials will be added as customers provide feedback

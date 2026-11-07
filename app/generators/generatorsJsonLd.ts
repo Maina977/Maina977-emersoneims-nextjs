@@ -54,7 +54,7 @@ export const generatorsJsonLd = {
       name: 'Generators - Cummins & Voltka Diesel Generators Kenya',
       isPartOf: { '@id': 'https://www.emersoneims.com/#website' },
       about: { '@id': 'https://www.emersoneims.com/#organization' },
-      description: 'Buy NEW Cummins & Voltka diesel generators in Kenya. 10kVA to 3000kVA with warranty and free maintenance.',
+      description: 'New VOLTKA diesel generators in Kenya, 10 to 3000 kVA: 2-year warranty and 1 year free servicing on new sets.',
     },
     {
       '@type': 'Product',

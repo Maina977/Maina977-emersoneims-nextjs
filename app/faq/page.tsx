@@ -240,7 +240,7 @@ const FAQ_DATA = [
     id: 'price-1',
     category: 'Pricing',
     question: 'How much does generator installation cost?',
-    answer: 'Installation costs vary: Small generators (20-50kVA) KES 50,000-100,000, Medium (100-200kVA) KES 150,000-300,000, Large (300kVA+) KES 400,000+. Includes site preparation, mounting, fuel tank, ATS, cabling, testing, and commissioning.',
+    answer: 'Installation is quoted separately from the generator. Our published guide is KES 150,000 – 500,000 for 10–100 kVA and KES 500,000 – 2,000,000 for 100–500 kVA, depending on cable runs, civil works, fuel arrangement and access; larger sets are quoted after a site survey. The ATS is priced as its own line. Generator list prices exclude VAT, ATS, delivery, installation and commissioning.',
     tags: ['installation', 'cost', 'price']
   },
   {

@@ -286,7 +286,7 @@ export default function SparePartsPage() {
             category pages never show (they list 761). The browsable count is
             computed in the layout's title; it is not hard-coded here.
           */}
-          <p className="text-amber-400 text-lg font-semibold">15,452 inventory references • browse the categories below for parts listed with part numbers and engine fitment • Same-day Nairobi delivery</p>
+          <p className="text-amber-400 text-lg font-semibold">15,452 inventory references • browse the categories below for parts listed with part numbers and engine fitment • Same-day dispatch on confirmed stock orders</p>
         </div>
       </section>
 
@@ -698,7 +698,7 @@ export default function SparePartsPage() {
                 Showing all {filteredParts.length} matching parts from {formatKES(parts.length)} in inventory
               </p>
               <p className="text-amber-400 text-sm font-semibold">
-                🚚 Same-day delivery available in Nairobi | 📦 Nationwide shipping
+                🚚 Same-day dispatch on confirmed stock orders | 📦 Nationwide shipping
               </p>
             </div>
           </>

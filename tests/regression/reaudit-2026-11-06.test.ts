@@ -21,8 +21,10 @@ describe('re-audit 6 Nov 2026', () => {
     }
   });
 
-  it('C: used-generator figures are labelled as typical, not a unit\'s own', () => {
-    expect(read('app/generators/used/page.tsx')).toMatch(/Typical range across this brand&apos;s stock/);
+  it('C: used generators are listed unit by unit, with no brand-wide hour or price ranges', () => {
+    const u = read('app/generators/used/page.tsx');
+    expect(u).toMatch(/publishableStock\(\)/);
+    expect(u).not.toMatch(/runningHours|priceRange/);
   });
 
   it('E: live pages carry no unconfirmed or guaranteed emergency response times', () => {

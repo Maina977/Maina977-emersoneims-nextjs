@@ -33,7 +33,7 @@ export default function ConversionCTAHub() {
       label: 'Request Spare-Part Price',
       icon: '⚙️',
       service: 'Spare Parts',
-      description: '2000+ parts in stock — same-day delivery'
+      description: 'Same-day dispatch on confirmed stock orders'
     },
     {
       label: 'Sell or Trade In Your Generator',

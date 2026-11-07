@@ -211,7 +211,7 @@ function AboutHero({ reducedMotion }: { reducedMotion: boolean }) {
 
       <div className="relative z-10 eims-shell w-full pb-20 md:pb-28">
         <p className="hero-fade text-xs md:text-xs tracking-[0.45em] uppercase text-amber-400 mb-5">
-          Est. 2013 — Nairobi, Kenya
+          Est. 2011 — Nairobi, Kenya
         </p>
         <h1 className="text-[13vw] md:text-[7.5vw] font-bold leading-[0.95] text-white">
           <span className="block overflow-hidden"><span className="hero-line block">About</span></span>
@@ -372,7 +372,7 @@ function GeneratorBrands() {
             </h2>
           </div>
           <p className="mt-6 md:mt-0 max-w-sm text-gray-400">
-            We supply and service all major generator brands — both NEW and quality USED units. 15 years of expertise across every manufacturer.
+            We supply and service all major generator brands — new VOLTKA sets and used units of other makes. Operating in Kenya since 2011.
           </p>
         </Reveal>
 

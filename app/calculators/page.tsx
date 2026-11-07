@@ -8,6 +8,7 @@ import { calculatePMI } from '@/app/data/diagnostic/emersonMethodology';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import ScientificCalculator from '@/components/calculators/ScientificCalculator';
+import { voltkaEstimateKes } from '@/lib/pricing/voltkaConfirmedPrices';
 
 export default function CalculatorsPage() {
   const [activeCalculator, setActiveCalculator] = useState<'roi' | 'load' | 'solar' | 'ups' | 'ac' | 'motor' | 'pmi'>('roi');
@@ -106,7 +107,14 @@ function ROICalculator() {
     // Advanced ROI calculation
     const solarCost = inputs.solarCapacity * 85000; // KES 85K per kWp
     const batteryCost = inputs.batteryCapacity * 120000; // KES 120K per kWh
-    const generatorCost = inputs.generatorCapacity * 200000; // KES 200K per kVA
+    // Confirmed VOLTKA list price for the next size up (ex-warehouse, excl.
+    // VAT, ATS, delivery, installation, commissioning). Above 750 kVA there is
+    // no confirmed price, so the generator is left out and the result says so.
+    const genEst = voltkaEstimateKes(inputs.generatorCapacity);
+    const generatorCost = genEst ? genEst.kes : 0;
+    const generatorNote = genEst
+      ? `Includes VOLTKA ${genEst.basisKva} kVA list price (ex-warehouse, excl. VAT, ATS, delivery, installation and commissioning).`
+      : 'Generator above 750 kVA not included: price on request.';
     const totalInvestment = solarCost + batteryCost + generatorCost;
 
     // Savings calculation
@@ -122,6 +130,7 @@ function ROICalculator() {
 
     setResults({
       totalInvestment,
+      generatorNote,
       monthlySavings,
       annualSavings,
       paybackMonths,
@@ -205,6 +214,7 @@ function ROICalculator() {
                   <div className="text-3xl font-bold text-red-400">
                     KES {(results.totalInvestment / 1000000).toFixed(2)}M
                   </div>
+                  <div className="text-xs text-gray-500 mt-1">{results.generatorNote}</div>
                 </div>
                 <div className="bg-white/5 rounded-xl p-6 border border-white/10">
                   <div className="text-sm text-gray-400">Monthly Savings</div>

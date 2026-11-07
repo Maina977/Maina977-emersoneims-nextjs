@@ -8,10 +8,11 @@
 
 import { m, LazyMotion, domAnimation } from 'framer-motion';
 import Link from 'next/link';
+import { FOUNDING_YEAR } from '@/lib/business/companyFacts';
 
 // Real company data - factual only
 const COMPANY_FACTS = {
-  founded: 2012,
+  founded: FOUNDING_YEAR, // 2011, owner-confirmed 2026-11-06
   // Derived, not typed. This read 12 beside founded: 2012 — correct in 2024,
   // silently wrong every year after, and rendered on the homepage as
   // "N years of proven excellence".

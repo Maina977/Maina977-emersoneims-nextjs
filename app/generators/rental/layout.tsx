@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Generator Rental Kenya',
-  description: 'Generator rental services across all 47 Kenya counties. Rent generators from 7.5kVA to 2MVA for events, construction, emergencies. Same-day delivery in Nairobi. Silent generators for weddings, concerts, corporate events. 24/7 support.',
+  description: 'Generator rental services across all 47 Kenya counties. Rent generators from 7.5kVA to 2MVA for events, construction, emergencies. Delivery time confirmed when you book. Silent generators for weddings, concerts, corporate events. 24/7 support.',
   keywords: [
     // Primary Rental Keywords
     'generator rental Kenya',
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Generator Rental Kenya | 7.5kVA - 2MVA | All 47 Counties',
-    description: 'Rent generators for any occasion. 50+ units available. Same-day delivery. Silent units for events. 24/7 support. Best rates in Kenya.',
+    description: 'Rent generators for any occasion: silent units for events, standby for construction and emergencies. 24/7 support across all 47 counties.',
     type: 'website',
     url: 'https://www.emersoneims.com/generators/rental',
     siteName: 'EmersonEIMS',
@@ -150,7 +150,7 @@ const jsonLd = {
           name: 'How quickly can you deliver?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Within Nairobi: Same day delivery for orders placed before 12pm. Outside Nairobi: 24-48 hours depending on location. For urgent requirements, call our emergency line.',
+            text: 'Delivery time and transport cost are confirmed when you book: they depend on the unit, distance and site access. For urgent requirements, call our emergency line.',
           },
         },
         {

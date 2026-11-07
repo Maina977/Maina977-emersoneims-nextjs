@@ -1022,6 +1022,21 @@ const nextConfig: NextConfig = {
         destination: '/kenya',
         permanent: true,
       },
+      // Re-audit 7 Nov 2026: the six /specs/used/<brand> pages published
+      // invented running-hour and price ranges with customers' installed sets
+      // as the photos. Used stock is now listed unit by unit on /generators/used.
+      {
+        source: '/specs/used/:brand*',
+        destination: '/generators/used',
+        permanent: true,
+      },
+      // Re-audit 7 Nov 2026: three partner profiles for companies that are not
+      // partners, with invented ratings, testimonials and response guarantees.
+      {
+        source: '/marketplace/partners/:slug*',
+        destination: '/marketplace',
+        permanent: true,
+      },
       // Thika is a town in Kiambu County, not a county — the generic rule
       // below would send it to /kenya/thika, which is a 404.
       {

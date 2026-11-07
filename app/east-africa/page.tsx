@@ -84,8 +84,8 @@ export default function EastAfricaPage() {
                 EmersonEIMS HQ. Operating since 2011 across all 47 counties. Proven expertise in healthcare, manufacturing, telecom, hospitality, and real estate.
               </p>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>✓ Same-day delivery in Nairobi</li>
-                <li>✓ 47-county coverage guaranteed</li>
+                <li>✓ Same-day dispatch on confirmed stock parts orders</li>
+                <li>✓ All 47 counties covered</li>
                 <li>✓ Emergency response under 4 hours in the Nairobi metro</li>
                 <li>✓ 500+ installations in healthcare alone</li>
               </ul>

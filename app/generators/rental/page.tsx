@@ -89,50 +89,50 @@ const deliveryAreas = [
   {
     region: 'Nairobi Metropolitan',
     counties: ['Nairobi', 'Kiambu', 'Machakos', 'Kajiado'],
-    deliveryTime: 'Same day / 2-4 hours',
-    deliveryCost: 'Free for rentals over 7 days',
+    deliveryTime: 'Confirmed when you book',
+    deliveryCost: 'Quoted with your booking',
     icon: '🏙️',
   },
   {
     region: 'Central Kenya',
     counties: ['Nyeri', 'Kirinyaga', 'Murang\'a', 'Nyandarua', 'Laikipia'],
-    deliveryTime: '4-8 hours',
-    deliveryCost: 'KSh 15,000 - 30,000',
+    deliveryTime: 'Confirmed when you book',
+    deliveryCost: 'Quoted with your booking',
     icon: '🏔️',
   },
   {
     region: 'Rift Valley',
     counties: ['Nakuru', 'Narok', 'Kericho', 'Bomet', 'Baringo', 'Uasin Gishu', 'Nandi', 'Trans Nzoia', 'Elgeyo-Marakwet', 'West Pokot'],
-    deliveryTime: '6-12 hours',
-    deliveryCost: 'KSh 25,000 - 50,000',
+    deliveryTime: 'Confirmed when you book',
+    deliveryCost: 'Quoted with your booking',
     icon: '🌄',
   },
   {
     region: 'Western Kenya',
     counties: ['Kisumu', 'Siaya', 'Homa Bay', 'Migori', 'Kisii', 'Nyamira', 'Kakamega', 'Vihiga', 'Bungoma', 'Busia'],
-    deliveryTime: '8-14 hours',
-    deliveryCost: 'KSh 35,000 - 60,000',
+    deliveryTime: 'Confirmed when you book',
+    deliveryCost: 'Quoted with your booking',
     icon: '🌅',
   },
   {
     region: 'Coast Region',
     counties: ['Mombasa', 'Kilifi', 'Kwale', 'Taita-Taveta', 'Tana River', 'Lamu'],
-    deliveryTime: '12-18 hours',
-    deliveryCost: 'KSh 45,000 - 80,000',
+    deliveryTime: 'Confirmed when you book',
+    deliveryCost: 'Quoted with your booking',
     icon: '🏖️',
   },
   {
     region: 'Eastern Kenya',
     counties: ['Meru', 'Tharaka-Nithi', 'Embu', 'Kitui', 'Makueni', 'Marsabit', 'Isiolo'],
-    deliveryTime: '8-16 hours',
-    deliveryCost: 'KSh 30,000 - 60,000',
+    deliveryTime: 'Confirmed when you book',
+    deliveryCost: 'Quoted with your booking',
     icon: '🌵',
   },
   {
     region: 'Northern Kenya',
     counties: ['Turkana', 'Samburu', 'Wajir', 'Mandera', 'Garissa'],
-    deliveryTime: '18-36 hours',
-    deliveryCost: 'KSh 60,000 - 120,000',
+    deliveryTime: 'Confirmed when you book',
+    deliveryCost: 'Quoted with your booking',
     icon: '🏜️',
   },
 ];
@@ -203,7 +203,7 @@ const rentalFAQs = [
   },
   {
     question: 'How quickly can you deliver?',
-    answer: 'Within Nairobi: Same day delivery for orders placed before 12pm. Outside Nairobi: 24-48 hours depending on location. For urgent requirements, call our emergency line - we maintain a rapid response fleet.',
+    answer: 'Delivery time and transport cost are confirmed when you book: they depend on the unit, distance and site access. For urgent requirements, call our emergency line.',
   },
   {
     question: 'What happens if the generator breaks down?',
@@ -593,7 +593,7 @@ export default function GeneratorRentalPage() {
       {/* CTA Section */}
       <ServiceCTASection
         title="Need a Generator? Get a Quote Now!"
-        subtitle="Get a quote within minutes. Same-day delivery available in Nairobi. We serve all 47 Kenya counties."
+        subtitle="Tell us the load, site and dates; delivery time is confirmed when you book. We serve all 47 Kenya counties."
         primaryService="Generator Rental"
         primaryLabel="Check Rental Availability"
         secondaryServices={[

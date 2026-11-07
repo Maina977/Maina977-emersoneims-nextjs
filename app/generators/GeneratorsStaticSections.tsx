@@ -36,7 +36,7 @@ const GENERATOR_HUB_SECTIONS = [
     icon: '🔄',
     href: '/generators/used',
     color: 'green',
-    description: 'Certified pre-owned with warranty'
+    description: 'Unit by unit, 2-year warranty'
   },
   {
     id: 'rental',
@@ -329,13 +329,25 @@ export const TransparentPricing = () => {
 };
 
 export const BrandComparisonTable = () => {
+  // Re-audit 7 Nov 2026, item 6: the star ratings for fuel efficiency and
+  // parts availability, and the $-signs for price, had no test, survey or
+  // source behind them. Replaced with facts a buyer can check, and the
+  // datasheet figures that actually separate one set from another.
   const brands = [
-    { name: 'Cummins', origin: 'USA', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$$$', best: 'Reliability & support' },
-    { name: 'Perkins', origin: 'UK', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$$', best: 'Value for money' },
-    { name: 'Caterpillar', origin: 'USA', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐', price: '$$$$$', best: 'Heavy industrial' },
-    { name: 'FG Wilson', origin: 'UK', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐', price: '$$$', best: 'Commercial use' },
-    { name: 'Atlas Copco', origin: 'Sweden', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐⭐', parts: '⭐⭐⭐', price: '$$$$', best: 'Quiet operation' },
-    { name: 'Voltka', origin: 'China/Cummins', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$', best: 'Budget + quality' },
+    { name: 'VOLTKA', engine: 'Cummins', parent: 'VOLTKA', weSell: 'New (2-year warranty, 1 year free servicing)' },
+    { name: 'Cummins', engine: 'Cummins', parent: 'Cummins Inc. (USA)', weSell: 'Used, unit by unit' },
+    { name: 'Perkins', engine: 'Perkins', parent: 'Caterpillar Inc.', weSell: 'Used, unit by unit' },
+    { name: 'Caterpillar', engine: 'Cat', parent: 'Caterpillar Inc. (USA)', weSell: 'Used, unit by unit' },
+    { name: 'FG Wilson', engine: 'Mostly Perkins', parent: 'Caterpillar Inc.', weSell: 'Used, unit by unit' },
+    { name: 'Atlas Copco', engine: 'Varies by model', parent: 'Atlas Copco AB (Sweden)', weSell: 'Used, unit by unit' },
+  ];
+  const datasheetChecks = [
+    'Prime and standby rating to ISO 8528-1 (compare prime with prime)',
+    'Fuel consumption in litres per hour at 50%, 75% and 100% of prime',
+    'Transient performance class to ISO 8528-5 (G2 or G3)',
+    'Alternator make, insulation class and temperature rise',
+    'Sound pressure in dB(A) at 7 m for canopied sets',
+    'Who in Kenya stocks the filters, belts and sensors, and at what lead time',
   ];
 
   return (
@@ -354,7 +366,7 @@ export const BrandComparisonTable = () => {
             Generator Brand Comparison
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            We service all brands. Here's how they compare:
+            We service all of these makes. Stars and price signs do not tell you which set suits your site; these facts and datasheet figures do:
           </p>
         </div>
 
@@ -363,12 +375,9 @@ export const BrandComparisonTable = () => {
             <thead>
               <tr className="border-b border-gray-700 bg-slate-900/50">
                 <th className="text-left p-4 text-amber-400">Brand</th>
-                <th className="text-left p-4 text-gray-400">Origin</th>
-                <th className="text-left p-4 text-gray-400">Warranty</th>
-                <th className="text-left p-4 text-gray-400">Fuel Efficiency</th>
-                <th className="text-left p-4 text-gray-400">Parts Availability</th>
-                <th className="text-left p-4 text-gray-400">Price Range</th>
-                <th className="text-left p-4 text-gray-400">Best For</th>
+                <th className="text-left p-4 text-gray-400">Engine</th>
+                <th className="text-left p-4 text-gray-400">Parent company</th>
+                <th className="text-left p-4 text-gray-400">How we sell it</th>
               </tr>
             </thead>
             <tbody>
@@ -382,16 +391,20 @@ export const BrandComparisonTable = () => {
                   className="border-b border-gray-800 hover:bg-slate-900/50"
                 >
                   <td className="p-4 font-semibold text-white">{brand.name}</td>
-                  <td className="p-4 text-gray-400">{brand.origin}</td>
-                  <td className="p-4 text-green-400">{brand.warranty}</td>
-                  <td className="p-4">{brand.fuelEff}</td>
-                  <td className="p-4">{brand.parts}</td>
-                  <td className="p-4 text-amber-400">{brand.price}</td>
-                  <td className="p-4 text-gray-300">{brand.best}</td>
+                  <td className="p-4 text-gray-300">{brand.engine}</td>
+                  <td className="p-4 text-gray-400">{brand.parent}</td>
+                  <td className="p-4 text-gray-300">{brand.weSell}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="max-w-3xl mx-auto mt-8 p-6 rounded-xl border border-gray-800 bg-slate-900/40">
+          <h3 className="text-lg font-bold text-white mb-3">Compare these on each set&apos;s datasheet</h3>
+          <ul className="space-y-2 text-gray-300 text-sm list-disc pl-5">
+            {datasheetChecks.map((c) => <li key={c}>{c}</li>)}
+          </ul>
         </div>
 
         <p className="text-center text-gray-500 text-sm mt-6">
@@ -569,8 +582,8 @@ export const WhyChooseUs = () => {
     },
     {
       icon: '🔧',
-      title: '11+ Years Track Record',
-      description: 'Our senior technicians have serviced generators across Kenya since 2011, on Cummins, Perkins, Caterpillar and 10+ other brands.',
+      title: 'In Business Since 2011',
+      description: 'EmersonEIMS has serviced generators across Kenya since 2011, on Cummins, Perkins, Caterpillar and 10+ other brands. Each engineer\'s experience and qualifications come with your quotation.',
       highlight: 'PROVEN EXPERTISE'
     },
     {

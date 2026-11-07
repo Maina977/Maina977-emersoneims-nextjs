@@ -916,7 +916,7 @@ const FabricationPage = () => {
                 { value: "3,000", label: "Tons Annual Capacity" },
                 { value: "50+", label: "Certified Welders" },
                 { value: "ASME", label: "U-Stamp Certified" },
-                { value: "2012", label: "Operating in Kenya since" }
+                { value: "2011", label: "Operating in Kenya since" }
               ].map((stat, index) => (
                 <motion.div
                   key={index}

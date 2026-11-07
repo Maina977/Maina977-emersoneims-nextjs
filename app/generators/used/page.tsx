@@ -3,169 +3,36 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Image from 'next/image';
+import Link from 'next/link';
 import OptimizedImage from "@/components/media/OptimizedImage";
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import { SectionLead } from "@/components/generators";
 import HeroCinematicFX from '@/components/home/HeroCinematicFX';
 import TeslaSlideGallery from '@/components/galleries/TeslaSlideGallery';
+import {
+  publishableStock,
+  USED_MAKES,
+  USED_WARRANTY_TERM,
+  STOCK_LIST_FIELDS,
+  type UsedGeneratorUnit,
+} from '@/lib/inventory/usedGeneratorStock';
+import { kes, REQUEST_CURRENT_PRICE } from '@/lib/pricing/voltkaConfirmedPrices';
 
-// Tesla-style big slides of real used / pre-owned inventory (distinct set)
+/*
+ * Re-audit 7 Nov 2026, item 4. This page used to show six brand cards with
+ * invented price and running-hour ranges, model lists that are not real
+ * products, and photos of new VOLTKA stock and customers' sets captioned as
+ * pre-owned inventory. Units now come only from lib/inventory/usedGeneratorStock.ts,
+ * one identifiable machine per entry. The slide images below are unchanged;
+ * their captions now say what each photo actually shows.
+ */
 const USED_SLIDES = [
-  { src: '/images/voltka/voltka-warehouse-fleet.webp', title: 'Certified Pre-Owned Fleet', subtitle: 'Fully serviced, load-tested, ready to run', ctaHref: '/contact', ctaLabel: 'Request Stock List' },
-  { src: '/images/voltka/voltka-vks165-stock-forklift.webp', title: 'Ready Stock — Nairobi', subtitle: 'Same-week delivery across all 47 counties' },
-  { src: '/images/enhanced/FG-WILSON-GENERATOR-4K-CINEMATIC.jpg', title: 'FG Wilson · Perkins Power', subtitle: 'Low-hours commercial units' },
-  { src: '/images/desktop/generators/cummins-teal-canopy.jpg', title: 'Cummins Super Silent', subtitle: 'Workshop-inspected, repainted, warrantied' },
-  { src: '/images/enhanced/NTSA- ATLAS COPCO GENERATOR-4K-CINEMATIC.jpg', title: 'Atlas Copco — Heavy Duty', subtitle: 'Industrial-grade standby power' },
-  { src: '/images/desktop/overhaul/engine-bay-service.jpg', title: '21-Point Inspection', subtitle: 'Every unit tested before it leaves the yard', ctaHref: '/contact?type=inspection', ctaLabel: 'Request an Inspection' },
-];
-
-const usedGenerators = [
-  {
-    brand: "Cummins",
-    kvaRange: "50–2000 kVA",
-    warranty: "2 years",
-    priceRange: "KSh 800,000 – 15M",
-    features: ["Fully serviced", "Load tested", "OEM parts", "6-month service history"],
-    status: "Confirm availability",
-    statusColor: "bg-slate-600",
-    images: [
-      '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg',
-      '/images/voltka/voltka-cummins-engine-open-canopy.webp',
-      '/images/voltka/cummins-engine-detail.webp',
-    ],
-    specifications: {
-      brand: "Cummins",
-      models: ["C50D5", "C100D5", "C250D5", "C500D5", "C750D5", "C1000D5", "C1500D5", "C2000D5"],
-      runningHours: "2,000 – 8,500 hrs",
-      fuelConsumption: "0.18 – 0.22 L/kWh",
-      engineType: "4-stroke, turbocharged diesel",
-      coolingSystem: "Radiator-cooled with electric fan",
-      noiseLevel: "72 – 82 dB @ 1m",
-      serviceAvailability: "Nationwide authorized centers",
-      description: "Industry standard for mission-critical power. Each unit includes detailed service history and OEM part availability.",
-    },
-  },
-  {
-    brand: "Perkins",
-    kvaRange: "20–1000 kVA",
-    warranty: "2 years",
-    priceRange: "KSh 500,000 – 8M",
-    features: ["Fuel efficient", "Low hours", "New filters", "Painted"],
-    status: "Confirm availability",
-    statusColor: "bg-slate-600",
-    images: [
-      '/images/enhanced/ST AUSTINS ACADEMY 50KVA PERKINS ENGINE-4K-CINEMATIC.jpg',
-      '/images/PERKINS-ENGINE-PARTS.jpg',
-    ],
-    specifications: {
-      brand: "Perkins",
-      models: ["1104A-44G", "1104C-44G", "1106A-70G", "1106C-70G", "1500A-60G", "2000A-60G"],
-      runningHours: "1,500 – 6,000 hrs",
-      fuelConsumption: "0.17 – 0.19 L/kWh",
-      engineType: "4-stroke, naturally aspirated & turbocharged",
-      coolingSystem: "Water-cooled radiator with fan",
-      noiseLevel: "70 – 78 dB @ 1m",
-      serviceAvailability: "Direct service in Nairobi and regional hubs",
-      description: "Trusted by hospitals and schools across Kenya. Exceptional fuel efficiency ideal for 24/7 operations.",
-    },
-  },
-  {
-    brand: "Caterpillar",
-    kvaRange: "100–2000 kVA",
-    warranty: "2 years",
-    priceRange: "KSh 1.2M – 20M",
-    features: ["Heavy-duty", "Low hours", "Full service", "Canopy available"],
-    status: "Confirm availability",
-    statusColor: "bg-slate-600",
-    images: [
-      '/images/enhanced/BIGOT CATERPILLAR 30KVA-4K-CINEMATIC.jpg',
-      '/images/voltka/cat-canopy-studio.webp',
-      '/images/voltka/cat-open-frame.webp',
-    ],
-    specifications: {
-      brand: "Caterpillar",
-      models: ["C100D5", "C130D5", "C150D5", "C250D5", "C500D5", "C750D5", "C1000D5", "C2000D5"],
-      runningHours: "3,000 – 12,000 hrs",
-      fuelConsumption: "0.19 – 0.24 L/kWh",
-      engineType: "4-stroke, turbocharged with aftercooler",
-      coolingSystem: "Radiator with thermostat control",
-      noiseLevel: "74 – 86 dB @ 1m",
-      serviceAvailability: "Dealers in Nairobi, Mombasa, Kisumu, Nakuru",
-      description: "Built for industrial mining and manufacturing. Each unit undergoes 21-point inspection including bearing assessment and compression testing.",
-    },
-  },
-  {
-    brand: "Volvo Penta",
-    kvaRange: "50–1500 kVA",
-    warranty: "2 years",
-    priceRange: "KSh 700,000 – 12M",
-    features: ["Low emissions", "Advanced controls", "Soundproofed", "Containerized"],
-    status: "Confirm availability",
-    statusColor: "bg-slate-600",
-    images: [
-      '/images/gen00011.jpg',
-      '/images/GEN 2-1920x1080.png',
-    ],
-    specifications: {
-      brand: "Volvo Penta",
-      models: ["D3-110", "D4-115", "D5-200", "D9-400", "D11-350", "D13-550", "D16-735"],
-      runningHours: "2,500 – 7,500 hrs",
-      fuelConsumption: "0.20 – 0.25 L/kWh",
-      engineType: "4-stroke, turbocharged marine diesel",
-      coolingSystem: "Closed-loop water cooling with expansion tank",
-      noiseLevel: "68 – 78 dB @ 1m",
-      serviceAvailability: "Marine service centers in Mombasa & Nairobi",
-      description: "Marine-grade reliability for harsh remote locations. Low emissions meet future environmental standards.",
-    },
-  },
-  {
-    brand: "SDMO",
-    kvaRange: "30–1200 kVA",
-    warranty: "2 years",
-    priceRange: "KSh 400,000 – 10M",
-    features: ["French engineered", "Robust design", "Easy maintenance", "Export ready"],
-    status: "Confirm availability",
-    statusColor: "bg-slate-600",
-    images: [
-      '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
-      '/images/generator-canopy-fabrication.png',
-    ],
-    specifications: {
-      brand: "SDMO (Kohler Power)",
-      models: ["AIRDOSER 60", "AIRDOSER 80", "AIRDOSER 110", "AIRDOSER 150", "POWER FOCUS", "MDX series"],
-      runningHours: "2,000 – 8,000 hrs",
-      fuelConsumption: "0.18 – 0.21 L/kWh",
-      engineType: "4-stroke, turbocharged diesel",
-      coolingSystem: "Fan-cooled radiator",
-      noiseLevel: "70 – 80 dB @ 1m",
-      serviceAvailability: "Independent service centers across Kenya",
-      description: "French precision with proven African reliability. Popular in remote mining and agricultural operations.",
-    },
-  },
-  {
-    brand: "Wei Chai",
-    kvaRange: "30–1000 kVA",
-    warranty: "2 years",
-    priceRange: "KSh 200,000 – 6M",
-    features: ["Cost effective", "Fully tested", "New batteries", "Serviced"],
-    status: "Confirm availability",
-    statusColor: "bg-slate-600",
-    images: [
-      '/images/voltka/voltka-warehouse-fleet.webp',
-      '/images/voltka/voltka-vks165-stock-forklift.webp',
-    ],
-    specifications: {
-      brand: "Wei Chai",
-      models: ["WP2.9D", "WP4D", "WP5D", "WP6D", "WP7D", "WP10D", "WP13D"],
-      runningHours: "3,000 – 10,000 hrs",
-      fuelConsumption: "0.21 – 0.26 L/kWh",
-      engineType: "4-stroke, turbocharged diesel",
-      coolingSystem: "Water-cooled radiator",
-      noiseLevel: "72 – 82 dB @ 1m",
-      serviceAvailability: "Aftermarket service providers nationwide",
-      description: "Exceptional value for farmers, SMEs, and backup installations. All units mechanically sound and thoroughly tested.",
-    },
-  },
+  { src: '/images/voltka/voltka-warehouse-fleet.webp', title: 'Our Nairobi Warehouse', subtitle: 'Used units change week to week. Ask for the current stock list', ctaHref: '/contact?type=used-stock-list', ctaLabel: 'Request Stock List' },
+  { src: '/images/voltka/voltka-vks165-stock-forklift.webp', title: 'Stock Handling', subtitle: 'Delivery and installation are quoted per unit and site' },
+  { src: '/images/enhanced/FG-WILSON-GENERATOR-4K-CINEMATIC.jpg', title: 'FG Wilson · Perkins', subtitle: 'Makes we buy, recondition, sell and service' },
+  { src: '/images/desktop/generators/cummins-teal-canopy.jpg', title: 'Cummins Canopied Sets', subtitle: 'Inspect any unit before you buy' },
+  { src: '/images/enhanced/NTSA- ATLAS COPCO GENERATOR-4K-CINEMATIC.jpg', title: 'Atlas Copco', subtitle: 'Industrial standby sets' },
+  { src: '/images/desktop/overhaul/engine-bay-service.jpg', title: 'Pre-Sale Inspection', subtitle: 'Ask for the inspection and load-test report of the unit you are considering', ctaHref: '/contact?type=inspection', ctaLabel: 'Request an Inspection' },
 ];
 
 // Image Gallery Component
@@ -277,113 +144,34 @@ const ImageGallery = ({ images, brand }: { images: string[]; brand: string }) =>
   );
 };
 
-// Virtual Tour component removed - it promised a 360-degree inspection but only
-// showed an endless loading spinner. Real unit photography (ImageGallery with
-// lightbox) replaced it; physical on-site inspection is offered in the cards.
-
-type UsedGeneratorFilters = {
-  brand: string;
-  priceRange: string;
-  kvaRange: string;
-  status: string;
-};
-
-// Advanced Filter Component
-const AdvancedFilters = ({
-  onFilterChange,
-}: {
-  onFilterChange: (filters: UsedGeneratorFilters) => void;
-}) => {
-  const [filters, setFilters] = useState<UsedGeneratorFilters>({
-    brand: '',
-    priceRange: '',
-    kvaRange: '',
-    status: '',
-  });
-
-  const handleFilterChange = (key: keyof UsedGeneratorFilters, value: string) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-  };
-
+function UnitCard({ unit }: { unit: UsedGeneratorUnit }) {
   return (
-    <motion.div
-      className="bg-gradient-to-br from-gray-900 to-black rounded-xl border border-gray-800 p-6 mb-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
-      <h3 className="text-xl font-bold text-white mb-4">Advanced Filters</h3>
-      <div className="grid md:grid-cols-4 gap-4">
-        <div>
-          <label className="block text-gray-400 text-sm mb-2">Brand</label>
-          <select
-            value={filters.brand}
-            onChange={(e) => handleFilterChange('brand', e.target.value)}
-            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
-          >
-            <option value="">All Brands</option>
-            <option value="Cummins">Cummins</option>
-            <option value="Perkins">Perkins</option>
-            <option value="Caterpillar">Caterpillar</option>
-            <option value="Volvo Penta">Volvo Penta</option>
-            <option value="SDMO">SDMO</option>
-            <option value="Wei Chai">Wei Chai</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-gray-400 text-sm mb-2">Price Range</label>
-          <select
-            value={filters.priceRange}
-            onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
-          >
-            <option value="">All Prices</option>
-            <option value="0-500000">Under KSh 500K</option>
-            <option value="500000-2000000">KSh 500K - 2M</option>
-            <option value="2000000-5000000">KSh 2M - 5M</option>
-            <option value="5000000+">Above KSh 5M</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-gray-400 text-sm mb-2">Power Range</label>
-          <select
-            value={filters.kvaRange}
-            onChange={(e) => handleFilterChange('kvaRange', e.target.value)}
-            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
-          >
-            <option value="">All Sizes</option>
-            <option value="0-100">Under 100 kVA</option>
-            <option value="100-500">100-500 kVA</option>
-            <option value="500-1000">500-1000 kVA</option>
-            <option value="1000+">Above 1000 kVA</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-gray-400 text-sm mb-2">Status</label>
-          <select
-            value={filters.status}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
-          >
-            {/*
-              The stock options that stood here — In Stock / Limited Stock /
-              Available Soon — were filtering on hard-coded literals. No
-              inventory system feeds this page, so the filter sorted by a
-              value that was decided when the file was typed and would be
-              wrong the first time a set sold. A buyer could filter to
-              "In Stock" and be shown machines nobody had checked.
-            */}
-            <option value="">All units</option>
-          </select>
-        </div>
+    <article className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-black to-gray-900">
+      <div className="flex justify-between items-start gap-3 mb-2">
+        <h3 className="text-xl font-bold text-white">{unit.make} {unit.model}</h3>
+        <span className="text-xs text-white/60 font-mono">{unit.stockId}</span>
       </div>
-    </motion.div>
+      <p className="text-brand-gold font-semibold">{unit.kvaPrime} kVA prime · {unit.phase === 'three' ? 'three-phase' : 'single-phase'} · {unit.enclosure}</p>
+      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/80">
+        <dt className="text-white/50">Engine hours</dt><dd>{unit.engineHours.toLocaleString('en-US')} (read {unit.hoursReadOn})</dd>
+        {unit.yearOfManufacture ? (<><dt className="text-white/50">Year</dt><dd>{unit.yearOfManufacture}</dd></>) : null}
+        <dt className="text-white/50">Location</dt><dd>{unit.location}</dd>
+        <dt className="text-white/50">Price</dt><dd>{unit.priceKes ? `${kes(unit.priceKes)} excl. VAT` : REQUEST_CURRENT_PRICE}</dd>
+        <dt className="text-white/50">Load test</dt>
+        <dd>{unit.testRecord ? `${unit.testRecord.loadPercent}% for ${unit.testRecord.durationHours} h on ${unit.testRecord.date} (report ${unit.testRecord.reportRef})` : 'Not yet tested; ask before you buy'}</dd>
+        <dt className="text-white/50">Warranty</dt><dd>{USED_WARRANTY_TERM}: {unit.warrantyCoverage}</dd>
+      </dl>
+      {unit.conditionNotes ? <p className="mt-3 text-sm text-white/60">{unit.conditionNotes}</p> : null}
+      <ImageGallery images={unit.photos} brand={`${unit.make} ${unit.model} (${unit.stockId})`} />
+      <a href={`/contact?type=used-generator&unit=${encodeURIComponent(unit.stockId)}`} className="sci-fi-button block text-center py-3 mt-6">
+        Ask about {unit.stockId}
+      </a>
+    </article>
   );
-};
+}
 
 export default function UsedGeneratorsPage() {
-  const [filteredGenerators, setFilteredGenerators] = useState(usedGenerators);
+  const stock = publishableStock();
   const { isLite } = usePerformanceTier();
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -394,19 +182,6 @@ export default function UsedGeneratorsPage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
   const textY = useTransform(scrollYProgress, [0, 1], [0, 100]);
-
-  const handleFilterChange = (newFilters: UsedGeneratorFilters) => {
-    let filtered = [...usedGenerators];
-
-    if (newFilters.brand) {
-      filtered = filtered.filter(g => g.brand === newFilters.brand);
-    }
-    if (newFilters.status) {
-      filtered = filtered.filter(g => g.status === newFilters.status);
-    }
-
-    setFilteredGenerators(filtered);
-  };
 
   return (
     <div className="min-h-screen bg-black">
@@ -485,7 +260,7 @@ export default function UsedGeneratorsPage() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
             >
               <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">Certified Pre-Owned Generators</span>
+              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">Used Generators · Unit by Unit</span>
             </motion.div>
 
             {/* Main Title with Cinematic Typography */}
@@ -505,7 +280,7 @@ export default function UsedGeneratorsPage() {
               transition={{ duration: 0.8, delay: 0.7 }}
               className="text-lg md:text-xl lg:text-2xl text-gray-200/90 max-w-3xl mx-auto leading-relaxed mb-8"
             >
-              Fully Tested • 2-Year Warranty • Premium Brands • Best Value in Kenya
+              2-Year Warranty • Each Unit&apos;s Hours, Price &amp; Test Report on Request • Inspect Before You Buy
             </motion.p>
 
             {/* Decorative Line */}
@@ -529,7 +304,7 @@ export default function UsedGeneratorsPage() {
               transition={{ duration: 2, repeat: Infinity }}
               className="flex flex-col items-center gap-2"
             >
-              <span className="text-xs text-white/50 uppercase tracking-widest">Browse Stock</span>
+              <span className="text-xs text-white/50 uppercase tracking-widest">How It Works</span>
               <div className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2">
                 <motion.div
                   animate={{ y: [0, 12, 0], opacity: [1, 0.3, 1] }}
@@ -548,169 +323,79 @@ export default function UsedGeneratorsPage() {
         {!isLite && <HeroCinematicFX />}
       </section>
 
-      {/* Tesla-style big slide showcase of real pre-owned inventory */}
-      <TeslaSlideGallery slides={USED_SLIDES} eyebrow="Pre-Owned Inventory — Inspected & Warrantied" />
+      {/* Slide images unchanged; captions describe what each photo shows. */}
+      <TeslaSlideGallery slides={USED_SLIDES} eyebrow="Used Generators — How We Sell Them" />
 
       {/* Main Content */}
       <div className="eims-shell relative z-10 py-16">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <SectionLead
-            title="Used Generators"
-            subtitle="Fully serviced, tested, and warrantied generators from leading global brands."
-            centered
-          />
-        </motion.div>
+        <SectionLead
+          title="Used Generators"
+          subtitle="Every used set we sell is a specific machine with its own stock number, hours, price and warranty terms."
+          centered
+        />
 
-        {/* Advanced Filters */}
-        <AdvancedFilters onFilterChange={handleFilterChange} />
-
-        {/* Warning Banner */}
-        <motion.div
-          className="mt-8 bg-yellow-900/30 border border-yellow-700 rounded-xl p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className="flex items-center">
-            <svg className="w-8 h-8 text-yellow-500 mr-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-            <div>
-              <h3 className="text-lg font-bold text-white">Important Notice</h3>
-              <p className="text-white/70">All used generators undergo comprehensive 21-point inspection and load testing. Prices vary based on condition and hours.</p>
+        <section aria-labelledby="stock-heading" className="mt-12">
+          <h2 id="stock-heading" className="text-3xl font-bold text-white text-center mb-6">Current Stock</h2>
+          {stock.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {stock.map((u) => <UnitCard key={u.stockId} unit={u} />)}
             </div>
-          </div>
-        </motion.div>
-
-        <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredGenerators.map((gen, index) => (
-            <motion.article
-              key={gen.brand}
-              className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-black to-gray-900 hover:border-amber-500/50 transition-all duration-300"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold text-white">{gen.brand}</h2>
-                <span className={`${gen.statusColor} text-white text-xs font-bold px-3 py-1 rounded-full`}>
-                  {gen.status}
-                </span>
-              </div>
-
-              <p className="text-brand-gold font-semibold">{gen.kvaRange}</p>
-              <p className="text-white/80 mt-2">Warranty: {gen.warranty}</p>
-              <p className="text-white font-bold mt-2">{gen.priceRange}</p>
-              <p className="text-white/50 text-xs mt-1">Typical range across this brand&apos;s stock. Each unit&apos;s price, running hours, fuel use and test results are on its own quotation.</p>
-
-              {/* Running Hours & Specs */}
-              {gen.specifications && (
-                <div className="mt-4 space-y-2 text-sm">
-                  <p className="text-white/70">
-                    <span className="text-brand-gold font-semibold">Running Hours: </span>
-                    {gen.specifications.runningHours}
-                  </p>
-                  <p className="text-white/70">
-                    <span className="text-brand-gold font-semibold">Fuel: </span>
-                    {gen.specifications.fuelConsumption}
-                  </p>
-                </div>
-              )}
-              
-              {/* Image Gallery — real unit photography with lightbox */}
-              {gen.images && gen.images.length > 0 && (
-                <ImageGallery images={gen.images} brand={gen.brand} />
-              )}
-
-              <ul className="mt-6 space-y-2">
-                {gen.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-center text-white/80">
-                    <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    {feature}
-                  </li>
+          ) : (
+            <div className="max-w-3xl mx-auto p-8 rounded-xl border border-amber-500/30 bg-amber-950/20">
+              <p className="text-white/90 text-lg">
+                Used stock changes from week to week, so we do not publish a fixed list that would be out of date.
+                Ask for the current list and we will send, for each unit:
+              </p>
+              <ul className="mt-4 space-y-2 text-white/80">
+                {STOCK_LIST_FIELDS.map((f) => (
+                  <li key={f} className="flex gap-2"><span className="text-green-500" aria-hidden="true">✓</span>{f}</li>
                 ))}
               </ul>
-              
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <a
-                  href="/contact"
-                  className="sci-fi-button flex-1 text-center py-3"
-                  aria-label={`Request quote for ${gen.brand} used generator`}
-                >
-                  Request Quote
-                </a>
-                <a
-                  href={`/specs/used/${gen.brand.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="sci-fi-outline flex-1 text-center py-3"
-                  aria-label={`View detailed specifications for ${gen.brand} used generator`}
-                >
-                  View Details
-                </a>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <a href="/contact?type=used-stock-list" className="sci-fi-button flex-1 text-center py-3">Request the current stock list</a>
+                <a href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20please%20send%20your%20current%20used-generator%20stock%20list." className="sci-fi-outline flex-1 text-center py-3" rel="noopener noreferrer" target="_blank">Ask on WhatsApp</a>
               </div>
-            </motion.article>
-          ))}
-        </div>
+            </div>
+          )}
+        </section>
 
-        {filteredGenerators.length === 0 && (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4" aria-hidden="true">🔍</div>
-            <h3 className="text-2xl font-bold text-white mb-2">No generators found</h3>
-            <p className="text-gray-400">Try adjusting your filters</p>
-          </div>
-        )}
+        <section aria-labelledby="warranty-heading" className="mt-16 max-w-3xl mx-auto">
+          <h2 id="warranty-heading" className="text-2xl font-bold text-white mb-4">Warranty on Used Generators</h2>
+          <p className="text-white/80">
+            Every generator we sell, new or used, carries a {USED_WARRANTY_TERM} warranty. On a used set, what that warranty
+            covers depends on the condition of that machine, so the cover for each unit is written on its own quotation and
+            invoice. Cover depends on the set being serviced at the stated intervals, with the service record kept.
+          </p>
+        </section>
 
-        {/* Inspection Process */}
-        <motion.div
-          className="mt-20"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="text-3xl font-bold text-white text-center mb-10">Our 21-Point Inspection Process</h2>
+        <section aria-labelledby="checks-heading" className="mt-16">
+          <h2 id="checks-heading" className="text-3xl font-bold text-white text-center mb-4">What to Ask For Before Buying Any Used Generator</h2>
+          <p className="text-center text-white/60 max-w-3xl mx-auto mb-10">From us or anyone else. A seller who cannot show these for the exact unit is asking you to take the condition on trust.</p>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { number: 1, title: "Mechanical Inspection", description: "Engine compression test, turbo inspection, coolant system check, and vibration analysis.", color: "bg-blue-500" },
-              { number: 2, title: "Electrical Testing", description: "Alternator output test, AVR function, controller diagnostics, and insulation resistance.", color: "bg-green-500" },
-              { number: 3, title: "Load Bank Testing", description: "Full load test for 4+ hours, thermal imaging, voltage stability, and harmonic analysis.", color: "bg-purple-500" },
-            ].map((item, index) => (
-              <motion.div
-                key={item.number}
-                className="p-8 rounded-xl border border-gray-700 bg-gradient-to-br from-black to-gray-900"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div className={`w-12 h-12 ${item.color} rounded-lg flex items-center justify-center text-white text-xl font-bold mb-4`}>
-                  {item.number}
-                </div>
-                <h3 className="text-xl font-bold text-white">{item.title}</h3>
-                <p className="mt-4 text-white/70">{item.description}</p>
-              </motion.div>
+              { n: 1, title: 'Engine condition', text: 'Hour-meter reading checked against the service record, a compression or blow-by check, oil analysis if available, and no coolant in the oil.' },
+              { n: 2, title: 'Electrical condition', text: 'Alternator insulation resistance (megger) reading, AVR and controller function, and the protection settings on the breaker.' },
+              { n: 3, title: 'Load test', text: 'A load-bank test at a stated percentage of the prime rating for a stated time, with voltage, frequency and temperatures recorded on a dated report.' },
+            ].map((c) => (
+              <div key={c.n} className="p-8 rounded-xl border border-gray-700 bg-gradient-to-br from-black to-gray-900">
+                <div className="w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center text-white text-xl font-bold mb-4">{c.n}</div>
+                <h3 className="text-xl font-bold text-white">{c.title}</h3>
+                <p className="mt-4 text-white/70">{c.text}</p>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </section>
 
-        {/* A TRADE-IN PANEL STOOD HERE AND WAS REMOVED ON 2026-09-21, with the
-            homepage trade-in calculator, on the owner's instruction.
-
-            It promised "credit towards a new Cummins generator" and "free
-            collection and valuation" — three commitments, none of them backed
-            by a process anywhere in this business, and the first pointing at
-            the wrong make: VOLTKA is what we sell.
-
-            Its button linked to /generator/contact?type=tradein, which returns
-            HTTP 404 on production and always had. So the panel advertised a
-            service we do not run, through a button that did not work. */}
+        <section aria-labelledby="makes-heading" className="mt-16 text-center">
+          <h2 id="makes-heading" className="text-2xl font-bold text-white mb-4">Makes We Buy, Recondition, Sell Used and Service</h2>
+          <p className="text-white/60 mb-6">New generators: we sell VOLTKA only. <Link href="/generators" className="text-amber-400 underline">See new VOLTKA sets and prices</Link>.</p>
+          <ul className="flex flex-wrap justify-center gap-3">
+            {USED_MAKES.map((m) => (
+              <li key={m.name}><Link href={m.href} className="inline-block px-4 py-2 rounded-full border border-white/20 text-white/90 hover:border-amber-500">{m.name}</Link></li>
+            ))}
+          </ul>
+        </section>
       </div>
     </div>
   );
 }
-

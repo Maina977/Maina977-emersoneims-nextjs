@@ -121,10 +121,10 @@ export default function SolarGeneratorBlogPage() {
                 <div className="space-y-1 ml-4 text-gray-400">
                   <div className="flex justify-between"><span>Solar (10 kW):</span><span>KES 1.5M</span></div>
                   <div className="flex justify-between"><span>Battery (20 kWh):</span><span>KES 1.5M</span></div>
-                  <div className="flex justify-between"><span>Small generator (5 kVA):</span><span>KES 400K</span></div>
+                  <div className="flex justify-between"><span>Small generator (5 kVA):</span><span>Request current price</span></div>
                   <div className="flex justify-between"><span>Monthly fuel:</span><span>KES 15-25K</span></div>
                   <div className="border-t border-slate-600 pt-1 mt-1 flex justify-between">
-                    <span>1-year cost:</span><span className="text-emerald-400">KES 3.5-3.7M</span>
+                    <span>1-year cost:</span><span className="text-emerald-400">KES 3.2-3.3M plus the generator</span>
                   </div>
                 </div>
               </div>

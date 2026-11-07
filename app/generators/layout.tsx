@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: 'Cummins & Voltka Generators Kenya | 10-3000kVA',
-    description: 'Cummins generator sales & maintenance specialist. NEW generators with warranty + 1 year free maintenance. Serving all 47 counties. Expert installation & support.',
+    description: 'New VOLTKA generators with a 2-year warranty and 1 year free servicing. Used sets of other makes, servicing and repairs across all 47 counties.',
     type: 'website',
     url: 'https://www.emersoneims.com/generators',
     siteName: 'EmersonEIMS',

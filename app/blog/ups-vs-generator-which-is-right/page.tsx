@@ -169,15 +169,15 @@ export default function UPSVsGeneratorBlogPage() {
               <div>
                 <p className="font-bold">Option B: Generator Only</p>
                 <p className="text-sm">Capacity: 25 kVA generator</p>
-                <p className="text-sm">Cost: KES 1.5M | Solves: Long outages</p>
+                <p className="text-sm">Cost: request current price | Solves: Long outages</p>
                 <p className="text-sm">Problem: 5-second startup gap = system crashes</p>
               </div>
               <div>
                 <p className="font-bold">Option C: UPS + Generator (Recommended)</p>
                 <p className="text-sm">UPS (5 kW, 10-min): KES 300K</p>
-                <p className="text-sm">Generator (25 kVA): KES 1.5M</p>
+                <p className="text-sm">Generator (25 kVA): request current price</p>
                 <p className="text-sm">ATS Controller: KES 150K</p>
-                <p className="text-sm">Total: KES 1.95M | Result: Zero downtime, seamless operation</p>
+                <p className="text-sm">Total: KES 450K plus the generator | Result: Zero downtime, seamless operation</p>
               </div>
             </div>
           </div>

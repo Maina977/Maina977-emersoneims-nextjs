@@ -497,12 +497,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/solar-genius-pro/design-studio`, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solar-genius-pro/solar-dashboard`, changeFrequency: 'weekly', priority: 0.75 },
 
-    // Used-equipment specification pages, one per engine brand.
-    ...['cummins', 'caterpillar', 'perkins', 'sdmo', 'volvo-penta', 'wei-chai'].map((brand) => ({
-      url: `${BASE_URL}/specs/used/${brand}`,
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    })),
+    // /specs/used/<brand> removed 2026-11-07: 301 to /generators/used.
     // /generators/case-studies is 308-redirected to /case-studies in
     // next.config.ts and must NOT be listed — a sitemap advertises canonical
     // destinations, not redirect sources. /case-studies is listed below.
