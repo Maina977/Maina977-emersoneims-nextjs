@@ -11,6 +11,9 @@ import { test, expect } from '@playwright/test';
  * The site's middleware refuses HeadlessChrome, so a normal desktop UA is set.
  */
 test.use({
+  // The installed Chrome, as scripts/verify/aquascan-repeat.cjs uses; the
+  // bundled Playwright browsers are not installed on this machine.
+  channel: 'chrome',
   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
 });
 
