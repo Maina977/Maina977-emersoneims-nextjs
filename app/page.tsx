@@ -101,6 +101,7 @@ import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix
 import { COMMERCIAL_POLICY } from '@/lib/commercial/policy';
 import RecentWorkSection from '@/components/home/RecentWorkSection';
 import BuyerDirectory from '@/components/home/BuyerDirectory';
+import BlackNovemberAd from '@/components/campaign/BlackNovemberAd';
 import ClientTestimonials from '@/components/home/ClientTestimonials';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
@@ -661,6 +662,10 @@ export default function HomePage() {
 
       {/* STATIC CONTENT - Renders instantly (no JS needed) */}
       <StaticHeroFallback />
+      {/* Black November 2026 campaign (owner, 7 Nov 2026): a NEW section under
+          the hero. Existing homepage media are untouched. Remove after
+          CAMPAIGN_END in lib/campaign/blackNovember.ts (7 May 2027). */}
+      <BlackNovemberAd />
       {/* Purchasing directory under the hero (external audit, Nov 2026, §3):
           buy equipment, get a service, or talk to an engineer. */}
       <BuyerDirectory />
