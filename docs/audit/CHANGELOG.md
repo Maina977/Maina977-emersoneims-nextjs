@@ -1,7 +1,10 @@
-# Changelog (2026-11-05)
+# Changelog (updated 2026-11-07)
 
 | Commit | Change |
 |---|---|
+| 85a140fc | Re-audit 7 Nov: one generator price source with VAT, ATS, delivery, installation and commissioning exclusions named; conflicting prices removed (industry packages, service bible, blog, FAQ install costs, ROI calculator at KES 200,000/kVA); sitewide FAQ schema warranty corrected; delivery and installation-time promises replaced by `lib/business/deliveryTime.ts`; `/generators/used` rebuilt on `lib/inventory/usedGeneratorStock.ts` (no invented prices, hours, models or photos), `/specs/used/*` 301 to it; marketplace undertakings removed, partner profiles 301; brand star ratings replaced with engine, parent company and ISO 8528 datasheet checks; founding year 2011 everywhere (About said 2013, four pages 2012), unmeasured experience numbers removed; solar inverter and AC temperature and standards errors corrected; constituency pages withdrawn from the sitemap |
+| c9958d5f | Unconfirmed emergency response times replaced on 10 live pages; `generate_lead` test |
+| 5467b629 | Re-audit 6 Nov: /generators FAQ price inclusions, booking AI-tool claim, Cummins D5 phase, used-unit figures |
 | 9fd41d50 | Speed: homepage hero no longer content-visibility:auto; /contact h1 visible on first paint; /generators hero mounts only current and next slide |
 | 8ef96972 | Lead stages: /admin/leads pipeline, /admin/login (rate-limited, HttpOnly cookie), /api/admin/leads (admin only, never deletes). Needs ADMIN_API_KEY in Vercel |
 | 4acad138 | Articles link to their product and service pages (template + 17 hand-written articles) |

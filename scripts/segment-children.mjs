@@ -35,7 +35,7 @@ export const GUARDED_SEGMENTS = [
   'guides', 'healthcare', 'high-rise', 'hub', 'industry-solutions',
   'innovations', 'knowledge-base', 'maintenance-hub', 'marketplace',
   'podcasts', 'products', 'resources', 'safety', 'service', 'solar',
-  'specs', 'technical-bible', 'tools', 'troubleshooting',
+  'technical-bible', 'tools', 'troubleshooting', // 'specs' removed 2026-11-07: app/specs deleted, /specs/used/* 301s
 ];
 
 const PAGE_FILES = ['page.tsx', 'page.ts', 'page.jsx', 'page.js', 'route.ts', 'route.js'];

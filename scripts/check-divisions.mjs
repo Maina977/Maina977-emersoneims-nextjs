@@ -99,6 +99,12 @@ if (repairHubs.size === 0) {
   }
 }
 
+const brandSlugs = new Set(
+  existsSync(join(ROOT, 'lib/data/generator-brands.ts'))
+    ? [...read('lib/data/generator-brands.ts').matchAll(/slug: '([a-z0-9-]+)'/g)].map((m) => m[1])
+    : [],
+);
+
 function resolves(href) {
   if (!href.startsWith('/')) return false;
   const path = href.split(/[?#]/)[0].replace(/\/$/, '') || '/';
@@ -120,6 +126,11 @@ function resolves(href) {
 
   const r = path.match(/^\/repair-centre\/([^/]+)$/);
   if (r) return repairHubs.size === 0 || repairHubs.has(r[1]);
+
+  // /brands/<slug>: app/brands/[brand] builds one page per GENERATOR_BRANDS slug
+  // (generateStaticParams). Added 2026-11-07 for the SDMO and Weichai links.
+  const b = path.match(/^\/brands\/([^/]+)$/);
+  if (b) return brandSlugs.has(b[1]);
 
   return false;
 }
