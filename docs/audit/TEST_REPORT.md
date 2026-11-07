@@ -1,3 +1,19 @@
+# Test report (2026-11-07, re-audit)
+
+Build tested: `38d6b46f` (re-audit `85a140fc` + guard fixes); deployed as `5e50bcb8` (adds only the e2e browser setting).
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | 0 errors |
+| `npx vitest run` | 65 files, 649 tests passed |
+| Pre-build guards (14) | all pass (division-link guard now knows `/brands/<slug>`; segment guard updated for removed `/specs`, `/marketplace/partners`) |
+| Gate: lint, build, step 2, route audit (18/18), site audit (0 errors, 433 pages), Googlebot audit, SEO compare | passed |
+| Gate: AquaScan | first run timed out: ISRIC SoilGrids answering in 44-66 s and 502 (direct request 31 s); no AquaScan file changed since the 6 Nov pass. Re-run per site: Nairobi, Garissa, Kitale all passed, two identical runs each |
+| Playwright `e2e/reaudit-2026-11-07.spec.ts` (local build, installed Chrome, contact API and Google tags stubbed) | 6/6 passed |
+| Live after deploy: `live-smoke.cjs`; `/generators/used`, `/specs/used/cummins` (301), `/about-us` (Est. 2011), `/marketplace` (In Formation) | passed |
+| Live crawler sample (Googlebot, AdsBot UAs, 8 requests spaced 3 s) | 200 with self canonical; `/counties/*` 308; marketplace noindex |
+| Vercel firewall, last 24 h | Googlebot 291 requests, the 35 denied/challenged were all WordPress probe paths (`/cms/`, `/wp-json/`); no AdsBot traffic yet |
+
 # Test report (2026-11-06)
 
 Build tested: commit `722ecaf5` (includes `8f8882c7` security and `generate_lead`, `9b8a1ff3` confirmed generator prices). Not yet deployed.
