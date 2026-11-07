@@ -2,7 +2,7 @@
  * External re-audit, 7 November 2026: one test per corrected finding.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   VOLTKA_PRICE_BASIS, VOLTKA_PRICE_EXCLUSIONS, voltkaEstimateKes, confirmedPriceFor,
@@ -83,16 +83,26 @@ describe('3. delivery and installation promises', () => {
 
 describe('4. used-generator catalogue', () => {
   const unit: UsedGeneratorUnit = {
-    stockId: 'EIMS-U-0001', make: 'Perkins', model: '1104A-44TAG2', kvaPrime: 60, engineHours: 4210,
-    hoursReadOn: '2026-11-01', enclosure: 'canopied', phase: 'three', location: 'Nairobi',
-    photos: ['/images/stock/u0001-front.jpg'], warrantyCoverage: 'Engine and alternator',
+    stockId: 'EIMS-U-99', title: 'Perkins test set', enclosure: 'canopied',
+    photos: ['/images/used-stock/test.webp'], photographedOn: '2026-11-04', warrantyCoverage: 'Engine and alternator',
   };
-  it('a unit needs a stock number, hour reading, photo and warranty cover to be shown', () => {
+  it('a unit needs a reference, title, photo, photo date and warranty cover to be shown', () => {
     expect(isPublishableUnit(unit)).toBe(true);
     expect(isPublishableUnit({ ...unit, photos: [] })).toBe(false);
     expect(isPublishableUnit({ ...unit, stockId: '' })).toBe(false);
-    expect(isPublishableUnit({ ...unit, hoursReadOn: 'recently' })).toBe(false);
+    expect(isPublishableUnit({ ...unit, photographedOn: 'recently' })).toBe(false);
+    expect(isPublishableUnit({ ...unit, engineHours: 2269 })).toBe(false); // hours without the date read
+    expect(isPublishableUnit({ ...unit, engineHours: 2269, hoursReadOn: '2026-11-04' })).toBe(true);
     expect(isPublishableUnit({ ...unit, testRecord: { date: '2026-11-02', loadPercent: 75, durationHours: 2, reportRef: '' } })).toBe(false);
+  });
+  it('the owner-supplied units carry no invented hours, prices or ratings', () => {
+    expect(USED_GENERATOR_STOCK.length).toBe(8);
+    for (const u of USED_GENERATOR_STOCK) {
+      expect(u.engineHours, u.stockId).toBeUndefined();
+      expect(u.priceKes, u.stockId).toBeUndefined();
+      if (u.rating) expect(u.rating, u.stockId).toMatch(/\(rating plate\)$/);
+      for (const ph of u.photos) expect(existsSync(join(__dirname, '..', '..', 'public', ph)), ph).toBe(true);
+    }
   });
   it('every unit in stock is publishable (nothing half-filled ships)', () => {
     expect(publishableStock()).toHaveLength(USED_GENERATOR_STOCK.length);

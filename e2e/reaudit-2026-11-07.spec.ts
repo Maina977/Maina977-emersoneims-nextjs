@@ -25,7 +25,11 @@ test('used generators: unit-by-unit stock, no brand-wide price or hour ranges', 
   await page.goto('/generators/used');
   const body = (await page.textContent('body')) ?? '';
   expect(body).toContain('Current Stock');
-  expect(body).toContain('Request the current stock list');
+  // Owner-supplied units (photos of 4 Nov 2026): one card per machine.
+  expect(body).toContain('EIMS-U-01');
+  expect(body).toContain('Olympian GEP110-4');
+  expect(body).toContain('100 kVA / 80 kW prime');
+  expect(await page.locator('article', { hasText: 'EIMS-U-' }).count()).toBe(8);
   expect(body).toMatch(/2 years? warranty|2-year warranty/i);
   expect(body).not.toMatch(/KSh 800,000|2,000 – 8,500 hrs|AIRDOSER|Certified Pre-Owned Fleet/);
 });

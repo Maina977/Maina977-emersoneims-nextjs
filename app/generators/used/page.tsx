@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useRef } from "react";
+import { useState, useRef, Fragment } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Image from 'next/image';
 import Link from 'next/link';
@@ -145,24 +145,27 @@ const ImageGallery = ({ images, brand }: { images: string[]; brand: string }) =>
 };
 
 function UnitCard({ unit }: { unit: UsedGeneratorUnit }) {
+  const ask = 'On request';
   return (
-    <article className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-black to-gray-900">
+    <article className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-black to-gray-900 flex flex-col">
       <div className="flex justify-between items-start gap-3 mb-2">
-        <h3 className="text-xl font-bold text-white">{unit.make} {unit.model}</h3>
-        <span className="text-xs text-white/60 font-mono">{unit.stockId}</span>
+        <h3 className="text-xl font-bold text-white">{unit.title}</h3>
+        <span className="text-xs text-white/60 font-mono shrink-0">{unit.stockId}</span>
       </div>
-      <p className="text-brand-gold font-semibold">{unit.kvaPrime} kVA prime · {unit.phase === 'three' ? 'three-phase' : 'single-phase'} · {unit.enclosure}</p>
-      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/80">
-        <dt className="text-white/50">Engine hours</dt><dd>{unit.engineHours.toLocaleString('en-US')} (read {unit.hoursReadOn})</dd>
-        {unit.yearOfManufacture ? (<><dt className="text-white/50">Year</dt><dd>{unit.yearOfManufacture}</dd></>) : null}
-        <dt className="text-white/50">Location</dt><dd>{unit.location}</dd>
+      <p className="text-brand-gold font-semibold text-sm">{unit.rating ?? 'Rating: on request'}</p>
+      <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm text-white/80">
+        <dt className="text-white/50">Enclosure</dt><dd className="capitalize">{unit.enclosure}</dd>
+        {unit.plate?.map((line) => (<Fragment key={line}><dt className="text-white/50">Plate</dt><dd>{line}</dd></Fragment>))}
+        <dt className="text-white/50">Engine hours</dt>
+        <dd>{unit.engineHours !== undefined ? `${unit.engineHours.toLocaleString('en-US')} (read ${unit.hoursReadOn})` : ask}</dd>
         <dt className="text-white/50">Price</dt><dd>{unit.priceKes ? `${kes(unit.priceKes)} excl. VAT` : REQUEST_CURRENT_PRICE}</dd>
         <dt className="text-white/50">Load test</dt>
-        <dd>{unit.testRecord ? `${unit.testRecord.loadPercent}% for ${unit.testRecord.durationHours} h on ${unit.testRecord.date} (report ${unit.testRecord.reportRef})` : 'Not yet tested; ask before you buy'}</dd>
-        <dt className="text-white/50">Warranty</dt><dd>{USED_WARRANTY_TERM}: {unit.warrantyCoverage}</dd>
+        <dd>{unit.testRecord ? `${unit.testRecord.loadPercent}% for ${unit.testRecord.durationHours} h on ${unit.testRecord.date} (report ${unit.testRecord.reportRef})` : 'Ask for the report before you buy'}</dd>
+        <dt className="text-white/50">Warranty</dt><dd>{USED_WARRANTY_TERM}. {unit.warrantyCoverage}</dd>
       </dl>
       {unit.conditionNotes ? <p className="mt-3 text-sm text-white/60">{unit.conditionNotes}</p> : null}
-      <ImageGallery images={unit.photos} brand={`${unit.make} ${unit.model} (${unit.stockId})`} />
+      <ImageGallery images={unit.photos} brand={`${unit.title} (${unit.stockId})`} />
+      <p className="mt-2 text-xs text-white/40">Photographed {unit.photographedOn}. Availability changes; confirm before you visit.</p>
       <a href={`/contact?type=used-generator&unit=${encodeURIComponent(unit.stockId)}`} className="sci-fi-button block text-center py-3 mt-6">
         Ask about {unit.stockId}
       </a>
@@ -337,9 +340,14 @@ export default function UsedGeneratorsPage() {
         <section aria-labelledby="stock-heading" className="mt-12">
           <h2 id="stock-heading" className="text-3xl font-bold text-white text-center mb-6">Current Stock</h2>
           {stock.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {stock.map((u) => <UnitCard key={u.stockId} unit={u} />)}
-            </div>
+            <>
+              <p className="text-center text-white/70 max-w-3xl mx-auto mb-8">
+                Each card is one machine. Hours, price and the load-test report are sent for the unit you ask about.
+              </p>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {stock.map((u) => <UnitCard key={u.stockId} unit={u} />)}
+              </div>
+            </>
           ) : (
             <div className="max-w-3xl mx-auto p-8 rounded-xl border border-amber-500/30 bg-amber-950/20">
               <p className="text-white/90 text-lg">
