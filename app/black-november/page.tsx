@@ -6,7 +6,7 @@ import { CAMPAIGN_TERMS, CAMPAIGN_BENEFITS, CAMPAIGN_END_LABEL } from '@/lib/cam
 
 export const metadata: Metadata = {
   title: 'Black November 2026 Generator Offer',
-  description: `VOLTKA generators 40-1,500 kVA: free ATS, 6 months free service, 2-year warranty, free countrywide delivery and free installation below 100 kVA. Until ${CAMPAIGN_END_LABEL}.`,
+  description: `Generators powered by Cummins engines, 40-1,500 kVA: free ATS, 6 months free service, 2-year warranty, free countrywide delivery and free installation below 100 kVA. Until ${CAMPAIGN_END_LABEL}.`,
   alternates: { canonical: 'https://www.emersoneims.com/black-november' },
 };
 
@@ -33,7 +33,7 @@ export default function BlackNovemberPage() {
           {CAMPAIGN_TERMS.map((t) => (<li key={t}>{t}</li>))}
         </ol>
         <p className="mt-6 text-slate-400 text-sm">
-          Published VOLTKA prices are on our <Link href="/generators" className="text-orange-300 underline">generators page</Link>.
+          Published generator prices are on our <Link href="/generators" className="text-orange-300 underline">generators page</Link>.
         </p>
       </section>
 

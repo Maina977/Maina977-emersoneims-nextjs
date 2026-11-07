@@ -99,7 +99,7 @@ export default function BlackNovemberAd() {
           </div>
 
           <p className={styles.fine}>
-            Qualifying new VOLTKA generator purchases, 40 to 1,500 kVA, until {CAMPAIGN_END_LABEL}. The ATS rating, service visits,
+            Qualifying new generators powered by Cummins engines, 40 to 1,500 kVA, until {CAMPAIGN_END_LABEL}. The ATS rating, service visits,
             delivery point and installation scope are written in your quotation. <Link href={CAMPAIGN.termsHref}>Full offer terms</Link>.
           </p>
         </div>

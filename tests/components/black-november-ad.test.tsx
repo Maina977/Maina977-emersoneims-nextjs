@@ -25,7 +25,11 @@ describe('Black November ad', () => {
 
   it('makes no claim the owner did not give', () => {
     const src = readFileSync(join(root, 'components/campaign/BlackNovemberAd.tsx'), 'utf8') + readFileSync(join(root, 'lib/campaign/blackNovember.ts'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-    expect(src).not.toMatch(/Offer Extended|\d+\s?% off|Cummins-powered|guarantee/i);
+    expect(src).not.toMatch(/Offer Extended|\d+\s?% off|guarantee/i);
+    // Owner, 7 Nov 2026: no VOLTKA in the ad; "Generators powered by Cummins engines" instead.
+    const visible = src.replace(/src: '[^']*'/g, '').replace(/\/\/.*$/gm, '');
+    expect(visible).not.toMatch(/VOLTKA/);
+    expect(src).toMatch(/Generators powered by Cummins engines/);
     expect(CAMPAIGN_TERMS.join(' ')).toMatch(/written in your quotation/);
   });
 
