@@ -369,11 +369,16 @@ export default async function BrandPage({ params }: Props) {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Product',
-            name: `${brand.name} Generators`,
-            description: brand.description,
+            // Change Set C (2026-11-12): the prices below are VOLTKA list
+            // prices (Cummins engines), so when they are present the Product
+            // is the VOLTKA set and its brand is VOLTKA, not Cummins.
+            name: priceBand ? 'VOLTKA generators with Cummins engines' : `${brand.name} Generators`,
+            description: priceBand
+              ? 'New VOLTKA generator sets with Cummins engines. Published prices: prime rated, ex-warehouse, excluding VAT, ATS, delivery, installation and commissioning.'
+              : brand.description,
             brand: {
               '@type': 'Brand',
-              name: brand.name,
+              name: priceBand ? 'VOLTKA' : brand.name,
             },
             /*
              * Search Console, 2026-09-06: "Missing field lowPrice (in offers)"

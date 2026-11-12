@@ -1,3 +1,5 @@
+import { confirmedSpanSentence, VOLTKA_PRICES_AS_OF_LABEL } from '@/lib/pricing/voltkaConfirmedPrices';
+
 /**
  * GENERATOR BRANDS SEO DATA
  * 17 major generator brands with SEO metadata for brand-specific pages
@@ -123,7 +125,10 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
       },
       {
         question: 'How much do Cummins generators cost in {location}?',
-        answer: 'Cummins generator prices in {location} vary by capacity. Contact us for competitive quotes on new and certified pre-owned Cummins generators.'
+        // Change Set C (2026-11-12): was "Contact us for ... new and certified
+        // pre-owned Cummins generators": prices ARE published (VOLTKA sets,
+        // Cummins engines) and used sets are sold unit by unit, not "certified".
+        answer: `New generators with Cummins engines are sold as our VOLTKA sets, with published prices: ${confirmedSpanSentence()}, as of ${VOLTKA_PRICES_AS_OF_LABEL}. Used Cummins sets in {location} are priced unit by unit; ask for the current stock list.`
       },
       {
         question: 'Do you service Cummins generators in {location}?',
