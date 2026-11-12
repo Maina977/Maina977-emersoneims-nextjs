@@ -1,4 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdminRequest, adminNotFound } from '@/lib/auth/adminRequest';
+import { parseSubmitBody, cooldownRemaining, isSameOrigin, MAX_BODY_BYTES } from '@/lib/seo/indexnowRequest';
+
+/*
+ * ADMIN ONLY (Change Set A, 2026-11-12). This route was public and, being an
+ * API route, outside middleware rate limiting: anyone could make the site push
+ * arbitrary URL lists to IndexNow under our key. Anonymous GET and POST now
+ * get a plain 404 (same as every admin surface). Admins call it with
+ * `Authorization: Bearer <ADMIN_API_KEY>` or the admin_session cookie.
+ */
+let lastAcceptedAt = 0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SEO URL SUBMISSION API
@@ -380,18 +391,37 @@ async function pingQwant(): Promise<SubmissionResult> {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export async function POST(request: NextRequest) {
+  if (!isAdminRequest(request)) return adminNotFound();
+  // Cookie-authorised calls must come from this site (the cookie is already
+  // SameSite=Strict; this is defence in depth). Bearer-token calls are
+  // server-to-server and carry no Origin.
+  if (!request.headers.get('authorization') && !isSameOrigin(request)) return adminNotFound();
+  // Refuse an oversized body before reading it.
+  if (Number(request.headers.get('content-length') || 0) > MAX_BODY_BYTES) {
+    return NextResponse.json({ success: false, error: 'Body too large' }, { status: 413 });
+  }
   try {
-    const body = await request.json().catch(() => ({}));
-    const { urls: customUrls, submitAll, comprehensiveSubmit } = body;
+    const parsed = parseSubmitBody(await request.text(), SITE_URL);
+    if (!parsed.ok) {
+      return NextResponse.json({ success: false, error: parsed.error }, { status: parsed.status });
+    }
+    const wait = cooldownRemaining(lastAcceptedAt, Date.now());
+    if (wait > 0) {
+      return NextResponse.json(
+        { success: false, error: 'Submitted less than a minute ago; try again shortly' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(wait / 1000)) } },
+      );
+    }
+    lastAcceptedAt = Date.now();
 
     // Build URL list
     let urlsToSubmit: string[] = [];
 
-    if (comprehensiveSubmit || submitAll) {
+    if (parsed.mode === 'sitemap') {
       // Every published URL, read from sitemap.xml — see getSitemapUrls().
       urlsToSubmit = await getSitemapUrls();
-    } else if (customUrls && Array.isArray(customUrls)) {
-      urlsToSubmit = customUrls;
+    } else if (parsed.mode === 'custom') {
+      urlsToSubmit = parsed.urls;
     } else {
       // Default: critical pages only
       urlsToSubmit = CRITICAL_PAGES.map(page => `${SITE_URL}${page}`);
@@ -434,7 +464,7 @@ export async function POST(request: NextRequest) {
         successful,
         failed,
         urlsSubmitted: urlsToSubmit.length,
-        urlSource: comprehensiveSubmit || submitAll ? 'sitemap.xml' : 'request',
+        urlSource: parsed.mode === 'sitemap' ? 'sitemap.xml' : 'request',
         coveredWithoutSubmission: [...DERIVED],
       },
       results,
@@ -450,7 +480,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!isAdminRequest(request)) return adminNotFound();
   let totalPagesReady = 0;
   let samplePages: string[] = [];
   let sitemapError: string | null = null;
