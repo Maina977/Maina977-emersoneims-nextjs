@@ -379,6 +379,10 @@ export default async function GeneratorSizePage({ params }: Props) {
             <Link href="/pricing/generator-prices-kenya" className="eims-card px-5 py-3 text-sm text-white/80 hover:text-white">
               All generator prices →
             </Link>
+            {/* Change Set D (2026-11-12): the used alternative to a new set of this size. */}
+            <Link href="/generators/used" className="eims-card px-5 py-3 text-sm text-white/80 hover:text-white">
+              Used generators, unit by unit →
+            </Link>
             <Link href="/generators/spare-parts" className="eims-card px-5 py-3 text-sm text-white/80 hover:text-white">
               Spare parts →
             </Link>

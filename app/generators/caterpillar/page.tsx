@@ -113,6 +113,11 @@ export default function CaterpillarPage() {
           >
             Request Technical Specifications
           </Link>
+          {/* Change Set D (2026-11-12): makes we sell used, linked to the stock list. */}
+          <p className="mt-6 text-gray-200">
+            Looking for a used Caterpillar set? We sell them unit by unit; the warranty terms for each unit are on its quotation:{' '}
+            <Link href="/generators/used" className="underline font-semibold">see the current used stock</Link>.
+          </p>
         </div>
       </section>
     </div>

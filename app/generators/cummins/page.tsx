@@ -249,6 +249,11 @@ export default function CumminsPage() {
               Contact Sales
             </Link>
           </div>
+          {/* Change Set D (2026-11-12): makes we sell used, linked to the stock list. */}
+          <p className="mt-6 text-gray-200">
+            Looking for a used Cummins set? We sell them unit by unit; the warranty terms for each unit are on its quotation:{' '}
+            <Link href="/generators/used" className="underline font-semibold">see the current used stock</Link>.
+          </p>
           <p className="text-gray-300 mt-8">
             Call: +254 768 860 665 | WhatsApp: +254 782 914 717 | Email: sales@emersoneims.com
           </p>
