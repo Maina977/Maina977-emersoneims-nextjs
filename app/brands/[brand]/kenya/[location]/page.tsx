@@ -18,6 +18,7 @@ import {
   getCountyBySlug,
 } from '@/lib/data/kenya-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
+import { brandProductIdentity } from '@/lib/seo/brandProductSchema';
 
 type Props = {
   params: Promise<{ brand: string; location: string }>;
@@ -370,12 +371,10 @@ export default async function BrandLocationPage({ params }: Props) {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Product',
-            name: `${brand.name} Generators in ${county.name}`,
-            description: `${brand.description}. Available in ${county.name}, Kenya.`,
-            brand: {
-              '@type': 'Brand',
-              name: brand.name,
-            },
+            // Change Set C v2 (2026-11-12): these offers are the VOLTKA price
+            // band, so for Cummins the Product is the VOLTKA set (brand VOLTKA,
+            // Cummins engine). Same helper as the parent brand page.
+            ...brandProductIdentity(brand, priceBand !== null, county.name),
             /*
              * lowPrice / highPrice / offerCount added 2026-09-06 after Search
              * Console reported the missing lowPrice as a CRITICAL Product

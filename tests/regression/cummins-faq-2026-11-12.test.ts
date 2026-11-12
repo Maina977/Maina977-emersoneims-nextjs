@@ -31,9 +31,11 @@ describe('Cummins brand FAQ', () => {
     expect(band.high).toBe(s.highKes);
   });
 
-  it('Product schema is attributed to VOLTKA whenever it carries prices', () => {
-    const page = readFileSync(join(__dirname, '..', '..', 'app/brands/[brand]/page.tsx'), 'utf8');
-    expect(page).toMatch(/name: priceBand \? 'VOLTKA generators with Cummins engines'/);
-    expect(page).toMatch(/name: priceBand \? 'VOLTKA' : brand\.name/);
+  it('both brand templates take their Product identity from the shared helper (v2)', () => {
+    for (const f of ['app/brands/[brand]/page.tsx', 'app/brands/[brand]/kenya/[location]/page.tsx']) {
+      const page = readFileSync(join(__dirname, '..', '..', f), 'utf8');
+      expect(page, f).toMatch(/\.\.\.brandProductIdentity\(brand, priceBand !== null/);
+      expect(page, f).not.toMatch(/name: `\$\{brand\.name\} Generators/);
+    }
   });
 });

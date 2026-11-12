@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { publishedPriceRange } from '@/lib/products/generatorSizes';
+import { brandProductIdentity } from '@/lib/seo/brandProductSchema';
 import {
   GENERATOR_BRANDS,
   getBrandBySlug,
@@ -369,17 +370,10 @@ export default async function BrandPage({ params }: Props) {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Product',
-            // Change Set C (2026-11-12): the prices below are VOLTKA list
-            // prices (Cummins engines), so when they are present the Product
-            // is the VOLTKA set and its brand is VOLTKA, not Cummins.
-            name: priceBand ? 'VOLTKA generators with Cummins engines' : `${brand.name} Generators`,
-            description: priceBand
-              ? 'New VOLTKA generator sets with Cummins engines. Published prices: prime rated, ex-warehouse, excluding VAT, ATS, delivery, installation and commissioning.'
-              : brand.description,
-            brand: {
-              '@type': 'Brand',
-              name: priceBand ? 'VOLTKA' : brand.name,
-            },
+            // Change Set C (2026-11-12): when the VOLTKA prices are present the
+            // Product is the VOLTKA set (brand VOLTKA, Cummins engine). Shared
+            // with the /kenya/<county> variants: lib/seo/brandProductSchema.ts.
+            ...brandProductIdentity(brand, priceBand !== null),
             /*
              * Search Console, 2026-09-06: "Missing field lowPrice (in offers)"
              * — critical, so these pages were not eligible for a Product
