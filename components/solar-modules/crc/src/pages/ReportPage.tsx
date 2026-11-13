@@ -3,7 +3,13 @@ import styled from 'styled-components';
 import { useSolarStore } from '../services/store';
 import { reports, downloadBlob } from '../services/api';
 import { proposalFinance } from '../services/proposalFinance';
-import { BATTERY_KES_PER_KWH, PANEL_KES_PER_W, PANEL_WATT, tieredKes, inverterBands, type SystemType } from '@/lib/solar/sizing';
+import { BATTERY_KES_PER_KWH, PANEL_KES_PER_W, PANEL_WATT, tieredKes, inverterBands, pricesVerified, REQUEST_QUOTATION, type SystemType } from '@/lib/solar/sizing';
+
+// Price policy (management decision 2026-11-13): a proposal carries equipment
+// prices only with a verified price basis; otherwise it uses the client's own
+// quoted capex (labelled as theirs) and lists the equipment without prices.
+const SHOW_PRICES = pricesVerified();
+const NEED_PRICE = `A proposal needs a price: ${REQUEST_QUOTATION.toLowerCase()}, or enter the quoted installed cost in the calculator (it is then shown as the client's own figure).`;
 
 // Real proposal generator.
 // Fills in client + brand + site + design + financial from the shared
@@ -205,7 +211,7 @@ export default function ReportPage() {
   // Battery and inverter at the calculator's rates (lib/solar/sizing.ts), so
   // the BOM and the capex come from one price list.
   const offGrid = design.systemType === 'off-grid';
-  const batteryLineKes = design.batteryKwh > 0 ? Math.round(design.batteryKwh * BATTERY_KES_PER_KWH) : 0;
+  const batteryLineKes = SHOW_PRICES && design.batteryKwh > 0 ? Math.round(design.batteryKwh * BATTERY_KES_PER_KWH) : 0;
   // The calculator's price list (lib/solar/sizing.ts), not a separate KES
   // 12,500 per panel (2026-10-30 audit).
   function inverterKes(kw: number): number {
@@ -214,6 +220,8 @@ export default function ReportPage() {
   }
   const panelUnitKes = Math.round((design.panelW || PANEL_WATT) * PANEL_KES_PER_W);
   function buildBom() {
+    // No priced lines without verified prices: the equipment is still listed in the design section.
+    if (!SHOW_PRICES) return [];
     const panels = design.panelCount || metrics.panelCount;
     const panelTotalKes = panels * panelUnitKes;
     const inverterCost = inverterKes(design.inverterKw);
@@ -352,11 +360,11 @@ export default function ReportPage() {
       },
       provenance: [
         offGrid
-          ? { label: 'Diesel KSh ' + (site.dieselKesPerLitre ?? '-') + '/L', source: 'Used by the calculator for the diesel displaced (entered by the client, or the stated default)',
+          ? { label: (site.dieselKesPerLitre ?? 0) > 0 ? 'Diesel KSh ' + site.dieselKesPerLitre + '/L' : 'Diesel price not entered', source: 'Entered by the client: a user-provided assumption',
               url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) }
-          : { label: 'Tariff KSh ' + site.tariffKesPerKwh + '/kWh', source: 'Used by the calculator (entered by the client as total bill ÷ kWh, or the stated default)',
+          : { label: site.tariffKesPerKwh > 0 ? 'Tariff KSh ' + site.tariffKesPerKwh + '/kWh' : 'Tariff not entered', source: 'Entered by the client (total bill ÷ kWh): a user-provided assumption',
               url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
-        { label: 'Equipment pricing', source: 'Typical Kenyan installed prices (estimate, not a quotation)',
+        { label: SHOW_PRICES ? 'Equipment pricing' : 'Capital cost', source: SHOW_PRICES ? 'Verified price list (see the price basis)' : "The client's own quoted figure: a user-provided assumption, not an EmersonEIMS price",
           url: 'internal', retrievedIso: new Date().toISOString().slice(0, 10) },
         { label: 'Cash flow assumptions',
           source: `${offGrid ? 'Diesel price' : 'Tariff'} held flat (+${a.tariffEscalationPct}%/yr), panel output -${a.panelDegradationPct}%/yr, O&M ${a.omPctOfCapex}% of capex/yr`
@@ -380,6 +388,7 @@ export default function ReportPage() {
       return;
     }
 
+    if (!(capexKes > 0)) { setError(NEED_PRICE); return; }
     setLoading(true);
     try {
       const payload = buildProposalPayload();
@@ -401,7 +410,9 @@ export default function ReportPage() {
 
   async function handleGenerateFormat(fmt: 'pdf' | 'docx' | 'xlsx') {
     if (fmt === 'pdf') return handleGenerate();
-    setError(null); setOkMsg(null); setLoading(true);
+    setError(null); setOkMsg(null);
+    if (!(capexKes > 0)) { setError(NEED_PRICE); return; }
+    setLoading(true);
     try {
       // Build the same payload as PDF — re-use handleGenerate's logic by
       // calling the underlying builder.  We replicate the minimal payload
@@ -588,7 +599,7 @@ export default function ReportPage() {
           <SummaryRow><SummaryK>Annual yield</SummaryK><SummaryV>{metrics.annualProduction} kWh</SummaryV></SummaryRow>
 
           <Section>Financial</Section>
-          <SummaryRow><SummaryK>CAPEX</SummaryK><SummaryV>KSh {Math.round((financial.capexKes || metrics.totalCost) / 1000)}k</SummaryV></SummaryRow>
+          <SummaryRow><SummaryK>CAPEX</SummaryK><SummaryV>{capexKes > 0 ? `KSh ${Math.round(capexKes / 1000)}k${SHOW_PRICES ? '' : ' (client figure)'}` : REQUEST_QUOTATION}</SummaryV></SummaryRow>
           <SummaryRow><SummaryK>Year-1 saving</SummaryK><SummaryV>KSh {Math.round(financial.year1SavingsKes / 1000)}k</SummaryV></SummaryRow>
           <SummaryRow><SummaryK>Payback (proposal cash flow)</SummaryK><SummaryV>{finance.paybackYears != null ? `${finance.paybackYears} yrs` : 'Not within 25 years'}</SummaryV></SummaryRow>
 

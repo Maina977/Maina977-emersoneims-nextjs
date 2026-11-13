@@ -209,6 +209,12 @@ const nextConfig: NextConfig = {
     `.replace(/\s{2,}/g, ' ').trim();
 
     return [
+      // Preview deployments are never indexed (management decision
+      // 2026-11-13). Evaluated at build time: a production build (VERCEL_ENV
+      // 'production') gets no extra header, so production indexing is unchanged.
+      ...(process.env.VERCEL_ENV === 'preview'
+        ? [{ source: '/(.*)', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] }]
+        : []),
       {
         source: '/(.*)',
         headers: [

@@ -3,7 +3,10 @@ import styled from 'styled-components';
 import { useRouter } from 'next/navigation';
 import { useSolarStore } from '../services/store';
 import { autoDesign, equipment } from '../services/api';
-import { estimateInstalledCost, gridSaving } from '@/lib/solar/sizing';
+import { estimateInstalledCost, gridSaving, pricesVerified, REQUEST_QUOTATION } from '@/lib/solar/sizing';
+
+// BOM unit prices are shown only with a verified price basis (price policy 2026-11-13).
+const SHOW_PRICES = pricesVerified();
 
 /**
  * DesignerPage — real auto-designer. Pulls site + monthly consumption from the
@@ -154,16 +157,21 @@ const DesignerPage: React.FC = () => {
       const type = design.systemType ?? (design.batteryKwh > 0 ? 'hybrid' : 'grid-tied');
       const battKwh = d?.batteryKwh ?? design.batteryKwh ?? 0;
       if (d?.systemKw && !(Number(d?.capexKes) > 0)) {
-        d.capexKes = estimateInstalledCost(Number(d.systemKw), Number(d.inverterKw) || 0, Number(battKwh) || 0, type).midKes;
+        // Price policy (management decision 2026-11-13): verified prices, or the
+        // customer's own quoted capex; otherwise 0 = "Request a quotation".
+        d.capexKes = pricesVerified()
+          ? estimateInstalledCost(Number(d.systemKw), Number(d.inverterKw) || 0, Number(battKwh) || 0, type).midKes
+          : Number(financial.capexKes) > 0 ? Number(financial.capexKes) : 0;
         const annualKwh = Number(d.annualKwh) || 0;
         const oldAnnual = Number(metrics.annualProduction) || 0;
-        const tariff = Number(site.tariffKesPerKwh) || undefined;
+        // The customer's own tariff only: gridSaving would otherwise assume one.
+        const tariff = Number(site.tariffKesPerKwh) > 0 ? Number(site.tariffKesPerKwh) : null;
         const yearSaving = type === 'off-grid'
           // Diesel displaced scales with the energy delivered.
           ? (oldAnnual > 0 ? (Number(financial.year1SavingsKes) || 0) * Math.min(1.5, annualKwh / oldAnnual) : Number(financial.year1SavingsKes) || 0)
-          : gridSaving({ type, annualEnergyKwh: annualKwh, annualConsumptionKwh: consumption * 12, batteryKwh: Number(battKwh) || 0, tariffKesPerKwh: tariff }).annualSavingKes;
+          : tariff === null ? 0 : gridSaving({ type, annualEnergyKwh: annualKwh, annualConsumptionKwh: consumption * 12, batteryKwh: Number(battKwh) || 0, tariffKesPerKwh: tariff }).annualSavingKes;
         d.monthlySavingKes = Math.round(yearSaving / 12);
-        d.paybackYears = yearSaving > 0 ? Math.round((d.capexKes / yearSaving) * 10) / 10 : 0;
+        d.paybackYears = yearSaving > 0 && d.capexKes > 0 ? Math.round((d.capexKes / yearSaving) * 10) / 10 : 0;
       }
       const priced = Number(d?.capexKes) > 0;
       const bomLines = d?.bom || d?.bill || [];
@@ -280,7 +288,7 @@ const DesignerPage: React.FC = () => {
           <BomTable>
             <thead>
               <tr>
-                <th>Item</th><th>Qty</th><th>Unit (KSh)</th><th>Total (KSh)</th>
+                <th>Item</th><th>Qty</th>{SHOW_PRICES && <><th>Unit (KSh)</th><th>Total (KSh)</th></>}
               </tr>
             </thead>
             <tbody>
@@ -293,13 +301,16 @@ const DesignerPage: React.FC = () => {
                   <tr key={i}>
                     <td>{item || '—'}</td>
                     <td>{qty ?? '—'}</td>
+                    {SHOW_PRICES && <>
                     <td>{Number.isFinite(unit) ? Math.round(unit).toLocaleString() : '—'}</td>
                     <td>{Number.isFinite(total) ? Math.round(total).toLocaleString() : '—'}</td>
+                    </>}
                   </tr>
                 );
               })}
             </tbody>
           </BomTable>
+          {!SHOW_PRICES && <p style={{fontSize:12, opacity:0.75}}>Prices: {REQUEST_QUOTATION.toLowerCase()} for this bill of materials.</p>}
         </Card>
       )}
 
@@ -311,8 +322,8 @@ const DesignerPage: React.FC = () => {
             <Field>Panels <input value={`${metrics.panelCount} × ${design.panelW}W`} disabled /></Field>
             <Field>Inverter <input value={design.inverterKw ? `${design.inverterKw.toFixed(1)} kW` : '—'} disabled /></Field>
             <Field>Battery <input value={design.batteryKwh ? `${design.batteryKwh.toFixed(1)} kWh` : '—'} disabled /></Field>
-            <Field>CAPEX <input value={`KSh ${Math.round(metrics.totalCost).toLocaleString()}`} disabled /></Field>
-            <Field>Payback <input value={`${metrics.paybackPeriods.toFixed(1)} yrs`} disabled /></Field>
+            <Field>CAPEX <input value={metrics.totalCost > 0 ? `KSh ${Math.round(metrics.totalCost).toLocaleString()}${SHOW_PRICES ? '' : ' (your figure)'}` : REQUEST_QUOTATION} disabled /></Field>
+            <Field>Payback <input value={metrics.paybackPeriods > 0 ? `${metrics.paybackPeriods.toFixed(1)} yrs` : 'Needs a cost and your tariff'} disabled /></Field>
           </Grid>
         </Card>
       )}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sizeSolar, KENYA_TOWNS, type SystemType, type RoofType } from '@/lib/solar/sizing';
+import { sizeSolar, publicSizing, KENYA_TOWNS, type SystemType, type RoofType } from '@/lib/solar/sizing';
 import { fetchNasaSun } from '@/lib/solar/nasa';
 
 /**
@@ -85,6 +85,11 @@ export async function POST(request: NextRequest) {
     autonomyDays: [0.5, 5, 'days'],
     peakLoadKw: [0.1, 5000, 'kW'],
     dieselKesPerLitre: [100, 300, 'KES per litre'],
+    // Battery datasheet values (P0 audit 2026-11-13, R7): fractions, not %.
+    batteryDod: [0.3, 1, '(fraction)'],
+    dischargePathEfficiency: [0.5, 1, '(fraction)'],
+    // The customer's own quoted installed cost (a user-provided assumption).
+    installedCostKes: [10_000, 2_000_000_000, 'KES'],
   };
   for (const [k, [lo, hi, unit]] of Object.entries(RANGES)) {
     if (!given(k)) continue;
@@ -141,7 +146,7 @@ export async function POST(request: NextRequest) {
   const inKenya = lat! >= -4.9 && lat! <= 5.1 && lon! >= 33.8 && lon! <= 42.0;
 
   try {
-    const r = sizeSolar({
+    const sized = sizeSolar({
       monthlyKwh,
       pshAnnual: sun.annual,
       pshWorstMonth: sun.worstMonth,
@@ -156,6 +161,16 @@ export async function POST(request: NextRequest) {
       autonomyDays: num(body.autonomyDays),
       peakLoadKw: num(body.peakLoadKw),
       dieselKesPerLitre: num(body.dieselKesPerLitre),
+      batteryDod: num(body.batteryDod),
+      dischargePathEfficiency: num(body.dischargePathEfficiency),
+    });
+    // Price policy (management decision 2026-11-13): no unsourced prices; savings
+    // only from the customer's own tariff or diesel price; payback only with a
+    // cost (verified prices, or the customer's quoted installedCostKes).
+    const r = publicSizing(sized, {
+      tariffGiven: num(body.tariff) !== undefined,
+      dieselPriceGiven: num(body.dieselKesPerLitre) !== undefined,
+      customerCostKes: num(body.installedCostKes) ?? null,
     });
     return NextResponse.json({
       ...r,
@@ -166,7 +181,7 @@ export async function POST(request: NextRequest) {
       ...(inKenya ? {} : { warning: 'This location is outside Kenya: the sun hours are for the location, but prices, tariffs and the grid CO₂ factor are Kenyan.' }),
       // Field names the rest of the Solar app already reads (all in kWh / KES).
       systemKw: r.pvKwp,
-      totalCost: r.cost.midKes,
+      totalCost: r.cost ? r.cost.midKes : null,
       monthlySaving: r.monthlySavingKes,
       annualProduction: r.annualEnergyKwh,
       peakSunHours: sun.annual,

@@ -360,6 +360,8 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
   if (path.startsWith('/api/safety/')) return stub(path, { items: [], categories: [] });
 
   // ── QS
+  // Slab concrete take-off from measured dimensions (P0 audit 2026-11-13).
+  if (path.endsWith('/qs/takeoff/slab')) return calc(calcs.slabConcrete, body);
   if (path.startsWith('/api/qs/')) return stub(path, { items: [], total: 0, currency: 'KES' });
 
   // ── landscape / sched / report / pay / project / site

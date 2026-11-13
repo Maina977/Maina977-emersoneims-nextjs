@@ -544,3 +544,55 @@ export function quickPumpEstimate(
     rating
   };
 }
+
+/** The pump-test fields the analyser receives from the Field Data form. */
+export interface FieldPumpTest {
+  sustainableYieldM3Hr?: number;
+  drawdownM?: number;
+  testDurationHrs?: number;
+}
+
+/**
+ * Pump-test analysis for the borehole report, from a FIELD pump test only.
+ *
+ * P0 integrity rule (2026-11): a pump-test result must come from a pump test.
+ *  - No field test: no analysis (the report says no pump test data is available).
+ *  - Field test without a pumping rate or a drawdown: no analysis, with the reason.
+ *    Missing values are never defaulted (previously 1 m³/h and 10 m).
+ *  - Values the form does not collect (aquifer thickness, static water level) are
+ *    stated as assumptions on the result instead of being presented as measured.
+ */
+export function buildFieldPumpTestAnalysis(
+  pumpTest: FieldPumpTest | undefined | null,
+  modelledDepthM: number,
+): { analysis?: PumpTestResult & { assumptions: string[] }; rejected?: string } {
+  if (!pumpTest) return {};
+  const rate = Number(pumpTest.sustainableYieldM3Hr);
+  const drawdown = Number(pumpTest.drawdownM);
+  const missing: string[] = [];
+  if (!(rate > 0)) missing.push('pumping rate missing or zero');
+  if (!(drawdown > 0)) missing.push('drawdown missing or zero');
+  if (missing.length) return { rejected: `Pump test not analysed: ${missing.join('; ')}.` };
+
+  const assumedThickness = 30;
+  const assumedStatic = modelledDepthM * 0.3;
+  const durationMin = (pumpTest.testDurationHrs || 24) * 60;
+  const result = analyzePumpTest({
+    pumpingRate_m3hr: rate,
+    readings: [{ time_min: durationMin, drawdown_m: drawdown }],
+    aquiferThickness_m: assumedThickness,
+    staticWaterLevel_m: assumedStatic,
+    pumpDuration_min: durationMin,
+  });
+  return {
+    analysis: {
+      ...result,
+      assumptions: [
+        `Aquifer thickness assumed ${assumedThickness} m (not measured in this test).`,
+        `Static water level assumed ${assumedStatic.toFixed(1)} m (30% of the modelled depth, not measured).`,
+        ...(pumpTest.testDurationHrs ? [] : ['Test duration not entered; 24 h assumed.']),
+        'A single drawdown reading was entered; a full time-drawdown record is needed for a reliable Theis/Cooper-Jacob fit.',
+      ],
+    },
+  };
+}

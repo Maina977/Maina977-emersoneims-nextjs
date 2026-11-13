@@ -1549,3 +1549,53 @@ export function seismicEc8(b: Body) {
     method: 'EN 1998-1 §4.3.3.2 lateral force method, §3.2.2.5 design spectrum',
   };
 }
+
+/**
+ * Slab concrete take-off (QS, Engineering Apps directive §6): net in-situ
+ * concrete volume of a rectangular slab with rectangular openings, from the
+ * dimensions the user measured. Geometric net volume: every opening is
+ * deducted. No wastage, reinforcement or formwork is added: those need the
+ * structural design and the contract's measurement rules, and are not invented
+ * here. Directive benchmark: 12 m x 8 m x 0.15 m = 14.40 m3.
+ */
+export function slabConcrete(b: Body) {
+  const L = pick(b, 'length_m'), W = pick(b, 'width_m'), t = pick(b, 'thickness_m');
+  const err = missing({ length_m: L, width_m: W, thickness_m: t });
+  if (err) return err;
+  if (!(L! > 0 && W! > 0 && t! > 0)) return bad('length_m, width_m and thickness_m must be greater than 0');
+  if (L! > 200 || W! > 200) return bad('length_m and width_m above 200 m are not one slab pour; check the units (metres)');
+  if (t! < 0.05 || t! > 1.5) return bad('thickness_m must be between 0.05 and 1.5 m (in metres: 0.15 = 150 mm)');
+  const raw = b.openings === undefined ? [] : parseArray(b.openings);
+  if (raw === undefined) return bad('openings must be a list of {length_m, width_m} (and optional count)');
+  const gross = L! * W! * t!;
+  const rows: Array<{ opening: string; length_m: number; width_m: number; count: number; area_m2: number; volume_m3: number }> = [];
+  let openArea = 0;
+  for (const [i, o] of raw.entries()) {
+    const ol = n(o.length_m), ow = n(o.width_m), c = o.count === undefined ? 1 : n(o.count);
+    if (ol === undefined || ow === undefined) return bad(`openings[${i}] needs length_m and width_m`);
+    if (!(ol > 0 && ow > 0)) return bad(`openings[${i}] length_m and width_m must be greater than 0`);
+    if (c === undefined || !(c >= 1) || !Number.isInteger(c)) return bad(`openings[${i}] count must be a whole number of 1 or more`);
+    const fits = (ol <= L! && ow <= W!) || (ol <= W! && ow <= L!);
+    if (!fits) return bad(`openings[${i}] (${ol} x ${ow} m) is larger than the slab (${L} x ${W} m)`);
+    const area = ol * ow * c;
+    openArea += area;
+    rows.push({ opening: String(o.description ?? `Opening ${i + 1}`), length_m: ol, width_m: ow, count: c, area_m2: r(area, 3), volume_m3: r(area * t!, 3) });
+  }
+  if (!(openArea < L! * W!)) return bad(`The openings (${r(openArea, 2)} m2) leave no slab (${r(L! * W!, 2)} m2)`);
+  const deductions = openArea * t!;
+  return {
+    gross_volume_m3: r(gross, 3),
+    deductions_m3: r(deductions, 3),
+    net_volume_m3: r(gross - deductions, 3),
+    gross_area_m2: r(L! * W!, 3),
+    net_area_m2: r(L! * W! - openArea, 3),
+    openings: rows,
+    inputs: { length_m: L, width_m: W, thickness_m: t },
+    not_included: ['Wastage allowance', 'Reinforcement (needs the structural design)', 'Formwork (needs the formwork scheme and the measurement rules)', 'Edge thickenings, downstand beams and drops'],
+    assumptions: [
+      'Rectangular slab of uniform thickness, as entered.',
+      'Geometric net volume: every opening is deducted. Some measurement rules (NRM2, SMM7, CESMM4) do not deduct small voids: apply the rule in your contract.',
+    ],
+    method: 'Volume = L x W x t - sum(opening area x t)',
+  };
+}

@@ -41,6 +41,10 @@ export interface SizingInput {
   peakLoadKw?: number;
   /** Off-grid: diesel price KES/litre for the generator being replaced. */
   dieselKesPerLitre?: number;
+  /** Battery usable depth of discharge, 0-1 (datasheet). Default BATTERY_DOD. */
+  batteryDod?: number;
+  /** Battery discharge × inverter efficiency, 0-1 (datasheets). Default DISCHARGE_PATH_EFFICIENCY. */
+  dischargePathEfficiency?: number;
 }
 
 export interface SizingResult {
@@ -71,8 +75,29 @@ export interface SizingResult {
 export const DEFAULT_TARIFF_KES_PER_KWH = 25;
 export const PANEL_WATT = 550;
 export const PERFORMANCE_RATIO = 0.78; // wiring, inverter, temperature and soiling losses
-export const BATTERY_DOD = 0.9; // LiFePO4 usable depth of discharge
-export const BATTERY_EFFICIENCY = 0.95; // round trip
+export const BATTERY_DOD = 0.9; // LiFePO4 usable depth of discharge (default; the datasheet governs)
+/** Round-trip efficiency (charge then discharge): used for energy shifted through the battery. */
+export const BATTERY_EFFICIENCY = 0.95;
+/**
+ * Discharge-path efficiency (battery discharge × inverter) from stored DC
+ * energy to the AC load: used to SIZE the battery. Default 0.90, stated with
+ * every result; replace with the battery and inverter datasheet values.
+ * (P0 audit 2026-11-13, R7: sizing divided by the 95% ROUND-TRIP figure and
+ * left out the inverter, so batteries came out about 5% small, and neither
+ * value could be entered.)
+ */
+export const DISCHARGE_PATH_EFFICIENCY = 0.9;
+
+/**
+ * Nominal battery capacity for a usable AC energy: nominal = usable / (DoD × η_discharge).
+ * Directive benchmark: 20 kWh AC, 80% DoD, 90% → 27.78 kWh.
+ */
+export function nominalBatteryKwh(usableAcKwh: number, dod: number, dischargeEfficiency: number): number {
+  if (!(usableAcKwh >= 0) || !(dod > 0 && dod <= 1) || !(dischargeEfficiency > 0 && dischargeEfficiency <= 1)) {
+    throw new Error('Battery sizing needs usable energy ≥ 0, DoD in (0, 1] and discharge efficiency in (0, 1].');
+  }
+  return usableAcKwh / (dod * dischargeEfficiency);
+}
 export const DIESEL_L_PER_KWH = 0.35; // small genset at part load
 export const DIESEL_CO2_KG_PER_L = 2.68;
 /** Kenya grid emission factor (kg CO2/kWh; Climate Watch / KPLC 2023, mostly
@@ -126,6 +151,34 @@ export const INVERTER_HYBRID_BANDS: [number, number][] = [[10, 35_000], [Infinit
 export const INVERTER_OFF_GRID_BANDS: [number, number][] = [[10, 20_000], [Infinity, 15_000]];
 /** Installation, AC cabling and protection, on top of the equipment. */
 export const INSTALLATION_FACTOR = 1.12;
+/**
+ * PRICE POLICY (management decision 2026-11-13). Customers see only prices
+ * backed by an identifiable source, a verification date, the currency and the
+ * VAT status. The rates above are typical mid-2026 market figures with NO
+ * identifiable source, so they are NOT shown: every tool shows "Request a
+ * quotation" instead, or uses the customer's own cost and tariff, labelled as
+ * user-provided assumptions. The public price policy stays "confirmed VOLTKA
+ * prices only" unless management widens it. To switch these rates on, record
+ * the source (supplier quotation or price list) and the date here.
+ */
+export const PRICE_BASIS: { verified: boolean; source: string | null; verifiedOn: string | null; currency: 'KES'; vat: string } = {
+  verified: false,
+  source: null,
+  verifiedOn: null,
+  currency: 'KES',
+  vat: 'before VAT',
+};
+export function pricesVerified(): boolean {
+  return PRICE_BASIS.verified && !!PRICE_BASIS.source && !!PRICE_BASIS.verifiedOn;
+}
+export const REQUEST_QUOTATION = 'Request a quotation';
+export const REQUEST_QUOTATION_NOTE = 'We do not show estimated prices: ask us for a quotation for your site. To see payback now, enter a quoted cost and your own tariff; those are your assumptions.';
+/** A customer-entered rate as a number, or null when blank or not positive. */
+export function customerRate(v: unknown): number | null {
+  const n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN;
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 /** VAT policy: every price in the solar tools is BEFORE VAT; VAT on solar equipment depends on the Finance Act in force. */
 export const VAT_NOTE = 'Prices are before VAT: VAT on solar equipment depends on the Finance Act in force, so ask the installer to show it separately.';
 export function tieredKes(kw: number, bands: [number, number][]): number { return tiered(kw, bands); }
@@ -231,11 +284,13 @@ export function sizeSolar(input: SizingInput): SizingResult {
     batteryUsableKwh = dailyKwh * days;
     assumptions.push(`Battery carries the full load for ${days} day${days === 1 ? '' : 's'} without sun.`);
   }
-  const batteryKwh = batteryUsableKwh > 0 ? round1(batteryUsableKwh / (BATTERY_DOD * BATTERY_EFFICIENCY)) : 0;
+  const dod = input.batteryDod ?? BATTERY_DOD;
+  const etaDis = input.dischargePathEfficiency ?? DISCHARGE_PATH_EFFICIENCY;
+  const batteryKwh = batteryUsableKwh > 0 ? round1(nominalBatteryKwh(batteryUsableKwh, dod, etaDis)) : 0;
   // 2026-10-30 audit: a hybrid with 0% night use was sized with no battery
   // but a hybrid inverter's price, without comment.
   if (type === 'hybrid' && batteryKwh === 0) assumptions.unshift('No use after dark was entered, so no battery is needed: a grid-tied system would cost less (but gives no backup during KPLC cuts).');
-  if (batteryKwh > 0) assumptions.push(`LiFePO4 battery: ${Math.round(BATTERY_DOD * 100)}% usable depth, ${Math.round(BATTERY_EFFICIENCY * 100)}% round-trip efficiency, about KES ${BATTERY_KES_PER_KWH.toLocaleString('en-KE')} per kWh for the battery itself, plus installation.`);
+  if (batteryKwh > 0) assumptions.push(`LiFePO4 battery sized as usable AC energy ÷ (depth of discharge × discharge-path efficiency): ${Math.round(dod * 100)}% usable depth${input.batteryDod === undefined ? ' (assumed)' : ''}, ${Math.round(etaDis * 100)}% battery-to-load efficiency including the inverter${input.dischargePathEfficiency === undefined ? ' (assumed)' : ''}; use the battery and inverter datasheets. Battery price about KES ${BATTERY_KES_PER_KWH.toLocaleString('en-KE')} per kWh for the battery itself, plus installation.`);
 
   // ── Inverter ────────────────────────────────────────────────────────────
   let inverterKw: number;
@@ -349,6 +404,55 @@ export function sizeSolar(input: SizingInput): SizingResult {
     paybackYears,
     ...(notWorthwhile ? { notWorthwhile: true } : {}),
     assumptions,
+  };
+}
+
+/**
+ * What a customer may see from a sizing result under the price policy
+ * (PRICE_BASIS). Costs only when the price basis is verified; savings only
+ * from the customer's own tariff (or diesel price, off-grid); payback only
+ * when there is both a saving and a cost (verified, or the customer's quote).
+ * Assumption lines that quote unsourced prices are removed.
+ */
+export interface PublicSizing extends Omit<SizingResult, 'cost' | 'paybackYears' | 'annualSavingKes' | 'monthlySavingKes'> {
+  cost: SizingResult['cost'] | null;
+  paybackYears: number | null;
+  annualSavingKes: number | null;
+  monthlySavingKes: number | null;
+  pricing: { status: 'verified' | 'request-quotation'; message: string; currency: 'KES'; vat: string; source: string | null; verifiedOn: string | null; userProvided: string[] };
+}
+export function publicSizing(r: SizingResult, o: { tariffGiven: boolean; dieselPriceGiven?: boolean; customerCostKes?: number | null }): PublicSizing {
+  const verified = pricesVerified();
+  const savingKnown = r.savingBasis === 'diesel' ? !!o.dieselPriceGiven : o.tariffGiven;
+  const annual = savingKnown ? r.annualSavingKes : null;
+  const costBasis = o.customerCostKes ?? (verified ? r.cost.midKes : null);
+  const payback = annual && annual > 0 && costBasis ? round1(costBasis / annual) : null;
+  const userProvided = [
+    ...(o.tariffGiven && r.savingBasis !== 'diesel' ? ['tariff'] : []),
+    ...(o.dieselPriceGiven && r.savingBasis === 'diesel' ? ['diesel price'] : []),
+    ...(o.customerCostKes ? ['installed cost'] : []),
+  ];
+  const assumptions = r.assumptions
+    .filter((l) => !/^Prices are typical|^Payback range|^NOT WORTHWHILE: the saving would take/.test(l))
+    .filter((l) => o.tariffGiven || !/^Tariff assumed/.test(l))
+    .filter((l) => o.dieselPriceGiven || !/^Saving compared with a diesel generator/.test(l))
+    .map((l) => l.replace(/ Battery price about KES [\d,]+ per kWh for the battery itself, plus installation\./, ''));
+  if (!verified) assumptions.push(o.customerCostKes ? 'Installed cost: your figure (a user-provided assumption), not an EmersonEIMS price.' : `${REQUEST_QUOTATION}: ${REQUEST_QUOTATION_NOTE}`);
+  if (!savingKnown) assumptions.push(r.savingBasis === 'diesel' ? 'Enter your diesel price to see the saving.' : 'Enter your tariff (your bill total divided by its kWh) to see the saving.');
+  if (payback !== null && payback > 25) assumptions.unshift(`NOT WORTHWHILE: the saving would take ${payback} years to repay the cost, longer than the panels' 25-year life.`);
+  return {
+    ...r,
+    cost: verified ? r.cost : null,
+    annualSavingKes: annual,
+    monthlySavingKes: annual === null ? null : Math.round(annual / 12),
+    paybackYears: payback,
+    notWorthwhile: r.annualSavingKes <= 0 || (payback !== null && payback > 25) ? true : undefined,
+    assumptions,
+    pricing: {
+      status: verified ? 'verified' : 'request-quotation',
+      message: verified ? `Prices from ${PRICE_BASIS.source}, verified ${PRICE_BASIS.verifiedOn}, KES ${PRICE_BASIS.vat}.` : REQUEST_QUOTATION_NOTE,
+      currency: 'KES', vat: PRICE_BASIS.vat, source: PRICE_BASIS.source, verifiedOn: PRICE_BASIS.verifiedOn, userProvided,
+    },
   };
 }
 

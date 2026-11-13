@@ -672,6 +672,8 @@ export interface AnalysisResult {
 
   /** Pump Test Analyzer — Theis/Cooper-Jacob analysis of pumping test data */
   pumpTestAnalysis?: any;
+  /** Why a field pump test was not analysed (missing rate or drawdown). Absent when there was no test or it was analysed. */
+  pumpTestRejected?: string;
   /** Lithology Logger — stratigraphic analysis from drill cuttings/core logs */
   lithologyAnalysis?: any;
   /** ERT Intelligence Pipeline — full 10-step engineering-grade ERT analysis */

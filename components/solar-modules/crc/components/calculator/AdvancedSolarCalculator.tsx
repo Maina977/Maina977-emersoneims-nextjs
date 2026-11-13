@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import SolarCalculatorEngine, { Location, Appliance, CalculationResult, SizingResponse } from '../../core/calculator/SolarCalculatorEngine';
 import { core } from '../../src/services/api';
-import { KENYA_TOWNS, type SystemType } from '@/lib/solar/sizing';
+import { KENYA_TOWNS, REQUEST_QUOTATION, REQUEST_QUOTATION_NOTE, type SystemType } from '@/lib/solar/sizing';
 import { DiagnosticEngine } from '../../core/calculator/DiagnosticEngine';
 import { QualityAssessmentEngine } from '../../core/calculator/QualityAssessmentEngine';
 import SunWeatherEngine, { WeatherData, SunPosition } from '../../core/calculator/SunWeatherEngine';
@@ -382,8 +382,6 @@ export const AdvancedSolarCalculator: React.FC = () => {
                     <div className="solution-meta">
                       <span>⏱️ {solution.timeRequired} min</span>
                       <span>💡 {solution.difficulty}</span>
-                      <span>✓ {Math.round(solution.successRate * 100)}% success</span>
-                      <span>💰 ~KSH {solution.costEstimate}</span>
                     </div>
                     <ol>
                       {solution.steps.map((step: string, j: number) => (
@@ -1150,6 +1148,12 @@ const RenderCalculationResults: React.FC<{ result: CalculationResult }> = ({ res
       </div>
     </div>
 
+    {!c ? (
+    <div className="cost-section">
+      <h3>💰 Installed cost: {REQUEST_QUOTATION}</h3>
+      <p style={{ fontSize: '0.9rem', opacity: 0.85 }}>{REQUEST_QUOTATION_NOTE}</p>
+    </div>
+    ) : (
     <div className="cost-section">
       <h3>💰 Typical installed cost</h3>
       <div className="cost-breakdown">
@@ -1162,6 +1166,7 @@ const RenderCalculationResults: React.FC<{ result: CalculationResult }> = ({ res
       </div>
       <p style={{ fontSize: '0.8rem', opacity: 0.75 }}>{c.basis}</p>
     </div>
+    )}
 
     <div className="specs-section">
       <h3>Assumptions</h3>

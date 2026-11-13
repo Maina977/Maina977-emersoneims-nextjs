@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { estimateInstalledCost, PERFORMANCE_RATIO, PANEL_WATT } from '@/lib/solar/sizing';
+import { estimateInstalledCost, pricesVerified, REQUEST_QUOTATION, PERFORMANCE_RATIO, PANEL_WATT } from '@/lib/solar/sizing';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -188,21 +188,19 @@ const PKG = (pvKwp: number, invKw: number, batKwh: number, [rateLo, rateHi]: [nu
   // which is 3.3 kWp (2026-10-25 audit: card said 3 kWp, list said 6 panels).
   const panels = Math.ceil((pvKwp * 1000) / PANEL_WATT);
   const kwp = Math.round(panels * PANEL_WATT / 100) / 10;
-  const c = estimateInstalledCost(kwp, invKw, batKwh, 'hybrid');
+  // Price policy (management decision 2026-11-13): prices only when the price
+  // basis is verified (lib/solar/sizing.ts PRICE_BASIS), otherwise "Request a
+  // quotation". Savings need the customer's own tariff, so the card shows the
+  // expected solar output instead (5.5 sun-hours, stated performance ratio).
+  const c = pricesVerified() ? estimateInstalledCost(kwp, invKw, batKwh, 'hybrid') : null;
+  void rateLo; void rateHi;
   const kwhMonth = kwp * 5.5 * 30.4 * PERFORMANCE_RATIO;
-  const loMonth = (kwhMonth * 0.75 * rateLo);
-  const hiMonth = (kwhMonth * 0.9 * rateHi);
-  const lo = Math.round(loMonth / 1000) * 1000;
-  const hi = Math.round(hiMonth / 1000) * 1000;
   return {
     capacity: `${kwp} kWp`,
-    priceFrom: c.lowKes,
-    priceTo: c.highKes,
+    price: c ? `KES ${c.lowKes.toLocaleString('en-KE')} - ${c.highKes.toLocaleString('en-KE')}` : REQUEST_QUOTATION,
+    priceFrom: c ? c.lowKes : null,
     panels,
-    savings: `${lo.toLocaleString('en-KE')}-${hi.toLocaleString('en-KE')}/month`,
-    // Simple payback range: cheapest price at the best saving, dearest at the lowest.
-    paybackMin: c.lowKes / (hiMonth * 12),
-    paybackMax: c.highKes / (loMonth * 12),
+    output: `about ${(Math.round(kwhMonth / 10) * 10).toLocaleString('en-KE')} kWh/month`,
     inv: invKw, bat: batKwh,
   };
 };
@@ -218,12 +216,6 @@ const SOLAR_PRICING = [
   ...p,
   includes: [`${p.panels}× ${PANEL_WATT} W panels`, `${p.inv} kW hybrid inverter`, `${p.bat} kWh lithium (LiFePO4) battery`, 'Installation and commissioning', '1-Year Workmanship Warranty'],
 }));
-// "about 3-6 years" across the cards above, for the FAQ.
-const PAYBACK_RANGE = (() => {
-  const lo = Math.floor(Math.min(...SOLAR_PRICING.map((p) => p.paybackMin)));
-  const hi = Math.ceil(Math.max(...SOLAR_PRICING.map((p) => p.paybackMax)));
-  return `${lo}-${hi} years`;
-})();
 
 // ==================== SOLAR BRANDS COMPARISON ====================
 const SOLAR_BRANDS = [
@@ -293,12 +285,14 @@ const SOLAR_FAQ = [
     question: 'How much does a solar system cost in Kenya?',
     // From the same model as the package cards, so the two never disagree
     // (2026-10-25 audit: "from KES 350,000" sat beside a KES 481,000 card).
-    answer: `With the same assumptions as the packages on this page, a ${SOLAR_PRICING[0].capacity} home system with battery starts at about KES ${SOLAR_PRICING[0].priceFrom.toLocaleString('en-KE')}, and industrial systems over 100 kW run to several million shillings. The exact cost depends on your energy needs, panel quality, battery capacity, and whether you need grid-tie or off-grid configuration. We offer site surveys to give you an accurate quote.`
+    // No price figures without a verified source (price policy 2026-11-13).
+    answer: 'The cost depends on your energy use, the panel and battery brands, the battery size, and whether the system is grid-tied, hybrid or off-grid. We do not publish estimated prices: request a quotation and we will price the system for your site after a survey.'
   },
   {
     question: 'How long is the payback period for solar in Kenya?',
     // Range from the package cards' own prices and savings (2026-10-25 audit).
-    answer: `With the same assumptions as the packages on this page (5.5 sun hours a day, KES 22-28 per kWh, or 18 for industrial users, 75-90% of the solar used on site), the systems shown pay back in about ${PAYBACK_RANGE}. Systems used mostly in daytime, such as shops and offices, pay back faster than homes that need a battery for the evening. After payback the savings continue for the rest of the panels' 25-year life, less maintenance and a battery replacement after roughly 10-12 years. The ROI calculator on this page works it out for your own bill.`
+    // No assumed tariffs or prices (price policy 2026-11-13).
+    answer: "Payback depends on your quoted price and your own tariff (your bill total divided by its kWh). Systems used mostly in daytime, such as shops and offices, pay back faster than homes that need a battery for the evening. After payback the savings continue for the rest of the panels' 25-year life, less maintenance and a battery replacement after roughly 10-12 years. The ROI calculator on this page works it out from your bill and a quotation."
   },
   {
     question: 'Do solar panels work during cloudy days or at night?',
@@ -378,10 +372,10 @@ const WHY_SOLAR_KENYA = [
     description: 'On every installation we carry out'
   },
   {
-    // From the package cards (2026-10-27 audit: a fixed "3-7" disagreed with the FAQ).
-    stat: PAYBACK_RANGE.replace(' years', ''),
-    label: 'Year Payback',
-    description: 'Typical range: shorter for daytime business loads, longer for homes with batteries'
+    // Was a payback range from unsourced prices and assumed tariffs (price policy 2026-11-13).
+    stat: '25',
+    label: 'Year Panel Life',
+    description: 'Payback is worked out from your quotation and your own tariff'
   },
 ];
 
@@ -741,7 +735,7 @@ export default function SolarBible() {
               Solar System <span className="text-amber-400">Pricing</span>
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              Price ranges from our installed-cost model (mid-2026), before VAT. Your quotation after a site survey gives the exact price.
+              Typical system sizes and their expected output. Prices come with your quotation after a site survey.
             </p>
           </motion.div>
 
@@ -767,7 +761,7 @@ export default function SolarBible() {
                 <h3 className="text-xl font-bold text-white mb-2">{pkg.type}</h3>
                 <div className="text-3xl font-bold text-amber-400 mb-1">{pkg.capacity}</div>
                 <div className="text-lg text-gray-300 mb-4">
-                  KES {pkg.priceFrom.toLocaleString()} - {pkg.priceTo.toLocaleString()}
+                  {pkg.price}
                 </div>
                 <p className="text-sm text-gray-400 mb-4">{pkg.ideal}</p>
 
@@ -783,8 +777,8 @@ export default function SolarBible() {
                 </div>
 
                 <div className="bg-green-500/10 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-gray-400">Estimated Monthly Savings:</p>
-                  <p className="text-lg font-bold text-green-400">KES {pkg.savings}</p>
+                  <p className="text-sm text-gray-400">Expected solar output:</p>
+                  <p className="text-lg font-bold text-green-400">{pkg.output}</p>
                 </div>
 
                 <a

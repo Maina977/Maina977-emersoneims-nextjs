@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { liveDeliveryAllowed, mockDeliveryResponse } from '@/lib/env/liveDelivery';
 import nodemailer from 'nodemailer';
 import { isAdminRequest, adminNotFound } from '@/lib/auth/adminRequest';
 
@@ -270,6 +271,8 @@ async function sendTwilioSMS(to: string[], message: string): Promise<boolean> {
 }
 
 export async function POST(request: NextRequest) {
+  // No live notifications outside production (management decision 2026-11-13).
+  if (!liveDeliveryAllowed()) return NextResponse.json(mockDeliveryResponse());
   // Admin-only since 2026-10-18: this sends email/SMS to whatever address the
   // caller supplies, so unauthenticated it was an open relay for anyone on the
   // internet to send through the company's SMTP / SMS accounts. No page on

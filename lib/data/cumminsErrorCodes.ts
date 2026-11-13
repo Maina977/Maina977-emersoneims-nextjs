@@ -33,12 +33,14 @@ export const CUMMINS_ERROR_CODES: CumminsErrorCode[] = [
     brand: 'Cummins',
     model: 'All Electronic',
     category: 'ECM',
-    severity: 'warning',
+    // Cummins fault 111 (SPN 629 FMI 12, ECM critical internal failure) is a red-lamp
+    // (stop) code; it was rated 'warning' (P0 audit 2026-11-13, R8).
+    severity: 'critical',
     title: 'ECM Internal Hardware Failure',
     description: 'Electronic Control Module has detected an internal hardware fault that may affect performance.',
     symptoms: ['Check engine light on', 'Erratic engine behavior', 'Diagnostic communication issues', 'Limp mode possible'],
     causes: ['Internal ECM circuit failure', 'Power surge damage', 'Water ingress', 'Excessive vibration', 'Age degradation'],
-    solution: 'Check ECM power supply (24V±2V). Inspect connectors for corrosion. Clear code and test. If persistent, ECM replacement required.',
+    solution: 'Stop and do not run unattended: the ECM may not protect the engine. Check the ECM supply and ground against the system voltage (12 V or 24 V) while cranking and running, using the engine wiring diagram for the pins. Inspect connectors for corrosion. Clear code and test. If persistent, ECM replacement required.',
     parts: ['ECM unit', 'Connector seals', 'Gaskets'],
     tools: ['Cummins INSITE', 'Digital multimeter', 'Diagnostic adapter'],
     estimatedTime: '1-8 hours',

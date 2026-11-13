@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { equipment, core } from '../services/api';
-import { BATTERY_KES_PER_KWH, PANEL_KES_PER_W, tieredKes, inverterBands } from '@/lib/solar/sizing'; // one battery price for every tool (2026-10-19)
+import { BATTERY_KES_PER_KWH, PANEL_KES_PER_W, tieredKes, inverterBands, pricesVerified } from '@/lib/solar/sizing'; // one battery price for every tool (2026-10-19)
 
 // Self-quote checker.
 // Paste any quotation BOM. We parse rows, identify the equipment in the
@@ -402,7 +402,34 @@ DC isolators, SPDs + cabling x 1 @ 85000
 Mounting (aluminium rails) x 1 @ 90000
 Installation + commissioning x 1 @ 140000`;
 
+/**
+ * Price policy (management decision 2026-11-13): a price verdict needs sourced
+ * reference prices. The references here (mid-2026 rules of thumb and library
+ * prices) have no identifiable source, so the checker is offered only once the
+ * price basis is verified; until then the page offers an engineer's review.
+ */
 export default function QuoteCheckerPage() {
+  return pricesVerified() ? <QuoteCheckerTool /> : <QuoteReviewOffer />;
+}
+
+function QuoteReviewOffer() {
+  return (
+    <Container>
+      <Title>Solar quotation check</Title>
+      <p style={{ color: '#cbd5e1', maxWidth: 680, lineHeight: 1.6 }}>
+        We cannot compare your quotation with market prices yet: we do not have verified, dated reference prices
+        for panels, inverters and batteries, and we will not judge a quotation against guesses.
+      </p>
+      <p style={{ color: '#cbd5e1', maxWidth: 680, lineHeight: 1.6 }}>
+        Send us the quotation instead. An engineer checks the system size, the equipment ratings and the
+        string, battery and inverter matching, and tells you what is missing, at no charge.
+      </p>
+      <p style={{ color: '#e2e8f0', fontWeight: 700 }}>WhatsApp: 0768 860 665</p>
+    </Container>
+  );
+}
+
+function QuoteCheckerTool() {
   const [text, setText] = useState('');
   const [lib, setLib] = useState<LibItem[]>([]);
   const [loadingLib, setLoadingLib] = useState(true);

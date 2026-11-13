@@ -137,6 +137,20 @@ const EMERGENCIES: Array<[RegExp, string]> = [
   [/\b(coolant|radiator|water\s+pump|antifreeze)\s+(leak\w*|spill\w*)|\bleak\w*\s+(coolant|radiator)\b/, 'HOT COOLANT: let the engine cool before opening the cap or touching hoses; coolant is under pressure and scalds. Stop the set if the level is dropping and find the leak.'],
   [/\b(fuel|diesel|oil)\s+(leak|spill)/, 'Hot oil and fuel burn and can catch fire on a hot exhaust: stop the engine and let it cool before tracing the leak, and clean spills at once.'],
 ];
+// Engineering Apps directive §3 (2026-11-13 probe): suspected oil starvation,
+// bearing failure, seizure, overheating and other damaging conditions must give
+// stop-operation guidance. "engine seized" and "knocking after overhaul" got no
+// answer at all, and "metal in the oil" or "bearing noise" no stop line. These
+// lead the answer like an emergency, but the matching alarms stay listed: the
+// technician still needs them to find the cause.
+const STOP_CONDITIONS: Array<[RegExp, string]> = [
+  [/\b(alternator|generator[\s-]end|stator|rotor|exciter)\b[^.]{0,30}\bbearing\w*|\bbearing\w*\b[^.]{0,30}\b(alternator|generator[\s-]end|stator|rotor|exciter)\b/i, 'STOP THE SET: a failing alternator bearing can let the rotor rub the stator and destroy the windings, or seize. Do not run it until the bearing is checked (noise, heat, play) and replaced if worn; check the coupling alignment too.'],
+  [/^(?![^]*\b(alternator|generator[\s-]end|stator|rotor|exciter)\b[^.]{0,30}\bbearing)(?![^]*\bbearing\w*\b[^.]{0,30}\b(alternator|generator[\s-]end|stator|rotor|exciter)\b)[^]*\b(knock\w*|seiz\w*|bearing\w*|big[\s-]?end|main[\s-]?bearing|con(necting)?[\s-]?rod|spun|metal\s+(particles|filings|flakes|shavings|bits)|metal\s+in\s+(the\s+)?(oil|filter|sump)|glitter\w*\s+in\s+(the\s+)?oil|tight\s+engine|will\s+not\s+(turn|bar)\s+over|won'?t\s+(turn|bar)\s+over)\b/i, 'STOP THE ENGINE: knocking, bearing noise, metal in the oil or a seized or tight engine point to bearing or piston damage, often from oil starvation. Running on can wreck the crankshaft or break a connecting rod. Do not restart it or try to free it with the starter; check the oil level, the oil pressure with a mechanical gauge and the oil filter for metal, and have the engine inspected before it runs again.'],
+  [/\b(after|since|post)[\s-]*(an?\s+|the\s+)?(overhaul\w*|rebuil\w*|re-?build\w*|top[\s-]?overhaul|engine\s+repair)|\b(overhaul\w*|rebuil\w*)\b.*\b(knock\w*|seiz\w*|smok\w*|pressure|hot|overheat\w*|noise)/i, 'NEWLY OVERHAULED ENGINE: low oil pressure, knocking, rising temperature or heavy breather fumes in the first hours mean stop at once. Typical causes are an unprimed oil pump or filter, a blocked oil gallery, wrong bearing or piston clearances, or debris left in the engine. Prime the lubrication system before the first start, watch the oil pressure from the first second, and do not run on to "bed it in" if a reading is wrong.'],
+  [/^(?![^]*\b(alternator|winding|stator|generator[\s-]end)s?\b)[^]*(\boverheat\w*|\bhigh\s+(coolant|engine|water|jacket\s+water)\s+temp\w*|\b(coolant|engine|water)\s+temp\w*\s+(high|alarm|shutdown|rising)|\bboil\w*\s+over|\brunning\s+hot\b)/i, 'OVERHEATING: take the load off and stop the engine if the temperature keeps rising; running on can warp the head, blow the gasket and seize the pistons. Never pour cold water or coolant into a hot engine (it can crack the head or block): let it cool, then check the level.'],
+  [/\b(oil|milky|mayonnaise)\b[^.]{0,25}\b(in|into)\s+(the\s+)?(coolant|radiator|water)\b|\bcoolant\b[^.]{0,20}\b(in|into)\s+(the\s+)?oil\b|\bmilky\s+oil\b|\bwhite\s+smoke\b[^.]{0,30}\bcoolant\s+(loss|missing|disappear\w*|dropping|low)\b|\bcoolant\s+(loss|missing|disappear\w*|dropping)\b[^.]{0,30}\bwhite\s+smoke\b/i, 'OIL AND COOLANT MIXING: stop the engine. Coolant in the oil destroys the bearings quickly, and coolant loss with white smoke can mean a failed head gasket or a cracked head or liner. Do not keep topping up and running; have the oil cooler, head gasket and liners checked and the oil changed first.'],
+  [/\breverse\s+power\b|\bmotoring\b/i, 'REVERSE POWER: the set was being driven as a motor by the bus or mains. Do not reset and reclose the breaker until the cause is found (fuel starvation, governor fault, or a load-sharing or synchronising fault); repeated motoring can damage the engine.'],
+];
 // Checks a technician makes first for the fault itself, ahead of each controller
 // file's menu steps (audit 2026-10-31: 50 ComAp alarms shared one step list, and a
 // low-oil shutdown had no dipstick step).
@@ -788,7 +802,7 @@ function searchByWords(typed: string, opts: SearchOptions): SearchResponse {
   const total = filtered.length;
   // The lookup box carries what the assistant says about a hazard, and points to
   // the guide for symptoms alarms do not answer (audit 2026-10-31).
-  const hazard = EMERGENCIES.filter(([re]) => re.test(words)).map(([, l]) => l);
+  const hazard = [...EMERGENCIES, ...STOP_CONDITIONS].filter(([re]) => re.test(words)).map(([, l]) => l);
   const guideTitle = d.guides[0]?.title;
   const notice = hazard.length ? `SAFETY FIRST: ${hazard.join(' ')}` : guideTitle ? `GUIDE: see "${guideTitle}" in the Assistant tab for this symptom.` : undefined;
   return {
@@ -1482,6 +1496,7 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
   // 2026-10-31: "runaway engine" and "fire in generator" had no warning).
   const emergency = EMERGENCIES.filter(([re]) => re.test(typedText) || re.test(typedRaw));
   for (const [, line] of emergency) if (!safety.includes(line)) safety.push(line);
+  for (const [re, line] of STOP_CONDITIONS) if ((re.test(typedText) || re.test(typedRaw)) && !safety.includes(line)) safety.push(line);
   const addSafety = (lines: string[]) => { for (const l of lines) if (!safety.includes(l)) safety.push(l); };
   for (const [re, lines] of TOPIC_SAFETY) if (re.test(typedText) && !/voltage|current|frequency|phase|power/.test(re.source)) addSafety(lines);
   if (/overheat|coolant|radiator|temperatur|hot/.test(typedText)) addSafety(['Never open a hot radiator or expansion-tank cap: scalding coolant under pressure. Stop the engine and let it cool first.']);

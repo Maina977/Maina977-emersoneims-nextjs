@@ -842,7 +842,7 @@ async function repBuild(){
             body: JSON.stringify({environment:'outdoor_daylight', quality:'high', resolution:[1920,1080], objects:[{type:'building'}]})}),
     ]);
     if(!report || !report.success){
-        body.innerHTML = '<div style="color:#b71c1c;padding:40px;text-align:center">Report generation failed: '+(report?.error||'unknown')+'</div>';
+        body.innerHTML = '<div style="color:#b71c1c;padding:40px;text-align:center">'+((report&&report.message)?String(report.message).replace(/[<>&]/g,''):('Report generation failed: '+String((report&&report.error)||'unknown').replace(/[<>&]/g,'')))+'</div>';
         return;
     }
     // ---- Discipline-specific deep analysis (Architect / Engineer / QS / Safety) ----

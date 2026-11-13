@@ -5,6 +5,11 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default function robots(): MetadataRoute.Robots {
+  // Preview deployments: crawl nothing (management decision 2026-11-13).
+  // Production (VERCEL_ENV 'production') and local builds are unchanged.
+  if (process.env.VERCEL_ENV === 'preview') {
+    return { rules: [{ userAgent: '*', disallow: '/' }] };
+  }
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
   /*

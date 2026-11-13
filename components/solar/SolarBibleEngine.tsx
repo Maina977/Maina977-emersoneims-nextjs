@@ -21,6 +21,12 @@ import { KENYA_CLIMATE,
   findOptimalSystem,
   type SolarPanel, type BatteryUnit, type Inverter
 } from './SolarEquipmentDatabase';
+import { pricesVerified, REQUEST_QUOTATION, REQUEST_QUOTATION_NOTE } from '@/lib/solar/sizing';
+
+// Price policy (management decision 2026-11-13): the cost analysis is built on
+// typical rates with no identifiable source and on assumed tariffs and diesel
+// prices, so it is shown only once the price basis is verified.
+const PRICES_SHOWN = pricesVerified();
 import {
   INVERTER_FAULT_CODES, BATTERY_FAULT_CODES, PANEL_FAULT_CODES,
   analyzeSystemHealth, type FaultCode, type HealthMetrics, type HealthReport
@@ -453,6 +459,7 @@ ${systemDesign.batteries[0] ? `            <tr>
           </table>
         </div>
 
+        ${PRICES_SHOWN ? `
         <div class="section">
           <h2>Investment Summary</h2>
           <table>
@@ -472,6 +479,7 @@ ${systemDesign.batteries[0] ? `            <tr>
             <tr><td><strong>25-Year ROI:</strong></td><td class="highlight">KES ${(costAnalysis.roi25Years / 1000000).toFixed(1)} Million</td></tr>
           </table>
         </div>
+        ` : `<div class="section"><h2>Cost and payback</h2><p><strong>${REQUEST_QUOTATION}.</strong> ${REQUEST_QUOTATION_NOTE}</p></div>`}
 
         <div class="contact">
           <h3>📞 Contact Us for Installation</h3>
@@ -926,6 +934,7 @@ ${systemDesign.batteries[0] ? `            <tr>
                 </div>
               </div>
 
+              {PRICES_SHOWN ? (<>
               {/* Cost Analysis */}
               <div className="p-4 bg-gray-800/50 rounded-xl mb-6">
                 <h4 className="text-lg font-bold text-white mb-4">Cost Analysis</h4>
@@ -993,6 +1002,14 @@ ${systemDesign.batteries[0] ? `            <tr>
                 </div>
               </div>
 
+              </>) : (
+                <div className="p-4 bg-gray-800/50 rounded-xl mb-6">
+                  <h4 className="text-lg font-bold text-white mb-2">Cost and payback: {REQUEST_QUOTATION}</h4>
+                  <p className="text-sm text-gray-400">{REQUEST_QUOTATION_NOTE} The ROI calculator works out payback from your own quotation and tariff.</p>
+                  {costAnalysis.warning && <p className="mt-3 text-sm text-amber-400">⚠ {costAnalysis.warning}</p>}
+                </div>
+              )}
+
               {/* CTA Buttons */}
               <div className="grid grid-cols-2 gap-4">
                 <a
@@ -1003,7 +1020,7 @@ ${systemDesign.batteries[0] ? `            <tr>
                   Call for Quote
                 </a>
                 <a
-                  href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent(`Hi! I used the Solar Bible Calculator and need a ${(systemDesign.totalPanelWattage / 1000).toFixed(1)}kW system with ${systemDesign.totalBatteryCapacity.toFixed(1)}kWh battery for my ${propertyType} in ${location}. Total budget around KES ${costAnalysis.totalCost.toLocaleString()}. Please send me a detailed quotation.`)}`}
+                  href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent(`Hi! I used the Solar Bible Calculator and need a ${(systemDesign.totalPanelWattage / 1000).toFixed(1)}kW system with ${systemDesign.totalBatteryCapacity.toFixed(1)}kWh battery for my ${propertyType} in ${location}.${PRICES_SHOWN ? ` Total budget around KES ${costAnalysis.totalCost.toLocaleString()}.` : ''} Please send me a detailed quotation.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 py-4 bg-[#25D366] text-white font-bold rounded-xl hover:bg-[#22c55e]"

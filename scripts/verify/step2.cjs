@@ -65,9 +65,12 @@ async function functional(browser) {
     await page.getByRole('button', { name: /How long is the payback period/ }).first().click();
     await page.waitForTimeout(500);
     const faq = await page.evaluate(() => document.body.innerText);
-    const m = faq.match(/pay back in about (\d+)-(\d+) years/);
-    m && Number(m[1]) >= 1 && Number(m[2]) <= 15 && Number(m[1]) < Number(m[2])
-      ? pass('/solar', `FAQ payback ${m[1]}-${m[2]} years from the package model`) : fail('/solar', 'FAQ payback text missing or implausible');
+    // Price policy (management decision 2026-11-13): no payback range from
+    // unsourced prices or assumed tariffs; packages say "Request a quotation".
+    !/pay back in about \d+-\d+ years/.test(faq) && /Payback depends on your quoted price and your own tariff/.test(faq)
+      ? pass('/solar', 'FAQ payback: no invented range, worked from your quotation and tariff') : fail('/solar', 'FAQ payback quotes an invented range or lost its explanation');
+    /Request a quotation/.test(text) && !/KES [\d,]{5,} - [\d,]{5,}/.test(text)
+      ? pass('/solar', 'package cards: "Request a quotation", no unsourced price range') : fail('/solar', 'package cards show an unsourced price range');
     await page.getByRole('button', { name: /Savings Calculator/ }).first().click();
     await page.waitForTimeout(3000);
     const bill = page.locator('#roi-bill');
@@ -76,8 +79,10 @@ async function functional(browser) {
       await bill.fill('0'); await page.waitForTimeout(400);
       const t0 = await page.evaluate(() => document.body.innerText);
       /Enter your bill/.test(t0) ? pass('/solar ROI', 'bill 0 → coverage asks for a bill') : fail('/solar ROI', 'bill 0 shows a coverage figure');
-      /Not within 25 years/.test(t0) ? pass('/solar ROI', 'bill 0 → payback "Not within 25 years"') : fail('/solar ROI', 'bill 0 payback wording');
+      /Enter your tariff and a quoted cost/.test(t0) ? pass('/solar ROI', 'no tariff or cost → payback says what to enter') : fail('/solar ROI', 'payback shown without a tariff and a cost');
       await bill.fill('15000'); await page.waitForTimeout(400);
+      // The tester enters a tariff, as a customer would (their own figure).
+      await page.locator('#roi-tariff').fill('25'); await page.waitForTimeout(400);
       const read = async () => page.evaluate(() => {
         const m = document.body.innerText.match(/KES ([\d,]+)\s*Monthly Savings/); return m ? Number(m[1].replace(/,/g, '')) : null;
       });

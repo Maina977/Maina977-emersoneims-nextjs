@@ -14,7 +14,7 @@
  */
 import {
   PANEL_KES_PER_W, PV_KES_PER_KWP_BANDS, BATTERY_KES_PER_KWH, INSTALLATION_FACTOR,
-  tieredKes, inverterBands, type SizingResult, type SystemType,
+  tieredKes, inverterBands, pricesVerified, type SizingResult, type SystemType,
 } from '@/lib/solar/sizing';
 
 // ==================== TYPES ====================
@@ -91,7 +91,8 @@ export interface CalculationResult {
   location: Location;
   loadProfile: LoadProfile;
   recommendation: SystemRecommendation;
-  costEstimate: CostEstimate;
+  /** Null: "Request a quotation" (no verified prices; price policy 2026-11-13). */
+  costEstimate: CostEstimate | null;
   wiringSpecs: WiringSpec[];
   assumptions: string[];
   qualityWarnings: string[];
@@ -99,7 +100,8 @@ export interface CalculationResult {
 }
 
 /** What /api/solar/calculate returns (SizingResult plus the sun-hours used). */
-export type SizingResponse = SizingResult & { sunHours: { annual: number; source: string; note: string }; warning?: string };
+// cost is null unless the price basis is verified (price policy 2026-11-13).
+export type SizingResponse = Omit<SizingResult, 'cost'> & { cost: SizingResult['cost'] | null; sunHours: { annual: number; source: string; note: string }; warning?: string };
 
 // ==================== APPLIANCES ====================
 
@@ -182,7 +184,8 @@ export class SolarCalculatorEngine {
   }
 
   /** Cost split on the calculator's own price list (before VAT). */
-  costFrom(s: SizingResponse): CostEstimate {
+  costFrom(s: SizingResponse): CostEstimate | null {
+    if (!s.cost || !pricesVerified()) return null;
     const pvArray = tieredKes(s.pvKwp, PV_KES_PER_KWP_BANDS);
     const inverter = tieredKes(s.inverterKw, inverterBands(s.systemType));
     const battery = s.batteryKwh * BATTERY_KES_PER_KWH;

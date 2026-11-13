@@ -152,8 +152,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Fall back to demo licenses (for development/testing)
-    const demoLicense = DEMO_LICENSES.get(normalizedKey);
+    // Demo licences are for development and preview testing ONLY (security fix
+    // 2026-11-13): on production a key missing from the database fell through
+    // to this built-in demo key and was activated as a working licence, so the
+    // paid tier could be unlocked without paying. Production never uses it.
+    const demoLicense = process.env.VERCEL_ENV === 'production' ? undefined : DEMO_LICENSES.get(normalizedKey);
 
     if (!demoLicense) {
       await logActivationAttempt({

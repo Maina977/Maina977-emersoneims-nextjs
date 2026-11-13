@@ -943,7 +943,7 @@ function generateMethodologyReport(r: any): MethodologyReport {
       inputs: ['Coordinates', 'Search radius 25km'],
       outputs: ['Soil texture profile (0-200cm)', 'Climate normals', 'NDVI', 'Soil moisture'],
       assumptions: ['Satellite data representative of point location', '250m SoilGrids resolution adequate'],
-      limitations: ['Cloud cover may affect optical indices', 'SoilGrids accuracy ~75% for texture class', 'Climate normals use 30-year average'],
+      limitations: ['Cloud cover may affect optical indices', 'SoilGrids is a 250 m model prediction, not a measurement at the site', 'Climate normals use 30-year average'],
       dataTier: 'ESTIMATED',
     },
     {

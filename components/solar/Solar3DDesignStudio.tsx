@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   generateRoof3D,
   optimizePanelPlacement,
   calculatePerformance,
   calculateFinancials,
+  DEFAULT_LOSSES_PCT,
   ROOF_TEMPLATES,
   KENYA_SUN_PATHS,
   type Roof3DModel,
@@ -280,7 +281,18 @@ export default function Solar3DDesignStudio() {
 
   // Performance data
   const [performance, setPerformance] = useState<ReturnType<typeof calculatePerformance> | null>(null);
-  const [financials, setFinancials] = useState<ReturnType<typeof calculateFinancials> | null>(null);
+  // Financial inputs: the customer's quoted installed cost and current tariff.
+  // There are no default prices (P0 audit 2026-11-13: every system was priced
+  // at KES 25,000 per panel with a KES 22/kWh tariff rising 8% a year).
+  const [costKES, setCostKES] = useState('');
+  const [tariffKES, setTariffKES] = useState('');
+  const [escalationPct, setEscalationPct] = useState('0');
+  const [discountPct, setDiscountPct] = useState('10');
+  const financials = useMemo(() => {
+    const cost = Number(costKES), tariff = Number(tariffKES), esc = Number(escalationPct), disc = Number(discountPct);
+    if (!performance || !(cost > 0) || !(tariff > 0) || !(esc >= 0) || !(disc >= 0) || costKES.trim() === '' || tariffKES.trim() === '') return null;
+    return calculateFinancials(cost, performance.annualProduction, tariff, esc / 100, 0.005, disc / 100);
+  }, [performance, costKES, tariffKES, escalationPct, discountPct]);
 
   // Generate roof model
   const handleGenerateRoof = () => {
@@ -313,18 +325,11 @@ export default function Solar3DDesignStudio() {
       const perf = calculatePerformance(newPanels, roof);
       setPerformance(perf);
 
-      const fin = calculateFinancials(
-        newPanels.length * 25000, // Estimated cost per panel installed
-        perf.annualProduction,
-        22
-      );
-      setFinancials(fin);
 
       setAiMessage(`Placed ${newPanels.length} panels generating ${Math.round(perf.annualProduction).toLocaleString()} kWh/year`);
       setAiSuggestions([
-        `System efficiency: ${Math.round(perf.performanceRatio)}%`,
-        `Payback period: ${fin.paybackYears} years`,
-        `25-year savings: KES ${fin.yearlyProjection[24].cumulativeSavings.toLocaleString()}`,
+        `Performance ratio: ${Math.round(perf.performanceRatio)}% (stated loss assumptions; shading not assessed)`,
+        'Enter your quoted installed cost and your tariff in the Analysis step to see payback.',
       ]);
     }, 1500);
   };
@@ -767,7 +772,7 @@ export default function Solar3DDesignStudio() {
           )}
 
           {/* STEP 3: Analysis */}
-          {step === 'analysis' && performance && financials && (
+          {step === 'analysis' && performance && (
             <motion.div
               key="analysis"
               initial={{ opacity: 0, x: 20 }}
@@ -778,7 +783,27 @@ export default function Solar3DDesignStudio() {
               <div className="text-center mb-8">
                 <span className="text-6xl mb-4 block">📊</span>
                 <h3 className="text-2xl font-bold text-white">System Performance Analysis</h3>
-                <p className="text-gray-400">AI-generated comprehensive performance report</p>
+                <p className="text-gray-400">Desktop estimate from the roof model and stated assumptions. Not a site survey: shading, roof condition and structure must be checked on site.</p>
+              </div>
+
+
+              {/* Financial inputs (customer's own figures) */}
+              <div className="bg-slate-800/50 rounded-xl p-6">
+                <h4 className="text-white font-bold mb-1">Your costs (user-provided assumptions)</h4>
+                <p className="text-gray-400 text-sm mb-4">Payback and savings need your quoted installed cost and your current electricity tariff. Nothing is assumed: ask us for a quotation if you do not have one.</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {([
+                    ['Installed cost (KES, from a quotation)', costKES, setCostKES],
+                    ['Tariff (KES per kWh, from your bill)', tariffKES, setTariffKES],
+                    ['Tariff increase per year (%)', escalationPct, setEscalationPct],
+                    ['Discount rate for NPV (%)', discountPct, setDiscountPct],
+                  ] as Array<[string, string, (v: string) => void]>).map(([label, val, set]) => (
+                    <label key={label} className="text-xs text-gray-300">
+                      <span className="block mb-1">{label}</span>
+                      <input inputMode="decimal" value={val} onChange={(e) => set(e.target.value)} className="w-full rounded-lg bg-slate-900 border border-slate-600 px-3 py-2 text-white" />
+                    </label>
+                  ))}
+                </div>
               </div>
 
               {/* Key Metrics */}
@@ -786,7 +811,7 @@ export default function Solar3DDesignStudio() {
                 <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-6 text-center">
                   <p className="text-4xl font-bold text-amber-400">{panels.length}</p>
                   <p className="text-gray-400">Solar Panels</p>
-                  <p className="text-gray-500 text-sm">{(panels.length * 0.545).toFixed(1)} kWp</p>
+                  <p className="text-gray-500 text-sm">{performance.peakPower.toFixed(1)} kWp</p>
                 </div>
                 <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-6 text-center">
                   <p className="text-4xl font-bold text-green-400">
@@ -797,15 +822,15 @@ export default function Solar3DDesignStudio() {
                 </div>
                 <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl p-6 text-center">
                   <p className="text-4xl font-bold text-blue-400">
-                    KES {(financials.annualSavings / 1000).toFixed(0)}K
+                    {financials ? `KES ${(financials.annualSavings / 1000).toFixed(0)}K` : '—'}
                   </p>
-                  <p className="text-gray-400">Annual Savings</p>
-                  <p className="text-gray-500 text-sm">{financials.paybackYears} years payback</p>
+                  <p className="text-gray-400">Year-1 Savings</p>
+                  <p className="text-gray-500 text-sm">{financials ? `${financials.paybackYears} years simple payback` : 'Enter cost and tariff'}</p>
                 </div>
                 <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-6 text-center">
-                  <p className="text-4xl font-bold text-purple-400">{financials.roi25Year}%</p>
-                  <p className="text-gray-400">25-Year ROI</p>
-                  <p className="text-gray-500 text-sm">Net Present Value: KES {(financials.npv / 1000000).toFixed(1)}M</p>
+                  <p className="text-4xl font-bold text-purple-400">{financials ? (Number.isFinite(financials.irr) ? `${financials.irr}%` : 'n/a') : '—'}</p>
+                  <p className="text-gray-400">IRR (25 years)</p>
+                  <p className="text-gray-500 text-sm">{financials ? `NPV at ${discountPct}%: KES ${(financials.npv / 1000000).toFixed(2)}M` : 'Enter cost and tariff'}</p>
                 </div>
               </div>
 
@@ -834,7 +859,8 @@ export default function Solar3DDesignStudio() {
 
               {/* Losses Breakdown */}
               <div className="bg-slate-800/50 rounded-xl p-6">
-                <h4 className="text-white font-bold mb-4">System Losses</h4>
+                <h4 className="text-white font-bold mb-1">System Losses (assumed)</h4>
+                <p className="text-gray-400 text-xs mb-4">Typical values, not measured for this roof: soiling {DEFAULT_LOSSES_PCT.soiling}%, temperature {DEFAULT_LOSSES_PCT.temperature}%, wiring {DEFAULT_LOSSES_PCT.wiring}%, mismatch {DEFAULT_LOSSES_PCT.mismatch}%. Shading is not assessed (no obstruction survey). Losses combine by multiplication; the total is the one applied to the kWh figure.</p>
                 <div className="space-y-3">
                   {Object.entries(performance.losses).filter(([k]) => k !== 'total').map(([key, value]) => (
                     <div key={key} className="flex items-center gap-4">
@@ -857,8 +883,10 @@ export default function Solar3DDesignStudio() {
               </div>
 
               {/* 25-Year Financial Projection */}
+              {financials && (
               <div className="bg-slate-800/50 rounded-xl p-6">
-                <h4 className="text-white font-bold mb-4">25-Year Financial Projection</h4>
+                <h4 className="text-white font-bold mb-1">25-Year Financial Projection</h4>
+                <p className="text-gray-400 text-xs mb-4">User-provided assumptions: your cost and tariff, {escalationPct}% tariff increase a year, 0.5% panel degradation a year. Excludes maintenance, inverter and battery replacement, financing and tax.</p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -886,6 +914,7 @@ export default function Solar3DDesignStudio() {
                   </table>
                 </div>
               </div>
+              )}
 
               {/* Navigation */}
               <div className="flex gap-4">
@@ -917,50 +946,21 @@ export default function Solar3DDesignStudio() {
               <div className="text-center mb-8">
                 <span className="text-6xl mb-4 block">🚀</span>
                 <h3 className="text-2xl font-bold text-white">Export Your Design</h3>
-                <p className="text-gray-400">Share, download, or proceed to quotation</p>
+                <p className="text-gray-400">Send the design to our engineers for a site survey and quotation</p>
               </div>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <button className="p-6 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl hover:border-green-500 transition-all text-left">
-                  <span className="text-4xl mb-4 block">📄</span>
-                  <h4 className="text-white font-bold mb-2">Download PDF Report</h4>
-                  <p className="text-gray-400 text-sm">Complete design report with specifications</p>
-                </button>
-
-                <button className="p-6 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl hover:border-blue-500 transition-all text-left">
-                  <span className="text-4xl mb-4 block">📱</span>
-                  <h4 className="text-white font-bold mb-2">View in AR</h4>
-                  <p className="text-gray-400 text-sm">See panels on your actual roof</p>
-                </button>
-
-                <button className="p-6 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl hover:border-purple-500 transition-all text-left">
-                  <span className="text-4xl mb-4 block">🔗</span>
-                  <h4 className="text-white font-bold mb-2">Share Design Link</h4>
-                  <p className="text-gray-400 text-sm">Send to family, engineers, or financiers</p>
-                </button>
-
                 <a
                   href={`https://wa.me/254768860665?text=${encodeURIComponent(
-                    `Hi! I designed a ${panels.length}-panel (${(panels.length * 0.545).toFixed(1)}kW) system in your 3D Design Studio.\n\nEstimated production: ${performance ? Math.round(performance.annualProduction).toLocaleString() : 'N/A'} kWh/year\nPayback: ${financials?.paybackYears || 'N/A'} years\n\nI'd like to proceed with installation.`
+                    `Hi! I designed a ${panels.length}-panel (${performance ? performance.peakPower.toFixed(1) : (panels.length * 0.545).toFixed(1)}kWp) system in your 3D Design Studio.\n\nDesktop estimate: ${performance ? Math.round(performance.annualProduction).toLocaleString() : 'N/A'} kWh/year (shading not assessed)\n\nPlease arrange a site survey and quotation.`
                   )}`}
                   className="p-6 bg-gradient-to-br from-green-600/30 to-green-500/20 border border-green-500/50 rounded-xl hover:border-green-400 transition-all text-left"
                 >
                   <span className="text-4xl mb-4 block">💬</span>
-                  <h4 className="text-white font-bold mb-2">Order via WhatsApp</h4>
-                  <p className="text-gray-400 text-sm">Get instant response from our team</p>
+                  <h4 className="text-white font-bold mb-2">Request a site survey (WhatsApp)</h4>
+                  <p className="text-gray-400 text-sm">Our engineers confirm the design and quote</p>
                 </a>
 
-                <button className="p-6 bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl hover:border-amber-500 transition-all text-left">
-                  <span className="text-4xl mb-4 block">💰</span>
-                  <h4 className="text-white font-bold mb-2">Generate Full Quotation</h4>
-                  <p className="text-gray-400 text-sm">Complete BOM with pricing</p>
-                </button>
-
-                <button className="p-6 bg-gradient-to-br from-slate-600/30 to-slate-500/20 border border-slate-500/50 rounded-xl hover:border-slate-400 transition-all text-left">
-                  <span className="text-4xl mb-4 block">💾</span>
-                  <h4 className="text-white font-bold mb-2">Save to My Designs</h4>
-                  <p className="text-gray-400 text-sm">Access later from any device</p>
-                </button>
               </div>
 
               <div className="flex gap-4">
@@ -991,7 +991,7 @@ export default function Solar3DDesignStudio() {
       {/* Footer */}
       <div className="bg-slate-900/50 border-t border-slate-700 p-4 text-center">
         <p className="text-gray-500 text-sm">
-          EmersonEIMS 3D Solar Design Studio v2.0 | AI-Powered | World&apos;s Most Advanced Platform
+          EmersonEIMS 3D Solar Design Studio | Desktop estimate: confirm with a site survey
         </p>
       </div>
     </div>

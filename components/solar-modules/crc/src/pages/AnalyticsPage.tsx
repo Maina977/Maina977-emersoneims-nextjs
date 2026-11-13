@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { useSolarStore } from "../services/store";
 import { solar } from "../services/api";
-import { PERFORMANCE_RATIO } from "@/lib/solar/sizing";
+import { PERFORMANCE_RATIO, REQUEST_QUOTATION } from "@/lib/solar/sizing";
 
 const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
@@ -247,11 +247,11 @@ export default function AnalyticsPage() {
 
           <Card initial={{opacity: 0, y: 8}} animate={{opacity: 1, y: 0}} transition={{delay:0.1}}>
             <h3 style={{margin: "0 0 1rem", color: "#00D9FF"}}>Financial Snapshot</h3>
-            <StatRow><StatLabel>CAPEX</StatLabel><StatValue>KSh {Math.round((financial.capexKes || metrics.totalCost)).toLocaleString()}</StatValue></StatRow>
-            <StatRow><StatLabel>Year-1 Savings</StatLabel><StatValue>KSh {Math.round(annualSavings).toLocaleString()}</StatValue></StatRow>
-            <StatRow><StatLabel>Monthly Saving</StatLabel><StatValue>KSh {Math.round(metrics.monthlySaving).toLocaleString()}</StatValue></StatRow>
-            <StatRow><StatLabel>Payback</StatLabel><StatValue>{(financial.paybackYears || metrics.paybackPeriods).toFixed(1)} yrs</StatValue></StatRow>
-            {design.systemType !== 'off-grid' && <StatRow><StatLabel>Tariff used (your bill ÷ kWh)</StatLabel><StatValue>KSh {site.tariffKesPerKwh.toFixed(2)}/kWh</StatValue></StatRow>}
+            <StatRow><StatLabel>CAPEX</StatLabel><StatValue>{(financial.capexKes || metrics.totalCost) > 0 ? `KSh ${Math.round(financial.capexKes || metrics.totalCost).toLocaleString()}` : REQUEST_QUOTATION}</StatValue></StatRow>
+            <StatRow><StatLabel>Year-1 Savings</StatLabel><StatValue>{annualSavings > 0 ? `KSh ${Math.round(annualSavings).toLocaleString()}` : "Enter your tariff"}</StatValue></StatRow>
+            <StatRow><StatLabel>Monthly Saving</StatLabel><StatValue>{metrics.monthlySaving > 0 ? `KSh ${Math.round(metrics.monthlySaving).toLocaleString()}` : "Enter your tariff"}</StatValue></StatRow>
+            <StatRow><StatLabel>Payback</StatLabel><StatValue>{(financial.paybackYears || metrics.paybackPeriods) > 0 ? `${(financial.paybackYears || metrics.paybackPeriods).toFixed(1)} yrs` : "Needs a cost and your tariff"}</StatValue></StatRow>
+            {design.systemType !== 'off-grid' && <StatRow><StatLabel>Tariff used (your bill ÷ kWh)</StatLabel><StatValue>{site.tariffKesPerKwh > 0 ? `KSh ${site.tariffKesPerKwh.toFixed(2)}/kWh` : "Not entered"}</StatValue></StatRow>}
             {co2 > 0 && <StatRow><StatLabel>CO₂ Avoided / yr</StatLabel><StatValue>{Math.round(co2)} kg</StatValue></StatRow>}
           </Card>
 

@@ -15,7 +15,7 @@ import {
   Sun, Zap, Battery, Calculator, FileText, Play, Pause, Trash2, Plus, Grid, Layers, Cable,
   AlertTriangle, CheckCircle2, Settings, Box, MapPin, Printer, Share2, Activity
 } from 'lucide-react';
-import { estimateInstalledCost, DEFAULT_TARIFF_KES_PER_KWH, gridSaving } from '@/lib/solar/sizing';
+import { estimateInstalledCost, gridSaving, pricesVerified, customerRate, REQUEST_QUOTATION } from '@/lib/solar/sizing';
 
 // Roof drawing scale and module size (metres). See the panel size state below.
 const PX_PER_M = 20;
@@ -89,6 +89,8 @@ export default function SolarDesignStudioPro() {
   // array drawn (2026-10-30 audit: 90% of any array was valued at KES 25).
   const [monthlyUseKwh, setMonthlyUseKwh] = useState(450);
   const [tariffInput, setTariffInput] = useState('');
+  // The customer's quoted installed cost (a user-provided assumption).
+  const [quotedCostInput, setQuotedCostInput] = useState('');
   const [daytimeUsePct, setDaytimeUsePct] = useState(50);
 
   // Panels
@@ -163,8 +165,14 @@ export default function SolarDesignStudioPro() {
   const dailyProduction = effectiveKW * sunHours * PERFORMANCE_RATIO;
   const monthlyProduction = dailyProduction * 30;
   const annualProduction = dailyProduction * 365;
-  const installedCost = estimateInstalledCost(totalKW, inverterSize, batteryCapacity, batteryCapacity > 0 ? 'hybrid' : 'grid-tied');
-  const TARIFF_KES = Number(tariffInput) > 0 ? Number(tariffInput) : DEFAULT_TARIFF_KES_PER_KWH;
+  // Price policy (management decision 2026-11-13): no unsourced prices or
+  // assumed tariffs. Cost from verified prices or the customer's quotation;
+  // saving only from the customer's own tariff.
+  const installedCost = pricesVerified() ? estimateInstalledCost(totalKW, inverterSize, batteryCapacity, batteryCapacity > 0 ? 'hybrid' : 'grid-tied') : null;
+  const quotedCost = customerRate(quotedCostInput);
+  const costForPayback = quotedCost ?? installedCost?.midKes ?? null;
+  const tariffGiven = customerRate(tariffInput);
+  const TARIFF_KES = tariffGiven ?? 0;
   // The calculator's own rule (gridSaving in lib/solar/sizing.ts): only the
   // solar the site can use is valued, against its consumption and tariff.
   const saving = gridSaving({
@@ -175,7 +183,7 @@ export default function SolarDesignStudioPro() {
     batteryKwh: batteryCapacity,
     tariffKesPerKwh: TARIFF_KES,
   });
-  const annualSavingKes = saving.annualSavingKes;
+  const annualSavingKes = tariffGiven ? saving.annualSavingKes : 0;
   const usedShare = annualProduction > 0 ? saving.energyUsedKwh / annualProduction : 0;
 
   // Wire sizing from typical module data: modern 400 W+ half-cell modules
@@ -1174,8 +1182,11 @@ EARTHING:
                       <label className="text-slate-400 text-xs flex flex-col gap-1">Site use (kWh/month)
                         <input type="number" min={10} value={monthlyUseKwh} onChange={(e) => setMonthlyUseKwh(Number(e.target.value))} className="bg-slate-700 text-white text-sm rounded px-2 py-2 min-h-[44px]" />
                       </label>
-                      <label className="text-slate-400 text-xs flex flex-col gap-1">Tariff (KES/kWh, blank = {DEFAULT_TARIFF_KES_PER_KWH})
+                      <label className="text-slate-400 text-xs flex flex-col gap-1">Your tariff (KES/kWh)
                         <input type="number" min={1} value={tariffInput} onChange={(e) => setTariffInput(e.target.value)} placeholder="bill ÷ kWh" className="bg-slate-700 text-white text-sm rounded px-2 py-2 min-h-[44px]" />
+                      </label>
+                      <label className="text-slate-400 text-xs flex flex-col gap-1">Quoted installed cost (KES, optional)
+                        <input type="number" min={0} value={quotedCostInput} onChange={(e) => setQuotedCostInput(e.target.value)} placeholder="from a quotation" className="bg-slate-700 text-white text-sm rounded px-2 py-2 min-h-[44px]" />
                       </label>
                       <label className="text-slate-400 text-xs flex flex-col gap-1">Use while the sun is up (%)
                         <input type="number" min={0} max={100} value={daytimeUsePct} onChange={(e) => setDaytimeUsePct(Math.min(100, Math.max(0, Number(e.target.value))))} className="bg-slate-700 text-white text-sm rounded px-2 py-2 min-h-[44px]" />
@@ -1184,22 +1195,22 @@ EARTHING:
                     <table className="w-full text-sm">
                       <tbody className="text-slate-300">
                         <tr className="border-b border-slate-700/50">
-                          <td className="py-2">Typical installed cost</td>
-                          <td className="text-right">KSh {installedCost.lowKes.toLocaleString()} – {installedCost.highKes.toLocaleString()}</td>
+                          <td className="py-2">{quotedCost ? 'Installed cost (your quotation: your assumption)' : 'Installed cost'}</td>
+                          <td className="text-right">{quotedCost ? `KSh ${quotedCost.toLocaleString()}` : installedCost ? `KSh ${installedCost.lowKes.toLocaleString()} – ${installedCost.highKes.toLocaleString()}` : REQUEST_QUOTATION}</td>
                         </tr>
                         <tr className="border-b border-slate-700/50">
-                          <td className="py-2">Estimated annual saving ({Math.round(usedShare * 100)}% of the solar used on site at {monthlyUseKwh} kWh/month, KSh {TARIFF_KES}/kWh{batteryCapacity > 0 ? '' : '; no battery, so no power during KPLC cuts'})</td>
-                          <td className="text-right text-emerald-400">KSh {Math.round(annualSavingKes).toLocaleString()}</td>
+                          <td className="py-2">Estimated annual saving ({Math.round(usedShare * 100)}% of the solar used on site at {monthlyUseKwh} kWh/month, {tariffGiven ? `KSh ${TARIFF_KES}/kWh` : 'at your tariff'}{batteryCapacity > 0 ? '' : '; no battery, so no power during KPLC cuts'})</td>
+                          <td className="text-right text-emerald-400">{tariffGiven ? `KSh ${Math.round(annualSavingKes).toLocaleString()}` : 'Enter your tariff'}</td>
                         </tr>
                         <tr>
                           <td className="py-2">Simple payback (longer if less of the solar is used on site)</td>
-                          <td className="text-right text-amber-400">{annualSavingKes > 0 ? `${(installedCost.midKes / annualSavingKes).toFixed(1)} years` : '—'}</td>
+                          <td className="text-right text-amber-400">{annualSavingKes > 0 && costForPayback ? `${(costForPayback / annualSavingKes).toFixed(1)} years` : 'Needs a cost and your tariff'}</td>
                         </tr>
                       </tbody>
                     </table>
                     <p className="text-xs text-slate-500 mt-2">
-                      Sun data: {sunSource} ({sunHours} sun-hours a day), 78% performance ratio. Prices are typical Kenyan
-                      installed ranges (mid-2026), not a quotation.
+                      Sun data: {sunSource} ({sunHours} sun-hours a day), 78% performance ratio. Tariff and quoted cost are
+                      your own figures (user-provided assumptions); we price the system in a quotation after a site survey.
                     </p>
                   </div>
                 </div>

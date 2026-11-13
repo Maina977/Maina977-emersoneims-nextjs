@@ -7,8 +7,6 @@
  * back to formsubmit.co, which would send a real email to the sales inbox.
  */
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
 
 const sendMail = vi.fn(async () => ({ messageId: 'test' }));
 vi.mock('nodemailer', () => ({ default: { createTransport: () => ({ sendMail }) }, createTransport: () => ({ sendMail }) }));
@@ -22,6 +20,9 @@ let NextRequest: typeof import('next/server').NextRequest;
 let ip = 0;
 
 beforeAll(async () => {
+  // These tests simulate PRODUCTION delivery (with stubbed transports): live
+  // delivery is allowed only when VERCEL_ENV is 'production' (lib/env/liveDelivery).
+  vi.stubEnv('VERCEL_ENV', 'production');
   vi.stubEnv('SMTP_HOST', 'smtp.invalid');
   vi.stubEnv('SMTP_USER', 'leads@invalid');
   vi.stubEnv('SMTP_PASSWORD', 'not-a-secret');
@@ -92,19 +93,5 @@ describe('/api/contact', () => {
   });
 });
 
-describe('WhatsApp links', () => {
-  it('every hard-coded wa.me number on the site is one of the two company numbers', () => {
-    const root = join(__dirname, '..', '..');
-    const found = new Set<string>();
-    const walk = (d: string) => {
-      for (const n of readdirSync(d)) {
-        if (n === 'node_modules' || n.startsWith('.')) continue;
-        const p = join(d, n);
-        if (statSync(p).isDirectory()) walk(p);
-        else if (/\.(tsx?|jsx?)$/.test(n)) for (const m of readFileSync(p, 'utf8').matchAll(/wa\.me\/(\d{9,15})/g)) found.add(m[1]);
-      }
-    };
-    for (const d of ['app', 'components', 'lib']) walk(join(root, d));
-    expect([...found].sort()).toEqual(['254768860665', '254782914717']);
-  });
-});
+// The site-wide WhatsApp-number check moved to tests/regression/whatsapp-numbers.test.ts
+// (2026-11-13): it scans the whole codebase and timed out under full-suite load.

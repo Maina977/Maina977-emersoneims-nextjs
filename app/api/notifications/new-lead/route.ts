@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { liveDeliveryAllowed, mockDeliveryResponse } from '@/lib/env/liveDelivery';
 
 type LeadNotificationData = {
   engagementScore?: number;
@@ -31,6 +32,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export async function POST(request: NextRequest) {
+  // No live notifications outside production (management decision 2026-11-13).
+  if (!liveDeliveryAllowed()) return NextResponse.json(mockDeliveryResponse());
   try {
     const body = (await request.json()) as NewLeadRequestBody;
     const visitorId = typeof body.visitorId === 'string' ? body.visitorId : undefined;

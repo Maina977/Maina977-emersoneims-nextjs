@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { liveDeliveryAllowed, mockDeliveryResponse } from '@/lib/env/liveDelivery';
 import { getPostgresPool } from '@/lib/db';
 // In-memory LRU limiter. Throttles bursts per serverless instance — see the
 // note in POST about what that does and does not guarantee.
@@ -233,6 +234,13 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Invalid email format' },
         { status: 400 }
       );
+    }
+
+    // Previews and local runs never deliver or store (management decision
+    // 2026-11-13): the FormSubmit channel needs no key and would reach the
+    // sales inbox, and a local .env can hold the real database.
+    if (!liveDeliveryAllowed()) {
+      return NextResponse.json(mockDeliveryResponse());
     }
 
     // Get user's IP and location info from headers

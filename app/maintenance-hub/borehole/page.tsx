@@ -610,7 +610,7 @@ export default function BoreholeMaintenanceHub() {
                     <li>• Drilling: KES 6,500-9,500/m in rock (air drilling); up to about KES 13,000/m in loose ground (mud drilling)</li>
                     <li>• Pump installation: KES 80,000-500,000</li>
                     <li>• WRA approvals and permits: budget about KES 25,000 (fees vary by category)</li>
-                    <li>• Hydrogeological survey: KES 40,000-110,000</li>
+                    <li>• Hydrogeological survey: request a quotation (depends on access, ERT lines and reporting)</li>
                   </ul>
                 </div>
                 <div className="bg-slate-800 rounded-xl p-6 border border-teal-500/30">

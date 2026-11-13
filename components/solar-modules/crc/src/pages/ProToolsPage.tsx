@@ -2,7 +2,25 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { finance, solar, sustain, biz, reports, downloadBlob, research } from '../services/api';
 import { proposalFinance } from '../services/proposalFinance';
-import { DEFAULT_TARIFF_KES_PER_KWH } from '@/lib/solar/sizing';
+/**
+ * DEMONSTRATION CONTENT ONLY (management decision 2026-11-13, item 5). The
+ * sample proposal and sample Excel show the report layout with ILLUSTRATIVE
+ * figures. They are constants of this file, never read from or written to the
+ * project store, so they cannot reach a live estimate, BOM, report or
+ * quotation. Every price is labelled illustrative, not an EmersonEIMS offer.
+ */
+export const ILLUSTRATIVE = {
+  label: 'illustrative price, not an EmersonEIMS offer',
+  banner: 'DEMONSTRATION — illustrative prices, not an EmersonEIMS offer or quotation',
+  tariffKesPerKwh: 25, // illustrative tariff for the example only
+  bom: [
+    ['485 Wp mono panel', 14, 12500, 175000],
+    ['5 kW hybrid inverter', 1, 180000, 180000],
+    ['10 kWh LiFePO4 battery', 1, 360000, 360000],
+    ['Mounting, cabling, protection, installation & commissioning', 1, 285000, 285000],
+  ] as Array<[string, number, number, number]>,
+  batteryReplacementKes: 360000,
+} as const;
 
 // ============================================
 // Pro Tools — surfaces every new backend endpoint
@@ -214,7 +232,8 @@ const Pretty: React.FC<{ v: any; depth: number }> = ({ v, depth }) => {
 const NpvTool = () => {
   const t = useTool();
   const [rate, setRate] = useState(0.10);
-  const [cf, setCf] = useState('-1247500,240000,240000,240000,240000,240000,240000,240000,240000,240000,240000');
+  // Starts blank: the customer's own cash flows, not sample figures (item 5, 2026-11-13).
+  const [cf, setCf] = useState('');
   return (
     <Card>
       <CardH>NPV — Discounted Cash Flow</CardH>
@@ -223,9 +242,9 @@ const NpvTool = () => {
         <Input aria-label="Discount rate (decimal, e.g. 0.10 for 10%)" type="number" step="0.01" value={rate} onChange={(e) => setRate(+e.target.value)} placeholder="discount rate" />
       </Row>
       <Row>
-        <Input aria-label="Cash flows, comma-separated" value={cf} onChange={(e) => setCf(e.target.value)} placeholder="comma-separated cash flows" />
+        <Input aria-label="Cash flows, comma-separated" value={cf} onChange={(e) => setCf(e.target.value)} placeholder="your cash flows, e.g. -1000000, 200000, 200000" />
       </Row>
-      <Btn disabled={t.busy} onClick={() => t.run(() => finance.npv(rate, cf.split(',').map(Number)))}>Calculate NPV</Btn>
+      <Btn disabled={t.busy || !cf.trim()} onClick={() => t.run(() => finance.npv(rate, cf.split(',').map(Number)))}>Calculate NPV</Btn>
       <Result {...t} />
     </Card>
   );
@@ -233,13 +252,14 @@ const NpvTool = () => {
 
 const IrrTool = () => {
   const t = useTool();
-  const [cf, setCf] = useState('-1247500,240000,240000,240000,240000,240000,240000,240000,240000,240000,240000');
+  // Starts blank: the customer's own cash flows, not sample figures (item 5, 2026-11-13).
+  const [cf, setCf] = useState('');
   return (
     <Card>
       <CardH>IRR — Newton–Raphson</CardH>
       <CardSub>With bisection fallback</CardSub>
-      <Row><Input aria-label="Cash flows, comma-separated" value={cf} onChange={(e) => setCf(e.target.value)} /></Row>
-      <Btn disabled={t.busy} onClick={() => t.run(() => finance.irr(cf.split(',').map(Number)))}>Calculate IRR</Btn>
+      <Row><Input aria-label="Cash flows, comma-separated" value={cf} onChange={(e) => setCf(e.target.value)} placeholder="your cash flows, e.g. -1000000, 200000, 200000" /></Row>
+      <Btn disabled={t.busy || !cf.trim()} onClick={() => t.run(() => finance.irr(cf.split(',').map(Number)))}>Calculate IRR</Btn>
       <Result {...t} />
     </Card>
   );
@@ -513,26 +533,22 @@ const DieselVsSolarTool = () => {
 // ----- Reports -----
 const ProposalPdfTool = () => {
   const t = useTool();
-  const [name, setName] = useState('Sample Customer');
+  const [name, setName] = useState('Demonstration Customer');
   const generate = async () => {
     // A fixed, self-consistent example: the BOM adds up to the capex, and
     // payback/NPV/IRR come from the 25-year table printed in the PDF
     // (2026-10-25 audit: a 3-row "25-year" table, and a 735k BOM vs 1.25M capex).
-    const bom: Array<[string, number, number, number]> = [
-      ['485 Wp mono panel', 14, 12500, 175000],
-      ['5 kW hybrid inverter', 1, 180000, 180000],
-      ['10 kWh LiFePO4 battery', 1, 360000, 360000],
-      ['Mounting, cabling, protection, installation & commissioning', 1, 285000, 285000],
-    ];
+    // Every line says its price is illustrative.
+    const bom: Array<[string, number, number, number]> = ILLUSTRATIVE.bom.map(([item, qty, unit, total]) => [`${item} (${ILLUSTRATIVE.label})`, qty, unit, total]);
     const capexKes = bom.reduce((s, r) => s + r[3], 0);
     const annualKwh = 6.8 * 1600;                 // 1,600 kWh/kWp/yr, Nairobi (estimate)
     const consumptionKwhMonth = 1000;
-    const tariff = DEFAULT_TARIFF_KES_PER_KWH;    // effective KES/kWh, the calculator's default
+    const tariff = ILLUSTRATIVE.tariffKesPerKwh;  // illustrative tariff for the example only
     const year1SavingsKes = Math.round(annualKwh * 0.85 * tariff); // 85 % used on site
-    const f = proposalFinance({ capexKes, year1SavingsKes, batteryReplacement: { year: 12, costKes: 360000 } });
+    const f = proposalFinance({ capexKes, year1SavingsKes, batteryReplacement: { year: 12, costKes: ILLUSTRATIVE.batteryReplacementKes } });
     const blob = await reports.proposalBlob({
-      brand: { companyName: 'EmersonEIMS', primaryHex: '#0b8457', tagline: 'SAMPLE LAYOUT — fixed example, not your design and not a quotation' },
-      customer: { name, site: 'Nairobi' },
+      brand: { companyName: 'EmersonEIMS', primaryHex: '#0b8457', tagline: ILLUSTRATIVE.banner },
+      customer: { name: `${name} (demonstration)`, site: 'Nairobi (example)' },
       site: { irradianceKwhPerM2Day: 5.4, monthlyConsumptionKwh: consumptionKwhMonth, tariffKesPerKwh: tariff },
       design: { systemKw: 6.8, batteryKwh: 10, panelCount: 14, panelW: 485, inverterKw: 5, tiltDeg: 15, azimuthDeg: 0, specificYieldKwhPerKwp: 1600,
         annualOffsetPct: Math.round(annualKwh / (consumptionKwhMonth * 12) * 100), bom },
@@ -540,16 +556,16 @@ const ProposalPdfTool = () => {
         discountRatePct: f.assumptions.discountRatePct, tariffEscalationPct: f.assumptions.tariffEscalationPct,
         panelDegradationPct: f.assumptions.panelDegradationPct, cashFlowTable: f.cashFlowTable },
       provenance: [
-        { label: 'Example inputs', source: `Fixed example: tariff KES ${tariff}/kWh, 85% of output used on site, O&M ${f.assumptions.omPctOfCapex}% of capex/yr, battery replaced in year 12`, url: 'internal' },
+        { label: 'Demonstration inputs', source: `Illustrative only: every price and the KES ${tariff}/kWh tariff are example values, not an EmersonEIMS offer; 85% of output used on site, O&M ${f.assumptions.omPctOfCapex}% of capex/yr, battery replaced in year 12`, url: 'internal' },
       ],
     });
-    downloadBlob(blob as any, `proposal-${Date.now()}.pdf`);
-    return { ok: true, message: 'PDF downloaded' };
+    downloadBlob(blob as any, `DEMONSTRATION-proposal-${Date.now()}.pdf`);
+    return { ok: true, message: 'Demonstration PDF downloaded (illustrative prices, not an offer)' };
   };
   return (
     <Card>
-      <CardH>Sample Proposal PDF</CardH>
-      <CardSub>Shows the proposal layout with a fixed example design (6.8 kWp, Nairobi). It is not built from your inputs and is not a quotation.</CardSub>
+      <CardH>Demonstration Proposal PDF</CardH>
+      <CardSub>Shows the proposal layout with a fixed example design (6.8 kWp, Nairobi). Every price in it is illustrative, not an EmersonEIMS offer; it is not built from your inputs and is not a quotation. Request a quotation for real prices.</CardSub>
       <Row><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Customer name" aria-label="Customer name" /></Row>
       <Btn disabled={t.busy} onClick={() => t.run(generate)}>Generate &amp; Download PDF</Btn>
       <Result {...t} />
@@ -563,20 +579,20 @@ const XlsxTool = () => {
     const blob = await reports.xlsxBlob({
       sheets: [
         // A format sample, labelled as such (2026-10-29 audit: fixed figures with no label).
-        { name: 'SAMPLE - not your project', aoa: [['This file shows the export format with example figures. Use the Report page for your own project.'], [], ['Year', 'Net (KES) - example'], ...[1,2,3,4,5].map(y => [y, 240000])] },
-        { name: 'BOM (example)', rows: [
-          { item: 'Panel 485W', qty: 14, unit: 12500, total: 175000 },
-          { item: 'Inverter 5kW', qty: 1, unit: 180000, total: 180000 }
+        { name: 'DEMONSTRATION - not an offer', aoa: [['Demonstration of the export format. All figures are illustrative, not an EmersonEIMS offer or quotation. Use the Report page for your own project.'], [], ['Year', 'Net (KES) - illustrative'], ...[1,2,3,4,5].map(y => [y, 240000])] },
+        { name: 'BOM (illustrative prices)', rows: [
+          { item: `Panel 485W (${ILLUSTRATIVE.label})`, qty: 14, unit: 12500, total: 175000 },
+          { item: `Inverter 5kW (${ILLUSTRATIVE.label})`, qty: 1, unit: 180000, total: 180000 }
         ]}
       ]
     });
-    downloadBlob(blob as any, `sample-export-${Date.now()}.xlsx`);
-    return { ok: true, message: 'Sample Excel downloaded (example figures, not your project)' };
+    downloadBlob(blob as any, `DEMONSTRATION-export-${Date.now()}.xlsx`);
+    return { ok: true, message: 'Demonstration Excel downloaded (illustrative figures, not an offer)' };
   };
   return (
     <Card>
       <CardH>Excel Export</CardH>
-      <CardSub>Sample xlsx showing the export format (example figures)</CardSub>
+      <CardSub>Demonstration xlsx showing the export format: illustrative figures, not an EmersonEIMS offer</CardSub>
       <Btn disabled={t.busy} onClick={() => t.run(generate)}>Download Excel</Btn>
       <Result {...t} />
     </Card>

@@ -68,8 +68,9 @@ export interface Panel3DPlacement {
   segmentId: string;
   stringId: string;
   annualProduction: number; // kWh
-  efficiencyFactor: number; // 0-1
+  efficiencyFactor: number; // 0-1, the performance ratio applied
   shadingLoss: number; // %
+  wattage?: number; // Wp of the placed panel
 }
 
 export interface SolarDesign3D {
@@ -142,7 +143,7 @@ export interface FinancialProjection {
   roi25Year: number;
   lcoe: number; // Levelized cost of energy
   npv: number; // Net present value
-  irr: number; // Internal rate of return
+  irr: number; // Internal rate of return, % (NaN when the project does not pay back)
   yearlyProjection: YearlyFinancial[];
 }
 
@@ -456,9 +457,11 @@ function generateShadingMask(azimuth: number, tilt: number): number[][] {
     const hourRow: number[] = [];
     for (let month = 0; month < 12; month++) {
       if (hour >= 6 && hour <= 18) {
-        // Simplified: assume good solar access during daytime
-        const solarAccess = 0.85 + Math.random() * 0.15;
-        hourRow.push(solarAccess);
+        // No obstruction survey in this tool: the roof is treated as UNSHADED
+        // and the report says shading was not assessed. (P0 audit 2026-11-13:
+        // this was a random 85-100% per hour, so the same roof gave a
+        // different shading loss and kWh/year on every click.)
+        hourRow.push(1);
       } else {
         hourRow.push(0);
       }
@@ -470,7 +473,19 @@ function generateShadingMask(azimuth: number, tilt: number): number[][] {
 }
 
 /**
- * AI-powered optimal panel placement
+ * Loss assumptions (typical values, stated to the user; not measured for the
+ * site). Production uses exactly these, so the losses shown and the kWh/year
+ * agree. (P0 audit 2026-11-13: production used a random 85-95% factor per
+ * panel while a separate, unapplied loss list was displayed.)
+ */
+export const DEFAULT_LOSSES_PCT = { soiling: 3, temperature: 8, wiring: 2, mismatch: 2 } as const;
+export const DEFAULT_INVERTER_EFFICIENCY = 0.97;
+export function performanceRatioFrom(losses: { soiling: number; temperature: number; wiring: number; mismatch: number }, inverterEfficiency: number, shadingPct = 0): number {
+  return (1 - shadingPct / 100) * (1 - losses.soiling / 100) * (1 - losses.temperature / 100) * (1 - losses.wiring / 100) * (1 - losses.mismatch / 100) * inverterEfficiency;
+}
+
+/**
+ * Panel placement on the roof segments (rule-based packing, not AI)
  */
 export function optimizePanelPlacement(
   roof: Roof3DModel,
@@ -515,9 +530,9 @@ export function optimizePanelPlacement(
           z: roof.dimensions.height + 0.1,
         };
 
-        // Calculate efficiency based on position and shading
-        const efficiencyFactor = 0.85 + Math.random() * 0.1;
+        // The same stated loss model for every panel (see DEFAULT_LOSSES_PCT).
         const shadingLoss = (1 - segment.shadingMask[12][6]) * 100; // Noon in June
+        const efficiencyFactor = performanceRatioFrom(DEFAULT_LOSSES_PCT, DEFAULT_INVERTER_EFFICIENCY, shadingLoss);
 
         placements.push({
           id: `panel-${panelCount}`,
@@ -529,6 +544,7 @@ export function optimizePanelPlacement(
           annualProduction: (panelSpec.wattage * segment.annualIrradiance * efficiencyFactor) / 1000,
           efficiencyFactor,
           shadingLoss,
+          wattage: panelSpec.wattage,
         });
 
         totalCapacity += panelSpec.wattage;
@@ -633,10 +649,10 @@ export function generateProductionHeatmap(
 export function calculatePerformance(
   panels: Panel3DPlacement[],
   roof: Roof3DModel,
-  inverterEfficiency: number = 0.97
+  inverterEfficiency: number = DEFAULT_INVERTER_EFFICIENCY
 ): PerformanceAnalysis {
   const totalAnnualProduction = panels.reduce((sum, p) => sum + p.annualProduction, 0);
-  const peakPower = panels.length * 0.545; // Assuming 545W panels
+  const peakPower = panels.reduce((sum, p) => sum + (p.wattage ?? 545), 0) / 1000; // kWp of the placed panels
 
   // Monthly production (Kenya has relatively stable production year-round)
   const monthlyFactors = [0.95, 0.98, 1.0, 0.97, 0.88, 0.85, 0.82, 0.85, 0.92, 0.98, 0.95, 0.93];
@@ -661,14 +677,16 @@ export function calculatePerformance(
 
   // Calculate losses
   const avgShadingLoss = panels.reduce((sum, p) => sum + p.shadingLoss, 0) / panels.length;
+  const pr = performanceRatioFrom(DEFAULT_LOSSES_PCT, inverterEfficiency, avgShadingLoss || 0);
   const losses = {
-    shading: avgShadingLoss,
-    soiling: 3, // 3% soiling loss
-    temperature: 8, // 8% temp loss in Kenya
-    wiring: 2,
+    shading: avgShadingLoss || 0,
+    soiling: DEFAULT_LOSSES_PCT.soiling,
+    temperature: DEFAULT_LOSSES_PCT.temperature,
+    wiring: DEFAULT_LOSSES_PCT.wiring,
     inverter: (1 - inverterEfficiency) * 100,
-    mismatch: 2,
-    total: avgShadingLoss + 3 + 8 + 2 + (1 - inverterEfficiency) * 100 + 2,
+    mismatch: DEFAULT_LOSSES_PCT.mismatch,
+    // Losses combine multiplicatively; "total" is 1 - PR, the figure applied.
+    total: (1 - pr) * 100,
   };
 
   return {
@@ -676,8 +694,8 @@ export function calculatePerformance(
     monthlyProduction,
     hourlyProfile,
     peakPower,
-    performanceRatio: (100 - losses.total),
-    specificYield: totalAnnualProduction / peakPower,
+    performanceRatio: pr * 100,
+    specificYield: peakPower > 0 ? totalAnnualProduction / peakPower : 0,
     losses,
   };
 }
@@ -685,13 +703,44 @@ export function calculatePerformance(
 /**
  * Generate financial projection
  */
+/**
+ * IRR: the discount rate at which the NPV of the cash flows is zero, found by
+ * bisection (cash flow 0 = -cost). Null when there is no sign change (the
+ * project never pays back) or no root in -99%..+100%.
+ */
+export function internalRateOfReturn(cashFlows: number[]): number | null {
+  const npvAt = (r: number) => cashFlows.reduce((acc, cf, t) => acc + cf / Math.pow(1 + r, t), 0);
+  let lo = -0.99, hi = 1.0;
+  let fLo = npvAt(lo), fHi = npvAt(hi);
+  if (!(Number.isFinite(fLo) && Number.isFinite(fHi)) || fLo * fHi > 0) return null;
+  for (let k = 0; k < 200; k++) {
+    const mid = (lo + hi) / 2;
+    const fMid = npvAt(mid);
+    if (Math.abs(fMid) < 1e-9 || hi - lo < 1e-10) return mid;
+    if (fLo * fMid < 0) { hi = mid; fHi = fMid; } else { lo = mid; fLo = fMid; }
+  }
+  return (lo + hi) / 2;
+}
+
+/**
+ * Financial projection. The installed cost and tariff are the customer's
+ * figures (a quotation and the electricity bill): there are no default prices.
+ * (P0 audit 2026-11-13: the studio priced every system at KES 25,000 per panel
+ * with a KES 22/kWh tariff and 8%/yr tariff growth, and "IRR" was simple
+ * yield + inflation, not an IRR.) O&M and battery/inverter replacement are not
+ * included and are stated as such.
+ */
 export function calculateFinancials(
   systemCost: number,
   annualProduction: number,
-  tariffRate: number = 22, // KES per kWh
-  tariffInflation: number = 0.08,
-  degradation: number = 0.005
+  tariffRate: number,
+  tariffInflation: number,
+  degradation: number = 0.005,
+  discountRate: number = 0.1
 ): FinancialProjection {
+  if (!(systemCost > 0) || !(annualProduction > 0) || !(tariffRate > 0) || !(tariffInflation >= 0) || !(discountRate >= 0)) {
+    throw new Error('calculateFinancials needs a positive cost, production and tariff, and non-negative escalation and discount rates.');
+  }
   const yearlyProjection: YearlyFinancial[] = [];
   let cumulativeSavings = 0;
   let production = annualProduction;
@@ -717,8 +766,7 @@ export function calculateFinancials(
   const paybackYears = systemCost / annualSavings;
   const roi25Year = ((cumulativeSavings - systemCost) / systemCost) * 100;
 
-  // LCOE calculation
-  const discountRate = 0.1;
+  // LCOE calculation (capital cost only)
   let npvProduction = 0;
   const npvCost = systemCost;
   production = annualProduction;
@@ -741,8 +789,9 @@ export function calculateFinancials(
     npv += (production * tariff) / Math.pow(1 + discountRate, year);
   }
 
-  // IRR approximation
-  const irr = (annualSavings / systemCost) * 100 + tariffInflation * 100;
+  // IRR from the same year-by-year savings as the table.
+  const irrRaw = internalRateOfReturn([-systemCost, ...yearlyProjection.map((y) => y.savings)]);
+  const irr = irrRaw === null ? NaN : irrRaw * 100;
 
   return {
     systemCost,

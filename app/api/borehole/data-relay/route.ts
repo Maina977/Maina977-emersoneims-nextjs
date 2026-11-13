@@ -68,6 +68,31 @@ async function fetchWithRetry(url: string): Promise<{ status: number; type: stri
   const host = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
   const blocked = quotaBlockedUntil.get(host);
   if (blocked && blocked > Date.now()) return { status: 429, type: 'application/json', body: '{"error":"source quota spent; try again later"}' };
+  const down = hostDownUntil.get(host);
+  if (down && down > Date.now()) return { status: 503, type: 'application/json', body: '{"error":"source unavailable; failed in the last 2 minutes"}' };
+  const result = await fetchAttempts(url, host);
+  // Retries exhausted on a timeout or server error: the source is down. Later
+  // requests are answered at once for 2 minutes instead of each waiting out
+  // the full 55 s (2026-11-13: SoilGrids made every analysis take ~4 minutes).
+  // ("too large to relay" is about one request, not the source.)
+  if (result.status >= 500 && !result.body.includes('too large to relay')) hostDownUntil.set(host, Date.now() + HOST_DOWN_MS);
+  return result;
+}
+
+/**
+ * Per-attempt limit for sources that answer fast or not at all. ISRIC
+ * (SoilGrids) answers in 2-8 s, but about one connection in three is dropped
+ * and hangs (measured 13 Nov 2026: 21 s connect timeouts on its single
+ * server). One hung attempt used to spend the whole 55 s budget; now it is cut
+ * at 12 s and retried, which usually connects. Slow-but-working sources (ORNL
+ * MODIS, 30-60 s) keep the full budget.
+ */
+const ATTEMPT_MS: Record<string, number> = { 'rest.isric.org': 12_000 };
+
+const hostDownUntil = new Map<string, number>();
+const HOST_DOWN_MS = 2 * 60_000;
+
+async function fetchAttempts(url: string, host: string): Promise<{ status: number; type: string; body: string }> {
   let last: { status: number; type: string; body: string } = { status: 502, type: 'application/json', body: '{"error":"source did not answer"}' };
   // All attempts fit inside the function's 60 s limit (ORNL MODIS can take 30-60 s).
   const deadline = Date.now() + 55_000;
@@ -75,7 +100,7 @@ async function fetchWithRetry(url: string): Promise<{ status: number; type: stri
     const left = deadline - Date.now();
     if (left < 3_000) break;
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(left), headers: { 'User-Agent': 'EmersonEIMS-AquaScan/1.0 (+https://emersoneims.com)' } });
+      const res = await fetch(url, { signal: AbortSignal.timeout(Math.min(left, ATTEMPT_MS[host] ?? left)), headers: { 'User-Agent': 'EmersonEIMS-AquaScan/1.0 (+https://emersoneims.com)' } });
       const declared = Number(res.headers.get('content-length'));
       if (Number.isFinite(declared) && declared > MAX_BODY) return { status: 502, type: 'application/json', body: '{"error":"source answer too large to relay"}' };
       const body = await res.text();
@@ -86,12 +111,21 @@ async function fetchWithRetry(url: string): Promise<{ status: number; type: stri
       if (res.status !== 429 && res.status < 500) return last;
       if (res.status === 429 && QUOTA_MSG.test(body)) { quotaBlockedUntil.set(host, Date.now() + 10 * 60_000); return last; }
       const ra = Number(res.headers.get('retry-after'));
-      await sleep(Number.isFinite(ra) && ra > 0 ? Math.min(ra * 1000, 10_000) : 1000 * 2 ** attempt);
+      if (!(await backOff(Number.isFinite(ra) && ra > 0 ? Math.min(ra * 1000, 10_000) : 1000 * 2 ** attempt))) break;
     } catch {
-      await sleep(1000 * 2 ** attempt); // timeout or network error
+      if (!(await backOff(1000 * 2 ** attempt))) break; // timeout or network error
     }
   }
   return last;
+
+  // Waits before the next attempt, unless no attempt could follow it in time
+  // (2026-11-13: the wait after the last attempt pushed the answer to ~63 s,
+  // past the browser's 65 s limit, so the browser then called the source itself).
+  async function backOff(ms: number): Promise<boolean> {
+    if (Date.now() + ms > deadline - 3_000) return false;
+    await sleep(ms);
+    return true;
+  }
 }
 
 export async function GET(req: NextRequest) {

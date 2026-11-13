@@ -12,9 +12,9 @@
  * 
  * Philosophy: "You don't beat geophysics. You OPTIMIZE IT WITH AI."
  * 
- * Tier 1 ($):   AI Screening only → 70% accuracy
- * Tier 2 ($$):  AI + Targeted ERT (1-2 lines) → 85% accuracy  
- * Tier 3 ($$$): AI + ERT + Pump Test + Lab → 90-95% accuracy
+ * Tier 1 ($):   desktop screening only (accuracy not yet measured)
+ * Tier 2 ($$):  AI + Targeted ERT (1-2 lines) (accuracy not yet measured)  
+ * Tier 3 ($$$): AI + ERT + Pump Test + Lab (accuracy not yet measured)
  */
 
 export interface SurveyRecommendation {
@@ -342,7 +342,7 @@ export function generateSmartSurveyPlan(input: SurveyPlannerInput): SmartSurveyP
   const tierDescs = {
     1: 'Desktop screening from public satellite data, geological models and nearby borehole records. No field survey; a survey is still required before drilling.',
     2: 'Desktop screening plus targeted ERT/EM at the top drill candidates, instead of surveying the whole site.',
-    3: 'Full geophysical investigation with pump test and lab analysis. Bankable confidence. ~90-95% accuracy.',
+    3: 'Full geophysical investigation with pump test and lab analysis: the measurements a bankable hydrogeological report needs.',
   };
 
   return {

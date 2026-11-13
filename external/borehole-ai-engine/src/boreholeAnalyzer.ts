@@ -52,7 +52,7 @@ import { applyCalibrationCorrection } from './realTimeCalibration';
 import { assessDrillingRisk } from './riskDecisionEngine';
 import { calculateConfidenceWeighted } from './confidenceWeighting';
 import { optimizeMicroSite } from './microSitingOptimizer';
-import { analyzePumpTest, quickPumpEstimate } from './pumpTestAnalyzer';
+import { buildFieldPumpTestAnalysis } from './pumpTestAnalyzer';
 import { analyzeLithologyLog, queryNearbyLithologyLogs, getRegionalLithologyInsight } from './lithologyLogger';
 import { interpretERTSurvey, type ERTDataPoint } from './ertInterpretation';
 import { runERTIntelligencePipeline, type ExistingAILayers } from './ertIntelligenceEngine';
@@ -2322,6 +2322,7 @@ export class BoreholeAnalyzer {
 
     // ═══ PHASE 7: GROUND TRUTH & CREDIBILITY ENGINES ═══
     let pumpTestAnalysis: any;
+    let pumpTestRejected: string | undefined;
     let lithologyAnalysis: any;
     let ertInterpretation: any;
     let multiSourceAgreement: any;
@@ -2329,19 +2330,22 @@ export class BoreholeAnalyzer {
     let hydrochemPrediction: any;
 
     try {
-      // 1. Pump Test Analysis — if pump test field data provided
-      if (fieldData?.pumpTest) {
-        pumpTestAnalysis = analyzePumpTest({
-          pumpingRate_m3hr: (fieldData.pumpTest.sustainableYieldM3Hr || 1),
-          readings: [{ time_min: (fieldData.pumpTest.testDurationHrs || 24) * 60, drawdown_m: fieldData.pumpTest.drawdownM || 10 }],
-          aquiferThickness_m: 30,
-          staticWaterLevel_m: calibratedDepth * 0.3,
-          pumpDuration_min: (fieldData.pumpTest.testDurationHrs || 24) * 60,
-        });
-      } else if (hasCoords) {
-        // Quick estimate from rock type
-        pumpTestAnalysis = quickPumpEstimate(calibratedYield, calibratedDepth * 0.3, calibratedDepth * 0.3);
-      }
+      // 1. Pump Test Analysis — ONLY from a field pump test the user entered.
+      //
+      // P0 integrity fix: this used to (a) run a "quick estimate" with no pump
+      // test at all, feeding the model's own predicted yield with a drawdown and
+      // static level invented as 30% of the predicted depth, and (b) default a
+      // missing pumping rate to 1 m³/h and a missing drawdown to 10 m. The
+      // results were shown as "Pump Test Analysis" (Theis/Cooper-Jacob) and
+      // ticked "+ Pump Test 88-93%" on the accuracy ladder. A pump-test result
+      // must come from a pump test, so: no field test -> no analysis; a test
+      // without a pumping rate or a drawdown -> no analysis, with a reason.
+      // The remaining assumptions (aquifer thickness, static level) are not in
+      // the field-data form, so they are stated with the result.
+      // Logic and tests: buildFieldPumpTestAnalysis in pumpTestAnalyzer.ts.
+      const pumpTestOutcome = buildFieldPumpTestAnalysis(fieldData?.pumpTest, calibratedDepth);
+      pumpTestAnalysis = pumpTestOutcome.analysis;
+      pumpTestRejected = pumpTestOutcome.rejected;
 
       // 2. Lithology Analysis — query nearby lithology logs
       if (hasCoords) {
@@ -2747,6 +2751,7 @@ export class BoreholeAnalyzer {
       microSiting: microSiting ?? undefined,
       // ═══ PHASE 7 GROUND TRUTH ENGINE RESULTS ═══
       pumpTestAnalysis: pumpTestAnalysis ?? undefined,
+      pumpTestRejected,
       lithologyAnalysis: lithologyAnalysis ?? undefined,
       ertInterpretation: ertInterpretation ?? undefined,
       multiSourceAgreement: multiSourceAgreement ?? undefined,

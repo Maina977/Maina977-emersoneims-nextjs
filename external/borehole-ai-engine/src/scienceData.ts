@@ -5,13 +5,16 @@
    ═══════════════════════════════════════════════════════════════ */
 
 // ─── PART 1.1: REMOTE SENSING & SATELLITE DATA FUSION (10) ───
+// Percentage accuracies removed (P0 audit 2026-11-13, directive §5): no validation
+// study supports them for these sites. Ranges (±) are the products' published
+// resolutions and are pending source verification (dataset registry, P1).
 export const REMOTE_SENSING = [
   { name:'Groundwater Storage Change', method:'GRACE-FO satellite gravimetry', source:'NASA/GFZ', output:'mm/year water equivalent', accuracy:'±15mm' },
   { name:'Soil Moisture Profile (0-100cm)', method:'SMAP L-band radiometry + Sentinel-1 SAR', source:'NASA/ESA', output:'Volumetric water content', accuracy:'±0.04 m³/m³' },
   { name:'Evapotranspiration Rate', method:'SEBAL algorithm + Landsat thermal', source:'USGS', output:'mm/day', accuracy:'±0.5 mm/day' },
   { name:'Precipitation History', method:'GPM IMERG + CHIRPS', source:'NASA/USGS', output:'30-year daily rainfall', accuracy:'±5mm/day' },
-  { name:'Surface Water Bodies', method:'Sentinel-2 NDWI + Otsu thresholding', source:'ESA', output:'Water extent polygons', accuracy:'92% accuracy' },
-  { name:'Vegetation Water Stress', method:'Sentinel-2 NDVI + NDWI + LST', source:'ESA', output:'Crop water stress index', accuracy:'88% accuracy' },
+  { name:'Surface Water Bodies', method:'Sentinel-2 NDWI + Otsu thresholding', source:'ESA', output:'Water extent polygons', accuracy:'Not validated here' },
+  { name:'Vegetation Water Stress', method:'Sentinel-2 NDVI + NDWI + LST', source:'ESA', output:'Crop water stress index', accuracy:'Not validated here' },
   { name:'Ground Deformation (InSAR)', method:'Sentinel-1 interferometry', source:'ESA', output:'mm/year uplift/subsidence', accuracy:'±5mm/year' },
   { name:'Land Surface Temperature', method:'Landsat 8/9 band 10-11', source:'USGS', output:'°C', accuracy:'±1.5°C' },
   { name:'Albedo (Surface Reflectance)', method:'MODIS MCD43A3', source:'NASA', output:'0-1 scale', accuracy:'±0.02' },
@@ -20,8 +23,8 @@ export const REMOTE_SENSING = [
 
 // ─── PART 1.2: GEOLOGICAL & HYDROGEOLOGICAL MAPPING (8) ───
 export const GEO_HYDRO_MAPPING = [
-  { name:'Aquifer Type Classification', method:'UNESCO lithological maps + USGS', source:'Global Aquifer Database', output:'Confined/Unconfined/Karst', accuracy:'85%' },
-  { name:'Lineament/Fault Detection', method:'DEM hillshading + Canny edge detection', source:'SRTM/ASTER', output:'Fracture density map', accuracy:'80%' },
+  { name:'Aquifer Type Classification', method:'UNESCO lithological maps + USGS', source:'Global Aquifer Database', output:'Confined/Unconfined/Karst', accuracy:'Not validated here' },
+  { name:'Lineament/Fault Detection', method:'DEM hillshading + Canny edge detection', source:'SRTM/ASTER', output:'Fracture density map', accuracy:'Not validated here' },
   { name:'Bedrock Depth Estimation', method:'Gravity anomaly inversion + magnetics', source:'EMAG2/WGM2012', output:'Depth to basement (m)', accuracy:'±50m' },
   { name:'Porosity & Permeability', method:'Rock type lookup + empirical formulas', source:'Global lithology maps', output:'Fraction (0-1)', accuracy:'±15%' },
   { name:'Hydraulic Conductivity', method:'Grain size proxy + regional averages', source:'Literature database', output:'m/day', accuracy:'Order of magnitude' },
@@ -32,12 +35,12 @@ export const GEO_HYDRO_MAPPING = [
 
 // ─── PART 1.3: TOPOGRAPHIC & HYDROLOGICAL ANALYSIS (8) ───
 export const TOPO_HYDROLOGY = [
-  { name:'Flow Accumulation', method:'D8/D-Infinity algorithm', source:'SRTM 30m', output:'Flow direction grid', accuracy:'90%' },
-  { name:'Topographic Wetness Index', method:'ln(α / tan β)', source:'DEM', output:'TWI grid', accuracy:'85%' },
-  { name:'Drainage Density', method:'Stream network extraction', source:'DEM', output:'km/km²', accuracy:'80%' },
+  { name:'Flow Accumulation', method:'D8/D-Infinity algorithm', source:'SRTM 30m', output:'Flow direction grid', accuracy:'Not validated here' },
+  { name:'Topographic Wetness Index', method:'ln(α / tan β)', source:'DEM', output:'TWI grid', accuracy:'Not validated here' },
+  { name:'Drainage Density', method:'Stream network extraction', source:'DEM', output:'km/km²', accuracy:'Not validated here' },
   { name:'Slope & Aspect', method:'3x3 Sobel filter', source:'DEM', output:'Degrees', accuracy:'±5°' },
   { name:'Curvature (Profile/Plan)', method:'Second derivative of DEM', source:'DEM', output:'m⁻¹', accuracy:'±0.01' },
-  { name:'Catchment Delineation', method:'Pour point analysis', source:'DEM', output:'Watershed polygons', accuracy:'90%' },
+  { name:'Catchment Delineation', method:'Pour point analysis', source:'DEM', output:'Watershed polygons', accuracy:'Not validated here' },
   { name:'Distance to Rivers', method:'Euclidean distance', source:'OpenStreetMap/OGC', output:'meters', accuracy:'±10m' },
   { name:'Elevation Above Stream', method:'DEM minus river elevation', source:'SRTM + OSM', output:'meters', accuracy:'±10m' },
 ];
@@ -77,7 +80,7 @@ export const ENSEMBLE_METHODS = [
 export const TIME_SERIES = [
   { variable:'Groundwater Level', horizon:'12 months', model:'LSTM (3 layers, 128 units)', input:'Rainfall, pumping, ET', accuracy:'±0.5m', availability:'backend' as const, browserFallback:'Linear trend from GRACE TWS + seasonal decomposition via Open-Meteo climate history' },
   { variable:'Yield Sustainability', horizon:'10 years', model:'Prophet + SARIMA', input:'Historical yield, recharge', accuracy:'±20%', availability:'backend' as const, browserFallback:'Simple decline curve analysis using water balance estimates' },
-  { variable:'Drought Risk', horizon:'6 months', model:'Transformer', input:'SPI, SPEI, ENSO', accuracy:'75% precision', availability:'backend' as const, browserFallback:'SPI calculation from Open-Meteo precipitation history' },
+  { variable:'Drought Risk', horizon:'6 months', model:'Transformer', input:'SPI, SPEI, ENSO', accuracy:'Not validated here', availability:'backend' as const, browserFallback:'SPI calculation from Open-Meteo precipitation history' },
   { variable:'Recharge Forecast', horizon:'3 months', model:'ConvLSTM', input:'Weather forecast ensembles', accuracy:'±30%', availability:'backend' as const, browserFallback:'Water balance model (P − ET − Runoff) using Open-Meteo forecast API' },
 ];
 

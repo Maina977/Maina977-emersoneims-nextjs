@@ -9,7 +9,12 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useSolarStore } from '../src/services/store';
 import { proposalFinance } from '../src/services/proposalFinance';
-import { PERFORMANCE_RATIO, BATTERY_KES_PER_KWH } from '@/lib/solar/sizing';
+import { PERFORMANCE_RATIO } from '@/lib/solar/sizing';
+
+// Price policy (management decision 2026-11-13): the finance tools use the
+// customer's own capex and saving (user-provided assumptions), never sample
+// figures; the runners start from the project's figures or blank.
+const NEED_FIGURES = 'Enter your quoted capex and your year-1 saving (your own figures) to run this.';
 import { finance, sustain, research, biz, core, bos, eng, engPro, engElite, engGlobal, engApproval, archApproval } from '../src/services/api';
 
 // ============== STYLES ==============
@@ -809,22 +814,26 @@ const BenchmarkRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
 
 const FinanceRoiRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const r = useRunner();
-  const capex = ctx.financial?.capexKes || ctx.metrics?.totalCost || 1247500;
-  const yr1 = ctx.financial?.year1SavingsKes || (ctx.metrics?.monthlySaving || 0) * 12 || 240000;
+  const [capex, setCapex] = useState(ctx.financial?.capexKes || ctx.metrics?.totalCost || 0);
+  const [yr1, setYr1] = useState(ctx.financial?.year1SavingsKes || (ctx.metrics?.monthlySaving || 0) * 12 || 0);
+  const [batteryKes, setBatteryKes] = useState(0); // quoted battery replacement, optional
   const [discount, setDiscount] = useState(0.10);
   const [years, setYears] = useState(25);
   // The same engine and assumptions as the proposal (2026-10-29 audit: this
   // tile used +2.5%/yr and no O&M, degradation or battery replacement, so its
   // NPV was 663,775 against the proposal's 448,274).
-  const batteryKes = Math.round((Number(ctx.design?.batteryKwh) || 0) * BATTERY_KES_PER_KWH);
   return (
     <>
+      <Field><span className="l">Quoted capex (KSh)</span><input type="number" min={0} value={capex || ''} onChange={e => setCapex(+e.target.value)} /></Field>
+      <Field><span className="l">Year-1 saving (KSh)</span><input type="number" min={0} value={yr1 || ''} onChange={e => setYr1(+e.target.value)} /></Field>
+      <Field><span className="l">Quoted battery replacement, year 12 (KSh, optional)</span><input type="number" min={0} value={batteryKes || ''} onChange={e => setBatteryKes(+e.target.value)} /></Field>
+      {!(capex > 0 && yr1 > 0) && <Hint>{NEED_FIGURES}</Hint>}
       <Hint>NPV and IRR on the proposal's cash flow: capex KSh {capex.toLocaleString()}, year-1 saving KSh {yr1.toLocaleString()}, tariff held flat, panels -0.5%/yr, O&amp;M 1% of capex/yr{batteryKes > 0 ? `, battery replaced in year 12 (KSh ${batteryKes.toLocaleString()})` : ''}.</Hint>
       <Field><span className="l">Discount rate</span>
         <input type="number" step="0.005" value={discount} onChange={e => setDiscount(+e.target.value)} /></Field>
       <Field><span className="l">Years</span>
         <input type="number" min={5} max={30} value={years} onChange={e => setYears(+e.target.value)} /></Field>
-      <Run disabled={r.loading} onClick={async () => {
+      <Run disabled={r.loading || !(capex > 0 && yr1 > 0)} onClick={async () => {
         try {
           const f = proposalFinance({ capexKes: capex, year1SavingsKes: yr1, years, discountRatePct: discount * 100,
             batteryReplacement: batteryKes > 0 && years >= 12 ? { year: 12, costKes: batteryKes } : null });
@@ -855,15 +864,18 @@ const CarbonCreditsRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
 
 const LoanVsCashRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const r = useRunner();
-  const cost = ctx.financial?.capexKes || 1247500;
-  const ann = ctx.financial?.year1SavingsKes || 240000;
+  const [cost, setCost] = useState(ctx.financial?.capexKes || 0);
+  const [ann, setAnn] = useState(ctx.financial?.year1SavingsKes || 0);
   const [rate, setRate] = useState(0.14);
   return (
     <>
       <Hint>Cash purchase vs a loan over 20 years (20% down) at the rate you enter. An example to compare, not a financing offer: EmersonEIMS does not lend or arrange credit.</Hint>
+      <Field><span className="l">Quoted capex (KSh)</span><input type="number" min={0} value={cost || ''} onChange={e => setCost(+e.target.value)} /></Field>
+      <Field><span className="l">Year-1 saving (KSh)</span><input type="number" min={0} value={ann || ''} onChange={e => setAnn(+e.target.value)} /></Field>
+      {!(cost > 0 && ann > 0) && <Hint>{NEED_FIGURES}</Hint>}
       <Field><span className="l">Loan annual rate</span>
         <input type="number" step="0.005" value={rate} onChange={e => setRate(+e.target.value)} /></Field>
-      <Run disabled={r.loading} onClick={() => r.run(() => finance.loanVsCash({
+      <Run disabled={r.loading || !(cost > 0 && ann > 0)} onClick={() => r.run(() => finance.loanVsCash({
         systemCost: cost, annualSavings: ann, years: 20, loanRate: rate
       }))}>{r.loading ? 'Comparing…' : 'Compare scenarios'}</Run>
       <ResultBlock {...r} />
@@ -1001,13 +1013,14 @@ const EvChargingRunner: React.FC = () => {
 const DieselVsSolarRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const r = useRunner();
   const [annualKwh, setAnnualKwh] = useState(ctx.metrics?.annualProduction || 50000);
-  const [pvCapex, setPvCapex] = useState(ctx.financial?.capexKes || ctx.metrics?.totalCost || 4500000);
+  const [pvCapex, setPvCapex] = useState(ctx.financial?.capexKes || ctx.metrics?.totalCost || 0);
   return (
     <>
       <Hint>TCO comparison of diesel vs PV.</Hint>
       <Field><span className="l">Annual kWh load</span><input type="number" value={annualKwh} onChange={e => setAnnualKwh(+e.target.value)} /></Field>
       <Field><span className="l">PV capex (KSh)</span><input type="number" value={pvCapex} onChange={e => setPvCapex(+e.target.value)} /></Field>
-      <Run disabled={r.loading} onClick={() => r.run(() => sustain.dieselVsSolar({ annualKwh, pvCapexKes: pvCapex }))}>
+      {!(pvCapex > 0) && <Hint>Enter your quoted PV capex (your own figure) to run this.</Hint>}
+      <Run disabled={r.loading || !(pvCapex > 0)} onClick={() => r.run(() => sustain.dieselVsSolar({ annualKwh, pvCapexKes: pvCapex }))}>
         {r.loading ? 'Comparing…' : 'Run TCO comparison'}
       </Run>
       <ResultBlock {...r} />
@@ -1365,8 +1378,8 @@ const SoilingRunner: React.FC = () => {
 
 const TariffSensRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const r = useRunner();
-  const [capex, setCapex] = useState(ctx.financial?.capexKes || ctx.metrics?.totalCost || 1200000);
-  const [year1, setYear1] = useState((ctx.metrics?.monthlySaving || 8000) * 12);
+  const [capex, setCapex] = useState(ctx.financial?.capexKes || ctx.metrics?.totalCost || 0);
+  const [year1, setYear1] = useState((ctx.metrics?.monthlySaving || 0) * 12);
   const [baseline, setBaseline] = useState(0); // flat, like the calculator and proposals
   return (
     <>
@@ -1374,7 +1387,8 @@ const TariffSensRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
       <Field><span className="l">CAPEX (KSh)</span><input type="number" value={capex} onChange={e=>setCapex(+e.target.value)} /></Field>
       <Field><span className="l">Year-1 saving (KSh)</span><input type="number" value={year1} onChange={e=>setYear1(+e.target.value)} /></Field>
       <Field><span className="l">Baseline tariff escalation (%/yr)</span><input type="number" step="0.5" value={baseline} onChange={e=>setBaseline(+e.target.value)} /></Field>
-      <Run disabled={r.loading} onClick={() => r.run(() => eng.tariffSensitivity({
+      {!(capex > 0 && year1 > 0) && <Hint>{NEED_FIGURES}</Hint>}
+      <Run disabled={r.loading || !(capex > 0 && year1 > 0)} onClick={() => r.run(() => eng.tariffSensitivity({
         capexKes: capex, year1SavingKes: year1, baselineEscalationPct: baseline,
       }))}>{r.loading ? 'Computing…' : 'Compute IRR sensitivity'}</Run>
       <ResultBlock {...r} />

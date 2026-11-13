@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useSolarStore } from '../services/store';
 import { core } from '../services/api';
-import { DEFAULT_TARIFF_KES_PER_KWH, DEFAULT_DIESEL_KES_PER_LITRE } from '@/lib/solar/sizing';
+import { REQUEST_QUOTATION } from '@/lib/solar/sizing';
 
 const Container = styled.div`
   background: #0A0E27;
@@ -175,12 +175,15 @@ interface CalcResult {
   inverterBasis: 'peak-load' | 'estimated-peak' | 'array';
   batteryKwh: number;
   annualEnergyKwh: number;
-  monthlySavingKes: number;
+  // Null when the customer gave no tariff / diesel price (price policy 2026-11-13).
+  monthlySavingKes: number | null;
   savingBasis: 'grid-tariff' | 'diesel';
   dieselLitresAvoidedPerYear?: number;
   co2AvoidedKgPerYear?: number;
-  cost: { lowKes: number; midKes: number; highKes: number };
+  // Null unless prices are verified: "Request a quotation" (price policy 2026-11-13).
+  cost: { lowKes: number; midKes: number; highKes: number } | null;
   paybackYears: number | null;
+  pricing?: { status: 'verified' | 'request-quotation'; message: string; userProvided: string[] };
   notWorthwhile?: boolean;
   warning?: string;
   assumptions: string[];
@@ -207,11 +210,12 @@ export default function CalculatorPage() {
   const [location, setLocation] = useState('nairobi');
   const [systemType, setSystemType] = useState<SystemType>('hybrid');
   const [roofType, setRoofType] = useState<'flat' | 'pitched' | 'ground'>('pitched');
-  const [tariff, setTariff] = useState(String(DEFAULT_TARIFF_KES_PER_KWH));
+  const [tariff, setTariff] = useState('');
   const [daytimeUse, setDaytimeUse] = useState('50');
   const [nightUse, setNightUse] = useState('50');
   const [autonomy, setAutonomy] = useState('1');
-  const [diesel, setDiesel] = useState(String(DEFAULT_DIESEL_KES_PER_LITRE));
+  const [diesel, setDiesel] = useState('');
+  const [quotedCost, setQuotedCost] = useState('');
   const [peakLoad, setPeakLoad] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -229,7 +233,7 @@ export default function CalculatorPage() {
     // A tariff typed as 0 is a mistake, not "use the default" (2026-10-30 audit:
     // it silently became KES 25).
     if (String(tariff).trim() !== '' && !(Number(tariff) > 0)) {
-      setError('The tariff must be more than 0 KES/kWh (your bill total divided by the kWh on it), or leave it blank for the default.');
+      setError('The tariff must be more than 0 KES/kWh (your bill total divided by the kWh on it), or leave it blank.');
       return;
     }
     setLoading(true);
@@ -240,7 +244,9 @@ export default function CalculatorPage() {
       const payload: Record<string, unknown> = {
         // A big user who left the domestic default gets the commercial rate on the
         // server: the pre-filled 25 showed a 2.3-year payback (re-audit 2026-10-31).
-        consumption: cons, location, systemType, roofType, tariff: cons > 15000 && Number(tariff) === DEFAULT_TARIFF_KES_PER_KWH ? undefined : Number(tariff) || undefined,
+        // The customer's own tariff only; no default (price policy 2026-11-13).
+        consumption: cons, location, systemType, roofType, tariff: Number(tariff) > 0 ? Number(tariff) : undefined,
+        installedCostKes: Number(quotedCost) > 0 ? Number(quotedCost) : undefined,
         // A blank share is "use the default", never 0% (re-audit 2026-10-31).
         ...(systemType === 'grid-tied' && String(daytimeUse).trim() !== '' ? { daytimeUsePct: Number(daytimeUse) } : {}),
         ...(systemType === 'hybrid' && String(nightUse).trim() !== '' ? { nightUsePct: Number(nightUse) } : {}),
@@ -258,23 +264,25 @@ export default function CalculatorPage() {
       updateMetrics({
         systemSizeKw: data.pvKwp,
         panelCount: data.panels,
-        totalCost: data.cost.midKes,
-        monthlySaving: data.monthlySavingKes,
+        totalCost: data.cost?.midKes ?? (Number(quotedCost) > 0 ? Number(quotedCost) : 0),
+        monthlySaving: data.monthlySavingKes ?? 0,
         paybackPeriods: data.paybackYears ?? 0,
         annualProduction: data.annualEnergyKwh, // kWh
         carbonOffsetKg: data.co2AvoidedKgPerYear ?? 0,
         peakSunHours: data.sunHours.annual,
       });
       updateDesign({ systemKw: data.pvKwp, panelCount: data.panels, panelW: data.panelWatt, inverterKw: data.inverterKw, batteryKwh: data.batteryKwh, systemType });
-      updateFinancial({ capexKes: data.cost.midKes, year1SavingsKes: data.monthlySavingKes * 12, paybackYears: data.paybackYears ?? 0 });
+      // 0 = unknown: the proposal then shows "Request a quotation".
+      updateFinancial({ capexKes: data.cost?.midKes ?? (Number(quotedCost) > 0 ? Number(quotedCost) : 0), year1SavingsKes: (data.monthlySavingKes ?? 0) * 12, paybackYears: data.paybackYears ?? 0 });
       // The proposal shows the tariff and diesel price this calculation used
       // (2026-10-29 audit: it said KES 25 "entered by the client" after 30 was entered).
       updateSite({
         monthlyConsumptionKwh: cons, irradianceKwhPerM2Day: data.sunHours.annual, irradianceSource: data.sunHours.source,
         ...(Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon)) ? { lat: Number(data.lat), lon: Number(data.lon) } : {}),
         ...(data.location ? { displayName: String(data.location).replace(/ \(no location given\)$/, '') } : {}),
-        tariffKesPerKwh: Number(tariff) > 0 ? Number(tariff) : DEFAULT_TARIFF_KES_PER_KWH,
-        dieselKesPerLitre: Number(diesel) > 0 ? Number(diesel) : DEFAULT_DIESEL_KES_PER_LITRE,
+        // 0 = not given by the customer.
+        tariffKesPerKwh: Number(tariff) > 0 ? Number(tariff) : 0,
+        dieselKesPerLitre: Number(diesel) > 0 ? Number(diesel) : 0,
       });
       saveProject();
     } catch (e: unknown) {
@@ -288,7 +296,7 @@ export default function CalculatorPage() {
     ? `Hi EmersonEIMS, please quote this solar system:\n` +
       `Location: ${result.location}\nUse: ${consumption} kWh/month\nType: ${result.systemType}\n` +
       `Panels: ${result.panels} x ${result.panelWatt} W (${result.pvKwp} kWp)\nInverter: ${result.inverterKw} kW\n` +
-      `Battery: ${result.batteryKwh} kWh\nEstimate: ${kes(result.cost.lowKes)} – ${kes(result.cost.highKes)}`
+      `Battery: ${result.batteryKwh} kWh` + (result.cost ? `\nEstimate: ${kes(result.cost.lowKes)} – ${kes(result.cost.highKes)}` : '')
     : '';
 
   return (
@@ -347,10 +355,14 @@ export default function CalculatorPage() {
           <Row>
             {systemType !== 'off-grid' && (
               <div>
-                <Label htmlFor="sc-tariff">Tariff KES/kWh</Label>
-                <Input id="sc-tariff" type="number" min={1} value={tariff} onChange={(e) => setTariff(e.target.value)} />
+                <Label htmlFor="sc-tariff">Your tariff KES/kWh (bill total ÷ kWh)</Label>
+                <Input id="sc-tariff" type="number" min={1} value={tariff} placeholder="from your bill" onChange={(e) => setTariff(e.target.value)} />
               </div>
             )}
+            <div>
+              <Label htmlFor="sc-quoted-cost">Quoted installed cost KES (optional, your figure)</Label>
+              <Input id="sc-quoted-cost" type="number" min={0} value={quotedCost} placeholder="from a quotation" onChange={(e) => setQuotedCost(e.target.value)} />
+            </div>
             <div>
               <Label htmlFor="sc-roof">Mounting</Label>
               <Select id="sc-roof" value={roofType} onChange={(e) => setRoofType(e.target.value as 'flat' | 'pitched' | 'ground')}>
@@ -407,15 +419,15 @@ export default function CalculatorPage() {
                   <ResultLabel>Solar energy per year</ResultLabel>
                 </ResultCard>
                 <ResultCard initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                  <ResultValue style={{ fontSize: '1.1rem' }}>{kes(result.cost.lowKes)} – {kes(result.cost.highKes)}</ResultValue>
-                  <ResultLabel>Typical installed cost</ResultLabel>
+                  <ResultValue style={{ fontSize: '1.1rem' }}>{result.cost ? `${kes(result.cost.lowKes)} – ${kes(result.cost.highKes)}` : Number(quotedCost) > 0 ? kes(Number(quotedCost)) : REQUEST_QUOTATION}</ResultValue>
+                  <ResultLabel>{result.cost ? 'Installed cost' : Number(quotedCost) > 0 ? 'Your quoted cost (your assumption)' : 'Installed cost'}</ResultLabel>
                 </ResultCard>
                 <ResultCard initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-                  <ResultValue>{kes(result.monthlySavingKes)}</ResultValue>
+                  <ResultValue>{result.monthlySavingKes === null ? (result.savingBasis === 'diesel' ? 'Enter your diesel price' : 'Enter your tariff') : kes(result.monthlySavingKes)}</ResultValue>
                   <ResultLabel>{result.savingBasis === 'diesel' ? 'Diesel saved / month' : 'Saved on your bill / month'}</ResultLabel>
                 </ResultCard>
                 <ResultCard initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                  <ResultValue>{result.paybackYears !== null ? `${result.paybackYears} yrs` : '—'}</ResultValue>
+                  <ResultValue>{result.paybackYears !== null ? `${result.paybackYears} yrs` : 'Needs a cost and your tariff'}</ResultValue>
                   <ResultLabel>Simple payback</ResultLabel>
                 </ResultCard>
                 {result.dieselLitresAvoidedPerYear !== undefined && (

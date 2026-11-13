@@ -1,3 +1,5 @@
+import { liveDeliveryAllowed } from '@/lib/env/liveDelivery';
+
 /**
  * Email Notifications Service
  * Sends transactional emails via Resend
@@ -12,6 +14,8 @@ interface EmailData {
 }
 
 export async function sendEmail(emailData: EmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  // No live email outside production (management decision 2026-11-13).
+  if (!liveDeliveryAllowed()) return { success: false, error: 'Not sent: test environment (live delivery only on production)' };
   try {
     if (!process.env.RESEND_API_KEY) {
       console.warn('RESEND_API_KEY not set. Email not sent.');

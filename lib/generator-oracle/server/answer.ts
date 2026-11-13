@@ -88,7 +88,9 @@ export function answerOracle(message: string): OracleAnswer {
   }
   const d = diagnoseFromSymptoms({ symptoms: [q], topN: 5 });
   const alarms: RankedFault[] = d.ranked.slice(0, 3);
-  if (d.guides.length || alarms.length) {
+  // A safety line alone is still an answer (2026-11-13 probe: "engine seized"
+  // matched no guide or alarm and got "type a fault code", with no stop line).
+  if (d.guides.length || alarms.length || d.safety?.length) {
     const parts: string[] = [];
     // Safety first, the same lines the page shows (2026-10-30 audit).
     if (d.safety?.length) parts.push(`⚠️ Safety: ${d.safety.join(' ')}`);

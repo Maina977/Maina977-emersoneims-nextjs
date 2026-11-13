@@ -577,10 +577,15 @@ async function fetchWaterBodyAnalysis(lat: number, lon: number): Promise<WaterBo
     try {
       const resp = await fetch(jrcUrl, { signal: AbortSignal.timeout(10000) });
       if (resp.ok) jrcData = await resp.json();
-    } catch { /* fallback below */ }
+    } catch { /* unavailable: reported as such below */ }
 
-    // Estimate from known global patterns if API unavailable
-    // Based on JRC published global statistics and climate zone
+    // No JRC answer means no JRC result (2026-11-13 audit). This endpoint does
+    // not allow browser calls (CORS), so it failed on every analysis, and the
+    // report still printed "No significant surface water ... flood risk low",
+    // credited JRC for it and counted it as a data source in the confidence
+    // score. A missing measurement is now reported as missing.
+    if (!jrcData) return null;
+
     let occurrence = 0;
     let seasonality = 0;
     let recurrence = 0;

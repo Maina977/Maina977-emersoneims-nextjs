@@ -9,15 +9,12 @@
  * NEVER modify the tools themselves (standing rule).
  */
 import Link from 'next/link';
-import { estimateInstalledCost, PANEL_WATT } from '@/lib/solar/sizing';
+import { PANEL_WATT } from '@/lib/solar/sizing';
 
 // Home hybrid price range from the same model as the /solar package cards
 // (smallest: 3 kWp worth of 550 W panels + 5 kWh; largest home: 10 kWp + 15 kWh),
 // so the FAQ cannot disagree with them (2026-10-27: it said "KSh 150k-1.5M").
 const kwpFor = (kwp: number) => Math.round(Math.ceil((kwp * 1000) / PANEL_WATT) * PANEL_WATT / 100) / 10;
-const HOME_FROM = estimateInstalledCost(kwpFor(3), 3, 5, 'hybrid').lowKes;
-const HOME_TO = estimateInstalledCost(kwpFor(10), 10, 15, 'hybrid').highKes;
-const kes = (n: number) => `KSh ${n.toLocaleString('en-KE')}`;
 
 interface ToolCopy {
   h2: string;
@@ -41,7 +38,7 @@ const TOOLS: Record<string, ToolCopy> = {
     coverage:
       'Works for any site in Kenya. Depth checks against real drilled boreholes are strongest in the northern counties (Turkana, Wajir, Garissa, Isiolo, Marsabit), where field records exist. It never replaces the statutory hydrogeological survey and a licensed hydrogeologist’s sign-off.',
     faqs: [
-      { q: 'How much does a borehole survey cost in Kenya?', a: 'A statutory hydrogeological survey with targeted ERT typically costs KSh 40,000–110,000 depending on site access and reporting scope. AquaScan Pro produces the desktop pre-feasibility stage first, so you spend that survey money on a site that already screens well.' },
+      { q: 'How much does a borehole survey cost in Kenya?', a: 'The cost of a hydrogeological survey depends on site access and terrain, how many ERT lines the site needs, travel to the site and the reporting the Water Resources Authority requires. Request a quotation for your site. AquaScan Pro produces the desktop pre-feasibility stage first, so the survey is spent on a site that already screens well.' },
       { q: 'Can AquaScan Pro tell me exactly where and how deep to drill?', a: 'No desktop tool can — and any that claims to should worry you. AquaScan Pro gives a provisional investigation depth and target evidence, then requires field ERT/VES, a licensed hydrogeologist and WRA authorisation before any drilling instruction is issued.' },
       { q: 'What data does the report use?', a: 'NASA POWER and ERA5-Land climate data, ISRIC SoilGrids, SRTM terrain, mapped water points and compiled county drilling records. Every value carries its source and estimates are marked "(est.)". The full methodology is public at /aquascan-pro-v3/methodology.' },
     ],
@@ -86,7 +83,7 @@ const TOOLS: Record<string, ToolCopy> = {
     coverage: 'Estimates use NASA sun data for Kenyan towns and your own tariff; EmersonEIMS designs, installs and maintains the systems.',
     faqs: [
       { q: 'How many solar panels do I need in Kenya?', a: 'It depends on daily consumption: a typical home using 10 kWh/day needs roughly a 3 kW array with storage. SolarGenius Pro estimates it from your KPLC bill or appliances.' },
-      { q: 'What does a solar system cost in Kenya?', a: `On our mid-2026 cost model, home hybrid systems with a lithium battery run from about ${kes(HOME_FROM)} (${kwpFor(3)} kWp, 5 kWh) to about ${kes(HOME_TO)} (${kwpFor(10)} kWp, 15 kWh). The tool gives a typical installed-cost range for your own design; treat it as indicative and confirm it with a quotation.` },
+      { q: 'What does a solar system cost in Kenya?', a: `It depends on your energy use, the equipment brands, the battery size and the type of system: a typical home hybrid is about ${kwpFor(3)}-${kwpFor(10)} kWp with 5-15 kWh of lithium battery. We do not publish estimated prices: the tool sizes the system, and our quotation after a site survey gives the price.` },
       { q: 'Can solar run a borehole pump?', a: 'Yes — solar pumping is often the cheapest lifetime option. For a first estimate use off-grid mode with the pump\'s kW as the largest load; our engineers size the pump itself from your borehole\'s test-pumping results.' },
     ],
   },
@@ -121,7 +118,7 @@ const TOOLS: Record<string, ToolCopy> = {
     faqs: [
       { q: 'Why does my pump trip the breaker?', a: 'Usually overload from a jammed impeller, low insulation resistance after water ingress, or an undersized cable run. The suite walks the megger and current checks that separate them.' },
       { q: 'Do you diagnose on site?', a: 'Yes — thermal imaging, insulation testing, load-bank testing and power-quality logging across Kenya, with same-day response in Nairobi.' },
-      { q: 'What does a diagnostic visit cost?', a: 'Call-out diagnostics typically run KSh 5,000–15,000 within Nairobi depending on equipment, credited against repair work we carry out.' },
+      { q: 'What does a diagnostic visit cost?', a: 'It depends on the equipment, the distance to the site and whether specialist diagnostic tools are needed. Request a quotation: tell us the make, model and the fault shown on the controller and we will price the visit.' },
     ],
   },
   'maintenance-hub': {
@@ -137,7 +134,7 @@ const TOOLS: Record<string, ToolCopy> = {
     coverage: 'AMC coverage across Kenya and East Africa with mobile field service teams, genuine parts stock and 24/7 emergency response for contract clients.',
     faqs: [
       { q: 'How often should a standby generator be serviced?', a: 'Oil and filters every 250 running hours or 6 months (whichever first), full service at 500 hours or annually, plus weekly no-load checks and monthly on-load tests.' },
-      { q: 'What does an AMC cost in Kenya?', a: 'Typical generator AMCs run KSh 60k–250k/year depending on size, site count and response tier — usually 3–5% of replacement value, versus the far higher cost of an unplanned failure.' },
+      { q: 'What does an AMC cost in Kenya?', a: 'An AMC is priced on the generator size and running hours, the number of sites, the service intervals and the response time you need. Request a quotation for your sets; planned maintenance usually costs far less than an unplanned failure.' },
       { q: 'Do you maintain solar systems too?', a: 'Yes — panel cleaning regimes, string testing, inverter service and battery health monitoring, standalone or bundled with generator AMCs.' },
     ],
   },

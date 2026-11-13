@@ -123,6 +123,7 @@ const PossibleCausesPanel = dynamic(() => import('./PossibleCausesPanel'), { ssr
 const InteractiveTroubleshooter = dynamic(() => import('./InteractiveTroubleshooter'), { ssr: false });
 const InteractiveDiagnosticSystem = dynamic(() => import('./panels/InteractiveDiagnosticSystem'), { ssr: false });
 const ProfessionalDiagnosticTools = dynamic(() => import('./panels/ProfessionalDiagnosticTools'), { ssr: false });
+const EngineeringCalculatorsPanel = dynamic(() => import('./panels/EngineeringCalculatorsPanel'), { ssr: false });
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -914,7 +915,7 @@ export default function GeneratorOracleModule() {
   // Sub-tab states for each super-tab
   const [aiSubTab, setAiSubTab] = useState<'expert' | 'visual' | 'analyze'>('expert');
   const [faultsSubTab, setFaultsSubTab] = useState<'lookup' | 'analysis' | 'troubleshoot'>('lookup');
-  const [systemsSubTab, setSystemsSubTab] = useState<'engine' | 'electrical' | 'sensors' | 'interactive'>('interactive');
+  const [systemsSubTab, setSystemsSubTab] = useState<'engine' | 'electrical' | 'sensors' | 'interactive' | 'calculators'>('interactive');
   const [controllersSubTab, setControllersSubTab] = useState<'simulator' | 'ecmsuite' | 'ecmprog' | 'ecmguide' | 'protools' | 'ecmhardware'>('simulator');
   const [wiringSubTab, setWiringSubTab] = useState<'diagrams' | 'allwiring' | 'manuals'>('diagrams');
   const [monitoringSubTab, setMonitoringSubTab] = useState<'realtime' | 'canbus' | 'obd' | 'recording' | 'predictive' | 'remote'>('realtime');
@@ -1792,6 +1793,7 @@ export default function GeneratorOracleModule() {
                         { id: 'engine' as const, label: 'Engine', icon: '⚙️' },
                         { id: 'electrical' as const, label: 'Electrical', icon: '⚡' },
                         { id: 'sensors' as const, label: 'Sensors', icon: '🌡️' },
+                        { id: 'calculators' as const, label: 'Calculators', icon: '🧮' },
                       ]}
                       activeTab={systemsSubTab}
                       onTabChange={setSystemsSubTab}
@@ -1813,6 +1815,7 @@ export default function GeneratorOracleModule() {
                       />
                     )}
                     {systemsSubTab === 'sensors' && <SensorDiagnosticsPanel />}
+                    {systemsSubTab === 'calculators' && <EngineeringCalculatorsPanel />}
                   </motion.div>
                 )}
 

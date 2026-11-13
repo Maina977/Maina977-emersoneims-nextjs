@@ -156,15 +156,15 @@ export function calibrateWithFieldData(
     // Pump test = ground truth for yield
     calYield = pt.sustainableYieldM3Hr;
 
-    // Compute aquifer parameters
+    // Aquifer parameters as entered from the test analysis. (P0 audit
+    // 2026-11-13, R5: unused specific capacity and K were computed here from a
+    // drawdown defaulted to 1 m and an invented thickness of 2 x drawdown or 30 m.)
     const T = pt.transmissivityM2Day;
     const S = pt.storativity;
-    const specificCapacity = calYield / (pt.drawdownM || 1);
-    const K = T / (pt.drawdownM * 2 || 30); // rough aquifer thickness estimate
 
     notes.push(`Pump test yield: ${pt.sustainableYieldM3Hr} m³/hr (desktop predicted ${desktopResult.estimatedYield} m³/hr)`);
     notes.push(`Transmissivity: ${T} m²/day, Storativity: ${S}`);
-    notes.push(`Recovery: ${pt.recoveryPercent}% → ${pt.recoveryPercent > 80 ? 'GOOD aquifer (sustainable)' : 'CAUTION: slow recovery'}`);
+    notes.push(`Recovery: ${pt.recoveryPercent}% → ${pt.recoveryPercent > 80 ? 'good recovery (favourable; long-term sustainability still depends on recharge and a long-duration test)' : 'CAUTION: slow recovery'}`);
 
     confidenceBoost += 12;
     reportLevel = 3;

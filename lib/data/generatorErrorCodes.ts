@@ -62,7 +62,8 @@ export const GENERATOR_ERROR_CODES: ErrorCode[] = [
     code: '111',
     brand: 'Cummins',
     category: 'Engine Control Module',
-    severity: 'warning',
+    // Red-lamp (stop) code: SPN 629 FMI 12 (P0 audit 2026-11-13, R8).
+    severity: 'critical',
     title: 'ECM Hardware Failure - Internal',
     description: 'The Electronic Control Module (ECM) has detected an internal hardware malfunction. This may affect engine performance and monitoring capabilities.',
     symptoms: [
@@ -84,7 +85,7 @@ export const GENERATOR_ERROR_CODES: ErrorCode[] = [
       {
         step: 1,
         action: 'Check ECM power supply voltage',
-        expectedResult: '24V DC ± 2V (or 12V for 12V systems)',
+        expectedResult: 'Within the limits in the engine manual for the system voltage (12 V or 24 V), steady while cranking and running',
         tools: ['Digital Multimeter', 'ECM Wiring Diagram']
       },
       {
