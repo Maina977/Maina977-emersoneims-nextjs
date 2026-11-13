@@ -6,6 +6,7 @@
  */
 
 import { Metadata } from 'next';
+import { applyTemplateIndexPolicy } from '@/lib/seo/templateIndexPolicy';
 import { seoTitleParts } from '@/lib/seo/pageTitle';
 import { MAJOR_TOWN_SLUGS } from '@/lib/seo/majorTowns';
 import Link from 'next/link';
@@ -39,7 +40,13 @@ export async function generateStaticParams() {
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+// Release 1: one index policy for every template location page (lib/seo/templateIndexPolicy.ts).
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const { location } = await props.params;
+  return applyTemplateIndexPolicy(`/locations/${location}`, await baseMetadata(props));
+}
+
+async function baseMetadata({ params }: Props): Promise<Metadata> {
   const { location: locationSlug } = await params;
   const location = getLocationBySlug(locationSlug);
   const county = COUNTIES.find(c =>

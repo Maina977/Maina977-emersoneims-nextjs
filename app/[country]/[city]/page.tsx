@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { applyTemplateIndexPolicy } from '@/lib/seo/templateIndexPolicy';
 import { CONTACT } from '@/lib/constants/contact';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -38,7 +39,13 @@ export async function generateStaticParams() {
   return params;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+// Release 1: one index policy for every template location page (lib/seo/templateIndexPolicy.ts).
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const { country, city } = await props.params;
+  return applyTemplateIndexPolicy(`/${country}/${city}`, await baseMetadata(props));
+}
+
+async function baseMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   const country = getCountryBySlug(resolvedParams.country);
   const city = country ? getCityBySlug(resolvedParams.country, resolvedParams.city) : undefined;

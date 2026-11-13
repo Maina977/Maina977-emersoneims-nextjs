@@ -21,9 +21,15 @@ describe('location index policy', () => {
     expect(meta.title).toBe('x');
   });
 
-  it('leaves a page with a cross-page canonical to its canonical (no mixed signals)', () => {
+  // CHANGED IN RELEASE 1. Stage 1 left cross-canonical pages alone, which
+  // created 1,830 "canonical names a noindex page" pairs (confirmed by URL
+  // Inspection on this exact pair, 13 Nov). An unprotected page now becomes
+  // its own canonical with noindex, follow: one signal, not two.
+  it('turns an unprotected cross-canonical page into self-canonical noindex, follow', () => {
     const meta = { title: 'x', alternates: { canonical: 'https://www.emersoneims.com/kenya/baringo/ac-installation' } };
-    expect(withLocationIndexPolicy('/kenya/baringo/ac-companies', meta)).toBe(meta);
+    const out = withLocationIndexPolicy('/kenya/baringo/ac-repair', meta);
+    expect(out.alternates?.canonical).toBe('https://www.emersoneims.com/kenya/baringo/ac-repair');
+    expect(out.robots).toEqual({ index: false, follow: true });
     const self = { title: 'x', alternates: { canonical: 'https://www.emersoneims.com/kenya/nowhere/x' } };
     expect(withLocationIndexPolicy('/kenya/nowhere/x', self).robots).toEqual({ index: false, follow: true });
   });
