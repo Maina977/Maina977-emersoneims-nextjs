@@ -98,6 +98,9 @@ export function simulateProduction(i: ProductionInput): ProductionResult {
       'Mean-day method: each month represented by its mean day (10-minute steps); real years vary around this.',
       'Cell temperature from the NOCT model (open-rack, wind ~1 m/s); roof-mounted arrays run hotter.',
       'Inverter: PVWatts v5 efficiency curve with clipping at the AC rating. The mean-day method averages out clear-sky peaks, so clipping at DC/AC ratios above about 1.2 is UNDERESTIMATED; use hourly (TMY) data for high-ratio designs.',
+      ...(i.array.dcKw / i.inverter.acKw > 1.15 ? [
+        `DC/AC ${Math.round((i.array.dcKw / i.inverter.acKw) * 100) / 100}: on a synthetic test year (pvlib, docs/solar-validation/clipping-investigation.json) the mean-day method overestimated annual AC energy by about 1.2 % at DC/AC 1.33, 2.6 % at 1.5 and 3.8 % at 1.6. Indicative only; an hourly simulation is needed before quoting energy for this design.`,
+      ] : []),
     ],
     engineVersion: PRODUCTION_ENGINE_VERSION,
   };
