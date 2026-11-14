@@ -1,0 +1,25 @@
+import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
+import { reviewRows, reviewCsv, describeCondition } from '@/lib/generator-oracle/diagnostics/reviewSheet';
+
+describe('technician review sheet', () => {
+  const rows = reviewRows(FAMILIES);
+  it('covers every question, stop rule, cause and evidence rule', () => {
+    const expected = FAMILIES.reduce((n, f) => n + f.questions.length + f.stopRules.length + f.causes.length + f.causes.reduce((m, c) => m + c.evidence.length, 0), 0);
+    expect(rows.length).toBe(expected);
+    expect(rows.filter((r) => r.kind === 'stop').length).toBe(FAMILIES.reduce((n, f) => n + f.stopRules.length, 0));
+  });
+  it('rules read in plain terms', () => {
+    expect(describeCondition({ q: 'oilPressure', op: 'ltRef', ref: 'oemMinOilPressure' })).toBe('oilPressure < oemMinOilPressure');
+    expect(describeCondition({ all: [{ q: 'a', op: 'is', value: ['x', 'y'] }, { q: 'b', op: 'ge', value: 3 }] })).toBe('(a is x/y AND b ≥ 3)');
+  });
+  it('the committed review sheet matches the live definitions', () => {
+    const file = path.resolve('docs/engineering-apps/oracle-guided-diagnostics-review-sheet.csv');
+    const csv = reviewCsv(FAMILIES);
+    if (process.env.WRITE_REVIEW_SHEET) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, csv); }
+    // Line endings may be converted on checkout (core.autocrlf).
+    expect(fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n')).toBe(csv);
+  });
+});
