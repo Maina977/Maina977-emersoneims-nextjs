@@ -1,0 +1,2 @@
+# TEMPLATE ONLY. Register of OEM manuals EmersonEIMS holds lawfully (purchased or supplied with equipment). Content is NOT copied into the software; technicians cite manual + edition + page when entering limits in Guided Diagnosis and the review sheet. Leave rows blank until a real manual is registered.
+manualId,manufacturer,product,modelsCovered,documentTitle,documentNumber,edition,date,format,heldBy,location,licenceOrSource,reviewer,notes
