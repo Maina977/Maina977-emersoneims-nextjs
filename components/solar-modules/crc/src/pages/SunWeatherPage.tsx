@@ -3,7 +3,7 @@
 //   - /api/solar/sun-position    (Michalsky 1988)
 //   - /api/solar/sun-path/:date  (24h hourly samples)
 //   - /api/solar/seasonal        (monthly daylight + peak elevation)
-//   - /api/weather/:lat/:lon     (Open-Meteo current + forecast)
+//   - /api/weather/:lat/:lon     (MET Norway current + forecast; Open-Meteo only if licensed)
 //   - /api/nasa/solar/:lat/:lon  (NASA POWER monthly irradiance)
 // All data is real and sourced. Empty-state on upstream failure.
 
@@ -53,6 +53,8 @@ const SunWeatherPage: React.FC = () => {
   const [sunPath, setSunPath] = useState<any[]>([]);
   const [seasonal, setSeasonal] = useState<any>(null);
   const [weather, setWeather] = useState<any>(null);
+  // Attribution returned by /api/weather (MET Norway requires credit; CC BY 4.0).
+  const [weatherSource, setWeatherSource] = useState<string>('');
   const [nasa, setNasa] = useState<any>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -94,6 +96,7 @@ const SunWeatherPage: React.FC = () => {
     setSeasonal(s3);
     // The route answers { current: { temperature, cloudCover, windSpeed, humidity } }.
     setWeather(w?.current ?? null);
+    setWeatherSource(w?.source ?? '');
     setNasa(n);
     setBusy(false);
   };
@@ -129,7 +132,7 @@ const SunWeatherPage: React.FC = () => {
     <Wrap>
       <h2 style={{ marginTop: 0 }}>☀️ Sun & Weather Analysis</h2>
       <p style={{ color: 'rgba(230,241,255,0.65)' }}>
-        Real solar geometry (Michalsky 1988) + Open-Meteo weather + NASA POWER irradiance
+        Real solar geometry (Michalsky 1988) + MET Norway weather + NASA POWER irradiance
         for any location on Earth. All values are sourced; nothing is fabricated.
       </p>
 
@@ -167,17 +170,17 @@ const SunWeatherPage: React.FC = () => {
           <Stat>
             <div className="label">Air temperature</div>
             <div className="value">{weather?.temperature != null ? `${weather.temperature}°C` : '—'}</div>
-            <div className="sub">Open-Meteo current</div>
+            <div className="sub">{weatherSource || 'current'}</div>
           </Stat>
           <Stat>
             <div className="label">Cloud cover</div>
             <div className="value">{weather?.cloudCover != null ? `${weather.cloudCover}%` : '—'}</div>
-            <div className="sub">Open-Meteo</div>
+            <div className="sub">{weatherSource ? 'MET Norway' : '—'}</div>
           </Stat>
           <Stat>
             <div className="label">Wind</div>
             <div className="value">{weather?.windSpeed != null ? `${weather.windSpeed} m/s` : '—'}</div>
-            <div className="sub">{weather?.humidity != null ? `humidity ${weather.humidity}%` : 'Open-Meteo'}</div>
+            <div className="sub">{weather?.humidity != null ? `humidity ${weather.humidity}%` : '—'}</div>
           </Stat>
         </Grid>
         {Object.keys(errors).length > 0 && (

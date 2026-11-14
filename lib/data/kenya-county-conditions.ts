@@ -71,7 +71,7 @@ export interface CountySiteConditions {
 
 export const COUNTY_CONDITIONS_SOURCE = {
   elevation: 'GeoNames, via the Open-Meteo Geocoding API',
-  climate: 'Open-Meteo ERA5 reanalysis, 2025 daily maxima',
+  climate: 'ERA5 reanalysis, 2025 daily maxima; contains modified Copernicus Climate Change Service information (2026)',
   licence: 'CC BY 4.0',
   retrieved: '2026-08-08',
 } as const;

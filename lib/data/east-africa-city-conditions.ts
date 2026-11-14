@@ -45,7 +45,7 @@ export interface CitySiteConditions {
 
 export const EA_CONDITIONS_SOURCE = {
   elevation: 'Open-Meteo Geocoding API (GeoNames elevation), retrieved 2026-08-26',
-  temperature: 'Open-Meteo Archive (ERA5 reanalysis), 2025 daily maxima and minima',
+  temperature: 'ERA5 reanalysis, 2025 daily maxima and minima; contains modified Copernicus Climate Change Service information (2026)',
 } as const;
 
 export const EA_CITY_CONDITIONS: Readonly<Record<string, CitySiteConditions>> = {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
+import { fetchLocationforecast, toWeatherResponse } from '@/lib/data-sources/metNorway';
 
 // Open-Meteo forecast. Its free API is non-commercial only, so it is called
 // only under a commercial key or a self-hosted instance (2026-11-14).
@@ -49,7 +50,13 @@ export async function GET(
 
     const url = licensedOpenMeteoUrl(`${OPEN_METEO}?${qs}`);
     if (!url) {
-      return NextResponse.json({ error: OPEN_METEO_DISABLED_MESSAGE, available: false, licence: 'open-meteo-not-licensed' }, { status: 451 });
+      // No Open-Meteo licence: MET Norway (CC BY 4.0 / NLOD 2.0, commercial use allowed with attribution).
+      try {
+        const { data, fromCache } = await fetchLocationforecast(lat, lon);
+        return NextResponse.json(toWeatherResponse(data, lat, lon), { headers: { 'X-Weather-Cache': fromCache ? 'hit' : 'miss' } });
+      } catch (e) {
+        return NextResponse.json({ error: `Weather unavailable: ${e instanceof Error ? e.message : 'MET Norway did not answer'}. ${OPEN_METEO_DISABLED_MESSAGE}`, available: false }, { status: 502 });
+      }
     }
     // One retry: a single upstream blip answered the page with a 502.
     let res = await fetch(url, { signal: AbortSignal.timeout(10000) }).catch(() => null);

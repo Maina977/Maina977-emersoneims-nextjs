@@ -10,6 +10,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
+import { fetchNasaPowerDailyMet } from '@/lib/data-sources/nasaPower';
+import { et0Fao56 } from '@/lib/data-sources/fao56';
 
 interface GLDASRequest {
   latitude: number;
@@ -142,7 +144,7 @@ export async function POST(request: NextRequest) {
     let evapotranspiration = 0;
     let precipitation = 0;
     let groundwaterData: { anomaly: number; trend: 'increasing' | 'stable' | 'decreasing'; percentile: number; recharge: number } = { anomaly: 0, trend: 'stable', percentile: 50, recharge: 100 };
-    let dataSource = 'Open-Meteo Historical';
+    const dataSource = 'Open-Meteo Historical (licensed)';
 
     // Use Open-Meteo (free, real data)
     try {
@@ -191,22 +193,40 @@ export async function POST(request: NextRequest) {
       }
 
     } catch (error) {
-      console.error('[NASA GLDAS] Open-Meteo fallback failed:', error);
-
-      // Use regional estimates based on location
-      const isArid = Math.abs(latitude) > 20 && Math.abs(latitude) < 35;
-      const isTropical = Math.abs(latitude) < 15;
-
-      soilMoisture = {
-        layer0_10cm: isTropical ? 25 : (isArid ? 8 : 15),
-        layer10_40cm: isTropical ? 45 : (isArid ? 15 : 30),
-        layer40_100cm: isTropical ? 90 : (isArid ? 25 : 55),
-        layer100_200cm: isTropical ? 150 : (isArid ? 35 : 85),
-        rootZone: isTropical ? 50 : (isArid ? 15 : 35),
-      };
-      evapotranspiration = isTropical ? 5.5 : (isArid ? 7.2 : 3.8);
-      precipitation = isTropical ? 6.5 : (isArid ? 0.8 : 2.5);
-      dataSource = 'Regional Model Estimate';
+      console.error('[NASA GLDAS] Open-Meteo unavailable:', error instanceof Error ? error.message : error);
+      // 2026-11-14: no invented "regional estimates". Without a licensed
+      // soil-moisture source, report what NASA POWER supports: rainfall and FAO-56
+      // reference ET0 from measured/reanalysis inputs. Soil moisture by layer and
+      // the groundwater anomaly are NOT available from these sources: null.
+      const end = new Date(Date.now() - 3 * 86400000); // POWER daily data lag a few days
+      const start = new Date(end.getTime() - 30 * 86400000);
+      const met = await fetchNasaPowerDailyMet(latitude, longitude, start, end);
+      if (!met || met.days.length < 7) {
+        return NextResponse.json({ success: false, error: 'INSUFFICIENT EVIDENCE: no licensed soil-moisture source and too little NASA POWER data for this location.' }, { status: 503 });
+      }
+      const elev = met.elevationM ?? 0;
+      const et0 = met.days.map((d) => et0Fao56({ tMaxC: d.tMax, tMinC: d.tMin, tDewC: d.tDew, u2: d.u2, rsMJ: d.rsMJ, elevationM: elev, latDeg: latitude, dayOfYear: Math.floor((Date.parse(d.date) - Date.UTC(Number(d.date.slice(0, 4)), 0, 0)) / 86400000) }).et0);
+      const mean = (xs: number[]) => xs.reduce((x, y) => x + y, 0) / xs.length;
+      return NextResponse.json({
+        success: true,
+        data: {
+          location: { latitude, longitude },
+          soilMoisture: null,
+          groundwater: null,
+          evapotranspiration: Math.round(mean(et0) * 100) / 100,
+          evapotranspirationMethod: 'FAO-56 Penman-Monteith reference ET0 (grass), mm/day, from NASA POWER daily inputs',
+          precipitation: Math.round(mean(met.days.map((d) => d.precip)) * 100) / 100,
+          precipitationUnit: 'mm/day (period mean)',
+          runoff: null,
+          snowWaterEquivalent: null,
+          canopyWater: null,
+          rechargeEstimate: null,
+          period: { start: met.days[0].date, end: met.days[met.days.length - 1].date, days: met.days.length },
+          dataDate: met.days[met.days.length - 1].date,
+          unavailable: 'Soil moisture by layer and the groundwater anomaly need a licensed land-surface model source; not available.',
+          source: 'NASA POWER daily (MERRA-2; T2M_MAX, T2M_MIN, T2MDEW, WS2M, ALLSKY_SFC_SW_DWN, PRECTOTCORR), NASA Langley Research Center; ET0 by FAO-56',
+        },
+      });
     }
 
     const result: GLDASResponse = {

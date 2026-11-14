@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
+import { fetchNasaPowerPrecipitation } from '@/lib/data-sources/nasaPower';
 
 interface FloodRequest {
   latitude: number;
@@ -50,6 +51,8 @@ async function fetchHistoricalPrecipitation(lat: number, lng: number): Promise<{
   annual: number;
   maxDaily: number;
   extremeDays: number;
+  source?: string;
+  note?: string;
 } | null> {
   try {
     // Get last 10 years of data
@@ -65,10 +68,14 @@ async function fetchHistoricalPrecipitation(lat: number, lng: number): Promise<{
       daily: 'precipitation_sum',
     });
 
-    // Licence gate (2026-11-14): no licensed route → no rainfall history (reported as unavailable).
+    // Licence gate (2026-11-14): Open-Meteo only when licensed; otherwise NASA
+    // POWER daily corrected precipitation (MERRA-2 bias-corrected, 0.5° x 0.625°).
     const url = licensedOpenMeteoUrl(`${OPEN_METEO_HISTORICAL_URL}?${params}`);
-    const response = url ? await fetch(url, { signal: AbortSignal.timeout(30000) }) : null;
-    if (!url) console.warn(OPEN_METEO_DISABLED_MESSAGE);
+    if (!url) {
+      console.warn(OPEN_METEO_DISABLED_MESSAGE);
+      return await fetchNasaPowerPrecipitation(lat, lng, startDate, endDate);
+    }
+    const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
 
     if (response?.ok) {
       const data = await response.json();
@@ -86,6 +93,7 @@ async function fetchHistoricalPrecipitation(lat: number, lng: number): Promise<{
       const extremeDays = validPrecip.filter(p => p > 50).length; // Days with >50mm
 
       return {
+        source: 'Open-Meteo Historical (licensed)',
         annual: Math.round(annualAvg),
         maxDaily: Math.round(maxDaily * 10) / 10,
         extremeDays: Math.round(extremeDays / years), // Per year
@@ -285,7 +293,12 @@ export async function POST(request: NextRequest) {
       fetchNearbyWaterBodies(latitude, longitude),
     ]);
 
-    const source = 'Open-Meteo Historical + OpenStreetMap';
+    // No rainfall history → no flood rating (2026-11-14): the former 900 mm/yr and
+    // 80 mm/day stand-ins produced a rating from invented rainfall.
+    if (!precipData) {
+      return NextResponse.json({ success: false, error: 'INSUFFICIENT EVIDENCE: rainfall history unavailable for this location, so no flood rating is given.' }, { status: 503 });
+    }
+    const source = `${precipData.source ?? 'Rainfall history'} + OpenStreetMap${precipData.note ? `. ${precipData.note}` : ''}`;
 
     // Get elevation (simplified - ideally use elevation API)
     // For now, use regional estimate
@@ -296,8 +309,8 @@ export async function POST(request: NextRequest) {
       elevation = 1100; // Lake Victoria basin
     }
 
-    const annualPrecip = precipData?.annual || 900;
-    const maxDailyPrecip = precipData?.maxDaily || 80;
+    const annualPrecip = precipData.annual;
+    const maxDailyPrecip = precipData.maxDaily;
 
     // Calculate risk
     const { riskLevel, score } = calculateFloodRisk(

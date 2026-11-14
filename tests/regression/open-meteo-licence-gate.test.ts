@@ -76,15 +76,16 @@ describe('data relay enforces the licence', () => {
 
 describe('weather route enforces the licence', () => {
   afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.resetModules(); });
-  it('without a licence: 451 with an explanation, no upstream call', async () => {
+  it('without a licence: Open-Meteo is never called; MET Norway is used, and its failure is reported, not filled', async () => {
     vi.stubEnv('OPEN_METEO_API_KEY', '');
-    const spy = vi.fn();
+    const spy = vi.fn(async () => new Response('', { status: 503 }));
     vi.stubGlobal('fetch', spy);
     const { GET } = await import('@/app/api/weather/[lat]/[lon]/route');
     const { NextRequest } = await import('next/server');
     const r = await GET(new NextRequest('http://localhost/api/weather/-1.29/36.82'), { params: Promise.resolve({ lat: '-1.29', lon: '36.82' }) });
-    expect(r.status).toBe(451);
-    expect((await r.json()).error).toMatch(/non-commercial/);
-    expect(spy).not.toHaveBeenCalled();
+    expect(r.status).toBe(502);
+    expect((await r.json()).error).toMatch(/Weather unavailable/);
+    expect(spy.mock.calls.every((c) => !String((c as unknown[])[0]).includes('open-meteo'))).toBe(true);
+    expect(String((spy.mock.calls[0] as unknown[])[0])).toMatch(/api\.met\.no/);
   });
 });
