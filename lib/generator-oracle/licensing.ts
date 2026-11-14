@@ -26,6 +26,22 @@ export interface License {
 }
 
 // License configuration
+// ─── Server entitlement (P1 2026-11-15) ───────────────────────────────────────
+// The short-lived signed entitlement from the last activation/heartbeat. It is
+// held in memory only, never in storage. Paid server routes require it (header
+// x-eims-entitlement); the stored licence above is only a convenience cache and
+// grants nothing on the server.
+let entitlement: { token: string; expiresAt: string } | null = null;
+function rememberEntitlement(e: unknown) {
+  const x = e as { token?: unknown; expiresAt?: unknown } | null;
+  entitlement = x && typeof x.token === 'string' && typeof x.expiresAt === 'string' ? { token: x.token, expiresAt: x.expiresAt } : null;
+}
+/** Headers to send with a paid request; empty when there is no unexpired entitlement. */
+export function entitlementHeaders(): Record<string, string> {
+  if (!entitlement || Date.parse(entitlement.expiresAt) <= Date.now()) return {};
+  return { 'x-eims-entitlement': entitlement.token };
+}
+
 export const LICENSE_CONFIG = {
   maxDevices: 1, // ONE device per license - NO SHARING
   heartbeatIntervalMs: 24 * 60 * 60 * 1000, // 24 hours
@@ -293,6 +309,7 @@ export async function validateLicenseWithServer(forceCheck = false): Promise<{
       const data = await response.json();
 
       if (response.ok && data.success) {
+        rememberEntitlement(data.entitlement);
         // Update local license with server data
         const updatedLicense: License = {
           ...license,
@@ -425,6 +442,7 @@ export async function validateLicense(key: string): Promise<{
     const data = await response.json();
 
     if (response.ok && data.success) {
+      rememberEntitlement(data.entitlement);
       return {
         valid: true,
         message: 'License activated successfully',

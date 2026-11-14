@@ -8,6 +8,7 @@ import {
 } from '@/lib/generator-oracle/db';
 import { limiter } from '@/lib/rate-limiter';
 import { isAdminRequest } from '@/lib/generator-oracle/adminAuth';
+import { issueEntitlement } from '@/lib/entitlements/token';
 
 /**
  * License Activation API Endpoint
@@ -160,8 +161,13 @@ export async function POST(request: NextRequest) {
     }
 
     const license = activationResult.license!;
+    // Server-side entitlement (P1 2026-11-15): short-lived, signed, renewed by
+    // each heartbeat. Paid server routes trust this plus a database re-check,
+    // never the browser's stored licence. null when no signing key is configured.
+    const entitlement = issueEntitlement({ lic: license.id, dev: deviceId, tier: 'pro', feat: ['oracle.pro'] });
     return NextResponse.json({
       success: true,
+      entitlement,
       message: body.heartbeat ? 'Heartbeat updated' : 'License activated successfully',
       license: {
         key: normalizedKey,

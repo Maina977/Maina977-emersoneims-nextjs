@@ -237,6 +237,26 @@ export async function getLicenseByKey(licenseKey: string): Promise<OracleLicense
 }
 
 /**
+ * Get license by id (server-side entitlement re-check; the token carries the
+ * id, never the key).
+ */
+export async function getLicenseById(id: number): Promise<OracleLicense | null> {
+  if (!Number.isInteger(id) || id <= 0) return null;
+  const pool = await getPostgresPool();
+  if (!pool) return null;
+
+  await initOracleTables();
+
+  try {
+    const result = await pool.query(`SELECT * FROM oracle_licenses WHERE id = $1`, [id]);
+    return (result.rows[0] as unknown as OracleLicense) || null;
+  } catch (error) {
+    console.error('Failed to get license by id:', error);
+    return null;
+  }
+}
+
+/**
  * Get license by device fingerprint
  */
 export async function getLicenseByDevice(deviceFingerprint: string): Promise<OracleLicense | null> {
