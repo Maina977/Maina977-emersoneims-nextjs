@@ -29,6 +29,15 @@ describe('Overpass client', () => {
     expect(seen).toEqual(OVERPASS_ENDPOINTS);
     expect(r).toEqual({ elements: [], endpoint: OVERPASS_ENDPOINTS[2] }); // answered, nothing found
   });
+  it('stays inside its overall budget when every server hangs', async () => {
+    const hang = vi.fn((_u: string, init?: RequestInit) => new Promise<Response>((_, reject) => {
+      init?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+    }));
+    const t0 = Date.now();
+    expect(await overpassQuery('q', { fetchImpl: hang as unknown as typeof fetch, timeoutMs: 15000, budgetMs: 3000 })).toBeNull();
+    expect(Date.now() - t0).toBeLessThan(3500);
+    expect(hang.mock.calls.length).toBeLessThan(3); // no new attempt once < 1.5 s remains
+  });
   it('no server answers (or non-JSON) → null, never an empty result', async () => {
     const f = vi.fn(async () => new Response('<html>busy</html>', { status: 200 }));
     expect(await overpassQuery('q', { fetchImpl: f as unknown as typeof fetch })).toBeNull();
