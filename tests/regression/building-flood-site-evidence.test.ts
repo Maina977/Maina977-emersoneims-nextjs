@@ -116,7 +116,7 @@ describe('building soil', () => {
     vi.resetModules();
     const { POST } = await import('@/app/api/building/soil/route');
     const { NextRequest } = await import('next/server');
-    const r = await POST(new NextRequest('http://x/api/building/soil', { method: 'POST', body: JSON.stringify({ latitude: 0.5, longitude: 34.8 }) }));
+    const r = await POST(new NextRequest('http://x/api/building/soil', { method: 'POST', body: JSON.stringify({ latitude: 9.0, longitude: 7.5 }) }));
     return { status: r.status, j: await r.json() };
   }
   it('SoilGrids down → INSUFFICIENT EVIDENCE, not the old "Regional Model (Kenya)" black-cotton stand-in', async () => {

@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { soilAt } from '@/lib/aquascan-soil/kenyaSoil';
 
 interface SoilRequest {
   latitude: number;
@@ -163,27 +164,45 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Soil API] Fetching for ${latitude}, ${longitude}`);
 
-    // Fetch real data from SoilGrids
-    const soilData = await fetchSoilGridsData(latitude, longitude);
-    const source = 'ISRIC SoilGrids 2.0 (250 m, CC BY 4.0)';
+    // 1. Self-hosted SoilGrids 2.0 1 km Kenya extract (checksummed, no network;
+    //    P1 2026-11-14). It holds 0-30 cm only, so the depth is stated as such.
+    // 2. Otherwise the ISRIC REST service at 30-60 cm (often paused).
+    // 3. Otherwise INSUFFICIENT EVIDENCE. The old "Regional Model (Kenya)"
+    //    fallback returned one of four fixed soils chosen by a latitude box.
+    let clay: number, sand: number, silt: number;
+    let ph: number | null, organicCarbon: number | null, bulkDensity: number | null;
+    let coarseFragments: number | null = null, nitrogen: number | null = null, cationExchange: number | null = null;
+    let source: string, depths: string, resolution: string;
 
-    // SoilGrids or nothing (2026-11-14): the "Regional Model (Kenya)" fallback
-    // returned one of four fixed soils chosen by a latitude/longitude box.
-    const layer = (p: string) => (soilData?.properties?.layers ? extractProperty(soilData, p, '30-60cm') : null);
-    const clayG = layer('clay'), sandG = layer('sand'), siltG = layer('silt');
-    if (clayG === null || sandG === null || siltG === null) {
-      return NextResponse.json(
-        { success: false, error: 'INSUFFICIENT EVIDENCE: SoilGrids gave no clay/sand/silt for this location, so no soil description is given.' },
-        { status: 503 }
-      );
+    const local = soilAt(latitude, longitude);
+    const m = local.mean0to30;
+    if (local.status !== 'INSUFFICIENT EVIDENCE' && typeof m.clay === 'number' && typeof m.sand === 'number' && typeof m.silt === 'number') {
+      clay = m.clay; sand = m.sand; silt = m.silt;
+      ph = m.phh2o ?? null; organicCarbon = m.soc ?? null; bulkDensity = m.bdod ?? null;
+      source = `ISRIC SoilGrids 2.0, self-hosted 1 km Kenya extract (${local.dataset.id}; CC BY 4.0)`;
+      depths = '0-30 cm (thickness-weighted topsoil mean); deeper layers not in this extract';
+      resolution = '1 km';
+    } else {
+      const soilData = await fetchSoilGridsData(latitude, longitude);
+      const layer = (p: string) => (soilData?.properties?.layers ? extractProperty(soilData, p, '30-60cm') : null);
+      const clayG = layer('clay'), sandG = layer('sand'), siltG = layer('silt');
+      if (clayG === null || sandG === null || siltG === null) {
+        return NextResponse.json(
+          { success: false, error: `INSUFFICIENT EVIDENCE: no SoilGrids clay/sand/silt for this location${local.reason ? ` (${local.reason})` : ''}, so no soil description is given.` },
+          { status: 503 }
+        );
+      }
+      clay = clayG / 10; sand = sandG / 10; silt = siltG / 10; // g/kg → %
+      ph = scaled(layer('phh2o'), 10);           // stored as pH × 10
+      organicCarbon = scaled(layer('soc'), 10);  // dg/kg → g/kg
+      bulkDensity = scaled(layer('bdod'), 100);  // cg/cm³ → kg/dm³
+      coarseFragments = scaled(layer('cfvo'), 10);
+      nitrogen = scaled(layer('nitrogen'), 100);
+      cationExchange = scaled(layer('cec'), 10);
+      source = 'ISRIC SoilGrids 2.0 REST (250 m, CC BY 4.0)';
+      depths = '30-60cm analysis depth';
+      resolution = '250 m';
     }
-    let clay = clayG / 10, sand = sandG / 10, silt = siltG / 10; // g/kg → %
-    const ph = scaled(layer('phh2o'), 10);           // stored as pH × 10
-    const organicCarbon = scaled(layer('soc'), 10);  // dg/kg → g/kg
-    const bulkDensity = scaled(layer('bdod'), 100);  // cg/cm³ → kg/dm³
-    const coarseFragments = scaled(layer('cfvo'), 10);
-    const nitrogen = scaled(layer('nitrogen'), 100);
-    const cationExchange = scaled(layer('cec'), 10);
 
     // Normalize percentages
     const total = clay + sand + silt;
@@ -221,9 +240,9 @@ export async function POST(request: NextRequest) {
         foundationRecommendation: getFoundationRecommendation(expansive),
         excavationDifficulty: getExcavationDifficulty(clay, sand, coarseFragments),
         source,
-        depths: '30-60cm analysis depth',
+        depths,
         limitations: [
-          'SoilGrids is a 250 m predicted map, not a test of this plot; local fill, rock and made ground are not seen.',
+          `SoilGrids is a ${resolution} predicted map, not a test of this plot; local fill, rock and made ground are not seen.`,
           'Bearing capacity and groundwater level are not given: they need a site investigation.',
           'Shrink-swell, permeability and corrosivity are indicative from texture and pH only.',
         ],

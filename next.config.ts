@@ -88,6 +88,7 @@ const nextConfig: NextConfig = {
   // AquaScan soil lookup reads the versioned Kenya extract from disk (P1-C, 2026-11-14).
   outputFileTracingIncludes: {
     '/api/aquascan/soil': ['./data/aquascan/soil/**'],
+    '/api/building/soil': ['./data/aquascan/soil/**'],
   },
 
   // ═══════════════════════════════════════════════════════════════════
