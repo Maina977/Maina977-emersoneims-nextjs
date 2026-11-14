@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { overpassQuery, OSM_ATTRIBUTION } from '@/lib/data-sources/overpass';
 
-// OSM Overpass API: query building footprints near a coordinate
-const OVERPASS_API = 'https://overpass-api.de/api/interpreter';
+// Building footprints near a coordinate from OSM Overpass. No footprint, or no
+// answer, gives roofAreaM2 null (2026-11-14: a default 120 m² "typical Kenyan
+// residential" roof, or 80 m² for an unmeasurable footprint, was returned instead).
+const notFound = (assumedPitchDegrees: number, note: string) => ({
+  found: false,
+  roofAreaM2: null,
+  usableRoofM2: null,
+  pitchDegrees: assumedPitchDegrees,
+  roofType: 'unknown',
+  source: 'none',
+  note,
+});
 
 function computePolygonAreaM2(coords: [number, number][]): number {
   // Shoelace formula on (lon, lat) approximated to metres via cos-corrected degrees
@@ -40,29 +51,14 @@ export async function POST(request: NextRequest) {
 out geom;
 `;
 
-    const res = await fetch(OVERPASS_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `data=${encodeURIComponent(query)}`,
-      signal: AbortSignal.timeout(20000),
-    });
-
-    if (!res.ok) throw new Error(`Overpass API error: ${res.status}`);
-
-    const data = await res.json();
-    const elements: any[] = data.elements ?? [];
+    const data = await overpassQuery(query, { timeoutMs: 12000 });
+    if (!data) {
+      return NextResponse.json(notFound(assumedPitchDegrees, 'OpenStreetMap did not answer: measure or draw the roof.'));
+    }
+    const elements: any[] = data.elements;
 
     if (elements.length === 0) {
-      // Fallback: return a reasonable default for a typical Kenyan residential building
-      const defaultAreaM2 = 120;
-      return NextResponse.json({
-        found: false,
-        roofAreaM2: defaultAreaM2,
-        usableRoofM2: Math.round(defaultAreaM2 * 0.7),
-        pitchDegrees: assumedPitchDegrees,
-        roofType: 'unknown',
-        source: 'default',
-      });
+      return NextResponse.json(notFound(assumedPitchDegrees, `No building footprint is mapped within ${searchRadiusM} m: measure or draw the roof.`));
     }
 
     // Take the closest / largest building
@@ -80,8 +76,11 @@ out geom;
       }
     }
 
-    const roofAreaM2 = bestArea > 0 ? Math.round(bestArea) : 80;
-    const usableRoofM2 = Math.round(roofAreaM2 * 0.7); // 70% usable after setbacks
+    if (!(bestArea > 0)) {
+      return NextResponse.json(notFound(assumedPitchDegrees, 'A building is mapped here but without a usable outline: measure or draw the roof.'));
+    }
+    const roofAreaM2 = Math.round(bestArea);
+    const usableRoofM2 = Math.round(roofAreaM2 * 0.7); // planning assumption: 70 % usable after setbacks
 
     const tags = bestElement.tags ?? {};
     const roofType: string =
@@ -97,19 +96,11 @@ out geom;
       osmId: bestElement.id,
       osmType: bestElement.type,
       source: 'osm',
+      attribution: OSM_ATTRIBUTION,
+      usableNote: 'Usable area assumes 70 % of the footprint after edge setbacks; confirm on site.',
     });
   } catch (err) {
     console.error('[solar/roof-autofill]', err);
-    // Graceful degradation: never fail hard; return safe defaults so calculator can proceed
-    const defaultAreaM2 = 120;
-    return NextResponse.json({
-      found: false,
-      roofAreaM2: defaultAreaM2,
-      usableRoofM2: Math.round(defaultAreaM2 * 0.7),
-      pitchDegrees: 15,
-      roofType: 'unknown',
-      source: 'default',
-      note: err instanceof Error ? err.message : 'Overpass unavailable',
-    });
+    return NextResponse.json(notFound(15, err instanceof Error ? err.message : 'Roof lookup failed: measure or draw the roof.'));
   }
 }

@@ -352,10 +352,13 @@ export default function AquaScanProComplete() {
         }
 
         // Update historical data with real nearby borehole stats
+        // Only values the nearby-points API actually measured (it returns null
+        // where OpenStreetMap records nothing; it no longer invents boreholes).
         if (realApiData.nearbyBoreholes && analysisResult.historicalData) {
-          analysisResult.historicalData.averageDepth = realApiData.nearbyBoreholes.averageDepth;
-          analysisResult.historicalData.averageYield = realApiData.nearbyBoreholes.averageYield;
-          analysisResult.historicalData.averageSuccessRate = realApiData.nearbyBoreholes.successRate;
+          const nb = realApiData.nearbyBoreholes as { averageDepth: number | null; averageYield: number | null; successRate: number | null };
+          if (typeof nb.averageDepth === 'number') analysisResult.historicalData.averageDepth = nb.averageDepth;
+          if (typeof nb.averageYield === 'number') analysisResult.historicalData.averageYield = nb.averageYield;
+          if (typeof nb.successRate === 'number') analysisResult.historicalData.averageSuccessRate = nb.successRate;
         }
 
         // Update satellite data with real indices

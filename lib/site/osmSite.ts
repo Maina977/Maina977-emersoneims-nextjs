@@ -8,7 +8,8 @@
  * is reported as an error, not papered over.
  */
 
-const OVERPASS = 'https://overpass-api.de/api/interpreter';
+import { overpassQuery } from '@/lib/data-sources/overpass';
+
 const R = 6371000;
 const toRad = (d: number) => (d * Math.PI) / 180;
 
@@ -51,15 +52,9 @@ export async function fetchOsmSite(lat: number, lon: number, radiusMeters = 80):
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) throw new Error('Invalid coordinates');
   const radius = Math.max(10, Math.min(300, Math.round(radiusMeters)));
   const q = `[out:json][timeout:20];(way["building"](around:${radius},${lat},${lon});node["natural"="tree"](around:${radius},${lat},${lon}););out geom tags;`;
-  const res = await fetch(OVERPASS, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'data=' + encodeURIComponent(q),
-    signal: AbortSignal.timeout(15000),
-    next: { revalidate: 60 * 60 * 24 * 7 },
-  });
-  if (!res.ok) throw new Error(`OpenStreetMap (Overpass) HTTP ${res.status}`);
-  const j = (await res.json()) as { elements?: Array<{ type: string; id: number; lat?: number; lon?: number; tags?: Record<string, string>; geometry?: { lat: number; lon: number }[] }> };
+  // Identifying User-Agent + mirror fallback (2026-11-14: Node's default UA got 406).
+  const j = await overpassQuery<{ type: string; id: number; lat?: number; lon?: number; tags?: Record<string, string>; geometry?: { lat: number; lon: number }[] }>(q, { timeoutMs: 15000, revalidateS: 60 * 60 * 24 * 7 });
+  if (!j) throw new Error('OpenStreetMap (Overpass) did not answer');
 
   const local = (pLat: number, pLon: number) => ({
     x: Math.round(toRad(pLon - lon) * R * Math.cos(toRad(lat)) * 100) / 100,
