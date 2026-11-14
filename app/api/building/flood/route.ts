@@ -1,12 +1,13 @@
 /**
- * REAL Flood Risk Assessment API
- * Uses Open-Meteo Historical Data + OpenStreetMap Water Bodies
- * Free, no API key needed
+ * Flood screening API (not a flood study).
+ * Rainfall history (NASA POWER, or Open-Meteo only when licensed) + SRTM ground
+ * elevation + OpenStreetMap water bodies. Any missing input → INSUFFICIENT EVIDENCE.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
 import { fetchNasaPowerPrecipitation } from '@/lib/data-sources/nasaPower';
+import { fetchPointElevation } from '@/lib/data-sources/elevation';
 
 interface FloodRequest {
   latitude: number;
@@ -18,23 +19,24 @@ interface FloodResponse {
   data?: {
     riskLevel: 'low' | 'medium' | 'high' | 'critical';
     riskScore: number;        // 0-100
-    floodZone: string;
+    floodZone: string;        // screening category, not a mapped flood zone
+    method: string;
     factors: {
-      elevation: number;
-      nearestWaterBody: { name: string; type: string; distance: number } | null;
+      elevation: number;      // m above sea level (SRTM)
+      elevationSource: string;
+      nearestWaterBody: { name: string; type: string; distance: number } | null; // null = none within 2 km
       historicalPrecipitation: number;  // mm/year
       maxDailyPrecipitation: number;    // mm
-      drainageCapacity: string;
-      urbanization: string;
+      drainageCapacity: null;  // not assessed: no drainage data
+      urbanization: null;      // not assessed: no land-use data
     };
     historicalEvents: number;
-    projectedDepth: {
-      '10yr': number;         // meters
-      '50yr': number;
-      '100yr': number;
-    };
+    // No hydraulic or hydrological model is run, so no return-period depths are given.
+    projectedDepth: null;
+    projectedDepthNote: string;
     mitigations: string[];
-    insuranceCategory: string;
+    insuranceCategory: null;   // not an insurer's assessment
+    limitations: string[];
     buildingRecommendations: string[];
     source: string;
   };
@@ -105,11 +107,14 @@ async function fetchHistoricalPrecipitation(lat: number, lng: number): Promise<{
   return null;
 }
 
-async function fetchNearbyWaterBodies(lat: number, lng: number, radiusKm: number = 2): Promise<{
-  name: string;
-  type: string;
-  distance: number;
-} | null> {
+// 'failed' (lookup did not answer) is kept apart from 'none' (no water within
+// the radius): a failed lookup used to score like a site far from water.
+type WaterBodyLookup =
+  | { status: 'found'; body: { name: string; type: string; distance: number } }
+  | { status: 'none' }
+  | { status: 'failed' };
+
+async function fetchNearbyWaterBodies(lat: number, lng: number, radiusKm: number = 2): Promise<WaterBodyLookup> {
   try {
     const query = `
       [out:json][timeout:15];
@@ -154,13 +159,14 @@ async function fetchNearbyWaterBodies(lat: number, lng: number, radiusKm: number
           }
         }
 
-        return closest;
+        return closest ? { status: 'found', body: closest } : { status: 'none' };
       }
+      if (Array.isArray(data.elements)) return { status: 'none' };
     }
   } catch (error) {
     console.error('[Flood] Water bodies fetch failed:', error);
   }
-  return null;
+  return { status: 'failed' };
 }
 
 function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -196,6 +202,8 @@ function calculateFloodRisk(
     else if (waterBodyDistance < 500) score += 15;
     else if (waterBodyDistance < 1000) score += 10;
     else score += 5;
+  } else {
+    score += 5; // none mapped within 2 km: same as the farthest band, never lower
   }
 
   // Precipitation intensity
@@ -217,11 +225,13 @@ function calculateFloodRisk(
   return { riskLevel, score: Math.min(100, score) };
 }
 
-function getFloodZone(riskLevel: string, waterBodyDistance: number | null): string {
-  if (riskLevel === 'critical') return 'Zone AE (High Risk - Special Flood Hazard Area)';
-  if (riskLevel === 'high') return 'Zone A (High Risk - Flood Hazard Area)';
-  if (riskLevel === 'medium') return 'Zone B/X500 (Moderate Risk - 500-year floodplain)';
-  return 'Zone C/X (Low Risk - Minimal flood hazard)';
+// FEMA zone names (AE, A, X500…) were shown here, but they come from mapped US
+// flood studies; no such map exists for these sites. A plain screening label only.
+function getFloodZone(riskLevel: string, _waterBodyDistance: number | null): string {
+  if (riskLevel === 'critical') return 'Screening: very high flood concern (not a mapped flood zone)';
+  if (riskLevel === 'high') return 'Screening: high flood concern (not a mapped flood zone)';
+  if (riskLevel === 'medium') return 'Screening: moderate flood concern (not a mapped flood zone)';
+  return 'Screening: low flood concern (not a mapped flood zone)';
 }
 
 function getMitigations(riskLevel: string, waterBodyDistance: number | null): string[] {
@@ -288,9 +298,10 @@ export async function POST(request: NextRequest) {
     console.log(`[Flood API] Analyzing risk for ${latitude}, ${longitude}`);
 
     // Fetch data in parallel
-    const [precipData, waterBody] = await Promise.all([
+    const [precipData, waterLookup, ground] = await Promise.all([
       fetchHistoricalPrecipitation(latitude, longitude),
       fetchNearbyWaterBodies(latitude, longitude),
+      fetchPointElevation(latitude, longitude),
     ]);
 
     // No rainfall history → no flood rating (2026-11-14): the former 900 mm/yr and
@@ -298,16 +309,17 @@ export async function POST(request: NextRequest) {
     if (!precipData) {
       return NextResponse.json({ success: false, error: 'INSUFFICIENT EVIDENCE: rainfall history unavailable for this location, so no flood rating is given.' }, { status: 503 });
     }
-    const source = `${precipData.source ?? 'Rainfall history'} + OpenStreetMap${precipData.note ? `. ${precipData.note}` : ''}`;
-
-    // Get elevation (simplified - ideally use elevation API)
-    // For now, use regional estimate
-    let elevation = 1500; // Default for Kenya highlands
-    if (latitude >= -5 && latitude <= 5 && longitude >= 39 && longitude <= 42) {
-      elevation = 50; // Coastal
-    } else if (latitude >= -2 && latitude <= 2 && longitude >= 34 && longitude <= 36) {
-      elevation = 1100; // Lake Victoria basin
+    // Measured ground elevation or no rating (2026-11-14): the former latitude-box
+    // guess (1500 / 50 / 1100 m) decided up to 40 of the 100 points.
+    if (!ground) {
+      return NextResponse.json({ success: false, error: 'INSUFFICIENT EVIDENCE: ground elevation unavailable for this location, so no flood rating is given.' }, { status: 503 });
     }
+    if (waterLookup.status === 'failed') {
+      return NextResponse.json({ success: false, error: 'INSUFFICIENT EVIDENCE: the nearby water-body lookup did not answer, so no flood rating is given.' }, { status: 503 });
+    }
+    const waterBody = waterLookup.status === 'found' ? waterLookup.body : null;
+    const elevation = ground.elevationM;
+    const source = `${precipData.source ?? 'Rainfall history'} + ${ground.source} + OpenStreetMap${precipData.note ? `. ${precipData.note}` : ''}`;
 
     const annualPrecip = precipData.annual;
     const maxDailyPrecip = precipData.maxDaily;
@@ -320,34 +332,35 @@ export async function POST(request: NextRequest) {
       maxDailyPrecip
     );
 
-    // Project flood depths based on risk
-    const baseDepth = score / 100;
-    const projectedDepth = {
-      '10yr': Math.round(baseDepth * 0.3 * 100) / 100,
-      '50yr': Math.round(baseDepth * 0.6 * 100) / 100,
-      '100yr': Math.round(baseDepth * 1.0 * 100) / 100,
-    };
-
+    // Return-period depths were score × 0.3 / 0.6 / 1.0 m: invented, removed
+    // (2026-11-14). So were the insurance band, drainage and urbanisation labels.
     const result: FloodResponse = {
       success: true,
       data: {
         riskLevel,
         riskScore: score,
-        floodZone: getFloodZone(riskLevel, waterBody?.distance || null),
+        floodZone: getFloodZone(riskLevel, waterBody ? waterBody.distance : null),
+        method: 'Screening score from ground elevation, distance to mapped water and rainfall history. Not a flood study.',
         factors: {
           elevation,
+          elevationSource: ground.source,
           nearestWaterBody: waterBody,
           historicalPrecipitation: annualPrecip,
           maxDailyPrecipitation: maxDailyPrecip,
-          drainageCapacity: score > 50 ? 'Limited' : 'Adequate',
-          urbanization: 'Moderate', // Would need land use data
+          drainageCapacity: null,
+          urbanization: null,
         },
-        historicalEvents: precipData?.extremeDays || 0,
-        projectedDepth,
-        mitigations: getMitigations(riskLevel, waterBody?.distance || null),
-        insuranceCategory: riskLevel === 'critical' ? 'High Premium Required' :
-          riskLevel === 'high' ? 'Elevated Premium' :
-            riskLevel === 'medium' ? 'Standard Premium' : 'Preferred Rate',
+        historicalEvents: precipData.extremeDays || 0,
+        projectedDepth: null,
+        projectedDepthNote: 'No flood depths are given: that needs a hydraulic model with surveyed levels and river flows.',
+        mitigations: getMitigations(riskLevel, waterBody ? waterBody.distance : null),
+        insuranceCategory: null,
+        limitations: [
+          'Elevation above sea level matters mainly near the coast; inland river and flash flooding depend on local low points, which this screen does not see.',
+          'Water bodies are those mapped in OpenStreetMap within 2 km; unmapped streams and drains are missed.',
+          'Rainfall is a gridded record, coarser than the site.',
+          'For design, confirm with a site survey, the county flood records and a qualified engineer.',
+        ],
         buildingRecommendations: getBuildingRecommendations(riskLevel),
         source,
       },

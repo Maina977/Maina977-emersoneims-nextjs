@@ -6,7 +6,7 @@
  * - Open-Elevation API (terrain)
  * - ISRIC SoilGrids (soil)
  * - NASA POWER (climate)
- * - Open-Meteo Historical (flood/precipitation)
+ * - /api/building/flood (NASA POWER rainfall + SRTM elevation + OSM water)
  * - OpenStreetMap Overpass (water bodies, utilities, amenities)
  * - OpenStreetMap Nominatim (geocoding)
  */
@@ -29,13 +29,16 @@ interface CompleteSiteAnalysis {
     county: string;
     country: string;
   };
+  // A section is null when its source did not answer (2026-11-14): it used to
+  // be filled with fixed stand-ins (1500 m, 5° slope, loam, 100 kPa bearing,
+  // 10 m water table, low flood risk), which read as site findings.
   terrain: {
     elevation: number;
     slope: number;
     aspect: string;
     terrainType: string;
-    accessibility: string;
-  };
+    accessibility: string | null; // null when the source gave no slope
+  } | null;
   soil: {
     type: string;
     classification: string;
@@ -51,7 +54,7 @@ interface CompleteSiteAnalysis {
       silt: number;
       ph: number;
     };
-  };
+  } | null;
   climate: {
     zone: string;
     temperature: { annual: number; max: number; min: number };
@@ -59,14 +62,14 @@ interface CompleteSiteAnalysis {
     wind: { avgSpeed: number; maxSpeed: number; designPressure: number };
     solar: { irradiance: number; sunHours: number };
     buildingCode: string;
-  };
+  } | null;
   flood: {
     riskLevel: string;
     riskScore: number;
     floodZone: string;
     nearestWaterBody: { name: string; distance: number } | null;
     mitigations: string[];
-  };
+  } | null;
   seismic: {
     zone: number;
     riskLevel: string;
@@ -93,8 +96,9 @@ interface CompleteSiteAnalysis {
     maxCoverage: number;
     setbacks: { front: number; rear: number; side: number };
   };
-  overallScore: number;
+  overallScore: number | null;     // null unless terrain, soil and flood all answered
   buildingSuitability: string;
+  insufficientEvidence: string[];  // sections whose source did not answer
   recommendations: string[];
   risks: Array<{ type: string; level: string; description: string }>;
   dataSources: string[];
@@ -509,21 +513,29 @@ export async function POST(request: NextRequest) {
     ]);
 
     if (geocode.address) dataSources.push('OpenStreetMap Nominatim');
-    if (elevation) dataSources.push(elevation.source || 'Open-Elevation');
-    if (soil) dataSources.push(soil.source || 'ISRIC SoilGrids');
-    if (climate) dataSources.push(climate.source || 'NASA POWER');
-    if (flood) dataSources.push(flood.source || 'Open-Meteo Historical');
+    if (elevation?.source) dataSources.push(elevation.source);
+    if (soil?.source) dataSources.push(soil.source);
+    if (climate?.source) dataSources.push(climate.source);
+    if (flood?.source) dataSources.push(flood.source);
     dataSources.push('OpenStreetMap Overpass');
 
     // Get seismic and zoning data
     const seismic = getSeismicData(latitude, longitude, geocode.country);
     const zoning = getZoningDefaults(buildingType);
 
-    // Calculate overall score
-    const overallScore = calculateOverallScore(elevation, soil, flood, infrastructure);
-    const buildingSuitability = overallScore >= 70 ? 'Excellent' :
-      overallScore >= 55 ? 'Good' :
-        overallScore >= 40 ? 'Moderate' : 'Challenging';
+    // No overall score from missing inputs: an absent soil or flood answer used
+    // to count as neither good nor bad, so a gap could still read "Good".
+    const insufficientEvidence: string[] = [];
+    if (!elevation) insufficientEvidence.push('terrain: elevation service did not answer');
+    if (!soil) insufficientEvidence.push('soil: soil service did not answer');
+    if (!climate) insufficientEvidence.push('climate: climate service did not answer');
+    if (!flood) insufficientEvidence.push('flood: no flood screening (rainfall, elevation or water-body data unavailable)');
+    const scorable = Boolean(elevation && soil && flood);
+    const overallScore = scorable ? calculateOverallScore(elevation, soil, flood, infrastructure) : null;
+    const buildingSuitability = overallScore === null ? 'INSUFFICIENT EVIDENCE' :
+      overallScore >= 70 ? 'Excellent' :
+        overallScore >= 55 ? 'Good' :
+          overallScore >= 40 ? 'Moderate' : 'Challenging';
 
     // Generate recommendations and risks
     const recommendations = generateRecommendations(elevation, soil, flood, seismic, infrastructure);
@@ -542,39 +554,42 @@ export async function POST(request: NextRequest) {
           county: geocode.county,
           country: geocode.country,
         },
-        terrain: {
-          elevation: elevation?.elevation || 1500,
-          slope: elevation?.slope || 5,
-          aspect: elevation?.aspect || 'Flat',
-          terrainType: elevation?.terrainType || 'Gentle Slope',
-          accessibility: elevation?.slope < 10 ? 'Good' : 'Moderate',
-        },
-        soil: {
-          type: soil?.soilType || 'Loam',
-          classification: soil?.classification || 'Loam (USDA)',
-          bearingCapacity: soil?.bearingCapacity || 100,
-          waterTable: soil?.waterTable || 10,
-          expansive: soil?.expansive || false,
-          corrosivity: soil?.corrosivity || 'Low',
-          foundationRecommendation: soil?.foundationRecommendation || 'Strip Foundation',
-          excavationDifficulty: soil?.excavationDifficulty || 'Moderate',
-          properties: soil?.properties || { clay: 25, sand: 40, silt: 35, ph: 6.5 },
-        },
-        climate: {
-          zone: climate?.climateZone || 'Cwb (Subtropical Highland)',
-          temperature: climate?.temperature || { annual: 20, max: 28, min: 12 },
-          rainfall: climate?.rainfall || { annual: 900, maxMonthly: 200 },
-          wind: climate?.wind || { avgSpeed: 3, maxSpeed: 15, designPressure: 0.7 },
-          solar: climate?.solar || { irradiance: 5.5, sunHours: 7 },
-          buildingCode: climate?.buildingDesignCode || 'BS EN 1991 (Eurocode)',
-        },
-        flood: {
-          riskLevel: flood?.riskLevel || 'low',
-          riskScore: flood?.riskScore || 25,
-          floodZone: flood?.floodZone || 'Zone X (Minimal Risk)',
-          nearestWaterBody: flood?.factors?.nearestWaterBody || null,
-          mitigations: flood?.mitigations || [],
-        },
+        // Values pass through as the source gave them (?? keeps a real 0);
+        // a missing section is null, never a stand-in.
+        terrain: elevation ? {
+          elevation: elevation.elevation ?? null,
+          slope: elevation.slope ?? null,
+          aspect: elevation.aspect ?? null,
+          terrainType: elevation.terrainType ?? null,
+          accessibility: typeof elevation.slope === 'number' ? (elevation.slope < 10 ? 'Good' : 'Moderate') : null,
+        } : null,
+        soil: soil ? {
+          type: soil.soilType ?? null,
+          classification: soil.classification ?? null,
+          bearingCapacity: soil.bearingCapacity ?? null,
+          waterTable: soil.waterTable ?? null,
+          expansive: soil.expansive ?? null,
+          corrosivity: soil.corrosivity ?? null,
+          foundationRecommendation: soil.foundationRecommendation ?? null,
+          excavationDifficulty: soil.excavationDifficulty ?? null,
+          properties: soil.properties ?? null,
+        } : null,
+        climate: climate ? {
+          zone: climate.climateZone ?? null,
+          temperature: climate.temperature ?? null,
+          rainfall: climate.rainfall ?? null,
+          wind: climate.wind ?? null,
+          solar: climate.solar ?? null,
+          buildingCode: climate.buildingDesignCode ?? null,
+        } : null,
+        flood: flood ? {
+          riskLevel: flood.riskLevel,
+          riskScore: flood.riskScore,
+          floodZone: flood.floodZone,
+          nearestWaterBody: flood.factors?.nearestWaterBody ?? null,
+          mitigations: flood.mitigations ?? [],
+        } : null,
+        insufficientEvidence,
         seismic,
         infrastructure,
         amenities,
