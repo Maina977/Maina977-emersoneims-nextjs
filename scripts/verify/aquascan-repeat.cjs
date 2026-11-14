@@ -50,7 +50,15 @@ async function analyse(browser, site) {
   // Wait until the result tabs appear, then let late sources settle.
   await page.waitForFunction(() => /Analysis Complete/.test(document.body.innerText), null, { timeout: 240000 });
   await page.waitForTimeout(15000);
-  const text = await page.evaluate(() => document.body.innerText);
+  // Compare the analysis, not the site chrome: the header menu label can read
+  // "CONTACT" or "MORE" depending on render timing (13-14 Nov 2026 gates), which
+  // is not a computed value. The site nav and footer sit outside <main> (app/layout.tsx),
+  // so only #main-content is compared. Removing header/nav elements inside it is wrong:
+  // AquaScan's own <header className="app-header"> holds analysis content (14 Nov gate).
+  const text = await page.evaluate(() => {
+    const main = document.querySelector('#main-content');
+    return main ? main.innerText : 'MAIN CONTENT NOT FOUND';
+  });
   await page.waitForTimeout(500);
   await ctx.close();
   return { text, errs, relay, relay429, upstream429 };

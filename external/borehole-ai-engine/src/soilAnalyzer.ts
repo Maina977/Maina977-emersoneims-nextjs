@@ -72,7 +72,7 @@ export class SoilAnalyzer {
       suitability: this.calculateSuitability(properties),
       recommendations: this.generateRecommendations(properties, soilType),
       dataSource: hasRealData
-        ? 'ISRIC SoilGrids v2.0 (250m resolution, real measurements)'
+        ? 'ISRIC SoilGrids v2.0 (250 m model predictions; regional context, not a site measurement)'
         : 'Pixel-based classification + USDA Soil Taxonomy heuristics',
       // No accuracy has been measured for this classifier (2026-10-20 audit: a
       // 45-60% figure was printed, even on runs with no photo).

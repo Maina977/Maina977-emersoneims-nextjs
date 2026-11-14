@@ -6388,8 +6388,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       `${sf(s.latitude, 5)}, ${sf(s.longitude, 5)}`,
       `${Math.min(100, Math.round(s.score ?? 0))}/100`,
       `${sf((s.probability ?? 0) * 100)}%`,
-      `${s.expectedDepth_m}m`,
-      `${s.expectedYield_m3h} m³/hr`,
+      s.expectedDepth_m == null ? 'insufficient evidence' : `${s.expectedDepth_m}m`,
+      s.expectedYield_m3h == null ? 'insufficient evidence' : `${s.expectedYield_m3h} m³/hr`,
       `${s.distanceFromTarget_m}m`,
       s.rockType,
     ]);

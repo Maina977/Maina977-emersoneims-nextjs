@@ -1,3 +1,4 @@
+import { SOILGRIDS_REST_ENABLED } from './soilSource';
 /**
  * ═══════════════════════════════════════════════════════════════════
  * GLOBAL SOIL RECOGNITION & HYDRAULIC PROPERTIES ENGINE
@@ -123,6 +124,7 @@ const WRB_GROUNDWATER_MAP: Record<string, { desc: string; gw: string; depth: str
 };
 
 async function fetchWRBClassification(lat: number, lon: number): Promise<WRBSoilClassification | null> {
+  if (!SOILGRIDS_REST_ENABLED) return null; // see soilSource.ts
   try {
     const url = `https://rest.isric.org/soilgrids/v2.0/classification/query?lon=${lon}&lat=${lat}&number_classes=3`;
     const resp = await fetch(url, { signal: AbortSignal.timeout(12000) });
@@ -167,6 +169,7 @@ async function fetchWRBClassification(lat: number, lon: number): Promise<WRBSoil
 // ─── Soil Hydraulic Properties ────────────────────────────────
 
 async function fetchSoilHydraulicProperties(lat: number, lon: number): Promise<SoilHydraulicProperties | null> {
+  if (!SOILGRIDS_REST_ENABLED) return null; // see soilSource.ts
   try {
     // Fetch water retention properties at all available depths
     const depths = ['0-5cm', '5-15cm', '15-30cm', '30-60cm', '60-100cm', '100-200cm'];
@@ -311,6 +314,7 @@ async function fetchSoilHydraulicProperties(lat: number, lon: number): Promise<S
 // ─── Soil Recognition (Texture + Classification) ──────────────
 
 async function fetchSoilRecognition(lat: number, lon: number): Promise<SoilRecognition | null> {
+  if (!SOILGRIDS_REST_ENABLED) return null; // see soilSource.ts
   try {
     const url = `https://rest.isric.org/soilgrids/v2.0/properties/query?lon=${lon}&lat=${lat}` +
       `&property=clay&property=sand&property=silt&property=phh2o&property=soc&property=cec&property=bdod&property=nitrogen` +

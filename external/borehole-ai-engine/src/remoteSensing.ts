@@ -27,6 +27,7 @@
  *   - GRACE-FO (groundwater storage changes)
  */
 
+import { SOILGRIDS_REST_ENABLED } from './soilSource';
 import { fetchElevations } from './elevationService';
 import { spliceEra5ToIfs } from './historicalData';
 
@@ -115,6 +116,7 @@ export interface RemoteSensingResult {
  * Returns clay, sand, silt, pH, organic carbon, bulk density at 0-30cm depth.
  */
 export async function fetchSoilGrids(lat: number, lon: number): Promise<SoilGridsData | null> {
+  if (!SOILGRIDS_REST_ENABLED) return null; // see soilSource.ts
   try {
     const properties = ['clay', 'sand', 'silt', 'phh2o', 'soc', 'bdod', 'cec', 'nitrogen'];
     // SoilGrids serves standard depths only (0-5, 5-15, 15-30 cm); "0-30cm" is

@@ -5210,8 +5210,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
                             <td style={{fontSize:11}}>{s.latitude.toFixed(5)}, {s.longitude.toFixed(5)}</td>
                             <td style={{fontWeight:700,color:'#10B981'}}>{s.score.toFixed(0)}/100</td>
                             <td>{(s.probability*100).toFixed(0)}%</td>
-                            <td>{s.expectedDepth_m}m</td>
-                            <td>{s.expectedYield_m3h} m³/hr</td>
+                            <td>{s.expectedDepth_m === null || s.expectedDepth_m === undefined ? 'insufficient evidence' : `${s.expectedDepth_m}m`}</td>
+                            <td>{s.expectedYield_m3h === null || s.expectedYield_m3h === undefined ? 'insufficient evidence' : `${s.expectedYield_m3h} m³/hr`}</td>
                             <td>{s.distanceFromTarget_m}m</td>
                             <td>{s.rockType}</td>
                           </tr>

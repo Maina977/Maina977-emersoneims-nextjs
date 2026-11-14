@@ -8,6 +8,7 @@
 // References: Jha et al. (2010), Naghibi et al. (2015), MacDonald (2012)
 // ═══════════════════════════════════════════════════════════════════
 
+import { SOILGRIDS_REST_ENABLED, SOIL_INSUFFICIENT_EVIDENCE } from './soilSource';
 import { classifyRockType, estimateWeatheringProfile, type RockClassification, type WeatheringProfile } from './rockClassifier';
 import type { FieldValidationData } from './types';
 import { fetchElevations } from './elevationService';
@@ -18,8 +19,9 @@ export interface CandidateSite {
   score: number;                     // 0-100 composite score
   rank: number;
   probability: number;               // 0-1
-  expectedDepth_m: number;
-  expectedYield_m3h: number;
+  /** Null = INSUFFICIENT EVIDENCE (rock type and weathering not known). */
+  expectedDepth_m: number | null;
+  expectedYield_m3h: number | null;
   distanceFromTarget_m: number;
   featureScores: {
     twi: number;                     // Topographic Wetness Index (0-100)
@@ -33,11 +35,13 @@ export interface CandidateSite {
   };
   rockType: string;
   aquiferType: string;
-  weatheringDepth_m: number;
+  weatheringDepth_m: number | null;
   reasoning: string[];
 }
 
 export interface SiteSelectionResult {
+  /** What could not be assessed, and why (P0-C, 2026-11-14). */
+  insufficientEvidence?: string[];
   topSites: CandidateSite[];         // Ranked 1-3
   searchRadius_m: number;
   gridResolution_m: number;
@@ -200,8 +204,11 @@ export async function selectTopDrillingSites(
   }
 
   // ═══ STEP 2: Fetch SoilGrids for center point (one API call) ═══
-  let soilData = { clay: 30, sand: 40, silt: 30, pH: 6.5, soc: 10, bd: 1400 };
-  try {
+  // No default soil: before 2026-11-14 a failed call used clay 30 %, sand
+  // 40 %, pH 6.5 ... and a rock type was then inferred from those invented
+  // values. Soil is either all six measured values or nothing.
+  let soilData: { clay: number; sand: number; silt: number; pH: number; soc: number; bd: number } | null = null;
+  if (SOILGRIDS_REST_ENABLED) try {
     const sgResp = await fetch(`https://rest.isric.org/soilgrids/v2.0/properties/query?lon=${centerLon}&lat=${centerLat}&property=clay&property=sand&property=silt&property=phh2o&property=soc&property=bdod&depth=0-30cm&value=mean`);
     if (sgResp.ok) {
       const sg = await sgResp.json();
@@ -210,23 +217,30 @@ export async function selectTopDrillingSites(
         const layer = layers.find((l: any) => l.name === name);
         return layer?.depths?.[0]?.values?.mean ?? null;
       };
-      soilData = {
-        clay: (getValue('clay') ?? 300) / 10,    // g/kg → %
-        sand: (getValue('sand') ?? 400) / 10,
-        silt: (getValue('silt') ?? 300) / 10,
-        pH: (getValue('phh2o') ?? 65) / 10,
-        soc: (getValue('soc') ?? 100) / 10,      // dg/kg → g/kg
-        bd: (getValue('bdod') ?? 140) * 10,       // cg/cm³ → kg/m³
-      };
+      const v = { clay: getValue('clay'), sand: getValue('sand'), silt: getValue('silt'), ph: getValue('phh2o'), soc: getValue('soc'), bd: getValue('bdod') };
+      if (Object.values(v).every((x) => typeof x === 'number' && Number.isFinite(x))) {
+        soilData = {
+          clay: (v.clay as number) / 10,    // g/kg → %
+          sand: (v.sand as number) / 10,
+          silt: (v.silt as number) / 10,
+          pH: (v.ph as number) / 10,
+          soc: (v.soc as number) / 10,      // dg/kg → g/kg
+          bd: (v.bd as number) * 10,        // cg/cm³ → kg/m³
+        };
+      }
     }
-  } catch { /* use defaults */ }
+  } catch { /* no soil: INSUFFICIENT EVIDENCE below */ }
 
   // ═══ STEP 3: Classify rock type and weathering ═══
   const centerElev = elevations[Math.floor(elevations.length / 2)] || 500;
-  const rockClass = classifyRockType(
+  const rockClass = soilData ? classifyRockType(
     soilData.clay, soilData.sand, soilData.silt, soilData.pH,
     soilData.soc, soilData.bd, centerElev, annualPrecipitation_mm, centerLat,
-  );
+  ) : null;
+  const insufficientEvidence: string[] = rockClass ? [] : [
+    SOIL_INSUFFICIENT_EVIDENCE,
+    'Rock type, weathering depth, expected depth and expected yield are therefore not estimated for these candidates; they are ranked on terrain, drainage and recharge only (the rock and weathering terms are the same for every candidate, so they do not change the order).',
+  ];
 
   // ═══ STEP 4: Score each candidate point ═══
   const candidates: CandidateSite[] = [];
@@ -258,19 +272,21 @@ export async function selectTopDrillingSites(
     const drainageScore = Math.min(100, Math.max(0, (avgNeighborElev - elev) * 5 + 50));
 
     // Rock favorability (0-100)
-    const rockFav = rockClass.aquiferProductivity === 'high' ? 85 :
+    // Without a rock class the rock term is a constant (50) for every candidate.
+    const rockFav = !rockClass ? 50 :
+      rockClass.aquiferProductivity === 'high' ? 85 :
       rockClass.aquiferProductivity === 'moderate' ? 60 :
       rockClass.aquiferProductivity === 'low' ? 35 : 15;
 
-    // Weathering depth
-    const weathering = estimateWeatheringProfile(rockClass.primaryRockType, annualPrecipitation_mm, meanTemp_C, elev, slope_deg);
+    // Weathering depth (only from a known rock type)
+    const weathering = rockClass ? estimateWeatheringProfile(rockClass.primaryRockType, annualPrecipitation_mm, meanTemp_C, elev, slope_deg) : null;
 
     // NDVI proxy — use deterministic approx instead of per-point API call
     const ndviProxy = Math.min(1, Math.max(0, 0.3 + (annualPrecipitation_mm / 3000) + (drainageScore / 200)));
 
     const { total, features } = scoreCandidate(
       twi, slope_deg, lineamentDist, ndviProxy,
-      rechargeRate_mm, drainageScore, rockFav, weathering.totalWeatheringDepth_m,
+      rechargeRate_mm, drainageScore, rockFav, weathering ? weathering.totalWeatheringDepth_m : 0,
     );
 
     const dist = Math.sqrt(
@@ -314,15 +330,16 @@ export async function selectTopDrillingSites(
     const probability = Math.min(0.95, Math.max(0.10, adjustedTotal / 110));
 
     // Estimate depth from weathering + rock type
-    const expectedDepth = Math.round(
+    const expectedDepth = weathering ? Math.round(
       weathering.aquiferZone.bottom_m * (1 + (1 - probability) * 0.3),
-    );
+    ) : null;
 
     // Estimate yield from rock type + TWI
-    const baseYield = rockClass.aquiferProductivity === 'high' ? 5 :
+    const baseYield = !rockClass ? null :
+      rockClass.aquiferProductivity === 'high' ? 5 :
       rockClass.aquiferProductivity === 'moderate' ? 2.5 :
       rockClass.aquiferProductivity === 'low' ? 1.0 : 0.3;
-    const expectedYield = Math.round(baseYield * (1 + twi / 20) * 10) / 10;
+    const expectedYield = baseYield === null ? null : Math.round(baseYield * (1 + twi / 20) * 10) / 10;
 
     candidates.push({
       latitude: pt.lat,
@@ -330,13 +347,13 @@ export async function selectTopDrillingSites(
       score: Math.round(adjustedTotal * 10) / 10,
       rank: 0, // assigned after sorting
       probability: Math.round(probability * 1000) / 1000,
-      expectedDepth_m: Math.max(15, Math.min(150, expectedDepth)),
-      expectedYield_m3h: Math.max(0.3, Math.min(25, expectedYield)),
+      expectedDepth_m: expectedDepth === null ? null : Math.max(15, Math.min(150, expectedDepth)),
+      expectedYield_m3h: expectedYield === null ? null : Math.max(0.3, Math.min(25, expectedYield)),
       distanceFromTarget_m: Math.round(dist),
       featureScores: features,
-      rockType: rockClass.primaryRockType,
-      aquiferType: rockClass.aquiferType,
-      weatheringDepth_m: weathering.totalWeatheringDepth_m,
+      rockType: rockClass ? rockClass.primaryRockType : 'not known (insufficient evidence)',
+      aquiferType: rockClass ? rockClass.aquiferType : 'not known',
+      weatheringDepth_m: weathering ? weathering.totalWeatheringDepth_m : null,
       reasoning: [],
     });
 
@@ -372,13 +389,14 @@ export async function selectTopDrillingSites(
       `Composite score: ${s.score}/100 (probability ${(s.probability * 100).toFixed(0)}%)`,
       `Top strengths: ${best.join(', ')}`,
       `Rock type: ${s.rockType} (${s.aquiferType} aquifer)`,
-      `Weathering depth: ${s.weatheringDepth_m}m → expected drilling depth ${s.expectedDepth_m}m`,
-      `Expected yield: ${s.expectedYield_m3h} m³/hr`,
+      s.expectedDepth_m === null ? 'Weathering depth and drilling depth: INSUFFICIENT EVIDENCE (no soil or geology data)' : `Weathering depth: ${s.weatheringDepth_m}m → expected drilling depth ${s.expectedDepth_m}m`,
+      s.expectedYield_m3h === null ? 'Expected yield: INSUFFICIENT EVIDENCE' : `Expected yield: ${s.expectedYield_m3h} m³/hr`,
       `Distance from target: ${s.distanceFromTarget_m}m`,
     ];
   });
 
   return {
+    ...(insufficientEvidence.length ? { insufficientEvidence } : {}),
     topSites,
     searchRadius_m,
     gridResolution_m: gridStep_m,
