@@ -6,6 +6,8 @@ import {
   checkRateLimit,
   initOracleTables,
 } from '@/lib/generator-oracle/db';
+import { limiter } from '@/lib/rate-limiter';
+import { isAdminRequest } from '@/lib/generator-oracle/adminAuth';
 
 /**
  * License Activation API Endpoint
@@ -17,9 +19,18 @@ import {
  * - No way to change device without admin intervention
  *
  * Security measures:
- * - Rate limiting: Max 3 activation attempts per hour per device
+ * - Rate limiting per device AND per client IP (key-guessing protection)
  * - All activation attempts logged for audit
  * - Server-side expiry validation
+ * - Only licences that exist in the database can activate
+ *
+ * SECURITY HOTFIX 2026-11-13:
+ * - Removed the built-in demo licence (a hard-coded key in this public
+ *   repository) that activated as a working "pro" licence on every
+ *   environment, production included, whenever the key was not in the database.
+ * - Admin endpoints compared the header with `Bearer ${ADMIN_API_KEY}`: with
+ *   the variable unset that string is "Bearer undefined", which then granted
+ *   admin access. They now require a configured key and compare in constant time.
  */
 
 interface ActivationRequest {
@@ -29,39 +40,30 @@ interface ActivationRequest {
   deviceInfo?: Record<string, unknown>;
 }
 
-// Fallback demo licenses when database is not available
-const DEMO_LICENSES = new Map<string, {
-  email: string;
-  phone: string;
-  createdAt: string;
-  maxDevices: number;
-  activatedDevices: string[];
-  status: 'active' | 'revoked' | 'expired';
-  expiresAt?: string;
-}>([
-  // Demo license for testing
-  ['EIMS-TEST-0001-DEMO', {
-    email: 'test@example.com',
-    phone: '+254768860665',
-    createdAt: new Date().toISOString(),
-    maxDevices: 1, // ONE device only
-    activatedDevices: [],
-    status: 'active',
-  }],
-]);
+/** Activation attempts allowed per client IP per minute (in-memory, per instance). */
+const ACTIVATIONS_PER_IP_PER_MINUTE = 10;
 
 export async function POST(request: NextRequest) {
   // Get client info for logging
-  const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+  const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
                    request.headers.get('x-real-ip') ||
                    'unknown';
   const userAgent = request.headers.get('user-agent') || 'unknown';
+
+  // Per-IP limit before any work: a new device ID per request must not give
+  // unlimited key guesses.
+  if (!limiter.check(ACTIVATIONS_PER_IP_PER_MINUTE, `oracle-activate:${clientIp}`).success) {
+    return NextResponse.json(
+      { success: false, error: 'Too many activation attempts. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    );
+  }
 
   try {
     const body: ActivationRequest = await request.json();
 
     // Validate input
-    if (!body.key || !body.deviceId) {
+    if (!body.key || !body.deviceId || typeof body.key !== 'string' || typeof body.deviceId !== 'string') {
       return NextResponse.json(
         { success: false, error: 'Missing license key or device ID' },
         { status: 400 }
@@ -81,8 +83,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check rate limit
-    const withinLimit = await checkRateLimit(deviceId, 'device');
+    // Check rate limits (device and IP, durable when the database is available)
+    const withinLimit = (await checkRateLimit(deviceId, 'device')) && (await checkRateLimit(clientIp, 'ip'));
     if (!withinLimit) {
       await logActivationAttempt({
         license_key: normalizedKey,
@@ -106,56 +108,10 @@ export async function POST(request: NextRequest) {
     // Initialize tables (if using PostgreSQL)
     await initOracleTables();
 
-    // Try PostgreSQL first
+    // Only a licence recorded in the database can activate.
     const dbLicense = await getLicenseByKey(normalizedKey);
 
-    if (dbLicense) {
-      // Database license found - use PostgreSQL
-      const activationResult = await activateLicense(normalizedKey, deviceId, body.deviceInfo);
-
-      // Log the attempt
-      await logActivationAttempt({
-        license_key: normalizedKey,
-        device_fingerprint: deviceId,
-        device_info: body.deviceInfo,
-        ip_address: clientIp,
-        user_agent: userAgent,
-        success: activationResult.success,
-        failure_reason: activationResult.error,
-      });
-
-      if (!activationResult.success) {
-        const statusCode = activationResult.error?.includes('different device') ? 403 :
-                          activationResult.error?.includes('expired') ? 403 :
-                          activationResult.error?.includes('revoked') ? 403 : 400;
-
-        return NextResponse.json(
-          { success: false, error: activationResult.error },
-          { status: statusCode }
-        );
-      }
-
-      const license = activationResult.license!;
-      return NextResponse.json({
-        success: true,
-        message: body.heartbeat ? 'Heartbeat updated' : 'License activated successfully',
-        license: {
-          key: normalizedKey,
-          email: license.customer_email,
-          tier: 'pro',
-          status: license.status,
-          activatedAt: license.activated_at?.toISOString() || new Date().toISOString(),
-          expiresAt: license.expires_at?.toISOString() || null,
-          deviceCount: 1, // Always 1 - ONE device per license
-          maxDevices: 1,
-        },
-      });
-    }
-
-    // Fall back to demo licenses (for development/testing)
-    const demoLicense = DEMO_LICENSES.get(normalizedKey);
-
-    if (!demoLicense) {
+    if (!dbLicense) {
       await logActivationAttempt({
         license_key: normalizedKey,
         device_fingerprint: deviceId,
@@ -171,81 +127,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check demo license status
-    if (demoLicense.status === 'revoked') {
-      return NextResponse.json(
-        { success: false, error: 'This license has been revoked. Please contact support.' },
-        { status: 403 }
-      );
-    }
+    const activationResult = await activateLicense(normalizedKey, deviceId, body.deviceInfo);
 
-    if (demoLicense.status === 'expired') {
-      return NextResponse.json(
-        { success: false, error: 'This license has expired. Please renew to continue.' },
-        { status: 403 }
-      );
-    }
-
-    // Check expiration date
-    if (demoLicense.expiresAt && new Date(demoLicense.expiresAt) < new Date()) {
-      return NextResponse.json(
-        { success: false, error: 'This license has expired. Please renew to continue.' },
-        { status: 403 }
-      );
-    }
-
-    // Check device binding - ONE DEVICE ONLY
-    const isDeviceRegistered = demoLicense.activatedDevices.includes(deviceId);
-
-    if (!isDeviceRegistered) {
-      // Check if license already bound to another device
-      if (demoLicense.activatedDevices.length >= demoLicense.maxDevices) {
-        await logActivationAttempt({
-          license_key: normalizedKey,
-          device_fingerprint: deviceId,
-          ip_address: clientIp,
-          user_agent: userAgent,
-          success: false,
-          failure_reason: 'License bound to different device',
-        });
-
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'This license is already bound to a different device. Each license can only be used on ONE device. Contact support to transfer your license.',
-          },
-          { status: 403 }
-        );
-      }
-
-      // First activation - bind device
-      demoLicense.activatedDevices.push(deviceId);
-      console.log(`New device bound to demo license ${normalizedKey}: ${deviceId}`);
-    }
-
+    // Log the attempt
     await logActivationAttempt({
       license_key: normalizedKey,
       device_fingerprint: deviceId,
+      device_info: body.deviceInfo,
       ip_address: clientIp,
       user_agent: userAgent,
-      success: true,
+      success: activationResult.success,
+      failure_reason: activationResult.error,
     });
 
-    // Return success with license details
+    if (!activationResult.success) {
+      const statusCode = activationResult.error?.includes('different device') ? 403 :
+                        activationResult.error?.includes('expired') ? 403 :
+                        activationResult.error?.includes('revoked') ? 403 : 400;
+
+      return NextResponse.json(
+        { success: false, error: activationResult.error },
+        { status: statusCode }
+      );
+    }
+
+    const license = activationResult.license!;
     return NextResponse.json({
       success: true,
       message: body.heartbeat ? 'Heartbeat updated' : 'License activated successfully',
       license: {
         key: normalizedKey,
-        email: demoLicense.email,
+        email: license.customer_email,
         tier: 'pro',
-        status: 'active',
-        activatedAt: isDeviceRegistered
-          ? demoLicense.createdAt
-          : new Date().toISOString(),
-        expiresAt: demoLicense.expiresAt || null,
-        deviceCount: 1,
-        maxDevices: 1, // ONE device only
+        status: license.status,
+        activatedAt: license.activated_at?.toISOString() || new Date().toISOString(),
+        expiresAt: license.expires_at?.toISOString() || null,
+        deviceCount: 1, // Always 1 - ONE device per license
+        maxDevices: 1,
       },
     });
 
@@ -263,10 +181,7 @@ export async function POST(request: NextRequest) {
  * Protected by ADMIN_API_KEY
  */
 export async function PUT(request: NextRequest) {
-  // Check admin authentication
-  const authHeader = request.headers.get('authorization');
-
-  if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
+  if (!isAdminRequest(request)) {
     return NextResponse.json(
       { success: false, error: 'Unauthorized' },
       { status: 401 }
@@ -293,7 +208,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    console.log(`Admin created license: ${result.licenseKey} for ${body.email}`);
+    console.log(`Admin created a license for ${body.email}`);
 
     return NextResponse.json({
       success: true,
@@ -314,9 +229,7 @@ export async function PUT(request: NextRequest) {
  * GET endpoint for admin to list licenses
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-
-  if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
+  if (!isAdminRequest(request)) {
     return NextResponse.json(
       { success: false, error: 'Unauthorized' },
       { status: 401 }
