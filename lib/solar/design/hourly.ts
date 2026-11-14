@@ -76,6 +76,8 @@ export interface HourlyInput {
 }
 export interface HourlyResult {
   annualKwh: number; monthlyKwh: number[]; clippedKwh: number; hours: number;
+  /** AC energy per hour (kWh), same length and order as the input series (for hybrid dispatch). */
+  hourlyAcKwh: number[];
   specificYieldKwhPerKwp: number; performanceRatio: number; poaKwhM2: number;
   assumptions: string[]; engineVersion: string;
 }
@@ -96,6 +98,7 @@ export function simulateHourly(i: HourlyInput): HourlyResult {
   const t0 = Date.parse(i.start);
   const tilt = i.site.tiltDeg * D, sAz = i.site.azimuthDeg * D, albedo = i.site.albedo ?? 0.2;
   const monthly = Array(12).fill(0);
+  const hourlyAc: number[] = new Array(n).fill(0);
   let clipped = 0, poaSum = 0;
   for (let h = 0; h < n; h++) {
     const t = t0 + h * 3600000;
@@ -111,12 +114,14 @@ export function simulateHourly(i: HourlyInput): HourlyResult {
     const pdc = i.array.dcKw * (poa / 1000) * (1 + (i.array.gammaPmaxPct / 100) * (tc - 25)) * (1 - sysLoss);
     const inv = pvwattsInverterDetail(pdc, pdc0Inv, i.inverter.nominalEfficiency);
     monthly[new Date(t).getUTCMonth()] += inv.ac;
+    hourlyAc[h] = inv.ac;
     clipped += inv.clipped;
   }
   const annual = monthly.reduce((a, b) => a + b, 0);
   const r1 = (x: number) => Math.round(x * 10) / 10;
   return {
     annualKwh: Math.round(annual), monthlyKwh: monthly.map(r1), clippedKwh: r1(clipped), hours: n,
+    hourlyAcKwh: hourlyAc,
     specificYieldKwhPerKwp: Math.round(annual / i.array.dcKw),
     performanceRatio: Math.round((annual / (i.array.dcKw * (poaSum / 1000))) * 1000) / 1000,
     poaKwhM2: Math.round(poaSum / 10) / 100,
