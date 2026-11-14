@@ -109,7 +109,7 @@ export interface CompleteSiteAnalysis {
   };
   satellite: { ndvi: number; ndwi: number; landCover: string; droughtRisk: string };
   groundwater: { soilMoisture: number; rechargeRate: number; trend: string };
-  nearbyBoreholes: { count: number; averageDepth: number; averageYield: number; successRate: number };
+  nearbyBoreholes: { count: number; averageDepth: number | null; averageYield: number | null; successRate: number | null };
   risks: Array<{ type: string; level: string; description: string }>;
   costEstimate: { drillingCost: number; pumpCost: number; totalEstimate: number; currency: string };
   recommendations: string[];

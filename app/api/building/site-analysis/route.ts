@@ -12,6 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { overpassQuery, OSM_ATTRIBUTION } from '@/lib/data-sources/overpass';
 
 interface SiteAnalysisRequest {
   latitude: number;
@@ -177,16 +178,10 @@ async function fetchNearbyAmenities(lat: number, lng: number): Promise<Amenities
       out center;
     `;
 
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      body: `data=${encodeURIComponent(query)}`,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      signal: AbortSignal.timeout(20000),
-    });
+    const data = await overpassQuery(query, { timeoutMs: 15000 });
 
-    if (response.ok) {
-      const data = await response.json();
-      const elements = data.elements || [];
+    if (data) {
+      const elements = data.elements;
 
       // A tag "key=value" must match exactly; a bare "key" needs the key present.
       // (The old test matched every non-shop element as a shop.)
@@ -233,16 +228,10 @@ async function fetchInfrastructure(lat: number, lng: number): Promise<any> {
       out center;
     `;
 
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      body: `data=${encodeURIComponent(query)}`,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      signal: AbortSignal.timeout(15000),
-    });
+    const data = await overpassQuery(query, { timeoutMs: 12000 });
 
-    if (response.ok) {
-      const data = await response.json();
-      const elements = data.elements || [];
+    if (data) {
+      const elements = data.elements;
 
       // "available" means mapped in OpenStreetMap within the search radius, and
       // the distance is to the nearest mapped feature (2026-11-14: distances were
@@ -263,7 +252,7 @@ async function fetchInfrastructure(lat: number, lng: number): Promise<any> {
       const sewer = elements.filter((e: any) => e.tags?.man_made === 'manhole');
 
       return {
-        source: 'OpenStreetMap Overpass (mapped features only)',
+        source: `OpenStreetMap Overpass, mapped features only (${OSM_ATTRIBUTION})`,
         roadAccess: { available: roads.length > 0, type: roads[0]?.tags?.highway ?? null, distance: nearest(roads), searchRadiusM: 500 },
         electricity: { available: power.length > 0, distance: nearest(power), voltage: null, searchRadiusM: 500 },
         water: { available: water.length > 0, type: water.length > 0 ? 'Mapped water tap' : 'No water tap mapped within 1 km: confirm with the water company', distance: nearest(water), searchRadiusM: 1000 },
@@ -516,7 +505,7 @@ export async function POST(request: NextRequest) {
     if (soil?.source) dataSources.push(soil.source);
     if (climate?.source) dataSources.push(climate.source);
     if (flood?.source) dataSources.push(flood.source);
-    if (infrastructure || amenities) dataSources.push('OpenStreetMap Overpass');
+    if (infrastructure || amenities) dataSources.push(`OpenStreetMap Overpass (${OSM_ATTRIBUTION})`);
 
     // Get seismic and zoning data
     const seismic = getSeismicData(latitude, longitude, geocode.country);

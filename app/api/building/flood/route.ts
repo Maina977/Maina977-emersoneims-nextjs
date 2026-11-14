@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
 import { fetchNasaPowerPrecipitation } from '@/lib/data-sources/nasaPower';
 import { fetchPointElevation } from '@/lib/data-sources/elevation';
+import { overpassQuery, OSM_ATTRIBUTION } from '@/lib/data-sources/overpass';
 
 interface FloodRequest {
   latitude: number;
@@ -46,8 +47,6 @@ interface FloodResponse {
 // Open-Meteo Historical API
 const OPEN_METEO_HISTORICAL_URL = 'https://archive-api.open-meteo.com/v1/archive';
 
-// OpenStreetMap Overpass API
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 
 async function fetchHistoricalPrecipitation(lat: number, lng: number): Promise<{
   annual: number;
@@ -126,17 +125,11 @@ async function fetchNearbyWaterBodies(lat: number, lng: number, radiusKm: number
       out center;
     `;
 
-    const response = await fetch(OVERPASS_URL, {
-      method: 'POST',
-      body: `data=${encodeURIComponent(query)}`,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      signal: AbortSignal.timeout(15000),
-    });
+    // Identifying User-Agent + mirror fallback (overpass-api.de refuses Node's default with 406).
+    const data = await overpassQuery(query, { timeoutMs: 12000 });
 
-    if (response.ok) {
-      const data = await response.json();
-
-      if (data.elements && data.elements.length > 0) {
+    if (data) {
+      if (data.elements.length > 0) {
         // Find closest water body
         let closest: { name: string; type: string; distance: number } | null = null;
         let minDistance = Infinity;
@@ -161,7 +154,7 @@ async function fetchNearbyWaterBodies(lat: number, lng: number, radiusKm: number
 
         return closest ? { status: 'found', body: closest } : { status: 'none' };
       }
-      if (Array.isArray(data.elements)) return { status: 'none' };
+      return { status: 'none' };
     }
   } catch (error) {
     console.error('[Flood] Water bodies fetch failed:', error);
@@ -319,7 +312,7 @@ export async function POST(request: NextRequest) {
     }
     const waterBody = waterLookup.status === 'found' ? waterLookup.body : null;
     const elevation = ground.elevationM;
-    const source = `${precipData.source ?? 'Rainfall history'} + ${ground.source} + OpenStreetMap${precipData.note ? `. ${precipData.note}` : ''}`;
+    const source = `${precipData.source ?? 'Rainfall history'} + ${ground.source} + water bodies ${OSM_ATTRIBUTION}${precipData.note ? `. ${precipData.note}` : ''}`;
 
     const annualPrecip = precipData.annual;
     const maxDailyPrecip = precipData.maxDaily;

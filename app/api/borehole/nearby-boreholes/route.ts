@@ -1,15 +1,23 @@
 /**
- * Nearby Boreholes API
- * Fetches real borehole data from open databases
+ * Nearby water points API: OpenStreetMap only.
  *
- * Sources:
- * - Kenya Water Resources Authority (WRA) database
- * - BGS World Borehole Records
- * - OpenStreetMap water points
- * - AKVO Flow water point data
+ * 2026-11-14 the route returned invented boreholes, and they were removed. When
+ * fewer than `limit` real points were found it made up "Borehole A, B, C…":
+ * coordinates on a ring around the site, plus depth, yield, year, status and
+ * water quality varied by sine/cosine around an unsourced county table labelled
+ * "real data from WRA reports". It then recommended a drilling depth "based on
+ * N nearby boreholes".
+ *
+ * Now:
+ * - Only mapped OSM water points are returned, with only the values their tags
+ *   state. A missing tag is null.
+ * - Statistics are computed from those values or are null.
+ * - A failed lookup is INSUFFICIENT EVIDENCE, not "none nearby".
+ * - No drilling depth is recommended from map points.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { overpassQuery, OSM_ATTRIBUTION } from '@/lib/data-sources/overpass';
 
 interface NearbyBoreholesRequest {
   latitude: number;
@@ -20,15 +28,16 @@ interface NearbyBoreholesRequest {
 
 interface BoreholeRecord {
   id: string;
-  name: string;
+  name: string | null;
+  kind: string;           // OSM feature type (water_well, borehole, hand pump…)
   distance: number;       // km from query point
   coordinates: { latitude: number; longitude: number };
-  depth: number;          // meters
-  yield: number;          // m³/hour
-  staticWaterLevel: number;
-  year: number;
-  status: 'active' | 'inactive' | 'abandoned' | 'unknown';
-  waterQuality: 'good' | 'moderate' | 'poor' | 'unknown';
+  depth: number | null;   // m, from the OSM depth tag only
+  yield: number | null;   // m³/h, from pump:output only
+  staticWaterLevel: number | null;
+  year: number | null;
+  status: 'active' | 'unknown';
+  waterQuality: 'unknown';
   source: string;
 }
 
@@ -40,275 +49,137 @@ interface NearbyBoreholesResponse {
     totalFound: number;
     boreholes: BoreholeRecord[];
     statistics: {
-      averageDepth: number;
-      averageYield: number;
-      successRate: number;
-      commonDepthRange: { min: number; max: number };
-      commonYieldRange: { min: number; max: number };
+      pointsWithDepth: number;
+      pointsWithYield: number;
+      averageDepth: number | null;
+      averageYield: number | null;
+      successRate: null;    // OSM does not record dry holes
+      commonDepthRange: { min: number; max: number } | null;
+      commonYieldRange: { min: number; max: number } | null;
     };
     recommendations: string[];
+    limitations: string[];
     dataSources: string[];
   };
   error?: string;
 }
 
-// Kenya county-level borehole statistics (real data from WRA reports)
-const KENYA_BOREHOLE_DATA: Record<string, {
-  avgDepth: number;
-  avgYield: number;
-  successRate: number;
-  waterQuality: string;
-  aquiferType: string;
-}> = {
-  'Nairobi': { avgDepth: 180, avgYield: 8, successRate: 75, waterQuality: 'moderate', aquiferType: 'volcanic' },
-  'Kiambu': { avgDepth: 150, avgYield: 10, successRate: 80, waterQuality: 'good', aquiferType: 'volcanic' },
-  'Machakos': { avgDepth: 120, avgYield: 5, successRate: 65, waterQuality: 'moderate', aquiferType: 'basement' },
-  'Kajiado': { avgDepth: 200, avgYield: 6, successRate: 60, waterQuality: 'moderate', aquiferType: 'volcanic' },
-  'Nakuru': { avgDepth: 160, avgYield: 12, successRate: 70, waterQuality: 'moderate', aquiferType: 'volcanic' },
-  'Mombasa': { avgDepth: 80, avgYield: 15, successRate: 85, waterQuality: 'moderate', aquiferType: 'coastal' },
-  'Kilifi': { avgDepth: 60, avgYield: 10, successRate: 80, waterQuality: 'good', aquiferType: 'coastal' },
-  'Turkana': { avgDepth: 250, avgYield: 3, successRate: 45, waterQuality: 'poor', aquiferType: 'sedimentary' },
-  'Marsabit': { avgDepth: 220, avgYield: 4, successRate: 50, waterQuality: 'moderate', aquiferType: 'volcanic' },
-  'Garissa': { avgDepth: 180, avgYield: 5, successRate: 55, waterQuality: 'poor', aquiferType: 'sedimentary' },
-  'Nyeri': { avgDepth: 100, avgYield: 15, successRate: 85, waterQuality: 'good', aquiferType: 'volcanic' },
-  'Meru': { avgDepth: 120, avgYield: 12, successRate: 80, waterQuality: 'good', aquiferType: 'volcanic' },
-  'Kisumu': { avgDepth: 80, avgYield: 8, successRate: 70, waterQuality: 'moderate', aquiferType: 'lacustrine' },
-  'Uasin Gishu': { avgDepth: 140, avgYield: 10, successRate: 75, waterQuality: 'good', aquiferType: 'volcanic' },
-  'Trans Nzoia': { avgDepth: 100, avgYield: 12, successRate: 80, waterQuality: 'good', aquiferType: 'volcanic' },
-  'default': { avgDepth: 130, avgYield: 8, successRate: 70, waterQuality: 'moderate', aquiferType: 'mixed' },
-};
-
-// OpenStreetMap Overpass API for water points
-const OVERPASS_API = 'https://overpass-api.de/api/interpreter';
-
-async function fetchOSMWaterPoints(lat: number, lon: number, radius: number): Promise<any[]> {
-  const radiusMeters = radius * 1000;
-
-  const query = `
-    [out:json][timeout:25];
-    (
-      node["man_made"="water_well"](around:${radiusMeters},${lat},${lon});
-      node["waterway"="borehole"](around:${radiusMeters},${lat},${lon});
-      node["pump"="manual"](around:${radiusMeters},${lat},${lon});
-      node["pump"="powered"](around:${radiusMeters},${lat},${lon});
-    );
-    out body;
-  `;
-
-  try {
-    const response = await fetch(OVERPASS_API, {
-      method: 'POST',
-      body: `data=${encodeURIComponent(query)}`,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      signal: AbortSignal.timeout(30000),
-    });
-
-    if (!response.ok) {
-      throw new Error('OSM API failed');
-    }
-
-    const data = await response.json();
-    return data.elements || [];
-  } catch (error) {
-    console.error('[Boreholes] OSM fetch failed:', error);
-    return [];
-  }
-}
-
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth's radius in km
+  const R = 6371; // km
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function getCountyFromCoords(lat: number, lon: number): string {
-  // Simplified Kenya county detection
-  if (lat > -1.4 && lat < -1.1 && lon > 36.6 && lon < 37.1) return 'Nairobi';
-  if (lat > -1.3 && lat < -0.8 && lon > 36.5 && lon < 37.2) return 'Kiambu';
-  if (lat > -1.8 && lat < -1.2 && lon > 36.8 && lon < 37.5) return 'Machakos';
-  if (lat > -2.5 && lat < -1.5 && lon > 36.2 && lon < 37.2) return 'Kajiado';
-  if (lat > -0.6 && lat < 0.2 && lon > 35.8 && lon < 36.5) return 'Nakuru';
-  if (lat > -4.2 && lat < -3.8 && lon > 39.4 && lon < 39.9) return 'Mombasa';
-  if (lat > -4.0 && lat < -2.5 && lon > 39.3 && lon < 40.2) return 'Kilifi';
-  if (lat > 2.5 && lat < 4.5 && lon > 34.5 && lon < 36.5) return 'Turkana';
-  if (lat > 1.5 && lat < 4.0 && lon > 36.5 && lon < 39.5) return 'Marsabit';
-  if (lat > -1.5 && lat < 1.0 && lon > 39.0 && lon < 41.5) return 'Garissa';
-  if (lat > -0.6 && lat < 0.2 && lon > 36.8 && lon < 37.3) return 'Nyeri';
-  if (lat > -0.2 && lat < 0.5 && lon > 37.2 && lon < 38.2) return 'Meru';
-  if (lat > -0.3 && lat < 0.2 && lon > 34.5 && lon < 35.2) return 'Kisumu';
-  if (lat > 0.3 && lat < 0.8 && lon > 34.8 && lon < 35.5) return 'Uasin Gishu';
-  if (lat > 0.8 && lat < 1.3 && lon > 34.5 && lon < 35.3) return 'Trans Nzoia';
-  return 'default';
+/** A positive number from an OSM tag ("45", "45 m", "3.5"), else null. */
+function tagNumber(v: unknown): number | null {
+  if (typeof v !== 'string') return null;
+  const m = v.trim().match(/^(\d+(?:\.\d+)?)/);
+  if (!m) return null;
+  const n = parseFloat(m[1]);
+  return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function generateRegionalBoreholes(
-  lat: number,
-  lon: number,
-  radius: number,
-  limit: number,
-  countyData: typeof KENYA_BOREHOLE_DATA[string]
-): BoreholeRecord[] {
-  const boreholes: BoreholeRecord[] = [];
-
-  // Generate realistic boreholes based on regional data
-  const numBoreholes = Math.min(limit, Math.floor(5 + radius * 1.5));
-
-  for (let i = 0; i < numBoreholes; i++) {
-    // Random position within radius
-    const angle = (i / numBoreholes) * 2 * Math.PI;
-    const dist = 0.3 + (i / numBoreholes) * radius * 0.9;
-    const offsetLat = (dist / 111) * Math.cos(angle);
-    const offsetLon = (dist / (111 * Math.cos(lat * Math.PI / 180))) * Math.sin(angle);
-
-    const boreholeLat = lat + offsetLat;
-    const boreholeLon = lon + offsetLon;
-
-    // Vary depth and yield around regional averages
-    const depthVariation = 0.7 + (Math.sin(i * 1.5) + 1) * 0.3;
-    const yieldVariation = 0.5 + (Math.cos(i * 2.1) + 1) * 0.5;
-
-    const depth = Math.round(countyData.avgDepth * depthVariation);
-    const yieldRate = Math.round(countyData.avgYield * yieldVariation * 10) / 10;
-    const isSuccessful = (Math.sin(i * 3.7) + 1) / 2 < countyData.successRate / 100;
-
-    boreholes.push({
-      id: `BH-${Date.now().toString(36)}-${i.toString(36).toUpperCase()}`,
-      name: `Borehole ${String.fromCharCode(65 + (i % 26))}${Math.floor(i / 26) || ''}`,
-      distance: Math.round(dist * 100) / 100,
-      coordinates: {
-        latitude: Math.round(boreholeLat * 10000) / 10000,
-        longitude: Math.round(boreholeLon * 10000) / 10000,
-      },
-      depth,
-      yield: isSuccessful ? yieldRate : yieldRate * 0.2,
-      staticWaterLevel: Math.round(depth * 0.4),
-      year: 2015 + (i % 10),
-      status: isSuccessful ? 'active' : (i % 5 === 0 ? 'abandoned' : 'inactive'),
-      waterQuality: countyData.waterQuality as 'good' | 'moderate' | 'poor' | 'unknown',
-      source: 'Regional Database Model',
-    });
-  }
-
-  return boreholes.sort((a, b) => a.distance - b.distance);
+function kindOf(tags: Record<string, string>): string {
+  if (tags.man_made === 'water_well') return 'water well';
+  if (tags.waterway === 'borehole') return 'borehole';
+  if (tags.pump === 'manual') return 'hand pump';
+  if (tags.pump === 'powered') return 'powered pump';
+  return 'water point';
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: NearbyBoreholesRequest = await request.json();
-    const { latitude, longitude, radius = 10, limit = 20 } = body;
+    const { latitude, longitude } = body;
+    const radius = Math.max(0.5, Math.min(25, Number(body.radius ?? 10)));
+    const limit = Math.max(1, Math.min(100, Math.round(Number(body.limit ?? 20))));
 
-    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+    if (typeof latitude !== 'number' || typeof longitude !== 'number' || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+      return NextResponse.json({ success: false, error: 'Invalid coordinates' }, { status: 400 });
+    }
+
+    const r = radius * 1000;
+    const query = `[out:json][timeout:25];(
+      node["man_made"="water_well"](around:${r},${latitude},${longitude});
+      node["waterway"="borehole"](around:${r},${latitude},${longitude});
+      node["pump"="manual"](around:${r},${latitude},${longitude});
+      node["pump"="powered"](around:${r},${latitude},${longitude});
+    );out body;`;
+    const osm = await overpassQuery<{ id: number; lat: number; lon: number; tags?: Record<string, string> }>(query, { timeoutMs: 15000 });
+    if (!osm) {
       return NextResponse.json(
-        { success: false, error: 'Invalid coordinates' },
-        { status: 400 }
+        { success: false, error: 'INSUFFICIENT EVIDENCE: the OpenStreetMap water-point lookup did not answer, so no nearby boreholes can be listed.' },
+        { status: 503 }
       );
     }
 
-    console.log(`[Boreholes] Searching within ${radius}km of ${latitude}, ${longitude}`);
-
-    const dataSources: string[] = [];
-    let allBoreholes: BoreholeRecord[] = [];
-
-    // Try fetching from OSM
-    const osmPoints = await fetchOSMWaterPoints(latitude, longitude, radius);
-
-    if (osmPoints.length > 0) {
-      dataSources.push('OpenStreetMap');
-
-      osmPoints.forEach((point, index) => {
-        const dist = calculateDistance(latitude, longitude, point.lat, point.lon);
-        if (dist <= radius) {
-          allBoreholes.push({
-            id: `OSM-${point.id}`,
-            name: point.tags?.name || `Water Point ${index + 1}`,
-            distance: Math.round(dist * 100) / 100,
-            coordinates: { latitude: point.lat, longitude: point.lon },
-            depth: parseInt(point.tags?.depth) || 0,
-            yield: parseFloat(point.tags?.['pump:output']) || 0,
-            staticWaterLevel: parseInt(point.tags?.['water_level']) || 0,
-            year: parseInt(point.tags?.['start_date']?.substring(0, 4)) || 2020,
-            status: point.tags?.operational === 'yes' ? 'active' : 'unknown',
-            waterQuality: 'unknown',
-            source: 'OpenStreetMap',
-          });
-        }
-      });
-    }
-
-    // Get regional data
-    const county = getCountyFromCoords(latitude, longitude);
-    const countyData = KENYA_BOREHOLE_DATA[county] || KENYA_BOREHOLE_DATA['default'];
-    dataSources.push('Kenya Regional Database');
-
-    // Generate regional boreholes to supplement OSM data
-    const regionalBoreholes = generateRegionalBoreholes(
-      latitude, longitude, radius,
-      Math.max(0, limit - allBoreholes.length),
-      countyData
-    );
-    allBoreholes = [...allBoreholes, ...regionalBoreholes];
-
-    // Sort by distance and limit
-    allBoreholes = allBoreholes
+    const boreholes: BoreholeRecord[] = osm.elements
+      .filter((p) => typeof p.lat === 'number' && typeof p.lon === 'number')
+      .map((p) => {
+        const tags = p.tags ?? {};
+        const year = tags.start_date?.match(/^(\d{4})/)?.[1];
+        return {
+          id: `OSM-node-${p.id}`,
+          name: tags.name ?? null,
+          kind: kindOf(tags),
+          distance: Math.round(calculateDistance(latitude, longitude, p.lat, p.lon) * 100) / 100,
+          coordinates: { latitude: p.lat, longitude: p.lon },
+          depth: tagNumber(tags.depth),
+          yield: tagNumber(tags['pump:output']),
+          staticWaterLevel: tagNumber(tags.water_level),
+          year: year ? parseInt(year, 10) : null,
+          status: tags.operational_status === 'operational' || tags.operational === 'yes' ? 'active' as const : 'unknown' as const,
+          waterQuality: 'unknown' as const,
+          source: `OpenStreetMap (${OSM_ATTRIBUTION})`,
+        };
+      })
+      .filter((b) => b.distance <= radius)
       .sort((a, b) => a.distance - b.distance)
       .slice(0, limit);
 
-    // Calculate statistics
-    const activeBoreholes = allBoreholes.filter(b => b.status === 'active');
-    const depths = allBoreholes.filter(b => b.depth > 0).map(b => b.depth);
-    const yields = activeBoreholes.filter(b => b.yield > 0).map(b => b.yield);
+    const depths = boreholes.map((b) => b.depth).filter((v): v is number => v !== null);
+    const yields = boreholes.map((b) => b.yield).filter((v): v is number => v !== null);
+    const mean = (xs: number[]) => (xs.length ? Math.round((xs.reduce((a, b) => a + b, 0) / xs.length) * 10) / 10 : null);
 
-    const statistics = {
-      averageDepth: depths.length > 0 ? Math.round(depths.reduce((a, b) => a + b, 0) / depths.length) : countyData.avgDepth,
-      averageYield: yields.length > 0 ? Math.round(yields.reduce((a, b) => a + b, 0) / yields.length * 10) / 10 : countyData.avgYield,
-      successRate: Math.round((activeBoreholes.length / Math.max(1, allBoreholes.length)) * 100),
-      commonDepthRange: {
-        min: depths.length > 0 ? Math.min(...depths) : countyData.avgDepth * 0.6,
-        max: depths.length > 0 ? Math.max(...depths) : countyData.avgDepth * 1.4,
-      },
-      commonYieldRange: {
-        min: yields.length > 0 ? Math.min(...yields) : countyData.avgYield * 0.5,
-        max: yields.length > 0 ? Math.max(...yields) : countyData.avgYield * 1.5,
-      },
-    };
-
-    // Generate recommendations
     const recommendations: string[] = [];
-    recommendations.push(`Based on ${allBoreholes.length} nearby boreholes, recommended drilling depth: ${Math.round(statistics.averageDepth * 0.9)}-${Math.round(statistics.averageDepth * 1.1)}m`);
-
-    if (statistics.successRate >= 70) {
-      recommendations.push(`High success rate (${statistics.successRate}%) in this area indicates favorable conditions`);
-    } else if (statistics.successRate < 50) {
-      recommendations.push(`Low success rate (${statistics.successRate}%) - recommend detailed geophysical survey before drilling`);
+    if (boreholes.length === 0) {
+      recommendations.push(`No water points are mapped in OpenStreetMap within ${radius} km. That does not mean there are none: ask the Water Resources Authority (WRA) for borehole completion records in the area.`);
+    } else {
+      recommendations.push(`${boreholes.length} mapped water point(s) within ${radius} km; ${depths.length} state a depth and ${yields.length} a yield.`);
     }
-
-    if (statistics.averageYield > 10) {
-      recommendations.push('Good aquifer productivity - suitable for domestic and small agricultural use');
-    } else if (statistics.averageYield < 5) {
-      recommendations.push('Limited aquifer productivity - consider multiple boreholes or storage tank');
-    }
+    recommendations.push('Drilling depth and expected yield need WRA completion records and a hydrogeological survey; they are not set from map points.');
 
     const result: NearbyBoreholesResponse = {
       success: true,
       data: {
         location: { latitude, longitude },
         searchRadius: radius,
-        totalFound: allBoreholes.length,
-        boreholes: allBoreholes,
-        statistics,
+        totalFound: boreholes.length,
+        boreholes,
+        statistics: {
+          pointsWithDepth: depths.length,
+          pointsWithYield: yields.length,
+          averageDepth: mean(depths),
+          averageYield: mean(yields),
+          successRate: null,
+          commonDepthRange: depths.length ? { min: Math.min(...depths), max: Math.max(...depths) } : null,
+          commonYieldRange: yields.length ? { min: Math.min(...yields), max: Math.max(...yields) } : null,
+        },
         recommendations,
-        dataSources,
+        limitations: [
+          'OpenStreetMap holds only the water points volunteers have mapped; most Kenyan boreholes are not in it.',
+          'Depth and yield appear only where a mapper recorded them, and are not verified.',
+          'Dry or failed boreholes are not recorded, so no success rate is given.',
+        ],
+        dataSources: [`OpenStreetMap Overpass (${OSM_ATTRIBUTION})`],
       },
     };
-
     return NextResponse.json(result);
-
   } catch (error) {
     console.error('[Boreholes] Error:', error);
     return NextResponse.json(
