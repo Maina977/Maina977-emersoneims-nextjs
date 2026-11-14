@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useSolarStore } from '../services/store';
 import { core, site as siteApi } from '../services/api';
+import { mapSiteAssessment } from '../services/siteAssessment';
 
 // True app dashboard.
 // 1. Loads any saved Project from localStorage on mount.
@@ -227,36 +228,10 @@ export default function DashboardPage() {
         siteApi.roofAutofill({ lat: h.lat, lon: h.lon, searchRadiusM: 60 }).catch((e) => ({ error: e?.message }))
       ]);
 
-      // NASA POWER returns big nested JSON; pull a regional avg if possible.
-      let irrad: number | null = null;
-      const nasaData = (nasaR as any)?.data?.properties?.parameter?.ALLSKY_SFC_SW_DWN;
-      if (nasaData) {
-        const vals: number[] = Object.values(nasaData).filter((v: any) => typeof v === 'number' && v > 0) as number[];
-        if (vals.length) irrad = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 100) / 100;
-      }
-      // Some servers return the simplified shape with peakSunHours.
-      if (irrad == null && (nasaR as any)?.data?.peakSunHours) {
-        irrad = (nasaR as any).data.peakSunHours;
-      }
-
-      let temp: number | null = null;
-      const w: any = (weatherR as any)?.data;
-      if (w && typeof w.temp === 'number') temp = w.temp;
-
-      let roofArea: number | null = null;
-      let roofPerim: number | null = null;
-      let roofAz: number | null = null;
-      let roofProvenance = '';
-      const rd: any = (roofR as any)?.data;
-      if (rd) {
-        roofArea = rd.areaM2 ?? rd.roofAreaM2 ?? null;
-        roofPerim = rd.perimeterM ?? null;
-        roofAz = rd.suggestedArrayAzimuthDeg ?? rd.azimuthDeg ?? null;
-        const prov = rd.provenance;
-        roofProvenance = typeof prov === 'string'
-          ? prov
-          : (prov?.source || prov?.label || prov?.dataset || 'OSM Overpass building footprint');
-      }
+      // Mapping is tested in tests/regression/solar-dashboard-site-assessment.test.ts.
+      const a = mapSiteAssessment(nasaR, weatherR, roofR);
+      const irrad = a.irradianceKwhPerM2Day, temp = a.temperatureC, roofArea = a.roofAreaM2;
+      const roofPerim = a.roofPerimeterM, roofAz = a.roofAzimuthDeg, roofProvenance = a.roofProvenance, roofNote = a.roofNote;
 
       updateSite({
         irradianceKwhPerM2Day: irrad,
@@ -272,7 +247,7 @@ export default function DashboardPage() {
         '✓ Site assessed: ' +
           (irrad != null ? `${irrad} kWh/m²/day, ` : '') +
           (temp != null ? `${temp}°C, ` : '') +
-          (roofArea != null ? `${roofArea} m² roof.` : 'roof footprint unavailable.')
+          (roofArea != null ? `${roofArea} m² roof.` : `roof footprint unavailable${roofNote ? ` (${roofNote})` : ''}.`)
       );
     } catch (e: any) {
       setErr(e?.message || 'Site assessment failed.');
