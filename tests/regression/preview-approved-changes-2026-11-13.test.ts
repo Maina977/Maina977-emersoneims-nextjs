@@ -42,7 +42,7 @@ describe('item 5: demonstration content is labelled and isolated', () => {
   });
 });
 
-describe('security: the built-in demo licence never works on production', () => {
+describe('security: the built-in demo licence never works (any environment)', () => {
   afterEach(() => { vi.unstubAllEnvs(); vi.resetModules(); });
 
   async function activate(env: string) {
@@ -68,8 +68,12 @@ describe('security: the built-in demo licence never works on production', () => 
     const j = await res.json();
     expect(j.success).toBe(false);
   });
-  it('preview/local: the demo key still works for testing', async () => {
-    const res = await activate('preview');
-    expect((await res.json()).success).toBe(true);
+  // Released hotfix 21a1f001 (2026-11-14) removed the demo licence entirely:
+  // the key is public, so preview and local refuse it too.
+  it('preview/local: the demo key is refused as well', async () => {
+    for (const env of ['preview', 'development']) {
+      const res = await activate(env);
+      expect((await res.json()).success).toBe(false);
+    }
   });
 });
