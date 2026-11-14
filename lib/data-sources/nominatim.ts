@@ -18,6 +18,7 @@
  *
  * Data © OpenStreetMap contributors, ODbL 1.0.
  */
+import { createHash } from 'node:crypto';
 import { getPostgresPool } from '@/lib/db';
 
 export const NOMINATIM_USER_AGENT = 'EmersonEIMS-website/1.0 (+https://www.emersoneims.com)';
@@ -63,8 +64,39 @@ async function pool(): Promise<Pool | null> {
     CREATE TABLE IF NOT EXISTS geocode_cache (key TEXT PRIMARY KEY, body JSONB NOT NULL, at TIMESTAMPTZ NOT NULL DEFAULT NOW());
     CREATE TABLE IF NOT EXISTS nominatim_slot (id INT PRIMARY KEY, last_at TIMESTAMPTZ NOT NULL);
     INSERT INTO nominatim_slot (id, last_at) VALUES (1, 'epoch') ON CONFLICT (id) DO NOTHING;
+    CREATE TABLE IF NOT EXISTS geocode_visitor (k TEXT NOT NULL, win TIMESTAMPTZ NOT NULL, n INT NOT NULL, PRIMARY KEY (k, win));
   `).then(() => true, (e) => { warnOnce('setup', e); return false; });
   return (await tablesReady) ? p : null;
+}
+
+// ---------------------------------------------------------------- per visitor
+/**
+ * Per-visitor lookups per minute, counted in the database so that it holds
+ * across server instances (Release 4.1: the in-memory limit was never reached
+ * live, because requests spread over instances).
+ *
+ * Only a salted, day-scoped SHA-256 of the IP address is stored, never the
+ * address, and rows older than 10 minutes are removed. Returns null when the
+ * database is unavailable; the caller then relies on its in-memory limit.
+ */
+export async function visitorWithinLimit(ip: string, perMinute: number): Promise<boolean | null> {
+  const p = await pool();
+  if (!p) return null;
+  const day = new Date().toISOString().slice(0, 10);
+  const k = createHash('sha256').update(`emersoneims-geocode|${day}|${ip}`).digest('hex').slice(0, 32);
+  try {
+    const r = await p.query(
+      `INSERT INTO geocode_visitor (k, win, n) VALUES ($1, date_trunc('minute', NOW()), 1)
+       ON CONFLICT (k, win) DO UPDATE SET n = geocode_visitor.n + 1
+       RETURNING n`,
+      [k],
+    );
+    if (Math.random() < 0.02) p.query(`DELETE FROM geocode_visitor WHERE win < NOW() - INTERVAL '10 minutes'`).catch(() => undefined);
+    return Number(r.rows[0]?.n ?? 0) <= perMinute;
+  } catch (e) {
+    warnOnce('visitor-limit', e);
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------- 1 req/s
