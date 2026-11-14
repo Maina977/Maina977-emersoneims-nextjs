@@ -35,11 +35,17 @@ export interface OverpassResult<E = any> {
  */
 export async function overpassQuery<E = any>(
   query: string,
-  opts: { timeoutMs?: number; fetchImpl?: typeof fetch; endpoints?: string[]; revalidateS?: number } = {},
+  opts: { timeoutMs?: number; budgetMs?: number; fetchImpl?: typeof fetch; endpoints?: string[]; revalidateS?: number } = {},
 ): Promise<OverpassResult<E> | null> {
   const fetchImpl = opts.fetchImpl ?? fetch;
   const timeoutMs = opts.timeoutMs ?? 15000;
+  // Whole-call budget across all servers (2026-11-14 preview: three sequential
+  // 15 s attempts during an Overpass-wide overload ran past the ~30 s function
+  // limit and the caller got a 504 instead of its INSUFFICIENT EVIDENCE answer).
+  const deadline = Date.now() + (opts.budgetMs ?? 18000);
   for (const endpoint of opts.endpoints ?? OVERPASS_ENDPOINTS) {
+    const remaining = deadline - Date.now();
+    if (remaining < 1500) break;
     try {
       const r = await fetchImpl(endpoint, {
         method: 'POST',
@@ -49,7 +55,7 @@ export async function overpassQuery<E = any>(
           Accept: 'application/json',
         },
         body: 'data=' + encodeURIComponent(query),
-        signal: AbortSignal.timeout(timeoutMs),
+        signal: AbortSignal.timeout(Math.min(timeoutMs, remaining)),
         // Next.js data cache for repeat lookups of the same place (optional).
         ...(opts.revalidateS ? { next: { revalidate: opts.revalidateS } } : {}),
       } as RequestInit);
