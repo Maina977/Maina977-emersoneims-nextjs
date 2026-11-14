@@ -124,6 +124,7 @@ const InteractiveTroubleshooter = dynamic(() => import('./InteractiveTroubleshoo
 const InteractiveDiagnosticSystem = dynamic(() => import('./panels/InteractiveDiagnosticSystem'), { ssr: false });
 const ProfessionalDiagnosticTools = dynamic(() => import('./panels/ProfessionalDiagnosticTools'), { ssr: false });
 const EngineeringCalculatorsPanel = dynamic(() => import('./panels/EngineeringCalculatorsPanel'), { ssr: false });
+const GuidedDiagnosisPanel = dynamic(() => import('./panels/GuidedDiagnosisPanel'), { ssr: false });
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -914,7 +915,7 @@ export default function GeneratorOracleModule() {
 
   // Sub-tab states for each super-tab
   const [aiSubTab, setAiSubTab] = useState<'expert' | 'visual' | 'analyze'>('expert');
-  const [faultsSubTab, setFaultsSubTab] = useState<'lookup' | 'analysis' | 'troubleshoot'>('lookup');
+  const [faultsSubTab, setFaultsSubTab] = useState<'guided' | 'lookup' | 'analysis' | 'troubleshoot'>('guided');
   const [systemsSubTab, setSystemsSubTab] = useState<'engine' | 'electrical' | 'sensors' | 'interactive' | 'calculators'>('interactive');
   const [controllersSubTab, setControllersSubTab] = useState<'simulator' | 'ecmsuite' | 'ecmprog' | 'ecmguide' | 'protools' | 'ecmhardware'>('simulator');
   const [wiringSubTab, setWiringSubTab] = useState<'diagrams' | 'allwiring' | 'manuals'>('diagrams');
@@ -1741,6 +1742,7 @@ export default function GeneratorOracleModule() {
                     {/* Sub-Tab Navigation */}
                     <SubTabNav
                       tabs={[
+                        { id: 'guided' as const, label: 'Guided Diagnosis', icon: '🧭' },
                         { id: 'lookup' as const, label: 'Fault Code Lookup', icon: '🔍' },
                         { id: 'analysis' as const, label: 'Worked Example: Low Oil Pressure', icon: '📊' },
                         { id: 'troubleshoot' as const, label: 'Interactive Troubleshoot', icon: '🛠️' },
@@ -1759,6 +1761,7 @@ export default function GeneratorOracleModule() {
                         notice={searchNotice}
                       />
                     )}
+                    {faultsSubTab === 'guided' && <GuidedDiagnosisPanel />}
                     {faultsSubTab === 'analysis' && <DetailedFaultExample />}
                     {faultsSubTab === 'troubleshoot' && <InteractiveTroubleshooter />}
                   </motion.div>
