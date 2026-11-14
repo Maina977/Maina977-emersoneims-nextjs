@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
 
-// Open-Meteo: free, no API key, CORS-safe from server-side
+// Open-Meteo forecast. Its free API is non-commercial only, so it is called
+// only under a commercial key or a self-hosted instance (2026-11-14).
 const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast';
 
 export async function GET(
@@ -45,11 +47,15 @@ export async function GET(
       wind_speed_unit: 'ms',
     });
 
+    const url = licensedOpenMeteoUrl(`${OPEN_METEO}?${qs}`);
+    if (!url) {
+      return NextResponse.json({ error: OPEN_METEO_DISABLED_MESSAGE, available: false, licence: 'open-meteo-not-licensed' }, { status: 451 });
+    }
     // One retry: a single upstream blip answered the page with a 502.
-    let res = await fetch(`${OPEN_METEO}?${qs}`, { signal: AbortSignal.timeout(10000) }).catch(() => null);
+    let res = await fetch(url, { signal: AbortSignal.timeout(10000) }).catch(() => null);
     if (!res || !res.ok) {
       await new Promise((r) => setTimeout(r, 800));
-      res = await fetch(`${OPEN_METEO}?${qs}`, { signal: AbortSignal.timeout(10000) });
+      res = await fetch(url, { signal: AbortSignal.timeout(10000) });
     }
 
     if (!res.ok) throw new Error(`Open-Meteo error: ${res.status}`);

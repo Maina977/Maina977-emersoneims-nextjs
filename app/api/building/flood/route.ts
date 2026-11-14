@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
 
 interface FloodRequest {
   latitude: number;
@@ -64,11 +65,12 @@ async function fetchHistoricalPrecipitation(lat: number, lng: number): Promise<{
       daily: 'precipitation_sum',
     });
 
-    const response = await fetch(`${OPEN_METEO_HISTORICAL_URL}?${params}`, {
-      signal: AbortSignal.timeout(30000),
-    });
+    // Licence gate (2026-11-14): no licensed route → no rainfall history (reported as unavailable).
+    const url = licensedOpenMeteoUrl(`${OPEN_METEO_HISTORICAL_URL}?${params}`);
+    const response = url ? await fetch(url, { signal: AbortSignal.timeout(30000) }) : null;
+    if (!url) console.warn(OPEN_METEO_DISABLED_MESSAGE);
 
-    if (response.ok) {
+    if (response?.ok) {
       const data = await response.json();
       const precip = data.daily?.precipitation_sum || [];
 

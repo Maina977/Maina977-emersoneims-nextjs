@@ -23,7 +23,7 @@
  *     data as unavailable, as they already do for any failed request.
  */
 
-const HOSTS = new Set(['archive-api.open-meteo.com', 'api.open-meteo.com', 'power.larc.nasa.gov', 'modis.ornl.gov', 'rest.isric.org', 'ggis.un-igrac.org']);
+const HOSTS = new Set(['archive-api.open-meteo.com', 'api.open-meteo.com', 'flood-api.open-meteo.com', 'power.larc.nasa.gov', 'modis.ornl.gov', 'rest.isric.org', 'ggis.un-igrac.org']);
 const RELAY = '/api/borehole/data-relay?u=';
 const RELAY_TIMEOUT_MS = 65_000; // the relay function stops at 60 s
 const DIRECT_TIMEOUT_MS = 30_000;
@@ -53,6 +53,11 @@ export function installReliableFetch(): void {
       // 400/404: the relay is missing or refused the URL; anything else is the source's answer.
       if (r.status !== 400 && r.status !== 404) return read(r);
     } catch { /* relay unreachable: go direct */ }
+    // Open-Meteo is never called directly from the browser: its free API is
+    // non-commercial only, and the licence gate lives in the relay (2026-11-14).
+    if (/(^|\.)open-meteo\.com$/.test(new URL(url).hostname)) {
+      return { status: 451, type: 'application/json', body: '{"error":"Open-Meteo data unavailable: no licensed route (relay unreachable)"}' };
+    }
     // 2) Direct, one attempt.
     try {
       return await read(await orig(url, { signal: AbortSignal.timeout(DIRECT_TIMEOUT_MS) }));
@@ -76,7 +81,8 @@ export function installReliableFetch(): void {
       p = load(key);
       session.set(key, p);
       p.then((v) => {
-        if (v.status !== 200) session.delete(key);
+        // A licence refusal (451) will not change within the session: keep it.
+        if (v.status !== 200 && v.status !== 451) session.delete(key);
         if (isOutage(v.status)) downUntil.set(u.hostname, Date.now() + HOST_DOWN_MS);
       }, () => session.delete(key));
     }

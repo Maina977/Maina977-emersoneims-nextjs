@@ -14,6 +14,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { limiter } from '@/lib/rate-limiter';
+import { isOpenMeteoHost, licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
 
 // One analysis makes about 50 relay calls (measured 2026-10-31): room for an office.
 const RELAY_UPSTREAM_PER_MIN = 300;
@@ -24,6 +25,7 @@ export const maxDuration = 60;
 const ALLOWED_HOSTS = new Set([
   'archive-api.open-meteo.com',
   'api.open-meteo.com',
+  'flood-api.open-meteo.com', // relayed so the licence gate applies (was called directly from the browser)
   'power.larc.nasa.gov',
   'modis.ornl.gov',
   'rest.isric.org', // SoilGrids (2026-10-29 audit: aborted on every run, so soil was always Unknown)
@@ -43,16 +45,11 @@ const inflight = new Map<string, Promise<{ status: number; type: string; body: s
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// Open-Meteo's free API is for non-commercial use only. With a paid plan the
-// same requests go to its customer-* hosts with the key, which stays here on
-// the server (set OPEN_METEO_API_KEY). Without a key nothing changes.
-const OPEN_METEO_KEY = process.env.OPEN_METEO_API_KEY?.trim();
-function upstreamUrl(u: URL, useKey: boolean): string {
-  if (!useKey || !OPEN_METEO_KEY || !u.hostname.endsWith('open-meteo.com') || u.hostname.startsWith('customer-')) return u.toString();
-  const x = new URL(u.toString());
-  x.hostname = `customer-${u.hostname}`;
-  x.searchParams.set('apikey', OPEN_METEO_KEY);
-  return x.toString();
+// Open-Meteo's free API is for non-commercial use only (2026-11-14 compliance):
+// Open-Meteo is called only under a commercial key or a self-hosted instance
+// (lib/data-sources/openMeteo.ts); other hosts are passed through unchanged.
+function upstreamUrl(u: URL): string | null {
+  return licensedOpenMeteoUrl(u.toString());
 }
 
 /**
@@ -135,6 +132,11 @@ export async function GET(req: NextRequest) {
   if (target.protocol !== 'https:' || !ALLOWED_HOSTS.has(target.hostname) || target.username || target.password || target.port) {
     return NextResponse.json({ error: 'Host not allowed' }, { status: 400 });
   }
+  // Licence gate: refused before the cache, so nothing is served for Open-Meteo
+  // unless a licensed route (commercial key or self-hosted) is configured.
+  if (isOpenMeteoHost(target.hostname) && licensedOpenMeteoUrl(target.toString()) === null) {
+    return NextResponse.json({ error: OPEN_METEO_DISABLED_MESSAGE, licence: 'open-meteo-not-licensed' }, { status: 451 });
+  }
   const key = target.toString();
   const hit = cache.get(key);
   let out = hit && Date.now() - hit.at < DAY_MS ? hit : null;
@@ -149,9 +151,12 @@ export async function GET(req: NextRequest) {
       if (!limiter.check(RELAY_UPSTREAM_PER_MIN, `relay:${ip}`).success) {
         return NextResponse.json({ error: 'Too many requests; try again in a minute' }, { status: 429, headers: { 'Retry-After': '60' } });
       }
-      // The paid key is used only for this site's own pages.
+      // Licensed Open-Meteo access is spent only on this site's own pages.
       const sameSite = req.headers.get('sec-fetch-site') === 'same-origin' || req.headers.get('sec-fetch-site') === 'same-site';
-      p = fetchWithRetry(upstreamUrl(target, sameSite));
+      if (isOpenMeteoHost(target.hostname) && !sameSite) {
+        return NextResponse.json({ error: 'Open-Meteo data is relayed only for this site’s own pages.' }, { status: 403 });
+      }
+      p = fetchWithRetry(upstreamUrl(target)!);
       inflight.set(key, p);
     }
     try { out = { at: Date.now(), ...(await p) }; } finally { inflight.delete(key); }

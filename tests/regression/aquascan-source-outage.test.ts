@@ -16,7 +16,10 @@ import { NextRequest } from 'next/server';
 
 const SOIL_A = 'https://rest.isric.org/soilgrids/v2.0/properties/query?lon=36.8&lat=-1.29&property=clay';
 const SOIL_B = 'https://rest.isric.org/soilgrids/v2.0/classification/query?lon=36.8&lat=-1.29&number_classes=3';
-const METEO = 'https://archive-api.open-meteo.com/v1/archive?latitude=-1.29&longitude=36.8';
+// A generic relayed source (NASA POWER). Open-Meteo is licence-gated since
+// 2026-11-14 and is never called directly (tested at the end of this file).
+const METEO = 'https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR&latitude=-1.29&longitude=36.8';
+const OPEN_METEO = 'https://archive-api.open-meteo.com/v1/archive?latitude=-1.29&longitude=36.8';
 
 describe('browser fetch layer (reliableFetch)', () => {
   let calls: string[];
@@ -72,6 +75,16 @@ describe('browser fetch layer (reliableFetch)', () => {
     const r = await window.fetch(METEO);
     expect(await r.json()).toEqual({ direct: 1 });
     expect(calls).toHaveLength(2);
+  });
+
+  it('Open-Meteo is never called directly, even when the relay is unreachable (licence)', async () => {
+    await install((u) => {
+      if (u.includes('/api/borehole/data-relay')) throw new TypeError('relay unreachable');
+      return new Response('{"direct":1}', { status: 200 });
+    });
+    const r = await window.fetch(OPEN_METEO);
+    expect(r.status).toBe(451);
+    expect(calls).toHaveLength(1); // the relay attempt only
   });
 
   it('a bad request (4xx) is not treated as an outage', async () => {

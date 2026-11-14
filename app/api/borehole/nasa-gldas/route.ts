@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
 
 interface GLDASRequest {
   latitude: number;
@@ -67,7 +68,9 @@ async function fetchOpenMeteoSoilMoisture(lat: number, lon: number): Promise<any
     daily: 'precipitation_sum,et0_fao_evapotranspiration',
   });
 
-  const response = await fetch(`${OPEN_METEO_URL}?${params}`, {
+  const url = licensedOpenMeteoUrl(`${OPEN_METEO_URL}?${params}`);
+  if (!url) throw new Error(OPEN_METEO_DISABLED_MESSAGE);
+  const response = await fetch(url, {
     signal: AbortSignal.timeout(15000),
   });
 

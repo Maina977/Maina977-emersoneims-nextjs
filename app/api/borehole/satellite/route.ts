@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
 
 interface SatelliteRequest {
   latitude: number;
@@ -158,7 +159,9 @@ async function fetchOpenMeteoVegetation(lat: number, lon: number): Promise<any> 
     forecast_days: '1',
   });
 
-  const response = await fetch(`${OPEN_METEO_URL}?${params}`, {
+  const url = licensedOpenMeteoUrl(`${OPEN_METEO_URL}?${params}`);
+  if (!url) throw new Error(OPEN_METEO_DISABLED_MESSAGE);
+  const response = await fetch(url, {
     signal: AbortSignal.timeout(10000),
   });
 
