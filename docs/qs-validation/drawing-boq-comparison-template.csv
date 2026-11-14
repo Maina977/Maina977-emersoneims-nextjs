@@ -1,0 +1,2 @@
+# TEMPLATE ONLY. Ten projects: for each, the manual BOQ prepared independently by a QS from the same drawings, and the take-off tool quantity per item. Never fill toolQty from the manual BOQ or referenceQty from the tool. rate optional (KES, dated source in notes); needed for the total check.
+project,drawingSet,itemCode,description,unit,referenceQty,toolQty,rate,referenceSource,notes
