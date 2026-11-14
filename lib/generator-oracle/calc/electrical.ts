@@ -12,7 +12,7 @@
  * Engine version recorded with every result (directive §7).
  */
 
-export const CALC_ENGINE_VERSION = 'oracle-calc 1.1.0 (2026-11-14)';
+export const CALC_ENGINE_VERSION = 'oracle-calc 1.2.0 (2026-11-14, sync safety review)';
 
 export interface CalcResult<T> {
   ok: true;
@@ -297,55 +297,114 @@ export function derate(i: {
 // ─── 9. Synchronising check (paralleling a generator) ───────────────────────
 
 /**
- * Limits are taken only from a cited source. Built-in presets are the two
- * IEEE 1547-2003 bands confirmed from a published table (0–500 kVA and
- * >500–1500 kVA). For any other rating, or when the utility, the controller
- * manufacturer or IEEE 67 sets tighter limits, the user enters the limits and
- * their source; nothing is assumed.
+ * Safety review 2026-11-14 (management decision §3): IEEE 1547 governs the
+ * interconnection of distributed energy resources with a utility system. It is
+ * NOT a generic limit set for paralleling diesel generators on an isolated bus.
+ * Therefore no built-in limits are ever applied. Synchronising limits must come
+ * from the controller / synchroniser / OEM documentation (or the utility's
+ * interconnection requirements), verified by a named person for the specific
+ * installation. Without that, the result is LIMITS NOT VERIFIED and never a
+ * pass. The tool never commands closing: at most it reports that the readings
+ * are within the verified limits; the synchronising relay (ANSI 25) or the
+ * controller's synchroniser makes the close decision.
  */
-export const SYNC_PRESETS = {
-  'ieee1547-2003-0-500kVA': { maxDfHz: 0.3, maxDvPct: 10, maxDphiDeg: 20, label: 'IEEE 1547-2003 Table 5, aggregate rating 0–500 kVA' },
-  'ieee1547-2003-500-1500kVA': { maxDfHz: 0.2, maxDvPct: 5, maxDphiDeg: 15, label: 'IEEE 1547-2003 Table 5, aggregate rating >500–1500 kVA' },
-} as const;
-export type SyncPreset = keyof typeof SYNC_PRESETS;
+export type SyncApplication = 'island-bus' | 'utility-interconnection';
+export type SyncVerdict = 'WITHIN VERIFIED LIMITS' | 'LIMITS NOT VERIFIED' | 'DO NOT CLOSE' | 'DEAD BUS: NOT A SYNCHRONISING CASE';
+type YesNoUnknown = 'yes' | 'no' | 'unknown';
+
+/** Reference information only (never applied): published IEEE 1547-2003 DER interconnection bands. */
+export const IEEE1547_2003_REFERENCE = [
+  { band: 'aggregate 0–500 kVA', maxDfHz: 0.3, maxDvPct: 10, maxDphiDeg: 20 },
+  { band: 'aggregate >500–1500 kVA', maxDfHz: 0.2, maxDvPct: 5, maxDphiDeg: 15 },
+] as const;
+export const IEEE1547_NOTE = 'IEEE 1547-2003 bands are for DER interconnection with a utility system, shown for information only. They are not applied, and they are not limits for paralleling generators on an isolated bus.';
+
+/** Differences beyond these are never acceptable whatever limits are entered (gross error / wrong entry). */
+const ABSOLUTE = { maxDfHz: 1, maxDvPct: 20, maxDphiDeg: 30 };
+
+export interface SyncLimits { maxDfHz: number; maxDvPct: number; maxDphiDeg: number; source: string; verifiedFor: string; verifiedBy: string }
 
 export function syncCheck(i: {
+  application: SyncApplication;
   incomingV: number; busV: number; incomingHz: number; busHz: number; phaseAngleDeg: number;
-  limits: { preset: SyncPreset } | { maxDfHz: number; maxDvPct: number; maxDphiDeg: number; source: string };
-}): Calc<{ dfHz: number; dvPct: number; dphiDeg: number; withinFrequency: boolean; withinVoltage: boolean; withinPhase: boolean; permitClose: boolean; slipPeriodS: number | null }> {
+  busLive: boolean;
+  phaseSequence: 'same' | 'reversed' | 'not-checked';
+  syncRelayInService: YesNoUnknown; protectionInService: YesNoUnknown; breakerReady: YesNoUnknown;
+  limits: SyncLimits | null;
+}): Calc<{ verdict: SyncVerdict; dfHz: number; dvPct: number; dphiDeg: number; withinFrequency: boolean | null; withinVoltage: boolean | null; withinPhase: boolean | null; slipPeriodS: number | null; reasons: string[] }> {
   const e: string[] = [];
+  if (i.application !== 'island-bus' && i.application !== 'utility-interconnection') e.push('State the application: generators on an isolated bus, or interconnection with the utility.');
   need(e, 'Incoming (generator) voltage', i.incomingV, { gt: 0 });
-  need(e, 'Bus voltage', i.busV, { gt: 0 });
+  need(e, 'Bus voltage', i.busV, { min: 0 });
   need(e, 'Incoming frequency', i.incomingHz, { min: 40, max: 70 });
-  need(e, 'Bus frequency', i.busHz, { min: 40, max: 70 });
+  need(e, 'Bus frequency', i.busHz, { min: 0, max: 70 });
   need(e, 'Phase angle difference', i.phaseAngleDeg, { min: -180, max: 180 });
-  let lim: { maxDfHz: number; maxDvPct: number; maxDphiDeg: number }, source: string;
-  if ('preset' in i.limits) {
-    const p = SYNC_PRESETS[i.limits.preset];
-    if (!p) { e.push('Unknown limit preset.'); lim = { maxDfHz: NaN, maxDvPct: NaN, maxDphiDeg: NaN }; source = ''; }
-    else { lim = p; source = p.label; }
-  } else {
-    const l = i.limits;
-    need(e, 'Frequency difference limit', l.maxDfHz, { gt: 0, max: 1 });
-    need(e, 'Voltage difference limit', l.maxDvPct, { gt: 0, max: 20 });
-    need(e, 'Phase angle limit', l.maxDphiDeg, { gt: 0, max: 30 });
-    if (!l.source || !l.source.trim()) e.push('Enter where the limits come from (utility, controller manual, IEEE 67, IEEE 1547 edition).');
-    lim = l; source = l.source;
+  if (i.limits) {
+    need(e, 'Frequency difference limit', i.limits.maxDfHz, { gt: 0, max: ABSOLUTE.maxDfHz });
+    need(e, 'Voltage difference limit', i.limits.maxDvPct, { gt: 0, max: ABSOLUTE.maxDvPct });
+    need(e, 'Phase angle limit', i.limits.maxDphiDeg, { gt: 0, max: ABSOLUTE.maxDphiDeg });
   }
   if (e.length) return { ok: false, errors: e };
+
+  const reasons: string[] = [];
+  const warnings: string[] = [];
+  const nil = { dfHz: NaN, dvPct: NaN, dphiDeg: NaN, withinFrequency: null, withinVoltage: null, withinPhase: null, slipPeriodS: null };
+  const base = {
+    formula: 'Δf = f_incoming − f_bus; ΔV % = 100 × (V_incoming − V_bus) / V_bus; Δφ measured; slip period = 1/|Δf|',
+    inputs: { application: i.application, incomingV: String(i.incomingV), busV: String(i.busV), incomingHz: String(i.incomingHz), busHz: String(i.busHz), phaseAngleDeg: String(i.phaseAngleDeg), phaseSequence: i.phaseSequence, syncRelay: i.syncRelayInService, protection: i.protectionInService, breakerReady: i.breakerReady },
+    assumptions: [
+      'Readings as measured at the breaker by a synchroscope or synchronising relay.',
+      'This check never commands a breaker. The synchronising relay (ANSI 25) or the controller synchroniser makes the close decision.',
+      IEEE1547_NOTE,
+    ],
+  };
+
+  // Dead bus: closing onto a dead bus is a different procedure (dead-bus interlock), not synchronising.
+  if (!i.busLive || i.busV === 0) {
+    return ok({ verdict: 'DEAD BUS: NOT A SYNCHRONISING CASE' as SyncVerdict, ...nil, reasons: ['The bus is dead: use the dead-bus closing procedure and its interlock (only one machine may close onto a dead bus).'] }, { ...base, reference: 'Controller / switchgear dead-bus logic.', warnings: ['Do not use this check for dead-bus closing.'] });
+  }
+
   const df = i.incomingHz - i.busHz;
   const dv = 100 * (i.incomingV - i.busV) / i.busV;
   const dphi = i.phaseAngleDeg;
-  const wf = Math.abs(df) <= lim.maxDfHz, wv = Math.abs(dv) <= lim.maxDvPct, wp = Math.abs(dphi) <= lim.maxDphiDeg;
-  const warnings: string[] = [];
-  if (df < 0) warnings.push('Incoming machine slower than the bus: it would take reverse power on closing. Close with the incoming machine slightly fast.');
+  const values = { dfHz: r(df, 3), dvPct: r(dv, 2), dphiDeg: r(dphi, 1), slipPeriodS: df !== 0 ? r(1 / Math.abs(df), 1) : null };
+
+  // Always DO NOT CLOSE, whatever the limits.
+  const block: string[] = [];
+  if (i.phaseSequence === 'reversed') block.push('Phase sequence reversed: closing would be a phase-to-phase fault. Correct the rotation first.');
+  if (Math.abs(df) > ABSOLUTE.maxDfHz || Math.abs(dv) > ABSOLUTE.maxDvPct || Math.abs(dphi) > ABSOLUTE.maxDphiDeg) block.push(`A difference is grossly outside any synchronising window (|Δf| ≤ ${ABSOLUTE.maxDfHz} Hz, |ΔV| ≤ ${ABSOLUTE.maxDvPct} %, |Δφ| ≤ ${ABSOLUTE.maxDphiDeg}° at most).`);
+  if (i.syncRelayInService === 'no') block.push('Synchronising relay / controller synchroniser out of service.');
+  if (i.protectionInService === 'no') block.push('Generator protection (e.g. reverse power, overcurrent) not in service.');
+  if (i.breakerReady === 'no') block.push('Breaker not ready (spring not charged, trip latched or interlock active).');
+
+  let wf: boolean | null = null, wv: boolean | null = null, wp: boolean | null = null;
+  if (i.limits) {
+    wf = Math.abs(df) <= i.limits.maxDfHz; wv = Math.abs(dv) <= i.limits.maxDvPct; wp = Math.abs(dphi) <= i.limits.maxDphiDeg;
+    if (!wf) block.push(`|Δf| ${values.dfHz} Hz exceeds the limit ${i.limits.maxDfHz} Hz.`);
+    if (!wv) block.push(`|ΔV| ${values.dvPct} % exceeds the limit ${i.limits.maxDvPct} %.`);
+    if (!wp) block.push(`|Δφ| ${values.dphiDeg}° exceeds the limit ${i.limits.maxDphiDeg}°.`);
+  }
+  if (df < 0) warnings.push('Incoming machine slower than the bus: it would take reverse power on closing. Bring it slightly fast.');
   if (dv < 0) warnings.push('Incoming voltage below the bus: the machine would absorb reactive power on closing.');
-  if (!(wf && wv && wp)) warnings.push('Do NOT close the breaker: at least one difference is outside the limits.');
-  return ok({ dfHz: r(df, 3), dvPct: r(dv, 2), dphiDeg: r(dphi, 1), withinFrequency: wf, withinVoltage: wv, withinPhase: wp, permitClose: wf && wv && wp, slipPeriodS: df !== 0 ? r(1 / Math.abs(df), 1) : null }, {
-    formula: 'Δf = f_incoming − f_bus; ΔV % = 100 × (V_incoming − V_bus) / V_bus; Δφ measured; slip period = 1/|Δf|',
-    inputs: { incomingV: String(i.incomingV), busV: String(i.busV), incomingHz: String(i.incomingHz), busHz: String(i.busHz), phaseAngleDeg: String(i.phaseAngleDeg) },
-    assumptions: ['Values as measured by a synchroscope or synchronising relay at the breaker.', 'A permit here does not replace the synchronising relay (ANSI 25) or the controller interlock.'],
-    reference: `Limits: ${source}.`,
+
+  let verdict: SyncVerdict;
+  if (block.length) { verdict = 'DO NOT CLOSE'; reasons.push(...block); }
+  else {
+    const unverified: string[] = [];
+    if (!i.limits) unverified.push('No synchronising limits entered.');
+    else {
+      if (!i.limits.source?.trim()) unverified.push('Limits have no source document (controller/synchroniser manual, OEM, utility requirement).');
+      if (!i.limits.verifiedFor?.trim()) unverified.push('Limits not tied to this installation (state site, controller model and settings file).');
+      if (!i.limits.verifiedBy?.trim()) unverified.push('Limits not verified by a named, competent person.');
+    }
+    if (i.phaseSequence === 'not-checked') unverified.push('Phase sequence not checked.');
+    for (const [k, v] of [['Synchronising relay in service', i.syncRelayInService], ['Protection in service', i.protectionInService], ['Breaker ready', i.breakerReady]] as const) if (v === 'unknown') unverified.push(`${k}: not confirmed.`);
+    if (unverified.length) { verdict = 'LIMITS NOT VERIFIED'; reasons.push(...unverified); }
+    else { verdict = 'WITHIN VERIFIED LIMITS'; reasons.push('Readings are within the verified limits. The synchronising relay / controller makes the close decision.'); }
+  }
+  return ok({ verdict, ...values, withinFrequency: wf, withinVoltage: wv, withinPhase: wp, reasons }, {
+    ...base,
+    reference: i.limits ? `Limits: ${i.limits.source || '(no source)'}; for ${i.limits.verifiedFor || '(installation not stated)'}; verified by ${i.limits.verifiedBy || '(nobody)'}.` : 'No limits entered.',
     warnings,
   });
 }
