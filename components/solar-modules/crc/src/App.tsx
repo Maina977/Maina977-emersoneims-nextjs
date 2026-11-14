@@ -28,6 +28,7 @@ import HomePage from './pages/HomePage';
 import PanelLayoutPage from './pages/PanelLayoutPage';
 import SunWeatherPage from './pages/SunWeatherPage';
 import VideoLibraryPage from './pages/VideoLibraryPage';
+import DesignCheckPage from './pages/DesignCheckPage';
 import { useSolarStore } from './services/store';
 
 // ============================================
@@ -416,6 +417,7 @@ const App: React.FC = () => {
       id: 'design',
       label: 'Design & Engineering',
       items: [
+        { path: '/design-check',  label: 'Design Check',      icon: FiCheckSquare, badge: 'NEW' },
         { path: '/designer',      label: 'System Designer',   icon: FiBox },
         { path: '/design-studio', label: 'Design Studio',     icon: FiLayout },
         { path: '/voice',         label: 'Voice Commands',    icon: FiBell },
@@ -577,6 +579,7 @@ const App: React.FC = () => {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/calculator" element={<CalculatorPage />} />
             <Route path="/intelligent" element={<IntelligentCalculatorPage />} />
+            <Route path="/design-check" element={<DesignCheckPage />} />
             <Route path="/designer" element={<DesignerPage />} />
             <Route path="/design-studio" element={<DesignStudioPage />} />
             <Route path="/viewer-3d" element={<Viewer3DPage />} />
