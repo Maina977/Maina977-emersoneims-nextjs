@@ -8,7 +8,7 @@
 // References: Jha et al. (2010), Naghibi et al. (2015), MacDonald (2012)
 // ═══════════════════════════════════════════════════════════════════
 
-import { SOILGRIDS_REST_ENABLED, SOIL_INSUFFICIENT_EVIDENCE } from './soilSource';
+import { SOILGRIDS_REST_ENABLED, SITE_INFERENCE_WITHHELD } from './soilSource';
 import { classifyRockType, estimateWeatheringProfile, type RockClassification, type WeatheringProfile } from './rockClassifier';
 import type { FieldValidationData } from './types';
 import { fetchElevations } from './elevationService';
@@ -238,7 +238,7 @@ export async function selectTopDrillingSites(
     soilData.soc, soilData.bd, centerElev, annualPrecipitation_mm, centerLat,
   ) : null;
   const insufficientEvidence: string[] = rockClass ? [] : [
-    SOIL_INSUFFICIENT_EVIDENCE,
+    SITE_INFERENCE_WITHHELD,
     'Rock type, weathering depth, expected depth and expected yield are therefore not estimated for these candidates; they are ranked on terrain, drainage and recharge only (the rock and weathering terms are the same for every candidate, so they do not change the order).',
   ];
 

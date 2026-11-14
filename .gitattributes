@@ -1,0 +1,3 @@
+
+# Versioned soil grids (raw int16): never convert line endings
+*.i16 binary
