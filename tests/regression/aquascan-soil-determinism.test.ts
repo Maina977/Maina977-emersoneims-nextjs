@@ -28,7 +28,8 @@ describe('soil source', () => {
   it('the SoilGrids REST service is switched off, with the reason recorded', async () => {
     const s = await import('@/external/borehole-ai-engine/src/soilSource');
     expect(s.SOILGRIDS_REST_ENABLED).toBe(false);
-    expect(s.SOIL_INSUFFICIENT_EVIDENCE).toMatch(/INSUFFICIENT EVIDENCE[^]*paused by ISRIC/);
+    expect(s.SOIL_INSUFFICIENT_EVIDENCE).toMatch(/INSUFFICIENT EVIDENCE[^]*Kenya only/);
+    expect(s.SITE_INFERENCE_WITHHELD).toMatch(/not inferred from soil maps/);
   });
 
   it('global soil analysis and the remote-sensing soil fetch make no SoilGrids call and return no soil', async () => {

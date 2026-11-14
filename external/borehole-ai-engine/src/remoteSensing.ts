@@ -112,11 +112,41 @@ export interface RemoteSensingResult {
 }
 
 /**
+ * Soil from the self-hosted Kenya SoilGrids 2.0 1 km extract (/api/aquascan/soil):
+ * deterministic, versioned, no live dependency on the paused ISRIC REST service.
+ * Returned in SoilGrids' mapped units, as the REST service did (clay/sand/silt
+ * g/kg, pH × 10, bulk density cg/cm³, organic carbon dg/kg), 0–30 cm
+ * thickness-weighted. Outside Kenya, or with no mapped soil: null
+ * (INSUFFICIENT EVIDENCE).
+ */
+export async function fetchLocalKenyaSoil(lat: number, lon: number): Promise<SoilGridsData | null> {
+  try {
+    const res = await fetch(`/api/aquascan/soil?lat=${lat}&lon=${lon}`, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    const j = await res.json();
+    if (j.status !== 'OK' && j.status !== 'PARTIAL') return null; // PARTIAL: missing properties stay undefined
+    const m = j.mean0to30 as Record<string, number | null>;
+    const mapped = (v: number | null | undefined, f: number) => (typeof v === 'number' ? Math.round(v * f) : undefined);
+    if (m.clay == null && m.sand == null) return null;
+    return {
+      available: true,
+      clay: mapped(m.clay, 10), sand: mapped(m.sand, 10), silt: mapped(m.silt, 10),
+      phH2O: mapped(m.phh2o, 10), organicCarbon: mapped(m.soc, 10), bulkDensity: mapped(m.bdod, 100),
+      cec: undefined, nitrogen: undefined,
+      depth: '0-30cm',
+      source: `ISRIC SoilGrids 2.0, 1 km aggregate (${j.dataset?.id} v${j.dataset?.version}); regional context, not a site measurement. CC BY 4.0`,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Fetch soil properties from ISRIC SoilGrids v2.0 API (free, no key).
  * Returns clay, sand, silt, pH, organic carbon, bulk density at 0-30cm depth.
  */
 export async function fetchSoilGrids(lat: number, lon: number): Promise<SoilGridsData | null> {
-  if (!SOILGRIDS_REST_ENABLED) return null; // see soilSource.ts
+  if (!SOILGRIDS_REST_ENABLED) return fetchLocalKenyaSoil(lat, lon); // see soilSource.ts
   try {
     const properties = ['clay', 'sand', 'silt', 'phh2o', 'soc', 'bdod', 'cec', 'nitrogen'];
     // SoilGrids serves standard depths only (0-5, 5-15, 15-30 cm); "0-30cm" is

@@ -1,0 +1,372 @@
+{
+ "datasetId": "kenya-soilgrids-2.0-1km-v1",
+ "version": "1",
+ "source": {
+  "name": "SoilGrids 2.0 (1000 m aggregated)",
+  "publisher": "ISRIC – World Soil Information",
+  "release": "2.0",
+  "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/",
+  "retrievedOn": "2026-11-14"
+ },
+ "licence": {
+  "id": "CC-BY-4.0",
+  "url": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Soil data: SoilGrids 2.0 (Poggio et al. 2021), ISRIC – World Soil Information.",
+  "changesMade": "Clipped to Kenya by EmersonEIMS (window read, native 1 km Homolosine grid, values unchanged)."
+ },
+ "grid": {
+  "crs": "Interrupted Goode Homolosine (WGS84, ISRIC SoilGrids)",
+  "crsWkt": "PROJCS[\"Homolosine\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Interrupted_Goode_Homolosine\"],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+  "resolutionM": 1000,
+  "bbox": [
+   33.9,
+   -4.72,
+   41.91,
+   5.03
+  ],
+  "origin": [
+   3767250.0,
+   561000.0000000009
+  ],
+  "pixel": [
+   1000.0,
+   -1000.0
+  ],
+  "width": 900,
+  "height": 1088,
+  "note": "1 km aggregate of 250 m model predictions: regional context, not a site measurement."
+ },
+ "layers": [
+  {
+   "property": "clay",
+   "depth": "0-5cm",
+   "statistic": "mean",
+   "file": "clay_0-5cm_mean.i16",
+   "sha256": "045ffaf82e0eb7628ba5fd75219c1588868b5ed0ffb3ae0daa6e80fa38082b9d",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "%",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/clay/clay_0-5cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:02:45 GMT",
+    "contentLength": 191530251,
+    "isricFullFileSha256": "20f699cc64686bb5696e395f709232e5957ea3c6a4b39f6676517a502033f424"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "clay",
+   "depth": "5-15cm",
+   "statistic": "mean",
+   "file": "clay_5-15cm_mean.i16",
+   "sha256": "5008f963b0a087c57ffa1f2da02bd08d47944e6291875c6ba6b02145a6b55c33",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "%",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/clay/clay_5-15cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:02:49 GMT",
+    "contentLength": 192320598,
+    "isricFullFileSha256": "4164a3176651927fd503e313a22da2d8862a5817bdcade8096a475d0540e5f17"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "clay",
+   "depth": "15-30cm",
+   "statistic": "mean",
+   "file": "clay_15-30cm_mean.i16",
+   "sha256": "a576c76a606b6c6e1da4dcaa9c2f83a46ec812efac8f8ca0272118973c0bb7a3",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "%",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/clay/clay_15-30cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:02:46 GMT",
+    "contentLength": 193957642,
+    "isricFullFileSha256": "ff3c3fc8075c668e4861b655310d03c4e33139a45e4bf2bae308b30a7162be7a"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "sand",
+   "depth": "0-5cm",
+   "statistic": "mean",
+   "file": "sand_0-5cm_mean.i16",
+   "sha256": "4450ac2c393a1dd69262aa2108dee4c2ea845eb550bb873ff252a7960d1ba2b6",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "%",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/sand/sand_0-5cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:03:08 GMT",
+    "contentLength": 198827692,
+    "isricFullFileSha256": "fab9afdd9e576d816499142914c259e83409640f5d91a6aef000126de8cafdd0"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "sand",
+   "depth": "5-15cm",
+   "statistic": "mean",
+   "file": "sand_5-15cm_mean.i16",
+   "sha256": "be1b0d97c113863670c2326a5ac0ab5ba5e9cbb99f33b8ac95e399a4dd215b00",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "%",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/sand/sand_5-15cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:03:33 GMT",
+    "contentLength": 199088292,
+    "isricFullFileSha256": "c8fd832a050776dc9a545251c92b39fcd54391d155b74d7df02a4fe557efd013"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "sand",
+   "depth": "15-30cm",
+   "statistic": "mean",
+   "file": "sand_15-30cm_mean.i16",
+   "sha256": "3f4f2c54dab4c97fea5dc3f4efe80be12601e4976b932d189e2bf3603de13a07",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "%",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/sand/sand_15-30cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:03:24 GMT",
+    "contentLength": 199362307,
+    "isricFullFileSha256": "69d56d1577c29e111d9bb5748d3e154fc367c87ee610c0c4f6bed6841c154305"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "silt",
+   "depth": "0-5cm",
+   "statistic": "mean",
+   "file": "silt_0-5cm_mean.i16",
+   "sha256": "56277ef3b8b46ffe6f62034a86118c9bc024a2d4d646b447940b5117abb68d6d",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "%",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/silt/silt_0-5cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:04:08 GMT",
+    "contentLength": 194638176,
+    "isricFullFileSha256": "4c72f9303aa27fcb5f2527bb1a64b307e9ef37885afc08cdcee063e99c495295"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "silt",
+   "depth": "5-15cm",
+   "statistic": "mean",
+   "file": "silt_5-15cm_mean.i16",
+   "sha256": "204f87314bc9b9d2c9859342edf71fcb7164dc84c83bd9945eb760493c866ace",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "%",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/silt/silt_5-15cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:04:30 GMT",
+    "contentLength": 194628164,
+    "isricFullFileSha256": "13b685ff61986da5c7d8d255fee975318947f9fc17b693a76fc136bbec0f1a46"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "silt",
+   "depth": "15-30cm",
+   "statistic": "mean",
+   "file": "silt_15-30cm_mean.i16",
+   "sha256": "5332bf3a8c41d429bcde088e16d4a5b69771ee9dc0d0c59ccff4083da2b79de3",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "%",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/silt/silt_15-30cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:04:09 GMT",
+    "contentLength": 194289699,
+    "isricFullFileSha256": "ceb2ea427c813f6919cff9c23f212a39520ad2c5863f2531b35abf02c77849a0"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "bdod",
+   "depth": "0-5cm",
+   "statistic": "mean",
+   "file": "bdod_0-5cm_mean.i16",
+   "sha256": "da01ecf9c43ebe791452e3655179ada3a567a0bc7b606a705a92428ca12abf8f",
+   "bytes": 1958400,
+   "divisor": 100,
+   "unit": "kg/dm³",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/bdod/bdod_0-5cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:01:45 GMT",
+    "contentLength": 114696796,
+    "isricFullFileSha256": "05d76fc4ced9b47a132bd58e98a4c58e318801b977223381a54c5823907044ee"
+   },
+   "validCells": 893324
+  },
+  {
+   "property": "bdod",
+   "depth": "5-15cm",
+   "statistic": "mean",
+   "file": "bdod_5-15cm_mean.i16",
+   "sha256": "d50969c85a982d765d135c3150f0a0f328eed2fef9d5324d91b685bfce783a7e",
+   "bytes": 1958400,
+   "divisor": 100,
+   "unit": "kg/dm³",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/bdod/bdod_5-15cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:01:51 GMT",
+    "contentLength": 110211361,
+    "isricFullFileSha256": "d6ffa74d8297928e7c03a20626f0ddb85685625bbfa0286d7ac26f6a1587eff9"
+   },
+   "validCells": 893324
+  },
+  {
+   "property": "bdod",
+   "depth": "15-30cm",
+   "statistic": "mean",
+   "file": "bdod_15-30cm_mean.i16",
+   "sha256": "8b0c796f55fcd5f139355a21aadfa5b34c03c4934772a6aad022579c68ffc23d",
+   "bytes": 1958400,
+   "divisor": 100,
+   "unit": "kg/dm³",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/bdod/bdod_15-30cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:01:46 GMT",
+    "contentLength": 108464241,
+    "isricFullFileSha256": "d29bdd372ba05d7811359531bbbf9933d6ac19a47ce0ae90cbb29e73b8347099"
+   },
+   "validCells": 893324
+  },
+  {
+   "property": "soc",
+   "depth": "0-5cm",
+   "statistic": "mean",
+   "file": "soc_0-5cm_mean.i16",
+   "sha256": "b2c669b72a18837ced23ada05d1e29c1b8b2081f9bb4d0531bf361824793105e",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "g/kg",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/soc/soc_0-5cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:04:33 GMT",
+    "contentLength": 224589956,
+    "isricFullFileSha256": "1873108c25b569fc936853f9578d271b92142d40998c9922a7145c9486bd5344"
+   },
+   "validCells": 893324
+  },
+  {
+   "property": "soc",
+   "depth": "5-15cm",
+   "statistic": "mean",
+   "file": "soc_5-15cm_mean.i16",
+   "sha256": "9f937360e377a2addf48b01a0c0dbf3be14caf6799411b9454b7efdfffb957df",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "g/kg",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/soc/soc_5-15cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:04:57 GMT",
+    "contentLength": 213203577,
+    "isricFullFileSha256": "2de23ff0c4e0abbef905c9d63f61770a709a234e6b4ade49ce019a4d1b3b9296"
+   },
+   "validCells": 893324
+  },
+  {
+   "property": "soc",
+   "depth": "15-30cm",
+   "statistic": "mean",
+   "file": "soc_15-30cm_mean.i16",
+   "sha256": "460160895ddc9ed70d184e874ce19e1a6b7e4b96e162998147fdeb1bc474562d",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "g/kg",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/soc/soc_15-30cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:04:54 GMT",
+    "contentLength": 207177268,
+    "isricFullFileSha256": "09b83990d9229359cd895bedf9470a215e75ef6cdb4a8375de5d1ab8cbfdf669"
+   },
+   "validCells": 893324
+  },
+  {
+   "property": "phh2o",
+   "depth": "0-5cm",
+   "statistic": "mean",
+   "file": "phh2o_0-5cm_mean.i16",
+   "sha256": "d7f7a05bca43bb47ecf8dec318be2c71c7cc60e29caca2a48b3c65cfbcced742",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "pH",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/phh2o/phh2o_0-5cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:01:32 GMT",
+    "contentLength": 78793346,
+    "isricFullFileSha256": "d49a413ffe3d483ed41359855fd548509decfb5930368dcee7cfc3eff55d2d97"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "phh2o",
+   "depth": "5-15cm",
+   "statistic": "mean",
+   "file": "phh2o_5-15cm_mean.i16",
+   "sha256": "215f9c41acd2bab61971c9e09dfbf8d3852d0da900c74fe3e8f3ea198e804a85",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "pH",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/phh2o/phh2o_5-15cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:01:40 GMT",
+    "contentLength": 79096499,
+    "isricFullFileSha256": "dde2006490fad24deb8f4c5727d78066bea6042615dd5943503aa31012115896"
+   },
+   "validCells": 893297
+  },
+  {
+   "property": "phh2o",
+   "depth": "15-30cm",
+   "statistic": "mean",
+   "file": "phh2o_15-30cm_mean.i16",
+   "sha256": "784464b928b5a342da35d08e69e5a0ed519d019a5e288977ca3d5275496f3d23",
+   "bytes": 1958400,
+   "divisor": 10,
+   "unit": "pH",
+   "noData": -32768,
+   "source": {
+    "url": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/phh2o/phh2o_15-30cm_mean_1000.tif",
+    "lastModified": "Thu, 02 Jun 2022 16:01:33 GMT",
+    "contentLength": 78972879,
+    "isricFullFileSha256": "053dfe17ff71e7eb5e686cda1dd9b5e61f982c3b65443161534b2e3ac54c2a0e"
+   },
+   "validCells": 893297
+  }
+ ],
+ "equivalenceProof": {
+  "layer": "clay_0-5cm_mean",
+  "fullFileSha256Verified": true,
+  "windowIdentical": true
+ },
+ "createdBy": "EmersonEIMS (scripts in .tools/soil)",
+ "createdOn": "2026-11-14"
+}

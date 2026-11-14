@@ -94,11 +94,13 @@ export interface PumpTestResult {
 // Well function W(u) — Theis well function using series approximation
 export function wellFunction(u: number): number {
   if (u <= 0) return 20; // cap
-  if (u > 5) return 0;   // negligible
-  
-  // For small u, use Cooper-Jacob approximation
-  if (u < 0.01) return -0.5772 - Math.log(u);
-  
+  // Beyond u = 10, W(u) < 4.2e-6: negligible drawdown.
+  if (u > 10) return 0;
+  // The exact series is used for every u (2026-11-14 benchmark against
+  // scipy.special.exp1): the former Cooper-Jacob shortcut below u = 0.01 was
+  // off by up to 0.24 % and jumped at u = 0.01, and the old cut-off at u = 5
+  // dropped W(6) = 0.00036. Max error now < 1e-6 for 1e-6 ≤ u ≤ 10.
+
   // Series expansion: W(u) = -γ - ln(u) + u - u²/(2·2!) + u³/(3·3!) - ...
   // AUDIT FIX (2026-07-10): the first term is +u (was -u) and the recurrence
   // is term *= -u (an extra /(n+1) had crept in). The old version returned
@@ -243,7 +245,39 @@ export function analyzePumpTest(input: PumpTestInput): PumpTestResult {
       }
     }
   }
-  
+
+  // Refine the grid optimum: deterministic pattern search on log T and log S
+  // with shrinking steps (2026-11-14). The grid alone stepped S by ×1.5 and
+  // left the fit up to ~14 % off; against TTim synthetic tests with known T and
+  // S the refined fit recovers both (tests/regression/aquascan-pumptest-benchmark).
+  {
+    const sse = (T: number, S: number) => {
+      let s = 0;
+      for (let i = 0; i < pumpReadings.length; i++) {
+        const u = (r * r * S) / (4 * T * (pumpReadings[i].time_min / 1440));
+        s += (drawdowns[i] - (Q_m3day / (4 * Math.PI * T)) * wellFunction(u)) ** 2;
+      }
+      return s;
+    };
+    const meanDD = drawdowns.reduce((a, b) => a + b, 0) / Math.max(1, drawdowns.length);
+    const ssTot = drawdowns.reduce((a, d) => a + (d - meanDD) ** 2, 0);
+    let lt = Math.log(bestT_theis), ls = Math.log(bestS_theis);
+    let best = sse(bestT_theis, bestS_theis);
+    for (let step = 0.2; step > 1e-5; step /= 2) {
+      let improved = true;
+      while (improved) {
+        improved = false;
+        for (const [dt, ds] of [[step, 0], [-step, 0], [0, step], [0, -step], [step, step], [-step, -step], [step, -step], [-step, step]]) {
+          const v = sse(Math.exp(lt + dt), Math.exp(ls + ds));
+          if (v < best - 1e-15) { best = v; lt += dt; ls += ds; improved = true; break; }
+        }
+      }
+    }
+    bestT_theis = Math.exp(lt);
+    bestS_theis = Math.exp(ls);
+    if (ssTot > 0) bestMatch = Math.max(bestMatch, 1 - best / ssTot);
+  }
+
   // ═══ RECOVERY ANALYSIS ═══
   let recoveryResult: PumpTestResult['recovery'] = null;
   
@@ -287,12 +321,17 @@ export function analyzePumpTest(input: PumpTestInput): PumpTestResult {
   }
   
   // ═══ FINAL PARAMETER ESTIMATES ═══
-  // Weight Cooper-Jacob and Theis (CJ more reliable for late-time data)
+  // When the full-curve Theis least-squares fit explains the data closely
+  // (R² ≥ 0.99), it is the primary estimate: it uses every reading, whereas
+  // Cooper-Jacob uses only the late straight line and its S depends on the
+  // extrapolated t0. Otherwise (leaky, bounded or noisy tests) the estimates are
+  // blended as before, and recovery (when present) carries its weight.
+  const theisPrimary = bestMatch >= 0.99;
   const T_final = recoveryResult
-    ? (T_cj * 0.3 + bestT_theis * 0.3 + recoveryResult.T_m2day * 0.4)
-    : (T_cj * 0.5 + bestT_theis * 0.5);
-  
-  const S_final = Math.min(0.3, Math.max(1e-7, (S_cj * 0.5 + bestS_theis * 0.5)));
+    ? (theisPrimary ? bestT_theis * 0.6 + recoveryResult.T_m2day * 0.4 : T_cj * 0.3 + bestT_theis * 0.3 + recoveryResult.T_m2day * 0.4)
+    : (theisPrimary ? bestT_theis : T_cj * 0.5 + bestT_theis * 0.5);
+
+  const S_final = Math.min(0.3, Math.max(1e-7, theisPrimary ? bestS_theis : (S_cj * 0.5 + bestS_theis * 0.5)));
   const K_final = T_final / b;
   
   const maxDrawdown = Math.max(...pumpReadings.map(r => r.drawdown_m), 0.1);
