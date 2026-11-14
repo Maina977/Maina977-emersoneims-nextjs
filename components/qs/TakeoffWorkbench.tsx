@@ -10,9 +10,10 @@
  * displayed rotation never change a measurement, and each one records the
  * file's SHA-256 and page. Engines: lib/qs/takeoff.ts, boq.ts, export.ts.
  */
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { calibrate, quantify, TakeoffError, TAKEOFF_ENGINE_VERSION, type Calibration, type Measurement, type MeasureKind, type Pt } from '@/lib/qs/takeoff';
 import { buildBoq, BOQ_ENGINE_VERSION, type Adjustments, type BoqItem } from '@/lib/qs/boq';
+import { extractGeometry, SnapIndex, snap, type SnapKind } from '@/lib/qs/snap';
 import { analysePage, sha256Hex, viewportToPdf, pdfToViewport, resolutionLimitM, PDF_SHEET_VERSION, type SheetInfo, type PdfPageLike, type ViewportLike } from '@/lib/qs/pdfSheet';
 
 type Mode = 'calibrate' | MeasureKind | 'hole';
@@ -56,6 +57,13 @@ export default function TakeoffWorkbench() {
   const [items, setItems] = useState<ItemDraft[]>([]);
   const [adj, setAdj] = useState({ prelims: '', contingency: '', ohp: '', vat: '', vatFrom: '' });
   const svgRef = useRef<SVGSVGElement>(null);
+  // View: zoom and pan change only the displayed window (viewBox), never stored points.
+  const [vb, setVb] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [snapOn, setSnapOn] = useState(true);
+  const [ptSnaps, setPtSnaps] = useState<SnapKind[]>([]);
+  const [hover, setHover] = useState<{ p: Pt; kind: SnapKind } | null>(null);
+  const snapIndex = useRef<SnapIndex | null>(null);
+  const drag = useRef<{ x: number; y: number; vb: { x: number; y: number; w: number; h: number }; moved: boolean } | null>(null);
   const cal = sheet ? cals[sheet.id] ?? null : null;
   const sheetRefs = sheet ? refs[sheet.id] ?? [] : [];
 
@@ -71,6 +79,9 @@ export default function TakeoffWorkbench() {
       canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
       await page.render({ canvas, viewport: vp }).promise;
       const info = await analysePage(pdfjs, page as unknown as PdfPageLike, { name: p.name, sha256: p.sha, pageCount: p.pages });
+      const geo = extractGeometry(pdfjs.OPS, await page.getOperatorList(), page.userUnit ?? 1);
+      snapIndex.current = geo.segments.length ? new SnapIndex(geo.segments) : null;
+      setVb({ x: 0, y: 0, w: canvas.width, h: canvas.height });
       setSheet({
         id: `${p.sha.slice(0, 16)}#p${n}`, label: `${p.name}, page ${n} of ${p.pages}`, kind: 'pdf', url: canvas.toDataURL('image/png'), w: canvas.width, h: canvas.height,
         toSheet: (x, y) => viewportToPdf(vp, x, y), toDisplay: (q) => pdfToViewport(vp, q), pxPerUnit: scale, info, statedUnit: 'pt',
@@ -100,18 +111,71 @@ export default function TakeoffWorkbench() {
     const im = new Image();
     im.onload = () => {
       setPdf(null);
+      snapIndex.current = null; // images carry no vector geometry
+      setVb({ x: 0, y: 0, w: im.naturalWidth, h: im.naturalHeight });
       setSheet({ id: `img:${f.name}:${f.size}`, label: f.name, kind: 'image', url, w: im.naturalWidth, h: im.naturalHeight, toSheet: (x, y) => ({ x, y }), toDisplay: (q) => q, pxPerUnit: 1, statedUnit: 'px' });
     };
     im.src = url;
   };
 
-  const click = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!svgRef.current || !sheet) return;
+  const SNAP_PX = 10; // snap radius in screen pixels
+  /** Screen position → sheet point, snapped to drawing geometry when enabled. */
+  const locate = (clientX: number, clientY: number): { p: Pt; kind: SnapKind } | null => {
+    if (!svgRef.current || !sheet || !vb) return null;
     const r = svgRef.current.getBoundingClientRect();
-    const p = sheet.toSheet(((e.clientX - r.left) / r.width) * sheet.w, ((e.clientY - r.top) / r.height) * sheet.h);
-    if (mode === 'calibrate') { setPts((x) => (x.length >= 2 ? [p] : [...x, p])); return; }
+    const raw = sheet.toSheet(vb.x + ((clientX - r.left) / r.width) * vb.w, vb.y + ((clientY - r.top) / r.height) * vb.h);
+    if (!snapOn || !snapIndex.current) return { p: raw, kind: 'none' };
+    const tol = (SNAP_PX * vb.w) / r.width / sheet.pxPerUnit; // screen px → display units → PDF points
+    const s = snap(raw, snapIndex.current, tol);
+    return { p: s.point, kind: s.kind };
+  };
+  const click = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (drag.current?.moved) { drag.current = null; return; } // end of a pan, not a click
+    drag.current = null;
+    const hit = locate(e.clientX, e.clientY);
+    if (!hit) return;
+    if (mode === 'calibrate') { setPts((x) => (x.length >= 2 ? [hit.p] : [...x, hit.p])); return; }
     if (!cal) { setErr('Calibrate this sheet first'); return; }
-    setPts((x) => [...x, p]);
+    setPts((x) => [...x, hit.p]);
+    setPtSnaps((x) => [...x, hit.kind]);
+  };
+  const zoom = (factor: number, cx?: number, cy?: number) => {
+    if (!vb || !sheet) return;
+    const w = Math.min(sheet.w, Math.max(sheet.w / 64, vb.w * factor));
+    const h = (w * sheet.h) / sheet.w;
+    const fx = cx ?? vb.x + vb.w / 2, fy = cy ?? vb.y + vb.h / 2; // keep this point fixed
+    const x = Math.min(Math.max(0, fx - ((fx - vb.x) * w) / vb.w), sheet.w - w);
+    const y = Math.min(Math.max(0, fy - ((fy - vb.y) * h) / vb.h), sheet.h - h);
+    setVb({ x, y, w, h });
+  };
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!vb) return;
+      e.preventDefault();
+      const r = el.getBoundingClientRect();
+      zoom(e.deltaY < 0 ? 1 / 1.25 : 1.25, vb.x + ((e.clientX - r.left) / r.width) * vb.w, vb.y + ((e.clientY - r.top) / r.height) * vb.h);
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  });
+  const onDown = (e: React.MouseEvent<SVGSVGElement>) => { if (vb) drag.current = { x: e.clientX, y: e.clientY, vb, moved: false }; };
+  const onMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const d = drag.current;
+    if (d && e.buttons && svgRef.current && sheet) {
+      const dx = e.clientX - d.x, dy = e.clientY - d.y;
+      if (Math.abs(dx) + Math.abs(dy) > 4) d.moved = true;
+      if (d.moved) {
+        const r = svgRef.current.getBoundingClientRect();
+        const x = Math.min(Math.max(0, d.vb.x - (dx * d.vb.w) / r.width), sheet.w - d.vb.w);
+        const y = Math.min(Math.max(0, d.vb.y - (dy * d.vb.h) / r.height), sheet.h - d.vb.h);
+        setVb({ ...d.vb, x, y });
+        return;
+      }
+    }
+    const hit = locate(e.clientX, e.clientY);
+    setHover(hit && hit.kind !== 'none' ? hit : null);
   };
 
   const addRef = () => {
@@ -138,17 +202,17 @@ export default function TakeoffWorkbench() {
       const last = ms[idx];
       if (!last || (last.kind !== 'area' && last.kind !== 'volume')) { setErr('Measure an area on this sheet first, then add its openings'); return; }
       const m = { ...last, holes: [...(last.holes ?? []), pts] };
-      try { quantify(m); setMs(ms.map((x, i) => (i === idx ? m : x))); setPts([]); } catch (e) { setErr((e as Error).message); }
+      try { quantify(m); setMs(ms.map((x, i) => (i === idx ? m : x))); setPts([]); setPtSnaps([]); } catch (e) { setErr((e as Error).message); }
       return;
     }
     if (mode === 'calibrate') return;
-    const m: Measurement = { id: `M${ms.length + 1}`, kind: mode, sheetId: sheet.id, label: label || `${mode} ${ms.length + 1}`, points: pts, depthM: mode === 'volume' ? Number(depth) : undefined, metresPerUnit: cal.metresPerUnit, user: 'this browser', at: new Date().toISOString(), revision: 'A' };
-    try { quantify(m); setMs([...ms, m]); setPts([]); setLabel(''); } catch (e) { setErr(e instanceof TakeoffError ? e.message : String(e)); }
+    const m: Measurement = { id: `M${ms.length + 1}`, kind: mode, sheetId: sheet.id, label: label || `${mode} ${ms.length + 1}`, points: pts, depthM: mode === 'volume' ? Number(depth) : undefined, metresPerUnit: cal.metresPerUnit, user: 'this browser', at: new Date().toISOString(), revision: 'A', snaps: ptSnaps.slice(0, pts.length) };
+    try { quantify(m); setMs([...ms, m]); setPts([]); setPtSnaps([]); setLabel(''); } catch (e) { setErr(e instanceof TakeoffError ? e.message : String(e)); }
   };
 
   const quantities = useMemo(() => new Map(ms.map((m) => [m.id, quantify(m)])), [ms]);
   // Click precision is one pixel of the drawing as DISPLAYED (the rendered image is scaled to the panel width).
-  const shownScale = sheet && svgRef.current?.clientWidth ? svgRef.current.clientWidth / sheet.w : 1;
+  const shownScale = sheet && vb && svgRef.current?.clientWidth ? svgRef.current.clientWidth / vb.w : 1;
   const limitMm = sheet && cal ? (sheet.info ? resolutionLimitM(sheet.info, cal.metresPerUnit, sheet.pxPerUnit * shownScale) : cal.metresPerUnit / shownScale) * 1000 : null;
 
   const boq = useMemo(() => {
@@ -165,6 +229,17 @@ export default function TakeoffWorkbench() {
     return { boq: buildBoq(boqItems, quantities, a, 'A'), adj: a };
   }, [items, quantities, adj]);
 
+  const exportPdf = async () => {
+    if (!boq) return;
+    const { boqToPdf } = await import('@/lib/qs/pdfReport');
+    try {
+      const drawings = [...new Set(ms.map((m) => m.sheetId))].map((id) => `${pdf?.name ?? sheet?.label ?? 'drawing'} ${id}`);
+      const bytes = boqToPdf(boq.boq, { project: pdf?.name ?? sheet?.label ?? 'Project', preparedBy: 'Building Suite Pro (draft for QS review)', date: new Date().toISOString().slice(0, 10), drawings });
+      const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/pdf' }));
+      const a = document.createElement('a'); a.href = url; a.download = 'boq-rev-A.pdf'; a.click(); URL.revokeObjectURL(url);
+    } catch (e) { setErr((e as Error).message); }
+  };
+
   const exportXlsx = async () => {
     if (!boq) return;
     const { boqToXlsx } = await import('@/lib/qs/export');
@@ -177,7 +252,8 @@ export default function TakeoffWorkbench() {
 
   const input = 'rounded bg-slate-900 border border-slate-700 px-2 py-1 text-sm text-white';
   const modes: Array<[Mode, string]> = [['calibrate', 'Calibrate'], ['linear', 'Length'], ['area', 'Area'], ['hole', 'Opening (deduct)'], ['volume', 'Volume'], ['count', 'Count']];
-  const sw = sheet ? sheet.w / 500 : 1;
+  const sw = sheet && vb ? vb.w / 500 : 1; // strokes keep a constant on-screen width while zooming
+  const zoomPct = sheet && vb ? Math.round((sheet.w / vb.w) * 100) : 100;
   const D = (p: Pt) => sheet!.toDisplay(p);
   const poly = (ps: Pt[]) => ps.map((p) => { const d = D(p); return `${d.x},${d.y}`; }).join(' ');
 
@@ -208,14 +284,24 @@ export default function TakeoffWorkbench() {
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Measurement tools">
               {modes.map(([m, l]) => (
-                <button key={m} type="button" onClick={() => { setMode(m); setPts([]); }} disabled={m !== 'calibrate' && !cal}
+                <button key={m} type="button" onClick={() => { setMode(m); setPts([]); setPtSnaps([]); }} disabled={m !== 'calibrate' && !cal}
                   className={`rounded px-3 py-1 text-xs border ${mode === m ? 'border-amber-400 bg-amber-500/20' : 'border-slate-600'} disabled:opacity-40`}>{l}</button>
               ))}
               {mode !== 'calibrate' && <button type="button" onClick={finish} className="rounded bg-amber-600 px-3 py-1 text-xs text-white">Finish ({pts.length} pts)</button>}
-              {pts.length > 0 && <button type="button" onClick={() => setPts(pts.slice(0, -1))} className="rounded border border-slate-600 px-3 py-1 text-xs">Undo point</button>}
+              {pts.length > 0 && <button type="button" onClick={() => { setPts(pts.slice(0, -1)); setPtSnaps(ptSnaps.slice(0, -1)); }} className="rounded border border-slate-600 px-3 py-1 text-xs">Undo point</button>}
             </div>
-            <div className="overflow-auto rounded border border-slate-700 bg-white">
-              <svg ref={svgRef} viewBox={`0 0 ${sheet.w} ${sheet.h}`} className="w-full cursor-crosshair" onClick={click}>
+            <div className="flex flex-wrap items-center gap-2 text-xs" role="toolbar" aria-label="View">
+              <button type="button" onClick={() => zoom(1 / 1.5)} className="rounded border border-slate-600 px-2 py-1">Zoom in</button>
+              <button type="button" onClick={() => zoom(1.5)} className="rounded border border-slate-600 px-2 py-1">Zoom out</button>
+              <button type="button" onClick={() => setVb({ x: 0, y: 0, w: sheet.w, h: sheet.h })} className="rounded border border-slate-600 px-2 py-1">Fit</button>
+              <span className="text-slate-400" aria-live="polite">Zoom {zoomPct} %</span>
+              {snapIndex.current && (
+                <label className="ml-2"><input type="checkbox" checked={snapOn} onChange={(e) => setSnapOn(e.target.checked)} /> Snap to drawing lines</label>
+              )}
+              <span className="text-slate-500">Wheel to zoom, drag to pan.</span>
+            </div>
+            <div className="overflow-hidden rounded border border-slate-700 bg-white">
+              <svg ref={svgRef} viewBox={vb ? `${vb.x} ${vb.y} ${vb.w} ${vb.h}` : `0 0 ${sheet.w} ${sheet.h}`} className="w-full cursor-crosshair select-none" onClick={click} onMouseDown={onDown} onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
                 <image href={sheet.url} width={sheet.w} height={sheet.h} />
                 {ms.filter((m) => m.sheetId === sheet.id).map((m) => (
                   <g key={m.id}>
@@ -228,6 +314,13 @@ export default function TakeoffWorkbench() {
                 {sheetRefs.map((r, i) => <polyline key={i} points={poly([r.a, r.b])} stroke="#16a34a" strokeWidth={sw * 1.5} fill="none" />)}
                 {pts.length > 0 && <polyline points={poly(pts)} fill="none" stroke="#f59e0b" strokeWidth={sw * 1.2} />}
                 {pts.map((p, i) => { const d = D(p); return <circle key={i} cx={d.x} cy={d.y} r={sw * 2} fill="#f59e0b" />; })}
+                {hover && (() => { const d = D(hover.p); const s = sw * 4; return (
+                  <g data-snap={hover.kind} pointerEvents="none">
+                    {hover.kind === 'endpoint' ? <rect x={d.x - s} y={d.y - s} width={2 * s} height={2 * s} fill="none" stroke="#16a34a" strokeWidth={sw} />
+                      : hover.kind === 'intersection' ? <path d={`M${d.x - s} ${d.y - s}L${d.x + s} ${d.y + s}M${d.x - s} ${d.y + s}L${d.x + s} ${d.y - s}`} stroke="#16a34a" strokeWidth={sw} />
+                        : <circle cx={d.x} cy={d.y} r={s} fill="none" stroke="#16a34a" strokeWidth={sw} />}
+                  </g>
+                ); })()}
               </svg>
             </div>
           </div>
@@ -237,7 +330,7 @@ export default function TakeoffWorkbench() {
               {cal ? (
                 <>
                   <p className="text-xs text-emerald-300">Calibrated: {(cal.metresPerUnit * 1000).toFixed(4)} mm per {sheet.kind === 'pdf' ? 'PDF point' : 'pixel'}; reference agreement {cal.mismatchPct} %.{cal.statedScale ? ` Stated scale difference ${cal.statedScale.differencePct} %.` : ''}</p>
-                  {limitMm !== null && <p className="text-xs text-slate-400">Resolution limit on site: about {limitMm.toFixed(1)} mm per point placed{sheet.info?.kind === 'raster' ? ' (scan pixel size)' : ' (zoom)'}.</p>}
+                  {limitMm !== null && <p className="text-xs text-slate-400">Resolution limit on site: about {limitMm.toFixed(1)} mm per free click at this zoom{sheet.info?.kind === 'raster' ? ' (or the scan pixel size, if larger)' : ''}.{snapIndex.current && snapOn ? ' Points snapped to drawing lines are exact to the drawing.' : ''}</p>}
                 </>
               ) : (
                 <>
@@ -309,6 +402,7 @@ export default function TakeoffWorkbench() {
                 </tbody></table>
               )}
               <button type="button" onClick={exportXlsx} disabled={boq.boq.grandTotal === null} className="rounded bg-emerald-700 px-3 py-1 text-xs text-white disabled:opacity-40">Export Excel (with formulas)</button>
+              <button type="button" onClick={exportPdf} disabled={boq.boq.grandTotal === null} className="ml-2 rounded bg-emerald-800 px-3 py-1 text-xs text-white disabled:opacity-40">Export PDF report</button>
             </div>
           )}
         </div>

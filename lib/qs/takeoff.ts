@@ -70,6 +70,8 @@ export interface Measurement {
   user: string;
   at: string;
   revision: string;
+  /** How each point was placed: snapped to drawing geometry (exact) or a free click (resolution-limited). */
+  snaps?: Array<'endpoint' | 'intersection' | 'on-line' | 'none'>;
 }
 export interface Quantity {
   id: string; kind: MeasureKind; unit: 'm' | 'm²' | 'm³' | 'No';

@@ -47,19 +47,29 @@ function fixture() {
   const info = await page.evaluate(() => document.body.innerText.match(/page 1 of (\d+) · sheet (\d+) × (\d+) mm · ([a-z ]+)/));
   rec('PDF opened: 2 pages, A3 420 × 297 mm, vector', !!info && info[1] === '2' && info[2] === '420' && info[3] === '297', info ? info[0] : 'no sheet line');
 
-  // Click a point given in sheet millimetres (from the top-left, as drawn), for the current view rotation.
-  const clickMm = async (xmm, ymm, rot = 0) => {
-    const box = await page.locator('svg.cursor-crosshair').boundingBox();
-    const vb = await page.locator('svg.cursor-crosshair').getAttribute('viewBox');
-    const [, , w, h] = vb.split(' ').map(Number);
-    const W = 420, H = 297; // sheet mm, unrotated
-    let u, v; // fraction across the displayed image
-    if (rot === 0) { u = xmm / W; v = ymm / H; }
-    else if (rot === 90) { u = 1 - ymm / H; v = xmm / W; }
+  // Screen position of a point given in sheet millimetres (from the top-left, as drawn), for the
+  // current view rotation, zoom and pan (viewBox), optionally offset by a few screen pixels to
+  // imitate an imprecise hand.
+  const svg = () => page.locator('svg.cursor-crosshair');
+  const screenOf = async (xmm, ymm, rot = 0) => {
+    const box = await svg().boundingBox();
+    const [vx, vy, vw, vh] = (await svg().getAttribute('viewBox')).split(' ').map(Number);
+    const W = Number(await page.locator('svg.cursor-crosshair image').getAttribute('width'));
+    const Hh = Number(await page.locator('svg.cursor-crosshair image').getAttribute('height'));
+    let u, v; // fraction across the full rendered sheet
+    if (rot === 0) { u = xmm / 420; v = ymm / 297; }
+    else if (rot === 90) { u = 1 - ymm / 297; v = xmm / 420; }
     else throw new Error('rotation not handled');
-    await page.mouse.click(box.x + u * box.width, box.y + v * box.height);
-    return { w, h };
+    return { x: box.x + ((u * W - vx) / vw) * box.width, y: box.y + ((v * Hh - vy) / vh) * box.height };
   };
+  const OFF = { x: 4, y: -3 }; // deliberate miss, in screen pixels
+  const clickMm = async (xmm, ymm, rot = 0, off = OFF) => {
+    const s = await screenOf(xmm, ymm, rot);
+    await page.mouse.click(s.x + off.x, s.y + off.y);
+  };
+  const qtyOf = async (label) => Number(((await page.locator('tr', { hasText: label }).first().innerText()).match(/([\d,.]+) m(?:²|\b)/) || [])[1]?.replace(/,/g, ''));
+  const snapBox = page.getByLabel('Snap to drawing lines');
+  rec('vector sheet offers snapping, on by default', (await snapBox.count()) === 1 && (await snapBox.isChecked()), `snap checkbox present: ${await snapBox.count()}`);
 
   await page.getByLabel('Known length in metres').waitFor();
   await page.locator('label:has-text("Stated scale") input').fill('100');
@@ -82,10 +92,43 @@ function fixture() {
   await page.getByRole('button', { name: /^Finish/ }).click();
   const row1 = await page.locator('tr', { hasText: 'Ground slab' }).first().innerText();
   const net = Number((row1.match(/([\d,.]+) m²/) || [])[1]?.replace(/,/g, ''));
-  // Click precision on screen: the resolution limit shown by the tool.
+  rec('snapped area with clicks 4–5 px off: exactly 96 − 2 = 94.000 m²', Math.abs(net - 94) < 0.0005, row1.replace(/\s+/g, ' '));
   const limitMm = Number(((await page.locator('text=Resolution limit').innerText()).match(/about ([\d.]+) mm/) || [])[1]);
-  const tolM2 = (2 * (12 + 8) * limitMm) / 1000 * 1.5 + 2 * (2 + 1) * limitMm / 1000 * 1.5;
-  rec('area 96 − 2 = 94 m² within the stated click resolution', Math.abs(net - 94) <= tolM2, `${row1.replace(/\s+/g, ' ')} (tolerance ±${tolM2.toFixed(3)} m², limit ${limitMm} mm)`);
+
+  // Snapping off: the same miss now shows in the quantity, within the stated click resolution.
+  await snapBox.uncheck();
+  await page.getByRole('button', { name: 'Length', exact: true }).click();
+  await page.getByLabel('Measurement label').fill('Free edge');
+  await clickMm(50, 50); await clickMm(170, 50, 0, { x: -4, y: 3 });
+  await page.getByRole('button', { name: /^Finish/ }).click();
+  const free = await qtyOf('Free edge');
+  // The two clicks miss by 4 + 4 = 8 screen pixels along the edge: with snapping off the
+  // error must equal that miss (8 × the stated mm per pixel), proving the stated limit is honest.
+  const expectedErrM = (8 * limitMm) / 1000;
+  rec('snapping off: the error equals the deliberate 8 px miss at the stated mm per pixel', Math.abs(Math.abs(free - 12) - expectedErrM) <= (2 * limitMm) / 1000, `${free} m; error ${(Math.abs(free - 12) * 1000).toFixed(0)} mm vs expected ${(expectedErrM * 1000).toFixed(0)} mm (limit ${limitMm} mm/px)`);
+  await snapBox.check();
+
+  // Zoom with the wheel around the opening: the view changes, measurements stay exact.
+  const c = await screenOf(70, 65);
+  await page.mouse.move(c.x, c.y);
+  for (let i = 0; i < 3; i++) { await page.mouse.wheel(0, -100); await page.waitForTimeout(150); }
+  const zoomTxt = await page.locator('text=/Zoom \\d+ %/').innerText();
+  await page.getByRole('button', { name: 'Length', exact: true }).click();
+  await page.getByLabel('Measurement label').fill('Opening edge (zoomed)');
+  await clickMm(60, 60); await clickMm(80, 60);
+  await page.getByRole('button', { name: /^Finish/ }).click();
+  const zl = await qtyOf('Opening edge');
+  const limitZoomed = Number(((await page.locator('text=Resolution limit').innerText()).match(/about ([\d.]+) mm/) || [])[1]);
+  rec('wheel zoom: view enlarged, opening edge = 2.000 m, free-click limit shrinks', /Zoom (19[0-9]|20[0-9]) %/.test(zoomTxt) && Math.abs(zl - 2) < 0.0005 && limitZoomed < limitMm, `${zoomTxt}; ${zl} m; limit ${limitMm} → ${limitZoomed} mm`);
+
+  // Pan by dragging: the view moves, no point is added, stored quantities unchanged.
+  const vbBefore = await svg().getAttribute('viewBox');
+  const p0 = await screenOf(70, 65);
+  await page.mouse.move(p0.x, p0.y); await page.mouse.down(); await page.mouse.move(p0.x + 120, p0.y + 60, { steps: 6 }); await page.mouse.up();
+  const vbAfter = await svg().getAttribute('viewBox');
+  const finishTxt = await page.getByRole('button', { name: /^Finish/ }).innerText();
+  rec('drag pans the view without adding points or changing quantities', vbBefore !== vbAfter && /\(0 pts\)/.test(finishTxt) && (await page.locator('tr', { hasText: 'Ground slab' }).first().innerText()) === row1, `${vbBefore} → ${vbAfter}; ${finishTxt}`);
+  await page.getByRole('button', { name: 'Fit', exact: true }).click();
 
   // Rotate the view: the stored measurement is unchanged; a new measurement on the rotated view agrees.
   await page.getByRole('button', { name: 'Rotate view 90°' }).click();
@@ -96,8 +139,8 @@ function fixture() {
   await page.getByLabel('Measurement label').fill('Slab edge (rotated view)');
   await clickMm(50, 130, 90); await clickMm(170, 130, 90);
   await page.getByRole('button', { name: /^Finish/ }).click();
-  const len = Number(((await page.locator('tr', { hasText: 'Slab edge' }).first().innerText()).match(/([\d,.]+) m\b/) || [])[1]);
-  rec('length measured on the rotated view = 12 m', Math.abs(len - 12) <= 3 * limitMm / 1000, `${len} m`);
+  const len = await qtyOf('Slab edge');
+  rec('snapped length on the rotated view = 12.000 m', Math.abs(len - 12) < 0.0005, `${len} m`);
 
   // Page 2 needs its own calibration.
   await page.locator('label:has-text("Page") select').selectOption('2');
@@ -126,6 +169,16 @@ function fixture() {
   let xTotal = null, formula = '';
   wb.getWorksheet('BOQ').eachRow((row) => { if (row.getCell(2).value === 'TOTAL') { xTotal = row.getCell(6).value.result; formula = row.getCell(6).value.formula; } });
   rec('Excel total equals screen total; total is a formula', xTotal === shown && /ROUND\(/.test(formula), `excel ${xTotal} = ${formula}`);
+  // PDF report from the same BOQ: its TOTAL must equal the screen.
+  const [pdl] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.getByRole('button', { name: /Export PDF report/ }).click()]);
+  const pf = path.join(tmp, 'boq.pdf'); await pdl.saveAs(pf);
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  pdfjs.GlobalWorkerOptions.workerSrc = require('url').pathToFileURL(path.resolve('node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs')).href;
+  const pd = await pdfjs.getDocument({ data: new Uint8Array(fs.readFileSync(pf)) }).promise;
+  let ptxt = '';
+  for (let p = 1; p <= pd.numPages; p++) ptxt += (await (await pd.getPage(p)).getTextContent()).items.map((i) => i.str).join(' ') + ' ';
+  const shownTxt = shown.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  rec('PDF report total equals screen and Excel', ptxt.includes(`TOTAL ${shownTxt}`) || (ptxt.includes('TOTAL') && ptxt.includes(shownTxt)), `PDF contains ${shownTxt}: ${ptxt.includes(shownTxt)}`);
   rec('no page errors', errs.length === 0, errs.join(' | ') || 'none');
 
   await browser.close();
