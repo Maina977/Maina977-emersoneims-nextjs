@@ -42,6 +42,14 @@ interface ActivationRequest {
 
 /** Activation attempts allowed per client IP per minute (in-memory, per instance). */
 const ACTIVATIONS_PER_IP_PER_MINUTE = 10;
+/**
+ * Durable per-IP limit per hour. Separate from the per-device limit (3/hour):
+ * several licensed devices in one office share one public IP, and each sends
+ * a daily heartbeat, so the device limit would lock legitimate customers out.
+ * 30/hour still stops key guessing (keys are random, the in-memory limit
+ * caps bursts, and every failure is logged).
+ */
+const ACTIVATIONS_PER_IP_PER_HOUR = 30;
 
 export async function POST(request: NextRequest) {
   // Get client info for logging
@@ -84,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check rate limits (device and IP, durable when the database is available)
-    const withinLimit = (await checkRateLimit(deviceId, 'device')) && (await checkRateLimit(clientIp, 'ip'));
+    const withinLimit = (await checkRateLimit(deviceId, 'device')) && (await checkRateLimit(clientIp, 'ip', ACTIVATIONS_PER_IP_PER_HOUR));
     if (!withinLimit) {
       await logActivationAttempt({
         license_key: normalizedKey,

@@ -17,10 +17,19 @@ type License = { status: string; customer_email: string; activated_at?: Date; ex
 const db = {
   licenses: new Map<string, License>(),
   created: [] as unknown[],
+  // Durable rate-limit store as the database keeps it: attempts per identifier per hour.
+  rate: new Map<string, number>(),
+  rateCalls: [] as Array<[string, string, number | undefined]>,
 };
 vi.mock('@/lib/generator-oracle/db', () => ({
   initOracleTables: async () => true,
-  checkRateLimit: async () => true,
+  checkRateLimit: async (id: string, type: string, max?: number) => {
+    db.rateCalls.push([id, type, max]);
+    const k = `${type}:${id}`;
+    const n = (db.rate.get(k) ?? 0) + 1;
+    db.rate.set(k, n);
+    return n <= (max ?? 3); // 3 = the per-device default in lib/generator-oracle/db.ts
+  },
   logActivationAttempt: async () => undefined,
   getLicenseByKey: async (k: string) => db.licenses.get(k) ?? null,
   activateLicense: async (k: string) => {
@@ -35,15 +44,16 @@ vi.mock('@/lib/generator-oracle/db', () => ({
 }));
 
 let ipN = 0;
+let devN = 0;
 async function route() { return import('@/app/api/generator-oracle/activate/route'); }
-async function activate(key: string, env = 'production', ip?: string) {
+async function activate(key: string, env = 'production', ip?: string, deviceId?: string, heartbeat = false) {
   vi.stubEnv('VERCEL_ENV', env);
   const { NextRequest } = await import('next/server');
   const { POST } = await route();
   return POST(new NextRequest('http://localhost/api/generator-oracle/activate', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-forwarded-for': ip ?? `198.51.100.${++ipN % 250}` },
-    body: JSON.stringify({ key, deviceId: `device-${ipN}` }),
+    body: JSON.stringify({ key, deviceId: deviceId ?? `device-${++devN}`, ...(heartbeat ? { heartbeat: true } : {}) }),
   }));
 }
 async function admin(method: 'GET' | 'PUT', auth: string | null, key: string | undefined) {
@@ -64,6 +74,8 @@ beforeEach(() => {
   db.licenses.set('EIMS-GOOD-0000-0001', { status: 'active', customer_email: 'paid@example.com', expires_at: null });
   db.licenses.set('EIMS-EXPD-0000-0001', { status: 'active', customer_email: 'x@example.com', expires_at: new Date('2025-01-01') });
   db.licenses.set('EIMS-RVKD-0000-0001', { status: 'revoked', customer_email: 'y@example.com', expires_at: null });
+  db.rate.clear();
+  db.rateCalls.length = 0;
 });
 afterEach(() => { vi.unstubAllEnvs(); });
 
@@ -99,6 +111,26 @@ describe('activation: only real, valid database licences', () => {
     for (let i = 0; i < 12; i++) statuses.push((await activate('EIMS-AAAA-BBBB-CCCC', 'production', '203.0.113.77')).status);
     expect(statuses.slice(0, 10).every((s) => s === 404)).toBe(true);
     expect(statuses.slice(10)).toEqual([429, 429]);
+  });
+});
+
+describe('rate limits do not lock out legitimate customers (review 2026-11-14)', () => {
+  it('an office: 4 licensed devices behind one IP activate and heartbeat in the same hour', async () => {
+    for (let n = 1; n <= 4; n++) db.licenses.set(`EIMS-OFFC-0000-000${n}`, { status: 'active', customer_email: `seat${n}@example.com`, expires_at: null });
+    const statuses: number[] = [];
+    for (let n = 1; n <= 4; n++) statuses.push((await activate(`EIMS-OFFC-0000-000${n}`, 'production', '192.0.2.10', `office-${n}`)).status);
+    for (let n = 1; n <= 4; n++) statuses.push((await activate(`EIMS-OFFC-0000-000${n}`, 'production', '192.0.2.10', `office-${n}`, true)).status);
+    expect(statuses).toEqual([200, 200, 200, 200, 200, 200, 200, 200]);
+  });
+  it('the durable IP limit is separate (30/hour) from the device limit (default 3/hour)', async () => {
+    await activate('EIMS-GOOD-0000-0001', 'production', '192.0.2.20', 'dev-a');
+    expect(db.rateCalls).toContainEqual(['192.0.2.20', 'ip', 30]);
+    expect(db.rateCalls).toContainEqual(['dev-a', 'device', undefined]);
+  });
+  it('one device is still limited: the 4th attempt within the hour is refused', async () => {
+    const s: number[] = [];
+    for (let i = 0; i < 4; i++) s.push((await activate('EIMS-GOOD-0000-0001', 'production', `192.0.2.${30 + i}`, 'dev-same')).status);
+    expect(s).toEqual([200, 200, 200, 429]);
   });
 });
 

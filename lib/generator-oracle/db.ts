@@ -685,9 +685,11 @@ export async function logActivationAttempt(log: ActivationLog): Promise<void> {
 
 /**
  * Check rate limit for activation attempts
- * Returns true if within limit, false if exceeded
+ * Returns true if within limit, false if exceeded.
+ * maxPerHour defaults to the per-device limit; callers pass a higher figure
+ * for client IPs, which many devices (an office) can share.
  */
-export async function checkRateLimit(identifier: string, type: 'device' | 'ip'): Promise<boolean> {
+export async function checkRateLimit(identifier: string, type: 'device' | 'ip', maxPerHour: number = MAX_ACTIVATION_ATTEMPTS_PER_HOUR): Promise<boolean> {
   const pool = await getPostgresPool();
   if (!pool) return true; // Allow if no database
 
@@ -720,7 +722,7 @@ export async function checkRateLimit(identifier: string, type: 'device' | 'ip'):
     );
 
     const attempts = result.rows[0]?.attempts as number || 0;
-    return attempts <= MAX_ACTIVATION_ATTEMPTS_PER_HOUR;
+    return attempts <= maxPerHour;
   } catch (error) {
     console.error('Rate limit check failed:', error);
     return true; // Allow if error
