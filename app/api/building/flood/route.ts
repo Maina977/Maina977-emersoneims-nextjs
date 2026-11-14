@@ -300,15 +300,15 @@ export async function POST(request: NextRequest) {
     // No rainfall history → no flood rating (2026-11-14): the former 900 mm/yr and
     // 80 mm/day stand-ins produced a rating from invented rainfall.
     if (!precipData) {
-      return NextResponse.json({ success: false, error: 'INSUFFICIENT EVIDENCE: rainfall history unavailable for this location, so no flood rating is given.' }, { status: 503 });
+      return NextResponse.json({ success: false, status: 'INSUFFICIENT EVIDENCE', error: 'INSUFFICIENT EVIDENCE: rainfall history unavailable for this location, so no flood rating is given.' }, { status: 503 });
     }
     // Measured ground elevation or no rating (2026-11-14): the former latitude-box
     // guess (1500 / 50 / 1100 m) decided up to 40 of the 100 points.
     if (!ground) {
-      return NextResponse.json({ success: false, error: 'INSUFFICIENT EVIDENCE: ground elevation unavailable for this location, so no flood rating is given.' }, { status: 503 });
+      return NextResponse.json({ success: false, status: 'INSUFFICIENT EVIDENCE', error: 'INSUFFICIENT EVIDENCE: ground elevation unavailable for this location, so no flood rating is given.' }, { status: 503 });
     }
     if (waterLookup.status === 'failed') {
-      return NextResponse.json({ success: false, error: 'INSUFFICIENT EVIDENCE: the nearby water-body lookup did not answer, so no flood rating is given.' }, { status: 503 });
+      return NextResponse.json({ success: false, status: 'SERVICE UNAVAILABLE', error: 'SERVICE UNAVAILABLE: the OpenStreetMap water-body lookup did not answer, so no flood rating is given. Try again later.' }, { status: 503 });
     }
     const waterBody = waterLookup.status === 'found' ? waterLookup.body : null;
     const elevation = ground.elevationM;

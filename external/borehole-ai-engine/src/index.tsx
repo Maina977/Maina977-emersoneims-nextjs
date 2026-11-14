@@ -1,4 +1,5 @@
 ﻿import { inKenya } from './kenyaLand';
+import { geocodeSearchUrl } from '../../../lib/data-sources/geocodeClient';
 import { finalVerdict } from './verdict';
 import { governingSummary, last12Months, probabilityBand } from './governingSummary';
 import { parseCoordPair } from './coordParse';
@@ -1114,10 +1115,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
       const elapsed = now - lastNominatimCall.current;
       if (elapsed < 1100) await new Promise(r => setTimeout(r, 1100 - elapsed));
       lastNominatimCall.current = Date.now();
-      const resp = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&addressdetails=1&accept-language=en`,
-        { headers: { 'User-Agent': 'EmersonEIMS-BoreHoleAnalyzer/1.0' }, signal: AbortSignal.timeout(10000) },
-      );
+      const resp = await fetch(geocodeSearchUrl(q, { limit: 1 }), { signal: AbortSignal.timeout(10000) });
+      // Kept apart: the service did not answer vs. no place matched.
+      if (!resp.ok) {
+        setManualLocError('Place search is unavailable right now (SERVICE UNAVAILABLE). Try again in a minute, or paste decimal coordinates below.');
+        return;
+      }
       const matches = await resp.json();
       if (!Array.isArray(matches) || matches.length === 0) {
         setManualLocError(`No place found for "${q}". Try adding the county (e.g. "Ebusembe Mukhungu, Vihiga") — or paste decimal coordinates below.`);

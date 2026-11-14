@@ -27,15 +27,52 @@ export const OVERPASS_ENDPOINTS = [
 export interface OverpassResult<E = any> {
   elements: E[];
   endpoint: string;
+  /** 'NO MATCH FOUND' = the server answered and nothing is mapped there. */
+  status: 'OK' | 'NO MATCH FOUND';
+  cached?: boolean;
 }
+
+/** The three outcomes callers must keep apart (management directive 2026-11-14). */
+export type LookupStatus = 'OK' | 'NO MATCH FOUND' | 'SERVICE UNAVAILABLE';
+export const lookupStatus = (r: OverpassResult | null): LookupStatus => (r ? r.status : 'SERVICE UNAVAILABLE');
+
+// Answered queries are cached for an hour (repeat analyses of the same site).
+const CACHE_MS = 60 * 60 * 1000;
+const cache = new Map<string, { at: number; elements: unknown[]; endpoint: string }>();
+// After every server has failed, later calls answer SERVICE UNAVAILABLE at once
+// for two minutes instead of making each visitor wait out the full budget again.
+const BREAKER_MS = 2 * 60 * 1000;
+let breakerOpenUntil = 0;
+export function overpassBreakerOpen() { return Date.now() < breakerOpenUntil; }
+export function _resetOverpassForTests() { cache.clear(); breakerOpenUntil = 0; }
 
 /**
  * Runs an Overpass QL query. Returns null when no endpoint answered with valid
- * JSON. An answered query with no matches returns `elements: []`.
+ * JSON (SERVICE UNAVAILABLE). An answered query with no matches returns
+ * `elements: []` and status 'NO MATCH FOUND'.
  */
 export async function overpassQuery<E = any>(
   query: string,
   opts: { timeoutMs?: number; budgetMs?: number; fetchImpl?: typeof fetch; endpoints?: string[]; revalidateS?: number } = {},
+): Promise<OverpassResult<E> | null> {
+  const hit = cache.get(query);
+  if (hit && Date.now() - hit.at < CACHE_MS) {
+    return { elements: hit.elements as E[], endpoint: hit.endpoint, status: hit.elements.length ? 'OK' : 'NO MATCH FOUND', cached: true };
+  }
+  if (overpassBreakerOpen()) return null;
+  const result = await runQuery<E>(query, opts);
+  if (result) {
+    if (cache.size >= 300) cache.delete(cache.keys().next().value as string);
+    cache.set(query, { at: Date.now(), elements: result.elements, endpoint: result.endpoint });
+  } else {
+    breakerOpenUntil = Date.now() + BREAKER_MS;
+  }
+  return result;
+}
+
+async function runQuery<E>(
+  query: string,
+  opts: { timeoutMs?: number; budgetMs?: number; fetchImpl?: typeof fetch; endpoints?: string[]; revalidateS?: number },
 ): Promise<OverpassResult<E> | null> {
   const fetchImpl = opts.fetchImpl ?? fetch;
   const timeoutMs = opts.timeoutMs ?? 15000;
@@ -61,7 +98,7 @@ export async function overpassQuery<E = any>(
       } as RequestInit);
       if (!r.ok) continue; // 406 / 429 / 5xx: try the next server
       const j = await r.json();
-      if (j && Array.isArray(j.elements)) return { elements: j.elements as E[], endpoint };
+      if (j && Array.isArray(j.elements)) return { elements: j.elements as E[], endpoint, status: j.elements.length ? 'OK' : 'NO MATCH FOUND' };
     } catch {
       // timeout or network: next server
     }

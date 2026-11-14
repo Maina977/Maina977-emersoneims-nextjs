@@ -3,6 +3,7 @@
 // coordinates-only runs, where the classifier has nothing to look at).
 import exifr from 'exifr';
 import { estimateGeographicLocation } from './geoEstimator';
+import { geocodeSearchUrl, geocodeReverseUrl } from '../../../lib/data-sources/geocodeClient';
 
 /**
  * ImageDetector — Real image analysis pipeline.
@@ -321,19 +322,16 @@ export class ImageDetector {
       'fuel', 'parking', 'bus_stop', 'station',
     ]);
 
-    // Try each query — return FIRST valid geographic match
-    for (const q of uniqueQueries) {
+    // Try each query — return FIRST valid geographic match. At most 4 lookups
+    // per photo, through the site's geocoding endpoint (Nominatim usage policy).
+    for (const q of uniqueQueries.slice(0, 4)) {
       try {
-        const encoded = encodeURIComponent(q);
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encoded}&limit=5&addressdetails=1&accept-language=en`;
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'EIMS-AquaScanPro/3.0 (borehole-analysis)' },
-          signal: AbortSignal.timeout(10000),
-        });
+        const url = geocodeSearchUrl(q, { limit: 5 });
+        const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
         if (!res.ok) {
           console.log(`[ForwardGeocode] HTTP ${res.status} for "${q}"`);
-          // Nominatim 429 = rate limited, wait and retry
-          if (res.status === 429) await new Promise(r => setTimeout(r, 2000));
+          // 503 SERVICE UNAVAILABLE / 429: stop, do not hammer the service.
+          if (res.status === 503 || res.status === 429) break;
           continue;
         }
         const results = await res.json();
@@ -424,16 +422,13 @@ export class ImageDetector {
       'fuel', 'parking', 'bus_stop', 'station',
     ]);
 
-    for (const q of uniqueQueries) {
+    for (const q of uniqueQueries.slice(0, 4)) {
       try {
-        const encoded = encodeURIComponent(q);
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encoded}&limit=5&addressdetails=1&accept-language=en&countrycodes=${countryCodes}`;
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'EIMS-AquaScanPro/3.0 (borehole-analysis)' },
-          signal: AbortSignal.timeout(10000),
-        });
+        const url = geocodeSearchUrl(q, { limit: 5, countrycodes: countryCodes });
+        const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
         if (!res.ok) {
-          if (res.status === 429) await new Promise(r => setTimeout(r, 2000));
+          // 503 = SERVICE UNAVAILABLE: stop here rather than retrying every query.
+          if (res.status === 503 || res.status === 429) break;
           continue;
         }
         const results = await res.json();
@@ -511,11 +506,8 @@ export class ImageDetector {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&accept-language=en`;
-      const res = await fetch(url, {
-        signal: controller.signal,
-        headers: { 'User-Agent': 'EIMS-AquaScanPro/3.0 (borehole-analysis)' }
-      });
+      const url = geocodeReverseUrl(latitude, longitude, { zoom: 18 });
+      const res = await fetch(url, { signal: controller.signal });
       clearTimeout(timeout);
       if (res.ok) {
         const data = await res.json();

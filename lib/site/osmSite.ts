@@ -54,7 +54,7 @@ export async function fetchOsmSite(lat: number, lon: number, radiusMeters = 80):
   const q = `[out:json][timeout:20];(way["building"](around:${radius},${lat},${lon});node["natural"="tree"](around:${radius},${lat},${lon}););out geom tags;`;
   // Identifying User-Agent + mirror fallback (2026-11-14: Node's default UA got 406).
   const j = await overpassQuery<{ type: string; id: number; lat?: number; lon?: number; tags?: Record<string, string>; geometry?: { lat: number; lon: number }[] }>(q, { timeoutMs: 15000, revalidateS: 60 * 60 * 24 * 7 });
-  if (!j) throw new Error('OpenStreetMap (Overpass) did not answer');
+  if (!j) throw new Error('SERVICE UNAVAILABLE: OpenStreetMap (Overpass) did not answer');
 
   const local = (pLat: number, pLon: number) => ({
     x: Math.round(toRad(pLon - lon) * R * Math.cos(toRad(lat)) * 100) / 100,
