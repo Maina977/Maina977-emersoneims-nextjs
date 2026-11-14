@@ -1,0 +1,2 @@
+# One row per product, from the manufacturer datasheet. Units: W, V, A, %/degC, degC, kW, kWh, fractions 0-1, C-rate.
+manufacturer,datasheetUrl,datasheetRevision,datasheetDate,enteredBy,enteredOn,model,acKw,maxDcV,mpptMinV,mpptMaxV,mpptCount,maxInputA,maxIscA,batteryMaxDischargeKw,batteryMaxChargeKw,generatorCompatibility
