@@ -71,6 +71,10 @@ export function answerOracle(message: string): OracleAnswer {
       const checks = full?.diagnosticSteps?.length ? `Checks: ${full.diagnosticSteps.slice(0, 4).map((s) => s.action).join('; ')}.` : '';
       const text = [
         `**${codeLabel(top)} — ${top.title}** (${top.brand}; severity: ${top.severity})`,
+        // High-risk alarms not checked against the OEM manual say so first (review 2026-11-14).
+        (top.severity === 'shutdown' || top.severity === 'critical') && !full?.verified
+          ? `NOT VERIFIED against the ${top.brand} manual: this is a ${top.severity} alarm. Follow the controller/engine manual, and stop the set if it is unsafe.`
+          : '',
         safety,
         top.description,
         causes,
@@ -97,6 +101,8 @@ export function answerOracle(message: string): OracleAnswer {
     if (/\bleak/i.test(q)) parts.push(d.notes[0]);
     if (d.guides.length) parts.push(`Repair guides that cover this: ${d.guides.map((g) => `${g.title} (${g.url})`).join('; ')}.`);
     if (alarms.length) parts.push(`Alarms that mention these symptoms: ${alarms.map((a) => `${codeLabel(a)} — ${a.title}`).join('; ')}.`);
+    // Provenance (review 2026-11-14): alarm notes are our guidance, not OEM-verified.
+    if (alarms.length) parts.push('Those alarm notes are our engineers' guidance and are NOT VERIFIED against the manufacturer's manual; follow the controller manual.');
     parts.push('These are matched on the words you used, not a diagnosis. Start with the guide, and stop the set if there is a safety risk.');
     return { kind: 'symptom', found: true, text: parts.join('\n\n'), results: alarms, guides: d.guides, interpretedAs: null };
   }

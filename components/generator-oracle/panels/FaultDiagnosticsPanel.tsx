@@ -163,6 +163,9 @@ function FaultDetailModal({
                 <div className="flex flex-wrap items-center gap-3 mb-2">
                   <h2 className="text-lg sm:text-xl font-bold text-white">{fault.title}</h2>
                   <SeverityBadge severity={fault.severity} />
+                  {!fault.verified && (fault.severity === 'shutdown' || fault.severity === 'critical') && (
+                    <span className="rounded border border-amber-400/60 bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-200" title="Our engineers' guide; not yet checked against the OEM manual">NOT VERIFIED against OEM manual</span>
+                  )}
                 </div>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
                   <span>📦 {fault.brand}</span>
