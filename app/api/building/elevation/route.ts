@@ -175,15 +175,13 @@ export async function POST(request: NextRequest) {
       source = 'OpenTopoData SRTM30m';
     }
 
+    // Measured or nothing (2026-11-14): the "Regional Estimate" was
+    // 1200 + |latitude| × 100 m in East Africa and 500 m elsewhere.
     if (elevation === null) {
-      // Regional estimate based on location
-      if (latitude >= -5 && latitude <= 5 && longitude >= 33 && longitude <= 42) {
-        // Kenya/East Africa
-        elevation = 1200 + Math.abs(latitude * 100);
-      } else {
-        elevation = 500;
-      }
-      source = 'Regional Estimate';
+      return NextResponse.json(
+        { success: false, error: 'INSUFFICIENT EVIDENCE: no elevation service answered for this location.' },
+        { status: 503 }
+      );
     }
 
     // Get elevation grid for slope calculation

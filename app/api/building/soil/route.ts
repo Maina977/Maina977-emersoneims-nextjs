@@ -1,7 +1,7 @@
 /**
- * REAL Soil Data API
- * Uses SoilGrids API (ISRIC - World Soil Information)
- * Free, no API key needed
+ * Soil description from SoilGrids 2.0 (ISRIC, CC BY 4.0), 30-60 cm.
+ * No answer → INSUFFICIENT EVIDENCE. Bearing capacity and water table are not
+ * given: a soil map cannot supply them.
  * https://rest.isric.org/soilgrids/v2.0/docs
  */
 
@@ -17,26 +17,31 @@ interface SoilResponse {
   data?: {
     soilType: string;
     classification: string;
+    // Each value is null when SoilGrids did not report it (never 0 or a stand-in).
     properties: {
       clay: number;        // %
       sand: number;        // %
       silt: number;        // %
-      organicCarbon: number; // g/kg
-      ph: number;
-      bulkDensity: number; // kg/dm³
-      coarseFragments: number; // %
-      nitrogen: number;    // g/kg
-      cationExchange: number; // cmol(c)/kg
+      organicCarbon: number | null; // g/kg
+      ph: number | null;
+      bulkDensity: number | null; // kg/dm³
+      coarseFragments: number | null; // %
+      nitrogen: number | null;    // g/kg
+      cationExchange: number | null; // cmol(c)/kg
     };
-    bearingCapacity: number;  // kN/m² (calculated)
-    waterTable: number;       // estimated depth in meters
+    // 2026-11-14: bearing capacity was a texture rule of thumb (75-200 kPa) and
+    // the water table a formula of clay % and longitude. Neither can be read from
+    // a 250 m soil map; both are null and need a site investigation.
+    bearingCapacity: null;
+    waterTable: null;
     permeability: string;
-    expansive: boolean;
-    corrosivity: string;
+    expansive: boolean;       // indicative only: clay-rich texture at 30-60 cm
+    corrosivity: string | null;
     foundationRecommendation: string;
-    excavationDifficulty: string;
+    excavationDifficulty: string | null;
     source: string;
     depths: string;
+    limitations: string[];
   };
   error?: string;
 }
@@ -77,19 +82,18 @@ async function fetchSoilGridsData(lat: number, lng: number): Promise<any | null>
   return null;
 }
 
-function extractProperty(data: any, property: string, depth: string = '30-60cm'): number {
+// null when the layer or depth is missing: a missing clay value used to read as 0 % clay.
+function extractProperty(data: any, property: string, depth: string = '30-60cm'): number | null {
   try {
     const prop = data.properties.layers.find((l: any) => l.name === property);
-    if (!prop) return 0;
-
-    const depthData = prop.depths.find((d: any) => d.label === depth);
-    if (!depthData) return 0;
-
-    return depthData.values.mean || 0;
+    const v = prop?.depths?.find((d: any) => d.label === depth)?.values?.mean;
+    return typeof v === 'number' && Number.isFinite(v) ? v : null;
   } catch {
-    return 0;
+    return null;
   }
 }
+const scaled = (v: number | null, div: number) => (v === null ? null : v / div);
+const round = (v: number | null, dp: number) => (v === null ? null : Math.round(v * 10 ** dp) / 10 ** dp);
 
 function classifySoilType(clay: number, sand: number, silt: number): string {
   // USDA Soil Texture Triangle classification
@@ -113,53 +117,17 @@ function classifySoilType(clay: number, sand: number, silt: number): string {
   return 'Loam';
 }
 
-function calculateBearingCapacity(clay: number, sand: number, bulkDensity: number): number {
-  // Simplified bearing capacity estimation (kN/m²)
-  // Based on soil composition and density
-  let baseBearing = 100;
-
-  if (sand >= 70) baseBearing = 200;  // Sandy soils have higher bearing
-  else if (clay >= 50) baseBearing = 75;  // High clay reduces bearing
-  else if (clay >= 30) baseBearing = 100;
-  else baseBearing = 150;
-
-  // Adjust for bulk density (higher density = higher bearing)
-  const densityFactor = bulkDensity / 1.4; // 1.4 is typical
-  baseBearing *= densityFactor;
-
-  return Math.round(baseBearing);
+// No foundation type is chosen from a soil map (2026-11-14): it used to follow
+// from the texture-rule bearing capacity. The map can only flag what to look for.
+function getFoundationRecommendation(expansive: boolean): string {
+  const si = 'Foundation type and bearing pressure need a geotechnical site investigation (trial pits or boreholes with in-situ tests) and an engineer\'s design.';
+  return expansive
+    ? `${si} The soil map suggests clay-rich soil that may shrink and swell (for example black cotton soil): ask the investigation to test for it.`
+    : si;
 }
 
-function estimateWaterTable(lat: number, lng: number, clay: number): number {
-  // Simplified water table estimation
-  // Kenya/East Africa typically 5-30m depending on location
-  let baseDepth = 10;
-
-  // Higher clay = shallower water table
-  if (clay > 50) baseDepth = 3;
-  else if (clay > 30) baseDepth = 5;
-  else baseDepth = 10;
-
-  // Adjust for location (coastal areas shallower)
-  const distanceFromCoast = Math.abs(lng - 40); // Approximate for Kenya
-  baseDepth += distanceFromCoast * 0.3;
-
-  return Math.round(baseDepth);
-}
-
-function getFoundationRecommendation(soilType: string, bearingCapacity: number, expansive: boolean): string {
-  if (expansive) {
-    if (bearingCapacity < 75) return 'Pile Foundation (Under-ream type recommended due to expansive soil)';
-    return 'Raft Foundation with moisture barrier or Pile Foundation';
-  }
-
-  if (bearingCapacity >= 200) return 'Strip Foundation or Pad Foundation';
-  if (bearingCapacity >= 100) return 'Strip Foundation or Raft Foundation';
-  if (bearingCapacity >= 50) return 'Raft Foundation';
-  return 'Pile Foundation (deep foundations required)';
-}
-
-function getExcavationDifficulty(clay: number, sand: number, coarseFragments: number): string {
+function getExcavationDifficulty(clay: number, sand: number, coarseFragments: number | null): string | null {
+  if (coarseFragments === null) return null;
   if (coarseFragments > 35) return 'Difficult (high rock content)';
   if (clay > 50) return 'Moderate (cohesive soil)';
   if (sand > 80) return 'Easy (loose sandy soil)';
@@ -173,8 +141,9 @@ function getPermeability(clay: number, sand: number): string {
   return 'Moderate';
 }
 
-function getCorrosivity(ph: number, clay: number): string {
+function getCorrosivity(ph: number | null, clay: number): string | null {
   // Soil corrosivity based on pH and clay content
+  if (ph === null) return null;
   if (ph < 5.5 || ph > 9) return 'High';
   if (clay > 40 && (ph < 6 || ph > 8)) return 'Moderate';
   return 'Low';
@@ -196,50 +165,25 @@ export async function POST(request: NextRequest) {
 
     // Fetch real data from SoilGrids
     const soilData = await fetchSoilGridsData(latitude, longitude);
-    let source = 'ISRIC SoilGrids';
+    const source = 'ISRIC SoilGrids 2.0 (250 m, CC BY 4.0)';
 
-    let clay: number, sand: number, silt: number, ph: number;
-    let organicCarbon: number, bulkDensity: number, coarseFragments: number;
-    let nitrogen: number, cationExchange: number;
-
-    if (soilData && soilData.properties?.layers) {
-      // Extract values from SoilGrids response
-      clay = extractProperty(soilData, 'clay', '30-60cm') / 10; // Convert from g/kg to %
-      sand = extractProperty(soilData, 'sand', '30-60cm') / 10;
-      silt = extractProperty(soilData, 'silt', '30-60cm') / 10;
-      ph = extractProperty(soilData, 'phh2o', '30-60cm') / 10; // pH is stored as pH * 10
-      organicCarbon = extractProperty(soilData, 'soc', '30-60cm') / 10; // g/kg / 10
-      bulkDensity = extractProperty(soilData, 'bdod', '30-60cm') / 100; // Convert to kg/dm³
-      coarseFragments = extractProperty(soilData, 'cfvo', '30-60cm') / 10;
-      nitrogen = extractProperty(soilData, 'nitrogen', '30-60cm') / 100;
-      cationExchange = extractProperty(soilData, 'cec', '30-60cm') / 10;
-    } else {
-      // Regional fallback for Kenya
-      source = 'Regional Model (Kenya)';
-
-      // Common soil types in different Kenya regions
-      if (latitude >= -1 && latitude <= 1 && longitude >= 36 && longitude <= 38) {
-        // Central Kenya (Red volcanic soils - Nitisols)
-        clay = 45; sand = 25; silt = 30; ph = 5.8;
-        organicCarbon = 2.5; bulkDensity = 1.2; coarseFragments = 10;
-        nitrogen = 0.2; cationExchange = 25;
-      } else if (latitude <= -2 && longitude >= 39) {
-        // Coastal Kenya (Sandy soils)
-        clay = 15; sand = 70; silt = 15; ph = 7.2;
-        organicCarbon = 0.8; bulkDensity = 1.5; coarseFragments = 5;
-        nitrogen = 0.1; cationExchange = 8;
-      } else if (latitude >= -1 && latitude <= 2 && longitude >= 34 && longitude <= 36) {
-        // Western Kenya (Black cotton soil - Vertisols)
-        clay = 55; sand = 20; silt = 25; ph = 6.5;
-        organicCarbon = 1.5; bulkDensity = 1.3; coarseFragments = 5;
-        nitrogen = 0.15; cationExchange = 35;
-      } else {
-        // Default (Loam)
-        clay = 25; sand = 40; silt = 35; ph = 6.2;
-        organicCarbon = 1.2; bulkDensity = 1.4; coarseFragments = 15;
-        nitrogen = 0.12; cationExchange = 15;
-      }
+    // SoilGrids or nothing (2026-11-14): the "Regional Model (Kenya)" fallback
+    // returned one of four fixed soils chosen by a latitude/longitude box.
+    const layer = (p: string) => (soilData?.properties?.layers ? extractProperty(soilData, p, '30-60cm') : null);
+    const clayG = layer('clay'), sandG = layer('sand'), siltG = layer('silt');
+    if (clayG === null || sandG === null || siltG === null) {
+      return NextResponse.json(
+        { success: false, error: 'INSUFFICIENT EVIDENCE: SoilGrids gave no clay/sand/silt for this location, so no soil description is given.' },
+        { status: 503 }
+      );
     }
+    let clay = clayG / 10, sand = sandG / 10, silt = siltG / 10; // g/kg → %
+    const ph = scaled(layer('phh2o'), 10);           // stored as pH × 10
+    const organicCarbon = scaled(layer('soc'), 10);  // dg/kg → g/kg
+    const bulkDensity = scaled(layer('bdod'), 100);  // cg/cm³ → kg/dm³
+    const coarseFragments = scaled(layer('cfvo'), 10);
+    const nitrogen = scaled(layer('nitrogen'), 100);
+    const cationExchange = scaled(layer('cec'), 10);
 
     // Normalize percentages
     const total = clay + sand + silt;
@@ -251,35 +195,38 @@ export async function POST(request: NextRequest) {
     }
 
     const soilType = classifySoilType(clay, sand, silt);
-    const bearingCapacity = calculateBearingCapacity(clay, sand, bulkDensity || 1.4);
     const expansive = clay > 40 && soilType.includes('Clay');
-    const waterTable = estimateWaterTable(latitude, longitude, clay);
 
     const result: SoilResponse = {
       success: true,
       data: {
         soilType,
-        classification: `${soilType} (USDA Classification)`,
+        classification: `${soilType} (USDA texture class from SoilGrids)`,
         properties: {
           clay: Math.round(clay * 10) / 10,
           sand: Math.round(sand * 10) / 10,
           silt: Math.round(silt * 10) / 10,
-          organicCarbon: Math.round(organicCarbon * 100) / 100,
-          ph: Math.round(ph * 10) / 10,
-          bulkDensity: Math.round((bulkDensity || 1.4) * 100) / 100,
-          coarseFragments: Math.round(coarseFragments),
-          nitrogen: Math.round(nitrogen * 1000) / 1000,
-          cationExchange: Math.round(cationExchange * 10) / 10,
+          organicCarbon: round(organicCarbon, 2),
+          ph: round(ph, 1),
+          bulkDensity: round(bulkDensity, 2),
+          coarseFragments: round(coarseFragments, 0),
+          nitrogen: round(nitrogen, 3),
+          cationExchange: round(cationExchange, 1),
         },
-        bearingCapacity,
-        waterTable,
+        bearingCapacity: null,
+        waterTable: null,
         permeability: getPermeability(clay, sand),
         expansive,
         corrosivity: getCorrosivity(ph, clay),
-        foundationRecommendation: getFoundationRecommendation(soilType, bearingCapacity, expansive),
+        foundationRecommendation: getFoundationRecommendation(expansive),
         excavationDifficulty: getExcavationDifficulty(clay, sand, coarseFragments),
         source,
         depths: '30-60cm analysis depth',
+        limitations: [
+          'SoilGrids is a 250 m predicted map, not a test of this plot; local fill, rock and made ground are not seen.',
+          'Bearing capacity and groundwater level are not given: they need a site investigation.',
+          'Shrink-swell, permeability and corrosivity are indicative from texture and pH only.',
+        ],
       },
     };
 

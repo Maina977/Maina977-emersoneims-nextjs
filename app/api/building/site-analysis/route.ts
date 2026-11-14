@@ -59,8 +59,8 @@ interface CompleteSiteAnalysis {
     zone: string;
     temperature: { annual: number; max: number; min: number };
     rainfall: { annual: number; maxMonthly: number };
-    wind: { avgSpeed: number; maxSpeed: number; designPressure: number };
-    solar: { irradiance: number; sunHours: number };
+    wind: { avgSpeed: number; maxSpeed: number; designPressure: null };
+    solar: { irradiance: number; sunHours: null };
     buildingCode: string;
   } | null;
   flood: {
@@ -76,20 +76,22 @@ interface CompleteSiteAnalysis {
     pga: number;
     requirements: string[];
   };
+  // null when OpenStreetMap did not answer; "available" = mapped within the radius.
   infrastructure: {
-    roadAccess: { available: boolean; type: string; distance: number };
-    electricity: { available: boolean; distance: number; voltage: string };
-    water: { available: boolean; type: string; distance: number };
-    sewer: { available: boolean; type: string; distance: number };
-    telecom: { fiberAvailable: boolean; mobileSignal: string };
-  };
+    source: string;
+    roadAccess: { available: boolean; type: string | null; distance: number | null; searchRadiusM: number };
+    electricity: { available: boolean; distance: number | null; voltage: null; searchRadiusM: number };
+    water: { available: boolean; type: string; distance: number | null; searchRadiusM: number };
+    sewer: { available: boolean; type: string; distance: number | null; searchRadiusM: number };
+    telecom: null;
+  } | null;
   amenities: {
-    hospital: number;
-    school: number;
-    shopping: number;
-    police: number;
-    publicTransport: number;
-  };
+    hospital: number | null;
+    school: number | null;
+    shopping: number | null;
+    police: number | null;
+    publicTransport: number | null;
+  } | null;
   legal: {
     zoning: string;
     maxHeight: number;
@@ -156,21 +158,12 @@ async function reverseGeocode(lat: number, lng: number): Promise<{
 }
 
 // Fetch nearby amenities from OpenStreetMap
-async function fetchNearbyAmenities(lat: number, lng: number): Promise<{
-  hospital: number;
-  school: number;
-  shopping: number;
-  police: number;
-  publicTransport: number;
-}> {
-  const defaultDistances = {
-    hospital: 5000,
-    school: 2000,
-    shopping: 3000,
-    police: 4000,
-    publicTransport: 1000,
-  };
+// Distances in metres to the nearest mapped feature; null = none mapped within
+// the search radius. The whole result is null when OpenStreetMap did not answer
+// (2026-11-14: fixed defaults such as hospital 5000 m were returned instead).
+type Amenities = { hospital: number | null; school: number | null; shopping: number | null; police: number | null; publicTransport: number | null };
 
+async function fetchNearbyAmenities(lat: number, lng: number): Promise<Amenities | null> {
   try {
     const query = `
       [out:json][timeout:20];
@@ -195,31 +188,35 @@ async function fetchNearbyAmenities(lat: number, lng: number): Promise<{
       const data = await response.json();
       const elements = data.elements || [];
 
-      // Find closest of each type
-      const findClosest = (tags: string[], key: string) => {
-        let minDist = defaultDistances[key as keyof typeof defaultDistances];
+      // A tag "key=value" must match exactly; a bare "key" needs the key present.
+      // (The old test matched every non-shop element as a shop.)
+      const matches = (el: any, t: string) => {
+        const [k, v] = t.split('=');
+        return v === undefined ? el.tags?.[k] !== undefined : el.tags?.[k] === v;
+      };
+      const findClosest = (tag: string): number | null => {
+        let min: number | null = null;
         for (const el of elements) {
-          if (tags.some(t => el.tags?.[t.split('=')[0]] === t.split('=')[1] || el.tags?.[t])) {
-            const dist = calculateDistance(lat, lng, el.lat, el.lon);
-            if (dist < minDist) minDist = dist;
-          }
+          if (!matches(el, tag) || typeof el.lat !== 'number' || typeof el.lon !== 'number') continue;
+          const d = calculateDistance(lat, lng, el.lat, el.lon);
+          if (min === null || d < min) min = d;
         }
-        return Math.round(minDist);
+        return min === null ? null : Math.round(min);
       };
 
       return {
-        hospital: findClosest(['amenity=hospital'], 'hospital'),
-        school: findClosest(['amenity=school'], 'school'),
-        shopping: findClosest(['shop'], 'shopping'),
-        police: findClosest(['amenity=police'], 'police'),
-        publicTransport: findClosest(['highway=bus_stop'], 'publicTransport'),
+        hospital: findClosest('amenity=hospital'),
+        school: findClosest('amenity=school'),
+        shopping: findClosest('shop'),
+        police: findClosest('amenity=police'),
+        publicTransport: findClosest('highway=bus_stop'),
       };
     }
   } catch (error) {
     console.error('[Amenities] Fetch failed:', error);
   }
 
-  return defaultDistances;
+  return null;
 }
 
 // Fetch infrastructure from OpenStreetMap
@@ -247,43 +244,40 @@ async function fetchInfrastructure(lat: number, lng: number): Promise<any> {
       const data = await response.json();
       const elements = data.elements || [];
 
-      // Check for road
+      // "available" means mapped in OpenStreetMap within the search radius, and
+      // the distance is to the nearest mapped feature (2026-11-14: distances were
+      // fixed numbers such as 50 / 500 m, and fibre and "Good (4G)" were always shown).
+      const nearest = (list: any[]): number | null => {
+        let best: number | null = null;
+        for (const e of list) {
+          const la = e.center?.lat ?? e.lat, lo = e.center?.lon ?? e.lon;
+          if (typeof la !== 'number' || typeof lo !== 'number') continue;
+          const d = Math.round(calculateDistance(lat, lng, la, lo));
+          if (best === null || d < best) best = d;
+        }
+        return best;
+      };
       const roads = elements.filter((e: any) => e.tags?.highway);
-      const hasRoad = roads.length > 0;
-      const roadType = roads[0]?.tags?.highway || 'unknown';
-
-      // Check for power
       const power = elements.filter((e: any) => e.tags?.power);
-      const hasPower = power.length > 0;
-
-      // Check for water
       const water = elements.filter((e: any) => e.tags?.man_made === 'water_tap');
-      const hasWater = water.length > 0;
-
-      // Check for sewer
       const sewer = elements.filter((e: any) => e.tags?.man_made === 'manhole');
-      const hasSewer = sewer.length > 0;
 
       return {
-        roadAccess: { available: hasRoad, type: roadType, distance: hasRoad ? 50 : 500 },
-        electricity: { available: hasPower, distance: hasPower ? 100 : 500, voltage: '240V' },
-        water: { available: hasWater, type: hasWater ? 'Municipal' : 'Borehole Required', distance: hasWater ? 100 : 1000 },
-        sewer: { available: hasSewer, type: hasSewer ? 'Municipal' : 'Septic Required', distance: hasSewer ? 100 : 500 },
-        telecom: { fiberAvailable: true, mobileSignal: 'Good (4G)' },
+        source: 'OpenStreetMap Overpass (mapped features only)',
+        roadAccess: { available: roads.length > 0, type: roads[0]?.tags?.highway ?? null, distance: nearest(roads), searchRadiusM: 500 },
+        electricity: { available: power.length > 0, distance: nearest(power), voltage: null, searchRadiusM: 500 },
+        water: { available: water.length > 0, type: water.length > 0 ? 'Mapped water tap' : 'No water tap mapped within 1 km: confirm with the water company', distance: nearest(water), searchRadiusM: 1000 },
+        sewer: { available: sewer.length > 0, type: sewer.length > 0 ? 'Mapped manhole' : 'No sewer manhole mapped within 500 m: confirm with the county', distance: nearest(sewer), searchRadiusM: 500 },
+        telecom: null, // no coverage data source
       };
     }
   } catch (error) {
     console.error('[Infrastructure] Fetch failed:', error);
   }
 
-  // Default infrastructure
-  return {
-    roadAccess: { available: true, type: 'tarmac', distance: 100 },
-    electricity: { available: true, distance: 200, voltage: '240V' },
-    water: { available: false, type: 'Borehole Required', distance: 500 },
-    sewer: { available: false, type: 'Septic Required', distance: 500 },
-    telecom: { fiberAvailable: false, mobileSignal: 'Good (4G)' },
-  };
+  // No answer → no infrastructure claims (it used to report a tarmac road at
+  // 100 m and power at 200 m for any site).
+  return null;
 }
 
 function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -346,6 +340,10 @@ function getZoningDefaults(buildingType: string): {
   return zoningMap[buildingType] || zoningMap.residential;
 }
 
+// A missing value must not pass a threshold test: in JavaScript `null < 75` is
+// true, so a null bearing capacity read as "low bearing". NaN fails every comparison.
+const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : NaN);
+
 function calculateOverallScore(
   terrain: any,
   soil: any,
@@ -355,12 +353,12 @@ function calculateOverallScore(
   let score = 50;
 
   // Terrain factors
-  if (terrain?.slope < 5) score += 10;
-  else if (terrain?.slope > 15) score -= 10;
+  if (num(terrain?.slope) < 5) score += 10;
+  else if (num(terrain?.slope) > 15) score -= 10;
 
   // Soil factors
-  if (soil?.bearingCapacity > 150) score += 10;
-  else if (soil?.bearingCapacity < 75) score -= 15;
+  if (num(soil?.bearingCapacity) > 150) score += 10;
+  else if (num(soil?.bearingCapacity) < 75) score -= 15;
 
   if (soil?.expansive) score -= 10;
 
@@ -393,7 +391,7 @@ function generateRecommendations(
   }
 
   // Slope
-  if (terrain?.slope > 10) {
+  if (num(terrain?.slope) > 10) {
     recommendations.push('Site requires cut and fill earthworks - budget for retaining walls');
   }
 
@@ -409,15 +407,16 @@ function generateRecommendations(
   }
 
   // Infrastructure
-  if (!infrastructure?.water?.available) {
+  // Utility advice only from a real lookup: an unanswered lookup is not "no water".
+  if (infrastructure && !infrastructure.water?.available) {
     recommendations.push('Plan for borehole drilling - include in budget');
   }
 
-  if (!infrastructure?.electricity?.available) {
+  if (infrastructure && !infrastructure.electricity?.available) {
     recommendations.push('Budget for power connection or consider solar + generator');
   }
 
-  if (!infrastructure?.sewer?.available) {
+  if (infrastructure && !infrastructure.sewer?.available) {
     recommendations.push('Design septic system with biodigester');
   }
 
@@ -440,7 +439,7 @@ function identifyRisks(
     });
   }
 
-  if (soil?.bearingCapacity < 75) {
+  if (num(soil?.bearingCapacity) < 75) {
     risks.push({
       type: 'Geological',
       level: 'high',
@@ -464,7 +463,7 @@ function identifyRisks(
     });
   }
 
-  if (terrain?.slope > 15) {
+  if (num(terrain?.slope) > 15) {
     risks.push({
       type: 'Terrain',
       level: 'medium',
@@ -517,7 +516,7 @@ export async function POST(request: NextRequest) {
     if (soil?.source) dataSources.push(soil.source);
     if (climate?.source) dataSources.push(climate.source);
     if (flood?.source) dataSources.push(flood.source);
-    dataSources.push('OpenStreetMap Overpass');
+    if (infrastructure || amenities) dataSources.push('OpenStreetMap Overpass');
 
     // Get seismic and zoning data
     const seismic = getSeismicData(latitude, longitude, geocode.country);
@@ -530,6 +529,8 @@ export async function POST(request: NextRequest) {
     if (!soil) insufficientEvidence.push('soil: soil service did not answer');
     if (!climate) insufficientEvidence.push('climate: climate service did not answer');
     if (!flood) insufficientEvidence.push('flood: no flood screening (rainfall, elevation or water-body data unavailable)');
+    if (!infrastructure) insufficientEvidence.push('infrastructure: OpenStreetMap lookup did not answer');
+    if (!amenities) insufficientEvidence.push('amenities: OpenStreetMap lookup did not answer');
     const scorable = Boolean(elevation && soil && flood);
     const overallScore = scorable ? calculateOverallScore(elevation, soil, flood, infrastructure) : null;
     const buildingSuitability = overallScore === null ? 'INSUFFICIENT EVIDENCE' :

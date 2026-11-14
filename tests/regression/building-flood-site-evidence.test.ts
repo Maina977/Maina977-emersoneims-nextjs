@@ -109,7 +109,122 @@ describe('building flood screening', () => {
   });
 });
 
+describe('building soil', () => {
+  const layer = (name: string, mean: number | null) => ({ name, depths: [{ label: '30-60cm', values: { mean } }] });
+  async function soil(layers: unknown[] | null) {
+    vi.stubGlobal('fetch', vi.fn(async () => (layers ? new Response(JSON.stringify({ properties: { layers } })) : new Response('', { status: 503 }))));
+    vi.resetModules();
+    const { POST } = await import('@/app/api/building/soil/route');
+    const { NextRequest } = await import('next/server');
+    const r = await POST(new NextRequest('http://x/api/building/soil', { method: 'POST', body: JSON.stringify({ latitude: 0.5, longitude: 34.8 }) }));
+    return { status: r.status, j: await r.json() };
+  }
+  it('SoilGrids down → INSUFFICIENT EVIDENCE, not the old "Regional Model (Kenya)" black-cotton stand-in', async () => {
+    const { status, j } = await soil(null);
+    expect(status).toBe(503);
+    expect(j.error).toMatch(/INSUFFICIENT EVIDENCE/);
+    expect(JSON.stringify(j)).not.toMatch(/Regional Model/);
+  });
+  it('a missing texture layer is not read as 0 % clay', async () => {
+    const { status } = await soil([layer('clay', null), layer('sand', 200), layer('silt', 250)]);
+    expect(status).toBe(503);
+  });
+  it('real SoilGrids values: texture passes through; no bearing capacity, water table or foundation type from the map', async () => {
+    const { status, j } = await soil([layer('clay', 550), layer('sand', 200), layer('silt', 250), layer('phh2o', 65)]);
+    expect(status).toBe(200);
+    expect(j.data.properties.clay).toBe(55);
+    expect(j.data.properties.ph).toBe(6.5);
+    expect(j.data.properties.bulkDensity).toBeNull(); // not reported → null, not 1.4
+    expect(j.data.bearingCapacity).toBeNull();
+    expect(j.data.waterTable).toBeNull();
+    expect(j.data.expansive).toBe(true);
+    expect(j.data.foundationRecommendation).toMatch(/geotechnical site investigation/);
+    expect(j.data.foundationRecommendation).not.toMatch(/^(Strip|Raft|Pile|Pad)/);
+    expect(j.data.excavationDifficulty).toBeNull(); // needs coarse fragments
+    expect(j.data.source).toMatch(/CC BY 4\.0/);
+  });
+});
+
+describe('building elevation and climate', () => {
+  async function post(route: 'elevation' | 'climate') {
+    vi.resetModules();
+    const { POST } = await import(`@/app/api/building/${route}/route`);
+    const { NextRequest } = await import('next/server');
+    const r = await POST(new NextRequest(`http://x/api/building/${route}`, { method: 'POST', body: JSON.stringify({ latitude: -1.29, longitude: 36.82 }) }));
+    return { status: r.status as number, j: await r.json() };
+  }
+  it('no elevation service → INSUFFICIENT EVIDENCE (was 1200 + |lat| × 100 m)', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 503 })));
+    const { status, j } = await post('elevation');
+    expect(status).toBe(503);
+    expect(j.error).toMatch(/INSUFFICIENT EVIDENCE/);
+  });
+  it('no NASA POWER → INSUFFICIENT EVIDENCE (was one fixed "Regional Model (Kenya)" table)', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 503 })));
+    const { status, j } = await post('climate');
+    expect(status).toBe(503);
+    expect(JSON.stringify(j)).not.toMatch(/Regional Model/);
+  });
+  it('with NASA POWER: measured values pass through; rule-of-thumb figures are null', async () => {
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const series = (v: number) => Object.fromEntries([...months.map((m) => [m, v]), ['ANN', v]]);
+    const parameter = { T2M: series(19), T2M_MAX: series(26), T2M_MIN: series(12), RH2M: series(60), PRECTOTCORR: series(80), WS10M: series(3), WS10M_MAX: series(9), ALLSKY_SFC_SW_DWN: series(5.6), ALLSKY_SFC_UV_INDEX: series(9) };
+    vi.stubGlobal('fetch', vi.fn(async (u: string | URL | Request) => (String(u).includes('power.larc') ? new Response(JSON.stringify({ properties: { parameter } })) : new Response('', { status: 503 }))));
+    const { status, j } = await post('climate');
+    expect(status).toBe(200);
+    expect(j.data.rainfall.annual).toBe(960);
+    expect(j.data.solar.irradiance).toBe(5.6);
+    expect(j.data.rainfall.rainyDays).toBeNull();
+    expect(j.data.rainfall.wetSeason).toBeNull();
+    expect(j.data.wind.designPressure).toBeNull();
+    expect(j.data.wind.prevailingDirection).toBeNull();
+    expect(j.data.solar.sunHours).toBeNull();
+    expect(j.data.extremes).toEqual({ frostDays: null, hotDays: null, stormDays: null, hailRisk: null });
+  });
+});
+
 describe('building site analysis', () => {
+  it('a null bearing capacity or slope is not treated as "low" (JS null < 75 is true)', async () => {
+    const soilOk = { soilType: 'Clay', bearingCapacity: null, expansive: false, source: 'ISRIC SoilGrids 2.0 (250 m, CC BY 4.0)' };
+    const terrain = { elevation: 1650, slope: null, source: 'SRTM' };
+    const floodOk = { riskLevel: 'low', riskScore: 20, floodZone: 'Screening: low', mitigations: [], source: 'NASA POWER' };
+    vi.stubGlobal('fetch', vi.fn(async (u: string | URL | Request) => {
+      const url = String(u);
+      const data = url.includes('/api/building/soil') ? soilOk : url.includes('/api/building/elevation') ? terrain : url.includes('/api/building/flood') ? floodOk : null;
+      return data ? new Response(JSON.stringify({ success: true, data })) : new Response('', { status: 503 });
+    }));
+    vi.resetModules();
+    const { POST } = await import('@/app/api/building/site-analysis/route');
+    const { NextRequest } = await import('next/server');
+    const r = await POST(new NextRequest('http://x/api/building/site-analysis', { method: 'POST', body: JSON.stringify({ latitude: -1.29, longitude: 36.82 }) }));
+    const d = (await r.json()).data;
+    expect(d.risks.map((x: { description: string }) => x.description).join(' ')).not.toMatch(/Low bearing capacity/);
+    expect(d.terrain.accessibility).toBeNull();
+    expect(d.overallScore).toBe(50 + 10); // base 50 + low flood 10; no slope or bearing points from nulls
+  });
+  it('infrastructure and amenities: real nearest distances; a shop is only a shop', async () => {
+    // ~111 m per 0.001° of latitude at the equator
+    const elements = [
+      { type: 'way', center: { lat: 0.002, lon: 0 }, tags: { highway: 'residential' } },
+      { type: 'node', lat: 0.003, lon: 0, tags: { amenity: 'school' } },
+      { type: 'node', lat: 0.010, lon: 0, tags: { shop: 'supermarket' } },
+    ];
+    vi.stubGlobal('fetch', vi.fn(async (u: string | URL | Request) => (String(u).includes('overpass') ? new Response(JSON.stringify({ elements })) : new Response('', { status: 503 }))));
+    vi.resetModules();
+    const { POST } = await import('@/app/api/building/site-analysis/route');
+    const { NextRequest } = await import('next/server');
+    const d = (await (await POST(new NextRequest('http://x/api/building/site-analysis', { method: 'POST', body: JSON.stringify({ latitude: 0, longitude: 0 }) }))).json()).data;
+    expect(d.infrastructure.roadAccess.available).toBe(true);
+    expect(d.infrastructure.roadAccess.distance).toBeGreaterThan(215);
+    expect(d.infrastructure.roadAccess.distance).toBeLessThan(230);
+    expect(d.infrastructure.electricity.available).toBe(false);
+    expect(d.infrastructure.electricity.distance).toBeNull();
+    expect(d.infrastructure.telecom).toBeNull();
+    expect(d.amenities.school).toBeGreaterThan(325);
+    expect(d.amenities.school).toBeLessThan(340);
+    expect(d.amenities.shopping).toBeGreaterThan(1100); // the supermarket, not the nearer school
+    expect(d.amenities.hospital).toBeNull();
+  });
   it('missing sources stay missing: no 1500 m, loam, 100 kPa or "low flood" stand-ins, no overall score', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 503 })));
     vi.resetModules();
@@ -125,7 +240,10 @@ describe('building site analysis', () => {
     expect(d.flood).toBeNull();
     expect(d.overallScore).toBeNull();
     expect(d.buildingSuitability).toBe('INSUFFICIENT EVIDENCE');
-    expect(d.insufficientEvidence).toHaveLength(4);
+    expect(d.insufficientEvidence).toHaveLength(6);
+    expect(d.infrastructure).toBeNull(); // was: tarmac road at 100 m, power at 200 m
+    expect(d.amenities).toBeNull();      // was: hospital 5000 m, school 2000 m …
+    expect(d.recommendations.join(' ')).not.toMatch(/borehole|septic|power connection/i);
     const text = JSON.stringify(d);
     expect(text).not.toMatch(/Zone X|Minimal Risk|Loam \(USDA\)|Strip Foundation|Cwb/);
     expect(d.dataSources).not.toContain('ISRIC SoilGrids');

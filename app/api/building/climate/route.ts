@@ -28,27 +28,28 @@ interface ClimateResponse {
     };
     rainfall: {
       annual: number;      // mm/year
-      wetSeason: number;
-      drySeason: number;
+      wetSeason: null;     // not derived (was a fixed 70 % share)
+      drySeason: null;
       maxMonthly: number;
-      rainyDays: number;
+      rainyDays: null;
     };
     wind: {
       avgSpeed: number;    // m/s
       maxSpeed: number;
-      prevailingDirection: string;
-      designPressure: number; // kN/m²
+      prevailingDirection: null;
+      designPressure: null; // use the code basic wind speed
+      designNote: string;
     };
     solar: {
       irradiance: number;  // kWh/m²/day
-      sunHours: number;
+      sunHours: null;
       uvIndex: number;
     };
     extremes: {
-      frostDays: number;
-      hotDays: number;     // >35°C
-      stormDays: number;
-      hailRisk: string;
+      frostDays: null;
+      hotDays: null;
+      stormDays: null;
+      hailRisk: null;
     };
     climateZone: string;
     buildingDesignCode: string;
@@ -151,21 +152,6 @@ function classifyClimateZone(avgTemp: number, rainfall: number, lat: number): st
   return 'Cwa (Humid Subtropical)';
 }
 
-function getWindDesignPressure(avgSpeed: number, maxSpeed: number): number {
-  // Basic wind pressure calculation (0.613 * V² / 1000)
-  const designSpeed = maxSpeed * 1.2; // Safety factor
-  return Math.round(0.613 * designSpeed * designSpeed / 1000 * 100) / 100;
-}
-
-function getPrevailingWindDirection(lat: number, lng: number): string {
-  // Simplified based on global wind patterns
-  if (lat >= 0 && lat < 30) return 'NE (Trade Winds)';
-  if (lat < 0 && lat > -30) return 'SE (Trade Winds)';
-  if (lat >= 30 && lat < 60) return 'SW (Westerlies)';
-  if (lat <= -30 && lat > -60) return 'NW (Westerlies)';
-  return 'Variable';
-}
-
 function getBuildingDesignCode(country: string, climateZone: string): string {
   // Building codes based on region
   const codes: Record<string, string> = {
@@ -200,7 +186,7 @@ export async function POST(request: NextRequest) {
     const nasaData = await fetchNASAPowerData(latitude, longitude);
     const weatherData = await fetchOpenWeatherData(latitude, longitude);
 
-    let source = 'NASA POWER Climatology';
+    const source = 'NASA POWER Climatology';
 
     let tempData: Record<string, number> = {};
     let tempMaxData: Record<string, number> = {};
@@ -224,27 +210,13 @@ export async function POST(request: NextRequest) {
       solarData = params.ALLSKY_SFC_SW_DWN || {};
       uvData = params.ALLSKY_SFC_UV_INDEX || {};
     } else {
-      source = 'Regional Model (Kenya)';
-
-      // Kenya regional defaults
-      if (latitude >= -5 && latitude <= 5) {
-        // Equatorial East Africa
-        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-        const temps = [20, 21, 21, 20, 19, 18, 17, 18, 19, 20, 20, 20];
-        const rain = [60, 70, 120, 200, 150, 40, 20, 20, 30, 60, 150, 100];
-
-        months.forEach((m, i) => {
-          tempData[m] = temps[i];
-          tempMaxData[m] = temps[i] + 8;
-          tempMinData[m] = temps[i] - 5;
-          humidityData[m] = 65;
-          precipData[m] = rain[i];
-          windData[m] = 3;
-          windMaxData[m] = 12;
-          solarData[m] = 5.5;
-          uvData[m] = 10;
-        });
-      }
+      // NASA POWER or nothing (2026-11-14): the "Regional Model (Kenya)" was one
+      // fixed monthly table (17-21 °C, 65 % humidity, 3 m/s wind) for every site
+      // between 5° S and 5° N, and empty data (NaN) elsewhere.
+      return NextResponse.json(
+        { success: false, error: 'INSUFFICIENT EVIDENCE: NASA POWER climatology did not answer for this location.' },
+        { status: 503 }
+      );
     }
 
     // Calculate aggregates
@@ -264,7 +236,7 @@ export async function POST(request: NextRequest) {
       .map(([k, v]) => v as number);
     const annualRainfall = monthlyRain.reduce((a, b) => a + b, 0);
     const maxMonthlyRain = Math.max(...monthlyRain);
-    const rainyDays = Math.round(annualRainfall / 15); // Approximate
+
 
     // Wind
     const avgWind = calculateAnnualAverage(windData);
@@ -298,29 +270,35 @@ export async function POST(request: NextRequest) {
           max: Math.round(maxHumidity),
           min: Math.round(minHumidity),
         },
+        // 2026-11-14: figures that were rules of thumb, not data, are null:
+        // wet/dry split (fixed 70/30), rainy days (annual ÷ 15), storm days,
+        // frost/hot days, hail risk, sun hours (irradiance ÷ 0.8), wind
+        // direction by latitude band, and a "design pressure" from monthly
+        // maximum wind × 1.2, which is not a code basic wind speed.
         rainfall: {
           annual: Math.round(annualRainfall),
-          wetSeason: Math.round(annualRainfall * 0.7),
-          drySeason: Math.round(annualRainfall * 0.3),
+          wetSeason: null,
+          drySeason: null,
           maxMonthly: Math.round(maxMonthlyRain),
-          rainyDays: rainyDays,
+          rainyDays: null,
         },
         wind: {
           avgSpeed: Math.round(avgWind * 10) / 10,
           maxSpeed: Math.round(maxWind * 10) / 10,
-          prevailingDirection: getPrevailingWindDirection(latitude, longitude),
-          designPressure: getWindDesignPressure(avgWind, maxWind),
+          prevailingDirection: null,
+          designPressure: null,
+          designNote: 'For structural design use the basic wind speed from the national annex / building code, not these climatology values.',
         },
         solar: {
           irradiance: Math.round(avgSolar * 100) / 100,
-          sunHours: Math.round(avgSolar / 0.8), // Approximate conversion
+          sunHours: null,
           uvIndex: Math.round(avgUV * 10) / 10,
         },
         extremes: {
-          frostDays: minTemp < 0 ? Math.round(30 - annualTemp) : 0,
-          hotDays: maxTemp > 35 ? Math.round((maxTemp - 30) * 10) : 0,
-          stormDays: Math.round(rainyDays * 0.1),
-          hailRisk: annualRainfall > 1000 ? 'Moderate' : 'Low',
+          frostDays: null,
+          hotDays: null,
+          stormDays: null,
+          hailRisk: null,
         },
         climateZone,
         buildingDesignCode: getBuildingDesignCode(country, climateZone),
