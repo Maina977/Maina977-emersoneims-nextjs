@@ -102,7 +102,7 @@ export function answerOracle(message: string): OracleAnswer {
     if (d.guides.length) parts.push(`Repair guides that cover this: ${d.guides.map((g) => `${g.title} (${g.url})`).join('; ')}.`);
     if (alarms.length) parts.push(`Alarms that mention these symptoms: ${alarms.map((a) => `${codeLabel(a)} — ${a.title}`).join('; ')}.`);
     // Provenance (review 2026-11-14): alarm notes are our guidance, not OEM-verified.
-    if (alarms.length) parts.push('Those alarm notes are our engineers' guidance and are NOT VERIFIED against the manufacturer's manual; follow the controller manual.');
+    if (alarms.length) parts.push("Those alarm notes are our engineers' guidance and are NOT VERIFIED against the manufacturer's manual; follow the controller manual.");
     parts.push('These are matched on the words you used, not a diagnosis. Start with the guide, and stop the set if there is a safety risk.');
     return { kind: 'symptom', found: true, text: parts.join('\n\n'), results: alarms, guides: d.guides, interpretedAs: null };
   }
