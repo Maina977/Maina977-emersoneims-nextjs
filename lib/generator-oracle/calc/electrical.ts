@@ -12,7 +12,7 @@
  * Engine version recorded with every result (directive §7).
  */
 
-export const CALC_ENGINE_VERSION = 'oracle-calc 1.0.0 (2026-11-13)';
+export const CALC_ENGINE_VERSION = 'oracle-calc 1.1.0 (2026-11-14)';
 
 export interface CalcResult<T> {
   ok: true;
@@ -291,5 +291,61 @@ export function derate(i: {
       'Altitude and temperature effects multiplied; some manufacturers publish a combined table, which then governs.',
     ],
     reference: 'Manufacturer datasheet; ISO 3046-1 / ISO 8528-1 reference conditions (100 kPa, 25 °C, 30% RH).',
+  });
+}
+
+// ─── 9. Synchronising check (paralleling a generator) ───────────────────────
+
+/**
+ * Limits are taken only from a cited source. Built-in presets are the two
+ * IEEE 1547-2003 bands confirmed from a published table (0–500 kVA and
+ * >500–1500 kVA). For any other rating, or when the utility, the controller
+ * manufacturer or IEEE 67 sets tighter limits, the user enters the limits and
+ * their source; nothing is assumed.
+ */
+export const SYNC_PRESETS = {
+  'ieee1547-2003-0-500kVA': { maxDfHz: 0.3, maxDvPct: 10, maxDphiDeg: 20, label: 'IEEE 1547-2003 Table 5, aggregate rating 0–500 kVA' },
+  'ieee1547-2003-500-1500kVA': { maxDfHz: 0.2, maxDvPct: 5, maxDphiDeg: 15, label: 'IEEE 1547-2003 Table 5, aggregate rating >500–1500 kVA' },
+} as const;
+export type SyncPreset = keyof typeof SYNC_PRESETS;
+
+export function syncCheck(i: {
+  incomingV: number; busV: number; incomingHz: number; busHz: number; phaseAngleDeg: number;
+  limits: { preset: SyncPreset } | { maxDfHz: number; maxDvPct: number; maxDphiDeg: number; source: string };
+}): Calc<{ dfHz: number; dvPct: number; dphiDeg: number; withinFrequency: boolean; withinVoltage: boolean; withinPhase: boolean; permitClose: boolean; slipPeriodS: number | null }> {
+  const e: string[] = [];
+  need(e, 'Incoming (generator) voltage', i.incomingV, { gt: 0 });
+  need(e, 'Bus voltage', i.busV, { gt: 0 });
+  need(e, 'Incoming frequency', i.incomingHz, { min: 40, max: 70 });
+  need(e, 'Bus frequency', i.busHz, { min: 40, max: 70 });
+  need(e, 'Phase angle difference', i.phaseAngleDeg, { min: -180, max: 180 });
+  let lim: { maxDfHz: number; maxDvPct: number; maxDphiDeg: number }, source: string;
+  if ('preset' in i.limits) {
+    const p = SYNC_PRESETS[i.limits.preset];
+    if (!p) { e.push('Unknown limit preset.'); lim = { maxDfHz: NaN, maxDvPct: NaN, maxDphiDeg: NaN }; source = ''; }
+    else { lim = p; source = p.label; }
+  } else {
+    const l = i.limits;
+    need(e, 'Frequency difference limit', l.maxDfHz, { gt: 0, max: 1 });
+    need(e, 'Voltage difference limit', l.maxDvPct, { gt: 0, max: 20 });
+    need(e, 'Phase angle limit', l.maxDphiDeg, { gt: 0, max: 30 });
+    if (!l.source || !l.source.trim()) e.push('Enter where the limits come from (utility, controller manual, IEEE 67, IEEE 1547 edition).');
+    lim = l; source = l.source;
+  }
+  if (e.length) return { ok: false, errors: e };
+  const df = i.incomingHz - i.busHz;
+  const dv = 100 * (i.incomingV - i.busV) / i.busV;
+  const dphi = i.phaseAngleDeg;
+  const wf = Math.abs(df) <= lim.maxDfHz, wv = Math.abs(dv) <= lim.maxDvPct, wp = Math.abs(dphi) <= lim.maxDphiDeg;
+  const warnings: string[] = [];
+  if (df < 0) warnings.push('Incoming machine slower than the bus: it would take reverse power on closing. Close with the incoming machine slightly fast.');
+  if (dv < 0) warnings.push('Incoming voltage below the bus: the machine would absorb reactive power on closing.');
+  if (!(wf && wv && wp)) warnings.push('Do NOT close the breaker: at least one difference is outside the limits.');
+  return ok({ dfHz: r(df, 3), dvPct: r(dv, 2), dphiDeg: r(dphi, 1), withinFrequency: wf, withinVoltage: wv, withinPhase: wp, permitClose: wf && wv && wp, slipPeriodS: df !== 0 ? r(1 / Math.abs(df), 1) : null }, {
+    formula: 'Δf = f_incoming − f_bus; ΔV % = 100 × (V_incoming − V_bus) / V_bus; Δφ measured; slip period = 1/|Δf|',
+    inputs: { incomingV: String(i.incomingV), busV: String(i.busV), incomingHz: String(i.incomingHz), busHz: String(i.busHz), phaseAngleDeg: String(i.phaseAngleDeg) },
+    assumptions: ['Values as measured by a synchroscope or synchronising relay at the breaker.', 'A permit here does not replace the synchronising relay (ANSI 25) or the controller interlock.'],
+    reference: `Limits: ${source}.`,
+    warnings,
   });
 }

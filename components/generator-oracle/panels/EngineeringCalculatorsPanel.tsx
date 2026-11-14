@@ -10,13 +10,13 @@
 import { useMemo, useState } from 'react';
 import {
   powerFromVI, currentFromPower, sizeFromLoadSchedule, voltageDrop, phaseImbalance,
-  motorStartDip, fuelAndRuntime, derate, type Calc, type LoadLine, type Phases,
+  motorStartDip, fuelAndRuntime, derate, syncCheck, SYNC_PRESETS, type SyncPreset, type Calc, type LoadLine, type Phases,
 } from '@/lib/generator-oracle/calc/electrical';
 
-type Tool = 'power' | 'current' | 'sizing' | 'vdrop' | 'imbalance' | 'motor' | 'fuel' | 'derate';
+type Tool = 'power' | 'current' | 'sizing' | 'vdrop' | 'imbalance' | 'motor' | 'fuel' | 'derate' | 'sync';
 const TOOLS: Array<[Tool, string]> = [
   ['power', 'kW / kVA / PF'], ['current', 'Current'], ['sizing', 'Load schedule'], ['vdrop', 'Voltage drop'],
-  ['imbalance', 'Phase imbalance'], ['motor', 'Motor start dip'], ['fuel', 'Fuel & runtime'], ['derate', 'Derating'],
+  ['imbalance', 'Phase imbalance'], ['motor', 'Motor start dip'], ['fuel', 'Fuel & runtime'], ['derate', 'Derating'], ['sync', 'Synchronising check'],
 ];
 
 const num = (s: string): number => (s.trim() === '' ? NaN : Number(s));
@@ -83,6 +83,7 @@ export default function EngineeringCalculatorsPanel() {
   const [loads, setLoads] = useState<Array<Record<keyof LoadLine, string>>>([{ name: '', kW: '', powerFactor: '', quantity: '1', demandFactor: '' }]);
   const [material, setMaterial] = useState<'copper' | 'aluminium'>('copper');
   const [quantity, setQuantity] = useState<'voltage' | 'current'>('voltage');
+  const [syncLim, setSyncLim] = useState<SyncPreset | 'custom'>('ieee1547-2003-0-500kVA');
 
   const calc = useMemo((): { c: Calc<Record<string, unknown>>; labels: Record<string, string> } => {
     switch (tool) {
@@ -93,10 +94,11 @@ export default function EngineeringCalculatorsPanel() {
       case 'imbalance': return { c: phaseImbalance({ quantity, values: [num(g('a')), num(g('b')), num(g('c'))] }), labels: { average: 'Average', maxDeviation: 'Max deviation', imbalancePct: 'Unbalance (%)' } };
       case 'motor': return { c: motorStartDip({ generatorKVA: num(g('gkva')), reactancePU: num(g('xd')), motorStartingKVA: num(g('skva')), allowedDipPct: opt(g('lim')) }), labels: { dipPct: 'Initial dip (%)', withinLimit: 'Against your limit' } };
       case 'fuel': return { c: fuelAndRuntime({ loadPct: num(g('load')), usableFuelL: opt(g('tank')), datasheet: [['l1', 'f1'], ['l2', 'f2'], ['l3', 'f3'], ['l4', 'f4']].filter(([l, q]) => g(l) !== '' || g(q) !== '').map(([l, q]) => ({ loadPct: num(g(l)), litresPerHour: num(g(q)) })) }), labels: { litresPerHour: 'Consumption (L/h)', runtimeHours: 'Runtime (h)' } };
+      case 'sync': return { c: syncCheck({ incomingV: num(g('vi')), busV: num(g('vb')), incomingHz: num(g('fi')), busHz: num(g('fb')), phaseAngleDeg: num(g('ph')), limits: syncLim === 'custom' ? { maxDfHz: num(g('ldf')), maxDvPct: num(g('ldv')), maxDphiDeg: num(g('lph')), source: g('lsrc') } : { preset: syncLim } }), labels: { dfHz: 'Δf (Hz)', dvPct: 'ΔV (%)', dphiDeg: 'Δφ (°)', withinFrequency: 'Frequency within limit', withinVoltage: 'Voltage within limit', withinPhase: 'Phase within limit', permitClose: 'Permit breaker close', slipPeriodS: 'Slip period (s)' } };
       case 'derate': return { c: derate({ ratedKW: num(g('kw')), siteAltitudeM: num(g('alt')), altitudeThresholdM: num(g('altT')), altitudePctPerStep: num(g('altP')), altitudeStepM: num(g('altS')), siteTempC: num(g('t')), tempThresholdC: num(g('tT')), tempPctPerStep: num(g('tP')), tempStepC: num(g('tS')) }), labels: { availableKW: 'Available (kW)', totalDeratePct: 'Total derate (%)', altitudeDeratePct: 'Altitude (%)', temperatureDeratePct: 'Temperature (%)' } };
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tool, phases, f, loads, material, quantity]);
+  }, [tool, phases, f, loads, material, quantity, syncLim]);
 
   const phasePick = <Pick label="Supply" value={phases} options={[[3, 'Three-phase'], [1, 'Single-phase']]} onChange={setPhases} />;
   const touched = Object.values(f).some((x) => x !== '') || loads.some((l) => l.kW !== '');
@@ -121,6 +123,7 @@ export default function EngineeringCalculatorsPanel() {
         {tool === 'motor' && (<><Field label="Generator rating" unit="kVA" value={g('gkva')} onChange={s('gkva')} /><Field label="Alternator reactance X″d or X′d (datasheet)" unit="per unit" value={g('xd')} onChange={s('xd')} /><Field label="Motor starting kVA" unit="kVA" value={g('skva')} onChange={s('skva')} /><Field label="Allowed dip (optional)" unit="%" value={g('lim')} onChange={s('lim')} /></>)}
         {tool === 'fuel' && (<>{[1, 2, 3, 4].map((n) => (<div key={n} className="col-span-2 grid grid-cols-2 gap-2"><Field label={`Datasheet point ${n}: load`} unit="%" value={g(`l${n}`)} onChange={s(`l${n}`)} /><Field label="consumption" unit="L/h" value={g(`f${n}`)} onChange={s(`f${n}`)} /></div>))}<Field label="Load to evaluate" unit="%" value={g('load')} onChange={s('load')} /><Field label="Usable fuel (optional)" unit="L" value={g('tank')} onChange={s('tank')} /></>)}
         {tool === 'derate' && (<><Field label="Rated output (datasheet)" unit="kW" value={g('kw')} onChange={s('kw')} /><Field label="Site altitude" unit="m" value={g('alt')} onChange={s('alt')} /><Field label="Altitude threshold (datasheet)" unit="m" value={g('altT')} onChange={s('altT')} /><Field label="Altitude derate per step (datasheet)" unit="%" value={g('altP')} onChange={s('altP')} /><Field label="Altitude step (datasheet)" unit="m" value={g('altS')} onChange={s('altS')} /><Field label="Site max temperature" unit="°C" value={g('t')} onChange={s('t')} /><Field label="Temperature threshold (datasheet)" unit="°C" value={g('tT')} onChange={s('tT')} /><Field label="Temperature derate per step (datasheet)" unit="%" value={g('tP')} onChange={s('tP')} /><Field label="Temperature step (datasheet)" unit="°C" value={g('tS')} onChange={s('tS')} /></>)}
+        {tool === 'sync' && (<><Field label="Incoming (generator) voltage" unit="V" value={g('vi')} onChange={s('vi')} /><Field label="Bus voltage" unit="V" value={g('vb')} onChange={s('vb')} /><Field label="Incoming frequency" unit="Hz" value={g('fi')} onChange={s('fi')} /><Field label="Bus frequency" unit="Hz" value={g('fb')} onChange={s('fb')} /><Field label="Phase angle difference" unit="°" value={g('ph')} onChange={s('ph')} /><Pick label="Limits" value={syncLim} options={[...(Object.entries(SYNC_PRESETS).map(([k, v]) => [k, v.label]) as Array<[SyncPreset, string]>), ['custom', 'Enter limits from utility / controller manual / IEEE 67']]} onChange={setSyncLim} />{syncLim === 'custom' && (<><Field label="Max Δf" unit="Hz" value={g('ldf')} onChange={s('ldf')} /><Field label="Max ΔV" unit="%" value={g('ldv')} onChange={s('ldv')} /><Field label="Max Δφ" unit="°" value={g('lph')} onChange={s('lph')} /><Field label="Source of these limits" value={g('lsrc')} onChange={s('lsrc')} /></>)}</>)}
         {tool === 'sizing' && (<Field label="Maximum loading of the generator" unit="% of rating" value={g('maxload')} onChange={s('maxload')} />)}
       </div>
 
