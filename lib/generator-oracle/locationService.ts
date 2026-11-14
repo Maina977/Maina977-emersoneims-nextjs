@@ -4,6 +4,7 @@
  *
  * @copyright 2026 Generator Oracle / EmersonEIMS
  */
+import { geocodeReverseUrl } from '@/lib/data-sources/geocodeClient';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -172,14 +173,8 @@ export async function reverseGeocode(
   longitude: number
 ): Promise<GeocodeResult | null> {
   try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
-      {
-        headers: {
-          'User-Agent': 'GeneratorOracle/1.0',
-        },
-      }
-    );
+    // Through the site's geocoding endpoint (Nominatim usage policy, 2026-11-14).
+    const response = await fetch(geocodeReverseUrl(latitude, longitude, { zoom: 18 }));
 
     if (!response.ok) {
       throw new Error('Geocoding request failed');

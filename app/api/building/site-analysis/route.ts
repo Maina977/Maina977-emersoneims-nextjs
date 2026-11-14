@@ -13,6 +13,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { overpassQuery, OSM_ATTRIBUTION } from '@/lib/data-sources/overpass';
+import { geocodeReverse, OSM_GEOCODE_ATTRIBUTION } from '@/lib/data-sources/nominatim';
 
 interface SiteAnalysisRequest {
   latitude: number;
@@ -26,9 +27,10 @@ interface CompleteSiteAnalysis {
   location: {
     latitude: number;
     longitude: number;
-    address: string;
-    county: string;
-    country: string;
+    address: string | null;
+    county: string | null;
+    country: string | null;
+    lookupStatus: 'OK' | 'NO MATCH FOUND' | 'SERVICE UNAVAILABLE';
   };
   // A section is null when its source did not answer (2026-11-14): it used to
   // be filled with fixed stand-ins (1500 m, 5° slope, loam, 100 kPa bearing,
@@ -71,12 +73,7 @@ interface CompleteSiteAnalysis {
     nearestWaterBody: { name: string; distance: number } | null;
     mitigations: string[];
   } | null;
-  seismic: {
-    zone: number;
-    riskLevel: string;
-    pga: number;
-    requirements: string[];
-  };
+  seismic: ReturnType<typeof getSeismicData>;
   // null when OpenStreetMap did not answer; "available" = mapped within the radius.
   infrastructure: {
     source: string;
@@ -93,12 +90,7 @@ interface CompleteSiteAnalysis {
     police: number | null;
     publicTransport: number | null;
   } | null;
-  legal: {
-    zoning: string;
-    maxHeight: number;
-    maxCoverage: number;
-    setbacks: { front: number; rear: number; side: number };
-  };
+  legal: ReturnType<typeof getZoningDefaults>;
   overallScore: number | null;     // null unless terrain, soil and flood all answered
   buildingSuitability: string;
   insufficientEvidence: string[];  // sections whose source did not answer
@@ -129,33 +121,23 @@ async function callInternalAPI(endpoint: string, body: any): Promise<any> {
 }
 
 // Reverse geocoding
+// Shared Nominatim client (identified, cached, 1 req/s app-wide). The country
+// is never assumed: it was 'KE' whenever the lookup failed.
 async function reverseGeocode(lat: number, lng: number): Promise<{
-  address: string;
-  county: string;
-  country: string;
+  address: string | null;
+  county: string | null;
+  country: string | null;
+  status: 'OK' | 'NO MATCH FOUND' | 'SERVICE UNAVAILABLE';
 }> {
-  try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
-      {
-        headers: { 'User-Agent': 'ProBuildingSuite/1.0' },
-        signal: AbortSignal.timeout(10000),
-      }
-    );
-
-    if (response.ok) {
-      const data = await response.json();
-      return {
-        address: data.display_name || '',
-        county: data.address?.county || data.address?.state_district || data.address?.state || '',
-        country: data.address?.country_code?.toUpperCase() || 'KE',
-      };
-    }
-  } catch (error) {
-    console.error('[Geocode] Failed:', error);
-  }
-
-  return { address: '', county: '', country: 'KE' };
+  const r = await geocodeReverse<{ display_name?: string; address?: Record<string, string> }>(lat, lng, { zoom: 18 });
+  if (r.status !== 'OK' || !r.data) return { address: null, county: null, country: null, status: r.status };
+  const a = r.data.address ?? {};
+  return {
+    address: r.data.display_name ?? null,
+    county: a.county || a.state_district || a.state || null,
+    country: a.country_code ? a.country_code.toUpperCase() : null,
+    status: 'OK',
+  };
 }
 
 // Fetch nearby amenities from OpenStreetMap
@@ -280,53 +262,26 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * c;
 }
 
-function getSeismicData(lat: number, lng: number, country: string): {
-  zone: number;
-  riskLevel: string;
-  pga: number;
-  requirements: string[];
+// 2026-11-14: seismic zone and PGA (0.05 / 0.15 / 0.25 g) were assigned by
+// latitude box, and zoning (R1, 12 m height, 50 % coverage, setbacks) was one
+// fixed table for every site. Neither had a source; both are now null with the
+// authority that holds the real value.
+function getSeismicData(): {
+  zone: null; riskLevel: null; pga: null; requirements: string[]; note: string;
 } {
-  // Simplified seismic zones for Africa
-  let zone = 1;
-  let pga = 0.05;
-
-  // East African Rift increases seismic activity
-  if ((lat >= -4 && lat <= 4 && lng >= 35 && lng <= 40) ||
-    (lat >= 0 && lat <= 4 && lng >= 29 && lng <= 35)) {
-    zone = 2;
-    pga = 0.15;
-  }
-
-  // Ethiopia has higher seismic activity
-  if (country === 'ET') {
-    zone = 3;
-    pga = 0.25;
-  }
-
-  const riskLevel = zone >= 3 ? 'High' : zone >= 2 ? 'Moderate' : 'Low';
-  const requirements = zone >= 2 ? [
-    'Seismic detailing required',
-    'Ductile beam-column connections',
-    'Minimum reinforcement ratios per seismic code',
-  ] : [];
-
-  return { zone, riskLevel, pga, requirements };
+  return {
+    zone: null, riskLevel: null, pga: null, requirements: [],
+    note: 'Seismic design values are not estimated here. Take the zone and design ground acceleration from the national seismic code map for the site (in Kenya, the seismic provisions applied under the Building Code) and confirm with the structural engineer.',
+  };
 }
 
-function getZoningDefaults(buildingType: string): {
-  zoning: string;
-  maxHeight: number;
-  maxCoverage: number;
-  setbacks: { front: number; rear: number; side: number };
+function getZoningDefaults(): {
+  zoning: null; maxHeight: null; maxCoverage: null; setbacks: null; note: string;
 } {
-  const zoningMap: Record<string, any> = {
-    residential: { zoning: 'R1 - Low Density Residential', maxHeight: 12, maxCoverage: 50, setbacks: { front: 6, rear: 3, side: 1.5 } },
-    apartment: { zoning: 'R3 - High Density Residential', maxHeight: 30, maxCoverage: 60, setbacks: { front: 6, rear: 4, side: 3 } },
-    commercial: { zoning: 'C1 - Commercial', maxHeight: 45, maxCoverage: 80, setbacks: { front: 3, rear: 3, side: 0 } },
-    industrial: { zoning: 'I1 - Light Industrial', maxHeight: 20, maxCoverage: 70, setbacks: { front: 10, rear: 6, side: 3 } },
+  return {
+    zoning: null, maxHeight: null, maxCoverage: null, setbacks: null,
+    note: 'Zoning, height, plot coverage and setbacks are set by the county physical planning department for each parcel; obtain them from the county (development permission / zoning certificate) before design.',
   };
-
-  return zoningMap[buildingType] || zoningMap.residential;
 }
 
 // A missing value must not pass a threshold test: in JavaScript `null < 75` is
@@ -468,7 +423,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body: SiteAnalysisRequest = await request.json();
-    const { latitude, longitude, buildingType = 'residential', country = 'KE' } = body;
+    const { latitude, longitude } = body;
 
     if (typeof latitude !== 'number' || typeof longitude !== 'number') {
       return NextResponse.json(
@@ -480,6 +435,7 @@ export async function POST(request: NextRequest) {
     console.log(`[Complete Site Analysis] Starting for ${latitude}, ${longitude}`);
 
     const dataSources: string[] = [];
+    const insufficientEvidenceEarly: string[] = [];
 
     // Parallel API calls for maximum speed
     const [
@@ -500,7 +456,7 @@ export async function POST(request: NextRequest) {
       fetchNearbyAmenities(latitude, longitude),
     ]);
 
-    if (geocode.address) dataSources.push('OpenStreetMap Nominatim');
+    if (geocode.address) dataSources.push(OSM_GEOCODE_ATTRIBUTION);
     if (elevation?.source) dataSources.push(elevation.source);
     if (soil?.source) dataSources.push(soil.source);
     if (climate?.source) dataSources.push(climate.source);
@@ -508,18 +464,22 @@ export async function POST(request: NextRequest) {
     if (infrastructure || amenities) dataSources.push(`OpenStreetMap Overpass (${OSM_ATTRIBUTION})`);
 
     // Get seismic and zoning data
-    const seismic = getSeismicData(latitude, longitude, geocode.country);
-    const zoning = getZoningDefaults(buildingType);
+    const seismic = getSeismicData();
+    const zoning = getZoningDefaults();
+    if (geocode.status !== 'OK') {
+      // Kept apart: the service did not answer vs. it answered with no address.
+      insufficientEvidenceEarly.push(geocode.status === 'SERVICE UNAVAILABLE' ? 'address: SERVICE UNAVAILABLE (geocoding did not answer)' : 'address: NO MATCH FOUND (no address mapped at this point)');
+    }
 
     // No overall score from missing inputs: an absent soil or flood answer used
     // to count as neither good nor bad, so a gap could still read "Good".
-    const insufficientEvidence: string[] = [];
-    if (!elevation) insufficientEvidence.push('terrain: elevation service did not answer');
-    if (!soil) insufficientEvidence.push('soil: soil service did not answer');
-    if (!climate) insufficientEvidence.push('climate: climate service did not answer');
+    const insufficientEvidence: string[] = [...insufficientEvidenceEarly];
+    if (!elevation) insufficientEvidence.push('terrain: SERVICE UNAVAILABLE (elevation service did not answer)');
+    if (!soil) insufficientEvidence.push('soil: no soil description (service unavailable or no mapped soil)');
+    if (!climate) insufficientEvidence.push('climate: SERVICE UNAVAILABLE (climate service did not answer)');
     if (!flood) insufficientEvidence.push('flood: no flood screening (rainfall, elevation or water-body data unavailable)');
-    if (!infrastructure) insufficientEvidence.push('infrastructure: OpenStreetMap lookup did not answer');
-    if (!amenities) insufficientEvidence.push('amenities: OpenStreetMap lookup did not answer');
+    if (!infrastructure) insufficientEvidence.push('infrastructure: SERVICE UNAVAILABLE (OpenStreetMap lookup did not answer)');
+    if (!amenities) insufficientEvidence.push('amenities: SERVICE UNAVAILABLE (OpenStreetMap lookup did not answer)');
     const scorable = Boolean(elevation && soil && flood);
     const overallScore = scorable ? calculateOverallScore(elevation, soil, flood, infrastructure) : null;
     const buildingSuitability = overallScore === null ? 'INSUFFICIENT EVIDENCE' :
@@ -543,6 +503,7 @@ export async function POST(request: NextRequest) {
           address: geocode.address,
           county: geocode.county,
           country: geocode.country,
+          lookupStatus: geocode.status,
         },
         // Values pass through as the source gave them (?? keeps a real 0);
         // a missing section is null, never a stand-in.

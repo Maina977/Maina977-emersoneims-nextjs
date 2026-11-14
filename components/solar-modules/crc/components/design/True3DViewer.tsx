@@ -8,6 +8,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
+import { geocodeSearchUrl } from '../../../../../lib/data-sources/geocodeClient';
 import { calculateSolarPosition } from '../../core/simulation/shadingEngine';
 
 interface Viewer3DProps {
@@ -137,11 +138,9 @@ export const True3DViewer: React.FC<Viewer3DProps> = ({ panels, roofPitch, addre
     (async () => {
       setSite((s) => ({ ...s, loading: true, error: null }));
       try {
-        const geo = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`,
-          { headers: { 'Accept-Language': 'en' } }
-        );
-        if (!geo.ok) throw new Error(`Nominatim HTTP ${geo.status}`);
+        // Through the site's geocoding endpoint (Nominatim usage policy, 2026-11-14).
+        const geo = await fetch(geocodeSearchUrl(address, { limit: 1 }));
+        if (!geo.ok) throw new Error(geo.status === 503 ? 'Place search is unavailable right now (SERVICE UNAVAILABLE).' : `Geocoding HTTP ${geo.status}`);
         const arr = await geo.json();
         if (!arr.length) throw new Error(`No geocode result for "${address}"`);
         const lat = parseFloat(arr[0].lat);

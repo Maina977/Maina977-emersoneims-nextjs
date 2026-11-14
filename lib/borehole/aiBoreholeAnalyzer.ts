@@ -67,6 +67,7 @@ if (typeof window !== 'undefined') {
 // DETERMINISTIC CALCULATIONS - Replaces Math.random() for 95% accuracy
 // ============================================================================
 
+import { geocodeReverseUrl } from '@/lib/data-sources/geocodeClient';
 import {
   getCoordinateValue,
   getValueInRange,
@@ -6149,7 +6150,6 @@ export interface DetectedSite {
 }
 
 export class SiteAutoDetector {
-  private nominatimUrl = 'https://nominatim.openstreetmap.org/reverse';
 
   /**
    * Auto-detect site from image file using EXIF GPS data
@@ -6334,15 +6334,8 @@ export class SiteAutoDetector {
   ): Promise<DetectedSite> {
     try {
       // Call Nominatim API
-      const response = await fetch(
-        `${this.nominatimUrl}?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1&zoom=18&namedetails=1`,
-        {
-          headers: {
-            'User-Agent': 'AquaScanPro/4.0 (https://www.emersoneims.com)',
-            'Accept-Language': 'en',
-          }
-        }
-      );
+      // Through the site's geocoding endpoint (Nominatim usage policy, 2026-11-14).
+      const response = await fetch(geocodeReverseUrl(latitude, longitude, { zoom: 18 }));
 
       if (!response.ok) {
         throw new Error('Geocoding failed');

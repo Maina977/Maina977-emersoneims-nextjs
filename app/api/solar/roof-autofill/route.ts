@@ -4,7 +4,8 @@ import { overpassQuery, OSM_ATTRIBUTION } from '@/lib/data-sources/overpass';
 // Building footprints near a coordinate from OSM Overpass. No footprint, or no
 // answer, gives roofAreaM2 null (2026-11-14: a default 120 m² "typical Kenyan
 // residential" roof, or 80 m² for an unmeasurable footprint, was returned instead).
-const notFound = (assumedPitchDegrees: number, note: string) => ({
+const notFound = (assumedPitchDegrees: number, note: string, status: 'NO MATCH FOUND' | 'SERVICE UNAVAILABLE' | 'INSUFFICIENT EVIDENCE' = 'NO MATCH FOUND') => ({
+  status,
   found: false,
   roofAreaM2: null,
   usableRoofM2: null,
@@ -53,7 +54,7 @@ out geom;
 
     const data = await overpassQuery(query, { timeoutMs: 12000 });
     if (!data) {
-      return NextResponse.json(notFound(assumedPitchDegrees, 'OpenStreetMap did not answer: measure or draw the roof.'));
+      return NextResponse.json(notFound(assumedPitchDegrees, 'SERVICE UNAVAILABLE: OpenStreetMap did not answer. Measure or draw the roof.', 'SERVICE UNAVAILABLE'));
     }
     const elements: any[] = data.elements;
 
@@ -77,7 +78,7 @@ out geom;
     }
 
     if (!(bestArea > 0)) {
-      return NextResponse.json(notFound(assumedPitchDegrees, 'A building is mapped here but without a usable outline: measure or draw the roof.'));
+      return NextResponse.json(notFound(assumedPitchDegrees, 'A building is mapped here but without a usable outline: measure or draw the roof.', 'INSUFFICIENT EVIDENCE'));
     }
     const roofAreaM2 = Math.round(bestArea);
     const usableRoofM2 = Math.round(roofAreaM2 * 0.7); // planning assumption: 70 % usable after setbacks
@@ -87,6 +88,7 @@ out geom;
       tags['roof:shape'] ?? tags['building:roof'] ?? 'unknown';
 
     return NextResponse.json({
+      status: 'OK',
       found: true,
       roofAreaM2,
       usableRoofM2,
@@ -101,6 +103,6 @@ out geom;
     });
   } catch (err) {
     console.error('[solar/roof-autofill]', err);
-    return NextResponse.json(notFound(15, err instanceof Error ? err.message : 'Roof lookup failed: measure or draw the roof.'));
+    return NextResponse.json(notFound(15, err instanceof Error ? err.message : 'Roof lookup failed: measure or draw the roof.', 'SERVICE UNAVAILABLE'));
   }
 }

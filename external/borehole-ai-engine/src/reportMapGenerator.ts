@@ -211,7 +211,8 @@ function drawMapFrame(
   // Attribution
   ctx.fillStyle = '#64748b';
   ctx.font = '9px Helvetica, Arial, sans-serif';
-  ctx.fillText('EMERSON EIMS AquaScan Pro  •  Sources: NASA GIBS, ISRIC SoilGrids, OpenStreetMap', 14, h - 8);
+  // OSM tile policy: attribution must read "© OpenStreetMap contributors".
+  ctx.fillText('EMERSON EIMS AquaScan Pro  •  Sources: NASA GIBS, ISRIC SoilGrids, © OpenStreetMap contributors', 14, h - 8);
 
   // Legend (right side of bottom bar)
   if (legendItems && legendItems.length > 0) {

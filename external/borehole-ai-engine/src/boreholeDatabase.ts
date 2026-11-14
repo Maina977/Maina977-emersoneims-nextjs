@@ -11,6 +11,7 @@
  *
  * Sources: WASREB, WRA Kenya, BGS Africa Groundwater Atlas, RWSN, WPDx, UNICEF WASH
  */
+import { geocodeSearchUrl } from '../../../lib/data-sources/geocodeClient';
 
 // ─── Kenya County-Level Borehole Intelligence ───
 // Source: Kenya WRA Borehole Completion Reports, WASREB County Water Data,
@@ -2374,14 +2375,11 @@ export async function geocodeLocationForm(
     if (q.length > 2 && !queries.includes(q)) queries.push(q);
   }
 
-  for (const q of queries) {
+  // Through the site's geocoding endpoint (Nominatim usage policy, 2026-11-14).
+  for (const q of queries.slice(0, 4)) {
     try {
-      const encoded = encodeURIComponent(q);
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encoded}&limit=5&addressdetails=1&accept-language=en`;
-      const res = await fetch(url, {
-        headers: { 'User-Agent': 'EIMS-AquaScanPro/3.0 (borehole-analysis)' },
-        signal: AbortSignal.timeout(10000),
-      });
+      const res = await fetch(geocodeSearchUrl(q, { limit: 5 }), { signal: AbortSignal.timeout(10000) });
+      if (res.status === 503 || res.status === 429) break; // SERVICE UNAVAILABLE: stop, don't retry each query
       if (!res.ok) continue;
       const results = await res.json();
 

@@ -12,7 +12,7 @@
  * - Only mapped OSM water points are returned, with only the values their tags
  *   state. A missing tag is null.
  * - Statistics are computed from those values or are null.
- * - A failed lookup is INSUFFICIENT EVIDENCE, not "none nearby".
+ * - A failed lookup is SERVICE UNAVAILABLE; an empty answer is NO MATCH FOUND.
  * - No drilling depth is recommended from map points.
  */
 
@@ -44,6 +44,7 @@ interface BoreholeRecord {
 interface NearbyBoreholesResponse {
   success: boolean;
   data?: {
+    status: 'OK' | 'NO MATCH FOUND';
     location: { latitude: number; longitude: number };
     searchRadius: number;
     totalFound: number;
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
     const osm = await overpassQuery<{ id: number; lat: number; lon: number; tags?: Record<string, string> }>(query, { timeoutMs: 15000 });
     if (!osm) {
       return NextResponse.json(
-        { success: false, error: 'INSUFFICIENT EVIDENCE: the OpenStreetMap water-point lookup did not answer, so no nearby boreholes can be listed.' },
+        { success: false, status: 'SERVICE UNAVAILABLE', error: 'SERVICE UNAVAILABLE: the OpenStreetMap water-point lookup did not answer, so no nearby boreholes can be listed. Try again later.' },
         { status: 503 }
       );
     }
@@ -157,6 +158,7 @@ export async function POST(request: NextRequest) {
     const result: NearbyBoreholesResponse = {
       success: true,
       data: {
+        status: boreholes.length ? 'OK' : 'NO MATCH FOUND',
         location: { latitude, longitude },
         searchRadius: radius,
         totalFound: boreholes.length,

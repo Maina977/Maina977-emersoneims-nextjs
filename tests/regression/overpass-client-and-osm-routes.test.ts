@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { overpassQuery, OVERPASS_USER_AGENT, OVERPASS_ENDPOINTS } from '@/lib/data-sources/overpass';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { overpassQuery, OVERPASS_USER_AGENT, OVERPASS_ENDPOINTS, _resetOverpassForTests } from '@/lib/data-sources/overpass';
 
 // 2026-11-14: overpass-api.de answers 406 to Node's default User-Agent, so every
 // server-side Overpass call failed. Callers then reported "no water", "no
 // boreholes" or a default 120 m² roof, and nearby-boreholes invented boreholes.
 
+beforeEach(() => { _resetOverpassForTests(); });
 afterEach(() => { vi.unstubAllGlobals(); });
 
 const ua = (init?: RequestInit) => new Headers(init?.headers).get('user-agent');
@@ -27,7 +28,7 @@ describe('Overpass client', () => {
     });
     const r = await overpassQuery('q', { fetchImpl: f as unknown as typeof fetch });
     expect(seen).toEqual(OVERPASS_ENDPOINTS);
-    expect(r).toEqual({ elements: [], endpoint: OVERPASS_ENDPOINTS[2] }); // answered, nothing found
+    expect(r).toEqual({ elements: [], endpoint: OVERPASS_ENDPOINTS[2], status: 'NO MATCH FOUND' }); // answered, nothing found
   });
   it('stays inside its overall budget when every server hangs', async () => {
     const hang = vi.fn((_u: string, init?: RequestInit) => new Promise<Response>((_, reject) => {
@@ -55,11 +56,11 @@ async function post(route: string, body: unknown) {
 }
 
 describe('nearby boreholes: OpenStreetMap points only', () => {
-  it('Overpass down → INSUFFICIENT EVIDENCE (was a ring of invented "Borehole A, B, C…")', async () => {
+  it('Overpass down → SERVICE UNAVAILABLE (was a ring of invented "Borehole A, B, C…")', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 504 })));
     const { status, j } = await post('borehole/nearby-boreholes', { latitude: -1.29, longitude: 36.82 });
     expect(status).toBe(503);
-    expect(j.error).toMatch(/INSUFFICIENT EVIDENCE/);
+    expect(j.status).toBe('SERVICE UNAVAILABLE');
   });
   it('nothing mapped → empty list, null statistics, no drilling depth, no invented records', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ elements: [] }))));

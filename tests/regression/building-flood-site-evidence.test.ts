@@ -240,7 +240,7 @@ describe('building site analysis', () => {
     expect(d.flood).toBeNull();
     expect(d.overallScore).toBeNull();
     expect(d.buildingSuitability).toBe('INSUFFICIENT EVIDENCE');
-    expect(d.insufficientEvidence).toHaveLength(6);
+    expect(d.insufficientEvidence).toHaveLength(7); // + address (geocoding unavailable)
     expect(d.infrastructure).toBeNull(); // was: tarmac road at 100 m, power at 200 m
     expect(d.amenities).toBeNull();      // was: hospital 5000 m, school 2000 m …
     expect(d.recommendations.join(' ')).not.toMatch(/borehole|septic|power connection/i);

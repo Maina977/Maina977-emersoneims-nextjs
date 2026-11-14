@@ -7,6 +7,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Polygon, Popup, useMapEvents, Circle } from 'react-leaflet';
 import L from 'leaflet';
+import { geocodeSearchUrl } from '../../../../../lib/data-sources/geocodeClient';
 import { calculateShadingHeatmap, Obstacle } from '../../core/simulation/shadingEngine';
 import { RoofAnalyzer } from './RoofAnalyzer';
 // NOTE: leaflet.css and DesignStudioAI.css are imported by
@@ -86,11 +87,9 @@ export const DesignStudioAI: React.FC<{ address: string; roofImage?: File }> = (
   // ---- Geocode (real Nominatim, free OSM service) ----
   const geocode = useCallback(async (q: string) => {
     try {
-      const r = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`,
-        { headers: { 'Accept-Language': 'en' } }
-      );
-      if (!r.ok) throw new Error(`Nominatim HTTP ${r.status}`);
+      // Through the site's geocoding endpoint (Nominatim usage policy, 2026-11-14).
+      const r = await fetch(geocodeSearchUrl(q, { limit: 1 }));
+      if (!r.ok) throw new Error(r.status === 503 ? 'Place search is unavailable right now (SERVICE UNAVAILABLE). Try again shortly or enter coordinates.' : `Geocoding HTTP ${r.status}`);
       const arr = await r.json();
       if (!arr.length) throw new Error(`No match for "${q}"`);
       const lat = parseFloat(arr[0].lat);
