@@ -3,6 +3,7 @@ import {
   validateStrings, checkCable, checkBattery, checkGenerator, SOLAR_DESIGN_ENGINE_VERSION,
   type Check, type Module, type Inverter, type Battery,
 } from '@/lib/solar/design/validate';
+import { simulateProduction, PVWATTS_DEFAULT_LOSSES, type ProductionResult } from '@/lib/solar/design/production';
 
 /**
  * Design Check (P1-B). Validates a string / inverter / cable / battery /
@@ -19,6 +20,7 @@ const FIELDS: Array<{ group: string; items: Array<[string, string, string]> }> =
   { group: 'String cable (optional)', items: [['c.lengthM', 'One-way length', 'm'], ['c.csaMm2', 'Cross-section', 'mm²'], ['c.tabulatedAmpacityA', 'Tabulated ampacity It (IEC 60364-5-52)', 'A'], ['c.ambientFactor', 'Ambient factor Ca', ''], ['c.groupingFactor', 'Grouping factor Cg', ''], ['c.maxDropPct', 'Max voltage drop', '%']] },
   { group: 'Battery (optional, datasheet)', items: [['b.model', 'Model', ''], ['b.datasheet', 'Datasheet reference', ''], ['b.nominalKwh', 'Nominal energy per unit', 'kWh'], ['b.units', 'Units', 'No'], ['b.usableDoD', 'Usable DoD (0–1)', ''], ['b.dischargeEfficiency', 'Discharge efficiency (0–1)', ''], ['b.maxDischargeC', 'Max discharge', 'C'], ['b.maxChargeC', 'Max charge', 'C'], ['b.usableAcKwh', 'Energy needed from the battery per cycle', 'kWh']] },
   { group: 'Generator (optional)', items: [['g.ratedKw', 'Generator rating', 'kW'], ['g.oemMinLoadPct', 'OEM minimum load (blank = 30 % practice)', '%'], ['g.minSiteLoadKw', 'Lowest site load while it runs', 'kW'], ['g.backfeed', 'Can PV export into the running generator? (yes/no)', '']] },
+  { group: 'Production estimate (optional)', items: [['p.lat', 'Latitude', '°'], ['p.tilt', 'Tilt', '°'], ['p.azimuth', 'Azimuth (0 = N, 180 = S)', '°'], ['p.ghi', '12 monthly irradiation, comma-separated', 'kWh/m²/day'], ['p.ghiSource', 'Irradiation source (e.g. NASA POWER, retrieved date)', ''], ['p.tamb', '12 monthly daytime ambient, comma-separated', '°C'], ['p.tambSource', 'Temperature source', ''], ['p.gammaPmaxPct', 'Module γ Pmax (datasheet)', '%/°C'], ['p.invEff', 'Inverter nominal efficiency (0–1, datasheet)', ''], ['p.losses', 'Losses: type "pvwatts" for NREL PVWatts defaults (14.08 %)', '']] },
 ];
 
 /** Worked example: the test values from solar-design-validation.test.ts, not a product recommendation. */
@@ -63,7 +65,25 @@ export default function DesignCheckPage() {
       const back = /^y/i.test(f['g.backfeed']);
       checks.push(...checkGenerator(inverter, { ratedKw: n(f, 'g.ratedKw'), oemMinLoadPct: optNum('g.oemMinLoadPct') }, n(f, 'g.minSiteLoadKw'), back));
     }
-    return { missing: [] as string[], errors, checks, valid: !errors.length && !checks.some((c) => c.verdict === 'REFUSE'), kWp: r.kWp };
+    const valid = !errors.length && !checks.some((c) => c.verdict === 'REFUSE');
+    let production: ProductionResult | null = null, productionError = '';
+    if (has(f, 'p', ['lat', 'tilt', 'azimuth', 'ghi', 'ghiSource', 'tamb', 'tambSource', 'gammaPmaxPct', 'invEff', 'losses'])) {
+      if (!valid) productionError = 'Production is estimated only for a valid design.';
+      else if (!/^pvwatts$/i.test(f['p.losses'].trim())) productionError = 'Enter "pvwatts" to use the NREL PVWatts default losses (itemised losses come next).';
+      else {
+        try {
+          const list = (k: string) => f[k].split(',').map((x) => Number(x.trim()));
+          production = simulateProduction({
+            site: { latDeg: n(f, 'p.lat'), tiltDeg: n(f, 'p.tilt'), azimuthDeg: n(f, 'p.azimuth') },
+            ghiMonthly: list('p.ghi'), ghiSource: f['p.ghiSource'], ambientMonthlyC: list('p.tamb'), ambientSource: f['p.tambSource'],
+            array: { dcKw: r.kWp, gammaPmaxPct: n(f, 'p.gammaPmaxPct'), noctC: module.noctC },
+            inverter: { acKw: inverter.acKw, nominalEfficiency: n(f, 'p.invEff') },
+            losses: PVWATTS_DEFAULT_LOSSES, lossesSource: 'NREL PVWatts v5 default losses (14.08 %)',
+          });
+        } catch (e) { productionError = (e as Error).message; }
+      }
+    }
+    return { missing: [] as string[], errors, checks, valid, kWp: r.kWp, production, productionError };
   }, [f]);
 
   const label = (k: string) => FIELDS.flatMap((g) => g.items).find((i) => i[0] === k)?.[1] ?? k;
@@ -118,6 +138,18 @@ export default function DesignCheckPage() {
                   </div>
                 ))}
               </div>
+              {'productionError' in result && result.productionError ? <p style={{ color: '#fbbf24', fontSize: 13, marginTop: 12 }}>Production: {result.productionError}</p> : null}
+              {'production' in result && result.production ? (() => { const p = result.production; return (
+                <div style={{ marginTop: 16, borderTop: '1px solid #334155', paddingTop: 12 }} aria-label="Production estimate">
+                  <div style={{ fontSize: 16, fontWeight: 700 }}>Estimated production: {p.annualKwh.toLocaleString('en-KE')} kWh/year</div>
+                  <div style={{ fontSize: 12, color: '#cbd5e1' }}>Specific yield {p.specificYieldKwhPerKwp} kWh/kWp · performance ratio {p.performanceRatio} · temperature loss {p.temperatureLossPct} % · system losses {p.systemLossPct} % · clipped {p.clippedKwh} kWh</div>
+                  <table style={{ fontSize: 12, marginTop: 6, borderCollapse: 'collapse' }}><tbody><tr>
+                    {['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'].map((m, i) => <td key={i} style={{ padding: '2px 6px', textAlign: 'center' }}>{m}<br />{Math.round(p.monthlyKwh[i])}</td>)}
+                  </tr></tbody></table>
+                  <ul style={{ fontSize: 11, color: '#94a3b8', marginTop: 6, paddingLeft: 16 }}>{p.assumptions.map((a) => <li key={a}>{a}</li>)}</ul>
+                  <div style={{ fontSize: 11, color: '#64748b' }}>{p.engineVersion}; benchmarked against pvlib 0.16.1 (annual within 1.5 %).</div>
+                </div>
+              ); })() : null}
             </>
           )}
           <p style={{ fontSize: 11, color: '#64748b', marginTop: 12 }}>{SOLAR_DESIGN_ENGINE_VERSION}. Checks follow IEC 62548-1 and IEC 60364-5-52 practice; the installer remains responsible for compliance with the local regulations (in Kenya, the EPRA solar PV regulations).</p>
