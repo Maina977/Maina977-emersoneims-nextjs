@@ -1,0 +1,52 @@
+{
+ "pvlib": "0.16.1",
+ "site": [
+  -1.2921,
+  36.8219,
+  10,
+  0
+ ],
+ "note": "synthetic test year, not measured data",
+ "rows": [
+  {
+   "dcAc": 1.0,
+   "hourlyAcKwh": 15262,
+   "meanDayAcKwh": 15356,
+   "acDiffPct": 0.61,
+   "hourlyClipKwh": 0,
+   "meanDayClipKwh": 0
+  },
+  {
+   "dcAc": 1.2,
+   "hourlyAcKwh": 18319,
+   "meanDayAcKwh": 18450,
+   "acDiffPct": 0.72,
+   "hourlyClipKwh": 20,
+   "meanDayClipKwh": 0
+  },
+  {
+   "dcAc": 1.33,
+   "hourlyAcKwh": 20219,
+   "meanDayAcKwh": 20457,
+   "acDiffPct": 1.17,
+   "hourlyClipKwh": 113,
+   "meanDayClipKwh": 0
+  },
+  {
+   "dcAc": 1.5,
+   "hourlyAcKwh": 22482,
+   "meanDayAcKwh": 23075,
+   "acDiffPct": 2.64,
+   "hourlyClipKwh": 452,
+   "meanDayClipKwh": 0
+  },
+  {
+   "dcAc": 1.6,
+   "hourlyAcKwh": 23675,
+   "meanDayAcKwh": 24572,
+   "acDiffPct": 3.79,
+   "hourlyClipKwh": 786,
+   "meanDayClipKwh": 40
+  }
+ ]
+}

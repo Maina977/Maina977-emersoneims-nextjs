@@ -28,6 +28,53 @@ export interface PoaResult {
   gainVsHorizontal: number;
 }
 
+/** Step length of the mean-day profile: 2.5° of hour angle = 10 minutes. */
+export const STEP_HOURS = 2.5 / 15;
+
+/**
+ * Plane-of-array irradiance through a month's mean day, step by step (10 min),
+ * in W/m², with the same method as poaMonthly (which sums these steps).
+ * Each step: { poaWm2, hourAngleDeg }.
+ */
+export function meanDayPoaSteps(latDeg: number, tiltDeg: number, azimuthDeg: number, H: number, month: number, albedo = 0.2): Array<{ poaWm2: number; hourAngleDeg: number }> {
+  const phi = latDeg * DEG, beta = tiltDeg * DEG;
+  // Surface azimuth γ in the Duffie-Beckman convention (0 = south, east negative).
+  const gamma = (((azimuthDeg - 180) + 540) % 360 - 180) * DEG;
+  const n = MEAN_DAY[month];
+  const delta = 23.45 * Math.sin((360 * (284 + n) / 365) * DEG) * DEG;
+  const ecc = 1 + 0.033 * Math.cos((360 * n / 365) * DEG);
+  const ws = Math.acos(Math.max(-1, Math.min(1, -Math.tan(phi) * Math.tan(delta))));
+  const H0 = (24 / Math.PI) * GSC * ecc * (Math.cos(phi) * Math.cos(delta) * Math.sin(ws) + ws * Math.sin(phi) * Math.sin(delta)) / 1000;
+  const KT = Math.min(0.8, Math.max(0.3, H / H0));
+  const fd = ws <= 81.4 * DEG
+    ? 1.391 - 3.560 * KT + 4.189 * KT * KT - 2.137 * KT ** 3
+    : 1.311 - 3.022 * KT + 3.427 * KT * KT - 1.821 * KT ** 3;
+  const Hd = H * Math.min(1, Math.max(0, fd));
+  const Hb = H - Hd;
+  const steps: { cz: number; ct: number; w: number }[] = [];
+  let sumG0 = 0;
+  for (let w = -ws + (2.5 * DEG); w < ws; w += 2.5 * DEG) {
+    const cz = Math.cos(phi) * Math.cos(delta) * Math.cos(w) + Math.sin(phi) * Math.sin(delta);
+    if (cz <= 0.01) continue;
+    const ct = Math.sin(delta) * Math.sin(phi) * Math.cos(beta)
+      - Math.sin(delta) * Math.cos(phi) * Math.sin(beta) * Math.cos(gamma)
+      + Math.cos(delta) * Math.cos(phi) * Math.cos(beta) * Math.cos(w)
+      + Math.cos(delta) * Math.sin(phi) * Math.sin(beta) * Math.cos(gamma) * Math.cos(w)
+      + Math.cos(delta) * Math.sin(beta) * Math.sin(gamma) * Math.sin(w);
+    steps.push({ cz, ct, w });
+    sumG0 += cz;
+  }
+  // Daily energies (kWh/m²) per step → W/m² over the step length.
+  const toW = 1000 / STEP_HOURS;
+  return steps.map((s) => {
+    const share = s.cz / sumG0;
+    const beam = Hb * share * (Math.max(0, s.ct) / Math.max(s.cz, 0.087));
+    const diffuse = Hd * share * (1 + Math.cos(beta)) / 2;
+    const ground = H * share * albedo * (1 - Math.cos(beta)) / 2;
+    return { poaWm2: (beam + diffuse + ground) * toW, hourAngleDeg: s.w / DEG };
+  });
+}
+
 export function poaMonthly(latDeg: number, tiltDeg: number, azimuthDeg: number, ghiMonthly: number[], albedo = 0.2): PoaResult {
   if (!(Math.abs(latDeg) <= 66)) throw new Error('Latitude must be within ±66°');
   if (!(tiltDeg >= 0 && tiltDeg <= 90)) throw new Error('Tilt must be between 0 and 90°');
