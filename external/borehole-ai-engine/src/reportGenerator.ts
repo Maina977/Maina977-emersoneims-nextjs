@@ -19,6 +19,8 @@
  */
 
 import { finalVerdict } from './verdict';
+import { evidenceGate } from './evidenceGate';
+import { generateScreeningPdf } from './screeningReport';
 import { governingSummary, last12Months } from './governingSummary';
 import { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, getCustomerDetails, computeCanonicalEconomics } from './reportShared';
 export { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, computeCanonicalEconomics };
@@ -931,7 +933,14 @@ function computeFinalVerdict(result: AnalysisResult) {
 
 // --- PDF REPORT ---
 
+/** Release 5: without site field evidence only the screening report is produced (no depth, yield, cost or payback). */
+function screeningOnly(result: AnalysisResult): boolean {
+  const g = evidenceGate(result);
+  return !(g.depth && g.yield);
+}
+
 export async function generatePDFReport(result: AnalysisResult, requestedTier: 'basic' | 'professional' | 'expert'): Promise<void> {
+  if (screeningOnly(result)) { generateScreeningPdf(result); return; }
   // One governing report for every tier (independent audit 2026-11-05: the
   // technical annex contradicted the page on rainfall, water level, yield and
   // probability, and the Comprehensive tier was a copy of Professional).
@@ -10505,6 +10514,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
 // --- EXCEL REPORT ---
 
 export async function generateExcelReport(result: AnalysisResult, tier: 'basic' | 'professional' | 'expert'): Promise<void> {
+  if (screeningOnly(result)) { generateScreeningPdf(result); return; }
   // --- 10-STEP AUDIT GATE ---
   const audit = auditReport(result);
   if (!audit.passed) {
@@ -10578,6 +10588,7 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
 
 
 export async function generateWordReport(result: AnalysisResult, tier: 'basic' | 'professional' | 'expert'): Promise<void> {
+  if (screeningOnly(result)) { generateScreeningPdf(result); return; }
   //  10-STEP AUDIT GATE 
   const audit = auditReport(result);
   if (!audit.passed) {
@@ -10742,6 +10753,8 @@ export function generateJSONReport(result: AnalysisResult): void {
  * with a radar chart, metric matrix, and weighted ranking.
  */
 export async function generateComparisonReport(sites: Array<{ name: string; result: AnalysisResult }>): Promise<void> {
+  // Release 5: a comparison of depth/yield/cost needs field evidence at every site.
+  if (sites.some((s) => screeningOnly(s.result))) { throw new Error('Site comparison reports need a field survey and pumping test at every compared site. Download each site\'s screening report instead.'); }
   if (sites.length < 2) throw new Error('Need at least 2 analyzed sites to compare');
   const jsPDF = (await import('jspdf')).default;
   const doc = makePdfSafe(new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true }));

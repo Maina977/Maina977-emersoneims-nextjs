@@ -85,6 +85,8 @@ export interface SitePhoto {
 }
 
 export interface AnalysisResult {
+  /** Field evidence supplied for this point; depth/yield/cost figures are shown only when backed by it (Release 5). */
+  siteEvidence?: { depth: boolean; yield: boolean; methods: string[] };
   site: BoreholeSite;
   soil: SoilAnalysis;
   waterQuality: WaterQuality;
