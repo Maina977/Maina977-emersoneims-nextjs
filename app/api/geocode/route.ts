@@ -18,10 +18,21 @@ export const dynamic = 'force-dynamic';
 
 const PER_VISITOR_PER_MIN = 15;
 
+// Edge caching (Release 4.2, 2026-11-20). The site-wide header gave every
+// response a 10-minute edge cache, so a "busy" (503) or "too many" (429)
+// answer for one visitor could be served to others asking for the same place.
+// Errors are now never cached. Answers are cached for a day at the edge,
+// which also spares Nominatim (its policy asks for caching).
+// Vercel-CDN-Cache-Control is read by Vercel's CDN before Cache-Control.
+function cacheHeaders(http: number): Record<string, string> {
+  return http === 200
+    ? { 'Vercel-CDN-Cache-Control': 'public, max-age=86400' }
+    : { 'Vercel-CDN-Cache-Control': 'no-store', 'CDN-Cache-Control': 'no-store', 'Cache-Control': 'no-store' };
+}
 function reply(status: 'OK' | 'NO MATCH FOUND' | 'SERVICE UNAVAILABLE', body: unknown, http = 200, cached = false) {
   return NextResponse.json(body, {
     status: http,
-    headers: { 'X-Geocode-Status': status, 'X-Geocode-Attribution': OSM_GEOCODE_ATTRIBUTION, 'X-Geocode-Cache': cached ? 'hit' : 'miss' },
+    headers: { 'X-Geocode-Status': status, 'X-Geocode-Attribution': OSM_GEOCODE_ATTRIBUTION, 'X-Geocode-Cache': cached ? 'hit' : 'miss', ...cacheHeaders(http) },
   });
 }
 
