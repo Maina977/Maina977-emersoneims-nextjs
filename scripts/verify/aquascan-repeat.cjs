@@ -86,16 +86,16 @@ async function analyse(browser, site) {
       for (const e of r.errs) { problems++; console.log(`FAIL ${site.name} run ${i + 1}: page error ${e}`); }
       for (const re of BANNED) if (re.test(r.text)) { problems++; console.log(`FAIL ${site.name} run ${i + 1}: shows ${re}`); }
     }
-    // The headline yield sits inside its stated range; Garissa's range reaches
-    // its real tested boreholes (12 and 15 m³/h within 20 km).
-    const m = a.text.match(/([\d.]+)\s*m³\/hr\s*Expected Yield\s*Range:\s*([\d.]+)[–-]([\d.]+)/);
-    if (!m) { problems++; console.log(`FAIL ${site.name}: Expected Yield card not found`); }
-    else {
-      const [y, lo, hi] = [Number(m[1]), Number(m[2]), Number(m[3])];
-      if (!(lo <= y && y <= hi)) { problems++; console.log(`FAIL ${site.name}: yield ${y} outside its range ${lo}-${hi}`); }
-      else if (site.name === 'Garissa' && hi < 11) { problems++; console.log(`FAIL Garissa: range top ${hi} below the 90th percentile of local tested yields`); }
-      else console.log(`ok   ${site.name}: yield ${y} m³/h inside ${lo}-${hi}`);
-    }
+    // Release 5 (2026-11-20): these runs enter no field survey or pumping test,
+    // so the screen must show what evidence is needed and no depth, yield or
+    // project cost figure (management: no depth/yield without evidence, no
+    // unsourced prices).
+    const needs = ['Needs a field survey', 'Needs a test-pumped borehole', 'Quotation after survey'];
+    const missingNeeds = needs.filter((s) => !a.text.includes(s));
+    if (missingNeeds.length) { problems++; console.log(`FAIL ${site.name}: evidence notice missing: ${missingNeeds.join(', ')}`); }
+    if (/[\d.]+\s*m³\/hr\s*Expected Yield/.test(a.text)) { problems++; console.log(`FAIL ${site.name}: shows an expected-yield figure without a pumping test`); }
+    if (/\$[\d,]+\s*\n?\s*PROJECT COST/i.test(a.text)) { problems++; console.log(`FAIL ${site.name}: shows a project cost without survey and test`); }
+    if (!missingNeeds.length) console.log(`ok   ${site.name}: no depth/yield/cost without field evidence; evidence needed is shown`);
     // Keep both runs for diagnosis (scripts/verify/out is git-ignored).
     try {
       const fs = require('fs'), path = require('path');
@@ -122,8 +122,7 @@ async function analyse(browser, site) {
       const ls = t.split('\n').map((l) => l.trim());
       const card = (label) => { const i = ls.findIndex((l) => l.startsWith(label)); return i > 0 ? `${label}=${ls[i - 1]}` : `${label}=missing`; };
       return [
-        (t.match(/[\d.]+\s*m³\/hr\s*Expected Yield\s*Range:\s*[\d.]+[–-][\d.]+/) || ['yield card missing'])[0],
-        ...['CHANCE OF A PRODUCTIVE BOREHOLE', 'RECOMMENDED DEPTH', 'YIELD (M³/H)', 'TOTAL PROJECT COST', 'PAYBACK PERIOD', 'TREATMENT LIKELY'].map(card),
+        ...['CHANCE OF A PRODUCTIVE BOREHOLE', 'DRILLING DEPTH', 'YIELD (M³/H)', 'PROJECT COST', 'TREATMENT LIKELY'].map(card),
         ...ls.filter((l) => /^Planning (depth|yield)\b/.test(l)),
       ].join('\n');
     };
