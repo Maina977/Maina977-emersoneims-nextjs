@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { limiter } from '@/lib/rate-limiter';
-import { geocodeSearch, geocodeReverse, OSM_GEOCODE_ATTRIBUTION } from '@/lib/data-sources/nominatim';
+import { geocodeSearch, geocodeReverse, visitorWithinLimit, OSM_GEOCODE_ATTRIBUTION } from '@/lib/data-sources/nominatim';
 
 /**
  * Geocoding for every EmersonEIMS tool (2026-11-14). Browsers used to call
@@ -28,7 +28,10 @@ function reply(status: 'OK' | 'NO MATCH FOUND' | 'SERVICE UNAVAILABLE', body: un
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
-  if (!limiter.check(PER_VISITOR_PER_MIN, `geocode:${ip}`).success) {
+  // In-memory limit (per instance) first, then the shared database count, which
+  // holds across instances (Release 4.1). Database unavailable → in-memory only.
+  const shared = limiter.check(PER_VISITOR_PER_MIN, `geocode:${ip}`).success ? await visitorWithinLimit(ip, PER_VISITOR_PER_MIN) : false;
+  if (shared === false) {
     return reply('SERVICE UNAVAILABLE', { status: 'SERVICE UNAVAILABLE', error: 'Too many place lookups from this connection. Wait a minute, or enter coordinates.' }, 429);
   }
 

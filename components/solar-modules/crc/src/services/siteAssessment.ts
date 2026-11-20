@@ -23,6 +23,20 @@ export interface SiteAssessment {
 const body = (r: any) => (r && typeof r === 'object' && r.data && typeof r.data === 'object' ? r.data : r);
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
+export interface GeoHit { lat: number; lon: number; displayName: string }
+
+/**
+ * /api/geocode answers a plain array of { displayName, lat, lon }; an older
+ * { success, data } shape is also accepted. Returns null when the answer is
+ * not a list (service unavailable), [] when nothing matched.
+ */
+export function parseGeocodeHits(r: unknown): GeoHit[] | null {
+  const x: any = r;
+  const list = Array.isArray(x) ? x : x?.success ? x.data : null;
+  if (!Array.isArray(list)) return null;
+  return list.filter((h: any) => Number.isFinite(h?.lat) && Number.isFinite(h?.lon) && typeof h?.displayName === 'string');
+}
+
 export function mapSiteAssessment(nasaR: unknown, weatherR: unknown, roofR: unknown): SiteAssessment {
   // /api/nasa/solar → { status, parameters, summary.averageDailyGHI (null if no valid days) }
   const n: any = body(nasaR);

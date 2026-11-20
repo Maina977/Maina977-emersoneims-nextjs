@@ -18,6 +18,7 @@
  *
  * Data © OpenStreetMap contributors, ODbL 1.0.
  */
+import { createHash } from 'node:crypto';
 import { getPostgresPool } from '@/lib/db';
 
 export const NOMINATIM_USER_AGENT = 'EmersonEIMS-website/1.0 (+https://www.emersoneims.com)';
@@ -44,6 +45,14 @@ function memSet(key: string, body: unknown) {
 }
 
 type Pool = NonNullable<Awaited<ReturnType<typeof getPostgresPool>>>;
+// Database problems are logged once per instance (message only, never the
+// query text, which is what a visitor typed).
+const warned = new Set<string>();
+function warnOnce(what: string, e: unknown) {
+  if (warned.has(what)) return;
+  warned.add(what);
+  console.warn(`[geocode] database ${what} failed; continuing without it:`, e instanceof Error ? e.message : String(e));
+}
 let tablesReady: Promise<boolean> | null = null;
 async function pool(): Promise<Pool | null> {
   // Database only on Vercel deployments: a local .env can hold the production
@@ -55,8 +64,39 @@ async function pool(): Promise<Pool | null> {
     CREATE TABLE IF NOT EXISTS geocode_cache (key TEXT PRIMARY KEY, body JSONB NOT NULL, at TIMESTAMPTZ NOT NULL DEFAULT NOW());
     CREATE TABLE IF NOT EXISTS nominatim_slot (id INT PRIMARY KEY, last_at TIMESTAMPTZ NOT NULL);
     INSERT INTO nominatim_slot (id, last_at) VALUES (1, 'epoch') ON CONFLICT (id) DO NOTHING;
-  `).then(() => true, () => false);
+    CREATE TABLE IF NOT EXISTS geocode_visitor (k TEXT NOT NULL, win TIMESTAMPTZ NOT NULL, n INT NOT NULL, PRIMARY KEY (k, win));
+  `).then(() => true, (e) => { warnOnce('setup', e); return false; });
   return (await tablesReady) ? p : null;
+}
+
+// ---------------------------------------------------------------- per visitor
+/**
+ * Per-visitor lookups per minute, counted in the database so that it holds
+ * across server instances (Release 4.1: the in-memory limit was never reached
+ * live, because requests spread over instances).
+ *
+ * Only a salted, day-scoped SHA-256 of the IP address is stored, never the
+ * address, and rows older than 10 minutes are removed. Returns null when the
+ * database is unavailable; the caller then relies on its in-memory limit.
+ */
+export async function visitorWithinLimit(ip: string, perMinute: number): Promise<boolean | null> {
+  const p = await pool();
+  if (!p) return null;
+  const day = new Date().toISOString().slice(0, 10);
+  const k = createHash('sha256').update(`emersoneims-geocode|${day}|${ip}`).digest('hex').slice(0, 32);
+  try {
+    const r = await p.query(
+      `INSERT INTO geocode_visitor (k, win, n) VALUES ($1, date_trunc('minute', NOW()), 1)
+       ON CONFLICT (k, win) DO UPDATE SET n = geocode_visitor.n + 1
+       RETURNING n`,
+      [k],
+    );
+    if (Math.random() < 0.02) p.query(`DELETE FROM geocode_visitor WHERE win < NOW() - INTERVAL '10 minutes'`).catch(() => undefined);
+    return Number(r.rows[0]?.n ?? 0) <= perMinute;
+  } catch (e) {
+    warnOnce('visitor-limit', e);
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------- 1 req/s
@@ -107,7 +147,7 @@ async function lookup<T>(kind: 'search' | 'reverse', params: Record<string, stri
     try {
       const r = await p.query(`SELECT body FROM geocode_cache WHERE key = $1 AND at > NOW() - INTERVAL '${CACHE_DAYS} days'`, [key]);
       if (r.rows.length) { memSet(key, r.rows[0].body); return classify<T>(kind, r.rows[0].body, true); }
-    } catch { /* cache is best-effort */ }
+    } catch (e) { warnOnce('cache-read', e); /* cache is best-effort */ }
   }
 
   if (!(await claimSlot(p))) {
@@ -121,7 +161,14 @@ async function lookup<T>(kind: 'search' | 'reverse', params: Record<string, stri
     if (!res.ok) return { status: 'SERVICE UNAVAILABLE', data: null, cached: false, reason: `Nominatim HTTP ${res.status}` };
     const body = await res.json();
     memSet(key, body);
-    if (p) p.query(`INSERT INTO geocode_cache (key, body, at) VALUES ($1, $2, NOW()) ON CONFLICT (key) DO UPDATE SET body = EXCLUDED.body, at = NOW()`, [key, JSON.stringify(body)]).catch(() => undefined);
+    // Awaited (Release 4.1): on Vercel a function can be frozen as soon as the
+    // response is sent, so the fire-and-forget write of Release 4 was lost and
+    // other instances never found the shared copy (seen live 2026-11-14).
+    if (p) {
+      try {
+        await p.query(`INSERT INTO geocode_cache (key, body, at) VALUES ($1, $2, NOW()) ON CONFLICT (key) DO UPDATE SET body = EXCLUDED.body, at = NOW()`, [key, JSON.stringify(body)]);
+      } catch (e) { warnOnce('cache-write', e); }
+    }
     return classify<T>(kind, body, false);
   } catch (e) {
     return { status: 'SERVICE UNAVAILABLE', data: null, cached: false, reason: e instanceof Error ? e.message : 'Nominatim did not answer' };
@@ -154,4 +201,4 @@ export function geocodeReverse<T = Record<string, unknown>>(lat: number, lon: nu
 }
 
 /** Test hook. */
-export function _resetNominatimForTests() { memory.clear(); localLast = 0; localChain = Promise.resolve(); tablesReady = null; }
+export function _resetNominatimForTests() { memory.clear(); localLast = 0; localChain = Promise.resolve(); tablesReady = null; warned.clear(); }

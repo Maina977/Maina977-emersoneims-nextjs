@@ -1,5 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { mapSiteAssessment } from '@/components/solar-modules/crc/src/services/siteAssessment';
+import { mapSiteAssessment, parseGeocodeHits } from '@/components/solar-modules/crc/src/services/siteAssessment';
+
+describe('Solar dashboard address search', () => {
+  it('reads the plain array /api/geocode really returns (was always "Geocoding failed")', () => {
+    expect(parseGeocodeHits([{ displayName: 'Kitale, Trans-Nzoia County, Kenya', lat: 1.0157, lon: 35.0062 }])).toEqual([{ displayName: 'Kitale, Trans-Nzoia County, Kenya', lat: 1.0157, lon: 35.0062 }]);
+  });
+  it('no match → []; service unavailable (error object) → null; malformed rows dropped', () => {
+    expect(parseGeocodeHits([])).toEqual([]);
+    expect(parseGeocodeHits({ status: 'SERVICE UNAVAILABLE', error: 'x' })).toBeNull();
+    expect(parseGeocodeHits([{ displayName: 'x', lat: 'n/a', lon: 1 }])).toEqual([]);
+    expect(parseGeocodeHits({ success: true, data: [{ displayName: 'y', lat: 1, lon: 2 }] })).toHaveLength(1);
+  });
+});
 
 // The Solar dashboard showed "—" for irradiance, temperature and roof area on
 // every site because it read `.data…` on bodies that have no `.data`

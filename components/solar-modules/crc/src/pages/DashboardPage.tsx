@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useSolarStore } from '../services/store';
 import { core, site as siteApi } from '../services/api';
-import { mapSiteAssessment } from '../services/siteAssessment';
+import { mapSiteAssessment, parseGeocodeHits } from '../services/siteAssessment';
 
 // True app dashboard.
 // 1. Loads any saved Project from localStorage on mount.
@@ -194,9 +194,12 @@ export default function DashboardPage() {
     setHits(null);
     setLoadingGeo(true);
     try {
+      // /api/geocode answers a plain array of { displayName, lat, lon } (it never
+      // had a { success, data } wrapper, so every search here showed "Geocoding
+      // failed": found in the 2026-11-15 walkthrough). Accept both shapes.
       const r: any = await siteApi.geocode(query.trim());
-      if (!r?.success) throw new Error(r?.error || 'Geocoding failed');
-      const arr: Hit[] = r.data || [];
+      const arr: Hit[] | null = parseGeocodeHits(r);
+      if (!arr) throw new Error(r?.error || 'Place search is unavailable right now. Try again in a minute, or enter coordinates.');
       if (arr.length === 0) {
         setErr('No matches. Try a more specific address (city + country).');
       } else {
@@ -260,7 +263,7 @@ export default function DashboardPage() {
       <Title>Site & System Dashboard</Title>
       <Sub>
         Type any address (e.g. <i>Industrial Area, Nairobi</i>) and we'll fetch real
-        irradiance from NASA POWER, current weather from Open-Meteo and your roof
+        irradiance from NASA POWER, current weather from MET Norway and your roof
         footprint from OpenStreetMap. No fabricated data.
       </Sub>
 
@@ -288,7 +291,7 @@ export default function DashboardPage() {
         )}
 
         {loadingSite && (
-          <Banner $kind="info"><Spinner /> Assessing site (NASA POWER + Open-Meteo + OSM)…</Banner>
+          <Banner $kind="info"><Spinner /> Assessing site (NASA POWER + MET Norway + OpenStreetMap)…</Banner>
         )}
         {info && <Banner $kind="ok">{info}</Banner>}
         {err && <Banner $kind="error">⚠ {err}</Banner>}
