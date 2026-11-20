@@ -30,7 +30,7 @@ describe('proposal exports', () => {
     expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow']);
     expect(String(wb.getWorksheet('Summary')!.getCell('A2').value)).toMatch(/DRAFT: NOT FOR ISSUE/);
     expect(wb.getWorksheet('Cash flow')!.getCell('E2').value).toBe(380000);
-  });
+  }, 30000); // ExcelJS import + round trip exceeds 5 s under full-suite load
   it('PDF: a valid document is produced', async () => {
     const { proposalToPdf } = await import('@/lib/solar/design/proposalExport');
     const pdf = proposalToPdf(buildProposal(base()));

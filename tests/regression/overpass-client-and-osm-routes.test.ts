@@ -55,16 +55,29 @@ async function post(route: string, body: unknown) {
   return { status: r.status as number, j: await r.json() };
 }
 
+describe('nearby boreholes: offline Kenya extract inside Kenya', () => {
+  it('Garissa: answered from the committed index without any network call', async () => {
+    const net = vi.fn(async () => { throw new Error('network must not be used'); });
+    vi.stubGlobal('fetch', net);
+    const { status, j } = await post('borehole/nearby-boreholes', { latitude: -0.4532, longitude: 39.6461, radius: 5, limit: 50 });
+    expect(status).toBe(200);
+    expect(net).not.toHaveBeenCalled();
+    expect(j.data.boreholes.length).toBe(9);          // index built 2026-11-20 from the 13 Nov 2026 extract
+    expect(j.data.dataSources[0]).toMatch(/OpenStreetMap Kenya extract via Geofabrik/);
+  });
+});
+
+// Overpass path: a point outside Kenya (Kampala), where the offline index does not apply.
 describe('nearby boreholes: OpenStreetMap points only', () => {
   it('Overpass down → SERVICE UNAVAILABLE (was a ring of invented "Borehole A, B, C…")', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 504 })));
-    const { status, j } = await post('borehole/nearby-boreholes', { latitude: -1.29, longitude: 36.82 });
+    const { status, j } = await post('borehole/nearby-boreholes', { latitude: 0.3476, longitude: 32.5825 });
     expect(status).toBe(503);
     expect(j.status).toBe('SERVICE UNAVAILABLE');
   });
   it('nothing mapped → empty list, null statistics, no drilling depth, no invented records', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ elements: [] }))));
-    const { status, j } = await post('borehole/nearby-boreholes', { latitude: -1.29, longitude: 36.82, limit: 20 });
+    const { status, j } = await post('borehole/nearby-boreholes', { latitude: 0.3476, longitude: 32.5825, limit: 20 });
     expect(status).toBe(200);
     expect(j.data.boreholes).toEqual([]);
     expect(j.data.statistics.averageDepth).toBeNull();
@@ -73,11 +86,11 @@ describe('nearby boreholes: OpenStreetMap points only', () => {
   });
   it('mapped points: only tagged values, missing tags are null, distances real', async () => {
     const elements = [
-      { id: 11, lat: -1.29, lon: 36.83, tags: { man_made: 'water_well', depth: '120 m', name: 'Church well' } },
-      { id: 12, lat: -1.30, lon: 36.82, tags: { pump: 'manual' } },
+      { id: 11, lat: 0.3476, lon: 32.5925, tags: { man_made: 'water_well', depth: '120 m', name: 'Church well' } },
+      { id: 12, lat: 0.3376, lon: 32.5825, tags: { pump: 'manual' } },
     ];
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ elements }))));
-    const { j } = await post('borehole/nearby-boreholes', { latitude: -1.29, longitude: 36.82, limit: 20 });
+    const { j } = await post('borehole/nearby-boreholes', { latitude: 0.3476, longitude: 32.5825, limit: 20 });
     expect(j.data.boreholes).toHaveLength(2);
     const [a, b] = j.data.boreholes;
     expect(a.depth).toBe(120);
