@@ -1,0 +1,29 @@
+{
+ "dataset": "kenya-points-v1",
+ "source": "OpenStreetMap via Geofabrik kenya-latest.osm.pbf",
+ "sourceMd5": "3631953bb9b2f0e4de9be36045ce208c",
+ "sourceBytes": 352452073,
+ "sourceLastModified": "Fri, 13 Nov 2026 23:37:33 GMT",
+ "licence": "ODbL 1.0 (derived database)",
+ "attribution": "© OpenStreetMap contributors",
+ "builtOn": "2026-11-20",
+ "points": 27722,
+ "byKind": {
+  "bus_stop": 624,
+  "police": 417,
+  "shop": 8028,
+  "school": 7289,
+  "hospital": 440,
+  "water_tap": 314,
+  "power_pole": 6557,
+  "water_well": 3080,
+  "manhole": 137,
+  "powered_pump": 286,
+  "hand_pump": 550
+ },
+ "outputSha256": "03e6badc8410a1cee8291c693bb9627f307cc33ad9f9c70e8fe627728de041b3",
+ "outputBytes": 382584,
+ "row": "[lat, lon, kind, name|null, extra|null]",
+ "note": "Only mapped features; most Kenyan boreholes are not in OpenStreetMap. Values only as tagged by mappers.",
+ "buildSeconds": 263.0
+}

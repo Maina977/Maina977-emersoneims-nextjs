@@ -18,6 +18,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { overpassQuery, OSM_ATTRIBUTION } from '@/lib/data-sources/overpass';
+import { pointsNear } from '@/lib/osm/kenyaPoints';
 
 interface NearbyBoreholesRequest {
   latitude: number;
@@ -111,7 +112,16 @@ export async function POST(request: NextRequest) {
       node["pump"="manual"](around:${r},${latitude},${longitude});
       node["pump"="powered"](around:${r},${latitude},${longitude});
     );out body;`;
-    const osm = await overpassQuery<{ id: number; lat: number; lon: number; tags?: Record<string, string> }>(query, { timeoutMs: 15000 });
+    // Offline Kenya extract first (2026-11-20: the public Overpass servers timed
+    // out for six days); Overpass only outside Kenya or if the index is missing.
+    const KIND_TAGS: Record<string, Record<string, string>> = { water_well: { man_made: 'water_well' }, borehole: { waterway: 'borehole' }, hand_pump: { pump: 'manual' }, powered_pump: { pump: 'powered' } };
+    const offline = pointsNear(latitude, longitude, r, ['water_well', 'borehole', 'hand_pump', 'powered_pump']);
+    const sourceLabel = offline
+      ? `OpenStreetMap Kenya extract via Geofabrik, ${offline.manifest.sourceLastModified || offline.manifest.builtOn} (${OSM_ATTRIBUTION})`
+      : `OpenStreetMap Overpass (${OSM_ATTRIBUTION})`;
+    const osm = offline
+      ? { elements: offline.found.map((f, i) => ({ id: i + 1, lat: f.lat, lon: f.lon, tags: { ...(f.extra ?? {}), ...(f.name ? { name: f.name } : {}), ...KIND_TAGS[f.kind] } as Record<string, string> })) }
+      : await overpassQuery<{ id: number; lat: number; lon: number; tags?: Record<string, string> }>(query, { timeoutMs: 15000 });
     if (!osm) {
       return NextResponse.json(
         { success: false, status: 'SERVICE UNAVAILABLE', error: 'SERVICE UNAVAILABLE: the OpenStreetMap water-point lookup did not answer, so no nearby boreholes can be listed. Try again later.' },
@@ -136,7 +146,7 @@ export async function POST(request: NextRequest) {
           year: year ? parseInt(year, 10) : null,
           status: tags.operational_status === 'operational' || tags.operational === 'yes' ? 'active' as const : 'unknown' as const,
           waterQuality: 'unknown' as const,
-          source: `OpenStreetMap (${OSM_ATTRIBUTION})`,
+          source: sourceLabel,
         };
       })
       .filter((b) => b.distance <= radius)
@@ -178,7 +188,7 @@ export async function POST(request: NextRequest) {
           'Depth and yield appear only where a mapper recorded them, and are not verified.',
           'Dry or failed boreholes are not recorded, so no success rate is given.',
         ],
-        dataSources: [`OpenStreetMap Overpass (${OSM_ATTRIBUTION})`],
+        dataSources: [sourceLabel],
       },
     };
     return NextResponse.json(result);

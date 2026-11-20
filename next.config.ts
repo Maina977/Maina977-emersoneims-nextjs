@@ -89,6 +89,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/api/aquascan/soil': ['./data/aquascan/soil/**'],
     '/api/building/soil': ['./data/aquascan/soil/**'],
+    '/api/borehole/nearby-boreholes': ['./data/osm/kenya-points-v1/**'],
   },
 
   // ═══════════════════════════════════════════════════════════════════
