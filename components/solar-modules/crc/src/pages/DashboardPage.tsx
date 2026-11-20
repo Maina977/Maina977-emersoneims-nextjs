@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useSolarStore } from '../services/store';
 import { core, site as siteApi } from '../services/api';
-import { mapSiteAssessment } from '../services/siteAssessment';
+import { mapSiteAssessment, parseGeocodeHits } from '../services/siteAssessment';
 
 // True app dashboard.
 // 1. Loads any saved Project from localStorage on mount.
@@ -198,9 +198,8 @@ export default function DashboardPage() {
       // had a { success, data } wrapper, so every search here showed "Geocoding
       // failed": found in the 2026-11-15 walkthrough). Accept both shapes.
       const r: any = await siteApi.geocode(query.trim());
-      const list = Array.isArray(r) ? r : r?.success ? r.data : null;
-      if (!Array.isArray(list)) throw new Error(r?.error || 'Place search is unavailable right now. Try again in a minute, or enter coordinates.');
-      const arr: Hit[] = list.filter((h: any) => Number.isFinite(h?.lat) && Number.isFinite(h?.lon) && typeof h?.displayName === 'string');
+      const arr: Hit[] | null = parseGeocodeHits(r);
+      if (!arr) throw new Error(r?.error || 'Place search is unavailable right now. Try again in a minute, or enter coordinates.');
       if (arr.length === 0) {
         setErr('No matches. Try a more specific address (city + country).');
       } else {
