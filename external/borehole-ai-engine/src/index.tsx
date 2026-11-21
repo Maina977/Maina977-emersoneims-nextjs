@@ -1,4 +1,5 @@
 ﻿import { inKenya } from './kenyaLand';
+import { evidenceGate, gated, DEPTH_NEEDS, YIELD_NEEDS, COST_NEEDS } from './evidenceGate';
 import { geocodeSearchUrl } from '../../../lib/data-sources/geocodeClient';
 import { finalVerdict } from './verdict';
 import { governingSummary, last12Months, probabilityBand } from './governingSummary';
@@ -2237,11 +2238,14 @@ const AIBoreholeAnalyzer: React.FC = () => {
             const diff = Math.round(result.probability * 100) - Math.round(cr * 100);
             return <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>County record: {Math.round(cr * 100)}% of boreholes productive.{Math.abs(diff) >= 10 ? ` This point's estimate is ${diff > 0 ? 'above' : 'below'} it; plan on the lower of the two (${diff > 0 ? 'the county rate' : 'this point'}) until a survey.` : ''}</span>;
           })()}</div></div>
-          <div className="summary-card depth"><div className="summary-value">{result.recommendedDepth.toFixed(0)}m</div><div className="summary-label">Recommended Depth</div></div>
-          <div className="summary-card yield-card"><div className="summary-value">{result.estimatedYield.toFixed(1)}</div><div className="summary-label">Yield (m³/h)</div></div>
-          <div className="summary-card cost-card"><div className="summary-value">{fmtUSD(ecoTotal)}</div><div className="summary-label">Total project cost</div></div>
-          <div className="summary-card solar-card"><div className="summary-value">{fmtUSD(eco ? eco.solarCost : solar.totalSolar)}</div><div className="summary-label">of which solar pump power{(result as any).pumpHeadAssumption ? ' (water level assumed)' : ''}</div></div>
-          <div className="summary-card roi-card"><div className="summary-value">{ecoPayback >= 240 ? 'None' : `${ecoPayback}mo`}</div><div className="summary-label">Payback Period</div></div>
+          {/* Release 5 (2026-11-20): depth, yield, cost and payback only with site field evidence. */}
+          {(() => { const g = evidenceGate(result); return (<>
+          <div className="summary-card depth"><div className="summary-value" style={g.depth ? undefined : {fontSize:15}}>{gated(g.depth, `${result.recommendedDepth.toFixed(0)}m`, DEPTH_NEEDS)}</div><div className="summary-label">Drilling depth{g.depth ? ' (from your field survey)' : ''}</div></div>
+          <div className="summary-card yield-card"><div className="summary-value" style={g.yield ? undefined : {fontSize:15}}>{gated(g.yield, result.estimatedYield.toFixed(1), YIELD_NEEDS)}</div><div className="summary-label">Yield (m³/h){g.yield ? ' (from your pumping test)' : ''}</div></div>
+          <div className="summary-card cost-card"><div className="summary-value" style={g.cost ? undefined : {fontSize:15}}>{gated(g.cost, fmtUSD(ecoTotal), COST_NEEDS)}</div><div className="summary-label">Project cost</div></div>
+          {g.cost && <div className="summary-card solar-card"><div className="summary-value">{fmtUSD(eco ? eco.solarCost : solar.totalSolar)}</div><div className="summary-label">of which solar pump power{(result as any).pumpHeadAssumption ? ' (water level assumed)' : ''}</div></div>}
+          {g.cost && <div className="summary-card roi-card"><div className="summary-value">{ecoPayback >= 240 ? 'None' : `${ecoPayback}mo`}</div><div className="summary-label">Payback Period</div></div>}
+          </>); })()}
           <div className="summary-card risk-sc" style={{borderColor:getRiskColor(result.risk.overallRisk)}}><div className="summary-value" style={{color:getRiskColor(result.risk.overallRisk)}}>{(result.risk.overallRisk*100).toFixed(0)}%</div><div className="summary-label">Overall Risk</div></div>
           <div className="summary-card wq-card"><div className="summary-value">{wqExpanded.treatmentRequired}</div><div className="summary-label">Treatment likely (screening)</div></div>
         </div>
@@ -2269,17 +2273,18 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{fontSize:12,color:'var(--text-secondary)',marginTop:2}}>{v.next}</div>
                 </div>
               ); })()}
+              {!evidenceGate(result).depth && <div style={{fontSize:12,color:'var(--text-secondary)',margin:'0 0 10px'}}>{evidenceGate(result).note}</div>}
               <div style={{display:'flex',gap:20,flexWrap:'wrap',marginBottom:12}}>
-                <div style={{textAlign:'center',minWidth:120,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderRadius:10,border:'1px solid rgba(255,255,255,0.08)'}}>
+                {evidenceGate(result).depth && <div style={{textAlign:'center',minWidth:120,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderRadius:10,border:'1px solid rgba(255,255,255,0.08)'}}>
                   <div style={{fontSize:28,fontWeight:800,color:'#38bdf8',lineHeight:1}}>{fc.depth_m}<span style={{fontSize:14}}>m</span></div>
-                  <div style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>Recommended Depth</div>
+                  <div style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>Drilling depth (field survey)</div>
                   <div style={{fontSize:9,color:'var(--text-tertiary)'}}>Range: {fc.depthRange[0]}–{fc.depthRange[1]}m</div>
-                </div>
-                <div style={{textAlign:'center',minWidth:120,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderRadius:10,border:'1px solid rgba(255,255,255,0.08)'}}>
+                </div>}
+                {evidenceGate(result).yield && <div style={{textAlign:'center',minWidth:120,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderRadius:10,border:'1px solid rgba(255,255,255,0.08)'}}>
                   <div style={{fontSize:28,fontWeight:800,color:'#22c55e',lineHeight:1}}>{fc.yield_m3hr}<span style={{fontSize:14}}> m³/hr</span></div>
-                  <div style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>Expected Yield</div>
+                  <div style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>Yield (pumping test)</div>
                   <div style={{fontSize:9,color:'var(--text-tertiary)'}}>Range: {fc.yieldRange[0]}–{fc.yieldRange[1]} m³/hr</div>
-                </div>
+                </div>}
                 <div style={{textAlign:'center',minWidth:120,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderRadius:10,border:'1px solid rgba(255,255,255,0.08)'}}>
                   <div style={{fontSize:28,fontWeight:800,color:fcColor,lineHeight:1}}>{(fc.successProbability*100).toFixed(1)}<span style={{fontSize:14}}>%</span></div>
                   <div style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>Modelled Success Score</div>
@@ -5742,10 +5747,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <div style={{padding:14,borderRadius:12,background:'rgba(22,163,74,0.05)',border:'1.5px solid rgba(22,163,74,0.2)',marginBottom:20}}>
                         <div style={{fontWeight:800,fontSize:13,color:'#16a34a',marginBottom:8}}>Integrated Survey — Drill Specification</div>
                         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:8,marginBottom:10}}>
-                          <div className="result-item"><span className="rl">Drill Depth</span><span className="rv">{integrated.drillSpec.optimalDepth_m}m</span></div>
-                          <div className="result-item"><span className="rl">Casing Depth</span><span className="rv">{integrated.drillSpec.casingDepth_m}m</span></div>
-                          <div className="result-item"><span className="rl">Screen</span><span className="rv">{integrated.drillSpec.screenInterval_m[0]}–{integrated.drillSpec.screenInterval_m[1]}m</span></div>
-                          <div className="result-item"><span className="rl">Expected Yield</span><span className="rv">{integrated.drillSpec.expectedYield_m3hr} m{'³'}/hr</span></div>
+                          <div className="result-item"><span className="rl">Drill Depth</span><span className="rv">{gated(evidenceGate(result).depth, `${integrated.drillSpec.optimalDepth_m}m`, DEPTH_NEEDS)}</span></div>
+                          <div className="result-item"><span className="rl">Casing Depth</span><span className="rv">{gated(evidenceGate(result).depth, `${integrated.drillSpec.casingDepth_m}m`, DEPTH_NEEDS)}</span></div>
+                          <div className="result-item"><span className="rl">Screen</span><span className="rv">{gated(evidenceGate(result).depth, `${integrated.drillSpec.screenInterval_m[0]}–${integrated.drillSpec.screenInterval_m[1]}m`, DEPTH_NEEDS)}</span></div>
+                          <div className="result-item"><span className="rl">Expected Yield</span><span className="rv">{gated(evidenceGate(result).yield, `${integrated.drillSpec.expectedYield_m3hr} m³/hr`, YIELD_NEEDS)}</span></div>
                           <div className="result-item"><span className="rl">Siting confidence (after survey)</span><span className="rv">{integrated.drillSpec.successProbability_pct}%</span></div>
                           <div className="result-item"><span className="rl">Method</span><span className="rv">{integrated.drillSpec.drillingMethod}</span></div>
                           <div className="result-item"><span className="rl">Drill Cost Est.</span><span className="rv">${integrated.drillSpec.estimatedCost_usd.toLocaleString()}</span></div>
@@ -6247,9 +6252,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:8,marginBottom:16}}>
                     <div className="result-item"><span className="rl">Methods Fused</span><span className="rv">{result.geophysicsFusion.unifiedLayers?.length ?? 0} layers</span></div>
-                    <div className="result-item"><span className="rl">Bedrock Depth</span><span className="rv">{result.geophysicsFusion.bedrockDepth?.toFixed(0) ?? '—'}m</span></div>
-                    <div className="result-item"><span className="rl">Water Table</span><span className="rv">{result.geophysicsFusion.waterTable?.toFixed(0) ?? '—'}m</span></div>
-                    <div className="result-item"><span className="rl">Expected Yield</span><span className="rv">{result.geophysicsFusion.expectedYield?.toFixed(1) ?? '—'} m³/hr</span></div>
+                    <div className="result-item"><span className="rl">Bedrock Depth</span><span className="rv">{gated(evidenceGate(result).depth, `${result.geophysicsFusion.bedrockDepth?.toFixed(0) ?? '—'}m`, DEPTH_NEEDS)}</span></div>
+                    <div className="result-item"><span className="rl">Water Table</span><span className="rv">{gated(evidenceGate(result).depth, `${result.geophysicsFusion.waterTable?.toFixed(0) ?? '—'}m`, DEPTH_NEEDS)}</span></div>
+                    <div className="result-item"><span className="rl">Expected Yield</span><span className="rv">{gated(evidenceGate(result).yield, `${result.geophysicsFusion.expectedYield?.toFixed(1) ?? '—'} m³/hr`, YIELD_NEEDS)}</span></div>
                     <div className="result-item"><span className="rl">Confidence</span><span className="rv">{((result.geophysicsFusion.overallConfidence ?? 0)*100).toFixed(0)}%</span></div>
                     <div className="result-item"><span className="rl">Confidence Boost</span><span className="rv">+{result.geophysicsFusion.confidenceBoost ?? 0}%</span></div>
                     <div className="result-item"><span className="rl">Drill Depth</span><span className="rv">{result.geophysicsFusion.recommendedDrillingDepth?.toFixed(0) ?? '—'}m</span></div>
@@ -7286,9 +7291,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   {/* Financial */}
                   <h4 style={{marginBottom:8}}>Financial Analysis</h4>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:8,marginBottom:16}}>
-                    <div className="result-item"><span className="rl">Drilling Cost</span><span className="rv" style={{fontWeight:700}}>${dp.expectedDrillingCost_usd.toLocaleString()}</span></div>
-                    <div className="result-item"><span className="rl">Payback Period</span><span className="rv" style={{fontWeight:700}}>{dp.paybackPeriod_years} years</span></div>
-                    <div className="result-item"><span className="rl">10-Year ROI</span><span className="rv" style={{color:dp.roi_pct>0?'#16a34a':'#ef4444',fontWeight:700}}>{dp.roi_pct}%</span></div>
+                    <div className="result-item"><span className="rl">Drilling Cost</span><span className="rv" style={{fontWeight:700}}>{gated(evidenceGate(result).cost, `$${dp.expectedDrillingCost_usd.toLocaleString()}`, COST_NEEDS)}</span></div>
+                    <div className="result-item"><span className="rl">Payback Period</span><span className="rv" style={{fontWeight:700}}>{gated(evidenceGate(result).cost, `${dp.paybackPeriod_years} years`, COST_NEEDS)}</span></div>
+                    <div className="result-item"><span className="rl">10-Year ROI</span><span className="rv" style={{color:dp.roi_pct>0?'#16a34a':'#ef4444',fontWeight:700}}>{gated(evidenceGate(result).cost, `${dp.roi_pct}%`, COST_NEEDS)}</span></div>
                     <div className="result-item"><span className="rl">Cost per m³/day</span><span className="rv">${dp.costPerM3PerDay_usd}</span></div>
                   </div>
                   {/* Feature importance */}
@@ -7415,9 +7420,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
                       <div><strong>Coordinates:</strong><br/><span style={{fontFamily:'monospace',fontSize:15}}>{dd.primaryPoint.lat.toFixed(6)}, {dd.primaryPoint.lon.toFixed(6)}</span></div>
                       <div><strong>Modelled Success Score:</strong><br/><span style={{fontSize:24,fontWeight:'bold',color:'#16a34a'}}>{dd.successProbability}%</span></div>
-                      <div><strong>Target Depth:</strong><br/>{dd.targetDepth_m}m <span style={{color:'var(--text-muted)'}}>(range: {dd.depthRange_m[0]}-{dd.depthRange_m[1]}m)</span></div>
-                      <div><strong>Expected Yield:</strong><br/>{dd.expectedYield_m3hr} m3/hr <span style={{color:'var(--text-muted)'}}>(range: {dd.yieldRange_m3hr[0]}-{dd.yieldRange_m3hr[1]})</span></div>
-                      <div><strong>Casing Depth:</strong> {dd.casingDepth_m}m</div>
+                      <div><strong>Target Depth:</strong><br/>{evidenceGate(result).depth ? <>{dd.targetDepth_m}m <span style={{color:'var(--text-muted)'}}>(range: {dd.depthRange_m[0]}-{dd.depthRange_m[1]}m)</span></> : DEPTH_NEEDS}</div>
+                      <div><strong>Expected Yield:</strong><br/>{evidenceGate(result).yield ? <>{dd.expectedYield_m3hr} m3/hr <span style={{color:'var(--text-muted)'}}>(range: {dd.yieldRange_m3hr[0]}-{dd.yieldRange_m3hr[1]})</span></> : YIELD_NEEDS}</div>
+                      <div><strong>Casing Depth:</strong> {gated(evidenceGate(result).depth, `${dd.casingDepth_m}m`, DEPTH_NEEDS)}</div>
                       <div><strong>Screen Interval:</strong> {dd.screenInterval_m[0]}-{dd.screenInterval_m[1]}m</div>
                       <div><strong>Pump Type:</strong> {dd.pumpType}</div>
                       <div><strong>Estimated Cost:</strong> {fmtUSD(ecoTotal)} <span style={{opacity:0.7}}>(same basis as the summary)</span></div>
@@ -8937,8 +8942,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
     // Comparison metrics table rows
     const compMetrics = analyzed.length >= 2 ? [
       { label: 'Modelled Success Score', unit: '%', values: analyzed.map(s => (s.result!.probability * 100).toFixed(1)), best: 'max' as const },
-      { label: 'Recommended Depth', unit: 'm', values: analyzed.map(s => s.result!.recommendedDepth.toFixed(0)), best: 'min' as const },
-      { label: 'Estimated Yield', unit: 'm³/h', values: analyzed.map(s => s.result!.estimatedYield.toFixed(1)), best: 'max' as const },
+      // Release 5: depth/yield rows only when every compared site has field evidence.
+      ...(analyzed.every(s => evidenceGate(s.result).depth) ? [{ label: 'Recommended Depth', unit: 'm', values: analyzed.map(s => s.result!.recommendedDepth.toFixed(0)), best: 'min' as const }] : []),
+      ...(analyzed.every(s => evidenceGate(s.result).yield) ? [{ label: 'Estimated Yield', unit: 'm³/h', values: analyzed.map(s => s.result!.estimatedYield.toFixed(1)), best: 'max' as const }] : []),
       { label: 'Overall Risk', unit: '%', values: analyzed.map(s => (s.result!.risk.overallRisk * 100).toFixed(0)), best: 'min' as const },
       { label: 'Geological Risk', unit: '%', values: analyzed.map(s => (s.result!.risk.categories.geological * 100).toFixed(0)), best: 'min' as const },
       { label: 'Financial Risk', unit: '%', values: analyzed.map(s => (s.result!.risk.categories.financial * 100).toFixed(0)), best: 'min' as const },
@@ -9027,9 +9033,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div className="compare-bars">
               {[
                 { label: 'Modelled Success Score', key: 'prob', values: analyzed.map(s => s.result!.probability * 100), max: 100, unit: '%', higherBetter: true },
-                { label: 'Estimated Yield', key: 'yield', values: analyzed.map(s => s.result!.estimatedYield), max: Math.max(...analyzed.map(s => s.result!.estimatedYield)) * 1.2, unit: ' m³/h', higherBetter: true },
+                ...(analyzed.every(s => evidenceGate(s.result).yield) ? [{ label: 'Estimated Yield', key: 'yield', values: analyzed.map(s => s.result!.estimatedYield), max: Math.max(...analyzed.map(s => s.result!.estimatedYield)) * 1.2, unit: ' m³/h', higherBetter: true }] : []),
                 { label: 'Overall Risk', key: 'risk', values: analyzed.map(s => s.result!.risk.overallRisk * 100), max: 100, unit: '%', higherBetter: false },
-                { label: 'Recommended Depth', key: 'depth', values: analyzed.map(s => s.result!.recommendedDepth), max: Math.max(...analyzed.map(s => s.result!.recommendedDepth)) * 1.2, unit: 'm', higherBetter: false },
+                ...(analyzed.every(s => evidenceGate(s.result).depth) ? [{ label: 'Recommended Depth', key: 'depth', values: analyzed.map(s => s.result!.recommendedDepth), max: Math.max(...analyzed.map(s => s.result!.recommendedDepth)) * 1.2, unit: 'm', higherBetter: false }] : []),
                 { label: 'Data Confidence', key: 'conf', values: analyzed.map(s => s.result!.confidenceMetrics?.overall ?? 50), max: 100, unit: '%', higherBetter: true },
               ].map(metric => (
                 <div key={metric.key} className="comp-bar-group">

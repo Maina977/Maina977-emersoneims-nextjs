@@ -2738,6 +2738,19 @@ export class BoreholeAnalyzer {
         ...clientLocation,
         geocodedDisplayName: clientGeo?.displayName,
       } : undefined,
+      // Site-level evidence actually supplied for this point (Release 5,
+      // 2026-11-20): depth figures need a field resistivity/seismic survey,
+      // yield figures a pumping test. Without them they are not shown.
+      siteEvidence: {
+        depth: !!(fieldData?.ertSurvey?.aquiferDepthM && fieldData.ertSurvey.aquiferDepthM > 0) || !!(fieldData?.seismicSurvey?.fractureZoneDepthM),
+        yield: !!fieldData?.pumpTest || !!(fieldData?.stepDrawdownTest?.steps?.length),
+        methods: [
+          fieldData?.ertSurvey ? `ERT/VES survey${fieldData.ertSurvey.contractor ? ` (${fieldData.ertSurvey.contractor}, ${fieldData.ertSurvey.surveyDate})` : ''}` : null,
+          fieldData?.seismicSurvey ? 'seismic survey' : null,
+          fieldData?.pumpTest ? `pumping test (${fieldData.pumpTest.testDate})` : null,
+          fieldData?.stepDrawdownTest ? 'step-drawdown test' : null,
+        ].filter((x): x is string => !!x),
+      },
       // ═══ 10 ADVANCED FEATURE ENGINE RESULTS ═══
       geophysicsFusion: geophysicsFusion ?? undefined,
       boreholeIntelligence: boreholeIntelligence ?? undefined,
