@@ -13,7 +13,8 @@
  * rates with no source and assumed KES 25/kWh (18 industrial).
  */
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
+import { useSessionDraft } from '@/lib/loading/sessionDraft';
 import { estimateInstalledCost, pricesVerified, customerRate, REQUEST_QUOTATION, PERFORMANCE_RATIO, BATTERY_DOD, BATTERY_EFFICIENCY } from '@/lib/solar/sizing';
 import {
   TrendingUp, DollarSign,
@@ -29,17 +30,32 @@ const KENYA_SOLAR = {
   gridKgCo2PerKwh: 0.213, // Kenya grid (Climate Watch / KPLC 2023), as the sustainability tool
 };
 
-const inputCls = 'w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:border-amber-500 focus:outline-none';
+/** sessionStorage form name and the starting values (unchanged from before 2026-11-21). */
+export const ROI_DRAFT_FORM = 'solar-roi';
+const ROI_DEFAULTS = {
+  monthlyBill: 15000,
+  tariffInput: '',
+  systemSize: 5, // kW
+  quotedCostInput: '',
+  batteryReplacementInput: '',
+  includesBattery: true,
+  batteryCapacity: 10, // kWh
+};
+
+const inputCls ='w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:border-amber-500 focus:outline-none';
 
 export default function SolarROICalculator() {
-  // User inputs
-  const [monthlyBill, setMonthlyBill] = useState(15000);
-  const [tariffInput, setTariffInput] = useState('');
-  const [systemSize, setSystemSize] = useState(5); // kW
-  const [quotedCostInput, setQuotedCostInput] = useState('');
-  const [batteryReplacementInput, setBatteryReplacementInput] = useState('');
-  const [includesBattery, setIncludesBattery] = useState(true);
-  const [batteryCapacity, setBatteryCapacity] = useState(10); // kWh
+  // User inputs. Kept in sessionStorage while the tab is open, so a reload
+  // (e.g. the recovery "Reload page") does not empty the form (2026-11-21).
+  const [draft, setDraft] = useSessionDraft(ROI_DRAFT_FORM, ROI_DEFAULTS);
+  const { monthlyBill, tariffInput, systemSize, quotedCostInput, batteryReplacementInput, includesBattery, batteryCapacity } = draft;
+  const setMonthlyBill = (v: number) => setDraft('monthlyBill', v);
+  const setTariffInput = (v: string) => setDraft('tariffInput', v);
+  const setSystemSize = (v: number) => setDraft('systemSize', v); // kW
+  const setQuotedCostInput = (v: string) => setDraft('quotedCostInput', v);
+  const setBatteryReplacementInput = (v: string) => setDraft('batteryReplacementInput', v);
+  const setIncludesBattery = (v: boolean) => setDraft('includesBattery', v);
+  const setBatteryCapacity = (v: number) => setDraft('batteryCapacity', v); // kWh
 
   const calculations = useMemo(() => {
     const rate = customerRate(tariffInput);

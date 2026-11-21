@@ -27,12 +27,15 @@ const serverSnapshot = () => false;
 export type Wait = (ms: number) => Promise<void>;
 const defaultWait: Wait = (ms) => new Promise<void>((r) => setTimeout(r, ms));
 
-/** Runs `load` up to `attempts` times with back-off (1 s, 2 s, 4 s …); rethrows the last error. */
-export async function importWithRetry<T>(load: () => Promise<T>, attempts = 3, wait: Wait = defaultWait): Promise<T> {
+/**
+ * Runs `load` up to `attempts` times with back-off (1 s, 2 s, 4 s …); rethrows the last error.
+ * `retryable` can pass an error straight on (e.g. an HTTP 400 that a retry cannot fix).
+ */
+export async function importWithRetry<T>(load: () => Promise<T>, attempts = 3, wait: Wait = defaultWait, retryable: (e: unknown) => boolean = () => true): Promise<T> {
   for (let i = 0; ; i++) {
     try { return await load(); }
     catch (e) {
-      if (i >= attempts - 1) throw e;
+      if (i >= attempts - 1 || !retryable(e)) throw e;
       await wait(1000 * 2 ** i); // 1 s, then 2 s
     }
   }

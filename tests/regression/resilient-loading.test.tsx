@@ -99,6 +99,38 @@ describe('ResilientModule in four network states', () => {
   });
 });
 
+describe('Pro Tools report generation (#/pro "Generate & Download PDF")', () => {
+  const blobRes = () => new Response(new Blob(['%PDF']), { status: 200, headers: { 'content-type': 'application/pdf' } });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it('interrupted: a dropped connection is retried and the file arrives', async () => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError('Failed to fetch')).mockResolvedValue(blobRes());
+    vi.stubGlobal('fetch', fetchMock);
+    const { postReport } = await import('@/components/solar-modules/crc/src/services/api');
+    const out = await postReport('/reports/proposal', {}, { wait: noWait });
+    expect(out).toBeInstanceOf(Blob);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('stalled: each attempt is stopped at the timeout, and after 3 a clear message re-enables the button', async () => {
+    const fetchMock = vi.fn((_u: string, init: RequestInit) => new Promise((_r, reject) => {
+      init.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { postReport } = await import('@/components/solar-modules/crc/src/services/api');
+    await expect(postReport('/reports/proposal', {}, { timeoutMs: 20, wait: noWait })).rejects.toThrow(/did not answer.*Tried 3 times/);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('an HTTP error from the server is not retried', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: 'bad input' }), { status: 400, headers: { 'content-type': 'application/json' } }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { postReport } = await import('@/components/solar-modules/crc/src/services/api');
+    await expect(postReport('/reports/proposal', {}, { wait: noWait })).rejects.toThrow('bad input');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('recoveryReload', () => {
   it('a failing flush does not block the others or the reload', () => {
     const calls: string[] = [];
