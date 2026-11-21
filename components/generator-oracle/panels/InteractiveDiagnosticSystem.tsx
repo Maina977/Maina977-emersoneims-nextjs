@@ -2145,7 +2145,8 @@ const AIQuestionPanel = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="fixed bottom-4 right-4 left-4 sm:left-auto sm:w-96 bg-slate-900 border border-green-500/30 rounded-2xl shadow-2xl z-50 p-4"
+        style={{ bottom: 'calc(1rem + var(--consent-bar-h, 0px))' }}
+        className="fixed right-4 left-4 sm:left-auto sm:w-96 bg-slate-900 border border-green-500/30 rounded-2xl shadow-2xl z-50 p-4"
         role="dialog"
         aria-label={`Ask about ${subject}`}
       >
@@ -2230,7 +2231,8 @@ Be concise but thorough.`
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="fixed bottom-4 right-4 w-96 bg-slate-900 border border-cyan-500/30 rounded-2xl shadow-2xl z-50 overflow-hidden"
+      style={{ bottom: 'calc(1rem + var(--consent-bar-h, 0px))' }}
+      className="fixed right-4 w-96 bg-slate-900 border border-cyan-500/30 rounded-2xl shadow-2xl z-50 overflow-hidden"
     >
       <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-gradient-to-r from-cyan-500/10 to-blue-500/10">
         <div className="flex items-center gap-2">

@@ -2256,6 +2256,20 @@ html[data-hub-route="true"] body {
   background: var(--color-surface-base, #f7f8fa);
 }
 
+/* Cookie banner space reservation (2026-11-21).
+   While the fixed cookie banner is visible, CookieConsent sets
+   data-consent-bar="open" and --consent-bar-h (its measured height) on <html>
+   (lib/compliance/consentBarSpace.ts). The body gains that much bottom padding,
+   so every tool result and button can be scrolled fully above the banner, and
+   scroll-padding keeps focused / scrolled-to elements out from behind it.
+   Both disappear when the banner is answered. */
+html[data-consent-bar="open"] {
+  scroll-padding-bottom: var(--consent-bar-h, 0px);
+}
+html[data-consent-bar="open"] body {
+  padding-bottom: var(--consent-bar-h, 0px);
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    NAVIGATION ANIMATIONS — replaced framer-motion, 2026-09-26
 

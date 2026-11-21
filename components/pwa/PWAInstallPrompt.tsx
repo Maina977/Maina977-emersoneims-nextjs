@@ -71,7 +71,8 @@ export default function PWAInstallPrompt() {
   if (!showPrompt) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm">
+    // Lifted by the cookie banner's height while it is visible (0 otherwise).
+    <div className="fixed right-4 z-50 max-w-sm" style={{ bottom: 'calc(1rem + var(--consent-bar-h, 0px))' }}>
       <div className="bg-gradient-to-br from-gray-900 to-black border border-cyan-500/30 rounded-lg shadow-2xl p-6 backdrop-blur-sm">
         <button
           onClick={handleDismiss}

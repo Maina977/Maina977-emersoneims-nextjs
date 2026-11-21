@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { releaseConsentBarSpace, reserveConsentBarSpace } from '@/lib/compliance/consentBarSpace';
 
 /**
  * Cookie Consent Banner - GDPR Compliance
@@ -89,21 +90,23 @@ export default function CookieConsent() {
   };
 
   /*
-   * Publish the bar's height so the page can keep its own controls clear of it.
-   * Cleared on unmount and whenever the banner is dismissed, so the reserved
-   * space disappears the moment the bar does.
+   * Reserve the bar's height at the bottom of the page while it is visible
+   * (lib/compliance/consentBarSpace.ts explains the CSS that uses it), so no
+   * tool result or button can end up permanently behind the banner. Measured
+   * with a ResizeObserver, so text wrapping, zoom and rotation stay in step.
+   * Released on dismiss and on unmount, so the space goes when the bar does.
    */
   useEffect(() => {
     const root = document.documentElement;
     if (!showBanner) {
-      root.style.removeProperty('--consent-bar-h');
+      releaseConsentBarSpace(root);
       return;
     }
     const el = barRef.current;
     if (!el) return;
 
     const publish = () => {
-      root.style.setProperty('--consent-bar-h', `${Math.ceil(el.getBoundingClientRect().height)}px`);
+      reserveConsentBarSpace(root, el.getBoundingClientRect().height);
     };
     publish();
 
@@ -112,12 +115,14 @@ export default function CookieConsent() {
       ro = new ResizeObserver(publish);
       ro.observe(el);
     }
+    window.addEventListener('resize', publish);
     window.addEventListener('orientationchange', publish);
 
     return () => {
       ro?.disconnect();
+      window.removeEventListener('resize', publish);
       window.removeEventListener('orientationchange', publish);
-      root.style.removeProperty('--consent-bar-h');
+      releaseConsentBarSpace(root);
     };
   }, [showBanner]);
 
@@ -125,37 +130,45 @@ export default function CookieConsent() {
 
   // Mobile UX audit 2026-07-10: on a 390px phone this banner rendered 326px
   // tall -- with the floating accessibility button it covered 54% of every
-  // first-time visitor's screen. Phones now get a compact single-line notice
-  // with the same three GDPR choices; the full copy appears from md: up.
+  // first-time visitor's screen.
+  // 2026-11-21 ("must not obscure tool results or actions"): now one slim row
+  // on desktop (title inline, no emoji/heading block) and a short wrapped line
+  // plus one row of buttons on phones. Every button keeps a 44px touch target,
+  // and the three choices are the same size so Reject is as easy as Accept.
+  // It is a NON-modal dialog: no focus trap, the page stays usable, and its
+  // height is reserved at the bottom of the page (see the effect above).
+  // z-[45]: above floating widgets' z-40 layer, but BELOW full-screen modal
+  // overlays (z-50) a visitor opens on a tool, so the banner can never cover a
+  // modal's own action buttons; it is back in view as soon as the modal closes.
   return (
-    <div ref={barRef} className="fixed bottom-0 left-0 right-0 z-50 p-3 md:p-4 bg-gradient-to-r from-gray-900 to-black border-t border-cyan-500/30 backdrop-blur-lg">
+    <div
+      ref={barRef}
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="cookie-notice-title"
+      aria-describedby="cookie-notice-text"
+      className="fixed bottom-0 left-0 right-0 z-[45] px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:px-4 bg-gradient-to-r from-gray-900 to-black border-t border-cyan-500/30 backdrop-blur-lg"
+    >
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5 md:gap-4">
-          <div className="flex-1">
-            <div className="flex items-start gap-3">
-              <div className="hidden md:block text-2xl">🍪</div>
-              <div>
-                <h3 className="hidden md:block text-white font-semibold text-lg mb-1">
-                  Cookie & Privacy Notice
-                </h3>
-                <p className="text-gray-300 text-xs md:text-sm leading-snug md:leading-relaxed max-w-3xl">
-                  <span className="md:hidden">We use essential and analytics cookies; data stays private. </span>
-                  <span className="hidden md:inline">
-                    We use essential cookies to ensure our website works properly and analytics cookies to understand how you interact with it.
-                    Your data is processed securely and never shared with third parties.{' '}
-                  </span>
-                  <a href="/privacy" className="text-cyan-400 hover:text-cyan-300 underline">
-                    Privacy Policy
-                  </a>
-                </p>
-              </div>
-            </div>
-          </div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
+          <p id="cookie-notice-text" className="flex-1 min-w-0 text-gray-300 text-xs md:text-sm leading-snug">
+            <strong id="cookie-notice-title" className="text-white font-semibold">
+              Cookie &amp; Privacy Notice:
+            </strong>{' '}
+            <span className="xl:hidden">We use essential and analytics cookies; data stays private. </span>
+            <span className="hidden xl:inline">
+              We use essential cookies to ensure our website works properly and analytics cookies to understand how you interact with it.
+              Your data is processed securely and never shared with third parties.{' '}
+            </span>
+            <a href="/privacy" className="text-cyan-400 hover:text-cyan-300 underline">
+              Privacy Policy
+            </a>
+          </p>
 
-          <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
             <button
               onClick={acceptCookies}
-              className="flex-1 md:flex-none px-3 py-2 md:px-6 md:py-2.5 bg-gradient-to-r from-amber-500 to-cyan-500 text-black font-semibold rounded-lg hover:opacity-90 transition-opacity text-xs md:text-sm whitespace-nowrap"
+              className="flex-1 md:flex-none min-h-[44px] px-2 md:px-5 bg-gradient-to-r from-amber-500 to-cyan-500 text-black font-semibold rounded-lg hover:opacity-90 transition-opacity text-xs md:text-sm whitespace-nowrap"
               // Must CONTAIN the visible text "Accept All" (WCAG 2.5.3), or
               // voice control cannot target the button by what it says.
               // "Accept cookies" did not contain it.
@@ -165,7 +178,7 @@ export default function CookieConsent() {
             </button>
             <button
               onClick={declineCookies}
-              className="flex-1 md:flex-none px-3 py-2 md:px-6 md:py-2.5 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors text-xs md:text-sm whitespace-nowrap"
+              className="flex-1 md:flex-none min-h-[44px] px-2 md:px-5 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors text-xs md:text-sm whitespace-nowrap"
               // Must contain the visible text "Essential Only" (WCAG 2.5.3).
               // "Allow only essential cookies" did not, so voice control could
               // not activate the button by the words printed on it.
@@ -175,14 +188,14 @@ export default function CookieConsent() {
             </button>
             <button
               onClick={rejectAllCookies}
-              className="flex-1 md:flex-none px-3 py-2 md:px-6 md:py-2.5 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition-colors text-xs md:text-sm whitespace-nowrap"
+              className="flex-1 md:flex-none min-h-[44px] px-2 md:px-5 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition-colors text-xs md:text-sm whitespace-nowrap"
               aria-label="Reject all cookies"
             >
               Reject All
             </button>
             <button
               onClick={declineCookies}
-              className="hidden md:block p-2.5 text-gray-400 hover:text-white transition-colors"
+              className="hidden md:flex items-center justify-center min-h-[44px] min-w-[44px] text-gray-400 hover:text-white transition-colors"
               aria-label="Close cookie notice"
             >
               <X size={20} />
