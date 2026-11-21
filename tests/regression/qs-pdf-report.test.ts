@@ -39,8 +39,11 @@ describe('PDF BOQ report', () => {
     expect(t).toMatch(/VAT = 16 %/);
     expect(t).toMatch(/registered quantity surveyor/);
   });
-  it('an incomplete bill is refused', () => {
+  it('an incomplete bill prints as INCOMPLETE with no total', async () => {
     const boq = buildBoq(ITEMS.map((i) => ({ ...i, rate: null })), Q, ADJ, 'B');
-    expect(() => boqToPdf(boq, { project: 'x', preparedBy: 'x', date: '2026-11-14' })).toThrow(/incomplete/);
+    const t = await textOf(boqToPdf(boq, { project: 'x', preparedBy: 'x', date: '2026-11-14' }));
+    expect(t).toMatch(/INCOMPLETE/);
+    expect(t).toMatch(/TOTAL: not available/);
+    expect(t).not.toMatch(/Measured works/);
   });
 });

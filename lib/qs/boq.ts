@@ -10,7 +10,19 @@ import type { Quantity } from './takeoff';
 
 export const BOQ_ENGINE_VERSION = 'qs-boq 1.0.0 (2026-11-14)';
 
-export interface Rate { value: number; currency: 'KES'; source: string; date: string; location: string; kind: 'rate-library' | 'supplier-quote' }
+export type RateKind = 'rate-library' | 'supplier-quote' | 'other';
+export const RATE_KIND_LABELS: Record<RateKind, string> = { 'rate-library': 'Rate library', 'supplier-quote': 'Supplier quote', other: 'Other source' };
+export interface Rate { value: number; currency: 'KES'; source: string; date: string; location: string; kind: RateKind }
+
+/**
+ * A rate as typed in the BOQ table → Rate. Blank value → null ("rate required").
+ * The kind is what the user chose; it is never defaulted, and an unchosen kind
+ * is refused by buildBoq, so a supplier quote is never labelled a rate library.
+ */
+export function rateFromInput(i: { value: string; kind: string; source: string; date: string; location: string }): Rate | null {
+  if (i.value.trim() === '') return null;
+  return { value: Number(i.value), currency: 'KES', source: i.source.trim(), date: i.date.trim(), location: i.location.trim(), kind: i.kind as RateKind };
+}
 export interface BoqItem {
   code: string; section: string; trade: string; description: string;
   unit: 'm' | 'm²' | 'm³' | 'No' | 'kg' | 't' | 'item';
@@ -81,7 +93,8 @@ export function buildBoq(items: BoqItem[], quantities: Map<string, Quantity>, ad
     let rate: number | null = null, rateNote = 'rate required';
     if (it.rate) {
       if (!(it.rate.value >= 0) || !it.rate.source || Number.isNaN(Date.parse(it.rate.date))) errors.push(`${it.code}: a rate needs a value, a source and a date`);
-      else { rate = it.rate.value; rateNote = `${it.rate.kind === 'supplier-quote' ? 'Supplier quote' : 'Rate library'}: ${it.rate.source}, ${it.rate.date}, ${it.rate.location}`; }
+      else if (!Object.prototype.hasOwnProperty.call(RATE_KIND_LABELS, it.rate.kind)) errors.push(`${it.code}: choose where the rate comes from (rate library, supplier quote or other source)`);
+      else { rate = it.rate.value; rateNote = `${RATE_KIND_LABELS[it.rate.kind]}: ${it.rate.source}, ${it.rate.date}, ${it.rate.location}`; }
     }
     lines.push({ code: it.code, section: it.section, description: it.description, unit: it.unit, quantity, rate, amount: rate === null ? null : money(quantity * rate), rateNote, quantitySource: src.join(' + ') });
   }
@@ -116,6 +129,19 @@ export function buildBoq(items: BoqItem[], quantities: Map<string, Quantity>, ad
   const subtotalBeforeVat = money(measuredWorks + preliminaries + contingency + overheadsProfit);
   const vat = money(subtotalBeforeVat * adj.vat.pct / 100);
   return { version: BOQ_ENGINE_VERSION, revision, lines, sections, measuredWorks, preliminaries, contingency, overheadsProfit, subtotalBeforeVat, vat, grandTotal: money(subtotalBeforeVat + vat), pricedSubtotal, unpricedItems, basis, errors };
+}
+
+/** Printed on every export: no reviewer is authenticated, so nothing produced here is approved, certified or issued. */
+export const DRAFT_NOTICE = 'DRAFT — not certified. Not checked or approved by a registered quantity surveyor.';
+
+/** One line saying why the bill has no total, or null when it is complete. */
+export function incompleteNotice(boq: Boq): string | null {
+  if (boq.grandTotal !== null) return null;
+  const why = [
+    boq.unpricedItems.length ? `${boq.unpricedItems.length} item(s) need a rate (${boq.unpricedItems.join(', ')})` : '',
+    boq.errors.length ? `${boq.errors.length} error(s) to resolve` : '',
+  ].filter(Boolean).join('; ');
+  return `INCOMPLETE — ${why || 'the bill is not complete'}. No bill total: the priced items shown are not a bill total.`;
 }
 
 /** Variation between two revisions: per item quantity, rate and amount changes. */
