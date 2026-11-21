@@ -31,8 +31,10 @@ export function finalVerdict(result: AnalysisResult): FinalVerdict {
   const wq = (result as any).waterQuality as { tds?: number; nitrate?: number; fluoride?: number } | undefined;
   const tds = Number(wq?.tds), no3 = Number(wq?.nitrate), f = Number(wq?.fluoride);
   const quality: string[] = [];
-  if (tds >= 3000) { level = 'unfavourable'; quality.push(`Expected salinity (TDS about ${Math.round(tds)} mg/L) is too high for drinking without desalination`); }
-  else if (tds >= 1000) { if (level === 'favourable') level = 'mixed'; quality.push(`Expected salinity (TDS about ${Math.round(tds)} mg/L) is above the 1,000 mg/L drinking limit: budget for reverse osmosis`); }
+  // 2026-11-21: the TDS value is a regional model estimate, not a sample, so
+  // only its band is stated (no precise mg/L figure without a water test).
+  if (tds >= 3000) { level = 'unfavourable'; quality.push(`Regional data suggest high salinity (TDS above 3,000 mg/L, not measured here): too salty for drinking without desalination`); }
+  else if (tds >= 1000) { if (level === 'favourable') level = 'mixed'; quality.push(`Regional data suggest salinity above the 1,000 mg/L drinking limit (not measured here): budget for reverse osmosis`); }
   if (no3 > 50) { if (level === 'favourable') level = 'mixed'; quality.push(`Nitrate may exceed 50 mg/L (pollution from latrines or farming): site the borehole away from them and test the water`); }
   if (f > 4) { if (level === 'favourable') level = 'mixed'; quality.push(`Fluoride may be well above 1.5 mg/L: defluoridation is needed for drinking`); }
   else if (f > 1.5) quality.push(`Fluoride may exceed 1.5 mg/L: plan defluoridation for drinking water`);
