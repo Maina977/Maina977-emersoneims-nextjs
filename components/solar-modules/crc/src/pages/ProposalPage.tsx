@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { simulateHourly, type HourlyResult } from '@/lib/solar/design/hourly';
 import { simulateHybrid, type HybridResult } from '@/lib/solar/design/hybrid';
 import type { Proposal } from '@/lib/solar/design/proposal';
@@ -9,6 +9,10 @@ import {
   EMPTY_BOM_ROW, LOSSES_SOURCE, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_FORM, WORKED_EXAMPLE_PRODUCTION,
   type BomRow, type ProposalForm, type WeatherOk,
 } from '@/lib/solar/design/proposalForm';
+import {
+  clearDraft, loadDraft, projectFileName, readProject, saveDraft, serializeProject,
+  MAX_PROJECT_BYTES, SAVED_HERE_ONLY_NOTE, SIGN_OFFS_NOT_RESTORED, type SavedProduction, type SavedProject,
+} from '@/lib/solar/design/proposalSave';
 
 /**
  * Proposal (P1, 2026-11-20). Design-to-proposal workflow: datasheets with
@@ -19,6 +23,10 @@ import {
  * There are no approval inputs: approval needs an authenticated, authorised
  * reviewer (lib/solar/design/proposalApproval.ts), which does not exist yet,
  * so every proposal is DRAFT. The revision hash of the inputs is shown.
+ * Saved projects (2026-11-21, lib/solar/design/proposalSave.ts): the draft is
+ * autosaved in this browser and can be saved to / opened from a .json file.
+ * Saved data never restores a datasheet sign-off or an approval; everything
+ * is recomputed after a restore or import.
  */
 
 type FieldKind = 'text' | 'date' | 'check' | 'yesno';
@@ -90,6 +98,17 @@ function Fieldset({ g, f, set }: { g: Group; f: ProposalForm; set: (k: string, v
   );
 }
 
+/** File text; FileReader where Blob.text() is missing (older Safari). */
+function readText(file: File): Promise<string> {
+  if (typeof file.text === 'function') return file.text();
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result ?? ''));
+    r.onerror = () => reject(r.error ?? new Error('read failed'));
+    r.readAsText(file);
+  });
+}
+
 async function postProposal(input: unknown, format: 'json' | 'xlsx' | 'pdf'): Promise<Response> {
   return fetch('/api/solar/proposal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input, format }) });
 }
@@ -134,6 +153,74 @@ export default function ProposalPage() {
   const revision = useMemo(() => (mapped.input ? proposalRevisionHash(mapped.input) : ''), [mapped.input]);
   const stale = proposal !== null && builtFor !== inputKey;
 
+  // ---------------------------------------------------------------- saved project
+  const [hydrated, setHydrated] = useState(false);
+  const [autosavePaused, setAutosavePaused] = useState(false);
+  const [restored, setRestored] = useState<{ savedAt: string; production: SavedProduction; stripped: string[] } | null>(null);
+  const [storageMsg, setStorageMsg] = useState('');
+  const [draftError, setDraftError] = useState('');
+  const [lastSaved, setLastSaved] = useState('');
+  const [opened, setOpened] = useState<{ name: string; savedAt: string; fileRevision: string | null; production: SavedProduction; stripped: string[] } | null>(null);
+  const [openError, setOpenError] = useState('');
+  const openInput = useRef<HTMLInputElement>(null);
+  const savedProduction: SavedProduction = weather ? { kind: 'weather', label: weather.source } : example ? { kind: 'test-example', label: WORKED_EXAMPLE_PRODUCTION.assumptions[0] } : { kind: 'none', label: '' };
+  const current: SavedProject = { form: f, bom, production: savedProduction };
+
+  /** Put a restored or imported project on the page. Nothing computed is taken from it. */
+  const applyProject = (p: SavedProject) => {
+    setF(p.form); setBom(p.bom.length ? p.bom : [{ ...EMPTY_BOM_ROW }]); setExample(p.production.kind === 'test-example');
+    setWeather(null); setWeatherMsg(''); setLoad(null); setLoadMsg(''); setProposal(null); setBuiltFor(''); setServerError('');
+  };
+
+  useEffect(() => {
+    const r = loadDraft();
+    if (r.status === 'restored') { applyProject(r.project); setRestored({ savedAt: r.savedAt, production: r.project.production, stripped: r.stripped }); }
+    else if (r.status === 'blocked') setStorageMsg(r.message);
+    else if (r.status === 'rejected') { setDraftError(r.message); if (r.reason === 'newer') setAutosavePaused(true); }
+    setHydrated(true);
+    // Runs once, on mount.
+  }, []);
+
+  const draftJson = JSON.stringify(current);
+  useEffect(() => {
+    if (!hydrated || autosavePaused) return;
+    const t = setTimeout(() => {
+      const r = saveDraft(JSON.parse(draftJson) as SavedProject, revision || null);
+      if (r.ok) { setStorageMsg(''); setLastSaved(r.removed ? '' : r.savedAt); } else setStorageMsg(r.message);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [draftJson, revision, hydrated, autosavePaused]);
+
+  const discardDraft = () => {
+    if (typeof window !== 'undefined' && !window.confirm('Clear the draft saved in this browser and empty the form? Save a project file first if you want to keep it.')) return;
+    const r = clearDraft();
+    setStorageMsg(r.ok ? '' : r.message);
+    setRestored(null); setDraftError(''); setAutosavePaused(false); setLastSaved(''); setOpened(null); setOpenError('');
+    applyProject({ form: {}, bom: [{ ...EMPTY_BOM_ROW }], production: { kind: 'none', label: '' } });
+  };
+
+  const saveFile = () => {
+    try {
+      const url = URL.createObjectURL(new Blob([serializeProject(current, revision || null)], { type: 'application/json' }));
+      const a = document.createElement('a'); a.href = url; a.download = projectFileName(f.ref ?? ''); document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) { setOpenError(`The project file could not be prepared: ${(e as Error).message}`); }
+  };
+
+  const openFile = async (file: File | undefined) => {
+    if (openInput.current) openInput.current.value = '';
+    if (!file) return;
+    setOpenError('');
+    if (file.size > MAX_PROJECT_BYTES) { setOpenError(`Project file not opened: ${file.name} is larger than ${MAX_PROJECT_BYTES.toLocaleString('en-KE')} bytes, far more than a proposal project.`); return; }
+    let text: string;
+    try { text = await readText(file); } catch (e) { setOpenError(`Project file not opened: ${file.name} could not be read (${(e as Error).message}).`); return; }
+    const r = readProject(text, 'file');
+    if (!r.ok) { setOpenError(r.message.replace('Project file not opened', `Project file not opened (${file.name})`)); return; }
+    applyProject(r.project); setRestored(null); setDraftError(''); setAutosavePaused(false);
+    setOpened({ name: file.name, savedAt: r.savedAt, fileRevision: r.fileRevisionHash, production: r.project.production, stripped: r.stripped });
+  };
+  const when = (iso: string) => new Date(iso).toLocaleString('en-KE');
+
   const fetchWeather = async () => {
     const lat = Number(f['c.lat']), lon = Number(f['c.lon']);
     if (!(f['c.lat'] ?? '').trim() || !(f['c.lon'] ?? '').trim() || !Number.isFinite(lat) || !Number.isFinite(lon)) { setWeatherMsg('Enter the site latitude and longitude first.'); return; }
@@ -151,7 +238,9 @@ export default function ProposalPage() {
 
   const onLoadFile = async (file: File | undefined) => {
     if (!file) return;
-    const p = parseLoadCsv(await file.text(), weather?.hours);
+    let text: string;
+    try { text = await readText(file); } catch (e) { setLoad(null); setLoadMsg(`${file.name} could not be read (${(e as Error).message}).`); return; }
+    const p = parseLoadCsv(text, weather?.hours);
     if (p.values) { setLoad(p.values); setLoadMsg(`${file.name}: ${p.values.length} hourly values, ${Math.round(p.values.reduce((a, b) => a + b, 0)).toLocaleString('en-KE')} kWh in total.`); }
     else { setLoad(null); setLoadMsg(p.error); }
   };
@@ -181,8 +270,8 @@ export default function ProposalPage() {
     finally { setBusy(''); }
   };
 
-  const loadExample = () => { setF(WORKED_EXAMPLE_FORM); setBom(WORKED_EXAMPLE_BOM.map((r) => ({ ...r }))); setExample(true); setWeather(null); setWeatherMsg(''); setLoad(null); setLoadMsg(''); setProposal(null); setServerError(''); };
-  const clear = () => { setF({}); setBom([{ ...EMPTY_BOM_ROW }]); setExample(false); setWeather(null); setWeatherMsg(''); setLoad(null); setLoadMsg(''); setProposal(null); setServerError(''); };
+  const loadExample = () => { setF(WORKED_EXAMPLE_FORM); setBom(WORKED_EXAMPLE_BOM.map((r) => ({ ...r }))); setExample(true); setWeather(null); setWeatherMsg(''); setLoad(null); setLoadMsg(''); setProposal(null); setServerError(''); setRestored(null); setOpened(null); };
+  const clear = () => { setF({}); setBom([{ ...EMPTY_BOM_ROW }]); setExample(false); setWeather(null); setWeatherMsg(''); setLoad(null); setLoadMsg(''); setProposal(null); setServerError(''); setRestored(null); setOpened(null); };
 
   const p = production.result;
   const h = hybrid.result;
@@ -203,6 +292,41 @@ export default function ProposalPage() {
           TEST VALUES: the worked example uses the module, inverter, prices, tariff and production figures from the regression test. They are not a product recommendation, a real price or a real tariff. The production figures are test values, not a simulation, until you fetch the hourly weather.
         </div>
       ) : null}
+
+      <section style={{ ...box, marginBottom: 12 }} aria-label="Saved project">
+        <h2 style={{ fontSize: 16, fontWeight: 600, color: '#fbbf24', margin: '0 0 8px' }}>Saved project</h2>
+        <p role="note" style={{ fontSize: 12, color: '#fde68a', margin: '0 0 8px' }}>{SAVED_HERE_ONLY_NOTE}</p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button type="button" onClick={saveFile} style={btn}>Save project file (.json)</button>
+          <button type="button" onClick={() => openInput.current?.click()} style={btn}>Open project file</button>
+          <input ref={openInput} type="file" accept=".json,application/json" aria-label="Open project file (.json)" hidden onChange={(e) => openFile(e.target.files?.[0])} />
+          <button type="button" onClick={discardDraft} style={{ ...btn, background: 'transparent', color: '#94a3b8' }}>Clear draft</button>
+        </div>
+        <p style={{ fontSize: 12, color: '#94a3b8', margin: '8px 0 0' }}>
+          The form and the bill of materials are saved in this browser as you type{lastSaved ? ` (last saved ${when(lastSaved)})` : ''}. The project file also holds the production source and the revision. Hourly weather, the load file and the built proposal are not saved: they are recomputed. {SIGN_OFFS_NOT_RESTORED}
+        </p>
+        {restored ? (
+          <div role="status" style={{ fontSize: 13, color: '#cbd5e1', marginTop: 8 }}>
+            Restored your draft from this browser (saved {when(restored.savedAt)}).
+            {restored.production.kind === 'weather' ? ` Production was from ${restored.production.label}; the hourly weather is not stored, so fetch it again to recompute production and the revision.` : ''}
+            {restored.stripped.length ? ` Not restored: ${restored.stripped.join(', ')}.` : ''}
+          </div>
+        ) : null}
+        {opened ? (
+          <div role="status" style={{ fontSize: 13, color: '#cbd5e1', marginTop: 8, wordBreak: 'break-word' }}>
+            Opened {opened.name} (saved {when(opened.savedAt)}). The proposal is DRAFT.
+            {opened.production.kind === 'weather' ? ` Production was from ${opened.production.label}; fetch the hourly weather again to recompute it.` : ''}
+            {opened.stripped.length ? ` Ignored from the file: ${opened.stripped.join(', ')}.` : ''}
+            <div style={{ fontSize: 12, marginTop: 4, wordBreak: 'break-all' }}>
+              Revision recomputed from the opened inputs: {revision ? <code>{revision}</code> : 'available once the inputs are complete'}
+              {opened.fileRevision ? <> · the file stated <code>{opened.fileRevision}</code> ({revision === opened.fileRevision ? 'matches' : revision ? 'differs: the recomputed one applies' : 'not yet comparable'})</> : ' · the file stated no revision'}
+            </div>
+          </div>
+        ) : null}
+        {storageMsg ? <p role="alert" style={{ color: '#fca5a5', fontSize: 13, margin: '8px 0 0' }}>{storageMsg}</p> : null}
+        {draftError ? <p role="alert" style={{ color: '#fca5a5', fontSize: 13, margin: '8px 0 0' }}>{draftError}{autosavePaused ? ' Autosave is paused so that draft is not overwritten; use Clear draft to start again.' : ''}</p> : null}
+        {openError ? <p role="alert" style={{ color: '#fca5a5', fontSize: 13, margin: '8px 0 0' }}>{openError}</p> : null}
+      </section>
 
       <div style={{ display: 'grid', gap: 12 }}>
         {GROUPS.map((g) => <Fieldset key={g.id} g={g} f={f} set={set} />)}
