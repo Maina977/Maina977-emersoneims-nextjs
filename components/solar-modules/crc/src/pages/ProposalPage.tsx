@@ -83,7 +83,7 @@ function Fieldset({ g, f, set }: { g: Group; f: ProposalForm; set: (k: string, v
           </label>
         ) : (
           <label key={k} style={{ fontSize: 12, color: '#cbd5e1' }}>
-            {l}{u ? <span style={{ color: '#64748b' }}> ({u})</span> : null}
+            {l}{u ? <span style={{ color: '#94a3b8' }}> ({u})</span> : null}
             {kind === 'yesno' ? (
               <select value={f[k] ?? ''} onChange={(e) => set(k, e.target.value)} style={inputStyle}>
                 <option value="">—</option><option value="yes">yes</option><option value="no">no</option>
@@ -483,7 +483,7 @@ function ProposalView({ p, stale }: { p: Proposal; stale: boolean }) {
 
       <h3 style={h2}>Disclosures</h3>
       <ul style={{ fontSize: 12, color: '#cbd5e1', paddingLeft: 16 }}>{p.disclosures.map((d) => <li key={d}>{d}</li>)}</ul>
-      <div style={{ fontSize: 11, color: '#64748b' }}>{p.versions.join(' · ')}</div>
+      <div style={{ fontSize: 11, color: '#94a3b8' }}>{p.versions.join(' · ')}</div>
     </div>
   );
 }

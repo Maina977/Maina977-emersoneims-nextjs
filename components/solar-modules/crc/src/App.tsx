@@ -360,7 +360,8 @@ const Breadcrumb = styled.div`
   display: flex; align-items: center; gap: 0.4rem;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
-  color: rgba(230, 241, 255, 0.42);
+  /* 0.42 alpha failed WCAG AA contrast (axe, 2026-11-21); 0.72 is about 8:1 on the top bar */
+  color: rgba(230, 241, 255, 0.72);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   & .sep { opacity: 0.5; }
@@ -571,7 +572,7 @@ const App: React.FC = () => {
       <MainArea>
         <TopBar>
           <TopBarLeft>
-            <MenuButton onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <MenuButton onClick={() => setSidebarOpen(!sidebarOpen)} aria-label={sidebarOpen ? 'Close menu' : 'Open menu'} aria-expanded={sidebarOpen}>
               {sidebarOpen ? <FiX size={20} /> : <FiMenu size={20} />}
             </MenuButton>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
