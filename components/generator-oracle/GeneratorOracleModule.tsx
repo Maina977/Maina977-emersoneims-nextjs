@@ -125,6 +125,7 @@ const InteractiveDiagnosticSystem = dynamic(() => import('./panels/InteractiveDi
 const ProfessionalDiagnosticTools = dynamic(() => import('./panels/ProfessionalDiagnosticTools'), { ssr: false });
 const EngineeringCalculatorsPanel = dynamic(() => import('./panels/EngineeringCalculatorsPanel'), { ssr: false });
 const GuidedDiagnosisPanel = dynamic(() => import('./panels/GuidedDiagnosisPanel'), { ssr: false });
+const ServiceManagementPanel = dynamic(() => import('./panels/ServiceManagementPanel'), { ssr: false });
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -910,7 +911,7 @@ export default function GeneratorOracleModule() {
   // Opens on the Fault Center: the lookup is the part that answers a real
   // customer's question. The 'command' dashboard is a training simulator.
   const [activeScreen, setActiveScreen] = useState<
-    'command' | 'ai' | 'faults' | 'systems' | 'controllers' | 'wiring' | 'monitoring' | 'tools'
+    'command' | 'ai' | 'faults' | 'systems' | 'controllers' | 'wiring' | 'monitoring' | 'tools' | 'service'
   >('faults');
 
   // Sub-tab states for each super-tab
@@ -1256,6 +1257,7 @@ export default function GeneratorOracleModule() {
                     <PremiumNavTab icon="🛠️" label="Diagnostic Assistant" active={activeScreen === 'ai'} onClick={() => setActiveScreen('ai')} />
                     <PremiumNavTab icon="📐" label="Wiring & Manuals" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
                     <PremiumNavTab icon="🛠️" label="Tools & Reports" active={activeScreen === 'tools'} onClick={() => setActiveScreen('tools')} />
+                    <PremiumNavTab icon="📋" label="Service & Job Cards" active={activeScreen === 'service'} onClick={() => setActiveScreen('service')} />
                   </div>
                 </nav>
 
@@ -1273,6 +1275,7 @@ export default function GeneratorOracleModule() {
                     <option value="ai">🛠️ Diagnostic Assistant</option>
                     <option value="wiring">📐 Wiring & Manuals</option>
                     <option value="tools">🛠️ Tools & Reports</option>
+                    <option value="service">📋 Service & Job Cards</option>
                   </select>
                 </div>
 
@@ -2119,6 +2122,21 @@ export default function GeneratorOracleModule() {
                       </HolographicGlassPanel>
                     )}
                     {toolsSubTab === 'alerts' && <NotificationSettings />}
+                  </motion.div>
+                )}
+
+                {/* SUPER-TAB: SERVICE & JOB CARDS — asset register, OEM-cited maintenance
+                    plans, due list and workshop job cards (lib/generator-oracle/service). */}
+                {activeScreen === 'service' && (
+                  <motion.div
+                    key="service"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="space-y-4"
+                  >
+                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="service" />
+                    <ServiceManagementPanel />
                   </motion.div>
                 )}
 
