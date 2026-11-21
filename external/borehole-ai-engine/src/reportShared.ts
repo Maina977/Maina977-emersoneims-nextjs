@@ -4,7 +4,7 @@
  * only when a report is downloaded - much faster page load).
  */
 import type { AnalysisResult } from './types';
-import { finalVerdict } from './verdict';
+import { finalVerdict, salinityEvidence } from './verdict';
 import { auditReport, type AuditReport } from './reportAuditor';
 import type { VerificationReport } from './preReportVerification';
 import { drillRatePerM, mobilisationUSD, countyRateBand, costSoilType, KES_PER_USD, drillingCostKES, EIMS_RATES_KES } from './costModel';
@@ -143,15 +143,24 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   // filtration (2026-10-25 audit: RO recommended for 60 m3/day while $1.5-2.5k
   // was budgeted). Allowance ~$300 per m3/day of plant, min $6,000; a lab test
   // decides whether it is needed at all.
-  const _tds = Number(result.waterQuality?.tds ?? 0);
-  const needsRO = _tds >= 1000 && !isHandPump;
+  // 2026-11-21: only a MEASURED salinity (laboratory, or the median of 3+
+  // boreholes nearby) sizes or prices a desalination plant. A modelled value
+  // gives a screening class only: desalination is then not priced, and the
+  // reader is told a laboratory test decides (salinityUnpriced).
+  const _sal = salinityEvidence(result);
+  const _tds = _sal.measured ? Number(_sal.tds ?? 0) : 0;
+  const needsRO = _sal.measured && _tds >= 1000 && !isHandPump;
+  const salinityUnpriced = !_sal.measured && (_sal.risk === 'HIGH' || _sal.risk === 'ELEVATED');
+  // The modelled salinity is the only reason for the generic allowance when no
+  // other treatment is listed and fluoride (priced separately) is the rest.
+  const _onlyModelledSalinity = salinityUnpriced && wqTreatments.every((t: string) => /desalin|reverse osmosis|\bro\b|salin|fluorid/i.test(String(t)));
   const roDailyM3 = Math.round(yieldVal * 6);
   // Small brackish RO plants cost about $450 per m³/day of capacity, more
   // above 3,000 mg/L (higher pressure, more pre-treatment). 2026-10-30 audit:
   // $300 per m³/day understated the plant.
   const wqTreatmentCost = needsRO
     ? Math.max(8000, Math.round(((_tds >= 3000 ? 700 : 450) * roDailyM3) / 100) * 100)
-    : !result.waterQuality?.isPotable
+    : !result.waterQuality?.isPotable && !_onlyModelledSalinity
       ? (wqTreatments.length > 2 ? 4000 : _ironMinor && isHandPump ? 400 : _ironOnly ? 1500 : 2500)
       : 0;
   const fluorideVal = result.waterQuality?.fluoride ?? 0;
@@ -264,7 +273,7 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   return {
     depthVal, yieldVal, soilType, cpm, drillingCost, mobilisationCost, casingCost, casingNote, blindCasingLen,
     screenLength, screenCost, screenNote, pumpKW, pumpHead, pumpCost, pumpNote,
-    installCost, solarKW, solarCost, isHandPump, wqTreatmentCost, needsRO, roDailyM3, fluorideVal,
+    installCost, solarKW, solarCost, isHandPump, wqTreatmentCost, needsRO, salinityUnpriced, roDailyM3, fluorideVal,
     defluoridationCost, annualDefluoridation, subtotalCost, isHardRock,
     contingencyRate, contingency, totalCost, annualMaintenance, annualOM,
     pumpHoursPerDay, operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,

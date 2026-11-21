@@ -95,6 +95,7 @@ async function fieldRecordsWithin(lat: number, lon: number, km: number): Promise
 }
 import { getKenyaHydroPrior } from './kenyaHydroPriors';
 import { nearestKenyaBaseline } from './kenyaBaseline';
+import { salinityFromWaterQuality, modelledSalinityLabel, salinityRisk } from './verdict';
 
 /**
  * One chemistry model (2026-10-29 audit: the PDF printed the rock-type model's
@@ -102,7 +103,7 @@ import { nearestKenyaBaseline } from './kenyaBaseline';
  * water-quality model governs the parameters both predict; the rock-type
  * model keeps the ones only it predicts (chloride, sulfate, manganese ...).
  */
-function harmonizeHydrochem(hc: any, wq: any): any {
+export function harmonizeHydrochem(hc: any, wq: any): any {
   if (!hc || !wq || !Array.isArray(hc.predictions)) return hc;
   const governing: Record<string, number | undefined> = {
     pH: wq.pH, TDS: wq.tds, hardness: wq.hardness, iron: wq.iron, fluoride: wq.fluoride, nitrate: wq.nitrate,
@@ -126,18 +127,56 @@ function harmonizeHydrochem(hc: any, wq: any): any {
   const potabilityScore = Math.max(0, 100 - health.length * 25 - aesthetic.length * 10);
   // Water type follows the governing salinity (2026-10-30 audit: Garissa was
   // typed "Ca-HCO3", fresh calcium bicarbonate water, at TDS 8,495 mg/L).
+  // 2026-11-21: a MODELLED salinity is stated as a screening class only (no
+  // mg/L figure, no threshold attached to it); the measured nearby median keeps
+  // its figure. The numbers stay internal for the quality logic above.
+  const sal = salinityFromWaterQuality(wq);
+  const salModelled = sal.basis === 'modelled';
   let waterType = hc.waterType, waterTypeDescription = hc.waterTypeDescription;
   if (tdsGov != null && tdsGov >= 3000) {
     waterType = 'Na-Cl (saline)';
-    waterTypeDescription = `Sodium chloride type is expected at a salinity of about ${Math.round(tdsGov).toLocaleString('en-KE')} mg/L. Not drinkable without desalination; a laboratory test fixes the type.`;
+    waterTypeDescription = salModelled
+      ? `Sodium chloride type is expected where regional data indicate a high risk of saline groundwater. ${LAB_FIRST_WATER} The laboratory test also fixes the type.`
+      : `Sodium chloride type is expected at the measured salinity (TDS ${Math.round(tdsGov).toLocaleString('en-KE')} mg/L, ${sal.source.replace(/^Measured: /, '')}). Not drinkable without desalination; a laboratory test fixes the type.`;
   } else if (tdsGov != null && tdsGov >= 1000) {
     waterType = 'Mixed, brackish (Na-HCO3-Cl)';
-    waterTypeDescription = `Brackish water (about ${Math.round(tdsGov).toLocaleString('en-KE')} mg/L) is usually sodium-rich with chloride. Above the 1,000 mg/L drinking limit; a laboratory test fixes the type.`;
+    waterTypeDescription = salModelled
+      ? `Brackish water, usually sodium-rich with chloride, is expected where regional data indicate an elevated salinity risk. ${LAB_FIRST_WATER} The laboratory test also fixes the type.`
+      : `Brackish water (measured TDS ${Math.round(tdsGov).toLocaleString('en-KE')} mg/L, ${sal.source.replace(/^Measured: /, '')}) is usually sodium-rich with chloride. Above the 1,000 mg/L drinking limit; a laboratory test fixes the type.`;
   } else if (waterType) {
     waterTypeDescription = `${waterTypeDescription ?? ''} Expected from the rock type, not measured; a laboratory test fixes it.`.trim();
   }
-  return { ...hc, predictions, overallQuality, potabilityScore, waterType, waterTypeDescription };
+  if (!salModelled || !sal.risk) return { ...hc, predictions, overallQuality, potabilityScore, waterType, waterTypeDescription };
+
+  // Modelled salinity: class in place of the figure everywhere this panel prints it.
+  const isSal = (p: string) => /^(TDS|EC)$/i.test(String(p));
+  const salText = modelledSalinityLabel(sal.risk);
+  const shown = predictions.map((p: any) => (isSal(p.parameter) ? { ...p, displayValue: salText } : p));
+  const salExceeds = shown.some((p: any) => isSal(p.parameter) && p.exceedsGuideline);
+  const primaryConcerns = [
+    ...((hc.primaryConcerns ?? []) as string[]).filter((c) => !/^(TDS|EC)\s*:/i.test(String(c))),
+    ...(salExceeds ? [`TDS: ${salText}`] : []),
+  ];
+  // Treatment and its cost level must not follow a modelled salinity.
+  const isSalTreat = (t: string) => /reverse osmosis|\bRO\b|desalin|high TDS/i.test(String(t));
+  const otherTreat = ((hc.treatmentRequired ?? []) as string[]).filter((t) => !isSalTreat(t));
+  const treatmentRequired = [...otherTreat, ...(sal.risk !== 'LOW' ? ['Desalination (reverse osmosis) only if a laboratory test of the first water confirms high salinity'] : [])];
+  const treatmentCost = otherTreat.length === 0 ? 'none'
+    : otherTreat.length <= 1 && !otherTreat.some((t) => t.includes('Arsenic')) ? 'low'
+    : otherTreat.length <= 2 ? 'moderate' : 'high';
+  const salFigure = /\b(TDS|EC): [\d.,]+ (mg\/L|µS\/cm) \(WHO: [\d.,]+ (mg\/L|µS\/cm)\)/g;
+  const narrative = typeof hc.narrative === 'string'
+    ? hc.narrative.replace(salFigure, `TDS: ${salText}`).replace(/Reverse osmosis \(high TDS\)/g, 'desalination only if a laboratory test confirms high salinity')
+    : hc.narrative;
+  const recommendations = Array.isArray(hc.recommendations)
+    ? hc.recommendations.map((s: string) => String(s).replace(/Reverse osmosis \(high TDS\)/g, 'desalination only if a laboratory test confirms high salinity'))
+    : hc.recommendations;
+  const validation = Array.isArray(hc.validation)
+    ? hc.validation.map((v: any) => (isSal(v.parameter) && Number.isFinite(Number(v.predicted)) ? { ...v, predictedDisplay: `${salinityRisk(Number(v.predicted))} risk (screening class, not measured at this site)` } : v))
+    : hc.validation;
+  return { ...hc, predictions: shown, overallQuality, potabilityScore, waterType, waterTypeDescription, primaryConcerns, treatmentRequired, treatmentCost, narrative, recommendations, validation };
 }
+const LAB_FIRST_WATER = 'Salinity has not been measured at this site; a laboratory test of the first water is needed before drinking use or treatment design.';
 
 /**
  * Monthly split of an annual rainfall total when only the annual figure is
@@ -2881,7 +2920,10 @@ export class BoreholeAnalyzer {
         { metric: 'Final drilling depth', predicted: `${calibratedDepth}m`, actual: '---', error: '---', unit: 'm' },
         { metric: 'Static water level (modelled)', predicted: `${Math.round(calibratedDepth * 0.3)}m`, actual: '---', error: '---', unit: 'm bgl' },
         { metric: 'Yield (pump test)', predicted: `${calibratedYield} m3/hr`, actual: '---', error: '---', unit: 'm3/hr' },
-        { metric: 'TDS (estimated)', predicted: `${Math.round(waterQuality?.tds ?? 300)} mg/L`, actual: '---', error: '---', unit: 'mg/L' },
+        // A modelled TDS is a screening class here, not a figure (2026-11-21).
+        (() => { const s = salinityFromWaterQuality(waterQuality); return s.measured
+          ? { metric: 'TDS (measured nearby)', predicted: s.value, actual: '---', error: '---', unit: 'mg/L' }
+          : { metric: 'Salinity (regional screening)', predicted: s.risk ? `${s.risk} risk, not measured at this site` : 'laboratory test needed', actual: '---', error: '---', unit: 'mg/L' }; })(),
         { metric: 'pH (estimated)', predicted: `${(waterQuality?.pH ?? 7.0).toFixed(1)}`, actual: '---', error: '---', unit: '' },
         { metric: 'Iron (estimated)', predicted: `${(waterQuality?.iron ?? 0.1).toFixed(2)} mg/L`, actual: '---', error: '---', unit: 'mg/L' },
         { metric: 'Fluoride (estimated)', predicted: `${(waterQuality?.fluoride ?? 0.3).toFixed(2)} mg/L`, actual: '---', error: '---', unit: 'mg/L' },
@@ -3731,6 +3773,19 @@ export class BoreholeAnalyzer {
       wqG.treatmentRequired = (wqG.treatmentRequired ?? []).filter((t: string) => /desalin|reverse osmosis|\bro\b|salin|fluorid/i.test(String(t)));
       wqG.isPotable = Number(wqG.tds ?? 0) < 1000 && Number(wqG.fluoride ?? 0) <= 1.5;
       delete wqG.accuracy;
+    }
+    // A modelled salinity designs no treatment (2026-11-21): the desalination
+    // line becomes conditional on a laboratory test of the first water.
+    if (result.waterQuality) {
+      const wqS: any = result.waterQuality;
+      const salS = salinityFromWaterQuality(wqS, fieldData?.labWaterAnalysis);
+      const isSalT = (t: string) => /desalin|reverse osmosis|\bro\b|distillation|salin/i.test(String(t));
+      const rest = (wqS.treatmentRequired ?? []).filter((t: string) => !isSalT(t));
+      if (salS.basis === 'modelled') {
+        wqS.treatmentRequired = salS.risk === 'LOW' ? rest : [...rest, 'Desalination (reverse osmosis) only if a laboratory test of the first water confirms high salinity'];
+      } else if (salS.basis === 'lab') {
+        wqS.treatmentRequired = (salS.tds ?? 0) > 1000 ? [...rest, `Desalination (reverse osmosis): laboratory TDS ${salS.value}`] : rest;
+      }
     }
     // Ensure GPS coordinates propagate to ALL possible storage paths
     if (effectiveLat != null && effectiveLon != null) {

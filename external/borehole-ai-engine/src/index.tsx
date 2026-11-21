@@ -1,7 +1,7 @@
 ﻿import { inKenya } from './kenyaLand';
 import { evidenceGate, gated, DEPTH_NEEDS, YIELD_NEEDS, COST_NEEDS } from './evidenceGate';
 import { geocodeSearchUrl } from '../../../lib/data-sources/geocodeClient';
-import { finalVerdict } from './verdict';
+import { finalVerdict, salinityEvidence } from './verdict';
 import { governingSummary, last12Months, probabilityBand } from './governingSummary';
 import { parseCoordPair } from './coordParse';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -604,13 +604,14 @@ function genProbability(prob: number, _depth: number, r?: any) {
  * Literature: Mn/Fe ratio typically 0.02-0.5 in groundwater.
  */
 function genWaterQualityExpanded(wq: any, depth?: number) {
-  const salinity = Math.round(wq.tds * 0.65);
+  // 2026-11-21: no "salinity" figure (TDS x 0.65) and no treatment price from
+  // the modelled TDS (an unsourced formula). Treatment cost comes only from
+  // computeCanonicalEconomics, which prices desalination on measured salinity.
   // Manganese correlates with iron levels (same redox conditions) + depth effect
   const depthFactor = depth ? Math.min(0.15, depth * 0.001) : 0.05;
   const manganese = Math.round((wq.iron * 0.35 + depthFactor) * 100) / 100;
-  const treatmentCost = !wq.isPotable ? Math.round(500 + wq.tds * 0.8 + wq.fluoride * 200) : 0;
-  return { ...wq, salinity, manganese, treatmentRequired: wq.isPotable ? 'NO' : 'YES',
-    estimatedTreatmentCostUSD: treatmentCost, contaminationRisk: wq.fluoride > 1.5 || wq.arsenic > 0.01 ? 'High' : wq.iron > 0.3 ? 'Medium' : 'Low' };
+  return { ...wq, manganese, treatmentRequired: wq.isPotable ? 'NO' : 'YES',
+    contaminationRisk: wq.fluoride > 1.5 || wq.arsenic > 0.01 ? 'High' : wq.iron > 0.3 ? 'Medium' : 'Low' };
 }
 
 function genDrillingStrategy(depth: number, soil: string, eco?: any) {
@@ -5855,7 +5856,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 // hid the measured data and regional warnings).
                 const sec = governingSummary(result, '').find((s) => s.title === 'Water quality');
                 if (!sec) return null;
-                const col = (basis: string) => (/^(Measured|Laboratory)/.test(basis) ? '#22c55e' : /Regional estimate/.test(basis) ? '#FF9800' : 'var(--text-secondary)');
+                const col = (basis: string) => (/^(Measured|Laboratory)/.test(basis) ? '#22c55e' : /Regional (estimate|screening)/.test(basis) ? '#FF9800' : 'var(--text-secondary)');
                 return (
                   <>
                     <div className="result-grid">
@@ -5875,7 +5876,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <div className="treatment-box">
                 <div className="treatment-header">Treatment likely: <strong style={{color:wqExpanded.treatmentRequired==='YES'?'#F44336':'#4CAF50'}}>{wqExpanded.treatmentRequired}</strong></div>
                 {/* The same allowance as the Costs tab and the PDF (2026-10-25 audit: six sites, two figures each). */}
-                {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">Allowance if treatment is needed: <strong>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</strong> ({fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day` : ''}. A laboratory test decides whether it is.</div>}
+                {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">Allowance if treatment is needed: <strong>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</strong> ({fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day (sized on measured salinity)` : ''}. A laboratory test decides whether it is.</div>}
+                {eco?.salinityUnpriced && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Desalination not priced:</strong> {salinityEvidence(result).sentence}</div>}
                 {(result as any).coastalIntrusionNote && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Seawater intrusion risk:</strong> {(result as any).coastalIntrusionNote}</div>}
                 {result.waterQuality.treatmentRequired.length>0 && <ul className="rec-list">{result.waterQuality.treatmentRequired.map((t,i)=><li key={i}>{t}</li>)}</ul>}
               </div>
@@ -5899,6 +5901,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <tr><td>Pump + installation</td><td>{fmtUSD(eco.pumpCost + eco.installCost)}</td><td>{fmtKSH(eco.pumpCost + eco.installCost)}</td></tr>
                       {eco.solarCost > 0 && <tr><td>Solar pump power ({eco.solarKW} kW)</td><td>{fmtUSD(eco.solarCost)}</td><td>{fmtKSH(eco.solarCost)}</td></tr>}
                       {eco.wqTreatmentCost + eco.defluoridationCost > 0 && <tr><td>Water treatment allowance (a lab test decides)</td><td>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</td><td>{fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}</td></tr>}
+                      {eco.salinityUnpriced && <tr><td>Desalination (reverse osmosis): salinity not measured at this site; a laboratory test of the first water decides</td><td>not priced</td><td>—</td></tr>}
                       <tr><td>Contingency ({Math.round(eco.contingencyRate * 100)}%)</td><td>{fmtUSD(eco.contingency)}</td><td>{fmtKSH(eco.contingency)}</td></tr>
                       <tr className="cost-total"><td><strong>TOTAL PROJECT</strong></td><td><strong>{fmtUSD(eco.totalCost)}</strong></td><td><strong>{fmtKSH(eco.totalCost)}</strong></td></tr>
                     </>) : (
@@ -7106,7 +7109,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                             {result.hydrochemPrediction.predictions.map((p: any, i: number) => (
                               <tr key={i}>
                                 <td style={{fontWeight:600}}>{p.parameter}</td>
-                                <td>{p.predictedValue} {p.unit}</td>
+                                <td>{p.displayValue ?? `${p.predictedValue} ${p.unit}`}</td>
                                 <td>{p.whoGuideline} {p.unit}</td>
                                 <td style={{color:p.exceedsGuideline?'#ef4444':'#16a34a',fontWeight:700}}>{p.exceedsGuideline ? '⚠ EXCEEDS' : '✓ OK'}</td>
                                 <td style={{color:p.healthRisk==='high'||p.healthRisk==='critical'?'#ef4444':p.healthRisk==='moderate'?'#f59e0b':'#16a34a'}}>{p.healthRisk}</td>
@@ -7138,14 +7141,14 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <h4 style={{marginBottom:8,color:'#4CAF50'}}>Lab Validation — Predicted vs Actual</h4>
                       <div className="sci-table-wrap">
                         <table className="sci-table">
-                          <thead><tr><th>Parameter</th><th>Predicted</th><th>Actual</th><th>Error %</th><th>Accurate?</th></tr></thead>
+                          <thead><tr><th>Parameter</th><th>Predicted (model)</th><th>Measured (laboratory{fieldDataInput?.labWaterAnalysis?.sampleDate ? `, sampled ${fieldDataInput.labWaterAnalysis.sampleDate}` : ''})</th><th>Error %</th><th>Accurate?</th></tr></thead>
                           <tbody>
                             {result.hydrochemPrediction.validation.map((v: any, i: number) => (
                               <tr key={i}>
                                 <td style={{fontWeight:600}}>{v.parameter}</td>
-                                <td>{v.predicted} {v.unit}</td>
+                                <td>{v.predictedDisplay ?? `${v.predicted} ${v.unit}`}</td>
                                 <td>{v.actual} {v.unit}</td>
-                                <td style={{color:v.error_pct>30?'#ef4444':'#16a34a'}}>{v.error_pct}%</td>
+                                <td style={{color:v.error_pct>30?'#ef4444':'#16a34a'}}>{v.predictedDisplay ? '—' : `${v.error_pct}%`}</td>
                                 <td style={{color:v.predictionAccurate?'#16a34a':'#ef4444',fontWeight:700}}>{v.predictionAccurate ? '✓' : '✗'}</td>
                               </tr>
                             ))}

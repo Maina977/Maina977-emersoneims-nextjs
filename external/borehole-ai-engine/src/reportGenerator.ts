@@ -18,7 +18,7 @@
  *   - JSON (raw data dump)
  */
 
-import { finalVerdict } from './verdict';
+import { finalVerdict, salinityEvidence, salinityFromWaterQuality, modelledSalinityLabel, labSourceLabel, nearbyProvenance } from './verdict';
 import { evidenceGate } from './evidenceGate';
 import { generateScreeningPdf } from './screeningReport';
 import { governingSummary, last12Months } from './governingSummary';
@@ -1313,7 +1313,14 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         : healthFails.length > 0
           ? `MODELLED EXCEEDANCE RISK -- ${healthFails.join(', ')} may exceed WHO guideline values. Do not use for drinking until an accredited lab confirms; treatment budgeted below.`
           : (wq?.tds ?? 0) >= 1000
-            ? 'LIKELY TOO SALTY TO DRINK WITHOUT REVERSE OSMOSIS (modelled -- lab-confirm); RO budgeted below.'
+            ? (() => {
+              // 2026-11-21: a modelled salinity gives a class only, and no RO budget.
+              const s = salinityEvidence(result);
+              if (s.measured && (s.tds ?? 0) < 1000) return `Measured salinity ${s.value} (${s.source.replace(/^Measured: /, '')}) is within the 1,000 mg/L drinking limit; the other parameters need a laboratory test.`;
+              return s.measured
+                ? `LIKELY TOO SALTY TO DRINK WITHOUT REVERSE OSMOSIS (measured TDS ${s.value}, ${s.source.replace(/^Measured: /, '')} -- lab-confirm at the borehole); RO budgeted below.`
+                : `${modelledSalinityLabel(s.risk ?? 'ELEVATED').toUpperCase()}. ${s.sentence} Desalination is not priced until then.`;
+            })()
             : 'TREATMENT REQUIRED (aesthetic parameters; modelled -- lab-confirm).';
       // Render the FULL message wrapped over as many lines as needed — the old
       // code printed only splitTextToSize(...)[0], truncating the sentence to
@@ -1836,13 +1843,16 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
           (sv.nitrate ?? 0) > 50 ? 'Nitrate' : '',
         ].filter(Boolean);
         const aestheticFails = [(sv.tds ?? 0) > 1000 ? 'TDS' : ''].filter(Boolean);
-        if (!healthFails.length && !aestheticFails.length) return 'Verify with an ISO 17025 laboratory analysis before use';
+        // A modelled salinity is a class, never a figure (2026-11-21).
+        const salX = salinityEvidence(result);
+        const salModelledNote = salX.basis === 'modelled' && salX.risk && salX.risk !== 'LOW' ? `${modelledSalinityLabel(salX.risk)}; lab test needed before drinking use or treatment design` : '';
+        if (!healthFails.length && !aestheticFails.length) return salModelledNote || 'Verify with an ISO 17025 laboratory analysis before use';
         // A numeric "score" beside a health failure reads as good news — say
         // the operative fact first (review finding: "94/100 looks too
         // optimistic unless it clearly means treatable after defluoridation").
         if (healthFails.length > 0) return `Modelled ${healthFails.join(', ')} above WHO guideline -- treatment likely required; lab-confirm before drinking`;
         if (aestheticFails.length > 0) return (wq?.tds ?? 0) >= 1000
-          ? `SALTY: TDS ${Math.round(sv.tds ?? 0)} mg/L measured nearby -- reverse osmosis likely; lab-confirm`
+          ? `SALTY: TDS ${Math.round(sv.tds ?? 0)} mg/L. ${salX.source} -- reverse osmosis likely; lab-confirm`
           : `AESTHETIC TREATMENT: ${aestheticFails.join(', ')} (minor)`;
         return 'TREATMENT NEEDED';
       })()],
@@ -1852,7 +1862,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         // used to quote "$1,200-1,500" while the budget carried $4,000.
         const ecoWq = computeCanonicalEconomics(result);
         const treatTotal = ecoWq.wqTreatmentCost + ecoWq.defluoridationCost;
-        return `Budgeted: $${treatTotal.toLocaleString()}${ecoWq.defluoridationCost > 0 ? ` (incl. $${ecoWq.defluoridationCost.toLocaleString()} defluoridation + $${ecoWq.annualDefluoridation}/yr media)` : ''} — same figure as the cost tables`;
+        const unpriced = ecoWq.salinityUnpriced ? 'Desalination not priced: salinity not measured at this site; a laboratory test of the first water decides' : '';
+        if (treatTotal <= 0 && unpriced) return unpriced;
+        return `Budgeted: $${treatTotal.toLocaleString()}${ecoWq.defluoridationCost > 0 ? ` (incl. $${ecoWq.defluoridationCost.toLocaleString()} defluoridation + $${ecoWq.annualDefluoridation}/yr media)` : ''} — same figure as the cost tables${unpriced ? `. ${unpriced}` : ''}`;
       })()],
       ['Coordinates', getCoords(result), `GPS: ${result.gpsSource?.toUpperCase()}`],
       ['Location Confidence', result.locationConfidence?.grade || 'N/A', result.locationConfidence?.drillingReliability || 'N/A'],
@@ -2118,8 +2130,11 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     doc.text('Suitable Uses (yield and water quality)', margin, y); y += 6;
     // Uses follow water quality and volume too (2026-10-25 audit: irrigation of 2-5 ha was suggested for salty water needing RO).
     const _salty = Number(result.waterQuality?.tds ?? 0) >= 1000;
+    const _salMeasured = salinityEvidence(result).measured;
     const _useCases: Array<[string, string, [number,number,number]]> = _salty
-      ? [['Livestock Watering', 'Most livestock tolerate this salinity; check the lab result', [22,163,74]], ['Construction / Dust Suppression', 'Site water where salinity does not matter', [56,189,248]], ['Drinking Water After RO', 'Community supply only after reverse osmosis', [251,191,36]]]
+      ? (_salMeasured
+        ? [['Livestock Watering', 'Most livestock tolerate this salinity; check the lab result', [22,163,74]], ['Construction / Dust Suppression', 'Site water where salinity does not matter', [56,189,248]], ['Drinking Water After RO', 'Community supply only after reverse osmosis', [251,191,36]]]
+        : [['Livestock Watering', 'Usually possible even if the water is brackish; a lab test decides', [22,163,74]], ['Construction / Dust Suppression', 'Site water where salinity does not matter', [56,189,248]], ['Drinking Water: Lab Test First', `Salinity risk is ${String(salinityEvidence(result).risk ?? 'elevated').toLowerCase()} here and not measured; a laboratory test decides the treatment`, [251,191,36]]])
       : _invYld >= 5
       ? [['Small-Scale Irrigation', 'Drip on about 1-2 ha (~3 mm/day)', [22,163,74]], ['Industrial / Construction', 'Site water & dust suppression', [56,189,248]], ['Community Water Point', 'Piped scheme for 500+ people', [251,191,36]]]
       : _invYld >= 2
@@ -2207,10 +2222,13 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
 
   // Water quality chart -- modelled values, NOT normalized (to avoid misrepresentation)
   checkSpace(70);
-  const wqLabels = ['pH', 'TDS (mg/L)', 'Hardness (mg/L CaCO3)', 'Fluoride (mg/L)', 'Iron (mg/L)', 'Nitrate (mg/L)'];
+  // A modelled TDS is not charted as a figure (2026-11-21): the bar appears
+  // only when salinity was measured (laboratory or 3+ boreholes nearby).
+  const _chartSal = salinityEvidence(result);
+  const wqLabels = ['pH', ...(_chartSal.measured ? ['TDS (mg/L, measured)'] : []), 'Hardness (mg/L CaCO3)', 'Fluoride (mg/L)', 'Iron (mg/L)', 'Nitrate (mg/L)'];
   const wqValues = [
     result.waterQuality?.pH || 0,
-    result.waterQuality?.tds || 0,
+    ...(_chartSal.measured ? [_chartSal.tds || 0] : []),
     result.waterQuality?.hardness || 0,
     result.waterQuality?.fluoride || 0,
     result.waterQuality?.iron || 0,
@@ -2835,7 +2853,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
   doc.setFontSize(8);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(100, 100, 140);
-  doc.text('Salinity and fluoride: measured nearby where stated, otherwise regional estimates. The rest needs a laboratory test of the finished borehole.', margin, y); y += 4;
+  doc.text('Salinity: measured nearby where stated, otherwise a regional screening class (no figure). Fluoride: measured nearby or a regional estimate. The rest needs a laboratory test.', margin, y); y += 4;
   doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
   doc.text('NOTE: The Water Quality Score is a proprietary health-impact index based on WHO Guidelines for Drinking-water Quality (4th ed. incl. addenda; 2026 consolidated) exceedance penalties. It is NOT a WHO-endorsed standard.', margin, y); y += 3;
   doc.text('For bankable/regulatory reports, use binary potability assessment (Meets/Exceeds WHO limits per parameter) confirmed by ISO 17025 accredited laboratory.', margin, y); y += 3;
@@ -2858,13 +2876,14 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
   const _mn = (result.waterQuality as any)?.measuredNearby || {};
   const _meas = (k: string) => Number(_mn?.[k]?.n) >= 3;
   const _st = (k: string, ok: boolean, aesthetic: boolean) => (ok ? (_meas(k) ? 'Within limit (measured nearby)' : 'Within limit (estimate)') : aesthetic ? 'AESTHETIC CONCERN' : 'HEALTH EXCEEDANCE');
-  const _src = (k: string, otherwise: string) => (_meas(k) ? `Measured nearby: median of ${_mn[k].n} boreholes (UNESCO IHP-WINS)` : otherwise);
+  const _src = (k: string, otherwise: string) => (_meas(k) ? `Measured: median of ${_mn[k].n} boreholes within ${_mn.radius_km ?? 25} km ${nearbyProvenance(_mn)}` : otherwise);
   autoTable(doc, {
     startY: y,
     head: [['Parameter', 'Value', 'WHO GDWQ reference', 'Basis', 'Status', 'Data Source']],
     body: [
       ['pH', _lab[0], '6.5 - 8.5', 'Operational', _lab[1], 'Modelled (regional) — lab test decides'],
-      ['TDS (mg/L)', _meas('ec') ? fmt(result.waterQuality?.tds, 0) : `${fmt(result.waterQuality?.tds, 0)} (modelled)`, '< 1000', 'Palatability', _meas('ec') ? _st('ec', (result.waterQuality?.tds ?? 0) < 1000, true) : _lab[1], _src('ec', 'Modelled from soil and geology: lab test decides')],
+      // A modelled TDS shows its screening class, not a figure (2026-11-21).
+      ['TDS (mg/L)', _meas('ec') ? fmt(result.waterQuality?.tds, 0) : (() => { const s = salinityEvidence({ waterQuality: result.waterQuality } as AnalysisResult); return s.risk ? `${s.risk} risk (screening class, not measured at this site)` : _lab[0]; })(), '< 1000', 'Palatability', _meas('ec') ? _st('ec', (result.waterQuality?.tds ?? 0) < 1000, true) : _lab[1], _src('ec', 'Regional screening, not measured at this site: lab test decides')],
       ['Hardness (mg/L)', _lab[0], '< 500', 'Aesthetic', _lab[1], 'Geochemical Model'],
       ['Fluoride (mg/L)', fmt(result.waterQuality?.fluoride, 2), '< 1.5', 'HEALTH', _st('fluoride', (result.waterQuality?.fluoride ?? 0) < 1.5, false), _src('fluoride', 'Regional estimate (not measured here)')],
       ['Iron (mg/L)', _lab[0], '< 0.3', 'Aesthetic (no health guideline)', _lab[1], 'Soil Chemistry Model'],
@@ -2895,7 +2914,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     const aestheticFlags: string[] = [];
     if ((sv.fluoride ?? 0) >= 1.5) healthFails.push(`Fluoride ${fmt(sv.fluoride, 2)} mg/L > 1.5`);
     if ((sv.nitrate ?? 0) >= 50) healthFails.push(`Nitrate ${fmt(sv.nitrate, 1)} mg/L > 50 (measured nearby)`);
-    if ((sv.tds ?? 0) >= 1000) aestheticFlags.push(`TDS ${fmt(sv.tds, 0)} mg/L > 1000 (palatability, measured nearby)`);
+    if ((sv.tds ?? 0) >= 1000) aestheticFlags.push(`TDS ${fmt(sv.tds, 0)} mg/L > 1000 (palatability; ${salinityFromWaterQuality(wq).source})`);
     checkSpace(20);
     if (healthFails.length > 0) {
       doc.setFillColor(254, 226, 226);
@@ -2918,6 +2937,18 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       // Salty water is not "simple treatment" (2026-10-25 audit).
       const _salty = Number(result.waterQuality?.tds ?? 0) >= 1000;
       doc.text(`${aestheticFlags.join('; ')}. WHO proposes no health-based guideline for these parameters. Laboratory confirmation required; ${_salty ? 'at this salinity the water is likely too salty to drink without reverse osmosis, which is budgeted' : 'simple treatment (e.g. aeration + filtration for iron) is budgeted'}.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
+      y += 18;
+    } else if (salinityEvidence(result).basis === 'modelled' && ['HIGH', 'ELEVATED'].includes(String(salinityEvidence(result).risk))) {
+      // A modelled salinity risk is stated as a class with no figure (2026-11-21).
+      const _salM = salinityEvidence(result);
+      doc.setFillColor(255, 247, 230);
+      doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'F');
+      doc.setDrawColor(217, 119, 6);
+      doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'S');
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
+      doc.text(modelledSalinityLabel(_salM.risk as 'HIGH' | 'ELEVATED').toUpperCase(), margin + 3, y + 4);
+      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 80, 20);
+      doc.text(`${_salM.sentence} Desalination is not priced until a test measures the salinity.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
       y += 18;
     } else {
       doc.setFillColor(240, 253, 244);
@@ -3124,6 +3155,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         ...(wqTreatmentCost > 0 ? [['Water Treatment', `$${wqTreatmentCost.toLocaleString()}`, wqTreatmentCost <= 400
           ? `Right-sized household option -- ${result.waterQuality?.treatmentRequired?.join(', ') || 'iron removal'}: simple aeration + sand filtration (~KSh ${Math.round(wqTreatmentCost * 129 / 1000) * 1000 / 1000}k). Lab analysis confirms the need before purchase.`
           : `Conservative upper bound -- ${result.waterQuality?.treatmentRequired?.join(', ') || 'Filtration system'}`]] : []),
+        ...(computeCanonicalEconomics(result).salinityUnpriced ? [['Desalination (RO)', 'not priced', 'Salinity has not been measured at this site (regional screening class only); a laboratory test of the first water decides whether treatment is needed and its size']] : []),
         ...(defluoridationCost > 0 ? [['Defluoridation Unit', `$${defluoridationCost.toLocaleString()}`, `Fluoride ${fluorideVal.toFixed(1)} mg/L > 1.5 WHO limit -- bone-char/activated alumina (+$${annualDefluoridation}/yr media)`]] : []),
         [`Contingency (${Math.round(contingencyRate * 100)}%)`, `$${contingency.toLocaleString()}`, isHardRock ? 'Hard rock (gneiss/granite) -- DTH hammer, bit changes, foam drilling complications' : 'Standard engineering contingency for unforeseen conditions'],
         ['', '', ''],
@@ -5920,7 +5952,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         startY: y, margin: { left: margin, right: margin },
         head: [['Parameter', 'Predicted', 'Unit', 'WHO Limit', 'Exceeds?', 'Health Risk']],
         body: hc.predictions.map((p: any) => [
-          p.parameter, fmt(p.predictedValue, 3), p.unit, fmt(p.whoGuideline, 3),
+          // A modelled salinity carries its screening class, not a figure (2026-11-21).
+          p.parameter, p.displayValue ?? fmt(p.predictedValue, 3), p.displayValue ? '' : p.unit, fmt(p.whoGuideline, 3),
           p.exceedsGuideline ? 'YES' : 'No', (p.healthRisk || '').toUpperCase(),
         ]),
         headStyles: { fillColor: [6, 150, 180], textColor: 255, fontStyle: 'bold', fontSize: 7 },
@@ -6533,7 +6566,10 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       const wq = cal.calibratedWaterQuality;
       checkSpace(60);
       doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 185, 129);
-      doc.text('Laboratory Water Quality Analysis (Field-Confirmed)', margin, y); y += 6;
+      doc.text('Laboratory Water Quality Analysis (Field-Confirmed)', margin, y); y += 5;
+      // Source and date on every measured value (2026-11-21): never confusable with a modelled class.
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(16, 120, 90);
+      doc.text(labSourceLabel(wq), margin, y); y += 5;
 
       // A parameter the laboratory did not report is "not tested", never a
       // pass or a fail (2026-10-30 audit).
@@ -6550,7 +6586,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       ];
       autoTable(doc, {
         startY: y, margin: { left: margin, right: margin },
-        head: [['Parameter', 'Measured', 'WHO Limit', 'Status']], body: wqRows,
+        head: [['Parameter', `Measured (${String((wq as any).sampleDate ?? '').trim() ? `sampled ${(wq as any).sampleDate}` : 'sample date not given'})`, 'WHO Limit', 'Status']], body: wqRows,
         styles: { fontSize: 8, cellPadding: 2 },
         headStyles: { fillColor: [16, 185, 129], textColor: 255 },
         didParseCell: (data: any) => {
@@ -8793,7 +8829,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
           ['Corrosion Risk', (wci.corrosionRisk ?? '').toUpperCase(), wci.pipeRecommendation],
           ['Scaling Risk', (wci.scalingRisk ?? '').toUpperCase(), wci.scalingRisk === 'none' ? 'No scaling expected.' : 'Screen incrustation monitoring required.'],
           ['Iron Bacteria Risk', '', wci.ironBacteriaRisk],
-          ['Salinity Classification', '', wci.salinityClass],
+          // The class band (e.g. "3000-10000 mg/L") is printed only for a
+          // measured salinity; a modelled one shows its screening class (2026-11-21).
+          ['Salinity Classification', '', (() => { const s = salinityEvidence(result); return s.measured ? `${wci.salinityClass} (${s.source})` : s.risk ? `${modelledSalinityLabel(s.risk)}. ${s.sentence}` : 'Laboratory test needed'; })()],
           ['Design Life (pipe)', `${wci.designLife_years} years`, `Based on ${wci.corrosionRisk} corrosion + ${wci.scalingRisk} scaling risk.`],
         ],
         headStyles: { fillColor: [13, 17, 23], textColor: 255, fontSize: 7 },
@@ -10722,6 +10760,41 @@ export function generateCSVReport(result: AnalysisResult): void {
 
 // --- JSON REPORT ---
 
+/**
+ * The JSON download carries the whole result; a MODELLED salinity figure is
+ * withheld from it like everywhere else (2026-11-21). Measured data (the
+ * laboratory result, the nearby boreholes) is kept as is, and the screening
+ * class is added. Pure: the input is not changed.
+ */
+export function redactModelledSalinity<T>(data: T): T {
+  const wqSal = salinityFromWaterQuality((data as any)?.waterQuality);
+  if (wqSal.basis !== 'modelled') return data;
+  const KEEP = new Set(['fieldData', 'calibrationResult', 'measuredNearby', 'nearbyWells', 'labWaterAnalysis', 'calibratedWaterQuality', 'openData']);
+  const SAL_KEY = /^(tds|tds_mgL|TDS_mgL|salinity|tdsMedian_mgL)$/;
+  const walk = (v: any, depth: number): any => {
+    if (depth > 40 || v == null || typeof v !== 'object') return v;
+    if (Array.isArray(v)) return v.map((x) => walk(x, depth + 1));
+    const out: any = {};
+    for (const [k, x] of Object.entries(v)) {
+      if (KEEP.has(k)) { out[k] = x; continue; }
+      out[k] = SAL_KEY.test(k) && typeof x === 'number' ? null : walk(x, depth + 1);
+    }
+    if (/^(TDS|EC)$/i.test(String(out.parameter ?? ''))) {
+      if (typeof out.predictedValue === 'number') out.predictedValue = null;
+      if (typeof out.predicted === 'number') { out.predicted = null; out.error_pct = null; }
+    }
+    return out;
+  };
+  const red = walk(data, 0);
+  red.salinityScreening = {
+    basis: 'regional screening, not measured at this site',
+    risk: wqSal.risk,
+    statement: wqSal.sentence,
+    note: 'Modelled salinity figures are withheld from this export; only a laboratory test or measured boreholes give a concentration.',
+  };
+  return red;
+}
+
 export function generateJSONReport(result: AnalysisResult): void {
   // --- 10-STEP AUDIT GATE ---
   const audit = auditReport(result);
@@ -10731,7 +10804,7 @@ export function generateJSONReport(result: AnalysisResult): void {
   // --- VERIFICATION GATE ---
   enforceVerificationGate(result);
 
-  const exportData = {
+  const exportData = redactModelledSalinity({
     report: {
       title: 'EMERSON EIMS AquaScan Pro - Borehole Pre-Screen',
       generated: new Date().toISOString(),
@@ -10739,7 +10812,7 @@ export function generateJSONReport(result: AnalysisResult): void {
       coordinates: getCoords(result),
     },
     ...result,
-  };
+  });
 
   const json = JSON.stringify(exportData, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -10842,6 +10915,8 @@ export async function generateComparisonReport(sites: Array<{ name: string; resu
     ['Data Confidence', ...scored.map(s => `${s.result.confidenceMetrics?.overall ?? 'N/A'}%`)],
     ['Water Quality Score', ...scored.map(s => `${fmt((s.result.waterQuality?.score ?? 0) * 100, 0)}/100`)],
     ['Treatment Required', ...scored.map(s => s.result.waterQuality?.isPotable ? 'NO' : 'YES')],
+    // Salinity: the measured figure with its source, else the screening class only (2026-11-21).
+    ['Salinity', ...scored.map(s => { const x = salinityEvidence(s.result); return x.measured ? `${x.value}. ${x.source}` : x.risk ? `${x.risk} risk (not measured at this site)` : 'lab test needed'; })],
     ['Assessment Type', ...scored.map(() => 'Desktop pre-screen')],
   ];
 
