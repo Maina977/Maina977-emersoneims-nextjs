@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { calibrate, quantify, TakeoffError, TAKEOFF_ENGINE_VERSION, type Calibration, type Measurement, type MeasureKind, type Pt } from '@/lib/qs/takeoff';
 import { buildBoq, BOQ_ENGINE_VERSION, type Adjustments, type BoqItem } from '@/lib/qs/boq';
 import { extractGeometry, SnapIndex, snap, type SnapKind } from '@/lib/qs/snap';
+import TradesPanel from './TradesPanel';
 import { analysePage, sha256Hex, viewportToPdf, pdfToViewport, resolutionLimitM, PDF_SHEET_VERSION, type SheetInfo, type PdfPageLike, type ViewportLike } from '@/lib/qs/pdfSheet';
 
 type Mode = 'calibrate' | MeasureKind | 'hole';
@@ -33,7 +34,11 @@ interface Sheet {
   info?: SheetInfo;
   statedUnit: 'pt' | 'px';
 }
-interface ItemDraft { code: string; section: string; description: string; measurementId: string; factor: string; rate: string; source: string; date: string; location: string }
+interface ItemDraft {
+  code: string; section: string; description: string; measurementId: string; factor: string; rate: string; source: string; date: string; location: string;
+  /** Items from the Trades panel: a scheduled quantity with its full trace (lib/qs/trades), not a measurement link. */
+  trade?: { name: string; unit: BoqItem['unit']; scheduled: { value: number; source: string } };
+}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PdfDoc = any;
 
@@ -218,11 +223,13 @@ export default function TakeoffWorkbench() {
   const boq = useMemo(() => {
     if (!items.length) return null;
     const boqItems: BoqItem[] = items.map((d) => {
+      const rate: BoqItem['rate'] = d.rate.trim() === '' ? null : { value: Number(d.rate), currency: 'KES', source: d.source, date: d.date, location: d.location, kind: 'rate-library' };
+      if (d.trade) return { code: d.code, section: d.section || 'General', trade: d.trade.name, description: d.description, unit: d.trade.unit, links: [], scheduledQuantity: d.trade.scheduled, rate };
       const q = quantities.get(d.measurementId);
       return {
         code: d.code, section: d.section || 'General', trade: '', description: d.description, unit: q ? UNIT[q.kind] : 'item',
         links: [{ measurementId: d.measurementId, factor: Number(d.factor || '1') }],
-        rate: d.rate.trim() === '' ? null : { value: Number(d.rate), currency: 'KES', source: d.source, date: d.date, location: d.location, kind: 'rate-library' },
+        rate,
       };
     });
     const a: Adjustments = { preliminaries: { kind: 'percent', pct: Number(adj.prelims || 'NaN') }, contingencyPct: Number(adj.contingency || 'NaN'), overheadsProfitPct: Number(adj.ohp || 'NaN'), vat: { pct: Number(adj.vat || 'NaN'), effectiveFrom: adj.vatFrom } };
@@ -362,10 +369,18 @@ export default function TakeoffWorkbench() {
         </div>
       )}
 
-      {ms.length > 0 && (
+      {sheet && (
+        <TradesPanel quantities={quantities} measurements={ms} existingCodes={items.map((d) => d.code)}
+          onAdd={(added) => setItems((cur) => [...cur, ...added.map((b): ItemDraft => ({
+            code: b.code, section: b.section, description: b.description, measurementId: '', factor: '', rate: '', source: '', date: '', location: '',
+            trade: { name: b.trade, unit: b.unit, scheduled: b.scheduledQuantity! },
+          }))])} />
+      )}
+
+      {(ms.length > 0 || items.length > 0) && (
         <div className="rounded border border-slate-700 p-3 space-y-3">
           <div className="flex items-center justify-between"><div className="text-sm font-semibold">Bill of quantities</div>
-            <button type="button" onClick={() => setItems([...items, { code: `${items.length + 1}`, section: '', description: '', measurementId: ms[0].id, factor: '1', rate: '', source: '', date: '', location: '' }])} className="rounded bg-slate-700 px-3 py-1 text-xs">Add item</button></div>
+            <button type="button" disabled={!ms.length} onClick={() => setItems([...items, { code: `${items.length + 1}`, section: '', description: '', measurementId: ms[0].id, factor: '1', rate: '', source: '', date: '', location: '' }])} className="rounded bg-slate-700 px-3 py-1 text-xs disabled:opacity-40">Add item</button></div>
           <div className="overflow-x-auto"><table className="w-full text-xs">
             <thead><tr className="text-left text-slate-400"><th>Code</th><th>Section</th><th>Description</th><th>Measurement</th><th>× factor</th><th>Rate (KES)</th><th>Rate source</th><th>Rate date</th><th>Location</th><th className="text-right">Qty</th><th className="text-right">Amount</th></tr></thead>
             <tbody>
@@ -375,8 +390,15 @@ export default function TakeoffWorkbench() {
                 return (
                   <tr key={i} className="border-t border-slate-800">
                     {(['code', 'section', 'description'] as const).map((k) => <td key={k}><input aria-label={k} value={d[k]} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
-                    <td><select aria-label="measurement" value={d.measurementId} onChange={(e) => up('measurementId', e.target.value)} className={input}>{ms.map((m) => <option key={m.id} value={m.id}>{m.id} {m.label}</option>)}</select></td>
-                    {(['factor', 'rate', 'source', 'date', 'location'] as const).map((k) => <td key={k}><input aria-label={k} value={d[k]} placeholder={k === 'date' ? 'YYYY-MM-DD' : ''} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
+                    {d.trade ? (
+                      <td colSpan={2} className="max-w-xs truncate text-slate-400" title={d.trade.scheduled.source}>{d.trade.name}: {d.trade.scheduled.source}</td>
+                    ) : (
+                      <>
+                        <td><select aria-label="measurement" value={d.measurementId} onChange={(e) => up('measurementId', e.target.value)} className={input}>{ms.map((m) => <option key={m.id} value={m.id}>{m.id} {m.label}</option>)}</select></td>
+                        <td><input aria-label="factor" value={d.factor} onChange={(e) => up('factor', e.target.value)} className={`${input} w-full`} /></td>
+                      </>
+                    )}
+                    {(['rate', 'source', 'date', 'location'] as const).map((k) => <td key={k}><input aria-label={k} value={d[k]} placeholder={k === 'date' ? 'YYYY-MM-DD' : ''} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
                     <td className="text-right">{line ? `${fmt(line.quantity, 3)} ${line.unit}` : ''}</td>
                     <td className="text-right">{line ? (line.amount === null ? <span className="text-amber-300">rate required</span> : fmt(line.amount)) : ''}</td>
                   </tr>
