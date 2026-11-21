@@ -76,7 +76,9 @@ function OpeningsTable({ rows, onChange }: { rows: OpeningForm[]; onChange: (row
 }
 
 export default function TradesPanel({ quantities, measurements, existingCodes, onAdd }: {
-  quantities: Map<string, Quantity>; measurements: Measurement[]; existingCodes: string[]; onAdd: (items: BoqItem[]) => void;
+  quantities: Map<string, Quantity>; measurements: Measurement[]; existingCodes: string[];
+  /** `form` is a copy of the form the items were calculated from: a saved project recomputes the quantities from it. */
+  onAdd: (items: BoqItem[], form: TradeForm) => void;
 }) {
   const [trade, setTrade] = useState<TradeKind>('masonry');
   const [form, setForm] = useState<TradeForm>(() => emptyForm('masonry'));
@@ -100,7 +102,7 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
     if (!lines) return;
     try {
       const items = tradeBoqItems(lines, section, existingCodes);
-      onAdd(items); setError(''); setAdded(`${items.length} item(s) added to the BOQ under "${section.trim()}". Enter a dated rate for each.`); setLines(null);
+      onAdd(items, JSON.parse(JSON.stringify(form)) as TradeForm); setError(''); setAdded(`${items.length} item(s) added to the BOQ under "${section.trim()}". Enter a dated rate for each.`); setLines(null);
     } catch (e) { setError(e instanceof TradeError ? e.message : `Unexpected error: ${(e as Error).message}`); }
   };
 

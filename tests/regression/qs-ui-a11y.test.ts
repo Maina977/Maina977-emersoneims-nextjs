@@ -20,13 +20,16 @@ const Q = new Map<string, Quantity>([['M1', { id: 'M1', kind: 'linear', unit: 'm
 const panel = () => render(createElement(TradesPanel, { quantities: Q, measurements: [], existingCodes: [], onAdd: () => {} }));
 
 describe('take-off workbench: saved-project status', { timeout: 30_000 }, () => {
-  it('nothing is saved, and the page says so', () => {
+  it('the page says exactly what is saved and where', () => {
     render(createElement(TakeoffWorkbench));
-    expect(screen.getByRole('note')).toHaveTextContent('Not saved — export Excel/PDF to keep your work.');
+    expect(screen.getByRole('note')).toHaveTextContent('Saved in this browser only (autosave) — use Save project to keep a file. Accounts and shared storage are not available yet.');
+    expect(screen.queryByText(/Not saved — export/)).toBeNull();
   });
-  it('the workbench does not use browser storage (so it must not imply saving)', async () => {
-    const src = (await import('node:fs')).readFileSync('components/qs/TakeoffWorkbench.tsx', 'utf8') + (await import('node:fs')).readFileSync('components/qs/TradesPanel.tsx', 'utf8');
+  it('the components reach browser storage only through the guarded wrapper in lib/qs/project.ts', async () => {
+    const fs = await import('node:fs');
+    const src = fs.readFileSync('components/qs/TakeoffWorkbench.tsx', 'utf8') + fs.readFileSync('components/qs/TradesPanel.tsx', 'utf8');
     expect(src).not.toMatch(/localStorage|sessionStorage|indexedDB/);
+    expect(fs.readFileSync('lib/qs/project.ts', 'utf8')).toMatch(/export function guardedStorage/);
   });
 });
 

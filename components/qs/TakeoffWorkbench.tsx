@@ -9,18 +9,32 @@
  * PDF points are stored in PDF user space (lib/qs/pdfSheet.ts), so zoom and
  * displayed rotation never change a measurement, and each one records the
  * file's SHA-256 and page. Engines: lib/qs/takeoff.ts, boq.ts, export.ts.
+ *
+ * Saving (lib/qs/project.ts): "Save project" downloads a versioned .json file
+ * (the drawing embedded up to 15 MB); "Open project" validates it strictly and
+ * re-derives every quantity from the saved points; a draft is autosaved in this
+ * browser, keyed by the drawing's SHA-256. No accounts, nothing server-side.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { calibrate, quantify, TakeoffError, TAKEOFF_ENGINE_VERSION, type Calibration, type Measurement, type MeasureKind, type Pt } from '@/lib/qs/takeoff';
-import { buildBoq, rateFromInput, BOQ_ENGINE_VERSION, RATE_KIND_LABELS, type Adjustments, type BoqItem, type RateKind } from '@/lib/qs/boq';
+import { quantify, calibrate, TakeoffError, TAKEOFF_ENGINE_VERSION, type Calibration, type Measurement, type MeasureKind, type Pt } from '@/lib/qs/takeoff';
+import { BOQ_ENGINE_VERSION, RATE_KIND_LABELS, type RateKind } from '@/lib/qs/boq';
+import { TRADES_ENGINE_VERSION } from '@/lib/qs/trades';
 import { extractGeometry, SnapIndex, snap, type SnapKind } from '@/lib/qs/snap';
 import TradesPanel from './TradesPanel';
 import { analysePage, sha256Hex, viewportToPdf, pdfToViewport, resolutionLimitM, PDF_SHEET_VERSION, type SheetInfo, type PdfPageLike, type ViewportLike } from '@/lib/qs/pdfSheet';
+import {
+  extractEmbeddedDrawing, buildProject, bytesToBase64, checkDrawingHash, draftBoq, guardedStorage, hasWork, parseProject, readAutosave, restoreProject, revisionProblem, writeAutosave, autosaveKey,
+  ProjectError, EMBED_LIMIT_BYTES, SAVE_NOTICE,
+  type AdjustmentDraft, type Difference, type DrawingIdentity, type ItemDraft, type ProjectFile, type RefDim, type RestoredProject, type WorkbenchSnapshot,
+} from '@/lib/qs/project';
 
 type Mode = 'calibrate' | MeasureKind | 'hole';
-const UNIT: Record<MeasureKind, BoqItem['unit']> = { linear: 'm', area: 'm²', volume: 'm³', count: 'No' };
 const fmt = (x: number | null, d = 2) => (x === null ? '—' : x.toLocaleString('en-KE', { minimumFractionDigits: d, maximumFractionDigits: d }));
 const RENDER_WIDTH_PX = 2400; // render width; zoom changes display only, never stored points
+const ENGINES = [TAKEOFF_ENGINE_VERSION, PDF_SHEET_VERSION, BOQ_ENGINE_VERSION, TRADES_ENGINE_VERSION];
+const EMPTY_ADJ: AdjustmentDraft = { prelims: '', contingency: '', ohp: '', vat: '', vatFrom: '' };
+const when = (iso: string) => new Date(iso).toLocaleString('en-KE', { dateStyle: 'medium', timeStyle: 'short' });
+const isPdf = (f: File) => f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
 
 interface Sheet {
   id: string; // file hash + page, or image name
@@ -34,15 +48,24 @@ interface Sheet {
   info?: SheetInfo;
   statedUnit: 'pt' | 'px';
 }
-interface ItemDraft {
-  code: string; section: string; description: string; measurementId: string; factor: string; rate: string; source: string; date: string; location: string;
-  /** Where the rate comes from, chosen by the user ('' until chosen; the engine refuses a rate without it). */
-  rateKind: RateKind | '';
-  /** Items from the Trades panel: a scheduled quantity with its full trace (lib/qs/trades), not a measurement link. */
-  trade?: { name: string; unit: BoqItem['unit']; scheduled: { value: number; source: string } };
-}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PdfDoc = any;
+
+/** File bytes; FileReader where Blob.arrayBuffer is missing (older browsers, test DOMs). */
+function readBytes(f: Blob): Promise<Uint8Array<ArrayBuffer>> {
+  if (typeof f.arrayBuffer === 'function') return f.arrayBuffer().then((b) => new Uint8Array(b));
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(new Uint8Array(r.result as ArrayBuffer));
+    r.onerror = () => reject(r.error ?? new Error('the file could not be read'));
+    r.readAsArrayBuffer(f);
+  });
+}
+
+function download(bytes: BlobPart, type: string, name: string) {
+  const url = URL.createObjectURL(new Blob([bytes], { type }));
+  const a = document.createElement('a'); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);
+}
 
 export default function TakeoffWorkbench() {
   const [sheet, setSheet] = useState<Sheet | null>(null);
@@ -52,7 +75,7 @@ export default function TakeoffWorkbench() {
   const [busy, setBusy] = useState('');
   const [mode, setMode] = useState<Mode>('calibrate');
   const [pts, setPts] = useState<Pt[]>([]); // sheet units
-  const [refs, setRefs] = useState<Record<string, Array<{ a: Pt; b: Pt; knownM: number }>>>({});
+  const [refs, setRefs] = useState<Record<string, RefDim[]>>({});
   const [refLen, setRefLen] = useState('');
   const [stated, setStated] = useState({ ratio: '', dpi: '' });
   const [cals, setCals] = useState<Record<string, Calibration>>({});
@@ -62,7 +85,21 @@ export default function TakeoffWorkbench() {
   const [depth, setDepth] = useState('');
   const [err, setErr] = useState('');
   const [items, setItems] = useState<ItemDraft[]>([]);
-  const [adj, setAdj] = useState({ prelims: '', contingency: '', ohp: '', vat: '', vatFrom: '' });
+  const [adj, setAdj] = useState<AdjustmentDraft>(EMPTY_ADJ);
+  const [revision, setRevision] = useState('A');
+  const [revInput, setRevInput] = useState('A');
+  const [revErr, setRevErr] = useState('');
+  // Saving: the drawing's identity (and its bytes, for embedding), project messages, autosave state.
+  const [drawing, setDrawing] = useState<DrawingIdentity | null>(null);
+  const drawingFile = useRef<File | null>(null);
+  const [projectMsg, setProjectMsg] = useState('');
+  const [projectErr, setProjectErr] = useState('');
+  const [differences, setDifferences] = useState<Difference[]>([]);
+  const [pendingProject, setPendingProject] = useState<{ project: ProjectFile; restored: RestoredProject } | null>(null);
+  const [draftOffer, setDraftOffer] = useState<ProjectFile | null>(null);
+  const [autosaveErr, setAutosaveErr] = useState('');
+  const [autosavedAt, setAutosavedAt] = useState('');
+  const store = useMemo(() => guardedStorage(), []);
   const svgRef = useRef<SVGSVGElement>(null);
   // View: zoom and pan change only the displayed window (viewBox), never stored points.
   const [vb, setVb] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -98,31 +135,144 @@ export default function TakeoffWorkbench() {
     setBusy('');
   }
 
-  const load = async (f: File) => {
-    setErr(''); setCalErr(''); setPts([]);
-    if (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) {
+  const snapshot = (): WorkbenchSnapshot | null => (drawing ? { drawing, page: pageNo, stated, refs, cals, measurements: ms, items, adj, revision } : null);
+
+  /** Writes the draft now; reports full/blocked storage instead of failing. */
+  const autosaveNow = (s: WorkbenchSnapshot | null = snapshot()) => {
+    if (!s || !hasWork(s)) return;
+    const r = writeAutosave(store, s, new Date().toISOString(), ENGINES);
+    if (r.ok) { setAutosaveErr(''); setAutosavedAt(new Date().toISOString()); } else setAutosaveErr(r.message);
+  };
+  // Autosave shortly after each change; paused while a restore offer is open, so the draft is not overwritten before the user decides.
+  useEffect(() => {
+    if (!drawing || draftOffer || pendingProject) return;
+    const t = setTimeout(() => autosaveNow(), 600);
+    return () => clearTimeout(t);
+  }, [drawing, draftOffer, pendingProject, refs, cals, ms, items, adj, revision, stated, pageNo]);
+
+  const applyRestored = (r: RestoredProject, sheetId: string | null) => {
+    setRefs(r.refs); setCals(r.cals); setMs(r.measurements); setItems(r.items); setAdj(r.adj);
+    setRevision(r.revision); setRevInput(r.revision); setRevErr(''); setStated(r.stated);
+    setDifferences(r.differences);
+    setMode(sheetId && r.cals[sheetId] ? 'linear' : 'calibrate'); setPts([]); setPtSnaps([]);
+  };
+
+  /** Opens a drawing. With `restore`, the workbench is replaced by the restored project; otherwise a matching autosaved draft is offered. */
+  const load = async (f: File, restore?: RestoredProject) => {
+    setErr(''); setCalErr(''); setPts([]); setPtSnaps([]); setProjectErr(''); setDraftOffer(null);
+    if (!restore) { setProjectMsg(''); setDifferences([]); }
+    setBusy('Reading the drawing…');
+    let bytes: Uint8Array, sha: string;
+    try { bytes = await readBytes(f); sha = await sha256Hex(bytes); }
+    catch (e) { setErr(`Could not read the drawing: ${(e as Error).message}`); setBusy(''); return; }
+    const id: DrawingIdentity = { name: f.name, size: f.size, sha256: sha, type: f.type || (isPdf(f) ? 'application/pdf' : '') };
+    // A project is one drawing: work on the previous drawing stays in its own autosave.
+    if (drawing && hasWork({ refs, measurements: ms, items })) {
+      autosaveNow();
+      if (drawing.sha256 !== sha && !restore) setProjectMsg(`Work on ${drawing.name} is kept in this browser's autosave: load that drawing again to restore it.`);
+    }
+    setRefs({}); setCals({}); setMs([]); setItems([]); setAdj(EMPTY_ADJ); setRevision('A'); setRevInput('A'); setRevErr(''); setMode('calibrate');
+    drawingFile.current = f; setDrawing(id);
+    let sheetId: string | null = null;
+    if (isPdf(f)) {
       setBusy('Opening PDF…');
       try {
         const pdfjs = await import('pdfjs-dist');
         pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
-        const bytes = new Uint8Array(await f.arrayBuffer());
-        const sha = await sha256Hex(bytes);
         const doc = await pdfjs.getDocument({ data: bytes }).promise;
         const p = { doc, name: f.name, sha, pages: doc.numPages };
-        setPdf(p); setPageNo(1); setViewRot(0);
-        await renderPdfPage(p, 1, 0);
-      } catch (e) { setErr(`Could not open the PDF: ${(e as Error).message}`); setBusy(''); }
-      return;
+        const n = restore && restore.page <= doc.numPages ? restore.page : 1;
+        setPdf(p); setPageNo(n); setViewRot(0);
+        await renderPdfPage(p, n, 0);
+        sheetId = `${sha.slice(0, 16)}#p${n}`;
+      } catch (e) { setErr(`Could not open the PDF: ${(e as Error).message}`); setBusy(''); return; }
+    } else {
+      const url = URL.createObjectURL(f);
+      const ok = await new Promise<boolean>((resolve) => {
+        const im = new Image();
+        im.onload = () => {
+          setPdf(null); setPageNo(1);
+          snapIndex.current = null; // images carry no vector geometry
+          setVb({ x: 0, y: 0, w: im.naturalWidth, h: im.naturalHeight });
+          setSheet({ id: `img:${f.name}:${f.size}`, label: f.name, kind: 'image', url, w: im.naturalWidth, h: im.naturalHeight, toSheet: (x, y) => ({ x, y }), toDisplay: (q) => q, pxPerUnit: 1, statedUnit: 'px' });
+          resolve(true);
+        };
+        im.onerror = () => resolve(false);
+        im.src = url;
+      });
+      setBusy('');
+      if (!ok) { setErr('Could not open the image: the file is not a readable PNG or JPG'); return; }
+      sheetId = `img:${f.name}:${f.size}`;
     }
-    const url = URL.createObjectURL(f);
-    const im = new Image();
-    im.onload = () => {
-      setPdf(null);
-      snapIndex.current = null; // images carry no vector geometry
-      setVb({ x: 0, y: 0, w: im.naturalWidth, h: im.naturalHeight });
-      setSheet({ id: `img:${f.name}:${f.size}`, label: f.name, kind: 'image', url, w: im.naturalWidth, h: im.naturalHeight, toSheet: (x, y) => ({ x, y }), toDisplay: (q) => q, pxPerUnit: 1, statedUnit: 'px' });
-    };
-    im.src = url;
+    if (restore) { applyRestored(restore, sheetId); return; }
+    const d = readAutosave(store, id);
+    if (!d.ok) { setAutosaveErr(d.message); return; }
+    if (!d.value) return;
+    if ('error' in d.value) { setProjectErr(`The autosaved work for this drawing could not be used and was left unchanged: ${d.value.error}`); return; }
+    const dp = d.value.project;
+    if (dp.measurements.length || dp.items.length || dp.sheets.some((s) => s.references.length)) setDraftOffer(dp);
+  };
+
+  const restoreDraft = async () => {
+    if (!draftOffer) return;
+    try {
+      const r = restoreProject(draftOffer);
+      if (pdf && r.page !== pageNo && r.page <= pdf.pages) { setPageNo(r.page); await renderPdfPage(pdf, r.page, viewRot); }
+      const sid = pdf ? `${pdf.sha.slice(0, 16)}#p${r.page <= pdf.pages ? r.page : pageNo}` : sheet?.id ?? null;
+      applyRestored(r, sid);
+      setProjectMsg(`Unsaved work from ${when(draftOffer.savedAt)} restored. Quantities were recomputed from the saved points.`);
+      setDraftOffer(null);
+    } catch (e) { setProjectErr(e instanceof ProjectError ? e.message : `Could not restore the draft: ${(e as Error).message}`); }
+  };
+  const discardDraft = () => {
+    if (!drawing) return;
+    const r = store.remove(autosaveKey(drawing.sha256));
+    if (!r.ok) setAutosaveErr(r.message);
+    setDraftOffer(null); setProjectMsg('The autosaved draft for this drawing was discarded.');
+  };
+
+  const saveProject = async () => {
+    const s = snapshot();
+    if (!s || !drawingFile.current) return;
+    setProjectErr('');
+    try {
+      const embed = s.drawing.size <= EMBED_LIMIT_BYTES;
+      const embeddedBase64 = embed ? bytesToBase64(await readBytes(drawingFile.current)) : undefined;
+      const p = buildProject(s, { savedAt: new Date().toISOString(), embeddedBase64, engines: ENGINES });
+      const base = s.drawing.name.replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9._-]+/g, '-').slice(0, 60) || 'takeoff';
+      download(JSON.stringify(p), 'application/json', `${base}-rev-${s.revision}-takeoff-project.json`);
+      setProjectMsg(embed
+        ? 'Project saved, with the drawing inside the file.'
+        : `Project saved without the drawing (${(s.drawing.size / 1048576).toFixed(1)} MB is over the 15 MB limit). Keep the drawing file: opening the project asks for it and checks its SHA-256.`);
+      autosaveNow(s);
+    } catch (e) { setProjectErr(`Could not save the project: ${(e as Error).message}`); }
+  };
+
+  const openProject = async (f: File) => {
+    setProjectErr(''); setProjectMsg(''); setPendingProject(null);
+    try {
+      const p = parseProject(new TextDecoder().decode(await readBytes(f)));
+      const r = restoreProject(p); // everything is recomputed before the workbench is touched
+      const bytes = await extractEmbeddedDrawing(p);
+      if (bytes) {
+        await load(new File([new Uint8Array(bytes)], p.drawing.name, { type: p.drawing.type }), r);
+        setProjectMsg(`Project from ${when(p.savedAt)} opened. Every quantity was recomputed from the saved points and calibration.`);
+      } else {
+        setPendingProject({ project: p, restored: r });
+      }
+    } catch (e) { setProjectErr(e instanceof ProjectError ? e.message : `Could not open the project: ${(e as Error).message}`); }
+  };
+  const provideDrawing = async (f: File) => {
+    if (!pendingProject) return;
+    setProjectErr('');
+    const { project: p, restored } = pendingProject;
+    try {
+      const bytes = await readBytes(f);
+      checkDrawingHash(p.drawing, await sha256Hex(bytes));
+      setPendingProject(null);
+      await load(new File([bytes], p.drawing.name, { type: p.drawing.type || f.type }), restored);
+      setProjectMsg(`Project from ${when(p.savedAt)} opened with ${f.name} (SHA-256 verified). Every quantity was recomputed from the saved points and calibration.`);
+    } catch (e) { setProjectErr(e instanceof ProjectError ? e.message : `Could not read the drawing: ${(e as Error).message}`); }
   };
 
   const SNAP_PX = 10; // snap radius in screen pixels
@@ -213,7 +363,10 @@ export default function TakeoffWorkbench() {
       return;
     }
     if (mode === 'calibrate') return;
-    const m: Measurement = { id: `M${ms.length + 1}`, kind: mode, sheetId: sheet.id, label: label || `${mode} ${ms.length + 1}`, points: pts, depthM: mode === 'volume' ? Number(depth) : undefined, metresPerUnit: cal.metresPerUnit, user: 'this browser', at: new Date().toISOString(), revision: 'A', snaps: ptSnaps.slice(0, pts.length) };
+    const used = new Set(ms.map((x) => x.id));
+    let n = ms.length + 1;
+    while (used.has(`M${n}`)) n++;
+    const m: Measurement = { id: `M${n}`, kind: mode, sheetId: sheet.id, label: label || `${mode} ${n}`, points: pts, depthM: mode === 'volume' ? Number(depth) : undefined, metresPerUnit: cal.metresPerUnit, user: 'this browser', at: new Date().toISOString(), revision, snaps: ptSnaps.slice(0, pts.length) };
     try { quantify(m); setMs([...ms, m]); setPts([]); setPtSnaps([]); setLabel(''); } catch (e) { setErr(e instanceof TakeoffError ? e.message : String(e)); }
   };
 
@@ -222,21 +375,7 @@ export default function TakeoffWorkbench() {
   const shownScale = sheet && vb && svgRef.current?.clientWidth ? svgRef.current.clientWidth / vb.w : 1;
   const limitMm = sheet && cal ? (sheet.info ? resolutionLimitM(sheet.info, cal.metresPerUnit, sheet.pxPerUnit * shownScale) : cal.metresPerUnit / shownScale) * 1000 : null;
 
-  const boq = useMemo(() => {
-    if (!items.length) return null;
-    const boqItems: BoqItem[] = items.map((d) => {
-      const rate = rateFromInput({ value: d.rate, kind: d.rateKind, source: d.source, date: d.date, location: d.location });
-      if (d.trade) return { code: d.code, section: d.section || 'General', trade: d.trade.name, description: d.description, unit: d.trade.unit, links: [], scheduledQuantity: d.trade.scheduled, rate };
-      const q = quantities.get(d.measurementId);
-      return {
-        code: d.code, section: d.section || 'General', trade: '', description: d.description, unit: q ? UNIT[q.kind] : 'item',
-        links: [{ measurementId: d.measurementId, factor: Number(d.factor || '1') }],
-        rate,
-      };
-    });
-    const a: Adjustments = { preliminaries: { kind: 'percent', pct: Number(adj.prelims || 'NaN') }, contingencyPct: Number(adj.contingency || 'NaN'), overheadsProfitPct: Number(adj.ohp || 'NaN'), vat: { pct: Number(adj.vat || 'NaN'), effectiveFrom: adj.vatFrom } };
-    return { boq: buildBoq(boqItems, quantities, a, 'A'), adj: a };
-  }, [items, quantities, adj]);
+  const boq = useMemo(() => draftBoq(items, quantities, adj, revision), [items, quantities, adj, revision]);
 
   const exportPdf = async () => {
     if (!boq) return;
@@ -244,8 +383,7 @@ export default function TakeoffWorkbench() {
     try {
       const drawings = [...new Set(ms.map((m) => m.sheetId))].map((id) => `${pdf?.name ?? sheet?.label ?? 'drawing'} ${id}`);
       const bytes = boqToPdf(boq.boq, { project: pdf?.name ?? sheet?.label ?? 'Project', preparedBy: 'Building Suite Pro (draft for QS review)', date: new Date().toISOString().slice(0, 10), drawings });
-      const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/pdf' }));
-      const a = document.createElement('a'); a.href = url; a.download = 'boq-rev-A-draft.pdf'; a.click(); URL.revokeObjectURL(url);
+      download(new Uint8Array(bytes), 'application/pdf', `boq-rev-${revision}-draft.pdf`);
     } catch (e) { setErr((e as Error).message); }
   };
 
@@ -254,12 +392,12 @@ export default function TakeoffWorkbench() {
     const { boqToXlsx } = await import('@/lib/qs/export');
     try {
       const buf = await boqToXlsx(boq.boq, boq.adj, pdf?.name ?? sheet?.label ?? 'Project');
-      const url = URL.createObjectURL(new Blob([new Uint8Array(buf)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
-      const a = document.createElement('a'); a.href = url; a.download = 'boq-rev-A-draft.xlsx'; a.click(); URL.revokeObjectURL(url);
+      download(new Uint8Array(buf), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', `boq-rev-${revision}-draft.xlsx`);
     } catch (e) { setErr((e as Error).message); }
   };
 
   const input = 'rounded bg-slate-900 border border-slate-700 px-2 py-1 text-sm text-white';
+  const fileInput = 'block max-w-full text-xs file:mr-2 file:rounded file:border-0 file:bg-slate-700 file:px-2 file:py-1 file:text-white';
   const modes: Array<[Mode, string]> = [['calibrate', 'Calibrate'], ['linear', 'Length'], ['area', 'Area'], ['hole', 'Opening (deduct)'], ['volume', 'Volume'], ['count', 'Count']];
   const sw = sheet && vb ? vb.w / 500 : 1; // strokes keep a constant on-screen width while zooming
   const zoomPct = sheet && vb ? Math.round((sheet.w / vb.w) * 100) : 100;
@@ -270,10 +408,54 @@ export default function TakeoffWorkbench() {
     <div className="mx-auto max-w-7xl space-y-4 p-4 text-slate-200">
       <h1 className="text-2xl font-bold">Measured take-off and BOQ</h1>
       <p className="text-sm text-slate-400">Every quantity is measured on your drawing. Nothing is generated from a description. Calibrate each sheet with two known dimensions, one in each direction. They must agree within 1 %.</p>
-      {/* Nothing here is stored (no account, no browser storage, no project file): say so plainly. */}
-      <p role="note" className="rounded border border-amber-500/60 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">Not saved — export Excel/PDF to keep your work.</p>
+      {/* What is kept, and where: an autosaved draft in this browser, and a project file the user downloads. No accounts, no server storage. */}
+      <p role="note" className="rounded border border-amber-500/60 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">{SAVE_NOTICE}</p>
+
+      <section aria-labelledby="qs-project-heading" className="rounded border border-slate-700 p-3 space-y-2">
+        <h2 id="qs-project-heading" className="text-sm font-semibold">Project</h2>
+        <div className="flex flex-wrap items-end gap-3">
+          <button type="button" onClick={saveProject} disabled={!drawing || !sheet} className="rounded bg-emerald-700 px-3 py-1 text-xs text-white disabled:opacity-40">Save project (.json)</button>
+          <label className="min-w-0 max-w-full text-xs">Open project (.json)
+            <input type="file" accept="application/json,.json" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) openProject(f); }} className={fileInput} />
+          </label>
+          <label className="text-xs">Revision
+            <input value={revInput} onChange={(e) => { const v = e.target.value; setRevInput(v); const p = revisionProblem(v); setRevErr(p ?? ''); if (!p) setRevision(v); }} aria-describedby="qs-rev-err" className={`${input} ml-1 w-20`} />
+          </label>
+        </div>
+        <p id="qs-rev-err" className="text-xs text-red-300" role="alert">{revErr ? `${revErr}. Revision ${revision} is still used.` : ''}</p>
+        {pendingProject && (
+          <div className="break-words rounded border border-amber-500/60 p-2 text-xs space-y-1">
+            <p>This project does not contain its drawing. Select <strong>{pendingProject.project.drawing.name}</strong> ({pendingProject.project.drawing.size.toLocaleString('en-KE')} bytes, SHA-256 {pendingProject.project.drawing.sha256.slice(0, 12)}…). A different file is refused.</p>
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="min-w-0 max-w-full">Drawing for the opened project
+                <input type="file" accept="application/pdf,image/png,image/jpeg" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) provideDrawing(f); }} className={fileInput} />
+              </label>
+              <button type="button" onClick={() => setPendingProject(null)} className="rounded border border-slate-600 px-2 py-1">Cancel opening</button>
+            </div>
+          </div>
+        )}
+        {draftOffer && (
+          <div role="group" aria-labelledby="qs-draft-q" className="flex flex-wrap items-center gap-2 rounded border border-sky-500/60 p-2 text-xs">
+            <span id="qs-draft-q">Restore unsaved work from {when(draftOffer.savedAt)}?</span>
+            <button type="button" onClick={restoreDraft} className="rounded bg-sky-700 px-2 py-1 text-white">Restore</button>
+            <button type="button" onClick={discardDraft} className="rounded border border-slate-600 px-2 py-1">Discard draft</button>
+          </div>
+        )}
+        <p className="break-words text-xs text-red-300" role="alert">{projectErr}</p>
+        <p className="text-xs text-red-300" role="alert">{autosaveErr}</p>
+        <p className="text-xs text-emerald-300" role="status">{projectMsg}{projectMsg && autosavedAt ? ' ' : ''}{autosavedAt && !autosaveErr ? `Autosaved in this browser at ${when(autosavedAt)}.` : ''}</p>
+        {differences.length > 0 && (
+          <div role="alert" className="break-words rounded border border-red-500/60 p-2 text-xs text-red-200">
+            <p>The numbers stored in the file differ from the ones recomputed from its points and calibration. The recomputed values are used:</p>
+            <ul className="list-disc pl-5">
+              {differences.map((d) => <li key={d.what}>{d.what}: stored {fmt(d.stored, 3)}, recomputed {fmt(d.recomputed, 3)}</li>)}
+            </ul>
+          </div>
+        )}
+      </section>
+
       <div className="flex flex-wrap items-center gap-3">
-        <label className="text-sm">Drawing (PDF, PNG or JPG): <input type="file" accept="application/pdf,image/png,image/jpeg" onChange={(e) => e.target.files?.[0] && load(e.target.files[0])} className="text-sm" /></label>
+        <label className="min-w-0 max-w-full text-sm">Drawing (PDF, PNG or JPG): <input type="file" accept="application/pdf,image/png,image/jpeg" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) load(f); }} className="max-w-full text-sm" /></label>
         <label className="text-xs">Stated scale 1:<input value={stated.ratio} onChange={(e) => setStated({ ...stated, ratio: e.target.value })} className={`${input} w-16 ml-1`} /></label>
         {sheet?.kind === 'image' && <label className="text-xs">Image DPI <input value={stated.dpi} onChange={(e) => setStated({ ...stated, dpi: e.target.value })} className={`${input} w-16 ml-1`} /></label>}
         {pdf && (
@@ -282,17 +464,17 @@ export default function TakeoffWorkbench() {
             <button type="button" onClick={() => { const r = (viewRot + 90) % 360; setViewRot(r); renderPdfPage(pdf, pageNo, r); }} className="rounded border border-slate-600 px-2 py-1 text-xs">Rotate view 90°</button>
           </>
         )}
-        {busy && <span className="text-xs text-amber-300">{busy}</span>}
+        {busy && <span className="text-xs text-amber-300" role="status">{busy}</span>}
       </div>
       {sheet?.info && (
-        <div className="rounded border border-slate-700 p-2 text-xs text-slate-300">
+        <div className="break-words rounded border border-slate-700 p-2 text-xs text-slate-300">
           <strong>{sheet.label}</strong> · sheet {sheet.info.widthMm} × {sheet.info.heightMm} mm · {sheet.info.kind === 'vector' ? 'vector drawing' : sheet.info.kind === 'raster' ? `scanned at ${sheet.info.rasterDpi} dpi` : sheet.info.kind}
           {' '}· file SHA-256 {sheet.info.sha256.slice(0, 12)}…{sheet.info.notes.map((n) => <div key={n} className="text-amber-300">{n}</div>)}
         </div>
       )}
       {sheet && (
         <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Measurement tools">
               {modes.map(([m, l]) => (
                 <button key={m} type="button" onClick={() => { setMode(m); setPts([]); setPtSnaps([]); }} disabled={m !== 'calibrate' && !cal}
@@ -335,7 +517,7 @@ export default function TakeoffWorkbench() {
               </svg>
             </div>
           </div>
-          <div className="space-y-3">
+          <div className="min-w-0 space-y-3">
             <div className="rounded border border-slate-700 p-3 space-y-2">
               <div className="text-sm font-semibold">Scale (this sheet)</div>
               {cal ? (
@@ -377,9 +559,9 @@ export default function TakeoffWorkbench() {
 
       {sheet && (
         <TradesPanel quantities={quantities} measurements={ms} existingCodes={items.map((d) => d.code)}
-          onAdd={(added) => setItems((cur) => [...cur, ...added.map((b): ItemDraft => ({
+          onAdd={(added, form) => setItems((cur) => [...cur, ...added.map((b): ItemDraft => ({
             code: b.code, section: b.section, description: b.description, measurementId: '', factor: '', rate: '', rateKind: '', source: '', date: '', location: '',
-            trade: { name: b.trade, unit: b.unit, scheduled: b.scheduledQuantity! },
+            trade: { name: b.trade, unit: b.unit, scheduled: b.scheduledQuantity!, lineCode: b.code, form },
           }))])} />
       )}
 
