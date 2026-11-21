@@ -4,7 +4,7 @@
  * only when a report is downloaded - much faster page load).
  */
 import type { AnalysisResult } from './types';
-import { finalVerdict, salinityEvidence } from './verdict';
+import { finalVerdict, salinityEvidence, chemEvidence } from './verdict';
 import { auditReport, type AuditReport } from './reportAuditor';
 import type { VerificationReport } from './preReportVerification';
 import { drillRatePerM, mobilisationUSD, countyRateBand, costSoilType, KES_PER_USD, drillingCostKES, EIMS_RATES_KES } from './costModel';
@@ -132,13 +132,15 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
       ? _wdPump.solarPanels_kW
       : Math.max(1, Math.round(pumpKW / 0.85 * 1.2 * 10) / 10);
   const solarCost = Math.round(solarKW * 1500);
-  const wqTreatments = result.waterQuality?.treatmentRequired || [];
+  // 2026-11-21: with a laboratory result its own treatment list governs; the
+  // modelled list must not price treatment beside a measurement.
+  const _labWq = (result as any).calibrationResult?.calibratedWaterQuality;
+  const wqTreatments: string[] = (_labWq ? _labWq.treatmentRequired : result.waterQuality?.treatmentRequired) || [];
   // AUDIT FIX (2026-07-16): right-size treatment. A single MINOR aesthetic iron
   // exceedance (0.3-1.0 mg/L) on a household/hand-pump system needs simple
   // aeration + sand filtration (~KSh 40-50k), not a $1,500 plant — the oversized
   // line was 13% of capex and unfairly sank the project NPV.
-  const _ironOnly = wqTreatments.length <= 1 && (result.waterQuality?.iron ?? 0) > 0.3;
-  const _ironMinor = _ironOnly && (result.waterQuality?.iron ?? 0) <= 1.0;
+  const _iron = Number((_labWq ? _labWq.iron : result.waterQuality?.iron) ?? 0) || 0;
   // Salty water (TDS >= 1,000 mg/L) needs reverse osmosis, not aeration and
   // filtration (2026-10-25 audit: RO recommended for 60 m3/day while $1.5-2.5k
   // was budgeted). Allowance ~$300 per m3/day of plant, min $6,000; a lab test
@@ -151,19 +153,30 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   const _tds = _sal.measured ? Number(_sal.tds ?? 0) : 0;
   const needsRO = _sal.measured && _tds >= 1000 && !isHandPump;
   const salinityUnpriced = !_sal.measured && (_sal.risk === 'HIGH' || _sal.risk === 'ELEVATED');
-  // The modelled salinity is the only reason for the generic allowance when no
-  // other treatment is listed and fluoride (priced separately) is the rest.
-  const _onlyModelledSalinity = salinityUnpriced && wqTreatments.every((t: string) => /desalin|reverse osmosis|\bro\b|salin|fluorid/i.test(String(t)));
+  // 2026-11-21: fluoride follows the same rule. Only a MEASURED fluoride
+  // (laboratory, or the median of 3+ boreholes nearby) prices defluoridation;
+  // a modelled class leaves it unpriced and a laboratory test decides.
+  const _fl = chemEvidence(result, 'fluoride');
+  const fluorideVal = _fl.measured ? Number(_fl.mgL ?? 0) : 0;
+  const fluorideUnpriced = !_fl.measured && (_fl.risk === 'HIGH' || _fl.risk === 'ELEVATED');
+  // The generic allowance covers the other listed treatments only: fluoride is
+  // priced separately (or unpriced when modelled), and a modelled salinity
+  // line buys nothing. Without a laboratory result the water is non-potable
+  // only on modelled values, so an empty list buys nothing either.
+  const _covered = (t: string) => /fluorid/i.test(t) || (!_sal.measured && /desalin|reverse osmosis|\bro\b|salin|distillation/i.test(t));
+  const _pricedTreat = wqTreatments.filter((t: string) => !_covered(String(t)));
+  const _ironOnly = _pricedTreat.length <= 1 && _iron > 0.3;
+  const _ironMinor = _ironOnly && _iron <= 1.0;
   const roDailyM3 = Math.round(yieldVal * 6);
   // Small brackish RO plants cost about $450 per m³/day of capacity, more
   // above 3,000 mg/L (higher pressure, more pre-treatment). 2026-10-30 audit:
   // $300 per m³/day understated the plant.
+  const _potable = _labWq ? !!_labWq.isPotable : !!result.waterQuality?.isPotable;
   const wqTreatmentCost = needsRO
     ? Math.max(8000, Math.round(((_tds >= 3000 ? 700 : 450) * roDailyM3) / 100) * 100)
-    : !result.waterQuality?.isPotable && !_onlyModelledSalinity
-      ? (wqTreatments.length > 2 ? 4000 : _ironMinor && isHandPump ? 400 : _ironOnly ? 1500 : 2500)
+    : !_potable && (_pricedTreat.length > 0 || (!!_labWq && wqTreatments.length === 0))
+      ? (_pricedTreat.length > 2 ? 4000 : _ironMinor && isHandPump ? 400 : _ironOnly ? 1500 : 2500)
       : 0;
-  const fluorideVal = result.waterQuality?.fluoride ?? 0;
   const defluoridationCost = fluorideVal > 1.5 ? 2500 : 0;
   const annualDefluoridation = fluorideVal > 1.5 ? 450 : 0;
   // Statutory pre-drilling costs people forget (Kenya Water Resources
@@ -273,7 +286,7 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   return {
     depthVal, yieldVal, soilType, cpm, drillingCost, mobilisationCost, casingCost, casingNote, blindCasingLen,
     screenLength, screenCost, screenNote, pumpKW, pumpHead, pumpCost, pumpNote,
-    installCost, solarKW, solarCost, isHandPump, wqTreatmentCost, needsRO, salinityUnpriced, roDailyM3, fluorideVal,
+    installCost, solarKW, solarCost, isHandPump, wqTreatmentCost, needsRO, salinityUnpriced, fluorideUnpriced, roDailyM3, fluorideVal,
     defluoridationCost, annualDefluoridation, subtotalCost, isHardRock,
     contingencyRate, contingency, totalCost, annualMaintenance, annualOM,
     pumpHoursPerDay, operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,

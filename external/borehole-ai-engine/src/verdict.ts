@@ -130,11 +130,131 @@ export function salinityFromWaterQuality(wq: any, lab?: any): SalinityEvidence {
   };
 }
 
+/** The laboratory result for this borehole, if one was entered. */
+export function labWaterResult(result: AnalysisResult | null | undefined): any {
+  const r: any = result;
+  return r?.calibrationResult?.calibratedWaterQuality ?? r?.fieldData?.labWaterAnalysis;
+}
+
 /** Salinity evidence for a whole analysis (laboratory result, then nearby boreholes, then the model). */
 export function salinityEvidence(result: AnalysisResult): SalinityEvidence {
   const r: any = result;
-  const lab = r?.calibrationResult?.calibratedWaterQuality ?? r?.fieldData?.labWaterAnalysis;
-  return salinityFromWaterQuality(r?.waterQuality, lab);
+  return salinityFromWaterQuality(r?.waterQuality, labWaterResult(result));
+}
+
+/**
+ * Fluoride and nitrate follow the salinity rule (2026-11-21 management
+ * directive: AquaScan "must distinguish laboratory measurements from modelled
+ * risk"). One helper for both:
+ * - laboratory value: the figure with "Measured: laboratory test (lab, date)";
+ * - median of 3 or more measured boreholes nearby: the figure with its source;
+ * - otherwise the regional model: a risk class only, no mg/L figure and no
+ *   threshold attached to the site value. The internal number still drives the
+ *   verdict level when it is the best evidence there is.
+ *
+ * Classes use only the guideline values already in the code: fluoride against
+ * the WHO guideline 1.5 mg/L (HIGH above 4 mg/L, the code's existing "well
+ * above the guideline" break for defluoridation), nitrate against the WHO
+ * guideline 50 mg/L.
+ */
+export type ChemParam = 'fluoride' | 'nitrate';
+export type ChemRisk = 'HIGH' | 'ELEVATED' | 'LOW';
+export interface ChemEvidence {
+  param: ChemParam;
+  name: string;
+  basis: 'lab' | 'nearby' | 'modelled' | 'none';
+  measured: boolean;
+  /** The governing internal figure (mg/L). Display it only when `measured`. */
+  mgL: number | null;
+  risk: ChemRisk | null;
+  /** The value cell: a figure when measured, the risk class when modelled. */
+  value: string;
+  /** Where the value comes from, in words. */
+  source: string;
+  /** One plain sentence for the reader. */
+  sentence: string;
+}
+
+/** Fluoride class against the WHO guideline 1.5 mg/L; HIGH is "well above" it (over 4 mg/L). */
+export function fluorideRisk(f: number): ChemRisk {
+  return f > 4 ? 'HIGH' : f > 1.5 ? 'ELEVATED' : 'LOW';
+}
+/** Nitrate class against the WHO guideline 50 mg/L. */
+export function nitrateRisk(no3: number): ChemRisk {
+  return no3 > 50 ? 'HIGH' : 'LOW';
+}
+
+const CHEM: Record<ChemParam, { name: string; guideline: string; risk: (v: number) => ChemRisk; dp: number }> = {
+  fluoride: { name: 'Fluoride', guideline: 'the WHO guideline is 1.5 mg/L', risk: fluorideRisk, dp: 2 },
+  nitrate: { name: 'Nitrate', guideline: 'the WHO guideline is 50 mg/L', risk: nitrateRisk, dp: 1 },
+};
+
+/** A measured concentration, e.g. "0.8 mg/L". */
+export function fmtChem(param: ChemParam, x: number): string {
+  return `${x.toLocaleString('en-KE', { maximumFractionDigits: CHEM[param].dp })} mg/L`;
+}
+
+/** "Fluoride risk: HIGH (regional screening, not measured at this site)". */
+export function modelledChemLabel(name: string, risk: ChemRisk): string {
+  return `${name} risk: ${risk} (${NOT_MEASURED})`;
+}
+
+/** The reader's sentence for a modelled fluoride or nitrate class. */
+export function modelledChemSentence(param: ChemParam, risk: ChemRisk): string {
+  const name = CHEM[param].name;
+  const what = param === 'fluoride' ? 'excess fluoride' : 'nitrate pollution (from latrines or farming)';
+  const level = risk === 'HIGH' ? 'a high' : risk === 'ELEVATED' ? 'an elevated' : 'a low';
+  const tail = risk === 'LOW'
+    ? `${name} has not been measured at this site; a laboratory test of the first water confirms it.`
+    : `${name} has not been measured at this site; a laboratory test of the first water is needed before drinking use or treatment design.`;
+  return `Regional data indicate ${level} risk of ${what} here. ${tail}`;
+}
+
+/** True when the water-quality figure for `param` is the median of 3 or more measured boreholes nearby. */
+export function chemMeasuredNearby(param: ChemParam, wq: any): boolean {
+  return Number(wq?.measuredNearby?.[param]?.n) >= 3 && Number.isFinite(Number(wq?.[param]));
+}
+
+/** Fluoride or nitrate evidence: the laboratory governs, then the measured nearby median, then the model (class only). */
+export function chemFromWaterQuality(param: ChemParam, wq: any, lab?: any): ChemEvidence {
+  const { name, guideline, risk: cls } = CHEM[param];
+  const labV = Number(lab?.[param]);
+  if (lab && lab[param] != null && Number.isFinite(labV)) {
+    return {
+      param, name, basis: 'lab', measured: true, mgL: labV, risk: cls(labV),
+      value: fmtChem(param, labV), source: labSourceLabel(lab),
+      sentence: `Laboratory ${name.toLowerCase()} ${fmtChem(param, labV)}; ${guideline}.`,
+    };
+  }
+  const v = Number(wq?.[param]);
+  if (wq?.[param] == null || !Number.isFinite(v)) {
+    return { param, name, basis: 'none', measured: false, mgL: null, risk: null, value: 'laboratory test needed', source: `No ${name.toLowerCase()} estimate for this site`, sentence: `${name} has not been measured at this site; a laboratory test of the first water is needed.` };
+  }
+  if (chemMeasuredNearby(param, wq)) {
+    const mq = wq.measuredNearby;
+    const where = `median of ${mq[param].n} boreholes${mq.radius_km != null ? ` within ${mq.radius_km} km` : ' nearby'}`;
+    return {
+      param, name, basis: 'nearby', measured: true, mgL: v, risk: cls(v),
+      value: fmtChem(param, v), source: `Measured: ${where} ${nearbyProvenance(mq)}`,
+      sentence: `Measured nearby: ${name.toLowerCase()} ${fmtChem(param, v)} (${where}); ${guideline}.`,
+    };
+  }
+  const risk = cls(v);
+  return {
+    param, name, basis: 'modelled', measured: false, mgL: v, risk,
+    value: `${name} risk: ${risk}`, source: 'Regional screening, not measured at this site',
+    sentence: modelledChemSentence(param, risk),
+  };
+}
+
+/** Fluoride or nitrate evidence for a whole analysis. */
+export function chemEvidence(result: AnalysisResult, param: ChemParam): ChemEvidence {
+  return chemFromWaterQuality(param, (result as any)?.waterQuality, labWaterResult(result));
+}
+
+/** The site-value cell for a report: the measured figure with its source, or the modelled class. */
+export function chemCell(e: ChemEvidence): string {
+  return e.measured ? `${e.value}. ${e.source}` : e.risk ? modelledChemLabel(e.name, e.risk) : 'laboratory test needed';
 }
 
 export function finalVerdict(result: AnalysisResult): FinalVerdict {
@@ -171,9 +291,31 @@ export function finalVerdict(result: AnalysisResult): FinalVerdict {
   if (governingTds >= 3000) level = 'unfavourable';
   else if (governingTds >= 1000 && level === 'favourable') level = 'mixed';
   if (sal.basis === 'lab' || governingTds >= 1000) { const s = salNote(); if (s) quality.push(s); }
-  if (no3 > 50) { if (level === 'favourable') level = 'mixed'; quality.push(`Nitrate may exceed 50 mg/L (pollution from latrines or farming): site the borehole away from them and test the water`); }
-  if (f > 4) { if (level === 'favourable') level = 'mixed'; quality.push(`Fluoride may be well above 1.5 mg/L: defluoridation is needed for drinking`); }
-  else if (f > 1.5) quality.push(`Fluoride may exceed 1.5 mg/L: plan defluoridation for drinking water`);
+  // 2026-11-21: fluoride and nitrate follow the same rule. The best evidence
+  // (laboratory, then the measured nearby median, then the model) sets the
+  // level; a modelled value is stated as a risk class with no figure and no
+  // threshold attached to it.
+  const fl = chemEvidence(result, 'fluoride');
+  const ni = chemEvidence(result, 'nitrate');
+  const measSrc = (e: ChemEvidence) => (e.basis === 'lab' ? 'laboratory test' : e.source.replace(/^Measured: /, ''));
+  const governingNo3 = ni.measured && ni.mgL != null ? ni.mgL : no3;
+  const governingF = fl.measured && fl.mgL != null ? fl.mgL : f;
+  if (governingNo3 > 50) {
+    if (level === 'favourable') level = 'mixed';
+    quality.push(ni.measured
+      ? `measured nitrate is above the WHO 50 mg/L guideline (${ni.value}, ${measSrc(ni)}): pollution from latrines or farming; find and remove the source, and treat before drinking`
+      : `${modelledChemLabel('Nitrate', 'HIGH')}. Regional data indicate a high risk of nitrate pollution from latrines or farming: site the borehole away from them and test the water`);
+  }
+  if (governingF > 4) {
+    if (level === 'favourable') level = 'mixed';
+    quality.push(fl.measured
+      ? `measured fluoride is well above the WHO 1.5 mg/L guideline (${fl.value}, ${measSrc(fl)}): defluoridation is needed for drinking`
+      : `${modelledChemLabel('Fluoride', 'HIGH')}. Regional data indicate a high risk of excess fluoride here: defluoridation is likely to be needed for drinking if a laboratory test confirms it`);
+  } else if (governingF > 1.5) {
+    quality.push(fl.measured
+      ? `measured fluoride is above the WHO 1.5 mg/L guideline (${fl.value}, ${measSrc(fl)}): plan defluoridation for drinking water`
+      : `${modelledChemLabel('Fluoride', 'ELEVATED')}. Regional data indicate an elevated risk of excess fluoride here: plan for defluoridation if a laboratory test confirms it`);
+  }
   const qualityNote = quality.length ? ` Water quality: ${quality.join('; ')}. A laboratory test of the first water confirms it.` : '';
   const color: [number, number, number] = level === 'favourable' ? [22, 163, 74] : level === 'mixed' ? [217, 119, 6] : [220, 38, 38];
   const withQuality = (v: FinalVerdict): FinalVerdict => ({ ...v, next: v.next + qualityNote });

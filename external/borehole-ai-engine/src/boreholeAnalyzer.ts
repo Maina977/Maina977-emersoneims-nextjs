@@ -95,7 +95,7 @@ async function fieldRecordsWithin(lat: number, lon: number, km: number): Promise
 }
 import { getKenyaHydroPrior } from './kenyaHydroPriors';
 import { nearestKenyaBaseline } from './kenyaBaseline';
-import { salinityFromWaterQuality, modelledSalinityLabel, salinityRisk } from './verdict';
+import { salinityFromWaterQuality, modelledSalinityLabel, salinityRisk, chemFromWaterQuality, chemMeasuredNearby, fluorideRisk, nitrateRisk, modelledChemLabel, type ChemRisk } from './verdict';
 
 /**
  * One chemistry model (2026-10-29 audit: the PDF printed the rock-type model's
@@ -146,36 +146,60 @@ export function harmonizeHydrochem(hc: any, wq: any): any {
   } else if (waterType) {
     waterTypeDescription = `${waterTypeDescription ?? ''} Expected from the rock type, not measured; a laboratory test fixes it.`.trim();
   }
-  if (!salModelled || !sal.risk) return { ...hc, predictions, overallQuality, potabilityScore, waterType, waterTypeDescription };
-
-  // Modelled salinity: class in place of the figure everywhere this panel prints it.
+  // 2026-11-21: every modelled parameter in this panel (the rock-type and
+  // water-quality models) is stated as a risk class, never as a site
+  // concentration; only salinity, fluoride and nitrate measured at 3+ boreholes
+  // nearby keep their figures. Classes use the panel's WHO guideline values.
   const isSal = (p: string) => /^(TDS|EC)$/i.test(String(p));
-  const salText = modelledSalinityLabel(sal.risk);
-  const shown = predictions.map((p: any) => (isSal(p.parameter) ? { ...p, displayValue: salText } : p));
-  const salExceeds = shown.some((p: any) => isSal(p.parameter) && p.exceedsGuideline);
-  const primaryConcerns = [
-    ...((hc.primaryConcerns ?? []) as string[]).filter((c) => !/^(TDS|EC)\s*:/i.test(String(c))),
-    ...(salExceeds ? [`TDS: ${salText}`] : []),
-  ];
-  // Treatment and its cost level must not follow a modelled salinity.
+  const measuredParam = (p: string) => (isSal(p) ? !salModelled && sal.measured : p === 'fluoride' || p === 'nitrate' ? chemMeasuredNearby(p, wq) : false);
+  const classOf = (p: any, v: number): ChemRisk => (isSal(p.parameter) ? salinityRisk(v) : p.parameter === 'fluoride' ? fluorideRisk(v) : p.parameter === 'nitrate' ? nitrateRisk(v) : p.exceedsGuideline ? 'ELEVATED' : 'LOW');
+  const labelOf = (p: any, v: number): string => (isSal(p.parameter) ? modelledSalinityLabel(classOf(p, v)) : modelledChemLabel(HC_NAMES[p.parameter] ?? String(p.parameter), classOf(p, v)));
+  const shown = predictions.map((p: any) => (measuredParam(p.parameter) || !Number.isFinite(Number(p.predictedValue)) ? p : { ...p, displayValue: labelOf(p, Number(p.predictedValue)) }));
+  const byName = new Map<string, any>(shown.map((p: any) => [String(p.parameter).toLowerCase(), p]));
+  const primaryConcerns = shown.filter((p: any) => p.exceedsGuideline).map((p: any) => p.displayValue ?? `${p.parameter}: ${p.predictedValue} ${p.unit} (WHO: ${p.whoGuideline} ${p.unit}), measured nearby`);
+  // Treatment and its cost level must not follow a modelled value: each line
+  // for a modelled parameter becomes conditional on a laboratory test.
   const isSalTreat = (t: string) => /reverse osmosis|\bRO\b|desalin|high TDS/i.test(String(t));
-  const otherTreat = ((hc.treatmentRequired ?? []) as string[]).filter((t) => !isSalTreat(t));
-  const treatmentRequired = [...otherTreat, ...(sal.risk !== 'LOW' ? ['Desalination (reverse osmosis) only if a laboratory test of the first water confirms high salinity'] : [])];
-  const treatmentCost = otherTreat.length === 0 ? 'none'
-    : otherTreat.length <= 1 && !otherTreat.some((t) => t.includes('Arsenic')) ? 'low'
-    : otherTreat.length <= 2 ? 'moderate' : 'high';
-  const salFigure = /\b(TDS|EC): [\d.,]+ (mg\/L|µS\/cm) \(WHO: [\d.,]+ (mg\/L|µS\/cm)\)/g;
+  const TREAT_PARAM: [RegExp, string][] = [[/iron/i, 'iron'], [/manganese/i, 'manganese'], [/fluorid/i, 'fluoride'], [/arsenic/i, 'arsenic'], [/nitr/i, 'nitrate'], [/soften|hardness/i, 'hardness'], [/disinfect|coliform/i, 'totalcoliform']];
+  const treatModelled = (t: string) => { const hit = TREAT_PARAM.find(([re]) => re.test(t)); return hit ? !measuredParam(byName.get(hit[1])?.parameter ?? hit[1]) : false; };
+  const rawTreat = ((hc.treatmentRequired ?? []) as string[]);
+  const otherTreat = rawTreat.filter((t) => !isSalTreat(t) || !salModelled);
+  const pricedTreat = otherTreat.filter((t) => !treatModelled(String(t)));
+  const treatmentRequired = [
+    ...otherTreat.map((t) => (treatModelled(String(t)) ? `${t} only if a laboratory test of the first water confirms it` : t)),
+    ...(salModelled && sal.risk && sal.risk !== 'LOW' ? ['Desalination (reverse osmosis) only if a laboratory test of the first water confirms high salinity'] : []),
+  ];
+  const treatmentCost = treatmentRequired.length === 0 ? 'none'
+    : pricedTreat.length === 0 ? 'not_priced'
+    : pricedTreat.length <= 1 && !pricedTreat.some((t) => t.includes('Arsenic')) ? 'low'
+    : pricedTreat.length <= 2 ? 'moderate' : 'high';
+  // "fluoride: 2.4 mg/L (WHO: 1.5 mg/L)" in the narrative becomes the class.
+  const concernFigure = /\b(\w+): -?[\d.,]+[^(;]*?\(WHO: [^)]*\)/g;
   const narrative = typeof hc.narrative === 'string'
-    ? hc.narrative.replace(salFigure, `TDS: ${salText}`).replace(/Reverse osmosis \(high TDS\)/g, 'desalination only if a laboratory test confirms high salinity')
+    ? hc.narrative
+      .replace(concernFigure, (m: string, name: string) => byName.get(name.toLowerCase())?.displayValue ?? m)
+      .replace(/Reverse osmosis \(high TDS\)/g, salModelled ? 'desalination only if a laboratory test confirms high salinity' : 'Reverse osmosis (high TDS)')
     : hc.narrative;
   const recommendations = Array.isArray(hc.recommendations)
-    ? hc.recommendations.map((s: string) => String(s).replace(/Reverse osmosis \(high TDS\)/g, 'desalination only if a laboratory test confirms high salinity'))
+    ? hc.recommendations.map((s: string) => (salModelled ? String(s).replace(/Reverse osmosis \(high TDS\)/g, 'desalination only if a laboratory test confirms high salinity') : String(s)))
     : hc.recommendations;
+  // Model against laboratory: the model side is a class, not a figure.
   const validation = Array.isArray(hc.validation)
-    ? hc.validation.map((v: any) => (isSal(v.parameter) && Number.isFinite(Number(v.predicted)) ? { ...v, predictedDisplay: `${salinityRisk(Number(v.predicted))} risk (screening class, not measured at this site)` } : v))
+    ? hc.validation.map((v: any) => {
+      if (!Number.isFinite(Number(v.predicted))) return v;
+      const p = byName.get(String(v.parameter).toLowerCase()) ?? { parameter: v.parameter, exceedsGuideline: v.predictedExceeds };
+      const risk = classOf({ ...p, exceedsGuideline: v.predictedExceeds ?? p.exceedsGuideline }, Number(v.predicted));
+      return { ...v, predictedDisplay: `${risk} risk (screening class, not measured at this site)` };
+    })
     : hc.validation;
   return { ...hc, predictions: shown, overallQuality, potabilityScore, waterType, waterTypeDescription, primaryConcerns, treatmentRequired, treatmentCost, narrative, recommendations, validation };
 }
+/** Reader names for the hydrochemistry panel's parameters. */
+const HC_NAMES: Record<string, string> = {
+  pH: 'pH', TDS: 'Salinity', EC: 'Salinity', hardness: 'Hardness', iron: 'Iron', fluoride: 'Fluoride', nitrate: 'Nitrate', nitrite: 'Nitrite',
+  arsenic: 'Arsenic', manganese: 'Manganese', chloride: 'Chloride', sulfate: 'Sulfate', turbidity: 'Turbidity', calcium: 'Calcium',
+  magnesium: 'Magnesium', sodium: 'Sodium', lead: 'Lead', totalColiform: 'Bacteria (total coliform)', eColi: 'Bacteria (E. coli)',
+};
 const LAB_FIRST_WATER = 'Salinity has not been measured at this site; a laboratory test of the first water is needed before drinking use or treatment design.';
 
 /**
@@ -2924,9 +2948,13 @@ export class BoreholeAnalyzer {
         (() => { const s = salinityFromWaterQuality(waterQuality); return s.measured
           ? { metric: 'TDS (measured nearby)', predicted: s.value, actual: '---', error: '---', unit: 'mg/L' }
           : { metric: 'Salinity (regional screening)', predicted: s.risk ? `${s.risk} risk, not measured at this site` : 'laboratory test needed', actual: '---', error: '---', unit: 'mg/L' }; })(),
-        { metric: 'pH (estimated)', predicted: `${(waterQuality?.pH ?? 7.0).toFixed(1)}`, actual: '---', error: '---', unit: '' },
-        { metric: 'Iron (estimated)', predicted: `${(waterQuality?.iron ?? 0.1).toFixed(2)} mg/L`, actual: '---', error: '---', unit: 'mg/L' },
-        { metric: 'Fluoride (estimated)', predicted: `${(waterQuality?.fluoride ?? 0.3).toFixed(2)} mg/L`, actual: '---', error: '---', unit: 'mg/L' },
+        // pH and iron are soil-model values: no figure (2026-11-21). Fluoride is
+        // the measured nearby figure or the regional class.
+        { metric: 'pH', predicted: 'laboratory test needed', actual: '---', error: '---', unit: '' },
+        { metric: 'Iron', predicted: 'laboratory test needed', actual: '---', error: '---', unit: 'mg/L' },
+        (() => { const fe = chemFromWaterQuality('fluoride', waterQuality); return fe.measured
+          ? { metric: 'Fluoride (measured nearby)', predicted: fe.value, actual: '---', error: '---', unit: 'mg/L' }
+          : { metric: 'Fluoride (regional screening)', predicted: fe.risk ? `${fe.risk} risk, not measured at this site` : 'laboratory test needed', actual: '---', error: '---', unit: 'mg/L' }; })(),
       ],
       confidenceComposition: {
         aiPrior: Math.round((ensembleResult?.confidence != null ? ensembleResult.confidence / 100 : 0.65) * 100) / 100,
@@ -2986,8 +3014,11 @@ export class BoreholeAnalyzer {
           const cPumpInstall = 3520;                             // pump + installation (detailed model)
           const cSolar = 2100;                                   // solar array + controller
           const cSurveyPermits = 775;                            // hydro survey + WRA approval
-          const needsTreat = ((waterQuality?.fluoride ?? 0) > 1.5) || ((waterQuality?.iron ?? 0) > 0.3);
-          const cTreatment = needsTreat ? 4000 : 1000;           // defluoridation/iron removal if modelled exceedance
+          // Measured values only price treatment (2026-11-21): the laboratory or
+          // the median of 3+ boreholes nearby, never the regional model.
+          const flD = chemFromWaterQuality('fluoride', waterQuality, fieldData?.labWaterAnalysis);
+          const needsTreat = (flD.measured && (flD.mgL ?? 0) > 1.5) || Number(fieldData?.labWaterAnalysis?.iron ?? 0) > 0.3;
+          const cTreatment = needsTreat ? 4000 : 1000;           // defluoridation/iron removal on a measured exceedance
           const subtotal = cDrill + cCasing + cScreen + cPumpInstall + cSolar + cSurveyPermits + cTreatment;
           return Math.round(subtotal * 1.15);                    // 15% engineering contingency
         })(),
@@ -3418,13 +3449,16 @@ export class BoreholeAnalyzer {
             calcium_mgL: labWQ.calcium,
             alkalinity_mgL_CaCO3: labWQ.alkalinity,
             hardness_mgL_CaCO3: labWQ.hardness ?? wqRemote?.hardness,
-            iron_mgL: labWQ.iron ?? wqRemote?.iron,
+            // 2026-11-21: health and treatment parameters come from the
+            // laboratory only. A modelled figure must not print as "Fluoride
+            // X mg/L exceeds WHO" or size treatment in the design notes.
+            iron_mgL: labWQ.iron,
             manganese_mgL: labWQ.manganese,
             sulfate_mgL: labWQ.sulfate,
             chloride_mgL: labWQ.chloride,
-            fluoride_mgL: labWQ.fluoride ?? wqRemote?.fluoride,
-            arsenic_ugL: labWQ.arsenic ? labWQ.arsenic * 1000 : wqRemote?.arsenic ? wqRemote.arsenic * 1000 : undefined,
-            nitrate_mgL: labWQ.nitrate ?? wqRemote?.nitrate,
+            fluoride_mgL: labWQ.fluoride,
+            arsenic_ugL: labWQ.arsenic ? labWQ.arsenic * 1000 : undefined,
+            nitrate_mgL: labWQ.nitrate,
             dissolvedOxygen_mgL: labWQ.dissolvedOxygen,
             h2s_detected: labWQ.h2s ?? false,
           };
@@ -3436,9 +3470,9 @@ export class BoreholeAnalyzer {
             temperature_C: 22,
             tds_mgL: wqRemote.tds ?? 400,
             hardness_mgL_CaCO3: wqRemote.hardness,
-            iron_mgL: wqRemote.iron,
-            fluoride_mgL: wqRemote.fluoride,
-            nitrate_mgL: wqRemote.nitrate,
+            // Modelled iron, fluoride and nitrate are not passed (2026-11-21):
+            // the corrosion indices need pH, TDS and hardness only, and a
+            // modelled value must not raise a treatment line with a figure.
           };
         }
         return undefined;
@@ -3785,6 +3819,15 @@ export class BoreholeAnalyzer {
         wqS.treatmentRequired = salS.risk === 'LOW' ? rest : [...rest, 'Desalination (reverse osmosis) only if a laboratory test of the first water confirms high salinity'];
       } else if (salS.basis === 'lab') {
         wqS.treatmentRequired = (salS.tds ?? 0) > 1000 ? [...rest, `Desalination (reverse osmosis): laboratory TDS ${salS.value}`] : rest;
+      }
+      // Fluoride follows the same rule (2026-11-21): a modelled class designs no
+      // defluoridation; the line becomes conditional on a laboratory test.
+      const flS = chemFromWaterQuality('fluoride', wqS, fieldData?.labWaterAnalysis);
+      const restF = (wqS.treatmentRequired ?? []).filter((t: string) => !/fluorid/i.test(String(t)));
+      if (flS.basis === 'modelled') {
+        wqS.treatmentRequired = flS.risk === 'LOW' ? restF : [...restF, 'Defluoridation only if a laboratory test of the first water confirms excess fluoride'];
+      } else if (flS.measured) {
+        wqS.treatmentRequired = (flS.mgL ?? 0) > 1.5 ? [...restF, `Defluoridation (activated alumina or bone char): ${flS.basis === 'lab' ? 'laboratory' : 'measured nearby'} fluoride ${flS.value}`] : restF;
       }
     }
     // Ensure GPS coordinates propagate to ALL possible storage paths

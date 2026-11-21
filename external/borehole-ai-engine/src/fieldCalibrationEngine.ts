@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { FieldValidationData, AnalysisResult } from './types';
-import { salinityFromWaterQuality } from './verdict';
+import { salinityFromWaterQuality, chemFromWaterQuality } from './verdict';
 
 export interface CalibrationResult {
   /** Calibrated depth (field-confirmed or field-adjusted) */
@@ -209,7 +209,16 @@ export function calibrateWithFieldData(
         ? `Lab TDS: ${lab.tds} mg/L (measured nearby before drilling: ${desk.value}, ${desk.source.replace(/^Measured: /, '')})`
         : `Lab TDS: ${lab.tds} mg/L (the desktop screen classed the salinity risk as ${desk.risk}; that class was not a measurement)`);
     }
-    if (has('pH') && Number.isFinite(wqDesktop?.pH)) notes.push(`Lab pH: ${lab.pH} (desktop predicted ${wqDesktop.pH}, delta ${Math.abs(wqDesktop.pH - lab.pH).toFixed(1)})`);
+    // The desktop pH, fluoride and nitrate were model values, not measurements:
+    // the laboratory figure is compared with the desktop class, never a figure.
+    if (has('pH')) notes.push(`Lab pH: ${lab.pH} (the desktop screen gave no measured pH for this site)`);
+    for (const p of ['fluoride', 'nitrate'] as const) {
+      if (!has(p) || !Number.isFinite(Number(wqDesktop?.[p]))) continue;
+      const desk = chemFromWaterQuality(p, wqDesktop);
+      notes.push(desk.measured
+        ? `Lab ${p}: ${lab[p]} mg/L (measured nearby before drilling: ${desk.value}, ${desk.source.replace(/^Measured: /, '')})`
+        : `Lab ${p}: ${lab[p]} mg/L (the desktop screen classed the ${p} risk as ${desk.risk}; that class was not a measurement)`);
+    }
     if (lab.fluoride > 1.5) notes.push(`⚠ Fluoride ${lab.fluoride} mg/L EXCEEDS WHO limit 1.5 mg/L`);
     if (lab.arsenic > 0.01) notes.push(`⚠ Arsenic ${lab.arsenic} mg/L EXCEEDS WHO limit 0.01 mg/L`);
 
