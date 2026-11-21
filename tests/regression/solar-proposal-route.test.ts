@@ -91,3 +91,18 @@ describe('POST /api/solar/proposal', () => {
     expect(last).toBe(429);
   });
 });
+
+describe('POST /api/solar/proposal: request size (audit M6 / LOW 3, 2026-11-21)', () => {
+  it('a declared Content-Length over 2 MB is refused before reading', async () => {
+    const r = await POST(new NextRequest('http://x/api/solar/proposal', { method: 'POST', body: '{}', headers: { 'x-forwarded-for': '10.0.9.1', 'content-length': String(3_000_000) } }));
+    expect(r.status).toBe(413);
+  });
+  it('a chunked body with no Content-Length is cut off past 2 MB', async () => {
+    const chunk = new TextEncoder().encode('x'.repeat(512 * 1024));
+    let sent = 0;
+    const stream = new ReadableStream<Uint8Array>({ pull(c) { if (sent >= 8) { c.close(); return; } sent++; c.enqueue(chunk); } });
+    const r = await POST(new NextRequest('http://x/api/solar/proposal', { method: 'POST', body: stream, headers: { 'x-forwarded-for': '10.0.9.2' }, duplex: 'half' } as unknown as ConstructorParameters<typeof NextRequest>[1]));
+    expect(r.status).toBe(413);
+    expect(sent).toBeLessThan(8); // reading stopped early
+  });
+});

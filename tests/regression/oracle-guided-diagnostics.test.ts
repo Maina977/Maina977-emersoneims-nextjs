@@ -131,7 +131,7 @@ describe('ranking follows the evidence', () => {
     expect(r.ranked[0].id).toBe('belt');
   });
   it('underspeed at 50 Hz → speed cause leads, not the AVR', () => {
-    const r = diagnose(NO_VOLTAGE, { ratedFrequency: '50', frequency: 44, voltage: 300, ratedVoltage: 400 });
+    const r = diagnose(NO_VOLTAGE, { ratedFrequency: '50', frequency: 44, oemMinFrequency: 48.5, voltage: 300, ratedVoltage: 400 }); // TEST governor minimum
     expect(r.ranked[0].id).toBe('speed');
   });
   it('voltage within ±5 % excludes the AVR cause', () => {

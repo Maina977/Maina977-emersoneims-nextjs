@@ -22,6 +22,25 @@ export const maxDuration = 60;
 const NO_STORE = { 'Cache-Control': 'no-store', 'Vercel-CDN-Cache-Control': 'no-store' };
 const MAX_BYTES = 2_000_000;
 
+/** The body as text, or null once more than maxBytes have arrived (reading stops there). */
+async function readCapped(req: Request, maxBytes: number): Promise<string | null> {
+  if (!req.body) return '';
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) { await reader.cancel().catch(() => {}); return null; }
+    chunks.push(value);
+  }
+  const all = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { all.set(c, off); off += c.byteLength; }
+  return new TextDecoder().decode(all);
+}
+
 const fail = (error: string, status: number) => NextResponse.json({ error }, { status, headers: NO_STORE });
 
 export async function POST(req: NextRequest) {
@@ -31,8 +50,10 @@ export async function POST(req: NextRequest) {
   const declared = Number(req.headers.get('content-length'));
   if (Number.isFinite(declared) && declared > MAX_BYTES) return fail('Request too large (2 MB limit)', 413);
 
-  const text = await req.text();
-  if (new TextEncoder().encode(text).length > MAX_BYTES) return fail('Request too large (2 MB limit)', 413);
+  // Read with a hard cap so a chunked body with no Content-Length is never
+  // buffered past the limit (re-audit LOW 3, 2026-11-21).
+  const text = await readCapped(req, MAX_BYTES);
+  if (text === null) return fail('Request too large (2 MB limit)', 413);
   let body: unknown;
   try { body = JSON.parse(text); } catch { return fail('Body must be JSON', 400); }
   const parsed = checkProposalRequest(body);

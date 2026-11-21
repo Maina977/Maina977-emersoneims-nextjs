@@ -80,11 +80,11 @@ export function buildEntries(f: ProposalForm): { module: LibraryEntry<Module> | 
     b.errors.forEach((e) => errors.push(`Battery: ${e}`));
     if (b.entry) { battery = signOff(f, 'b', 'Battery', b.entry, errors); b.entry.warnings.forEach((w) => warnings.push(`Battery: ${w}`)); }
   }
-  const module = m.entry ? signOff(f, 'm', 'Module', m.entry, errors) : null;
+  const moduleEntry = m.entry ? signOff(f, 'm', 'Module', m.entry, errors) : null;
   const inverter = inv.entry ? signOff(f, 'i', 'Inverter', inv.entry, errors) : null;
   m.entry?.warnings.forEach((w) => warnings.push(`Module: ${w}`));
   inv.entry?.warnings.forEach((w) => warnings.push(`Inverter: ${w}`));
-  return { module, inverter, battery, errors, warnings };
+  return { module: moduleEntry, inverter, battery, errors, warnings };
 }
 
 export function parseStrings(s: string): number[] { return s.split(',').map((x) => x.trim()).filter((x) => x !== '').map(Number); }
@@ -179,7 +179,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   for (const [k, l] of [['ref', 'Proposal reference'], ['c.name', 'Client name'], ['c.address', 'Site address'], ['c.lat', 'Latitude'], ['c.lon', 'Longitude'], ['d.modulesPerString', 'Modules per string'], ['d.stringsPerMppt', 'Strings per MPPT'], ['d.inverterCount', 'Inverter count'], ['t.recordLowC', 'Site record low temperature'], ['t.maxAmbientC', 'Max ambient temperature'], ['t.source', 'Source of the site temperatures'], ['f.lifetime', 'Lifetime']] as const) {
     if (blank(f, k)) errors.push(`${l} is required`);
   }
-  const { module, inverter, battery, errors: eErr, warnings } = buildEntries(f);
+  const { module: moduleEntry, inverter, battery, errors: eErr, warnings } = buildEntries(f);
   errors.push(...eErr);
   if (battery) for (const [k, l] of [['b.units', 'Battery units'], ['b.requiredUsableAcKwh', 'Energy needed from the battery per cycle']] as const) if (blank(f, k)) errors.push(`${l} is required`);
   if (!production) errors.push('Production is required: fetch the hourly weather and run the simulation');
@@ -208,11 +208,11 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   // No approval is ever built from the form: a typed name cannot approve
   // (proposalApproval.ts). Any old 'a.*' fields are ignored.
 
-  if (errors.length || !module || !inverter || !production || !tariff || !esc || !disc || !deg || !om) return { input: null, errors, warnings };
+  if (errors.length || !moduleEntry || !inverter || !production || !tariff || !esc || !disc || !deg || !om) return { input: null, errors, warnings };
   const input: ProposalInput = {
     reference: str(f, 'ref'),
     client: { name: str(f, 'c.name'), siteAddress: str(f, 'c.address'), lat: num(f, 'c.lat'), lon: num(f, 'c.lon') },
-    module, inverter,
+    module: moduleEntry, inverter,
     ...(battery ? { battery: { entry: battery, units: num(f, 'b.units'), requiredUsableAcKwh: num(f, 'b.requiredUsableAcKwh') } } : {}),
     design: { modulesPerString: num(f, 'd.modulesPerString'), stringsPerMppt: parseStrings(str(f, 'd.stringsPerMppt')) },
     inverterCount: num(f, 'd.inverterCount'),
