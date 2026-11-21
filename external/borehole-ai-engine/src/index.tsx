@@ -1,7 +1,7 @@
 ﻿import { inKenya } from './kenyaLand';
 import { evidenceGate, gated, DEPTH_NEEDS, YIELD_NEEDS, COST_NEEDS } from './evidenceGate';
 import { geocodeSearchUrl } from '../../../lib/data-sources/geocodeClient';
-import { finalVerdict, salinityEvidence } from './verdict';
+import { finalVerdict, salinityEvidence, chemEvidence } from './verdict';
 import { governingSummary, last12Months, probabilityBand } from './governingSummary';
 import { parseCoordPair } from './coordParse';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -5878,6 +5878,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 {/* The same allowance as the Costs tab and the PDF (2026-10-25 audit: six sites, two figures each). */}
                 {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">Allowance if treatment is needed: <strong>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</strong> ({fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day (sized on measured salinity)` : ''}. A laboratory test decides whether it is.</div>}
                 {eco?.salinityUnpriced && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Desalination not priced:</strong> {salinityEvidence(result).sentence}</div>}
+                {eco?.fluorideUnpriced && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Defluoridation not priced:</strong> {chemEvidence(result, 'fluoride').sentence}</div>}
                 {(result as any).coastalIntrusionNote && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Seawater intrusion risk:</strong> {(result as any).coastalIntrusionNote}</div>}
                 {result.waterQuality.treatmentRequired.length>0 && <ul className="rec-list">{result.waterQuality.treatmentRequired.map((t,i)=><li key={i}>{t}</li>)}</ul>}
               </div>
@@ -7093,7 +7094,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div className="result-item"><span className="rl">Water Type</span><span className="rv" style={{fontWeight:700}}>{result.hydrochemPrediction.waterType}</span></div>
                     <div className="result-item"><span className="rl">Overall Quality</span><span className="rv" style={{color:result.hydrochemPrediction.overallQuality==='excellent'||result.hydrochemPrediction.overallQuality==='good'?'#16a34a':result.hydrochemPrediction.overallQuality==='acceptable'?'#f59e0b':'#ef4444',fontWeight:700}}>{result.hydrochemPrediction.overallQuality?.toUpperCase()}</span></div>
                     <div className="result-item"><span className="rl">Potability Score</span><span className="rv" style={{color:result.hydrochemPrediction.potabilityScore>=70?'#16a34a':'#ef4444',fontWeight:700}}>{result.hydrochemPrediction.potabilityScore}/100</span></div>
-                    <div className="result-item"><span className="rl">Treatment Cost</span><span className="rv">{result.hydrochemPrediction.treatmentCost?.toUpperCase()}</span></div>
+                    <div className="result-item"><span className="rl">Treatment Cost</span><span className="rv">{result.hydrochemPrediction.treatmentCost?.replace(/_/g, ' ').toUpperCase()}</span></div>
                   </div>
                   <div className="result-item full-width" style={{marginBottom:12}}>
                     <span className="rl">Water Type Description</span>
@@ -7110,8 +7111,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                               <tr key={i}>
                                 <td style={{fontWeight:600}}>{p.parameter}</td>
                                 <td>{p.displayValue ?? `${p.predictedValue} ${p.unit}`}</td>
-                                <td>{p.whoGuideline} {p.unit}</td>
-                                <td style={{color:p.exceedsGuideline?'#ef4444':'#16a34a',fontWeight:700}}>{p.exceedsGuideline ? '⚠ EXCEEDS' : '✓ OK'}</td>
+                                {/* A modelled class carries no threshold and no pass/fail (2026-11-21). */}
+                                <td>{p.displayValue ? '—' : `${p.whoGuideline} ${p.unit}`}</td>
+                                <td style={{color:p.displayValue?'var(--text-secondary)':p.exceedsGuideline?'#ef4444':'#16a34a',fontWeight:700}}>{p.displayValue ? 'class only' : p.exceedsGuideline ? '⚠ EXCEEDS' : '✓ OK'}</td>
                                 <td style={{color:p.healthRisk==='high'||p.healthRisk==='critical'?'#ef4444':p.healthRisk==='moderate'?'#f59e0b':'#16a34a'}}>{p.healthRisk}</td>
                               </tr>
                             ))}

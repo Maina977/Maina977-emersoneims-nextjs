@@ -18,7 +18,7 @@
  *   - JSON (raw data dump)
  */
 
-import { finalVerdict, salinityEvidence, salinityFromWaterQuality, modelledSalinityLabel, labSourceLabel, nearbyProvenance } from './verdict';
+import { finalVerdict, salinityEvidence, salinityFromWaterQuality, modelledSalinityLabel, labSourceLabel, nearbyProvenance, chemEvidence, chemFromWaterQuality, chemCell, modelledChemLabel, labWaterResult, type ChemRisk } from './verdict';
 import { evidenceGate } from './evidenceGate';
 import { generateScreeningPdf } from './screeningReport';
 import { governingSummary, last12Months } from './governingSummary';
@@ -1303,15 +1303,18 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     // Water quality operative line — same thresholds as the annex
     {
       const wq = result.waterQuality;
-      const healthFails = [
-        (wq?.fluoride ?? 0) > 1.5 ? 'Fluoride' : '',
-        (wq as any)?.measuredNearby?.nitrate?.n >= 3 && (wq?.nitrate ?? 0) > 50 ? 'Nitrate' : '',
-      ].filter(Boolean);
+      // 2026-11-21: a measured exceedance is stated with its figure and source;
+      // a modelled one as a risk class, with no figure and no threshold.
+      const chemX = (['fluoride', 'nitrate'] as const).map((p) => chemEvidence(result, p));
+      const measuredFails = chemX.filter((e) => e.measured && (e.mgL ?? 0) > (e.param === 'fluoride' ? 1.5 : 50));
+      const modelledRisks = chemX.filter((e) => !e.measured && (e.risk === 'HIGH' || e.risk === 'ELEVATED'));
       const wqOk = !!wq?.isPotable;
       const wqLine = wqOk
         ? 'POTABLE (modelled) -- verify with an ISO 17025 lab analysis before community use.'
-        : healthFails.length > 0
-          ? `MODELLED EXCEEDANCE RISK -- ${healthFails.join(', ')} may exceed WHO guideline values. Do not use for drinking until an accredited lab confirms; treatment budgeted below.`
+        : measuredFails.length > 0
+          ? `MEASURED EXCEEDANCE -- ${measuredFails.map((e) => `${e.name} ${e.value} (${e.source.replace(/^Measured: /, '')})`).join('; ')} above the WHO guideline. Do not use for drinking without treatment; treatment budgeted below.`
+          : modelledRisks.length > 0
+          ? `${modelledRisks.map((e) => modelledChemLabel(e.name, e.risk as ChemRisk).toUpperCase()).join('; ')}. Not measured at this site: a laboratory test of the first water decides whether treatment is needed; it is not priced until then.`
           : (wq?.tds ?? 0) >= 1000
             ? (() => {
               // 2026-11-21: a modelled salinity gives a class only, and no RO budget.
@@ -1414,8 +1417,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         // Hand-pump systems need no solar array — omit the row entirely (audit #9)
         ...(eco.solarCost > 0 ? [['Solar power system', `$${eco.solarCost.toLocaleString()}`, eco.kes(eco.solarCost), `${eco.solarKW.toFixed(1)} kW array`] as string[]] : []),
         ...(eco.wqTreatmentCost + eco.defluoridationCost > 0
-          ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.kes(eco.wqTreatmentCost + eco.defluoridationCost), eco.defluoridationCost > 0 ? `incl. defluoridation (+$${eco.annualDefluoridation}/yr media)` : 'per modelled water quality'] as string[]]
+          ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.kes(eco.wqTreatmentCost + eco.defluoridationCost), eco.defluoridationCost > 0 ? `incl. defluoridation on measured fluoride (+$${eco.annualDefluoridation}/yr media)` : 'allowance; a laboratory test of the first water decides'] as string[]]
           : []),
+        ...(eco.fluorideUnpriced ? [['Defluoridation', 'not priced', '', 'Fluoride has not been measured at this site (regional screening class only); a laboratory test of the first water decides'] as string[]] : []),
         ['Contingency', `$${eco.contingency.toLocaleString()}`, eco.kes(eco.contingency), `${(eco.contingencyRate * 100).toFixed(0)}%${eco.isHardRock ? ' (hard rock)' : ''}`],
         ['TOTAL CAPITAL', `$${eco.totalCost.toLocaleString()}`, eco.kes(eco.totalCost), 'Complete functional borehole. Excl. land, storage tank, distribution'],
         ['Payback', eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : eco.paybackWithheld ? 'Not given: site unfavourable' : 'Not within 20 yrs', '', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, ${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr${eco.isHandPump ? ' — household use case: the real value is avoided vendor-water cost, not sales' : ''}`],
@@ -1829,28 +1833,37 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         // failure reads as good news (review finding).
         const wqv = result.waterQuality;
         const sv = screeningValues(wqv);
-        const fails = (sv.fluoride ?? 0) > 1.5 || (sv.nitrate ?? 0) > 50 || (sv.tds ?? 0) >= 1000;
+        // 2026-11-21: only a measured value is an "exceedance"; a modelled
+        // fluoride or nitrate is a risk class (best evidence: lab, nearby, model).
+        const chemS = (['fluoride', 'nitrate'] as const).map((p) => chemEvidence(result, p));
+        const measFail = chemS.some((e) => e.measured && (e.mgL ?? 0) > (e.param === 'fluoride' ? 1.5 : 50));
+        const modRisk = chemS.some((e) => !e.measured && (e.risk === 'HIGH' || e.risk === 'ELEVATED'));
+        const fails = measFail || (sv.tds ?? 0) >= 1000;
         // No proprietary index number in the executive summary -- "index
         // 94/100" beside a guideline exceedance confused every reviewer.
-        return !fails
-          ? 'No exceedance in the values measured nearby -- lab test required before drinking'
-          : 'LIKELY GUIDELINE EXCEEDANCE -- lab test and treatment budget required';
+        return fails
+          ? 'GUIDELINE EXCEEDANCE IN MEASURED VALUES -- lab test at the borehole and treatment budget required'
+          : modRisk
+            ? 'Regional screening indicates a water-quality risk (not measured at this site) -- lab test required before drinking'
+            : 'No exceedance in the values measured nearby -- lab test required before drinking';
       })(), (() => {
         const wq = result.waterQuality;
         const sv = screeningValues(wq);
-        const healthFails = [
-          (sv.fluoride ?? 0) > 1.5 ? 'Fluoride' : '',
-          (sv.nitrate ?? 0) > 50 ? 'Nitrate' : '',
-        ].filter(Boolean);
+        const chemS = (['fluoride', 'nitrate'] as const).map((p) => chemEvidence(result, p));
+        const healthFails = chemS.filter((e) => e.measured && (e.mgL ?? 0) > (e.param === 'fluoride' ? 1.5 : 50));
+        const modelledChem = chemS.filter((e) => !e.measured && (e.risk === 'HIGH' || e.risk === 'ELEVATED')).map((e) => modelledChemLabel(e.name, e.risk as ChemRisk));
         const aestheticFails = [(sv.tds ?? 0) > 1000 ? 'TDS' : ''].filter(Boolean);
         // A modelled salinity is a class, never a figure (2026-11-21).
         const salX = salinityEvidence(result);
-        const salModelledNote = salX.basis === 'modelled' && salX.risk && salX.risk !== 'LOW' ? `${modelledSalinityLabel(salX.risk)}; lab test needed before drinking use or treatment design` : '';
-        if (!healthFails.length && !aestheticFails.length) return salModelledNote || 'Verify with an ISO 17025 laboratory analysis before use';
+        const salModelledNote = [
+          ...(salX.basis === 'modelled' && salX.risk && salX.risk !== 'LOW' ? [modelledSalinityLabel(salX.risk)] : []),
+          ...modelledChem,
+        ].join('; ');
+        if (!healthFails.length && !aestheticFails.length) return salModelledNote ? `${salModelledNote}; lab test needed before drinking use or treatment design` : 'Verify with an ISO 17025 laboratory analysis before use';
         // A numeric "score" beside a health failure reads as good news — say
         // the operative fact first (review finding: "94/100 looks too
         // optimistic unless it clearly means treatable after defluoridation").
-        if (healthFails.length > 0) return `Modelled ${healthFails.join(', ')} above WHO guideline -- treatment likely required; lab-confirm before drinking`;
+        if (healthFails.length > 0) return `Measured ${healthFails.map((e) => `${e.name.toLowerCase()} ${e.value} (${e.source.replace(/^Measured: /, '')})`).join('; ')} above the WHO guideline -- treatment required before drinking`;
         if (aestheticFails.length > 0) return (wq?.tds ?? 0) >= 1000
           ? `SALTY: TDS ${Math.round(sv.tds ?? 0)} mg/L. ${salX.source} -- reverse osmosis likely; lab-confirm`
           : `AESTHETIC TREATMENT: ${aestheticFails.join(', ')} (minor)`;
@@ -1862,9 +1875,12 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         // used to quote "$1,200-1,500" while the budget carried $4,000.
         const ecoWq = computeCanonicalEconomics(result);
         const treatTotal = ecoWq.wqTreatmentCost + ecoWq.defluoridationCost;
-        const unpriced = ecoWq.salinityUnpriced ? 'Desalination not priced: salinity not measured at this site; a laboratory test of the first water decides' : '';
+        const unpriced = [
+          ...(ecoWq.salinityUnpriced ? ['Desalination not priced: salinity not measured at this site; a laboratory test of the first water decides'] : []),
+          ...(ecoWq.fluorideUnpriced ? ['Defluoridation not priced: fluoride not measured at this site; a laboratory test of the first water decides'] : []),
+        ].join('. ');
         if (treatTotal <= 0 && unpriced) return unpriced;
-        return `Budgeted: $${treatTotal.toLocaleString()}${ecoWq.defluoridationCost > 0 ? ` (incl. $${ecoWq.defluoridationCost.toLocaleString()} defluoridation + $${ecoWq.annualDefluoridation}/yr media)` : ''} — same figure as the cost tables${unpriced ? `. ${unpriced}` : ''}`;
+        return `Budgeted: $${treatTotal.toLocaleString()}${ecoWq.defluoridationCost > 0 ? ` (incl. $${ecoWq.defluoridationCost.toLocaleString()} defluoridation on measured fluoride + $${ecoWq.annualDefluoridation}/yr media)` : ''} — same figure as the cost tables${unpriced ? `. ${unpriced}` : ''}`;
       })()],
       ['Coordinates', getCoords(result), `GPS: ${result.gpsSource?.toUpperCase()}`],
       ['Location Confidence', result.locationConfidence?.grade || 'N/A', result.locationConfidence?.drillingReliability || 'N/A'],
@@ -2092,8 +2108,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         ['Pump & installation',        `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.pumpNote],
         ...(eco.solarCost > 0 ? [['Solar power system', `$${eco.solarCost.toLocaleString()}`, `${eco.solarKW} kW array + controller`] as [string, string, string]] : []),
         ...((eco.wqTreatmentCost + eco.defluoridationCost) > 0
-          ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.defluoridationCost > 0 ? 'Incl. defluoridation (fluoride > WHO 1.5 mg/L)' : 'Per water-quality model'] as [string, string, string]]
+          ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.defluoridationCost > 0 ? `Incl. defluoridation (measured fluoride ${chemEvidence(result, 'fluoride').value}, above the WHO 1.5 mg/L guideline)` : 'Allowance; a laboratory test of the first water decides'] as [string, string, string]]
           : []),
+        ...(eco.fluorideUnpriced ? [['Defluoridation', 'not priced', 'Fluoride not measured at this site (regional screening class only); a laboratory test of the first water decides'] as [string, string, string]] : []),
         [`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, `$${eco.contingency.toLocaleString()}`, eco.isHardRock ? 'Hard-rock drilling risk premium' : 'Standard engineering contingency'],
         ['TOTAL CAPITAL COST',         `$${_totalCap.toLocaleString()}`,  `${(tier as string) === 'basic' ? 'Same model as the cost table' : 'Same model as Section 5.1'}. Incl. survey + statutory approvals. Excl. land, storage tank`],
         ['Annual O&M',                 `$${eco.annualOM.toLocaleString()}/yr`, eco.annualDefluoridation > 0 ? `4.5% of capital ($${_annualMaint.toLocaleString()}) + defluoridation media ($${eco.annualDefluoridation}/yr) — same O&M used in every table` : '4.5% of capital (World Bank WASH benchmark) — same O&M used in every table'],
@@ -2220,24 +2237,29 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
   }
   y += 58;
 
-  // Water quality chart -- modelled values, NOT normalized (to avoid misrepresentation)
-  checkSpace(70);
-  // A modelled TDS is not charted as a figure (2026-11-21): the bar appears
-  // only when salinity was measured (laboratory or 3+ boreholes nearby).
+  // Water quality chart (2026-11-21): MEASURED values only (laboratory, or the
+  // median of 3+ boreholes nearby). Modelled chemistry is a risk class with no
+  // figure, so it is never charted; with nothing measured there is no chart.
   const _chartSal = salinityEvidence(result);
-  const wqLabels = ['pH', ...(_chartSal.measured ? ['TDS (mg/L, measured)'] : []), 'Hardness (mg/L CaCO3)', 'Fluoride (mg/L)', 'Iron (mg/L)', 'Nitrate (mg/L)'];
-  const wqValues = [
-    result.waterQuality?.pH || 0,
-    ...(_chartSal.measured ? [_chartSal.tds || 0] : []),
-    result.waterQuality?.hardness || 0,
-    result.waterQuality?.fluoride || 0,
-    result.waterQuality?.iron || 0,
-    result.waterQuality?.nitrate || 0,
+  const _chartLab = labWaterResult(result);
+  const _chartF = chemEvidence(result, 'fluoride'), _chartN = chemEvidence(result, 'nitrate');
+  const _labNum = (k: string) => (_chartLab && _chartLab[k] != null && Number.isFinite(Number(_chartLab[k])) ? Number(_chartLab[k]) : null);
+  const _chartBars: [string, number | null][] = [
+    ['pH (lab)', _labNum('pH')],
+    ['TDS (mg/L, measured)', _chartSal.measured ? _chartSal.tds : null],
+    ['Hardness (mg/L CaCO3, lab)', _labNum('hardness')],
+    ['Fluoride (mg/L, measured)', _chartF.measured ? _chartF.mgL : null],
+    ['Iron (mg/L, lab)', _labNum('iron')],
+    ['Nitrate (mg/L, measured)', _chartN.measured ? _chartN.mgL : null],
   ];
-  const wqChart = renderBarChart(wqLabels, wqValues, 'Water Quality -- Modelled Values (lab confirmation required)', 500, 230,
-    ['#38bdf8', '#22c55e', '#fbbf24', '#ef4444', '#f97316', '#06b6d4']);
-  doc.addImage(wqChart, 'PNG', margin, y, pageW - margin * 2, 60);
-  y += 65;
+  const _shownBars = _chartBars.filter((b): b is [string, number] => b[1] != null);
+  if (_shownBars.length) {
+    checkSpace(70);
+    const wqChart = renderBarChart(_shownBars.map((b) => b[0]), _shownBars.map((b) => b[1]), 'Water Quality -- Measured Values (laboratory or boreholes nearby)', 500, 230,
+      ['#38bdf8', '#22c55e', '#fbbf24', '#ef4444', '#f97316', '#06b6d4']);
+    doc.addImage(wqChart, 'PNG', margin, y, pageW - margin * 2, 60);
+    y += 65;
+  }
 
   // Precipitation chart
   try {
@@ -2853,7 +2875,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
   doc.setFontSize(8);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(100, 100, 140);
-  doc.text('Salinity: measured nearby where stated, otherwise a regional screening class (no figure). Fluoride: measured nearby or a regional estimate. The rest needs a laboratory test.', margin, y); y += 4;
+  doc.text('Salinity, fluoride, nitrate: measured nearby where stated, otherwise a regional screening class (no figure). The rest needs a laboratory test.', margin, y); y += 4;
   doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
   doc.text('NOTE: The Water Quality Score is a proprietary health-impact index based on WHO Guidelines for Drinking-water Quality (4th ed. incl. addenda; 2026 consolidated) exceedance penalties. It is NOT a WHO-endorsed standard.', margin, y); y += 3;
   doc.text('For bankable/regulatory reports, use binary potability assessment (Meets/Exceeds WHO limits per parameter) confirmed by ISO 17025 accredited laboratory.', margin, y); y += 3;
@@ -2885,7 +2907,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       // A modelled TDS shows its screening class, not a figure (2026-11-21).
       ['TDS (mg/L)', _meas('ec') ? fmt(result.waterQuality?.tds, 0) : (() => { const s = salinityEvidence({ waterQuality: result.waterQuality } as AnalysisResult); return s.risk ? `${s.risk} risk (screening class, not measured at this site)` : _lab[0]; })(), '< 1000', 'Palatability', _meas('ec') ? _st('ec', (result.waterQuality?.tds ?? 0) < 1000, true) : _lab[1], _src('ec', 'Regional screening, not measured at this site: lab test decides')],
       ['Hardness (mg/L)', _lab[0], '< 500', 'Aesthetic', _lab[1], 'Geochemical Model'],
-      ['Fluoride (mg/L)', fmt(result.waterQuality?.fluoride, 2), '< 1.5', 'HEALTH', _st('fluoride', (result.waterQuality?.fluoride ?? 0) < 1.5, false), _src('fluoride', 'Regional estimate (not measured here)')],
+      // Fluoride and nitrate follow the salinity rule (2026-11-21): a modelled value is a class, no figure.
+      ['Fluoride (mg/L)', _meas('fluoride') ? fmt(result.waterQuality?.fluoride, 2) : (() => { const e = chemFromWaterQuality('fluoride', result.waterQuality); return e.risk ? `${e.risk} risk (screening class, not measured at this site)` : _lab[0]; })(), '< 1.5', 'HEALTH', _meas('fluoride') ? _st('fluoride', (result.waterQuality?.fluoride ?? 0) <= 1.5, false) : _lab[1], _src('fluoride', 'Regional screening, not measured at this site: lab test decides')],
       ['Iron (mg/L)', _lab[0], '< 0.3', 'Aesthetic (no health guideline)', _lab[1], 'Soil Chemistry Model'],
       ['Arsenic (mg/L)', _lab[0], '< 0.01', 'HEALTH', _lab[1], 'Geogenic Risk Model'],
       ['Nitrate (mg/L)', _meas('nitrate') ? fmt(result.waterQuality?.nitrate, 1) : _lab[0], '< 50', 'HEALTH', _meas('nitrate') ? _st('nitrate', (result.waterQuality?.nitrate ?? 0) < 50, false) : _lab[1], _src('nitrate', 'Land-use model: lab test decides')],
@@ -2912,8 +2935,11 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     const sv = screeningValues(wq);
     const healthFails: string[] = [];
     const aestheticFlags: string[] = [];
-    if ((sv.fluoride ?? 0) >= 1.5) healthFails.push(`Fluoride ${fmt(sv.fluoride, 2)} mg/L > 1.5`);
-    if ((sv.nitrate ?? 0) >= 50) healthFails.push(`Nitrate ${fmt(sv.nitrate, 1)} mg/L > 50 (measured nearby)`);
+    // Only measured fluoride and nitrate count as exceedances (2026-11-21).
+    const _fX = chemFromWaterQuality('fluoride', wq), _nX = chemFromWaterQuality('nitrate', wq);
+    if (_fX.measured && (_fX.mgL ?? 0) > 1.5) healthFails.push(`Fluoride ${_fX.value} > 1.5 mg/L (${_fX.source})`);
+    if (_nX.measured && (_nX.mgL ?? 0) > 50) healthFails.push(`Nitrate ${_nX.value} > 50 mg/L (${_nX.source})`);
+    const _chemModelled = [_fX, _nX].filter((e) => !e.measured && (e.risk === 'HIGH' || e.risk === 'ELEVATED'));
     if ((sv.tds ?? 0) >= 1000) aestheticFlags.push(`TDS ${fmt(sv.tds, 0)} mg/L > 1000 (palatability; ${salinityFromWaterQuality(wq).source})`);
     checkSpace(20);
     if (healthFails.length > 0) {
@@ -2924,7 +2950,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 28, 28);
       doc.text('WHO SCREENING: LIKELY HEALTH-GUIDELINE EXCEEDANCE', margin + 3, y + 4);
       doc.setFontSize(7); doc.setFont('helvetica', 'normal');
-      doc.text(`Exceedances from nearby measurements or the regional fluoride estimate: ${healthFails.join('; ')}. Do not use for drinking until an accredited laboratory confirms actual chemistry; budget treatment accordingly.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
+      doc.text(`Exceedances in measurements at boreholes nearby: ${healthFails.join('; ')}. Do not use for drinking until an accredited laboratory confirms the chemistry of this borehole; budget treatment accordingly.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
       y += 18;
     } else if (aestheticFlags.length > 0) {
       doc.setFillColor(255, 247, 230);
@@ -2938,18 +2964,29 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       const _salty = Number(result.waterQuality?.tds ?? 0) >= 1000;
       doc.text(`${aestheticFlags.join('; ')}. WHO proposes no health-based guideline for these parameters. Laboratory confirmation required; ${_salty ? 'at this salinity the water is likely too salty to drink without reverse osmosis, which is budgeted' : 'simple treatment (e.g. aeration + filtration for iron) is budgeted'}.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
       y += 18;
-    } else if (salinityEvidence(result).basis === 'modelled' && ['HIGH', 'ELEVATED'].includes(String(salinityEvidence(result).risk))) {
-      // A modelled salinity risk is stated as a class with no figure (2026-11-21).
+    } else if ((salinityEvidence(result).basis === 'modelled' && ['HIGH', 'ELEVATED'].includes(String(salinityEvidence(result).risk))) || _chemModelled.length > 0) {
+      // A modelled salinity, fluoride or nitrate risk is stated as a class with
+      // no figure (2026-11-21); no treatment is priced from it.
       const _salM = salinityEvidence(result);
+      const _salOn = _salM.basis === 'modelled' && (_salM.risk === 'HIGH' || _salM.risk === 'ELEVATED');
+      const _heads = [
+        ...(_salOn ? [modelledSalinityLabel(_salM.risk as 'HIGH' | 'ELEVATED')] : []),
+        ..._chemModelled.map((e) => modelledChemLabel(e.name, e.risk as ChemRisk)),
+      ];
+      const _body = `${[...(_salOn ? [_salM.sentence] : []), ..._chemModelled.map((e) => e.sentence)].join(' ')} No treatment is priced until a test measures these values.`;
+      doc.setFontSize(7);
+      const _bodyLines = doc.splitTextToSize(_body, pageW - margin * 2 - 8);
+      const _boxH = 5 * _heads.length + _bodyLines.length * 3 + 6;
+      checkSpace(_boxH + 4);
       doc.setFillColor(255, 247, 230);
-      doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'F');
+      doc.roundedRect(margin, y - 2, pageW - margin * 2, _boxH, 2, 2, 'F');
       doc.setDrawColor(217, 119, 6);
-      doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'S');
+      doc.roundedRect(margin, y - 2, pageW - margin * 2, _boxH, 2, 2, 'S');
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
-      doc.text(modelledSalinityLabel(_salM.risk as 'HIGH' | 'ELEVATED').toUpperCase(), margin + 3, y + 4);
+      _heads.forEach((h, i) => doc.text(h.toUpperCase(), margin + 3, y + 4 + i * 5));
       doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 80, 20);
-      doc.text(`${_salM.sentence} Desalination is not priced until a test measures the salinity.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
-      y += 18;
+      doc.text(_bodyLines, margin + 3, y + 4 + _heads.length * 5);
+      y += _boxH + 4;
     } else {
       doc.setFillColor(240, 253, 244);
       doc.roundedRect(margin, y - 2, pageW - margin * 2, 10, 2, 2, 'F');
@@ -2961,19 +2998,18 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     }
 
     // Audit fix #15: Fluoride regional adjustment documentation
-    if ((wq as any)?.regionalProvince && (wq?.fluoride ?? 0) > 1.0) {
+    if ((wq as any)?.regionalProvince && (wq?.fluoride ?? 0) > 1.0 && !_fX.measured) {
       const rwCite = (wq as any)?.regionalCitations ?? [];
-      const fRaw = (wq as any)?.fluorideRaw ?? null;
-      const fAdj = wq?.fluoride ?? 0;
       checkSpace(22);
       doc.setFillColor(255, 249, 235);
       doc.roundedRect(margin, y - 2, pageW - margin * 2, 18, 2, 2, 'F');
       doc.setDrawColor(245, 158, 11);
       doc.roundedRect(margin, y - 2, pageW - margin * 2, 18, 2, 2, 'S');
       doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 100, 0);
-      doc.text(`\u26A0 FLUORIDE REGIONAL ADJUSTMENT: ${fRaw !== null ? fRaw.toFixed(2) + ' \u2192 ' + fAdj.toFixed(2) : fAdj.toFixed(2)} mg/L (${(wq as any).regionalProvince}).`, margin + 3, y + 3);
+      // 2026-11-21: the regional class only, never the modelled figure.
+      doc.text(`! FLUORIDE REGIONAL ADJUSTMENT (${(wq as any).regionalProvince}): ${modelledChemLabel('Fluoride', _fX.risk ?? 'LOW')}.`, margin + 3, y + 3);
       doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(120, 80, 0);
-      doc.text(`${rwCite.length > 0 ? 'Sources: ' + rwCite.join('; ') + '. ' : ''}This is a modelled estimate based on regional geochemical patterns -- NOT a measured value.`, margin + 3, y + 8, { maxWidth: pageW - margin * 2 - 8 });
+      doc.text(`${rwCite.length > 0 ? 'Sources: ' + rwCite.join('; ') + '. ' : ''}A screening class from regional geochemical patterns -- NOT a measured value.`, margin + 3, y + 8, { maxWidth: pageW - margin * 2 - 8 });
       doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 28, 28);
       doc.text('REQUIRED: Field lab water analysis (ion chromatography or SPADNS method) to validate fluoride concentration before treatment design.', margin + 3, y + 13);
       y += 22;
@@ -3156,7 +3192,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
           ? `Right-sized household option -- ${result.waterQuality?.treatmentRequired?.join(', ') || 'iron removal'}: simple aeration + sand filtration (~KSh ${Math.round(wqTreatmentCost * 129 / 1000) * 1000 / 1000}k). Lab analysis confirms the need before purchase.`
           : `Conservative upper bound -- ${result.waterQuality?.treatmentRequired?.join(', ') || 'Filtration system'}`]] : []),
         ...(computeCanonicalEconomics(result).salinityUnpriced ? [['Desalination (RO)', 'not priced', 'Salinity has not been measured at this site (regional screening class only); a laboratory test of the first water decides whether treatment is needed and its size']] : []),
-        ...(defluoridationCost > 0 ? [['Defluoridation Unit', `$${defluoridationCost.toLocaleString()}`, `Fluoride ${fluorideVal.toFixed(1)} mg/L > 1.5 WHO limit -- bone-char/activated alumina (+$${annualDefluoridation}/yr media)`]] : []),
+        ...(defluoridationCost > 0 ? [['Defluoridation Unit', `$${defluoridationCost.toLocaleString()}`, `Measured fluoride ${fluorideVal.toFixed(1)} mg/L (${chemEvidence(result, 'fluoride').source.replace(/^Measured: /, '')}) > 1.5 WHO limit -- bone-char/activated alumina (+$${annualDefluoridation}/yr media)`]] : []),
+        ...(computeCanonicalEconomics(result).fluorideUnpriced ? [['Defluoridation', 'not priced', 'Fluoride has not been measured at this site (regional screening class only); a laboratory test of the first water decides']] : []),
         [`Contingency (${Math.round(contingencyRate * 100)}%)`, `$${contingency.toLocaleString()}`, isHardRock ? 'Hard rock (gneiss/granite) -- DTH hammer, bit changes, foam drilling complications' : 'Standard engineering contingency for unforeseen conditions'],
         ['', '', ''],
         ['TOTAL PROJECT COST', `$${totalCost.toLocaleString()} (~${kes(totalCost)})`, `Subtotal $${subtotalCost.toLocaleString()} + ${Math.round(contingencyRate * 100)}% contingency. KSh at ~${kesPerUsd}/USD. Priced at the EmersonEIMS tender rates, including approvals, completion works, pump and power; a drilling-and-casing-only quote is much lower`],
@@ -5889,9 +5926,10 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       const check = (label: string, s3: number | undefined, s32: any, whoLimit: number) => {
         if (typeof s3 !== 'number' || typeof s32 !== 'number') return;
         const s3Exceeds = s3 > whoLimit; const s32Exceeds = s32 > whoLimit;
+        // Both are model values: the disagreement is stated in classes, no figures (2026-11-21).
         if (s3Exceeds !== s32Exceeds) {
           conflicts.push(
-            `${label}: Section 3 (regional-adjusted) = ${s3} mg/L (${s3Exceeds ? 'FAILS' : 'passes'} WHO ${whoLimit}) but this model = ${s32} mg/L (${s32Exceeds ? 'fails' : 'PASSES'}).`
+            `${label}: Section 3 (regional-adjusted) screens ${s3Exceeds ? 'ABOVE' : 'below'} the WHO guideline but this model screens ${s32Exceeds ? 'above' : 'BELOW'} it. Neither is a measurement.`
           );
         }
       };
@@ -5952,9 +5990,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         startY: y, margin: { left: margin, right: margin },
         head: [['Parameter', 'Predicted', 'Unit', 'WHO Limit', 'Exceeds?', 'Health Risk']],
         body: hc.predictions.map((p: any) => [
-          // A modelled salinity carries its screening class, not a figure (2026-11-21).
-          p.parameter, p.displayValue ?? fmt(p.predictedValue, 3), p.displayValue ? '' : p.unit, fmt(p.whoGuideline, 3),
-          p.exceedsGuideline ? 'YES' : 'No', (p.healthRisk || '').toUpperCase(),
+          // A modelled value carries its screening class, not a figure or a threshold (2026-11-21).
+          p.parameter, p.displayValue ?? fmt(p.predictedValue, 3), p.displayValue ? '' : p.unit, p.displayValue ? '' : fmt(p.whoGuideline, 3),
+          p.displayValue ? 'class only' : p.exceedsGuideline ? 'YES' : 'No', (p.healthRisk || '').toUpperCase(),
         ]),
         headStyles: { fillColor: [6, 150, 180], textColor: 255, fontStyle: 'bold', fontSize: 7 },
         bodyStyles: { fontSize: 7 },
@@ -6182,7 +6220,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
   // Treatment
   if (!result.waterQuality?.isPotable) {
     const treatments = result.waterQuality?.treatmentRequired || [];
-    recs.push(`Install water treatment system: ${treatments.join('; ') || 'filtration required'}.`);
+    recs.push(`Water treatment: ${treatments.join('; ') || 'a laboratory test of the first water decides what is needed'}.`);
   }
   // Field validation
   recs.push('Conduct geophysical survey (Electrical Resistivity Tomography) to validate subsurface model before drilling.');
@@ -10795,6 +10833,47 @@ export function redactModelledSalinity<T>(data: T): T {
   return red;
 }
 
+/**
+ * The JSON download, general version (2026-11-21): every MODELLED chemistry
+ * figure is withheld, like everywhere else. Salinity as above; fluoride and
+ * nitrate unless measured (median of 3+ boreholes nearby); the soil-model
+ * values (iron, arsenic, hardness, turbidity, manganese, pH) inside the water
+ * blocks always. Laboratory and nearby-borehole data are kept, and the risk
+ * classes are added. Pure: the input is not changed.
+ */
+export function redactModelledChemistry<T>(data: T): T {
+  const d: any = data;
+  if (d == null || typeof d !== 'object') return data;
+  const wq = d.waterQuality;
+  const base: any = redactModelledSalinity(data);
+  const modelled = (['fluoride', 'nitrate'] as const).map((p) => chemFromWaterQuality(p, wq)).filter((e) => e.basis === 'modelled');
+  const chemKeys = new Set(modelled.flatMap((e) => [e.param, `${e.param}_mgL`, `${e.param}Raw`]));
+  const KEEP = new Set(['fieldData', 'calibrationResult', 'measuredNearby', 'nearbyWells', 'labWaterAnalysis', 'calibratedWaterQuality', 'openData', 'fluorideAreaSurvey']);
+  const WATER_BLOCKS = new Set(['waterQuality', 'waterChemistry', 'hydrochemPrediction']);
+  const SOIL_KEY = /^(iron|iron_mgL|arsenic|arsenic_ugL|hardness|hardness_mgL_CaCO3|turbidity|manganese|manganese_mgL|pH)$/;
+  const walk = (v: any, depth: number, inWater: boolean): any => {
+    if (depth > 40 || v == null || typeof v !== 'object') return v;
+    if (Array.isArray(v)) return v.map((x) => walk(x, depth + 1, inWater));
+    const out: any = {};
+    for (const [k, x] of Object.entries(v)) {
+      if (KEEP.has(k)) { out[k] = x; continue; }
+      const num = typeof x === 'number';
+      out[k] = num && (chemKeys.has(k) || (inWater && SOIL_KEY.test(k))) ? null : walk(x, depth + 1, inWater || WATER_BLOCKS.has(k));
+    }
+    // Hydrochemistry rows: a row shown as a class carries no figure.
+    if (typeof out.displayValue === 'string' && typeof out.predictedValue === 'number') out.predictedValue = null;
+    if (typeof out.predictedDisplay === 'string' && typeof out.predicted === 'number') { out.predicted = null; out.error_pct = null; }
+    return out;
+  };
+  const red = walk(base, 0, false);
+  red.chemistryScreening = {
+    basis: 'regional screening, not measured at this site',
+    ...Object.fromEntries(modelled.map((e) => [e.param, { risk: e.risk, statement: e.sentence }])),
+    note: 'Modelled chemistry figures (fluoride and nitrate unless measured nearby; iron, arsenic, hardness, turbidity, manganese and pH from soil models) are withheld from this export; only a laboratory test or measured boreholes give a concentration.',
+  };
+  return red;
+}
+
 export function generateJSONReport(result: AnalysisResult): void {
   // --- 10-STEP AUDIT GATE ---
   const audit = auditReport(result);
@@ -10804,7 +10883,7 @@ export function generateJSONReport(result: AnalysisResult): void {
   // --- VERIFICATION GATE ---
   enforceVerificationGate(result);
 
-  const exportData = redactModelledSalinity({
+  const exportData = redactModelledChemistry({
     report: {
       title: 'EMERSON EIMS AquaScan Pro - Borehole Pre-Screen',
       generated: new Date().toISOString(),
@@ -10917,6 +10996,9 @@ export async function generateComparisonReport(sites: Array<{ name: string; resu
     ['Treatment Required', ...scored.map(s => s.result.waterQuality?.isPotable ? 'NO' : 'YES')],
     // Salinity: the measured figure with its source, else the screening class only (2026-11-21).
     ['Salinity', ...scored.map(s => { const x = salinityEvidence(s.result); return x.measured ? `${x.value}. ${x.source}` : x.risk ? `${x.risk} risk (not measured at this site)` : 'lab test needed'; })],
+    // Fluoride and nitrate: the same rule (2026-11-21).
+    ['Fluoride', ...scored.map(s => chemCell(chemEvidence(s.result, 'fluoride')))],
+    ['Nitrate', ...scored.map(s => chemCell(chemEvidence(s.result, 'nitrate')))],
     ['Assessment Type', ...scored.map(() => 'Desktop pre-screen')],
   ];
 
