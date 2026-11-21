@@ -37,7 +37,7 @@ describe('form mapping', () => {
     expect(i.finance.tariffKesPerKwh).toEqual({ value: 25, source: 'customer bill (test)' });
     expect(i.finance.selfConsumedFraction).toEqual({ value: 0.8, source: 'load logger (test)' });
     expect(i.bom[1].rate).toEqual({ valueKes: 320000, source: 'test supplier quote Q-1', date: '2026-11-01' });
-    expect(i.approval).toBeUndefined();
+    expect(i).not.toHaveProperty('approval');
     expect(i.battery).toBeUndefined();
   });
   it('an empty form lists what is missing and builds nothing; no value is defaulted', () => {
@@ -59,9 +59,11 @@ describe('form mapping', () => {
     expect(e.module!.status).toBe('unverified');
     expect(e.errors.join(' ')).toMatch(/different person/);
   });
-  it('a partly filled approval must be complete', () => {
-    const r = formToProposalInput({ ...WORKED_EXAMPLE_FORM, 'a.engineer': 'TEST ENGINEER' }, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_PRODUCTION, null);
-    expect(r.errors.join(' ')).toMatch(/registration number is required/);
+  it('typed approval fields are ignored: no approval is ever built from the form', () => {
+    const r = formToProposalInput({ ...WORKED_EXAMPLE_FORM, 'a.engineer': 'TEST ENGINEER', 'a.registration': 'TEST-REG', 'a.date': '2026-11-20' }, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_PRODUCTION, null);
+    expect(r.errors).toEqual([]);
+    expect(r.input).not.toHaveProperty('approval');
+    expect(r.input).not.toHaveProperty('verifiedApproval');
   });
 });
 
@@ -116,6 +118,7 @@ describe('request shape and file names', () => {
     expect(checkProposalRequest({ input: {}, format: 'csv' })).toEqual({ error: 'format must be json, xlsx or pdf' });
     const i = formToProposalInput(WORKED_EXAMPLE_FORM, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_PRODUCTION, null).input;
     expect(checkProposalRequest({ input: i })).toMatchObject({ format: 'json' });
+    expect(checkProposalRequest({ input: { ...i, approval: { engineer: 'TEST ENGINEER', registration: 'TEST-REG', date: '2026-11-20' } } })).toEqual({ error: expect.stringMatching(/client-supplied approval is not accepted/) });
   });
   it('file names are sanitised', () => {
     expect(proposalFileName('ABC/12 "x"', 'pdf')).toBe('solar-proposal-ABC_12_x.pdf');

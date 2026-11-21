@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/solar/proposal/route';
 import { formToProposalInput, WORKED_EXAMPLE_FORM, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_PRODUCTION } from '@/lib/solar/design/proposalForm';
 import type { ProposalInput } from '@/lib/solar/design/proposal';
+import { APPROVAL_UNAVAILABLE_REASON, CLIENT_APPROVAL_REJECTED, signApproval, proposalRevisionHash } from '@/lib/solar/design/proposalApproval';
 
 // TEST values only (the same as tests/regression/solar-proposal.test.ts).
 const base = (): ProposalInput => {
@@ -21,11 +22,33 @@ describe('POST /api/solar/proposal', () => {
     expect(p.status).toBe('DRAFT');
     expect(p.system.dcKwp).toBe(17.6);
     expect(p.costing.capexKes).toBe(800000);
-    expect(p.statusReasons.join(' ')).toMatch(/approval not yet recorded/);
+    expect(p.statusReasons).toContain(APPROVAL_UNAVAILABLE_REASON);
+    expect(p.revisionHash).toBe(proposalRevisionHash(base()));
+    expect(p.approval).toBeNull();
   });
-  it('json: FOR ISSUE once an approval is recorded', async () => {
-    const r = await call({ input: { ...base(), approval: { engineer: 'TEST ENGINEER', registration: 'TEST-REG', date: '2026-11-20' } }, format: 'json' });
-    expect((await r.json()).status).toBe('FOR ISSUE');
+  it('rejects a client-supplied typed approval with 400 (it can never raise the status)', async () => {
+    const r = await call({ input: { ...base(), approval: { engineer: 'TEST ENGINEER', registration: 'TEST-REG', date: '2026-11-20' } }, format: 'json' }, '10.0.0.2');
+    expect(r.status).toBe(400);
+    expect((await r.json()).error).toBe(CLIENT_APPROVAL_REJECTED);
+  });
+  it('rejects a client-supplied verifiedApproval with 400, even one correctly signed with a TEST key', async () => {
+    const i = base();
+    const verifiedApproval = signApproval({ reviewerId: 'test-reviewer-1', reviewerName: 'TEST REVIEWER', registration: 'TEST-REG-0001', approvedAt: '2026-11-21T09:00:00Z', revisionHash: proposalRevisionHash(i) }, 'TEST-ONLY-signing-key-not-a-secret-0123456789');
+    for (const format of ['json', 'pdf', 'xlsx']) {
+      const r = await call({ input: { ...i, verifiedApproval }, format }, '10.0.0.3');
+      expect(r.status).toBe(400);
+      expect((await r.json()).error).toMatch(/client-supplied approval is not accepted/);
+    }
+    const r = await call({ input: { ...i, approval: null }, format: 'json' }, '10.0.0.3');
+    expect(r.status).toBe(400);
+  });
+  it('even with a signing key in the environment there is no registry, so the route stays DRAFT', async () => {
+    process.env.PROPOSAL_APPROVAL_SIGNING_KEY = 'TEST-ONLY-signing-key-not-a-secret-0123456789';
+    try {
+      const p = await (await call({ input: base(), format: 'json' }, '10.0.0.4')).json();
+      expect(p.status).toBe('DRAFT');
+      expect(p.statusReasons).toContain(APPROVAL_UNAVAILABLE_REASON);
+    } finally { delete process.env.PROPOSAL_APPROVAL_SIGNING_KEY; }
   });
   it('xlsx: a zip (PK) workbook with an attachment name', async () => {
     const r = await call({ input: base(), format: 'xlsx' });

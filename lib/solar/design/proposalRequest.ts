@@ -4,6 +4,7 @@
  * stay in buildProposal (which throws with its own message).
  */
 import type { ProposalInput } from './proposal';
+import { CLIENT_APPROVAL_REJECTED } from './proposalApproval';
 
 export type ProposalFormat = 'json' | 'xlsx' | 'pdf';
 
@@ -46,7 +47,8 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
     if (s === undefined && (k === 'exportTariffKesPerKwh' || k === 'selfConsumedFraction')) continue;
     if (!isObj(s) || !isNum(s.value) || !isStr(s.source)) e.push(`finance.${k} must be { value, source }`);
   }
-  if (i.approval !== undefined && (!isObj(i.approval) || !isStr(i.approval.engineer) || !isStr(i.approval.registration) || !isStr(i.approval.date))) e.push('approval must be { engineer, registration, date }');
+  // A client can never supply an approval (typed or "verified"): rejected outright.
+  if ('approval' in i || 'verifiedApproval' in i) return { error: CLIENT_APPROVAL_REJECTED };
   if (e.length) return { error: `Invalid proposal input: ${e.join('; ')}` };
   return { input: i as unknown as ProposalInput, format };
 }

@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { limiter } from '@/lib/rate-limiter';
 import { buildProposal } from '@/lib/solar/design/proposal';
 import { checkProposalRequest, proposalFileName } from '@/lib/solar/design/proposalRequest';
+import { approvalVerifierFromEnvironment, type AuthorisedReviewer } from '@/lib/solar/design/proposalApproval';
+
+/** PENDING (owner decision on accounts): no authorised-reviewer registry exists, so none is loaded. */
+const AUTHORISED_REVIEWER_REGISTRY: readonly AuthorisedReviewer[] | null = null;
 
 /**
  * POST /api/solar/proposal  { input: ProposalInput, format: 'json' | 'xlsx' | 'pdf' }
  * Builds the design-to-proposal (lib/solar/design/proposal.ts) and returns it
  * as JSON, an Excel workbook or a PDF (lib/solar/design/proposalExport.ts).
  * Bad input → 400 with the engine's own message. Never cached.
+ * Any `approval` or `verifiedApproval` in the input → 400: approvals are never
+ * taken from the client, and every proposal from this route is DRAFT (or
+ * REFUSED) until authenticated, authorised reviewers exist.
  */
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -28,8 +35,12 @@ export async function POST(req: NextRequest) {
   const parsed = checkProposalRequest(body);
   if ('error' in parsed) return fail(parsed.error, 400);
 
+  // Approval lock: a client-supplied approval was rejected above (400). There
+  // is no authenticated reviewer session and no reviewer registry yet, so the
+  // verifier is null and the engine fails closed: never FOR ISSUE from here.
+  const verifier = approvalVerifierFromEnvironment(process.env, AUTHORISED_REVIEWER_REGISTRY);
   let proposal;
-  try { proposal = buildProposal(parsed.input); }
+  try { proposal = buildProposal(parsed.input, verifier); }
   catch (e) { return fail(e instanceof Error ? e.message : 'Invalid proposal input', 400); }
 
   if (parsed.format === 'json') return NextResponse.json(proposal, { headers: NO_STORE });

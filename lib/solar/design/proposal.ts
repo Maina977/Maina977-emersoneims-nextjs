@@ -13,8 +13,12 @@
  * - Every price needs a dated source. With any item unpriced, there is no
  *   total and no financial result (status DRAFT, "rate required").
  * - Unverified datasheets keep the proposal at DRAFT.
- * - A proposal is FOR ISSUE only once a named engineer's approval is recorded.
- *   The engine never approves on its own.
+ * - A proposal is FOR ISSUE only with a VerifiedApproval that the server's
+ *   verifier accepts: valid HMAC signature, reviewer in the authorised-reviewer
+ *   registry, and approved revisionHash equal to this input's revisionHash
+ *   (proposalApproval.ts). A typed name never counts. Without a verifier (no
+ *   accounts or registry yet) every proposal stays DRAFT. The engine never
+ *   approves on its own.
  * - Financial inputs (tariff, escalation, discount rate, degradation, O&M) are
  *   the designer's, each with a source. Nothing is assumed.
  * - Uncertainty disclosures are always included.
@@ -23,8 +27,9 @@ import { validateStrings, checkCable, checkBattery, type Module, type Inverter, 
 import type { LibraryEntry } from './datasheet';
 import type { HourlyResult } from './hourly';
 import type { HybridResult } from './hybrid';
+import { proposalRevisionHash, verifyApproval, TYPED_APPROVAL_IGNORED_REASON, type ApprovalVerifier, type VerifiedApproval } from './proposalApproval';
 
-export const PROPOSAL_ENGINE_VERSION = 'solar-proposal 1.0.0 (2026-11-20)';
+export const PROPOSAL_ENGINE_VERSION = 'solar-proposal 1.1.0 (2026-11-21, approval lock)';
 
 export interface Sourced { value: number; source: string }
 export interface PricedLine { item: string; model: string; quantity: number; unit: string; rate: { valueKes: number; source: string; date: string } | null }
@@ -47,12 +52,17 @@ export interface ProposalInput {
     omKesPerYear: Sourced;
     lifetimeYears: number;
   };
-  approval?: { engineer: string; registration: string; date: string };
+  /** Server-produced only (see proposalApproval.ts); never taken from a client request. */
+  verifiedApproval?: VerifiedApproval;
 }
 
 export interface CashflowYear { year: number; energyKwh: number; savingsKes: number; omKes: number; netKes: number; cumulativeKes: number }
 export interface Proposal {
   reference: string; status: 'REFUSED' | 'DRAFT' | 'FOR ISSUE'; statusReasons: string[];
+  /** SHA-256 of the canonical input (approval excluded): the revision an approval is locked to. */
+  revisionHash: string;
+  /** Set only when status is FOR ISSUE through a verified approval. */
+  approval: null | { reviewerId: string; reviewerName: string; registration: string; approvedAt: string };
   client: ProposalInput['client'];
   system: { dcKwp: number; acKw: number; modules: number; strings: number; inverterCount: number; batteryKwh: number | null };
   checks: Check[];
@@ -97,7 +107,7 @@ const need = (name: string, s: Sourced | undefined, min: number, max: number) =>
   return s.value;
 };
 
-export function buildProposal(i: ProposalInput): Proposal {
+export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | null = null): Proposal {
   const reasons: string[] = [];
   const f = i.finance;
   const tariff = need('Tariff (KES/kWh)', f.tariffKesPerKwh, 1, 200);
@@ -176,14 +186,19 @@ export function buildProposal(i: ProposalInput): Proposal {
   }
 
   // 5. Status
+  const revisionHash = proposalRevisionHash(i);
+  if ((i as { approval?: unknown }).approval !== undefined) reasons.push(TYPED_APPROVAL_IGNORED_REASON);
+  const approvalCheck = verifyApproval(i.verifiedApproval, revisionHash, verifier);
   let status: Proposal['status'] = 'FOR ISSUE';
   if (refused.length || str.errors.length) status = 'REFUSED';
-  else if (reasons.length || !i.approval) status = 'DRAFT';
-  if (status !== 'REFUSED' && !i.approval) reasons.push('Engineer review and approval not yet recorded');
-  if (i.approval && (!i.approval.engineer.trim() || !i.approval.registration.trim() || Number.isNaN(Date.parse(i.approval.date)))) throw new Error('Approval needs the engineer, registration number and date');
+  else if (reasons.length || !approvalCheck.ok) status = 'DRAFT';
+  if (status !== 'REFUSED' && !approvalCheck.ok) reasons.push(approvalCheck.reason);
+  const approval: Proposal['approval'] = status === 'FOR ISSUE' && approvalCheck.ok
+    ? { reviewerId: approvalCheck.reviewer.reviewerId, reviewerName: approvalCheck.reviewer.name, registration: approvalCheck.reviewer.registration, approvedAt: approvalCheck.approval.approvedAt }
+    : null;
 
   return {
-    reference: i.reference, status, statusReasons: reasons, client: i.client,
+    reference: i.reference, status, statusReasons: reasons, revisionHash, approval, client: i.client,
     system: { dcKwp, acKw, modules, strings, inverterCount: i.inverterCount, batteryKwh: i.battery ? i.battery.entry.data.nominalKwh * i.battery.units : null },
     checks, schedule, costing: { lines, capexKes: capex, unpriced },
     energy: { year1Kwh: y1, usefulYear1Kwh: useful === null ? null : Math.round(useful), exportYear1Kwh: Math.round(exported), clippedKwh: i.production.clippedKwh, specificYield: i.production.specificYieldKwhPerKwp, performanceRatio: i.production.performanceRatio, source: i.production.assumptions[0] },

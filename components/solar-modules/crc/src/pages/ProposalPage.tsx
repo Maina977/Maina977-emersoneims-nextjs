@@ -3,6 +3,7 @@ import { simulateHourly, type HourlyResult } from '@/lib/solar/design/hourly';
 import { simulateHybrid, type HybridResult } from '@/lib/solar/design/hybrid';
 import type { Proposal } from '@/lib/solar/design/proposal';
 import type { Check } from '@/lib/solar/design/validate';
+import { proposalRevisionHash, APPROVAL_LOCKED_NOTICE } from '@/lib/solar/design/proposalApproval';
 import {
   buildHourlyInput, buildHybridInput, formToProposalInput, hybridRequested, lastFullYear, parseLoadCsv,
   EMPTY_BOM_ROW, LOSSES_SOURCE, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_FORM, WORKED_EXAMPLE_PRODUCTION,
@@ -15,6 +16,9 @@ import {
  * hybrid balance → priced bill of materials → sourced finance inputs → the
  * proposal from /api/solar/proposal (engine: lib/solar/design/proposal.ts),
  * with Excel and PDF downloads. Every field starts empty; nothing is assumed.
+ * There are no approval inputs: approval needs an authenticated, authorised
+ * reviewer (lib/solar/design/proposalApproval.ts), which does not exist yet,
+ * so every proposal is DRAFT. The revision hash of the inputs is shown.
  */
 
 type FieldKind = 'text' | 'date' | 'check' | 'yesno';
@@ -48,7 +52,6 @@ const FINANCE: Group = { id: 'finance', title: 'Finance (each value with its sou
   ...sourcedRow('om', 'O&M', 'KES/yr'), ...sourcedRow('selfConsumed', 'Self-consumed fraction (0–1; used when there is no hybrid balance)', ''),
   ['f.lifetime', 'Lifetime', 'years'],
 ] };
-const APPROVAL: Group = { id: 'approval', title: 'Engineer approval (optional)', note: 'Record only an approval that a named, registered engineer has actually given.', items: [['a.engineer', 'Engineer', ''], ['a.registration', 'Registration number', ''], ['a.date', 'Date', '', 'date']] };
 
 const colour: Record<Check['verdict'], string> = { PASS: '#22c55e', WARN: '#f59e0b', REFUSE: '#ef4444' };
 const statusColour: Record<Proposal['status'], string> = { REFUSED: '#ef4444', DRAFT: '#f59e0b', 'FOR ISSUE': '#22c55e' };
@@ -128,6 +131,7 @@ export default function ProposalPage() {
 
   const mapped = useMemo(() => formToProposalInput(f, bom, production.result, hybrid.result), [f, bom, production.result, hybrid.result]);
   const inputKey = mapped.input ? JSON.stringify(mapped.input) : '';
+  const revision = useMemo(() => (mapped.input ? proposalRevisionHash(mapped.input) : ''), [mapped.input]);
   const stale = proposal !== null && builtFor !== inputKey;
 
   const fetchWeather = async () => {
@@ -187,7 +191,7 @@ export default function ProposalPage() {
     <div style={{ padding: 16, color: '#e2e8f0', maxWidth: 1200, margin: '0 auto' }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Proposal</h1>
       <p style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12 }}>
-        From datasheets to a technical and commercial proposal: design checks, hourly production on a past weather year, optional hybrid balance, priced bill of materials and the customer&apos;s own tariff. Any REFUSE blocks the proposal; an unpriced item leaves it without a total; it is FOR ISSUE only once a named engineer&apos;s approval is recorded.
+        From datasheets to a technical and commercial proposal: design checks, hourly production on a past weather year, optional hybrid balance, priced bill of materials and the customer&apos;s own tariff. Any REFUSE blocks the proposal; an unpriced item leaves it without a total; approval needs an authenticated, authorised reviewer, which is not available yet, so every proposal is DRAFT.
       </p>
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
         <button type="button" onClick={loadExample} style={btn}>Load worked example (test values, not a recommendation)</button>
@@ -267,7 +271,12 @@ export default function ProposalPage() {
         </section>
 
         <Fieldset g={FINANCE} f={f} set={set} />
-        <Fieldset g={APPROVAL} f={f} set={set} />
+        <section style={{ ...box, borderColor: '#f59e0b' }} aria-label="Engineer approval">
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#fbbf24', margin: '0 0 8px' }}>Engineer approval</h2>
+          <p role="note" style={{ fontSize: 13, color: '#fde68a', margin: 0 }}>{APPROVAL_LOCKED_NOTICE}</p>
+          <p style={{ fontSize: 12, color: '#94a3b8', margin: '6px 0 0' }}>An approval will be locked to this revision of the inputs; any later edit returns the proposal to DRAFT.</p>
+          <p style={{ fontSize: 12, color: '#cbd5e1', margin: '6px 0 0', wordBreak: 'break-all' }}>Revision (SHA-256 of the inputs): {revision ? <code>{revision}</code> : 'available once the inputs are complete'}</p>
+        </section>
 
         <section style={box} aria-live="polite" aria-label="Proposal">
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
@@ -289,12 +298,16 @@ export default function ProposalPage() {
 
 function ProposalView({ p, stale }: { p: Proposal; stale: boolean }) {
   const h2: React.CSSProperties = { fontSize: 15, fontWeight: 600, color: '#fbbf24', margin: '16px 0 6px' };
+  // FOR ISSUE is shown only with a verified approval.
+  const shown: Proposal['status'] = p.status === 'FOR ISSUE' && !p.approval ? 'DRAFT' : p.status;
   return (
     <div>
       {stale ? <p style={{ fontSize: 12, color: '#fbbf24' }}>The inputs have changed since this proposal was built. Build it again before using it.</p> : null}
-      <div style={{ border: `2px solid ${statusColour[p.status]}`, borderRadius: 10, padding: 12 }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: statusColour[p.status] }}>{p.status === 'FOR ISSUE' ? 'FOR ISSUE' : `${p.status}: NOT FOR ISSUE`} · {p.reference}</div>
+      <div style={{ border: `2px solid ${statusColour[shown]}`, borderRadius: 10, padding: 12 }}>
+        <div style={{ fontSize: 18, fontWeight: 700, color: statusColour[shown] }}>{shown === 'FOR ISSUE' ? 'FOR ISSUE' : `${shown}: NOT FOR ISSUE`} · {p.reference}</div>
         <div style={{ fontSize: 12, color: '#cbd5e1' }}>{p.client.name} · {p.client.siteAddress} ({p.client.lat}, {p.client.lon}) · {p.system.dcKwp} kWp DC / {p.system.acKw} kW AC · {p.system.modules} modules in {p.system.strings} strings{p.system.batteryKwh !== null ? ` · battery ${p.system.batteryKwh} kWh nominal` : ''}</div>
+        <div style={{ fontSize: 12, color: '#cbd5e1', wordBreak: 'break-all' }}>Revision (SHA-256 of the inputs): <code>{p.revisionHash}</code></div>
+        <div style={{ fontSize: 12, color: '#fde68a' }}>{p.approval ? `Approved by ${p.approval.reviewerName} (${p.approval.registration}) on ${p.approval.approvedAt} for this revision` : APPROVAL_LOCKED_NOTICE}</div>
         {p.statusReasons.length ? <ul style={{ fontSize: 12, paddingLeft: 16, margin: '6px 0 0' }}>{p.statusReasons.map((r) => <li key={r}>{r}</li>)}</ul> : null}
       </div>
 

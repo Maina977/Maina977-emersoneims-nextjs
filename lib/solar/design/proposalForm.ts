@@ -205,11 +205,8 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   }
   const bom = buildBom(bomRows, errors);
 
-  let approval: ProposalInput['approval'];
-  if (anyFilled(f, 'a.')) {
-    for (const [k, l] of [['a.engineer', 'Engineer name'], ['a.registration', 'Engineer registration number'], ['a.date', 'Approval date']] as const) if (blank(f, k)) errors.push(`Approval: ${l} is required (or clear the approval section)`);
-    approval = { engineer: str(f, 'a.engineer'), registration: str(f, 'a.registration'), date: str(f, 'a.date') };
-  }
+  // No approval is ever built from the form: a typed name cannot approve
+  // (proposalApproval.ts). Any old 'a.*' fields are ignored.
 
   if (errors.length || !module || !inverter || !production || !tariff || !esc || !disc || !deg || !om) return { input: null, errors, warnings };
   const input: ProposalInput = {
@@ -229,7 +226,6 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
       tariffKesPerKwh: tariff, ...(exportTariff ? { exportTariffKesPerKwh: exportTariff } : {}), ...(selfConsumed ? { selfConsumedFraction: selfConsumed } : {}),
       tariffEscalationPct: esc, discountRatePct: disc, degradationPctPerYear: deg, omKesPerYear: om, lifetimeYears: num(f, 'f.lifetime'),
     },
-    ...(approval ? { approval } : {}),
   };
   return { input, errors, warnings };
 }
