@@ -25,6 +25,8 @@ export const NO_CRANK: FaultFamily = {
     { id: 'barOver', kind: 'choice', text: 'With the set isolated, does the engine turn over by hand (barring tool)?', options: [{ value: 'turns', label: 'Turns freely' }, { value: 'stiff', label: 'Turns but stiff' }, { value: 'locked', label: 'Will not turn' }, { value: 'not-tried', label: 'Not tried' }], help: 'Only with the set switched OFF, isolated and locked off.' },
     { id: 'restVoltage', kind: 'number', text: 'Battery voltage at rest (engine off, 1 h after charging)', unit: 'V', min: 0, max: 32 },
     { id: 'crankVoltage', kind: 'number', text: 'Battery voltage while cranking', unit: 'V', min: 0, max: 32 },
+    // No built-in "holds its voltage" figure: the minimum comes from the starter / engine manual for this set.
+    { id: 'oemMinCrankVoltage', kind: 'number', text: 'OEM minimum battery voltage while cranking (starter or engine manual)', unit: 'V', min: 5, max: 30 },
     { id: 'starterSound', kind: 'choice', text: 'What does the starter do?', options: [{ value: 'nothing', label: 'Nothing' }, { value: 'click', label: 'Clicks only' }, { value: 'slow', label: 'Turns slowly' }, { value: 'normal', label: 'Turns at normal speed' }] },
     { id: 'eStop', kind: 'choice', text: 'Emergency stop', options: [{ value: 'released', label: 'Released' }, { value: 'pressed', label: 'Pressed' }, { value: 'unknown', label: 'Not checked' }] },
     { id: 'controllerAlarm', kind: 'choice', text: 'Does the controller show an alarm or refuse the start?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
@@ -41,7 +43,7 @@ export const NO_CRANK: FaultFamily = {
         { when: sys({ q: 'restVoltage', op: 'lt', value: 12.4 }, { q: 'restVoltage', op: 'lt', value: 24.8 }), effect: 'strongly', because: 'Rest voltage below about 75 % charge (BCI)' },
         { when: sys({ q: 'crankVoltage', op: 'lt', value: 9.6 }, { q: 'crankVoltage', op: 'lt', value: 19.2 }), effect: 'strongly', because: 'Voltage collapses below the BCI load-test level while cranking' },
         { when: is('starterSound', ['click', 'slow']), effect: 'supports', because: 'Starter clicks or turns slowly' },
-        { when: sys({ q: 'crankVoltage', op: 'ge', value: 10.5 }, { q: 'crankVoltage', op: 'ge', value: 21 }), effect: 'contradicts', because: 'Battery holds its voltage while cranking' },
+        { when: { q: 'crankVoltage', op: 'gtRef', ref: 'oemMinCrankVoltage' }, effect: 'contradicts', because: 'Battery stays above the OEM minimum cranking voltage' },
       ],
       actions: ['Charge the battery fully and re-test at rest and under load (BCI load test or a conductance tester).', 'Replace a battery that fails the load test; check the charger/alternator output afterwards.'],
       reference: BCI,
@@ -59,7 +61,7 @@ export const NO_CRANK: FaultFamily = {
     {
       id: 'starter', title: 'Starter motor or solenoid fault',
       evidence: [
-        { when: { all: [is('starterSound', ['click', 'nothing']), sys({ q: 'crankVoltage', op: 'ge', value: 10.5 }, { q: 'crankVoltage', op: 'ge', value: 21 })] }, effect: 'strongly', because: 'Battery voltage holds but the starter does not turn' },
+        { when: { all: [is('starterSound', ['click', 'nothing']), { q: 'crankVoltage', op: 'gtRef', ref: 'oemMinCrankVoltage' }] }, effect: 'strongly', because: 'Battery stays above the OEM minimum cranking voltage but the starter does not turn' },
         { when: is('starterSound', 'normal'), effect: 'excludes', because: 'The starter turns the engine normally' },
       ],
       actions: ['Check the solenoid supply and the main contacts; bench-test the starter.'],
@@ -347,6 +349,8 @@ export const NO_VOLTAGE: FaultFamily = {
   questions: [
     { id: 'frequency', kind: 'number', text: 'Frequency', unit: 'Hz', min: 0, max: 70 },
     { id: 'ratedFrequency', kind: 'choice', text: 'Rated frequency', options: [{ value: '50', label: '50 Hz' }, { value: '60', label: '60 Hz' }] },
+    // No built-in "at rated" band: the steady-state limit comes from the governor / controller settings for this set.
+    { id: 'oemMinFrequency', kind: 'number', text: 'Lowest steady-state frequency allowed for this set (governor or controller settings sheet, OEM manual)', unit: 'Hz', min: 30, max: 70 },
     { id: 'voltage', kind: 'number', text: 'Output voltage, line to line', unit: 'V', min: 0, max: 15000 },
     { id: 'ratedVoltage', kind: 'number', text: 'Rated voltage, line to line', unit: 'V', min: 100, max: 15000 },
     { id: 'avrFuse', kind: 'choice', text: 'AVR fuse and supply', options: [{ value: 'ok', label: 'Fuse OK, supply present' }, { value: 'blown', label: 'Fuse blown' }, { value: 'not-checked', label: 'Not checked' }] },
@@ -362,7 +366,7 @@ export const NO_VOLTAGE: FaultFamily = {
     { when: { q: 'voltage', op: 'ge', value: 0 }, level: 'CAUTION', message: 'Alternator and panel terminals are lethal while running: stop the set, isolate and lock off before touching wiring; prove dead with an approved tester; measure live only with rated instruments.' },
   ],
   causes: [
-    { id: 'speed', title: 'Low engine speed (frequency low)', evidence: [{ when: { any: [{ all: [is('ratedFrequency', '50'), { q: 'frequency', op: 'lt', value: 47.5 }] }, { all: [is('ratedFrequency', '60'), { q: 'frequency', op: 'lt', value: 57 }] }] }, effect: 'strongly', because: 'Frequency more than 5 % below rated: the AVR reduces voltage when underspeed' }, { when: { any: [{ all: [is('ratedFrequency', '50'), { q: 'frequency', op: 'ge', value: 49.5 }] }, { all: [is('ratedFrequency', '60'), { q: 'frequency', op: 'ge', value: 59.4 }] }] }, effect: 'excludes', because: 'Frequency at rated' }], actions: ['Use the speed/governor checks first: the AVR protects the alternator by reducing voltage when the engine is underspeed.'], reference: ALT_PRACTICE },
+    { id: 'speed', title: 'Low engine speed (frequency low)', evidence: [{ when: { any: [{ all: [is('ratedFrequency', '50'), { q: 'frequency', op: 'lt', value: 47.5 }] }, { all: [is('ratedFrequency', '60'), { q: 'frequency', op: 'lt', value: 57 }] }] }, effect: 'strongly', because: 'Frequency more than 5 % below rated: the AVR reduces voltage when underspeed' }, { when: { q: 'frequency', op: 'gtRef', ref: 'oemMinFrequency' }, effect: 'excludes', because: 'Frequency above the lowest steady-state frequency allowed for this set' }], actions: ['Use the speed/governor checks first: the AVR protects the alternator by reducing voltage when the engine is underspeed.'], reference: ALT_PRACTICE },
     { id: 'avr-supply', title: 'AVR fuse or supply', evidence: [{ when: is('avrFuse', 'blown'), effect: 'strongly', because: 'AVR fuse blown' }, { when: is('avrFuse', 'ok'), effect: 'excludes', because: 'Fuse and supply OK' }], actions: ['Replace the fuse with the correct rating; find why it blew (shorted diode, wiring) before running.'], reference: ALT_PRACTICE },
     { id: 'residual', title: 'Loss of residual magnetism', evidence: [{ when: is('residual', 'none'), effect: 'strongly', because: 'No residual voltage' }, { when: is('residual', 'present'), effect: 'excludes', because: 'Residual voltage present' }], actions: ['Flash the field per the alternator manual (polarity and voltage as specified).'], reference: ALT_PRACTICE },
     { id: 'sensing', title: 'AVR sensing wiring', evidence: [{ when: is('sensing', 'loose'), effect: 'strongly', because: 'Sensing wiring loose or disconnected' }, { when: is('sensing', 'ok'), effect: 'excludes', because: 'Sensing wiring correct' }], actions: ['Isolate; re-make the sensing connections to the wiring diagram for this AVR.'], reference: ALT_PRACTICE },

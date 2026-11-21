@@ -11,8 +11,24 @@
  *   a part is flagged "compatibility unverified" and blocks sign-off.
  * - Readings outside the limits given for that set (from its rating plate or
  *   manual) are flagged. The engine does not invent limits.
+ * - There are no user accounts yet. Every name (technician, status steps,
+ *   supervisor sign-off) is TYPED and NOT verified. The last step is therefore
+ *   called SIGN-OFF RECORDED — NOT VERIFIED (typed name) everywhere, including
+ *   the saved data; it is never an approval, a signature or a certified record.
+ * - A card at that step is locked. It changes only through reopenJobCard(),
+ *   which needs who, when and a reason, starts a new revision and needs a fresh
+ *   sign-off. The earlier sign-off stays in the card's history.
+ * - A SHA-256 hash of the card content is recorded at sign-off, so a later
+ *   change shows as "changed after sign-off". Anyone can recompute a hash, so
+ *   it detects changes but proves nothing about who signed.
  */
-export const SERVICE_ENGINE_VERSION = 'oracle-service 1.0.0 (2026-11-20)';
+import { sha256Hex } from './sha256';
+
+export const SERVICE_ENGINE_VERSION = 'oracle-service 1.1.0 (2026-11-21)';
+
+/** Shown on the screen and in every job-card report and export. */
+export const TYPED_SIGNOFF_NOTICE = 'Sign-off recorded by typed name — not an authenticated signature. Not valid as a certified record until reviewer accounts exist.';
+export const TYPED_NAMES_NOTICE = 'All names on this card (technician, status steps, sign-off) are typed in and not verified.';
 
 export interface ManualRef { document: string; edition: string; page: string }
 export interface Asset { id: string; make: string; model: string; engine: string; controller: string; serial: string; ratedKva: number }
@@ -26,7 +42,16 @@ const refText = (r: ManualRef) => `${r.document}, ${r.edition}, p. ${r.page}`;
 function checkRef(where: string, r: ManualRef | undefined) {
   if (!r || !r.document?.trim() || !r.edition?.trim() || !r.page?.trim()) throw new Error(`${where}: cite the OEM manual (document, edition, page)`);
 }
-const addMonths = (iso: string, m: number) => { const d = new Date(iso); d.setUTCMonth(d.getUTCMonth() + m); return d.toISOString().slice(0, 10); };
+/**
+ * Calendar months, clamped to the last day of the target month:
+ * 31 Jan + 1 month = 28 (or 29) Feb, never 3 Mar (setUTCMonth alone overflows).
+ */
+export function addMonths(iso: string, m: number): string {
+  const d = new Date(iso);
+  const y = d.getUTCFullYear(), mo = d.getUTCMonth() + m, day = d.getUTCDate();
+  const lastDay = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(y, mo, Math.min(day, lastDay))).toISOString().slice(0, 10);
+}
 
 export function validatePlan(plan: PlanTask[]): void {
   const ids = new Set<string>();
@@ -66,27 +91,74 @@ export function dueList(plan: PlanTask[], history: ServiceRecord[], now: { date:
 }
 
 // ---------------------------------------------------------------- job cards
-export type JobStatus = 'OPEN' | 'IN PROGRESS' | 'AWAITING PARTS' | 'COMPLETED' | 'SIGNED OFF';
+/** The last step. Never shown as an approval: there are no reviewer accounts. */
+export const SIGNOFF = 'SIGN-OFF RECORDED — NOT VERIFIED (typed name)' as const;
+export type JobStatus = 'OPEN' | 'IN PROGRESS' | 'AWAITING PARTS' | 'COMPLETED' | typeof SIGNOFF;
 const FLOW: Record<JobStatus, JobStatus[]> = {
-  OPEN: ['IN PROGRESS'], 'IN PROGRESS': ['AWAITING PARTS', 'COMPLETED'], 'AWAITING PARTS': ['IN PROGRESS'], COMPLETED: ['SIGNED OFF', 'IN PROGRESS'], 'SIGNED OFF': [],
+  OPEN: ['IN PROGRESS'], 'IN PROGRESS': ['AWAITING PARTS', 'COMPLETED'], 'AWAITING PARTS': ['IN PROGRESS'], COMPLETED: [SIGNOFF, 'IN PROGRESS'], [SIGNOFF]: [],
 };
 /** The steps a card may move to next (for the UI status bar; same table transition() enforces). */
 export function nextStatuses(s: JobStatus): JobStatus[] { return [...(FLOW[s] ?? [])]; }
-export const JOB_STATUSES: JobStatus[] = ['OPEN', 'IN PROGRESS', 'AWAITING PARTS', 'COMPLETED', 'SIGNED OFF'];
+export const JOB_STATUSES: JobStatus[] = ['OPEN', 'IN PROGRESS', 'AWAITING PARTS', 'COMPLETED', SIGNOFF];
+
 export interface PartLine { partNo: string; description: string; qty: number; compatibility: ManualRef | null }
 export interface Reading { name: string; value: number; unit: string; min?: number; max?: number; limitSource?: string }
 export interface JobCard {
   id: string; assetId: string; opened: string; reportedFault: string; faultCodes: string[];
   technician: string; status: JobStatus; tasks: string[]; parts: PartLine[]; labourHours: number;
   engineHoursAtJob: number | null; readings: Reading[]; findings: string;
-  completedOn: string | null; signedOffBy: string | null; signedOffOn: string | null;
-  log: Array<{ at: string; from: JobStatus; to: JobStatus; by: string; note?: string }>;
+  completedOn: string | null;
+  /** Starts at 1; every reopen (or failed import check) starts a new revision that needs a fresh sign-off. */
+  revision: number;
+  /** Typed, not verified. Set only while status is SIGNOFF. */
+  signOffTypedName: string | null; signOffRecordedOn: string | null;
+  /** SHA-256 of the card content at sign-off; set only while status is SIGNOFF. */
+  signOffHash: string | null;
+  log: LogEntry[];
+}
+/** One status step. Sign-off steps carry `hash` and `revision`; a step from SIGNOFF cancels that sign-off. */
+export interface LogEntry { at: string; from: JobStatus; to: JobStatus; by: string; note?: string; hash?: string; revision?: number }
+
+/** JSON with sorted keys and no undefined values, so the hash does not depend on key order. */
+function canonical(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(canonical).join(',')}]`;
+  if (v && typeof v === 'object') {
+    const o = v as Record<string, unknown>;
+    return `{${Object.keys(o).filter((k) => o[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${canonical(o[k])}`).join(',')}}`;
+  }
+  return JSON.stringify(v ?? null);
+}
+
+/**
+ * Hash of what was signed: the work content of the card, its revision, and the
+ * typed sign-off name and time. Status and history are not part of it.
+ */
+export function cardContentHash(card: JobCard, typedName: string, recordedOn: string, revision = card.revision): string {
+  const { id, assetId, opened, reportedFault, faultCodes, technician, tasks, parts, labourHours, engineHoursAtJob, readings, findings, completedOn } = card;
+  return sha256Hex(canonical({ id, assetId, opened, reportedFault, faultCodes, technician, tasks, parts, labourHours, engineHoursAtJob, readings, findings, completedOn, revision, typedName, recordedOn }));
+}
+
+export type SignOffCheck =
+  | { kind: 'never' }
+  | { kind: 'no-hash'; by: string; at: string; cancelled: boolean }
+  | { kind: 'unchanged' | 'changed'; by: string; at: string; cancelled: boolean; recorded: string; current: string };
+
+/** Compares the card with the hash recorded at its latest sign-off. */
+export function signOffCheck(card: JobCard): SignOffCheck {
+  const idx = card.log.map((l) => l.to).lastIndexOf(SIGNOFF);
+  if (idx < 0) return card.status === SIGNOFF ? { kind: 'no-hash', by: card.signOffTypedName ?? '', at: card.signOffRecordedOn ?? '', cancelled: false } : { kind: 'never' };
+  const e = card.log[idx];
+  const cancelled = card.status !== SIGNOFF;
+  if (!e.hash) return { kind: 'no-hash', by: e.by, at: e.at, cancelled };
+  const current = cardContentHash(card, e.by, e.at, e.revision ?? card.revision);
+  const consistent = cancelled || (idx === card.log.length - 1 && e.revision === card.revision && card.signOffHash === e.hash && card.signOffTypedName === e.by && card.signOffRecordedOn === e.at);
+  return { kind: current === e.hash && consistent ? 'unchanged' : 'changed', by: e.by, at: e.at, cancelled, recorded: e.hash, current };
 }
 
 export function openJobCard(j: { id: string; assetId: string; opened: string; reportedFault: string; faultCodes?: string[]; technician: string }): JobCard {
   if (!j.id?.trim() || !j.assetId?.trim() || !j.technician?.trim() || !j.reportedFault?.trim()) throw new Error('Job card needs an id, asset, technician and the reported fault');
   if (Number.isNaN(Date.parse(j.opened))) throw new Error('Job card needs the date opened');
-  return { id: j.id, assetId: j.assetId, opened: j.opened, reportedFault: j.reportedFault.trim(), faultCodes: j.faultCodes ?? [], technician: j.technician, status: 'OPEN', tasks: [], parts: [], labourHours: 0, engineHoursAtJob: null, readings: [], findings: '', completedOn: null, signedOffBy: null, signedOffOn: null, log: [] };
+  return { id: j.id, assetId: j.assetId, opened: j.opened, reportedFault: j.reportedFault.trim(), faultCodes: j.faultCodes ?? [], technician: j.technician, status: 'OPEN', tasks: [], parts: [], labourHours: 0, engineHoursAtJob: null, readings: [], findings: '', completedOn: null, revision: 1, signOffTypedName: null, signOffRecordedOn: null, signOffHash: null, log: [] };
 }
 
 /** Readings outside the limits supplied for this set; a reading with no limit is not judged. */
@@ -99,6 +171,17 @@ export function readingFlags(r: Reading[]): string[] {
     if (x.max !== undefined && x.value > x.max) f.push(`${x.name} ${x.value} ${x.unit} is above ${x.max} ${x.unit} (${x.limitSource})`);
   }
   return f;
+}
+
+/** Why a sign-off by `by` is not allowed on this card content (empty = allowed). */
+export function signOffBlockers(card: JobCard, by: string): string[] {
+  const out: string[] = [];
+  if (by.trim().toLowerCase() === card.technician.trim().toLowerCase()) out.push('Sign-off must be by a supervisor other than the technician');
+  const unverified = card.parts.filter((p) => !p.compatibility || !p.compatibility.document?.trim());
+  if (unverified.length) out.push(`Compatibility unverified for: ${unverified.map((p) => p.partNo).join(', ')}; cite the OEM parts book`);
+  const flags = readingFlags(card.readings);
+  if (flags.length) out.push(`Readings need attention before sign-off: ${flags.join('; ')}`);
+  return out;
 }
 
 export function transition(card: JobCard, to: JobStatus, by: string, at: string, update: Partial<Pick<JobCard, 'tasks' | 'parts' | 'labourHours' | 'engineHoursAtJob' | 'readings' | 'findings'>> = {}, note?: string): JobCard {
@@ -114,36 +197,146 @@ export function transition(card: JobCard, to: JobStatus, by: string, at: string,
     if (e.length) throw new Error(`To complete, record: ${e.join(', ')}`);
     next.completedOn = at;
   }
-  if (to === 'SIGNED OFF') {
-    if (by === card.technician) throw new Error('Sign-off must be by a supervisor other than the technician');
-    const unverified = next.parts.filter((p) => !p.compatibility || !p.compatibility.document?.trim());
-    if (unverified.length) throw new Error(`Compatibility unverified for: ${unverified.map((p) => p.partNo).join(', ')}; cite the OEM parts book`);
-    const flags = readingFlags(next.readings);
-    if (flags.length) throw new Error(`Readings need attention before sign-off: ${flags.join('; ')}`);
-    next.signedOffBy = by; next.signedOffOn = at;
+  if (to === SIGNOFF) {
+    const blockers = signOffBlockers(next, by);
+    if (blockers.length) throw new Error(blockers.join('; '));
+    next.signOffTypedName = by; next.signOffRecordedOn = at;
+    const hash = cardContentHash(next, by, at);
+    next.signOffHash = hash;
+    next.log = [...card.log, { at, from: card.status, to, by, note, hash, revision: next.revision }];
   }
   return next;
 }
 
-/** Service record from a signed-off job card (feeds dueList). */
+/** Cancels the current sign-off: new revision, back to `to`, entry kept in the history. */
+function cancelSignOff(card: JobCard, to: JobStatus, by: string, at: string, why: string): JobCard {
+  const prior = `sign-off of revision ${card.revision} recorded by typed name ${card.signOffTypedName ?? '?'} on ${card.signOffRecordedOn ?? '?'}${card.signOffHash ? ` (content hash ${card.signOffHash})` : ' (no content hash)'}`;
+  return {
+    ...card, status: to, revision: card.revision + 1, signOffTypedName: null, signOffRecordedOn: null, signOffHash: null,
+    log: [...card.log, { at, from: card.status, to, by, note: `${why} Cancels the ${prior}. Revision ${card.revision + 1} needs a fresh sign-off.` }],
+  };
+}
+
+/**
+ * The only way to change a card after sign-off. Needs who, when and a reason;
+ * starts a new revision that needs a fresh sign-off. The earlier sign-off
+ * stays in the history.
+ */
+export function reopenJobCard(card: JobCard, by: string, at: string, reason: string): JobCard {
+  if (card.status !== SIGNOFF) throw new Error(`Only a card at ${SIGNOFF} can be reopened (this one is ${card.status})`);
+  if (!by?.trim() || Number.isNaN(Date.parse(at))) throw new Error('Who and when are required to reopen a job card');
+  if (!reason?.trim()) throw new Error('Give the reason for reopening the job card after sign-off');
+  return cancelSignOff(card, 'IN PROGRESS', by.trim(), at, `REOPENED. Reason: ${reason.trim()}.`);
+}
+
+/**
+ * For loaded or imported cards (never trusted). Replays the history through
+ * the same status flow transition() enforces, re-derives status and revision
+ * from it, re-applies the completion and sign-off rules, and checks the
+ * content hash of a current sign-off. Returns every problem; the store
+ * refuses a card with any.
+ */
+export function cardIntegrityProblems(card: JobCard): string[] {
+  const out: string[] = [];
+  const tech = card.technician.trim().toLowerCase();
+  let at: JobStatus = 'OPEN';
+  let reopens = 0;
+  card.log.forEach((e, i) => {
+    const n = `history step ${i + 1}`;
+    if (e.from !== at) out.push(`${n} starts from ${e.from} but the card was at ${at}`);
+    const reopen = at === SIGNOFF && e.to === 'IN PROGRESS';
+    if (!reopen && !FLOW[at].includes(e.to)) out.push(`${n}: ${at} → ${e.to} is not an allowed step`);
+    if (!e.by.trim() || Number.isNaN(Date.parse(e.at))) out.push(`${n} has no who or when`);
+    if (e.to === SIGNOFF) {
+      if (e.by.trim().toLowerCase() === tech) out.push(`${n}: sign-off by the technician`);
+      if (!e.hash) out.push(`${n}: no content hash was recorded at sign-off`);
+      if (e.revision !== reopens + 1) out.push(`${n}: sign-off revision does not match the history`);
+    }
+    if (reopen) reopens++;
+    at = e.to;
+  });
+  if (at !== card.status) out.push(`its status ${card.status} does not match its history (${at})`);
+  if (card.revision !== reopens + 1) out.push(`revision ${card.revision} does not match its history (${reopens + 1})`);
+  if (card.status === 'COMPLETED' || card.status === SIGNOFF) {
+    const miss = [!card.findings.trim() && 'findings', !card.tasks.length && 'work done', !(card.engineHoursAtJob !== null && card.engineHoursAtJob >= 0) && 'engine-hour reading', !card.readings.length && 'test-run readings', !card.completedOn && 'completion date'].filter(Boolean);
+    if (miss.length) out.push(`completed without: ${miss.join(', ')}`);
+  }
+  if (card.status === SIGNOFF) {
+    const c = signOffCheck(card);
+    if (c.kind === 'changed') out.push('CHANGED AFTER SIGN-OFF: the content does not match the hash recorded at sign-off');
+    if (c.kind === 'no-hash' && !out.some((p) => p.includes('no content hash'))) out.push('no content hash was recorded at sign-off');
+    out.push(...signOffBlockers(card, card.signOffTypedName ?? '').filter((b) => !b.startsWith('Sign-off must be') || !out.some((p) => p.includes('sign-off by the technician'))));
+  }
+  return out;
+}
+
+/** Service record from a card with a recorded sign-off (feeds dueList). */
 export function toServiceRecord(card: JobCard, planTaskIds: string[]): ServiceRecord {
-  if (card.status !== 'SIGNED OFF') throw new Error('Only a signed-off job card becomes service history');
+  if (card.status !== SIGNOFF) throw new Error(`Only a job card at ${SIGNOFF} becomes service history`);
   return { date: card.completedOn!.slice(0, 10), engineHours: card.engineHoursAtJob!, taskIds: planTaskIds, jobCardId: card.id, technician: card.technician };
 }
 
-/** Plain-text job card report for the customer file. */
+/** Lines describing the sign-off state, for the report and the screen. */
+export function signOffSummary(card: JobCard): string[] {
+  const c = signOffCheck(card);
+  if (c.kind === 'never') return [`No sign-off recorded (revision ${card.revision}).`];
+  const out: string[] = [];
+  if (c.cancelled) out.push(`No current sign-off (revision ${card.revision}). An earlier sign-off recorded by typed name ${c.by} on ${c.at} was cancelled — see the status history for who, when and why.`);
+  else out.push(`${SIGNOFF}: typed name ${c.by}, recorded ${c.at}, revision ${card.revision}. Not an authenticated signature, not an approval.`);
+  if (c.kind === 'no-hash') out.push('CHANGED AFTER SIGN-OFF / NOT VERIFIED: no content hash was recorded at that sign-off, so changes cannot be ruled out.');
+  else {
+    out.push(`Content hash at sign-off (SHA-256): ${c.recorded}`);
+    out.push(c.kind === 'unchanged'
+      ? 'Card content matches the hash recorded at sign-off (this detects later edits; it does not prove who signed).'
+      : `CHANGED AFTER SIGN-OFF: the card no longer matches the hash recorded at sign-off (now ${c.current}).`);
+  }
+  return out;
+}
+
+const fmtLimits = (r: Reading) => {
+  if (r.min === undefined && r.max === undefined) return 'no limit given, not judged';
+  const range = r.min !== undefined && r.max !== undefined ? `${r.min}–${r.max} ${r.unit}` : r.min !== undefined ? `min ${r.min} ${r.unit}` : `max ${r.max} ${r.unit}`;
+  return `limits ${range}, source: ${r.limitSource?.trim() || 'NOT GIVEN'}`;
+};
+
+/** Plain-text job card report for the customer file. Not a certified record (typed names). */
 export function jobCardReport(card: JobCard, asset: Asset): string {
+  const list = (xs: string[], empty: string) => (xs.length ? xs.map((x) => `  - ${x}`) : [`  ${empty}`]);
+  const flags = readingFlags(card.readings);
   const lines = [
-    `JOB CARD ${card.id} — ${card.status}`,
-    `${asset.make} ${asset.model} (${asset.ratedKva} kVA), engine ${asset.engine}, controller ${asset.controller}, serial ${asset.serial}`,
-    `Opened ${card.opened} by ${card.technician}. Reported fault: ${card.reportedFault}${card.faultCodes.length ? ` (codes: ${card.faultCodes.join(', ')})` : ''}`,
-    `Engine hours: ${card.engineHoursAtJob ?? '—'}. Labour: ${card.labourHours} h.`,
-    `Work done: ${card.tasks.join('; ') || '—'}`,
-    `Parts: ${card.parts.map((p) => `${p.qty} × ${p.partNo} ${p.description}${p.compatibility ? ` [${refText(p.compatibility)}]` : ' [compatibility unverified]'}`).join('; ') || 'none'}`,
-    `Test readings: ${card.readings.map((r) => `${r.name} ${r.value} ${r.unit}`).join('; ') || '—'}`,
-    `Findings: ${card.findings || '—'}`,
-    card.signedOffBy ? `Signed off by ${card.signedOffBy} on ${card.signedOffOn}` : 'Not signed off.',
-    `History: ${card.log.map((l) => `${l.at} ${l.from}→${l.to} (${l.by})`).join('; ')}`,
+    `JOB CARD ${card.id} (revision ${card.revision}) — ${card.status}`,
+    `NOTICE: ${TYPED_SIGNOFF_NOTICE}`,
+    `NOTICE: ${TYPED_NAMES_NOTICE}`,
+    '',
+    'ASSET',
+    `  ${asset.id}: ${asset.make} ${asset.model} (${asset.ratedKva} kVA), engine ${asset.engine || '—'}, controller ${asset.controller || '—'}, serial ${asset.serial}`,
+    '',
+    'FAULT',
+    `  Reported fault: ${card.reportedFault}`,
+    `  Fault codes: ${card.faultCodes.join(', ') || 'none'}`,
+    `  Opened ${card.opened}; technician (typed name): ${card.technician}`,
+    '',
+    'WORK DONE',
+    ...list(card.tasks, '(none recorded)'),
+    `  Engine hours at job: ${card.engineHoursAtJob === null ? '—' : `${card.engineHoursAtJob} h`}. Labour: ${card.labourHours} h.`,
+    '',
+    'PARTS',
+    ...list(card.parts.map((p) => `${p.qty} × ${p.partNo}${p.description ? ` ${p.description}` : ''} — ${p.compatibility ? `parts book: ${refText(p.compatibility)}` : 'compatibility unverified (no parts-book reference)'}`), 'none'),
+    '',
+    'TEST READINGS',
+    ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})`), '(none recorded)'),
+    ...flags.map((f) => `  ! ${f}`),
+    '',
+    'FINDINGS',
+    `  ${card.findings || '—'}`,
+    '',
+    'SIGN-OFF',
+    ...signOffSummary(card).map((x) => `  ${x}`),
+    `  Completed: ${card.completedOn ?? '—'}`,
+    '',
+    'STATUS HISTORY (who = typed name, not verified)',
+    ...list(card.log.map((l) => `${l.at}  ${l.from} → ${l.to}  by ${l.by}${l.revision ? ` (revision ${l.revision})` : ''}${l.note ? ` — ${l.note}` : ''}${l.hash ? ` [content hash ${l.hash}]` : ''}`), '(no status changes yet)'),
+    '',
     `[${SERVICE_ENGINE_VERSION}]`,
   ];
   return lines.join('\n');

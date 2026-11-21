@@ -7,22 +7,27 @@
  * Errors are the engine's own messages, passed through unchanged.
  */
 import {
-  dueList, openJobCard, transition, toServiceRecord, validatePlan, JOB_STATUSES,
+  cardIntegrityProblems, dueList, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, JOB_STATUSES, SIGNOFF, TYPED_SIGNOFF_NOTICE,
   type Asset, type DueItem, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord,
 } from './maintenance';
 
+/** Storage key is unchanged since version 1 so existing saved data is found and upgraded. */
 export const STORE_KEY = 'eims-oracle-service-v1';
-export const STORE_VERSION = 1;
+/** Where unreadable saved data is copied before this screen starts empty, so it is never overwritten. */
+export const BACKUP_KEY = 'eims-oracle-service-unreadable-backup';
+/** 1 = first release (2026-11-20); 2 = sign-off content hash + reopen (2026-11-21). */
+export const STORE_VERSION = 2;
+export const STORE_FORMAT = 'eims-oracle-service';
 
 export interface ServiceState {
-  version: 1;
+  version: 2;
   assets: Asset[];
   plans: Record<string, PlanTask[]>;
   history: Record<string, ServiceRecord[]>;
   jobCards: JobCard[];
 }
 
-export const emptyState = (): ServiceState => ({ version: 1, assets: [], plans: {}, history: {}, jobCards: [] });
+export const emptyState = (): ServiceState => ({ version: 2, assets: [], plans: {}, history: {}, jobCards: [] });
 
 export type CardUpdate = Partial<Pick<JobCard, 'tasks' | 'parts' | 'labourHours' | 'engineHoursAtJob' | 'readings' | 'findings'>>;
 
@@ -34,6 +39,7 @@ export type ServiceAction =
   | { type: 'openCard'; card: { assetId: string; opened: string; reportedFault: string; faultCodes?: string[]; technician: string; id?: string } }
   | { type: 'updateCard'; cardId: string; update: CardUpdate }
   | { type: 'transition'; cardId: string; to: JobStatus; by: string; at: string; note?: string; update?: CardUpdate }
+  | { type: 'reopen'; cardId: string; by: string; at: string; reason: string }
   | { type: 'recordService'; cardId: string; planTaskIds: string[] };
 
 /** Next free id like "JC-3" for a prefix. */
@@ -153,7 +159,7 @@ export function reduce(s: ServiceState, a: ServiceAction): ServiceState {
     }
     case 'updateCard': {
       const c = findCard(s, a.cardId);
-      if (!isEditable(c)) throw new Error(`A ${c.status} job card cannot be edited${c.status === 'COMPLETED' ? '; move it back to IN PROGRESS first' : ''}`);
+      if (!isEditable(c)) throw new Error(`A ${c.status} job card cannot be edited${c.status === 'COMPLETED' ? '; move it back to IN PROGRESS first' : '; reopen it first (who, when and the reason are kept in its history)'}`);
       return replaceCard(s, { ...c, ...checkUpdate(a.update) });
     }
     case 'transition': {
@@ -161,6 +167,8 @@ export function reduce(s: ServiceState, a: ServiceAction): ServiceState {
       const update = a.update && isEditable(c) ? checkUpdate(a.update) : {};
       return replaceCard(s, transition(c, a.to, a.by.trim(), a.at, update, a.note?.trim() || undefined));
     }
+    case 'reopen':
+      return replaceCard(s, reopenJobCard(findCard(s, a.cardId), a.by, a.at, a.reason));
     case 'recordService': {
       const c = findCard(s, a.cardId);
       const hist = s.history[c.assetId] ?? [];
@@ -188,9 +196,12 @@ export function dueFor(s: ServiceState, assetId: string, now: { date: string; en
   try { return { items: dueList(s.plans[assetId] ?? [], s.history[assetId] ?? [], now, soon), error: null }; } catch (e) { return { items: [], error: e instanceof Error ? e.message : String(e) }; }
 }
 
+
 // ------------------------------------------------------------ save / load
+/** Exported JSON. `notice` is for people reading the file; it is ignored on import. */
 export function serialise(s: ServiceState): string {
-  return JSON.stringify({ ...s, version: STORE_VERSION }, null, 2);
+  const { assets, plans, history, jobCards } = s;
+  return JSON.stringify({ format: STORE_FORMAT, version: STORE_VERSION, notice: TYPED_SIGNOFF_NOTICE, assets, plans, history, jobCards }, null, 2);
 }
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -198,10 +209,37 @@ const isStr = (v: unknown): v is string => typeof v === 'string';
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const optNum = (v: unknown) => v === undefined || isNum(v);
 const isRef = (v: unknown) => isObj(v) && isStr(v.document) && isStr(v.edition) && isStr(v.page);
+const isHash = (v: unknown) => isStr(v) && /^[0-9a-f]{64}$/.test(v);
+const isRev = (v: unknown) => Number.isInteger(v) && (v as number) >= 1;
 
-function checkShape(d: unknown): string | null {
-  if (!isObj(d)) return 'not a JSON object';
-  if (d.version !== STORE_VERSION) return `unsupported version ${String(d.version)} (expected ${STORE_VERSION})`;
+/** Version 1 (2026-11-20) used the plain status "SIGNED OFF" and signedOffBy/signedOffOn. */
+const V1_SIGNED = 'SIGNED OFF';
+function upgradeV1(d: Record<string, unknown>): Record<string, unknown> {
+  const st = (v: unknown) => (v === V1_SIGNED ? SIGNOFF : v);
+  const cards = d.jobCards;
+  return {
+    ...d, format: STORE_FORMAT, version: 2,
+    jobCards: Array.isArray(cards) ? cards.map((c) => {
+      if (!isObj(c)) return c;
+      const { signedOffBy, signedOffOn, ...rest } = c;
+      return {
+        ...rest, status: st(c.status), revision: 1, signOffTypedName: signedOffBy ?? null, signOffRecordedOn: signedOffOn ?? null, signOffHash: null,
+        log: Array.isArray(c.log) ? c.log.map((l) => (isObj(l) ? { ...l, from: st(l.from), to: st(l.to) } : l)) : c.log,
+      };
+    }) : cards,
+  };
+}
+
+/** Which version this is, or why it cannot be read. */
+function checkVersion(d: Record<string, unknown>): { version: number } | { error: string } {
+  if (d.format !== undefined && d.format !== STORE_FORMAT) return { error: `this is a different kind of file (format "${String(d.format)}"), not a Generator Oracle service file` };
+  if (d.version === undefined) return { error: 'the file has no version number, so it was not saved by this screen' };
+  if (d.version === 1) return { version: 1 };
+  if (d.version === STORE_VERSION) return d.format === STORE_FORMAT ? { version: STORE_VERSION } : { error: 'the file has no format marker, so it was not saved by this screen' };
+  return { error: `the file is version ${JSON.stringify(d.version)}, which this screen does not know (it reads versions 1 and ${STORE_VERSION}). It may come from a newer release: update the page, or export again from the release that saved it` };
+}
+
+function checkShape(d: Record<string, unknown>): string | null {
   if (!Array.isArray(d.assets) || !isObj(d.plans) || !isObj(d.history) || !Array.isArray(d.jobCards)) return 'missing assets, plans, history or jobCards';
   const ids = new Set<string>();
   for (const a of d.assets) {
@@ -228,47 +266,105 @@ function checkShape(d: unknown): string | null {
     if (cardIds.has(c.id)) return `job card ${id} repeated`;
     cardIds.add(c.id);
     if (!ids.has(c.assetId)) return `job card ${id} refers to unknown asset ${c.assetId}`;
-    if (!JOB_STATUSES.includes(c.status as JobStatus)) return `job card ${id} has unknown status`;
+    if (!JOB_STATUSES.includes(c.status as JobStatus)) return `job card ${id} has unknown status ${JSON.stringify(c.status)}`;
     if (!Array.isArray(c.faultCodes) || !c.faultCodes.every(isStr) || !Array.isArray(c.tasks) || !c.tasks.every(isStr)) return `job card ${id} is malformed`;
     if (!isNum(c.labourHours) || !(c.engineHoursAtJob === null || isNum(c.engineHoursAtJob))) return `job card ${id} hours are malformed`;
     if (!Array.isArray(c.parts) || !c.parts.every((p) => isObj(p) && isStr(p.partNo) && isStr(p.description) && isNum(p.qty) && (p.compatibility === null || isRef(p.compatibility)))) return `job card ${id} parts are malformed`;
     if (!Array.isArray(c.readings) || !c.readings.every((r) => isObj(r) && isStr(r.name) && isNum(r.value) && isStr(r.unit) && optNum(r.min) && optNum(r.max) && (r.limitSource === undefined || isStr(r.limitSource)))) return `job card ${id} readings are malformed`;
-    for (const k of ['completedOn', 'signedOffBy', 'signedOffOn']) if (!(c[k] === null || isStr(c[k]))) return `job card ${id} is malformed`;
-    if (!Array.isArray(c.log) || !c.log.every((l) => isObj(l) && isStr(l.at) && isStr(l.by) && JOB_STATUSES.includes(l.from as JobStatus) && JOB_STATUSES.includes(l.to as JobStatus) && (l.note === undefined || isStr(l.note)))) return `job card ${id} log is malformed`;
+    for (const k of ['completedOn', 'signOffTypedName', 'signOffRecordedOn']) if (!(c[k] === null || isStr(c[k]))) return `job card ${id} is malformed`;
+    if (!isRev(c.revision)) return `job card ${id} revision is malformed`;
+    if (!(c.signOffHash === null || isHash(c.signOffHash))) return `job card ${id} sign-off hash is malformed`;
+    if (!Array.isArray(c.log) || !c.log.every((l) => isObj(l) && isStr(l.at) && isStr(l.by) && JOB_STATUSES.includes(l.from as JobStatus) && JOB_STATUSES.includes(l.to as JobStatus)
+      && (l.note === undefined || isStr(l.note)) && (l.hash === undefined || isHash(l.hash)) && (l.revision === undefined || isRev(l.revision)))) return `job card ${id} log is malformed`;
+    const last = c.log.length ? (c.log[c.log.length - 1] as Record<string, unknown>).to : 'OPEN';
+    if (last !== c.status) return `job card ${id}: its status does not match its history`;
+    if (c.status !== SIGNOFF && (c.signOffTypedName !== null || c.signOffRecordedOn !== null || c.signOffHash !== null)) return `job card ${id} carries sign-off details but is not at the sign-off step`;
   }
   return null;
 }
 
-/** Parse saved or imported JSON. Never throws. */
-export function deserialise(text: string): { ok: true; state: ServiceState } | { ok: false; error: string } {
+export type ReadResult = { ok: true; state: ServiceState; notice: string | null } | { ok: false; error: string };
+
+/**
+ * Parse saved or imported JSON. Never throws. Nothing in the file is trusted:
+ * every job card is replayed against the job-card rules (cardIntegrityProblems)
+ * and a card claiming a sign-off must match the content hash recorded at it.
+ * Any failure, and any service record without a signed card behind it,
+ * refuses the whole file with a message; nothing is shown as clean.
+ */
+export function deserialise(text: string): ReadResult {
   let d: unknown;
   try { d = JSON.parse(text); } catch { return { ok: false, error: 'Not a valid JSON file' }; }
-  const problem = checkShape(d);
+  if (!isObj(d)) return { ok: false, error: 'Not a Generator Oracle service file: not a JSON object' };
+  const v = checkVersion(d);
+  if ('error' in v) return { ok: false, error: `Not a Generator Oracle service file: ${v.error}` };
+  const data = v.version === 1 ? upgradeV1(d) : d;
+  const problem = checkShape(data);
   if (problem) return { ok: false, error: `Not a Generator Oracle service file: ${problem}` };
-  const o = d as ServiceState;
-  return { ok: true, state: { version: 1, assets: o.assets, plans: o.plans, history: o.history, jobCards: o.jobCards } };
+  const o = data as unknown as ServiceState;
+  for (const c of o.jobCards) {
+    const p = cardIntegrityProblems(c);
+    if (p.length) {
+      const claim = c.status === SIGNOFF || c.log.some((l) => l.to === SIGNOFF) ? ' Its sign-off is CHANGED AFTER SIGN-OFF / NOT VERIFIED.' : '';
+      return { ok: false, error: `Refused: job card ${c.id} fails the job-card checks (${p.join('; ')}).${claim} Nothing was loaded.` };
+    }
+  }
+  for (const [assetId, hist] of Object.entries(o.history)) {
+    for (const r of hist) {
+      const c = o.jobCards.find((x) => x.id === r.jobCardId);
+      if (!c) return { ok: false, error: `Refused: service history for ${assetId} points at job card ${r.jobCardId}, which is not in the file. Nothing was loaded.` };
+      if (c.assetId !== assetId || c.technician !== r.technician || !c.log.some((l) => l.to === SIGNOFF)) return { ok: false, error: `Refused: service history for ${assetId} does not match job card ${r.jobCardId} (asset, technician or sign-off). Nothing was loaded.` };
+    }
+  }
+  const notice = v.version === 1 ? `This data was saved by version 1 of this screen and has been upgraded to version ${STORE_VERSION}.` : null;
+  return { ok: true, state: { version: 2, assets: o.assets, plans: o.plans, history: o.history, jobCards: o.jobCards }, notice };
 }
 
 /** Minimal Storage interface so tests can pass a stub. */
 export interface KeyValueStore { getItem(k: string): string | null; setItem(k: string, v: string): void }
 
-export function loadState(store: KeyValueStore | null | undefined): { state: ServiceState; error: string | null } {
+export const STORAGE_UNAVAILABLE = 'Browser storage is not available (blocked or private mode); nothing will be saved. Use Export JSON to keep a copy.';
+
+export interface LoadResult {
+  state: ServiceState;
+  /** Something went wrong; shown as an error. */
+  error: string | null;
+  /** Data was read but changed on the way in (upgrade, failed sign-off check); shown as a notice. */
+  notice: string | null;
+  /** True when unreadable saved data could not be backed up: do not save over it until the user changes something. */
+  protectSaved: boolean;
+}
+
+export function loadState(store: KeyValueStore | null | undefined, now: string = new Date().toISOString()): LoadResult {
+  if (!store) return { state: emptyState(), error: STORAGE_UNAVAILABLE, notice: null, protectSaved: false };
+  let raw: string | null;
+  try { raw = store.getItem(STORE_KEY); } catch { return { state: emptyState(), error: STORAGE_UNAVAILABLE, notice: null, protectSaved: false }; }
+  if (!raw) return { state: emptyState(), error: null, notice: null, protectSaved: false };
+  const r = deserialise(raw);
+  if (r.ok) return { state: r.state, error: null, notice: r.notice, protectSaved: false };
+  const backupKey = `${BACKUP_KEY}:${now}`;
   try {
-    const raw = store?.getItem(STORE_KEY);
-    if (!raw) return { state: emptyState(), error: null };
-    const r = deserialise(raw);
-    return r.ok ? { state: r.state, error: null } : { state: emptyState(), error: `Saved data could not be read (${r.error}); starting empty` };
+    store.setItem(backupKey, raw);
+    return { state: emptyState(), error: `Saved data could not be read (${r.error}). A copy was kept in browser storage under "${backupKey}"; starting empty.`, notice: null, protectSaved: false };
   } catch {
-    return { state: emptyState(), error: 'Browser storage is not available; nothing will be saved' };
+    return { state: emptyState(), error: `Saved data could not be read (${r.error}) and could not be backed up. It is left in place and will be replaced only when you make a change here.`, notice: null, protectSaved: true };
   }
 }
 
+// DOMException is not always an Error subclass (jsdom, older engines): read name/code directly.
+const isQuota = (e: unknown) => {
+  const x = (e ?? {}) as { name?: unknown; code?: unknown };
+  return x.name === 'QuotaExceededError' || x.name === 'NS_ERROR_DOM_QUOTA_REACHED' || x.code === 22 || x.code === 1014;
+};
+
 export function saveState(store: KeyValueStore | null | undefined, s: ServiceState): string | null {
+  if (!store) return STORAGE_UNAVAILABLE;
   try {
-    if (!store) return 'Browser storage is not available; nothing will be saved';
     store.setItem(STORE_KEY, serialise(s));
     return null;
-  } catch {
-    return 'Could not save in this browser (storage full or blocked)';
+  } catch (e) {
+    return isQuota(e)
+      ? 'Could not save: browser storage is full. Your latest change is on screen only; use Export JSON to keep a copy.'
+      : 'Could not save: browser storage is blocked. Your latest change is on screen only; use Export JSON to keep a copy.';
   }
 }
