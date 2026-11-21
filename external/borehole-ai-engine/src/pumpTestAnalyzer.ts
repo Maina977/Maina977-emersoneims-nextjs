@@ -589,6 +589,8 @@ export interface FieldPumpTest {
   sustainableYieldM3Hr?: number;
   drawdownM?: number;
   testDurationHrs?: number;
+  /** Measured static water level (guided field-evidence entry); replaces the assumption when given. */
+  staticWaterLevelM?: number;
 }
 
 /**
@@ -614,7 +616,9 @@ export function buildFieldPumpTestAnalysis(
   if (missing.length) return { rejected: `Pump test not analysed: ${missing.join('; ')}.` };
 
   const assumedThickness = 30;
-  const assumedStatic = modelledDepthM * 0.3;
+  const measuredStatic = Number(pumpTest.staticWaterLevelM);
+  const hasStatic = Number.isFinite(measuredStatic) && measuredStatic >= 0 && pumpTest.staticWaterLevelM != null;
+  const assumedStatic = hasStatic ? measuredStatic : modelledDepthM * 0.3;
   const durationMin = (pumpTest.testDurationHrs || 24) * 60;
   const result = analyzePumpTest({
     pumpingRate_m3hr: rate,
@@ -628,7 +632,9 @@ export function buildFieldPumpTestAnalysis(
       ...result,
       assumptions: [
         `Aquifer thickness assumed ${assumedThickness} m (not measured in this test).`,
-        `Static water level assumed ${assumedStatic.toFixed(1)} m (30% of the modelled depth, not measured).`,
+        hasStatic
+          ? `Static water level ${assumedStatic.toFixed(2)} m, as measured in the test.`
+          : `Static water level assumed ${assumedStatic.toFixed(1)} m (30% of the modelled depth, not measured).`,
         ...(pumpTest.testDurationHrs ? [] : ['Test duration not entered; 24 h assumed.']),
         'A single drawdown reading was entered; a full time-drawdown record is needed for a reliable Theis/Cooper-Jacob fit.',
       ],
