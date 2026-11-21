@@ -7,7 +7,7 @@
  * summary show, with its source.
  */
 import type { AnalysisResult } from './types';
-import { finalVerdict } from './verdict';
+import { finalVerdict, salinityFromWaterQuality, labSourceLabel, nearbyProvenance } from './verdict';
 import { computeCanonicalEconomics } from './reportShared';
 
 export type Row = [string, string, string]; // label, value, basis
@@ -66,8 +66,8 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   // A laboratory test of this borehole's water governs everything else.
   const lab = r.calibrationResult?.calibratedWaterQuality;
   if (lab) {
-    const meta = [lab.labName, lab.sampleDate].filter(Boolean).join(', ');
-    const labBasis = `Laboratory test${meta ? ` (${meta})` : ''}`;
+    // "Measured: laboratory test (name, sampled date)": never confusable with a modelled class.
+    const labBasis = labSourceLabel(lab);
     const params: [string, string, string, string][] = [
       ['pH', 'pH', '', '6.5-8.5'], ['Salinity (TDS)', 'tds', 'mg/L', 'limit 1,000 mg/L'], ['Fluoride', 'fluoride', 'mg/L', 'WHO limit 1.5 mg/L'],
       ['Nitrate', 'nitrate', 'mg/L', 'WHO limit 50 mg/L'], ['Iron', 'iron', 'mg/L', 'limit 0.3 mg/L'], ['Arsenic', 'arsenic', 'mg/L', 'WHO limit 0.01 mg/L'],
@@ -80,15 +80,19 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
     wqRows.push(['Safe to drink', lab.isPotable ? 'Yes, on the parameters tested' : 'Not confirmed', (lab.treatmentRequired ?? []).join('; ') || 'Coliform, fluoride, nitrate, arsenic and TDS must all be tested']);
     sections.push({ title: 'Water quality', rows: wqRows, notes: (wq.regionalWarnings ?? []).map(String) });
   } else {
-  if (mq?.ec?.n >= 3) wqRows.push(['Salinity (TDS)', `${f(wq.tds)} mg/L`, `Measured: median of ${mq.ec.n} boreholes within ${mq.radius_km} km (${mq.ec.over1500} of ${mq.ec.n} above EC 1,500 µS/cm). Drinking limit ${tdsLimit} mg/L`]);
-  else wqRows.push(['Salinity (TDS)', `about ${f(wq.tds)} mg/L`, `Regional estimate, not measured. Drinking limit ${tdsLimit} mg/L`]);
-  if (mq?.fluoride?.n >= 3) wqRows.push(['Fluoride', `${f(wq.fluoride, 1)} mg/L`, `Measured: median of ${mq.fluoride.n} boreholes (${mq.fluoride.over1_5} of ${mq.fluoride.n} above 1.5 mg/L; highest ${f(mq.fluoride.max, 1)})`]);
+  // 2026-11-21: a modelled salinity is shown as a screening class only, never
+  // as a concentration; the measured nearby median keeps its figure and source.
+  const sal = salinityFromWaterQuality(wq);
+  if (sal.basis === 'nearby') wqRows.push(['Salinity (TDS)', sal.value, `${sal.source}. ${mq.ec.over1500} of ${mq.ec.n} above EC 1,500 µS/cm. Drinking limit ${tdsLimit} mg/L`]);
+  else if (sal.basis === 'modelled') wqRows.push(['Salinity (TDS)', sal.value, `${sal.source}. ${sal.sentence}`]);
+  else wqRows.push(['Salinity (TDS)', 'laboratory test needed', 'No salinity estimate for this site']);
+  if (mq?.fluoride?.n >= 3) wqRows.push(['Fluoride', `${f(wq.fluoride, 1)} mg/L`, `Measured: median of ${mq.fluoride.n} boreholes within ${mq.radius_km} km ${nearbyProvenance(mq)}. ${mq.fluoride.over1_5} of ${mq.fluoride.n} above 1.5 mg/L; highest ${f(mq.fluoride.max, 1)}`]);
   // One or two tests nearby are measurements too, just too few for a median
   // (audit 2026-11-05: Kisumu's 5.5 mg/L is one of its two tested boreholes).
   else if (wq.fluorideAreaSurvey?.values?.length) wqRows.push(['Fluoride', `${f(wq.fluoride, 1)} mg/L`, `Measured at ${wq.fluorideAreaSurvey.values.length} borehole${wq.fluorideAreaSurvey.values.length > 1 ? 's' : ''} in ${wq.fluorideAreaSurvey.name}, ${wq.fluorideAreaSurvey.sampled} (${wq.fluorideAreaSurvey.values.map((v: number) => f(v, 1)).join(' and ')} mg/L): too few to rely on. WHO limit 1.5 mg/L`]);
   else if (mq?.fluoride?.n > 0) wqRows.push(['Fluoride', `about ${f(wq.fluoride, 1)} mg/L`, `Measured at only ${mq.fluoride.n} borehole${mq.fluoride.n > 1 ? 's' : ''} within ${mq.radius_km} km (highest ${f(mq.fluoride.max, 1)} mg/L${mq.fluoride.over1_5 ? `; ${mq.fluoride.over1_5} above 1.5 mg/L` : ''}): too few to rely on. WHO limit 1.5 mg/L`]);
   else wqRows.push(['Fluoride', `about ${f(wq.fluoride, 1)} mg/L`, 'Regional estimate, not measured. WHO limit 1.5 mg/L']);
-  if (mq?.nitrate?.n >= 3) wqRows.push(['Nitrate', `${f(wq.nitrate)} mg/L`, `Measured: median of ${mq.nitrate.n} boreholes. WHO limit 50 mg/L`]);
+  if (mq?.nitrate?.n >= 3) wqRows.push(['Nitrate', `${f(wq.nitrate)} mg/L`, `Measured: median of ${mq.nitrate.n} boreholes within ${mq.radius_km} km ${nearbyProvenance(mq)}. WHO limit 50 mg/L`]);
   else wqRows.push(['Nitrate', 'laboratory test needed', 'Depends on nearby latrines and farming; not predictable from desktop data. WHO limit 50 mg/L']);
   for (const p of ['pH', 'Iron', 'Hardness', 'Arsenic', 'Bacteria (E. coli)']) wqRows.push([p, 'laboratory test needed', 'No measurement near the site']);
   sections.push({ title: 'Water quality', rows: wqRows, notes: (wq.regionalWarnings ?? []).map(String) });
@@ -105,6 +109,7 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   ];
   if (eco.solarCost > 0) costRows.push([`Solar pump power (${f(eco.solarKW, 1)} kW)`, usd(eco.solarCost), eco.kes(eco.solarCost)]);
   if (eco.wqTreatmentCost > 0) costRows.push([eco.needsRO ? 'Desalination (reverse osmosis) allowance' : 'Water treatment allowance (a laboratory test decides)', usd(eco.wqTreatmentCost), eco.kes(eco.wqTreatmentCost)]);
+  if (eco.salinityUnpriced) costRows.push(['Desalination (reverse osmosis)', 'not priced', 'Salinity has not been measured at this site; a laboratory test of the first water decides whether treatment is needed and its size']);
   if (eco.defluoridationCost > 0) costRows.push(['Defluoridation', usd(eco.defluoridationCost), eco.kes(eco.defluoridationCost)]);
   costRows.push([`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, usd(eco.contingency), eco.kes(eco.contingency)]);
   costRows.push(['TOTAL', usd(eco.totalCost), eco.kes(eco.totalCost)]);

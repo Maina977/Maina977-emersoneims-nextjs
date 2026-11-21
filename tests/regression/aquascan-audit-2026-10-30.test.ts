@@ -83,7 +83,7 @@ describe('laboratory results', () => {
     const wq = governingSummary(r, 'Test').find((s) => s.title === 'Water quality')!;
     const row = (k: string) => wq.rows.find((x) => x[0] === k)!;
     expect(row('Salinity (TDS)')[1]).toBe('350 mg/L');
-    expect(row('Salinity (TDS)')[2]).toMatch(/Laboratory test \(KEBS, 2026-10-01\)/);
+    expect(row('Salinity (TDS)')[2]).toMatch(/^Measured: laboratory test \(KEBS, sampled 2026-10-01\)/);
     expect(row('Bacteria (coliform)')[1]).toBe('not tested');
     expect(row('Safe to drink')[1]).toBe('Not confirmed');
   });

@@ -426,7 +426,8 @@ export class WaterQualityAnalyzer {
       province = 'Sahel Arid Zone';
       tdsMult = 2.5;       // Evaporative concentration: 500-2000 mg/L (Edmunds 2003)
       fluorideMult = 1.5;  // Moderate fluoride from granite weathering
-      warnings.push('SAHEL: High TDS expected (500-2000 mg/L). May exceed WHO 1000 mg/L aesthetic limit.');
+      // No concentration range for an unmeasured site (2026-11-21).
+      warnings.push('SAHEL: regional data indicate a high risk of salty groundwater in this zone. Salinity has not been measured at this site; test it before drinking use or treatment design.');
       warnings.push('SAHEL: Low recharge zone — groundwater may be fossil (>1000 years old). Not renewable.');
       citations.push('Edmunds (2003) Renewable and non-renewable groundwater in semi-arid regions');
       citations.push('MacDonald et al. (2012) Quantitative maps of groundwater resources in Africa');
@@ -455,7 +456,7 @@ export class WaterQualityAnalyzer {
     else if (lat >= 22 && lat <= 38 && lon >= -10 && lon <= 60) {
       province = 'MENA Arid Zone';
       tdsMult = 3.0;       // Evaporite-rich, 500-5000 mg/L
-      warnings.push('MENA: Extremely high TDS likely (500-5000 mg/L). RO desalination may be required.');
+      warnings.push('MENA: regional data indicate a high risk of saline groundwater in this zone. Salinity has not been measured at this site; a laboratory test decides whether desalination is needed.');
       warnings.push('MENA: Groundwater largely fossil/non-renewable. Sustainability assessment critical.');
       citations.push('UN-ESCWA/BGR (2013) Shared Aquifer Resources in Western Asia');
     }

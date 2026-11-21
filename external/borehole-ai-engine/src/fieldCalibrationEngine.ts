@@ -8,6 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { FieldValidationData, AnalysisResult } from './types';
+import { salinityFromWaterQuality } from './verdict';
 
 export interface CalibrationResult {
   /** Calibrated depth (field-confirmed or field-adjusted) */
@@ -200,7 +201,14 @@ export function calibrateWithFieldData(
 
     // Compare desktop prediction vs lab reality
     const wqDesktop = desktopResult.waterQuality;
-    if (has('tds') && Number.isFinite(wqDesktop?.tds)) notes.push(`Lab TDS: ${lab.tds} mg/L (desktop predicted ${wqDesktop.tds}, delta ${Math.abs(wqDesktop.tds - lab.tds).toFixed(0)})`);
+    // A modelled desktop TDS is a screening class, never a figure (2026-11-21);
+    // the median of 3+ measured boreholes nearby keeps its number.
+    if (has('tds') && Number.isFinite(wqDesktop?.tds)) {
+      const desk = salinityFromWaterQuality(wqDesktop);
+      notes.push(desk.measured
+        ? `Lab TDS: ${lab.tds} mg/L (measured nearby before drilling: ${desk.value}, ${desk.source.replace(/^Measured: /, '')})`
+        : `Lab TDS: ${lab.tds} mg/L (the desktop screen classed the salinity risk as ${desk.risk}; that class was not a measurement)`);
+    }
     if (has('pH') && Number.isFinite(wqDesktop?.pH)) notes.push(`Lab pH: ${lab.pH} (desktop predicted ${wqDesktop.pH}, delta ${Math.abs(wqDesktop.pH - lab.pH).toFixed(1)})`);
     if (lab.fluoride > 1.5) notes.push(`⚠ Fluoride ${lab.fluoride} mg/L EXCEEDS WHO limit 1.5 mg/L`);
     if (lab.arsenic > 0.01) notes.push(`⚠ Arsenic ${lab.arsenic} mg/L EXCEEDS WHO limit 0.01 mg/L`);
