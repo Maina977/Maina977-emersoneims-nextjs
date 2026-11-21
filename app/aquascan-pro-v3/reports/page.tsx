@@ -1,11 +1,12 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { ToolAppShell, ToolLoadingState } from '@/components/tools/ToolAppShell';
+import { ToolAppShell } from '@/components/tools/ToolAppShell';
+import { resilient } from '@/lib/loading/ResilientModule';
 
-const ReportsHub = dynamic(
+// Retry, slow note + Reload, and Try again (lib/loading, 2026-11-21).
+const ReportsHub = resilient(
   () => import('@/components/aquascan-modules/reports/ReportsHub'),
-  { ssr: false, loading: () => <ToolLoadingState name="AquaScan Reports" /> }
+  { name: 'AquaScan Reports' }
 );
 
 export default function AquaScanReportsPage() {

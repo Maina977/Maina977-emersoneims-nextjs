@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { importWithRetry } from '@/components/solar-modules/SolarGeniusProV2';
+import { importWithRetry } from '@/lib/loading/resilientImport';
 
 // Management directive 2026-11-21 "Solar loading": a failed workspace download
 // is retried with back-off, then reported; never an endless spinner.

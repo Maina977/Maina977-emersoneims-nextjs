@@ -21,6 +21,7 @@ import { BOQ_ENGINE_VERSION, RATE_KIND_LABELS, type RateKind } from '@/lib/qs/bo
 import { TRADES_ENGINE_VERSION } from '@/lib/qs/trades';
 import { extractGeometry, SnapIndex, snap, type SnapKind } from '@/lib/qs/snap';
 import TradesPanel from './TradesPanel';
+import { importWithRetry, onBeforeRecoveryReload } from '@/lib/loading/resilientImport';
 import { analysePage, sha256Hex, viewportToPdf, pdfToViewport, resolutionLimitM, PDF_SHEET_VERSION, type SheetInfo, type PdfPageLike, type ViewportLike } from '@/lib/qs/pdfSheet';
 import {
   extractEmbeddedDrawing, buildProject, bytesToBase64, checkDrawingHash, draftBoq, guardedStorage, hasWork, parseProject, readAutosave, restoreProject, revisionProblem, writeAutosave, autosaveKey,
@@ -114,7 +115,7 @@ export default function TakeoffWorkbench() {
   async function renderPdfPage(p: { doc: PdfDoc; name: string; sha: string; pages: number }, n: number, rot: number) {
     setBusy(`Rendering page ${n}…`);
     try {
-      const pdfjs = await import('pdfjs-dist');
+      const pdfjs = await importWithRetry(() => import('pdfjs-dist'));
       const page = await p.doc.getPage(n);
       const base = page.getViewport({ scale: 1, rotation: (page.rotate + rot) % 360 });
       const scale = RENDER_WIDTH_PX / base.width;
@@ -149,6 +150,10 @@ export default function TakeoffWorkbench() {
     const t = setTimeout(() => autosaveNow(), 600);
     return () => clearTimeout(t);
   }, [drawing, draftOffer, pendingProject, refs, cals, ms, items, adj, revision, stated, pageNo]);
+  // A recovery "Reload page" (lib/loading) writes the draft at once instead of losing the last 600 ms.
+  const flushRef = useRef<() => void>(() => {});
+  flushRef.current = () => { if (drawing && !draftOffer && !pendingProject) autosaveNow(); };
+  useEffect(() => onBeforeRecoveryReload(() => flushRef.current()), []);
 
   const applyRestored = (r: RestoredProject, sheetId: string | null) => {
     setRefs(r.refs); setCals(r.cals); setMs(r.measurements); setItems(r.items); setAdj(r.adj);
@@ -177,7 +182,7 @@ export default function TakeoffWorkbench() {
     if (isPdf(f)) {
       setBusy('Opening PDF…');
       try {
-        const pdfjs = await import('pdfjs-dist');
+        const pdfjs = await importWithRetry(() => import('pdfjs-dist'));
         pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
         const doc = await pdfjs.getDocument({ data: bytes }).promise;
         const p = { doc, name: f.name, sha, pages: doc.numPages };
@@ -381,8 +386,9 @@ export default function TakeoffWorkbench() {
 
   const exportPdf = async () => {
     if (!boq) return;
-    const { boqToPdf } = await import('@/lib/qs/pdfReport');
     try {
+      // Inside the try: a failed download now shows a message instead of nothing (2026-11-21).
+      const { boqToPdf } = await importWithRetry(() => import('@/lib/qs/pdfReport'));
       const drawings = [...new Set(ms.map((m) => m.sheetId))].map((id) => `${pdf?.name ?? sheet?.label ?? 'drawing'} ${id}`);
       const bytes = boqToPdf(boq.boq, { project: pdf?.name ?? sheet?.label ?? 'Project', preparedBy: 'Building Suite Pro (draft for QS review)', date: new Date().toISOString().slice(0, 10), drawings });
       download(new Uint8Array(bytes), 'application/pdf', `boq-rev-${revision}-draft.pdf`);
@@ -391,8 +397,8 @@ export default function TakeoffWorkbench() {
 
   const exportXlsx = async () => {
     if (!boq) return;
-    const { boqToXlsx } = await import('@/lib/qs/export');
     try {
+      const { boqToXlsx } = await importWithRetry(() => import('@/lib/qs/export'));
       const buf = await boqToXlsx(boq.boq, boq.adj, pdf?.name ?? sheet?.label ?? 'Project');
       download(new Uint8Array(buf), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', `boq-rev-${revision}-draft.xlsx`);
     } catch (e) { setErr((e as Error).message); }

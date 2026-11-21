@@ -1,7 +1,7 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { ToolAppShell, ToolLoadingState } from '@/components/tools/ToolAppShell';
+import { ToolAppShell } from '@/components/tools/ToolAppShell';
+import { resilient } from '@/lib/loading/ResilientModule';
 import SolarGeniusContent from '@/components/solar/SolarGeniusContent';
 // Stylesheets for the dynamically-imported Design Studio, shipped with the
 // page <head> instead of as lazy CSS chunks (ChunkLoadError prevention — see
@@ -10,9 +10,10 @@ import SolarGeniusContent from '@/components/solar/SolarGeniusContent';
 import 'leaflet/dist/leaflet.css';
 import '@/components/solar-modules/crc/components/design/DesignStudioAI.css';
 
-const DesignStudioPage = dynamic(
+// Retry, slow note + Reload, and Try again (lib/loading, 2026-11-21).
+const DesignStudioPage = resilient(
   () => import('@/components/solar-modules/crc/src/pages/DesignStudioPage'),
-  { ssr: false, loading: () => <ToolLoadingState name="Solar Design Studio AI" /> }
+  { name: 'Solar Design Studio AI' }
 );
 
 export default function SolarDesignStudioPage() {

@@ -1,14 +1,23 @@
 'use client';
 
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { resilient } from '@/lib/loading/ResilientModule';
 import DMCAProtection from '@/components/security/DMCAProtection';
 import GeneratorOracleSEO from '@/components/seo/GeneratorOracleSEO';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import LiveBackendStatus from '@/components/generator-oracle/LiveBackendStatus';
 
-// Lazy load the main component for better initial load performance
-const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/GeneratorOracleModule'));
+// Loaded on demand, with retry, a slow note + Reload after 12 s and Try again
+// after 3 failures (lib/loading, 2026-11-21). Service records are in this
+// browser's localStorage, so a reload loses nothing saved.
+const GeneratorOracleModule = resilient(() => import('@/components/generator-oracle/GeneratorOracleModule'), {
+  name: 'Generator Oracle',
+  subject: 'Generator Oracle',
+  loading: () => <LoadingFallback />,
+  failedTitle: 'Generator Oracle did not download.',
+  failedBody: 'This is usually a dropped or slow connection. Service records you saved are kept in this browser. Press Try again to download it again.',
+});
 
 /**
  * Generator Oracle
@@ -37,9 +46,7 @@ export default function GeneratorOraclePage() {
       <GeneratorOracleSEO pageType="diagnostic" />
       {/* Disable DevTools protection - it causes false positives on Windows with display scaling */}
       <DMCAProtection enableDevToolsProtection={false} />
-      <Suspense fallback={<LoadingFallback />}>
-        <GeneratorOracleModule />
-      </Suspense>
+      <GeneratorOracleModule />
       <div className="px-4 pt-4 max-w-7xl mx-auto">
         <LiveBackendStatus variant="compact" />
       </div>
