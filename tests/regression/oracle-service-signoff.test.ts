@@ -3,9 +3,9 @@ import { createHash } from 'node:crypto';
 import { sha256Hex } from '@/lib/generator-oracle/service/sha256';
 import {
   cardContentHash, jobCardReport, openJobCard, signOffCheck, signOffSummary, transition, SIGNOFF, TYPED_SIGNOFF_NOTICE,
-  type Asset, type JobCard,
+  V1_UNCHECKED_SIGNOFF_NOTE, V1_UPGRADE_BY, type Asset, type JobCard,
 } from '@/lib/generator-oracle/service/maintenance';
-import { apply, deserialise, emptyState, loadState, reduce, saveState, serialise, BACKUP_KEY, STORE_KEY, type KeyValueStore, type ServiceAction, type ServiceState } from '@/lib/generator-oracle/service/store';
+import { apply, deserialise, emptyState, loadState, reduce, saveState, serialise, BACKUP_KEY, STORE_KEY, V1_BACKUP_KEY, type KeyValueStore, type ServiceAction, type ServiceState } from '@/lib/generator-oracle/service/store';
 
 // TEST values and TEST references only — never real OEM intervals, names or part numbers.
 const NOW = '2026-11-21T09:00:00.000Z';
@@ -249,18 +249,144 @@ describe('import attacks: nothing that claims a sign-off is shown as clean', () 
     expect(r.error).toMatch(/CHANGED AFTER SIGN-OFF/);
     expect(st.mem.get(`${BACKUP_KEY}:${NOW}`)).toBe(raw);
   });
-  it('a version 1 file with a plain "SIGNED OFF" card is refused (no hash: the sign-off cannot be checked)', () => {
-    const j = exported(signed());
-    const c = j.jobCards[0];
-    const v1Card = { ...c, status: 'SIGNED OFF', signedOffBy: c.signOffTypedName, signedOffOn: c.signOffRecordedOn, log: c.log.map((l: Record<string, unknown>) => ({ at: l.at, from: l.from === SIGNOFF ? 'SIGNED OFF' : l.from, to: l.to === SIGNOFF ? 'SIGNED OFF' : l.to, by: l.by })) };
-    delete v1Card.signOffTypedName; delete v1Card.signOffRecordedOn; delete v1Card.signOffHash; delete v1Card.revision;
-    refused(JSON.stringify({ version: 1, assets: j.assets, plans: j.plans, history: {}, jobCards: [v1Card] }), /no content hash was recorded at sign-off/);
-  });
   it('a clean export imports unchanged (no notice)', () => {
     const s = reduce(signed(), { type: 'recordService', cardId: 'JC-1', planTaskIds: ['T-1'] });
     expect(deserialise(serialise(s))).toEqual({ ok: true, state: s, notice: null });
     const reopened = run(s, { type: 'reopen', cardId: 'JC-1', by: 'SUPERVISOR-B', at: '2026-11-21T08:00', reason: 'TEST' }, { type: 'updateCard', cardId: 'JC-1', update: { labourHours: 3 } });
     expect(deserialise(serialise(reopened))).toEqual({ ok: true, state: reopened, notice: null });
+  });
+  it('a version 1 file with a plain "SIGNED OFF" card loads: the card goes back to COMPLETED, everything else is kept', () => {
+    const v1 = v1File(signed());
+    const r = deserialise(JSON.stringify(v1), NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.upgradedFrom).toBe(1);
+    expect(r.state.assets).toEqual(v1.assets);
+    expect(r.state.plans).toEqual(v1.plans);
+    const c = card(r.state);
+    expect(c).toMatchObject({ status: 'COMPLETED', revision: 2, signOffTypedName: null, signOffRecordedOn: null, signOffHash: null });
+    expect(c.findings).toBe('TEST sender faulty');
+    const last = c.log[c.log.length - 1];
+    expect(last).toMatchObject({ at: NOW, from: SIGNOFF, to: 'COMPLETED', by: V1_UPGRADE_BY });
+    expect(last.note).toContain('Sign-off from a version-1 file could not be checked (no content hash); sign-off must be recorded again');
+    expect(last.note).toContain('recorded by typed name SUPERVISOR-B on 2026-11-20T13:00');
+    // the old sign-off step stays in the history
+    expect(c.log[c.log.length - 2]).toMatchObject({ from: 'COMPLETED', to: SIGNOFF, by: 'SUPERVISOR-B' });
+    expect(r.notice).toMatch(/saved by version 1 .* upgraded to version 2/);
+    expect(r.notice).toContain(`${V1_UNCHECKED_SIGNOFF_NOTE}. Moved back to COMPLETED: job card JC-1.`);
+    // nothing is shown as signed: the report says no current sign-off and not verified
+    const rep = jobCardReport(c, asset(r.state));
+    expect(rep).toContain('No current sign-off (revision 2)');
+    expect(rep).toContain('CHANGED AFTER SIGN-OFF / NOT VERIFIED');
+  });
+});
+
+/** A version-1 file of a state: plain "SIGNED OFF", signedOffBy/On, no hash, no revision, no format marker. */
+function v1File(s: ServiceState) {
+  const j = exported(s);
+  const jobCards = j.jobCards.map((c: Record<string, unknown> & { log: Array<Record<string, unknown>> }) => {
+    const v1Card: Record<string, unknown> = { ...c, status: c.status === SIGNOFF ? 'SIGNED OFF' : c.status, signedOffBy: c.signOffTypedName, signedOffOn: c.signOffRecordedOn,
+      log: c.log.map((l) => ({ at: l.at, from: l.from === SIGNOFF ? 'SIGNED OFF' : l.from, to: l.to === SIGNOFF ? 'SIGNED OFF' : l.to, by: l.by, ...(l.note ? { note: l.note } : {}) })) };
+    delete v1Card.signOffTypedName; delete v1Card.signOffRecordedOn; delete v1Card.signOffHash; delete v1Card.revision;
+    return v1Card;
+  });
+  return { version: 1, assets: j.assets, plans: j.plans, history: j.history, jobCards };
+}
+
+describe('version-1 upgrade: unhashed sign-offs are moved back, not the whole file refused (auditor LOW 1)', () => {
+  /** Two assets, plans, a signed card recorded as service history, a second signed card and an open one. */
+  const project = () => {
+    let s = reduce(signed(), { type: 'recordService', cardId: 'JC-1', planTaskIds: ['T-1'] });
+    s = run(s,
+      { type: 'saveAsset', asset: { make: 'TEST', model: 'T-200', engine: 'TEST-ENG2', controller: 'TEST-CTRL2', serial: 'S-2', ratedKva: 200 } },
+      { type: 'addTask', assetId: 'A-2', task: { task: 'TEST air filter', intervalMonths: 6, source: ref } },
+      { type: 'openCard', card: { assetId: 'A-2', opened: '2026-11-19', reportedFault: 'TEST no start', technician: 'TECH-C' } },
+      { type: 'transition', cardId: 'JC-2', to: 'IN PROGRESS', by: 'TECH-C', at: '2026-11-19T08:00' },
+      { type: 'transition', cardId: 'JC-2', to: 'COMPLETED', by: 'TECH-C', at: '2026-11-19T10:00', update: { findings: 'TEST battery flat', tasks: ['TEST charge battery'], engineHoursAtJob: 300, readings: [{ name: 'TEST voltage', value: 400, unit: 'V' }] } },
+      { type: 'transition', cardId: 'JC-2', to: SIGNOFF, by: 'SUPERVISOR-D', at: '2026-11-19T11:00' },
+      { type: 'openCard', card: { assetId: 'A-2', opened: '2026-11-21', reportedFault: 'TEST oil leak', technician: 'TECH-C' } });
+    return s;
+  };
+
+  it('loads assets, plans and unsigned cards; lists every affected card; takes their service records out of the due list', () => {
+    const r = deserialise(JSON.stringify(v1File(project())), NOW);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.state.assets.map((a) => a.id)).toEqual(['A-1', 'A-2']);
+    expect(Object.keys(r.state.plans)).toEqual(['A-1', 'A-2']);
+    expect(r.state.jobCards.map((c) => [c.id, c.status, c.revision])).toEqual([['JC-1', 'COMPLETED', 2], ['JC-2', 'COMPLETED', 2], ['JC-3', 'OPEN', 1]]);
+    expect(r.notice).toContain('Moved back to COMPLETED: job cards JC-1, JC-2.');
+    expect(r.notice).toContain('Service records taken out of the due list until each card is signed off and recorded again: JC-1 (A-1, 2026-11-20, 1500 h, plan tasks T-1).');
+    expect(r.state.history['A-1']).toEqual([]);
+    expect(card(r.state).log[card(r.state).log.length - 1].note).toContain('Its service record was taken out of the due list until then: JC-1 (A-1, 2026-11-20, 1500 h, plan tasks T-1).');
+    // No card loads at the sign-off step, and nothing in the report or export reads as plain SIGNED OFF
+    expect(r.state.jobCards.some((c) => c.status === SIGNOFF)).toBe(false);
+    for (const text of [serialise(r.state), ...r.state.jobCards.map((c) => jobCardReport(c, r.state.assets.find((a) => a.id === c.assetId)!))]) expect(text).not.toMatch(/\bSIGNED OFF\b/);
+  });
+  it('the moved-back card can be signed off again (revision 2), recorded as service, exported and re-imported unchanged', () => {
+    const r = deserialise(JSON.stringify(v1File(project())), NOW);
+    if (!r.ok) throw new Error(r.error);
+    const s = run(r.state,
+      { type: 'transition', cardId: 'JC-1', to: SIGNOFF, by: 'SUPERVISOR-B', at: '2026-11-21T10:00' },
+      { type: 'recordService', cardId: 'JC-1', planTaskIds: ['T-1'] });
+    const c = card(s);
+    expect(c).toMatchObject({ status: SIGNOFF, revision: 2 });
+    expect(c.log[c.log.length - 1]).toMatchObject({ revision: 2, hash: c.signOffHash });
+    expect(signOffCheck(c).kind).toBe('unchanged');
+    expect(deserialise(serialise(s))).toEqual({ ok: true, state: s, notice: null });
+  });
+  it('localStorage version-1 data: loads, the original is backed up first, and the message lists the cards', () => {
+    const st = memoryStore();
+    const raw = JSON.stringify(v1File(project()));
+    st.mem.set(STORE_KEY, raw);
+    const r = loadState(st, NOW);
+    expect(r.error).toBeNull();
+    expect(r.protectSaved).toBe(false);
+    expect(r.state.assets).toHaveLength(2);
+    expect(r.notice).toContain('Moved back to COMPLETED: job cards JC-1, JC-2.');
+    expect(r.notice).toContain(`"${V1_BACKUP_KEY}:${NOW}"`);
+    expect(st.mem.get(`${V1_BACKUP_KEY}:${NOW}`)).toBe(raw);
+    expect(st.mem.get(STORE_KEY)).toBe(raw); // not overwritten by loading
+  });
+  it('localStorage version-1 data that cannot be backed up: loads but protects the saved original', () => {
+    const raw = JSON.stringify(v1File(project()));
+    const st: KeyValueStore = { getItem: (k) => (k === STORE_KEY ? raw : null), setItem: () => { throw new Error('quota'); } };
+    const r = loadState(st, NOW);
+    expect(r.state.jobCards).toHaveLength(3);
+    expect(r.protectSaved).toBe(true);
+    expect(r.notice).toMatch(/could not be backed up; it is left in place/);
+  });
+  it('a version-1 card with other problems is still refused (whole file), and a tampered version-2 file is still refused and backed up', () => {
+    const v1 = v1File(signed());
+    (v1.jobCards[0] as Record<string, unknown>).readings = []; // completed without test-run readings
+    expect(deserialise(JSON.stringify(v1), NOW)).toMatchObject({ ok: false, error: expect.stringMatching(/completed without: test-run readings/) });
+    const st = memoryStore();
+    const j = exported(signed());
+    j.jobCards[0].findings = 'TEST edited after sign-off';
+    const raw = JSON.stringify(j);
+    st.mem.set(STORE_KEY, raw);
+    const r = loadState(st, NOW);
+    expect(r.state).toEqual(emptyState());
+    expect(r.error).toMatch(/CHANGED AFTER SIGN-OFF/);
+    expect(st.mem.get(`${BACKUP_KEY}:${NOW}`)).toBe(raw);
+  });
+  it('the version-1 move-back step cannot be used to forge anything in a version-2 file', () => {
+    // An unhashed sign-off plus a move-back step makes only a COMPLETED card, never a signed one...
+    const j = exported(completed());
+    const c = j.jobCards[0];
+    c.log.push({ at: '2026-11-20T13:00', from: 'COMPLETED', to: SIGNOFF, by: 'FORGED-REVIEWER' });
+    c.log.push({ at: NOW, from: SIGNOFF, to: 'COMPLETED', by: V1_UPGRADE_BY, note: `${V1_UNCHECKED_SIGNOFF_NOTE}.` });
+    c.revision = 2;
+    const r = deserialise(JSON.stringify(j));
+    expect(r.ok && card(r.state).status).toBe('COMPLETED');
+    // ...and it cannot carry service history (that needs a hashed sign-off)
+    j.history = { 'A-1': [{ date: '2026-11-20', engineHours: 1500, taskIds: ['T-1'], jobCardId: 'JC-1', technician: 'TECH-A' }] };
+    expect(deserialise(JSON.stringify(j))).toMatchObject({ ok: false, error: expect.stringMatching(/does not match job card JC-1/) });
+    // a move-back step after a hashed (current) sign-off is not allowed
+    const k = exported(signed());
+    k.jobCards[0].log.push({ at: NOW, from: SIGNOFF, to: 'COMPLETED', by: V1_UPGRADE_BY, note: `${V1_UNCHECKED_SIGNOFF_NOTE}.` });
+    Object.assign(k.jobCards[0], { status: 'COMPLETED', revision: 2, signOffTypedName: null, signOffRecordedOn: null, signOffHash: null });
+    expect(deserialise(JSON.stringify(k))).toMatchObject({ ok: false, error: expect.stringMatching(/not an allowed step/) });
   });
 });
 

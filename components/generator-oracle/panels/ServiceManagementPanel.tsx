@@ -36,8 +36,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
 const localNow = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const today = () => localNow().slice(0, 10);
 
-function download(name: string, text: string, type: string) {
-  const url = URL.createObjectURL(new Blob([text], { type }));
+function download(name: string, data: BlobPart, type: string) {
+  const url = URL.createObjectURL(new Blob([data], { type }));
   const a = document.createElement('a');
   a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -252,6 +252,18 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
   const recorded = (state.history[card.assetId] ?? []).some((r) => r.jobCardId === card.id);
   const [ticked, setTicked] = useState<string[]>([]);
   const report = jobCardReport(card, asset);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  // jsPDF is loaded only when a PDF is asked for.
+  const downloadPdf = async () => {
+    setPdfBusy(true); setPdfError(null);
+    try {
+      const { jobCardToPdf } = await import('@/lib/generator-oracle/service/jobCardPdf');
+      download(`job-card-${card.id}-rev${card.revision}.pdf`, new Uint8Array(jobCardToPdf(card, asset)), 'application/pdf');
+    } catch (e) {
+      setPdfError(`Could not make the PDF (${e instanceof Error ? e.message : String(e)}). The .txt report has the same content.`);
+    } finally { setPdfBusy(false); }
+  };
   const check = signOffCheck(card);
   const changed = check.kind === 'changed' || check.kind === 'no-hash';
   const next = nextStatuses(card.status);
@@ -376,8 +388,12 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
       <div className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-xs text-slate-300">Job card report (not a certified record)</div>
-          <button type="button" className={btn2} onClick={() => download(`job-card-${card.id}-rev${card.revision}.txt`, report, 'text/plain;charset=utf-8')}>Download report .txt</button>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className={btn2} onClick={() => download(`job-card-${card.id}-rev${card.revision}.txt`, report, 'text/plain;charset=utf-8')}>Download report .txt</button>
+            <button type="button" className={btn2} disabled={pdfBusy} onClick={downloadPdf}>{pdfBusy ? 'Preparing PDF…' : 'Download PDF'}</button>
+          </div>
         </div>
+        <ErrorLine error={pdfError} />
         <pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded-lg border border-slate-800 bg-slate-950 p-3 text-[11px] text-slate-300">{report}</pre>
       </div>
     </div>
