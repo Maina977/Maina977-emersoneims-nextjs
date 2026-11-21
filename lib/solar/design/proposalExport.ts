@@ -3,22 +3,27 @@
  *
  * Both are rendered from the same Proposal object, so screen, Excel and PDF
  * cannot disagree. A DRAFT or REFUSED proposal is marked as such on every
- * page and sheet, with its reasons.
+ * page and sheet, with its reasons, and carries the revision hash. FOR ISSUE
+ * is printed only when the proposal holds a verified approval.
  */
 import ExcelJS from 'exceljs';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { Proposal } from './proposal';
+import { APPROVAL_LOCKED_NOTICE } from './proposalApproval';
 
 const kes = (x: number | null) => (x === null ? 'rate required' : `KES ${Math.round(x).toLocaleString('en-KE')}`);
-const banner = (p: Proposal) => (p.status === 'FOR ISSUE' ? 'FOR ISSUE' : `${p.status}: NOT FOR ISSUE`);
+/** FOR ISSUE only with a verified approval; a FOR ISSUE status without one is shown as DRAFT. */
+const issued = (p: Proposal) => p.status === 'FOR ISSUE' && p.approval !== null;
+const banner = (p: Proposal) => (issued(p) ? 'FOR ISSUE' : `${p.status === 'FOR ISSUE' ? 'DRAFT' : p.status}: NOT FOR ISSUE`);
+const approvalText = (p: Proposal) => (issued(p) && p.approval ? `Approved by ${p.approval.reviewerName} (${p.approval.registration}, reviewer ${p.approval.reviewerId}) on ${p.approval.approvedAt} for this revision` : APPROVAL_LOCKED_NOTICE);
 
 export async function proposalToXlsx(p: Proposal): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'EmersonEIMS Solar Genius Pro';
   const sum = wb.addWorksheet('Summary');
   sum.addRows([
-    [`Solar proposal ${p.reference}`], [banner(p)], [],
+    [`Solar proposal ${p.reference}`], [banner(p)], ['Revision (SHA-256 of the inputs)', p.revisionHash], ['Approval', approvalText(p)], [],
     ['Client', p.client.name], ['Site', p.client.siteAddress], ['Coordinates', `${p.client.lat}, ${p.client.lon}`], [],
     ['DC capacity (kWp)', p.system.dcKwp], ['AC capacity (kW)', p.system.acKw], ['Modules', p.system.modules], ['Strings', p.system.strings], ['Battery (kWh nominal)', p.system.batteryKwh ?? '—'], [],
     ['Year-1 energy (kWh)', p.energy.year1Kwh], ['Used on site, year 1 (kWh)', p.energy.usefulYear1Kwh ?? 'unknown'], ['Exported, year 1 (kWh)', p.energy.exportYear1Kwh], ['Clipped (kWh)', p.energy.clippedKwh], ['Specific yield (kWh/kWp)', p.energy.specificYield], ['Performance ratio', p.energy.performanceRatio], ['Energy source', p.energy.source], [],
@@ -30,7 +35,7 @@ export async function proposalToXlsx(p: Proposal): Promise<Buffer> {
   ]);
   sum.getColumn(1).width = 30; sum.getColumn(2).width = 90;
   sum.getRow(1).font = { bold: true, size: 14 };
-  sum.getRow(2).font = { bold: true, color: { argb: p.status === 'FOR ISSUE' ? 'FF1B7F3A' : 'FFB00020' } };
+  sum.getRow(2).font = { bold: true, color: { argb: issued(p) ? 'FF1B7F3A' : 'FFB00020' } };
 
   const chk = wb.addWorksheet('Design checks');
   chk.addRow(['Check', 'Verdict', 'Value', 'Limit', 'Unit', 'Margin %', 'Formula', 'Reference']);
@@ -52,11 +57,13 @@ export async function proposalToXlsx(p: Proposal): Promise<Buffer> {
 
 export function proposalToPdf(p: Proposal): Uint8Array {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const mark = () => { doc.setFontSize(9); doc.setTextColor(p.status === 'FOR ISSUE' ? 27 : 176, p.status === 'FOR ISSUE' ? 127 : 0, p.status === 'FOR ISSUE' ? 58 : 32); doc.text(banner(p), 14, 8); doc.setTextColor(0, 0, 0); };
+  const mark = () => { doc.setFontSize(9); doc.setTextColor(issued(p) ? 27 : 176, issued(p) ? 127 : 0, issued(p) ? 58 : 32); doc.text(banner(p), 14, 8); doc.setTextColor(0, 0, 0); };
   mark();
   doc.setFontSize(16); doc.text(`Solar proposal ${p.reference}`, 14, 18);
   doc.setFontSize(10); doc.text(`${p.client.name} · ${p.client.siteAddress} (${p.client.lat}, ${p.client.lon})`, 14, 25);
-  autoTable(doc, { startY: 30, head: [['System', '']], body: [
+  doc.setFontSize(8); doc.text(`Revision (SHA-256 of the inputs): ${p.revisionHash}`, 14, 30);
+  doc.text(approvalText(p), 14, 34, { maxWidth: 182 });
+  autoTable(doc, { startY: 40, head: [['System', '']], body: [
     ['DC capacity', `${p.system.dcKwp} kWp (${p.system.modules} modules, ${p.system.strings} strings)`], ['AC capacity', `${p.system.acKw} kW`], ['Battery', p.system.batteryKwh === null ? 'none' : `${p.system.batteryKwh} kWh nominal`],
     ['Year-1 energy', `${p.energy.year1Kwh.toLocaleString('en-KE')} kWh (specific yield ${p.energy.specificYield} kWh/kWp, PR ${p.energy.performanceRatio})`], ['Used on site, year 1', p.energy.usefulYear1Kwh === null ? 'unknown' : `${p.energy.usefulYear1Kwh.toLocaleString('en-KE')} kWh`],
     ['Capital cost', kes(p.costing.capexKes)], ['NPV / IRR', p.finance ? `${kes(p.finance.npvKes)} / ${p.finance.irrPct ?? '—'} %` : '—'], ['Simple payback', p.finance?.simplePaybackYears != null ? `${p.finance.simplePaybackYears} years` : '—'], ['LCOE', p.finance ? `KES ${p.finance.lcoeKesPerKwh}/kWh` : '—'],
@@ -67,6 +74,6 @@ export function proposalToPdf(p: Proposal): Uint8Array {
   autoTable(doc, { head: [['Disclosures']], body: p.disclosures.map((d) => [d]), styles: { fontSize: 8 } });
   doc.setFontSize(7);
   const pages = doc.getNumberOfPages();
-  for (let k = 1; k <= pages; k++) { doc.setPage(k); if (k > 1) mark(); doc.setFontSize(7); doc.text(`${p.versions.join(' · ')} · page ${k} of ${pages}`, 14, 290); }
+  for (let k = 1; k <= pages; k++) { doc.setPage(k); if (k > 1) mark(); doc.setFontSize(7); doc.text(`${p.versions.join(' · ')} · revision ${p.revisionHash.slice(0, 16)} · page ${k} of ${pages}`, 14, 290); }
   return new Uint8Array(doc.output('arraybuffer'));
 }

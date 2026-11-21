@@ -3,6 +3,7 @@ import { npv, irr, simplePayback, buildProposal, type ProposalInput } from '@/li
 import type { Module, Inverter } from '@/lib/solar/design/validate';
 import type { LibraryEntry } from '@/lib/solar/design/datasheet';
 import type { HourlyResult } from '@/lib/solar/design/hourly';
+import { APPROVAL_UNAVAILABLE_REASON, TYPED_APPROVAL_IGNORED_REASON, proposalRevisionHash } from '@/lib/solar/design/proposalApproval';
 
 // TEST components, prices, tariffs and approvals only — never project data.
 const MOD: Module = { model: 'test-module', pmaxW: 550, vocV: 49.5, iscA: 13.9, vmpV: 41.5, impA: 13.1, betaVocPct: -0.27, betaVmpPct: -0.35, alphaIscPct: 0.048, gammaPmaxPct: -0.35, noctC: 45, maxSystemV: 1500, maxSeriesFuseA: 25, datasheet: 'test datasheet rev A' };
@@ -28,14 +29,25 @@ describe('proposal exports', () => {
     const p = buildProposal(base());
     const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await proposalToXlsx(p) as unknown as ArrayBuffer);
     expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow']);
-    expect(String(wb.getWorksheet('Summary')!.getCell('A2').value)).toMatch(/DRAFT: NOT FOR ISSUE/);
+    const sum = wb.getWorksheet('Summary')!;
+    expect(String(sum.getCell('A2').value)).toMatch(/DRAFT: NOT FOR ISSUE/);
+    expect(sum.getCell('B3').value).toBe(p.revisionHash);
+    expect(String(sum.getCell('B4').value)).toMatch(/not available yet .* All proposals remain DRAFT/);
+    const cells: string[] = [];
+    sum.eachRow((row) => row.eachCell((c) => { cells.push(String(c.value)); }));
+    expect(cells.filter((c) => /FOR ISSUE/.test(c) && !/NOT FOR ISSUE/.test(c))).toEqual([]);
     expect(wb.getWorksheet('Cash flow')!.getCell('E2').value).toBe(380000);
   }, 30000); // ExcelJS import + round trip exceeds 5 s under full-suite load
   it('PDF: a valid document is produced', async () => {
     const { proposalToPdf } = await import('@/lib/solar/design/proposalExport');
-    const pdf = proposalToPdf(buildProposal(base()));
+    const p = buildProposal(base());
+    const pdf = proposalToPdf(p);
     expect(new TextDecoder().decode(pdf.slice(0, 5))).toBe('%PDF-');
     expect(pdf.length).toBeGreaterThan(3000);
+    const text = new TextDecoder('latin1').decode(pdf);
+    expect(text).toContain(p.revisionHash);
+    expect(text).toContain('DRAFT: NOT FOR ISSUE');
+    expect(text).not.toContain('(FOR ISSUE)');
   });
 });
 
@@ -61,11 +73,23 @@ describe('design-to-proposal', () => {
     // 20 equal 380,000 inflows at 10 %: annuity factor 8.5136 → NPV 3,235,170 − 800,000
     expect(p.finance!.npvKes).toBeCloseTo(380000 * 8.513564 - 800000, -1);
   });
-  it('without a recorded engineer approval it stays DRAFT; with one it is FOR ISSUE', () => {
-    expect(buildProposal(base()).status).toBe('DRAFT');
-    const ok = buildProposal({ ...base(), approval: { engineer: 'TEST ENGINEER', registration: 'TEST-REG', date: '2026-11-20' } });
-    expect(ok.status).toBe('FOR ISSUE');
-    expect(ok.statusReasons).toEqual([]);
+  it('without a verified approval it stays DRAFT, failing closed with the stated reason', () => {
+    const p = buildProposal(base());
+    expect(p.status).toBe('DRAFT');
+    expect(p.approval).toBeNull();
+    expect(p.statusReasons).toEqual([APPROVAL_UNAVAILABLE_REASON]);
+    expect(p.revisionHash).toBe(proposalRevisionHash(base()));
+    expect(p.revisionHash).toMatch(/^[0-9a-f]{64}$/);
+  });
+  it('a typed approval (name, registration, date) never grants FOR ISSUE', () => {
+    const typed = { ...base(), approval: { engineer: 'TEST ENGINEER', registration: 'TEST-REG', date: '2026-11-20' } } as unknown as ProposalInput;
+    const p = buildProposal(typed);
+    expect(p.status).toBe('DRAFT');
+    expect(p.approval).toBeNull();
+    expect(p.statusReasons).toContain(TYPED_APPROVAL_IGNORED_REASON);
+    expect(p.statusReasons).toContain(APPROVAL_UNAVAILABLE_REASON);
+    // The typed approval is not part of the revision.
+    expect(p.revisionHash).toBe(buildProposal(base()).revisionHash);
   });
   it('an unsafe string (20 modules: cold Voc > 1000 V) refuses the proposal', () => {
     const p = buildProposal({ ...base(), design: { modulesPerString: 20, stringsPerMppt: [1] } });
@@ -78,8 +102,8 @@ describe('design-to-proposal', () => {
     expect(p.finance).toBeNull();
     expect(p.statusReasons.join(' ')).toMatch(/Rate required: Mounting structure/);
   });
-  it('an unverified datasheet keeps it DRAFT even when approved', () => {
-    const p = buildProposal({ ...base(), module: entry(MOD, 'module', false), approval: { engineer: 'TEST ENGINEER', registration: 'TEST-REG', date: '2026-11-20' } });
+  it('an unverified datasheet keeps it DRAFT', () => {
+    const p = buildProposal({ ...base(), module: entry(MOD, 'module', false) });
     expect(p.status).toBe('DRAFT');
     expect(p.statusReasons.join(' ')).toMatch(/not verified/);
   });
