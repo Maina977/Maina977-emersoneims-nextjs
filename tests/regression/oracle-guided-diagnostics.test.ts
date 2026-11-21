@@ -95,8 +95,17 @@ describe('ranking follows the evidence', () => {
   it('the same thresholds scale for 24 V systems', () => {
     const r = diagnose(NO_CRANK, { systemVoltage: '24', restVoltage: 23.6, crankVoltage: 16, starterSound: 'slow' });
     expect(r.ranked[0].id).toBe('battery');
-    const ok = diagnose(NO_CRANK, { systemVoltage: '24', restVoltage: 25.4, crankVoltage: 22, starterSound: 'click', terminals: 'clean' });
+    // TEST OEM minimum; the "battery holds" judgement needs the manual figure, none is built in.
+    const ok = diagnose(NO_CRANK, { systemVoltage: '24', restVoltage: 25.4, crankVoltage: 22, oemMinCrankVoltage: 20, starterSound: 'click', terminals: 'clean' });
     expect(ok.ranked[0].id).toBe('starter');
+  });
+  it('no built-in cranking-voltage or "at rated" frequency limit: without the OEM figure the rule does not fire', () => {
+    const noOem = diagnose(NO_CRANK, { systemVoltage: '24', restVoltage: 25.4, crankVoltage: 22, starterSound: 'click', terminals: 'clean' });
+    expect(noOem.ranked.find((c) => c.id === 'starter')?.score ?? 0).toBe(0);
+    const below = diagnose(NO_CRANK, { systemVoltage: '24', restVoltage: 25.4, crankVoltage: 22, oemMinCrankVoltage: 23, starterSound: 'click', terminals: 'clean' });
+    expect(below.ranked.find((c) => c.id === 'starter')?.score ?? 0).toBe(0);
+    expect(diagnose(NO_VOLTAGE, { ratedFrequency: '50', frequency: 49.9, voltage: 300, ratedVoltage: 400 }).excluded.map((e) => e.id)).not.toContain('speed');
+    expect(diagnose(NO_VOLTAGE, { ratedFrequency: '50', frequency: 49.9, oemMinFrequency: 49, voltage: 300, ratedVoltage: 400 }).excluded.map((e) => e.id)).toContain('speed');
   });
   it('mechanical gauge normal → sender fault leads; pump and bearings not first', () => {
     const r = diagnose(LOW_OIL_PRESSURE, { gauge: 'sender', mechanicalAgrees: 'yes', oilLevel: 'ok', oilCondition: 'normal', knock: 'no' });
