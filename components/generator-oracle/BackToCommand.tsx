@@ -72,6 +72,12 @@ const PANEL_DESCRIPTIONS: Record<string, { title: string; purpose: string; howTo
     howToUse:
       'Build a report after a diagnosis, review past lookups on this device, or search for a part and send the request to us on WhatsApp for price and availability.',
   },
+  service: {
+    title: 'Service & Job Cards',
+    purpose: 'Keep an asset register, maintenance plans from the OEM manual, what is due, and workshop job cards',
+    howToUse:
+      'Add each generator, then type its maintenance tasks and intervals from the OEM manual (document, edition and page are required; nothing is pre-filled). Enter the date and hour-meter reading to see what is due. Open a job card for each job and move it through to supervisor sign-off. Everything is saved in this browser only; use Export JSON to keep a copy.',
+  },
 };
 
 export default function BackToCommand({ onBack, currentPanel, showPanelInfo = true, showBack = true }: BackToCommandProps) {

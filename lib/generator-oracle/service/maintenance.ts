@@ -70,6 +70,9 @@ export type JobStatus = 'OPEN' | 'IN PROGRESS' | 'AWAITING PARTS' | 'COMPLETED' 
 const FLOW: Record<JobStatus, JobStatus[]> = {
   OPEN: ['IN PROGRESS'], 'IN PROGRESS': ['AWAITING PARTS', 'COMPLETED'], 'AWAITING PARTS': ['IN PROGRESS'], COMPLETED: ['SIGNED OFF', 'IN PROGRESS'], 'SIGNED OFF': [],
 };
+/** The steps a card may move to next (for the UI status bar; same table transition() enforces). */
+export function nextStatuses(s: JobStatus): JobStatus[] { return [...(FLOW[s] ?? [])]; }
+export const JOB_STATUSES: JobStatus[] = ['OPEN', 'IN PROGRESS', 'AWAITING PARTS', 'COMPLETED', 'SIGNED OFF'];
 export interface PartLine { partNo: string; description: string; qty: number; compatibility: ManualRef | null }
 export interface Reading { name: string; value: number; unit: string; min?: number; max?: number; limitSource?: string }
 export interface JobCard {
