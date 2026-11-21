@@ -199,7 +199,8 @@ export default function SpeechController({ language, className = '' }: SpeechCon
       {/* Floating Speech Button */}
       <motion.button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`fixed bottom-24 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-orange-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform ${className}`}
+        style={{ bottom: 'calc(6rem + var(--consent-bar-h, 0px))' }}
+        className={`fixed right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-orange-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform ${className}`}
         whileTap={{ scale: 0.95 }}
         title="Voice Assistant"
       >
@@ -222,7 +223,8 @@ export default function SpeechController({ language, className = '' }: SpeechCon
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-40 right-6 z-50 w-80 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-amber-500/30 overflow-hidden"
+            style={{ bottom: 'calc(10rem + var(--consent-bar-h, 0px))' }}
+            className="fixed right-6 z-50 w-80 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-amber-500/30 overflow-hidden"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-4 py-3 flex justify-between items-center">
@@ -500,7 +502,8 @@ export default function SpeechController({ language, className = '' }: SpeechCon
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="fixed bottom-40 left-1/2 transform -translate-x-1/2 z-50 max-w-lg bg-black/90 rounded-lg px-6 py-3 border border-amber-500/30"
+            style={{ bottom: 'calc(10rem + var(--consent-bar-h, 0px))' }}
+            className="fixed left-1/2 transform -translate-x-1/2 z-50 max-w-lg bg-black/90 rounded-lg px-6 py-3 border border-amber-500/30"
           >
             <p className="text-white text-center font-medium">{spokenText}</p>
           </motion.div>

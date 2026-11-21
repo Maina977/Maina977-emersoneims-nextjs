@@ -100,7 +100,8 @@ export default function InstallPrompt() {
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 100 }}
-        className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:bottom-4 sm:left-4 sm:right-auto sm:w-96"
+        // Bottom offsets include the cookie banner's height while it is visible (0 otherwise).
+        className="fixed bottom-[var(--consent-bar-h,0px)] left-0 right-0 z-50 p-4 sm:bottom-[calc(1rem_+_var(--consent-bar-h,0px))] sm:left-4 sm:right-auto sm:w-96"
       >
         <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-cyan-500/30 rounded-2xl p-5 shadow-2xl shadow-cyan-500/10">
           {/* Header */}

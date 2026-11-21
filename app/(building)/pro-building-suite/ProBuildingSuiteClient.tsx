@@ -105,8 +105,11 @@ export default function ProBuildingSuiteClient() {
         width: '100%',
         // 100dvh handles iOS Safari's collapsing URL bar correctly on mobile/tablet
         // (100vh would leave a blank strip when the bar retracts). 4rem accounts for the global fixed nav.
-        height: 'calc(100dvh - 4rem)',
-        minHeight: 'calc(100vh - 4rem)',
+        // --consent-bar-h is the cookie banner's height while it is visible (0 otherwise):
+        // the suite scrolls inside this frame, so the frame itself must end above the banner
+        // or its bottom results and action buttons would sit behind it.
+        height: 'calc(100dvh - 4rem - var(--consent-bar-h, 0px))',
+        minHeight: 'calc(100vh - 4rem - var(--consent-bar-h, 0px))',
         background: '#0a0e27',
         overflow: 'hidden',
         WebkitOverflowScrolling: 'touch',
