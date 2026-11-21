@@ -98,6 +98,7 @@ export default function DesignCheckPage() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
         <button type="button" onClick={() => setF(EXAMPLE)} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#e2e8f0' }}>Load worked example (test values, not a recommendation)</button>
         <button type="button" onClick={() => setF({})} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: '#94a3b8' }}>Clear</button>
+        <a href="#/proposal" style={{ fontSize: 13, color: '#fbbf24', alignSelf: 'center' }}>Continue to proposal →</a>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: 16 }}>
         <div style={{ display: 'grid', gap: 12 }}>
