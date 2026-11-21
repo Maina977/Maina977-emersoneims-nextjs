@@ -175,7 +175,11 @@ export interface ChemEvidence {
   sentence: string;
 }
 
-/** Fluoride class against the WHO guideline 1.5 mg/L; HIGH is "well above" it (over 4 mg/L). */
+/**
+ * Fluoride class against the WHO guideline 1.5 mg/L. HIGH is above 4 mg/L,
+ * the US EPA maximum contaminant level for fluoride (40 CFR 141.62), used
+ * here only as the "well above the guideline" band edge (re-audit LOW 1, 2026-11-21).
+ */
 export function fluorideRisk(f: number): ChemRisk {
   return f > 4 ? 'HIGH' : f > 1.5 ? 'ELEVATED' : 'LOW';
 }

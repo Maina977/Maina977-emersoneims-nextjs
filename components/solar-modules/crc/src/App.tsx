@@ -66,6 +66,12 @@ const AppContainer = styled.div`
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    /* Phones (2026-11-21 walkthrough): the app sits below the site header, so a
+       fixed 100dvh frame put its lower part, and buttons such as "Build proposal",
+       below the screen with a second scroll area inside. On phones the app
+       flows with the page and only the page scrolls. */
+    height: auto;
+    overflow: visible;
   }
 `;
 
@@ -230,6 +236,11 @@ const MainArea = styled.section`
   height: 100dvh;
   overflow: hidden;
   min-width: 0;
+
+  @media (max-width: 768px) {
+    height: auto;
+    overflow: visible;
+  }
 `;
 
 const TopBar = styled.div`
@@ -315,6 +326,12 @@ const Content = styled.main`
   scroll-behavior: smooth;
   /* every page now scrolls inside this region only */
   & > * { min-height: auto !important; }
+
+  /* Phones: no inner scroll area; the page scrolls (see AppContainer). */
+  @media (max-width: 768px) {
+    overflow-y: visible;
+    flex: none;
+  }
 `;
 
 /* Command bar (⌘K) inside the top bar */

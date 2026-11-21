@@ -24,7 +24,7 @@ import TradesPanel from './TradesPanel';
 import { analysePage, sha256Hex, viewportToPdf, pdfToViewport, resolutionLimitM, PDF_SHEET_VERSION, type SheetInfo, type PdfPageLike, type ViewportLike } from '@/lib/qs/pdfSheet';
 import {
   extractEmbeddedDrawing, buildProject, bytesToBase64, checkDrawingHash, draftBoq, guardedStorage, hasWork, parseProject, readAutosave, restoreProject, revisionProblem, writeAutosave, autosaveKey,
-  ProjectError, EMBED_LIMIT_BYTES, SAVE_NOTICE,
+  ProjectError, EMBED_LIMIT_BYTES, MAX_PROJECT_CHARS, SAVE_NOTICE,
   type AdjustmentDraft, type Difference, type DrawingIdentity, type ItemDraft, type ProjectFile, type RefDim, type RestoredProject, type WorkbenchSnapshot,
 } from '@/lib/qs/project';
 
@@ -250,6 +250,8 @@ export default function TakeoffWorkbench() {
 
   const openProject = async (f: File) => {
     setProjectErr(''); setProjectMsg(''); setPendingProject(null);
+    // Refuse before reading (re-audit LOW 3, 2026-11-21); parseProject applies the same limit to the text.
+    if (f.size > MAX_PROJECT_CHARS) { setProjectErr(`This file is larger than a project file can be (${Math.round(MAX_PROJECT_CHARS / 1024 / 1024)} MB); nothing was opened.`); return; }
     try {
       const p = parseProject(new TextDecoder().decode(await readBytes(f)));
       const r = restoreProject(p); // everything is recomputed before the workbench is touched

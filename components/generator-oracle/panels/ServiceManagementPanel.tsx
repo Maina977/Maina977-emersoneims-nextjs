@@ -444,6 +444,8 @@ export default function ServiceManagementPanel() {
   const card = cards.find((c) => c.id === cardId) ?? null;
 
   const importFile = async (file: File) => {
+    // Refuse before reading: a huge file would freeze the tab (re-audit LOW 2, 2026-11-21).
+    if (file.size > 10 * 1024 * 1024) { setError('That file is larger than an Oracle service export can be (10 MB); nothing was imported.'); setNotice(null); return; }
     let text = '';
     try { text = await file.text(); } catch { setError('Could not read that file'); return; }
     const r = deserialise(text);
