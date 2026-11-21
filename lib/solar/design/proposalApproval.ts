@@ -45,6 +45,14 @@ export interface VerifiedApproval {
   approvedAt: string;      // ISO 8601
   revisionHash: string;    // proposalRevisionHash of the approved input
   signature: string;       // hex HMAC-SHA256 of approvalSigningPayload under the server key
+  /**
+   * Optional (accounts, 2026-11-22): what exactly was approved, e.g.
+   * "building/boq-certification/<org>/<project>/<revision>". When present it is
+   * part of the signed payload, so an approval cannot be moved to another
+   * tool, document type, organisation, project or revision. Approvals made
+   * without it sign exactly the same payload as before.
+   */
+  binding?: string;
 }
 export interface AuthorisedReviewer { reviewerId: string; name: string; registration: string }
 export interface ApprovalVerifier {
@@ -92,6 +100,7 @@ export function approvalSigningPayload(a: Omit<VerifiedApproval, 'signature'>): 
     purpose: 'solar-proposal-approval/v1',
     reviewerId: a.reviewerId, reviewerName: a.reviewerName, registration: a.registration,
     approvedAt: a.approvedAt, revisionHash: a.revisionHash,
+    ...(a.binding !== undefined ? { binding: a.binding } : {}),
   });
 }
 
@@ -126,7 +135,8 @@ export function verifyApproval(approval: unknown, currentRevisionHash: string, v
   if (approval === undefined || approval === null) return { ok: false, reason: 'Engineer approval by an authorised reviewer is not yet recorded' };
   const a = approval as Partial<VerifiedApproval>;
   if (!isStr(a.reviewerId) || !isStr(a.reviewerName) || !isStr(a.registration) || !isStr(a.approvedAt) || Number.isNaN(Date.parse(a.approvedAt))
-    || !isStr(a.revisionHash) || !HEX64.test(a.revisionHash) || !isStr(a.signature) || !HEX64.test(a.signature)) {
+    || !isStr(a.revisionHash) || !HEX64.test(a.revisionHash) || !isStr(a.signature) || !HEX64.test(a.signature)
+    || (a.binding !== undefined && !isStr(a.binding))) {
     return { ok: false, reason: 'The approval is incomplete or malformed; the proposal remains DRAFT' };
   }
   const full = a as VerifiedApproval;
