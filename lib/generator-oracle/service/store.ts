@@ -7,7 +7,8 @@
  * Errors are the engine's own messages, passed through unchanged.
  */
 import {
-  cardIntegrityProblems, dueList, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, JOB_STATUSES, SIGNOFF, TYPED_SIGNOFF_NOTICE,
+  cardIntegrityProblems, dueList, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
+  JOB_STATUSES, SIGNOFF, TYPED_SIGNOFF_NOTICE, V1_UNCHECKED_SIGNOFF_NOTE,
   type Asset, type DueItem, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord,
 } from './maintenance';
 
@@ -15,6 +16,8 @@ import {
 export const STORE_KEY = 'eims-oracle-service-v1';
 /** Where unreadable saved data is copied before this screen starts empty, so it is never overwritten. */
 export const BACKUP_KEY = 'eims-oracle-service-unreadable-backup';
+/** Where version-1 saved data is copied before it is upgraded and saved as version 2. */
+export const V1_BACKUP_KEY = 'eims-oracle-service-v1-original';
 /** 1 = first release (2026-11-20); 2 = sign-off content hash + reopen (2026-11-21). */
 export const STORE_VERSION = 2;
 export const STORE_FORMAT = 'eims-oracle-service';
@@ -283,16 +286,49 @@ function checkShape(d: Record<string, unknown>): string | null {
   return null;
 }
 
-export type ReadResult = { ok: true; state: ServiceState; notice: string | null } | { ok: false; error: string };
+export type ReadResult =
+  | { ok: true; state: ServiceState; notice: string | null; /** Present only for version-1 data: keep the original before saving over it. */ upgradedFrom?: 1 }
+  | { ok: false; error: string };
+
+/**
+ * Version 1 had no content hash, so its sign-offs cannot be checked. Each such
+ * card goes back to COMPLETED with a history note (voidUncheckedSignOff), and a
+ * service record that rested on it is taken out of the due list until the card
+ * is signed and recorded again. Everything else in the file is kept.
+ */
+function voidV1SignOffs(o: ServiceState, now: string): { state: ServiceState; message: string | null } {
+  const affected: string[] = [];
+  const removed: string[] = [];
+  const history: Record<string, ServiceRecord[]> = {};
+  const voidedIds = new Set(o.jobCards.filter((c) => c.status === SIGNOFF && !c.log[c.log.length - 1]?.hash).map((c) => c.id));
+  for (const [assetId, hist] of Object.entries(o.history)) {
+    history[assetId] = hist.filter((r) => {
+      if (!voidedIds.has(r.jobCardId)) return true;
+      removed.push(`${r.jobCardId} (${assetId}, ${r.date}, ${r.engineHours} h, plan tasks ${r.taskIds.join(', ') || 'none'})`);
+      return false;
+    });
+  }
+  const jobCards = o.jobCards.map((c) => {
+    if (!voidedIds.has(c.id)) return c;
+    affected.push(c.id);
+    const recs = removed.filter((r) => r.startsWith(`${c.id} (`));
+    return voidUncheckedSignOff(c, now, recs.length ? `Its service record was taken out of the due list until then: ${recs.join('; ')}.` : undefined);
+  });
+  if (!affected.length) return { state: o, message: null };
+  const message = `${V1_UNCHECKED_SIGNOFF_NOTE}. Moved back to COMPLETED: job card${affected.length > 1 ? 's' : ''} ${affected.join(', ')}.`
+    + (removed.length ? ` Service records taken out of the due list until each card is signed off and recorded again: ${removed.join('; ')}.` : '');
+  return { state: { ...o, history, jobCards }, message };
+}
 
 /**
  * Parse saved or imported JSON. Never throws. Nothing in the file is trusted:
  * every job card is replayed against the job-card rules (cardIntegrityProblems)
  * and a card claiming a sign-off must match the content hash recorded at it.
- * Any failure, and any service record without a signed card behind it,
+ * Any failure, and any service record without a hashed sign-off behind it,
  * refuses the whole file with a message; nothing is shown as clean.
+ * Version-1 sign-offs (no hash) are moved back to COMPLETED, not refused.
  */
-export function deserialise(text: string): ReadResult {
+export function deserialise(text: string, now: string = new Date().toISOString()): ReadResult {
   let d: unknown;
   try { d = JSON.parse(text); } catch { return { ok: false, error: 'Not a valid JSON file' }; }
   if (!isObj(d)) return { ok: false, error: 'Not a Generator Oracle service file: not a JSON object' };
@@ -301,7 +337,8 @@ export function deserialise(text: string): ReadResult {
   const data = v.version === 1 ? upgradeV1(d) : d;
   const problem = checkShape(data);
   if (problem) return { ok: false, error: `Not a Generator Oracle service file: ${problem}` };
-  const o = data as unknown as ServiceState;
+  const voided = v.version === 1 ? voidV1SignOffs(data as unknown as ServiceState, now) : { state: data as unknown as ServiceState, message: null };
+  const o = voided.state;
   for (const c of o.jobCards) {
     const p = cardIntegrityProblems(c);
     if (p.length) {
@@ -313,11 +350,13 @@ export function deserialise(text: string): ReadResult {
     for (const r of hist) {
       const c = o.jobCards.find((x) => x.id === r.jobCardId);
       if (!c) return { ok: false, error: `Refused: service history for ${assetId} points at job card ${r.jobCardId}, which is not in the file. Nothing was loaded.` };
-      if (c.assetId !== assetId || c.technician !== r.technician || !c.log.some((l) => l.to === SIGNOFF)) return { ok: false, error: `Refused: service history for ${assetId} does not match job card ${r.jobCardId} (asset, technician or sign-off). Nothing was loaded.` };
+      if (c.assetId !== assetId || c.technician !== r.technician || !c.log.some((l) => l.to === SIGNOFF && l.hash)) return { ok: false, error: `Refused: service history for ${assetId} does not match job card ${r.jobCardId} (asset, technician or sign-off). Nothing was loaded.` };
     }
   }
-  const notice = v.version === 1 ? `This data was saved by version 1 of this screen and has been upgraded to version ${STORE_VERSION}.` : null;
-  return { ok: true, state: { version: 2, assets: o.assets, plans: o.plans, history: o.history, jobCards: o.jobCards }, notice };
+  const state: ServiceState = { version: 2, assets: o.assets, plans: o.plans, history: o.history, jobCards: o.jobCards };
+  if (v.version !== 1) return { ok: true, state, notice: null };
+  const notice = `This data was saved by version 1 of this screen and has been upgraded to version ${STORE_VERSION}.${voided.message ? ` ${voided.message}` : ''}`;
+  return { ok: true, state, notice, upgradedFrom: 1 };
 }
 
 /** Minimal Storage interface so tests can pass a stub. */
@@ -340,7 +379,17 @@ export function loadState(store: KeyValueStore | null | undefined, now: string =
   let raw: string | null;
   try { raw = store.getItem(STORE_KEY); } catch { return { state: emptyState(), error: STORAGE_UNAVAILABLE, notice: null, protectSaved: false }; }
   if (!raw) return { state: emptyState(), error: null, notice: null, protectSaved: false };
-  const r = deserialise(raw);
+  const r = deserialise(raw, now);
+  if (r.ok && r.upgradedFrom === 1) {
+    // The next save writes version 2 over it: keep the version-1 original first.
+    const key = `${V1_BACKUP_KEY}:${now}`;
+    try {
+      store.setItem(key, raw);
+      return { state: r.state, error: null, notice: `${r.notice} The original version-1 data was kept in browser storage under "${key}".`, protectSaved: false };
+    } catch {
+      return { state: r.state, error: null, notice: `${r.notice} The original version-1 data could not be backed up; it is left in place and will be replaced only when you make a change here.`, protectSaved: true };
+    }
+  }
   if (r.ok) return { state: r.state, error: null, notice: r.notice, protectSaved: false };
   const backupKey = `${BACKUP_KEY}:${now}`;
   try {

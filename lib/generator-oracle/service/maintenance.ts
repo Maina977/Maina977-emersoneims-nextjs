@@ -217,6 +217,29 @@ function cancelSignOff(card: JobCard, to: JobStatus, by: string, at: string, why
   };
 }
 
+/** History note on a version-1 sign-off that had no content hash and was moved back to COMPLETED on upgrade. */
+export const V1_UNCHECKED_SIGNOFF_NOTE = 'Sign-off from a version-1 file could not be checked (no content hash); sign-off must be recorded again';
+/** `by` on that history step: the upgrade did it, not a person. */
+export const V1_UPGRADE_BY = 'Generator Oracle (version-1 upgrade)';
+
+const isV1Void = (e: LogEntry | undefined) => !!e && e.from === SIGNOFF && e.to === 'COMPLETED' && e.by === V1_UPGRADE_BY && !!e.note?.startsWith(V1_UNCHECKED_SIGNOFF_NOTE);
+
+/**
+ * Version-1 upgrade only: a card at the sign-off step whose sign-off has no
+ * content hash goes back to COMPLETED with a history note. The old sign-off
+ * step stays in the history; the card starts a new revision that needs a
+ * fresh sign-off. `extra` is added to the note (e.g. a service record removed).
+ */
+export function voidUncheckedSignOff(card: JobCard, at: string, extra?: string): JobCard {
+  const last = card.log[card.log.length - 1];
+  if (card.status !== SIGNOFF || !last || last.to !== SIGNOFF || last.hash) throw new Error(`Job card ${card.id}: only a sign-off without a content hash can be moved back this way`);
+  const note = `${V1_UNCHECKED_SIGNOFF_NOTE}. It was recorded by typed name ${last.by} on ${last.at}.${extra ? ` ${extra}` : ''}`;
+  return {
+    ...card, status: 'COMPLETED', revision: card.revision + 1, signOffTypedName: null, signOffRecordedOn: null, signOffHash: null,
+    log: [...card.log, { at, from: SIGNOFF, to: 'COMPLETED', by: V1_UPGRADE_BY, note }],
+  };
+}
+
 /**
  * The only way to change a card after sign-off. Needs who, when and a reason;
  * starts a new revision that needs a fresh sign-off. The earlier sign-off
@@ -244,10 +267,13 @@ export function cardIntegrityProblems(card: JobCard): string[] {
   card.log.forEach((e, i) => {
     const n = `history step ${i + 1}`;
     if (e.from !== at) out.push(`${n} starts from ${e.from} but the card was at ${at}`);
-    const reopen = at === SIGNOFF && e.to === 'IN PROGRESS';
+    // A version-1 sign-off with no hash, moved back to COMPLETED on upgrade: allowed only as that exact pair of steps.
+    const voided = e.to === SIGNOFF && !e.hash && isV1Void(card.log[i + 1]);
+    const v1Void = at === SIGNOFF && isV1Void(e) && i > 0 && !card.log[i - 1].hash;
+    const reopen = (at === SIGNOFF && e.to === 'IN PROGRESS') || v1Void;
     if (!reopen && !FLOW[at].includes(e.to)) out.push(`${n}: ${at} → ${e.to} is not an allowed step`);
     if (!e.by.trim() || Number.isNaN(Date.parse(e.at))) out.push(`${n} has no who or when`);
-    if (e.to === SIGNOFF) {
+    if (e.to === SIGNOFF && !voided) {
       if (e.by.trim().toLowerCase() === tech) out.push(`${n}: sign-off by the technician`);
       if (!e.hash) out.push(`${n}: no content hash was recorded at sign-off`);
       if (e.revision !== reopens + 1) out.push(`${n}: sign-off revision does not match the history`);
@@ -299,45 +325,45 @@ const fmtLimits = (r: Reading) => {
   return `limits ${range}, source: ${r.limitSource?.trim() || 'NOT GIVEN'}`;
 };
 
-/** Plain-text job card report for the customer file. Not a certified record (typed names). */
-export function jobCardReport(card: JobCard, asset: Asset): string {
+/** One section of the job card report: a heading and its lines (already indented/bulleted). */
+export interface ReportSection { heading: string; lines: string[] }
+
+/**
+ * The job card report as a title, notices and sections. The .txt and the PDF
+ * are both built from this, so they always carry the same content.
+ */
+export function jobCardReportParts(card: JobCard, asset: Asset): { title: string; notices: string[]; sections: ReportSection[]; footer: string } {
   const list = (xs: string[], empty: string) => (xs.length ? xs.map((x) => `  - ${x}`) : [`  ${empty}`]);
   const flags = readingFlags(card.readings);
-  const lines = [
-    `JOB CARD ${card.id} (revision ${card.revision}) — ${card.status}`,
-    `NOTICE: ${TYPED_SIGNOFF_NOTICE}`,
-    `NOTICE: ${TYPED_NAMES_NOTICE}`,
-    '',
-    'ASSET',
-    `  ${asset.id}: ${asset.make} ${asset.model} (${asset.ratedKva} kVA), engine ${asset.engine || '—'}, controller ${asset.controller || '—'}, serial ${asset.serial}`,
-    '',
-    'FAULT',
-    `  Reported fault: ${card.reportedFault}`,
-    `  Fault codes: ${card.faultCodes.join(', ') || 'none'}`,
-    `  Opened ${card.opened}; technician (typed name): ${card.technician}`,
-    '',
-    'WORK DONE',
-    ...list(card.tasks, '(none recorded)'),
-    `  Engine hours at job: ${card.engineHoursAtJob === null ? '—' : `${card.engineHoursAtJob} h`}. Labour: ${card.labourHours} h.`,
-    '',
-    'PARTS',
-    ...list(card.parts.map((p) => `${p.qty} × ${p.partNo}${p.description ? ` ${p.description}` : ''} — ${p.compatibility ? `parts book: ${refText(p.compatibility)}` : 'compatibility unverified (no parts-book reference)'}`), 'none'),
-    '',
-    'TEST READINGS',
-    ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})`), '(none recorded)'),
-    ...flags.map((f) => `  ! ${f}`),
-    '',
-    'FINDINGS',
-    `  ${card.findings || '—'}`,
-    '',
-    'SIGN-OFF',
-    ...signOffSummary(card).map((x) => `  ${x}`),
-    `  Completed: ${card.completedOn ?? '—'}`,
-    '',
-    'STATUS HISTORY (who = typed name, not verified)',
-    ...list(card.log.map((l) => `${l.at}  ${l.from} → ${l.to}  by ${l.by}${l.revision ? ` (revision ${l.revision})` : ''}${l.note ? ` — ${l.note}` : ''}${l.hash ? ` [content hash ${l.hash}]` : ''}`), '(no status changes yet)'),
-    '',
-    `[${SERVICE_ENGINE_VERSION}]`,
-  ];
-  return lines.join('\n');
+  return {
+    title: `JOB CARD ${card.id} (revision ${card.revision}) — ${card.status}`,
+    notices: [`NOTICE: ${TYPED_SIGNOFF_NOTICE}`, `NOTICE: ${TYPED_NAMES_NOTICE}`],
+    sections: [
+      { heading: 'ASSET', lines: [`  ${asset.id}: ${asset.make} ${asset.model} (${asset.ratedKva} kVA), engine ${asset.engine || '—'}, controller ${asset.controller || '—'}, serial ${asset.serial}`] },
+      { heading: 'FAULT', lines: [
+        `  Reported fault: ${card.reportedFault}`,
+        `  Fault codes: ${card.faultCodes.join(', ') || 'none'}`,
+        `  Opened ${card.opened}; technician (typed name): ${card.technician}`,
+      ] },
+      { heading: 'WORK DONE', lines: [
+        ...list(card.tasks, '(none recorded)'),
+        `  Engine hours at job: ${card.engineHoursAtJob === null ? '—' : `${card.engineHoursAtJob} h`}. Labour: ${card.labourHours} h.`,
+      ] },
+      { heading: 'PARTS', lines: list(card.parts.map((p) => `${p.qty} × ${p.partNo}${p.description ? ` ${p.description}` : ''} — ${p.compatibility ? `parts book: ${refText(p.compatibility)}` : 'compatibility unverified (no parts-book reference)'}`), 'none') },
+      { heading: 'TEST READINGS', lines: [
+        ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})`), '(none recorded)'),
+        ...flags.map((f) => `  ! ${f}`),
+      ] },
+      { heading: 'FINDINGS', lines: [`  ${card.findings || '—'}`] },
+      { heading: 'SIGN-OFF', lines: [...signOffSummary(card).map((x) => `  ${x}`), `  Completed: ${card.completedOn ?? '—'}`] },
+      { heading: 'STATUS HISTORY (who = typed name, not verified)', lines: list(card.log.map((l) => `${l.at}  ${l.from} → ${l.to}  by ${l.by}${l.revision ? ` (revision ${l.revision})` : ''}${l.note ? ` — ${l.note}` : ''}${l.hash ? ` [content hash ${l.hash}]` : ''}`), '(no status changes yet)') },
+    ],
+    footer: `[${SERVICE_ENGINE_VERSION}]`,
+  };
+}
+
+/** Plain-text job card report for the customer file. Not a certified record (typed names). */
+export function jobCardReport(card: JobCard, asset: Asset): string {
+  const p = jobCardReportParts(card, asset);
+  return [p.title, ...p.notices, ...p.sections.flatMap((s) => ['', s.heading, ...s.lines]), '', p.footer].join('\n');
 }
