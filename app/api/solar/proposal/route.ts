@@ -27,9 +27,12 @@ const fail = (error: string, status: number) => NextResponse.json({ error }, { s
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
   if (!limiter.check(20, `solar-proposal:${ip}`).success) return fail('Too many requests; try again in a minute.', 429);
+  // Audit M6 (2026-11-21): refuse on the declared size before reading the body.
+  const declared = Number(req.headers.get('content-length'));
+  if (Number.isFinite(declared) && declared > MAX_BYTES) return fail('Request too large (2 MB limit)', 413);
 
   const text = await req.text();
-  if (text.length > MAX_BYTES) return fail('Request too large (2 MB limit)', 413);
+  if (new TextEncoder().encode(text).length > MAX_BYTES) return fail('Request too large (2 MB limit)', 413);
   let body: unknown;
   try { body = JSON.parse(text); } catch { return fail('Body must be JSON', 400); }
   const parsed = checkProposalRequest(body);

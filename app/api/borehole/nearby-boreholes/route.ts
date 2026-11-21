@@ -19,6 +19,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { overpassQuery, OSM_ATTRIBUTION } from '@/lib/data-sources/overpass';
 import { pointsNear } from '@/lib/osm/kenyaPoints';
+import { NO_STORE } from '@/lib/http/edgeCache';
 
 interface NearbyBoreholesRequest {
   latitude: number;
@@ -210,7 +211,7 @@ export async function GET(request: NextRequest) {
   if (!lat || !lon) {
     return NextResponse.json(
       { success: false, error: 'Missing lat and lon parameters' },
-      { status: 400 }
+      { status: 400, headers: NO_STORE }
     );
   }
 
@@ -224,5 +225,9 @@ export async function GET(request: NextRequest) {
     headers: { 'Content-Type': 'application/json' },
   });
 
-  return POST(mockRequest as NextRequest);
+  // Audit M2 (2026-11-21): a GET error (400/429/500/503) must never be edge-cached
+  // for other visitors; successful answers keep the site default.
+  const res = await POST(mockRequest as NextRequest);
+  if (res.status !== 200) for (const [k, v] of Object.entries(NO_STORE)) res.headers.set(k, v);
+  return res;
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { soilAt } from '@/lib/aquascan-soil/kenyaSoil';
+import { NO_STORE } from '@/lib/http/edgeCache';
 
 /**
  * Soil properties at a point from the self-hosted Kenya SoilGrids extract.
@@ -12,7 +13,7 @@ export function GET(request: Request) {
   const lat = Number(u.searchParams.get('lat'));
   const lon = Number(u.searchParams.get('lon'));
   if (!u.searchParams.get('lat') || !u.searchParams.get('lon') || !Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
-    return NextResponse.json({ error: 'lat and lon are required, in decimal degrees' }, { status: 400 });
+    return NextResponse.json({ error: 'lat and lon are required, in decimal degrees' }, { status: 400, headers: NO_STORE });
   }
   // Same input, same answer: cacheable for a day at the CDN.
   return NextResponse.json(soilAt(lat, lon), { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });

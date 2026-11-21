@@ -52,6 +52,10 @@ export interface ApprovalVerifier {
   signingKey: string;
   /** The authorised-reviewer registry (storage pending: accounts database). */
   registry: readonly AuthorisedReviewer[];
+  /** Oldest acceptable approval, in days (default 365). Audit L1, 2026-11-21. */
+  maxAgeDays?: number;
+  /** Clock for tests; defaults to Date.now(). */
+  now?: number;
 }
 
 const MIN_KEY_LENGTH = 32;
@@ -132,6 +136,12 @@ export function verifyApproval(approval: unknown, currentRevisionHash: string, v
   if (!reviewer || reviewer.name !== full.reviewerName || reviewer.registration !== full.registration) {
     return { ok: false, reason: `Reviewer ${full.reviewerId} is not in the authorised-reviewer registry; the proposal remains DRAFT` };
   }
+  // Audit L1 (2026-11-21): a correctly signed approval must also be current:
+  // not dated in the future (5 minutes' clock skew allowed) and not older than maxAgeDays.
+  const now = verifier.now ?? Date.now();
+  const at = Date.parse(full.approvedAt);
+  if (at > now + 5 * 60e3) return { ok: false, reason: 'The approval is dated in the future; the proposal remains DRAFT' };
+  if (now - at > (verifier.maxAgeDays ?? 365) * 86400e3) return { ok: false, reason: 'The approval is too old to rely on; the proposal remains DRAFT and needs a new approval' };
   if (full.revisionHash !== currentRevisionHash) {
     return { ok: false, reason: `The proposal has changed since it was approved (approved revision ${full.revisionHash.slice(0, 12)}…, current ${currentRevisionHash.slice(0, 12)}…); it is back to DRAFT and needs a new approval` };
   }

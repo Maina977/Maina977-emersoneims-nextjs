@@ -439,6 +439,8 @@ interface RunnerCtx {
 const NOT_ONLINE_RUNNERS = new Set([
   'tou-dispatch', 'fault-prediction', 'load-forecast', 'nlp-advisor', 'permit-pack', 'mqtt', 'panel-counter', 'pilot',
   'sld-svg', 'arc-rsd', 'cable-derated', 'faa-glare', 'sign-off-package',
+  // /api/engapproval/* has no route in production (404); audit L5 2026-11-21.
+  'iec62446-report', 'nfpa855',
   'wind-uplift', 'snow-load', 'ballast-schedule', 'roof-reserve', 'fire-setback', 'flashing', 'neighbour-shadow', 'ifc-export',
   // /api/archapproval/planning-narrative answers 404 (2026-10-29 audit).
   'planning-narrative',

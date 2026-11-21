@@ -12,7 +12,9 @@ import {
 // TEST key, TEST reviewers and the TEST worked example only: no real engineer, registration or key.
 const TEST_KEY = 'TEST-ONLY-signing-key-not-a-secret-0123456789';
 const TEST_REVIEWER: AuthorisedReviewer = { reviewerId: 'test-reviewer-1', name: 'TEST REVIEWER', registration: 'TEST-REG-0001' };
-const verifier: ApprovalVerifier = { signingKey: TEST_KEY, registry: [TEST_REVIEWER] };
+// Fixed clock: approvals are dated 2026-11-21T09:00Z (L1 date window).
+const NOW = Date.parse('2026-11-21T12:00:00Z');
+const verifier: ApprovalVerifier = { signingKey: TEST_KEY, registry: [TEST_REVIEWER], now: NOW };
 const base = (): ProposalInput => {
   const r = formToProposalInput(WORKED_EXAMPLE_FORM, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_PRODUCTION, null);
   if (!r.input) throw new Error(r.errors.join('; '));
@@ -103,7 +105,7 @@ describe('verified approval (engine level, TEST key and TEST reviewer)', () => {
     expect(approvalVerifierFromEnvironment({}, [TEST_REVIEWER])).toBeNull();
     expect(approvalVerifierFromEnvironment({ PROPOSAL_APPROVAL_SIGNING_KEY: TEST_KEY }, null)).toBeNull();
     expect(approvalVerifierFromEnvironment({ PROPOSAL_APPROVAL_SIGNING_KEY: TEST_KEY }, [])).toBeNull();
-    expect(approvalVerifierFromEnvironment({ PROPOSAL_APPROVAL_SIGNING_KEY: TEST_KEY }, [TEST_REVIEWER])).toEqual(verifier);
+    expect(approvalVerifierFromEnvironment({ PROPOSAL_APPROVAL_SIGNING_KEY: TEST_KEY }, [TEST_REVIEWER])).toEqual({ signingKey: TEST_KEY, registry: [TEST_REVIEWER] });
   });
   it('exports print FOR ISSUE only with the verified approval', async () => {
     const { proposalToPdf } = await import('@/lib/solar/design/proposalExport');
@@ -150,5 +152,19 @@ describe('approval audit trail (hash chain)', () => {
     expect(verifyAuditChain([c[0], c[2]])).toMatchObject({ ok: false, index: 1 });
     expect(verifyAuditChain([c[1], c[0], c[2]])).toMatchObject({ ok: false, index: 0 });
     expect(verifyAuditChain(appendAuditRecord([], entry('REVOKED', '2026-11-21T09:00:00Z')))).toMatchObject({ ok: false, problem: expect.stringMatching(/REVOKED without/) });
+  });
+});
+
+describe('approval date window (audit L1, 2026-11-21)', () => {
+  const signedAt = (iso: string, i: ProposalInput) =>
+    signApproval({ reviewerId: TEST_REVIEWER.reviewerId, reviewerName: TEST_REVIEWER.name, registration: TEST_REVIEWER.registration, approvedAt: iso, revisionHash: proposalRevisionHash(i) }, TEST_KEY);
+  it('a correctly signed approval dated 2001 or 2099 gives DRAFT', () => {
+    const i = base();
+    expect(verifyApproval(signedAt('2001-01-01T00:00:00Z', i), proposalRevisionHash(i), verifier)).toMatchObject({ ok: false, reason: expect.stringMatching(/too old/) });
+    expect(verifyApproval(signedAt('2099-01-01T00:00:00Z', i), proposalRevisionHash(i), verifier)).toMatchObject({ ok: false, reason: expect.stringMatching(/future/) });
+  });
+  it('an approval from earlier the same day is accepted', () => {
+    const i = base();
+    expect(verifyApproval(signedAt('2026-11-21T09:00:00Z', i), proposalRevisionHash(i), verifier).ok).toBe(true);
   });
 });

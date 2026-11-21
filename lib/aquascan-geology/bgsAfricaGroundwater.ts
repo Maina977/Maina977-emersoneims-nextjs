@@ -90,6 +90,7 @@ export async function groundwaterContext(lat: number, lon: number, fetchImpl: ty
   const unknown = [d && !DEPTH_CLASSES[d] ? `depth "${d}"` : null, s && !STORAGE_CLASSES[s] ? `storage "${s}"` : null, pr && !PRODUCTIVITY_CLASSES[pr] ? `productivity "${pr}"` : null].filter(Boolean);
   if (!out.depthToGroundwater && !out.storage && !out.productivity) {
     const v = base('NO DATA', unknown.length ? `Unrecognised class codes: ${unknown.join(', ')}` : 'No mapped value at this point (water body or outside the map)');
+    if (cache.size > 2000) cache.delete(cache.keys().next().value as string);
     cache.set(key, { at: Date.now(), v });
     return v;
   }

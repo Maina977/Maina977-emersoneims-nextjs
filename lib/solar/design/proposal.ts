@@ -107,6 +107,19 @@ const need = (name: string, s: Sourced | undefined, min: number, max: number) =>
   return s.value;
 };
 
+/**
+ * 2026-11-21 audit (M1): a "verified" status sent by the client is not
+ * trusted on its own. The provenance must name a second person (different
+ * from the person who entered it, case-insensitive) with a valid date. Names
+ * are typed, so this is a second-person check, not an authenticated one.
+ */
+export function secondPersonChecked<T>(e: LibraryEntry<T>): boolean {
+  const p = e.provenance;
+  const by = (p?.verifiedBy || '').trim().toLowerCase();
+  const entered = (p?.enteredBy || '').trim().toLowerCase();
+  return e.status === 'verified' && by !== '' && by !== entered && !Number.isNaN(Date.parse(p?.verifiedOn || ''));
+}
+
 export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | null = null): Proposal {
   const reasons: string[] = [];
   const f = i.finance;
@@ -134,9 +147,9 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   const dcKwp = Math.round(modules * i.module.data.pmaxW) / 1000;
   const acKw = i.inverter.data.acKw * i.inverterCount;
   const schedule: Proposal['schedule'] = [
-    { item: 'PV module', model: i.module.data.model, quantity: modules, unit: 'No', datasheet: i.module.data.datasheet, verified: i.module.status === 'verified' },
-    { item: 'Inverter', model: i.inverter.data.model, quantity: i.inverterCount, unit: 'No', datasheet: i.inverter.data.datasheet, verified: i.inverter.status === 'verified' },
-    ...(i.battery ? [{ item: 'Battery', model: i.battery.entry.data.model, quantity: i.battery.units, unit: 'No', datasheet: i.battery.entry.data.datasheet, verified: i.battery.entry.status === 'verified' }] : []),
+    { item: 'PV module', model: i.module.data.model, quantity: modules, unit: 'No', datasheet: i.module.data.datasheet, verified: secondPersonChecked(i.module) },
+    { item: 'Inverter', model: i.inverter.data.model, quantity: i.inverterCount, unit: 'No', datasheet: i.inverter.data.datasheet, verified: secondPersonChecked(i.inverter) },
+    ...(i.battery ? [{ item: 'Battery', model: i.battery.entry.data.model, quantity: i.battery.units, unit: 'No', datasheet: i.battery.entry.data.datasheet, verified: secondPersonChecked(i.battery.entry) }] : []),
     ...i.bom.map((b) => ({ item: b.item, model: b.model, quantity: b.quantity, unit: b.unit })),
   ];
   for (const s of schedule) if (s.verified === false) reasons.push(`Datasheet not verified by a second person: ${s.model}`);

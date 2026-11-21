@@ -12,9 +12,12 @@ const base = {
 const run = (p: Partial<Parameters<typeof syncCheck>[0]>) => { const r = syncCheck({ ...base, ...p }); if (!r.ok) throw new Error(r.errors.join()); return r; };
 
 describe('synchronising check: only verified limits can give a within-limits result', () => {
-  it('verified limits, all conditions confirmed, readings inside → WITHIN VERIFIED LIMITS (never "permit close")', () => {
+  it('limits entered with source, installation and verifier, readings inside → WITHIN ENTERED LIMITS (NOT VERIFIED), never "verified" or "permit close"', () => {
     const r = run({});
-    expect(r.value.verdict).toBe('WITHIN VERIFIED LIMITS');
+    expect(r.value.verdict).toBe('WITHIN ENTERED LIMITS (NOT VERIFIED)');
+    expect(r.value.reasons.join(' ')).toMatch(/typed, not an authenticated verification/);
+    // Audit O7 (2026-11-21): a typed "x" as verifier never yields a verified result.
+    expect(run({ limits: { ...verified, source: 'x', verifiedFor: 'x', verifiedBy: 'x' } }).value.verdict).not.toMatch(/VERIFIED LIMITS/);
     expect(r.value.reasons.join(' ')).toMatch(/relay \/ controller makes the close decision/);
     expect(r.value).toMatchObject({ dfHz: 0.05, dvPct: 1.22, dphiDeg: 5, slipPeriodS: 20 });
   });

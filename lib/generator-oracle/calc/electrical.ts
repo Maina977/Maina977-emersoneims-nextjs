@@ -309,7 +309,10 @@ export function derate(i: {
  * controller's synchroniser makes the close decision.
  */
 export type SyncApplication = 'island-bus' | 'utility-interconnection';
-export type SyncVerdict = 'WITHIN VERIFIED LIMITS' | 'LIMITS NOT VERIFIED' | 'DO NOT CLOSE' | 'DEAD BUS: NOT A SYNCHRONISING CASE';
+// 2026-11-21 audit (H2): the verifier's name is typed, not an authenticated
+// verification, so the best result is "within the entered limits (not verified)"
+// until verification is tied to a signed-in, authorised person.
+export type SyncVerdict = 'WITHIN ENTERED LIMITS (NOT VERIFIED)' | 'LIMITS NOT VERIFIED' | 'DO NOT CLOSE' | 'DEAD BUS: NOT A SYNCHRONISING CASE';
 type YesNoUnknown = 'yes' | 'no' | 'unknown';
 
 /** Reference information only (never applied): published IEEE 1547-2003 DER interconnection bands. */
@@ -400,7 +403,7 @@ export function syncCheck(i: {
     if (i.phaseSequence === 'not-checked') unverified.push('Phase sequence not checked.');
     for (const [k, v] of [['Synchronising relay in service', i.syncRelayInService], ['Protection in service', i.protectionInService], ['Breaker ready', i.breakerReady]] as const) if (v === 'unknown') unverified.push(`${k}: not confirmed.`);
     if (unverified.length) { verdict = 'LIMITS NOT VERIFIED'; reasons.push(...unverified); }
-    else { verdict = 'WITHIN VERIFIED LIMITS'; reasons.push('Readings are within the verified limits. The synchronising relay / controller makes the close decision.'); }
+    else { verdict = 'WITHIN ENTERED LIMITS (NOT VERIFIED)'; reasons.push('Readings are within the limits entered. The limits and the verifier\'s name are typed, not an authenticated verification: confirm them against the controller / synchroniser documentation on site. The synchronising relay / controller makes the close decision.'); }
   }
   return ok({ verdict, ...values, withinFrequency: wf, withinVoltage: wv, withinPhase: wp, reasons }, {
     ...base,
