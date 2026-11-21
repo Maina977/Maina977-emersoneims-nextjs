@@ -27,6 +27,7 @@ import { computeDrillReadiness } from './drillReadiness';
 import { wellKind, displayOutcome, cleanWellsForDisplay } from './wellDisplay';
 import { invertVES, type VESInversionResult, type VESDataPoint } from './vesInversionEngine';
 import { installReliableFetch } from './reliableFetch';
+import EvidenceCards from './EvidenceCardsView';
 // Pre-checks (Kenya land/water, elevation) use the same relay as the analysis.
 if (typeof window !== 'undefined') installReliableFetch();
 // NOTE: styles.css is deliberately NOT imported here. This module is loaded
@@ -2295,6 +2296,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
             </div>
           );
         })()}
+
+        {/* Regional BGS context and mapped OSM water points (P1 UI 2026-11-20): evidence only, loaded in the browser. */}
+        <EvidenceCards key={`${result.site.latitude},${result.site.longitude}`} lat={Number(result.site.latitude)} lon={Number(result.site.longitude)} />
 
         {/* Assessment Classification */}
         {/* ═══ DATA SOURCE NOTE: Info banner when API fallbacks were used ═══ */}
