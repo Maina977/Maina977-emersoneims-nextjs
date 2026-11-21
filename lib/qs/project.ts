@@ -99,7 +99,11 @@ export class ProjectError extends Error {
 // ------------------------------------------------------------------ BOQ from the drafts (one place, used by the workbench and here)
 
 export function draftAdjustments(adj: AdjustmentDraft): Adjustments {
-  return { preliminaries: { kind: 'percent', pct: Number(adj.prelims || 'NaN') }, contingencyPct: Number(adj.contingency || 'NaN'), overheadsProfitPct: Number(adj.ohp || 'NaN'), vat: { pct: Number(adj.vat || 'NaN'), effectiveFrom: adj.vatFrom } };
+  // A field left empty is "not entered yet" (no error); a value typed in is checked (2026-11-21).
+  const isBlank = (s: string | undefined) => !(s ?? '').trim();
+  const notEntered = ([['prelims', 'preliminaries'], ['contingency', 'contingency'], ['ohp', 'overheads and profit'], ['vat', 'VAT'], ['vatFrom', 'VAT date']] as const)
+    .filter(([k]) => isBlank(adj[k])).map(([, key]) => key);
+  return { preliminaries: { kind: 'percent', pct: Number(adj.prelims || 'NaN') }, contingencyPct: Number(adj.contingency || 'NaN'), overheadsProfitPct: Number(adj.ohp || 'NaN'), vat: { pct: Number(adj.vat || 'NaN'), effectiveFrom: adj.vatFrom }, notEntered };
 }
 export function draftBoqItems(items: ItemDraft[], quantities: Map<string, Quantity>): BoqItem[] {
   return items.map((d) => {

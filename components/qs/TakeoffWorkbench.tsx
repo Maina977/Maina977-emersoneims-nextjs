@@ -611,6 +611,7 @@ export default function TakeoffWorkbench() {
           {boq && (
             <div className="text-sm space-y-1">
               <div aria-live="polite" className="space-y-1">
+                {boq.boq.missing?.length ? <p className="text-xs text-slate-300">Not entered yet (needed for a bill total): {boq.boq.missing.join(', ')}</p> : null}
                 {boq.boq.errors.map((e) => <p key={e} className="text-xs text-red-300">{e}</p>)}
               </div>
               {boq.boq.grandTotal === null ? (

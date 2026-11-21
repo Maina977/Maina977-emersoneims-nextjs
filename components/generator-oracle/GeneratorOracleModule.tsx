@@ -1294,7 +1294,11 @@ export default function GeneratorOracleModule() {
           </header>
 
           {/* ==================== MAIN CONTENT ==================== */}
-          <div className="flex-1 p-4 lg:p-6">
+          {/* min-height (2026-11-21, layout shift 0.24): the screens animate in, so on
+              first paint this area was nearly empty and the footer and independence
+              statement sat on screen, then were pushed below it. Reserving a screen
+              height keeps them below the fold from the first paint. */}
+          <div className="flex-1 p-4 lg:p-6 min-h-[100dvh]">
             <div className="max-w-[1920px] mx-auto pb-10">
               <ErrorBoundary fallbackTitle="Panel Error" onReset={() => setActiveScreen('faults')}>
               <AnimatePresence mode="wait">

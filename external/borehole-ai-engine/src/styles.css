@@ -19,7 +19,8 @@
   --border-glow: rgba(56,189,248,0.15);
   --text-primary: #f0f4f8;
   --text-secondary: #8ba3bc;
-  --text-muted: #506882;
+  /* was #506882 (3.18:1 on --bg-card, failed WCAG AA, axe 2026-11-21); #8a9fb6 is about 6.7:1 */
+  --text-muted: #8a9fb6;
   --accent: #38bdf8;
   --accent-green: #22c55e;
   --accent-amber: #f59e0b;

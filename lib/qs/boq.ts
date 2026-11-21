@@ -37,6 +37,13 @@ export interface Adjustments {
   contingencyPct: number;
   overheadsProfitPct: number;
   vat: { pct: number; effectiveFrom: string };
+  /**
+   * Fields the user has not filled in yet (2026-11-21 directive: empty optional
+   * fields must not show errors). Each is still needed for a bill total, so the
+   * bill stays INCOMPLETE, but it is reported as "not entered yet", not as an error.
+   * Keys: 'preliminaries' | 'contingency' | 'overheads and profit' | 'VAT' | 'VAT date'.
+   */
+  notEntered?: string[];
 }
 export interface BoqLine {
   code: string; section: string; description: string; unit: string;
@@ -54,6 +61,8 @@ export interface Boq {
   unpricedItems: string[];
   basis: string[];
   errors: string[];
+  /** Adjustments not entered yet (no error; the bill has no total until they are). */
+  missing: string[];
 }
 
 const UNIT_FOR: Record<Quantity['kind'], BoqItem['unit']> = { linear: 'm', area: 'm²', volume: 'm³', count: 'No' };
@@ -107,9 +116,19 @@ export function buildBoq(items: BoqItem[], quantities: Map<string, Quantity>, ad
   });
   const pricedSubtotal = money(lines.reduce((a, l) => a + (l.amount ?? 0), 0));
   const unpricedItems = lines.filter((l) => l.amount === null).map((l) => l.code);
-  for (const [k, v] of Object.entries({ contingency: adj.contingencyPct, 'overheads and profit': adj.overheadsProfitPct, VAT: adj.vat.pct })) if (!(v >= 0 && v <= 100)) errors.push(`${k} % must be between 0 and 100`);
-  if (adj.preliminaries.kind === 'percent' && !(adj.preliminaries.pct >= 0 && adj.preliminaries.pct <= 100)) errors.push('Preliminaries % must be between 0 and 100');
-  if (Number.isNaN(Date.parse(adj.vat.effectiveFrom))) errors.push('The VAT rate needs the date it applies from');
+  const blank = new Set(adj.notEntered ?? []);
+  const missing: string[] = [];
+  const LABEL: Record<string, string> = { preliminaries: 'Preliminaries %', contingency: 'Contingency %', 'overheads and profit': 'Overheads & profit %', VAT: 'VAT %', 'VAT date': 'VAT rate effective date' };
+  const pctCheck = (key: string, v: number) => {
+    if (blank.has(key)) missing.push(LABEL[key]);
+    else if (!(v >= 0 && v <= 100)) errors.push(`${LABEL[key]} must be a number between 0 and 100`);
+  };
+  if (adj.preliminaries.kind === 'percent') pctCheck('preliminaries', adj.preliminaries.pct);
+  pctCheck('contingency', adj.contingencyPct);
+  pctCheck('overheads and profit', adj.overheadsProfitPct);
+  pctCheck('VAT', adj.vat.pct);
+  if (blank.has('VAT date')) missing.push(LABEL['VAT date']);
+  else if (Number.isNaN(Date.parse(adj.vat.effectiveFrom))) errors.push('The VAT rate needs the date it applies from (YYYY-MM-DD)');
 
   const basis = [
     'Measured works = sum of section subtotals',
@@ -118,9 +137,9 @@ export function buildBoq(items: BoqItem[], quantities: Map<string, Quantity>, ad
     `Overheads & profit = ${adj.overheadsProfitPct} % × (measured works + preliminaries + contingency)`,
     `VAT = ${adj.vat.pct} % (from ${adj.vat.effectiveFrom}) × subtotal before VAT`,
   ];
-  const complete = !unpricedItems.length && !errors.length;
+  const complete = !unpricedItems.length && !errors.length && !missing.length;
   if (!complete) {
-    return { version: BOQ_ENGINE_VERSION, revision, lines, sections, measuredWorks: null, preliminaries: null, contingency: null, overheadsProfit: null, subtotalBeforeVat: null, vat: null, grandTotal: null, pricedSubtotal, unpricedItems, basis, errors };
+    return { version: BOQ_ENGINE_VERSION, revision, lines, sections, measuredWorks: null, preliminaries: null, contingency: null, overheadsProfit: null, subtotalBeforeVat: null, vat: null, grandTotal: null, pricedSubtotal, unpricedItems, basis, errors, missing };
   }
   const measuredWorks = money(sections.reduce((a, s) => a + (s.subtotal ?? 0), 0));
   const preliminaries = money(adj.preliminaries.kind === 'percent' ? measuredWorks * adj.preliminaries.pct / 100 : adj.preliminaries.items.reduce((a, i) => a + i.amount, 0));
@@ -128,7 +147,7 @@ export function buildBoq(items: BoqItem[], quantities: Map<string, Quantity>, ad
   const overheadsProfit = money((measuredWorks + preliminaries + contingency) * adj.overheadsProfitPct / 100);
   const subtotalBeforeVat = money(measuredWorks + preliminaries + contingency + overheadsProfit);
   const vat = money(subtotalBeforeVat * adj.vat.pct / 100);
-  return { version: BOQ_ENGINE_VERSION, revision, lines, sections, measuredWorks, preliminaries, contingency, overheadsProfit, subtotalBeforeVat, vat, grandTotal: money(subtotalBeforeVat + vat), pricedSubtotal, unpricedItems, basis, errors };
+  return { version: BOQ_ENGINE_VERSION, revision, lines, sections, measuredWorks, preliminaries, contingency, overheadsProfit, subtotalBeforeVat, vat, grandTotal: money(subtotalBeforeVat + vat), pricedSubtotal, unpricedItems, basis, errors, missing };
 }
 
 /** Printed on every export: no reviewer is authenticated, so nothing produced here is approved, certified or issued. */
@@ -139,6 +158,7 @@ export function incompleteNotice(boq: Boq): string | null {
   if (boq.grandTotal !== null) return null;
   const why = [
     boq.unpricedItems.length ? `${boq.unpricedItems.length} item(s) need a rate (${boq.unpricedItems.join(', ')})` : '',
+    boq.missing?.length ? `not entered yet: ${boq.missing.join(', ')}` : '',
     boq.errors.length ? `${boq.errors.length} error(s) to resolve` : '',
   ].filter(Boolean).join('; ');
   return `INCOMPLETE — ${why || 'the bill is not complete'}. No bill total: the priced items shown are not a bill total.`;

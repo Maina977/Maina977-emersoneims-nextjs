@@ -1239,8 +1239,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 </div>
                 <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
                   <input type="text" placeholder='Search place name — e.g. "Emabungo, Vihiga"' value={placeQuery} onChange={e=>setPlaceQuery(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void searchPlaceAndApply();}} style={{flex:2,minWidth:220,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontSize:13}} />
-                  <button onClick={searchPlaceAndApply} disabled={placeSearching} style={{padding:'8px 18px',borderRadius:8,border:'none',background:placeSearching?'var(--bg-elevated)':'#22c55e',color:placeSearching?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:placeSearching?'wait':'pointer'}}>{placeSearching?'⏳ Searching…':'\u{1F50D} Find Place'}</button>
-                  <button onClick={()=>{ if(!navigator?.geolocation){setManualLocError('This device/browser has no GPS access.');return;} navigator.geolocation.getCurrentPosition(p=>{setManualLat(String(p.coords.latitude));setManualLon(String(p.coords.longitude));setManualLocError('');},()=>setManualLocError('Device GPS failed — allow location access, or paste coordinates.'),{enableHighAccuracy:true,timeout:15000}); }} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#0ea5e9',color:'#fff',fontWeight:700,fontSize:13,cursor:'pointer'}}>{'\u{1F4F1}'} I&apos;m at the site</button>
+                  <button onClick={searchPlaceAndApply} disabled={placeSearching} style={{padding:'8px 18px',borderRadius:8,border:'none',background:placeSearching?'var(--bg-elevated)':'#15803d',color:placeSearching?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:placeSearching?'wait':'pointer'}}>{placeSearching?'⏳ Searching…':'\u{1F50D} Find Place'}</button>
+                  <button onClick={()=>{ if(!navigator?.geolocation){setManualLocError('This device/browser has no GPS access.');return;} navigator.geolocation.getCurrentPosition(p=>{setManualLat(String(p.coords.latitude));setManualLon(String(p.coords.longitude));setManualLocError('');},()=>setManualLocError('Device GPS failed — allow location access, or paste coordinates.'),{enableHighAccuracy:true,timeout:15000}); }} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#0369a1',color:'#fff',fontWeight:700,fontSize:13,cursor:'pointer'}}>{'\u{1F4F1}'} I&apos;m at the site</button>
                 </div>
                 <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
                   <input type="text" placeholder="Latitude (e.g. 0.026677) — or paste both: 0.026677, 34.647174" value={manualLat} onChange={e=>{setManualLat(e.target.value);setManualLocError('');}} style={{flex:1.4,minWidth:210,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
@@ -1872,9 +1872,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
         <div className="science-parts-grid">
           {SCI.SCIENCE_PARTS.map(p => (
             <div key={p.id} className="science-part-card" style={{borderColor:p.color}} onClick={()=>{setActiveSciPart(p.id);setActiveView('capabilities');}}>
-              <div className="sp-header"><span className="sp-icon">{p.icon}</span><span className="sp-part" style={{color:p.color}}>Part {p.part}</span></div>
+              <div className="sp-header"><span className="sp-icon">{p.icon}</span><span className="sp-part" style={{color:'var(--text-secondary)',borderLeft:`3px solid ${p.color}`,paddingLeft:5}}>Part {p.part}</span></div>
               <div className="sp-title">{p.title}</div>
-              <div className="sp-count" style={{color:p.color}}>{p.count} capabilities</div>
+              <div className="sp-count" style={{color:'var(--text-secondary)'}}>{p.count} capabilities</div>
               <div className="sp-desc">{p.description}</div>
             </div>
           ))}
@@ -2561,14 +2561,14 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{fontWeight:700,marginBottom:8,color:'var(--text-primary)',fontSize:14}}>{'\u{1F4CD}'} {result.gpsSource==='none'&&result.locationMethod!=='filename-geocode'&&result.locationMethod!=='iptc-geocode'?'Set Site Location':'Update Site Location'}</div>
                   <div style={{fontSize:12,color:'var(--text-secondary)',marginBottom:10}}>{result.gpsSource==='none'&&result.locationMethod!=='filename-geocode'&&result.locationMethod!=='iptc-geocode'?'No GPS found in image. Use your device GPS (if you are at the site) or enter coordinates manually.':'Location is set. You can update it below if needed.'}</div>
                   <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
-                    <button onClick={useMyLocation} disabled={locatingDevice} style={{padding:'10px 20px',borderRadius:8,border:'none',background:locatingDevice?'var(--bg-elevated)':'#22c55e',color:locatingDevice?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:locatingDevice?'wait':'pointer',display:'flex',alignItems:'center',gap:6}}>
+                    <button onClick={useMyLocation} disabled={locatingDevice} style={{padding:'10px 20px',borderRadius:8,border:'none',background:locatingDevice?'var(--bg-elevated)':'#15803d',color:locatingDevice?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:locatingDevice?'wait':'pointer',display:'flex',alignItems:'center',gap:6}}>
                       {locatingDevice ? '\u23F3 Locating...' : '\u{1F4F1} I\u2019m at the site — Use My GPS'}
                     </button>
                   </div>
                   <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:8}}>Or search the place by name (village, church, school, town):</div>
                   <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
                     <input type="text" placeholder='e.g. "Esikangu Church of God, Vihiga"' value={placeQuery} onChange={e=>setPlaceQuery(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void searchPlaceAndApply();}} style={{flex:2,minWidth:220,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontSize:13}} />
-                    <button onClick={searchPlaceAndApply} disabled={placeSearching} style={{padding:'8px 20px',borderRadius:8,border:'none',background:placeSearching?'var(--bg-elevated)':'#22c55e',color:placeSearching?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:placeSearching?'wait':'pointer'}}>{placeSearching?'⏳ Searching…':'\u{1F50D} Find & Re-analyze'}</button>
+                    <button onClick={searchPlaceAndApply} disabled={placeSearching} style={{padding:'8px 20px',borderRadius:8,border:'none',background:placeSearching?'var(--bg-elevated)':'#15803d',color:placeSearching?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:placeSearching?'wait':'pointer'}}>{placeSearching?'⏳ Searching…':'\u{1F50D} Find & Re-analyze'}</button>
                   </div>
                   <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:8}}>Or paste decimal coordinates (in Google Maps: press &amp; hold the spot, copy the numbers — Plus Codes like 2JGW+JWV won&apos;t work):</div>
                   <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
@@ -2616,7 +2616,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     {/* Why the yield is what it is (2026-10-19 re-audit). */}
                     {(result as any).governingYieldNote && <div style={{fontSize:12,color:'var(--text-tertiary)',margin:'-6px 0 12px'}}>Planning yield {result.estimatedYield} m³/h. {(result as any).governingYieldNote}{(result as any).wellDesign?.drawdown?.modelNote ? ' ' + (result as any).wellDesign.drawdown.modelNote : ''}</div>}
                     <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-                      <a href={`https://www.google.com/maps?q=${dLat.toFixed(6)},${dLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" style={{padding:'8px 16px',borderRadius:8,background:'#22c55e',color:'#fff',fontWeight:700,fontSize:13,textDecoration:'none'}}>{'\u{1F5FA}️'} Open in Google Maps</a>
+                      <a href={`https://www.google.com/maps?q=${dLat.toFixed(6)},${dLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" style={{padding:'8px 16px',borderRadius:8,background:'#15803d',color:'#fff',fontWeight:700,fontSize:13,textDecoration:'none'}}>{'\u{1F5FA}️'} Open in Google Maps</a>
                       <button onClick={()=>{try{navigator.clipboard.writeText(`${dLat.toFixed(6)}, ${dLon.toFixed(6)}`);}catch{/* clipboard blocked */}}} style={{padding:'8px 16px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontWeight:600,fontSize:13,cursor:'pointer'}}>{'\u{1F4CB}'} Copy coordinates</button>
                     </div>
                   </div>
@@ -3085,7 +3085,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div style={{background:'rgba(56,189,248,0.06)',border:'1px solid rgba(56,189,248,0.15)',padding:'14px 18px',borderRadius:12,marginBottom:16}}>
                   <div style={{fontWeight:700,marginBottom:8,color:'var(--text-primary)',fontSize:14}}>{'\u{1F4CD}'} {result.gpsSource==='none'?'Set Site Location':'Update Location'}</div>
                   <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
-                    <button onClick={useMyLocation} disabled={locatingDevice} style={{padding:'10px 20px',borderRadius:8,border:'none',background:locatingDevice?'var(--bg-elevated)':'#22c55e',color:locatingDevice?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:locatingDevice?'wait':'pointer',display:'flex',alignItems:'center',gap:6}}>
+                    <button onClick={useMyLocation} disabled={locatingDevice} style={{padding:'10px 20px',borderRadius:8,border:'none',background:locatingDevice?'var(--bg-elevated)':'#15803d',color:locatingDevice?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:locatingDevice?'wait':'pointer',display:'flex',alignItems:'center',gap:6}}>
                       {locatingDevice ? '\u23F3 Locating...' : '\u{1F4F1} I\u2019m at the site — Use My GPS'}
                     </button>
                   </div>
