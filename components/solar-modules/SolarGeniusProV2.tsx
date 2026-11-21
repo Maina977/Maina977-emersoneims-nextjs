@@ -83,7 +83,14 @@ export default function SolarGeniusProV2() {
   return (
     <div>
       <ToolLoadingState name="Solar Genius Pro" />
-      {slow ? <p role="status" className="-mt-24 pb-24 text-center text-sm text-slate-300 px-4">Still downloading the workspace — this connection is slow. Keep this page open.</p> : null}
+      {/* A stalled download never fails, so the automatic retry cannot start (seen once in
+          the 2026-11-21 release run: no load after 98 s). A full reload fetches everything again. */}
+      {slow ? (
+        <div role="status" className="-mt-24 pb-24 text-center text-sm text-slate-300 px-4">
+          <p>Still downloading the workspace — the connection is slow or a download stalled.</p>
+          <button type="button" onClick={() => window.location.reload()} className="mt-3 rounded bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">Reload page</button>
+        </div>
+      ) : null}
     </div>
   );
 }
