@@ -21,10 +21,11 @@ const input = 'rounded bg-slate-900 border border-slate-700 px-2 py-1 text-xs te
 
 function ParamField({ label, unit, value, onChange }: { label: string; unit: string; value: ParamForm; onChange: (v: ParamForm) => void }) {
   return (
-    <div className="grid grid-cols-[10rem_5rem_1fr] items-center gap-2 text-xs">
+    // Narrow screens (390 px): label + value on one row, source below; minmax(0, …) lets inputs shrink instead of overflowing.
+    <div className="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-2 text-xs sm:grid-cols-[10rem_5rem_minmax(0,1fr)]">
       <span>{label} ({unit})</span>
-      <input aria-label={`${label} value (${unit})`} value={value.value} onChange={(e) => onChange({ ...value, value: e.target.value })} className={input} inputMode="decimal" />
-      <input aria-label={`${label} source`} value={value.source} onChange={(e) => onChange({ ...value, source: e.target.value })} placeholder="source, e.g. Section A-A, drawing A-201 rev C" className={input} />
+      <input aria-label={`${label} value (${unit})`} value={value.value} onChange={(e) => onChange({ ...value, value: e.target.value })} className={`${input} min-w-0`} inputMode="decimal" />
+      <input aria-label={`${label} source`} value={value.source} onChange={(e) => onChange({ ...value, source: e.target.value })} placeholder="source, e.g. Section A-A, drawing A-201 rev C" className={`${input} col-span-2 min-w-0 sm:col-span-1`} />
     </div>
   );
 }
@@ -35,9 +36,9 @@ function MeasurementPick({ label, kind, value, onChange, quantities, labels, opt
 }) {
   const opts = measurementOptions(quantities, kind);
   return (
-    <label className="flex items-center gap-2 text-xs">
+    <label className="flex flex-wrap items-center gap-2 text-xs">
       <span className="w-40">{label} ({kind})</span>
-      <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className={input}>
+      <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className={`${input} min-w-0 max-w-full`}>
         <option value="">{optional ? 'none' : opts.length ? 'choose…' : `no ${kind} measurement yet`}</option>
         {opts.map((q) => <option key={q.id} value={q.id}>{q.id} {labels.get(q.id) ?? ''} · {q.net} {q.unit}</option>)}
       </select>
@@ -52,8 +53,8 @@ function OpeningsTable({ rows, onChange }: { rows: OpeningForm[]; onChange: (row
       <div className="flex items-center justify-between text-xs"><span className="font-semibold">Openings</span>
         <button type="button" onClick={() => onChange([...rows, emptyOpening()])} className="rounded bg-slate-700 px-2 py-0.5">Add opening</button></div>
       {rows.length === 0 ? <p className="text-xs text-slate-500">None.</p> : (
-        <div className="overflow-x-auto"><table className="w-full text-xs">
-          <thead><tr className="text-left text-slate-400"><th>Mark</th><th>Type</th><th>Width (m)</th><th>Width source</th><th>Height (m)</th><th>Height source</th><th>Count</th><th /></tr></thead>
+        <div className="overflow-x-auto"><table className="w-full min-w-[40rem] text-xs">
+          <thead><tr className="text-left text-slate-400">{['Mark', 'Type', 'Width (m)', 'Width source', 'Height (m)', 'Height source', 'Count'].map((h) => <th key={h} scope="col">{h}</th>)}<th scope="col"><span className="sr-only">Remove</span></th></tr></thead>
           <tbody>
             {rows.map((o, i) => (
               <tr key={i}>
@@ -139,7 +140,7 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
           <>
             <MeasurementPick label="Wall length" kind="linear" value={f.wallLengthId} onChange={(id) => edit({ ...f, wallLengthId: id })} {...pickProps} />
             <ParamField label="Plaster height" unit="m" value={f.height} onChange={(v) => edit({ ...f, height: v })} />
-            <label className="flex items-center gap-2 text-xs"><span className="w-40">Faces</span>
+            <label className="flex flex-wrap items-center gap-2 text-xs"><span className="w-40">Faces</span>
               <select aria-label="Faces" value={f.faces} onChange={(e) => edit({ ...f, faces: e.target.value as '' | '1' | '2' })} className={input}><option value="">choose…</option><option value="1">one face</option><option value="2">both faces</option></select></label>
             <ParamField label="Min. deducted opening" unit="m²" value={f.minDeducted} onChange={(v) => edit({ ...f, minDeducted: v })} />
             <OpeningsTable rows={f.openings} onChange={(rows) => edit({ ...f, openings: rows })} />
@@ -174,9 +175,9 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
               const upRoom = (next: typeof r) => edit({ ...f, rooms: f.rooms.map((x, j) => (j === i ? next : x)) });
               return (
                 <div key={i} className="space-y-2 rounded border border-slate-800 p-2">
-                  <div className="flex items-center gap-2 text-xs">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="w-40">Room {i + 1} name</span>
-                    <input aria-label={`room ${i + 1} name`} value={r.name} onChange={(e) => upRoom({ ...r, name: e.target.value })} className={input} />
+                    <input aria-label={`room ${i + 1} name`} value={r.name} onChange={(e) => upRoom({ ...r, name: e.target.value })} className={`${input} min-w-0`} />
                     <button type="button" aria-label={`remove room ${i + 1}`} onClick={() => edit({ ...f, rooms: f.rooms.filter((_, j) => j !== i) })} className="px-1 text-red-300">×</button>
                   </div>
                   <MeasurementPick label="Floor area" kind="area" value={r.areaId} onChange={(id) => upRoom({ ...r, areaId: id })} {...pickProps} />
@@ -185,7 +186,7 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
                     <div className="space-y-1 pl-4">
                       {r.doorWidths.map((d, j) => (
                         <div key={j} className="flex items-center gap-1">
-                          <div className="flex-1"><ParamField label={`Door ${j + 1} width`} unit="m" value={d} onChange={(v) => upRoom({ ...r, doorWidths: r.doorWidths.map((x, k) => (k === j ? v : x)) })} /></div>
+                          <div className="min-w-0 flex-1"><ParamField label={`Door ${j + 1} width`} unit="m" value={d} onChange={(v) => upRoom({ ...r, doorWidths: r.doorWidths.map((x, k) => (k === j ? v : x)) })} /></div>
                           <button type="button" aria-label={`remove door ${j + 1}`} onClick={() => upRoom({ ...r, doorWidths: r.doorWidths.filter((_, k) => k !== j) })} className="px-1 text-xs text-red-300">×</button>
                         </div>
                       ))}
@@ -220,11 +221,13 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
         <label>BOQ section <input aria-label="BOQ section for trade items" value={section} onChange={(e) => { setSection(e.target.value); setAdded(''); }} className={`${input} w-40`} /></label>
         <button type="button" onClick={add} disabled={!lines} className="rounded bg-emerald-700 px-3 py-1 text-white disabled:opacity-40">Add to BOQ</button>
       </div>
-      {error && <p className="text-xs text-red-300" role="alert">{error}</p>}
-      {added && <p className="text-xs text-emerald-300" role="status">{added}</p>}
+      {/* Always in the DOM, so screen readers announce the message when it changes. */}
+      <p className="text-xs text-red-300" role="alert">{error}</p>
+      <p className="text-xs text-emerald-300" role="status">{added}</p>
       {lines && (
-        <div className="overflow-x-auto"><table className="w-full text-xs">
-          <thead><tr className="text-left text-slate-400"><th>Code</th><th>Description</th><th className="text-right">Quantity</th><th>Unit</th><th>Formula</th><th>Inputs</th></tr></thead>
+        <div className="overflow-x-auto"><table className="w-full min-w-[40rem] text-xs">
+          <caption className="sr-only">Calculated trade quantities</caption>
+          <thead><tr className="text-left text-slate-400"><th scope="col">Code</th><th scope="col">Description</th><th scope="col" className="text-right">Quantity</th><th scope="col">Unit</th><th scope="col">Formula</th><th scope="col">Inputs</th></tr></thead>
           <tbody>
             {lines.map((l) => (
               <tr key={l.code} className="border-t border-slate-800 align-top">

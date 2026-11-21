@@ -187,8 +187,14 @@ describe('Excel export', () => {
     const totalRow = ws.getColumn(2).values.findIndex((v) => v === 'TOTAL');
     expect(val(`F${totalRow}`)).toBeCloseTo(825611.56, 2);
   });
-  it('an incomplete bill is not exported as priced', async () => {
+  it('an incomplete bill is exported as an INCOMPLETE draft, never as priced', async () => {
     const b = buildBoq(ITEMS.map((i) => ({ ...i, rate: null })), Q, ADJ, 'A');
-    await expect(boqToXlsx(b, ADJ, 'x')).rejects.toThrow(/incomplete/);
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load((await boqToXlsx(b, ADJ, 'x')) as unknown as Parameters<typeof wb.xlsx.load>[0]);
+    const text: string[] = [];
+    wb.getWorksheet('BOQ')!.eachRow((row) => row.eachCell((c) => text.push(String(c.value))));
+    expect(text.join('\n')).toMatch(/INCOMPLETE/);
+    expect(text).not.toContain('TOTAL');
+    expect(text.join('\n')).not.toMatch(/Measured works/);
   });
 });

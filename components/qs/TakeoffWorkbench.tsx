@@ -12,7 +12,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { calibrate, quantify, TakeoffError, TAKEOFF_ENGINE_VERSION, type Calibration, type Measurement, type MeasureKind, type Pt } from '@/lib/qs/takeoff';
-import { buildBoq, BOQ_ENGINE_VERSION, type Adjustments, type BoqItem } from '@/lib/qs/boq';
+import { buildBoq, rateFromInput, BOQ_ENGINE_VERSION, RATE_KIND_LABELS, type Adjustments, type BoqItem, type RateKind } from '@/lib/qs/boq';
 import { extractGeometry, SnapIndex, snap, type SnapKind } from '@/lib/qs/snap';
 import TradesPanel from './TradesPanel';
 import { analysePage, sha256Hex, viewportToPdf, pdfToViewport, resolutionLimitM, PDF_SHEET_VERSION, type SheetInfo, type PdfPageLike, type ViewportLike } from '@/lib/qs/pdfSheet';
@@ -36,6 +36,8 @@ interface Sheet {
 }
 interface ItemDraft {
   code: string; section: string; description: string; measurementId: string; factor: string; rate: string; source: string; date: string; location: string;
+  /** Where the rate comes from, chosen by the user ('' until chosen; the engine refuses a rate without it). */
+  rateKind: RateKind | '';
   /** Items from the Trades panel: a scheduled quantity with its full trace (lib/qs/trades), not a measurement link. */
   trade?: { name: string; unit: BoqItem['unit']; scheduled: { value: number; source: string } };
 }
@@ -223,7 +225,7 @@ export default function TakeoffWorkbench() {
   const boq = useMemo(() => {
     if (!items.length) return null;
     const boqItems: BoqItem[] = items.map((d) => {
-      const rate: BoqItem['rate'] = d.rate.trim() === '' ? null : { value: Number(d.rate), currency: 'KES', source: d.source, date: d.date, location: d.location, kind: 'rate-library' };
+      const rate = rateFromInput({ value: d.rate, kind: d.rateKind, source: d.source, date: d.date, location: d.location });
       if (d.trade) return { code: d.code, section: d.section || 'General', trade: d.trade.name, description: d.description, unit: d.trade.unit, links: [], scheduledQuantity: d.trade.scheduled, rate };
       const q = quantities.get(d.measurementId);
       return {
@@ -243,7 +245,7 @@ export default function TakeoffWorkbench() {
       const drawings = [...new Set(ms.map((m) => m.sheetId))].map((id) => `${pdf?.name ?? sheet?.label ?? 'drawing'} ${id}`);
       const bytes = boqToPdf(boq.boq, { project: pdf?.name ?? sheet?.label ?? 'Project', preparedBy: 'Building Suite Pro (draft for QS review)', date: new Date().toISOString().slice(0, 10), drawings });
       const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/pdf' }));
-      const a = document.createElement('a'); a.href = url; a.download = 'boq-rev-A.pdf'; a.click(); URL.revokeObjectURL(url);
+      const a = document.createElement('a'); a.href = url; a.download = 'boq-rev-A-draft.pdf'; a.click(); URL.revokeObjectURL(url);
     } catch (e) { setErr((e as Error).message); }
   };
 
@@ -253,7 +255,7 @@ export default function TakeoffWorkbench() {
     try {
       const buf = await boqToXlsx(boq.boq, boq.adj, pdf?.name ?? sheet?.label ?? 'Project');
       const url = URL.createObjectURL(new Blob([new Uint8Array(buf)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
-      const a = document.createElement('a'); a.href = url; a.download = 'boq-rev-A.xlsx'; a.click(); URL.revokeObjectURL(url);
+      const a = document.createElement('a'); a.href = url; a.download = 'boq-rev-A-draft.xlsx'; a.click(); URL.revokeObjectURL(url);
     } catch (e) { setErr((e as Error).message); }
   };
 
@@ -268,6 +270,8 @@ export default function TakeoffWorkbench() {
     <div className="mx-auto max-w-7xl space-y-4 p-4 text-slate-200">
       <h1 className="text-2xl font-bold">Measured take-off and BOQ</h1>
       <p className="text-sm text-slate-400">Every quantity is measured on your drawing. Nothing is generated from a description. Calibrate each sheet with two known dimensions, one in each direction. They must agree within 1 %.</p>
+      {/* Nothing here is stored (no account, no browser storage, no project file): say so plainly. */}
+      <p role="note" className="rounded border border-amber-500/60 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">Not saved — export Excel/PDF to keep your work.</p>
       <div className="flex flex-wrap items-center gap-3">
         <label className="text-sm">Drawing (PDF, PNG or JPG): <input type="file" accept="application/pdf,image/png,image/jpeg" onChange={(e) => e.target.files?.[0] && load(e.target.files[0])} className="text-sm" /></label>
         <label className="text-xs">Stated scale 1:<input value={stated.ratio} onChange={(e) => setStated({ ...stated, ratio: e.target.value })} className={`${input} w-16 ml-1`} /></label>
@@ -346,7 +350,7 @@ export default function TakeoffWorkbench() {
                 </>
               )}
               {cal?.statedScale?.warning && <p className="text-xs text-amber-300">{cal.statedScale.warning}</p>}
-              {calErr && <p className="text-xs text-red-300">{calErr}</p>}
+              <p className="text-xs text-red-300" role="alert">{calErr}</p>
             </div>
             {cal && mode !== 'calibrate' && mode !== 'hole' && (
               <div className="rounded border border-slate-700 p-3 space-y-2">
@@ -354,15 +358,17 @@ export default function TakeoffWorkbench() {
                 {mode === 'volume' && <input value={depth} onChange={(e) => setDepth(e.target.value)} placeholder="Depth / thickness (m)" aria-label="Depth in metres" className={`${input} w-full`} />}
               </div>
             )}
-            {err && <p className="text-xs text-red-300" role="alert">{err}</p>}
+            <p className="text-xs text-red-300" role="alert">{err}</p>
             <div className="rounded border border-slate-700 p-3">
               <div className="text-sm font-semibold mb-1">Measurements (all sheets)</div>
               {ms.length === 0 ? <p className="text-xs text-slate-500">None yet.</p> : (
-                <table className="w-full text-xs"><tbody>
+                <div className="overflow-x-auto"><table className="w-full text-xs">
+                  <thead><tr className="text-left text-slate-400"><th scope="col">Id</th><th scope="col">Label</th><th scope="col">Page</th><th scope="col" className="text-right">Net</th><th scope="col" className="text-right">Deducted</th></tr></thead>
+                  <tbody>
                   {ms.map((m) => { const q = quantities.get(m.id)!; return (
                     <tr key={m.id} className="border-t border-slate-800" title={`sheet ${m.sheetId}, ${m.at}`}><td className="py-1">{m.id}</td><td>{m.label}</td><td className="text-slate-500">{m.sheetId.split('#')[1] ?? ''}</td><td className="text-right">{fmt(q.net, 3)} {q.unit}</td><td className="text-right text-slate-500">{q.deductions ? `−${fmt(q.deductions, 3)}` : ''}</td></tr>
                   ); })}
-                </tbody></table>
+                </tbody></table></div>
               )}
             </div>
           </div>
@@ -372,7 +378,7 @@ export default function TakeoffWorkbench() {
       {sheet && (
         <TradesPanel quantities={quantities} measurements={ms} existingCodes={items.map((d) => d.code)}
           onAdd={(added) => setItems((cur) => [...cur, ...added.map((b): ItemDraft => ({
-            code: b.code, section: b.section, description: b.description, measurementId: '', factor: '', rate: '', source: '', date: '', location: '',
+            code: b.code, section: b.section, description: b.description, measurementId: '', factor: '', rate: '', rateKind: '', source: '', date: '', location: '',
             trade: { name: b.trade, unit: b.unit, scheduled: b.scheduledQuantity! },
           }))])} />
       )}
@@ -380,25 +386,32 @@ export default function TakeoffWorkbench() {
       {(ms.length > 0 || items.length > 0) && (
         <div className="rounded border border-slate-700 p-3 space-y-3">
           <div className="flex items-center justify-between"><div className="text-sm font-semibold">Bill of quantities</div>
-            <button type="button" disabled={!ms.length} onClick={() => setItems([...items, { code: `${items.length + 1}`, section: '', description: '', measurementId: ms[0].id, factor: '1', rate: '', source: '', date: '', location: '' }])} className="rounded bg-slate-700 px-3 py-1 text-xs disabled:opacity-40">Add item</button></div>
-          <div className="overflow-x-auto"><table className="w-full text-xs">
-            <thead><tr className="text-left text-slate-400"><th>Code</th><th>Section</th><th>Description</th><th>Measurement</th><th>× factor</th><th>Rate (KES)</th><th>Rate source</th><th>Rate date</th><th>Location</th><th className="text-right">Qty</th><th className="text-right">Amount</th></tr></thead>
+            <button type="button" disabled={!ms.length} onClick={() => setItems([...items, { code: `${items.length + 1}`, section: '', description: '', measurementId: ms[0].id, factor: '1', rate: '', rateKind: '', source: '', date: '', location: '' }])} className="rounded bg-slate-700 px-3 py-1 text-xs disabled:opacity-40">Add item</button></div>
+          <div className="overflow-x-auto"><table className="w-full min-w-[62rem] text-xs">
+            <caption className="sr-only">Bill of quantities items</caption>
+            <thead><tr className="text-left text-slate-400">{['Code', 'Section', 'Description', 'Measurement', '× factor', 'Rate (KES)', 'Rate from', 'Rate source', 'Rate date', 'Location'].map((h) => <th key={h} scope="col">{h}</th>)}<th scope="col" className="text-right">Qty</th><th scope="col" className="text-right">Amount</th></tr></thead>
             <tbody>
               {items.map((d, i) => {
                 const line = boq?.boq.lines[i];
                 const up = (k: keyof ItemDraft, v: string) => setItems(items.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
+                const name = (field: string) => `Item ${i + 1} ${field}`;
                 return (
                   <tr key={i} className="border-t border-slate-800">
-                    {(['code', 'section', 'description'] as const).map((k) => <td key={k}><input aria-label={k} value={d[k]} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
+                    {(['code', 'section', 'description'] as const).map((k) => <td key={k}><input aria-label={name(k)} value={d[k]} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
                     {d.trade ? (
                       <td colSpan={2} className="max-w-xs truncate text-slate-400" title={d.trade.scheduled.source}>{d.trade.name}: {d.trade.scheduled.source}</td>
                     ) : (
                       <>
-                        <td><select aria-label="measurement" value={d.measurementId} onChange={(e) => up('measurementId', e.target.value)} className={input}>{ms.map((m) => <option key={m.id} value={m.id}>{m.id} {m.label}</option>)}</select></td>
-                        <td><input aria-label="factor" value={d.factor} onChange={(e) => up('factor', e.target.value)} className={`${input} w-full`} /></td>
+                        <td><select aria-label={name('measurement')} value={d.measurementId} onChange={(e) => up('measurementId', e.target.value)} className={input}>{ms.map((m) => <option key={m.id} value={m.id}>{m.id} {m.label}</option>)}</select></td>
+                        <td><input aria-label={name('factor')} value={d.factor} onChange={(e) => up('factor', e.target.value)} className={`${input} w-full`} /></td>
                       </>
                     )}
-                    {(['rate', 'source', 'date', 'location'] as const).map((k) => <td key={k}><input aria-label={k} value={d[k]} placeholder={k === 'date' ? 'YYYY-MM-DD' : ''} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
+                    <td><input aria-label={name('rate (KES)')} value={d.rate} onChange={(e) => up('rate', e.target.value)} className={`${input} w-full`} /></td>
+                    <td><select aria-label={name('rate from')} value={d.rateKind} onChange={(e) => up('rateKind', e.target.value)} className={input}>
+                      <option value="">choose…</option>
+                      {(Object.keys(RATE_KIND_LABELS) as RateKind[]).map((k) => <option key={k} value={k}>{RATE_KIND_LABELS[k]}</option>)}
+                    </select></td>
+                    {([['source', 'rate source'], ['date', 'rate date'], ['location', 'rate location']] as const).map(([k, l]) => <td key={k}><input aria-label={name(l)} value={d[k]} placeholder={k === 'date' ? 'YYYY-MM-DD' : ''} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
                     <td className="text-right">{line ? `${fmt(line.quantity, 3)} ${line.unit}` : ''}</td>
                     <td className="text-right">{line ? (line.amount === null ? <span className="text-amber-300">rate required</span> : fmt(line.amount)) : ''}</td>
                   </tr>
@@ -413,7 +426,9 @@ export default function TakeoffWorkbench() {
           </div>
           {boq && (
             <div className="text-sm space-y-1">
-              {boq.boq.errors.map((e) => <p key={e} className="text-xs text-red-300">{e}</p>)}
+              <div aria-live="polite" className="space-y-1">
+                {boq.boq.errors.map((e) => <p key={e} className="text-xs text-red-300">{e}</p>)}
+              </div>
               {boq.boq.grandTotal === null ? (
                 <p className="text-amber-300">No total yet: {boq.boq.unpricedItems.length ? `${boq.boq.unpricedItems.length} item(s) need a dated rate` : 'complete the adjustments'}. Priced items so far: KES {fmt(boq.boq.pricedSubtotal)} (not a bill total).</p>
               ) : (
@@ -423,8 +438,11 @@ export default function TakeoffWorkbench() {
                   ))}
                 </tbody></table>
               )}
-              <button type="button" onClick={exportXlsx} disabled={boq.boq.grandTotal === null} className="rounded bg-emerald-700 px-3 py-1 text-xs text-white disabled:opacity-40">Export Excel (with formulas)</button>
-              <button type="button" onClick={exportPdf} disabled={boq.boq.grandTotal === null} className="ml-2 rounded bg-emerald-800 px-3 py-1 text-xs text-white disabled:opacity-40">Export PDF report</button>
+              <p className="text-xs text-slate-400">Exports are marked DRAFT, not certified{boq.boq.grandTotal === null ? ', and INCOMPLETE: unpriced items show "rate required" and there is no bill total' : ''}.</p>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={exportXlsx} className="rounded bg-emerald-700 px-3 py-1 text-xs text-white">Export Excel (with formulas)</button>
+                <button type="button" onClick={exportPdf} className="rounded bg-emerald-800 px-3 py-1 text-xs text-white">Export PDF report</button>
+              </div>
             </div>
           )}
         </div>
