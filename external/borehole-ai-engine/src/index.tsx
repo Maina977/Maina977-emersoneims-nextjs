@@ -1,5 +1,6 @@
 ﻿import { inKenya } from './kenyaLand';
-import { evidenceGate, gated, DEPTH_NEEDS, YIELD_NEEDS, COST_NEEDS } from './evidenceGate';
+import { evidenceGate, evidenceChecklist, gated, DEPTH_NEEDS, YIELD_NEEDS, COST_NEEDS } from './evidenceGate';
+import { costSourcing, QUOTATION_TEXT } from './costSources';
 import { geocodeSearchUrl } from '../../../lib/data-sources/geocodeClient';
 import { finalVerdict, salinityEvidence, chemEvidence } from './verdict';
 import { governingSummary, last12Months, probabilityBand } from './governingSummary';
@@ -2126,7 +2127,18 @@ const AIBoreholeAnalyzer: React.FC = () => {
     // The PDF's economics (one model for screen and report; 2026-10-20).
     const eco = (() => { try { return computeCanonicalEconomics(result); } catch { return null; } })();
     const ecoPayback = eco ? (eco.paybackMonths > 0 ? eco.paybackMonths : 999) : roi.paybackMonths;
-    const ecoTotal = eco ? eco.totalCost : cost.total + solar.totalSolar;
+    // 2026-11-22: only lines with a sourced rate are priced; the total is the
+    // total of those lines, and payback waits for the quotation of the rest.
+    const ecoSrc = eco ? costSourcing(eco) : null;
+    const ecoPriced = !!ecoSrc && ecoSrc.quotationItems.length === 0;
+    const ecoTotal = ecoSrc ? ecoSrc.sourcedTotal : cost.total + solar.totalSolar;
+    const evG = evidenceGate(result);
+    const needsEvidence = (what: string) => (
+      <div className="tab-desc" style={{padding:12,borderRadius:8,border:'1px solid var(--border)'}}>
+        <strong>{COST_NEEDS}.</strong> {what} {evG.note}
+        <ul style={{margin:'6px 0 0 18px'}}>{evidenceChecklist(result.fieldData).filter((c) => !c.ok).flatMap((c) => c.needs.map((n) => <li key={c.figure + n}>{c.figure}: {n}</li>))}</ul>
+      </div>
+    );
     // Depth options keep their relative costs, on the same total as the report.
     const scenariosRaw = genScenarios(result.recommendedDepth, result.estimatedYield, costSoil, costCtx);
     const recRaw = scenariosRaw[1]?.cost || 1;
@@ -2180,11 +2192,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
           })()}</div></div>
           {/* Release 5 (2026-11-20): depth, yield, cost and payback only with site field evidence. */}
           {(() => { const g = evidenceGate(result); return (<>
-          <div className="summary-card depth"><div className="summary-value" style={g.depth ? undefined : {fontSize:15}}>{gated(g.depth, `${result.recommendedDepth.toFixed(0)}m`, DEPTH_NEEDS)}</div><div className="summary-label">Drilling depth{g.depth ? ' (from your field survey)' : ''}</div></div>
-          <div className="summary-card yield-card"><div className="summary-value" style={g.yield ? undefined : {fontSize:15}}>{gated(g.yield, result.estimatedYield.toFixed(1), YIELD_NEEDS)}</div><div className="summary-label">Yield (m³/h){g.yield ? ' (from your pumping test)' : ''}</div></div>
-          <div className="summary-card cost-card"><div className="summary-value" style={g.cost ? undefined : {fontSize:15}}>{gated(g.cost, fmtUSD(ecoTotal), COST_NEEDS)}</div><div className="summary-label">Project cost</div></div>
+          <div className="summary-card depth"><div className="summary-value" style={g.depth ? undefined : {fontSize:15}}>{gated(g.depth, `${result.recommendedDepth.toFixed(0)}m`, DEPTH_NEEDS)}</div><div className="summary-label">Drilling depth{g.depth ? ' (from your field survey)' : ''}{g.citations.depth && <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>{g.citations.depth}</span>}</div></div>
+          <div className="summary-card yield-card"><div className="summary-value" style={g.yield ? undefined : {fontSize:15}}>{gated(g.yield, result.estimatedYield.toFixed(1), YIELD_NEEDS)}</div><div className="summary-label">Yield (m³/h){g.yield ? ' (from your pumping test)' : ''}{g.citations.yield && <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>{g.citations.yield}</span>}</div></div>
+          <div className="summary-card cost-card"><div className="summary-value" style={g.cost ? undefined : {fontSize:15}}>{gated(g.cost, fmtUSD(ecoTotal), COST_NEEDS)}</div><div className="summary-label">{g.cost && ecoSrc?.quotationItems.length ? `Project cost, sourced items only (by quotation: ${ecoSrc.quotationItems.join(', ')})` : 'Project cost'}</div></div>
           {g.cost && <div className="summary-card solar-card"><div className="summary-value">{fmtUSD(eco ? eco.solarCost : solar.totalSolar)}</div><div className="summary-label">of which solar pump power{(result as any).pumpHeadAssumption ? ' (water level assumed)' : ''}</div></div>}
-          {g.cost && <div className="summary-card roi-card"><div className="summary-value">{ecoPayback >= 240 ? 'None' : `${ecoPayback}mo`}</div><div className="summary-label">Payback Period</div></div>}
+          {g.cost && <div className="summary-card roi-card"><div className="summary-value" style={ecoPriced ? undefined : {fontSize:15}}>{!ecoPriced ? 'After quotation' : ecoPayback >= 240 ? 'None' : `${ecoPayback}mo`}</div><div className="summary-label">Payback Period</div></div>}
           </>); })()}
           <div className="summary-card risk-sc" style={{borderColor:getRiskColor(result.risk.overallRisk)}}><div className="summary-value" style={{color:getRiskColor(result.risk.overallRisk)}}>{(result.risk.overallRisk*100).toFixed(0)}%</div><div className="summary-label">Overall Risk</div></div>
           <div className="summary-card wq-card"><div className="summary-value">{wqExpanded.treatmentRequired}</div><div className="summary-label">Treatment likely (screening)</div></div>
@@ -5765,7 +5777,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
           )}
 
           {/* SCENARIO SIMULATION (#15) */}
-          {activeResultTab==='scenarios' && (
+          {activeResultTab==='scenarios' && !evG.cost && needsEvidence('Depth options compare depths, yields and costs, so they need the field survey and the pumping test.')}
+          {activeResultTab==='scenarios' && evG.cost && (
             <div>
               <h4 className="tab-title">{'\u{1F3AF}'} Depth options (rule of thumb)</h4>
               <p className="tab-desc">Fixed proportions of the planned depth and yield, for budgeting only: they are not site evidence. Only the survey and the drilled hole tell you what a deeper hole would give.</p>
@@ -5775,7 +5788,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     {i===1 && <div className="scenario-badge">RECOMMENDED</div>}
                     <div className="scenario-header">Scenario {i+1}: Drill at {sc.depth}m</div>
                     <div className="scenario-row"><span>Yield</span><span>{sc.yield == null ? 'Not assessed at this depth (a pump test decides)' : `${sc.yield} m³/h`}</span></div>
-                    <div className="scenario-row"><span>Cost</span><span>{fmtUSD(sc.cost)}</span></div>
+                    <div className="scenario-row"><span>Cost{ecoPriced ? '' : ' (sourced items)'}</span><span>{fmtUSD(sc.cost)}</span></div>
                     <div className="scenario-row"><span>Basis</span><span>Rule of thumb, not assessed for risk</span></div>
                     <div className="scenario-note">{sc.recommendation}</div>
                   </div>
@@ -5815,7 +5828,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <div className="treatment-box">
                 <div className="treatment-header">Treatment likely: <strong style={{color:wqExpanded.treatmentRequired==='YES'?'#F44336':'#4CAF50'}}>{wqExpanded.treatmentRequired}</strong></div>
                 {/* The same allowance as the Costs tab and the PDF (2026-10-25 audit: six sites, two figures each). */}
-                {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">Allowance if treatment is needed: <strong>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</strong> ({fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day (sized on measured salinity)` : ''}. A laboratory test decides whether it is.</div>}
+                {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">If treatment is needed it is priced <strong>by quotation</strong> (no sourced rate on file){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day (sized on measured salinity)` : ''}. A laboratory test decides whether it is.</div>}
                 {eco?.salinityUnpriced && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Desalination not priced:</strong> {salinityEvidence(result).sentence}</div>}
                 {eco?.fluorideUnpriced && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Defluoridation not priced:</strong> {chemEvidence(result, 'fluoride').sentence}</div>}
                 {(result as any).coastalIntrusionNote && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Seawater intrusion risk:</strong> {(result as any).coastalIntrusionNote}</div>}
@@ -5825,25 +5838,22 @@ const AIBoreholeAnalyzer: React.FC = () => {
           )}
 
           {/* COST BREAKDOWN (#2, #22) */}
-          {activeResultTab==='costs' && (
+          {activeResultTab==='costs' && !evG.cost && needsEvidence('The project cost follows from the surveyed depth and the tested yield.')}
+          {activeResultTab==='costs' && evG.cost && (
             <div>
               <h4 className="tab-title">{'\u{1F4B5}'} Project Cost (same figures as the PDF report)</h4>
+              <p className="tab-desc">Priced on the field evidence entered: {[evG.citations.depth, evG.citations.yield].filter(Boolean).join('; ')}. Only items with a sourced rate carry a price; the others are priced by the supplier&apos;s quotation.</p>
               <div className="cost-table">
                 <table>
-                  <thead><tr><th>Item</th><th>Cost (USD)</th><th>Cost (KSh)</th></tr></thead>
+                  <thead><tr><th>Item</th><th>Cost (USD)</th><th>Cost (KSh)</th><th>Source</th></tr></thead>
                   <tbody>
-                    {eco ? (<>
-                      <tr><td>Hydrogeological survey + WRA approvals (required)</td><td>{fmtUSD(eco.surveyCost + eco.permitCost)}</td><td>{fmtKSH(eco.surveyCost + eco.permitCost)}</td></tr>
-                      <tr><td>Drilling ({eco.depthVal} m at about KSh {eco.cpmKES.toLocaleString()}/m, {eco.drillMethod})</td><td>{fmtUSD(eco.drillingCost)}</td><td>{fmtKSH(eco.drillingCost)}</td></tr>
-                      {eco.mobilisationCost > 0 && <tr><td>Mobilisation (rig and crew; at least KSh 240,000 beyond 100 km)</td><td>{fmtUSD(eco.mobilisationCost)}</td><td>{fmtKSH(eco.mobilisationCost)}</td></tr>}
-                      <tr><td>Casing &amp; screen</td><td>{fmtUSD(eco.casingCost + eco.screenCost)}</td><td>{fmtKSH(eco.casingCost + eco.screenCost)}</td></tr>
-                      <tr><td>Completion: gravel pack, development, 24 h test pumping, lab test, cap</td><td>{fmtUSD(eco.completionCost)}</td><td>{fmtKSH(eco.completionCost)}</td></tr>
-                      <tr><td>Pump + installation</td><td>{fmtUSD(eco.pumpCost + eco.installCost)}</td><td>{fmtKSH(eco.pumpCost + eco.installCost)}</td></tr>
-                      {eco.solarCost > 0 && <tr><td>Solar pump power ({eco.solarKW} kW)</td><td>{fmtUSD(eco.solarCost)}</td><td>{fmtKSH(eco.solarCost)}</td></tr>}
-                      {eco.wqTreatmentCost + eco.defluoridationCost > 0 && <tr><td>Water treatment allowance (a lab test decides)</td><td>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</td><td>{fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}</td></tr>}
-                      {eco.salinityUnpriced && <tr><td>Desalination (reverse osmosis): salinity not measured at this site; a laboratory test of the first water decides</td><td>not priced</td><td>—</td></tr>}
-                      <tr><td>Contingency ({Math.round(eco.contingencyRate * 100)}%)</td><td>{fmtUSD(eco.contingency)}</td><td>{fmtKSH(eco.contingency)}</td></tr>
-                      <tr className="cost-total"><td><strong>TOTAL PROJECT</strong></td><td><strong>{fmtUSD(eco.totalCost)}</strong></td><td><strong>{fmtKSH(eco.totalCost)}</strong></td></tr>
+                    {eco && ecoSrc ? (<>
+                      {ecoSrc.lines.map((l) => (
+                        <tr key={l.item}><td>{l.item}</td><td>{l.source ? fmtUSD(l.usd) : QUOTATION_TEXT}</td><td>{l.source ? fmtKSH(l.usd) : '—'}</td><td style={{fontSize:11}}>{l.source ?? 'No sourced rate on file: the supplier’s quotation prices this item'}</td></tr>
+                      ))}
+                      {eco.salinityUnpriced && <tr><td>Desalination (reverse osmosis): salinity not measured at this site; a laboratory test of the first water decides</td><td>not priced</td><td>—</td><td></td></tr>}
+                      <tr><td>Contingency ({Math.round(eco.contingencyRate * 100)}% of the sourced items)</td><td>{fmtUSD(ecoSrc.sourcedContingency)}</td><td>{fmtKSH(ecoSrc.sourcedContingency)}</td><td></td></tr>
+                      <tr className="cost-total"><td><strong>{ecoPriced ? 'TOTAL PROJECT' : 'TOTAL OF THE SOURCED ITEMS'}</strong></td><td><strong>{fmtUSD(ecoSrc.sourcedTotal)}</strong></td><td><strong>{fmtKSH(ecoSrc.sourcedTotal)}</strong></td><td style={{fontSize:11}}>{ecoPriced ? '' : `Not included, by quotation: ${ecoSrc.quotationItems.join(', ')}`}</td></tr>
                     </>) : (
                       <tr className="cost-total"><td><strong>TOTAL (estimate)</strong></td><td><strong>{fmtUSD(ecoTotal)}</strong></td><td><strong>{fmtKSH(ecoTotal)}</strong></td></tr>
                     )}
@@ -5887,14 +5897,21 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div className="result-item"><span className="rl">Pumping hours</span><span className="rv">{eco ? eco.pumpHoursPerDay : solar.runtime} h/day</span></div>
                 <div className="result-item"><span className="rl">Solar array</span><span className="rv">{eco ? (eco.solarKW > 0 ? `${eco.solarKW} kW` : 'None (hand pump)') : `${solar.panelKwp} kWp`}</span></div>
                 <div className="result-item"><span className="rl">Battery</span><span className="rv">None — the pump fills a storage tank in daylight</span></div>
-                <div className="result-item"><span className="rl">Solar cost (in the project total)</span><span className="rv" style={{fontWeight:700}}>{fmtUSD(eco ? eco.solarCost : solar.totalSolar)} ({fmtKSH(eco ? eco.solarCost : solar.totalSolar)})</span></div>
+                <div className="result-item"><span className="rl">Solar cost (in the project total)</span><span className="rv" style={{fontWeight:700}}>{evG.cost ? `${fmtUSD(eco ? eco.solarCost : solar.totalSolar)} (${fmtKSH(eco ? eco.solarCost : solar.totalSolar)})` : COST_NEEDS}</span></div>
               </div>
               <p className="tab-desc" style={{marginTop:12}}>Priced at about $1,500 per kW installed (array, controller, mounting and wiring). A supplier quotation fixes the real price.</p>
             </div>
           )}
 
           {/* ROI & PAYBACK (#8) */}
-          {activeResultTab==='roi' && (
+          {activeResultTab==='roi' && !evG.cost && needsEvidence('Payback follows from the project cost and the tested yield.')}
+          {activeResultTab==='roi' && evG.cost && !ecoPriced && (
+            <div>
+              <h4 className="tab-title">{'\u{1F4C8}'} Payback (same figures as the PDF report)</h4>
+              <p className="tab-desc">Payback, return and NPV are given once the supplier&apos;s quotation prices every item. Items without a sourced rate: {ecoSrc?.quotationItems.join(', ')}.</p>
+            </div>
+          )}
+          {activeResultTab==='roi' && evG.cost && ecoPriced && (
             <div>
               <h4 className="tab-title">{'\u{1F4C8}'} Payback (same figures as the PDF report)</h4>
               {eco ? (<>
@@ -7367,9 +7384,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <div><strong>Target Depth:</strong><br/>{evidenceGate(result).depth ? <>{dd.targetDepth_m}m <span style={{color:'var(--text-muted)'}}>(range: {dd.depthRange_m[0]}-{dd.depthRange_m[1]}m)</span></> : DEPTH_NEEDS}</div>
                       <div><strong>Expected Yield:</strong><br/>{evidenceGate(result).yield ? <>{dd.expectedYield_m3hr} m3/hr <span style={{color:'var(--text-muted)'}}>(range: {dd.yieldRange_m3hr[0]}-{dd.yieldRange_m3hr[1]})</span></> : YIELD_NEEDS}</div>
                       <div><strong>Casing Depth:</strong> {gated(evidenceGate(result).depth, `${dd.casingDepth_m}m`, DEPTH_NEEDS)}</div>
-                      <div><strong>Screen Interval:</strong> {dd.screenInterval_m[0]}-{dd.screenInterval_m[1]}m</div>
+                      <div><strong>Screen Interval:</strong> {gated(evG.depth, `${dd.screenInterval_m[0]}-${dd.screenInterval_m[1]}m`, DEPTH_NEEDS)}</div>
                       <div><strong>Pump Type:</strong> {dd.pumpType}</div>
-                      <div><strong>Estimated Cost:</strong> {fmtUSD(ecoTotal)} <span style={{opacity:0.7}}>(same basis as the summary)</span></div>
+                      <div><strong>Estimated Cost:</strong> {evG.cost ? <>{fmtUSD(ecoTotal)} <span style={{opacity:0.7}}>({ecoPriced ? 'same basis as the summary' : 'sourced items only; the rest by quotation'})</span></> : COST_NEEDS}</div>
                     </div>
                   </div>
                   {dd.alternativePoints?.length ? (

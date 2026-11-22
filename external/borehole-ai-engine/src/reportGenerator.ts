@@ -19,8 +19,9 @@
  */
 
 import { finalVerdict, salinityEvidence, salinityFromWaterQuality, modelledSalinityLabel, labSourceLabel, nearbyProvenance, chemEvidence, chemFromWaterQuality, chemCell, modelledChemLabel, labWaterResult, type ChemRisk } from './verdict';
-import { evidenceGate } from './evidenceGate';
-import { generateScreeningPdf } from './screeningReport';
+import { evidenceGate, provenanceText } from './evidenceGate';
+import { generateScreeningPdf, screeningRows, screeningContent } from './screeningReport';
+import { costSourcing, QUOTATION_TEXT } from './costSources';
 import { governingSummary, last12Months } from './governingSummary';
 import { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, getCustomerDetails, computeCanonicalEconomics } from './reportShared';
 export { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, computeCanonicalEconomics };
@@ -939,6 +940,42 @@ function screeningOnly(result: AnalysisResult): boolean {
   return !(g.depth && g.yield);
 }
 
+/** The entered field evidence behind depth, yield, cost and water quality, for the full PDF (2026-11-22). */
+export function fieldEvidenceRows(result: AnalysisResult): string[][] {
+  const g = evidenceGate(result);
+  const lab = result.fieldData?.labWaterAnalysis;
+  return [
+    ['Drilling depth', g.citations.depth ?? (g.depth ? g.methods.join('; ') : 'not established: needs a geophysical survey')],
+    ['Yield', g.citations.yield ?? (g.yield ? g.methods.join('; ') : 'not established: needs a pumping test')],
+    ['Project cost', g.cost ? 'Priced on the depth and yield above, at sourced rates only; other items by quotation' : 'not established: needs the survey and the pumping test'],
+    ...(lab ? [['Water quality', `${labSourceLabel(lab)} ${provenanceText(lab.provenance)}`]] : []),
+  ];
+}
+
+/**
+ * Cost rows [item, USD, KSh, basis] for the full PDF (2026-11-22): a price only
+ * where the rate has a source, "by quotation" otherwise; the total is the total
+ * of the sourced lines; payback and NPV only when every item is priced.
+ */
+export function sourcedCostRows(result: AnalysisResult): string[][] {
+  const eco = computeCanonicalEconomics(result);
+  const cs = costSourcing(eco);
+  const g = evidenceGate(result);
+  const usd = (v: number) => `$${Math.round(v).toLocaleString()}`;
+  const rows: string[][] = cs.lines.map((l) => l.source
+    ? [l.item, usd(l.usd), eco.kes(l.usd), l.source]
+    : [l.item, QUOTATION_TEXT, '', 'No sourced rate on file: the supplier\'s quotation prices this item']);
+  if (eco.salinityUnpriced) rows.push(['Desalination (RO)', 'not priced', '', 'Salinity has not been measured at this site (regional screening class only); a laboratory test of the first water decides']);
+  if (eco.fluorideUnpriced) rows.push(['Defluoridation', 'not priced', '', 'Fluoride has not been measured at this site (regional screening class only); a laboratory test of the first water decides']);
+  rows.push([`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, usd(cs.sourcedContingency), eco.kes(cs.sourcedContingency), `${Math.round(eco.contingencyRate * 100)}% of the sourced items${eco.isHardRock ? ' (hard rock)' : ''}`]);
+  rows.push([cs.quotationItems.length ? 'TOTAL OF SOURCED ITEMS' : 'TOTAL CAPITAL', usd(cs.sourcedTotal), eco.kes(cs.sourcedTotal),
+    `${cs.quotationItems.length ? `Not included, by quotation: ${cs.quotationItems.join(', ')}. ` : ''}Depth and yield from: ${[g.citations.depth, g.citations.yield].filter(Boolean).join('; ') || 'field evidence not cited'}`]);
+  const priced = cs.quotationItems.length === 0;
+  rows.push(['Payback', eco.paybackWithheld ? 'Not given: site unfavourable' : !priced ? 'Not given until the quotation prices every item' : eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : 'Not within 20 yrs', '', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr`]);
+  if (priced) rows.push(['NPV @ 10% / 20 yrs', usd(eco.npv10Rounded), '', eco.irr === 999 ? 'IRR >100%' : eco.irr === -999 ? 'IRR negative' : `IRR ~${eco.irr}%`]);
+  return rows;
+}
+
 export async function generatePDFReport(result: AnalysisResult, requestedTier: 'basic' | 'professional' | 'expert'): Promise<void> {
   if (screeningOnly(result)) { generateScreeningPdf(result); return; }
   // One governing report for every tier (independent audit 2026-11-05: the
@@ -1253,19 +1290,24 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       y += 19;
     }
 
-    // Headline tiles (2 rows x 3)
+    // Headline tiles (2 rows x 3). 2026-11-22: depth and yield cite the field
+    // evidence entered; the cost is the sourced items only.
+    const _briefCs = costSourcing(eco);
+    const _briefG = evidenceGate(result);
+    const _cite = (s: string | undefined) => (s && s.length > 70 ? `${s.slice(0, 67)}...` : s);
     const tiles = [
       // Not a calibrated probability: no drilled outcomes have been used to check it
       // (P0 audit 2026-11-13, directive §5).
       { lbl: 'MODELLED SUCCESS SCORE', val: pct(result.probability), sub: `MODELLED, uncalibrated${u ? ` · range ${(u.probabilityRange[0] * 100).toFixed(0)}-${(u.probabilityRange[1] * 100).toFixed(0)}%` : ''}`, c: fv.color },
-      { lbl: 'PROVISIONAL INVESTIGATION DEPTH', val: `${fmt(result.recommendedDepth, 0)} m`, sub: u ? `range ${u.depthRange[0]}-${u.depthRange[1]} m — revise after ERT` : 'satellite-only estimate — revise after ERT', c: [56, 189, 248] as [number, number, number] },
-      { lbl: 'EXPECTED YIELD', val: `${fmt(result.estimatedYield, 1)} m³/hr`, sub: u ? `range ${u.yieldRange[0]}-${u.yieldRange[1]} m³/hr` : 'satellite-only estimate', c: [34, 197, 94] as [number, number, number] },
+      { lbl: _briefG.citations.depth ? 'DRILLING DEPTH (FIELD SURVEY)' : 'PROVISIONAL INVESTIGATION DEPTH', val: `${fmt(result.recommendedDepth, 0)} m`, sub: _briefG.citations.depth ? `from ${_cite(_briefG.citations.depth)} (see Field evidence)` : u ? `range ${u.depthRange[0]}-${u.depthRange[1]} m — revise after ERT` : 'satellite-only estimate — revise after ERT', c: [56, 189, 248] as [number, number, number] },
+      { lbl: _briefG.citations.yield ? 'YIELD (PUMPING TEST)' : 'EXPECTED YIELD', val: `${fmt(result.estimatedYield, 1)} m³/hr`, sub: _briefG.citations.yield ? `from ${_cite(_briefG.citations.yield)} (see Field evidence)` : u ? `range ${u.yieldRange[0]}-${u.yieldRange[1]} m³/hr` : 'satellite-only estimate', c: [34, 197, 94] as [number, number, number] },
       // One water table, with what it rests on (2026-10-25 audit).
       { lbl: 'WATER TABLE', val: wtDepth != null ? `${fmt(wtDepth, 0)} m` : 'Not measured', sub: briefR.waterTableKind === 'field' ? 'measured on site' : briefR.waterTableKind === 'nearby' ? 'median of nearby boreholes' : 'confirm with ERT or drilling', c: [129, 140, 248] as [number, number, number] },
-      { lbl: 'TOTAL INVESTMENT', val: `${eco.kes(eco.totalCost)}`, sub: `$${eco.totalCost.toLocaleString()} · incl. survey, permits, ${(eco.contingencyRate * 100).toFixed(0)}% contingency`, c: [251, 191, 36] as [number, number, number] },
+      // 2026-11-22: sourced items only; the rest are by quotation.
+      { lbl: _briefCs.quotationItems.length ? 'SOURCED ITEMS (REST BY QUOTE)' : 'TOTAL INVESTMENT', val: `${eco.kes(_briefCs.sourcedTotal)}`, sub: `$${_briefCs.sourcedTotal.toLocaleString()} · ${_briefCs.quotationItems.length ? `by quotation: ${_briefCs.quotationItems.join(', ')}` : `incl. survey, permits, ${(eco.contingencyRate * 100).toFixed(0)}% contingency`}`, c: [251, 191, 36] as [number, number, number] },
       // "Not viable (sales)" and ">20 yrs" must never disagree across pages —
       // one label, everywhere (external audit item 13).
-      { lbl: 'PAYBACK (WATER SALES)', val: eco.paybackMonths > 0 && eco.paybackMonths <= 240 ? `${(eco.paybackMonths / 12).toFixed(1)} yrs` : eco.paybackWithheld ? 'Not given (unfavourable site)' : 'Not viable as sales', sub: eco.paybackMonths > 0 && eco.paybackMonths <= 240 ? `${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay}h/day • $${eco.waterTariffPerM3.toFixed(2)}/m³` : `value = avoided vendor-water cost${eco.isHandPump ? ' (household hand-pump scheme)' : ''}`, c: [56, 189, 248] as [number, number, number] },
+      { lbl: 'PAYBACK (WATER SALES)', val: _briefCs.quotationItems.length && !eco.paybackWithheld ? 'After quotation' : eco.paybackMonths > 0 && eco.paybackMonths <= 240 ?`${(eco.paybackMonths / 12).toFixed(1)} yrs` : eco.paybackWithheld ? 'Not given (unfavourable site)' : 'Not viable as sales', sub: eco.paybackMonths > 0 && eco.paybackMonths <= 240 ? `${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay}h/day • $${eco.waterTariffPerM3.toFixed(2)}/m³` : `value = avoided vendor-water cost${eco.isHandPump ? ' (household hand-pump scheme)' : ''}`, c: [56, 189, 248] as [number, number, number] },
     ];
     const tW = (pw - 8) / 3, tH = 23;
     tiles.forEach((t, i) => {
@@ -1402,29 +1444,28 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     // ── BRIEF PAGE 2 — MONEY AND NEXT STEPS ─────────────────────
     briefHeader(2);
 
+    // The field evidence behind the depth, yield and cost (2026-11-22).
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('FIELD EVIDENCE BEHIND THESE FIGURES', margin, y); y += 3;
+    autoTable(doc, {
+      startY: y,
+      head: [['Figure', 'Source, date, method and reference (as entered)']],
+      body: fieldEvidenceRows(result),
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7 },
+      margin: { left: margin, right: margin },
+      theme: 'grid',
+    });
+    y = lastY(6);
+
     doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
     doc.text('INVESTMENT AT A GLANCE', margin, y); y += 3;
     autoTable(doc, {
       startY: y,
       head: [['Item', 'USD', 'KSh (approx)', 'Basis']],
-      body: [
-        ['Survey + statutory approvals', `$${(eco.surveyCost + eco.permitCost).toLocaleString()}`, eco.kes(eco.surveyCost + eco.permitCost), eco.permitNote ? `Hydrogeological survey KSh 85,000 + ${eco.permitNote}` : 'Hydrogeological survey and WRA approvals (EmersonEIMS tender rates)'],
-        ['Drilling', `$${eco.drillingCost.toLocaleString()}`, eco.kes(eco.drillingCost), `${eco.depthVal} m × ~KSh ${eco.cpmKES.toLocaleString()}/m — ${eco.drillMethod}, ${eco.soilType} ground (EmersonEIMS tender rate, Baringo, 16 Oct 2026)`],
-        ...(eco.mobilisationCost > 0 ? [['Mobilisation', `$${eco.mobilisationCost.toLocaleString()}`, eco.kes(eco.mobilisationCost), 'Rig and crew mobilisation: about $3/km beyond 50 km of Nairobi, at least KSh 240,000 beyond 100 km (EmersonEIMS tender rate); nearer sites are covered by the per-metre rate'] as string[]] : []),
-        ['Casing + screen', `$${(eco.casingCost + eco.screenCost).toLocaleString()}`, eco.kes(eco.casingCost + eco.screenCost), `Casing ${eco.casingNote} = $${eco.casingCost.toLocaleString()}; provisional screen ${Math.round(eco.screenLength)}m x $35/m = $${eco.screenCost.toLocaleString()}`],
-        ['Completion works', `$${eco.completionCost.toLocaleString()}`, eco.kes(eco.completionCost), eco.completionNote],
-        ['Pump + installation', `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.kes(eco.pumpCost + eco.installCost), eco.pumpNote],
-        // Hand-pump systems need no solar array — omit the row entirely (audit #9)
-        ...(eco.solarCost > 0 ? [['Solar power system', `$${eco.solarCost.toLocaleString()}`, eco.kes(eco.solarCost), `${eco.solarKW.toFixed(1)} kW array`] as string[]] : []),
-        ...(eco.wqTreatmentCost + eco.defluoridationCost > 0
-          ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.kes(eco.wqTreatmentCost + eco.defluoridationCost), eco.defluoridationCost > 0 ? `incl. defluoridation on measured fluoride (+$${eco.annualDefluoridation}/yr media)` : 'allowance; a laboratory test of the first water decides'] as string[]]
-          : []),
-        ...(eco.fluorideUnpriced ? [['Defluoridation', 'not priced', '', 'Fluoride has not been measured at this site (regional screening class only); a laboratory test of the first water decides'] as string[]] : []),
-        ['Contingency', `$${eco.contingency.toLocaleString()}`, eco.kes(eco.contingency), `${(eco.contingencyRate * 100).toFixed(0)}%${eco.isHardRock ? ' (hard rock)' : ''}`],
-        ['TOTAL CAPITAL', `$${eco.totalCost.toLocaleString()}`, eco.kes(eco.totalCost), 'Complete functional borehole. Excl. land, storage tank, distribution'],
-        ['Payback', eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : eco.paybackWithheld ? 'Not given: site unfavourable' : 'Not within 20 yrs', '', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, ${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr${eco.isHandPump ? ' — household use case: the real value is avoided vendor-water cost, not sales' : ''}`],
-        ['NPV @ 10% / 20 yrs', `$${eco.npv10Rounded.toLocaleString()}`, '', eco.irr === 999 ? 'IRR >100%' : eco.irr === -999 ? 'IRR negative' : `IRR ~${eco.irr}%`],
-      ],
+      // 2026-11-22: only lines with a sourced rate are priced; payback and NPV
+      // wait for the quotation when any item has no sourced rate.
+      body: sourcedCostRows(result).map((r) => [r[0], r[1], r[2], r[3]]),
       headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
       bodyStyles: { fontSize: 7 },
       columnStyles: { 3: { cellWidth: 70 } },
@@ -2077,6 +2118,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     const eco = computeCanonicalEconomics(result);
     const _totalCap  = eco.totalCost;
     const _annualMaint = eco.annualMaintenance;
+    const _unpriced = costSourcing(eco).quotationItems.length > 0;
 
     // IDENTICAL scenarios + formula to Section 5.1's "Tariff Scenario
     // Comparison" (review finding: the two tables printed 10.2-yr and 21-yr
@@ -2088,7 +2130,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     ].map(t => {
       const rev = Math.round(eco.dailyWaterM3 * eco.operatingDaysPerYear * (t.rate - eco.roOpexPerM3) * t.util);
       const net = rev - eco.annualOM; // single O&M definition (maint + media)
-      const pb = eco.paybackWithheld ? 'Not given' : net > 0 ? (_totalCap / net).toFixed(1) : 'Never';
+      // 2026-11-22: no payback on a total that includes unsourced prices.
+      const pb = eco.paybackWithheld ? 'Not given' : _unpriced ? 'After quotation' : net > 0 ? (_totalCap / net).toFixed(1) : 'Never';
       return { ...t, rev, net, pb };
     });
 
@@ -2100,20 +2143,10 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     autoTable(doc, {
       startY: y,
       head: [['Cost Component', 'Amount (USD)', 'Notes']],
+      // 2026-11-22: the same sourced cost lines as the brief (sourcedCostRows).
       body: [
-        ['Survey + statutory approvals', `$${(eco.surveyCost + eco.permitCost).toLocaleString()}`, 'Hydrogeological survey report + WRA abstraction approval (required)'],
-        ['Drilling, casing & screen',  `$${(eco.drillingCost + eco.casingCost + eco.screenCost).toLocaleString()}`, `${eco.depthVal}m at ~KSh ${eco.cpmKES.toLocaleString()}/m (${eco.drillMethod}, ${eco.soilType}) + casing + screen`],
-        ['Completion works', `$${eco.completionCost.toLocaleString()}`, eco.completionNote],
-        ...(eco.mobilisationCost > 0 ? [['Mobilisation', `$${eco.mobilisationCost.toLocaleString()}`, 'Rig and crew mobilisation: about $3/km beyond 50 km of Nairobi, at least KSh 240,000 beyond 100 km (EmersonEIMS tender rate); nearer sites are covered by the per-metre rate'] as [string, string, string]] : []),
-        ['Pump & installation',        `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.pumpNote],
-        ...(eco.solarCost > 0 ? [['Solar power system', `$${eco.solarCost.toLocaleString()}`, `${eco.solarKW} kW array + controller`] as [string, string, string]] : []),
-        ...((eco.wqTreatmentCost + eco.defluoridationCost) > 0
-          ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.defluoridationCost > 0 ? `Incl. defluoridation (measured fluoride ${chemEvidence(result, 'fluoride').value}, above the WHO 1.5 mg/L guideline)` : 'Allowance; a laboratory test of the first water decides'] as [string, string, string]]
-          : []),
-        ...(eco.fluorideUnpriced ? [['Defluoridation', 'not priced', 'Fluoride not measured at this site (regional screening class only); a laboratory test of the first water decides'] as [string, string, string]] : []),
-        [`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, `$${eco.contingency.toLocaleString()}`, eco.isHardRock ? 'Hard-rock drilling risk premium' : 'Standard engineering contingency'],
-        ['TOTAL CAPITAL COST',         `$${_totalCap.toLocaleString()}`,  `${(tier as string) === 'basic' ? 'Same model as the cost table' : 'Same model as Section 5.1'}. Incl. survey + statutory approvals. Excl. land, storage tank`],
-        ['Annual O&M',                 `$${eco.annualOM.toLocaleString()}/yr`, eco.annualDefluoridation > 0 ? `4.5% of capital ($${_annualMaint.toLocaleString()}) + defluoridation media ($${eco.annualDefluoridation}/yr) — same O&M used in every table` : '4.5% of capital (World Bank WASH benchmark) — same O&M used in every table'],
+        ...sourcedCostRows(result).filter((r) => r[0] !== 'Payback' && !r[0].startsWith('NPV')).map((r) => [r[0], r[1], r[3]]),
+        ['Annual O&M', _unpriced ? 'After quotation' : `$${eco.annualOM.toLocaleString()}/yr`, _unpriced ? '4.5% of capital (World Bank WASH benchmark), once the quotation prices every item' : eco.annualDefluoridation > 0 ? `4.5% of capital ($${_annualMaint.toLocaleString()}) + defluoridation media ($${eco.annualDefluoridation}/yr) — same O&M used in every table` : '4.5% of capital (World Bank WASH benchmark) — same O&M used in every table'],
       ],
       headStyles: { fillColor: [15,23,42] as [number,number,number], textColor: [56,189,248] as [number,number,number], fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9 },
@@ -2132,8 +2165,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       body: [
         ..._invScenarios.map(s => [
           s.name, `$${s.rate.toFixed(2)}/m\u00b3 @ ${Math.round(s.util * 100)}%`,
-          `$${s.rev.toLocaleString()}`, `$${s.net.toLocaleString()}`,
-          s.pb === 'Never' ? 'Never (not viable)' : `${s.pb} yrs`,
+          `$${s.rev.toLocaleString()}`, _unpriced ? 'After quotation' : `$${s.net.toLocaleString()}`,
+          s.pb === 'Never' ? 'Never (not viable)' : /^[A-Z]/.test(s.pb) ? s.pb : `${s.pb} yrs`,
         ]),
       ],
       headStyles: { fillColor: [22,163,74] as [number,number,number], textColor: [255,255,255] as [number,number,number], fontStyle: 'bold', fontSize: 8 },
@@ -3173,31 +3206,16 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       netAnnual, cashFlows, irr, paybackMonths, npv10Rounded,
       drillMethod, surveyCost, permitCost, permitNote, completionCost, completionNote, kesPerUsd, kes, cpmKES,
     } = computeCanonicalEconomics(result);
+    // 2026-11-22: only sourced rates are priced; with any item by quotation,
+    // the ROI, payback and NPV below wait for the quotation.
+    const _unpriced51 = costSourcing(computeCanonicalEconomics(result)).quotationItems.length > 0;
 
     autoTable(doc, {
       startY: y,
       head: [['Cost Item', 'Amount (USD)', 'Notes']],
       body: [
-        ['Hydrogeological Survey + ERT', `$${surveyCost.toLocaleString()}`, 'Statutory requirement for motorised boreholes (Kenya Water Resources Regulations) -- KSh 40,000-110,000 market range, July 2026'],
-        ['WRA, county and NEMA approvals', `$${permitCost.toLocaleString()}`, permitNote],
-        ['Drilling', `$${drillingCost.toLocaleString()}`, `${depthVal}m x $${cpm}/m (~KSh ${cpmKES.toLocaleString()}/m) -- ${drillMethod}, ${soilType} ground. EmersonEIMS rates: KSh 6,800/m to 100 m, 7,300/m to 200 m, 8,200/m to 300 m, 9,500/m beyond; hard rock KSh 10,500/m`],
-        ...(mobilisationCost > 0 ? [['Mobilisation', `$${mobilisationCost.toLocaleString()}`, 'Rig and crew mobilisation: about $3/km beyond 50 km of Nairobi, at least KSh 240,000 beyond 100 km (EmersonEIMS tender rate); nearer sites are covered by the per-metre rate']] : []),
-        ['Casing & Grouting', `$${casingCost.toLocaleString()}`, casingNote],
-        ['Well Screen', `$${screenCost.toLocaleString()}`, screenNote],
-        ['Completion Works', `$${completionCost.toLocaleString()}`, completionNote],
-        ['Pump Unit', `$${pumpCost.toLocaleString()}`, pumpNote],
-        ['Installation & Pipe', `$${installCost.toLocaleString()}`, 'Rising main, fittings, civil works'],
-        ...(solarCost > 0 ? [['Solar Power System', `$${solarCost.toLocaleString()}`, `${solarKW} kW solar array + controller (~$1,500/kW, IRENA 2023)`]] : []),
-        ...(wqTreatmentCost > 0 ? [['Water Treatment', `$${wqTreatmentCost.toLocaleString()}`, wqTreatmentCost <= 400
-          ? `Right-sized household option -- ${result.waterQuality?.treatmentRequired?.join(', ') || 'iron removal'}: simple aeration + sand filtration (~KSh ${Math.round(wqTreatmentCost * 129 / 1000) * 1000 / 1000}k). Lab analysis confirms the need before purchase.`
-          : `Conservative upper bound -- ${result.waterQuality?.treatmentRequired?.join(', ') || 'Filtration system'}`]] : []),
-        ...(computeCanonicalEconomics(result).salinityUnpriced ? [['Desalination (RO)', 'not priced', 'Salinity has not been measured at this site (regional screening class only); a laboratory test of the first water decides whether treatment is needed and its size']] : []),
-        ...(defluoridationCost > 0 ? [['Defluoridation Unit', `$${defluoridationCost.toLocaleString()}`, `Measured fluoride ${fluorideVal.toFixed(1)} mg/L (${chemEvidence(result, 'fluoride').source.replace(/^Measured: /, '')}) > 1.5 WHO limit -- bone-char/activated alumina (+$${annualDefluoridation}/yr media)`]] : []),
-        ...(computeCanonicalEconomics(result).fluorideUnpriced ? [['Defluoridation', 'not priced', 'Fluoride has not been measured at this site (regional screening class only); a laboratory test of the first water decides']] : []),
-        [`Contingency (${Math.round(contingencyRate * 100)}%)`, `$${contingency.toLocaleString()}`, isHardRock ? 'Hard rock (gneiss/granite) -- DTH hammer, bit changes, foam drilling complications' : 'Standard engineering contingency for unforeseen conditions'],
-        ['', '', ''],
-        ['TOTAL PROJECT COST', `$${totalCost.toLocaleString()} (~${kes(totalCost)})`, `Subtotal $${subtotalCost.toLocaleString()} + ${Math.round(contingencyRate * 100)}% contingency. KSh at ~${kesPerUsd}/USD. Priced at the EmersonEIMS tender rates, including approvals, completion works, pump and power; a drilling-and-casing-only quote is much lower`],
-        ['Annual Maintenance', `$${annualMaintenance.toLocaleString()}/yr`, '~4.5% of capital (World Bank WASH O&M benchmark 2019: 3% solar + 6% mechanical)'],
+        ...sourcedCostRows(result).filter((r) => r[0] !== 'Payback' && !r[0].startsWith('NPV')).map((r) => [r[0], r[2] ? `${r[1]} (~${r[2]})` : r[1], r[3]]),
+        ['Annual Maintenance', _unpriced51 ? 'After quotation' : `$${annualMaintenance.toLocaleString()}/yr`, '~4.5% of capital (World Bank WASH O&M benchmark 2019: 3% solar + 6% mechanical)'],
       ],
       headStyles: { fillColor: [34, 197, 94], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9 },
@@ -3223,7 +3241,12 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     autoTable(doc, {
       startY: y,
       head: [['Metric', 'Value', 'Assessment']],
-      body: [
+      body: _unpriced51 ? [
+        ['Total Investment', 'After quotation', 'Some items have no sourced rate; see the cost table'],
+        ['Daily Water Production', `${sf(dailyWaterM3, 1)} m³/day`, `${yieldVal} m³/hr × ${pumpHoursPerDay} hrs (solar)`],
+        ['Annual Revenue (Steady-state)', `$${yr3Revenue.toLocaleString()}/yr`, `@ $${waterTariffPerM3}/m³ × ${Math.round(yr3PlusUtilization * 100)}% utilization`],
+        ['Payback, IRR and NPV', 'After quotation', 'Given once the quotation prices every item'],
+      ] : [
         ['Total Investment', `$${totalCost.toLocaleString()}`, ''],
         ['Daily Water Production', `${sf(dailyWaterM3, 1)} m³/day`, `${yieldVal} m³/hr × ${pumpHoursPerDay} hrs (solar)`],
         ['Annual Revenue (Year 1)', `$${yr1Revenue.toLocaleString()}/yr`, `@ $${waterTariffPerM3}/m³ × ${Math.round(yr1Utilization * 100)}% utilization`],
@@ -3253,7 +3276,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     // NPV sensitivity at multiple discount rates
     let npv125 = 0, npv15 = 0;
     for (let t = 0; t < cashFlows.length; t++) { npv125 += cashFlows[t] / Math.pow(1.125, t); npv15 += cashFlows[t] / Math.pow(1.15, t); }
-    doc.text(`NPV sensitivity: @10% = $${npv10Rounded.toLocaleString()} | @12.5% = $${Math.round(npv125).toLocaleString()} | @15% = $${Math.round(npv15).toLocaleString()}`, margin, y); y += 8;
+    doc.text(_unpriced51 ? 'NPV sensitivity: given once the quotation prices every item.' : `NPV sensitivity: @10% = $${npv10Rounded.toLocaleString()} | @12.5% = $${Math.round(npv125).toLocaleString()} | @15% = $${Math.round(npv15).toLocaleString()}`, margin, y); y += 8;
 
     // Audit fix #18: Three tariff scenarios -- commercial, community kiosk, subsidised
     checkSpace(45);
@@ -3272,6 +3295,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         body: tariffs.map(t => {
           const rev = Math.round(dailyWaterM3 * operatingDaysPerYear * (t.rate - computeCanonicalEconomics(result).roOpexPerM3) * t.util);
           const net = rev - totalAnnualMaint;
+          if (_unpriced51) return [t.name, `$${t.rate.toFixed(2)}`, `${Math.round(t.util * 100)}%`, `$${rev.toLocaleString()}`, 'After quotation', 'After quotation', '-'];
           const pb = computeCanonicalEconomics(result).paybackWithheld ? 'Not given' : net > 0 ? (totalCost / net).toFixed(1) : 'Never';
           return [t.name, `$${t.rate.toFixed(2)}`, `${Math.round(t.util * 100)}%`, `$${rev.toLocaleString()}`, `$${net.toLocaleString()}`, pb, net > 0 && +pb < 15 ? 'YES' : 'NO'];
         }),
@@ -3291,7 +3315,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     }
 
     // Red viability warning banner when project does not break even
-    if (paybackMonths < 0 || irr === -999 || npv10Rounded < 0) {
+    if (!_unpriced51 && (paybackMonths < 0 || irr === -999 || npv10Rounded < 0)) {
       checkSpace(20);
       doc.setFillColor(254, 226, 226); doc.rect(margin, y - 2, pageW - margin * 2, 14, 'F');
       doc.setDrawColor(220, 38, 38); doc.setLineWidth(0.8); doc.rect(margin, y - 2, pageW - margin * 2, 14, 'S');
@@ -3311,6 +3335,11 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
     doc.text('Four scenarios showing impact of key variables on project viability.', margin, y); y += 7;
 
+    if (_unpriced51) {
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+      doc.text('The sensitivity scenarios are given once the supplier\'s quotation prices every item; some items have no sourced rate (see the cost table).', margin, y, { maxWidth: pageW - margin * 2 });
+      y += 10;
+    } else {
     // Best case: higher tariff, full utilization, lower cost
     const bestTariff = waterTariffPerM3 * 1.5;
     const bestCost = Math.round(totalCost * 0.85);
@@ -3361,6 +3390,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     );
     doc.addImage(sensChart, 'PNG', margin, y, pageW - margin * 2, 62);
     y += 68;
+    }
   }
 
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
@@ -8189,7 +8219,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     doc.text(`Provisional casing allowance: to ~${dd.casingDepth_m}m | Provisional screen allowance: across the ${dd.screenInterval_m[0]}-${dd.screenInterval_m[1]}m aquifer zone | Pump: ${dd.pumpType}`, margin + 6, y + 38);
     // ONE canonical cost (Section 5.1); do not print a second total here.
     const _ddEco = computeCanonicalEconomics(result);
-    doc.text(`Preliminary Cost Estimate: $${_ddEco.totalCost.toLocaleString()} (same model as Section 5.1 — see Detailed Cost Breakdown)`, margin + 6, y + 46);
+    doc.text(costSourcing(_ddEco).quotationItems.length
+      ? `Sourced items: $${costSourcing(_ddEco).sourcedTotal.toLocaleString()}; the rest by quotation (same model as Section 5.1 — see Detailed Cost Breakdown)`
+      : `Preliminary Cost Estimate: $${costSourcing(_ddEco).sourcedTotal.toLocaleString()} (same model as Section 5.1 — see Detailed Cost Breakdown)`, margin + 6, y + 46);
     doc.setFontSize(6.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
     doc.text('PROVISIONAL TENDER ALLOWANCE ONLY — casing depth, screen interval and screen length are provisional and MUST be finalised from the drill-cutting log, sieve analysis and geophysical logs during drilling. Do not procure casing/screen from this figure. Depth range: +/-15% model uncertainty.', margin + 6, y + 53, { maxWidth: pageW - margin * 2 - 12 });
     y += 70;
@@ -10766,15 +10798,13 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
 
 // --- CSV REPORT ---
 
-export function generateCSVReport(result: AnalysisResult): void {
-  // --- 10-STEP AUDIT GATE ---
-  const audit = auditReport(result);
-  if (!audit.passed) {
-    throw new AuditBlockError(audit);
-  }
-  // --- VERIFICATION GATE ---
-  enforceVerificationGate(result);
-
+/**
+ * CSV rows. 2026-11-22: without the survey and the pumping test the CSV is the
+ * screening report (no depth, yield or cost), like the PDF, Word and Excel;
+ * with them, the governing figures cite the entered evidence.
+ */
+export function csvReportRows(result: AnalysisResult): string[][] {
+  if (screeningOnly(result)) return screeningRows(result);
   // The governing figures, as the page and the PDF summary (2026-10-30 audit:
   // this export carried hidden sub-models and "undefined" values).
   const rows: string[][] = [
@@ -10789,6 +10819,24 @@ export function generateCSVReport(result: AnalysisResult): void {
     for (const note of sec.notes ?? []) rows.push(['Note', note]);
     rows.push(['']);
   }
+  return rows;
+}
+
+export function generateCSVReport(result: AnalysisResult): void {
+  if (screeningOnly(result)) {
+    const csv = csvReportRows(result).map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    saveAs(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }), `AquaScanPro_Screening_${getTimestamp()}.csv`);
+    return;
+  }
+  // --- 10-STEP AUDIT GATE ---
+  const audit = auditReport(result);
+  if (!audit.passed) {
+    throw new AuditBlockError(audit);
+  }
+  // --- VERIFICATION GATE ---
+  enforceVerificationGate(result);
+
+  const rows = csvReportRows(result);
 
   const csvContent = rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8' });
@@ -10874,7 +10922,51 @@ export function redactModelledChemistry<T>(data: T): T {
   return red;
 }
 
+/**
+ * The JSON download. 2026-11-22: without the survey and the pumping test it is
+ * the screening report plus the evidence entered (no depth, yield or cost
+ * figures); with them, the full result plus a fieldEvidence block citing the
+ * source, date, method and reference behind depth, yield and cost.
+ */
+export function jsonReportData(result: AnalysisResult): Record<string, unknown> {
+  const report = {
+    title: 'EMERSON EIMS AquaScan Pro - Borehole Pre-Screen',
+    generated: new Date().toISOString(),
+    location: getLocationString(result),
+    coordinates: getCoords(result),
+  };
+  const g = evidenceGate(result);
+  if (screeningOnly(result)) {
+    return redactModelledChemistry({
+      report: { ...report, type: 'desktop screening: not a site assessment' },
+      screening: screeningContent(result),
+      siteEvidence: result.siteEvidence ?? { depth: false, yield: false, methods: [] },
+      fieldData: result.fieldData ?? null,
+    });
+  }
+  const eco = computeCanonicalEconomics(result);
+  const cs = costSourcing(eco);
+  return redactModelledChemistry({
+    report,
+    fieldEvidence: {
+      depth: { value_m: result.recommendedDepth, source: g.citations.depth ?? null },
+      yield: { value_m3h: result.estimatedYield, source: g.citations.yield ?? null },
+      cost: {
+        sourcedTotal_usd: cs.sourcedTotal,
+        lines: cs.lines.map((l) => ({ item: l.item, usd: l.source ? l.usd : null, source: l.source ?? 'by quotation' })),
+        byQuotation: cs.quotationItems,
+        basis: `Depth and yield from: ${[g.citations.depth, g.citations.yield].filter(Boolean).join('; ')}`,
+      },
+    },
+    ...result,
+  });
+}
+
 export function generateJSONReport(result: AnalysisResult): void {
+  if (screeningOnly(result)) {
+    saveAs(new Blob([JSON.stringify(jsonReportData(result), null, 2)], { type: 'application/json' }), `AquaScanPro_Screening_${getTimestamp()}.json`);
+    return;
+  }
   // --- 10-STEP AUDIT GATE ---
   const audit = auditReport(result);
   if (!audit.passed) {
@@ -10883,15 +10975,7 @@ export function generateJSONReport(result: AnalysisResult): void {
   // --- VERIFICATION GATE ---
   enforceVerificationGate(result);
 
-  const exportData = redactModelledChemistry({
-    report: {
-      title: 'EMERSON EIMS AquaScan Pro - Borehole Pre-Screen',
-      generated: new Date().toISOString(),
-      location: getLocationString(result),
-      coordinates: getCoords(result),
-    },
-    ...result,
-  });
+  const exportData = jsonReportData(result);
 
   const json = JSON.stringify(exportData, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
