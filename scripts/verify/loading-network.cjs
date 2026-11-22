@@ -50,7 +50,8 @@ const SLOW_NOTE_AFTER_MS = 12_000;
 const TARGETS = [
   { key: 'roi', name: '/solar Savings Calculator (ROI)', path: '/solar#solar-tool-roi', ready: '#roi-bill', input: { selector: '#roi-bill', value: '23456' } },
   { key: 'quote', name: 'Quote Checker', path: '/solar-genius-pro#/quote-check', ready: 'text=Solar quotation check', input: { selector: 'textarea[aria-label="Quotation lines, one item per line"]', value: 'Inverter 5kW x 1 @ 150000', optional: true } },
-  { key: 'pro', name: 'Pro Tools reports', path: '/solar-genius-pro#/pro', ready: 'text=Generate & Download PDF', input: null },
+  // The PDF button sits on the Reports tab (needs a click); the tab itself shows when Pro Tools has loaded.
+  { key: 'pro', name: 'Pro Tools reports', path: '/solar-genius-pro#/pro', ready: 'text="Reports"', input: null },
   { key: 'proposal', name: 'Solar proposal (autosaved draft)', path: '/solar-genius-pro#/proposal', ready: 'text=Proposal reference', input: { selector: 'input[aria-label="Proposal reference"], label:has-text("Proposal reference") input', value: 'NETTEST-1', optional: true } },
   { key: 'sgp-calc', name: 'Solar System Calculator', path: '/solar-genius-pro/calculator-advanced', notText: 'Preparing full workspace', input: null },
   { key: 'oracle', name: 'Generator Oracle', path: '/generator-oracle', notText: 'Initializing Diagnostic System', input: null },
