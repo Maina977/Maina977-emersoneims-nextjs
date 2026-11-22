@@ -91,7 +91,9 @@ describe('page-specific sources', () => {
   });
 
   it('Solar keeps the loader height reserved when the workspace mounts', () => {
-    expect(read('components/solar-modules/SolarGeniusProV2.tsx')).toContain('if (App) return <div className="min-h-[100dvh]"><App /></div>;');
+    // After the Report A merge the workspace renders through the shared resilient
+    // loader (SolarApp); the same full-height reservation wraps it.
+    expect(read('components/solar-modules/SolarGeniusProV2.tsx')).toContain('return <div className="min-h-[100dvh]"><SolarApp /></div>;');
   });
 
   it('the Generator Oracle scan line animates transform, not top', () => {
