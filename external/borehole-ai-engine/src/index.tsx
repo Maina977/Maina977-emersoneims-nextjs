@@ -1215,11 +1215,16 @@ const AIBoreholeAnalyzer: React.FC = () => {
       {/* Upload and location first (2026-10-19 re-audit): on a phone "Step 1" sat ~9,800 px down,
           below the pipeline, stats, methods, features and formulas. */}
       {/* CTA Section — Location Form + Image Upload */}
-      <div className="cta-section">
-        {initStatus === 'loading' && <div className="init-loading"><div className="borehole-spinner"></div><p>Loading AquaScan…</p></div>}
+      {/* Layout shift (2026-11-22, Priority 3): the form used to appear only once the
+          engine had initialised, so a 170 px spinner became a ~2,000 px form about 2 s
+          after load and pushed everything below it off the screen (CLS 0.31 on a phone).
+          The form is now laid out from the first paint, disabled until the engine is
+          ready, with the loading notice laid OVER it, so nothing moves when it goes. */}
+      <div className="cta-section" aria-busy={initStatus === 'loading'}>
+        {initStatus === 'loading' && <div className="init-loading init-loading-overlay" role="status"><div className="borehole-spinner"></div><p>Loading AquaScan…</p></div>}
         {initStatus === 'error' && <div className="init-error"><p>The tool failed to load: {initError}</p><button className="btn btn-retry" onClick={()=>window.location.reload()}>Retry</button></div>}
-        {initStatus === 'ready' && (
-          <>
+        {initStatus !== 'error' && (
+          <fieldset className="aq-init-fieldset" disabled={initStatus !== 'ready'}>
             {/* LOCATION FORM — Client provides exact borehole site */}
             <div style={{background:'rgba(0,188,212,0.06)',border:'2px solid rgba(0,188,212,0.25)',borderRadius:16,padding:'20px 24px',marginBottom:20}}>
               <h3 style={{margin:'0 0 8px',fontSize:16,fontWeight:700,color:'var(--text-primary)'}}>
@@ -1831,7 +1836,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 </div>
               )}
             </div>
-          </>
+          </fieldset>
         )}
         <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageSelect} style={{display:'none'}} />
         <input ref={videoInputRef} type="file" accept="video/*" onChange={(e) => { if(e.target.files?.[0]){ handleImageSelect(e as any); }}} style={{display:'none'}} />

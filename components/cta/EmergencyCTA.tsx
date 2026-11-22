@@ -26,6 +26,7 @@ import {
   Award,
   Headphones
 } from 'lucide-react';
+import { floatAboveConsentBar } from '@/lib/compliance/consentBarSpace';
 
 interface EmergencyCTAProps {
   variant?: 'full' | 'compact' | 'floating' | 'banner';
@@ -79,7 +80,9 @@ function EmergencyCTAInner({ variant = 'full', showStats = true }: EmergencyCTAP
       // WhatsAppButton: 64px at right-6 / sm:right-8), not on top of it. Its
       // own "WhatsApp Us" pill was removed 2026-10-16 — the site-wide button
       // already offers WhatsApp, and the two overlapped on phones.
-      <div className="fixed bottom-6 right-24 sm:right-28 z-50">
+      // Lifted above the cookie notice like the WhatsApp button (2026-11-22): at
+      // z-50 it sat on top of the notice's "Essential Only" and "Reject All".
+      <div className="fixed right-24 sm:right-28 z-50" style={floatAboveConsentBar('1.5rem')}>
         {/* Phones get the short label: with the number written out it is
             270px wide, which on a 360px screen ran off the left edge and over
             the accessibility button. The link still dials the number. */}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { floatAboveConsentBar } from '@/lib/compliance/consentBarSpace';
 
 // Tool workspaces where the full-size button covered inputs and tabs
 // (2026-10-20 audit). There it shrinks to a small corner icon; the panel,
@@ -228,7 +229,7 @@ function AccessibilityWidgetInner() {
       <button
         id="accessibility-settings"
         onClick={() => setIsOpen(true)}
-        style={{ bottom: compact ? 'calc(0.5rem + var(--consent-bar-h, 0px))' : 'calc(6rem + var(--consent-bar-h, 0px))' }}
+        style={floatAboveConsentBar(compact ? '0.5rem' : '6rem')}
         className={(compact ? 'fixed left-2 scale-75 origin-bottom-left opacity-90 ' : 'fixed left-4 ') + "z-[9999] bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl shadow-2xl shadow-blue-600/50 flex items-center gap-2 sm:gap-3 p-3 sm:px-5 sm:py-4 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group border-2 border-white/20"}
         aria-label="Open accessibility settings"
         title="♿ Accessibility Options - Click here for visually impaired support: high contrast, large text, line spacing, large cursor and link highlighting"

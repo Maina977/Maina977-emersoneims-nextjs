@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { SERVICE_ACTIONS } from '@/lib/serviceConnect/actions';
+import { MORE_WIDTH, PREDICTED_ITEM_CLASS, PREDICTED_MORE_CLASS, fitNavItems } from './priorityPlus';
 // framer-motion removed 2026-09-26 — see the note at the foot of this file.
 // Every animation this component performs is now CSS; the keyframes live in
 // app/globals.css under "NAVIGATION ANIMATIONS".
@@ -411,25 +412,39 @@ function TeslaStyleNavigationInner({
   const tailRef = useRef<HTMLDivElement | null>(null);
   const itemWidths = useRef<number[]>([]);
   const [visibleCount, setVisibleCount] = useState(NAV_ITEMS.length);
+  // Until the bar has measured itself, the server-rendered breakpoint classes
+  // (./priorityPlus) decide what is shown, so hydration does not move the bar.
+  const [measured, setMeasured] = useState(false);
   const [overflowOpen, setOverflowOpen] = useState(false);
 
   useEffect(() => {
     const row = navRowRef.current;
     if (!row) return;
 
-    // Cache widths: once an item collapses into MORE its offsetWidth reads 0, so
-    // a naive re-measure on resize would compute nonsense. Measure each item once
-    // while it is laid out, keep the width, and recompute from the cache after.
+    // Width of every item, including the ones currently collapsed into MORE
+    // (2026-11-22). A hidden item reads offsetWidth 0, so it is measured by
+    // showing it for the duration of one synchronous read: no frame is painted
+    // in between, so nothing flickers. This replaces a cache that kept the FIRST
+    // width it saw, which was often taken in the fallback font before Inter had
+    // loaded (up to 12 px wider per item) and so kept an item in MORE that fits.
     const widths = itemWidths.current;
+    const naturalWidth = (el: HTMLDivElement | null | undefined) => {
+      if (!el) return 0;
+      if (el.offsetWidth > 0) return el.offsetWidth;
+      const prev = el.style.display;
+      el.style.display = 'block';
+      const w = el.offsetWidth;
+      el.style.display = prev;
+      return w;
+    };
 
     const measure = () => {
       for (let i = 0; i < NAV_ITEMS.length; i++) {
-        const w = itemRefs.current[i]?.offsetWidth ?? 0;
+        const w = naturalWidth(itemRefs.current[i]);
         if (w > 0) widths[i] = w;
       }
       const rowWidth = row.clientWidth;
       const tailWidth = tailRef.current?.offsetWidth ?? 0;
-      const MORE_WIDTH = 92; // width reserved for the MORE control
 
       // THE GAP IS PART OF THE WIDTH. The row is `flex gap-1 xl:gap-2`, so with
       // n items on the bar the browser also lays out (n-1) gaps. Summing only
@@ -449,24 +464,14 @@ function TeslaStyleNavigationInner({
       const rowStyle = getComputedStyle(row);
       const gap = parseFloat(rowStyle.columnGap || rowStyle.gap || '0') || 0;
 
-      let used = 0;
-      let fit = 0;
-      for (let i = 0; i < NAV_ITEMS.length; i++) {
-        const w = widths[i] ?? 0;
-        // A width we have not captured yet must NOT be treated as fitting for
-        // free — doing so inflated the count until the bar overflowed and pushed
-        // MORE itself out of reach. Bail and let the next frame measure instead.
-        if (!w) return;
-        // Reserve room for MORE, and for the gap before it, only while items
-        // still remain after this one.
-        const reserve = i < NAV_ITEMS.length - 1 ? MORE_WIDTH + gap : 0;
-        // Every item after the first is preceded by a gap.
-        const candidate = used + (fit > 0 ? gap : 0) + w;
-        if (candidate + tailWidth + reserve > rowWidth) break;
-        used = candidate;
-        fit++;
-      }
+      // A width we have not captured yet must NOT be treated as fitting for
+      // free — doing so inflated the count until the bar overflowed and pushed
+      // MORE itself out of reach. fitNavItems returns null then, and the next
+      // frame measures again.
+      const fit = fitNavItems(NAV_ITEMS.map((_, i) => widths[i] ?? 0), rowWidth, tailWidth, gap, MORE_WIDTH);
+      if (fit === null) return;
       setVisibleCount(prev => (prev === fit ? prev : fit));
+      setMeasured(true);
     };
 
     // Widths are only readable once the row has laid out, and on a slow first
@@ -483,11 +488,17 @@ function TeslaStyleNavigationInner({
     const ro = new ResizeObserver(measure);
     ro.observe(row);
     window.addEventListener('resize', measure);
+    // The webfont changes item widths without resizing the row, so measure
+    // again once it has loaded.
+    let live = true;
+    document.fonts?.ready.then(() => { if (live) measure(); }).catch(() => { /* measured already */ });
     return () => {
+      live = false;
       ro.disconnect();
       window.removeEventListener('resize', measure);
     };
   }, []);
+  const itemClass = (i: number) => (measured ? (i < visibleCount ? '' : 'hidden') : PREDICTED_ITEM_CLASS[i] ?? '');
   const mobileMenuId = 'tesla-primary-mobile-menu';
 
   useEffect(() => {
@@ -578,13 +589,15 @@ function TeslaStyleNavigationInner({
                 correctly concluded everything fitted and MORE never appeared.
                 With min-w-0 the row shrinks to the width actually available and the
                 measurement becomes true. */}
-            <div ref={navRowRef} className="hidden lg:flex items-center flex-1 min-w-0 justify-end gap-1 xl:gap-2">
+            {/* nav-caps-font (app/layout.tsx): a fallback face matched to Inter's
+                upper-case width, so the labels do not move when Inter loads. */}
+            <div ref={navRowRef} className="nav-caps-font hidden lg:flex items-center flex-1 min-w-0 justify-end gap-1 xl:gap-2">
               {NAV_ITEMS.map((item) =>
                 item.type === 'mega' && item.key ? (
                   <div
                     key={item.key}
                     ref={el => { itemRefs.current[NAV_ITEMS.indexOf(item)] = el; }}
-                    className={`relative ${NAV_ITEMS.indexOf(item) < visibleCount ? '' : 'hidden'}`}
+                    className={`relative ${itemClass(NAV_ITEMS.indexOf(item))}`}
                     onMouseEnter={() => handleMegaEnter(item.key!)}
                     onMouseLeave={handleMegaLeave}
                   >
@@ -620,7 +633,7 @@ function TeslaStyleNavigationInner({
                   <div
                     key={item.href}
                     ref={el => { itemRefs.current[NAV_ITEMS.indexOf(item)] = el; }}
-                    className={NAV_ITEMS.indexOf(item) < visibleCount ? '' : 'hidden'}
+                    className={itemClass(NAV_ITEMS.indexOf(item))}
                   >
                   <Link
                     href={item.href!}
@@ -635,9 +648,9 @@ function TeslaStyleNavigationInner({
 
               {/* Priority+ overflow. Only appears when the bar genuinely runs out
                   of room, so nothing is ever dropped at any viewport width. */}
-              {visibleCount < NAV_ITEMS.length && (
+              {(!measured || visibleCount < NAV_ITEMS.length) && (
                 <div
-                  className="relative"
+                  className={measured ? 'relative' : `relative ${PREDICTED_MORE_CLASS}`}
                   onMouseEnter={() => setOverflowOpen(true)}
                   onMouseLeave={() => setOverflowOpen(false)}
                 >

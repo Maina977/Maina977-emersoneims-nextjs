@@ -68,7 +68,12 @@ export default function SolarGeniusProV2() {
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
 
-  if (App) return <App />;
+  // Same reserved height as the loader (ToolLoadingState is min-h-[100dvh]). The
+  // workspace's first frame on a phone was ~500 px tall for one commit before its
+  // pages laid out, which pulled the bands below the tool into view and pushed
+  // them out again (CLS 0.085 at 390 px, 2026-11-22). Keeping at least the
+  // loader's height means content below never moves up into view.
+  if (App) return <div className="min-h-[100dvh]"><App /></div>;
   if (failed) {
     return (
       <div className="min-h-[60dvh] flex items-center justify-center bg-gradient-to-b from-slate-950 to-black" role="alert">
