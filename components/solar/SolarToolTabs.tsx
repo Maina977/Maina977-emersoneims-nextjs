@@ -6,7 +6,8 @@
  * Early-click finding (production, 2026-11-21): a click on "Savings Calculator"
  * before the page had hydrated did nothing, because the tabs were <button>s
  * whose only behaviour was a React onClick. They are now native links
- * (href="#solar-tool-roi"): before hydration the browser records the choice in
+ * (the link target is the address fragment solar-tool-<id>; no element id is
+ * needed, the fragment is read as state): before hydration the browser records the choice in
  * the address, and on hydration useHashTab opens that tab. After hydration a
  * click opens the tab at once and updates the address without a scroll jump.
  * The address also keeps the open tab across a reload, so a recovery
