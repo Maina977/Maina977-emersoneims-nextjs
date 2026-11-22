@@ -48,6 +48,35 @@ export interface Preloader<T> {
   peek(): T | undefined;
 }
 
+// ------------------------------------------------- engineering downloads in flight
+// Root cause of the Solar stalls (investigation 2026-11-22, HAR evidence in
+// phase2-report-a/stall-investigation): on a slow link, the engineering module
+// a visitor asked for shared one connection with decorative and analytics
+// downloads (three.js for the /solar ring gallery, 187 KB; gtag, 183 KB). Those
+// downloads now wait while any engineering module is downloading: the count is
+// published here, and as window.__eimsEngineeringBusy for the inline gtag loader.
+let inFlight = 0;
+const busyListeners = new Set<() => void>();
+function setInFlight(n: number): void {
+  inFlight = n;
+  if (typeof window !== 'undefined') (window as unknown as { __eimsEngineeringBusy?: number }).__eimsEngineeringBusy = n;
+  for (const l of Array.from(busyListeners)) l();
+}
+/** Counts `p` as an engineering download until it settles; returns `p` unchanged. */
+export function trackEngineeringDownload<T>(p: Promise<T>): Promise<T> {
+  setInFlight(inFlight + 1);
+  const done = () => setInFlight(Math.max(0, inFlight - 1));
+  p.then(done, done);
+  return p;
+}
+/** Number of engineering downloads in flight (tests, diagnostics). */
+export function engineeringDownloadsInFlight(): number { return inFlight; }
+const subscribeBusy = (l: () => void) => { busyListeners.add(l); return () => { busyListeners.delete(l); }; };
+/** True while no engineering module is downloading (always false on the server). */
+export function useEngineeringIdle(): boolean {
+  return useSyncExternalStore(subscribeBusy, () => inFlight === 0, () => false);
+}
+
 /** Memoises a retried download. A failure clears the memo so a later call (Try again) downloads afresh. */
 export function createPreloader<T>(load: () => Promise<T>, opts: { attempts?: number; wait?: Wait } = {}): Preloader<T> {
   let promise: Promise<T> | null = null;
@@ -55,7 +84,7 @@ export function createPreloader<T>(load: () => Promise<T>, opts: { attempts?: nu
   let value: T | undefined;
   const preload = (() => {
     if (!promise) {
-      promise = importWithRetry(load, opts.attempts ?? 3, opts.wait ?? defaultWait).then(
+      promise = trackEngineeringDownload(importWithRetry(load, opts.attempts ?? 3, opts.wait ?? defaultWait)).then(
         (v) => { value = v; done = true; return v; },
         (e) => { promise = null; throw e; },
       );
