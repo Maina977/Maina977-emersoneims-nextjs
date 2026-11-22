@@ -38,13 +38,21 @@ describe('proposal exports', () => {
     expect(cells.filter((c) => /FOR ISSUE/.test(c) && !/NOT FOR ISSUE/.test(c))).toEqual([]);
     expect(wb.getWorksheet('Cash flow')!.getCell('E2').value).toBe(380000);
   }, 30000); // ExcelJS import + round trip exceeds 5 s under full-suite load
-  it('PDF: a valid document is produced', async () => {
+  it('PDF: a valid document whose TEXT (read with pdfjs, not raw bytes) is DRAFT with the revision hash', async () => {
     const { proposalToPdf } = await import('@/lib/solar/design/proposalExport');
     const p = buildProposal(base());
     const pdf = proposalToPdf(p);
     expect(new TextDecoder().decode(pdf.slice(0, 5))).toBe('%PDF-');
-    expect(pdf.length).toBeGreaterThan(3000);
-    const text = new TextDecoder('latin1').decode(pdf);
+    // 2026-11-22: a raw-byte search only works if the PDF is uncompressed; read the text instead.
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const { pathToFileURL } = await import('node:url'); const path = await import('node:path');
+    pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(path.resolve('node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs')).href;
+    const doc = await pdfjs.getDocument({ data: pdf.slice() }).promise;
+    let text = '';
+    for (let n = 1; n <= doc.numPages; n++) text += (await (await doc.getPage(n)).getTextContent()).items.map((i) => ('str' in i ? i.str : '')).join(' ') + '\n';
+    text = text.replace(/\s+/g, ' ');
+    expect(text).toContain('TEST-001');
+    expect(text).toMatch(/800,?000/); // capex 32 × 15,000 + 320,000
     expect(text).toContain(p.revisionHash);
     expect(text).toContain('DRAFT: NOT FOR ISSUE');
     expect(text).not.toContain('(FOR ISSUE)');

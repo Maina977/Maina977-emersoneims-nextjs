@@ -20,7 +20,7 @@
 
 import { finalVerdict, salinityEvidence, salinityFromWaterQuality, modelledSalinityLabel, labSourceLabel, nearbyProvenance, chemEvidence, chemFromWaterQuality, chemCell, modelledChemLabel, labWaterResult, type ChemRisk } from './verdict';
 import { evidenceGate, provenanceText } from './evidenceGate';
-import { generateScreeningPdf, screeningRows, screeningContent } from './screeningReport';
+import { generateScreeningPdf, generateScreeningDocx, generateScreeningXlsx, screeningRows, screeningContent } from './screeningReport';
 import { costSourcing, QUOTATION_TEXT } from './costSources';
 import { governingSummary, last12Months } from './governingSummary';
 import { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, getCustomerDetails, computeCanonicalEconomics } from './reportShared';
@@ -10622,7 +10622,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
 // --- EXCEL REPORT ---
 
 export async function generateExcelReport(result: AnalysisResult, tier: 'basic' | 'professional' | 'expert'): Promise<void> {
-  if (screeningOnly(result)) { generateScreeningPdf(result); return; }
+  // Without field evidence the screening report, as a real .xlsx (not the PDF).
+  if (screeningOnly(result)) { await generateScreeningXlsx(result); return; }
   // --- 10-STEP AUDIT GATE ---
   const audit = auditReport(result);
   if (!audit.passed) {
@@ -10696,7 +10697,8 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
 
 
 export async function generateWordReport(result: AnalysisResult, tier: 'basic' | 'professional' | 'expert'): Promise<void> {
-  if (screeningOnly(result)) { generateScreeningPdf(result); return; }
+  // Without field evidence the screening report, as a real .docx (not the PDF).
+  if (screeningOnly(result)) { await generateScreeningDocx(result); return; }
   //  10-STEP AUDIT GATE 
   const audit = auditReport(result);
   if (!audit.passed) {

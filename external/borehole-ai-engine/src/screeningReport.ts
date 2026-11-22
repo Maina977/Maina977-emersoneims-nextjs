@@ -12,6 +12,8 @@
  */
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import ExcelJS from 'exceljs';
+import { Document, Packer, Paragraph, HeadingLevel, TextRun } from 'docx';
 import type { AnalysisResult } from './types';
 import { evidenceGate, provenanceText } from './evidenceGate';
 import { finalVerdict, labSourceLabel } from './verdict';
@@ -74,6 +76,73 @@ export function screeningRows(result: AnalysisResult, when = new Date()): string
     ['Next steps'], ...c.nextSteps.map((x, i) => ['', `${i + 1}. ${x}`]),
     ...(c.sources.length ? [[''], ['Data used'], ...c.sources.map((x) => ['', x])] : []),
   ];
+}
+
+const SCREENING_BANNER = 'DESKTOP SCREENING: NOT A SITE ASSESSMENT';
+const screeningFileName = (ext: 'docx' | 'xlsx') => `AquaScanPro_Screening_${new Date().toISOString().slice(0, 10)}.${ext}`;
+const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+function saveBytes(bytes: Uint8Array, mime: string, name: string) {
+  const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: mime }));
+  const a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+/**
+ * The screening report as a real Word document (2026-11-22). Before, the
+ * "MS Word (.docx)" button returned the screening PDF when field evidence was
+ * missing, and a release test counted that as a pass. Same content as the PDF.
+ */
+export async function generateScreeningDocx(result: AnalysisResult, save = true): Promise<Uint8Array> {
+  const c = screeningContent(result);
+  const p = (text: string, opts: { bold?: boolean; color?: string } = {}) => new Paragraph({ children: [new TextRun({ text, bold: opts.bold, color: opts.color })] });
+  const section = (heading: string, items: string[], numbered = false) => [
+    new Paragraph({ text: heading, heading: HeadingLevel.HEADING_2 }),
+    ...items.map((x, i) => p(numbered ? `${i + 1}. ${x}` : `• ${x}`)),
+  ];
+  const doc = new Document({
+    creator: 'EmersonEIMS AquaScan Pro',
+    title: c.title,
+    sections: [{
+      children: [
+        p(SCREENING_BANNER, { bold: true, color: 'B00020' }),
+        new Paragraph({ text: c.title, heading: HeadingLevel.HEADING_1 }),
+        p(`Location: ${c.location}`),
+        p(c.verdict, { bold: true }),
+        p(c.next),
+        p(c.evidenceNote),
+        ...section('What this desktop screen covers', c.established),
+        ...section('Not established by a desktop screen', c.notEstablished),
+        ...section('Next steps', c.nextSteps, true),
+        ...(c.sources.length ? section('Data used', c.sources) : []),
+        p(`${SCREENING_REPORT_VERSION} · EmersonEIMS`),
+      ],
+    }],
+  });
+  // toBase64String works in the browser and under test (jsdom's Blob has no arrayBuffer()).
+  const b64 = await Packer.toBase64String(doc);
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  if (save) saveBytes(bytes, DOCX_MIME, screeningFileName('docx'));
+  return bytes;
+}
+
+/** The screening report as a real Excel workbook (2026-11-22); same content as the PDF. */
+export async function generateScreeningXlsx(result: AnalysisResult, save = true): Promise<Uint8Array> {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'EmersonEIMS AquaScan Pro';
+  const ws = wb.addWorksheet('Screening');
+  ws.columns = [{ width: 34 }, { width: 110 }];
+  for (const row of screeningRows(result)) ws.addRow(row);
+  ws.getCell('A1').font = { bold: true, size: 13 };
+  ws.getCell('A2').font = { bold: true, color: { argb: 'FFB00020' } };
+  ws.addRow([]); ws.addRow([SCREENING_REPORT_VERSION]);
+  const bytes = new Uint8Array(await wb.xlsx.writeBuffer() as ArrayBuffer);
+  if (save) saveBytes(bytes, XLSX_MIME, screeningFileName('xlsx'));
+  return bytes;
 }
 
 /** Saves the screening PDF in the browser; returns the bytes (for tests). */

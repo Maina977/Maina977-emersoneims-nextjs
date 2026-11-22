@@ -57,14 +57,30 @@ describe('POST /api/solar/proposal', () => {
     expect(r.headers.get('content-disposition')).toBe('attachment; filename="solar-proposal-TEST-001.xlsx"');
     const b = new Uint8Array(await r.arrayBuffer());
     expect(String.fromCharCode(b[0], b[1])).toBe('PK');
+    // Opened with ExcelJS: the right workbook, marked DRAFT, with the revision hash.
+    const ExcelJS = (await import('exceljs')).default;
+    const wb = new ExcelJS.Workbook(); await wb.xlsx.load(b.buffer as ArrayBuffer);
+    expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow']);
+    expect(String(wb.getWorksheet('Summary')!.getCell('A2').value)).toMatch(/DRAFT: NOT FOR ISSUE/);
+    expect(wb.getWorksheet('Summary')!.getCell('B3').value).toBe(proposalRevisionHash(base()));
   }, 30000);
-  it('pdf: starts with %PDF-', async () => {
+  it('pdf: a real PDF whose text (pdfjs) is DRAFT with the revision hash', async () => {
     const r = await call({ input: base(), format: 'pdf' });
     expect(r.status).toBe(200);
     expect(r.headers.get('content-type')).toBe('application/pdf');
     expect(r.headers.get('content-disposition')).toMatch(/solar-proposal-TEST-001\.pdf/);
     const b = new Uint8Array(await r.arrayBuffer());
     expect(new TextDecoder().decode(b.slice(0, 5))).toBe('%PDF-');
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const { pathToFileURL } = await import('node:url'); const path = await import('node:path');
+    pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(path.resolve('node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs')).href;
+    const doc = await pdfjs.getDocument({ data: b.slice() }).promise;
+    let text = '';
+    for (let n = 1; n <= doc.numPages; n++) text += (await (await doc.getPage(n)).getTextContent()).items.map((i) => ('str' in i ? i.str : '')).join(' ') + '\n';
+    text = text.replace(/\s+/g, ' ');
+    expect(text).toContain('DRAFT: NOT FOR ISSUE');
+    expect(text).toContain('TEST-001');
+    expect(text.match(/(?<!NOT )FOR ISSUE(?!\w)/)).toBeNull();
   }, 30000);
   it('400 with the engine message on an unsourced tariff', async () => {
     const i = base(); i.finance.tariffKesPerKwh = { value: 25, source: '' };
