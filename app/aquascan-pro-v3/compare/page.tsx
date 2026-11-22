@@ -1,11 +1,12 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { ToolAppShell, ToolLoadingState } from '@/components/tools/ToolAppShell';
+import { ToolAppShell } from '@/components/tools/ToolAppShell';
+import { resilient } from '@/lib/loading/ResilientModule';
 
-const CompareHub = dynamic(
+// Retry, slow note + Reload, and Try again (lib/loading, 2026-11-21).
+const CompareHub = resilient(
   () => import('@/components/aquascan-modules/compare/CompareHub'),
-  { ssr: false, loading: () => <ToolLoadingState name="AquaScan Site Comparison" /> }
+  { name: 'AquaScan Site Comparison' }
 );
 
 export default function AquaScanComparePage() {

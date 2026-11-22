@@ -12,6 +12,7 @@
  * everywhere. It is never presented as an approval or a certified record.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { importWithRetry } from '@/lib/loading/resilientImport';
 import {
   jobCardReport, nextStatuses, signOffCheck, signOffSummary, SIGNOFF, TYPED_NAMES_NOTICE, TYPED_SIGNOFF_NOTICE,
   type Asset, type JobCard, type JobStatus,
@@ -258,7 +259,7 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
   const downloadPdf = async () => {
     setPdfBusy(true); setPdfError(null);
     try {
-      const { jobCardToPdf } = await import('@/lib/generator-oracle/service/jobCardPdf');
+      const { jobCardToPdf } = await importWithRetry(() => import('@/lib/generator-oracle/service/jobCardPdf'));
       download(`job-card-${card.id}-rev${card.revision}.pdf`, new Uint8Array(jobCardToPdf(card, asset)), 'application/pdf');
     } catch (e) {
       setPdfError(`Could not make the PDF (${e instanceof Error ? e.message : String(e)}). The .txt report has the same content.`);

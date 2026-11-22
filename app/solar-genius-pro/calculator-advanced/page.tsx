@@ -1,11 +1,12 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { ToolAppShell, ToolLoadingState } from '@/components/tools/ToolAppShell';
+import { ToolAppShell } from '@/components/tools/ToolAppShell';
+import { resilient } from '@/lib/loading/ResilientModule';
 
-const CalculatorPage = dynamic(
+// Retry, slow note + Reload, and Try again (lib/loading, 2026-11-21).
+const CalculatorPage = resilient(
   () => import('@/components/solar-modules/crc/src/pages/CalculatorPage'),
-  { ssr: false, loading: () => <ToolLoadingState name="Solar System Calculator" /> }
+  { name: 'Solar System Calculator' }
 );
 
 export default function SolarCalculatorAdvancedPage() {

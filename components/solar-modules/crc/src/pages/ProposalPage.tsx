@@ -3,6 +3,7 @@ import { simulateHourly, type HourlyResult } from '@/lib/solar/design/hourly';
 import { simulateHybrid, type HybridResult } from '@/lib/solar/design/hybrid';
 import type { Proposal } from '@/lib/solar/design/proposal';
 import type { Check } from '@/lib/solar/design/validate';
+import { onBeforeRecoveryReload } from '@/lib/loading/resilientImport';
 import { proposalRevisionHash, APPROVAL_LOCKED_NOTICE } from '@/lib/solar/design/proposalApproval';
 import {
   buildHourlyInput, buildHybridInput, formToProposalInput, hybridRequested, lastFullYear, parseLoadCsv,
@@ -190,6 +191,10 @@ export default function ProposalPage() {
     }, 400);
     return () => clearTimeout(t);
   }, [draftJson, revision, hydrated, autosavePaused]);
+  // A recovery "Reload page" (lib/loading) writes the draft at once instead of losing the last 400 ms.
+  const flushRef = useRef<() => void>(() => {});
+  flushRef.current = () => { if (hydrated && !autosavePaused) saveDraft(JSON.parse(draftJson) as SavedProject, revision || null); };
+  useEffect(() => onBeforeRecoveryReload(() => flushRef.current()), []);
 
   const discardDraft = () => {
     if (typeof window !== 'undefined' && !window.confirm('Clear the draft saved in this browser and empty the form? Save a project file first if you want to keep it.')) return;

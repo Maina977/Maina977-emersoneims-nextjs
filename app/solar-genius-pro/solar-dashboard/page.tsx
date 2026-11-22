@@ -1,12 +1,13 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { ToolAppShell, ToolLoadingState } from '@/components/tools/ToolAppShell';
+import { ToolAppShell } from '@/components/tools/ToolAppShell';
 import SolarGeniusContent from '@/components/solar/SolarGeniusContent';
+import { resilient } from '@/lib/loading/ResilientModule';
 
-const DashboardPage = dynamic(
+// Retry, slow note + Reload, and Try again (lib/loading, 2026-11-21).
+const DashboardPage = resilient(
   () => import('@/components/solar-modules/crc/src/pages/DashboardPage'),
-  { ssr: false, loading: () => <ToolLoadingState name="Solar Dashboard" /> }
+  { name: 'Solar Dashboard' }
 );
 
 export default function SolarDashboardPage() {

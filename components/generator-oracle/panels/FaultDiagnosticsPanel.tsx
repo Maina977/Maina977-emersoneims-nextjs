@@ -16,6 +16,7 @@ import type { EnhancedFaultCode } from '@/lib/generator-oracle/enhanced-fault-da
 import { lookupFaultCode, codeLabel, modelsLabel, type CodeKind } from '@/lib/generator-oracle/client/oracleClient';
 import { waLink } from '@/lib/serviceConnect/actions';
 import EngineerEscalation, { bookingHrefForFault } from '@/components/generator-oracle/EngineerEscalation';
+import { importWithRetry } from '@/lib/loading/resilientImport';
 // `getFaultByCode` only resolves a static set of 6 enriched records — keeping
 // it dynamically imported in this client component means the 1.9k-line module
 // is fetched only when the modal mounts, not on initial page render.
@@ -95,7 +96,7 @@ function FaultDetailModal({
   const [enhancedFault, setEnhancedFault] = useState<EnhancedFaultCode | undefined>(undefined);
   useEffect(() => {
     let cancelled = false;
-    import('@/lib/generator-oracle/enhanced-fault-database')
+    importWithRetry(() => import('@/lib/generator-oracle/enhanced-fault-database'))
       .then((mod) => { if (!cancelled) setEnhancedFault(mod.getFaultByCode(fault.code)); })
       .catch(() => { /* enriched data is optional */ });
     return () => { cancelled = true; };
