@@ -516,6 +516,17 @@ export function middleware(request: NextRequest) {
   const clientIP = getClientIP(request);
   const hostname = request.nextUrl.hostname;
 
+  // 0-PILOT. /validation/pilots is a preview-only reviewer tool (Phase 2,
+  //     2026-11-22). The page calls notFound() in production, but notFound()
+  //     alone does not give a 404 STATUS on Next 16 + Vercel (see guard 0g),
+  //     so production answers a hard 404 here as well.
+  if (process.env.VERCEL_ENV === 'production' && /^\/validation\/pilots(\/|$)/.test(pathname)) {
+    return new NextResponse('Not Found', {
+      status: 404,
+      headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Content-Type': 'text/plain', 'X-Pilot-Guard': '404-production' },
+    });
+  }
+
   // ─────────────────────────────────────────────────────────────────────────────
   // 0-HOST. CONSOLIDATE power.emersoneims.com INTO www.emersoneims.com.
   //
