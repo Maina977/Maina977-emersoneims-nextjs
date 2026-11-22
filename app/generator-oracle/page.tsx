@@ -1,23 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { resilient } from '@/lib/loading/ResilientModule';
+import { Suspense, lazy, useEffect, useState } from 'react';
+import { importWithRetry } from '@/lib/loading/resilientImport';
 import DMCAProtection from '@/components/security/DMCAProtection';
 import GeneratorOracleSEO from '@/components/seo/GeneratorOracleSEO';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import LiveBackendStatus from '@/components/generator-oracle/LiveBackendStatus';
 
-// Loaded on demand, with retry, a slow note + Reload after 12 s and Try again
-// after 3 failures (lib/loading, 2026-11-21). Service records are in this
-// browser's localStorage, so a reload loses nothing saved.
-const GeneratorOracleModule = resilient(() => import('@/components/generator-oracle/GeneratorOracleModule'), {
-  name: 'Generator Oracle',
-  subject: 'Generator Oracle',
-  loading: () => <LoadingFallback />,
-  failedTitle: 'Generator Oracle did not download.',
-  failedBody: 'This is usually a dropped or slow connection. Service records you saved are kept in this browser. Press Try again to download it again.',
-});
+// React.lazy + Suspense, as in production: the module is SERVER-RENDERED, so the
+// page's H1 and tool content are in the HTML (Phase 2 gate, 2026-11-22: a
+// client-only loader removed the H1 and failed the site audit and SEO compare).
+// The download is retried on failure (3 attempts with back-off, lib/loading).
+const GeneratorOracleModule = lazy(() => importWithRetry(() => import('@/components/generator-oracle/GeneratorOracleModule')));
 
 /**
  * Generator Oracle
@@ -46,7 +41,9 @@ export default function GeneratorOraclePage() {
       <GeneratorOracleSEO pageType="diagnostic" />
       {/* Disable DevTools protection - it causes false positives on Windows with display scaling */}
       <DMCAProtection enableDevToolsProtection={false} />
-      <GeneratorOracleModule />
+      <Suspense fallback={<LoadingFallback />}>
+        <GeneratorOracleModule />
+      </Suspense>
       <div className="px-4 pt-4 max-w-7xl mx-auto">
         <LiveBackendStatus variant="compact" />
       </div>
