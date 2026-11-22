@@ -31,6 +31,7 @@ import { defaultLocale } from '@/i18n';
 import enMessages from '@/messages/en.json';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import GoogleTags from '@/components/analytics/GoogleTags';
+import { BOOT_WATCHDOG_SCRIPT } from '@/lib/loading/bootWatchdog';
 import WebVitalsReporter from '@/components/analytics/WebVitalsReporter';
 import { ALL_SERVICES } from '@/lib/services/allServices';
 
@@ -535,6 +536,8 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={inter.variable}>
       <head>
+        {/* Boot watchdog: first, so it sees framework scripts that fail before React starts (lib/loading/bootWatchdog.ts). */}
+        <script id="eims-boot-watchdog" dangerouslySetInnerHTML={{ __html: BOOT_WATCHDOG_SCRIPT }} />
         {/* Structured Data - LocalBusiness Schema */}
         <script
           type="application/ld+json"
