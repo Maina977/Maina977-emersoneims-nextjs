@@ -33,7 +33,8 @@ export const BOOT_WATCHDOG_SCRIPT = [
   "var d=document.createElement('div');d.id='" + BOOT_NOTICE_ID + "';d.setAttribute('role','alert');",
   "d.style.cssText='position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483647;max-width:560px;margin:0 auto;padding:14px 16px;border-radius:12px;background:#0f172a;color:#f8fafc;border:1px solid #f59e0b;font:15px/1.45 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.4)';",
   "var p=document.createElement('p');p.style.margin='0 0 10px';",
-  "p.textContent=failed?'The page did not finish loading. The connection dropped while it was downloading, so the tools on this page cannot start.':'This page is still downloading. The connection is slow or a download stalled.';",
+  // Same wording as the error pages (app/error.tsx) and the module loader (ResilientModule), so a visitor sees one message.
+  "p.textContent=failed?'The page did not finish loading. The connection dropped while part of this page was downloading. Reload the page to download it again.':'Still downloading this page \\u2014 the connection is slow or a download stalled.';",
   "var b=document.createElement('button');b.type='button';b.textContent='Reload page';",
   "b.style.cssText='padding:8px 16px;border-radius:8px;border:0;background:#f59e0b;color:#0f172a;font-weight:600;cursor:pointer';",
   "b.onclick=function(){location.reload();};",

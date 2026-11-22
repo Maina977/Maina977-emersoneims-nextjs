@@ -29,6 +29,8 @@ describe('boot watchdog', () => {
     expect(n).not.toBeNull();
     expect(n!.getAttribute('role')).toBe('alert');
     expect(n!.textContent).toMatch(/did not finish loading/);
+    // One message across the site: the same sentence as app/error.tsx.
+    expect(n!.textContent).toMatch(/The connection dropped while part of this page was downloading/);
     expect(n!.textContent).toMatch(/Figures you typed in the tools are kept/);
     expect(n!.querySelector('button')!.textContent).toBe('Reload page');
   });
@@ -53,7 +55,7 @@ describe('boot watchdog', () => {
     vi.advanceTimersByTime(19000);
     expect(notice()).toBeNull();
     vi.advanceTimersByTime(2000);
-    expect(notice()!.textContent).toMatch(/still downloading/);
+    expect(notice()!.textContent).toMatch(/Still downloading this page — the connection is slow or a download stalled/);
     markReactStarted();
     vi.advanceTimersByTime(1500);
     expect(notice()).toBeNull();
