@@ -29,6 +29,7 @@ import { wellKind, displayOutcome, cleanWellsForDisplay } from './wellDisplay';
 import { invertVES, type VESInversionResult, type VESDataPoint } from './vesInversionEngine';
 import { installReliableFetch } from './reliableFetch';
 import EvidenceCards from './EvidenceCardsView';
+import { FieldEvidencePanel } from './FieldEvidencePanel';
 // Pre-checks (Kenya land/water, elevation) use the same relay as the analysis.
 if (typeof window !== 'undefined') installReliableFetch();
 // NOTE: styles.css is deliberately NOT imported here. This module is loaded
@@ -1394,15 +1395,21 @@ const AIBoreholeAnalyzer: React.FC = () => {
               </div>
               {showFieldForms && (
                 <div style={{display:'grid',gap:16}}>
-                  {/* ERT Survey */}
+                  {/* Guided field evidence (2026-11-22, management priority 6): survey,
+                      pumping test and laboratory analysis, each with its source,
+                      validated before it sets the fields the evidence gate reads. It
+                      replaces the old ERT summary, pump test, step test and lab forms,
+                      which filled unentered values (thickness 10 m, resistivity 50,
+                      transmissivity 50, drawdown 10 m, recovery 85%, today's date). */}
+                  <FieldEvidencePanel
+                    fieldData={fieldDataInput}
+                    onApply={(patch)=>setFieldDataInput((p: any)=>({...p,...patch}))}
+                    onRemove={(keys)=>setFieldDataInput((p: any)=>{const n={...p};for(const k of keys)delete n[k];return n;})}
+                  />
+                  {/* ERT raw data file */}
                   <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
-                    <legend style={{fontSize:12,fontWeight:700,color:'#f59e0b'}}>ERT / Resistivity Survey</legend>
+                    <legend style={{fontSize:12,fontWeight:700,color:'#f59e0b'}}>ERT raw data file (.dat / .res)</legend>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
-                      <label style={{fontSize:11}}>Aquifer Depth (m)<input type="number" placeholder="e.g. 35" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),aquiferDepthM:v,aquiferThicknessM:p.ertSurvey?.aquiferThicknessM??10,resistivityOhmM:p.ertSurvey?.resistivityOhmM??50,surveyDate:p.ertSurvey?.surveyDate??new Date().toISOString().split('T')[0],contractor:p.ertSurvey?.contractor??''}}))}}/></label>
-                      <label style={{fontSize:11}}>Aquifer Thickness (m)<input type="number" placeholder="e.g. 15" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.ertSurvey)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),aquiferThicknessM:v}}))}}/></label>
-                      <label style={{fontSize:11}}>Resistivity (Ω·m)<input type="number" placeholder="e.g. 45" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.ertSurvey)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),resistivityOhmM:v}}))}}/></label>
-                      <label style={{fontSize:11}}>Contractor<input type="text" placeholder="Company name" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.ertSurvey)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),contractor:e.target.value}}))}}/></label>
-                      <label style={{fontSize:11}}>Survey Date<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.ertSurvey)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),surveyDate:e.target.value}}))}}/></label>
                       <label style={{fontSize:11}}>Upload .dat/.res file<input ref={ertFileRef} type="file" accept=".dat,.res,.stg,.csv,.txt" style={{width:'100%',fontSize:10}} onChange={e=>{const f=e.target.files?.[0];if(f){const reader=new FileReader();reader.onload=()=>{try{const parsed=parseERTFile(f.name,reader.result as string);setFieldDataInput((p: any)=>({...p,ertDataFile:parsed}))}catch(err){console.warn('ERT parse error:',err)}};reader.readAsText(f)}}}/></label>
                     </div>
                   </fieldset>
@@ -1469,56 +1476,6 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <label style={{fontSize:11}}>Conductivity (mS/m)<input type="number" placeholder="e.g. 30" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.emTdemSurvey)setFieldDataInput((p: any)=>({...p,emTdemSurvey:{...(p.emTdemSurvey || {}),conductivity_mS_m:v}}))}}/></label>
                       <label style={{fontSize:11}}>Max Depth (m)<input type="number" placeholder="e.g. 100" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.emTdemSurvey)setFieldDataInput((p: any)=>({...p,emTdemSurvey:{...(p.emTdemSurvey || {}),maxDepthM:v}}))}}/></label>
                       <label style={{fontSize:11}}>Soundings<input type="number" placeholder="e.g. 5" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseInt(e.target.value);if(v>0&&fieldDataInput.emTdemSurvey)setFieldDataInput((p: any)=>({...p,emTdemSurvey:{...(p.emTdemSurvey || {}),soundingCount:v}}))}}/></label>
-                    </div>
-                  </fieldset>
-                  {/* Pump Test */}
-                  <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
-                    <legend style={{fontSize:12,fontWeight:700,color:'#06b6d4'}}>Pump Test Results</legend>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:8}}>
-                      <label style={{fontSize:11}}>Sustainable Yield (m³/hr)<input type="number" step="0.1" placeholder="e.g. 2.5" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0)setFieldDataInput((p: any)=>({...p,pumpTest:{...(p.pumpTest || {}),sustainableYieldM3Hr:v,transmissivityM2Day:p.pumpTest?.transmissivityM2Day??50,storativity:p.pumpTest?.storativity??0.01,drawdownM:p.pumpTest?.drawdownM??10,recoveryPercent:p.pumpTest?.recoveryPercent??85,testDurationHrs:p.pumpTest?.testDurationHrs??24,testDate:p.pumpTest?.testDate??new Date().toISOString().split('T')[0]}}))}}/></label>
-                      <label style={{fontSize:11}}>Transmissivity (m²/day)<input type="number" step="0.1" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.pumpTest)setFieldDataInput((p: any)=>({...p,pumpTest:{...(p.pumpTest || {}),transmissivityM2Day:v}}))}}/></label>
-                      <label style={{fontSize:11}}>Drawdown (m)<input type="number" step="0.1" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.pumpTest)setFieldDataInput((p: any)=>({...p,pumpTest:{...(p.pumpTest || {}),drawdownM:v}}))}}/></label>
-                      <label style={{fontSize:11}}>Recovery %<input type="number" max="100" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseInt(e.target.value);if(v>0&&fieldDataInput.pumpTest)setFieldDataInput((p: any)=>({...p,pumpTest:{...(p.pumpTest || {}),recoveryPercent:v}}))}}/></label>
-                    </div>
-                  </fieldset>
-                  {/* Lab Water Analysis — FULL CHEMISTRY (v3) */}
-                  <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
-                    <legend style={{fontSize:12,fontWeight:700,color:'#10b981'}}>Laboratory Water Analysis — Full Chemistry</legend>
-                    <p style={{fontSize:10,margin:'0 0 6px',color:'var(--text-secondary)'}}>Complete chemistry enables LSI/RSI corrosion indices, pipe material selection, and treatment design. Minimum: pH + TDS.</p>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:8}}>
-                      {[
-                        {k:'pH',p:'e.g. 7.2',u:''},
-                        {k:'tds',p:'mg/L',u:'mg/L'},
-                        {k:'iron',p:'mg/L',u:'mg/L'},
-                        {k:'fluoride',p:'mg/L',u:'mg/L'},
-                        {k:'arsenic',p:'mg/L',u:'mg/L'},
-                        {k:'nitrate',p:'mg/L',u:'mg/L'},
-                        {k:'turbidity',p:'NTU',u:'NTU'},
-                        {k:'coliform',p:'CFU/100mL',u:'CFU'},
-                        {k:'hardness',p:'mg/L CaCO3',u:'mg/L'},
-                        {k:'calcium',p:'mg/L',u:'mg/L'},
-                        {k:'alkalinity',p:'mg/L CaCO3',u:'mg/L'},
-                        {k:'sulfate',p:'mg/L',u:'mg/L'},
-                        {k:'chloride',p:'mg/L',u:'mg/L'},
-                        {k:'manganese',p:'mg/L',u:'mg/L'},
-                        {k:'dissolvedOxygen',p:'mg/L',u:'mg/L'},
-                        {k:'temperature',p:'°C',u:'°C'},
-                        {k:'sodium',p:'mg/L',u:'mg/L'},
-                        {k:'magnesium',p:'mg/L',u:'mg/L'},
-                        {k:'bicarbonate',p:'mg/L',u:'mg/L'},
-                        {k:'electricalConductivity',p:'µS/cm',u:'µS/cm'},
-                      ].map(({k,p})=>(
-                        <label key={k} style={{fontSize:11}}>{k==='pH'?'pH':k==='tds'?'TDS':k==='dissolvedOxygen'?'Dissolved O₂':k==='electricalConductivity'?'EC':k==='h2s'?'H₂S':k.charAt(0).toUpperCase()+k.slice(1)}<input type="number" step="0.01" placeholder={p} style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value.replace(',','.'));setFieldDataInput((prev: any)=>{
-                        // Only what the laboratory reported (2026-10-30 audit: one
-                        // entry filled every other parameter with 0, so an untested
-                        // coliform read as a pass).
-                        const lab: any={...(prev.labWaterAnalysis || {}),labName:prev.labWaterAnalysis?.labName??'',sampleDate:prev.labWaterAnalysis?.sampleDate??new Date().toISOString().split('T')[0]};
-                        if(Number.isFinite(v)&&v>=0)lab[k]=v;else delete lab[k];
-                        return{...prev,labWaterAnalysis:lab}})}}/></label>
-                      ))}
-                      <label style={{fontSize:11}}>H₂S Detected<select style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>setFieldDataInput((prev: any)=>({...prev,labWaterAnalysis:{...(prev.labWaterAnalysis||{}),...{h2s:e.target.value==='yes'}}}))}><option value="no">No</option><option value="yes">Yes</option></select></label>
-                      <label style={{fontSize:11}}>Lab Name<input type="text" placeholder="Lab name" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.labWaterAnalysis)setFieldDataInput((p: any)=>({...p,labWaterAnalysis:{...(p.labWaterAnalysis || {}),labName:e.target.value}}))}}/></label>
-                      <label style={{fontSize:11}}>Sample Date<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.labWaterAnalysis)setFieldDataInput((p: any)=>({...p,labWaterAnalysis:{...(p.labWaterAnalysis||{}),sampleDate:e.target.value}}))}}/></label>
                     </div>
                   </fieldset>
                   {/* Site Demographics — for demand/sustainability (v3) */}
@@ -1596,24 +1553,6 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <label style={{fontSize:11}}>Sample Depth (m)<input type="number" step="0.1" placeholder="e.g. 25" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.sieveAnalysis)setFieldDataInput((p: any)=>({...p,sieveAnalysis:{...(p.sieveAnalysis||{}),sampleDepth_m:v}}))}}/></label>
                       <label style={{fontSize:11}}>Sample Date<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.sieveAnalysis)setFieldDataInput((p: any)=>({...p,sieveAnalysis:{...(p.sieveAnalysis||{}),sampleDate:e.target.value}}))}}/></label>
                     </div>
-                  </fieldset>
-                  {/* Step-Drawdown Test (v2 well design) */}
-                  <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
-                    <legend style={{fontSize:12,fontWeight:700,color:'#8b5cf6'}}>Step-Drawdown Test (≥3 steps)</legend>
-                    <p style={{fontSize:10,margin:'0 0 8px',color:'var(--text-secondary)'}}>Enter step test data for Jacob method well loss analysis. Minimum 3 steps required. s/Q = B + CQ</p>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:4,marginBottom:4}}>
-                      <span style={{fontSize:10,fontWeight:700,textAlign:'center'}}>Pumping Rate (m³/hr)</span>
-                      <span style={{fontSize:10,fontWeight:700,textAlign:'center'}}>Drawdown (m)</span>
-                      <span style={{fontSize:10,fontWeight:700,textAlign:'center'}}>Duration (min)</span>
-                    </div>
-                    {[0,1,2,3,4].map(stepIdx=>(
-                      <div key={stepIdx} style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:4,marginBottom:4}}>
-                        <input type="number" step="0.1" placeholder={`Step ${stepIdx+1} Q`} style={{padding:3,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)',fontSize:11}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0){setFieldDataInput((p: any)=>{const prev=p.stepDrawdownTest?.steps||[];const step={...(prev[stepIdx]||{pumpingRate_m3hr:0,drawdown_m:0,duration_min:60}),pumpingRate_m3hr:v};const newSteps=[...prev];newSteps[stepIdx]=step;return{...p,stepDrawdownTest:{...(p.stepDrawdownTest||{staticWaterLevel_m:0}),steps:newSteps.filter((s: any)=>s.pumpingRate_m3hr>0)}}})}}}/>
-                        <input type="number" step="0.01" placeholder={`Step ${stepIdx+1} s`} style={{padding:3,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)',fontSize:11}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0){setFieldDataInput((p: any)=>{const prev=p.stepDrawdownTest?.steps||[];const step={...(prev[stepIdx]||{pumpingRate_m3hr:0,drawdown_m:0,duration_min:60}),drawdown_m:v};const newSteps=[...prev];newSteps[stepIdx]=step;return{...p,stepDrawdownTest:{...(p.stepDrawdownTest||{staticWaterLevel_m:0}),steps:newSteps.filter((s: any)=>s.pumpingRate_m3hr>0)}}})}}}/>
-                        <input type="number" step="1" placeholder="min" style={{padding:3,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)',fontSize:11}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0){setFieldDataInput((p: any)=>{const prev=p.stepDrawdownTest?.steps||[];const step={...(prev[stepIdx]||{pumpingRate_m3hr:0,drawdown_m:0,duration_min:60}),duration_min:v};const newSteps=[...prev];newSteps[stepIdx]=step;return{...p,stepDrawdownTest:{...(p.stepDrawdownTest||{staticWaterLevel_m:0}),steps:newSteps.filter((s: any)=>s.pumpingRate_m3hr>0)}}})}}}/>
-                      </div>
-                    ))}
-                    <label style={{fontSize:11}}>Static Water Level (m)<input type="number" step="0.1" placeholder="e.g. 12.5" style={{width:200,padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)',marginLeft:8}} onChange={e=>{const v=parseFloat(e.target.value);if(v>=0)setFieldDataInput((p: any)=>({...p,stepDrawdownTest:{...(p.stepDrawdownTest||{steps:[]}),staticWaterLevel_m:v}}))}}/></label>
                   </fieldset>
                   {/* Local Boreholes */}
                   <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
