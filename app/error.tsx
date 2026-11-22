@@ -1,6 +1,7 @@
 'use client';
 
 import { reportError } from '@/lib/monitoring/reportError';
+import { isChunkLoadError } from '@/lib/loading/isChunkLoadError';
 import { useEffect } from 'react';
 import Link from 'next/link';
 
@@ -30,13 +31,24 @@ export default function Error({ error, reset }: ErrorProps) {
           </div>
         </div>
 
-        <h2 className="text-3xl font-bold mb-4">
-          Oops! <span className="text-orange-500">Error</span>
-        </h2>
-        
-        <p className="text-gray-400 mb-8">
-          Something unexpected happened. Please try again or contact us if the problem persists.
-        </p>
+        {isChunkLoadError(error) ? (
+          <>
+            <h2 className="text-3xl font-bold mb-4">The page did not finish loading</h2>
+            <p className="text-gray-300 mb-8">
+              The connection dropped while part of this page was downloading. Reload the page to download it
+              again. Work saved in this browser (drafts, projects, service records) is kept.
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className="text-3xl font-bold mb-4">
+              Oops! <span className="text-orange-500">Error</span>
+            </h2>
+            <p className="text-gray-400 mb-8">
+              Something unexpected happened. Please try again or contact us if the problem persists.
+            </p>
+          </>
+        )}
 
         {/* Dev-only error details */}
         {process.env.NODE_ENV === 'development' && (
@@ -49,10 +61,11 @@ export default function Error({ error, reset }: ErrorProps) {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
-            onClick={reset}
+            type="button"
+            onClick={isChunkLoadError(error) ? () => window.location.reload() : reset}
             className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg font-semibold hover:opacity-90 transition"
           >
-            🔄 Try Again
+            {isChunkLoadError(error) ? 'Reload page' : '🔄 Try Again'}
           </button>
           
           <Link

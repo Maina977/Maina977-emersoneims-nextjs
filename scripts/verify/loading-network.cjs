@@ -39,7 +39,9 @@ if (preview && !TOKEN) { console.error('A protected preview needs VERCEL_TRUSTED
 const ORIGIN = new URL(BASE).origin;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 EIMS-loading-verify';
 
-const SLOW_NOTE = /the connection is slow or a download stalled/;
+// Recovery offered with a "Reload page" button: the loaders' slow note, or the
+// error pages' failed-download message (app/error.tsx, app/global-error.tsx).
+const SLOW_NOTE = /the connection is slow or a download stalled|The connection dropped while part of this page was downloading/;
 const FAILED = /did not download/;
 const SLOW_NOTE_AFTER_MS = 12_000;
 
