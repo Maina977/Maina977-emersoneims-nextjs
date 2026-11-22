@@ -347,8 +347,9 @@ function constrainWithFieldData(layers: SubsurfaceLayer[], fd: FieldValidationDa
     const aquiferLayer = layers.find(l => l.isAquifer);
     if (aquiferLayer) {
       // T = K × b → K = T / b
-      aquiferLayer.hydraulicConductivity_m_day = pt.transmissivityM2Day / aquiferLayer.thicknessM;
-      aquiferLayer.storativity = pt.storativity;
+      // Only from a reported transmissivity / storativity (never defaulted).
+      if (pt.transmissivityM2Day != null) aquiferLayer.hydraulicConductivity_m_day = pt.transmissivityM2Day / aquiferLayer.thicknessM;
+      if (pt.storativity != null) aquiferLayer.storativity = pt.storativity;
       aquiferLayer.confidence = Math.min(0.95, aquiferLayer.confidence + 0.35);
       aquiferLayer.dataSourcesUsed.push('Pump test');
     }

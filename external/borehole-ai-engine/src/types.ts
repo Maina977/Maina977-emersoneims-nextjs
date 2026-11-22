@@ -86,7 +86,11 @@ export interface SitePhoto {
 
 export interface AnalysisResult {
   /** Field evidence supplied for this point; depth/yield/cost figures are shown only when backed by it (Release 5). */
-  siteEvidence?: { depth: boolean; yield: boolean; methods: string[] };
+  siteEvidence?: {
+    depth: boolean; yield: boolean; methods: string[];
+    /** The entered evidence behind each figure (source, date, method, reference), cited wherever the figure appears. */
+    citations?: { depth?: string; yield?: string };
+  };
   site: BoreholeSite;
   soil: SoilAnalysis;
   waterQuality: WaterQuality;
@@ -978,25 +982,53 @@ export interface ValidationTarget {
   goal: string;
 }
 
+/**
+ * Where an entered measurement comes from (2026-11-22, management priority 6):
+ * the contractor or laboratory, the date, the method or standard, and the
+ * report reference, exactly as the user typed them. A survey report file is
+ * hashed in the browser; only its name and SHA-256 are kept, never the file.
+ */
+export interface EvidenceProvenance {
+  source: string;
+  date: string;
+  method: string;
+  reference: string;
+  accreditation?: string;
+  samplePoint?: string;
+  reportFile?: { name: string; sha256: string };
+}
+
 /** Field data input — when available, overrides desktop estimates and boosts confidence */
 export interface FieldValidationData {
   /** ERT/Seismic survey results */
   ertSurvey?: {
     aquiferDepthM: number;
     aquiferThicknessM: number;
-    resistivityOhmM: number;
+    /** Interpreted aquifer resistivity, only when the survey report gives it. */
+    resistivityOhmM?: number;
     surveyDate: string;
     contractor: string;
+    /** VES or ERT, and the array / interpretation method. */
+    method?: string;
+    provenance?: EvidenceProvenance;
   };
-  /** 24-hour pumping test results */
+  /** Pumping test results (constant-rate). sustainableYieldM3Hr is the TESTED pumping rate. */
   pumpTest?: {
-    transmissivityM2Day: number;
-    storativity: number;
+    /** Only when the test report gives it; never defaulted. */
+    transmissivityM2Day?: number;
+    /** Only when the test report gives it; never defaulted. */
+    storativity?: number;
     sustainableYieldM3Hr: number;
     drawdownM: number;
     recoveryPercent: number;
     testDurationHrs: number;
     testDate: string;
+    testType?: 'constant-rate';
+    staticWaterLevelM?: number;
+    dynamicWaterLevelM?: number;
+    recoveryWaterLevelM?: number;
+    recoveryDurationHrs?: number;
+    provenance?: EvidenceProvenance;
   };
   /** Lab sieve analysis grain-size distribution (v2 well design) */
   sieveAnalysis?: {
@@ -1011,11 +1043,16 @@ export interface FieldValidationData {
     staticWaterLevel_m: number;
     wellRadius_m?: number;
     testDate?: string;
+    provenance?: EvidenceProvenance;
   };
   /** Laboratory water analysis */
   labWaterAnalysis?: {
     labName: string;
     sampleDate: string;
+    /** Accreditation as entered (e.g. KENAS ISO/IEC 17025), and where the sample was taken. */
+    accreditation?: string;
+    samplePoint?: string;
+    provenance?: EvidenceProvenance;
     pH: number;
     tds: number;
     iron: number;

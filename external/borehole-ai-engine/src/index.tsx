@@ -1,5 +1,6 @@
 ﻿import { inKenya } from './kenyaLand';
-import { evidenceGate, gated, DEPTH_NEEDS, YIELD_NEEDS, COST_NEEDS } from './evidenceGate';
+import { evidenceGate, evidenceChecklist, gated, DEPTH_NEEDS, YIELD_NEEDS, COST_NEEDS } from './evidenceGate';
+import { costSourcing, QUOTATION_TEXT } from './costSources';
 import { geocodeSearchUrl } from '../../../lib/data-sources/geocodeClient';
 import { finalVerdict, salinityEvidence, chemEvidence } from './verdict';
 import { governingSummary, last12Months, probabilityBand } from './governingSummary';
@@ -29,6 +30,7 @@ import { wellKind, displayOutcome, cleanWellsForDisplay } from './wellDisplay';
 import { invertVES, type VESInversionResult, type VESDataPoint } from './vesInversionEngine';
 import { installReliableFetch } from './reliableFetch';
 import EvidenceCards from './EvidenceCardsView';
+import { FieldEvidencePanel } from './FieldEvidencePanel';
 // Pre-checks (Kenya land/water, elevation) use the same relay as the analysis.
 if (typeof window !== 'undefined') installReliableFetch();
 // NOTE: styles.css is deliberately NOT imported here. This module is loaded
@@ -1394,15 +1396,21 @@ const AIBoreholeAnalyzer: React.FC = () => {
               </div>
               {showFieldForms && (
                 <div style={{display:'grid',gap:16}}>
-                  {/* ERT Survey */}
+                  {/* Guided field evidence (2026-11-22, management priority 6): survey,
+                      pumping test and laboratory analysis, each with its source,
+                      validated before it sets the fields the evidence gate reads. It
+                      replaces the old ERT summary, pump test, step test and lab forms,
+                      which filled unentered values (thickness 10 m, resistivity 50,
+                      transmissivity 50, drawdown 10 m, recovery 85%, today's date). */}
+                  <FieldEvidencePanel
+                    fieldData={fieldDataInput}
+                    onApply={(patch)=>setFieldDataInput((p: any)=>({...p,...patch}))}
+                    onRemove={(keys)=>setFieldDataInput((p: any)=>{const n={...p};for(const k of keys)delete n[k];return n;})}
+                  />
+                  {/* ERT raw data file */}
                   <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
-                    <legend style={{fontSize:12,fontWeight:700,color:'#f59e0b'}}>ERT / Resistivity Survey</legend>
+                    <legend style={{fontSize:12,fontWeight:700,color:'#f59e0b'}}>ERT raw data file (.dat / .res)</legend>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
-                      <label style={{fontSize:11}}>Aquifer Depth (m)<input type="number" placeholder="e.g. 35" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),aquiferDepthM:v,aquiferThicknessM:p.ertSurvey?.aquiferThicknessM??10,resistivityOhmM:p.ertSurvey?.resistivityOhmM??50,surveyDate:p.ertSurvey?.surveyDate??new Date().toISOString().split('T')[0],contractor:p.ertSurvey?.contractor??''}}))}}/></label>
-                      <label style={{fontSize:11}}>Aquifer Thickness (m)<input type="number" placeholder="e.g. 15" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.ertSurvey)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),aquiferThicknessM:v}}))}}/></label>
-                      <label style={{fontSize:11}}>Resistivity (Ω·m)<input type="number" placeholder="e.g. 45" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.ertSurvey)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),resistivityOhmM:v}}))}}/></label>
-                      <label style={{fontSize:11}}>Contractor<input type="text" placeholder="Company name" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.ertSurvey)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),contractor:e.target.value}}))}}/></label>
-                      <label style={{fontSize:11}}>Survey Date<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.ertSurvey)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),surveyDate:e.target.value}}))}}/></label>
                       <label style={{fontSize:11}}>Upload .dat/.res file<input ref={ertFileRef} type="file" accept=".dat,.res,.stg,.csv,.txt" style={{width:'100%',fontSize:10}} onChange={e=>{const f=e.target.files?.[0];if(f){const reader=new FileReader();reader.onload=()=>{try{const parsed=parseERTFile(f.name,reader.result as string);setFieldDataInput((p: any)=>({...p,ertDataFile:parsed}))}catch(err){console.warn('ERT parse error:',err)}};reader.readAsText(f)}}}/></label>
                     </div>
                   </fieldset>
@@ -1469,56 +1477,6 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <label style={{fontSize:11}}>Conductivity (mS/m)<input type="number" placeholder="e.g. 30" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.emTdemSurvey)setFieldDataInput((p: any)=>({...p,emTdemSurvey:{...(p.emTdemSurvey || {}),conductivity_mS_m:v}}))}}/></label>
                       <label style={{fontSize:11}}>Max Depth (m)<input type="number" placeholder="e.g. 100" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.emTdemSurvey)setFieldDataInput((p: any)=>({...p,emTdemSurvey:{...(p.emTdemSurvey || {}),maxDepthM:v}}))}}/></label>
                       <label style={{fontSize:11}}>Soundings<input type="number" placeholder="e.g. 5" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseInt(e.target.value);if(v>0&&fieldDataInput.emTdemSurvey)setFieldDataInput((p: any)=>({...p,emTdemSurvey:{...(p.emTdemSurvey || {}),soundingCount:v}}))}}/></label>
-                    </div>
-                  </fieldset>
-                  {/* Pump Test */}
-                  <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
-                    <legend style={{fontSize:12,fontWeight:700,color:'#06b6d4'}}>Pump Test Results</legend>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:8}}>
-                      <label style={{fontSize:11}}>Sustainable Yield (m³/hr)<input type="number" step="0.1" placeholder="e.g. 2.5" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0)setFieldDataInput((p: any)=>({...p,pumpTest:{...(p.pumpTest || {}),sustainableYieldM3Hr:v,transmissivityM2Day:p.pumpTest?.transmissivityM2Day??50,storativity:p.pumpTest?.storativity??0.01,drawdownM:p.pumpTest?.drawdownM??10,recoveryPercent:p.pumpTest?.recoveryPercent??85,testDurationHrs:p.pumpTest?.testDurationHrs??24,testDate:p.pumpTest?.testDate??new Date().toISOString().split('T')[0]}}))}}/></label>
-                      <label style={{fontSize:11}}>Transmissivity (m²/day)<input type="number" step="0.1" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.pumpTest)setFieldDataInput((p: any)=>({...p,pumpTest:{...(p.pumpTest || {}),transmissivityM2Day:v}}))}}/></label>
-                      <label style={{fontSize:11}}>Drawdown (m)<input type="number" step="0.1" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.pumpTest)setFieldDataInput((p: any)=>({...p,pumpTest:{...(p.pumpTest || {}),drawdownM:v}}))}}/></label>
-                      <label style={{fontSize:11}}>Recovery %<input type="number" max="100" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseInt(e.target.value);if(v>0&&fieldDataInput.pumpTest)setFieldDataInput((p: any)=>({...p,pumpTest:{...(p.pumpTest || {}),recoveryPercent:v}}))}}/></label>
-                    </div>
-                  </fieldset>
-                  {/* Lab Water Analysis — FULL CHEMISTRY (v3) */}
-                  <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
-                    <legend style={{fontSize:12,fontWeight:700,color:'#10b981'}}>Laboratory Water Analysis — Full Chemistry</legend>
-                    <p style={{fontSize:10,margin:'0 0 6px',color:'var(--text-secondary)'}}>Complete chemistry enables LSI/RSI corrosion indices, pipe material selection, and treatment design. Minimum: pH + TDS.</p>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:8}}>
-                      {[
-                        {k:'pH',p:'e.g. 7.2',u:''},
-                        {k:'tds',p:'mg/L',u:'mg/L'},
-                        {k:'iron',p:'mg/L',u:'mg/L'},
-                        {k:'fluoride',p:'mg/L',u:'mg/L'},
-                        {k:'arsenic',p:'mg/L',u:'mg/L'},
-                        {k:'nitrate',p:'mg/L',u:'mg/L'},
-                        {k:'turbidity',p:'NTU',u:'NTU'},
-                        {k:'coliform',p:'CFU/100mL',u:'CFU'},
-                        {k:'hardness',p:'mg/L CaCO3',u:'mg/L'},
-                        {k:'calcium',p:'mg/L',u:'mg/L'},
-                        {k:'alkalinity',p:'mg/L CaCO3',u:'mg/L'},
-                        {k:'sulfate',p:'mg/L',u:'mg/L'},
-                        {k:'chloride',p:'mg/L',u:'mg/L'},
-                        {k:'manganese',p:'mg/L',u:'mg/L'},
-                        {k:'dissolvedOxygen',p:'mg/L',u:'mg/L'},
-                        {k:'temperature',p:'°C',u:'°C'},
-                        {k:'sodium',p:'mg/L',u:'mg/L'},
-                        {k:'magnesium',p:'mg/L',u:'mg/L'},
-                        {k:'bicarbonate',p:'mg/L',u:'mg/L'},
-                        {k:'electricalConductivity',p:'µS/cm',u:'µS/cm'},
-                      ].map(({k,p})=>(
-                        <label key={k} style={{fontSize:11}}>{k==='pH'?'pH':k==='tds'?'TDS':k==='dissolvedOxygen'?'Dissolved O₂':k==='electricalConductivity'?'EC':k==='h2s'?'H₂S':k.charAt(0).toUpperCase()+k.slice(1)}<input type="number" step="0.01" placeholder={p} style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value.replace(',','.'));setFieldDataInput((prev: any)=>{
-                        // Only what the laboratory reported (2026-10-30 audit: one
-                        // entry filled every other parameter with 0, so an untested
-                        // coliform read as a pass).
-                        const lab: any={...(prev.labWaterAnalysis || {}),labName:prev.labWaterAnalysis?.labName??'',sampleDate:prev.labWaterAnalysis?.sampleDate??new Date().toISOString().split('T')[0]};
-                        if(Number.isFinite(v)&&v>=0)lab[k]=v;else delete lab[k];
-                        return{...prev,labWaterAnalysis:lab}})}}/></label>
-                      ))}
-                      <label style={{fontSize:11}}>H₂S Detected<select style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>setFieldDataInput((prev: any)=>({...prev,labWaterAnalysis:{...(prev.labWaterAnalysis||{}),...{h2s:e.target.value==='yes'}}}))}><option value="no">No</option><option value="yes">Yes</option></select></label>
-                      <label style={{fontSize:11}}>Lab Name<input type="text" placeholder="Lab name" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.labWaterAnalysis)setFieldDataInput((p: any)=>({...p,labWaterAnalysis:{...(p.labWaterAnalysis || {}),labName:e.target.value}}))}}/></label>
-                      <label style={{fontSize:11}}>Sample Date<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.labWaterAnalysis)setFieldDataInput((p: any)=>({...p,labWaterAnalysis:{...(p.labWaterAnalysis||{}),sampleDate:e.target.value}}))}}/></label>
                     </div>
                   </fieldset>
                   {/* Site Demographics — for demand/sustainability (v3) */}
@@ -1596,24 +1554,6 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <label style={{fontSize:11}}>Sample Depth (m)<input type="number" step="0.1" placeholder="e.g. 25" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.sieveAnalysis)setFieldDataInput((p: any)=>({...p,sieveAnalysis:{...(p.sieveAnalysis||{}),sampleDepth_m:v}}))}}/></label>
                       <label style={{fontSize:11}}>Sample Date<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.sieveAnalysis)setFieldDataInput((p: any)=>({...p,sieveAnalysis:{...(p.sieveAnalysis||{}),sampleDate:e.target.value}}))}}/></label>
                     </div>
-                  </fieldset>
-                  {/* Step-Drawdown Test (v2 well design) */}
-                  <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
-                    <legend style={{fontSize:12,fontWeight:700,color:'#8b5cf6'}}>Step-Drawdown Test (≥3 steps)</legend>
-                    <p style={{fontSize:10,margin:'0 0 8px',color:'var(--text-secondary)'}}>Enter step test data for Jacob method well loss analysis. Minimum 3 steps required. s/Q = B + CQ</p>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:4,marginBottom:4}}>
-                      <span style={{fontSize:10,fontWeight:700,textAlign:'center'}}>Pumping Rate (m³/hr)</span>
-                      <span style={{fontSize:10,fontWeight:700,textAlign:'center'}}>Drawdown (m)</span>
-                      <span style={{fontSize:10,fontWeight:700,textAlign:'center'}}>Duration (min)</span>
-                    </div>
-                    {[0,1,2,3,4].map(stepIdx=>(
-                      <div key={stepIdx} style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:4,marginBottom:4}}>
-                        <input type="number" step="0.1" placeholder={`Step ${stepIdx+1} Q`} style={{padding:3,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)',fontSize:11}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0){setFieldDataInput((p: any)=>{const prev=p.stepDrawdownTest?.steps||[];const step={...(prev[stepIdx]||{pumpingRate_m3hr:0,drawdown_m:0,duration_min:60}),pumpingRate_m3hr:v};const newSteps=[...prev];newSteps[stepIdx]=step;return{...p,stepDrawdownTest:{...(p.stepDrawdownTest||{staticWaterLevel_m:0}),steps:newSteps.filter((s: any)=>s.pumpingRate_m3hr>0)}}})}}}/>
-                        <input type="number" step="0.01" placeholder={`Step ${stepIdx+1} s`} style={{padding:3,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)',fontSize:11}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0){setFieldDataInput((p: any)=>{const prev=p.stepDrawdownTest?.steps||[];const step={...(prev[stepIdx]||{pumpingRate_m3hr:0,drawdown_m:0,duration_min:60}),drawdown_m:v};const newSteps=[...prev];newSteps[stepIdx]=step;return{...p,stepDrawdownTest:{...(p.stepDrawdownTest||{staticWaterLevel_m:0}),steps:newSteps.filter((s: any)=>s.pumpingRate_m3hr>0)}}})}}}/>
-                        <input type="number" step="1" placeholder="min" style={{padding:3,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)',fontSize:11}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0){setFieldDataInput((p: any)=>{const prev=p.stepDrawdownTest?.steps||[];const step={...(prev[stepIdx]||{pumpingRate_m3hr:0,drawdown_m:0,duration_min:60}),duration_min:v};const newSteps=[...prev];newSteps[stepIdx]=step;return{...p,stepDrawdownTest:{...(p.stepDrawdownTest||{staticWaterLevel_m:0}),steps:newSteps.filter((s: any)=>s.pumpingRate_m3hr>0)}}})}}}/>
-                      </div>
-                    ))}
-                    <label style={{fontSize:11}}>Static Water Level (m)<input type="number" step="0.1" placeholder="e.g. 12.5" style={{width:200,padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)',marginLeft:8}} onChange={e=>{const v=parseFloat(e.target.value);if(v>=0)setFieldDataInput((p: any)=>({...p,stepDrawdownTest:{...(p.stepDrawdownTest||{steps:[]}),staticWaterLevel_m:v}}))}}/></label>
                   </fieldset>
                   {/* Local Boreholes */}
                   <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
@@ -2187,7 +2127,18 @@ const AIBoreholeAnalyzer: React.FC = () => {
     // The PDF's economics (one model for screen and report; 2026-10-20).
     const eco = (() => { try { return computeCanonicalEconomics(result); } catch { return null; } })();
     const ecoPayback = eco ? (eco.paybackMonths > 0 ? eco.paybackMonths : 999) : roi.paybackMonths;
-    const ecoTotal = eco ? eco.totalCost : cost.total + solar.totalSolar;
+    // 2026-11-22: only lines with a sourced rate are priced; the total is the
+    // total of those lines, and payback waits for the quotation of the rest.
+    const ecoSrc = eco ? costSourcing(eco) : null;
+    const ecoPriced = !!ecoSrc && ecoSrc.quotationItems.length === 0;
+    const ecoTotal = ecoSrc ? ecoSrc.sourcedTotal : cost.total + solar.totalSolar;
+    const evG = evidenceGate(result);
+    const needsEvidence = (what: string) => (
+      <div className="tab-desc" style={{padding:12,borderRadius:8,border:'1px solid var(--border)'}}>
+        <strong>{COST_NEEDS}.</strong> {what} {evG.note}
+        <ul style={{margin:'6px 0 0 18px'}}>{evidenceChecklist(result.fieldData).filter((c) => !c.ok).flatMap((c) => c.needs.map((n) => <li key={c.figure + n}>{c.figure}: {n}</li>))}</ul>
+      </div>
+    );
     // Depth options keep their relative costs, on the same total as the report.
     const scenariosRaw = genScenarios(result.recommendedDepth, result.estimatedYield, costSoil, costCtx);
     const recRaw = scenariosRaw[1]?.cost || 1;
@@ -2241,11 +2192,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
           })()}</div></div>
           {/* Release 5 (2026-11-20): depth, yield, cost and payback only with site field evidence. */}
           {(() => { const g = evidenceGate(result); return (<>
-          <div className="summary-card depth"><div className="summary-value" style={g.depth ? undefined : {fontSize:15}}>{gated(g.depth, `${result.recommendedDepth.toFixed(0)}m`, DEPTH_NEEDS)}</div><div className="summary-label">Drilling depth{g.depth ? ' (from your field survey)' : ''}</div></div>
-          <div className="summary-card yield-card"><div className="summary-value" style={g.yield ? undefined : {fontSize:15}}>{gated(g.yield, result.estimatedYield.toFixed(1), YIELD_NEEDS)}</div><div className="summary-label">Yield (m³/h){g.yield ? ' (from your pumping test)' : ''}</div></div>
-          <div className="summary-card cost-card"><div className="summary-value" style={g.cost ? undefined : {fontSize:15}}>{gated(g.cost, fmtUSD(ecoTotal), COST_NEEDS)}</div><div className="summary-label">Project cost</div></div>
+          <div className="summary-card depth"><div className="summary-value" style={g.depth ? undefined : {fontSize:15}}>{gated(g.depth, `${result.recommendedDepth.toFixed(0)}m`, DEPTH_NEEDS)}</div><div className="summary-label">Drilling depth{g.depth ? ' (from your field survey)' : ''}{g.citations.depth && <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>{g.citations.depth}</span>}</div></div>
+          <div className="summary-card yield-card"><div className="summary-value" style={g.yield ? undefined : {fontSize:15}}>{gated(g.yield, result.estimatedYield.toFixed(1), YIELD_NEEDS)}</div><div className="summary-label">Yield (m³/h){g.yield ? ' (from your pumping test)' : ''}{g.citations.yield && <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>{g.citations.yield}</span>}</div></div>
+          <div className="summary-card cost-card"><div className="summary-value" style={g.cost ? undefined : {fontSize:15}}>{gated(g.cost, fmtUSD(ecoTotal), COST_NEEDS)}</div><div className="summary-label">{g.cost && ecoSrc?.quotationItems.length ? `Project cost, sourced items only (by quotation: ${ecoSrc.quotationItems.join(', ')})` : 'Project cost'}</div></div>
           {g.cost && <div className="summary-card solar-card"><div className="summary-value">{fmtUSD(eco ? eco.solarCost : solar.totalSolar)}</div><div className="summary-label">of which solar pump power{(result as any).pumpHeadAssumption ? ' (water level assumed)' : ''}</div></div>}
-          {g.cost && <div className="summary-card roi-card"><div className="summary-value">{ecoPayback >= 240 ? 'None' : `${ecoPayback}mo`}</div><div className="summary-label">Payback Period</div></div>}
+          {g.cost && <div className="summary-card roi-card"><div className="summary-value" style={ecoPriced ? undefined : {fontSize:15}}>{!ecoPriced ? 'After quotation' : ecoPayback >= 240 ? 'None' : `${ecoPayback}mo`}</div><div className="summary-label">Payback Period</div></div>}
           </>); })()}
           <div className="summary-card risk-sc" style={{borderColor:getRiskColor(result.risk.overallRisk)}}><div className="summary-value" style={{color:getRiskColor(result.risk.overallRisk)}}>{(result.risk.overallRisk*100).toFixed(0)}%</div><div className="summary-label">Overall Risk</div></div>
           <div className="summary-card wq-card"><div className="summary-value">{wqExpanded.treatmentRequired}</div><div className="summary-label">Treatment likely (screening)</div></div>
@@ -5826,7 +5777,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
           )}
 
           {/* SCENARIO SIMULATION (#15) */}
-          {activeResultTab==='scenarios' && (
+          {activeResultTab==='scenarios' && !evG.cost && needsEvidence('Depth options compare depths, yields and costs, so they need the field survey and the pumping test.')}
+          {activeResultTab==='scenarios' && evG.cost && (
             <div>
               <h4 className="tab-title">{'\u{1F3AF}'} Depth options (rule of thumb)</h4>
               <p className="tab-desc">Fixed proportions of the planned depth and yield, for budgeting only: they are not site evidence. Only the survey and the drilled hole tell you what a deeper hole would give.</p>
@@ -5836,7 +5788,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     {i===1 && <div className="scenario-badge">RECOMMENDED</div>}
                     <div className="scenario-header">Scenario {i+1}: Drill at {sc.depth}m</div>
                     <div className="scenario-row"><span>Yield</span><span>{sc.yield == null ? 'Not assessed at this depth (a pump test decides)' : `${sc.yield} m³/h`}</span></div>
-                    <div className="scenario-row"><span>Cost</span><span>{fmtUSD(sc.cost)}</span></div>
+                    <div className="scenario-row"><span>Cost{ecoPriced ? '' : ' (sourced items)'}</span><span>{fmtUSD(sc.cost)}</span></div>
                     <div className="scenario-row"><span>Basis</span><span>Rule of thumb, not assessed for risk</span></div>
                     <div className="scenario-note">{sc.recommendation}</div>
                   </div>
@@ -5876,7 +5828,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <div className="treatment-box">
                 <div className="treatment-header">Treatment likely: <strong style={{color:wqExpanded.treatmentRequired==='YES'?'#F44336':'#4CAF50'}}>{wqExpanded.treatmentRequired}</strong></div>
                 {/* The same allowance as the Costs tab and the PDF (2026-10-25 audit: six sites, two figures each). */}
-                {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">Allowance if treatment is needed: <strong>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</strong> ({fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day (sized on measured salinity)` : ''}. A laboratory test decides whether it is.</div>}
+                {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">If treatment is needed it is priced <strong>by quotation</strong> (no sourced rate on file){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day (sized on measured salinity)` : ''}. A laboratory test decides whether it is.</div>}
                 {eco?.salinityUnpriced && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Desalination not priced:</strong> {salinityEvidence(result).sentence}</div>}
                 {eco?.fluorideUnpriced && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Defluoridation not priced:</strong> {chemEvidence(result, 'fluoride').sentence}</div>}
                 {(result as any).coastalIntrusionNote && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Seawater intrusion risk:</strong> {(result as any).coastalIntrusionNote}</div>}
@@ -5886,25 +5838,22 @@ const AIBoreholeAnalyzer: React.FC = () => {
           )}
 
           {/* COST BREAKDOWN (#2, #22) */}
-          {activeResultTab==='costs' && (
+          {activeResultTab==='costs' && !evG.cost && needsEvidence('The project cost follows from the surveyed depth and the tested yield.')}
+          {activeResultTab==='costs' && evG.cost && (
             <div>
               <h4 className="tab-title">{'\u{1F4B5}'} Project Cost (same figures as the PDF report)</h4>
+              <p className="tab-desc">Priced on the field evidence entered: {[evG.citations.depth, evG.citations.yield].filter(Boolean).join('; ')}. Only items with a sourced rate carry a price; the others are priced by the supplier&apos;s quotation.</p>
               <div className="cost-table">
                 <table>
-                  <thead><tr><th>Item</th><th>Cost (USD)</th><th>Cost (KSh)</th></tr></thead>
+                  <thead><tr><th>Item</th><th>Cost (USD)</th><th>Cost (KSh)</th><th>Source</th></tr></thead>
                   <tbody>
-                    {eco ? (<>
-                      <tr><td>Hydrogeological survey + WRA approvals (required)</td><td>{fmtUSD(eco.surveyCost + eco.permitCost)}</td><td>{fmtKSH(eco.surveyCost + eco.permitCost)}</td></tr>
-                      <tr><td>Drilling ({eco.depthVal} m at about KSh {eco.cpmKES.toLocaleString()}/m, {eco.drillMethod})</td><td>{fmtUSD(eco.drillingCost)}</td><td>{fmtKSH(eco.drillingCost)}</td></tr>
-                      {eco.mobilisationCost > 0 && <tr><td>Mobilisation (rig and crew; at least KSh 240,000 beyond 100 km)</td><td>{fmtUSD(eco.mobilisationCost)}</td><td>{fmtKSH(eco.mobilisationCost)}</td></tr>}
-                      <tr><td>Casing &amp; screen</td><td>{fmtUSD(eco.casingCost + eco.screenCost)}</td><td>{fmtKSH(eco.casingCost + eco.screenCost)}</td></tr>
-                      <tr><td>Completion: gravel pack, development, 24 h test pumping, lab test, cap</td><td>{fmtUSD(eco.completionCost)}</td><td>{fmtKSH(eco.completionCost)}</td></tr>
-                      <tr><td>Pump + installation</td><td>{fmtUSD(eco.pumpCost + eco.installCost)}</td><td>{fmtKSH(eco.pumpCost + eco.installCost)}</td></tr>
-                      {eco.solarCost > 0 && <tr><td>Solar pump power ({eco.solarKW} kW)</td><td>{fmtUSD(eco.solarCost)}</td><td>{fmtKSH(eco.solarCost)}</td></tr>}
-                      {eco.wqTreatmentCost + eco.defluoridationCost > 0 && <tr><td>Water treatment allowance (a lab test decides)</td><td>{fmtUSD(eco.wqTreatmentCost + eco.defluoridationCost)}</td><td>{fmtKSH(eco.wqTreatmentCost + eco.defluoridationCost)}</td></tr>}
-                      {eco.salinityUnpriced && <tr><td>Desalination (reverse osmosis): salinity not measured at this site; a laboratory test of the first water decides</td><td>not priced</td><td>—</td></tr>}
-                      <tr><td>Contingency ({Math.round(eco.contingencyRate * 100)}%)</td><td>{fmtUSD(eco.contingency)}</td><td>{fmtKSH(eco.contingency)}</td></tr>
-                      <tr className="cost-total"><td><strong>TOTAL PROJECT</strong></td><td><strong>{fmtUSD(eco.totalCost)}</strong></td><td><strong>{fmtKSH(eco.totalCost)}</strong></td></tr>
+                    {eco && ecoSrc ? (<>
+                      {ecoSrc.lines.map((l) => (
+                        <tr key={l.item}><td>{l.item}</td><td>{l.source ? fmtUSD(l.usd) : QUOTATION_TEXT}</td><td>{l.source ? fmtKSH(l.usd) : '—'}</td><td style={{fontSize:11}}>{l.source ?? 'No sourced rate on file: the supplier’s quotation prices this item'}</td></tr>
+                      ))}
+                      {eco.salinityUnpriced && <tr><td>Desalination (reverse osmosis): salinity not measured at this site; a laboratory test of the first water decides</td><td>not priced</td><td>—</td><td></td></tr>}
+                      <tr><td>Contingency ({Math.round(eco.contingencyRate * 100)}% of the sourced items)</td><td>{fmtUSD(ecoSrc.sourcedContingency)}</td><td>{fmtKSH(ecoSrc.sourcedContingency)}</td><td></td></tr>
+                      <tr className="cost-total"><td><strong>{ecoPriced ? 'TOTAL PROJECT' : 'TOTAL OF THE SOURCED ITEMS'}</strong></td><td><strong>{fmtUSD(ecoSrc.sourcedTotal)}</strong></td><td><strong>{fmtKSH(ecoSrc.sourcedTotal)}</strong></td><td style={{fontSize:11}}>{ecoPriced ? '' : `Not included, by quotation: ${ecoSrc.quotationItems.join(', ')}`}</td></tr>
                     </>) : (
                       <tr className="cost-total"><td><strong>TOTAL (estimate)</strong></td><td><strong>{fmtUSD(ecoTotal)}</strong></td><td><strong>{fmtKSH(ecoTotal)}</strong></td></tr>
                     )}
@@ -5948,14 +5897,21 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div className="result-item"><span className="rl">Pumping hours</span><span className="rv">{eco ? eco.pumpHoursPerDay : solar.runtime} h/day</span></div>
                 <div className="result-item"><span className="rl">Solar array</span><span className="rv">{eco ? (eco.solarKW > 0 ? `${eco.solarKW} kW` : 'None (hand pump)') : `${solar.panelKwp} kWp`}</span></div>
                 <div className="result-item"><span className="rl">Battery</span><span className="rv">None — the pump fills a storage tank in daylight</span></div>
-                <div className="result-item"><span className="rl">Solar cost (in the project total)</span><span className="rv" style={{fontWeight:700}}>{fmtUSD(eco ? eco.solarCost : solar.totalSolar)} ({fmtKSH(eco ? eco.solarCost : solar.totalSolar)})</span></div>
+                <div className="result-item"><span className="rl">Solar cost (in the project total)</span><span className="rv" style={{fontWeight:700}}>{evG.cost ? `${fmtUSD(eco ? eco.solarCost : solar.totalSolar)} (${fmtKSH(eco ? eco.solarCost : solar.totalSolar)})` : COST_NEEDS}</span></div>
               </div>
               <p className="tab-desc" style={{marginTop:12}}>Priced at about $1,500 per kW installed (array, controller, mounting and wiring). A supplier quotation fixes the real price.</p>
             </div>
           )}
 
           {/* ROI & PAYBACK (#8) */}
-          {activeResultTab==='roi' && (
+          {activeResultTab==='roi' && !evG.cost && needsEvidence('Payback follows from the project cost and the tested yield.')}
+          {activeResultTab==='roi' && evG.cost && !ecoPriced && (
+            <div>
+              <h4 className="tab-title">{'\u{1F4C8}'} Payback (same figures as the PDF report)</h4>
+              <p className="tab-desc">Payback, return and NPV are given once the supplier&apos;s quotation prices every item. Items without a sourced rate: {ecoSrc?.quotationItems.join(', ')}.</p>
+            </div>
+          )}
+          {activeResultTab==='roi' && evG.cost && ecoPriced && (
             <div>
               <h4 className="tab-title">{'\u{1F4C8}'} Payback (same figures as the PDF report)</h4>
               {eco ? (<>
@@ -7428,9 +7384,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <div><strong>Target Depth:</strong><br/>{evidenceGate(result).depth ? <>{dd.targetDepth_m}m <span style={{color:'var(--text-muted)'}}>(range: {dd.depthRange_m[0]}-{dd.depthRange_m[1]}m)</span></> : DEPTH_NEEDS}</div>
                       <div><strong>Expected Yield:</strong><br/>{evidenceGate(result).yield ? <>{dd.expectedYield_m3hr} m3/hr <span style={{color:'var(--text-muted)'}}>(range: {dd.yieldRange_m3hr[0]}-{dd.yieldRange_m3hr[1]})</span></> : YIELD_NEEDS}</div>
                       <div><strong>Casing Depth:</strong> {gated(evidenceGate(result).depth, `${dd.casingDepth_m}m`, DEPTH_NEEDS)}</div>
-                      <div><strong>Screen Interval:</strong> {dd.screenInterval_m[0]}-{dd.screenInterval_m[1]}m</div>
+                      <div><strong>Screen Interval:</strong> {gated(evG.depth, `${dd.screenInterval_m[0]}-${dd.screenInterval_m[1]}m`, DEPTH_NEEDS)}</div>
                       <div><strong>Pump Type:</strong> {dd.pumpType}</div>
-                      <div><strong>Estimated Cost:</strong> {fmtUSD(ecoTotal)} <span style={{opacity:0.7}}>(same basis as the summary)</span></div>
+                      <div><strong>Estimated Cost:</strong> {evG.cost ? <>{fmtUSD(ecoTotal)} <span style={{opacity:0.7}}>({ecoPriced ? 'same basis as the summary' : 'sourced items only; the rest by quotation'})</span></> : COST_NEEDS}</div>
                     </div>
                   </div>
                   {dd.alternativePoints?.length ? (

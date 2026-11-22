@@ -13,8 +13,8 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { AnalysisResult } from './types';
-import { evidenceGate } from './evidenceGate';
-import { finalVerdict } from './verdict';
+import { evidenceGate, provenanceText } from './evidenceGate';
+import { finalVerdict, labSourceLabel } from './verdict';
 
 export const SCREENING_REPORT_VERSION = 'aquascan-screening-report 1.0.0 (2026-11-20)';
 
@@ -41,6 +41,10 @@ export function screeningContent(result: AnalysisResult, when = new Date()): Scr
     next: v.next,
     evidenceNote: g.note,
     established: [
+      // Field evidence entered so far, cited with its source (2026-11-22).
+      ...(g.citations.depth ? [`Geophysical survey entered: ${g.citations.depth}.`] : []),
+      ...(g.citations.yield ? [`Pumping test entered: ${g.citations.yield}.`] : []),
+      ...(result.fieldData?.labWaterAnalysis ? [`Laboratory analysis entered: ${labSourceLabel(result.fieldData.labWaterAnalysis)} ${provenanceText(result.fieldData.labWaterAnalysis.provenance)}.`] : []),
       'Location and terrain context from public elevation and map data.',
       'Regional climate and recharge context from public climate data.',
       'Screening indicators from public geological, soil and satellite data (regional, not site-specific).',
@@ -58,6 +62,18 @@ export function screeningContent(result: AnalysisResult, when = new Date()): Scr
     ],
     sources,
   };
+}
+
+/** The screening report as table rows, for the CSV download when evidence is missing (2026-11-22). */
+export function screeningRows(result: AnalysisResult, when = new Date()): string[][] {
+  const c = screeningContent(result, when);
+  return [
+    [c.title], ['DESKTOP SCREENING: NOT A SITE ASSESSMENT'], ['Location', c.location], ['Verdict', c.verdict], ['Next step', c.next], ['Evidence', c.evidenceNote], [''],
+    ['What this desktop screen covers'], ...c.established.map((x) => ['', x]), [''],
+    ['Not established by a desktop screen'], ...c.notEstablished.map((x) => ['', x]), [''],
+    ['Next steps'], ...c.nextSteps.map((x, i) => ['', `${i + 1}. ${x}`]),
+    ...(c.sources.length ? [[''], ['Data used'], ...c.sources.map((x) => ['', x])] : []),
+  ];
 }
 
 /** Saves the screening PDF in the browser; returns the bytes (for tests). */

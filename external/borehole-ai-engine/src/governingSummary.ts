@@ -9,6 +9,8 @@
 import type { AnalysisResult } from './types';
 import { finalVerdict, salinityFromWaterQuality, chemFromWaterQuality, labSourceLabel, nearbyProvenance } from './verdict';
 import { computeCanonicalEconomics } from './reportShared';
+import { evidenceGate, provenanceText } from './evidenceGate';
+import { costSourcing, QUOTATION_TEXT } from './costSources';
 
 export type Row = [string, string, string]; // label, value, basis
 export interface SummarySection { title: string; rows: Row[]; notes?: string[] }
@@ -40,6 +42,7 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   const v = finalVerdict(result);
   const eco = computeCanonicalEconomics(result);
   const sections: SummarySection[] = [];
+  const g0 = evidenceGate(result);
 
   // 1. Verdict
   const depthRange = r.uncertainty?.depthRange;
@@ -51,11 +54,19 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
       ['Verdict', v.verdict, 'Desktop pre-screen: a hydrogeological survey is required before drilling (Kenya Water Resources Regulations)'],
       ['What to do next', v.next, ''],
       ['Chance of a productive borehole', probabilityBand(n(r.probability) ?? 0.5), 'A planning estimate from desktop data; not yet calibrated against drilling outcomes'],
-      ['Planned depth', `${f(r.recommendedDepth)} m${Array.isArray(depthRange) ? ` (likely ${f(depthRange[0])}-${f(depthRange[1])} m)` : ''}`, 'Field records nearby where they exist, otherwise the regional model'],
+      ['Planned depth', `${f(r.recommendedDepth)} m${Array.isArray(depthRange) ? ` (likely ${f(depthRange[0])}-${f(depthRange[1])} m)` : ''}`, g0.citations.depth ? `Field evidence: ${g0.citations.depth}` : 'Field records nearby where they exist, otherwise the regional model'],
       ...(((r.fallbacksUsed ?? r.dataProvenance?.fallbacksUsed ?? []) as string[]).length ? [['Sources that did not answer', ((r.fallbacksUsed ?? r.dataProvenance?.fallbacksUsed) as string[]).join('; '), 'A stored baseline or no value was used for these'] as Row] : []),
-      ['Expected yield', `${f(r.estimatedYield, 1)} m³/h${Array.isArray(yieldRange) ? ` (likely ${f(yieldRange[0], 1)}-${f(yieldRange[1], 1)} m³/h)` : ''}`, 'Confirmed only by a pump test'],
+      ['Expected yield', `${f(r.estimatedYield, 1)} m³/h${Array.isArray(yieldRange) ? ` (likely ${f(yieldRange[0], 1)}-${f(yieldRange[1], 1)} m³/h)` : ''}`, g0.citations.yield ? `Field evidence: ${g0.citations.yield}` : 'Confirmed only by a pump test'],
     ],
   });
+
+  // 1b. The field evidence entered, with its source (2026-11-22).
+  const fd = r.fieldData ?? {};
+  const evRowsField: Row[] = [];
+  if (g0.citations.depth) evRowsField.push(['Drilling depth', 'from field evidence', g0.citations.depth]);
+  if (g0.citations.yield) evRowsField.push(['Yield', 'from field evidence', g0.citations.yield]);
+  if (fd.labWaterAnalysis) evRowsField.push(['Water quality', 'laboratory', `${labSourceLabel(fd.labWaterAnalysis)} ${provenanceText(fd.labWaterAnalysis.provenance)}`]);
+  if (evRowsField.length) sections.push({ title: 'Field evidence entered', rows: evRowsField });
 
   // 2. Water quality: measured where nearby boreholes were tested, otherwise
   //    a regional estimate; parameters with no basis need a laboratory test.
@@ -109,26 +120,25 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   sections.push({ title: 'Water quality', rows: wqRows, notes: (wq.regionalWarnings ?? []).map(String) });
   }
 
-  // 3. Costs and payback (the PDF's cost table, one model)
-  const costRows: Row[] = [
-    ['Hydrogeological survey and WRA approvals (required)', usd(eco.surveyCost + eco.permitCost), eco.kes(eco.surveyCost + eco.permitCost)],
-    [`Drilling (${f(eco.depthVal)} m, ${eco.drillMethod})`, usd(eco.drillingCost), eco.kes(eco.drillingCost)],
-    ['Mobilisation', usd(eco.mobilisationCost), eco.kes(eco.mobilisationCost)],
-    ['Casing and screen', usd(eco.casingCost + eco.screenCost), eco.kes(eco.casingCost + eco.screenCost)],
-    ['Completion: gravel pack, development, 24 h test pumping, lab test, cap', usd(eco.completionCost), eco.kes(eco.completionCost)],
-    ['Pump and installation', usd(eco.pumpCost + eco.installCost), eco.kes(eco.pumpCost + eco.installCost)],
-  ];
-  if (eco.solarCost > 0) costRows.push([`Solar pump power (${f(eco.solarKW, 1)} kW)`, usd(eco.solarCost), eco.kes(eco.solarCost)]);
-  if (eco.wqTreatmentCost > 0) costRows.push([eco.needsRO ? 'Desalination (reverse osmosis) allowance' : 'Water treatment allowance (a laboratory test decides)', usd(eco.wqTreatmentCost), eco.kes(eco.wqTreatmentCost)]);
+  // 3. Costs and payback (one model). 2026-11-22: only lines with a sourced
+  //    rate carry a price, with the source beside it; the rest are "by
+  //    quotation", and the total is the total of the sourced lines.
+  const cs = costSourcing(eco);
+  const costRows: Row[] = cs.lines.map((l): Row => l.source
+    ? [l.item, usd(l.usd), `${eco.kes(l.usd)}. ${l.source}`]
+    : [l.item, QUOTATION_TEXT, 'No sourced rate on file: the supplier\'s quotation prices this item']);
   if (eco.salinityUnpriced) costRows.push(['Desalination (reverse osmosis)', 'not priced', 'Salinity has not been measured at this site; a laboratory test of the first water decides whether treatment is needed and its size']);
-  if (eco.defluoridationCost > 0) costRows.push(['Defluoridation (on measured fluoride)', usd(eco.defluoridationCost), eco.kes(eco.defluoridationCost)]);
   if (eco.fluorideUnpriced) costRows.push(['Defluoridation', 'not priced', 'Fluoride has not been measured at this site; a laboratory test of the first water decides whether treatment is needed and its size']);
-  costRows.push([`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, usd(eco.contingency), eco.kes(eco.contingency)]);
-  costRows.push(['TOTAL', usd(eco.totalCost), eco.kes(eco.totalCost)]);
+  costRows.push([`Contingency (${Math.round(eco.contingencyRate * 100)}% of the sourced items)`, usd(cs.sourcedContingency), eco.kes(cs.sourcedContingency)]);
+  costRows.push([cs.quotationItems.length ? 'TOTAL of the sourced items' : 'TOTAL', usd(cs.sourcedTotal), `${eco.kes(cs.sourcedTotal)}${cs.quotationItems.length ? `. Not included, by quotation: ${cs.quotationItems.join(', ')}` : ''}`]);
   if (r.pumpHeadAssumption) costRows.push(['Water level behind the pump cost', 'assumed, not measured', String(r.pumpHeadAssumption)]);
   const paybackYears = n(eco.paybackMonths) !== null && eco.paybackMonths > 0 ? eco.paybackMonths / 12 : null;
-  costRows.push(['Payback if water is sold', eco.paybackWithheld ? 'not given: the site screens as unfavourable' : paybackYears !== null ? `about ${f(paybackYears, 1)} years` : 'does not pay back from water sales', `$${eco.waterTariffPerM3}/m³, ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} days/yr${eco.needsRO ? `; only ${Math.round(eco.roRecovery * 100)}% is product water after reverse osmosis, which costs about $${eco.roOpexPerM3}/m³` : ''}`]);
-  sections.push({ title: 'Costs (typical Kenyan prices, not a quotation)', rows: costRows, notes: ['Prices are estimates for planning; the drilling contractor and the hydrogeological survey fix the real cost.'] });
+  costRows.push(['Payback if water is sold', eco.paybackWithheld ? 'not given: the site screens as unfavourable' : cs.quotationItems.length ? 'not given until the quotation prices every item' : paybackYears !== null ? `about ${f(paybackYears, 1)} years` : 'does not pay back from water sales', `$${eco.waterTariffPerM3}/m³, ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} days/yr${eco.needsRO ? `; only ${Math.round(eco.roRecovery * 100)}% is product water after reverse osmosis, which costs about $${eco.roOpexPerM3}/m³` : ''}`]);
+  const ge = evidenceGate(result);
+  sections.push({ title: 'Costs (typical Kenyan prices, not a quotation)', rows: costRows, notes: [
+    'Prices are estimates for planning; the drilling contractor and the hydrogeological survey fix the real cost.',
+    ...(ge.cost ? [`Priced on the drilling depth and yield from the field evidence entered: ${[ge.citations.depth, ge.citations.yield].filter(Boolean).join('; ')}.`] : []),
+  ] });
 
   // 4. Rainfall, recharge and groundwater storage
   const w = r.historicalData?.weather;
