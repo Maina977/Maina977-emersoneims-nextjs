@@ -221,11 +221,13 @@ function UltraCockpitBackground() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_100%_50%,rgba(245,158,11,0.08),transparent_45%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_0%_50%,rgba(139,92,246,0.08),transparent_45%)]" />
 
-      {/* Single CSS-animated scan line - respects reduced motion */}
+      {/* Single CSS-animated scan line - respects reduced motion.
+          Moved with transform, not `top` (2026-11-22): animating `top` is a layout
+          change on every frame, which Chrome counted as ~28 layout shifts per load. */}
       <div
-        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent motion-reduce:hidden"
+        className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent motion-reduce:hidden"
         style={{
-          animation: 'scanLine 10s linear infinite',
+          animation: 'oracleScanLine 10s linear infinite',
           boxShadow: '0 0 20px 5px rgba(6,182,212,0.2)'
         }}
       />
@@ -252,9 +254,9 @@ function UltraCockpitBackground() {
 
       {/* CSS keyframes injected via style tag */}
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes scanLine {
-          0% { top: -5%; }
-          100% { top: 105%; }
+        @keyframes oracleScanLine {
+          0% { transform: translateY(-5vh); }
+          100% { transform: translateY(105vh); }
         }
         @keyframes float {
           0%, 100% { opacity: 0.2; transform: translateY(0); }

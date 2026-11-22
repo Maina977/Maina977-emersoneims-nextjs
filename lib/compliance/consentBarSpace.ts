@@ -20,6 +20,23 @@
 export const CONSENT_BAR_VAR = '--consent-bar-h';
 export const CONSENT_BAR_ATTR = 'data-consent-bar';
 
+/**
+ * Inline style for a fixed floating control that must sit `base` above the
+ * bottom edge, and above the cookie banner while it is open.
+ *
+ * The control keeps a constant `bottom` and is lifted with the CSS `translate`
+ * property instead (layout shift fix, 2026-11-22). Changing `bottom` when the
+ * banner opened ~2 s after load moved the accessibility and Service Connect
+ * buttons in layout, which Chrome counts as a layout shift on every page; a
+ * translation is not a layout change, so it is not counted, and the controls
+ * still end up in exactly the same place. `translate` is an independent
+ * property, so it composes with any Tailwind `transform` utility (scale-75)
+ * already on the element.
+ */
+export function floatAboveConsentBar(base: string): { bottom: string; translate: string } {
+  return { bottom: base, translate: `0 calc(-1 * var(${CONSENT_BAR_VAR}, 0px))` };
+}
+
 /** Turn a measured height into a CSS length: whole pixels, never negative or NaN. */
 export function consentBarLength(height: number): string {
   if (!Number.isFinite(height) || height <= 0) return '0px';

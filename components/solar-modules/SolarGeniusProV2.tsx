@@ -39,5 +39,8 @@ const SolarApp = resilient(() => import('./crc/src/App'), {
 export const preloadSolarApp = SolarApp.preload;
 
 export default function SolarGeniusProV2() {
-  return <SolarApp />;
+  // Same reserved height as the loader (ToolLoadingState is min-h-[100dvh]): the
+  // workspace first frame on a phone was ~500 px tall for one commit, which pulled
+  // the bands below into view and out again (CLS 0.085 at 390 px, 2026-11-22).
+  return <div className="min-h-[100dvh]"><SolarApp /></div>;
 }

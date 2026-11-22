@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { releaseConsentBarSpace, reserveConsentBarSpace } from '@/lib/compliance/consentBarSpace';
 
@@ -21,6 +21,11 @@ function safeGet(key: string): string | null {
 function safeSet(key: string, value: string): void {
   try { window.localStorage.setItem(key, value); } catch { /* storage blocked — ignore */ }
 }
+
+// Layout effect in the browser (no server warning): the reservation is written
+// before the banner's first frame is painted, so floating controls and padding
+// are already in place when the banner appears (layout shift fix 2026-11-22).
+const useBeforePaintEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
@@ -96,7 +101,7 @@ export default function CookieConsent() {
    * with a ResizeObserver, so text wrapping, zoom and rotation stay in step.
    * Released on dismiss and on unmount, so the space goes when the bar does.
    */
-  useEffect(() => {
+  useBeforePaintEffect(() => {
     const root = document.documentElement;
     if (!showBanner) {
       releaseConsentBarSpace(root);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SERVICE_ACTIONS, COMPANY_PHONE_DISPLAY } from '@/lib/serviceConnect/actions';
+import { floatAboveConsentBar } from '@/lib/compliance/consentBarSpace';
 
 interface WhatsAppButtonProps {
   phoneNumber?: string;
@@ -52,7 +53,7 @@ function WhatsAppButtonInner({
       {/* Main floating button */}
       <div
         className={`fixed ${positionClasses} z-50`}
-        style={{ bottom: 'calc(1.5rem + var(--consent-bar-h, 0px))' }}
+        style={floatAboveConsentBar('1.5rem')}
       >          {/* Quick action menu */}
           {isOpen && (
             <div
