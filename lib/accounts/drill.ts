@@ -28,7 +28,7 @@ import { accountsDatabaseUrl } from './config';
 import type { AccountsDb } from './db';
 import { mailMode } from './testMail';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const lib = require('../../scripts/db/accounts-lib.cjs') as {
+const lib = require('./backup-core.cjs') as {
   exportOrg: (c: unknown, orgId: string, o?: { fullFidelity?: boolean }) => Promise<Record<string, unknown> & { exportSha256: string; projects: unknown[]; revisions: { id: string; contentSha256: string }[]; attachments: { id: string; sha256: string }[]; audit: unknown[] }>;
   verifyExport: (e: unknown) => string[];
   importOrg: (c: unknown, secret: string, e: unknown, now?: Date) => Promise<{ projects: number; revisions: number; attachments: number }>;
