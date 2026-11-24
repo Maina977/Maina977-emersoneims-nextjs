@@ -87,7 +87,7 @@ describe('the full analysis refuses too few readings and never uses a fixed tran
   it(`fewer than ${MIN_PUMP_READINGS_FOR_PARAMETERS} pumping readings: InsufficientPumpTestData, no numbers`, () => {
     for (const n of [1, 2, 5]) {
       const readings = Array.from({ length: n }, (_, i) => ({ time_min: (i + 1) * 30, drawdown_m: 2 + i }));
-      expect(() => analyzePumpTest({ pumpingRate_m3hr: 5, readings })).toThrow(InsufficientPumpTestData);
+      expect(() => analyzePumpTest({ pumpingRate_m3hr: 5, staticWaterLevel_m: 20, readings })).toThrow(InsufficientPumpTestData);
     }
   });
 
@@ -100,7 +100,7 @@ describe('the full analysis refuses too few readings and never uses a fixed tran
 
   it('a flat drawdown record (no Cooper-Jacob slope) is fitted from the data, not set to a fixed value', () => {
     const readings = [1, 2, 5, 10, 20, 40, 60, 120].map((t) => ({ time_min: t, drawdown_m: 3 }));
-    const r = analyzePumpTest({ pumpingRate_m3hr: 10, readings });
+    const r = analyzePumpTest({ pumpingRate_m3hr: 10, staticWaterLevel_m: 20, readings });
     expect(Number.isFinite(r.transmissivity_m2day)).toBe(true);
     expect(r.transmissivity_m2day).not.toBeCloseTo(250, 0);
     expect(r.transmissivity_m2day).not.toBeCloseTo(500, 0);
