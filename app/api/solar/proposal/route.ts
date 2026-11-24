@@ -3,8 +3,9 @@ import { limiter } from '@/lib/rate-limiter';
 import { buildProposal } from '@/lib/solar/design/proposal';
 import { checkProposalRequest, proposalFileName } from '@/lib/solar/design/proposalRequest';
 import { approvalVerifierFromEnvironment, type AuthorisedReviewer } from '@/lib/solar/design/proposalApproval';
+import { solarApprovalFor } from '@/lib/accounts/solarApproval';
 
-/** PENDING (owner decision on accounts): no authorised-reviewer registry exists, so none is loaded. */
+/** No static registry: verified reviewers live in the accounts database (Report B, lib/accounts/solarApproval.ts). */
 const AUTHORISED_REVIEWER_REGISTRY: readonly AuthorisedReviewer[] | null = null;
 
 /**
@@ -13,8 +14,10 @@ const AUTHORISED_REVIEWER_REGISTRY: readonly AuthorisedReviewer[] | null = null;
  * as JSON, an Excel workbook or a PDF (lib/solar/design/proposalExport.ts).
  * Bad input → 400 with the engine's own message. Never cached.
  * Any `approval` or `verifiedApproval` in the input → 400: approvals are never
- * taken from the client, and every proposal from this route is DRAFT (or
- * REFUSED) until authenticated, authorised reviewers exist.
+ * taken from the client. A proposal is FOR ISSUE only when the SERVER finds an
+ * approval of this exact input by a verified, in-date, in-scope reviewer of an
+ * organisation the signed-in user belongs to (accounts; never in production
+ * while accounts are hard-off). Otherwise DRAFT (or REFUSED).
  */
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -59,12 +62,14 @@ export async function POST(req: NextRequest) {
   const parsed = checkProposalRequest(body);
   if ('error' in parsed) return fail(parsed.error, 400);
 
-  // Approval lock: a client-supplied approval was rejected above (400). There
-  // is no authenticated reviewer session and no reviewer registry yet, so the
-  // verifier is null and the engine fails closed: never FOR ISSUE from here.
-  const verifier = approvalVerifierFromEnvironment(process.env, AUTHORISED_REVIEWER_REGISTRY);
+  // Approval lock: a client-supplied approval was rejected above (400). The only
+  // approval ever used is one the server finds and re-verifies for this exact
+  // input (fails closed to DRAFT on any problem).
+  const found = await solarApprovalFor(req, parsed.input);
+  const verifier = found.verifier ?? approvalVerifierFromEnvironment(process.env, AUTHORISED_REVIEWER_REGISTRY);
+  const input = found.verifiedApproval ? { ...parsed.input, verifiedApproval: found.verifiedApproval } : parsed.input;
   let proposal;
-  try { proposal = buildProposal(parsed.input, verifier); }
+  try { proposal = buildProposal(input, verifier); }
   catch (e) { return fail(e instanceof Error ? e.message : 'Invalid proposal input', 400); }
 
   if (parsed.format === 'json') return NextResponse.json(proposal, { headers: NO_STORE });
