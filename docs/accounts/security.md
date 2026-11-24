@@ -36,6 +36,7 @@
 | `tests/regression/accounts-test-email.test.tsx` | 9: the preview test-email workflow |
 | `tests/regression/accounts-adversarial.test.ts` | 19: impersonation, privilege escalation, cross-organisation access, replay, revoked approvals |
 | `tests/regression/accounts-page-guard.test.ts` | 4: the `/accounts` 404 guard |
+| `tests/regression/accounts-live-readiness.test.ts` | 8: rejection and the review lifecycle; full-fidelity recovery with sign-in on the restored copy; drill refusals; isolation report; one-time bootstrap; schema check |
 
 These tests run on PGlite and never touch a real database. The real-database run on the protected preview is `preview-accounts-e2e.cjs` (see the Report B assessment); it needs the owner's preview setup.
 

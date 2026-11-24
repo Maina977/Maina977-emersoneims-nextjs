@@ -276,7 +276,32 @@ async function connectAccountsDb(opts = {}) {
   return client;
 }
 
+const SCHEMA_TABLES = [
+  'acct_schema_migrations', 'acct_users', 'acct_sessions', 'acct_rate', 'acct_tokens', 'acct_orgs', 'acct_memberships',
+  'acct_projects', 'acct_revisions', 'acct_attachments', 'acct_attachment_chunks', 'acct_reviewers', 'acct_approvals',
+  'acct_approval_chain', 'acct_audit', 'acct_audit_head', 'acct_audit_archive', 'acct_recovery_codes', 'acct_test_outbox',
+  'acct_review_decisions',
+];
+const SCHEMA_TRIGGERS = ['acct_revisions_immutable', 'acct_audit_immutable', 'acct_approval_chain_immutable'];
+
+/** Read-only: every expected migration, table and append-only trigger present? Names and counts only. */
+async function checkSchema(client) {
+  const lines = [];
+  let ok = true;
+  const line = (good, what) => { if (!good) ok = false; lines.push(`${good ? 'OK     ' : 'MISSING'} ${what}`); };
+  const applied = (await client.query('SELECT name FROM acct_schema_migrations ORDER BY name').catch(() => ({ rows: [] }))).rows.map((r) => r.name);
+  for (const m of migrationFiles()) line(applied.includes(m), `migration ${m}`);
+  const tables = (await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")).rows.map((r) => r.table_name);
+  for (const t of SCHEMA_TABLES) line(tables.includes(t), `table ${t}`);
+  const triggers = (await client.query('SELECT tgname FROM pg_trigger WHERE NOT tgisinternal')).rows.map((r) => r.tgname);
+  for (const t of SCHEMA_TRIGGERS) line(triggers.includes(t), `append-only trigger ${t}`);
+  const orgs = Number((await client.query('SELECT count(*)::int AS n FROM acct_orgs').catch(() => ({ rows: [{ n: -1 }] }))).rows[0].n);
+  lines.push(`INFO    organisations in this database: ${orgs} (the disaster-recovery test database must show 0)`);
+  return { ok, organisations: orgs, lines };
+}
+
 module.exports = {
+  checkSchema,
   MIGRATIONS_DIR, canonicalJson, sha256, migrationFiles, applyMigrations, auditHash, appendAudit, purgeDeletedProjects,
   exportOrg, verifyExport, importOrg, args, connectAccountsDb,
 };

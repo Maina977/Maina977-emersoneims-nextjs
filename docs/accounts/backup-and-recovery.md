@@ -38,6 +38,39 @@ Apply the migrations to the target database first. The restore:
 
 The drill found and fixed one defect: restored users could never sign in, because their address stayed unverified.
 
+## Full fidelity: disaster recovery that keeps sign-in and the second factor
+
+The default export is **portable**. It has no credentials, and restored users reset their password.
+
+For disaster recovery into the **same environment**, `--full-fidelity` also exports:
+- each member's scrypt password hash and verification time;
+- the encrypted second-factor seed;
+- the recovery-code HMACs.
+
+A restore then **preserves sign-in, the authenticator and the recovery codes**. These are covered by the file's SHA-256, so an altered credential is refused. Restoring needs the **same `ACCOUNTS_SECRET_KEY`**: the seeds are encrypted under it and the codes keyed by it. Reviewer profiles still come back **suspended** until re-verified. A full-fidelity file holds password hashes, so protect it like the database itself.
+
+```
+ACCOUNTS_DATABASE_URL=postgres://... node scripts/db/export-org.cjs --org=<id> --out=org.json --yes --full-fidelity
+```
+
+## The in-preview drill (credentials never leave the preview)
+
+A registry administrator (second-factor session, fresh code) can run `POST /api/accounts/registry/dr-drill`. It:
+1. exports one organisation in full fidelity from the preview database;
+2. restores it into the **separate, empty** `ACCOUNTS_DR_DATABASE_URL`;
+3. reports only booleans and counts.
+
+The checks:
+- backup verified;
+- projects restored;
+- every revision hash and attachment intact;
+- audit records archived, and the restored audit chain verifies;
+- stored credentials identical, and recovery codes preserved;
+- optionally, a fictitious test user's real password and authenticator code accepted against the restored copy;
+- reviewers suspended.
+
+The automated test (`accounts-live-readiness`) also **signs in on the restored copy** with the original password, the authenticator, and a recovery code.
+
 ## Not yet done (owner decisions)
 
 - Choose a backup schedule (for example weekly per organisation), a storage location (encrypted) and a retention period.

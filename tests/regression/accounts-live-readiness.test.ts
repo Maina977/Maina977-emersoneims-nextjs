@@ -206,3 +206,21 @@ describe('one-time registry-administrator bootstrap (preview)', () => {
     expect((await env2.pg.query<{ is_registry_admin: boolean }>("SELECT is_registry_admin FROM acct_users WHERE email = 'boot@test.example'")).rows[0].is_registry_admin).toBe(false);
   });
 });
+
+describe('read-only schema check (owner runs it before switching accounts on)', () => {
+  it('OK on a fully migrated database; reports a missing migration and a missing append-only trigger', async () => {
+    const pg = new PGlite();
+    expect((await lib.checkSchema(pg)).ok).toBe(false); // empty database
+    await lib.applyMigrations(pg);
+    const good = await lib.checkSchema(pg);
+    expect(good.ok).toBe(true);
+    expect(good.organisations).toBe(0);
+    expect(good.lines.filter((l: string) => l.startsWith('OK')).length).toBe(4 + 20 + 3);
+    await pg.query("DELETE FROM acct_schema_migrations WHERE name = 'accounts-004-review-decisions.sql'");
+    await pg.query('DROP TRIGGER acct_audit_immutable ON acct_audit');
+    const bad = await lib.checkSchema(pg);
+    expect(bad.ok).toBe(false);
+    expect(bad.lines).toEqual(expect.arrayContaining(['MISSING migration accounts-004-review-decisions.sql', 'MISSING append-only trigger acct_audit_immutable']));
+    expect(JSON.stringify(bad)).not.toMatch(/postgres:|password|secret/i);
+  });
+});

@@ -57,6 +57,16 @@ In `outbox` and `smtp` modes, sign-up and invitations to any other address are r
 DELETE FROM acct_test_outbox WHERE created_at < now() - interval '7 days';
 ```
 
+## Review decisions
+
+A verified reviewer can **approve** or **reject** the exact current revision; rejection needs a reason. Both need a second-factor session and a fresh code. A rejection keeps the document DRAFT and shows who, when and why. A reviewer revokes their own approval before rejecting. A revoked approval is never revived on the same revision: the corrected revision is approved again instead.
+
+## Preview verification tools (registry administrators; booleans and counts only)
+
+- `POST /api/accounts/registry/isolation-report`: is this the preview? Is the accounts database separate from production? Are production database, mail or payment settings present here? Is paid mode on?
+- `POST /api/accounts/registry/dr-drill`: see [backup-and-recovery.md](backup-and-recovery.md).
+- `ACCOUNTS_BOOTSTRAP_REGISTRY_ADMIN` (preview validation only): a one-time grant to a named **test** address when it verifies its email, only while no registry administrator exists. Audited as `registry_admin.bootstrapped`. Remove the setting after use.
+
 ## A lost authenticator
 
 1. **The person still has a recovery code:** they sign in with it ("Lost your authenticator?"), then use "Replace my authenticator" and set up the new phone. Afterwards they make new recovery codes.
