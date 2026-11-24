@@ -16,6 +16,7 @@ import {
 } from './crypto';
 import { randomUUID } from 'node:crypto';
 import { issueRecoveryCodes, useRecoveryCode } from './recovery';
+import { assertTestRecipient } from './testMail';
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,63}$/;
 export function normaliseEmail(e: unknown): string {
@@ -69,6 +70,7 @@ export const SIGNUP_DONE = 'If this address can be registered, a verification em
 
 export async function signup(ctx: Ctx, body: { email?: unknown; password?: unknown; displayName?: unknown }, ip: string): Promise<{ message: string }> {
   const email = normaliseEmail(body.email);
+  assertTestRecipient(ctx, email); // preview test-email mode: fictitious test addresses only
   const password = checkPassword(body.password);
   const displayName = typeof body.displayName === 'string' ? body.displayName.trim().slice(0, 120) : '';
   if (!(await rateHit(ctx.db, `signup-ip:${ip}`, 3600e3, 10, ctx.now()))) throw new AcctError(429, 'Too many requests; try again later.');

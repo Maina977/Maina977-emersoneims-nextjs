@@ -13,6 +13,7 @@ import { atLeast, MFA_ROLES, ROLES, type Role } from './config';
 import { AcctError, assertUuid, badRequest, forbidden, notFound, type Actor, type Ctx, type Queryable } from './context';
 import { consumeToken, issueToken, normaliseEmail } from './auth';
 import { sha256HexNode } from './crypto';
+import { assertTestRecipient } from './testMail';
 
 export async function requireMember(q: Queryable, actor: Actor, orgIdIn: unknown, min: Role = 'viewer'): Promise<{ orgId: string; role: Role }> {
   const orgId = assertUuid(orgIdIn);
@@ -66,6 +67,7 @@ const asRole = (r: unknown): Role => {
 
 export async function invite(ctx: Ctx, actor: Actor, orgIdIn: unknown, body: { email?: unknown; role?: unknown }) {
   const email = normaliseEmail(body.email);
+  assertTestRecipient(ctx, email); // preview test-email mode: fictitious test addresses only
   const role = asRole(body.role);
   const token = await ctx.db.tx(async (q) => {
     const { orgId, role: mine } = await requireMember(q, actor, orgIdIn, 'admin');

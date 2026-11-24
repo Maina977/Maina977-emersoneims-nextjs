@@ -155,6 +155,30 @@ function TokenView({ view, token, me, onDone }: { view: string; token: string; m
 }
 
 // ------------------------------------------------------------------ second factor
+// ------------------------------------------------------------------ preview test email
+/** Outbox mode only: the real messages sent to a TEST address, with their real links. Nothing leaves the system. */
+function TestOutbox() {
+  const [info, setInfo] = useState<{ mode: string; testDomains: string[] } | null>(null);
+  const [email, setEmail] = useState('');
+  const [msgs, setMsgs] = useState<{ kind: string; subject: string; text: string; createdAt: string }[] | null>(null);
+  const a = useAction();
+  useEffect(() => { void api('GET', 'mail-mode').then((r) => { if (r.ok) setInfo({ mode: String(r.mode), testDomains: r.testDomains as string[] }); }); }, []);
+  if (!info || info.mode !== 'outbox') return null;
+  const linkOf = (text: string) => (text.match(/https?:\/\/\S+?\/accounts\?view=\w+&token=[A-Za-z0-9_-]+/) ?? [])[0];
+  return <Card title="Test email outbox (preview)">
+    <p className="mb-3 text-sm text-slate-400">This preview does not send email. Messages to test addresses (@{info.testDomains.join(', @')}) appear here; open the link exactly as you would from your inbox.</p>
+    <form className="flex flex-wrap items-end gap-2" onSubmit={async (e) => { e.preventDefault(); const r = await a.run(() => api('GET', `test-outbox?email=${encodeURIComponent(email)}`)); if (r.ok) setMsgs(r.messages as never); }}>
+      <div className="min-w-[14rem] flex-1"><Field label="Test address"><input className={input} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></Field></div>
+      <button className={btn2} disabled={a.busy}>Show messages</button>
+    </form>
+    {msgs && (msgs.length === 0 ? <p className="mt-3 text-sm text-slate-400">No messages for this address.</p> : <ul className="mt-3 space-y-2">{msgs.map((m, i) => { const link = linkOf(m.text); return <li key={i} className="rounded bg-slate-950/60 px-3 py-2 text-sm">
+      <p className="text-slate-100">{m.subject} <span className="text-xs text-slate-400">· {m.createdAt.slice(0, 16).replace('T', ' ')}</span></p>
+      {link ? <a className="text-amber-300 underline" href={link}>Open the link in this message</a> : <p className="text-slate-300">{m.text}</p>}
+    </li>; })}</ul>)}
+    <Notice msg={a.msg} />
+  </Card>;
+}
+
 function RecoveryCodes({ codes }: { codes: string[] }) {
   return <div role="region" aria-label="Recovery codes" className="mt-3 rounded-lg border border-amber-500 bg-slate-950 p-4">
     <p className="mb-2 text-sm font-semibold text-amber-300">Save these recovery codes now. They are shown only once.</p>
@@ -466,6 +490,7 @@ export default function AccountsApp() {
           {me.isRegistryAdmin && (me.mfa ? <><Registry /><RegistryReset /></> : <p className="text-amber-300">Registry administration needs the second factor in this session.</p>)}
         </div>
       )}
+      <div className="mt-6"><TestOutbox /></div>
     </main>
   );
 }

@@ -12,6 +12,7 @@ import * as orgs from './orgs';
 import * as projects from './projects';
 import * as reviewers from './reviewers';
 import * as recovery from './recovery';
+import * as testMail from './testMail';
 import { AcctError, type Actor } from './context';
 import { clearSessionCookies, clientIp, json, setSessionCookies, type Call, type RouteSpec } from './http';
 
@@ -37,6 +38,10 @@ export const ROUTES: Entry[] = [
   })],
   ['POST', 'password/reset-request', pub((c) => auth.requestPasswordReset(c.ctx, c.body.email, clientIp(c.request)))],
   ['POST', 'password/reset', pub(async (c) => { await auth.resetPassword(c.ctx, c.body.token, c.body.password); return { reset: true }; })],
+
+  // ---- preview test email (no message leaves the system in outbox mode) -------
+  ['GET', 'mail-mode', pub(async (c) => testMail.mailInfo(c.ctx.env))],
+  ['GET', 'test-outbox', pub((c) => testMail.readTestOutbox(c.ctx, c.query.get('email')))],
 
   // ---- session ---------------------------------------------------------------
   ['GET', 'me', ses(async (c) => { const a = me(c); return { user: { id: a.userId, email: a.email, mfa: a.mfa, totpEnabled: a.totpEnabled, isRegistryAdmin: a.isRegistryAdmin } }; })],

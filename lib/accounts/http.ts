@@ -27,7 +27,7 @@ import {
 } from './config';
 import { AcctError, type Actor, type Ctx } from './context';
 import { getAccountsDb } from './db';
-import { getMailer } from './mailer';
+import { resolveMailer } from './testMail';
 import { sessionActor } from './auth';
 import { safeEqualStr, sha256HexNode } from './crypto';
 
@@ -105,7 +105,7 @@ export async function handle(request: NextRequest, spec: RouteSpec | null, param
   if (!secret) return fail(503, 'Accounts are not available: ACCOUNTS_SECRET_KEY is not configured.');
   // 3. Cross-site.
   if (crossSiteRefused(request, env)) return fail(403, 'Request refused: it did not come from this site.');
-  const ctx: Ctx = { db, secret, mailer: getMailer(), now: () => new Date(), env, origin: siteOrigin(request, env) };
+  const ctx: Ctx = { db, secret, mailer: resolveMailer(env, db), now: () => new Date(), env, origin: siteOrigin(request, env) };
   try {
     // 4. Session.
     let actor: Actor | null = null;

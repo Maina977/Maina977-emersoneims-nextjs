@@ -27,5 +27,7 @@ export class MemoryMailer implements AccountMailer {
 
 let current: AccountMailer = nullMailer;
 export const getMailer = () => current;
+/** True while a test has installed its own mailer (lib/accounts/testMail.ts resolveMailer). */
+export const mailerOverriddenForTests = () => current !== nullMailer;
 /** Tests only. */
 export function setMailerForTests(m: AccountMailer | null) { current = m ?? nullMailer; }

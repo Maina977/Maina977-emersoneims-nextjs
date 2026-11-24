@@ -18,7 +18,7 @@ import type { NextRequest } from 'next/server';
 import { proposalRevisionHash, type ApprovalVerifier, type VerifiedApproval } from '@/lib/solar/design/proposalApproval';
 import { accountsEnabled, accountsSecret, SESSION_COOKIE } from './config';
 import { getAccountsDb } from './db';
-import { getMailer } from './mailer';
+import { resolveMailer } from './testMail';
 import { sessionActor } from './auth';
 import { solarProposalApproval } from './reviewers';
 import type { Ctx } from './context';
@@ -32,7 +32,7 @@ export async function solarApprovalFor(request: NextRequest, input: object, env:
     const db = await getAccountsDb(env);
     const secret = accountsSecret(env);
     if (!db || !secret) return NONE;
-    const ctx: Ctx = { db, secret, mailer: getMailer(), now: () => new Date(), env, origin: new URL(request.url).origin };
+    const ctx: Ctx = { db, secret, mailer: resolveMailer(env, db), now: () => new Date(), env, origin: new URL(request.url).origin };
     const actor = await sessionActor(ctx, request.cookies.get(SESSION_COOKIE)?.value);
     const found = await solarProposalApproval(ctx, actor, proposalRevisionHash(input));
     return found ?? NONE;
