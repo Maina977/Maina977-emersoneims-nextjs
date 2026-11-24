@@ -27,6 +27,7 @@ import { decryptSecret, matchTotp, verifyPassword } from './crypto';
 import { accountsDatabaseUrl } from './config';
 import type { AccountsDb } from './db';
 import { mailMode } from './testMail';
+import { databaseRole } from './identity';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const lib = require('./backup-core.cjs') as {
   exportOrg: (c: unknown, orgId: string, o?: { fullFidelity?: boolean }) => Promise<Record<string, unknown> & { exportSha256: string; projects: unknown[]; revisions: { id: string; contentSha256: string }[]; attachments: { id: string; sha256: string }[]; audit: unknown[] }>;
@@ -76,7 +77,22 @@ export async function isolationReport(ctx: Ctx, actor: Actor, body: Record<strin
     productionMailSettingsPresentHere: has('SMTP_HOST', 'SMTP_USER', 'SMTP_PASS', 'RESEND_API_KEY', 'FORMSUBMIT_EMAIL'),
     paymentSettingsPresentHere: has('MPESA_CONSUMER_KEY', 'MPESA_CONSUMER_SECRET', 'MPESA_PASSKEY', 'PAYSTACK_SECRET_KEY', 'FLUTTERWAVE_SECRET_KEY'),
     paidModeOn: e.NEXT_PUBLIC_AI_TOOLS_PAID === 'true',
+    accountsDatabaseRole: (await databaseRole(ctx.db)) ?? 'unmarked',
   };
+}
+
+/**
+ * A registry administrator gives up the role (second-factor session, fresh code;
+ * audited). The live-validation run calls it at the end, so the one-time
+ * bootstrapped TEST administrator holds no rights after testing.
+ */
+export async function relinquishRegistryAdmin(ctx: Ctx, actor: Actor, body: Record<string, unknown>) {
+  await requireRegistryAdminWithCode(ctx, actor, body.totp);
+  await ctx.db.tx(async (q) => {
+    await q.query('UPDATE acct_users SET is_registry_admin = FALSE, updated_at = $2 WHERE id = $1', [actor.userId, ctx.now().toISOString()]);
+    await appendAudit(q, ctx.secret, { actorUserId: actor.userId, orgId: null, action: 'registry_admin.relinquished', objectType: 'user', objectId: actor.userId }, ctx.now());
+  });
+  return { registryAdmin: false };
 }
 
 export async function disasterRecoveryDrill(ctx: Ctx, actor: Actor, body: Record<string, unknown>) {
@@ -93,6 +109,11 @@ export async function disasterRecoveryDrill(ctx: Ctx, actor: Actor, body: Record
   const src = await open('primary');
   const dst = await open('dr');
   try {
+    // Identity BEFORE anything is restored: the source must be the owner-marked preview database and the
+    // target the owner-marked disaster-recovery test database. Production has no marker, so it never qualifies.
+    const srcRole = await databaseRole(src as unknown as AccountsDb);
+    const dstRole = await databaseRole(dst as unknown as AccountsDb);
+    if (srcRole !== 'preview' || dstRole !== 'dr-test') throw badRequest(`Refused: database identity check failed (source ${srcRole ?? 'unmarked'}, target ${dstRole ?? 'unmarked'}; expected preview and dr-test).`);
     // The test database must be empty (no organisations) and migrated.
     const orgsInDr = Number((await dst.query('SELECT count(*)::int AS n FROM acct_orgs')).rows[0]?.n ?? -1);
     if (orgsInDr !== 0) throw badRequest('Refused: the disaster-recovery database is not empty (use a fresh, migrated test database).');

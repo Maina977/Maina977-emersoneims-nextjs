@@ -56,9 +56,10 @@ ACCOUNTS_DATABASE_URL=postgres://... node scripts/db/export-org.cjs --org=<id> -
 ## The in-preview drill (credentials never leave the preview)
 
 A registry administrator (second-factor session, fresh code) can run `POST /api/accounts/registry/dr-drill`. It:
-1. exports one organisation in full fidelity from the preview database;
-2. restores it into the **separate, empty** `ACCOUNTS_DR_DATABASE_URL`;
-3. reports only booleans and counts.
+1. checks both database identities first (migration 005): the source must be marked `preview` and the target `dr-test`, or nothing is read or restored (400);
+2. exports one organisation in full fidelity from the preview database;
+3. restores it into the **separate, empty** `ACCOUNTS_DR_DATABASE_URL`;
+4. reports only booleans and counts.
 
 The checks:
 - backup verified;

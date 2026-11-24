@@ -331,3 +331,23 @@ CREATE TABLE IF NOT EXISTS acct_review_decisions (
 CREATE INDEX IF NOT EXISTS acct_review_decisions_rev ON acct_review_decisions (revision_id, document_type, created_at DESC);
 
 INSERT INTO acct_schema_migrations (name, sha256) VALUES ('accounts-004-review-decisions.sql', '515e136c5fe666304a01322e5d0e794750ced78484ab44bb4036628cec94433c') ON CONFLICT (name) DO NOTHING;
+
+-- ===== accounts-005-database-identity.sql =====
+-- Database identity marker (Report B database setup approval, safeguards 2, 4 and 8).
+--
+-- ADDITIVE ONLY (CREATE ... IF NOT EXISTS). Applied by scripts/db/migrate.cjs or
+-- lib/db/migrations/preview-setup.sql.
+--
+-- One row, set BY THE OWNER, separately in each database:
+--   preview database:            INSERT INTO acct_database_identity (role) VALUES ('preview');
+--   disaster-recovery test DB:   INSERT INTO acct_database_identity (role) VALUES ('dr-test');
+-- The accounts feature refuses to run unless its database says 'preview'; the
+-- recovery drill refuses unless the source says 'preview' and the target says
+-- 'dr-test'. A production database has no such table, so it can never qualify.
+CREATE TABLE IF NOT EXISTS acct_database_identity (
+  singleton  BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK (singleton),
+  role       TEXT NOT NULL CHECK (role IN ('preview', 'dr-test')),
+  set_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO acct_schema_migrations (name, sha256) VALUES ('accounts-005-database-identity.sql', 'e3ecbf19fb5c8e35b525c22103ff2b7d23b04e0e6d9955ed78852d769a5a7fd8') ON CONFLICT (name) DO NOTHING;

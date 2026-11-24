@@ -39,18 +39,26 @@ node -e "console.log(require('crypto').randomBytes(36).toString('base64url'))"
 2. Copy the whole of `lib/db/migrations/preview-setup.sql` (on GitHub, branch `dev/phase2-report-b`) into the editor and run it once. It creates every table and records the same fingerprints as the scripts. Running it again is harmless.
 3. Clear the editor, copy the whole of `lib/db/migrations/check-schema.sql`, and run it. It is read-only.
 4. Every row must say **OK**, and the last row must say **SCHEMA OK**. On the disaster-recovery test database, the `organisations` row must say **0**.
+5. **Mark the database** (one line, once per database), then run `check-schema.sql` again. The `identity` row must show the role:
+
+   | Database | Run this line | `identity` row shows |
+   |---|---|---|
+   | Preview database | `INSERT INTO acct_database_identity (role) VALUES ('preview');` | `preview` |
+   | Disaster-recovery test database | `INSERT INTO acct_database_identity (role) VALUES ('dr-test');` | `dr-test` |
+
+   Each database accepts one mark only. Accounts refuse to run ("not marked as the preview database") unless their database says `preview`. The recovery drill refuses to restore anything unless the source says `preview` **and** the target says `dr-test`. The production database has no such mark, so it can never be used, even if a connection string were mixed up.
 
 **Option B: from a computer with this repository.**
 ```
 ACCOUNTS_DATABASE_URL="<connection string>" node scripts/db/migrate.cjs --yes
 ACCOUNTS_DATABASE_URL="<connection string>" node scripts/db/check-schema.cjs --yes
 ```
-`migrate.cjs` refuses to run without `--yes`, and refuses if the URL equals the production `DATABASE_URL`. `check-schema.cjs` must end with **`SCHEMA OK`**.
+`migrate.cjs` refuses to run without `--yes`, and refuses if the URL equals the production `DATABASE_URL`. `check-schema.cjs` must end with **`SCHEMA OK`**. Then mark each database as in Option A, step 5.
 
-**Do not continue until both databases show `SCHEMA OK`.**
+**Do not continue until both databases show `SCHEMA OK` and the right `identity` (preview / dr-test).**
 
 ### 4. Add the settings in Vercel
-Go to Project → Settings → Environment Variables. Tick **Preview only**, never Production.
+Go to Project → Settings → Environment Variables. For every setting below, tick **Preview only**: untick Production and Development. Vercel gives a Preview-only setting to preview deployments only; production deployments never receive it. Independently of that, the code keeps accounts off in production (`VERCEL_ENV=production`) whatever is set.
 
 **The four required settings.** Values are never written here.
 
@@ -80,14 +88,27 @@ Messages are marked `[TEST]`, and any other recipient is refused.
 | Name | Value | What it does |
 |---|---|---|
 | `ACCOUNTS_DR_DATABASE_URL` | the **disaster-recovery test** connection string | The empty database that the recovery drill restores into. It must not be the preview or the production database. |
-| `ACCOUNTS_BOOTSTRAP_REGISTRY_ADMIN` | `registry-admin@emersoneims-preview.test` | One time only: this **fictitious** test address becomes the registry administrator when it verifies its email, so the developer can verify one clearly labelled fictitious test reviewer. It works only for a test address, only in test-email mode, and only while no registry administrator exists. **Remove it after the validation run.** |
+| `ACCOUNTS_BOOTSTRAP_REGISTRY_ADMIN` | `registry-admin@emersoneims-preview.test` | One time only: this **fictitious** test address becomes the registry administrator when it verifies its email, so the developer can verify one clearly labelled fictitious test reviewer. It works only for a test address, only in test-email mode, and only while no registry administrator exists. Every registry action also needs an authenticator-verified session and a fresh code. At the end of the run, the test gives the role up itself (audited). **Remove the setting after the validation run.** |
 
 ### 5. No real administrator or reviewer
 Real registry administrators and real reviewers are granted only later, by the SQL in [operations.md](operations.md), and only for people management names. The validation uses a fictitious reviewer, **"TEST REVIEWER (PREVIEW ONLY)"**, which the test suspends again at the end, so approvals stay inactive.
 
-### 6. Turn it on, then tell the developer
+### 6. Owner checks before switching on (answer yes or no, never a value)
+
+| # | Check | Where |
+|---|---|---|
+| 1 | Both databases are on the provider's **free** plan, and the account has no payment card, or a spending limit of 0 so it pauses rather than bills | Provider dashboard → Billing |
+| 2 | Vercel's plan and usage are unchanged: these settings add no paid feature | Vercel → Settings → Billing |
+| 3 | Both databases show `SCHEMA OK`; the preview shows identity `preview`, the recovery test database `dr-test` and organisations `0` | `check-schema.sql` |
+| 4 | Every setting in step 4 is ticked **Preview** only | Vercel → Environment Variables |
+| 5 | Preview deployments are protected (Vercel Authentication on for previews) | Vercel → Settings → Deployment Protection |
+| 6 | The two connection strings are kept only in Vercel and nowhere else | |
+
+The developer cannot see your billing pages, so items 1 and 2 rely on your confirmation.
+
+### 7. Turn it on, then tell the developer
 1. Add `ACCOUNTS_ENABLED` = `true` (Preview only) last.
-2. Tell the developer **only** that the preview database is ready. Do not send any value.
+2. Tell the developer **only** that the preview database is ready and the six checks in step 6 are yes. Do not send any value.
 
 They will redeploy the preview and run the live-database validation. It has five phases:
 1. the core checks;
@@ -96,7 +117,7 @@ They will redeploy the preview and run the live-database validation. It has five
 4. the isolation report;
 5. the recovery drill.
 
-Every test account uses `@emersoneims-preview.test` addresses, and every email is read from the test outbox, so the real verification links are used. Afterwards, remove `ACCOUNTS_BOOTSTRAP_REGISTRY_ADMIN`. To finish with the preview, delete both databases.
+Every test account uses `@emersoneims-preview.test` addresses, and every email is read from the test outbox, so the real verification links are used. Afterwards, remove `ACCOUNTS_BOOTSTRAP_REGISTRY_ADMIN` (the test administrator will already have given up the role). To finish with the preview, delete both databases.
 
 ## Why the developer cannot do this
 

@@ -29,6 +29,7 @@ let session = '';
 beforeAll(async () => {
   pg = new PGlite();
   await lib.applyMigrations(pg);
+  await pg.query("INSERT INTO acct_database_identity (role) VALUES ('preview')");
   db = fromPglite(pg);
   setAccountsDbForTests(db);
   setMailerForTests(null); // the real resolver decides

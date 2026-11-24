@@ -29,6 +29,7 @@ const requests: string[] = [];
 beforeAll(async () => {
   const pg = new PGlite();
   await lib.applyMigrations(pg);
+  await pg.query("INSERT INTO acct_database_identity (role) VALUES ('preview')");
   setAccountsDbForTests(fromPglite(pg));
   mailer = new MemoryMailer();
   setMailerForTests(mailer);

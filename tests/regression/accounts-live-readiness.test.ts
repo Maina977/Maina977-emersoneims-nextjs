@@ -111,7 +111,7 @@ describe('full-fidelity disaster recovery into a separate, empty database', () =
     await completeAttachment(w.env.ctx, w.owner.actor, w.org, p.id, att.id);
     const codes = (await regenerateRecoveryCodes(w.env.ctx, w.owner.actor, { totp: freshCode(w.env, w.owner) })).recoveryCodes;
 
-    const dr = await newTestEnv(); // a separate, empty, migrated database (same environment secret)
+    const dr = await newTestEnv('dr-test'); // a separate, empty, migrated database (same environment secret)
     dr.clock.t = w.env.clock.t;
     setDrillClientsForTests(async (which) => asClient(which === 'primary' ? w.env.pg : dr.pg));
     try {
@@ -137,7 +137,7 @@ describe('full-fidelity disaster recovery into a separate, empty database', () =
 
   it('only a registry administrator with a fresh code; never into a database that is not empty', async () => {
     const w = await world();
-    const dr = await newTestEnv();
+    const dr = await newTestEnv('dr-test');
     setDrillClientsForTests(async (which) => asClient(which === 'primary' ? w.env.pg : dr.pg));
     try {
       await rejects(disasterRecoveryDrill(w.env.ctx, w.owner.actor, { orgId: w.org, totp: freshCode(w.env, w.owner) }), 404);
@@ -170,6 +170,7 @@ describe('isolation report (booleans only)', () => {
       vercelEnv: 'preview', accountsDatabaseConfigured: true, productionDatabaseUrlPresentHere: false, accountsDatabaseIsNotProduction: true,
       drDatabaseConfigured: true, drDatabaseIsSeparate: true, accountsMailMode: 'outbox',
       productionMailSettingsPresentHere: false, paymentSettingsPresentHere: false, paidModeOn: false,
+      accountsDatabaseRole: 'preview',
     });
     expect(JSON.stringify(r)).not.toMatch(/postgres:/);
   });
@@ -215,7 +216,10 @@ describe('read-only schema check (owner runs it before switching accounts on)', 
     const good = await lib.checkSchema(pg);
     expect(good.ok).toBe(true);
     expect(good.organisations).toBe(0);
-    expect(good.lines.filter((l: string) => l.startsWith('OK')).length).toBe(4 + 20 + 3);
+    expect(good.lines.filter((l: string) => l.startsWith('OK')).length).toBe(5 + 21 + 3);
+    expect(good.lines).toContain('INFO    database identity: NOT SET (owner marks it: preview or dr-test)');
+    await pg.query("INSERT INTO acct_database_identity (role) VALUES ('dr-test')");
+    expect((await lib.checkSchema(pg)).lines).toContain('INFO    database identity: dr-test');
     await pg.query("DELETE FROM acct_schema_migrations WHERE name = 'accounts-004-review-decisions.sql'");
     await pg.query('DROP TRIGGER acct_audit_immutable ON acct_audit');
     const bad = await lib.checkSchema(pg);

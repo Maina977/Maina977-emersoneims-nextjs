@@ -58,6 +58,7 @@ export const ROUTES: Entry[] = [
   // Preview verification tools (registry administrators, fresh code; booleans and counts only).
   ['POST', 'registry/isolation-report', ses((c) => drill.isolationReport(c.ctx, me(c), c.body))],
   ['POST', 'registry/dr-drill', ses((c) => drill.disasterRecoveryDrill(c.ctx, me(c), c.body))],
+  ['POST', 'registry/self/relinquish', ses((c) => drill.relinquishRegistryAdmin(c.ctx, me(c), c.body))],
   ['POST', 'registry/users/reset-second-factor', ses((c) => recovery.adminResetSecondFactor(c.ctx, me(c), c.body))],
 
   // ---- organisations ---------------------------------------------------------

@@ -63,9 +63,11 @@ A verified reviewer can **approve** or **reject** the exact current revision; re
 
 ## Preview verification tools (registry administrators; booleans and counts only)
 
-- `POST /api/accounts/registry/isolation-report`: is this the preview? Is the accounts database separate from production? Are production database, mail or payment settings present here? Is paid mode on?
+- `POST /api/accounts/registry/isolation-report`: is this the preview? Is the accounts database separate from production? Are production database, mail or payment settings present here? Is paid mode on? Which identity (`preview` / `dr-test` / `unmarked`) does the accounts database carry?
 - `POST /api/accounts/registry/dr-drill`: see [backup-and-recovery.md](backup-and-recovery.md).
 - `ACCOUNTS_BOOTSTRAP_REGISTRY_ADMIN` (preview validation only): a one-time grant to a named **test** address when it verifies its email, only while no registry administrator exists. Audited as `registry_admin.bootstrapped`. Remove the setting after use.
+- `POST /api/accounts/registry/self/relinquish` (second-factor session, fresh code): a registry administrator gives up the role; audited as `registry_admin.relinquished`. The live-validation run calls it at the end for the test administrator.
+- Database identity (migration 005): accounts answer 503 unless their database is marked `preview`, or if `ACCOUNTS_DATABASE_URL` equals `DATABASE_URL` / `POSTGRES_URL`. See [preview-setup.md](preview-setup.md), step 3.
 
 ## A lost authenticator
 

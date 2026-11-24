@@ -68,7 +68,7 @@ const SCHEMA_TABLES = [
   'acct_schema_migrations', 'acct_users', 'acct_sessions', 'acct_rate', 'acct_tokens', 'acct_orgs', 'acct_memberships',
   'acct_projects', 'acct_revisions', 'acct_attachments', 'acct_attachment_chunks', 'acct_reviewers', 'acct_approvals',
   'acct_approval_chain', 'acct_audit', 'acct_audit_head', 'acct_audit_archive', 'acct_recovery_codes', 'acct_test_outbox',
-  'acct_review_decisions',
+  'acct_review_decisions', 'acct_database_identity',
 ];
 const SCHEMA_TRIGGERS = ['acct_revisions_immutable', 'acct_audit_immutable', 'acct_approval_chain_immutable'];
 
@@ -85,6 +85,8 @@ async function checkSchema(client) {
   for (const t of SCHEMA_TRIGGERS) line(triggers.includes(t), `append-only trigger ${t}`);
   const orgs = Number((await client.query('SELECT count(*)::int AS n FROM acct_orgs').catch(() => ({ rows: [{ n: -1 }] }))).rows[0].n);
   lines.push(`INFO    organisations in this database: ${orgs} (the disaster-recovery test database must show 0)`);
+  const role = (await client.query('SELECT role FROM acct_database_identity').catch(() => ({ rows: [] }))).rows[0]?.role;
+  lines.push(`INFO    database identity: ${role ?? 'NOT SET (owner marks it: preview or dr-test)'}`);
   return { ok, organisations: orgs, lines };
 }
 

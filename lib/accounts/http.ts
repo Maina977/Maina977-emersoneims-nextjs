@@ -28,6 +28,7 @@ import {
 import { AcctError, type Actor, type Ctx } from './context';
 import { getAccountsDb } from './db';
 import { resolveMailer } from './testMail';
+import { previewDatabaseConfirmed } from './identity';
 import { sessionActor } from './auth';
 import { safeEqualStr, sha256HexNode } from './crypto';
 
@@ -103,6 +104,9 @@ export async function handle(request: NextRequest, spec: RouteSpec | null, param
   if (!db) return fail(503, NO_ACCOUNTS_DATABASE);
   const secret = accountsSecret(env);
   if (!secret) return fail(503, 'Accounts are not available: ACCOUNTS_SECRET_KEY is not configured.');
+  // 2b. Identity: only the owner-marked preview database, never the production URL.
+  const identity = await previewDatabaseConfirmed(db, env);
+  if (!identity.ok) return fail(503, identity.reason);
   // 3. Cross-site.
   if (crossSiteRefused(request, env)) return fail(403, 'Request refused: it did not come from this site.');
   const ctx: Ctx = { db, secret, mailer: resolveMailer(env, db), now: () => new Date(), env, origin: siteOrigin(request, env) };

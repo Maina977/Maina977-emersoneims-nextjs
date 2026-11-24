@@ -17,9 +17,11 @@ export const TEST_PASSWORD = 'correct horse battery staple';
 
 export interface TestEnv { pg: PGlite; db: AccountsDb; ctx: Ctx; mailer: MemoryMailer; clock: { t: number } }
 
-export async function newTestEnv(): Promise<TestEnv> {
+/** role: the owner-set database identity marker (migration 005); null = unmarked. */
+export async function newTestEnv(role: 'preview' | 'dr-test' | null = 'preview'): Promise<TestEnv> {
   const pg = new PGlite();
   await lib.applyMigrations(pg);
+  if (role) await pg.query('INSERT INTO acct_database_identity (role) VALUES ($1)', [role]);
   const db = fromPglite(pg);
   const mailer = new MemoryMailer();
   const clock = { t: Date.parse('2026-11-22T08:00:00Z') };
