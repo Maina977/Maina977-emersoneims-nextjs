@@ -27,6 +27,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { accountsEnabled } from '@/lib/accounts/config';
 
 // Supported locales
 const locales = ['en', 'sw', 'fr', 'de', 'es', 'pt', 'zh', 'nl', 'am', 'so', 'ar'];
@@ -524,6 +525,17 @@ export function middleware(request: NextRequest) {
     return new NextResponse('Not Found', {
       status: 404,
       headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Content-Type': 'text/plain', 'X-Pilot-Guard': '404-production' },
+    });
+  }
+
+  // 0-ACCOUNTS. /accounts (Report B) exists only where accounts are enabled
+  //     (never production: lib/accounts/config.ts). The page calls notFound(),
+  //     but under app/loading.tsx that streams a 200 (preview check 2026-11-24:
+  //     HTTP 200 with the not-found body), so answer a hard 404 here.
+  if (/^\/accounts(\/|$)/.test(pathname) && !accountsEnabled()) {
+    return new NextResponse('Not Found', {
+      status: 404,
+      headers: { 'X-Robots-Tag': 'noindex, nofollow', 'Content-Type': 'text/plain', 'X-Accounts-Guard': '404-disabled' },
     });
   }
 
