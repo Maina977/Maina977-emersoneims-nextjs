@@ -2,7 +2,7 @@
  * Accounts Phase 2: authentication, organisations and project storage, on
  * PGlite only (no real database). TEST data only.
  */
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { createHash, randomBytes } from 'node:crypto';
 import { newTestEnv, makeUser, TEST_PASSWORD, lib, type TestEnv, type TestUser } from '../helpers/accountsTestDb';
 import { hashPassword, verifyPassword, hotp, totpCode, matchTotp, base32Encode, base32Decode, encryptSecret, decryptSecret, SCRYPT_N } from '@/lib/accounts/crypto';
@@ -16,6 +16,10 @@ import { verifyAuditLog } from '@/lib/accounts/audit';
 import { canonicalJson, proposalRevisionHash } from '@/lib/solar/design/proposalApproval';
 import { contentSha256 } from '@/lib/accounts/context';
 import { GENERIC_LOGIN_ERROR, accountsEnabled, accountsDatabaseUrl } from '@/lib/accounts/config';
+
+// Real scrypt (N = 2^15) for every test user: slow by design. A longer per-test timeout keeps
+// these reliable on a busy machine; it changes no assertion.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const sha = (b: Uint8Array | string) => createHash('sha256').update(b).digest('hex');
 async function rejects(p: Promise<unknown>, status: number, msg?: string | RegExp) {

@@ -2,7 +2,7 @@
  * Report B: verified-professional registry and document approvals, on PGlite
  * only (no real database). TEST data only: no real names or registration numbers.
  */
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { newTestEnv, makeUser, freshCode, TEST_SIGNING_KEY, type TestEnv, type TestUser } from '../helpers/accountsTestDb';
 import { createOrg, invite, acceptInvite } from '@/lib/accounts/orgs';
 import { autosave, createProject } from '@/lib/accounts/projects';
@@ -12,6 +12,10 @@ import {
 } from '@/lib/accounts/reviewers';
 import { verifyAuditLog } from '@/lib/accounts/audit';
 import { documentLabel } from '@/lib/accounts/documentLabels';
+
+// Real scrypt (N = 2^15) for every test user: slow by design. A longer per-test timeout keeps
+// these reliable on a busy machine; it changes no assertion.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 async function rejects(p: Promise<unknown>, status: number, msg?: RegExp) {
   try { await p; } catch (e) {
@@ -175,26 +179,28 @@ describe('approvals: exact revision, verified reviewer, signed, audited', () => 
     expect(s).toMatchObject({ approved: false, reason: expect.stringMatching(/replay refused/) });
   });
 
-  it('suspension or expiry of the reviewer withdraws the approval; revoking does too', async () => {
+  it('suspending the reviewer withdraws the approval', async () => {
     const r1 = await verifiedReviewer(w, w.rev1);
     await approve(w, w.rev1);
     expect((await status(w)).approved).toBe(true);
     await suspendReviewer(w.env.ctx, w.admin.actor, r1, 'TEST suspension');
     expect((await status(w)).approved).toBe(false);
+  });
 
-    const w2 = await world();
-    await verifiedReviewer(w2, w2.rev1);
-    await approve(w2, w2.rev1);
-    w2.env.clock.t = Date.parse('2028-01-02T08:00:00Z'); // past validUntil 2027-12-31
-    expect((await status(w2)).approved).toBe(false);
+  it('expiry of the registration withdraws the approval', async () => {
+    await verifiedReviewer(w, w.rev1);
+    await approve(w, w.rev1);
+    w.env.clock.t = Date.parse('2028-01-02T08:00:00Z'); // past validUntil 2027-12-31
+    expect((await status(w)).approved).toBe(false);
+  });
 
-    const w3 = await world();
-    await verifiedReviewer(w3, w3.rev1);
-    const a = await approve(w3, w3.rev1);
-    await rejects(revokeApproval(w3.env.ctx, w3.owner.actor, w3.orgA, a.id, { totp: freshCode(w3.env, w3.owner) }), 404); // only the reviewer themself
-    await revokeApproval(w3.env.ctx, w3.rev1.actor, w3.orgA, a.id, { totp: freshCode(w3.env, w3.rev1) });
-    expect((await status(w3)).approved).toBe(false);
-    expect((await verifyApprovalChain(w3.env.db)).ok).toBe(true);
+  it('only the reviewer can revoke; revoking withdraws the approval and the chain still verifies', async () => {
+    await verifiedReviewer(w, w.rev1);
+    const a = await approve(w, w.rev1);
+    await rejects(revokeApproval(w.env.ctx, w.owner.actor, w.orgA, a.id, { totp: freshCode(w.env, w.owner) }), 404); // only the reviewer themself
+    await revokeApproval(w.env.ctx, w.rev1.actor, w.orgA, a.id, { totp: freshCode(w.env, w.rev1) });
+    expect((await status(w)).approved).toBe(false);
+    expect((await verifyApprovalChain(w.env.db)).ok).toBe(true);
   });
 
   it('without the server signing key, approvals are unavailable and documents stay DRAFT', async () => {
