@@ -5040,7 +5040,36 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
 
   // -- 27. PUMP TEST ANALYSIS --
   try {
-  if (!result.pumpTestAnalysis) {
+  // Safety correction 2026-11-25: a single-reading field test → observed specific
+  // capacity + INSUFFICIENT EVIDENCE; no transmissivity, storativity or yield.
+  if (result.pumpTestObservation) {
+    const ob = result.pumpTestObservation;
+    const required = (result.pumpTestEvidenceRequired ?? []) as readonly string[];
+    const insufficient = String(result.pumpTestInsufficient ?? 'INSUFFICIENT EVIDENCE');
+    const width = pageW - margin * 2 - 8;
+    const lines = [
+      ...doc.splitTextToSize(ob.statement, width),
+      '',
+      ...doc.splitTextToSize(insufficient, width),
+      '',
+      'Records needed for a defensible pumping-test interpretation:',
+      ...required.flatMap((r) => doc.splitTextToSize(`- ${r}`, width)),
+    ];
+    const h = 22 + lines.length * 4;
+    checkSpace(h + 4);
+    doc.setFillColor(255, 240, 240);
+    doc.roundedRect(margin, y, pageW - margin * 2, h, 2, 2, 'F');
+    doc.setDrawColor(220, 38, 38); doc.setLineWidth(0.8);
+    doc.roundedRect(margin, y, pageW - margin * 2, h, 2, 2, 'S');
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
+    doc.text('27. Pump Test -- SINGLE READING: INSUFFICIENT EVIDENCE', margin + 4, y + 8);
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(60, 20, 20);
+    doc.text(`Observed specific capacity: ${ob.specificCapacity_m3hr_per_m.toFixed(3)} m3/h per m of drawdown (${ob.pumpingRate_m3hr} m3/h at ${ob.drawdown_m} m).`, margin + 4, y + 15);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(120, 30, 30);
+    let ly = y + 21;
+    for (const l of lines) { doc.text(l, margin + 4, ly); ly += 4; }
+    y += h + 6;
+  } else if (!result.pumpTestAnalysis) {
     checkSpace(32);
     doc.setFillColor(255, 240, 240);
     doc.roundedRect(margin, y, pageW - margin * 2, 28, 2, 2, 'F');
@@ -8037,7 +8066,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     ['49', 'Risk Decision Engine', result.riskDecision ? 'COMPLETED' : 'SKIPPED', 'Probabilistic risk breakdown, financial scenarios, decision recommendation'],
     ['50', 'Confidence Weighting', result.confidenceWeighted ? 'COMPLETED' : 'SKIPPED', 'Data quality?weighted predictions with uncertainty bounds'],
     ['51', 'Micro-Siting Optimizer', result.microSiting ? 'COMPLETED' : 'SKIPPED', 'GPS-precise drilling point, confidence radius, terrain/fracture scoring'],
-    ['52', 'Pump Test Analysis', !result.pumpTestAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldPumpTest ? 'COMPLETED' : 'MODELLED'), 'Theis/Cooper-Jacob analytical pump test interpretation'],
+    ['52', 'Pump Test Analysis', result.pumpTestObservation ? 'INSUFFICIENT EVIDENCE' : !result.pumpTestAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldPumpTest ? 'COMPLETED' : 'MODELLED'), 'Theis/Cooper-Jacob analytical pump test interpretation'],
     ['53', 'Lithology Analysis', !result.lithologyAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldERT ? 'COMPLETED' : 'MODELLED'), 'Stratigraphic logging, water strikes, casing design, fracture density'],
     ['54', 'ERT Interpretation', !result.ertInterpretation ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldERT ? 'COMPLETED' : 'MODELLED'), 'Resistivity inversion, aquifer target extraction, saline intrusion check'],
     ['55', 'Multi-Source Agreement', result.multiSourceAgreement ? 'COMPLETED' : 'SKIPPED', 'Cross-validation of all data sources, conflict resolution, consensus'],

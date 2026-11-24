@@ -169,10 +169,13 @@ describe('the yield is the tested rate or the engine analysis of entered data, n
     expect(cp.aquiferParameters).toBeUndefined();
     expect(cp.calibrationNotes.join(' ')).not.toMatch(/Transmissivity: undefined/);
   });
-  it('pump-test analysis uses the measured static level', () => {
+  it('the pump-test observation carries the measured static level (and assumes nothing)', () => {
+    // Safety correction 2026-11-25: a single reading no longer yields a full analysis
+    // (that analysis reported ~250 m²/day whatever the data); only the observation.
     const P = ok(validatePumpingTest(constantRate(), NOW));
-    const a = buildFieldPumpTestAnalysis(P.pumpTest, 90).analysis!;
-    expect(a.assumptions.join(' ')).toMatch(/Static water level 18.00 m, as measured in the test/);
-    expect(a.assumptions.join(' ')).not.toMatch(/30% of the modelled depth/);
+    const out = buildFieldPumpTestAnalysis(P.pumpTest, 90);
+    expect(out.analysis).toBeUndefined();
+    expect(out.observation?.staticWaterLevel_m).toBe(18);
+    expect(JSON.stringify(out)).not.toMatch(/30% of the modelled depth/);
   });
 });

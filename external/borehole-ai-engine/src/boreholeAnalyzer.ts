@@ -52,7 +52,7 @@ import { applyCalibrationCorrection } from './realTimeCalibration';
 import { assessDrillingRisk } from './riskDecisionEngine';
 import { calculateConfidenceWeighted } from './confidenceWeighting';
 import { optimizeMicroSite } from './microSitingOptimizer';
-import { buildFieldPumpTestAnalysis } from './pumpTestAnalyzer';
+import { buildFieldPumpTestAnalysis, type SingleReadingObservation } from './pumpTestAnalyzer';
 import { siteEvidenceFrom } from './evidenceGate';
 import { analyzeLithologyLog, queryNearbyLithologyLogs, getRegionalLithologyInsight } from './lithologyLogger';
 import { interpretERTSurvey, type ERTDataPoint } from './ertInterpretation';
@@ -2387,6 +2387,9 @@ export class BoreholeAnalyzer {
     // ═══ PHASE 7: GROUND TRUTH & CREDIBILITY ENGINES ═══
     let pumpTestAnalysis: any;
     let pumpTestRejected: string | undefined;
+    let pumpTestObservation: SingleReadingObservation | undefined;
+    let pumpTestInsufficient: string | undefined;
+    let pumpTestEvidenceRequired: readonly string[] | undefined;
     let lithologyAnalysis: any;
     let ertInterpretation: any;
     let multiSourceAgreement: any;
@@ -2408,8 +2411,11 @@ export class BoreholeAnalyzer {
       // the field-data form, so they are stated with the result.
       // Logic and tests: buildFieldPumpTestAnalysis in pumpTestAnalyzer.ts.
       const pumpTestOutcome = buildFieldPumpTestAnalysis(fieldData?.pumpTest, calibratedDepth);
-      pumpTestAnalysis = pumpTestOutcome.analysis;
+      pumpTestAnalysis = pumpTestOutcome.analysis; // never set for a single reading (safety correction 2026-11-25)
       pumpTestRejected = pumpTestOutcome.rejected;
+      pumpTestObservation = pumpTestOutcome.observation;
+      pumpTestInsufficient = pumpTestOutcome.insufficientEvidence;
+      pumpTestEvidenceRequired = pumpTestOutcome.required;
 
       // 2. Lithology Analysis — query nearby lithology logs
       if (hasCoords) {
@@ -2822,6 +2828,9 @@ export class BoreholeAnalyzer {
       // ═══ PHASE 7 GROUND TRUTH ENGINE RESULTS ═══
       pumpTestAnalysis: pumpTestAnalysis ?? undefined,
       pumpTestRejected,
+      pumpTestObservation,
+      pumpTestInsufficient,
+      pumpTestEvidenceRequired,
       lithologyAnalysis: lithologyAnalysis ?? undefined,
       ertInterpretation: ertInterpretation ?? undefined,
       multiSourceAgreement: multiSourceAgreement ?? undefined,

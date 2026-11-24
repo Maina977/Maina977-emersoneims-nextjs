@@ -680,6 +680,16 @@ export interface AnalysisResult {
   pumpTestAnalysis?: any;
   /** Why a field pump test was not analysed (missing rate or drawdown). Absent when there was no test or it was analysed. */
   pumpTestRejected?: string;
+  /**
+   * A field pump test with ONE pumping rate and ONE drawdown (safety correction
+   * 2026-11-25): the observed specific capacity only. Present instead of
+   * pumpTestAnalysis; aquifer parameters and yields are withheld.
+   */
+  pumpTestObservation?: import('./pumpTestAnalyzer').SingleReadingObservation;
+  /** The INSUFFICIENT EVIDENCE statement shown with pumpTestObservation. */
+  pumpTestInsufficient?: string;
+  /** The pumping-test records needed for a defensible interpretation. */
+  pumpTestEvidenceRequired?: readonly string[];
   /** Lithology Logger — stratigraphic analysis from drill cuttings/core logs */
   lithologyAnalysis?: any;
   /** ERT Intelligence Pipeline — full 10-step engineering-grade ERT analysis */

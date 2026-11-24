@@ -45,16 +45,21 @@ describe('buildFieldPumpTestAnalysis', () => {
   it('benchmark: Q = 12 m³/h, s = 8 m gives specific capacity 1.5 m³/h/m', () => {
     const out = buildFieldPumpTestAnalysis({ sustainableYieldM3Hr: 12, drawdownM: 8, testDurationHrs: 24 }, 80);
     expect(out.rejected).toBeUndefined();
-    expect(out.analysis?.specificCapacity_m3hr_m).toBeCloseTo(1.5, 10);
+    expect(out.observation?.specificCapacity_m3hr_per_m).toBeCloseTo(1.5, 10);
   });
 
-  it('states the values the form does not collect as assumptions', () => {
+  // Safety correction 2026-11-25: the previous test here asserted that a single
+  // reading produced a full analysis (with assumed 30 m thickness and an assumed
+  // static level). That full analysis was the defect: it reported ~250 m²/day and
+  // "good aquifer" whatever the data. A single reading now yields only the
+  // observed specific capacity and INSUFFICIENT EVIDENCE (see
+  // tests/regression/aquascan-single-reading-safety.test.ts).
+  it('a single reading gives no aquifer analysis, only the observation and INSUFFICIENT EVIDENCE', () => {
     const out = buildFieldPumpTestAnalysis({ sustainableYieldM3Hr: 12, drawdownM: 8 }, 80);
-    const a = out.analysis?.assumptions.join(' ') ?? '';
-    expect(a).toMatch(/Aquifer thickness assumed 30 m \(not measured/);
-    expect(a).toMatch(/Static water level assumed 24\.0 m/); // 30% of the 80 m modelled depth
-    expect(a).toMatch(/Test duration not entered; 24 h assumed/);
-    expect(a).toMatch(/single drawdown reading/);
+    expect(out.analysis).toBeUndefined();
+    expect(out.insufficientEvidence).toMatch(/^INSUFFICIENT EVIDENCE/);
+    expect(out.observation?.statement).toMatch(/single observation/);
+    expect(out.observation?.testDuration_hrs).toBeNull(); // nothing assumed
   });
 });
 
@@ -69,7 +74,8 @@ describe('borehole report wiring', () => {
 
   it('ticks "+ Pump Test" on the accuracy ladder only for user-supplied field data', () => {
     const ui = engine('index.tsx');
-    expect(ui).toMatch(/level: '\+ Pump Test'[^\n]*status: !!\(result\.pumpTestAnalysis && result\.fieldData\?\.pumpTest\)/);
+    // 2026-11-25: a single-reading test now produces pumpTestObservation instead of pumpTestAnalysis; still user field data only.
+    expect(ui).toMatch(/level: '\+ Pump Test'[^\n]*status: !!\(\(result\.pumpTestAnalysis \|\| result\.pumpTestObservation\) && result\.fieldData\?\.pumpTest\)/);
   });
 
   it('shows the stated assumptions and the rejection reason on the pump-test tab', () => {

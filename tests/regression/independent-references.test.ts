@@ -22,7 +22,7 @@ describe('independent references', () => {
     expect((slabConcrete({ length_m: 12, width_m: 8, thickness_m: 0.15 }) as { net_volume_m3: number }).net_volume_m3).toBe(14.4);
   });
   it('specific capacity: directive benchmark Q 12 m³/h, s 8 m → 1.5 m³/h/m', () => {
-    expect(buildFieldPumpTestAnalysis({ sustainableYieldM3Hr: 12, drawdownM: 8, testDurationHrs: 24 }, 80).analysis?.specificCapacity_m3hr_m).toBeCloseTo(1.5, 10);
+    expect(buildFieldPumpTestAnalysis({ sustainableYieldM3Hr: 12, drawdownM: 8, testDurationHrs: 24 }, 80).observation?.specificCapacity_m3hr_per_m).toBeCloseTo(1.5, 10);
   });
   // Retrieved 14 Nov 2026 (P0-D).
   it('voltage unbalance: NEMA MG-1 example (as quoted by EASA and others) 460 / 450 / 467 V → average 459 V, max deviation 9 V, 1.96 %', () => {

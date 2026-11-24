@@ -6468,8 +6468,26 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {activeResultTab==='pump-test' && (
             <div>
               <h4 className="tab-title">{'\u{1F4A7}'} Pump Test Analysis</h4>
-              <p className="tab-desc">Theis/Cooper-Jacob analysis of pumping test data — transmissivity, storativity, safe yield, and sustainability.</p>
-              {result.pumpTestAnalysis ? (
+              <p className="tab-desc">What the entered pumping-test data supports. Aquifer parameters and yields need a full time-drawdown record; one reading gives the specific capacity only.</p>
+              {/* Safety correction 2026-11-25: one rate + one drawdown → specific capacity only, INSUFFICIENT EVIDENCE for the rest. */}
+              {result.pumpTestObservation ? (
+                <div>
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:8,marginBottom:12}}>
+                    <div className="result-item"><span className="rl">Pumping rate (tested)</span><span className="rv">{result.pumpTestObservation.pumpingRate_m3hr} m³/h</span></div>
+                    <div className="result-item"><span className="rl">Drawdown (measured)</span><span className="rv">{result.pumpTestObservation.drawdown_m} m</span></div>
+                    <div className="result-item"><span className="rl">Specific capacity (observed)</span><span className="rv">{result.pumpTestObservation.specificCapacity_m3hr_per_m.toFixed(3)} m³/h per m</span></div>
+                    <div className="result-item"><span className="rl">Test duration</span><span className="rv">{result.pumpTestObservation.testDuration_hrs != null ? `${result.pumpTestObservation.testDuration_hrs} h` : 'not entered'}</span></div>
+                  </div>
+                  <p style={{fontSize:13,marginBottom:10}}>{result.pumpTestObservation.statement}</p>
+                  <div role="alert" style={{border:'2px solid #dc2626',background:'rgba(220,38,38,0.08)',borderRadius:8,padding:12,marginBottom:10}}>
+                    <strong style={{color:'#dc2626'}}>{result.pumpTestInsufficient}</strong>
+                    <p style={{fontSize:12,margin:'8px 0 4px'}}>Records needed for a defensible pumping-test interpretation:</p>
+                    <ul style={{fontSize:12,margin:0,paddingLeft:18}}>
+                      {(result.pumpTestEvidenceRequired ?? []).map((r: string, i: number) => <li key={i}>{r}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              ) : result.pumpTestAnalysis ? (
                 <div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:8,marginBottom:16}}>
                     <div className="result-item"><span className="rl">Transmissivity</span><span className="rv">{result.pumpTestAnalysis.transmissivity_m2day?.toFixed(1) ?? result.pumpTestAnalysis.estimatedTransmissivity_m2day?.toFixed(1) ?? '—'} m²/day</span></div>
@@ -8198,7 +8216,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     { level: '+ Regional calibration', accuracy: 'MODELLED', status: !!result.regionalModel, color: '#38bdf8' },
                     { level: `+ Nearby borehole records (${result.nearbyWells?.sampleSize ?? 0} wells)`, accuracy: 'OBSERVED nearby', status: !!result.nearbyWells?.sampleSize, color: '#06b6d4' },
                     { level: '+ ERT/geophysics survey at the site', accuracy: 'OBSERVED at site', status: !!result.ertInterpretation, color: '#8b5cf6' },
-                    { level: '+ Pump Test', accuracy: 'OBSERVED at site', status: !!(result.pumpTestAnalysis && result.fieldData?.pumpTest), color: '#16a34a' },
+                    { level: '+ Pump Test', accuracy: 'OBSERVED at site', status: !!((result.pumpTestAnalysis || result.pumpTestObservation) && result.fieldData?.pumpTest), color: '#16a34a' },
                     { level: '+ 50+ recorded local drilling outcomes', accuracy: 'needed to measure accuracy', status: (result.drillingPrediction?.trainingOutcomes||0) >= 50, color: '#16a34a' },
                   ].map((step, i) => (
                     <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'6px 0',borderBottom:'1px solid rgba(255,255,255,0.05)'}}>

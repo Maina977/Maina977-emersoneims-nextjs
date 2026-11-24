@@ -150,7 +150,25 @@ function linearRegression(x: number[], y: number[]): { slope: number; intercept:
   return { slope, intercept, r2: Math.max(0, r2) };
 }
 
+/**
+ * Minimum pumping readings for any aquifer-parameter estimate (AquaScan safety
+ * correction, 2026-11-25). Cooper-Jacob skips the first 3 readings and needs at
+ * least 2 late points for a slope; a Theis fit through fewer points is not
+ * constrained (any T/S pair fits one reading). Below this, analyzePumpTest refuses.
+ */
+export const MIN_PUMP_READINGS_FOR_PARAMETERS = 6;
+
+/** Thrown when a pump test cannot support aquifer parameters (too few readings). */
+export class InsufficientPumpTestData extends Error {
+  constructor(public readonly pumpingReadings: number) {
+    super(`Insufficient pumping-test data: ${pumpingReadings} pumping reading(s); at least ${MIN_PUMP_READINGS_FOR_PARAMETERS} time-drawdown readings are needed for transmissivity, storativity or yield.`);
+    this.name = 'InsufficientPumpTestData';
+  }
+}
+
 export function analyzePumpTest(input: PumpTestInput): PumpTestResult {
+  const pumpingCount = input.readings.filter((r) => !r.recovery && r.time_min > 0).length;
+  if (pumpingCount < MIN_PUMP_READINGS_FOR_PARAMETERS) throw new InsufficientPumpTestData(pumpingCount);
   const Q_m3day = input.pumpingRate_m3hr * 24;
   const Q_m3min = input.pumpingRate_m3hr / 60;
   const r = input.observationWellDistance_m || (input.boreholeRadius_m || 0.076);
@@ -198,7 +216,12 @@ export function analyzePumpTest(input: PumpTestInput): PumpTestResult {
   
   // T = 2.303 × Q / (4π × Δs)  where Δs = drawdown per log cycle
   const deltaS_cj = cjRegression.slope * 1; // slope = drawdown per unit log10(time)
-  const T_cj = deltaS_cj > 0.001 ? (2.303 * Q_m3day) / (4 * Math.PI * deltaS_cj) : 500;
+  // AquaScan safety correction (2026-11-25): no fixed fallback. The former
+  // "500 m²/day" default was blended 50/50 into the final value whenever the
+  // slope was unusable, so a one-reading test always reported ~250 m²/day and
+  // "good aquifer". Without a valid slope, Cooper-Jacob contributes nothing.
+  const cjValid = lateLogTime.length >= 2 && Number.isFinite(deltaS_cj) && deltaS_cj > 0.001;
+  const T_cj = cjValid ? (2.303 * Q_m3day) / (4 * Math.PI * deltaS_cj) : NaN;
   
   // S = 2.25 × T × t0 / r²  where t0 = time at zero drawdown (x-intercept)
   const t0_min = deltaS_cj > 0.001 ? Math.pow(10, -cjRegression.intercept / cjRegression.slope) : 1;
@@ -214,16 +237,22 @@ export function analyzePumpTest(input: PumpTestInput): PumpTestResult {
   const midTime_day = pumpReadings[midIdx]?.time_min / 1440 || 0.01;
   const midDrawdown = pumpReadings[midIdx]?.drawdown_m || 1;
   
-  // Iterate to find T and S that best fit Theis curve
-  let bestT_theis = T_cj;
-  let bestS_theis = Math.max(S_cj, 1e-6);
+  // Iterate to find T and S that best fit Theis curve.
+  // Search SEED only (2026-11-25): Cooper-Jacob when valid, otherwise the Logan
+  // approximation from the measured data (T ≈ 1.22 Q / s_max). The seed never
+  // enters the result directly; the fit below must match the readings.
+  const sMax = Math.max(...drawdowns.filter((d) => Number.isFinite(d) && d > 0), 0.001);
+  const T_seed = cjValid ? T_cj : (1.22 * Q_m3day) / sMax;
+  const S_seed = cjValid && Number.isFinite(S_cj) ? Math.max(S_cj, 1e-6) : 1e-4;
+  let bestT_theis = T_seed;
+  let bestS_theis = S_seed;
   let bestMatch = 0;
-  
-  // Grid search around Cooper-Jacob estimates
+
+  // Grid search around the seed
   for (let tMult = 0.5; tMult <= 2.0; tMult += 0.1) {
     for (let sMult = 0.1; sMult <= 10; sMult *= 1.5) {
-      const tryT = T_cj * tMult;
-      const tryS = Math.max(S_cj, 1e-6) * sMult;
+      const tryT = T_seed * tMult;
+      const tryS = S_seed * sMult;
       
       let ssRes = 0;
       let ssTot = 0;
@@ -263,13 +292,22 @@ export function analyzePumpTest(input: PumpTestInput): PumpTestResult {
     const ssTot = drawdowns.reduce((a, d) => a + (d - meanDD) ** 2, 0);
     let lt = Math.log(bestT_theis), ls = Math.log(bestS_theis);
     let best = sse(bestT_theis, bestS_theis);
+    // Bounded search (2026-11-25): physical limits on T and S, and an iteration cap
+    // per step size. Without them a record that is not Theis-shaped (e.g. flat
+    // drawdown) let S drift towards zero in endless tiny "improvements" (observed:
+    // > 30 s). Real tests converge in far fewer moves; the TTim benchmark is unchanged.
+    const LT_MIN = Math.log(1e-4), LT_MAX = Math.log(1e6), LS_MIN = Math.log(1e-7), LS_MAX = Math.log(0.5);
+    const MAX_MOVES_PER_STEP = 400;
     for (let step = 0.2; step > 1e-5; step /= 2) {
       let improved = true;
-      while (improved) {
+      let moves = 0;
+      while (improved && moves < MAX_MOVES_PER_STEP) {
         improved = false;
         for (const [dt, ds] of [[step, 0], [-step, 0], [0, step], [0, -step], [step, step], [-step, -step], [step, -step], [-step, step]]) {
-          const v = sse(Math.exp(lt + dt), Math.exp(ls + ds));
-          if (v < best - 1e-15) { best = v; lt += dt; ls += ds; improved = true; break; }
+          const nt = lt + dt, ns = ls + ds;
+          if (nt < LT_MIN || nt > LT_MAX || ns < LS_MIN || ns > LS_MAX) continue;
+          const v = sse(Math.exp(nt), Math.exp(ns));
+          if (v < best - 1e-15) { best = v; lt = nt; ls = ns; improved = true; moves++; break; }
         }
       }
     }
@@ -300,7 +338,8 @@ export function analyzePumpTest(input: PumpTestInput): PumpTestResult {
     if (recLogRatio.length >= 2) {
       const recReg = linearRegression(recLogRatio, recResidual);
       const deltaS_rec = recReg.slope;
-      const T_recovery = deltaS_rec > 0.001 ? (2.303 * Q_m3day) / (4 * Math.PI * deltaS_rec) : T_cj;
+      const T_ref = cjValid ? T_cj : bestT_theis; // no fixed value (2026-11-25)
+      const T_recovery = deltaS_rec > 0.001 ? (2.303 * Q_m3day) / (4 * Math.PI * deltaS_rec) : T_ref;
       
       const lastRecDrawdown = recoveryReadings[recoveryReadings.length - 1]?.drawdown_m || 0;
       const maxDrawdownVal = Math.max(...pumpReadings.map(r => r.drawdown_m), 0.1);
@@ -308,8 +347,8 @@ export function analyzePumpTest(input: PumpTestInput): PumpTestResult {
       
       // Boundary detection
       let boundary = 'none';
-      if (T_recovery > T_cj * 1.5) boundary = 'recharge'; // recharge boundary → faster recovery
-      else if (T_recovery < T_cj * 0.5) boundary = 'barrier'; // barrier boundary → slower recovery
+      if (T_recovery > T_ref * 1.5) boundary = 'recharge'; // recharge boundary → faster recovery
+      else if (T_recovery < T_ref * 0.5) boundary = 'barrier'; // barrier boundary → slower recovery
       
       recoveryResult = {
         T_m2day: Math.max(0.1, T_recovery),
@@ -328,10 +367,10 @@ export function analyzePumpTest(input: PumpTestInput): PumpTestResult {
   // blended as before, and recovery (when present) carries its weight.
   const theisPrimary = bestMatch >= 0.99;
   const T_final = recoveryResult
-    ? (theisPrimary ? bestT_theis * 0.6 + recoveryResult.T_m2day * 0.4 : T_cj * 0.3 + bestT_theis * 0.3 + recoveryResult.T_m2day * 0.4)
-    : (theisPrimary ? bestT_theis : T_cj * 0.5 + bestT_theis * 0.5);
+    ? (theisPrimary || !cjValid ? bestT_theis * 0.6 + recoveryResult.T_m2day * 0.4 : T_cj * 0.3 + bestT_theis * 0.3 + recoveryResult.T_m2day * 0.4)
+    : (theisPrimary || !cjValid ? bestT_theis : T_cj * 0.5 + bestT_theis * 0.5);
 
-  const S_final = Math.min(0.3, Math.max(1e-7, theisPrimary ? bestS_theis : (S_cj * 0.5 + bestS_theis * 0.5)));
+  const S_final = Math.min(0.3, Math.max(1e-7, theisPrimary || !cjValid || !Number.isFinite(S_cj) ? bestS_theis : (S_cj * 0.5 + bestS_theis * 0.5)));
   const K_final = T_final / b;
   
   const maxDrawdown = Math.max(...pumpReadings.map(r => r.drawdown_m), 0.1);
@@ -533,7 +572,7 @@ export function analyzePumpTest(input: PumpTestInput): PumpTestResult {
     recoveryPct: Math.round(recoveryPct),
     recoveryTime_min: Math.round(recoveryTime),
     cooperJacob: {
-      T_m2day: Math.max(0.1, T_cj),
+      T_m2day: cjValid ? Math.max(0.1, T_cj) : NaN, // NaN = no valid Cooper-Jacob slope (never a fixed value)
       S: Math.max(1e-7, S_cj),
       drawdownPerLogCycle_m: deltaS_cj,
       validAfter_min: Math.max(0, validAfter_cj),
@@ -589,55 +628,102 @@ export interface FieldPumpTest {
   sustainableYieldM3Hr?: number;
   drawdownM?: number;
   testDurationHrs?: number;
-  /** Measured static water level (guided field-evidence entry); replaces the assumption when given. */
+  /** Measured static water level (guided field-evidence entry). */
   staticWaterLevelM?: number;
 }
 
 /**
- * Pump-test analysis for the borehole report, from a FIELD pump test only.
+ * What ONE pumping-rate / drawdown observation supports (AquaScan safety
+ * correction, 2026-11-25): the observed specific capacity under the stated test
+ * conditions, and nothing more.
+ */
+export interface SingleReadingObservation {
+  basis: 'single-reading';
+  pumpingRate_m3hr: number;
+  drawdown_m: number;
+  /** Q / s: m³/h per metre of drawdown, at this rate and duration only. */
+  specificCapacity_m3hr_per_m: number;
+  testDuration_hrs: number | null;
+  staticWaterLevel_m: number | null;
+  statement: string;
+}
+
+/** The records a defensible pumping-test interpretation needs (shown with INSUFFICIENT EVIDENCE). */
+export const PUMP_TEST_EVIDENCE_REQUIRED: readonly string[] = [
+  `A drawdown time series: at least ${MIN_PUMP_READINGS_FOR_PARAMETERS} timed water-level readings during pumping, from early minutes to the end of the test.`,
+  'The pumping rate(s) and every change of rate, with times.',
+  'Recovery readings after the pump stops, where available.',
+  'The measured static water level, well depth, screen and pump intake depths.',
+  'The aquifer model and assumptions (confined, unconfined or leaky; partial penetration; well losses), stated by the hydrogeologist.',
+  'An independent interpretation of the test by a registered hydrogeologist.',
+];
+
+export const INSUFFICIENT_PUMP_TEST_EVIDENCE =
+  'INSUFFICIENT EVIDENCE: one pumping rate and one drawdown give the specific capacity at that rate only. ' +
+  'They do not support transmissivity, storativity, hydraulic conductivity, a safe or sustainable yield, an aquifer rating or a pump selection. ' +
+  'None of these is calculated.';
+
+// Plausibility limits for a single borehole test (inputs outside them are rejected, not clipped).
+const MAX_RATE_M3HR = 500;
+const MAX_DRAWDOWN_M = 500;
+const MAX_DURATION_HRS = 720;
+const MAX_STATIC_M = 1000;
+
+/**
+ * Pump-test result for the borehole report, from a FIELD pump test only.
  *
- * P0 integrity rule (2026-11): a pump-test result must come from a pump test.
- *  - No field test: no analysis (the report says no pump test data is available).
- *  - Field test without a pumping rate or a drawdown: no analysis, with the reason.
- *    Missing values are never defaulted (previously 1 m³/h and 10 m).
- *  - Values the form does not collect (aquifer thickness, static water level) are
- *    stated as assumptions on the result instead of being presented as measured.
+ * SAFETY CORRECTION (2026-11-25). The Field Data form collects ONE pumping rate
+ * and ONE drawdown. This function used to pass that single reading to the full
+ * Theis / Cooper-Jacob analysis, which could not fit it and fell back to a fixed
+ * 500 m²/day, so every test reported about 250 m²/day, "good aquifer" and a large
+ * sustainable yield (a 1 m³/h, 40 m drawdown test showed 46 m³/h). Now:
+ *  - no field test: nothing (as before);
+ *  - missing, zero, negative, non-numeric or implausible inputs: rejected with
+ *    every reason named; nothing is assumed or clipped;
+ *  - a valid single reading: the specific capacity Q / s only, labelled as a
+ *    single observation, with INSUFFICIENT EVIDENCE for everything else;
+ *  - the full analysis (analyzePumpTest) is never called from this path.
+ * `analysis` is kept in the return type for callers but is never set here.
  */
 export function buildFieldPumpTestAnalysis(
   pumpTest: FieldPumpTest | undefined | null,
-  modelledDepthM: number,
-): { analysis?: PumpTestResult & { assumptions: string[] }; rejected?: string } {
+  _modelledDepthM?: number,
+): {
+  analysis?: undefined;
+  observation?: SingleReadingObservation;
+  insufficientEvidence?: string;
+  required?: readonly string[];
+  rejected?: string;
+} {
   if (!pumpTest) return {};
-  const rate = Number(pumpTest.sustainableYieldM3Hr);
-  const drawdown = Number(pumpTest.drawdownM);
-  const missing: string[] = [];
-  if (!(rate > 0)) missing.push('pumping rate missing or zero');
-  if (!(drawdown > 0)) missing.push('drawdown missing or zero');
-  if (missing.length) return { rejected: `Pump test not analysed: ${missing.join('; ')}.` };
+  const num = (v: unknown) => (v === null || v === undefined || v === '' ? NaN : Number(v));
+  const rate = num(pumpTest.sustainableYieldM3Hr);
+  const drawdown = num(pumpTest.drawdownM);
+  const hours = num(pumpTest.testDurationHrs);
+  const swl = num(pumpTest.staticWaterLevelM);
+  const problems: string[] = [];
+  if (!(rate > 0)) problems.push('pumping rate missing or zero');
+  else if (!Number.isFinite(rate) || rate > MAX_RATE_M3HR) problems.push(`pumping rate ${pumpTest.sustainableYieldM3Hr} m³/h is not plausible for one borehole (maximum ${MAX_RATE_M3HR})`);
+  if (!(drawdown > 0)) problems.push('drawdown missing or zero');
+  else if (!Number.isFinite(drawdown) || drawdown > MAX_DRAWDOWN_M) problems.push(`drawdown ${pumpTest.drawdownM} m is not plausible (maximum ${MAX_DRAWDOWN_M})`);
+  if (pumpTest.testDurationHrs != null && !(hours > 0 && hours <= MAX_DURATION_HRS)) problems.push(`test duration ${pumpTest.testDurationHrs} h is not valid (more than 0, at most ${MAX_DURATION_HRS})`);
+  if (pumpTest.staticWaterLevelM != null && !(swl >= 0 && swl <= MAX_STATIC_M)) problems.push(`static water level ${pumpTest.staticWaterLevelM} m is not valid (0 to ${MAX_STATIC_M})`);
+  if (problems.length) return { rejected: `Pump test not analysed: ${problems.join('; ')}.` };
 
-  const assumedThickness = 30;
-  const measuredStatic = Number(pumpTest.staticWaterLevelM);
-  const hasStatic = Number.isFinite(measuredStatic) && measuredStatic >= 0 && pumpTest.staticWaterLevelM != null;
-  const assumedStatic = hasStatic ? measuredStatic : modelledDepthM * 0.3;
-  const durationMin = (pumpTest.testDurationHrs || 24) * 60;
-  const result = analyzePumpTest({
-    pumpingRate_m3hr: rate,
-    readings: [{ time_min: durationMin, drawdown_m: drawdown }],
-    aquiferThickness_m: assumedThickness,
-    staticWaterLevel_m: assumedStatic,
-    pumpDuration_min: durationMin,
-  });
+  const sc = rate / drawdown;
+  const durationTxt = Number.isFinite(hours) ? `${hours} h` : 'an unstated duration';
   return {
-    analysis: {
-      ...result,
-      assumptions: [
-        `Aquifer thickness assumed ${assumedThickness} m (not measured in this test).`,
-        hasStatic
-          ? `Static water level ${assumedStatic.toFixed(2)} m, as measured in the test.`
-          : `Static water level assumed ${assumedStatic.toFixed(1)} m (30% of the modelled depth, not measured).`,
-        ...(pumpTest.testDurationHrs ? [] : ['Test duration not entered; 24 h assumed.']),
-        'A single drawdown reading was entered; a full time-drawdown record is needed for a reliable Theis/Cooper-Jacob fit.',
-      ],
+    observation: {
+      basis: 'single-reading',
+      pumpingRate_m3hr: rate,
+      drawdown_m: drawdown,
+      specificCapacity_m3hr_per_m: sc,
+      testDuration_hrs: Number.isFinite(hours) ? hours : null,
+      staticWaterLevel_m: Number.isFinite(swl) ? swl : null,
+      statement: `Observed specific capacity ${sc.toFixed(3)} m³/h per metre of drawdown (${rate} m³/h at ${drawdown} m drawdown after ${durationTxt}). ` +
+        'This is a single observation under these test conditions only; it is not a sustainable or safe yield.',
     },
+    insufficientEvidence: INSUFFICIENT_PUMP_TEST_EVIDENCE,
+    required: PUMP_TEST_EVIDENCE_REQUIRED,
   };
 }
