@@ -7,7 +7,7 @@
  * readable CSRF cookie in document.cookie). TEST data only.
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextRequest } from 'next/server';
 import { PGlite } from '@electric-sql/pglite';
 import { fromPglite, setAccountsDbForTests } from '@/lib/accounts/db';
@@ -233,7 +233,7 @@ describe('professional approval screens (each step by the right person, in their
     // 3. The reviewer approves this exact revision (fresh code).
     await signIn('reviewer', 1);
     fireEvent.click(await screen.findByRole('button', { name: 'Revisions' }));
-    await screen.findByText(/You are approving revision 1 exactly/);
+    await screen.findByText(/You are reviewing revision 1 exactly/);
     type(/^Fresh authenticator code/, code('reviewer', 1));
     fireEvent.click(screen.getByRole('button', { name: 'Approve this revision' }));
     await waitFor(() => {
@@ -246,5 +246,31 @@ describe('professional approval screens (each step by the right person, in their
     fireEvent.click(await screen.findByRole('button', { name: 'Revisions' }));
     await screen.findByText('FOR ISSUE');
     await screen.findByText(/Approved by TEST Approving Engineer \(EBK TEST-UI-77\)/);
+
+    // 5. Rejection on a second project: the reviewer rejects with a reason; the owner sees who, when and why.
+    await projects.createProject(ctx, ownerActor, org, { tool: 'solar', name: 'TEST rejected proposal', content: { pvKwp: 9, note: 'TEST' } });
+    await signIn('reviewer', 1); // same browser session; its next unused code is step +2 below
+    // Open that project by its name (the list is newest first).
+    const rowOf = async (name: string) => (await screen.findByText(name)).closest('li') as HTMLElement;
+    fireEvent.click(within(await rowOf('TEST rejected proposal')).getByRole('button', { name: 'Revisions' }));
+    const form = await screen.findByRole('form', { name: 'Review decision' });
+    expect(within(await rowOf('TEST rejected proposal')).getByRole('form', { name: 'Review decision' })).toBe(form);
+    fireEvent.click(within(form).getByLabelText('Reject'));
+    fireEvent.change(within(form).getByLabelText(/^Reason for rejection/), { target: { value: 'TEST: cable sizing not shown' } });
+    // This reviewer already used two consecutive codes (sign-in, approval). Codes are single-use and
+    // accepted only within ±1 step, so, as a real person would, wait for the authenticator's next step.
+    await new Promise((r) => setTimeout(r, 31_000));
+    fireEvent.change(within(form).getByLabelText(/^Fresh authenticator code/), { target: { value: code('reviewer', 1) } });
+    fireEvent.click(within(form).getByRole('button', { name: 'Reject this revision' }));
+    await waitFor(() => {
+      const alerts = screen.queryAllByRole('alert').map((x) => x.textContent).join(' | ');
+      expect(screen.queryByText('Rejected: the reason is recorded against this exact revision.'), `alerts: ${alerts}`).not.toBeNull();
+    });
+    await signIn('owner', 0);
+    fireEvent.click(within(await rowOf('TEST rejected proposal')).getByRole('button', { name: 'Revisions' }));
+    await screen.findByText(/Rejected by TEST Approving Engineer \(EBK TEST-UI-77\), .*: TEST: cable sizing not shown/);
+    // The approved project offers no review form at any moment (it waits for the status first).
+    fireEvent.click(within(await rowOf('TEST approval proposal')).getByRole('button', { name: 'Revisions' }));
+    expect(within(await rowOf('TEST approval proposal')).queryByRole('form', { name: 'Review decision' })).toBeNull();
   });
 });

@@ -13,6 +13,7 @@ import * as projects from './projects';
 import * as reviewers from './reviewers';
 import * as recovery from './recovery';
 import * as testMail from './testMail';
+import * as drill from './drill';
 import { AcctError, type Actor } from './context';
 import { clearSessionCookies, clientIp, json, setSessionCookies, type Call, type RouteSpec } from './http';
 
@@ -54,6 +55,9 @@ export const ROUTES: Entry[] = [
   ['GET', 'recovery-codes', ses((c) => recovery.recoveryCodesRemaining(c.ctx, me(c)))],
   ['POST', 'recovery-codes', ses((c) => recovery.regenerateRecoveryCodes(c.ctx, me(c), c.body))],
   ['POST', 'totp/reset', ses(async (c) => { await recovery.resetOwnAuthenticator(c.ctx, me(c), c.body); return { totpEnabled: false }; })],
+  // Preview verification tools (registry administrators, fresh code; booleans and counts only).
+  ['POST', 'registry/isolation-report', ses((c) => drill.isolationReport(c.ctx, me(c), c.body))],
+  ['POST', 'registry/dr-drill', ses((c) => drill.disasterRecoveryDrill(c.ctx, me(c), c.body))],
   ['POST', 'registry/users/reset-second-factor', ses((c) => recovery.adminResetSecondFactor(c.ctx, me(c), c.body))],
 
   // ---- organisations ---------------------------------------------------------
@@ -101,6 +105,7 @@ export const ROUTES: Entry[] = [
   ['POST', 'registry/reviewers/:reviewer/suspend', ses(async (c) => { await reviewers.suspendReviewer(c.ctx, me(c), p(c, 'reviewer'), c.body.reason); return { suspended: true }; })],
   ['POST', 'orgs/:org/projects/:project/revisions/:revision/approve', ses((c) => reviewers.approveRevision(c.ctx, me(c), p(c, 'org'), p(c, 'project'), p(c, 'revision'), c.body))],
   ['GET', 'orgs/:org/projects/:project/revisions/:revision/approval', ses(async (c) => ({ status: await reviewers.approvalStatus(c.ctx, me(c), p(c, 'org'), p(c, 'project'), p(c, 'revision'), c.query.get('documentType')) }))],
+  ['POST', 'orgs/:org/projects/:project/revisions/:revision/reject', ses((c) => reviewers.rejectRevision(c.ctx, me(c), p(c, 'org'), p(c, 'project'), p(c, 'revision'), c.body))],
   ['POST', 'orgs/:org/approvals/:approval/revoke', ses(async (c) => { await reviewers.revokeApproval(c.ctx, me(c), p(c, 'org'), p(c, 'approval'), c.body); return { revoked: true }; })],
 ];
 

@@ -166,7 +166,8 @@ export function verifyApproval(approval: unknown, currentRevisionHash: string, v
  */
 export interface ApprovalAuditRecord {
   sequence: number;                  // 0, 1, 2, …
-  action: 'APPROVED' | 'REVOKED';
+  /** REJECTED (Report B, 2026-11-24): a recorded decision not to approve; it never makes anything approved. */
+  action: 'APPROVED' | 'REVOKED' | 'REJECTED';
   proposalReference: string;
   revisionHash: string;
   reviewerId: string;                // who
@@ -212,7 +213,7 @@ export function verifyAuditChain(chain: readonly ApprovalAuditRecord[]): AuditCh
     const expectedPrev = i === 0 ? null : chain[i - 1].recordHash;
     if (r.previousRecordHash !== expectedPrev) return fail('broken link: previousRecordHash does not match the previous record');
     if (auditRecordHash(r) !== r.recordHash) return fail('record hash does not match its contents (record altered)');
-    if (r.action !== 'APPROVED' && r.action !== 'REVOKED') return fail(`unknown action ${String(r.action)}`);
+    if (r.action !== 'APPROVED' && r.action !== 'REVOKED' && r.action !== 'REJECTED') return fail(`unknown action ${String(r.action)}`);
     if (!HEX64.test(r.revisionHash)) return fail('revisionHash is not a SHA-256 hex digest');
     if (![r.reviewerId, r.reviewerName, r.registration, r.proposalReference].every(isStr)) return fail('who (reviewer id, name, registration) and the proposal reference are required');
     const t = Date.parse(r.at);
@@ -221,7 +222,7 @@ export function verifyAuditChain(chain: readonly ApprovalAuditRecord[]): AuditCh
     lastTime = t;
     const key = `${r.proposalReference}\u0000${r.revisionHash}`;
     if (r.action === 'APPROVED') approved.add(key);
-    else if (!approved.delete(key)) return fail('REVOKED without a matching APPROVED of the same revision');
+    else if (r.action === 'REVOKED' && !approved.delete(key)) return fail('REVOKED without a matching APPROVED of the same revision');
   }
   return { ok: true, headHash: chain.length ? chain[chain.length - 1].recordHash : null };
 }

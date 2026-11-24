@@ -16,7 +16,7 @@ import {
 } from './crypto';
 import { randomUUID } from 'node:crypto';
 import { issueRecoveryCodes, useRecoveryCode } from './recovery';
-import { assertTestRecipient } from './testMail';
+import { assertTestRecipient, isTestAddress, mailMode } from './testMail';
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,63}$/;
 export function normaliseEmail(e: unknown): string {
@@ -93,7 +93,27 @@ export async function verifyEmail(ctx: Ctx, token: unknown): Promise<void> {
     if (!t?.user_id) throw badRequest('This verification link is not valid or has expired.');
     await q.query('UPDATE acct_users SET email_verified_at = $2, updated_at = $2 WHERE id = $1', [t.user_id, ctx.now().toISOString()]);
     await appendAudit(q, ctx.secret, { actorUserId: t.user_id, orgId: null, action: 'user.email_verified', objectType: 'user', objectId: t.user_id }, ctx.now());
+    await bootstrapRegistryAdmin(q, ctx, t.user_id);
   });
+}
+
+/**
+ * PREVIEW BOOTSTRAP of the first registry administrator (Report B live-database
+ * validation), instead of a manual SQL grant. Only when ALL hold:
+ * ACCOUNTS_BOOTSTRAP_REGISTRY_ADMIN names exactly this (just verified) address;
+ * test-email mode is on and the address is an allow-listed TEST address; and no
+ * registry administrator exists yet (one time only). Audited. Accounts are off
+ * in production, so this never runs there. Remove the setting after use.
+ */
+async function bootstrapRegistryAdmin(q: Queryable, ctx: Ctx, userId: string): Promise<void> {
+  const want = (ctx.env.ACCOUNTS_BOOTSTRAP_REGISTRY_ADMIN ?? '').trim().toLowerCase();
+  if (!want || mailMode(ctx.env) === 'none' || !isTestAddress(want, ctx.env)) return;
+  const u = (await q.query<{ email: string }>('SELECT email FROM acct_users WHERE id = $1', [userId])).rows[0];
+  if (!u || u.email !== want) return;
+  const any = (await q.query('SELECT 1 FROM acct_users WHERE is_registry_admin = TRUE LIMIT 1')).rows;
+  if (any.length) return;
+  await q.query('UPDATE acct_users SET is_registry_admin = TRUE, updated_at = $2 WHERE id = $1', [userId, ctx.now().toISOString()]);
+  await appendAudit(q, ctx.secret, { actorUserId: userId, orgId: null, action: 'registry_admin.bootstrapped', objectType: 'user', objectId: userId, detail: { via: 'ACCOUNTS_BOOTSTRAP_REGISTRY_ADMIN' } }, ctx.now());
 }
 
 // ------------------------------------------------------------------ sign-in

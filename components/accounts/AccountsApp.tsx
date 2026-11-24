@@ -269,8 +269,10 @@ function Members({ org, me }: { org: Org; me: Me }) {
 function ProjectRow({ org, p, onChanged, isReviewer }: { org: Org; p: Project; onChanged: () => void; isReviewer: boolean }) {
   const [open, setOpen] = useState(false);
   const [revs, setRevs] = useState<Revision[]>([]);
-  const [status, setStatus] = useState<{ label: string; reason: string; reviewer?: { name: string; registration: string; approvedAt: string } } | null>(null);
+  const [status, setStatus] = useState<{ label: string; reason: string; reviewer?: { name: string; registration: string; approvedAt: string }; rejection?: { name: string; registration: string; rejectedAt: string; reason: string } } | null>(null);
   const [code, setCode] = useState('');
+  const [decision, setDecision] = useState<'approve' | 'reject'>('approve');
+  const [rejectReason, setRejectReason] = useState('');
   const a = useAction();
   const docType = APPROVABLE[p.tool];
   const load = useCallback(async () => {
@@ -302,11 +304,25 @@ function ProjectRow({ org, p, onChanged, isReviewer }: { org: Org; p: Project; o
     </div>
     {open && <div className="mt-3 space-y-3">
       {docType && status && <p className="text-sm text-slate-200">Status of the current revision: <strong className={status.reviewer ? 'text-emerald-300' : 'text-amber-300'}>{status.label}</strong>
-        {status.reviewer ? <span className="block text-xs text-slate-400">Approved by {status.reviewer.name} ({status.reviewer.registration}), {status.reviewer.approvedAt}</span> : <span className="block text-xs text-slate-400">{status.reason}</span>}</p>}
-      {docType && isReviewer && current && !status?.reviewer && !p.deletedAt && <form className="flex flex-wrap items-end gap-2" onSubmit={async (e) => { e.preventDefault(); const r = await a.run(() => api('POST', `orgs/${org.id}/projects/${p.id}/revisions/${current.id}/approve`, { documentType: docType, revisionHash: current.contentSha256, totp: code }), 'Approved: this exact revision only.'); if (r.ok) { setCode(''); void load(); } }}>
-        <p className="w-full text-xs text-slate-400">You are approving revision {current.version} exactly (SHA-256 {current.contentSha256.slice(0, 16)}…). Any later change needs a new approval.</p>
+        {status.reviewer ? <span className="block text-xs text-slate-400">Approved by {status.reviewer.name} ({status.reviewer.registration}), {status.reviewer.approvedAt}</span>
+          : status.rejection ? <span className="block text-xs text-red-300">Rejected by {status.rejection.name} ({status.rejection.registration}), {status.rejection.rejectedAt}: {status.rejection.reason}</span>
+          : <span className="block text-xs text-slate-400">{status.reason}</span>}</p>}
+      {/* Only once the status is known: never offer a review of a revision that is already approved. */}
+      {docType && isReviewer && current && status && !status.reviewer && !p.deletedAt && <form className="flex flex-wrap items-end gap-2" aria-label="Review decision" onSubmit={async (e) => {
+        e.preventDefault();
+        const path = `orgs/${org.id}/projects/${p.id}/revisions/${current.id}/${decision}`;
+        const body = { documentType: docType, revisionHash: current.contentSha256, totp: code, ...(decision === 'reject' ? { reason: rejectReason } : {}) };
+        const r = await a.run(() => api('POST', path, body), decision === 'approve' ? 'Approved: this exact revision only.' : 'Rejected: the reason is recorded against this exact revision.');
+        if (r.ok) { setCode(''); setRejectReason(''); void load(); }
+      }}>
+        <p className="w-full text-xs text-slate-400">You are reviewing revision {current.version} exactly (SHA-256 {current.contentSha256.slice(0, 16)}…). Any later change needs a new review.</p>
+        <fieldset className="flex w-full gap-4 text-sm text-slate-300"><legend className="sr-only">Decision</legend>
+          <label className="inline-flex items-center gap-1"><input type="radio" name={`decision-${p.id}`} checked={decision === 'approve'} onChange={() => setDecision('approve')} /> Approve</label>
+          <label className="inline-flex items-center gap-1"><input type="radio" name={`decision-${p.id}`} checked={decision === 'reject'} onChange={() => setDecision('reject')} /> Reject</label>
+        </fieldset>
+        {decision === 'reject' && <div className="w-full"><Field label="Reason for rejection"><input className={input} required maxLength={1000} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} /></Field></div>}
         <Field label="Fresh authenticator code"><input className={input} inputMode="numeric" pattern="[0-9]{6}" required value={code} onChange={(e) => setCode(e.target.value)} /></Field>
-        <button className={btn} disabled={a.busy}>Approve this revision</button>
+        <button className={btn} disabled={a.busy}>{decision === 'approve' ? 'Approve this revision' : 'Reject this revision'}</button>
       </form>}
       <ol className="space-y-1 text-sm">
         {revs.map((r) => <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded bg-slate-950/60 px-3 py-1.5">

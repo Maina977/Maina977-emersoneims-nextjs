@@ -14,6 +14,8 @@ export interface ApprovalStatus {
   label: string;
   reason: string;
   reviewer?: { name: string; registration: string; approvedAt: string };
+  /** The latest recorded rejection of this exact revision, if any (the document stays unapproved). */
+  rejection?: { name: string; registration: string; rejectedAt: string; reason: string };
 }
 
 export function documentLabel(tool: Tool, documentType: string, approved: boolean): string {

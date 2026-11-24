@@ -258,6 +258,47 @@ export async function revokeApproval(ctx: Ctx, actor: Actor, orgIdIn: unknown, a
 }
 
 /**
+ * REJECTS the exact current revision with a reason (a recorded decision, never
+ * an approval). Same conditions as approving: second-factor session and a
+ * fresh code; verified, identity-checked, in-date, in-scope reviewer of the
+ * project's own organisation; current revision; stored content matches its
+ * hash; the hash given is that hash. A reviewer who has an active approval of
+ * this revision must revoke it first.
+ */
+export async function rejectRevision(ctx: Ctx, actor: Actor, orgIdIn: unknown, projectIdIn: unknown, revisionIdIn: unknown, body: Record<string, unknown>) {
+  const documentType = typeof body.documentType === 'string' ? body.documentType : '';
+  const revisionHash = typeof body.revisionHash === 'string' ? body.revisionHash : '';
+  const reason = str(body.reason, 'A reason for the rejection', 1000);
+  if (!actor.mfa) throw new AcctError(403, 'Rejecting needs a second-factor session.', { needMfa: true });
+  return ctx.db.tx(async (q) => {
+    const { orgId } = await requireMember(q, actor, orgIdIn, 'viewer');
+    if (!(await useTotp(q, ctx, actor.userId, body.totp))) throw new AcctError(403, 'A fresh authenticator code is required to reject.');
+    const rv = (await q.query<Record<string, unknown>>(`SELECT ${REVIEWER_COLS} FROM acct_reviewers WHERE org_id = $1 AND user_id = $2`, [orgId, actor.userId])).rows[0];
+    if (!rv) throw forbidden('You are not a registered reviewer in this organisation');
+    const reviewer = reviewerOut(rv, today(ctx));
+    if (reviewer.effectiveState !== 'verified') throw forbidden(`Your reviewer profile is ${reviewer.effectiveState}, not verified: you cannot reject`);
+    const rev = await loadRevision(q, orgId, projectIdIn, revisionIdIn, true);
+    if (!APPROVABLE[rev.tool].includes(documentType)) throw badRequest('This document type cannot be reviewed for this tool');
+    if (!inScope(reviewer, rev.tool, documentType)) throw forbidden('This document is outside your scope of authority');
+    if (rev.recomputed !== rev.stored) throw new AcctError(409, 'The stored document does not match its hash; it cannot be reviewed');
+    if (revisionHash !== rev.stored) throw new AcctError(409, 'The revision hash you reviewed is not the hash of this revision');
+    if (String(rev.p.current_revision_id) !== rev.revisionId) throw new AcctError(409, 'Only the current revision can be reviewed; reload the project');
+    const active = await q.query('SELECT 1 FROM acct_approvals WHERE revision_id = $1 AND reviewer_id = $2 AND document_type = $3 AND revoked_at IS NULL', [rev.revisionId, reviewer.id, documentType]);
+    if (active.rows.length) throw new AcctError(409, 'You have approved this revision: revoke that approval before rejecting it');
+    const id = randomUUID();
+    const at = ctx.now().toISOString();
+    await q.query(
+      `INSERT INTO acct_review_decisions (id, org_id, project_id, revision_id, revision_hash, tool, document_type, reviewer_id, decision, reason, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'rejected', $9, $10)`,
+      [id, orgId, rev.projectId, rev.revisionId, rev.stored, rev.tool, documentType, reviewer.id, reason, at],
+    );
+    await appendAudit(q, ctx.secret, { actorUserId: actor.userId, orgId, action: 'approval.rejected', objectType: 'revision', objectId: rev.revisionId, detail: { decisionId: id, projectId: rev.projectId, tool: rev.tool, documentType, revisionHash: rev.stored, reviewerId: reviewer.id, reason } }, ctx.now());
+    await appendApprovalChain(q, { action: 'REJECTED', proposalReference: `${rev.tool}:${rev.projectId}`, revisionHash: rev.stored, reviewerId: reviewer.id, reviewerName: reviewer.legalName, registration: registration(reviewer), at });
+    return { id, decision: 'rejected' as const };
+  });
+}
+
+/**
  * Re-checks every approval of a revision from scratch: signature (HMAC),
  * reviewer still verified/in date/in scope in this organisation, exact
  * revision hash (the stored content is re-hashed), binding to this tool,
@@ -269,6 +310,22 @@ export async function checkApprovals(ctx: Ctx, q: Queryable, orgId: string, proj
 
 /** As checkApprovals, plus the one approval that actually passed (never just "the first row"). */
 async function checkApprovalsDetailed(ctx: Ctx, q: Queryable, orgId: string, projectIdIn: unknown, revisionIdIn: unknown, documentType: string): Promise<{ status: ApprovalStatus; verified: VerifiedApproval | null; registry: AuthorisedReviewer[] }> {
+  const r = await checkApprovalsCore(ctx, q, orgId, projectIdIn, revisionIdIn, documentType);
+  if (r.status.approved) return r;
+  // Not approved: say so with the latest rejection of this exact revision, if there is one.
+  const rej = (await q.query<Record<string, unknown>>(
+    `SELECT d.reason, d.created_at, v.legal_name, v.professional_body, v.registration_number
+     FROM acct_review_decisions d JOIN acct_reviewers v ON v.id = d.reviewer_id
+     WHERE d.org_id = $1 AND d.revision_id = $2 AND d.document_type = $3 AND d.decision = 'rejected'
+     ORDER BY d.created_at DESC LIMIT 1`,
+    [orgId, String(revisionIdIn), documentType],
+  )).rows[0];
+  if (!rej) return r;
+  const rejection = { name: String(rej.legal_name), registration: `${rej.professional_body} ${rej.registration_number}`, rejectedAt: toIso(rej.created_at) ?? '', reason: String(rej.reason) };
+  return { ...r, status: { ...r.status, rejection, reason: `Rejected by ${rejection.name} (${rejection.registration}): ${rejection.reason}` } };
+}
+
+async function checkApprovalsCore(ctx: Ctx, q: Queryable, orgId: string, projectIdIn: unknown, revisionIdIn: unknown, documentType: string): Promise<{ status: ApprovalStatus; verified: VerifiedApproval | null; registry: AuthorisedReviewer[] }> {
   const rev = await loadRevision(q, orgId, projectIdIn, revisionIdIn);
   const notApproved = (reason: string, registry: AuthorisedReviewer[] = []) => ({ status: { approved: false, label: documentLabel(rev.tool, documentType, false), reason } as ApprovalStatus, verified: null, registry });
   const key = signingKey(ctx);

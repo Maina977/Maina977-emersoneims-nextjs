@@ -114,7 +114,15 @@ const b64 = (v) => Buffer.from(v).toString('base64');
  * (bytes base64), reviewers, approvals and its audit records. Hashes are
  * included so the import can verify every item.
  */
-async function exportOrg(client, orgId) {
+/**
+ * opts.fullFidelity (disaster recovery into the SAME environment, same
+ * ACCOUNTS_SECRET_KEY): also exports each member's scrypt password hash,
+ * verification time, encrypted second-factor seed and step, and recovery-code
+ * HMACs, so a restore preserves sign-in and the second factor. Default (false):
+ * a portable copy without credentials; restored users reset their password.
+ */
+async function exportOrg(client, orgId, opts = {}) {
+  const fullFidelity = opts.fullFidelity === true;
   const one = async (sql) => (await client.query(sql, [orgId])).rows;
   const org = (await one('SELECT id, name, created_by, created_at FROM acct_orgs WHERE id = $1'))[0];
   if (!org) throw new Error('No such organisation');
@@ -124,6 +132,15 @@ async function exportOrg(client, orgId) {
   const attachments = await one("SELECT * FROM acct_attachments WHERE org_id = $1 AND status = 'complete' ORDER BY id");
   const reviewers = await one('SELECT * FROM acct_reviewers WHERE org_id = $1 ORDER BY id');
   const approvals = await one('SELECT * FROM acct_approvals WHERE org_id = $1 ORDER BY id');
+  const decisions = await one('SELECT * FROM acct_review_decisions WHERE org_id = $1 ORDER BY created_at, id');
+  const credentials = fullFidelity
+    ? await one(`SELECT u.id, u.password_hash, u.email_verified_at, u.totp_secret_enc, u.totp_enabled_at, u.totp_last_step
+                 FROM acct_users u JOIN acct_memberships m ON m.user_id = u.id WHERE m.org_id = $1 ORDER BY u.id`)
+    : [];
+  const recovery = fullFidelity
+    ? await one(`SELECT r.user_id, r.code_hmac, r.created_at, r.used_at FROM acct_recovery_codes r
+                 JOIN acct_memberships m ON m.user_id = r.user_id WHERE m.org_id = $1 ORDER BY r.user_id, r.code_hmac`)
+    : [];
   const audit = await one('SELECT * FROM acct_audit WHERE org_id = $1 ORDER BY seq');
   const body = {
     format: 'emersoneims-accounts-org-export', formatVersion: 1,
@@ -133,6 +150,12 @@ async function exportOrg(client, orgId) {
     revisions: revisions.map((r) => ({ id: r.id, projectId: r.project_id, version: Number(r.version), parentRevisionId: r.parent_revision_id, content: parseJson(r.content), contentSha256: r.content_sha256, restoredFrom: r.restored_from, note: r.note, createdBy: r.created_by, createdAt: iso(r.created_at) })),
     attachments: attachments.map((a) => ({ id: a.id, projectId: a.project_id, filename: a.filename, mediaType: a.media_type, sizeBytes: Number(a.size_bytes), sha256: a.sha256, dataBase64: b64(a.data), createdBy: a.created_by, createdAt: iso(a.created_at), deletedAt: iso(a.deleted_at) })),
     reviewers: reviewers.map((r) => ({ id: r.id, userId: r.user_id, legalName: r.legal_name, identityCheckStatus: r.identity_check_status, professionalBody: r.professional_body, registrationNumber: r.registration_number, scope: parseJson(r.scope), validFrom: r.valid_from ? iso(r.valid_from).slice(0, 10) : null, validUntil: r.valid_until ? iso(r.valid_until).slice(0, 10) : null, evidenceRef: r.evidence_ref, state: r.state, verifiedBy: r.verified_by, verifiedAt: iso(r.verified_at), createdAt: iso(r.created_at) })),
+    reviewDecisions: decisions.map((d) => ({ id: d.id, projectId: d.project_id, revisionId: d.revision_id, revisionHash: d.revision_hash, tool: d.tool, documentType: d.document_type, reviewerId: d.reviewer_id, decision: d.decision, reason: d.reason, createdAt: iso(d.created_at) })),
+    ...(fullFidelity ? {
+      fullFidelity: true,
+      credentials: credentials.map((c) => ({ userId: c.id, passwordHash: c.password_hash, emailVerifiedAt: iso(c.email_verified_at), totpSecretEnc: c.totp_secret_enc, totpEnabledAt: iso(c.totp_enabled_at), totpLastStep: Number(c.totp_last_step) })),
+      recoveryCodes: recovery.map((r) => ({ userId: r.user_id, codeHmac: r.code_hmac, createdAt: iso(r.created_at), usedAt: iso(r.used_at) })),
+    } : {}),
     approvals: approvals.map((a) => ({ id: a.id, projectId: a.project_id, revisionId: a.revision_id, revisionHash: a.revision_hash, tool: a.tool, documentType: a.document_type, reviewerId: a.reviewer_id, approval: parseJson(a.approval), createdAt: iso(a.created_at), revokedAt: iso(a.revoked_at) })),
     audit: audit.map((r) => ({ seq: Number(r.seq), at: iso(r.at), actorUserId: r.actor_user_id, orgId: r.org_id, action: r.action, objectType: r.object_type, objectId: r.object_id, detail: parseJson(r.detail), prevHash: r.prev_hash, recordHash: r.record_hash })),
   };
@@ -167,8 +190,22 @@ async function importOrg(client, secret, exp, now = new Date()) {
   return inTx(client, async () => {
     const exists = (await client.query('SELECT 1 FROM acct_orgs WHERE id = $1', [exp.org.id])).rows[0];
     if (exists) throw new Error('This organisation already exists in the target database');
+    // Full fidelity (same environment and secret): sign-in and the second factor are preserved.
+    // Otherwise users come back DISABLED and reset their password.
+    const cred = new Map((exp.fullFidelity ? exp.credentials : []).map((c) => [c.userId, c]));
     for (const m of exp.members) {
-      await client.query("INSERT INTO acct_users (id, email, password_hash, display_name) VALUES ($1, $2, '!', $3) ON CONFLICT DO NOTHING", [m.userId, m.email, m.displayName ?? '']);
+      const c = cred.get(m.userId);
+      if (c) {
+        await client.query(
+          'INSERT INTO acct_users (id, email, password_hash, display_name, email_verified_at, totp_secret_enc, totp_enabled_at, totp_last_step) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING',
+          [m.userId, m.email, c.passwordHash, m.displayName ?? '', c.emailVerifiedAt, c.totpSecretEnc, c.totpEnabledAt, c.totpLastStep],
+        );
+      } else {
+        await client.query("INSERT INTO acct_users (id, email, password_hash, display_name) VALUES ($1, $2, '!', $3) ON CONFLICT DO NOTHING", [m.userId, m.email, m.displayName ?? '']);
+      }
+    }
+    for (const r of (exp.fullFidelity ? exp.recoveryCodes : [])) {
+      await client.query('INSERT INTO acct_recovery_codes (user_id, code_hmac, created_at, used_at) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING', [r.userId, r.codeHmac, r.createdAt, r.usedAt]);
     }
     await client.query('INSERT INTO acct_orgs (id, name, created_by, created_at) VALUES ($1, $2, $3, $4)', [exp.org.id, exp.org.name, exp.org.createdBy, exp.org.createdAt]);
     for (const m of exp.members) await client.query('INSERT INTO acct_memberships (org_id, user_id, role, created_at) VALUES ($1, $2, $3, $4)', [exp.org.id, m.userId, m.role, m.createdAt]);
@@ -202,8 +239,14 @@ async function importOrg(client, secret, exp, now = new Date()) {
         [a.id, exp.org.id, a.projectId, a.revisionId, a.revisionHash, a.tool, a.documentType, a.reviewerId, JSON.stringify(a.approval), a.createdAt, a.revokedAt],
       );
     }
+    for (const d of (exp.reviewDecisions || [])) {
+      await client.query(
+        'INSERT INTO acct_review_decisions (id, org_id, project_id, revision_id, revision_hash, tool, document_type, reviewer_id, decision, reason, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+        [d.id, exp.org.id, d.projectId, d.revisionId, d.revisionHash, d.tool, d.documentType, d.reviewerId, d.decision, d.reason, d.createdAt],
+      );
+    }
     for (const r of exp.audit) await client.query('INSERT INTO acct_audit_archive (org_id, seq, record) VALUES ($1, $2, $3::jsonb)', [exp.org.id, r.seq, JSON.stringify(r)]);
-    await appendAudit(client, secret, { actorUserId: null, orgId: exp.org.id, action: 'org.imported', objectType: 'org', objectId: exp.org.id, detail: { exportSha256: exp.exportSha256 } }, now);
+    await appendAudit(client, secret, { actorUserId: null, orgId: exp.org.id, action: 'org.imported', objectType: 'org', objectId: exp.org.id, detail: { exportSha256: exp.exportSha256, fullFidelity: exp.fullFidelity === true } }, now);
     return { projects: exp.projects.length, revisions: exp.revisions.length, attachments: exp.attachments.length };
   });
 }
