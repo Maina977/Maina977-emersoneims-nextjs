@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { actingUserId } from '@/lib/generator-oracle/sessionGuard';
 import { getPostgresPool } from '@/lib/db';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -50,6 +51,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { subscription, userId, deviceInfo } = body;
 
+    // A device is linked to a user only for that signed-in user (security review 2026-11-24);
+    // otherwise anyone could receive another user's notifications. Anonymous devices stay allowed.
+    let linkedUserId: number | null = null;
+    if (userId !== undefined && userId !== null && userId !== '') {
+      const who = await actingUserId(request, userId);
+      if ('response' in who) return who.response;
+      linkedUserId = who.id;
+    }
+
     if (!subscription || !subscription.endpoint || !subscription.keys) {
       return NextResponse.json(
         { success: false, error: 'Invalid subscription data' },
@@ -90,7 +100,7 @@ export async function POST(request: NextRequest) {
          user_id = EXCLUDED.user_id,
          device_info = EXCLUDED.device_info,
          last_used_at = NOW()`,
-      [endpoint, p256dh, auth, userId || null, JSON.stringify(deviceInfo || {})]
+      [endpoint, p256dh, auth, linkedUserId, JSON.stringify(deviceInfo || {})]
     );
 
     return NextResponse.json({

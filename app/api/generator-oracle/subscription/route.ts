@@ -18,6 +18,7 @@ import {
   YEARLY_PLANS,
   getPlanById,
 } from '@/lib/generator-oracle/subscriptionService';
+import { actingUserId } from '@/lib/generator-oracle/sessionGuard';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GET - Get subscription info
@@ -39,8 +40,13 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Everything below is one user's data: only for the signed-in user (security review 2026-11-24).
+    const who = await actingUserId(request, userId);
+    if ('response' in who) return who.response;
+    const uid = who.id;
+
     // Check usage limit
-    if (action === 'check-limit' && userId) {
+    if (action === 'check-limit') {
       const type = searchParams.get('type') as 'diagnosis' | 'ai_diagnosis' | 'report';
 
       if (!type) {
@@ -50,7 +56,7 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      const result = await checkUsageLimit(parseInt(userId), type);
+      const result = await checkUsageLimit(uid, type);
       return NextResponse.json({
         success: true,
         ...result,
@@ -58,8 +64,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get payment history
-    if (action === 'payments' && userId) {
-      const payments = await getUserPayments(parseInt(userId));
+    if (action === 'payments') {
+      const payments = await getUserPayments(uid);
       return NextResponse.json({
         success: true,
         payments,
@@ -67,10 +73,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Get subscription and usage
-    if (userId) {
+    {
       const [subscription, usage] = await Promise.all([
-        getUserSubscription(parseInt(userId)),
-        getUserUsage(parseInt(userId)),
+        getUserSubscription(uid),
+        getUserUsage(uid),
       ]);
 
       const plan = getPlanById(subscription?.planId || 'free');
@@ -82,11 +88,6 @@ export async function GET(request: NextRequest) {
         plan,
       });
     }
-
-    return NextResponse.json(
-      { success: false, error: 'User ID required' },
-      { status: 400 }
-    );
   } catch (error) {
     console.error('Subscription GET error:', error);
     return NextResponse.json(
@@ -105,12 +106,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action, userId } = body;
 
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'User ID required' },
-        { status: 400 }
-      );
-    }
+    // Only the signed-in user's own subscription (security review 2026-11-24).
+    const who = await actingUserId(request, userId);
+    if ('response' in who) return who.response;
+    const uid = who.id;
 
     // Increment usage
     if (action === 'increment-usage') {
@@ -124,7 +123,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Check limit first
-      const limit = await checkUsageLimit(parseInt(userId), type);
+      const limit = await checkUsageLimit(uid, type);
 
       if (!limit.allowed) {
         return NextResponse.json({
@@ -136,7 +135,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      await incrementUsage(parseInt(userId), type);
+      await incrementUsage(uid, type);
 
       return NextResponse.json({
         success: true,
@@ -147,7 +146,7 @@ export async function POST(request: NextRequest) {
 
     // Activate free plan (for new users)
     if (action === 'activate-free') {
-      const subscription = await createSubscription(parseInt(userId), 'free');
+      const subscription = await createSubscription(uid, 'free');
 
       return NextResponse.json({
         success: true,
@@ -159,7 +158,7 @@ export async function POST(request: NextRequest) {
     // Cancel subscription
     if (action === 'cancel') {
       const { immediate } = body;
-      const success = await cancelSubscription(parseInt(userId), immediate);
+      const success = await cancelSubscription(uid, immediate);
 
       return NextResponse.json({
         success,
