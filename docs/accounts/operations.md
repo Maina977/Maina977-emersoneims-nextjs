@@ -44,6 +44,30 @@ Grant it only to people management has named. They must enrol the second factor 
 - **Logs:** server errors are logged as `[accounts] internal error <type>`, with no tokens or bodies. Watch the Vercel logs for spikes in 401, 403 or 429 responses on `/api/accounts/*`.
 - **Integrity:** periodically verify the audit log (`verifyAuditLog`) and the approval chain (`verifyApprovalChain`). Any failure is an incident.
 
+## Test email on the preview
+
+| `ACCOUNTS_MAIL_MODE` | Behaviour |
+|---|---|
+| unset or `none` | Account emails are withheld (logged only as "email not sent"). Nobody can verify an address. |
+| `outbox` | Emails to addresses in `ACCOUNTS_TEST_EMAIL_DOMAINS` are kept in `acct_test_outbox` and shown on the "Test email outbox" screen of `/accounts`. Nothing is sent. |
+| `smtp` | Emails go through a **dedicated test sender** (`ACCOUNTS_SMTP_URL`, `ACCOUNTS_MAIL_FROM`), marked `[TEST]`, and only to the test domains |
+
+In `outbox` and `smtp` modes, sign-up and invitations to any other address are refused (400). Without a domain list they are refused entirely (503). Never verify addresses directly in the database: testing must use the emailed link. Clear the outbox when a test round ends:
+```sql
+DELETE FROM acct_test_outbox WHERE created_at < now() - interval '7 days';
+```
+
+## A lost authenticator
+
+1. **The person still has a recovery code:** they sign in with it ("Lost your authenticator?"), then use "Replace my authenticator" and set up the new phone. Afterwards they make new recovery codes.
+2. **The person has no codes left:** a registry administrator, after checking the person's identity outside the system (in person, or a video call against their ID), uses "Reset a person's second factor". They record the reason and the identity-check reference. The person is signed out everywhere, and any reviewer profile is suspended until the registry re-verifies it.
+3. **A registry administrator loses theirs:** another registry administrator resets it. If there is none, the database owner removes the second factor by SQL and records it, then management re-confirms the administrator:
+   ```sql
+   UPDATE acct_users SET totp_secret_enc = NULL, totp_enabled_at = NULL, totp_last_step = 0 WHERE email = '<address>';
+   DELETE FROM acct_recovery_codes WHERE user_id = (SELECT id FROM acct_users WHERE email = '<address>');
+   DELETE FROM acct_sessions WHERE user_id = (SELECT id FROM acct_users WHERE email = '<address>');
+   ```
+
 ## Incidents
 
 1. **Suspected account compromise:** delete that user's sessions (`DELETE FROM acct_sessions WHERE user_id = …`), then reset their password. Suspend their reviewer profile if they have one.

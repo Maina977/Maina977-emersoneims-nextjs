@@ -18,6 +18,9 @@
 | Leaking internals | Generic 500 message. The server log records only the error type, never tokens or bodies. Every response is no-store and noindex. | `accounts-http` |
 | Feature reaching production | `accountsEnabled()` is false whenever `VERCEL_ENV=production`. There is no fallback to the production database, and the scripts refuse if the two URLs are equal. | `accounts-storage`, `accounts-http`, `accounts-ui`, `accounts-solar-proposal` |
 | Backup tampering | Every hash is verified before a restore. A restore refuses altered files and existing organisations. Restored users come back disabled and reviewers suspended. | `accounts-recovery` |
+| Lost authenticator: lock-out or takeover | 10 single-use recovery codes, stored only as HMACs under the server secret; a wrong code counts towards lockout. Self-reset needs a second-factor session plus a fresh code or recovery code, and ends other sessions. The registry-administrator reset (last resort) needs a fresh code, can never be done on oneself, records a reason and identity-check reference, ends every session and **suspends the person's reviewer profiles**. | `accounts-recovery-codes`, `accounts-ui` |
+| Email to real people from the preview | In test-email mode, sign-up and invitations are limited to allow-listed test domains, and the mailers refuse every other recipient. Outbox mode sends nothing. Verification always uses the emailed link and the real endpoint. | `accounts-test-email` |
+| `/accounts` visible where accounts are off | Middleware hard 404 (noindex) | `accounts-page-guard` |
 
 ## Test map
 
@@ -28,16 +31,20 @@
 | `tests/regression/accounts-http.test.ts` | 12: the HTTP guard under attack |
 | `tests/regression/accounts-recovery.test.ts` | 4: the disaster-recovery drill |
 | `tests/regression/accounts-solar-proposal.test.ts` | 7: Solar FOR ISSUE versus DRAFT |
-| `tests/regression/accounts-ui.test.tsx` | 3: the screens end to end |
+| `tests/regression/accounts-ui.test.tsx` | 3: the screens end to end, including recovery-code sign-in |
+| `tests/regression/accounts-recovery-codes.test.ts` | 8: authenticator recovery |
+| `tests/regression/accounts-test-email.test.tsx` | 9: the preview test-email workflow |
+| `tests/regression/accounts-adversarial.test.ts` | 19: impersonation, privilege escalation, cross-organisation access, replay, revoked approvals |
+| `tests/regression/accounts-page-guard.test.ts` | 4: the `/accounts` 404 guard |
 
-All tests run on PGlite. They never touch a real database.
+These tests run on PGlite and never touch a real database. The real-database run on the protected preview is `preview-accounts-e2e.cjs` (see the Report B assessment); it needs the owner's preview setup.
 
 ## Residual risks and limits (not solvable by software alone)
 
 1. **Reviewer verification is a human process.** The system records that a registry admin checked an identity and a registration; it cannot check them itself. The professional bodies accepted (`PROFESSIONAL_BODIES` in `config.ts`) are a **pending business decision**.
 2. **No independent security audit yet.** These controls were reviewed by the developer. Commission an external penetration test before any production release.
-3. **Email is not wired.** The default mailer sends nothing. A real sender, its domain authentication (SPF, DKIM, DMARC) and deliverability are an owner decision.
-4. **TOTP only.** There are no recovery codes and no WebAuthn. A user who loses their authenticator needs an administrator-assisted reset, which is not yet built.
+3. **No production email.** The preview has test-email modes only. A production sender, its domain authentication (SPF, DKIM, DMARC) and deliverability are an owner decision.
+4. **TOTP only.** No WebAuthn or passkeys. Recovery codes and the registry-administrator reset cover a lost authenticator. The administrator reset depends on a **human identity check** done outside the system, and its quality is a process matter.
 5. **Key custody.** Whoever holds `ACCOUNTS_SECRET_KEY` and `PROPOSAL_APPROVAL_SIGNING_KEY` can decrypt TOTP seeds and sign approvals. Store both only in Vercel's encrypted environment and rotate them per [operations.md](operations.md).
 6. **The rate limits are database-backed**, which is adequate for a preview. Distributed attacks at scale need edge protection (Vercel Firewall).
 7. **Personal data.** Accounts hold names and emails. Hosting location and retention must meet the Kenya Data Protection Act 2019; that is an owner and legal decision (see [data-handling-procedures.md](data-handling-procedures.md)).
