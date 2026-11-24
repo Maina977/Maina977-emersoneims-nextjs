@@ -1,5 +1,7 @@
 // Centralised typed-ish client for all SolarGeniusPro backend endpoints.
 // All requests go through Vite's /api proxy -> http://localhost:3001
+import { importWithRetry } from '@/lib/loading/resilientImport';
+
 const BASE = '/api';
 
 async function req<T = any>(path: string, opts: RequestInit = {}): Promise<T> {
@@ -61,15 +63,42 @@ export const solar = {
 };
 
 // ---------------- Reports ----------------
+// Bounded retry for report generation (management priority 1, 2026-11-21).
+// Generating a file changes nothing on the server, so a dropped connection is
+// retried (3 attempts, 1 s / 2 s apart) and a request that stalls is stopped
+// after REPORT_TIMEOUT_MS, so the button is never left disabled for ever.
+// An HTTP error from the server is passed straight on: a retry cannot fix it.
+export const REPORT_TIMEOUT_MS = 60_000;
+class RetryableReportError extends Error {}
+
+export function postReport(path: string, body: any, opts: { timeoutMs?: number; wait?: (ms: number) => Promise<void> } = {}) {
+  const timeoutMs = opts.timeoutMs ?? REPORT_TIMEOUT_MS;
+  const once = async () => {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), timeoutMs);
+    try {
+      return await req(path, { method: 'POST', body: JSON.stringify(body), signal: ctl.signal });
+    } catch (e) {
+      if (ctl.signal.aborted) throw new RetryableReportError(`The report server did not answer within ${Math.round(timeoutMs / 1000)} s.`);
+      if (e instanceof TypeError) throw new RetryableReportError('The connection to the report server dropped.'); // fetch network failure
+      throw e;
+    } finally { clearTimeout(t); }
+  };
+  return importWithRetry(once, 3, opts.wait, (e) => e instanceof RetryableReportError).catch((e) => {
+    if (e instanceof RetryableReportError) throw new Error(`${e.message} Tried 3 times; check the connection and press the button again.`);
+    throw e;
+  });
+}
+
 export const reports = {
-  pdfBlob: (p: any) => post('/reports/pdf', p),
-  proposalBlob: (p: any) => post('/reports/proposal', p),
-  proposalDocxBlob: (p: any) => post('/reports/proposal-docx', p),
-  proposalXlsxBlob: (p: any) => post('/reports/proposal-xlsx', p),
-  xlsxBlob: (p: any) => post('/reports/xlsx', p),
-  csv: (rows: any[]) => post('/reports/csv', { rows }),
-  schematic: (p: any) => post('/reports/schematic', p),
-  specSheet: (p: any) => post('/reports/spec-sheet', p)
+  pdfBlob: (p: any) => postReport('/reports/pdf', p),
+  proposalBlob: (p: any) => postReport('/reports/proposal', p),
+  proposalDocxBlob: (p: any) => postReport('/reports/proposal-docx', p),
+  proposalXlsxBlob: (p: any) => postReport('/reports/proposal-xlsx', p),
+  xlsxBlob: (p: any) => postReport('/reports/xlsx', p),
+  csv: (rows: any[]) => postReport('/reports/csv', { rows }),
+  schematic: (p: any) => postReport('/reports/schematic', p),
+  specSheet: (p: any) => postReport('/reports/spec-sheet', p)
 };
 
 export function downloadBlob(blob: Blob, filename: string) {

@@ -20,6 +20,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { BSP_FEATURES } from '@/lib/buildingSuitePro/featureRoutes';
+import { recoveryReload, SLOW_NOTE_AFTER_MS } from '@/lib/loading/resilientImport';
 
 // Feature-slug modes plus the wizard's own working modes, so links such as
 // /solutions/building?mode=physics open the right tab (2026-10-19 audit).
@@ -54,17 +55,33 @@ function killOldServiceWorkerOnce() {
 
 export default function ProBuildingSuiteClient() {
   const [loaded, setLoaded] = useState(false);
+  // Stalled download (lib/loading, 2026-11-21): the 6 s safety hide only removes
+  // the spinner. If after 12 s the suite document has still not been parsed,
+  // say so and offer a reload. Not shown once its scripts have run
+  // (readyState interactive/complete), so nothing typed in it can be lost.
+  const [slow, setSlow] = useState(false);
+  const frameLoaded = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
     killOldServiceWorkerOnce();
     const t = window.setTimeout(() => setLoaded(true), 6000); // safety hide (wizard typically ready in 2-3s)
+    const slowT = window.setTimeout(() => {
+      if (frameLoaded.current) return;
+      let started = false; // the suite's own document has been parsed and its scripts run
+      try {
+        const doc = iframeRef.current?.contentDocument;
+        // The initial about:blank is "complete" too; it is not the suite.
+        started = !!doc && doc.URL !== 'about:blank' && (doc.readyState === 'interactive' || doc.readyState === 'complete');
+      } catch { started = false; }
+      if (!started) setSlow(true);
+    }, SLOW_NOTE_AFTER_MS);
     // A cached iframe can finish loading before React hydrates and attaches
     // onLoad, so the ?mode= deep link was silently lost (2026-10-19 audit).
     try {
       if (iframeRef.current?.contentDocument?.readyState === 'complete') handleIframeLoad();
     } catch { /* not same-origin yet */ }
-    return () => window.clearTimeout(t);
+    return () => { window.clearTimeout(t); window.clearTimeout(slowT); };
   }, []);
 
   /**
@@ -76,6 +93,8 @@ export default function ProBuildingSuiteClient() {
    */
   function handleIframeLoad() {
     setLoaded(true);
+    frameLoaded.current = true;
+    setSlow(false);
     try {
       const params = new URLSearchParams(window.location.search);
       const mode = params.get('mode');
@@ -144,6 +163,14 @@ export default function ProBuildingSuiteClient() {
             Building design calculators
           </p>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      )}
+      {slow && (
+        <div role="status" style={{ position: 'absolute', left: 0, right: 0, bottom: 24, zIndex: 3, display: 'flex', justifyContent: 'center', padding: '0 16px' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8, padding: '12px 16px', textAlign: 'center', color: '#cbd5e1', fontSize: 14, maxWidth: 420 }}>
+            <p style={{ margin: 0 }}>Still downloading Building Suite Pro — the connection is slow or a download stalled.</p>
+            <button type="button" onClick={() => recoveryReload()} style={{ marginTop: 10, background: '#d97706', color: '#fff', border: 0, borderRadius: 4, padding: '8px 16px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Reload page</button>
+          </div>
         </div>
       )}
       <iframe

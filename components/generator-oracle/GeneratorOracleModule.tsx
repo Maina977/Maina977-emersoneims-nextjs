@@ -40,7 +40,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import dynamic from 'next/dynamic';
+import { resilient } from '@/lib/loading/ResilientModule';
 // Client-safe metadata only — no dataset, no template generator. ~5 KB.
 import { CONTROLLER_BRANDS, type ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
 // All dataset access goes through the typed server API client.
@@ -71,61 +71,61 @@ import InstallPrompt from './InstallPrompt';
 import { DisclaimerAcknowledgment, FooterDisclaimer } from './DisclaimerBanner';
 import { CONTROLLER_TYPES } from './controllerTypes';
 // Heavy parts load only when opened (2026-10-30 audit: one 452 KB chunk).
-const ControllerSimulator = dynamic(() => import('./ControllerSimulator'), { ssr: false });
-const DetailedFaultExample = dynamic(() => import('./DetailedFaultExample'), { ssr: false });
-const SpeechController = dynamic(() => import('./SpeechController'), { ssr: false });
+const ControllerSimulator = resilient(() => import('./ControllerSimulator'), { name: 'Controller Simulator', variant: 'panel' });
+const DetailedFaultExample = resilient(() => import('./DetailedFaultExample'), { name: 'Detailed Fault Example', variant: 'panel' });
+const SpeechController = resilient(() => import('./SpeechController'), { name: 'Speech Controller', variant: 'panel', loading: () => null });
 import BackToCommand from './BackToCommand';
 import ErrorBoundary from './ErrorBoundary';
 
 // ==================== DYNAMIC IMPORTS (Load on demand - saves ~500KB initial bundle) ====================
 // Panel components - loaded only when user navigates to them
-const EnginePanel = dynamic(() => import('./panels/EnginePanel'), { ssr: false });
-const ElectricalPanel = dynamic(() => import('./panels/ElectricalPanel'), { ssr: false });
-const FaultDiagnosticsPanel = dynamic(() => import('./panels/FaultDiagnosticsPanel'), { ssr: false });
-const TechnicianAssistantPanel = dynamic(() => import('./panels/TechnicianAssistantPanel'), { ssr: false });
-const WiringDiagramsPanel = dynamic(() => import('./panels/WiringDiagramsPanel'), { ssr: false });
-const AllControllerWiringDiagrams = dynamic(() => import('./AllControllerWiringDiagrams'), { ssr: false });
-const TechnicianInputDiagnostics = dynamic(() => import('./TechnicianInputDiagnostics'), { ssr: false });
+const EnginePanel = resilient(() => import('./panels/EnginePanel'), { name: 'Engine', variant: 'panel' });
+const ElectricalPanel = resilient(() => import('./panels/ElectricalPanel'), { name: 'Electrical', variant: 'panel' });
+const FaultDiagnosticsPanel = resilient(() => import('./panels/FaultDiagnosticsPanel'), { name: 'Fault Diagnostics', variant: 'panel' });
+const TechnicianAssistantPanel = resilient(() => import('./panels/TechnicianAssistantPanel'), { name: 'Technician Assistant', variant: 'panel' });
+const WiringDiagramsPanel = resilient(() => import('./panels/WiringDiagramsPanel'), { name: 'Wiring Diagrams', variant: 'panel' });
+const AllControllerWiringDiagrams = resilient(() => import('./AllControllerWiringDiagrams'), { name: 'All Controller Wiring Diagrams', variant: 'panel' });
+const TechnicianInputDiagnostics = resilient(() => import('./TechnicianInputDiagnostics'), { name: 'Technician Input Diagnostics', variant: 'panel' });
 
 // Advanced Panels - loaded on demand
-const RealTimeMonitoringPanel = dynamic(() => import('./panels/RealTimeMonitoringPanel'), { ssr: false });
-const OBDProtocolPanel = dynamic(() => import('./panels/OBDProtocolPanel'), { ssr: false });
-const RemoteConnectivityPanel = dynamic(() => import('./panels/RemoteConnectivityPanel'), { ssr: false });
-const PredictiveMaintenancePanel = dynamic(() => import('./panels/PredictiveMaintenancePanel'), { ssr: false });
-const DataRecordingPanel = dynamic(() => import('./panels/DataRecordingPanel'), { ssr: false });
-const ControllerRepairManualsPanel = dynamic(() => import('./panels/ControllerRepairManualsPanel'), { ssr: false });
-const SensorDiagnosticsPanel = dynamic(() => import('./panels/SensorDiagnosticsPanel'), { ssr: false });
-const ECMDiagnosticsPanel = dynamic(() => import('./panels/ECMDiagnosticsPanel'), { ssr: false });
-const AIAnalysisPanel = dynamic(() => import('./panels/AIAnalysisPanel'), { ssr: false });
-const UnifiedDiagnosticsPanel = dynamic(() => import('./panels/UnifiedDiagnosticsPanel'), { ssr: false });
-const ECMProgrammingPanel = dynamic(() => import('./panels/ECMProgrammingPanel'), { ssr: false });
-const CANbusMonitorPanel = dynamic(() => import('./panels/CANbusMonitorPanel'), { ssr: false });
-const FleetDashboardPanel = dynamic(() => import('./panels/FleetDashboardPanel'), { ssr: false });
-const CompleteDiagnosticPanel = dynamic(() => import('./panels/CompleteDiagnosticPanel'), { ssr: false });
-const ECMReprogrammingGuidePanel = dynamic(() => import('./panels/ECMReprogrammingGuidePanel'), { ssr: false });
-const ExpertAIChatPanel = dynamic(() => import('./panels/ExpertAIChatPanel'), { ssr: false });
-const UniversalDiagnosticPanel = dynamic(() => import('./panels/UniversalDiagnosticPanel'), { ssr: false });
-const ODIDashboardPanel = dynamic(() => import('./panels/ODIDashboardPanel'), { ssr: false });
-const ProfessionalDiagnosticInterface = dynamic(() => import('./panels/ProfessionalDiagnosticInterface'), { ssr: false });
-const ECMDiagnosticSuite = dynamic(() => import('./panels/ECMDiagnosticSuite'), { ssr: false });
-const ECMHardwarePanel = dynamic(() => import('./panels/ECMHardwarePanel'), { ssr: false });
+const RealTimeMonitoringPanel = resilient(() => import('./panels/RealTimeMonitoringPanel'), { name: 'Real Time Monitoring', variant: 'panel' });
+const OBDProtocolPanel = resilient(() => import('./panels/OBDProtocolPanel'), { name: 'OBD Protocol', variant: 'panel' });
+const RemoteConnectivityPanel = resilient(() => import('./panels/RemoteConnectivityPanel'), { name: 'Remote Connectivity', variant: 'panel' });
+const PredictiveMaintenancePanel = resilient(() => import('./panels/PredictiveMaintenancePanel'), { name: 'Predictive Maintenance', variant: 'panel' });
+const DataRecordingPanel = resilient(() => import('./panels/DataRecordingPanel'), { name: 'Data Recording', variant: 'panel' });
+const ControllerRepairManualsPanel = resilient(() => import('./panels/ControllerRepairManualsPanel'), { name: 'Controller Repair Manuals', variant: 'panel' });
+const SensorDiagnosticsPanel = resilient(() => import('./panels/SensorDiagnosticsPanel'), { name: 'Sensor Diagnostics', variant: 'panel' });
+const ECMDiagnosticsPanel = resilient(() => import('./panels/ECMDiagnosticsPanel'), { name: 'ECM Diagnostics', variant: 'panel' });
+const AIAnalysisPanel = resilient(() => import('./panels/AIAnalysisPanel'), { name: 'AI Analysis', variant: 'panel' });
+const UnifiedDiagnosticsPanel = resilient(() => import('./panels/UnifiedDiagnosticsPanel'), { name: 'Unified Diagnostics', variant: 'panel' });
+const ECMProgrammingPanel = resilient(() => import('./panels/ECMProgrammingPanel'), { name: 'ECM Programming', variant: 'panel' });
+const CANbusMonitorPanel = resilient(() => import('./panels/CANbusMonitorPanel'), { name: 'CA Nbus Monitor', variant: 'panel' });
+const FleetDashboardPanel = resilient(() => import('./panels/FleetDashboardPanel'), { name: 'Fleet Dashboard', variant: 'panel' });
+const CompleteDiagnosticPanel = resilient(() => import('./panels/CompleteDiagnosticPanel'), { name: 'Complete Diagnostic', variant: 'panel' });
+const ECMReprogrammingGuidePanel = resilient(() => import('./panels/ECMReprogrammingGuidePanel'), { name: 'ECM Reprogramming Guide', variant: 'panel' });
+const ExpertAIChatPanel = resilient(() => import('./panels/ExpertAIChatPanel'), { name: 'Expert AI Chat', variant: 'panel' });
+const UniversalDiagnosticPanel = resilient(() => import('./panels/UniversalDiagnosticPanel'), { name: 'Universal Diagnostic', variant: 'panel' });
+const ODIDashboardPanel = resilient(() => import('./panels/ODIDashboardPanel'), { name: 'ODI Dashboard', variant: 'panel' });
+const ProfessionalDiagnosticInterface = resilient(() => import('./panels/ProfessionalDiagnosticInterface'), { name: 'Professional Diagnostic Interface', variant: 'panel' });
+const ECMDiagnosticSuite = resilient(() => import('./panels/ECMDiagnosticSuite'), { name: 'ECM Diagnostic Suite', variant: 'panel' });
+const ECMHardwarePanel = resilient(() => import('./panels/ECMHardwarePanel'), { name: 'ECM Hardware', variant: 'panel' });
 
 // Feature panels - loaded on demand
-const SubscriptionManager = dynamic(() => import('./SubscriptionManager'), { ssr: false });
-const ReportBuilder = dynamic(() => import('./ReportBuilder'), { ssr: false });
-const AIVisualDiagnostic = dynamic(() => import('./AIVisualDiagnostic'), { ssr: false });
-const PartsOrderPanel = dynamic(() => import('./PartsOrderPanel'), { ssr: false });
-const LocationCapture = dynamic(() => import('./LocationCapture'), { ssr: false });
-const NotificationSettings = dynamic(() => import('./NotificationSettings'), { ssr: false });
+const SubscriptionManager = resilient(() => import('./SubscriptionManager'), { name: 'Subscription Manager', variant: 'panel' });
+const ReportBuilder = resilient(() => import('./ReportBuilder'), { name: 'Report Builder', variant: 'panel' });
+const AIVisualDiagnostic = resilient(() => import('./AIVisualDiagnostic'), { name: 'AI Visual Diagnostic', variant: 'panel' });
+const PartsOrderPanel = resilient(() => import('./PartsOrderPanel'), { name: 'Parts Order', variant: 'panel' });
+const LocationCapture = resilient(() => import('./LocationCapture'), { name: 'Location Capture', variant: 'panel' });
+const NotificationSettings = resilient(() => import('./NotificationSettings'), { name: 'Notification Settings', variant: 'panel' });
 
 // Educational content panel
-const PossibleCausesPanel = dynamic(() => import('./PossibleCausesPanel'), { ssr: false });
-const InteractiveTroubleshooter = dynamic(() => import('./InteractiveTroubleshooter'), { ssr: false });
-const InteractiveDiagnosticSystem = dynamic(() => import('./panels/InteractiveDiagnosticSystem'), { ssr: false });
-const ProfessionalDiagnosticTools = dynamic(() => import('./panels/ProfessionalDiagnosticTools'), { ssr: false });
-const EngineeringCalculatorsPanel = dynamic(() => import('./panels/EngineeringCalculatorsPanel'), { ssr: false });
-const GuidedDiagnosisPanel = dynamic(() => import('./panels/GuidedDiagnosisPanel'), { ssr: false });
-const ServiceManagementPanel = dynamic(() => import('./panels/ServiceManagementPanel'), { ssr: false });
+const PossibleCausesPanel = resilient(() => import('./PossibleCausesPanel'), { name: 'Possible Causes', variant: 'panel' });
+const InteractiveTroubleshooter = resilient(() => import('./InteractiveTroubleshooter'), { name: 'Interactive Troubleshooter', variant: 'panel' });
+const InteractiveDiagnosticSystem = resilient(() => import('./panels/InteractiveDiagnosticSystem'), { name: 'Interactive Diagnostic System', variant: 'panel' });
+const ProfessionalDiagnosticTools = resilient(() => import('./panels/ProfessionalDiagnosticTools'), { name: 'Professional Diagnostic Tools', variant: 'panel' });
+const EngineeringCalculatorsPanel = resilient(() => import('./panels/EngineeringCalculatorsPanel'), { name: 'Engineering Calculators', variant: 'panel' });
+const GuidedDiagnosisPanel = resilient(() => import('./panels/GuidedDiagnosisPanel'), { name: 'Guided Diagnosis', variant: 'panel' });
+const ServiceManagementPanel = resilient(() => import('./panels/ServiceManagementPanel'), { name: 'Service Management', variant: 'panel' });
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -221,11 +221,13 @@ function UltraCockpitBackground() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_100%_50%,rgba(245,158,11,0.08),transparent_45%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_0%_50%,rgba(139,92,246,0.08),transparent_45%)]" />
 
-      {/* Single CSS-animated scan line - respects reduced motion */}
+      {/* Single CSS-animated scan line - respects reduced motion.
+          Moved with transform, not `top` (2026-11-22): animating `top` is a layout
+          change on every frame, which Chrome counted as ~28 layout shifts per load. */}
       <div
-        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent motion-reduce:hidden"
+        className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent motion-reduce:hidden"
         style={{
-          animation: 'scanLine 10s linear infinite',
+          animation: 'oracleScanLine 10s linear infinite',
           boxShadow: '0 0 20px 5px rgba(6,182,212,0.2)'
         }}
       />
@@ -252,9 +254,9 @@ function UltraCockpitBackground() {
 
       {/* CSS keyframes injected via style tag */}
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes scanLine {
-          0% { top: -5%; }
-          100% { top: 105%; }
+        @keyframes oracleScanLine {
+          0% { transform: translateY(-5vh); }
+          100% { transform: translateY(105vh); }
         }
         @keyframes float {
           0%, 100% { opacity: 0.2; transform: translateY(0); }

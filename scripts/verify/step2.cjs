@@ -71,7 +71,8 @@ async function functional(browser) {
       ? pass('/solar', 'FAQ payback: no invented range, worked from your quotation and tariff') : fail('/solar', 'FAQ payback quotes an invented range or lost its explanation');
     /Request a quotation/.test(text) && !/KES [\d,]{5,} - [\d,]{5,}/.test(text)
       ? pass('/solar', 'package cards: "Request a quotation", no unsourced price range') : fail('/solar', 'package cards show an unsourced price range');
-    await page.getByRole('button', { name: /Savings Calculator/ }).first().click();
+    // Phase 2 (2026-11-22): the /solar tabs are links with role="tab" (they work before hydration).
+    await page.getByRole('tab', { name: /Savings Calculator/ }).or(page.getByRole('button', { name: /Savings Calculator/ })).first().click();
     await page.waitForTimeout(3000);
     const bill = page.locator('#roi-bill');
     if (await bill.count()) {

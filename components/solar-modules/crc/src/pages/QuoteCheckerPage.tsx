@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { equipment, core } from '../services/api';
+import { useSessionDraft } from '@/lib/loading/sessionDraft';
+
+/** sessionStorage form name for the quote being checked. */
+export const QUOTE_DRAFT_FORM = 'solar-quote-check';
 import { BATTERY_KES_PER_KWH, PANEL_KES_PER_W, tieredKes, inverterBands, pricesVerified } from '@/lib/solar/sizing'; // one battery price for every tool (2026-10-19)
 
 // Self-quote checker.
@@ -430,7 +434,11 @@ function QuoteReviewOffer() {
 }
 
 function QuoteCheckerTool() {
-  const [text, setText] = useState('');
+  // The pasted quote is kept in sessionStorage while the tab is open, so a
+  // reload (e.g. the recovery "Reload page") does not lose it (2026-11-21).
+  const [draft, setDraft] = useSessionDraft(QUOTE_DRAFT_FORM, { text: '' });
+  const text = draft.text;
+  const setText = (v: string) => setDraft('text', v);
   const [lib, setLib] = useState<LibItem[]>([]);
   const [loadingLib, setLoadingLib] = useState(true);
   const [libErr, setLibErr] = useState<string | null>(null);

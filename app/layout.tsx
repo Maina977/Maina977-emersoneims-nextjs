@@ -31,6 +31,7 @@ import { defaultLocale } from '@/i18n';
 import enMessages from '@/messages/en.json';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import GoogleTags from '@/components/analytics/GoogleTags';
+import { BOOT_WATCHDOG_SCRIPT } from '@/lib/loading/bootWatchdog';
 import WebVitalsReporter from '@/components/analytics/WebVitalsReporter';
 import { ALL_SERVICES } from '@/lib/services/allServices';
 
@@ -74,6 +75,14 @@ const inter = localFont({
   variable: '--font-inter',
   adjustFontFallback: 'Arial',
 });
+
+// The fallback above is matched to Inter's AVERAGE (mostly lower-case) width.
+// The nav bar is set in spaced upper-case semibold, where that fallback runs
+// about 8% wide, so the bar shifted when Inter arrived (layout shift fix
+// 2026-11-22). The nav uses .nav-caps-font instead: Inter first, then Arial
+// scaled to Inter's measured upper-case width (98%, from the nav labels'
+// widths in both faces; ascent/descent kept equal to Inter's 0.96875/0.2412).
+const INTER_PRIMARY_FAMILY = inter.style.fontFamily.split(',')[0].trim();
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
@@ -527,6 +536,8 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={inter.variable}>
       <head>
+        {/* Boot watchdog: first, so it sees framework scripts that fail before React starts (lib/loading/bootWatchdog.ts). */}
+        <script id="eims-boot-watchdog" dangerouslySetInnerHTML={{ __html: BOOT_WATCHDOG_SCRIPT }} />
         {/* Structured Data - LocalBusiness Schema */}
         <script
           type="application/ld+json"
@@ -654,6 +665,8 @@ export default async function RootLayout({
           img,video,iframe{height:auto;max-width:100%;display:block}
           /* Font family alias */
           :root{--font-sans:var(--font-inter)}
+          @font-face{font-family:'Inter Caps Fallback';src:local('Arial');ascent-override:98.85%;descent-override:24.62%;line-gap-override:0%;size-adjust:98%}
+          .nav-caps-font{font-family:${INTER_PRIMARY_FAMILY},'Inter Caps Fallback',Arial,sans-serif}
           /* Navigation skeleton for instant render */
           nav#main-navigation{min-height:64px}
           /* Hero opt-in: pages add the hero-full class to first section to fill viewport */

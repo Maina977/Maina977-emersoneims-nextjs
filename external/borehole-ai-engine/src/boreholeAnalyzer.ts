@@ -53,6 +53,7 @@ import { assessDrillingRisk } from './riskDecisionEngine';
 import { calculateConfidenceWeighted } from './confidenceWeighting';
 import { optimizeMicroSite } from './microSitingOptimizer';
 import { buildFieldPumpTestAnalysis } from './pumpTestAnalyzer';
+import { siteEvidenceFrom } from './evidenceGate';
 import { analyzeLithologyLog, queryNearbyLithologyLogs, getRegionalLithologyInsight } from './lithologyLogger';
 import { interpretERTSurvey, type ERTDataPoint } from './ertInterpretation';
 import { runERTIntelligencePipeline, type ExistingAILayers } from './ertIntelligenceEngine';
@@ -2436,8 +2437,8 @@ export class BoreholeAnalyzer {
               electrode_spacing_m: fieldData.ertDataFile?.electrodeSpacing_m || 5,
             });
           });
-        } else if (fieldData.ertSurvey) {
-          // Construct from single survey result
+        } else if (fieldData.ertSurvey && fieldData.ertSurvey.resistivityOhmM != null) {
+          // Construct from single survey result (only with an entered resistivity)
           const aqD = fieldData.ertSurvey.aquiferDepthM;
           const aqT = fieldData.ertSurvey.aquiferThicknessM;
           const rho = fieldData.ertSurvey.resistivityOhmM;
@@ -2804,16 +2805,9 @@ export class BoreholeAnalyzer {
       // Site-level evidence actually supplied for this point (Release 5,
       // 2026-11-20): depth figures need a field resistivity/seismic survey,
       // yield figures a pumping test. Without them they are not shown.
-      siteEvidence: {
-        depth: !!(fieldData?.ertSurvey?.aquiferDepthM && fieldData.ertSurvey.aquiferDepthM > 0) || !!(fieldData?.seismicSurvey?.fractureZoneDepthM),
-        yield: !!fieldData?.pumpTest || !!(fieldData?.stepDrawdownTest?.steps?.length),
-        methods: [
-          fieldData?.ertSurvey ? `ERT/VES survey${fieldData.ertSurvey.contractor ? ` (${fieldData.ertSurvey.contractor}, ${fieldData.ertSurvey.surveyDate})` : ''}` : null,
-          fieldData?.seismicSurvey ? 'seismic survey' : null,
-          fieldData?.pumpTest ? `pumping test (${fieldData.pumpTest.testDate})` : null,
-          fieldData?.stepDrawdownTest ? 'step-drawdown test' : null,
-        ].filter((x): x is string => !!x),
-      },
+      // Same conditions, one function (evidenceGate.ts), with citations of the
+      // entered source, date, method and reference (2026-11-22).
+      siteEvidence: siteEvidenceFrom(fieldData),
       // ═══ 10 ADVANCED FEATURE ENGINE RESULTS ═══
       geophysicsFusion: geophysicsFusion ?? undefined,
       boreholeIntelligence: boreholeIntelligence ?? undefined,

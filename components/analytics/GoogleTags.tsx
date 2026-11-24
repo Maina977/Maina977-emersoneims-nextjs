@@ -111,8 +111,15 @@ export default function GoogleTags() {
      * another Lighthouse run. If field data shows no gain either, revert this:
      * unjustified complexity on 4,970 pages is not worth keeping.
      */
-    '(function(){var done=false;',
-    'function load(){if(done)return;done=true;',
+    // Engineering first (Solar stall root cause, 2026-11-22): while a tool module
+    // is downloading (window.__eimsEngineeringBusy, set by lib/loading/resilientImport),
+    // the tag waits, re-checking each second, for at most 20 s after this script ran,
+    // so it always loads. Pages without engineering tools never set the flag:
+    // their behaviour is unchanged.
+    '(function(){var done=false,t0=Date.now();',
+    'function load(){if(done)return;',
+    'if((window.__eimsEngineeringBusy|0)>0&&Date.now()-t0<20000){setTimeout(load,1000);return;}',
+    'done=true;',
     "var s=document.createElement('script');s.async=true;",
     `s.src='https://www.googletagmanager.com/gtag/js?id=${loaderId}';`,
     'document.head.appendChild(s);}',

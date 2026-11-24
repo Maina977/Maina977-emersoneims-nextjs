@@ -148,8 +148,8 @@ function buildERTLayers(ert: NonNullable<FieldValidationData['ertSurvey']>, ertF
       });
       topDepth = bottomDepth;
     }
-  } else {
-    // Simple 3-layer model from survey summary
+  } else if (ert.resistivityOhmM != null) {
+    // Simple 3-layer model from survey summary (only with an entered resistivity)
     const aqTop = ert.aquiferDepthM;
     const aqBottom = aqTop + ert.aquiferThicknessM;
     const rho = ert.resistivityOhmM;
@@ -446,7 +446,7 @@ export function runMultiGeophysicsFusion(fieldData: FieldValidationData): Fusion
     const ertLayers = buildERTLayers(fieldData.ertSurvey, fieldData.ertDataFile);
     allLayerSets.push(ertLayers);
     methodsUsed.push('ERT');
-    diagnostics.push(`ERT: ${ertLayers.length} layers, aquifer at ${fieldData.ertSurvey.aquiferDepthM}m, ρ=${fieldData.ertSurvey.resistivityOhmM} Ωm`);
+    diagnostics.push(`ERT: ${ertLayers.length} layers, aquifer at ${fieldData.ertSurvey.aquiferDepthM}m, ρ=${fieldData.ertSurvey.resistivityOhmM != null ? `${fieldData.ertSurvey.resistivityOhmM} Ωm` : 'not entered'}`);
   }
 
   // 2. EM/TDEM layers

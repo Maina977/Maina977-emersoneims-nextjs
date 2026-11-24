@@ -1,6 +1,7 @@
 'use client';
 
 import { reportError } from '@/lib/monitoring/reportError';
+import { isChunkLoadError } from '@/lib/loading/isChunkLoadError';
 import { useEffect } from 'react';
 import Link from 'next/link';
 
@@ -26,8 +27,12 @@ export default function GlobalError({ error, reset }: ErrorProps) {
     console.error('Application error:', error);
   }, [error]);
 
+  // A failed download of the page's code (connection dropped while loading) is
+  // not a fault in the page: say so, and offer a full reload, which fixes it.
+  const download = isChunkLoadError(error);
+
   return (
-    <html>
+    <html lang="en">
       <body className="min-h-screen bg-black text-white">
         <div className="min-h-screen flex items-center justify-center px-4">
           <div className="max-w-lg text-center">
@@ -52,14 +57,25 @@ export default function GlobalError({ error, reset }: ErrorProps) {
             </div>
 
             {/* Error Message */}
-            <h1 className="text-4xl font-bold mb-4">
-              Something Went <span className="text-red-500">Wrong</span>
-            </h1>
-            
-            <p className="text-gray-400 mb-8">
-              We apologize for the inconvenience. Our team has been notified and 
-              is working to fix this issue.
-            </p>
+            {download ? (
+              <>
+                <h1 className="text-4xl font-bold mb-4">The page did not finish loading</h1>
+                <p className="text-gray-300 mb-8">
+                  The connection dropped while part of this page was downloading. Reload the page to
+                  download it again. Work saved in this browser (drafts, projects, service records) is kept.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-4xl font-bold mb-4">
+                  Something Went <span className="text-red-500">Wrong</span>
+                </h1>
+                <p className="text-gray-400 mb-8">
+                  We apologize for the inconvenience. Please try again; if it keeps happening, call or
+                  WhatsApp us below and tell us which page you were on.
+                </p>
+              </>
+            )}
 
             {/* Error Details (Dev only) */}
             {process.env.NODE_ENV === 'development' && (
@@ -77,10 +93,11 @@ export default function GlobalError({ error, reset }: ErrorProps) {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={reset}
+                type="button"
+                onClick={download ? () => window.location.reload() : reset}
                 className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg font-semibold hover:opacity-90 transition-opacity"
               >
-                Try Again
+                {download ? 'Reload page' : 'Try Again'}
               </button>
               
               <Link

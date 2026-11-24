@@ -1,14 +1,18 @@
 'use client';
 
 import { Suspense, lazy, useEffect, useState } from 'react';
+import { importWithRetry } from '@/lib/loading/resilientImport';
 import DMCAProtection from '@/components/security/DMCAProtection';
 import GeneratorOracleSEO from '@/components/seo/GeneratorOracleSEO';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import LiveBackendStatus from '@/components/generator-oracle/LiveBackendStatus';
 
-// Lazy load the main component for better initial load performance
-const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/GeneratorOracleModule'));
+// React.lazy + Suspense, as in production: the module is SERVER-RENDERED, so the
+// page's H1 and tool content are in the HTML (Phase 2 gate, 2026-11-22: a
+// client-only loader removed the H1 and failed the site audit and SEO compare).
+// The download is retried on failure (3 attempts with back-off, lib/loading).
+const GeneratorOracleModule = lazy(() => importWithRetry(() => import('@/components/generator-oracle/GeneratorOracleModule')));
 
 /**
  * Generator Oracle

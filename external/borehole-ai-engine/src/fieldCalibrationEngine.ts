@@ -132,12 +132,14 @@ export function calibrateWithFieldData(
     const depthAccuracy = 1 - (depthDelta / Math.max(desktopResult.recommendedDepth, ert.aquiferDepthM));
 
     notes.push(`ERT aquifer depth: ${ert.aquiferDepthM}m (desktop predicted ${desktopResult.recommendedDepth}m, delta ${depthDelta.toFixed(1)}m, ${(depthAccuracy * 100).toFixed(0)}% accurate)`);
-    notes.push(`ERT aquifer thickness: ${ert.aquiferThicknessM}m, resistivity: ${ert.resistivityOhmM} Ω·m`);
+    const rho = ert.resistivityOhmM;
+    notes.push(`ERT aquifer thickness: ${ert.aquiferThicknessM}m, resistivity: ${rho != null ? `${rho} Ω·m` : 'not given in the survey entry'}`);
 
-    // Resistivity → rock type validation
-    if (ert.resistivityOhmM > 1000) notes.push('High resistivity → fresh bedrock / dry zone');
-    else if (ert.resistivityOhmM > 100) notes.push('Moderate resistivity → fractured/weathered rock (promising)');
-    else if (ert.resistivityOhmM > 10) notes.push('Low resistivity → saturated zone / clay (good if thick)');
+    // Resistivity → rock type validation (only when the survey gives it)
+    if (rho == null) { /* no resistivity entered: no interpretation */ }
+    else if (rho > 1000) notes.push('High resistivity → fresh bedrock / dry zone');
+    else if (rho > 100) notes.push('Moderate resistivity → fractured/weathered rock (promising)');
+    else if (rho > 10) notes.push('Low resistivity → saturated zone / clay (good if thick)');
     else notes.push('Very low resistivity → clay / saline water (caution)');
 
     // Yield adjustment from aquifer thickness
@@ -164,11 +166,23 @@ export function calibrateWithFieldData(
     const S = pt.storativity;
 
     notes.push(`Pump test yield: ${pt.sustainableYieldM3Hr} m³/hr (desktop predicted ${desktopResult.estimatedYield} m³/hr)`);
-    notes.push(`Transmissivity: ${T} m²/day, Storativity: ${S}`);
+    if (T != null || S != null) notes.push(`Transmissivity: ${T ?? 'not reported'} m²/day, Storativity: ${S ?? 'not reported'}`);
     notes.push(`Recovery: ${pt.recoveryPercent}% → ${pt.recoveryPercent > 80 ? 'good recovery (favourable; long-term sustainability still depends on recharge and a long-duration test)' : 'CAUTION: slow recovery'}`);
 
     confidenceBoost += 12;
     reportLevel = 3;
+  } else if (fieldData.stepDrawdownTest?.steps?.length) {
+    // A step-drawdown test alone: the yield shown is the highest rate actually
+    // tested, never the desktop model (2026-11-22, management priority 6).
+    const sd = fieldData.stepDrawdownTest;
+    const top = Math.max(...sd.steps.map((s) => Number(s.pumpingRate_m3hr) || 0));
+    if (top > 0) {
+      sources.push(`Step-drawdown test (${sd.steps.length} steps${sd.testDate ? `, ${sd.testDate}` : ''})`);
+      calYield = top;
+      notes.push(`Step-drawdown test: highest step rate tested ${top} m³/hr (desktop predicted ${desktopResult.estimatedYield} m³/hr). A step test does not establish a sustainable yield; a constant-rate test does.`);
+      confidenceBoost += 6;
+      reportLevel = Math.max(reportLevel, 2) as CalibrationResult['reportLevel'];
+    }
   }
 
   // ═══ LAB WATER QUALITY CALIBRATION ═══
@@ -552,8 +566,9 @@ export function calibrateWithFieldData(
 
   // Pump test data → compute aquifer parameters
   let aquiferParams: CalibrationResult['aquiferParameters'];
-  if (fieldData.pumpTest) {
-    const pt = fieldData.pumpTest;
+  // Only when the test report gives transmissivity and storativity (never defaulted).
+  if (fieldData.pumpTest && fieldData.pumpTest.transmissivityM2Day != null && fieldData.pumpTest.storativity != null) {
+    const pt = fieldData.pumpTest as typeof fieldData.pumpTest & { transmissivityM2Day: number; storativity: number };
     const thickness = fieldData.ertSurvey?.aquiferThicknessM ?? 20;
     aquiferParams = {
       transmissivity_m2day: pt.transmissivityM2Day,

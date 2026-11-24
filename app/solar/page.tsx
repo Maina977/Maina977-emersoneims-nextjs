@@ -22,6 +22,9 @@ import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import SolarEngineeringDeepDive from '@/components/solar/SolarEngineeringDeepDive';
 import ServiceCTASection from '@/components/cta/ServiceCTASection';
 import SolarGeniusProCard from '@/components/solar/SolarGeniusProCard';
+import SolarToolTabs, { useHashTab, type SolarTab } from '@/components/solar/SolarToolTabs';
+import { resilient } from '@/lib/loading/ResilientModule';
+import { useEngineeringIdle } from '@/lib/loading/resilientImport';
 
 // Strictly-solar rotating gallery (like the landing page ring)
 // Deterministic particle layout — fixed values so SSR and client render
@@ -46,19 +49,19 @@ const SOLAR_RING = [
 ];
 
 // ==================== DYNAMIC IMPORTS ====================
-const SolarBibleEngine = dynamic(() => import('@/components/solar/SolarBibleEngine'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
+// Engineering tools: retry, slow note + Reload, and Try again (lib/loading, 2026-11-21).
+// The shop, booking form and gallery stay on next/dynamic (not engineering tools).
+const toolPlaceholder = () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />;
+const SolarBibleEngine = resilient(() => import('@/components/solar/SolarBibleEngine'), { name: 'The sizing calculator', variant: 'panel', subject: 'the sizing calculator', loading: toolPlaceholder });
 
 const SolarProductsShop = dynamic(() => import('@/components/solar/SolarProductsShop'), {
   loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
   ssr: false
 });
 
-const SolarROICalculator = dynamic(() => import('@/components/solar/SolarROICalculator'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
+const SolarROICalculator = resilient(() => import('@/components/solar/SolarROICalculator'), {
+  name: 'The Savings Calculator', variant: 'panel', subject: 'the Savings Calculator', loading: toolPlaceholder,
+  failedBody: 'This is usually a dropped or slow connection. Figures you typed are kept in this tab. Press Try again to download it again.',
 });
 
 const SolarInstallationBooking = dynamic(() => import('@/components/solar/SolarInstallationBooking'), {
@@ -66,23 +69,11 @@ const SolarInstallationBooking = dynamic(() => import('@/components/solar/SolarI
   ssr: false
 });
 
-const SolarMaintenanceHub = dynamic(() => import('@/components/solar/SolarMaintenanceHub'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
+const SolarMaintenanceHub = resilient(() => import('@/components/solar/SolarMaintenanceHub'), { name: 'The maintenance hub', variant: 'panel', subject: 'the maintenance hub', loading: toolPlaceholder });
 
+const Solar3DDesignStudio = resilient(() => import('@/components/solar/Solar3DDesignStudio'), { name: 'The 3D Design Studio', variant: 'panel', subject: 'the 3D Design Studio', loading: toolPlaceholder });
 
-
-const Solar3DDesignStudio = dynamic(() => import('@/components/solar/Solar3DDesignStudio'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
-
-
-const True3DWebGLViewer = dynamic(() => import('@/components/solar/True3DWebGLViewer'), {
-  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
-  ssr: false
-});
+const True3DWebGLViewer = resilient(() => import('@/components/solar/True3DWebGLViewer'), { name: 'The 3D viewer', variant: 'panel', subject: 'the 3D viewer', loading: toolPlaceholder });
 
 
 
@@ -91,9 +82,39 @@ const True3DWebGLViewer = dynamic(() => import('@/components/solar/True3DWebGLVi
 // Below-the-fold rotating WebGL ring gallery — code-split to keep it out of the
 // page entry bundle (matches the dynamic pattern used for every section above).
 const RingGallery = dynamic(() => import('@/components/home/RingGallery'), {
-  loading: () => <div className="bg-black h-[100svh] min-h-[620px]" />,
+  loading: () => <div className={GALLERY_PLACEHOLDER_CLASS} />,
   ssr: false
 });
+
+// ENGINEERING BEFORE DECORATION (Solar stall root cause, 2026-11-22). On a slow
+// link the ring gallery's three.js (187 KB) started downloading the moment a
+// visitor scrolled to the tool tabs and clicked one, and shared the connection
+// with the calculator they asked for (HARs in phase2-report-a/stall-investigation).
+// Now, after the page has loaded and the browser is idle, the two tools most
+// often opened are downloaded first (small); the gallery mounts only once they
+// have arrived and no engineering module is downloading. Ceiling: 45 s, so the
+// gallery always appears. Until then the same placeholder as its loader shows.
+const GALLERY_PLACEHOLDER_CLASS = 'bg-black h-[100svh] min-h-[620px]';
+function useDecorationAfterEngineering(): boolean {
+  const engineeringIdle = useEngineeringIdle();
+  const [warm, setWarm] = useState(false);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    const warmUp = () => {
+      Promise.allSettled([SolarROICalculator.preload(), SolarBibleEngine.preload()]).then(() => { if (!cancelled) setWarm(true); });
+    };
+    const onLoad = () => {
+      if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(warmUp, { timeout: 3000 });
+      else setTimeout(warmUp, 1000);
+    };
+    if (document.readyState === 'complete') onLoad(); else window.addEventListener('load', onLoad, { once: true });
+    const ceiling = setTimeout(() => { if (!cancelled) setReady(true); }, 45_000);
+    return () => { cancelled = true; window.removeEventListener('load', onLoad); clearTimeout(ceiling); };
+  }, []);
+  useEffect(() => { if (warm && engineeringIdle) setReady(true); }, [warm, engineeringIdle]);
+  return ready;
+}
 
 // Import equipment database and guides
 import {
@@ -423,7 +444,8 @@ const SOLAR_DOWNLOADS = [
   { title: 'Solar System Wiring Diagrams', description: 'Technical diagrams for common configurations', type: 'PDF', icon: '⚡' },
 ];
 
-type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'repair' | 'design3d' | 'webgl3d';
+const TAB_IDS = ['overview', 'shop', 'calculator', 'roi', 'booking', 'faults', 'maintenance', 'education', 'equipment', 'wiring', 'repair', 'design3d', 'webgl3d'] as const;
+type TabType = typeof TAB_IDS[number];
 
 // ==================== FLOATING WHATSAPP COMPONENT ====================
 function FloatingWhatsApp() {
@@ -508,13 +530,14 @@ function UrgencyBanner() {
 export default function SolarBible() {
   const [selectedSystem, setSelectedSystem] = useState(SOLAR_SYSTEMS[0]);
   const [selectedLocation, setSelectedLocation] = useState('nairobi');
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useHashTab<TabType>('overview', TAB_IDS);
+  const galleryReady = useDecorationAfterEngineering();
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
   // ==================== TABS ORGANIZED BY USER JOURNEY ====================
-  const tabs = [
+  const tabs: (SolarTab & { id: TabType })[] = [
     // TIER 1: Customer Entry Points (What customers see first)
     { id: 'overview', label: 'Solar Overview', icon: '☀️', badge: 'START' },
     { id: 'calculator', label: 'Size My System', icon: '🧮', badge: 'FREE' },
@@ -677,11 +700,13 @@ export default function SolarBible() {
       <SolarGeniusProCard />
 
       {/* ==================== ROTATING SOLAR GALLERY ==================== */}
-      <RingGallery
-        items={SOLAR_RING}
-        eyebrow="Solar Projects Across Kenya"
-        heading="Powered by the Sun"
-      />
+      {galleryReady ? (
+        <RingGallery
+          items={SOLAR_RING}
+          eyebrow="Solar Projects Across Kenya"
+          heading="Powered by the Sun"
+        />
+      ) : <div className={GALLERY_PLACEHOLDER_CLASS} aria-hidden="true" />}
 
       {/* ==================== WHY SOLAR IN KENYA ==================== */}
       <section className="py-16 bg-gradient-to-b from-amber-900/10 to-transparent">
@@ -1078,25 +1103,8 @@ export default function SolarBible() {
             ))}
           </div>
 
-          {/* Tab Navigation */}
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
-                className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${
-                  activeTab === tab.id
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                }`}
-              >
-                {tab.icon} {tab.label}
-                {tab.badge && (
-                  <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs rounded-full">{tab.badge}</span>
-                )}
-              </button>
-            ))}
-          </div>
+          {/* Tab Navigation: native links, so a click before hydration is not lost (2026-11-21). */}
+          <SolarToolTabs tabs={tabs} active={activeTab} onSelect={setActiveTab} />
 
           {/* Tab Content */}
           <AnimatePresence mode="wait">
