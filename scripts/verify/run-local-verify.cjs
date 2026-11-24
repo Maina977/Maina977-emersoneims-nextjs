@@ -70,9 +70,19 @@ const ping = () => new Promise((res) => {
   } else {
     note('BUILD running');
     const buildExit = run('npm run build', 'build.log', 30 * 60 * 1000);
-    const passes = (fs.readFileSync(path.join(out, 'build.log'), 'utf8').match(/PASS/g) || []).length;
+    const buildLog = fs.readFileSync(path.join(out, 'build.log'), 'utf8');
+    const passes = (buildLog.match(/PASS/g) || []).length;
     note(`BUILD exit=${buildExit} PASS-lines=${passes}`);
     if (buildExit !== 0) { note('RESULT FAILED (build)'); note('DONE'); return; }
+    // 2026-11-24: a build can succeed locally yet fail to DEPLOY. A file-system call with a
+    // dynamic path made Turbopack trace the whole project into one server function
+    // (488 MB > Vercel's 250 MB limit); the local build only warned. Treat that warning as a failure.
+    const traced = (buildLog.match(/causes the whole project to be traced/g) || []).length;
+    if (traced) {
+      note(`BUILD-TRACE FAILED :: ${traced} file-system access(es) trace the whole project into a server function (see build.log); Vercel's function size limit would be exceeded`);
+      note('RESULT FAILED (build trace)'); note('DONE'); return;
+    }
+    note('BUILD-TRACE ok :: no whole-project file tracing');
   }
 
   const serverLog = fs.openSync(path.join(out, 'server.log'), 'w');

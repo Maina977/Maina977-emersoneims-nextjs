@@ -52,3 +52,12 @@ describe('application code never imports from deploy-excluded directories', () =
     expect(bad).toEqual([]);
   });
 });
+
+describe('code traced into server functions does not read the file system with dynamic paths', () => {
+  it('the accounts backup core (used by the accounts API) has no file-system access at all', () => {
+    const core = fs.readFileSync(path.join(ROOT, 'lib', 'accounts', 'backup-core.cjs'), 'utf8');
+    // 488 MB function on Vercel (24 Nov 2026) came from fs.readdirSync / readFileSync with a computed path here.
+    expect(core).not.toMatch(/require\(\s*['"](node:)?fs['"]\s*\)/);
+    expect(core).not.toMatch(/__dirname/);
+  });
+});
