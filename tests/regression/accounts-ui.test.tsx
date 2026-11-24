@@ -110,6 +110,11 @@ describe('account screens', () => {
     type(/The 6-digit code/, totpCode(key, Date.now()));
     fireEvent.click(screen.getByRole('button', { name: 'Turn on' }));
     await screen.findByText(/Authenticator app enabled and used for this session/);
+    // Recovery codes shown once, right after turning it on.
+    const codesBox = await screen.findByRole('region', { name: 'Recovery codes' });
+    const recoveryCodes = Array.from(codesBox.querySelectorAll('li')).map((li) => li.textContent!);
+    expect(recoveryCodes).toHaveLength(10);
+    await screen.findByText(/Unused recovery codes: 10/);
 
     // 5. Organisation (the creator is its owner; owners need the second factor, which this session has).
     type(/^New organisation/, 'TEST UI Org');
@@ -135,6 +140,17 @@ describe('account screens', () => {
     // Every request went through the API; no request loop.
     const orgsLoads = requests.filter((r) => r === 'GET /api/accounts/orgs').length;
     expect(orgsLoads).toBeLessThan(5);
+
+    // 8. Lost phone: sign out, then sign in with a recovery code instead of the authenticator.
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    await screen.findByRole('form', { name: 'Sign in' });
+    type(/^Email/, email); type(/^Password$/, TEST_PASSWORD);
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Lost your authenticator\? Use a recovery code/ }));
+    type(/^Recovery code/, recoveryCodes[3]);
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await screen.findByText(/Authenticator app enabled and used for this session/);
+    await screen.findByText(/Unused recovery codes: 9/);
   });
 });
 

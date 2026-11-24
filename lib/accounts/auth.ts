@@ -15,6 +15,7 @@ import {
   burnPasswordCheck, decryptSecret, encryptSecret, hashPassword, matchTotp, newTotpSecret, otpauthUri, randomToken, sha256HexNode, verifyPassword,
 } from './crypto';
 import { randomUUID } from 'node:crypto';
+import { issueRecoveryCodes, useRecoveryCode } from './recovery';
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,63}$/;
 export function normaliseEmail(e: unknown): string {
@@ -128,7 +129,7 @@ export async function useTotp(q: Queryable, ctx: Ctx, userId: string, code: unkn
   return true;
 }
 
-export async function login(ctx: Ctx, body: { email?: unknown; password?: unknown; totp?: unknown }, ip: string): Promise<NewSession | { needTotp: true }> {
+export async function login(ctx: Ctx, body: { email?: unknown; password?: unknown; totp?: unknown; recoveryCode?: unknown }, ip: string): Promise<NewSession | { needTotp: true }> {
   const now = ctx.now();
   if (!(await rateHit(ctx.db, `login-ip:${ip}`, 15 * 60e3, LOGIN_PER_IP_PER_15MIN, now))) throw new AcctError(429, GENERIC_LOGIN_ERROR);
   let email: string;
@@ -156,9 +157,14 @@ export async function login(ctx: Ctx, body: { email?: unknown; password?: unknow
   if (!ok) return recordFailure('password');
   if (!u.email_verified_at) throw loginFail();
   const totpOn = Boolean(u.totp_enabled_at);
-  if (totpOn && (body.totp === undefined || body.totp === null || body.totp === '')) return { needTotp: true };
+  const given = (v: unknown) => v !== undefined && v !== null && v !== '';
+  // The second factor: an authenticator code, or (lost device) one unused recovery code.
+  if (totpOn && !given(body.totp) && !given(body.recoveryCode)) return { needTotp: true };
   return ctx.db.tx(async (q) => {
-    if (totpOn && !(await useTotp(q, ctx, u.id, body.totp))) return null;
+    if (totpOn) {
+      const proven = given(body.totp) ? await useTotp(q, ctx, u.id, body.totp) : await useRecoveryCode(q, ctx, u.id, body.recoveryCode);
+      if (!proven) return null;
+    }
     await q.query('UPDATE acct_users SET failed_logins = 0, locked_until = NULL WHERE id = $1', [u.id]);
     const s = await createSession(q, ctx, u.id, totpOn);
     await appendAudit(q, ctx.secret, { actorUserId: u.id, orgId: null, action: 'login.succeeded', objectType: 'user', objectId: u.id, detail: { mfa: totpOn } }, now);
@@ -198,9 +204,10 @@ export async function totpSetup(ctx: Ctx, actor: Actor): Promise<{ secret: strin
   return { secret, uri: otpauthUri(secret, actor.email) };
 }
 
-export async function totpEnable(ctx: Ctx, actor: Actor, code: unknown): Promise<void> {
+/** Turns the authenticator on; returns the first set of recovery codes, shown once. */
+export async function totpEnable(ctx: Ctx, actor: Actor, code: unknown): Promise<{ recoveryCodes: string[] }> {
   if (actor.totpEnabled) throw badRequest('The second factor is already enabled');
-  await ctx.db.tx(async (q) => {
+  return ctx.db.tx(async (q) => {
     const u = (await q.query<{ totp_secret_enc: string | null }>('SELECT totp_secret_enc FROM acct_users WHERE id = $1 FOR UPDATE', [actor.userId])).rows[0];
     const secret = u?.totp_secret_enc ? decryptSecret(u.totp_secret_enc, ctx.secret) : null;
     const step = secret && typeof code === 'string' ? matchTotp(secret, code.trim(), ctx.now().getTime()) : null;
@@ -208,6 +215,7 @@ export async function totpEnable(ctx: Ctx, actor: Actor, code: unknown): Promise
     await q.query('UPDATE acct_users SET totp_enabled_at = $2, totp_last_step = $3, updated_at = $2 WHERE id = $1', [actor.userId, ctx.now().toISOString(), step]);
     await q.query('UPDATE acct_sessions SET mfa_verified = TRUE WHERE token_hash = $1', [actor.sessionHash]);
     await appendAudit(q, ctx.secret, { actorUserId: actor.userId, orgId: null, action: 'user.totp_enabled', objectType: 'user', objectId: actor.userId }, ctx.now());
+    return { recoveryCodes: await issueRecoveryCodes(q, ctx, actor.userId) };
   });
 }
 

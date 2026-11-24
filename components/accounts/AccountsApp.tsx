@@ -65,10 +65,12 @@ interface Me { id: string; email: string; mfa: boolean; totpEnabled: boolean; is
 function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [code, setCode] = useState('');
   const [needCode, setNeedCode] = useState(false);
+  const [useRecovery, setUseRecovery] = useState(false);
   const a = useAction();
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const r = await a.run(() => api('POST', 'login', { email, password, ...(needCode ? { totp: code } : {}) }));
+    const second = needCode ? (useRecovery ? { recoveryCode: code } : { totp: code }) : {};
+    const r = await a.run(() => api('POST', 'login', { email, password, ...second }));
     if (r.ok && r.needTotp) { setNeedCode(true); a.setMsg({ kind: 'ok', text: 'Enter the 6-digit code from your authenticator app.' }); return; }
     if (r.ok) onSignedIn();
   };
@@ -76,7 +78,11 @@ function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
     <form onSubmit={submit} className="space-y-3" aria-label="Sign in">
       <Field label="Email"><input className={input} type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
       <Field label="Password"><input className={input} type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
-      {needCode && <Field label="Authenticator code"><input className={input} inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" required value={code} onChange={(e) => setCode(e.target.value)} /></Field>}
+      {needCode && (useRecovery
+        ? <Field label="Recovery code"><input className={input} autoComplete="off" placeholder="XXXXX-XXXXX" required value={code} onChange={(e) => setCode(e.target.value)} /></Field>
+        : <Field label="Authenticator code"><input className={input} inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" required value={code} onChange={(e) => setCode(e.target.value)} /></Field>)}
+      {needCode && <button type="button" className="text-sm text-amber-300 underline" onClick={() => { setUseRecovery(!useRecovery); setCode(''); }}>
+        {useRecovery ? 'Use my authenticator app instead' : 'Lost your authenticator? Use a recovery code'}</button>}
       <button className={btn} disabled={a.busy}>Sign in</button>
       <Notice msg={a.msg} />
     </form>
@@ -149,14 +155,49 @@ function TokenView({ view, token, me, onDone }: { view: string; token: string; m
 }
 
 // ------------------------------------------------------------------ second factor
+function RecoveryCodes({ codes }: { codes: string[] }) {
+  return <div role="region" aria-label="Recovery codes" className="mt-3 rounded-lg border border-amber-500 bg-slate-950 p-4">
+    <p className="mb-2 text-sm font-semibold text-amber-300">Save these recovery codes now. They are shown only once.</p>
+    <p className="mb-3 text-xs text-slate-300">Each works once, in place of your authenticator, if you lose your phone. Store them somewhere safe and private (not in email). Anyone with your password and a code can sign in as you.</p>
+    <ol className="grid grid-cols-2 gap-1 font-mono text-sm text-white sm:grid-cols-5">{codes.map((c) => <li key={c}>{c}</li>)}</ol>
+  </div>;
+}
+
 function SecondFactor({ me, onChange }: { me: Me; onChange: () => void }) {
   const [setup, setSetup] = useState<{ secret: string; uri: string } | null>(null);
   const [code, setCode] = useState('');
+  const [codes, setCodes] = useState<string[] | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const [mode, setMode] = useState<'none' | 'regenerate' | 'replace'>('none');
+  const [proof, setProof] = useState(''); const [proofIsRecovery, setProofIsRecovery] = useState(false);
   const a = useAction();
-  if (me.totpEnabled) return <Card title="Second factor"><p className="text-emerald-300">Authenticator app enabled{me.mfa ? ' and used for this session.' : '. Sign out and in again with a code to use it in this session.'}</p></Card>;
+  useEffect(() => { if (me.totpEnabled && me.mfa) void api('GET', 'recovery-codes').then((r) => { if (r.ok) setRemaining(Number(r.remaining)); }); }, [me.totpEnabled, me.mfa, codes]);
+  if (me.totpEnabled) return <Card title="Second factor">
+    <p className="text-emerald-300">Authenticator app enabled{me.mfa ? ' and used for this session.' : '. Sign out and in again with a code to use it in this session.'}</p>
+    {codes && <RecoveryCodes codes={codes} />}
+    {me.mfa && <>
+      {remaining !== null && <p className={`mt-2 text-sm ${remaining <= 2 ? 'text-amber-300' : 'text-slate-300'}`}>Unused recovery codes: {remaining}{remaining <= 2 ? ': make new ones soon.' : ''}</p>}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button className={btn2} onClick={() => { setMode(mode === 'regenerate' ? 'none' : 'regenerate'); setProof(''); }}>Make new recovery codes</button>
+        <button className={btn2} onClick={() => { setMode(mode === 'replace' ? 'none' : 'replace'); setProof(''); }}>Replace my authenticator (new phone)</button>
+      </div>
+      {mode === 'regenerate' && <form className="mt-3 flex flex-wrap items-end gap-2" onSubmit={async (e) => { e.preventDefault(); const r = await a.run(() => api('POST', 'recovery-codes', { totp: proof })); if (r.ok) { setCodes(r.recoveryCodes as string[]); setMode('none'); } }}>
+        <p className="w-full text-xs text-slate-400">Your current codes will stop working.</p>
+        <Field label="Fresh authenticator code"><input className={input} inputMode="numeric" pattern="[0-9]{6}" required value={proof} onChange={(e) => setProof(e.target.value)} /></Field>
+        <button className={btn} disabled={a.busy}>Make new codes</button>
+      </form>}
+      {mode === 'replace' && <form className="mt-3 space-y-2" onSubmit={async (e) => { e.preventDefault(); const r = await a.run(() => api('POST', 'totp/reset', proofIsRecovery ? { recoveryCode: proof } : { totp: proof }), 'Authenticator removed. Set up the new one now.'); if (r.ok) { setCodes(null); setSetup(null); onChange(); } }}>
+        <p className="text-xs text-slate-400">This removes your authenticator and recovery codes and signs you out everywhere else. You then set up the new phone straight away.</p>
+        <label className="flex items-center gap-2 text-sm text-slate-300"><input type="checkbox" checked={proofIsRecovery} onChange={(e) => { setProofIsRecovery(e.target.checked); setProof(''); }} /> I no longer have my old authenticator (use a recovery code)</label>
+        <Field label={proofIsRecovery ? 'Unused recovery code' : 'Fresh authenticator code'}><input className={input} required value={proof} onChange={(e) => setProof(e.target.value)} /></Field>
+        <button className={btn} disabled={a.busy}>Remove my authenticator</button>
+      </form>}
+    </>}
+    <Notice msg={a.msg} />
+  </Card>;
   return <Card title="Second factor (required for owners, admins and reviewers)">
     {!setup ? <button className={btn} disabled={a.busy} onClick={async () => { const r = await a.run(() => api('POST', 'totp/setup', {})); if (r.ok) setSetup({ secret: String(r.secret), uri: String(r.uri) }); }}>Set up an authenticator app</button> : (
-      <form className="space-y-3" onSubmit={async (e) => { e.preventDefault(); const r = await a.run(() => api('POST', 'totp/enable', { code }), 'Second factor enabled.'); if (r.ok) onChange(); }}>
+      <form className="space-y-3" onSubmit={async (e) => { e.preventDefault(); const r = await a.run(() => api('POST', 'totp/enable', { code }), 'Second factor enabled.'); if (r.ok) { setCodes(r.recoveryCodes as string[]); onChange(); } }}>
         <p className="text-sm text-slate-300">In your authenticator app choose <em>enter a setup key</em> and type this key (time-based):</p>
         <p className="break-all rounded bg-slate-950 px-3 py-2 font-mono text-amber-300" aria-label="Setup key">{setup.secret}</p>
         <p className="break-all text-xs text-slate-400">Or open: <a className="underline" href={setup.uri}>{setup.uri}</a></p>
@@ -316,6 +357,22 @@ function Audit({ org }: { org: Org }) {
   </Card>;
 }
 
+function RegistryReset() {
+  const [email, setEmail] = useState(''); const [reason, setReason] = useState(''); const [ref, setRef] = useState(''); const [code, setCode] = useState('');
+  const a = useAction();
+  return <Card title="Reset a person's second factor (last resort)">
+    <p className="mb-3 text-sm text-slate-400">Only when the person has lost both their authenticator and their recovery codes, and only after checking their identity outside this system (for example in person or by a video call against their ID). The reset signs them out everywhere and suspends any reviewer profile they have until it is re-verified.</p>
+    <form className="grid gap-2 sm:grid-cols-2" onSubmit={async (e) => { e.preventDefault(); const r = await a.run(() => api('POST', 'registry/users/reset-second-factor', { email, reason, identityCheckRef: ref, totp: code })); if (r.ok) { a.setMsg({ kind: 'ok', text: `Second factor reset. Reviewer profiles suspended: ${Number(r.suspendedReviewerProfiles)}.` }); setEmail(''); setReason(''); setRef(''); setCode(''); } }}>
+      <Field label="Their email address"><input className={input} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
+      <Field label="Reason"><input className={input} required value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
+      <Field label="Reference of the identity check"><input className={input} required value={ref} onChange={(e) => setRef(e.target.value)} /></Field>
+      <Field label="Your fresh authenticator code"><input className={input} inputMode="numeric" pattern="[0-9]{6}" required value={code} onChange={(e) => setCode(e.target.value)} /></Field>
+      <button className={btn} disabled={a.busy}>Reset second factor</button>
+    </form>
+    <Notice msg={a.msg} />
+  </Card>;
+}
+
 function Registry() {
   const [list, setList] = useState<Reviewer[]>([]);
   const [form, setForm] = useState<Record<string, { evidence: string; from: string; until: string; code: string; checked: boolean; reason: string }>>({});
@@ -406,7 +463,7 @@ export default function AccountsApp() {
             <button className={btn2} onClick={async () => { await api('POST', 'logout', {}); setMe(null); }}>Sign out</button></div>
           <SecondFactor me={me} onChange={refresh} />
           <Organisations me={me} />
-          {me.isRegistryAdmin && (me.mfa ? <Registry /> : <p className="text-amber-300">Registry administration needs the second factor in this session.</p>)}
+          {me.isRegistryAdmin && (me.mfa ? <><Registry /><RegistryReset /></> : <p className="text-amber-300">Registry administration needs the second factor in this session.</p>)}
         </div>
       )}
     </main>

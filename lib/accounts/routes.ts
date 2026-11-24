@@ -11,6 +11,7 @@ import * as auth from './auth';
 import * as orgs from './orgs';
 import * as projects from './projects';
 import * as reviewers from './reviewers';
+import * as recovery from './recovery';
 import { AcctError, type Actor } from './context';
 import { clearSessionCookies, clientIp, json, setSessionCookies, type Call, type RouteSpec } from './http';
 
@@ -41,7 +42,14 @@ export const ROUTES: Entry[] = [
   ['GET', 'me', ses(async (c) => { const a = me(c); return { user: { id: a.userId, email: a.email, mfa: a.mfa, totpEnabled: a.totpEnabled, isRegistryAdmin: a.isRegistryAdmin } }; })],
   ['POST', 'logout', ses(async (c) => { await auth.logout(c.ctx, me(c)); return clearSessionCookies(json({ success: true })); })],
   ['POST', 'totp/setup', ses((c) => auth.totpSetup(c.ctx, me(c)))],
-  ['POST', 'totp/enable', ses(async (c) => { await auth.totpEnable(c.ctx, me(c), c.body.code); return { totpEnabled: true }; })],
+  // Returns the first recovery codes, shown once.
+  ['POST', 'totp/enable', ses(async (c) => ({ totpEnabled: true, ...(await auth.totpEnable(c.ctx, me(c), c.body.code)) }))],
+
+  // ---- authenticator recovery --------------------------------------------------
+  ['GET', 'recovery-codes', ses((c) => recovery.recoveryCodesRemaining(c.ctx, me(c)))],
+  ['POST', 'recovery-codes', ses((c) => recovery.regenerateRecoveryCodes(c.ctx, me(c), c.body))],
+  ['POST', 'totp/reset', ses(async (c) => { await recovery.resetOwnAuthenticator(c.ctx, me(c), c.body); return { totpEnabled: false }; })],
+  ['POST', 'registry/users/reset-second-factor', ses((c) => recovery.adminResetSecondFactor(c.ctx, me(c), c.body))],
 
   // ---- organisations ---------------------------------------------------------
   ['GET', 'orgs', ses(async (c) => ({ orgs: await orgs.listOrgs(c.ctx, me(c)) }))],
