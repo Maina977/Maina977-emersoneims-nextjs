@@ -224,3 +224,31 @@ describe('read-only schema check (owner runs it before switching accounts on)', 
     expect(JSON.stringify(bad)).not.toMatch(/postgres:|password|secret/i);
   });
 });
+
+describe('SQL-editor version of the schema check (owner without a terminal)', () => {
+  it('pasting preview-setup.sql gives SCHEMA OK, the scripts see it as fully migrated, and it is up to date; a missing trigger gives SCHEMA INCOMPLETE', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const dir = path.join(process.cwd(), 'lib', 'db', 'migrations');
+    const check = fs.readFileSync(path.join(dir, 'check-schema.sql'), 'utf8');
+    const setup = fs.readFileSync(path.join(dir, 'preview-setup.sql'), 'utf8');
+    // The committed file is exactly what the generator produces from today's migrations.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { build } = require('../../scripts/db/build-preview-setup-sql.cjs');
+    expect(setup.replace(/\r\n/g, '\n')).toBe(build());
+    const pg = new PGlite();
+    // Exactly what the owner does: paste the whole file into the SQL editor and run it (twice is harmless).
+    await pg.exec(setup);
+    await pg.exec(setup);
+    // The scripts agree: nothing left to apply, and no "migration changed" refusal.
+    expect(await lib.applyMigrations(pg)).toEqual([]);
+    const rows = (await pg.query<{ kind: string; name: string; status: string }>(check)).rows;
+    expect(rows.filter((r) => r.status === 'MISSING')).toEqual([]);
+    expect(rows[rows.length - 1]).toMatchObject({ kind: 'RESULT', status: 'SCHEMA OK' });
+    expect(rows.find((r) => r.kind === 'organisations')?.status).toBe('0');
+    await pg.exec('DROP TRIGGER acct_revisions_immutable ON acct_revisions');
+    const bad = (await pg.query<{ kind: string; name: string; status: string }>(check)).rows;
+    expect(bad.find((r) => r.name === 'acct_revisions_immutable')?.status).toBe('MISSING');
+    expect(bad[bad.length - 1].status).toBe('SCHEMA INCOMPLETE');
+  });
+});

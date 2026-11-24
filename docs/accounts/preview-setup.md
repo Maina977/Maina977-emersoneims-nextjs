@@ -33,15 +33,21 @@ node -e "console.log(require('crypto').randomBytes(36).toString('base64url'))"
 ```
 
 ### 3. Apply the tables yourself, on BOTH databases, and check them
-From a computer with this repository, run these for each of the two connection strings:
+
+**Option A (recommended, no code): the provider's web SQL editor.** Do this for **each** database:
+1. Open the database in the provider's dashboard, then its **SQL editor**.
+2. Copy the whole of `lib/db/migrations/preview-setup.sql` (on GitHub, branch `dev/phase2-report-b`) into the editor and run it once. It creates every table and records the same fingerprints as the scripts. Running it again is harmless.
+3. Clear the editor, copy the whole of `lib/db/migrations/check-schema.sql`, and run it. It is read-only.
+4. Every row must say **OK**, and the last row must say **SCHEMA OK**. On the disaster-recovery test database, the `organisations` row must say **0**.
+
+**Option B: from a computer with this repository.**
 ```
 ACCOUNTS_DATABASE_URL="<connection string>" node scripts/db/migrate.cjs --yes
 ACCOUNTS_DATABASE_URL="<connection string>" node scripts/db/check-schema.cjs --yes
 ```
-- `migrate.cjs` applies `accounts-001` to `accounts-004`. It refuses to run without `--yes`, and refuses if the URL equals the production `DATABASE_URL`.
-- `check-schema.cjs` is read-only. It prints only names and `OK` or `MISSING`, and must end with **`SCHEMA OK`**. On the disaster-recovery test database it must also show `organisations in this database: 0`.
+`migrate.cjs` refuses to run without `--yes`, and refuses if the URL equals the production `DATABASE_URL`. `check-schema.cjs` must end with **`SCHEMA OK`**.
 
-Do not continue until both databases show `SCHEMA OK`.
+**Do not continue until both databases show `SCHEMA OK`.**
 
 ### 4. Add the settings in Vercel
 Go to Project → Settings → Environment Variables. Tick **Preview only**, never Production.
