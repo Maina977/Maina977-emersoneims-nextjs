@@ -569,30 +569,18 @@ export async function updateUserRole(
   if (!pool) return false;
 
   try {
-    // Verify updater has permission
-    const updaterResult = await pool.query(
-      'SELECT role FROM oracle_users WHERE id = $1',
-      [updatedBy]
+    // Same organisation only, and managers cannot create or change admins
+    // (security review 2026-11-24: the update had no organisation check).
+    const pair = await teamPair(pool, updatedBy, userId);
+    if (!pair) return false;
+    if (pair.actor.role === 'manager' && (newRole === 'admin' || pair.target.role === 'admin')) return false;
+
+    const r = await pool.query(
+      'UPDATE oracle_users SET role = $2 WHERE id = $1 AND organization_id = $3 RETURNING id',
+      [userId, newRole, pair.actor.organization_id]
     );
 
-    if (updaterResult.rows.length === 0) return false;
-
-    const updaterRole = updaterResult.rows[0].role;
-    if (updaterRole !== 'admin' && updaterRole !== 'manager') {
-      return false;
-    }
-
-    // Managers cannot create admins
-    if (updaterRole === 'manager' && newRole === 'admin') {
-      return false;
-    }
-
-    await pool.query(
-      'UPDATE oracle_users SET role = $2 WHERE id = $1',
-      [userId, newRole]
-    );
-
-    return true;
+    return r.rows.length === 1;
   } catch (error) {
     console.error('Update role error:', error);
     return false;
@@ -600,14 +588,42 @@ export async function updateUserRole(
 }
 
 /**
+ * The acting admin/manager and the target user, if both exist, the actor is
+ * an admin or manager, and both belong to the same (non-null) organisation.
+ * null otherwise.
+ */
+export async function teamPair(
+  pool: { query: (sql: string, params: unknown[]) => Promise<{ rows: Array<Record<string, unknown>> }> },
+  actorId: number,
+  targetId: number
+): Promise<{ actor: { role: string; organization_id: number }; target: { role: string; organization_id: number } } | null> {
+  const r = await pool.query('SELECT id, role, organization_id FROM oracle_users WHERE id = ANY($1::int[])', [[actorId, targetId]]);
+  const actor = r.rows.find((x) => Number(x.id) === Number(actorId));
+  const target = r.rows.find((x) => Number(x.id) === Number(targetId));
+  if (!actor || !target) return null;
+  if (actor.role !== 'admin' && actor.role !== 'manager') return null;
+  if (actor.organization_id === null || actor.organization_id === undefined) return null;
+  if (Number(actor.organization_id) !== Number(target.organization_id)) return null;
+  return {
+    actor: { role: String(actor.role), organization_id: Number(actor.organization_id) },
+    target: { role: String(target.role), organization_id: Number(target.organization_id) },
+  };
+}
+
+/**
  * Deactivate user
  */
-export async function deactivateUser(userId: number): Promise<boolean> {
+export async function deactivateUser(userId: number, deactivatedBy: number): Promise<boolean> {
   const pool = await getPostgresPool();
   if (!pool) return false;
 
   try {
-    await pool.query('UPDATE oracle_users SET is_active = false WHERE id = $1', [userId]);
+    // Same organisation only; managers cannot deactivate admins (security review 2026-11-24).
+    const pair = await teamPair(pool, deactivatedBy, userId);
+    if (!pair) return false;
+    if (pair.actor.role === 'manager' && pair.target.role === 'admin') return false;
+    const r = await pool.query('UPDATE oracle_users SET is_active = false WHERE id = $1 AND organization_id = $2 RETURNING id', [userId, pair.actor.organization_id]);
+    if (r.rows.length !== 1) return false;
     await pool.query('DELETE FROM oracle_sessions WHERE user_id = $1', [userId]);
     return true;
   } catch (error) {

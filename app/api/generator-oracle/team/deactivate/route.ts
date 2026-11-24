@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Cannot deactivate yourself' }, { status: 400 });
     }
 
-    const ok = await deactivateUser(userId);
+    const ok = await deactivateUser(userId, sessionResult.user.id);
     if (!ok) {
       return NextResponse.json({ success: false, error: 'Deactivation failed (database unavailable)' }, { status: 500 });
     }

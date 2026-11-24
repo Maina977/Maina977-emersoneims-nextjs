@@ -19,6 +19,7 @@ import {
   createPaymentRecord,
   getPlanById,
 } from '@/lib/generator-oracle/subscriptionService';
+import { actingUserId } from '@/lib/generator-oracle/sessionGuard';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // POST - Initiate M-Pesa Payment
@@ -56,9 +57,14 @@ export async function POST(request: NextRequest) {
     if (action === 'pay') {
       const { userId, planId, phoneNumber } = body;
 
-      if (!userId || !planId || !phoneNumber) {
+      // A payment prompt is sent only for the signed-in user (security review 2026-11-24):
+      // without this, anyone could push M-Pesa prompts to any phone number.
+      const who = await actingUserId(request, userId);
+      if ('response' in who) return who.response;
+
+      if (!planId || !phoneNumber) {
         return NextResponse.json(
-          { success: false, error: 'Missing required fields: userId, planId, phoneNumber' },
+          { success: false, error: 'Missing required fields: planId, phoneNumber' },
           { status: 400 }
         );
       }
@@ -113,7 +119,7 @@ export async function POST(request: NextRequest) {
 
       // Create payment record
       await createPaymentRecord({
-        userId: parseInt(userId),
+        userId: who.id,
         amount: plan.priceKES,
         currency: 'KES',
         paymentMethod: 'mpesa',
