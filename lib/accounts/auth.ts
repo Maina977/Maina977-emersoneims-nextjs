@@ -232,7 +232,10 @@ export async function resetPassword(ctx: Ctx, token: unknown, password: unknown)
   await ctx.db.tx(async (q) => {
     const t = await consumeToken(q, ctx, token, 'reset_password');
     if (!t?.user_id) throw badRequest('This reset link is not valid or has expired.');
-    await q.query('UPDATE acct_users SET password_hash = $2, failed_logins = 0, locked_until = NULL, updated_at = $3 WHERE id = $1', [t.user_id, hash, ctx.now().toISOString()]);
+    // A completed reset proves control of the mailbox (the single-use link was sent there), so it
+    // also verifies the address. Without this, a user restored from a backup (address unverified,
+    // scripts/db/import-org.cjs) could never sign in again (recovery drill, 2026-11-24).
+    await q.query('UPDATE acct_users SET password_hash = $2, failed_logins = 0, locked_until = NULL, email_verified_at = COALESCE(email_verified_at, $3), updated_at = $3 WHERE id = $1', [t.user_id, hash, ctx.now().toISOString()]);
     await q.query('DELETE FROM acct_sessions WHERE user_id = $1', [t.user_id]);
     await appendAudit(q, ctx.secret, { actorUserId: t.user_id, orgId: null, action: 'user.password_reset', objectType: 'user', objectId: t.user_id }, ctx.now());
   });
