@@ -56,25 +56,46 @@ export interface Preloader<T> {
 // downloads now wait while any engineering module is downloading: the count is
 // published here, and as window.__eimsEngineeringBusy for the inline gtag loader.
 let inFlight = 0;
+// PAGE HOLD (Solar performance, 2026-11-25). A tool page's first HTML can claim
+// "engineering busy" before any download has started (window.__eimsToolHold = 1,
+// set by an inline script in app/solar-genius-pro/layout.tsx). Measured: the gtag
+// library was requested at 0.9 s, before the workspace download began (about 2 s),
+// so the busy rule above never saw it. The hold counts as one download in flight
+// until the first engineering download settles, or HOLD_CEILING_MS at most, so
+// analytics and prefetches are delayed, never lost.
+export const HOLD_CEILING_MS = 10_000;
+type BusyWindow = { __eimsEngineeringBusy?: number; __eimsToolHold?: number };
+let hold = typeof window !== 'undefined' && (window as unknown as BusyWindow).__eimsToolHold === 1 ? 1 : 0;
 const busyListeners = new Set<() => void>();
-function setInFlight(n: number): void {
-  inFlight = n;
-  if (typeof window !== 'undefined') (window as unknown as { __eimsEngineeringBusy?: number }).__eimsEngineeringBusy = n;
+function publish(): void {
+  if (typeof window !== 'undefined') (window as unknown as BusyWindow).__eimsEngineeringBusy = inFlight + hold;
   for (const l of Array.from(busyListeners)) l();
 }
+function setInFlight(n: number): void {
+  inFlight = n;
+  publish();
+}
+/** Ends the page hold (first download settled, or the ceiling). Safe to call repeatedly. */
+export function releaseToolHold(): void {
+  if (!hold) return;
+  hold = 0;
+  if (typeof window !== 'undefined') (window as unknown as BusyWindow).__eimsToolHold = 0;
+  publish();
+}
+if (hold) { publish(); setTimeout(releaseToolHold, HOLD_CEILING_MS); }
 /** Counts `p` as an engineering download until it settles; returns `p` unchanged. */
 export function trackEngineeringDownload<T>(p: Promise<T>): Promise<T> {
   setInFlight(inFlight + 1);
-  const done = () => setInFlight(Math.max(0, inFlight - 1));
+  const done = () => { releaseToolHold(); setInFlight(Math.max(0, inFlight - 1)); };
   p.then(done, done);
   return p;
 }
-/** Number of engineering downloads in flight (tests, diagnostics). */
-export function engineeringDownloadsInFlight(): number { return inFlight; }
+/** Number of engineering downloads in flight, plus the page hold (tests, diagnostics). */
+export function engineeringDownloadsInFlight(): number { return inFlight + hold; }
 const subscribeBusy = (l: () => void) => { busyListeners.add(l); return () => { busyListeners.delete(l); }; };
-/** True while no engineering module is downloading (always false on the server). */
+/** True while no engineering module is downloading and no page hold is active (always false on the server). */
 export function useEngineeringIdle(): boolean {
-  return useSyncExternalStore(subscribeBusy, () => inFlight === 0, () => false);
+  return useSyncExternalStore(subscribeBusy, () => inFlight + hold === 0, () => false);
 }
 
 /** Memoises a retried download. A failure clears the memo so a later call (Try again) downloads afresh. */

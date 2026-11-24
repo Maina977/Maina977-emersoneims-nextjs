@@ -5,31 +5,37 @@ import { HashRouter as Router, Routes, Route, Navigate, useLocation, useNavigate
 import styled, { createGlobalStyle } from 'styled-components';
 import { FiMenu, FiX, FiBarChart2, FiGrid, FiBox, FiTrendingUp, FiSettings, FiStar, FiClipboard, FiTool, FiCpu, FiZap, FiAlertTriangle, FiLayout, FiEye, FiActivity, FiCheckSquare, FiGlobe, FiBell, FiUser, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
-// Pages
-import DashboardPage from './pages/DashboardPage';
-import CalculatorPage from './pages/CalculatorPage';
-import DesignerPage from './pages/DesignerPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import SettingsPage from './pages/SettingsPage';
-import ReportPage from './pages/ReportPage';
-import ProToolsPage from './pages/ProToolsPage';
-import IntelligentCalculatorPage from './pages/IntelligentCalculatorPage';
-import AdvancedFeaturesPage from './pages/AdvancedFeaturesPage';
-import FaultCodesPage from './pages/FaultCodesPage';
-import DesignStudioPage from './pages/DesignStudioPage';
-import Viewer3DPage from './pages/Viewer3DPage';
-import WiringDiagramPage from './pages/WiringDiagramPage';
-import ProjectWorkflowPage from './pages/ProjectWorkflowPage';import Global3DPage from './pages/Global3DPage';
-import QuoteCheckerPage from './pages/QuoteCheckerPage';
-import VoiceCommandPage from './pages/VoiceCommandPage';
-import QuoteParserPage from './pages/QuoteParserPage';
-import RepairMaintenancePage from './pages/RepairMaintenancePage';
-import HomePage from './pages/HomePage';
-import PanelLayoutPage from './pages/PanelLayoutPage';
-import SunWeatherPage from './pages/SunWeatherPage';
-import VideoLibraryPage from './pages/VideoLibraryPage';
-import DesignCheckPage from './pages/DesignCheckPage';
-import ProposalPage from './pages/ProposalPage';
+// Pages: each one is its own download (Solar performance, 2026-11-25; see ./routes.ts).
+// The loaders are shared with SolarGeniusProV2, which starts the current page's
+// download together with this file, so the same promise is reused here.
+import { PAGE_LOADERS } from './routes';
+import { recoveryReload } from '@/lib/loading/resilientImport';
+const page = (p: string) => React.lazy(PAGE_LOADERS[p]);
+const DashboardPage = page('/dashboard');
+const CalculatorPage = page('/calculator');
+const DesignerPage = page('/designer');
+const AnalyticsPage = page('/analytics');
+const SettingsPage = page('/settings');
+const ReportPage = page('/report');
+const ProToolsPage = page('/pro');
+const IntelligentCalculatorPage = page('/intelligent');
+const AdvancedFeaturesPage = page('/advanced');
+const FaultCodesPage = page('/fault-codes');
+const DesignStudioPage = page('/design-studio');
+const Viewer3DPage = page('/viewer-3d');
+const WiringDiagramPage = page('/wiring');
+const ProjectWorkflowPage = page('/workflow');
+const Global3DPage = page('/global-3d');
+const QuoteCheckerPage = page('/quote-check');
+const VoiceCommandPage = page('/voice');
+const QuoteParserPage = page('/quote-parser');
+const RepairMaintenancePage = page('/repair');
+const HomePage = page('/home');
+const PanelLayoutPage = page('/panel-layout');
+const SunWeatherPage = page('/sun-weather');
+const VideoLibraryPage = page('/videos');
+const DesignCheckPage = page('/design-check');
+const ProposalPage = page('/proposal');
 import { useSolarStore } from './services/store';
 
 // ============================================
@@ -595,6 +601,9 @@ const App: React.FC = () => {
         </TopBar>
 
         <Content>
+          <BackgroundPageFetch />
+          <PageErrorBoundary>
+          <React.Suspense fallback={<PageLoading />}>
           <Routes>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/calculator" element={<CalculatorPage />} />
@@ -629,11 +638,67 @@ const App: React.FC = () => {
             {/* The page is titled "Calculator": open on it (2026-10-20 audit). */}
             <Route path="/" element={<CalculatorPage />} />
           </Routes>
+          </React.Suspense>
+          </PageErrorBoundary>
         </Content>
       </MainArea>
       </AppContainer>
     </>
   );
+};
+
+/**
+ * If a page's download still fails after its retries (dropped connection), say so
+ * plainly and offer a reload that keeps drafts (recoveryReload flushes them first),
+ * as the workspace download already does. Never a blank area.
+ */
+class PageErrorBoundary extends React.Component<{ children: React.ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <div role="alert" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#e2e8f0', textAlign: 'center', padding: 16 }}>
+        <strong>This tool did not download.</strong>
+        <span style={{ color: '#94a3b8', fontSize: 14 }}>This is usually a dropped or slow connection. Nothing you entered is lost: drafts are kept in this browser.</span>
+        <button type="button" onClick={() => recoveryReload()} style={{ padding: '8px 16px', borderRadius: 6, background: '#f59e0b', color: '#000', fontWeight: 700, border: 0, cursor: 'pointer' }}>Try again</button>
+      </div>
+    );
+  }
+}
+
+/** Shown while a page's code is still arriving (first visit to that page only). */
+const PageLoading: React.FC = () => (
+  <div role="status" aria-live="polite" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 14 }}>
+    Loading this tool…
+  </div>
+);
+
+/**
+ * After the first screen is ready and the browser is idle, fetch the other
+ * pages one at a time, so moving between tabs is instant. Waits for any
+ * engineering download and the page hold to finish first (window.__eimsEngineeringBusy),
+ * and stops on Save-Data or 2G connections, where each tab loads on demand instead.
+ */
+const BackgroundPageFetch: React.FC = () => {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const conn = (navigator as unknown as { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (conn?.saveData || conn?.effectiveType === '2g' || conn?.effectiveType === 'slow-2g') return;
+    let cancelled = false;
+    const w = window as unknown as { __eimsEngineeringBusy?: number; requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+    const idle = (fn: () => void) => (w.requestIdleCallback ? w.requestIdleCallback(fn, { timeout: 3000 }) : setTimeout(fn, 1500));
+    const queue = Object.values(PAGE_LOADERS);
+    const next = () => {
+      if (cancelled || !queue.length) return;
+      if ((w.__eimsEngineeringBusy ?? 0) > 0) { setTimeout(next, 1000); return; }
+      const load = queue.shift()!;
+      load().catch(() => { /* fetched on demand later */ }).finally(() => { if (!cancelled) idle(next); });
+    };
+    const start = setTimeout(() => idle(next), 4000);
+    return () => { cancelled = true; clearTimeout(start); };
+  }, []);
+  return null;
 };
 
 const AppWrapper: React.FC = () => (
