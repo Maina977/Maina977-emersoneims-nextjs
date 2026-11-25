@@ -33,6 +33,7 @@ import EvidenceCards from './EvidenceCardsView';
 import { FieldEvidencePanel } from './FieldEvidencePanel';
 import { hasRainfallSeries } from './historicalData';
 import { withholdModelFigures } from './figureGate';
+import { waterCheckStatusText } from './locationStatus';
 import { siteScore, compareCardFigures, compareVerdictSentence, radarAxes, costRowAllowed, uniqueBest } from './compareGate';
 import { placePrecision, SITE_LOCATION_NEEDED } from './locationPrecision';
 // Pre-checks (Kenya land/water, elevation) use the same relay as the analysis.
@@ -2642,6 +2643,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div style={{fontWeight:700,marginBottom:6,color:'var(--text-primary)',fontSize:14}}>{'\u{1F4E1}'} Data Source Transparency</div>
                 <div><strong>Photo:</strong> {(result as any).photosNotUsedForModel ? `Kept for the report only: photos are not used for any groundwater figure.${(result as any).locationFromPhotoGps ? ' The location is the photo\u2019s camera GPS position.' : ''}` : (result as any).noPhoto ? 'None supplied (coordinates-only run).' : result.pixelAnalysis?.isOutdoorScene ? 'Looks like an outdoor scene (automatic colour check — it can be wrong).' : 'Does not look like an outdoor site photo.'} {(result as any).photosNotUsedForModel || (result as any).noPhoto ? '' : (result.geoEstimate as any)?.source === 'user-coordinates' || (result.clientLocation as any)?.latitude != null ? 'Not used for depth or yield because you entered coordinates.' : 'Used only as a weak hint; enter coordinates for a better result.'}</div>
                 <div><strong>Location:</strong> {(result as any).locationFromSearchedPin ? `\u{1F50E} Searched place, confirmed by the customer — centre of ${(result as any).locationFromSearchedPin}` : (result as any).locationFromPhotoGps ? `\u{1F4F7} Camera GPS — position read from the photo\u2019s EXIF data${(result as any).locationNote ? `. ${(result as any).locationNote}` : ''}` : result.locationMethod==='exif-gps' ? '\u{1F4E1} Photo EXIF GPS (±10m) — Location extracted FROM THE IMAGE' : result.locationMethod==='filename-geocode' ? `\u{1F4C1} Filename Geocode — "${result.locationContext?.filenameHint?.split(' → ')[0] || 'filename'}" matched to real place via OpenStreetMap` : result.locationMethod==='iptc-geocode' ? '\u{1F3F7}\uFE0F IPTC/XMP Geocode — Photo metadata text matched to real place' : result.gpsSource==='device' ? '\u{1F4F1} Device GPS — You confirmed you are at the borehole site' + (result.gpsAccuracy ? ` (±${Math.round(result.gpsAccuracy)}m)` : '') : result.gpsSource==='manual' ? '\u{1F4DD} Manual Entry — Coordinates entered by user' : result.locationMethod==='visual-estimate' ? '\u{1F30D} Visual Terrain Estimate — Location estimated from soil color, vegetation, and terrain' : '\u274C No location found — use your device location or enter coordinates below'}</div>
+                {/* Re-review of 126efdbc, M-1/M-2: the water-body check result, with the map attribution (ODbL). */}
+                <div><strong>Water-body check:</strong> {(result as any).waterBodyCheckUnavailable && !waterConfirmed
+                  ? `${String((result as any).waterCheckNote || 'Water-body check unavailable')} — waiting for your confirmation that the site is on land (summary)`
+                  : waterCheckStatusText(result)}</div>
                 {/* No region means no estimate (coordinates-only runs): never an empty line. */}
                 {result.geoEstimate?.bestEstimate?.region && (
                   (result.geoEstimate.bestEstimate as { source?: string }).source === 'user-coordinates'
