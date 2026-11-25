@@ -21,6 +21,7 @@
 import { finalVerdict, salinityEvidence, salinityFromWaterQuality, modelledSalinityLabel, labSourceLabel, nearbyProvenance, chemEvidence, chemFromWaterQuality, chemCell, modelledChemLabel, labWaterResult, type ChemRisk } from './verdict';
 import { evidenceGate, provenanceText } from './evidenceGate';
 import { generateScreeningPdf, generateScreeningDocx, generateScreeningXlsx, screeningRows, screeningContent } from './screeningReport';
+import { locationStatusText, waterCheckStatusText, photoGpsConflictText } from './locationStatus';
 import { costSourcing, QUOTATION_TEXT } from './costSources';
 import { governingSummary, last12Months } from './governingSummary';
 import { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, getCustomerDetails, computeCanonicalEconomics } from './reportShared';
@@ -1910,7 +1911,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
           : `AESTHETIC TREATMENT: ${aestheticFails.join(', ')} (minor)`;
         return 'TREATMENT NEEDED';
       })()],
-      ['Treatment Required', result.waterQuality?.isPotable ? 'NO' : 'YES', (() => {
+      ['Treatment Required', !((result as any).calibrationResult?.calibratedWaterQuality || result.fieldData?.labWaterAnalysis) ? 'NOT KNOWN' : result.waterQuality?.isPotable ? 'NO' : 'YES', (() => {
+        // Review of 126efdbc, B-3: a treatment conclusion needs a laboratory result.
+        if (!((result as any).calibrationResult?.calibratedWaterQuality || result.fieldData?.labWaterAnalysis)) return 'Needs a laboratory test of a water sample (modelled water quality only)';
         if (result.waterQuality?.isPotable) return 'Disinfection only (standard)';
         // Cite the SAME canonical economics the cost tables use — this row
         // used to quote "$1,200-1,500" while the budget carried $4,000.
@@ -1923,7 +1926,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         if (treatTotal <= 0 && unpriced) return unpriced;
         return `Budgeted: $${treatTotal.toLocaleString()}${ecoWq.defluoridationCost > 0 ? ` (incl. $${ecoWq.defluoridationCost.toLocaleString()} defluoridation on measured fluoride + $${ecoWq.annualDefluoridation}/yr media)` : ''} — same figure as the cost tables${unpriced ? `. ${unpriced}` : ''}`;
       })()],
-      ['Coordinates', getCoords(result), `GPS: ${result.gpsSource?.toUpperCase()}`],
+      ['Coordinates', getCoords(result), `${locationStatusText(result)}. Water-body check: ${waterCheckStatusText(result)}${photoGpsConflictText(result) ? `. ${photoGpsConflictText(result)}` : ''}`],
       ['Location Confidence', result.locationConfidence?.grade || 'N/A', result.locationConfidence?.drillingReliability || 'N/A'],
       ['Overall Confidence', result.confidenceMetrics ? `${result.confidenceMetrics.overall}%` : 'N/A', result.confidenceMetrics ? `Geo ${result.confidenceMetrics.geological}% | Terrain ${result.confidenceMetrics.terrain}% | Veg ${result.confidenceMetrics.vegetation}% | Data ${result.confidenceMetrics.dataDensity}%` : ''],
       ['Confidence Tier', result.confidenceMetrics ? (
@@ -10965,6 +10968,10 @@ export function jsonReportData(result: AnalysisResult): Record<string, unknown> 
     generated: new Date().toISOString(),
     location: getLocationString(result),
     coordinates: getCoords(result),
+    // Re-review of 126efdbc, M-1 / 4e: the same location and water-check status as the screen.
+    locationStatus: locationStatusText(result),
+    waterCheck: waterCheckStatusText(result),
+    photoGpsNote: photoGpsConflictText(result),
   };
   const g = evidenceGate(result);
   if (screeningOnly(result)) {

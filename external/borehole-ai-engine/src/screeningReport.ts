@@ -17,12 +17,19 @@ import { Document, Packer, Paragraph, HeadingLevel, TextRun } from 'docx';
 import type { AnalysisResult } from './types';
 import { evidenceGate, provenanceText } from './evidenceGate';
 import { finalVerdict, labSourceLabel } from './verdict';
+import { locationStatusText, waterCheckStatusText, photoGpsConflictText } from './locationStatus';
 
 export const SCREENING_REPORT_VERSION = 'aquascan-screening-report 1.0.0 (2026-11-20)';
 
 export interface ScreeningContent {
   title: string;
   location: string;
+  /** Re-review of 126efdbc, M-1: how the location was obtained, as on the screen. */
+  locationStatus: string;
+  /** Re-review of 126efdbc, M-1: the water-body check, as on the screen. */
+  waterCheck: string;
+  /** Re-review of 126efdbc, 4e: the photo's camera GPS disagrees with the confirmed site. */
+  photoGpsNote: string | null;
   verdict: string; next: string;
   evidenceNote: string;
   established: string[];
@@ -39,6 +46,9 @@ export function screeningContent(result: AnalysisResult, when = new Date()): Scr
   return {
     title: `AquaScan Pro: desktop screening report (${when.toISOString().slice(0, 10)})`,
     location: Number.isFinite(lat) && Number.isFinite(lon) ? `${(lat as number).toFixed(5)}, ${(lon as number).toFixed(5)}` : 'location not recorded',
+    locationStatus: locationStatusText(result),
+    waterCheck: waterCheckStatusText(result),
+    photoGpsNote: photoGpsConflictText(result),
     verdict: v.verdict.replace(' -- ', ' — '),
     next: v.next,
     evidenceNote: g.note,
@@ -70,7 +80,7 @@ export function screeningContent(result: AnalysisResult, when = new Date()): Scr
 export function screeningRows(result: AnalysisResult, when = new Date()): string[][] {
   const c = screeningContent(result, when);
   return [
-    [c.title], ['DESKTOP SCREENING: NOT A SITE ASSESSMENT'], ['Location', c.location], ['Verdict', c.verdict], ['Next step', c.next], ['Evidence', c.evidenceNote], [''],
+    [c.title], ['DESKTOP SCREENING: NOT A SITE ASSESSMENT'], ['Location', c.location], ['Location source', c.locationStatus], ['Water-body check', c.waterCheck], ...(c.photoGpsNote ? [['Photo GPS', c.photoGpsNote]] : []), ['Verdict', c.verdict], ['Next step', c.next], ['Evidence', c.evidenceNote], [''],
     ['What this desktop screen covers'], ...c.established.map((x) => ['', x]), [''],
     ['Not established by a desktop screen'], ...c.notEstablished.map((x) => ['', x]), [''],
     ['Next steps'], ...c.nextSteps.map((x, i) => ['', `${i + 1}. ${x}`]),
@@ -110,6 +120,9 @@ export async function generateScreeningDocx(result: AnalysisResult, save = true)
         p(SCREENING_BANNER, { bold: true, color: 'B00020' }),
         new Paragraph({ text: c.title, heading: HeadingLevel.HEADING_1 }),
         p(`Location: ${c.location}`),
+        p(`Location source: ${c.locationStatus}`),
+        p(`Water-body check: ${c.waterCheck}`),
+        ...(c.photoGpsNote ? [p(`Photo GPS: ${c.photoGpsNote}`)] : []),
         p(c.verdict, { bold: true }),
         p(c.next),
         p(c.evidenceNote),
@@ -152,10 +165,15 @@ export function generateScreeningPdf(result: AnalysisResult, save = true): Uint8
   doc.setFontSize(9); doc.setTextColor(176, 0, 32); doc.text('DESKTOP SCREENING: NOT A SITE ASSESSMENT', 14, 10); doc.setTextColor(0, 0, 0);
   doc.setFontSize(15); doc.text(c.title, 14, 20);
   doc.setFontSize(10); doc.text(`Location: ${c.location}`, 14, 28);
-  doc.setFontSize(12); doc.text(doc.splitTextToSize(c.verdict, 180), 14, 37);
-  doc.setFontSize(10); doc.text(doc.splitTextToSize(c.next, 180), 14, 44);
-  doc.setFontSize(9); doc.text(doc.splitTextToSize(c.evidenceNote, 180), 14, 54);
-  autoTable(doc, { startY: 68, head: [['What this desktop screen covers']], body: c.established.map((x) => [x]), styles: { fontSize: 9 } });
+  // Re-review of 126efdbc, M-1 / 4e: the location source and the water-body check, as on the screen.
+  doc.setFontSize(8);
+  const locLines = doc.splitTextToSize([`Location source: ${c.locationStatus}`, `Water-body check: ${c.waterCheck}`, ...(c.photoGpsNote ? [`Photo GPS: ${c.photoGpsNote}`] : [])].join('\n'), 182);
+  doc.text(locLines, 14, 33);
+  const y0 = 33 + locLines.length * 3.6 + 2;
+  doc.setFontSize(12); doc.text(doc.splitTextToSize(c.verdict, 180), 14, y0 + 4);
+  doc.setFontSize(10); doc.text(doc.splitTextToSize(c.next, 180), 14, y0 + 11);
+  doc.setFontSize(9); doc.text(doc.splitTextToSize(c.evidenceNote, 180), 14, y0 + 21);
+  autoTable(doc, { startY: y0 + 35, head: [['What this desktop screen covers']], body: c.established.map((x) => [x]), styles: { fontSize: 9 } });
   autoTable(doc, { head: [['Not established by a desktop screen']], body: c.notEstablished.map((x) => [x]), styles: { fontSize: 9 } });
   autoTable(doc, { head: [['Next steps']], body: c.nextSteps.map((x, i) => [`${i + 1}. ${x}`]), styles: { fontSize: 9 } });
   if (c.sources.length) autoTable(doc, { head: [['Data used']], body: c.sources.map((x) => [x]), styles: { fontSize: 8 } });

@@ -350,7 +350,7 @@ function auditScoreConsistency(result: AnalysisResult): AuditCheck {
     };
   }
 
-  return { ...base, severity: 'PASS', details: `WQ score ${(score*100).toFixed(0)}/100 (internal: ${score.toFixed(3)}). Potability: ${result.waterQuality.isPotable ? 'POTABLE' : 'TREATMENT NEEDED'}. Score-display alignment verified.` };
+  return { ...base, severity: 'PASS', details: `WQ score ${(score*100).toFixed(0)}/100 (internal: ${score.toFixed(3)}). Modelled potability flag: ${result.waterQuality.isPotable ? 'no treatment indicated' : 'treatment indicated'} (a laboratory test decides). Score-display alignment verified.` };
 }
 
 
@@ -485,7 +485,10 @@ function auditUncertaintyPresent(result: AnalysisResult): AuditCheck {
   return {
     ...base,
     severity: 'PASS',
-    details: `Uncertainty ranges verified: Depth ${u.depthRange[0]}-${u.depthRange[1]}m (conf: ${(u.depthConfidence*100).toFixed(0)}%), Yield ${u.yieldRange[0]}-${u.yieldRange[1]} m³/hr, Probability ${(u.probabilityRange[0]*100).toFixed(0)}-${(u.probabilityRange[1]*100).toFixed(0)}%.`,
+    details: (result as any).siteEvidence?.depth && (result as any).siteEvidence?.yield
+      ? `Uncertainty ranges verified: Depth ${u.depthRange[0]}-${u.depthRange[1]}m (conf: ${(u.depthConfidence*100).toFixed(0)}%), Yield ${u.yieldRange[0]}-${u.yieldRange[1]} m³/hr, Probability ${(u.probabilityRange[0]*100).toFixed(0)}-${(u.probabilityRange[1]*100).toFixed(0)}%.`
+      // Review of 126efdbc, B-2: modelled depth/yield ranges are not printed without field evidence.
+      : `Uncertainty ranges present and consistent. Depth and yield are not shown until a field survey and a pumping test are entered; probability ${(u.probabilityRange[0]*100).toFixed(0)}-${(u.probabilityRange[1]*100).toFixed(0)}%.`,
   };
 }
 
@@ -748,7 +751,10 @@ function auditDrillDecision(result: AnalysisResult): AuditCheck {
     return { ...base, severity: 'WARN', details: `Contradiction: ${dd.successProbability}% success but ${dd.expectedYield_m3hr} m3/hr yield. High yield prediction conflicts with low success probability.` };
   }
 
-  return { ...base, severity: 'PASS', details: `Primary point: ${dd.primaryPoint.lat.toFixed(4)}, ${dd.primaryPoint.lon.toFixed(4)}. Depth: ${dd.targetDepth_m}m. Yield: ${dd.expectedYield_m3hr} m3/hr. Success: ${dd.successProbability}%.` };
+  const evOk = (result as any).siteEvidence?.depth && (result as any).siteEvidence?.yield;
+  return { ...base, severity: 'PASS', details: evOk
+    ? `Primary point: ${dd.primaryPoint.lat.toFixed(4)}, ${dd.primaryPoint.lon.toFixed(4)}. Depth: ${dd.targetDepth_m}m. Yield: ${dd.expectedYield_m3hr} m3/hr. Success: ${dd.successProbability}%.`
+    : `Primary point: ${dd.primaryPoint.lat.toFixed(4)}, ${dd.primaryPoint.lon.toFixed(4)}. Depth and yield are shown only with a field survey and a pumping test. Success: ${dd.successProbability}%.` };
 }
 
 function auditRiskRegister(result: AnalysisResult): AuditCheck {
