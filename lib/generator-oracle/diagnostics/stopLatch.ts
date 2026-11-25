@@ -11,8 +11,12 @@ import { cleanEquipment } from './session';
 import { SAFEGUARD_LABEL, UNCLASSIFIED_PROTECTIVE } from './engine';
 import { FAMILIES } from './families';
 import type { Equipment } from './oemReferences';
-import type { DiagnosisRecord } from './jobCardRecord';
-import { clearanceLine, LATCHED_STOP_PREFIX, latchedStopLine } from '@/lib/generator-oracle/service/maintenance';
+import { diagnosisRecord, recordInputs, recordSafety, recordToCardUpdate, sessionRecord, withRecordSafety, type DiagnosisRecord } from './jobCardRecord';
+import type { RawAnswers } from './session';
+import type { FaultFamily } from './types';
+import type { ExternalStop } from './sessionSafety';
+import { clearanceLine, LATCHED_STOP_PREFIX, latchedStopLine, type GuidedSafetyAdd, type JobCard } from '@/lib/generator-oracle/service/maintenance';
+import type { CardUpdate } from '@/lib/generator-oracle/service/store';
 
 /** Browser storage key for answers, latched STOPs and the clearance record. */
 export const GD_STORE = 'eims-oracle-guided-diagnosis-v1';
@@ -58,7 +62,7 @@ export function readStore(): StoreRead {
     return { unreadable: false, raw: s.raw, equipment: cleanEquipment(s), latched: s.latched, cleared: s.cleared.map((c: StoredClearance) => ({ ...c, reason: c.reason ?? '' })) };
   } catch { return { unreadable: true, latched: [], cleared: [] }; }
 }
-const sameStop = (a: StoredLatched, b: StoredLatched) => a.key === b.key && a.since === b.since;
+export const sameStop = (a: StoredLatched, b: StoredLatched) => a.key === b.key && a.since === b.since;
 /** Union of latched STOPs, minus only those with a recorded clearance for that exact STOP. */
 export function mergeLatched(a: StoredLatched[], b: StoredLatched[], cleared: StoredClearance[]): StoredLatched[] {
   const out: StoredLatched[] = [];
@@ -86,25 +90,114 @@ export function labelFor(l: StoredLatched): string | undefined {
  * storage gives the SAFETY HOLD; an unreadable record gives its STOP.
  */
 export function latchRecordLines(s: StoreRead = readStore()): string[] {
-  if (s.blocked) return [SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY];
   const out: string[] = [];
-  for (const l of s.unreadable ? [UNREADABLE_STOP()] : s.latched) {
-    out.push(latchedStopLine(l));
-    const label = labelFor(l);
-    if (label) out.push(label);
+  if (s.blocked) out.push(SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY);
+  else {
+    for (const l of s.unreadable ? [UNREADABLE_STOP()] : s.latched) {
+      out.push(latchedStopLine(l));
+      const label = labelFor(l);
+      if (label) out.push(label);
+    }
+    if (!s.unreadable) for (const c of s.cleared) out.push(clearanceLine(c));
   }
-  if (!s.unreadable) for (const c of s.cleared) out.push(clearanceLine(c));
+  // R-INT-1: the safety state travels with the lines (not enumerable; a copy of the array drops it),
+  // so withLatchedStops() can rebuild the record body under these STOPs.
+  Object.defineProperty(out, LINES_STATE, { value: safetyStateOf(s), enumerable: false });
   return out;
 }
 
 /** The guided record with the stored safety record first. A latched STOP (or the hold) makes it a STOP record. */
 export function withLatchedStops(rec: DiagnosisRecord, lines: string[]): DiagnosisRecord {
+  // R-INT-1: lines from latchRecordLines() and a record from diagnosisRecord()/sessionRecord() carry
+  // their inputs, so the body is rebuilt with every uncleared latched STOP (and the SAFETY HOLD) as
+  // external STOPs: no running check and no running-only Next check under a latch or the hold.
+  const st = (lines as unknown as Record<symbol, SafetyState | undefined>)[LINES_STATE];
+  const inp = recordInputs(rec);
+  if (st && inp) return guardCore((extra) => diagnosisRecord(inp.family, inp.raw, inp.equipment, inp.session, [...inp.extraStops, ...extra]), st).record;
+  return prefixLines(rec, lines);
+}
+function prefixLines(rec: DiagnosisRecord, lines: string[]): DiagnosisRecord {
   if (!lines.length) return rec;
   const active = lines.some((l) => l.startsWith(LATCHED_STOP_PREFIX) || l === SAFETY_HOLD_TEXT);
-  return {
+  const out: DiagnosisRecord = {
     ...rec,
     lines: [...lines, ...rec.lines],
     findings: [...lines, rec.findings].join('\n'),
     result: { ...rec.result, stopActive: rec.result.stopActive || active },
   };
+  const safety = recordSafety(rec);
+  return safety ? withRecordSafety(out, safety) : out;
+}
+
+/**
+ * Integration review R-INT-1/2/3 (2026-11-26). The safety state a record is made under: every
+ * latched STOP, every recorded clearance, and whether the SAFETY HOLD applies (storage blocked).
+ */
+export interface SafetyState { latched: StoredLatched[]; cleared: StoredClearance[]; hold: boolean }
+export function safetyStateOf(s: StoreRead): SafetyState {
+  if (s.blocked) return { latched: [], cleared: [], hold: true };
+  if (s.unreadable) return { latched: [UNREADABLE_STOP()], cleared: [], hold: false };
+  return { latched: s.latched, cleared: s.cleared, hold: false };
+}
+/** The family name the SAFETY HOLD is passed to the engine under (its lines are then taken out of the record). */
+export const HOLD_FROM = 'SAFETY HOLD';
+const LINES_STATE = Symbol.for('eims.oracle.latchLinesState');
+const HOLD_RAISED = `(Raised in the "${HOLD_FROM}" diagnosis of this session.)`;
+
+export interface GuardedRecord {
+  record: DiagnosisRecord;
+  /** True when only the SAFETY HOLD (no STOP) applies: the record is worded as a hold, not as a STOP. */
+  holdOnly: boolean;
+  /** What "Record a guided diagnosis" adds to the card's structured safety record (R-INT-2). */
+  safety: GuidedSafetyAdd;
+}
+
+/**
+ * R-INT-1: the record for one family, made under the safety state. Every latched STOP with no
+ * recorded clearance that the answers no longer show (cleared answers, other tabs, the safety
+ * screen) and the SAFETY HOLD are passed to diagnose() as external STOPs, so the record body,
+ * the job card, the .txt and the PDF offer no running check and no running-only Next check.
+ * The latch lines (latched STOPs, clearances, or the hold) are written first.
+ */
+export function guardedSessionRecord(family: FaultFamily, session: RawAnswers, equipment: Equipment, st: SafetyState): GuardedRecord {
+  return guardCore((extra) => sessionRecord(family, session, equipment, extra), st);
+}
+
+function guardCore(build: (extra: ExternalStop[]) => DiagnosisRecord, st: SafetyState): GuardedRecord {
+  const base = build([]);
+  const shown = new Set(base.result.stops.filter((s) => s.level === 'STOP').map((s) => s.message));
+  const open = st.latched.filter((l) => !st.cleared.some((c) => sameStop(c, l)));
+  const extra: ExternalStop[] = open.filter((l) => !shown.has(l.message)).map((l) => {
+    const label = labelFor(l);
+    return { family: l.from, message: l.message, ...(label ? { label } : {}) };
+  });
+  if (st.hold) extra.push({ family: HOLD_FROM, message: SAFETY_HOLD_TEXT });
+  let rec = extra.length ? build(extra) : base;
+  const holdOnly = st.hold && open.length === 0 && !base.result.stopActive;
+  if (st.hold) {
+    // R-INT-3: the hold is never worded as a STOP: its engine STOP line is taken out (the hold
+    // text itself is written first, below), and a hold-only record says "the SAFETY HOLD applies".
+    const word = (l: string) => (holdOnly ? l.replace(/a STOP is active/g, 'the SAFETY HOLD applies').replace(/the STOP above applies/g, 'the SAFETY HOLD applies') : l);
+    const kept = rec.lines.filter((l) => l !== `STOP: ${SAFETY_HOLD_TEXT}` && l !== HOLD_RAISED).map(word);
+    rec = { ...rec, lines: kept, findings: kept.join('\n') };
+  }
+  // A plain copy (no safety state attached), so prefixLines() only adds the lines.
+  const latchLines = [
+    ...(st.hold ? [SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY] : []),
+    ...latchRecordLines({ unreadable: false, latched: st.latched, cleared: st.cleared }),
+  ];
+  const strip = (l: StoredLatched) => { const label = labelFor(l); return { key: l.key, from: l.from, since: l.since, message: l.message, ...(label ? { label } : {}) }; };
+  const safety: GuidedSafetyAdd = {
+    stops: st.latched.map(strip),
+    clearances: st.cleared.map((c) => ({ ...strip(c), clearedAt: c.clearedAt, by: c.by, reason: c.reason })),
+    hold: st.hold ? { text: SAFETY_HOLD_TEXT, why: SAFETY_HOLD_WHY } : null,
+  };
+  return { record: withRecordSafety(prefixLines(rec, latchLines), { add: safety, holdOnly }), holdOnly, safety };
+}
+
+/** The findings/readings update for a guarded record (hold wording for a hold-only record, R-INT-3). */
+export function guardedCardUpdate(card: Pick<JobCard, 'findings' | 'readings'> & Partial<Pick<JobCard, 'guidedSafety'>>, g: GuardedRecord): CardUpdate {
+  const { guidedSafety: _structured, ...u } = recordToCardUpdate(card, g.record);
+  void _structured; // set on the card by the recordGuidedSafety action, never through a card edit
+  return u;
 }

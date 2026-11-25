@@ -7,9 +7,9 @@
  * Errors are the engine's own messages, passed through unchanged.
  */
 import {
-  cardIntegrityProblems, dueList, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
+  cardIntegrityProblems, dueList, mergeGuidedSafety, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
   JOB_STATUSES, SIGNOFF, TYPED_SIGNOFF_NOTICE, V1_UNCHECKED_SIGNOFF_NOTE,
-  type Asset, type DueItem, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord,
+  type Asset, type DueItem, type GuidedSafetyAdd, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord,
 } from './maintenance';
 
 /** Storage key is unchanged since version 1 so existing saved data is found and upgraded. */
@@ -43,6 +43,8 @@ export type ServiceAction =
   | { type: 'updateCard'; cardId: string; update: CardUpdate }
   | { type: 'transition'; cardId: string; to: JobStatus; by: string; at: string; note?: string; update?: CardUpdate }
   | { type: 'reopen'; cardId: string; by: string; at: string; reason: string }
+  /** R-INT-2: adds the Guided Diagnosis safety state to the card (merge-only; nothing is removed). */
+  | { type: 'recordGuidedSafety'; cardId: string; at: string; safety: GuidedSafetyAdd }
   | { type: 'recordService'; cardId: string; planTaskIds: string[] };
 
 /** Next free id like "JC-3" for a prefix. */
@@ -72,6 +74,8 @@ function findAsset(s: ServiceState, id: string): Asset {
 
 function checkUpdate(u: CardUpdate): CardUpdate {
   const out: CardUpdate = { ...u };
+  // R-INT-2: the guided safety record is never set or changed through a card edit.
+  delete (out as Record<string, unknown>).guidedSafety;
   if (u.tasks) out.tasks = u.tasks.map((t) => t.trim()).filter(Boolean);
   if (u.findings !== undefined) out.findings = u.findings.trim();
   if (u.labourHours !== undefined && !(Number.isFinite(u.labourHours) && u.labourHours >= 0)) throw new Error('Labour hours must be a number of 0 or more');
@@ -170,6 +174,12 @@ export function reduce(s: ServiceState, a: ServiceAction): ServiceState {
       const update = a.update && isEditable(c) ? checkUpdate(a.update) : {};
       return replaceCard(s, transition(c, a.to, a.by.trim(), a.at, update, a.note?.trim() || undefined));
     }
+    case 'recordGuidedSafety': {
+      const c = findCard(s, a.cardId);
+      if (!isEditable(c)) throw new Error(`A ${c.status} job card cannot be edited`);
+      if (Number.isNaN(Date.parse(a.at))) throw new Error('When is required to record the guided safety state');
+      return replaceCard(s, { ...c, guidedSafety: mergeGuidedSafety(c.guidedSafety, a.safety, a.at) });
+    }
     case 'reopen':
       return replaceCard(s, reopenJobCard(findCard(s, a.cardId), a.by, a.at, a.reason));
     case 'recordService': {
@@ -212,6 +222,10 @@ const isStr = (v: unknown): v is string => typeof v === 'string';
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const optNum = (v: unknown) => v === undefined || isNum(v);
 const isRef = (v: unknown) => isObj(v) && isStr(v.document) && isStr(v.edition) && isStr(v.page);
+const isGStop = (v: unknown) => isObj(v) && isStr(v.key) && isStr(v.from) && isStr(v.since) && isStr(v.message) && (v.label === undefined || isStr(v.label));
+const isGuidedSafety = (v: unknown) => isObj(v) && Array.isArray(v.stops) && v.stops.every(isGStop)
+  && Array.isArray(v.clearances) && v.clearances.every((c) => isGStop(c) && isStr((c as Record<string, unknown>).clearedAt) && isStr((c as Record<string, unknown>).by) && isStr((c as Record<string, unknown>).reason))
+  && Array.isArray(v.holds) && v.holds.every((h) => isObj(h) && isStr(h.since) && isStr(h.text) && isStr(h.why) && (h.resolvedAt === undefined || isStr(h.resolvedAt)));
 const isHash = (v: unknown) => isStr(v) && /^[0-9a-f]{64}$/.test(v);
 const isRev = (v: unknown) => Number.isInteger(v) && (v as number) >= 1;
 
@@ -281,6 +295,7 @@ function checkShape(d: Record<string, unknown>): string | null {
       && (l.note === undefined || isStr(l.note)) && (l.hash === undefined || isHash(l.hash)) && (l.revision === undefined || isRev(l.revision)))) return `job card ${id} log is malformed`;
     const last = c.log.length ? (c.log[c.log.length - 1] as Record<string, unknown>).to : 'OPEN';
     if (last !== c.status) return `job card ${id}: its status does not match its history`;
+    if (c.guidedSafety !== undefined && !isGuidedSafety(c.guidedSafety)) return `job card ${id} guided safety record is malformed`;
     if (c.status !== SIGNOFF && (c.signOffTypedName !== null || c.signOffRecordedOn !== null || c.signOffHash !== null)) return `job card ${id} carries sign-off details but is not at the sign-off step`;
   }
   return null;

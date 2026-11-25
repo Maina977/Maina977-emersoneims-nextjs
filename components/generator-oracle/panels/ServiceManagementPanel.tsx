@@ -22,11 +22,10 @@ import {
   type CardUpdate, type ServiceAction, type ServiceState,
 } from '@/lib/generator-oracle/service/store';
 import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
-import { recordToCardUpdate, sessionRecord } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
 import { SCREEN_BUCKET } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { loadGuidedEquipment, loadGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
-import { latchRecordLines, withLatchedStops } from '@/lib/generator-oracle/diagnostics/stopLatch';
-import { LATCHED_STOP_PREFIX } from '@/lib/generator-oracle/service/maintenance';
+import { guardedCardUpdate, guardedSessionRecord, latchRecordLines, readStore, safetyStateOf, type SafetyState } from '@/lib/generator-oracle/diagnostics/stopLatch';
+import { LATCHED_STOP_PREFIX, type GuidedSafetyAdd } from '@/lib/generator-oracle/service/maintenance';
 
 const inp = 'w-full min-w-0 rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white focus:border-amber-500 outline-none';
 const lbl = 'block text-xs text-slate-300';
@@ -257,10 +256,12 @@ const fromDraft = (d: Draft): CardUpdate => ({
  * those whose answers were cleared and safety-screen STOPs, and every recorded clearance) is
  * written first, so the card's SAFETY section carries it.
  */
-function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft) => void }) {
+function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft, safety: GuidedSafetyAdd) => void }) {
   const [session, setSession] = useState<RawAnswers>(() => loadGuidedSession(getStore(), FAMILIES));
   const [equipment, setEquipment] = useState(() => loadGuidedEquipment(getStore()));
-  const [latch, setLatch] = useState<string[]>(() => latchRecordLines());
+  // R-INT-1/2: the browser's safety state (latched STOPs, clearances, SAFETY HOLD) as data.
+  const [safetyState, setSafetyState] = useState<SafetyState>(() => safetyStateOf(readStore()));
+  const latch = useMemo(() => latchRecordLines(safetyState.hold ? { unreadable: true, blocked: true, latched: [], cleared: [] } : { unreadable: false, latched: safetyState.latched, cleared: safetyState.cleared }), [safetyState]);
   const [familyId, setFamilyId] = useState('');
   // A family is offered when it has answers, or when the shared safety screen does (its STOPs apply to every family),
   // and every family is offered while the safety record holds a latched STOP or a clearance.
@@ -268,14 +269,16 @@ function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft) => void }) 
   const latchedCount = latch.filter((l) => l.startsWith(LATCHED_STOP_PREFIX)).length;
   const fam = available.find((f) => f.id === familyId) ?? null;
   // Same function as the Guided Diagnosis tab: screen merged in, other families' STOPs carried in.
-  const rec = useMemo(() => (fam ? withLatchedStops(sessionRecord(fam, session, equipment), latch) : null), [fam, session, equipment, latch]);
+  // R-INT-1: uncleared latched STOPs and the SAFETY HOLD are external STOPs for the engine, so the body withholds running checks.
+  const guarded = useMemo(() => (fam ? guardedSessionRecord(fam, session, equipment, safetyState) : null), [fam, session, equipment, safetyState]);
+  const rec = guarded?.record ?? null;
   const add = () => {
-    if (!rec) return;
-    const u = recordToCardUpdate({ findings: d.findings, readings: [] }, rec);
+    if (!rec || !guarded) return;
+    const u = guardedCardUpdate({ findings: d.findings, readings: [] }, guarded);
     onAdd({
       ...d, findings: u.findings ?? d.findings,
       readings: [...d.readings, ...rec.readings.map((r) => ({ name: r.name, value: String(r.value), unit: r.unit, min: r.min === undefined ? '' : String(r.min), max: r.max === undefined ? '' : String(r.max), limitSource: r.limitSource ?? '' }))],
-    });
+    }, guarded.safety);
   };
   return (
     <div className="space-y-2 rounded-lg border border-slate-800 p-2">
@@ -293,13 +296,15 @@ function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft) => void }) 
       )}
       {rec && (
         <>
-          {rec.result.stopActive && <p role="alert" className="text-xs text-red-200">This diagnosis has an active STOP: it is recorded first in the findings.</p>}
+          {guarded?.holdOnly
+            ? <p role="alert" className="text-xs text-amber-200">SAFETY HOLD: this browser's safety record cannot be read. The hold is recorded first on the card and blocks completion until a record is made with a readable safety record, or "{READINGS_NOT_TAKEN_STOP}" is written.</p>
+            : rec.result.stopActive && <p role="alert" className="text-xs text-red-200">This diagnosis has an active STOP: it is recorded first in the findings.</p>}
           <div className="text-[11px] text-slate-400">Preview — exactly what is added to the findings:</div>
           <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded bg-slate-950 p-2 text-[11px] text-slate-300">{rec.findings}</pre>
           <button type="button" className={btn2} onClick={add}>Add this diagnosis to the card</button>
         </>
       )}
-      <button type="button" className="text-xs text-slate-400 underline" onClick={() => { setSession(loadGuidedSession(getStore(), FAMILIES)); setEquipment(loadGuidedEquipment(getStore())); setLatch(latchRecordLines()); }}>Reload saved answers</button>
+      <button type="button" className="text-xs text-slate-400 underline" onClick={() => { setSession(loadGuidedSession(getStore(), FAMILIES)); setEquipment(loadGuidedEquipment(getStore())); setSafetyState(safetyStateOf(readStore())); }}>Reload saved answers</button>
     </div>
   );
 }
@@ -397,7 +402,11 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
             <p className="text-xs text-red-200 break-words">Do not test-run a set with an unresolved STOP. Record instead: <button type="button" className="underline text-red-100" onClick={() => setD({ ...d, findings: d.findings.toLowerCase().includes(READINGS_NOT_TAKEN_STOP.toLowerCase()) ? d.findings : [d.findings.trim(), READINGS_NOT_TAKEN_STOP].filter(Boolean).join('. ') })}>{READINGS_NOT_TAKEN_STOP}</button></p>
           </div>
           <Field label="Findings"><textarea rows={3} className={inp} value={d.findings} onChange={(e) => setD({ ...d, findings: e.target.value })} /></Field>
-          <GuidedRecord d={d} onAdd={(next) => { if (dispatch({ type: 'updateCard', cardId: card.id, update: fromDraft(next) })) setD(next); }} />
+          <GuidedRecord d={d} onAdd={(next, safety) => {
+            // R-INT-2: the structured safety record goes on the card first (merge-only), then the findings.
+            if (!dispatch({ type: 'recordGuidedSafety', cardId: card.id, at: new Date().toISOString(), safety })) return;
+            if (dispatch({ type: 'updateCard', cardId: card.id, update: fromDraft(next) })) setD(next);
+          }} />
           <button type="button" className={btn2} onClick={() => dispatch({ type: 'updateCard', cardId: card.id, update: fromDraft(d) })}>Save changes</button>
         </div>
       ) : card.status === 'COMPLETED' ? (
@@ -493,11 +502,16 @@ export default function ServiceManagementPanel() {
     setSaveError(saveState(getStore(), state));
   }, [state, loaded]);
 
+  // Two dispatches in one handler (recordGuidedSafety, then updateCard) must build on each other,
+  // so each applies to the latest state, not to the state of the last render.
+  const latestState = useRef(state);
+  latestState.current = state;
   const dispatch: Dispatch = (a) => {
-    const r = apply(state, a);
+    const r = apply(latestState.current, a);
     setError(r.error); setNotice(null);
     if (r.error) return false;
     dirty.current = true;
+    latestState.current = r.state;
     setState(r.state);
     if (a.type === 'saveAsset' && !a.asset.id) setAssetId(r.state.assets[r.state.assets.length - 1].id);
     if (a.type === 'openCard') setCardId(r.state.jobCards[r.state.jobCards.length - 1].id);

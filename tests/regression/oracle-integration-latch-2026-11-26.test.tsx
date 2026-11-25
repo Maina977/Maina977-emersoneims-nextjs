@@ -35,6 +35,8 @@ describe('Guided Diagnosis integration: 1.3.0 safety screen under the production
     fireEvent.change(screen.getAllByLabelText(/OEM minimum oil pressure/i)[0], { target: { value: '150' } });
     fireEvent.change(screen.getAllByLabelText(/^Oil pressure/i)[0], { target: { value: '150' } });
     expect(hold()).not.toBeNull();
+    // Review R-INT-4 (2026-11-26): a typed reading latches when committed (here: leaving the field).
+    fireEvent.blur(screen.getAllByLabelText(/^Oil pressure/i)[0]);
     fireEvent.change(screen.getAllByLabelText(/OEM minimum oil pressure/i)[0], { target: { value: '100' } });
     expect(hold()).not.toBeNull();
     expect(screen.getByTestId('gd-latched-stop').textContent).toMatch(/still active until a clearance is recorded/);

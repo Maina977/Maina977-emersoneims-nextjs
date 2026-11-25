@@ -72,11 +72,53 @@ export function unresolvedLatchedStops(card: Pick<JobCard, 'findings'>): string[
   }
   return out;
 }
-const latchedStopBlocker = (card: Pick<JobCard, 'findings'>): string | null =>
-  unresolvedLatchedStops(card).length && !recordsStopInForce(card)
+/**
+ * Integration review R-INT-2 (2026-11-26): the Guided Diagnosis safety state carried onto a card
+ * as structured data that the card editor cannot change (it is not part of CardUpdate; the
+ * store only ever adds to it). Completion and sign-off read THIS, not the editable findings text.
+ */
+export interface GuidedSafetyStop { key: string; from: string; since: string; message: string; label?: string }
+export interface GuidedSafetyClearance extends GuidedSafetyStop { clearedAt: string; by: string; reason: string }
+/** R-INT-3: the SAFETY HOLD (browser storage blocked) is its own record, never worded as a STOP. */
+export interface GuidedSafetyHold { since: string; text: string; why: string; resolvedAt?: string }
+export interface GuidedSafety { stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; holds: GuidedSafetyHold[] }
+/** What one "Record a guided diagnosis" adds: the browser's latched STOPs, its clearances, and the hold if storage was blocked. */
+export interface GuidedSafetyAdd { stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; hold: { text: string; why: string } | null }
+const sameGuidedStop = (a: GuidedSafetyStop, b: GuidedSafetyStop) => a.key === b.key && a.since === b.since;
+/**
+ * Merge-only: nothing already on the card is removed. A hold is resolved only by a later record
+ * made with readable storage (that record carries the browser's real latch state, whose STOPs
+ * then block on their own).
+ */
+export function mergeGuidedSafety(prev: GuidedSafety | undefined, add: GuidedSafetyAdd, at: string): GuidedSafety {
+  const stops = [...(prev?.stops ?? [])];
+  for (const s of add.stops) if (!stops.some((x) => sameGuidedStop(x, s))) stops.push({ ...s });
+  const clearances = [...(prev?.clearances ?? [])];
+  for (const c of add.clearances) if (!clearances.some((x) => sameGuidedStop(x, c) && x.clearedAt === c.clearedAt)) clearances.push({ ...c });
+  // A clearance always comes with its STOP, so a card never shows a clearance for a STOP it does not list.
+  for (const c of add.clearances) if (!stops.some((x) => sameGuidedStop(x, c))) stops.push({ key: c.key, from: c.from, since: c.since, message: c.message, ...(c.label ? { label: c.label } : {}) });
+  let holds = (prev?.holds ?? []).map((h) => ({ ...h }));
+  if (add.hold) { if (!holds.some((h) => !h.resolvedAt)) holds.push({ since: at, text: add.hold.text, why: add.hold.why }); }
+  else holds = holds.map((h) => (h.resolvedAt ? h : { ...h, resolvedAt: at }));
+  return { stops, clearances, holds };
+}
+/** The card's latched STOPs with no recorded clearance, and whether a SAFETY HOLD is unresolved. */
+export function unresolvedGuidedSafety(card: Pick<JobCard, 'guidedSafety'>): { stops: GuidedSafetyStop[]; hold: GuidedSafetyHold | null } {
+  const g = card.guidedSafety;
+  if (!g) return { stops: [], hold: null };
+  return { stops: g.stops.filter((s) => !g.clearances.some((c) => sameGuidedStop(c, s))), hold: g.holds.find((h) => !h.resolvedAt) ?? null };
+}
+const latchedStopBlocker = (card: Pick<JobCard, 'findings' | 'guidedSafety'>): string | null => {
+  if (recordsStopInForce(card)) return null;
+  const u = unresolvedGuidedSafety(card);
+  if (u.stops.length) return `"${READINGS_NOT_TAKEN_STOP}" in the findings (${u.stops.length} Guided Diagnosis STOP(s) recorded on this card are still latched with no recorded clearance; record the clearance on Guided Diagnosis and record the diagnosis again, or state that the STOP is in force)`;
+  if (u.hold) return `"${READINGS_NOT_TAKEN_STOP}" in the findings (a SAFETY HOLD is recorded on this card: the previous diagnostic safety status could not be verified; record the guided diagnosis again from a browser whose safety record can be read, or state that the STOP is in force)`;
+  // Also the findings text (8041e0b0): a latched line in the findings without a clearance line still blocks.
+  return unresolvedLatchedStops(card).length
     ? `"${READINGS_NOT_TAKEN_STOP}" in the findings (a Guided Diagnosis STOP is still latched with no recorded clearance; record the clearance, or state that the STOP is in force)`
     : null;
-export const STOP_NOT_CARRIED_NOTICE ='Generator Oracle cannot confirm a set is safe to run. A STOP from Guided Diagnosis is kept only in this browser — record it on this card. Do not test-run a set with an unresolved STOP.';
+};
+export const STOP_NOT_CARRIED_NOTICE = 'Generator Oracle cannot confirm a set is safe to run. A STOP from Guided Diagnosis is kept only in this browser — record it on this card. Do not test-run a set with an unresolved STOP.';
 
 export interface ManualRef { document: string; edition: string; page: string }
 export interface Asset { id: string; make: string; model: string; engine: string; controller: string; serial: string; ratedKva: number }
@@ -163,6 +205,8 @@ export interface JobCard {
   /** SHA-256 of the card content at sign-off; set only while status is SIGNOFF. */
   signOffHash: string | null;
   log: LogEntry[];
+  /** Guided Diagnosis safety state carried onto the card (R-INT-2); merge-only, not editable. */
+  guidedSafety?: GuidedSafety;
 }
 /** One status step. Sign-off steps carry `hash` and `revision`; a step from SIGNOFF cancels that sign-off. */
 export interface LogEntry { at: string; from: JobStatus; to: JobStatus; by: string; note?: string; hash?: string; revision?: number }
@@ -182,8 +226,9 @@ function canonical(v: unknown): string {
  * typed sign-off name and time. Status and history are not part of it.
  */
 export function cardContentHash(card: JobCard, typedName: string, recordedOn: string, revision = card.revision): string {
-  const { id, assetId, opened, reportedFault, faultCodes, technician, tasks, parts, labourHours, engineHoursAtJob, readings, findings, completedOn } = card;
-  return sha256Hex(canonical({ id, assetId, opened, reportedFault, faultCodes, technician, tasks, parts, labourHours, engineHoursAtJob, readings, findings, completedOn, revision, typedName, recordedOn }));
+  const { id, assetId, opened, reportedFault, faultCodes, technician, tasks, parts, labourHours, engineHoursAtJob, readings, findings, completedOn, guidedSafety } = card;
+  // guidedSafety (R-INT-2) is signed too; absent on older cards, so their hashes are unchanged (canonical drops undefined).
+  return sha256Hex(canonical({ id, assetId, opened, reportedFault, faultCodes, technician, tasks, parts, labourHours, engineHoursAtJob, readings, findings, completedOn, revision, typedName, recordedOn, guidedSafety }));
 }
 
 export type SignOffCheck =
@@ -396,12 +441,42 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
   const fl = (card.findings || '').split(/\r?\n/);
   const stopLines: string[] = [];
   const belongs = (l: string | undefined) => !!l && (/^This is a conservative software safeguard/.test(l) || /^\(Raised in the ".*" diagnosis of this session\.\)$/.test(l));
+  // R-INT-3: SAFETY HOLD lines get their own section, never the STOP heading.
+  const holdLines: string[] = [];
   fl.forEach((l, i) => {
-    if (!/^(STOP\b|SAFETY HOLD\b)/.test(l)) return;
+    if (/^SAFETY HOLD\b/.test(l)) {
+      holdLines.push(`  ${l}`);
+      if (/^Why: /.test(fl[i + 1] ?? '')) holdLines.push(`  ${fl[i + 1]}`);
+      return;
+    }
+    if (!/^STOP\b/.test(l)) return;
     stopLines.push(`  ${l}`);
     for (let j = i + 1; belongs(fl[j]); j++) stopLines.push(`  ${fl[j]}`);
   });
-  const safety: ReportSection[] = stopLines.length ? [{ heading: 'SAFETY — STOP (repeated from the findings below)', lines: stopLines }] : [];
+  // R-INT-2: the structured safety record held on the card (not editable), first.
+  const g = card.guidedSafety;
+  const unresolved = unresolvedGuidedSafety(card);
+  const structured: ReportSection[] = [];
+  if (g?.holds.length) {
+    structured.push({ heading: 'SAFETY HOLD — previous diagnostic safety status could not be verified (held on this card)', lines: g.holds.flatMap((h) => [
+      `  ${h.text}`, `  ${h.why}`,
+      `  Recorded ${h.since} (UTC). ${h.resolvedAt ? `Resolved ${h.resolvedAt} (UTC) by a later guided-diagnosis record made with a readable safety record.` : 'NOT RESOLVED: completion needs a later guided-diagnosis record made with a readable safety record, or "' + READINGS_NOT_TAKEN_STOP + '".'}`,
+    ]) });
+  }
+  if (g?.stops.length) {
+    structured.push({ heading: 'SAFETY — GUIDED DIAGNOSIS STOP RECORD (held on this card)', lines: [
+      ...g.stops.flatMap((s) => {
+        const open = unresolved.stops.includes(s);
+        return [`  ${open ? latchedStopLine(s) : `STOP — cleared by a recorded clearance (UNVERIFIED). Source: ${oneLine(s.from)} tab. Since: ${s.since} (UTC). ${oneLine(s.message)}`}`, ...(s.label ? [`  ${s.label}`] : [])];
+      }),
+      ...g.clearances.map((c) => `  ${clearanceLine(c)}`),
+    ] });
+  }
+  const safety: ReportSection[] = [
+    ...structured,
+    ...(holdLines.length ? [{ heading: 'SAFETY HOLD (repeated from the findings below)', lines: holdLines }] : []),
+    ...(stopLines.length ? [{ heading: 'SAFETY — STOP (repeated from the findings below)', lines: stopLines }] : []),
+  ];
   return {
     title: `JOB CARD ${card.id} (revision ${card.revision}) — ${card.status}`,
     notices: [`SAFETY: ${STOP_NOT_CARRIED_NOTICE}`, `NOTICE: ${TYPED_SIGNOFF_NOTICE}`, `NOTICE: ${TYPED_NAMES_NOTICE}`],

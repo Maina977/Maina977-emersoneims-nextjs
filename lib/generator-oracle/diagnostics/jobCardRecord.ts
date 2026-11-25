@@ -20,15 +20,32 @@
  */
 import { classKey, diagnose, protectiveLimitIds, sourceKey, tolKey } from './engine';
 import { answersFromRaw, mergedRaw, type RawAnswers } from './session';
-import { externalStopsFor } from './sessionSafety';
+import { externalStopsFor, type ExternalStop } from './sessionSafety';
 import { NOT_VERIFIED, publishedEntryOf, publishedLimitFor, referencesFor, type Equipment } from './oemReferences';
 import { isScreenKey } from './safetyScreen';
 import { FAMILIES } from './families';
 import type { Answers, DiagnosisResult, FaultFamily, LimitClass, NumberQuestion, Question } from './types';
-import type { JobCard, Reading } from '@/lib/generator-oracle/service/maintenance';
+import { mergeGuidedSafety, type GuidedSafety, type GuidedSafetyAdd, type JobCard, type Reading } from '@/lib/generator-oracle/service/maintenance';
 import type { CardUpdate } from '@/lib/generator-oracle/service/store';
 
 export const RECORD_HEADER = 'GUIDED DIAGNOSIS';
+
+/** What a record was built from (R-INT-1); see recordInputs(). */
+export interface RecordInputs { family: FaultFamily; raw: Record<string, string> | undefined; equipment: Equipment; session?: RawAnswers; extraStops: ExternalStop[] }
+const RECORD_INPUTS = Symbol.for('eims.oracle.recordInputs');
+const RECORD_SAFETY = Symbol.for('eims.oracle.recordSafety');
+export function recordInputs(rec: DiagnosisRecord): RecordInputs | undefined {
+  return (rec as unknown as Record<symbol, RecordInputs | undefined>)[RECORD_INPUTS];
+}
+/** The safety state a guarded record was made under (R-INT-2/3): what the card's structured safety record gets, and whether only the SAFETY HOLD applies. */
+export interface RecordSafety { add: GuidedSafetyAdd; holdOnly: boolean }
+export function withRecordSafety<T extends DiagnosisRecord>(rec: T, safety: RecordSafety): T {
+  Object.defineProperty(rec, RECORD_SAFETY, { value: safety, enumerable: false });
+  return rec;
+}
+export function recordSafety(rec: DiagnosisRecord): RecordSafety | undefined {
+  return (rec as unknown as Record<symbol, RecordSafety | undefined>)[RECORD_SAFETY];
+}
 
 /** Ids of questions that hold an OEM / settings-sheet figure. */
 export function refQuestions(family: FaultFamily): Set<string> {
@@ -81,11 +98,14 @@ export interface DiagnosisRecord {
 /**
  * @param raw the answers this family sees (the shared safety screen merged in — see session.mergedRaw)
  * @param session the whole guided session, so STOPs raised in other families are carried in (F3)
+ * @param extraStops further STOPs that apply to this machine (integration review R-INT-1: every
+ *   uncleared latched STOP and the SAFETY HOLD), so running checks and running-only questions are withheld
+
  */
-export function diagnosisRecord(family: FaultFamily, raw: Record<string, string> | undefined, equipment: Equipment = {}, session?: RawAnswers): DiagnosisRecord {
+export function diagnosisRecord(family: FaultFamily, raw: Record<string, string> | undefined, equipment: Equipment = {}, session?: RawAnswers, extraStops: ExternalStop[] = []): DiagnosisRecord {
   const typed = answersFromRaw(family, raw);
   const { answers, refused } = guardPublished(family, typed, equipment);
-  const base = diagnose(family, answers, { externalStops: externalStopsFor(FAMILIES, session, family.id) });
+  const base = diagnose(family, answers, { externalStops: [...externalStopsFor(FAMILIES, session, family.id), ...extraStops] });
   const result: DiagnosisResult = { ...base, invalid: [...refused, ...base.invalid] };
   const valid = new Map(Object.entries(answers).filter(([k]) => !result.invalid.some((i) => i.q === k)));
   const oemQs = refQuestions(family);
@@ -161,22 +181,33 @@ export function diagnosisRecord(family: FaultFamily, raw: Record<string, string>
     if (srcs.length) r.limitSource = srcs.join(' | ');
     readings.push(r);
   }
-  return { result, lines, findings: lines.join('\n'), readings };
+  const rec: DiagnosisRecord = { result, lines, findings: lines.join('\n'), readings };
+  // Integration review R-INT-1: the inputs travel with the record (not enumerable, so the record's
+  // data is unchanged), so a record combined with the latch can be rebuilt under the latched STOPs.
+  const inputs: RecordInputs = { family, raw, equipment, session, extraStops };
+  Object.defineProperty(rec, RECORD_INPUTS, { value: inputs, enumerable: false });
+  return rec;
 }
 
 /** The record for one family of a session (screen merged, other families' STOPs carried in). */
-export function sessionRecord(family: FaultFamily, session: RawAnswers, equipment: Equipment = {}): DiagnosisRecord {
-  return diagnosisRecord(family, mergedRaw(session, family.id), equipment, session);
+export function sessionRecord(family: FaultFamily, session: RawAnswers, equipment: Equipment = {}, extraStops: ExternalStop[] = []): DiagnosisRecord {
+  return diagnosisRecord(family, mergedRaw(session, family.id), equipment, session, extraStops);
 }
 
 /**
  * The card update that adds this record. A record with a STOP goes FIRST in the
  * findings (F6); otherwise it is appended. Readings are appended; work done is not touched.
  */
-export function recordToCardUpdate(card: Pick<JobCard, 'findings' | 'readings'>, rec: DiagnosisRecord): CardUpdate {
+export function recordToCardUpdate(card: Pick<JobCard, 'findings' | 'readings'> & Partial<Pick<JobCard, 'guidedSafety'>>, rec: DiagnosisRecord): CardUpdate & { guidedSafety?: GuidedSafety } {
   const old = card.findings.trim();
+  const safety = recordSafety(rec);
   // Review R8: earlier records stay, below the STOP record, marked as made before it.
-  const below = 'NOTE: The findings below were recorded before this STOP. None of their running checks may be done while the STOP stands.';
+  // R-INT-3: below a hold-only record they are marked as made before the SAFETY HOLD, never "this STOP".
+  const below = safety?.holdOnly
+    ? 'NOTE: The findings below were recorded before this SAFETY HOLD. None of their running checks may be done while the hold stands.'
+    : 'NOTE: The findings below were recorded before this STOP. None of their running checks may be done while the STOP stands.';
   const findings = !old ? rec.findings : rec.result.stopActive ? `${rec.findings}\n\n${below}\n\n${old}` : `${old}\n\n${rec.findings}`;
-  return { findings, readings: [...card.readings, ...rec.readings] };
+  // R-INT-2: a record made under the browser's safety state carries it as structured data (merge-only).
+  // The store never takes this from a card edit: the recordGuidedSafety action sets it.
+  return { findings, readings: [...card.readings, ...rec.readings], ...(safety ? { guidedSafety: mergeGuidedSafety(card.guidedSafety, safety.add, new Date().toISOString()) } : {}) };
 }

@@ -25,7 +25,7 @@ import { LIMIT_CLASS_OPTIONS, type Question } from '@/lib/generator-oracle/diagn
 
 import {
   CLEARANCE_NOT_RESTART, GD_STORE, SAFETY_HOLD_ACK_LABEL, SAFETY_HOLD_SESSION_ONLY, SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY,
-  UNREADABLE_STOP, latchRecordLines, mergeCleared, mergeLatched, readStore, withLatchedStops,
+  UNREADABLE_STOP, guardedSessionRecord, mergeCleared, mergeLatched, readStore, sameStop,
 } from '@/lib/generator-oracle/diagnostics/stopLatch';
 
 // The STOP latch record lives in lib/generator-oracle/diagnostics/stopLatch.ts (moved unchanged,
@@ -44,11 +44,19 @@ const field = 'w-full rounded-md bg-slate-900 border border-slate-700 px-2 py-1.
 
 interface QProps {
   q: Question; values: Record<string, string>; set: (k: string, v: string) => void; scope: string;
+  /** R-INT-4: a typed value is committed (and may then latch a STOP) on blur, Enter or a pause; a choice at once. */
+  commit: () => void; typing: () => void;
   stopActive: boolean; note?: string; tolerance: boolean; protective: boolean;
   published: { value: number; classification: 'shutdown' | 'warning'; source: string } | null;
 }
 
-function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, protective, published }: QProps) {
+function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, protective, published, commit, typing }: QProps) {
+  const typed = (k: string) => ({
+    onChange: (e: { target: { value: string } }) => { set(k, e.target.value); typing(); },
+    onBlur: commit,
+    onKeyDown: (e: { key: string }) => { if (e.key === 'Enter') commit(); },
+  });
+  const chosen = (k: string) => (e: { target: { value: string } }) => { set(k, e.target.value); commit(); };
   const id = `gd-${scope}-${q.id.replace(/\./g, '-')}`;
   const value = values[q.id] ?? '';
   const limit = q.kind === 'number' ? q.oemLimit : undefined;
@@ -59,9 +67,9 @@ function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, pro
         {q.kind === 'number' ? <span className="text-slate-500"> ({q.unit})</span> : null}
       </label>
       {q.kind === 'number' ? (
-        <input id={id} inputMode="decimal" value={value} onChange={(e) => set(q.id, e.target.value)} className={field} />
+        <input id={id} inputMode="decimal" value={value} {...typed(q.id)} className={field} />
       ) : (
-        <select id={id} value={value} onChange={(e) => set(q.id, e.target.value)} className={field}>
+        <select id={id} value={value} onChange={chosen(q.id)} className={field}>
           <option value="">Not answered</option>
           {q.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
@@ -72,13 +80,13 @@ function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, pro
       {limit ? (
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           <label className="block">Is this a warning or a shutdown value?
-            <select aria-label={`Classification: ${limit.parameter}`} value={values[classKey(q.id)] ?? ''} onChange={(e) => set(classKey(q.id), e.target.value)} className={`mt-1 ${field}`}>
+            <select aria-label={`Classification: ${limit.parameter}`} value={values[classKey(q.id)] ?? ''} onChange={chosen(classKey(q.id))} className={`mt-1 ${field}`}>
               <option value="">Not answered (treated as not stated)</option>
               {LIMIT_CLASS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </label>
           <label className="block">Source: manual ID, revision, page
-            <input aria-label={`Source: ${limit.parameter}`} value={values[sourceKey(q.id)] ?? ''} onChange={(e) => set(sourceKey(q.id), e.target.value)} className={`mt-1 ${field}`} />
+            <input aria-label={`Source: ${limit.parameter}`} value={values[sourceKey(q.id)] ?? ''} {...typed(sourceKey(q.id))} className={`mt-1 ${field}`} />
           </label>
           {value && (!values[classKey(q.id)] || values[classKey(q.id)] === 'not-stated') ? (
             <span className="sm:col-span-2 text-amber-300">{protective
@@ -87,7 +95,7 @@ function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, pro
           ) : null}
           {published ? (
             <button type="button" className="sm:col-span-2 rounded-md border border-cyan-600 px-2 py-1 text-left text-cyan-200"
-              onClick={() => { set(q.id, String(published.value)); set(classKey(q.id), published.classification); set(sourceKey(q.id), published.source); }}>
+              onClick={() => { set(q.id, String(published.value)); set(classKey(q.id), published.classification); set(sourceKey(q.id), published.source); commit(); }}>
               Use published value for the selected model: {published.value} {q.kind === 'number' ? q.unit : ''} ({published.classification}) — check the variant matches this set
             </button>
           ) : null}
@@ -95,7 +103,7 @@ function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, pro
       ) : null}
       {tolerance && q.kind === 'number' ? (
         <label className="block mt-2">Measurement tolerance ± ({q.unit}; from the instrument or sensor data, optional)
-          <input aria-label={`Tolerance: ${q.text}`} inputMode="decimal" value={values[tolKey(q.id)] ?? ''} onChange={(e) => set(tolKey(q.id), e.target.value)} className={`mt-1 ${field}`} />
+          <input aria-label={`Tolerance: ${q.text}`} inputMode="decimal" value={values[tolKey(q.id)] ?? ''} {...typed(tolKey(q.id))} className={`mt-1 ${field}`} />
         </label>
       ) : null}
     </div>
@@ -158,6 +166,20 @@ export default function GuidedDiagnosisPanel() {
    * the stored record was never loaded and a latched STOP lost to the SAFETY HOLD. Every later
    * successful read now merges it, before the hold can be released.
    */
+  // R-INT-4: what is committed (blur, Enter, a choice, a tab change, or a pause in typing) may latch a STOP.
+  const [committed, setCommitted] = useState<RawAnswers>({});
+  const [commitTick, setCommitTick] = useState(0);
+  const pause = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const commit = () => { if (pause.current) { clearTimeout(pause.current); pause.current = null; } setCommitTick((t) => t + 1); };
+  /** While typing: a value left unchanged for 0.8 s is committed too. */
+  const typing = () => { if (pause.current) clearTimeout(pause.current); pause.current = setTimeout(commit, 800); };
+  useEffect(() => () => { if (pause.current) clearTimeout(pause.current); }, []);
+  // The answers as they are when committed (same object as `raw` right after a commit).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setCommitted(raw); }, [commitTick, loaded]);
+  // R-INT-5: the latest page state, for writing a STOP back when another window's write dropped it.
+  const latest = useRef({ latched, cleared, raw, equipment, loaded });
+  latest.current = { latched, cleared, raw, equipment, loaded };
   const readAndMerge = (): boolean => {
     const s = readStore();
     if (s.blocked) return false;
@@ -170,8 +192,27 @@ export default function GuidedDiagnosisPanel() {
     if (raw0) setRaw((r) => (Object.keys(raw0).some((k) => !(k in r)) ? { ...raw0, ...r } : r));
     const eq0 = s.equipment;
     if (eq0 && Object.keys(eq0).length) setEquipment((e) => (Object.keys(e).length ? e : eq0));
-    setCleared((c) => keepSame(c, mergeCleared(c, s.cleared)));
-    setLatched((l) => keepSame(l, mergeLatched(l, s.latched, s.cleared)));
+    // Only when the read brings something new (no state update at all otherwise, so a retry every
+    // 2 s never re-renders the panel, also right after a committed change).
+    const now = latest.current;
+    if (keepSame(now.cleared, mergeCleared(now.cleared, s.cleared)) !== now.cleared) setCleared((c) => keepSame(c, mergeCleared(c, s.cleared)));
+    if (keepSame(now.latched, mergeLatched(now.latched, s.latched, s.cleared)) !== now.latched) setLatched((l) => keepSame(l, mergeLatched(l, s.latched, s.cleared)));
+    // Answers merged in from the stored record are committed (they may latch); repeated reads that bring nothing new change nothing.
+    if (raw0 && Object.keys(raw0).some((k) => !(k in latest.current.raw))) commit();
+    // R-INT-5: if the stored record lacks a STOP (or a clearance) this page holds — another window
+    // wrote an out-of-date record — write the merged record back now, so a reload cannot lose it.
+    const cur = latest.current;
+    if (cur.loaded) {
+      const lostStop = cur.latched.some((l) => !s.latched.some((x) => x.key === l.key) && !s.cleared.some((c) => sameStop(c, l)));
+      const lostClear = cur.cleared.some((c) => !s.cleared.some((x) => sameStop(x, c) && x.clearedAt === c.clearedAt));
+      if (lostStop || lostClear) {
+        const mergedCleared = mergeCleared(cur.cleared, s.cleared);
+        const mergedLatched = mergeLatched(cur.latched, s.latched, mergedCleared);
+        try {
+          localStorage.setItem(GD_STORE, JSON.stringify({ v: 2, raw: { ...(s.raw ?? {}), ...cur.raw }, equipment: cur.equipment, latched: mergedLatched, cleared: mergedCleared }));
+        } catch { setStorageOk(false); }
+      }
+    }
     return true;
   };
   useEffect(() => {
@@ -201,10 +242,10 @@ export default function GuidedDiagnosisPanel() {
   }, [storageOk]);
   // Every STOP computed on any tab is latched. Safety-screen STOPs are shared by every family,
   // so they are latched once (from "Safety screen"), not once per family.
-  const liveStops = useMemo(() => {
+  const stopsOf = (answers: RawAnswers) => {
     const out: Array<{ key: string; message: string; from: string; label?: string }> = [];
     for (const f of FAMILIES) {
-      for (const s of diagnosisRecord(f, mergedRaw(raw, f.id), equipment).result.stops) {
+      for (const s of diagnosisRecord(f, mergedRaw(answers, f.id), equipment).result.stops) {
         if (s.level !== 'STOP' || s.origin === 'other-family') continue;
         // The safeguard label is latched with the STOP so the job card carries it (2026-11-26).
         const label = s.label ? { label: s.label } : {};
@@ -215,7 +256,14 @@ export default function GuidedDiagnosisPanel() {
       }
     }
     return out;
-  }, [raw, equipment]);
+  };
+  // STOPs shown by the answers on screen now (also while typing) ...
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const liveNow = useMemo(() => stopsOf(raw), [raw, equipment]);
+  // ... and the STOPs that latch: from the committed answers only (R-INT-4), so typing 160 against a
+  // 150 kPa minimum does not latch "1" or "16". A committed value at or beyond a limit latches as before.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const liveStops = useMemo(() => (committed === raw ? liveNow : stopsOf(committed)), [committed, raw, liveNow, equipment]);
   useEffect(() => {
     if (!loaded) return;
     const add = liveStops.filter((s) => !latched.some((l) => l.key === s.key));
@@ -245,7 +293,7 @@ export default function GuidedDiagnosisPanel() {
   // Service & Job Cards screen reads to record the same diagnosis on a card.
   useEffect(() => { if (dirty.current) setSaveError(saveGuidedSession(getStore(), raw, equipment)); }, [raw, equipment]);
   const recordClearance = (l: Latched) => {
-    if (liveStops.some((s) => s.key === l.key)) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: the answers entered still show this condition. Complete the required checks and update the answers first.' })); return; }
+    if (liveNow.some((s) => s.key === l.key) || liveStops.some((s) => s.key === l.key)) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: the answers entered still show this condition. Complete the required checks and update the answers first.' })); return; }
     const by = (clearBy[l.key] ?? '').trim();
     if (!by) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: enter the name or initials of the qualified technician recording the clearance.' })); return; }
     const reason = (clearWhy[l.key] ?? '').trim();
@@ -263,6 +311,7 @@ export default function GuidedDiagnosisPanel() {
   };
   const setEq = (k: keyof Equipment, v: string) => {
     dirty.current = true;
+    commit();
     setEquipment((e) => ({ ...e, [k]: v || undefined }));
     // Safety review F7: a published model-specific limit is cleared as soon as the equipment changes.
     setRaw((r) => {
@@ -283,7 +332,7 @@ export default function GuidedDiagnosisPanel() {
   const readingsWithTol = useMemo(() => limitReadings(family), [family]);
   const familyRefs = referencesFor(equipment, family.id);
 
-  const route = () => { const f = familyFor(symptom); if (f) setFamilyId(f.id); };
+  const route = () => { const f = familyFor(symptom); if (f) { commit(); setFamilyId(f.id); } };
   const routed = symptom.trim() ? familyFor(symptom) : null;
   const next = result.nextQuestion;
   // Safety hotfix (2026-11-25, independent review F1): while a STOP applies, no further
@@ -293,7 +342,7 @@ export default function GuidedDiagnosisPanel() {
   // Active = any STOP computed now (on any tab) or any latched STOP not yet cleared by record.
   const stopActive = result.stopActive || latched.length > 0;
   // Latched STOPs whose condition is no longer computed are still shown (they are not cleared).
-  const latchedOnly = latched.filter((l) => !liveStops.some((s) => s.key === l.key));
+  const latchedOnly = latched.filter((l) => !liveNow.some((s) => s.key === l.key));
   // Blocked storage: SAFETY HOLD until an in-person reassessment is acknowledged for this page session.
   const safetyHold = loaded && !storageOk && !holdAck;
   // Instructions are withheld under a STOP, under a safety hold, and until the stored record has been checked.
@@ -311,17 +360,16 @@ export default function GuidedDiagnosisPanel() {
   const STOP_HOLD = 'Further checks are withheld while a STOP applies. Make the set safe first: engine stopped, isolated and locked off. A qualified technician decides the next step once the hazard is controlled.';
 
   const qProps = (q: Question, scope: string): QProps => ({
-    q, values, set, scope, stopActive, tolerance: readingsWithTol.has(q.id),
+    q, values, set, scope, stopActive, commit, typing, tolerance: readingsWithTol.has(q.id),
     protective: (family.limits ?? []).some((l) => l.limit === q.id && l.protective),
     note: oemQs.has(q.id) ? questionReferenceNote(equipment, family.id, q.id) : undefined,
     published: oemQs.has(q.id) ? publishedLimitFor(equipment, family.id, q.id) : null,
   });
   // The download carries, first, every latched STOP (also those the answers no longer show) and
   // every recorded clearance, in the same lines as the job card; then the 1.3.0 record.
-  const downloadText = () => withLatchedStops(record, [
-    ...(!storageOk ? [SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY] : []),
-    ...latchRecordLines({ unreadable: false, latched, cleared }),
-  ]).findings;
+  // R-INT-1: uncleared latched STOPs and the SAFETY HOLD go to the engine as external STOPs, so the
+  // download carries no running check and no running-only Next check under a latch or the hold.
+  const downloadText = () => guardedSessionRecord(family, raw, equipment, { latched, cleared, hold: !storageOk }).record.findings;
   const download = () => {
     const url = URL.createObjectURL(new Blob([`${downloadText()}\n`], { type: 'text/plain' }));
     const a = document.createElement('a');
@@ -365,7 +413,7 @@ export default function GuidedDiagnosisPanel() {
         <p className="text-[11px] text-slate-500">Published figures are shown only for the exact model selected. They are never entered for you: type and confirm every limit for the set in front of you, or press “Use published value” for that exact model. Any other model: per OEM manual — NOT VERIFIED. Every limit you enter is recorded as applying only to the manufacturer, model and variant typed here.</p>
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="Fault family">
           {FAMILIES.map((f) => (
-            <button key={f.id} type="button" role="tab" aria-selected={f.id === familyId} onClick={() => setFamilyId(f.id)}
+            <button key={f.id} type="button" role="tab" aria-selected={f.id === familyId} onClick={() => { commit(); setFamilyId(f.id); }}
               className={`rounded-full px-3 py-1 text-xs border ${f.id === familyId ? 'border-amber-400 bg-amber-500/20 text-amber-200' : 'border-slate-700 text-slate-300 hover:border-slate-500'}`}>
               {f.title}
             </button>
@@ -379,7 +427,7 @@ export default function GuidedDiagnosisPanel() {
         <div className="grid gap-3 sm:grid-cols-2">
           {SCREEN_QUESTIONS.map((q) => <QuestionInput key={q.id} {...qProps(q, 'screen')} />)}
         </div>
-        <button type="button" onClick={() => { dirty.current = true; setRaw((r) => ({ ...r, [SCREEN_BUCKET]: {} })); }} className="text-xs text-slate-400 underline">Clear safety screen</button>
+        <button type="button" onClick={() => { dirty.current = true; setRaw((r) => ({ ...r, [SCREEN_BUCKET]: {} })); commit(); }} className="text-xs text-slate-400 underline">Clear safety screen</button>
       </div>
 
       {!storageOk && !stopActive && holdAck ? (
@@ -489,7 +537,7 @@ export default function GuidedDiagnosisPanel() {
             </div>
           </details>
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => { dirty.current = true; setRaw((r) => ({ ...r, [familyId]: {} })); }} className="text-xs text-slate-400 underline">Clear answers</button>
+            <button type="button" onClick={() => { dirty.current = true; setRaw((r) => ({ ...r, [familyId]: {} })); commit(); }} className="text-xs text-slate-400 underline">Clear answers</button>
             <button type="button" onClick={download} className="text-xs text-amber-300 underline">Download this diagnosis (.txt)</button>
           </div>
           <p className="text-[11px] text-slate-500">To record it on a job card: Service &amp; Job Cards → Job cards → open the card → “Record a guided diagnosis”. The card gets this result, and first every STOP latched here (also one the answers no longer show) and every recorded clearance (UNVERIFIED).</p>
