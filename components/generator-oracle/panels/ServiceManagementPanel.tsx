@@ -21,6 +21,10 @@ import {
   apply, dueFor, deserialise, emptyState, isEditable, loadState, saveState, serialise,
   type CardUpdate, type ServiceAction, type ServiceState,
 } from '@/lib/generator-oracle/service/store';
+import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
+import { recordToCardUpdate, sessionRecord } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
+import { SCREEN_BUCKET } from '@/lib/generator-oracle/diagnostics/safetyScreen';
+import { loadGuidedEquipment, loadGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
 
 const inp = 'w-full min-w-0 rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white focus:border-amber-500 outline-none';
 const lbl = 'block text-xs text-slate-300';
@@ -242,6 +246,55 @@ const fromDraft = (d: Draft): CardUpdate => ({
   readings: d.readings.map((r) => ({ name: r.name, value: num(r.value), unit: r.unit, min: optNum(r.min), max: optNum(r.max), limitSource: r.limitSource })),
 });
 
+/**
+ * Records a Guided Diagnosis result on the card. The answers come from the
+ * Guided Diagnosis tab (browser storage) and go through the same diagnose(),
+ * so the card carries exactly the result shown there. Findings and readings are
+ * appended; work done is not touched (a recommendation is not work done).
+ */
+function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft) => void }) {
+  const [session, setSession] = useState<RawAnswers>(() => loadGuidedSession(getStore(), FAMILIES));
+  const [equipment, setEquipment] = useState(() => loadGuidedEquipment(getStore()));
+  const [familyId, setFamilyId] = useState('');
+  // A family is offered when it has answers, or when the shared safety screen does (its STOPs apply to every family).
+  const available = FAMILIES.filter((f) => session[f.id] || session[SCREEN_BUCKET]);
+  const fam = available.find((f) => f.id === familyId) ?? null;
+  // Same function as the Guided Diagnosis tab: screen merged in, other families' STOPs carried in.
+  const rec = useMemo(() => (fam ? sessionRecord(fam, session, equipment) : null), [fam, session, equipment]);
+  const add = () => {
+    if (!rec) return;
+    const u = recordToCardUpdate({ findings: d.findings, readings: [] }, rec);
+    onAdd({
+      ...d, findings: u.findings ?? d.findings,
+      readings: [...d.readings, ...rec.readings.map((r) => ({ name: r.name, value: String(r.value), unit: r.unit, min: r.min === undefined ? '' : String(r.min), max: r.max === undefined ? '' : String(r.max), limitSource: r.limitSource ?? '' }))],
+    });
+  };
+  return (
+    <div className="space-y-2 rounded-lg border border-slate-800 p-2">
+      <div className="text-xs text-slate-300">Record a guided diagnosis — from the answers on Fault Center → Guided Diagnosis (this browser)</div>
+      {available.length === 0 ? (
+        <p className="text-xs text-slate-500">No guided diagnosis answers saved in this browser yet.</p>
+      ) : (
+        <Field label="Fault family">
+          <select className={inp} value={familyId} onChange={(e) => setFamilyId(e.target.value)}>
+            <option value="">Choose…</option>
+            {available.map((f) => <option key={f.id} value={f.id}>{f.title}</option>)}
+          </select>
+        </Field>
+      )}
+      {rec && (
+        <>
+          {rec.result.stopActive && <p role="alert" className="text-xs text-red-200">This diagnosis has an active STOP: it is recorded first in the findings.</p>}
+          <div className="text-[11px] text-slate-400">Preview — exactly what is added to the findings:</div>
+          <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded bg-slate-950 p-2 text-[11px] text-slate-300">{rec.findings}</pre>
+          <button type="button" className={btn2} onClick={add}>Add this diagnosis to the card</button>
+        </>
+      )}
+      <button type="button" className="text-xs text-slate-400 underline" onClick={() => { setSession(loadGuidedSession(getStore(), FAMILIES)); setEquipment(loadGuidedEquipment(getStore())); }}>Reload saved answers</button>
+    </div>
+  );
+}
+
 function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; card: JobCard; asset: Asset; dispatch: Dispatch }) {
   const editable = isEditable(card);
   const [d, setD] = useState<Draft>(() => toDraft(card));
@@ -335,6 +388,7 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
             <p className="text-xs text-red-200 break-words">Do not test-run a set with an unresolved STOP. Record instead: <button type="button" className="underline text-red-100" onClick={() => setD({ ...d, findings: d.findings.toLowerCase().includes(READINGS_NOT_TAKEN_STOP.toLowerCase()) ? d.findings : [d.findings.trim(), READINGS_NOT_TAKEN_STOP].filter(Boolean).join('. ') })}>{READINGS_NOT_TAKEN_STOP}</button></p>
           </div>
           <Field label="Findings"><textarea rows={3} className={inp} value={d.findings} onChange={(e) => setD({ ...d, findings: e.target.value })} /></Field>
+          <GuidedRecord d={d} onAdd={(next) => { if (dispatch({ type: 'updateCard', cardId: card.id, update: fromDraft(next) })) setD(next); }} />
           <button type="button" className={btn2} onClick={() => dispatch({ type: 'updateCard', cardId: card.id, update: fromDraft(d) })}>Save changes</button>
         </div>
       ) : card.status === 'COMPLETED' ? (

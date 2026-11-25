@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { diagnose, evaluate, validateAnswers, DIAGNOSTIC_ENGINE_VERSION } from '@/lib/generator-oracle/diagnostics/engine';
 import { FAMILIES, familyFor, LOW_OIL_PRESSURE, OVERHEATING, NO_CRANK, NO_START, KNOCK_SEIZURE, NO_VOLTAGE } from '@/lib/generator-oracle/diagnostics/families';
+import { SCREEN_QUESTIONS } from '@/lib/generator-oracle/diagnostics/safetyScreen';
+
+/** The cross-family safety screen answered "no" throughout (it is asked first in every family). */
+const SCREEN_NO = Object.fromEntries(SCREEN_QUESTIONS.map((q) => [q.id, 'no']));
 
 describe('family definitions are well formed', () => {
   for (const f of FAMILIES) {
@@ -59,16 +63,29 @@ describe('three-valued conditions', () => {
 });
 
 describe('stop rules always fire', () => {
-  it('oil pressure below the OEM minimum → STOP, whatever else is answered', () => {
+  it('oil pressure below an OEM minimum classified as shutdown → STOP, whatever else is answered', () => {
+    const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 150, oemMinOilPressure: 200, 'oemMinOilPressure.class': 'shutdown', mechanicalAgrees: 'yes', oilLevel: 'ok' });
+    expect(r.stops.some((s) => s.level === 'STOP' && /reached the OEM minimum \(shutdown value\)/.test(s.message))).toBe(true);
+  });
+  it('the same reading against an UNCLASSIFIED minimum → conservative software STOP (protective parameter, management-confirmed 2026-11-25)', () => {
     const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 150, oemMinOilPressure: 200, mechanicalAgrees: 'yes', oilLevel: 'ok' });
-    expect(r.stops.some((s) => s.level === 'STOP' && /below the OEM minimum/.test(s.message))).toBe(true);
+    expect(r.stops[0].level).toBe('STOP');
+    expect(r.stops[0].message).toMatch(/^STOP — Protective threshold classification not verified\. Do not continue operating until the applicable manufacturer limits have been confirmed by a qualified technician\.$/);
+    expect(r.stops[0].label).toBe('This is a conservative software safeguard, not a manufacturer instruction.');
+    expect(r.stopActive).toBe(true);
+    expect(r.nextQuestion?.id).toBe('oemMinOilPressure'); // its classification is still asked next
+  });
+  it('the same reading against a minimum classified WARNING → CAUTION only (never escalated)', () => {
+    const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 150, oemMinOilPressure: 200, 'oemMinOilPressure.class': 'warning', mechanicalAgrees: 'yes', oilLevel: 'ok' });
+    expect(r.stopActive).toBe(false);
+    expect(r.stops.find((s) => /OEM warning \(pre-alarm\) value/.test(s.message))!.level).toBe('CAUTION');
   });
   it('oil pressure above the minimum → no pressure STOP', () => {
     const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 250, oemMinOilPressure: 200, oilLevel: 'ok' });
     expect(r.stops.filter((s) => s.level === 'STOP')).toHaveLength(0);
   });
   it('no OEM minimum entered → no invented limit, and the OEM limit is asked first', () => {
-    const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 50 });
+    const r = diagnose(LOW_OIL_PRESSURE, { ...SCREEN_NO, oilPressure: 50, oilPressureAtZero: 'no' });
     expect(r.stops).toHaveLength(0);
     expect(r.nextQuestion?.id).toBe('oemMinOilPressure');
   });
@@ -76,13 +93,14 @@ describe('stop rules always fire', () => {
     for (const where of ['engine', 'top', 'generator-end', 'unsure']) expect(diagnose(KNOCK_SEIZURE, { where }).stops[0].level).toBe('STOP');
   });
   it('coolant above the OEM alarm → STOP; seized engine → STOP; low insulation → STOP', () => {
-    expect(diagnose(OVERHEATING, { coolantTemp: 108, oemAlarmCoolantTemp: 103 }).stops.some((s) => s.level === 'STOP')).toBe(true);
+    expect(diagnose(OVERHEATING, { coolantTemp: 108, oemAlarmCoolantTemp: 103, 'oemAlarmCoolantTemp.class': 'shutdown' }).stops.some((s) => s.level === 'STOP')).toBe(true);
     expect(diagnose(NO_CRANK, { barOver: 'locked' }).stops.some((s) => s.level === 'STOP')).toBe(true);
-    expect(diagnose(NO_VOLTAGE, { insulation: 0.4, oemMinInsulation: 1 }).stops.some((s) => s.level === 'STOP')).toBe(true);
+    expect(diagnose(NO_VOLTAGE, { insulation: 0.4, oemMinInsulation: 1, 'oemMinInsulation.class': 'shutdown' }).stops.some((s) => s.level === 'STOP')).toBe(true);
   });
-  it('a fresh session asks the safety question first', () => {
-    expect(diagnose(KNOCK_SEIZURE, {}).nextQuestion?.id).toBe('where');
-    expect(diagnose(OVERHEATING, {}).nextQuestion?.id).toBe('coolantTemp');
+  it('a fresh session asks the shared safety screen first, then the family safety question', () => {
+    for (const f of FAMILIES) expect(diagnose(f, {}).nextQuestion?.id).toBe('screen.alarm');
+    expect(diagnose(KNOCK_SEIZURE, SCREEN_NO).nextQuestion?.id).toBe('where');
+    expect(diagnose(OVERHEATING, SCREEN_NO).nextQuestion?.id).toBe('coolantTemp');
   });
 });
 
@@ -158,6 +176,7 @@ describe('determinism', () => {
   it('all questions answered → no next question', () => {
     const a: Record<string, string | number> = {};
     for (const q of OVERHEATING.questions) a[q.id] = q.kind === 'number' ? q.min + 1 : q.options[0].value;
+    a['oemAlarmCoolantTemp.class'] = 'warning';
     expect(diagnose(OVERHEATING, a).nextQuestion).toBeNull();
   });
 });

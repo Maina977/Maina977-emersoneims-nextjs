@@ -5,9 +5,10 @@
  */
 import type { Condition, FaultFamily } from './types';
 import { DIAGNOSTIC_ENGINE_VERSION } from './engine';
+import { SCREEN_QUESTIONS, SCREEN_RULES, isScreenKey } from './safetyScreen';
 
 export interface ReviewRow {
-  family: string; kind: 'question' | 'stop' | 'cause' | 'evidence'; id: string;
+  family: string; kind: 'safety' | 'question' | 'stop' | 'limit' | 'crosscheck' | 'cause' | 'evidence'; id: string;
   text: string; rule: string;
   oemReference: string; verdict: '' ; reviewerComment: string;
 }
@@ -21,19 +22,42 @@ export function describeCondition(c: Condition): string {
     case 'le': return `${c.q} ≤ ${c.value}`;
     case 'gt': return `${c.q} > ${c.value}`;
     case 'ge': return `${c.q} ≥ ${c.value}`;
-    case 'ltRef': return `${c.q} ${c.inclusive ? '≤' : '<'} ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
-    case 'gtRef': return `${c.q} ${c.inclusive ? '≥' : '>'} ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
+    case 'ltRef': return `${c.q} < ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
+    case 'gtRef': return `${c.q} > ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
+    case 'leRef': return `${c.q} ≤ ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
+    case 'geRef': return `${c.q} ≥ ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
   }
 }
 
 export function reviewRows(families: FaultFamily[]): ReviewRow[] {
   const rows: ReviewRow[] = [];
   const blank = { oemReference: '', verdict: '' as const, reviewerComment: '' };
+  // The shared safety screen is reviewed once (it is asked first in every family).
+  if (families.some((f) => f.questions.some((q) => isScreenKey(q.id)))) {
+    for (const q of SCREEN_QUESTIONS) rows.push({ family: 'safety-screen', kind: 'question', id: q.id, text: q.text, rule: q.options.map((o) => o.label).join(' | '), ...blank });
+    SCREEN_RULES.forEach((s, i) => rows.push({ family: 'safety-screen', kind: 'stop', id: `stop-${i + 1}`, text: `${s.level}: ${s.message}`, rule: describeCondition(s.when), ...blank }));
+  }
   for (const f of families) {
-    for (const q of f.questions) rows.push({ family: f.id, kind: 'question', id: q.id, text: q.text, rule: q.kind === 'number' ? `number ${q.min}–${q.max} ${q.unit}` : q.options.map((o) => o.label).join(' | '), ...blank });
-    f.stopRules.forEach((s, i) => rows.push({ family: f.id, kind: 'stop', id: `stop-${i + 1}`, text: `${s.level}: ${s.message}`, rule: describeCondition(s.when), ...blank }));
+    (f.mandatorySafety ?? []).forEach((m, i) => rows.push({ family: f.id, kind: 'safety', id: `safety-${i + 1}`, text: `CAUTION (always shown first): ${m}`, rule: 'always', ...blank }));
+    for (const q of f.questions.filter((x) => !isScreenKey(x.id))) {
+      const rule = q.kind === 'number' ? `number ${q.min}–${q.max} ${q.unit}` : q.options.map((o) => o.label).join(' | ');
+      const marks = [
+        q.needsRunning ? '[needs the engine running: not offered while a STOP is active]' : '',
+        q.kind === 'number' && q.oemLimit ? `[OEM ${q.oemLimit.direction === 'min' ? 'minimum' : 'maximum'}: "${q.oemLimit.parameter}"; also asks classification (shutdown / warning / not stated) and source (manual ID, revision, page)]` : '',
+        q.kind === 'number' && q.ratingPlate ? '[rating-plate value]' : '',
+      ].filter(Boolean).join(' ');
+      rows.push({ family: f.id, kind: 'question', id: q.id, text: q.help ? `${q.text} — ${q.help}` : q.text, rule: marks ? `${rule} ${marks}` : rule, ...blank });
+    }
+    f.stopRules.filter((s) => !s.screen).forEach((s, i) => rows.push({ family: f.id, kind: 'stop', id: `stop-${i + 1}`, text: `${s.level}: ${s.message}${s.label ? ` [${s.label}]` : ''}${s.underStop !== undefined ? ` | While a STOP is active: ${s.underStop ?? '(not shown)'}` : ''}`, rule: describeCondition(s.when), ...blank }));
+    for (const l of f.limits ?? []) {
+      const lq = f.questions.find((q) => q.id === l.limit);
+      const dir = lq?.kind === 'number' && lq.oemLimit?.direction === 'min' ? '≤' : '≥';
+      rows.push({ family: f.id, kind: 'limit', id: l.id, text: `Shutdown value reached → STOP: ${l.shutdown} | Warning value reached → CAUTION: ${l.warning} | ${l.protective ? 'PROTECTIVE — not classified → conservative software STOP: "STOP — Protective threshold classification not verified. Do not continue operating until the applicable manufacturer limits have been confirmed by a qualified technician." + "This is a conservative software safeguard, not a manufacturer instruction."' : 'Not classified → CAUTION (says so; never clears a STOP)'} | Within the measurement tolerance → CAUTION "at or near the limit" | No limit entered → NOT VERIFIED, no threshold`, rule: `${l.reading} ${dir} ${l.limit} (equality counts as reaching)`, ...blank });
+    }
+    (f.crossChecks ?? []).forEach((x, i) => rows.push({ family: f.id, kind: 'crosscheck', id: `cross-${i + 1}`, text: `Refuses ${x.refuse.join(', ')}: ${x.reason}`, rule: describeCondition(x.when), ...blank }));
     for (const c of f.causes) {
-      rows.push({ family: f.id, kind: 'cause', id: c.id, text: `${c.title}. Actions: ${c.actions.join(' / ')}`, rule: c.reference, ...blank });
+      const running = c.runningChecks?.length ? ` Running checks (withheld while any STOP is active): ${c.runningChecks.join(' / ')}` : '';
+      rows.push({ family: f.id, kind: 'cause', id: c.id, text: `${c.title}. Actions: ${c.actions.join(' / ')}${running}`, rule: c.reference, ...blank });
       c.evidence.forEach((e, i) => rows.push({ family: f.id, kind: 'evidence', id: `${c.id}.${i + 1}`, text: `${e.effect}: ${e.because}`, rule: describeCondition(e.when), ...blank }));
     }
   }

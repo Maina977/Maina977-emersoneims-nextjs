@@ -21,6 +21,18 @@ export interface NumberQuestion {
   min: number;
   max: number;
   help?: string;
+  /** Answering needs the engine running or circuits live: never offered as the next check while a STOP is active. */
+  needsRunning?: boolean;
+  /**
+   * This question holds an OEM figure typed from the manual or settings sheet.
+   * Two companion answers go with it: `<id>.class` (shutdown / warning /
+   * not-stated) and `<id>.source` (manual ID, revision, page). `direction`
+   * says which side is the limit: a reading reaches a 'min' limit at or below
+   * it, a 'max' limit at or above it.
+   */
+  oemLimit?: { direction: 'min' | 'max'; parameter: string };
+  /** A rating-plate value (not an OEM limit): compared with, never classified. */
+  ratingPlate?: boolean;
 }
 export interface ChoiceQuestion {
   id: string;
@@ -28,14 +40,16 @@ export interface ChoiceQuestion {
   text: string;
   options: Array<{ value: string; label: string }>;
   help?: string;
+  /** Answering needs the engine running or circuits live: never offered as the next check while a STOP is active. */
+  needsRunning?: boolean;
 }
 export type Question = NumberQuestion | ChoiceQuestion;
 
 /** A condition on the answers. `ref` compares with another answer (e.g. an OEM limit). */
 export type Condition =
   | { q: string; op: 'lt' | 'le' | 'gt' | 'ge'; value: number }
-  // inclusive: equality counts as reaching the limit (used by STOP rules; 2026-11-25 safety hotfix).
-  | { q: string; op: 'ltRef' | 'gtRef'; ref: string; factor?: number; inclusive?: boolean }
+  /** ltRef/gtRef: strictly inside a limit. leRef/geRef: the limit is reached (equality counts as reaching). */
+  | { q: string; op: 'ltRef' | 'gtRef' | 'leRef' | 'geRef'; ref: string; factor?: number }
   | { q: string; op: 'is'; value: string | string[] }
   | { all: Condition[] }
   | { any: Condition[] };
@@ -51,8 +65,19 @@ export interface Cause {
   id: string;
   title: string;
   evidence: EvidenceRule[];
-  /** Ordered checks or repairs; safe actions only. */
+  /** Ordered checks or repairs done with the set stopped and isolated; safe actions only. */
   actions: string[];
+  /**
+   * Checks that need the engine running or circuits live (for example a
+   * supervised test run). The engine withholds them whenever any STOP rule is
+   * active, so they can never follow a STOP.
+   */
+  runningChecks?: string[];
+  /**
+   * This cause says "do not run": while it is among the leading causes (top three,
+   * score > 0), every running check and running-only question is withheld too.
+   */
+  doNotRun?: boolean;
   /** Where this cause and its checks come from. */
   reference: string;
 }
@@ -62,6 +87,75 @@ export interface StopRule {
   /** STOP: do not run; CAUTION: run only as described. */
   level: 'STOP' | 'CAUTION';
   message: string;
+  /** A separate line shown under the message (e.g. "conservative software safeguard"). */
+  label?: string;
+  /**
+   * CAUTION only: what to show instead while any STOP is active (null = not shown),
+   * so nothing after a STOP implies continued running. Omitted = shown unchanged
+   * (the text must then be safe with the engine stopped).
+   */
+  underStop?: string | null;
+  /** Set on the cross-family safety screen's rules. */
+  screen?: boolean;
+}
+
+/** Classification of an OEM limit entered by the technician. */
+export type LimitClass = 'shutdown' | 'warning' | 'not-stated';
+export const LIMIT_CLASS_OPTIONS: Array<{ value: LimitClass; label: string }> = [
+  { value: 'shutdown', label: 'Shutdown / stop value (the manual says stop or the controller trips)' },
+  { value: 'warning', label: 'Warning / pre-alarm value' },
+  { value: 'not-stated', label: 'Not stated in the source' },
+];
+
+/**
+ * A measured reading compared with an OEM limit question (exact-threshold rule,
+ * 2026-11-25): reaching the limit (equality included) gives a STOP only when
+ * the limit is classified 'shutdown'; 'warning' gives a CAUTION; unclassified
+ * gives a CAUTION that says so and never clears any STOP. A reading within the
+ * measurement tolerance entered for it (`<reading>.tol`) but not at the limit
+ * is shown as "at or near the limit".
+ */
+export interface LimitRule {
+  id: string;
+  reading: string;
+  limit: string;
+  /**
+   * Protective parameter (management correction 2026-11-25): violating the limit risks
+   * immediate engine damage or personal hazard. Reached with the classification not
+   * stated or unanswered → STOP ("treated as a shutdown limit because it has not been
+   * classified"). An explicit 'warning' classification still gives CAUTION only.
+   * Non-protective limits keep the CAUTION for an unclassified value.
+   */
+  protective: boolean;
+  /** Message when a limit classified 'shutdown' is reached (shown as STOP). */
+  shutdown: string;
+  /** Message when a limit classified 'warning' is reached (shown as CAUTION). */
+  warning: string;
+}
+
+export interface LimitStatus {
+  id: string;
+  reading: string;
+  limit: string;
+  direction: 'min' | 'max';
+  /** OEM parameter name and the reading's units. */
+  parameter: string;
+  unit: string;
+  /** not-verified: no limit entered; inside: strictly inside it; near: within the tolerance entered; reached: at or beyond it. */
+  status: 'not-verified' | 'inside' | 'near' | 'reached';
+  classification: LimitClass | null;
+  source: string | null;
+  value: number | null;
+  limitValue: number | null;
+  tolerance: number | null;
+  /** The level shown for this status, or null when none (inside / not verified). */
+  level: 'STOP' | 'CAUTION' | null;
+  /** Full status line, with the reading and the provenance of the limit. */
+  text: string;
+  /** What the safety list shows for this status (STOP / CAUTION), when level is set. */
+  alert: string | null;
+  /** A separate line shown under the alert (the conservative-safeguard label). */
+  label: string | null;
 }
 
 export interface FaultFamily {
@@ -72,6 +166,20 @@ export interface FaultFamily {
   questions: Question[];
   stopRules: StopRule[];
   causes: Cause[];
+  /**
+   * Safety instructions shown first in every result of this family, before any
+   * question or check (stop the engine, isolate, lock off, hot or pressurised parts).
+   */
+  mandatorySafety?: string[];
+  /**
+   * Checks between answers (plausibility, not OEM limits). When `when` is true
+   * the listed answers are refused with `reason` and take no part in the result.
+   */
+  crossChecks?: Array<{ when: Condition; refuse: string[]; reason: string }>;
+  /** Readings compared with classified OEM limits (exact-threshold rule). */
+  limits?: LimitRule[];
+  /** Verifiable general references for the family as a whole (by title only). */
+  references?: string[];
   /** Review status of this family's content. */
   review: 'technician review pending' | 'reviewed';
 }
@@ -83,13 +191,29 @@ export interface RankedCause {
   for: string[];
   against: string[];
   actions: string[];
+  /** Running/live checks withheld because a STOP is active (empty when none). */
+  withheld: string[];
   reference: string;
 }
 
 export interface DiagnosisResult {
   family: string;
   engineVersion: string;
-  stops: Array<{ level: StopRule['level']; message: string }>;
+  /** STOP rules that fired, then the family's mandatory safety, then CAUTION rules that fired. */
+  stops: Array<{
+    level: StopRule['level']; message: string;
+    /** Separate line shown under the message. */ label?: string;
+    /** screen: cross-family safety screen; family: this family's rules or limits; other-family: a STOP raised in another family of the same session. */
+    origin: 'screen' | 'family' | 'other-family';
+    /** For origin 'other-family': the family where the STOP was raised (shown on its own line). */
+    from?: string;
+  }>;
+  /** True when running checks and running-only questions are withheld (any STOP, or a leading "do not run" cause). */
+  runningWithheld: boolean;
+  /** True when any STOP rule fired: running checks are withheld from every cause. */
+  stopActive: boolean;
+  /** Every limit rule of the family with its status (exact-threshold rule). */
+  limits: LimitStatus[];
   /** Answers refused because they are outside the physical range. */
   invalid: Array<{ q: string; reason: string }>;
   ranked: RankedCause[];

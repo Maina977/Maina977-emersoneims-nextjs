@@ -184,6 +184,9 @@ export function readingFlags(r: Reading[]): string[] {
     if ((x.min !== undefined || x.max !== undefined) && !x.limitSource?.trim()) f.push(`${x.name}: limit given without its source`);
     if (x.min !== undefined && x.value < x.min) f.push(`${x.name} ${x.value} ${x.unit} is below ${x.min} ${x.unit} (${x.limitSource})`);
     if (x.max !== undefined && x.value > x.max) f.push(`${x.name} ${x.value} ${x.unit} is above ${x.max} ${x.unit} (${x.limitSource})`);
+    // Exact-threshold rule (2026-11-25): a reading equal to a limit has reached it; it is never shown as within limits.
+    if (x.min !== undefined && x.value === x.min) f.push(`${x.name} ${x.value} ${x.unit} is AT the minimum ${x.min} ${x.unit} — equality counts as reaching the limit (${x.limitSource})`);
+    if (x.max !== undefined && x.value === x.max) f.push(`${x.name} ${x.value} ${x.unit} is AT the maximum ${x.max} ${x.unit} — equality counts as reaching the limit (${x.limitSource})`);
   }
   return f;
 }
@@ -350,10 +353,23 @@ export interface ReportSection { heading: string; lines: string[] }
 export function jobCardReportParts(card: JobCard, asset: Asset): { title: string; notices: string[]; sections: ReportSection[]; footer: string } {
   const list = (xs: string[], empty: string) => (xs.length ? xs.map((x) => `  - ${x}`) : [`  ${empty}`]);
   const flags = readingFlags(card.readings);
+  // Safety review F6: every STOP in the findings, with the lines that belong to it (its
+  // safeguard label and its "(Raised in …)" source line), is repeated as the FIRST section
+  // of the report, before the asset and the work.
+  const fl = (card.findings || '').split(/\r?\n/);
+  const stopLines: string[] = [];
+  const belongs = (l: string | undefined) => !!l && (/^This is a conservative software safeguard/.test(l) || /^\(Raised in the ".*" diagnosis of this session\.\)$/.test(l));
+  fl.forEach((l, i) => {
+    if (!/^STOP\b/.test(l)) return;
+    stopLines.push(`  ${l}`);
+    for (let j = i + 1; belongs(fl[j]); j++) stopLines.push(`  ${fl[j]}`);
+  });
+  const safety: ReportSection[] = stopLines.length ? [{ heading: 'SAFETY — STOP (repeated from the findings below)', lines: stopLines }] : [];
   return {
     title: `JOB CARD ${card.id} (revision ${card.revision}) — ${card.status}`,
     notices: [`SAFETY: ${STOP_NOT_CARRIED_NOTICE}`, `NOTICE: ${TYPED_SIGNOFF_NOTICE}`, `NOTICE: ${TYPED_NAMES_NOTICE}`],
     sections: [
+      ...safety,
       { heading: 'ASSET', lines: [`  ${asset.id}: ${asset.make} ${asset.model} (${asset.ratedKva} kVA), engine ${asset.engine || '—'}, controller ${asset.controller || '—'}, serial ${asset.serial}`] },
       { heading: 'FAULT', lines: [
         `  Reported fault: ${card.reportedFault}`,
@@ -369,7 +385,8 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
         ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})`), !card.readings.length && recordsStopInForce(card) ? READINGS_NOT_TAKEN_STOP : '(none recorded)'),
         ...flags.map((f) => `  ! ${f}`),
       ] },
-      { heading: 'FINDINGS', lines: [`  ${card.findings || '—'}`] },
+      // One report line per findings line (a guided-diagnosis record is several lines).
+      { heading: 'FINDINGS', lines: (card.findings || '—').split(/\r?\n/).map((l) => `  ${l}`) },
       { heading: 'SIGN-OFF', lines: [...signOffSummary(card).map((x) => `  ${x}`), `  Completed: ${card.completedOn ?? '—'}`] },
       { heading: 'STATUS HISTORY (who = typed name, not verified)', lines: list(card.log.map((l) => `${l.at}  ${l.from} → ${l.to}  by ${l.by}${l.revision ? ` (revision ${l.revision})` : ''}${l.note ? ` — ${l.note}` : ''}${l.hash ? ` [content hash ${l.hash}]` : ''}`), '(no status changes yet)') },
     ],

@@ -33,7 +33,14 @@ describe('Guided Diagnosis: no checks suggested while a STOP applies', () => {
     answer(/OEM minimum oil pressure/i, '200');
     answer(/^Oil pressure/i, '100');
     answer(/Does a mechanical gauge show normal pressure/i, 'yes');
-    expect(screen.getByRole('alert').textContent).toMatch(/STOP the engine: oil pressure is at or below the OEM minimum/);
+    // Engine 1.3.0 (integration 2026-11-26): an OEM limit whose classification is not stated is a
+    // protective limit, so reaching it is a conservative software STOP.
+    expect(screen.getByRole('alert').textContent).toMatch(/STOP — Protective threshold classification not verified/);
+    expect(hold()).not.toBeNull();
+    expect(document.body.textContent).not.toMatch(/Confirm with a mechanical gauge before any engine work/);
+    // Classified as the shutdown value: the OEM-limit STOP wording.
+    fireEvent.change(screen.getAllByLabelText('Classification: OEM minimum oil pressure')[0], { target: { value: 'shutdown' } });
+    expect(screen.getByRole('alert').textContent).toMatch(/STOP the engine: oil pressure has reached the OEM minimum/);
     expect(hold()).not.toBeNull();
     expect(document.body.textContent).not.toMatch(/Confirm with a mechanical gauge before any engine work/);
   });
@@ -192,5 +199,7 @@ describe('Guided Diagnosis: no checks suggested while a STOP applies', () => {
         }
       }
     }
-  });
+  // Engine 1.3.0 adds the shared safety screen (10 questions) to every family and more families,
+  // so this exhaustive loop renders many more combinations than the 5 s default allows.
+  }, 180_000);
 });

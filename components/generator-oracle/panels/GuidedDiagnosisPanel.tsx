@@ -4,12 +4,24 @@
  * Guided fault-finding (P1-A). Deterministic: lib/generator-oracle/diagnostics.
  * Stop rules are shown first and cannot be hidden; readings outside the
  * physical range are refused with the reason; machine limits come from the
- * OEM manual entered by the technician, never from defaults.
+ * OEM manual entered by the technician, never from defaults. Every OEM limit
+ * asks whether it is a warning or a shutdown value and where it comes from;
+ * equality with a limit counts as reaching it.
+ *
+ * Integration 2026-11-26: the oracle-diagnostics 1.3.0 engine, families, shared
+ * safety screen, limit checks, published references and job-card record run
+ * inside the production safety wrapper (STOP latch with recorded UNVERIFIED
+ * clearance, SAFETY HOLD for blocked storage, cross-tab STOP hold, no checks or
+ * actions suggested while a STOP or the hold applies).
  */
-import { useEffect, useMemo, useState } from 'react';
-import { diagnose } from '@/lib/generator-oracle/diagnostics/engine';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FAMILIES, familyFor } from '@/lib/generator-oracle/diagnostics/families';
-import type { Answers, Question } from '@/lib/generator-oracle/diagnostics/types';
+import { diagnosisRecord, refQuestions } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
+import { knownModels, publishedEntryOf, publishedLimitFor, questionReferenceNote, referencesFor, type Equipment } from '@/lib/generator-oracle/diagnostics/oemReferences';
+import { classKey, limitReadings, sourceKey, tolKey } from '@/lib/generator-oracle/diagnostics/engine';
+import { cleanEquipment, mergedRaw, saveGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
+import { SCREEN_BUCKET, SCREEN_QUESTIONS, isScreenKey } from '@/lib/generator-oracle/diagnostics/safetyScreen';
+import { LIMIT_CLASS_OPTIONS, type Question } from '@/lib/generator-oracle/diagnostics/types';
 
 /** Browser storage key for answers, latched STOPs and the clearance record. */
 export const GD_STORE = 'eims-oracle-guided-diagnosis-v1';
@@ -34,7 +46,7 @@ const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0
 const validLatched = (x: unknown): x is StoredLatched => !!x && typeof x === 'object' && isStr((x as StoredLatched).key) && isStr((x as StoredLatched).message) && isStr((x as StoredLatched).from) && isStr((x as StoredLatched).since);
 const validClearance = (x: unknown): x is StoredClearance => validLatched(x) && isStr((x as StoredClearance).clearedAt) && isStr((x as StoredClearance).by) && typeof (x as StoredClearance).reason === 'string';
 /** Reads the stored safety state. Any malformed part makes the whole record unreadable (never "cleared"). */
-export function readStore(): { unreadable: boolean; blocked?: true; raw?: Record<string, Record<string, string>>; latched: StoredLatched[]; cleared: StoredClearance[] } {
+export function readStore(): { unreadable: boolean; blocked?: true; raw?: Record<string, Record<string, string>>; equipment?: Equipment; latched: StoredLatched[]; cleared: StoredClearance[] } {
   let text: string | null = null;
   // `blocked`: the browser refused the read (storage blocked), as opposed to a record that was read but is malformed.
   try { text = localStorage.getItem(GD_STORE); } catch { return { unreadable: true, blocked: true, latched: [], cleared: [] }; }
@@ -49,7 +61,8 @@ export function readStore(): { unreadable: boolean; blocked?: true; raw?: Record
       && Array.isArray(s.latched) && s.latched.every(validLatched)
       && Array.isArray(s.cleared) && s.cleared.every((c: unknown) => validClearance({ reason: '', ...(c as object) }));
     if (!ok) return { unreadable: true, latched: [], cleared: [] };
-    return { unreadable: false, raw: s.raw, latched: s.latched, cleared: s.cleared.map((c: StoredClearance) => ({ ...c, reason: c.reason ?? '' })) };
+    // Equipment (1.3.0) is read in the same read; unknown models and non-text values are dropped.
+    return { unreadable: false, raw: s.raw, equipment: cleanEquipment(s), latched: s.latched, cleared: s.cleared.map((c: StoredClearance) => ({ ...c, reason: c.reason ?? '' })) };
   } catch { return { unreadable: true, latched: [], cleared: [] }; }
 }
 /** Returns `prev` when `next` has the same items, so a state setter does not re-render for nothing. */
@@ -69,9 +82,22 @@ export function mergeCleared(a: StoredClearance[], b: StoredClearance[]): Stored
   return out;
 }
 const UNREADABLE_STOP = (): StoredLatched => ({ key: 'storage|unreadable', from: 'stored safety record', since: new Date().toISOString(), message: 'The stored safety record in this browser could not be read or was altered, so earlier STOPs cannot be confirmed as cleared. Treat the set as stopped until a qualified technician has checked it.' });
+/** Latched STOPs raised by the shared safety screen are keyed once for all families. */
+const SCREEN_FROM = 'Safety screen';
 
-function QuestionInput({ q, value, onChange }: { q: Question; value: string; onChange: (v: string) => void }) {
-  const id = `gd-${q.id}`;
+const getStore = (): Storage | null => { try { return window.localStorage; } catch { return null; } };
+const field = 'w-full rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white focus:border-amber-500 outline-none';
+
+interface QProps {
+  q: Question; values: Record<string, string>; set: (k: string, v: string) => void; scope: string;
+  stopActive: boolean; note?: string; tolerance: boolean; protective: boolean;
+  published: { value: number; classification: 'shutdown' | 'warning'; source: string } | null;
+}
+
+function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, protective, published }: QProps) {
+  const id = `gd-${scope}-${q.id.replace(/\./g, '-')}`;
+  const value = values[q.id] ?? '';
+  const limit = q.kind === 'number' ? q.oemLimit : undefined;
   return (
     <div className="block text-xs text-slate-300">
       <label htmlFor={id} className="block mb-1">
@@ -79,41 +105,70 @@ function QuestionInput({ q, value, onChange }: { q: Question; value: string; onC
         {q.kind === 'number' ? <span className="text-slate-500"> ({q.unit})</span> : null}
       </label>
       {q.kind === 'number' ? (
-        <input id={id} inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white focus:border-amber-500 outline-none" />
+        <input id={id} inputMode="decimal" value={value} onChange={(e) => set(q.id, e.target.value)} className={field} />
       ) : (
-        <select id={id} value={value} onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white">
+        <select id={id} value={value} onChange={(e) => set(q.id, e.target.value)} className={field}>
           <option value="">Not answered</option>
           {q.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       )}
       {q.help ? <span className="block mt-1 text-slate-500">{q.help}</span> : null}
+      {note ? <span className="block mt-1 text-cyan-300">{note}</span> : null}
+      {q.needsRunning && stopActive ? <span className="block mt-1 text-red-300">Needs the engine running: do not run it to answer this while a STOP is active. Enter only what was seen before the stop.</span> : null}
+      {limit ? (
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <label className="block">Is this a warning or a shutdown value?
+            <select aria-label={`Classification: ${limit.parameter}`} value={values[classKey(q.id)] ?? ''} onChange={(e) => set(classKey(q.id), e.target.value)} className={`mt-1 ${field}`}>
+              <option value="">Not answered (treated as not stated)</option>
+              {LIMIT_CLASS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </label>
+          <label className="block">Source: manual ID, revision, page
+            <input aria-label={`Source: ${limit.parameter}`} value={values[sourceKey(q.id)] ?? ''} onChange={(e) => set(sourceKey(q.id), e.target.value)} className={`mt-1 ${field}`} />
+          </label>
+          {value && (!values[classKey(q.id)] || values[classKey(q.id)] === 'not-stated') ? (
+            <span className="sm:col-span-2 text-amber-300">{protective
+              ? 'Classification not stated: this is a protective limit, so reaching it gives a conservative software STOP (not a manufacturer instruction) until a qualified technician confirms the manufacturer limits.'
+              : 'Classification not stated: reaching this value is shown as CAUTION, not as a confirmed shutdown, and does not clear any STOP.'}</span>
+          ) : null}
+          {published ? (
+            <button type="button" className="sm:col-span-2 rounded-md border border-cyan-600 px-2 py-1 text-left text-cyan-200"
+              onClick={() => { set(q.id, String(published.value)); set(classKey(q.id), published.classification); set(sourceKey(q.id), published.source); }}>
+              Use published value for the selected model: {published.value} {q.kind === 'number' ? q.unit : ''} ({published.classification}) — check the variant matches this set
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      {tolerance && q.kind === 'number' ? (
+        <label className="block mt-2">Measurement tolerance ± ({q.unit}; from the instrument or sensor data, optional)
+          <input aria-label={`Tolerance: ${q.text}`} inputMode="decimal" value={values[tolKey(q.id)] ?? ''} onChange={(e) => set(tolKey(q.id), e.target.value)} className={`mt-1 ${field}`} />
+        </label>
+      ) : null}
     </div>
   );
 }
 
+const LIMIT_LABEL = { 'not-verified': 'NOT VERIFIED', inside: 'INSIDE LIMIT', near: 'AT OR NEAR THE LIMIT', reached: 'LIMIT REACHED' } as const;
+
 export default function GuidedDiagnosisPanel() {
   const [familyId, setFamilyId] = useState(FAMILIES[0].id);
   const [symptom, setSymptom] = useState('');
-  const [raw, setRaw] = useState<Record<string, Record<string, string>>>({});
+  const [raw, setRaw] = useState<RawAnswers>({});
+  const [equipment, setEquipment] = useState<Equipment>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
+  // Set by the first change the technician makes; the job-card hand-off copy is written only after it.
+  const dirty = useRef(false);
   const family = FAMILIES.find((f) => f.id === familyId)!;
-  const values = raw[familyId] ?? {};
+  // This family's answers with the shared safety screen merged in (the screen is answered once for all families).
+  const values = useMemo(() => mergedRaw(raw, familyId), [raw, familyId]);
 
-  const toAnswers = (fam: typeof family, vals: Record<string, string>): Answers => {
-    const a: Answers = {};
-    for (const q of fam.questions) {
-      const v = vals[q.id];
-      if (v === undefined || v.trim() === '') continue;
-      a[q.id] = q.kind === 'number' ? Number(v) : v;
-    }
-    return a;
-  };
-  const result = useMemo(() => diagnose(family, toAnswers(family, values)), [family, values]);
-  // STOPs raised on OTHER fault-family tabs apply to the same machine (2026-11-25 safety
-  // hotfix, review R2/F3): they are shown here too and hold every tab.
-  const otherStops = useMemo(() => FAMILIES.filter((f) => f.id !== familyId).flatMap((f) =>
-    diagnose(f, toAnswers(f, raw[f.id] ?? {})).stops.filter((s) => s.level === 'STOP').map((s) => ({ ...s, from: f.title }))), [raw, familyId]);
+  // Same function as the job-card record and the .txt download, so all three agree. It carries
+  // STOPs raised on OTHER fault-family tabs (2026-11-25 safety hotfix, review R2/F3): they
+  // apply to the same machine, are shown here too and hold every tab.
+  const record = useMemo(() => diagnosisRecord(family, values, equipment, raw), [family, values, equipment, raw]);
+  const result = record.result;
+  const otherStops = result.stops.filter((s) => s.level === 'STOP' && s.origin === 'other-family');
+  const ownStops = result.stops.filter((s) => !(s.level === 'STOP' && s.origin === 'other-family'));
 
   // STOP LATCH (2026-11-25 safety hotfix, management directive on STOP persistence): a STOP,
   // once shown, stays active across tab changes, reloads, changed or cleared answers and
@@ -159,6 +214,8 @@ export default function GuidedDiagnosisPanel() {
     }
     const raw0 = s.raw;
     if (raw0) setRaw((r) => (Object.keys(raw0).some((k) => !(k in r)) ? { ...raw0, ...r } : r));
+    const eq0 = s.equipment;
+    if (eq0 && Object.keys(eq0).length) setEquipment((e) => (Object.keys(e).length ? e : eq0));
     setCleared((c) => keepSame(c, mergeCleared(c, s.cleared)));
     setLatched((l) => keepSame(l, mergeLatched(l, s.latched, s.cleared)));
     return true;
@@ -188,9 +245,21 @@ export default function GuidedDiagnosisPanel() {
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageOk]);
-  // Every STOP computed on any tab is latched.
-  const liveStops = useMemo(() => FAMILIES.flatMap((f) =>
-    diagnose(f, toAnswers(f, raw[f.id] ?? {})).stops.filter((s) => s.level === 'STOP').map((s) => ({ key: `${f.id}|${s.message}`, message: s.message, from: f.title }))), [raw]);
+  // Every STOP computed on any tab is latched. Safety-screen STOPs are shared by every family,
+  // so they are latched once (from "Safety screen"), not once per family.
+  const liveStops = useMemo(() => {
+    const out: Array<{ key: string; message: string; from: string }> = [];
+    for (const f of FAMILIES) {
+      for (const s of diagnosisRecord(f, mergedRaw(raw, f.id), equipment).result.stops) {
+        if (s.level !== 'STOP' || s.origin === 'other-family') continue;
+        const stop = s.origin === 'screen'
+          ? { key: `${SCREEN_BUCKET}|${s.message}`, message: s.message, from: SCREEN_FROM }
+          : { key: `${f.id}|${s.message}`, message: s.message, from: f.title };
+        if (!out.some((x) => x.key === stop.key)) out.push(stop);
+      }
+    }
+    return out;
+  }, [raw, equipment]);
   useEffect(() => {
     if (!loaded) return;
     const add = liveStops.filter((s) => !latched.some((l) => l.key === s.key));
@@ -213,9 +282,12 @@ export default function GuidedDiagnosisPanel() {
         setLatched((l) => keepSame(l, mergeLatched(l, incoming, s.unreadable ? [] : mergedCleared)));
         if (!s.unreadable) setCleared((c) => keepSame(c, mergeCleared(c, s.cleared)));
       }
-      localStorage.setItem(GD_STORE, JSON.stringify({ v: 2, raw, latched: mergedLatched, cleared: mergedCleared }));
+      localStorage.setItem(GD_STORE, JSON.stringify({ v: 2, raw, equipment, latched: mergedLatched, cleared: mergedCleared }));
     } catch { setStorageOk(false); }
-  }, [raw, latched, cleared, loaded]);
+  }, [raw, equipment, latched, cleared, loaded]);
+  // Job-card hand-off (1.3.0): the answers are also kept under the guided-session key, which the
+  // Service & Job Cards screen reads to record the same diagnosis on a card.
+  useEffect(() => { if (dirty.current) setSaveError(saveGuidedSession(getStore(), raw, equipment)); }, [raw, equipment]);
   const recordClearance = (l: Latched) => {
     if (liveStops.some((s) => s.key === l.key)) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: the answers entered still show this condition. Complete the required checks and update the answers first.' })); return; }
     const by = (clearBy[l.key] ?? '').trim();
@@ -228,7 +300,33 @@ export default function GuidedDiagnosisPanel() {
     setClearErr((e) => ({ ...e, [l.key]: '' }));
   };
 
-  const set = (q: string, v: string) => setRaw((r) => ({ ...r, [familyId]: { ...(r[familyId] ?? {}), [q]: v } }));
+  const set = (q: string, v: string) => {
+    dirty.current = true;
+    const bucket = isScreenKey(q) ? SCREEN_BUCKET : familyId;
+    setRaw((r) => ({ ...r, [bucket]: { ...(r[bucket] ?? {}), [q]: v } }));
+  };
+  const setEq = (k: keyof Equipment, v: string) => {
+    dirty.current = true;
+    setEquipment((e) => ({ ...e, [k]: v || undefined }));
+    // Safety review F7: a published model-specific limit is cleared as soon as the equipment changes.
+    setRaw((r) => {
+      const next: RawAnswers = {};
+      for (const [fid, ans] of Object.entries(r)) {
+        const a = { ...ans };
+        for (const key of Object.keys(a)) {
+          if (!key.endsWith('.source') || !publishedEntryOf(a[key])) continue;
+          const lim = key.slice(0, -'.source'.length);
+          delete a[key]; delete a[lim]; delete a[`${lim}.class`];
+        }
+        next[fid] = a;
+      }
+      return next;
+    });
+  };
+  const oemQs = useMemo(() => refQuestions(family), [family]);
+  const readingsWithTol = useMemo(() => limitReadings(family), [family]);
+  const familyRefs = referencesFor(equipment, family.id);
+
   const route = () => { const f = familyFor(symptom); if (f) setFamilyId(f.id); };
   const routed = symptom.trim() ? familyFor(symptom) : null;
   const next = result.nextQuestion;
@@ -237,7 +335,7 @@ export default function GuidedDiagnosisPanel() {
   // cranking or live circuits (e.g. a cylinder cut-out test under "STOP THE SET"), which
   // contradicts the STOP. Causes stay listed for information only.
   // Active = any STOP computed now (on any tab) or any latched STOP not yet cleared by record.
-  const stopActive = result.stops.some((s) => s.level === 'STOP') || otherStops.length > 0 || latched.length > 0;
+  const stopActive = result.stopActive || latched.length > 0;
   // Latched STOPs whose condition is no longer computed are still shown (they are not cleared).
   const latchedOnly = latched.filter((l) => !liveStops.some((s) => s.key === l.key));
   // Blocked storage: SAFETY HOLD until an in-person reassessment is acknowledged for this page session.
@@ -256,6 +354,26 @@ export default function GuidedDiagnosisPanel() {
   };
   const STOP_HOLD = 'Further checks are withheld while a STOP applies. Make the set safe first: engine stopped, isolated and locked off. A qualified technician decides the next step once the hazard is controlled.';
 
+  const qProps = (q: Question, scope: string): QProps => ({
+    q, values, set, scope, stopActive, tolerance: readingsWithTol.has(q.id),
+    protective: (family.limits ?? []).some((l) => l.limit === q.id && l.protective),
+    note: oemQs.has(q.id) ? questionReferenceNote(equipment, family.id, q.id) : undefined,
+    published: oemQs.has(q.id) ? publishedLimitFor(equipment, family.id, q.id) : null,
+  });
+  // The download carries every latched STOP not shown by the answers any more, first (a latched
+  // STOP is never dropped from a record made on this screen), then the 1.3.0 record.
+  const downloadText = () => [
+    ...latchedOnly.map((l) => `STOP (latched; still active until a clearance is recorded; from the ${l.from} tab, since ${l.since.slice(0, 16).replace('T', ' ')} UTC): ${l.message}`),
+    ...(latchedOnly.length ? [CLEARANCE_NOT_RESTART] : []),
+    record.findings,
+  ].join('\n');
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([`${downloadText()}\n`], { type: 'text/plain' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = `guided-diagnosis-${family.id}.txt`; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-3">
@@ -268,6 +386,28 @@ export default function GuidedDiagnosisPanel() {
           <button type="button" onClick={route} className="rounded-md bg-amber-600 hover:bg-amber-500 px-3 py-1.5 text-sm font-medium text-white">Find fault family</button>
         </div>
         {symptom.trim() && !routed ? <p className="text-xs text-slate-400">No matching fault family; choose one below.</p> : null}
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="block text-xs text-slate-300">Engine model (for published references; optional)
+            <select value={equipment.engine ?? ''} onChange={(e) => setEq('engine', e.target.value)} className={`mt-1 ${field}`}>
+              <option value="">Not listed / not selected</option>
+              {knownModels('engine').map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </label>
+          <label className="block text-xs text-slate-300">Controller model (for published references; optional)
+            <select value={equipment.controller ?? ''} onChange={(e) => setEq('controller', e.target.value)} className={`mt-1 ${field}`}>
+              <option value="">Not listed / not selected</option>
+              {knownModels('controller').map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {([['manufacturer', 'Manufacturer (as on the plate)'], ['model', 'Model (as on the plate)'], ['variant', 'Variant / configuration']] as const).map(([k, label]) => (
+            <label key={k} className="block text-xs text-slate-300">{label}
+              <input value={equipment[k] ?? ''} onChange={(e) => setEq(k, e.target.value)} className={`mt-1 ${field}`} />
+            </label>
+          ))}
+        </div>
+        <p className="text-[11px] text-slate-500">Published figures are shown only for the exact model selected. They are never entered for you: type and confirm every limit for the set in front of you, or press “Use published value” for that exact model. Any other model: per OEM manual — NOT VERIFIED. Every limit you enter is recorded as applying only to the manufacturer, model and variant typed here.</p>
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="Fault family">
           {FAMILIES.map((f) => (
             <button key={f.id} type="button" role="tab" aria-selected={f.id === familyId} onClick={() => setFamilyId(f.id)}
@@ -278,28 +418,53 @@ export default function GuidedDiagnosisPanel() {
         </div>
       </div>
 
+      <div data-testid="safety-screen" className="rounded-xl border border-red-700/60 bg-red-950/20 p-4 space-y-2">
+        <div className="text-sm font-semibold text-red-200">Safety screen — answered once, applies to every fault family</div>
+        <p className="text-xs text-slate-400">Any “Yes” is a STOP on every tab and on every job card made from this session.</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {SCREEN_QUESTIONS.map((q) => <QuestionInput key={q.id} {...qProps(q, 'screen')} />)}
+        </div>
+        <button type="button" onClick={() => { dirty.current = true; setRaw((r) => ({ ...r, [SCREEN_BUCKET]: {} })); }} className="text-xs text-slate-400 underline">Clear safety screen</button>
+      </div>
+
       {!storageOk && !stopActive && holdAck ? (
         <p data-testid="gd-storage-blocked" role="status" className="rounded-lg border border-amber-500/60 bg-amber-950/40 p-3 text-xs text-amber-100">
           This browser does not allow the safety record to be saved: a STOP shown here cannot be kept after a reload. Record any STOP on the job card.
         </p>
       ) : null}
-      {(result.stops.length > 0 || otherStops.length > 0 || latched.length > 0) && (
-        <div role="alert" className="space-y-2">
+      {(result.stops.length > 0 || latched.length > 0) && (
+        <div role="alert" data-testid="safety-messages" className="space-y-2">
           {latchedOnly.map((l) => (
             <div key={`l${l.key}`} data-testid="gd-latched-stop" className="rounded-lg border p-3 text-sm border-red-500 bg-red-950/60 text-red-100">
               <strong>STOP (still active until a clearance is recorded)</strong> · (from the {l.from} tab, since {l.since.slice(0, 16).replace('T', ' ')} UTC) {l.message}
             </div>
           ))}
+          {ownStops.map((s, i) => (
+            <div key={i} className={`rounded-lg border p-3 text-sm ${s.level === 'STOP' ? 'border-red-500 bg-red-950/60 text-red-100' : 'border-amber-500/60 bg-amber-950/40 text-amber-100'}`}>
+              <strong>{s.level}</strong> · {s.message}
+              {s.label ? <p className="mt-1 text-xs italic opacity-90">{s.label}</p> : null}
+            </div>
+          ))}
           {otherStops.map((s, i) => (
             <div key={`o${i}`} className="rounded-lg border p-3 text-sm border-red-500 bg-red-950/60 text-red-100">
               <strong>STOP</strong> · (from the {s.from} tab) {s.message}
+              {s.label ? <p className="mt-1 text-xs italic opacity-90">{s.label}</p> : null}
+              <p className="mt-1 text-xs opacity-80">Raised in the “{s.from}” diagnosis of this session.</p>
             </div>
           ))}
-          {result.stops.map((s, i) => (
-            <div key={i} className={`rounded-lg border p-3 text-sm ${s.level === 'STOP' ? 'border-red-500 bg-red-950/60 text-red-100' : 'border-amber-500/60 bg-amber-950/40 text-amber-100'}`}>
-              <strong>{s.level}</strong> · {s.message}
-            </div>
-          ))}
+        </div>
+      )}
+
+      {result.limits.length > 0 && (
+        <div data-testid="limit-status" className="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-xs text-slate-300 space-y-1">
+          <div className="font-semibold text-slate-200">Limit checks (equality counts as reaching the limit)</div>
+          <ul className="space-y-1">
+            {result.limits.map((l) => (
+              <li key={l.id} className={l.level === 'STOP' ? 'text-red-200' : l.level === 'CAUTION' ? 'text-amber-200' : 'text-slate-300'}>
+                <strong>{LIMIT_LABEL[l.status]}{l.status === 'reached' && l.level ? ` (${l.level})` : ''}</strong> · {l.text}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -352,26 +517,32 @@ export default function GuidedDiagnosisPanel() {
           ) : !loaded ? (
             <p className="text-xs text-slate-400">Checking this browser's safety record…</p>
           ) : next ? (
-            <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3">
+            <div data-testid="next-check" className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3">
               <div className="text-xs text-amber-300 mb-2">Next check</div>
-              <QuestionInput q={next} value={values[next.id] ?? ''} onChange={(v) => set(next.id, v)} />
+              <QuestionInput {...qProps(next, 'next')} />
             </div>
-          ) : <p className="text-xs text-slate-400">All questions answered.</p>}
+          ) : <p data-testid="next-check" className="text-xs text-slate-400">All questions answered.</p>}
+          {!withheld && result.runningWithheld ? <p className="text-xs text-red-300">Checks that need the engine running are withheld because a leading cause says do not run.</p> : null}
           {holdAck && !storageOk ? <p data-testid="gd-safety-hold-released" className="text-xs text-amber-200">Safety hold released for this page session only: in-person reassessment recorded by {holdAck.by} (typed name, UNVERIFIED, not stored).</p> : null}
           {result.invalid.map((i) => <p key={i.q} className="text-xs text-red-300">Refused: {i.reason}</p>)}
           <details>
-            <summary className="cursor-pointer text-xs text-slate-300">All questions ({result.answered}/{family.questions.length} answered){withheld ? ': only to correct an answer already entered' : ''}</summary>
+            <summary className="cursor-pointer text-xs text-slate-300">All questions ({result.answered}/{family.questions.length} answered, safety screen included){withheld ? ': only to correct an answer already entered' : ''}</summary>
             {stopActive ? <p data-testid="gd-stop-questions-warning" className="mt-2 text-xs text-red-200">A STOP applies: do not take any reading that needs the engine running, cranking or live circuits.</p> : null}
             {!stopActive && safetyHold ? <p data-testid="gd-hold-questions-warning" className="mt-2 text-xs text-amber-200">A safety hold applies: do not take any reading that needs the engine running, cranking or live circuits.</p> : null}
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {family.questions.map((q) => <QuestionInput key={q.id} q={q} value={values[q.id] ?? ''} onChange={(v) => set(q.id, v)} />)}
+              {family.questions.filter((q) => !isScreenKey(q.id)).map((q) => <QuestionInput key={q.id} {...qProps(q, 'all')} />)}
             </div>
           </details>
-          <button type="button" onClick={() => setRaw((r) => ({ ...r, [familyId]: {} }))} className="text-xs text-slate-400 underline">Clear answers</button>
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={() => { dirty.current = true; setRaw((r) => ({ ...r, [familyId]: {} })); }} className="text-xs text-slate-400 underline">Clear answers</button>
+            <button type="button" onClick={download} className="text-xs text-amber-300 underline">Download this diagnosis (.txt)</button>
+          </div>
+          <p className="text-[11px] text-slate-500">To record it on a job card: Service &amp; Job Cards → Job cards → open the card → “Record a guided diagnosis”. The card gets this result from the answers. A STOP latched here whose condition the answers no longer show is not carried onto the card: record it on the card yourself.</p>
+          {saveError ? <p className="text-xs text-amber-300">{saveError}</p> : null}
         </div>
 
-        <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-3">
-          <div className="text-xs text-slate-400">Likely causes, most supported first{stopActive ? ' (for information only: no checks are suggested while a STOP applies)' : safetyHold ? ' (for information only: no checks are suggested while the safety hold applies)' : ''}</div>
+        <div data-testid="ranked-causes" className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-3">
+          <div className="text-xs text-slate-400">Likely causes, most supported first{stopActive ? <span> (for information only: no checks are suggested while a STOP applies)</span> : safetyHold ? <span> (for information only: no checks are suggested while the safety hold applies)</span> : null}</div>
           <ol className="space-y-2">
             {result.ranked.map((c, i) => (
               <li key={c.id} className="rounded-lg border border-slate-700 p-3">
@@ -380,6 +551,9 @@ export default function GuidedDiagnosisPanel() {
                 {c.against.length > 0 && <ul className="mt-1 text-xs text-slate-400">{c.against.map((f) => <li key={f}>− {f}</li>)}</ul>}
                 {!withheld && i < 3 && c.score > 0 && (
                   <ul className="mt-2 list-disc pl-4 text-xs text-slate-200">{c.actions.map((a) => <li key={a}>{a}</li>)}</ul>
+                )}
+                {!withheld && i < 3 && c.score > 0 && c.withheld.length > 0 && (
+                  <p className="mt-1 text-xs text-red-300">Withheld because a leading cause says do not run: {c.withheld.length} check(s) that need the engine running.</p>
                 )}
                 <p className="mt-1 text-[11px] text-slate-500">{c.reference}</p>
               </li>
@@ -393,6 +567,15 @@ export default function GuidedDiagnosisPanel() {
           )}
         </div>
       </div>
+      {familyRefs.length > 0 && (
+        <div data-testid="published-references" className="rounded-xl border border-cyan-700/60 bg-cyan-950/30 p-3 text-xs text-cyan-100 space-y-1">
+          <div className="font-semibold">Published references for the selected equipment (context only; used as a limit only when you press “Use published value”)</div>
+          <ul className="list-disc pl-4 space-y-1">{familyRefs.map((r) => <li key={r.entry.id}>{r.text}</li>)}</ul>
+        </div>
+      )}
+      {family.references?.length ? (
+        <ul className="text-[11px] text-slate-500 list-disc pl-4">{family.references.map((r) => <li key={r}>{r}</li>)}</ul>
+      ) : null}
       {cleared.length > 0 && (
         <details data-testid="gd-clearance-record" className="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-xs text-slate-300">
           <summary className="cursor-pointer">STOP clearance record ({cleared.length}), UNVERIFIED, kept in this browser only</summary>
