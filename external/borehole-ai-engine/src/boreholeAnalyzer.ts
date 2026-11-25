@@ -7,7 +7,7 @@ import { RiskAnalyzer } from './riskAnalyzer';
 import { AnalysisResult, FieldValidationData } from './types';
 import { calculateLocationConfidence } from './locationVerifier';
 import { fetchRemoteSensingData } from './remoteSensing';
-import { fetchHistoricalData, estimateGroundwaterTrend } from './historicalData';
+import { fetchHistoricalData, estimateGroundwaterTrend, hasRainfallSeries } from './historicalData';
 import { measuredGroundwaterNear } from './openGroundwaterData';
 import { getRegionalBoreholeStats, geocodeLocationForm, GEOLOGICAL_FORMATIONS, getKenyaCountyBoreholeStats, getKenyaCountyFromCoords, getKenyaCountyBoreholeStatsByName } from './boreholeDatabase';
 import { fetchGLDASGroundwaterData } from './gldasGroundwater';
@@ -1067,6 +1067,7 @@ export class BoreholeAnalyzer {
     if (historicalData?.weather && gldasGroundwater?.waterBudget) {
       nasaPowerET = gldasGroundwater.waterBudget.evapotranspiration;
       if (nasaPowerET && nasaPowerET > 0) {
+        // 2026-11-25: null when only the stored annual baseline is available (no 20-year series).
         historicalData.groundwater = estimateGroundwaterTrend(
           historicalData.weather,
           effectiveLat!,
@@ -1074,6 +1075,10 @@ export class BoreholeAnalyzer {
           nasaPowerET,  // REAL NASA POWER evapotranspiration
         );
       }
+    }
+    if (historicalData?.weather && !hasRainfallSeries(historicalData.weather)) {
+      historicalData.groundwater = null;
+      fallbacksUsed.push('The 20-year rainfall record was not available, so the groundwater trend is not estimated for this run (recharge trend, depletion risk and water-table trend need the rainfall series)');
     }
 
     let calibratedDepth = recommendedDepth;
@@ -2708,9 +2713,8 @@ export class BoreholeAnalyzer {
       pixelAnalysis: undefined, // no photo pixel analysis is reported (review m8)
       isReliableTerrainImage: features.isReliableTerrainImage,
       resolvedLocation: features.resolvedLocation,
-      // Management 2026-11-25: no photo-colour location candidates are reported (photos are not analysed);
-      // only the best estimate, which is the customer's own location, is kept.
-      geoEstimate: features.geoEstimate ? { ...features.geoEstimate, estimates: [] } : undefined,
+      // Management 2026-11-25: the photo is not analysed, so no geo-estimate of any kind is reported.
+      geoEstimate: undefined, // management 2026-11-25: no object describing a photo that was not analysed
       locationConfidence,
       remoteSensing,
       historicalData,
@@ -3867,8 +3871,8 @@ export class BoreholeAnalyzer {
     // Ensure GPS coordinates propagate to ALL possible storage paths
     if (effectiveLat != null && effectiveLon != null) {
       if (!result.clientLocation) result.clientLocation = {};
-      if (!result.geoEstimate) result.geoEstimate = { bestEstimate: { rank: 1, region: '', country: '', countryCode: '', latitude: effectiveLat, longitude: effectiveLon, confidence: 0.5, climateZone: 'Unknown', reasoning: [] }, estimates: [], alternatives: [], isOutdoor: true, method: 'fallback', timestamp: new Date().toISOString() } as any;
-      if ((result.geoEstimate as any).bestEstimate == null) (result.geoEstimate as any).bestEstimate = { rank: 1, region: '', country: '', countryCode: '', latitude: effectiveLat, longitude: effectiveLon, confidence: 0.5, climateZone: 'Unknown', reasoning: [] };
+      // Management 2026-11-25: no geo-estimate object is created (it claimed an outdoor photo, isOutdoor: true,
+      // for a photo that was not analysed); the coordinates live in result.site and result.clientLocation.
       if (!result.site) result.site = { latitude: effectiveLat, longitude: effectiveLon, confidence: 0.5, siteType: 'flat', vegetationDensity: 0, waterIndicator: 0, terrainSlope: 0 };
       if (result.site.latitude == null) result.site.latitude = effectiveLat;
       if (result.site.longitude == null) result.site.longitude = effectiveLon;
