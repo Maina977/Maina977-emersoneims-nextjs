@@ -1,0 +1,53 @@
+{
+  "schema": "emersoneims/solar-equipment-datasheet v1",
+  "kind": "battery-lfp",
+  "manufacturer": "Pylon Technologies Co., Ltd. (Pylontech)",
+  "model": "US5000",
+  "variant": "US5000 (datasheet also covers US5000-B, which adds a breaker)",
+  "datasheet": {
+    "title": "PYLONTECH Residential BESS US5000 - Specification",
+    "revision": "PY21US05-1",
+    "date": null,
+    "url": "https://portal.segen.co.uk/reseller/docs/US5000%20spec.pdf",
+    "retrieved": "2026-11-25",
+    "copySource": "distributor (Segen Ltd, UK reseller portal) - copy of the Pylontech-issued datasheet"
+  },
+  "evidenceClass": "manufacturer specification",
+  "verification": {
+    "status": "unverified",
+    "enteredBy": "research agent (automated extraction)",
+    "note": "Needs second-person check against the PDF before use in a quoted design. Distributor-hosted copy; confirm against a Pylontech-hosted copy or a Pylontech-issued document from the Kenyan distributor."
+  },
+  "parameters": {
+    "nominalVoltage": { "value": 48, "unit": "V", "condition": "Nominal Voltage (Vdc)" },
+    "nominalEnergy": { "value": 4.8, "unit": "kWh", "condition": "printed 'Nominal Capacity(Wh) 4800'" },
+    "usableEnergy": { "value": 4.56, "unit": "kWh", "condition": "printed 'Usable Capacity(Wh) 4560'" },
+    "depthOfDischarge": { "value": 95, "unit": "%", "condition": "as printed" },
+    "dischargeVoltageMin": { "value": 44.5, "unit": "V", "condition": "Discharge Voltage printed '44.5 ~ 53.5'" },
+    "dischargeVoltageMax": { "value": 53.5, "unit": "V", "condition": "as printed" },
+    "chargeVoltageMin": { "value": 52.5, "unit": "V", "condition": "Charge Voltage printed '52.5 ~ 53.5'" },
+    "chargeVoltageMax": { "value": 53.5, "unit": "V", "condition": "as printed" },
+    "recommendedChargeCurrent": { "value": 50, "unit": "A", "condition": "Charge/Discharge Current, Recommend" },
+    "recommendedDischargeCurrent": { "value": 50, "unit": "A", "condition": "Charge/Discharge Current, Recommend" },
+    "maxChargeCurrent": { "value": 100, "unit": "A", "condition": "Charge/Discharge Current, Max." },
+    "maxDischargeCurrent": { "value": 100, "unit": "A", "condition": "Charge/Discharge Current, Max." },
+    "peakCurrent1": { "value": null, "unit": "A", "condition": "Peak 1", "note": "Printed as '101~120@15min'." },
+    "peakCurrent2": { "value": null, "unit": "A", "condition": "Peak 2", "note": "Printed as '121~200@15sec'." },
+    "cycleLife": { "value": 6000, "unit": "cycles", "condition": "printed '>6,000 25' - the 25 is read as 25 °C (degree symbol not extracted); no DoD, C-rate or end-of-life capacity condition is printed", "note": "Lower bound ('>')." },
+    "maxModulesPerGroup": { "value": 16, "unit": "count", "condition": "Configuration (max. in 1 battery group)" },
+    "chargeTemperatureMin": { "value": 0, "unit": "°C", "condition": "Working Temperature, Charge printed '0~55'" },
+    "chargeTemperatureMax": { "value": 55, "unit": "°C", "condition": "as printed" },
+    "dischargeTemperatureMin": { "value": -10, "unit": "°C", "condition": "Working Temperature, Discharge printed '-10~55'" },
+    "dischargeTemperatureMax": { "value": 55, "unit": "°C", "condition": "as printed" },
+    "maxAltitude": { "value": 4000, "unit": "m", "condition": "printed '<4000'" },
+    "weight": { "value": 38, "unit": "kg", "condition": "US5000 (US5000-B printed 39)" }
+  },
+  "notes": [
+    "Datasheet code printed on page 1: 'Pylontech datesheet-PY21US05-1' (spelling as printed). No date printed.",
+    "The manufacturer's own sites (en.pylontech.com.cn and regional sites) render downloads through JavaScript only; no direct manufacturer-hosted PDF URL could be obtained, so the Segen distributor copy was used.",
+    "Design life printed '15+ Years (25/77)' - read as 25 °C / 77 °F with the degree symbols lost in text extraction.",
+    "Short-circuit current printed '<4000A/2ms'. IP20. Communication RS485, CAN. Natural cooling. Breaker: US5000 No, US5000-B Yes.",
+    "Standards printed: IEC62619, IEC63056, CE, UN38.3, UL1973, UKCA (US5000-B adds CEC).",
+    "Other sources disagree on cycle life (some catalogues say >8000) and weight (operation manual 39.7 kg); this file records only this datasheet."
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "schema": "emersoneims/solar-equipment-datasheet v1",
+  "kind": "inverter-string",
+  "manufacturer": "SMA Solar Technology AG",
+  "model": "Sunny Tripower 10.0 (STP10.0-3AV-40)",
+  "variant": "10 kW three-phase transformerless grid-tie, 2 MPPT",
+  "datasheet": {
+    "title": "Sunny Tripower 8.0 / 10.0 (STP8.0-3AV-40 / STP10.0-3AV-40)",
+    "revision": "STP8-10-3AV-40-DS-en-40",
+    "date": "2023-04 (printed 'Last updated: 04/2023')",
+    "url": "https://files.sma.de/downloads/STP8-10-3AV-40-DS-en-40.pdf",
+    "retrieved": "2026-11-25",
+    "copySource": "manufacturer"
+  },
+  "evidenceClass": "manufacturer specification",
+  "verification": {
+    "status": "unverified",
+    "enteredBy": "research agent (automated extraction)",
+    "note": "Needs second-person check against the PDF before use in a quoted design."
+  },
+  "parameters": {
+    "ratedAcOutputPower": { "value": 10000, "unit": "W", "condition": "Rated power (at 230 V, 50 Hz)" },
+    "maxApparentPower": { "value": 10000, "unit": "VA", "condition": "Rated / Max. apparent power printed '10000 VA / 10000 VA'" },
+    "ratedOutputCurrentPerPhase": { "value": 14.5, "unit": "A", "condition": "printed '3 x 14.5 A / 3 x 14.5 A' (rated / max)" },
+    "maxOutputCurrentPerPhase": { "value": 14.5, "unit": "A", "condition": "as above" },
+    "maxPvArrayPower": { "value": 15000, "unit": "Wp", "condition": "Max. PV array power" },
+    "maxDcInputVoltage": { "value": 1000, "unit": "V", "condition": "Max. input voltage" },
+    "mpptVoltageMin": { "value": 320, "unit": "V", "condition": "MPP voltage range, STP10.0 column printed '320 V to 800 V'" },
+    "mpptVoltageMax": { "value": 800, "unit": "V", "condition": "as printed" },
+    "ratedInputVoltage": { "value": 580, "unit": "V", "condition": "printed once, shared by both models" },
+    "minInputVoltage": { "value": 125, "unit": "V", "condition": "printed 'Min. input voltage / initial input voltage 125 V / 175 V'" },
+    "initialInputVoltage": { "value": 175, "unit": "V", "condition": "as above" },
+    "numberOfMppts": { "value": 2, "unit": "count", "condition": "printed '2 / A:2; B:1' (independent MPP inputs / strings per input)" },
+    "maxInputCurrentMpptA": { "value": 20, "unit": "A", "condition": "Max. usable input current input A (printed '20 A / 12 A')" },
+    "maxInputCurrentMpptB": { "value": 12, "unit": "A", "condition": "Max. usable input current input B" },
+    "maxShortCircuitCurrentMpptA": { "value": 30, "unit": "A", "condition": "Max. DC short-circuit current input A (printed '30 A / 18 A')" },
+    "maxShortCircuitCurrentMpptB": { "value": 18, "unit": "A", "condition": "Max. DC short-circuit current input B" },
+    "maxEfficiency": { "value": 98.3, "unit": "%", "condition": "Max. efficiency (STP10.0 column '98.3 % / 98.0 %')" },
+    "euroEfficiency": { "value": 98.0, "unit": "%", "condition": "European efficiency" },
+    "cecEfficiency": { "value": null, "unit": "%", "condition": "CEC", "note": "Not printed." },
+    "acVoltageRangeMin": { "value": 180, "unit": "V", "condition": "Voltage range printed '180 V to 280 V'" },
+    "acVoltageRangeMax": { "value": 280, "unit": "V", "condition": "as printed" },
+    "operatingTemperatureMin": { "value": null, "unit": "°C", "condition": "n/a", "note": "Text extraction reads '25 °C to +60 °C (13 °F to +140 °F)'; the lower bound almost certainly carries a minus sign that was not extracted. Read from the rendered PDF before use." },
+    "operatingTemperatureMax": { "value": 60, "unit": "°C", "condition": "as printed" },
+    "selfConsumptionNight": { "value": 5.0, "unit": "W", "condition": "Self-consumption (at night)" },
+    "weight": { "value": 20.5, "unit": "kg", "condition": "as printed" }
+  },
+  "notes": [
+    "Rated voltage options printed: 3/N/PE 220 V/380 V, 230 V/400 V, 240 V/415 V; grid frequency 50 Hz (45-55 Hz) or 60 Hz (55-65 Hz).",
+    "Power factor at rated power 1; displacement power factor adjustable 0.8 overexcited to 0.8 underexcited. Topology transformerless, convection cooled, IP65, protection class I, overvoltage category III.",
+    "Values shared across both models are printed centred once in the table (rated input voltage, min/initial input voltage, input currents, MPP input count); this file applies them to the STP10.0 column on that reading.",
+    "STP8.0 column differs only in MPP range (260-800 V), rated power 8000 W, current 3 x 11.6 / 12.1 A and European efficiency 97.7 %.",
+    "SMA is used for the string-inverter slot because the Huawei EU datasheet URL (solar.huawei.com) returned HTTP 504 twice and no manufacturer copy was reachable."
+  ]
+}

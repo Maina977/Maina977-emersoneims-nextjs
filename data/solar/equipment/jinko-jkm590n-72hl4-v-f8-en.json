@@ -1,0 +1,54 @@
+{
+  "schema": "emersoneims/solar-equipment-datasheet v1",
+  "kind": "module",
+  "manufacturer": "Jinko Solar Co., Ltd.",
+  "model": "Tiger Neo 72HL4-(V) JKM590N-72HL4-V",
+  "variant": "590 W bin (datasheet covers 580-605 W), N-type TOPCon mono-facial, 144 half cells",
+  "datasheet": {
+    "title": "Tiger Neo N-type 72HL4-(V) 580-605 Watt Mono-facial Module",
+    "revision": "JKM580-605N-72HL4-(V)-F8-EN",
+    "date": null,
+    "url": "https://jinkosolar.com/uploads/JKM580-605N-72HL4-(V)-F8-EN.pdf",
+    "retrieved": "2026-11-25",
+    "copySource": "manufacturer"
+  },
+  "evidenceClass": "manufacturer specification",
+  "verification": {
+    "status": "unverified",
+    "enteredBy": "research agent (automated extraction)",
+    "note": "Needs second-person check against the PDF before use in a quoted design."
+  },
+  "parameters": {
+    "pmax": { "value": 590, "unit": "W", "condition": "STC (1000 W/m2, cell 25 °C, AM1.5)" },
+    "vmp": { "value": 43.71, "unit": "V", "condition": "STC" },
+    "imp": { "value": 13.50, "unit": "A", "condition": "STC" },
+    "voc": { "value": 52.63, "unit": "V", "condition": "STC" },
+    "isc": { "value": 14.13, "unit": "A", "condition": "STC" },
+    "moduleEfficiency": { "value": 22.84, "unit": "%", "condition": "STC" },
+    "powerToleranceMin": { "value": 0, "unit": "%", "condition": "printed '0 ~ +3 %'" },
+    "powerToleranceMax": { "value": 3, "unit": "%", "condition": "printed '0 ~ +3 %'" },
+    "tempCoeffPmax": { "value": -0.29, "unit": "%/°C", "condition": "as printed" },
+    "tempCoeffVoc": { "value": -0.25, "unit": "%/°C", "condition": "as printed" },
+    "tempCoeffIsc": { "value": 0.045, "unit": "%/°C", "condition": "as printed" },
+    "tempCoeffVmp": { "value": null, "unit": "%/°C", "condition": "n/a", "note": "Not printed on this datasheet." },
+    "noct": { "value": null, "unit": "°C", "condition": "n/a", "note": "Neither NOCT nor NMOT, nor any NOCT/NMOT electrical table, is printed on this F8 datasheet." },
+    "maxSystemVoltage": { "value": 1500, "unit": "V", "condition": "IEC; printed '1000/1500 VDC (IEC)' - two system-voltage versions; confirm which version the supplied module is" },
+    "maxSeriesFuseRating": { "value": 25, "unit": "A", "condition": "as printed" },
+    "operatingTemperatureMin": { "value": -40, "unit": "°C", "condition": "as printed '-40 °C ~ +70 °C'" },
+    "operatingTemperatureMax": { "value": 70, "unit": "°C", "condition": "as printed" },
+    "cellCount": { "value": 144, "unit": "count", "condition": "printed '144 (72x2)'" },
+    "lengthMm": { "value": 2278, "unit": "mm", "condition": "printed 2278x1134x30 mm" },
+    "widthMm": { "value": 1134, "unit": "mm", "condition": "as printed" },
+    "thicknessMm": { "value": 30, "unit": "mm", "condition": "as printed" },
+    "weight": { "value": 27.0, "unit": "kg", "condition": "as printed" },
+    "maxStaticLoadFront": { "value": 5400, "unit": "Pa", "condition": "front side max static test load" },
+    "maxStaticLoadRear": { "value": 2400, "unit": "Pa", "condition": "rear side max static test load" }
+  },
+  "notes": [
+    "Other bins printed on the same sheet (Pmax W / Vmp V / Imp A / Voc V / Isc A / eff %): 580/43.35/13.38/52.31/14.01/22.45; 585/43.53/13.44/52.47/14.07/22.65; 595/43.88/13.56/52.79/14.19/23.03; 600/44.06/13.62/52.95/14.25/23.23; 605/44.23/13.68/53.11/14.31/23.42.",
+    "No date printed apart from the copyright line '© 2024 Jinko Solar Co., Ltd.'; revision taken from the document code JKM580-605N-72HL4-(V)-F8-EN printed on page 1.",
+    "Warranty as printed: 12-year product, 30-year linear power; 1% first-year degradation, 0.40% annual degradation, 87.4% at year 30.",
+    "Certifications printed: IEC61215:2021 / IEC61730:2023, IEC61701 / IEC62716 / IEC60068 / IEC62804.",
+    "Column alignment for the 590 W bin cross-checked between pdftotext -table and -raw output; Vmp x Imp = 590.1 W, consistent."
+  ]
+}
