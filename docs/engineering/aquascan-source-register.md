@@ -70,6 +70,15 @@ Re-review of 126efdbc, M-2. The Open-Meteo elevation check was removed: Open-Met
 |---|---|---|---|---|
 | F1 | Lakes and reservoirs | OpenStreetMap `natural=water` polygons (`water=lake`/`reservoir`, or named "Lake …"), named, perennial (`intermittent=yes` dropped), bounding box over ~3 km²; queried via the Overpass API on 2026-11-25. 27 bodies, including Victoria (clipped to the Kenyan part), Turkana, Naivasha, Baringo, Nakuru, Bogoria, Elmenteita, Magadi, Jipe, Chala, and the Masinga, Kiambere, Gitaru, Kindaruma and Sasumua reservoirs. Simplified to ~130 m; islands and holes under ~0.3 km² dropped | © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright). Attribution is carried in the data file header | USED: refusal on open water |
 | F2 | Coast | Natural Earth 10 m land polygons, clipped to 38.9–41.9 E, 4.85–1.45 S, simplified to ~220 m. Kenyan islands are taken from the existing geoBoundaries outline (`kenyaOutline.ts`) | Public domain (https://www.naturalearthdata.com/about/terms-of-use/) | USED: refusal in the sea |
+| F3 | Kenyan islands (Lamu archipelago, Mombasa Island, Lake Victoria islands as land) | The existing Kenya outline `kenyaOutline.ts`: geoBoundaries gbOpen KEN ADM0 (Runfola et al. 2020, PLoS ONE 15(4): e0231866) | CC BY 4.0 (attribution required) | USED: a point on a Kenyan island is never 'sea' |
+
+**Attribution shown to the customer.** ODbL requires attribution where the data is used. Every water-check outcome carries `WATER_MAP_ATTRIBUTION` ("Lake and reservoir maps © OpenStreetMap contributors (ODbL); coast: Natural Earth; islands: geoBoundaries (CC BY 4.0)"):
+
+- the passed-check note;
+- the near-shore note;
+- the lake and sea refusals.
+
+It is shown on the result page ("Water-body check:" line and the near-shore banner) and in every export (screening PDF, Word, Excel and CSV rows, JSON, and the full-PDF coordinates row).
 
 Rules:
 
