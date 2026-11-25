@@ -140,6 +140,8 @@ describe('hourly simulation with a horizon', () => {
     expect(h.input!.losses.shading).toBe(0);
     expect(h.input!.horizon!.sectors).toHaveLength(1);
     expect(buildHourlyInput({ ...form, 'sh.sectors': '45,135,25' }, w).errors.join(' ')).toMatch(/source/);
+    // The worked example itself carries the TEST tilt / azimuth / efficiency, so it simulates straight through.
+    expect(buildHourlyInput(WORKED_EXAMPLE_FORM, w).errors).toEqual([]);
   });
 });
 

@@ -295,6 +295,8 @@ export const WORKED_EXAMPLE_FORM: ProposalForm = {
   'i.model': 'test-inverter', 'i.acKw': '15', 'i.maxDcV': '1000', 'i.mpptMinV': '200', 'i.mpptMaxV': '850', 'i.mpptCount': '2', 'i.maxInputA': '26', 'i.maxIscA': '40',
   'i.verified': 'yes', 'i.verifiedBy': 'test-2', 'i.verifiedOn': '2026-11-20',
   'd.modulesPerString': '16', 'd.stringsPerMppt': '1,1', 'd.inverterCount': '1',
+  // TEST values (as solar-proposal-form.test.ts) so "Fetch hourly weather" can simulate the example straight through.
+  'd.tilt': '10', 'd.azimuth': '0', 'i.nominalEfficiency': '0.96',
   't.recordLowC': '10', 't.maxAmbientC': '35', 't.source': 'test station record',
   'f.tariff': '25', 'f.tariffSource': 'customer bill (test)', 'f.selfConsumed': '0.8', 'f.selfConsumedSource': 'load logger (test)',
   'f.escalation': '0', 'f.escalationSource': 'test source', 'f.discount': '10', 'f.discountSource': 'test source', 'f.degradation': '0', 'f.degradationSource': 'test source',
