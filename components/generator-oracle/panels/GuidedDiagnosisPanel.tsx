@@ -34,9 +34,10 @@ const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0
 const validLatched = (x: unknown): x is StoredLatched => !!x && typeof x === 'object' && isStr((x as StoredLatched).key) && isStr((x as StoredLatched).message) && isStr((x as StoredLatched).from) && isStr((x as StoredLatched).since);
 const validClearance = (x: unknown): x is StoredClearance => validLatched(x) && isStr((x as StoredClearance).clearedAt) && isStr((x as StoredClearance).by) && typeof (x as StoredClearance).reason === 'string';
 /** Reads the stored safety state. Any malformed part makes the whole record unreadable (never "cleared"). */
-export function readStore(): { unreadable: boolean; raw?: Record<string, Record<string, string>>; latched: StoredLatched[]; cleared: StoredClearance[] } {
+export function readStore(): { unreadable: boolean; blocked?: true; raw?: Record<string, Record<string, string>>; latched: StoredLatched[]; cleared: StoredClearance[] } {
   let text: string | null = null;
-  try { text = localStorage.getItem(GD_STORE); } catch { return { unreadable: true, latched: [], cleared: [] }; }
+  // `blocked`: the browser refused the read (storage blocked), as opposed to a record that was read but is malformed.
+  try { text = localStorage.getItem(GD_STORE); } catch { return { unreadable: true, blocked: true, latched: [], cleared: [] }; }
   if (text === null) return { unreadable: false, latched: [], cleared: [] };
   try {
     const s = JSON.parse(text);
@@ -50,6 +51,10 @@ export function readStore(): { unreadable: boolean; raw?: Record<string, Record<
     if (!ok) return { unreadable: true, latched: [], cleared: [] };
     return { unreadable: false, raw: s.raw, latched: s.latched, cleared: s.cleared.map((c: StoredClearance) => ({ ...c, reason: c.reason ?? '' })) };
   } catch { return { unreadable: true, latched: [], cleared: [] }; }
+}
+/** Returns `prev` when `next` has the same items, so a state setter does not re-render for nothing. */
+function keepSame<T>(prev: T[], next: T[]): T[] {
+  return prev.length === next.length && prev.every((x, i) => x === next[i]) ? prev : next;
 }
 const sameStop = (a: StoredLatched, b: StoredLatched) => a.key === b.key && a.since === b.since;
 /** Union of latched STOPs, minus only those with a recorded clearance for that exact STOP. */
@@ -135,25 +140,54 @@ export default function GuidedDiagnosisPanel() {
   const [holdBy, setHoldBy] = useState('');
   const [holdConfirm, setHoldConfirm] = useState(false);
   const [holdErr, setHoldErr] = useState('');
+  /**
+   * Reads the stored record and merges it into the page: answers not yet on the page, the
+   * clearance record and every latched STOP. Returns false only when the browser refused the
+   * read (blocked storage); nothing is changed then. Setters keep the same value when nothing
+   * new was read, so repeated reads (retries, focus, storage events) cause no extra renders.
+   * Independent review of 4c2a6ee5 (MAJOR): if the first read failed but storage works later,
+   * the stored record was never loaded and a latched STOP lost to the SAFETY HOLD. Every later
+   * successful read now merges it, before the hold can be released.
+   */
+  const readAndMerge = (): boolean => {
+    const s = readStore();
+    if (s.blocked) return false;
+    if (s.unreadable) {
+      // Never restore a supposedly cleared diagnosis from a record that cannot be read.
+      setLatched((l) => keepSame(l, mergeLatched(l, [UNREADABLE_STOP()], [])));
+      return true;
+    }
+    const raw0 = s.raw;
+    if (raw0) setRaw((r) => (Object.keys(raw0).some((k) => !(k in r)) ? { ...raw0, ...r } : r));
+    setCleared((c) => keepSame(c, mergeCleared(c, s.cleared)));
+    setLatched((l) => keepSame(l, mergeLatched(l, s.latched, s.cleared)));
+    return true;
+  };
   useEffect(() => {
-    const read = () => {
-      const s = readStore();
-      if (s.unreadable) {
-        // Never restore a supposedly cleared diagnosis from a record that cannot be read.
-        setLatched((l) => mergeLatched(l, [UNREADABLE_STOP()], []));
-        return;
-      }
-      if (s.raw) setRaw((r) => ({ ...s.raw, ...r }));
-      setCleared((c) => mergeCleared(c, s.cleared));
-      setLatched((l) => mergeLatched(l, s.latched, s.cleared));
-    };
-    try { localStorage.getItem(GD_STORE); } catch { setStorageOk(false); setLoaded(true); return; }
-    read();
-    const onStorage = (e: StorageEvent) => { if (e.key === GD_STORE) read(); };
+    // Listeners are registered in every case, also when the first read is refused, so a record
+    // that becomes readable later (or is written by another window) is always merged.
+    const onStorage = (e: StorageEvent) => { if (e.key === GD_STORE || e.key === null) readAndMerge(); };
+    const onFocus = () => { readAndMerge(); };
+    const onVisible = () => { if (document.visibilityState === 'visible') readAndMerge(); };
     addEventListener('storage', onStorage);
+    addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisible);
+    if (!readAndMerge()) setStorageOk(false);
     setLoaded(true);
-    return () => removeEventListener('storage', onStorage);
+    return () => {
+      removeEventListener('storage', onStorage);
+      removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // While storage is not usable, keep retrying the read so a stored STOP is merged as soon as it can be read.
+  useEffect(() => {
+    if (storageOk) return;
+    const t = setInterval(() => { readAndMerge(); }, 2000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageOk]);
   // Every STOP computed on any tab is latched.
   const liveStops = useMemo(() => FAMILIES.flatMap((f) =>
     diagnose(f, toAnswers(f, raw[f.id] ?? {})).stops.filter((s) => s.level === 'STOP').map((s) => ({ key: `${f.id}|${s.message}`, message: s.message, from: f.title }))), [raw]);
@@ -167,8 +201,18 @@ export default function GuidedDiagnosisPanel() {
     try {
       // Merge with what another window may have stored: a STOP is never dropped by a write.
       const s = readStore();
+      // If the stored record cannot be read, do not write: writing now would overwrite (and so
+      // drop) STOPs stored earlier that this page has not been able to read.
+      if (s.blocked) { setStorageOk(false); return; }
       const mergedCleared = mergeCleared(cleared, s.unreadable ? [] : s.cleared);
       const mergedLatched = mergeLatched(latched, s.unreadable ? [] : s.latched, mergedCleared);
+      // A successful read here also brings stored STOPs onto THIS page (review of 4c2a6ee5):
+      // a STOP kept in storage must never be kept there but missing from the screen.
+      if (!s.blocked) {
+        const incoming = s.unreadable ? [UNREADABLE_STOP()] : s.latched;
+        setLatched((l) => keepSame(l, mergeLatched(l, incoming, s.unreadable ? [] : mergedCleared)));
+        if (!s.unreadable) setCleared((c) => keepSame(c, mergeCleared(c, s.cleared)));
+      }
       localStorage.setItem(GD_STORE, JSON.stringify({ v: 2, raw, latched: mergedLatched, cleared: mergedCleared }));
     } catch { setStorageOk(false); }
   }, [raw, latched, cleared, loaded]);
@@ -204,6 +248,9 @@ export default function GuidedDiagnosisPanel() {
     const by = holdBy.trim();
     if (!holdConfirm) { setHoldErr('Not released: confirm that a qualified technician has reassessed the machine in person.'); return; }
     if (!by) { setHoldErr('Not released: enter the name or initials of the qualified technician.'); return; }
+    // Re-read first: any STOP stored in this browser that can be read now is merged before
+    // anything is released, and then shows as a STOP (a real STOP always wins over the hold).
+    readAndMerge();
     setHoldAck({ by: by.slice(0, 60), at: new Date().toISOString() });
     setHoldErr('');
   };
