@@ -96,3 +96,14 @@ describe('R7: water-body check unavailable is never a silent pass', () => {
     expect(ui).toMatch(/\(\(result as any\)\.waterBodyCheckUnavailable && !waterConfirmed\)\) \? 'none' : 'aut/);
   });
 });
+
+describe('N5 (re-review of f17f80a7): viability takes no placeholder water value', () => {
+  it('the engine passes "no water evidence" (0) explicitly to the risk analysis', () => {
+    expect(src('boreholeAnalyzer.ts')).toMatch(/0, \/\/ review N5: no water evidence from a photo \(photos are not analysed\); explicitly absent, never a placeholder value/);
+  });
+  it('viability is unchanged at the shipped neutral value (0.3 gave the same as 0 in the reviewer sweep)', async () => {
+    const r = await run(NEUTRAL, { latitude: -1.2921, longitude: 36.8219 });
+    expect(['high', 'medium', 'low', 'not_recommended']).toContain(r.risk.viability);
+    expect(r.risk.viability).not.toBe('high');
+  }, 150000);
+});
