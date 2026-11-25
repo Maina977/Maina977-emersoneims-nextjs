@@ -6,10 +6,13 @@
  * physical range are refused with the reason; machine limits come from the
  * OEM manual entered by the technician, never from defaults.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { diagnose } from '@/lib/generator-oracle/diagnostics/engine';
 import { FAMILIES, familyFor } from '@/lib/generator-oracle/diagnostics/families';
 import type { Answers, Question } from '@/lib/generator-oracle/diagnostics/types';
+
+/** Browser storage key for answers, latched STOPs and the clearance record. */
+export const GD_STORE = 'eims-oracle-guided-diagnosis-v1';
 
 function QuestionInput({ q, value, onChange }: { q: Question; value: string; onChange: (v: string) => void }) {
   const id = `gd-${q.id}`;
@@ -56,6 +59,54 @@ export default function GuidedDiagnosisPanel() {
   const otherStops = useMemo(() => FAMILIES.filter((f) => f.id !== familyId).flatMap((f) =>
     diagnose(f, toAnswers(f, raw[f.id] ?? {})).stops.filter((s) => s.level === 'STOP').map((s) => ({ ...s, from: f.title }))), [raw, familyId]);
 
+  // STOP LATCH (2026-11-25 safety hotfix, management directive on STOP persistence): a STOP,
+  // once shown, stays active across tab changes, reloads, changed or cleared answers and
+  // less severe faults. It is cleared only by an explicit, recorded clearance, accepted only
+  // when the entered answers no longer show the condition. Answers, latched STOPs and the
+  // clearance record are kept in this browser (localStorage); if storage is unavailable the
+  // panel says so.
+  type Latched = { key: string; message: string; from: string; since: string };
+  type Clearance = { key: string; message: string; from: string; since: string; clearedAt: string; by: string };
+  const [latched, setLatched] = useState<Latched[]>([]);
+  const [cleared, setCleared] = useState<Clearance[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [storageOk, setStorageOk] = useState(true);
+  const [clearBy, setClearBy] = useState<Record<string, string>>({});
+  const [clearConfirm, setClearConfirm] = useState<Record<string, boolean>>({});
+  const [clearErr, setClearErr] = useState<Record<string, string>>({});
+  useEffect(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem(GD_STORE) || 'null');
+      if (s && typeof s === 'object') {
+        if (s.raw && typeof s.raw === 'object') setRaw(s.raw);
+        if (Array.isArray(s.latched)) setLatched(s.latched);
+        if (Array.isArray(s.cleared)) setCleared(s.cleared);
+      }
+    } catch { setStorageOk(false); }
+    setLoaded(true);
+  }, []);
+  // Every STOP computed on any tab is latched.
+  const liveStops = useMemo(() => FAMILIES.flatMap((f) =>
+    diagnose(f, toAnswers(f, raw[f.id] ?? {})).stops.filter((s) => s.level === 'STOP').map((s) => ({ key: `${f.id}|${s.message}`, message: s.message, from: f.title }))), [raw]);
+  useEffect(() => {
+    if (!loaded) return;
+    const add = liveStops.filter((s) => !latched.some((l) => l.key === s.key));
+    if (add.length) setLatched((l) => [...l, ...add.map((s) => ({ ...s, since: new Date().toISOString() }))]);
+  }, [liveStops, loaded, latched]);
+  useEffect(() => {
+    if (!loaded) return;
+    try { localStorage.setItem(GD_STORE, JSON.stringify({ v: 1, raw, latched, cleared })); } catch { setStorageOk(false); }
+  }, [raw, latched, cleared, loaded]);
+  const recordClearance = (l: Latched) => {
+    if (liveStops.some((s) => s.key === l.key)) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: the answers entered still show this condition. Complete the required checks and update the answers first.' })); return; }
+    const by = (clearBy[l.key] ?? '').trim();
+    if (!by) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: enter the initials of the qualified technician recording the clearance.' })); return; }
+    if (!clearConfirm[l.key]) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: confirm that the required checks were completed and the set is safe.' })); return; }
+    setCleared((c) => [...c, { ...l, clearedAt: new Date().toISOString(), by: by.slice(0, 40) }]);
+    setLatched((ls) => ls.filter((x) => x.key !== l.key));
+    setClearErr((e) => ({ ...e, [l.key]: '' }));
+  };
+
   const set = (q: string, v: string) => setRaw((r) => ({ ...r, [familyId]: { ...(r[familyId] ?? {}), [q]: v } }));
   const route = () => { const f = familyFor(symptom); if (f) setFamilyId(f.id); };
   const routed = symptom.trim() ? familyFor(symptom) : null;
@@ -64,7 +115,10 @@ export default function GuidedDiagnosisPanel() {
   // check or action is suggested. Several suggested checks need the engine running,
   // cranking or live circuits (e.g. a cylinder cut-out test under "STOP THE SET"), which
   // contradicts the STOP. Causes stay listed for information only.
-  const stopActive = result.stops.some((s) => s.level === 'STOP') || otherStops.length > 0;
+  // Active = any STOP computed now (on any tab) or any latched STOP not yet cleared by record.
+  const stopActive = result.stops.some((s) => s.level === 'STOP') || otherStops.length > 0 || latched.length > 0;
+  // Latched STOPs whose condition is no longer computed are still shown (they are not cleared).
+  const latchedOnly = latched.filter((l) => !liveStops.some((s) => s.key === l.key));
   const STOP_HOLD = 'Further checks are withheld while a STOP applies. Make the set safe first: engine stopped, isolated and locked off. A qualified technician decides the next step once the hazard is controlled.';
 
   return (
@@ -89,8 +143,13 @@ export default function GuidedDiagnosisPanel() {
         </div>
       </div>
 
-      {(result.stops.length > 0 || otherStops.length > 0) && (
+      {(result.stops.length > 0 || otherStops.length > 0 || latched.length > 0) && (
         <div role="alert" className="space-y-2">
+          {latchedOnly.map((l) => (
+            <div key={`l${l.key}`} data-testid="gd-latched-stop" className="rounded-lg border p-3 text-sm border-red-500 bg-red-950/60 text-red-100">
+              <strong>STOP (still active until a clearance is recorded)</strong> · (from the {l.from} tab, since {l.since.slice(0, 16).replace('T', ' ')} UTC) {l.message}
+            </div>
+          ))}
           {otherStops.map((s, i) => (
             <div key={`o${i}`} className="rounded-lg border p-3 text-sm border-red-500 bg-red-950/60 text-red-100">
               <strong>STOP</strong> · (from the {s.from} tab) {s.message}
@@ -107,7 +166,25 @@ export default function GuidedDiagnosisPanel() {
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-3">
           {stopActive ? (
-            <div data-testid="gd-stop-hold" className="rounded-lg border border-red-500 bg-red-950/60 p-3 text-xs text-red-100">{STOP_HOLD}</div>
+            <div data-testid="gd-stop-hold" className="rounded-lg border border-red-500 bg-red-950/60 p-3 text-xs text-red-100 space-y-3">
+              <p>{STOP_HOLD}</p>
+              {!storageOk ? <p data-testid="gd-storage-warning">This browser cannot keep the STOP after a reload: record it on the job card.</p> : null}
+              {latched.map((l) => (
+                <div key={`c${l.key}`} className="rounded-md border border-red-400/50 p-2 space-y-1" data-testid="gd-clearance">
+                  <p className="font-semibold">Record STOP clearance: {l.from}</p>
+                  <label className="block">Initials of the qualified technician
+                    <input value={clearBy[l.key] ?? ''} onChange={(e) => setClearBy((b) => ({ ...b, [l.key]: e.target.value }))}
+                      className="mt-1 w-full rounded bg-slate-900 border border-slate-700 px-2 py-1 text-white" />
+                  </label>
+                  <label className="flex items-start gap-2">
+                    <input type="checkbox" checked={!!clearConfirm[l.key]} onChange={(e) => setClearConfirm((c) => ({ ...c, [l.key]: e.target.checked }))} />
+                    <span>The required checks were completed, the cause was dealt with and the set is safe.</span>
+                  </label>
+                  <button type="button" onClick={() => recordClearance(l)} className="rounded bg-red-700 px-2 py-1 text-white">Record STOP clearance</button>
+                  {clearErr[l.key] ? <p role="status" className="text-red-200">{clearErr[l.key]}</p> : null}
+                </div>
+              ))}
+            </div>
           ) : next ? (
             <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3">
               <div className="text-xs text-amber-300 mb-2">Next check</div>
@@ -148,6 +225,12 @@ export default function GuidedDiagnosisPanel() {
           )}
         </div>
       </div>
+      {cleared.length > 0 && (
+        <details data-testid="gd-clearance-record" className="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-xs text-slate-300">
+          <summary className="cursor-pointer">STOP clearance record ({cleared.length}), kept in this browser</summary>
+          <ul className="mt-2 space-y-1">{cleared.map((c, i) => <li key={i}>{c.clearedAt.slice(0, 16).replace('T', ' ')} UTC · cleared by {c.by} · {c.from}: {c.message}</li>)}</ul>
+        </details>
+      )}
       <p className="text-[11px] text-slate-500">{result.disclaimer} Content status: {result.review}. {result.engineVersion}.</p>
     </div>
   );

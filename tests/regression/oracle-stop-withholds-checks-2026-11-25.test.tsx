@@ -8,7 +8,8 @@ import { diagnose } from '@/lib/generator-oracle/diagnostics/engine';
 // Safety hotfix (independent review F1, 2026-11-25): while any STOP applies, the panel
 // suggests no further check or action. Before the fix, "STOP THE SET" (knock) was
 // followed by "Cylinder cut-out test", which needs the knocking engine running.
-afterEach(cleanup);
+// Each test starts with empty browser storage (the panel latches STOPs in localStorage).
+afterEach(() => { cleanup(); localStorage.clear(); });
 
 const choose = (familyTitle: RegExp) => fireEvent.click(screen.getByRole('tab', { name: familyTitle }));
 const answer = (questionText: RegExp, value: string) => fireEvent.change(screen.getAllByLabelText(questionText)[0], { target: { value } });
@@ -61,10 +62,46 @@ describe('Guided Diagnosis: no checks suggested while a STOP applies', () => {
     choose(/Low oil pressure/);
     expect(hold()).not.toBeNull();
     expect(document.body.textContent).not.toMatch(/Confirm with a mechanical gauge before any engine work/);
-    // Clearing the knock answers releases the other tabs.
+    // Clearing the knock answers does NOT release the STOP (latched until a recorded clearance).
     choose(/Knocking, bearing noise or seizure/);
     fireEvent.click(screen.getByRole('button', { name: 'Clear answers' }));
     choose(/Overheating \/ high coolant temperature/);
+    expect(hold()).not.toBeNull();
+    expect(screen.getByTestId('gd-latched-stop').textContent).toMatch(/still active until a clearance is recorded/);
+  });
+
+  it('STOP latch: survives a reload and a less severe fault; cleared only by a recorded clearance', () => {
+    const { unmount } = render(<GuidedDiagnosisPanel />);
+    choose(/Knocking, bearing noise or seizure/);
+    answer(/Where is the noise\?/, 'engine');
+    expect(hold()).not.toBeNull();
+    unmount(); // reload
+    render(<GuidedDiagnosisPanel />);
+    expect(hold()).not.toBeNull();
+    expect(document.body.textContent).toMatch(/STOP THE SET/);
+    // a second, less severe fault on another tab does not clear it
+    choose(/Cranks but will not start|will not start/i);
+    answer(/Fuel at the filter|fuel/i, 'no');
+    expect(hold()).not.toBeNull();
+    // clearance refused while the answers still show the condition
+    fireEvent.click(screen.getAllByRole('button', { name: 'Record STOP clearance' })[0]);
+    expect(document.body.textContent).toMatch(/Not cleared: the answers entered still show this condition/);
+    // checks done: answers updated (cleared), but initials and confirmation are required
+    choose(/Knocking, bearing noise or seizure/);
+    fireEvent.click(screen.getByRole('button', { name: 'Clear answers' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Record STOP clearance' })[0]);
+    expect(document.body.textContent).toMatch(/Not cleared: enter the initials/);
+    fireEvent.change(screen.getAllByLabelText(/Initials of the qualified technician/)[0], { target: { value: 'TEST-JK' } });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Record STOP clearance' })[0]);
+    expect(document.body.textContent).toMatch(/Not cleared: confirm that the required checks were completed/);
+    fireEvent.click(screen.getAllByLabelText(/The required checks were completed/)[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Record STOP clearance' })[0]);
+    expect(hold()).toBeNull();
+    expect(screen.getByTestId('gd-clearance-record').textContent).toMatch(/cleared by TEST-JK/);
+    // and the record survives a reload
+    cleanup();
+    render(<GuidedDiagnosisPanel />);
+    expect(screen.getByTestId('gd-clearance-record').textContent).toMatch(/cleared by TEST-JK/);
     expect(hold()).toBeNull();
   });
 
