@@ -169,6 +169,9 @@ export function readingFlags(r: Reading[]): string[] {
     if ((x.min !== undefined || x.max !== undefined) && !x.limitSource?.trim()) f.push(`${x.name}: limit given without its source`);
     if (x.min !== undefined && x.value < x.min) f.push(`${x.name} ${x.value} ${x.unit} is below ${x.min} ${x.unit} (${x.limitSource})`);
     if (x.max !== undefined && x.value > x.max) f.push(`${x.name} ${x.value} ${x.unit} is above ${x.max} ${x.unit} (${x.limitSource})`);
+    // Exact-threshold rule (2026-11-25): a reading equal to a limit has reached it; it is never shown as within limits.
+    if (x.min !== undefined && x.value === x.min) f.push(`${x.name} ${x.value} ${x.unit} is AT the minimum ${x.min} ${x.unit} — equality counts as reaching the limit (${x.limitSource})`);
+    if (x.max !== undefined && x.value === x.max) f.push(`${x.name} ${x.value} ${x.unit} is AT the maximum ${x.max} ${x.unit} — equality counts as reaching the limit (${x.limitSource})`);
   }
   return f;
 }

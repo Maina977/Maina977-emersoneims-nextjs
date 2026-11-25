@@ -2,7 +2,7 @@
 
 Governing protocol: `C:\Users\User\Documents\EmersonEIMS-proposals\pilot-protocols-2026-11-25\PILOT-PROTOCOL-GENERATOR-ORACLE.md` (Pilot GO-P1). This file lists what to collect and how to run the new guided families inside that protocol. It does not change the protocol. **Binding from the protocol:** any S1 (equipment-damage) or S2 (personnel-safety) unsafe recommendation is an automatic FAIL; a STOP is credited only if it is shown before any hazardous action and nothing afterwards contradicts it.
 
-Note for the protocol owner: the protocol text (Section 1) describes 6 families and engine 1.0.0. This branch has 10 families and engine `oracle-diagnostics 1.1.0 (2026-11-25)`. Record the engine version shown on screen at the run; if management wants the new families in scope, that is decided and signed before testing (protocol Section 5 step 2).
+Note for the protocol owner: the protocol text (Section 1) describes 6 families and engine 1.0.0. This branch has 10 families and engine `oracle-diagnostics 1.2.0 (2026-11-25)`; scope, measures and the first case are set out in `C:\Users\User\Documents\EmersonEIMS-proposals\pilot-protocols-2026-11-25\PILOT-PROTOCOL-GENERATOR-ORACLE-ADDENDUM-A-10-FAMILIES.md` (to be signed before testing). Record the engine version shown on screen at the run.
 
 Data note for protocol Section 4: Guided Diagnosis now keeps its answers (and the selected engine/controller model) in browser local storage under `eims-oracle-guided-session-v1`, so a job card can pick them up. Use the separate pilot browser profile and clear it at close, as the protocol already requires for the job-card panel.
 
@@ -24,7 +24,8 @@ Data note for protocol Section 4: Guided Diagnosis now keeps its answers (and th
 | Exhaust: colour, when worst, load % at the time, coolant level trend, oil condition, air-filter indicator | smoke |
 | Fuel: tank dip, separator water, filter dates | hunting, smoke |
 | Service history ≥ 12 months (dates, hours, work, parts) | all |
-| OEM manual references: title, number, revision, page for every limit entered | all |
+| OEM manual references: title, number, revision, page for every limit entered, **and whether the manual calls it a shutdown or a warning value** | all |
+| Manufacturer, model and variant/configuration exactly as on the plate | all (recorded as the applicability of every limit entered) |
 
 **Pack B (sealed, after the fault):** strip-down findings, confirmed root cause, parts replaced, repair job card, test-run results.
 

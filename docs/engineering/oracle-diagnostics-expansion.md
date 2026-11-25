@@ -1,6 +1,34 @@
 # Generator Oracle — guided diagnostics expansion 1 (2026-11-25)
 
-Branch `ws/oracle-diagnostics`. Engine `oracle-diagnostics 1.1.0 (2026-11-25)`. Content status of every family: **technician review pending**.
+Branch `ws/oracle-diagnostics`. Engine `oracle-diagnostics 1.2.0 (2026-11-25)` (1.1.0 = expansion; 1.2.0 = exact-threshold rule, increment 2). Content status of every family: **technician review pending**.
+
+## 0. Increment 2 (2026-11-25): exact-threshold rule and provenance
+
+Management decision: **equality with a limit counts as reaching it**, unless the OEM document defines a different comparison (recorded where it does).
+
+| Situation | Result |
+|---|---|
+| Reading strictly inside the limit entered | "INSIDE LIMIT", no limit alarm (never described as safe) |
+| Reading within the measurement tolerance entered (`± units`) but not at the limit | CAUTION "AT OR NEAR THE LIMIT — re-measure"; for a shutdown value it adds the conditional STOP instruction |
+| Reached, classified **shutdown** | STOP (the family's shutdown message) |
+| Reached, classified **warning** | CAUTION — a shutdown is never derived from a warning value, however far it is exceeded |
+| Reached, classification **not stated** | CAUTION "LIMIT REACHED — NOT CLASSIFIED … not a confirmed shutdown; this does not clear any STOP … If it is the shutdown value: STOP …"; the classification is the next question asked |
+| No limit entered | "NOT VERIFIED", no threshold applied |
+
+Implementation: `NumberQuestion.oemLimit {direction, parameter}` marks every OEM figure (11 questions); each has companion answers `<id>.class` (shutdown / warning / not stated) and `<id>.source` (manual ID, revision, page; ≤ 300 characters). `FaultFamily.limits` (9 limit rules in 6 families) compare a reading with an OEM limit at equality (`≤` min, `≥` max). The former strict STOP rules on oil pressure, coolant, insulation and charging voltage became limit rules. Evidence that means "limit reached" now uses the new `leRef`/`geRef` operators; "strictly inside" keeps `ltRef`/`gtRef`. Rating-plate values (rated voltage, rated rpm) are marked `ratingPlate` and are never classified.
+
+Provenance in the export: the job-card findings / .txt / PDF list every OEM figure with parameter, value and units, minimum or maximum, classification, the typed source, and "applies only to: manufacturer …; model …; variant/configuration …". The technician types these three fields on the Guided Diagnosis tab. Test readings carry the same text as `limitSource`. The job-card reading check now also flags a reading equal to its min or max ("is AT the maximum … equality counts as reaching the limit"). The Perkins 1104D coolant maximum (110 °C, shutdown, 48 kPa system) can be entered for that exact model with **Use published value**. That fills value, classification and source; nothing is entered automatically.
+
+Tests: `tests/regression/oracle-exact-threshold.test.ts` covers:
+- just inside / at / beyond, for min and max, for shutdown, warning, not-stated and unanswered;
+- tolerance cases;
+- a warning value never becoming a STOP;
+- unclassified never clearing a STOP;
+- no limit → NOT VERIFIED;
+- export provenance;
+- reference-record provenance completeness.
+
+The safety harness in `oracle-diagnostics-expansion.test.ts` now also covers every limit rule at equality with a shutdown classification.
 
 ## 1. What changed
 
@@ -55,7 +83,7 @@ Questions (safety first): overspeed trip caused? → linkage by hand (stopped, i
 Causes: linkage sticking/worn; gain/stability setting (running check: re-tune — withheld under STOP); fuel air/restriction (running check: sight glass); speed sensor (excluded for mechanical governors; running check: pickup signal); cyclic/non-linear load (excluded at no load); AVR–governor interaction; load sharing in parallel; swing within the band entered (no fault shown — never a pass against ISO 8528-5 unless the band is the agreed one).
 
 **Worked example W1 (synthetic).** Single set, electronic governor, swing 1.2 Hz, band entered 0.5 Hz, hunts at no load, linkage sticking, fuel OK, sensor OK, no gain change, no load, voltage steady.
-Hand derivation: linkage = +3 (sticking) +1 (no load) = **4**; gain = +1 (no load) −1 (no change) = **0**; fuel = −1 (fuel OK) = **−1**; sensor excluded (OK); load excluded (no load); AVR excluded (voltage steady); parallel excluded (single); within-band excluded (1.2 > 0.5). Stops: 2 mandatory CAUTIONs + swing CAUTION; no STOP.
+Hand derivation: linkage = +3 (sticking) +1 (no load) = **4**; gain = +1 (no load) −1 (no change) = **0**; fuel = −1 (fuel OK) = **−1**; sensor excluded (OK); load excluded (no load); AVR excluded (voltage steady); parallel excluded (single); within-band excluded (1.2 > 0.5). Stops: 2 mandatory CAUTIONs + "LIMIT REACHED — NOT CLASSIFIED" CAUTION for the band (1.2 ≥ 0.5, no classification entered); no STOP.
 Application output: identical (test `W1`, benchmark B01).
 
 ### 4.2 Overspeed shutdown or runaway (`overspeed`)
@@ -73,7 +101,7 @@ Questions: what shut it down → runaway? → oil in intake / sump overfull (sto
 Causes: governor/actuator too slow on load rejection; linkage; false trip from speed signal (supported when the logged peak is *below* the trip entered); wrong setpoint / flywheel-teeth / pole setting (strongly supported when the trip entered is below rated speed); engine running on its own oil; over-fuelling at start. No running checks exist in this family by design: after an overspeed trip the guide never directs a run.
 
 **Worked example W2 (synthetic).** Controller overspeed shutdown when the breaker opened; log 1720 rpm; trip entered 1700 rpm (TEST); rated 1500 rpm; linkage OK, sensor OK, no settings change, no oil.
-Derivation: governor-response = +3 (load rejection) +1 (1720 > 1700) = **4**; sensor-false = −1 (sensor OK; 1720 < 1700 false) = **−1**; settings = −1 (no change; 1700 < 1500 false) = **−1**; start-fuel = −1 (not at start); linkage and oil-fuel excluded. Stops: STOP (overspeed shutdown) then 2 mandatory CAUTIONs. Next question: none (STOP active, remaining questions answered).
+Derivation: governor-response = +3 (load rejection) +1 (1720 > 1700) = **4**; sensor-false = −1 (sensor OK; 1720 < 1700 false) = **−1**; settings = −1 (no change; 1700 < 1500 false) = **−1**; start-fuel = −1 (not at start); linkage and oil-fuel excluded. Stops: STOP (overspeed shutdown), 2 mandatory CAUTIONs, then a NOT CLASSIFIED CAUTION (1720 ≥ trip 1700, trip setting not classified). Next question: the trip setting, to get its classification (with "shutdown" entered — benchmark B02 — a second STOP is added and no question remains).
 
 ### 4.3 Battery not charging / overcharging (`charging`)
 
@@ -93,7 +121,7 @@ Cross-checks: band max < min refused; band > 18 V on a 12 V system or < 18 V on 
 Causes: belt; alternator/regulator undercharge (running check: voltage-drop test — withheld under STOP); regulator overcharge; D+ excitation circuit; connections; battery will not hold charge (strongly when charging voltage is in band but rest voltage below 75 %); no charger supply; charger fault.
 
 **Worked example W3 (synthetic).** 24 V, alternator in question, battery normal, belt OK, rest 24.2 V, running 24.6 V, band entered 27.0–29.0 V (TEST), charge-fail alarm, D+ OK, terminals clean.
-Derivation: alt-under = +3 (24.6 < 27) +1 (alarm) = **4**; battery = **0** (rest < 24.8 but running not in band → rule not true); connections −1; charger-supply −1 (alternator only); charger −1; belt, alt-over (24.6 < 29), excitation excluded. Stops: 2 mandatory CAUTIONs. The voltage-drop running check is shown (no STOP).
+Derivation: alt-under = +3 (24.6 < 27) +1 (alarm) = **4**; battery = **0** (rest < 24.8 but running not in band → rule not true); connections −1; charger-supply −1 (alternator only); charger −1; belt, alt-over (24.6 < 29), excitation excluded. Stops: 2 mandatory CAUTIONs + a CAUTION for 24.6 ≤ lowest 27 (not classified; B03 classifies it as a warning value). The voltage-drop running check is shown (no STOP).
 
 ### 4.4 Excessive exhaust smoke (`exhaust-smoke`)
 
@@ -135,7 +163,7 @@ By title only; clauses and values **not verified against a held copy and not use
 | L1 | Content is general practice, not reviewed by a senior technician | All four families "technician review pending" | Reviewer fills `oracle-guided-diagnostics-review-sheet.csv` (pilot copy with edition/page/reviewer) |
 | L2 | No OEM thresholds are built in | Comparison rules (band, trip, charging voltages) do nothing until figures are entered | Technician enters from the manual; datasets add context for exact models only |
 | L3 | Standards cited by title only | No clause-level claim can be made | Obtain copies of ISO 8528-5, ISO 3046-4, IEEE 450/1188, NFPA 110 and cite clauses |
-| L4 | Strict comparisons | A reading exactly at a limit gives no STOP and no conclusion (B06, B07) | Reviewer to decide whether "at the limit" should be CAUTION |
+| L4 | (Closed 2026-11-25) Strict comparisons | Replaced by the exact-threshold rule: equality reaches the limit (B06, B07, B14, B15) | — |
 | L5 | Weights (+3/+1/−1) are judgement, not statistics | Rank order is a check-list order, not a probability | Calibrate after real pilot cases |
 | L6 | Overspeed family never offers a test run | Diagnosis may stop short of confirming governor response | Supervised test by procedure outside the tool, authorised by a senior technician |
 | L7 | Running-only questions are tagged by judgement (12 existing + 5 new) | An untagged question could still be offered after a STOP | Reviewer checks the `[needs the engine running…]` marks on the sheet |
@@ -143,3 +171,5 @@ By title only; clauses and values **not verified against a held copy and not use
 | L9 | Job-card hand-off uses this browser's storage | A diagnosis made on another device is not visible | Accounts/server storage (out of scope) |
 | L10 | All worked examples and benchmarks are synthetic | No field validation yet | Pilot GO-P1 (`oracle-evidence-package.md`) |
 | L11 | Reference datasets cover 3 public documents only | Most engines/controllers show NOT VERIFIED | Extend the register (gaps listed there) |
+| L12 | An unclassified limit gives CAUTION, not STOP (management rule) | A technician who leaves "Is this a warning or a shutdown value?" blank sees a CAUTION, with a conditional STOP instruction, even for oil pressure | Train operators to classify from the manual; reviewer checks this in GO-P1 (Addendum A §A3) |
+| L13 | Equipment make/model/variant are typed, not checked against a register | Applicability is only as good as what was typed | Asset register link (out of scope) |

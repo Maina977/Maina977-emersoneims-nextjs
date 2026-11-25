@@ -7,7 +7,7 @@ import type { Condition, FaultFamily } from './types';
 import { DIAGNOSTIC_ENGINE_VERSION } from './engine';
 
 export interface ReviewRow {
-  family: string; kind: 'safety' | 'question' | 'stop' | 'crosscheck' | 'cause' | 'evidence'; id: string;
+  family: string; kind: 'safety' | 'question' | 'stop' | 'limit' | 'crosscheck' | 'cause' | 'evidence'; id: string;
   text: string; rule: string;
   oemReference: string; verdict: '' ; reviewerComment: string;
 }
@@ -23,6 +23,8 @@ export function describeCondition(c: Condition): string {
     case 'ge': return `${c.q} ≥ ${c.value}`;
     case 'ltRef': return `${c.q} < ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
     case 'gtRef': return `${c.q} > ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
+    case 'leRef': return `${c.q} ≤ ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
+    case 'geRef': return `${c.q} ≥ ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
   }
 }
 
@@ -33,9 +35,19 @@ export function reviewRows(families: FaultFamily[]): ReviewRow[] {
     (f.mandatorySafety ?? []).forEach((m, i) => rows.push({ family: f.id, kind: 'safety', id: `safety-${i + 1}`, text: `CAUTION (always shown first): ${m}`, rule: 'always', ...blank }));
     for (const q of f.questions) {
       const rule = q.kind === 'number' ? `number ${q.min}–${q.max} ${q.unit}` : q.options.map((o) => o.label).join(' | ');
-      rows.push({ family: f.id, kind: 'question', id: q.id, text: q.help ? `${q.text} — ${q.help}` : q.text, rule: q.needsRunning ? `${rule} [needs the engine running: not offered while a STOP is active]` : rule, ...blank });
+      const marks = [
+        q.needsRunning ? '[needs the engine running: not offered while a STOP is active]' : '',
+        q.kind === 'number' && q.oemLimit ? `[OEM ${q.oemLimit.direction === 'min' ? 'minimum' : 'maximum'}: "${q.oemLimit.parameter}"; also asks classification (shutdown / warning / not stated) and source (manual ID, revision, page)]` : '',
+        q.kind === 'number' && q.ratingPlate ? '[rating-plate value]' : '',
+      ].filter(Boolean).join(' ');
+      rows.push({ family: f.id, kind: 'question', id: q.id, text: q.help ? `${q.text} — ${q.help}` : q.text, rule: marks ? `${rule} ${marks}` : rule, ...blank });
     }
     f.stopRules.forEach((s, i) => rows.push({ family: f.id, kind: 'stop', id: `stop-${i + 1}`, text: `${s.level}: ${s.message}`, rule: describeCondition(s.when), ...blank }));
+    for (const l of f.limits ?? []) {
+      const lq = f.questions.find((q) => q.id === l.limit);
+      const dir = lq?.kind === 'number' && lq.oemLimit?.direction === 'min' ? '≤' : '≥';
+      rows.push({ family: f.id, kind: 'limit', id: l.id, text: `Shutdown value reached → STOP: ${l.shutdown} | Warning value reached → CAUTION: ${l.warning} | Not classified → CAUTION (says so; never clears a STOP) | Within the measurement tolerance → CAUTION "at or near the limit" | No limit entered → NOT VERIFIED, no threshold`, rule: `${l.reading} ${dir} ${l.limit} (equality counts as reaching)`, ...blank });
+    }
     (f.crossChecks ?? []).forEach((x, i) => rows.push({ family: f.id, kind: 'crosscheck', id: `cross-${i + 1}`, text: `Refuses ${x.refuse.join(', ')}: ${x.reason}`, rule: describeCondition(x.when), ...blank }));
     for (const c of f.causes) {
       const running = c.runningChecks?.length ? ` Running checks (withheld while any STOP is active): ${c.runningChecks.join(' / ')}` : '';

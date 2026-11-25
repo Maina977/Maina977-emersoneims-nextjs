@@ -36,9 +36,19 @@ describe('Guided Diagnosis UI: new families and the job-card hand-off', () => {
     fireEvent.change(screen.getByLabelText(/Engine model/), { target: { value: '1104D (Mech) Industrial Engine NK' } });
     expect(notes()).toMatch(/1104D \(Mech\) Industrial Engine NK — Jacket water coolant temperature, maximum allowable: 110 °C/);
     // Not entered as an answer: the OEM alarm field stays empty.
-    expect((screen.getAllByLabelText(/OEM high coolant temperature alarm/)[0] as HTMLInputElement).value).toBe('');
+    const limitInput = () => screen.getAllByLabelText(/OEM high coolant temperature limit/)[0] as HTMLInputElement;
+    expect(limitInput().value).toBe('');
+    // "Use published value" is offered for the exact model only, and enters value, classification and source.
+    fireEvent.click(screen.getAllByRole('button', { name: /Use published value for the selected model: 110 °C \(shutdown\)/ })[0]);
+    expect(limitInput().value).toBe('110');
+    expect((screen.getAllByLabelText('Classification: OEM high coolant temperature limit')[0] as HTMLSelectElement).value).toBe('shutdown');
+    expect((screen.getAllByLabelText('Source: OEM high coolant temperature limit')[0] as HTMLInputElement).value).toMatch(/SEBU8325-01.*PDF p\. 22.*1104D \(Mech\) Industrial Engine NK/);
+    // 110 °C reading = the published shutdown maximum → STOP (equality counts as reaching)
+    fireEvent.change(screen.getAllByLabelText(/^Coolant temperature/)[0], { target: { value: '110' } });
+    expect(screen.getByRole('alert').textContent).toMatch(/^STOP · Take the load off and STOP the engine: coolant has reached the OEM limit/);
     fireEvent.change(screen.getByLabelText(/Engine model/), { target: { value: '' } });
-    expect(notes()).not.toMatch(/110 °C/);
+    expect(notes()).not.toMatch(/Jacket water/);
+    expect(screen.queryAllByRole('button', { name: /Use published value/ })).toHaveLength(0);
   });
 
   it('a saved diagnosis is recorded on an open job card with exactly the guided text', async () => {

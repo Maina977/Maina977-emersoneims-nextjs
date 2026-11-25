@@ -9,6 +9,7 @@
  * unknown families, unknown questions and non-string values are dropped on read.
  */
 import type { Answers, FaultFamily } from './types';
+import { classKey, limitReadings, sourceKey, tolKey } from './engine';
 import { knownModels, type Equipment } from './oemReferences';
 
 export const GUIDED_SESSION_KEY = 'eims-oracle-guided-session-v1';
@@ -19,13 +20,28 @@ interface KeyValueStore { getItem(k: string): string | null; setItem(k: string, 
 /** Typed strings → engine answers: numbers for number questions, option values otherwise; blanks dropped. */
 export function answersFromRaw(family: FaultFamily, raw: Record<string, string> | undefined): Answers {
   const a: Answers = {};
-  for (const q of family.questions) {
-    const v = raw?.[q.id];
+  for (const k of answerKeys(family)) {
+    const v = raw?.[k.key];
     if (v === undefined || v.trim() === '') continue;
     // Number('') is 0, so blanks are dropped above; Number('abc') is NaN and is refused by the engine.
-    a[q.id] = q.kind === 'number' ? Number(v.trim()) : v;
+    a[k.key] = k.kind === 'number' ? Number(v.trim()) : v;
   }
   return a;
+}
+
+/**
+ * Every answer key of a family: its questions, plus the companions of each OEM
+ * limit (classification, source) and of each limit reading (tolerance).
+ */
+export function answerKeys(family: FaultFamily): Array<{ key: string; kind: 'number' | 'text' }> {
+  const out: Array<{ key: string; kind: 'number' | 'text' }> = [];
+  const readings = limitReadings(family);
+  for (const q of family.questions) {
+    out.push({ key: q.id, kind: q.kind === 'number' ? 'number' : 'text' });
+    if (q.kind === 'number' && q.oemLimit) out.push({ key: classKey(q.id), kind: 'text' }, { key: sourceKey(q.id), kind: 'text' });
+    if (q.kind === 'number' && readings.has(q.id)) out.push({ key: tolKey(q.id), kind: 'number' });
+  }
+  return out;
 }
 
 /** Only known families and questions, string values only. */
@@ -38,9 +54,9 @@ export function cleanSession(families: FaultFamily[], data: unknown): RawAnswers
     const r = (answers as Record<string, unknown>)[f.id];
     if (!r || typeof r !== 'object' || Array.isArray(r)) continue;
     const clean: Record<string, string> = {};
-    for (const q of f.questions) {
-      const v = (r as Record<string, unknown>)[q.id];
-      if (typeof v === 'string' && v.trim() !== '') clean[q.id] = v;
+    for (const { key } of answerKeys(f)) {
+      const v = (r as Record<string, unknown>)[key];
+      if (typeof v === 'string' && v.trim() !== '') clean[key] = v.slice(0, 300);
     }
     if (Object.keys(clean).length) out[f.id] = clean;
   }
@@ -63,6 +79,11 @@ export function cleanEquipment(data: unknown): Equipment {
   const { engine, controller } = eq as Record<string, unknown>;
   if (typeof engine === 'string' && knownModels('engine').includes(engine)) out.engine = engine;
   if (typeof controller === 'string' && knownModels('controller').includes(controller)) out.controller = controller;
+  // Free text typed by the technician (the set in front of them); kept short, never matched to datasets.
+  for (const k of ['manufacturer', 'model', 'variant'] as const) {
+    const v = (eq as Record<string, unknown>)[k];
+    if (typeof v === 'string' && v.trim()) out[k] = v.trim().slice(0, 100);
+  }
   return out;
 }
 

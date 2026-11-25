@@ -1,6 +1,6 @@
 {
   "dataset": "comap-il4-amf25-datasheet-2021-04-29",
-  "datasetVersion": 1,
+  "datasetVersion": 2,
   "compiled": "2026-11-25",
   "source": {
     "publisher": "ComAp a.s.",
@@ -17,38 +17,78 @@
   "entries": [
     {
       "id": "il4amf25-power-supply",
-      "equipment": { "kind": "controller", "make": "ComAp", "models": ["InteliLite 4 AMF 25"], "firmware": "SW 1.0.0 (datasheet)" },
+      "equipment": {
+        "kind": "controller",
+        "make": "ComAp",
+        "models": [
+          "InteliLite 4 AMF 25"
+        ],
+        "firmware": "SW 1.0.0 (datasheet)",
+        "variant": "Standard and low-temperature versions (datasheet)"
+      },
       "parameter": "Controller power supply range",
       "kind": "module-supply-range",
       "valueMin": 8,
       "valueMax": 36,
       "units": "V DC",
       "meaning": "The controller's own supply range, not a battery charging limit.",
-      "page": "Datasheet p. 2 (Technical data)",
-      "families": ["charging"],
-      "verification": "verified-from-public-document"
+      "page": "Datasheet PDF p. 3 (Technical data)",
+      "families": [
+        "charging"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "not-a-limit",
+      "applicability": "ComAp InteliLite 4 AMF 25, HW 1.0 / SW 1.0.0 datasheet. Controller supply only."
     },
     {
       "id": "il4amf25-dplus",
-      "equipment": { "kind": "controller", "make": "ComAp", "models": ["InteliLite 4 AMF 25"], "firmware": "SW 1.0.0 (datasheet)" },
+      "equipment": {
+        "kind": "controller",
+        "make": "ComAp",
+        "models": [
+          "InteliLite 4 AMF 25"
+        ],
+        "firmware": "SW 1.0.0 (datasheet)",
+        "variant": "HW 1.0 / SW 1.0.0"
+      },
       "parameter": "D+ (charging alternator excitation) output",
       "kind": "configuration-fact",
       "valueMax": 250,
       "units": "mA",
       "meaning": "D+ maximum output current 250 mA; the charging-fail threshold is adjustable (no default value is given in the datasheet).",
-      "page": "Datasheet p. 2 (Technical data, D+)",
-      "families": ["charging"],
-      "verification": "verified-from-public-document"
+      "page": "Datasheet PDF p. 3 (Technical data, D+)",
+      "families": [
+        "charging"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "not-a-limit",
+      "applicability": "ComAp InteliLite 4 AMF 25 only. Output rating, not a charging threshold."
     },
     {
       "id": "il4amf25-protections",
-      "equipment": { "kind": "controller", "make": "ComAp", "models": ["InteliLite 4 AMF 25"], "firmware": "SW 1.0.0 (datasheet)" },
+      "equipment": {
+        "kind": "controller",
+        "make": "ComAp",
+        "models": [
+          "InteliLite 4 AMF 25"
+        ],
+        "firmware": "SW 1.0.0 (datasheet)",
+        "variant": "HW 1.0 / SW 1.0.0"
+      },
       "parameter": "Protections available (ANSI device numbers)",
       "kind": "protection-available",
       "meaning": "Overspeed (ANSI 12), underspeed (14), undervoltage (27), aux battery undervoltage (27X), overvoltage, overfrequency (81O), underfrequency (81U), reverse power (32R), among others. The datasheet lists functions only; trip settings are not given.",
-      "page": "Datasheet p. 3 (Functions and protections)",
-      "families": ["overspeed", "frequency-hunting", "charging", "no-voltage"],
-      "verification": "verified-from-public-document"
+      "page": "Datasheet PDF p. 4 (Functions and protections)",
+      "families": [
+        "overspeed",
+        "frequency-hunting",
+        "charging",
+        "no-voltage"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "not-a-limit",
+      "applicability": "ComAp InteliLite 4 AMF 25 only. Lists functions; no trip values.",
+      "units": "none"
     }
   ],
   "gaps": [

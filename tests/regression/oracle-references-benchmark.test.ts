@@ -27,7 +27,7 @@ describe('published reference datasets', () => {
         if (e.relatesTo) {
           const fam = FAMILIES.find((x) => x.id === e.relatesTo!.family)!;
           expect(fam.questions.some((q) => q.id === e.relatesTo!.question)).toBe(true);
-          expect(e.relatesTo.relation).toBe('context-not-a-limit');
+          expect(['context-not-a-limit', 'published-limit']).toContain(e.relatesTo.relation);
         }
       }
     }

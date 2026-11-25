@@ -51,7 +51,7 @@ export const FREQUENCY_HUNTING: FaultFamily = {
     { id: 'linkage', kind: 'choice', text: 'Actuator and fuel linkage moved through full travel by hand (set stopped and isolated)', options: [{ value: 'ok', label: 'Moves freely, no play' }, { value: 'sticking', label: 'Sticks or binds' }, { value: 'worn', label: 'Worn joints / play' }, { value: 'disconnected', label: 'Disconnected, broken or seized' }, { value: 'not-checked', label: 'Not checked' }] },
     { id: 'parallel', kind: 'choice', text: 'Is the set running in parallel (with other sets or the mains)?', options: [{ value: 'single', label: 'No, runs alone' }, { value: 'parallel', label: 'Yes, in parallel' }] },
     { id: 'freqSwing', kind: 'number', text: 'Frequency swing at steady load, peak to peak (panel or meter, watched for at least a minute)', unit: 'Hz', min: 0, max: 30, needsRunning: true, help: 'Swing = highest minus lowest frequency seen. Read from the panel; do not open covers on a running set.' },
-    { id: 'oemMaxSwing', kind: 'number', text: 'Steady-state frequency band allowed for this set, peak to peak (governor/controller settings sheet or the agreed ISO 8528-5 performance class)', unit: 'Hz', min: 0.01, max: 10, help: OEM_NV },
+    { id: 'oemMaxSwing', kind: 'number', text: 'Steady-state frequency band allowed for this set, peak to peak (governor/controller settings sheet or the agreed ISO 8528-5 performance class)', unit: 'Hz', min: 0.01, max: 10, help: OEM_NV, oemLimit: { direction: 'max', parameter: 'Steady-state frequency band allowed' } },
     { id: 'whenObserved', kind: 'choice', text: 'When does it hunt?', options: [{ value: 'no-load', label: 'At no load' }, { value: 'steady-load', label: 'At steady load' }, { value: 'load-change', label: 'After load changes' }, { value: 'always', label: 'All the time' }] },
     { id: 'governorType', kind: 'choice', text: 'Governor type', options: [{ value: 'mechanical', label: 'Mechanical governor' }, { value: 'electronic', label: 'Electronic governor + actuator' }, { value: 'ecm', label: 'Engine ECM (electronic engine)' }] },
     { id: 'fuelSupply', kind: 'choice', text: 'Fuel supply (dip, water separator, filters, suction side; set stopped)', options: [{ value: 'ok', label: 'Correct' }, { value: 'air', label: 'Air in the fuel' }, { value: 'restricted', label: 'Filter or suction restricted' }, { value: 'not-checked', label: 'Not checked' }] },
@@ -64,7 +64,11 @@ export const FREQUENCY_HUNTING: FaultFamily = {
     { when: is('overspeedTrip', 'yes'), level: 'STOP', message: 'STOP: the hunting has reached an overspeed shutdown. Do not reset and restart. Use the "Overspeed shutdown" workflow first: linkage, actuator, speed sensor and trip setting are checked with the set stopped and isolated.' },
     { when: is('linkage', 'disconnected'), level: 'STOP', message: 'STOP: a disconnected, broken or seized fuel linkage can let the engine overspeed. Do not run until it is repaired and moves freely through its full travel (checked with the set stopped and isolated).' },
     { when: is('parallel', 'parallel'), level: 'CAUTION', message: 'Open the generator circuit breaker and take the set out of parallel before diagnosing: a hunting set in parallel can cause reverse power and breaker trips. Do not re-synchronise until its frequency is stable. Synchronising limits are NOT VERIFIED here; use the controller settings sheet.' },
-    { when: { q: 'freqSwing', op: 'gtRef', ref: 'oemMaxSwing' }, level: 'CAUTION', message: 'The swing is outside the band entered for this set: transfer or shed sensitive loads (UPS, drives, IT, medical) before further diagnosis.' },
+  ],
+  limits: [
+    { id: 'swing-band', reading: 'freqSwing', limit: 'oemMaxSwing',
+      shutdown: 'STOP: the frequency swing has reached the band entered as a shutdown value. Open the generator breaker and stop the set; check the linkage, actuator and governor with the set isolated.',
+      warning: 'CAUTION: the frequency swing has reached the band entered (warning value): transfer or shed sensitive loads (UPS, drives, IT, medical) before further diagnosis.' },
   ],
   causes: [
     {
@@ -146,7 +150,7 @@ export const FREQUENCY_HUNTING: FaultFamily = {
       id: 'within-band', title: 'Swing within the band entered for this set (no governing fault shown by this reading)',
       evidence: [
         { when: { q: 'freqSwing', op: 'ltRef', ref: 'oemMaxSwing' }, effect: 'strongly', because: 'Measured swing is inside the band entered for this set' },
-        { when: { q: 'freqSwing', op: 'gtRef', ref: 'oemMaxSwing' }, effect: 'excludes', because: 'Measured swing is outside the band entered for this set' },
+        { when: { q: 'freqSwing', op: 'geRef', ref: 'oemMaxSwing' }, effect: 'excludes', because: 'Measured swing has reached or exceeded the band entered for this set' },
       ],
       actions: ['Check the meter and how the swing was measured (steady load, long enough); record the reading. A swing inside the band does not by itself show a fault; it is not a pass against ISO 8528-5 unless the band entered is the agreed one.'],
       reference: REF_ISO_8528_5,
@@ -172,8 +176,8 @@ export const OVERSPEED: FaultFamily = {
     { id: 'linkage', kind: 'choice', text: 'Actuator and fuel linkage moved through full travel by hand (set stopped and isolated)', options: [{ value: 'ok', label: 'Moves freely' }, { value: 'sticking', label: 'Sticks or binds' }, { value: 'disconnected', label: 'Disconnected, broken or seized' }, { value: 'not-checked', label: 'Not checked' }] },
     { id: 'whenTripped', kind: 'choice', text: 'When did it trip?', options: [{ value: 'start', label: 'During start-up' }, { value: 'load-rejection', label: 'When load was removed / breaker opened' }, { value: 'steady', label: 'At steady running' }, { value: 'stopping', label: 'While stopping' }] },
     { id: 'peakRpm', kind: 'number', text: 'Highest speed in the controller/ECM event log', unit: 'rpm', min: 0, max: 5000 },
-    { id: 'oemTripRpm', kind: 'number', text: 'Overspeed trip setting for this set (controller/ECM settings sheet)', unit: 'rpm', min: 300, max: 5000, help: OEM_NV },
-    { id: 'ratedRpm', kind: 'number', text: 'Rated speed (rating plate)', unit: 'rpm', min: 300, max: 4000 },
+    { id: 'oemTripRpm', kind: 'number', text: 'Overspeed trip setting for this set (controller/ECM settings sheet)', unit: 'rpm', min: 300, max: 5000, help: OEM_NV, oemLimit: { direction: 'max', parameter: 'Overspeed trip setting' } },
+    { id: 'ratedRpm', kind: 'number', text: 'Rated speed (rating plate)', unit: 'rpm', min: 300, max: 4000, ratingPlate: true },
     { id: 'speedSensor', kind: 'choice', text: 'Speed sensor gap, screened cable and connector (set stopped and isolated)', options: [{ value: 'ok', label: 'Correct' }, { value: 'fault', label: 'Loose, damaged, wrong gap or interference' }, { value: 'not-checked', label: 'Not checked' }] },
     { id: 'settingsChanged', kind: 'choice', text: 'Controller/ECM settings changed, or controller replaced, recently?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
   ],
@@ -183,12 +187,17 @@ export const OVERSPEED: FaultFamily = {
     { when: is('oilIntake', ['oil-in-intake', 'sump-overfull']), level: 'STOP', message: 'STOP: oil in the intake or an overfull sump can feed the engine and cause a runaway. Do not run until the source is found and corrected.' },
     { when: is('linkage', 'disconnected'), level: 'STOP', message: 'STOP: a disconnected, broken or seized fuel linkage can leave the fuel rack open. Do not run until it is repaired.' },
   ],
+  limits: [
+    { id: 'overspeed-trip', reading: 'peakRpm', limit: 'oemTripRpm',
+      shutdown: 'STOP: the logged speed has reached the overspeed trip setting entered. Do not restart until the cause is found (see the checks below).',
+      warning: 'CAUTION: the logged speed has reached the overspeed warning value entered: find the cause before the set returns to service.' },
+  ],
   causes: [
     {
       id: 'governor-response', title: 'Governor or actuator too slow on load rejection',
       evidence: [
         { when: is('whenTripped', 'load-rejection'), effect: 'strongly', because: 'Tripped when load was removed' },
-        { when: { q: 'peakRpm', op: 'gtRef', ref: 'oemTripRpm' }, effect: 'supports', because: 'Logged speed above the trip setting entered: a real overspeed' },
+        { when: { q: 'peakRpm', op: 'geRef', ref: 'oemTripRpm' }, effect: 'supports', because: 'Logged speed at or above the trip setting entered: a real overspeed' },
         { when: is('whenTripped', ['start', 'stopping']), effect: 'contradicts', because: 'Tripped at start or stop, not on a load change' },
       ],
       actions: ['Compare the governor gain/stability and actuator settings with the commissioning record; with the set stopped and isolated, check the actuator and linkage move freely.'],
@@ -217,7 +226,7 @@ export const OVERSPEED: FaultFamily = {
       id: 'settings', title: 'Wrong overspeed setpoint, flywheel-teeth or pole setting',
       evidence: [
         { when: is('settingsChanged', 'yes'), effect: 'strongly', because: 'Settings changed or controller replaced recently' },
-        { when: { q: 'oemTripRpm', op: 'ltRef', ref: 'ratedRpm' }, effect: 'strongly', because: 'The trip setting entered is below the rated speed: the setting, or the entry, is wrong' },
+        { when: { q: 'oemTripRpm', op: 'leRef', ref: 'ratedRpm' }, effect: 'strongly', because: 'The trip setting entered is at or below the rated speed: the setting, or the entry, is wrong' },
         { when: is('settingsChanged', 'no'), effect: 'contradicts', because: 'No recent settings change' },
       ],
       actions: ['Compare the overspeed setpoint, the flywheel-teeth (or pole-pair) count and the speed source with the settings sheet for this set; correct them with the controller/ECM software.'],
@@ -263,8 +272,8 @@ export const CHARGING: FaultFamily = {
     { id: 'systemVoltage', kind: 'choice', text: 'Battery system voltage', options: [{ value: '12', label: '12 V' }, { value: '24', label: '24 V' }] },
     { id: 'source', kind: 'choice', text: 'Which charging source is in question?', options: [{ value: 'alternator', label: 'Engine charging alternator' }, { value: 'charger', label: 'Mains battery charger' }, { value: 'both', label: 'Both / not known' }] },
     { id: 'runVoltage', kind: 'number', text: 'Battery voltage at the terminals with the engine running at rated speed (DC meter, keep clear of the belt and fan)', unit: 'V', min: 0, max: 40, needsRunning: true },
-    { id: 'oemChargeMin', kind: 'number', text: 'Lowest regulated charging voltage for this alternator (alternator or engine manual)', unit: 'V', min: 5, max: 40, help: OEM_NV },
-    { id: 'oemChargeMax', kind: 'number', text: 'Highest regulated charging voltage for this alternator (alternator or engine manual)', unit: 'V', min: 5, max: 40, help: OEM_NV },
+    { id: 'oemChargeMin', kind: 'number', text: 'Lowest regulated charging voltage for this alternator (alternator or engine manual)', unit: 'V', min: 5, max: 40, help: OEM_NV, oemLimit: { direction: 'min', parameter: 'Lowest regulated charging voltage' } },
+    { id: 'oemChargeMax', kind: 'number', text: 'Highest regulated charging voltage for this alternator (alternator or engine manual)', unit: 'V', min: 5, max: 40, help: OEM_NV, oemLimit: { direction: 'max', parameter: 'Highest regulated charging voltage' } },
     { id: 'restVoltage', kind: 'number', text: 'Battery voltage at rest (engine off, charger off, after at least 1 h)', unit: 'V', min: 0, max: 32 },
     { id: 'chargeAlarm', kind: 'choice', text: 'Charge-fail alarm or lamp while running?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }], needsRunning: true },
     { id: 'excitation', kind: 'choice', text: 'Alternator excitation (D+ / warning-lamp) wire and plugs (set stopped and isolated)', options: [{ value: 'ok', label: 'Intact and tight' }, { value: 'open', label: 'Broken, loose or lamp open' }, { value: 'not-checked', label: 'Not checked' }] },
@@ -275,9 +284,16 @@ export const CHARGING: FaultFamily = {
   stopRules: [
     { when: is('batteryCondition', 'hot-swollen'), level: 'STOP', message: 'STOP: a hot or swollen battery can be in thermal runaway. Stop the engine and switch off and isolate the mains battery charger; keep sparks and flames away and ventilate. Do not disconnect or move it until it has cooled; then replace it.' },
     { when: is('batteryCondition', 'gassing'), level: 'STOP', message: 'STOP charging: strong gassing or a rotten-egg smell means overcharging or a failed cell. Stop the engine, switch off and isolate the charger and ventilate the room; no sparks or flames.' },
-    { when: { q: 'runVoltage', op: 'gtRef', ref: 'oemChargeMax' }, level: 'STOP', message: 'STOP the engine: the charging voltage is above the highest value entered for this alternator. Overcharging boils the battery and can damage the controller and ECM. Do not run until the regulator fault is found.' },
     { when: is('belt', 'broken'), level: 'STOP', message: 'STOP: a broken or missing belt. On many engines the same belt drives the water pump and fan, so running on risks overheating. Do not run until it is replaced (set stopped and isolated).' },
     { when: is('source', ['charger', 'both']), level: 'CAUTION', message: 'The battery charger has mains voltage inside: isolate and lock off its supply before opening it. Only a competent electrician works inside the charger.' },
+  ],
+  limits: [
+    { id: 'charge-max', reading: 'runVoltage', limit: 'oemChargeMax',
+      shutdown: 'STOP the engine: the charging voltage has reached the highest value entered for this alternator (shutdown value). Overcharging boils the battery and can damage the controller and ECM. Do not run until the regulator fault is found.',
+      warning: 'CAUTION: the charging voltage has reached the highest value entered (warning value). Watch the battery for heat or gassing; repair the regulator before the set returns to normal duty.' },
+    { id: 'charge-min', reading: 'runVoltage', limit: 'oemChargeMin',
+      shutdown: 'STOP the engine: the charging voltage has reached the lowest value entered and the source classifies it as a shutdown value; check the charging alternator and belt with the set isolated.',
+      warning: 'CAUTION: the charging voltage has reached the lowest value entered (warning value): the battery is not being charged and the set may fail to start next time.' },
   ],
   causes: [
     {
@@ -293,7 +309,7 @@ export const CHARGING: FaultFamily = {
     {
       id: 'alt-under', title: 'Charging alternator or regulator not charging',
       evidence: [
-        { when: { q: 'runVoltage', op: 'ltRef', ref: 'oemChargeMin' }, effect: 'strongly', because: 'Running battery voltage below the lowest charging voltage entered' },
+        { when: { q: 'runVoltage', op: 'leRef', ref: 'oemChargeMin' }, effect: 'strongly', because: 'Running battery voltage at or below the lowest charging voltage entered' },
         { when: is('chargeAlarm', 'yes'), effect: 'supports', because: 'Charge-fail alarm while running' },
         { when: is('source', 'charger'), effect: 'contradicts', because: 'Only the mains charger is in question' },
         { when: chargeBand, effect: 'excludes', because: 'Running battery voltage inside the charging band entered' },
@@ -305,7 +321,7 @@ export const CHARGING: FaultFamily = {
     {
       id: 'alt-over', title: 'Regulator overcharging',
       evidence: [
-        { when: { q: 'runVoltage', op: 'gtRef', ref: 'oemChargeMax' }, effect: 'strongly', because: 'Running battery voltage above the highest charging voltage entered' },
+        { when: { q: 'runVoltage', op: 'geRef', ref: 'oemChargeMax' }, effect: 'strongly', because: 'Running battery voltage at or above the highest charging voltage entered' },
         { when: is('batteryCondition', 'gassing'), effect: 'supports', because: 'Battery gassing' },
         { when: { q: 'runVoltage', op: 'ltRef', ref: 'oemChargeMax' }, effect: 'excludes', because: 'Running battery voltage below the highest charging voltage entered' },
       ],
@@ -365,7 +381,7 @@ export const CHARGING: FaultFamily = {
   // Plausibility only (not OEM limits): a band entered for a 12 V system above
   // 18 V, or for a 24 V system below 18 V, belongs to the other system voltage.
   crossChecks: [
-    { when: { q: 'oemChargeMax', op: 'ltRef', ref: 'oemChargeMin' }, refuse: ['oemChargeMin', 'oemChargeMax'], reason: 'Charging band: the highest charging voltage entered is below the lowest; check both entries' },
+    { when: { q: 'oemChargeMax', op: 'leRef', ref: 'oemChargeMin' }, refuse: ['oemChargeMin', 'oemChargeMax'], reason: 'Charging band: the highest charging voltage entered is at or below the lowest; check both entries' },
     { when: { all: [is('systemVoltage', '12'), { any: [{ q: 'oemChargeMin', op: 'gt', value: 18 }, { q: 'oemChargeMax', op: 'gt', value: 18 }] }] }, refuse: ['oemChargeMin', 'oemChargeMax'], reason: 'Charging band: a value above 18 V was entered for a 12 V system; check the system voltage or the entry' },
     { when: { all: [is('systemVoltage', '24'), { any: [{ q: 'oemChargeMin', op: 'lt', value: 18 }, { q: 'oemChargeMax', op: 'lt', value: 18 }] }] }, refuse: ['oemChargeMin', 'oemChargeMax'], reason: 'Charging band: a value below 18 V was entered for a 24 V system; check the system voltage or the entry' },
   ],

@@ -6,6 +6,7 @@ import { answersFromRaw, cleanSession } from '@/lib/generator-oracle/diagnostics
 import { reduce, emptyState, type ServiceAction, type ServiceState } from '@/lib/generator-oracle/service/store';
 import { jobCardReport } from '@/lib/generator-oracle/service/maintenance';
 import type { Answers, Condition, FaultFamily, NumberQuestion } from '@/lib/generator-oracle/diagnostics/types';
+import { readingFlags } from '@/lib/generator-oracle/service/maintenance';
 
 // All numeric OEM figures below are TEST values typed by the "technician" in the
 // test, never real OEM data. Worked examples are SYNTHETIC: hand-derived from the
@@ -26,7 +27,9 @@ function satisfy(f: FaultFamily, c: Condition): Answers | null {
     case 'is': return { [c.q]: Array.isArray(c.value) ? c.value[0] : c.value };
     case 'lt': case 'le': return { [c.q]: num(c.q).min };
     case 'gt': case 'ge': return { [c.q]: num(c.q).max };
+    case 'leRef':
     case 'ltRef': { const q = num(c.q); const r = num(c.ref); return { [c.q]: q.min, [c.ref]: Math.max(r.min, q.min + 1) }; }
+    case 'geRef':
     case 'gtRef': { const q = num(c.q); const r = num(c.ref); return { [c.q]: q.max, [c.ref]: Math.min(r.max, q.max - 1) }; }
   }
 }
@@ -107,12 +110,42 @@ describe('SAFETY: nothing hazardous after a STOP, in any workflow (all ten famil
       });
     });
   }
+  for (const f of FAMILIES) {
+    for (const l of f.limits ?? []) {
+      it(`${f.id} limit ${l.id} (shutdown, reached at equality): STOP first, nothing running or live follows`, () => {
+        const lq = f.questions.find((q) => q.id === l.limit) as NumberQuestion;
+        const rq = f.questions.find((q) => q.id === l.reading) as NumberQuestion;
+        // A limit value valid for both questions; the reading equals it (equality counts as reaching).
+        const L = Math.max(lq.min, rq.min) + (Math.min(lq.max, rq.max) - Math.max(lq.min, rq.min)) / 2;
+        const base: Answers = { [l.limit]: L, [`${l.limit}.class`]: 'shutdown', [l.reading]: L };
+        if (f.id === 'charging') base.systemVoltage = L > 18 ? '24' : '12';
+        const variants: Answers[] = [base];
+        for (const q of f.questions) if (q.kind === 'choice' && base[q.id] === undefined) for (const o of q.options) variants.push({ ...base, [q.id]: o.value });
+        let checked = 0;
+        for (const a of variants) {
+          const r = diagnose(f, a);
+          const st = r.limits.find((x) => x.id === l.id)!;
+          if (st.status !== 'reached') continue; // refused by a cross-check in this variant
+          checked++;
+          expect(st.level).toBe('STOP');
+          expect(r.stopActive).toBe(true);
+          expect(r.stops[0].level).toBe('STOP');
+          for (const c of r.ranked) {
+            for (const act of c.actions) expect(act, `${f.id}.${c.id}`).not.toMatch(RUNNING);
+            expect(c.withheld).toEqual(f.causes.find((x) => x.id === c.id)!.runningChecks ?? []);
+          }
+          if (r.nextQuestion) expect(r.nextQuestion.needsRunning).toBeFalsy();
+        }
+        expect(checked).toBeGreaterThan(0);
+      });
+    }
+  }
   it('every running check is written as conditional on no STOP being active', () => {
     for (const f of FAMILIES) for (const c of f.causes) for (const rc of c.runningChecks ?? []) expect(rc).toMatch(/^Only when no STOP is active/);
   });
   it('no text anywhere tells the technician to keep running (only negated forms)', () => {
     for (const f of FAMILIES) {
-      const texts = [...(f.mandatorySafety ?? []), ...f.stopRules.map((s) => s.message), ...f.causes.flatMap((c) => [...c.actions, ...(c.runningChecks ?? [])])];
+      const texts = [...(f.mandatorySafety ?? []), ...f.stopRules.map((s) => s.message), ...(f.limits ?? []).flatMap((l) => [l.shutdown, l.warning]), ...f.causes.flatMap((c) => [...c.actions, ...(c.runningChecks ?? [])])];
       for (const t of texts) expect(t, f.id).not.toMatch(CARRY_ON);
     }
   });
@@ -152,9 +185,10 @@ describe('no invented limits', () => {
     const o = diagnose(OVERSPEED, { peakRpm: 2500 });
     expect(o.ranked.find((c) => c.id === 'governor-response')!.score).toBe(0);
   });
-  it('the OEM figure decides: the same reading is a STOP above the max entered, not below', () => {
-    expect(diagnose(CHARGING, { runVoltage: 29.5, oemChargeMin: 27, oemChargeMax: 29 }).stopActive).toBe(true); // TEST figures
-    expect(diagnose(CHARGING, { runVoltage: 29.5, oemChargeMin: 27, oemChargeMax: 30 }).stopActive).toBe(false);
+  it('the OEM figure decides: the same reading is a STOP at or above a shutdown max entered, not below it', () => {
+    const sd = { 'oemChargeMax.class': 'shutdown' };
+    expect(diagnose(CHARGING, { runVoltage: 29.5, oemChargeMin: 27, oemChargeMax: 29, ...sd }).stopActive).toBe(true); // TEST figures
+    expect(diagnose(CHARGING, { runVoltage: 29.5, oemChargeMin: 27, oemChargeMax: 30, ...sd }).stopActive).toBe(false);
   });
 });
 
@@ -195,15 +229,17 @@ describe('worked examples (SYNTHETIC, hand-derived)', () => {
     const v = view(OVERSPEED, { tripSource: 'controller', runaway: 'no', oilIntake: 'none', linkage: 'ok', whenTripped: 'load-rejection', peakRpm: 1720, oemTripRpm: 1700, ratedRpm: 1500, speedSensor: 'ok', settingsChanged: 'no' });
     expect(v.ranked).toEqual([['governor-response', 4], ['sensor-false', -1], ['settings', -1], ['start-fuel', -1]]);
     expect(v.excluded).toEqual(['linkage', 'oil-fuel']);
-    expect(v.stops).toEqual(['STOP', 'CAUTION', 'CAUTION']);
+    expect(v.stops).toEqual(['STOP', 'CAUTION', 'CAUTION', 'CAUTION']); // + peak 1720 ≥ trip 1700, trip not classified
+    expect(v.r.limits[0]).toMatchObject({ status: 'reached', level: 'CAUTION', classification: null });
     expect(v.stopActive).toBe(true);
-    expect(v.r.nextQuestion).toBeNull();
+    expect(v.r.nextQuestion?.id).toBe('oemTripRpm'); // the reached trip setting has no classification yet: asked next
   });
   it('W3 charging: 24 V, 24.6 V running vs 27.0–29.0 V band (TEST), alarm on → alternator/regulator undercharge first', () => {
     const v = view(CHARGING, { batteryCondition: 'normal', belt: 'ok', systemVoltage: '24', source: 'alternator', runVoltage: 24.6, oemChargeMin: 27, oemChargeMax: 29, restVoltage: 24.2, chargeAlarm: 'yes', excitation: 'ok', terminals: 'clean' });
     expect(v.ranked).toEqual([['alt-under', 4], ['battery', 0], ['connections', -1], ['charger-supply', -1], ['charger', -1]]);
     expect(v.excluded).toEqual(['alt-over', 'belt', 'excitation']);
-    expect(v.stops).toEqual(['CAUTION', 'CAUTION']);
+    expect(v.stops).toEqual(['CAUTION', 'CAUTION', 'CAUTION']); // + 24.6 ≤ lowest 27, not classified
+    expect(v.r.limits.map((l) => [l.id, l.status])).toEqual([['charge-max', 'inside'], ['charge-min', 'reached']]);
     expect(v.r.ranked[0].actions.some((a) => a.startsWith('Only when no STOP is active'))).toBe(true);
   });
   it('W4 smoke: black at full load, 115 % load, air filter clean → overload first; overload caution, no STOP', () => {
@@ -254,15 +290,16 @@ describe('job card integration: the card carries exactly the guided result', () 
     expect(causeLines).toEqual(r.ranked.map((c) => c.title));
     for (const s of r.stops) expect(rec.findings).toContain(`${s.level}: ${s.message}`);
     expect(rec.findings).toContain('technician review pending');
-    expect(rec.findings).toMatch(/OEM \/ settings-sheet figure entered by the technician — NOT VERIFIED/);
+    expect(rec.findings).toMatch(/OEM figures entered \(not verified by EmersonEIMS\)/);
   });
-  it('readings: measured values only; the OEM max from the STOP rule is attached as NOT VERIFIED', () => {
-    const rec = diagnosisRecord(CHARGING, raw);
+  it('readings: measured values only; both charging limits from the limit rules are attached with classification and source', () => {
+    const rec = diagnosisRecord(CHARGING, { ...raw, 'oemChargeMax.class': 'shutdown', 'oemChargeMax.source': 'TEST-MANUAL rev A p. 12' });
     expect(rec.readings.map((x) => x.name)).toEqual([CHARGING.questions.find((q) => q.id === 'runVoltage')!.text, CHARGING.questions.find((q) => q.id === 'restVoltage')!.text]);
     const run = rec.readings[0];
-    expect(run).toMatchObject({ value: 24.6, unit: 'V', max: 29 });
-    expect(run.min).toBeUndefined(); // the minimum is not a STOP comparison; not judged on the card
-    expect(run.limitSource).toMatch(/NOT VERIFIED/);
+    expect(run).toMatchObject({ value: 24.6, unit: 'V', min: 27, max: 29 });
+    expect(run.limitSource).toMatch(/Highest regulated charging voltage — SHUTDOWN value, source: TEST-MANUAL rev A p\. 12/);
+    expect(run.limitSource).toMatch(/Lowest regulated charging voltage — classification NOT STATED \(treated as CAUTION\), source: NOT GIVEN/);
+    expect(run.limitSource).toMatch(/NOT VERIFIED; equality counts as reaching it/);
   });
   it('recorded on a job card through the store, it survives into the report (.txt and PDF share it)', () => {
     let s: ServiceState = emptyState();

@@ -59,9 +59,18 @@ describe('three-valued conditions', () => {
 });
 
 describe('stop rules always fire', () => {
-  it('oil pressure below the OEM minimum → STOP, whatever else is answered', () => {
+  it('oil pressure below an OEM minimum classified as shutdown → STOP, whatever else is answered', () => {
+    const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 150, oemMinOilPressure: 200, 'oemMinOilPressure.class': 'shutdown', mechanicalAgrees: 'yes', oilLevel: 'ok' });
+    expect(r.stops.some((s) => s.level === 'STOP' && /reached the OEM minimum \(shutdown value\)/.test(s.message))).toBe(true);
+  });
+  it('the same reading against an unclassified minimum → CAUTION that says it is not a confirmed shutdown (management rule 2026-11-25)', () => {
     const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 150, oemMinOilPressure: 200, mechanicalAgrees: 'yes', oilLevel: 'ok' });
-    expect(r.stops.some((s) => s.level === 'STOP' && /below the OEM minimum/.test(s.message))).toBe(true);
+    expect(r.stops.some((s) => s.level === 'STOP')).toBe(false);
+    const c = r.stops.find((s) => /LIMIT REACHED — NOT CLASSIFIED/.test(s.message))!;
+    expect(c.level).toBe('CAUTION');
+    expect(c.message).toMatch(/does not clear any STOP/);
+    expect(c.message).toMatch(/If it is the shutdown value: STOP the engine/);
+    expect(r.nextQuestion?.id).toBe('oemMinOilPressure'); // its classification is asked next
   });
   it('oil pressure above the minimum → no pressure STOP', () => {
     const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 250, oemMinOilPressure: 200, oilLevel: 'ok' });
@@ -76,9 +85,9 @@ describe('stop rules always fire', () => {
     for (const where of ['engine', 'top', 'generator-end', 'unsure']) expect(diagnose(KNOCK_SEIZURE, { where }).stops[0].level).toBe('STOP');
   });
   it('coolant above the OEM alarm → STOP; seized engine → STOP; low insulation → STOP', () => {
-    expect(diagnose(OVERHEATING, { coolantTemp: 108, oemAlarmCoolantTemp: 103 }).stops.some((s) => s.level === 'STOP')).toBe(true);
+    expect(diagnose(OVERHEATING, { coolantTemp: 108, oemAlarmCoolantTemp: 103, 'oemAlarmCoolantTemp.class': 'shutdown' }).stops.some((s) => s.level === 'STOP')).toBe(true);
     expect(diagnose(NO_CRANK, { barOver: 'locked' }).stops.some((s) => s.level === 'STOP')).toBe(true);
-    expect(diagnose(NO_VOLTAGE, { insulation: 0.4, oemMinInsulation: 1 }).stops.some((s) => s.level === 'STOP')).toBe(true);
+    expect(diagnose(NO_VOLTAGE, { insulation: 0.4, oemMinInsulation: 1, 'oemMinInsulation.class': 'shutdown' }).stops.some((s) => s.level === 'STOP')).toBe(true);
   });
   it('a fresh session asks the safety question first', () => {
     expect(diagnose(KNOCK_SEIZURE, {}).nextQuestion?.id).toBe('where');
@@ -158,6 +167,7 @@ describe('determinism', () => {
   it('all questions answered → no next question', () => {
     const a: Record<string, string | number> = {};
     for (const q of OVERHEATING.questions) a[q.id] = q.kind === 'number' ? q.min + 1 : q.options[0].value;
+    a['oemAlarmCoolantTemp.class'] = 'warning';
     expect(diagnose(OVERHEATING, a).nextQuestion).toBeNull();
   });
 });

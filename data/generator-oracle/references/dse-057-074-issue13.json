@@ -1,6 +1,6 @@
 {
   "dataset": "dse-057-074-issue13",
-  "datasetVersion": 1,
+  "datasetVersion": 2,
   "compiled": "2026-11-25",
   "source": {
     "publisher": "Deep Sea Electronics Plc",
@@ -18,57 +18,141 @@
   "entries": [
     {
       "id": "dse7x-charge-failure",
-      "equipment": { "kind": "controller", "make": "Deep Sea Electronics", "models": ["DSE7200 series", "DSE7300 series"], "firmware": null },
+      "equipment": {
+        "kind": "controller",
+        "make": "Deep Sea Electronics",
+        "models": [
+          "DSE7200 series",
+          "DSE7300 series"
+        ],
+        "firmware": null,
+        "variant": "All DSE7200/7300 variants covered by 057-074 Issue 13"
+      },
       "parameter": "CHARGE FAILURE warning",
       "kind": "alarm-meaning",
       "meaning": "The auxiliary charge alternator voltage is low as measured from the W/L terminal.",
       "page": "PDF p. 95 (section 8, warnings)",
-      "families": ["charging"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "charging"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "warning",
+      "applicability": "DSE7200 and DSE7300 series modules only (057-074 Issue 13). Listed in the manual under warning alarms. Not DSE7310 MKII / DSE7320 MKII.",
+      "units": "none"
     },
     {
       "id": "dse7x-protections-disabled",
-      "equipment": { "kind": "controller", "make": "Deep Sea Electronics", "models": ["DSE7200 series", "DSE7300 series"], "firmware": "V4 onwards (per the manual)" },
+      "equipment": {
+        "kind": "controller",
+        "make": "Deep Sea Electronics",
+        "models": [
+          "DSE7200 series",
+          "DSE7300 series"
+        ],
+        "firmware": "V4 onwards (per the manual)",
+        "variant": "Module firmware V4 onwards (per the manual)"
+      },
       "parameter": "PROTECTIONS DISABLED",
       "kind": "alarm-meaning",
       "meaning": "Shutdown and electrical-trip alarms can be disabled by user configuration; the alarm text is then displayed but the engine continues to run. Check the configuration before relying on any controller shutdown.",
       "page": "PDF p. 96",
-      "families": ["low-oil-pressure", "overheating", "overspeed"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "low-oil-pressure",
+        "overheating",
+        "overspeed"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "not-a-limit",
+      "applicability": "DSE7200 and DSE7300 series, firmware V4 onwards. A configuration state, not a threshold.",
+      "units": "none"
     },
     {
       "id": "dse7x-overspeed-shutdown",
-      "equipment": { "kind": "controller", "make": "Deep Sea Electronics", "models": ["DSE7200 series", "DSE7300 series"], "firmware": null },
+      "equipment": {
+        "kind": "controller",
+        "make": "Deep Sea Electronics",
+        "models": [
+          "DSE7200 series",
+          "DSE7300 series"
+        ],
+        "firmware": null,
+        "variant": "All DSE7200/7300 variants covered by 057-074 Issue 13"
+      },
       "parameter": "OVERSPEED shutdown",
       "kind": "alarm-meaning",
       "meaning": "The engine speed has exceeded the pre-set trip. During start-up the overspeed trip logic can be configured to allow an extra margin ('Overspeed Overshoot') to prevent nuisance tripping.",
       "page": "PDF p. 97 (section 8.5, shutdowns)",
-      "families": ["overspeed", "frequency-hunting"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "overspeed",
+        "frequency-hunting"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "shutdown",
+      "applicability": "DSE7200 and DSE7300 series only. Listed under shutdowns; the trip value is the module configuration, not published here.",
+      "units": "none"
     },
     {
       "id": "dse7x-loss-of-speed-signal",
-      "equipment": { "kind": "controller", "make": "Deep Sea Electronics", "models": ["DSE7200 series", "DSE7300 series"], "firmware": null },
+      "equipment": {
+        "kind": "controller",
+        "make": "Deep Sea Electronics",
+        "models": [
+          "DSE7200 series",
+          "DSE7300 series"
+        ],
+        "firmware": null,
+        "variant": "Modules configured for magnetic-pickup speed sensing"
+      },
       "parameter": "LOSS OF SPEED SIGNAL shutdown",
       "kind": "alarm-meaning",
       "meaning": "The speed signal from the magnetic pickup is not being received by the controller.",
       "page": "PDF p. 98",
-      "families": ["overspeed", "frequency-hunting"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "overspeed",
+        "frequency-hunting"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "shutdown",
+      "applicability": "DSE7200 and DSE7300 series with a magnetic pickup configured. Listed under shutdowns.",
+      "units": "none"
     },
     {
       "id": "dse7x-speed-source",
-      "equipment": { "kind": "controller", "make": "Deep Sea Electronics", "models": ["DSE7200 series", "DSE7300 series"], "firmware": null },
+      "equipment": {
+        "kind": "controller",
+        "make": "Deep Sea Electronics",
+        "models": [
+          "DSE7200 series",
+          "DSE7300 series"
+        ],
+        "firmware": null,
+        "variant": "Factory configuration; MPU or CAN by configuration"
+      },
       "parameter": "Speed sensing source",
       "kind": "configuration-fact",
       "meaning": "Speed detection is factory configured from the main alternator output frequency; a flywheel magnetic pickup can be added by configuration; with CAN configured, speed comes over CAN. Rising oil pressure can disconnect the starter but cannot detect under- or overspeed.",
       "page": "PDF pp. 85, 88 (starting sequence)",
-      "families": ["overspeed", "frequency-hunting"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "overspeed",
+        "frequency-hunting"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "not-a-limit",
+      "applicability": "DSE7200 and DSE7300 series only.",
+      "units": "none"
     },
     {
       "id": "dse7x-dc-supply-check",
-      "equipment": { "kind": "controller", "make": "Deep Sea Electronics", "models": ["DSE7200 series", "DSE7300 series"], "firmware": null },
+      "equipment": {
+        "kind": "controller",
+        "make": "Deep Sea Electronics",
+        "models": [
+          "DSE7200 series",
+          "DSE7300 series"
+        ],
+        "firmware": null,
+        "variant": "All DSE7200/7300 variants covered by 057-074 Issue 13"
+      },
       "parameter": "Controller DC supply (troubleshooting: unit shuts down)",
       "kind": "module-supply-range",
       "valueMin": 9,
@@ -76,18 +160,37 @@
       "units": "V DC",
       "meaning": "If the unit shuts down, check the DC supply voltage is not above 35 V or below 9 V. This is the controller module's own supply check, not a battery charging limit.",
       "page": "PDF p. 114 (fault finding)",
-      "families": ["charging"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "charging"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "not-a-limit",
+      "applicability": "DSE7200 and DSE7300 series module supply only; not a battery charging or engine limit."
     },
     {
       "id": "dse7x-mpu-screen",
-      "equipment": { "kind": "controller", "make": "Deep Sea Electronics", "models": ["DSE7200 series", "DSE7300 series"], "firmware": null },
+      "equipment": {
+        "kind": "controller",
+        "make": "Deep Sea Electronics",
+        "models": [
+          "DSE7200 series",
+          "DSE7300 series"
+        ],
+        "firmware": null,
+        "variant": "Modules with a magnetic pickup"
+      },
       "parameter": "Intermittent magnetic pickup fault",
       "kind": "procedure",
       "meaning": "Make sure the magnetic pickup screen connects to earth at one end only (earthed at both ends it acts as an aerial and picks up random voltages); check the pickup is the correct distance from the flywheel teeth.",
       "page": "PDF p. 114 (fault finding)",
-      "families": ["overspeed", "frequency-hunting"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "overspeed",
+        "frequency-hunting"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "not-a-limit",
+      "applicability": "DSE7200 and DSE7300 series with a magnetic pickup.",
+      "units": "none"
     }
   ],
   "gaps": [

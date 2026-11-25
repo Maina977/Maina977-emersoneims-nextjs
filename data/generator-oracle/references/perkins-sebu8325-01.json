@@ -1,6 +1,6 @@
 {
   "dataset": "perkins-sebu8325-01",
-  "datasetVersion": 1,
+  "datasetVersion": 2,
   "compiled": "2026-11-25",
   "source": {
     "publisher": "Perkins Engines Company Limited",
@@ -17,17 +17,43 @@
   "entries": [
     {
       "id": "p1104d-no-oil-pressure-stop",
-      "equipment": { "kind": "engine", "make": "Perkins", "models": ["1104D (Mech) Industrial Engine NK", "1104D (Mech) Industrial Engine NL", "1104D (Mech) Industrial Engine NM"], "firmware": null },
+      "equipment": {
+        "kind": "engine",
+        "make": "Perkins",
+        "models": [
+          "1104D (Mech) Industrial Engine NK",
+          "1104D (Mech) Industrial Engine NL",
+          "1104D (Mech) Industrial Engine NM"
+        ],
+        "firmware": null,
+        "variant": "1104D (Mech) Industrial Engine as covered by SEBU8325-01"
+      },
       "parameter": "No oil pressure / maximum coolant temperature exceeded",
       "kind": "procedure",
       "meaning": "NOTICE: if no oil pressure is indicated, STOP the engine; if the maximum coolant temperature is exceeded, STOP the engine. Engine damage can result.",
       "page": "PDF p. 22 (Gauges and Indicators)",
-      "families": ["low-oil-pressure", "overheating"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "low-oil-pressure",
+        "overheating"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "shutdown",
+      "applicability": "Perkins 1104D (Mech) Industrial Engine NK, NL, NM only. An instruction (stop the engine), no numeric value.",
+      "units": "none"
     },
     {
       "id": "p1104d-typical-oil-pressure",
-      "equipment": { "kind": "engine", "make": "Perkins", "models": ["1104D (Mech) Industrial Engine NK", "1104D (Mech) Industrial Engine NL", "1104D (Mech) Industrial Engine NM"], "firmware": null },
+      "equipment": {
+        "kind": "engine",
+        "make": "Perkins",
+        "models": [
+          "1104D (Mech) Industrial Engine NK",
+          "1104D (Mech) Industrial Engine NL",
+          "1104D (Mech) Industrial Engine NM"
+        ],
+        "firmware": null,
+        "variant": "SAE10W30 oil, at rated rpm"
+      },
       "parameter": "Typical engine oil pressure at rated rpm",
       "kind": "typical-range",
       "valueMin": 207,
@@ -35,34 +61,76 @@
       "units": "kPa",
       "conditions": "SAE10W30 oil, at rated rpm. Lower pressure is normal at low idle.",
       "meaning": "Typical range only. It is NOT a minimum or a trip setting and is never used as the 'OEM minimum oil pressure'.",
-      "relatesTo": { "family": "low-oil-pressure", "question": "oemMinOilPressure", "relation": "context-not-a-limit" },
+      "relatesTo": {
+        "family": "low-oil-pressure",
+        "question": "oemMinOilPressure",
+        "relation": "context-not-a-limit"
+      },
       "page": "PDF p. 22 (Gauges and Indicators)",
-      "families": ["low-oil-pressure"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "low-oil-pressure"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "not-a-limit",
+      "applicability": "Perkins 1104D (Mech) Industrial Engine NK, NL, NM; SAE10W30 oil; rated rpm. Typical range only."
     },
     {
       "id": "p1104d-coolant-max",
-      "equipment": { "kind": "engine", "make": "Perkins", "models": ["1104D (Mech) Industrial Engine NK", "1104D (Mech) Industrial Engine NL", "1104D (Mech) Industrial Engine NM"], "firmware": null },
+      "equipment": {
+        "kind": "engine",
+        "make": "Perkins",
+        "models": [
+          "1104D (Mech) Industrial Engine NK",
+          "1104D (Mech) Industrial Engine NL",
+          "1104D (Mech) Industrial Engine NM"
+        ],
+        "firmware": null,
+        "variant": "Pressurised cooling system at 48 kPa (7 psi)"
+      },
       "parameter": "Jacket water coolant temperature, maximum allowable",
       "kind": "maximum",
       "value": 110,
       "units": "°C",
       "conditions": "Maximum allowable. Typical range 71–96 °C. Maximum allowable 110 °C with the pressurised cooling system at 48 kPa (7 psi). The reading should never exceed the boiling point for the pressurised system in use.",
       "meaning": "Published engine maximum, not the controller's high-coolant-temperature alarm setting. The alarm setting for the set must still be confirmed and entered.",
-      "relatesTo": { "family": "overheating", "question": "oemAlarmCoolantTemp", "relation": "context-not-a-limit" },
+      "relatesTo": {
+        "family": "overheating",
+        "question": "oemAlarmCoolantTemp",
+        "relation": "published-limit"
+      },
       "page": "PDF p. 22 (Gauges and Indicators)",
-      "families": ["overheating"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "overheating"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "shutdown",
+      "applicability": "Perkins 1104D (Mech) Industrial Engine NK, NL, NM, with a 48 kPa pressurised cooling system only. The manual says STOP the engine if the maximum is exceeded.",
+      "documentComparison": "The manual says \"if maximum coolant temperature is exceeded, STOP the engine\". It does not define equality separately, so EmersonEIMS treats a reading equal to 110 °C as reaching it (management exact-threshold rule)."
     },
     {
       "id": "p1104d-high-idle",
-      "equipment": { "kind": "engine", "make": "Perkins", "models": ["1104D (Mech) Industrial Engine NK", "1104D (Mech) Industrial Engine NL", "1104D (Mech) Industrial Engine NM"], "firmware": null },
+      "equipment": {
+        "kind": "engine",
+        "make": "Perkins",
+        "models": [
+          "1104D (Mech) Industrial Engine NK",
+          "1104D (Mech) Industrial Engine NL",
+          "1104D (Mech) Industrial Engine NM"
+        ],
+        "firmware": null,
+        "variant": "Per engine rating (high idle rpm not stated in this section)"
+      },
       "parameter": "Overspeed",
       "kind": "procedure",
       "meaning": "Never exceed the high idle rpm: overspeeding can seriously damage the engine. The manual does not state the high idle figure here; it depends on the engine rating.",
       "page": "PDF p. 22 (Gauges and Indicators, Tachometer)",
-      "families": ["overspeed"],
-      "verification": "verified-from-public-document"
+      "families": [
+        "overspeed"
+      ],
+      "verification": "verified-from-public-document",
+      "classification": "not-a-limit",
+      "applicability": "Perkins 1104D (Mech) Industrial Engine NK, NL, NM. No numeric value given.",
+      "units": "rpm"
     }
   ],
   "gaps": [

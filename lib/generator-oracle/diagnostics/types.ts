@@ -23,6 +23,16 @@ export interface NumberQuestion {
   help?: string;
   /** Answering needs the engine running or circuits live: never offered as the next check while a STOP is active. */
   needsRunning?: boolean;
+  /**
+   * This question holds an OEM figure typed from the manual or settings sheet.
+   * Two companion answers go with it: `<id>.class` (shutdown / warning /
+   * not-stated) and `<id>.source` (manual ID, revision, page). `direction`
+   * says which side is the limit: a reading reaches a 'min' limit at or below
+   * it, a 'max' limit at or above it.
+   */
+  oemLimit?: { direction: 'min' | 'max'; parameter: string };
+  /** A rating-plate value (not an OEM limit): compared with, never classified. */
+  ratingPlate?: boolean;
 }
 export interface ChoiceQuestion {
   id: string;
@@ -38,7 +48,8 @@ export type Question = NumberQuestion | ChoiceQuestion;
 /** A condition on the answers. `ref` compares with another answer (e.g. an OEM limit). */
 export type Condition =
   | { q: string; op: 'lt' | 'le' | 'gt' | 'ge'; value: number }
-  | { q: string; op: 'ltRef' | 'gtRef'; ref: string; factor?: number }
+  /** ltRef/gtRef: strictly inside a limit. leRef/geRef: the limit is reached (equality counts as reaching). */
+  | { q: string; op: 'ltRef' | 'gtRef' | 'leRef' | 'geRef'; ref: string; factor?: number }
   | { q: string; op: 'is'; value: string | string[] }
   | { all: Condition[] }
   | { any: Condition[] };
@@ -73,6 +84,49 @@ export interface StopRule {
   message: string;
 }
 
+/** Classification of an OEM limit entered by the technician. */
+export type LimitClass = 'shutdown' | 'warning' | 'not-stated';
+export const LIMIT_CLASS_OPTIONS: Array<{ value: LimitClass; label: string }> = [
+  { value: 'shutdown', label: 'Shutdown / stop value (the manual says stop or the controller trips)' },
+  { value: 'warning', label: 'Warning / pre-alarm value' },
+  { value: 'not-stated', label: 'Not stated in the source' },
+];
+
+/**
+ * A measured reading compared with an OEM limit question (exact-threshold rule,
+ * 2026-11-25): reaching the limit (equality included) gives a STOP only when
+ * the limit is classified 'shutdown'; 'warning' gives a CAUTION; unclassified
+ * gives a CAUTION that says so and never clears any STOP. A reading within the
+ * measurement tolerance entered for it (`<reading>.tol`) but not at the limit
+ * is shown as "at or near the limit".
+ */
+export interface LimitRule {
+  id: string;
+  reading: string;
+  limit: string;
+  /** Message when a limit classified 'shutdown' is reached (shown as STOP). */
+  shutdown: string;
+  /** Message when a limit classified 'warning' is reached (shown as CAUTION). */
+  warning: string;
+}
+
+export interface LimitStatus {
+  id: string;
+  reading: string;
+  limit: string;
+  direction: 'min' | 'max';
+  /** not-verified: no limit entered; inside: strictly inside it; near: within the tolerance entered; reached: at or beyond it. */
+  status: 'not-verified' | 'inside' | 'near' | 'reached';
+  classification: LimitClass | null;
+  source: string | null;
+  value: number | null;
+  limitValue: number | null;
+  tolerance: number | null;
+  /** The level shown for this status, or null when none (inside / not verified). */
+  level: 'STOP' | 'CAUTION' | null;
+  text: string;
+}
+
 export interface FaultFamily {
   id: string;
   title: string;
@@ -91,6 +145,8 @@ export interface FaultFamily {
    * the listed answers are refused with `reason` and take no part in the result.
    */
   crossChecks?: Array<{ when: Condition; refuse: string[]; reason: string }>;
+  /** Readings compared with classified OEM limits (exact-threshold rule). */
+  limits?: LimitRule[];
   /** Verifiable general references for the family as a whole (by title only). */
   references?: string[];
   /** Review status of this family's content. */
@@ -116,6 +172,8 @@ export interface DiagnosisResult {
   stops: Array<{ level: StopRule['level']; message: string }>;
   /** True when any STOP rule fired: running checks are withheld from every cause. */
   stopActive: boolean;
+  /** Every limit rule of the family with its status (exact-threshold rule). */
+  limits: LimitStatus[];
   /** Answers refused because they are outside the physical range. */
   invalid: Array<{ q: string; reason: string }>;
   ranked: RankedCause[];
