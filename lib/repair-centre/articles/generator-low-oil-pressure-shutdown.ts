@@ -312,10 +312,9 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
       q: 'Pressure is fine when cold and low when hot. What does that mean?',
       a: 'That pattern is characteristic. Oil viscosity falls as temperature rises, so leakage through bearing clearances increases and gallery pressure drops. An engine with worn clearances therefore shows the fault hot first. It is a genuine indication and warrants clearance assessment rather than another sender.',
     },
-    {
-      q: 'The oil level was low. Can I just top it up and return the set to service?',
-      a: 'Top it up, yes, but find out where the oil went. Oil does not disappear. Investigate leaks and consumption, and check the oil is not diluted by fuel, which raises the level while lowering the viscosity and the pressure together.',
-    },
+    // Withdrawn 2026-11-25 (independent verification B1): the low-oil-level
+    // Q&A presented continued operation as the first step after a lubrication
+    // fault. Removed from the page and FAQPage.
   ],
 
   references: [

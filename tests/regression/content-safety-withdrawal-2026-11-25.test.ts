@@ -18,6 +18,7 @@ import { registerRepairCentreTests } from './content-safety-withdrawal/repair-ce
 import { registerTroubleshootingSolutionsTests } from './content-safety-withdrawal/troubleshooting-solutions';
 import { registerServicesBibleKbTests } from './content-safety-withdrawal/services-bible-kb';
 import { registerBlogGeneratorsPlantTests } from './content-safety-withdrawal/blog-generators-plant';
+import { registerVerificationFollowupTests } from './content-safety-withdrawal/verification-followups';
 import { CONTENT_SAFETY_WITHDRAWN_MESSAGE } from '@/lib/safety/contentWithdrawal';
 
 describe('content-safety withdrawal 2026-11-25', () => {
@@ -52,4 +53,5 @@ describe('content-safety withdrawal 2026-11-25', () => {
   registerTroubleshootingSolutionsTests();
   registerServicesBibleKbTests();
   registerBlogGeneratorsPlantTests();
+  registerVerificationFollowupTests();
 });
