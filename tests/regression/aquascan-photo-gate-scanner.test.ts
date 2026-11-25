@@ -44,7 +44,7 @@ describe('m8: no photo pixel analysis is reported', () => {
 
 describe('management 2026-11-25 (1): the placeholder or a default is never described as the customer\'s photo', () => {
   it('no photo-colour location candidates are reported; the PDF module list says the pixel analysis was not run', () => {
-    expect(src('boreholeAnalyzer.ts')).toMatch(/geoEstimate: features\.geoEstimate \? \{ \.\.\.features\.geoEstimate, estimates: \[\] \} : undefined,/);
+    expect(src('boreholeAnalyzer.ts')).toMatch(/geoEstimate: undefined, \/\/ management 2026-11-25: no object describing a photo that was not analysed/);
     const rg = src('reportGenerator.ts');
     expect(rg).toMatch(/'Not run: photos are not analysed for groundwater; they are kept for the report only'/);
     expect(rg).toMatch(/\['3', 'Visual Geo-Estimation', result\.geoEstimate\?\.estimates\?\.length \? 'COMPLETED' : 'SKIPPED'/);
