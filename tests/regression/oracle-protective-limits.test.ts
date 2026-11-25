@@ -87,7 +87,7 @@ describe('verified warning threshold, but another symptom requires stopping', ()
 
 describe('model-specific configuration: the Perkins 1104D NK coolant maximum', () => {
   it('applies only to the model(s) its manual covers; another model → NOT VERIFIED unless entered', () => {
-    expect(publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK' }, 'overheating', 'oemAlarmCoolantTemp')).toMatchObject({ value: 110, classification: 'shutdown' });
+    expect(publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Perkins', model: '1104D (Mech) Industrial Engine NK' }, 'overheating', 'oemAlarmCoolantTemp')).toMatchObject({ value: 110, classification: 'shutdown' });
     for (const eq of [{ engine: '1106D Industrial Engine' }, { engine: 'Perkins 1104D' }, {}]) {
       expect(publishedLimitFor(eq, 'overheating', 'oemAlarmCoolantTemp')).toBeNull();
       expect(questionReferenceNote(eq, 'overheating', 'oemAlarmCoolantTemp')).toMatch(/^per OEM manual — NOT VERIFIED/);

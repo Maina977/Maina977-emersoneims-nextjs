@@ -194,12 +194,12 @@ describe('PROVENANCE: every rule that uses an OEM value, and every reference rec
     }
   });
   it('a published limit is offered only for its exact model, with its source', () => {
-    const a = publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK' }, 'overheating', 'oemAlarmCoolantTemp')!;
+    const a = publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Perkins', model: '1104D (Mech) Industrial Engine NK' }, 'overheating', 'oemAlarmCoolantTemp')!;
     expect(a).toMatchObject({ value: 110, classification: 'shutdown' });
     expect(a.source).toMatch(/^SEBU8325-01 .*July 2012, PDF p\. 22/);
     expect(a.source.length).toBeLessThanOrEqual(300);
     expect(publishedLimitFor({ engine: '1106D Industrial Engine' }, 'overheating', 'oemAlarmCoolantTemp')).toBeNull();
-    expect(publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK' }, 'low-oil-pressure', 'oemMinOilPressure')).toBeNull(); // typical range is not a limit
+    expect(publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Perkins', model: '1104D (Mech) Industrial Engine NK' }, 'low-oil-pressure', 'oemMinOilPressure')).toBeNull(); // typical range is not a limit
     // Using it: equality with the published shutdown maximum is a STOP.
     const r = diagnose(OVERHEATING, { coolantTemp: 110, oemAlarmCoolantTemp: a.value, 'oemAlarmCoolantTemp.class': a.classification, 'oemAlarmCoolantTemp.source': a.source });
     expect(r.stops[0].level).toBe('STOP');

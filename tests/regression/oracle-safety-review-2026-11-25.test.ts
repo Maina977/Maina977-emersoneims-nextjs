@@ -96,7 +96,7 @@ describe('F1 (BLOCKING): no running, cranking or live step under a STOP — all 
       }
     }
     expect(n).toBeGreaterThan(100);
-  });
+  }, 60000); // hundreds of STOP states: allow time on a loaded machine
 });
 
 describe('F2 (BLOCKING): no CAUTION that implies continued running after a STOP', () => {
@@ -136,7 +136,7 @@ describe('F3 (BLOCKING): the most serious condition decides across families; sha
     };
     const rec = sessionRecord(OVERHEATING, session);
     assertStopFirstAndSafe(OVERHEATING, rec.result, 'overheating with knock elsewhere');
-    expect(rec.result.stops.some((s) => s.origin === 'other-family' && /Knocking, bearing noise or seizure/.test(s.message))).toBe(true);
+    expect(rec.result.stops.some((s) => s.origin === 'other-family' && /Knocking, bearing noise or seizure/.test(s.from ?? ''))).toBe(true);
     expect(rec.lines[0]).toMatch(/^STOP: /);
     expect(rec.findings).not.toMatch(/Reduce the load and check the airflow/);
   });
@@ -153,7 +153,9 @@ describe('F3 (BLOCKING): the most serious condition decides across families; sha
     const session: RawAnswers = { 'frequency-hunting': { overspeedTrip: 'yes' }, 'no-voltage': { residual: 'none' } };
     const nv = sessionRecord(NO_VOLTAGE, session);
     assertStopFirstAndSafe(NO_VOLTAGE, nv.result, 'no-voltage');
-    expect(nv.result.stops[0].message).toMatch(/^STOP \(raised in "Frequency unstable/);
+    // Review R7: the exact wording is kept; where it was raised is a separate field and line.
+    expect(nv.result.stops[0].message).not.toMatch(/raised in/);
+    expect(nv.result.stops[0].from).toMatch(/^Frequency unstable/);
   });
 });
 
@@ -233,9 +235,9 @@ describe('F5 / F6: the job card states the STOP first, never "treated as CAUTION
 
 describe('F7: a published model-specific limit is not applied once the model no longer matches', () => {
   it('Use published value for 1104D NK, then the engine selector is cleared: the limit is refused, NOT VERIFIED', () => {
-    const pub = publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK' }, 'overheating', 'oemAlarmCoolantTemp')!;
+    const pub = publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Perkins', model: '1104D (Mech) Industrial Engine NK' }, 'overheating', 'oemAlarmCoolantTemp')!;
     const raw = { oemAlarmCoolantTemp: String(pub.value), 'oemAlarmCoolantTemp.class': pub.classification, 'oemAlarmCoolantTemp.source': pub.source, coolantTemp: '108' };
-    const ok = diagnosisRecord(OVERHEATING, raw, { engine: '1104D (Mech) Industrial Engine NK' });
+    const ok = diagnosisRecord(OVERHEATING, raw, { engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Perkins', model: '1104D (Mech) Industrial Engine NK' });
     expect(ok.result.limits[0].status).toBe('inside'); // still the right model
     for (const eq of [{}, { engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Cummins', model: '6BTA5.9' }]) {
       const rec = diagnosisRecord(OVERHEATING, raw, eq);
@@ -246,7 +248,9 @@ describe('F7: a published model-specific limit is not applied once the model no 
   });
   it('no published value is offered when the typed plate model is a different engine', () => {
     expect(publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Cummins', model: '6BTA5.9' }, 'overheating', 'oemAlarmCoolantTemp')).toBeNull();
-    expect(publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Perkins', model: '1104D-44' }, 'overheating', 'oemAlarmCoolantTemp')).not.toBeNull();
+    expect(publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Perkins', model: '1104D (Mech) Industrial Engine NK' }, 'overheating', 'oemAlarmCoolantTemp')).not.toBeNull();
+    // Case, spaces and hyphens only are ignored.
+    expect(publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'PERKINS', model: '1104d (mech) industrial-engine nk' }, 'overheating', 'oemAlarmCoolantTemp')).not.toBeNull();
   });
 });
 

@@ -38,6 +38,12 @@ describe('Guided Diagnosis UI: new families and the job-card hand-off', () => {
     // Not entered as an answer: the OEM alarm field stays empty.
     const limitInput = () => screen.getAllByLabelText(/OEM high coolant temperature limit/)[0] as HTMLInputElement;
     expect(limitInput().value).toBe('');
+    // Review R4: not offered until the typed plate matches the manual's model designation exactly.
+    expect(screen.queryAllByRole('button', { name: /Use published value/ })).toHaveLength(0);
+    fireEvent.change(screen.getByLabelText('Manufacturer (as on the plate)'), { target: { value: 'Perkins' } });
+    fireEvent.change(screen.getByLabelText('Model (as on the plate)'), { target: { value: '1104D-E44TA' } });
+    expect(screen.queryAllByRole('button', { name: /Use published value/ })).toHaveLength(0);
+    fireEvent.change(screen.getByLabelText('Model (as on the plate)'), { target: { value: '1104D (Mech) Industrial Engine NK' } });
     // "Use published value" is offered for the exact model only, and enters value, classification and source.
     fireEvent.click(screen.getAllByRole('button', { name: /Use published value for the selected model: 110 °C \(shutdown\)/ })[0]);
     expect(limitInput().value).toBe('110');

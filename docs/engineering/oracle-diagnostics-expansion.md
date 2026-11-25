@@ -2,6 +2,22 @@
 
 Branch `ws/oracle-diagnostics`. Engine `oracle-diagnostics 1.2.0 (2026-11-25)` (1.1.0 = expansion; 1.2.0 = exact-threshold rule, increment 2). Content status of every family: **technician review pending**.
 
+## 000. Fixes from the re-review of 739d1adf (2026-11-25)
+
+Re-review: `C:\Users\User\Documents\EmersonEIMS-proposals\oracle-safety-review-2026-11-25\ORACLE-BRANCH-739d1adf-REREVIEW.md`. Its reproductions are regression tests asserting the required behaviour: `tests/regression/oracle-rereview-739d1adf.test.ts`.
+
+| # | Fix |
+|---|---|
+| R1 (BLOCKING) | No-start "Exhaust while cranking" is now marked as needing the engine running. An audit test fails on any question in any family whose text, help or options use the reviewer's word list (crank, cranking, running, while running, under load, live, energised, supply present, cut-out, start the engine, run the set, load test) without that flag. Only OEM figures typed from a manual are exempt. A second audit does the same for every always-shown step, with negated prohibitions ("Do not crank") excepted. |
+| R2 | The exhaust-smoke injectors question now reads "removed and bench-tested"; the cut-out wording is gone. No-voltage "AVR fuse and supply" (supply present means live circuits) and no-crank terminals ("get hot when cranking") are marked as needing the engine running. The AVR settings step now starts "With the set isolated". |
+| R3 | When a leading cause says "do not run", the cautions are rewritten as they are under a STOP, so nothing implies running. Limit cautions become "Also recorded for the investigation (running is withheld: a leading cause says do not run)". Rule cautions use their stopped-engine wording. |
+| R4 | "Use published value" now needs the typed manufacturer and the full model designation to match exactly; only case, spaces and hyphens are ignored. Blank, partial, one-character or other-variant plates are refused, for example "1104D-E44TA" against "1104D (Mech) Industrial Engine NK". |
+| R5 | Any safety-screen item marked "Not checked" gives a CAUTION: "Safety screen not completed … safety is NOT confirmed". |
+| R6 | No threshold is invented. Low oil pressure and no-voltage each ask whether the instrument reads zero or below its stated resolution. "Yes — at or near zero; treat as zero" gives the labelled software-safeguard STOP. |
+| R7 | A STOP from another family keeps its exact wording and its label. Where it was raised is shown on a separate line: "(Raised in the "<family>" diagnosis of this session.)". |
+| R8 | When a STOP record goes on top of earlier findings, it is followed by "NOTE: The findings below were recorded before this STOP. None of their running checks may be done while the STOP stands." |
+| Open | F10 (a psi value typed into a kPa field cannot be detected; L14) and F11 (charging over-voltage is non-protective by management decision; L15) remain open, as documented. |
+
 ## 00. Engine 1.3.0 (2026-11-25): fixes from the independent safety review of 40195d6f
 
 Review: `C:\Users\User\Documents\EmersonEIMS-proposals\oracle-safety-review-2026-11-25\ORACLE-INDEPENDENT-SAFETY-REVIEW.md`. Every reproduction is now a regression test asserting the required behaviour: `tests/regression/oracle-safety-review-2026-11-25.test.ts`.

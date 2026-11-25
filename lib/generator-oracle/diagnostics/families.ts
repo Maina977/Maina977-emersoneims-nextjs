@@ -32,7 +32,7 @@ export const NO_CRANK: FaultFamily = {
     { id: 'starterSound', kind: 'choice', text: 'What does the starter do?', options: [{ value: 'nothing', label: 'Nothing' }, { value: 'click', label: 'Clicks only' }, { value: 'slow', label: 'Turns slowly' }, { value: 'normal', label: 'Turns at normal speed' }], needsRunning: true },
     { id: 'eStop', kind: 'choice', text: 'Emergency stop', options: [{ value: 'released', label: 'Released' }, { value: 'pressed', label: 'Pressed' }, { value: 'unknown', label: 'Not checked' }] },
     { id: 'controllerAlarm', kind: 'choice', text: 'Does the controller show an alarm or refuse the start?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
-    { id: 'terminals', kind: 'choice', text: 'Battery terminals and starter cables', options: [{ value: 'clean', label: 'Clean and tight' }, { value: 'corroded', label: 'Corroded or loose' }, { value: 'hot', label: 'Get hot when cranking' }] },
+    { id: 'terminals', kind: 'choice', text: 'Battery terminals and starter cables', options: [{ value: 'clean', label: 'Clean and tight' }, { value: 'corroded', label: 'Corroded or loose' }, { value: 'hot', label: 'Get hot when cranking' }], needsRunning: true },
   ],
   stopRules: [
     { when: is('barOver', 'locked'), level: 'STOP', message: 'STOP: the engine will not turn by hand. Do not try to free it with the starter. Suspect seizure, hydraulic lock (coolant or fuel in a cylinder) or a jammed coupling; inspect before any further attempt.' },
@@ -47,7 +47,7 @@ export const NO_CRANK: FaultFamily = {
         { when: is('starterSound', ['click', 'slow']), effect: 'supports', because: 'Starter clicks or turns slowly' },
         { when: { q: 'crankVoltage', op: 'gtRef', ref: 'oemMinCrankVoltage' }, effect: 'contradicts', because: 'Battery stays above the OEM minimum cranking voltage' },
       ],
-      actions: ['With the set isolated (negative lead off first): charge the battery fully, then test it at rest with a battery load tester (BCI load test) or a conductance tester.', 'Replace a battery that fails the load test.'],
+      actions: ['With the set isolated (negative lead off first): charge the battery fully, then test it at rest with a battery tester (BCI method) or a conductance tester.', 'Replace a battery that fails the test.'],
       runningChecks: ['Only when no STOP is active: check the charger or charging-alternator output afterwards, from outside the guards.'],
       reference: BCI,
     },
@@ -108,7 +108,7 @@ export const NO_START: FaultFamily = {
     { id: 'shutoff', kind: 'choice', text: 'Fuel shut-off solenoid / ECM fuel enable during cranking', options: [{ value: 'energised', label: 'Energised (clicks / voltage present)' }, { value: 'not-energised', label: 'Not energised' }, { value: 'not-checked', label: 'Not checked' }], needsRunning: true },
     { id: 'crankRpm', kind: 'number', text: 'Cranking speed', unit: 'rpm', min: 0, max: 800, needsRunning: true },
     { id: 'oemMinCrankRpm', kind: 'number', text: 'OEM minimum cranking speed for starting (manual)', unit: 'rpm', min: 30, max: 400, oemLimit: { direction: 'min', parameter: 'OEM minimum cranking speed' } },
-    { id: 'smoke', kind: 'choice', text: 'Exhaust while cranking', options: [{ value: 'none', label: 'Nothing' }, { value: 'white', label: 'White/grey vapour' }, { value: 'black', label: 'Black' }] },
+    { id: 'smoke', kind: 'choice', text: 'Exhaust while cranking', options: [{ value: 'none', label: 'Nothing' }, { value: 'white', label: 'White/grey vapour' }, { value: 'black', label: 'Black' }], needsRunning: true },
     { id: 'ecmCode', kind: 'choice', text: 'Active ECM/controller fault code (speed sensor, fuel, ECM power)?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
     { id: 'cold', kind: 'choice', text: 'Cold start conditions and cold-start aid', options: [{ value: 'warm', label: 'Warm / not relevant' }, { value: 'aid-ok', label: 'Cold, aid working' }, { value: 'aid-failed', label: 'Cold, aid not working' }] },
   ],
@@ -152,7 +152,7 @@ export const NO_START: FaultFamily = {
         { when: { q: 'crankRpm', op: 'leRef', ref: 'oemMinCrankRpm' }, effect: 'strongly', because: 'Cranking speed at or below the OEM minimum' },
         { when: { q: 'crankRpm', op: 'gtRef', ref: 'oemMinCrankRpm' }, effect: 'excludes', because: 'Cranking speed above the OEM minimum' },
       ],
-      actions: ['Use the "will not crank / cranks slowly" checks: battery, cables, starter, oil grade for the temperature.'],
+      actions: ['With the set isolated: check the battery, cables and starter (first family) and the oil grade for the temperature.'],
       reference: PRACTICE,
     },
     {
@@ -197,6 +197,7 @@ export const LOW_OIL_PRESSURE: FaultFamily = {
   review: 'technician review pending',
   questions: [
     { id: 'oilPressure', kind: 'number', text: 'Oil pressure measured', unit: 'kPa', min: 0, max: 1500, help: '1 bar = 100 kPa; 1 psi = 6.895 kPa.', needsRunning: true },
+    { id: 'oilPressureAtZero', kind: 'choice', text: 'Does the oil-pressure instrument read zero, or below its stated resolution (needle on the stop, display at zero)?', options: [{ value: 'no', label: 'No' }, { value: 'yes', label: 'Yes — at or near zero; treat as zero' }], needsRunning: true },
     { id: 'oemMinOilPressure', kind: 'number', text: 'OEM minimum oil pressure at this speed (manual)', unit: 'kPa', min: 20, max: 800, oemLimit: { direction: 'min', parameter: 'OEM minimum oil pressure' } },
     { id: 'gauge', kind: 'choice', text: 'How was it measured?', options: [{ value: 'mechanical', label: 'Mechanical test gauge' }, { value: 'sender', label: 'Panel sender / display only' }] },
     { id: 'mechanicalAgrees', kind: 'choice', text: 'Does a mechanical gauge show normal pressure while the panel shows low?', options: [{ value: 'yes', label: 'Yes, mechanical reading is normal' }, { value: 'no', label: 'No, both are low' }, { value: 'not-checked', label: 'Not checked' }], needsRunning: true },
@@ -217,7 +218,7 @@ export const LOW_OIL_PRESSURE: FaultFamily = {
   ],
   stopRules: [
     // Safety review F9: zero oil pressure needs no number to be a stop condition (software safeguard, not an OEM limit).
-    { when: { q: 'oilPressure', op: 'le', value: 0 }, level: 'STOP', message: 'STOP — Oil pressure reads zero. Do not continue operating until the reading and the lubrication system have been checked by a qualified technician.', label: 'This is a conservative software safeguard, not an OEM limit.' },
+    { when: { any: [{ q: 'oilPressure', op: 'le', value: 0 }, is('oilPressureAtZero', 'yes')] }, level: 'STOP', message: 'STOP — Oil pressure reads zero. Do not continue operating until the reading and the lubrication system have been checked by a qualified technician.', label: 'This is a conservative software safeguard, not an OEM limit.' },
     { when: is('knock', 'yes'), level: 'STOP', message: 'STOP: knocking with an oil pressure problem points to bearing damage. Do not restart; inspect the bearings and the oil filter for metal.' },
     { when: is('oilCondition', ['metal', 'milky']), level: 'STOP', message: 'STOP: metal or coolant in the oil. Do not run until the source is found (bearings; head gasket, oil cooler or liners).' },
     { when: is('oilLevel', 'low'), level: 'STOP', message: 'STOP: oil level below the low mark. Do not run until topped up to the mark with the correct grade and the leak or consumption is found.' },
@@ -381,11 +382,12 @@ export const NO_VOLTAGE: FaultFamily = {
     { id: 'oemMinFrequency', kind: 'number', text: 'Lowest steady-state frequency allowed for this set (governor or controller settings sheet, OEM manual)', unit: 'Hz', min: 30, max: 70, oemLimit: { direction: 'min', parameter: 'Lowest steady-state frequency allowed' } },
     { id: 'voltage', kind: 'number', text: 'Output voltage, line to line', unit: 'V', min: 0, max: 15000, needsRunning: true },
     { id: 'ratedVoltage', kind: 'number', text: 'Rated voltage, line to line (rating plate)', unit: 'V', min: 100, max: 15000, ratingPlate: true },
-    { id: 'avrFuse', kind: 'choice', text: 'AVR fuse and supply', options: [{ value: 'ok', label: 'Fuse OK, supply present' }, { value: 'blown', label: 'Fuse blown' }, { value: 'not-checked', label: 'Not checked' }] },
+    { id: 'avrFuse', kind: 'choice', text: 'AVR fuse and supply', options: [{ value: 'ok', label: 'Fuse OK, supply present' }, { value: 'blown', label: 'Fuse blown' }, { value: 'not-checked', label: 'Not checked' }], needsRunning: true },
     { id: 'residual', kind: 'choice', text: 'Residual voltage with the AVR disconnected (excitation off)', options: [{ value: 'present', label: 'A few volts present' }, { value: 'none', label: 'None' }, { value: 'not-checked', label: 'Not checked' }], needsRunning: true },
     { id: 'sensing', kind: 'choice', text: 'AVR sensing wiring', options: [{ value: 'ok', label: 'Tight and correct' }, { value: 'loose', label: 'Loose or disconnected' }] },
     { id: 'diodes', kind: 'choice', text: 'Rotating rectifier diodes (tested isolated)', options: [{ value: 'ok', label: 'All good' }, { value: 'failed', label: 'One or more failed' }, { value: 'not-checked', label: 'Not checked' }] },
     { id: 'insulation', kind: 'number', text: 'Winding insulation resistance', unit: 'MΩ', min: 0, max: 100000, help: 'Insulation tester, AVR and controller disconnected first.' },
+    { id: 'insulationAtZero', kind: 'choice', text: 'Does the insulation tester read zero, or below its stated resolution?', options: [{ value: 'no', label: 'No' }, { value: 'yes', label: 'Yes — at or near zero; treat as zero' }] },
     { id: 'oemMinInsulation', kind: 'number', text: 'Minimum insulation resistance (alternator manual)', unit: 'MΩ', min: 0.1, max: 10000, oemLimit: { direction: 'min', parameter: 'Minimum insulation resistance' } },
     { id: 'loadPct', kind: 'number', text: 'Load', unit: '% of rating', min: 0, max: 200 },
   ],
@@ -399,7 +401,7 @@ export const NO_VOLTAGE: FaultFamily = {
   ],
   stopRules: [
     // Safety review F9: zero insulation resistance needs no number to be a stop condition (software safeguard, not an OEM limit).
-    { when: { q: 'insulation', op: 'le', value: 0 }, level: 'STOP', message: 'STOP — Insulation resistance reads zero. Do not run or energise the set until the windings have been checked by a qualified technician.', label: 'This is a conservative software safeguard, not an OEM limit.' },
+    { when: { any: [{ q: 'insulation', op: 'le', value: 0 }, is('insulationAtZero', 'yes')] }, level: 'STOP', message: 'STOP — Insulation resistance reads zero. Do not run or energise the set until the windings have been checked by a qualified technician.', label: 'This is a conservative software safeguard, not an OEM limit.' },
     { when: { q: 'voltage', op: 'ge', value: 0 }, level: 'CAUTION', message: 'Alternator and panel terminals are lethal while running: stop the set, isolate and lock off before touching wiring; prove dead with an approved tester; measure live only with rated instruments.', underStop: 'Alternator and panel terminals are lethal: keep the set stopped, isolated and locked off; prove dead with an approved tester before touching any wiring.' },
   ],
   causes: [
@@ -409,7 +411,7 @@ export const NO_VOLTAGE: FaultFamily = {
     { id: 'sensing', title: 'AVR sensing wiring', evidence: [{ when: is('sensing', 'loose'), effect: 'strongly', because: 'Sensing wiring loose or disconnected' }, { when: is('sensing', 'ok'), effect: 'excludes', because: 'Sensing wiring correct' }], actions: ['Isolate; re-make the sensing connections to the wiring diagram for this AVR.'], reference: ALT_PRACTICE },
     { id: 'diodes', title: 'Rotating rectifier (diode) failure', evidence: [{ when: is('diodes', 'failed'), effect: 'strongly', because: 'Diode failed on test' }, { when: is('diodes', 'ok'), effect: 'excludes', because: 'Diodes test good' }, { when: is('avrFuse', 'blown'), effect: 'supports', because: 'A shorted diode often blows the AVR fuse' }], actions: ['Replace the full diode set and the surge suppressor per the manual.'], reference: ALT_PRACTICE },
     { id: 'winding', title: 'Winding insulation fault', evidence: [{ when: { q: 'insulation', op: 'leRef', ref: 'oemMinInsulation' }, effect: 'strongly', because: 'Insulation at or below the manufacturer minimum' }, { when: { q: 'insulation', op: 'gtRef', ref: 'oemMinInsulation', factor: 10 }, effect: 'contradicts', because: 'Insulation well above the minimum' }], actions: ['With the set isolated: dry out per the alternator manual; re-test the insulation; rewind if it does not recover.'], reference: ALT_PRACTICE },
-    { id: 'avr', title: 'AVR failure or setting', evidence: [{ when: { all: [is('avrFuse', 'ok'), is('residual', 'present'), is('sensing', 'ok'), is('diodes', 'ok')] }, effect: 'strongly', because: 'Supply, residual, sensing and diodes check out' }, { when: { all: [{ q: 'voltage', op: 'gtRef', ref: 'ratedVoltage', factor: 0.95 }, { q: 'voltage', op: 'ltRef', ref: 'ratedVoltage', factor: 1.05 }] }, effect: 'excludes', because: 'Voltage within ±5 % of rated' }], actions: ['Check the AVR settings (voltage, stability, under-frequency roll-off); replace the AVR with the correct model if it does not regulate.'], reference: ALT_PRACTICE },
+    { id: 'avr', title: 'AVR failure or setting', evidence: [{ when: { all: [is('avrFuse', 'ok'), is('residual', 'present'), is('sensing', 'ok'), is('diodes', 'ok')] }, effect: 'strongly', because: 'Supply, residual, sensing and diodes check out' }, { when: { all: [{ q: 'voltage', op: 'gtRef', ref: 'ratedVoltage', factor: 0.95 }, { q: 'voltage', op: 'ltRef', ref: 'ratedVoltage', factor: 1.05 }] }, effect: 'excludes', because: 'Voltage within ±5 % of rated' }], actions: ['With the set isolated: compare the AVR settings (voltage, stability, under-frequency roll-off) with the AVR manual; replace the AVR with the correct model if it does not regulate.'], reference: ALT_PRACTICE },
     { id: 'overload', title: 'Overload or a heavy motor start pulling voltage down', evidence: [{ when: { q: 'loadPct', op: 'gt', value: 100 }, effect: 'strongly', because: 'Load above the rating' }, { when: { q: 'loadPct', op: 'lt', value: 10 }, effect: 'excludes', because: 'Little or no load' }], actions: ['Compare the connected load and the largest motor start with the rating (Calculators tab).'], runningChecks: ['Only when no STOP is active: reduce the load and stage motor starts.'], reference: ALT_PRACTICE },
   ],
 };

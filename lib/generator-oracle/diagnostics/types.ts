@@ -205,6 +205,8 @@ export interface DiagnosisResult {
     /** Separate line shown under the message. */ label?: string;
     /** screen: cross-family safety screen; family: this family's rules or limits; other-family: a STOP raised in another family of the same session. */
     origin: 'screen' | 'family' | 'other-family';
+    /** For origin 'other-family': the family where the STOP was raised (shown on its own line). */
+    from?: string;
   }>;
   /** True when running checks and running-only questions are withheld (any STOP, or a leading "do not run" cause). */
   runningWithheld: boolean;

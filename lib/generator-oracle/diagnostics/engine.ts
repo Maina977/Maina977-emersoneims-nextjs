@@ -196,12 +196,15 @@ export function limitStatuses(family: FaultFamily, answers: Answers): LimitStatu
 }
 
 /** Wording for a limit CAUTION while a STOP is active: a record only, nothing that implies running. */
-const cautionUnderStop = (l: LimitStatus) => `Also recorded for the investigation (the STOP above applies): ${l.parameter} ${l.limitValue} ${l.unit} (${l.classification === 'warning' ? 'warning value' : 'classification not stated'}) ${l.status === 'near' ? 'is within the measurement tolerance of' : 'has been reached by'} the reading ${l.value} ${l.unit}; source: ${l.source ?? 'NOT GIVEN'}.`;
+const cautionUnderStop = (l: LimitStatus, why: string) => `Also recorded for the investigation (${why}): ${l.parameter} ${l.limitValue} ${l.unit} (${l.classification === 'warning' ? 'warning value' : 'classification not stated'}) ${l.status === 'near' ? 'is within the measurement tolerance of' : 'has been reached by'} the reading ${l.value} ${l.unit}; source: ${l.source ?? 'NOT GIVEN'}.`;
 
 export interface DiagnoseOptions {
   /** STOPs raised in other families of the same session (see sessionSafety.ts). */
   externalStops?: Array<{ family: string; message: string; label?: string }>;
 }
+
+/** Why running is withheld, for the record-only caution wording. */
+const withheldWhy = (stopActive: boolean) => (stopActive ? 'the STOP above applies' : 'running is withheld: a leading cause says do not run');
 
 export function diagnose(family: FaultFamily, raw: Answers, opts: DiagnoseOptions = {}): DiagnosisResult {
   const { answers, invalid } = validateAnswers(family, raw);
@@ -210,8 +213,6 @@ export function diagnose(family: FaultFamily, raw: Answers, opts: DiagnoseOption
   const raw0 = limitStatuses(family, answers);
   const external = opts.externalStops ?? [];
   const stopActive = external.length > 0 || fired.some((s) => s.level === 'STOP') || raw0.some((l) => l.level === 'STOP');
-  // Under a STOP, a limit CAUTION is a record only, everywhere it is shown (safety review F2).
-  const limits = stopActive ? raw0.map((l) => (l.level === 'CAUTION' ? { ...l, text: cautionUnderStop(l), alert: cautionUnderStop(l) } : l)) : raw0;
 
   const ranked: RankedCause[] = [];
   const excluded: DiagnosisResult['excluded'] = [];
@@ -235,6 +236,10 @@ export function diagnose(family: FaultFamily, raw: Answers, opts: DiagnoseOption
   scored.sort((x, y) => y.score - x.score || (order.get(x.cause.id)! - order.get(y.cause.id)!));
   // A leading "do not run" cause withholds running checks as firmly as a STOP does.
   const runningWithheld = stopActive || scored.slice(0, 3).some((s) => s.score > 0 && s.cause.doNotRun);
+  // Whenever running is withheld (a STOP, or a leading "do not run" cause — review R3), a limit
+  // CAUTION is a record only, everywhere it is shown: nothing that implies running (F2).
+  const why = withheldWhy(stopActive);
+  const limits = runningWithheld ? raw0.map((l) => (l.level === 'CAUTION' ? { ...l, text: cautionUnderStop(l, why), alert: cautionUnderStop(l, why) } : l)) : raw0;
   for (const { cause, score, pro, con } of scored) {
     const running = cause.runningChecks ?? [];
     ranked.push({
@@ -251,10 +256,11 @@ export function diagnose(family: FaultFamily, raw: Answers, opts: DiagnoseOption
   const stops: Msg[] = [];
   for (const s of fired.filter((x) => x.level === 'STOP')) stops.push({ level: 'STOP', message: s.message, ...(s.label ? { label: s.label } : {}), origin: s.screen ? 'screen' : 'family' });
   for (const l of limits.filter((x) => x.level === 'STOP')) stops.push({ level: 'STOP', message: l.alert ?? l.text, ...(l.label ? { label: l.label } : {}), origin: 'family' });
-  for (const e of external) stops.push({ level: 'STOP', message: `STOP (raised in "${e.family}"): ${e.message.replace(/^STOP[:\s—-]*/, '')}`, ...(e.label ? { label: e.label } : {}), origin: 'other-family' });
+  // Review R7: a STOP from another family keeps its exact wording; where it was raised is a separate line.
+  for (const e of external) stops.push({ level: 'STOP', message: e.message, ...(e.label ? { label: e.label } : {}), origin: 'other-family', from: e.family });
   for (const m of family.mandatorySafety ?? []) stops.push({ level: 'CAUTION', message: m, origin: 'family' });
   for (const s of fired.filter((x) => x.level === 'CAUTION')) {
-    if (!stopActive) stops.push({ level: 'CAUTION', message: s.message, origin: s.screen ? 'screen' : 'family' });
+    if (!runningWithheld) stops.push({ level: 'CAUTION', message: s.message, origin: s.screen ? 'screen' : 'family' });
     else if (s.underStop === undefined) stops.push({ level: 'CAUTION', message: s.message, origin: s.screen ? 'screen' : 'family' });
     else if (s.underStop !== null) stops.push({ level: 'CAUTION', message: s.underStop, origin: s.screen ? 'screen' : 'family' });
   }

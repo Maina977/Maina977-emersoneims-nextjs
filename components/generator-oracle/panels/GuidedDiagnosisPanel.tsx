@@ -203,6 +203,7 @@ export default function GuidedDiagnosisPanel() {
             <div key={i} className={`rounded-lg border p-3 text-sm ${s.level === 'STOP' ? 'border-red-500 bg-red-950/60 text-red-100' : 'border-amber-500/60 bg-amber-950/40 text-amber-100'}`}>
               <strong>{s.level}</strong> · {s.message}
               {s.label ? <p className="mt-1 text-xs italic opacity-90">{s.label}</p> : null}
+              {s.from ? <p className="mt-1 text-xs opacity-80">Raised in the “{s.from}” diagnosis of this session.</p> : null}
             </div>
           ))}
         </div>

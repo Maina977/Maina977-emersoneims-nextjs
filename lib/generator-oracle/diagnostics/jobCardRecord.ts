@@ -93,7 +93,11 @@ export function diagnosisRecord(family: FaultFamily, raw: Record<string, string>
 
   const lines: string[] = [];
   // STOP lines first (F6), each followed by its label line where it has one.
-  for (const s of result.stops.filter((x) => x.level === 'STOP')) { lines.push(`STOP: ${s.message}`); if (s.label) lines.push(s.label); }
+  for (const s of result.stops.filter((x) => x.level === 'STOP')) {
+    lines.push(`STOP: ${s.message}`);
+    if (s.label) lines.push(s.label);
+    if (s.from) lines.push(`(Raised in the "${s.from}" diagnosis of this session.)`);
+  }
   lines.push(`${RECORD_HEADER}: ${family.title} [${family.id}] — ${result.engineVersion}; content status: ${result.review}.`);
   lines.push(`Not a manufacturer procedure. ${result.disclaimer}`);
   for (const s of result.stops.filter((x) => x.level === 'CAUTION')) { lines.push(`CAUTION: ${s.message}`); if (s.label) lines.push(s.label); }
@@ -171,6 +175,8 @@ export function sessionRecord(family: FaultFamily, session: RawAnswers, equipmen
  */
 export function recordToCardUpdate(card: Pick<JobCard, 'findings' | 'readings'>, rec: DiagnosisRecord): CardUpdate {
   const old = card.findings.trim();
-  const findings = !old ? rec.findings : rec.result.stopActive ? `${rec.findings}\n\n${old}` : `${old}\n\n${rec.findings}`;
+  // Review R8: earlier records stay, below the STOP record, marked as made before it.
+  const below = 'NOTE: The findings below were recorded before this STOP. None of their running checks may be done while the STOP stands.';
+  const findings = !old ? rec.findings : rec.result.stopActive ? `${rec.findings}\n\n${below}\n\n${old}` : `${old}\n\n${rec.findings}`;
   return { findings, readings: [...card.readings, ...rec.readings] };
 }

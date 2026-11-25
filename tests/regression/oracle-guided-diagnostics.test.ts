@@ -85,7 +85,7 @@ describe('stop rules always fire', () => {
     expect(r.stops.filter((s) => s.level === 'STOP')).toHaveLength(0);
   });
   it('no OEM minimum entered → no invented limit, and the OEM limit is asked first', () => {
-    const r = diagnose(LOW_OIL_PRESSURE, { ...SCREEN_NO, oilPressure: 50 });
+    const r = diagnose(LOW_OIL_PRESSURE, { ...SCREEN_NO, oilPressure: 50, oilPressureAtZero: 'no' });
     expect(r.stops).toHaveLength(0);
     expect(r.nextQuestion?.id).toBe('oemMinOilPressure');
   });
