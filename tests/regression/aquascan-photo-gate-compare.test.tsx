@@ -15,7 +15,7 @@ configure({ asyncUtilTimeout: 20000 });
 
 const calls: Array<{ name: string; loc: any }> = [];
 const GPS: Record<string, { latitude: number; longitude: number } | null> = {};
-let mode: 'ok' | 'refuse' | 'tie' = 'ok';
+let mode: 'ok' | 'refuse' | 'tie' | 'water' = 'ok';
 const desk = (y: number, d: number, p = 0.62) => ({
   probability: p, estimatedYield: y, recommendedDepth: d,
   risk: { overallRisk: 0.3, viability: 'moderate', categories: { geological: 0.3, financial: 0.3, contamination: 0.2 } },
@@ -32,6 +32,7 @@ vi.mock('@/external/borehole-ai-engine/src/boreholeAnalyzer', () => ({
       calls.push({ name: file.name, loc });
       if (mode === 'refuse') throw new Error('Location problem: -6.8000, 39.2800 is outside Kenya\'s land area');
       if (mode === 'tie') return desk(6.5, 40);
+      if (mode === 'water') return { ...desk(6.5, 40), waterBodyCheckUnavailable: true };
       return calls.length % 2 ? desk(6.5, 40, 0.71) : desk(1.2, 95, 0.52);
     }
   },
@@ -123,5 +124,19 @@ describe('compare flow (required behaviour)', () => {
     await waitFor(() => expect(calls).toHaveLength(1));
     const card = container.querySelectorAll('.compare-card')[0];
     await waitFor(() => expect(card.querySelector('[role="alert"]')?.textContent).toMatch(/Not analysed: -6\.8000, 39\.2800 is outside Kenya's land area/));
+  });
+
+  it('N3: a site whose water-body check was unavailable is not shown or ranked until the customer confirms it is on land', async () => {
+    const { container } = await mountCompare();
+    mode = 'water';
+    GPS['w.jpg'] = { latitude: -1.29, longitude: 36.82 };
+    up(inputs(container)[0], 'w.jpg');
+    await waitFor(() => expect(calls).toHaveLength(1));
+    const card = () => container.querySelectorAll('.compare-card')[0];
+    await waitFor(() => expect(card().textContent).toMatch(/confirm on a map that this site is on land before it is shown or ranked/));
+    expect(card().textContent).not.toMatch(/Score:/);
+    expect(card().textContent).not.toMatch(/Chance of success/);
+    fireEvent.click(screen.getByLabelText('Site A: I have checked the site is on land'));
+    await waitFor(() => expect(card().textContent).toMatch(/Score:/));
   });
 });
