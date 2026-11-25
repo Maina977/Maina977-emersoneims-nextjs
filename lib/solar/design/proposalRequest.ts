@@ -38,7 +38,16 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
   if (!Array.isArray(i.cables) || !(i.cables as unknown[]).every(isObj)) e.push('cables must be an array (may be empty)');
   const p = i.production;
   if (!isObj(p) || !isNum(p.annualKwh) || !isNum(p.clippedKwh) || !isNum(p.specificYieldKwhPerKwp) || !isNum(p.performanceRatio) || !Array.isArray(p.assumptions) || !isStr(p.engineVersion)) e.push('production (hourly simulation result) is required');
-  if (i.hybrid !== undefined && (!isObj(i.hybrid) || !isObj(i.hybrid.totals) || !isStr(i.hybrid.engineVersion))) e.push('hybrid must be a hybrid simulation result');
+  if (isObj(p) && p.shading !== undefined) {
+    const sh = p.shading;
+    if (!isObj(sh) || !isObj(sh.horizon) || !Array.isArray(sh.monthly) || !isObj(sh.annual) || !isNum(sh.annual.shadedAnnualKwh) || !isStr(sh.engineVersion)) e.push('production.shading must be a horizon-shading result');
+  }
+  if (i.connections !== undefined) {
+    const c = i.connections;
+    const tri = (x: unknown) => x === true || x === false || x === null;
+    if (!isObj(c) || !tri(c.grid) || !tri(c.generator) || (c.generatorRatedKw !== undefined && !isNum(c.generatorRatedKw))) e.push('connections must be { grid, generator } with true, false or null');
+  }
+  if (i.hybrid !== undefined &&(!isObj(i.hybrid) || !isObj(i.hybrid.totals) || !isStr(i.hybrid.engineVersion))) e.push('hybrid must be a hybrid simulation result');
   if (!Array.isArray(i.bom) || !(i.bom as unknown[]).every((l) => isObj(l) && isStr(l.item) && isStr(l.model) && isNum(l.quantity) && isStr(l.unit) && (l.rate === null || isObj(l.rate)))) e.push('bom must be an array of { item, model, quantity, unit, rate | null }');
   const f = i.finance;
   if (!isObj(f) || !isNum(f.lifetimeYears)) e.push('finance { …, lifetimeYears } is required');

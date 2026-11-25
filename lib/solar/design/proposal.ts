@@ -28,8 +28,10 @@ import type { LibraryEntry } from './datasheet';
 import type { HourlyResult } from './hourly';
 import type { HybridResult } from './hybrid';
 import { proposalRevisionHash, verifyApproval, TYPED_APPROVAL_IGNORED_REASON, type ApprovalVerifier, type VerifiedApproval } from './proposalApproval';
+import { buildSld, type SldConnections, type SldModel } from './sld';
+import { horizonErrors, type ShadingSummary } from './shading';
 
-export const PROPOSAL_ENGINE_VERSION = 'solar-proposal 1.1.0 (2026-11-21, approval lock)';
+export const PROPOSAL_ENGINE_VERSION = 'solar-proposal 1.2.0 (2026-11-25, single-line diagram and horizon shading)';
 
 export interface Sourced { value: number; source: string }
 export interface PricedLine { item: string; model: string; quantity: number; unit: string; rate: { valueKes: number; source: string; date: string } | null }
@@ -39,6 +41,8 @@ export interface ProposalInput {
   module: LibraryEntry<Module>; inverter: LibraryEntry<Inverter>; battery?: { entry: LibraryEntry<Battery>; units: number; requiredUsableAcKwh: number };
   design: ArrayDesign; inverterCount: number; temps: SiteTemps & { source: string };
   cables: CableRun[];
+  /** Grid / generator connection for the single-line diagram; absent = not stated (shown as to be specified by the engineer). */
+  connections?: SldConnections;
   production: HourlyResult;
   hybrid?: HybridResult;
   bom: PricedLine[];
@@ -70,6 +74,10 @@ export interface Proposal {
   costing: { lines: Array<PricedLine & { amountKes: number | null }>; capexKes: number | null; unpriced: string[] };
   energy: { year1Kwh: number; usefulYear1Kwh: number | null; exportYear1Kwh: number; clippedKwh: number; specificYield: number; performanceRatio: number; source: string };
   finance: null | { npvKes: number; irrPct: number | null; simplePaybackYears: number | null; lcoeKesPerKwh: number; cashflows: CashflowYear[] };
+  /** Single-line diagram model (sld.ts): the screen SVG and the PDF/Excel exports are all drawn from it. */
+  sld: SldModel;
+  /** Horizon shading from the production simulation (shading.ts), or null when no horizon was entered. */
+  shading: ShadingSummary | null;
   disclosures: string[];
   versions: string[];
 }
@@ -130,6 +138,18 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   const om = need('O&M (KES/yr)', f.omKesPerYear, 0, 1e9);
   if (!(Number.isInteger(f.lifetimeYears) && f.lifetimeYears >= 5 && f.lifetimeYears <= 30)) throw new Error('Lifetime must be 5–30 whole years');
   if (!i.temps.source?.trim()) throw new Error('Source of the site temperatures is required');
+  const c = i.connections;
+  if (c !== undefined && (typeof c !== 'object' || c === null || ![true, false, null].includes(c.grid) || ![true, false, null].includes(c.generator)
+    || (c.generatorRatedKw !== undefined && !(Number.isFinite(c.generatorRatedKw) && c.generatorRatedKw > 0)))) throw new Error('connections must be { grid: true | false | null, generator: true | false | null, generatorRatedKw?: positive kW }');
+  const shading = i.production.shading ?? null;
+  if (shading) {
+    const he = horizonErrors(shading.horizon);
+    if (he.length) throw new Error(`Horizon shading: ${he.join('; ')}`);
+    if (!Array.isArray(shading.monthly) || shading.monthly.length !== 12) throw new Error('Horizon shading: 12 monthly results are required');
+    const pcts = [shading.annual?.beamLossPct, shading.annual?.energyLossPct, ...shading.monthly.flatMap((m) => [m.beamLossPct, m.poaLossPct, m.energyLossPct])];
+    if (pcts.some((x) => x !== null && !(typeof x === 'number' && x >= 0 && x <= 100))) throw new Error('Horizon shading: loss percentages must be 0–100 %');
+    if (Math.abs(shading.annual.shadedAnnualKwh - i.production.annualKwh) > 1) throw new Error('Horizon shading: the shaded annual energy does not match the production result (they must come from the same simulation)');
+  }
   const exportTariff = f.exportTariffKesPerKwh ? need('Export tariff (KES/kWh)', f.exportTariffKesPerKwh, 0, 200) : 0;
 
   // 1. Design checks
@@ -138,7 +158,7 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   if (str.errors.length) reasons.push(...str.errors.map((e) => `Design: ${e}`));
   for (const c of i.cables) { const r = checkCable(c); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Cable ${c.name}: ${e}`)); }
   if (i.battery) { const r = checkBattery(i.battery.entry.data, i.inverter.data, i.battery.requiredUsableAcKwh, i.battery.units); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Battery: ${e}`)); }
-  const refused = checks.filter((c) => c.verdict === 'REFUSE');
+  const refused = checks.filter((k) => k.verdict === 'REFUSE');
   refused.forEach((c) => reasons.push(`REFUSE: ${c.title} (${c.value} ${c.unit} vs limit ${c.limit} ${c.unit})`));
 
   // 2. Schedule and costing
@@ -210,12 +230,19 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     ? { reviewerId: approvalCheck.reviewer.reviewerId, reviewerName: approvalCheck.reviewer.name, registration: approvalCheck.reviewer.registration, approvedAt: approvalCheck.approval.approvedAt }
     : null;
 
+  const sld = buildSld({
+    reference: i.reference, module: i.module.data, inverter: i.inverter.data, design: i.design, inverterCount: i.inverterCount, temps: i.temps,
+    ...(i.battery ? { battery: { data: i.battery.entry.data, units: i.battery.units, requiredUsableAcKwh: i.battery.requiredUsableAcKwh } } : {}),
+    cables: i.cables, ...(i.connections ? { connections: i.connections } : {}),
+  });
+
   return {
     reference: i.reference, status, statusReasons: reasons, revisionHash, approval, client: i.client,
     system: { dcKwp, acKw, modules, strings, inverterCount: i.inverterCount, batteryKwh: i.battery ? i.battery.entry.data.nominalKwh * i.battery.units : null },
     checks, schedule, costing: { lines, capexKes: capex, unpriced },
     energy: { year1Kwh: y1, usefulYear1Kwh: useful === null ? null : Math.round(useful), exportYear1Kwh: Math.round(exported), clippedKwh: i.production.clippedKwh, specificYield: i.production.specificYieldKwhPerKwp, performanceRatio: i.production.performanceRatio, source: i.production.assumptions[0] },
     finance,
+    sld, shading,
     disclosures: [
       `Energy is a simulation (${i.production.engineVersion}) using ${i.production.assumptions[0]} It is not a guarantee. Year-to-year weather alone commonly moves annual yield by several per cent; regional weather data are coarser than the site.`,
       'The simulation agrees with pvlib on identical inputs; it has not yet been compared with measured output of installed EmersonEIMS systems.',
@@ -223,7 +250,9 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
       'Prices are those listed with their dated sources; they change, and the proposal is valid only while they hold.',
       'Financial results use the tariff, escalation, discount rate and degradation shown, as given by the customer or datasheet; other assumptions give other results.',
       'Electrical design must be checked and signed by a qualified engineer before installation; this proposal is not a certificate.',
+      'The single-line diagram shows only what the design determines; every item marked "to be specified by the engineer" must be completed before construction.',
+      ...(shading ? [`Horizon shading: the surveyed horizon (${shading.horizon.source}) blocks direct sunlight and reduces year-1 energy by ${shading.annual.energyLossPct ?? 0} %. Diffuse light is not reduced (the indicative further loss is about ${shading.indicativeDiffuseLossPct ?? 0} %), and near shading close to the modules (row-to-row, parapets, vents) is not modelled.`] : []),
     ],
-    versions: [PROPOSAL_ENGINE_VERSION, str.engineVersion, i.production.engineVersion, ...(i.hybrid ? [i.hybrid.engineVersion] : [])],
+    versions: [PROPOSAL_ENGINE_VERSION, str.engineVersion, i.production.engineVersion, ...(shading ? [shading.engineVersion] : []), sld.engineVersion, ...(i.hybrid ? [i.hybrid.engineVersion] : [])],
   };
 }

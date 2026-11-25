@@ -28,7 +28,7 @@ describe('proposal exports', () => {
     const ExcelJS = (await import('exceljs')).default;
     const p = buildProposal(base());
     const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await proposalToXlsx(p) as unknown as ArrayBuffer);
-    expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow']);
+    expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow', 'Single-line diagram']); // 2026-11-25: SLD sheet added
     const sum = wb.getWorksheet('Summary')!;
     expect(String(sum.getCell('A2').value)).toMatch(/DRAFT: NOT FOR ISSUE/);
     expect(sum.getCell('B3').value).toBe(p.revisionHash);
