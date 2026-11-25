@@ -465,14 +465,11 @@ export default function SpeechController({ language, className = '' }: SpeechCon
                 </button>
                 <button
                   onClick={() => {
-                    const instructions = {
-                      en: 'To diagnose your generator, first check the oil pressure, then verify coolant temperature, and finally inspect the battery voltage.',
-                      sw: 'Kuchunguza jenereta yako, kwanza angalia shinikizo la mafuta, kisha thibitisha joto la kipozezi, na hatimaye kagua voltage ya betri.',
-                      fr: 'Pour diagnostiquer votre générateur, vérifiez d\'abord la pression d\'huile, puis la température du liquide de refroidissement, et enfin la tension de la batterie.',
-                      es: 'Para diagnosticar su generador, primero verifique la presión del aceite, luego la temperatura del refrigerante, y finalmente el voltaje de la batería.',
-                      ar: 'لتشخيص مولدك، تحقق أولاً من ضغط الزيت، ثم درجة حرارة سائل التبريد، وأخيراً جهد البطارية.',
-                      hi: 'अपने जनरेटर की जांच के लिए, पहले तेल का दबाव जांचें, फिर शीतलक तापमान की पुष्टि करें, और अंत में बैटरी वोल्टेज की जांच करें।',
-                      zh: '要诊断您的发电机，首先检查油压，然后验证冷却液温度，最后检查电池电压。',
+                    // Safety withdrawal 2026-11-25 (review R5): the old guide ("first check the oil
+                    // pressure, then verify coolant temperature...") had no STOP context. English only
+                    // until reviewed translations of the safety wording exist.
+                    const instructions: Record<string, string> = {
+                      en: 'If the generator shows a shutdown alarm, knocking, smoke, a leak or overheating, stop it and do not restart it. Consult the applicable OEM service manual and a qualified technician.',
                     };
                     speak(instructions[language as keyof typeof instructions] || instructions.en);
                   }}

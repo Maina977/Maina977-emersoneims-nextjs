@@ -181,7 +181,7 @@ export const SYMPTOM_DIAGNOSES: SymptomDiagnosis[] = [
       "generator coolant temperature high", "generator thermal shutdown",
       "generator overheating problem Kenya", "generator cooling problem"
     ],
-    description: "The generator engine temperature rises above normal operating range, potentially causing shutdown. Normal operating temperature is typically 80-95°C (176-203°F).",
+    description: "The generator engine temperature rises above normal operating range, potentially causing shutdown. The normal operating temperature is set by the engine maker: see the OEM manual for your model.",
     urgency: 'critical',
     possibleCauses: [
       {

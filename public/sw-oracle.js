@@ -2,34 +2,49 @@
  * GENERATOR ORACLE - SERVICE WORKER
  * Handles push notifications and background sync
  *
+ * SAFETY WITHDRAWAL 2026-11-25 (independent withdrawal review R4). Version 1 answered every
+ * same-origin GET (pages and /_next chunks) cache-first from a cache name that never changed
+ * ('generator-oracle-v1') and pre-cached '/' and '/generator-oracle', so a returning visitor
+ * could be served the PRE-withdrawal Oracle page and scripts after a deploy. This version:
+ *   - never caches or answers pages (navigations), scripts, styles or /_next/ files: those
+ *     requests are not intercepted, so they always come from the network as usual;
+ *   - caches only the two notification icons (all that offline alerts need);
+ *   - uses a new cache name and, on activate, deletes every older 'generator-oracle-*' cache;
+ *   - after taking control, reloads any open window that an old version controlled, so a
+ *     stale page served by version 1 is replaced at once.
+ * How an existing visitor's old worker is replaced: on the next navigation in scope the
+ * browser re-fetches /sw-oracle.js (bypassing the HTTP cache for the script itself), sees the
+ * bytes changed and installs this version; install calls skipWaiting(), activate calls
+ * clients.claim(), deletes 'generator-oracle-v1' and reloads the windows it now controls.
+ *
  * @copyright 2026 Generator Oracle / EmersonEIMS
  */
 
-const CACHE_NAME = 'generator-oracle-v1';
-const OFFLINE_URL = '/offline';
+const CACHE_PREFIX = 'generator-oracle-';
+const CACHE_NAME = 'generator-oracle-v2';
 
-// Files to cache for offline access
+// Only what offline notifications need. No pages, no scripts.
 const STATIC_CACHE = [
-  '/',
-  '/generator-oracle',
   '/images/oracle-icon-192.png',
   '/images/oracle-icon-512.png',
 ];
+
+/** True for the only requests this worker answers from its cache. */
+function isCachedAsset(url) {
+  return url.origin === self.location.origin && STATIC_CACHE.includes(url.pathname);
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // INSTALLATION
 // ═══════════════════════════════════════════════════════════════════════════════
 
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing Generator Oracle Service Worker');
-
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Caching static assets');
-      return cache.addAll(STATIC_CACHE).catch((err) => {
-        console.warn('[SW] Some static assets failed to cache:', err);
-      });
-    })
+    caches.open(CACHE_NAME).then((cache) =>
+      cache.addAll(STATIC_CACHE).catch((err) => {
+        console.warn('[SW] Some notification icons failed to cache:', err);
+      })
+    )
   );
 
   // Activate immediately
@@ -40,24 +55,24 @@ self.addEventListener('install', (event) => {
 // ACTIVATION
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/** Deletes older Generator Oracle caches only (other workers' caches are left alone). Resolves to how many were deleted. */
+async function deleteOldOracleCaches() {
+  const names = await caches.keys();
+  const old = names.filter((name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME);
+  await Promise.all(old.map((name) => caches.delete(name)));
+  return old.length;
+}
+
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating Generator Oracle Service Worker');
-
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => {
-            console.log('[SW] Deleting old cache:', name);
-            return caches.delete(name);
-          })
-      );
-    })
-  );
-
-  // Take control of all clients
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const deleted = await deleteOldOracleCaches();
+    await self.clients.claim();
+    // An older version may have served these windows a cached (pre-withdrawal) page: reload them.
+    if (deleted > 0) {
+      const windows = await self.clients.matchAll({ type: 'window' });
+      await Promise.all(windows.map((client) => (client.navigate ? client.navigate(client.url).catch(() => undefined) : undefined)));
+    }
+  })());
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -222,44 +237,22 @@ async function syncFeedbackQueue() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FETCH HANDLING (Offline support)
+// FETCH HANDLING (notification icons only)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
-
-  // Skip API calls and external resources
   const url = new URL(event.request.url);
-  if (url.pathname.startsWith('/api/') || url.origin !== location.origin) {
-    return;
-  }
+  // Pages, scripts, styles, /_next/ files and API calls are not intercepted: the network answers them.
+  if (event.request.mode === 'navigate' || !isCachedAsset(url)) return;
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      return fetch(event.request)
-        .then((response) => {
-          // Cache successful responses
-          if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Return offline page for navigation requests
-          if (event.request.mode === 'navigate') {
-            return caches.match(OFFLINE_URL);
-          }
-          return new Response('Offline', { status: 503 });
-        });
-    })
+    caches.open(CACHE_NAME).then((cache) =>
+      cache.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
+        if (response.status === 200) cache.put(event.request, response.clone());
+        return response;
+      }))
+    )
   );
 });
 

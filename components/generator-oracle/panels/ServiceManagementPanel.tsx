@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { importWithRetry } from '@/lib/loading/resilientImport';
 import {
-  jobCardReport, nextStatuses, signOffCheck, signOffSummary, SIGNOFF, STOP_NOT_CARRIED_NOTICE, TYPED_NAMES_NOTICE, TYPED_SIGNOFF_NOTICE,
+  jobCardReport, nextStatuses, signOffCheck, signOffSummary, SIGNOFF, READINGS_NOT_TAKEN_STOP, STOP_NOT_CARRIED_NOTICE, TYPED_NAMES_NOTICE, TYPED_SIGNOFF_NOTICE,
   type Asset, type JobCard, type JobStatus,
 } from '@/lib/generator-oracle/service/maintenance';
 import {
@@ -332,6 +332,7 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
               </div>
             ))}
             <button type="button" className={btn2} onClick={() => setD({ ...d, readings: [...d.readings, { name: '', value: '', unit: '', min: '', max: '', limitSource: '' }] })}>+ Add reading</button>
+            <p className="text-xs text-red-200 break-words">Do not test-run a set with an unresolved STOP. Record instead: <button type="button" className="underline text-red-100" onClick={() => setD({ ...d, findings: d.findings.toLowerCase().includes(READINGS_NOT_TAKEN_STOP.toLowerCase()) ? d.findings : [d.findings.trim(), READINGS_NOT_TAKEN_STOP].filter(Boolean).join('. ') })}>{READINGS_NOT_TAKEN_STOP}</button></p>
           </div>
           <Field label="Findings"><textarea rows={3} className={inp} value={d.findings} onChange={(e) => setD({ ...d, findings: e.target.value })} /></Field>
           <button type="button" className={btn2} onClick={() => dispatch({ type: 'updateCard', cardId: card.id, update: fromDraft(d) })}>Save changes</button>

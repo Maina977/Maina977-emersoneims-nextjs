@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ORACLE_SAFETY_WITHDRAWN_MESSAGE } from '@/lib/generator-oracle/safety/withdrawal';
-import { jobCardReport, STOP_NOT_CARRIED_NOTICE, type Asset, type JobCard } from '@/lib/generator-oracle/service/maintenance';
+import { jobCardReport, cardIntegrityProblems, transition, READINGS_NOT_TAKEN_STOP, STOP_NOT_CARRIED_NOTICE, SIGNOFF, type Asset, type JobCard } from '@/lib/generator-oracle/service/maintenance';
 import { jobCardToPdf } from '@/lib/generator-oracle/service/jobCardPdf';
 import { emptyState, reduce, type ServiceAction, type ServiceState } from '@/lib/generator-oracle/service/store';
 
@@ -37,6 +37,11 @@ const WITHDRAWN = [
   'lib/maintenance-hub/comprehensive-fault-database', // "25-65 PSI at operating temperature"
   'lib/data/cumminsErrorCodes', // "Install mechanical gauge to verify actual pressure"
   'components/maintenance-companion/shared/RepairStepCard', // Repair Guide Library step renderer
+  // Third pass (2026-11-25, withdrawal review N1/R3)
+  'lib/maintenance-companion/predictiveEngine', // N1 invented limits, no overheating STOP
+  'components/maintenance-companion/PredictiveAnalyzer',
+  'components/maintenance-companion/shared/PredictionCard',
+  'lib/generator-oracle/controller-repair-manuals-withdrawn-data', // R3 Common Faults / Procedures data
 ];
 
 const ROOT = path.resolve('.');
@@ -129,6 +134,7 @@ const ROUTES = [
   'app/api/generator-oracle/ai-visual-diagnose/route',
   'app/api/ai/chat/route',
   'app/api/ai/diagnose/route',
+  'app/api/ai/chat/stream/route', // R2
 ];
 const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'] as const;
 
@@ -247,5 +253,54 @@ describe('Oracle safety withdrawal 2026-11-25: job card carries the STOP line', 
   it('the job-card screen shows it at the top', () => {
     const panel = fs.readFileSync('components/generator-oracle/panels/ServiceManagementPanel.tsx', 'utf8');
     expect(panel).toMatch(/<div className="space-y-4 min-w-0">\s*\{\/\*[^*]*\*\/\}\s*<p role="note" data-testid="stop-not-carried-notice"[^>]*>\s*<strong>Safety\.<\/strong> \{STOP_NOT_CARRIED_NOTICE\}/);
+  });
+});
+
+describe('Oracle safety withdrawal 2026-11-25, pass 3', () => {
+  it('N1: the Maintenance Companion Predictive tab shows the notice', () => {
+    const mc = fs.readFileSync('components/maintenance-companion/MainCompanionModule.tsx', 'utf8');
+    expect(mc).toContain('<OracleSafetyWithdrawnNotice surface="maintenance-companion-predictive" />');
+    expect(mc).not.toMatch(/<PredictiveAnalyzer/);
+  });
+  it('R3: Repair Manuals data ships with empty Repair Procedures / Common Faults', async () => {
+    const { CONTROLLER_MANUALS } = await import('@/lib/generator-oracle/controller-repair-manuals');
+    expect(CONTROLLER_MANUALS.length).toBe(10);
+    for (const m of CONTROLLER_MANUALS) { expect(m.repairProcedures).toEqual([]); expect(m.commonFaults).toEqual([]); }
+  });
+  it('R5: wording fixes', () => {
+    expect(fs.readFileSync('lib/generator-oracle/educationalContent.ts', 'utf8')).not.toContain('80-95°C');
+    expect(fs.readFileSync('components/generator-oracle/SpeechController.tsx', 'utf8')).not.toContain('first check the oil pressure');
+    const edu = fs.readFileSync('components/generators/GeneratorEducationPanel.tsx', 'utf8');
+    expect(edu).toContain('if you find one, do not run the generator');
+    expect(edu).not.toContain("'Run generator under load for 30 minutes'");
+  });
+});
+
+describe('R1: a job card with an unresolved STOP completes and signs off without test-run readings', () => {
+  const run = (st: ServiceState, ...acts: ServiceAction[]) => acts.reduce(reduce, st);
+  const base = () => run(emptyState(),
+    { type: 'saveAsset', asset: { make: 'TEST', model: 'T-100', engine: 'TEST-ENG', controller: 'TEST-CTRL', serial: 'S-1', ratedKva: 100 } },
+    { type: 'openCard', card: { assetId: 'A-1', opened: '2026-11-25', reportedFault: 'TEST knocking', faultCodes: [], technician: 'TECH-A' } },
+    { type: 'transition', cardId: 'JC-1', to: 'IN PROGRESS', by: 'TECH-A', at: '2026-11-25T08:00' }).jobCards[0];
+  const work = { tasks: ['TEST inspected, knock confirmed'], engineHoursAtJob: 1200, labourHours: 1 };
+
+  it('without the phrase, test-run readings are still required', () => {
+    expect(() => transition(base(), 'COMPLETED', 'TECH-A', '2026-11-25T10:00', { ...work, findings: 'TEST knock' })).toThrow(/test-run readings/);
+  });
+  it(`with "${READINGS_NOT_TAKEN_STOP}" in the findings: COMPLETED, then SIGNOFF, no readings, card intact, report says so`, () => {
+    expect(READINGS_NOT_TAKEN_STOP).toBe('Readings not taken: STOP in force');
+    const done = transition(base(), 'COMPLETED', 'TECH-A', '2026-11-25T10:00', { ...work, findings: `TEST knock. ${READINGS_NOT_TAKEN_STOP}` });
+    expect(done.status).toBe('COMPLETED');
+    expect(done.readings).toEqual([]);
+    const signed = transition(done, SIGNOFF, 'SUPERVISOR-B', '2026-11-25T11:00');
+    expect(signed.status).toBe(SIGNOFF);
+    expect(cardIntegrityProblems(signed)).toEqual([]);
+    const report = jobCardReport(signed, { id: 'A-1', make: 'TEST', model: 'T-100', engine: '', controller: '', serial: 'S-1', ratedKva: 100 } as Asset);
+    expect(report).toMatch(new RegExp(`TEST READINGS\n  ${READINGS_NOT_TAKEN_STOP}`));
+  });
+  it('the job-card screen offers the phrase next to the readings', () => {
+    const panel = fs.readFileSync('components/generator-oracle/panels/ServiceManagementPanel.tsx', 'utf8');
+    expect(panel).toContain('Do not test-run a set with an unresolved STOP. Record instead:');
+    expect(panel).toContain('{READINGS_NOT_TAKEN_STOP}</button>');
   });
 });

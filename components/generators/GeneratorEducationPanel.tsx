@@ -76,8 +76,8 @@ const QUICK_TIPS = [
       'Check oil level before starting',
       'Inspect coolant level',
       'Test battery voltage',
-      'Look for fuel leaks',
-      'Run generator under load for 30 minutes'
+      'Look for fuel, oil or coolant leaks: if you find one, do not run the generator; call a technician',
+      'Only if no leak or fault was found: exercise the generator under load for 30 minutes'
     ]
   },
   {

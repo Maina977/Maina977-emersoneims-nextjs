@@ -34,6 +34,15 @@ export const TYPED_NAMES_NOTICE = 'All names on this card (technician, status st
  * is not carried onto the card. Wording only: shown at the top of the job-card
  * screen and as the first notice of every .txt / PDF report.
  */
+/**
+ * Review R1 (2026-11-25): a set with an unresolved STOP must not be test-run, so a card whose
+ * findings record this phrase completes and signs off without test-run readings.
+ */
+export const READINGS_NOT_TAKEN_STOP = 'Readings not taken: STOP in force';
+/** True when the card records an unresolved STOP (the phrase above in its findings). */
+export function recordsStopInForce(card: Pick<JobCard, 'findings'>): boolean {
+  return card.findings.toLowerCase().includes(READINGS_NOT_TAKEN_STOP.toLowerCase());
+}
 export const STOP_NOT_CARRIED_NOTICE = 'Generator Oracle cannot confirm a set is safe to run. A STOP from Guided Diagnosis is kept only in this browser — record it on this card. Do not test-run a set with an unresolved STOP.';
 
 export interface ManualRef { document: string; edition: string; page: string }
@@ -199,7 +208,7 @@ export function transition(card: JobCard, to: JobStatus, by: string, at: string,
     if (!next.findings.trim()) e.push('findings');
     if (!next.tasks.length) e.push('work done');
     if (!(next.engineHoursAtJob !== null && next.engineHoursAtJob >= 0)) e.push('engine-hour reading');
-    if (!next.readings.length) e.push('test-run readings');
+    if (!next.readings.length && !recordsStopInForce(next)) e.push(`test-run readings (or, if a STOP is unresolved, write "${READINGS_NOT_TAKEN_STOP}" in the findings)`);
     if (e.length) throw new Error(`To complete, record: ${e.join(', ')}`);
     next.completedOn = at;
   }
@@ -290,7 +299,7 @@ export function cardIntegrityProblems(card: JobCard): string[] {
   if (at !== card.status) out.push(`its status ${card.status} does not match its history (${at})`);
   if (card.revision !== reopens + 1) out.push(`revision ${card.revision} does not match its history (${reopens + 1})`);
   if (card.status === 'COMPLETED' || card.status === SIGNOFF) {
-    const miss = [!card.findings.trim() && 'findings', !card.tasks.length && 'work done', !(card.engineHoursAtJob !== null && card.engineHoursAtJob >= 0) && 'engine-hour reading', !card.readings.length && 'test-run readings', !card.completedOn && 'completion date'].filter(Boolean);
+    const miss = [!card.findings.trim() && 'findings', !card.tasks.length && 'work done', !(card.engineHoursAtJob !== null && card.engineHoursAtJob >= 0) && 'engine-hour reading', !card.readings.length && !recordsStopInForce(card) && 'test-run readings', !card.completedOn && 'completion date'].filter(Boolean);
     if (miss.length) out.push(`completed without: ${miss.join(', ')}`);
   }
   if (card.status === SIGNOFF) {
@@ -357,7 +366,7 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
       ] },
       { heading: 'PARTS', lines: list(card.parts.map((p) => `${p.qty} × ${p.partNo}${p.description ? ` ${p.description}` : ''} — ${p.compatibility ? `parts book: ${refText(p.compatibility)}` : 'compatibility unverified (no parts-book reference)'}`), 'none') },
       { heading: 'TEST READINGS', lines: [
-        ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})`), '(none recorded)'),
+        ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})`), !card.readings.length && recordsStopInForce(card) ? READINGS_NOT_TAKEN_STOP : '(none recorded)'),
         ...flags.map((f) => `  ! ${f}`),
       ] },
       { heading: 'FINDINGS', lines: [`  ${card.findings || '—'}`] },
