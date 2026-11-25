@@ -432,6 +432,11 @@ export class BoreholeAnalyzer {
     const effectiveLat = clientGeo?.latitude ?? features.metadata?.gps?.latitude;
     const effectiveLon = clientGeo?.longitude ?? features.metadata?.gps?.longitude;
     const hasCoords = effectiveLat != null && effectiveLon != null;
+    // Safety hotfix 2026-11-25: no analysis without a real location. A position guessed from the
+    // photo's colours ('visual-estimate') or no position at all is refused with a reason.
+    if (!clientGeo && (!hasCoords || features.locationMethod === 'visual-estimate')) {
+      throw new Error('Location problem: AquaScan needs the site\u2019s coordinates (typed, searched or from the camera GPS). A photo cannot locate the site or show groundwater.');
+    }
     // Kenyan land only, whatever the entry point (typed, re-analysis, place
     // search or photo GPS) (2026-10-27 audit: Kampala, Lake Turkana and the
     // sea off Mombasa all got full results).
