@@ -3077,6 +3077,131 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
 
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
 
+  // -- 27. PUMP TEST ANALYSIS --
+  // Correction 2026-11-26: this section was inside the Professional-only block, and the tier has
+  // been 'basic' since 3025687f (one governing PDF), so the PDF never printed the pump-test result
+  // or its INSUFFICIENT EVIDENCE limitation. It is printed whenever a pump test was entered
+  // (single reading, time series, or a test that could not be analysed); with no pump test at all
+  // the section is left out, as on the screen.
+  try {
+  if (result.pumpTestTimeSeries || result.pumpTestObservation || result.pumpTestAnalysis || result.pumpTestRejected) {
+  // Safety correction 2026-11-25: a single-reading field test → observed specific
+  // capacity + INSUFFICIENT EVIDENCE; no transmissivity, storativity or yield.
+  // Time series (2026-11-25): only what the time-series analysis supports -- the same rows as the
+  // Pump Test tab, with its own INSUFFICIENT EVIDENCE when the record is not enough.
+  if (result.pumpTestTimeSeries) {
+    const ts = result.pumpTestTimeSeries;
+    checkSpace(40);
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
+    doc.text('27. Pump Test Analysis (Theis / Cooper-Jacob)', margin, y); y += 8;
+    doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
+    doc.text(ts.status === 'analysed' ? 'Field pumping test entered as timed readings (time series), analysed from the readings entered.' : 'Field pumping test entered as timed readings (time series): INSUFFICIENT EVIDENCE for an aquifer interpretation.', margin, y); y += 7;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Item', 'Value', 'Basis']],
+      body: ts.rows.map((r) => [r[0], r[1], r[2]]),
+      headStyles: { fillColor: [220, 38, 38], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 6.5 },
+      columnStyles: { 0: { cellWidth: 38 }, 1: { cellWidth: 38 } },
+      theme: 'grid',
+    });
+    y = lastY(6);
+  } else if (result.pumpTestObservation) {
+    const ob = result.pumpTestObservation;
+    const required = (result.pumpTestEvidenceRequired ?? []) as readonly string[];
+    const insufficient = String(result.pumpTestInsufficient ?? 'INSUFFICIENT EVIDENCE');
+    const width = pageW - margin * 2 - 8;
+    const lines = [
+      ...doc.splitTextToSize(ob.statement, width),
+      '',
+      ...doc.splitTextToSize(insufficient, width),
+      '',
+      'Records needed for a defensible pumping-test interpretation:',
+      ...required.flatMap((r) => doc.splitTextToSize(`- ${r}`, width)),
+    ];
+    const h = 22 + lines.length * 4;
+    checkSpace(h + 4);
+    doc.setFillColor(255, 240, 240);
+    doc.roundedRect(margin, y, pageW - margin * 2, h, 2, 2, 'F');
+    doc.setDrawColor(220, 38, 38); doc.setLineWidth(0.8);
+    doc.roundedRect(margin, y, pageW - margin * 2, h, 2, 2, 'S');
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
+    doc.text('27. Pump Test -- SINGLE READING: INSUFFICIENT EVIDENCE', margin + 4, y + 8);
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(60, 20, 20);
+    doc.text(`Observed specific capacity: ${ob.specificCapacity_m3hr_per_m.toFixed(3)} m3/h per m of drawdown (${ob.pumpingRate_m3hr} m3/h at ${ob.drawdown_m} m).`, margin + 4, y + 15);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(120, 30, 30);
+    let ly = y + 21;
+    for (const l of lines) { doc.text(l, margin + 4, ly); ly += 4; }
+    y += h + 6;
+  } else if (!result.pumpTestAnalysis) {
+    checkSpace(32);
+    doc.setFillColor(255, 240, 240);
+    doc.roundedRect(margin, y, pageW - margin * 2, 28, 2, 2, 'F');
+    doc.setDrawColor(220, 38, 38); doc.setLineWidth(0.8);
+    doc.roundedRect(margin, y, pageW - margin * 2, 28, 2, 2, 'S');
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
+    doc.text('27. Pump Test Analysis -- PENDING FIELD EXECUTION', margin + 4, y + 8);
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(150, 30, 30);
+    doc.text(result.pumpTestRejected ? `The pump test entered was not analysed (${String(result.pumpTestRejected).replace(/^Pump test not analysed: /, '').replace(/\.$/, '')}). All transmissivity, storativity, and yield values in this report are MODELLED ESTIMATES.` : 'No field pump test has been conducted. All transmissivity, storativity, and yield values in this report are MODELLED ESTIMATES.', margin + 4, y + 15, { maxWidth: pageW - margin * 2 - 8 });
+    doc.text('Action required: Commission a 24-hour constant-rate pump test (est. $1,500-$3,000) before financial commitment or regulatory submission.', margin + 4, y + 21);
+    doc.text('Data source on completion: field step-test + recovery curve (Cooper-Jacob method).', margin + 4, y + 26);
+    y += 34;
+  } else if (result.pumpTestAnalysis) {
+    addPage();
+    const pt = result.pumpTestAnalysis;
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
+    doc.text('27. Pump Test Analysis (Theis / Cooper-Jacob)', margin, y); y += 8;
+    doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
+    doc.text('Field pump test data analyzed with multiple analytical methods.', margin, y); y += 7;
+
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Parameter', 'Value']],
+      body: [
+        ['Transmissivity', `${fmt(pt.transmissivity_m2day)} m²/day`],
+        ['Storativity', pt.storativity != null ? pt.storativity.toExponential(2) : 'N/A'],
+        ['Hydraulic Conductivity', `${fmt(pt.hydraulicConductivity_m_day)} m/day`],
+        ['Specific Capacity', `${fmt(pt.specificCapacity_m3hr_m)} m³/hr/m`],
+        ['Well Efficiency', `${fmt(pt.wellEfficiency_pct, 0)}%`],
+        ['Max Recommended Yield', `${fmt(pt.maxRecommendedYield_m3hr, 1)} m³/hr`],
+        ['Sustainable Yield', `${fmt(pt.sustainableYield_m3hr, 1)} m³/hr`],
+        ['Safe Yield', `${fmt(pt.safeYield_m3hr, 1)} m³/hr`],
+        ['Max Drawdown', `${fmt(pt.maxDrawdown_m)}m`],
+        ['Available Drawdown', `${fmt(pt.availableDrawdown_m)}m`],
+        ['Recovery', `${fmt(pt.recoveryPct, 0)}% in ${fmt(pt.recoveryTime_min, 0)} min`],
+        ['Aquifer Type', (pt.aquiferType || 'N/A').replace(/_/g, ' ').toUpperCase()],
+        ['Sustainability Rating', (pt.sustainabilityRating || 'N/A').toUpperCase()],
+        ['Long-Term Decline', `${fmt(pt.longTermDecline_m_year)} m/year`],
+        ['Data Quality', (pt.dataQuality || 'N/A').toUpperCase()],
+        ['Confidence', `${((pt.confidence ?? 0) * 100).toFixed(0)}%`],
+      ],
+      headStyles: { fillColor: [220, 38, 38], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 8 },
+      alternateRowStyles: { fillColor: [255, 240, 240] },
+      theme: 'grid',
+    });
+    y = lastY(4);
+
+    checkSpace(30);
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 30, 30);
+    doc.text('Analytical Methods:', margin, y); y += 6;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Method', 'T (m²/d)', 'S', 'Quality']],
+      body: [
+        ['Cooper-Jacob', fmt(pt.cooperJacob?.T_m2day), pt.cooperJacob?.S?.toExponential(2) ?? 'N/A', `R?=${fmt(pt.cooperJacob?.r_squared)}`],
+        ['Theis', fmt(pt.theis?.T_m2day), pt.theis?.S?.toExponential(2) ?? 'N/A', `Match: ${fmt(pt.theis?.typeMatchQuality)}`],
+        ['Recovery', pt.recovery ? fmt(pt.recovery.T_m2day) : 'N/A', '', pt.recovery ? `${fmt(pt.recovery.recoveryEfficiency_pct, 0)}% efficient` : ''],
+      ],
+      headStyles: { fillColor: [180, 30, 30], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7.5 },
+      theme: 'grid',
+    });
+    y = lastY(6);
+  }
+  }
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // Technical sections: Professional and Comprehensive tiers only (2026-10-20).
   if ((tier as string) !== 'basic') {
   // -- SOIL ANALYSIS --
@@ -5064,104 +5189,6 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
   }
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
 
-  // -- 27. PUMP TEST ANALYSIS --
-  try {
-  // Safety correction 2026-11-25: a single-reading field test → observed specific
-  // capacity + INSUFFICIENT EVIDENCE; no transmissivity, storativity or yield.
-  if (result.pumpTestObservation) {
-    const ob = result.pumpTestObservation;
-    const required = (result.pumpTestEvidenceRequired ?? []) as readonly string[];
-    const insufficient = String(result.pumpTestInsufficient ?? 'INSUFFICIENT EVIDENCE');
-    const width = pageW - margin * 2 - 8;
-    const lines = [
-      ...doc.splitTextToSize(ob.statement, width),
-      '',
-      ...doc.splitTextToSize(insufficient, width),
-      '',
-      'Records needed for a defensible pumping-test interpretation:',
-      ...required.flatMap((r) => doc.splitTextToSize(`- ${r}`, width)),
-    ];
-    const h = 22 + lines.length * 4;
-    checkSpace(h + 4);
-    doc.setFillColor(255, 240, 240);
-    doc.roundedRect(margin, y, pageW - margin * 2, h, 2, 2, 'F');
-    doc.setDrawColor(220, 38, 38); doc.setLineWidth(0.8);
-    doc.roundedRect(margin, y, pageW - margin * 2, h, 2, 2, 'S');
-    doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
-    doc.text('27. Pump Test -- SINGLE READING: INSUFFICIENT EVIDENCE', margin + 4, y + 8);
-    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(60, 20, 20);
-    doc.text(`Observed specific capacity: ${ob.specificCapacity_m3hr_per_m.toFixed(3)} m3/h per m of drawdown (${ob.pumpingRate_m3hr} m3/h at ${ob.drawdown_m} m).`, margin + 4, y + 15);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(120, 30, 30);
-    let ly = y + 21;
-    for (const l of lines) { doc.text(l, margin + 4, ly); ly += 4; }
-    y += h + 6;
-  } else if (!result.pumpTestAnalysis) {
-    checkSpace(32);
-    doc.setFillColor(255, 240, 240);
-    doc.roundedRect(margin, y, pageW - margin * 2, 28, 2, 2, 'F');
-    doc.setDrawColor(220, 38, 38); doc.setLineWidth(0.8);
-    doc.roundedRect(margin, y, pageW - margin * 2, 28, 2, 2, 'S');
-    doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
-    doc.text('27. Pump Test Analysis -- PENDING FIELD EXECUTION', margin + 4, y + 8);
-    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(150, 30, 30);
-    doc.text('No field pump test has been conducted. All transmissivity, storativity, and yield values in this report are MODELLED ESTIMATES.', margin + 4, y + 15);
-    doc.text('Action required: Commission a 24-hour constant-rate pump test (est. $1,500-$3,000) before financial commitment or regulatory submission.', margin + 4, y + 21);
-    doc.text('Data source on completion: field step-test + recovery curve (Cooper-Jacob method).', margin + 4, y + 26);
-    y += 34;
-  } else if (result.pumpTestAnalysis) {
-    addPage();
-    const pt = result.pumpTestAnalysis;
-    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
-    doc.text('27. Pump Test Analysis (Theis / Cooper-Jacob)', margin, y); y += 8;
-    doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-    doc.text('Field pump test data analyzed with multiple analytical methods.', margin, y); y += 7;
-
-    autoTable(doc, {
-      startY: y, margin: { left: margin, right: margin },
-      head: [['Parameter', 'Value']],
-      body: [
-        ['Transmissivity', `${fmt(pt.transmissivity_m2day)} m²/day`],
-        ['Storativity', pt.storativity != null ? pt.storativity.toExponential(2) : 'N/A'],
-        ['Hydraulic Conductivity', `${fmt(pt.hydraulicConductivity_m_day)} m/day`],
-        ['Specific Capacity', `${fmt(pt.specificCapacity_m3hr_m)} m³/hr/m`],
-        ['Well Efficiency', `${fmt(pt.wellEfficiency_pct, 0)}%`],
-        ['Max Recommended Yield', `${fmt(pt.maxRecommendedYield_m3hr, 1)} m³/hr`],
-        ['Sustainable Yield', `${fmt(pt.sustainableYield_m3hr, 1)} m³/hr`],
-        ['Safe Yield', `${fmt(pt.safeYield_m3hr, 1)} m³/hr`],
-        ['Max Drawdown', `${fmt(pt.maxDrawdown_m)}m`],
-        ['Available Drawdown', `${fmt(pt.availableDrawdown_m)}m`],
-        ['Recovery', `${fmt(pt.recoveryPct, 0)}% in ${fmt(pt.recoveryTime_min, 0)} min`],
-        ['Aquifer Type', (pt.aquiferType || 'N/A').replace(/_/g, ' ').toUpperCase()],
-        ['Sustainability Rating', (pt.sustainabilityRating || 'N/A').toUpperCase()],
-        ['Long-Term Decline', `${fmt(pt.longTermDecline_m_year)} m/year`],
-        ['Data Quality', (pt.dataQuality || 'N/A').toUpperCase()],
-        ['Confidence', `${((pt.confidence ?? 0) * 100).toFixed(0)}%`],
-      ],
-      headStyles: { fillColor: [220, 38, 38], textColor: 255, fontStyle: 'bold', fontSize: 9 },
-      bodyStyles: { fontSize: 8 },
-      alternateRowStyles: { fillColor: [255, 240, 240] },
-      theme: 'grid',
-    });
-    y = lastY(4);
-
-    checkSpace(30);
-    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 30, 30);
-    doc.text('Analytical Methods:', margin, y); y += 6;
-    autoTable(doc, {
-      startY: y, margin: { left: margin, right: margin },
-      head: [['Method', 'T (m²/d)', 'S', 'Quality']],
-      body: [
-        ['Cooper-Jacob', fmt(pt.cooperJacob?.T_m2day), pt.cooperJacob?.S?.toExponential(2) ?? 'N/A', `R?=${fmt(pt.cooperJacob?.r_squared)}`],
-        ['Theis', fmt(pt.theis?.T_m2day), pt.theis?.S?.toExponential(2) ?? 'N/A', `Match: ${fmt(pt.theis?.typeMatchQuality)}`],
-        ['Recovery', pt.recovery ? fmt(pt.recovery.T_m2day) : 'N/A', '', pt.recovery ? `${fmt(pt.recovery.recoveryEfficiency_pct, 0)}% efficient` : ''],
-      ],
-      headStyles: { fillColor: [180, 30, 30], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-      bodyStyles: { fontSize: 7.5 },
-      theme: 'grid',
-    });
-    y = lastY(6);
-  }
-  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
 
   // -- 28. LITHOLOGY / STRATIGRAPHY ANALYSIS --
   try {
