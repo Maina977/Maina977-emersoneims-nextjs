@@ -51,7 +51,7 @@ export function jobCardToPdf(card: JobCard, asset: Asset): Uint8Array {
       const m = /^ {2}([-!]) (.*)$/.exec(raw);
       const text = m ? m[2] : raw.trim();
       // STOP lines (and their safeguard label) are highlighted wherever they appear (safety review F6).
-      const stop = /^STOP\b/.test(text) || /^This is a conservative software safeguard/.test(text) || /^\(Raised in the ".*" diagnosis of this session\.\)$/.test(text);
+      const stop = /^(STOP\b|SAFETY HOLD\b)/.test(text) || /^This is a conservative software safeguard/.test(text) || /^\(Raised in the ".*" diagnosis of this session\.\)$/.test(text);
       const alert = stop || /CHANGED AFTER SIGN-OFF|compatibility unverified/.test(text) || m?.[1] === '!';
       write(text, { x: LEFT + 2, bullet: m ? (m[1] === '!' ? '!' : '-') : undefined, red: alert, bold: stop || /CHANGED AFTER SIGN-OFF/.test(text) });
     }

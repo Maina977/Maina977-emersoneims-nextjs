@@ -43,7 +43,40 @@ export const READINGS_NOT_TAKEN_STOP = 'Readings not taken: STOP in force';
 export function recordsStopInForce(card: Pick<JobCard, 'findings'>): boolean {
   return card.findings.toLowerCase().includes(READINGS_NOT_TAKEN_STOP.toLowerCase());
 }
-export const STOP_NOT_CARRIED_NOTICE = 'Generator Oracle cannot confirm a set is safe to run. A STOP from Guided Diagnosis is kept only in this browser — record it on this card. Do not test-run a set with an unresolved STOP.';
+/**
+ * Integration 2026-11-26: every STOP latched on the Guided Diagnosis screen (and every recorded
+ * clearance) is carried onto the card by "Record a guided diagnosis", one line each. The lines
+ * start with "STOP" so the report repeats them in its first SAFETY section.
+ */
+export const LATCHED_STOP_PREFIX = 'STOP — still latched — no recorded clearance.';
+export const CLEARANCE_RECORD_PREFIX = 'STOP CLEARANCE RECORDED — UNVERIFIED';
+export interface LatchedStopRef { from: string; since: string; message: string }
+export interface ClearanceRef extends LatchedStopRef { clearedAt: string; by: string; reason: string }
+const oneLine = (s: string) => s.replace(/\s+/g, ' ').trim();
+export function latchedStopLine(l: LatchedStopRef): string {
+  return `${LATCHED_STOP_PREFIX} Source: ${oneLine(l.from)} tab. Since: ${l.since} (UTC). ${oneLine(l.message)}`;
+}
+export function clearanceLine(c: ClearanceRef): string {
+  return `${CLEARANCE_RECORD_PREFIX} (typed name, not authenticated; NOT authorisation to restart the generator): Source: ${oneLine(c.from)} tab. Since: ${c.since} (UTC). Cleared: ${c.clearedAt} (UTC) by ${oneLine(c.by)}. Reason: ${oneLine(c.reason) || '(not recorded)'}. STOP was: ${oneLine(c.message)}`;
+}
+const LATCH_ID = /^STOP — still latched — no recorded clearance\. Source: (.+?) tab\. Since: (\S+) \(UTC\)\./;
+const CLEAR_ID = /^STOP CLEARANCE RECORDED — UNVERIFIED .*?: Source: (.+?) tab\. Since: (\S+) \(UTC\)\./;
+/** Latched STOPs recorded in the findings with no clearance line for the same STOP (source + since). */
+export function unresolvedLatchedStops(card: Pick<JobCard, 'findings'>): string[] {
+  const lines = (card.findings || '').split(/\r?\n/);
+  const cleared = new Set(lines.map((l) => CLEAR_ID.exec(l)).filter(Boolean).map((m) => `${m![1]}|${m![2]}`));
+  const out: string[] = [];
+  for (const l of lines) {
+    const m = LATCH_ID.exec(l);
+    if (m && !cleared.has(`${m[1]}|${m[2]}`) && !out.includes(l)) out.push(l);
+  }
+  return out;
+}
+const latchedStopBlocker = (card: Pick<JobCard, 'findings'>): string | null =>
+  unresolvedLatchedStops(card).length && !recordsStopInForce(card)
+    ? `"${READINGS_NOT_TAKEN_STOP}" in the findings (a Guided Diagnosis STOP is still latched with no recorded clearance; record the clearance, or state that the STOP is in force)`
+    : null;
+export const STOP_NOT_CARRIED_NOTICE ='Generator Oracle cannot confirm a set is safe to run. A STOP from Guided Diagnosis is kept only in this browser — record it on this card. Do not test-run a set with an unresolved STOP.';
 
 export interface ManualRef { document: string; edition: string; page: string }
 export interface Asset { id: string; make: string; model: string; engine: string; controller: string; serial: string; ratedKva: number }
@@ -199,6 +232,8 @@ export function signOffBlockers(card: JobCard, by: string): string[] {
   if (unverified.length) out.push(`Compatibility unverified for: ${unverified.map((p) => p.partNo).join(', ')}; cite the OEM parts book`);
   const flags = readingFlags(card.readings);
   if (flags.length) out.push(`Readings need attention before sign-off: ${flags.join('; ')}`);
+  const latched = latchedStopBlocker(card);
+  if (latched) out.push(`Before sign-off, record ${latched}`);
   return out;
 }
 
@@ -212,6 +247,8 @@ export function transition(card: JobCard, to: JobStatus, by: string, at: string,
     if (!next.tasks.length) e.push('work done');
     if (!(next.engineHoursAtJob !== null && next.engineHoursAtJob >= 0)) e.push('engine-hour reading');
     if (!next.readings.length && !recordsStopInForce(next)) e.push(`test-run readings (or, if a STOP is unresolved, write "${READINGS_NOT_TAKEN_STOP}" in the findings)`);
+    const latched = latchedStopBlocker(next);
+    if (latched) e.push(latched);
     if (e.length) throw new Error(`To complete, record: ${e.join(', ')}`);
     next.completedOn = at;
   }
@@ -302,7 +339,7 @@ export function cardIntegrityProblems(card: JobCard): string[] {
   if (at !== card.status) out.push(`its status ${card.status} does not match its history (${at})`);
   if (card.revision !== reopens + 1) out.push(`revision ${card.revision} does not match its history (${reopens + 1})`);
   if (card.status === 'COMPLETED' || card.status === SIGNOFF) {
-    const miss = [!card.findings.trim() && 'findings', !card.tasks.length && 'work done', !(card.engineHoursAtJob !== null && card.engineHoursAtJob >= 0) && 'engine-hour reading', !card.readings.length && !recordsStopInForce(card) && 'test-run readings', !card.completedOn && 'completion date'].filter(Boolean);
+    const miss = [!card.findings.trim() && 'findings', !card.tasks.length && 'work done', !(card.engineHoursAtJob !== null && card.engineHoursAtJob >= 0) && 'engine-hour reading', !card.readings.length && !recordsStopInForce(card) && 'test-run readings', !card.completedOn && 'completion date', latchedStopBlocker(card)].filter(Boolean);
     if (miss.length) out.push(`completed without: ${miss.join(', ')}`);
   }
   if (card.status === SIGNOFF) {
@@ -360,7 +397,7 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
   const stopLines: string[] = [];
   const belongs = (l: string | undefined) => !!l && (/^This is a conservative software safeguard/.test(l) || /^\(Raised in the ".*" diagnosis of this session\.\)$/.test(l));
   fl.forEach((l, i) => {
-    if (!/^STOP\b/.test(l)) return;
+    if (!/^(STOP\b|SAFETY HOLD\b)/.test(l)) return;
     stopLines.push(`  ${l}`);
     for (let j = i + 1; belongs(fl[j]); j++) stopLines.push(`  ${fl[j]}`);
   });

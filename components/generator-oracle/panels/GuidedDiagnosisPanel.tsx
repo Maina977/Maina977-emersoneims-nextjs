@@ -19,69 +19,23 @@ import { FAMILIES, familyFor } from '@/lib/generator-oracle/diagnostics/families
 import { diagnosisRecord, refQuestions } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
 import { knownModels, publishedEntryOf, publishedLimitFor, questionReferenceNote, referencesFor, type Equipment } from '@/lib/generator-oracle/diagnostics/oemReferences';
 import { classKey, limitReadings, sourceKey, tolKey } from '@/lib/generator-oracle/diagnostics/engine';
-import { cleanEquipment, mergedRaw, saveGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
+import { mergedRaw, saveGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
 import { SCREEN_BUCKET, SCREEN_QUESTIONS, isScreenKey } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { LIMIT_CLASS_OPTIONS, type Question } from '@/lib/generator-oracle/diagnostics/types';
 
-/** Browser storage key for answers, latched STOPs and the clearance record. */
-export const GD_STORE = 'eims-oracle-guided-diagnosis-v1';
-/** Shown with every clearance and in the record (management acceptance condition). */
-export const CLEARANCE_NOT_RESTART = 'Recording a clearance only removes this software STOP. It is NOT authorisation to restart the generator or return it to service: follow the applicable OEM procedure and have a qualified technician verify the set first. Clearances recorded here are UNVERIFIED: the person is not authenticated.';
+import {
+  CLEARANCE_NOT_RESTART, GD_STORE, SAFETY_HOLD_ACK_LABEL, SAFETY_HOLD_SESSION_ONLY, SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY,
+  UNREADABLE_STOP, latchRecordLines, mergeCleared, mergeLatched, readStore, withLatchedStops,
+} from '@/lib/generator-oracle/diagnostics/stopLatch';
 
-type StoredLatched = { key: string; message: string; from: string; since: string };
-type StoredClearance = StoredLatched & { clearedAt: string; by: string; reason: string };
-/**
- * Management decision (2026-11-25): when this browser blocks storage, the panel cannot read an
- * earlier unresolved STOP or keep a new one, so it shows a SAFETY HOLD. It is not a fault or
- * STOP condition of the machine. It withholds every running-engine / live instruction and the
- * Next-check prompt, exactly like a STOP hold, until an in-person reassessment by a qualified
- * technician is acknowledged. The acknowledgement lasts only for this page session: it is
- * kept in memory, never stored, and must be repeated after a reload.
- */
-export const SAFETY_HOLD_TEXT = "SAFETY HOLD — Previous diagnostic safety status cannot be verified. Do not continue guided operational checks until the machine's condition has been reassessed by a qualified technician.";
-export const SAFETY_HOLD_WHY = 'Why: this browser does not allow the safety record to be read or saved, so an earlier unresolved STOP for this machine cannot be ruled out. This hold is about the missing record, not a fault found on the machine.';
-export const SAFETY_HOLD_ACK_LABEL = "A qualified technician has reassessed the machine's condition in person";
-export const SAFETY_HOLD_SESSION_ONLY = 'This acknowledgement lasts only for this page session. It cannot be stored in this browser and must be repeated after a reload.';
-const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
-const validLatched = (x: unknown): x is StoredLatched => !!x && typeof x === 'object' && isStr((x as StoredLatched).key) && isStr((x as StoredLatched).message) && isStr((x as StoredLatched).from) && isStr((x as StoredLatched).since);
-const validClearance = (x: unknown): x is StoredClearance => validLatched(x) && isStr((x as StoredClearance).clearedAt) && isStr((x as StoredClearance).by) && typeof (x as StoredClearance).reason === 'string';
-/** Reads the stored safety state. Any malformed part makes the whole record unreadable (never "cleared"). */
-export function readStore(): { unreadable: boolean; blocked?: true; raw?: Record<string, Record<string, string>>; equipment?: Equipment; latched: StoredLatched[]; cleared: StoredClearance[] } {
-  let text: string | null = null;
-  // `blocked`: the browser refused the read (storage blocked), as opposed to a record that was read but is malformed.
-  try { text = localStorage.getItem(GD_STORE); } catch { return { unreadable: true, blocked: true, latched: [], cleared: [] }; }
-  if (text === null) return { unreadable: false, latched: [], cleared: [] };
-  try {
-    const s = JSON.parse(text);
-    // Every part must have the exact shape the panel writes (independent review L3d/L3f: a
-    // clearance without clearedAt, or a non-text answer, crashed the panel and hid the STOP).
-    const rawOk = s && s.raw && typeof s.raw === 'object' && !Array.isArray(s.raw)
-      && Object.values(s.raw).every((fam) => fam && typeof fam === 'object' && !Array.isArray(fam) && Object.values(fam as object).every((v) => typeof v === 'string'));
-    const ok = s && typeof s === 'object' && (s.v === 1 || s.v === 2) && rawOk
-      && Array.isArray(s.latched) && s.latched.every(validLatched)
-      && Array.isArray(s.cleared) && s.cleared.every((c: unknown) => validClearance({ reason: '', ...(c as object) }));
-    if (!ok) return { unreadable: true, latched: [], cleared: [] };
-    // Equipment (1.3.0) is read in the same read; unknown models and non-text values are dropped.
-    return { unreadable: false, raw: s.raw, equipment: cleanEquipment(s), latched: s.latched, cleared: s.cleared.map((c: StoredClearance) => ({ ...c, reason: c.reason ?? '' })) };
-  } catch { return { unreadable: true, latched: [], cleared: [] }; }
-}
+// The STOP latch record lives in lib/generator-oracle/diagnostics/stopLatch.ts (moved unchanged,
+// 2026-11-26) so the job-card screen reads the same record; re-exported here for existing imports.
+export { CLEARANCE_NOT_RESTART, GD_STORE, SAFETY_HOLD_ACK_LABEL, SAFETY_HOLD_SESSION_ONLY, SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY, mergeCleared, mergeLatched, readStore };
+
 /** Returns `prev` when `next` has the same items, so a state setter does not re-render for nothing. */
 function keepSame<T>(prev: T[], next: T[]): T[] {
   return prev.length === next.length && prev.every((x, i) => x === next[i]) ? prev : next;
 }
-const sameStop = (a: StoredLatched, b: StoredLatched) => a.key === b.key && a.since === b.since;
-/** Union of latched STOPs, minus only those with a recorded clearance for that exact STOP. */
-export function mergeLatched(a: StoredLatched[], b: StoredLatched[], cleared: StoredClearance[]): StoredLatched[] {
-  const out: StoredLatched[] = [];
-  for (const l of [...a, ...b]) if (!out.some((x) => x.key === l.key) && !cleared.some((c) => sameStop(c, l))) out.push(l);
-  return out;
-}
-export function mergeCleared(a: StoredClearance[], b: StoredClearance[]): StoredClearance[] {
-  const out = [...a];
-  for (const c of b) if (!out.some((x) => sameStop(x, c) && x.clearedAt === c.clearedAt)) out.push(c);
-  return out;
-}
-const UNREADABLE_STOP = (): StoredLatched => ({ key: 'storage|unreadable', from: 'stored safety record', since: new Date().toISOString(), message: 'The stored safety record in this browser could not be read or was altered, so earlier STOPs cannot be confirmed as cleared. Treat the set as stopped until a qualified technician has checked it.' });
 /** Latched STOPs raised by the shared safety screen are keyed once for all families. */
 const SCREEN_FROM = 'Safety screen';
 
@@ -180,8 +134,8 @@ export default function GuidedDiagnosisPanel() {
   // (the technician is not authenticated) and is never authorisation to restart; unreadable or
   // corrupted stored safety state is treated as a STOP, never as "cleared"; several open
   // windows are merged so a STOP is never dropped by another window's write.
-  type Latched = { key: string; message: string; from: string; since: string };
-  type Clearance = { key: string; message: string; from: string; since: string; clearedAt: string; by: string; reason: string };
+  type Latched = { key: string; message: string; from: string; since: string; label?: string };
+  type Clearance = Latched & { clearedAt: string; by: string; reason: string };
   const [latched, setLatched] = useState<Latched[]>([]);
   const [cleared, setCleared] = useState<Clearance[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -248,13 +202,15 @@ export default function GuidedDiagnosisPanel() {
   // Every STOP computed on any tab is latched. Safety-screen STOPs are shared by every family,
   // so they are latched once (from "Safety screen"), not once per family.
   const liveStops = useMemo(() => {
-    const out: Array<{ key: string; message: string; from: string }> = [];
+    const out: Array<{ key: string; message: string; from: string; label?: string }> = [];
     for (const f of FAMILIES) {
       for (const s of diagnosisRecord(f, mergedRaw(raw, f.id), equipment).result.stops) {
         if (s.level !== 'STOP' || s.origin === 'other-family') continue;
+        // The safeguard label is latched with the STOP so the job card carries it (2026-11-26).
+        const label = s.label ? { label: s.label } : {};
         const stop = s.origin === 'screen'
-          ? { key: `${SCREEN_BUCKET}|${s.message}`, message: s.message, from: SCREEN_FROM }
-          : { key: `${f.id}|${s.message}`, message: s.message, from: f.title };
+          ? { key: `${SCREEN_BUCKET}|${s.message}`, message: s.message, from: SCREEN_FROM, ...label }
+          : { key: `${f.id}|${s.message}`, message: s.message, from: f.title, ...label };
         if (!out.some((x) => x.key === stop.key)) out.push(stop);
       }
     }
@@ -360,13 +316,12 @@ export default function GuidedDiagnosisPanel() {
     note: oemQs.has(q.id) ? questionReferenceNote(equipment, family.id, q.id) : undefined,
     published: oemQs.has(q.id) ? publishedLimitFor(equipment, family.id, q.id) : null,
   });
-  // The download carries every latched STOP not shown by the answers any more, first (a latched
-  // STOP is never dropped from a record made on this screen), then the 1.3.0 record.
-  const downloadText = () => [
-    ...latchedOnly.map((l) => `STOP (latched; still active until a clearance is recorded; from the ${l.from} tab, since ${l.since.slice(0, 16).replace('T', ' ')} UTC): ${l.message}`),
-    ...(latchedOnly.length ? [CLEARANCE_NOT_RESTART] : []),
-    record.findings,
-  ].join('\n');
+  // The download carries, first, every latched STOP (also those the answers no longer show) and
+  // every recorded clearance, in the same lines as the job card; then the 1.3.0 record.
+  const downloadText = () => withLatchedStops(record, [
+    ...(!storageOk ? [SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY] : []),
+    ...latchRecordLines({ unreadable: false, latched, cleared }),
+  ]).findings;
   const download = () => {
     const url = URL.createObjectURL(new Blob([`${downloadText()}\n`], { type: 'text/plain' }));
     const a = document.createElement('a');
@@ -537,7 +492,7 @@ export default function GuidedDiagnosisPanel() {
             <button type="button" onClick={() => { dirty.current = true; setRaw((r) => ({ ...r, [familyId]: {} })); }} className="text-xs text-slate-400 underline">Clear answers</button>
             <button type="button" onClick={download} className="text-xs text-amber-300 underline">Download this diagnosis (.txt)</button>
           </div>
-          <p className="text-[11px] text-slate-500">To record it on a job card: Service &amp; Job Cards → Job cards → open the card → “Record a guided diagnosis”. The card gets this result from the answers. A STOP latched here whose condition the answers no longer show is not carried onto the card: record it on the card yourself.</p>
+          <p className="text-[11px] text-slate-500">To record it on a job card: Service &amp; Job Cards → Job cards → open the card → “Record a guided diagnosis”. The card gets this result, and first every STOP latched here (also one the answers no longer show) and every recorded clearance (UNVERIFIED).</p>
           {saveError ? <p className="text-xs text-amber-300">{saveError}</p> : null}
         </div>
 

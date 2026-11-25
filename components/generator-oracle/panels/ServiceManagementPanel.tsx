@@ -25,6 +25,8 @@ import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
 import { recordToCardUpdate, sessionRecord } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
 import { SCREEN_BUCKET } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { loadGuidedEquipment, loadGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
+import { latchRecordLines, withLatchedStops } from '@/lib/generator-oracle/diagnostics/stopLatch';
+import { LATCHED_STOP_PREFIX } from '@/lib/generator-oracle/service/maintenance';
 
 const inp = 'w-full min-w-0 rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white focus:border-amber-500 outline-none';
 const lbl = 'block text-xs text-slate-300';
@@ -251,16 +253,22 @@ const fromDraft = (d: Draft): CardUpdate => ({
  * Guided Diagnosis tab (browser storage) and go through the same diagnose(),
  * so the card carries exactly the result shown there. Findings and readings are
  * appended; work done is not touched (a recommendation is not work done).
+ * Integration 2026-11-26: the Guided Diagnosis safety record (every latched STOP, including
+ * those whose answers were cleared and safety-screen STOPs, and every recorded clearance) is
+ * written first, so the card's SAFETY section carries it.
  */
 function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft) => void }) {
   const [session, setSession] = useState<RawAnswers>(() => loadGuidedSession(getStore(), FAMILIES));
   const [equipment, setEquipment] = useState(() => loadGuidedEquipment(getStore()));
+  const [latch, setLatch] = useState<string[]>(() => latchRecordLines());
   const [familyId, setFamilyId] = useState('');
-  // A family is offered when it has answers, or when the shared safety screen does (its STOPs apply to every family).
-  const available = FAMILIES.filter((f) => session[f.id] || session[SCREEN_BUCKET]);
+  // A family is offered when it has answers, or when the shared safety screen does (its STOPs apply to every family),
+  // and every family is offered while the safety record holds a latched STOP or a clearance.
+  const available = latch.length ? FAMILIES : FAMILIES.filter((f) => session[f.id] || session[SCREEN_BUCKET]);
+  const latchedCount = latch.filter((l) => l.startsWith(LATCHED_STOP_PREFIX)).length;
   const fam = available.find((f) => f.id === familyId) ?? null;
   // Same function as the Guided Diagnosis tab: screen merged in, other families' STOPs carried in.
-  const rec = useMemo(() => (fam ? sessionRecord(fam, session, equipment) : null), [fam, session, equipment]);
+  const rec = useMemo(() => (fam ? withLatchedStops(sessionRecord(fam, session, equipment), latch) : null), [fam, session, equipment, latch]);
   const add = () => {
     if (!rec) return;
     const u = recordToCardUpdate({ findings: d.findings, readings: [] }, rec);
@@ -272,6 +280,7 @@ function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft) => void }) 
   return (
     <div className="space-y-2 rounded-lg border border-slate-800 p-2">
       <div className="text-xs text-slate-300">Record a guided diagnosis — from the answers on Fault Center → Guided Diagnosis (this browser)</div>
+      {latchedCount > 0 ? <p role="alert" className="text-xs text-red-200">{latchedCount} STOP(s) still latched on Guided Diagnosis with no recorded clearance: they are recorded first on the card, whichever fault family you choose.</p> : null}
       {available.length === 0 ? (
         <p className="text-xs text-slate-500">No guided diagnosis answers saved in this browser yet.</p>
       ) : (
@@ -290,7 +299,7 @@ function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft) => void }) 
           <button type="button" className={btn2} onClick={add}>Add this diagnosis to the card</button>
         </>
       )}
-      <button type="button" className="text-xs text-slate-400 underline" onClick={() => { setSession(loadGuidedSession(getStore(), FAMILIES)); setEquipment(loadGuidedEquipment(getStore())); }}>Reload saved answers</button>
+      <button type="button" className="text-xs text-slate-400 underline" onClick={() => { setSession(loadGuidedSession(getStore(), FAMILIES)); setEquipment(loadGuidedEquipment(getStore())); setLatch(latchRecordLines()); }}>Reload saved answers</button>
     </div>
   );
 }
