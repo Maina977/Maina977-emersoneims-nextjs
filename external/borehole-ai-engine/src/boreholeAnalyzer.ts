@@ -75,7 +75,7 @@ import { computePathTo97 } from './pathTo97Engine';
 import { runSatelliteRemoteSensing } from './satelliteRemoteSensingEngine';
 import { evaluateSurfaceGeophysics } from './surfaceGeophysicsEngine';
 import { sanitizeAnalysisResult } from './sanitizeOutputs';
-import { siteRefusal } from './kenyaLand';
+import { siteCheck } from './kenyaLand';
 import { loadLocalJson } from './localData';
 
 /**
@@ -448,16 +448,21 @@ export class BoreholeAnalyzer {
     const effectiveLat = clientGeo?.latitude ?? features.metadata?.gps?.latitude;
     const effectiveLon = clientGeo?.longitude ?? features.metadata?.gps?.longitude;
     const hasCoords = effectiveLat != null && effectiveLon != null;
+    let waterCheckUnavailable = false;
     // Safety hotfix 2026-11-25: no analysis without a real location. A position guessed from the
     // photo's colours ('visual-estimate') or no position at all is refused with a reason.
-    if (!clientGeo && (!hasCoords || features.locationMethod === 'visual-estimate')) {
+    // Review R3: a position from the file name or embedded text (filename/IPTC geocode) is not accepted either;
+    // only coordinates from the caller or the photo's own camera GPS.
+    if (!clientGeo && (!hasCoords || features.locationMethod !== 'exif-gps')) {
       throw new Error('Location problem: AquaScan needs the site\u2019s coordinates (typed, searched or from the camera GPS). A photo cannot locate the site or show groundwater.');
     }
     // Kenyan land only, whatever the entry point (typed, re-analysis, place
     // search or photo GPS) (2026-10-27 audit: Kampala, Lake Turkana and the
     // sea off Mombasa all got full results).
     if (hasCoords) {
-      const refusal = await siteRefusal(effectiveLat as number, effectiveLon as number);
+      const check = await siteCheck(effectiveLat as number, effectiveLon as number);
+      waterCheckUnavailable = check.waterCheck === 'unavailable';
+      const refusal = check.refusal;
       // Prefixed so the page shows the reason, not "a data service did not answer" (2026-10-29 audit).
       if (refusal) throw new Error(`Location problem: ${refusal}`);
     }
@@ -2697,7 +2702,9 @@ export class BoreholeAnalyzer {
     }
 
     const result = ({
-      site,
+      // Review R1 (2026-11-25): siteType, vegetation, water indicator and slope came from fixed neutral
+      // inputs (photos are not analysed); they are not reported as observations.
+      site: { ...site, siteType: undefined, vegetationDensity: undefined, waterIndicator: undefined, terrainSlope: undefined, visualObservations: 'not analysed: photos are not used' } as any,
       soil,
       waterQuality,
       risk,
@@ -3868,12 +3875,17 @@ export class BoreholeAnalyzer {
         wqS.treatmentRequired = (flS.mgL ?? 0) > 1.5 ? [...restF, `Defluoridation (activated alumina or bone char): ${flS.basis === 'lab' ? 'laboratory' : 'measured nearby'} fluoride ${flS.value}`] : restF;
       }
     }
+    // Review R7: the open-water check could not run; the page asks the customer to confirm the site is on land.
+    if (waterCheckUnavailable) {
+      (result as any).waterBodyCheckUnavailable = true;
+      (result.fallbacksUsed ??= [] as any).push('Water-body check unavailable: the elevation service did not answer, so the point was not checked against lakes and the sea; the customer confirms it is on land');
+    }
     // Ensure GPS coordinates propagate to ALL possible storage paths
     if (effectiveLat != null && effectiveLon != null) {
       if (!result.clientLocation) result.clientLocation = {};
       // Management 2026-11-25: no geo-estimate object is created (it claimed an outdoor photo, isOutdoor: true,
       // for a photo that was not analysed); the coordinates live in result.site and result.clientLocation.
-      if (!result.site) result.site = { latitude: effectiveLat, longitude: effectiveLon, confidence: 0.5, siteType: 'flat', vegetationDensity: 0, waterIndicator: 0, terrainSlope: 0 };
+      if (!result.site) result.site = { latitude: effectiveLat, longitude: effectiveLon, confidence: 0.5, visualObservations: 'not analysed: photos are not used' } as any;
       if (result.site.latitude == null) result.site.latitude = effectiveLat;
       if (result.site.longitude == null) result.site.longitude = effectiveLon;
     }

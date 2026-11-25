@@ -8050,7 +8050,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     ['15', 'Satellite NDVI', result.satelliteVegetation ? 'COMPLETED' : 'SKIPPED', 'Monthly NDVI profile from MODIS/VIIRS'],
     ['16', 'NASA POWER Moisture', result.nasaPowerMoisture ? 'COMPLETED' : 'SKIPPED', 'GWETPROF root-zone moisture trend'],
     ['17', 'Regional Borehole Stats', result.boreholeRecords ? 'COMPLETED' : 'SKIPPED', 'Country/region database depth/yield/success'],
-    ['18', 'Site Classification', result.site ? 'COMPLETED' : 'SKIPPED', 'Terrain type, vegetation density, slope analysis'],
+    ['18', 'Site Classification', 'NOT ANALYSED', 'Terrain type, vegetation density and slope are not observed: photos are not analysed'],
     ['19', 'Soil Analysis', result.soil ? 'COMPLETED' : 'SKIPPED', 'USDA texture, porosity, permeability, pH, suitability'],
     ['20', 'Probability Calculation', result.probability != null ? 'COMPLETED' : 'SKIPPED', 'Multi-factor modelled success score with GLDAS/GRACE recalibration'],
     ['21', 'Depth Estimation', result.recommendedDepth != null ? 'COMPLETED' : 'SKIPPED', 'Calibrated depth from elevation, geology, regional data'],
