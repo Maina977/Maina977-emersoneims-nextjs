@@ -41,15 +41,20 @@ export default function GuidedDiagnosisPanel() {
   const family = FAMILIES.find((f) => f.id === familyId)!;
   const values = raw[familyId] ?? {};
 
-  const result = useMemo(() => {
+  const toAnswers = (fam: typeof family, vals: Record<string, string>): Answers => {
     const a: Answers = {};
-    for (const q of family.questions) {
-      const v = values[q.id];
+    for (const q of fam.questions) {
+      const v = vals[q.id];
       if (v === undefined || v.trim() === '') continue;
       a[q.id] = q.kind === 'number' ? Number(v) : v;
     }
-    return diagnose(family, a);
-  }, [family, values]);
+    return a;
+  };
+  const result = useMemo(() => diagnose(family, toAnswers(family, values)), [family, values]);
+  // STOPs raised on OTHER fault-family tabs apply to the same machine (2026-11-25 safety
+  // hotfix, review R2/F3): they are shown here too and hold every tab.
+  const otherStops = useMemo(() => FAMILIES.filter((f) => f.id !== familyId).flatMap((f) =>
+    diagnose(f, toAnswers(f, raw[f.id] ?? {})).stops.filter((s) => s.level === 'STOP').map((s) => ({ ...s, from: f.title }))), [raw, familyId]);
 
   const set = (q: string, v: string) => setRaw((r) => ({ ...r, [familyId]: { ...(r[familyId] ?? {}), [q]: v } }));
   const route = () => { const f = familyFor(symptom); if (f) setFamilyId(f.id); };
@@ -59,7 +64,7 @@ export default function GuidedDiagnosisPanel() {
   // check or action is suggested. Several suggested checks need the engine running,
   // cranking or live circuits (e.g. a cylinder cut-out test under "STOP THE SET"), which
   // contradicts the STOP. Causes stay listed for information only.
-  const stopActive = result.stops.some((s) => s.level === 'STOP');
+  const stopActive = result.stops.some((s) => s.level === 'STOP') || otherStops.length > 0;
   const STOP_HOLD = 'Further checks are withheld while a STOP applies. Make the set safe first: engine stopped, isolated and locked off. A qualified technician decides the next step once the hazard is controlled.';
 
   return (
@@ -84,8 +89,13 @@ export default function GuidedDiagnosisPanel() {
         </div>
       </div>
 
-      {result.stops.length > 0 && (
+      {(result.stops.length > 0 || otherStops.length > 0) && (
         <div role="alert" className="space-y-2">
+          {otherStops.map((s, i) => (
+            <div key={`o${i}`} className="rounded-lg border p-3 text-sm border-red-500 bg-red-950/60 text-red-100">
+              <strong>STOP</strong> · (from the {s.from} tab) {s.message}
+            </div>
+          ))}
           {result.stops.map((s, i) => (
             <div key={i} className={`rounded-lg border p-3 text-sm ${s.level === 'STOP' ? 'border-red-500 bg-red-950/60 text-red-100' : 'border-amber-500/60 bg-amber-950/40 text-amber-100'}`}>
               <strong>{s.level}</strong> · {s.message}
@@ -106,7 +116,8 @@ export default function GuidedDiagnosisPanel() {
           ) : <p className="text-xs text-slate-400">All questions answered.</p>}
           {result.invalid.map((i) => <p key={i.q} className="text-xs text-red-300">Refused: {i.reason}</p>)}
           <details>
-            <summary className="cursor-pointer text-xs text-slate-300">All questions ({result.answered}/{family.questions.length} answered)</summary>
+            <summary className="cursor-pointer text-xs text-slate-300">All questions ({result.answered}/{family.questions.length} answered){stopActive ? ': only to correct an answer already entered' : ''}</summary>
+            {stopActive ? <p data-testid="gd-stop-questions-warning" className="mt-2 text-xs text-red-200">A STOP applies: do not take any reading that needs the engine running, cranking or live circuits.</p> : null}
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {family.questions.map((q) => <QuestionInput key={q.id} q={q} value={values[q.id] ?? ''} onChange={(v) => set(q.id, v)} />)}
             </div>

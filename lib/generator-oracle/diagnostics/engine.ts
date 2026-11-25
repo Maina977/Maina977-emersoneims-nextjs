@@ -54,6 +54,7 @@ export function evaluate(c: Condition, a: Answers): boolean | null {
       const ref = a[c.ref];
       if (ref === undefined) return null;
       const limit = Number(ref) * (c.factor ?? 1);
+      if (c.inclusive) return c.op === 'ltRef' ? Number(v) <= limit : Number(v) >= limit;
       return c.op === 'ltRef' ? Number(v) < limit : Number(v) > limit;
     }
   }

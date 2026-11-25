@@ -32,9 +32,47 @@ describe('Guided Diagnosis: no checks suggested while a STOP applies', () => {
     answer(/OEM minimum oil pressure/i, '200');
     answer(/^Oil pressure/i, '100');
     answer(/Does a mechanical gauge show normal pressure/i, 'yes');
-    expect(screen.getByRole('alert').textContent).toMatch(/STOP the engine: oil pressure is below the OEM minimum/);
+    expect(screen.getByRole('alert').textContent).toMatch(/STOP the engine: oil pressure is at or below the OEM minimum/);
     expect(hold()).not.toBeNull();
     expect(document.body.textContent).not.toMatch(/Confirm with a mechanical gauge before any engine work/);
+  });
+
+  it('equality with an entered limit counts as reaching it (review P1)', () => {
+    const fam = (id: string) => FAMILIES.find((f) => f.id === id)!;
+    const isStop = (id: string, a: Record<string, number>) => diagnose(fam(id), a).stops.some((s) => s.level === 'STOP');
+    expect(isStop('low-oil-pressure', { oilPressure: 150, oemMinOilPressure: 150 })).toBe(true);
+    expect(isStop('low-oil-pressure', { oilPressure: 151, oemMinOilPressure: 150 })).toBe(false);
+    const overheat = FAMILIES.find((f) => f.questions.some((q) => q.id === 'oemAlarmCoolantTemp'))!.id;
+    expect(isStop(overheat, { coolantTemp: 100, oemAlarmCoolantTemp: 100 })).toBe(true);
+    expect(isStop(overheat, { coolantTemp: 99, oemAlarmCoolantTemp: 100 })).toBe(false);
+    const insul = FAMILIES.find((f) => f.questions.some((q) => q.id === 'oemMinInsulation'))!.id;
+    expect(isStop(insul, { insulation: 1, oemMinInsulation: 1 })).toBe(true);
+    expect(isStop(insul, { insulation: 1.1, oemMinInsulation: 1 })).toBe(false);
+  });
+
+  it('a STOP on one tab holds every other tab and is shown there (review R2)', () => {
+    render(<GuidedDiagnosisPanel />);
+    choose(/Knocking, bearing noise or seizure/);
+    answer(/Where is the noise\?/, 'engine');
+    choose(/Overheating \/ high coolant temperature/);
+    expect(screen.getByRole('alert').textContent).toMatch(/from the Knocking, bearing noise or seizure tab/);
+    expect(hold()).not.toBeNull();
+    expect(screen.queryByText('Next check')).toBeNull();
+    choose(/Low oil pressure/);
+    expect(hold()).not.toBeNull();
+    expect(document.body.textContent).not.toMatch(/Confirm with a mechanical gauge before any engine work/);
+    // Clearing the knock answers releases the other tabs.
+    choose(/Knocking, bearing noise or seizure/);
+    fireEvent.click(screen.getByRole('button', { name: 'Clear answers' }));
+    choose(/Overheating \/ high coolant temperature/);
+    expect(hold()).toBeNull();
+  });
+
+  it('under a STOP the All-questions list warns against running or live readings (review R1)', () => {
+    render(<GuidedDiagnosisPanel />);
+    choose(/Knocking, bearing noise or seizure/);
+    answer(/Where is the noise\?/, 'engine');
+    expect(screen.getByTestId('gd-stop-questions-warning').textContent).toMatch(/do not take any reading that needs the engine running, cranking or live circuits/);
   });
 
   it('a CAUTION alone does not withhold checks (no change to non-STOP behaviour)', () => {
