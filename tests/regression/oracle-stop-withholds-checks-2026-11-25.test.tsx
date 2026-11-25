@@ -90,19 +90,66 @@ describe('Guided Diagnosis: no checks suggested while a STOP applies', () => {
     choose(/Knocking, bearing noise or seizure/);
     fireEvent.click(screen.getByRole('button', { name: 'Clear answers' }));
     fireEvent.click(screen.getAllByRole('button', { name: 'Record STOP clearance' })[0]);
-    expect(document.body.textContent).toMatch(/Not cleared: enter the initials/);
-    fireEvent.change(screen.getAllByLabelText(/Initials of the qualified technician/)[0], { target: { value: 'TEST-JK' } });
+    // Never presented as authorisation to restart.
+    expect(screen.getAllByTestId('gd-not-restart')[0].textContent).toMatch(/NOT authorisation to restart the generator/);
+    expect(document.body.textContent).toMatch(/Not cleared: enter the name or initials/);
+    fireEvent.change(screen.getAllByLabelText(/Name or initials of the qualified technician/)[0], { target: { value: 'TEST-JK' } });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Record STOP clearance' })[0]);
+    expect(document.body.textContent).toMatch(/Not cleared: state what was found and what was done/);
+    fireEvent.change(screen.getAllByLabelText(/Clearance reason/)[0], { target: { value: 'TEST: big-end bearing replaced, oil and filter changed' } });
     fireEvent.click(screen.getAllByRole('button', { name: 'Record STOP clearance' })[0]);
     expect(document.body.textContent).toMatch(/Not cleared: confirm that the required checks were completed/);
-    fireEvent.click(screen.getAllByLabelText(/The required checks were completed/)[0]);
+    fireEvent.click(screen.getAllByLabelText(/The required checks for this STOP were completed/)[0]);
     fireEvent.click(screen.getAllByRole('button', { name: 'Record STOP clearance' })[0]);
     expect(hold()).toBeNull();
-    expect(screen.getByTestId('gd-clearance-record').textContent).toMatch(/cleared by TEST-JK/);
+    const rec = () => screen.getByTestId('gd-clearance-record').textContent ?? '';
+    expect(rec()).toMatch(/UNVERIFIED/);
+    expect(rec()).toMatch(/recorded by TEST-JK \(not authenticated\)/);
+    expect(rec()).toMatch(/reason: TEST: big-end bearing replaced/);
+    expect(rec()).toMatch(/Knocking, bearing noise or seizure/);
+    expect(rec()).toMatch(/NOT authorisation to restart the generator/);
     // and the record survives a reload
     cleanup();
     render(<GuidedDiagnosisPanel />);
-    expect(screen.getByTestId('gd-clearance-record').textContent).toMatch(/cleared by TEST-JK/);
+    expect(rec()).toMatch(/recorded by TEST-JK/);
     expect(hold()).toBeNull();
+  });
+
+  it('corrupted or altered stored safety state is treated as a STOP, never as cleared', () => {
+    for (const bad of ['{not json', JSON.stringify({ v: 2, raw: {}, latched: [{ key: 1 }], cleared: [] }), JSON.stringify({ v: 9 }), JSON.stringify([])]) {
+      localStorage.setItem('eims-oracle-guided-diagnosis-v1', bad);
+      render(<GuidedDiagnosisPanel />);
+      expect(hold(), bad).not.toBeNull();
+      expect(document.body.textContent, bad).toMatch(/stored safety record in this browser could not be read or was altered/);
+      cleanup(); localStorage.clear();
+    }
+  });
+
+  it('another window writing an empty state cannot drop a latched STOP', () => {
+    render(<GuidedDiagnosisPanel />);
+    choose(/Knocking, bearing noise or seizure/);
+    answer(/Where is the noise\?/, 'engine');
+    // A second window (no STOP) stores its state.
+    localStorage.setItem('eims-oracle-guided-diagnosis-v1', JSON.stringify({ v: 2, raw: {}, latched: [], cleared: [] }));
+    // This window writes again (any change) — the merge keeps the STOP in storage.
+    choose(/Overheating \/ high coolant temperature/);
+    answer(/Coolant level/i, 'ok');
+    const stored = JSON.parse(localStorage.getItem('eims-oracle-guided-diagnosis-v1') || '{}');
+    expect(stored.latched.some((l: { key: string }) => l.key.startsWith('knock-seizure|'))).toBe(true);
+    cleanup();
+    render(<GuidedDiagnosisPanel />);
+    expect(hold()).not.toBeNull();
+  });
+
+  it('storage unavailable: the panel says the STOP cannot be kept after a reload', () => {
+    const orig = Storage.prototype.getItem;
+    Storage.prototype.getItem = () => { throw new Error('blocked'); };
+    try {
+      render(<GuidedDiagnosisPanel />);
+      choose(/Knocking, bearing noise or seizure/);
+      answer(/Where is the noise\?/, 'engine');
+      expect(screen.getByTestId('gd-storage-warning').textContent).toMatch(/cannot keep the STOP after a reload/);
+    } finally { Storage.prototype.getItem = orig; }
   });
 
   it('under a STOP the All-questions list warns against running or live readings (review R1)', () => {

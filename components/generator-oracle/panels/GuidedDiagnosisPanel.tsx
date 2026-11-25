@@ -13,6 +13,41 @@ import type { Answers, Question } from '@/lib/generator-oracle/diagnostics/types
 
 /** Browser storage key for answers, latched STOPs and the clearance record. */
 export const GD_STORE = 'eims-oracle-guided-diagnosis-v1';
+/** Shown with every clearance and in the record (management acceptance condition). */
+export const CLEARANCE_NOT_RESTART = 'Recording a clearance only removes this software STOP. It is NOT authorisation to restart the generator or return it to service: follow the applicable OEM procedure and have a qualified technician verify the set first. Clearances recorded here are UNVERIFIED: the person is not authenticated.';
+
+type StoredLatched = { key: string; message: string; from: string; since: string };
+type StoredClearance = StoredLatched & { clearedAt: string; by: string; reason: string };
+const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
+const validLatched = (x: unknown): x is StoredLatched => !!x && typeof x === 'object' && isStr((x as StoredLatched).key) && isStr((x as StoredLatched).message) && isStr((x as StoredLatched).from) && isStr((x as StoredLatched).since);
+const validClearance = (x: unknown): x is StoredClearance => validLatched(x) && isStr((x as StoredClearance).clearedAt) && isStr((x as StoredClearance).by) && typeof (x as StoredClearance).reason === 'string';
+/** Reads the stored safety state. Any malformed part makes the whole record unreadable (never "cleared"). */
+export function readStore(): { unreadable: boolean; raw?: Record<string, Record<string, string>>; latched: StoredLatched[]; cleared: StoredClearance[] } {
+  let text: string | null = null;
+  try { text = localStorage.getItem(GD_STORE); } catch { return { unreadable: true, latched: [], cleared: [] }; }
+  if (text === null) return { unreadable: false, latched: [], cleared: [] };
+  try {
+    const s = JSON.parse(text);
+    const ok = s && typeof s === 'object' && (s.v === 1 || s.v === 2)
+      && s.raw && typeof s.raw === 'object' && Array.isArray(s.latched) && s.latched.every(validLatched)
+      && Array.isArray(s.cleared) && s.cleared.every((c: unknown) => (s.v === 1 ? validLatched(c) : validClearance(c)));
+    if (!ok) return { unreadable: true, latched: [], cleared: [] };
+    return { unreadable: false, raw: s.raw, latched: s.latched, cleared: s.cleared.map((c: StoredClearance) => ({ ...c, reason: c.reason ?? '' })) };
+  } catch { return { unreadable: true, latched: [], cleared: [] }; }
+}
+const sameStop = (a: StoredLatched, b: StoredLatched) => a.key === b.key && a.since === b.since;
+/** Union of latched STOPs, minus only those with a recorded clearance for that exact STOP. */
+export function mergeLatched(a: StoredLatched[], b: StoredLatched[], cleared: StoredClearance[]): StoredLatched[] {
+  const out: StoredLatched[] = [];
+  for (const l of [...a, ...b]) if (!out.some((x) => x.key === l.key) && !cleared.some((c) => sameStop(c, l))) out.push(l);
+  return out;
+}
+export function mergeCleared(a: StoredClearance[], b: StoredClearance[]): StoredClearance[] {
+  const out = [...a];
+  for (const c of b) if (!out.some((x) => sameStop(x, c) && x.clearedAt === c.clearedAt)) out.push(c);
+  return out;
+}
+const UNREADABLE_STOP = (): StoredLatched => ({ key: 'storage|unreadable', from: 'stored safety record', since: new Date().toISOString(), message: 'The stored safety record in this browser could not be read or was altered, so earlier STOPs cannot be confirmed as cleared. Treat the set as stopped until a qualified technician has checked it.' });
 
 function QuestionInput({ q, value, onChange }: { q: Question; value: string; onChange: (v: string) => void }) {
   const id = `gd-${q.id}`;
@@ -65,25 +100,38 @@ export default function GuidedDiagnosisPanel() {
   // when the entered answers no longer show the condition. Answers, latched STOPs and the
   // clearance record are kept in this browser (localStorage); if storage is unavailable the
   // panel says so.
+  // Management acceptance conditions (2026-11-25): a browser-recorded clearance is UNVERIFIED
+  // (the technician is not authenticated) and is never authorisation to restart; unreadable or
+  // corrupted stored safety state is treated as a STOP, never as "cleared"; several open
+  // windows are merged so a STOP is never dropped by another window's write.
   type Latched = { key: string; message: string; from: string; since: string };
-  type Clearance = { key: string; message: string; from: string; since: string; clearedAt: string; by: string };
+  type Clearance = { key: string; message: string; from: string; since: string; clearedAt: string; by: string; reason: string };
   const [latched, setLatched] = useState<Latched[]>([]);
   const [cleared, setCleared] = useState<Clearance[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [storageOk, setStorageOk] = useState(true);
   const [clearBy, setClearBy] = useState<Record<string, string>>({});
+  const [clearWhy, setClearWhy] = useState<Record<string, string>>({});
   const [clearConfirm, setClearConfirm] = useState<Record<string, boolean>>({});
   const [clearErr, setClearErr] = useState<Record<string, string>>({});
   useEffect(() => {
-    try {
-      const s = JSON.parse(localStorage.getItem(GD_STORE) || 'null');
-      if (s && typeof s === 'object') {
-        if (s.raw && typeof s.raw === 'object') setRaw(s.raw);
-        if (Array.isArray(s.latched)) setLatched(s.latched);
-        if (Array.isArray(s.cleared)) setCleared(s.cleared);
+    const read = () => {
+      const s = readStore();
+      if (s.unreadable) {
+        // Never restore a supposedly cleared diagnosis from a record that cannot be read.
+        setLatched((l) => mergeLatched(l, [UNREADABLE_STOP()], []));
+        return;
       }
-    } catch { setStorageOk(false); }
+      if (s.raw) setRaw((r) => ({ ...s.raw, ...r }));
+      setCleared((c) => mergeCleared(c, s.cleared));
+      setLatched((l) => mergeLatched(l, s.latched, s.cleared));
+    };
+    try { localStorage.getItem(GD_STORE); } catch { setStorageOk(false); setLoaded(true); return; }
+    read();
+    const onStorage = (e: StorageEvent) => { if (e.key === GD_STORE) read(); };
+    addEventListener('storage', onStorage);
     setLoaded(true);
+    return () => removeEventListener('storage', onStorage);
   }, []);
   // Every STOP computed on any tab is latched.
   const liveStops = useMemo(() => FAMILIES.flatMap((f) =>
@@ -95,14 +143,22 @@ export default function GuidedDiagnosisPanel() {
   }, [liveStops, loaded, latched]);
   useEffect(() => {
     if (!loaded) return;
-    try { localStorage.setItem(GD_STORE, JSON.stringify({ v: 1, raw, latched, cleared })); } catch { setStorageOk(false); }
+    try {
+      // Merge with what another window may have stored: a STOP is never dropped by a write.
+      const s = readStore();
+      const mergedCleared = mergeCleared(cleared, s.unreadable ? [] : s.cleared);
+      const mergedLatched = mergeLatched(latched, s.unreadable ? [] : s.latched, mergedCleared);
+      localStorage.setItem(GD_STORE, JSON.stringify({ v: 2, raw, latched: mergedLatched, cleared: mergedCleared }));
+    } catch { setStorageOk(false); }
   }, [raw, latched, cleared, loaded]);
   const recordClearance = (l: Latched) => {
     if (liveStops.some((s) => s.key === l.key)) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: the answers entered still show this condition. Complete the required checks and update the answers first.' })); return; }
     const by = (clearBy[l.key] ?? '').trim();
-    if (!by) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: enter the initials of the qualified technician recording the clearance.' })); return; }
-    if (!clearConfirm[l.key]) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: confirm that the required checks were completed and the set is safe.' })); return; }
-    setCleared((c) => [...c, { ...l, clearedAt: new Date().toISOString(), by: by.slice(0, 40) }]);
+    if (!by) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: enter the name or initials of the qualified technician recording the clearance.' })); return; }
+    const reason = (clearWhy[l.key] ?? '').trim();
+    if (reason.length < 10) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: state what was found and what was done (at least 10 characters).' })); return; }
+    if (!clearConfirm[l.key]) { setClearErr((e) => ({ ...e, [l.key]: 'Not cleared: confirm that the required checks were completed.' })); return; }
+    setCleared((c) => [...c, { ...l, clearedAt: new Date().toISOString(), by: by.slice(0, 60), reason: reason.slice(0, 500) }]);
     setLatched((ls) => ls.filter((x) => x.key !== l.key));
     setClearErr((e) => ({ ...e, [l.key]: '' }));
   };
@@ -172,13 +228,18 @@ export default function GuidedDiagnosisPanel() {
               {latched.map((l) => (
                 <div key={`c${l.key}`} className="rounded-md border border-red-400/50 p-2 space-y-1" data-testid="gd-clearance">
                   <p className="font-semibold">Record STOP clearance: {l.from}</p>
-                  <label className="block">Initials of the qualified technician
+                  <p data-testid="gd-not-restart">{CLEARANCE_NOT_RESTART}</p>
+                  <label className="block">Name or initials of the qualified technician
                     <input value={clearBy[l.key] ?? ''} onChange={(e) => setClearBy((b) => ({ ...b, [l.key]: e.target.value }))}
+                      className="mt-1 w-full rounded bg-slate-900 border border-slate-700 px-2 py-1 text-white" />
+                  </label>
+                  <label className="block">Clearance reason: what was found and what was done
+                    <textarea value={clearWhy[l.key] ?? ''} onChange={(e) => setClearWhy((b) => ({ ...b, [l.key]: e.target.value }))} rows={2}
                       className="mt-1 w-full rounded bg-slate-900 border border-slate-700 px-2 py-1 text-white" />
                   </label>
                   <label className="flex items-start gap-2">
                     <input type="checkbox" checked={!!clearConfirm[l.key]} onChange={(e) => setClearConfirm((c) => ({ ...c, [l.key]: e.target.checked }))} />
-                    <span>The required checks were completed, the cause was dealt with and the set is safe.</span>
+                    <span>The required checks for this STOP were completed. I understand this does not authorise restarting the generator.</span>
                   </label>
                   <button type="button" onClick={() => recordClearance(l)} className="rounded bg-red-700 px-2 py-1 text-white">Record STOP clearance</button>
                   {clearErr[l.key] ? <p role="status" className="text-red-200">{clearErr[l.key]}</p> : null}
@@ -227,8 +288,9 @@ export default function GuidedDiagnosisPanel() {
       </div>
       {cleared.length > 0 && (
         <details data-testid="gd-clearance-record" className="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-xs text-slate-300">
-          <summary className="cursor-pointer">STOP clearance record ({cleared.length}), kept in this browser</summary>
-          <ul className="mt-2 space-y-1">{cleared.map((c, i) => <li key={i}>{c.clearedAt.slice(0, 16).replace('T', ' ')} UTC · cleared by {c.by} · {c.from}: {c.message}</li>)}</ul>
+          <summary className="cursor-pointer">STOP clearance record ({cleared.length}), UNVERIFIED, kept in this browser only</summary>
+          <p className="mt-2 text-amber-200">{CLEARANCE_NOT_RESTART}</p>
+          <ul className="mt-2 space-y-1">{cleared.map((c, i) => <li key={i}>UNVERIFIED · {c.clearedAt.slice(0, 16).replace('T', ' ')} UTC · recorded by {c.by} (not authenticated) · fault: {c.from}: {c.message} · reason: {c.reason || '(not recorded)'}</li>)}</ul>
         </details>
       )}
       <p className="text-[11px] text-slate-500">{result.disclaimer} Content status: {result.review}. {result.engineVersion}.</p>
