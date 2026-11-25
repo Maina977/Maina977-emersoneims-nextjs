@@ -127,7 +127,7 @@ export const FAULT_CODES: FaultCode[] = [
     code: 'SPN-190',
     brand: 'J1939',
     title: 'Engine Speed — Overspeed, Underspeed and Sensor Faults',
-    description: 'SPN 190 is the engine-speed signal; the FMI says whether the engine is over speed, under speed or the sensor is at fault. Overspeed first: the engine has exceeded its maximum safe operating speed. This protection fault activates when engine RPM surpasses the manufacturer\'s specified limit, typically 10-15% above rated speed. Engine overspeed can cause catastrophic mechanical damage including connecting rod failure, piston damage, and crankshaft breakage.',
+    description: 'SPN 190 is the engine-speed signal; the FMI says whether the engine is over speed, under speed or the sensor is at fault. Overspeed first: the engine has exceeded its maximum safe operating speed. This protection fault activates when engine RPM surpasses the manufacturer\'s specified limit. Engine overspeed can cause catastrophic mechanical damage including connecting rod failure, piston damage, and crankshaft breakage.',
     severity: 'critical',
     category: 'Engine Speed/Timing',
     possibleCauses: [
@@ -138,14 +138,7 @@ export const FAULT_CODES: FaultCode[] = [
       'ECM calibration error',
       'Mechanical governor spring failure'
     ],
-    troubleshootingSteps: [
-      'Review fault log for conditions when overspeed occurred',
-      'Check if overspeed was caused by sudden load rejection',
-      'Inspect governor actuator for proper operation and response',
-      'Verify fuel rack or injector pump returns to idle position',
-      'Check speed sensor for intermittent signal issues',
-      'Test load bank to verify proper load transfer and control'
-    ],
+    troubleshootingSteps: [],
     relatedParts: [
       'Governor Actuator',
       'Governor Control Module',
@@ -181,14 +174,7 @@ export const FAULT_CODES: FaultCode[] = [
       'Oil filter bypass valve stuck open',
       'Incorrect oil viscosity for operating temperature'
     ],
-    troubleshootingSteps: [
-      'Check engine oil level - add oil if low and inspect for leaks',
-      'Install mechanical oil pressure gauge to verify actual pressure',
-      'Check oil condition - look for coolant contamination or metal particles',
-      'Replace oil pressure sensor if mechanical gauge shows normal pressure',
-      'If actual pressure is low, inspect oil pump and bearings',
-      'Perform oil analysis to detect bearing wear or contamination'
-    ],
+    troubleshootingSteps: [],
     relatedParts: [
       'Oil Pressure Sensor',
       'Oil Pump Assembly',
@@ -203,10 +189,6 @@ export const FAULT_CODES: FaultCode[] = [
       {
         question: 'Can I run the generator with low oil pressure warning?',
         answer: 'Absolutely not. Running an engine with low oil pressure will cause rapid bearing wear and can destroy the engine within minutes. Stop immediately and diagnose the cause.'
-      },
-      {
-        question: 'Why does my generator show low oil pressure when the oil is full?',
-        answer: 'If oil level is correct but pressure is low, the oil pressure sensor may be faulty. Verify with a mechanical gauge. If actual pressure is low, the oil pump or bearings may be worn.'
       }
     ]
   },
@@ -359,10 +341,8 @@ export const FAULT_CODES: FaultCode[] = [
     troubleshootingSteps: [
       'Stop the engine and let it cool: never open the radiator or expansion-tank cap on a hot engine, the coolant is under pressure and can scald. Then check the coolant level and add if low',
       'Inspect for visible coolant leaks at hoses, clamps, and gaskets',
-      'Verify cooling fan operation and proper belt tension',
       'Check thermostat operation - should open at rated temperature',
-      'Clean radiator fins of any debris or blockage',
-      'Test water pump for proper flow and impeller condition'
+      'Clean radiator fins of any debris or blockage'
     ],
     relatedParts: [
       'Thermostat',
@@ -390,7 +370,7 @@ export const FAULT_CODES: FaultCode[] = [
     code: 'SPN-157',
     brand: 'J1939',
     title: 'Fuel Injector Rail Pressure Low',
-    description: 'The high-pressure fuel rail in the common-rail injection system is not achieving required pressure. Modern diesel engines require very high fuel pressure (1,600-2,000+ bar) for proper atomization. Low rail pressure causes poor combustion, white smoke, hard starting, and significant power loss.',
+    description: 'The high-pressure fuel rail in the common-rail injection system is not achieving required pressure. Modern diesel engines require very high fuel pressure for proper atomization. Low rail pressure causes poor combustion, white smoke, hard starting, and significant power loss.',
     severity: 'critical',
     category: 'Fuel System',
     possibleCauses: [
@@ -404,7 +384,6 @@ export const FAULT_CODES: FaultCode[] = [
     troubleshootingSteps: [
       'Check fuel supply system first - filters, supply pump, tank',
       'Monitor actual rail pressure with diagnostic tool during cranking',
-      'Perform injector leak-back test - max 80ml/min per injector',
       'Check high-pressure pump drive coupling',
       'Inspect fuel rail pressure sensor and wiring',
       'Test pressure relief valve if equipped'
@@ -423,10 +402,6 @@ export const FAULT_CODES: FaultCode[] = [
       {
         question: 'What causes low fuel rail pressure in common rail diesel?',
         answer: 'Low rail pressure is commonly caused by worn injectors leaking fuel back, a failing high-pressure pump, or fuel supply restrictions. An injector leak-back test can identify leaking injectors.'
-      },
-      {
-        question: 'How do I test common rail injector leak-back?',
-        answer: 'Connect clear tubes to each injector return line and measure fuel collected during cranking. More than 80ml per minute indicates a leaking injector that needs replacement.'
       }
     ]
   },
@@ -452,7 +427,6 @@ export const FAULT_CODES: FaultCode[] = [
     ],
     troubleshootingSteps: [
       'Check fuel level and ensure fuel reaches injectors',
-      'Verify battery voltage - minimum 24V for cranking',
       'Check starter motor operation and engagement',
       'Verify fuel solenoid clicks when energized',
       'Check speed sensor signal during cranking (use DSE config software)',
@@ -472,10 +446,6 @@ export const FAULT_CODES: FaultCode[] = [
       {
         question: 'Why does my DSE controller show a Fail to Start alarm?',
         answer: 'Fail to Start means the engine did not reach running speed within the configured number of crank attempts. Check fuel supply, battery voltage, and starter motor operation first. The speed sensor must also detect engine rotation.'
-      },
-      {
-        question: 'How many start attempts does DSE allow before lockout?',
-        answer: 'DSE controllers typically allow 3 start attempts before locking out with a start fail alarm. This is configurable in the DSE configuration software.'
       }
     ]
   },
@@ -517,10 +487,6 @@ export const FAULT_CODES: FaultCode[] = [
       {
         question: 'Why is my generator showing underspeed warning?',
         answer: 'Underspeed indicates the engine cannot maintain proper RPM. This is usually caused by overloading, restricted fuel supply, or dirty air filter. Reduce load and check filters.'
-      },
-      {
-        question: 'What is the normal speed setting for a 50Hz generator?',
-        answer: 'A 50Hz generator runs at 1500 RPM (4-pole) or 3000 RPM (2-pole). The DSE underspeed threshold is typically set 5-10% below rated speed.'
       }
     ]
   },
@@ -540,14 +506,7 @@ export const FAULT_CODES: FaultCode[] = [
       'Worn engine bearings',
       'Wrong oil viscosity for conditions'
     ],
-    troubleshootingSteps: [
-      'Check oil level immediately - add if low',
-      'Inspect for oil leaks around engine',
-      'Install mechanical pressure gauge to verify actual pressure',
-      'If gauge shows good pressure, replace oil pressure sensor',
-      'If actual pressure is low, inspect oil pump and bearings',
-      'Check oil filter for bypass valve operation'
-    ],
+    troubleshootingSteps: [],
     relatedParts: [
       'Oil Pressure Sensor',
       'Oil Filter',
@@ -558,16 +517,7 @@ export const FAULT_CODES: FaultCode[] = [
     ],
     relatedCodes: ['DSE-EMERGENCY-STOP'],
     searchKeywords: ['low oil pressure', 'generator oil alarm', 'DSE oil shutdown'],
-    faqQuestions: [
-      {
-        question: 'My generator shut down on a low oil pressure alarm - what do I do?',
-        answer: 'Do not restart until diagnosed. Check oil level first and add if needed. If oil level is correct, the sensor may be faulty - verify with a mechanical gauge before condemning the engine.'
-      },
-      {
-        question: 'What oil pressure should a generator maintain?',
-        answer: 'Typical diesel generators should maintain 30-60 PSI (2-4 bar) at operating temperature. DSE shutdown threshold is usually set around 10-15 PSI (0.7-1.0 bar).'
-      }
-    ]
+    faqQuestions: []
   },
   {
     code: 'DSE-LOW-FUEL-LEVEL',
@@ -588,9 +538,7 @@ export const FAULT_CODES: FaultCode[] = [
     troubleshootingSteps: [
       'Visually verify fuel level in tank',
       'If tank shows fuel, check fuel level sensor',
-      'Inspect tank for leaks or damage',
       'Verify fuel consumption matches expected rate',
-      'Check fuel lines for leaks',
       'Calibrate fuel level sensor if needed'
     ],
     relatedParts: [
@@ -602,16 +550,7 @@ export const FAULT_CODES: FaultCode[] = [
     ],
     relatedCodes: ['DSE-FAIL-TO-START'],
     searchKeywords: ['low fuel warning', 'generator fuel level', 'DSE fuel alarm'],
-    faqQuestions: [
-      {
-        question: 'How accurate is the DSE fuel level reading?',
-        answer: 'Accuracy depends on proper sensor calibration. DSE controllers support 2-point or multi-point calibration. Standard senders have accuracy of +/-5% of tank capacity.'
-      },
-      {
-        question: 'Can I adjust the fuel warning level on DSE?',
-        answer: 'Yes, the low fuel warning and shutdown levels are configurable through DSE Configuration Suite software. Typical settings are 20% warning and 10% shutdown.'
-      }
-    ]
+    faqQuestions: []
   },
   {
     code: 'DSE-HIGH-COOLANT-TEMPERATURE',
@@ -634,7 +573,6 @@ export const FAULT_CODES: FaultCode[] = [
       'With the engine stopped and cool (never open the cap hot), check the coolant level in the radiator and expansion tank',
       'Inspect for visible coolant leaks',
       'Clean radiator fins of any debris',
-      'Verify cooling fan operates when engine is hot',
       'Test thermostat opens at correct temperature'
     ],
     relatedParts: [
@@ -649,10 +587,6 @@ export const FAULT_CODES: FaultCode[] = [
     relatedCodes: ['DSE-LOW-OIL-PRESSURE', 'DSE-UNDERSPEED'],
     searchKeywords: ['generator overheating', 'coolant temperature high', 'DSE thermal shutdown'],
     faqQuestions: [
-      {
-        question: 'What temperature causes DSE to shut down for overheating?',
-        answer: 'The default DSE high temperature shutdown is typically 102-108 deg C (215-226 deg F), but this is configurable. Warning activates about 10 degrees before shutdown.'
-      },
       {
         question: 'Can overheating damage my generator engine?',
         answer: 'Yes, severe overheating can cause head gasket failure, warped cylinder head, piston seizure, and other catastrophic damage. Always investigate and repair cooling issues before restarting.'
@@ -675,14 +609,7 @@ export const FAULT_CODES: FaultCode[] = [
       'BMS or building automation emergency signal',
       'Loose or corroded emergency stop connections'
     ],
-    troubleshootingSteps: [
-      'Locate and reset all emergency stop buttons',
-      'Check for remote/external emergency stop inputs',
-      'Verify emergency stop wiring is secure',
-      'Check for fire suppression system activation',
-      'Verify building management system status',
-      'Test emergency stop circuit continuity'
-    ],
+    troubleshootingSteps: [],
     relatedParts: [
       'Emergency Stop Button',
       'Emergency Stop Wiring',
@@ -693,10 +620,6 @@ export const FAULT_CODES: FaultCode[] = [
     relatedCodes: ['DSE-FAIL-TO-START', 'DSE-LOW-OIL-PRESSURE'],
     searchKeywords: ['emergency stop', 'generator e-stop', 'DSE shutdown'],
     faqQuestions: [
-      {
-        question: 'Why won\'t my generator start after pressing emergency stop?',
-        answer: 'The emergency stop must be reset (usually by pulling or twisting the button) and the fault cleared on the DSE controller. Check for multiple e-stop locations.'
-      },
       {
         question: 'Is DSE emergency stop normally open or normally closed?',
         answer: 'DSE emergency stop input is configurable but typically wired as normally closed (N/C) for fail-safe operation. An open circuit triggers emergency stop.'
@@ -736,16 +659,7 @@ export const FAULT_CODES: FaultCode[] = [
     ],
     relatedCodes: ['DSE-UNDERSPEED'],
     searchKeywords: ['generator over voltage', 'high voltage output', 'AVR fault'],
-    faqQuestions: [
-      {
-        question: 'What causes generator over voltage?',
-        answer: 'Over voltage is usually caused by AVR malfunction, incorrect AVR adjustment, or sudden load rejection. The AVR should regulate output to 220V/380V +/-5%.'
-      },
-      {
-        question: 'What voltage should a 380V generator produce?',
-        answer: 'A standard 3-phase generator should produce 380V line-to-line (220V line-to-neutral) at 50Hz. Acceptable tolerance is typically +/-5% (361V to 399V).'
-      }
-    ]
+    faqQuestions: []
   },
   {
     code: 'DSE-GENERATOR-UNDER-VOLTAGE',
@@ -811,14 +725,7 @@ export const FAULT_CODES: FaultCode[] = [
       'Bearing wear beginning',
       'Oil pump wear'
     ],
-    troubleshootingSteps: [
-      'Check engine oil level on dipstick',
-      'Inspect oil condition - check for contamination',
-      'Verify oil filter service interval',
-      'Compare oil pressure to mechanical gauge',
-      'Check oil temperature - hot oil reads lower pressure',
-      'Listen for unusual bearing noise'
-    ],
+    troubleshootingSteps: [],
     relatedParts: [
       'Engine Oil',
       'Oil Filter',
@@ -829,10 +736,6 @@ export const FAULT_CODES: FaultCode[] = [
     relatedCodes: ['COMAP-OVERSPEED', 'COMAP-HIGH-COOLANT-TEMPERATURE'],
     searchKeywords: ['oil pressure warning', 'InteliGen oil fault', 'ComAp low oil'],
     faqQuestions: [
-      {
-        question: 'What is the difference between a ComAp oil pressure warning and shutdown?',
-        answer: 'ComAp controllers have two oil pressure levels. The warning (shown as "Wrn") is an early notice that pressure is getting low while the engine keeps running. The shutdown (shown as "Sd") stops the engine to prevent damage. The warning gives you time to check the oil level and pressure before a shutdown.'
-      },
       {
         question: 'How do I adjust ComAp oil pressure thresholds?',
         answer: 'Use ComAp InteliConfig or InteliMonitor software to access protection settings. Oil pressure warning and shutdown levels are in the Binary Outputs configuration.'
@@ -855,14 +758,7 @@ export const FAULT_CODES: FaultCode[] = [
       'Electronic governor control failure',
       'Speed sensor signal interference'
     ],
-    troubleshootingSteps: [
-      'Review event log for conditions leading to overspeed',
-      'Check if caused by load rejection event',
-      'Inspect governor actuator operation',
-      'Verify fuel control linkage moves freely',
-      'Test governor response with InteliConfig',
-      'Check for speed sensor wiring issues'
-    ],
+    troubleshootingSteps: [],
     relatedParts: [
       'Governor Actuator',
       'Governor Linkage',
@@ -873,10 +769,6 @@ export const FAULT_CODES: FaultCode[] = [
     relatedCodes: ['COMAP-LOW-OIL-PRESSURE', 'COMAP-START-FAIL'],
     searchKeywords: ['overspeed shutdown', 'generator overspeed', 'InteliGen overspeed'],
     faqQuestions: [
-      {
-        question: 'What RPM triggers ComAp overspeed shutdown?',
-        answer: 'Default overspeed is typically 115% of rated speed - 1725 RPM for a 50Hz 1500 RPM engine. This is configurable but should not be set higher than engine manufacturer limits.'
-      },
       {
         question: 'My generator overspeed when load is removed - why?',
         answer: 'This is load rejection overspeed. When large loads disconnect suddenly, the engine accelerates. A properly tuned governor should control this within limits.'
@@ -919,10 +811,6 @@ export const FAULT_CODES: FaultCode[] = [
     searchKeywords: ['high temperature', 'overheating shutdown', 'InteliGen coolant'],
     faqQuestions: [
       {
-        question: 'What is the default ComAp high temperature shutdown setting?',
-        answer: 'Default high temperature shutdown is typically 100-105 deg C. Warning level is usually set 5-10 degrees below shutdown. Both are configurable in InteliConfig.'
-      },
-      {
         question: 'How do I reset ComAp after temperature shutdown?',
         answer: 'Fix the cooling issue first, then clear the alarm using the controller buttons or InteliMonitor software. The engine must be allowed to cool before resetting.'
       }
@@ -964,10 +852,6 @@ export const FAULT_CODES: FaultCode[] = [
     searchKeywords: ['fail to start', 'generator won\'t start', 'InteliGen start fail'],
     faqQuestions: [
       {
-        question: 'How many start attempts does ComAp allow?',
-        answer: 'The default is typically 3 start attempts with a configurable pause between attempts. This can be changed in InteliConfig but should not exceed engine manufacturer recommendations.'
-      },
-      {
         question: 'My ComAp shows start fail but engine cranks fine - why?',
         answer: 'If the engine cranks but doesn\'t start, check fuel delivery and speed sensor. The speed sensor must detect engine rotation for the controller to recognize a running engine.'
       }
@@ -1006,16 +890,7 @@ export const FAULT_CODES: FaultCode[] = [
     ],
     relatedCodes: ['COMAP-OVERSPEED'],
     searchKeywords: ['over frequency', 'high frequency', 'generator Hz high'],
-    faqQuestions: [
-      {
-        question: 'What frequency should my generator produce?',
-        answer: 'In Kenya and most of Africa, generators should produce 50Hz (+/-0.5Hz under stable load). At 50Hz, a 4-pole generator runs at 1500 RPM, and a 2-pole at 3000 RPM.'
-      },
-      {
-        question: 'Is 52Hz damaging to equipment?',
-        answer: 'Brief frequency variations are tolerable, but sustained operation above 52Hz can damage motors (they run fast and hot), transformers, and sensitive electronics. Fix promptly.'
-      }
-    ]
+    faqQuestions: []
   },
 
   // ═══════════════════════════════════════════════════════════════════════════════
@@ -1058,10 +933,6 @@ export const FAULT_CODES: FaultCode[] = [
       {
         question: 'What coolant should I use in a Perkins engine?',
         answer: 'Perkins recommends Extended Life Coolant (ELC) meeting ASTM D6210 specification. Use 50/50 pre-mix or mix concentrate with clean water. Check for correct freezing/boiling protection.'
-      },
-      {
-        question: 'At what temperature does a Perkins shut down?',
-        answer: 'Typical shutdown temperature is 102-108 deg C depending on engine model and calibration. Warning activates approximately 8-10 degrees before shutdown threshold.'
       }
     ]
   },
@@ -1080,14 +951,7 @@ export const FAULT_CODES: FaultCode[] = [
       'Worn bearings',
       'Wrong oil viscosity'
     ],
-    troubleshootingSteps: [
-      'Check oil level on dipstick',
-      'Inspect for oil leaks',
-      'Install mechanical pressure gauge',
-      'If gauge shows good pressure, replace sensor',
-      'If actual pressure low, inspect pump and bearings',
-      'Check oil filter bypass valve'
-    ],
+    troubleshootingSteps: [],
     relatedParts: [
       'Oil Pressure Sensor',
       'Oil Pump',
@@ -1102,10 +966,6 @@ export const FAULT_CODES: FaultCode[] = [
       {
         question: 'What oil should I use in a Perkins generator engine?',
         answer: 'Perkins recommends 15W-40 multigrade diesel engine oil meeting API CJ-4 or CK-4 specification. In very cold climates, 10W-30 may be specified. Always check your manual.'
-      },
-      {
-        question: 'What is normal oil pressure for Perkins?',
-        answer: 'Normal operating oil pressure is typically 40-60 PSI (2.8-4.1 bar) at operating temperature. Idle pressure may be lower (15-25 PSI). Shutdown occurs below 10-15 PSI.'
       }
     ]
   },
@@ -1193,10 +1053,6 @@ export const FAULT_CODES: FaultCode[] = [
       {
         question: 'What is generator reverse power?',
         answer: 'Reverse power (motoring) occurs when the generator absorbs power from the grid instead of producing it. This can damage the prime mover and must trigger immediate disconnection.'
-      },
-      {
-        question: 'What is normal reverse power setting?',
-        answer: 'Typical reverse power trip is set at 5-15% of rated power with a time delay of 2-5 seconds. Settings depend on application and generator characteristics.'
       }
     ]
   },
@@ -1216,14 +1072,7 @@ export const FAULT_CODES: FaultCode[] = [
       'Earth leakage in connected load',
       'CT wiring fault giving false reading'
     ],
-    troubleshootingSteps: [
-      'Disconnect loads and check if fault clears',
-      'Use insulation tester to check cable megger values',
-      'Inspect all junction boxes for moisture',
-      'Check generator winding insulation resistance',
-      'Verify CT and earth fault relay wiring',
-      'Systematically reconnect loads to isolate faulty circuit'
-    ],
+    troubleshootingSteps: [],
     relatedParts: [
       'Earth Fault Relay',
       'Current Transformers',
@@ -1234,10 +1083,6 @@ export const FAULT_CODES: FaultCode[] = [
     relatedCodes: ['DSE-GENERATOR-OVER-VOLTAGE', 'DSE-GENERATOR-UNDER-VOLTAGE'],
     searchKeywords: ['earth fault', 'ground fault', 'generator earth leakage'],
     faqQuestions: [
-      {
-        question: 'What insulation resistance is acceptable for a generator?',
-        answer: 'Minimum acceptable insulation resistance is typically 1 megohm per kV of rated voltage, measured with a 500V or 1000V insulation tester. New equipment should be 100+ megohms.'
-      },
       {
         question: 'Is it safe to run with an earth fault?',
         answer: 'No. Earth faults create electrocution hazard and fire risk. The generator should be shut down and the fault located and repaired before resuming operation.'
@@ -1328,16 +1173,7 @@ export const FAULT_CODES: FaultCode[] = [
     ],
     relatedCodes: ['COMAP-START-FAIL'],
     searchKeywords: ['low battery', 'generator battery', 'charging fault'],
-    faqQuestions: [
-      {
-        question: 'What voltage should generator starting batteries maintain?',
-        answer: 'For 24V systems, batteries should maintain 25-28V float charge. For 12V systems, 13-14V. During cranking, voltage should not drop below 18V (24V system) or 9V (12V system).'
-      },
-      {
-        question: 'How often should generator batteries be replaced?',
-        answer: 'Lead-acid starting batteries typically last 3-5 years. Perform annual load testing and replace when capacity drops below 80% of rated. AGM batteries may last longer.'
-      }
-    ]
+    faqQuestions: []
   },
   {
     code: 'COMAP-SPEED-SIGNAL-LOST',
@@ -1376,10 +1212,6 @@ export const FAULT_CODES: FaultCode[] = [
       {
         question: 'What type of speed sensor does ComAp use?',
         answer: 'ComAp controllers accept both magnetic pickup (MPU) and digital sensors. The input type is configured in InteliConfig. MPU sensors generate AC voltage proportional to speed.'
-      },
-      {
-        question: 'How do I test a magnetic pickup speed sensor?',
-        answer: 'Measure resistance (typically 100-1000 ohms). Spin a metal object past the sensor and measure AC voltage output. Check gap to tone ring is per specification (usually 0.5-2mm).'
       }
     ]
   },
@@ -1402,14 +1234,7 @@ export const FAULT_CODES: FaultCode[] = [
       'ECM governor control failure',
       'Mechanical governor spring broken'
     ],
-    troubleshootingSteps: [
-      'Check event log for conditions during overspeed',
-      'Inspect governor actuator operation',
-      'Verify fuel control returns to idle',
-      'Check for load rejection events',
-      'Test governor response with EST',
-      'Inspect mechanical governor components'
-    ],
+    troubleshootingSteps: [],
     relatedParts: [
       'Governor Actuator',
       'Electronic Governor',

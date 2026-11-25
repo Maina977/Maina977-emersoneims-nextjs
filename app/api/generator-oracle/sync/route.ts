@@ -7,7 +7,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getPostgresPool } from '@/lib/db';
-import { compareVersions, isNewerVersion } from '@/lib/generator-oracle/versionManager';
+import { isNewerVersion } from '@/lib/generator-oracle/versionManager';
+import { withdrawnRouteResponse } from '@/lib/generator-oracle/safety/withdrawal';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -151,73 +152,10 @@ export async function GET(request: NextRequest) {
 // POST - Download updates
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { fromVersion, toVersion } = body;
-
-    const pool = await getPostgresPool();
-
-    if (!pool) {
-      // Return empty sync response
-      return NextResponse.json({
-        success: true,
-        version: toVersion || '1.0.0',
-        faults: [],
-        isFullSync: true,
-        message: 'Database unavailable - no remote faults',
-      });
-    }
-
-    await initSyncTables();
-
-    // For now, since we don't have fault data in the database,
-    // return the built-in fault codes
-    // In production, this would fetch from oracle_fault_codes table
-
-    const { getAllFaultCodes } = await import('@/lib/generator-oracle/controllerFaultCodes');
-    const allFaultCodes = getAllFaultCodes();
-
-    // Get or create current version
-    let currentVersion = toVersion || '1.0.0';
-
-    const versionResult = await pool.query(
-      `SELECT version FROM oracle_fault_versions WHERE is_current = true LIMIT 1`
-    );
-
-    if (versionResult.rows.length > 0) {
-      currentVersion = (versionResult.rows[0] as { version: string }).version;
-    }
-
-    // Determine if full sync or delta sync
-    const isFullSync = !fromVersion || fromVersion === '0.0.0' ||
-                       compareVersions(fromVersion, '1.0.0') < 0;
-
-    if (isFullSync) {
-      return NextResponse.json({
-        success: true,
-        version: currentVersion,
-        faults: allFaultCodes,
-        isFullSync: true,
-        faultCount: allFaultCodes.length,
-      });
-    }
-
-    // Delta sync - get only changed faults
-    // For now, return all faults since we don't track deltas yet
-    return NextResponse.json({
-      success: true,
-      version: currentVersion,
-      faults: allFaultCodes,
-      removed: [],
-      isFullSync: false, // Would be true delta in production
-      faultCount: allFaultCodes.length,
-    });
-  } catch (error) {
-    console.error('Sync download error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to download updates' },
-      { status: 500 }
-    );
-  }
+// SAFETY WITHDRAWAL (management rule, 2026-11-25). POST returned the full controller
+// fault library (diagnostic steps, reset steps, solutions) - the same data as the withdrawn
+// /api/generator-oracle/fault-code (review finding S2). It answers 503 with the shared notice
+// before doing any work. Previous version: git show fa565ab1:app/api/generator-oracle/sync/route.ts
+export async function POST() {
+  return withdrawnRouteResponse();
 }

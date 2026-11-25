@@ -3,16 +3,16 @@
  *
  * Implements structured data for Generator Oracle:
  * - SoftwareApplication schema
- * - FAQ schema for common questions
- * - HowTo schema for diagnostic guides
- * - Organization schema with service offerings
+ * - Service schema with service offerings
+ * (FAQ and HowTo schemas deleted 2026-11-25, content-safety withdrawal.)
  */
 
 export interface GeneratorOracleSEOProps {
   pageType?: 'home' | 'diagnostic' | 'faq' | 'guide';
 }
 
-export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracleSEOProps) {
+// pageType is kept for callers; since 2026-11-25 no schema depends on it.
+export default function GeneratorOracleSEO(_props: GeneratorOracleSEOProps) {
   // Software Application Schema
   const softwareSchema = {
     '@context': 'https://schema.org',
@@ -20,7 +20,9 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
     name: 'Generator Oracle',
     applicationCategory: 'UtilitiesApplication',
     operatingSystem: 'Web Browser',
-    description: 'Professional generator diagnostic tool for troubleshooting diesel generators, identifying fault codes, and providing repair guidance. Compatible with major engine platforms including J1939 and CAN protocols.',
+    // 2026-11-25: describes only what /generator-oracle shows (the fault-code
+    // lookup and repair guides are withdrawn).
+    description: 'Generator diagnostic tool for diesel generators: Guided Diagnosis, wiring diagrams and service job cards, with escalation to an EmersonEIMS engineer.',
     offers: {
       '@type': 'Offer',
       price: '0',
@@ -36,123 +38,10 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
       url: 'https://www.emersoneims.com',
     },
     featureList: [
-      'Controller alarm lookup for 10 controller brands',
-      'J1939 SPN/FMI engine code reference',
-      'Step-by-Step Repair Guides',
-      'J1939/CAN Protocol Support',
+      'Guided Diagnosis',
+      'Wiring diagrams',
+      'Service job cards',
       'One-tap escalation to an EmersonEIMS engineer',
-    ],
-  };
-
-  // FAQ Schema for common generator problems
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: 'Why won\'t my generator start?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Common causes include: dead battery, fuel issues (empty tank, clogged filter, air in lines), faulty starter motor, low oil triggering safety shutoff, or ECM fault codes. Use Generator Oracle to diagnose the exact cause with step-by-step troubleshooting.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'What does a generator fault code mean?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Generator fault codes are diagnostic messages from the ECM (Engine Control Module) indicating a problem. They follow J1939 protocol with SPN (Suspect Parameter Number) and FMI (Failure Mode Identifier). Generator Oracle can decode these codes and provide repair guidance.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'How often should I service my diesel generator?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Recommended service intervals: Oil change every 250 hours or 6 months. Fuel filter every 500 hours. Air filter every 500 hours or as needed. Full service including coolant, belts, and hoses every 1000 hours or annually. Emergency standby generators should be load-tested monthly.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Why is my generator overheating?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Generator overheating causes include: low coolant level, blocked radiator, faulty thermostat, broken water pump, damaged fan belt, or overloading. Check coolant level first, then inspect the cooling system. Generator Oracle provides detailed diagnostic steps for each cause.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'What size generator do I need for my home/business?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Calculate total wattage of essential equipment, add 25% safety margin. Homes typically need 10-25kVA. Small businesses 30-100kVA. Factories 200-2000kVA. Contact EmersonEIMS to book a site survey and sizing consultation.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'How do I read a J1939 fault code?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'J1939 fault codes have two parts: SPN (Suspect Parameter Number) identifies the component, FMI (Failure Mode Identifier) describes the failure type. Example: SPN 100 FMI 1 = Engine Oil Pressure Low. Generator Oracle decodes these automatically.',
-        },
-      },
-    ],
-  };
-
-  // HowTo Schema for diagnostic guide
-  const howToSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'HowTo',
-    name: 'How to Diagnose Generator Problems',
-    description: 'Step-by-step guide to troubleshoot common diesel generator issues using Generator Oracle diagnostic tool.',
-    totalTime: 'PT15M',
-    estimatedCost: {
-      '@type': 'MonetaryAmount',
-      currency: 'KES',
-      value: '0',
-    },
-    tool: [
-      {
-        '@type': 'HowToTool',
-        name: 'Generator Oracle App',
-      },
-      {
-        '@type': 'HowToTool',
-        name: 'Multimeter',
-      },
-    ],
-    step: [
-      {
-        '@type': 'HowToStep',
-        name: 'Check for Fault Codes',
-        text: 'Read the active alarm or fault code shown on your generator controller display.',
-        position: 1,
-      },
-      {
-        '@type': 'HowToStep',
-        name: 'Identify the Problem',
-        text: 'Enter the fault code into Generator Oracle. The tool will identify the affected system and component.',
-        position: 2,
-      },
-      {
-        '@type': 'HowToStep',
-        name: 'Review Possible Causes',
-        text: 'Generator Oracle lists the likely causes, most common first. Start with the first one.',
-        position: 3,
-      },
-      {
-        '@type': 'HowToStep',
-        name: 'Follow Repair Steps',
-        text: 'Follow the step-by-step repair guide provided. Each step includes safety warnings and required tools.',
-        position: 4,
-      },
-      {
-        '@type': 'HowToStep',
-        name: 'Clear Codes and Test',
-        text: 'After repair, clear fault codes and run the generator. Monitor for any returning faults.',
-        position: 5,
-      },
     ],
   };
 
@@ -218,23 +107,14 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
       />
-      {/* The FAQPage schema built above is NOT emitted (2026-08-29).
-          /generator-oracle was serving TWO FAQPage entities: this one, and the
-          one in ToolSeoContent. Two FAQPage nodes on a single URL is invalid,
-          and this was the wrong one to keep — Google requires the questions to
-          be visible on the page that declares them, and this component renders
-          no FAQ at all, only markup. ToolSeoContent renders a real
-          "Frequently asked questions" section with its six Q&As on the page,
-          so its schema is the compliant one and it stays.
-          Same violation as the site-wide FAQSchema removed from app/layout.tsx
-          earlier. The faqSchema object is left in place, unused, so the
-          questions are not lost if a visible FAQ is ever added here. */}
-      {pageType === 'guide' && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
-        />
-      )}
+      {/* CONTENT-SAFETY WITHDRAWAL 2026-11-25: the unused FAQPage object (it
+          was never emitted: no visible counterpart on /generator-oracle) and
+          the HowTo ("enter the fault code … follow the repair steps … clear
+          fault codes and run the generator") are deleted. Both described the
+          withdrawn fault-code lookup and repair guides, and the HowTo ended
+          by running the set after clearing codes. The visible FAQ and its
+          FAQPage on this URL come from ToolSeoContent. */}
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}

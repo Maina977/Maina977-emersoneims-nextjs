@@ -21,8 +21,8 @@ export function describeCondition(c: Condition): string {
     case 'le': return `${c.q} ≤ ${c.value}`;
     case 'gt': return `${c.q} > ${c.value}`;
     case 'ge': return `${c.q} ≥ ${c.value}`;
-    case 'ltRef': return `${c.q} < ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
-    case 'gtRef': return `${c.q} > ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
+    case 'ltRef': return `${c.q} ${c.inclusive ? '≤' : '<'} ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
+    case 'gtRef': return `${c.q} ${c.inclusive ? '≥' : '>'} ${c.factor && c.factor !== 1 ? `${c.factor} × ` : ''}${c.ref}`;
   }
 }
 

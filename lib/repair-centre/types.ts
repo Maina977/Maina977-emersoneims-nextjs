@@ -99,12 +99,27 @@ export interface RepairGroup {
   note?: string;
 }
 
+/**
+ * Sections from which content was withdrawn by the content-safety withdrawal
+ * of 2026-11-25 (CONTENT-SAFETY-CLASSIFICATION.md, Repair Centre group). Each
+ * listed section shows SafetyChecksWithdrawnNotice at its head.
+ */
+export type SafetyWithdrawnSection = 'tools' | 'decision-tree' | 'diagnosis' | 'repair' | 'validation';
+
 export interface RepairArticle {
   slug: string;
   hub: string;
   header: ArticleHeader;
   /** Concise answer placed before the deep explanation, for readers and retrieval. */
   directAnswer: string;
+  /**
+   * Optional meta / social / TechArticle description. When absent the first
+   * 300 characters of directAnswer are used (see lib/repair-centre/schema.ts).
+   * Set only where that cut would publish withdrawn text or drop a STOP.
+   */
+  metaDescription?: string;
+  /** Sections carrying the content-safety withdrawal notice (2026-11-25). */
+  safetyWithdrawn?: SafetyWithdrawnSection[];
   symptoms: {
     display: string[];
     indicators: string[];

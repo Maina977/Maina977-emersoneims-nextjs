@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { importWithRetry } from '@/lib/loading/resilientImport';
 import {
-  jobCardReport, nextStatuses, signOffCheck, signOffSummary, SIGNOFF, TYPED_NAMES_NOTICE, TYPED_SIGNOFF_NOTICE,
+  jobCardReport, nextStatuses, signOffCheck, signOffSummary, SIGNOFF, READINGS_NOT_TAKEN_STOP, STOP_NOT_CARRIED_NOTICE, TYPED_NAMES_NOTICE, TYPED_SIGNOFF_NOTICE,
   type Asset, type JobCard, type JobStatus,
 } from '@/lib/generator-oracle/service/maintenance';
 import {
@@ -332,6 +332,7 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
               </div>
             ))}
             <button type="button" className={btn2} onClick={() => setD({ ...d, readings: [...d.readings, { name: '', value: '', unit: '', min: '', max: '', limitSource: '' }] })}>+ Add reading</button>
+            <p className="text-xs text-red-200 break-words">Do not test-run a set with an unresolved STOP. Record instead: <button type="button" className="underline text-red-100" onClick={() => setD({ ...d, findings: d.findings.toLowerCase().includes(READINGS_NOT_TAKEN_STOP.toLowerCase()) ? d.findings : [d.findings.trim(), READINGS_NOT_TAKEN_STOP].filter(Boolean).join('. ') })}>{READINGS_NOT_TAKEN_STOP}</button></p>
           </div>
           <Field label="Findings"><textarea rows={3} className={inp} value={d.findings} onChange={(e) => setD({ ...d, findings: e.target.value })} /></Field>
           <button type="button" className={btn2} onClick={() => dispatch({ type: 'updateCard', cardId: card.id, update: fromDraft(d) })}>Save changes</button>
@@ -460,6 +461,10 @@ export default function ServiceManagementPanel() {
 
   return (
     <div className="space-y-4 min-w-0">
+      {/* Safety withdrawal 2026-11-25 (review finding S9): wording only. */}
+      <p role="note" data-testid="stop-not-carried-notice" className="rounded-md border border-red-500/60 bg-red-950/50 px-3 py-2 text-sm text-red-100 break-words">
+        <strong>Safety.</strong> {STOP_NOT_CARRIED_NOTICE}
+      </p>
       <div className={box}>
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">

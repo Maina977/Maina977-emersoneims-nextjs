@@ -110,7 +110,9 @@ const CumminsBanner = dynamic(() => import('@/components/brands/CumminsBanner'))
 const ConversionCTAHub = dynamic(() => import('@/components/generators/ConversionCTAHub'));
 
 // AI DIAGNOSTIC COMPONENTS
-const AIVisualDiagnostic = dynamic(() => import('@/components/generator-oracle/AIVisualDiagnostic'), { ssr: false });
+// SAFETY WITHDRAWAL 2026-11-25 (review finding S13): the visual diagnostic component is no
+// longer imported here, so its code is not in this page; the section shows the shared notice.
+import OracleSafetyWithdrawnNotice from '@/components/generator-oracle/OracleSafetyWithdrawnNotice';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BIBLE OF GENERATORS - COMPREHENSIVE NAVIGATION HUB
@@ -327,7 +329,7 @@ const AIVisualDiagnosticSection = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
             </span>
-            Free • verify on site before acting
+            Temporarily unavailable
           </span>
           {/* Was "AI Visual Diagnostic" promising photo AI, shelf-life and
               time-to-failure prediction. Photo AI is not enabled on this site;
@@ -336,18 +338,18 @@ const AIVisualDiagnosticSection = () => {
             Visual Fault Checklist
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Tick what you can see on the generator — a leak, smoke, corrosion, a damaged belt or burnt
-            wiring — and get the matching diagnostic guides and controller alarms. Then send it to one of
-            our engineers in one tap.
+            The visual checklist is temporarily unavailable while safety checks are being updated. For a
+            leak, smoke, corrosion, a damaged belt or burnt wiring, consult the applicable OEM service
+            manual and a qualified technician, or send a photo to one of our engineers in one tap.
           </p>
         </div>
 
         {/* Feature Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: '👀', title: 'What You See', desc: 'Tick the visible signs' },
-            { icon: '📋', title: 'Matching Guides', desc: 'Step-by-step diagnosis' },
-            { icon: '🎛️', title: 'Related Alarms', desc: 'From 10 controller brands' },
+            { icon: '👀', title: 'What You See', desc: 'Note the visible signs' },
+            { icon: '📋', title: 'OEM Manual First', desc: 'Checks per the OEM service manual' },
+            { icon: '🎛️', title: 'Controller Alarm', desc: 'Note the alarm on the display' },
             { icon: '💬', title: 'Ask an Engineer', desc: 'One tap on WhatsApp' },
           ].map((feature) => (
             <div
@@ -374,7 +376,7 @@ const AIVisualDiagnosticSection = () => {
             className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30"
           >
             <span className="text-2xl">👀</span>
-            <span>{showDiagnostic ? 'Hide Checklist' : 'Open Visual Checklist'}</span>
+            <span>{showDiagnostic ? 'Hide notice' : 'Visual Checklist: temporarily unavailable'}</span>
           </button>
         </div>
 
@@ -386,7 +388,7 @@ const AIVisualDiagnosticSection = () => {
             
             className="bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden"
           >
-            <AIVisualDiagnostic />
+            <OracleSafetyWithdrawnNotice surface="generators-visual-checklist" />
           </div>
         )}
 
@@ -396,7 +398,7 @@ const AIVisualDiagnosticSection = () => {
             href="/generator-oracle"
             className="text-pink-400 hover:text-pink-300 underline"
           >
-            Or open Generator Oracle for full diagnostic suite →
+            Or open Generator Oracle (Guided Diagnosis) →
           </a>
         </div>
       </div>

@@ -34,7 +34,8 @@ export type Question = NumberQuestion | ChoiceQuestion;
 /** A condition on the answers. `ref` compares with another answer (e.g. an OEM limit). */
 export type Condition =
   | { q: string; op: 'lt' | 'le' | 'gt' | 'ge'; value: number }
-  | { q: string; op: 'ltRef' | 'gtRef'; ref: string; factor?: number }
+  // inclusive: equality counts as reaching the limit (used by STOP rules; 2026-11-25 safety hotfix).
+  | { q: string; op: 'ltRef' | 'gtRef'; ref: string; factor?: number; inclusive?: boolean }
   | { q: string; op: 'is'; value: string | string[] }
   | { all: Condition[] }
   | { any: Condition[] };

@@ -139,12 +139,16 @@ async function api() {
   await expectStatus('solar/losses ok', post('/api/solar/losses', { soiling: 3 }), 200);
   await expectStatus('solar/auto-design {}', post('/api/solar/auto-design', {}), 400);
   await expectStatus('finance/npv []', post('/api/finance/npv', { cashFlows: [] }), 400);
-  const chat = await expectStatus('ai/chat SPN 110 FMI 0', post('/api/ai/chat', { message: 'SPN 110 FMI 0' }), 200);
-  if (chat.status === 200) {
-    const j = await chat.json();
-    /110/.test(JSON.stringify(j)) && !/confidence/i.test(JSON.stringify(j)) ? pass('ai/chat', 'code resolved, no confidence figure') : fail('ai/chat', JSON.stringify(j).slice(0, 160));
+  // Generator Oracle safety withdrawal (2026-11-25): /api/ai/chat is withdrawn and must answer
+  // HTTP 503 with the withdrawal notice for every request (never diagnostic instructions).
+  for (const [label, body] of [['ai/chat SPN 110 FMI 0 (withdrawn)', { message: 'SPN 110 FMI 0' }], ['ai/chat empty (withdrawn)', { message: '' }]]) {
+    const r = await expectStatus(label, post('/api/ai/chat', body), 503);
+    if (r.status === 503) {
+      const j = await r.json().catch(() => ({}));
+      j.error === 'temporarily_unavailable' && /temporarily unavailable while safety checks are being updated/i.test(j.message || '')
+        ? pass(label, 'withdrawal notice') : fail(label, JSON.stringify(j).slice(0, 160));
+    }
   }
-  await expectStatus('ai/chat empty', post('/api/ai/chat', { message: '' }), 400);
 }
 
 (async () => {

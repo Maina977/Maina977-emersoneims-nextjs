@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import SafetyChecksWithdrawnNotice from '@/components/safety/SafetyChecksWithdrawnNotice';
 
 // Troubleshooting decision tree structure
 interface TroubleshootNode {
@@ -24,8 +25,13 @@ interface TroubleshootResult {
   diyPossible: boolean;
   estimatedCost: string;
   timeToFix: string;
-  relatedCodes?: string[];
   callExpert: boolean;
+  /**
+   * Content-safety withdrawal 2026-11-25: the result's steps are withdrawn
+   * until corrected and independently reviewed. The card shows
+   * SafetyChecksWithdrawnNotice and the engineer contact instead of steps.
+   */
+  withdrawn?: boolean;
 }
 
 // Complete troubleshooting decision trees for ALL services
@@ -754,19 +760,18 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diagnosis: 'Dead or Discharged Battery',
           severity: 'low',
           causes: ['Battery not charging', 'Faulty battery charger', 'Old battery (3+ years)', 'Parasitic drain'],
-          solutions: ['Charge battery with external charger', 'Check battery charger output (13.5-14.5V)', 'Test battery load capacity', 'Replace battery if over 3 years old'],
+          solutions: ['Charge battery with external charger', 'Test battery load capacity', 'Replace battery if over 3 years old'],
           diyPossible: true,
           estimatedCost: 'KES 8,000 - 25,000 (new battery)',
           timeToFix: '30 minutes - 2 hours',
-          relatedCodes: ['E1010', 'BAT01'],
           callExpert: false
         }},
-        { label: 'Battery seems fine (12.6V+)', nextId: 'battery-ok' },
+        { label: 'Battery seems fine', nextId: 'battery-ok' },
         { label: 'Not sure how to check', result: {
           diagnosis: 'Potential Electrical Issue',
           severity: 'medium',
           causes: ['Dead battery', 'Faulty starter', 'Electrical connection issues', 'Control panel fault'],
-          solutions: ['Have battery tested (should read 12.6V+ when charged)', 'Check battery terminals for corrosion', 'Inspect main fuses', 'Check emergency stop button is released'],
+          solutions: ['Check battery terminals for corrosion', 'Inspect main fuses'],
           diyPossible: false,
           estimatedCost: 'KES 5,000 - 50,000 depending on issue',
           timeToFix: '1-4 hours',
@@ -786,18 +791,18 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: false,
           estimatedCost: 'KES 15,000 - 80,000',
           timeToFix: '2-6 hours',
-          relatedCodes: ['E1001', 'STR01'],
           callExpert: true
         }},
         { label: 'Emergency stop was engaged!', result: {
           diagnosis: 'Emergency Stop Engaged',
           severity: 'low',
           causes: ['Emergency stop button pressed', 'Safety interlock activated'],
-          solutions: ['Release emergency stop button by twisting/pulling', 'Reset the control panel', 'Check for any safety interlocks'],
-          diyPossible: true,
+          solutions: [],
+          withdrawn: true,
+          diyPossible: false,
           estimatedCost: 'Free',
           timeToFix: '5 minutes',
-          callExpert: false
+          callExpert: true
         }}
       ]
     },
@@ -815,7 +820,6 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: true,
           estimatedCost: 'KES 5,000 - 25,000',
           timeToFix: '1-3 hours',
-          relatedCodes: ['E1001', 'F101', 'F102'],
           callExpert: false
         }}
       ]
@@ -842,7 +846,6 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: true,
           estimatedCost: 'KES 10,000 - 30,000',
           timeToFix: '2-4 hours',
-          relatedCodes: ['F201', 'F202'],
           callExpert: false
         }},
         { label: 'Fuel is full and clean', result: {
@@ -853,7 +856,6 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: false,
           estimatedCost: 'KES 15,000 - 100,000',
           timeToFix: '2-8 hours',
-          relatedCodes: ['E1001', 'E2001', 'F101'],
           callExpert: true
         }}
       ]
@@ -866,7 +868,7 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diagnosis: 'Air in Fuel System',
           severity: 'medium',
           causes: ['Air entered fuel lines during storage', 'Loose fuel connections', 'Fuel pump not priming'],
-          solutions: ['Bleed air from fuel system at injector bleed points', 'Check all fuel line connections', 'Prime fuel pump manually if equipped', 'Crank in short bursts (10 sec) with 30 sec rest'],
+          solutions: ['Bleed air from fuel system at injector bleed points', 'Check all fuel line connections', 'Prime fuel pump manually if equipped'],
           diyPossible: true,
           estimatedCost: 'KES 0 - 5,000',
           timeToFix: '30 minutes - 2 hours',
@@ -922,25 +924,25 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: false,
           estimatedCost: 'KES 10,000 - 50,000',
           timeToFix: '1-4 hours',
-          relatedCodes: ['E1010', 'F101'],
           callExpert: true
         }},
         { label: '5-30 seconds', result: {
           diagnosis: 'Sensor or Safety Shutdown',
           severity: 'medium',
           causes: ['Low oil pressure sensor', 'Overspeed protection', 'Coolant temperature sensor', 'Safety interlock'],
-          solutions: ['Check oil level', 'Inspect sensors and connections', 'Review fault codes on display', 'Check safety interlocks'],
+          solutions: [],
+          withdrawn: true,
           diyPossible: false,
           estimatedCost: 'KES 5,000 - 30,000',
           timeToFix: '1-3 hours',
-          relatedCodes: ['E1004', 'E1003', 'S101'],
           callExpert: true
         }},
         { label: '1-5 minutes', result: {
           diagnosis: 'Operating Parameter Fault',
           severity: 'medium',
           causes: ['Overheating', 'Low oil pressure', 'Governor/speed control issue', 'Load imbalance'],
-          solutions: ['Check coolant level', 'Verify oil level and quality', 'Inspect for cooling system blockages', 'Check governor settings'],
+          solutions: [],
+          withdrawn: true,
           diyPossible: false,
           estimatedCost: 'KES 10,000 - 60,000',
           timeToFix: '2-6 hours',
@@ -965,7 +967,7 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diagnosis: 'Normal Cold Start Behavior',
           severity: 'low',
           causes: ['Cold engine combustion', 'Rich fuel mixture during warm-up'],
-          solutions: ['Allow proper warm-up time (3-5 minutes)', 'This is normal if it clears within 1-2 minutes', 'Check air filter if excessive'],
+          solutions: ['Check air filter if excessive'],
           diyPossible: true,
           estimatedCost: 'Free',
           timeToFix: 'N/A - Normal operation',
@@ -979,7 +981,6 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: false,
           estimatedCost: 'KES 5,000 - 80,000',
           timeToFix: '1-6 hours',
-          relatedCodes: ['E1015', 'A101', 'T101'],
           callExpert: true
         }},
         { label: 'Only under heavy load', result: {
@@ -1006,7 +1007,6 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: false,
           estimatedCost: 'KES 80,000 - 500,000+',
           timeToFix: '1-5 days',
-          relatedCodes: ['E1021', 'C201'],
           callExpert: true
         }},
         { label: 'Thin white smoke, no smell', result: {
@@ -1053,7 +1053,6 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: false,
           estimatedCost: 'KES 150,000 - 600,000',
           timeToFix: '3-7 days',
-          relatedCodes: ['O101', 'E401'],
           callExpert: true
         }}
       ]
@@ -1070,7 +1069,6 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: true,
           estimatedCost: 'KES 5,000 - 50,000',
           timeToFix: '1-4 hours',
-          relatedCodes: ['E1003', 'C101'],
           callExpert: false
         }},
         { label: 'Coolant level is fine', nextId: 'overheat-full' }
@@ -1084,8 +1082,9 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diagnosis: 'Restricted Airflow to Radiator',
           severity: 'medium',
           causes: ['Dirty radiator fins', 'Debris blocking airflow', 'Failed cooling fan', 'Poor ventilation in enclosure'],
-          solutions: ['Clean radiator with compressed air or water', 'Remove debris from around generator', 'Check cooling fan operation', 'Ensure adequate ventilation'],
-          diyPossible: true,
+          solutions: [],
+          withdrawn: true,
+          diyPossible: false,
           estimatedCost: 'KES 0 - 20,000',
           timeToFix: '30 minutes - 2 hours',
           callExpert: false
@@ -1094,11 +1093,11 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diagnosis: 'Thermostat, Water Pump, or Internal Issue',
           severity: 'high',
           causes: ['Stuck thermostat', 'Failed water pump', 'Internal blockage', 'Head gasket failure'],
-          solutions: ['Test thermostat operation', 'Check water pump flow', 'Flush cooling system', 'Professional diagnosis needed'],
+          solutions: [],
+          withdrawn: true,
           diyPossible: false,
           estimatedCost: 'KES 15,000 - 150,000',
           timeToFix: '2-8 hours',
-          relatedCodes: ['E1020', 'C102'],
           callExpert: true
         }}
       ]
@@ -1123,20 +1122,19 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: false,
           estimatedCost: 'KES 30,000 - 200,000',
           timeToFix: '2-8 hours',
-          relatedCodes: ['V101', 'G101'],
           callExpert: true
         }},
-        { label: 'Low voltage (below 200V)', result: {
+        { label: 'Low voltage', result: {
           diagnosis: 'AVR or Speed Control Issue',
           severity: 'medium',
           causes: ['AVR malfunction', 'Engine running below rated speed', 'Faulty speed sensor', 'Governor issue'],
-          solutions: ['Check engine RPM (should be 1500 for 50Hz)', 'Adjust AVR voltage setting if accessible', 'Test speed sensor', 'Check governor operation'],
+          solutions: ['Check engine RPM (should be 1500 for 50Hz)', 'Test speed sensor', 'Check governor operation'],
           diyPossible: false,
           estimatedCost: 'KES 15,000 - 80,000',
           timeToFix: '1-4 hours',
           callExpert: true
         }},
-        { label: 'Normal voltage (220-240V)', result: {
+        { label: 'Normal voltage', result: {
           diagnosis: 'Output Breaker or Connection Issue',
           severity: 'low',
           causes: ['Output circuit breaker tripped', 'Loose terminal connections', 'Faulty output contactor'],
@@ -1166,7 +1164,8 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diagnosis: 'Belt, Bearing, or Turbo Issue',
           severity: 'medium',
           causes: ['Loose or worn belt', 'Failing bearing (alternator, water pump)', 'Turbocharger bearing wear'],
-          solutions: ['Inspect and tension/replace belts', 'Check bearing play in pulleys', 'Listen to turbo with stethoscope', 'Replace worn components'],
+          solutions: [],
+          withdrawn: true,
           diyPossible: false,
           estimatedCost: 'KES 10,000 - 100,000',
           timeToFix: '1-6 hours',
@@ -1206,29 +1205,28 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diyPossible: true,
           estimatedCost: 'KES 0 - 50,000',
           timeToFix: '1-4 hours',
-          relatedCodes: ['E1003', 'E1020'],
           callExpert: false
         }},
         { label: 'Low oil pressure', result: {
           diagnosis: 'Oil Pressure Protection Activated',
           severity: 'critical',
           causes: ['Low oil level', 'Oil pump failure', 'Oil leak', 'Worn bearings', 'Wrong oil viscosity'],
-          solutions: ['Check oil level immediately', 'Inspect for leaks', 'Do NOT restart until oil level correct', 'If level OK, oil pump/bearing issue - call expert'],
+          solutions: [],
+          withdrawn: true,
           diyPossible: false,
           estimatedCost: 'KES 5,000 - 300,000',
           timeToFix: '1-8 hours',
-          relatedCodes: ['E1004', 'O101'],
           callExpert: true
         }},
         { label: 'Overspeed', result: {
           diagnosis: 'Overspeed Protection Activated',
           severity: 'high',
           causes: ['Governor failure', 'Speed sensor fault', 'Fuel system issue', 'Load rejection'],
-          solutions: ['Check for fault codes', 'Inspect governor/actuator', 'Test speed sensor', 'Review load connection sequence'],
+          solutions: [],
+          withdrawn: true,
           diyPossible: false,
           estimatedCost: 'KES 20,000 - 100,000',
           timeToFix: '2-6 hours',
-          relatedCodes: ['E360', 'E1030'],
           callExpert: true
         }},
         { label: 'No warning - just stopped', result: {
@@ -1249,20 +1247,20 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
       description: 'Check the display panel for a code like E1001, SPN-xxx, or similar',
       options: [
         { label: 'Yes, I have the code', result: {
-          diagnosis: 'Use Our Diagnostic Suite for Detailed Analysis',
+          diagnosis: 'Send Us the Code',
           severity: 'medium',
           causes: ['Error code indicates specific fault'],
-          solutions: ['Go to our Diagnostic Suite', 'Enter your error code for detailed causes and solutions', 'Our database covers all major controller brands'],
-          diyPossible: true,
+          solutions: ['Write down the code exactly as the display shows it, with the controller make and model', 'Send it to our engineers on WhatsApp or call +254 768 860 665', 'You can also work through Guided Diagnosis in Generator Oracle'],
+          diyPossible: false,
           estimatedCost: 'Depends on fault',
           timeToFix: 'Depends on fault',
-          callExpert: false
+          callExpert: true
         }},
         { label: 'No code, just warning light', result: {
           diagnosis: 'Warning Indicator Active',
           severity: 'medium',
           causes: ['Various - depends on which light', 'Could be oil, temp, battery, or general fault'],
-          solutions: ['Identify which warning light is on', 'Check corresponding system (oil level, coolant, battery)', 'Consult operator manual for light meaning', 'Use Diagnostic Suite for fault codes'],
+          solutions: ['Identify which warning light is on', 'Check corresponding system (oil level, coolant, battery)', 'Consult operator manual for light meaning'],
           diyPossible: true,
           estimatedCost: 'KES 0 - 50,000',
           timeToFix: '30 minutes - 4 hours',
@@ -1288,11 +1286,11 @@ const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
           diagnosis: 'Coolant System Leak',
           severity: 'high',
           causes: ['Failed hose', 'Radiator damage', 'Water pump seal', 'Head gasket (if in oil)'],
-          solutions: ['Identify leak location', 'Replace failed hose or clamp', 'Repair/replace radiator', 'Pressure test cooling system'],
-          diyPossible: true,
+          solutions: [],
+          withdrawn: true,
+          diyPossible: false,
           estimatedCost: 'KES 3,000 - 80,000',
           timeToFix: '1-4 hours',
-          relatedCodes: ['C101', 'E1003'],
           callExpert: false
         }},
         { label: 'Clear/yellow (diesel)', result: {
@@ -1487,6 +1485,7 @@ export default function TroubleshootingWizardPage() {
                 </div>
 
                 {/* Details Grid */}
+                {!result.withdrawn && (
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
                     <div className="text-2xl mb-1">{result.diyPossible ? '✅' : '🔧'}</div>
@@ -1504,6 +1503,7 @@ export default function TroubleshootingWizardPage() {
                     <div className="font-bold text-white">{result.timeToFix}</div>
                   </div>
                 </div>
+                )}
 
                 {/* Causes */}
                 <div className="bg-white/5 border border-white/10 rounded-xl p-6">
@@ -1518,46 +1518,30 @@ export default function TroubleshootingWizardPage() {
                   </ul>
                 </div>
 
-                {/* Solutions */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                  <h3 className="text-lg font-bold text-white mb-4">✅ Recommended Solutions</h3>
-                  <ol className="space-y-3">
-                    {result.solutions.map((solution, idx) => (
-                      <li key={idx} className="flex items-start gap-3 text-gray-300">
-                        <span className="flex-shrink-0 w-6 h-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-sm font-bold">
-                          {idx + 1}
-                        </span>
-                        {solution}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-
-                {/* Related Codes */}
-                {result.relatedCodes && result.relatedCodes.length > 0 && (
+                {/* Solutions — or, for a result withdrawn by the content-safety
+                    withdrawal of 2026-11-25, the notice in their place */}
+                {result.withdrawn ? (
+                  <SafetyChecksWithdrawnNotice surface="troubleshooting-result" />
+                ) : (
                   <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-white mb-4">📋 Related Error Codes</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {result.relatedCodes.map(code => (
-                        <Link
-                          key={code}
-                          href={`/faults/${encodeURIComponent(code)}`}
-                          className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
-                        >
-                          {code}
-                        </Link>
+                    <h3 className="text-lg font-bold text-white mb-4">✅ Recommended Solutions</h3>
+                    <ol className="space-y-3">
+                      {result.solutions.map((solution, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-gray-300">
+                          <span className="flex-shrink-0 w-6 h-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-sm font-bold">
+                            {idx + 1}
+                          </span>
+                          {solution}
+                        </li>
                       ))}
-                    </div>
-                    <p className="text-sm text-gray-400 mt-3">
-                      Click a code to open its detailed fault page
-                    </p>
+                    </ol>
                   </div>
                 )}
 
                 {/* CTA */}
                 <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 rounded-xl p-6">
                   <h3 className="text-lg font-bold text-white mb-4">
-                    {result.callExpert ? '📞 Expert Assistance Recommended' : '🔧 Need Further Help?'}
+                    {result.callExpert || result.withdrawn ? '📞 Expert Assistance Recommended' : '🔧 Need Further Help?'}
                   </h3>
                   <div className="flex flex-wrap gap-4">
                     <a

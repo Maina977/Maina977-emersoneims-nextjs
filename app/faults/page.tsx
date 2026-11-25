@@ -124,7 +124,7 @@ export default function FaultCodesPage() {
             </h1>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
               Plain-English guides to common generator alarms and engine fault codes from
-              Cummins, Perkins, DSE and ComAp: what each one means, the likely causes, and how to fix it.
+              Cummins, Perkins, DSE and ComAp: what each one means and the likely causes.
             </p>
 
             {/* Search Bar */}
@@ -313,7 +313,7 @@ export default function FaultCodesPage() {
             "@context": "https://schema.org",
             "@type": "WebPage",
             "name": "Generator Fault Code Database",
-            "description": "Plain-English guides to common generator alarms and engine fault codes from Cummins, Perkins, DSE and ComAp: what each one means, the likely causes, and how to fix it.",
+            "description": "Plain-English guides to common generator alarms and engine fault codes from Cummins, Perkins, DSE and ComAp: what each one means and the likely causes.",
             "provider": {
               "@type": "Organization",
               "name": "EmersonEIMS",

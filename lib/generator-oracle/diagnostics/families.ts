@@ -199,7 +199,7 @@ export const LOW_OIL_PRESSURE: FaultFamily = {
     { id: 'oemMaxOilTemp', kind: 'number', text: 'OEM maximum oil temperature (manual)', unit: '°C', min: 60, max: 160 },
   ],
   stopRules: [
-    { when: { q: 'oilPressure', op: 'ltRef', ref: 'oemMinOilPressure' }, level: 'STOP', message: 'STOP the engine: oil pressure is below the OEM minimum. Running on can destroy the bearings in minutes. Do not restart until the cause is found.' },
+    { when: { q: 'oilPressure', op: 'ltRef', ref: 'oemMinOilPressure', inclusive: true }, level: 'STOP', message: 'STOP the engine: oil pressure is at or below the OEM minimum. Running on can destroy the bearings in minutes. Do not restart until the cause is found.' },
     { when: is('knock', 'yes'), level: 'STOP', message: 'STOP: knocking with an oil pressure problem points to bearing damage. Do not restart; inspect the bearings and the oil filter for metal.' },
     { when: is('oilCondition', ['metal', 'milky']), level: 'STOP', message: 'STOP: metal or coolant in the oil. Do not run until the source is found (bearings; head gasket, oil cooler or liners).' },
     { when: is('oilLevel', 'low'), level: 'STOP', message: 'STOP: oil level below the low mark. Do not run until topped up to the mark with the correct grade and the leak or consumption is found.' },
@@ -298,7 +298,7 @@ export const OVERHEATING: FaultFamily = {
     { id: 'sensorCheck', kind: 'choice', text: 'Does an independent thermometer agree with the panel?', options: [{ value: 'agrees', label: 'Agrees' }, { value: 'panel-high', label: 'Panel reads higher' }, { value: 'not-checked', label: 'Not checked' }] },
   ],
   stopRules: [
-    { when: { q: 'coolantTemp', op: 'gtRef', ref: 'oemAlarmCoolantTemp' }, level: 'STOP', message: 'Take the load off and STOP the engine: coolant above the OEM alarm. Running on can warp the head and seize pistons. Never pour cold water into a hot engine.' },
+    { when: { q: 'coolantTemp', op: 'gtRef', ref: 'oemAlarmCoolantTemp', inclusive: true }, level: 'STOP', message: 'Take the load off and STOP the engine: coolant at or above the OEM alarm. Running on can warp the head and seize pistons. Never pour cold water into a hot engine.' },
     { when: is('gasBubbles', 'yes'), level: 'STOP', message: 'STOP: combustion gas in the coolant suggests a head gasket, cracked head or liner. Do not keep topping up and running.' },
     { when: is('coolantLevel', ['low', 'not-checked']), level: 'CAUTION', message: 'Do not open the radiator or expansion-tank cap while hot: coolant under pressure scalds. Let the engine cool first.' },
   ],
@@ -362,7 +362,7 @@ export const NO_VOLTAGE: FaultFamily = {
     { id: 'loadPct', kind: 'number', text: 'Load', unit: '% of rating', min: 0, max: 200 },
   ],
   stopRules: [
-    { when: { q: 'insulation', op: 'ltRef', ref: 'oemMinInsulation' }, level: 'STOP', message: 'STOP: insulation below the alternator manufacturer minimum. Do not run: risk of winding failure and of live metalwork. Dry out or repair the windings before running.' },
+    { when: { q: 'insulation', op: 'ltRef', ref: 'oemMinInsulation', inclusive: true }, level: 'STOP', message: 'STOP: insulation at or below the alternator manufacturer minimum. Do not run: risk of winding failure and of live metalwork. Dry out or repair the windings before running.' },
     { when: { q: 'voltage', op: 'ge', value: 0 }, level: 'CAUTION', message: 'Alternator and panel terminals are lethal while running: stop the set, isolate and lock off before touching wiring; prove dead with an approved tester; measure live only with rated instruments.' },
   ],
   causes: [

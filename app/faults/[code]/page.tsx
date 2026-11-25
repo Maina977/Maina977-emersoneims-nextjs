@@ -4,6 +4,13 @@ import { notFound } from 'next/navigation';
 import { FAULT_CODES, faultLabel } from '@/lib/data/faultCodes';
 import { FMI_BY_SPN } from '@/lib/data/faultFmi';
 import FaultCodeRepairLinks from '@/components/repair-centre/FaultCodeRepairLinks';
+import SafetyChecksWithdrawnNotice from '@/components/safety/SafetyChecksWithdrawnNotice';
+import {
+  FAULT_CONTENT_WITHDRAWN,
+  buildFaultFaqPage,
+  buildFaultHowTo,
+  faultMetaDescription,
+} from '@/lib/faults/faultPageSchema';
 
 /**
  * Individual Fault Code Page
@@ -77,14 +84,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const base = noParen.length > 60 ? noParen.replace(/\s+—\s+.*$/, '') : noParen;
   // Keep within ~60 characters before the site suffix.
   const title = base.length <= 44 ? `${base} — Causes & Fix` : base;
-  const fullDescription = fault.alarm
-    ? `What the ${fault.brand} "${fault.title}" alarm means, likely causes, how to diagnose it, and the steps to clear it. Generator support across Kenya.`
-    : `${codeLabel} means ${fault.title}. Likely causes, how to diagnose it, and the steps to clear the fault. Generator support across Kenya.`;
-  // Under ~155 characters so search results show it whole (2026-10-25 audit:
-  // 172 characters on /faults/cummins-111): drop the closing line first.
-  const description = fullDescription.length <= 155
-    ? fullDescription
-    : fullDescription.replace(/ Generator support across Kenya\.$/, '').slice(0, 155).replace(/\s+\S*$/, '').replace(/[,;:]$/, '') + (fullDescription.replace(/ Generator support across Kenya\.$/, '').length > 155 ? '…' : '');
+  // Identification wording (content-safety withdrawal 2026-11-25): no promise
+  // of "steps to clear the fault". See lib/faults/faultPageSchema.ts.
+  const description = faultMetaDescription(fault);
   return {
     title,
     description,
@@ -140,6 +142,9 @@ export default async function FaultCodePage({ params }: Props) {
   ).slice(0, 4);
 
   const label = faultLabel(fault);
+  const withdrawn = FAULT_CONTENT_WITHDRAWN[fault.code] ?? {};
+  const howTo = buildFaultHowTo(fault);
+  const faqPage = buildFaultFaqPage(fault);
   const whatsappLink = `https://wa.me/254768860665?text=${encodeURIComponent(`Hi, I need help with ${fault.brand} ${fault.alarm ? `"${fault.title}" alarm` : `fault code ${(fault.code.toUpperCase().startsWith(fault.brand.toUpperCase() + '-') ? fault.code.slice(fault.brand.length + 1) : fault.code)}`}`)}`;
 
   return (
@@ -210,22 +215,31 @@ export default async function FaultCodePage({ params }: Props) {
                 </ul>
               </div>
 
-              {/* Troubleshooting Steps */}
-              <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <span className="text-2xl">🔧</span> Troubleshooting Steps
-                </h2>
-                <ol className="space-y-4">
-                  {fault.troubleshootingSteps.map((step, i) => (
-                    <li key={i} className="flex items-start gap-4">
-                      <span className="w-8 h-8 bg-amber-500/10 border border-amber-500/30 rounded-full flex items-center justify-center text-amber-400 font-bold flex-shrink-0">
-                        {i + 1}
-                      </span>
-                      <span className="text-gray-300 pt-1">{step}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
+              {/* Troubleshooting Steps. Withdrawn steps (content-safety
+                  withdrawal 2026-11-25) are replaced by the notice; with no
+                  steps left the list and its HowTo are not emitted. */}
+              {fault.troubleshootingSteps.length > 0 ? (
+                <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span className="text-2xl">🔧</span> Troubleshooting Steps
+                  </h2>
+                  <ol className="space-y-4">
+                    {fault.troubleshootingSteps.map((step, i) => (
+                      <li key={i} className="flex items-start gap-4">
+                        <span className="w-8 h-8 bg-amber-500/10 border border-amber-500/30 rounded-full flex items-center justify-center text-amber-400 font-bold flex-shrink-0">
+                          {i + 1}
+                        </span>
+                        <span className="text-gray-300 pt-1">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  {withdrawn.steps && (
+                    <SafetyChecksWithdrawnNotice surface="fault-page-steps" className="mt-4" />
+                  )}
+                </div>
+              ) : withdrawn.steps ? (
+                <SafetyChecksWithdrawnNotice surface="fault-page-steps" />
+              ) : null}
 
               {/* FMI meanings — only for the SPNs in lib/data/faultFmi.ts */}
               {FMI_BY_SPN[fault.code] && (
@@ -245,9 +259,11 @@ export default async function FaultCodePage({ params }: Props) {
                           {fault.code} FMI {e.fmi}
                         </p>
                         <p className="text-gray-300 text-sm mt-1">{e.meaning}</p>
-                        <p className="text-gray-400 text-sm mt-1">
-                          <span className="text-amber-400">Check first:</span> {e.firstCheck}
-                        </p>
+                        {e.firstCheck && (
+                          <p className="text-gray-400 text-sm mt-1">
+                            <span className="text-amber-400">Check first:</span> {e.firstCheck}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -299,7 +315,13 @@ export default async function FaultCodePage({ params }: Props) {
                       </details>
                     ))}
                   </div>
+                  {withdrawn.faq && (
+                    <SafetyChecksWithdrawnNotice surface="fault-page-faq" className="mt-4" />
+                  )}
                 </div>
+              )}
+              {(!fault.faqQuestions || fault.faqQuestions.length === 0) && withdrawn.faq && (
+                <SafetyChecksWithdrawnNotice surface="fault-page-faq" />
               )}
             </div>
 
@@ -330,17 +352,20 @@ export default async function FaultCodePage({ params }: Props) {
                 </div>
               </div>
 
-              {/* Generator Oracle CTA */}
+              {/* Guided Diagnosis CTA. The Generator Oracle fault-code lookup
+                  is withdrawn (safety withdrawal 2026-11-25), so this points
+                  to Guided Diagnosis, which opens by default on the Oracle's
+                  Fault Center, not to the lookup. */}
               <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
-                <h3 className="text-lg font-bold mb-3">Look Up More Codes</h3>
+                <h3 className="text-lg font-bold mb-3">Guided Diagnosis</h3>
                 <p className="text-gray-400 text-sm mb-4">
-                  Search other controller alarms and engine fault codes, with troubleshooting steps, in Generator Oracle.
+                  Work through Guided Diagnosis in Generator Oracle, or send the code to our engineers.
                 </p>
                 <Link
                   href="/generator-oracle"
                   className="w-full px-4 py-3 bg-amber-500 text-black font-semibold rounded-lg hover:bg-amber-400 transition-colors flex items-center justify-center gap-2"
                 >
-                  Launch Generator Oracle →
+                  Open Guided Diagnosis →
                 </Link>
               </div>
 
@@ -375,45 +400,18 @@ export default async function FaultCodePage({ params }: Props) {
       </section>
 
       {/* Schema Markup */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "HowTo",
-            "name": fault.alarm ? `How to Fix the ${fault.brand} ${fault.title} Alarm` : `How to Fix ${fault.brand} ${(fault.code.toUpperCase().startsWith(fault.brand.toUpperCase() + '-') ? fault.code.slice(fault.brand.length + 1) : fault.code)} - ${fault.title}`,
-            "description": fault.description,
-            "step": fault.troubleshootingSteps.map((step, i) => ({
-              "@type": "HowToStep",
-              "position": i + 1,
-              "text": step,
-            })),
-            "tool": fault.relatedParts.map((part) => ({
-              "@type": "HowToTool",
-              "name": part,
-            })),
-          }),
-        }}
-      />
-
-      {/* FAQ Schema */}
-      {fault.faqQuestions && fault.faqQuestions.length > 0 && (
+      {howTo && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              "mainEntity": fault.faqQuestions.map((faq) => ({
-                "@type": "Question",
-                "name": faq.question,
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": faq.answer,
-                },
-              })),
-            }),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(howTo) }}
+        />
+      )}
+
+      {/* FAQ Schema */}
+      {faqPage && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPage) }}
         />
       )}
     </div>

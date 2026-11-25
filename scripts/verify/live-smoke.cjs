@@ -33,7 +33,8 @@ const fail = (m) => { bad++; console.log('FAIL ' + m); };
   const checks = [
     ['proposal {} -> 400', () => post('/api/reports/proposal', {}), 400],
     ['battery-sizing {} -> 400', () => post('/api/eng/battery-sizing', {}), 400],
-    ['ai/chat SPN 110 FMI 0 -> 200', () => post('/api/ai/chat', { message: 'SPN 110 FMI 0' }), 200],
+    // Oracle safety withdrawal (2026-11-25): /api/ai/chat is withdrawn and answers 503 with the notice.
+    ['ai/chat SPN 110 FMI 0 -> 503 (withdrawn)', () => post('/api/ai/chat', { message: 'SPN 110 FMI 0' }), 503],
     ['weather Nairobi -> 200', () => fetch(LIVE + '/api/weather/-1.2865/36.8172', { headers: { 'user-agent': CHROME } }), 200],
   ];
   for (const [label, go, want] of checks) {

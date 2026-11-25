@@ -51,32 +51,33 @@ export interface ServiceDiagnostics {
   deepLinks: DeepLink[];
 }
 
+// CONTENT-SAFETY WITHDRAWAL 2026-11-25 (audit S-W1..S-W3): unsourced figures
+// removed from items 1-2; the overheating and low-oil-pressure items (no STOP /
+// running on under a low-oil-pressure warning) withdrawn; the fixed "live"
+// gauge values withdrawn; deep links into withdrawn or absent bible sections
+// removed. Generator pages render no gauges while GEN_GAUGES is empty.
 const GEN_QA: DiagnosticQA[] = [
-  { q: 'Generator fails to start?', a: 'Check battery (12.5V+), fuel level, oil level. Ensure fuel valve open.', severity: 'high', solutions: ['Charge/replace battery', 'Refill fuel', 'Check oil level', 'Bleed fuel system'] },
-  { q: 'Generator starts but stops immediately?', a: 'Fuel starvation or faulty governor. Check fuel filter, pump, governor.', severity: 'high', solutions: ['Replace fuel filter', 'Test fuel pump (2.5–3.5 PSI)', 'Adjust governor linkage'] },
+  { q: 'Generator fails to start?', a: 'Check battery, fuel level, oil level. Ensure fuel valve open.', severity: 'high', solutions: ['Charge/replace battery', 'Refill fuel', 'Check oil level', 'Bleed fuel system'] },
+  { q: 'Generator starts but stops immediately?', a: 'Fuel starvation or faulty governor. Check fuel filter, pump, governor.', severity: 'high', solutions: ['Replace fuel filter', 'Test fuel pump', 'Adjust governor linkage'] },
   { q: 'No power output?', a: 'Check AVR, alternator field winding, circuit breakers.', severity: 'critical', solutions: ['Test AVR output', 'Check alternator excitation', 'Reset breakers'] },
-  { q: 'Generator overheating?', a: 'Check coolant, radiator, fan belt, thermostat.', severity: 'high', solutions: ['Top up coolant', 'Clean radiator fins', 'Adjust fan belt'] },
   { q: 'Excessive black smoke?', a: 'Rich fuel mixture or incomplete combustion.', severity: 'medium', solutions: ['Replace air filter', 'Clean injectors', 'Check timing'] },
-  { q: 'Low oil pressure warning?', a: 'Check oil level immediately. Stop if below 20 PSI.', severity: 'critical', solutions: ['Add correct oil', 'Replace filter', 'Test sensor'] },
 ];
 
-const GEN_GAUGES: DiagnosticGauge[] = [
-  { label: 'Oil Pressure', value: 45, max: 80, unit: 'PSI', color: '#00ff00' },
-  { label: 'Coolant Temp', value: 85, max: 120, unit: '°C', color: '#ffaa00' },
-  { label: 'RPM', value: 1500, max: 2000, unit: 'RPM', color: '#00ffff' },
-];
+const GEN_GAUGES: DiagnosticGauge[] = [];
 
+/** /services/cummins-generators: the only generator page with a bible. */
 const GEN_DEEP_LINKS: DeepLink[] = [
   { label: 'Open Live Engineering Tools', href: '#widgets', icon: '🎛️', description: 'Interactive knobs, charts, diagrams with sourced data' },
   { label: 'Open Sizing Calculator', href: '#calculator', icon: '🧮', description: 'Pick the right kVA on this page' },
   { label: 'Read Technical Bible', href: '#bible', icon: '📖', description: 'Engineering brief, brands, schematics — all on this page' },
   { label: 'Top 10 Brands Compared', href: '#bible-brands', icon: '🏷️', description: 'Cummins, Perkins, CAT, FG Wilson, SDMO…' },
   { label: 'Schematics & Diagrams', href: '#bible-diagrams', icon: '📐', description: 'Single-line, fuel system, cooling loop' },
-  { label: 'Repair Manual', href: '#bible-repair', icon: '🛠️', description: 'Step-by-step procedures' },
-  { label: 'Error Codes', href: '#bible-errors', icon: '⚠️', description: 'Decode controller faults' },
   { label: 'Parts Manual', href: '#bible-parts', icon: '🧰', description: 'OEM part numbers & service intervals' },
   { label: 'ROI & Cost Tables', href: '#bible-roi', icon: '💰', description: 'Capex, opex, payback' },
 ];
+
+/** generator-repairs and ats-changeover have no bible, so no #bible-* anchors. */
+const GEN_DEEP_LINKS_NO_BIBLE: DeepLink[] = GEN_DEEP_LINKS.filter((l) => !l.href.startsWith('#bible'));
 
 const SOLAR_QA: DiagnosticQA[] = [
   { q: 'Panels not charging batteries?', a: 'Check orientation, shading, connections. Test voltage (18-22V for 12V system).', severity: 'high', solutions: ['Clean panels', 'Remove shading', 'Check charge controller'] },
@@ -275,7 +276,7 @@ export const SERVICE_DIAGNOSTICS: Record<string, ServiceDiagnostics> = {
     subServices: ['Engine', 'Controls', 'Electricals', 'Cooling', 'Fuel System', 'Overhaul'],
     qaPairs: GEN_QA,
     gauges: GEN_GAUGES,
-    deepLinks: GEN_DEEP_LINKS,
+    deepLinks: GEN_DEEP_LINKS_NO_BIBLE,
   },
   'ats-changeover': {
     calculatorKey: 'generators',
@@ -284,7 +285,7 @@ export const SERVICE_DIAGNOSTICS: Record<string, ServiceDiagnostics> = {
     subServices: ['Auto Transfer Switch', 'Manual Changeover', 'Synchronization', 'Load-Shedding'],
     qaPairs: GEN_QA,
     gauges: GEN_GAUGES,
-    deepLinks: GEN_DEEP_LINKS,
+    deepLinks: GEN_DEEP_LINKS_NO_BIBLE,
   },
   'distribution-boards': {
     calculatorKey: 'high-voltage',

@@ -13,13 +13,19 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
+// SAFETY WITHDRAWAL (management rule, 2026-11-25; review finding S3). This page used to read
+// lib/generator-oracle/data/comprehensive-faults-index.ts (ENHANCED_FAULT_DATABASE) and its
+// pop-up showed that data's diagnostics, reset steps, repair guide, AI insights, case studies
+// and figures. It now reads only the identification list (code, title, severity, category);
+// the pop-up shows the shared notice in place of the withdrawn content. Previous version:
+//   git show fa565ab1:app/maintenance-hub/generators/page.tsx
 import {
-  ALL_COMPREHENSIVE_FAULTS,
-  searchComprehensiveFaults,
-  getCategories,
-  getDatabaseStats,
-  type EnhancedFaultCode
-} from '@/lib/generator-oracle/data/comprehensive-faults-index';
+  GENERATOR_FAULT_IDENTIFICATION,
+  searchGeneratorFaultIdentification,
+  generatorFaultCategories,
+  type GeneratorFaultIdentification,
+} from '@/lib/maintenance-hub/generator-fault-identification';
+import OracleSafetyWithdrawnNotice from '@/components/generator-oracle/OracleSafetyWithdrawnNotice';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GENERATOR BRANDS
@@ -99,15 +105,15 @@ const StatusIndicator = ({ status, label }: { status: 'online' | 'warning' | 'er
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE FAULT DETAIL MODAL
 // ═══════════════════════════════════════════════════════════════════════════════
+// Identification only (code, title, severity, category). The procedural content that was
+// here is withdrawn and the shared notice is shown in its place.
 const ComprehensiveFaultModal = ({
   fault,
   onClose
 }: {
-  fault: EnhancedFaultCode | null;
+  fault: GeneratorFaultIdentification | null;
   onClose: () => void;
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'diagnostics' | 'reset' | 'repair' | 'insights'>('overview');
-
   if (!fault) return null;
 
   const severityColors = {
@@ -117,14 +123,6 @@ const ComprehensiveFaultModal = ({
     warning: 'border-yellow-500 bg-yellow-900/20',
     info: 'border-blue-500 bg-blue-900/20',
   };
-
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: '📋' },
-    { id: 'diagnostics', label: 'Diagnostics', icon: '🔍' },
-    { id: 'reset', label: 'Reset Steps', icon: '🔄' },
-    { id: 'repair', label: 'Repair Guide', icon: '🔧' },
-    { id: 'insights', label: 'AI Insights', icon: '🤖' },
-  ];
 
   return (
     <motion.div
@@ -159,629 +157,21 @@ const ComprehensiveFaultModal = ({
                 <h2 className="text-2xl font-bold text-white mb-2">{fault.title}</h2>
                 <div className="flex flex-wrap gap-2 text-sm text-slate-400">
                   <span>Category: {fault.category}</span>
-                  <span>•</span>
-                  <span>Subcategory: {fault.subcategory}</span>
-                  <span>•</span>
-                  <span>Alt codes: {fault.alternativeCodes?.join(', ')}</span>
                 </div>
               </div>
               <button
                 onClick={onClose}
+                aria-label="Close"
                 className="w-10 h-10 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-white"
               >
                 ✕
               </button>
             </div>
-
-            {/* Tab Navigation */}
-            <div className="flex gap-2 mt-6 overflow-x-auto pb-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                  className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-2 ${
-                    activeTab === tab.id
-                      ? 'bg-amber-500 text-black'
-                      : 'bg-slate-700 text-white hover:bg-slate-600'
-                  }`}
-                >
-                  <span>{tab.icon}</span>
-                  {tab.label}
-                </button>
-              ))}
-            </div>
           </div>
 
-          {/* Content */}
+          {/* Content: withdrawn (safety withdrawal 2026-11-25) */}
           <div className="p-6 space-y-6 bg-slate-900/50">
-            {/* OVERVIEW TAB */}
-            {activeTab === 'overview' && (
-              <>
-                {/* Technical Overview - 4+ paragraphs */}
-                <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700">
-                  <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                    <span>📖</span> Technical Overview
-                  </h3>
-                  <div className="space-y-4 text-slate-300 leading-relaxed">
-                    {fault.technicalOverview?.split('\n\n').map((para, i) => (
-                      <p key={i}>{para}</p>
-                    ))}
-                  </div>
-                </div>
-
-                {/* System Impact - 4+ paragraphs */}
-                <div className="bg-slate-800/50 rounded-xl p-5 border border-red-500/30">
-                  <h3 className="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
-                    <span>⚠️</span> System Impact
-                  </h3>
-                  <div className="space-y-4 text-slate-300 leading-relaxed">
-                    {fault.systemImpact?.split('\n\n').map((para, i) => (
-                      <p key={i}>{para}</p>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Safety Considerations - 4+ paragraphs */}
-                <div className="bg-slate-800/50 rounded-xl p-5 border border-yellow-500/30">
-                  <h3 className="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">
-                    <span>🛡️</span> Safety Considerations
-                  </h3>
-                  <div className="space-y-4 text-slate-300 leading-relaxed">
-                    {fault.safetyConsiderations?.split('\n\n').map((para, i) => (
-                      <p key={i}>{para}</p>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Root Causes with Probabilities */}
-                <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700">
-                  <h3 className="text-xl font-bold text-orange-400 mb-4 flex items-center gap-2">
-                    <span>🎯</span> Root Causes Analysis
-                  </h3>
-                  <div className="space-y-4">
-                    {fault.rootCauses?.map((cause, i) => (
-                      <div key={i} className="bg-slate-900/50 rounded-lg p-4 border border-slate-600">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-white font-semibold">{cause.cause}</h4>
-                          <span className="px-2 py-1 bg-orange-500/20 text-orange-400 rounded text-sm font-bold">
-                            {cause.probability}% likely
-                          </span>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-3">{cause.explanation}</p>
-                        <div className="grid md:grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <span className="text-cyan-400 font-semibold">Test Method:</span>
-                            <p className="text-slate-400">{cause.testMethod}</p>
-                          </div>
-                          <div>
-                            <span className="text-cyan-400 font-semibold">Time to Test:</span>
-                            <p className="text-slate-400">{cause.timeToTest}</p>
-                          </div>
-                        </div>
-                        {cause.symptomsIndicating && (
-                          <div className="mt-3">
-                            <span className="text-yellow-400 font-semibold text-sm">Symptoms:</span>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {cause.symptomsIndicating.map((symptom, j) => (
-                                <span key={j} className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300">
-                                  {symptom}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Historical Context */}
-                <div className="bg-slate-800/50 rounded-xl p-5 border border-purple-500/30">
-                  <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
-                    <span>📚</span> Historical Context
-                  </h3>
-                  <div className="space-y-4 text-slate-300 leading-relaxed">
-                    {fault.historicalContext?.split('\n\n').map((para, i) => (
-                      <p key={i}>{para}</p>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* DIAGNOSTICS TAB */}
-            {activeTab === 'diagnostics' && (
-              <>
-                <div className="bg-slate-800/50 rounded-xl p-5 border border-cyan-500/30">
-                  <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                    <span>🔍</span> Step-by-Step Diagnostic Procedures
-                  </h3>
-                  <div className="space-y-6">
-                    {fault.diagnosticProcedures?.map((proc, i) => (
-                      <div key={i} className="bg-slate-900/50 rounded-lg p-5 border border-slate-600">
-                        <div className="flex items-start gap-4">
-                          <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center text-black font-bold text-lg flex-shrink-0">
-                            {proc.step}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="text-white font-bold text-lg mb-2">{proc.title}</h4>
-                            <p className="text-slate-300 mb-4">{proc.instruction}</p>
-
-                            {proc.safetyWarning && (
-                              <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 mb-4">
-                                <span className="text-red-400 font-semibold">⚠️ Safety Warning:</span>
-                                <p className="text-red-300 text-sm mt-1">{proc.safetyWarning}</p>
-                              </div>
-                            )}
-
-                            <div className="grid md:grid-cols-2 gap-4 text-sm">
-                              <div className="bg-slate-800/50 rounded-lg p-3">
-                                <span className="text-cyan-400 font-semibold">Tools Required:</span>
-                                <ul className="text-slate-400 mt-1">
-                                  {proc.toolsRequired?.map((tool, j) => (
-                                    <li key={j}>• {tool}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                              <div className="bg-slate-800/50 rounded-lg p-3">
-                                <span className="text-cyan-400 font-semibold">Expected Result:</span>
-                                <p className="text-slate-400 mt-1">{proc.expectedResult}</p>
-                              </div>
-                              <div className="bg-green-900/30 rounded-lg p-3">
-                                <span className="text-green-400 font-semibold">If Passed:</span>
-                                <p className="text-green-300 text-sm mt-1">{proc.ifPassed}</p>
-                              </div>
-                              <div className="bg-red-900/30 rounded-lg p-3">
-                                <span className="text-red-400 font-semibold">If Failed:</span>
-                                <p className="text-red-300 text-sm mt-1">{proc.ifFailed}</p>
-                              </div>
-                            </div>
-
-                            {proc.technicalNote && (
-                              <div className="mt-4 bg-amber-900/20 border border-amber-500/30 rounded-lg p-3">
-                                <span className="text-amber-400 font-semibold">📝 Technical Note:</span>
-                                <p className="text-amber-200 text-sm mt-1">{proc.technicalNote}</p>
-                              </div>
-                            )}
-
-                            <div className="mt-3 text-slate-500 text-sm">
-                              Estimated time: {proc.estimatedTime}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* RESET STEPS TAB */}
-            {activeTab === 'reset' && (
-              <>
-                <div className="bg-slate-800/50 rounded-xl p-5 border border-green-500/30">
-                  <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
-                    <span>🔄</span> Controller Reset Sequences
-                  </h3>
-                  <p className="text-slate-400 mb-6">
-                    Select your controller type below for specific reset instructions.
-                  </p>
-
-                  <div className="space-y-6">
-                    {/* DSE Controllers */}
-                    {fault.resetSequences?.TYPE_A && (
-                      <div className="bg-slate-900/50 rounded-lg p-5 border border-blue-500/30">
-                        <h4 className="text-blue-400 font-bold mb-3 flex items-center gap-2">
-                          <span className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white text-xs font-bold">DSE</span>
-                          Deep Sea Electronics (DSE 7xxx, 8xxx Series)
-                        </h4>
-                        <ol className="space-y-2 mb-4">
-                          {fault.resetSequences.TYPE_A.steps.map((step, i) => (
-                            <li key={i} className="flex items-start gap-2 text-slate-300">
-                              <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">
-                                {i + 1}
-                              </span>
-                              {step}
-                            </li>
-                          ))}
-                        </ol>
-                        <div className="bg-blue-900/30 rounded-lg p-3 mb-3">
-                          <span className="text-blue-400 font-semibold">Key Sequence:</span>
-                          <div className="flex gap-2 mt-2">
-                            {fault.resetSequences.TYPE_A.keySequence.map((key, i) => (
-                              <span key={i} className="px-3 py-1 bg-blue-500/30 border border-blue-500/50 rounded text-blue-300 font-mono text-sm">
-                                {key}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-slate-500 text-sm italic">{fault.resetSequences.TYPE_A.notes}</p>
-                      </div>
-                    )}
-
-                    {/* ComAp Controllers */}
-                    {fault.resetSequences?.TYPE_B && (
-                      <div className="bg-slate-900/50 rounded-lg p-5 border border-green-500/30">
-                        <h4 className="text-green-400 font-bold mb-3 flex items-center gap-2">
-                          <span className="w-8 h-8 bg-green-500 rounded flex items-center justify-center text-white text-xs font-bold">CA</span>
-                          ComAp (InteliLite, InteliGen Series)
-                        </h4>
-                        <ol className="space-y-2 mb-4">
-                          {fault.resetSequences.TYPE_B.steps.map((step, i) => (
-                            <li key={i} className="flex items-start gap-2 text-slate-300">
-                              <span className="bg-green-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">
-                                {i + 1}
-                              </span>
-                              {step}
-                            </li>
-                          ))}
-                        </ol>
-                        <div className="bg-green-900/30 rounded-lg p-3 mb-3">
-                          <span className="text-green-400 font-semibold">Key Sequence:</span>
-                          <div className="flex gap-2 mt-2 flex-wrap">
-                            {fault.resetSequences.TYPE_B.keySequence.map((key, i) => (
-                              <span key={i} className="px-3 py-1 bg-green-500/30 border border-green-500/50 rounded text-green-300 font-mono text-sm">
-                                {key}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-slate-500 text-sm italic">{fault.resetSequences.TYPE_B.notes}</p>
-                      </div>
-                    )}
-
-                    {/* Woodward Controllers */}
-                    {fault.resetSequences?.TYPE_C && (
-                      <div className="bg-slate-900/50 rounded-lg p-5 border border-purple-500/30">
-                        <h4 className="text-purple-400 font-bold mb-3 flex items-center gap-2">
-                          <span className="w-8 h-8 bg-purple-500 rounded flex items-center justify-center text-white text-xs font-bold">WW</span>
-                          Woodward (easYgen Series)
-                        </h4>
-                        <ol className="space-y-2 mb-4">
-                          {fault.resetSequences.TYPE_C.steps.map((step, i) => (
-                            <li key={i} className="flex items-start gap-2 text-slate-300">
-                              <span className="bg-purple-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">
-                                {i + 1}
-                              </span>
-                              {step}
-                            </li>
-                          ))}
-                        </ol>
-                        <p className="text-slate-500 text-sm italic">{fault.resetSequences.TYPE_C.notes}</p>
-                      </div>
-                    )}
-
-                    {/* SmartGen Controllers */}
-                    {fault.resetSequences?.TYPE_D && (
-                      <div className="bg-slate-900/50 rounded-lg p-5 border border-orange-500/30">
-                        <h4 className="text-orange-400 font-bold mb-3 flex items-center gap-2">
-                          <span className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center text-white text-xs font-bold">SG</span>
-                          SmartGen (HGM Series)
-                        </h4>
-                        <ol className="space-y-2 mb-4">
-                          {fault.resetSequences.TYPE_D.steps.map((step, i) => (
-                            <li key={i} className="flex items-start gap-2 text-slate-300">
-                              <span className="bg-orange-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">
-                                {i + 1}
-                              </span>
-                              {step}
-                            </li>
-                          ))}
-                        </ol>
-                        <p className="text-slate-500 text-sm italic">{fault.resetSequences.TYPE_D.notes}</p>
-                      </div>
-                    )}
-
-                    {/* CAT EMCP Controllers */}
-                    {fault.resetSequences?.TYPE_E && (
-                      <div className="bg-slate-900/50 rounded-lg p-5 border border-yellow-500/30">
-                        <h4 className="text-yellow-400 font-bold mb-3 flex items-center gap-2">
-                          <span className="w-8 h-8 bg-yellow-500 rounded flex items-center justify-center text-black text-xs font-bold">CAT</span>
-                          Caterpillar (EMCP Series)
-                        </h4>
-                        <ol className="space-y-2 mb-4">
-                          {fault.resetSequences.TYPE_E.steps.map((step, i) => (
-                            <li key={i} className="flex items-start gap-2 text-slate-300">
-                              <span className="bg-yellow-500 text-black w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">
-                                {i + 1}
-                              </span>
-                              {step}
-                            </li>
-                          ))}
-                        </ol>
-                        <p className="text-slate-500 text-sm italic">{fault.resetSequences.TYPE_E.notes}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* REPAIR GUIDE TAB */}
-            {activeTab === 'repair' && (
-              <>
-                {fault.repairProcedures?.map((repair, idx) => (
-                  <div key={idx} className="bg-slate-800/50 rounded-xl p-5 border border-green-500/30">
-                    <div className="flex items-start justify-between mb-4">
-                      <h3 className="text-xl font-bold text-green-400 flex items-center gap-2">
-                        <span>🔧</span> {repair.title}
-                      </h3>
-                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                        repair.difficulty === 'beginner' ? 'bg-green-500/20 text-green-400' :
-                        repair.difficulty === 'intermediate' ? 'bg-yellow-500/20 text-yellow-400' :
-                        repair.difficulty === 'advanced' ? 'bg-orange-500/20 text-orange-400' :
-                        'bg-red-500/20 text-red-400'
-                      }`}>
-                        {repair.difficulty}
-                      </span>
-                    </div>
-
-                    {/* Repair Info */}
-                    <div className="grid md:grid-cols-3 gap-4 mb-6">
-                      <div className="bg-slate-900/50 rounded-lg p-3 text-center">
-                        <div className="text-2xl font-bold text-cyan-400">{repair.estimatedTime}</div>
-                        <div className="text-slate-500 text-sm">Time Required</div>
-                      </div>
-                      <div className="bg-slate-900/50 rounded-lg p-3 text-center">
-                        <div className="text-2xl font-bold text-green-400">
-                          KES {repair.laborCost?.min?.toLocaleString()}-{repair.laborCost?.max?.toLocaleString()}
-                        </div>
-                        <div className="text-slate-500 text-sm">Labor Cost</div>
-                      </div>
-                      <div className="bg-slate-900/50 rounded-lg p-3 text-center">
-                        <div className="text-2xl font-bold text-amber-400">
-                          KES {repair.partsCost?.min?.toLocaleString()}-{repair.partsCost?.max?.toLocaleString()}
-                        </div>
-                        <div className="text-slate-500 text-sm">Parts Cost</div>
-                      </div>
-                    </div>
-
-                    {/* Parts Required */}
-                    {repair.partsRequired && repair.partsRequired.length > 0 && (
-                      <div className="mb-6">
-                        <h4 className="text-amber-400 font-semibold mb-3">Parts Required:</h4>
-                        <div className="space-y-2">
-                          {repair.partsRequired.map((part, i) => (
-                            <div key={i} className="bg-slate-900/50 rounded-lg p-3 flex justify-between items-center">
-                              <div>
-                                <span className="text-white font-medium">{part.name}</span>
-                                <span className="text-slate-500 ml-2">(Qty: {part.quantity})</span>
-                                <div className="text-slate-500 text-xs">OEM: {part.oemPartNumber}</div>
-                              </div>
-                              <span className="text-green-400 font-bold">KES {part.estimatedCost?.toLocaleString()}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Tools Required */}
-                    {repair.toolsRequired && (
-                      <div className="mb-6">
-                        <h4 className="text-cyan-400 font-semibold mb-3">Tools Required:</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {repair.toolsRequired.map((tool, i) => (
-                            <span key={i} className="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded text-sm">
-                              {tool}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Repair Steps - Detailed 5+ paragraph solutions */}
-                    <div className="mb-6">
-                      <h4 className="text-green-400 font-semibold mb-3">Step-by-Step Repair Procedure:</h4>
-                      <div className="space-y-4">
-                        {repair.steps?.map((step, i) => (
-                          <div key={i} className="bg-slate-900/50 rounded-lg p-4 border border-slate-600">
-                            <div className="flex items-start gap-3">
-                              <span className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0">
-                                {step.step}
-                              </span>
-                              <div className="flex-1">
-                                <p className="text-slate-300">{step.instruction}</p>
-                                {step.warning && (
-                                  <div className="mt-2 bg-red-900/30 border border-red-500/50 rounded p-2 text-red-300 text-sm">
-                                    ⚠️ {step.warning}
-                                  </div>
-                                )}
-                                {step.tip && (
-                                  <div className="mt-2 bg-blue-900/30 border border-blue-500/50 rounded p-2 text-blue-300 text-sm">
-                                    💡 {step.tip}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Verification Steps */}
-                    {repair.verificationSteps && (
-                      <div className="bg-green-900/20 rounded-lg p-4 border border-green-500/30">
-                        <h4 className="text-green-400 font-semibold mb-3">✅ Verification Checklist:</h4>
-                        <ul className="space-y-2">
-                          {repair.verificationSteps.map((step, i) => (
-                            <li key={i} className="flex items-center gap-2 text-green-300">
-                              <span>☐</span> {step}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {/* Prevention Strategies */}
-                {fault.preventionStrategies && (
-                  <div className="bg-slate-800/50 rounded-xl p-5 border border-blue-500/30">
-                    <h3 className="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
-                      <span>🛡️</span> Prevention Strategies
-                    </h3>
-                    <ul className="space-y-2">
-                      {fault.preventionStrategies.map((strategy, i) => (
-                        <li key={i} className="flex items-start gap-2 text-slate-300">
-                          <span className="text-blue-400 mt-1">▸</span>
-                          {strategy}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Maintenance Schedule */}
-                {fault.maintenanceSchedule && (
-                  <div className="bg-slate-800/50 rounded-xl p-5 border border-purple-500/30">
-                    <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
-                      <span>📅</span> Maintenance Schedule
-                    </h3>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-slate-600">
-                            <th className="text-left py-2 text-slate-400">Interval</th>
-                            <th className="text-left py-2 text-slate-400">Task</th>
-                            <th className="text-left py-2 text-slate-400">Importance</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {fault.maintenanceSchedule.map((item, i) => (
-                            <tr key={i} className="border-b border-slate-700">
-                              <td className="py-2 text-purple-400 font-medium">{item.interval}</td>
-                              <td className="py-2 text-slate-300">{item.task}</td>
-                              <td className="py-2">
-                                <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                  item.importance === 'critical' ? 'bg-red-500/20 text-red-400' :
-                                  item.importance === 'important' ? 'bg-yellow-500/20 text-yellow-400' :
-                                  'bg-blue-500/20 text-blue-400'
-                                }`}>
-                                  {item.importance}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* AI INSIGHTS TAB */}
-            {activeTab === 'insights' && (
-              <>
-                {/* AI Pattern Analysis */}
-                {fault.aiInsights && (
-                  <div className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-xl p-5 border border-purple-500/30">
-                    <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
-                      <span>🔎</span> Pattern Analysis
-                    </h3>
-                    <p className="text-slate-300 leading-relaxed mb-6">{fault.aiInsights.patternAnalysis}</p>
-
-                    {/* Predictive Indicators */}
-                    <div className="bg-slate-900/50 rounded-lg p-4 mb-4">
-                      <h4 className="text-cyan-400 font-semibold mb-3">📊 Predictive Indicators:</h4>
-                      <ul className="space-y-2">
-                        {fault.aiInsights.predictiveIndicators?.map((indicator, i) => (
-                          <li key={i} className="flex items-start gap-2 text-slate-300 text-sm">
-                            <span className="text-cyan-400 mt-1">▸</span>
-                            {indicator}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Environmental & Seasonal Factors */}
-                    <div className="grid md:grid-cols-2 gap-4 mb-4">
-                      <div className="bg-slate-900/50 rounded-lg p-4">
-                        <h4 className="text-yellow-400 font-semibold mb-2">🌦️ Seasonal Factors:</h4>
-                        <p className="text-slate-400 text-sm">{fault.aiInsights.seasonalFactors}</p>
-                      </div>
-                      <div className="bg-slate-900/50 rounded-lg p-4">
-                        <h4 className="text-green-400 font-semibold mb-2">🌍 Environmental Factors:</h4>
-                        <p className="text-slate-400 text-sm">{fault.aiInsights.environmentalFactors}</p>
-                      </div>
-                    </div>
-
-                    {/* AI Recommendations */}
-                    <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-lg p-4">
-                      <h4 className="text-cyan-400 font-semibold mb-3">💡 AI Recommendations:</h4>
-                      <ul className="space-y-2">
-                        {fault.aiInsights.recommendations?.map((rec, i) => (
-                          <li key={i} className="flex items-start gap-2 text-cyan-300 text-sm">
-                            <span className="text-cyan-400 mt-1">✓</span>
-                            {rec}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-
-                {/* Case Studies */}
-                {fault.caseStudies && fault.caseStudies.length > 0 && (
-                  <div className="bg-slate-800/50 rounded-xl p-5 border border-amber-500/30">
-                    <h3 className="text-xl font-bold text-amber-400 mb-4 flex items-center gap-2">
-                      <span>📖</span> Real-World Case Studies from Kenya
-                    </h3>
-                    <div className="space-y-6">
-                      {fault.caseStudies.map((study, i) => (
-                        <div key={i} className="bg-slate-900/50 rounded-lg p-5 border border-slate-600">
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="text-2xl">📍</span>
-                            <div>
-                              <h4 className="text-white font-bold">{study.location}</h4>
-                              <p className="text-slate-500 text-sm">{study.generatorModel}</p>
-                            </div>
-                          </div>
-                          <div className="space-y-3 text-sm">
-                            <div>
-                              <span className="text-red-400 font-semibold">Symptom:</span>
-                              <p className="text-slate-300 mt-1">{study.symptom}</p>
-                            </div>
-                            <div>
-                              <span className="text-cyan-400 font-semibold">Diagnosis:</span>
-                              <p className="text-slate-300 mt-1">{study.diagnosis}</p>
-                            </div>
-                            <div>
-                              <span className="text-green-400 font-semibold">Solution:</span>
-                              <p className="text-slate-300 mt-1">{study.solution}</p>
-                            </div>
-                            <div className="bg-amber-900/30 rounded-lg p-3">
-                              <span className="text-amber-400 font-semibold">💡 Lessons Learned:</span>
-                              <p className="text-amber-200 mt-1">{study.lessonsLearned}</p>
-                            </div>
-                            <div className="text-slate-500">
-                              Resolution time: {study.timeToResolve}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* FAQs */}
-                {fault.frequentlyAskedQuestions && fault.frequentlyAskedQuestions.length > 0 && (
-                  <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700">
-                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                      <span>❓</span> Frequently Asked Questions
-                    </h3>
-                    <div className="space-y-4">
-                      {fault.frequentlyAskedQuestions.map((faq, i) => (
-                        <div key={i} className="bg-slate-900/50 rounded-lg p-4">
-                          <h4 className="text-cyan-400 font-semibold mb-2">{faq.question}</h4>
-                          <p className="text-slate-300 text-sm">{faq.answer}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
+            <OracleSafetyWithdrawnNotice surface="maintenance-hub-generators-fault-detail" />
           </div>
         </motion.div>
       </div>
@@ -794,14 +184,14 @@ const ComprehensiveFaultModal = ({
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function GeneratorOracle() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFault, setSelectedFault] = useState<EnhancedFaultCode | null>(null);
+  const [selectedFault, setSelectedFault] = useState<GeneratorFaultIdentification | null>(null);
   const [simulatedRPM, setSimulatedRPM] = useState(1500);
   const [simulatedPower, setSimulatedPower] = useState(450);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [displayLimit, setDisplayLimit] = useState(12);
 
-  const stats = useMemo(() => getDatabaseStats(), []);
-  const categories = useMemo(() => getCategories(), []);
+  const totalFaultCodes = GENERATOR_FAULT_IDENTIFICATION.length;
+  const categories = useMemo(() => generatorFaultCategories(), []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -812,11 +202,7 @@ export default function GeneratorOracle() {
   }, []);
 
   const filteredFaults = useMemo(() => {
-    let faults = Object.values(ALL_COMPREHENSIVE_FAULTS);
-
-    if (searchQuery) {
-      faults = searchComprehensiveFaults(searchQuery);
-    }
+    let faults = searchGeneratorFaultIdentification(searchQuery);
 
     if (selectedCategory !== 'all') {
       faults = faults.filter(f => f.category === selectedCategory);
@@ -872,20 +258,8 @@ export default function GeneratorOracle() {
           className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
         >
           <div className="bg-slate-900/80 border border-amber-500/30 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-amber-400">{stats.totalFaultCodes}+</div>
+            <div className="text-3xl font-bold text-amber-400">{totalFaultCodes}</div>
             <div className="text-slate-400 text-sm">Fault Codes</div>
-          </div>
-          <div className="bg-slate-900/80 border border-green-500/30 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-green-400">{stats.totalDiagnosticSteps}+</div>
-            <div className="text-slate-400 text-sm">Diagnostic Steps</div>
-          </div>
-          <div className="bg-slate-900/80 border border-cyan-500/30 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-cyan-400">{stats.totalRepairProcedures}+</div>
-            <div className="text-slate-400 text-sm">Repair Procedures</div>
-          </div>
-          <div className="bg-slate-900/80 border border-purple-500/30 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-purple-400">{stats.totalCaseStudies}+</div>
-            <div className="text-slate-400 text-sm">Case Studies</div>
           </div>
         </motion.div>
 
@@ -895,7 +269,7 @@ export default function GeneratorOracle() {
             <div className="flex-1 relative">
               <input
                 type="text"
-                placeholder="Search fault codes, descriptions, symptoms..."
+                placeholder="Search fault codes and titles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-3 pl-12 text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
@@ -962,10 +336,9 @@ export default function GeneratorOracle() {
                 </span>
               </div>
               <h4 className="text-white font-semibold mb-2">{fault.title}</h4>
-              <p className="text-slate-400 text-sm line-clamp-2">{fault.technicalOverview?.slice(0, 150)}...</p>
               <div className="mt-3 flex items-center justify-between">
                 <span className="text-slate-500 text-xs">{fault.category}</span>
-                <span className="text-amber-400 text-xs">Click for full analysis →</span>
+                <span className="text-amber-400 text-xs">Click for details →</span>
               </div>
             </motion.div>
           ))}
@@ -993,7 +366,7 @@ export default function GeneratorOracle() {
             GENERATOR ORACLE v3.0 | Generator Diagnostic Database
           </p>
           <p className="text-amber-400/50 text-xs mt-2">
-            {stats.totalFaultCodes}+ Fault Codes | {stats.totalRootCauses}+ Root Causes | {stats.totalDiagnosticSteps}+ Diagnostic Steps | 8+ Generator Brands
+            {totalFaultCodes} Fault Codes | 8+ Generator Brands
           </p>
         </motion.div>
         {/*
@@ -1008,7 +381,7 @@ export default function GeneratorOracle() {
           <h2 className="text-2xl font-bold text-white">Still showing the fault?</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">
             Codes tell you what the controller sees, not always what is wrong. If the fault
-            persists after the checks above, send us the code and the make — an engineer will
+            persists, send us the code and the make — an engineer will
             tell you what it usually means on that machine before anyone is dispatched.
           </p>
           <div className="mt-7 max-w-xl">

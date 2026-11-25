@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { SYMPTOM_DIAGNOSES, SymptomDiagnosis, PossibleCause } from '@/lib/generator-oracle/educationalContent';
+import OracleSafetyWithdrawnNotice from '@/components/generator-oracle/OracleSafetyWithdrawnNotice';
 
 // Education categories for generators
 const GENERATOR_EDUCATION_CATEGORIES = [
@@ -75,8 +76,8 @@ const QUICK_TIPS = [
       'Check oil level before starting',
       'Inspect coolant level',
       'Test battery voltage',
-      'Look for fuel leaks',
-      'Run generator under load for 30 minutes'
+      'Look for fuel, oil or coolant leaks: if you find one, do not run the generator; call a technician',
+      'Only if no leak or fault was found: exercise the generator under load for 30 minutes'
     ]
   },
   {
@@ -238,14 +239,8 @@ function CauseItem({ cause }: { cause: PossibleCause }) {
           >
             <p className="text-gray-400 text-sm">{cause.explanation}</p>
 
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Check Procedure:</p>
-              <ol className="list-decimal list-inside space-y-1">
-                {cause.checkProcedure.slice(0, 4).map((step, i) => (
-                  <li key={i} className="text-xs text-gray-300">{step}</li>
-                ))}
-              </ol>
-            </div>
+            {/* Check Procedure: SAFETY WITHDRAWAL 2026-11-25 (cranking / test-run steps, unsourced limits). */}
+            <OracleSafetyWithdrawnNotice surface="generator-education-check-procedure" />
 
             <div className="flex flex-wrap gap-2 text-xs">
               <span className="px-2 py-1 bg-slate-700/50 rounded text-gray-300">

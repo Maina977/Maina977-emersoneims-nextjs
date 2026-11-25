@@ -22,7 +22,8 @@
 export interface FmiEntry {
   fmi: number;
   meaning: string;
-  firstCheck: string;
+  /** Omitted where the check was withdrawn (content-safety withdrawal, 2026-11-25). */
+  firstCheck?: string;
 }
 
 export const FMI_BY_SPN: Record<string, { measures: string; entries: FmiEntry[]; note?: string }> = {
@@ -30,14 +31,13 @@ export const FMI_BY_SPN: Record<string, { measures: string; entries: FmiEntry[];
     measures: 'engine oil pressure',
     entries: [
       { fmi: 0, meaning: 'Oil pressure far above normal — usually a cold start, a stuck relief valve or a faulty sender, not a low-oil emergency.', firstCheck: 'Confirm with a mechanical gauge when warm; check the relief valve and the sender.' },
-      { fmi: 1, meaning: 'Oil pressure far below normal (most severe). Most controllers treat this as a shutdown.', firstCheck: 'Stop the engine. Check the oil level, then confirm the real pressure with a mechanical gauge before any restart.' },
-      { fmi: 18, meaning: 'Oil pressure below normal (moderately severe).', firstCheck: 'Oil level and grade, oil filter, and a mechanical gauge reading at idle and at rated speed.' },
+      { fmi: 1, meaning: 'Oil pressure far below normal (most severe). Most controllers treat this as a shutdown.', firstCheck: 'Stop the engine. Check the oil level.' },
+      { fmi: 18, meaning: 'Oil pressure below normal (moderately severe).' },
       { fmi: 17, meaning: 'Oil pressure slightly below normal (least severe) — an early warning.', firstCheck: 'Oil level, filter condition and whether the last oil change used the correct viscosity.' },
       { fmi: 2, meaning: 'The pressure signal is erratic or does not make sense.', firstCheck: 'Sensor connector, harness chafing and the sensor ground.' },
       { fmi: 3, meaning: 'Sensor signal voltage above normal — usually an open circuit or a short to the supply.', firstCheck: 'Open signal or return wire, corroded connector pins, the 5 V sensor supply.' },
       { fmi: 4, meaning: 'Sensor signal voltage below normal — usually a short to ground.', firstCheck: 'A chafed wire touching the engine or chassis, or a failed sensor.' },
     ],
-    note: 'FMI 2, 3 and 4 point at the sensor circuit rather than the oil system. Confirm the actual pressure with a mechanical gauge before replacing parts.',
   },
   'SPN-190': {
     measures: 'engine speed',

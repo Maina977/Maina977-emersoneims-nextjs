@@ -1,26 +1,25 @@
-import { NextRequest } from 'next/server';
-import { lookupFaultCode } from '@/lib/generator-oracle/server/faultIndex';
-import { clampString, jsonError, jsonOk } from '@/lib/generator-oracle/server/httpUtils';
+/**
+ * SAFETY WITHDRAWAL (management rule, 2026-11-25).
+ *
+ * Withdrawn: S2: fault-code lookup with diagnostic steps, reset pathways and solutions (faultIndex.lookupFaultCode).
+ * The independent review of 2026-11-25 (ORACLE-SURFACES-REVIEW.md) found that
+ * it gave running, cranking or live-circuit steps under STOP conditions, used
+ * invented thresholds, or omitted STOPs. It stays unavailable until it is
+ * corrected and independently re-verified. Every method answers HTTP 503 with
+ * { error: 'temporarily_unavailable', message } before doing any work; no
+ * diagnostic module is imported here.
+ *
+ * The previous implementation is at commit fa565ab1:
+ *   git show fa565ab1:app/api/generator-oracle/fault-code/route.ts
+ */
+import { withdrawnRouteResponse } from '@/lib/generator-oracle/safety/withdrawal';
 
-export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
-  try {
-    const code = clampString(req.nextUrl.searchParams.get('code'));
-    const brand = clampString(req.nextUrl.searchParams.get('brand'));
-    if (!code) return jsonError('missing_code');
-
-    const result = lookupFaultCode(code, brand);
-    return jsonOk({
-      code,
-      brand: brand ?? null,
-      ...result,
-      // exactMatches keep their full ControllerFaultCode payload (diagnostic
-      // steps, reset pathways, solutions, safety warnings) — partialMatches
-      // are slim summaries to keep payload small.
-    });
-  } catch (e) {
-    return jsonError('fault_code_lookup_failed', 500, e instanceof Error ? e.message : 'unknown');
-  }
-}
+export async function GET() { return withdrawnRouteResponse(); }
+export async function POST() { return withdrawnRouteResponse(); }
+export async function PUT() { return withdrawnRouteResponse(); }
+export async function PATCH() { return withdrawnRouteResponse(); }
+export async function DELETE() { return withdrawnRouteResponse(); }
+export async function HEAD() { return withdrawnRouteResponse(); }
+export async function OPTIONS() { return withdrawnRouteResponse(); }

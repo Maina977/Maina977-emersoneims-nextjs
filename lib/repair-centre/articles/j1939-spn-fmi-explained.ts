@@ -21,6 +21,10 @@ export const j1939SpnFmiExplained: RepairArticle = {
   directAnswer:
     'A J1939 diagnostic message is compositional, and reading it as two separate pieces of information is what makes it useful. The SPN — Suspect Parameter Number — identifies WHICH parameter the engine control module is unhappy about. The FMI — Failure Mode Identifier — identifies HOW it is unhappy: whether the signal is above a normal range, below it, erratic, out of calibration, absent altogether, or whether the ECM has detected a mechanical condition rather than a signal problem. So SPN tells you where to look and FMI tells you what kind of fault to look for, and the two together frequently distinguish a genuine engine problem from a wiring or sensor problem before you touch anything. An occurrence count usually accompanies them, which tells you whether this is a one-off or a recurring condition. What the code does not tell you is the cause, because a sensor circuit fault and a real physical condition on the same parameter produce codes that differ only in their FMI. Look every code up in the engine manufacturer documentation for that exact engine — the standard defines the structure, not the complete meaning of every code on every engine, and manufacturers add their own.',
 
+  // Content-safety withdrawal 2026-11-25: verifying a protective value by
+  // running after the shutdown is withdrawn pending independent review.
+  safetyWithdrawn: ['tools', 'decision-tree', 'diagnosis', 'repair', 'validation'],
+
   symptoms: {
     display: [
       'A numeric code shown as SPN and FMI, sometimes with an occurrence count',
@@ -164,17 +168,15 @@ export const j1939SpnFmiExplained: RepairArticle = {
     { tool: 'Manufacturer diagnostic tool or approved service software', why: 'Reading full fault detail, occurrence counts and freeze-frame data that a controller display may not show' },
     { tool: 'True-RMS digital multimeter', why: 'Testing the sensor circuit named by the SPN — continuity, shorts to earth and supply' },
     { tool: 'Breakout leads or test harness appropriate to the connector', why: 'Measuring at a connector without damaging pins, which is how connectors get ruined' },
-    { tool: 'Independent gauge for the parameter concerned', why: 'Establishing whether the reported value is TRUE, which the code itself cannot tell you' },
     { tool: 'Controller documentation', why: 'Distinguishing a controller-generated alarm from a relayed engine ECM code' },
   ],
 
   decisionTree: [
-    { question: 'Is the code a protective condition — oil pressure, coolant temperature, overspeed?', yes: 'Do NOT clear and restart to test it. Establish the physical condition first.', no: 'Continue' },
+    { question: 'Is the code a protective condition — oil pressure, coolant temperature, overspeed?', yes: 'Do NOT clear and restart to test it. Refer to a qualified technician.', no: 'Continue' },
     { question: 'Did the code originate in the ENGINE ECM or the generator controller?', yes: 'Look it up in the matching documentation — engine codes are not in the controller manual', no: 'Establish the source before interpreting the number' },
     { question: 'Have you recorded the full code list and occurrence counts?', yes: 'Continue', no: 'Record before clearing anything — clearing destroys the history you need' },
     { question: 'Which SPN, which parameter is implicated?', yes: 'That tells you WHERE to look', no: 'Look it up against the engine documentation' },
     { question: 'What does the FMI say about the NATURE of the fault?', yes: 'Electrically implausible values point at wiring or sensor; out-of-range-but-plausible points at a real condition', no: 'This is the most valuable half of the code — do not skip it' },
-    { question: 'Does an independent measurement agree with the reported value?', yes: 'The condition is real — diagnose the engine', no: 'Sensor or wiring — the engine may be entirely healthy' },
     { question: 'Is the sensor circuit sound — continuity, no short to earth or supply?', yes: 'Suspect the sensor or a genuine condition', no: 'The harness is the fault' },
   ],
 
@@ -233,28 +235,17 @@ export const j1939SpnFmiExplained: RepairArticle = {
     },
     {
       step: 6,
-      title: 'Verify the reported value independently',
-      inspect: 'The actual physical quantity, measured separately from the ECM',
-      where: 'At the engine, with an independent gauge or meter',
-      instrument: 'Independent pressure gauge, thermometer or multimeter',
-      expected: 'Agreement, or a clear disagreement',
-      ifAbnormal: 'Agreement means the condition is real and belongs to the engine. Disagreement means the measurement path is at fault and the engine may be perfectly healthy. The code cannot tell you which.',
-      next: 'Step 7',
-      warning: 'Where verification requires running after a protective shutdown, establish first that running will not cause damage.',
-    },
-    {
-      step: 7,
       title: 'Test the sensor circuit named by the SPN',
       inspect: 'Continuity, shorts to earth and to supply, connector and pin condition',
       where: 'At the sensor and along its harness',
       instrument: 'Multimeter and appropriate breakout leads',
       expected: 'Sound circuit, clean and fully seated connectors',
       ifAbnormal: 'Corrosion, backed-out pins, chafed harness and rodent damage are leading causes of codes that look like engine faults. Use proper breakout leads — probing pins directly damages connectors and creates the next fault.',
-      next: 'Step 8',
+      next: 'Step 7',
       verify: 'Sensor type and expected circuit behaviour for this engine, from the manufacturer data.',
     },
     {
-      step: 8,
+      step: 7,
       title: 'Correct the cause, then clear and validate deliberately',
       inspect: 'That the identified cause is addressed before the code is cleared',
       where: 'At the corrected fault',
@@ -281,7 +272,6 @@ export const j1939SpnFmiExplained: RepairArticle = {
       level: 'sensor-replacement',
       title: 'Sensors',
       steps: [
-        'Replace a sensor proven faulty by independent measurement',
         'Fit the correct sensor for the engine and calibration',
         'Verify the reported value against an independent measurement after fitting',
       ],
@@ -307,7 +297,6 @@ export const j1939SpnFmiExplained: RepairArticle = {
 
   validation: [
     'Confirm the code does not return under the conditions that originally produced it',
-    'Confirm the reported value agrees with an independent measurement',
     'Confirm no new codes were introduced by the work',
     'Record the full code list after the repair as a new baseline',
     'Record the engine software and calibration version in service',

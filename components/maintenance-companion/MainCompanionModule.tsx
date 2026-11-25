@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ModuleSelector, { ModuleId } from './ModuleSelector';
 import ModeSelector, { UserMode } from './ModeSelector';
-import PredictiveAnalyzer from './PredictiveAnalyzer';
+// SAFETY WITHDRAWAL 2026-11-25 (independent review N1): the Predictive analyzer
+// (lib/maintenance-companion/predictiveEngine.ts) used invented limits (oil 2.5/2.0 bar,
+// coolant 92/98 °C, oil use 0.3/0.5 L/h) and gave no STOP for overheating (coolant 100 °C ->
+// 'Address Within 1 Week'). It is no longer imported; the tab shows the shared notice.
+import OracleSafetyWithdrawnNotice from '@/components/generator-oracle/OracleSafetyWithdrawnNotice';
 import EfficiencyCalculator from './EfficiencyCalculator';
 import RepairGuideLibrary from './RepairGuideLibrary';
 import PartsCatalog from './PartsCatalog';
@@ -61,7 +65,7 @@ export default function MainCompanionModule() {
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto">
             Your complete guide to generator maintenance, troubleshooting, and optimization.
-            Repair manuals, parts catalog, predictive AI, and financial analysis in one platform.
+            Repair guide overviews, parts catalog, efficiency and financial analysis in one platform.
           </p>
         </motion.div>
 
@@ -118,10 +122,7 @@ export default function MainCompanionModule() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <PredictiveAnalyzer
-                  onViewGuide={handleViewGuide}
-                  onViewPart={handleViewPart}
-                />
+                <OracleSafetyWithdrawnNotice surface="maintenance-companion-predictive" />
               </motion.div>
             )}
 

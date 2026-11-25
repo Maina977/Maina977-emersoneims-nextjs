@@ -19,7 +19,16 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
   },
 
   directAnswer:
-    'The first decision is not what the noise is but whether to keep running, and getting that wrong is far more expensive than any misdiagnosis. A deep, heavy knock that rises with load and speed — particularly one that appeared suddenly — should be treated as a bearing or bottom-end problem and the set stopped immediately, because a failing bearing that is allowed to run destroys the crankshaft and frequently the block, turning a repairable engine into scrap. The same applies to any metallic noise accompanied by falling oil pressure. Beyond that, the useful distinctions are these: injector or combustion knock is sharper and more rhythmic, changes with fuelling and often with temperature, and typically indicates injection timing or an injector rather than mechanical damage. Valve-train noise is a lighter, faster tapping tied to camshaft speed and usually related to clearances. Turbocharger noise is a whine or siren rather than a knock, and a change in its pitch or the appearance of a rattle warrants stopping before debris passes downstream. Note when the noise appears — cold or hot, on load or off, at what speed, because the pattern narrows it considerably before anything is dismantled.',
+    'The first decision is not what the noise is but whether to keep running, and getting that wrong is far more expensive than any misdiagnosis. A deep, heavy knock that rises with load and speed — particularly one that appeared suddenly — should be treated as a bearing or bottom-end problem and the set stopped immediately, because a failing bearing that is allowed to run destroys the crankshaft and frequently the block, turning a repairable engine into scrap. The same applies to any metallic noise accompanied by falling oil pressure. Beyond that, the useful distinctions are these: injector or combustion knock is sharper and more rhythmic, changes with fuelling and often with temperature, and typically indicates injection timing or an injector rather than mechanical damage. Valve-train noise is a lighter, faster tapping tied to camshaft speed and usually related to clearances. Turbocharger noise is a whine or siren rather than a knock, and a change in its pitch or the appearance of a rattle warrants stopping before debris passes downstream.',
+
+  // The 300-character cut of directAnswer ended "...problem and the set",
+  // dropping "stopped immediately". This keeps the STOP whole.
+  metaDescription:
+    'A deep, heavy knock that rises with load and speed should be treated as a bearing or bottom-end problem and the set stopped immediately. The same applies to any metallic noise accompanied by falling oil pressure.',
+
+  // Content-safety withdrawal 2026-11-25: classifying a knock by running,
+  // loading or cylinder cut-out is withdrawn pending independent review.
+  safetyWithdrawn: ['tools', 'decision-tree', 'diagnosis'],
 
   symptoms: {
     display: [
@@ -172,7 +181,6 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
 
   tools: [
     { tool: 'Mechanic\'s stethoscope or electronic listening device', why: 'Localising noise to a region of the engine safely, without improvising near rotating parts' },
-    { tool: 'Oil pressure gauge, independent of the engine instrument', why: 'Confirming actual oil pressure, because falling pressure alongside a noise changes the urgency entirely' },
     { tool: 'Oil filter cutter and inspection light', why: 'Metallic particles in the filter are among the most decisive findings available, and cost almost nothing to look for' },
     { tool: 'Oil sampling kit for laboratory analysis', why: 'Wear metals identify which components are wearing before failure occurs' },
     { tool: 'Feeler gauges', why: 'Valve clearances, where valve-train noise is indicated' },
@@ -185,10 +193,7 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
     { question: 'Is the noise a deep knock that rises with load, and did it appear suddenly?', yes: 'Treat as bottom-end. Stop and escalate — running on determines whether it stays repairable.', no: 'Continue' },
     { question: 'Are there metallic particles in the oil or filter?', yes: 'Stop. This is decisive evidence of component wear in progress.', no: 'Continue' },
     { question: 'Is the oil contaminated with fuel or coolant?', yes: 'Stop. Oil film strength is compromised and bearing failure will follow regardless of the original noise.', no: 'Continue' },
-    { question: 'Does the noise change with fuelling, and is it sharper and rhythmic?', yes: 'More consistent with injection or combustion than mechanical damage', no: 'Continue' },
-    { question: 'Is it a light rapid tapping at camshaft speed?', yes: 'Valve train — check clearances against the manufacturer specification', no: 'Continue' },
     { question: 'Is it a whine or rattle from the turbocharger?', yes: 'Stop before debris passes downstream, and check shaft play', no: 'Continue' },
-    { question: 'Is it worse cold and improving warm?', yes: 'Often piston-related, but confirm rather than assume', no: 'Localise with a stethoscope before dismantling anything' },
   ],
 
   diagnosis: [
@@ -225,50 +230,17 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
     },
     {
       step: 4,
-      title: 'Measure oil pressure independently',
-      inspect: 'Actual oil pressure at normal running temperature, compared against the engine data and its own history',
-      where: 'At a gallery test point',
-      instrument: 'Independent oil pressure gauge',
-      expected: 'Pressure consistent with the engine specification for that temperature and speed',
-      ifAbnormal: 'A low reading alongside a knock strongly supports bearing clearance. Compare against the engine data rather than a remembered figure, since normal pressure varies substantially between engines.',
-      next: 'Step 5',
-      verify: 'Normal running oil pressure for this engine at temperature and speed, from the manufacturer data.',
-    },
-    {
-      step: 5,
-      title: 'Characterise the noise properly',
-      inspect: 'Pitch, rhythm, and response to load, speed and temperature',
-      where: 'With the engine running, from a safe position',
-      instrument: 'Mechanic\'s stethoscope or electronic listening device',
-      expected: 'A description precise enough to distinguish the categories',
-      ifAbnormal: 'Deep and load-dependent points at the bottom end. Sharper and fuelling-dependent points at combustion. Light and fast at camshaft speed points at the valve train. Aerodynamic points at the turbo.',
-      next: 'Step 6',
-      warning: 'Use a proper listening device. Improvising with a screwdriver near belts, fan or coupling is how people are injured during exactly this task.',
-    },
-    {
-      step: 6,
-      title: 'Localise the noise to a region or cylinder',
-      inspect: 'Where on the engine the noise is loudest, and whether it changes when a cylinder\'s contribution is altered',
-      where: 'Across the block, head and turbocharger',
-      instrument: 'Stethoscope; cylinder cut-out via the manufacturer\'s approved method only',
-      expected: 'Noise localised to a region',
-      ifAbnormal: 'Combustion-related noise usually changes when that cylinder stops firing; mechanical noise usually does not. Use the manufacturer\'s approved method for cutting out a cylinder.',
-      next: 'Step 7',
-      warning: 'Never loosen a high-pressure fuel fitting on a running engine to isolate a cylinder.',
-    },
-    {
-      step: 7,
       title: 'Check valve clearances and turbocharger play where indicated',
       inspect: 'Valve clearances against specification; turbo shaft radial and axial play against the limit',
       where: 'At the valve gear and the turbocharger',
       instrument: 'Feeler gauges, dial indicator',
       expected: 'Both within manufacturer limits',
       ifAbnormal: 'These are the two accessible mechanical checks that resolve a meaningful share of noise complaints without dismantling the engine.',
-      next: 'Step 8',
+      next: 'Step 5',
       verify: 'Valve clearance specification and turbocharger shaft play limits for this engine.',
     },
     {
-      step: 8,
+      step: 5,
       title: 'Sample the oil for laboratory analysis',
       inspect: 'Wear metals, contamination and oil condition',
       where: 'A representative sample taken correctly',
@@ -364,16 +336,12 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
       a: 'If it is a deep knock that rises with load, no, and this is the single most expensive judgement in the whole guide. A failing bearing scores the journal within minutes, and once the shell material has gone it damages the crankshaft and often the block, turning a repairable engine into scrap. Stopping now may cost you a shift; running on can cost you the engine.',
     },
     {
-      q: 'How do I tell a bearing knock from injector knock?',
-      a: 'By pitch and by what changes it. Bearing knock is deeper, heavier and rises with LOAD. Injector or combustion knock is sharper and more rhythmic, changes with FUELLING, and is often temperature-dependent. Combustion noise usually alters when that cylinder stops firing; mechanical noise usually does not. If oil pressure is also falling, treat it as mechanical and stop.',
-    },
-    {
       q: 'Is cutting the oil filter open really worth it?',
       a: 'It is one of the most decisive checks available and takes minutes. Metallic particles trapped in the medium mean components are wearing right now, which converts an ambiguous noise into a clear decision not to run. Do it at every oil change as well, not only when investigating a fault — it finds problems long before they become audible.',
     },
     {
       q: 'The noise is only there when cold and goes once warm. Is that acceptable?',
-      a: 'It is less urgent than a load-dependent knock, and is often piston-related as clearances close up with expansion, but it should still be identified rather than lived with, because it indicates wear that will progress. Confirm oil pressure is normal and there is no metallic content in the filter, then investigate properly rather than accepting it as a characteristic of the engine.',
+      a: 'It is less urgent than a load-dependent knock, and is often piston-related as clearances close up with expansion, but it should still be identified rather than lived with, because it indicates wear that will progress.',
     },
   ],
 

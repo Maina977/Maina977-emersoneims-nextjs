@@ -320,7 +320,6 @@ export const WORKSHOP_EDUCATION: ServiceEducation[] = [
     ],
     symptoms: ['Blue smoke and high oil consumption', 'Low compression and hard starting', 'Knocking or heavy noise under load', 'Metal in the oil or oil filter', 'Low oil pressure hot', 'Heavy crankcase blow-by at the breather'],
     repairSteps: [
-      'Diagnose and measure before dismantling — compression and where possible cylinder-leakage tests to confirm the engine, not an ancillary, is at fault.',
       'Strip the engine and measure every major component against the manufacturer\'s limits: bores/liners, crankshaft journals, bearings, pistons, valves and seats.',
       'Recondition or renew to the measured need — rebore or renew liners, grind or renew the crankshaft to matched bearing sizes, renew pistons, rings, valves, guides and the full gasket set.',
       'Assess and repair the lubrication, cooling and fuel systems at the same time, so a fixed engine is not returned to the fault that killed it.',
@@ -328,7 +327,6 @@ export const WORKSHOP_EDUCATION: ServiceEducation[] = [
       'Static test, then controlled run-in, then load test where facilities allow, before handover.',
     ],
     testing: [
-      'Compression and (where available) cylinder-leakage testing to confirm the diagnosis before work begins.',
       'Dimensional measurement of every reused component against the manufacturer\'s wear limits.',
       'Static checks on reassembly — oil pressure and no leaks on first prime and crank.',
       'Controlled run-in and, where facilities allow, load testing to prove power and stable running before release.',

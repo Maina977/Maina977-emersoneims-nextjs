@@ -68,7 +68,7 @@ export default function MaintenanceCompanionLayout({
               url: 'https://www.emersoneims.com',
             },
             featureList: [
-              'Step-by-step repair guides',
+              'Repair guide overviews',
               'Parts catalogue',
               'Efficiency calculator',
               'Repair vs replace costing',

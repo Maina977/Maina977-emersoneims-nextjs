@@ -10,7 +10,10 @@ import {
   difficultyColors,
   difficultyLabels
 } from '@/lib/maintenance-companion/repairGuides';
-import RepairStepCard from './shared/RepairStepCard';
+// SAFETY WITHDRAWAL 2026-11-25: the guides' step-by-step instructions included start/run/crank
+// steps for faults such as overheating and unsourced limits (e.g. thermostat 82-88 °C, 15 PSI
+// pressure test). The steps are withdrawn; RepairStepCard is no longer imported here.
+import OracleSafetyWithdrawnNotice from '@/components/generator-oracle/OracleSafetyWithdrawnNotice';
 
 interface RepairGuideLibraryProps {
   initialGuideId?: string;
@@ -97,12 +100,6 @@ export default function RepairGuideLibrary({ initialGuideId, isTechnicianMode = 
                 </span>
               </div>
             </div>
-            <div className="text-right">
-              <span className="text-slate-500 text-sm block">Progress</span>
-              <span className="text-white font-mono text-2xl">
-                {completedSteps.length} / {selectedGuide.steps.length}
-              </span>
-            </div>
           </div>
         </div>
 
@@ -149,34 +146,8 @@ export default function RepairGuideLibrary({ initialGuideId, isTechnicianMode = 
           </div>
         )}
 
-        {/* Steps */}
-        <div className="space-y-4">
-          <h3 className="text-white font-semibold">Step-by-Step Instructions</h3>
-          {selectedGuide.steps.map((step, index) => (
-            <RepairStepCard
-              key={step.stepNumber}
-              step={step}
-              isActive={activeStep === index}
-              isCompleted={completedSteps.includes(step.stepNumber)}
-              onComplete={() => handleCompleteStep(step.stepNumber)}
-            />
-          ))}
-        </div>
-
-        {/* Completion Status */}
-        {completedSteps.length === selectedGuide.steps.length && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-emerald-500/10 rounded-xl p-6 border border-emerald-500/30 text-center"
-          >
-            <svg className="w-16 h-16 mx-auto text-emerald-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 className="text-emerald-400 text-xl font-bold mb-2">Repair Complete!</h3>
-            <p className="text-slate-400">All steps have been completed successfully.</p>
-          </motion.div>
-        )}
+        {/* Steps: withdrawn (safety withdrawal 2026-11-25) */}
+        <OracleSafetyWithdrawnNotice surface="maintenance-companion-repair-steps" />
 
         {/* Related Info */}
         <div className="grid md:grid-cols-2 gap-4">

@@ -6,7 +6,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 export const metadata: Metadata = {
   title: 'Technical Bible | Engineering Reference',
   description:
-    'The Technical Bible — deep engineering documentation for generators, solar PV, UPS, motors and boreholes. Standards, derate factors, fault trees, single-line diagrams and field procedures used by EmersonEIMS engineers.',
+    'The Technical Bible — deep engineering documentation for generators, solar PV, UPS, motors and boreholes. Standards, derate factors, single-line diagrams and field procedures used by EmersonEIMS engineers.',
   alternates: { canonical: `${SITE}/technical-bible` },
   openGraph: {
     title: 'Technical Bible',
