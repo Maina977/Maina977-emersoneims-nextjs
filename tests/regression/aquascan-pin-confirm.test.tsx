@@ -2,12 +2,13 @@
 /**
  * Re-review of f17f80a7 (2026-11-25), N1/N2/N4 on the REAL page with the REAL engine (adapted from
  * the reviewer's scratch pin-confirm test). Network mocked: /api/geocode answers with real Nominatim
- * answers for Makuyu; every other source is down, so the open-water check is "unavailable".
+ * answers for Makuyu; every other source is down (the open-water check is offline since M-2).
  * Required:
  *  N1  no engine call at an unconfirmed searched pin on any path (dashboard run, dashboard after a
  *      refused later search, results-view "Find & Re-analyze"); a confirmed pin is labelled
  *      "Searched place, confirmed by the customer";
- *  N2  report downloads are disabled (not only CSS-held) until the water check is confirmed;
+ *  N2  report downloads are disabled (not only CSS-held) until the water check is confirmed
+ *      (since M-2 of the 126efdbc re-review the check is offline; a near-shore pin needs confirmation);
  *  N4  "I'm at the site" clears a pending searched pin.
  */
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
@@ -113,13 +114,15 @@ describe('N1: no run at an unconfirmed searched pin (dashboard)', () => {
 describe('N1 results view + N2 downloads', () => {
   it('"Find & Re-analyze" with a village does NOT re-run until confirmed; "Re-analyse at this pin" then runs; downloads disabled until the water check is confirmed', async () => {
     const { container } = await mount();
-    fireEvent.change(latBox(), { target: { value: '-1.2921' } });
-    fireEvent.change(lonBox(), { target: { value: '36.8219' } });
+    // A recorded shoreline borehole at Kalokol (Lake Turkana, WRA registry): within the 300 m
+    // shoreline margin, so the offline water check is inconclusive (re-review of 126efdbc, M-2).
+    fireEvent.change(latBox(), { target: { value: '3.31944' } });
+    fireEvent.change(lonBox(), { target: { value: '35.96444' } });
     runNoPhoto();
     await waitFor(() => expect(container.querySelector('.results-view')).toBeTruthy());
     expect(calls).toHaveLength(1);
-    // N2: the water check was unavailable (elevation route down): every download button is disabled
-    expect(container.textContent).toMatch(/Water-body check unavailable/);
+    // N2: the water check is inconclusive: every download button is disabled until confirmed
+    expect(container.textContent).toMatch(/Water-body check inconclusive: the pin is within 0\.1 km of the mapped shore of Lake Turkana/);
     fireEvent.click(screen.getAllByRole('button').find((b) => /^Report$/.test(b.textContent || '') )!);
     const pdf = await waitFor(() => screen.getAllByRole('button').find((b) => /PDF Report/.test(b.textContent || ''))!);
     expect((pdf as HTMLButtonElement).disabled).toBe(true);

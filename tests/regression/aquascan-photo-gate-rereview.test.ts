@@ -43,9 +43,10 @@ describe('R1: no invented observation in the result, on screen or in exports', (
     expect(r.site.latitude).toBeCloseTo(-1.2921, 4);
     const json = JSON.stringify(r);
     expect(json).not.toMatch(/"siteType":"flat"|"vegetationDensity":0\.3|"waterIndicator":0\.3|"terrainSlope":4\.5/);
-    // R7 under the same mock: the elevation service is down, so the water-body check is reported unavailable
-    expect(r.waterBodyCheckUnavailable).toBe(true);
-    expect((r.fallbacksUsed ?? []).join(' ')).toMatch(/Water-body check unavailable/);
+    // R7 / re-review of 126efdbc M-2: the water-body check is offline now, so with every network
+    // source down it still runs; Nairobi is on land and needs no confirmation.
+    expect(r.waterBodyCheckUnavailable).toBeUndefined();
+    expect(r.waterCheckNote).toMatch(/^Not on a mapped lake, reservoir or the sea/);
   }, 150000);
   it('page, PDF module list and report map show no neutral value as an observation', () => {
     const ui = src('index.tsx');
@@ -81,8 +82,8 @@ describe('R6: compare runs cannot overwrite each other', () => {
 });
 
 describe('R7: water-body check unavailable is never a silent pass', () => {
-  it('siteCheck reports "unavailable" when the elevation service fails (Kenyan land point)', async () => {
-    expect(await siteCheck(-1.2921, 36.8219)).toEqual({ refusal: null, waterCheck: 'unavailable' });
+  it('siteCheck needs no network (M-2): a Kenyan land point is checked offline and passes', async () => {
+    expect(await siteCheck(-1.2921, 36.8219)).toEqual({ refusal: null, waterCheck: 'ok', note: expect.stringMatching(/^Not on a mapped lake/) });
   });
   it('outside Kenya is still refused offline', async () => {
     const r = await siteCheck(-6.8, 39.28);
@@ -90,9 +91,9 @@ describe('R7: water-body check unavailable is never a silent pass', () => {
   });
   it('the page shows the warning and holds the downloads until the customer confirms the site is on land', () => {
     const ui = src('index.tsx');
-    expect(ui).toMatch(/Water-body check unavailable\.<\/strong> The elevation service did not answer/);
+    expect(ui).toMatch(/AquaScan could not confirm from its lake, reservoir and coastline maps that this point is on land/);
     expect(ui).toMatch(/I have checked: the site is on land/);
-    expect(ui).toMatch(/Downloads wait for your confirmation: the water-body check was unavailable/);
+    expect(ui).toMatch(/Downloads wait for your confirmation: the water-body check could not confirm that the site is on land/);
     expect(ui).toMatch(/\(\(result as any\)\.waterBodyCheckUnavailable && !waterConfirmed\)\) \? 'none' : 'aut/);
   });
 });
