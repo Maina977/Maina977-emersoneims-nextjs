@@ -33,7 +33,8 @@ export default function BuildUpEditor({ item, unit, draft, result, rates, onChan
     <div className="space-y-2 rounded border border-sky-700/60 p-2 text-xs">
       <div className="font-semibold">Rate build-up for {item}, per {unit}</div>
       <p className="text-slate-400">Material = quantity per {unit} × price × (1 + waste %); labour and plant = hours per {unit} × rate per hour. Net + overheads &amp; profit = unit rate. A line with no price leaves the rate as “rate required”.</p>
-      <div className="overflow-x-auto"><table className="w-full min-w-[56rem]">
+      {/* relative: the sr-only cells inside are position:absolute; without a positioned scroll box they escape it and widen the page (390 px overflow, 2026-11-25). */}
+      <div className="relative overflow-x-auto" role="region" aria-label={`Rate build-up lines for ${item}, scrolls sideways`} tabIndex={0}><table className="w-full min-w-[56rem]">
         <caption className="sr-only">{`Rate build-up lines for ${item}`}</caption>
         <thead><tr className="text-left text-slate-400">{['Kind', 'Description', 'Unit', `Qty per ${unit}`, 'Price (KES)', 'Waste %', 'Price source', 'Price date', 'Price status', 'Amount'].map((h) => <th key={h} scope="col">{h}</th>)}<th scope="col"><span className="sr-only">Remove</span></th></tr></thead>
         <tbody>

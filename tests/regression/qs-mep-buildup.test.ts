@@ -446,6 +446,36 @@ describe('saved projects keep MEP forms and build-ups, and recompute them', () =
     expect(after.lines.map((l) => [l.code, l.quantity, l.rate, l.amount])).toEqual(before.lines.map((l) => [l.code, l.quantity, l.rate, l.amount]));
     expect(after.lines.find((l) => l.code === 'E.5')!.amount).toBe(7759.75);
   });
+  it('electrical + plumbing trades, a verified build-up and an INDICATIVE build-up from the PPRA dataset: reopened identical, price-status split unchanged', async () => {
+    // Corrective-action guard (2026-11-25): the preview check reported a reopen mismatch; the cause was the
+    // check reading the open build-up editor's rows, but the product property is pinned here.
+    const fs = await import('node:fs');
+    const ppra = parseRatesFile(fs.readFileSync('data/building/rates/ppra-mprg-2026-06.json', 'utf8'));
+    const P5: BuildUpDraft = {
+      resources: [{ ...resourceFromRates(ppra, 'PPRA012-45', '0.25'), waste: '5' }, resourceFromRates(ppra, 'PPRA012-34', '0.5'), resourceFromRates(ppra, 'PPRA012-40', '0.5')],
+      ohp: '0', ohpSource: 'TEST: materials-only budget', location: 'Kenya',
+    };
+    const e = tradeBoqItems(elec, SECTION_E, []);
+    const p = tradeBoqItems(plumb, SECTION_P, e.map((x) => x.code));
+    const item = (b: BoqItem, form: ElectricalForm | PlumbingForm): ItemDraft => ({
+      code: b.code, section: b.section, description: b.description, measurementId: '', factor: '', rate: '', rateKind: '', source: '', date: '', location: '',
+      trade: { name: b.trade, unit: b.unit, scheduled: b.scheduledQuantity!, lineCode: b.code, form },
+      ...(b.code === 'E.5' ? { buildUp: CABLE_BUILDUP } : b.code === 'P.5' ? { buildUp: P5 } : {}),
+    });
+    const s: WorkbenchSnapshot = { ...snap(), items: [...e.map((b) => item(b, ELEC)), ...p.map((b) => item(b, PLUMB))] };
+    const before = draftBoq(s.items, Q, s.adj, 'A')!.boq;
+    const r = restoreProject(parseProject(JSON.stringify(buildProject(s, { savedAt: '2026-11-25T09:00:00.000Z' }))));
+    const after = r.boq!.boq;
+    expect(r.differences).toEqual([]);
+    expect(after.lines).toHaveLength(18);
+    expect(after.lines.map((l) => [l.code, l.unit, l.quantity, l.rate, l.amount, l.tier])).toEqual(before.lines.map((l) => [l.code, l.unit, l.quantity, l.rate, l.amount, l.tier]));
+    expect(after.priceStatus).toEqual(before.priceStatus);
+    expect(after.priceStatus).toMatchObject({ verified: 7759.75, indicative: 1990.01, verifiedItems: ['E.5'], indicativeItems: ['P.5'], preliminary: true });
+    expect(after.priceStatus.unpricedItems).toHaveLength(16);
+    // Every build-up input keeps its status, source and date through the file.
+    const p5 = r.items.find((i) => i.code === 'P.5')!.buildUp!;
+    expect(p5.resources.map((x) => [x.tier, x.date, x.source.startsWith('PPRA Market Price Reference Guide, June 2026')])).toEqual([['indicative', '2026-06-06', true], ['indicative', '2026-06-06', true], ['indicative', '2026-06-06', true]]);
+  });
   it('a damaged build-up or MEP form is refused; a schema-1 file cannot carry a build-up', () => {
     const file = JSON.parse(JSON.stringify(buildProject(snap(), { savedAt: '2026-11-25T09:00:00.000Z' })));
     const refused = (o: unknown) => { try { parseProject(JSON.stringify(o)); } catch (e) { expect(e).toBeInstanceOf(ProjectError); return (e as ProjectError).kind; } return 'accepted'; };

@@ -561,7 +561,7 @@ export default function TakeoffWorkbench() {
             <div className="rounded border border-slate-700 p-3">
               <div className="text-sm font-semibold mb-1">Measurements (all sheets)</div>
               {ms.length === 0 ? <p className="text-xs text-slate-500">None yet.</p> : (
-                <div className="overflow-x-auto"><table className="w-full text-xs">
+                <div className="relative overflow-x-auto" role="region" aria-label="Measurements table, scrolls sideways" tabIndex={0}><table className="w-full text-xs">
                   <thead><tr className="text-left text-slate-400"><th scope="col">Id</th><th scope="col">Label</th><th scope="col">Page</th><th scope="col" className="text-right">Net</th><th scope="col" className="text-right">Deducted</th></tr></thead>
                   <tbody>
                   {ms.map((m) => { const q = quantities.get(m.id)!; return (
@@ -604,7 +604,8 @@ export default function TakeoffWorkbench() {
             }} className="rounded bg-amber-800 px-2 py-1 text-white">Use indicative rates (PPRA June 2026)</button>
             <span role="status" className="text-slate-300">{ratesMsg || 'No rates loaded. Without a sourced price an item stays “rate required” (quotation required).'}</span>
           </div>
-          <div className="overflow-x-auto"><table className="w-full min-w-[62rem] text-xs">
+          {/* relative: keeps the position:absolute sr-only cells of nested tables (build-up editor) inside this scroll box, so the page never scrolls sideways (2026-11-25). */}
+          <div className="relative overflow-x-auto" role="region" aria-label="Bill of quantities table, scrolls sideways" tabIndex={0}><table className="w-full min-w-[62rem] text-xs">
             <caption className="sr-only">Bill of quantities items</caption>
             <thead><tr className="text-left text-slate-400">{['Code', 'Section', 'Description', 'Measurement', '× factor', 'Rate (KES)', 'Rate from', 'Rate source', 'Rate date', 'Location', 'Build-up'].map((h) => <th key={h} scope="col">{h}</th>)}<th scope="col" className="text-right">Qty</th><th scope="col" className="text-right">Amount</th></tr></thead>
             <tbody>

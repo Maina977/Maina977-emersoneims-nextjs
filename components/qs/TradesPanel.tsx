@@ -55,7 +55,8 @@ function OpeningsTable({ rows, onChange }: { rows: OpeningForm[]; onChange: (row
       <div className="flex items-center justify-between text-xs"><span className="font-semibold">Openings</span>
         <button type="button" onClick={() => onChange([...rows, emptyOpening()])} className="rounded bg-slate-700 px-2 py-0.5">Add opening</button></div>
       {rows.length === 0 ? <p className="text-xs text-slate-500">None.</p> : (
-        <div className="overflow-x-auto"><table className="w-full min-w-[40rem] text-xs">
+        // relative: the sr-only "Remove" header is position:absolute and must stay inside this scroll box (page overflow at 390 px, 2026-11-25).
+        <div className="relative overflow-x-auto" role="region" aria-label="Openings table, scrolls sideways" tabIndex={0}><table className="w-full min-w-[40rem] text-xs">
           <thead><tr className="text-left text-slate-400">{['Mark', 'Type', 'Width (m)', 'Width source', 'Height (m)', 'Height source', 'Count'].map((h) => <th key={h} scope="col">{h}</th>)}<th scope="col"><span className="sr-only">Remove</span></th></tr></thead>
           <tbody>
             {rows.map((o, i) => (
@@ -330,7 +331,7 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
       <p className="text-xs text-red-300" role="alert">{error}</p>
       <p className="text-xs text-emerald-300" role="status">{added}</p>
       {lines && (
-        <div className="overflow-x-auto"><table className="w-full min-w-[40rem] text-xs">
+        <div className="relative overflow-x-auto" role="region" aria-label="Calculated trade quantities table, scrolls sideways" tabIndex={0}><table className="w-full min-w-[40rem] text-xs">
           <caption className="sr-only">Calculated trade quantities</caption>
           <thead><tr className="text-left text-slate-400"><th scope="col">Code</th><th scope="col">Description</th><th scope="col" className="text-right">Quantity</th><th scope="col">Unit</th><th scope="col">Formula</th><th scope="col">Inputs</th></tr></thead>
           <tbody>
