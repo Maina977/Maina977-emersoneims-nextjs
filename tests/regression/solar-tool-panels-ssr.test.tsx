@@ -54,6 +54,22 @@ describe('/solar server HTML reserves the tool area before hydration', () => {
     expect(html.slice(at, html.indexOf('<footer', at))).toContain('Our Solar Installations');
   }, 60000);
 
+  it('the tools section and the section between it and the footer are never skipped by content-visibility (root cause)', async () => {
+    // app/globals.css (max-width 768px): section:not(:first-child) { content-visibility: auto; contain-intrinsic-size: 0 500px }
+    const css = readFileSync(join(process.cwd(), 'app/globals.css'), 'utf8');
+    expect(css).toMatch(/section:not\(:first-child\)\s*\{\s*content-visibility: auto;\s*contain-intrinsic-size: 0 500px;/);
+    const { default: SolarPage } = await import('@/app/solar/page');
+    const html = renderToString(<SolarPage />);
+    const tabs = html.indexOf('role="tablist"');
+    const toolsOpen = html.lastIndexOf('<section', tabs);
+    const toolsTag = html.slice(toolsOpen, html.indexOf('>', toolsOpen));
+    expect(toolsTag).toContain('![content-visibility:visible]');
+    const footer = html.indexOf('<footer', tabs);
+    const between = html.slice(tabs, footer).match(/<section[^>]*>/g) ?? [];
+    expect(between.length).toBeGreaterThan(0);
+    for (const tag of between) expect(tag, tag).toContain('![content-visibility:visible]');
+  }, 60000);
+
   it('the source keeps every tab panel inside the container', () => {
     const src = readFileSync(join(process.cwd(), 'app/solar/page.tsx'), 'utf8');
     const open = src.indexOf('<ToolPanelArea>');

@@ -1067,7 +1067,14 @@ export default function SolarBible() {
       </section>
 
       {/* ==================== MAIN TABS SECTION ==================== */}
-      <section className="py-12 bg-gradient-to-b from-slate-900 to-black">
+      {/* Rendered at its real height, not skipped (ROI CLS root cause, browser trace 2026-11-25):
+          on phones app/globals.css gives every section after the first content-visibility:auto
+          with a 500 px placeholder size, so these two sections (really ~1,800 and ~1,300 px)
+          were laid out as 500 px each until scrolled near; when a visitor jumped to the tool
+          tabs they took their real height and pushed the footer out of view (CLS 0.28).
+          Opting out only the tools section and the section between it and the footer keeps the
+          optimisation for the rest of the page. */}
+      <section className="py-12 bg-gradient-to-b from-slate-900 to-black ![content-visibility:visible]">
         <div className="max-w-7xl mx-auto px-6">
           {/* Location & Weather */}
           <div className="flex items-center gap-4 flex-wrap mb-6">
@@ -1786,7 +1793,8 @@ export default function SolarBible() {
       </section>
 
       {/* ==================== FINAL CTA ==================== */}
-      <section className="py-20 bg-gradient-to-r from-amber-600 via-orange-500 to-red-500">
+      {/* Not skipped either: it sits between the tools and the footer (see the tools section). */}
+      <section className="py-20 bg-gradient-to-r from-amber-600 via-orange-500 to-red-500 ![content-visibility:visible]">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
             Ready to Harness the Power of the Sun?

@@ -76,6 +76,60 @@ every `activeTab ===` panel is inside the container.
 **Pass criterion (coordinator):** CLS below 0.1 on roi/mobile over 3 runs, and no regression on
 load CLS. This has not been re-measured yet.
 
+### 1c. The real cause, found by a browser trace (2026-11-25)
+
+The second fix also failed: the branch measured 0.2796 ×3. The coordinator's trace again showed one
+shift, from the footer. Before the tap, the footer's top (11,247 px) was reported *inside* the
+tool-panel range (10,561 to 11,840 px), which cannot happen in normal flow.
+
+**Mechanism.** `app/globals.css`, inside `@media (max-width: 768px)`, contains this rule:
+
+```css
+section:not(:first-child) { content-visibility: auto; contain-intrinsic-size: 0 500px; }
+```
+
+On a phone, every /solar section except the first is laid out at a 500 px placeholder height
+while it is off screen. There is no `auto` keyword, so the real size is not remembered once the
+section leaves the screen again.
+
+* The tools section is really about 1,800 px tall and was counted as 500. Its content overflowed
+  that 500 px box, which is why the footer appeared to overlap the panels.
+* The final CTA section is about 1,300 px and was also counted as 500.
+* Before the tap, the whole page was reported at 21,093 px. Fully rendered it is 37,060 px.
+* When the tap scrolls the tool tabs into view, those sections are rendered at their real height.
+  This pushes the footer, which was in view at the top of the screen, out of view. That is the
+  0.28 shift.
+* Production has the same rule and the same 0.282. The cause was never the ROI module's late
+  arrival.
+
+**Experiments.** I ran the coordinator's `roi-shift-diag.cjs` against preview 88197c93, adding
+scroll, history and mutation logging, plus a CSS override injected before the page loads. Same
+profile as the bench (390×844, 150 ms, 1.6 Mbps, CPU ×4, cold).
+
+| Run | CLS (no recent input) |
+|---|---|
+| Unmodified | 0.2796 |
+| A: `content-visibility: visible` on every section | 0.0000 ×2 |
+| B: `visible` only on the tools section and the section between it and the footer | 0.0000 ×2 |
+
+**Fix (B).** Both sections in `app/solar/page.tsx` carry `![content-visibility:visible]`.
+Tailwind generates `content-visibility: visible !important`; I confirmed this with the project's
+Tailwind CLI. The `!important` is needed because the global rule's selector
+`section:not(:first-child)` is more specific than a single class.
+
+* The rest of the page keeps the content-visibility optimisation.
+* The shared `globals.css` is not changed.
+* The one-screen panel container (1b) and the per-panel reservation (1) stay. They hold the space
+  while a tool downloads, once the sections are rendered at their real height.
+
+Test: `solar-tool-panels-ssr.test.tsx` asserts that the global rule is still present and that, in
+the server HTML, the tools section and every section between the tab bar and the footer carry the
+opt-out.
+
+Limitation: another page whose sections sit below the viewport with tall real content has the same
+500 px estimate on phones. That is a site-wide CSS question for the owner of `globals.css`, outside
+the Solar hub.
+
 ## 2. Accessibility (axe on /solar)
 
 | axe finding | Where | Change |
