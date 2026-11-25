@@ -101,15 +101,36 @@ export default function AnalyticsTracker() {
     }
 
     // Fire the pageview off the critical path.
-    idle(() => {
-      if (document.hidden) return;
-      send({
-        t: 'pageview',
-        p: pathname,
-        h: location.hostname,
-        r: referrerHostname,
+    // Solar performance (2026-11-25): while an engineering tool is downloading
+    // (window.__eimsEngineeringBusy, incl. the page hold on /solar-genius-pro), wait,
+    // re-checking each second, for at most 10 s. NOT LOST: if the visitor leaves
+    // before it is sent, it is sent on pagehide (sendBeacon survives unload).
+    // Pages without engineering tools: unchanged (busy is never set there).
+    let sent = false;
+    let seen = !document.hidden; // the page was visible at some point (background tabs are not counted, as before)
+    const onVisible = () => { if (!document.hidden) seen = true; };
+    const sendPageview = () => {
+      if (sent) return;
+      sent = true;
+      removeEventListener('pagehide', onLeave);
+      document.removeEventListener('visibilitychange', onVisible);
+      send({ t: 'pageview', p: pathname, h: location.hostname, r: referrerHostname });
+    };
+    const onLeave = () => { if (seen) sendPageview(); };
+    addEventListener('pagehide', onLeave);
+    document.addEventListener('visibilitychange', onVisible);
+    const startedAt = Date.now();
+    const whenToolReady = () => {
+      if (sent) return;
+      const busy = ((window as unknown as { __eimsEngineeringBusy?: number }).__eimsEngineeringBusy ?? 0) > 0;
+      if (busy && Date.now() - startedAt < 10_000) { setTimeout(whenToolReady, 1000); return; }
+      idle(() => {
+        if (sent) return;
+        if (document.hidden) { sent = true; removeEventListener('pagehide', onLeave); document.removeEventListener('visibilitychange', onVisible); return; } // unchanged rule: background tabs are not counted
+        sendPageview();
       });
-    });
+    };
+    whenToolReady();
 
     // (Re)start the presence heartbeat for the current path. Paused while the
     // tab is hidden; counted only toward live-visitor presence by the store.

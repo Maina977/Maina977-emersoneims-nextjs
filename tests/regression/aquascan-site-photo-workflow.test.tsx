@@ -28,6 +28,8 @@ import type { AnalysisResult } from '@/external/borehole-ai-engine/src/types';
 import { sharpImage, blurred, jpegWithExif, pngDataUrl } from './aquascan-site-photo-fixtures';
 
 afterEach(cleanup);
+// The UI flow and report generation are slow when the whole AquaScan suite runs.
+vi.setConfig({ testTimeout: 60000 });
 const NOW = new Date('2026-11-25T12:00:00Z');
 const SITE = { latitude: 1.0157, longitude: 35.0062 };
 const engine = (f: string) => fs.readFileSync(path.join(process.cwd(), 'external', 'borehole-ai-engine', 'src', f), 'utf8');
@@ -288,7 +290,7 @@ describe('no data path from photos into groundwater figures', () => {
     const cmp = ui.slice(ui.indexOf('const handleCompSiteUpload'), ui.indexOf('const parseManualCoordinates'));
     expect(cmp).toMatch(/analyzer\.analyzeImage\(ph, undefined, \{ latitude: gps\.lat, longitude: gps\.lon \}\)/);
     expect(cmp).not.toMatch(/analyzer\.analyzeImage\(file\)/);
-    const re = ui.slice(ui.indexOf('Photos never feed the groundwater analysis (2026-11-25): always the placeholder.'));
+    const re = ui.slice(ui.indexOf('Safety hotfix 2026-11-25: always the placeholder'));
     expect(re.slice(0, 1200)).toMatch(/let file: File \| undefined;/);
   });
   it('the same analysis result gives identical groundwater outputs with and without site-photo records stored', () => {

@@ -70,9 +70,21 @@ export const metadata: Metadata = {
   category: 'engineering',
 };
 
+/*
+ * TOOL HOLD (Solar performance, 2026-11-25). On the workspace page only, the
+ * first HTML marks "engineering busy" so the deferred gtag loader, the
+ * first-party pageview and the menu prefetches wait for the workspace code
+ * instead of competing with it. lib/loading/resilientImport.ts ends the hold
+ * when the first workspace download settles, or after 10 s at most; nothing is
+ * dropped (pageview: see components/AnalyticsTracker.tsx). Sub-pages are left
+ * unchanged. Plain inline script: executes once while the HTML is parsed.
+ */
+const TOOL_HOLD = "if(location.pathname==='/solar-genius-pro'){window.__eimsToolHold=1;window.__eimsEngineeringBusy=Math.max(1,window.__eimsEngineeringBusy|0);}";
+
 export default function SolarGeniusProLayout({ children }: { children: ReactNode }) {
   return (
     <>
+      <script id="eims-tool-hold" dangerouslySetInnerHTML={{ __html: TOOL_HOLD }} />
       <FlagshipProductSchema
         name="Solar Genius Pro"
         url={URL}

@@ -23,8 +23,19 @@
 
 import { ToolLoadingState } from '@/components/tools/ToolAppShell';
 import { resilient } from '@/lib/loading/ResilientModule';
+import { trackEngineeringDownload } from '@/lib/loading/resilientImport';
+import { PAGE_LOADERS, pageForHash } from './crc/src/routes';
 
 export { importWithRetry, SLOW_NOTE_AFTER_MS } from '@/lib/loading/resilientImport';
+
+// Solar performance (2026-11-25): the workspace shell no longer contains every
+// page. The page for the current #/route starts downloading HERE, at the same
+// moment as the shell below, so the visitor's screen arrives in one wave. App.tsx
+// reuses the same download (React.lazy over the same loader). A failure is not
+// surfaced here: the page's own loader retries it when App renders it.
+if (typeof window !== 'undefined') {
+  trackEngineeringDownload(PAGE_LOADERS[pageForHash(window.location.hash)]()).catch(() => { /* retried on render */ });
+}
 
 const SolarApp = resilient(() => import('./crc/src/App'), {
   name: 'Solar Genius Pro',

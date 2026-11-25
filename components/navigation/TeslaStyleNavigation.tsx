@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEngineeringIdle } from '@/lib/loading/resilientImport';
 import Image from 'next/image';
 import { SERVICE_ACTIONS } from '@/lib/serviceConnect/actions';
 import { MORE_WIDTH, PREDICTED_ITEM_CLASS, PREDICTED_MORE_CLASS, fitNavItems } from './priorityPlus';
@@ -391,6 +393,14 @@ const NAV_ITEMS = [
 function TeslaStyleNavigationInner({
   activeSection = 'hero',
 }: TeslaStyleNavigationProps) {
+  // Solar performance (2026-11-25): on Solar pages, menu-link prefetches wait
+  // while the tool's code is downloading (or the page hold is active), then run
+  // as before. Measured: 3-4 prefetches (/, /contact, /industries) started at the
+  // same moment as the workspace download and stalled with it. Other pages: unchanged.
+  const pathname = usePathname();
+  const engineeringIdle = useEngineeringIdle();
+  const holdPrefetch = (pathname?.startsWith('/solar') ?? false) && !engineeringIdle;
+  const pf = (href: string) => !holdPrefetch && prefetchForHref(href);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeMega, setActiveMega] = useState<string | null>(null);
@@ -567,6 +577,7 @@ function TeslaStyleNavigationInner({
             {/* Logo — slim, professional */}
             <Link
               href="/"
+              prefetch={holdPrefetch ? false : undefined}
               aria-label="Emerson EiMS — Reliable Power. Without Limits."
               className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-md"
             >
@@ -637,7 +648,7 @@ function TeslaStyleNavigationInner({
                   >
                   <Link
                     href={item.href!}
-                    prefetch={prefetchForHref(item.href!)}
+                    prefetch={pf(item.href!)}
                     className="px-3 xl:px-4 py-2 text-xs xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 whitespace-nowrap rounded-md text-white/75 hover:text-white"
                   >
                     {item.label}
@@ -683,7 +694,7 @@ function TeslaStyleNavigationInner({
                             <Link
                               key={over.href}
                               href={over.href!}
-                              prefetch={prefetchForHref(over.href!)}
+                              prefetch={pf(over.href!)}
                               onClick={() => setOverflowOpen(false)}
                               className="block px-4 py-2.5 text-[12px] font-semibold tracking-[0.08em] uppercase text-white/75 hover:text-white hover:bg-white/5 transition-colors"
                             >
@@ -721,7 +732,7 @@ function TeslaStyleNavigationInner({
               <div ref={tailRef} className="ml-2 pl-3 flex items-center gap-3 border-l border-white/10">
                 <Link
                   href="/contact?type=quote"
-                  prefetch={prefetchForHref('/contact')}
+                  prefetch={pf('/contact')}
                   className="px-4 py-2 text-xs xl:text-[12px] font-bold tracking-[0.08em] uppercase rounded-md bg-amber-500 text-black hover:bg-amber-400 transition-colors duration-200 whitespace-nowrap"
                 >
                   Get Quote
@@ -791,7 +802,7 @@ function TeslaStyleNavigationInner({
                               <li key={item.href}>
                                 <Link
                                   href={item.href}
-                                  prefetch={prefetchForHref(item.href)}
+                                  prefetch={pf(item.href)}
                                   className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-300"
                                   onClick={() => setActiveMega(null)}
                                 >
@@ -898,7 +909,7 @@ function TeslaStyleNavigationInner({
                                     <Link
                                       key={subItem.href}
                                       href={subItem.href}
-                                      prefetch={prefetchForHref(subItem.href)}
+                                      prefetch={pf(subItem.href)}
                                       onClick={() => setIsMenuOpen(false)}
                                       className="flex items-center gap-3 px-4 py-2.5 text-white/60 hover:text-white rounded-lg hover:bg-white/5 transition-all"
                                     >
@@ -915,7 +926,7 @@ function TeslaStyleNavigationInner({
                       <Link
                         key={item.href}
                         href={item.href!}
-                        prefetch={prefetchForHref(item.href!)}
+                        prefetch={pf(item.href!)}
                         onClick={() => setIsMenuOpen(false)}
                         className="block px-4 py-3 rounded-xl text-sm font-semibold tracking-wide uppercase text-white/80 hover:text-white hover:bg-white/5 transition-colors"
                       >

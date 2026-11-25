@@ -52,6 +52,7 @@ import { applyCalibrationCorrection } from './realTimeCalibration';
 import { assessDrillingRisk } from './riskDecisionEngine';
 import { calculateConfidenceWeighted } from './confidenceWeighting';
 import { optimizeMicroSite } from './microSitingOptimizer';
+import { SITE_LOCATION_NEEDED } from './locationPrecision';
 import { buildFieldPumpTestAnalysis, type SingleReadingObservation } from './pumpTestAnalyzer';
 import { buildFieldTimeSeriesAnalysis, type TimeSeriesAnalysis } from './pumpTestTimeSeries';
 import { siteEvidenceFrom } from './evidenceGate';
@@ -240,6 +241,9 @@ export interface ClientLocation {
   longitude?: number;
 }
 
+/** Neutral values for every pixel-derived image feature (review M3). */
+const NEUTRAL_PIXEL_FEATURES = { terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: undefined, vegetationScore: 0.3, waterProbability: 0.3, isReliableTerrainImage: false, predictions: [] };
+
 export class BoreholeAnalyzer {
   private imageDetector: ImageDetector;
   private siteLocator: SiteLocator;
@@ -282,7 +286,10 @@ export class BoreholeAnalyzer {
     // Coordinates-only run: the page sends a neutral grey placeholder. Its
     // "terrain" and "vegetation" are not evidence and must not vote
     // (2026-10-27 audit: it gave 66% at Garissa and Nakuru at 15% weight).
-    const noPhoto = imageFile?.name === '__aquascan-no-photo__.jpg';
+    // Safety hotfix 2026-11-25 (review M3): the ENGINE never lets image pixels vote, whatever it is
+    // given. Every run is treated as photo-free; only the image's EXIF metadata (camera GPS) is read.
+    const noPhoto = true;
+    void imageFile;
     // ERA5, the GRACE-FO proxy, NASA POWER and MODIS through the data relay
     // (retries + one-day cache), so every source answers and repeats.
     installReliableFetch();
@@ -296,6 +303,11 @@ export class BoreholeAnalyzer {
     let clientGeo: (NonNullable<Awaited<ReturnType<typeof geocodeLocationForm>>> & {
       constituency?: string; ward?: string; suburb?: string; placeType?: string;
     }) | null = null;
+    // Safety hotfix 2026-11-25 (review B2): a place name alone (country, county, town) is not a site;
+    // it is never geocoded to its centre and analysed. (The geocoding branch below is no longer reached.)
+    if (!(clientLocation?.latitude != null && clientLocation?.longitude != null) && clientLocation && Object.values(clientLocation).some(v => typeof v === 'string' && v.trim())) {
+      throw new Error(SITE_LOCATION_NEEDED);
+    }
     if (clientLocation?.latitude != null && clientLocation?.longitude != null) {
       // Direct coordinates — highest priority, skip geocoding entirely
       const lat = clientLocation.latitude;
@@ -422,17 +434,25 @@ export class BoreholeAnalyzer {
     // part, so the rest of the analysis keeps the values it needs. The neutral
     // object is the last resort, with those values filled in (audit 2026-10-31:
     // an empty one gave a total cost of NaN).
-    let features: any = await withLimit(this.imageDetector.analyzeImage(imageFile, hints, { skipModel: noPhoto }), 60000);
+    let features: any = await withLimit(this.imageDetector.analyzeImage(imageFile, hints, { skipModel: true }), 60000);
     if (!features) {
       console.warn('[Pipeline] Image analysis timed out (60s): retrying without the photo classifier');
       features = await withLimit(this.imageDetector.analyzeImage(imageFile, hints, { skipModel: true }), 20000);
     }
     if (!features) features = { ...{ metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {} }, vegetationScore: 0.3, waterProbability: 0.3, isReliableTerrainImage: false, locationMethod: 'none', locationContext: {}, gpsSource: 'none', predictions: [] };
+    // Review M3: every pixel-derived field is replaced by the same neutral values, so a real photo and
+    // the placeholder give identical groundwater figures at the same coordinates.
+    features = { ...features, ...NEUTRAL_PIXEL_FEATURES };
 
     // Merge coordinates: client location takes priority over image GPS
     const effectiveLat = clientGeo?.latitude ?? features.metadata?.gps?.latitude;
     const effectiveLon = clientGeo?.longitude ?? features.metadata?.gps?.longitude;
     const hasCoords = effectiveLat != null && effectiveLon != null;
+    // Safety hotfix 2026-11-25: no analysis without a real location. A position guessed from the
+    // photo's colours ('visual-estimate') or no position at all is refused with a reason.
+    if (!clientGeo && (!hasCoords || features.locationMethod === 'visual-estimate')) {
+      throw new Error('Location problem: AquaScan needs the site\u2019s coordinates (typed, searched or from the camera GPS). A photo cannot locate the site or show groundwater.');
+    }
     // Kenyan land only, whatever the entry point (typed, re-analysis, place
     // search or photo GPS) (2026-10-27 audit: Kampala, Lake Turkana and the
     // sea off Mombasa all got full results).
@@ -2659,7 +2679,7 @@ export class BoreholeAnalyzer {
         remoteSensing, fieldData, historicalData, boreholeRecords,
         gldasGroundwater, nearbyWells, demHydrology, ensembleResult,
         advancedRockMapping: advancedRockResult, rockClassification,
-        fractureAI, lineamentAnalysis, pixelAnalysis: features.pixelAnalysis,
+        fractureAI, lineamentAnalysis, pixelAnalysis: undefined,
         vegetationGWProxy, satelliteVegetation, nasaPowerMoisture,
         satelliteWaterAnalysis, globalSoilAnalysis,
         insarDeformation: insarResult, lithologyAnalysis, soil,
@@ -2685,10 +2705,12 @@ export class BoreholeAnalyzer {
       imageFingerprint: features.imageFingerprint,
       imageForensicId: features.imageForensicId,
       locationContext: features.locationContext,
-      pixelAnalysis: features.pixelAnalysis,
+      pixelAnalysis: undefined, // no photo pixel analysis is reported (review m8)
       isReliableTerrainImage: features.isReliableTerrainImage,
       resolvedLocation: features.resolvedLocation,
-      geoEstimate: features.geoEstimate,
+      // Management 2026-11-25: no photo-colour location candidates are reported (photos are not analysed);
+      // only the best estimate, which is the customer's own location, is kept.
+      geoEstimate: features.geoEstimate ? { ...features.geoEstimate, estimates: [] } : undefined,
       locationConfidence,
       remoteSensing,
       historicalData,
