@@ -113,7 +113,8 @@ describe('C. photo pixels never reach the groundwater analysis', () => {
   });
   it('the placeholder is the one the analyser treats as "no photo" (its pixels do not vote)', () => {
     expect(engine('index.tsx')).toMatch(/return blob \? new File\(\[blob\], NO_PHOTO_NAME/);
-    expect(engine('boreholeAnalyzer.ts')).toMatch(/const noPhoto = imageFile\?\.name === '__aquascan-no-photo__\.jpg';/);
+    // Review M3: the engine now treats EVERY run as photo-free (aquascan-photo-gate-engine.test.ts).
+    expect(engine('boreholeAnalyzer.ts')).toMatch(/const noPhoto = true;/);
   });
   it('same coordinates, two different photos: the analyser receives identical input (the placeholder) both times', async () => {
     // The page code path: both uploads become the same placeholder file name and bytes.
