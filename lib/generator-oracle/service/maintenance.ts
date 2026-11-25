@@ -338,14 +338,16 @@ export interface ReportSection { heading: string; lines: string[] }
 export function jobCardReportParts(card: JobCard, asset: Asset): { title: string; notices: string[]; sections: ReportSection[]; footer: string } {
   const list = (xs: string[], empty: string) => (xs.length ? xs.map((x) => `  - ${x}`) : [`  ${empty}`]);
   const flags = readingFlags(card.readings);
-  // Safety review F6: every STOP in the findings (with the label line that follows it) is
-  // repeated as the FIRST section of the report, before the asset and the work.
+  // Safety review F6: every STOP in the findings, with the lines that belong to it (its
+  // safeguard label and its "(Raised in …)" source line), is repeated as the FIRST section
+  // of the report, before the asset and the work.
   const fl = (card.findings || '').split(/\r?\n/);
   const stopLines: string[] = [];
+  const belongs = (l: string | undefined) => !!l && (/^This is a conservative software safeguard/.test(l) || /^\(Raised in the ".*" diagnosis of this session\.\)$/.test(l));
   fl.forEach((l, i) => {
     if (!/^STOP\b/.test(l)) return;
     stopLines.push(`  ${l}`);
-    if (fl[i + 1] && /^This is a conservative software safeguard/.test(fl[i + 1])) stopLines.push(`  ${fl[i + 1]}`);
+    for (let j = i + 1; belongs(fl[j]); j++) stopLines.push(`  ${fl[j]}`);
   });
   const safety: ReportSection[] = stopLines.length ? [{ heading: 'SAFETY — STOP (repeated from the findings below)', lines: stopLines }] : [];
   return {

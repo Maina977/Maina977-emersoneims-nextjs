@@ -11,7 +11,10 @@ import { answersFromRaw, type RawAnswers } from '@/lib/generator-oracle/diagnost
 import { recordToCardUpdate, sessionRecord } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
 import { publishedLimitFor } from '@/lib/generator-oracle/diagnostics/oemReferences';
 import { SCREEN_BUCKET, SCREEN_QUESTIONS } from '@/lib/generator-oracle/diagnostics/safetyScreen';
-import { openJobCard, jobCardReport, type Asset } from '@/lib/generator-oracle/service/maintenance';
+import { openJobCard, jobCardReport, jobCardReportParts, type Asset } from '@/lib/generator-oracle/service/maintenance';
+import { jobCardToPdf } from '@/lib/generator-oracle/service/jobCardPdf';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import type { FaultFamily } from '@/lib/generator-oracle/diagnostics/types';
 
 const screenAll = (over: Record<string, string> = {}) => ({ ...Object.fromEntries(SCREEN_QUESTIONS.map((q) => [q.id, 'no'])), ...over });
@@ -125,6 +128,32 @@ describe('R7: the exact protective wording on other tabs', () => {
     const i = rec.lines.indexOf(`STOP: ${UNCLASSIFIED_PROTECTIVE}`);
     expect(rec.lines.slice(i, i + 3)).toEqual([`STOP: ${UNCLASSIFIED_PROTECTIVE}`, SAFEGUARD_LABEL, '(Raised in the "Low oil pressure / oil starvation" diagnosis of this session.)']);
   });
+});
+
+describe('Final re-review MINOR: the SAFETY section at the top of the .txt and PDF carries the "(Raised in …)" line', () => {
+  it('a STOP from another family is repeated at the top with its label and its source line, in the .txt and the PDF', async () => {
+    const rec = sessionRecord(CHARGING, { 'low-oil-pressure': { oilPressure: '140', oemMinOilPressure: '150' } });
+    const card = { ...openJobCard({ id: 'J', assetId: 'A1', opened: '2026-11-25', reportedFault: 'x', technician: 'T' }), ...recordToCardUpdate({ findings: '', readings: [] }, rec) } as ReturnType<typeof openJobCard>;
+    const raised = '(Raised in the "Low oil pressure / oil starvation" diagnosis of this session.)';
+    const parts = jobCardReportParts(card, asset);
+    expect(parts.sections[0].heading).toMatch(/^SAFETY — STOP/);
+    const top = parts.sections[0].lines;
+    const i = top.indexOf(`  STOP: ${UNCLASSIFIED_PROTECTIVE}`);
+    expect(top.slice(i, i + 3)).toEqual([`  STOP: ${UNCLASSIFIED_PROTECTIVE}`, `  ${SAFEGUARD_LABEL}`, `  ${raised}`]);
+    const txt = jobCardReport(card, asset);
+    expect(txt.indexOf(raised)).toBeLessThan(txt.indexOf('\nASSET\n'));
+    // PDF: the same line appears before ASSET (pdfjs text extraction).
+    const LIBS = path.resolve('node_modules');
+    const pdfjs = await import(pathToFileURL(path.join(LIBS, 'pdfjs-dist/legacy/build/pdf.mjs')).href);
+    pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(path.join(LIBS, 'pdfjs-dist/legacy/build/pdf.worker.mjs')).href;
+    const doc = await pdfjs.getDocument({ data: jobCardToPdf(card, asset).slice() }).promise;
+    let text = '';
+    for (let p = 1; p <= doc.numPages; p++) text += (await (await doc.getPage(p)).getTextContent()).items.map((x: { str?: string }) => x.str ?? '').join(' ') + ' ';
+    const norm = text.replace(/\s+/g, ' ');
+    const iRaised = norm.indexOf('Raised in the "Low oil pressure / oil starvation" diagnosis of this session.');
+    expect(iRaised).toBeGreaterThan(-1);
+    expect(iRaised).toBeLessThan(norm.indexOf('ASSET'));
+  }, 60000);
 });
 
 describe('R8: earlier job-card records stay below a later STOP record, marked as made before it', () => {
