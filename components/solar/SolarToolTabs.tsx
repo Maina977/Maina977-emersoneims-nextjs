@@ -59,15 +59,18 @@ export default function SolarToolTabs<T extends string>({ tabs, active, onSelect
             e.preventDefault();
             onSelect(tab.id);
           }}
-          className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${
+          // Accessibility (2026-11-25): at least 44 px tall to tap; the open tab is
+          // amber with dark text (white on amber-500 is 2.1:1, below WCAG AA 4.5:1),
+          // and the badges are red-600 (white on red-500 is 3.8:1; on red-600 4.8:1).
+          className={`px-4 py-2 min-h-[44px] rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${
             active === tab.id
-              ? 'bg-amber-500 text-white'
+              ? 'bg-amber-500 text-slate-950'
               : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
           }`}
         >
-          {tab.icon} {tab.label}
+          <span aria-hidden="true">{tab.icon}</span> {tab.label}
           {tab.badge && (
-            <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs rounded-full">{tab.badge}</span>
+            <span className="px-1.5 py-0.5 bg-red-600 text-white text-xs rounded-full">{tab.badge}</span>
           )}
         </a>
       ))}
