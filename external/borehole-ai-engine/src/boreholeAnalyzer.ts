@@ -53,6 +53,7 @@ import { assessDrillingRisk } from './riskDecisionEngine';
 import { calculateConfidenceWeighted } from './confidenceWeighting';
 import { optimizeMicroSite } from './microSitingOptimizer';
 import { buildFieldPumpTestAnalysis, type SingleReadingObservation } from './pumpTestAnalyzer';
+import { buildFieldTimeSeriesAnalysis, type TimeSeriesAnalysis } from './pumpTestTimeSeries';
 import { siteEvidenceFrom } from './evidenceGate';
 import { analyzeLithologyLog, queryNearbyLithologyLogs, getRegionalLithologyInsight } from './lithologyLogger';
 import { interpretERTSurvey, type ERTDataPoint } from './ertInterpretation';
@@ -2390,6 +2391,7 @@ export class BoreholeAnalyzer {
     let pumpTestObservation: SingleReadingObservation | undefined;
     let pumpTestInsufficient: string | undefined;
     let pumpTestEvidenceRequired: readonly string[] | undefined;
+    let pumpTestTimeSeries: TimeSeriesAnalysis | undefined;
     let lithologyAnalysis: any;
     let ertInterpretation: any;
     let multiSourceAgreement: any;
@@ -2416,6 +2418,12 @@ export class BoreholeAnalyzer {
       pumpTestObservation = pumpTestOutcome.observation;
       pumpTestInsufficient = pumpTestOutcome.insufficientEvidence;
       pumpTestEvidenceRequired = pumpTestOutcome.required;
+      // Time series (2026-11-25): timed readings are analysed by Theis, Cooper-Jacob and
+      // Theis recovery (pumpTestTimeSeries.ts). The single-reading observation above
+      // describes ONE rate and ONE drawdown, so it is not shown for a time series; the
+      // time-series result carries its own INSUFFICIENT EVIDENCE when the record is not enough.
+      pumpTestTimeSeries = buildFieldTimeSeriesAnalysis(fieldData?.pumpTest);
+      if (pumpTestTimeSeries) { pumpTestObservation = undefined; pumpTestInsufficient = undefined; pumpTestEvidenceRequired = undefined; }
 
       // 2. Lithology Analysis — query nearby lithology logs
       if (hasCoords) {
@@ -2831,6 +2839,7 @@ export class BoreholeAnalyzer {
       pumpTestObservation,
       pumpTestInsufficient,
       pumpTestEvidenceRequired,
+      pumpTestTimeSeries,
       lithologyAnalysis: lithologyAnalysis ?? undefined,
       ertInterpretation: ertInterpretation ?? undefined,
       multiSourceAgreement: multiSourceAgreement ?? undefined,

@@ -1,0 +1,43 @@
+# AquaScan Pro: source register (pumping-test analysis and regional context)
+
+Compiled 2026-11-25 on branch `ws/aquascan-pumptest-timeseries` from public sources. Each entry gives its status:
+
+- **USED**: it underpins code or tests;
+- **CITED**: a method reference stated in the output, not reproduced numerically;
+- **CONTEXT**: regional background only. It never becomes a site value;
+- **NOT REPRODUCED**: considered as an independent test, but its data and answers could not be verified verbatim.
+
+Summaries are attributed, not quoted, unless marked.
+
+## A. Pumping-test methods
+
+| # | Source | Use in AquaScan | Status |
+|---|---|---|---|
+| A1 | Theis, C.V. (1935). The relation between the lowering of the piezometric surface and the rate and duration of discharge of a well using ground-water storage. *Trans. AGU* 16(2): 519–524. doi:10.1029/TR016i002p00519. USGS reprint (Ground Water Notes 5, 1952, notation slightly changed): https://water.usgs.gov/ogw/pubs/Theis-1935.pdf | The non-equilibrium equation s = Q W(u)/(4πT); the full-curve fit and recovery method | USED (formula) / CITED |
+| A2 | Cooper, H.H. and Jacob, C.E. (1946). A generalized graphical method for evaluating formation constants and summarizing well-field history. *Trans. AGU* 27(4): 526–534. doi:10.1029/TR027i004p00526. USGS record: https://www.usgs.gov/publications/a-generalized-graphical-method-evaluating-formation-constants-and-summarizing-well | The straight-line method, T = 2.303Q/(4πΔs), S = 2.25Tt₀/r², with the u < 0.01 condition | USED (formula) / CITED |
+| A3 | Kruseman, G.P. and de Ridder, N.A., with Verweij, J.M. (1990; often dated 1994). *Analysis and Evaluation of Pumping Test Data*, 2nd ed. ILRI Publication 47, Wageningen, 377 p. ISBN 9789070754204. WUR record: https://research.wur.nl/en/publications/analysis-and-evaluation-of-pumping-test-data-2/. Public scan (EU JRC AquaKnow): https://aquaknow.jrc.ec.europa.eu/sites/default/files/Kruseman%20-%201994%20-%20Analysis%20and%20evaluation%20of%20pumping%20test%20data.pdf | Standard practice for assumptions, validity conditions, recovery and segment selection (Ch. 3). The Oude Korendijk example would be the obvious published test | CITED; example **NOT REPRODUCED**: the scan is image-only (JBIG2) and could not be read verbatim here |
+| A4 | Ferris, J.G., Knowles, D.B., Brown, R.H. and Stallman, R.W. (1962). *Theory of Aquifer Tests*. USGS Water-Supply Paper 1536-E, 105 p. https://pubs.usgs.gov/publication/wsp1536E | Background: limits of applicability, variable discharge and image-well theory (the barrier-boundary benchmark uses an image well) | CITED |
+| A5 | Lohman, S.W. (1972). *Ground-Water Hydraulics*. USGS Professional Paper 708, 70 p. doi:10.3133/pp708. https://pubs.usgs.gov/publication/pp708 | A candidate for published worked examples | NOT REPRODUCED (not transcribed in this increment) |
+| A6 | Abramowitz, M. and Stegun, I.A. (eds) (1964). *Handbook of Mathematical Functions*, NBS Applied Mathematics Series 55, §5.1, eqs 5.1.53 and 5.1.56 | The independent E₁(u) used to build the synthetic test data. The tests check it against scipy | USED (tests) |
+| A7 | SciPy `scipy.special.exp1` | Reference W(u) values (`tests/fixtures/pumptest-benchmark.json`) | USED (tests) |
+| A8 | Bakker, M. TTim 0.8, analytic-element transient model, MIT licence | Independent synthetic confined-aquifer tests with known T and S (`scripts/benchmarks/pumptest_benchmark.py`) | USED (tests) |
+| A9 | Hantush, M.S. (1964). Hydraulics of wells. *Advances in Hydroscience* 1: 281–432. Bierschenk, W.H. (1963). Determining well efficiency by multiple step-drawdown tests. IASH Publ. 64: 493–507 | Step-drawdown well-loss analysis (s = BQ + CQ²). **Not implemented** in this increment (limitation L3) | CITED (future work) |
+| A10 | ICRC (2011). *Technical Review: Practical Guidelines for Test Pumping in Water Wells* (R. Boak). https://www.icrc.org/en/doc/assets/files/publications/icrc-002-4033.pdf | Field practice for constant-rate and recovery tests and standard forms. Informs the evidence package | CITED |
+
+## B. Kenya regulatory and regional context (never a site value)
+
+| # | Source | What it says (summarised, with attribution) | Use | Status |
+|---|---|---|---|---|
+| B1 | Barasa, M., Crane, E., Upton, K., Ó Dochartaigh, B. and Bellwood-Howard, I. (2018). *Hydrogeology of Kenya*. Africa Groundwater Atlas, British Geological Survey. https://earthwise.bgs.ac.uk/index.php/Hydrogeology_of_Kenya | Four aquifer settings: unconsolidated sedimentary, volcanic, mixed sedimentary and basement. It quotes transmissivity of 120–600 m²/d for the Tiwi aquifer, a median of 275 m²/d for Merti, about 7.5–7.6 m³/h average yield in volcanic rocks, and about 4.4 m³/h in basement | Context only. It must not be shown as a value for a site. The time-series analysis uses only the entered test record | CONTEXT |
+| B2 | BGS Africa Groundwater Atlas country maps (aquifer type and productivity, 1:5 M; User Guide BGS OR/21/063). https://www2.bgs.ac.uk/africaGroundwaterAtlas/downloadGIS.html | Productivity classes based on borehole yields, from Very Low (< 0.1 l/s) to Very High (> 20 l/s). Described as largely qualitative at this map scale | Already shown as the "regional groundwater" card (`evidenceCards.ts`), labelled regional | CONTEXT |
+| B3 | MacDonald, A.M. et al. (2012). Quantitative maps of groundwater resources in Africa. *Environ. Res. Lett.* 7 024009 | 5 km grid of depth to groundwater, storage and productivity | Existing regional card | CONTEXT |
+| B4 | Kenya: The Water (Water Resources Management) Rules, 2021, L.N. 43 of 2021. https://new.kenyalaw.org/akn/ke/act/ln/2021/43/eng@2022-12-31 | Contains provisions on borehole and well test pumping, supervision of works, and the borehole or well completion record (section headings found; **the full text was not reviewed** in this increment) | The evidence package asks for the WRA completion record and the test-pumping record | CITED (headings only) |
+| B5 | Mumma, A. et al. (2011). *Kenya Groundwater Governance Case Study*. World Bank (cited by B1) | Groundwater governance context | Background | CONTEXT (not opened) |
+| B6 | Oord, A. et al. (2014). *Hydrogeological Assessment of the Merti Aquifer, Kenya* (cited by B1) | Regional aquifer study | Background | CONTEXT (not opened) |
+
+## C. Rules for using these sources
+
+1. **Regional information never becomes a site prediction.** No drilling depth, sustainable yield, aquifer parameter or water-quality value comes from B1–B6. The evidence gate (`evidenceGate.ts`) is unchanged.
+2. **A published example is used as a test only after verbatim reproduction.** The stated data and answers must be transcribed from the source, with page and tolerance recorded. None is yet (A3, A5).
+3. **Synthetic is labelled synthetic.** The TTim and A&S-built data test the code's correctness. They are not field validation.
+4. **Each output row carries its evidence class:** [Measured], [Modelled estimate], [Planning estimate, assumptions stated], [Not supported] or [Reference].

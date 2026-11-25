@@ -67,6 +67,8 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   if (g0.citations.yield) evRowsField.push(['Yield', 'from field evidence', g0.citations.yield]);
   if (fd.labWaterAnalysis) evRowsField.push(['Water quality', 'laboratory', `${labSourceLabel(fd.labWaterAnalysis)} ${provenanceText(fd.labWaterAnalysis.provenance)}`]);
   if (evRowsField.length) sections.push({ title: 'Field evidence entered', rows: evRowsField });
+  // 1c. Time-series pumping-test analysis (2026-11-25): the same rows as the Pump Test tab.
+  if (r.pumpTestTimeSeries?.rows?.length) sections.push({ title: 'Pumping test analysis (time series)', rows: r.pumpTestTimeSeries.rows as Row[] });
 
   // 2. Water quality: measured where nearby boreholes were tested, otherwise
   //    a regional estimate; parameters with no basis need a laboratory test.

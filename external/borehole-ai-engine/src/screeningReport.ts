@@ -17,6 +17,7 @@ import { Document, Packer, Paragraph, HeadingLevel, TextRun } from 'docx';
 import type { AnalysisResult } from './types';
 import { evidenceGate, provenanceText } from './evidenceGate';
 import { finalVerdict, labSourceLabel } from './verdict';
+import { timeSeriesRowText } from './pumpTestTimeSeries';
 
 export const SCREENING_REPORT_VERSION = 'aquascan-screening-report 1.0.0 (2026-11-20)';
 
@@ -46,6 +47,8 @@ export function screeningContent(result: AnalysisResult, when = new Date()): Scr
       // Field evidence entered so far, cited with its source (2026-11-22).
       ...(g.citations.depth ? [`Geophysical survey entered: ${g.citations.depth}.`] : []),
       ...(g.citations.yield ? [`Pumping test entered: ${g.citations.yield}.`] : []),
+      // Time-series analysis (2026-11-25): the same rows as the Pump Test tab, one per line.
+      ...((result.pumpTestTimeSeries?.rows ?? []).map(timeSeriesRowText)),
       ...(result.fieldData?.labWaterAnalysis ? [`Laboratory analysis entered: ${labSourceLabel(result.fieldData.labWaterAnalysis)} ${provenanceText(result.fieldData.labWaterAnalysis.provenance)}.`] : []),
       'Location and terrain context from public elevation and map data.',
       'Regional climate and recharge context from public climate data.',

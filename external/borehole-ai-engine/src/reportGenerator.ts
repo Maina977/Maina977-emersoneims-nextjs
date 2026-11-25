@@ -1458,6 +1458,24 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     });
     y = lastY(6);
 
+    // Time-series pumping-test analysis (2026-11-25): the same rows as the Pump Test tab.
+    if (result.pumpTestTimeSeries?.rows?.length) {
+      checkSpace(30);
+      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+      doc.text('PUMPING TEST ANALYSIS (TIME SERIES)', margin, y); y += 3;
+      autoTable(doc, {
+        startY: y,
+        head: [['Item', 'Value', 'Basis']],
+        body: result.pumpTestTimeSeries.rows.map((r) => [r[0], r[1], r[2]]),
+        headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+        bodyStyles: { fontSize: 6.5 },
+        columnStyles: { 0: { cellWidth: 38 }, 1: { cellWidth: 38 } },
+        margin: { left: margin, right: margin },
+        theme: 'grid',
+      });
+      y = lastY(6);
+    }
+
     doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
     doc.text('INVESTMENT AT A GLANCE', margin, y); y += 3;
     autoTable(doc, {
@@ -8066,7 +8084,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     ['49', 'Risk Decision Engine', result.riskDecision ? 'COMPLETED' : 'SKIPPED', 'Probabilistic risk breakdown, financial scenarios, decision recommendation'],
     ['50', 'Confidence Weighting', result.confidenceWeighted ? 'COMPLETED' : 'SKIPPED', 'Data quality?weighted predictions with uncertainty bounds'],
     ['51', 'Micro-Siting Optimizer', result.microSiting ? 'COMPLETED' : 'SKIPPED', 'GPS-precise drilling point, confidence radius, terrain/fracture scoring'],
-    ['52', 'Pump Test Analysis', result.pumpTestObservation ? 'INSUFFICIENT EVIDENCE' : !result.pumpTestAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldPumpTest ? 'COMPLETED' : 'MODELLED'), 'Theis/Cooper-Jacob analytical pump test interpretation'],
+    ['52', 'Pump Test Analysis', result.pumpTestObservation ? 'INSUFFICIENT EVIDENCE' : result.pumpTestTimeSeries ? (result.pumpTestTimeSeries.status === 'analysed' ? 'COMPLETED (time series)' : 'INSUFFICIENT EVIDENCE') : !result.pumpTestAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldPumpTest ? 'COMPLETED' : 'MODELLED'), 'Theis/Cooper-Jacob analytical pump test interpretation'],
     ['53', 'Lithology Analysis', !result.lithologyAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldERT ? 'COMPLETED' : 'MODELLED'), 'Stratigraphic logging, water strikes, casing design, fracture density'],
     ['54', 'ERT Interpretation', !result.ertInterpretation ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldERT ? 'COMPLETED' : 'MODELLED'), 'Resistivity inversion, aquifer target extraction, saline intrusion check'],
     ['55', 'Multi-Source Agreement', result.multiSourceAgreement ? 'COMPLETED' : 'SKIPPED', 'Cross-validation of all data sources, conflict resolution, consensus'],
@@ -10973,6 +10991,8 @@ export function jsonReportData(result: AnalysisResult): Record<string, unknown> 
       screening: screeningContent(result),
       siteEvidence: result.siteEvidence ?? { depth: false, yield: false, methods: [] },
       fieldData: result.fieldData ?? null,
+      // Time-series pumping-test analysis (2026-11-25), as on the Pump Test tab.
+      ...(result.pumpTestTimeSeries ? { pumpTestTimeSeries: result.pumpTestTimeSeries } : {}),
     });
   }
   const eco = computeCanonicalEconomics(result);

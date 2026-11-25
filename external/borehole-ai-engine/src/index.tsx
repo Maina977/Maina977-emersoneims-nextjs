@@ -31,6 +31,7 @@ import { invertVES, type VESInversionResult, type VESDataPoint } from './vesInve
 import { installReliableFetch } from './reliableFetch';
 import EvidenceCards from './EvidenceCardsView';
 import { FieldEvidencePanel } from './FieldEvidencePanel';
+import { PumpTestTimeSeriesView } from './PumpTestTimeSeriesView';
 // Pre-checks (Kenya land/water, elevation) use the same relay as the analysis.
 if (typeof window !== 'undefined') installReliableFetch();
 // NOTE: styles.css is deliberately NOT imported here. This module is loaded
@@ -6470,7 +6471,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <h4 className="tab-title">{'\u{1F4A7}'} Pump Test Analysis</h4>
               <p className="tab-desc">What the entered pumping-test data supports. Aquifer parameters and yields need a full time-drawdown record; one reading gives the specific capacity only.</p>
               {/* Safety correction 2026-11-25: one rate + one drawdown → specific capacity only, INSUFFICIENT EVIDENCE for the rest. */}
-              {result.pumpTestObservation ? (
+              {/* Time series 2026-11-25: Theis / Cooper-Jacob / Theis recovery from timed readings (pumpTestTimeSeries.ts). */}
+              {result.pumpTestTimeSeries ? (
+                <PumpTestTimeSeriesView a={result.pumpTestTimeSeries} />
+              ) : result.pumpTestObservation ? (
                 <div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:8,marginBottom:12}}>
                     <div className="result-item"><span className="rl">Pumping rate (tested)</span><span className="rv">{result.pumpTestObservation.pumpingRate_m3hr} m³/h</span></div>
@@ -8216,7 +8220,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     { level: '+ Regional calibration', accuracy: 'MODELLED', status: !!result.regionalModel, color: '#38bdf8' },
                     { level: `+ Nearby borehole records (${result.nearbyWells?.sampleSize ?? 0} wells)`, accuracy: 'OBSERVED nearby', status: !!result.nearbyWells?.sampleSize, color: '#06b6d4' },
                     { level: '+ ERT/geophysics survey at the site', accuracy: 'OBSERVED at site', status: !!result.ertInterpretation, color: '#8b5cf6' },
-                    { level: '+ Pump Test', accuracy: 'OBSERVED at site', status: !!((result.pumpTestAnalysis || result.pumpTestObservation) && result.fieldData?.pumpTest), color: '#16a34a' },
+                    { level: '+ Pump Test', accuracy: 'OBSERVED at site', status: !!((result.pumpTestAnalysis || result.pumpTestObservation) && result.fieldData?.pumpTest) || !!(result.pumpTestTimeSeries && result.fieldData?.pumpTest?.timeSeries), color: '#16a34a' },
                     { level: '+ 50+ recorded local drilling outcomes', accuracy: 'needed to measure accuracy', status: (result.drillingPrediction?.trainingOutcomes||0) >= 50, color: '#16a34a' },
                   ].map((step, i) => (
                     <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'6px 0',borderBottom:'1px solid rgba(255,255,255,0.05)'}}>
