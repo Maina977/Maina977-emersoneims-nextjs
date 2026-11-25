@@ -3,7 +3,9 @@
 Usage: python build_kenya_water.py <data dir> <output kenyaWater.ts>
 <data dir> holds: kelakes_bb.json (Overpass, kenya_water_overpass_names.overpassql: names + bounding boxes),
 kelakes_geom.json (Overpass, kenya_water_overpass_geom.overpassql: geometry of the selected ids) and
-ne_10m_land.geojson (https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_10m_land.geojson).
+ne_10m_land.geojson (https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_10m_land.geojson),
+and kelakes_extra.json (Overpass, kenya_water_overpass_extra.overpassql: Ndakaini and Turkwel Gorge,
+added for the re-review of f89698e8, MINOR).
 Built 2026-11-25 (re-review of 126efdbc, M-2).
 """
 import json, sys, math
@@ -108,6 +110,45 @@ for e in g['elements']:
     if out:
         water.append({'name': name, 'kind': t.get('water', 'lake'), 'osm': f"{e['type']}/{e['id']}", 'rings': out})
 
+# Re-review of f89698e8 (MINOR): two reservoirs the first selection missed.
+# - Ndakaini Dam: OSM way 1119327511, tagged landuse=reservoir (not natural=water), taken whole.
+# - Turkwel Gorge reservoir: OSM maps the impoundment as part of the Turkwel river area polygons
+#   (natural=water, water=river). Those polygons are clipped to the impoundment, which is the
+#   wide section at 1.795-1.918 N, 35.20-35.49 E (16-29 km across, against 0.2-2 km for the river
+#   channel up- and downstream). Each source polygon is its own body, so overlapping polygons never
+#   cancel out under the even-odd test.
+TURKWEL_BOX = (35.20, 1.795, 35.49, 1.918)
+xg = json.load(open(D + '/kelakes_extra.json', encoding='utf-8'))
+for e in xg['elements']:
+    t = e.get('tags', {})
+    if e['type'] == 'way' and e['id'] == 1119327511:
+        r = [(n['lon'], n['lat']) for n in e['geometry']]
+        s2 = simplify_ring([list(p) for p in r], TOL)
+        if s2: water.append({'name': 'Ndakaini Dam', 'kind': 'reservoir', 'osm': 'way/1119327511', 'rings': [[[round(x, 4), round(y, 4)] for x, y in s2]]})
+        continue
+    if t.get('natural') != 'water' or t.get('water') != 'river': continue
+    if e['type'] == 'way':
+        rings = [[(n['lon'], n['lat']) for n in e['geometry']]]
+        if rings[0][0] != rings[0][-1]: continue
+    else:
+        outer = [[(n['lon'], n['lat']) for n in m['geometry']] for m in e['members'] if m['type'] == 'way' and m.get('role') in ('outer', '') and 'geometry' in m]
+        inner = [[(n['lon'], n['lat']) for n in m['geometry']] for m in e['members'] if m['type'] == 'way' and m.get('role') == 'inner' and 'geometry' in m]
+        rings = assemble(outer) + assemble(inner)
+    out = []
+    for r in rings:
+        r = [list(p) for p in r]
+        xs = [p[0] for p in r]; ys = [p[1] for p in r]
+        if max(xs) < TURKWEL_BOX[0] or min(xs) > TURKWEL_BOX[2] or max(ys) < TURKWEL_BOX[1] or min(ys) > TURKWEL_BOX[3]: continue
+        r = clip(r, *TURKWEL_BOX)
+        if len(r) < 4: continue
+        s2 = simplify_ring(r, TOL)
+        if not s2: continue
+        a = abs(sum(s2[i][0] * s2[i - 1][1] - s2[i - 1][0] * s2[i][1] for i in range(len(s2)))) / 2 * 12321
+        if a < 0.3: continue
+        out.append([[round(x, 4), round(y, 4)] for x, y in s2])
+    if out:
+        water.append({'name': 'Turkwel Gorge Reservoir', 'kind': 'reservoir', 'osm': f"{e['type']}/{e['id']} (water=river, clipped to the impoundment)", 'rings': out})
+
 # Natural Earth 10 m land, clipped to the Kenyan coast
 COAST = (38.9, -4.85, 41.9, -1.45)
 land = []
@@ -139,6 +180,8 @@ with open(OUT, 'w', encoding='utf-8', newline='\n') as fh:
  *   the Overpass API on 2026-11-25. (c) OpenStreetMap contributors, Open Database Licence (ODbL) 1.0,
  *   https://www.openstreetmap.org/copyright . Lake Victoria is clipped to the Kenyan part.
  *   Simplified (Douglas-Peucker, 0.0012 deg ~ 130 m); islands and holes under ~0.3 km2 dropped.
+ *   Added 2026-11-25 (same licence): Ndakaini Dam (way 1119327511, landuse=reservoir) and the
+ *   Turkwel Gorge reservoir (the Turkwel river area polygons clipped to the impoundment).
  * - COAST: Natural Earth 10 m land polygons (public domain, https://www.naturalearthdata.com/about/terms-of-use/),
  *   clipped to the Kenyan coast 38.9..41.9 E, 4.85..1.45 S and simplified (0.002 deg ~ 220 m).
  * Coordinates are [lon, lat].
