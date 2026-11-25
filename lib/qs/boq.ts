@@ -7,21 +7,27 @@
  * never presented as the total. Each amount is computed once, in one place.
  */
 import type { Quantity } from './takeoff';
+import { computeBuildUp, roundMoney, TIER_LABELS, TIER_SHORT, type BuildUp, type BuildUpResult, type PriceTier } from './rateBuildUp';
 
-export const BOQ_ENGINE_VERSION = 'qs-boq 1.0.0 (2026-11-14)';
+export const BOQ_ENGINE_VERSION = 'qs-boq 1.1.0 (2026-11-25: rate build-ups, price status)';
 
 export type RateKind = 'rate-library' | 'supplier-quote' | 'other';
 export const RATE_KIND_LABELS: Record<RateKind, string> = { 'rate-library': 'Rate library', 'supplier-quote': 'Supplier quote', other: 'Other source' };
-export interface Rate { value: number; currency: 'KES'; source: string; date: string; location: string; kind: RateKind }
+/**
+ * `tier`: verified (approved EmersonEIMS rate / current supplier quotation) or
+ * indicative (dated public source). Not stated → treated as indicative, never
+ * as verified (lib/qs/rateBuildUp, price status rule).
+ */
+export interface Rate { value: number; currency: 'KES'; source: string; date: string; location: string; kind: RateKind; tier?: PriceTier }
 
 /**
  * A rate as typed in the BOQ table → Rate. Blank value → null ("rate required").
  * The kind is what the user chose; it is never defaulted, and an unchosen kind
  * is refused by buildBoq, so a supplier quote is never labelled a rate library.
  */
-export function rateFromInput(i: { value: string; kind: string; source: string; date: string; location: string }): Rate | null {
+export function rateFromInput(i: { value: string; kind: string; source: string; date: string; location: string; tier?: string }): Rate | null {
   if (i.value.trim() === '') return null;
-  return { value: Number(i.value), currency: 'KES', source: i.source.trim(), date: i.date.trim(), location: i.location.trim(), kind: i.kind as RateKind };
+  return { value: Number(i.value), currency: 'KES', source: i.source.trim(), date: i.date.trim(), location: i.location.trim(), kind: i.kind as RateKind, ...(i.tier ? { tier: i.tier as PriceTier } : {}) };
 }
 export interface BoqItem {
   code: string; section: string; trade: string; description: string;
@@ -31,6 +37,8 @@ export interface BoqItem {
   /** For reinforcement (kg/t) or items not measured on drawings: a quantity with its source document, never estimated. */
   scheduledQuantity?: { value: number; source: string };
   rate: Rate | null;
+  /** A unit-rate build-up (lib/qs/rateBuildUp) instead of a single rate: the rate is computed from it here. */
+  buildUp?: BuildUp;
 }
 export interface Adjustments {
   preliminaries: { kind: 'percent'; pct: number } | { kind: 'itemised'; items: Array<{ description: string; amount: number }> };
@@ -49,8 +57,24 @@ export interface BoqLine {
   code: string; section: string; description: string; unit: string;
   quantity: number; rate: number | null; amount: number | null;
   rateNote: string; quantitySource: string;
+  /** The rate build-up behind `rate`, when the item has one (shown per item and in both exports). */
+  buildUp?: BuildUpResult;
+  /** Price status of the line: verified, indicative (preliminary budget only) or unpriced (quotation required). */
+  tier: LineTier;
+  tierNote: string;
 }
+export type LineTier = PriceTier | 'unpriced';
+/** Measured works split by price status (before preliminaries, contingency, O&P and VAT). */
+export interface PriceStatus {
+  verified: number; indicative: number;
+  verifiedItems: string[]; indicativeItems: string[]; unpricedItems: string[];
+  /** True whenever any line is indicative or unpriced: the bill is a preliminary budget, never a quotation. */
+  preliminary: boolean;
+  notice: string | null;
+}
+export const PRELIMINARY_NOTICE = 'PRELIMINARY BUDGET — not a quotation. Contains indicative market rates and/or unpriced items; indicative rates are dated public reference prices, not EmersonEIMS selling prices.';
 export interface Boq {
+  priceStatus: PriceStatus;
   version: string; revision: string;
   lines: BoqLine[];
   sections: Array<{ section: string; subtotal: number | null; unpriced: number }>;
@@ -66,7 +90,8 @@ export interface Boq {
 }
 
 const UNIT_FOR: Record<Quantity['kind'], BoqItem['unit']> = { linear: 'm', area: 'm²', volume: 'm³', count: 'No' };
-const money = (x: number) => Math.round(x * 100) / 100;
+/** Same decimal half-up rounding as Excel's ROUND(x, 2) (see roundMoney). */
+const money = roundMoney;
 const qty = (x: number) => Math.round(x * 1000) / 1000;
 
 export function buildBoq(items: BoqItem[], quantities: Map<string, Quantity>, adj: Adjustments, revision: string, ruleQty?: Map<string, number>): Boq {
@@ -100,12 +125,42 @@ export function buildBoq(items: BoqItem[], quantities: Map<string, Quantity>, ad
     }
     quantity = qty(quantity);
     let rate: number | null = null, rateNote = 'rate required';
-    if (it.rate) {
+    let buildUp: BuildUpResult | undefined;
+    let tier: LineTier = 'unpriced', tierNote = TIER_SHORT.unpriced;
+    if (it.buildUp) {
+      if (it.rate) errors.push(`${it.code}: either a single rate or a rate build-up, not both`);
+      buildUp = computeBuildUp(it.buildUp, it.unit);
+      for (const e of buildUp.errors) errors.push(`${it.code}: ${e}`);
+      if (buildUp.rate !== null && !it.rate) { rate = buildUp.rate; rateNote = buildUp.basis; tier = buildUp.tier!; tierNote = TIER_LABELS[tier]; }
+      else if (buildUp.missing.length) rateNote = `rate required (build-up: ${buildUp.missing.join('; ')})`;
+    } else if (it.rate) {
       if (!(it.rate.value >= 0) || !it.rate.source || Number.isNaN(Date.parse(it.rate.date))) errors.push(`${it.code}: a rate needs a value, a source and a date`);
       else if (!Object.prototype.hasOwnProperty.call(RATE_KIND_LABELS, it.rate.kind)) errors.push(`${it.code}: choose where the rate comes from (rate library, supplier quote or other source)`);
-      else { rate = it.rate.value; rateNote = `${RATE_KIND_LABELS[it.rate.kind]}: ${it.rate.source}, ${it.rate.date}, ${it.rate.location}`; }
+      else if (it.rate.tier !== undefined && it.rate.tier !== 'verified' && it.rate.tier !== 'indicative') errors.push(`${it.code}: the price status must be verified or indicative`);
+      else if (it.rate.tier === 'verified' && it.rate.kind === 'other') errors.push(`${it.code}: a verified rate is an EmersonEIMS company rate (rate library) or a current supplier quotation, not "other source"`);
+      else {
+        rate = it.rate.value; rateNote = `${RATE_KIND_LABELS[it.rate.kind]}: ${it.rate.source}, ${it.rate.date}, ${it.rate.location}`;
+        // A rate whose status was not stated is never treated as verified.
+        tier = it.rate.tier ?? 'indicative';
+        tierNote = it.rate.tier ? TIER_LABELS[it.rate.tier] : `${TIER_LABELS.indicative} — status not stated, so treated as indicative`;
+      }
     }
-    lines.push({ code: it.code, section: it.section, description: it.description, unit: it.unit, quantity, rate, amount: rate === null ? null : money(quantity * rate), rateNote, quantitySource: src.join(' + ') });
+    if (rate === null) { tier = 'unpriced'; tierNote = TIER_SHORT.unpriced; }
+    lines.push({ code: it.code, section: it.section, description: it.description, unit: it.unit, quantity, rate, amount: rate === null ? null : money(quantity * rate), rateNote, quantitySource: src.join(' + '), tier, tierNote, ...(buildUp ? { buildUp } : {}) });
+  }
+  const byTier = (t: LineTier) => lines.filter((l) => l.tier === t);
+  const priceStatus: PriceStatus = {
+    verified: money(byTier('verified').reduce((a, l) => a + (l.amount ?? 0), 0)),
+    indicative: money(byTier('indicative').reduce((a, l) => a + (l.amount ?? 0), 0)),
+    verifiedItems: byTier('verified').map((l) => l.code), indicativeItems: byTier('indicative').map((l) => l.code), unpricedItems: byTier('unpriced').map((l) => l.code),
+    preliminary: lines.some((l) => l.tier !== 'verified'),
+    notice: null,
+  };
+  if (priceStatus.preliminary) priceStatus.notice = `${PRELIMINARY_NOTICE} Priced items at verified rates KES ${priceStatus.verified.toFixed(2)} (${priceStatus.verifiedItems.length} item(s)); at indicative market rates KES ${priceStatus.indicative.toFixed(2)} (${priceStatus.indicativeItems.length} item(s)); unpriced, quotation required: ${priceStatus.unpricedItems.length} item(s).`;
+  // Overheads & profit inside rate build-ups AND at bill level would be charged twice.
+  const ohpInBuildUps = items.filter((it) => it.buildUp && it.buildUp.ohpPct > 0).map((it) => it.code);
+  if (ohpInBuildUps.length && !(adj.notEntered ?? []).includes('overheads and profit') && adj.overheadsProfitPct > 0) {
+    errors.push(`Overheads & profit are in the rate build-ups of ${ohpInBuildUps.join(', ')} and also at bill level (${adj.overheadsProfitPct} %): charged twice. Enter 0 % at bill level, or 0 % in those build-ups`);
   }
 
   const sectionNames = [...new Set(lines.map((l) => l.section))];
@@ -139,7 +194,7 @@ export function buildBoq(items: BoqItem[], quantities: Map<string, Quantity>, ad
   ];
   const complete = !unpricedItems.length && !errors.length && !missing.length;
   if (!complete) {
-    return { version: BOQ_ENGINE_VERSION, revision, lines, sections, measuredWorks: null, preliminaries: null, contingency: null, overheadsProfit: null, subtotalBeforeVat: null, vat: null, grandTotal: null, pricedSubtotal, unpricedItems, basis, errors, missing };
+    return { version: BOQ_ENGINE_VERSION, revision, lines, sections, measuredWorks: null, preliminaries: null, contingency: null, overheadsProfit: null, subtotalBeforeVat: null, vat: null, grandTotal: null, pricedSubtotal, unpricedItems, basis, errors, missing, priceStatus };
   }
   const measuredWorks = money(sections.reduce((a, s) => a + (s.subtotal ?? 0), 0));
   const preliminaries = money(adj.preliminaries.kind === 'percent' ? measuredWorks * adj.preliminaries.pct / 100 : adj.preliminaries.items.reduce((a, i) => a + i.amount, 0));
@@ -147,7 +202,7 @@ export function buildBoq(items: BoqItem[], quantities: Map<string, Quantity>, ad
   const overheadsProfit = money((measuredWorks + preliminaries + contingency) * adj.overheadsProfitPct / 100);
   const subtotalBeforeVat = money(measuredWorks + preliminaries + contingency + overheadsProfit);
   const vat = money(subtotalBeforeVat * adj.vat.pct / 100);
-  return { version: BOQ_ENGINE_VERSION, revision, lines, sections, measuredWorks, preliminaries, contingency, overheadsProfit, subtotalBeforeVat, vat, grandTotal: money(subtotalBeforeVat + vat), pricedSubtotal, unpricedItems, basis, errors, missing };
+  return { version: BOQ_ENGINE_VERSION, revision, lines, sections, measuredWorks, preliminaries, contingency, overheadsProfit, subtotalBeforeVat, vat, grandTotal: money(subtotalBeforeVat + vat), pricedSubtotal, unpricedItems, basis, errors, missing, priceStatus };
 }
 
 /** Printed on every export: no reviewer is authenticated, so nothing produced here is approved, certified or issued. */

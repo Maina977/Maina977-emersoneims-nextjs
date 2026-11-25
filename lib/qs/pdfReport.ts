@@ -3,7 +3,8 @@
  * export: every figure printed here is the engine's value, so screen, Excel
  * and PDF totals are identical. Includes the quantity source (measurements or
  * the trade calculation trace), the rate source and date for every line, the
- * calculation basis and the engine versions.
+ * calculation basis and the engine versions, and every rate build-up
+ * (materials, labour, plant, O&P) behind a built-up rate.
  *
  * Every report is a DRAFT, not certified: no reviewer is authenticated here,
  * so the name in "prepared by" never certifies anything. An incomplete bill is
@@ -11,8 +12,9 @@
  * unpriced lines shows a "priced items only" subtotal, and there is no total.
  */
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { DRAFT_NOTICE, incompleteNotice, type Boq } from './boq';
+import autoTable, { type RowInput } from 'jspdf-autotable';
+import { DRAFT_NOTICE, PRELIMINARY_NOTICE, incompleteNotice, type Boq } from './boq';
+import { TIER_SHORT } from './rateBuildUp';
 
 const money = (x: number) => Math.round(x * 100) / 100;
 const kes = (x: number | null) => (x === null ? '—' : x.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
@@ -37,8 +39,13 @@ export function boqToPdf(boq: Boq, meta: { project: string; preparedBy: string; 
   doc.setFontSize(14); T(`DRAFT Bill of Quantities: ${meta.project}`, 14, 16);
   doc.setFontSize(9);
   T(`Revision ${boq.revision} · prepared by ${meta.preparedBy} · ${meta.date}`, 14, 22);
-  doc.setTextColor(180, 83, 9); T(DRAFT_NOTICE, 14, 27); doc.setTextColor(0, 0, 0);
+  doc.setTextColor(180, 83, 9); T(DRAFT_NOTICE, 14, 27);
   let y = 32;
+  if (boq.priceStatus.notice) {
+    const wrapped = doc.splitTextToSize(pdfSafe(boq.priceStatus.notice), 180) as string[];
+    doc.text(wrapped, 14, y); y += wrapped.length * 4 + 1;
+  }
+  doc.setTextColor(0, 0, 0);
   if (incomplete) {
     doc.setTextColor(185, 28, 28);
     for (const t of [incomplete, ...boq.errors.map((e) => `Error: ${e}`)]) {
@@ -55,7 +62,7 @@ export function boqToPdf(boq: Boq, meta: { project: string; preparedBy: string; 
       startY: y,
       head: [[pdfSafe(s.section), 'Unit', 'Quantity', 'Rate (KES)', 'Amount (KES)']],
       body: [
-        ...lines.map((l) => [pdfSafe(`${l.code}  ${l.description}\nQuantity: ${l.quantitySource}\nRate: ${l.rateNote}`), pdfSafe(l.unit), l.quantity.toLocaleString('en-KE', { maximumFractionDigits: 3 }), kes(l.rate), l.amount === null ? 'rate required' : kes(l.amount)]),
+        ...lines.map((l) => [pdfSafe(`${l.code}  ${l.description}\nQuantity: ${l.quantitySource}\nRate: ${l.rateNote}\nPrice status: ${l.tierNote}`), pdfSafe(l.unit), l.quantity.toLocaleString('en-KE', { maximumFractionDigits: 3 }), kes(l.rate), l.amount === null ? 'rate required' : kes(l.amount)]),
         s.unpriced
           ? [{ content: pdfSafe(`Subtotal: ${s.section} (priced items only — INCOMPLETE, ${s.unpriced} unpriced)`), colSpan: 4, styles: { fontStyle: 'bold' } }, { content: kes(priced), styles: { fontStyle: 'bold' } }]
           : [{ content: pdfSafe(`Subtotal: ${s.section}`), colSpan: 4, styles: { fontStyle: 'bold' } }, { content: kes(s.subtotal), styles: { fontStyle: 'bold' } }],
@@ -66,19 +73,49 @@ export function boqToPdf(boq: Boq, meta: { project: string; preparedBy: string; 
     });
     y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 4;
   }
+  // Rate build-ups: the basis of every built-up rate, line by line, with the same figures as the engine and the Excel sheet.
+  for (const l of boq.lines.filter((x) => x.buildUp)) {
+    const b = l.buildUp!;
+    const num = (x: number | null, d = 2) => (x === null ? '—' : x.toLocaleString('en-KE', { minimumFractionDigits: d, maximumFractionDigits: d }));
+    const totals = b.rate === null
+      ? [[{ content: pdfSafe(`Build-up incomplete — rate required: ${[...b.errors, ...b.missing].join('; ')}`), colSpan: 5, styles: { fontStyle: 'bold' as const, textColor: [185, 28, 28] as [number, number, number] } }]]
+      : [
+        ...([['Materials', b.materials], ['Labour', b.labour], ['Plant', b.plant], ['Net unit rate', b.net], [`Overheads & profit ${b.ohpPct} % (${b.ohpSource})`, b.ohp]] as Array<[string, number | null]>)
+          .map(([t, v]) => [{ content: pdfSafe(t), colSpan: 4 }, num(v)]),
+        [{ content: pdfSafe(`Unit rate per ${l.unit} (to the BOQ) — ${TIER_SHORT[b.tier!]}`), colSpan: 4, styles: { fontStyle: 'bold' as const } }, { content: num(b.rate), styles: { fontStyle: 'bold' as const } }],
+      ];
+    autoTable(doc, {
+      startY: y,
+      head: [[pdfSafe(`Rate build-up ${l.code}: ${l.description} (per ${l.unit})`), 'Qty / unit', 'Price (KES)', 'Waste %', 'Amount (KES)']],
+      body: [
+        ...b.lines.map((r) => [pdfSafe(`${r.kind}: ${r.description} (${r.unit})\nPrice: ${r.source || '—'}, ${r.date || '—'}\nStatus: ${r.tier ? TIER_SHORT[r.tier] : TIER_SHORT.unpriced}`), num(r.quantity, 3), r.price === null ? 'price required' : num(r.price), String(r.wastePct), r.amount === null ? 'price required' : num(r.amount)]),
+        ...totals,
+      ],
+      styles: { fontSize: 8, cellPadding: 1.5 },
+      columnStyles: { 0: { cellWidth: 95 }, 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+      margin: { left: 14, right: 14 },
+    });
+    y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 4;
+  }
   autoTable(doc, {
     startY: y,
     head: [['Summary', 'Amount (KES)']],
-    body: incomplete
+    body: [...((incomplete
       ? [
         ['Priced items only (INCOMPLETE — not a bill total)', kes(boq.pricedSubtotal)],
-        [{ content: 'TOTAL: not available until every item is priced and every error is resolved', styles: { fontStyle: 'bold' } }, { content: '—', styles: { fontStyle: 'bold' } }],
+        [{ content: 'TOTAL: not available until every item is priced and every error is resolved', styles: { fontStyle: 'bold' as const } }, { content: '—', styles: { fontStyle: 'bold' as const } }],
       ]
       : [
         ['Measured works', kes(boq.measuredWorks)], ['Preliminaries', kes(boq.preliminaries)], ['Contingency', kes(boq.contingency)],
         ['Overheads & profit', kes(boq.overheadsProfit)], ['Subtotal before VAT', kes(boq.subtotalBeforeVat)], ['VAT', kes(boq.vat)],
-        [{ content: 'TOTAL', styles: { fontStyle: 'bold' } }, { content: kes(boq.grandTotal), styles: { fontStyle: 'bold' } }],
-      ],
+        [{ content: 'TOTAL', styles: { fontStyle: 'bold' as const } }, { content: kes(boq.grandTotal), styles: { fontStyle: 'bold' as const } }],
+      ]) as RowInput[]),
+      // Price status, always shown: verified and indicative money are reported separately, never merged silently.
+      [pdfSafe(`Priced at verified EmersonEIMS rates (${boq.priceStatus.verifiedItems.length} item(s), before adjustments)`), kes(boq.priceStatus.verified)],
+      [pdfSafe(`Priced at indicative market rates, preliminary budget only (${boq.priceStatus.indicativeItems.length} item(s), before adjustments)`), kes(boq.priceStatus.indicative)],
+      [pdfSafe(`Unpriced, quotation required: ${boq.priceStatus.unpricedItems.length} item(s)${boq.priceStatus.unpricedItems.length ? ` (${boq.priceStatus.unpricedItems.join(', ')})` : ''}`), '—'],
+      [{ content: pdfSafe(boq.priceStatus.preliminary ? PRELIMINARY_NOTICE : 'All items at verified rates. Still a DRAFT: not certified.'), colSpan: 2, styles: { fontStyle: 'bold' as const } }],
+    ],
     styles: { fontSize: 9 }, columnStyles: { 1: { halign: 'right' } }, margin: { left: 14, right: 14 },
   });
   y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;

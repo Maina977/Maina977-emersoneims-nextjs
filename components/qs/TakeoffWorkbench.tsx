@@ -15,12 +15,15 @@
  * re-derives every quantity from the saved points; a draft is autosaved in this
  * browser, keyed by the drawing's SHA-256. No accounts, nothing server-side.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { quantify, calibrate, TakeoffError, TAKEOFF_ENGINE_VERSION, type Calibration, type Measurement, type MeasureKind, type Pt } from '@/lib/qs/takeoff';
-import { BOQ_ENGINE_VERSION, RATE_KIND_LABELS, type RateKind } from '@/lib/qs/boq';
+import { BOQ_ENGINE_VERSION, PRELIMINARY_NOTICE, RATE_KIND_LABELS, type RateKind } from '@/lib/qs/boq';
 import { TRADES_ENGINE_VERSION } from '@/lib/qs/trades';
 import { extractGeometry, SnapIndex, snap, type SnapKind } from '@/lib/qs/snap';
 import TradesPanel from './TradesPanel';
+import BuildUpEditor from './BuildUpEditor';
+import { BUILDUP_ENGINE_VERSION, emptyBuildUp, parseRatesFile, RatesFileError, TIER_SHORT, type RatesFile } from '@/lib/qs/rateBuildUp';
+import { MEP_ENGINE_VERSION } from '@/lib/qs/mep';
 import { importWithRetry, onBeforeRecoveryReload } from '@/lib/loading/resilientImport';
 import { analysePage, sha256Hex, viewportToPdf, pdfToViewport, resolutionLimitM, PDF_SHEET_VERSION, type SheetInfo, type PdfPageLike, type ViewportLike } from '@/lib/qs/pdfSheet';
 import {
@@ -32,7 +35,7 @@ import {
 type Mode = 'calibrate' | MeasureKind | 'hole';
 const fmt = (x: number | null, d = 2) => (x === null ? '—' : x.toLocaleString('en-KE', { minimumFractionDigits: d, maximumFractionDigits: d }));
 const RENDER_WIDTH_PX = 2400; // render width; zoom changes display only, never stored points
-const ENGINES = [TAKEOFF_ENGINE_VERSION, PDF_SHEET_VERSION, BOQ_ENGINE_VERSION, TRADES_ENGINE_VERSION];
+const ENGINES = [TAKEOFF_ENGINE_VERSION, PDF_SHEET_VERSION, BOQ_ENGINE_VERSION, TRADES_ENGINE_VERSION, MEP_ENGINE_VERSION, BUILDUP_ENGINE_VERSION];
 const EMPTY_ADJ: AdjustmentDraft = { prelims: '', contingency: '', ohp: '', vat: '', vatFrom: '' };
 const when = (iso: string) => new Date(iso).toLocaleString('en-KE', { dateStyle: 'medium', timeStyle: 'short' });
 const isPdf = (f: File) => f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
@@ -100,6 +103,10 @@ export default function TakeoffWorkbench() {
   const [draftOffer, setDraftOffer] = useState<ProjectFile | null>(null);
   const [autosaveErr, setAutosaveErr] = useState('');
   const [autosavedAt, setAutosavedAt] = useState('');
+  // A rates file the user loaded (their own cited, dated price list); its entries are copied into build-up lines with citation and date.
+  const [rates, setRates] = useState<RatesFile | null>(null);
+  const [ratesMsg, setRatesMsg] = useState('');
+  const [openBuildUp, setOpenBuildUp] = useState<number | null>(null);
   const store = useMemo(() => guardedStorage(), []);
   const svgRef = useRef<SVGSVGElement>(null);
   // View: zoom and pan change only the displayed window (viewBox), never stored points.
@@ -158,7 +165,7 @@ export default function TakeoffWorkbench() {
   const applyRestored = (r: RestoredProject, sheetId: string | null) => {
     setRefs(r.refs); setCals(r.cals); setMs(r.measurements); setItems(r.items); setAdj(r.adj);
     setRevision(r.revision); setRevInput(r.revision); setRevErr(''); setStated(r.stated);
-    setDifferences(r.differences);
+    setDifferences(r.differences); setOpenBuildUp(null);
     setMode(sheetId && r.cals[sheetId] ? 'linear' : 'calibrate'); setPts([]); setPtSnaps([]);
   };
 
@@ -300,6 +307,8 @@ export default function TakeoffWorkbench() {
     if (!hit) return;
     if (mode === 'calibrate') { setPts((x) => (x.length >= 2 ? [hit.p] : [...x, hit.p])); return; }
     if (!cal) { setErr('Calibrate this sheet first'); return; }
+    // A new point means the user is measuring again: a message about an earlier, refused measurement is stale (2026-11-25).
+    setErr('');
     setPts((x) => [...x, hit.p]);
     setPtSnaps((x) => [...x, hit.kind]);
   };
@@ -485,7 +494,7 @@ export default function TakeoffWorkbench() {
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Measurement tools">
               {modes.map(([m, l]) => (
-                <button key={m} type="button" onClick={() => { setMode(m); setPts([]); setPtSnaps([]); }} disabled={m !== 'calibrate' && !cal}
+                <button key={m} type="button" onClick={() => { setMode(m); setPts([]); setPtSnaps([]); setErr(''); }} disabled={m !== 'calibrate' && !cal}
                   className={`rounded px-3 py-1 text-xs border ${mode === m ? 'border-amber-400 bg-amber-500/20' : 'border-slate-600'} disabled:opacity-40`}>{l}</button>
               ))}
               {mode !== 'calibrate' && <button type="button" onClick={finish} className="rounded bg-amber-600 px-3 py-1 text-xs text-white">Finish ({pts.length} pts)</button>}
@@ -552,7 +561,7 @@ export default function TakeoffWorkbench() {
             <div className="rounded border border-slate-700 p-3">
               <div className="text-sm font-semibold mb-1">Measurements (all sheets)</div>
               {ms.length === 0 ? <p className="text-xs text-slate-500">None yet.</p> : (
-                <div className="overflow-x-auto"><table className="w-full text-xs">
+                <div className="relative overflow-x-auto" role="region" aria-label="Measurements table, scrolls sideways" tabIndex={0}><table className="w-full text-xs">
                   <thead><tr className="text-left text-slate-400"><th scope="col">Id</th><th scope="col">Label</th><th scope="col">Page</th><th scope="col" className="text-right">Net</th><th scope="col" className="text-right">Deducted</th></tr></thead>
                   <tbody>
                   {ms.map((m) => { const q = quantities.get(m.id)!; return (
@@ -577,14 +586,68 @@ export default function TakeoffWorkbench() {
         <div className="rounded border border-slate-700 p-3 space-y-3">
           <div className="flex items-center justify-between"><div className="text-sm font-semibold">Bill of quantities</div>
             <button type="button" disabled={!ms.length} onClick={() => setItems([...items, { code: `${items.length + 1}`, section: '', description: '', measurementId: ms[0].id, factor: '1', rate: '', rateKind: '', source: '', date: '', location: '' }])} className="rounded bg-slate-700 px-3 py-1 text-xs disabled:opacity-40">Add item</button></div>
-          <div className="overflow-x-auto"><table className="w-full min-w-[62rem] text-xs">
+          <div className="flex flex-wrap items-end gap-3 text-xs">
+            <label className="min-w-0 max-w-full">Rates file for build-ups (.json, your own cited and dated price list)
+              <input type="file" accept="application/json,.json" onChange={async (e) => {
+                const f = e.target.files?.[0]; e.target.value = '';
+                if (!f) return;
+                try { const r = parseRatesFile(new TextDecoder().decode(await readBytes(f))); setRates(r); setRatesMsg(`Loaded ${r.records.length} records from ${f.name}: ${r.dataset}. Each record keeps its own status, source and date.`); }
+                catch (err) { setRates(null); setRatesMsg(err instanceof RatesFileError ? `Rates file refused: ${err.message}` : `Rates file could not be read: ${(err as Error).message}`); }
+              }} className={fileInput} />
+            </label>
+            <button type="button" onClick={async () => {
+              try {
+                const mod = await import('@/data/building/rates/ppra-mprg-2026-06.json');
+                const r = parseRatesFile(JSON.stringify(mod.default ?? mod)); setRates(r);
+                setRatesMsg(`Loaded ${r.records.length} records (INDICATIVE market rates, preliminary budgets only — not EmersonEIMS selling prices): ${r.dataset}.`);
+              } catch (err) { setRatesMsg(`Indicative dataset could not be loaded: ${(err as Error).message}`); }
+            }} className="rounded bg-amber-800 px-2 py-1 text-white">Use indicative rates (PPRA June 2026)</button>
+            <span role="status" className="text-slate-300">{ratesMsg || 'No rates loaded. Without a sourced price an item stays “rate required” (quotation required).'}</span>
+          </div>
+          {/* relative: keeps the position:absolute sr-only cells of nested tables (build-up editor) inside this scroll box, so the page never scrolls sideways (2026-11-25). */}
+          <div className="relative overflow-x-auto" role="region" aria-label="Bill of quantities table, scrolls sideways" tabIndex={0}><table className="w-full min-w-[62rem] text-xs">
             <caption className="sr-only">Bill of quantities items</caption>
-            <thead><tr className="text-left text-slate-400">{['Code', 'Section', 'Description', 'Measurement', '× factor', 'Rate (KES)', 'Rate from', 'Rate source', 'Rate date', 'Location'].map((h) => <th key={h} scope="col">{h}</th>)}<th scope="col" className="text-right">Qty</th><th scope="col" className="text-right">Amount</th></tr></thead>
+            <thead><tr className="text-left text-slate-400">{['Code', 'Section', 'Description', 'Measurement', '× factor', 'Rate (KES)', 'Rate from', 'Rate source', 'Rate date', 'Location', 'Build-up'].map((h) => <th key={h} scope="col">{h}</th>)}<th scope="col" className="text-right">Qty</th><th scope="col" className="text-right">Amount</th></tr></thead>
             <tbody>
               {items.map((d, i) => {
                 const line = boq?.boq.lines[i];
                 const up = (k: keyof ItemDraft, v: string) => setItems(items.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
+                const setItem = (next: ItemDraft) => setItems(items.map((x, j) => (j === i ? next : x)));
                 const name = (field: string) => `Item ${i + 1} ${field}`;
+                // A build-up replaces the single rate: switching it on clears the single-rate fields (never both).
+                const toggleBuildUp = () => {
+                  if (d.buildUp) { if (openBuildUp === i) setOpenBuildUp(null); else setOpenBuildUp(i); return; }
+                  setItem({ ...d, rate: '', rateKind: '', rateTier: '', source: '', date: '', location: '', buildUp: emptyBuildUp() }); setOpenBuildUp(i);
+                };
+                const removeBuildUp = () => { const { buildUp: _drop, ...rest } = d; void _drop; setItem(rest); setOpenBuildUp(null); };
+                if (d.buildUp) return (
+                  <Fragment key={i}>
+                    <tr className="border-t border-slate-800">
+                      {(['code', 'section', 'description'] as const).map((k) => <td key={k}><input aria-label={name(k)} value={d[k]} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
+                      {d.trade ? (
+                        <td colSpan={2} className="max-w-xs truncate text-slate-400" title={d.trade.scheduled.source}>{d.trade.name}: {d.trade.scheduled.source}</td>
+                      ) : (
+                        <>
+                          <td><select aria-label={name('measurement')} value={d.measurementId} onChange={(e) => up('measurementId', e.target.value)} className={input}>{ms.map((m) => <option key={m.id} value={m.id}>{m.id} {m.label}</option>)}</select></td>
+                          <td><input aria-label={name('factor')} value={d.factor} onChange={(e) => up('factor', e.target.value)} className={`${input} w-full`} /></td>
+                        </>
+                      )}
+                      <td className="text-right">{line?.rate != null ? fmt(line.rate) : <span className="text-amber-300">rate required</span>}</td>
+                      <td colSpan={4} className={line?.tier === 'indicative' ? 'text-amber-300' : line?.tier === 'verified' ? 'text-emerald-300' : 'text-slate-400'}>Rate build-up{line?.buildUp?.priceDate ? `, prices from ${line.buildUp.priceDate}` : ''} · {line ? TIER_SHORT[line.tier] : ''}</td>
+                      <td className="whitespace-nowrap">
+                        <button type="button" aria-label={name('edit build-up')} aria-expanded={openBuildUp === i} onClick={toggleBuildUp} className="rounded bg-sky-800 px-2 py-0.5">{openBuildUp === i ? 'Hide' : 'Edit'}</button>
+                        <button type="button" aria-label={name('remove build-up')} onClick={removeBuildUp} className="ml-1 px-1 text-red-300">×</button>
+                      </td>
+                      <td className="text-right">{line ? `${fmt(line.quantity, 3)} ${line.unit}` : ''}</td>
+                      <td className="text-right">{line ? (line.amount === null ? <span className="text-amber-300">rate required</span> : fmt(line.amount)) : ''}</td>
+                    </tr>
+                    {openBuildUp === i && (
+                      <tr><td colSpan={13}>
+                        <BuildUpEditor item={`Item ${i + 1} (${d.code})`} unit={line?.unit ?? d.trade?.unit ?? ''} draft={d.buildUp} result={line?.buildUp} rates={rates} onChange={(b) => setItem({ ...d, buildUp: b })} />
+                      </td></tr>
+                    )}
+                  </Fragment>
+                );
                 return (
                   <tr key={i} className="border-t border-slate-800">
                     {(['code', 'section', 'description'] as const).map((k) => <td key={k}><input aria-label={name(k)} value={d[k]} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
@@ -600,8 +663,14 @@ export default function TakeoffWorkbench() {
                     <td><select aria-label={name('rate from')} value={d.rateKind} onChange={(e) => up('rateKind', e.target.value)} className={input}>
                       <option value="">choose…</option>
                       {(Object.keys(RATE_KIND_LABELS) as RateKind[]).map((k) => <option key={k} value={k}>{RATE_KIND_LABELS[k]}</option>)}
+                    </select>
+                    <select aria-label={name('price status')} value={d.rateTier ?? ''} onChange={(e) => up('rateTier', e.target.value)} className={`${input} mt-1 block`}>
+                      <option value="">status… (unstated = indicative)</option>
+                      <option value="verified">Verified (company rate / supplier quotation)</option>
+                      <option value="indicative">Indicative (public source, budget only)</option>
                     </select></td>
                     {([['source', 'rate source'], ['date', 'rate date'], ['location', 'rate location']] as const).map(([k, l]) => <td key={k}><input aria-label={name(l)} value={d[k]} placeholder={k === 'date' ? 'YYYY-MM-DD' : ''} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
+                    <td><button type="button" aria-label={name('build up the rate')} onClick={toggleBuildUp} className="rounded bg-slate-700 px-2 py-0.5">Build up</button></td>
                     <td className="text-right">{line ? `${fmt(line.quantity, 3)} ${line.unit}` : ''}</td>
                     <td className="text-right">{line ? (line.amount === null ? <span className="text-amber-300">rate required</span> : fmt(line.amount)) : ''}</td>
                   </tr>
@@ -610,8 +679,9 @@ export default function TakeoffWorkbench() {
             </tbody>
           </table></div>
           <div className="flex flex-wrap gap-3 text-xs">
-            {([['prelims', 'Preliminaries %'], ['contingency', 'Contingency %'], ['ohp', 'Overheads & profit %'], ['vat', 'VAT %'], ['vatFrom', 'VAT rate effective from']] as const).map(([k, l]) => (
-              <label key={k}>{l} <input value={adj[k]} onChange={(e) => setAdj({ ...adj, [k]: e.target.value })} placeholder={k === 'vatFrom' ? 'YYYY-MM-DD' : ''} className={`${input} w-28 ml-1`} /></label>
+            {/* "Bill-level" O&P: distinct from each rate build-up's own O&P field (one accessible name per control, 2026-11-25). */}
+            {([['prelims', 'Preliminaries %'], ['contingency', 'Contingency %'], ['ohp', 'Bill-level overheads & profit %'], ['vat', 'VAT %'], ['vatFrom', 'VAT rate effective from']] as const).map(([k, l]) => (
+              <label key={k}>{l} <input aria-label={l} value={adj[k]} onChange={(e) => setAdj({ ...adj, [k]: e.target.value })} placeholder={k === 'vatFrom' ? 'YYYY-MM-DD' : ''} className={`${input} w-28 ml-1`} /></label>
             ))}
           </div>
           {boq && (
@@ -629,6 +699,13 @@ export default function TakeoffWorkbench() {
                   ))}
                 </tbody></table>
               )}
+              <div className="rounded border border-slate-700 p-2 text-xs" aria-label="Price status of the priced items">
+                <div className="font-semibold">Price status (measured items, before adjustments)</div>
+                <div className="text-emerald-300">Verified EmersonEIMS rates: KES {fmt(boq.boq.priceStatus.verified)} ({boq.boq.priceStatus.verifiedItems.length} item(s))</div>
+                <div className="text-amber-300">Indicative market rates — preliminary budget only: KES {fmt(boq.boq.priceStatus.indicative)} ({boq.boq.priceStatus.indicativeItems.length} item(s))</div>
+                <div className="text-slate-300">Unpriced — quotation required: {boq.boq.priceStatus.unpricedItems.length} item(s){boq.boq.priceStatus.unpricedItems.length ? ` (${boq.boq.priceStatus.unpricedItems.join(', ')})` : ''}</div>
+                {boq.boq.priceStatus.preliminary && <p role="note" className="mt-1 font-semibold text-amber-200">{PRELIMINARY_NOTICE}</p>}
+              </div>
               <p className="text-xs text-slate-400">Exports are marked DRAFT, not certified{boq.boq.grandTotal === null ? ', and INCOMPLETE: unpriced items show "rate required" and there is no bill total' : ''}.</p>
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={exportXlsx} className="rounded bg-emerald-700 px-3 py-1 text-xs text-white">Export Excel (with formulas)</button>
@@ -638,7 +715,7 @@ export default function TakeoffWorkbench() {
           )}
         </div>
       )}
-      <p className="text-[11px] text-slate-500">{TAKEOFF_ENGINE_VERSION} · {PDF_SHEET_VERSION} · {BOQ_ENGINE_VERSION}. Reinforcement and formwork are not measured here. They come from the bar schedules and the formwork scheme. Rates come only from your dated rate library or supplier quotes.</p>
+      <p className="text-[11px] text-slate-500">{TAKEOFF_ENGINE_VERSION} · {PDF_SHEET_VERSION} · {BOQ_ENGINE_VERSION} · {BUILDUP_ENGINE_VERSION}. Reinforcement and formwork are not measured here. They come from the bar schedules and the formwork scheme. Rates come only from your dated rate library, supplier quotes, or build-ups of sourced, dated prices.</p>
     </div>
   );
 }
