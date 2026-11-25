@@ -116,7 +116,13 @@ describe('Guided Diagnosis: no checks suggested while a STOP applies', () => {
   });
 
   it('corrupted or altered stored safety state is treated as a STOP, never as cleared', () => {
-    for (const bad of ['{not json', JSON.stringify({ v: 2, raw: {}, latched: [{ key: 1 }], cleared: [] }), JSON.stringify({ v: 9 }), JSON.stringify([])]) {
+    const L = { key: 'knock-seizure|x', message: 'x', from: 'x', since: '2026-11-25T10:00:00.000Z' };
+    for (const bad of ['{not json', JSON.stringify({ v: 2, raw: {}, latched: [{ key: 1 }], cleared: [] }), JSON.stringify({ v: 9 }), JSON.stringify([]),
+      // independent review L3d: v1 record with a fake clearance lacking clearedAt (crashed the panel)
+      JSON.stringify({ v: 1, raw: {}, latched: [], cleared: [L] }),
+      // independent review L3f: a stored answer that is not text (crashed the panel)
+      JSON.stringify({ v: 2, raw: { 'knock-seizure': { where: 5 } }, latched: [], cleared: [] }),
+      JSON.stringify({ v: 2, raw: [], latched: [], cleared: [] })]) {
       localStorage.setItem('eims-oracle-guided-diagnosis-v1', bad);
       render(<GuidedDiagnosisPanel />);
       expect(hold(), bad).not.toBeNull();

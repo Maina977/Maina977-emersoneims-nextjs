@@ -28,9 +28,13 @@ export function readStore(): { unreadable: boolean; raw?: Record<string, Record<
   if (text === null) return { unreadable: false, latched: [], cleared: [] };
   try {
     const s = JSON.parse(text);
-    const ok = s && typeof s === 'object' && (s.v === 1 || s.v === 2)
-      && s.raw && typeof s.raw === 'object' && Array.isArray(s.latched) && s.latched.every(validLatched)
-      && Array.isArray(s.cleared) && s.cleared.every((c: unknown) => (s.v === 1 ? validLatched(c) : validClearance(c)));
+    // Every part must have the exact shape the panel writes (independent review L3d/L3f: a
+    // clearance without clearedAt, or a non-text answer, crashed the panel and hid the STOP).
+    const rawOk = s && s.raw && typeof s.raw === 'object' && !Array.isArray(s.raw)
+      && Object.values(s.raw).every((fam) => fam && typeof fam === 'object' && !Array.isArray(fam) && Object.values(fam as object).every((v) => typeof v === 'string'));
+    const ok = s && typeof s === 'object' && (s.v === 1 || s.v === 2) && rawOk
+      && Array.isArray(s.latched) && s.latched.every(validLatched)
+      && Array.isArray(s.cleared) && s.cleared.every((c: unknown) => validClearance({ reason: '', ...(c as object) }));
     if (!ok) return { unreadable: true, latched: [], cleared: [] };
     return { unreadable: false, raw: s.raw, latched: s.latched, cleared: s.cleared.map((c: StoredClearance) => ({ ...c, reason: c.reason ?? '' })) };
   } catch { return { unreadable: true, latched: [], cleared: [] }; }
@@ -199,6 +203,11 @@ export default function GuidedDiagnosisPanel() {
         </div>
       </div>
 
+      {!storageOk && !stopActive ? (
+        <p data-testid="gd-storage-blocked" role="status" className="rounded-lg border border-amber-500/60 bg-amber-950/40 p-3 text-xs text-amber-100">
+          This browser does not allow the safety record to be saved: a STOP shown here cannot be kept after a reload. Record any STOP on the job card.
+        </p>
+      ) : null}
       {(result.stops.length > 0 || otherStops.length > 0 || latched.length > 0) && (
         <div role="alert" className="space-y-2">
           {latchedOnly.map((l) => (
