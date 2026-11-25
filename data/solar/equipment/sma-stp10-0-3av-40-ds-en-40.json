@@ -40,7 +40,7 @@
     "cecEfficiency": { "value": null, "unit": "%", "condition": "CEC", "note": "Not printed." },
     "acVoltageRangeMin": { "value": 180, "unit": "V", "condition": "Voltage range printed '180 V to 280 V'" },
     "acVoltageRangeMax": { "value": 280, "unit": "V", "condition": "as printed" },
-    "operatingTemperatureMin": { "value": null, "unit": "°C", "condition": "n/a", "note": "Text extraction reads '25 °C to +60 °C (13 °F to +140 °F)'; the lower bound almost certainly carries a minus sign that was not extracted. Read from the rendered PDF before use." },
+    "operatingTemperatureMin": { "value": -25, "unit": "°C", "condition": "as printed '‒25 °C to +60 °C'", "note": "Confirmed 2026-11-25 by independent second-person check: the PDF prints a figure dash (‒25 °C), lost in the first text extraction; consistent with the printed −13 °F." },
     "operatingTemperatureMax": { "value": 60, "unit": "°C", "condition": "as printed" },
     "selfConsumptionNight": { "value": 5.0, "unit": "W", "condition": "Self-consumption (at night)" },
     "weight": { "value": 20.5, "unit": "kg", "condition": "as printed" }

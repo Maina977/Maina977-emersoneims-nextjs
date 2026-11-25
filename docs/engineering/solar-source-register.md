@@ -61,3 +61,10 @@ These models were chosen as **representative examples of equipment types sold in
 ## 4. Protection and cable practice
 
 The tool contains no ampacity tables and no SPD or isolator selection tables. Everything it does not determine is labelled "to be specified by the engineer" on the single-line diagram (`sld.ts`). No other protection source was used. A public, verifiable source for Kenyan practice (for example the EPRA solar PV regulations named in the Design Check page) has **not** been reviewed in this increment. That review is a listed next action, not a claim.
+
+
+## Independent second-person check (2026-11-25)
+
+All values in this register were re-opened at their cited public sources by an independent checker (report: `EmersonEIMS-proposals/source-verification-2026-11-25/INDEPENDENT-SOURCE-CHECK.md`, held outside the repo).
+- Solar: 121/121 values match. SMA STP10.0 minimum operating temperature filled in as −25 °C (the PDF prints "‒25 °C"; the minus sign was lost in the first extraction).
+- Pylontech US5000: two different third-party copies both carry the code PY21US05-1 and disagree on weight (38 vs 40 kg), depth (161 vs 162 mm) and peak current (101~120 vs 100~120 A @15 min). This dataset uses the Segen copy. Neither copy is from Pylontech's own site; obtain the manufacturer's current datasheet before relying on these three values.
