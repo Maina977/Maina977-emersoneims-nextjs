@@ -24,6 +24,9 @@ describe('M-2: offline water-body check', () => {
       [3.5, 36.1, /on open water \(Lake Turkana/],
       [4.2, 36.0, /on open water \(Lake Turkana/],
       [-0.77, 36.35, /on open water \(Lake Naivasha/],
+      // re-review of f89698e8 (MINOR): added reservoirs
+      [1.87, 35.30, /on open water \(Turkwel Gorge Reservoir/],
+      [-0.82, 36.844, /on open water \(Ndakaini Dam/],
       [-3.22, 40.15, /in the sea \(the Indian Ocean, 2\.\d km off the mapped coastline\)/],
       [-4.08, 39.72, /in the sea \(the Indian Ocean/],
     ] as [number, number, RegExp][]) {
@@ -69,7 +72,7 @@ describe('M-2: offline water-body check', () => {
     expect(src).toMatch(/OpenStreetMap contributors, Open Database Licence \(ODbL\) 1\.0/);
     expect(src).toMatch(/Natural Earth 10 m land polygons \(public domain/);
     const names = KENYA_WATER.map((w) => w.name);
-    for (const n of ['Lake Victoria', 'Lake Turkana', 'Lake Naivasha', 'Lake Baringo', 'Lake Nakuru', 'Lake Bogoria', 'Lake Elmenteita', 'Lake Magadi', 'Lake Jipe', 'Lake Chala', 'Masinga Reservoir', 'Kiambere Reservoir']) expect(names).toContain(n);
+    for (const n of ['Lake Victoria', 'Lake Turkana', 'Lake Naivasha', 'Lake Baringo', 'Lake Nakuru', 'Lake Bogoria', 'Lake Elmenteita', 'Lake Magadi', 'Lake Jipe', 'Lake Chala', 'Masinga Reservoir', 'Kiambere Reservoir', 'Turkwel Gorge Reservoir', 'Ndakaini Dam']) expect(names).toContain(n);
     const land = fs.readFileSync(path.join(ROOT, 'external/borehole-ai-engine/src/kenyaLand.ts'), 'utf8');
     expect(land).not.toMatch(/api\.open-meteo\.com|fetch\(/);
   });
