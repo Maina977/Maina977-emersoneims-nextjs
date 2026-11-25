@@ -55,6 +55,12 @@ export default function GuidedDiagnosisPanel() {
   const route = () => { const f = familyFor(symptom); if (f) setFamilyId(f.id); };
   const routed = symptom.trim() ? familyFor(symptom) : null;
   const next = result.nextQuestion;
+  // Safety hotfix (2026-11-25, independent review F1): while a STOP applies, no further
+  // check or action is suggested. Several suggested checks need the engine running,
+  // cranking or live circuits (e.g. a cylinder cut-out test under "STOP THE SET"), which
+  // contradicts the STOP. Causes stay listed for information only.
+  const stopActive = result.stops.some((s) => s.level === 'STOP');
+  const STOP_HOLD = 'Further checks are withheld while a STOP applies. Make the set safe first: engine stopped, isolated and locked off. A qualified technician decides the next step once the hazard is controlled.';
 
   return (
     <div className="space-y-4">
@@ -90,7 +96,9 @@ export default function GuidedDiagnosisPanel() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-3">
-          {next ? (
+          {stopActive ? (
+            <div data-testid="gd-stop-hold" className="rounded-lg border border-red-500 bg-red-950/60 p-3 text-xs text-red-100">{STOP_HOLD}</div>
+          ) : next ? (
             <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3">
               <div className="text-xs text-amber-300 mb-2">Next check</div>
               <QuestionInput q={next} value={values[next.id] ?? ''} onChange={(v) => set(next.id, v)} />
@@ -107,14 +115,14 @@ export default function GuidedDiagnosisPanel() {
         </div>
 
         <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-3">
-          <div className="text-xs text-slate-400">Likely causes, most supported first</div>
+          <div className="text-xs text-slate-400">Likely causes, most supported first{stopActive ? ' (for information only: no checks are suggested while a STOP applies)' : ''}</div>
           <ol className="space-y-2">
             {result.ranked.map((c, i) => (
               <li key={c.id} className="rounded-lg border border-slate-700 p-3">
                 <div className="flex justify-between gap-2 text-sm text-white"><span>{i + 1}. {c.title}</span><span className="text-slate-500 text-xs">evidence {c.score >= 0 ? '+' : ''}{c.score}</span></div>
                 {c.for.length > 0 && <ul className="mt-1 text-xs text-emerald-300">{c.for.map((f) => <li key={f}>+ {f}</li>)}</ul>}
                 {c.against.length > 0 && <ul className="mt-1 text-xs text-slate-400">{c.against.map((f) => <li key={f}>− {f}</li>)}</ul>}
-                {i < 3 && c.score > 0 && (
+                {!stopActive && i < 3 && c.score > 0 && (
                   <ul className="mt-2 list-disc pl-4 text-xs text-slate-200">{c.actions.map((a) => <li key={a}>{a}</li>)}</ul>
                 )}
                 <p className="mt-1 text-[11px] text-slate-500">{c.reference}</p>
