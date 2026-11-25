@@ -58,13 +58,18 @@ describe('exact-threshold rule: maximum limit (coolant, 103 °C)', () => {
     const r = diagnose(CHARGING, { systemVoltage: '24', runVoltage: 30, oemChargeMax: 29, batteryCondition: 'gassing' });
     expect(r.stopActive).toBe(true); // the gassing STOP still stands
     expect(r.stops[0].level).toBe('STOP');
-    const c = r.stops.find((s) => /LIMIT REACHED — NOT CLASSIFIED/.test(s.message))!;
+    // Under the STOP the caution is a record only — nothing that implies running (safety review F2).
+    const c = r.stops.find((s) => /^Also recorded for the investigation \(the STOP above applies\)/.test(s.message))!;
     expect(c.level).toBe('CAUTION');
-    expect(c.message).toMatch(/not as a confirmed shutdown; this does not clear any STOP/);
+    expect(r.stops.some((s) => /LIMIT REACHED — NOT CLASSIFIED|Watch the battery/.test(s.message))).toBe(false);
+    // Without another STOP the non-protective unclassified limit is the CAUTION that says so.
+    const alone = diagnose(CHARGING, { systemVoltage: '24', runVoltage: 30, oemChargeMax: 29, batteryCondition: 'normal' });
+    expect(alone.stopActive).toBe(false);
+    expect(alone.stops.find((s) => /LIMIT REACHED — NOT CLASSIFIED/.test(s.message))!.message).toMatch(/not as a confirmed shutdown; this does not clear any STOP/);
   });
   it('PROTECTIVE unclassified: oil pressure below the minimum → STOP first, then no running-engine step', () => {
     const r = oil(150, undefined, { knock: 'no', oilCondition: 'normal', recentWork: 'none' });
-    expect(r.stops[0]).toEqual({ level: 'STOP', message: expect.stringMatching(/^STOP — Protective threshold classification not verified\. Do not continue operating until the applicable manufacturer limits have been confirmed by a qualified technician\.$/), label: 'This is a conservative software safeguard, not a manufacturer instruction.' });
+    expect(r.stops[0]).toMatchObject({ level: 'STOP', message: expect.stringMatching(/^STOP — Protective threshold classification not verified\. Do not continue operating until the applicable manufacturer limits have been confirmed by a qualified technician\.$/), label: 'This is a conservative software safeguard, not a manufacturer instruction.' });
     for (const c of r.ranked) for (const a of c.actions) expect(a).not.toMatch(/re-?start|run the|running|on load|under load|load bank|crank the/i);
     expect(r.nextQuestion?.id).toBe('oemMinOilPressure');
     expect(r.nextQuestion?.needsRunning).toBeFalsy();
@@ -85,11 +90,12 @@ describe('exact-threshold rule: maximum limit (coolant, 103 °C)', () => {
 });
 
 describe('measurement tolerance: "at or near the limit"', () => {
-  it('within the tolerance entered but not at the limit → CAUTION at or near; outside it → inside', () => {
+  it('within the tolerance of a SHUTDOWN limit → STOP (treated as reached, safety review F4); of a warning → CAUTION; outside it → inside', () => {
     const near = st(cool(102, 'shutdown', { 'coolantTemp.tol': 1 }), 'coolant-temp-max');
-    expect(near).toMatchObject({ status: 'near', level: 'CAUTION', tolerance: 1 });
-    expect(near.text).toMatch(/^AT OR NEAR THE LIMIT/);
-    expect(near.text).toMatch(/This is a shutdown value: if the re-measurement confirms it/);
+    expect(near).toMatchObject({ status: 'near', level: 'STOP', tolerance: 1 });
+    expect(near.text).toMatch(/^STOP — AT OR NEAR A SHUTDOWN LIMIT/);
+    expect(near.text).not.toMatch(/re-measure/i);
+    expect(st(cool(102, 'warning', { 'coolantTemp.tol': 1 }), 'coolant-temp-max')).toMatchObject({ status: 'near', level: 'CAUTION' });
     expect(st(cool(102, 'shutdown', { 'coolantTemp.tol': 0.5 }), 'coolant-temp-max').status).toBe('inside');
     expect(st(oil(203, 'warning', { 'oilPressure.tol': 5 }), 'oil-pressure-min').status).toBe('near');
   });

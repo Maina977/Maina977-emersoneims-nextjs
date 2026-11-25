@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { diagnose, evaluate, validateAnswers, DIAGNOSTIC_ENGINE_VERSION } from '@/lib/generator-oracle/diagnostics/engine';
 import { FAMILIES, familyFor, LOW_OIL_PRESSURE, OVERHEATING, NO_CRANK, NO_START, KNOCK_SEIZURE, NO_VOLTAGE } from '@/lib/generator-oracle/diagnostics/families';
+import { SCREEN_QUESTIONS } from '@/lib/generator-oracle/diagnostics/safetyScreen';
+
+/** The cross-family safety screen answered "no" throughout (it is asked first in every family). */
+const SCREEN_NO = Object.fromEntries(SCREEN_QUESTIONS.map((q) => [q.id, 'no']));
 
 describe('family definitions are well formed', () => {
   for (const f of FAMILIES) {
@@ -81,7 +85,7 @@ describe('stop rules always fire', () => {
     expect(r.stops.filter((s) => s.level === 'STOP')).toHaveLength(0);
   });
   it('no OEM minimum entered → no invented limit, and the OEM limit is asked first', () => {
-    const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 50 });
+    const r = diagnose(LOW_OIL_PRESSURE, { ...SCREEN_NO, oilPressure: 50 });
     expect(r.stops).toHaveLength(0);
     expect(r.nextQuestion?.id).toBe('oemMinOilPressure');
   });
@@ -93,9 +97,10 @@ describe('stop rules always fire', () => {
     expect(diagnose(NO_CRANK, { barOver: 'locked' }).stops.some((s) => s.level === 'STOP')).toBe(true);
     expect(diagnose(NO_VOLTAGE, { insulation: 0.4, oemMinInsulation: 1, 'oemMinInsulation.class': 'shutdown' }).stops.some((s) => s.level === 'STOP')).toBe(true);
   });
-  it('a fresh session asks the safety question first', () => {
-    expect(diagnose(KNOCK_SEIZURE, {}).nextQuestion?.id).toBe('where');
-    expect(diagnose(OVERHEATING, {}).nextQuestion?.id).toBe('coolantTemp');
+  it('a fresh session asks the shared safety screen first, then the family safety question', () => {
+    for (const f of FAMILIES) expect(diagnose(f, {}).nextQuestion?.id).toBe('screen.alarm');
+    expect(diagnose(KNOCK_SEIZURE, SCREEN_NO).nextQuestion?.id).toBe('where');
+    expect(diagnose(OVERHEATING, SCREEN_NO).nextQuestion?.id).toBe('coolantTemp');
   });
 });
 

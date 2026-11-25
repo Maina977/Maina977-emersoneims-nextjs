@@ -5,6 +5,7 @@
  */
 import type { Condition, FaultFamily } from './types';
 import { DIAGNOSTIC_ENGINE_VERSION } from './engine';
+import { SCREEN_QUESTIONS, SCREEN_RULES, isScreenKey } from './safetyScreen';
 
 export interface ReviewRow {
   family: string; kind: 'safety' | 'question' | 'stop' | 'limit' | 'crosscheck' | 'cause' | 'evidence'; id: string;
@@ -31,9 +32,14 @@ export function describeCondition(c: Condition): string {
 export function reviewRows(families: FaultFamily[]): ReviewRow[] {
   const rows: ReviewRow[] = [];
   const blank = { oemReference: '', verdict: '' as const, reviewerComment: '' };
+  // The shared safety screen is reviewed once (it is asked first in every family).
+  if (families.some((f) => f.questions.some((q) => isScreenKey(q.id)))) {
+    for (const q of SCREEN_QUESTIONS) rows.push({ family: 'safety-screen', kind: 'question', id: q.id, text: q.text, rule: q.options.map((o) => o.label).join(' | '), ...blank });
+    SCREEN_RULES.forEach((s, i) => rows.push({ family: 'safety-screen', kind: 'stop', id: `stop-${i + 1}`, text: `${s.level}: ${s.message}`, rule: describeCondition(s.when), ...blank }));
+  }
   for (const f of families) {
     (f.mandatorySafety ?? []).forEach((m, i) => rows.push({ family: f.id, kind: 'safety', id: `safety-${i + 1}`, text: `CAUTION (always shown first): ${m}`, rule: 'always', ...blank }));
-    for (const q of f.questions) {
+    for (const q of f.questions.filter((x) => !isScreenKey(x.id))) {
       const rule = q.kind === 'number' ? `number ${q.min}–${q.max} ${q.unit}` : q.options.map((o) => o.label).join(' | ');
       const marks = [
         q.needsRunning ? '[needs the engine running: not offered while a STOP is active]' : '',
@@ -42,7 +48,7 @@ export function reviewRows(families: FaultFamily[]): ReviewRow[] {
       ].filter(Boolean).join(' ');
       rows.push({ family: f.id, kind: 'question', id: q.id, text: q.help ? `${q.text} — ${q.help}` : q.text, rule: marks ? `${rule} ${marks}` : rule, ...blank });
     }
-    f.stopRules.forEach((s, i) => rows.push({ family: f.id, kind: 'stop', id: `stop-${i + 1}`, text: `${s.level}: ${s.message}`, rule: describeCondition(s.when), ...blank }));
+    f.stopRules.filter((s) => !s.screen).forEach((s, i) => rows.push({ family: f.id, kind: 'stop', id: `stop-${i + 1}`, text: `${s.level}: ${s.message}${s.label ? ` [${s.label}]` : ''}${s.underStop !== undefined ? ` | While a STOP is active: ${s.underStop ?? '(not shown)'}` : ''}`, rule: describeCondition(s.when), ...blank }));
     for (const l of f.limits ?? []) {
       const lq = f.questions.find((q) => q.id === l.limit);
       const dir = lq?.kind === 'number' && lq.oemLimit?.direction === 'min' ? '≤' : '≥';

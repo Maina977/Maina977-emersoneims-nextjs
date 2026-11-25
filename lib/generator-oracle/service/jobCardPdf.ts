@@ -45,12 +45,15 @@ export function jobCardToPdf(card: JobCard, asset: Asset): Uint8Array {
   for (const n of p.notices) write(n, { size: 9, bold: true, red: true, gap: 1 });
   for (const s of p.sections) {
     y += 2.5;
-    write(s.heading, { size: 10, bold: true, gap: 1 });
+    const safety = /^SAFETY/.test(s.heading);
+    write(s.heading, { size: safety ? 11 : 10, bold: true, red: safety, gap: 1 });
     for (const raw of s.lines) {
       const m = /^ {2}([-!]) (.*)$/.exec(raw);
       const text = m ? m[2] : raw.trim();
-      const alert = /CHANGED AFTER SIGN-OFF|compatibility unverified/.test(text) || m?.[1] === '!';
-      write(text, { x: LEFT + 2, bullet: m ? (m[1] === '!' ? '!' : '-') : undefined, red: alert, bold: /CHANGED AFTER SIGN-OFF/.test(text) });
+      // STOP lines (and their safeguard label) are highlighted wherever they appear (safety review F6).
+      const stop = /^STOP\b/.test(text) || /^This is a conservative software safeguard/.test(text);
+      const alert = stop || /CHANGED AFTER SIGN-OFF|compatibility unverified/.test(text) || m?.[1] === '!';
+      write(text, { x: LEFT + 2, bullet: m ? (m[1] === '!' ? '!' : '-') : undefined, red: alert, bold: stop || /CHANGED AFTER SIGN-OFF/.test(text) });
     }
   }
   y += 3;

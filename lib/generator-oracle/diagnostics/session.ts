@@ -11,6 +11,7 @@
 import type { Answers, FaultFamily } from './types';
 import { classKey, limitReadings, sourceKey, tolKey } from './engine';
 import { knownModels, type Equipment } from './oemReferences';
+import { SCREEN_BUCKET, SCREEN_QUESTIONS, isScreenKey } from './safetyScreen';
 
 export const GUIDED_SESSION_KEY = 'eims-oracle-guided-session-v1';
 export type RawAnswers = Record<string, Record<string, string>>;
@@ -23,8 +24,8 @@ export function answersFromRaw(family: FaultFamily, raw: Record<string, string> 
   for (const k of answerKeys(family)) {
     const v = raw?.[k.key];
     if (v === undefined || v.trim() === '') continue;
-    // Number('') is 0, so blanks are dropped above; Number('abc') is NaN and is refused by the engine.
-    a[k.key] = k.kind === 'number' ? Number(v.trim()) : v;
+    // Numbers stay as typed: the engine parses them (plain decimals only; "," accepted as the decimal mark).
+    a[k.key] = k.kind === 'number' ? v.trim() : v;
   }
   return a;
 }
@@ -44,23 +45,36 @@ export function answerKeys(family: FaultFamily): Array<{ key: string; kind: 'num
   return out;
 }
 
-/** Only known families and questions, string values only. */
+/**
+ * Only known families and questions, string values only. Safety-screen answers
+ * live once, in the shared "__screen" bucket, never inside a family's bucket.
+ */
 export function cleanSession(families: FaultFamily[], data: unknown): RawAnswers {
   const out: RawAnswers = {};
   if (!data || typeof data !== 'object' || Array.isArray(data)) return out;
   const answers = (data as { answers?: unknown }).answers;
   if (!answers || typeof answers !== 'object' || Array.isArray(answers)) return out;
-  for (const f of families) {
-    const r = (answers as Record<string, unknown>)[f.id];
-    if (!r || typeof r !== 'object' || Array.isArray(r)) continue;
+  const pick = (r: unknown, keys: string[]) => {
     const clean: Record<string, string> = {};
-    for (const { key } of answerKeys(f)) {
+    if (!r || typeof r !== 'object' || Array.isArray(r)) return clean;
+    for (const key of keys) {
       const v = (r as Record<string, unknown>)[key];
       if (typeof v === 'string' && v.trim() !== '') clean[key] = v.slice(0, 300);
     }
+    return clean;
+  };
+  for (const f of families) {
+    const clean = pick((answers as Record<string, unknown>)[f.id], answerKeys(f).map((k) => k.key).filter((k) => !isScreenKey(k)));
     if (Object.keys(clean).length) out[f.id] = clean;
   }
+  const screen = pick((answers as Record<string, unknown>)[SCREEN_BUCKET], SCREEN_QUESTIONS.map((q) => q.id));
+  if (Object.keys(screen).length) out[SCREEN_BUCKET] = screen;
   return out;
+}
+
+/** The answers one family sees: the shared safety screen plus its own. */
+export function mergedRaw(session: RawAnswers, familyId: string): Record<string, string> {
+  return { ...(session[SCREEN_BUCKET] ?? {}), ...(session[familyId] ?? {}) };
 }
 
 export function loadGuidedSession(store: KeyValueStore | null | undefined, families: FaultFamily[]): RawAnswers {

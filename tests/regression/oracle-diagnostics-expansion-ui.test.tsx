@@ -51,6 +51,18 @@ describe('Guided Diagnosis UI: new families and the job-card hand-off', () => {
     expect(screen.queryAllByRole('button', { name: /Use published value/ })).toHaveLength(0);
   });
 
+  it('the shared safety screen: a "yes" on one tab is a STOP on every tab (safety review F3)', async () => {
+    render(<GuidedDiagnosisPanel />);
+    await act(async () => {});
+    fireEvent.click(screen.getByRole('tab', { name: 'Overheating / high coolant temperature' }));
+    fireEvent.change(screen.getByLabelText(/Safety screen: knocking, or bearing noise/), { target: { value: 'yes' } });
+    expect(screen.getByRole('alert').textContent).toMatch(/^STOP · STOP THE SET: knocking/);
+    fireEvent.click(screen.getByRole('tab', { name: 'Battery not charging, or overcharging (engine alternator or mains charger)' }));
+    expect(screen.getByRole('alert').textContent).toMatch(/^STOP · STOP THE SET: knocking/);
+    const saved = JSON.parse(window.localStorage.getItem(GUIDED_SESSION_KEY)!);
+    expect(saved.answers.__screen['screen.knock']).toBe('yes');
+  });
+
   it('a saved diagnosis is recorded on an open job card with exactly the guided text', async () => {
     const acts: ServiceAction[] = [
       { type: 'saveAsset', asset: { make: 'TEST', model: 'T-1', engine: 'TEST-ENG', controller: 'TEST-CTRL', serial: 'S-1', ratedKva: 100 } },

@@ -22,7 +22,8 @@ import {
   type CardUpdate, type ServiceAction, type ServiceState,
 } from '@/lib/generator-oracle/service/store';
 import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
-import { diagnosisRecord, recordToCardUpdate } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
+import { recordToCardUpdate, sessionRecord } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
+import { SCREEN_BUCKET } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { loadGuidedEquipment, loadGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
 
 const inp = 'w-full min-w-0 rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white focus:border-amber-500 outline-none';
@@ -255,9 +256,11 @@ function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft) => void }) 
   const [session, setSession] = useState<RawAnswers>(() => loadGuidedSession(getStore(), FAMILIES));
   const [equipment, setEquipment] = useState(() => loadGuidedEquipment(getStore()));
   const [familyId, setFamilyId] = useState('');
-  const available = FAMILIES.filter((f) => session[f.id]);
+  // A family is offered when it has answers, or when the shared safety screen does (its STOPs apply to every family).
+  const available = FAMILIES.filter((f) => session[f.id] || session[SCREEN_BUCKET]);
   const fam = available.find((f) => f.id === familyId) ?? null;
-  const rec = useMemo(() => (fam ? diagnosisRecord(fam, session[fam.id], equipment) : null), [fam, session, equipment]);
+  // Same function as the Guided Diagnosis tab: screen merged in, other families' STOPs carried in.
+  const rec = useMemo(() => (fam ? sessionRecord(fam, session, equipment) : null), [fam, session, equipment]);
   const add = () => {
     if (!rec) return;
     const u = recordToCardUpdate({ findings: d.findings, readings: [] }, rec);

@@ -318,8 +318,10 @@ describe('job card integration: the card carries exactly the guided result', () 
     // appending a second diagnosis keeps the first
     const rec2 = diagnosisRecord(OVERSPEED, { tripSource: 'controller' });
     const s2 = reduce(s, { type: 'updateCard', cardId: 'JC-1', update: recordToCardUpdate(card, rec2) });
-    expect(s2.jobCards[0].findings.startsWith(rec.findings)).toBe(true);
-    expect(s2.jobCards[0].findings).toContain('STOP: overspeed shutdown');
+    // A record with a STOP goes FIRST in the findings (safety review F6); the earlier record is kept after it.
+    expect(s2.jobCards[0].findings.startsWith(rec2.findings)).toBe(true);
+    expect(s2.jobCards[0].findings.endsWith(rec.findings)).toBe(true);
+    expect(s2.jobCards[0].findings.split('\n')[0]).toMatch(/^STOP: STOP: overspeed shutdown/);
   });
   it('the session reader drops unknown families, unknown questions and non-strings', () => {
     const clean = cleanSession(FAMILIES, { answers: { charging: { runVoltage: '24', bogus: 'x', belt: 3 }, nope: { a: 'b' } } });

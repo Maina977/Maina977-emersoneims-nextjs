@@ -7,6 +7,7 @@
  */
 import type { Condition, FaultFamily } from './types';
 import { FREQUENCY_HUNTING, OVERSPEED, CHARGING, EXHAUST_SMOKE } from './familiesExpansion';
+import { withScreen } from './safetyScreen';
 
 const PRACTICE = 'General diesel generator service practice (EmersonEIMS); confirm limits and procedure in the OEM service manual for this engine.';
 const ALT_PRACTICE = 'General alternator service practice (EmersonEIMS); confirm limits and procedure in the alternator and AVR manuals.';
@@ -46,7 +47,8 @@ export const NO_CRANK: FaultFamily = {
         { when: is('starterSound', ['click', 'slow']), effect: 'supports', because: 'Starter clicks or turns slowly' },
         { when: { q: 'crankVoltage', op: 'gtRef', ref: 'oemMinCrankVoltage' }, effect: 'contradicts', because: 'Battery stays above the OEM minimum cranking voltage' },
       ],
-      actions: ['Charge the battery fully and re-test at rest and with a battery load tester (BCI load test) or a conductance tester.', 'Replace a battery that fails the load test; check the charger/alternator output afterwards.'],
+      actions: ['With the set isolated (negative lead off first): charge the battery fully, then test it at rest with a battery load tester (BCI load test) or a conductance tester.', 'Replace a battery that fails the load test.'],
+      runningChecks: ['Only when no STOP is active: check the charger or charging-alternator output afterwards, from outside the guards.'],
       reference: BCI,
     },
     {
@@ -56,7 +58,8 @@ export const NO_CRANK: FaultFamily = {
         { when: { all: [sys({ q: 'restVoltage', op: 'ge', value: 12.4 }, { q: 'restVoltage', op: 'ge', value: 24.8 }), is('starterSound', ['click', 'slow'])] }, effect: 'supports', because: 'Good battery but weak cranking' },
         { when: is('terminals', 'clean'), effect: 'contradicts', because: 'Terminals clean and tight' },
       ],
-      actions: ['Isolate, clean and tighten the battery terminals and the starter main and earth cables.', 'Measure voltage drop across each cable while cranking (positive and earth paths).'],
+      actions: ['Isolate, clean and tighten the battery terminals and the starter main and earth cables.'],
+      runningChecks: ['Only when no STOP is active: measure the voltage drop across each cable while cranking (positive and earth paths).'],
       reference: PRACTICE,
     },
     {
@@ -65,7 +68,7 @@ export const NO_CRANK: FaultFamily = {
         { when: { all: [is('starterSound', ['click', 'nothing']), { q: 'crankVoltage', op: 'gtRef', ref: 'oemMinCrankVoltage' }] }, effect: 'strongly', because: 'Battery stays above the OEM minimum cranking voltage but the starter does not turn' },
         { when: is('starterSound', 'normal'), effect: 'excludes', because: 'The starter turns the engine normally' },
       ],
-      actions: ['Check the solenoid supply and the main contacts; bench-test the starter.'],
+      actions: ['With the set isolated: check the solenoid supply wiring and the main contacts; remove and bench-test the starter.'],
       reference: PRACTICE,
     },
     {
@@ -75,7 +78,8 @@ export const NO_CRANK: FaultFamily = {
         { when: is('controllerAlarm', 'yes'), effect: 'strongly', because: 'Controller shows an alarm or refuses the start' },
         { when: { all: [is('starterSound', 'nothing'), is('controllerAlarm', 'no'), is('eStop', 'released')] }, effect: 'supports', because: 'No starter action with no alarm: check the start output and relay' },
       ],
-      actions: ['Find out why the emergency stop was pressed before releasing it.', 'Read the controller alarm and event log; check the crank relay output.'],
+      actions: ['Find out why the emergency stop was pressed before releasing it.', 'Read the controller alarm and event log.'],
+      runningChecks: ['Only when no STOP is active: check the crank relay output during a start attempt.'],
       reference: PRACTICE,
     },
     {
@@ -85,7 +89,8 @@ export const NO_CRANK: FaultFamily = {
         { when: is('barOver', 'stiff'), effect: 'supports', because: 'Engine is stiff to turn' },
         { when: is('barOver', 'turns'), effect: 'excludes', because: 'Engine turns freely by hand' },
       ],
-      actions: ['Do not crank. Remove injectors to check for liquid in a cylinder; inspect for bearing seizure; check the oil for coolant or fuel.'],
+      actions: ['Do not crank. With the set isolated: remove the injectors to check for liquid in a cylinder; inspect for bearing seizure; check the oil for coolant or fuel.'],
+      doNotRun: true,
       reference: PRACTICE,
     },
   ],
@@ -108,7 +113,7 @@ export const NO_START: FaultFamily = {
     { id: 'cold', kind: 'choice', text: 'Cold start conditions and cold-start aid', options: [{ value: 'warm', label: 'Warm / not relevant' }, { value: 'aid-ok', label: 'Cold, aid working' }, { value: 'aid-failed', label: 'Cold, aid not working' }] },
   ],
   stopRules: [
-    { when: is('fuelAtFilter', ['yes', 'bubbles', 'no', 'not-checked']), level: 'CAUTION', message: 'Diesel under pressure can penetrate skin: never feel for leaks by hand; collect spilled fuel; no flames. Follow the starter duty cycle in the manual (crank, then rest) to avoid burning out the starter.' },
+    { when: is('fuelAtFilter', ['yes', 'bubbles', 'no', 'not-checked']), level: 'CAUTION', message: 'Diesel under pressure can penetrate skin: never feel for leaks by hand; collect spilled fuel; no flames. Follow the starter duty cycle in the manual (crank, then rest) to avoid burning out the starter.', underStop: 'Diesel under pressure can penetrate skin: never feel for leaks by hand; collect spilled fuel; no flames.' },
   ],
   causes: [
     {
@@ -156,7 +161,8 @@ export const NO_START: FaultFamily = {
         { when: is('ecmCode', 'yes'), effect: 'strongly', because: 'Active ECM/controller fault code' },
         { when: is('ecmCode', 'no'), effect: 'contradicts', because: 'No active fault code' },
       ],
-      actions: ['Look up the active code in the Fault Code tab; check the speed sensor gap and wiring, and the ECM supply and earth while cranking.'],
+      actions: ['Look up the active code in the Fault Code tab; with the set isolated, check the speed sensor gap and wiring and the ECM supply and earth connections.'],
+      runningChecks: ['Only when no STOP is active: measure the ECM supply and earth voltages while cranking.'],
       reference: PRACTICE,
     },
     {
@@ -166,7 +172,8 @@ export const NO_START: FaultFamily = {
         { when: is('smoke', 'white'), effect: 'supports', because: 'White vapour: fuel injected but not burning (low compression temperature)' },
         { when: is('cold', 'warm'), effect: 'excludes', because: 'Warm conditions' },
       ],
-      actions: ['Test the glow plugs or intake heater and their relay/timer; use the OEM-approved cold-start procedure only.'],
+      actions: ['With the set isolated: test the glow plugs or intake heater and their relay/timer.'],
+      runningChecks: ['Only when no STOP is active: start using the OEM-approved cold-start procedure only.'],
       reference: PRACTICE,
     },
     {
@@ -175,7 +182,8 @@ export const NO_START: FaultFamily = {
         { when: { all: [is('smoke', 'white'), is('cold', ['warm', 'aid-ok'])] }, effect: 'supports', because: 'White vapour in warm conditions or with a working start aid' },
         { when: { all: [is('fuelAtFilter', 'yes'), is('shutoff', 'energised'), is('ecmCode', 'no')] }, effect: 'supports', because: 'Fuel and electrics check out' },
       ],
-      actions: ['Compression test per the OEM procedure; check injection timing after any pump or timing work.'],
+      actions: ['With the set isolated: check the injection timing marks after any pump or timing work.'],
+      runningChecks: ['Only when no STOP is active: compression test (cranking) per the OEM procedure.'],
       reference: PRACTICE,
     },
   ],
@@ -208,6 +216,8 @@ export const LOW_OIL_PRESSURE: FaultFamily = {
       warning: 'CAUTION: oil temperature has reached the OEM warning value: reduce the load and check the cooling; if it reaches the shutdown value, STOP the engine.' },
   ],
   stopRules: [
+    // Safety review F9: zero oil pressure needs no number to be a stop condition (software safeguard, not an OEM limit).
+    { when: { q: 'oilPressure', op: 'le', value: 0 }, level: 'STOP', message: 'STOP — Oil pressure reads zero. Do not continue operating until the reading and the lubrication system have been checked by a qualified technician.', label: 'This is a conservative software safeguard, not an OEM limit.' },
     { when: is('knock', 'yes'), level: 'STOP', message: 'STOP: knocking with an oil pressure problem points to bearing damage. Do not restart; inspect the bearings and the oil filter for metal.' },
     { when: is('oilCondition', ['metal', 'milky']), level: 'STOP', message: 'STOP: metal or coolant in the oil. Do not run until the source is found (bearings; head gasket, oil cooler or liners).' },
     { when: is('oilLevel', 'low'), level: 'STOP', message: 'STOP: oil level below the low mark. Do not run until topped up to the mark with the correct grade and the leak or consumption is found.' },
@@ -219,7 +229,8 @@ export const LOW_OIL_PRESSURE: FaultFamily = {
         { when: is('oilLevel', 'low'), effect: 'strongly', because: 'Level below the low mark' },
         { when: is('oilLevel', 'ok'), effect: 'excludes', because: 'Level between the marks' },
       ],
-      actions: ['Top up with the OEM grade; find external leaks; check consumption (blue smoke, breather).'],
+      actions: ['Engine stopped, on level ground: top up with the OEM grade; find external leaks.'],
+      runningChecks: ['Only when no STOP is active: check oil consumption in service (blue smoke, breather).'],
       reference: PRACTICE,
     },
     {
@@ -229,7 +240,8 @@ export const LOW_OIL_PRESSURE: FaultFamily = {
         { when: is('mechanicalAgrees', 'no'), effect: 'excludes', because: 'The mechanical gauge also reads low' },
         { when: is('gauge', 'sender'), effect: 'supports', because: 'Only the panel reading is available' },
       ],
-      actions: ['Confirm with a mechanical gauge before any engine work; check the sender, its wiring and the controller calibration.'],
+      actions: ['With the set isolated: check the sender, its wiring and the controller calibration.'],
+      runningChecks: ['Only when no STOP is active: confirm the pressure with a mechanical test gauge (fitted with the engine stopped) before any other engine work.'],
       reference: PRACTICE,
     },
     {
@@ -264,6 +276,7 @@ export const LOW_OIL_PRESSURE: FaultFamily = {
         { when: is('recentWork', 'overhaul'), effect: 'supports', because: 'Recent overhaul or bearing work (clearances, priming, debris)' },
       ],
       actions: ['Do not run. Drop the sump, inspect main and big-end bearings and journals; measure clearances.'],
+      doNotRun: true,
       reference: PRACTICE,
     },
     {
@@ -281,7 +294,8 @@ export const LOW_OIL_PRESSURE: FaultFamily = {
         { when: { q: 'oilTemp', op: 'geRef', ref: 'oemMaxOilTemp' }, effect: 'strongly', because: 'Oil temperature at or above the OEM maximum' },
         { when: { q: 'oilTemp', op: 'ltRef', ref: 'oemMaxOilTemp', factor: 0.9 }, effect: 'contradicts', because: 'Oil temperature well within the OEM maximum' },
       ],
-      actions: ['Use the overheating checks; check the oil cooler and load.'],
+      actions: ['With the set stopped and cooled: check the oil cooler for blockage and the oil grade.'],
+      runningChecks: ['Only when no STOP is active: use the overheating checks and check the load.'],
       reference: PRACTICE,
     },
   ],
@@ -312,15 +326,17 @@ export const OVERHEATING: FaultFamily = {
   ],
   stopRules: [
     { when: is('gasBubbles', 'yes'), level: 'STOP', message: 'STOP: combustion gas in the coolant suggests a head gasket, cracked head or liner. Do not keep topping up and running.' },
+    // Coolant low with the temperature at the limit entered (any classification): stop and let it cool (safety review F3).
+    { when: { all: [is('coolantLevel', 'low'), { q: 'coolantTemp', op: 'geRef', ref: 'oemAlarmCoolantTemp' }] }, level: 'STOP', message: 'STOP the engine: coolant is low and the temperature has reached the limit entered. Let it cool before checking; never open a hot radiator cap.' },
     { when: is('coolantLevel', ['low', 'not-checked']), level: 'CAUTION', message: 'Do not open the radiator or expansion-tank cap while hot: coolant under pressure scalds. Let the engine cool first.' },
   ],
   causes: [
     { id: 'low-coolant', title: 'Low coolant / leak', evidence: [{ when: is('coolantLevel', 'low'), effect: 'strongly', because: 'Coolant low' }, { when: is('coolantLevel', 'ok'), effect: 'excludes', because: 'Coolant at the correct level' }], actions: ['When cold, top up with the correct coolant mix; pressure-test for leaks (hoses, radiator, water pump seal).'], reference: PRACTICE },
-    { id: 'gasket', title: 'Head gasket, cracked head or liner', evidence: [{ when: is('gasBubbles', 'yes'), effect: 'strongly', because: 'Combustion gas in the coolant' }, { when: is('gasBubbles', 'no'), effect: 'contradicts', because: 'No gas in the coolant' }], actions: ['Combustion-gas (block) test; pressure test; inspect the head and liners.'], reference: PRACTICE },
+    { id: 'gasket', title: 'Head gasket, cracked head or liner', evidence: [{ when: is('gasBubbles', 'yes'), effect: 'strongly', because: 'Combustion gas in the coolant' }, { when: is('gasBubbles', 'no'), effect: 'contradicts', because: 'No gas in the coolant' }], actions: ['Engine stopped and cooled: pressure test; combustion-gas (block) test on the cold coolant; inspect the head and liners.'], doNotRun: true, reference: PRACTICE },
     { id: 'belt', title: 'Fan or water-pump belt', evidence: [{ when: is('belt', ['slack', 'broken']), effect: 'strongly', because: 'Belt slack, glazed or broken' }, { when: is('belt', 'ok'), effect: 'excludes', because: 'Belt correct' }], actions: ['Isolate the set, then replace or tension the belt to the OEM figure.'], reference: PRACTICE },
-    { id: 'radiator', title: 'Blocked radiator', evidence: [{ when: is('radiator', 'blocked'), effect: 'strongly', because: 'Radiator core dirty or blocked' }, { when: is('radiator', 'clean'), effect: 'excludes', because: 'Radiator clean' }], actions: ['Clean the core from the fan side outwards with low-pressure air or water; check internal blockage by temperature drop across the core.'], reference: PRACTICE },
+    { id: 'radiator', title: 'Blocked radiator', evidence: [{ when: is('radiator', 'blocked'), effect: 'strongly', because: 'Radiator core dirty or blocked' }, { when: is('radiator', 'clean'), effect: 'excludes', because: 'Radiator clean' }], actions: ['With the set stopped, isolated and cooled: clean the core from the fan side outwards with low-pressure air or water.'], runningChecks: ['Only when no STOP is active: check internal blockage by the temperature drop across the core.'], reference: PRACTICE },
     { id: 'airflow', title: 'Hot air recirculation or restricted room airflow', evidence: [{ when: is('airflow', ['recirculating', 'restricted']), effect: 'strongly', because: 'Room or canopy airflow problem' }, { when: is('airflow', 'ok'), effect: 'excludes', because: 'Free airflow' }], actions: ['Clear the inlet and outlet; duct the radiator discharge outside; check louvres open.'], reference: PRACTICE },
-    { id: 'overload', title: 'Overload', evidence: [{ when: { q: 'loadPct', op: 'gt', value: 100 }, effect: 'strongly', because: 'Load above the rating' }, { when: { q: 'loadPct', op: 'le', value: 80 }, effect: 'contradicts', because: 'Load well within the rating' }], actions: ['Reduce load to within the rating at site conditions (altitude and temperature derating).'], reference: PRACTICE },
+    { id: 'overload', title: 'Overload', evidence: [{ when: { q: 'loadPct', op: 'gt', value: 100 }, effect: 'strongly', because: 'Load above the rating' }, { when: { q: 'loadPct', op: 'le', value: 80 }, effect: 'contradicts', because: 'Load well within the rating' }], actions: ['Compare the connected load with the rating at site conditions (altitude and temperature derating) from the load list.'], runningChecks: ['Only when no STOP is active: reduce the load to within the rating.'], reference: PRACTICE },
     { id: 'thermostat', title: 'Thermostat stuck closed', evidence: [{ when: is('thermostat', 'stuck'), effect: 'strongly', because: 'Thermostat stuck closed' }, { when: is('thermostat', 'ok'), effect: 'excludes', because: 'Thermostat opens correctly' }], actions: ['Replace the thermostat with the OEM rating.'], reference: PRACTICE },
     { id: 'sensor', title: 'Temperature sender or display fault', evidence: [{ when: is('sensorCheck', 'panel-high'), effect: 'strongly', because: 'Panel reads higher than an independent thermometer' }, { when: is('sensorCheck', 'agrees'), effect: 'excludes', because: 'Independent reading agrees' }], actions: ['Check the sender and wiring; do not ignore a real overheat to "fix" a sender.'], reference: PRACTICE },
   ],
@@ -334,11 +350,11 @@ export const KNOCK_SEIZURE: FaultFamily = {
   review: 'technician review pending',
   questions: [
     { id: 'where', kind: 'choice', text: 'Where is the noise?', options: [{ value: 'engine', label: 'Engine block / sump' }, { value: 'top', label: 'Top of the engine (valve cover)' }, { value: 'generator-end', label: 'Alternator / generator end' }, { value: 'unsure', label: 'Not sure' }] },
-    { id: 'when', kind: 'choice', text: 'When is it loudest?', options: [{ value: 'load', label: 'Under load' }, { value: 'idle', label: 'At idle / when off load' }, { value: 'always', label: 'All the time' }] },
+    { id: 'when', kind: 'choice', text: 'When is it loudest?', options: [{ value: 'load', label: 'Under load' }, { value: 'idle', label: 'At idle / when off load' }, { value: 'always', label: 'All the time' }], needsRunning: true },
     { id: 'metal', kind: 'choice', text: 'Metal in the oil filter or sump?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }, { value: 'not-checked', label: 'Not checked' }] },
-    { id: 'pressureLow', kind: 'choice', text: 'Oil pressure', options: [{ value: 'low', label: 'Low' }, { value: 'normal', label: 'Normal (mechanical gauge)' }, { value: 'not-checked', label: 'Not checked' }] },
+    { id: 'pressureLow', kind: 'choice', text: 'Oil pressure', options: [{ value: 'low', label: 'Low' }, { value: 'normal', label: 'Normal (mechanical gauge)' }, { value: 'not-checked', label: 'Not checked' }], needsRunning: true },
     { id: 'afterOverhaul', kind: 'choice', text: 'Recent overhaul?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
-    { id: 'smoke', kind: 'choice', text: 'Exhaust', options: [{ value: 'normal', label: 'Normal' }, { value: 'black', label: 'Black smoke' }, { value: 'white', label: 'White smoke' }] },
+    { id: 'smoke', kind: 'choice', text: 'Exhaust', options: [{ value: 'normal', label: 'Normal' }, { value: 'black', label: 'Black smoke' }, { value: 'white', label: 'White smoke' }], needsRunning: true },
   ],
   stopRules: [
     { when: is('where', ['engine', 'top', 'generator-end', 'unsure']), level: 'STOP', message: 'STOP THE SET: knocking, bearing noise or seizure can wreck the crankshaft, break a connecting rod or destroy the alternator. Do not restart or try to free it with the starter; inspect first.' },
@@ -346,7 +362,7 @@ export const KNOCK_SEIZURE: FaultFamily = {
   causes: [
     { id: 'bearing', title: 'Main or big-end bearing failure', evidence: [{ when: is('metal', 'yes'), effect: 'strongly', because: 'Metal in the oil' }, { when: is('pressureLow', 'low'), effect: 'strongly', because: 'Low oil pressure' }, { when: is('where', 'engine'), effect: 'supports', because: 'Noise from the block or sump' }, { when: is('when', 'load'), effect: 'supports', because: 'Louder under load' }, { when: is('where', 'generator-end'), effect: 'excludes', because: 'Noise from the alternator end' }], actions: ['Drop the sump; inspect bearings and journals; measure clearances; find the cause (oil starvation, contamination, clearance).'], reference: PRACTICE },
     { id: 'post-overhaul', title: 'Post-overhaul fault: clearances, priming, debris or timing', evidence: [{ when: is('afterOverhaul', 'yes'), effect: 'strongly', because: 'Recent overhaul' }, { when: is('afterOverhaul', 'no'), effect: 'excludes', because: 'No recent overhaul' }], actions: ['Check bearing and piston clearances, oil gallery plugs, pump priming, injection timing and torque records.'], reference: PRACTICE },
-    { id: 'combustion', title: 'Combustion knock (injector or timing)', evidence: [{ when: is('smoke', ['black', 'white']), effect: 'supports', because: 'Smoke with the knock' }, { when: is('where', 'top'), effect: 'supports', because: 'Noise from the top of the engine' }, { when: { all: [is('metal', 'no'), is('pressureLow', 'normal')] }, effect: 'supports', because: 'No metal and normal pressure' }], actions: ['Cylinder cut-out test to find the cylinder; test injectors; check injection timing.'], reference: PRACTICE },
+    { id: 'combustion', title: 'Combustion knock (injector or timing)', evidence: [{ when: is('smoke', ['black', 'white']), effect: 'supports', because: 'Smoke with the knock' }, { when: is('where', 'top'), effect: 'supports', because: 'Noise from the top of the engine' }, { when: { all: [is('metal', 'no'), is('pressureLow', 'normal')] }, effect: 'supports', because: 'No metal and normal pressure' }], actions: ['With the set stopped and isolated: remove and test the injectors; check the injection timing marks.'], runningChecks: ['Only when no STOP is active: cylinder cut-out test per the OEM procedure.'], reference: PRACTICE },
     { id: 'valvetrain', title: 'Valve train (clearance, broken spring, rocker)', evidence: [{ when: is('where', 'top'), effect: 'strongly', because: 'Noise from the valve cover' }, { when: is('when', 'idle'), effect: 'supports', because: 'Noticeable at idle' }], actions: ['Check valve clearances and springs per the manual.'], reference: PRACTICE },
     { id: 'alternator-bearing', title: 'Alternator bearing or coupling', evidence: [{ when: is('where', 'generator-end'), effect: 'strongly', because: 'Noise from the generator end' }, { when: is('where', 'engine'), effect: 'excludes', because: 'Noise from the engine' }], actions: ['Isolate; check bearing play, heat and grease; check coupling alignment and the flex plate.'], reference: ALT_PRACTICE },
   ],
@@ -382,19 +398,24 @@ export const NO_VOLTAGE: FaultFamily = {
       warning: 'CAUTION: frequency has reached the lowest steady-state value allowed (warning value): transfer or shed sensitive loads and use the speed/governor checks.' },
   ],
   stopRules: [
-    { when: { q: 'voltage', op: 'ge', value: 0 }, level: 'CAUTION', message: 'Alternator and panel terminals are lethal while running: stop the set, isolate and lock off before touching wiring; prove dead with an approved tester; measure live only with rated instruments.' },
+    // Safety review F9: zero insulation resistance needs no number to be a stop condition (software safeguard, not an OEM limit).
+    { when: { q: 'insulation', op: 'le', value: 0 }, level: 'STOP', message: 'STOP — Insulation resistance reads zero. Do not run or energise the set until the windings have been checked by a qualified technician.', label: 'This is a conservative software safeguard, not an OEM limit.' },
+    { when: { q: 'voltage', op: 'ge', value: 0 }, level: 'CAUTION', message: 'Alternator and panel terminals are lethal while running: stop the set, isolate and lock off before touching wiring; prove dead with an approved tester; measure live only with rated instruments.', underStop: 'Alternator and panel terminals are lethal: keep the set stopped, isolated and locked off; prove dead with an approved tester before touching any wiring.' },
   ],
   causes: [
-    { id: 'speed', title: 'Low engine speed (frequency low)', evidence: [{ when: { q: 'frequency', op: 'leRef', ref: 'oemMinFrequency' }, effect: 'strongly', because: 'Frequency at or below the lowest steady-state frequency allowed for this set (OEM / governor settings): the AVR reduces voltage when underspeed' }, { when: { q: 'frequency', op: 'gtRef', ref: 'oemMinFrequency' }, effect: 'excludes', because: 'Frequency above the lowest steady-state frequency allowed for this set' }], actions: ['Use the speed/governor checks first: the AVR protects the alternator by reducing voltage when the engine is underspeed.'], reference: ALT_PRACTICE },
+    { id: 'speed', title: 'Low engine speed (frequency low)', evidence: [{ when: { q: 'frequency', op: 'leRef', ref: 'oemMinFrequency' }, effect: 'strongly', because: 'Frequency at or below the lowest steady-state frequency allowed for this set (OEM / governor settings): the AVR reduces voltage when underspeed' }, { when: { q: 'frequency', op: 'gtRef', ref: 'oemMinFrequency' }, effect: 'excludes', because: 'Frequency above the lowest steady-state frequency allowed for this set' }], actions: ['With the set stopped and isolated: check the governor actuator, linkage and speed sensor (see the Frequency hunting family).'], runningChecks: ['Only when no STOP is active: check the engine speed at no load against rated; the AVR reduces voltage when the engine is underspeed.'], reference: ALT_PRACTICE },
     { id: 'avr-supply', title: 'AVR fuse or supply', evidence: [{ when: is('avrFuse', 'blown'), effect: 'strongly', because: 'AVR fuse blown' }, { when: is('avrFuse', 'ok'), effect: 'excludes', because: 'Fuse and supply OK' }], actions: ['Replace the fuse with the correct rating; find why it blew (shorted diode, wiring) before the set returns to service.'], reference: ALT_PRACTICE },
-    { id: 'residual', title: 'Loss of residual magnetism', evidence: [{ when: is('residual', 'none'), effect: 'strongly', because: 'No residual voltage' }, { when: is('residual', 'present'), effect: 'excludes', because: 'Residual voltage present' }], actions: ['Flash the field per the alternator manual (polarity and voltage as specified).'], reference: ALT_PRACTICE },
+    { id: 'residual', title: 'Loss of residual magnetism', evidence: [{ when: is('residual', 'none'), effect: 'strongly', because: 'No residual voltage' }, { when: is('residual', 'present'), effect: 'excludes', because: 'Residual voltage present' }], actions: ['With the set isolated: check the exciter field wiring and the AVR connections.'], runningChecks: ['Only when no STOP is active: flash the field per the alternator manual (polarity and voltage as specified).'], reference: ALT_PRACTICE },
     { id: 'sensing', title: 'AVR sensing wiring', evidence: [{ when: is('sensing', 'loose'), effect: 'strongly', because: 'Sensing wiring loose or disconnected' }, { when: is('sensing', 'ok'), effect: 'excludes', because: 'Sensing wiring correct' }], actions: ['Isolate; re-make the sensing connections to the wiring diagram for this AVR.'], reference: ALT_PRACTICE },
     { id: 'diodes', title: 'Rotating rectifier (diode) failure', evidence: [{ when: is('diodes', 'failed'), effect: 'strongly', because: 'Diode failed on test' }, { when: is('diodes', 'ok'), effect: 'excludes', because: 'Diodes test good' }, { when: is('avrFuse', 'blown'), effect: 'supports', because: 'A shorted diode often blows the AVR fuse' }], actions: ['Replace the full diode set and the surge suppressor per the manual.'], reference: ALT_PRACTICE },
-    { id: 'winding', title: 'Winding insulation fault', evidence: [{ when: { q: 'insulation', op: 'leRef', ref: 'oemMinInsulation' }, effect: 'strongly', because: 'Insulation at or below the manufacturer minimum' }, { when: { q: 'insulation', op: 'gtRef', ref: 'oemMinInsulation', factor: 10 }, effect: 'contradicts', because: 'Insulation well above the minimum' }], actions: ['Dry out per the manual; re-test; rewind if it does not recover.'], reference: ALT_PRACTICE },
+    { id: 'winding', title: 'Winding insulation fault', evidence: [{ when: { q: 'insulation', op: 'leRef', ref: 'oemMinInsulation' }, effect: 'strongly', because: 'Insulation at or below the manufacturer minimum' }, { when: { q: 'insulation', op: 'gtRef', ref: 'oemMinInsulation', factor: 10 }, effect: 'contradicts', because: 'Insulation well above the minimum' }], actions: ['With the set isolated: dry out per the alternator manual; re-test the insulation; rewind if it does not recover.'], reference: ALT_PRACTICE },
     { id: 'avr', title: 'AVR failure or setting', evidence: [{ when: { all: [is('avrFuse', 'ok'), is('residual', 'present'), is('sensing', 'ok'), is('diodes', 'ok')] }, effect: 'strongly', because: 'Supply, residual, sensing and diodes check out' }, { when: { all: [{ q: 'voltage', op: 'gtRef', ref: 'ratedVoltage', factor: 0.95 }, { q: 'voltage', op: 'ltRef', ref: 'ratedVoltage', factor: 1.05 }] }, effect: 'excludes', because: 'Voltage within ±5 % of rated' }], actions: ['Check the AVR settings (voltage, stability, under-frequency roll-off); replace the AVR with the correct model if it does not regulate.'], reference: ALT_PRACTICE },
-    { id: 'overload', title: 'Overload or a heavy motor start pulling voltage down', evidence: [{ when: { q: 'loadPct', op: 'gt', value: 100 }, effect: 'strongly', because: 'Load above the rating' }, { when: { q: 'loadPct', op: 'lt', value: 10 }, effect: 'excludes', because: 'Little or no load' }], actions: ['Reduce load; stage motor starts; check the motor-start dip with the Calculators tab.'], reference: ALT_PRACTICE },
+    { id: 'overload', title: 'Overload or a heavy motor start pulling voltage down', evidence: [{ when: { q: 'loadPct', op: 'gt', value: 100 }, effect: 'strongly', because: 'Load above the rating' }, { when: { q: 'loadPct', op: 'lt', value: 10 }, effect: 'excludes', because: 'Little or no load' }], actions: ['Compare the connected load and the largest motor start with the rating (Calculators tab).'], runningChecks: ['Only when no STOP is active: reduce the load and stage motor starts.'], reference: ALT_PRACTICE },
   ],
 };
+
+// The cross-family safety screen is asked first in every family (safety review F3).
+for (const f of [NO_CRANK, NO_START, LOW_OIL_PRESSURE, OVERHEATING, KNOCK_SEIZURE, NO_VOLTAGE]) withScreen(f);
 
 export const FAMILIES: FaultFamily[] = [NO_CRANK, NO_START, LOW_OIL_PRESSURE, OVERHEATING, KNOCK_SEIZURE, NO_VOLTAGE, FREQUENCY_HUNTING, OVERSPEED, CHARGING, EXHAUST_SMOKE];
 export { FREQUENCY_HUNTING, OVERSPEED, CHARGING, EXHAUST_SMOKE };

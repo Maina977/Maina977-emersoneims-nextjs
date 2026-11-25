@@ -18,6 +18,7 @@
  *    `needsRunning` (never offered as the next check while a STOP is active).
  */
 import type { Condition, FaultFamily } from './types';
+import { withScreen } from './safetyScreen';
 
 const PRACTICE = 'General diesel generator service practice (EmersonEIMS); confirm limits and procedure in the OEM service manual for this engine.';
 const ALT_PRACTICE = 'General alternator service practice (EmersonEIMS); confirm limits and procedure in the alternator and AVR manuals.';
@@ -44,7 +45,7 @@ export const FREQUENCY_HUNTING: FaultFamily = {
   references: [REF_ISO_8528_5, REF_ISO_3046_4],
   mandatorySafety: [
     `Before touching the governor actuator, fuel linkage, speed sensor or their wiring: ${LOCK_OFF}, and isolate the generator output. On an automatic-start set the linkage, fan and belts can move without warning.`,
-    'Readings on a running set (frequency, voltage) are taken only from the panel or with rated instruments on fixed test points, guards in place. Never adjust the linkage or reach past a guard on a running engine.',
+    'Never adjust the linkage or reach past a guard on a running engine; readings are taken only from the panel or with rated instruments on fixed test points, and only when no STOP applies.',
   ],
   questions: [
     { id: 'overspeedTrip', kind: 'choice', text: 'Has the hunting caused an overspeed shutdown?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
@@ -63,7 +64,7 @@ export const FREQUENCY_HUNTING: FaultFamily = {
   stopRules: [
     { when: is('overspeedTrip', 'yes'), level: 'STOP', message: 'STOP: the hunting has reached an overspeed shutdown. Do not reset and restart. Use the "Overspeed shutdown" workflow first: linkage, actuator, speed sensor and trip setting are checked with the set stopped and isolated.' },
     { when: is('linkage', 'disconnected'), level: 'STOP', message: 'STOP: a disconnected, broken or seized fuel linkage can let the engine overspeed. Do not run until it is repaired and moves freely through its full travel (checked with the set stopped and isolated).' },
-    { when: is('parallel', 'parallel'), level: 'CAUTION', message: 'Open the generator circuit breaker and take the set out of parallel before diagnosing: a hunting set in parallel can cause reverse power and breaker trips. Do not re-synchronise until its frequency is stable. Synchronising limits are NOT VERIFIED here; use the controller settings sheet.' },
+    { when: is('parallel', 'parallel'), level: 'CAUTION', message: 'Open the generator circuit breaker and take the set out of parallel before diagnosing: a hunting set in parallel can cause reverse power and breaker trips. Do not re-synchronise until its frequency is stable. Synchronising limits are NOT VERIFIED here; use the controller settings sheet.', underStop: 'Keep the generator circuit breaker open and the set out of parallel; do not re-synchronise until the fault is found and cleared.' },
   ],
   limits: [
     { id: 'swing-band', reading: 'freqSwing', limit: 'oemMaxSwing', protective: false,
@@ -152,7 +153,8 @@ export const FREQUENCY_HUNTING: FaultFamily = {
         { when: { q: 'freqSwing', op: 'ltRef', ref: 'oemMaxSwing' }, effect: 'strongly', because: 'Measured swing is inside the band entered for this set' },
         { when: { q: 'freqSwing', op: 'geRef', ref: 'oemMaxSwing' }, effect: 'excludes', because: 'Measured swing has reached or exceeded the band entered for this set' },
       ],
-      actions: ['Check the meter and how the swing was measured (steady load, long enough); record the reading. A swing inside the band does not by itself show a fault; it is not a pass against ISO 8528-5 unless the band entered is the agreed one.'],
+      actions: ['Check the meter type and its calibration; record the reading. A swing inside the band does not by itself show a fault; it is not a pass against ISO 8528-5 unless the band entered is the agreed one.'],
+      runningChecks: ['Only when no STOP is active: repeat the measurement at steady load for long enough to be representative.'],
       reference: REF_ISO_8528_5,
     },
   ],
@@ -395,7 +397,7 @@ export const EXHAUST_SMOKE: FaultFamily = {
   review: 'technician review pending',
   references: [REF_ISO_8528_1, REF_NFPA_110],
   mandatorySafety: [
-    'Exhaust gas contains carbon monoxide: never run the set in an enclosed or poorly ventilated space to watch the smoke; observe from outside the exhaust path.',
+    'Exhaust gas contains carbon monoxide: the set must never run in an enclosed or poorly ventilated space.',
     `The exhaust manifold, turbocharger and silencer stay hot long after stopping. Intake, turbo and injector checks only after you ${LOCK_OFF} and the engine has cooled.`,
   ],
   questions: [
@@ -414,12 +416,13 @@ export const EXHAUST_SMOKE: FaultFamily = {
     { id: 'waterInFuel', kind: 'choice', text: 'Water separator / fuel sample', options: [{ value: 'clean', label: 'Clean' }, { value: 'water', label: 'Water present' }, { value: 'not-checked', label: 'Not checked' }] },
   ],
   stopRules: [
-    { when: { all: [is('colour', 'white'), { any: [is('coolantLoss', 'losing'), is('smell', 'sweet')] }] }, level: 'STOP', message: 'STOP: white smoke with coolant loss or a sweet smell points to coolant entering the cylinders (head gasket, cracked head or liner). Do not run or crank: a hydraulic lock can bend a connecting rod. Inspect first. Never open the radiator cap while hot.' },
+    // Coolant entering the cylinders: white smoke with coolant loss or a sweet smell, OR coolant loss with a sweet smell whatever the colour (safety review F8).
+    { when: { any: [{ all: [is('colour', 'white'), { any: [is('coolantLoss', 'losing'), is('smell', 'sweet')] }] }, { all: [is('coolantLoss', 'losing'), is('smell', 'sweet')] }] }, level: 'STOP', message: 'STOP: coolant loss with white smoke or a sweet exhaust smell points to coolant entering the cylinders (head gasket, cracked head or liner). Do not run or crank: a hydraulic lock can bend a connecting rod. Inspect first. Never open the radiator cap while hot.' },
     { when: is('coolantLoss', 'losing'), level: 'CAUTION', message: 'Coolant loss: do not open the radiator or expansion-tank cap while hot (pressurised coolant scalds). Check it cold.' },
     { when: is('oilCondition', 'milky'), level: 'STOP', message: 'STOP: milky oil means coolant in the oil. Do not run until the source is found (head gasket, oil cooler, liners).' },
     { when: is('oilCondition', 'fuel'), level: 'STOP', message: 'STOP: oil thinned by fuel can starve the bearings. Do not run until the fuel leak into the sump is found and the oil and filter are changed.' },
     { when: is('turboOil', 'oil'), level: 'STOP', message: 'STOP: oil in the intake or at the turbo outlet. A failed turbo seal can feed oil into the engine and cause a runaway, and the turbo can fail completely. Do not run until inspected.' },
-    { when: { q: 'loadPct', op: 'gt', value: 100 }, level: 'CAUTION', message: 'The load entered is above 100 % of the rating: reduce the load to within the rating for this duty (ISO 8528-1 rating definitions, OEM data) or stop the set. Running overloaded overheats and damages the engine.' },
+    { when: { q: 'loadPct', op: 'gt', value: 100 }, level: 'CAUTION', message: 'The load entered is above 100 % of the rating: reduce the load to within the rating for this duty (ISO 8528-1 rating definitions, OEM data) or stop the set. Running overloaded overheats and damages the engine.', underStop: 'Recorded for the investigation: the load was above 100 % of the rating when the fault was seen.' },
   ],
   causes: [
     {
@@ -440,7 +443,8 @@ export const EXHAUST_SMOKE: FaultFamily = {
         { when: { q: 'loadPct', op: 'le', value: 80 }, effect: 'contradicts', because: 'Load well within the rating' },
         { when: is('colour', ['blue', 'white']), effect: 'excludes', because: 'Overload gives black smoke, not blue or white' },
       ],
-      actions: ['Reduce the load to within the rating at site conditions (altitude and temperature derating per the OEM data); check the load profile with the Calculators tab.'],
+      actions: ['Compare the connected load with the rating at site conditions (altitude and temperature derating per the OEM data) from the load list and the Calculators tab.'],
+      runningChecks: ['Only when no STOP is active: reduce the load to within the rating.'],
       reference: `${PRACTICE} ${REF_ISO_8528_1}`,
     },
     {
@@ -472,7 +476,8 @@ export const EXHAUST_SMOKE: FaultFamily = {
         { when: { all: [is('colour', 'blue'), is('oilUse', 'high')] }, effect: 'supports', because: 'Blue smoke with high oil consumption' },
         { when: is('colour', 'black'), effect: 'contradicts', because: 'Black smoke, not blue' },
       ],
-      actions: ['Compression test per the OEM procedure (set stopped and isolated between tests); measure blow-by per the OEM method; plan an overhaul if confirmed.'],
+      actions: ['Plan a compression and blow-by test per the OEM procedure; plan an overhaul if confirmed.'],
+      runningChecks: ['Only when no STOP is active: compression test (cranking) and blow-by measurement per the OEM procedure.'],
       reference: PRACTICE,
     },
     {
@@ -495,6 +500,7 @@ export const EXHAUST_SMOKE: FaultFamily = {
         { when: is('colour', 'black'), effect: 'excludes', because: 'Black smoke, not white' },
       ],
       actions: ['Do not run. Pressure-test the cooling system (cold) and do a combustion-gas (block) test; inspect the head gasket, head and liners.'],
+      doNotRun: true,
       reference: PRACTICE,
     },
     {
@@ -504,7 +510,8 @@ export const EXHAUST_SMOKE: FaultFamily = {
         { when: is('smell', 'raw-fuel'), effect: 'supports', because: 'Raw-fuel smell' },
         { when: is('when', 'full-load'), effect: 'contradicts', because: 'Worst at high load, not after a cold start' },
       ],
-      actions: ['Test the glow plugs or intake heater and their relay (set stopped and isolated); see the "Cranks but will not start" cold-start checks; compression test and injection timing per the OEM procedure.'],
+      actions: ['With the set isolated: test the glow plugs or intake heater and their relay; check the injection timing marks; see the "Cranks but will not start" cold-start checks.'],
+      runningChecks: ['Only when no STOP is active: compression test (cranking) per the OEM procedure.'],
       reference: PRACTICE,
     },
     {
@@ -519,5 +526,8 @@ export const EXHAUST_SMOKE: FaultFamily = {
     },
   ],
 };
+
+// The cross-family safety screen is asked first in every family (safety review F3).
+for (const f of [FREQUENCY_HUNTING, OVERSPEED, CHARGING, EXHAUST_SMOKE]) withScreen(f);
 
 export const EXPANSION_FAMILIES: FaultFamily[] = [FREQUENCY_HUNTING, OVERSPEED, CHARGING, EXHAUST_SMOKE];

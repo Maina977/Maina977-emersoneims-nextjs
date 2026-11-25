@@ -13,7 +13,9 @@ import { FAMILIES, familyFor } from '@/lib/generator-oracle/diagnostics/families
 import { diagnosisRecord, refQuestions } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
 import { knownModels, publishedLimitFor, questionReferenceNote, referencesFor, type Equipment } from '@/lib/generator-oracle/diagnostics/oemReferences';
 import { classKey, limitReadings, sourceKey, tolKey } from '@/lib/generator-oracle/diagnostics/engine';
-import { loadGuidedEquipment, loadGuidedSession, saveGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
+import { loadGuidedEquipment, loadGuidedSession, mergedRaw, saveGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
+import { SCREEN_BUCKET, SCREEN_QUESTIONS, isScreenKey } from '@/lib/generator-oracle/diagnostics/safetyScreen';
+import { publishedEntryOf } from '@/lib/generator-oracle/diagnostics/oemReferences';
 import { LIMIT_CLASS_OPTIONS, type Question } from '@/lib/generator-oracle/diagnostics/types';
 
 const getStore = (): Storage | null => { try { return window.localStorage; } catch { return null; } };
@@ -26,7 +28,7 @@ interface QProps {
 }
 
 function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, protective, published }: QProps) {
-  const id = `gd-${scope}-${q.id}`;
+  const id = `gd-${scope}-${q.id.replace(/\./g, '-')}`;
   const value = values[q.id] ?? '';
   const limit = q.kind === 'number' ? q.oemLimit : undefined;
   return (
@@ -88,20 +90,42 @@ export default function GuidedDiagnosisPanel() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const dirty = useRef(false);
   const family = FAMILIES.find((f) => f.id === familyId)!;
-  const values = raw[familyId] ?? {};
+  // This family's answers with the shared safety screen merged in (the screen is answered once for all families).
+  const values = mergedRaw(raw, familyId);
 
   // The answers are kept in browser storage so a job card can record the same diagnosis.
   const [equipment, setEquipment] = useState<Equipment>({});
   useEffect(() => { setRaw(loadGuidedSession(getStore(), FAMILIES)); setEquipment(loadGuidedEquipment(getStore())); }, []);
   useEffect(() => { if (dirty.current) setSaveError(saveGuidedSession(getStore(), raw, equipment)); }, [raw, equipment]);
-  const set = (q: string, v: string) => { dirty.current = true; setRaw((r) => ({ ...r, [familyId]: { ...(r[familyId] ?? {}), [q]: v } })); };
-  const setEq = (k: keyof Equipment, v: string) => { dirty.current = true; setEquipment((e) => ({ ...e, [k]: v || undefined })); };
+  const set = (q: string, v: string) => {
+    dirty.current = true;
+    const bucket = isScreenKey(q) ? SCREEN_BUCKET : familyId;
+    setRaw((r) => ({ ...r, [bucket]: { ...(r[bucket] ?? {}), [q]: v } }));
+  };
+  const setEq = (k: keyof Equipment, v: string) => {
+    dirty.current = true;
+    setEquipment((e) => ({ ...e, [k]: v || undefined }));
+    // Safety review F7: a published model-specific limit is cleared as soon as the equipment changes.
+    setRaw((r) => {
+      const next: RawAnswers = {};
+      for (const [fid, ans] of Object.entries(r)) {
+        const a = { ...ans };
+        for (const key of Object.keys(a)) {
+          if (!key.endsWith('.source') || !publishedEntryOf(a[key])) continue;
+          const lim = key.slice(0, -'.source'.length);
+          delete a[key]; delete a[lim]; delete a[`${lim}.class`];
+        }
+        next[fid] = a;
+      }
+      return next;
+    });
+  };
   const oemQs = useMemo(() => refQuestions(family), [family]);
   const readingsWithTol = useMemo(() => limitReadings(family), [family]);
   const familyRefs = referencesFor(equipment, family.id);
 
   // Same function as the job-card record and the .txt download, so all three agree.
-  const record = useMemo(() => diagnosisRecord(family, values, equipment), [family, values, equipment]);
+  const record = useMemo(() => diagnosisRecord(family, values, equipment, raw), [family, values, equipment, raw]);
   const result = record.result;
 
   const qProps = (q: Question, scope: string): QProps => ({
@@ -164,6 +188,15 @@ export default function GuidedDiagnosisPanel() {
         </div>
       </div>
 
+      <div data-testid="safety-screen" className="rounded-xl border border-red-700/60 bg-red-950/20 p-4 space-y-2">
+        <div className="text-sm font-semibold text-red-200">Safety screen — answered once, applies to every fault family</div>
+        <p className="text-xs text-slate-400">Any “Yes” is a STOP on every tab and on every job card made from this session.</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {SCREEN_QUESTIONS.map((q) => <QuestionInput key={q.id} {...qProps(q, 'screen')} />)}
+        </div>
+        <button type="button" onClick={() => { dirty.current = true; setRaw((r) => ({ ...r, [SCREEN_BUCKET]: {} })); }} className="text-xs text-slate-400 underline">Clear safety screen</button>
+      </div>
+
       {result.stops.length > 0 && (
         <div role="alert" data-testid="safety-messages" className="space-y-2">
           {result.stops.map((s, i) => (
@@ -196,11 +229,12 @@ export default function GuidedDiagnosisPanel() {
               <QuestionInput {...qProps(next, 'next')} />
             </div>
           ) : <p data-testid="next-check" className="text-xs text-slate-400">{result.stopActive ? 'No further check is offered while a STOP is active, other than the stopped-and-isolated checks listed.' : 'All questions answered.'}</p>}
+          {result.runningWithheld ? <p className="text-xs text-red-300">Checks that need the engine running are withheld{result.stopActive ? ' while a STOP is active' : ' because a leading cause says do not run'}.</p> : null}
           {result.invalid.map((i) => <p key={i.q} className="text-xs text-red-300">Refused: {i.reason}</p>)}
           <details>
-            <summary className="cursor-pointer text-xs text-slate-300">All questions ({result.answered}/{family.questions.length} answered)</summary>
+            <summary className="cursor-pointer text-xs text-slate-300">All questions ({result.answered}/{family.questions.length} answered, safety screen included)</summary>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {family.questions.map((q) => <QuestionInput key={q.id} {...qProps(q, 'all')} />)}
+              {family.questions.filter((q) => !isScreenKey(q.id)).map((q) => <QuestionInput key={q.id} {...qProps(q, 'all')} />)}
             </div>
           </details>
           <div className="flex flex-wrap gap-3">

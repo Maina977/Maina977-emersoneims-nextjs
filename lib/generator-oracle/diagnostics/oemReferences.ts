@@ -101,9 +101,27 @@ export function referencesFor(eq: Equipment, familyId: string, questionId?: stri
 }
 
 /** A published limit the technician may enter for this exact model (relation 'published-limit'), or null. */
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+/**
+ * Does the plate typed by the technician agree with the dataset entry? Empty
+ * fields do not block; a typed manufacturer must match the entry's make, and a
+ * typed model must contain the entry's model code (its first token, e.g.
+ * "1104D") or be contained in the full model name (safety review F7).
+ */
+export function plateMatches(eq: Equipment, entry: ReferenceEntry, model: string): boolean {
+  if (eq.manufacturer?.trim() && !norm(entry.equipment.make).includes(norm(eq.manufacturer)) && !norm(eq.manufacturer).includes(norm(entry.equipment.make))) return false;
+  if (eq.model?.trim()) {
+    const code = norm(model.split(/\s+/)[0]);
+    const typed = norm(eq.model);
+    if (!typed.includes(code) && !norm(model).includes(typed)) return false;
+  }
+  return true;
+}
+
 export function publishedLimitFor(eq: Equipment, familyId: string, questionId: string): { value: number; classification: 'shutdown' | 'warning'; source: string; ref: ShownReference } | null {
   const r = referencesFor(eq, familyId, questionId).find((x) => x.entry.relatesTo?.relation === 'published-limit' && x.entry.value !== undefined && x.entry.classification !== 'not-a-limit');
-  if (!r) return null;
+  if (!r || !plateMatches(eq, r.entry, r.matchedModel)) return null;
   const s = r.source;
   return {
     value: r.entry.value!,
@@ -112,6 +130,9 @@ export function publishedLimitFor(eq: Equipment, familyId: string, questionId: s
     ref: r,
   };
 }
+
+/** The dataset entry id a published-limit source names, or null for a figure typed by the technician. */
+export const publishedEntryOf = (source: string | undefined): string | null => (source ? (/dataset entry ([a-z0-9-]+)/.exec(source)?.[1] ?? null) : null);
 
 /** What to show beside an OEM-figure question: the published context for the selected model, or NOT VERIFIED. */
 export function questionReferenceNote(eq: Equipment, familyId: string, questionId: string): string {

@@ -73,6 +73,11 @@ export interface Cause {
    * active, so they can never follow a STOP.
    */
   runningChecks?: string[];
+  /**
+   * This cause says "do not run": while it is among the leading causes (top three,
+   * score > 0), every running check and running-only question is withheld too.
+   */
+  doNotRun?: boolean;
   /** Where this cause and its checks come from. */
   reference: string;
 }
@@ -82,6 +87,16 @@ export interface StopRule {
   /** STOP: do not run; CAUTION: run only as described. */
   level: 'STOP' | 'CAUTION';
   message: string;
+  /** A separate line shown under the message (e.g. "conservative software safeguard"). */
+  label?: string;
+  /**
+   * CAUTION only: what to show instead while any STOP is active (null = not shown),
+   * so nothing after a STOP implies continued running. Omitted = shown unchanged
+   * (the text must then be safe with the engine stopped).
+   */
+  underStop?: string | null;
+  /** Set on the cross-family safety screen's rules. */
+  screen?: boolean;
 }
 
 /** Classification of an OEM limit entered by the technician. */
@@ -123,6 +138,9 @@ export interface LimitStatus {
   reading: string;
   limit: string;
   direction: 'min' | 'max';
+  /** OEM parameter name and the reading's units. */
+  parameter: string;
+  unit: string;
   /** not-verified: no limit entered; inside: strictly inside it; near: within the tolerance entered; reached: at or beyond it. */
   status: 'not-verified' | 'inside' | 'near' | 'reached';
   classification: LimitClass | null;
@@ -182,7 +200,14 @@ export interface DiagnosisResult {
   family: string;
   engineVersion: string;
   /** STOP rules that fired, then the family's mandatory safety, then CAUTION rules that fired. */
-  stops: Array<{ level: StopRule['level']; message: string; /** Separate line shown under the message. */ label?: string }>;
+  stops: Array<{
+    level: StopRule['level']; message: string;
+    /** Separate line shown under the message. */ label?: string;
+    /** screen: cross-family safety screen; family: this family's rules or limits; other-family: a STOP raised in another family of the same session. */
+    origin: 'screen' | 'family' | 'other-family';
+  }>;
+  /** True when running checks and running-only questions are withheld (any STOP, or a leading "do not run" cause). */
+  runningWithheld: boolean;
   /** True when any STOP rule fired: running checks are withheld from every cause. */
   stopActive: boolean;
   /** Every limit rule of the family with its status (exact-threshold rule). */

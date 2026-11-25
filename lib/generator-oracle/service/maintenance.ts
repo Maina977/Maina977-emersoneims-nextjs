@@ -338,10 +338,21 @@ export interface ReportSection { heading: string; lines: string[] }
 export function jobCardReportParts(card: JobCard, asset: Asset): { title: string; notices: string[]; sections: ReportSection[]; footer: string } {
   const list = (xs: string[], empty: string) => (xs.length ? xs.map((x) => `  - ${x}`) : [`  ${empty}`]);
   const flags = readingFlags(card.readings);
+  // Safety review F6: every STOP in the findings (with the label line that follows it) is
+  // repeated as the FIRST section of the report, before the asset and the work.
+  const fl = (card.findings || '').split(/\r?\n/);
+  const stopLines: string[] = [];
+  fl.forEach((l, i) => {
+    if (!/^STOP\b/.test(l)) return;
+    stopLines.push(`  ${l}`);
+    if (fl[i + 1] && /^This is a conservative software safeguard/.test(fl[i + 1])) stopLines.push(`  ${fl[i + 1]}`);
+  });
+  const safety: ReportSection[] = stopLines.length ? [{ heading: 'SAFETY — STOP (repeated from the findings below)', lines: stopLines }] : [];
   return {
     title: `JOB CARD ${card.id} (revision ${card.revision}) — ${card.status}`,
     notices: [`NOTICE: ${TYPED_SIGNOFF_NOTICE}`, `NOTICE: ${TYPED_NAMES_NOTICE}`],
     sections: [
+      ...safety,
       { heading: 'ASSET', lines: [`  ${asset.id}: ${asset.make} ${asset.model} (${asset.ratedKva} kVA), engine ${asset.engine || '—'}, controller ${asset.controller || '—'}, serial ${asset.serial}`] },
       { heading: 'FAULT', lines: [
         `  Reported fault: ${card.reportedFault}`,

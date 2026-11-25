@@ -38,7 +38,7 @@ export const BENCHMARK_CASES: BenchmarkCase[] = [
     problem: 'Controller overspeed shutdown when the breaker opened; log 1720 rpm, trip entered 1700 rpm, rated 1500 rpm.',
     principle: 'An overspeed trip is a protective STOP; a trip on load rejection with a logged speed above the setting is a real overspeed (governor response).',
     inputs: { tripSource: 'controller', runaway: 'no', oilIntake: 'none', linkage: 'ok', whenTripped: 'load-rejection', peakRpm: '1720', oemTripRpm: '1700', 'oemTripRpm.class': 'shutdown', 'oemTripRpm.source': 'TEST settings sheet p. 1', ratedRpm: '1500', speedSensor: 'ok', settingsChanged: 'no' },
-    expect: { stops: ['STOP', 'STOP', 'CAUTION', 'CAUTION'], top: [['governor-response', 4], ['sensor-false', -1]], excludedIncludes: ['linkage', 'oil-fuel'], nextQuestion: null },
+    expect: { stops: ['STOP', 'STOP', 'CAUTION', 'CAUTION'], top: [['governor-response', 4], ['sensor-false', -1]], excludedIncludes: ['linkage', 'oil-fuel'], nextQuestion: 'screen.alarm' },
     source: 'SYNTHETIC; DSE 057-074 Issue 13 p. 97 describes the OVERSPEED shutdown meaning (DSE7200/7300 only).',
   },
   {
@@ -126,7 +126,7 @@ export const BENCHMARK_CASES: BenchmarkCase[] = [
     problem: 'Negative logged speed and an unknown trip source typed.',
     principle: 'Readings outside the physical range and unknown options are refused, never clipped or guessed.',
     inputs: { peakRpm: '-5', tripSource: 'magic' },
-    expect: { stops: ['CAUTION', 'CAUTION'], top: [['governor-response', 0]], invalid: ['tripSource', 'peakRpm'], nextQuestion: 'tripSource' },
+    expect: { stops: ['CAUTION', 'CAUTION'], top: [['governor-response', 0]], invalid: ['tripSource', 'peakRpm'], nextQuestion: 'screen.alarm' },
     source: 'SYNTHETIC; engine validation.',
   },
   {
@@ -134,7 +134,7 @@ export const BENCHMARK_CASES: BenchmarkCase[] = [
     problem: 'Nothing recorded yet.',
     principle: 'No evidence → no cause above 0; mandatory safety shown; the safety question is asked first.',
     inputs: {},
-    expect: { stops: ['CAUTION', 'CAUTION'], top: [['governor-response', 0], ['linkage', 0]], nextQuestion: 'tripSource' },
+    expect: { stops: ['CAUTION', 'CAUTION'], top: [['governor-response', 0], ['linkage', 0]], nextQuestion: 'screen.alarm' },
     source: 'SYNTHETIC.',
   },
   {
