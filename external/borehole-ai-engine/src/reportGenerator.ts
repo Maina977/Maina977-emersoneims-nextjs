@@ -8016,8 +8016,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
 
   const testSummary: string[][] = [
     ['1', 'Location Resolution', result.resolvedLocation ? 'COMPLETED' : 'SKIPPED', 'Forward geocoding via Nominatim'],
-    ['2', 'Image Pixel Analysis', result.pixelAnalysis ? 'COMPLETED' : 'SKIPPED', 'RGB spectral decomposition, ExG vegetation, water/soil indices'],
-    ['3', 'Visual Geo-Estimation', result.geoEstimate ? 'COMPLETED' : 'SKIPPED', 'Image-based location intelligence from terrain/climate cues'],
+    ['2', 'Image Pixel Analysis', result.pixelAnalysis ? 'COMPLETED' : 'SKIPPED', result.pixelAnalysis ? 'RGB spectral decomposition, ExG vegetation, water/soil indices' : 'Not run: photos are not analysed for groundwater; they are kept for the report only'],
+    ['3', 'Visual Geo-Estimation', result.geoEstimate?.estimates?.length ? 'COMPLETED' : 'SKIPPED', 'Image-based location intelligence from terrain/climate cues (not used: photos are not analysed)'],
     ['4', 'Image Forensic ID', result.imageForensicId ? 'COMPLETED' : 'SKIPPED', 'EXIF, pHash, camera provenance extraction'],
     ['5', 'Remote Sensing (SoilGrids)', result.remoteSensing ? 'COMPLETED' : 'SKIPPED', 'ISRIC SoilGrids clay/sand/silt/pH/SOC/BD/CEC'],
     ['6', 'Elevation (SRTM)', (result.remoteSensing as any)?.elevation ? 'COMPLETED' : 'SKIPPED', 'Open-Elevation 30m DEM'],

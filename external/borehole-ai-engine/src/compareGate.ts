@@ -66,3 +66,12 @@ export function radarAxes(results: AnalysisResult[]): { labels: string[]; values
 /** The drilling-cost row is shown only when every compared site has the evidence for a cost. */
 export const costRowAllowed = (results: AnalysisResult[]) => results.length > 0 && results.every((r) => evidenceGate(r).cost);
 export { COST_NEEDS };
+
+/** Index of the single best value, or -1 when two or more share it (a tie is not a win). */
+export function uniqueBest(values: number[], higherBetter: boolean): number {
+  const fin = values.filter(Number.isFinite);
+  if (!fin.length) return -1;
+  const target = higherBetter ? Math.max(...fin) : Math.min(...fin);
+  const idx = values.map((v, i) => (v === target ? i : -1)).filter((i) => i >= 0);
+  return idx.length === 1 ? idx[0] : -1;
+}
