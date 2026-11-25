@@ -122,6 +122,9 @@ export async function collectRouteMeta(): Promise<Record<string, RouteMeta>> {
   out['/solutions/controls'] = pick((await import('@/app/solutions/controls/layout')).metadata);
   out['/diagnostics'] = pick((await import('@/app/diagnostics/layout')).metadata);
   out['/faults'] = pick((await import('@/app/faults/layout')).metadata);
+  // Added in the second follow-up; `git diff 4c2a6ee5` of its layout touches
+  // only description lines, so its identity fields are the pre-change ones.
+  out['/generator-oracle'] = pick((await import('@/app/generator-oracle/layout')).metadata);
 
   return out;
 }

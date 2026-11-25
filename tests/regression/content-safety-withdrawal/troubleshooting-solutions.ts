@@ -168,16 +168,13 @@ export function registerTroubleshootingSolutionsTests(): void {
       expect(page).toContain('surface="solutions-generators-repairs"');
     });
 
-    it('SG-W6: JSON-LD keeps FAQPage Q1, Q3, Q4 (and Q2 minus the limit) and drops the HowTo', () => {
+    it('SG-W6: JSON-LD drops the HowTo and the FAQPage (no visible FAQ on the page)', () => {
       const graph = buildGeneratorSolutionsJsonLd()['@graph'] as Array<Record<string, unknown>>;
       expect(graph.some((n) => n['@type'] === 'HowTo')).toBe(false);
-      const faq = graph.find((n) => n['@type'] === 'FAQPage') as { mainEntity: Array<{ name: string }> };
-      expect(faq.mainEntity.map((q) => q.name)).toEqual([
-        'How often should I service my generator?',
-        'What causes a generator to fail to start?',
-        'How much does generator installation cost in Kenya?',
-        'What size generator do I need for my home?',
-      ]);
+      // Follow-up 2026-11-25: the FAQPage had no visible counterpart on
+      // /solutions/generators, so the whole object was removed.
+      expect(graph.some((n) => n['@type'] === 'FAQPage')).toBe(false);
+      expect(graph.map((n) => n['@type'])).toEqual(['WebPage', 'BreadcrumbList', 'Service']);
       expect(layout).toContain('buildGeneratorSolutionsJsonLd()');
     });
   });

@@ -20,16 +20,8 @@ export default function ControlsSolutionsLayout({ children }: { children: React.
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
-      {
-        "@type": "FAQPage",
-        "mainEntity": [
-          { "@type": "Question", "name": "What does DSE fault code 'Fail to Start' mean?", "acceptedAnswer": { "@type": "Answer", "text": "DSE 'Fail to Start' means the engine didn't reach running speed within the crank time." } },
-          { "@type": "Question", "name": "How do I reset a DeepSea controller?", "acceptedAnswer": { "@type": "Answer", "text": "To reset a DeepSea controller: 1) Fix the fault condition first, 2) Press and hold the STOP/RESET button for 3 seconds, 3) If persistent, cycle power to the controller. Some faults require parameter reset via DSE Configuration Suite." } },
-          { "@type": "Question", "name": "What is the difference between DSE7310 and DSE7320?", "acceptedAnswer": { "@type": "Answer", "text": "DSE7310 is for single generator auto-start applications. DSE7320 adds mains (utility) monitoring for automatic mains failure (AMF) operation with automatic transfer between mains and generator power." } },
-          { "@type": "Question", "name": "How do I connect to a DeepSea controller remotely?", "acceptedAnswer": { "@type": "Answer", "text": "Remote connection options: 1) DSE WebNet for Ethernet/WiFi monitoring, 2) DSE890 Gateway for cloud access, 3) Modbus TCP/IP for SCADA integration. Configure IP settings via front panel or DSE Configuration Suite software." } },
-          { "@type": "Question", "name": "Why is my PowerWizard showing 'Not In Auto'?", "acceptedAnswer": { "@type": "Answer", "text": "PowerWizard 'Not In Auto' indicates the controller is in Manual or Off mode. Check the mode selector switch position. Also verify all auto-start permissives are satisfied (no active shutdowns, remote start enabled if used)." } }
-        ]
-      },
+      // FAQPage removed 2026-11-25: none of its Q&As are shown on the page
+      // (Google requires FAQ markup to match visible content).
       {
         "@type": "Service",
         "serviceType": "Generator Controller Services",

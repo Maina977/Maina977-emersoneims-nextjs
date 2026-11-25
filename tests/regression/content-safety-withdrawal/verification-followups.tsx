@@ -46,6 +46,31 @@ export const FOLLOWUP_MARKERS: Record<string, string[]> = {
   ],
 };
 
+/** Second follow-up (coordinator, 2026-11-25): items the previous round flagged. */
+export const FOLLOWUP2_MARKERS: Record<string, string[]> = {
+  'lib/repair-centre/articles/generator-low-oil-pressure-shutdown.ts': [
+    'Pressure is fine when cold and low when hot',
+    'An engine with worn clearances therefore shows the fault hot first',
+  ],
+  'components/seo/ToolSeoContent.tsx': [
+    'Look up a controller alarm or J1939 engine code',
+    'how to clear the alarm',
+    'Alarm lookup for DeepSea, ComAp',
+    'points you to the matching diagnostic guide and alarm',
+    'Older mechanical engines have no engine codes; for those, use the symptom guides',
+  ],
+  'app/generator-oracle/layout.tsx': [
+    'Free generator fault-code lookup',
+    'Reset steps. Engineer escalation.',
+    'with reset steps and Kenya engineer escalation',
+    'explained by Kenya generator engineers. Free to use.',
+  ],
+  'lib/solutions/generatorsSchema.ts': [
+    'How often should I service my generator?',
+    'What size generator do I need for my home?',
+  ],
+};
+
 export function registerVerificationFollowupTests(): void {
   describe('verification follow-ups B1-B3', () => {
     for (const [file, markers] of Object.entries(FOLLOWUP_MARKERS)) {
@@ -77,11 +102,48 @@ export function registerVerificationFollowupTests(): void {
       }
     });
 
-    it('B3: /solutions/controls FAQPage no longer carries the battery threshold or reset-and-retry', () => {
+    it('B3 + follow-up: /solutions/controls emits no FAQPage (none visible on the page)', () => {
       const { container } = render(<ControlsLayout>{null}</ControlsLayout>);
       const html = container.innerHTML;
-      expect(html).toContain('"@type":"FAQPage"');
+      expect(html).not.toContain('"@type":"FAQPage"');
+      expect(html).toContain('"@type":"Service"');
       for (const m of FOLLOWUP_MARKERS['app/solutions/controls/layout.tsx']) expect(html).not.toContain(m);
+    });
+
+    it('follow-up: the cold/hot oil-pressure Q&A is gone from the article and its FAQPage', () => {
+      const a = getRepairArticle('generator-low-oil-pressure-shutdown')!;
+      const ld = JSON.stringify(buildRepairArticleJsonLd(a, 'https://www.emersoneims.com/x'));
+      for (const m of FOLLOWUP2_MARKERS['lib/repair-centre/articles/generator-low-oil-pressure-shutdown.ts']) {
+        expect(JSON.stringify(a)).not.toContain(m);
+        expect(ld).not.toContain(m);
+      }
+    });
+
+    it('follow-up: /generator-oracle visible copy and its FAQPage describe only what the page offers', async () => {
+      const ToolSeoContent = (await import('@/components/seo/ToolSeoContent')).default;
+      const { container } = render(<ToolSeoContent tool="generator-oracle" />);
+      const html = container.innerHTML;
+      for (const m of FOLLOWUP2_MARKERS['components/seo/ToolSeoContent.tsx']) expect(html).not.toContain(m);
+      expect(html).toContain('Guided Diagnosis');
+      // Visible FAQ and FAQPage are built from the same data: every answer in
+      // the markup is on the page.
+      const script = container.querySelector('script[type="application/ld+json"]')!;
+      const ld = JSON.parse(script.textContent!) as { mainEntity: { name: string; acceptedAnswer: { text: string } }[] };
+      const visible = container.textContent!.replace(script.textContent!, '');
+      for (const q of ld.mainEntity) {
+        expect(visible).toContain(q.name);
+        expect(visible).toContain(q.acceptedAnswer.text);
+      }
+      const layoutSrc = src('app/generator-oracle/layout.tsx');
+      for (const m of FOLLOWUP2_MARKERS['app/generator-oracle/layout.tsx']) expect(layoutSrc).not.toContain(m);
+    });
+
+    it('follow-up: /solutions/generators emits no FAQPage', async () => {
+      const { buildGeneratorSolutionsJsonLd } = await import('@/lib/solutions/generatorsSchema');
+      expect(JSON.stringify(buildGeneratorSolutionsJsonLd())).not.toContain('FAQPage');
+      for (const m of FOLLOWUP2_MARKERS['lib/solutions/generatorsSchema.ts']) {
+        expect(src('lib/solutions/generatorsSchema.ts')).not.toContain(m);
+      }
     });
 
     it('B3: the withdrawn fault-table actions show the notice text', () => {

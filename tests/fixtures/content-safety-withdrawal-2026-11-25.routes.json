@@ -570,6 +570,18 @@
       "robots": null,
       "description": "Search generator fault codes by brand and controller — DSE, SmartGen, Datakom, ComAp and more, with likely causes and what to check first. Free, no signup.",
       "ogDescription": null
+    },
+    "/generator-oracle": {
+      "title": "Generator Fault Codes & Diagnosis — Free Tool",
+      "ogTitle": "Generator Oracle — Generator Fault Codes & Diagnosis",
+      "twitterTitle": "Generator Oracle — Generator Fault Codes & Diagnosis",
+      "canonical": "https://www.emersoneims.com/generator-oracle",
+      "robots": {
+        "index": true,
+        "follow": true
+      },
+      "description": "Free generator fault-code lookup: DSE, ComAp, SmartGen, Woodward and CAT alarms plus J1939 engine codes, with checks and Kenya engineer support.",
+      "ogDescription": "Controller alarms for DSE, ComAp, Woodward, SmartGen and CAT PowerWizard, plus J1939 engine codes, explained by Kenya generator engineers. Free to use."
     }
   },
   "sitemapUrls": [

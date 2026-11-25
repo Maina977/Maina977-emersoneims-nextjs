@@ -48,7 +48,9 @@ export const metadata: Metadata = {
     // searcher gets and the fact it costs nothing; the brand names that make it
     // credible (DSE, ComAp, SmartGen) stay, the marketing word "intelligence"
     // goes. Full detail still lives in the page body.
-    'Free generator fault-code lookup: DSE, ComAp, SmartGen, Woodward and CAT alarms plus J1939 engine codes, with checks and Kenya engineer support.',
+    // 2026-11-25 content-safety withdrawal: the fault-code lookup is withdrawn,
+    // so the descriptions name what the page offers now.
+    'Free generator Guided Diagnosis with STOP safety checks first, wiring diagrams and service job cards, with Kenya engineer support.',
   keywords: [
     'generator diagnostics Kenya',
     'generator fault codes',
@@ -71,7 +73,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Generator Oracle — Generator Fault Codes & Diagnosis',
     description:
-      'Controller alarms for DSE, ComAp, Woodward, SmartGen and CAT PowerWizard, plus J1939 engine codes, explained by Kenya generator engineers. Free to use.',
+      'Guided generator diagnosis with STOP safety checks first, wiring diagrams and service job cards, written by Kenya generator engineers. Free to use.',
     url: URL,
     type: 'website',
     locale: 'en_KE',
@@ -81,7 +83,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Generator Oracle — Generator Fault Codes & Diagnosis',
-    description: 'Controller alarms and J1939 engine codes explained. Reset steps. Engineer escalation. Free.',
+    description: 'Guided Diagnosis with STOP safety checks first. Wiring diagrams. Service job cards. Engineer escalation. Free.',
     images: [`${SITE}/og-image.jpg`],
     site: '@EmersonEIMS',
     creator: '@EmersonEIMS',
@@ -104,7 +106,7 @@ export default function GeneratorOracleLayout({ children }: { children: React.Re
       <FlagshipProductSchema
         name="Generator Oracle"
         url={URL}
-        description="Generator fault-code lookup: hand-written controller alarm guides for DSE, ComAp, Woodward, SmartGen and CAT PowerWizard plus J1939 engine codes, with reset steps and Kenya engineer escalation."
+        description="Generator Guided Diagnosis with STOP safety checks first, wiring diagrams and service job cards, with Kenya engineer escalation."
         category="Generator Diagnostics"
         applicationCategory="EngineeringApplication"
         keywords={['Generator Diagnostics', 'Fault Codes', 'DSE', 'ComAp', 'Woodward', 'SmartGen', 'PowerWizard', 'Cummins', 'Voltka']}

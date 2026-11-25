@@ -44,19 +44,24 @@ const TOOLS: Record<string, ToolCopy> = {
     ],
   },
   'generator-oracle': {
-    h2: 'Generator Oracle — Generator Fault Codes & Diagnosis',
+    /*
+     * CONTENT-SAFETY WITHDRAWAL 2026-11-25: the fault-code / alarm lookup is
+     * withdrawn, so this copy (and the FAQPage built from the same faqs[])
+     * describes only what /generator-oracle offers now.
+     */
+    h2: 'Generator Oracle — Guided Generator Fault Diagnosis',
     intro:
-      'Generator Oracle is a free fault-code and diagnosis tool for diesel generators. Look up a controller alarm or J1939 engine code, or describe the symptoms, and it shows the likely causes, what to check and how to clear the alarm. The descriptions are written by our engineers; it is rule-based, not generative AI.',
+      'Generator Oracle is a free diagnosis tool for diesel generators. Guided Diagnosis works through the symptoms one question at a time, with the STOP safety checks first. It also holds wiring diagrams and service job cards, and connects you to an EmersonEIMS engineer. The content is written by our engineers; it is rule-based, not generative AI.',
     capabilities: [
-      'Symptom-to-cause fault analysis for starting, fuel, cooling, AVR, alternator and control-panel problems',
-      'Alarm lookup for DeepSea, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens and ENKO controllers, plus J1939 engine codes',
-      'Maintenance-interval guidance (250 h oil service, 500 h full service, major overhaul planning)',
+      'Guided Diagnosis for starting, fuel, cooling, AVR, alternator and control-panel problems, with the STOP safety checks first',
+      'Wiring diagrams',
+      'Service job cards',
       'One-tap WhatsApp or phone escalation to an EmersonEIMS engineer when hands-on service is needed',
     ],
     coverage: 'Backed by EmersonEIMS mobile field service teams covering all 47 counties from our Nairobi base and scheduled regional deployments, with emergency response in under 4 hours in the Nairobi metro; other counties by mobile workshop, time depending on distance.',
     faqs: [
-      { q: 'Why does my generator start and then shut down?', a: 'Common causes include low fuel pressure, blocked filters, low coolant/oil protection trips, failing sensors or AVR issues. Generator Oracle points you to the matching diagnostic guide and alarm, and EmersonEIMS technicians can attend if it needs hands-on work (under 4 hours in the Nairobi metro; elsewhere by mobile workshop).' },
-      { q: 'Which generator brands does it cover?', a: 'It covers the controllers most sets in Kenya use — DeepSea, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens and ENKO — and J1939 engine codes from electronic diesels such as Cummins, Caterpillar, Perkins, Volvo Penta, Deutz and MTU. Older mechanical engines have no engine codes; for those, use the symptom guides.' },
+      { q: 'Why does my generator start and then shut down?', a: 'Common causes include low fuel pressure, blocked filters, low coolant/oil protection trips, failing sensors or AVR issues. Guided Diagnosis works through the symptoms with the STOP safety checks first, and EmersonEIMS technicians can attend if it needs hands-on work (under 4 hours in the Nairobi metro; elsewhere by mobile workshop).' },
+      { q: 'Which generator brands does it cover?', a: 'Guided Diagnosis works from the symptoms, so it applies to diesel generator sets of any make. For a specific controller alarm or engine fault code, send it to our engineers on WhatsApp or call +254 768 860 665.' },
       { q: 'Is the diagnosis a substitute for a technician?', a: 'It narrows the fault fast and prevents unnecessary parts purchases, but load testing, injector service and control rewiring need a qualified technician — book one directly from the tool.' },
     ],
   },

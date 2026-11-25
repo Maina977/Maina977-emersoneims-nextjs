@@ -308,13 +308,10 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
       q: 'Can I raise the shutdown threshold to stop the nuisance trips?',
       a: 'No. If the pressure is genuinely low, raising the threshold removes the only thing preventing bearing destruction. If the pressure is not genuinely low, the sender or wiring is at fault and that is what needs fixing. Either way, changing the threshold treats the alarm rather than the engine.',
     },
-    {
-      q: 'Pressure is fine when cold and low when hot. What does that mean?',
-      a: 'That pattern is characteristic. Oil viscosity falls as temperature rises, so leakage through bearing clearances increases and gallery pressure drops. An engine with worn clearances therefore shows the fault hot first. It is a genuine indication and warrants clearance assessment rather than another sender.',
-    },
-    // Withdrawn 2026-11-25 (independent verification B1): the low-oil-level
-    // Q&A presented continued operation as the first step after a lubrication
-    // fault. Removed from the page and FAQPage.
+    // Withdrawn 2026-11-25 (independent verification B1 and follow-up): the
+    // low-oil-level Q&A presented continued operation as the first step after
+    // a lubrication fault, and the cold/hot pressure Q&A implied readings
+    // taken with the engine running. Removed from the page and FAQPage.
   ],
 
   references: [

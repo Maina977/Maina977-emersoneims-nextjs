@@ -2,9 +2,9 @@
  * JSON-LD for /solutions/generators (rendered by app/solutions/generators/layout.tsx).
  *
  * Content-safety withdrawal 2026-11-25 (audit SG-W6):
- *  - FAQPage: the battery-voltage sentence of the "fail to start" answer and
- *    the whole "Why is my generator overheating?" Q&A are withdrawn (unsourced
- *    limit; overheating advice with no STOP).
+ *  - FAQPage: dropped entirely. It first lost its battery-voltage sentence
+ *    and the overheating Q&A; then, because none of its Q&As is shown on the
+ *    page, the whole object was removed (FAQ markup must match visible content).
  *  - The pre-start-checks HowTo is withdrawn (its leak check had no
  *    "if found, do not start").
  * Pure function so the regression test can call it.
@@ -31,15 +31,8 @@ export function buildGeneratorSolutionsJsonLd() {
           { "@type": "ListItem", "position": 3, "item": { "@id": "https://www.emersoneims.com/solutions/generators", "name": "Generators" } }
         ]
       },
-      {
-        "@type": "FAQPage",
-        "mainEntity": [
-          { "@type": "Question", "name": "How often should I service my generator?", "acceptedAnswer": { "@type": "Answer", "text": "Generators should be serviced every 250-500 hours or every 6 months, whichever comes first. Daily checks include oil level, coolant, and fuel. Annual service includes full oil change, filter replacement, and load bank testing." } },
-          { "@type": "Question", "name": "What causes a generator to fail to start?", "acceptedAnswer": { "@type": "Answer", "text": "Common causes include: dead battery (most common), empty fuel tank, faulty starter motor, clogged fuel filter, or safety shutdown due to low oil." } },
-          { "@type": "Question", "name": "How much does generator installation cost in Kenya?", "acceptedAnswer": { "@type": "Answer", "text": "Generator installation in Kenya ranges from KES 50,000 for small units to KES 500,000+ for large industrial installations. This includes electrical connections, AMF panel, ATS, fuel system, and commissioning." } },
-          { "@type": "Question", "name": "What size generator do I need for my home?", "acceptedAnswer": { "@type": "Answer", "text": "For a typical Kenyan home: 5-10kVA for basic needs (lights, TV, fridge), 15-20kVA if including AC units, 25kVA+ for large homes with multiple ACs. Calculate total load and add 25% safety margin." } }
-        ]
-      },
+      // FAQPage removed 2026-11-25: none of its Q&As are shown on
+      // /solutions/generators (Google requires FAQ markup to match visible content).
       {
         "@type": "Service",
         "serviceType": "Generator Installation and Maintenance",
