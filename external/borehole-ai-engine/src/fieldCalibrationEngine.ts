@@ -167,7 +167,7 @@ export function calibrateWithFieldData(
 
     notes.push(`Pump test yield: ${pt.sustainableYieldM3Hr} m³/hr (desktop predicted ${desktopResult.estimatedYield} m³/hr)`);
     if (T != null || S != null) notes.push(`Transmissivity: ${T ?? 'not reported'} m²/day, Storativity: ${S ?? 'not reported'}`);
-    notes.push(`Recovery: ${pt.recoveryPercent}% → ${pt.recoveryPercent > 80 ? 'good recovery (favourable; long-term sustainability still depends on recharge and a long-duration test)' : 'CAUTION: slow recovery'}`);
+    if (pt.recoveryPercent != null) notes.push(`Recovery: ${pt.recoveryPercent}% → ${pt.recoveryPercent > 80 ? 'good recovery (favourable; long-term sustainability still depends on recharge and a long-duration test)' : 'CAUTION: slow recovery'}`);
 
     confidenceBoost += 12;
     reportLevel = 3;

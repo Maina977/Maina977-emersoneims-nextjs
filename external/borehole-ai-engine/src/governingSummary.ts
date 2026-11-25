@@ -11,6 +11,9 @@ import { finalVerdict, salinityFromWaterQuality, chemFromWaterQuality, labSource
 import { computeCanonicalEconomics } from './reportShared';
 import { evidenceGate, provenanceText } from './evidenceGate';
 import { costSourcing, QUOTATION_TEXT } from './costSources';
+import { locationStatusText, waterCheckStatusText, photoGpsConflictText } from './locationStatus';
+import { displayDepth, displayYield } from './displayFigures';
+import { waterQualityStatus } from './waterQualityStatus';
 
 export type Row = [string, string, string]; // label, value, basis
 export interface SummarySection { title: string; rows: Row[]; notes?: string[] }
@@ -51,12 +54,17 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
     title: 'Verdict',
     rows: [
       ['Site', locationText, `${f(r.site?.latitude, 5)}, ${f(r.site?.longitude, 5)}`],
+      // Re-review of f89698e8 (MAJOR): the same location and water-check status as the screen, PDF and JSON.
+      ['Location source', locationStatusText(r), 'How the site coordinates were obtained'],
+      ['Water-body check', waterCheckStatusText(r), 'Offline lake, reservoir and coastline maps'],
+      ...(photoGpsConflictText(r) ? [['Photo GPS', String(photoGpsConflictText(r)), 'The camera position is not used for the site'] as Row] : []),
       ['Verdict', v.verdict, 'Desktop pre-screen: a hydrogeological survey is required before drilling (Kenya Water Resources Regulations)'],
       ['What to do next', v.next, ''],
       ['Chance of a productive borehole', probabilityBand(n(r.probability) ?? 0.5), 'A planning estimate from desktop data; not yet calibrated against drilling outcomes'],
-      ['Planned depth', `${f(r.recommendedDepth)} m${Array.isArray(depthRange) ? ` (likely ${f(depthRange[0])}-${f(depthRange[1])} m)` : ''}`, g0.citations.depth ? `Field evidence: ${g0.citations.depth}` : 'Field records nearby where they exist, otherwise the regional model'],
+      // Re-review of f89698e8, BLOCKING 2: depth and yield only through the display accessor.
+      ['Planned depth', (() => { const d = displayDepth(r); return d.shown ? `${f(d.value)} m${Array.isArray(depthRange) ? ` (likely ${f(depthRange[0])}-${f(depthRange[1])} m)` : ''}` : d.text; })(), g0.citations.depth ? `Field evidence: ${g0.citations.depth}` : 'Field records nearby where they exist, otherwise the regional model'],
       ...(((r.fallbacksUsed ?? r.dataProvenance?.fallbacksUsed ?? []) as string[]).length ? [['Sources that did not answer', ((r.fallbacksUsed ?? r.dataProvenance?.fallbacksUsed) as string[]).join('; '), 'A stored baseline or no value was used for these'] as Row] : []),
-      ['Expected yield', `${f(r.estimatedYield, 1)} m³/h${Array.isArray(yieldRange) ? ` (likely ${f(yieldRange[0], 1)}-${f(yieldRange[1], 1)} m³/h)` : ''}`, g0.citations.yield ? `Field evidence: ${g0.citations.yield}` : 'Confirmed only by a pump test'],
+      ['Expected yield', (() => { const y = displayYield(r); return y.shown ? `${f(y.value, 1)} m³/h${Array.isArray(yieldRange) ? ` (likely ${f(yieldRange[0], 1)}-${f(yieldRange[1], 1)} m³/h)` : ''}` : y.text; })(), g0.citations.yield ? `Field evidence: ${g0.citations.yield}` : 'Confirmed only by a pump test'],
     ],
   });
 
@@ -67,6 +75,8 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   if (g0.citations.yield) evRowsField.push(['Yield', 'from field evidence', g0.citations.yield]);
   if (fd.labWaterAnalysis) evRowsField.push(['Water quality', 'laboratory', `${labSourceLabel(fd.labWaterAnalysis)} ${provenanceText(fd.labWaterAnalysis.provenance)}`]);
   if (evRowsField.length) sections.push({ title: 'Field evidence entered', rows: evRowsField });
+  // 1c. Time-series pumping-test analysis (2026-11-25): the same rows as the Pump Test tab.
+  if (r.pumpTestTimeSeries?.rows?.length) sections.push({ title: 'Pumping test analysis (time series)', rows: r.pumpTestTimeSeries.rows as Row[] });
 
   // 2. Water quality: measured where nearby boreholes were tested, otherwise
   //    a regional estimate; parameters with no basis need a laboratory test.
@@ -94,6 +104,8 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   // 2026-11-21: a modelled salinity is shown as a screening class only, never
   // as a concentration; the measured nearby median keeps its figure and source.
   const sal = salinityFromWaterQuality(wq);
+  // Re-review of f89698e8, BLOCKING 3: the potability status as on the screen.
+  wqRows.push(['Potability', waterQualityStatus(r).potability, 'A potability or treatment conclusion needs a laboratory result']);
   if (sal.basis === 'nearby') wqRows.push(['Salinity (TDS)', sal.value, `${sal.source}. ${mq.ec.over1500} of ${mq.ec.n} above EC 1,500 µS/cm. Drinking limit ${tdsLimit} mg/L`]);
   else if (sal.basis === 'modelled') wqRows.push(['Salinity (TDS)', sal.value, `${sal.source}. ${sal.sentence}`]);
   else wqRows.push(['Salinity (TDS)', 'laboratory test needed', 'No salinity estimate for this site']);

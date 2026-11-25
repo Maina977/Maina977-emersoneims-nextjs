@@ -21,6 +21,8 @@
 import { finalVerdict, salinityEvidence, salinityFromWaterQuality, modelledSalinityLabel, labSourceLabel, nearbyProvenance, chemEvidence, chemFromWaterQuality, chemCell, modelledChemLabel, labWaterResult, type ChemRisk } from './verdict';
 import { evidenceGate, provenanceText } from './evidenceGate';
 import { generateScreeningPdf, generateScreeningDocx, generateScreeningXlsx, screeningRows, screeningContent } from './screeningReport';
+import { locationStatusText, waterCheckStatusText, photoGpsConflictText } from './locationStatus';
+import { waterQualityStatus } from './waterQualityStatus';
 import { costSourcing, QUOTATION_TEXT } from './costSources';
 import { governingSummary, last12Months } from './governingSummary';
 import { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, getCustomerDetails, computeCanonicalEconomics } from './reportShared';
@@ -1350,9 +1352,11 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       const chemX = (['fluoride', 'nitrate'] as const).map((p) => chemEvidence(result, p));
       const measuredFails = chemX.filter((e) => e.measured && (e.mgL ?? 0) > (e.param === 'fluoride' ? 1.5 : 50));
       const modelledRisks = chemX.filter((e) => !e.measured && (e.risk === 'HIGH' || e.risk === 'ELEVATED'));
-      const wqOk = !!wq?.isPotable;
+      // Re-review of f89698e8, BLOCKING 3: one status for the screen and every export (waterQualityStatus.ts).
+      const wqS = waterQualityStatus(result);
+      const wqOk = wqS.known && !!wq?.isPotable;
       const wqLine = wqOk
-        ? 'POTABLE (modelled) -- verify with an ISO 17025 lab analysis before community use.'
+        ? 'MEETS THE GUIDELINE VALUES on the parameters the laboratory tested.'
         : measuredFails.length > 0
           ? `MEASURED EXCEEDANCE -- ${measuredFails.map((e) => `${e.name} ${e.value} (${e.source.replace(/^Measured: /, '')})`).join('; ')} above the WHO guideline. Do not use for drinking without treatment; treatment budgeted below.`
           : modelledRisks.length > 0
@@ -1366,7 +1370,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
                 ? `LIKELY TOO SALTY TO DRINK WITHOUT REVERSE OSMOSIS (measured TDS ${s.value}, ${s.source.replace(/^Measured: /, '')} -- lab-confirm at the borehole); RO budgeted below.`
                 : `${modelledSalinityLabel(s.risk ?? 'ELEVATED').toUpperCase()}. ${s.sentence} Desalination is not priced until then.`;
             })()
-            : 'TREATMENT REQUIRED (aesthetic parameters; modelled -- lab-confirm).';
+            : !wqS.known
+              ? `NOT KNOWN -- ${wqS.treatmentNote.toLowerCase()}.`
+              : 'TREATMENT REQUIRED (laboratory result).';
       // Render the FULL message wrapped over as many lines as needed — the old
       // code printed only splitTextToSize(...)[0], truncating the sentence to
       // "...until an" on p2 (re-audit #7). Box height follows the wrapped text.
@@ -1457,6 +1463,24 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       theme: 'grid',
     });
     y = lastY(6);
+
+    // Time-series pumping-test analysis (2026-11-25): the same rows as the Pump Test tab.
+    if (result.pumpTestTimeSeries?.rows?.length) {
+      checkSpace(30);
+      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+      doc.text('PUMPING TEST ANALYSIS (TIME SERIES)', margin, y); y += 3;
+      autoTable(doc, {
+        startY: y,
+        head: [['Item', 'Value', 'Basis']],
+        body: result.pumpTestTimeSeries.rows.map((r) => [r[0], r[1], r[2]]),
+        headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+        bodyStyles: { fontSize: 6.5 },
+        columnStyles: { 0: { cellWidth: 38 }, 1: { cellWidth: 38 } },
+        margin: { left: margin, right: margin },
+        theme: 'grid',
+      });
+      y = lastY(6);
+    }
 
     doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
     doc.text('INVESTMENT AT A GLANCE', margin, y); y += 3;
@@ -1910,7 +1934,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
           : `AESTHETIC TREATMENT: ${aestheticFails.join(', ')} (minor)`;
         return 'TREATMENT NEEDED';
       })()],
-      ['Treatment Required', result.waterQuality?.isPotable ? 'NO' : 'YES', (() => {
+      ['Treatment Required', waterQualityStatus(result).treatment, (() => {
+        // Review of 126efdbc, B-3 / f89698e8 BLOCKING 3: a treatment conclusion needs a laboratory result.
+        if (!waterQualityStatus(result).known) return waterQualityStatus(result).treatmentNote;
         if (result.waterQuality?.isPotable) return 'Disinfection only (standard)';
         // Cite the SAME canonical economics the cost tables use — this row
         // used to quote "$1,200-1,500" while the budget carried $4,000.
@@ -1923,7 +1949,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         if (treatTotal <= 0 && unpriced) return unpriced;
         return `Budgeted: $${treatTotal.toLocaleString()}${ecoWq.defluoridationCost > 0 ? ` (incl. $${ecoWq.defluoridationCost.toLocaleString()} defluoridation on measured fluoride + $${ecoWq.annualDefluoridation}/yr media)` : ''} — same figure as the cost tables${unpriced ? `. ${unpriced}` : ''}`;
       })()],
-      ['Coordinates', getCoords(result), `GPS: ${result.gpsSource?.toUpperCase()}`],
+      ['Coordinates', getCoords(result), `${locationStatusText(result)}. Water-body check: ${waterCheckStatusText(result)}${photoGpsConflictText(result) ? `. ${photoGpsConflictText(result)}` : ''}`],
       ['Location Confidence', result.locationConfidence?.grade || 'N/A', result.locationConfidence?.drillingReliability || 'N/A'],
       ['Overall Confidence', result.confidenceMetrics ? `${result.confidenceMetrics.overall}%` : 'N/A', result.confidenceMetrics ? `Geo ${result.confidenceMetrics.geological}% | Terrain ${result.confidenceMetrics.terrain}% | Veg ${result.confidenceMetrics.vegetation}% | Data ${result.confidenceMetrics.dataDensity}%` : ''],
       ['Confidence Tier', result.confidenceMetrics ? (
@@ -6695,7 +6721,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       });
       y = lastY(4);
       doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-      doc.text(`Source: ${wq.source} | Safe to drink: ${wq.isPotable ? 'YES' : 'NOT CONFIRMED (treatment needed or parameters untested)'}`, margin, y);
+      doc.text(`Source: ${wq.source} | Safe to drink: ${waterQualityStatus(result).safeToDrink}`, margin, y);
       if (wq.treatmentRequired.length > 0) {
         y += 4;
         doc.text(`Treatment: ${wq.treatmentRequired.join('; ')}`, margin, y, { maxWidth: 170 });
@@ -8016,8 +8042,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
 
   const testSummary: string[][] = [
     ['1', 'Location Resolution', result.resolvedLocation ? 'COMPLETED' : 'SKIPPED', 'Forward geocoding via Nominatim'],
-    ['2', 'Image Pixel Analysis', result.pixelAnalysis ? 'COMPLETED' : 'SKIPPED', 'RGB spectral decomposition, ExG vegetation, water/soil indices'],
-    ['3', 'Visual Geo-Estimation', result.geoEstimate ? 'COMPLETED' : 'SKIPPED', 'Image-based location intelligence from terrain/climate cues'],
+    ['2', 'Image Pixel Analysis', result.pixelAnalysis ? 'COMPLETED' : 'SKIPPED', result.pixelAnalysis ? 'RGB spectral decomposition, ExG vegetation, water/soil indices' : 'Not run: photos are not analysed for groundwater; they are kept for the report only'],
+    ['3', 'Visual Geo-Estimation', result.geoEstimate?.estimates?.length ? 'COMPLETED' : 'SKIPPED', 'Image-based location intelligence from terrain/climate cues (not used: photos are not analysed)'],
     ['4', 'Image Forensic ID', result.imageForensicId ? 'COMPLETED' : 'SKIPPED', 'EXIF, pHash, camera provenance extraction'],
     ['5', 'Remote Sensing (SoilGrids)', result.remoteSensing ? 'COMPLETED' : 'SKIPPED', 'ISRIC SoilGrids clay/sand/silt/pH/SOC/BD/CEC'],
     ['6', 'Elevation (SRTM)', (result.remoteSensing as any)?.elevation ? 'COMPLETED' : 'SKIPPED', 'Open-Elevation 30m DEM'],
@@ -8032,7 +8058,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     ['15', 'Satellite NDVI', result.satelliteVegetation ? 'COMPLETED' : 'SKIPPED', 'Monthly NDVI profile from MODIS/VIIRS'],
     ['16', 'NASA POWER Moisture', result.nasaPowerMoisture ? 'COMPLETED' : 'SKIPPED', 'GWETPROF root-zone moisture trend'],
     ['17', 'Regional Borehole Stats', result.boreholeRecords ? 'COMPLETED' : 'SKIPPED', 'Country/region database depth/yield/success'],
-    ['18', 'Site Classification', result.site ? 'COMPLETED' : 'SKIPPED', 'Terrain type, vegetation density, slope analysis'],
+    ['18', 'Site Classification', 'NOT ANALYSED', 'Terrain type, vegetation density and slope are not observed: photos are not analysed'],
     ['19', 'Soil Analysis', result.soil ? 'COMPLETED' : 'SKIPPED', 'USDA texture, porosity, permeability, pH, suitability'],
     ['20', 'Probability Calculation', result.probability != null ? 'COMPLETED' : 'SKIPPED', 'Multi-factor modelled success score with GLDAS/GRACE recalibration'],
     ['21', 'Depth Estimation', result.recommendedDepth != null ? 'COMPLETED' : 'SKIPPED', 'Calibrated depth from elevation, geology, regional data'],
@@ -8066,7 +8092,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     ['49', 'Risk Decision Engine', result.riskDecision ? 'COMPLETED' : 'SKIPPED', 'Probabilistic risk breakdown, financial scenarios, decision recommendation'],
     ['50', 'Confidence Weighting', result.confidenceWeighted ? 'COMPLETED' : 'SKIPPED', 'Data quality?weighted predictions with uncertainty bounds'],
     ['51', 'Micro-Siting Optimizer', result.microSiting ? 'COMPLETED' : 'SKIPPED', 'GPS-precise drilling point, confidence radius, terrain/fracture scoring'],
-    ['52', 'Pump Test Analysis', result.pumpTestObservation ? 'INSUFFICIENT EVIDENCE' : !result.pumpTestAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldPumpTest ? 'COMPLETED' : 'MODELLED'), 'Theis/Cooper-Jacob analytical pump test interpretation'],
+    ['52', 'Pump Test Analysis', result.pumpTestObservation ? 'INSUFFICIENT EVIDENCE' : result.pumpTestTimeSeries ? (result.pumpTestTimeSeries.status === 'analysed' ? 'COMPLETED (time series)' : 'INSUFFICIENT EVIDENCE') : !result.pumpTestAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldPumpTest ? 'COMPLETED' : 'MODELLED'), 'Theis/Cooper-Jacob analytical pump test interpretation'],
     ['53', 'Lithology Analysis', !result.lithologyAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldERT ? 'COMPLETED' : 'MODELLED'), 'Stratigraphic logging, water strikes, casing design, fracture density'],
     ['54', 'ERT Interpretation', !result.ertInterpretation ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldERT ? 'COMPLETED' : 'MODELLED'), 'Resistivity inversion, aquifer target extraction, saline intrusion check'],
     ['55', 'Multi-Source Agreement', result.multiSourceAgreement ? 'COMPLETED' : 'SKIPPED', 'Cross-validation of all data sources, conflict resolution, consensus'],
@@ -10965,6 +10991,10 @@ export function jsonReportData(result: AnalysisResult): Record<string, unknown> 
     generated: new Date().toISOString(),
     location: getLocationString(result),
     coordinates: getCoords(result),
+    // Re-review of 126efdbc, M-1 / 4e: the same location and water-check status as the screen.
+    locationStatus: locationStatusText(result),
+    waterCheck: waterCheckStatusText(result),
+    photoGpsNote: photoGpsConflictText(result),
   };
   const g = evidenceGate(result);
   if (screeningOnly(result)) {
@@ -10973,6 +11003,8 @@ export function jsonReportData(result: AnalysisResult): Record<string, unknown> 
       screening: screeningContent(result),
       siteEvidence: result.siteEvidence ?? { depth: false, yield: false, methods: [] },
       fieldData: result.fieldData ?? null,
+      // Time-series pumping-test analysis (2026-11-25), as on the Pump Test tab.
+      ...(result.pumpTestTimeSeries ? { pumpTestTimeSeries: result.pumpTestTimeSeries } : {}),
     });
   }
   const eco = computeCanonicalEconomics(result);
@@ -11108,7 +11140,7 @@ export async function generateComparisonReport(sites: Array<{ name: string; resu
     ['Soil Type', ...scored.map(s => soilLabel(s.result))],
     ['Data Confidence', ...scored.map(s => `${s.result.confidenceMetrics?.overall ?? 'N/A'}%`)],
     ['Water Quality Score', ...scored.map(s => `${fmt((s.result.waterQuality?.score ?? 0) * 100, 0)}/100`)],
-    ['Treatment Required', ...scored.map(s => s.result.waterQuality?.isPotable ? 'NO' : 'YES')],
+    ['Treatment Required', ...scored.map(s => waterQualityStatus(s.result).treatment)],
     // Salinity: the measured figure with its source, else the screening class only (2026-11-21).
     ['Salinity', ...scored.map(s => { const x = salinityEvidence(s.result); return x.measured ? `${x.value}. ${x.source}` : x.risk ? `${x.risk} risk (not measured at this site)` : 'lab test needed'; })],
     // Fluoride and nitrate: the same rule (2026-11-21).

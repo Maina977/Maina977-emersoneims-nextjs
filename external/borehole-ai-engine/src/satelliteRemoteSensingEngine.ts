@@ -390,33 +390,49 @@ function analyzeSAR(
   };
 }
 
-function analyzeGRACE(
+/** A finite number, or null (no default stands in for a missing measurement). */
+const finiteOrNull = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+
+/**
+ * Exported for tests (2026-11-25). Root cause of "trend.toFixed is not a function": when the shipped
+ * GRACE file is not available, the trend fell back to gldasData.graceAnomaly.trend, which is the trend
+ * DIRECTION string ('gaining' | 'stable' | 'losing' | ...), not the rate (changeRate, cm/yr). The
+ * string reached .toFixed and threw, and the whole 10-method engine was skipped. Now only finite
+ * numbers are used; a missing value is reported as "not available" with the reason.
+ */
+export function analyzeGRACE(
   lat: number, lon: number,
   graceData: any, gldasData: any,
 ): SatelliteMethodResult {
   const hasGrace = !!graceData;
   const hasGldas = !!gldasData?.graceAnomaly;
-  const twsAnomaly = graceData?.twsAnomaly_cm ?? gldasData?.graceAnomaly?.twsAnomaly ?? 0;
-  const trend = graceData?.trend_cm_per_year ?? gldasData?.graceAnomaly?.trend ?? 0;
+  const twsRaw = finiteOrNull(graceData?.twsAnomaly_cm) ?? finiteOrNull(gldasData?.graceAnomaly?.twsAnomaly);
+  const trendRaw = finiteOrNull(graceData?.trend_cm_per_year) ?? finiteOrNull(gldasData?.graceAnomaly?.changeRate);
+  const direction = typeof gldasData?.graceAnomaly?.trend === 'string' ? gldasData.graceAnomaly.trend : null;
+  const twsAnomaly = twsRaw ?? 0;
+  const trend = trendRaw ?? 0;
   const status = graceData?.status ?? graceData?.aquiferStress ?? gldasData?.graceAnomaly?.basinStatus ?? 'Unknown';
 
   // Positive TWS anomaly = more water than baseline = good
   // Positive trend = storage increasing = very good
   let score: number;
-  if (twsAnomaly > 5 && trend > 0) score = 85;
+  if (twsRaw == null) score = 50; // not measured: neutral, and the confidence below is reduced
+  else if (twsAnomaly > 5 && trend > 0) score = 85;
   else if (twsAnomaly > 0) score = 70;
   else if (twsAnomaly > -5) score = 55;
   else if (twsAnomaly > -15) score = 40;
   else score = 25;
 
-  // Trend adjustment
-  if (trend > 0.5) score = Math.min(95, score + 10);
-  else if (trend < -0.5) score = Math.max(10, score - 15);
+  // Trend adjustment (only with a measured rate)
+  if (trendRaw != null && trend > 0.5) score = Math.min(95, score + 10);
+  else if (trendRaw != null && trend < -0.5) score = Math.max(10, score - 15);
 
   const findings: string[] = [];
   if (hasGrace || hasGldas) {
-    findings.push(`TWS anomaly: ${twsAnomaly > 0 ? '+' : ''}${twsAnomaly.toFixed(1)} cm equivalent water thickness`);
-    findings.push(`Storage trend: ${trend > 0 ? '+' : ''}${trend.toFixed(2)} cm/year — ${trend > 0 ? 'increasing (positive recharge)' : trend > -0.5 ? 'relatively stable' : 'declining (depletion concern)'}`);
+    findings.push(twsRaw != null ? `TWS anomaly: ${twsAnomaly > 0 ? '+' : ''}${twsAnomaly.toFixed(1)} cm equivalent water thickness` : 'TWS anomaly: not available (no numeric storage anomaly from GRACE or the soil-moisture indicator)');
+    findings.push(trendRaw != null
+      ? `Storage trend: ${trend > 0 ? '+' : ''}${trend.toFixed(2)} cm/year — ${trend > 0 ? 'increasing (positive recharge)' : trend > -0.5 ? 'relatively stable' : 'declining (depletion concern)'}`
+      : `Storage trend: not available (no numeric rate from GRACE or the soil-moisture indicator${direction ? `; the indicator reports the direction as "${direction}"` : ''})`);
     findings.push(`Basin status: ${status}`);
     if (graceData?.seasonalAmplitude_cm) findings.push(`Seasonal amplitude: ${graceData.seasonalAmplitude_cm.toFixed(1)} cm (indicates ${graceData.seasonalAmplitude_cm > 10 ? 'strong' : 'moderate'} seasonal recharge cycle)`);
     // AUDIT FIX (2026-07-16): reconcile the ~300 km GRACE footprint with local
@@ -431,18 +447,20 @@ function analyzeGRACE(
     method: '3. GRACE / GRACE-FO Gravity',
     platform: 'GRACE / GRACE-FO (G3P groundwater, GFZ GravIS total storage)',
     resolution: '~300 km (regional screening)',
-    status: hasGrace ? 'available' : hasGldas ? 'partial' : 'unavailable',
-    confidence: hasGrace ? 0.72 : hasGldas ? 0.55 : 0.2,
+    status: twsRaw == null ? 'unavailable' : hasGrace ? 'available' : hasGldas ? 'partial' : 'unavailable',
+    confidence: twsRaw == null ? 0 : hasGrace ? (trendRaw == null ? 0.5 : 0.72) : hasGldas ? (trendRaw == null ? 0.35 : 0.55) : 0.2,
     groundwaterScore: score,
     keyFindings: findings,
     dataSource: hasGrace ? graceData.dataSource || 'GRACE / GRACE-FO (G3P, GFZ GravIS)' : hasGldas ? 'Soil-moisture indicator (not GRACE data)' : 'N/A',
     metrics: {
-      twsAnomaly_cm: twsAnomaly,
-      trendCmPerYear: trend,
+      twsAnomaly_cm: twsRaw ?? 'not available',
+      trendCmPerYear: trendRaw ?? 'not available',
       seasonalAmplitude_cm: graceData?.seasonalAmplitude_cm ?? 'N/A',
       basinStatus: status,
     },
-    implication: score > 70
+    implication: twsRaw == null
+      ? 'Not available: no regional water-storage data for this run.'
+      : score > 70
       ? 'GRACE indicates positive/stable water storage — regional aquifer is in good condition for drilling'
       : score > 45
         ? 'Moderate storage levels — drilling viable but sustainable yield must be assessed carefully'
@@ -932,20 +950,27 @@ export async function runSatelliteRemoteSensing(
   const fractureAI = existingResult.fractureAI;
   const rockData = (existingResult as any).geological;
 
-  // Run all 10 method analyzers
+  // Run all 10 method analyzers. 2026-11-25: each is isolated; a method that fails is reported as
+  // "not available" with its reason (confidence 0, so the fusion ignores it), and the others still run.
+  const safe = (name: string, fn: () => SatelliteMethodResult): SatelliteMethodResult => {
+    try { return fn(); } catch (e) {
+      return { method: name, platform: 'n/a', resolution: 'n/a', status: 'unavailable', confidence: 0, groundwaterScore: 50,
+        keyFindings: [`Not available: this method could not be evaluated (${(e as Error)?.message || 'error'})`], dataSource: 'N/A', metrics: {}, implication: 'Not available for this run.' };
+    }
+  };
   const methods: SatelliteMethodResult[] = [
-    analyzeMultispectral(lat, lon, remoteSensing, ndviData, remoteSensing?.waterIndices, remoteSensing?.soilGrids),
-    analyzeSAR(lat, lon, insarData),
-    analyzeGRACE(lat, lon, graceData, gldasData),
-    analyzeThermalIR(lat, lon, lstData, gldasData),
-    analyzeHyperspectral(lat, lon, remoteSensing?.soilGrids, rockData, globalSoil),
-    analyzeDEM(lat, lon, demData, lineamentData),
-    analyzeNDVI(lat, lon, ndviData, vegProxy, satVeg),
-    analyzeSMAP(lat, lon, smapData, gldasData),
+    safe('1. Multispectral', () => analyzeMultispectral(lat, lon, remoteSensing, ndviData, remoteSensing?.waterIndices, remoteSensing?.soilGrids)),
+    safe('2. SAR / InSAR', () => analyzeSAR(lat, lon, insarData)),
+    safe('3. GRACE / GRACE-FO Gravity', () => analyzeGRACE(lat, lon, graceData, gldasData)),
+    safe('4. Thermal Infrared', () => analyzeThermalIR(lat, lon, lstData, gldasData)),
+    safe('5. Hyperspectral', () => analyzeHyperspectral(lat, lon, remoteSensing?.soilGrids, rockData, globalSoil)),
+    safe('6. DEM / Topography', () => analyzeDEM(lat, lon, demData, lineamentData)),
+    safe('7. NDVI', () => analyzeNDVI(lat, lon, ndviData, vegProxy, satVeg)),
+    safe('8. Soil Moisture (SMAP)', () => analyzeSMAP(lat, lon, smapData, gldasData)),
   ];
 
   // Method 10: LiDAR
-  methods.push(analyzeLiDAR(lat, lon, demData, lineamentData, fractureAI));
+  methods.push(safe('10. LiDAR', () => analyzeLiDAR(lat, lon, demData, lineamentData, fractureAI)));
 
   // Method 9: Multi-Sensor Fusion (uses results from methods 1-8 + 10)
   const fusion = runMultiSensorFusion(methods);

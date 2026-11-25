@@ -690,6 +690,11 @@ export interface AnalysisResult {
   pumpTestInsufficient?: string;
   /** The pumping-test records needed for a defensible interpretation. */
   pumpTestEvidenceRequired?: readonly string[];
+  /**
+   * Time-series pumping-test analysis (2026-11-25): Theis, Cooper-Jacob and Theis
+   * recovery from timed readings. Present only when the field pump test has a time series.
+   */
+  pumpTestTimeSeries?: import('./pumpTestTimeSeries').TimeSeriesAnalysis;
   /** Lithology Logger — stratigraphic analysis from drill cuttings/core logs */
   lithologyAnalysis?: any;
   /** ERT Intelligence Pipeline — full 10-step engineering-grade ERT analysis */
@@ -1030,7 +1035,8 @@ export interface FieldValidationData {
     storativity?: number;
     sustainableYieldM3Hr: number;
     drawdownM: number;
-    recoveryPercent: number;
+    /** Absent for a time-series test entered without recovery readings (never defaulted). */
+    recoveryPercent?: number;
     testDurationHrs: number;
     testDate: string;
     testType?: 'constant-rate';
@@ -1039,6 +1045,8 @@ export interface FieldValidationData {
     recoveryWaterLevelM?: number;
     recoveryDurationHrs?: number;
     provenance?: EvidenceProvenance;
+    /** Timed readings (2026-11-25): validated by pumpTestTimeSeries.validateTimeSeries. */
+    timeSeries?: import('./pumpTestTimeSeries').PumpTestTimeSeries;
   };
   /** Lab sieve analysis grain-size distribution (v2 well design) */
   sieveAnalysis?: {

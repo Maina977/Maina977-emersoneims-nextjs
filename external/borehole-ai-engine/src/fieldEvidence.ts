@@ -11,6 +11,7 @@
  * out, and an entry missing a required measurement or its source is refused.
  */
 import type { EvidenceProvenance, FieldValidationData } from './types';
+import { validateTimeSeries, type PumpTestTimeSeries } from './pumpTestTimeSeries';
 
 export interface SourceEntry {
   /** Contractor (survey, test) or laboratory name. */
@@ -35,8 +36,21 @@ export interface SurveyEntry extends SourceEntry {
 
 export interface StepEntry { rateM3h: number | null; dynamicLevelM: number | null; durationMin: number | null }
 
+/** Time-series entry (2026-11-25): timed readings as entered, in minutes and metres. */
+export interface TimeSeriesEntry {
+  rateM3h: number | null;
+  /** 'drawdown' = metres below the static level; 'water-level' = metres below ground (converted using the static level). */
+  valuesAre: 'drawdown' | 'water-level';
+  readings: { tMin: number | null; value: number | null }[];
+  rateChanges: { tMin: number | null; rateM3h: number | null }[];
+  pumpingStoppedMin: number | null;
+  recovery: { tPrimeMin: number | null; value: number | null }[];
+  observationDistanceM: number | null;
+  pumpIntakeDepthM: number | null;
+}
+
 export interface PumpingTestEntry extends SourceEntry {
-  testType: 'constant-rate' | 'step-drawdown';
+  testType: 'constant-rate' | 'step-drawdown' | 'time-series';
   staticLevelM: number | null;
   /** constant-rate */
   durationHrs?: number | null;
@@ -49,6 +63,8 @@ export interface PumpingTestEntry extends SourceEntry {
   storativity?: number | null;
   /** step-drawdown */
   steps?: StepEntry[];
+  /** time-series (constant-rate test with timed readings) */
+  timeSeries?: TimeSeriesEntry;
 }
 
 export const LAB_PARAMETERS = [
@@ -215,7 +231,56 @@ export function validatePumpingTest(e: PumpingTestEntry, now = new Date()): Entr
     };
   }
 
-  errors.push('Test type must be constant-rate or step-drawdown.');
+  if (e.testType === 'time-series') {
+    const t = e.timeSeries;
+    if (!t) { errors.push('Enter the timed drawdown readings.'); return { ok: false, errors }; }
+    const toS = (v: number | null) => (finite(v) ? (t.valuesAre === 'water-level' ? (finite(swl) ? v - (swl as number) : NaN) : v) : NaN);
+    const isBlank = (a: (number | null)[]) => a.every((x) => x == null);
+    const series: PumpTestTimeSeries = {
+      rate_m3h: finite(t.rateM3h) ? t.rateM3h : NaN,
+      rateChanges: t.rateChanges.filter((c) => !isBlank([c.tMin, c.rateM3h])).map((c) => ({ t_min: finite(c.tMin) ? c.tMin : NaN, rate_m3h: finite(c.rateM3h) ? c.rateM3h : NaN })),
+      readings: t.readings.filter((r) => !isBlank([r.tMin, r.value])).map((r) => ({ t_min: finite(r.tMin) ? r.tMin : NaN, s_m: Math.round(toS(r.value) * 1e6) / 1e6 })),
+      pumpingStopped_min: t.pumpingStoppedMin ?? null,
+      recovery: t.recovery.filter((r) => !isBlank([r.tPrimeMin, r.value])).map((r) => ({ tPrime_min: finite(r.tPrimeMin) ? r.tPrimeMin : NaN, sResidual_m: Math.round(toS(r.value) * 1e6) / 1e6 })),
+      observationDistance_m: t.observationDistanceM ?? null,
+      pumpIntakeDepth_m: t.pumpIntakeDepthM ?? null,
+      staticWaterLevel_m: finite(swl) ? swl : NaN,
+    };
+    if (t.valuesAre === 'water-level' && !finite(swl)) errors.push('Water levels are converted to drawdown with the static water level, which is required.');
+    const v = validateTimeSeries(series);
+    if (!v.ok) errors.push(...v.errors.filter((x) => !/^Static water level/.test(x) || finite(swl)));
+    if (errors.length || !v.ok) return { ok: false, errors: errors.length ? errors : v.errors };
+    const ts = v.value;
+    const firstChange = ts.rateChanges.length ? ts.rateChanges[0].t_min : Infinity;
+    const seg = ts.readings.filter((r) => r.t_min <= firstChange);
+    const end = seg[seg.length - 1];
+    const sAtStop = ts.readings[ts.readings.length - 1].s_m;
+    const lastRec = ts.recovery.length ? ts.recovery[ts.recovery.length - 1] : null;
+    const r2 = (x: number) => Math.round(x * 100) / 100;
+    return {
+      ok: true, errors: [],
+      value: {
+        pumpTest: {
+          testType: 'constant-rate',
+          // The tested rate and the drawdown at the end of the (first) constant-rate segment.
+          sustainableYieldM3Hr: ts.rate_m3h,
+          drawdownM: r2(end.s_m),
+          ...(lastRec && sAtStop > 0 ? { recoveryPercent: Math.round(Math.min(100, Math.max(0, ((sAtStop - lastRec.sResidual_m) / sAtStop) * 100))) } : {}),
+          testDurationHrs: r2(end.t_min / 60),
+          testDate: e.date.trim(),
+          staticWaterLevelM: swl as number,
+          dynamicWaterLevelM: r2((swl as number) + end.s_m),
+          ...(lastRec ? { recoveryWaterLevelM: r2((swl as number) + lastRec.sResidual_m), recoveryDurationHrs: r2(lastRec.tPrime_min / 60) } : {}),
+          ...(finite(e.transmissivityM2Day) ? { transmissivityM2Day: e.transmissivityM2Day } : {}),
+          ...(finite(e.storativity) ? { storativity: e.storativity } : {}),
+          provenance: provenance(e),
+          timeSeries: ts,
+        },
+      },
+    };
+  }
+
+  errors.push('Test type must be constant-rate, step-drawdown or time-series.');
   return { ok: false, errors };
 }
 

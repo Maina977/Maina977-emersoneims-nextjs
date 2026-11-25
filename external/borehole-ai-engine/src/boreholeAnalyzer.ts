@@ -7,7 +7,7 @@ import { RiskAnalyzer } from './riskAnalyzer';
 import { AnalysisResult, FieldValidationData } from './types';
 import { calculateLocationConfidence } from './locationVerifier';
 import { fetchRemoteSensingData } from './remoteSensing';
-import { fetchHistoricalData, estimateGroundwaterTrend } from './historicalData';
+import { fetchHistoricalData, estimateGroundwaterTrend, hasRainfallSeries } from './historicalData';
 import { measuredGroundwaterNear } from './openGroundwaterData';
 import { getRegionalBoreholeStats, geocodeLocationForm, GEOLOGICAL_FORMATIONS, getKenyaCountyBoreholeStats, getKenyaCountyFromCoords, getKenyaCountyBoreholeStatsByName } from './boreholeDatabase';
 import { fetchGLDASGroundwaterData } from './gldasGroundwater';
@@ -52,7 +52,9 @@ import { applyCalibrationCorrection } from './realTimeCalibration';
 import { assessDrillingRisk } from './riskDecisionEngine';
 import { calculateConfidenceWeighted } from './confidenceWeighting';
 import { optimizeMicroSite } from './microSitingOptimizer';
+import { SITE_LOCATION_NEEDED } from './locationPrecision';
 import { buildFieldPumpTestAnalysis, type SingleReadingObservation } from './pumpTestAnalyzer';
+import { buildFieldTimeSeriesAnalysis, type TimeSeriesAnalysis } from './pumpTestTimeSeries';
 import { siteEvidenceFrom } from './evidenceGate';
 import { analyzeLithologyLog, queryNearbyLithologyLogs, getRegionalLithologyInsight } from './lithologyLogger';
 import { interpretERTSurvey, type ERTDataPoint } from './ertInterpretation';
@@ -73,7 +75,7 @@ import { computePathTo97 } from './pathTo97Engine';
 import { runSatelliteRemoteSensing } from './satelliteRemoteSensingEngine';
 import { evaluateSurfaceGeophysics } from './surfaceGeophysicsEngine';
 import { sanitizeAnalysisResult } from './sanitizeOutputs';
-import { siteRefusal } from './kenyaLand';
+import { siteCheck } from './kenyaLand';
 import { loadLocalJson } from './localData';
 
 /**
@@ -239,6 +241,9 @@ export interface ClientLocation {
   longitude?: number;
 }
 
+/** Neutral values for every pixel-derived image feature (review M3). */
+const NEUTRAL_PIXEL_FEATURES = { terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: undefined, vegetationScore: 0.3, waterProbability: 0.3, isReliableTerrainImage: false, predictions: [] };
+
 export class BoreholeAnalyzer {
   private imageDetector: ImageDetector;
   private siteLocator: SiteLocator;
@@ -281,7 +286,10 @@ export class BoreholeAnalyzer {
     // Coordinates-only run: the page sends a neutral grey placeholder. Its
     // "terrain" and "vegetation" are not evidence and must not vote
     // (2026-10-27 audit: it gave 66% at Garissa and Nakuru at 15% weight).
-    const noPhoto = imageFile?.name === '__aquascan-no-photo__.jpg';
+    // Safety hotfix 2026-11-25 (review M3): the ENGINE never lets image pixels vote, whatever it is
+    // given. Every run is treated as photo-free; only the image's EXIF metadata (camera GPS) is read.
+    const noPhoto = true;
+    void imageFile;
     // ERA5, the GRACE-FO proxy, NASA POWER and MODIS through the data relay
     // (retries + one-day cache), so every source answers and repeats.
     installReliableFetch();
@@ -295,6 +303,11 @@ export class BoreholeAnalyzer {
     let clientGeo: (NonNullable<Awaited<ReturnType<typeof geocodeLocationForm>>> & {
       constituency?: string; ward?: string; suburb?: string; placeType?: string;
     }) | null = null;
+    // Safety hotfix 2026-11-25 (review B2): a place name alone (country, county, town) is not a site;
+    // it is never geocoded to its centre and analysed. (The geocoding branch below is no longer reached.)
+    if (!(clientLocation?.latitude != null && clientLocation?.longitude != null) && clientLocation && Object.values(clientLocation).some(v => typeof v === 'string' && v.trim())) {
+      throw new Error(SITE_LOCATION_NEEDED);
+    }
     if (clientLocation?.latitude != null && clientLocation?.longitude != null) {
       // Direct coordinates — highest priority, skip geocoding entirely
       const lat = clientLocation.latitude;
@@ -421,22 +434,37 @@ export class BoreholeAnalyzer {
     // part, so the rest of the analysis keeps the values it needs. The neutral
     // object is the last resort, with those values filled in (audit 2026-10-31:
     // an empty one gave a total cost of NaN).
-    let features: any = await withLimit(this.imageDetector.analyzeImage(imageFile, hints, { skipModel: noPhoto }), 60000);
+    let features: any = await withLimit(this.imageDetector.analyzeImage(imageFile, hints, { skipModel: true }), 60000);
     if (!features) {
       console.warn('[Pipeline] Image analysis timed out (60s): retrying without the photo classifier');
       features = await withLimit(this.imageDetector.analyzeImage(imageFile, hints, { skipModel: true }), 20000);
     }
     if (!features) features = { ...{ metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {} }, vegetationScore: 0.3, waterProbability: 0.3, isReliableTerrainImage: false, locationMethod: 'none', locationContext: {}, gpsSource: 'none', predictions: [] };
+    // Review M3: every pixel-derived field is replaced by the same neutral values, so a real photo and
+    // the placeholder give identical groundwater figures at the same coordinates.
+    features = { ...features, ...NEUTRAL_PIXEL_FEATURES };
 
     // Merge coordinates: client location takes priority over image GPS
     const effectiveLat = clientGeo?.latitude ?? features.metadata?.gps?.latitude;
     const effectiveLon = clientGeo?.longitude ?? features.metadata?.gps?.longitude;
     const hasCoords = effectiveLat != null && effectiveLon != null;
+    let waterCheckUnavailable = false;
+    let waterCheckNote = '';
+    // Safety hotfix 2026-11-25: no analysis without a real location. A position guessed from the
+    // photo's colours ('visual-estimate') or no position at all is refused with a reason.
+    // Review R3: a position from the file name or embedded text (filename/IPTC geocode) is not accepted either;
+    // only coordinates from the caller or the photo's own camera GPS.
+    if (!clientGeo && (!hasCoords || features.locationMethod !== 'exif-gps')) {
+      throw new Error('Location problem: AquaScan needs the site\u2019s coordinates (typed, searched or from the camera GPS). A photo cannot locate the site or show groundwater.');
+    }
     // Kenyan land only, whatever the entry point (typed, re-analysis, place
     // search or photo GPS) (2026-10-27 audit: Kampala, Lake Turkana and the
     // sea off Mombasa all got full results).
     if (hasCoords) {
-      const refusal = await siteRefusal(effectiveLat as number, effectiveLon as number);
+      const check = await siteCheck(effectiveLat as number, effectiveLon as number);
+      waterCheckUnavailable = check.waterCheck !== 'ok';
+      waterCheckNote = check.note;
+      const refusal = check.refusal;
       // Prefixed so the page shows the reason, not "a data service did not answer" (2026-10-29 audit).
       if (refusal) throw new Error(`Location problem: ${refusal}`);
     }
@@ -1019,7 +1047,7 @@ export class BoreholeAnalyzer {
       soil.type,
       recommendedDepth,
       contaminationSources,
-      features.waterProbability,
+      0, // review N5: no water evidence from a photo (photos are not analysed); explicitly absent, never a placeholder value
       features.terrainType,
       riskRealData,  // REAL satellite data when available
     );
@@ -1046,6 +1074,7 @@ export class BoreholeAnalyzer {
     if (historicalData?.weather && gldasGroundwater?.waterBudget) {
       nasaPowerET = gldasGroundwater.waterBudget.evapotranspiration;
       if (nasaPowerET && nasaPowerET > 0) {
+        // 2026-11-25: null when only the stored annual baseline is available (no 20-year series).
         historicalData.groundwater = estimateGroundwaterTrend(
           historicalData.weather,
           effectiveLat!,
@@ -1053,6 +1082,10 @@ export class BoreholeAnalyzer {
           nasaPowerET,  // REAL NASA POWER evapotranspiration
         );
       }
+    }
+    if (historicalData?.weather && !hasRainfallSeries(historicalData.weather)) {
+      historicalData.groundwater = null;
+      fallbacksUsed.push('The 20-year rainfall record was not available, so the groundwater trend is not estimated for this run (recharge trend, depletion risk and water-table trend need the rainfall series)');
     }
 
     let calibratedDepth = recommendedDepth;
@@ -2390,6 +2423,7 @@ export class BoreholeAnalyzer {
     let pumpTestObservation: SingleReadingObservation | undefined;
     let pumpTestInsufficient: string | undefined;
     let pumpTestEvidenceRequired: readonly string[] | undefined;
+    let pumpTestTimeSeries: TimeSeriesAnalysis | undefined;
     let lithologyAnalysis: any;
     let ertInterpretation: any;
     let multiSourceAgreement: any;
@@ -2416,6 +2450,12 @@ export class BoreholeAnalyzer {
       pumpTestObservation = pumpTestOutcome.observation;
       pumpTestInsufficient = pumpTestOutcome.insufficientEvidence;
       pumpTestEvidenceRequired = pumpTestOutcome.required;
+      // Time series (2026-11-25): timed readings are analysed by Theis, Cooper-Jacob and
+      // Theis recovery (pumpTestTimeSeries.ts). The single-reading observation above
+      // describes ONE rate and ONE drawdown, so it is not shown for a time series; the
+      // time-series result carries its own INSUFFICIENT EVIDENCE when the record is not enough.
+      pumpTestTimeSeries = buildFieldTimeSeriesAnalysis(fieldData?.pumpTest);
+      if (pumpTestTimeSeries) { pumpTestObservation = undefined; pumpTestInsufficient = undefined; pumpTestEvidenceRequired = undefined; }
 
       // 2. Lithology Analysis — query nearby lithology logs
       if (hasCoords) {
@@ -2651,7 +2691,7 @@ export class BoreholeAnalyzer {
         remoteSensing, fieldData, historicalData, boreholeRecords,
         gldasGroundwater, nearbyWells, demHydrology, ensembleResult,
         advancedRockMapping: advancedRockResult, rockClassification,
-        fractureAI, lineamentAnalysis, pixelAnalysis: features.pixelAnalysis,
+        fractureAI, lineamentAnalysis, pixelAnalysis: undefined,
         vegetationGWProxy, satelliteVegetation, nasaPowerMoisture,
         satelliteWaterAnalysis, globalSoilAnalysis,
         insarDeformation: insarResult, lithologyAnalysis, soil,
@@ -2664,7 +2704,9 @@ export class BoreholeAnalyzer {
     }
 
     const result = ({
-      site,
+      // Review R1 (2026-11-25): siteType, vegetation, water indicator and slope came from fixed neutral
+      // inputs (photos are not analysed); they are not reported as observations.
+      site: { ...site, siteType: undefined, vegetationDensity: undefined, waterIndicator: undefined, terrainSlope: undefined, visualObservations: 'not analysed: photos are not used' } as any,
       soil,
       waterQuality,
       risk,
@@ -2677,10 +2719,11 @@ export class BoreholeAnalyzer {
       imageFingerprint: features.imageFingerprint,
       imageForensicId: features.imageForensicId,
       locationContext: features.locationContext,
-      pixelAnalysis: features.pixelAnalysis,
+      pixelAnalysis: undefined, // no photo pixel analysis is reported (review m8)
       isReliableTerrainImage: features.isReliableTerrainImage,
       resolvedLocation: features.resolvedLocation,
-      geoEstimate: features.geoEstimate,
+      // Management 2026-11-25: the photo is not analysed, so no geo-estimate of any kind is reported.
+      geoEstimate: undefined, // management 2026-11-25: no object describing a photo that was not analysed
       locationConfidence,
       remoteSensing,
       historicalData,
@@ -2831,6 +2874,7 @@ export class BoreholeAnalyzer {
       pumpTestObservation,
       pumpTestInsufficient,
       pumpTestEvidenceRequired,
+      pumpTestTimeSeries,
       lithologyAnalysis: lithologyAnalysis ?? undefined,
       ertInterpretation: ertInterpretation ?? undefined,
       multiSourceAgreement: multiSourceAgreement ?? undefined,
@@ -3516,7 +3560,8 @@ export class BoreholeAnalyzer {
             const mq = await measuredGroundwaterNear(effectiveLat, effectiveLon, 25).catch(() => null);
             if (mq?.restWaterLevel && mq.restWaterLevel.n >= 3 && mq.restWaterLevel.median != null) return mq.restWaterLevel.median;
           }
-          (result as any).pumpHeadAssumption = `No water level has been measured near this site: the pump and solar costs assume about ${Math.round(calibratedDepth * 0.5)} m (half the planned depth). A survey or the drilled hole sets the real figure.`;
+          // Re-review of f89698e8, BLOCKING 2: no modelled depth in the text (the number was half the modelled depth).
+          (result as any).pumpHeadAssumption = 'No water level has been measured near this site: the pump and solar costs assume the water stands at half the planned depth. A survey or the drilled hole sets the real figure.';
           return calibratedDepth * 0.5;
         })(),
         aquiferType: aqClass?.aquiferType ?? subsurfaceModel?.lithologicalColumn?.aquifers?.[0]?.type ?? 'unknown',
@@ -3833,12 +3878,19 @@ export class BoreholeAnalyzer {
         wqS.treatmentRequired = (flS.mgL ?? 0) > 1.5 ? [...restF, `Defluoridation (activated alumina or bone char): ${flS.basis === 'lab' ? 'laboratory' : 'measured nearby'} fluoride ${flS.value}`] : restF;
       }
     }
+    // Review R7: the open-water check could not run; the page asks the customer to confirm the site is on land.
+    // Re-review of 126efdbc, M-2: the check is offline (kenyaWater.ts); its outcome is recorded either way.
+    if (waterCheckNote) (result as any).waterCheckNote = waterCheckNote;
+    if (waterCheckUnavailable) {
+      (result as any).waterBodyCheckUnavailable = true;
+      (result.fallbacksUsed ??= [] as any).push(`${waterCheckNote || 'Water-body check inconclusive'}; the customer confirms on a map that the site is on land`);
+    }
     // Ensure GPS coordinates propagate to ALL possible storage paths
     if (effectiveLat != null && effectiveLon != null) {
       if (!result.clientLocation) result.clientLocation = {};
-      if (!result.geoEstimate) result.geoEstimate = { bestEstimate: { rank: 1, region: '', country: '', countryCode: '', latitude: effectiveLat, longitude: effectiveLon, confidence: 0.5, climateZone: 'Unknown', reasoning: [] }, estimates: [], alternatives: [], isOutdoor: true, method: 'fallback', timestamp: new Date().toISOString() } as any;
-      if ((result.geoEstimate as any).bestEstimate == null) (result.geoEstimate as any).bestEstimate = { rank: 1, region: '', country: '', countryCode: '', latitude: effectiveLat, longitude: effectiveLon, confidence: 0.5, climateZone: 'Unknown', reasoning: [] };
-      if (!result.site) result.site = { latitude: effectiveLat, longitude: effectiveLon, confidence: 0.5, siteType: 'flat', vegetationDensity: 0, waterIndicator: 0, terrainSlope: 0 };
+      // Management 2026-11-25: no geo-estimate object is created (it claimed an outdoor photo, isOutdoor: true,
+      // for a photo that was not analysed); the coordinates live in result.site and result.clientLocation.
+      if (!result.site) result.site = { latitude: effectiveLat, longitude: effectiveLon, confidence: 0.5, visualObservations: 'not analysed: photos are not used' } as any;
       if (result.site.latitude == null) result.site.latitude = effectiveLat;
       if (result.site.longitude == null) result.site.longitude = effectiveLon;
     }

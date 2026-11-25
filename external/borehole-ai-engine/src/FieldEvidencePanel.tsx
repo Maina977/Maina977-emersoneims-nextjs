@@ -11,6 +11,7 @@ import {
   validateSurvey, validatePumpingTest, validateLabAnalysis, sha256Hex, LAB_PARAMETERS,
   type SurveyEntry, type PumpingTestEntry, type LabEntry, type StepEntry, type LabParameterKey,
 } from './fieldEvidence';
+import { parseTwoColumns } from './pumpTestTimeSeries';
 import { evidenceChecklist, provenanceText } from './evidenceGate';
 
 type Patch = Partial<FieldValidationData>;
@@ -54,6 +55,44 @@ function SourceFields({ s, set, names }: { s: { source: string; date: string; me
 
 const blankSource = { source: '', date: '', method: '', reference: '' };
 
+type Pair = { a: string; b: string };
+const blankRows = (n: number): Pair[] => Array.from({ length: n }, () => ({ a: '', b: '' }));
+
+/**
+ * Editable two-column table with paste-from-spreadsheet (2026-11-25). Pasted text is
+ * parsed by parseTwoColumns: refused with line-by-line reasons, never half-applied.
+ */
+function SeriesTable({ title, cols, rows, setRows, hint }: { title: string; cols: [string, string]; rows: Pair[]; setRows: (r: Pair[]) => void; hint: string }) {
+  const [paste, setPaste] = useState('');
+  const [err, setErr] = useState<string[]>([]);
+  const apply = () => {
+    const p = parseTwoColumns(paste, { first: cols[0], second: cols[1] });
+    if (p.errors.length) { setErr(p.errors); return; }
+    setErr([]); setRows(p.rows.map(([a, b]) => ({ a: String(a), b: String(b) }))); setPaste('');
+  };
+  return (
+    <div style={{ marginTop: 8, padding: 8, border: '1px dashed var(--border)', borderRadius: 6 }}>
+      <div style={{ fontSize: 11, fontWeight: 700 }}>{title}</div>
+      <div style={{ fontSize: 10, color: 'var(--text-secondary)', margin: '2px 0 4px' }}>{hint}</div>
+      <label style={lbl}>{`Paste ${title.toLowerCase()} from a spreadsheet (two columns: ${cols[0]}, ${cols[1]})`}
+        <textarea style={{ ...inp, minHeight: 48, fontFamily: 'monospace', fontSize: 11 }} value={paste} onChange={(e) => setPaste(e.target.value)} />
+      </label>
+      <button type="button" className="btn btn-secondary" style={{ fontSize: 10, padding: '2px 10px', marginTop: 4 }} onClick={apply}>{`Use pasted ${title.toLowerCase()}`}</button>
+      <Errors errors={err} />
+      <div style={{ ...grid(110), fontSize: 10, fontWeight: 700, marginTop: 6 }}><span>{cols[0]}</span><span>{cols[1]}</span><span /></div>
+      {rows.map((r, i) => (
+        <div key={i} style={{ ...grid(110), marginTop: 2 }}>
+          <input aria-label={`${title} row ${i + 1} ${cols[0]}`} type="text" inputMode="decimal" style={inp} value={r.a} onChange={(e) => setRows(rows.map((x, j) => j === i ? { ...x, a: e.target.value } : x))} />
+          <input aria-label={`${title} row ${i + 1} ${cols[1]}`} type="text" inputMode="decimal" style={inp} value={r.b} onChange={(e) => setRows(rows.map((x, j) => j === i ? { ...x, b: e.target.value } : x))} />
+          <button type="button" className="btn btn-secondary" aria-label={`Delete ${title} row ${i + 1}`} style={{ fontSize: 10, padding: '2px 8px' }} onClick={() => setRows(rows.filter((_, j) => j !== i))}>Delete</button>
+        </div>
+      ))}
+      <button type="button" className="btn btn-secondary" style={{ fontSize: 10, padding: '2px 10px', marginTop: 4 }} onClick={() => setRows([...rows, { a: '', b: '' }])}>{`Add a row (${title.toLowerCase()})`}</button>
+      <span style={{ fontSize: 10, marginLeft: 8, color: 'var(--text-secondary)' }}>{rows.filter((r) => r.a.trim() || r.b.trim()).length} row(s) entered</span>
+    </div>
+  );
+}
+
 export function FieldEvidencePanel({ fieldData, onApply, onRemove }: {
   fieldData: Partial<FieldValidationData>;
   onApply: (patch: Patch) => void;
@@ -64,7 +103,13 @@ export function FieldEvidencePanel({ fieldData, onApply, onRemove }: {
   const [svFile, setSvFile] = useState<{ name: string; sha256: string } | null>(null);
   const [svErr, setSvErr] = useState<string[]>([]);
   // ── Pumping test ──
-  const [pt, setPt] = useState({ ...blankSource, testType: 'constant-rate' as 'constant-rate' | 'step-drawdown', swl: '', dur: '', rate: '', dwl: '', rec: '', recH: '', T: '', S: '' });
+  type TestType = 'constant-rate' | 'step-drawdown' | 'time-series';
+  const [pt, setPt] = useState({ ...blankSource, testType: 'constant-rate' as TestType, swl: '', dur: '', rate: '', dwl: '', rec: '', recH: '', T: '', S: '' });
+  // Time series (2026-11-25)
+  const [ts, setTs] = useState({ rate: '', valuesAre: 'drawdown' as 'drawdown' | 'water-level', stop: '', obs: '', intake: '' });
+  const [tsReadings, setTsReadings] = useState<Pair[]>(blankRows(6));
+  const [tsChanges, setTsChanges] = useState<Pair[]>([]);
+  const [tsRecovery, setTsRecovery] = useState<Pair[]>([]);
   const [steps, setSteps] = useState<{ rate: string; dwl: string; min: string }[]>([{ rate: '', dwl: '', min: '' }, { rate: '', dwl: '', min: '' }, { rate: '', dwl: '', min: '' }]);
   const [ptErr, setPtErr] = useState<string[]>([]);
   // ── Laboratory ──
@@ -85,13 +130,22 @@ export function FieldEvidencePanel({ fieldData, onApply, onRemove }: {
       ...pt, testType: pt.testType, staticLevelM: num(pt.swl), transmissivityM2Day: num(pt.T), storativity: num(pt.S),
       ...(pt.testType === 'constant-rate'
         ? { durationHrs: num(pt.dur), rateM3h: num(pt.rate), dynamicLevelM: num(pt.dwl), recoveryLevelM: num(pt.rec), recoveryHrs: num(pt.recH) }
-        : { steps: steps.map<StepEntry>((s) => ({ rateM3h: num(s.rate), dynamicLevelM: num(s.dwl), durationMin: num(s.min) })) }),
+        : pt.testType === 'time-series'
+          ? { timeSeries: {
+              rateM3h: num(ts.rate), valuesAre: ts.valuesAre,
+              readings: tsReadings.map((r) => ({ tMin: num(r.a), value: num(r.b) })),
+              rateChanges: tsChanges.map((r) => ({ tMin: num(r.a), rateM3h: num(r.b) })),
+              pumpingStoppedMin: num(ts.stop),
+              recovery: tsRecovery.map((r) => ({ tPrimeMin: num(r.a), value: num(r.b) })),
+              observationDistanceM: num(ts.obs), pumpIntakeDepthM: num(ts.intake),
+            } }
+          : { steps: steps.map<StepEntry>((s) => ({ rateM3h: num(s.rate), dynamicLevelM: num(s.dwl), durationMin: num(s.min) })) }),
     };
     const r = validatePumpingTest(entry);
     if (!r.ok) { setPtErr(r.errors); return; }
     setPtErr([]);
     // One pumping test at a time: the other test type is cleared.
-    onRemove(pt.testType === 'constant-rate' ? ['stepDrawdownTest'] : ['pumpTest']);
+    onRemove(pt.testType === 'step-drawdown' ? ['pumpTest'] : ['stepDrawdownTest']);
     onApply(r.value);
   };
   const addLab = () => {
@@ -152,7 +206,7 @@ export function FieldEvidencePanel({ fieldData, onApply, onRemove }: {
       <fieldset style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 10, marginBottom: 10 }}>
         <legend style={{ fontSize: 12, fontWeight: 700, color: '#06b6d4' }}>2. Pumping test: gives the yield</legend>
         <div style={grid(150)}>
-          <Field label="Test type *"><select style={inp} value={pt.testType} onChange={(e) => setPt({ ...pt, testType: e.target.value as 'constant-rate' | 'step-drawdown' })}><option value="constant-rate">Constant-rate test</option><option value="step-drawdown">Step-drawdown test</option></select></Field>
+          <Field label="Test type *"><select style={inp} value={pt.testType} onChange={(e) => setPt({ ...pt, testType: e.target.value as TestType })}><option value="constant-rate">Constant-rate test (summary levels)</option><option value="time-series">Constant-rate test with timed readings (time series)</option><option value="step-drawdown">Step-drawdown test</option></select></Field>
           <SourceFields s={pt} set={(k, v) => setPt({ ...pt, [k]: v })} names={{ source: 'Test contractor', date: 'Test date', method: 'Method / standard', methodHint: 'e.g. WRA test-pumping guideline' }} />
           <Field label="Static water level (m below ground) *"><input type="number" min="0" step="0.01" style={inp} value={pt.swl} onChange={(e) => setPt({ ...pt, swl: e.target.value })} /></Field>
           {pt.testType === 'constant-rate' && <>
@@ -161,6 +215,13 @@ export function FieldEvidencePanel({ fieldData, onApply, onRemove }: {
             <Field label="Dynamic water level at end (m) *"><input type="number" min="0" step="0.01" style={inp} value={pt.dwl} onChange={(e) => setPt({ ...pt, dwl: e.target.value })} /></Field>
             <Field label="Water level at end of recovery (m) *"><input type="number" min="0" step="0.01" style={inp} value={pt.rec} onChange={(e) => setPt({ ...pt, rec: e.target.value })} /></Field>
             <Field label="Recovery duration (hours) *"><input type="number" min="0" step="0.5" style={inp} value={pt.recH} onChange={(e) => setPt({ ...pt, recH: e.target.value })} /></Field>
+          </>}
+          {pt.testType === 'time-series' && <>
+            <Field label="Pumping rate at start (m³/h) *"><input type="number" min="0" step="0.01" style={inp} value={ts.rate} onChange={(e) => setTs({ ...ts, rate: e.target.value })} /></Field>
+            <Field label="Readings are *"><select style={inp} value={ts.valuesAre} onChange={(e) => setTs({ ...ts, valuesAre: e.target.value as 'drawdown' | 'water-level' })}><option value="drawdown">Drawdown (m below the static level)</option><option value="water-level">Water level (m below ground)</option></select></Field>
+            <Field label="Observation-well distance (m; empty = pumping well)"><input type="number" min="0" step="0.1" style={inp} value={ts.obs} onChange={(e) => setTs({ ...ts, obs: e.target.value })} /></Field>
+            <Field label="Pump intake depth (m below ground, optional)"><input type="number" min="0" step="0.1" style={inp} value={ts.intake} onChange={(e) => setTs({ ...ts, intake: e.target.value })} /></Field>
+            <Field label="Pump stopped at (min since start; needed with recovery)"><input type="number" min="0" step="1" style={inp} value={ts.stop} onChange={(e) => setTs({ ...ts, stop: e.target.value })} /></Field>
           </>}
           <Field label="Transmissivity (m²/day, if in report)"><input type="number" min="0" step="0.1" style={inp} value={pt.T} onChange={(e) => setPt({ ...pt, T: e.target.value })} /></Field>
           <Field label="Storativity (if in report)"><input type="number" min="0" step="0.0001" style={inp} value={pt.S} onChange={(e) => setPt({ ...pt, S: e.target.value })} /></Field>
@@ -178,10 +239,18 @@ export function FieldEvidencePanel({ fieldData, onApply, onRemove }: {
             <button type="button" className="btn btn-secondary" style={{ fontSize: 10, padding: '2px 10px', marginTop: 4 }} onClick={() => setSteps([...steps, { rate: '', dwl: '', min: '' }])}>Add a step</button>
           </div>
         )}
+        {pt.testType === 'time-series' && <>
+          <SeriesTable title="Drawdown readings" cols={['Time since pumping started (min)', ts.valuesAre === 'drawdown' ? 'Drawdown (m)' : 'Water level (m below ground)']} rows={tsReadings} setRows={setTsReadings}
+            hint="At least 6 readings at the starting rate, times increasing, from the first minutes to the end of pumping. Units: minutes and metres only." />
+          <SeriesTable title="Rate changes" cols={['Time of change (min since start)', 'New rate (m³/h)']} rows={tsChanges} setRows={setTsChanges}
+            hint="Optional. Leave empty for a constant rate. With a change, only the readings before it are analysed (variable-rate analysis is not supported)." />
+          <SeriesTable title="Recovery readings" cols={["Time since pump stopped t' (min)", ts.valuesAre === 'drawdown' ? 'Residual drawdown (m)' : 'Water level (m below ground)']} rows={tsRecovery} setRows={setTsRecovery}
+            hint="Optional, at least 3 if entered; needs the pump stop time above." />
+        </>}
         <p style={{ fontSize: 10, color: 'var(--text-secondary)', margin: '6px 0 0' }}>The yield shown is the rate you tested (or, for a step test, the highest step rate), with this test&apos;s reference. Drawdown and recovery are worked out from the levels you enter.</p>
         <button type="button" className="btn btn-primary" style={{ fontSize: 11, padding: '5px 14px', marginTop: 8 }} onClick={addPumpTest}>Add pumping test</button>
         <Errors errors={ptErr} />
-        {ptd && <Added text={`constant-rate test ${provenanceText(ptd.provenance, { date: ptd.testDate })}: ${ptd.sustainableYieldM3Hr} m³/h for ${ptd.testDurationHrs} h, drawdown ${ptd.drawdownM} m, recovery ${ptd.recoveryPercent}%`} onRemove={() => onRemove(['pumpTest'])} />}
+        {ptd && <Added text={`constant-rate test ${provenanceText(ptd.provenance, { date: ptd.testDate })}: ${ptd.sustainableYieldM3Hr} m³/h for ${ptd.testDurationHrs} h, drawdown ${ptd.drawdownM} m${ptd.recoveryPercent != null ? `, recovery ${ptd.recoveryPercent}%` : ''}${ptd.timeSeries ? `; time series of ${ptd.timeSeries.readings.length} readings${ptd.timeSeries.rateChanges.length ? `, ${ptd.timeSeries.rateChanges.length} rate change(s)` : ''}${ptd.timeSeries.recovery.length ? `, ${ptd.timeSeries.recovery.length} recovery readings` : ''} (analysed on the Pump Test tab)` : ''}`} onRemove={() => onRemove(['pumpTest'])} />}
         {sdt && <Added text={`step-drawdown test ${provenanceText(sdt.provenance, { date: sdt.testDate })}: ${sdt.steps.length} steps up to ${Math.max(...sdt.steps.map((s) => s.pumpingRate_m3hr))} m³/h`} onRemove={() => onRemove(['stepDrawdownTest'])} />}
       </fieldset>
 

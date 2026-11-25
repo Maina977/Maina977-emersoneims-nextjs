@@ -1,0 +1,338 @@
+{
+ "title": "Pumping test 'Oude Korendijk' (Wit 1963), as published in Kruseman & de Ridder (1990/1994), 2nd ed., ILRI Publication 47",
+ "source": {
+  "book": "Kruseman, G.P. and de Ridder, N.A., with J.M. Verweij (1994). Analysis and Evaluation of Pumping Test Data, Second Edition (Completely Revised). ILRI Publication 47, Wageningen. ISBN 90 70754 207 (AquaKnow copy: 2000 reprint).",
+  "bookUrl": "https://aquaknow.jrc.ec.europa.eu/sites/default/files/Kruseman%20-%201994%20-%20Analysis%20and%20evaluation%20of%20pumping%20test%20data.pdf",
+  "dataTable": "Table 3.1, p. 59 (piezometers H30 and H90, screen depths 20 m and 24 m)",
+  "site": "p. 56: confined aquifer 18-25 m below surface (KD sought), fully penetrating screen, Q = 9.12 l/s = 788 m3/d for nearly 14 hours; piezometers at 0.8, 30, 90 and 215 m",
+  "originalData": "Wit, K.E. (1963). Report No. 190, Inst. Land and Water Management Research, Wageningen (in Dutch).",
+  "machineReadableCopy": "timflow (MIT), docs/transient/04pumpingtests/data/piezometer_h30.txt and piezometer_h90.txt, https://github.com/timflow-org/timflow (head in m, negative = drawdown; drawdown = -head here)",
+  "sha256": {
+   "piezometer_h30.txt": "a705d2fca98d033f840c06604765abbc01014509b30d2d1425626ea50eb3edb5",
+   "piezometer_h90.txt": "3d31d0f7ac1ff9858a5883e352fc62ccb5d5e4cf4be93333bf36d43f0da4eaa5"
+  },
+  "crossCheck": "Every time and drawdown value of both files was compared with the text layer of Table 3.1 (p. 59) of the AquaKnow PDF on 2026-11-25: identical."
+ },
+ "Q_m3d": 788,
+ "piezometers": {
+  "H30": {
+   "r_m": 30,
+   "readings": [
+    [
+     0.1,
+     0.04
+    ],
+    [
+     0.25,
+     0.08
+    ],
+    [
+     0.5,
+     0.13
+    ],
+    [
+     0.7,
+     0.18
+    ],
+    [
+     1.0,
+     0.23
+    ],
+    [
+     1.4,
+     0.28
+    ],
+    [
+     1.9,
+     0.33
+    ],
+    [
+     2.33,
+     0.36
+    ],
+    [
+     2.8,
+     0.39
+    ],
+    [
+     3.36,
+     0.42
+    ],
+    [
+     4.0,
+     0.45
+    ],
+    [
+     5.35,
+     0.5
+    ],
+    [
+     6.8,
+     0.54
+    ],
+    [
+     8.3,
+     0.57
+    ],
+    [
+     8.7,
+     0.58
+    ],
+    [
+     10.0,
+     0.6
+    ],
+    [
+     13.1,
+     0.64
+    ],
+    [
+     18.0,
+     0.68
+    ],
+    [
+     27.0,
+     0.742
+    ],
+    [
+     33.0,
+     0.753
+    ],
+    [
+     41.0,
+     0.779
+    ],
+    [
+     48.0,
+     0.793
+    ],
+    [
+     59.0,
+     0.819
+    ],
+    [
+     80.0,
+     0.855
+    ],
+    [
+     95.0,
+     0.873
+    ],
+    [
+     139.0,
+     0.915
+    ],
+    [
+     181.0,
+     0.935
+    ],
+    [
+     245.0,
+     0.966
+    ],
+    [
+     300.0,
+     0.99
+    ],
+    [
+     360.0,
+     1.007
+    ],
+    [
+     480.0,
+     1.05
+    ],
+    [
+     600.0,
+     1.053
+    ],
+    [
+     728.0,
+     1.072
+    ],
+    [
+     830.0,
+     1.088
+    ]
+   ]
+  },
+  "H90": {
+   "r_m": 90,
+   "readings": [
+    [
+     1.5,
+     0.015
+    ],
+    [
+     2.0,
+     0.021
+    ],
+    [
+     2.16,
+     0.023
+    ],
+    [
+     2.66,
+     0.044
+    ],
+    [
+     3.0,
+     0.054
+    ],
+    [
+     3.5,
+     0.075
+    ],
+    [
+     4.0,
+     0.09
+    ],
+    [
+     4.33,
+     0.104
+    ],
+    [
+     5.5,
+     0.133
+    ],
+    [
+     6.0,
+     0.153
+    ],
+    [
+     7.5,
+     0.178
+    ],
+    [
+     9.0,
+     0.206
+    ],
+    [
+     13.0,
+     0.25
+    ],
+    [
+     15.0,
+     0.275
+    ],
+    [
+     18.0,
+     0.305
+    ],
+    [
+     25.0,
+     0.348
+    ],
+    [
+     30.0,
+     0.364
+    ],
+    [
+     40.0,
+     0.404
+    ],
+    [
+     53.0,
+     0.429
+    ],
+    [
+     60.0,
+     0.444
+    ],
+    [
+     75.0,
+     0.467
+    ],
+    [
+     90.0,
+     0.494
+    ],
+    [
+     105.0,
+     0.507
+    ],
+    [
+     120.0,
+     0.528
+    ],
+    [
+     150.0,
+     0.55
+    ],
+    [
+     180.0,
+     0.569
+    ],
+    [
+     248.0,
+     0.593
+    ],
+    [
+     301.0,
+     0.614
+    ],
+    [
+     363.0,
+     0.636
+    ],
+    [
+     422.0,
+     0.657
+    ],
+    [
+     542.0,
+     0.679
+    ],
+    [
+     602.0,
+     0.688
+    ],
+    [
+     680.0,
+     0.701
+    ],
+    [
+     785.0,
+     0.718
+    ],
+    [
+     845.0,
+     0.716
+    ]
+   ]
+  }
+ },
+ "published": {
+  "jacob_H30": {
+   "where": "Example 3.4, p. 68 (Figure 3.7, p. 66)",
+   "method": "Jacob (Cooper-Jacob) straight line, Procedure 3.4, graphical fit; validity stated as u < 0.1 for t > 1.4 min",
+   "deltaS_m_per_log_cycle": 0.375,
+   "t0_min": 0.25,
+   "KD_m2d": 385,
+   "S": 0.00017
+  },
+  "jacob_H90": {
+   "where": "Example 3.4, p. 68",
+   "method": "Jacob, Procedure 3.4",
+   "KD_m2d": 450,
+   "S": 0.00017,
+   "note": "book: less reliable, few points before leakage starts"
+  },
+  "theis_all": {
+   "where": "Example 3.3, p. 65 (Figure 3.6, p. 64)",
+   "method": "Theis type-curve match of s vs t/r2 for H30 and H90 together (H215 discarded); match point W(u) = 1, 1/u = 10, s = 0.16 m, t/r2 = 1.5e-3 min/m2",
+   "KD_m2d": 392,
+   "S": 0.00016
+  },
+  "summary": {
+   "where": "Section 3.3, Table 3.3, pp. 70-71",
+   "KD_m2d": 390,
+   "S": 0.00017,
+   "methodsRange_KD_m2d": [
+    370,
+    431
+   ],
+   "note": "Table 3.3 (p. 71): Thiem 1 385, Thiem 2 390, Theis 392 (S 1.6e-4), Jacob 1 385 (1.7e-4), Jacob 2 370 (4.1e-4), Jacob 3 431 (1.7e-4); Example 3.6 text (p. 70) gives 437 for Jacob 3. Book: late-time data probably influenced by leakage; graphical methods are never accurate (p. 70)."
+  }
+ }
+}

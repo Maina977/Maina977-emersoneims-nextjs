@@ -368,12 +368,25 @@ export async function fetchHistoricalWeather(lat: number, lon: number): Promise<
  *
  * Falls back to aridity-based percentage estimation when ET data unavailable.
  */
+/**
+ * True only for a 20-year rainfall series (drought years and a trend). The stored ERA5 annual
+ * baseline used when the weather service does not answer has neither (2026-11-25).
+ */
+export function hasRainfallSeries(w: unknown): w is HistoricalWeather {
+  const x = w as Partial<HistoricalWeather> | null | undefined;
+  return !!x && Array.isArray(x.droughtYears) && typeof x.trendDirection === 'string' && Number.isFinite(Number(x.trendPerDecade)) && Number(x.avgAnnualPrecip) > 0;
+}
+
 export function estimateGroundwaterTrend(
   weather: HistoricalWeather,
   lat: number,
   lon: number,
   nasaPowerET?: number | null,  // Annual ET in mm/year from NASA POWER (EVPTRNS)
-): GroundwaterTrend {
+): GroundwaterTrend | null {
+  // 2026-11-25 (reviewer of f736e0b0): an annual-only baseline has no drought years or trend; this
+  // used to throw a TypeError on weather.droughtYears.length and fail the whole analysis. The trend
+  // needs the 20-year series: without it the trend is "not available" (null), never a crash.
+  if (!hasRainfallSeries(weather)) return null;
   const reasoning: string[] = [];
   const avg = weather.avgAnnualPrecip;
 

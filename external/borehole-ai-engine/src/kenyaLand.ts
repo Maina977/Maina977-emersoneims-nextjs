@@ -6,6 +6,7 @@
  */
 
 import { KENYA_RINGS } from './kenyaOutline';
+import { KENYA_WATER, KENYA_COAST_BOX, KENYA_COAST_LAND } from './kenyaWater';
 
 /**
  * Kenya's land outline (kenyaOutline.ts, ~550 m accuracy) with a ~3 km
@@ -35,41 +36,101 @@ export function inKenya(lat: number, lon: number): boolean {
   return minD < TOLERANCE_DEG;
 }
 
-/**
- * Open water at the point? The Copernicus DEM (via Open-Meteo) holds water
- * bodies at one constant level and the sea at 0 m, while land is never
- * perfectly flat over a few km. Measured 2026-10-27 on a 3x3 grid at ~1.7 km
- * spacing: Lake Turkana 9/9 points at 362 m, Winam Gulf 9/9 at 1,133 m; the
- * flattest land (Lodwar) had at most 2 equal heights and a 14 m range.
- * Returns null when the elevation service does not answer (not checked).
- */
-export async function openWaterAt(lat: number, lon: number): Promise<'sea' | 'lake' | false | null> {
-  const d = 0.015;
-  const pts: [number, number][] = [];
-  for (const dy of [-d, 0, d]) for (const dx of [-d, 0, d]) pts.push([lat + dy, lon + dx]);
-  try {
-    const la = pts.map((p) => p[0].toFixed(5)).join(',');
-    const lo = pts.map((p) => p[1].toFixed(5)).join(',');
-    const r = await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${la}&longitude=${lo}`, { signal: AbortSignal.timeout(10000) });
-    if (!r.ok) return null;
-    const el: unknown = (await r.json())?.elevation;
-    if (!Array.isArray(el) || el.length !== 9 || !el.every((v) => typeof v === 'number')) return null;
-    const centre = el[4] as number;
-    if (centre <= 0) return 'sea';
-    const same = (el as number[]).filter((v) => v === centre).length;
-    return same >= 5 ? 'lake' : false;
-  } catch {
-    return null;
+type Ring = [number, number][];
+
+function inRings(lat: number, lon: number, rings: Ring[]): boolean {
+  let inside = false;
+  for (const R of rings) {
+    for (let i = 0, j = R.length - 1; i < R.length; j = i++) {
+      const [xi, yi] = R[i], [xj, yj] = R[j];
+      if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+    }
   }
+  return inside;
+}
+
+/** Distance in km from the point to the nearest ring edge (local equirectangular). */
+function edgeKm(lat: number, lon: number, rings: Ring[]): number {
+  const kx = Math.cos((lat * Math.PI) / 180);
+  let best = Infinity;
+  for (const R of rings) {
+    for (let i = 0, j = R.length - 1; i < R.length; j = i++) {
+      const ax = (R[j][0] - lon) * kx, ay = R[j][1] - lat, bx = (R[i][0] - lon) * kx, by = R[i][1] - lat;
+      const dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy;
+      const s = L > 0 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / L)) : 0;
+      best = Math.min(best, Math.hypot(ax + s * dx, ay + s * dy));
+    }
+  }
+  return best * 111.32;
+}
+
+/**
+ * Shoreline margins: inside a mapped water body but closer to its shore than this, the point is not
+ * refused (the map or the pin may be off by that much); the customer confirms it is on land instead.
+ * Lakes and reservoirs: OpenStreetMap, simplified to ~130 m. Coast: Natural Earth 10 m, ~220 m
+ * simplification plus the source's own generalisation.
+ */
+export const LAKE_SHORE_MARGIN_KM = 0.3;
+export const SEA_SHORE_MARGIN_KM = 1.0;
+
+export type WaterAt =
+  | { kind: 'lake' | 'reservoir' | 'sea'; name: string; nearShore: boolean; shoreKm: number }
+  | null;
+
+/**
+ * Re-review of 126efdbc, M-2 (2026-11-25): open water at the point, from bundled offline maps
+ * (kenyaWater.ts: OpenStreetMap lakes and reservoirs, ODbL; Natural Earth coast, public domain).
+ * Replaces the Open-Meteo elevation check (a paid licence is needed for commercial use, and it was
+ * unavailable on every run). It never needs the network, so it is never "unavailable".
+ * Rivers are not checked: Kenyan river channels are narrower than the pin and map accuracy.
+ */
+export function openWaterAt(lat: number, lon: number): WaterAt {
+  for (const w of KENYA_WATER) {
+    if (!inRings(lat, lon, w.rings as Ring[])) continue;
+    const km = edgeKm(lat, lon, w.rings as Ring[]);
+    return { kind: w.kind === 'reservoir' ? 'reservoir' : 'lake', name: w.name, nearShore: km < LAKE_SHORE_MARGIN_KM, shoreKm: km };
+  }
+  const [x0, y0, x1, y1] = KENYA_COAST_BOX;
+  if (lon >= x0 && lon <= x1 && lat >= y0 && lat <= y1 && !inRings(lat, lon, KENYA_COAST_LAND as Ring[]) && !inRings(lat, lon, KENYA_RINGS as Ring[])) {
+    const km = Math.min(edgeKm(lat, lon, KENYA_COAST_LAND as Ring[]), edgeKm(lat, lon, KENYA_RINGS as Ring[]));
+    return { kind: 'sea', name: 'the Indian Ocean', nearShore: km < SEA_SHORE_MARGIN_KM, shoreKm: km };
+  }
+  return null;
+}
+
+const where = (lat: number, lon: number) => `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+function waterRefusal(lat: number, lon: number, w: NonNullable<WaterAt>): string {
+  return w.kind === 'sea'
+    ? `${where(lat, lon)} is in the sea (${w.name}, ${w.shoreKm.toFixed(1)} km off the mapped coastline). Move the pin onto land. (${WATER_MAP_ATTRIBUTION})`
+    : `${where(lat, lon)} is on open water (${w.name}, ${w.shoreKm.toFixed(1)} km from the mapped shore). Move the pin onto land. (${WATER_MAP_ATTRIBUTION})`;
+}
+
+/**
+ * Attribution shown wherever the water-check result is shown (screen, refusals, exports). The lake
+ * and reservoir polygons are OpenStreetMap data (ODbL 1.0: attribution required); the coast is
+ * Natural Earth (public domain); Kenyan islands come from the geoBoundaries outline (CC BY 4.0).
+ */
+export const WATER_MAP_ATTRIBUTION = 'Lake and reservoir maps \u00a9 OpenStreetMap contributors (ODbL); coast: Natural Earth; islands: geoBoundaries (CC BY 4.0)';
+export const WATER_CHECK_OK = `Not on a mapped lake, reservoir or the sea (offline maps. ${WATER_MAP_ATTRIBUTION})`;
+
+/**
+ * Refusal plus the state of the water-body check (review R7: never a silent pass). 'near-shore':
+ * the point is on a mapped water body but within the shoreline margin, so the customer confirms
+ * on a map that it is on land before reports are released.
+ */
+export async function siteCheck(lat: number, lon: number): Promise<{ refusal: string | null; waterCheck: 'ok' | 'near-shore'; note: string }> {
+  if (!inKenya(lat, lon)) return { refusal: await siteRefusal(lat, lon), waterCheck: 'ok', note: WATER_CHECK_OK };
+  const w = openWaterAt(lat, lon);
+  if (w && !w.nearShore) return { refusal: waterRefusal(lat, lon, w), waterCheck: 'ok', note: WATER_CHECK_OK };
+  if (w) return { refusal: null, waterCheck: 'near-shore', note: `Water-body check inconclusive: the pin is within ${Math.max(0.1, w.shoreKm).toFixed(1)} km of the mapped ${w.kind === 'sea' ? 'coastline' : `shore of ${w.name}`} (${WATER_MAP_ATTRIBUTION})` };
+  return { refusal: null, waterCheck: 'ok', note: WATER_CHECK_OK };
 }
 
 /** A clear refusal, or null when the point is on Kenyan land. */
 export async function siteRefusal(lat: number, lon: number): Promise<string | null> {
   if (!inKenya(lat, lon)) {
-    return `${lat.toFixed(4)}, ${lon.toFixed(4)} is outside Kenya's land area (sea or a neighbouring country). AquaScan uses Kenyan borehole records, rainfall and costs, so it only runs for sites in Kenya.`;
+    return `${where(lat, lon)} is outside Kenya's land area (sea or a neighbouring country). AquaScan uses Kenyan borehole records, rainfall and costs, so it only runs for sites in Kenya.`;
   }
-  const water = await openWaterAt(lat, lon);
-  if (water === 'sea') return `${lat.toFixed(4)}, ${lon.toFixed(4)} is in the sea (0 m elevation). Move the pin onto land.`;
-  if (water === 'lake') return `${lat.toFixed(4)}, ${lon.toFixed(4)} is on open water (a lake surface). Move the pin onto land.`;
-  return null;
+  const w = openWaterAt(lat, lon);
+  return w && !w.nearShore ? waterRefusal(lat, lon, w) : null;
 }
