@@ -82,7 +82,19 @@ import ErrorBoundary from './ErrorBoundary';
 const EnginePanel = resilient(() => import('./panels/EnginePanel'), { name: 'Engine', variant: 'panel' });
 const ElectricalPanel = resilient(() => import('./panels/ElectricalPanel'), { name: 'Electrical', variant: 'panel' });
 const FaultDiagnosticsPanel = resilient(() => import('./panels/FaultDiagnosticsPanel'), { name: 'Fault Diagnostics', variant: 'panel' });
-const TechnicianAssistantPanel = resilient(() => import('./panels/TechnicianAssistantPanel'), { name: 'Technician Assistant', variant: 'panel' });
+// SAFETY WITHDRAWAL (management decision P3, 2026-11-25). The Technician Assistant used
+// invented thresholds (coolant > 95 °C, oil pressure < 20 PSI) and listed running-engine
+// steps before its STOP (independent safety review, finding P3). It is withdrawn until its
+// corrections pass independent review: the panel module is no longer imported anywhere,
+// so its code is not in the build and no saved state, link or direct call can run it.
+export const TECHNICIAN_ASSISTANT_UNAVAILABLE = 'Technician Assistant is temporarily unavailable while safety checks are being updated. Please consult the applicable OEM service manual and a qualified technician.';
+function TechnicianAssistantPanel() {
+  return (
+    <div role="status" data-testid="technician-assistant-withdrawn" className="rounded-xl border border-amber-500/60 bg-amber-950/40 p-4 text-sm text-amber-100">
+      {TECHNICIAN_ASSISTANT_UNAVAILABLE}
+    </div>
+  );
+}
 const WiringDiagramsPanel = resilient(() => import('./panels/WiringDiagramsPanel'), { name: 'Wiring Diagrams', variant: 'panel' });
 const AllControllerWiringDiagrams = resilient(() => import('./AllControllerWiringDiagrams'), { name: 'All Controller Wiring Diagrams', variant: 'panel' });
 const TechnicianInputDiagnostics = resilient(() => import('./TechnicianInputDiagnostics'), { name: 'Technician Input Diagnostics', variant: 'panel' });
