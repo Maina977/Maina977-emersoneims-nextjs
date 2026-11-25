@@ -33,6 +33,9 @@ import EvidenceCards from './EvidenceCardsView';
 import { FieldEvidencePanel } from './FieldEvidencePanel';
 import { hasRainfallSeries } from './historicalData';
 import { withholdModelFigures } from './figureGate';
+import { atPin, pinBlocksRun, pinAfterRun, boxesToPoint } from './pinGate';
+import { displayDepth, displayYield, pumpSizingAllowed, PLAN_NEEDS, PUMP_NEEDS } from './displayFigures';
+import { waterQualityStatus } from './waterQualityStatus';
 import { waterCheckStatusText } from './locationStatus';
 import { siteScore, compareCardFigures, compareVerdictSentence, radarAxes, costRowAllowed, uniqueBest } from './compareGate';
 import { placePrecision, SITE_LOCATION_NEEDED } from './locationPrecision';
@@ -736,35 +739,30 @@ const AIBoreholeAnalyzer: React.FC = () => {
   /** Review N2: the report downloads are held (disabled + handler guard) while the audit or the water check is unresolved. */
   const downloadsHeldRef = useRef(false);
   /** Review N1: a searched pin is pending until confirmed; no run path may use its coordinates before that. */
-  const pinPendingAt = (lat: number, lon: number) =>
-    !!pinNote && pinNote.needsConfirm && !pinNote.confirmed && Math.abs(Number(pinNote.lat) - lat) < 1e-6 && Math.abs(Number(pinNote.lon) - lon) < 1e-6;
-  const pinConfirmedAt = (lat: number, lon: number) =>
-    !!pinNote && pinNote.confirmed && Math.abs(Number(pinNote.lat) - lat) < 1e-6 && Math.abs(Number(pinNote.lon) - lon) < 1e-6;
+  // Re-review of f89698e8 (BLOCKING 1): both decided from the coordinates (pinGate.ts, ~1 m), at run time.
+  const pinPendingAt = (lat: number, lon: number) => pinBlocksRun(pinNote, lat, lon);
+  const pinConfirmedAt = (lat: number, lon: number) => !!pinNote && pinNote.confirmed && atPin(pinNote, lat, lon);
+  /**
+   * The pin box is hidden only while the boxes hold a DIFFERENT valid point; for the pin's point, or a
+   * partial or unreadable entry, it stays (the pin itself is kept either way).
+   */
+  const boxesAtPin = (() => { const pt = boxesToPoint(manualLat, manualLon); return !!pinNote && (!pt || atPin(pinNote, pt.lat, pt.lon)); })();
   const PIN_UNCONFIRMED = 'Location problem: the searched place was pinned at its centre. Confirm the pin is at the drilling site (tick the box under the pin), or type the exact coordinates.';
   /** Review N1: a later search that fails or is refused drops an unconfirmed pin AND its coordinates. */
   const dropPendingPin = () => {
     if (pinNote && !pinNote.confirmed) {
-      if (manualLat.trim() === pinNote.lat && manualLon.trim() === pinNote.lon) { setManualLat(''); setManualLon(''); }
+      const pt = boxesToPoint(manualLat, manualLon);
+      if (pt && atPin(pinNote, pt.lat, pt.lon)) { setManualLat(''); setManualLon(''); }
     }
     setPinNote(null);
   };
-  /**
-   * Re-review of 126efdbc, B-1 (2026-11-25): editing a coordinate box replaces the searched pin only
-   * when the edit parses to a DIFFERENT coordinate. A no-op edit (a trailing space, "1.0" for "1")
-   * keeps the pin and its status: a pending pin stays pending and keeps blocking runs; a confirmed
-   * pin keeps its searched-place label. A pasted "lat, lon" pair in the latitude box is compared too.
-   */
+  /** Coordinate box edits (B-1 of 126efdbc, then BLOCKING 1 of f89698e8). */
   const coordEdit = (field: 'lat' | 'lon', value: string) => {
+    // Re-review of f89698e8 (BLOCKING 1): an edit never changes the searched pin. Before, the first
+    // intermediate value that differed (Backspace, clearing a box) dropped a pending pin, and
+    // retyping the same numbers then ran at the unconfirmed place centre as "Manual Entry". The
+    // run gate (pinGate.ts) decides from the coordinates at run time instead.
     if (field === 'lat') setManualLat(value); else setManualLon(value);
-    if (!pinNote) return;
-    let lat = field === 'lat' ? value : manualLat;
-    let lon = field === 'lon' ? value : manualLon;
-    const pair = field === 'lat' ? value.split(/[,;\s]+/).filter(Boolean) : [];
-    if (pair.length === 2) { lat = pair[0]; lon = pair[1]; }
-    const la = Number(String(lat).trim()), lo = Number(String(lon).trim());
-    const same = String(lat).trim() !== '' && String(lon).trim() !== '' && Number.isFinite(la) && Number.isFinite(lo)
-      && Math.abs(Number(pinNote.lat) - la) < 1e-6 && Math.abs(Number(pinNote.lon) - lo) < 1e-6;
-    if (!same) setPinNote(null);
   };
   const [scannerResult, setScannerResult] = useState<AIScanResult | null>(null);
   const [scannerRunning, setScannerRunning] = useState(false);
@@ -939,10 +937,6 @@ const AIBoreholeAnalyzer: React.FC = () => {
     // Coordinates typed but invalid? STOP and say so — never run the analysis
     // at the wrong place while the user believes their location was applied.
     let manualCoords: { lat: number; lon: number } | null = null;
-    if (pinNote?.needsConfirm && !pinNote.confirmed && (manualLat.trim() || manualLon.trim())) {
-      setManualLocError(PIN_UNCONFIRMED); setAnalysisError(PIN_UNCONFIRMED); setActiveView('analyze');
-      return;
-    }
     if (manualLat.trim() || manualLon.trim()) {
       const parsed = parseManualCoordinates(manualLat, manualLon);
       if ('error' in parsed) {
@@ -952,6 +946,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
         return;
       }
       manualCoords = parsed;
+    }
+    // Re-review of f89698e8 (BLOCKING 1): refused when the point to be analysed IS the unconfirmed
+    // searched pin, however the boxes got there.
+    if (manualCoords && pinPendingAt(manualCoords.lat, manualCoords.lon)) {
+      setManualLocError(PIN_UNCONFIRMED); setAnalysisError(PIN_UNCONFIRMED); setActiveView('analyze');
+      return;
     }
 
     // Multiple photos: analyze the one with EXIF GPS as primary (best
@@ -989,6 +989,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
         // Review B2/m6: a typed place name is not a site location; the camera GPS is used when valid.
         photoGps = await exifGpsOf(primary);
         if (!photoGps) { setAnalysisError(PHOTO_NEEDS_LOCATION); setManualLocError(PHOTO_NEEDS_LOCATION); setActiveView('analyze'); return; }
+        if (pinPendingAt(photoGps.lat, photoGps.lon)) { setManualLocError(PIN_UNCONFIRMED); setAnalysisError(PIN_UNCONFIRMED); setActiveView('analyze'); return; }
         placeNameIgnored = hasTypedPlace;
       }
       const ph = await placeholderPhoto();
@@ -1031,6 +1032,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
       }
       void hasClientLoc; // a place name alone is never the location (review B2)
       if (!locationArg) { setAnalysisError(SITE_LOCATION_NEEDED); setManualLocError(SITE_LOCATION_NEEDED); setAnalyzing(false); setActiveView('analyze'); return; }
+      // Re-review of f89698e8: last check at the engine call, then a run elsewhere replaces an unconfirmed pin.
+      if (pinPendingAt(Number(locationArg.latitude), Number(locationArg.longitude))) { setManualLocError(PIN_UNCONFIRMED); setAnalysisError(PIN_UNCONFIRMED); setAnalyzing(false); setActiveView('analyze'); return; }
+      { const la = Number(locationArg.latitude), lo = Number(locationArg.longitude); setPinNote((pn) => pinAfterRun(pn, la, lo)); }
 
       // Build field data if any field forms were filled
       const hasFieldData = Object.keys(fieldDataInput).length > 0 && Object.values(fieldDataInput).some(v => v != null);
@@ -1096,6 +1100,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
     const typed = (sites[idx].lat ?? '').trim() || (sites[idx].lon ?? '').trim() ? parseCoordPair(sites[idx].lat ?? '', sites[idx].lon ?? '') : null;
     if (typed && 'error' in typed) { apply({ analyzing: false, note: `Not analysed: ${typed.error}` }); return; }
     const gps = typed ? { lat: typed.lat, lon: typed.lon } : file ? await exifGpsOf(file) : null;
+    // Re-review of f89698e8: compare mode never analyses the unconfirmed searched pin either.
+    if (gps && pinPendingAt(gps.lat, gps.lon)) { apply({ analyzing: false, note: `Not analysed: ${PIN_UNCONFIRMED}` }); return; }
     const ph = gps ? await placeholderPhoto() : null;
     if (!gps || !ph) {
       apply({ analyzing: false, note: gps ? 'Could not start the analysis in this browser.' : 'Not analysed: this photo has no camera GPS position, and a photo alone cannot locate the site or show groundwater. Enter this site\u2019s latitude and longitude below and press "Analyse at these coordinates".' });
@@ -1180,6 +1186,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
     // Review N1: never re-analyse at an unconfirmed searched pin.
     if (pinPendingAt(lat, lon)) { setManualLocError(PIN_UNCONFIRMED); return false; }
     const searchedPinName = pinConfirmedAt(lat, lon) ? pinNote!.name : null;
+    setPinNote((pn) => pinAfterRun(pn, lat, lon));
     setManualLocError('');
     // Every coordinate change is checked and re-analysed (2026-10-29 audit: the
     // GPS button relabelled a Nairobi result as Kampala without re-running).
@@ -1423,7 +1430,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         {!pinnedPlaceLoading && !pinnedPlace && <div style={{marginTop:6,color:'var(--text-tertiary)',fontSize:11}}>Place names will be resolved during analysis and printed in the report.</div>}
                       </div>;
                 })()}
-                {pinNote && (
+                {pinNote && boxesAtPin && (
                   <div role="status" style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(56,189,248,0.08)',border:'1px solid rgba(56,189,248,0.3)',color:'var(--text-primary)',fontSize:12,lineHeight:1.5}}>
                     {pinNote.text}
                     {pinNote.needsConfirm && (
@@ -2316,7 +2323,13 @@ const AIBoreholeAnalyzer: React.FC = () => {
     const climate = genClimate(result.historicalData, result.gldasGroundwater, (result as any).rechargeSummary);
     const prob = genProbability(result.probability, result.recommendedDepth, result);
     const wqExpanded = genWaterQualityExpanded(result.waterQuality, result.recommendedDepth);
-    const strategy = genDrillingStrategy(result.recommendedDepth, result.soil.type, eco);
+    // Re-review of f89698e8, BLOCKING 2: the casing, screen interval and duration derive from the
+    // depth, so without a surveyed depth they are not shown (displayFigures.ts).
+    const strategy = (() => {
+      const st = genDrillingStrategy(result.recommendedDepth, result.soil.type, eco);
+      if (displayDepth(result).shown) return st;
+      return { ...st, method: /\d/.test(st.method) ? 'Chosen after the survey (formation type and depth)' : st.method, casingRequired: PLAN_NEEDS, screenPlacement: PLAN_NEEDS, estimatedDuration: 'Set after the survey (depends on the drilled depth)' };
+    })();
     const nearby = result.nearbyWells?.nearbyWells ?? [];
     const tabs = ['overview','ai-scanner','verification','geolocation','remote-sensing','satellite-rs','surface-geophysics-30','gldas-groundwater','realtime-water','subsurface-3d','subsurface-twin','insar','survey-plan','hybrid-geophysics','advanced-geophysics','aquifer-sim','historical','borehole-records','subsurface','geological','rock-sites','topographic','scenarios','water','costs','solar','roi','strategy','climate','probability','ml-models','risk','risk-decision','confidence-quality','geophysics-fusion','fracture-ai','aquifer-type','recharge-model','drill-map','micro-siting','calibration-loop','borehole-intelligence','pump-test','lithology','ert-interpretation','source-agreement','drought-analysis','hydrochemistry','data-quality','drilling-prediction','regional-model','site-identity','drill-decision','risk-register','pump-protocol','prediction-table','confidence-breakdown','bankable-checklist','well-design','engineer-trust','data-provenance','methodology','cross-validation','ai-vs-reality','pinn-explainable','path-to-97','validation','compare','report'] as const;
 
@@ -2336,7 +2349,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
     // Review of 126efdbc, B-2 (2026-11-25): without a field survey AND a pumping test, tabs whose
     // content is modelled depth, yield, cost, ROI or payback for this site are not shown.
     const gTabs = evidenceGate(result);
-    const MODEL_FIGURE_TABS = new Set(['gldas-groundwater','subsurface-3d','survey-plan','hybrid-geophysics','advanced-geophysics','aquifer-sim','rock-sites','risk-decision','confidence-quality','calibration-loop','data-quality','drilling-prediction','regional-model','risk-register','pump-protocol','prediction-table','well-design']);
+    const MODEL_FIGURE_TABS = new Set(['gldas-groundwater','subsurface-3d','survey-plan','hybrid-geophysics','advanced-geophysics','aquifer-sim','rock-sites','risk-decision','confidence-quality','calibration-loop','data-quality','drilling-prediction','regional-model','risk-register','pump-protocol','prediction-table','well-design','subsurface']);
     const figuresAllowed = gTabs.depth && gTabs.yield;
     const visibleTabs: string[] = showTechnical ? tabs.filter((t) => !HIDDEN_TABS.has(t) && (figuresAllowed || !MODEL_FIGURE_TABS.has(t))) : CUSTOMER_TABS;
     const tabLabel = (t: string) => TAB_LABELS[t] ?? t.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -2383,7 +2396,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {g.cost && <div className="summary-card roi-card"><div className="summary-value" style={ecoPriced ? undefined : {fontSize:15}}>{!ecoPriced ? 'After quotation' : ecoPayback >= 240 ? 'None' : `${ecoPayback}mo`}</div><div className="summary-label">Payback Period</div></div>}
           </>); })()}
           <div className="summary-card risk-sc" style={{borderColor:getRiskColor(result.risk.overallRisk)}}><div className="summary-value" style={{color:getRiskColor(result.risk.overallRisk)}}>{(result.risk.overallRisk*100).toFixed(0)}%</div><div className="summary-label">Overall Risk</div></div>
-          <div className="summary-card wq-card"><div className="summary-value">{wqExpanded.treatmentRequired}</div><div className="summary-label">Treatment likely (screening)</div></div>
+          <div className="summary-card wq-card"><div className="summary-value">{waterQualityStatus(result).treatment}</div><div className="summary-label">{waterQualityStatus(result).known ? 'Treatment (laboratory result)' : 'Treatment: needs a laboratory test'}</div></div>
         </div>
 
         {/* ═══ FINAL CONSENSUS — ONE authoritative answer ═══ */}
@@ -2490,10 +2503,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {result.uncertainty && (
             <div style={{marginTop:10,display:'flex',gap:12,flexWrap:'wrap'}}>
               <div style={{padding:'6px 12px',borderRadius:8,background:'rgba(56,189,248,0.1)',fontSize:12}}>
-                <strong>Depth:</strong> {evidenceGate(result).depth ? `${result.uncertainty.depthRange[0]}–${result.uncertainty.depthRange[1]}m` : DEPTH_NEEDS}
+                <strong>Depth:</strong> {(() => { const d = displayDepth(result); return d.shown ? (d.range ? `${d.range[0]}–${d.range[1]}m` : `${d.value}m`) : d.text; })()}
               </div>
               <div style={{padding:'6px 12px',borderRadius:8,background:'rgba(34,197,94,0.1)',fontSize:12}}>
-                <strong>Yield:</strong> {evidenceGate(result).yield ? `${result.uncertainty.yieldRange[0]}–${result.uncertainty.yieldRange[1]} m³/hr` : YIELD_NEEDS}
+                <strong>Yield:</strong> {(() => { const y = displayYield(result); return y.shown ? (y.range ? `${y.range[0]}–${y.range[1]} m³/hr` : `${y.value} m³/hr`) : y.text; })()}
               </div>
               <div style={{padding:'6px 12px',borderRadius:8,background:'rgba(251,191,36,0.1)',fontSize:12}}>
                 <strong>Probability:</strong> {Math.round(result.uncertainty.probabilityRange[0]*100)}–{Math.round(result.uncertainty.probabilityRange[1]*100)}%
@@ -2715,7 +2728,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <input type="text" placeholder="Longitude (e.g. 34.647174)" value={manualLon} onChange={e=>{coordEdit('lon', e.target.value);}} style={{flex:1,minWidth:140,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
                     <button onClick={applyManualCoordinates} style={{padding:'8px 20px',borderRadius:8,border:'none',background:'var(--accent)',color:'#000',fontWeight:600,fontSize:13,cursor:'pointer'}}>Apply &amp; Re-analyze</button>
                   </div>
-                  {pinNote && (
+                  {pinNote && boxesAtPin && (
                     <div role="status" style={{marginTop:10,padding:'8px 12px',borderRadius:8,background:'rgba(56,189,248,0.08)',border:'1px solid rgba(56,189,248,0.3)',color:'var(--text-primary)',fontSize:12,lineHeight:1.5}}>
                       {pinNote.text}
                       {pinNote.needsConfirm && (
@@ -2759,7 +2772,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     )}
                     <div style={{fontSize:13,color:'var(--text-secondary)',marginBottom:12}}>
                       {/* A planning figure, not an instruction (2026-10-25 audit). */}
-                      Planning depth <strong style={{color:'#fbbf24'}}>{evidenceGate(result).depth ? `${Math.round(dDepth)} m` : DEPTH_NEEDS.toLowerCase()}</strong> at this point{result.gpsSource==='manual' ? ' (location you provided)' : result.gpsSource==='device' ? ' (your device GPS)' : ' (photo GPS)'} — an ERT survey and a hydrogeologist fix the drilling point and depth before any rig is booked.
+                      Planning depth <strong style={{color:'#fbbf24'}}>{displayDepth(result).shown ? `${Math.round(dDepth)} m` : DEPTH_NEEDS.toLowerCase()}</strong> at this point{result.gpsSource==='manual' ? ' (location you provided)' : result.gpsSource==='device' ? ' (your device GPS)' : ' (photo GPS)'} — an ERT survey and a hydrogeologist fix the drilling point and depth before any rig is booked.
                     </div>
                     {/* Why the yield is what it is (2026-10-19 re-audit). */}
                     {evidenceGate(result).yield && (result as any).governingYieldNote && <div style={{fontSize:12,color:'var(--text-tertiary)',margin:'-6px 0 12px'}}>Planning yield {result.estimatedYield} m³/h. {(result as any).governingYieldNote}{(result as any).wellDesign?.drawdown?.modelNote ? ' ' + (result as any).wellDesign.drawdown.modelNote : ''}</div>}
@@ -2815,7 +2828,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div className="result-item"><span className="rl">Viability</span><span className="rv">{result.risk.viability === 'not_recommended' ? 'NEEDS ASSESSMENT' : result.risk.viability.toUpperCase()}</span></div>
                 {/* Soil from ISRIC SoilGrids only; photo-derived soil and porosity are not shown (2026-10-19). */}
                 <div className="result-item"><span className="rl">Soil Type</span><span className="rv">{(result.soil as any)?.realSoilGrids ? result.soil.type.toUpperCase() : 'Unknown until drilled'}</span></div>
-                <div className="result-item"><span className="rl">Potability</span><span className="rv">{(result as any).calibrationResult?.calibratedWaterQuality || result.fieldData?.labWaterAnalysis ? (result.waterQuality.isPotable ? 'Meets the guideline values on the parameters the laboratory tested' : 'Treatment required (laboratory result)') : 'Not known: needs a laboratory test of a water sample'}</span></div>
+                <div className="result-item"><span className="rl">Potability</span><span className="rv">{waterQualityStatus(result).potability}</span></div>
                 {(result.soil as any)?.realSoilGrids && <div className="result-item"><span className="rl">Porosity</span><span className="rv">{(result.soil.porosity*100).toFixed(0)}%</span></div>}
               </div>
             </div>
@@ -4975,13 +4988,16 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div className="result-grid">
                     <div className="result-item"><span className="rl">Aquifer Type</span><span className="rv">{(result.subsurfaceModel as any).aquiferUnits?.[0]?.type ?? (result.soil.type==='rocky'?'Fractured/Confined':'Unconfined/Porous')}</span></div>
                     <div className="result-item"><span className="rl">Porosity</span><span className="rv">{(result.soil.porosity*100).toFixed(1)}%</span></div>
+                    {/* Re-review of f89698e8, BLOCKING 2: modelled aquifer parameters and layer depths only with field evidence. */}
+                    {pumpSizingAllowed(result) ? <>
                     <div className="result-item"><span className="rl">Hydraulic Conductivity (K)</span><span className="rv">{(result.subsurfaceModel as any).aquiferUnits?.[0]?.hydraulicConductivity?.toFixed(2) ?? (result.soil.permeability*50).toFixed(1)} m/day</span></div>
                     <div className="result-item"><span className="rl">Aquifer Thickness</span><span className="rv">{(result.subsurfaceModel as any).aquiferUnits?.[0]?.thickness?.toFixed(0) ?? Math.round(result.recommendedDepth*0.4)}m</span></div>
                     <div className="result-item"><span className="rl">Transmissivity (T=Kb)</span><span className="rv">{(result.subsurfaceModel as any).aquiferUnits?.[0]?.transmissivity?.toFixed(0) ?? 'N/A'} m²/day</span></div>
                     <div className="result-item"><span className="rl">Storativity</span><span className="rv">{(result.subsurfaceModel as any).aquiferUnits?.[0]?.storativity?.toExponential(2) ?? (result.soil.porosity*0.1).toFixed(4)}</span></div>
+                    </> : <div className="result-item" style={{gridColumn:'1/-1'}}><span className="rl">Aquifer thickness, K, T, storativity</span><span className="rv">Not shown: modelled from soil data for this site. A geophysical survey and a pumping test measure them.</span></div>}
                   </div>
                   {/* Lithological layers */}
-                  {result.subsurfaceModel.lithologicalColumn?.length > 0 && (
+                  {pumpSizingAllowed(result) && result.subsurfaceModel.lithologicalColumn?.length > 0 && (
                     <div style={{marginTop:20}}>
                       <h4 style={{color:'#FF9800',marginBottom:12}}>Lithological Column (estimated)</h4>
                       <div className="sci-table-wrap">
@@ -5733,7 +5749,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 );
               })()}
               <div className="treatment-box">
-                <div className="treatment-header">Treatment likely: <strong style={{color:wqExpanded.treatmentRequired==='YES'?'#F44336':'#4CAF50'}}>{wqExpanded.treatmentRequired}</strong></div>
+                <div className="treatment-header">Treatment: <strong style={{color:waterQualityStatus(result).treatment==='YES'?'#F44336':waterQualityStatus(result).treatment==='NO'?'#4CAF50':'#fbbf24'}}>{waterQualityStatus(result).known ? waterQualityStatus(result).treatment : waterQualityStatus(result).potability}</strong></div>
                 {/* The same allowance as the Costs tab and the PDF (2026-10-25 audit: six sites, two figures each). */}
                 {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">If treatment is needed it is priced <strong>by quotation</strong> (no sourced rate on file){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day (sized on measured salinity)` : ''}. A laboratory test decides whether it is.</div>}
                 {eco?.salinityUnpriced && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Desalination not priced:</strong> {salinityEvidence(result).sentence}</div>}
@@ -5800,9 +5816,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div>
               <h4 className="tab-title">{'\u2600\uFE0F'} Solar Pump Power (same figures as the PDF report)</h4>
               <div className="result-grid">
+                {!pumpSizingAllowed(result) && <p className="tab-desc"><strong>{PUMP_NEEDS}.</strong> Until then AquaScan gives no pump power, head, pumping hours or array size for this site.</p>}
+                {pumpSizingAllowed(result) && <>
                 <div className="result-item"><span className="rl">Pump</span><span className="rv">{eco ? `about ${Number(eco.pumpKW).toFixed(2)} kW at ${eco.pumpHead} m head` : `${solar.pumpKw} kW`} (until the pump test sets the duty point){(result as any).pumpHeadAssumption ? '. The water level is assumed, not measured: ' + String((result as any).pumpHeadAssumption) : ''}</span></div>
                 <div className="result-item"><span className="rl">Pumping hours</span><span className="rv">{eco ? eco.pumpHoursPerDay : solar.runtime} h/day</span></div>
                 <div className="result-item"><span className="rl">Solar array</span><span className="rv">{eco ? (eco.solarKW > 0 ? `${eco.solarKW} kW` : 'None (hand pump)') : `${solar.panelKwp} kWp`}</span></div>
+                </>}
                 <div className="result-item"><span className="rl">Battery</span><span className="rv">None — the pump fills a storage tank in daylight</span></div>
                 <div className="result-item"><span className="rl">Solar cost (in the project total)</span><span className="rv" style={{fontWeight:700}}>{evG.cost ? `${fmtUSD(eco ? eco.solarCost : solar.totalSolar)} (${fmtKSH(eco ? eco.solarCost : solar.totalSolar)})` : COST_NEEDS}</span></div>
               </div>
@@ -7594,7 +7613,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         <tr><td style={{fontWeight:600}}>Type</td><td>{pm.type}</td></tr>
                         <tr><td style={{fontWeight:600}}>Suggested Model</td><td>{pm.make_model_suggestion}</td></tr>
                         <tr><td style={{fontWeight:600}}>Motor Rating</td><td>{pm.motorRating_kW} kW ({pm.motorRating_hp} HP)</td></tr>
-                        <tr><td style={{fontWeight:600}}>Total Dynamic Head</td><td>{pm.totalDynamicHead_m}m{(result as any).pumpHeadAssumption ? ' (water level assumed, not measured)' : ''}</td></tr>
+                        <tr><td style={{fontWeight:600}}>Total Dynamic Head</td><td>{pumpSizingAllowed(result) ? `${pm.totalDynamicHead_m}m` : PUMP_NEEDS}{(result as any).pumpHeadAssumption ? ' (water level assumed, not measured)' : ''}</td></tr>
                         <tr><td style={{fontWeight:600}}>Pump Efficiency</td><td>{pm.pumpEfficiency_pct}% (at operating point from curve)</td></tr>
                         <tr><td style={{fontWeight:600}}>Installation Depth</td><td>{pm.installationDepth_m}m bgl</td></tr>
                         <tr><td style={{fontWeight:600}}>Power Source</td><td>{pm.powerSource}</td></tr>
@@ -7840,7 +7859,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                           const p = String(item.parameter).toLowerCase();
                           if (p.includes('yield')) return null;
                           const ur = (result as any).uncertainty?.depthRange;
-                          if (p.includes('depth') && p.includes('drill') && Array.isArray(ur)) return <div><strong>Range:</strong> {ur[0]} – {ur[1]} m</div>;
+                          if (p.includes('depth') && p.includes('drill') && Array.isArray(ur)) { const d = displayDepth(result); return <div><strong>Range:</strong> {d.shown ? `${ur[0]} – ${ur[1]} m` : d.text}</div>; }
+                          if (!displayDepth(result).shown && /depth|aquifer top|bedrock|water table|static water|head/.test(p)) return null;
+                          if (!displayYield(result).shown && /yield|transmissiv|drawdown|specific capacity|pump/.test(p)) return null;
                           return item.confidenceInterval ? <div><strong>{item.confidenceInterval.confidence_pct}% CI:</strong> {item.confidenceInterval.lower.toFixed(1)} - {item.confidenceInterval.upper.toFixed(1)} {item.unit}</div> : null;
                         })()}
                       </div>

@@ -79,7 +79,9 @@ describe('B-1: a no-op edit never releases a pending searched pin (dashboard)', 
       expect(confirmBox(), `after "${value}"`).toBeTruthy();
       expect((confirmBox() as HTMLInputElement).checked).toBe(false);
       fireEvent.click(noPhotoBtn());
-      await waitFor(() => expect(container.textContent).toMatch(/Confirm the pin is at the drilling site/));
+      // Refused either by the pin gate or, for a pair pasted beside a filled longitude box, by the
+      // strict coordinate parser (re-review of f89698e8: the gate decides from the parsed point).
+      await waitFor(() => expect(container.textContent).toMatch(/Confirm the pin is at the drilling site|Location problem:/));
       await new Promise((r) => setTimeout(r, 300));
       expect(calls, `after "${value}"`).toHaveLength(0);
       expect(container.querySelector('.results-view')).toBeNull();
