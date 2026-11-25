@@ -163,7 +163,7 @@ export default function GeneratorSynchronizationGuide() {
         <p>
           <strong>(1) Voltage magnitude</strong> must match — typically within a few percent. A voltage difference drives a
           circulating reactive (kVAr) current the instant the breaker closes. <strong>(2) Frequency</strong> must match very
-          closely; in practice the incoming set is run a touch <em>fast</em> (a small positive slip, e.g. +0.1–0.2&nbsp;Hz) so
+          closely; in practice the incoming set is run a touch <em>fast</em> (a small positive slip, within the slip window configured in the sync-check relay or controller per its manual) so
           that on closing it immediately takes a little load rather than being motored. <strong>(3) Phase sequence (rotation)</strong>
           — A-B-C — must be identical; a reversed rotation is catastrophic and is checked once at installation, not on every
           start. <strong>(4) Phase angle</strong> — the two waveforms must cross zero at the same instant (angle difference near
@@ -467,9 +467,7 @@ export default function GeneratorSynchronizationGuide() {
         <p>
           <strong>Sync-check relay blocks every close</strong> even when the scope looks fine: check the relay&apos;s voltage,
           slip and angle windows and its sensing inputs — often the bus and incoming sensing are swapped or one phase is missing.
-          <strong> Voltage won&apos;t match</strong>: AVR fault, wrong AVR mode, or sensing error. <strong>Earth-fault or
-          overheating with no obvious load fault</strong> on a multi-set plant is the circulating-neutral problem from section 8 —
-          revisit the neutral earthing (single-point or switched neutral). Methodically, every paralleling fault traces to one of:
+          <strong> Voltage won&apos;t match</strong>: AVR fault, wrong AVR mode, or sensing error. Methodically, every paralleling fault traces to one of:
           sensing (PT/VT wiring), bias outputs (governor/AVR), settings (windows, droop mode, share gains), or the neutral/earth
           scheme.
         </p>
@@ -488,7 +486,6 @@ export default function GeneratorSynchronizationGuide() {
           ['kVAr not shared, one set hot', 'AVR reactive-droop/cross-current', 'AVR compensation set & wired'],
           ['Hunting / oscillation', 'Governor/AVR instability', 'Detune gains, actuator, clean share signal'],
           ['Sync-check blocks all closes', 'Sensing swapped / window too tight', 'Bus vs set sensing, relay windows'],
-          ['Unexplained earth-fault / overheating', 'Circulating neutral current', 'Single-point earth / switched neutral'],
         ]}
       />
 

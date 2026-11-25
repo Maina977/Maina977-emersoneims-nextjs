@@ -1,6 +1,8 @@
 // Blog Articles Data - Comprehensive SEO Content for Emerson EiMS
 // 12+ detailed articles covering all generator and solar services
 
+import { CONTENT_SAFETY_WITHDRAWN_MESSAGE } from '@/lib/safety/contentWithdrawal';
+
 export interface BlogArticle {
   id: string;
   slug: string;
@@ -79,7 +81,6 @@ Perform these checks every day your generator runs:
 
 ### Visual Inspection
 - **Check for oil leaks** under and around the generator
-- **Look for fuel leaks** around connections and filters
 - **Inspect coolant level** in reservoir (never open a hot radiator)
 - **Check battery terminals** for corrosion (white powder buildup)
 - **Verify all guards and covers** are properly secured
@@ -87,9 +88,10 @@ Perform these checks every day your generator runs:
 ### Operational Checks
 - **Check oil level** with dipstick - should be between min and max marks
 - **Verify fuel level** is adequate for expected runtime
-- **Listen for unusual sounds** during operation (knocking, grinding)
 - **Check exhaust color** - should be clear or light gray
 - **Monitor control panel** for any warning lights or error codes
+
+${CONTENT_SAFETY_WITHDRAWN_MESSAGE}
 
 ## Weekly Maintenance Tasks (15 Minutes)
 
@@ -98,7 +100,7 @@ Perform these checks every day your generator runs:
 - **Drive belt check** - Look for cracks, fraying, proper tension
 - **Radiator inspection** - Check fins for debris or damage
 - **Coolant hose check** - Ensure hoses are tight and not cracked
-- **Battery voltage test** - Should be 12.5V+ when off, 14V+ when charging
+- **Battery voltage test** - per the OEM manual for your model
 
 ### Fuel System
 - **Drain water separator** - Water accumulates especially during rainy season
@@ -119,8 +121,8 @@ Perform these checks every day your generator runs:
 - **Run generator under load** for minimum 30 minutes
 - **Check all gauges** - oil pressure, water temperature, voltage, frequency
 - **Test automatic start** function if equipped
-- **Verify output voltage** under load (should be 240V plus or minus 5%)
-- **Check frequency stability** (should be 50Hz plus or minus 1Hz)
+- **Verify output voltage** under load (per the OEM manual for your model)
+- **Check frequency stability** (per the OEM manual for your model)
 
 ## Quarterly Service Schedule
 
@@ -169,26 +171,7 @@ During long rains (March-May) and short rains (October-December):
 
 ## Warning Signs That Require Immediate Attention
 
-### Engine Problems
-- Blue or black exhaust smoke
-- Knocking or unusual sounds
-- Oil pressure drops below normal
-- Excessive vibration
-- Hard starting or no start
-
-### Electrical Issues
-- Output voltage fluctuations greater than 10%
-- Frequency instability
-- Warning lights staying on
-- Burning smell from control panel
-- Flickering lights when connected
-
-### Cooling System Red Flags
-- Coolant leaking anywhere
-- Temperature gauge reading high
-- Coolant discolored or has oil in it
-- Radiator fins damaged
-- Fan not engaging
+${CONTENT_SAFETY_WITHDRAWN_MESSAGE}
 
 ## DIY Maintenance vs Professional Service
 
@@ -852,8 +835,9 @@ If financing, negotiate:
 - Check running hours (under 3,000 ideal)
 - Look for oil leaks
 - Check exhaust color (should be clear)
-- Listen for knocking sounds
 - Check oil condition (dipstick)
+
+${CONTENT_SAFETY_WITHDRAWN_MESSAGE}
 
 **Alternator:**
 - Test output voltage stability
@@ -869,7 +853,6 @@ If financing, negotiate:
 
 **Red Flags - Walk Away:**
 - No running hours meter
-- Seller won't let it run under load
 - Unknown service history
 - Multiple owners
 - Suspiciously low price
@@ -915,7 +898,6 @@ Your total investment includes more than just the generator:
 4. **Skipping professional installation:** Safety and warranty issues
 5. **Not getting warranty in writing:** Verbal promises mean nothing
 6. **Forgetting about maintenance:** Factor in ongoing costs
-7. **Buying without load test:** Always see it run under load
 
 ## Our Guarantee
 
@@ -1021,7 +1003,6 @@ In 2024, a family of four in Nairobi died after running their generator in the g
 ### Proper Grounding
 - Generator must be properly grounded
 - Use copper grounding rod driven 2.4m into earth
-- Earth resistance should be under 5 ohms
 - Have electrician verify installation
 
 ### Backfeed Prevention
@@ -1115,10 +1096,10 @@ Always hire licensed electrician for installation.
 
 ### During Operation
 - Monitor temperature and oil pressure
-- Listen for unusual sounds
-- Check for smoke or sparks
 - Keep unauthorized persons away
 - Never overload
+
+${CONTENT_SAFETY_WITHDRAWN_MESSAGE}
 
 ### Shutdown Procedure
 1. Reduce load gradually
@@ -1269,7 +1250,7 @@ Your safety is our priority. Serving all 47 counties in Kenya.
       },
       {
         question: 'How do I prevent my generator from catching fire?',
-        answer: 'Key prevention steps: maintain proper clearance around generator, clean fuel and oil leaks immediately, never refuel while running or hot, ensure proper ventilation, use correct wiring sizes, and perform regular maintenance to catch problems early.'
+        answer: 'Key prevention steps: maintain proper clearance around generator, never refuel while running or hot, ensure proper ventilation, use correct wiring sizes, and perform regular maintenance to catch problems early.'
       }
     ],
     content: `
@@ -1293,8 +1274,9 @@ Understanding fire risks and prevention measures can protect your investment and
 **Prevention:**
 - Inspect fuel system weekly
 - Replace fuel lines every 5 years
-- Tighten connections regularly
 - Never overfill tank (leave expansion room)
+
+${CONTENT_SAFETY_WITHDRAWN_MESSAGE}
 
 ### 2. Electrical Fires
 **Cause:** Short circuits, overloaded wiring, loose connections
@@ -1368,11 +1350,12 @@ Understanding fire risks and prevention measures can protect your investment and
 - Clear access for emergency response
 
 ### Daily Checks
-- Visual inspection for fuel leaks
 - Check oil level (low oil = overheating)
 - Verify cooling system functioning
 - Check for debris around generator
 - Ensure fire extinguisher accessible
+
+${CONTENT_SAFETY_WITHDRAWN_MESSAGE}
 
 ### Weekly Checks
 - Inspect fuel lines and connections
@@ -2288,19 +2271,7 @@ Not all generator maintenance requires a technician. Many tasks are simple and s
 
 **Why It Matters:** Generators that sit unused can fail when needed. Monthly running prevents fuel degradation, keeps seals lubricated, and verifies operation.
 
-**Steps:**
-1. Check oil and coolant levels
-2. Turn on generator
-3. Let warm up for 5 minutes at no load
-4. Connect load (at least 30% of capacity)
-5. Run for 30 minutes minimum
-6. Monitor gauges throughout
-7. Listen for unusual sounds
-8. Check for leaks while running
-9. Reduce load gradually
-10. Run 3-5 minutes at no load
-11. Turn off and let cool
-12. Record in maintenance log
+${CONTENT_SAFETY_WITHDRAWN_MESSAGE}
 
 ## Tools Every Generator Owner Needs
 
@@ -2323,14 +2294,7 @@ Not all generator maintenance requires a technician. Many tasks are simple and s
 
 ## When to Call a Professional
 
-**Call immediately if:**
-- Generator won't start after basic troubleshooting
-- Unusual noises (knocking, grinding)
-- Smoke or burning smell
-- Voltage fluctuations
-- Oil in coolant or coolant in oil
-- Fuel leaks
-- Electrical problems
+${CONTENT_SAFETY_WITHDRAWN_MESSAGE}
 
 **Schedule service for:**
 - Oil changes (warranty compliance)

@@ -7,6 +7,7 @@ import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import ControlsEngineeringDeepDive from '@/components/solutions/ControlsEngineeringDeepDive';
+import { CONTENT_SAFETY_WITHDRAWN_MESSAGE } from '@/lib/safety/contentWithdrawal';
 
 // =====================================================
 // COMPREHENSIVE DEEPSEA & POWERWIZARD SOLUTIONS HUB
@@ -195,8 +196,10 @@ const FAULT_CODES = [
     category: 'DeepSea Engine Faults',
     icon: '🔧',
     codes: [
-      { code: '01', description: 'Emergency Stop', cause: 'E-Stop button pressed', action: 'Release E-Stop, reset alarm, check for actual emergency' },
-      { code: '02', description: 'Low Oil Pressure', cause: 'Oil level low, pump failure, sensor fault', action: 'Check oil level, verify with mechanical gauge, check sensor wiring' },
+      // action withdrawn 2026-11-25 (content-safety withdrawal): reset-first e-stop step.
+      { code: '01', description: 'Emergency Stop', cause: 'E-Stop button pressed', action: CONTENT_SAFETY_WITHDRAWN_MESSAGE },
+      // action withdrawn 2026-11-25: gauge reading with the engine running after low oil pressure.
+      { code: '02', description: 'Low Oil Pressure', cause: 'Oil level low, pump failure, sensor fault', action: CONTENT_SAFETY_WITHDRAWN_MESSAGE },
       { code: '03', description: 'High Engine Temperature', cause: 'Coolant issue, thermostat, fan failure', action: 'Check coolant level, verify temp with IR gun, check fan operation' },
       { code: '04', description: 'Low Coolant Temperature', cause: 'Stuck thermostat, faulty sender', action: 'Check thermostat operation, verify sender resistance' },
       { code: '05', description: 'Under Speed', cause: 'Load issue, fuel problem, governor fault', action: 'Check fuel supply, governor actuator, reduce load if needed' },

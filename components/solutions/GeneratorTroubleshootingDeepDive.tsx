@@ -53,7 +53,9 @@ export default function GeneratorTroubleshootingDeepDive() {
           ['Cranks but won’t fire', 'Fuel: empty, air-locked, stale, filter', 'Fuel level, bleed, filter, solenoid'],
           ['Cranks slowly', 'Weak battery / bad connections', 'Load-test battery, clean terminals'],
           ['Starts then stops', 'Shutdown alarm (oil/temp/speed)', 'Read controller code, address root'],
-          ['Won’t crank, panel live', 'Mode in STOP / latched alarm', 'Reset alarm, set to AUTO'],
+          // The "panel live, will not crank" row is withdrawn (content-safety
+          // withdrawal 2026-11-25): it cleared a latched shutdown alarm
+          // before the cause was found.
         ]}
       />
 

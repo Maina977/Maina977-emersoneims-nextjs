@@ -197,16 +197,20 @@ export default function ServiceDiagnosticsPanel({
           </div>
 
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-3 mb-4">
-                Live Telemetry
-              </h2>
-              <div className="grid grid-cols-1 gap-3">
-                {diagnostics.gauges.map((g, idx) => (
-                  <NeedleGauge key={idx} {...g} />
-                ))}
+            {/* No gauges (generator pages since the 2026-11-25 content-safety
+                withdrawal): render no "Live Telemetry" heading at all. */}
+            {diagnostics.gauges.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-cyan-400 border-b border-slate-700 pb-3 mb-4">
+                  Live Telemetry
+                </h2>
+                <div className="grid grid-cols-1 gap-3">
+                  {diagnostics.gauges.map((g, idx) => (
+                    <NeedleGauge key={idx} {...g} />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 border border-cyan-500/30 rounded-lg p-4">
               <h3 className="text-lg font-bold text-cyan-400 mb-2">Need Expert Help?</h3>

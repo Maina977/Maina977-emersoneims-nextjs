@@ -20,7 +20,11 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
   },
 
   directAnswer:
-    'Low oil pressure is the one shutdown you must never override, defeat or "test by running it a bit longer". Below the pressure that maintains a hydrodynamic film, the bearing shells and journals are in metal-to-metal contact and damage accumulates in seconds, not minutes. The entire diagnosis turns on a single question answered early: is the pressure genuinely low, or is the measurement wrong? Fit a mechanical gauge to the main gallery and compare it against what the controller reports. If the mechanical gauge confirms low pressure, stop and treat it as a mechanical fault. If the mechanical gauge shows normal pressure, you are chasing a sender, its wiring or the controller input, and the engine was never at risk.',
+    'Low oil pressure is the one shutdown you must never override, defeat or "test by running it a bit longer". Below the pressure that maintains a hydrodynamic film, the bearing shells and journals are in metal-to-metal contact and damage accumulates in seconds, not minutes. The entire diagnosis turns on a single question answered early: is the pressure genuinely low, or is the measurement wrong?',
+
+  // Content-safety withdrawal 2026-11-25: running-engine gauge checks after a
+  // low-oil-pressure shutdown are withdrawn pending independent review.
+  safetyWithdrawn: ['tools', 'decision-tree', 'diagnosis', 'repair', 'validation'],
 
   symptoms: {
     display: [
@@ -61,7 +65,7 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
     plain:
       'The engine protected itself because the oil pressure fell below a safe level. Oil pressure is what keeps a film of oil between moving metal parts. Without it, those parts touch and damage begins very quickly. The first job is not to fix the engine — it is to find out whether the pressure is really low or the gauge is lying.',
     technical:
-      'Journal bearings operate hydrodynamically: rotation drags oil into a converging wedge, generating a pressure film that separates the journal from the shell. Gallery pressure is the supply that sustains that film against leakage from the bearing clearances. Because leakage flow through a clearance rises sharply with clearance and falls with viscosity, gallery pressure is simultaneously a function of pump delivery, oil viscosity at temperature, and total bearing clearance. This is why genuine low pressure characteristically appears hot rather than cold, and why worn clearances present first as a hot-idle pressure fault. It also explains why fuel dilution is so destructive: it reduces viscosity, increasing leakage flow and lowering pressure while simultaneously weakening the film the pressure is meant to maintain. A low reading with normal mechanical pressure is a measurement fault — the sender, its wiring, or the controller input, and carries no mechanical risk, which is why the mechanical gauge check comes early and decides the entire direction of the work.',
+      'Journal bearings operate hydrodynamically: rotation drags oil into a converging wedge, generating a pressure film that separates the journal from the shell. Gallery pressure is the supply that sustains that film against leakage from the bearing clearances. Because leakage flow through a clearance rises sharply with clearance and falls with viscosity, gallery pressure is simultaneously a function of pump delivery, oil viscosity at temperature, and total bearing clearance. This is why genuine low pressure characteristically appears hot rather than cold, and why worn clearances present first as a hot-idle pressure fault. It also explains why fuel dilution is so destructive: it reduces viscosity, increasing leakage flow and lowering pressure while simultaneously weakening the film the pressure is meant to maintain. A low reading with normal mechanical pressure is a measurement fault — the sender, its wiring, or the controller input, and carries no mechanical risk.',
   },
 
   causes: {
@@ -146,24 +150,20 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
   },
 
   tools: [
-    { tool: 'Mechanical oil pressure gauge with adaptor', why: 'The decisive instrument. It separates a mechanical fault from a measurement fault, and everything else follows from that result.' },
     { tool: 'Digital multimeter, true RMS', why: 'Sender resistance or output, and wiring continuity and shorts to earth' },
-    { tool: 'Infrared or contact thermometer', why: 'Oil temperature at the moment the pressure is read — pressure without temperature is not comparable to a specification' },
     { tool: 'Oil sample kit', why: 'Wear metals, viscosity and fuel dilution; the cheapest way to see inside the engine' },
     { tool: 'Filter wrench', why: 'Filter removal and inspection of the element and its bypass arrangement' },
-    { tool: 'Service tool', why: 'Reading the reported value and the shutdown history alongside the mechanical gauge' },
+    { tool: 'Service tool', why: 'Reading the reported value and the shutdown history' },
     { tool: 'Inspection light and mirror', why: 'External leak tracing at the cooler, seals and gallery plugs' },
   ],
 
   decisionTree: [
     { question: 'Is there knocking, rumbling, or metallic glitter in the oil?', yes: 'Stop. Do not run the engine. Refer for internal inspection.', no: 'Continue' },
-    { question: 'Is the oil level correct, with the set stopped and level?', yes: 'Continue', no: 'Correct the level with the specified grade, then re-test before going further' },
+    { question: 'Is the oil level correct, with the set stopped and level?', yes: 'Continue', no: 'Correct the level with the specified grade. Do not restart; refer to a qualified technician.' },
     { question: 'Is the oil above maximum, milky, or does it smell of fuel?', yes: 'Investigate dilution — this is a separate and more serious fault than a pressure sender', no: 'Continue' },
-    { question: 'Does a mechanical gauge on the gallery confirm the low reading?', yes: 'This is a real mechanical fault. Go to the supply-side checks and be prepared to stop.', no: 'The engine was never at risk. Diagnose the sender, wiring and controller input.' },
-    { question: 'Is the correct oil grade in use for the ambient and the engine?', yes: 'Continue', no: 'Drain and refill with the specified grade, then re-measure hot' },
-    { question: 'Is the filter correct, unblocked and its bypass intact?', yes: 'Continue', no: 'Replace and re-measure' },
-    { question: 'Is the pressure relief valve free and seating correctly?', yes: 'Continue to pump and clearances', no: 'Free or replace it and re-measure' },
-    { question: 'Is pressure low only when hot, and acceptable when cold?', yes: 'This pattern points at viscosity over worn clearances — refer for clearance assessment', no: 'Assess pump delivery and the suction path' },
+    { question: 'Is the correct oil grade in use for the ambient and the engine?', yes: 'Continue', no: 'Drain and refill with the specified grade. Do not restart; refer to a qualified technician.' },
+    { question: 'Is the filter correct, unblocked and its bypass intact?', yes: 'Continue', no: 'Replace it. Do not restart; refer to a qualified technician.' },
+    { question: 'Is the pressure relief valve free and seating correctly?', yes: 'Refer for internal assessment with all readings recorded', no: 'Free or replace it. Do not restart; refer to a qualified technician.' },
   ],
 
   diagnosis: [
@@ -180,80 +180,47 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
     },
     {
       step: 2,
-      title: 'Fit a mechanical gauge — this step decides everything',
-      inspect: 'Actual gallery pressure compared against the controller reading',
-      where: 'Main oil gallery test point',
-      instrument: 'Mechanical oil pressure gauge with the correct adaptor',
-      expected: 'Mechanical and reported readings agree',
-      ifAbnormal: 'Disagreement means the engine was never at risk and you are chasing a measurement fault. Agreement means the protection was correct and this is mechanical.',
-      next: 'If disproved go to Step 3. If confirmed go to Step 4.',
-      warning: 'Run only long enough to take the reading, and stop immediately if pressure is genuinely low.',
-      verify: 'The correct pressure at idle and at rated speed, and the temperature at which it applies, are engine-specific. Read them from the engine data.',
-    },
-    {
-      step: 3,
       title: 'Diagnose the sender and its circuit where the reading is disproved',
       inspect: 'Sender output through its range, wiring continuity, and shorts to earth',
       where: 'At the sender connector and at the controller input',
       instrument: 'Digital multimeter',
       expected: 'Sender within specification, wiring continuous, no short to earth',
       ifAbnormal: 'A short to earth produces a permanent low reading. A drifted sender produces an intermittent one. Repair wiring before replacing the sender.',
-      next: 'Replace what is proven faulty, then Step 9',
+      next: 'Replace what is proven faulty, then Step 6',
       verify: 'Whether the engine uses a sender or a simple pressure switch changes the test entirely — confirm which is fitted.',
     },
     {
-      step: 4,
-      title: 'Measure oil temperature alongside pressure',
-      inspect: 'Oil temperature at the moment the pressure reading is taken',
-      where: 'Sump or gallery',
-      instrument: 'Infrared or contact thermometer',
-      expected: 'Temperature within the normal operating band',
-      ifAbnormal: 'Pressure quoted without temperature is not comparable to a specification. High oil temperature lowers viscosity and therefore pressure, and points at the oil cooler or at overload rather than at bearings.',
-      next: 'Step 5',
-    },
-    {
-      step: 5,
+      step: 3,
       title: 'Verify the oil grade and check for dilution',
       inspect: 'Grade in use against specification, and the oil for fuel or coolant dilution',
       where: 'Service records, the drum used at the last service, and a sample',
       instrument: 'Oil sample kit',
       expected: 'Correct grade for the ambient, no dilution, viscosity within limits',
       ifAbnormal: 'Fuel dilution lowers viscosity and pressure together and indicates a separate injection or combustion fault that must also be found.',
-      next: 'Step 6',
+      next: 'Step 4',
     },
     {
-      step: 6,
+      step: 4,
       title: 'Inspect the filter and its bypass arrangement',
       inspect: 'Filter part number, condition, and the anti-drain and bypass valves',
       where: 'Filter housing',
       instrument: 'Filter wrench and inspection light',
       expected: 'Correct filter, not collapsed, bypass intact',
       ifAbnormal: 'An incorrect filter can lack the correct bypass or anti-drain function, producing low or delayed pressure that looks like a pump fault.',
-      next: 'Step 7',
+      next: 'Step 5',
     },
     {
-      step: 7,
+      step: 5,
       title: 'Check the pressure relief valve',
       inspect: 'Relief valve for a stuck-open condition, debris on the seat, and spring condition',
       where: 'Relief valve location per the engine layout',
       instrument: 'Basic hand tools and an inspection light',
       expected: 'Valve free, seat clean, spring intact',
       ifAbnormal: 'A relief valve held open by debris caps gallery pressure below normal and is a genuine, repairable cause that is often missed.',
-      next: 'Step 8',
-    },
-    {
-      step: 8,
-      title: 'Assess the suction path, pump and clearances',
-      inspect: 'Suction strainer condition, pump delivery, and the hot-versus-cold pressure pattern',
-      where: 'Sump and pump, with pressure logged cold and hot',
-      instrument: 'Mechanical gauge and workshop measuring equipment',
-      expected: 'Clear strainer, pump delivering to specification, pressure holding when hot',
-      ifAbnormal: 'Pressure acceptable cold but low hot is the characteristic signature of worn clearances. This is a workshop decision, not a field repair.',
       next: 'Refer for internal assessment with all readings recorded',
-      verify: 'Bearing clearance limits are engine-specific and require the workshop manual figures.',
     },
     {
-      step: 9,
+      step: 6,
       title: 'Confirm the protection setting before returning to service',
       inspect: 'Shutdown threshold and any warning band in the controller',
       where: 'Controller configuration',
@@ -278,10 +245,8 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
       level: 'sensor-replacement',
       title: 'Sender and wiring',
       steps: [
-        'Replace a sender proven wrong by a mechanical gauge',
         'Repair wiring shorted to earth before replacing components',
       ],
-      note: 'Never replace a sender on suspicion alone. Prove it with a mechanical gauge first.',
     },
     {
       level: 'mechanical',
@@ -313,13 +278,9 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
   ],
 
   validation: [
-    'Confirm oil pressure with a mechanical gauge at idle and at rated speed, at normal operating temperature',
-    'Compare the controller reading against the mechanical gauge across the range and confirm they track',
-    'Run under load and confirm pressure holds as oil temperature rises',
     'Check for leaks at every joint disturbed, hot and under pressure',
     'Take an oil sample as a new baseline where the engine has been opened or the cause was wear-related',
     'Prove the shutdown function still operates rather than assuming it does',
-    'Record pressure at idle, at rated speed, and the oil temperature at which they were taken',
   ],
 
   whenNotToRepair: [
@@ -350,10 +311,6 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
     {
       q: 'Pressure is fine when cold and low when hot. What does that mean?',
       a: 'That pattern is characteristic. Oil viscosity falls as temperature rises, so leakage through bearing clearances increases and gallery pressure drops. An engine with worn clearances therefore shows the fault hot first. It is a genuine indication and warrants clearance assessment rather than another sender.',
-    },
-    {
-      q: 'Why is fitting a mechanical gauge so important when the controller already shows a value?',
-      a: 'Because the controller reading and the actual pressure are two different things, and the entire direction of the work depends on which one is wrong. Five minutes with a mechanical gauge either exonerates the engine completely or confirms a mechanical fault. No other single step separates the two possibilities so cleanly.',
     },
     {
       q: 'The oil level was low. Can I just top it up and return the set to service?',

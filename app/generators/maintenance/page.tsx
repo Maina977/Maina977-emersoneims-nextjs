@@ -188,7 +188,7 @@ const commonIssues = [
   {
     name: 'White smoke emission',
     causes: ['Coolant entering combustion chamber', 'Head gasket failure', 'Cracked cylinder head', 'Cracked engine block', 'Injector timing too late', 'Cold engine operation'],
-    repairs: ['Cooling system pressure test', 'Head gasket replacement', 'Cylinder head replacement or repair', 'Engine block replacement', 'Injection timing correction', 'Allow proper warm-up'],
+    repairs: ['Cooling system pressure test', 'Head gasket replacement', 'Cylinder head replacement or repair', 'Engine block replacement', 'Injection timing correction'],
     consequences: 'Coolant loss leading to overheating, engine oil contamination, bearing damage, complete engine failure.',
     cascadingDamage: 'Coolant in oil destroys bearing surfaces within hours, causes piston seizure, corrodes internal engine components, and contaminates lubrication system permanently.',
     urgency: 'CRITICAL'

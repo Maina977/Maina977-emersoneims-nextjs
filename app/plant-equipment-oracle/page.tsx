@@ -96,7 +96,7 @@ export default function PlantEquipmentOraclePage() {
             </p>
             <p className="text-sm text-gray-500 border-t border-white/10 pt-4">
               Fault code numbers are industry-standard identifiers used for
-              identification only. Descriptions, causes and checks are written in
+              identification only. Descriptions are written in
               our own words as statements of engineering fact — nothing here is
               transcribed from a manufacturer service manual. This tool is not
               affiliated with or endorsed by any manufacturer, and all brand and

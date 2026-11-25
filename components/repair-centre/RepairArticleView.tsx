@@ -6,6 +6,7 @@ import DecisionFlowchart from './DecisionFlowchart';
 import SystemComponentDiagram from './SystemComponentDiagram';
 import DiagnosticSequenceDiagram from './DiagnosticSequenceDiagram';
 import RepairStageDiagram from './RepairStageDiagram';
+import SafetyChecksWithdrawnNotice from '@/components/safety/SafetyChecksWithdrawnNotice';
 
 /**
  * Server component. Every section renders into the initial HTML so the whole
@@ -55,6 +56,13 @@ function CauseBlock({ label, items, weight }: { label: string; items: string[]; 
 
 export default function RepairArticleView({ article }: { article: RepairArticle }) {
   const h = article.header;
+  // Content-safety withdrawal (2026-11-25): sections whose unsafe steps were
+  // removed show the shared notice at their head.
+  const withdrawn = new Set(article.safetyWithdrawn ?? []);
+  const notice = (section: NonNullable<RepairArticle['safetyWithdrawn']>[number]) =>
+    withdrawn.has(section) ? (
+      <SafetyChecksWithdrawnNotice surface={`repair-centre-${article.slug}-${section}`} className="mb-5" />
+    ) : null;
   const wa = getWhatsAppUrl(CONTACT.PRIMARY_WHATSAPP, `Fault diagnosis enquiry — ${h.title}`);
 
   /*
@@ -213,6 +221,7 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
       </Section>
 
       <Section id="tools" n="05" title="Tools required">
+        {notice('tools')}
         <div className="overflow-x-auto rounded-xl border border-slate-700">
           <table className="w-full text-sm">
             <caption className="sr-only">Tools required and the reason each is needed</caption>
@@ -232,6 +241,7 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
       </Section>
 
       <Section id="decision-tree" n="06" title="Diagnostic decision tree">
+        {notice('decision-tree')}
         <DecisionFlowchart nodes={article.decisionTree} title={article.header.title} />
         <ol className="mt-6 space-y-3">
           {article.decisionTree.map((d, i) => (
@@ -247,6 +257,7 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
       </Section>
 
       <Section id="diagnosis" n="07" title="Step-by-step diagnosis">
+        {notice('diagnosis')}
         <DiagnosticSequenceDiagram steps={article.diagnosis} slug={article.slug} />
         <div className="space-y-5">
           {article.diagnosis.map(s => (
@@ -278,6 +289,7 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
       </Section>
 
       <Section id="repair" n="08" title="Repair procedure">
+        {notice('repair')}
         <RepairStageDiagram repair={article.repair} slug={article.slug} />
         <div className="space-y-4">
           {article.repair.map((r, i) => (
@@ -296,6 +308,7 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
       </Section>
 
       <Section id="validation" n="09" title="Post-repair validation">
+        {notice('validation')}
         <Bullets items={article.validation} tone="amber" />
       </Section>
 

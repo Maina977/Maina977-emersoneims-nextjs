@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getArticleBySlug, getRelatedArticles, BLOG_ARTICLES } from '@/lib/data/blog-articles';
 import { articleServiceLinks } from '@/lib/content/serviceLinks';
+import { buildBlogArticleSchema, buildBlogFaqSchema, buildBlogBreadcrumbSchema } from '@/lib/blog/articleSchema';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -207,77 +208,28 @@ export default async function BlogArticlePage({ params }: Props) {
   }
 
   const relatedArticles = getRelatedArticles(slug, 3);
+  const faqSchema = buildBlogFaqSchema(article);
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Schema.org Article JSON-LD */}
+      {/* Schema.org Article JSON-LD (builders in lib/blog/articleSchema.ts) */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            headline: article.title,
-            description: article.description,
-            image: article.image || 'https://www.emersoneims.com/images/blog-default.jpg',
-            author: {
-              '@type': 'Organization',
-              name: article.author,
-              url: 'https://www.emersoneims.com'
-            },
-            publisher: {
-              '@type': 'Organization',
-              name: 'Emerson EiMS',
-              logo: {
-                '@type': 'ImageObject',
-                url: 'https://www.emersoneims.com/emerson-eims-logo.png'
-              }
-            },
-            datePublished: article.date,
-            dateModified: article.updatedDate || article.date,
-            mainEntityOfPage: {
-              '@type': 'WebPage',
-              '@id': `https://www.emersoneims.com/blog/${article.slug}`
-            }
-          })
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildBlogArticleSchema(article)) }}
       />
 
       {/* FAQ Schema if article has FAQs */}
-      {article.faqs && article.faqs.length > 0 && (
+      {faqSchema && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'FAQPage',
-              mainEntity: article.faqs.map(faq => ({
-                '@type': 'Question',
-                name: faq.question,
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: faq.answer
-                }
-              }))
-            })
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       )}
 
       {/* Breadcrumb Schema */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.emersoneims.com' },
-              { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://www.emersoneims.com/blog' },
-              { '@type': 'ListItem', position: 3, name: article.title, item: `https://www.emersoneims.com/blog/${article.slug}` }
-            ]
-          })
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildBlogBreadcrumbSchema(article)) }}
       />
 
       {/* Article Header */}

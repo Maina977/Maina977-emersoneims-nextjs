@@ -20,7 +20,14 @@
  *    service manual on hand.
  *
  * 8 unique bibles · 10 service slugs (3 generator slugs share one bible).
+ *
+ * CONTENT-SAFETY WITHDRAWAL 2026-11-25 (audit S-W4, items C6-C24): unsourced
+ * operating/acceptance figures in GENERATOR_BIBLE were removed or replaced
+ * with "per the OEM manual for your model"; the load-bank fault-finding entry,
+ * the SPN 190 fix list (no STOP), the SPN 100 mechanical-gauge step and the
+ * ComAp GenStop "reset and re-test under load" step are withdrawn.
  */
+import { CONTENT_SAFETY_WITHDRAWN_MESSAGE } from '@/lib/safety/contentWithdrawal';
 
 export interface BrandProfile {
   name: string;
@@ -96,15 +103,15 @@ const GENERATOR_BIBLE: ServiceBible = {
   },
   intro: [
     'A diesel genset is a tightly-coupled system of a compression-ignition prime mover, a synchronous alternator, a control module, a fuel-and-cooling skid, and the switchgear that decides when the genset is connected to the load. Every one of those subsystems has its own failure modes, its own service intervals, and its own commissioning checklist. A specification that ignores any of them is the source of nine out of ten standby-power complaints we see in the field.',
-    'The first decision is duty class. ISO 8528 defines four duty profiles — Emergency Standby (ESP), Prime (PRP), Limited-Time Prime (LTP) and Continuous Operation (COP). A 100 kVA ESP-rated unit running continuously will derate to ~90 kVA and double its maintenance burden. Choose the rating that matches expected runtime, not the cheapest sticker price.',
+    'The first decision is duty class. ISO 8528 defines four duty profiles — Emergency Standby (ESP), Prime (PRP), Limited-Time Prime (LTP) and Continuous Operation (COP). Choose the rating that matches expected runtime, not the cheapest sticker price.',
     'Sizing follows the formula kVA = Σ(running kW) ÷ pf + Σ(starting kW × inrush factor). Real installations are dominated by motor inrush — a 30 kW direct-on-line motor will pull six times running current for the first second. Soft-starters, VSDs, and step-loading sequences buy back capacity, which is why a 250 kVA genset can often replace a 400 kVA one if the controls are designed properly.',
     'Fuel is where most field failures originate. Diesel is hygroscopic; water condenses on the inside of half-empty tanks, sulphate-reducing bacteria thrive at the water-fuel interface, and the resulting biomass blocks primary filters in months. Polishing systems, weekly water checks, and full-tank policies during long shutdowns extend injector life from 4,000 hours to 15,000 hours.',
-    'Cooling design is rarely optimised. A radiator sized for 35 °C ambient that is installed in a 45 °C engine room will overheat. Ventilation requires inlet area ≥ radiator face area × 1.5 and outlet area ≥ inlet × 1.25, with louvre free-area corrections. We have lifted three Cummins units in 2025 alone whose ducting reduced free area to under 50% of catalogue.',
+    'Cooling design is rarely optimised. A radiator sized for 35 °C ambient that is installed in a 45 °C engine room will overheat. Ventilation inlet and outlet free areas must be sized per the OEM manual for your model, with louvre free-area corrections. We have lifted three Cummins units in 2025 alone whose ducting reduced free area to under 50% of catalogue.',
     'The alternator (the "generator end") must be selected for both kVA and short-circuit ratio. Hospitals running large MRI / CT plant need an alternator with high SCR and low subtransient reactance to ride through nuisance breaker trips during diagnostic imaging cycles. Cheap end-coupled alternators are fine for offices and useless for clinical loads.',
     'Modern controllers — Deepsea DSE, ComAp InteliLite, Cummins PowerCommand, Woodward easYgen — implement the same core functions: AVR setpoint, governor trim, fuel theft alarm, over/under-voltage, over/under-frequency, oil pressure low, coolant high, charge-fail and emergency-stop interlocks. The controller is also where you connect the J1939 CAN bus that will give you live engine telemetry on a SCADA.',
     'The switchgear that joins the genset to the building is the Automatic Transfer Switch. Open-transition ATSs leave a brief power gap (typically 100–500 ms once running). Closed-transition ATSs synchronise the genset with utility before transferring — required for sites that cannot tolerate even a flicker, such as broadcast and telco. Bypass-isolation ATSs let you maintain the switch without dropping load. Pick the right class — they do not retrofit cheaply.',
-    'Earthing of standby gensets is its own discipline. As a separately-derived source the alternator neutral and frame must be bonded once and only once; a second N-PE bond inside the building will draw triplen-harmonic currents through the structure. Earth resistance ≤ 5 Ω is enough for general; ≤ 1 Ω is the standard for medical, telecom and data-centre. Test by fall-of-potential or clamp method annually.',
-    'A maintenance regime is non-negotiable. Daily: visual leaks, fuel level, battery charge LED. Weekly: 5-minute no-load run, exercise the ATS. Monthly: load-bank ≥ 30% of nameplate for 30 minutes to burn off wet-stacking. 250-hour: oil and filter, coolant test, valve adjustment per OEM. 1,000-hour: injector test, cooling system flush, generator-end air-gap inspection. Skipping the load-bank is the single biggest reason "perfectly good" gensets fail to take load on the day of an outage.',
+    'Earthing of standby gensets is its own discipline. As a separately-derived source the alternator neutral and frame must be bonded once and only once; a second N-PE bond inside the building will draw triplen-harmonic currents through the structure. Test by fall-of-potential or clamp method annually.',
+    'A maintenance regime is non-negotiable. Daily: visual leaks, fuel level, battery charge LED. Weekly: exercise the ATS. Monthly: load-bank per the OEM manual for your model to burn off wet-stacking. 250-hour: oil and filter, coolant test, valve adjustment per OEM. 1,000-hour: injector test, cooling system flush, generator-end air-gap inspection. Skipping the load-bank is the single biggest reason "perfectly good" gensets fail to take load on the day of an outage.',
     'Finally, the most under-spec\'d item is the fuel-day-tank piping. A diesel-engine return temperature can hit 80 °C; routing the return to the bottom of a tank that already supplies the engine recirculates hot fuel and chokes capacity. Returns must enter at the top, separated from suction by a baffle, and the day-tank should be vented through a flame-arrester that itself is checked yearly.',
     'The transfer switch deserves its own commissioning discipline, because it is the component that decides whether all the money spent on the genset ever reaches the load. Four timers govern its behaviour and all four need to be set for the site rather than left at factory defaults: the utility-failure delay, which stops a momentary dip from starting the engine; the warm-up delay, which holds transfer until voltage and frequency are inside the acceptance window; the retransfer delay, which stops the load bouncing back onto a utility supply that has not settled; and the cool-down run, which lets the engine shed heat unloaded before it stops. Sites that suffer repeated transfers during unstable-supply periods almost always have a retransfer delay set in seconds when it should be minutes. Beyond the timers, the switch itself must be exercised: an ATS that has sat in one position for a year can have stiff mechanism and oxidised contacts, and the first time it is asked to move should not be during a real outage.',
     'Repair economics deserve to be stated honestly, because the sector has a reputation for the opposite. A well-maintained diesel genset is a long-lived asset — the engine is designed for tens of thousands of hours — so a unit failing early is usually telling you about installation, fuel or maintenance rather than about its own design life. Three pieces of evidence should exist before anyone quotes an overhaul: the running hours, the maintenance history, and a load-bank result showing what the set can actually deliver today. Those three numbers separate a set that needs an injector service from one that genuinely needs a rebuild, and they occasionally show that neither is worth doing on an old machine. Ask for them, from any contractor. A quote that arrives without that evidence base is a guess dressed up as a diagnosis, and it is the buyer who carries the cost of the guess.',
@@ -124,17 +131,17 @@ const GENERATOR_BIBLE: ServiceBible = {
   installPhases: [
     { phase: '1. Site survey & load study', goal: 'Quantify real running, starting, and step loads.', checklist: ['Walk-through of every panel and motor', 'Logging clamp-meter readings over 7-day cycle', 'Identify essential vs non-essential circuits', 'Confirm civil access for delivery and exhaust route'] },
     { phase: '2. Sizing & specification', goal: 'Lock the kVA, duty class, alternator option, controls level.', checklist: ['Compute kVA per motor inrush', 'Choose ESP/PRP rating', 'Specify alternator SCR for sensitive loads', 'Decide ATS class — open / closed / bypass'] },
-    { phase: '3. Civil works & foundation', goal: 'Vibration-isolated, drained, fire-rated platform.', checklist: ['Reinforced concrete plinth ≥ 1.5 × wet weight of genset', 'Anti-vibration mounts rated to engine RPM', 'Bund wall for 110% fuel capacity', 'Drainage to oil-water separator'] },
-    { phase: '4. Electrical infrastructure', goal: 'Cabling, ATS, earthing, neutral strategy correct from day one.', checklist: ['Cable sized for full-load current × 1.25 + voltage drop', 'TN-S separately-derived neutral arrangement', 'Earth pit installed and tested', 'ATS mechanical interlock verified'] },
-    { phase: '5. Fuel & ventilation', goal: 'Reliable fuel delivery and adequate cooling air.', checklist: ['Bulk + day-tank with float controls', 'Inlet free area ≥ radiator face × 1.5', 'Exhaust silencer hospital-grade if near patients', 'Spring-loaded counterweight on exhaust roof flap'] },
-    { phase: '6. Commissioning', goal: 'Validate every protection setting and load behaviour.', checklist: ['No-load run 30 minutes — log all parameters', 'Load-bank to 100% nameplate for 1 hour', 'Step-load test 25 / 50 / 75 / 100%', 'Black-start under simulated mains failure'] },
+    { phase: '3. Civil works & foundation', goal: 'Vibration-isolated, drained, fire-rated platform.', checklist: ['Reinforced concrete plinth sized per the OEM manual for your model', 'Anti-vibration mounts rated to engine RPM', 'Bund wall for 110% fuel capacity', 'Drainage to oil-water separator'] },
+    { phase: '4. Electrical infrastructure', goal: 'Cabling, ATS, earthing, neutral strategy correct from day one.', checklist: ['Cable sized for full-load current and voltage drop', 'TN-S separately-derived neutral arrangement', 'Earth pit installed and tested', 'ATS mechanical interlock verified'] },
+    { phase: '5. Fuel & ventilation', goal: 'Reliable fuel delivery and adequate cooling air.', checklist: ['Bulk + day-tank with float controls', 'Inlet free area per the OEM manual for your model', 'Exhaust silencer hospital-grade if near patients', 'Spring-loaded counterweight on exhaust roof flap'] },
+    { phase: '6. Commissioning', goal: 'Validate every protection setting and load behaviour.', checklist: ['No-load run — log all parameters', 'Load-bank and step-load tests per the OEM manual for your model', 'Black-start under simulated mains failure'] },
     { phase: '7. Documentation & training', goal: 'Operations team can run the genset confidently.', checklist: ['As-built single-line, ATS schedule, earthing certificate', 'Parts list and OEM manuals (paper + PDF)', 'Operator training — start / stop / silence-alarm', 'Loaded test report with annotated trends'] },
     { phase: '8. Service contract activation', goal: 'Locked-in maintenance from day one.', checklist: ['Quarterly visit schedule', '24/7 emergency call-out SLA', 'OEM-genuine consumables in agreement', 'Annual load-bank and thermography in scope'] },
   ],
   partsManual: [
     { group: 'Filtration', items: [
-      { name: 'Lube oil filter', interval: '250 hr / 6 mo', note: 'Spin-on; torque per OEM (typically 18–22 Nm).' },
-      { name: 'Fuel primary (water separator)', interval: '500 hr', note: 'Drain weekly; replace when ΔP > 100 kPa.' },
+      { name: 'Lube oil filter', interval: '250 hr / 6 mo', note: 'Spin-on; torque per the OEM manual for your model.' },
+      { name: 'Fuel primary (water separator)', interval: '500 hr', note: 'Drain weekly; replace at the ΔP limit per the OEM manual for your model.' },
       { name: 'Fuel secondary (fine)', interval: '500 hr', note: 'Cleanliness critical for common-rail systems.' },
       { name: 'Air cleaner', interval: '1,000 hr or per ΔP gauge', note: 'Dusty East-African sites: 6 months.' },
       { name: 'Crankcase breather', interval: '1,000 hr' },
@@ -161,7 +168,7 @@ const GENERATOR_BIBLE: ServiceBible = {
       { name: 'Brushes & slip rings (brushed alternators)', interval: '10,000 hr' },
     ]},
     { group: 'Battery & charging', items: [
-      { name: 'Cranking battery 12 V / 24 V', interval: '3 yr or capacity < 80%' },
+      { name: 'Cranking battery 12 V / 24 V', interval: '3 yr' },
       { name: 'Battery charger (float)', interval: '5 yr / on alarm' },
       { name: 'Battery cables & terminals', interval: 'Annual clean & dielectric grease' },
     ]},
@@ -178,29 +185,28 @@ const GENERATOR_BIBLE: ServiceBible = {
   ],
   repairManual: [
     { fault: 'Cranks but will not start', priority: 'urgent', steps: [
-      'Confirm cranking RPM ≥ 150 (battery voltage > 9.6 V under crank for 12 V).',
+      'Confirm cranking speed and battery voltage under crank per the OEM manual for your model.',
       'Bleed fuel system from primary filter through secondary to injection pump.',
       'Verify fuel solenoid energises on start command (24 V / 12 V coil).',
       'Check air filter ΔP and inlet shutoff flap.',
       'Probe ECU for SPN/FMI faults; clear and re-attempt.',
     ]},
     { fault: 'Black smoke under load', priority: 'urgent', steps: [
-      'Inspect air filter ΔP — replace if > 6 kPa.',
+      'Inspect air filter ΔP — replace at the limit per the OEM manual for your model.',
       'Boost-pressure check at full load (compare against engine spec card).',
       'Injector pop test — replace any with poor spray pattern.',
       'Fuel timing on mechanical pumps; verify advance.',
     ], warning: 'Sustained black smoke wets piston rings — schedule oil sample to check fuel dilution.' },
     { fault: 'High coolant temperature', priority: 'emergency', steps: [
       'Stop engine; allow controlled cool-down — never open hot pressure cap.',
-      'Verify coolant level once below 60 °C; pressure-test cap.',
-      'Check thermostat opening temperature on bench (82 / 88 °C typical).',
+      'Verify coolant level once cooled per the OEM manual for your model; pressure-test cap.',
+      'Check thermostat opening temperature on bench per the OEM manual for your model.',
       'Inspect water pump impeller and belt tension.',
       'Clean radiator core externally; pressure-flush if internally fouled.',
     ], warning: 'A genset that fails on coolant after only 30 minutes of load almost always has restricted ducting — recheck inlet and outlet free area.' },
     { fault: 'Low / no power output', priority: 'urgent', steps: [
       'Confirm engine reaches and holds rated RPM (50 Hz → 1,500 / 60 Hz → 1,800).',
       'Measure residual voltage across alternator output unloaded.',
-      'Test AVR sensing on terminals 1–2 (typically 220–240 V single phase).',
       'Re-flash field if alternator has lost residual magnetism.',
       'Replace AVR if rotating diodes test good but excitation fails.',
     ]},
@@ -223,7 +229,7 @@ const GENERATOR_BIBLE: ServiceBible = {
       'Mechanically operate ATS in manual mode; inspect contacts for welding.',
     ]},
     { fault: 'Battery cranking but engine does not turn over', priority: 'urgent', steps: [
-      'Voltage drop across starter solenoid — should be < 0.5 V at engagement.',
+      'Voltage drop across starter solenoid at engagement, per the OEM manual for your model.',
       'Replace solenoid if engagement intermittent.',
       'Check ring gear for chipped teeth.',
       'Verify ECU permits crank (not in lockout).',
@@ -244,26 +250,19 @@ const GENERATOR_BIBLE: ServiceBible = {
       'Where the site load is genuinely and permanently small, the honest fix is a smaller genset or a load-bank in the maintenance regime, not a bigger one.',
       'Inspect turbocharger and exhaust components for oil carry-over, which follows prolonged wet stacking.',
     ], warning: 'Wet stacking is caused by how the set is operated, not by a defective engine. Replacing components without changing the duty pattern simply repeats it.' },
-    { fault: 'Set will not deliver rated output on load bank', priority: 'urgent', steps: [
-      'Establish the facts before quoting anything: running hours, maintenance history, and the load-bank curve showing what it delivers now.',
-      'Step the load up in stages and record voltage, frequency, temperature and smoke at each step; where it falls over tells you which subsystem is limiting.',
-      'Frequency sagging under load points at the engine — fuel delivery, air intake restriction, injectors or compression.',
-      'Voltage sagging while frequency holds points at the alternator end — AVR, excitation, or winding condition.',
-      'Overheating at high load points at cooling and ventilation, which is a room problem as often as a radiator problem.',
-      'Run a compression test and take an oil sample before recommending an overhaul; these two results usually settle the repair-versus-replace question.',
-      'Present the finding with the evidence attached, including the option of not rebuilding where the economics do not support it.',
-    ]},
+    // Withdrawn 2026-11-25 (audit C19): staged load-up into overheating/smoke with no abort criterion.
+    { fault: 'Set will not deliver rated output on load bank', priority: 'urgent', steps: [CONTENT_SAFETY_WITHDRAWN_MESSAGE] },
   ],
   errorCodes: [
-    { code: 'SPN 100 / FMI 1', family: 'J1939 (Cummins, Perkins, JD)', meaning: 'Engine oil pressure low — below shutdown threshold.', severity: 'critical', fix: ['Stop engine immediately', 'Check oil level and pressure-sender wiring', 'Replace sender if reading conflicts with manual gauge'] },
+    { code: 'SPN 100 / FMI 1', family: 'J1939 (Cummins, Perkins, JD)', meaning: 'Engine oil pressure low — below shutdown threshold.', severity: 'critical', fix: ['Stop engine immediately', 'Check oil level and pressure-sender wiring'] },
     { code: 'SPN 110 / FMI 0', family: 'J1939', meaning: 'Engine coolant temperature high.', severity: 'critical', fix: ['Allow cool-down', 'Check coolant level', 'Inspect thermostat and radiator', 'Verify ventilation free-area'] },
-    { code: 'SPN 190 / FMI 0', family: 'J1939', meaning: 'Engine speed above limit (overspeed).', severity: 'critical', fix: ['Inspect governor / actuator', 'Check throttle linkage on mechanical engines', 'Verify ECU calibration not corrupted'] },
-    { code: 'SPN 168 / FMI 1', family: 'J1939', meaning: 'Battery voltage low.', severity: 'medium', fix: ['Test battery capacity', 'Verify charger output 13.8–14.4 V at 12 V system', 'Replace battery if < 80% capacity'] },
+    { code: 'SPN 190 / FMI 0', family: 'J1939', meaning: 'Engine speed above limit (overspeed).', severity: 'critical', fix: [CONTENT_SAFETY_WITHDRAWN_MESSAGE] },
+    { code: 'SPN 168 / FMI 1', family: 'J1939', meaning: 'Battery voltage low.', severity: 'medium', fix: ['Test battery capacity', 'Verify charger output per the OEM manual for your model'] },
     { code: 'SPN 1239 / FMI 2', family: 'J1939 (Tier 4)', meaning: 'Fuel pressure regulation fault.', severity: 'high', fix: ['Inspect rail pressure sensor', 'Check for return-line restriction', 'Bleed system'] },
     { code: 'DSE 7000-Series — "Fail to Start"', family: 'Deepsea controller', meaning: 'Cranking time exceeded without RPM detection.', severity: 'high', fix: ['Bleed fuel system', 'Verify fuel solenoid energises', 'Check magnetic pickup signal'] },
     { code: 'DSE 7000 — "Loss of Mains"', family: 'Deepsea controller', meaning: 'Detected utility outage; standby start sequence active.', severity: 'low', fix: ['Verify ATS will accept transfer', 'Confirm genset reaches V and Hz windows'] },
     { code: 'PowerCommand — "Fault Code 1438"', family: 'Cummins PCC', meaning: 'Fail to crank — typically starter / battery issue.', severity: 'high', fix: ['Test battery under crank load', 'Inspect starter solenoid', 'Check engine harness ground'] },
-    { code: 'ComAp — "GenStop"', family: 'InteliLite / InteliGen', meaning: 'Generic stop alarm. Drill into binary inputs.', severity: 'high', fix: ['Identify which binary input triggered', 'Verify sensor and wiring', 'Reset and re-test under load'] },
+    { code: 'ComAp — "GenStop"', family: 'InteliLite / InteliGen', meaning: 'Generic stop alarm. Drill into binary inputs.', severity: 'high', fix: ['Identify which binary input triggered', 'Verify sensor and wiring'] },
     { code: 'AVR loss-of-sensing', family: 'Stamford / Marathon', meaning: 'AVR no longer sees output voltage; field collapses.', severity: 'high', fix: ['Verify sensing fuses', 'Check AVR connector tightness', 'Replace AVR if field re-flash does not restore output'] },
     { code: 'Reverse-power trip', family: 'Generator protection relay', meaning: 'Genset motoring on parallel runs.', severity: 'high', fix: ['Check governor minimum-fuel setting', 'Verify load-share lines on parallel sets', 'Inspect prime-mover power'] },
     { code: 'Overcurrent (51) trip', family: 'Generator protection relay', meaning: 'Sustained current above pickup setting.', severity: 'high', fix: ['Identify offending feeder', 'Verify CT polarity and ratio', 'Check protection grading vs downstream MCB'] },
@@ -287,10 +286,10 @@ const GENERATOR_BIBLE: ServiceBible = {
     'Loadbank-test certificate annually keeps warranty live',
   ],
   qualityChecks: [
-    'Megger insulation resistance test on alternator — ≥ 1 MΩ/kV +1',
-    'Cooling system pressure-test 100 kPa for 10 minutes',
+    'Megger insulation resistance test on alternator — minimum per the OEM manual for your model',
+    'Cooling system pressure-test per the OEM manual for your model',
     'Oil sample tribology every 250 hr',
-    'Thermography of switchgear connections at 80% load',
+    'Thermography of switchgear connections under load',
     'Earth-loop impedance test on every distribution circuit',
     'ATS mechanical interlock proven physically, not assumed from the drawing',
     'All four ATS timers set for the site and recorded on the commissioning sheet',

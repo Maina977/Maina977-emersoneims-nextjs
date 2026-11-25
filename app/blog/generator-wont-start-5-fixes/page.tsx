@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import ArticleServiceLinks from '@/components/blog/ArticleServiceLinks';
+import SafetyChecksWithdrawnNotice from '@/components/safety/SafetyChecksWithdrawnNotice';
 
 export const metadata: Metadata = {
   // Self-referential canonical. Declared here so this route does not depend
@@ -85,17 +86,11 @@ export default function GeneratorWontStartBlogPage() {
           <ul className="list-disc list-inside space-y-2 mt-2 ml-2">
             <li>Open fuel cap and look inside (is there actually fuel?)</li>
             <li>Smell the fuel fill opening (no smell = empty tank)</li>
-            <li>Check for fuel leaks under the generator</li>
           </ul>
 
-          <p className="mt-3">
-            <strong>Fix it:</strong>
-          </p>
-          <ul className="list-disc list-inside space-y-2 mt-2 ml-2">
-            <li>Add fuel (premium diesel recommended for generators)</li>
-            <li>Wait 1-2 minutes for fuel to reach carburetor</li>
-            <li>Try starting again</li>
-          </ul>
+          {/* Content-safety withdrawal 2026-11-25: the leak check followed by a
+              restart, and the carburettor step (diesel sets have none). */}
+          <SafetyChecksWithdrawnNotice surface="blog-wont-start-fuel-fix" className="my-6" />
 
           <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4 my-6">
             <p className="text-sm text-cyan-300">
@@ -119,7 +114,6 @@ export default function GeneratorWontStartBlogPage() {
           <ul className="list-disc list-inside space-y-2 mt-2 ml-2">
             <li>Listen for a clicking sound from fuel solenoid when you try to start</li>
             <li>Check fuel line (should have pressure when cranking)</li>
-            <li>Smell for fuel at the carburetor (no smell = solenoid blocked)</li>
           </ul>
 
           <p className="mt-3">
@@ -131,38 +125,14 @@ export default function GeneratorWontStartBlogPage() {
             <li>If solenoid still won't click → it's failed, needs replacement (KES 3K-8K)</li>
           </ul>
 
-          <h2 className="text-3xl font-bold text-white mt-8 mb-4">Cause #4: Spark Plug Carbon Buildup</h2>
-
-          <p>
-            <strong>Symptom:</strong> Fuel reaches engine. Cranks fine. But no ignition spark.
-          </p>
-
-          <p className="mt-3">
-            <strong>Why it happens:</strong> Old fuel leaves carbon deposits on spark plug. Plug can't fire. Happens especially with dirty fuel or long storage.
-          </p>
-
-          <p className="mt-3">
-            <strong>Quick check:</strong>
-          </p>
-          <ul className="list-disc list-inside space-y-2 mt-2 ml-2">
-            <li>Remove spark plug (wrench, 16-19mm)</li>
-            <li>Look at electrode tip (should be shiny, light gray/brown)</li>
-            <li>If black & gunked up → spark plug issue</li>
-          </ul>
-
-          <p className="mt-3">
-            <strong>Fix it:</strong>
-          </p>
-          <ul className="list-disc list-inside space-y-2 mt-2 ml-2">
-            <li>Clean spark plug with wire brush (or replace it, KES 500-1.5K)</li>
-            <li>Check gap (should be 0.7-0.8mm, manufacturer specs)</li>
-            <li>Reinstall & try starting</li>
-          </ul>
+          {/* Content-safety withdrawal 2026-11-25: spark-plug section (unsourced
+              gap figure; diesel sets have no spark plugs). */}
+          <SafetyChecksWithdrawnNotice surface="blog-wont-start-cause-4" className="my-6" />
 
           <h2 className="text-3xl font-bold text-white mt-8 mb-4">Cause #5: Low Compression (Engine Problem)</h2>
 
           <p>
-            <strong>Symptom:</strong> All the above are fine. Battery good, fuel flowing, spark plug fires. But engine still won't start.
+            <strong>Symptom:</strong> All the above are fine. Battery good, fuel flowing. But engine still won't start.
           </p>
 
           <p className="mt-3">
@@ -185,7 +155,7 @@ export default function GeneratorWontStartBlogPage() {
 
           <div className="bg-slate-800/50 border border-cyan-500/20 rounded-lg p-6 my-6 space-y-3 text-sm">
             <p><strong>Engine won't crank?</strong> → Check battery (Cause #1)</p>
-            <p><strong>Engine cranks but won't ignite?</strong> → Check fuel (Cause #2) → Check solenoid (Cause #3) → Check spark plug (Cause #4)</p>
+            <p><strong>Engine cranks but won't ignite?</strong> → Check fuel (Cause #2) → Check solenoid (Cause #3)</p>
             <p><strong>Everything looks fine but still won't start?</strong> → Low compression (Cause #5) → Call technician</p>
           </div>
 
