@@ -18,6 +18,18 @@ export const CLEARANCE_NOT_RESTART = 'Recording a clearance only removes this so
 
 type StoredLatched = { key: string; message: string; from: string; since: string };
 type StoredClearance = StoredLatched & { clearedAt: string; by: string; reason: string };
+/**
+ * Management decision (2026-11-25): when this browser blocks storage, the panel cannot read an
+ * earlier unresolved STOP or keep a new one, so it shows a SAFETY HOLD. It is not a fault or
+ * STOP condition of the machine. It withholds every running-engine / live instruction and the
+ * Next-check prompt, exactly like a STOP hold, until an in-person reassessment by a qualified
+ * technician is acknowledged. The acknowledgement lasts only for this page session: it is
+ * kept in memory, never stored, and must be repeated after a reload.
+ */
+export const SAFETY_HOLD_TEXT = "SAFETY HOLD — Previous diagnostic safety status cannot be verified. Do not continue guided operational checks until the machine's condition has been reassessed by a qualified technician.";
+export const SAFETY_HOLD_WHY = 'Why: this browser does not allow the safety record to be read or saved, so an earlier unresolved STOP for this machine cannot be ruled out. This hold is about the missing record, not a fault found on the machine.';
+export const SAFETY_HOLD_ACK_LABEL = "A qualified technician has reassessed the machine's condition in person";
+export const SAFETY_HOLD_SESSION_ONLY = 'This acknowledgement lasts only for this page session. It cannot be stored in this browser and must be repeated after a reload.';
 const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
 const validLatched = (x: unknown): x is StoredLatched => !!x && typeof x === 'object' && isStr((x as StoredLatched).key) && isStr((x as StoredLatched).message) && isStr((x as StoredLatched).from) && isStr((x as StoredLatched).since);
 const validClearance = (x: unknown): x is StoredClearance => validLatched(x) && isStr((x as StoredClearance).clearedAt) && isStr((x as StoredClearance).by) && typeof (x as StoredClearance).reason === 'string';
@@ -118,6 +130,11 @@ export default function GuidedDiagnosisPanel() {
   const [clearWhy, setClearWhy] = useState<Record<string, string>>({});
   const [clearConfirm, setClearConfirm] = useState<Record<string, boolean>>({});
   const [clearErr, setClearErr] = useState<Record<string, string>>({});
+  // Safety hold acknowledgement: page-session memory only (never written to storage).
+  const [holdAck, setHoldAck] = useState<{ by: string; at: string } | null>(null);
+  const [holdBy, setHoldBy] = useState('');
+  const [holdConfirm, setHoldConfirm] = useState(false);
+  const [holdErr, setHoldErr] = useState('');
   useEffect(() => {
     const read = () => {
       const s = readStore();
@@ -179,6 +196,17 @@ export default function GuidedDiagnosisPanel() {
   const stopActive = result.stops.some((s) => s.level === 'STOP') || otherStops.length > 0 || latched.length > 0;
   // Latched STOPs whose condition is no longer computed are still shown (they are not cleared).
   const latchedOnly = latched.filter((l) => !liveStops.some((s) => s.key === l.key));
+  // Blocked storage: SAFETY HOLD until an in-person reassessment is acknowledged for this page session.
+  const safetyHold = loaded && !storageOk && !holdAck;
+  // Instructions are withheld under a STOP, under a safety hold, and until the stored record has been checked.
+  const withheld = stopActive || safetyHold || !loaded;
+  const acknowledgeHold = () => {
+    const by = holdBy.trim();
+    if (!holdConfirm) { setHoldErr('Not released: confirm that a qualified technician has reassessed the machine in person.'); return; }
+    if (!by) { setHoldErr('Not released: enter the name or initials of the qualified technician.'); return; }
+    setHoldAck({ by: by.slice(0, 60), at: new Date().toISOString() });
+    setHoldErr('');
+  };
   const STOP_HOLD = 'Further checks are withheld while a STOP applies. Make the set safe first: engine stopped, isolated and locked off. A qualified technician decides the next step once the hazard is controlled.';
 
   return (
@@ -203,7 +231,7 @@ export default function GuidedDiagnosisPanel() {
         </div>
       </div>
 
-      {!storageOk && !stopActive ? (
+      {!storageOk && !stopActive && holdAck ? (
         <p data-testid="gd-storage-blocked" role="status" className="rounded-lg border border-amber-500/60 bg-amber-950/40 p-3 text-xs text-amber-100">
           This browser does not allow the safety record to be saved: a STOP shown here cannot be kept after a reload. Record any STOP on the job card.
         </p>
@@ -255,16 +283,39 @@ export default function GuidedDiagnosisPanel() {
                 </div>
               ))}
             </div>
+          ) : safetyHold ? (
+            <div data-testid="gd-safety-hold" role="alert" className="rounded-lg border border-amber-500 bg-amber-950/60 p-3 text-xs text-amber-100 space-y-3">
+              <p className="text-sm font-semibold">{SAFETY_HOLD_TEXT}</p>
+              <p data-testid="gd-safety-hold-why">{SAFETY_HOLD_WHY}</p>
+              <p>No further checks are suggested while this hold applies. Do not take any reading that needs the engine running, cranking or live circuits.</p>
+              <div className="rounded-md border border-amber-400/50 p-2 space-y-1" data-testid="gd-safety-hold-ack">
+                <label className="flex items-start gap-2">
+                  <input type="checkbox" checked={holdConfirm} onChange={(e) => setHoldConfirm(e.target.checked)} />
+                  <span>{SAFETY_HOLD_ACK_LABEL}</span>
+                </label>
+                <label className="block">Name or initials of the qualified technician
+                  <input value={holdBy} onChange={(e) => setHoldBy(e.target.value)}
+                    className="mt-1 w-full rounded bg-slate-900 border border-slate-700 px-2 py-1 text-white" />
+                </label>
+                <p>{SAFETY_HOLD_SESSION_ONLY}</p>
+                <button type="button" onClick={acknowledgeHold} className="rounded bg-amber-700 px-2 py-1 text-white">Record reassessment for this page session</button>
+                {holdErr ? <p role="status" className="text-amber-200">{holdErr}</p> : null}
+              </div>
+            </div>
+          ) : !loaded ? (
+            <p className="text-xs text-slate-400">Checking this browser's safety record…</p>
           ) : next ? (
             <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3">
               <div className="text-xs text-amber-300 mb-2">Next check</div>
               <QuestionInput q={next} value={values[next.id] ?? ''} onChange={(v) => set(next.id, v)} />
             </div>
           ) : <p className="text-xs text-slate-400">All questions answered.</p>}
+          {holdAck && !storageOk ? <p data-testid="gd-safety-hold-released" className="text-xs text-amber-200">Safety hold released for this page session only: in-person reassessment recorded by {holdAck.by} (typed name, UNVERIFIED, not stored).</p> : null}
           {result.invalid.map((i) => <p key={i.q} className="text-xs text-red-300">Refused: {i.reason}</p>)}
           <details>
-            <summary className="cursor-pointer text-xs text-slate-300">All questions ({result.answered}/{family.questions.length} answered){stopActive ? ': only to correct an answer already entered' : ''}</summary>
+            <summary className="cursor-pointer text-xs text-slate-300">All questions ({result.answered}/{family.questions.length} answered){withheld ? ': only to correct an answer already entered' : ''}</summary>
             {stopActive ? <p data-testid="gd-stop-questions-warning" className="mt-2 text-xs text-red-200">A STOP applies: do not take any reading that needs the engine running, cranking or live circuits.</p> : null}
+            {!stopActive && safetyHold ? <p data-testid="gd-hold-questions-warning" className="mt-2 text-xs text-amber-200">A safety hold applies: do not take any reading that needs the engine running, cranking or live circuits.</p> : null}
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {family.questions.map((q) => <QuestionInput key={q.id} q={q} value={values[q.id] ?? ''} onChange={(v) => set(q.id, v)} />)}
             </div>
@@ -273,14 +324,14 @@ export default function GuidedDiagnosisPanel() {
         </div>
 
         <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-3">
-          <div className="text-xs text-slate-400">Likely causes, most supported first{stopActive ? ' (for information only: no checks are suggested while a STOP applies)' : ''}</div>
+          <div className="text-xs text-slate-400">Likely causes, most supported first{stopActive ? ' (for information only: no checks are suggested while a STOP applies)' : safetyHold ? ' (for information only: no checks are suggested while the safety hold applies)' : ''}</div>
           <ol className="space-y-2">
             {result.ranked.map((c, i) => (
               <li key={c.id} className="rounded-lg border border-slate-700 p-3">
                 <div className="flex justify-between gap-2 text-sm text-white"><span>{i + 1}. {c.title}</span><span className="text-slate-500 text-xs">evidence {c.score >= 0 ? '+' : ''}{c.score}</span></div>
                 {c.for.length > 0 && <ul className="mt-1 text-xs text-emerald-300">{c.for.map((f) => <li key={f}>+ {f}</li>)}</ul>}
                 {c.against.length > 0 && <ul className="mt-1 text-xs text-slate-400">{c.against.map((f) => <li key={f}>− {f}</li>)}</ul>}
-                {!stopActive && i < 3 && c.score > 0 && (
+                {!withheld && i < 3 && c.score > 0 && (
                   <ul className="mt-2 list-disc pl-4 text-xs text-slate-200">{c.actions.map((a) => <li key={a}>{a}</li>)}</ul>
                 )}
                 <p className="mt-1 text-[11px] text-slate-500">{c.reference}</p>
