@@ -18,11 +18,12 @@ import {
   TradeError, type Opening, type Param, type TradeLine,
 } from './trades';
 import type { BoqItem } from './boq';
+import { electrical, plumbing, FIXTURE_LABELS, POINT_LABELS, SERVICE_LABELS, type FixtureKind, type PipeService, type PointKind } from './mep';
 
 export interface ParamForm { value: string; source: string }
 export interface OpeningForm { mark: string; type: Opening['type']; width: ParamForm; height: ParamForm; count: string }
 
-export type TradeKind = 'masonry' | 'plaster' | 'roofing' | 'rooms' | 'strip' | 'openings';
+export type TradeKind = 'masonry' | 'plaster' | 'roofing' | 'rooms' | 'strip' | 'openings' | 'electrical' | 'plumbing';
 export const TRADE_LABELS: Record<TradeKind, string> = {
   masonry: 'Masonry walling',
   plaster: 'Plaster / render',
@@ -30,7 +31,21 @@ export const TRADE_LABELS: Record<TradeKind, string> = {
   rooms: 'Room finishes',
   strip: 'Strip foundation',
   openings: 'Door & window schedule',
+  electrical: 'Electrical installation',
+  plumbing: 'Plumbing & sanitary',
 };
+
+// ---- MEP rows (lib/qs/mep). Measurement ids are take-off ids; '' = none chosen.
+export interface PointRowForm { kind: PointKind | ''; label: string; countId: string }
+export interface CircuitRunForm { label: string; runId: string; pointsId: string; drop: ParamForm; allowance: ParamForm; conductors: ParamForm; cableSpec: string; conduitSpec: string }
+export interface EnumeratedRowForm { label: string; count: ParamForm }
+export interface FixtureRowForm { kind: FixtureKind | ''; label: string; countId: string }
+export interface PipeRunForm { label: string; service: PipeService | ''; material: string; diameter: ParamForm; runId: string; pointsId: string; drop: ParamForm; allowance: ParamForm; fittings: ParamForm }
+export const emptyPointRow = (): PointRowForm => ({ kind: '', label: '', countId: '' });
+export const emptyCircuitRun = (): CircuitRunForm => ({ label: '', runId: '', pointsId: '', drop: P(), allowance: P(), conductors: P(), cableSpec: '', conduitSpec: '' });
+export const emptyEnumeratedRow = (): EnumeratedRowForm => ({ label: '', count: P() });
+export const emptyFixtureRow = (): FixtureRowForm => ({ kind: '', label: '', countId: '' });
+export const emptyPipeRun = (): PipeRunForm => ({ label: '', service: '', material: '', diameter: P(), runId: '', pointsId: '', drop: P(), allowance: P(), fittings: P() });
 
 export interface MasonryForm {
   trade: 'masonry'; code: string; description: string;
@@ -57,11 +72,28 @@ export interface StripForm {
   wall: { enabled: boolean; thickness: ParamForm; height: ParamForm };
 }
 export interface OpeningsForm { trade: 'openings'; code: string; openings: OpeningForm[] }
-export type TradeForm = MasonryForm | PlasterForm | RoofingForm | RoomsForm | StripForm | OpeningsForm;
+export interface ElectricalForm { trade: 'electrical'; code: string; description: string; points: PointRowForm[]; runs: CircuitRunForm[]; enumerated: EnumeratedRowForm[] }
+export interface PlumbingForm { trade: 'plumbing'; code: string; description: string; fixtures: FixtureRowForm[]; pipes: PipeRunForm[] }
+export type TradeForm = MasonryForm | PlasterForm | RoofingForm | RoomsForm | StripForm | OpeningsForm | ElectricalForm | PlumbingForm;
 
-const P = (): ParamForm => ({ value: '', source: '' });
+function P(): ParamForm { return { value: '', source: '' }; }
 export const emptyOpening = (): OpeningForm => ({ mark: '', type: 'door', width: P(), height: P(), count: '' });
 export const emptyRoom = (): RoomForm => ({ name: '', areaId: '', perimeterId: '', doorWidths: [] });
+
+/**
+ * For validating saved forms (lib/qs/project): the blank element of every list
+ * field, and the allowed values of every choice field inside a list element.
+ */
+export const FORM_LIST_ELEMENTS: Record<string, () => object> = {
+  openings: emptyOpening, rooms: emptyRoom, doorWidths: P,
+  points: emptyPointRow, runs: emptyCircuitRun, enumerated: emptyEnumeratedRow, fixtures: emptyFixtureRow, pipes: emptyPipeRun,
+};
+export const FORM_LIST_CHOICES: Record<string, Record<string, readonly string[]>> = {
+  openings: { type: ['door', 'window', 'other'] },
+  points: { kind: ['', ...Object.keys(POINT_LABELS)] },
+  fixtures: { kind: ['', ...Object.keys(FIXTURE_LABELS)] },
+  pipes: { service: ['', ...Object.keys(SERVICE_LABELS)] },
+};
 
 /** A blank form for a trade: every value and source empty, every option off. */
 export function emptyForm(trade: TradeKind): TradeForm {
@@ -72,12 +104,15 @@ export function emptyForm(trade: TradeKind): TradeForm {
     case 'rooms': return { trade, code: '', rooms: [emptyRoom()], skirting: false, ceiling: false };
     case 'strip': return { trade, code: '', description: '', trenchLengthId: '', width: P(), depth: P(), concrete: P(), wall: { enabled: false, thickness: P(), height: P() } };
     case 'openings': return { trade, code: '', openings: [emptyOpening()] };
+    case 'electrical': return { trade, code: '', description: '', points: [], runs: [], enumerated: [] };
+    case 'plumbing': return { trade, code: '', description: '', fixtures: [], pipes: [] };
   }
 }
 
 /** Which take-off measurement kind each measurement slot accepts. */
 export const SLOT_KIND = {
   wallLength: 'linear', planArea: 'area', ridge: 'linear', roomArea: 'area', roomPerimeter: 'linear', trenchLength: 'linear',
+  pointCount: 'count', runLength: 'linear', fixtureCount: 'count',
 } as const satisfies Record<string, MeasureKind>;
 
 /** Measurements of one kind, for a picker. */
@@ -180,7 +215,45 @@ export function calculateTrade(f: TradeForm, quantities: Map<string, Quantity>):
       if (!f.openings.length) throw new TradeError('Add at least one door or window to the schedule');
       return openingSchedule(openings(f.openings), code);
     }
+    case 'electrical': {
+      const description = text('Description', f.description);
+      return electrical({
+        code, description,
+        points: f.points.map((p, i) => ({ kind: p.kind as PointKind, label: p.label, count: optPick(`Point row ${i + 1}: count`, p.countId, quantities, SLOT_KIND.pointCount) })),
+        runs: f.runs.map((r, i) => ({
+          label: r.label, plan: optPick(`Run ${i + 1}: run length`, r.runId, quantities, SLOT_KIND.runLength),
+          points: optPick(`Run ${i + 1}: points served`, r.pointsId, quantities, SLOT_KIND.pointCount),
+          dropM: optional(`Run ${i + 1}: drop per point`, r.drop), allowancePct: optional(`Run ${i + 1}: allowance`, r.allowance),
+          conductors: param(`Run ${i + 1}: conductors per run`, r.conductors), cableSpec: r.cableSpec, conduitSpec: r.conduitSpec,
+        })),
+        enumerated: f.enumerated.map((e, i) => ({ label: e.label, count: param(`Enumerated item ${i + 1} count`, e.count) })),
+      });
+    }
+    case 'plumbing': {
+      const description = text('Description', f.description);
+      return plumbing({
+        code, description,
+        fixtures: f.fixtures.map((x, i) => ({ kind: x.kind as FixtureKind, label: x.label, count: optPick(`Fixture row ${i + 1}: count`, x.countId, quantities, SLOT_KIND.fixtureCount) })),
+        pipes: f.pipes.map((p, i) => ({
+          label: p.label, service: p.service as PipeService, material: p.material, diameterMm: param(`Pipe run ${i + 1}: nominal diameter`, p.diameter),
+          plan: optPick(`Pipe run ${i + 1}: run length`, p.runId, quantities, SLOT_KIND.runLength),
+          points: optPick(`Pipe run ${i + 1}: fixtures served`, p.pointsId, quantities, SLOT_KIND.fixtureCount),
+          dropM: optional(`Pipe run ${i + 1}: rise per fixture`, p.drop), allowancePct: optional(`Pipe run ${i + 1}: allowance`, p.allowance),
+          fittingsPerM: optional(`Pipe run ${i + 1}: fittings allowance`, p.fittings),
+        })),
+      });
+    }
   }
+}
+
+/** An optional parameter: value and source both blank → not used; half-filled → the engine refuses it. */
+function optional(label: string, f: ParamForm): Param | undefined {
+  if (f.value.trim() === '' && f.source.trim() === '') return undefined;
+  return param(label, f);
+}
+/** A measurement slot that may be empty (the engine then says what is missing); a chosen id must exist and be of the right kind. */
+function optPick(label: string, id: string, quantities: Map<string, Quantity>, kind: MeasureKind): Quantity | undefined {
+  return id ? pickKind(label, id, quantities, kind) : undefined;
 }
 
 /** Codes in `incoming` that already exist in the BOQ or repeat within `incoming`. */

@@ -20,12 +20,14 @@
  */
 import { calibrate, quantify, TakeoffError, type Calibration, type Measurement, type MeasureKind, type Pt, type Quantity } from './takeoff';
 import { buildBoq, rateFromInput, DRAFT_NOTICE, RATE_KIND_LABELS, type Adjustments, type Boq, type BoqItem, type RateKind } from './boq';
-import { calculateTrade, emptyForm, emptyOpening, emptyRoom, TRADE_LABELS, type TradeForm, type TradeKind } from './tradeForms';
+import { calculateTrade, emptyForm, FORM_LIST_CHOICES, FORM_LIST_ELEMENTS, TRADE_LABELS, type TradeForm, type TradeKind } from './tradeForms';
 import { toBoqItems, TradeError } from './trades';
+import { buildUpFromDraft, RESOURCE_LABELS, type BuildUpDraft, type PriceTier, type ResourceKind } from './rateBuildUp';
 import { sha256Hex } from './pdfSheet';
 
 export const PROJECT_FORMAT = 'building-suite-pro/qs-takeoff-project';
-export const PROJECT_SCHEMA_VERSION = 1;
+/** 2 (2026-11-25): items may carry a rate build-up; electrical and plumbing trade forms. Schema 1 files are read unchanged. */
+export const PROJECT_SCHEMA_VERSION = 2;
 /** Drawings up to this size are embedded in the project file (base64); larger ones are stored by identity only. */
 export const EMBED_LIMIT_BYTES = 15 * 1024 * 1024;
 /** Longest project file text accepted (an embedded 15 MB drawing is about 20 MB as base64). */
@@ -48,6 +50,10 @@ export interface ItemDraft {
    * measurement link. `form` and `lineCode` are what the quantity is recomputed from on open.
    */
   trade?: { name: string; unit: BoqItem['unit']; scheduled: { value: number; source: string }; lineCode: string; form: TradeForm };
+  /** A unit-rate build-up as typed (lib/qs/rateBuildUp). When present, the rate is computed from it and the single-rate fields stay blank. */
+  buildUp?: BuildUpDraft;
+  /** Price status of the single rate (verified / indicative). Missing or '' → treated as indicative, never verified. */
+  rateTier?: PriceTier | '';
 }
 export interface AdjustmentDraft { prelims: string; contingency: string; ohp: string; vat: string; vatFrom: string }
 export interface RefDim { a: Pt; b: Pt; knownM: number }
@@ -107,10 +113,11 @@ export function draftAdjustments(adj: AdjustmentDraft): Adjustments {
 }
 export function draftBoqItems(items: ItemDraft[], quantities: Map<string, Quantity>): BoqItem[] {
   return items.map((d) => {
-    const rate = rateFromInput({ value: d.rate, kind: d.rateKind, source: d.source, date: d.date, location: d.location });
-    if (d.trade) return { code: d.code, section: d.section || 'General', trade: d.trade.name, description: d.description, unit: d.trade.unit, links: [], scheduledQuantity: d.trade.scheduled, rate };
+    const rate = rateFromInput({ value: d.rate, kind: d.rateKind, source: d.source, date: d.date, location: d.location, tier: d.rateTier ?? '' });
+    const bu = d.buildUp ? { buildUp: buildUpFromDraft(d.buildUp) } : {};
+    if (d.trade) return { code: d.code, section: d.section || 'General', trade: d.trade.name, description: d.description, unit: d.trade.unit, links: [], scheduledQuantity: d.trade.scheduled, rate, ...bu };
     const q = quantities.get(d.measurementId);
-    return { code: d.code, section: d.section || 'General', trade: '', description: d.description, unit: q ? UNIT[q.kind] : 'item', links: [{ measurementId: d.measurementId, factor: Number(d.factor || '1') }], rate };
+    return { code: d.code, section: d.section || 'General', trade: '', description: d.description, unit: q ? UNIT[q.kind] : 'item', links: [{ measurementId: d.measurementId, factor: Number(d.factor || '1') }], rate, ...bu };
   });
 }
 export function draftBoq(items: ItemDraft[], quantities: Map<string, Quantity>, adj: AdjustmentDraft, revision: string): { boq: Boq; adj: Adjustments } | null {
@@ -179,6 +186,8 @@ export function buildProject(s: WorkbenchSnapshot, opts: { savedAt: string; embe
     code: d.code, section: d.section, description: d.description, measurementId: d.measurementId, factor: d.factor,
     rate: d.rate, rateKind: d.rateKind, source: d.source, date: d.date, location: d.location,
     ...(d.trade ? { trade: { name: d.trade.name, unit: d.trade.unit, scheduled: { value: d.trade.scheduled.value, source: d.trade.scheduled.source }, lineCode: d.trade.lineCode, form: JSON.parse(JSON.stringify(d.trade.form)) as TradeForm } } : {}),
+    ...(d.buildUp ? { buildUp: JSON.parse(JSON.stringify(d.buildUp)) as BuildUpDraft } : {}),
+    ...(d.rateTier ? { rateTier: d.rateTier } : {}),
   }));
   const b = draftBoq(s.items, quantities, s.adj, s.revision);
   return {
@@ -260,11 +269,13 @@ function sameShape(v: unknown, template: unknown, path: string): void {
   for (const k of Object.keys(t)) {
     const tv = t[k];
     if (Array.isArray(tv)) {
-      const el = k === 'openings' ? emptyOpening() : k === 'rooms' ? emptyRoom() : k === 'doorWidths' ? { value: '', source: '' } : null;
-      if (!el) bad(`${path}.${k}`, 'is not a field of this format');
+      const make = Object.prototype.hasOwnProperty.call(FORM_LIST_ELEMENTS, k) ? FORM_LIST_ELEMENTS[k] : null;
+      if (!make) bad(`${path}.${k}`, 'is not a field of this format');
+      const el = make!();
+      const choices = FORM_LIST_CHOICES[k] ?? {};
       arr(o[k], `${path}.${k}`, 500).forEach((x, i) => {
         sameShape(x, el, `${path}.${k}[${i}]`);
-        if (k === 'openings') oneOf((x as Obj).type, `${path}.${k}[${i}].type`, ['door', 'window', 'other'] as const);
+        for (const [field, allowed] of Object.entries(choices)) oneOf((x as Obj)[field], `${path}.${k}[${i}].${field}`, allowed);
       });
     } else if (k === 'trade') {
       if (o[k] !== tv) bad(`${path}.trade`, 'does not match the form');
@@ -368,7 +379,7 @@ export function parseProject(text: string): ProjectFile {
   const ITEM_TEXT = ['code', 'section', 'description', 'measurementId', 'factor', 'rate', 'source', 'date', 'location'] as const;
   const items: ItemDraft[] = arr(o.items, 'items', 5000).map((v, i) => {
     const p = `items[${i}]`;
-    const it = obj(v, p, [...ITEM_TEXT, 'rateKind'], ['trade']);
+    const it = obj(v, p, [...ITEM_TEXT, 'rateKind'], ver >= 2 ? ['trade', 'buildUp', 'rateTier'] : ['trade']);
     const out = { rateKind: oneOf(it.rateKind, `${p}.rateKind`, ['', ...(Object.keys(RATE_KIND_LABELS) as RateKind[])]) } as ItemDraft;
     for (const k of ITEM_TEXT) out[k] = str(it[k], `${p}.${k}`, k === 'description' || k === 'source' ? 2000 : 200);
     if (it.trade !== undefined) {
@@ -380,6 +391,23 @@ export function parseProject(text: string): ProjectFile {
         lineCode: str(t.lineCode, `${p}.trade.lineCode`, 200), form: tradeForm(t.form, `${p}.trade.form`),
       };
     }
+    if (it.buildUp !== undefined) {
+      const b = obj(it.buildUp, `${p}.buildUp`, ['resources', 'ohp', 'ohpSource', 'location']);
+      out.buildUp = {
+        resources: arr(b.resources, `${p}.buildUp.resources`, 200).map((x, j) => {
+          const q = `${p}.buildUp.resources[${j}]`;
+          const r = obj(x, q, ['kind', 'description', 'unit', 'quantity', 'price', 'tier', 'waste', 'source', 'date']);
+          return {
+            kind: oneOf(r.kind, `${q}.kind`, ['', ...(Object.keys(RESOURCE_LABELS) as ResourceKind[])]),
+            tier: oneOf(r.tier, `${q}.tier`, ['', 'verified', 'indicative'] as const),
+            description: str(r.description, `${q}.description`, 500), unit: str(r.unit, `${q}.unit`, 40), quantity: str(r.quantity, `${q}.quantity`, 40),
+            price: str(r.price, `${q}.price`, 40), waste: str(r.waste, `${q}.waste`, 40), source: str(r.source, `${q}.source`, 1000), date: str(r.date, `${q}.date`, 40),
+          };
+        }),
+        ohp: str(b.ohp, `${p}.buildUp.ohp`, 40), ohpSource: str(b.ohpSource, `${p}.buildUp.ohpSource`, 500), location: str(b.location, `${p}.buildUp.location`, 200),
+      };
+    }
+    if (it.rateTier !== undefined) out.rateTier = oneOf(it.rateTier, `${p}.rateTier`, ['', 'verified', 'indicative'] as const);
     return out;
   });
 
