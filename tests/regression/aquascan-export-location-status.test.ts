@@ -16,7 +16,8 @@ import { locationStatusText, waterCheckStatusText } from '@/external/borehole-ai
 
 vi.setConfig({ testTimeout: 200000 });
 const NEUTRAL = { metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {}, vegetationScore: 0.3, waterProbability: 0.3, isReliableTerrainImage: false, locationMethod: 'none', locationContext: {}, gpsSource: 'none', predictions: [] };
-const src = (f: string) => fs.readFileSync(path.join(process.cwd(), 'external', 'borehole-ai-engine', 'src', f), 'utf8');
+// Line endings normalised so the source patterns match on Windows (CRLF) checkouts as well as Linux (LF).
+const src = (f: string) => fs.readFileSync(path.join(process.cwd(), 'external', 'borehole-ai-engine', 'src', f), 'utf8').replace(/\r\n/g, '\n');
 
 beforeAll(() => {
   const fail = async () => { throw new TypeError('network disabled (test)'); };
