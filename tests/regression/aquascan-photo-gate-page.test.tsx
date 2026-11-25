@@ -104,7 +104,28 @@ describe('location: site-specific only (review B2, M1, m6)', () => {
     fireEvent.change(q, { target: { value: 'Emabungo' } });
     fireEvent.keyDown(q, { key: 'Enter' });
     await waitFor(() => expect((screen.getByPlaceholderText(/^Latitude \(e\.g\. 0\.026677\)/) as HTMLInputElement).value).toBe('0.056700'), { timeout: 5000 });
-    expect(document.body.textContent).toMatch(/Pin set at the centre of Emabungo, Vihiga, Kenya \(village, about 3 km across\)/);
+    expect(document.body.textContent).toMatch(/Pinned at the centre of Emabungo, Vihiga, Kenya \(village\)/);
+    // review R2/R7: the pin note is information (role=status), not the red error box
+    expect(screen.getAllByRole('status').some((el) => /Pinned at the centre of Emabungo/.test(el.textContent || ''))).toBe(true);
+  });
+
+  it('an approximate pin must be confirmed before the run; after confirming, the engine gets the pin (review R2)', async () => {
+    const { container } = await mount();
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify([{ lat: '-0.9005840', lon: '37.1865230', class: 'place', type: 'village', addresstype: 'village', display_name: 'Makuyu, Makuyu ward, Murang`a South, Murang`a, Kenya', boundingbox: ['-0.9205840', '-0.8805840', '37.1665230', '37.2065230'] }]), { status: 200 })));
+    const q = screen.getByPlaceholderText('Search place name — e.g. "Emabungo, Vihiga"');
+    fireEvent.change(q, { target: { value: 'Makuyu' } });
+    fireEvent.keyDown(q, { key: 'Enter' });
+    await waitFor(() => expect((screen.getByPlaceholderText(/^Latitude \(e\.g\. 0\.026677\)/) as HTMLInputElement).value).toBe('-0.900584'));
+    vi.unstubAllGlobals();
+    GPS['noexif.jpg'] = null;
+    upload(container, [photo('noexif.jpg', [1, 2, 3])]);
+    await waitFor(() => expect(container.textContent).toMatch(/Confirm the pin is at the drilling site/));
+    expect(calls).toHaveLength(0);
+    await waitFor(() => screen.getByText('Back and try again')); fireEvent.click(screen.getByText('Back and try again'));
+    fireEvent.click(screen.getByLabelText(/I confirm this pin is at the drilling site/));
+    upload(container, [photo('noexif.jpg', [1, 2, 3])]);
+    await waitFor(() => expect(calls).toHaveLength(1));
+    expect(calls[0].loc).toMatchObject({ latitude: -0.900584, longitude: 37.186523 });
   });
 });
 

@@ -336,7 +336,8 @@ function drawFallbackMap(
     }
   } else {
     // Vegetation — draw NDVI gradient zones
-    const ndviVal = analysisData?.vegetationGWProxy?.ndviMean || analysisData?.site?.vegetationDensity || 0.4;
+    // Review R1: only a measured (satellite) NDVI; never the site's neutral vegetation value or a default.
+    const ndviVal = analysisData?.vegetationGWProxy?.ndviMean ?? 'not available';
     const ndviColors = ['#8B0000', '#CD853F', '#DAA520', '#6B8E23', '#228B22', '#006400'];
     const ndviLabels = ['Bare', 'Sparse', 'Low', 'Moderate', 'Dense', 'Very Dense'];
     const bandH = Math.floor((H - 100) / ndviColors.length);
