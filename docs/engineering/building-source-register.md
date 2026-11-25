@@ -40,3 +40,9 @@ Retrieved 2026-11-25. Values are cited with attribution; no whole document is co
 | VAT treatment of any public price | Not stated by any source used. Records say "not stated" |
 | Verified EmersonEIMS rates | None provided. The data type is supported (`status: "verified"`) |
 | PPRA September 2026 guide | The newest edition contains no building, electrical or waterworks categories, so June 2026 is the latest applicable one |
+
+
+## Independent second-person check (2026-11-25)
+
+All values in this register were re-opened at their cited public sources by an independent checker (report: `EmersonEIMS-proposals/source-verification-2026-11-25/INDEPENDENT-SOURCE-CHECK.md`, held outside the repo).
+- Building: 15/15 values match. Corrected labels: PPRA012-36 (PPR socket 20 mm) and PPRA012-40 (PPR elbow 20 mm) are averages of the four towns reporting (Mombasa did not report), not five-town averages. Values unchanged.
