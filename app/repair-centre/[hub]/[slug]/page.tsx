@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getAllRepairArticleSlugs, getRepairArticle } from '@/lib/repair-centre';
 import RepairArticleView from '@/components/repair-centre/RepairArticleView';
+import { buildRepairArticleJsonLd, repairArticleDescription } from '@/lib/repair-centre/schema';
 
 interface Props { params: Promise<{ hub: string; slug: string }> }
 
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!a || a.hub !== hub) notFound();
 
   const url = `https://www.emersoneims.com/repair-centre/${a.hub}/${a.slug}`;
-  const description = a.directAnswer.slice(0, 300);
+  const description = repairArticleDescription(a);
 
   /*
    * Article headlines are written for the page, not for a search result:
@@ -78,48 +79,9 @@ export default async function RepairArticlePage({ params }: Props) {
 
   const url = `https://www.emersoneims.com/repair-centre/${article.hub}/${article.slug}`;
 
-  const ld = {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'TechArticle',
-        '@id': `${url}#article`,
-        headline: article.header.title,
-        description: article.directAnswer.slice(0, 300),
-        url,
-        datePublished: article.header.published,
-        dateModified: article.header.lastReviewed,
-        author: { '@type': 'Organization', name: article.header.author },
-        publisher: {
-          '@type': 'Organization',
-          name: 'Emerson Industrial Maintenance Services',
-          url: 'https://www.emersoneims.com',
-        },
-        proficiencyLevel: article.header.difficulty,
-        dependencies: article.tools.map(t => t.tool).join(', '),
-        articleSection: article.header.equipmentCategory,
-      },
-      {
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.emersoneims.com' },
-          { '@type': 'ListItem', position: 2, name: 'Repair Centre', item: 'https://www.emersoneims.com/repair-centre' },
-          { '@type': 'ListItem', position: 3, name: article.hub, item: `https://www.emersoneims.com/repair-centre/${article.hub}` },
-          { '@type': 'ListItem', position: 4, name: article.header.title, item: url },
-        ],
-      },
-      ...(article.faq.length
-        ? [{
-            '@type': 'FAQPage',
-            mainEntity: article.faq.map(f => ({
-              '@type': 'Question',
-              name: f.q,
-              acceptedAnswer: { '@type': 'Answer', text: f.a },
-            })),
-          }]
-        : []),
-    ],
-  };
+  // Built from the article data, so withdrawn content is absent from the
+  // markup exactly as it is from the page (lib/repair-centre/schema.ts).
+  const ld = buildRepairArticleJsonLd(article, url);
 
   return (
     <>

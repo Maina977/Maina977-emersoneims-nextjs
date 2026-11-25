@@ -22,29 +22,37 @@ import { REPAIR_ARTICLES } from '@/lib/repair-centre';
  * render nothing rather than a forced link.
  */
 
+/**
+ * CONTENT-SAFETY WITHDRAWAL 2026-11-25: these Repair Centre articles had their
+ * diagnosis sections withdrawn (running under a STOP condition). Fault pages
+ * do not link into them until they are corrected and independently reviewed.
+ */
+export const WITHDRAWN_GUIDE_SLUGS: readonly string[] = [
+  'generator-low-oil-pressure-shutdown',
+  'generator-overheating',
+  'diesel-engine-abnormal-noise',
+  'generator-starts-then-stops',
+  'controller-alarm-interpretation',
+  'j1939-spn-fmi-explained',
+];
+
 /** Fault-code category -> Repair Centre article slugs that genuinely cover it. */
-const CATEGORY_TO_GUIDES: Record<string, string[]> = {
-  'Engine Speed/Timing': ['generator-cranks-but-will-not-start', 'j1939-spn-fmi-explained'],
+export const CATEGORY_TO_GUIDES: Record<string, string[]> = {
+  'Engine Speed/Timing': ['generator-cranks-but-will-not-start'],
   'Fuel System': [
     'diesel-fuel-contamination',
-    'generator-starts-then-stops',
     'generator-excessive-smoke',
   ],
-  'Lubrication System': ['generator-low-oil-pressure-shutdown', 'diesel-engine-abnormal-noise'],
-  'Cooling System': ['generator-overheating'],
   'Electrical Output': [
     'generator-produces-no-voltage-output',
     'generator-unstable-voltage',
     'generator-avr-fault-diagnosis',
   ],
-  'ECM/Controller': ['controller-alarm-interpretation', 'j1939-spn-fmi-explained'],
   'Air Intake/Turbo': ['generator-air-restriction-turbocharger', 'generator-excessive-smoke'],
   'Starting System': ['starter-motor-clicks-but-will-not-crank', 'generator-battery-not-charging'],
   'Electrical/Starting': ['starter-motor-clicks-but-will-not-crank', 'generator-battery-not-charging'],
-  'Engine Protection': ['controller-alarm-interpretation', 'generator-low-oil-pressure-shutdown'],
-  'Safety/Control': ['safe-isolation-and-proving-dead', 'controller-alarm-interpretation'],
+  'Safety/Control': ['safe-isolation-and-proving-dead'],
   'Electrical Safety': ['safe-isolation-and-proving-dead'],
-  'Communication/Network': ['controller-alarm-interpretation', 'j1939-spn-fmi-explained'],
   'Emissions/Aftertreatment': ['generator-excessive-smoke', 'generator-air-restriction-turbocharger'],
 };
 
@@ -57,21 +65,23 @@ export default function FaultCodeRepairLinks({
 }) {
   const slugs = CATEGORY_TO_GUIDES[category] ?? [];
   const bySlug = new Map(REPAIR_ARTICLES.map(a => [a.slug, a]));
-  const guides = slugs.map(s => bySlug.get(s)).filter((a): a is NonNullable<typeof a> => Boolean(a));
+  const guides = slugs
+    .filter(s => !WITHDRAWN_GUIDE_SLUGS.includes(s))
+    .map(s => bySlug.get(s))
+    .filter((a): a is NonNullable<typeof a> => Boolean(a));
   if (guides.length === 0) return null;
 
   return (
     <section className="mt-8 rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-900/20 to-blue-900/20 p-6 md:p-8">
       <p className="text-xs uppercase tracking-[0.2em] text-cyan-400 font-semibold mb-2">
-        Full diagnostic guide
+        Related Repair Centre guides
       </p>
       <h2 className="text-2xl font-bold text-white mb-3">
-        {code} tells you where to start. These tell you what to do next.
+        Guides related to {code}
       </h2>
       <p className="text-slate-300 mb-6 max-w-3xl">
-        A fault code names a symptom, not a cause. Our engineers have written the diagnostic sequence
-        they use on site for this class of fault — ranked causes, ordered steps with the reading
-        expected at each one, and the point at which to stop and call someone.
+        A fault code names a symptom, not a cause. These guides cover this class of fault: what it
+        means, its likely causes, the safety precautions, and when to call a qualified technician.
       </p>
 
       <ul className="grid sm:grid-cols-2 gap-3">

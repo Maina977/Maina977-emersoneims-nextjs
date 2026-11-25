@@ -16,6 +16,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SafetyChecksWithdrawnNotice from '@/components/safety/SafetyChecksWithdrawnNotice';
 import {
   TECHNICAL_SERVICES,
   IEC_WIRE_COLORS,
@@ -1296,11 +1297,15 @@ const RepairGuideViewer = ({ procedure, onClose }: RepairGuideViewerProps) => {
               );
             })}
 
-            {/* Test Procedure */}
-            <div className="mt-8 p-4 bg-green-500/10 rounded-lg border border-green-500/30">
-              <h3 className="text-lg font-semibold text-green-400 mb-2">Final Test Procedure</h3>
-              <p className="text-white">{procedure.testProcedure}</p>
-            </div>
+            {/* Test Procedure (withdrawn where unsafe, 2026-11-25: notice instead) */}
+            {procedure.testProcedure ? (
+              <div className="mt-8 p-4 bg-green-500/10 rounded-lg border border-green-500/30">
+                <h3 className="text-lg font-semibold text-green-400 mb-2">Final Test Procedure</h3>
+                <p className="text-white">{procedure.testProcedure}</p>
+              </div>
+            ) : (
+              <SafetyChecksWithdrawnNotice surface="technical-bible-repair-test-procedure" className="mt-8" />
+            )}
           </div>
         </div>
       </div>

@@ -143,7 +143,7 @@ function GenCoolingLoop() {
   return (
     <DiagramFrame
       title="Engine Cooling Loop — Closed-Circuit"
-      caption="Coolant flows from engine block to thermostat housing; below 82 °C bypass returns to pump, above setpoint flows through radiator to reject heat."
+      caption="Coolant flows from engine block to thermostat housing; below the thermostat setpoint bypass returns to pump, above setpoint flows through radiator to reject heat."
     >
       <Box x={60} y={180} w={160} h={100} label="ENGINE BLOCK" fill="#7c2d12" />
       <Box x={300} y={200} w={120} h={60} label="THERMOSTAT" fill="#1f2937" />
@@ -156,8 +156,8 @@ function GenCoolingLoop() {
       <Box x={420} y={20} w={120} h={50} label="EXPANSION TANK" fill="#1f2937" />
       <Wire d="M480,200 V70" dashed />
       <text x={60} y={420} fontSize="11" fill={NEUTRAL}>
-        Maintain 50/50 ethylene-glycol–water mix; pressure cap 90–110 kPa.
-        Coolant pH 8.5–10.5 — drift triggers liner pitting via cavitation.
+        Maintain 50/50 ethylene-glycol–water mix; pressure cap rating per the OEM manual for your model.
+        Coolant pH per the OEM manual for your model — drift triggers liner pitting via cavitation.
       </text>
     </DiagramFrame>
   );
@@ -167,7 +167,7 @@ function ATSWiring() {
   return (
     <DiagramFrame
       title="Automatic Transfer Switch — Wiring Sequence"
-      caption="Open-transition ATS: detects utility loss → starts genset → transfers load after stable voltage/frequency confirmed (typically 10–30 s)."
+      caption="Open-transition ATS: detects utility loss → starts genset → transfers load after stable voltage/frequency confirmed."
     >
       <Box x={40} y={40} w={150} h={60} label="UTILITY 415 V" fill="#1e3a8a" />
       <Box x={40} y={300} w={150} h={60} label="GENSET 415 V" fill="#7c2d12" />
@@ -186,7 +186,7 @@ function ATSWiring() {
         Mechanical interlock prevents both contactors closing simultaneously.
       </text>
       <text x={40} y={420} fontSize="11" fill={NEUTRAL}>
-        Sense voltage 80–110% nominal · frequency 47–52 Hz · transfer delay 1–10 s · retransfer 5–30 min cool-down.
+        Sensing windows and transfer, retransfer and cool-down timers are set per the OEM manual for your model and controller.
       </text>
     </DiagramFrame>
   );
@@ -212,7 +212,6 @@ function GenGrounding() {
       <Wire d="M490,260 V330" color={GREEN} dashed />
       <Box x={460} y={330} w={70} h={40} label="EARTH ROD" fill="#064e3b" />
       <text x={60} y={420} fontSize="11" fill={NEUTRAL}>
-        Earth resistance target ≤ 1 Ω for medical / data-centre, ≤ 5 Ω general.
         Test by fall-of-potential method annually.
       </text>
     </DiagramFrame>

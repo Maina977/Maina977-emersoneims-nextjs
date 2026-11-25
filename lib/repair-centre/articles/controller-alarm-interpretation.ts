@@ -21,6 +21,10 @@ export const controllerAlarmInterpretation: RepairArticle = {
   directAnswer:
     'A controller alarm reports what the controller measured, or failed to measure — not what broke. That distinction decides whether you fix the fault or replace a healthy part. A low oil pressure shutdown means the controller saw a low signal on its oil pressure input; the engine may indeed have low oil pressure, or the sender may have failed, or its wiring may have chafed to earth, and the alarm looks identical in all three cases. So the correct reading of any alarm is: what did this input actually measure, is that measurement true, and if it is true what caused it. Three further habits matter. Read the alarm that came FIRST, because a shutdown cascades and the last alarm on the display is often a consequence rather than the cause. Distinguish a warning from a shutdown, since they indicate very different urgency. And never simply reset and restart to see whether it recurs, because on a protective shutdown that means running an engine the controller has already judged unsafe. Every code number, its meaning and its reset path must come from the manual for that exact controller and firmware version — the same number means different things on different makes.',
 
+  // Content-safety withdrawal 2026-11-25: measuring the physical value after
+  // a protective shutdown (which means running) is withdrawn pending review.
+  safetyWithdrawn: ['tools', 'decision-tree', 'diagnosis', 'repair'],
+
   symptoms: {
     display: [
       'A numbered fault or alarm code with a short text description',
@@ -164,7 +168,6 @@ export const controllerAlarmInterpretation: RepairArticle = {
     { tool: 'The manual for that exact controller AND firmware version', why: 'Code numbering is manufacturer-specific and changes between versions; without it a number carries no reliable meaning' },
     { tool: 'True-RMS digital multimeter', why: 'Measuring what the sender actually produces, and comparing it against what the controller reports' },
     { tool: 'Controller service software or configuration access', why: 'Reading thresholds, delays and the alarm log in order' },
-    { tool: 'Independent gauge for the quantity in question — pressure, temperature', why: 'The only way to establish whether the measurement is TRUE rather than merely present' },
     { tool: 'Insulation and continuity test capability', why: 'Tracing chafed or corroded sender wiring, a leading cause of false alarms' },
     { tool: 'Engine manufacturer documentation where an ECM is fitted', why: 'ECM-originated codes belong to the engine, not the controller' },
   ],
@@ -174,7 +177,6 @@ export const controllerAlarmInterpretation: RepairArticle = {
     { question: 'Is this a WARNING or a SHUTDOWN?', yes: 'Establish which — they carry very different urgency and different reset behaviour', no: 'Read the alarm text and the manual for this controller' },
     { question: 'Which alarm came FIRST in the log?', yes: 'Work on that one — later entries are usually consequences of it', no: 'Retrieve the log before resetting, because resetting may clear the order' },
     { question: 'Does the code come from the controller or from the engine ECM?', yes: 'Look it up in the correct document — controller manual or engine manual, not the other', no: 'Establish the source before interpreting the number' },
-    { question: 'Is the measurement the alarm refers to actually TRUE?', yes: 'A genuine condition — diagnose the engine or alternator fault', no: 'Sender, wiring or threshold — the engine may be perfectly healthy' },
     { question: 'Is the sender wiring sound and correctly earthed?', yes: 'Continue', no: 'A chafed or corroded sender circuit produces a convincing false alarm' },
     { question: 'Are the configured threshold and delay appropriate for this installation?', yes: 'Continue', no: 'Factory defaults frequently do not suit a specific engine or duty' },
     { question: 'Has the cause been established?', yes: 'Correct it, then reset and validate under the condition that triggered it', no: 'Do NOT reset and restart to see what happens' },
@@ -215,48 +217,37 @@ export const controllerAlarmInterpretation: RepairArticle = {
     },
     {
       step: 4,
-      title: 'Establish whether the measurement is true',
-      inspect: 'The actual physical quantity, measured independently of the controller',
-      where: 'At the engine or alternator, using a separate gauge or meter',
-      instrument: 'Independent pressure gauge, thermometer or multimeter',
-      expected: 'Agreement between the independent measurement and what the controller reports',
-      ifAbnormal: 'This is the pivotal step. Disagreement means the measurement path is at fault and the engine may be entirely healthy. Agreement means the condition is real and must be diagnosed on the engine.',
-      next: 'Step 5',
-      warning: 'Where checking requires the set to run after a protective shutdown, do not simply restart it. Establish first that running will not cause damage.',
-    },
-    {
-      step: 5,
       title: 'Test the sender and its wiring',
       inspect: 'Sender output against its specification, and harness continuity, insulation and earth integrity',
       where: 'At the sender and along its harness to the controller',
       instrument: 'Multimeter, insulation tester',
       expected: 'Sender output plausible for the measured condition; harness sound',
       ifAbnormal: 'Chafed wiring shorting to earth and corroded connections are leading causes of convincing false alarms. Check the earth return specifically, not only the signal wire.',
-      next: 'Step 6',
+      next: 'Step 5',
       verify: 'The sender type and its output characteristic for this engine — these differ, and a sender of the wrong type reads plausibly but incorrectly.',
     },
     {
-      step: 6,
+      step: 5,
       title: 'Check the configured threshold, delay and arming logic',
       inspect: 'Threshold value, time delay, and when the protection is armed in the start sequence',
       where: 'Controller configuration',
       instrument: 'Service software',
       expected: 'Settings appropriate to the engine and duty',
       ifAbnormal: 'An alarm at an unexpected point in the sequence often reflects arming or inhibit logic rather than a physical fault. Factory defaults do not always suit a specific installation.',
-      next: 'Step 7',
+      next: 'Step 6',
     },
     {
-      step: 7,
+      step: 6,
       title: 'Verify the controller supply',
       inspect: 'Controller supply voltage, especially during cranking',
       where: 'At the controller supply terminals',
       instrument: 'Multimeter, ideally recording',
       expected: 'Stable supply through the whole start sequence',
       ifAbnormal: 'A weak starting battery causing the supply to dip during cranking produces spurious alarms that appear to come from unrelated inputs. This is commonly misdiagnosed as a controller fault.',
-      next: 'Step 8',
+      next: 'Step 7',
     },
     {
-      step: 8,
+      step: 7,
       title: 'Correct the cause, then reset and validate deliberately',
       inspect: 'That the identified cause has been addressed before any restart',
       where: 'At the corrected fault',
@@ -283,7 +274,6 @@ export const controllerAlarmInterpretation: RepairArticle = {
       level: 'sensor-replacement',
       title: 'Senders',
       steps: [
-        'Replace a sender proven faulty by independent measurement',
         'Fit the correct sender type for the engine — a wrong type reads plausibly but incorrectly',
         'Verify the reading against an independent gauge after fitting',
       ],
@@ -350,7 +340,7 @@ export const controllerAlarmInterpretation: RepairArticle = {
   faq: [
     {
       q: 'The controller says low oil pressure. Does the engine have low oil pressure?',
-      a: 'It means the controller measured a low signal on its oil pressure input. That happens when the engine genuinely has low oil pressure, when the sender has failed, and when the sender wiring has chafed to earth, and the alarm is identical in all three cases. Measure the actual pressure with an independent gauge before touching the engine. What you must not do is reset and restart to see whether it recurs, because if the pressure really is low you will destroy the engine.',
+      a: 'It means the controller measured a low signal on its oil pressure input. That happens when the engine genuinely has low oil pressure, when the sender has failed, and when the sender wiring has chafed to earth, and the alarm is identical in all three cases. What you must not do is reset and restart to see whether it recurs, because if the pressure really is low you will destroy the engine.',
     },
     {
       q: 'Several alarms came up at once. Which one do I work on?',

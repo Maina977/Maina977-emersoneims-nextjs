@@ -7,6 +7,7 @@ import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import ControlsEngineeringDeepDive from '@/components/solutions/ControlsEngineeringDeepDive';
+import { CONTENT_SAFETY_WITHDRAWN_MESSAGE } from '@/lib/safety/contentWithdrawal';
 
 // =====================================================
 // COMPREHENSIVE DEEPSEA & POWERWIZARD SOLUTIONS HUB
@@ -195,12 +196,14 @@ const FAULT_CODES = [
     category: 'DeepSea Engine Faults',
     icon: '🔧',
     codes: [
-      { code: '01', description: 'Emergency Stop', cause: 'E-Stop button pressed', action: 'Release E-Stop, reset alarm, check for actual emergency' },
-      { code: '02', description: 'Low Oil Pressure', cause: 'Oil level low, pump failure, sensor fault', action: 'Check oil level, verify with mechanical gauge, check sensor wiring' },
-      { code: '03', description: 'High Engine Temperature', cause: 'Coolant issue, thermostat, fan failure', action: 'Check coolant level, verify temp with IR gun, check fan operation' },
+      // action withdrawn 2026-11-25 (content-safety withdrawal): reset-first e-stop step.
+      { code: '01', description: 'Emergency Stop', cause: 'E-Stop button pressed', action: CONTENT_SAFETY_WITHDRAWN_MESSAGE },
+      // action withdrawn 2026-11-25: gauge reading with the engine running after low oil pressure.
+      { code: '02', description: 'Low Oil Pressure', cause: 'Oil level low, pump failure, sensor fault', action: CONTENT_SAFETY_WITHDRAWN_MESSAGE },
+      { code: '03', description: 'High Engine Temperature', cause: 'Coolant issue, thermostat, fan failure', action: CONTENT_SAFETY_WITHDRAWN_MESSAGE },
       { code: '04', description: 'Low Coolant Temperature', cause: 'Stuck thermostat, faulty sender', action: 'Check thermostat operation, verify sender resistance' },
       { code: '05', description: 'Under Speed', cause: 'Load issue, fuel problem, governor fault', action: 'Check fuel supply, governor actuator, reduce load if needed' },
-      { code: '06', description: 'Over Speed', cause: 'Governor malfunction, speed sensor issue', action: 'Check governor, verify speed with tachometer, check sensor gap' },
+      { code: '06', description: 'Over Speed', cause: 'Governor malfunction, speed sensor issue', action: CONTENT_SAFETY_WITHDRAWN_MESSAGE },
       { code: '07', description: 'Low Fuel Level', cause: 'Tank empty, sender fault, wiring issue', action: 'Check fuel tank level physically, verify sender operation' },
       { code: '08', description: 'Fail to Start', cause: 'Multiple possible: fuel, batteries, starter', action: 'Follow systematic start troubleshooting procedure' },
       { code: '09', description: 'Fail to Stop', cause: 'Fuel solenoid stuck, governor issue', action: 'Check fuel solenoid, manual stop, check governor output' },
@@ -238,9 +241,9 @@ const FAULT_CODES = [
     category: 'PowerWizard Common Alarms',
     icon: '🟧',
     codes: [
-      { code: 'E014', description: 'High Engine Temperature', cause: 'Cooling system issue', action: 'Check coolant, thermostat, fan, water pump' },
-      { code: 'E015', description: 'Low Oil Pressure', cause: 'Oil system issue', action: 'Check oil level, filter, pump, pressure sender' },
-      { code: 'E016', description: 'Overspeed', cause: 'Speed control issue', action: 'Check governor, fuel system, speed sensor' },
+      { code: 'E014', description: 'High Engine Temperature', cause: 'Cooling system issue', action: CONTENT_SAFETY_WITHDRAWN_MESSAGE },
+      { code: 'E015', description: 'Low Oil Pressure', cause: 'Oil system issue', action: CONTENT_SAFETY_WITHDRAWN_MESSAGE },
+      { code: 'E016', description: 'Overspeed', cause: 'Speed control issue', action: CONTENT_SAFETY_WITHDRAWN_MESSAGE },
       { code: 'E023', description: 'Fail to Start', cause: 'Start system failure', action: 'Check batteries, starter, fuel, control settings' },
       { code: 'E025', description: 'Fail to Crank', cause: 'Cranking system issue', action: 'Check batteries, starter motor, wiring' },
       { code: 'E031', description: 'High Battery Voltage', cause: 'Charger issue, battery', action: 'Check battery charger output, battery condition' },

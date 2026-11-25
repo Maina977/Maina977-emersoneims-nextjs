@@ -19,7 +19,17 @@ export const generatorStartsThenStops: RepairArticle = {
   },
 
   directAnswer:
-    'An engine that fires and then dies is being stopped by one of two things: it is running out of something it needs, or a protection is shutting it down deliberately. Time the stop before touching anything, because the interval separates the causes almost by itself. A stop within two to three seconds of firing usually means the run signal never latched or the fuel path closed again. A stop after ten to sixty seconds usually means fuel starvation — the engine consumes what was in the filter and pipework faster than the supply can replace it. A stop only when load is applied is a load-acceptance problem, not a starting problem. And a stop with an alarm on the controller is not a mystery at all: read the alarm first, because the controller is telling you what it protected against.',
+    'An engine that fires and then dies is being stopped by one of two things: it is running out of something it needs, or a protection is shutting it down deliberately. A stop within two to three seconds of firing usually means the run signal never latched or the fuel path closed again. A stop after ten to sixty seconds usually means fuel starvation — the engine consumes what was in the filter and pipework faster than the supply can replace it. A stop only when load is applied is a load-acceptance problem, not a starting problem. And a stop with an alarm on the controller is not a mystery at all: read the alarm first, because the controller is telling you what it protected against.',
+
+  // The meta/OG/TechArticle description previously published "Time the stop
+  // before touching anything" (an instruction to restart and time a set that
+  // may have tripped on protection). Identification text only.
+  metaDescription:
+    'An engine that fires and then dies is being stopped by one of two things: it is running out of something it needs, or a protection is shutting it down deliberately. A stop with an alarm on the controller is not a mystery: read the alarm first, because the controller is telling you what it protected against.',
+
+  // Content-safety withdrawal 2026-11-25: restarting after an alarmed
+  // protective shutdown to time or prove it is withdrawn pending review.
+  safetyWithdrawn: ['tools', 'decision-tree', 'diagnosis', 'repair'],
 
   symptoms: {
     display: [
@@ -135,7 +145,7 @@ export const generatorStartsThenStops: RepairArticle = {
       'Batteries remain live and can deliver very high fault current',
     ],
     specificHazards: [
-      'This fault requires repeated starting, so the engine will run without warning while you are near it — keep clear of the fan, belts and coupling',
+      'The engine can run without warning while you are near it — keep clear of the fan, belts and coupling',
       'A high-pressure fuel leak penetrates skin; never search for one by hand',
       'Repeated cranking overheats the starter — respect the duty cycle and rest periods',
       'Diesel spillage on a hot exhaust is a fire risk',
@@ -150,24 +160,19 @@ export const generatorStartsThenStops: RepairArticle = {
   },
 
   tools: [
-    { tool: 'Stopwatch or phone timer', why: 'Timing the run before the stop — the cheapest and most informative instrument for this fault' },
     { tool: 'Service tool or fault-code reader', why: 'Reading the shutdown history and live data through the run and the stop' },
     { tool: 'Digital multimeter, true RMS', why: 'Run circuit, solenoid supply, sender circuits and control voltage stability' },
-    { tool: 'Mechanical oil pressure gauge', why: 'Proving or disproving an oil pressure shutdown independently of the sender' },
     { tool: 'Low-pressure fuel gauge', why: 'Supply pressure while running, which is where starvation shows up' },
     { tool: 'Clear hose section', why: 'Making air ingress visible in the suction line rather than inferring it' },
-    { tool: 'Infrared thermometer', why: 'Checking real coolant and oil temperature against the reported value' },
     { tool: 'Clamp meter', why: 'Measuring applied load where the stop is load-dependent' },
     { tool: 'Cooling system pressure tester', why: 'Confirming a suspected leak behind a temperature shutdown' },
   ],
 
   decisionTree: [
-    { question: 'Does the controller show an alarm at the moment of the stop?', yes: 'Read and record it. The alarm names the protection that operated — go to that parameter and prove it independently.', no: 'Treat as an involuntary stop and work the fuel path and run circuit' },
-    { question: 'Is the run time repeatable to within a second or two?', yes: 'A very repeatable interval suggests a timer or a safety-on delay expiring, or a fixed fuel reserve being consumed', no: 'A variable interval suggests intermittent contact or progressive air ingress' },
+    { question: 'Does the controller show an alarm at the moment of the stop?', yes: 'Read and record it. Do not restart; refer to a qualified technician.', no: 'Treat as an involuntary stop and work the fuel path and run circuit' },
     { question: 'Does it stop within two or three seconds of firing?', yes: 'Investigate the run latch and the fuel solenoid holding circuit', no: 'Continue' },
     { question: 'Does it run indefinitely off-load and stop only on load application?', yes: 'This is load acceptance — work fuel supply under demand, air restriction and governing', no: 'Continue' },
     { question: 'Does bleeding the fuel system extend the run time?', yes: 'Air is entering on the suction side. Find the leak; it is often above the fuel level and will not weep when stopped.', no: 'Continue' },
-    { question: 'Does an independent gauge confirm the reported oil pressure or temperature?', yes: 'The protection was correct — diagnose the underlying mechanical cause', no: 'Suspect the sender, its wiring or the controller input' },
     { question: 'Is supply pressure maintained at the injection pump inlet while running?', yes: 'Move to speed signal and control circuit', no: 'Work filters, lift pump and suction restriction' },
     { question: 'Is the speed signal stable throughout the run and at the moment of the stop?', yes: 'Investigate the control supply and the run relay', no: 'Diagnose the speed sensor, air gap and trigger wheel' },
   ],
@@ -175,94 +180,61 @@ export const generatorStartsThenStops: RepairArticle = {
   diagnosis: [
     {
       step: 1,
-      title: 'Time the run and read the controller before touching anything',
-      inspect: 'How long the engine runs, and whether an alarm is present at the stop',
-      where: 'Controller display and stored fault history',
-      instrument: 'Stopwatch and service tool',
-      expected: 'A recorded run time and either a named shutdown alarm or a clean log',
-      ifAbnormal: 'A named alarm converts this from a search into a targeted investigation. An unalarmed stop points at fuel or the run circuit.',
-      next: 'Step 2',
-      warning: 'Record the fault history before clearing it. Clearing first destroys the evidence.',
-      verify: 'The safety-on delay for the controller fitted — protections are inhibited for a period after start, and a very repeatable run time often corresponds exactly to that period expiring.',
-    },
-    {
-      step: 2,
-      title: 'Watch live data through a complete start-to-stop cycle',
-      inspect: 'Speed, oil pressure, coolant temperature and battery voltage logged continuously through the run',
-      where: 'Service tool connected while the set runs',
-      instrument: 'Service tool with live data logging',
-      expected: 'All parameters stable and within limits until the moment of the stop',
-      ifAbnormal: 'The parameter that moves first is the fault. A value that collapses at the instant of the stop is usually a symptom of the stop rather than its cause — the order matters.',
-      next: 'Step 3 for an alarmed stop, Step 5 for an unalarmed stop',
-    },
-    {
-      step: 3,
-      title: 'Prove an alarmed shutdown independently before accepting it',
-      inspect: 'The parameter the controller says it protected against',
-      where: 'At the engine, with an instrument independent of the sender',
-      instrument: 'Mechanical oil pressure gauge, or infrared thermometer for temperature',
-      expected: 'Independent reading agrees with the controller',
-      ifAbnormal: 'Disagreement indicts the sender, its wiring or the controller input. Agreement means the protection was right and the mechanical cause must be found.',
-      next: 'If confirmed, diagnose that system. If disproved, Step 4.',
-      warning: 'If low oil pressure is independently confirmed, stop. Do not continue running to gather more evidence.',
-    },
-    {
-      step: 4,
       title: 'Test the sender and its circuit where the reading is disproved',
       inspect: 'Sender resistance or output through its range, and the wiring to the controller',
       where: 'At the sender connector and at the controller input',
       instrument: 'Digital multimeter',
       expected: 'Sender within specification and wiring continuous with no short to earth or supply',
       ifAbnormal: 'A drifting sender produces a false shutdown that looks exactly like a real fault. Repair wiring before replacing components.',
-      next: 'Step 9',
+      next: 'Step 6',
       verify: 'Sender resistance values and the expected characteristic are engine-specific and must be read from the service data.',
     },
     {
-      step: 5,
+      step: 2,
       title: 'Measure fuel supply pressure while running, not just at rest',
       inspect: 'Supply pressure at the inlet to the injection pump throughout the run',
       where: 'Low-pressure gauge point at the pump inlet',
       instrument: 'Low-pressure fuel gauge',
       expected: 'Pressure within specification and holding steady until the stop',
       ifAbnormal: 'Pressure decaying through the run is the signature of a restriction or a failing lift pump. This is the most common cause of a stop after ten to sixty seconds.',
-      next: 'Step 6',
+      next: 'Step 3',
       verify: 'The required supply pressure is engine-specific — read it from the engine data rather than accepting a generic figure.',
     },
     {
-      step: 6,
+      step: 3,
       title: 'Make air ingress visible',
       inspect: 'The suction line while the engine runs',
       where: 'Clear hose section fitted temporarily between tank and filter',
       instrument: 'Clear hose section',
       expected: 'A solid column of fuel with no bubbles for the whole run',
       ifAbnormal: 'Bubbles confirm air ingress. The leak is frequently above the fuel level, so it draws air while running and does not weep when stopped, which is why it is so often missed.',
-      next: 'Repair, bleed, re-run and re-time. Then Step 7.',
+      next: 'Repair, bleed, re-run and re-time. Then Step 4.',
       warning: 'Bleed by the manufacturer\'s method. Do not crack high-pressure unions on a common-rail engine to bleed it.',
     },
     {
-      step: 7,
+      step: 4,
       title: 'Check the run latch and the fuel solenoid holding circuit',
       inspect: 'Voltage at the fuel shutoff or run solenoid throughout the run, and the run relay',
       where: 'At the solenoid terminals and at the relay',
       instrument: 'Digital multimeter',
       expected: 'Voltage present and stable for the whole run, dropping only when the stop is commanded',
       ifAbnormal: 'Voltage disappearing before the engine dies means the control circuit stopped it. A solenoid that holds cold and drops when warm indicates a breaking-down coil.',
-      next: 'Step 8',
+      next: 'Step 5',
       verify: 'Whether the solenoid is a pull-and-hold design, and the expected holding voltage, are model-specific.',
     },
     {
-      step: 8,
+      step: 5,
       title: 'Verify the speed signal remains valid at running speed',
       inspect: 'Speed signal stability through the run and at the instant of the stop',
       where: 'At the sensor and on the controller live data',
       instrument: 'Oscilloscope, or service tool live data',
       expected: 'A clean, consistent signal at running speed with no dropouts',
       ifAbnormal: 'A sensor with a marginal air gap can work at cranking speed and fail at running speed. Loss of speed signal makes the controller stop the engine.',
-      next: 'Step 9',
+      next: 'Step 6',
       verify: 'Sensor air gap and resistance are engine-specific.',
     },
     {
-      step: 9,
+      step: 6,
       title: 'Where the stop is load-dependent, characterise it under real load',
       inspect: 'Speed, frequency, supply pressure, boost and exhaust temperature as load is applied in steps',
       where: 'Controller live data with a clamp meter on the output',
@@ -273,7 +245,7 @@ export const generatorStartsThenStops: RepairArticle = {
       warning: 'Disconnect sensitive load before deliberately loading a set that is known to stop under load.',
     },
     {
-      step: 10,
+      step: 7,
       title: 'Confirm the control supply is stable once the alternator takes over',
       inspect: 'Control voltage through start, run and the moment the charge alternator picks up',
       where: 'At the controller supply terminals',
@@ -308,7 +280,6 @@ export const generatorStartsThenStops: RepairArticle = {
       level: 'sensor-replacement',
       title: 'Senders and sensors',
       steps: [
-        'Replace an oil pressure or temperature sender proven wrong by an independent instrument',
         'Replace a speed sensor that drops out at running speed',
         'Replace a fuel solenoid whose coil breaks down when warm',
       ],
@@ -373,10 +344,6 @@ export const generatorStartsThenStops: RepairArticle = {
   relatedSlugs: ['controller-alarm-interpretation', 'diesel-fuel-contamination', 'generator-cranks-but-will-not-start', 'generator-excessive-smoke', 'generator-low-oil-pressure-shutdown', 'generator-overheating', 'generator-produces-no-voltage-output', 'generator-unstable-voltage', 'starter-motor-clicks-but-will-not-crank'],
 
   faq: [
-    {
-      q: 'It runs for about thirty seconds every time. Does the consistency mean anything?',
-      a: 'Yes, and it is one of the most useful clues available. A highly repeatable interval usually means either a fixed quantity of fuel is being consumed before starvation, or a timer has expired — commonly the safety-on delay, after which protections become active and an existing fault finally trips. Time it accurately and check the delay setting.',
-    },
     {
       q: 'There is no alarm at all. Does that rule out a protection trip?',
       a: 'Largely, yes, and that is valuable. An unalarmed stop points at fuel starvation or at the run circuit losing its hold. Check the fuel solenoid holding voltage and the control supply before dismantling the fuel system.',

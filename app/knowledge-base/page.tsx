@@ -3,6 +3,9 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+// Content-safety withdrawal 2026-11-25 (audit KB-W1): the weekly loaded run and
+// running noise check (no STOP) in gen-maintenance-schedule are withdrawn.
+import { CONTENT_SAFETY_WITHDRAWN_MESSAGE } from '@/lib/safety/contentWithdrawal';
 
 // Knowledge base articles/guides
 const KNOWLEDGE_BASE = {
@@ -141,10 +144,9 @@ Regular maintenance extends generator life from 15,000 to 25,000+ hours.
 - [ ] Clear area around generator
 
 ### Weekly Checks
-- [ ] Run generator for 30 minutes under load
+- ${CONTENT_SAFETY_WITHDRAWN_MESSAGE}
 - [ ] Check air filter condition
 - [ ] Inspect belts for wear/tension
-- [ ] Check for unusual noises or vibrations
 - [ ] Verify all gauges working
 
 ### 250 Hours / 6 Months

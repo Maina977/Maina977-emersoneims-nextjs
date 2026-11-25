@@ -46,16 +46,18 @@ export default function ControlsEngineeringDeepDive() {
       </DeepDiveBlock>
 
       <SpecTable
-        caption="Typical AMF timing (set to engine/site, not defaults)"
+        caption="AMF timers (set to the engine and site per the controller and engine manuals, not defaults)"
         accent="violet"
         highlightCol={0}
-        headers={['Timer', 'Purpose', 'Typical range']}
+        headers={['Timer', 'Purpose']}
         rows={[
-          ['Start delay', 'Ignore momentary mains dips', '1–5 s'],
-          ['Warm-up', 'Stabilise before loading', '5–30 s'],
-          ['Transfer (break)', 'Open-transition changeover gap', '0.5–2 s'],
-          ['Return delay', 'Confirm mains is stable', '10–60 s'],
-          ['Cool-down', 'Shed engine heat before stop', '60–300 s'],
+          // "Typical range" column withdrawn 2026-11-25 (content-safety audit
+          // C28 / S-W6): unsourced settings with no model-specific manual.
+          ['Start delay', 'Ignore momentary mains dips'],
+          ['Warm-up', 'Stabilise before loading'],
+          ['Transfer (break)', 'Open-transition changeover gap'],
+          ['Return delay', 'Confirm mains is stable'],
+          ['Cool-down', 'Shed engine heat before stop'],
         ]}
       />
 

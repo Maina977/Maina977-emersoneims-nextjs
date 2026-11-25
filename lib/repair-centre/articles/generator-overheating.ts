@@ -21,6 +21,10 @@ export const generatorOverheating: RepairArticle = {
   directAnswer:
     'Work outwards from the air and the coolant before suspecting the engine. In practice the overwhelming majority of high-temperature shutdowns come down to heat not leaving the radiator: a core blocked externally with dust, chaff or oil mist, a canopy recirculating its own hot discharge air because a wall or another machine was placed too close after installation, a slipping or missing fan belt, or a failed viscous fan drive. Next comes coolant itself — level, concentration and whether the system is holding pressure, because a system that cannot hold pressure boils well below the temperature it was designed to reach. Only when air and coolant are proven should you move to thermostat, water pump, internal core fouling and finally head gasket. One critical safety point governs all of it: never open a hot pressurised cooling system. Wait until it has cooled, or you will be scalded by escaping coolant that flashes to steam the moment the cap is released.',
 
+  // Content-safety withdrawal 2026-11-25: running and loaded checks made
+  // before the overheating cause is found are withdrawn pending review.
+  safetyWithdrawn: ['diagnosis'],
+
   symptoms: {
     display: [
       'High coolant temperature alarm followed by shutdown',
@@ -180,7 +184,7 @@ export const generatorOverheating: RepairArticle = {
   decisionTree: [
     { question: 'Is the engine still hot and the cooling system pressurised?', yes: 'Stop. Allow it to cool before opening anything.', no: 'Continue' },
     { question: 'Is there oil in the coolant, coolant in the oil, or unexplained coolant loss?', yes: 'Stop and escalate — this suggests an internal failure, not a cooling fault', no: 'Continue' },
-    { question: 'Is the radiator core clear when viewed from BOTH faces?', yes: 'Continue', no: 'Clean the core properly and re-test before going further' },
+    { question: 'Is the radiator core clear when viewed from BOTH faces?', yes: 'Continue', no: 'Clean the core properly before going further' },
     { question: 'Is the coolant at correct level and concentration?', yes: 'Continue', no: 'Correct it, and establish where the coolant went' },
     { question: 'Is the fan belt in good condition and correctly tensioned, and does the fan drive engage?', yes: 'Continue', no: 'Airflow is compromised — correct this first' },
     { question: 'Does the system hold its rated pressure, including the cap?', yes: 'Continue', no: 'A system that will not hold pressure boils below its design temperature — replace the cap or find the leak' },
@@ -235,36 +239,16 @@ export const generatorOverheating: RepairArticle = {
     },
     {
       step: 5,
-      title: 'Thermally survey the core under load',
-      inspect: 'Temperature distribution across the radiator face while running under load',
-      where: 'Across the whole core area',
-      instrument: 'Thermal camera or infrared thermometer',
-      expected: 'Reasonably even temperature gradient across the core',
-      ifAbnormal: 'Cold patches indicate internal blockage in those tubes; uniformly small temperature drop across the core indicates inadequate airflow or coolant flow rather than fouling.',
-      next: 'Step 6',
-    },
-    {
-      step: 6,
-      title: 'Check for recirculation and ventilation adequacy',
-      inspect: 'Whether hot discharge air returns to the intake; clearances and ventilation openings',
-      where: 'Around the canopy or in the plant room, set running',
-      instrument: 'Anemometer, thermometer at intake and discharge',
-      expected: 'Intake air close to ambient, discharge directed away with adequate clearance',
-      ifAbnormal: 'Intake air significantly above ambient proves recirculation. This is an installation defect — often created after commissioning when a wall, fence or another machine was added, and no work on the set will correct it.',
-      next: 'Step 7',
-    },
-    {
-      step: 7,
       title: 'Verify the temperature reading is real',
       inspect: 'Sender output and wiring against an independent measurement',
       where: 'At the sender and with an infrared reading of the housing',
       instrument: 'Multimeter and infrared thermometer',
       expected: 'Displayed temperature agreeing with independent measurement',
       ifAbnormal: 'A faulty sender or chafed wiring produces shutdowns on a set that is not actually overheating. Confirm before dismantling any cooling components.',
-      next: 'Step 8',
+      next: 'Step 6',
     },
     {
-      step: 8,
+      step: 6,
       title: 'Then thermostat, pump, and finally internal causes',
       inspect: 'Thermostat operation, water pump condition, and evidence of combustion gas in the coolant',
       where: 'Thermostat housing, pump, and at the expansion tank',

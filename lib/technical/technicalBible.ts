@@ -132,7 +132,8 @@ export interface RepairProcedure {
   parts: { partNumber: string; name: string; quantity: number }[];
   safetyWarnings: string[];
   steps: RepairStep[];
-  testProcedure: string;
+  /** Optional: withdrawn where it was unsafe (2026-11-25). */
+  testProcedure?: string;
   linkedFaultCodes: string[];
 }
 
@@ -487,8 +488,7 @@ export const SAMPLE_SCHEMATICS: Schematic[] = [
     ],
     notes: [
       'Always disconnect battery negative before working on starting circuit',
-      'Check battery voltage before troubleshooting - minimum 24V for proper operation',
-      'Starter motor should disengage within 0.5 seconds of engine starting',
+      // notes[1]-[2] withdrawn 2026-11-25 (content-safety audit TK-W1): unsourced limits.
     ],
     relatedDiagrams: ['gen-charging-circuit', 'gen-control-wiring'],
     lastUpdated: '2024-03-15',
@@ -645,132 +645,9 @@ export const SAMPLE_WIRING_DIAGRAMS: WiringDiagram[] = [
 // ==================== TROUBLESHOOTING TREES ====================
 
 export const TROUBLESHOOTING_TREES: TroubleshootingTree[] = [
-  {
-    id: 'gen-no-start',
-    serviceId: 'diesel-generators',
-    name: 'Generator Won\'t Start',
-    symptom: 'Generator cranks but does not start, or does not crank at all',
-    startNode: 'check-battery',
-    relatedFaultCodes: ['DSE-4261', 'DSE-4271', 'DSE-1621'],
-    nodes: [
-      {
-        id: 'check-battery',
-        question: 'Is battery voltage above 24V (or 12V for 12V systems)?',
-        yesNode: 'check-estop',
-        noNode: 'solution-battery',
-        tools: ['Multimeter'],
-        timeEstimate: '2 minutes',
-      },
-      {
-        id: 'solution-battery',
-        question: '',
-        solution: 'Charge or replace battery. Check charger operation. Test battery under load.',
-        severity: 'warning',
-        partsList: ['Battery', 'Battery charger'],
-        timeEstimate: '30-60 minutes',
-      },
-      {
-        id: 'check-estop',
-        question: 'Is the emergency stop released and reset?',
-        yesNode: 'check-fuel',
-        noNode: 'solution-estop',
-        timeEstimate: '1 minute',
-      },
-      {
-        id: 'solution-estop',
-        question: '',
-        solution: 'Release emergency stop button. Twist clockwise or pull out to release. Check for multiple E-stops on panel and remote locations.',
-        severity: 'info',
-        timeEstimate: '2 minutes',
-      },
-      {
-        id: 'check-fuel',
-        question: 'Is there fuel in the tank and is fuel reaching the injection pump?',
-        yesNode: 'check-crank',
-        noNode: 'solution-fuel',
-        tools: ['Visual inspection', 'Fuel pressure gauge'],
-        timeEstimate: '5 minutes',
-      },
-      {
-        id: 'solution-fuel',
-        question: '',
-        solution: 'Refill fuel tank. Bleed fuel system. Check fuel filters for blockage. Verify fuel solenoid operation.',
-        severity: 'warning',
-        tools: ['Fuel pressure gauge', 'Filter wrench'],
-        partsList: ['Fuel filter', 'Fuel'],
-        timeEstimate: '15-45 minutes',
-      },
-      {
-        id: 'check-crank',
-        question: 'Does the engine crank when start is pressed?',
-        yesNode: 'check-compression',
-        noNode: 'check-starter',
-        timeEstimate: '1 minute',
-      },
-      {
-        id: 'check-starter',
-        question: 'Do you hear the starter solenoid click when pressing start?',
-        yesNode: 'solution-starter-motor',
-        noNode: 'solution-control',
-        timeEstimate: '1 minute',
-      },
-      {
-        id: 'solution-starter-motor',
-        question: '',
-        solution: 'Starter motor failure. Check starter motor cables for tightness. Test starter motor by direct battery connection (jumpering). Replace starter if faulty.',
-        severity: 'warning',
-        tools: ['Multimeter', 'Jump cables'],
-        partsList: ['Starter motor'],
-        timeEstimate: '30-90 minutes',
-      },
-      {
-        id: 'solution-control',
-        question: '',
-        solution: 'Control circuit issue. Check controller fault codes. Verify start signal from controller. Check wiring from controller to starter relay.',
-        severity: 'critical',
-        tools: ['Multimeter', 'Controller manual'],
-        timeEstimate: '30-120 minutes',
-      },
-      {
-        id: 'check-compression',
-        question: 'Is the engine cranking at normal speed (not slow)?',
-        yesNode: 'check-air',
-        noNode: 'solution-compression',
-        timeEstimate: '1 minute',
-      },
-      {
-        id: 'solution-compression',
-        question: '',
-        solution: 'Possible low compression or internal engine issue. Perform compression test. Check valve clearances. Inspect for seized components.',
-        severity: 'critical',
-        tools: ['Compression tester', 'Feeler gauges'],
-        timeEstimate: '60-180 minutes',
-      },
-      {
-        id: 'check-air',
-        question: 'Is the air filter clean and air intake unrestricted?',
-        yesNode: 'solution-specialist',
-        noNode: 'solution-air',
-        tools: ['Visual inspection', 'Restriction gauge'],
-        timeEstimate: '5 minutes',
-      },
-      {
-        id: 'solution-air',
-        question: '',
-        solution: 'Replace air filter. Check intake ducting for blockages or collapsed hoses.',
-        severity: 'info',
-        partsList: ['Air filter'],
-        timeEstimate: '10-20 minutes',
-      },
-      {
-        id: 'solution-specialist',
-        question: '',
-        solution: 'Issue requires specialist diagnosis. Possible fuel injection timing, injector failure, or ECU issue. Contact authorized service center.',
-        severity: 'critical',
-        timeEstimate: 'Contact specialist',
-      },
-    ],
-  },
+  // 'gen-no-start' withdrawn 2026-11-25 (content-safety audit TK-W2): it reset the
+  // e-stop before the cause was found, used an unsourced battery-voltage pass
+  // threshold, and cranked for a compression test before seizure was ruled out.
   {
     id: 'solar-low-output',
     serviceId: 'solar-systems',
@@ -947,18 +824,9 @@ export const REPAIR_PROCEDURES: RepairProcedure[] = [
         instruction: 'Open fuel supply valve. Use priming pump to bleed air from system until solid fuel flows.',
         checkPoint: 'No air bubbles should be visible at bleed point',
       },
-      {
-        stepNumber: 11,
-        instruction: 'Start the generator and let it run for several minutes. Check for leaks around filters.',
-        checkPoint: 'Monitor for any fuel seepage around filter seals',
-      },
-      {
-        stepNumber: 12,
-        instruction: 'Apply load and verify normal power output with no surging or hunting.',
-        checkPoint: 'Generator should carry full load smoothly',
-      },
+      // Steps 11-12 and testProcedure withdrawn 2026-11-25 (content-safety audit
+      // TK-W3): a run and full-load test watching for fuel leaks with no STOP.
     ],
-    testProcedure: 'Run generator at full rated load for 15 minutes. Monitor for any power fluctuations, fuel leaks, or unusual sounds.',
     linkedFaultCodes: ['DSE-1631', 'DSE-1632', 'CUM-291'],
   },
 ];
@@ -1049,7 +917,7 @@ export const MAINTENANCE_SCHEDULES: MaintenanceSchedule[] = [
           'Check fuel level',
           'Inspect for leaks (oil, fuel, coolant)',
           'Check battery terminals for corrosion',
-          'Test start the generator if not in use',
+          // procedure[5] withdrawn 2026-11-25 (audit TK-W4): test start after a leak check with no STOP.
           'Record engine hours',
         ],
         tools: ['Visual inspection', 'Clean rag'],

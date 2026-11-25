@@ -75,23 +75,20 @@ const NINE_SERVICES = [
     color: 'cyan',
     subServices: ['Controls', 'Engine', 'Electricals'],
     qaPairs: [
-      { q: 'Generator fails to start?', a: 'Check battery (12.5V+), fuel level, oil level. Ensure fuel valve open.', severity: 'high', solutions: ['Charge/replace battery', 'Refill fuel', 'Check oil level', 'Bleed fuel system'] },
-      { q: 'Generator starts but stops immediately?', a: 'Fuel starvation or faulty governor. Check fuel filter, pump, governor.', severity: 'high', solutions: ['Replace fuel filter', 'Test fuel pump (2.5-3.5 PSI)', 'Adjust governor linkage'] },
+      // Content-safety withdrawal 2026-11-25 (audit S-W1/S-W2, same text as
+      // lib/services/serviceDiagnostics.ts GEN_QA): figures removed, the
+      // overheating and low-oil-pressure items and the fixed gauges withdrawn.
+      { q: 'Generator fails to start?', a: 'Check battery, fuel level, oil level. Ensure fuel valve open.', severity: 'high', solutions: ['Charge/replace battery', 'Refill fuel', 'Check oil level', 'Bleed fuel system'] },
+      { q: 'Generator starts but stops immediately?', a: 'Fuel starvation or faulty governor. Check fuel filter, pump, governor.', severity: 'high', solutions: ['Replace fuel filter', 'Test fuel pump', 'Adjust governor linkage'] },
       { q: 'No power output?', a: 'Check AVR, alternator field winding, circuit breakers.', severity: 'critical', solutions: ['Test AVR output', 'Check alternator excitation', 'Reset breakers'] },
-      { q: 'Generator overheating?', a: 'Check coolant, radiator, fan belt, thermostat.', severity: 'high', solutions: ['Top up coolant', 'Clean radiator fins', 'Adjust fan belt'] },
       { q: 'Excessive black smoke?', a: 'Rich fuel mixture or incomplete combustion.', severity: 'medium', solutions: ['Replace air filter', 'Clean injectors', 'Check timing'] },
-      { q: 'Low oil pressure warning?', a: 'Check oil level immediately. Stop if below 20 PSI.', severity: 'critical', solutions: ['Add correct oil', 'Replace filter', 'Test sensor'] },
     ],
     calculator: {
       name: 'Generator Sizing Calculator',
       fields: ['Load (kW)', 'Power Factor', 'Safety Factor'],
       formula: 'Generator kVA = (Load × Safety Factor) / Power Factor'
     },
-    gauges: [
-      { label: 'Oil Pressure', value: 45, max: 80, unit: 'PSI', color: '#00ff00' },
-      { label: 'Coolant Temp', value: 85, max: 120, unit: '°C', color: '#ffaa00' },
-      { label: 'RPM', value: 1500, max: 2000, unit: 'RPM', color: '#00ffff' },
-    ]
+    gauges: [] as { label: string; value: number; max: number; unit: string; color: string }[],
   },
   {
     id: 'solar',
@@ -585,17 +582,19 @@ export default function UniversalDiagnosticPage() {
               {/* Column 2: Gauges & Contact */}
               <div className="space-y-6">
 
-                {/* Pressure Gauges */}
-                <div>
-                  <h3 className="text-lg font-bold text-cyan-400 border-b border-gray-700 pb-2 mb-4">
-                    PRESSURE GAUGES
-                  </h3>
-                  <div className="grid grid-cols-1 gap-3">
-                    {selectedService.gauges.map((gauge, idx) => (
-                      <NeedleGauge key={idx} {...gauge} />
-                    ))}
+                {/* Pressure Gauges (none for generators since 2026-11-25) */}
+                {selectedService.gauges.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-cyan-400 border-b border-gray-700 pb-2 mb-4">
+                      PRESSURE GAUGES
+                    </h3>
+                    <div className="grid grid-cols-1 gap-3">
+                      {selectedService.gauges.map((gauge, idx) => (
+                        <NeedleGauge key={idx} {...gauge} />
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Quick Contact */}
                 <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 border border-cyan-500/30 rounded-lg p-4">
