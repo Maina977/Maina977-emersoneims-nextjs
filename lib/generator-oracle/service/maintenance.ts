@@ -29,6 +29,12 @@ export const SERVICE_ENGINE_VERSION = 'oracle-service 1.1.0 (2026-11-21)';
 /** Shown on the screen and in every job-card report and export. */
 export const TYPED_SIGNOFF_NOTICE = 'Sign-off recorded by typed name — not an authenticated signature. Not valid as a certified record until reviewer accounts exist.';
 export const TYPED_NAMES_NOTICE = 'All names on this card (technician, status steps, sign-off) are typed in and not verified.';
+/**
+ * Safety withdrawal 2026-11-25 (review finding S9): the Guided Diagnosis STOP latch
+ * is not carried onto the card. Wording only: shown at the top of the job-card
+ * screen and as the first notice of every .txt / PDF report.
+ */
+export const STOP_NOT_CARRIED_NOTICE = 'Generator Oracle cannot confirm a set is safe to run. A STOP from Guided Diagnosis is kept only in this browser — record it on this card. Do not test-run a set with an unresolved STOP.';
 
 export interface ManualRef { document: string; edition: string; page: string }
 export interface Asset { id: string; make: string; model: string; engine: string; controller: string; serial: string; ratedKva: number }
@@ -337,7 +343,7 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
   const flags = readingFlags(card.readings);
   return {
     title: `JOB CARD ${card.id} (revision ${card.revision}) — ${card.status}`,
-    notices: [`NOTICE: ${TYPED_SIGNOFF_NOTICE}`, `NOTICE: ${TYPED_NAMES_NOTICE}`],
+    notices: [`SAFETY: ${STOP_NOT_CARRIED_NOTICE}`, `NOTICE: ${TYPED_SIGNOFF_NOTICE}`, `NOTICE: ${TYPED_NAMES_NOTICE}`],
     sections: [
       { heading: 'ASSET', lines: [`  ${asset.id}: ${asset.make} ${asset.model} (${asset.ratedKva} kVA), engine ${asset.engine || '—'}, controller ${asset.controller || '—'}, serial ${asset.serial}`] },
       { heading: 'FAULT', lines: [

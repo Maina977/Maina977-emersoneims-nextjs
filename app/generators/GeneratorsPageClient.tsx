@@ -110,7 +110,9 @@ const CumminsBanner = dynamic(() => import('@/components/brands/CumminsBanner'))
 const ConversionCTAHub = dynamic(() => import('@/components/generators/ConversionCTAHub'));
 
 // AI DIAGNOSTIC COMPONENTS
-const AIVisualDiagnostic = dynamic(() => import('@/components/generator-oracle/AIVisualDiagnostic'), { ssr: false });
+// SAFETY WITHDRAWAL 2026-11-25 (review finding S13): the visual diagnostic component is no
+// longer imported here, so its code is not in this page; the section shows the shared notice.
+import OracleSafetyWithdrawnNotice from '@/components/generator-oracle/OracleSafetyWithdrawnNotice';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BIBLE OF GENERATORS - COMPREHENSIVE NAVIGATION HUB
@@ -386,7 +388,7 @@ const AIVisualDiagnosticSection = () => {
             
             className="bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden"
           >
-            <AIVisualDiagnostic />
+            <OracleSafetyWithdrawnNotice surface="generators-visual-checklist" />
           </div>
         )}
 

@@ -1,37 +1,25 @@
 /**
- * Generator fault-code chat endpoint.
+ * SAFETY WITHDRAWAL (management rule, 2026-11-25).
  *
- * Rewritten 2026-10-25 (audit round 5): it had its own code reader and
- * symptom matcher, so it disagreed with the Generator Oracle search ("Cummins
- * 111" got a greeting), introduced itself as an "AI Assistant" and returned
- * confidence percentages. It now answers from the same fault index as
- * /api/generator-oracle/search and /diagnose, in plain words, with no scores.
+ * Withdrawn: S14: answerOracle() chat answers (fuel leak, battery, overheating defects).
+ * The independent review of 2026-11-25 (ORACLE-SURFACES-REVIEW.md) found that
+ * it gave running, cranking or live-circuit steps under STOP conditions, used
+ * invented thresholds, or omitted STOPs. It stays unavailable until it is
+ * corrected and independently re-verified. Every method answers HTTP 503 with
+ * { error: 'temporarily_unavailable', message } before doing any work; no
+ * diagnostic module is imported here.
+ *
+ * The previous implementation is at commit fa565ab1:
+ *   git show fa565ab1:app/api/ai/chat/route.ts
  */
-import { NextRequest, NextResponse } from 'next/server';
-import { answerOracle } from '@/lib/generator-oracle/server/answer';
+import { withdrawnRouteResponse } from '@/lib/generator-oracle/safety/withdrawal';
 
-export async function POST(request: NextRequest) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Request body must be JSON' }, { status: 400 });
-  }
-  const message = body && typeof body === 'object' ? (body as { message?: unknown }).message : undefined;
-  if (typeof message !== 'string' || !message.trim()) {
-    return NextResponse.json({ error: 'Missing or invalid message' }, { status: 400 });
-  }
-  if (message.length > 500) {
-    return NextResponse.json({ error: 'Message too long (500 characters at most)' }, { status: 400 });
-  }
-  const a = answerOracle(message);
-  return NextResponse.json({
-    response: a.text,
-    isDiagnostic: a.kind !== 'none',
-    found: a.found,
-    interpretedAs: a.interpretedAs,
-    results: a.results.slice(0, 5).map((r) => ({ code: r.code, codeKind: r.codeKind, brand: r.brand, title: r.title, severity: r.severity })),
-    guides: a.guides.map((g) => ({ title: g.title, url: g.url })),
-    source: 'Generator Oracle fault index (rule-based)',
-  });
-}
+export const dynamic = 'force-dynamic';
+
+export async function GET() { return withdrawnRouteResponse(); }
+export async function POST() { return withdrawnRouteResponse(); }
+export async function PUT() { return withdrawnRouteResponse(); }
+export async function PATCH() { return withdrawnRouteResponse(); }
+export async function DELETE() { return withdrawnRouteResponse(); }
+export async function HEAD() { return withdrawnRouteResponse(); }
+export async function OPTIONS() { return withdrawnRouteResponse(); }

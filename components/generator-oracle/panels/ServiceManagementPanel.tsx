@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { importWithRetry } from '@/lib/loading/resilientImport';
 import {
-  jobCardReport, nextStatuses, signOffCheck, signOffSummary, SIGNOFF, TYPED_NAMES_NOTICE, TYPED_SIGNOFF_NOTICE,
+  jobCardReport, nextStatuses, signOffCheck, signOffSummary, SIGNOFF, STOP_NOT_CARRIED_NOTICE, TYPED_NAMES_NOTICE, TYPED_SIGNOFF_NOTICE,
   type Asset, type JobCard, type JobStatus,
 } from '@/lib/generator-oracle/service/maintenance';
 import {
@@ -460,6 +460,10 @@ export default function ServiceManagementPanel() {
 
   return (
     <div className="space-y-4 min-w-0">
+      {/* Safety withdrawal 2026-11-25 (review finding S9): wording only. */}
+      <p role="note" data-testid="stop-not-carried-notice" className="rounded-md border border-red-500/60 bg-red-950/50 px-3 py-2 text-sm text-red-100 break-words">
+        <strong>Safety.</strong> {STOP_NOT_CARRIED_NOTICE}
+      </p>
       <div className={box}>
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">

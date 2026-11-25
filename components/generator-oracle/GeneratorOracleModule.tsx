@@ -72,7 +72,6 @@ import { DisclaimerAcknowledgment, FooterDisclaimer } from './DisclaimerBanner';
 import { CONTROLLER_TYPES } from './controllerTypes';
 // Heavy parts load only when opened (2026-10-30 audit: one 452 KB chunk).
 const ControllerSimulator = resilient(() => import('./ControllerSimulator'), { name: 'Controller Simulator', variant: 'panel' });
-const DetailedFaultExample = resilient(() => import('./DetailedFaultExample'), { name: 'Detailed Fault Example', variant: 'panel' });
 const SpeechController = resilient(() => import('./SpeechController'), { name: 'Speech Controller', variant: 'panel', loading: () => null });
 import BackToCommand from './BackToCommand';
 import ErrorBoundary from './ErrorBoundary';
@@ -81,7 +80,20 @@ import ErrorBoundary from './ErrorBoundary';
 // Panel components - loaded only when user navigates to them
 const EnginePanel = resilient(() => import('./panels/EnginePanel'), { name: 'Engine', variant: 'panel' });
 const ElectricalPanel = resilient(() => import('./panels/ElectricalPanel'), { name: 'Electrical', variant: 'panel' });
-const FaultDiagnosticsPanel = resilient(() => import('./panels/FaultDiagnosticsPanel'), { name: 'Fault Diagnostics', variant: 'panel' });
+// SAFETY WITHDRAWAL (management rule, 2026-11-25). An instruction-giving workflow that is
+// not safe stays unavailable until corrected and independently re-verified. The independent
+// review of 2026-11-25 (ORACLE-SURFACES-REVIEW.md) found these screens gave running, cranking
+// or live-circuit steps under STOP conditions, used invented thresholds, or omitted STOPs.
+// Their modules are no longer imported anywhere, so their code is not in the build; each
+// screen renders the one shared notice instead:
+//   S1/S10-S13 Diagnostic Assistant (ExpertAIChatPanel, AIVisualDiagnostic, AIAnalysisPanel and
+//              their RuleBasedAssistantPanel fallback), S2/S3 Fault Code Lookup
+//              (FaultDiagnosticsPanel + Expert Notes), S4 Worked Example (DetailedFaultExample),
+//              S5 InteractiveTroubleshooter, S6 TechnicianInputDiagnostics, and the unreachable
+//              Systems > Interactive screen (InteractiveDiagnosticSystem, which also mounted the
+//              rule-based assistant). S7 (Wiring > Diagnostics flows) and S8 (Repair Manuals >
+//              Repair Procedures / Fault Codes) are withdrawn inside their panels.
+import OracleSafetyWithdrawnNotice from './OracleSafetyWithdrawnNotice';
 // SAFETY WITHDRAWAL (management decision P3, 2026-11-25). The Technician Assistant used
 // invented thresholds (coolant > 95 °C, oil pressure < 20 PSI) and listed running-engine
 // steps before its STOP (independent safety review, finding P3). It is withdrawn until its
@@ -97,7 +109,6 @@ function TechnicianAssistantPanel() {
 }
 const WiringDiagramsPanel = resilient(() => import('./panels/WiringDiagramsPanel'), { name: 'Wiring Diagrams', variant: 'panel' });
 const AllControllerWiringDiagrams = resilient(() => import('./AllControllerWiringDiagrams'), { name: 'All Controller Wiring Diagrams', variant: 'panel' });
-const TechnicianInputDiagnostics = resilient(() => import('./TechnicianInputDiagnostics'), { name: 'Technician Input Diagnostics', variant: 'panel' });
 
 // Advanced Panels - loaded on demand
 const RealTimeMonitoringPanel = resilient(() => import('./panels/RealTimeMonitoringPanel'), { name: 'Real Time Monitoring', variant: 'panel' });
@@ -108,14 +119,12 @@ const DataRecordingPanel = resilient(() => import('./panels/DataRecordingPanel')
 const ControllerRepairManualsPanel = resilient(() => import('./panels/ControllerRepairManualsPanel'), { name: 'Controller Repair Manuals', variant: 'panel' });
 const SensorDiagnosticsPanel = resilient(() => import('./panels/SensorDiagnosticsPanel'), { name: 'Sensor Diagnostics', variant: 'panel' });
 const ECMDiagnosticsPanel = resilient(() => import('./panels/ECMDiagnosticsPanel'), { name: 'ECM Diagnostics', variant: 'panel' });
-const AIAnalysisPanel = resilient(() => import('./panels/AIAnalysisPanel'), { name: 'AI Analysis', variant: 'panel' });
 const UnifiedDiagnosticsPanel = resilient(() => import('./panels/UnifiedDiagnosticsPanel'), { name: 'Unified Diagnostics', variant: 'panel' });
 const ECMProgrammingPanel = resilient(() => import('./panels/ECMProgrammingPanel'), { name: 'ECM Programming', variant: 'panel' });
 const CANbusMonitorPanel = resilient(() => import('./panels/CANbusMonitorPanel'), { name: 'CA Nbus Monitor', variant: 'panel' });
 const FleetDashboardPanel = resilient(() => import('./panels/FleetDashboardPanel'), { name: 'Fleet Dashboard', variant: 'panel' });
 const CompleteDiagnosticPanel = resilient(() => import('./panels/CompleteDiagnosticPanel'), { name: 'Complete Diagnostic', variant: 'panel' });
 const ECMReprogrammingGuidePanel = resilient(() => import('./panels/ECMReprogrammingGuidePanel'), { name: 'ECM Reprogramming Guide', variant: 'panel' });
-const ExpertAIChatPanel = resilient(() => import('./panels/ExpertAIChatPanel'), { name: 'Expert AI Chat', variant: 'panel' });
 const UniversalDiagnosticPanel = resilient(() => import('./panels/UniversalDiagnosticPanel'), { name: 'Universal Diagnostic', variant: 'panel' });
 const ODIDashboardPanel = resilient(() => import('./panels/ODIDashboardPanel'), { name: 'ODI Dashboard', variant: 'panel' });
 const ProfessionalDiagnosticInterface = resilient(() => import('./panels/ProfessionalDiagnosticInterface'), { name: 'Professional Diagnostic Interface', variant: 'panel' });
@@ -125,15 +134,12 @@ const ECMHardwarePanel = resilient(() => import('./panels/ECMHardwarePanel'), { 
 // Feature panels - loaded on demand
 const SubscriptionManager = resilient(() => import('./SubscriptionManager'), { name: 'Subscription Manager', variant: 'panel' });
 const ReportBuilder = resilient(() => import('./ReportBuilder'), { name: 'Report Builder', variant: 'panel' });
-const AIVisualDiagnostic = resilient(() => import('./AIVisualDiagnostic'), { name: 'AI Visual Diagnostic', variant: 'panel' });
 const PartsOrderPanel = resilient(() => import('./PartsOrderPanel'), { name: 'Parts Order', variant: 'panel' });
 const LocationCapture = resilient(() => import('./LocationCapture'), { name: 'Location Capture', variant: 'panel' });
 const NotificationSettings = resilient(() => import('./NotificationSettings'), { name: 'Notification Settings', variant: 'panel' });
 
 // Educational content panel
 const PossibleCausesPanel = resilient(() => import('./PossibleCausesPanel'), { name: 'Possible Causes', variant: 'panel' });
-const InteractiveTroubleshooter = resilient(() => import('./InteractiveTroubleshooter'), { name: 'Interactive Troubleshooter', variant: 'panel' });
-const InteractiveDiagnosticSystem = resilient(() => import('./panels/InteractiveDiagnosticSystem'), { name: 'Interactive Diagnostic System', variant: 'panel' });
 const ProfessionalDiagnosticTools = resilient(() => import('./panels/ProfessionalDiagnosticTools'), { name: 'Professional Diagnostic Tools', variant: 'panel' });
 const EngineeringCalculatorsPanel = resilient(() => import('./panels/EngineeringCalculatorsPanel'), { name: 'Engineering Calculators', variant: 'panel' });
 const GuidedDiagnosisPanel = resilient(() => import('./panels/GuidedDiagnosisPanel'), { name: 'Guided Diagnosis', variant: 'panel' });
@@ -1739,9 +1745,8 @@ export default function GeneratorOracleModule() {
                     />
 
                     {/* Sub-Tab Content */}
-                    {aiSubTab === 'expert' && <ExpertAIChatPanel />}
-                    {aiSubTab === 'visual' && <AIVisualDiagnostic />}
-                    {aiSubTab === 'analyze' && <AIAnalysisPanel />}
+                    {/* Safety withdrawal 2026-11-25: S1, S10-S13 */}
+                    <OracleSafetyWithdrawnNotice surface={`diagnostic-assistant-${aiSubTab}`} />
                   </motion.div>
                 )}
 
@@ -1774,17 +1779,11 @@ export default function GeneratorOracleModule() {
                     />
 
                     {/* Sub-Tab Content */}
-                    {faultsSubTab === 'lookup' && (
-                      <FaultDiagnosticsPanel
-                        onSearch={handleSearch}
-                        searchResults={searchResults as any}
-                        isSearching={isSearching}
-                        notice={searchNotice}
-                      />
-                    )}
+                    {/* Safety withdrawal 2026-11-25: S2/S3 lookup, S4 worked example, S5 troubleshoot */}
+                    {faultsSubTab === 'lookup' && <OracleSafetyWithdrawnNotice surface="fault-code-lookup" />}
                     {faultsSubTab === 'guided' && <GuidedDiagnosisPanel />}
-                    {faultsSubTab === 'analysis' && <DetailedFaultExample />}
-                    {faultsSubTab === 'troubleshoot' && <InteractiveTroubleshooter />}
+                    {faultsSubTab === 'analysis' && <OracleSafetyWithdrawnNotice surface="worked-example" />}
+                    {faultsSubTab === 'troubleshoot' && <OracleSafetyWithdrawnNotice surface="interactive-troubleshoot" />}
                   </motion.div>
                 )}
 
@@ -1825,7 +1824,7 @@ export default function GeneratorOracleModule() {
                     />
 
                     {/* Sub-Tab Content */}
-                    {systemsSubTab === 'interactive' && <InteractiveDiagnosticSystem />}
+                    {systemsSubTab === 'interactive' && <OracleSafetyWithdrawnNotice surface="interactive-diagnostic-system" />}
                     {systemsSubTab === 'engine' && (
                       <EnginePanel
                         parameters={parameters as any}
@@ -2108,7 +2107,7 @@ export default function GeneratorOracleModule() {
                         </div>
                       </HolographicGlassPanel>
                     )}
-                    {toolsSubTab === 'techinput' && <TechnicianInputDiagnostics />}
+                    {toolsSubTab === 'techinput' && <OracleSafetyWithdrawnNotice surface="tech-input" />}
                     {toolsSubTab === 'assistant' && <TechnicianAssistantPanel />}
                     {toolsSubTab === 'settings' && (
                       <HolographicGlassPanel title="Settings" subtitle="Configure Your Preferences" icon="⚙️" accentColor="purple" variant="glow">
