@@ -63,6 +63,15 @@ export async function openWaterAt(lat: number, lon: number): Promise<'sea' | 'la
   }
 }
 
+/** Refusal plus whether the open-water check could run (review R7: never a silent pass). */
+export async function siteCheck(lat: number, lon: number): Promise<{ refusal: string | null; waterCheck: 'ok' | 'unavailable' }> {
+  if (!inKenya(lat, lon)) return { refusal: await siteRefusal(lat, lon), waterCheck: 'ok' };
+  const water = await openWaterAt(lat, lon);
+  if (water === 'sea') return { refusal: `${lat.toFixed(4)}, ${lon.toFixed(4)} is in the sea (0 m elevation). Move the pin onto land.`, waterCheck: 'ok' };
+  if (water === 'lake') return { refusal: `${lat.toFixed(4)}, ${lon.toFixed(4)} is on open water (a lake surface). Move the pin onto land.`, waterCheck: 'ok' };
+  return { refusal: null, waterCheck: water === null ? 'unavailable' : 'ok' };
+}
+
 /** A clear refusal, or null when the point is on Kenyan land. */
 export async function siteRefusal(lat: number, lon: number): Promise<string | null> {
   if (!inKenya(lat, lon)) {

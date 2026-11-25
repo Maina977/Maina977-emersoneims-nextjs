@@ -724,6 +724,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [activeSciPart, setActiveSciPart] = useState<string>('remote-sensing');
   // Export status shown on the page (2026-10-20: native alert() pop-ups).
   const [exportMsg, setExportMsg] = useState<string>('');
+  /** Review R2 (2026-11-25): a searched pin is shown as information and, when approximate, must be confirmed. */
+  const [pinNote, setPinNote] = useState<{ text: string; needsConfirm: boolean; confirmed: boolean } | null>(null);
+  /** Review R7: the water-body check could not run; reports wait for the customer's confirmation. */
+  const [waterConfirmed, setWaterConfirmed] = useState(false);
+  /** Review R6: one request id per compare site, so a late answer never overwrites a newer one. */
+  const compReq = useRef<Record<string, number>>({});
   const [scannerResult, setScannerResult] = useState<AIScanResult | null>(null);
   const [scannerRunning, setScannerRunning] = useState(false);
   const scannerMapRef = useRef<HTMLCanvasElement>(null);
@@ -886,6 +892,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
     // Coordinates typed but invalid? STOP and say so — never run the analysis
     // at the wrong place while the user believes their location was applied.
     let manualCoords: { lat: number; lon: number } | null = null;
+    if (pinNote?.needsConfirm && !pinNote.confirmed && (manualLat.trim() || manualLon.trim())) {
+      const msg = 'Location problem: the searched place was pinned at its centre. Confirm the pin is at the drilling site (tick the box under the coordinates), or type the exact coordinates.';
+      setManualLocError(msg); setAnalysisError(msg); setActiveView('analyze');
+      return;
+    }
     if (manualLat.trim() || manualLon.trim()) {
       const parsed = parseManualCoordinates(manualLat, manualLon);
       if ('error' in parsed) {
@@ -983,6 +994,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
         delete (analysisResult as any).imageForensicId;
         delete (analysisResult as any).imageFingerprint;
       }
+      setWaterConfirmed(false);
       setResult(analysisResult);
       setActiveView('results');
       setActiveResultTab('overview');
@@ -996,9 +1008,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
   const handleCompSiteUpload = async (idx: number, file: File) => {
     if (!analyzer) return;
-    const sites = [...compSites];
-    sites[idx] = { ...sites[idx], image: URL.createObjectURL(file), file, analyzing: true, result: null, note: undefined };
-    setCompSites(sites);
+    const sites = compSites.map((x, i) => (i === idx ? { ...x, image: URL.createObjectURL(file), file, analyzing: true, result: null, note: undefined } : x));
+    setCompSites((cs) => cs.map((x, i) => (i === idx ? sites[idx] : x)));
     // Safety hotfix 2026-11-25: the photo's camera GPS gives the location and the analysis runs on
     // the placeholder; without camera GPS the site is not analysed.
     await runCompSite(idx, sites, file);
@@ -1007,23 +1018,30 @@ const AIBoreholeAnalyzer: React.FC = () => {
   /** Compare mode: coordinates typed for the site win; else the photo's camera GPS; else not analysed (with the reason). */
   const runCompSite = async (idx: number, sites: ComparisonSite[], file: File | null) => {
     if (!analyzer) return;
+    // Review R6: each run carries a request id; only the newest run for a site may write to it, and it
+    // writes only its own site (functional update), so parallel sites never overwrite each other.
+    const id = sites[idx].id;
+    const req = (compReq.current[id] ?? 0) + 1;
+    compReq.current[id] = req;
+    const apply = (patch: Partial<ComparisonSite>) => {
+      if (compReq.current[id] !== req) return;
+      setCompSites((cs) => cs.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+    };
     const typed = (sites[idx].lat ?? '').trim() || (sites[idx].lon ?? '').trim() ? parseCoordPair(sites[idx].lat ?? '', sites[idx].lon ?? '') : null;
-    if (typed && 'error' in typed) { const u = [...sites]; u[idx] = { ...u[idx], analyzing: false, note: `Not analysed: ${typed.error}` }; setCompSites(u); return; }
+    if (typed && 'error' in typed) { apply({ analyzing: false, note: `Not analysed: ${typed.error}` }); return; }
     const gps = typed ? { lat: typed.lat, lon: typed.lon } : file ? await exifGpsOf(file) : null;
     const ph = gps ? await placeholderPhoto() : null;
     if (!gps || !ph) {
-      const updated = [...sites]; updated[idx] = { ...updated[idx], analyzing: false, note: gps ? 'Could not start the analysis in this browser.' : 'Not analysed: this photo has no camera GPS position, and a photo alone cannot locate the site or show groundwater. Enter this site\u2019s latitude and longitude below and press "Analyse at these coordinates".' };
-      setCompSites(updated);
+      apply({ analyzing: false, note: gps ? 'Could not start the analysis in this browser.' : 'Not analysed: this photo has no camera GPS position, and a photo alone cannot locate the site or show groundwater. Enter this site\u2019s latitude and longitude below and press "Analyse at these coordinates".' });
       return;
     }
     try {
       const res = await analyzer.analyzeImage(ph, undefined, { latitude: gps.lat, longitude: gps.lon });
-      const updated = [...sites]; updated[idx] = { ...updated[idx], result: res, analyzing: false, note: undefined };
-      setCompSites(updated);
+      apply({ result: res, analyzing: false, note: (res as any).waterBodyCheckUnavailable ? 'Water-body check unavailable: confirm on a map that this site is on land.' : undefined });
     } catch (e: any) {
       // Review M2: the engine's reason is shown, not a blank card.
       const msg = String(e?.message || e || 'the analysis failed').replace(/^Location problem:\s*/, '');
-      const updated = [...sites]; updated[idx] = { ...updated[idx], analyzing: false, note: `Not analysed: ${msg}` }; setCompSites(updated);
+      apply({ analyzing: false, note: `Not analysed: ${msg}` });
     }
   };
 
@@ -1193,11 +1211,13 @@ const AIBoreholeAnalyzer: React.FC = () => {
       const lat = parseFloat(m.lat);
       const lon = parseFloat(m.lon);
       if (isNaN(lat) || isNaN(lon)) { setManualLocError('The map service returned an unusable result — paste decimal coordinates below instead.'); return; }
-      // Review B2: only a village, locality or finer (at most 5 km across) is a site location.
+      // Review B2/R2: only a village, locality or finer is a site location; a point-mapped place is
+      // pinned at its centre and the customer must confirm the pin (or type the exact coordinates).
       const prec = placePrecision(m);
-      if (!prec.ok) { setManualLocError(prec.reason); return; }
+      if (!prec.ok) { setManualLocError(prec.reason); setPinNote(null); return; }
       setPlaceQuery(`${m.display_name}`);
-      setManualLocError(prec.note);
+      setManualLocError('');
+      setPinNote({ text: prec.note, needsConfirm: prec.needsConfirm, confirmed: false });
       if (!result) {
         // Pre-analysis (dashboard): pin the coordinates so the upcoming
         // analysis runs there — the fields double as the visible confirmation.
@@ -1312,8 +1332,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <button onClick={()=>{ if(!navigator?.geolocation){setManualLocError('This device/browser has no GPS access.');return;} navigator.geolocation.getCurrentPosition(p=>{setManualLat(String(p.coords.latitude));setManualLon(String(p.coords.longitude));setManualLocError('');},()=>setManualLocError('Device GPS failed — allow location access, or paste coordinates.'),{enableHighAccuracy:true,timeout:15000}); }} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#0369a1',color:'#fff',fontWeight:700,fontSize:13,cursor:'pointer'}}>{'\u{1F4F1}'} I&apos;m at the site</button>
                 </div>
                 <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
-                  <input type="text" placeholder="Latitude (e.g. 0.026677) — or paste both: 0.026677, 34.647174" value={manualLat} onChange={e=>{setManualLat(e.target.value);setManualLocError('');}} style={{flex:1.4,minWidth:210,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
-                  <input type="text" placeholder="Longitude (e.g. 34.647174)" value={manualLon} onChange={e=>{setManualLon(e.target.value);setManualLocError('');}} style={{flex:1,minWidth:150,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
+                  <input type="text" placeholder="Latitude (e.g. 0.026677) — or paste both: 0.026677, 34.647174" value={manualLat} onChange={e=>{setManualLat(e.target.value);setManualLocError('');setPinNote(null);}} style={{flex:1.4,minWidth:210,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
+                  <input type="text" placeholder="Longitude (e.g. 34.647174)" value={manualLon} onChange={e=>{setManualLon(e.target.value);setManualLocError('');setPinNote(null);}} style={{flex:1,minWidth:150,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
                 </div>
                 {(() => {
                   if (!manualLat.trim() && !manualLon.trim()) return null;
@@ -1327,6 +1347,14 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         {!pinnedPlaceLoading && !pinnedPlace && <div style={{marginTop:6,color:'var(--text-tertiary)',fontSize:11}}>Place names will be resolved during analysis and printed in the report.</div>}
                       </div>;
                 })()}
+                {pinNote && (
+                  <div role="status" style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(56,189,248,0.08)',border:'1px solid rgba(56,189,248,0.3)',color:'var(--text-primary)',fontSize:12,lineHeight:1.5}}>
+                    {pinNote.text}
+                    {pinNote.needsConfirm && (
+                      <label style={{display:'block',marginTop:6}}><input type="checkbox" checked={pinNote.confirmed} onChange={e=>setPinNote(p=>p?{...p,confirmed:e.target.checked}:p)} /> I confirm this pin is at the drilling site (or I will type the exact coordinates instead)</label>
+                    )}
+                  </div>
+                )}
                 {manualLocError && (
                   <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.25)',color:'#fca5a5',fontSize:12,lineHeight:1.5}}>{'⚠️'} {manualLocError}</div>
                 )}
@@ -2245,6 +2273,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
           </div>
         )}
 
+        {(result as any).waterBodyCheckUnavailable && (
+          <div role="alert" style={{border:'2px solid #d97706',background:'rgba(217,119,6,0.08)',borderRadius:10,padding:'12px 16px',margin:'0 0 12px'}}>
+            <strong>Water-body check unavailable.</strong> The elevation service did not answer, so AquaScan could not confirm that this point is not on a lake or the sea. Check the pin on a map.
+            <label style={{display:'block',marginTop:6,fontSize:13}}><input type="checkbox" checked={waterConfirmed} onChange={e=>setWaterConfirmed(e.target.checked)} /> I have checked: the site is on land</label>
+          </div>
+        )}
         {/* Summary Cards */}
         <div className="results-summary-cards">
           <div className="summary-card success"><div className="summary-value">{probabilityBand(result.probability)}</div><div className="summary-label">Chance of a productive borehole (planning estimate){(() => {
@@ -2676,7 +2710,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div className="result-item"><span className="rl">GPS Source</span><span className="rv" style={{color:result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'#4CAF50':result.gpsSource==='manual'?'#38bdf8':result.locationMethod==='visual-estimate'?'#fbbf24':'#F44336'}}>{(result as any).locationFromPhotoGps?'Camera GPS (photo EXIF)':result.locationMethod==='exif-gps'?'Photo EXIF (from image)':result.locationMethod==='filename-geocode'?'Filename Geocode (OSM)':result.locationMethod==='iptc-geocode'?'IPTC/XMP Geocode (OSM)':result.gpsSource==='device'?'Device GPS (at site)':result.gpsSource==='manual'?'Manual Entry':result.locationMethod==='visual-estimate'?`Visual Estimate (${result.geoEstimate?.bestEstimate?.country||'terrain'})`:'No GPS'}</span></div>
                 {result.imageForensicId && !(result as any).noPhoto && <div className="result-item"><span className="rl">Image ID</span><span className="rv" style={{fontFamily:'var(--font-mono)',fontSize:11}}>{result.imageForensicId.compositeId}</span></div>}
                 {result.imageForensicId?.cameraMake && <div className="result-item"><span className="rl">Camera</span><span className="rv">{[result.imageForensicId.cameraMake, result.imageForensicId.cameraModel].filter(Boolean).join(' ')}{result.imageForensicId.cameraSerial ? ` (SN: ${result.imageForensicId.cameraSerial})` : ''}</span></div>}
-                <div className="result-item"><span className="rl">Site Type</span><span className="rv">{result.site.siteType.toUpperCase()}</span></div>
+                {/* Review R1 (2026-11-25): site type, terrain, vegetation, slope and water indicator came from fixed neutral
+                    inputs (photos are not analysed), so they are not shown as observations. */}
+                <div className="result-item"><span className="rl">Site Type</span><span className="rv">Not analysed (photos are not used)</span></div>
                 <div className="result-item"><span className="rl">Viability</span><span className="rv">{result.risk.viability === 'not_recommended' ? 'NEEDS ASSESSMENT' : result.risk.viability.toUpperCase()}</span></div>
                 {/* Soil from ISRIC SoilGrids only; photo-derived soil and porosity are not shown (2026-10-19). */}
                 <div className="result-item"><span className="rl">Soil Type</span><span className="rv">{(result.soil as any)?.realSoilGrids ? result.soil.type.toUpperCase() : 'Unknown until drilled'}</span></div>
@@ -2871,11 +2907,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div className="result-item"><span className="rl">Location Context</span><span className="rv">{[result.locationContext.city, result.locationContext.region, result.locationContext.country].filter(Boolean).join(', ')}</span></div>
                 )}
                 <div className="result-item"><span className="rl">Timestamp</span><span className="rv">{result.timestamp || new Date().toISOString()}</span></div>
-                <div className="result-item"><span className="rl">Terrain Type</span><span className="rv">{result.site.siteType.toUpperCase()} (from pixel + MobileNet fusion)</span></div>
-                <div className="result-item"><span className="rl">Location Confidence</span><span className="rv">{(result.site.confidence*100).toFixed(0)}%</span></div>
-                <div className="result-item"><span className="rl">Vegetation Density</span><span className="rv">{(result.site.vegetationDensity*100).toFixed(0)}%</span></div>
-                <div className="result-item"><span className="rl">Terrain Slope</span><span className="rv">{result.site.terrainSlope.toFixed(1)}&deg;</span></div>
-                <div className="result-item"><span className="rl">Water Indicator</span><span className="rv">{(result.site.waterIndicator*100).toFixed(0)}%</span></div>
+                <div className="result-item"><span className="rl">Terrain, vegetation, slope, water indicator</span><span className="rv">Not analysed: photos are not used, and no observation is made from them</span></div>
               </div>
               {result.resolvedLocation && result.resolvedLocation.source !== 'none' && (
                 <div style={{marginTop:16}}>
@@ -8489,7 +8521,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <strong style={{color:'#d97706'}}>{'\u{1F4CB}'} Downloads available after quality review items are resolved.</strong>
                 </div>
               )}
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:12,marginTop:12, opacity: result && !runPrePublishAudit(result).passed ? 0.4 : 1, pointerEvents: result && !runPrePublishAudit(result).passed ? 'none' : 'auto'}}>
+              {result && (result as any).waterBodyCheckUnavailable && !waterConfirmed && (
+                <div role="status" style={{background:'rgba(217,119,6,0.08)',padding:12,borderRadius:8,marginBottom:12,border:'1px solid rgba(217,119,6,0.3)',textAlign:'center'}}>
+                  <strong style={{color:'#d97706'}}>Downloads wait for your confirmation: the water-body check was unavailable. Confirm on the summary that the site is on land.</strong>
+                </div>
+              )}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:12,marginTop:12, opacity: result && (!runPrePublishAudit(result).passed || ((result as any).waterBodyCheckUnavailable && !waterConfirmed)) ? 0.4 : 1, pointerEvents: result && (!runPrePublishAudit(result).passed || ((result as any).waterBodyCheckUnavailable && !waterConfirmed)) ? 'none' : 'auto'}}>
                 <button className="btn btn-analyze" style={{background:'linear-gradient(135deg,#ef4444,#dc2626)',padding:'16px 20px',fontSize:14,display:'flex',alignItems:'center',gap:8,justifyContent:'center'}}
                   onClick={async ()=>{if(result){try{setCustomerDetails(custName,custEmail,custOrg);await (await loadReports()).generatePDFReport(result,reportTier);setTrackerRefresh(n=>n+1);setExportMsg('PDF report downloaded!')}catch(e:any){if(e instanceof AuditBlockError){setExportMsg('Quality review: '+e.audit.blockedReason)}else if(e instanceof VerificationBlockError){setExportMsg('⛔ VERIFICATION FAILED — Report blocked.\n\n'+e.verification.summary)}else{setExportMsg('PDF error: '+e.message)}}}}}>
                   {'\u{1F4C4}'} <span><strong>PDF Report</strong><br/><small>Charts, tables, graphs in color</small></span>
@@ -8760,7 +8797,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <input aria-label={`${site.name} latitude`} placeholder="Latitude (optional)" value={site.lat ?? ''} onChange={e=>{const v=e.target.value; setCompSites(cs=>cs.map((x,i)=>i===idx?{...x,lat:v}:x));}} style={{fontSize:11,padding:3}} />
                 <input aria-label={`${site.name} longitude`} placeholder="Longitude (optional)" value={site.lon ?? ''} onChange={e=>{const v=e.target.value; setCompSites(cs=>cs.map((x,i)=>i===idx?{...x,lon:v}:x));}} style={{fontSize:11,padding:3}} />
               </div>
-              <button type="button" className="btn btn-secondary" style={{fontSize:11,marginTop:4}} disabled={site.analyzing} onClick={()=>{const sites=[...compSites]; sites[idx]={...sites[idx],analyzing:true,result:null,note:undefined}; setCompSites(sites); void runCompSite(idx, sites, site.file);}}>Analyse at these coordinates</button>
+              <button type="button" className="btn btn-secondary" style={{fontSize:11,marginTop:4}} disabled={site.analyzing} onClick={()=>{const sites=compSites.map((x,i)=>i===idx?{...x,analyzing:true,result:null,note:undefined}:x); setCompSites(cs=>cs.map((x,i)=>i===idx?sites[idx]:x)); void runCompSite(idx, sites, site.file);}}>Analyse at these coordinates</button>
               {site.result && (
                 <div className="compare-results">
                   <div className="cr-row"><span>Chance of success</span><span style={{color:'#4CAF50'}}>{compareCardFigures(site.result).chance}</span></div>
