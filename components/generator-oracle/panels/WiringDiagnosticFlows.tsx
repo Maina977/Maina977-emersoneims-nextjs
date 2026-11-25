@@ -12,7 +12,7 @@
  * shipped source imports it.
  */
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { ControllerModel } from './WiringDiagramsPanel';
 
 // ==================== DIAGNOSTIC TROUBLESHOOTING FLOWS ====================

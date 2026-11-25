@@ -47,7 +47,6 @@ import { CONTROLLER_BRANDS, type ControllerFaultCode } from '@/lib/generator-ora
 import {
   getHealth as oracleHealth,
   searchFaultCodes as apiSearchFaultCodes,
-  codeLabel,
   type CodeKind,
   type SearchResultItem,
 } from '@/lib/generator-oracle/client/oracleClient';
