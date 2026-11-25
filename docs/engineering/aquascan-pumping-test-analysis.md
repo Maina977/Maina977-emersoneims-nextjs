@@ -98,7 +98,9 @@ The analysis states no sustainable or safe yield. It states:
 - the observed specific capacity Q/s at the end of the constant-rate segment;
 - a **planning estimate**, when it is not withheld.
 
-The planning estimate is the drawdown projected by the Cooper-Jacob line after 365 days of continuous pumping at the tested rate. It is compared with the available drawdown (pump intake depth minus static level) when that is entered. It is labelled "PLANNING ESTIMATE (extrapolation, not a measured or sustainable yield)", with three stated assumptions.
+The planning estimate is the drawdown projected by the Cooper-Jacob line after 365 days of continuous pumping at the tested rate. It is compared with the available drawdown (pump intake depth minus static level) when that is entered. It is labelled "PLANNING ESTIMATE (extrapolation, not a measured or sustainable yield)", tagged *[Planning estimate: modelled, assumptions stated]*, and carries three stated assumptions.
+
+**The 365-day planning estimate is a modelled projection, not a sustainable-yield determination; the abstraction rate must be determined by a registered hydrogeologist.** The output repeats this sentence with every presented estimate.
 
 It is **withheld** when any of these holds:
 - there is no valid T;
@@ -173,7 +175,67 @@ The synthetic data are built in the test with an **independent** E₁(u): Abramo
 | TTim volcanic | T 150, S 5e-4, Q 15, r 40 | Known | T 150.00, S 5.00e-4; CJ 150.64; projection withheld (valid line < 1 cycle before the last) | as above | pass |
 | TTim sedimentary | T 400, S 2e-4, Q 30, r 60 | Known | T 400.00, S 2.000e-4; CJ 401.1 | as above | pass |
 
-**Published textbook example.** None is reproduced. The Kruseman & de Ridder "Oude Korendijk" example is the natural candidate, but the public PDF is a scanned image. Its data and stated answers could not be extracted verbatim in this environment: there are no OCR or PDF-render tools, and a summarising web reader is not a verbatim source. So no published-example test is claimed. Next action: transcribe Table 3.2 and the stated KD and S from the printed book, record the page, and add a test with the book's stated tolerance.
+## 5a. Independent published reference: "Oude Korendijk" (Kruseman & de Ridder)
+
+**Source.** Kruseman, G.P. and de Ridder, N.A., with J.M. Verweij (1994). *Analysis and Evaluation of Pumping Test Data*, Second Edition (Completely Revised). ILRI Publication 47, Wageningen. ISBN 90 70754 207. Public copy at EU JRC AquaKnow; it has a text layer.
+
+| Item | Where in the book |
+|---|---|
+| Site and test: confined aquifer 18–25 m; Q = 9.12 l/s = 788 m³/d for nearly 14 h; piezometers at 0.8, 30, 90 and 215 m | p. 56 |
+| Data: Table 3.1, piezometers H30 and H90 | p. 59 |
+| Theis answer (Example 3.3) | p. 65 |
+| Jacob answer (Example 3.4) | p. 68 |
+| Summary (Table 3.3) and conclusion | pp. 70–71 |
+
+The original data are from Wit (1963).
+
+**Machine-readable data.** timflow (MIT licence), `docs/transient/04pumpingtests/data/piezometer_h30.txt` and `piezometer_h90.txt`:
+- H30 SHA-256 `a705d2fc…eb3edb5`;
+- H90 SHA-256 `3d31d0f7…eda4eaa5`.
+
+Every value in both files was compared with the text layer of the book's Table 3.1: they are identical. Fixture: `tests/fixtures/oude-korendijk.json`. Test: `tests/regression/aquascan-pumptest-oude-korendijk.test.ts`.
+
+**Published answers:**
+- **Jacob, H30** (p. 68): Δs = 0.375 m per log cycle, t₀ = 0.25 min, so **KD = 385 m²/d, S = 1.7e-4**. Validity is stated as u < 0.1 for t > 1.4 min.
+- **Jacob, H90** (p. 68): KD = 450 m²/d, S = 1.7e-4. The book calls this "less reliable".
+- **Theis** (p. 65): type-curve match of s against t/r² for H30 and H90 together, giving **KD = 392 m²/d, S = 1.6e-4**.
+- **Table 3.3:** the methods give 370–431 m²/d. The text of Example 3.6 gives 437 for "Jacob 3", where Table 3.3 gives 431.
+- **Conclusion** (p. 71): **KD = 390 m²/d, S = 1.7e-4**.
+- **Caveat** (p. 70): the book states that the late-time data are probably influenced by leakage and that graphical methods are never accurate.
+
+**Result 1: the book's arithmetic is reproduced exactly from its stated inputs.**
+- Jacob: 2.303·788/(4π·0.375) = 385.1, which rounds to **385**. S = 2.25·385·(0.25/1440)/30² = 1.67e-4, which rounds to **1.7e-4**.
+- Theis match point: 788·1/(4π·0.16) = **392**, and S = 4·392·(1.5e-3/1440)·0.1 = **1.6e-4**.
+- Tolerance: the book's rounding. **Pass.**
+
+**Result 2: the tool's least-squares analysis on the same readings, compared with the book's graphical answers. Recorded as found; the code was not tuned to match.**
+
+| Quantity | AquaScan | Published | Difference | RMS misfit to the readings (book's T, S / AquaScan's) |
+|---|---|---|---|---|
+| H30 Theis T, S | **480 m²/d, 1.13e-4** (R² 0.990; 95 % fit interval 461–500) | 392, 1.6e-4 (Theis); conclusion 390, 1.7e-4 | **+23 %** T; −34 % S | 0.093 m (book Theis) / **0.032 m** |
+| H30 Cooper-Jacob T | **542 m²/d** (u < 0.01 segment 4–830 min); segment-choice range 370–897 | 385 (u < 0.1, graphical line) | +41 % | 0.097 m (book Jacob) |
+| H90 Theis T, S | **501 m²/d, 2.04e-4** | 450, 1.7e-4 (Jacob H90) | +11 % | 0.063 m (book Jacob H90) / **0.023 m** |
+| H90 Cooper-Jacob T | 601 m²/d | 450 | +34 % | — |
+
+**Why they differ, and why the code was not changed.**
+1. **Leakage.** The aquifer is leaky, so late drawdowns rise more slowly than Theis (book pp. 65, 68, 70). A least-squares fit over the whole record, or a Cooper-Jacob line restricted to u < 0.01 (the late part), gives a flatter slope and therefore a higher T. The book's graphical lines favour the early and middle data.
+2. **Criterion.** The book applies Jacob with u < 0.1, after 1.4 min. AquaScan applies the stricter u < 0.01 (Cooper & Jacob 1946; Kruseman p. 65 gives the errors: < 1 % at u < 0.03 … 10 % at u < 0.15). Even a least-squares line over the book's window (t ≥ 1.4 min) gives 503 m²/d, not 385. The book's line is a graphical judgement.
+3. **Pooled data.** The book's Theis match pools H30 and H90 on one s against t/r² plot. AquaScan analyses one piezometer at a time.
+4. **Misfit.** The book's parameters fit the H30 readings three times worse (RMS 0.09 m against 0.03 m). They are not wrong; they are a leakage-aware graphical judgement that the confined Theis model cannot represent over the whole record.
+
+**Conclusion.**
+- The formulas are verified: the book's arithmetic is reproduced exactly.
+- On a leaky field test, the confined-model T is 11–41 % above the book's, depending on method and piezometer. That is outside a 10 % agreement tolerance, so this case does **not** pass as agreement.
+- The tool's Cooper-Jacob segment-sensitivity range (370–897 m²/d) contains the published 385.
+
+**Known gap: leakage is not flagged.** The tool does not warn about leakage on this record. Its methods spread is 13 %, below the 30 % warning level. The flattening check (late slope 0.23 against 0.30 m per log cycle, ratio 0.77) is just above its 0.75 threshold and runs only for the planning estimate. The threshold was deliberately not lowered to fit this case. Recorded as limitation L12.
+
+**Code fix found by this case.** The Cooper-Jacob segment iteration oscillated on H30 and ended on a segment that failed its own u < 0.01 check. It now falls back to the earliest self-consistent segment (start 4 min). All earlier tests are unchanged.
+
+**Other sources checked for text-form published examples:**
+- USGS WSP 1536-E (Ferris et al. 1962) and USGS PP 708 (Lohman 1972): found, but no example was transcribed.
+- Holzbecher (COMSOL paper on Oude Korendijk): the PDF has no text layer.
+- timflow notebook: it lists K&dR k = 55.71 m/d (×7 m = 390 m²/d) and "Ss 1.7e-4". The book shows that 1.7e-4 is S, not Ss, so the book itself is used as the reference.
 
 ## 6. Limitations register
 
@@ -185,7 +247,8 @@ The synthetic data are built in the test with an **independent** E₁(u): Abramo
 | L4 | S only with an observation well; no well-radius-based S | A pumping-well-only test gives T only, by design | — |
 | L5 | No hydraulic conductivity (thickness not measured) | — | Add once a measured screened or saturated thickness is entered |
 | L6 | Planning estimate: one horizon (365 d), straight-line extrapolation, no recharge, interference or seasonal decline | Labelled planning figure; not a yield | The hydrogeologist sets the permit yield |
-| L7 | No published worked example reproduced (section 5) | Correctness rests on synthetic Theis data and TTim | Transcribe Kruseman & de Ridder from the printed book |
+| L7 | One published example (Oude Korendijk, section 5a); the tool agrees with the book's arithmetic exactly, but its least-squares T on this leaky test is 11-41 % above the book's graphical values | Agreement with practitioner judgement on leaky data is not established | Add a leaky (Hantush-Jacob) fit and re-compare; add a second, non-leaky published case |
+| L12 | Leakage is not flagged on the Oude Korendijk record (flattening ratio 0.77 vs threshold 0.75; checked only on the planning path) | A leaky test can be reported with only the confined-model assumption stated | Evaluate a leakage diagnostic (late-slope ratio, Hantush fit) on several published leaky tests before choosing a threshold |
 | L8 | Synthetic benchmarks only; no field validation | No claim of field accuracy | Pilot per `aquascan-evidence-package.md` |
 | L9 | Dry or suction-break readings (drawdown below the intake) are rejected rather than truncated | A record with a pump failure must be cut to its valid part before entry | — |
 | L10 | Units fixed to minutes and metres; no conversion | Data in hours or feet must be converted first | — |

@@ -257,6 +257,13 @@ const FOUR_PI = 4 * Math.PI;
 /** Theis drawdown, Q in m³/d, T in m²/d, P = r²S in m², t in days. */
 const theisS = (Q: number, T: number, P: number, tDay: number) => (Q / (FOUR_PI * T)) * wellFunction(P / (4 * T * tDay));
 
+/** Cooper-Jacob transmissivity T = 2.303 Q / (4π Δs): Q in m³/day, Δs in m per log10 cycle → m²/day. */
+export const cooperJacobT = (Q_m3d: number, deltaS_m: number): number => (deltaS_m > 0 ? (2.303 * Q_m3d) / (FOUR_PI * deltaS_m) : NaN);
+/** Cooper-Jacob storativity S = 2.25 T t₀ / r²: T in m²/day, t₀ in minutes, r in m. */
+export const cooperJacobS = (T_m2d: number, t0_min: number, r_m: number): number => (2.25 * T_m2d * (t0_min / 1440)) / (r_m * r_m);
+/** Theis drawdown (m) at distance r (m) and time t (min) for Q in m³/day, T in m²/day. */
+export const theisDrawdown = (Q_m3d: number, T_m2d: number, S: number, r_m: number, t_min: number): number => theisS(Q_m3d, T_m2d, r_m * r_m * S, t_min / 1440);
+
 interface TheisFit { T: number; P: number; sse: number; r2: number; rmse: number; maxAbs: number; ciT: [number, number] | null; ciP: [number, number] | null; iterations: number }
 
 /**
@@ -415,6 +422,8 @@ const FIELD_REQUIRED: readonly string[] = [
 ];
 
 const HORIZON_DAYS = 365;
+/** Appended to every presented planning estimate (management, 2026-11-25). */
+export const PLANNING_NOT_YIELD = 'This is a modelled projection, not a sustainable-yield determination; the abstraction rate must be determined by a registered hydrogeologist.';
 
 const sig = (x: number, d = 3) => (Number.isFinite(x) ? Number(x.toPrecision(d)).toString() : '—');
 const sci = (x: number) => (Number.isFinite(x) ? x.toExponential(2) : '—');
@@ -485,7 +494,7 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
   let cjLine = cjAt(start, n - 1);
   let validAfter = NaN;
   const cjParams = (ln: Line) => {
-    const T = ln.slope > 0 ? (2.303 * Q) / (FOUR_PI * ln.slope) : NaN;
+    const T = cooperJacobT(Q, ln.slope);
     const t0 = ln.slope > 0 ? 10 ** (-ln.intercept / ln.slope) : NaN; // minutes
     const P = 2.25 * T * (t0 / 1440); // r²S, m²
     return { T, t0, P };
@@ -499,6 +508,15 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
     if (ns === start) break;
     start = ns;
     cjLine = cjAt(start, n - 1);
+  }
+  // The iteration can oscillate between two segments (e.g. leaky late-time flattening,
+  // Oude Korendijk H30). Then take the earliest start whose own fit satisfies u < 0.01
+  // for every reading in the segment (self-consistent); if none exists, the check fails.
+  {
+    const consistent = (i: number) => { const p = cjParams(cjAt(i, n - 1)); return p.T > 0 && p.P > 0 && tMin[i] > (p.P / (4 * p.T * 0.01)) * 1440; };
+    if (!consistent(start)) {
+      for (let i = 0; i <= n - 3; i++) if (consistent(i)) { start = i; cjLine = cjAt(start, n - 1); break; }
+    }
   }
   const cjp = cjParams(cjLine);
   let cooperJacob: TimeSeriesAnalysis['cooperJacob'] = null;
@@ -658,7 +676,7 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
         : ' The pump intake depth was not entered, so the available drawdown is unknown.';
       planningEstimate = {
         status: 'presented', horizon_days: HORIZON_DAYS, projectedDrawdown_m: proj, availableDrawdown_m: avail, logCyclesExtrapolated: cycles,
-        statement: `PLANNING ESTIMATE (extrapolation, not a measured or sustainable yield): at the tested ${Q_h} m³/h, the Cooper-Jacob line projects about ${sig(proj)} m drawdown after ${HORIZON_DAYS} days of continuous pumping (${cycles.toFixed(1)} log cycles beyond the ${sig(segEnd / 60, 3)} h test).${cmp}`,
+        statement: `PLANNING ESTIMATE (extrapolation, not a measured or sustainable yield): at the tested ${Q_h} m³/h, the Cooper-Jacob line projects about ${sig(proj)} m drawdown after ${HORIZON_DAYS} days of continuous pumping (${cycles.toFixed(1)} log cycles beyond the ${sig(segEnd / 60, 3)} h test).${cmp} ${PLANNING_NOT_YIELD}`,
         assumptions: peAssumptions,
       };
     }
@@ -683,7 +701,7 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
 function buildRows(a: TimeSeriesAnalysis): Row[] {
   // Every basis starts with its evidence class (management directive 2026-11-25):
   // [Measured], [Modelled estimate], [Planning estimate], [Not supported], [Reference].
-  const M = '[Measured] ', E = '[Modelled estimate] ', P = '[Planning estimate, assumptions stated] ', N = '[Not supported] ', R = '[Reference] ';
+  const M = '[Measured] ', E = '[Modelled estimate] ', P = '[Planning estimate: modelled, assumptions stated] ', N = '[Not supported] ', R = '[Reference] ';
   const rows: Row[] = [];
   rows.push(['Test analysed', a.analysedSegment.statement, M + (a.geometry === 'observation-well' ? `Observation well at ${a.observationDistance_m} m (distance as entered)` : 'Readings in the pumping well')]);
   if (a.variableRate) rows.push(['Variable rate', 'not supported', N + a.variableRate.statement]);
