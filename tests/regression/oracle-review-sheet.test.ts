@@ -7,8 +7,11 @@ import { reviewRows, reviewCsv, describeCondition } from '@/lib/generator-oracle
 describe('technician review sheet', () => {
   const rows = reviewRows(FAMILIES);
   it('covers every question, stop rule, cause and evidence rule', () => {
-    const expected = FAMILIES.reduce((n, f) => n + f.questions.length + f.stopRules.length + f.causes.length + f.causes.reduce((m, c) => m + c.evidence.length, 0), 0);
+    const expected = FAMILIES.reduce((n, f) => n + (f.mandatorySafety?.length ?? 0) + f.questions.length + f.stopRules.length + (f.crossChecks?.length ?? 0) + f.causes.length + f.causes.reduce((m, c) => m + c.evidence.length, 0), 0);
     expect(rows.length).toBe(expected);
+    expect(rows.filter((r) => r.kind === 'safety').length).toBe(FAMILIES.reduce((n, f) => n + (f.mandatorySafety?.length ?? 0), 0));
+    // Running checks are on the sheet so the reviewer sees what is withheld after a STOP.
+    expect(rows.filter((r) => r.kind === 'cause' && /withheld while any STOP is active/.test(r.text)).length).toBe(FAMILIES.reduce((n, f) => n + f.causes.filter((c) => c.runningChecks?.length).length, 0));
     expect(rows.filter((r) => r.kind === 'stop').length).toBe(FAMILIES.reduce((n, f) => n + f.stopRules.length, 0));
   });
   it('rules read in plain terms', () => {

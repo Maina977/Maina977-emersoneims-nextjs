@@ -21,6 +21,8 @@ export interface NumberQuestion {
   min: number;
   max: number;
   help?: string;
+  /** Answering needs the engine running or circuits live: never offered as the next check while a STOP is active. */
+  needsRunning?: boolean;
 }
 export interface ChoiceQuestion {
   id: string;
@@ -28,6 +30,8 @@ export interface ChoiceQuestion {
   text: string;
   options: Array<{ value: string; label: string }>;
   help?: string;
+  /** Answering needs the engine running or circuits live: never offered as the next check while a STOP is active. */
+  needsRunning?: boolean;
 }
 export type Question = NumberQuestion | ChoiceQuestion;
 
@@ -50,8 +54,14 @@ export interface Cause {
   id: string;
   title: string;
   evidence: EvidenceRule[];
-  /** Ordered checks or repairs; safe actions only. */
+  /** Ordered checks or repairs done with the set stopped and isolated; safe actions only. */
   actions: string[];
+  /**
+   * Checks that need the engine running or circuits live (for example a
+   * supervised test run). The engine withholds them whenever any STOP rule is
+   * active, so they can never follow a STOP.
+   */
+  runningChecks?: string[];
   /** Where this cause and its checks come from. */
   reference: string;
 }
@@ -71,6 +81,18 @@ export interface FaultFamily {
   questions: Question[];
   stopRules: StopRule[];
   causes: Cause[];
+  /**
+   * Safety instructions shown first in every result of this family, before any
+   * question or check (stop the engine, isolate, lock off, hot or pressurised parts).
+   */
+  mandatorySafety?: string[];
+  /**
+   * Checks between answers (plausibility, not OEM limits). When `when` is true
+   * the listed answers are refused with `reason` and take no part in the result.
+   */
+  crossChecks?: Array<{ when: Condition; refuse: string[]; reason: string }>;
+  /** Verifiable general references for the family as a whole (by title only). */
+  references?: string[];
   /** Review status of this family's content. */
   review: 'technician review pending' | 'reviewed';
 }
@@ -82,13 +104,18 @@ export interface RankedCause {
   for: string[];
   against: string[];
   actions: string[];
+  /** Running/live checks withheld because a STOP is active (empty when none). */
+  withheld: string[];
   reference: string;
 }
 
 export interface DiagnosisResult {
   family: string;
   engineVersion: string;
+  /** STOP rules that fired, then the family's mandatory safety, then CAUTION rules that fired. */
   stops: Array<{ level: StopRule['level']; message: string }>;
+  /** True when any STOP rule fired: running checks are withheld from every cause. */
+  stopActive: boolean;
   /** Answers refused because they are outside the physical range. */
   invalid: Array<{ q: string; reason: string }>;
   ranked: RankedCause[];

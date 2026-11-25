@@ -6,12 +6,16 @@
  * physical range are refused with the reason; machine limits come from the
  * OEM manual entered by the technician, never from defaults.
  */
-import { useMemo, useState } from 'react';
-import { diagnose } from '@/lib/generator-oracle/diagnostics/engine';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FAMILIES, familyFor } from '@/lib/generator-oracle/diagnostics/families';
-import type { Answers, Question } from '@/lib/generator-oracle/diagnostics/types';
+import { diagnosisRecord, refQuestions } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
+import { knownModels, questionReferenceNote, referencesFor, type Equipment } from '@/lib/generator-oracle/diagnostics/oemReferences';
+import { loadGuidedEquipment, loadGuidedSession, saveGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
+import type { Question } from '@/lib/generator-oracle/diagnostics/types';
 
-function QuestionInput({ q, value, onChange }: { q: Question; value: string; onChange: (v: string) => void }) {
+const getStore = (): Storage | null => { try { return window.localStorage; } catch { return null; } };
+
+function QuestionInput({ q, value, onChange, stopActive = false, note }: { q: Question; value: string; onChange: (v: string) => void; stopActive?: boolean; note?: string }) {
   const id = `gd-${q.id}`;
   return (
     <div className="block text-xs text-slate-300">
@@ -30,6 +34,8 @@ function QuestionInput({ q, value, onChange }: { q: Question; value: string; onC
         </select>
       )}
       {q.help ? <span className="block mt-1 text-slate-500">{q.help}</span> : null}
+      {note ? <span className="block mt-1 text-cyan-300">{note}</span> : null}
+      {q.needsRunning && stopActive ? <span className="block mt-1 text-red-300">Needs the engine running: do not run it to answer this while a STOP is active. Enter only what was seen before the stop.</span> : null}
     </div>
   );
 }
@@ -37,21 +43,32 @@ function QuestionInput({ q, value, onChange }: { q: Question; value: string; onC
 export default function GuidedDiagnosisPanel() {
   const [familyId, setFamilyId] = useState(FAMILIES[0].id);
   const [symptom, setSymptom] = useState('');
-  const [raw, setRaw] = useState<Record<string, Record<string, string>>>({});
+  const [raw, setRaw] = useState<RawAnswers>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const dirty = useRef(false);
   const family = FAMILIES.find((f) => f.id === familyId)!;
   const values = raw[familyId] ?? {};
 
-  const result = useMemo(() => {
-    const a: Answers = {};
-    for (const q of family.questions) {
-      const v = values[q.id];
-      if (v === undefined || v.trim() === '') continue;
-      a[q.id] = q.kind === 'number' ? Number(v) : v;
-    }
-    return diagnose(family, a);
-  }, [family, values]);
+  // The answers are kept in browser storage so a job card can record the same diagnosis.
+  const [equipment, setEquipment] = useState<Equipment>({});
+  useEffect(() => { setRaw(loadGuidedSession(getStore(), FAMILIES)); setEquipment(loadGuidedEquipment(getStore())); }, []);
+  useEffect(() => { if (dirty.current) setSaveError(saveGuidedSession(getStore(), raw, equipment)); }, [raw, equipment]);
+  const setEq = (k: keyof Equipment, v: string) => { dirty.current = true; setEquipment((e) => ({ ...e, [k]: v || undefined })); };
+  const oemQs = useMemo(() => refQuestions(family), [family]);
+  const noteFor = (q: Question) => (oemQs.has(q.id) && q.kind === 'number' && !/rating plate/i.test(q.text) ? questionReferenceNote(equipment, family.id, q.id) : undefined);
+  const familyRefs = referencesFor(equipment, family.id);
 
-  const set = (q: string, v: string) => setRaw((r) => ({ ...r, [familyId]: { ...(r[familyId] ?? {}), [q]: v } }));
+  // Same function as the job-card record and the .txt download, so all three agree.
+  const record = useMemo(() => diagnosisRecord(family, values, equipment), [family, values, equipment]);
+  const result = record.result;
+
+  const set = (q: string, v: string) => { dirty.current = true; setRaw((r) => ({ ...r, [familyId]: { ...(r[familyId] ?? {}), [q]: v } })); };
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([`${record.findings}\n`], { type: 'text/plain' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = `guided-diagnosis-${family.id}.txt`; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
   const route = () => { const f = familyFor(symptom); if (f) setFamilyId(f.id); };
   const routed = symptom.trim() ? familyFor(symptom) : null;
   const next = result.nextQuestion;
@@ -68,6 +85,21 @@ export default function GuidedDiagnosisPanel() {
           <button type="button" onClick={route} className="rounded-md bg-amber-600 hover:bg-amber-500 px-3 py-1.5 text-sm font-medium text-white">Find fault family</button>
         </div>
         {symptom.trim() && !routed ? <p className="text-xs text-slate-400">No matching fault family; choose one below.</p> : null}
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="block text-xs text-slate-300">Engine model (for published references; optional)
+            <select value={equipment.engine ?? ''} onChange={(e) => setEq('engine', e.target.value)} className="mt-1 w-full rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white">
+              <option value="">Not listed / not selected</option>
+              {knownModels('engine').map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </label>
+          <label className="block text-xs text-slate-300">Controller model (for published references; optional)
+            <select value={equipment.controller ?? ''} onChange={(e) => setEq('controller', e.target.value)} className="mt-1 w-full rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white">
+              <option value="">Not listed / not selected</option>
+              {knownModels('controller').map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </label>
+        </div>
+        <p className="text-[11px] text-slate-500">Published figures are shown only for the exact model selected, as context. They are never entered for you: type and confirm every limit for the set in front of you. Any other model: per OEM manual — NOT VERIFIED.</p>
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="Fault family">
           {FAMILIES.map((f) => (
             <button key={f.id} type="button" role="tab" aria-selected={f.id === familyId} onClick={() => setFamilyId(f.id)}
@@ -93,17 +125,22 @@ export default function GuidedDiagnosisPanel() {
           {next ? (
             <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3">
               <div className="text-xs text-amber-300 mb-2">Next check</div>
-              <QuestionInput q={next} value={values[next.id] ?? ''} onChange={(v) => set(next.id, v)} />
+              <QuestionInput q={next} value={values[next.id] ?? ''} onChange={(v) => set(next.id, v)} stopActive={result.stopActive} note={noteFor(next)} />
             </div>
-          ) : <p className="text-xs text-slate-400">All questions answered.</p>}
+          ) : <p className="text-xs text-slate-400">{result.stopActive ? 'No further check is offered while a STOP is active, other than the stopped-and-isolated checks listed.' : 'All questions answered.'}</p>}
           {result.invalid.map((i) => <p key={i.q} className="text-xs text-red-300">Refused: {i.reason}</p>)}
           <details>
             <summary className="cursor-pointer text-xs text-slate-300">All questions ({result.answered}/{family.questions.length} answered)</summary>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {family.questions.map((q) => <QuestionInput key={q.id} q={q} value={values[q.id] ?? ''} onChange={(v) => set(q.id, v)} />)}
+              {family.questions.map((q) => <QuestionInput key={q.id} q={q} value={values[q.id] ?? ''} onChange={(v) => set(q.id, v)} stopActive={result.stopActive} note={noteFor(q)} />)}
             </div>
           </details>
-          <button type="button" onClick={() => setRaw((r) => ({ ...r, [familyId]: {} }))} className="text-xs text-slate-400 underline">Clear answers</button>
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={() => { dirty.current = true; setRaw((r) => ({ ...r, [familyId]: {} })); }} className="text-xs text-slate-400 underline">Clear answers</button>
+            <button type="button" onClick={download} className="text-xs text-amber-300 underline">Download this diagnosis (.txt)</button>
+          </div>
+          <p className="text-[11px] text-slate-500">To record it on a job card: Service &amp; Job Cards → Job cards → open the card → “Record a guided diagnosis”. The card gets exactly this result.</p>
+          {saveError ? <p className="text-xs text-amber-300">{saveError}</p> : null}
         </div>
 
         <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-3">
@@ -117,6 +154,9 @@ export default function GuidedDiagnosisPanel() {
                 {i < 3 && c.score > 0 && (
                   <ul className="mt-2 list-disc pl-4 text-xs text-slate-200">{c.actions.map((a) => <li key={a}>{a}</li>)}</ul>
                 )}
+                {i < 3 && c.score > 0 && c.withheld.length > 0 && (
+                  <p className="mt-1 text-xs text-red-300">Withheld while a STOP is active: {c.withheld.length} check(s) that need the engine running.</p>
+                )}
                 <p className="mt-1 text-[11px] text-slate-500">{c.reference}</p>
               </li>
             ))}
@@ -129,6 +169,15 @@ export default function GuidedDiagnosisPanel() {
           )}
         </div>
       </div>
+      {familyRefs.length > 0 && (
+        <div className="rounded-xl border border-cyan-700/60 bg-cyan-950/30 p-3 text-xs text-cyan-100 space-y-1">
+          <div className="font-semibold">Published references for the selected equipment (context only, not used by any rule)</div>
+          <ul className="list-disc pl-4 space-y-1">{familyRefs.map((r) => <li key={r.entry.id}>{r.text}</li>)}</ul>
+        </div>
+      )}
+      {family.references?.length ? (
+        <ul className="text-[11px] text-slate-500 list-disc pl-4">{family.references.map((r) => <li key={r}>{r}</li>)}</ul>
+      ) : null}
       <p className="text-[11px] text-slate-500">{result.disclaimer} Content status: {result.review}. {result.engineVersion}.</p>
     </div>
   );

@@ -354,7 +354,8 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
         ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})`), '(none recorded)'),
         ...flags.map((f) => `  ! ${f}`),
       ] },
-      { heading: 'FINDINGS', lines: [`  ${card.findings || '—'}`] },
+      // One report line per findings line (a guided-diagnosis record is several lines).
+      { heading: 'FINDINGS', lines: (card.findings || '—').split(/\r?\n/).map((l) => `  ${l}`) },
       { heading: 'SIGN-OFF', lines: [...signOffSummary(card).map((x) => `  ${x}`), `  Completed: ${card.completedOn ?? '—'}`] },
       { heading: 'STATUS HISTORY (who = typed name, not verified)', lines: list(card.log.map((l) => `${l.at}  ${l.from} → ${l.to}  by ${l.by}${l.revision ? ` (revision ${l.revision})` : ''}${l.note ? ` — ${l.note}` : ''}${l.hash ? ` [content hash ${l.hash}]` : ''}`), '(no status changes yet)') },
     ],

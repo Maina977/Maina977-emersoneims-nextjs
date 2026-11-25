@@ -6,6 +6,7 @@
  * "OEM minimum oil pressure"), and rules compare against those answers.
  */
 import type { Condition, FaultFamily } from './types';
+import { FREQUENCY_HUNTING, OVERSPEED, CHARGING, EXHAUST_SMOKE } from './familiesExpansion';
 
 const PRACTICE = 'General diesel generator service practice (EmersonEIMS); confirm limits and procedure in the OEM service manual for this engine.';
 const ALT_PRACTICE = 'General alternator service practice (EmersonEIMS); confirm limits and procedure in the alternator and AVR manuals.';
@@ -24,10 +25,10 @@ export const NO_CRANK: FaultFamily = {
     { id: 'systemVoltage', kind: 'choice', text: 'Starting system voltage', options: [{ value: '12', label: '12 V' }, { value: '24', label: '24 V' }] },
     { id: 'barOver', kind: 'choice', text: 'With the set isolated, does the engine turn over by hand (barring tool)?', options: [{ value: 'turns', label: 'Turns freely' }, { value: 'stiff', label: 'Turns but stiff' }, { value: 'locked', label: 'Will not turn' }, { value: 'not-tried', label: 'Not tried' }], help: 'Only with the set switched OFF, isolated and locked off.' },
     { id: 'restVoltage', kind: 'number', text: 'Battery voltage at rest (engine off, 1 h after charging)', unit: 'V', min: 0, max: 32 },
-    { id: 'crankVoltage', kind: 'number', text: 'Battery voltage while cranking', unit: 'V', min: 0, max: 32 },
+    { id: 'crankVoltage', kind: 'number', text: 'Battery voltage while cranking', unit: 'V', min: 0, max: 32, needsRunning: true },
     // No built-in "holds its voltage" figure: the minimum comes from the starter / engine manual for this set.
     { id: 'oemMinCrankVoltage', kind: 'number', text: 'OEM minimum battery voltage while cranking (starter or engine manual)', unit: 'V', min: 5, max: 30 },
-    { id: 'starterSound', kind: 'choice', text: 'What does the starter do?', options: [{ value: 'nothing', label: 'Nothing' }, { value: 'click', label: 'Clicks only' }, { value: 'slow', label: 'Turns slowly' }, { value: 'normal', label: 'Turns at normal speed' }] },
+    { id: 'starterSound', kind: 'choice', text: 'What does the starter do?', options: [{ value: 'nothing', label: 'Nothing' }, { value: 'click', label: 'Clicks only' }, { value: 'slow', label: 'Turns slowly' }, { value: 'normal', label: 'Turns at normal speed' }], needsRunning: true },
     { id: 'eStop', kind: 'choice', text: 'Emergency stop', options: [{ value: 'released', label: 'Released' }, { value: 'pressed', label: 'Pressed' }, { value: 'unknown', label: 'Not checked' }] },
     { id: 'controllerAlarm', kind: 'choice', text: 'Does the controller show an alarm or refuse the start?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
     { id: 'terminals', kind: 'choice', text: 'Battery terminals and starter cables', options: [{ value: 'clean', label: 'Clean and tight' }, { value: 'corroded', label: 'Corroded or loose' }, { value: 'hot', label: 'Get hot when cranking' }] },
@@ -45,7 +46,7 @@ export const NO_CRANK: FaultFamily = {
         { when: is('starterSound', ['click', 'slow']), effect: 'supports', because: 'Starter clicks or turns slowly' },
         { when: { q: 'crankVoltage', op: 'gtRef', ref: 'oemMinCrankVoltage' }, effect: 'contradicts', because: 'Battery stays above the OEM minimum cranking voltage' },
       ],
-      actions: ['Charge the battery fully and re-test at rest and under load (BCI load test or a conductance tester).', 'Replace a battery that fails the load test; check the charger/alternator output afterwards.'],
+      actions: ['Charge the battery fully and re-test at rest and with a battery load tester (BCI load test) or a conductance tester.', 'Replace a battery that fails the load test; check the charger/alternator output afterwards.'],
       reference: BCI,
     },
     {
@@ -99,8 +100,8 @@ export const NO_START: FaultFamily = {
   questions: [
     { id: 'fuelLevel', kind: 'choice', text: 'Fuel in the tank (checked by dip, not only the gauge)', options: [{ value: 'ok', label: 'Enough' }, { value: 'low', label: 'Low or empty' }, { value: 'unknown', label: 'Not checked' }] },
     { id: 'fuelAtFilter', kind: 'choice', text: 'Does fuel reach the filter and the injection pump (crack a bleed screw)?', options: [{ value: 'yes', label: 'Yes, solid fuel' }, { value: 'bubbles', label: 'Air bubbles' }, { value: 'no', label: 'No fuel' }, { value: 'not-checked', label: 'Not checked' }] },
-    { id: 'shutoff', kind: 'choice', text: 'Fuel shut-off solenoid / ECM fuel enable during cranking', options: [{ value: 'energised', label: 'Energised (clicks / voltage present)' }, { value: 'not-energised', label: 'Not energised' }, { value: 'not-checked', label: 'Not checked' }] },
-    { id: 'crankRpm', kind: 'number', text: 'Cranking speed', unit: 'rpm', min: 0, max: 800 },
+    { id: 'shutoff', kind: 'choice', text: 'Fuel shut-off solenoid / ECM fuel enable during cranking', options: [{ value: 'energised', label: 'Energised (clicks / voltage present)' }, { value: 'not-energised', label: 'Not energised' }, { value: 'not-checked', label: 'Not checked' }], needsRunning: true },
+    { id: 'crankRpm', kind: 'number', text: 'Cranking speed', unit: 'rpm', min: 0, max: 800, needsRunning: true },
     { id: 'oemMinCrankRpm', kind: 'number', text: 'OEM minimum cranking speed for starting (manual)', unit: 'rpm', min: 30, max: 400 },
     { id: 'smoke', kind: 'choice', text: 'Exhaust while cranking', options: [{ value: 'none', label: 'Nothing' }, { value: 'white', label: 'White/grey vapour' }, { value: 'black', label: 'Black' }] },
     { id: 'ecmCode', kind: 'choice', text: 'Active ECM/controller fault code (speed sensor, fuel, ECM power)?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
@@ -187,15 +188,15 @@ export const LOW_OIL_PRESSURE: FaultFamily = {
   keywords: /oil pressure|low oil|oil starvation|lube|lubrication/i,
   review: 'technician review pending',
   questions: [
-    { id: 'oilPressure', kind: 'number', text: 'Oil pressure measured', unit: 'kPa', min: 0, max: 1500, help: '1 bar = 100 kPa; 1 psi = 6.895 kPa.' },
+    { id: 'oilPressure', kind: 'number', text: 'Oil pressure measured', unit: 'kPa', min: 0, max: 1500, help: '1 bar = 100 kPa; 1 psi = 6.895 kPa.', needsRunning: true },
     { id: 'oemMinOilPressure', kind: 'number', text: 'OEM minimum oil pressure at this speed (manual)', unit: 'kPa', min: 20, max: 800 },
     { id: 'gauge', kind: 'choice', text: 'How was it measured?', options: [{ value: 'mechanical', label: 'Mechanical test gauge' }, { value: 'sender', label: 'Panel sender / display only' }] },
-    { id: 'mechanicalAgrees', kind: 'choice', text: 'Does a mechanical gauge show normal pressure while the panel shows low?', options: [{ value: 'yes', label: 'Yes, mechanical reading is normal' }, { value: 'no', label: 'No, both are low' }, { value: 'not-checked', label: 'Not checked' }] },
+    { id: 'mechanicalAgrees', kind: 'choice', text: 'Does a mechanical gauge show normal pressure while the panel shows low?', options: [{ value: 'yes', label: 'Yes, mechanical reading is normal' }, { value: 'no', label: 'No, both are low' }, { value: 'not-checked', label: 'Not checked' }], needsRunning: true },
     { id: 'oilLevel', kind: 'choice', text: 'Oil level on the dipstick (engine stopped, level ground)', options: [{ value: 'ok', label: 'Between the marks' }, { value: 'low', label: 'Below the low mark' }, { value: 'high', label: 'Above the full mark' }] },
     { id: 'oilCondition', kind: 'choice', text: 'Oil condition', options: [{ value: 'normal', label: 'Normal' }, { value: 'fuel', label: 'Thin, smells of diesel' }, { value: 'milky', label: 'Milky / mayonnaise' }, { value: 'metal', label: 'Metal particles or glitter' }] },
     { id: 'knock', kind: 'choice', text: 'Any knocking or bearing noise?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
     { id: 'recentWork', kind: 'choice', text: 'Recent work', options: [{ value: 'none', label: 'None' }, { value: 'oil-service', label: 'Oil and filter change' }, { value: 'overhaul', label: 'Overhaul or bearing work' }] },
-    { id: 'oilTemp', kind: 'number', text: 'Oil temperature', unit: '°C', min: -40, max: 200 },
+    { id: 'oilTemp', kind: 'number', text: 'Oil temperature', unit: '°C', min: -40, max: 200, needsRunning: true },
     { id: 'oemMaxOilTemp', kind: 'number', text: 'OEM maximum oil temperature (manual)', unit: '°C', min: 60, max: 160 },
   ],
   stopRules: [
@@ -289,13 +290,13 @@ export const OVERHEATING: FaultFamily = {
     { id: 'coolantTemp', kind: 'number', text: 'Coolant temperature', unit: '°C', min: -40, max: 150 },
     { id: 'oemAlarmCoolantTemp', kind: 'number', text: 'OEM high coolant temperature alarm (manual)', unit: '°C', min: 70, max: 125 },
     { id: 'coolantLevel', kind: 'choice', text: 'Coolant level (only when cold)', options: [{ value: 'ok', label: 'Correct' }, { value: 'low', label: 'Low' }, { value: 'not-checked', label: 'Not checked (engine hot)' }] },
-    { id: 'gasBubbles', kind: 'choice', text: 'Bubbles or exhaust smell in the expansion tank while running?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
+    { id: 'gasBubbles', kind: 'choice', text: 'Bubbles or exhaust smell in the expansion tank while running?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }], needsRunning: true },
     { id: 'belt', kind: 'choice', text: 'Fan and water-pump belt', options: [{ value: 'ok', label: 'Correct tension' }, { value: 'slack', label: 'Slack or glazed' }, { value: 'broken', label: 'Broken' }] },
     { id: 'radiator', kind: 'choice', text: 'Radiator core (both faces)', options: [{ value: 'clean', label: 'Clean' }, { value: 'blocked', label: 'Dirty or blocked' }] },
     { id: 'airflow', kind: 'choice', text: 'Room or canopy airflow', options: [{ value: 'ok', label: 'Free inlet and outlet' }, { value: 'recirculating', label: 'Hot air recirculating' }, { value: 'restricted', label: 'Inlet or outlet restricted' }] },
     { id: 'loadPct', kind: 'number', text: 'Load', unit: '% of rating', min: 0, max: 150 },
     { id: 'thermostat', kind: 'choice', text: 'Thermostat test', options: [{ value: 'ok', label: 'Opens correctly' }, { value: 'stuck', label: 'Stuck closed' }, { value: 'not-tested', label: 'Not tested' }] },
-    { id: 'sensorCheck', kind: 'choice', text: 'Does an independent thermometer agree with the panel?', options: [{ value: 'agrees', label: 'Agrees' }, { value: 'panel-high', label: 'Panel reads higher' }, { value: 'not-checked', label: 'Not checked' }] },
+    { id: 'sensorCheck', kind: 'choice', text: 'Does an independent thermometer agree with the panel?', options: [{ value: 'agrees', label: 'Agrees' }, { value: 'panel-high', label: 'Panel reads higher' }, { value: 'not-checked', label: 'Not checked' }], needsRunning: true },
   ],
   stopRules: [
     { when: { q: 'coolantTemp', op: 'gtRef', ref: 'oemAlarmCoolantTemp' }, level: 'STOP', message: 'Take the load off and STOP the engine: coolant above the OEM alarm. Running on can warp the head and seize pistons. Never pour cold water into a hot engine.' },
@@ -347,14 +348,14 @@ export const NO_VOLTAGE: FaultFamily = {
   keywords: /no (output )?voltage|low voltage|voltage (low|unstable|hunting)|no output|avr|excitation|not producing power/i,
   review: 'technician review pending',
   questions: [
-    { id: 'frequency', kind: 'number', text: 'Frequency', unit: 'Hz', min: 0, max: 70 },
+    { id: 'frequency', kind: 'number', text: 'Frequency', unit: 'Hz', min: 0, max: 70, needsRunning: true },
     { id: 'ratedFrequency', kind: 'choice', text: 'Rated frequency', options: [{ value: '50', label: '50 Hz' }, { value: '60', label: '60 Hz' }] },
     // No built-in "at rated" band: the steady-state limit comes from the governor / controller settings for this set.
     { id: 'oemMinFrequency', kind: 'number', text: 'Lowest steady-state frequency allowed for this set (governor or controller settings sheet, OEM manual)', unit: 'Hz', min: 30, max: 70 },
-    { id: 'voltage', kind: 'number', text: 'Output voltage, line to line', unit: 'V', min: 0, max: 15000 },
+    { id: 'voltage', kind: 'number', text: 'Output voltage, line to line', unit: 'V', min: 0, max: 15000, needsRunning: true },
     { id: 'ratedVoltage', kind: 'number', text: 'Rated voltage, line to line', unit: 'V', min: 100, max: 15000 },
     { id: 'avrFuse', kind: 'choice', text: 'AVR fuse and supply', options: [{ value: 'ok', label: 'Fuse OK, supply present' }, { value: 'blown', label: 'Fuse blown' }, { value: 'not-checked', label: 'Not checked' }] },
-    { id: 'residual', kind: 'choice', text: 'Residual voltage with the AVR disconnected (excitation off)', options: [{ value: 'present', label: 'A few volts present' }, { value: 'none', label: 'None' }, { value: 'not-checked', label: 'Not checked' }] },
+    { id: 'residual', kind: 'choice', text: 'Residual voltage with the AVR disconnected (excitation off)', options: [{ value: 'present', label: 'A few volts present' }, { value: 'none', label: 'None' }, { value: 'not-checked', label: 'Not checked' }], needsRunning: true },
     { id: 'sensing', kind: 'choice', text: 'AVR sensing wiring', options: [{ value: 'ok', label: 'Tight and correct' }, { value: 'loose', label: 'Loose or disconnected' }] },
     { id: 'diodes', kind: 'choice', text: 'Rotating rectifier diodes (tested isolated)', options: [{ value: 'ok', label: 'All good' }, { value: 'failed', label: 'One or more failed' }, { value: 'not-checked', label: 'Not checked' }] },
     { id: 'insulation', kind: 'number', text: 'Winding insulation resistance', unit: 'MΩ', min: 0, max: 100000, help: 'Insulation tester, AVR and controller disconnected first.' },
@@ -367,7 +368,7 @@ export const NO_VOLTAGE: FaultFamily = {
   ],
   causes: [
     { id: 'speed', title: 'Low engine speed (frequency low)', evidence: [{ when: { q: 'frequency', op: 'ltRef', ref: 'oemMinFrequency' }, effect: 'strongly', because: 'Frequency below the lowest steady-state frequency allowed for this set (OEM / governor settings): the AVR reduces voltage when underspeed' }, { when: { q: 'frequency', op: 'gtRef', ref: 'oemMinFrequency' }, effect: 'excludes', because: 'Frequency above the lowest steady-state frequency allowed for this set' }], actions: ['Use the speed/governor checks first: the AVR protects the alternator by reducing voltage when the engine is underspeed.'], reference: ALT_PRACTICE },
-    { id: 'avr-supply', title: 'AVR fuse or supply', evidence: [{ when: is('avrFuse', 'blown'), effect: 'strongly', because: 'AVR fuse blown' }, { when: is('avrFuse', 'ok'), effect: 'excludes', because: 'Fuse and supply OK' }], actions: ['Replace the fuse with the correct rating; find why it blew (shorted diode, wiring) before running.'], reference: ALT_PRACTICE },
+    { id: 'avr-supply', title: 'AVR fuse or supply', evidence: [{ when: is('avrFuse', 'blown'), effect: 'strongly', because: 'AVR fuse blown' }, { when: is('avrFuse', 'ok'), effect: 'excludes', because: 'Fuse and supply OK' }], actions: ['Replace the fuse with the correct rating; find why it blew (shorted diode, wiring) before the set returns to service.'], reference: ALT_PRACTICE },
     { id: 'residual', title: 'Loss of residual magnetism', evidence: [{ when: is('residual', 'none'), effect: 'strongly', because: 'No residual voltage' }, { when: is('residual', 'present'), effect: 'excludes', because: 'Residual voltage present' }], actions: ['Flash the field per the alternator manual (polarity and voltage as specified).'], reference: ALT_PRACTICE },
     { id: 'sensing', title: 'AVR sensing wiring', evidence: [{ when: is('sensing', 'loose'), effect: 'strongly', because: 'Sensing wiring loose or disconnected' }, { when: is('sensing', 'ok'), effect: 'excludes', because: 'Sensing wiring correct' }], actions: ['Isolate; re-make the sensing connections to the wiring diagram for this AVR.'], reference: ALT_PRACTICE },
     { id: 'diodes', title: 'Rotating rectifier (diode) failure', evidence: [{ when: is('diodes', 'failed'), effect: 'strongly', because: 'Diode failed on test' }, { when: is('diodes', 'ok'), effect: 'excludes', because: 'Diodes test good' }, { when: is('avrFuse', 'blown'), effect: 'supports', because: 'A shorted diode often blows the AVR fuse' }], actions: ['Replace the full diode set and the surge suppressor per the manual.'], reference: ALT_PRACTICE },
@@ -377,11 +378,14 @@ export const NO_VOLTAGE: FaultFamily = {
   ],
 };
 
-export const FAMILIES: FaultFamily[] = [NO_CRANK, NO_START, LOW_OIL_PRESSURE, OVERHEATING, KNOCK_SEIZURE, NO_VOLTAGE];
+export const FAMILIES: FaultFamily[] = [NO_CRANK, NO_START, LOW_OIL_PRESSURE, OVERHEATING, KNOCK_SEIZURE, NO_VOLTAGE, FREQUENCY_HUNTING, OVERSPEED, CHARGING, EXHAUST_SMOKE];
+export { FREQUENCY_HUNTING, OVERSPEED, CHARGING, EXHAUST_SMOKE };
 
 /** The family whose symptom words match a description, or null. */
 export function familyFor(description: string): FaultFamily | null {
-  // Safety-critical families first.
-  const order = [KNOCK_SEIZURE, LOW_OIL_PRESSURE, OVERHEATING, NO_START, NO_CRANK, NO_VOLTAGE];
+  // Safety-critical families first. CHARGING before OVERHEATING so "battery
+  // boiling" is not read as coolant boiling; SMOKE after NO_START so "white
+  // smoke, will not start" stays a no-start.
+  const order = [KNOCK_SEIZURE, OVERSPEED, LOW_OIL_PRESSURE, CHARGING, OVERHEATING, NO_START, NO_CRANK, EXHAUST_SMOKE, NO_VOLTAGE, FREQUENCY_HUNTING];
   return order.find((f) => f.keywords.test(description)) ?? null;
 }

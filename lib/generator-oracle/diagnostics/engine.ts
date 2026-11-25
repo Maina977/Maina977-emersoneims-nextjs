@@ -5,7 +5,7 @@
  */
 import type { Answers, Condition, DiagnosisResult, FaultFamily, Question, RankedCause } from './types';
 
-export const DIAGNOSTIC_ENGINE_VERSION = 'oracle-diagnostics 1.0.0 (2026-11-14)';
+export const DIAGNOSTIC_ENGINE_VERSION = 'oracle-diagnostics 1.1.0 (2026-11-25)';
 const DISCLAIMER = 'A guided check list, not a manufacturer procedure. Confirm limits and procedures in the engine and controller manuals for this machine before replacing parts.';
 
 /** Valid answers only: numbers inside the question's physical range, options that exist. */
@@ -26,6 +26,13 @@ export function validateAnswers(family: FaultFamily, raw: Answers): { answers: A
       answers[q.id] = s;
     }
   }
+  // Cross-checks run on the single-answer-valid set; a refused pair is removed together.
+  const refused = new Set<string>();
+  for (const x of family.crossChecks ?? []) {
+    if (evaluate(x.when, answers) !== true) continue;
+    for (const id of x.refuse) if (answers[id] !== undefined && !refused.has(id)) { refused.add(id); invalid.push({ q: id, reason: x.reason }); }
+  }
+  for (const id of refused) delete answers[id];
   return { answers, invalid };
 }
 
@@ -72,7 +79,15 @@ export function diagnose(family: FaultFamily, raw: Answers): DiagnosisResult {
   const { answers, invalid } = validateAnswers(family, raw);
 
   // Stop rules first; they are reported whatever else the evidence says.
-  const stops = family.stopRules.filter((s) => evaluate(s.when, answers) === true).map((s) => ({ level: s.level, message: s.message }));
+  // Order: STOPs that fired, the family's mandatory safety, then CAUTIONs that fired.
+  const fired = family.stopRules.filter((s) => evaluate(s.when, answers) === true);
+  const stops = [
+    ...fired.filter((s) => s.level === 'STOP').map((s) => ({ level: s.level, message: s.message })),
+    ...(family.mandatorySafety ?? []).map((message) => ({ level: 'CAUTION' as const, message })),
+    ...fired.filter((s) => s.level === 'CAUTION').map((s) => ({ level: s.level, message: s.message })),
+  ];
+  // A STOP withholds every check that needs the engine running or circuits live.
+  const stopActive = fired.some((s) => s.level === 'STOP');
 
   const ranked: RankedCause[] = [];
   const excluded: DiagnosisResult['excluded'] = [];
@@ -88,7 +103,13 @@ export function diagnose(family: FaultFamily, raw: Answers): DiagnosisResult {
       (WEIGHT[e.effect] > 0 ? pro : con).push(e.because);
     }
     if (out) { excluded.push({ id: cause.id, title: cause.title, because: out }); continue; }
-    ranked.push({ id: cause.id, title: cause.title, score, for: pro, against: con, actions: cause.actions, reference: cause.reference });
+    const running = cause.runningChecks ?? [];
+    ranked.push({
+      id: cause.id, title: cause.title, score, for: pro, against: con,
+      actions: stopActive ? [...cause.actions] : [...cause.actions, ...running],
+      withheld: stopActive ? [...running] : [],
+      reference: cause.reference,
+    });
   }
   // Highest score first; ties keep the family's order (the usual-first order).
   const order = new Map(family.causes.map((c, i) => [c.id, i]));
@@ -106,13 +127,15 @@ export function diagnose(family: FaultFamily, raw: Answers): DiagnosisResult {
   const stopQs = new Set(family.stopRules.flatMap((s) => questionsOf(s.when)).filter((q) => answers[q] === undefined));
   const byOrder = (a: string, b: string) => family.questions.findIndex((q) => q.id === a) - family.questions.findIndex((q) => q.id === b);
   const candidates = [...stopQs].sort(byOrder).concat([...count.entries()].sort((a, b) => b[1] - a[1] || byOrder(a[0], b[0])).map(([q]) => q).filter((q) => !stopQs.has(q)));
-  const nextId = candidates.find((q) => family.questions.some((x) => x.id === q));
+  // While a STOP is active, never offer a check that needs the engine running or circuits live.
+  const nextId = candidates.find((q) => { const x = family.questions.find((y) => y.id === q); return !!x && !(stopActive && x.needsRunning); });
   const nextQuestion: Question | null = nextId ? family.questions.find((q) => q.id === nextId)! : null;
 
   return {
     family: family.id,
     engineVersion: DIAGNOSTIC_ENGINE_VERSION,
     stops,
+    stopActive,
     invalid,
     ranked,
     excluded,
