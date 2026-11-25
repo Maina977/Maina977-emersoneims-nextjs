@@ -23,7 +23,7 @@ import SolarEngineeringDeepDive from '@/components/solar/SolarEngineeringDeepDiv
 import ServiceCTASection from '@/components/cta/ServiceCTASection';
 import SolarGeniusProCard from '@/components/solar/SolarGeniusProCard';
 import SolarToolTabs, { useHashTab, type SolarTab } from '@/components/solar/SolarToolTabs';
-import { TOOL_SLOT, toolPlaceholder } from '@/components/solar/toolReserve';
+import { TOOL_SLOT, ToolPanelArea, toolPlaceholder } from '@/components/solar/toolReserve';
 import { resilient } from '@/lib/loading/ResilientModule';
 import { useEngineeringIdle } from '@/lib/loading/resilientImport';
 
@@ -1113,7 +1113,9 @@ export default function SolarBible() {
           {/* Tab Navigation: native links, so a click before hydration is not lost (2026-11-21). */}
           <SolarToolTabs tabs={tabs} active={activeTab} onSelect={setActiveTab} />
 
-          {/* Tab Content */}
+          {/* Tab Content: at least one screen tall in the server HTML, so a tool
+              opened before hydration cannot push the footer down (CLS fix, 2026-11-25). */}
+          <ToolPanelArea>
           <AnimatePresence mode="wait">
             {activeTab === 'overview' && (
               <motion.div
@@ -1779,6 +1781,7 @@ export default function SolarBible() {
 
 
           </AnimatePresence>
+          </ToolPanelArea>
         </div>
       </section>
 

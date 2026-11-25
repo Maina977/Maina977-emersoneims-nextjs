@@ -44,6 +44,38 @@ arrives. Moving content that is out of view does not count as a layout shift. Fo
 the tools whose height cannot be calculated simply reserve one screen height. A residual shift
 only shows up if the visitor scrolls to the bottom of the placeholder while it is loading.
 
+### 1b. Browser acceptance result and second fix (2026-11-25)
+
+The coordinator measured the first fix with `solar-perf-bench.cjs TARGETS=roi PROFILE=mobile`, the
+same instrument that found 0.282. It **failed**: production 0.282 ×3, branch 0.2796 ×3.
+
+The trace showed a single shift, and its source was the page footer (previous height 238 px in
+view, then 0). The visitor taps "Savings Calculator" before hydration. At that moment the tools
+area in the server HTML is short and the footer is in view. After hydration the ROI panel is
+inserted and pushes the footer down. The per-panel reservation could not prevent this, because it
+does not exist until after hydration.
+
+**Second fix:** `ToolPanelArea` (`components/solar/toolReserve.tsx`) wraps all tab panels in
+`app/solar/page.tsx` with a `<div data-tool-panels class="min-h-screen">`. This div is in the
+server HTML, so it is there from the first paint and causes no load shift.
+
+* Because the container starts below the tab bar and is at least one screen tall, the footer
+  begins below the screen after the tap. A panel arriving later moves only content that is out of
+  view.
+* `100vh` (`min-h-screen`) is used rather than `svh` because on phones `vh` is the large viewport.
+  The footer therefore stays out of view even when the address bar is hidden.
+* One screen is the smallest reservation that does this. Every tab is taller than one phone
+  screen, so no tab gets an empty gap on a phone. On a large desktop, a short tab can leave space
+  up to one screen tall.
+
+`tests/regression/solar-tool-panels-ssr.test.tsx` renders the real `/solar` page with
+`renderToString`. It asserts the container is in the server HTML with `min-h-screen`, sits after
+the tab bar and before the footer, and contains the server-rendered panel. It also checks that
+every `activeTab ===` panel is inside the container.
+
+**Pass criterion (coordinator):** CLS below 0.1 on roi/mobile over 3 runs, and no regression on
+load CLS. This has not been re-measured yet.
+
 ## 2. Accessibility (axe on /solar)
 
 | axe finding | Where | Change |

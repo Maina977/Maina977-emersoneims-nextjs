@@ -27,6 +27,8 @@
  * Class strings are written out in full so Tailwind finds them.
  */
 
+import type { ReactNode } from 'react';
+
 export type ReservedTool = 'roi' | 'sizing' | 'screen';
 
 /** Tab panel: holds the final height while it contains a placeholder (or the slow note under it). */
@@ -48,6 +50,27 @@ export function ToolPlaceholder({ tool, name }: { tool: ReservedTool; name: stri
   return (
     <div data-tool-reserve="" role="status" aria-label={`Loading ${name}`} className={`animate-pulse bg-slate-800 rounded-xl ${TOOL_PLACEHOLDER[tool]}`} />
   );
+}
+
+/**
+ * The always-rendered area that holds the tab panels (browser acceptance, 2026-11-25).
+ *
+ * The per-panel reservation above exists only after hydration. On a slow phone
+ * the visitor tapped the "Savings Calculator" link before hydration; the tools
+ * area in the server HTML was short, so the footer was in view; after hydration
+ * the ROI panel was inserted and pushed the footer down (CLS 0.28, measured,
+ * source: the footer). This container is in the server HTML and is at least
+ * one screen tall (100vh, which on phones is the large viewport, so the footer
+ * stays out of view even with the address bar hidden). With the tab bar above
+ * it, the footer starts below the screen, and a panel arriving later moves
+ * nothing that is in view. Every tab is taller than one screen on a phone, so
+ * no tab is left with an empty gap there; on a large desktop a short tab can
+ * leave space up to one screen tall.
+ */
+export const TOOL_PANELS_CLASS = 'min-h-screen';
+
+export function ToolPanelArea({ children }: { children: ReactNode }) {
+  return <div data-tool-panels="" className={TOOL_PANELS_CLASS}>{children}</div>;
 }
 
 /** A `loading` function for resilient() / next/dynamic. */
