@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
 import GuidedDiagnosisPanel, { GD_STORE, SAFETY_HOLD_TEXT } from '@/components/generator-oracle/panels/GuidedDiagnosisPanel';
 
 // Management decision (2026-11-25): when browser storage is blocked, Guided Diagnosis shows a
@@ -107,6 +107,77 @@ describe('Guided Diagnosis: SAFETY HOLD when browser storage is blocked', () => 
     answer(/Where is the noise\?/, 'engine');
     expect(screen.queryByTestId('gd-stop-hold')).not.toBeNull();
     expect(screen.queryByText('Next check')).toBeNull();
+  });
+
+  // Independent review of 4c2a6ee5 (MAJOR): the first read fails, later reads succeed, and an
+  // unresolved STOP is stored. The STOP must be shown and win, also after an acknowledgement.
+  const STORED_STOP = { key: 'knock-seizure|TEST stored STOP', message: 'TEST stored STOP: STOP THE SET.', from: 'Knocking, bearing noise or seizure', since: '2026-11-25T10:00:00.000Z' };
+  const storeStop = () => origSet.call(localStorage, GD_STORE, JSON.stringify({ v: 2, raw: {}, latched: [STORED_STOP], cleared: [] }));
+  /** getItem throws for the first `n` calls, then works. */
+  const failFirstReads = (n: number) => {
+    let left = n;
+    Storage.prototype.getItem = function (this: Storage, k: string) { if (left-- > 0) throw new Error('blocked'); return origGet.call(this, k); };
+  };
+  const stopShown = () => {
+    expect(screen.queryByTestId('gd-latched-stop')?.textContent).toMatch(/TEST stored STOP/);
+    expect(screen.queryByTestId('gd-stop-hold')).not.toBeNull();
+    expect(hold()).toBeNull();
+    expect(screen.queryByText('Next check')).toBeNull();
+    expect(document.body.textContent).toMatch(/no checks are suggested while a STOP applies/);
+  };
+
+  it('first read fails once, the next read works: the stored latched STOP is shown at once and wins', () => {
+    storeStop();
+    failFirstReads(1);
+    render(<GuidedDiagnosisPanel />);
+    stopShown();
+    // It stays in storage too.
+    expect(JSON.parse(origGet.call(localStorage, GD_STORE) || '{}').latched.map((l: { key: string }) => l.key)).toContain(STORED_STOP.key);
+  });
+
+  it('reads fail at load and on the first save, then work: the acknowledgement re-reads first and the STOP wins (no actions)', () => {
+    storeStop();
+    failFirstReads(2);
+    render(<GuidedDiagnosisPanel />);
+    expect(hold()).not.toBeNull();
+    // A save made while the record could not be read must not overwrite (drop) the stored STOP.
+    expect(JSON.parse(origGet.call(localStorage, GD_STORE) || '{}').latched.map((l: { key: string }) => l.key)).toContain(STORED_STOP.key);
+    acknowledge('TECH-Q');
+    stopShown();
+    expect(screen.queryByTestId('gd-safety-hold-released')?.textContent ?? '').not.toMatch(/Next check/);
+  });
+
+  it('while in the hold, a retry merges the stored STOP as soon as it can be read (no acknowledgement needed)', () => {
+    vi.useFakeTimers();
+    try {
+      storeStop();
+      failFirstReads(2);
+      render(<GuidedDiagnosisPanel />);
+      expect(hold()).not.toBeNull();
+      act(() => { vi.advanceTimersByTime(2100); });
+      stopShown();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('while in the hold, a focus event merges the stored STOP', () => {
+    storeStop();
+    failFirstReads(2);
+    render(<GuidedDiagnosisPanel />);
+    expect(hold()).not.toBeNull();
+    act(() => { window.dispatchEvent(new Event('focus')); });
+    stopShown();
+  });
+
+  it('storage stays blocked: a retry or focus changes nothing and never raises a STOP', () => {
+    vi.useFakeTimers();
+    try {
+      block('both');
+      render(<GuidedDiagnosisPanel />);
+      act(() => { vi.advanceTimersByTime(6100); window.dispatchEvent(new Event('focus')); });
+      expect(hold()).not.toBeNull();
+      expect(screen.queryByTestId('gd-latched-stop')).toBeNull();
+      expect(screen.queryByTestId('gd-stop-hold')).toBeNull();
+    } finally { vi.useRealTimers(); }
   });
 
   it('storage available: no hold, normal screen (unchanged)', () => {
