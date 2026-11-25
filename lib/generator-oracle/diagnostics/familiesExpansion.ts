@@ -66,7 +66,7 @@ export const FREQUENCY_HUNTING: FaultFamily = {
     { when: is('parallel', 'parallel'), level: 'CAUTION', message: 'Open the generator circuit breaker and take the set out of parallel before diagnosing: a hunting set in parallel can cause reverse power and breaker trips. Do not re-synchronise until its frequency is stable. Synchronising limits are NOT VERIFIED here; use the controller settings sheet.' },
   ],
   limits: [
-    { id: 'swing-band', reading: 'freqSwing', limit: 'oemMaxSwing',
+    { id: 'swing-band', reading: 'freqSwing', limit: 'oemMaxSwing', protective: false,
       shutdown: 'STOP: the frequency swing has reached the band entered as a shutdown value. Open the generator breaker and stop the set; check the linkage, actuator and governor with the set isolated.',
       warning: 'CAUTION: the frequency swing has reached the band entered (warning value): transfer or shed sensitive loads (UPS, drives, IT, medical) before further diagnosis.' },
   ],
@@ -188,7 +188,7 @@ export const OVERSPEED: FaultFamily = {
     { when: is('linkage', 'disconnected'), level: 'STOP', message: 'STOP: a disconnected, broken or seized fuel linkage can leave the fuel rack open. Do not run until it is repaired.' },
   ],
   limits: [
-    { id: 'overspeed-trip', reading: 'peakRpm', limit: 'oemTripRpm',
+    { id: 'overspeed-trip', reading: 'peakRpm', limit: 'oemTripRpm', protective: true,
       shutdown: 'STOP: the logged speed has reached the overspeed trip setting entered. Do not restart until the cause is found (see the checks below).',
       warning: 'CAUTION: the logged speed has reached the overspeed warning value entered: find the cause before the set returns to service.' },
   ],
@@ -288,10 +288,10 @@ export const CHARGING: FaultFamily = {
     { when: is('source', ['charger', 'both']), level: 'CAUTION', message: 'The battery charger has mains voltage inside: isolate and lock off its supply before opening it. Only a competent electrician works inside the charger.' },
   ],
   limits: [
-    { id: 'charge-max', reading: 'runVoltage', limit: 'oemChargeMax',
+    { id: 'charge-max', reading: 'runVoltage', limit: 'oemChargeMax', protective: false,
       shutdown: 'STOP the engine: the charging voltage has reached the highest value entered for this alternator (shutdown value). Overcharging boils the battery and can damage the controller and ECM. Do not run until the regulator fault is found.',
       warning: 'CAUTION: the charging voltage has reached the highest value entered (warning value). Watch the battery for heat or gassing; repair the regulator before the set returns to normal duty.' },
-    { id: 'charge-min', reading: 'runVoltage', limit: 'oemChargeMin',
+    { id: 'charge-min', reading: 'runVoltage', limit: 'oemChargeMin', protective: false,
       shutdown: 'STOP the engine: the charging voltage has reached the lowest value entered and the source classifies it as a shutdown value; check the charging alternator and belt with the set isolated.',
       warning: 'CAUTION: the charging voltage has reached the lowest value entered (warning value): the battery is not being charged and the set may fail to start next time.' },
   ],

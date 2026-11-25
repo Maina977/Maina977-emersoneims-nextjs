@@ -21,11 +21,11 @@ const field = 'w-full rounded-md bg-slate-900 border border-slate-700 px-2 py-1.
 
 interface QProps {
   q: Question; values: Record<string, string>; set: (k: string, v: string) => void; scope: string;
-  stopActive: boolean; note?: string; tolerance: boolean;
+  stopActive: boolean; note?: string; tolerance: boolean; protective: boolean;
   published: { value: number; classification: 'shutdown' | 'warning'; source: string } | null;
 }
 
-function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, published }: QProps) {
+function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, protective, published }: QProps) {
   const id = `gd-${scope}-${q.id}`;
   const value = values[q.id] ?? '';
   const limit = q.kind === 'number' ? q.oemLimit : undefined;
@@ -58,7 +58,9 @@ function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, pub
             <input aria-label={`Source: ${limit.parameter}`} value={values[sourceKey(q.id)] ?? ''} onChange={(e) => set(sourceKey(q.id), e.target.value)} className={`mt-1 ${field}`} />
           </label>
           {value && (!values[classKey(q.id)] || values[classKey(q.id)] === 'not-stated') ? (
-            <span className="sm:col-span-2 text-amber-300">Classification not stated: reaching this value is shown as CAUTION, not as a confirmed shutdown, and does not clear any STOP.</span>
+            <span className="sm:col-span-2 text-amber-300">{protective
+              ? 'Classification not stated: this is a protective limit, so reaching it is treated as a SHUTDOWN (STOP) until you confirm the classification in the OEM manual.'
+              : 'Classification not stated: reaching this value is shown as CAUTION, not as a confirmed shutdown, and does not clear any STOP.'}</span>
           ) : null}
           {published ? (
             <button type="button" className="sm:col-span-2 rounded-md border border-cyan-600 px-2 py-1 text-left text-cyan-200"
@@ -104,6 +106,7 @@ export default function GuidedDiagnosisPanel() {
 
   const qProps = (q: Question, scope: string): QProps => ({
     q, values, set, scope, stopActive: result.stopActive, tolerance: readingsWithTol.has(q.id),
+    protective: (family.limits ?? []).some((l) => l.limit === q.id && l.protective),
     note: oemQs.has(q.id) ? questionReferenceNote(equipment, family.id, q.id) : undefined,
     published: oemQs.has(q.id) ? publishedLimitFor(equipment, family.id, q.id) : null,
   });

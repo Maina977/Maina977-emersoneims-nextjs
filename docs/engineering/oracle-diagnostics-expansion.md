@@ -12,8 +12,23 @@ Management decision: **equality with a limit counts as reaching it**, unless the
 | Reading within the measurement tolerance entered (`± units`) but not at the limit | CAUTION "AT OR NEAR THE LIMIT — re-measure"; for a shutdown value it adds the conditional STOP instruction |
 | Reached, classified **shutdown** | STOP (the family's shutdown message) |
 | Reached, classified **warning** | CAUTION — a shutdown is never derived from a warning value, however far it is exceeded |
-| Reached, classification **not stated** | CAUTION "LIMIT REACHED — NOT CLASSIFIED … not a confirmed shutdown; this does not clear any STOP … If it is the shutdown value: STOP …"; the classification is the next question asked |
+| Reached, classification **not stated**, **protective** parameter | **STOP** "Treated as a shutdown limit because it has not been classified; confirm against the OEM manual" + the shutdown message; the classification is still the next question asked |
+| Reached, classification **not stated**, non-protective parameter | CAUTION "LIMIT REACHED — NOT CLASSIFIED … not a confirmed shutdown; this does not clear any STOP … If it is the shutdown value: STOP …"; the classification is the next question asked |
 | No limit entered | "NOT VERIFIED", no threshold applied |
+
+**Protective parameters** (management correction 2026-11-25: conservative under uncertainty means stopping the engine). A protective parameter is one whose limit violation risks immediate engine damage or personal hazard. Unclassified at or beyond the limit → STOP. An explicit "warning" classification still gives CAUTION only.
+
+| Limit rule | Protective? | Why |
+|---|---|---|
+| Oil pressure at/below the minimum entered (`oil-pressure-min`) | **Yes** | Bearing damage within minutes |
+| Oil temperature at/above the maximum entered (`oil-temp-max`) | **Yes** | Thin oil starves the bearings |
+| Coolant temperature at/above the maximum entered (`coolant-temp-max`) | **Yes** | Head warp, piston seizure; scald hazard |
+| Logged speed at/above the overspeed trip entered (`overspeed-trip`) | **Yes** | Mechanical failure, flying parts |
+| Insulation at/below the minimum entered (`insulation-min`) | **Yes** (judgement) | Measured off-line, but running below it risks live metalwork (personal hazard) and winding failure; the 1.0 rule was already a STOP |
+| Charging voltage at/above the highest entered (`charge-max`) | No (judgement) | Overcharge damage develops over time; the hot/swollen and gassing battery STOP rules still stop immediately |
+| Charging voltage at/below the lowest entered (`charge-min`) | No | Battery not charged; no immediate hazard |
+| Frequency at/below the lowest steady-state value (`frequency-min`) | No | Load protection; the breaker/load CAUTION applies |
+| Frequency swing at/above the band (`swing-band`) | No | Performance band; load CAUTION |
 
 Implementation: `NumberQuestion.oemLimit {direction, parameter}` marks every OEM figure (11 questions); each has companion answers `<id>.class` (shutdown / warning / not stated) and `<id>.source` (manual ID, revision, page; ≤ 300 characters). `FaultFamily.limits` (9 limit rules in 6 families) compare a reading with an OEM limit at equality (`≤` min, `≥` max). The former strict STOP rules on oil pressure, coolant, insulation and charging voltage became limit rules. Evidence that means "limit reached" now uses the new `leRef`/`geRef` operators; "strictly inside" keeps `ltRef`/`gtRef`. Rating-plate values (rated voltage, rated rpm) are marked `ratingPlate` and are never classified.
 
@@ -101,7 +116,7 @@ Questions: what shut it down → runaway? → oil in intake / sump overfull (sto
 Causes: governor/actuator too slow on load rejection; linkage; false trip from speed signal (supported when the logged peak is *below* the trip entered); wrong setpoint / flywheel-teeth / pole setting (strongly supported when the trip entered is below rated speed); engine running on its own oil; over-fuelling at start. No running checks exist in this family by design: after an overspeed trip the guide never directs a run.
 
 **Worked example W2 (synthetic).** Controller overspeed shutdown when the breaker opened; log 1720 rpm; trip entered 1700 rpm (TEST); rated 1500 rpm; linkage OK, sensor OK, no settings change, no oil.
-Derivation: governor-response = +3 (load rejection) +1 (1720 > 1700) = **4**; sensor-false = −1 (sensor OK; 1720 < 1700 false) = **−1**; settings = −1 (no change; 1700 < 1500 false) = **−1**; start-fuel = −1 (not at start); linkage and oil-fuel excluded. Stops: STOP (overspeed shutdown), 2 mandatory CAUTIONs, then a NOT CLASSIFIED CAUTION (1720 ≥ trip 1700, trip setting not classified). Next question: the trip setting, to get its classification (with "shutdown" entered — benchmark B02 — a second STOP is added and no question remains).
+Derivation: governor-response = +3 (load rejection) +1 (1720 > 1700) = **4**; sensor-false = −1 (sensor OK; 1720 < 1700 false) = **−1**; settings = −1 (no change; 1700 < 1500 false) = **−1**; start-fuel = −1 (not at start); linkage and oil-fuel excluded. Stops: STOP (overspeed shutdown), a second STOP (1720 ≥ trip 1700: overspeed is protective, so the unclassified trip setting is treated as a shutdown limit), then 2 mandatory CAUTIONs. Next question: the trip setting, to get its classification (benchmark B02 enters "shutdown"; same stops, no question remains).
 
 ### 4.3 Battery not charging / overcharging (`charging`)
 
@@ -171,5 +186,5 @@ By title only; clauses and values **not verified against a held copy and not use
 | L9 | Job-card hand-off uses this browser's storage | A diagnosis made on another device is not visible | Accounts/server storage (out of scope) |
 | L10 | All worked examples and benchmarks are synthetic | No field validation yet | Pilot GO-P1 (`oracle-evidence-package.md`) |
 | L11 | Reference datasets cover 3 public documents only | Most engines/controllers show NOT VERIFIED | Extend the register (gaps listed there) |
-| L12 | An unclassified limit gives CAUTION, not STOP (management rule) | A technician who leaves "Is this a warning or a shutdown value?" blank sees a CAUTION, with a conditional STOP instruction, even for oil pressure | Train operators to classify from the manual; reviewer checks this in GO-P1 (Addendum A §A3) |
+| L12 | Implemented rule pending management confirmation: an unclassified limit on a **protective** parameter gives STOP; on a non-protective parameter it gives CAUTION | A STOP may appear for a limit that the manual actually calls a warning value, until the classification is entered (conservative) | Management confirms the rule and the protective list; operators classify from the manual (Addendum A §A3) |
 | L13 | Equipment make/model/variant are typed, not checked against a register | Applicability is only as good as what was typed | Asset register link (out of scope) |

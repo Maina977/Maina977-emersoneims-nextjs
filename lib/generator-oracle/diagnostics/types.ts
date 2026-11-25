@@ -104,6 +104,14 @@ export interface LimitRule {
   id: string;
   reading: string;
   limit: string;
+  /**
+   * Protective parameter (management correction 2026-11-25): violating the limit risks
+   * immediate engine damage or personal hazard. Reached with the classification not
+   * stated or unanswered → STOP ("treated as a shutdown limit because it has not been
+   * classified"). An explicit 'warning' classification still gives CAUTION only.
+   * Non-protective limits keep the CAUTION for an unclassified value.
+   */
+  protective: boolean;
   /** Message when a limit classified 'shutdown' is reached (shown as STOP). */
   shutdown: string;
   /** Message when a limit classified 'warning' is reached (shown as CAUTION). */

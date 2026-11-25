@@ -24,8 +24,8 @@ describe('exact-threshold rule: minimum limit (oil pressure, 200 kPa)', () => {
     [200, 'warning', 'reached', 'CAUTION', false],
     [199, 'warning', 'reached', 'CAUTION', false],
     [201, 'not-stated', 'inside', null, false],
-    [200, 'not-stated', 'reached', 'CAUTION', false],
-    [199, undefined, 'reached', 'CAUTION', false],
+    [200, 'not-stated', 'reached', 'STOP', true], // protective: unclassified is treated as shutdown
+    [199, undefined, 'reached', 'STOP', true],
   ] as const)('reading %s kPa, %s → %s / %s', (reading, cls, status, level, stop) => {
     const r = oil(reading, cls);
     expect(st(r, 'oil-pressure-min')).toMatchObject({ status, level });
@@ -42,8 +42,8 @@ describe('exact-threshold rule: maximum limit (coolant, 103 °C)', () => {
     [103, 'warning', 'reached', 'CAUTION', false],
     [104, 'warning', 'reached', 'CAUTION', false],
     [102, undefined, 'inside', null, false],
-    [103, undefined, 'reached', 'CAUTION', false],
-    [104, 'not-stated', 'reached', 'CAUTION', false],
+    [103, undefined, 'reached', 'STOP', true], // protective: unclassified is treated as shutdown
+    [104, 'not-stated', 'reached', 'STOP', true],
   ] as const)('reading %s °C, %s → %s / %s', (reading, cls, status, level, stop) => {
     const r = cool(reading, cls);
     expect(st(r, 'coolant-temp-max')).toMatchObject({ status, level });
@@ -54,13 +54,26 @@ describe('exact-threshold rule: maximum limit (coolant, 103 °C)', () => {
     expect(r.stopActive).toBe(false);
     expect(r.stops.find((s) => /OEM warning value/.test(s.message))!.level).toBe('CAUTION');
   });
-  it('unclassified: CAUTION that says so, never clears a STOP raised by another rule', () => {
-    const r = cool(104, undefined, { gasBubbles: 'yes' });
-    expect(r.stopActive).toBe(true); // the combustion-gas STOP still stands
+  it('NON-protective unclassified (charging maximum): CAUTION that says so, never clears a STOP raised by another rule', () => {
+    const r = diagnose(CHARGING, { systemVoltage: '24', runVoltage: 30, oemChargeMax: 29, batteryCondition: 'gassing' });
+    expect(r.stopActive).toBe(true); // the gassing STOP still stands
     expect(r.stops[0].level).toBe('STOP');
-    const c = r.stops.find((s) => /NOT CLASSIFIED/.test(s.message))!;
+    const c = r.stops.find((s) => /LIMIT REACHED — NOT CLASSIFIED/.test(s.message))!;
     expect(c.level).toBe('CAUTION');
     expect(c.message).toMatch(/not as a confirmed shutdown; this does not clear any STOP/);
+  });
+  it('PROTECTIVE unclassified: oil pressure below the minimum → STOP first, then no running-engine step', () => {
+    const r = oil(150, undefined, { knock: 'no', oilCondition: 'normal', recentWork: 'none' });
+    expect(r.stops[0]).toEqual({ level: 'STOP', message: expect.stringMatching(/^STOP — LIMIT REACHED, NOT CLASSIFIED: Treated as a shutdown limit because it has not been classified; confirm against the OEM manual\./) });
+    for (const c of r.ranked) for (const a of c.actions) expect(a).not.toMatch(/re-?start|run the|running|on load|under load|load bank|crank the/i);
+    expect(r.nextQuestion?.id).toBe('oemMinOilPressure');
+    expect(r.nextQuestion?.needsRunning).toBeFalsy();
+  });
+  it('protective parameters are exactly: oil pressure, oil temperature, coolant temperature, overspeed, insulation', () => {
+    const p = FAMILIES.flatMap((f) => (f.limits ?? []).filter((l) => l.protective).map((l) => l.id)).sort();
+    expect(p).toEqual(['coolant-temp-max', 'insulation-min', 'oil-pressure-min', 'oil-temp-max', 'overspeed-trip']);
+    const non = FAMILIES.flatMap((f) => (f.limits ?? []).filter((l) => !l.protective).map((l) => l.id)).sort();
+    expect(non).toEqual(['charge-max', 'charge-min', 'frequency-min', 'swing-band']);
   });
   it('a reading at the maximum is never described as inside, safe or normal', () => {
     for (const cls of ['shutdown', 'warning', 'not-stated', undefined]) {

@@ -84,7 +84,7 @@ export const BENCHMARK_CASES: BenchmarkCase[] = [
   {
     id: 'B07', category: 'boundary', family: 'frequency-hunting',
     problem: 'Swing exactly equal to the band entered (0.5 Hz); the band is not classified.',
-    principle: 'Equality reaches the band; unclassified → CAUTION that says so (not a shutdown); "within band" is excluded.',
+    principle: 'Non-protective parameter: equality reaches the band; unclassified → CAUTION that says so (not a shutdown); "within band" is excluded.',
     inputs: { freqSwing: '0.5', oemMaxSwing: '0.5', parallel: 'single', overspeedTrip: 'no', linkage: 'ok' },
     expect: { stops: ['CAUTION', 'CAUTION', 'CAUTION'], top: [['gain', 0], ['fuel', 0]], excludedIncludes: ['linkage', 'parallel', 'within-band'], nextQuestion: 'oemMaxSwing' },
     source: 'SYNTHETIC; management exact-threshold rule 2026-11-25.',
@@ -100,9 +100,9 @@ export const BENCHMARK_CASES: BenchmarkCase[] = [
   {
     id: 'B14', category: 'boundary', family: 'low-oil-pressure',
     problem: 'Oil pressure exactly at the OEM minimum entered (200 kPa), classification not stated, oil level correct.',
-    principle: 'Unclassified limit reached → CAUTION saying it is not a confirmed shutdown, with the conditional STOP instruction; the classification is asked next.',
+    principle: 'Protective parameter: an unclassified limit reached is treated as a shutdown limit → STOP ("confirm against the OEM manual"); the classification is still asked next.',
     inputs: { oilPressure: '200', oemMinOilPressure: '200', oilLevel: 'ok' },
-    expect: { stops: ['CAUTION'], top: [['sender', 0]], excludedIncludes: ['level'], nextQuestion: 'oemMinOilPressure' },
+    expect: { stops: ['STOP'], top: [['sender', 0]], excludedIncludes: ['level'], nextQuestion: 'oemMinOilPressure' },
     source: 'SYNTHETIC; management exact-threshold rule 2026-11-25.',
   },
   {

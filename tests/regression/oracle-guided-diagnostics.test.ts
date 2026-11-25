@@ -63,14 +63,17 @@ describe('stop rules always fire', () => {
     const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 150, oemMinOilPressure: 200, 'oemMinOilPressure.class': 'shutdown', mechanicalAgrees: 'yes', oilLevel: 'ok' });
     expect(r.stops.some((s) => s.level === 'STOP' && /reached the OEM minimum \(shutdown value\)/.test(s.message))).toBe(true);
   });
-  it('the same reading against an unclassified minimum → CAUTION that says it is not a confirmed shutdown (management rule 2026-11-25)', () => {
+  it('the same reading against an UNCLASSIFIED minimum → STOP, treated as a shutdown limit (protective parameter, correction 2026-11-25)', () => {
     const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 150, oemMinOilPressure: 200, mechanicalAgrees: 'yes', oilLevel: 'ok' });
-    expect(r.stops.some((s) => s.level === 'STOP')).toBe(false);
-    const c = r.stops.find((s) => /LIMIT REACHED — NOT CLASSIFIED/.test(s.message))!;
-    expect(c.level).toBe('CAUTION');
-    expect(c.message).toMatch(/does not clear any STOP/);
-    expect(c.message).toMatch(/If it is the shutdown value: STOP the engine/);
-    expect(r.nextQuestion?.id).toBe('oemMinOilPressure'); // its classification is asked next
+    expect(r.stops[0].level).toBe('STOP');
+    expect(r.stops[0].message).toMatch(/^STOP — LIMIT REACHED, NOT CLASSIFIED: Treated as a shutdown limit because it has not been classified; confirm against the OEM manual\. STOP the engine/);
+    expect(r.stopActive).toBe(true);
+    expect(r.nextQuestion?.id).toBe('oemMinOilPressure'); // its classification is still asked next
+  });
+  it('the same reading against a minimum classified WARNING → CAUTION only (never escalated)', () => {
+    const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 150, oemMinOilPressure: 200, 'oemMinOilPressure.class': 'warning', mechanicalAgrees: 'yes', oilLevel: 'ok' });
+    expect(r.stopActive).toBe(false);
+    expect(r.stops.find((s) => /OEM warning \(pre-alarm\) value/.test(s.message))!.level).toBe('CAUTION');
   });
   it('oil pressure above the minimum → no pressure STOP', () => {
     const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 250, oemMinOilPressure: 200, oilLevel: 'ok' });

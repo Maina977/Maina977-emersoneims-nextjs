@@ -46,7 +46,7 @@ export function reviewRows(families: FaultFamily[]): ReviewRow[] {
     for (const l of f.limits ?? []) {
       const lq = f.questions.find((q) => q.id === l.limit);
       const dir = lq?.kind === 'number' && lq.oemLimit?.direction === 'min' ? '≤' : '≥';
-      rows.push({ family: f.id, kind: 'limit', id: l.id, text: `Shutdown value reached → STOP: ${l.shutdown} | Warning value reached → CAUTION: ${l.warning} | Not classified → CAUTION (says so; never clears a STOP) | Within the measurement tolerance → CAUTION "at or near the limit" | No limit entered → NOT VERIFIED, no threshold`, rule: `${l.reading} ${dir} ${l.limit} (equality counts as reaching)`, ...blank });
+      rows.push({ family: f.id, kind: 'limit', id: l.id, text: `Shutdown value reached → STOP: ${l.shutdown} | Warning value reached → CAUTION: ${l.warning} | ${l.protective ? 'PROTECTIVE — not classified → STOP (treated as a shutdown limit until confirmed)' : 'Not classified → CAUTION (says so; never clears a STOP)'} | Within the measurement tolerance → CAUTION "at or near the limit" | No limit entered → NOT VERIFIED, no threshold`, rule: `${l.reading} ${dir} ${l.limit} (equality counts as reaching)`, ...blank });
     }
     (f.crossChecks ?? []).forEach((x, i) => rows.push({ family: f.id, kind: 'crosscheck', id: `cross-${i + 1}`, text: `Refuses ${x.refuse.join(', ')}: ${x.reason}`, rule: describeCondition(x.when), ...blank }));
     for (const c of f.causes) {

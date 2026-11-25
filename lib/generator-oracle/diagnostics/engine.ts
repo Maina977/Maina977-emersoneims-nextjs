@@ -6,8 +6,9 @@
  * Exact-threshold rule (management decision 2026-11-25): equality with a limit
  * counts as REACHING it. A reading strictly inside the limit entered is the
  * only "inside" case; at or beyond it the limit's classification decides:
- * shutdown → STOP, warning → CAUTION, not stated → CAUTION that says so and
- * never clears any STOP. A shutdown is never derived from a warning value.
+ * shutdown → STOP, warning → CAUTION (never escalated), not stated → STOP for a
+ * protective parameter ("treated as a shutdown limit because it has not been
+ * classified") and CAUTION for a non-protective one (never clearing any STOP).
  * With no limit entered the status is NOT VERIFIED and no threshold is applied.
  */
 import { LIMIT_CLASS_OPTIONS } from './types';
@@ -17,6 +18,8 @@ export const DIAGNOSTIC_ENGINE_VERSION = 'oracle-diagnostics 1.2.0 (2026-11-25)'
 const DISCLAIMER = 'A guided check list, not a manufacturer procedure. Confirm limits and procedures in the engine and controller manuals for this machine before replacing parts.';
 const NOT_VERIFIED = 'per OEM manual — NOT VERIFIED';
 const SOURCE_MAX = 300;
+/** Wording for a protective limit reached without a classification (management correction 2026-11-25). */
+export const UNCLASSIFIED_PROTECTIVE = 'STOP — LIMIT REACHED, NOT CLASSIFIED: Treated as a shutdown limit because it has not been classified; confirm against the OEM manual.';
 
 /** Companion answer keys of an OEM-limit question and of a limit reading. */
 export const classKey = (limitId: string) => `${limitId}.class`;
@@ -144,6 +147,7 @@ export function limitStatuses(family: FaultFamily, answers: Answers): LimitStatu
     if (reached) {
       if (classification === 'shutdown') return { ...base, status: 'reached', level: 'STOP', text: `${l.shutdown} [Reading ${v} ${u} ${cmp} ${prov}.]` };
       if (classification === 'warning') return { ...base, status: 'reached', level: 'CAUTION', text: `${l.warning} [Reading ${v} ${u} ${cmp} ${prov}.]` };
+      if (l.protective) return { ...base, status: 'reached', level: 'STOP', text: `${UNCLASSIFIED_PROTECTIVE} ${l.shutdown} [Reading ${v} ${u} ${cmp} ${prov}.]` };
       return { ...base, status: 'reached', level: 'CAUTION', text: `LIMIT REACHED — NOT CLASSIFIED: ${rq.text} ${v} ${u} has reached the ${param.toLowerCase()} entered (${L} ${u}), but the source does not say whether it is a warning or a shutdown value. Shown as CAUTION, not as a confirmed shutdown; this does not clear any STOP. Confirm the classification in the manual now. If it is the shutdown value: ${l.shutdown} [Reading ${v} ${u} ${cmp} ${prov}.]` };
     }
     if (tolerance !== null && Math.abs(v - L) <= tolerance) {

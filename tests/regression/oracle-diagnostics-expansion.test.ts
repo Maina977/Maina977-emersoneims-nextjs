@@ -117,7 +117,7 @@ describe('SAFETY: nothing hazardous after a STOP, in any workflow (all ten famil
         const rq = f.questions.find((q) => q.id === l.reading) as NumberQuestion;
         // A limit value valid for both questions; the reading equals it (equality counts as reaching).
         const L = Math.max(lq.min, rq.min) + (Math.min(lq.max, rq.max) - Math.max(lq.min, rq.min)) / 2;
-        const base: Answers = { [l.limit]: L, [`${l.limit}.class`]: 'shutdown', [l.reading]: L };
+        const base: Answers = { [l.limit]: L, [l.reading]: L, ...(l.protective ? {} : { [`${l.limit}.class`]: 'shutdown' }) }; // protective: unclassified must STOP too
         if (f.id === 'charging') base.systemVoltage = L > 18 ? '24' : '12';
         const variants: Answers[] = [base];
         for (const q of f.questions) if (q.kind === 'choice' && base[q.id] === undefined) for (const o of q.options) variants.push({ ...base, [q.id]: o.value });
@@ -229,8 +229,8 @@ describe('worked examples (SYNTHETIC, hand-derived)', () => {
     const v = view(OVERSPEED, { tripSource: 'controller', runaway: 'no', oilIntake: 'none', linkage: 'ok', whenTripped: 'load-rejection', peakRpm: 1720, oemTripRpm: 1700, ratedRpm: 1500, speedSensor: 'ok', settingsChanged: 'no' });
     expect(v.ranked).toEqual([['governor-response', 4], ['sensor-false', -1], ['settings', -1], ['start-fuel', -1]]);
     expect(v.excluded).toEqual(['linkage', 'oil-fuel']);
-    expect(v.stops).toEqual(['STOP', 'CAUTION', 'CAUTION', 'CAUTION']); // + peak 1720 ≥ trip 1700, trip not classified
-    expect(v.r.limits[0]).toMatchObject({ status: 'reached', level: 'CAUTION', classification: null });
+    expect(v.stops).toEqual(['STOP', 'STOP', 'CAUTION', 'CAUTION']); // + peak 1720 ≥ trip 1700: protective, not classified → treated as shutdown
+    expect(v.r.limits[0]).toMatchObject({ status: 'reached', level: 'STOP', classification: null });
     expect(v.stopActive).toBe(true);
     expect(v.r.nextQuestion?.id).toBe('oemTripRpm'); // the reached trip setting has no classification yet: asked next
   });
