@@ -59,7 +59,7 @@ function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, pro
           </label>
           {value && (!values[classKey(q.id)] || values[classKey(q.id)] === 'not-stated') ? (
             <span className="sm:col-span-2 text-amber-300">{protective
-              ? 'Classification not stated: this is a protective limit, so reaching it is treated as a SHUTDOWN (STOP) until you confirm the classification in the OEM manual.'
+              ? 'Classification not stated: this is a protective limit, so reaching it gives a conservative software STOP (not a manufacturer instruction) until a qualified technician confirms the manufacturer limits.'
               : 'Classification not stated: reaching this value is shown as CAUTION, not as a confirmed shutdown, and does not clear any STOP.'}</span>
           ) : null}
           {published ? (
@@ -169,6 +169,7 @@ export default function GuidedDiagnosisPanel() {
           {result.stops.map((s, i) => (
             <div key={i} className={`rounded-lg border p-3 text-sm ${s.level === 'STOP' ? 'border-red-500 bg-red-950/60 text-red-100' : 'border-amber-500/60 bg-amber-950/40 text-amber-100'}`}>
               <strong>{s.level}</strong> · {s.message}
+              {s.label ? <p className="mt-1 text-xs italic opacity-90">{s.label}</p> : null}
             </div>
           ))}
         </div>

@@ -64,7 +64,7 @@ describe('exact-threshold rule: maximum limit (coolant, 103 °C)', () => {
   });
   it('PROTECTIVE unclassified: oil pressure below the minimum → STOP first, then no running-engine step', () => {
     const r = oil(150, undefined, { knock: 'no', oilCondition: 'normal', recentWork: 'none' });
-    expect(r.stops[0]).toEqual({ level: 'STOP', message: expect.stringMatching(/^STOP — LIMIT REACHED, NOT CLASSIFIED: Treated as a shutdown limit because it has not been classified; confirm against the OEM manual\./) });
+    expect(r.stops[0]).toEqual({ level: 'STOP', message: expect.stringMatching(/^STOP — Protective threshold classification not verified\. Do not continue operating until the applicable manufacturer limits have been confirmed by a qualified technician\.$/), label: 'This is a conservative software safeguard, not a manufacturer instruction.' });
     for (const c of r.ranked) for (const a of c.actions) expect(a).not.toMatch(/re-?start|run the|running|on load|under load|load bank|crank the/i);
     expect(r.nextQuestion?.id).toBe('oemMinOilPressure');
     expect(r.nextQuestion?.needsRunning).toBeFalsy();

@@ -132,7 +132,12 @@ export interface LimitStatus {
   tolerance: number | null;
   /** The level shown for this status, or null when none (inside / not verified). */
   level: 'STOP' | 'CAUTION' | null;
+  /** Full status line, with the reading and the provenance of the limit. */
   text: string;
+  /** What the safety list shows for this status (STOP / CAUTION), when level is set. */
+  alert: string | null;
+  /** A separate line shown under the alert (the conservative-safeguard label). */
+  label: string | null;
 }
 
 export interface FaultFamily {
@@ -177,7 +182,7 @@ export interface DiagnosisResult {
   family: string;
   engineVersion: string;
   /** STOP rules that fired, then the family's mandatory safety, then CAUTION rules that fired. */
-  stops: Array<{ level: StopRule['level']; message: string }>;
+  stops: Array<{ level: StopRule['level']; message: string; /** Separate line shown under the message. */ label?: string }>;
   /** True when any STOP rule fired: running checks are withheld from every cause. */
   stopActive: boolean;
   /** Every limit rule of the family with its status (exact-threshold rule). */

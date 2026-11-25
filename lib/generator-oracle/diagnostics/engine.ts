@@ -19,7 +19,9 @@ const DISCLAIMER = 'A guided check list, not a manufacturer procedure. Confirm l
 const NOT_VERIFIED = 'per OEM manual — NOT VERIFIED';
 const SOURCE_MAX = 300;
 /** Wording for a protective limit reached without a classification (management correction 2026-11-25). */
-export const UNCLASSIFIED_PROTECTIVE = 'STOP — LIMIT REACHED, NOT CLASSIFIED: Treated as a shutdown limit because it has not been classified; confirm against the OEM manual.';
+// Wording set by management (2026-11-25), used verbatim on screen, in the job-card findings, .txt and PDF.
+export const UNCLASSIFIED_PROTECTIVE = 'STOP — Protective threshold classification not verified. Do not continue operating until the applicable manufacturer limits have been confirmed by a qualified technician.';
+export const SAFEGUARD_LABEL = 'This is a conservative software safeguard, not a manufacturer instruction.';
 
 /** Companion answer keys of an OEM-limit question and of a limit reading. */
 export const classKey = (limitId: string) => `${limitId}.class`;
@@ -137,7 +139,7 @@ export function limitStatuses(family: FaultFamily, answers: Answers): LimitStatu
     const classification = (answers[classKey(l.limit)] as LimitClass | undefined) ?? null;
     const source = (answers[sourceKey(l.limit)] as string | undefined) ?? null;
     const tolerance = (answers[tolKey(l.reading)] as number | undefined) ?? null;
-    const base = { id: l.id, reading: l.reading, limit: l.limit, direction, classification, source, tolerance, value: v ?? null, limitValue: L ?? null };
+    const base = { id: l.id, reading: l.reading, limit: l.limit, direction, classification, source, tolerance, value: v ?? null, limitValue: L ?? null, alert: null as string | null, label: null as string | null };
     const u = rq.unit;
     const cmp = direction === 'min' ? '≤' : '≥';
     const prov = `${param} ${L} ${u} (${direction === 'min' ? 'minimum' : 'maximum'}), classified ${classification === 'shutdown' ? 'SHUTDOWN' : classification === 'warning' ? 'WARNING' : 'NOT STATED'}, source: ${source ?? 'NOT GIVEN'}; entered by the technician — not verified by EmersonEIMS`;
@@ -145,13 +147,16 @@ export function limitStatuses(family: FaultFamily, answers: Answers): LimitStatu
     if (v === undefined) return { ...base, status: 'not-verified', level: null, text: `${param} entered (${L} ${u}) but no reading yet: nothing is judged.` };
     const reached = direction === 'min' ? v <= L : v >= L;
     if (reached) {
-      if (classification === 'shutdown') return { ...base, status: 'reached', level: 'STOP', text: `${l.shutdown} [Reading ${v} ${u} ${cmp} ${prov}.]` };
-      if (classification === 'warning') return { ...base, status: 'reached', level: 'CAUTION', text: `${l.warning} [Reading ${v} ${u} ${cmp} ${prov}.]` };
-      if (l.protective) return { ...base, status: 'reached', level: 'STOP', text: `${UNCLASSIFIED_PROTECTIVE} ${l.shutdown} [Reading ${v} ${u} ${cmp} ${prov}.]` };
-      return { ...base, status: 'reached', level: 'CAUTION', text: `LIMIT REACHED — NOT CLASSIFIED: ${rq.text} ${v} ${u} has reached the ${param.toLowerCase()} entered (${L} ${u}), but the source does not say whether it is a warning or a shutdown value. Shown as CAUTION, not as a confirmed shutdown; this does not clear any STOP. Confirm the classification in the manual now. If it is the shutdown value: ${l.shutdown} [Reading ${v} ${u} ${cmp} ${prov}.]` };
+      if (classification === 'shutdown') { const t = `${l.shutdown} [Reading ${v} ${u} ${cmp} ${prov}.]`; return { ...base, status: 'reached', level: 'STOP', text: t, alert: t }; }
+      if (classification === 'warning') { const t = `${l.warning} [Reading ${v} ${u} ${cmp} ${prov}.]`; return { ...base, status: 'reached', level: 'CAUTION', text: t, alert: t }; }
+      // Unknown classification on a protective parameter: conservative software STOP. It never says or implies
+      // that the manufacturer requires a shutdown at this (unverified) value.
+      if (l.protective) return { ...base, status: 'reached', level: 'STOP', alert: UNCLASSIFIED_PROTECTIVE, label: SAFEGUARD_LABEL, text: `${UNCLASSIFIED_PROTECTIVE} ${SAFEGUARD_LABEL} [Reading ${v} ${u} ${cmp} ${param} ${L} ${u} entered, classification not stated, source: ${source ?? 'NOT GIVEN'}.]` };
+      { const t = `LIMIT REACHED — NOT CLASSIFIED: ${rq.text} ${v} ${u} has reached the ${param.toLowerCase()} entered (${L} ${u}), but the source does not say whether it is a warning or a shutdown value. Shown as CAUTION, not as a confirmed shutdown; this does not clear any STOP. Confirm the classification in the manual with a qualified technician. [Reading ${v} ${u} ${cmp} ${prov}.]`; return { ...base, status: 'reached', level: 'CAUTION', text: t, alert: t }; }
     }
     if (tolerance !== null && Math.abs(v - L) <= tolerance) {
-      return { ...base, status: 'near', level: 'CAUTION', text: `AT OR NEAR THE LIMIT: ${rq.text} ${v} ${u} is within the measurement tolerance entered (±${tolerance} ${u}) of the ${param.toLowerCase()} (${L} ${u}); the true value may already have reached it. Re-measure with a calibrated or mechanical instrument before relying on it.${classification === 'shutdown' ? ` This is a shutdown value: if the re-measurement confirms it — ${l.shutdown}` : ''} [${prov}.]` };
+      const t = `AT OR NEAR THE LIMIT: ${rq.text} ${v} ${u} is within the measurement tolerance entered (±${tolerance} ${u}) of the ${param.toLowerCase()} (${L} ${u}); the true value may already have reached it. Re-measure with a calibrated or mechanical instrument before relying on it.${classification === 'shutdown' ? ` This is a shutdown value: if the re-measurement confirms it — ${l.shutdown}` : ''} [${prov}.]`;
+      return { ...base, status: 'near', level: 'CAUTION', text: t, alert: t };
     }
     return { ...base, status: 'inside', level: null, text: `${rq.text} ${v} ${u} is inside the ${param.toLowerCase()} entered (${prov}); no limit alarm from this reading.` };
   });
@@ -166,10 +171,10 @@ export function diagnose(family: FaultFamily, raw: Answers): DiagnosisResult {
   const limits = limitStatuses(family, answers);
   const stops = [
     ...fired.filter((s) => s.level === 'STOP').map((s) => ({ level: s.level, message: s.message })),
-    ...limits.filter((l) => l.level === 'STOP').map((l) => ({ level: 'STOP' as const, message: l.text })),
+    ...limits.filter((l) => l.level === 'STOP').map((l) => ({ level: 'STOP' as const, message: l.alert ?? l.text, ...(l.label ? { label: l.label } : {}) })),
     ...(family.mandatorySafety ?? []).map((message) => ({ level: 'CAUTION' as const, message })),
     ...fired.filter((s) => s.level === 'CAUTION').map((s) => ({ level: s.level, message: s.message })),
-    ...limits.filter((l) => l.level === 'CAUTION').map((l) => ({ level: 'CAUTION' as const, message: l.text })),
+    ...limits.filter((l) => l.level === 'CAUTION').map((l) => ({ level: 'CAUTION' as const, message: l.alert ?? l.text, ...(l.label ? { label: l.label } : {}) })),
   ];
   // A STOP withholds every check that needs the engine running or circuits live.
   const stopActive = stops.some((s) => s.level === 'STOP');

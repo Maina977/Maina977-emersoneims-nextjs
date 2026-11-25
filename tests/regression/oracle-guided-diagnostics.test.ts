@@ -63,10 +63,11 @@ describe('stop rules always fire', () => {
     const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 150, oemMinOilPressure: 200, 'oemMinOilPressure.class': 'shutdown', mechanicalAgrees: 'yes', oilLevel: 'ok' });
     expect(r.stops.some((s) => s.level === 'STOP' && /reached the OEM minimum \(shutdown value\)/.test(s.message))).toBe(true);
   });
-  it('the same reading against an UNCLASSIFIED minimum → STOP, treated as a shutdown limit (protective parameter, correction 2026-11-25)', () => {
+  it('the same reading against an UNCLASSIFIED minimum → conservative software STOP (protective parameter, management-confirmed 2026-11-25)', () => {
     const r = diagnose(LOW_OIL_PRESSURE, { oilPressure: 150, oemMinOilPressure: 200, mechanicalAgrees: 'yes', oilLevel: 'ok' });
     expect(r.stops[0].level).toBe('STOP');
-    expect(r.stops[0].message).toMatch(/^STOP — LIMIT REACHED, NOT CLASSIFIED: Treated as a shutdown limit because it has not been classified; confirm against the OEM manual\. STOP the engine/);
+    expect(r.stops[0].message).toMatch(/^STOP — Protective threshold classification not verified\. Do not continue operating until the applicable manufacturer limits have been confirmed by a qualified technician\.$/);
+    expect(r.stops[0].label).toBe('This is a conservative software safeguard, not a manufacturer instruction.');
     expect(r.stopActive).toBe(true);
     expect(r.nextQuestion?.id).toBe('oemMinOilPressure'); // its classification is still asked next
   });

@@ -55,7 +55,7 @@ export function diagnosisRecord(family: FaultFamily, raw: Record<string, string>
   const lines: string[] = [];
   lines.push(`${RECORD_HEADER}: ${family.title} [${family.id}] — ${result.engineVersion}; content status: ${result.review}.`);
   lines.push(`Not a manufacturer procedure. ${result.disclaimer}`);
-  for (const s of result.stops) lines.push(`${s.level}: ${s.message}`);
+  for (const s of result.stops) { lines.push(`${s.level}: ${s.message}`); if (s.label) lines.push(s.label); }
   lines.push(`Equipment (typed by the technician; any OEM figure below applies only to it): ${equipmentText(equipment)}.`);
   lines.push(`Equipment selected for published references: engine ${equipment.engine ?? 'none / not listed'}; controller ${equipment.controller ?? 'none / not listed'}.`);
   const published = referencesFor(equipment, family.id);
