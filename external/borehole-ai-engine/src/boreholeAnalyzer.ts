@@ -1044,7 +1044,7 @@ export class BoreholeAnalyzer {
       soil.type,
       recommendedDepth,
       contaminationSources,
-      features.waterProbability,
+      0, // review N5: no water evidence from a photo (photos are not analysed); explicitly absent, never a placeholder value
       features.terrainType,
       riskRealData,  // REAL satellite data when available
     );
