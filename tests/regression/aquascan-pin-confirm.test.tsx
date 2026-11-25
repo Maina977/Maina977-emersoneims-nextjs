@@ -123,6 +123,9 @@ describe('N1 results view + N2 downloads', () => {
     expect(calls).toHaveLength(1);
     // N2: the water check is inconclusive: every download button is disabled until confirmed
     expect(container.textContent).toMatch(/Water-body check inconclusive: the pin is within 0\.1 km of the mapped shore of Lake Turkana/);
+    // ODbL attribution where the water-check result is shown
+    expect(container.textContent).toMatch(/Lake and reservoir maps © OpenStreetMap contributors \(ODbL\)/);
+    expect(container.textContent).toMatch(/Water-body check: Water-body check inconclusive.*waiting for your confirmation/);
     fireEvent.click(screen.getAllByRole('button').find((b) => /^Report$/.test(b.textContent || '') )!);
     const pdf = await waitFor(() => screen.getAllByRole('button').find((b) => /PDF Report/.test(b.textContent || ''))!);
     expect((pdf as HTMLButtonElement).disabled).toBe(true);
