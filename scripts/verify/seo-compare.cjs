@@ -61,9 +61,23 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     // SoftwareApplication block was on every page, and /solar carried an
     // invented "10 AI engines" SoftwareApplication. It must stay on /generator-oracle.
     const INTENDED_REMOVED = new Set(['SoftwareApplication']);
+    // Reviewed, intended removal (content-safety release, 2026-11-25; management-approved; independent
+    // audit CONTENT-WITHDRAWAL-VERIFICATION.md): on these pages EVERY HowTo step / FAQ answer was unsafe
+    // (e.g. fitting a mechanical gauge with the engine running after low oil pressure), so the visible
+    // steps were withdrawn and the HowTo / FAQPage that republished them was removed with them, as
+    // Google requires markup to match the page. Scoped to exactly these pages; anywhere else the
+    // removal of a JSON-LD type still fails the gate.
+    const PAGE_INTENDED_REMOVED = {
+      ...Object.fromEntries(['spn-190', 'spn-100', 'dse-low-oil-pressure', 'dse-emergency-stop', 'comap-low-oil-pressure', 'comap-overspeed', 'perkins-100', 'dse-earth-fault', 'perkins-190'].map((s) => [`/faults/${s}`, ['HowTo', 'HowToStep', 'HowToTool', 'HowToSupply']])),
+      ...Object.fromEntries(['dse-low-oil-pressure', 'dse-generator-over-voltage', 'comap-generator-over-frequency', 'comap-low-battery-voltage'].map((s) => [`/faults/${s}`, ['FAQPage', 'Question', 'Answer']])),
+      '/solutions/controls': ['FAQPage', 'Question', 'Answer'],
+      '/solutions/generators': ['FAQPage', 'Question', 'Answer', 'HowTo', 'HowToStep', 'HowToTool', 'HowToSupply'],
+    };
+    PAGE_INTENDED_REMOVED['/faults/dse-low-oil-pressure'] = ['HowTo', 'HowToStep', 'HowToTool', 'HowToSupply', 'FAQPage', 'Question', 'Answer'];
     if (live.status === 200 && a.ldTypes !== b.ldTypes) {
       const before = new Set(a.ldTypes.split(',').filter(Boolean)), after = new Set(b.ldTypes.split(',').filter(Boolean));
-      const removed = [...before].filter((t) => !after.has(t) && !(INTENDED_REMOVED.has(t) && p !== '/generator-oracle'));
+      const pageAllowed = new Set(PAGE_INTENDED_REMOVED[p] || []);
+      const removed = [...before].filter((t) => !after.has(t) && !(INTENDED_REMOVED.has(t) && p !== '/generator-oracle') && !pageAllowed.has(t));
       const added = [...after].filter((t) => !before.has(t));
       if (removed.length || added.length) problems.push(`JSON-LD types removed [${removed}] added [${added}]`);
       else console.log(`     JSON-LD: intended removal of ${[...before].filter((t) => !after.has(t)).join(',')}`);
