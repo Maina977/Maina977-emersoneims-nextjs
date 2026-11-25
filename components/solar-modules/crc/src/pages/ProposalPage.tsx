@@ -3,11 +3,13 @@ import { simulateHourly, type HourlyResult } from '@/lib/solar/design/hourly';
 import { simulateHybrid, type HybridResult } from '@/lib/solar/design/hybrid';
 import type { Proposal } from '@/lib/solar/design/proposal';
 import type { Check } from '@/lib/solar/design/validate';
+import { sldToSvg, type SldModel } from '@/lib/solar/design/sld';
+import { horizonElevationDeg, shadingRows, SHADING_HEAD, type HorizonProfile, type ShadingSummary } from '@/lib/solar/design/shading';
 import { onBeforeRecoveryReload } from '@/lib/loading/resilientImport';
 import { proposalRevisionHash, APPROVAL_LOCKED_NOTICE } from '@/lib/solar/design/proposalApproval';
 import {
-  buildHourlyInput, buildHybridInput, formToProposalInput, hybridRequested, lastFullYear, parseLoadCsv,
-  EMPTY_BOM_ROW, LOSSES_SOURCE, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_FORM, WORKED_EXAMPLE_PRODUCTION,
+  buildHourlyInput, buildHybridInput, formToProposalInput, horizonFromForm, hybridRequested, lastFullYear, parseLoadCsv, sldPreviewFromForm,
+  EMPTY_BOM_ROW, LOSSES_SOURCE, LOSSES_SOURCE_WITH_HORIZON, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_FORM, WORKED_EXAMPLE_PRODUCTION,
   type BomRow, type ProposalForm, type WeatherOk,
 } from '@/lib/solar/design/proposalForm';
 import {
@@ -47,6 +49,7 @@ const GROUPS: Group[] = [
   { id: 'battery', title: 'Battery (optional, datasheet)', note: 'Leave empty for a system without a battery.', items: [...prov('b'), ['b.model', 'Model', ''], ['b.nominalKwh', 'Nominal energy per unit', 'kWh'], ['b.usableDoD', 'Usable DoD (0–1)', ''], ['b.dischargeEfficiency', 'Discharge efficiency (0–1)', ''], ['b.maxDischargeC', 'Max discharge', 'C'], ['b.maxChargeC', 'Max charge', 'C'], ['b.units', 'Units', 'No'], ['b.requiredUsableAcKwh', 'Energy needed from the battery per cycle', 'kWh'], ...verification('b')] },
   { id: 'design', title: 'Array design', items: [['d.modulesPerString', 'Modules per string', 'No'], ['d.stringsPerMppt', 'Strings on each MPPT (e.g. 1,1)', ''], ['d.inverterCount', 'Inverter count', 'No'], ['d.tilt', 'Tilt', '°'], ['d.azimuth', 'Azimuth (0 = N, 180 = S)', '°'], ['d.albedo', 'Ground albedo (optional; blank = 0.2)', '']] },
   { id: 'temps', title: 'Site temperatures', items: [['t.recordLowC', 'Site record low', '°C'], ['t.maxAmbientC', 'Max ambient while generating', '°C'], ['t.source', 'Source of these temperatures', '']] },
+  { id: 'sld', title: 'Connections (for the single-line diagram)', note: 'Leave unanswered if not yet decided: the diagram then marks it "to be specified by the engineer".', items: [['sld.grid', 'Connected to the utility grid', '', 'yesno'], ['sld.generator', 'Generator connected', '', 'yesno']] },
   { id: 'cable', title: 'Cable run (optional)', note: 'Values from IEC 60364-5-52 for the installation method. Leave empty to skip.', items: [['k.name', 'Name', ''], ['k.lengthM', 'One-way length', 'm'], ['k.csaMm2', 'Cross-section', 'mm²'], ['k.designCurrentA', 'Design current', 'A'], ['k.systemV', 'System voltage', 'V'], ['k.tabulatedAmpacityA', 'Tabulated ampacity It', 'A'], ['k.ambientFactor', 'Ambient factor Ca', ''], ['k.groupingFactor', 'Grouping factor Cg', ''], ['k.maxDropPct', 'Max voltage drop', '%']] },
 ];
 const HYBRID_GROUPS: Group[] = [
@@ -280,6 +283,8 @@ export default function ProposalPage() {
 
   const p = production.result;
   const h = hybrid.result;
+  const horizon = horizonFromForm(f);
+  const sldPreview = sldPreviewFromForm(f);
 
   return (
     <div style={{ padding: 16, color: '#e2e8f0', maxWidth: 1200, margin: '0 auto' }}>
@@ -338,7 +343,7 @@ export default function ProposalPage() {
 
         <section style={box} aria-label="Weather and production">
           <h2 style={{ fontSize: 16, fontWeight: 600, color: '#fbbf24', margin: '0 0 8px' }}>Weather and production</h2>
-          <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 8px' }}>Hourly irradiance and temperature for {year} at the site coordinates, then an hourly simulation with losses: {LOSSES_SOURCE} (14.08 %).</p>
+          <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 8px' }}>Hourly irradiance and temperature for {year} at the site coordinates, then an hourly simulation with losses: {horizon.profile ? LOSSES_SOURCE_WITH_HORIZON : `${LOSSES_SOURCE} (14.08 %)`}.</p>
           <button type="button" onClick={fetchWeather} disabled={busy === 'weather'} style={btn}>{busy === 'weather' ? 'Fetching…' : 'Fetch hourly weather'}</button>
           {weatherMsg ? <p style={{ color: '#fca5a5', fontSize: 13, marginTop: 8 }}>{weatherMsg}</p> : null}
           {weather ? <p style={{ fontSize: 12, color: '#cbd5e1', marginTop: 8 }}>Weather: {weather.source} ({weather.hours} hours).{weather.notes?.length ? ` ${weather.notes.join(' ')}` : ''}</p> : null}
@@ -347,8 +352,35 @@ export default function ProposalPage() {
             <div style={{ marginTop: 8, fontSize: 13 }}>
               <div style={{ fontWeight: 700 }}>{weather ? 'Simulated' : 'TEST values (not a simulation)'}: {p.annualKwh.toLocaleString('en-KE')} kWh/year · specific yield {p.specificYieldKwhPerKwp} kWh/kWp · clipped {p.clippedKwh} kWh · PR {p.performanceRatio}</div>
               <div style={{ fontSize: 11, color: '#94a3b8' }}>{p.assumptions[0]} {p.engineVersion}</div>
+              {p.shading ? <ShadingView s={p.shading} /> : null}
             </div>
           ) : null}
+        </section>
+
+        <section style={box} aria-label="Horizon shading">
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#fbbf24', margin: '0 0 8px' }}>Horizon shading (optional)</h2>
+          <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 8px' }}>
+            Obstructions seen from the array (survey with an inclinometer and compass, or a horizon photo). Azimuth clockwise from north (0 = N, 90 = E, 180 = S, 270 = W). Direct sunlight is blocked whenever the sun is lower than the horizon at its azimuth; diffuse light is not reduced. With a horizon, the PVWatts 3 % shading allowance is replaced by this calculation. Leave all three empty for no horizon shading. Method: docs/engineering/solar-sld-and-shading.md.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 8 }}>
+            <label style={{ fontSize: 12, color: '#cbd5e1' }}>Sectors: from azimuth, to azimuth, elevation (°), one per line
+              <textarea aria-label="Horizon sectors" rows={4} value={f['sh.sectors'] ?? ''} onChange={(e) => set('sh.sectors', e.target.value)} placeholder="e.g. 60,120,15" style={{ ...inputStyle, fontFamily: 'monospace' }} />
+            </label>
+            <label style={{ fontSize: 12, color: '#cbd5e1' }}>Obstacles: name, height above array (m), distance (m), azimuth (°), width (m), one per line
+              <textarea aria-label="Obstacles" rows={4} value={f['sh.obstacles'] ?? ''} onChange={(e) => set('sh.obstacles', e.target.value)} placeholder="e.g. water tank,4,12,90,3" style={{ ...inputStyle, fontFamily: 'monospace' }} />
+            </label>
+            <label style={{ fontSize: 12, color: '#cbd5e1' }}>Source of the horizon (survey, date, by whom)
+              <input value={f['sh.source'] ?? ''} onChange={(e) => set('sh.source', e.target.value)} style={inputStyle} />
+            </label>
+          </div>
+          {horizon.errors.length ? <ul role="alert" style={{ fontSize: 12, color: '#fca5a5', paddingLeft: 16 }}>{horizon.errors.map((x) => <li key={x}>{x}</li>)}</ul> : null}
+          {horizon.profile ? <HorizonChart profile={horizon.profile} /> : null}
+          {horizon.profile && !p?.shading ? <p style={{ fontSize: 12, color: '#94a3b8' }}>The monthly losses appear under Weather and production once the hourly weather is fetched.</p> : null}
+        </section>
+
+        <section style={box} aria-label="Single-line diagram">
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#fbbf24', margin: '0 0 8px' }}>Single-line diagram (preview)</h2>
+          {sldPreview.model ? <SldView m={sldPreview.model} /> : <p style={{ fontSize: 12, color: '#94a3b8' }}>Shown once the module, inverter, array design and site temperatures are complete. Waiting for: {sldPreview.errors.join('; ')}</p>}
         </section>
 
         <section style={box} aria-label="Hybrid balance">
@@ -473,6 +505,11 @@ function ProposalView({ p, stale }: { p: Proposal; stale: boolean }) {
         <div style={{ color: '#94a3b8' }}>{p.energy.source}</div>
       </div>
 
+      <h3 style={h2}>Single-line diagram</h3>
+      <SldView m={p.sld} />
+
+      {p.shading ? <><h3 style={h2}>Horizon shading</h3><ShadingView s={p.shading} /></> : null}
+
       <h3 style={h2}>Finance</h3>
       {p.finance ? (
         <>
@@ -490,5 +527,49 @@ function ProposalView({ p, stale }: { p: Proposal; stale: boolean }) {
       <ul style={{ fontSize: 12, color: '#cbd5e1', paddingLeft: 16 }}>{p.disclosures.map((d) => <li key={d}>{d}</li>)}</ul>
       <div style={{ fontSize: 11, color: '#94a3b8' }}>{p.versions.join(' · ')}</div>
     </div>
+  );
+}
+
+/** The diagram as SVG text from sld.ts (all text escaped there); the PDF draws the same model. */
+function SldView({ m }: { m: SldModel }) {
+  const svg = useMemo(() => sldToSvg(m), [m]);
+  return (
+    <div>
+      <div style={{ overflowX: 'auto', background: '#fff', borderRadius: 8 }}>
+        <div style={{ minWidth: 900 }} dangerouslySetInnerHTML={{ __html: svg }} />
+      </div>
+      <p style={{ fontSize: 11, color: '#94a3b8', margin: '4px 0 0' }}>{m.legend} {m.engineVersion}</p>
+    </div>
+  );
+}
+
+function ShadingView({ s }: { s: ShadingSummary }) {
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div style={{ fontSize: 13, fontWeight: 700 }}>Horizon shading (computed factor, included above): AC energy loss {s.annual.energyLossPct ?? 0} % · beam loss {s.annual.beamLossPct ?? 0} % · {s.annual.unshadedAnnualKwh.toLocaleString('en-KE')} kWh unshaded → {s.annual.shadedAnnualKwh.toLocaleString('en-KE')} kWh</div>
+      <div style={{ overflowX: 'auto' }}><table style={{ fontSize: 12, borderCollapse: 'collapse', width: '100%', marginTop: 4 }}>
+        <thead><tr>{SHADING_HEAD.map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
+        <tbody>{shadingRows(s).map((r) => <tr key={r[0]}>{r.map((v, i) => <td key={i} style={{ ...td, textAlign: i ? 'right' : 'left', fontWeight: r[0] === 'Year' ? 700 : undefined }}>{v}</td>)}</tr>)}</tbody>
+      </table></div>
+      <ul style={{ fontSize: 11, color: '#94a3b8', paddingLeft: 16 }}>
+        <li>{s.method}</li><li>{s.diffuseTreatment}</li>
+        <li>Sky-view factor (horizontal) {s.skyViewFactorHorizontal}; indicative diffuse loss NOT applied: {s.indicativeDiffuseLossPct ?? 0} % of plane-of-array irradiation.</li>
+        <li>Horizon source: {s.horizon.source}. {s.engineVersion}</li>
+      </ul>
+    </div>
+  );
+}
+
+/** Horizon elevation against azimuth (input check only; the numbers are in the table). */
+function HorizonChart({ profile }: { profile: HorizonProfile }) {
+  const W = 720, H = 160, L = 34, B = 20;
+  const pts = Array.from({ length: 361 }, (_, a) => `${L + (a / 360) * (W - L - 6)},${H - B - (horizonElevationDeg(profile, a) / 90) * (H - B - 8)}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Horizon elevation by azimuth" style={{ maxWidth: W, marginTop: 8 }}>
+      <rect x={L} y={8} width={W - L - 6} height={H - B - 8} fill="none" stroke="#475569" />
+      {[0, 90, 180, 270, 360].map((a) => <text key={a} x={L + (a / 360) * (W - L - 6)} y={H - 6} fontSize="10" fill="#94a3b8" textAnchor="middle">{a}°</text>)}
+      {[0, 30, 60, 90].map((e) => <text key={e} x={L - 4} y={H - B - (e / 90) * (H - B - 8) + 3} fontSize="10" fill="#94a3b8" textAnchor="end">{e}°</text>)}
+      <polyline points={pts} fill="none" stroke="#fbbf24" strokeWidth="1.5" />
+    </svg>
   );
 }

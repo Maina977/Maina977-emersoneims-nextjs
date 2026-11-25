@@ -13,12 +13,17 @@ import type { Module, Inverter, Battery, CableRun } from './validate';
 import type { HourlyInput, HourlyResult } from './hourly';
 import type { HybridInput, HybridResult } from './hybrid';
 import type { ProposalInput, PricedLine, Sourced } from './proposal';
-import { PVWATTS_DEFAULT_LOSSES } from './production';
+import { PVWATTS_DEFAULT_LOSSES, type Losses } from './production';
+import { parseHorizonText, type HorizonProfile } from './shading';
+import { buildSld, type SldConnections, type SldModel } from './sld';
 
 export type ProposalForm = Record<string, string>;
 export interface BomRow { item: string; model: string; quantity: string; unit: string; rate: string; rateSource: string; rateDate: string }
 export const EMPTY_BOM_ROW: BomRow = { item: '', model: '', quantity: '', unit: '', rate: '', rateSource: '', rateDate: '' };
 export const LOSSES_SOURCE = 'PVWatts v5 defaults';
+/** With a horizon profile the PVWatts 3 % shading allowance is replaced by the computed horizon loss (no double counting). */
+export const LOSSES_SOURCE_WITH_HORIZON = 'PVWatts v5 defaults, with the 3 % shading allowance replaced by the horizon calculation (shading 0 %)';
+export const LOSSES_WITH_HORIZON: Losses = { ...PVWATTS_DEFAULT_LOSSES, shading: 0 };
 
 const str = (f: ProposalForm, k: string) => (f[k] ?? '').trim();
 const blank = (f: ProposalForm, k: string) => str(f, k) === '';
@@ -104,6 +109,8 @@ export function buildHourlyInput(f: ProposalForm, w: WeatherOk): { input: Hourly
   for (const [k, l] of need) if (!Number.isFinite(k === 'd.stringsPerMppt' ? dcKwp(f) : num(f, k))) errors.push(`${l} is required for the simulation`);
   const dc = dcKwp(f);
   if (!errors.length && !(dc > 0)) errors.push('The array has no DC capacity (check the array design)');
+  const hz = horizonFromForm(f);
+  errors.push(...hz.errors);
   if (errors.length) return { input: null, errors };
   return {
     input: {
@@ -111,8 +118,51 @@ export function buildHourlyInput(f: ProposalForm, w: WeatherOk): { input: Hourly
       start: w.start, ghiWm2: w.ghiWm2, tempC: w.tempC, weatherSource: w.source,
       array: { dcKw: dc, gammaPmaxPct: num(f, 'm.gammaPmaxPct'), noctC: num(f, 'm.noctC') },
       inverter: { acKw: num(f, 'i.acKw') * num(f, 'd.inverterCount'), nominalEfficiency: num(f, 'i.nominalEfficiency') },
-      losses: PVWATTS_DEFAULT_LOSSES, lossesSource: LOSSES_SOURCE,
+      ...(hz.profile ? { losses: LOSSES_WITH_HORIZON, lossesSource: LOSSES_SOURCE_WITH_HORIZON, horizon: hz.profile } : { losses: PVWATTS_DEFAULT_LOSSES, lossesSource: LOSSES_SOURCE }),
     },
+    errors,
+  };
+}
+
+/** The horizon profile from the form (sh.sectors, sh.obstacles, sh.source); null when all three are blank. */
+export function horizonFromForm(f: ProposalForm): { profile: HorizonProfile | null; errors: string[] } {
+  return parseHorizonText(f['sh.sectors'] ?? '', f['sh.obstacles'] ?? '', f['sh.source'] ?? '');
+}
+
+/** Grid / generator connection for the single-line diagram: yes/no answers; unanswered = null (not stated). */
+export function connectionsFromForm(f: ProposalForm): SldConnections | undefined {
+  const tri = (k: string) => (str(f, k) === 'yes' ? true : str(f, k) === 'no' ? false : null);
+  const grid = tri('sld.grid'), generator = tri('sld.generator');
+  const rated = num(f, 'hgen.ratedKw');
+  if (grid === null && generator === null) return undefined;
+  return { grid, generator, ...(generator === true && Number.isFinite(rated) && rated > 0 ? { generatorRatedKw: rated } : {}) };
+}
+
+/**
+ * Single-line diagram preview from the form, as soon as the module, inverter,
+ * array design and site temperatures are complete (finance is not needed).
+ * Uses the same buildSld as the proposal, so the preview and the built
+ * proposal show the same diagram for the same inputs.
+ */
+export function sldPreviewFromForm(f: ProposalForm): { model: SldModel | null; errors: string[] } {
+  const errors: string[] = [];
+  for (const [k, l] of [['d.modulesPerString', 'Modules per string'], ['d.stringsPerMppt', 'Strings per MPPT'], ['d.inverterCount', 'Inverter count'], ['t.recordLowC', 'Site record low temperature'], ['t.maxAmbientC', 'Max ambient temperature']] as const) if (blank(f, k)) errors.push(`${l} is required`);
+  const { module, inverter, battery, errors: eErr } = buildEntries(f);
+  errors.push(...eErr);
+  if (errors.length || !module || !inverter) return { model: null, errors };
+  const cables: CableRun[] = anyFilled(f, 'k.') && CABLE_KEYS.every((k) => !blank(f, `k.${k}`))
+    ? [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct') }]
+    : [];
+  const conn = connectionsFromForm(f);
+  const units = num(f, 'b.units'), need = num(f, 'b.requiredUsableAcKwh');
+  return {
+    model: buildSld({
+      reference: str(f, 'ref') || '(no reference yet)', module: module.data, inverter: inverter.data,
+      design: { modulesPerString: num(f, 'd.modulesPerString'), stringsPerMppt: parseStrings(str(f, 'd.stringsPerMppt')) },
+      inverterCount: num(f, 'd.inverterCount'), temps: { recordLowC: num(f, 't.recordLowC'), maxAmbientC: num(f, 't.maxAmbientC') },
+      ...(battery && Number.isFinite(units) ? { battery: { data: battery.data, units, ...(Number.isFinite(need) ? { requiredUsableAcKwh: need } : {}) } } : {}),
+      cables, ...(conn ? { connections: conn } : {}),
+    }),
     errors,
   };
 }
@@ -218,6 +268,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
     inverterCount: num(f, 'd.inverterCount'),
     temps: { recordLowC: num(f, 't.recordLowC'), maxAmbientC: num(f, 't.maxAmbientC'), source: str(f, 't.source') },
     cables,
+    ...(connectionsFromForm(f) ? { connections: connectionsFromForm(f) } : {}),
     // The hourly series is not used by the proposal engine; dropped to keep the request small.
     production: { ...production, hourlyAcKwh: [] },
     ...(hybrid ? { hybrid } : {}),
@@ -244,6 +295,8 @@ export const WORKED_EXAMPLE_FORM: ProposalForm = {
   'i.model': 'test-inverter', 'i.acKw': '15', 'i.maxDcV': '1000', 'i.mpptMinV': '200', 'i.mpptMaxV': '850', 'i.mpptCount': '2', 'i.maxInputA': '26', 'i.maxIscA': '40',
   'i.verified': 'yes', 'i.verifiedBy': 'test-2', 'i.verifiedOn': '2026-11-20',
   'd.modulesPerString': '16', 'd.stringsPerMppt': '1,1', 'd.inverterCount': '1',
+  // TEST values (as solar-proposal-form.test.ts) so "Fetch hourly weather" can simulate the example straight through.
+  'd.tilt': '10', 'd.azimuth': '0', 'i.nominalEfficiency': '0.96',
   't.recordLowC': '10', 't.maxAmbientC': '35', 't.source': 'test station record',
   'f.tariff': '25', 'f.tariffSource': 'customer bill (test)', 'f.selfConsumed': '0.8', 'f.selfConsumedSource': 'load logger (test)',
   'f.escalation': '0', 'f.escalationSource': 'test source', 'f.discount': '10', 'f.discountSource': 'test source', 'f.degradation': '0', 'f.degradationSource': 'test source',

@@ -1,0 +1,47 @@
+{
+  "schema": "emersoneims/solar-equipment-datasheet v1",
+  "kind": "charge-controller",
+  "manufacturer": "Victron Energy B.V.",
+  "model": "SmartSolar Charge Controller MPPT 150/45",
+  "variant": "150 V / 45 A (datasheet shared with MPPT 150/35)",
+  "datasheet": {
+    "title": "SmartSolar Charge Controller MPPT 150/35 & 150/45",
+    "revision": null,
+    "date": null,
+    "url": "https://www.victronenergy.com/upload/documents/Datasheet-SmartSolar-charge-controller-MPPT-150-35-&-150-45-EN.pdf",
+    "retrieved": "2026-11-25",
+    "copySource": "manufacturer"
+  },
+  "evidenceClass": "manufacturer specification",
+  "verification": {
+    "status": "unverified",
+    "enteredBy": "research agent (automated extraction)",
+    "note": "Needs second-person check against the PDF before use in a quoted design."
+  },
+  "parameters": {
+    "maxPvOpenCircuitVoltage": { "value": 150, "unit": "V", "condition": "absolute maximum, coldest conditions" },
+    "maxPvOperatingVoltage": { "value": 145, "unit": "V", "condition": "start-up and operating maximum" },
+    "maxPvShortCircuitCurrent": { "value": 50, "unit": "A", "condition": "footnote 2: a PV array with a higher short circuit current may damage the controller" },
+    "ratedChargeCurrent": { "value": 45, "unit": "A", "condition": "as printed" },
+    "batteryVoltages": { "value": null, "unit": "V", "condition": "as printed", "note": "Printed: '12 / 24 / 48 V Auto Select (software tool needed to select 36 V)'." },
+    "nominalPvPower12V": { "value": 650, "unit": "W", "condition": "12 V battery; footnote 1a: if more PV power is connected, the controller will limit input power" },
+    "nominalPvPower24V": { "value": 1300, "unit": "W", "condition": "24 V battery" },
+    "nominalPvPower36V": { "value": 1950, "unit": "W", "condition": "36 V battery" },
+    "nominalPvPower48V": { "value": 2600, "unit": "W", "condition": "48 V battery" },
+    "peakEfficiency": { "value": 98, "unit": "%", "condition": "printed as 'Maximum efficiency 98 %'" },
+    "selfConsumption12V": { "value": 20, "unit": "mA", "condition": "12 V" },
+    "selfConsumption24V": { "value": 15, "unit": "mA", "condition": "24 V" },
+    "selfConsumption48V": { "value": 10, "unit": "mA", "condition": "48 V" },
+    "operatingTemperatureMin": { "value": -30, "unit": "°C", "condition": "as printed '-30 to +60 °C (full rated output up to 40 °C)'" },
+    "operatingTemperatureMax": { "value": 60, "unit": "°C", "condition": "as printed" },
+    "fullRatedOutputUpTo": { "value": 40, "unit": "°C", "condition": "as printed" },
+    "weight": { "value": 1.25, "unit": "kg", "condition": "as printed" }
+  },
+  "notes": [
+    "PV start condition (footnote 1b): PV voltage must exceed Vbat + 5 V to start; thereafter minimum PV voltage is Vbat + 1 V.",
+    "Default absorption voltages 14,4 / 28,8 / 43,2 / 57,6 V and float 13,8 / 27,6 / 41,4 / 55,2 V (adjustable); temperature compensation -16 / -32 / -64 mV/°C.",
+    "Protection category IP43 (electronic components), IP22 (connection area). Safety standards EN/IEC 62109-1, UL 1741, CSA C22.2.",
+    "No revision code or date is printed on the datasheet; file name therefore uses 'undated'. Victron updates these PDFs in place at the same URL, so the retrieved date matters.",
+    "Values read from the 150/45 column of a two-column table (150/35 | 150/45) via pdftotext -table; 150/35 column values are 35 A rated and 40 A max Isc."
+  ]
+}

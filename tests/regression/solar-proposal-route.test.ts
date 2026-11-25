@@ -60,7 +60,7 @@ describe('POST /api/solar/proposal', () => {
     // Opened with ExcelJS: the right workbook, marked DRAFT, with the revision hash.
     const ExcelJS = (await import('exceljs')).default;
     const wb = new ExcelJS.Workbook(); await wb.xlsx.load(b.buffer as ArrayBuffer);
-    expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow']);
+    expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow', 'Single-line diagram']); // 2026-11-25: SLD sheet added
     expect(String(wb.getWorksheet('Summary')!.getCell('A2').value)).toMatch(/DRAFT: NOT FOR ISSUE/);
     expect(wb.getWorksheet('Summary')!.getCell('B3').value).toBe(proposalRevisionHash(base()));
   }, 30000);
