@@ -1,0 +1,111 @@
+{
+  "dataset": "solar-hub-references",
+  "version": "1.0.0",
+  "retrievedOn": "2026-11-25",
+  "purpose": "Reference values for the /solar hub calculators, each with its source and status. Reference only: no value here is a price, a quotation or a guarantee, and none is used to change a calculator result. See docs/engineering/solar-hub-source-register.md.",
+  "statusVocabulary": {
+    "manufacturer-specification": "Printed on the manufacturer's datasheet for that exact model; applies to that model only.",
+    "published-reference": "Published by a regulator or reported from a regulator's notice; dated, applies to the period stated.",
+    "user-provided-assumption": "Entered by the customer (tariff, quoted cost, battery replacement quote).",
+    "modelled-estimate": "A planning assumption inside the calculator, not a measurement."
+  },
+  "sources": [
+    {
+      "id": "jinko-tiger-neo-f8",
+      "title": "JinkoSolar Tiger Neo N-type 72HL4-(V) 580-605 W datasheet, JKM580-605N-72HL4-(V)-F8-EN",
+      "publisher": "JinkoSolar Co., Ltd.",
+      "date": "2024 (copyright line on the datasheet)",
+      "url": "https://jinkosolar.com/uploads/JKM580-605N-72HL4-(V)-F8-EN.pdf",
+      "accessed": "2026-11-25",
+      "how": "PDF text extracted locally (pdfjs-dist)"
+    },
+    {
+      "id": "deye-sg04lp1-2026-09",
+      "title": "Deye single phase hybrid inverter SUN-3/3.6/5/6K-SG04LP1-EU datasheet (file BDatasheetSUN-3-6K-SG04LP120260911en)",
+      "publisher": "Ningbo Deye Inverter Technology Co., Ltd.",
+      "date": "2026-09-11 (date in the file name)",
+      "url": "https://www.deyeinverter.com/deyeinverter/2026/09/14/BDatasheetSUN-3-6K-SG04LP120260911en.pdf",
+      "accessed": "2026-11-25",
+      "how": "PDF text extracted locally (pdfjs-dist)"
+    },
+    {
+      "id": "pylontech-us5000-py21us05-1",
+      "title": "Pylontech US5000 Residential BESS datasheet, PY21US05-1",
+      "publisher": "Pylontech (copy hosted by a distributor, fvcomponentes.com)",
+      "date": "not printed; reference PY21US05-1 (2021 series); distributor upload 2024-01",
+      "url": "https://fvcomponentes.com/wp-content/uploads/2024/01/Pylontech-US5000-48KWh-48V.pdf",
+      "accessed": "2026-11-25",
+      "how": "PDF text extracted locally (pdfjs-dist). Not from pylontech.com.cn: a third-party copy of the manufacturer sheet."
+    },
+    {
+      "id": "apc-srt5kxli-se-page",
+      "title": "APC Smart-UPS SRT 5000VA 230V (SRT5KXLI) product page",
+      "publisher": "Schneider Electric",
+      "date": "no date on the page",
+      "url": "https://www.se.com/il/en/product/SRT5KXLI/apc-smartups-srt-5000va-230v",
+      "accessed": "2026-11-25",
+      "how": "web page read"
+    },
+    {
+      "id": "epra-pass-through-2026-09",
+      "title": "EPRA Adjusts Electricity Charges as Ksh4.16 Per kWh Pass-Through Costs Apply (reports EPRA notice dated 2026-09-18 under Schedule of Tariffs 2023, Part III clause 1)",
+      "publisher": "Kenyans.co.ke (news report of an EPRA gazette notice)",
+      "date": "2026-09-20",
+      "url": "https://www.kenyans.co.ke/news/127216-epra-adjusts-electricity-charges-ksh416-kwh-pass-through-costs-apply",
+      "accessed": "2026-11-25",
+      "how": "web page read; the EPRA notice itself was not retrieved"
+    },
+    {
+      "id": "epra-fuel-2026-11",
+      "title": "EPRA Maintains Fuel Prices Unchanged, Super Petrol to Retail at Ksh226.96",
+      "publisher": "Kenyans.co.ke (news report quoting EPRA's monthly review)",
+      "date": "2026-11-14",
+      "url": "https://kenyans.co.ke/news/129383-epra-maintains-fuel-prices-unchanged-super-petrol-retail-ksh22696",
+      "accessed": "2026-11-25",
+      "how": "web page read; the EPRA price notice itself was not retrieved"
+    }
+  ],
+  "values": [
+    { "id": "module.jinko580.pmax", "value": 580, "unit": "Wp", "status": "manufacturer-specification", "source": "jinko-tiger-neo-f8", "appliesTo": "JKM580N-72HL4(-V) at STC" },
+    { "id": "module.jinko580.efficiencyStc", "value": 22.45, "unit": "%", "status": "manufacturer-specification", "source": "jinko-tiger-neo-f8", "appliesTo": "JKM580N-72HL4(-V) at STC" },
+    { "id": "module.jinko.tempCoeffPmax", "value": -0.29, "unit": "%/°C", "status": "manufacturer-specification", "source": "jinko-tiger-neo-f8", "appliesTo": "Tiger Neo 72HL4-(V) 580-605 W" },
+    { "id": "module.jinko.firstYearDegradation", "value": 1, "unit": "%", "status": "manufacturer-specification", "source": "jinko-tiger-neo-f8", "appliesTo": "warranty limit, year 1" },
+    { "id": "module.jinko.annualDegradation", "value": 0.4, "unit": "%/year", "status": "manufacturer-specification", "source": "jinko-tiger-neo-f8", "appliesTo": "linear power warranty limit, years 2-30" },
+    { "id": "module.jinko.productWarranty", "value": 12, "unit": "years", "status": "manufacturer-specification", "source": "jinko-tiger-neo-f8" },
+    { "id": "module.jinko.powerWarranty", "value": 30, "unit": "years", "status": "manufacturer-specification", "source": "jinko-tiger-neo-f8" },
+
+    { "id": "inverter.deye5k.ratedAcPower", "value": 5000, "unit": "W", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09", "appliesTo": "SUN-5K-SG04LP1-EU" },
+    { "id": "inverter.deye.maxEfficiency", "value": 97.6, "unit": "%", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09", "appliesTo": "SUN-3/3.6/5/6K-SG04LP1-EU" },
+    { "id": "inverter.deye.euroEfficiency", "value": 96.5, "unit": "%", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09", "appliesTo": "SUN-3/3.6/5/6K-SG04LP1-EU" },
+    { "id": "inverter.deye.mpptEfficiency", "value": 99, "unit": "% (printed as >99%)", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09" },
+    { "id": "inverter.deye.batteryVoltageRange", "value": [40, 60], "unit": "V", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09" },
+    { "id": "inverter.deye.maxBatteryCurrent", "value": 140, "unit": "A", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09", "appliesTo": "3.6/5/6 kW models" },
+    { "id": "inverter.deye.warranty", "value": "5 years / up to 10 years, varies by installation country", "unit": "", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09" },
+
+    { "id": "battery.us5000.nominalCapacity", "value": 4800, "unit": "Wh", "status": "manufacturer-specification", "source": "pylontech-us5000-py21us05-1" },
+    { "id": "battery.us5000.usableCapacity", "value": 4560, "unit": "Wh", "status": "manufacturer-specification", "source": "pylontech-us5000-py21us05-1" },
+    { "id": "battery.us5000.depthOfDischarge", "value": 95, "unit": "%", "status": "manufacturer-specification", "source": "pylontech-us5000-py21us05-1" },
+    { "id": "battery.us5000.cycleLife", "value": 6000, "unit": "cycles (printed as >6,000 at 25 °C)", "status": "manufacturer-specification", "source": "pylontech-us5000-py21us05-1" },
+    { "id": "battery.us5000.designLife", "value": 15, "unit": "years (printed as 15+ years at 25 °C)", "status": "manufacturer-specification", "source": "pylontech-us5000-py21us05-1" },
+    { "id": "battery.us5000.recommendedCurrent", "value": 50, "unit": "A", "status": "manufacturer-specification", "source": "pylontech-us5000-py21us05-1" },
+
+    { "id": "ups.srt5kxli.rating", "value": "5 kVA / 4.5 kW, double-conversion on-line", "unit": "", "status": "manufacturer-specification", "source": "apc-srt5kxli-se-page" },
+
+    { "id": "tariff.kenya.passThrough.2026-09", "value": 4.16, "unit": "KES/kWh (fuel energy cost 3.00 + forex 1.14 + WRMA 0.0148)", "status": "published-reference", "source": "epra-pass-through-2026-09", "appliesTo": "meter readings taken in September 2026; added to the base energy charge" },
+    { "id": "fuel.nairobi.diesel.2026-11", "value": 227.76, "unit": "KES/litre incl. 8% VAT", "status": "published-reference", "source": "epra-fuel-2026-11", "appliesTo": "Nairobi, 15 Nov - 14 Dec 2026" },
+    { "id": "fuel.nairobi.petrol.2026-11", "value": 226.96, "unit": "KES/litre incl. 8% VAT", "status": "published-reference", "source": "epra-fuel-2026-11", "appliesTo": "Nairobi, 15 Nov - 14 Dec 2026" },
+    { "id": "fuel.nairobi.kerosene.2026-11", "value": 219.87, "unit": "KES/litre incl. 8% VAT", "status": "published-reference", "source": "epra-fuel-2026-11", "appliesTo": "Nairobi, 15 Nov - 14 Dec 2026" }
+  ],
+  "calculatorAssumptions": [
+    { "id": "roi.avgSunHours", "value": 5.5, "unit": "h/day", "status": "modelled-estimate", "where": "components/solar/SolarROICalculator.tsx KENYA_SOLAR.avgSunHours" },
+    { "id": "roi.performanceRatio", "value": 0.78, "unit": "", "status": "modelled-estimate", "where": "lib/solar/sizing.ts PERFORMANCE_RATIO", "checkedAgainst": "inverter.deye.euroEfficiency (inverter loss alone 3.5%); the ratio also covers temperature, wiring and soiling" },
+    { "id": "roi.degradationRate", "value": 0.5, "unit": "%/year", "status": "modelled-estimate", "where": "KENYA_SOLAR.degradationRate", "checkedAgainst": "module.jinko.annualDegradation 0.40 (warranty limit): the calculator is more conservative" },
+    { "id": "roi.batteryDod", "value": 90, "unit": "%", "status": "modelled-estimate", "where": "lib/solar/sizing.ts BATTERY_DOD", "checkedAgainst": "battery.us5000.depthOfDischarge 95: the calculator uses less of the battery" },
+    { "id": "roi.batteryEfficiency", "value": 95, "unit": "%", "status": "modelled-estimate", "where": "lib/solar/sizing.ts BATTERY_EFFICIENCY", "checkedAgainst": "no manufacturer round-trip figure found (gap)" },
+    { "id": "roi.batteryReplacementYear", "value": 12, "unit": "year", "status": "modelled-estimate", "where": "SolarROICalculator batteryReplacementYear (cost only when the customer enters a quote)", "checkedAgainst": "battery.us5000.designLife 15+ years and >6,000 cycles (16.4 years at one cycle a day): year 12 is earlier, i.e. conservative" },
+    { "id": "roi.maintenance", "value": 1, "unit": "% of system cost per year", "status": "modelled-estimate", "where": "KENYA_SOLAR.maintenanceCostPercent" },
+    { "id": "roi.gridCo2", "value": 0.213, "unit": "kg CO2/kWh", "status": "modelled-estimate", "where": "KENYA_SOLAR.gridKgCo2PerKwh (Climate Watch / KPLC 2023, as cited in the code; not re-verified here)" },
+    { "id": "roi.tariff", "value": null, "unit": "KES/kWh", "status": "user-provided-assumption", "where": "input roi-tariff" },
+    { "id": "roi.installedCost", "value": null, "unit": "KES", "status": "user-provided-assumption", "where": "input roi-cost" }
+  ]
+}

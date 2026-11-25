@@ -1,0 +1,64 @@
+{
+  "dataset": "solar-hub-roi-benchmarks",
+  "version": "1.0.0",
+  "date": "2026-11-25",
+  "label": "SYNTHETIC",
+  "note": "All cases are synthetic: realistic Kenyan inputs chosen by the engineer, with the expected results worked out by hand from the calculator's formula (docs/engineering/solar-hub-source-register.md, section 'Test-case programme'). They prove the arithmetic; they are NOT field validation against a metered installation.",
+  "formula": {
+    "consumptionKwhPerMonth": "bill / tariff",
+    "productionKwhPerMonth": "kW x 5.5 h x 0.78 x 30",
+    "directKwh": "min(production, consumption x 0.5) x 0.75",
+    "storedKwh": "battery ? min((production - direct) x 0.95, consumption - direct, batteryKwh x 0.9 x 30) : 0",
+    "savedKwh": "battery ? min(direct + max(0, stored), min(production, consumption) x 0.9) : direct",
+    "monthlySavingsKes": "round(savedKwh x tariff)",
+    "yearN": "annualSavings x 0.995^(N-1) - 1% x cost - (N = 12 ? batteryReplacementQuote : 0)",
+    "paybackYear": "first N in 1..25 where the running total >= cost",
+    "roiPercent": "round((total25 - cost) / cost x 100)",
+    "netSavingsDisplay": "KES (total25 - cost) / 1e6 to 1 decimal, 'M'"
+  },
+  "cases": [
+    {
+      "id": "B1-hybrid-household",
+      "inputs": { "monthlyBill": 15000, "tariffInput": "25", "systemSize": 5, "quotedCostInput": "600000", "batteryReplacementInput": "", "includesBattery": true, "batteryCapacity": 10 },
+      "handCalc": "600 kWh; 643.5 kWh produced; direct 225; stored min(397.6, 375, 270) = 270; saved 495 kWh x 25 = 12,375/month; running total 142,500 / 284,258 / 425,276 / 565,560 / 705,112",
+      "expected": { "monthlySavingsKes": 12375, "paybackYears": 5, "roiPercent": 458, "netSavingsMillions": 2.7, "coveragePercent": 100, "co2KgPerYear": 1265 },
+      "tolerance": { "monthlySavingsKes": 1, "paybackYears": 0, "roiPercent": 1, "netSavingsMillions": 0.05, "coveragePercent": 0, "co2KgPerYear": 1 }
+    },
+    {
+      "id": "B2-grid-tied-small-shop",
+      "inputs": { "monthlyBill": 8000, "tariffInput": "30", "systemSize": 3, "quotedCostInput": "450000", "batteryReplacementInput": "", "includesBattery": false, "batteryCapacity": 10 },
+      "handCalc": "266.7 kWh; 386.1 produced; direct min(386.1, 133.3) x 0.75 = 100 kWh x 30 = 3,000/month; 36,000/yr less 4,500 maintenance; running total passes 450,000 in year 15 (453,996)",
+      "expected": { "monthlySavingsKes": 3000, "paybackYears": 15, "roiPercent": 63, "netSavingsMillions": 0.3, "coveragePercent": 100, "co2KgPerYear": 256 },
+      "tolerance": { "monthlySavingsKes": 1, "paybackYears": 0, "roiPercent": 1, "netSavingsMillions": 0.05, "coveragePercent": 0, "co2KgPerYear": 1 }
+    },
+    {
+      "id": "B3-battery-replacement-year-12",
+      "inputs": { "monthlyBill": 40000, "tariffInput": "28", "systemSize": 10, "quotedCostInput": "1500000", "batteryReplacementInput": "400000", "includesBattery": true, "batteryCapacity": 20 },
+      "handCalc": "1,428.6 kWh; 1,287 produced; direct 535.7; stored min(713.7, 892.9, 540) = 540 (battery-limited); saved 1,075.7 x 28 = 30,120/month; 25 years 361,440 x 23.556 - 375,000 - 400,000 = 7.74M",
+      "expected": { "monthlySavingsKes": 30120, "paybackYears": 5, "roiPercent": 416, "netSavingsMillions": 6.2, "coveragePercent": 90, "co2KgPerYear": 2750 },
+      "tolerance": { "monthlySavingsKes": 1, "paybackYears": 0, "roiPercent": 1, "netSavingsMillions": 0.05, "coveragePercent": 0, "co2KgPerYear": 1 }
+    },
+    {
+      "id": "B4-battery-sizing-limit",
+      "inputs": { "monthlyBill": 15000, "tariffInput": "25", "systemSize": 5, "quotedCostInput": "600000", "batteryReplacementInput": "", "includesBattery": true, "batteryCapacity": 5 },
+      "handCalc": "as B1 but the 5 kWh battery stores at most 5 x 0.9 x 30 = 135 kWh: saved 225 + 135 = 360 kWh x 25 = 9,000/month",
+      "expected": { "monthlySavingsKes": 9000, "paybackYears": 6, "coveragePercent": 100 },
+      "tolerance": { "monthlySavingsKes": 1, "paybackYears": 0, "coveragePercent": 0 }
+    },
+    {
+      "id": "B5-boundary-never-pays-back",
+      "inputs": { "monthlyBill": 2000, "tariffInput": "25", "systemSize": 1, "quotedCostInput": "2000000", "batteryReplacementInput": "", "includesBattery": false, "batteryCapacity": 10 },
+      "handCalc": "80 kWh; direct min(128.7, 40) x 0.75 = 30 kWh x 25 = 750/month = 9,000/yr, less 20,000 maintenance: the running total falls every year",
+      "expected": { "monthlySavingsKes": 750, "paybackText": "Not within 25 years" },
+      "tolerance": { "monthlySavingsKes": 1 }
+    }
+  ],
+  "invalidInputs": [
+    { "id": "I1-tariff-zero", "field": "roi-tariff", "value": "0", "expect": "tariff rejected: savings show 'Enter your tariff'" },
+    { "id": "I2-tariff-negative", "field": "roi-tariff", "value": "-5", "expect": "tariff rejected: savings show 'Enter your tariff'" },
+    { "id": "I3-cost-zero", "field": "roi-cost", "value": "0", "expect": "cost rejected: installed cost shows 'Request a quotation', payback asks for a quoted cost" },
+    { "id": "I4-cost-negative", "field": "roi-cost", "value": "-100000", "expect": "cost rejected as I3" },
+    { "id": "I5-bill-negative", "field": "roi-bill", "value": "-500", "expect": "bill clamped to 0" },
+    { "id": "I6-corrupt-session-draft", "field": "sessionStorage", "value": "{\"monthlyBill\":\"lots\",\"tariffInput\":25}", "expect": "wrongly typed fields ignored: bill 15000 default, tariff empty" }
+  ]
+}
