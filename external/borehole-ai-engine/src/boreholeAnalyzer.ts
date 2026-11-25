@@ -448,6 +448,7 @@ export class BoreholeAnalyzer {
     const effectiveLon = clientGeo?.longitude ?? features.metadata?.gps?.longitude;
     const hasCoords = effectiveLat != null && effectiveLon != null;
     let waterCheckUnavailable = false;
+    let waterCheckNote = '';
     // Safety hotfix 2026-11-25: no analysis without a real location. A position guessed from the
     // photo's colours ('visual-estimate') or no position at all is refused with a reason.
     // Review R3: a position from the file name or embedded text (filename/IPTC geocode) is not accepted either;
@@ -460,7 +461,8 @@ export class BoreholeAnalyzer {
     // sea off Mombasa all got full results).
     if (hasCoords) {
       const check = await siteCheck(effectiveLat as number, effectiveLon as number);
-      waterCheckUnavailable = check.waterCheck === 'unavailable';
+      waterCheckUnavailable = check.waterCheck !== 'ok';
+      waterCheckNote = check.note;
       const refusal = check.refusal;
       // Prefixed so the page shows the reason, not "a data service did not answer" (2026-10-29 audit).
       if (refusal) throw new Error(`Location problem: ${refusal}`);
@@ -3867,9 +3869,11 @@ export class BoreholeAnalyzer {
       }
     }
     // Review R7: the open-water check could not run; the page asks the customer to confirm the site is on land.
+    // Re-review of 126efdbc, M-2: the check is offline (kenyaWater.ts); its outcome is recorded either way.
+    if (waterCheckNote) (result as any).waterCheckNote = waterCheckNote;
     if (waterCheckUnavailable) {
       (result as any).waterBodyCheckUnavailable = true;
-      (result.fallbacksUsed ??= [] as any).push('Water-body check unavailable: the elevation service did not answer, so the point was not checked against lakes and the sea; the customer confirms it is on land');
+      (result.fallbacksUsed ??= [] as any).push(`${waterCheckNote || 'Water-body check inconclusive'}; the customer confirms on a map that the site is on land`);
     }
     // Ensure GPS coordinates propagate to ALL possible storage paths
     if (effectiveLat != null && effectiveLon != null) {
