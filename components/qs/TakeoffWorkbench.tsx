@@ -678,8 +678,9 @@ export default function TakeoffWorkbench() {
             </tbody>
           </table></div>
           <div className="flex flex-wrap gap-3 text-xs">
-            {([['prelims', 'Preliminaries %'], ['contingency', 'Contingency %'], ['ohp', 'Overheads & profit %'], ['vat', 'VAT %'], ['vatFrom', 'VAT rate effective from']] as const).map(([k, l]) => (
-              <label key={k}>{l} <input value={adj[k]} onChange={(e) => setAdj({ ...adj, [k]: e.target.value })} placeholder={k === 'vatFrom' ? 'YYYY-MM-DD' : ''} className={`${input} w-28 ml-1`} /></label>
+            {/* "Bill-level" O&P: distinct from each rate build-up's own O&P field (one accessible name per control, 2026-11-25). */}
+            {([['prelims', 'Preliminaries %'], ['contingency', 'Contingency %'], ['ohp', 'Bill-level overheads & profit %'], ['vat', 'VAT %'], ['vatFrom', 'VAT rate effective from']] as const).map(([k, l]) => (
+              <label key={k}>{l} <input aria-label={l} value={adj[k]} onChange={(e) => setAdj({ ...adj, [k]: e.target.value })} placeholder={k === 'vatFrom' ? 'YYYY-MM-DD' : ''} className={`${input} w-28 ml-1`} /></label>
             ))}
           </div>
           {boq && (

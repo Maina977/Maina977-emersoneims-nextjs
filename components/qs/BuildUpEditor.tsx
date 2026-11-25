@@ -74,7 +74,7 @@ export default function BuildUpEditor({ item, unit, draft, result, rates, onChan
         )}
       </div>
       <div className="flex flex-wrap gap-3">
-        <label>Overheads &amp; profit % <input aria-label={`${item} build-up overheads and profit %`} value={draft.ohp} onChange={(e) => onChange({ ...draft, ohp: e.target.value })} className={`${input} w-16`} inputMode="decimal" /></label>
+        <label>{`Build-up overheads & profit % (${item})`} <input aria-label={`Build-up overheads & profit % (${item})`} value={draft.ohp} onChange={(e) => onChange({ ...draft, ohp: e.target.value })} className={`${input} w-16`} inputMode="decimal" /></label>
         <label>basis <input aria-label={`${item} build-up overheads and profit basis`} value={draft.ohpSource} onChange={(e) => onChange({ ...draft, ohpSource: e.target.value })} placeholder="e.g. company policy 2026" className={`${input} w-48`} /></label>
         <label>Location <input aria-label={`${item} build-up location`} value={draft.location} onChange={(e) => onChange({ ...draft, location: e.target.value })} placeholder="e.g. Nairobi" className={`${input} w-32`} /></label>
       </div>
