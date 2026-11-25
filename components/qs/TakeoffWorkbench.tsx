@@ -307,6 +307,8 @@ export default function TakeoffWorkbench() {
     if (!hit) return;
     if (mode === 'calibrate') { setPts((x) => (x.length >= 2 ? [hit.p] : [...x, hit.p])); return; }
     if (!cal) { setErr('Calibrate this sheet first'); return; }
+    // A new point means the user is measuring again: a message about an earlier, refused measurement is stale (2026-11-25).
+    setErr('');
     setPts((x) => [...x, hit.p]);
     setPtSnaps((x) => [...x, hit.kind]);
   };
@@ -492,7 +494,7 @@ export default function TakeoffWorkbench() {
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Measurement tools">
               {modes.map(([m, l]) => (
-                <button key={m} type="button" onClick={() => { setMode(m); setPts([]); setPtSnaps([]); }} disabled={m !== 'calibrate' && !cal}
+                <button key={m} type="button" onClick={() => { setMode(m); setPts([]); setPtSnaps([]); setErr(''); }} disabled={m !== 'calibrate' && !cal}
                   className={`rounded px-3 py-1 text-xs border ${mode === m ? 'border-amber-400 bg-amber-500/20' : 'border-slate-600'} disabled:opacity-40`}>{l}</button>
               ))}
               {mode !== 'calibrate' && <button type="button" onClick={finish} className="rounded bg-amber-600 px-3 py-1 text-xs text-white">Finish ({pts.length} pts)</button>}
