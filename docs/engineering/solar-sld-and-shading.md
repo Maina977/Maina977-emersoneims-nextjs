@@ -45,7 +45,7 @@ Nothing the design does not determine is given a value. The phrase "to be specif
 
 ### 2.2 One model, three outputs
 
-`SldModel` holds the boxes (position, title, wrapped text lines) and the wires. `sldToSvg()` draws it on screen, `drawSldPage()` in `proposalExport.ts` draws the same boxes and text in the PDF, and `sldRows()` lists the same text in the Excel sheet. All text is XML-escaped in the SVG; the test feeds `a&b <x>` as a model name.
+`SldModel` holds the boxes (position, title, wrapped text lines) and the wires. `sldToSvg()` draws it on screen, `drawSldPage()` in `proposalExport.ts` draws the same boxes and text in the PDF, and `sldRows()` lists the same text in the Excel sheet. All text is XML-escaped in the SVG; the test feeds `a&b <x>` as a model name. jsPDF's built-in font covers only WinAnsi, and a character outside it (≥, ≤, −, Greek letters) corrupted the rest of that text run. Every PDF string therefore goes through `pdfSafe()`, which keeps the words and uses ASCII stand-ins (">=" for "≥"; anything unknown becomes "?"). The fix covers the existing PDF tables too. Test: "pdfSafe keeps WinAnsi text…", and the PDF read-back now asserts "rated >= 824.08 V DC and >= 17.38 A".
 
 ### 2.3 Safety behaviour
 

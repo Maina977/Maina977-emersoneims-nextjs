@@ -267,5 +267,13 @@ describe('exports show the same SLD and shading numbers', () => {
     expect(text).toContain(march[3]);
     expect(text).toContain('DRAFT: NOT FOR ISSUE');
     expect(text).toContain(`page ${doc.numPages} of ${doc.numPages}`);
+    // Characters outside jsPDF's WinAnsi font are replaced, so no text run is corrupted (2026-11-25 fix).
+    expect(text).toMatch(/rated >= 824\.08 V DC and >= 17\.38 A/);
+    expect(text).toMatch(/Earthing, equipotential bonding and lightning protection: to be specified by the engineer/);
+    expect(text).not.toMatch(/"e|"d/);
+  }, 60000);
+  it('pdfSafe keeps WinAnsi text and replaces the rest', async () => {
+    const { pdfSafe } = await import('@/lib/solar/design/proposalExport');
+    expect(pdfSafe('≥ 824 V, ≤ 25 A, −0.27, 1 × 16, 10 °C, mm², 200–850 V, β, ✓')).toBe('>= 824 V, <= 25 A, -0.27, 1 × 16, 10 °C, mm², 200–850 V, beta, ?');
   }, 60000);
 });
