@@ -71,15 +71,12 @@ import InstallPrompt from './InstallPrompt';
 import { DisclaimerAcknowledgment, FooterDisclaimer } from './DisclaimerBanner';
 import { CONTROLLER_TYPES } from './controllerTypes';
 // Heavy parts load only when opened (2026-10-30 audit: one 452 KB chunk).
-const ControllerSimulator = resilient(() => import('./ControllerSimulator'), { name: 'Controller Simulator', variant: 'panel' });
 const SpeechController = resilient(() => import('./SpeechController'), { name: 'Speech Controller', variant: 'panel', loading: () => null });
 import BackToCommand from './BackToCommand';
 import ErrorBoundary from './ErrorBoundary';
 
 // ==================== DYNAMIC IMPORTS (Load on demand - saves ~500KB initial bundle) ====================
 // Panel components - loaded only when user navigates to them
-const EnginePanel = resilient(() => import('./panels/EnginePanel'), { name: 'Engine', variant: 'panel' });
-const ElectricalPanel = resilient(() => import('./panels/ElectricalPanel'), { name: 'Electrical', variant: 'panel' });
 // SAFETY WITHDRAWAL (management rule, 2026-11-25). An instruction-giving workflow that is
 // not safe stays unavailable until corrected and independently re-verified. The independent
 // review of 2026-11-25 (ORACLE-SURFACES-REVIEW.md) found these screens gave running, cranking
@@ -111,39 +108,20 @@ const WiringDiagramsPanel = resilient(() => import('./panels/WiringDiagramsPanel
 const AllControllerWiringDiagrams = resilient(() => import('./AllControllerWiringDiagrams'), { name: 'All Controller Wiring Diagrams', variant: 'panel' });
 
 // Advanced Panels - loaded on demand
-const RealTimeMonitoringPanel = resilient(() => import('./panels/RealTimeMonitoringPanel'), { name: 'Real Time Monitoring', variant: 'panel' });
-const OBDProtocolPanel = resilient(() => import('./panels/OBDProtocolPanel'), { name: 'OBD Protocol', variant: 'panel' });
-const RemoteConnectivityPanel = resilient(() => import('./panels/RemoteConnectivityPanel'), { name: 'Remote Connectivity', variant: 'panel' });
-const PredictiveMaintenancePanel = resilient(() => import('./panels/PredictiveMaintenancePanel'), { name: 'Predictive Maintenance', variant: 'panel' });
-const DataRecordingPanel = resilient(() => import('./panels/DataRecordingPanel'), { name: 'Data Recording', variant: 'panel' });
 const ControllerRepairManualsPanel = resilient(() => import('./panels/ControllerRepairManualsPanel'), { name: 'Controller Repair Manuals', variant: 'panel' });
-const SensorDiagnosticsPanel = resilient(() => import('./panels/SensorDiagnosticsPanel'), { name: 'Sensor Diagnostics', variant: 'panel' });
-const ECMDiagnosticsPanel = resilient(() => import('./panels/ECMDiagnosticsPanel'), { name: 'ECM Diagnostics', variant: 'panel' });
-const UnifiedDiagnosticsPanel = resilient(() => import('./panels/UnifiedDiagnosticsPanel'), { name: 'Unified Diagnostics', variant: 'panel' });
-const ECMProgrammingPanel = resilient(() => import('./panels/ECMProgrammingPanel'), { name: 'ECM Programming', variant: 'panel' });
-const CANbusMonitorPanel = resilient(() => import('./panels/CANbusMonitorPanel'), { name: 'CA Nbus Monitor', variant: 'panel' });
-const FleetDashboardPanel = resilient(() => import('./panels/FleetDashboardPanel'), { name: 'Fleet Dashboard', variant: 'panel' });
-const CompleteDiagnosticPanel = resilient(() => import('./panels/CompleteDiagnosticPanel'), { name: 'Complete Diagnostic', variant: 'panel' });
-const ECMReprogrammingGuidePanel = resilient(() => import('./panels/ECMReprogrammingGuidePanel'), { name: 'ECM Reprogramming Guide', variant: 'panel' });
-const UniversalDiagnosticPanel = resilient(() => import('./panels/UniversalDiagnosticPanel'), { name: 'Universal Diagnostic', variant: 'panel' });
-const ODIDashboardPanel = resilient(() => import('./panels/ODIDashboardPanel'), { name: 'ODI Dashboard', variant: 'panel' });
-const ProfessionalDiagnosticInterface = resilient(() => import('./panels/ProfessionalDiagnosticInterface'), { name: 'Professional Diagnostic Interface', variant: 'panel' });
-const ECMDiagnosticSuite = resilient(() => import('./panels/ECMDiagnosticSuite'), { name: 'ECM Diagnostic Suite', variant: 'panel' });
-const ECMHardwarePanel = resilient(() => import('./panels/ECMHardwarePanel'), { name: 'ECM Hardware', variant: 'panel' });
 
 // Feature panels - loaded on demand
-const SubscriptionManager = resilient(() => import('./SubscriptionManager'), { name: 'Subscription Manager', variant: 'panel' });
-const ReportBuilder = resilient(() => import('./ReportBuilder'), { name: 'Report Builder', variant: 'panel' });
-const PartsOrderPanel = resilient(() => import('./PartsOrderPanel'), { name: 'Parts Order', variant: 'panel' });
-const LocationCapture = resilient(() => import('./LocationCapture'), { name: 'Location Capture', variant: 'panel' });
 const NotificationSettings = resilient(() => import('./NotificationSettings'), { name: 'Notification Settings', variant: 'panel' });
 
 // Educational content panel
-const PossibleCausesPanel = resilient(() => import('./PossibleCausesPanel'), { name: 'Possible Causes', variant: 'panel' });
-const ProfessionalDiagnosticTools = resilient(() => import('./panels/ProfessionalDiagnosticTools'), { name: 'Professional Diagnostic Tools', variant: 'panel' });
-const EngineeringCalculatorsPanel = resilient(() => import('./panels/EngineeringCalculatorsPanel'), { name: 'Engineering Calculators', variant: 'panel' });
 const GuidedDiagnosisPanel = resilient(() => import('./panels/GuidedDiagnosisPanel'), { name: 'Guided Diagnosis', variant: 'panel' });
 const ServiceManagementPanel = resilient(() => import('./panels/ServiceManagementPanel'), { name: 'Service Management', variant: 'panel' });
+// SAFETY WITHDRAWAL 2026-11-25 (review S23): the command, systems, controllers and monitoring
+// screens were unreachable from the navigation but still built as lazy chunks with the same
+// defect class (e.g. ControllerSimulator, SensorDiagnosticsPanel, ProfessionalDiagnosticTools,
+// PredictiveMaintenancePanel, ECM panels). Those screens and every lazy declaration only they
+// (or nothing) used, including PossibleCausesPanel and ReportBuilder, are removed, so none of
+// those modules is in the build. Previous version: git show d32e2f20:components/generator-oracle/GeneratorOracleModule.tsx
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -1323,392 +1301,7 @@ export default function GeneratorOracleModule() {
               <ErrorBoundary fallbackTitle="Panel Error" onReset={() => setActiveScreen('faults')}>
               <AnimatePresence mode="wait">
                 {/* COMMAND CENTER */}
-                {activeScreen === 'command' && (
-                  <motion.div
-                    key="command"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-6"
-                  >
-                    {/* Every reading on this screen is simulated; say so first. */}
-                    <div role="note" className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-                      <strong className="text-amber-300">Training simulator.</strong> The gauges and readings on this
-                      screen are simulated so you can practise reading a running generator. They are not from your
-                      generator.{' '}
-                      <button type="button" onClick={() => setActiveScreen('faults')} className="underline font-semibold text-amber-200">
-                        Look up a real fault code →
-                      </button>
-                    </div>
-
-                    {/* HERO SECTION - Value Proposition */}
-                    <motion.div
-                      className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-950/80 via-slate-900/90 to-purple-950/80 border border-cyan-500/30 p-6"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5" />
-                      <div className="relative flex flex-col lg:flex-row items-center gap-6">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold">NO HARDWARE REQUIRED</span>
-                            <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-500/50 rounded-full text-xs text-cyan-300 font-bold">FREE</span>
-                          </div>
-                          <h2 className="text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
-                            Find the Cause of a Generator Fault, Step by Step
-                          </h2>
-                          <p className="text-slate-400 text-sm lg:text-base mb-4">
-                            Look up controller alarms (DSE, ComAp, Woodward, SmartGen, CAT PowerWizard and more) and J1939 engine
-                            codes from Cummins, Caterpillar, Perkins, Volvo Penta and other electronic diesels, then follow the
-                            checks. When you are stuck, one of our engineers is a WhatsApp message away.
-                          </p>
-                          {/* PRIMARY: Diagnostic Tools & Simulators - Most Used by Technicians */}
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => { setActiveScreen('controllers'); setControllersSubTab('simulator'); }}
-                              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 flex items-center gap-2 ring-2 ring-purple-400/50"
-                            >
-                              <span>🖥️</span> Controller Simulators (10)
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => { setActiveScreen('controllers'); setControllersSubTab('protools'); }}
-                              className="px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 flex items-center gap-2 ring-2 ring-orange-400/50"
-                            >
-                              <span>🔧</span> Pro Diagnostic Tools (10)
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => { setActiveScreen('controllers'); setControllersSubTab('ecmsuite'); }}
-                              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 flex items-center gap-2"
-                            >
-                              <span>🧠</span> ECM Suite (10 Brands)
-                            </motion.button>
-                          </div>
-                          {/* SECONDARY: AI & Troubleshooting */}
-                          <div className="flex flex-wrap gap-2">
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => { setActiveScreen('ai'); setAiSubTab('expert'); }}
-                              className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 flex items-center gap-2"
-                            >
-                              <span>💬</span> Diagnostic Assistant
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => { setActiveScreen('faults'); setFaultsSubTab('lookup'); }}
-                              className="px-6 py-3 bg-slate-800/80 border border-slate-600/50 text-white font-medium rounded-xl hover:bg-slate-700/80 flex items-center gap-2"
-                            >
-                              <span>🔍</span> Fault Code Lookup
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => { setActiveScreen('ai'); setAiSubTab('visual'); }}
-                              className="px-6 py-3 bg-slate-800/80 border border-slate-600/50 text-white font-medium rounded-xl hover:bg-slate-700/80 flex items-center gap-2"
-                            >
-                              <span>📷</span> Visual Checklist
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => { setActiveScreen('faults'); setFaultsSubTab('troubleshoot'); }}
-                              className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-green-500/20 flex items-center gap-2"
-                            >
-                              <span>🛠️</span> Troubleshoot Guide
-                            </motion.button>
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0 grid grid-cols-3 gap-3">
-                          {[
-                            { icon: '🛠️', label: 'Troubleshoot', desc: 'Guided checks', action: 'troubleshoot' },
-                            { icon: '📋', label: 'Repair Guides', desc: 'Step-by-step' },
-                            { icon: '📐', label: 'Wiring', desc: 'Controller diagrams' },
-                            { icon: '🔄', label: 'Reset Steps', desc: 'Per alarm' },
-                            { icon: '🖥️', label: 'Simulators', desc: 'Practise safely' },
-                            { icon: '💬', label: 'Engineer', desc: 'On WhatsApp' },
-                          ].map((item, idx) => (
-                            <div key={idx} className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 text-center">
-                              <span className="text-2xl mb-1 block">{item.icon}</span>
-                              <span className="text-xs text-white font-medium block">{item.label}</span>
-                              <span className="text-[10px] text-slate-500">{item.desc}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-
-                    {/* Top Analytics Row */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {/* Simulated readings. The fixed "Efficiency 94.2%", "CO2 Saved
-                          12.4 kg" cards and invented trend percentages were removed. */}
-                      <AnalyticsCard title="Active Power" value={`${parameters.activePowerKw?.toFixed(1) || '--'} kW`} change="simulated" trend="stable" icon="⚡" color="cyan" />
-                      <AnalyticsCard title="Load Factor" value={`${parameters.loadPercent?.toFixed(0) || '--'}%`} change="simulated" trend="stable" icon="📊" color="amber" />
-                      <AnalyticsCard title="Fuel Level" value={`${parameters.fuelLevel || '--'}%`} change="simulated" trend="stable" icon="⛽" color="green" />
-                      <AnalyticsCard title="Engine Hours" value={`${parameters.engineHours?.toFixed(0) || '--'}`} change="simulated" trend="stable" icon="⏱️" color="purple" />
-                    </div>
-
-                    {/* Main Dashboard Grid */}
-                    <div className="grid grid-cols-12 gap-6">
-                      {/* Left Column - Gauges */}
-                      <div className="col-span-12 lg:col-span-4 space-y-6">
-                        <HolographicGlassPanel title="Engine Vitals" subtitle="Simulated values" icon="⚙️" accentColor="amber" variant="glow">
-                          <div className="grid grid-cols-2 gap-6">
-                            <Gauge3D
-                              value={parameters.rpm}
-                              min={0}
-                              max={2000}
-                              label="RPM"
-                              unit="rpm"
-                              size={140}
-                              warningThreshold={1700}
-                              criticalThreshold={1900}
-                              accentColor="amber"
-                            />
-                            <Gauge3D
-                              value={parameters.oilPressure}
-                              min={0}
-                              max={80}
-                              label="Oil Press"
-                              unit="PSI"
-                              size={140}
-                              warningThreshold={20}
-                              criticalThreshold={15}
-                              accentColor="green"
-                            />
-                            <Gauge3D
-                              value={parameters.coolantTemp}
-                              min={0}
-                              max={120}
-                              label="Coolant"
-                              unit="C"
-                              size={140}
-                              warningThreshold={95}
-                              criticalThreshold={105}
-                              accentColor="cyan"
-                            />
-                            <Gauge3D
-                              value={parameters.loadPercent}
-                              min={0}
-                              max={100}
-                              label="Load"
-                              unit="%"
-                              size={140}
-                              warningThreshold={85}
-                              criticalThreshold={95}
-                              accentColor="purple"
-                            />
-                          </div>
-                        </HolographicGlassPanel>
-                      </div>
-
-                      {/* Center Column - Main Display */}
-                      <div className="col-span-12 lg:col-span-5 space-y-6">
-                        {/* Generator Status */}
-                        <HolographicGlassPanel accentColor="cyan" variant="glow">
-                          <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-4">
-                              <motion.div
-                                className={`w-5 h-5 rounded-full ${
-                                  generatorStatus === 'running' ? 'bg-green-500' :
-                                  generatorStatus === 'fault' ? 'bg-red-500' :
-                                  'bg-blue-500'
-                                }`}
-                                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
-                                transition={{ duration: 1.5, repeat: Infinity }}
-                                style={{ boxShadow: `0 0 20px ${generatorStatus === 'running' ? '#22c55e' : generatorStatus === 'fault' ? '#ef4444' : '#3b82f6'}` }}
-                              />
-                              <div>
-                                <h2 className="text-xl font-bold uppercase tracking-wider text-white">Generator Status</h2>
-                                <p className={`text-sm uppercase tracking-wider ${
-                                  generatorStatus === 'running' ? 'text-green-400' :
-                                  generatorStatus === 'fault' ? 'text-red-400' :
-                                  'text-blue-400'
-                                }`}>
-                                  {generatorStatus.toUpperCase()} - NOMINAL
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex gap-3">
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setGeneratorStatus('running')}
-                                className="px-4 py-2 bg-gradient-to-br from-green-600 to-green-700 rounded-lg font-medium uppercase tracking-wider text-white text-sm"
-                              >
-                                Start
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setGeneratorStatus('standby')}
-                                className="px-4 py-2 bg-gradient-to-br from-slate-600 to-slate-700 rounded-lg font-medium uppercase tracking-wider text-white text-sm"
-                              >
-                                Stop
-                              </motion.button>
-                            </div>
-                          </div>
-
-                          {/* Power Display Grid */}
-                          <div className="grid grid-cols-4 gap-4 mb-6">
-                            {[
-                              { label: 'Active Power', value: parameters.activePowerKw, unit: 'kW', color: 'cyan' },
-                              { label: 'Apparent Power', value: parameters.apparentPowerKva, unit: 'kVA', color: 'purple' },
-                              { label: 'Reactive Power', value: parameters.reactivePowerKvar, unit: 'kVAr', color: 'amber' },
-                              { label: 'Power Factor', value: parameters.powerFactor, unit: 'PF', color: 'green' },
-                            ].map((item) => (
-                              <div key={item.label} className="text-center p-4 bg-slate-900/50 rounded-xl border border-slate-700/30">
-                                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-2">{item.label}</div>
-                                <motion.div
-                                  className={`text-2xl font-bold font-mono text-${item.color}-400`}
-                                  key={item.value}
-                                  initial={{ scale: 0.9 }}
-                                  animate={{ scale: 1 }}
-                                >
-                                  {item.value?.toFixed(item.unit === 'PF' ? 2 : 1) || '--'}
-                                </motion.div>
-                                <div className="text-xs text-slate-500">{item.unit}</div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Voltage & Frequency */}
-                          <div className="grid grid-cols-4 gap-3 p-4 bg-slate-950/50 rounded-xl border border-cyan-500/20">
-                            {[
-                              { label: 'L1-N', value: parameters.voltageL1N },
-                              { label: 'L2-N', value: parameters.voltageL2N },
-                              { label: 'L3-N', value: parameters.voltageL3N },
-                              { label: 'Freq', value: parameters.frequency, unit: 'Hz', color: 'amber' },
-                            ].map((item, i) => (
-                              <div key={i} className="text-center">
-                                <div className="text-[9px] text-slate-500 uppercase">{item.label}</div>
-                                <div className={`text-xl font-mono ${item.color ? `text-${item.color}-400` : 'text-cyan-400'}`}>
-                                  {item.value?.toFixed(item.unit === 'Hz' ? 2 : 0) ?? '--'}
-                                  <span className="text-xs text-slate-500 ml-0.5">{item.unit || 'V'}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </HolographicGlassPanel>
-
-                        {/* Live Data Stream */}
-                        <HolographicGlassPanel title="Performance Trend" subtitle="Simulated data stream" icon="📈" accentColor="cyan">
-                          <LiveDataStream />
-                        </HolographicGlassPanel>
-
-                        {/* Quick Search */}
-                        <HolographicGlassPanel title={t.faultCode} subtitle={totalCodes ? `${totalCodes.toLocaleString()} ${t.faultCodes}` : t.faultCodes} icon="🔍" accentColor="purple">
-                          <div className="flex gap-3">
-                            <input
-                              type="text"
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-                              placeholder={t.searchPlaceholder}
-                              className="flex-1 px-4 py-3 bg-slate-950/80 border border-purple-500/30 rounded-xl text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-purple-500/60 transition-colors"
-                            />
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => handleSearch(searchQuery)}
-                              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-medium rounded-xl"
-                            >
-                              {t.searchButton}
-                            </motion.button>
-                          </div>
-
-                          {searchResults.length > 0 && (
-                            <div className="mt-4 space-y-2 max-h-48 overflow-y-auto">
-                              {searchResults.slice(0, 5).map((fault) => (
-                                <motion.div
-                                  key={fault.id}
-                                  className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50 cursor-pointer hover:border-purple-500/50"
-                                  whileHover={{ x: 4 }}
-                                  onClick={() => setActiveScreen('faults')}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <span className="px-2 py-1 bg-slate-800 rounded font-mono text-cyan-400 text-sm">{codeLabel(fault as { code: string; codeKind?: CodeKind })}</span>
-                                    <span className="text-white text-sm flex-1">{fault.title}</span>
-                                    <span className={`px-2 py-0.5 rounded text-xs ${
-                                      fault.severity === 'shutdown' ? 'bg-red-500/20 text-red-400' :
-                                      fault.severity === 'critical' ? 'bg-orange-500/20 text-orange-400' :
-                                      'bg-amber-500/20 text-amber-400'
-                                    }`}>
-                                      {fault.severity}
-                                    </span>
-                                  </div>
-                                </motion.div>
-                              ))}
-                            </div>
-                          )}
-                        </HolographicGlassPanel>
-                      </div>
-
-                      {/* Right Column - Controller & Support. The "AI Diagnostics
-                          Engine" card that showed a random confidence figure and a
-                          fixed "operating within optimal parameters" verdict was
-                          removed (2026-10-18): no AI runs here. */}
-                      <div className="col-span-12 lg:col-span-3 space-y-6">
-
-                        {/* Controller Selection Mini */}
-                        <HolographicGlassPanel title="Controller" icon="🎛️" accentColor="cyan">
-                          <div className="grid grid-cols-3 gap-2">
-                            {Object.entries(CONTROLLER_BRANDS).slice(0, 6).map(([key, brand]) => (
-                              <motion.button
-                                key={key}
-                                onClick={() => handleBrandSelect(key)}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className={`p-2 rounded-lg text-center transition-all ${
-                                  selectedBrand === key
-                                    ? 'bg-cyan-500/20 border border-cyan-500'
-                                    : 'bg-slate-900/50 border border-slate-700 hover:border-cyan-500/50'
-                                }`}
-                              >
-                                <div className="text-[10px] text-slate-300 truncate">{brand.name}</div>
-                              </motion.button>
-                            ))}
-                          </div>
-                        </HolographicGlassPanel>
-
-                        {/* Support */}
-                        <HolographicGlassPanel title={t.needHelp} icon="💬" accentColor="green">
-                          <div className="space-y-3">
-                            <a
-                              href="tel:+254768860665"
-                              className="flex items-center gap-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl hover:bg-blue-500/20 transition-colors"
-                            >
-                              <span className="text-xl">📞</span>
-                              <div className="flex-1">
-                                <div className="text-sm text-blue-400 font-medium">{t.callSupport}</div>
-                                <div className="text-xs text-slate-500">+254 768 860 665</div>
-                              </div>
-                            </a>
-                            <a
-                              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-xl hover:bg-green-500/20 transition-colors"
-                            >
-                              <span className="text-xl">💬</span>
-                              <div className="flex-1">
-                                <div className="text-sm text-green-400 font-medium">{t.whatsappSupport}</div>
-                                <div className="text-xs text-slate-500">Chat with an engineer</div>
-                              </div>
-                            </a>
-                          </div>
-                        </HolographicGlassPanel>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
+                {/* 'command' screen removed (safety withdrawal 2026-11-25, review S23): it was unreachable from the navigation. */}
 
                 {/* ══════════════════════════════════════════════════════════════════════════
                     CONSOLIDATED SUPER-TAB: AI DIAGNOSTICS
@@ -1791,126 +1384,13 @@ export default function GeneratorOracleModule() {
                     CONSOLIDATED SUPER-TAB: SYSTEMS
                     Combines: Engine + Electrical + Sensors + Interactive Systems
                 ══════════════════════════════════════════════════════════════════════════ */}
-                {activeScreen === 'systems' && (
-                  <motion.div
-                    key="systems"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-4"
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="systems" />
-
-                    {/* Systems Header */}
-                    <div className="text-center mb-4">
-                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400">
-                        System Diagnostics
-                      </h2>
-                      <p className="text-slate-400 text-sm">Engine, Electrical, Sensors & Interactive System Analysis</p>
-                    </div>
-
-                    {/* Sub-Tab Navigation */}
-                    <SubTabNav
-                      tabs={[
-                        { id: 'interactive' as const, label: 'Interactive Systems', icon: '🏭' },
-                        { id: 'engine' as const, label: 'Engine', icon: '⚙️' },
-                        { id: 'electrical' as const, label: 'Electrical', icon: '⚡' },
-                        { id: 'sensors' as const, label: 'Sensors', icon: '🌡️' },
-                        { id: 'calculators' as const, label: 'Calculators', icon: '🧮' },
-                      ]}
-                      activeTab={systemsSubTab}
-                      onTabChange={setSystemsSubTab}
-                      accentColor="green"
-                    />
-
-                    {/* Sub-Tab Content */}
-                    {systemsSubTab === 'interactive' && <OracleSafetyWithdrawnNotice surface="interactive-diagnostic-system" />}
-                    {systemsSubTab === 'engine' && (
-                      <EnginePanel
-                        parameters={parameters as any}
-                        onParameterChange={(key, value) => setParameters(prev => ({ ...prev, [key]: value }))}
-                      />
-                    )}
-                    {systemsSubTab === 'electrical' && (
-                      <ElectricalPanel
-                        parameters={parameters as any}
-                        onParameterChange={(key, value) => setParameters(prev => ({ ...prev, [key]: value }))}
-                      />
-                    )}
-                    {systemsSubTab === 'sensors' && <SensorDiagnosticsPanel />}
-                    {systemsSubTab === 'calculators' && <EngineeringCalculatorsPanel />}
-                  </motion.div>
-                )}
+                {/* 'systems' screen removed (safety withdrawal 2026-11-25, review S23): it was unreachable from the navigation. */}
 
                 {/* ══════════════════════════════════════════════════════════════════════════
                     CONSOLIDATED SUPER-TAB: CONTROLLERS
                     Combines: Simulator + ECM Suite + ECM Prog + Pro Tools
                 ══════════════════════════════════════════════════════════════════════════ */}
-                {activeScreen === 'controllers' && (
-                  <motion.div
-                    key="controllers"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-4"
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="controllers" />
-
-                    {/* Controllers Header */}
-                    <div className="text-center mb-4">
-                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
-                        Controller Center
-                      </h2>
-                      <p className="text-slate-400 text-sm">Controller display simulators, ECM guidance and practice tools</p>
-                    </div>
-
-                    {/* Sub-Tab Navigation */}
-                    <SubTabNav
-                      tabs={[
-                        { id: 'simulator' as const, label: 'Controller Simulator', icon: '🖥️' },
-                        { id: 'ecmsuite' as const, label: 'ECM Suite (10 Brands)', icon: '🧠' },
-                        { id: 'ecmhardware' as const, label: 'ECM Link (sim)', icon: '🔌' },
-                        { id: 'ecmprog' as const, label: 'ECM Programming', icon: '💾' },
-                        { id: 'ecmguide' as const, label: 'ECM Reprogram Guide', icon: '📋' },
-                        { id: 'protools' as const, label: 'Pro Diagnostic Tools', icon: '🔧' },
-                      ]}
-                      activeTab={controllersSubTab}
-                      onTabChange={setControllersSubTab}
-                      accentColor="cyan"
-                    />
-
-                    {/* Sub-Tab Content */}
-                    {controllersSubTab === 'simulator' && (
-                      <div className="space-y-6">
-                        <HolographicGlassPanel title="Controller Simulator" subtitle="Interactive Display Emulation" icon="🖥️" accentColor="cyan" variant="glow">
-                          <div className="flex flex-wrap gap-2 mb-6">
-                            {(Object.keys(CONTROLLER_TYPES) as ControllerType[]).map(type => (
-                              <motion.button
-                                key={type}
-                                onClick={() => setSimulatorController(type)}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className={`px-4 py-2 rounded-lg transition-all ${
-                                  simulatorController === type
-                                    ? 'bg-cyan-500 text-white'
-                                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                                }`}
-                              >
-                                {CONTROLLER_TYPES[type].shortName || type}
-                              </motion.button>
-                            ))}
-                          </div>
-                        </HolographicGlassPanel>
-                        <ControllerSimulator controllerType={simulatorController} />
-                      </div>
-                    )}
-                    {controllersSubTab === 'ecmsuite' && <ECMDiagnosticSuite />}
-                    {controllersSubTab === 'ecmhardware' && <ECMHardwarePanel />}
-                    {controllersSubTab === 'ecmprog' && <ECMProgrammingPanel />}
-                    {controllersSubTab === 'ecmguide' && <ECMReprogrammingGuidePanel />}
-                    {controllersSubTab === 'protools' && <ProfessionalDiagnosticTools />}
-                  </motion.div>
-                )}
+                {/* 'controllers' screen removed (safety withdrawal 2026-11-25, review S23): it was unreachable from the navigation. */}
 
                 {/* ══════════════════════════════════════════════════════════════════════════
                     CONSOLIDATED SUPER-TAB: WIRING & MANUALS
@@ -1957,48 +1437,7 @@ export default function GeneratorOracleModule() {
                     CONSOLIDATED SUPER-TAB: MONITORING
                     Combines: Real-time + CANbus + OBD + Recording + Predictive + Remote
                 ══════════════════════════════════════════════════════════════════════════ */}
-                {activeScreen === 'monitoring' && (
-                  <motion.div
-                    key="monitoring"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-4"
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('faults')} currentPanel="monitoring" />
-
-                    {/* Monitoring Header */}
-                    <div className="text-center mb-4">
-                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-violet-400">
-                        Monitoring & Data
-                      </h2>
-                      <p className="text-slate-400 text-sm">Training views of monitoring, CAN bus, OBD and data recording (simulated data)</p>
-                    </div>
-
-                    {/* Sub-Tab Navigation */}
-                    <SubTabNav
-                      tabs={[
-                        { id: 'realtime' as const, label: 'Monitor (sim)', icon: '📊' },
-                        { id: 'canbus' as const, label: 'CAN Bus', icon: '📡' },
-                        { id: 'obd' as const, label: 'OBD Protocol', icon: '🔌' },
-                        { id: 'recording' as const, label: 'Data Recording', icon: '📈' },
-                        { id: 'predictive' as const, label: 'Predictive', icon: '🔮' },
-                        { id: 'remote' as const, label: 'Remote', icon: '🌐' },
-                      ]}
-                      activeTab={monitoringSubTab}
-                      onTabChange={setMonitoringSubTab}
-                      accentColor="purple"
-                    />
-
-                    {/* Sub-Tab Content */}
-                    {monitoringSubTab === 'realtime' && <RealTimeMonitoringPanel />}
-                    {monitoringSubTab === 'canbus' && <CANbusMonitorPanel />}
-                    {monitoringSubTab === 'obd' && <OBDProtocolPanel />}
-                    {monitoringSubTab === 'recording' && <DataRecordingPanel />}
-                    {monitoringSubTab === 'predictive' && <PredictiveMaintenancePanel />}
-                    {monitoringSubTab === 'remote' && <RemoteConnectivityPanel />}
-                  </motion.div>
-                )}
+                {/* 'monitoring' screen removed (safety withdrawal 2026-11-25, review S23): it was unreachable from the navigation. */}
 
                 {/* ══════════════════════════════════════════════════════════════════════════
                     CONSOLIDATED SUPER-TAB: TOOLS & REPORTS

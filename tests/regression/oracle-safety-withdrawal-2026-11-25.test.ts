@@ -42,6 +42,34 @@ const WITHDRAWN = [
   'components/maintenance-companion/PredictiveAnalyzer',
   'components/maintenance-companion/shared/PredictionCard',
   'lib/generator-oracle/controller-repair-manuals-withdrawn-data', // R3 Common Faults / Procedures data
+  // Fourth pass (2026-11-25, review S23): hidden Oracle screens and never-rendered panels
+  'components/generator-oracle/ControllerSimulator',
+  'components/generator-oracle/panels/EnginePanel',
+  'components/generator-oracle/panels/ElectricalPanel',
+  'components/generator-oracle/panels/RealTimeMonitoringPanel',
+  'components/generator-oracle/panels/OBDProtocolPanel',
+  'components/generator-oracle/panels/RemoteConnectivityPanel',
+  'components/generator-oracle/panels/PredictiveMaintenancePanel',
+  'components/generator-oracle/panels/DataRecordingPanel',
+  'components/generator-oracle/panels/SensorDiagnosticsPanel',
+  'components/generator-oracle/panels/ECMDiagnosticsPanel',
+  'components/generator-oracle/panels/UnifiedDiagnosticsPanel',
+  'components/generator-oracle/panels/ECMProgrammingPanel',
+  'components/generator-oracle/panels/CANbusMonitorPanel',
+  'components/generator-oracle/panels/FleetDashboardPanel',
+  'components/generator-oracle/panels/CompleteDiagnosticPanel',
+  'components/generator-oracle/panels/ECMReprogrammingGuidePanel',
+  'components/generator-oracle/panels/UniversalDiagnosticPanel',
+  'components/generator-oracle/panels/ODIDashboardPanel',
+  'components/generator-oracle/panels/ProfessionalDiagnosticInterface',
+  'components/generator-oracle/panels/ECMDiagnosticSuite',
+  'components/generator-oracle/panels/ECMHardwarePanel',
+  'components/generator-oracle/ReportBuilder',
+  'components/generator-oracle/PossibleCausesPanel',
+  'components/generator-oracle/panels/ProfessionalDiagnosticTools',
+  // Not withdrawn by this change but must stay out of the build (unsourced 80-95 °C figures)
+  'lib/generator-oracle/data/spare-parts-database',
+  'lib/maintenance-hub/enhanced-services-data',
 ];
 
 const ROOT = path.resolve('.');
@@ -181,7 +209,7 @@ describe('Oracle safety withdrawal 2026-11-25: screens', () => {
   });
   it('every withdrawn tab renders the shared notice', () => {
     expect(mod).toMatch(/<OracleSafetyWithdrawnNotice surface=\{`diagnostic-assistant-\$\{aiSubTab\}`\} \/>/);
-    for (const s of ['fault-code-lookup', 'worked-example', 'interactive-troubleshoot', 'tech-input', 'interactive-diagnostic-system']) expect(mod).toContain(`<OracleSafetyWithdrawnNotice surface="${s}" />`);
+    for (const s of ['fault-code-lookup', 'worked-example', 'interactive-troubleshoot', 'tech-input']) expect(mod).toContain(`<OracleSafetyWithdrawnNotice surface="${s}" />`);
     const wiring = fs.readFileSync('components/generator-oracle/panels/WiringDiagramsPanel.tsx', 'utf8');
     expect(wiring).toContain('<OracleSafetyWithdrawnNotice surface="wiring-diagnostics-flows" />');
     expect(wiring).not.toMatch(/DIAGNOSTIC_TROUBLESHOOTING\s*[:=[.]/);
@@ -302,5 +330,19 @@ describe('R1: a job card with an unresolved STOP completes and signs off without
     const panel = fs.readFileSync('components/generator-oracle/panels/ServiceManagementPanel.tsx', 'utf8');
     expect(panel).toContain('Do not test-run a set with an unresolved STOP. Record instead:');
     expect(panel).toContain('{READINGS_NOT_TAKEN_STOP}</button>');
+  });
+});
+
+describe('Oracle safety withdrawal 2026-11-25, pass 4: no navigation points at a removed screen', () => {
+  const mod = fs.readFileSync('components/generator-oracle/GeneratorOracleModule.tsx', 'utf8');
+  it('only the five reachable screens are rendered or offered', () => {
+    const rendered = [...mod.matchAll(/\{activeScreen === '(\w+)' && \(/g)].map((m) => m[1]).sort();
+    expect(rendered).toEqual(['ai', 'faults', 'service', 'tools', 'wiring']);
+    const navTargets = [...mod.matchAll(/setActiveScreen\('(\w+)'\)/g)].map((m) => m[1]);
+    expect(navTargets.length).toBeGreaterThan(0);
+    for (const t of navTargets) expect(rendered).toContain(t);
+    const options = [...mod.matchAll(/<option value="(\w+)">/g)].map((m) => m[1]).sort();
+    expect(options).toEqual(['ai', 'faults', 'service', 'tools', 'wiring']);
+    expect(mod).toMatch(/>\('faults'\)/);
   });
 });
