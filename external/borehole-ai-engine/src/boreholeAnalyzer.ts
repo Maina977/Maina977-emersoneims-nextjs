@@ -3551,7 +3551,8 @@ export class BoreholeAnalyzer {
             const mq = await measuredGroundwaterNear(effectiveLat, effectiveLon, 25).catch(() => null);
             if (mq?.restWaterLevel && mq.restWaterLevel.n >= 3 && mq.restWaterLevel.median != null) return mq.restWaterLevel.median;
           }
-          (result as any).pumpHeadAssumption = `No water level has been measured near this site: the pump and solar costs assume about ${Math.round(calibratedDepth * 0.5)} m (half the planned depth). A survey or the drilled hole sets the real figure.`;
+          // Re-review of f89698e8, BLOCKING 2: no modelled depth in the text (the number was half the modelled depth).
+          (result as any).pumpHeadAssumption = 'No water level has been measured near this site: the pump and solar costs assume the water stands at half the planned depth. A survey or the drilled hole sets the real figure.';
           return calibratedDepth * 0.5;
         })(),
         aquiferType: aqClass?.aquiferType ?? subsurfaceModel?.lithologicalColumn?.aquifers?.[0]?.type ?? 'unknown',

@@ -22,6 +22,7 @@ import { finalVerdict, salinityEvidence, salinityFromWaterQuality, modelledSalin
 import { evidenceGate, provenanceText } from './evidenceGate';
 import { generateScreeningPdf, generateScreeningDocx, generateScreeningXlsx, screeningRows, screeningContent } from './screeningReport';
 import { locationStatusText, waterCheckStatusText, photoGpsConflictText } from './locationStatus';
+import { waterQualityStatus } from './waterQualityStatus';
 import { costSourcing, QUOTATION_TEXT } from './costSources';
 import { governingSummary, last12Months } from './governingSummary';
 import { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, getCustomerDetails, computeCanonicalEconomics } from './reportShared';
@@ -1351,9 +1352,11 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       const chemX = (['fluoride', 'nitrate'] as const).map((p) => chemEvidence(result, p));
       const measuredFails = chemX.filter((e) => e.measured && (e.mgL ?? 0) > (e.param === 'fluoride' ? 1.5 : 50));
       const modelledRisks = chemX.filter((e) => !e.measured && (e.risk === 'HIGH' || e.risk === 'ELEVATED'));
-      const wqOk = !!wq?.isPotable;
+      // Re-review of f89698e8, BLOCKING 3: one status for the screen and every export (waterQualityStatus.ts).
+      const wqS = waterQualityStatus(result);
+      const wqOk = wqS.known && !!wq?.isPotable;
       const wqLine = wqOk
-        ? 'POTABLE (modelled) -- verify with an ISO 17025 lab analysis before community use.'
+        ? 'MEETS THE GUIDELINE VALUES on the parameters the laboratory tested.'
         : measuredFails.length > 0
           ? `MEASURED EXCEEDANCE -- ${measuredFails.map((e) => `${e.name} ${e.value} (${e.source.replace(/^Measured: /, '')})`).join('; ')} above the WHO guideline. Do not use for drinking without treatment; treatment budgeted below.`
           : modelledRisks.length > 0
@@ -1367,7 +1370,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
                 ? `LIKELY TOO SALTY TO DRINK WITHOUT REVERSE OSMOSIS (measured TDS ${s.value}, ${s.source.replace(/^Measured: /, '')} -- lab-confirm at the borehole); RO budgeted below.`
                 : `${modelledSalinityLabel(s.risk ?? 'ELEVATED').toUpperCase()}. ${s.sentence} Desalination is not priced until then.`;
             })()
-            : 'TREATMENT REQUIRED (aesthetic parameters; modelled -- lab-confirm).';
+            : !wqS.known
+              ? `NOT KNOWN -- ${wqS.treatmentNote.toLowerCase()}.`
+              : 'TREATMENT REQUIRED (laboratory result).';
       // Render the FULL message wrapped over as many lines as needed — the old
       // code printed only splitTextToSize(...)[0], truncating the sentence to
       // "...until an" on p2 (re-audit #7). Box height follows the wrapped text.
@@ -1911,9 +1916,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
           : `AESTHETIC TREATMENT: ${aestheticFails.join(', ')} (minor)`;
         return 'TREATMENT NEEDED';
       })()],
-      ['Treatment Required', !((result as any).calibrationResult?.calibratedWaterQuality || result.fieldData?.labWaterAnalysis) ? 'NOT KNOWN' : result.waterQuality?.isPotable ? 'NO' : 'YES', (() => {
-        // Review of 126efdbc, B-3: a treatment conclusion needs a laboratory result.
-        if (!((result as any).calibrationResult?.calibratedWaterQuality || result.fieldData?.labWaterAnalysis)) return 'Needs a laboratory test of a water sample (modelled water quality only)';
+      ['Treatment Required', waterQualityStatus(result).treatment, (() => {
+        // Review of 126efdbc, B-3 / f89698e8 BLOCKING 3: a treatment conclusion needs a laboratory result.
+        if (!waterQualityStatus(result).known) return waterQualityStatus(result).treatmentNote;
         if (result.waterQuality?.isPotable) return 'Disinfection only (standard)';
         // Cite the SAME canonical economics the cost tables use — this row
         // used to quote "$1,200-1,500" while the budget carried $4,000.
@@ -6698,7 +6703,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       });
       y = lastY(4);
       doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-      doc.text(`Source: ${wq.source} | Safe to drink: ${wq.isPotable ? 'YES' : 'NOT CONFIRMED (treatment needed or parameters untested)'}`, margin, y);
+      doc.text(`Source: ${wq.source} | Safe to drink: ${waterQualityStatus(result).safeToDrink}`, margin, y);
       if (wq.treatmentRequired.length > 0) {
         y += 4;
         doc.text(`Treatment: ${wq.treatmentRequired.join('; ')}`, margin, y, { maxWidth: 170 });
@@ -11115,7 +11120,7 @@ export async function generateComparisonReport(sites: Array<{ name: string; resu
     ['Soil Type', ...scored.map(s => soilLabel(s.result))],
     ['Data Confidence', ...scored.map(s => `${s.result.confidenceMetrics?.overall ?? 'N/A'}%`)],
     ['Water Quality Score', ...scored.map(s => `${fmt((s.result.waterQuality?.score ?? 0) * 100, 0)}/100`)],
-    ['Treatment Required', ...scored.map(s => s.result.waterQuality?.isPotable ? 'NO' : 'YES')],
+    ['Treatment Required', ...scored.map(s => waterQualityStatus(s.result).treatment)],
     // Salinity: the measured figure with its source, else the screening class only (2026-11-21).
     ['Salinity', ...scored.map(s => { const x = salinityEvidence(s.result); return x.measured ? `${x.value}. ${x.source}` : x.risk ? `${x.risk} risk (not measured at this site)` : 'lab test needed'; })],
     // Fluoride and nitrate: the same rule (2026-11-21).
