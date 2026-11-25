@@ -29,6 +29,14 @@ const WITHDRAWN = [
   'components/generator-oracle/panels/ControllerRepairManualsWithdrawnSections', // S8 Repair Procedures / Fault Codes
   'components/generator-oracle/panels/InteractiveDiagnosticSystem', // hidden; mounted S1 and called expert-chat
   'components/generator-oracle/panels/TechnicianAssistantPanel', // P3, withdrawn earlier
+  // Second pass (2026-11-25): S3 data behind /maintenance-hub/generators, and data with the same defects
+  'lib/generator-oracle/enhanced-fault-database', // S3 Expert Notes data
+  'lib/generator-oracle/data/comprehensive-faults-index', // the /maintenance-hub/generators source
+  'lib/generator-oracle/data/comprehensive-faults-part1',
+  'lib/generator-oracle/data/comprehensive-faults-part2',
+  'lib/maintenance-hub/comprehensive-fault-database', // "25-65 PSI at operating temperature"
+  'lib/data/cumminsErrorCodes', // "Install mechanical gauge to verify actual pressure"
+  'components/maintenance-companion/shared/RepairStepCard', // Repair Guide Library step renderer
 ];
 
 const ROOT = path.resolve('.');
@@ -67,9 +75,12 @@ function importsOf(file: string): string[] {
   return specs;
 }
 
-/** Every file reachable from app/ (pages, layouts, routes, sitemap, ...) plus middleware/proxy. */
+/** Next.js bundles only these app/ files (and what they import); other files under app/ are not built on their own. */
+const NEXT_ENTRY = /[\\/](page|layout|route|template|error|global-error|not-found|loading|default|forbidden|unauthorized|sitemap|robots|manifest|opengraph-image|twitter-image|icon|apple-icon)\.(tsx?|jsx?|mjs)$/;
+
+/** Every file reachable from a Next entry file under app/ (pages, layouts, routes, sitemap, ...) plus middleware/proxy/instrumentation. */
 function reachable(): Map<string, string> {
-  const entries = [...walk(path.join(ROOT, 'app')), ...['middleware.ts', 'proxy.ts', 'instrumentation.ts'].map((f) => path.join(ROOT, f)).filter((f) => fs.existsSync(f))];
+  const entries = [...walk(path.join(ROOT, 'app')).filter((f) => NEXT_ENTRY.test(f)), ...['middleware.ts', 'proxy.ts', 'instrumentation.ts'].map((f) => path.join(ROOT, f)).filter((f) => fs.existsSync(f))];
   const seen = new Map<string, string>(); // file -> who imported it
   const queue = entries.map((e) => { seen.set(e, '(entry)'); return e; });
   while (queue.length) {
@@ -144,6 +155,17 @@ describe('Oracle safety withdrawal 2026-11-25: withdrawn API routes answer 503 b
   }
 });
 
+describe('Oracle safety withdrawal 2026-11-25: sync download withdrawn', () => {
+  it('POST /api/generator-oracle/sync (full fault library with steps) answers 503 with the notice', async () => {
+    const mod = (await import(/* @vite-ignore */ pathToFileURL(path.join(ROOT, 'app/api/generator-oracle/sync/route.ts')).href)) as { POST: (r?: Request) => Promise<Response> };
+    const res = await mod.POST(new Request('http://localhost/api/generator-oracle/sync', { method: 'POST', body: '{"fromVersion":"0.0.0"}' }));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'temporarily_unavailable', message: NOTICE });
+    const src = fs.readFileSync('app/api/generator-oracle/sync/route.ts', 'utf8');
+    expect(src).not.toContain('controllerFaultCodes');
+  });
+});
+
 describe('Oracle safety withdrawal 2026-11-25: screens', () => {
   const mod = fs.readFileSync('components/generator-oracle/GeneratorOracleModule.tsx', 'utf8');
   it('the default Fault Center sub-tab is Guided Diagnosis, and Fault Center is the default screen', () => {
@@ -164,6 +186,32 @@ describe('Oracle safety withdrawal 2026-11-25: screens', () => {
     expect(gens).toContain('<OracleSafetyWithdrawnNotice surface="generators-visual-checklist" />');
     const notice = fs.readFileSync('components/generator-oracle/OracleSafetyWithdrawnNotice.tsx', 'utf8');
     expect(notice).toContain('{ORACLE_SAFETY_WITHDRAWN_MESSAGE}');
+  });
+  it('second pass: public pages show the notice in place of the withdrawn instructions', () => {
+    const mh = fs.readFileSync('app/maintenance-hub/generators/page.tsx', 'utf8');
+    expect(mh).toContain('<OracleSafetyWithdrawnNotice surface="maintenance-hub-generators-fault-detail" />');
+    expect(mh).toContain("from '@/lib/maintenance-hub/generator-fault-identification'");
+    for (const gone of ['resetSequences', 'repairProcedures', 'aiInsights', 'caseStudies', 'diagnosticProcedures', 'technicalOverview', 'alternativeCodes']) expect(mh).not.toContain(gone);
+    const gp = fs.readFileSync('app/generator-problems/[problem]/page.tsx', 'utf8');
+    expect(gp).toContain('<OracleSafetyWithdrawnNotice surface="generator-problems-check-procedure" />');
+    expect(gp).not.toContain('checkProcedure.map');
+    const edu = fs.readFileSync('components/generators/GeneratorEducationPanel.tsx', 'utf8');
+    expect(edu).toContain('<OracleSafetyWithdrawnNotice surface="generator-education-check-procedure" />');
+    expect(edu).not.toContain('checkProcedure');
+    const rg = fs.readFileSync('components/maintenance-companion/RepairGuideLibrary.tsx', 'utf8');
+    expect(rg).toContain('<OracleSafetyWithdrawnNotice surface="maintenance-companion-repair-steps" />');
+    expect(rg).not.toMatch(/selectedGuide\.steps\.map|<RepairStepCard/);
+    const gens = fs.readFileSync('app/generators/GeneratorsPageClient.tsx', 'utf8');
+    for (const gone of ['get the matching diagnostic guides', 'Step-by-step diagnosis', 'full diagnostic suite', 'Open Visual Checklist']) expect(gens).not.toContain(gone);
+    expect(gens).toContain('The visual checklist is temporarily unavailable while safety checks are being updated.');
+  });
+  it('the identification list carries no instructions, thresholds or cross-brand codes', async () => {
+    const { GENERATOR_FAULT_IDENTIFICATION } = await import('@/lib/maintenance-hub/generator-fault-identification');
+    expect(GENERATOR_FAULT_IDENTIFICATION.length).toBe(8);
+    for (const f of GENERATOR_FAULT_IDENTIFICATION) {
+      expect(Object.keys(f).sort()).toEqual(['category', 'code', 'severity', 'title']);
+      expect(f.title).not.toMatch(/\d\s?(PSI|bar|°C)|start the engine|run the engine|test[- ]run|crank the|under load/i);
+    }
   });
   it('the Technician Assistant keeps its own notice text', () => {
     expect(mod).toContain("Technician Assistant is temporarily unavailable while safety checks are being updated. Please consult the applicable OEM service manual and a qualified technician.");

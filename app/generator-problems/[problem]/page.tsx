@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SYMPTOM_DIAGNOSES, type PossibleCause } from '@/lib/generator-oracle/educationalContent';
 import { getProblemName } from '@/lib/seo/generatorProblems';
+import OracleSafetyWithdrawnNotice from '@/components/generator-oracle/OracleSafetyWithdrawnNotice';
 
 // PROBLEM_MAP moved to lib/seo/generatorProblems.ts so this page and its new
 // layout.tsx build their titles from ONE copy. The layout needs it to emit
@@ -416,20 +417,10 @@ export default function GeneratorProblemPage() {
                             <p className="text-slate-300">{cause.explanation}</p>
                           </div>
 
-                          {/* Check Procedure */}
-                          <div>
-                            <h4 className="text-xs uppercase tracking-wider text-slate-500 mb-3">Step-by-Step Check Procedure</h4>
-                            <ol className="space-y-3">
-                              {cause.checkProcedure.map((step, i) => (
-                                <li key={i} className="flex items-start gap-3">
-                                  <span className="flex-shrink-0 w-6 h-6 bg-cyan-500/20 text-cyan-400 rounded-full flex items-center justify-center text-xs font-medium">
-                                    {i + 1}
-                                  </span>
-                                  <span className="text-slate-300">{step}</span>
-                                </li>
-                              ))}
-                            </ol>
-                          </div>
+                          {/* Check Procedure: SAFETY WITHDRAWAL 2026-11-25. The check steps (from
+                              lib/generator-oracle/educationalContent.ts) included cranking and test-run
+                              steps and unsourced limits. Withdrawn until corrected and re-verified. */}
+                          <OracleSafetyWithdrawnNotice surface="generator-problems-check-procedure" />
 
                           {/* Required Tools */}
                           <div>
