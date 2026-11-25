@@ -140,7 +140,7 @@ Please schedule a site assessment.`
               monthlyBill: '', roofType: '', preferredDate: '', additionalNotes: '',
             });
           }}
-          className="px-6 py-3 bg-amber-500 text-white font-medium rounded-xl hover:bg-amber-600 transition-colors"
+          className="px-6 py-3 bg-amber-500 text-slate-950 font-medium rounded-xl hover:bg-amber-400 transition-colors"
         >
           Book Another Service
         </button>
@@ -162,13 +162,13 @@ Please schedule a site assessment.`
           <div key={s} className="flex items-center">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
               s < step ? 'bg-green-500 text-white' :
-              s === step ? 'bg-amber-500 text-white' :
+              s === step ? 'bg-amber-500 text-slate-950' :
               'bg-slate-700 text-slate-400'
             }`}>
               {s < step ? <CheckCircle className="w-5 h-5" /> : s}
             </div>
             {s < 4 && (
-              <div className={`w-16 md:w-24 h-1 mx-2 ${
+              <div className={`w-6 sm:w-16 md:w-24 h-1 mx-1 sm:mx-2 ${
                 s < step ? 'bg-green-500' : 'bg-slate-700'
               }`} />
             )}
@@ -189,10 +189,10 @@ Please schedule a site assessment.`
             <h3 className="text-lg font-semibold text-white mb-4">Your Contact Information</h3>
 
             <div>
-              <label className="block text-slate-300 text-sm mb-2">Full Name *</label>
+              <label htmlFor="booking-name" className="block text-slate-300 text-sm mb-2">Full Name *</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                <input
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input id="booking-name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => updateForm('name', e.target.value)}
@@ -203,10 +203,10 @@ Please schedule a site assessment.`
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm mb-2">Phone Number *</label>
+              <label htmlFor="booking-phone" className="block text-slate-300 text-sm mb-2">Phone Number *</label>
               <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                <input
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input id="booking-phone"
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => updateForm('phone', e.target.value)}
@@ -217,8 +217,8 @@ Please schedule a site assessment.`
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm mb-2">Email (Optional)</label>
-              <input
+              <label htmlFor="booking-email" className="block text-slate-300 text-sm mb-2">Email (Optional)</label>
+              <input id="booking-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => updateForm('email', e.target.value)}
@@ -241,8 +241,8 @@ Please schedule a site assessment.`
             <h3 className="text-lg font-semibold text-white mb-4">Installation Location</h3>
 
             <div>
-              <label className="block text-slate-300 text-sm mb-2">County *</label>
-              <select
+              <label htmlFor="booking-county" className="block text-slate-300 text-sm mb-2">County *</label>
+              <select id="booking-county"
                 value={formData.county}
                 onChange={(e) => updateForm('county', e.target.value)}
                 className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:border-amber-500 focus:outline-none"
@@ -254,10 +254,10 @@ Please schedule a site assessment.`
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm mb-2">Specific Location / Address *</label>
+              <label htmlFor="booking-address" className="block text-slate-300 text-sm mb-2">Specific Location / Address *</label>
               <div className="relative">
-                <MapPin className="absolute left-4 top-3 w-5 h-5 text-slate-500" />
-                <textarea
+                <MapPin className="absolute left-4 top-3 w-5 h-5 text-slate-400" />
+                <textarea id="booking-address"
                   value={formData.location}
                   onChange={(e) => updateForm('location', e.target.value)}
                   rows={3}
@@ -292,7 +292,7 @@ Please schedule a site assessment.`
                   }`}
                 >
                   <type.icon className={`w-8 h-8 mb-2 ${
-                    formData.installationType === type.id ? 'text-amber-400' : 'text-slate-500'
+                    formData.installationType === type.id ? 'text-amber-400' : 'text-slate-400'
                   }`} />
                   <p className="font-semibold">{type.name}</p>
                   <p className="text-sm text-slate-400">{type.description}</p>
@@ -335,8 +335,8 @@ Please schedule a site assessment.`
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-slate-300 text-sm mb-2">Estimated System Size</label>
-                <select
+                <label htmlFor="booking-size" className="block text-slate-300 text-sm mb-2">Estimated System Size</label>
+                <select id="booking-size"
                   value={formData.systemSize}
                   onChange={(e) => updateForm('systemSize', e.target.value)}
                   className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:border-amber-500 focus:outline-none"
@@ -352,8 +352,8 @@ Please schedule a site assessment.`
               </div>
 
               <div>
-                <label className="block text-slate-300 text-sm mb-2">Monthly Electricity Bill (KES)</label>
-                <input
+                <label htmlFor="booking-bill" className="block text-slate-300 text-sm mb-2">Monthly Electricity Bill (KES)</label>
+                <input id="booking-bill"
                   type="number"
                   value={formData.monthlyBill}
                   onChange={(e) => updateForm('monthlyBill', e.target.value)}
@@ -363,8 +363,8 @@ Please schedule a site assessment.`
               </div>
 
               <div>
-                <label className="block text-slate-300 text-sm mb-2">Roof Type</label>
-                <select
+                <label htmlFor="booking-roof" className="block text-slate-300 text-sm mb-2">Roof Type</label>
+                <select id="booking-roof"
                   value={formData.roofType}
                   onChange={(e) => updateForm('roofType', e.target.value)}
                   className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:border-amber-500 focus:outline-none"
@@ -379,8 +379,8 @@ Please schedule a site assessment.`
               </div>
 
               <div>
-                <label className="block text-slate-300 text-sm mb-2">Preferred Assessment Date</label>
-                <input
+                <label htmlFor="booking-date" className="block text-slate-300 text-sm mb-2">Preferred Assessment Date</label>
+                <input id="booking-date"
                   type="date"
                   value={formData.preferredDate}
                   onChange={(e) => updateForm('preferredDate', e.target.value)}
@@ -390,8 +390,8 @@ Please schedule a site assessment.`
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm mb-2">Additional Notes</label>
-              <textarea
+              <label htmlFor="booking-notes" className="block text-slate-300 text-sm mb-2">Additional Notes</label>
+              <textarea id="booking-notes"
                 value={formData.additionalNotes}
                 onChange={(e) => updateForm('additionalNotes', e.target.value)}
                 rows={3}
@@ -450,8 +450,8 @@ Please schedule a site assessment.`
             disabled={!canProceed()}
             className={`px-6 py-3 rounded-xl font-medium transition-colors ${
               canProceed()
-                ? 'bg-amber-500 text-white hover:bg-amber-600'
-                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                ? 'bg-amber-500 text-slate-950 hover:bg-amber-400'
+                : 'bg-slate-700 text-slate-400 cursor-not-allowed'
             }`}
           >
             Next Step

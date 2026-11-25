@@ -155,7 +155,7 @@ export default function SolarROICalculator() {
             <label htmlFor="roi-tariff" className="block text-slate-300 text-sm mb-2">Your tariff (KES per kWh)</label>
             <input id="roi-tariff" type="number" min={1} value={tariffInput} placeholder="bill total ÷ kWh on the bill"
               onChange={(e) => setTariffInput(e.target.value)} className={inputCls} />
-            <p className="text-slate-500 text-xs mt-1">
+            <p className="text-slate-400 text-xs mt-1">
               {calculations.monthlyConsumption !== null ? `Estimated consumption: ~${calculations.monthlyConsumption} kWh/month` : 'Your bill total divided by the kWh on it.'}
             </p>
           </div>
@@ -163,8 +163,8 @@ export default function SolarROICalculator() {
           <div>
             <label htmlFor="roi-size" className="block text-slate-300 text-sm mb-2">System Size: {systemSize} kW</label>
             <input id="roi-size" type="range" min="1" max="50" value={systemSize}
-              onChange={(e) => setSystemSize(Number(e.target.value))} className="w-full accent-amber-500" />
-            <div className="flex justify-between text-slate-500 text-xs">
+              onChange={(e) => setSystemSize(Number(e.target.value))} className="w-full h-11 accent-amber-500 cursor-pointer" />
+            <div className="flex justify-between text-slate-400 text-xs">
               <span>1 kW</span><span>25 kW</span><span>50 kW</span>
             </div>
           </div>
@@ -173,11 +173,11 @@ export default function SolarROICalculator() {
             <label htmlFor="roi-cost" className="block text-slate-300 text-sm mb-2">Quoted installed cost (KES)</label>
             <input id="roi-cost" type="number" min={0} value={quotedCostInput} placeholder="from a quotation"
               onChange={(e) => setQuotedCostInput(e.target.value)} className={inputCls} />
-            <p className="text-slate-500 text-xs mt-1">We do not show estimated prices. Ask us for a quotation for your site.</p>
+            <p className="text-slate-400 text-xs mt-1">We do not show estimated prices. Ask us for a quotation for your site.</p>
           </div>
 
           <div>
-            <label className="flex items-center gap-3 cursor-pointer">
+            <label className="flex items-center gap-3 min-h-[44px] cursor-pointer">
               <input type="checkbox" checked={includesBattery} onChange={(e) => setIncludesBattery(e.target.checked)} className="w-5 h-5 rounded accent-amber-500" />
               <span className="text-slate-300">Include Battery Storage</span>
             </label>
@@ -186,7 +186,7 @@ export default function SolarROICalculator() {
                 <div>
                   <label htmlFor="roi-battery" className="block text-slate-400 text-sm mb-2">Battery Capacity: {batteryCapacity} kWh</label>
                   <input id="roi-battery" type="range" min="5" max="50" value={batteryCapacity}
-                    onChange={(e) => setBatteryCapacity(Number(e.target.value))} className="w-full accent-amber-500" />
+                    onChange={(e) => setBatteryCapacity(Number(e.target.value))} className="w-full h-11 accent-amber-500 cursor-pointer" />
                 </div>
                 <div>
                   <label htmlFor="roi-battery-repl" className="block text-slate-400 text-sm mb-2">Quoted battery replacement in year 12 (KES, optional)</label>
@@ -209,7 +209,7 @@ export default function SolarROICalculator() {
                 {calculations.totalSystemCost !== null ? `KES ${calculations.totalSystemCost.toLocaleString()}` : REQUEST_QUOTATION}
               </span>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               {calculations.quotedCost ? 'Your quoted cost: a user-provided assumption, not an EmersonEIMS price.' : 'Enter a quoted cost to see payback, or ask us for a quotation.'}
             </p>
           </div>
@@ -217,32 +217,32 @@ export default function SolarROICalculator() {
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-center">
               <PiggyBank className="w-8 h-8 text-green-400 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-green-400">
+              <p className="text-2xl font-bold text-green-400 [overflow-wrap:anywhere]">
                 {calculations.monthlySavings !== null ? `KES ${calculations.monthlySavings.toLocaleString()}` : 'Enter your tariff'}
               </p>
               <p className="text-slate-400 text-sm">Monthly Savings</p>
             </div>
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-center">
               <Calendar className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-amber-400">
+              <p className="text-2xl font-bold text-amber-400 [overflow-wrap:anywhere]">
                 {missing || (calculations.paybackYear != null ? `${calculations.paybackYear} Years` : 'Not within 25 years')}
               </p>
               <p className="text-slate-400 text-sm">Payback Period</p>
             </div>
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 text-center">
               <TrendingUp className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-blue-400">{calculations.totalROI !== null ? `${calculations.totalROI}%` : '—'}</p>
+              <p className="text-2xl font-bold text-blue-400 [overflow-wrap:anywhere]">{calculations.totalROI !== null ? `${calculations.totalROI}%` : '—'}</p>
               <p className="text-slate-400 text-sm">25-Year ROI</p>
             </div>
             <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 text-center">
               <DollarSign className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-purple-400">
+              <p className="text-2xl font-bold text-purple-400 [overflow-wrap:anywhere]">
                 {calculations.lifetimeSavings !== null ? `KES ${(calculations.lifetimeSavings / 1000000).toFixed(1)}M` : '—'}
               </p>
               <p className="text-slate-400 text-sm">25-Year Net Savings</p>
             </div>
           </div>
-          <p className="text-xs text-slate-500 leading-relaxed">
+          <p className="text-xs text-slate-400 leading-relaxed">
             How this is worked out: savings are the solar energy used on site times your tariff (your bill ÷ your
             tariff gives the consumption). Panel output falls 0.5% a year, maintenance is 1% of the system cost a
             year and tariffs are held flat.
@@ -260,7 +260,7 @@ export default function SolarROICalculator() {
               <div className="bg-gradient-to-r from-amber-500 to-green-500 h-3 rounded-full transition-all"
                 style={{ width: `${Math.min(100, calculations.coveragePercent ?? 0)}%` }} />
             </div>
-            <p className="text-slate-500 text-sm mt-2">System produces ~{calculations.monthlyProduction} kWh/month</p>
+            <p className="text-slate-400 text-sm mt-2">System produces ~{calculations.monthlyProduction} kWh/month</p>
           </div>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-4">

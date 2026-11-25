@@ -254,7 +254,9 @@ export default function CinematicImageGallery({
     return (
       <>
         <div className={`relative ${className}`}>
-          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+          {/* Keyboard users can focus and scroll the strip (axe scrollable-region-focusable, /solar 2026-11-25).
+              Only the carousel layout, used on /solar; nike-style and the other layouts are unchanged. */}
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide" tabIndex={0} role="region" aria-label="Photo gallery, scroll sideways for more">
             {images.map((image, idx) => (
               <motion.div
                 key={idx}

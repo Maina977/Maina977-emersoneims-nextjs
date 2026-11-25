@@ -553,7 +553,7 @@ ${systemDesign.batteries[0] ? `            <tr>
               onClick={() => setMode(tab.id as typeof mode)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 mode === tab.id
-                  ? 'bg-white text-amber-600'
+                  ? 'bg-white text-amber-800'
                   : 'bg-white/20 text-white hover:bg-white/30'
               }`}
             >
@@ -1239,7 +1239,7 @@ ${systemDesign.batteries[0] ? `            <tr>
                   onChange={(e) => setHealthMetrics({...healthMetrics, panelEfficiency: Number(e.target.value)})}
                   className="w-full accent-amber-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">Current output vs rated output</p>
+                <p className="text-xs text-gray-400 mt-1">Current output vs rated output</p>
               </div>
 
               <div>
@@ -1254,7 +1254,7 @@ ${systemDesign.batteries[0] ? `            <tr>
                   onChange={(e) => setHealthMetrics({...healthMetrics, batterySOH: Number(e.target.value)})}
                   className="w-full accent-green-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">Current capacity vs original</p>
+                <p className="text-xs text-gray-400 mt-1">Current capacity vs original</p>
               </div>
 
               <div>
@@ -1454,7 +1454,7 @@ ${systemDesign.batteries[0] ? `            <tr>
 
       {/* Footer */}
       <div className="px-6 py-4 bg-gray-800/50 border-t border-gray-700">
-        <p className="text-xs text-gray-500 text-center">
+        <p className="text-xs text-gray-400 text-center">
           Solar Bible Calculator | EmersonEIMS | {SOLAR_FAULT_TOTAL} fault codes | Health analysis
         </p>
       </div>
