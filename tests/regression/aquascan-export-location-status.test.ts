@@ -39,11 +39,11 @@ describe('M-1: exports carry the location status and the water-body check', () =
     r.photoGpsConflictNote = 'Photo GPS is 12 km from the confirmed site; the confirmed site was used.';
     const rows = flat(screeningRows(r));
     expect(rows).toMatch(/Location source \| Searched place, confirmed by the customer — centre of Kalokol/);
-    expect(rows).toMatch(/Water-body check \| Water-body check inconclusive: the pin is within 0\.1 km of the mapped shore of Lake Turkana — confirmed on land by the customer/);
+    expect(rows).toMatch(/Water-body check \| Water-body check inconclusive: the pin is within 0\.1 km of the mapped shore of Lake Turkana \(Lake and reservoir maps © OpenStreetMap contributors \(ODbL\); coast: Natural Earth; islands: geoBoundaries \(CC BY 4\.0\)\) — confirmed on land by the customer/);
     expect(rows).toMatch(/Photo GPS \| Photo GPS is 12 km from the confirmed site; the confirmed site was used\./);
     const j: any = jsonReportData(r);
     expect(j.report.locationStatus).toBe('Searched place, confirmed by the customer — centre of Kalokol');
-    expect(j.report.waterCheck).toMatch(/— confirmed on land by the customer$/);
+    expect(j.report.waterCheck).toMatch(/© OpenStreetMap contributors \(ODbL\).*— confirmed on land by the customer$/);
     expect(j.report.photoGpsNote).toMatch(/^Photo GPS is 12 km/);
     expect(j.screening.locationStatus).toBe(j.report.locationStatus);
   });
@@ -53,7 +53,7 @@ describe('M-1: exports carry the location status and the water-body check', () =
     r.gpsSource = 'manual';
     const c = screeningContent(r);
     expect(c.locationStatus).toBe('Manual entry — coordinates typed by the customer');
-    expect(c.waterCheck).toMatch(/^Not on a mapped lake, reservoir or the sea/);
+    expect(c.waterCheck).toMatch(/^Not on a mapped lake, reservoir or the sea \(offline maps\. Lake and reservoir maps © OpenStreetMap contributors \(ODbL\)/);
     expect(c.photoGpsNote).toBeNull();
     expect(flat(screeningRows(r))).not.toMatch(/Photo GPS \|/);
   });

@@ -30,6 +30,9 @@ describe('M-2: offline water-body check', () => {
       const r = await siteCheck(lat, lon);
       expect(r.refusal, `${lat},${lon}`).toMatch(re);
     }
+    // ODbL: the attribution is part of every refusal and every passed check
+    expect((await siteCheck(3.5, 36.1)).refusal).toMatch(/© OpenStreetMap contributors \(ODbL\); coast: Natural Earth/);
+    expect(WATER_CHECK_OK).toMatch(/© OpenStreetMap contributors \(ODbL\)/);
     // further offshore the Kenya outline already refuses it
     expect((await siteCheck(-4.5, 40.5)).refusal).toMatch(/outside Kenya/);
     expect(fetchSpy).not.toHaveBeenCalled();
@@ -45,7 +48,7 @@ describe('M-2: offline water-body check', () => {
     const r = await siteCheck(3.31944, 35.96444);
     expect(r.refusal).toBeNull();
     expect(r.waterCheck).toBe('near-shore');
-    expect(r.note).toMatch(/^Water-body check inconclusive: the pin is within 0\.1 km of the mapped shore of Lake Turkana$/);
+    expect(r.note).toMatch(/^Water-body check inconclusive: the pin is within 0\.1 km of the mapped shore of Lake Turkana \(Lake and reservoir maps © OpenStreetMap contributors \(ODbL\)/);
   });
 
   it('recorded boreholes are not refused: WRA field records 0 of 3,445; registry 2 of 22,820 (both geocoded kilometres into the lake)', () => {

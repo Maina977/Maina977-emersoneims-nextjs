@@ -101,11 +101,17 @@ export function openWaterAt(lat: number, lon: number): WaterAt {
 const where = (lat: number, lon: number) => `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
 function waterRefusal(lat: number, lon: number, w: NonNullable<WaterAt>): string {
   return w.kind === 'sea'
-    ? `${where(lat, lon)} is in the sea (${w.name}, ${w.shoreKm.toFixed(1)} km off the mapped coastline). Move the pin onto land.`
-    : `${where(lat, lon)} is on open water (${w.name}, ${w.shoreKm.toFixed(1)} km from the mapped shore). Move the pin onto land.`;
+    ? `${where(lat, lon)} is in the sea (${w.name}, ${w.shoreKm.toFixed(1)} km off the mapped coastline). Move the pin onto land. (${WATER_MAP_ATTRIBUTION})`
+    : `${where(lat, lon)} is on open water (${w.name}, ${w.shoreKm.toFixed(1)} km from the mapped shore). Move the pin onto land. (${WATER_MAP_ATTRIBUTION})`;
 }
 
-export const WATER_CHECK_OK = 'Not on a mapped lake, reservoir or the sea (offline OpenStreetMap and Natural Earth maps)';
+/**
+ * Attribution shown wherever the water-check result is shown (screen, refusals, exports). The lake
+ * and reservoir polygons are OpenStreetMap data (ODbL 1.0: attribution required); the coast is
+ * Natural Earth (public domain); Kenyan islands come from the geoBoundaries outline (CC BY 4.0).
+ */
+export const WATER_MAP_ATTRIBUTION = 'Lake and reservoir maps \u00a9 OpenStreetMap contributors (ODbL); coast: Natural Earth; islands: geoBoundaries (CC BY 4.0)';
+export const WATER_CHECK_OK = `Not on a mapped lake, reservoir or the sea (offline maps. ${WATER_MAP_ATTRIBUTION})`;
 
 /**
  * Refusal plus the state of the water-body check (review R7: never a silent pass). 'near-shore':
@@ -116,7 +122,7 @@ export async function siteCheck(lat: number, lon: number): Promise<{ refusal: st
   if (!inKenya(lat, lon)) return { refusal: await siteRefusal(lat, lon), waterCheck: 'ok', note: WATER_CHECK_OK };
   const w = openWaterAt(lat, lon);
   if (w && !w.nearShore) return { refusal: waterRefusal(lat, lon, w), waterCheck: 'ok', note: WATER_CHECK_OK };
-  if (w) return { refusal: null, waterCheck: 'near-shore', note: `Water-body check inconclusive: the pin is within ${Math.max(0.1, w.shoreKm).toFixed(1)} km of the mapped ${w.kind === 'sea' ? 'coastline' : `shore of ${w.name}`}` };
+  if (w) return { refusal: null, waterCheck: 'near-shore', note: `Water-body check inconclusive: the pin is within ${Math.max(0.1, w.shoreKm).toFixed(1)} km of the mapped ${w.kind === 'sea' ? 'coastline' : `shore of ${w.name}`} (${WATER_MAP_ATTRIBUTION})` };
   return { refusal: null, waterCheck: 'ok', note: WATER_CHECK_OK };
 }
 
