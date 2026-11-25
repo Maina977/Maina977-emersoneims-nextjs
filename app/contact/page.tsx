@@ -277,6 +277,12 @@ function SciFiContactForm() {
       engineer: 'I would like to speak to an engineer about: ',
     };
     if (type && opener[type]) setFormData((f) => (f.message ? f : { ...f, message: opener[type] }));
+    // AquaScan site photos (2026-11-25): /contact?type=survey&detail=… pre-fills the survey
+    // request with the property and candidate locations. Nothing is sent until the visitor submits.
+    if (type === 'survey') {
+      const detail = (new URLSearchParams(window.location.search).get('detail') ?? '').slice(0, 1500);
+      setFormData((f) => (f.message ? f : { ...f, message: detail || 'I would like a hydrogeological survey for: ' }));
+    }
     if (type === 'emergency') setFormData((f) => ({ ...f, urgency: 'high' }));
   }, []);
 

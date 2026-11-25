@@ -42,3 +42,22 @@ Summaries are attributed, not quoted, unless marked.
 2. **A published example is used as a test only after verbatim reproduction.** The stated data and answers must be transcribed from the source, with page and tolerance recorded. None is yet (A3, A5).
 3. **Synthetic is labelled synthetic.** The TTim and A&S-built data test the code's correctness. They are not field validation.
 4. **Each output row carries its evidence class:** [Measured], [Modelled estimate], [Planning estimate, assumptions stated], [Not supported] or [Reference].
+
+## D. Site-photo workflow: setback and access distances (2026-11-25)
+
+The rule is: **no distance is used as a number unless a verified source gives it.** None was verified for Kenya, so the workflow says "distance requirement per WRA guidance — NOT VERIFIED" and asks for a professional check. The customer's own estimated distance is reported as entered.
+
+| # | Topic | Source checked | What it says | Use |
+|---|---|---|---|---|
+| D1 | Latrine to water-point distance, by country | Parker, A. and Carlier, I. (2009). *National regulations on the safe distance between latrines and waterpoints*. DEW Point Enquiry A0304, DFID. https://assets.publishing.service.gov.uk/media/57a08b3c40f0b652dd000ba6/DEWPoint_A0304_Nov2009_National_regulations_safe_distance_latrines.pdf (text extracted 2026-11-25) | Lists national figures, e.g. Burkina Faso 25 m, Ethiopia 30 m, Ghana 50 m. It stresses that "following these guidelines does not guarantee safe drinking water". **Kenya is not covered.** | Context only: no number used |
+| D2 | The "30 m" rule of thumb | UNHCR WASH guidance (search result, wash.unhcr.org Excreta Management) | The 30 m figure "is often used", but "the required distance can vary greatly depending on ground conditions". Attributed to the Sphere Handbook by secondary sources; **the Sphere text itself was not verified** | Not used |
+| D3 | Kenya borehole siting relative to latrines and septic tanks | Water Resources Regulations 2021 (L.N. 43/2021) and 2025 (L.N. 58/2025), Kenya Law; Water Services Regulations | Searched: **no distance found** in the text reviewed | "NOT VERIFIED" |
+| D4 | Overhead power-line clearance | Kenya Power and KETRACO wayleave pages (kplc.co.ke, ketraco.co.ke) | Wayleave and building restrictions described; **no 11/33 kV clearance figure found** | "NOT VERIFIED" |
+| D5 | Drilling-rig access width and working area | Not found in a manufacturer or drilling-practice source in this pass | — | "NOT VERIFIED" |
+| D6 | Borehole spacing (interference) | WRA regulations (as D3) | Not found | "NOT VERIFIED" |
+
+Next action: obtain the WRA borehole siting guideline and the Kenya Power wayleave specification. Record each figure here with the clause, then reference it in `siteConstraints.ts`.
+
+## E. Vision models
+
+See `aquascan-vision-model-evaluation.md`, which gives the licence evidence per layer.

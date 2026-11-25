@@ -32,6 +32,8 @@ import { installReliableFetch } from './reliableFetch';
 import EvidenceCards from './EvidenceCardsView';
 import { FieldEvidencePanel } from './FieldEvidencePanel';
 import { PumpTestTimeSeriesView } from './PumpTestTimeSeriesView';
+import { SitePhotoWorkflow } from './SitePhotoWorkflow';
+import { chanceText, compareCardFigures, compareVerdictSentence, photoOnlyLocation, PHOTO_ONLY_NO_CHANCE } from './photoOnlyGate';
 // Pre-checks (Kenya land/water, elevation) use the same relay as the analysis.
 if (typeof window !== 'undefined') installReliableFetch();
 // NOTE: styles.css is deliberately NOT imported here. This module is loaded
@@ -49,7 +51,7 @@ if (typeof window !== 'undefined') installReliableFetch();
    TYPES
    ═══════════════════════════════════════════════════════════════ */
 type SubsystemId = 'location'|'ingestion'|'satellite'|'geological'|'hydrogeological'|'ml'|'risk'|'cost'|'verification'|'remote-sensing'|'calibration'|'report';
-type ViewId = 'dashboard'|'analyze'|'results'|'compare'|'feedback'|'capabilities';
+type ViewId = 'dashboard'|'analyze'|'results'|'compare'|'feedback'|'capabilities'|'site-photos';
 type ReportTier = 'basic'|'professional'|'expert';
 
 interface SubsystemDef {
@@ -137,7 +139,7 @@ async function buildSitePhotos(files: File[], primary: File): Promise<SitePhoto[
 
 interface ComparisonSite {
   id: string; name: string; image: string | null; file: File | null;
-  result: AnalysisResult | null; analyzing: boolean;
+  result: AnalysisResult | null; analyzing: boolean; note?: string;
 }
 
 interface FeedbackEntry {
@@ -657,6 +659,27 @@ function findNearest(arr: number[], val: number): number {
 
 /** File name of the neutral placeholder used for a coordinates-only run. */
 const NO_PHOTO_NAME = '__aquascan-no-photo__.jpg';
+/**
+ * Photos never feed the groundwater analysis (management rule, 2026-11-25): the analysis
+ * always receives this neutral placeholder; real photos are kept for the report and for
+ * their camera GPS position only.
+ */
+async function placeholderPhoto(): Promise<File | null> {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64; canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  if (ctx) { ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, 64, 64); }
+  const blob: Blob | null = await new Promise((res) => canvas.toBlob((b) => res(b), 'image/jpeg', 0.8));
+  return blob ? new File([blob], NO_PHOTO_NAME, { type: 'image/jpeg' }) : null;
+}
+async function exifGpsOf(f: File): Promise<{ lat: number; lon: number } | null> {
+  try {
+    const exifr = (await import('exifr')).default;
+    const g = await exifr.gps(f).catch(() => null);
+    return g && Number.isFinite(g.latitude) && Number.isFinite(g.longitude) ? { lat: g.latitude, lon: g.longitude } : null;
+  } catch { return null; }
+}
+const PHOTO_NEEDS_LOCATION = 'AquaScan needs the site\u2019s coordinates. A photo cannot locate the site or show groundwater, and this photo has no camera GPS position. Enter the latitude and longitude (or search the place), then add the photo again.';
 
 const AIBoreholeAnalyzer: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string|null>(null);
@@ -906,6 +929,20 @@ const AIBoreholeAnalyzer: React.FC = () => {
         }
       } catch { /* keep first file as primary */ }
     }
+    // Photos never feed the groundwater analysis (2026-11-25): the analysis gets the neutral
+    // placeholder; the location comes from typed coordinates, the place search or the camera GPS.
+    let analysisFile: File = primary;
+    let photoGps: { lat: number; lon: number } | null = null;
+    if (!noPhoto) {
+      const hasTypedPlace = Object.values(clientLoc).some(v => v && String(v).trim());
+      if (!manualCoords && !hasTypedPlace) {
+        photoGps = await exifGpsOf(primary);
+        if (!photoGps) { setAnalysisError(PHOTO_NEEDS_LOCATION); setManualLocError(PHOTO_NEEDS_LOCATION); setActiveView('analyze'); return; }
+      }
+      const ph = await placeholderPhoto();
+      if (!ph) { setAnalysisError('Could not start the analysis in this browser.'); setActiveView('analyze'); return; }
+      analysisFile = ph;
+    }
     primaryFileRef.current = primary;
     setSelectedImage(noPhoto ? null : URL.createObjectURL(primary));
     setExtraImages(files.filter(f => f !== primary).map(f => URL.createObjectURL(f)));
@@ -934,6 +971,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
           latitude: manualCoords.lat,
           longitude: manualCoords.lon,
         };
+      } else if (photoGps) {
+        locationArg = { ...clientLoc, latitude: photoGps.lat, longitude: photoGps.lon };
       } else if (hasClientLoc) {
         locationArg = clientLoc;
       }
@@ -941,12 +980,19 @@ const AIBoreholeAnalyzer: React.FC = () => {
       // Build field data if any field forms were filled
       const hasFieldData = Object.keys(fieldDataInput).length > 0 && Object.values(fieldDataInput).some(v => v != null);
       const analysisResult = await analyzer.analyzeImage(
-        primary,
+        analysisFile,
         (step, label) => { setPipelineStep(step); setPipelineLabel(label); },
         locationArg,
         hasFieldData ? fieldDataInput as FieldValidationData : undefined,
       );
       try { analysisResult.sitePhotos = await sitePhotosPromise; } catch { /* photos optional */ }
+      if (!noPhoto) {
+        // The analysed image was the placeholder: drop its identity, record why.
+        (analysisResult as any).photosNotUsedForModel = true;
+        if (photoGps) (analysisResult as any).locationFromPhotoGps = true;
+        delete (analysisResult as any).imageForensicId;
+        delete (analysisResult as any).imageFingerprint;
+      }
       if (noPhoto) {
         (analysisResult as any).noPhoto = true;
         // No photo: no image identity or stripped-metadata warning anywhere (2026-10-20).
@@ -967,10 +1013,19 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const handleCompSiteUpload = async (idx: number, file: File) => {
     if (!analyzer) return;
     const sites = [...compSites];
-    sites[idx] = { ...sites[idx], image: URL.createObjectURL(file), file, analyzing: true, result: null };
+    sites[idx] = { ...sites[idx], image: URL.createObjectURL(file), file, analyzing: true, result: null, note: undefined };
     setCompSites(sites);
+    // Photos never feed the groundwater analysis (2026-11-25): the site's camera GPS gives the
+    // location and the analysis runs on the placeholder; without GPS the site is not analysed.
+    const gps = await exifGpsOf(file);
+    const ph = gps ? await placeholderPhoto() : null;
+    if (!gps || !ph) {
+      const updated = [...sites]; updated[idx] = { ...updated[idx], analyzing: false, note: gps ? 'Could not start the analysis in this browser.' : 'Not analysed: this photo has no camera GPS position, and a photo alone cannot locate the site or show groundwater. Use "Site photos: compare candidate drilling spots", or enter the coordinates on the main page.' };
+      setCompSites(updated);
+      return;
+    }
     try {
-      const res = await analyzer.analyzeImage(file);
+      const res = await analyzer.analyzeImage(ph, undefined, { latitude: gps.lat, longitude: gps.lon });
       const updated = [...sites]; updated[idx] = { ...updated[idx], result: res, analyzing: false };
       setCompSites(updated);
     } catch { const updated = [...sites]; updated[idx] = { ...updated[idx], analyzing: false }; setCompSites(updated); }
@@ -1048,7 +1103,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
     // Re-run the FULL analysis at the new coordinates: with the site photo, or
     // the neutral placeholder of a coordinates-only run.
     const imageInput = document.querySelector<HTMLInputElement>('input[type="file"][accept*="image"]');
-    let file: File | undefined = primaryFileRef.current ?? imageInput?.files?.[0];
+    void imageInput;
+    // Photos never feed the groundwater analysis (2026-11-25): always the placeholder.
+    let file: File | undefined;
+    const photoFile: File | undefined = primaryFileRef.current ?? undefined;
     if (!file) {
       const canvas = document.createElement('canvas');
       canvas.width = 64; canvas.height = 64;
@@ -1073,7 +1131,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
         );
         // Re-attach the photos from the original upload (or build them now)
         if (sitePhotosRef.current.length === 0) {
-          try { sitePhotosRef.current = await buildSitePhotos([file], file); } catch { /* optional */ }
+          if (photoFile) { try { sitePhotosRef.current = await buildSitePhotos([photoFile], photoFile); } catch { /* optional */ } }
         }
         analysisResult.sitePhotos = sitePhotosRef.current;
         setResult(analysisResult);
@@ -1382,6 +1440,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
             </div>
 
             <div className="cta-buttons">
+              <button className="btn btn-compare" onClick={()=>setActiveView('site-photos')}>
+                {'\u{1F4F8}'} Site photos: compare candidate drilling spots
+              </button>
               <button className="btn btn-compare" onClick={()=>setActiveView('compare')}>
                 {'\u{1F504}'} Compare Multiple Sites
               </button>
@@ -2189,7 +2250,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
         {/* Summary Cards */}
         <div className="results-summary-cards">
-          <div className="summary-card success"><div className="summary-value">{probabilityBand(result.probability)}</div><div className="summary-label">Chance of a productive borehole (planning estimate){(() => {
+          <div className="summary-card success"><div className="summary-value">{chanceText(result)}</div><div className="summary-label">Chance of a productive borehole (planning estimate){(() => {
             // The county's recorded rate beside it, so a higher figure is explained (audit 2026-11-05).
             const cr = Number((result.boreholeRecords as any)?.countyIntelligence?.successRate);
             if (!(cr > 0)) return null;
@@ -2463,7 +2524,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               {/* DATA SOURCE TRANSPARENCY BANNER */}
               <div className="data-source-banner" style={{background:result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'rgba(34,197,94,0.08)':result.gpsSource==='manual'?'rgba(56,189,248,0.08)':result.locationMethod==='visual-estimate'?'rgba(251,191,36,0.08)':'rgba(239,68,68,0.08)',color:'var(--text-secondary)',padding:'14px 18px',borderRadius:12,marginBottom:16,fontSize:13,border:`1px solid ${result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'?'rgba(34,197,94,0.2)':result.gpsSource==='manual'?'rgba(56,189,248,0.2)':result.locationMethod==='visual-estimate'?'rgba(251,191,36,0.2)':'rgba(239,68,68,0.2)'}`}}>
                 <div style={{fontWeight:700,marginBottom:6,color:'var(--text-primary)',fontSize:14}}>{'\u{1F4E1}'} Data Source Transparency</div>
-                <div><strong>Photo:</strong> {(result as any).noPhoto ? 'None supplied (coordinates-only run).' : result.pixelAnalysis?.isOutdoorScene ? 'Looks like an outdoor scene (automatic colour check — it can be wrong).' : 'Does not look like an outdoor site photo.'} {(result.geoEstimate as any)?.source === 'user-coordinates' || (result.clientLocation as any)?.latitude != null ? 'Not used for depth or yield because you entered coordinates.' : 'Used only as a weak hint; enter coordinates for a better result.'}</div>
+                <div><strong>Photo:</strong> {(result as any).photosNotUsedForModel ? `Kept for the report only: photos are not used for any groundwater figure.${(result as any).locationFromPhotoGps ? ' The location is the photo\u2019s camera GPS position.' : ''}` : (result as any).noPhoto ? 'None supplied (coordinates-only run).' : result.pixelAnalysis?.isOutdoorScene ? 'Looks like an outdoor scene (automatic colour check — it can be wrong).' : 'Does not look like an outdoor site photo.'} {(result.geoEstimate as any)?.source === 'user-coordinates' || (result.clientLocation as any)?.latitude != null ? 'Not used for depth or yield because you entered coordinates.' : 'Used only as a weak hint; enter coordinates for a better result.'}</div>
                 <div><strong>Location:</strong> {result.locationMethod==='exif-gps' ? '\u{1F4E1} Photo EXIF GPS (±10m) — Location extracted FROM THE IMAGE' : result.locationMethod==='filename-geocode' ? `\u{1F4C1} Filename Geocode — "${result.locationContext?.filenameHint?.split(' → ')[0] || 'filename'}" matched to real place via OpenStreetMap` : result.locationMethod==='iptc-geocode' ? '\u{1F3F7}\uFE0F IPTC/XMP Geocode — Photo metadata text matched to real place' : result.gpsSource==='device' ? '\u{1F4F1} Device GPS — You confirmed you are at the borehole site' + (result.gpsAccuracy ? ` (±${Math.round(result.gpsAccuracy)}m)` : '') : result.gpsSource==='manual' ? '\u{1F4DD} Manual Entry — Coordinates entered by user' : result.locationMethod==='visual-estimate' ? '\u{1F30D} Visual Terrain Estimate — Location estimated from soil color, vegetation, and terrain' : '\u274C No location found — use your device location or enter coordinates below'}</div>
                 {/* No region means no estimate (coordinates-only runs): never an empty line. */}
                 {result.geoEstimate?.bestEstimate?.region && (
@@ -5999,8 +6060,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div>
               <h4 className="tab-title">{'\u{1F4CA}'} Probability Breakdown</h4>
               <div className="prob-cards">
-                <div className="prob-card"><div className="prob-value">{probabilityBand(prob.success / 100)}</div><div className="prob-label">Chance of a productive borehole (planning estimate)</div></div>
-                {result.uncertainty?.probabilityRange && <div className="prob-card"><div className="prob-value">{Math.round(result.uncertainty.probabilityRange[0] * 100)}–{Math.round(result.uncertainty.probabilityRange[1] * 100)}%</div><div className="prob-label">Range across the models</div></div>}
+                <div className="prob-card"><div className="prob-value">{photoOnlyLocation(result) ? PHOTO_ONLY_NO_CHANCE : probabilityBand(prob.success / 100)}</div><div className="prob-label">Chance of a productive borehole (planning estimate)</div></div>
+                {!photoOnlyLocation(result) && result.uncertainty?.probabilityRange && <div className="prob-card"><div className="prob-value">{Math.round(result.uncertainty.probabilityRange[0] * 100)}–{Math.round(result.uncertainty.probabilityRange[1] * 100)}%</div><div className="prob-label">Range across the models</div></div>}
               </div>
               <div className="result-grid">
                 <div className="result-item"><span className="rl">Recharge</span><span className="rv">{prob.rechargePotential}</span></div>
@@ -8181,7 +8242,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{background:'rgba(168,85,247,0.06)',padding:14,borderRadius:12}}>
                     <div style={{fontSize:12,color:'var(--text-secondary)',marginBottom:6}}>MODELLED SUCCESS SCORE</div>
                     <div style={{fontSize:10,color:'var(--text-muted)',marginBottom:6}}>MODELLED, uncalibrated: a score, not a probability. No drilled outcomes have been used to check it yet.</div>
-                    <div style={{fontSize:11}}>Desktop: <strong>{probabilityBand(result.probability)}</strong></div>
+                    <div style={{fontSize:11}}>Desktop: <strong>{chanceText(result)}</strong></div>
                     {result.drillingPrediction && <div style={{fontSize:11}}>Desktop model: <strong>{result.drillingPrediction.successProbability}%</strong></div>}
                     {result.regionalModel?.correctedProbability && <div style={{fontSize:11}}>Regional: <strong>{result.regionalModel.correctedProbability}%</strong></div>}
                   </div>
@@ -8929,7 +8990,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
     // Comparison metrics table rows
     const compMetrics = analyzed.length >= 2 ? [
-      { label: 'Modelled Success Score', unit: '%', values: analyzed.map(s => (s.result!.probability * 100).toFixed(1)), best: 'max' as const },
+      // 2026-11-25: no success score for a site whose location came only from its photo.
+      ...(analyzed.every(s => !photoOnlyLocation(s.result)) ? [{ label: 'Modelled Success Score', unit: '%', values: analyzed.map(s => (s.result!.probability * 100).toFixed(1)), best: 'max' as const }] : []),
       // Release 5: depth/yield rows only when every compared site has field evidence.
       ...(analyzed.every(s => evidenceGate(s.result).depth) ? [{ label: 'Recommended Depth', unit: 'm', values: analyzed.map(s => s.result!.recommendedDepth.toFixed(0)), best: 'min' as const }] : []),
       ...(analyzed.every(s => evidenceGate(s.result).yield) ? [{ label: 'Estimated Yield', unit: 'm³/h', values: analyzed.map(s => s.result!.estimatedYield.toFixed(1)), best: 'max' as const }] : []),
@@ -8985,11 +9047,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <input ref={el=>{compInputRefs.current[idx]=el}} type="file" accept="image/*" style={{display:'none'}}
                 onChange={e=>{if(e.target.files?.[0]) handleCompSiteUpload(idx, e.target.files[0]);}} />
               {site.analyzing && <div className="compare-status"><div className="mini-spinner"></div> Analyzing...</div>}
+              {site.note && <div className="compare-status" role="alert">{site.note}</div>}
               {site.result && (
                 <div className="compare-results">
-                  <div className="cr-row"><span>Chance of success</span><span style={{color:'#4CAF50'}}>{probabilityBand(site.result.probability)}</span></div>
-                  <div className="cr-row"><span>Depth</span><span>{site.result.recommendedDepth.toFixed(0)}m</span></div>
-                  <div className="cr-row"><span>Yield</span><span>{site.result.estimatedYield.toFixed(1)} m&sup3;/h</span></div>
+                  <div className="cr-row"><span>Chance of success</span><span style={{color:'#4CAF50'}}>{compareCardFigures(site.result).chance}</span></div>
+                  <div className="cr-row"><span>Depth</span><span>{compareCardFigures(site.result).depth}</span></div>
+                  <div className="cr-row"><span>Yield</span><span>{compareCardFigures(site.result).yield}</span></div>
                   <div className="cr-row"><span>Risk</span><span style={{color:getRiskColor(site.result.risk.overallRisk)}}>{(site.result.risk.overallRisk*100).toFixed(0)}%</span></div>
                   <div className="cr-row"><span>Confidence</span><span>{(site.result.confidenceMetrics?.overall ?? 50).toFixed(0)}%</span></div>
                   <div className="cr-row"><span>Viability</span><span>{site.result.risk.viability.toUpperCase()}</span></div>
@@ -9020,7 +9083,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <h4 className="compare-section-title">{'\u{1F4CA}'} Parameter Comparison</h4>
             <div className="compare-bars">
               {[
-                { label: 'Modelled Success Score', key: 'prob', values: analyzed.map(s => s.result!.probability * 100), max: 100, unit: '%', higherBetter: true },
+                ...(analyzed.every(s => !photoOnlyLocation(s.result)) ? [{ label: 'Modelled Success Score', key: 'prob', values: analyzed.map(s => s.result!.probability * 100), max: 100, unit: '%', higherBetter: true }] : []),
                 ...(analyzed.every(s => evidenceGate(s.result).yield) ? [{ label: 'Estimated Yield', key: 'yield', values: analyzed.map(s => s.result!.estimatedYield), max: Math.max(...analyzed.map(s => s.result!.estimatedYield)) * 1.2, unit: ' m³/h', higherBetter: true }] : []),
                 { label: 'Overall Risk', key: 'risk', values: analyzed.map(s => s.result!.risk.overallRisk * 100), max: 100, unit: '%', higherBetter: false },
                 ...(analyzed.every(s => evidenceGate(s.result).depth) ? [{ label: 'Recommended Depth', key: 'depth', values: analyzed.map(s => s.result!.recommendedDepth), max: Math.max(...analyzed.map(s => s.result!.recommendedDepth)) * 1.2, unit: 'm', higherBetter: false }] : []),
@@ -9122,9 +9185,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <strong>Engineering Recommendation</strong>
             </div>
             <p>
-              <strong>{best.name}</strong> is the recommended drilling site with a composite score of <strong>{scored[0].score.total}/100</strong>.
-              It has {probabilityBand(best.result!.probability)} chance of success (planning estimate) with an estimated yield of {best.result!.estimatedYield.toFixed(1)} m&sup3;/h
-              at {best.result!.recommendedDepth.toFixed(0)}m depth. Overall risk is {(best.result!.risk.overallRisk*100).toFixed(0)}% ({best.result!.risk.viability}).
+              {compareVerdictSentence(best.result!, best.name, scored[0].score.total)} Overall risk is {(best.result!.risk.overallRisk*100).toFixed(0)}% ({best.result!.risk.viability}).
             </p>
             {scored.length > 1 && scored[1].site.result && (
               <p style={{marginTop:8, fontSize:13, color:'var(--text-muted)'}}>
@@ -9391,6 +9452,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
         {activeView==='analyze' && renderAnalyzing()}
         {activeView==='results' && renderResults()}
         {activeView==='compare' && renderCompare()}
+        {activeView==='site-photos' && <SitePhotoWorkflow />}
         {activeView==='feedback' && renderFeedback()}
       </main>
       <footer className="app-footer">
