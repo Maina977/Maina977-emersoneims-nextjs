@@ -77,3 +77,11 @@ field validation**: no metered installation was compared.
 | G5 | Pylontech primary source | The copy is hosted by a distributor | Download it from pylontech.com.cn |
 | G6 | Grid CO2 factor 0.213 kg/kWh | Cited in the code (Climate Watch / KPLC 2023), not re-verified in this pass | Verify against the source |
 | G7 | Field validation | No metered Kenyan installation data in the repository | Compare with one real site's bills before and after installation |
+
+
+## Independent second-person check (2026-11-25)
+
+All values in this register were re-opened at their cited public sources by an independent checker (report: `EmersonEIMS-proposals/source-verification-2026-11-25/INDEPENDENT-SOURCE-CHECK.md`, held outside the repo).
+- Hub: 24/25 values match. Corrected: Deye maximum battery charge/discharge current is per model (datasheet p. 2): SUN-5K-SG04LP1-EU = 120 A (the dataset had 140 A, which is the range maximum for the 24 V SUN-3K model only). Not used by any calculation, so no result changes.
+- Pylontech US5000: two different third-party copies both carry the code PY21US05-1 and disagree on weight (38 vs 40 kg), depth (161 vs 162 mm) and peak current (101~120 vs 100~120 A @15 min). This dataset uses the fvcomponentes copy. Neither copy is from Pylontech's own site.
+- EPRA pass-through and Nairobi fuel prices match the cited Kenyans.co.ke reports; the EPRA notices themselves were not opened (secondary source).

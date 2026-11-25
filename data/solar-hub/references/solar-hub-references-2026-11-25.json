@@ -79,7 +79,7 @@
     { "id": "inverter.deye.euroEfficiency", "value": 96.5, "unit": "%", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09", "appliesTo": "SUN-3/3.6/5/6K-SG04LP1-EU" },
     { "id": "inverter.deye.mpptEfficiency", "value": 99, "unit": "% (printed as >99%)", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09" },
     { "id": "inverter.deye.batteryVoltageRange", "value": [40, 60], "unit": "V", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09" },
-    { "id": "inverter.deye.maxBatteryCurrent", "value": 140, "unit": "A", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09", "appliesTo": "3.6/5/6 kW models" },
+    { "id": "inverter.deye.maxBatteryCurrent", "value": 120, "unit": "A", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09", "appliesTo": "SUN-5K-SG04LP1-EU only", "note": "Corrected 2026-11-25 after independent check (datasheet p. 2, row 'Max. Charging/Discharging Current (A)'): the value differs per model: SUN-3K-SG04LP1-24-EU 140, SUN-3K-SG04LP1-EU 70, SUN-3.6K 90, SUN-5K 120, SUN-6K 135. The front-page 140 A is the range maximum (24 V model only). Not used by any calculation." },
     { "id": "inverter.deye.warranty", "value": "5 years / up to 10 years, varies by installation country", "unit": "", "status": "manufacturer-specification", "source": "deye-sg04lp1-2026-09" },
 
     { "id": "battery.us5000.nominalCapacity", "value": 4800, "unit": "Wh", "status": "manufacturer-specification", "source": "pylontech-us5000-py21us05-1" },
