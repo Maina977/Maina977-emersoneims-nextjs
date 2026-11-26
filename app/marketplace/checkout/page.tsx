@@ -42,6 +42,8 @@ export default function CheckoutPage() {
     total: number;
   } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Shown when the server refuses the order (e.g. 400 Invalid order details).
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   // Load cart from localStorage
   useEffect(() => {
@@ -82,6 +84,7 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     setSubmitting(true);
+    setOrderError(null);
     try {
       const response = await fetch('/api/orders/create', {
         method: 'POST',
@@ -112,6 +115,10 @@ export default function CheckoutPage() {
         setStep('confirm');
         localStorage.removeItem('cart'); // Clear cart
         setCart([]);
+      } else {
+        setOrderError(
+          (typeof data.error === 'string' && data.error) || 'We could not create your order'
+        );
       }
     } catch (error) {
       console.error('Failed to create order:', error);
@@ -335,6 +342,13 @@ export default function CheckoutPage() {
                     <p className="text-white">{phone}</p>
                   </div>
                 </div>
+
+                {orderError && (
+                  <div role="alert" className="bg-red-900/30 border border-red-500/40 rounded-lg p-4 text-red-300">
+                    {orderError}. Please check your name, email and phone number (digits only) and try again,
+                    or <Link href="/contact" className="underline">contact us</Link> to order.
+                  </div>
+                )}
 
                 <div className="flex gap-4">
                   <button

@@ -11,8 +11,11 @@
 import { retired } from '@/lib/security/retiredRoute';
 
 const gone = () => retired('This proxy API');
+// All 7 methods answer 410 (OPTIONS too, so no automatic CORS preflight answer).
 export const GET = gone;
+export const HEAD = gone;
 export const POST = gone;
 export const PUT = gone;
-export const DELETE = gone;
 export const PATCH = gone;
+export const DELETE = gone;
+export const OPTIONS = gone;
