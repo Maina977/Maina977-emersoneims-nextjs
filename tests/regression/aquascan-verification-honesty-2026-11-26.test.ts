@@ -446,8 +446,9 @@ describe('D1: the engineer trust score and grade follow the verification coverag
 describe('C: the price state of each line and the contingency are identical on screen and in every export', () => {
   const variants: { name: string; pricing: any }[] = [
     { name: 'private project (default)', pricing: undefined },
-    { name: 'private project with a verified survey quotation', pricing: { category: 'private', quotations: [{ item: 'survey', amountKES: 60000, reference: 'TEST-Q-17', date: '2026-11-20', label: 'verified project quotation' }] } },
-    { name: 'government tender', pricing: { category: 'government_tender', quotations: [] } },
+    // MAJOR-3 (review of ef8f6b2e): a stored "verified" quotation is read as the user's own rate; a stored tender category as private.
+    { name: 'private project with a user-entered survey rate (stored as "verified")', pricing: { category: 'private', quotations: [{ item: 'survey', amountKES: 60000, reference: 'TEST-Q-17', date: '2026-11-20', label: 'verified project quotation' }] } },
+    { name: 'a stored government-tender category is read as private', pricing: { category: 'government_tender', quotations: [] } },
   ];
   for (const v of variants) {
     it(`${v.name}: full exports (survey + pumping test), all-sources-unavailable verification`, async () => {
@@ -468,8 +469,9 @@ describe('C: the price state of each line and the contingency are identical on s
       expect(e.totalKES).toBe(cs.sourcedTotalKES);
       expect(e.subtotalCost).toBe(cs.sourcedSubtotal);
       if (!v.pricing) { expect(costLineText(survey).usd).toBe('Request a quotation'); expect(costLineText(drilling).usd).toBe('Request a quotation'); }
-      if (v.pricing?.quotations?.length) { expect(survey.state).toBe('verified'); expect(costLineText(survey).basis).toBe('verified project quotation: TEST-Q-17, dated 2026-11-20. Applies to this project only'); expected.push(fmtKES(60000), costLineText(survey).basis); }
-      if (v.pricing?.category === 'government_tender') { expect(survey.state).toBe('tender'); expect(costLineText(survey).basis).toMatch(/^government tender rate: /); }
+      if (v.pricing?.quotations?.length) { expect(survey.state).toBe('indicative'); expect(costLineText(survey).basis).toBe('indicative — not a binding offer: entered by the user, not verified by EmersonEIMS (TEST-Q-17, dated 2026-11-20). Applies to this project only'); expected.push(fmtKES(60000), costLineText(survey).basis); }
+      if (v.pricing?.category === 'government_tender') { expect(cs.category).toBe('private'); expect(costLineText(survey).usd).toBe('Request a quotation'); }
+      expect(JSON.stringify(cs.lines)).not.toMatch(/verified project quotation|government tender rate/);
       const ex = await exportsText(r);
       for (const [fmt, text] of Object.entries(ex)) {
         const t = fmt === 'JSON' ? text : squash(text);

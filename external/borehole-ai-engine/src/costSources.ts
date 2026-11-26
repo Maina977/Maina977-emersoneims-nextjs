@@ -20,7 +20,7 @@
 import { EIMS_RATES_KES, KES_PER_USD, drillingCostKES } from './costModel';
 import {
   PRICE_STATE, TENDER_RATE_SOURCE, PRICING_CATEGORY_LABEL, COST_ITEM_LABEL, REFERENCE_QUOTATION_TEXT,
-  quotationFor, quotationBasis, fmtKES, ENTRY_LABEL, type CostItemKey, type PriceState, type PricingCategory, type ProjectPricing,
+  quotationFor, quotationBasis, fmtKES, ENTRY_LABEL, USER_ENTERED_LABEL, type CostItemKey, type PriceState, type PricingCategory, type ProjectPricing,
 } from './projectPricing';
 
 /** The cost-model figures costSourcing reads (computeCanonicalEconomics supplies them). */
@@ -161,11 +161,11 @@ export function costSourcing(eco: Eco): CostSourcing {
   // assumption and is never presented as hard rock.
   const rockNote = eco.isHardRock ? 'hard rock: geological finding' : eco.rockTypeUnknown ? 'pricing assumption: ground conditions unknown' : 'soft ground: geological finding';
   const groundNote = eco.rockTypeUnknown
-    ? `${groundConditionsUnknownText(rate)} The drilling line uses the conservative hard-rock rate on the same assumption.`
+    ? `${groundConditionsUnknownText(rate)}${gov && !quotationFor(pricing, 'drilling') ? ' The drilling line uses the conservative hard-rock rate on the same assumption.' : ''}`
     : `Ground conditions: ${eco.isHardRock ? 'hard rock' : 'soft ground'} (geological finding: rock classification "${eco.rockType}"). Contingency ${rate}% for ${eco.isHardRock ? 'hard rock' : 'soft ground'}, the same classification as the drilling rate.`;
   const notes = [
     `Pricing category: ${PRICING_CATEGORY_LABEL[pricing.category]}.`,
-    ...(gov ? [`Government tender rates: ${TENDER_RATE_SOURCE}.`] : [`Private project: no tender rate is used. Each item is "${PRICE_STATE.REQUEST}" unless a ${PRICE_STATE.VERIFIED} or the user's own indicative rate is entered for this project, or the item has its own cited source (solar: ${SOLAR_SOURCE}).`, REFERENCE_QUOTATION_TEXT]),
+    ...(gov ? [`Government tender rates: ${TENDER_RATE_SOURCE}.`] : [`Private project: no tender rate is used. Each item is "${PRICE_STATE.REQUEST}" unless you enter your own indicative rate for this project (${USER_ENTERED_LABEL}), or the item has its own cited source (solar: ${SOLAR_SOURCE}).`, REFERENCE_QUOTATION_TEXT]),
     groundNote,
   ];
   return {
@@ -179,7 +179,8 @@ export function costSourcing(eco: Eco): CostSourcing {
     sourcedContingencyKES,
     sourcedTotalKES: sourcedSubtotalKES + sourcedContingencyKES,
     indicative,
-    totalLabel: priced.length === 0 ? 'Total: request a quotation' : `${quotationItems.length ? 'TOTAL of the priced items (the rest: to quote)' : 'TOTAL'}${indicative ? ` (${PRICE_STATE.INDICATIVE})` : ''}`,
+    // MINOR (review of ef8f6b2e): with no borehole item priced (solar benchmark only) the total is a quotation too.
+    totalLabel: !priced.some((l) => l.key !== 'solar') ? (priced.length ? 'Total: request a quotation (only the solar benchmark is priced)' : 'Total: request a quotation') : `${quotationItems.length ? 'TOTAL of the priced items (the rest: to quote)' : 'TOTAL'}${indicative ? ` (${PRICE_STATE.INDICATIVE})` : ''}`,
     contingencyLabel: `Contingency (${rate}% of the priced items, ${rockNote})`,
     notes,
   };

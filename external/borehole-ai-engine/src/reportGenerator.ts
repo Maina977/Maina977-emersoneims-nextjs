@@ -5005,8 +5005,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       head: [['Risk Metric (sub-model)', 'Probability']],
       body: [
         ['Success score (sub-model)', `${Math.round(rd.successProbability ?? 0)}/100 (sub-model, uncalibrated; governing: ${successScore(result.probability)})`],
-        ['Low Yield Risk', `${(rd.lowYieldProbability ?? 0).toFixed(1)}%`],
-        ['Dry Borehole Risk', `${(rd.dryBoreholeProbability ?? 0).toFixed(1)}%`],
+        ['Low Yield Risk (modelled score, uncalibrated)', `${Math.round(rd.lowYieldProbability ?? 0)}/100`],
+        ['Dry Borehole Risk (modelled score, uncalibrated)', `${Math.round(rd.dryBoreholeProbability ?? 0)}/100`],
         ['Poor Water Quality', `${(rd.poorQualityProbability ?? 0).toFixed(1)}%`],
         ['Collapse Risk', `${(rd.collapseRiskProbability ?? 0).toFixed(1)}%`],
         ['Overall Risk Level', `${(rd.overallRiskLevel || '').replace(/_/g, ' ').toUpperCase()} (sub-model; governing: ${riskLabel(result.risk?.overallRisk)})`],
@@ -10339,7 +10339,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
         ['Survey, approvals, lab test', 'Survey KSh 85,000; WRA 80,000 + abstraction 30,000 + county 25,000 (+ NEMA 105,000 at 5 m3/h or more); lab KSh 28,000', TENDER_RATE_SOURCE, PRICE_STATE.TENDER],
         ['Mobilisation', 'About $3/km beyond 50 km of Nairobi; at least KSh 240,000 beyond 100 km', TENDER_RATE_SOURCE, PRICE_STATE.TENDER],
       ] : [
-        ['Survey, permits, drilling, casing, gravel pack, development, test pumping, lab test, mobilisation', `${PRICE_STATE.REQUEST} (private project), unless a ${PRICE_STATE.VERIFIED} or the user's own indicative rate is entered for this project. ${REFERENCE_QUOTATION_TEXT}`, 'Pricing policy 2026-11-26', PRICING_CATEGORY_LABEL.private],
+        ['Survey, permits, drilling, casing, gravel pack, development, test pumping, lab test, mobilisation', `${PRICE_STATE.REQUEST} (private project), unless the user enters their own indicative rate for this project (entered by the user, not verified by EmersonEIMS). ${REFERENCE_QUOTATION_TEXT}`, 'Pricing policy 2026-11-26', PRICING_CATEGORY_LABEL.private],
       ]),
       ['Solar pump system', '$1,500/kW', 'IRENA Renewable Power Generation Costs (2023)', 'Peer-reviewed'],
       ['Water tariff', '$0.80/m\u00B3 (base case)', 'WHO/UNICEF JMP rural Africa range; see 3-scenario comparison', 'Regional est.'],

@@ -360,7 +360,7 @@ function auditProbabilityRechargeCoherence(result: AnalysisResult): AuditCheck {
     id: 4,
     name: 'Probability-Recharge Coherence',
     category: 'LOGIC',
-    description: 'High success probability with zero recharge is contradictory — cannot find water where none enters the aquifer',
+    description: 'High success score with zero recharge is contradictory — cannot find water where none enters the aquifer',
   };
 
   const prob = result.probability;
@@ -379,7 +379,7 @@ function auditProbabilityRechargeCoherence(result: AnalysisResult): AuditCheck {
     return {
       ...base,
       severity: 'FAIL',
-      details: `CONTRADICTION: Probability=${(prob*100).toFixed(0)}% but recharge=${recharge} mm/yr. Cannot have >60% success probability with zero groundwater recharge.`,
+      details: `CONTRADICTION: success score ${Math.round(prob*100)}/100 but recharge=${recharge} mm/yr. Cannot have a success score above 60/100 with zero groundwater recharge.`,
       fix: 'Recalibrate probability using water budget: if rechargeFraction < 3%, apply -20% penalty. If recharge = 0, apply -30% penalty.',
     };
   }
@@ -749,7 +749,7 @@ function auditDrillDecision(result: AnalysisResult): AuditCheck {
 
   // Check for internal contradictions
   if (dd.successProbability < 30 && dd.expectedYield_m3hr > 5) {
-    return { ...base, severity: 'WARN', details: `Contradiction: ${dd.successProbability}% success but ${dd.expectedYield_m3hr} m3/hr yield. High yield prediction conflicts with low success probability.` };
+    return { ...base, severity: 'WARN', details: `Contradiction: success score ${dd.successProbability}/100 but ${dd.expectedYield_m3hr} m3/hr yield. High yield prediction conflicts with low success score.` };
   }
 
   const evOk = (result as any).siteEvidence?.depth && (result as any).siteEvidence?.yield;

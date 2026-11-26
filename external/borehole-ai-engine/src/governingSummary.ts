@@ -44,21 +44,9 @@ export function last12Months(period: unknown): string | null {
  * frequency ("about 7 in 10", "62%"). It is a qualitative screening class with
  * its score out of 100 and this note, on screen and in every export.
  */
-export const SCORE_NOT_PROBABILITY = 'not a probability of success — not calibrated against drilled outcomes';
-
-/** The class of the uncalibrated score; the same thresholds as the verdict (verdict.ts). */
-export function screeningClass(p: number): 'favourable' | 'mixed' | 'unfavourable' {
-  return p >= 0.65 ? 'favourable' : p >= 0.5 ? 'mixed' : 'unfavourable';
-}
-
-/** The uncalibrated score out of 100 (never a percentage). */
-export const scoreOutOf100 = (p: number) => `${Math.round(Math.max(0, Math.min(1, p)) * 100)}/100`;
-
-/** "Favourable screening indicator (score 68/100; not a probability of success — not calibrated against drilled outcomes)". */
-export function screeningIndicator(p: number): string {
-  const c = screeningClass(p);
-  return `${c[0].toUpperCase()}${c.slice(1)} screening indicator (score ${scoreOutOf100(p)}; ${SCORE_NOT_PROBABILITY})`;
-}
+// The wording lives in successScore.ts (no imports) so the engines can use it too.
+import { SCORE_NOT_PROBABILITY, screeningClass, scoreOutOf100, screeningIndicator } from './successScore';
+export { SCORE_NOT_PROBABILITY, screeningClass, scoreOutOf100, screeningIndicator };
 
 /** Kept for its callers; since 2026-11-26 it returns the screening indicator, never "about N in 10". */
 export function probabilityBand(p: number): string {
