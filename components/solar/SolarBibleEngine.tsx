@@ -85,6 +85,14 @@ interface HealthAnalysis {
 // ═══════════════════════════════════════════════════════════════════════════════
 // WIRE SIZING CALCULATOR
 // ═══════════════════════════════════════════════════════════════════════════════
+// DO NOT USE (audit 2026-11-26). WIRE_SIZES and calculateWireSize are dead
+// code: nothing calls them, and their ratings are PHYSICALLY WRONG. A
+// conductor's current rating is thermal and does not depend on the system
+// voltage, yet this table gives the same wire more amps at 48 V than at 12 V
+// (e.g. 21 mm² at 125 A, where IEC 60364-5-52 rates 25 mm² at about 101-119 A).
+// Using it would undersize cables. Size cables with recommendConductor
+// (lib/solar-genius/server/solar-engineering.js, /api/solar/voltage-drop).
+// Kept in place only because code is never deleted without an owner decision.
 
 const WIRE_SIZES = [
   { awg: 14, mm2: 2.08, maxAmps12v: 15, maxAmps24v: 20, maxAmps48v: 25 },
