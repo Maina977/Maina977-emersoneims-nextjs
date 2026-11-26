@@ -143,7 +143,7 @@ describe('completion and sign-off while a STOP is latched', () => {
   // F10-R3: the structured action, not the phrase in the findings.
   it('the recorded "readings not taken — STOP in force" action completes it; the phrase in the findings does not', () => {
     expect(() => complete(base(`${latchedStopLine(L)}\n${READINGS_NOT_TAKEN_STOP}`))).toThrow(/still latched/);
-    expect(complete({ ...base(latchedStopLine(L)), guidedSafety: recordNotTaken(undefined, { at: '2026-11-26T11:00:00.000Z', by: 'TECH-A', confirmed: true }) }).status).toBe('COMPLETED');
+    expect(complete({ ...base(latchedStopLine(L)), readings: [], guidedSafety: recordNotTaken(undefined, { at: '2026-11-26T11:00:00.000Z', by: 'TECH-A', confirmed: true }) }).status).toBe('COMPLETED');
   });
   it('a recorded clearance for that STOP (same source and since) completes it; one for another STOP does not', () => {
     const clr = (since: string) => clearanceLine({ ...L, since, clearedAt: '2026-11-26T11:00:00.000Z', by: 'TEST-JK', reason: 'TEST repaired' });

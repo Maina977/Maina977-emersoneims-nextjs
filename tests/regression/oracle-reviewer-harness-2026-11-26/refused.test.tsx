@@ -13,6 +13,7 @@
  *
  * Real-project D6 (2026-11-26): completion fixtures now carry the engine test-run readings
  * (oil pressure, coolant temperature, output voltage, frequency; oil temperature for low-oil cards).
+ * F10-R3 MINOR (2026-11-26): a card with the recorded action completes without test-run readings (completion helper).
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
@@ -24,7 +25,7 @@ import { guardedSessionRecord, guardedCardUpdate, readStore, safetyStateOf } fro
 import { loadGuidedSession, loadGuidedEquipment } from '@/lib/generator-oracle/diagnostics/session';
 import { SAFEGUARD_LABEL } from '@/lib/generator-oracle/diagnostics/engine';
 import { apply, emptyState, serialise, importState, type ServiceState, type ServiceAction } from '@/lib/generator-oracle/service/store';
-import { jobCardReport, type JobCard } from '@/lib/generator-oracle/service/maintenance';
+import { jobCardReport, recordsStopInForce, type JobCard } from '@/lib/generator-oracle/service/maintenance';
 import type { FaultFamily } from '@/lib/generator-oracle/diagnostics/types';
 
 beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
@@ -43,7 +44,7 @@ function record(s: ServiceState, famId: string, at: string): ServiceState {
 function complete(s: ServiceState) {
   const r1 = apply(s, { type: 'transition', cardId: 'JC1', to: 'IN PROGRESS', by: 'Tech', at: '2026-11-26T12:00:00.000Z' } as ServiceAction);
   if (r1.error) return r1.error;
-  return apply(r1.state, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: '2026-11-26T12:00:00.000Z', update: { tasks: ['x'], engineHoursAtJob: 1, readings: [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }] } } as ServiceAction).error;
+  return apply(r1.state, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: '2026-11-26T12:00:00.000Z', update: { tasks: ['x'], engineHoursAtJob: 1, readings: recordsStopInForce(r1.state.jobCards[0]) ? [] : [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }] } } as ServiceAction).error;
 }
 const setSession = (answers: Record<string, Record<string, string>>) => localStorage.setItem(SESSION, JSON.stringify({ version: 1, answers, equipment: {} }));
 const lop = (raw: Record<string, string>) => sessionRecord(F('low-oil-pressure'), { 'low-oil-pressure': raw }).result;

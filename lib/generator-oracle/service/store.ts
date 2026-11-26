@@ -8,7 +8,7 @@
  */
 import {
   cardIntegrityProblems, dueList, markImported, mergeGuidedSafety, recordHoldReassessment, recordNotTaken, unresolvedGuidedSafety, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
-  JOB_STATUSES, SIGNOFF, TYPED_SIGNOFF_NOTICE, V1_UNCHECKED_SIGNOFF_NOTE,
+  JOB_STATUSES, NOT_TAKEN_ACTION, recordsStopInForce, SIGNOFF, TYPED_SIGNOFF_NOTICE, V1_UNCHECKED_SIGNOFF_NOTE,
   type Asset, type DueItem, type GuidedSafetyAdd, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord,
 } from './maintenance';
 
@@ -115,6 +115,13 @@ function checkUpdate(u: CardUpdate): CardUpdate {
   return out;
 }
 
+/** Readings added after "readings not taken — STOP in force" was recorded are refused (F10-R3 MINOR). */
+function refuseReadingsAfterNotTaken(c: JobCard, u: CardUpdate): void {
+  if (u.readings?.length && recordsStopInForce(c)) {
+    throw new Error(`Readings refused: "${NOT_TAKEN_ACTION}" is recorded on this card, so test-run readings cannot be added. If the set was test-run after all, open a new job card for that run.`);
+  }
+}
+
 const replaceCard = (s: ServiceState, c: JobCard): ServiceState => ({ ...s, jobCards: s.jobCards.map((x) => (x.id === c.id ? c : x)) });
 
 /** Apply one action. Throws with the engine's (or this module's) message when refused. */
@@ -171,11 +178,14 @@ export function reduce(s: ServiceState, a: ServiceAction): ServiceState {
     case 'updateCard': {
       const c = findCard(s, a.cardId);
       if (!isEditable(c)) throw new Error(`A ${c.status} job card cannot be edited${c.status === 'COMPLETED' ? '; move it back to IN PROGRESS first' : '; reopen it first (who, when and the reason are kept in its history)'}`);
-      return replaceCard(s, { ...c, ...checkUpdate(a.update) });
+      const u = checkUpdate(a.update);
+      refuseReadingsAfterNotTaken(c, u);
+      return replaceCard(s, { ...c, ...u });
     }
     case 'transition': {
       const c = findCard(s, a.cardId);
       const update = a.update && isEditable(c) ? checkUpdate(a.update) : {};
+      refuseReadingsAfterNotTaken(c, update);
       return replaceCard(s, transition(c, a.to, a.by.trim(), a.at, update, a.note?.trim() || undefined));
     }
     case 'recordGuidedSafety': {
@@ -195,6 +205,8 @@ export function reduce(s: ServiceState, a: ServiceAction): ServiceState {
     case 'recordNotTaken': {
       const c = findCard(s, a.cardId);
       if (!isEditable(c)) throw new Error(`A ${c.status} job card cannot be edited`);
+      // A card cannot say both "no test-run readings were taken" and carry test-run readings (F10-R3 MINOR).
+      if (c.readings.length) throw new Error(`Not recorded: this card has ${c.readings.length} test-run reading(s). Remove them first if no test run was done, or do not record "${NOT_TAKEN_ACTION}".`);
       return replaceCard(s, { ...c, guidedSafety: recordNotTaken(c.guidedSafety, a) });
     }
     case 'recordHoldReassessment': {

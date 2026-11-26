@@ -295,7 +295,7 @@ export const STOP_NOT_CARRIED_NOTICE = 'Generator Oracle cannot confirm a set is
  */
 interface RequiredReading { family: string; id: string; text: string; units: string[]; match?: RegExp }
 /** The engine test-run readings, with the words a technician uses for them on a card. */
-const BASE_TEST_RUN: Array<[string, string, RegExp]> = [['low-oil-pressure', 'oilPressure', /oil\s*pressure/i], ['overheating', 'coolantTemp', /coolant/i], ['no-voltage', 'voltage', /volt/i], ['no-voltage', 'frequency', /freq|hz/i]];
+const BASE_TEST_RUN: Array<[string, string, RegExp]> = [['low-oil-pressure', 'oilPressure', /oil\s*pressure/i], ['overheating', 'coolantTemp', /coolant/i], ['no-voltage', 'voltage', /volt/i], ['no-voltage', 'frequency', /freq|\bhz\b/i]];
 const unitsOf = (q: Question): string[] => {
   const kind = unitKindOf(q);
   return kind ? [...UNIT_OPTIONS[kind]] : q.kind === 'number' ? [q.unit] : [];
@@ -512,6 +512,9 @@ export function transition(card: JobCard, to: JobStatus, by: string, at: string,
       // Real-project test D6 (2026-11-26): not "any reading" — the test-run readings THIS job needs.
       const missing = missingTestRunReadings(next);
       if (missing.length) e.push(`test-run readings for this job: ${missing.join('; ')} (or, if a STOP is unresolved, ${NOT_TAKEN_PROMPT})`);
+    } else if (next.readings.length) {
+      // F10-R3 MINOR: the card cannot say both "no test-run readings were taken" and carry test-run readings.
+      e.push(`one consistent record: "${NOT_TAKEN_ACTION}" is recorded but the card also carries ${next.readings.length} test-run reading(s); remove the readings, or use a new job card for the test run`);
     }
     const latched = latchedStopBlocker(next);
     if (latched) e.push(latched);

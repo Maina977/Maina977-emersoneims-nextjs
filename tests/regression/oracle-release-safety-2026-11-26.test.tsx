@@ -19,7 +19,7 @@ import { diagnosisRecord, REFUSED_UNIT_ALL, REFUSED_UNIT_SOME } from '@/lib/gene
 import { convertUnits, PSI_TO_KPA } from '@/lib/generator-oracle/diagnostics/units';
 import { validProtectiveFields } from '@/lib/generator-oracle/diagnostics/refusedProtective';
 import {
-  DEVICE_ONLY_NOTICE, IMPORTED_NOTICE, READINGS_NOT_TAKEN_STOP, SIGNED_OFF_ELSEWHERE, SIGNOFF, cardContentHash, jobCardReport, signOffSummary,
+  DEVICE_ONLY_NOTICE, IMPORTED_NOTICE, READINGS_NOT_TAKEN_STOP, recordsStopInForce, SIGNED_OFF_ELSEWHERE, SIGNOFF, cardContentHash, jobCardReport, signOffSummary,
   type Asset, type GuidedSafetyAdd, type JobCard,
 } from '@/lib/generator-oracle/service/maintenance';
 import { jobCardToPdf } from '@/lib/generator-oracle/service/jobCardPdf';
@@ -53,7 +53,7 @@ const notTaken = (s: ServiceState) => go(s, { type: 'recordNotTaken', cardId: 'J
 const complete = (s: ServiceState, findings = 'TEST inspected') => {
   const a = apply(s, { type: 'transition', cardId: 'JC-1', to: 'IN PROGRESS', by: 'TECH-A', at: T2 } as ServiceAction);
   if (a.error) return a.error;
-  const b = apply(a.state, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings, tasks: ['TEST'], engineHoursAtJob: 10, readings: [{ name: 'TEST', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil temperature', value: 90, unit: '°C' }] } } as ServiceAction);
+  const b = apply(a.state, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings, tasks: ['TEST'], engineHoursAtJob: 10, readings: recordsStopInForce(a.state.jobCards[0]) ? [] : [{ name: 'TEST', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil temperature', value: 90, unit: '°C' }] } } as ServiceAction);
   return b.error;
 };
 /** A card with a latched STOP and a clearance of it, made on "another device", exported. */

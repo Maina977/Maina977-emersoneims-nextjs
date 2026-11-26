@@ -12,6 +12,7 @@
  *
  * Real-project D6 (2026-11-26): completion fixtures now carry the engine test-run readings
  * (oil pressure, coolant temperature, output voltage, frequency; oil temperature for low-oil cards).
+ * F10-R3 MINOR (2026-11-26): a card with the recorded action completes without test-run readings (completion helper).
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
@@ -23,7 +24,7 @@ import { guardedSessionRecord, guardedCardUpdate, readStore, safetyStateOf } fro
 import { loadGuidedSession, loadGuidedEquipment } from '@/lib/generator-oracle/diagnostics/session';
 import { UNCLASSIFIED_PROTECTIVE, SAFEGUARD_LABEL } from '@/lib/generator-oracle/diagnostics/engine';
 import { apply, emptyState, serialise, importState, deserialise, type ServiceState, type ServiceAction } from '@/lib/generator-oracle/service/store';
-import { jobCardReport, signOffSummary, DEVICE_ONLY_NOTICE, IMPORTED_NOTICE, SIGNED_OFF_ELSEWHERE, SIGNOFF, cardContentHash, type JobCard } from '@/lib/generator-oracle/service/maintenance';
+import { jobCardReport, recordsStopInForce, signOffSummary, DEVICE_ONLY_NOTICE, IMPORTED_NOTICE, SIGNED_OFF_ELSEWHERE, SIGNOFF, cardContentHash, type JobCard } from '@/lib/generator-oracle/service/maintenance';
 
 beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); });
@@ -42,7 +43,7 @@ function record(s: ServiceState, famId: string, at: string): ServiceState {
 function complete(s: ServiceState, extra: Record<string, unknown> = {}) {
   let st = s;
   if (card(st).status === 'OPEN') { const r1 = tryGo(st, { type: 'transition', cardId: 'JC1', to: 'IN PROGRESS', by: 'Tech', at: T0 } as ServiceAction); if (r1.error) return { error: r1.error, state: st }; st = r1.state; }
-  const r2 = tryGo(st, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: T0, update: { tasks: ['inspected'], engineHoursAtJob: 10, readings: [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }], ...extra } } as ServiceAction);
+  const r2 = tryGo(st, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: T0, update: { tasks: ['inspected'], engineHoursAtJob: 10, readings: recordsStopInForce(st.jobCards[0]) ? [] : [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }], ...extra } } as ServiceAction);
   return { error: r2.error, state: r2.state };
 }
 const reassess = (s: ServiceState, at: string) => go(s, { type: 'recordHoldReassessment', cardId: 'JC1', at, by: 'JK', reason: 'Checked in person on site', confirmed: true } as ServiceAction);

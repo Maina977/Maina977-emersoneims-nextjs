@@ -16,7 +16,7 @@ import { CLEARANCE_NOT_RESTART, SAFETY_HOLD_ACK_LABEL, SAFETY_HOLD_SESSION_ONLY,
 import {
   DEVICE_ONLY_NOTICE, HOLD_REASSESSMENT_LABEL, HOLD_REASSESSMENT_NOTICE, IMPORTED_NOTICE, NOT_TAKEN_PROMPT, READINGS_NOT_TAKEN_STOP,
   SIGNED_OFF_ELSEWHERE, STOP_NOT_CARRIED_NOTICE, TYPED_NAMES_NOTICE, TYPED_SIGNOFF_NOTICE, jobCardReport, latchedStopLine,
-  recordsStopInForce, signOffSummary, type Asset, type GuidedSafetyAdd, type JobCard,
+  recordsStopInForce, signOffSummary, transition, type Asset, type GuidedSafetyAdd, type JobCard,
 } from '@/lib/generator-oracle/service/maintenance';
 import { jobCardToPdf } from '@/lib/generator-oracle/service/jobCardPdf';
 import { apply, emptyState, importState, serialise, type ServiceAction, type ServiceState } from '@/lib/generator-oracle/service/store';
@@ -45,7 +45,7 @@ const base = () => go(go(emptyState(), { type: 'saveAsset', asset: { make: 'TEST
 const completeErr = (s: ServiceState, findings: string, readings = true) => {
   const a = apply(s, { type: 'transition', cardId: 'JC-1', to: 'IN PROGRESS', by: 'TECH-A', at: T2 } as ServiceAction);
   if (a.error) return a.error;
-  return apply(a.state, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings, tasks: ['TEST'], engineHoursAtJob: 1, readings: readings ? [{ name: 'TEST', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }] : [] } } as ServiceAction).error;
+  return apply(a.state, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings, tasks: ['TEST'], engineHoursAtJob: 1, readings: readings && !recordsStopInForce(a.state.jobCards[0]) ? [{ name: 'TEST', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }] : [] } } as ServiceAction).error;
 };
 const STOP = { key: 'knock-seizure|STOP THE SET: TEST', from: 'Knocking, bearing noise or seizure', since: T0, message: 'STOP THE SET: TEST' };
 const HOLDKEY = refusedHoldKey('low-oil-pressure', 'oilPressure');
@@ -140,5 +140,26 @@ describe('F10-R3: the phrase in the findings (typed or pasted) unblocks nothing;
     s = go(s, { type: 'recordNotTaken', cardId: 'JC-1', at: T2, by: 'TECH-B', confirmed: true } as ServiceAction);
     expect(completeErr(s, 'TEST')).toBeNull();
     expect(jobCardReport(s.jobCards[0], s.assets[0])).toMatch(/by OTHER \(typed name, UNVERIFIED\) at \S+ \(UTC\)\. No test-run readings were taken\. IMPORTED — not counted on this device\./);
+  });
+});
+
+describe('F10-R3 MINOR: the action and test-run readings cannot both be on one card', () => {
+  const READ = [{ name: 'TEST oil pressure', value: 300, unit: 'kPa' }];
+  it('recording the action on a card that has readings is refused, with what to do', () => {
+    const withReadings = go(base(), { type: 'updateCard', cardId: 'JC-1', update: { readings: READ } } as ServiceAction);
+    const r = apply(withReadings, { type: 'recordNotTaken', cardId: 'JC-1', at: T1, by: 'TECH-A', confirmed: true } as ServiceAction);
+    expect(r.error).toMatch(/Not recorded: this card has 1 test-run reading\(s\)\. Remove them first if no test run was done, or do not record "readings not taken — STOP in force"/);
+  });
+  it('adding readings after the action is refused (card edit and completion update alike)', () => {
+    const marked = go(base(), { type: 'recordNotTaken', cardId: 'JC-1', at: T1, by: 'TECH-A', confirmed: true } as ServiceAction);
+    expect(apply(marked, { type: 'updateCard', cardId: 'JC-1', update: { readings: READ } } as ServiceAction).error).toMatch(/Readings refused: "readings not taken — STOP in force" is recorded on this card/);
+    const inProgress = go(marked, { type: 'transition', cardId: 'JC-1', to: 'IN PROGRESS', by: 'TECH-A', at: T2 } as ServiceAction);
+    expect(apply(inProgress, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings: 'TEST', tasks: ['TEST'], engineHoursAtJob: 1, readings: READ } } as ServiceAction).error).toMatch(/Readings refused/);
+    // Without readings it completes.
+    expect(apply(inProgress, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings: 'TEST', tasks: ['TEST'], engineHoursAtJob: 1 } } as ServiceAction).error).toBeNull();
+  });
+  it('a card object carrying both (e.g. built outside the store) does not complete', () => {
+    const c: JobCard = { ...base().jobCards[0], status: 'IN PROGRESS', readings: READ, findings: 'TEST', tasks: ['TEST'], engineHoursAtJob: 1, guidedSafety: { stops: [], clearances: [], holds: [], notTaken: [{ at: T1, by: 'TECH-A', confirmed: true }] } };
+    expect(() => transition(c, 'COMPLETED', 'TECH-A', T2)).toThrow(/one consistent record: "readings not taken — STOP in force" is recorded but the card also carries 1 test-run reading/);
   });
 });
