@@ -25,7 +25,17 @@ export interface AlarmSignal {
  * Trust contract: this is a UX cue, not a safety annunciator. Sample data
  * conditions count as alarms (already labelled by SampleBadge upstream).
  */
-export function AlarmController({ signals }: { signals: readonly AlarmSignal[] }) {
+export function AlarmController({
+  signals,
+  clearState = 'ok',
+  clearDescription = 'All systems nominal',
+}: {
+  signals: readonly AlarmSignal[];
+  /** Lamp when nothing trips. A tool that cannot check every limit passes 'info', not a green 'ok' (review 2026-11-26, N1). */
+  clearState?: 'ok' | 'info';
+  /** Wording when nothing trips. */
+  clearDescription?: string;
+}) {
   const [armed, setArmed] = React.useState(false);
   const [silenced, setSilenced] = React.useState(false);
   const ctxRef = React.useRef<AudioContext | null>(null);
@@ -34,7 +44,7 @@ export function AlarmController({ signals }: { signals: readonly AlarmSignal[] }
   // Highest severity present
   const fault = signals.some((s) => s.severity === 'fault');
   const warn = signals.some((s) => s.severity === 'warn');
-  const lampState: 'ok' | 'warn' | 'fault' = fault ? 'fault' : warn ? 'warn' : 'ok';
+  const lampState: 'ok' | 'info' | 'warn' | 'fault' = fault ? 'fault' : warn ? 'warn' : clearState;
 
   // Beep on transitions
   React.useEffect(() => {
@@ -119,7 +129,7 @@ export function AlarmController({ signals }: { signals: readonly AlarmSignal[] }
       <StatusLight
         state={lampState}
         label={count === 0 ? 'No alarms' : `${count} alarm${count === 1 ? '' : 's'}`}
-        description={fault ? 'Fault present' : warn ? 'Caution present' : 'All systems nominal'}
+        description={fault ? 'Fault present' : warn ? 'Caution present' : clearDescription}
         pulse={fault && armed && !silenced}
         size="sm"
       />
