@@ -18,7 +18,7 @@
  * model-specific limit whose model is no longer selected (or whose typed plate
  * disagrees) is refused, never applied (F7).
  */
-import { classKey, diagnose, protectiveLimitIds, sourceKey, tolKey } from './engine';
+import { classKey, diagnose, NO_VERIFIED_LEAD, protectiveLimitIds, sourceKey, tolKey, UNVERIFIED_CAUSE_LABEL } from './engine';
 import { answersFromRaw, mergedRaw, type RawAnswers } from './session';
 import { convertUnits, unitKindOf, unitLine } from './units';
 import { refusedProtectiveStops } from './refusedProtective';
@@ -181,9 +181,10 @@ export function diagnosisRecord(family: FaultFamily, raw: Record<string, string>
     for (const e of units.entered) lines.push(`- ${unitLine(e)}`);
   }
   lines.push('Likely causes, most supported first:');
+  if (result.ranked[0]?.unverified) lines.push(NO_VERIFIED_LEAD);
   result.ranked.forEach((c, i) => {
     const why = [...c.for.map((x) => `+ ${x}`), ...c.against.map((x) => `− ${x}`)].join('; ');
-    lines.push(`${i + 1}. ${c.title} (evidence ${c.score >= 0 ? '+' : ''}${c.score}${why ? `: ${why}` : ''})`);
+    lines.push(`${i + 1}. ${c.title} (evidence ${c.score >= 0 ? '+' : ''}${c.score}${why ? `: ${why}` : ''})${c.unverified ? ` [${UNVERIFIED_CAUSE_LABEL}]` : ''}`);
     if (i < 3 && c.score > 0) for (const a of c.actions) lines.push(`   - ${a}`);
     if (i < 3 && c.score > 0 && c.withheld.length) lines.push(`   - Withheld (${result.stopActive ? 'a STOP is active' : 'a leading cause says do not run'}): ${c.withheld.length} check(s) that need the engine running.`);
   });

@@ -19,7 +19,7 @@ import { FAMILIES, familyFor } from '@/lib/generator-oracle/diagnostics/families
 import { diagnosisRecord, refQuestions } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
 import { refusedHoldKey, refusedHoldText, validProtectiveFields } from '@/lib/generator-oracle/diagnostics/refusedProtective';
 import { knownModels, publishedEntryOf, publishedLimitFor, questionReferenceNote, referencesFor, type Equipment } from '@/lib/generator-oracle/diagnostics/oemReferences';
-import { classKey, limitReadings, SAFEGUARD_LABEL, sourceKey, tolKey } from '@/lib/generator-oracle/diagnostics/engine';
+import { classKey, limitReadings, NO_VERIFIED_LEAD, SAFEGUARD_LABEL, sourceKey, tolKey, UNVERIFIED_CAUSE_LABEL } from '@/lib/generator-oracle/diagnostics/engine';
 import { mergedRaw, saveGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
 import { SCREEN_BUCKET, SCREEN_QUESTIONS, isScreenKey } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { LIMIT_CLASS_OPTIONS, type Question } from '@/lib/generator-oracle/diagnostics/types';
@@ -631,6 +631,7 @@ export default function GuidedDiagnosisPanel() {
 
         <div data-testid="ranked-causes" className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-3">
           <div className="text-xs text-slate-400">Likely causes, most supported first{stopActive ? <span> (for information only: no checks are suggested while a STOP applies)</span> : safetyHold ? <span> (for information only: no checks are suggested while the safety hold applies)</span> : null}</div>
+          {result.ranked[0]?.unverified ? <p data-testid="no-verified-lead" className="text-xs text-amber-200">{NO_VERIFIED_LEAD}</p> : null}
           <ol className="space-y-2">
             {result.ranked.map((c, i) => (
               <li key={c.id} className="rounded-lg border border-slate-700 p-3">
@@ -643,7 +644,7 @@ export default function GuidedDiagnosisPanel() {
                 {!withheld && i < 3 && c.score > 0 && c.withheld.length > 0 && (
                   <p className="mt-1 text-xs text-red-300">Withheld because a leading cause says do not run: {c.withheld.length} check(s) that need the engine running.</p>
                 )}
-                <p className="mt-1 text-[11px] text-slate-500">{c.reference}</p>
+                <p className="mt-1 text-[11px] text-slate-500">{c.unverified ? <strong className="text-amber-300">{UNVERIFIED_CAUSE_LABEL}. </strong> : null}{c.reference}</p>
               </li>
             ))}
           </ol>

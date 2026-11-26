@@ -40,6 +40,10 @@ export const SCREEN_QUESTIONS: ChoiceQuestion[] = [
   yn('battery', 'Safety screen: battery hot, swollen or gassing strongly?'),
   yn('burning', 'Safety screen: burning smell, smoke or arcing from the alternator, panel or wiring?'),
   yn('fuelLeak', 'Safety screen: fuel leaking, or spraying onto hot parts?'),
+  // CA-31 (2026-11-26): P1-A section 5 rows 4, 6 and 7. Observations or protection indications only: no limit is invented.
+  yn('crankcase', 'Safety screen: crankcase pressure high (a crankcase pressure alarm or trip, or the breather or dipstick tube blowing hard)?'),
+  yn('reversePower', 'Safety screen: a reverse-power trip (the generator breaker opened on reverse-power protection)?'),
+  yn('earthFault', 'Safety screen: an earth fault indicated (an earth-fault or earth-leakage protection trip or alarm)?'),
 ];
 
 const SCREEN_QUESTION_IDS = SCREEN_QUESTIONS.map((q) => q.id);
@@ -55,6 +59,9 @@ export const SCREEN_RULES: StopRule[] = [
   { screen: true, when: yes('battery'), level: 'STOP', message: 'STOP: a hot, swollen or strongly gassing battery. Stop the engine, switch off and isolate the battery charger, ventilate; no sparks or flames; do not move the battery until it has cooled.' },
   { screen: true, when: yes('burning'), level: 'STOP', message: 'STOP and isolate: burning smell, smoke or arcing from the alternator, panel or wiring. Stop the set, isolate and lock off the electrical supplies; do not re-energise until inspected.' },
   { screen: true, when: yes('fuelLeak'), level: 'STOP', message: 'STOP: leaking or spraying fuel is a fire risk. Stop the engine; do not restart until the leak is repaired.' },
+  { screen: true, when: yes('crankcase'), level: 'STOP', message: 'STOP THE SET: high crankcase pressure — crankcase explosion risk. Do not restart; do not open the crankcase or remove inspection covers while the engine is hot; let it cool before any inspection.' },
+  { screen: true, when: yes('reversePower'), level: 'STOP', message: 'STOP: a reverse-power trip. Do not reclose the generator breaker until the cause has been found by a qualified technician.' },
+  { screen: true, when: yes('earthFault'), level: 'STOP', message: 'STOP and isolate: an earth fault is indicated. Treat the frame and all exposed metalwork as live until tested; do not touch them; isolate, lock off and prove dead with an approved tester before any work.' },
   // Safety review R5: an item marked "Not checked" is acknowledged — safety is not confirmed.
   { screen: true, when: { any: SCREEN_QUESTION_IDS.map((id) => ({ q: id, op: 'is' as const, value: 'not-checked' })) }, level: 'CAUTION', message: 'Safety screen not completed: one or more safety items are marked "Not checked", so safety is NOT confirmed. Check them with the set stopped and isolated before relying on this diagnosis.' },
   { screen: true, when: { q: `${SCREEN_PREFIX}alarm`, op: 'is', value: 'warning' }, level: 'CAUTION', message: 'A controller warning alarm is active or logged: record its exact text and find its cause before relying on the set.' },
