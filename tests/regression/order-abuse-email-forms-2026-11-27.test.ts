@@ -25,7 +25,12 @@ beforeEach(() => { mailer.calls.length = 0; });
 describe('order email forms that would dodge the per-inbox limit are refused', () => {
   it('quoted local parts, a trailing-dot domain, an address literal and a backslash: 400, no email', async () => {
     const id = u();
-    const forms = [`"victim${id}"@gmail.com`, `"v.ictim${id}+x"@gmail.com`, `victim${id}@gmail.com.`, `victim${id}@[gmail.com]`, `vic\\tim${id}@gmail.com`, `victim${id}@gmail..`];
+    const forms = [`"victim${id}"@gmail.com`, `"v.ictim${id}+x"@gmail.com`, `victim${id}@gmail.com.`, `victim${id}@GMAIL.COM.`, `victim${id}@[gmail.com]`, `vic\\tim${id}@gmail.com`, `victim${id}@gmail..`,
+      // Review of 53a503a6: Unicode full stops (IDNA maps them to a trailing dot), comments, zero-width and soft-hyphen
+      // characters, and leading/trailing/doubled dots in the local part.
+      `victim${id}@gmail.com。`, `victim${id}@gmail.com｡`, `victim${id}@gmail.com．`, `v.ictim${id}@gmail.com。`,
+      `(x)victim${id}@gmail.com`, `victim${id}@(x)gmail.com`, `vic​tim${id}@gmail.com`, `vic­tim${id}@gmail.com`, `victim${id}@gm­ail.com`,
+      `.victim${id}@gmail.com`, `victim${id}.@gmail.com`, `vic..tim${id}@gmail.com`];
     for (const e of forms) expect(await send(body({ customerEmail: e })), e).toBe(400);
     expect(mailer.calls).toEqual([]);
   });
