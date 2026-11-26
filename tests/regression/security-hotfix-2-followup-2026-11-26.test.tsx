@@ -95,6 +95,15 @@ describe('/api/v1/payments/verify facade', () => {
     for (const id of ['psk:../../transaction/123', 'flw:a&status=successful', 'psk:..', 'flw:a/b']) expect((await verify(id)).status, id).toBe(400);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
+  it('a malformed escape (/verify/%25 -> "%") is a clean 400, not an unhandled 500', async () => {
+    const res = await v1Verify(
+      new NextRequest('https://www.emersoneims.com/api/v1/payments/verify/%25', { headers: { 'x-forwarded-host': 'www.emersoneims.com' } }),
+      { params: Promise.resolve({ payment_id: '%' }) },
+    );
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('Invalid payment_id format. Expected "<provider>:<id>".');
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
   it('legitimate ids still verify and pass on no PII', async () => {
     for (const [id, status] of [['psk:SGP-1764100000000-ABCD1234', 'completed'], ['flw:pay_1764100000000', 'completed']] as const) {
       const res = await verify(id);

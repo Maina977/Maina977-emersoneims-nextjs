@@ -31,7 +31,23 @@ export async function GET(
     );
   }
 
-  const decoded = decodeURIComponent(payment_id);
+  // A malformed escape (e.g. "%") made decodeURIComponent throw outside any
+  // try, giving an unhandled 500. Answer 400 with the usual message instead.
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(payment_id);
+  } catch {
+    return NextResponse.json(
+      {
+        success: false,
+        status: 'unknown',
+        payment_id: '',
+        provider: '',
+        error: 'Invalid payment_id format. Expected "<provider>:<id>".',
+      } satisfies VerifyResponse,
+      { status: 400 },
+    );
+  }
   const [provider, ...rest] = decoded.split(':');
   const providerId = rest.join(':');
 
