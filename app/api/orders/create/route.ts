@@ -90,7 +90,10 @@ export async function POST(request: Request) {
     if (
       !isStr(customerId, 1, 64) || !/^[A-Za-z0-9_-]+$/.test(customerId) ||
       !isStr(customerName, 1, 100) || /[<>]/.test(customerName) ||
-      !isStr(customerEmail, 3, 254) || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(customerEmail) ||
+      // Review of 0421aa80: quoted local parts ("victim"@…), address literals (@[…]), backslashes and a trailing-dot
+      // domain are valid-looking forms that the same inbox accepts but the per-recipient limiter would key separately.
+      // No ordinary customer address needs them, so they are refused here, before any limiter or email.
+      !isStr(customerEmail, 3, 254) || !/^[^\s@<>"[\]\\]+@[^\s@<>"[\]\\]+\.[^\s@<>"[\]\\.]+$/.test(customerEmail.trim()) ||
       !isStr(customerPhone, 7, 20) || !/^\+?[0-9 ()-]{7,20}$/.test(customerPhone) ||
       typeof shippingLocation !== 'string' || !SHIPPING_LOCATIONS.has(shippingLocation) ||
       typeof method !== 'string' || !PAYMENT_METHODS.has(method) ||
