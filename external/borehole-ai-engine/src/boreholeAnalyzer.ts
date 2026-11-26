@@ -767,7 +767,7 @@ export class BoreholeAnalyzer {
         fallbacksUsed.push(`Elevation API failed — using a stored SRTM elevation for ${kbElev.name} (${kbElev.distance_km} km away) instead of this exact point`);
         remoteSensing.elevation = {
           elevation: kbElev.elevation_m,
-          source: `EmersonEIMS baseline — SRTM measured at ${kbElev.name} (${kbElev.distance_km} km)`,
+          source: `EmersonEIMS baseline — SRTM measured at ${kbElev.name} (${kbElev.distance_km} km away), not at this site`,
         };
       }
     }
@@ -791,7 +791,7 @@ export class BoreholeAnalyzer {
         const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
         remoteSensing = {
           soilGrids: kb.soil ? { available: true, clay: kb.soil.clay_pct != null ? kb.soil.clay_pct * 10 : null, sand: kb.soil.sand_pct != null ? kb.soil.sand_pct * 10 : null, silt: kb.soil.silt_pct != null ? kb.soil.silt_pct * 10 : null, phH2O: kb.soil.pH != null ? kb.soil.pH * 10 : null, source: `EmersonEIMS baseline — ISRIC SoilGrids measured at ${kb.name}` } : null,
-          elevation: kb.elevation_m != null ? { elevation: kb.elevation_m, source: `EmersonEIMS baseline — SRTM measured at ${kb.name}` } : null,
+          elevation: kb.elevation_m != null ? { elevation: kb.elevation_m, source: `EmersonEIMS baseline — SRTM measured at ${kb.name}${kb.distance_km != null ? ` (${kb.distance_km} km away)` : ""}, not at this site` } : null,
           climate: {
             annualPrecipitation: annualP,
             monthlyPrecipitation: kenyaMonthlyRain(annualP),
@@ -3756,7 +3756,10 @@ export class BoreholeAnalyzer {
     try {
       let wt: number | null = null;
       let kind: 'field' | 'nearby' | null = null;
-      let basis = (result as any).pumpHeadAssumption ?? 'Not measured: no field reading and too few recorded water levels nearby. An ERT survey or the drilled hole sets it.';
+      // S36 (2026-11-26): the pump-cost assumption ("half the planned depth") is
+      // shown only beside the pump and cost figures, which are gated on field
+      // evidence; the water-table basis never carries it.
+      let basis = 'Not measured: no field reading and too few recorded water levels nearby. An ERT survey or the drilled hole sets it.';
       const fieldSwl = Number(fieldData?.stepDrawdownTest?.staticWaterLevel_m ?? fieldData?.gprSurvey?.waterTableDepthM);
       if (Number.isFinite(fieldSwl) && fieldSwl > 0) {
         wt = fieldSwl; kind = 'field'; basis = 'Measured on site (field data you entered).';

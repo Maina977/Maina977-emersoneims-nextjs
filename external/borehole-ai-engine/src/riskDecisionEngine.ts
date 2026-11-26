@@ -347,7 +347,7 @@ function makeDecision(successProb: number, riskScore: number, input: RiskDecisio
       confidence: Math.min(0.95, successProb),
       headline: `${(successProb * 100).toFixed(0)}% success probability — PROCEED with drilling`,
       reasoning: [
-        `High success probability (${(successProb * 100).toFixed(0)}%)`,
+        `High success score (${Math.round(successProb * 100)}/100 (uncalibrated, not a probability))`,
         `Low overall risk score (${riskScore}/100)`,
         input.hasFieldGeophysics ? 'Supported by field geophysics data' : 'Consider adding ERT for higher confidence',
         `Expected depth: ${input.predictedDepth_m}m, Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr`,
@@ -361,7 +361,7 @@ function makeDecision(successProb: number, riskScore: number, input: RiskDecisio
       confidence: successProb * 0.8,
       headline: `${(successProb * 100).toFixed(0)}% probability — RECOMMEND geophysical survey before drilling`,
       reasoning: [
-        `Moderate success probability (${(successProb * 100).toFixed(0)}%)`,
+        `Moderate success score (${Math.round(successProb * 100)}/100 (uncalibrated, not a probability))`,
         `Moderate risk (${riskScore}/100) — additional data will reduce uncertainty`,
         'ERT survey recommended to confirm aquifer location and depth',
         'Survey cost (~$500-2000) justified by reduced drilling failure risk',
@@ -375,7 +375,7 @@ function makeDecision(successProb: number, riskScore: number, input: RiskDecisio
       confidence: 0.6,
       headline: `${(successProb * 100).toFixed(0)}% probability — CONSIDER alternative site`,
       reasoning: [
-        `Low success probability at this location (${(successProb * 100).toFixed(0)}%)`,
+        `Low modelled success score at this location (${Math.round(successProb * 100)}/100, uncalibrated)`,
         `High risk score (${riskScore}/100)`,
         'Look for fracture intersections, valley positions, or nearby successful boreholes',
         'If must drill here: mandatory ERT + seismic survey first',
@@ -388,7 +388,7 @@ function makeDecision(successProb: number, riskScore: number, input: RiskDecisio
     confidence: 0.7,
     headline: `${(successProb * 100).toFixed(0)}% probability — NOT RECOMMENDED for drilling`,
     reasoning: [
-      `Very low success probability (${(successProb * 100).toFixed(0)}%)`,
+      `Very low success score (${Math.round(successProb * 100)}/100 (uncalibrated, not a probability))`,
       `Very high risk (${riskScore}/100)`,
       'Multiple risk factors indicate this site is unsuitable',
       'Recommend comprehensive regional survey to identify better locations',

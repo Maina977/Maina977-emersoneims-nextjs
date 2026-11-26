@@ -20,7 +20,7 @@
 import { EIMS_RATES_KES, KES_PER_USD, drillingCostKES } from './costModel';
 import {
   PRICE_STATE, TENDER_RATE_SOURCE, PRICING_CATEGORY_LABEL, COST_ITEM_LABEL, REFERENCE_QUOTATION_TEXT,
-  quotationFor, quotationBasis, fmtKES, type CostItemKey, type PriceState, type PricingCategory, type ProjectPricing,
+  quotationFor, quotationBasis, fmtKES, ENTRY_LABEL, type CostItemKey, type PriceState, type PricingCategory, type ProjectPricing,
 } from './projectPricing';
 
 /** The cost-model figures costSourcing reads (computeCanonicalEconomics supplies them). */
@@ -67,11 +67,13 @@ export interface CostSourcing {
   notes: string[];
 }
 
+/** The solar benchmark's own source (not a tender rate), as the PDF's B.3 assumptions table cites it. */
+export const SOLAR_SOURCE = 'IRENA Renewable Power Generation Costs (2023), about $1,500/kW installed';
+
 /** Kept for callers that name the unpriced state; the policy wording since 2026-11-26. */
 export const QUOTATION_TEXT = PRICE_STATE.REQUEST;
 
 const TENDER = EIMS_RATES_KES.source;
-const INDICATIVE_TENDER = `${PRICE_STATE.INDICATIVE}: ${TENDER} rate used as a preliminary figure, not a private-project quotation`;
 
 export function costSourcing(eco: Eco): CostSourcing {
   const pricing = eco.pricing;
@@ -81,12 +83,21 @@ export function costSourcing(eco: Eco): CostSourcing {
   const hard = eco.isHardRock;
 
   // The tender's own figure for each item it prices (KSh), with its detail.
-  const tenderKES: Partial<Record<CostItemKey, { kes: number; detail: string }>> = {
+  // M-2 (review of 56acf032): the hard-rock rate and the beyond-300 m band are not
+  // signed-tender lines: costModel.ts says they come from the company's researched
+  // pricing draft of the same date (the signed BOQ carried them at zero quantity).
+  // M-4: no classified rock type is priced at the conservative hard-rock rate, as
+  // a labelled pricing assumption, matching the conservative 25% contingency.
+  const hardRate = hard || !!eco.rockTypeUnknown;
+  const DRAFT = 'EmersonEIMS researched pricing draft, 16 Oct 2026 (not a signed tender BOQ line: the signed BOQ carried it at zero quantity)';
+  const drillSource = hardRate || eco.depthVal > 300 ? DRAFT : TENDER;
+  const tenderKES: Partial<Record<CostItemKey, { kes: number; detail: string; source?: string }>> = {
     survey: { kes: R.hydrogeologicalSurvey, detail: `survey ${fmtKES(R.hydrogeologicalSurvey)}` },
     permits: { kes: eco.permitKES, detail: eco.permitNote.replace(/\s*\([^)]*\)\s*$/, '') },
     drilling: {
       kes: drillingCostKES(eco.depthVal, eco.rockType),
-      detail: hard ? `${eco.depthVal} m x ${fmtKES(R.drillHardRockPerM)}/m (hard-rock rate; geological finding: rock classification "${eco.rockType}")` : `${eco.depthVal} m at the banded rates ${R.drillSoftBandsPerM.map(([to, r]) => `${fmtKES(r)}/m${Number.isFinite(to) ? ` to ${to} m` : ' beyond'}`).join(', ')}${eco.rockTypeUnknown ? ' (pricing assumption: no rock type classified)' : ` (geological finding: rock classification "${eco.rockType}")`}`,
+      source: drillSource,
+      detail: hardRate ? `${eco.depthVal} m x ${fmtKES(R.drillHardRockPerM)}/m (hard-rock rate; ${eco.rockTypeUnknown ? 'pricing assumption: no rock type classified, so the conservative hard-rock rate' : `geological finding: rock classification "${eco.rockType}"`})` : `${eco.depthVal} m at the banded rates ${R.drillSoftBandsPerM.map(([to, r]) => `${fmtKES(r)}/m${Number.isFinite(to) ? ` to ${to} m` : ' beyond'}`).join(', ')}${eco.rockTypeUnknown ? ' (pricing assumption: no rock type classified)' : ` (geological finding: rock classification "${eco.rockType}")`}`,
     },
     ...(eco.mobilisationCost > 0 && eco.mobilisationCost === mobFloorUSD ? { mobilisation: { kes: R.mobilisation, detail: `mobilisation ${fmtKES(R.mobilisation)} (beyond 100 km)` } } : {}),
     casing: { kes: eco.blindCasingLen * R.steelCasing6inPerM, detail: `${eco.blindCasingLen} m x ${fmtKES(R.steelCasing6inPerM)}/m (6-inch steel)` },
@@ -122,16 +133,16 @@ export function costSourcing(eco: Eco): CostSourcing {
     if (!it.show && !q) continue;
     const unpriced = (): CostLine => ({ key: it.key, item: it.item, usd: it.usd, kes: null, state: 'request', priceText: gov ? PRICE_STATE.TENDER_BOQ : PRICE_STATE.REQUEST, source: null });
     const priced = (kes: number, state: PriceState, source: string): CostLine => ({ key: it.key, item: it.item, usd: Math.round(kes / KES_PER_USD), kes, state, priceText: '', source });
-    if (q) { lines.push(priced(q.amountKES, 'verified', quotationBasis(q))); continue; }
+    if (q) { lines.push(priced(q.amountKES, q.label === ENTRY_LABEL.indicative ? 'indicative' : 'verified', quotationBasis(q))); continue; }
     const t = tenderKES[it.key];
     if (t) {
-      if (gov) lines.push(priced(t.kes, 'tender', `${PRICE_STATE.TENDER}: ${TENDER}: ${t.detail}`));
-      else if (it.key === 'survey' || it.key === 'permits') lines.push(unpriced());
-      else lines.push(priced(t.kes, 'indicative', `${INDICATIVE_TENDER}: ${t.detail}`));
+      if (gov) lines.push(priced(t.kes, 'tender', `${PRICE_STATE.TENDER}: ${t.source ?? TENDER}: ${t.detail}`));
+      // A private project is never priced at the tender's rates, not even as indicative.
+      else lines.push(unpriced());
       continue;
     }
     if (it.key === 'solar') {
-      lines.push(priced(Math.round(eco.solarCost * KES_PER_USD), 'indicative', `${PRICE_STATE.INDICATIVE}: IRENA 2023 benchmark, about $1,500/kW installed`));
+      lines.push(priced(Math.round(eco.solarCost * KES_PER_USD), 'indicative', `${PRICE_STATE.INDICATIVE}: ${SOLAR_SOURCE}`));
       continue;
     }
     lines.push(unpriced());
@@ -150,11 +161,11 @@ export function costSourcing(eco: Eco): CostSourcing {
   // assumption and is never presented as hard rock.
   const rockNote = eco.isHardRock ? 'hard rock: geological finding' : eco.rockTypeUnknown ? 'pricing assumption: ground conditions unknown' : 'soft ground: geological finding';
   const groundNote = eco.rockTypeUnknown
-    ? groundConditionsUnknownText(rate)
+    ? `${groundConditionsUnknownText(rate)} The drilling line uses the conservative hard-rock rate on the same assumption.`
     : `Ground conditions: ${eco.isHardRock ? 'hard rock' : 'soft ground'} (geological finding: rock classification "${eco.rockType}"). Contingency ${rate}% for ${eco.isHardRock ? 'hard rock' : 'soft ground'}, the same classification as the drilling rate.`;
   const notes = [
     `Pricing category: ${PRICING_CATEGORY_LABEL[pricing.category]}.`,
-    ...(gov ? [`Government tender rates: ${TENDER_RATE_SOURCE}.`] : [`Survey and permits: ${PRICE_STATE.REQUEST.toLowerCase()} unless a ${PRICE_STATE.VERIFIED} has been entered for this project. Other figures are ${PRICE_STATE.INDICATIVE}.`, REFERENCE_QUOTATION_TEXT]),
+    ...(gov ? [`Government tender rates: ${TENDER_RATE_SOURCE}.`] : [`Private project: no tender rate is used. Each item is "${PRICE_STATE.REQUEST}" unless a ${PRICE_STATE.VERIFIED} or the user's own indicative rate is entered for this project, or the item has its own cited source (solar: ${SOLAR_SOURCE}).`, REFERENCE_QUOTATION_TEXT]),
     groundNote,
   ];
   return {
@@ -168,7 +179,7 @@ export function costSourcing(eco: Eco): CostSourcing {
     sourcedContingencyKES,
     sourcedTotalKES: sourcedSubtotalKES + sourcedContingencyKES,
     indicative,
-    totalLabel: `${quotationItems.length ? 'TOTAL of the priced items' : 'TOTAL'}${indicative ? ` (${PRICE_STATE.INDICATIVE})` : ''}`,
+    totalLabel: priced.length === 0 ? 'Total: request a quotation' : `${quotationItems.length ? 'TOTAL of the priced items (the rest: to quote)' : 'TOTAL'}${indicative ? ` (${PRICE_STATE.INDICATIVE})` : ''}`,
     contingencyLabel: `Contingency (${rate}% of the priced items, ${rockNote})`,
     notes,
   };

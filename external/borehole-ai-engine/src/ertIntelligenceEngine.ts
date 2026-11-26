@@ -1006,7 +1006,7 @@ function hybridInterpretationModel(
     `ERT survey resolved ${interp1D.layers.length} subsurface layers (inversion quality: ${interp1D.inversionQuality})`,
     `Primary aquifer target at ${features.depthToTarget_m.toFixed(0)}–${(features.depthToTarget_m + features.targetThickness_m).toFixed(0)}m depth`,
     `Hybrid model combines ${weights.length} features (ERT: 40%, Satellite: 35%, Geological: 25%)`,
-    `Success probability: ${(successProbability * 100).toFixed(0)}% from weighted ensemble`,
+    `Modelled success score: ${Math.round(successProbability * 100)}/100 from weighted ensemble (uncalibrated; not a probability of success)`,
   ];
 
   return {
@@ -1538,15 +1538,15 @@ export function runERTIntelligencePipeline(
 
   if (confidence.finalConfidence > 0.75 && hybridInterp.successProbability > 0.65 && yieldEst.sustainableYield_m3hr > 0.3) {
     drillOrNoDrill = 'DRILL';
-    drillDecisionReasoning = `Confidence ${(confidence.finalConfidence * 100).toFixed(0)}%, success probability ${(hybridInterp.successProbability * 100).toFixed(0)}%, ` +
+    drillDecisionReasoning = `Confidence ${(confidence.finalConfidence * 100).toFixed(0)}%, success score ${Math.round(hybridInterp.successProbability * 100)}/100 (uncalibrated, not a probability), ` +
       `estimated yield ${yieldEst.sustainableYield_m3hr.toFixed(1)} m³/hr — site is viable for drilling.`;
   } else if (confidence.finalConfidence < 0.50 || hybridInterp.successProbability < 0.40) {
     drillOrNoDrill = 'NEEDS_FURTHER_ASSESSMENT';
-    drillDecisionReasoning = `Current confidence (${(confidence.finalConfidence * 100).toFixed(0)}%) and success probability (${(hybridInterp.successProbability * 100).toFixed(0)}%) suggest ` +
+    drillDecisionReasoning = `Current confidence (${(confidence.finalConfidence * 100).toFixed(0)}%) and success score (${Math.round(hybridInterp.successProbability * 100)}/100 (uncalibrated, not a probability)) suggest ` +
       `additional data collection (ERT survey, pump test, or additional geophysics) would strengthen the case before committing to drilling.`;
   } else {
     drillOrNoDrill = 'INVESTIGATE_FURTHER';
-    drillDecisionReasoning = `Moderate confidence (${(confidence.finalConfidence * 100).toFixed(0)}%), success probability ${(hybridInterp.successProbability * 100).toFixed(0)}% — ` +
+    drillDecisionReasoning = `Moderate confidence (${(confidence.finalConfidence * 100).toFixed(0)}%), success score ${Math.round(hybridInterp.successProbability * 100)}/100 (uncalibrated, not a probability) — ` +
       `recommend additional ERT lines or geophysical methods to confirm aquifer geometry before drilling.`;
   }
 
@@ -1556,7 +1556,7 @@ export function runERTIntelligencePipeline(
     `2D Inversion: ${invertedModel.nx}×${invertedModel.nz} grid, RMS ${invertedModel.rmsError_pct}%, method: ${invertedModel.method}.`,
     `Layers resolved: ${interpretation1D.layers.length}, aquifer targets: ${interpretation1D.aquiferTargets.length}.`,
     `Features: ${features.anomalyCount} anomalies (${features.verticalAnomalies} fractures, ${features.horizontalAnomalies} aquifer layers).`,
-    `Hybrid AI: success probability ${(hybridInterp.successProbability * 100).toFixed(0)}% from ${hybridInterp.featureWeights.length}-feature ensemble.`,
+    `Hybrid AI: success score ${Math.round(hybridInterp.successProbability * 100)}/100 (uncalibrated, not a probability) from ${hybridInterp.featureWeights.length}-feature ensemble.`,
     `Recommended depth: ${depthOpt.recommendedDrillingDepth_m}m (screen ${depthOpt.screenFrom_m}–${depthOpt.screenTo_m}m).`,
     `Estimated yield: ${yieldEst.estimatedYield_m3hr.toFixed(1)} m³/hr (${yieldEst.estimatedYield_Lmin.toFixed(0)} L/min), sustainable: ${yieldEst.sustainableYield_m3hr.toFixed(1)} m³/hr.`,
     `Confidence: ${(confidence.beforeERT * 100).toFixed(0)}% → ${(confidence.afterERT * 100).toFixed(0)}% (+${confidence.improvementPercent.toFixed(0)}%).`,

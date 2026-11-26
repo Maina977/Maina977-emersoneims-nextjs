@@ -467,7 +467,7 @@ describe('C: the price state of each line and the contingency are identical on s
       expect(e.contingencyKES).toBe(cs.sourcedContingencyKES);
       expect(e.totalKES).toBe(cs.sourcedTotalKES);
       expect(e.subtotalCost).toBe(cs.sourcedSubtotal);
-      if (!v.pricing) { expect(costLineText(survey).usd).toBe('Request a quotation'); expect(costLineText(drilling).basis).toMatch(/^indicative — not a binding offer/); }
+      if (!v.pricing) { expect(costLineText(survey).usd).toBe('Request a quotation'); expect(costLineText(drilling).usd).toBe('Request a quotation'); }
       if (v.pricing?.quotations?.length) { expect(survey.state).toBe('verified'); expect(costLineText(survey).basis).toBe('verified project quotation: TEST-Q-17, dated 2026-11-20. Applies to this project only'); expected.push(fmtKES(60000), costLineText(survey).basis); }
       if (v.pricing?.category === 'government_tender') { expect(survey.state).toBe('tender'); expect(costLineText(survey).basis).toMatch(/^government tender rate: /); }
       const ex = await exportsText(r);
