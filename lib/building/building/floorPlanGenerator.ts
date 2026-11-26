@@ -1435,19 +1435,24 @@ export const NOT_FROM_A_DESCRIPTION = {
   boq: 'Quantities need measured drawings: use the measured take-off (/solutions/building/takeoff).',
   estimatedCost: 'A cost needs measured quantities and sourced, dated rates: request a quotation (0768 860 665).',
   foundation: 'Foundation type, depth and reinforcement need a site investigation and a structural design by a registered engineer.',
-  electrical: 'Maximum demand, main switch, circuit protection and the position, type and rating of every light, switch and socket outlet (including the bathroom zones of IEC 60364-7-701 / BS 7671 Section 701) need an electrical design by a qualified person (licensed electrical contractor / engineer).',
+  // Management's wording (review of 9edba5ed, 2026-11-26), then the bathroom-zone note.
+  electrical: 'Electrical layouts, socket specifications, circuit protection and lighting loads require a project-specific design reviewed by a qualified electrical professional. Socket outlets near baths and showers are restricted by IEC 60364-7-701 / BS 7671 Section 701.',
 } as const;
 
+/*
+ * The generator's fixed `confidence: 0.85` is not returned either (review of
+ * 9edba5ed): it is a constant, not a measure of how accurate the sketch is.
+ */
 export type PublicRoom = Omit<Room, 'electrical'> & { electrical: null };
-export type PublicBuildingPlan = Omit<BuildingPlan, 'boqSummary' | 'estimatedCost' | 'foundation' | 'electrical' | 'floorPlans'> & {
+export type PublicBuildingPlan = Omit<BuildingPlan, 'boqSummary' | 'estimatedCost' | 'foundation' | 'electrical' | 'floorPlans' | 'confidence'> & {
   floorPlans: Array<Omit<FloorPlan, 'rooms'> & { rooms: PublicRoom[] }>;
   boqSummary: null; estimatedCost: null; foundation: null; electrical: null;
   notAvailable: typeof NOT_FROM_A_DESCRIPTION;
 };
 
 export function publicPlan(plan: BuildingPlan): PublicBuildingPlan {
-  const { boqSummary: _b, estimatedCost: _c, foundation: _f, electrical: _e, floorPlans, ...rest } = plan;
-  void _b; void _c; void _f; void _e;
+  const { boqSummary: _b, estimatedCost: _c, foundation: _f, electrical: _e, confidence: _k, floorPlans, ...rest } = plan;
+  void _b; void _c; void _f; void _e; void _k;
   const floors = floorPlans.map((f) => ({ ...f, rooms: f.rooms.map((r): PublicRoom => ({ ...r, electrical: null })) }));
   return { ...rest, floorPlans: floors, boqSummary: null, estimatedCost: null, foundation: null, electrical: null, notAvailable: NOT_FROM_A_DESCRIPTION };
 }
