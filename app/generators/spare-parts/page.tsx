@@ -393,15 +393,18 @@ export default function SparePartsPage() {
               >
                 ✓ In Stock Only
               </button>
-              <button
-                onClick={() => {
-                  setMinRating(4);
-                  setMaxPrice(500000);
-                }}
-                className="px-3 py-2 bg-slate-800 text-gray-300 hover:bg-slate-700 rounded-lg text-sm font-medium transition"
-              >
-                ⭐ 4+ Stars
-              </button>
+              {/* Sweep review F1: ratings are no longer invented, so this filter is shown only when real ratings exist. */}
+              {hasRatings && (
+                <button
+                  onClick={() => {
+                    setMinRating(4);
+                    setMaxPrice(500000);
+                  }}
+                  className="px-3 py-2 bg-slate-800 text-gray-300 hover:bg-slate-700 rounded-lg text-sm font-medium transition"
+                >
+                  ⭐ 4+ Stars
+                </button>
+              )}
               <button
                 onClick={() => {
                   setMinPrice(0);

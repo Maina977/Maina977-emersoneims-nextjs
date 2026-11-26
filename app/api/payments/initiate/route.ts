@@ -1,50 +1,20 @@
 /**
- * POST /api/payments/initiate
- * Initiates M-Pesa STK Push for order payment
+ * Payment initiate API (/api/payments/initiate): RETIRED (security sweep review 2026-11-27, SW-8 / S1).
+ * See lib/security/retiredRoute.ts.
+ *
+ * It sent an M-Pesa STK prompt to any phone for any amount, with no sign-in and no rate limit, and returned the
+ * provider's error message to the caller. It has no caller anywhere in the site, and it could not work in
+ * production (hard-coded sandbox shortcode against the live host; M-Pesa credentials not set). Payments are parked
+ * by management; the order-token-guarded /api/payments/mpesa is the only STK path. The previous code is in git
+ * history. All 7 methods answer 410 Gone and call nothing.
  */
+import { retired } from '@/lib/security/retiredRoute';
 
-import { mpesaService } from '@/lib/payments/mpesaService';
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { orderId, amount, phoneNumber, accountRef } = body;
-
-    if (!orderId || !amount || !phoneNumber || !accountRef) {
-      return Response.json(
-        { error: 'Missing required fields: orderId, amount, phoneNumber, accountRef' },
-        { status: 400 }
-      );
-    }
-
-    // Validate amount (KES 1 minimum, KES 150,000 maximum per M-Pesa rules)
-    if (amount < 1 || amount > 150000) {
-      return Response.json(
-        { error: 'Amount must be between KES 1 and KES 150,000' },
-        { status: 400 }
-      );
-    }
-
-    // Initiate STK Push
-    const response = await mpesaService.initiateSTKPush({
-      phoneNumber,
-      amount: Math.round(amount),
-      orderId,
-      accountRef
-    });
-
-    return Response.json({
-      success: true,
-      checkoutRequestId: response.CheckoutRequestID,
-      responseCode: response.ResponseCode,
-      responseDescription: response.ResponseDescription,
-      message: 'M-Pesa prompt sent to your phone. Please enter your PIN to complete payment.'
-    });
-  } catch (error: any) {
-    console.error('Payment initiation error:', error);
-    return Response.json(
-      { error: error.message || 'Payment initiation failed' },
-      { status: 500 }
-    );
-  }
-}
+const gone = () => retired('This payment API');
+export const GET = gone;
+export const HEAD = gone;
+export const POST = gone;
+export const PUT = gone;
+export const PATCH = gone;
+export const DELETE = gone;
+export const OPTIONS = gone;
