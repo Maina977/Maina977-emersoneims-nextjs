@@ -220,7 +220,7 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
             <MeasurementPick label="Wall length" kind="linear" value={f.wallLengthId} onChange={(id) => edit({ ...f, wallLengthId: id })} {...pickProps} />
             <ParamField label="Wall height" unit="m" value={f.height} onChange={(v) => edit({ ...f, height: v })} />
             <ParamField label="Wall thickness" unit="m" value={f.thickness} onChange={(v) => edit({ ...f, thickness: v })} />
-            <ParamField label="Min. deducted opening" unit="m²" value={f.minDeducted} onChange={(v) => edit({ ...f, minDeducted: v })} />
+            <ParamField label="Openings not deducted up to (each, ≤)" unit="m²" value={f.minDeducted} onChange={(v) => edit({ ...f, minDeducted: v })} />
             <OpeningsTable rows={f.openings} onChange={(rows) => edit({ ...f, openings: rows })} />
             <label className="block text-xs"><input type="checkbox" checked={f.block.enabled} onChange={(e) => edit({ ...f, block: { ...f.block, enabled: e.target.checked } })} /> Count blocks</label>
             {f.block.enabled && (
@@ -239,7 +239,7 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
             <ParamField label="Plaster height" unit="m" value={f.height} onChange={(v) => edit({ ...f, height: v })} />
             <label className="flex flex-wrap items-center gap-2 text-xs"><span className="w-40">Faces</span>
               <select aria-label="Faces" value={f.faces} onChange={(e) => edit({ ...f, faces: e.target.value as '' | '1' | '2' })} className={input}><option value="">choose…</option><option value="1">one face</option><option value="2">both faces</option></select></label>
-            <ParamField label="Min. deducted opening" unit="m²" value={f.minDeducted} onChange={(v) => edit({ ...f, minDeducted: v })} />
+            <ParamField label="Openings not deducted up to (each, ≤)" unit="m²" value={f.minDeducted} onChange={(v) => edit({ ...f, minDeducted: v })} />
             <OpeningsTable rows={f.openings} onChange={(rows) => edit({ ...f, openings: rows })} />
             <label className="block text-xs"><input type="checkbox" checked={f.reveal.enabled} onChange={(e) => edit({ ...f, reveal: { ...f.reveal, enabled: e.target.checked } })} /> Plaster reveals</label>
             {f.reveal.enabled && <div className="pl-4"><ParamField label="Reveal depth" unit="m" value={f.reveal.depth} onChange={(v) => edit({ ...f, reveal: { ...f.reveal, depth: v } })} /></div>}

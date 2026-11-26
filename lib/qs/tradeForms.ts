@@ -174,13 +174,13 @@ export function calculateTrade(f: TradeForm, quantities: Map<string, Quantity>):
       const block = f.block.enabled
         ? { lengthM: param('Block length', f.block.length), heightM: param('Block height', f.block.height), jointM: param('Joint', f.block.joint), wastagePct: wastage('Block wastage', f.block.wastage) }
         : undefined;
-      return masonry({ code, description, wallLength, heightM: param('Wall height', f.height), thicknessM: param('Wall thickness', f.thickness), openings: openings(f.openings), minDeductedOpeningM2: param('Minimum deducted opening', f.minDeducted), block });
+      return masonry({ code, description, wallLength, heightM: param('Wall height', f.height), thicknessM: param('Wall thickness', f.thickness), openings: openings(f.openings), minDeductedOpeningM2: param('Openings not deducted up to', f.minDeducted), block });
     }
     case 'plaster': {
       const description = text('Description', f.description);
       const wallLength = pickKind('Wall length', f.wallLengthId, quantities, SLOT_KIND.wallLength);
       if (f.faces !== '1' && f.faces !== '2') throw new TradeError('Faces: choose one face or both faces');
-      return plaster({ code, description, wallLength, heightM: param('Plaster height', f.height), faces: f.faces === '2' ? 2 : 1, openings: openings(f.openings), minDeductedOpeningM2: param('Minimum deducted opening', f.minDeducted), revealDepthM: f.reveal.enabled ? param('Reveal depth', f.reveal.depth) : undefined });
+      return plaster({ code, description, wallLength, heightM: param('Plaster height', f.height), faces: f.faces === '2' ? 2 : 1, openings: openings(f.openings), minDeductedOpeningM2: param('Openings not deducted up to', f.minDeducted), revealDepthM: f.reveal.enabled ? param('Reveal depth', f.reveal.depth) : undefined });
     }
     case 'roofing': {
       const description = text('Description', f.description);

@@ -137,6 +137,7 @@ export function quantify(m: Measurement): Quantity {
 export interface MeasurementRule { name: string; edition: string; voidNotDeductedUpToM2: number }
 export function ruleQuantity(q: Quantity, rule: MeasurementRule, depthM?: number): { geometricNet: number; ruleQuantity: number; voidsNotDeducted: number; rule: string } {
   if (q.kind !== 'area' && q.kind !== 'volume') return { geometricNet: q.net, ruleQuantity: q.net, voidsNotDeducted: 0, rule: `${rule.name} ${rule.edition}` };
+  // Each void of this area or less (3 dp) is not deducted; the same convention as the trades (lib/qs/trades, masonry/plaster) since 2026-11-26.
   const small = q.holes.filter((h) => h.areaM2 <= rule.voidNotDeductedUpToM2);
   const addBack = small.reduce((a, h) => a + h.areaM2, 0) * (q.kind === 'volume' ? depthM ?? NaN : 1);
   if (!Number.isFinite(addBack)) throw new TakeoffError('Volume rule quantity needs the depth');

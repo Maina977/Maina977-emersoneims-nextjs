@@ -82,7 +82,12 @@ export interface MasonryInput {
   wallLength: Quantity;            // centreline length, linear take-off
   heightM: Param; thicknessM: Param;
   openings: Opening[];
-  /** Openings smaller than this are not deducted (measurement rule; give the rule as source). */
+  /**
+   * Openings of this area or less (each) are NOT deducted; larger ones are (measurement rule; give the rule as source).
+   * Same convention as ruleQuantity() in lib/qs/takeoff (voidNotDeductedUpToM2) and the NRM2 / SMM7 wording
+   * "voids not exceeding 0.50 m²": an opening of exactly the threshold is not deducted (2026-11-26; it was
+   * deducted here while ruleQuantity did not deduct it). The field name is kept for saved projects.
+   */
   minDeductedOpeningM2: Param;
   block?: { lengthM: Param; heightM: Param; jointM: Param; wastagePct: Param };
 }
@@ -90,13 +95,13 @@ export function masonry(i: MasonryInput): TradeLine[] {
   const L = measured('Wall length', i.wallLength, 'linear');
   const H = need('Wall height', i.heightM, 0.3, 12, 'm');
   const T = need('Wall thickness', i.thicknessM, 0.05, 0.6, 'm');
-  const minDed = need('Minimum deducted opening', i.minDeductedOpeningM2, 0, 2, 'm²');
+  const minDed = need('Openings not deducted up to', i.minDeductedOpeningM2, 0, 2, 'm²');
   let deducted = 0, notDeducted = 0;
-  for (const o of i.openings) { const a = openingArea(o); if (a.each >= minDed) deducted += a.total; else notDeducted += a.total; }
+  for (const o of i.openings) { const a = openingArea(o); if (r3(a.each) > minDed) deducted += a.total; else notDeducted += a.total; }
   const gross = L * H;
   if (deducted >= gross) throw new TradeError('Openings exceed the wall area: check lengths, heights and counts');
   const net = gross - deducted;
-  const inputs = [`length ${r3(L)} m (take-off ${i.wallLength.id})`, src('height', i.heightM, 'm'), src('thickness', i.thicknessM, 'm'), `openings deducted ${r3(deducted)} m²; not deducted (< ${minDed} m², ${i.minDeductedOpeningM2.source}) ${r3(notDeducted)} m²`];
+  const inputs = [`length ${r3(L)} m (take-off ${i.wallLength.id})`, src('height', i.heightM, 'm'), src('thickness', i.thicknessM, 'm'), `openings deducted ${r3(deducted)} m²; not deducted (≤ ${minDed} m² each, ${i.minDeductedOpeningM2.source}) ${r3(notDeducted)} m²`];
   const lines: TradeLine[] = [
     { code: `${i.code}.1`, trade: 'Masonry', unit: 'm²', quantity: r3(net), description: `${i.description}: walling, ${T * 1000} mm`, formula: 'length × height − deducted openings', inputs },
     { code: `${i.code}.2`, trade: 'Masonry', unit: 'm³', quantity: r3(net * T), description: `${i.description}: walling volume`, formula: 'net area × thickness', inputs },
@@ -126,10 +131,10 @@ export interface PlasterInput {
 export function plaster(i: PlasterInput): TradeLine[] {
   const L = measured('Wall length', i.wallLength, 'linear');
   const H = need('Plaster height', i.heightM, 0.3, 12, 'm');
-  const minDed = need('Minimum deducted opening', i.minDeductedOpeningM2, 0, 2, 'm²');
+  const minDed = need('Openings not deducted up to', i.minDeductedOpeningM2, 0, 2, 'm²');
   if (i.faces !== 1 && i.faces !== 2) throw new TradeError('faces must be 1 or 2');
   let deducted = 0, revealLen = 0;
-  for (const o of i.openings) { const a = openingArea(o); if (a.each >= minDed) { deducted += a.total; revealLen += (2 * a.h + a.w) * o.count; } }
+  for (const o of i.openings) { const a = openingArea(o); if (r3(a.each) > minDed) { deducted += a.total; revealLen += (2 * a.h + a.w) * o.count; } }
   const net = (L * H - deducted) * i.faces;
   if (!(net > 0)) throw new TradeError('Openings exceed the plastered area');
   const lines: TradeLine[] = [{
