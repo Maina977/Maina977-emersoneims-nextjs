@@ -5,7 +5,7 @@
  * Cart → Shipping Address → Review Order → Place Order
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import type { Part } from '@/lib/parts/partsInventoryParser';
@@ -39,9 +39,20 @@ export default function CheckoutPage() {
   // Order confirmation
   const [orderCreated, setOrderCreated] = useState<{
     orderId: string;
-    total: number;
+    total: number | null; // null: price to be confirmed by EmersonEIMS
   } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Shown when the server refuses the order (e.g. 400 Invalid order details).
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const [orderErrorIsInput, setOrderErrorIsInput] = useState(false);
+  // Abuse protection (order-abuse hotfix 2026-11-26): a hidden honeypot field
+  // people never see, and when the delivery form was opened (the server refuses
+  // orders sent within seconds of it).
+  const [website, setWebsite] = useState('');
+  const formStartedAt = useRef<number | null>(null);
+  useEffect(() => {
+    if (step === 'shipping' && formStartedAt.current === null) formStartedAt.current = Date.now();
+  }, [step]);
 
   // Load cart from localStorage
   useEffect(() => {
@@ -82,6 +93,8 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     setSubmitting(true);
+    setOrderError(null);
+    setOrderErrorIsInput(false);
     try {
       const response = await fetch('/api/orders/create', {
         method: 'POST',
@@ -100,6 +113,8 @@ export default function CheckoutPage() {
           })),
           shippingLocation,
           paymentMethod: 'mpesa',
+          website,
+          formStartedAt: formStartedAt.current,
         }),
       });
 
@@ -107,11 +122,17 @@ export default function CheckoutPage() {
       if (data.orderId) {
         setOrderCreated({
           orderId: data.orderId,
-          total: data.total,
+          // The total is the server's, priced from the stock file; never the cart's.
+          total: data.priceConfirmed === false || typeof data.total !== 'number' ? null : data.total,
         });
         setStep('confirm');
         localStorage.removeItem('cart'); // Clear cart
         setCart([]);
+      } else {
+        setOrderError(
+          (typeof data.error === 'string' && data.error) || 'We could not create your order'
+        );
+        setOrderErrorIsInput(response.status === 400);
       }
     } catch (error) {
       console.error('Failed to create order:', error);
@@ -231,6 +252,13 @@ export default function CheckoutPage() {
                 <h2 className="text-2xl font-bold text-white">Shipping Address</h2>
 
                 <div className="space-y-4">
+                  {/* Honeypot: hidden from people and screen readers; bots fill it. */}
+                  <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', width: 1, height: 1, overflow: 'hidden' }}>
+                    <label>
+                      Website
+                      <input type="text" name="website" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+                    </label>
+                  </div>
                   <div>
                     <label className="block text-white font-semibold mb-2">Full Name *</label>
                     <input
@@ -336,6 +364,15 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
+                {orderError && (
+                  <div role="alert" className="bg-red-900/30 border border-red-500/40 rounded-lg p-4 text-red-300">
+                    {orderErrorIsInput
+                      ? <>{orderError}. Please check your name, email and phone number (digits only) and try again,
+                        or <Link href="/contact" className="underline">contact us</Link> to order.</>
+                      : <>{orderError} <Link href="/contact" className="underline">Contact us</Link></>}
+                  </div>
+                )}
+
                 <div className="flex gap-4">
                   <button
                     onClick={() => setStep('shipping')}
@@ -364,16 +401,29 @@ export default function CheckoutPage() {
               >
                 <div className="text-6xl mb-4">✅</div>
                 <h2 className="text-3xl font-bold text-green-400 mb-2">Order Created Successfully!</h2>
-                <p className="text-gray-400 mb-4">Your order is ready for payment</p>
+                <p className="text-gray-400 mb-4">
+                  {orderCreated.total === null ? 'We will confirm the price before any payment' : 'Your order is ready for payment'}
+                </p>
 
                 <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-8 my-8">
                   <p className="text-gray-400 text-sm mb-2">Order ID</p>
                   <p className="text-white font-bold text-2xl mb-4">{orderCreated.orderId}</p>
-                  <p className="text-gray-400 text-sm mb-2">Total Amount Due</p>
-                  <p className="text-amber-400 font-bold text-3xl">KES {orderCreated.total.toLocaleString()}</p>
+                  {orderCreated.total === null ? (
+                    <>
+                      <p className="text-amber-400 font-bold text-xl">Price to be confirmed by EmersonEIMS</p>
+                      <p className="text-gray-400 text-sm mt-2">
+                        Please <Link href="/contact" className="underline">contact us</Link> quoting order {orderCreated.orderId}.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-400 text-sm mb-2">Total Amount Due</p>
+                      <p className="text-amber-400 font-bold text-3xl">KES {orderCreated.total.toLocaleString()}</p>
+                    </>
+                  )}
                 </div>
 
-                <div className="space-y-2 mb-8">
+                {orderCreated.total !== null && <div className="space-y-2 mb-8">
                   <p className="text-gray-400">Redirecting to M-Pesa payment...</p>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -381,7 +431,7 @@ export default function CheckoutPage() {
                   >
                     Complete Payment with M-Pesa
                   </motion.button>
-                </div>
+                </div>}
 
                 <Link
                   href="/marketplace/orders"
