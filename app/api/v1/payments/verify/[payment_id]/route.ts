@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { trustedSelfOrigin } from '@/lib/security/selfOrigin';
+import { isPaymentReference } from '@/lib/security/paymentRefs';
 
 interface VerifyResponse {
   success: boolean;
@@ -34,7 +35,7 @@ export async function GET(
   const [provider, ...rest] = decoded.split(':');
   const providerId = rest.join(':');
 
-  if (!provider || !providerId) {
+  if (!provider || !providerId || !isPaymentReference(providerId)) {
     return NextResponse.json(
       {
         success: false,

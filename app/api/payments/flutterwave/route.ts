@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { isPaymentReference, isProviderTransactionId } from '@/lib/security/paymentRefs';
 
 interface FlutterwaveRequest {
   amount: number;
@@ -172,6 +173,15 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Security hotfix 2026-11-26: strict patterns before any fetch, and encoded,
+  // so input can never reach another Flutterwave endpoint with our key.
+  if ((transactionId && !isProviderTransactionId(transactionId)) || (!transactionId && !isPaymentReference(txRef))) {
+    return NextResponse.json(
+      { success: false, error: 'Invalid transaction_id or tx_ref' },
+      { status: 400 }
+    );
+  }
+
   const secretKey = process.env.FLUTTERWAVE_SECRET_KEY;
 
   if (!secretKey) {
@@ -185,9 +195,9 @@ export async function GET(request: NextRequest) {
     let verifyUrl = `${FLUTTERWAVE_API}/transactions/`;
 
     if (transactionId) {
-      verifyUrl += `${transactionId}/verify`;
+      verifyUrl += `${encodeURIComponent(transactionId)}/verify`;
     } else {
-      verifyUrl += `verify_by_reference?tx_ref=${txRef}`;
+      verifyUrl += `verify_by_reference?tx_ref=${encodeURIComponent(txRef ?? '')}`;
     }
 
     const response = await fetch(verifyUrl, {
@@ -203,21 +213,15 @@ export async function GET(request: NextRequest) {
     if (data.status === 'success') {
       const txData = data.data;
 
+      // Public, unauthenticated route: only what the payment flow needs.
+      // No customer email, name or phone (security hotfix 2026-11-26).
       return NextResponse.json({
         success: true,
         data: {
           status: txData.status,  // 'successful', 'failed', 'pending'
           amount: txData.amount,
           currency: txData.currency,
-          transactionId: txData.id,
-          txRef: txData.tx_ref,
-          paymentType: txData.payment_type,
-          customer: {
-            email: txData.customer?.email,
-            name: txData.customer?.name,
-            phone: txData.customer?.phone_number,
-          },
-          paidAt: txData.created_at,
+          reference: txData.tx_ref,
         },
       });
     } else {

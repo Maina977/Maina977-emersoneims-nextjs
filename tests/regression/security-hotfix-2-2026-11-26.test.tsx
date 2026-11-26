@@ -35,6 +35,7 @@ import CheckoutPage from '@/app/marketplace/checkout/page';
 type Handler = (...a: unknown[]) => Promise<Response> | Response;
 const call = (h: unknown, ...a: unknown[]) => Promise.resolve((h as Handler)(...a));
 
+const SEVEN = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT'];
 const PII = { name: 'TEST Victim Person', phone: '0700111222', email: 'victim@test.example' };
 const seeded: Order = {
   orderId: 'ORD-20261126-0042',
@@ -68,11 +69,16 @@ describe('generic proxy: retired, never fetches', () => {
     'https://api.nasa.gov@attacker.example/', // userinfo trick: passes startsWith, host is attacker.example
     'https://api.nasa.gov/planetary/apod',
   ];
-  for (const method of ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const) {
+  it('exports exactly the 7 methods, all retired', () => {
+    for (const mod of [proxyRoute, orderRoute, customerOrdersRoute]) {
+      expect(Object.keys(mod).filter((k) => /^[A-Z]+$/.test(k)).sort()).toEqual(SEVEN);
+    }
+  });
+  for (const method of SEVEN) {
     it(`${method} answers 410 for every target and makes no outbound request`, async () => {
       for (const t of targets) {
         const req = new NextRequest(`https://site.test/api/src/app/api/proxy/x?target=${encodeURIComponent(t)}`, {
-          method, body: method === 'GET' ? undefined : '{"a":1}', headers: { 'content-type': 'application/json' },
+          method, body: method === 'GET' || method === 'HEAD' ? undefined : '{"a":1}', headers: { 'content-type': 'application/json' },
         });
         const res = await call((proxyRoute as Record<string, unknown>)[method], req);
         expect(res.status).toBe(410);
@@ -89,6 +95,15 @@ describe('order lookup and customer history: no PII without proof of ownership',
     const res = await call(orderRoute.GET, req, { params: { orderId: seeded.orderId } });
     expect(res.status).toBe(410);
     noPII(await res.text());
+  });
+  it('every one of the 7 methods on both order routes answers 410 with no PII', async () => {
+    for (const mod of [orderRoute, customerOrdersRoute] as Record<string, unknown>[]) {
+      for (const m of SEVEN) {
+        const res = await call(mod[m], new Request('https://site.test/x', { method: m }), { params: { orderId: seeded.orderId, customerId: seeded.customerId } });
+        expect(res.status, m).toBe(410);
+        noPII(await res.text());
+      }
+    }
   });
   it('existing and unknown ids get byte-identical answers (existence not leaked)', async () => {
     const a = await call(orderRoute.GET, new Request('https://site.test/x'), { params: { orderId: seeded.orderId } });

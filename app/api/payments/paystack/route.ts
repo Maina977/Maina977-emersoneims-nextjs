@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { isPaymentReference } from '@/lib/security/paymentRefs';
 import crypto from 'crypto';
 
 interface PaystackRequest {
@@ -152,6 +153,15 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Security hotfix 2026-11-26: strict pattern before any fetch, and encoded,
+  // so a reference can never reach another Paystack endpoint with our key.
+  if (!isPaymentReference(reference)) {
+    return NextResponse.json(
+      { success: false, error: 'Invalid reference' },
+      { status: 400 }
+    );
+  }
+
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
 
   if (!secretKey) {
@@ -162,7 +172,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(`${PAYSTACK_API}/transaction/verify/${reference}`, {
+    const response = await fetch(`${PAYSTACK_API}/transaction/verify/${encodeURIComponent(reference)}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${secretKey}`,
@@ -175,6 +185,8 @@ export async function GET(request: NextRequest) {
     if (data.status === true && data.data) {
       const txData = data.data;
 
+      // Public, unauthenticated route: only what the payment flow needs.
+      // No customer email or name (security hotfix 2026-11-26).
       return NextResponse.json({
         success: true,
         data: {
@@ -182,14 +194,6 @@ export async function GET(request: NextRequest) {
           amount: txData.amount / 100,  // Convert back to major unit
           currency: txData.currency,
           reference: txData.reference,
-          channel: txData.channel,
-          customer: {
-            email: txData.customer?.email,
-            firstName: txData.customer?.first_name,
-            lastName: txData.customer?.last_name,
-          },
-          paidAt: txData.paid_at,
-          gatewayResponse: txData.gateway_response,
         },
       });
     } else {
