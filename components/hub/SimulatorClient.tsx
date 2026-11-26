@@ -39,7 +39,7 @@ type InverterKind = 'off-grid' | 'hybrid' | 'grid-tied';
 type BatteryChemistry = 'LFP' | 'NMC' | 'AGM' | 'Flooded';
 type PanelArrangement = 'series' | 'parallel' | 'mixed';
 
-interface Inputs {
+export interface Inputs {
   baseLoadKw: number;
   peakLoadKw: number;
   startingKva: number;
@@ -71,7 +71,7 @@ interface Inputs {
   hasCombiner: boolean;
 }
 
-const DEFAULTS: Inputs = {
+export const DEFAULTS: Inputs = {
   baseLoadKw: 80,
   peakLoadKw: 160,
   startingKva: 90,
@@ -103,13 +103,13 @@ const DEFAULTS: Inputs = {
 
 /* ────────── sizing model (transparent + conservative) ────────── */
 
-function deratePercent(altitudeM: number, ambientC: number) {
+export function deratePercent(altitudeM: number, ambientC: number) {
   const altDerate = Math.max(0, (altitudeM - 1000) / 300) * 3;
   const tempDerate = Math.max(0, (ambientC - 25) / 5) * 2;
   return Math.min(35, altDerate + tempDerate);
 }
 
-function sizeGenerator(i: Inputs) {
+export function sizeGenerator(i: Inputs) {
   const derate = deratePercent(i.altitudeM, i.ambientC);
   const chargeDrawKw = i.batteryBankKwh * Math.max(0, Math.min(0.5, i.chargeCRate));
   const effectivePeakKw = (i.peakLoadKw + chargeDrawKw) * (1 + i.supportMarginPct / 100);
@@ -129,10 +129,23 @@ function sizeFuel(i: Inputs, ratedKva: number) {
   return { lph, runtimeH };
 }
 
-function sizeUps(i: Inputs) {
-  const kva = (i.baseLoadKw * 0.4) / Math.max(0.7, Math.min(1, i.powerFactor));
-  const loadW = kva * 1000 * 0.7;
-  const wh = (loadW * (i.upsAutonomyMin / 60)) / 0.9;
+/** UPS loaded to at most 80 % of its rating (common sizing practice; the UPS Lab warns above 85 %). */
+export const UPS_MAX_LOADING = 0.8;
+/** Battery-to-load (discharge + inverter) efficiency assumed for the UPS battery. */
+export const UPS_DISCHARGE_EFFICIENCY = 0.9;
+
+/**
+ * UPS for the CRITICAL (0 ms) load the user enters (audit 2026-11-26: it was
+ * sized on 40 % of the base load, so the "Critical" input changed nothing,
+ * and its battery converted kVA back to W with 0.7 instead of the power factor).
+ *   kVA = critical kW ÷ PF ÷ 0.8 loading
+ *   battery Wh = critical W × autonomy h ÷ (discharge efficiency × usable DoD)
+ */
+export function sizeUps(i: Pick<Inputs, 'criticalLoadKw' | 'powerFactor' | 'upsAutonomyMin' | 'batteryChemistry'>) {
+  const pf = Math.max(0.7, Math.min(1, i.powerFactor));
+  const loadKw = Math.max(0, i.criticalLoadKw);
+  const kva = loadKw / pf / UPS_MAX_LOADING;
+  const wh = (loadKw * 1000 * (Math.max(0, i.upsAutonomyMin) / 60)) / (UPS_DISCHARGE_EFFICIENCY * CHEM_DOD[i.batteryChemistry]);
   return { kva, wh };
 }
 
@@ -151,7 +164,7 @@ function syntheticSolarKwPeak(c: TopologyComposition, panelWattageW = DEFAULT_KW
 
 /* ────────── battery chemistry → usable depth-of-discharge ────────── */
 
-const CHEM_DOD: Record<BatteryChemistry, number> = {
+export const CHEM_DOD: Record<BatteryChemistry, number> = {
   LFP:     0.9,
   NMC:     0.85,
   AGM:     0.5,
@@ -165,11 +178,42 @@ const CHEM_DOD: Record<BatteryChemistry, number> = {
  * MPPT can harvest ~25 % more than PWM at the same array, so PWM users
  * with a high-V array hit the warn threshold sooner.
  */
-function controllerUndersized(arrayKw: number, ratingA: number, kind: ControllerKind): boolean {
+export function controllerUndersized(arrayKw: number, ratingA: number, kind: ControllerKind): boolean {
   if (arrayKw <= 0 || ratingA <= 0) return false;
   const sysV = 48;
-  const requiredA = (arrayKw * 1000) / sysV / (kind === 'MPPT' ? 1.25 : 1.0);
+  // An MPPT controller delivers the array's power at battery voltage, so its
+  // output current is array W ÷ 48 V (Victron / Morningstar sizing). Audit
+  // 2026-11-26: this was divided by 1.25 for MPPT, so a controller 20 % too
+  // small passed. A PWM controller passes the array's own current, which on a
+  // matched 48 V array is about the same figure, so one rule serves both.
+  void kind;
+  const requiredA = (arrayKw * 1000) / sysV;
   return ratingA < requiredA * 0.9;
+}
+
+/**
+ * Battery runtime at the live load: only the charge above the chemistry's
+ * cut-off (SoC − (1 − DoD)) is usable, delivered through the inverter at
+ * UPS_DISCHARGE_EFFICIENCY. Audit 2026-11-26: the whole state of charge was
+ * counted and the "Usable DoD" shown beside it was never used, so an AGM
+ * bank (50 % usable) showed about 2.8x its runtime.
+ */
+export function bankRuntimeMin(bankKwh: number, socPct: number, dod: number, loadKw: number): number {
+  if (!(bankKwh > 0)) return 0;
+  const usableKwh = bankKwh * Math.max(0, socPct / 100 - (1 - dod)) * UPS_DISCHARGE_EFFICIENCY;
+  return (usableKwh / Math.max(loadKw, 0.001)) * 60;
+}
+
+/**
+ * Headroom of the generator at THIS site: its rating derated for altitude and
+ * ambient, less the peak kVA, as a share of the derated capacity. Audit
+ * 2026-11-26: the margin used the nameplate kVA, overstating headroom at
+ * altitude.
+ */
+export function supportMarginPct(ratedKva: number, deratePct: number, peakLoadKw: number, powerFactor: number): number {
+  const availableKva = ratedKva * (1 - deratePct / 100);
+  const peakKva = peakLoadKw / Math.max(0.6, Math.min(1, powerFactor));
+  return ((availableKva - peakKva) / Math.max(availableKva, 1)) * 100;
 }
 
 /* ────────── component ────────── */
@@ -235,14 +279,8 @@ export default function SimulatorClient() {
   const lineV = 415;
   const lineI = (loadKva * 1000) / (Math.sqrt(3) * lineV);
   const socPct = comp.batteries === 0 ? 0 : Math.max(20, 78 - (lowBattery ? 35 : 0));
-  const runtimeMin =
-    comp.batteries === 0
-      ? 0
-      : ((syntheticBankKwh(comp) * (socPct / 100) * 1000) / Math.max(liveLoadKw * 1000, 1)) * 60;
-  const supportMargin =
-    ((gen.ratedKva - effectiveInputs.peakLoadKw / Math.max(0.6, Math.min(1, inputs.powerFactor))) /
-      Math.max(gen.ratedKva, 1)) *
-    100;
+  const runtimeMin = bankRuntimeMin(syntheticBankKwh(comp), socPct, CHEM_DOD[inputs.batteryChemistry], liveLoadKw);
+  const supportMargin = supportMarginPct(gen.ratedKva, gen.derate, effectiveInputs.peakLoadKw, inputs.powerFactor);
 
   const pq: PowerQuality = {
     thdPct: Math.min(
@@ -514,9 +552,9 @@ export default function SimulatorClient() {
               <DigitalReadout label="Required (pre-derate)" value={gen.requiredKva} unit="kVA" decimals={0} status="info" />
               <DigitalReadout label="Fuel burn @ 75 %" value={fuel.lph} unit="L/h" decimals={1} status="info" />
               <DigitalReadout label="Tank runtime" value={fuel.runtimeH} unit="h" decimals={1} status={fuel.runtimeH < 12 ? 'warn' : 'ok'} />
-              <DigitalReadout label="UPS rating" value={ups.kva} unit="kVA" decimals={1} status="info" />
-              <DigitalReadout label="UPS battery" value={ups.wh / 1000} unit="kWh" decimals={2} status="info" />
-              <DigitalReadout label="Support margin" value={Math.max(0, supportMargin)} unit="%" decimals={1} status={supportMargin < 10 ? 'fault' : supportMargin < 20 ? 'warn' : 'ok'} />
+              <DigitalReadout label="UPS rating" value={ups.kva} unit="kVA" decimals={1} status="info" caption={`Critical load ÷ PF at ${Math.round(UPS_MAX_LOADING * 100)} % loading`} />
+              <DigitalReadout label="UPS battery" value={ups.wh / 1000} unit="kWh" decimals={2} status="info" caption={`${Math.round(CHEM_DOD[inputs.batteryChemistry] * 100)} % usable, ${Math.round(UPS_DISCHARGE_EFFICIENCY * 100)} % efficiency (assumed)`} />
+              <DigitalReadout label="Support margin" value={Math.max(0, supportMargin)} unit="%" decimals={1} status={supportMargin < 10 ? 'fault' : supportMargin < 20 ? 'warn' : 'ok'} caption="Of the site-derated rating" />
             </div>
           </CockpitPanel>
 

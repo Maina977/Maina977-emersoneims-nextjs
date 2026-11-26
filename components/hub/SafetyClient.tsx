@@ -11,7 +11,7 @@ import { KPICard, formatValue, statusPalette, type StatusKey } from '@/component
  * clearance, PPE and the fire-class extinguisher matrix.
  */
 
-interface SafetyInput {
+export interface SafetyInput {
   chemistry: 'lifepo4' | 'nmc' | 'agm' | 'flooded';
   bankKwh: number;
   roomVolumeM3: number;
@@ -51,7 +51,12 @@ const CHEM: Record<SafetyInput['chemistry'], ChemProfile> = {
 
 interface Risk { severity: 'success' | 'info' | 'warning' | 'danger'; title: string; detail: string }
 
-function evaluate(i: SafetyInput): { risks: Risk[]; score: number; chem: ChemProfile } {
+/** Baseline natural ventilation assumed for the room: 4 air changes per hour (an assumption, stated in the result). */
+export const ROOM_AIR_CHANGES_PER_HOUR = 4;
+/** 1 ft³/min = 0.028317 m³ × 60 = 1.699 m³/h. */
+export const M3H_PER_CFM = 1.699;
+
+export function evaluate(i: SafetyInput): { risks: Risk[]; score: number; chem: ChemProfile } {
   const chem = CHEM[i.chemistry];
   const risks: Risk[] = [];
 
@@ -62,9 +67,13 @@ function evaluate(i: SafetyInput): { risks: Risk[]; score: number; chem: ChemPro
 
   // 2. Ventilation for lead-acid
   const requiredCfm = chem.needsHydrogenVent ? Math.max(50, i.bankKwh * 6) : Math.max(30, i.bankKwh * 2);
-  const roomCfm = i.roomVolumeM3 * 4; // 4 ACH baseline
+  // 4 air changes per hour of the room volume is m³/h, not CFM: convert
+  // (1 CFM = 1.699 m³/h). Audit 2026-11-26: the m³/h figure was shown and
+  // compared as CFM, overstating the room's ventilation 1.7x, so an
+  // under-ventilated lead-acid room could pass the hydrogen check.
+  const roomCfm = (i.roomVolumeM3 * ROOM_AIR_CHANGES_PER_HOUR) / M3H_PER_CFM;
   if (chem.needsHydrogenVent && roomCfm < requiredCfm) {
-    risks.push({ severity: 'danger', title: 'Insufficient hydrogen ventilation', detail: `Need ≥ ${formatValue(requiredCfm, { unit: 'CFM' })}; room provides ≈ ${formatValue(roomCfm, { unit: 'CFM' })}.` });
+    risks.push({ severity: 'danger', title: 'Insufficient hydrogen ventilation', detail: `Need ≥ ${formatValue(requiredCfm, { unit: 'CFM' })} (screening rule; IEC 62485-2 gives the exact figure for the charger and cells); room provides ≈ ${formatValue(roomCfm, { unit: 'CFM' })} at an assumed ${ROOM_AIR_CHANGES_PER_HOUR} air changes per hour.` });
   } else if (!chem.needsHydrogenVent && i.ambientC > 35 && roomCfm < requiredCfm) {
     risks.push({ severity: 'warning', title: 'Heat-removal ventilation low', detail: `Ambient ${i.ambientC} °C — increase ACH or add forced ventilation.` });
   }
