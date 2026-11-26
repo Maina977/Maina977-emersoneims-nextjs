@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { limitPaidKeyRoute } from '@/lib/security/requestGuard';
 import { licensedOpenMeteoUrl, OPEN_METEO_DISABLED_MESSAGE } from '@/lib/data-sources/openMeteo';
 import { fetchLocationforecast, toWeatherResponse } from '@/lib/data-sources/metNorway';
 
@@ -7,9 +8,12 @@ import { fetchLocationforecast, toWeatherResponse } from '@/lib/data-sources/met
 const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast';
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ lat: string; lon: string }> }
 ) {
+  // Paid/quota API key behind this route: per-IP limit (security sweep 2026-11-26; lib/security/requestGuard.ts).
+  const limited = limitPaidKeyRoute(req, 'weather', 30);
+  if (limited) return limited;
   const { lat: latStr, lon: lonStr } = await params;
   const lat = parseFloat(latStr);
   const lon = parseFloat(lonStr);

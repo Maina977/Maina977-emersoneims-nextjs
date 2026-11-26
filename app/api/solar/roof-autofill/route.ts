@@ -37,10 +37,24 @@ function computePolygonAreaM2(coords: [number, number][]): number {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { lat, lon, searchRadiusM = 50, assumedPitchDegrees = 15 } = body;
+    const { lat, lon } = body;
+    // Security sweep 2026-11-26: searchRadiusM was written into the Overpass
+    // query unvalidated (Overpass QL injection; one bad query also opened the
+    // shared Overpass circuit breaker for every user of this instance), and
+    // assumedPitchDegrees was echoed unvalidated. Both must be finite numbers
+    // in range; lat/lon must be real coordinates.
+    const searchRadiusM = body.searchRadiusM === undefined ? 50 : body.searchRadiusM;
+    const assumedPitchDegrees = body.assumedPitchDegrees === undefined ? 15 : body.assumedPitchDegrees;
 
-    if (typeof lat !== 'number' || typeof lon !== 'number') {
+    if (typeof lat !== 'number' || typeof lon !== 'number' || !Number.isFinite(lat) || !Number.isFinite(lon)
+      || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
       return NextResponse.json({ error: 'lat and lon must be numbers' }, { status: 400 });
+    }
+    if (typeof searchRadiusM !== 'number' || !Number.isFinite(searchRadiusM) || searchRadiusM < 5 || searchRadiusM > 200) {
+      return NextResponse.json({ error: 'searchRadiusM must be a number from 5 to 200' }, { status: 400 });
+    }
+    if (typeof assumedPitchDegrees !== 'number' || !Number.isFinite(assumedPitchDegrees) || assumedPitchDegrees < 0 || assumedPitchDegrees > 60) {
+      return NextResponse.json({ error: 'assumedPitchDegrees must be a number from 0 to 60' }, { status: 400 });
     }
 
     const query = `

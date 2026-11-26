@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { ipHeaders, limitPaidKeyRoute } from '@/lib/security/requestGuard';
 
 interface WeatherRequest {
   latitude: number;
@@ -74,6 +75,9 @@ function getEfficiencyFromClouds(cloudCover: number): number {
 }
 
 export async function POST(request: NextRequest) {
+  // Paid/quota API key behind this route: per-IP limit (security sweep 2026-11-26; lib/security/requestGuard.ts).
+  const limited = limitPaidKeyRoute(request, 'solar-weather', 30);
+  if (limited) return limited;
   try {
     const body: WeatherRequest = await request.json();
     const { latitude, longitude, type = 'current' } = body;
@@ -259,7 +263,7 @@ export async function GET(request: NextRequest) {
   const mockRequest = new Request(request.url, {
     method: 'POST',
     body: JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...ipHeaders(request) },
   });
 
   return POST(mockRequest as NextRequest);
