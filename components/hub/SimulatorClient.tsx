@@ -142,13 +142,24 @@ export function generatorOverloaded(peakKw: number, ratedKva: number, deratePct:
 }
 
 /**
- * Fuel at 75 % load (0.27 L/kWh, a typical specific consumption) and, from
+ * ASSUMED specific fuel consumption of a diesel set at 75 % load, L per kWh
+ * generated. No datasheet is cited, so it is shown on screen as an
+ * assumption (review 2026-11-26, R7). It is lower than the solar
+ * calculator's DIESEL_L_PER_KWH (0.35, lib/solar/sizing.ts) on purpose: that
+ * figure is for a SMALL set at PART load, where consumption per kWh is
+ * higher; this one is for a set sized for the site at 75 % load. Replace
+ * with the chosen set's datasheet curve.
+ */
+export const GEN_SFC_L_PER_KWH_AT_75 = 0.27;
+
+/**
+ * Fuel at 75 % load (GEN_SFC_L_PER_KWH_AT_75, an assumption) and, from
  * the "Runtime/day" input, litres per day and days per tank. Audit
  * 2026-11-26 follow-up: Runtime/day was an input nothing read.
  */
 export function sizeFuel(i: Pick<Inputs, 'fuelTankL' | 'hoursPerDay'>, ratedKva: number) {
   const kwAt75 = ratedKva * GEN_RATED_PF * 0.75;
-  const lph = kwAt75 * 0.27;
+  const lph = kwAt75 * GEN_SFC_L_PER_KWH_AT_75;
   const runtimeH = i.fuelTankL / Math.max(lph, 0.1);
   const hours = Math.max(0, Math.min(24, i.hoursPerDay));
   const litresPerDay = lph * hours;
@@ -233,14 +244,20 @@ export function bankRuntimeMin(bankKwh: number, socPct: number, dod: number, loa
 
 /**
  * Headroom of the generator at THIS site: its rating derated for altitude and
- * ambient, less the peak kVA, as a share of the derated capacity. Audit
- * 2026-11-26: the margin used the nameplate kVA, overstating headroom at
- * altitude.
+ * ambient, as a share of the derated capacity, on whichever limit binds,
+ * kVA or kW (kVA × 0.8). Audit 2026-11-26: the margin used the nameplate kVA,
+ * overstating headroom at altitude. Review 2026-11-26: it compared kVA only
+ * and the caller left out the battery-charging draw, so at PF 1.0 160 kW on
+ * 250 kVA showed 36 % while the kW headroom is 20 %. Pass the peak INCLUDING
+ * charging.
  */
 export function supportMarginPct(ratedKva: number, deratePct: number, peakLoadKw: number, powerFactor: number): number {
   const availableKva = ratedKva * (1 - deratePct / 100);
+  const availableKw = availableKva * GEN_RATED_PF;
   const peakKva = peakLoadKw / Math.max(0.6, Math.min(1, powerFactor));
-  return ((availableKva - peakKva) / Math.max(availableKva, 1)) * 100;
+  const kvaMargin = (availableKva - peakKva) / Math.max(availableKva, 1);
+  const kwMargin = (availableKw - peakLoadKw) / Math.max(availableKw, 1);
+  return Math.min(kvaMargin, kwMargin) * 100;
 }
 
 /* ────────── component ────────── */
@@ -308,7 +325,7 @@ export default function SimulatorClient() {
   const lineI = (loadKva * 1000) / (Math.sqrt(3) * lineV);
   const socPct = comp.batteries === 0 ? 0 : Math.max(20, 78 - (lowBattery ? 35 : 0));
   const runtimeMin = bankRuntimeMin(syntheticBankKwh(comp), socPct, CHEM_DOD[inputs.batteryChemistry], liveLoadKw);
-  const supportMargin = supportMarginPct(gen.ratedKva, gen.derate, effectiveInputs.peakLoadKw, inputs.powerFactor);
+  const supportMargin = supportMarginPct(gen.ratedKva, gen.derate, effectiveInputs.peakLoadKw + gen.chargeDrawKw, inputs.powerFactor);
 
   const pq: PowerQuality = {
     thdPct: Math.min(
@@ -578,12 +595,13 @@ export default function SimulatorClient() {
             </div>
             <div className="grid grid-cols-2 gap-3 mt-6">
               <DigitalReadout label="Required (pre-derate)" value={gen.requiredKva} unit="kVA" decimals={0} status="info" />
-              <DigitalReadout label="Fuel burn @ 75 %" value={fuel.lph} unit="L/h" decimals={1} status="info" />
+              <DigitalReadout label="Fuel burn @ 75 %" value={fuel.lph} unit="L/h" decimals={1} status="info"
+                caption={`Assumed ${GEN_SFC_L_PER_KWH_AT_75} L/kWh at 75 % of the ${formatValue(gen.ratedKva * GEN_RATED_PF, { unit: 'kW', decimals: 0 })} rating (no datasheet cited; use the set's fuel curve)`} />
               <DigitalReadout label="Tank runtime" value={fuel.runtimeH} unit="h" decimals={1} status={fuel.runtimeH < 12 ? 'warn' : 'ok'}
                 caption={Number.isFinite(fuel.tankDays) ? `${formatValue(fuel.litresPerDay, { unit: 'L/day', decimals: 0 })} at ${inputs.hoursPerDay} h/day · ≈ ${fuel.tankDays.toFixed(1)} days per tank` : 'Set Runtime/day for litres per day'} />
               <DigitalReadout label="UPS rating" value={ups.kva} unit="kVA" decimals={1} status="info" caption={`Critical load ÷ PF at ${Math.round(UPS_MAX_LOADING * 100)} % loading`} />
               <DigitalReadout label="UPS battery" value={ups.wh / 1000} unit="kWh" decimals={2} status="info" caption={`${Math.round(CHEM_DOD[inputs.batteryChemistry] * 100)} % usable, ${Math.round(UPS_DISCHARGE_EFFICIENCY * 100)} % efficiency (assumed)`} />
-              <DigitalReadout label="Support margin" value={Math.max(0, supportMargin)} unit="%" decimals={1} status={supportMargin < 10 ? 'fault' : supportMargin < 20 ? 'warn' : 'ok'} caption="Of the site-derated rating" />
+              <DigitalReadout label="Support margin" value={Math.max(0, supportMargin)} unit="%" decimals={1} status={supportMargin < 10 ? 'fault' : supportMargin < 20 ? 'warn' : 'ok'} caption="Of the site-derated rating, kVA or kW (× 0.8), whichever is tighter; peak includes battery charging" />
             </div>
           </CockpitPanel>
 

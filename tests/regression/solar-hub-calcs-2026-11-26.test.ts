@@ -101,8 +101,13 @@ describe('Hub Smart Sizing simulator', () => {
     const g = sizeGenerator({ ...DEFAULTS, batteryBankKwh: 20 });
     expect(g.derate).toBeCloseTo(8.2, 6);
     expect(g.ratedKva).toBe(400);
-    // available 400 × 0.918 = 367.2 kVA; peak 160 / 0.85 = 188.24 kVA → (367.2 − 188.24)/367.2 = 48.74 %
-    expect(supportMarginPct(400, 8.2, 160, 0.85)).toBeCloseTo(48.74, 2);
+    // available 400 × 0.918 = 367.2 kVA; peak 160 / 0.85 = 188.24 kVA → kVA margin (367.2 − 188.24)/367.2 = 48.74 %.
+    // Review follow-up: the kW limit binds — 367.2 × 0.8 = 293.76 kW; (293.76 − 160)/293.76 = 45.53 %.
+    expect(supportMarginPct(400, 8.2, 160, 0.85)).toBeCloseTo(45.53, 2);
+    // With the 4 kW charging draw (as the screen now passes): (293.76 − 164)/293.76 = 44.17 %.
+    expect(supportMarginPct(400, 8.2, 164, 0.85)).toBeCloseTo(44.17, 2);
+    // Reviewer case, PF 1.0: 160 kW on 250 kVA, no derate: kVA 36 %, kW (200 − 160)/200 = 20 % → 20 %.
+    expect(supportMarginPct(250, 0, 160, 1)).toBeCloseTo(20, 6);
   });
 });
 
@@ -197,14 +202,15 @@ describe('Verified CORRECT (no change): hand-worked checks of the core engines',
     expect(r.pvKwp).toBe(6.6);
     expect(r.batteryKwh).toBe(24.7);
   });
-  it('voltage drop: DC 2 × I × L × ρ ÷ A; three-phase √3 × I × L × ρ ÷ A', () => {
-    // 48 V, 100 A, 10 m, 35 mm², 20 °C: 2 × 100 × 10 × 0.01724 ÷ 35 = 0.985 V = 2.05 %
+  it('voltage drop (superseded by R3 below): tabulated BS 7671 4D1B mV/A/m for tabulated copper sizes', () => {
+    // 48 V, 100 A, 10 m, 35 mm² DC in conduit: 4D1B col 2 = 1.25 mV/A/m → 1.25 × 100 × 10 / 1000 = 1.25 V = 2.60 %
+    // (the old rho/A formula at 20 °C gave 0.985 V: resistive only, at 20 °C instead of 70 °C).
     const d = eng.voltageDrop({ systemType: 'dc', currentA: 100, voltageV: 48, oneWayLengthM: 10, csaMm2: 35, ambientTempC: 20 });
-    expect(d.dropV).toBeCloseTo(0.985, 3);
-    expect(d.dropPct).toBeCloseTo(2.052, 2);
-    // 400 V, 50 A, 50 m, 16 mm², 20 °C: 1.732 × 50 × 50 × 0.01724 ÷ 16 = 4.666 V = 1.17 %
+    expect(d.dropV).toBeCloseTo(1.25, 3);
+    expect(d.dropPct).toBeCloseTo(2.604, 2);
+    // 400 V, 50 A, 50 m, 16 mm² three-phase: 4D1B col 6 = 2.4 → 2.4 × 50 × 50 / 1000 = 6.0 V = 1.5 %
     const t = eng.voltageDrop({ systemType: 'ac_three_phase', currentA: 50, voltageV: 400, oneWayLengthM: 50, csaMm2: 16, ambientTempC: 20 });
-    expect(t.dropV).toBeCloseTo(4.666, 2);
+    expect(t.dropV).toBeCloseTo(6.0, 3);
   });
   it('AC breaker = next standard ≥ 1.25 × I; 50 kW at 400 V three-phase → 72.2 A × 1.25 = 90.2 → 100 A', () => {
     const o = eng.ocpdSizing({ panelIscStc: 13.9, stringsInParallel: 3, inverterAcKw: 50, acVoltageV: 400, phases: 3 });
@@ -257,5 +263,190 @@ describe('Smart Sizing follow-up: generator overload alarm, kW limit, Runtime/da
   });
   it('the dead wire table is marked do-not-use', () => {
     expect(read('components/solar/SolarBibleEngine.tsx')).toMatch(/DO NOT USE \(audit 2026-11-26\)[\s\S]*PHYSICALLY WRONG/);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════════
+// Independent review 2026-11-26, residual items R1-R8 (REVIEW-SOLAR-HUB.md)
+// ═════════════════════════════════════════════════════════════════════════
+
+describe('R1/R2: UPS Lab rejects deliberately overloaded systems as a FAULT', () => {
+  // Eaton 9PX 6 kVA: rated 6 × 0.9 = 5,400 W and 6,000 VA; surge allowance 1.05 × 5,400 = 5,670 W.
+  // Vertiv APM 20 kVA: rated 20 × 0.95 = 19,000 W and 20,000 VA; surge allowance 19,950 W.
+  // Loads: heater 2,000 W pf 1.0 ×1.0; cooker 2,400 W pf 1.0 ×1.0; LED bulb 9 W pf 0.9 ×1.0; server 600 W pf 0.95 ×1.3.
+  type L = { kind: 'heater' | 'cooker' | 'led-bulb' | 'server'; qty: number };
+  const eaton = (loads: L[]) => upsLabCompute({ ups: [{ modelId: 'eaton-9px-6', qty: 1 }], loads, mainsPresent: true });
+  const vertiv = (loads: L[]) => upsLabCompute({ ups: [{ modelId: 'vertiv-apm-20', qty: 1 }], loads, mainsPresent: true });
+  const fault = (r: ReturnType<typeof eaton>) => r.isOverloaded && r.signals.some((x) => x.id === 'overload' && x.severity === 'fault');
+
+  it('101 % of rated W → FAULT (was only the > 85 % warning)', () => {
+    // 2 heaters 4,000 W + 162 LEDs 1,458 W = 5,458 W = 101.1 % of 5,400 W.
+    // VA = 4,000 + 1,458 / 0.9 = 5,620 VA (93.7 %); surge = 5,458 W (no inrush) < 5,670 W.
+    const r = eaton([{ kind: 'heater', qty: 2 }, { kind: 'led-bulb', qty: 162 }]);
+    expect(r.loadContinuousW).toBe(5458);
+    expect(r.loadVa).toBeCloseTo(5620, 6);
+    expect(fault(r)).toBe(true);
+    expect(r.overloadReasons).toHaveLength(1);
+    expect(r.overloadReasons[0]).toMatch(/^continuous/);
+  });
+  it('105 % of rated W (just under the surge allowance) → FAULT', () => {
+    // heater 2,000 + cooker 2,400 + 141 LEDs 1,269 = 5,669 W = 104.98 %; surge 5,669 ≤ 5,670 (surge rule silent);
+    // VA = 4,400 + 1,410 = 5,810 VA (96.8 %). Only the continuous-W limit catches it.
+    const r = eaton([{ kind: 'heater', qty: 1 }, { kind: 'cooker', qty: 1 }, { kind: 'led-bulb', qty: 141 }]);
+    expect(r.loadContinuousW).toBe(5669);
+    expect(fault(r)).toBe(true);
+    expect(r.overloadReasons.map((x) => x.split(' ')[0])).toEqual(['continuous']);
+  });
+  it('150 % of rated W → FAULT on every limit', () => {
+    // 4 heaters 8,000 + 11 LEDs 99 = 8,099 W = 150.0 %; VA = 8,000 + 110 = 8,110 VA (135 %); surge 8,099 > 5,670.
+    const r = eaton([{ kind: 'heater', qty: 4 }, { kind: 'led-bulb', qty: 11 }]);
+    expect(r.loadContinuousW).toBe(8099);
+    expect(fault(r)).toBe(true);
+    expect(r.overloadReasons.map((x) => x.split(' ')[0])).toEqual(['surge', 'continuous', 'apparent']);
+  });
+  it('exactly 100 % of rated W and VA is AT the limit and passes; one more bulb faults', () => {
+    // 600 LEDs = 5,400 W (100.0 %) and 600 × 10 = 6,000 VA (100.0 %); surge 5,400 ≤ 5,670. Rule: ≤ 100 % passes, > 100 % faults.
+    const at = eaton([{ kind: 'led-bulb', qty: 600 }]);
+    expect(at.loadContinuousW).toBe(5400);
+    expect(at.loadVa).toBeCloseTo(6000, 6);
+    expect(at.isOverloaded).toBe(false);
+    // 601 LEDs = 5,409 W (100.17 %) and 6,010 VA → FAULT on both.
+    const over = eaton([{ kind: 'led-bulb', qty: 601 }]);
+    expect(fault(over)).toBe(true);
+    expect(over.overloadReasons.map((x) => x.split(' ')[0])).toEqual(['continuous', 'apparent']);
+  });
+  it('Vertiv APM 20 kVA with 2,216 LEDs: 19,944 W, 22,160 VA (110.8 %) → FAULT', () => {
+    // 2,216 × 9 = 19,944 W (> 19,000 W rated: 105.0 %), 19,944 / 0.9 = 22,160 VA = 110.8 % of 20,000 VA;
+    // surge 19,944 ≤ 19,950, so the old surge-only check passed it.
+    const r = vertiv([{ kind: 'led-bulb', qty: 2216 }]);
+    expect(r.loadVa).toBeCloseTo(22160, 6);
+    expect(fault(r)).toBe(true);
+    expect(r.overloadReasons.some((x) => /^apparent/.test(x))).toBe(true);
+  });
+  it('inside rated W but over rated VA → still FAULT (VA alone)', () => {
+    // 2,100 LEDs = 18,900 W (99.5 % of 19,000 W), 21,000 VA (105 % of 20,000 VA), surge 18,900 < 19,950.
+    const r = vertiv([{ kind: 'led-bulb', qty: 2100 }]);
+    expect(fault(r)).toBe(true);
+    expect(r.overloadReasons.map((x) => x.split(' ')[0])).toEqual(['apparent']);
+  });
+  it('inside rated W and VA but over the surge allowance → still FAULT (surge alone)', () => {
+    // 8 servers = 4,800 W (88.9 %), VA = 4,800 / 0.95 = 5,053 VA (84.2 %);
+    // surge = 4,800 + 4,800 × 0.3 = 6,240 W > 5,670 W.
+    const r = eaton([{ kind: 'server', qty: 8 }]);
+    expect(r.loadStartingW).toBe(6240);
+    expect(fault(r)).toBe(true);
+    expect(r.overloadReasons.map((x) => x.split(' ')[0])).toEqual(['surge']);
+  });
+  it('just inside EVERY modelled limit → no fault', () => {
+    // Vertiv, 2,000 LEDs = 18,000 W (94.7 %), 20,000 VA (100.0 %, at the limit), surge 18,000 ≤ 19,950.
+    const r = vertiv([{ kind: 'led-bulb', qty: 2000 }]);
+    expect(r.isOverloaded).toBe(false);
+    expect(r.signals.some((x) => x.severity === 'fault')).toBe(false);
+    // Eaton, 7 servers = 4,200 W, 4,421 VA, surge 4,200 × 1.3 = 5,460 ≤ 5,670.
+    expect(eaton([{ kind: 'server', qty: 7 }]).isOverloaded).toBe(false);
+  });
+  it('limits the catalogue cannot check (overload curve, ambient, altitude) are said on screen, not assumed', () => {
+    const src = read('components/hub/UpsLabClient.tsx');
+    expect(src).toContain('{UPS_LIMITS_NOTE}');
+    expect(src).toMatch(/NOT checked: the manufacturer’s overload-versus-time curve, ambient-temperature and altitude derating/);
+    expect(src).toMatch(/exactly 100 % passes, above faults/);
+  });
+});
+
+describe('R8: the staggered-start surge assumption is stated, with the simultaneous figure', () => {
+  it('7 servers + 2 fridges: staggered 5,860 W; all at once Σ W × startMult = 5,460 + 1,600 = 7,060 W', () => {
+    const r = upsLabCompute({ ups: [{ modelId: 'eaton-9px-6', qty: 1 }], loads: [{ kind: 'server', qty: 7 }, { kind: 'fridge', qty: 2 }], mainsPresent: true });
+    expect(r.loadStartingW).toBe(5860);
+    expect(r.loadSimultaneousStartW).toBe(7060);
+    expect(read('components/hub/UpsLabClient.tsx')).toMatch(/assuming load groups start one at a time; all at once:/);
+  });
+});
+
+describe('R3: voltage drop uses BS 7671 Tables 4D1B / 4D2B (reactance + stranded resistance)', () => {
+  it('reviewer case: 95 mm², 200 A, 100 m, three-phase 400 V in conduit = 0.48 mV/A/m → 9.6 V = 2.40 %', () => {
+    // 4D1B col 6 (3 or 4 single-core cables, enclosed) z = 0.48: 0.48 × 200 × 100 / 1000 = 9.6 V; 9.6 / 400 = 2.40 %.
+    // The old formula: √3 × 200 × 100 × 0.02063 / 95 = 7.52 V = 1.88 %.
+    const d = eng.voltageDrop({ systemType: 'ac_three_phase', currentA: 200, voltageV: 400, oneWayLengthM: 100, csaMm2: 95, ambientTempC: 70 });
+    expect(d.dropV).toBeCloseTo(9.6, 3);
+    expect(d.dropPct).toBeCloseTo(2.4, 3);
+    expect(d.basis).toMatch(/4D1B/);
+    // Free air (multicore, 4D2B col 4) z = 0.43: 8.6 V = 2.15 %.
+    expect(eng.voltageDrop({ systemType: 'ac_three_phase', currentA: 200, voltageV: 400, oneWayLengthM: 100, csaMm2: 95, installMethod: 'free_air' }).dropV).toBeCloseTo(8.6, 3);
+  });
+  it('single-phase 25 mm², 80 A, 40 m in conduit: 4D1B col 3 z = 1.80 → 5.76 V = 2.50 % of 230 V', () => {
+    const d = eng.voltageDrop({ systemType: 'ac_single_phase', currentA: 80, voltageV: 230, oneWayLengthM: 40, csaMm2: 25 });
+    expect(d.dropV).toBeCloseTo(5.76, 3);
+    expect(d.dropPct).toBeCloseTo(2.504, 2);
+  });
+  it('cable selection follows the table: 200 A, 100 m, three-phase, 2 % limit → 150 mm² (old formula passed 95 mm²)', () => {
+    // 95: 0.48 → 2.40 % > 2; 120: 0.41 × 200 × 100 / 1000 = 8.2 V = 2.05 % > 2; 150: 0.36 → 7.2 V = 1.80 % ≤ 2.
+    const r = eng.recommendConductor({ systemType: 'ac_three_phase', currentA: 200, voltageV: 400, oneWayLengthM: 100, installMethod: 'conduit', maxVoltDropPct: 2 });
+    expect(r.recommendedCsaMm2).toBe(150);
+    expect(r.voltageDropPct).toBeCloseTo(1.8, 3);
+    expect(r.assumptions.join(' ')).toMatch(/BS 7671:2018 Table 4D1B/);
+  });
+  it('aluminium is screened conservatively (copper z × 1.64); untabulated sizes say reactance is NOT included', () => {
+    // 16 mm² Al single-phase, 20 A, 10 m: 2.8 × (0.02826/0.01724 = 1.6392) = 4.590 mV/A/m → 0.918 V.
+    const al = eng.voltageDrop({ systemType: 'ac_single_phase', currentA: 20, voltageV: 230, oneWayLengthM: 10, csaMm2: 16, conductorMaterial: 'aluminium' });
+    expect(al.dropV).toBeCloseTo(0.918, 3);
+    // 400 mm² is not in Table 4D1B as carried: resistive fallback, stated.
+    const big = eng.voltageDrop({ systemType: 'ac_three_phase', currentA: 100, voltageV: 400, oneWayLengthM: 10, csaMm2: 400, ambientTempC: 70 });
+    expect(big.basis).toMatch(/reactance NOT included/);
+  });
+});
+
+describe('R5: unsourced free-air 500 / 630 mm² ratings are not used', () => {
+  it('800 A DC in free air: 400 mm² (715 A, 4D2A col 8) is too small and nothing larger is sourced → no recommendation', () => {
+    // Old: 500 mm² "826 A" (no source) was recommended.
+    const r = eng.recommendConductor({ systemType: 'dc', currentA: 800, voltageV: 400, oneWayLengthM: 1, installMethod: 'free_air', maxVoltDropPct: 10 });
+    expect(r.recommendedCsaMm2).toBeNull();
+    // 700 A still gets the sourced 400 mm² (715 A).
+    expect(eng.recommendConductor({ systemType: 'dc', currentA: 700, voltageV: 400, oneWayLengthM: 1, installMethod: 'free_air', maxVoltDropPct: 10 }).recommendedCsaMm2).toBe(400);
+  });
+});
+
+describe('R4: table citations', () => {
+  it('PVC two-loaded = B.52.2, three-loaded = B.52.4; B.52.5 (XLPE) is no longer cited', () => {
+    const se = read('lib/solar-genius/server/solar-engineering.js');
+    const ea = read('lib/solar-genius/server/engineering-approval.js');
+    expect(se).toMatch(/Table B\.52\.2 \(PVC, copper, TWO loaded conductors\)/);
+    expect(se).toMatch(/Table B\.52\.4 \(PVC, copper, method B1, 30 °C\), THREE loaded/);
+    expect(se + ea).not.toMatch(/B\.52\.5/);
+    expect(ea).toMatch(/Table B\.52\.2 \(PVC, two loaded conductors/);
+  });
+});
+
+describe('R6: derating module (not online) rounds every lookup conservatively', () => {
+  it('A1 1.5 mm² = 13.5 A (BS 7671 4D1A col 3)', () => {
+    expect(approval.cableAmpacityDerated({ csaMm2: 1.5, installationMethod: 'A1', ambientC: 30, insulationType: 'PVC' }).baseAmpacityA).toBe(13.5);
+  });
+  it('soil 2.2 K·m/W takes the 2.5 row (0.89), not 2.0 (0.94); beyond 3.0 is refused', () => {
+    // D 10 mm² PVC, 20 °C ground (1.00): 63 × 0.89 = 56.07 A (old 63 × 0.94 = 59.22 A).
+    const r = approval.cableAmpacityDerated({ csaMm2: 10, installationMethod: 'D', ambientC: 20, soilThermalResistivityKMPerW: 2.2, insulationType: 'PVC' });
+    expect(r.deratedAmpacityA).toBeCloseTo(56.07, 2);
+    expect(() => approval.cableAmpacityDerated({ csaMm2: 10, installationMethod: 'D', ambientC: 20, soilThermalResistivityKMPerW: 3.5, insulationType: 'PVC' })).toThrow(/soil survey/);
+  });
+  it('buried grouping uses B.52.18 (touching): 2 circuits 0.75, not the in-air 0.80; more than 6 is refused', () => {
+    // D 10 mm² PVC, 20 °C ground, soil 1.5 (1.00): 63 × 0.75 = 47.25 A (old 63 × 0.80 = 50.4 A).
+    const r = approval.cableAmpacityDerated({ csaMm2: 10, installationMethod: 'D', ambientC: 20, groupedCircuits: 2, soilThermalResistivityKMPerW: 1.5, insulationType: 'PVC' });
+    expect(r.deratedAmpacityA).toBeCloseTo(47.25, 2);
+    expect(() => approval.cableAmpacityDerated({ csaMm2: 10, installationMethod: 'D', groupedCircuits: 7 })).toThrow(/B\.52\.18/);
+    // In air the B.52.17 row is unchanged: C 6 mm², 2 circuits → 46 × 0.80 = 36.8 A.
+    expect(approval.cableAmpacityDerated({ csaMm2: 6, installationMethod: 'C', ambientC: 30, groupedCircuits: 2, insulationType: 'PVC' }).deratedAmpacityA).toBeCloseTo(36.8, 2);
+  });
+});
+
+describe('R7: the generator fuel figure is one labelled assumption', () => {
+  it('0.27 L/kWh at 75 % is a named constant, shown on screen as assumed, and reconciled with the 0.35 small-set figure', async () => {
+    const { GEN_SFC_L_PER_KWH_AT_75 } = await import('@/components/hub/SimulatorClient');
+    const { DIESEL_L_PER_KWH } = await import('@/lib/solar/sizing');
+    expect(GEN_SFC_L_PER_KWH_AT_75).toBe(0.27);
+    expect(DIESEL_L_PER_KWH).toBe(0.35);
+    const src = read('components/hub/SimulatorClient.tsx');
+    expect(src).toMatch(/caption=\{`Assumed \$\{GEN_SFC_L_PER_KWH_AT_75\} L\/kWh at 75 %/);
+    expect(src).toMatch(/SMALL set at PART load/);
+    expect(src).not.toMatch(/kwAt75 \* 0\.27/);
+    // 400 kVA: 400 × 0.8 × 0.75 = 240 kW × 0.27 = 64.8 L/h (unchanged arithmetic).
+    expect(sizeFuel({ fuelTankL: 500, hoursPerDay: 8 }, 400).lph).toBeCloseTo(64.8, 6);
   });
 });
