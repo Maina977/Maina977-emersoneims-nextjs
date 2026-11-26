@@ -71,7 +71,10 @@ describe('form delivery outside production', () => {
     for (const path of ['@/app/api/notifications/route', '@/app/api/notifications/new-lead/route']) {
       const { POST } = await import(path);
       const res = await POST(new NextRequest('http://localhost/x', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }));
-      expect((await res.json()).mock).toBe(true);
+      // new-lead was retired in the security sweep (2026-11-26): it now refuses
+      // everywhere with 410 and sends nothing, which also satisfies this guard.
+      if (path.endsWith('new-lead/route')) expect(res.status).toBe(410);
+      else expect((await res.json()).mock).toBe(true);
     }
     expect(fetchMock).not.toHaveBeenCalled();
     expect(sendMail).not.toHaveBeenCalled();
