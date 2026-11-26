@@ -16,7 +16,7 @@ export const REFUSED_UNIT_ALL = 'STOP — protective value entered without its u
  * tab never releases it; only a valid value in the same field, a recorded clearance or the phrase does.
  */
 export const refusedHoldKey = (familyId: string, field: string) => `${familyId}|refused-value|${field}`;
-export const refusedHoldText = (field: string) => `STOP — protective value refused (${field}): value removed or refused — enter a valid value, record a clearance, or write "Readings not taken: STOP in force".`;
+export const refusedHoldText = (field: string) => `STOP — protective value refused (${field}): value removed or refused — enter a valid value, record a clearance, or record "readings not taken — STOP in force" on the job card.`;
 /** The protective fields of a family (readings and limits of its protective limits). */
 export function protectiveFields(family: FaultFamily): string[] {
   return [...new Set((family.limits ?? []).filter((l) => l.protective).flatMap((l) => [l.reading, l.limit]))];

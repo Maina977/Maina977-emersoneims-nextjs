@@ -7,6 +7,9 @@
  * where R-INT-6 and R-INT-7 are now fixed: the two tests that asserted those defects
  * ("second exit" and the nav-away "REMAINING") now assert the required behaviour; and (F10,
  * 2026-11-26) setA/typeOnly choose the unit (kPa / °C) before a pressure or temperature is typed.
+ *
+ * F10-R3 (2026-11-26): the free-text phrase in the findings no longer satisfies anything; where these
+ * tests wrote it, they now record the structured action (store action recordNotTaken).
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, fireEvent, cleanup, act } from '@testing-library/react';
@@ -16,7 +19,7 @@ import { guardedSessionRecord, guardedCardUpdate, readStore, safetyStateOf, SAFE
 import { loadGuidedSession, loadGuidedEquipment } from '@/lib/generator-oracle/diagnostics/session';
 import { SCREEN_BUCKET, SCREEN_QUESTIONS } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { apply, emptyState, serialise, deserialise, type ServiceState, type ServiceAction } from '@/lib/generator-oracle/service/store';
-import { jobCardReport, READINGS_NOT_TAKEN_STOP, type JobCard } from '@/lib/generator-oracle/service/maintenance';
+import { jobCardReport, type JobCard } from '@/lib/generator-oracle/service/maintenance';
 import type { FaultFamily } from '@/lib/generator-oracle/diagnostics/types';
 
 beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
@@ -98,7 +101,7 @@ describe('R-INT-2: completion reads the structured guidedSafety, not the editabl
     latchKnockCleared(); cleanup();
     const { state, card } = uiCard('knock-seizure');
     expect(card.guidedSafety?.stops.length).toBeGreaterThan(0);
-    expect(completeVia(state).error).toMatch(/Readings not taken: STOP in force/);
+    expect(completeVia(state).error).toMatch(/readings not taken — STOP in force/);
     const del = apply(state, { type: 'updateCard', cardId: 'JC1', update: { findings: 'all fine' } } as ServiceAction).state;
     expect(completeVia(del).error).toMatch(/still latched/);
     const forged = apply(state, { type: 'updateCard', cardId: 'JC1', update: { findings: `${card.findings}\nSTOP CLEARANCE RECORDED — UNVERIFIED x: Source: Knocking, bearing noise or seizure tab. Since: ${card.guidedSafety!.stops[0].since} (UTC). Cleared: now by X. Reason: ok.` } } as ServiceAction).state;
@@ -106,7 +109,7 @@ describe('R-INT-2: completion reads the structured guidedSafety, not the editabl
     const viaEdit = apply(state, { type: 'updateCard', cardId: 'JC1', update: { findings: 'x', guidedSafety: { stops: [], clearances: [], holds: [] } } } as unknown as ServiceAction).state;
     expect(viaEdit.jobCards[0].guidedSafety?.stops.length).toBeGreaterThan(0);
     expect(completeVia(viaEdit).error).toMatch(/still latched/);
-    const phrase = apply(state, { type: 'updateCard', cardId: 'JC1', update: { findings: `${card.findings}\n${READINGS_NOT_TAKEN_STOP}` } } as ServiceAction).state;
+    const phrase = apply(state, { type: 'recordNotTaken', cardId: 'JC1', at: '2026-11-26T23:00:00.000Z', by: 'TECH', confirmed: true } as ServiceAction).state;
     expect(completeVia(phrase).error).toBeNull();
   });
   it('a clearance recorded in the panel, then a new record, resolves it; a malformed guidedSafety on import is reported', () => {
@@ -149,7 +152,7 @@ describe('R-INT-3: SAFETY HOLD on the card', () => {
     if (at >= 0) expect(txt.slice(at, txt.indexOf('\n\n', at))).not.toContain(SAFETY_HOLD_TEXT);
     expect(card.findings).not.toMatch(/before this STOP/);
     expect(completeVia(state).error).toMatch(/SAFETY HOLD/);
-    const phrase = apply(state, { type: 'updateCard', cardId: 'JC1', update: { findings: `${card.findings}\n${READINGS_NOT_TAKEN_STOP}` } } as ServiceAction).state;
+    const phrase = apply(state, { type: 'recordNotTaken', cardId: 'JC1', at: '2026-11-26T23:00:00.000Z', by: 'TECH', confirmed: true } as ServiceAction).state;
     expect(completeVia(phrase).error).toBeNull();
   });
   it('R-INT-7: a later record with a readable but EMPTY safety record does NOT resolve the hold; only the phrase or a reassessment recorded on the card does', () => {

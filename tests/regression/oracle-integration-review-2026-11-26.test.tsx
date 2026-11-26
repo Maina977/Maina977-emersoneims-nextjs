@@ -19,7 +19,7 @@ import {
 } from '@/lib/generator-oracle/diagnostics/stopLatch';
 import { SCREEN_BUCKET, SCREEN_QUESTIONS } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import {
-  LATCHED_STOP_PREFIX, READINGS_NOT_TAKEN_STOP, jobCardReport, mergeGuidedSafety, recordHoldReassessment, openJobCard, transition, cardContentHash,
+  LATCHED_STOP_PREFIX, jobCardReport, mergeGuidedSafety, recordHoldReassessment, recordNotTaken, openJobCard, transition, cardContentHash,
   type Asset, type JobCard,
 } from '@/lib/generator-oracle/service/maintenance';
 import { jobCardToPdf } from '@/lib/generator-oracle/service/jobCardPdf';
@@ -172,7 +172,7 @@ describe('R-INT-2: completion reads the structured safety record, not the editab
     // Emptying the findings entirely does not help either.
     expect(() => complete({ ...card, findings: 'x' }, { readings })).toThrow(/still latched/);
     // The phrase does.
-    expect(complete({ ...card, findings: `${card.findings}\n${READINGS_NOT_TAKEN_STOP}` }).status).toBe('COMPLETED');
+    expect(complete({ ...card, guidedSafety: recordNotTaken(card.guidedSafety, { at: T, by: 'TECH', confirmed: true }) }).status).toBe('COMPLETED');
   });
 
   it('a real clearance recorded in the panel (latch store), recorded again onto the card, allows completion with readings', () => {
@@ -223,7 +223,7 @@ describe('R-INT-3: the SAFETY HOLD is recorded as a hold, and blocks completion'
     expect(card.findings).not.toMatch(/recorded before this STOP/);
     expect(card.findings).not.toContain(`STOP: ${SAFETY_HOLD_TEXT}`);
     expect(() => complete(card, { readings: [{ name: 'Coolant', value: 80, unit: '°C' }] })).toThrow(/SAFETY HOLD is recorded on this card/);
-    expect(complete({ ...card, findings: `${card.findings}\n${READINGS_NOT_TAKEN_STOP}` }).status).toBe('COMPLETED');
+    expect(complete({ ...card, guidedSafety: recordNotTaken(card.guidedSafety, { at: T, by: 'TECH', confirmed: true }) }).status).toBe('COMPLETED');
     // R-INT-7: a later record made with a readable safety record does NOT resolve the hold.
     const later = { ...card, guidedSafety: mergeGuidedSafety(card.guidedSafety, { stops: [], clearances: [], hold: null }, '2026-11-26T09:00:00.000Z') };
     expect(() => complete(later, { readings: [{ name: 'Coolant', value: 80, unit: '°C' }] })).toThrow(/SAFETY HOLD is recorded on this card/);

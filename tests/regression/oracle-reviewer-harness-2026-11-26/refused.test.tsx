@@ -7,6 +7,9 @@
  * where F10-R2 is now fixed: the two "REMAINING" tests and the "not latched" check of the panel test
  * assert the required behaviour (a committed refused value is kept as a hold); and, for tsc only,
  * one array literal is typed and one `let` is `const`.
+ *
+ * F10-R3 (2026-11-26): the free-text phrase in the findings no longer satisfies anything; where these
+ * tests wrote it, they now record the structured action (store action recordNotTaken).
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
@@ -18,7 +21,7 @@ import { guardedSessionRecord, guardedCardUpdate, readStore, safetyStateOf } fro
 import { loadGuidedSession, loadGuidedEquipment } from '@/lib/generator-oracle/diagnostics/session';
 import { SAFEGUARD_LABEL } from '@/lib/generator-oracle/diagnostics/engine';
 import { apply, emptyState, serialise, importState, type ServiceState, type ServiceAction } from '@/lib/generator-oracle/service/store';
-import { jobCardReport, READINGS_NOT_TAKEN_STOP, type JobCard } from '@/lib/generator-oracle/service/maintenance';
+import { jobCardReport, type JobCard } from '@/lib/generator-oracle/service/maintenance';
 import type { FaultFamily } from '@/lib/generator-oracle/diagnostics/types';
 
 beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
@@ -121,7 +124,7 @@ describe('job card: refusedInput and correctedAt', () => {
     s = record(s, 'overheating', '2026-11-26T09:10:00.000Z');
     expect(card(s).guidedSafety!.stops.find((x) => x.refusedInput)!.correctedAt).toBeUndefined();
     expect(complete(s)).toMatch(/STOP|Readings not taken/);
-    const p = go(s, { type: 'updateCard', cardId: 'JC1', update: { findings: `${card(s).findings}\n${READINGS_NOT_TAKEN_STOP}` } } as ServiceAction);
+    const p = go(s, { type: 'recordNotTaken', cardId: 'JC1', at: '2026-11-26T23:00:00.000Z', by: 'TECH', confirmed: true } as ServiceAction);
     expect(complete(p)).toBeNull();
   });
   it('imported card: a correctedAt in the file does not count; a correction after the import does', () => {

@@ -6,6 +6,9 @@
  * Copied from the reviewer's scratch/integration/mine4u/units-imports-f11.test.tsx (2026-11-26).
  * Changed only where F10-REMAINING is now fixed: the two "REMAINING" tests assert the fix; and for
  * tsc/lint: two unused imports removed, one `let` → `const`, one array typed.
+ *
+ * F10-R3 (2026-11-26): the free-text phrase in the findings no longer satisfies anything; where these
+ * tests wrote it, they now record the structured action (store action recordNotTaken).
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
@@ -17,7 +20,7 @@ import { guardedSessionRecord, guardedCardUpdate, readStore, safetyStateOf } fro
 import { loadGuidedSession, loadGuidedEquipment } from '@/lib/generator-oracle/diagnostics/session';
 import { UNCLASSIFIED_PROTECTIVE, SAFEGUARD_LABEL } from '@/lib/generator-oracle/diagnostics/engine';
 import { apply, emptyState, serialise, importState, deserialise, type ServiceState, type ServiceAction } from '@/lib/generator-oracle/service/store';
-import { jobCardReport, signOffSummary, DEVICE_ONLY_NOTICE, IMPORTED_NOTICE, SIGNED_OFF_ELSEWHERE, READINGS_NOT_TAKEN_STOP, SIGNOFF, cardContentHash, type JobCard } from '@/lib/generator-oracle/service/maintenance';
+import { jobCardReport, signOffSummary, DEVICE_ONLY_NOTICE, IMPORTED_NOTICE, SIGNED_OFF_ELSEWHERE, SIGNOFF, cardContentHash, type JobCard } from '@/lib/generator-oracle/service/maintenance';
 
 beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); });
@@ -58,8 +61,8 @@ describe('Imported job cards', () => {
     i = record(i, 'overheating', '2026-11-26T10:05:00.000Z'); // fresh record from an empty browser
     console.log('IMP-1 after fresh empty record:', complete(i).error?.slice(0, 160));
     expect(complete(i).error).toMatch(/still latched|fresh/);
-    expect(complete(go(i, { type: 'updateCard', cardId: 'JC1', update: { findings: `${card(i).findings}\n${READINGS_NOT_TAKEN_STOP}` } } as ServiceAction)).error).toMatch(/reassessment/);
-    i = reassess(go(i, { type: 'updateCard', cardId: 'JC1', update: { findings: `${card(i).findings}\n${READINGS_NOT_TAKEN_STOP}` } } as ServiceAction), '2026-11-26T10:10:00.000Z');
+    expect(complete(go(i, { type: 'recordNotTaken', cardId: 'JC1', at: '2026-11-26T23:00:00.000Z', by: 'TECH', confirmed: true } as ServiceAction)).error).toMatch(/reassessment/);
+    i = reassess(go(i, { type: 'recordNotTaken', cardId: 'JC1', at: '2026-11-26T23:00:00.000Z', by: 'TECH', confirmed: true } as ServiceAction), '2026-11-26T10:10:00.000Z');
     expect(complete(i).error).toBeNull();
   });
   it('tampered files: forged clearance, resolved hold, reassessment, imported=false/removed/forged freshRecordClean — none counts', () => {

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ORACLE_SAFETY_WITHDRAWN_MESSAGE } from '@/lib/generator-oracle/safety/withdrawal';
-import { jobCardReport, cardIntegrityProblems, transition, READINGS_NOT_TAKEN_STOP, STOP_NOT_CARRIED_NOTICE, SIGNOFF, type Asset, type JobCard } from '@/lib/generator-oracle/service/maintenance';
+import { jobCardReport, cardIntegrityProblems, recordNotTaken, transition, READINGS_NOT_TAKEN_STOP, STOP_NOT_CARRIED_NOTICE, SIGNOFF, type Asset, type JobCard } from '@/lib/generator-oracle/service/maintenance';
 import { jobCardToPdf } from '@/lib/generator-oracle/service/jobCardPdf';
 import { emptyState, reduce, type ServiceAction, type ServiceState } from '@/lib/generator-oracle/service/store';
 
@@ -315,21 +315,26 @@ describe('R1: a job card with an unresolved STOP completes and signs off without
   it('without the phrase, test-run readings are still required', () => {
     expect(() => transition(base(), 'COMPLETED', 'TECH-A', '2026-11-25T10:00', { ...work, findings: 'TEST knock' })).toThrow(/test-run readings/);
   });
-  it(`with "${READINGS_NOT_TAKEN_STOP}" in the findings: COMPLETED, then SIGNOFF, no readings, card intact, report says so`, () => {
+  // F10-R3 (2026-11-26): the phrase in the findings satisfies nothing; the structured action does.
+  it('with the recorded "readings not taken — STOP in force" action: COMPLETED, then SIGNOFF, no readings, card intact, report says so', () => {
     expect(READINGS_NOT_TAKEN_STOP).toBe('Readings not taken: STOP in force');
-    const done = transition(base(), 'COMPLETED', 'TECH-A', '2026-11-25T10:00', { ...work, findings: `TEST knock. ${READINGS_NOT_TAKEN_STOP}` });
+    expect(() => transition(base(), 'COMPLETED', 'TECH-A', '2026-11-25T10:00', { ...work, findings: `TEST knock. ${READINGS_NOT_TAKEN_STOP}` })).toThrow(/test-run readings/);
+    const marked = { ...base(), guidedSafety: recordNotTaken(undefined, { at: '2026-11-25T09:30', by: 'TECH-A', confirmed: true }) };
+    const done = transition(marked, 'COMPLETED', 'TECH-A', '2026-11-25T10:00', { ...work, findings: 'TEST knock.' });
     expect(done.status).toBe('COMPLETED');
     expect(done.readings).toEqual([]);
     const signed = transition(done, SIGNOFF, 'SUPERVISOR-B', '2026-11-25T11:00');
     expect(signed.status).toBe(SIGNOFF);
     expect(cardIntegrityProblems(signed)).toEqual([]);
     const report = jobCardReport(signed, { id: 'A-1', make: 'TEST', model: 'T-100', engine: '', controller: '', serial: 'S-1', ratedKva: 100 } as Asset);
-    expect(report).toMatch(new RegExp(`TEST READINGS\n  ${READINGS_NOT_TAKEN_STOP}`));
+    expect(report).toMatch(/TEST READINGS\n {2}none: readings not taken — STOP in force/);
+    expect(report).toMatch(/Recorded: readings not taken — STOP in force — by TECH-A \(typed name, UNVERIFIED\)/);
+    expect(report).not.toContain(READINGS_NOT_TAKEN_STOP);
   });
-  it('the job-card screen offers the phrase next to the readings', () => {
+  it('the job-card screen offers the structured action next to the readings', () => {
     const panel = fs.readFileSync('components/generator-oracle/panels/ServiceManagementPanel.tsx', 'utf8');
-    expect(panel).toContain('Do not test-run a set with an unresolved STOP. Record instead:');
-    expect(panel).toContain('{READINGS_NOT_TAKEN_STOP}</button>');
+    expect(panel).toContain('Do not test-run a set with an unresolved STOP. Instead, record the action below');
+    expect(panel).toContain('Record: {NOT_TAKEN_ACTION}</button>');
   });
 });
 

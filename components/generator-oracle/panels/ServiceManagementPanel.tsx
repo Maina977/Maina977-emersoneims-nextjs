@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { importWithRetry } from '@/lib/loading/resilientImport';
 import {
-  jobCardReport, nextStatuses, signOffCheck, signOffSummary, SIGNOFF, READINGS_NOT_TAKEN_STOP, STOP_NOT_CARRIED_NOTICE, TYPED_NAMES_NOTICE, TYPED_SIGNOFF_NOTICE,
+  jobCardReport, nextStatuses, signOffCheck, signOffSummary, SIGNOFF, NOT_TAKEN_ACTION, notTakenLine, STOP_NOT_CARRIED_NOTICE, TYPED_NAMES_NOTICE, TYPED_SIGNOFF_NOTICE,
   type Asset, type JobCard, type JobStatus,
 } from '@/lib/generator-oracle/service/maintenance';
 import {
@@ -299,7 +299,7 @@ function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft, safety: Gui
       {rec && (
         <>
           {guarded?.holdOnly
-            ? <p role="alert" className="text-xs text-amber-200">SAFETY HOLD: this browser's safety record cannot be read. The hold is recorded first on the card and blocks completion until a record is made with a readable safety record, or "{READINGS_NOT_TAKEN_STOP}" is written.</p>
+            ? <p role="alert" className="text-xs text-amber-200">SAFETY HOLD: this browser's safety record cannot be read. The hold is recorded first on the card and blocks completion until an in-person reassessment is recorded on the card, or the action "{NOT_TAKEN_ACTION}" is recorded on the job card.</p>
             : rec.result.stopActive && <p role="alert" className="text-xs text-red-200">This diagnosis has an active STOP: it is recorded first in the findings.</p>}
           <div className="text-[11px] text-slate-400">Preview — exactly what is added to the findings:</div>
           <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded bg-slate-950 p-2 text-[11px] text-slate-300">{rec.findings}</pre>
@@ -312,7 +312,27 @@ function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft, safety: Gui
 }
 
 /**
- * Review R-INT-7: a SAFETY HOLD on the card is released only by "Readings not taken: STOP in force"
+ * F10-R3 (2026-11-26): "readings not taken — STOP in force" is a structured action on the card
+ * (typed name + confirmation; UNVERIFIED; append-only; in the sign-off hash). Typing the words into
+ * the findings does nothing.
+ */
+function NotTakenAction({ card, dispatch }: { card: JobCard; dispatch: Dispatch }) {
+  const [by, setBy] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
+  const done = card.guidedSafety?.notTaken ?? [];
+  return (
+    <div data-testid="not-taken-action" className="space-y-1 rounded-md border border-red-500/50 p-2 text-xs text-red-200 break-words">
+      <p>Do not test-run a set with an unresolved STOP. Instead, record the action below (it is kept on the card, UNVERIFIED).</p>
+      {done.map((e, i) => <p key={i} className="text-red-100">{notTakenLine(e)}</p>)}
+      <label className="flex items-start gap-2"><input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} /><span>No test-run readings were taken because a STOP is in force</span></label>
+      <Field label="Name or initials of the technician (readings not taken)"><input className={inp} value={by} onChange={(e) => setBy(e.target.value)} /></Field>
+      <button type="button" className={btn2} onClick={() => { if (dispatch({ type: 'recordNotTaken', cardId: card.id, at: new Date().toISOString(), by, confirmed })) { setBy(''); setConfirmed(false); } }}>Record: {NOT_TAKEN_ACTION}</button>
+    </div>
+  );
+}
+
+/**
+ * Review R-INT-7: a SAFETY HOLD on the card is released only by the recorded "readings not taken — STOP in force" action
  * or by an in-person reassessment recorded here (typed name, UNVERIFIED, append-only).
  */
 function HoldReassessment({ card, dispatch }: { card: JobCard; dispatch: Dispatch }) {
@@ -426,7 +446,7 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
               </div>
             ))}
             <button type="button" className={btn2} onClick={() => setD({ ...d, readings: [...d.readings, { name: '', value: '', unit: '', min: '', max: '', limitSource: '' }] })}>+ Add reading</button>
-            <p className="text-xs text-red-200 break-words">Do not test-run a set with an unresolved STOP. Record instead: <button type="button" className="underline text-red-100" onClick={() => setD({ ...d, findings: d.findings.toLowerCase().includes(READINGS_NOT_TAKEN_STOP.toLowerCase()) ? d.findings : [d.findings.trim(), READINGS_NOT_TAKEN_STOP].filter(Boolean).join('. ') })}>{READINGS_NOT_TAKEN_STOP}</button></p>
+            <NotTakenAction card={card} dispatch={dispatch} />
           </div>
           <Field label="Findings"><textarea rows={3} className={inp} value={d.findings} onChange={(e) => setD({ ...d, findings: e.target.value })} /></Field>
           <HoldReassessment card={card} dispatch={dispatch} />

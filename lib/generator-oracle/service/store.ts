@@ -7,7 +7,7 @@
  * Errors are the engine's own messages, passed through unchanged.
  */
 import {
-  cardIntegrityProblems, dueList, markImported, mergeGuidedSafety, recordHoldReassessment, unresolvedGuidedSafety, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
+  cardIntegrityProblems, dueList, markImported, mergeGuidedSafety, recordHoldReassessment, recordNotTaken, unresolvedGuidedSafety, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
   JOB_STATUSES, SIGNOFF, TYPED_SIGNOFF_NOTICE, V1_UNCHECKED_SIGNOFF_NOTE,
   type Asset, type DueItem, type GuidedSafetyAdd, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord,
 } from './maintenance';
@@ -47,6 +47,8 @@ export type ServiceAction =
   | { type: 'recordGuidedSafety'; cardId: string; at: string; safety: GuidedSafetyAdd }
   /** R-INT-7: an in-person reassessment recorded on the card releases its SAFETY HOLD (append-only). */
   | { type: 'recordHoldReassessment'; cardId: string; at: string; by: string; reason: string; confirmed: boolean }
+  /** F10-R3: the structured "readings not taken — STOP in force" action (typed name, confirmation; append-only). */
+  | { type: 'recordNotTaken'; cardId: string; at: string; by: string; confirmed: boolean }
   | { type: 'recordService'; cardId: string; planTaskIds: string[] };
 
 /** Next free id like "JC-3" for a prefix. */
@@ -190,6 +192,11 @@ export function reduce(s: ServiceState, a: ServiceAction): ServiceState {
       }
       return replaceCard(s, merged);
     }
+    case 'recordNotTaken': {
+      const c = findCard(s, a.cardId);
+      if (!isEditable(c)) throw new Error(`A ${c.status} job card cannot be edited`);
+      return replaceCard(s, { ...c, guidedSafety: recordNotTaken(c.guidedSafety, a) });
+    }
     case 'recordHoldReassessment': {
       const c = findCard(s, a.cardId);
       if (!isEditable(c)) throw new Error(`A ${c.status} job card cannot be edited`);
@@ -245,10 +252,11 @@ const isGuidedSafety = (v: unknown) => isObj(v) && Array.isArray(v.stops) && v.s
   && Array.isArray(v.clearances) && v.clearances.every((c) => isGStop(c) && isStr((c as Record<string, unknown>).clearedAt) && isStr((c as Record<string, unknown>).by) && isStr((c as Record<string, unknown>).reason)
     && ((c as Record<string, unknown>).automatic === undefined || (c as Record<string, unknown>).automatic === true))
   && Array.isArray(v.holds) && v.holds.every((h) => isObj(h) && isStr(h.since) && isStr(h.text) && isStr(h.why) && (h.resolvedAt === undefined || isStr(h.resolvedAt)))
-  && (v.reassessments === undefined || (Array.isArray(v.reassessments) && v.reassessments.every((r) => isObj(r) && isStr(r.at) && isStr(r.by) && isStr(r.reason) && r.confirmed === true)));
+  && (v.reassessments === undefined || (Array.isArray(v.reassessments) && v.reassessments.every((r) => isObj(r) && isStr(r.at) && isStr(r.by) && isStr(r.reason) && r.confirmed === true)))
+  && (v.notTaken === undefined || (Array.isArray(v.notTaken) && v.notTaken.every((r) => isObj(r) && isStr(r.at) && isStr(r.by) && r.confirmed === true)));
 const isCardImport = (v: unknown) => isObj(v) && isStr(v.at) && ['stops', 'clearances', 'holds', 'reassessments'].every((k) => Number.isInteger(v[k]) && (v[k] as number) >= 0)
   && typeof v.signedOff === 'boolean' && (v.freshRecordAt === undefined || isStr(v.freshRecordAt)) && (v.freshRecordClean === undefined || typeof v.freshRecordClean === 'boolean')
-  && (v.reassessedAt === undefined || isStr(v.reassessedAt));
+  && (v.reassessedAt === undefined || isStr(v.reassessedAt)) && (v.notTaken === undefined || (Number.isInteger(v.notTaken) && (v.notTaken as number) >= 0));
 const isHash = (v: unknown) => isStr(v) && /^[0-9a-f]{64}$/.test(v);
 const isRev = (v: unknown) => Number.isInteger(v) && (v as number) >= 1;
 

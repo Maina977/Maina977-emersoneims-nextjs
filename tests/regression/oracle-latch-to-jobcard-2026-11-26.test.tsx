@@ -8,7 +8,7 @@ import ServiceManagementPanel from '@/components/generator-oracle/panels/Service
 import { reduce, emptyState, serialise, STORE_KEY, type ServiceAction } from '@/lib/generator-oracle/service/store';
 import {
   CLEARANCE_RECORD_PREFIX, LATCHED_STOP_PREFIX, READINGS_NOT_TAKEN_STOP, clearanceLine, jobCardReport, latchedStopLine,
-  openJobCard, transition, unresolvedLatchedStops, type Asset, type JobCard,
+  openJobCard, recordNotTaken, transition, unresolvedLatchedStops, type Asset, type JobCard,
 } from '@/lib/generator-oracle/service/maintenance';
 import { jobCardToPdf } from '@/lib/generator-oracle/service/jobCardPdf';
 import { latchRecordLines } from '@/lib/generator-oracle/diagnostics/stopLatch';
@@ -138,10 +138,12 @@ describe('completion and sign-off while a STOP is latched', () => {
 
   it('readings alone do not complete a card with a latched STOP and no clearance', () => {
     expect(unresolvedLatchedStops(base(latchedStopLine(L)))).toHaveLength(1);
-    expect(() => complete(base(latchedStopLine(L)))).toThrow(/Readings not taken: STOP in force.*still latched with no recorded clearance/);
+    expect(() => complete(base(latchedStopLine(L)))).toThrow(/readings not taken — STOP in force.*still latched with no recorded clearance/);
   });
-  it(`"${READINGS_NOT_TAKEN_STOP}" completes it`, () => {
-    expect(complete(base(`${latchedStopLine(L)}\n${READINGS_NOT_TAKEN_STOP}`)).status).toBe('COMPLETED');
+  // F10-R3: the structured action, not the phrase in the findings.
+  it('the recorded "readings not taken — STOP in force" action completes it; the phrase in the findings does not', () => {
+    expect(() => complete(base(`${latchedStopLine(L)}\n${READINGS_NOT_TAKEN_STOP}`))).toThrow(/still latched/);
+    expect(complete({ ...base(latchedStopLine(L)), guidedSafety: recordNotTaken(undefined, { at: '2026-11-26T11:00:00.000Z', by: 'TECH-A', confirmed: true }) }).status).toBe('COMPLETED');
   });
   it('a recorded clearance for that STOP (same source and since) completes it; one for another STOP does not', () => {
     const clr = (since: string) => clearanceLine({ ...L, since, clearedAt: '2026-11-26T11:00:00.000Z', by: 'TEST-JK', reason: 'TEST repaired' });

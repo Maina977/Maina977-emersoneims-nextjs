@@ -38,10 +38,35 @@ export const TYPED_NAMES_NOTICE = 'All names on this card (technician, status st
  * Review R1 (2026-11-25): a set with an unresolved STOP must not be test-run, so a card whose
  * findings record this phrase completes and signs off without test-run readings.
  */
+/** The old free-text phrase. F10-R3: it satisfies NOTHING any more (kept so tests can prove that). Never generated. */
 export const READINGS_NOT_TAKEN_STOP = 'Readings not taken: STOP in force';
 /** True when the card records an unresolved STOP (the phrase above in its findings). */
-export function recordsStopInForce(card: Pick<JobCard, 'findings'>): boolean {
-  return card.findings.toLowerCase().includes(READINGS_NOT_TAKEN_STOP.toLowerCase());
+/**
+ * F10-R3 (2026-11-26): "readings not taken — STOP in force" is a STRUCTURED technician action on the
+ * card (typed name + confirmation, UNVERIFIED, append-only in guidedSafety, in the sign-off hash). The
+ * phrase appearing anywhere in the findings text (typed, pasted or generated) satisfies nothing.
+ * Imported card: only an entry recorded on this device after the import counts.
+ */
+export const NOT_TAKEN_ACTION = 'readings not taken — STOP in force';
+export const NOT_TAKEN_PROMPT = `record "${NOT_TAKEN_ACTION}" on the job card`;
+export function recordsStopInForce(card: Pick<JobCard, 'findings'> & Partial<Pick<JobCard, 'guidedSafety' | 'imported'>>): boolean {
+  const all = card.guidedSafety?.notTaken ?? [];
+  const imp = card.imported;
+  const fresh = imp ? all.slice(imp.notTaken ?? 0).filter((e) => e.at >= imp.at) : all;
+  return fresh.length > 0;
+}
+/** Appends the structured action (typed name, confirmation; UNVERIFIED). */
+export function recordNotTaken(prev: GuidedSafety | undefined, r: { at: string; by: string; confirmed: boolean }): GuidedSafety {
+  const by = r.by.trim();
+  if (!r.confirmed) throw new Error(`Not recorded: confirm "${NOT_TAKEN_ACTION}" (no test-run readings were taken because a STOP is in force)`);
+  if (!by) throw new Error('Not recorded: enter the name or initials of the technician');
+  if (Number.isNaN(Date.parse(r.at))) throw new Error('When is required');
+  const g: GuidedSafety = prev ? { ...prev } : { stops: [], clearances: [], holds: [] };
+  g.notTaken = [...(prev?.notTaken ?? []), { at: r.at, by: by.slice(0, 60), confirmed: true }];
+  return g;
+}
+export function notTakenLine(e: { at: string; by: string }): string {
+  return `Recorded: ${NOT_TAKEN_ACTION} — by ${e.by} (typed name, UNVERIFIED) at ${e.at} (UTC). No test-run readings were taken.`;
 }
 /**
  * Integration 2026-11-26: every STOP latched on the Guided Diagnosis screen (and every recorded
@@ -112,11 +137,15 @@ export interface GuidedSafetyClearance extends GuidedSafetyStop, AutoRelease { c
 /** R-INT-3: the SAFETY HOLD (browser storage blocked) is its own record, never worded as a STOP. */
 export interface GuidedSafetyHold { since: string; text: string; why: string; resolvedAt?: string }
 /**
- * Review R-INT-7: the only way (besides "Readings not taken: STOP in force") to resolve a SAFETY
+ * Review R-INT-7: the only way (besides recording "readings not taken — STOP in force") to resolve a SAFETY
  * HOLD on a card: an in-person reassessment recorded ON THE CARD. Typed name, UNVERIFIED.
  */
 export interface GuidedSafetyReassessment { at: string; by: string; reason: string; confirmed: true }
-export interface GuidedSafety { stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; holds: GuidedSafetyHold[]; reassessments?: GuidedSafetyReassessment[] }
+export interface GuidedSafety {
+  stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; holds: GuidedSafetyHold[]; reassessments?: GuidedSafetyReassessment[];
+  /** F10-R3: the structured "readings not taken — STOP in force" actions (append-only). */
+  notTaken?: Array<{ at: string; by: string; confirmed: true }>;
+}
 /** What one "Record a guided diagnosis" adds: the browser's latched STOPs, the record's own STOPs, its clearances, and the hold if storage was blocked. */
 export interface GuidedSafetyAdd {
   stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; hold: { text: string; why: string } | null;
@@ -156,7 +185,7 @@ export function mergeGuidedSafety(prev: GuidedSafety | undefined, add: GuidedSaf
   for (const c of add.clearances) if (!stops.some((x) => sameGuidedStop(x, c))) stops.push({ key: c.key, from: c.from, since: c.since, message: c.message, ...(c.label ? { label: c.label } : {}) });
   const holds = (prev?.holds ?? []).map((h) => ({ ...h }));
   if (add.hold && !holds.some((h) => !h.resolvedAt)) holds.push({ since: at, text: add.hold.text, why: add.hold.why });
-  return { stops, clearances, holds, ...(prev?.reassessments ? { reassessments: prev.reassessments.map((r) => ({ ...r })) } : {}) };
+  return { stops, clearances, holds, ...(prev?.reassessments ? { reassessments: prev.reassessments.map((r) => ({ ...r })) } : {}), ...(prev?.notTaken ? { notTaken: prev.notTaken.map((e) => ({ ...e })) } : {}) };
 }
 /** R-INT-7: an in-person reassessment recorded on the card resolves its open SAFETY HOLD (append-only). */
 export function recordHoldReassessment(prev: GuidedSafety | undefined, r: { at: string; by: string; reason: string; confirmed: boolean }, opts: { imported?: CardImport } = {}): GuidedSafety {
@@ -201,12 +230,14 @@ export function unresolvedGuidedSafety(card: Pick<JobCard, 'guidedSafety'> & Par
  * resolved. Every card read from an imported file is marked here (outside the signed content, so
  * the file's own consistency checks are unchanged). Completion and sign-off then need a FRESH
  * assessment on this device after the import: a new Guided Diagnosis record with no unresolved STOP
- * or SAFETY HOLD, or "Readings not taken: STOP in force"; AND a fresh in-person reassessment.
+ * or SAFETY HOLD, or the recorded "readings not taken — STOP in force" action; AND a fresh in-person reassessment.
  */
 export interface CardImport {
   at: string;
   /** How many of each were on the card when it was imported (they stay visible as IMPORTED — UNVERIFIED). */
   stops: number; clearances: number; holds: number; reassessments: number;
+  /** F10-R3: structured "readings not taken" actions in the file (never counted here). */
+  notTaken?: number;
   /** The card was at the sign-off step (or had a sign-off) in the imported file. */
   signedOff: boolean;
   /** A Guided Diagnosis record added on this device after the import, and whether it carried no unresolved STOP or hold. */
@@ -223,7 +254,7 @@ export function markImported(card: JobCard, at: string): JobCard {
     ...card,
     imported: {
       at,
-      stops: g?.stops.length ?? 0, clearances: g?.clearances.length ?? 0, holds: g?.holds.length ?? 0, reassessments: g?.reassessments?.length ?? 0,
+      stops: g?.stops.length ?? 0, clearances: g?.clearances.length ?? 0, holds: g?.holds.length ?? 0, reassessments: g?.reassessments?.length ?? 0, notTaken: g?.notTaken?.length ?? 0,
       signedOff: card.status === SIGNOFF || card.log.some((l) => l.to === SIGNOFF),
     },
   };
@@ -232,18 +263,18 @@ const importedBlocker = (card: Pick<JobCard, 'findings' | 'imported'>): string |
   const imp = card.imported;
   if (!imp) return null;
   const e: string[] = [];
-  if (!(imp.freshRecordClean || recordsStopInForce(card))) e.push(`a fresh Guided Diagnosis record added on this device with no unresolved STOP or SAFETY HOLD, or "${READINGS_NOT_TAKEN_STOP}" in the findings`);
+  if (!(imp.freshRecordClean || recordsStopInForce(card))) e.push(`a fresh Guided Diagnosis record added on this device with no unresolved STOP or SAFETY HOLD, or ${NOT_TAKEN_PROMPT} on this device`);
   if (!imp.reassessedAt) e.push('a fresh in-person reassessment recorded on this card on this device');
   return e.length ? `${e.join(', and ')} (IMPORTED — UNVERIFIED card: an imported file is never proof that a STOP was resolved)` : null;
 };
 const latchedStopBlocker = (card: Pick<JobCard, 'findings' | 'guidedSafety'> & Partial<Pick<JobCard, 'imported'>>, opts: { asRecorded?: boolean } = {}): string | null => {
   if (recordsStopInForce(card)) return null;
   const u = unresolvedGuidedSafety(card, opts);
-  if (u.stops.length) return `"${READINGS_NOT_TAKEN_STOP}" in the findings (${u.stops.length} Guided Diagnosis STOP(s) recorded on this card are still latched with no recorded clearance; record the clearance on Guided Diagnosis and record the diagnosis again, or state that the STOP is in force)`;
-  if (u.hold) return `"${READINGS_NOT_TAKEN_STOP}" in the findings (a SAFETY HOLD is recorded on this card: the previous diagnostic safety status could not be verified; record an in-person reassessment on this card, or state that the STOP is in force)`;
+  if (u.stops.length) return `${NOT_TAKEN_PROMPT.replace(/^record /, 'the recorded action ')} (${u.stops.length} Guided Diagnosis STOP(s) recorded on this card are still latched with no recorded clearance; record the clearance on Guided Diagnosis and record the diagnosis again, or record that action)`;
+  if (u.hold) return `${NOT_TAKEN_PROMPT.replace(/^record /, 'the recorded action ')} (a SAFETY HOLD is recorded on this card: the previous diagnostic safety status could not be verified; record an in-person reassessment on this card, or record that action)`;
   // Also the findings text (8041e0b0): a latched line in the findings without a clearance line still blocks.
   return unresolvedLatchedStops(card).length
-    ? `"${READINGS_NOT_TAKEN_STOP}" in the findings (a Guided Diagnosis STOP is still latched with no recorded clearance; record the clearance, or state that the STOP is in force)`
+    ? `${NOT_TAKEN_PROMPT.replace(/^record /, 'the recorded action ')} (a Guided Diagnosis STOP is still latched with no recorded clearance; record the clearance, or record that action)`
     : null;
 };
 export const STOP_NOT_CARRIED_NOTICE = 'Generator Oracle cannot confirm a set is safe to run. A STOP from Guided Diagnosis is kept only in this browser — record it on this card. Do not test-run a set with an unresolved STOP.';
@@ -423,7 +454,7 @@ export function transition(card: JobCard, to: JobStatus, by: string, at: string,
     if (!next.findings.trim()) e.push('findings');
     if (!next.tasks.length) e.push('work done');
     if (!(next.engineHoursAtJob !== null && next.engineHoursAtJob >= 0)) e.push('engine-hour reading');
-    if (!next.readings.length && !recordsStopInForce(next)) e.push(`test-run readings (or, if a STOP is unresolved, write "${READINGS_NOT_TAKEN_STOP}" in the findings)`);
+    if (!next.readings.length && !recordsStopInForce(next)) e.push(`test-run readings (or, if a STOP is unresolved, ${NOT_TAKEN_PROMPT})`);
     const latched = latchedStopBlocker(next);
     if (latched) e.push(latched);
     const imported = importedBlocker(next);
@@ -595,7 +626,7 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
   if (g?.holds.length) {
     structured.push({ heading: 'SAFETY HOLD — previous diagnostic safety status could not be verified (held on this card)', lines: [...g.holds.flatMap((h) => [
       `  ${h.text}`, `  ${h.why}`,
-      `  Recorded ${h.since} (UTC). ${h.resolvedAt ? `Resolved ${h.resolvedAt} (UTC) by an in-person reassessment recorded on this card.` : 'NOT RESOLVED: completion needs an in-person reassessment recorded on this card, or "' + READINGS_NOT_TAKEN_STOP + '".'}`,
+      `  Recorded ${h.since} (UTC). ${h.resolvedAt ? `Resolved ${h.resolvedAt} (UTC) by an in-person reassessment recorded on this card.` : `NOT RESOLVED: completion needs an in-person reassessment recorded on this card, or the action ${NOT_TAKEN_PROMPT}.`}`,
     ]), ...(g.reassessments ?? []).map((r) => `  Reassessment recorded ${r.at} (UTC) by ${oneLine(r.by)} (typed name, UNVERIFIED): ${oneLine(r.reason)}. ${HOLD_REASSESSMENT_NOTICE}`)] });
   }
   if (g?.stops.length) {
@@ -619,6 +650,9 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
       ...(ib ? [`  Completion and sign-off need: ${ib}.`] : []),
     ] });
   }
+  if (g?.notTaken?.length) {
+    structured.push({ heading: 'SAFETY — READINGS NOT TAKEN, STOP IN FORCE (recorded action, held on this card)', lines: g.notTaken.map((e, i) => `  ${notTakenLine(e)}${card.imported && (i < (card.imported.notTaken ?? 0) || e.at < card.imported.at) ? ' IMPORTED — not counted on this device.' : ''}`) });
+  }
   const safety: ReportSection[] = [
     ...structured,
     ...(holdLines.length ? [{ heading: 'SAFETY HOLD (repeated from the findings below)', lines: holdLines }] : []),
@@ -641,7 +675,7 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
       ] },
       { heading: 'PARTS', lines: list(card.parts.map((p) => `${p.qty} × ${p.partNo}${p.description ? ` ${p.description}` : ''} — ${p.compatibility ? `parts book: ${refText(p.compatibility)}` : 'compatibility unverified (no parts-book reference)'}`), 'none') },
       { heading: 'TEST READINGS', lines: [
-        ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})`), !card.readings.length && recordsStopInForce(card) ? READINGS_NOT_TAKEN_STOP : '(none recorded)'),
+        ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})`), !card.readings.length && recordsStopInForce(card) ? `none: ${NOT_TAKEN_ACTION} (recorded action, see SAFETY)` : '(none recorded)'),
         ...flags.map((f) => `  ! ${f}`),
       ] },
       // One report line per findings line (a guided-diagnosis record is several lines).

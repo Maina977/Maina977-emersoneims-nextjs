@@ -48,6 +48,8 @@ const STOP = { key: 'knock-seizure|STOP THE SET: TEST', from: 'Knocking, bearing
 const latchedAdd: GuidedSafetyAdd = { stops: [STOP], clearances: [], hold: null };
 const base = () => go(go(emptyState(), { type: 'saveAsset', asset: { make: 'TEST', model: 'T', engine: 'E', controller: 'C', serial: 'S', ratedKva: 100 } } as ServiceAction),
   { type: 'openCard', card: { id: 'JC-1', assetId: 'A-1', opened: '2026-11-26', reportedFault: 'TEST', technician: 'TECH-A' } } as ServiceAction);
+/** F10-R3: the structured "readings not taken — STOP in force" action, recorded on this device. */
+const notTaken = (s: ServiceState) => go(s, { type: 'recordNotTaken', cardId: 'JC-1', at: T2, by: 'TECH-B', confirmed: true } as ServiceAction);
 const complete = (s: ServiceState, findings = 'TEST inspected') => {
   const a = apply(s, { type: 'transition', cardId: 'JC-1', to: 'IN PROGRESS', by: 'TECH-A', at: T2 } as ServiceAction);
   if (a.error) return a.error;
@@ -87,7 +89,7 @@ describe('1. CRITICAL: an imported file is never proof that a STOP was resolved'
     j.jobCards[0].guidedSafety.clearances.push({ ...STOP, clearedAt: T2, by: 'FORGED', reason: 'FORGED clearance' });
     const s = reimport(j);
     expect(complete(s)).toMatch(/SAFETY HOLD|still latched|IMPORTED/);
-    expect(complete(s, `TEST ${READINGS_NOT_TAKEN_STOP}`)).toMatch(/fresh in-person reassessment/);
+    expect(complete(notTaken(s))).toMatch(/fresh in-person reassessment/);
   });
   it('tamper: an edited sign-off hash (recomputed) is shown as signed off on another device — UNVERIFIED here', () => {
     let s = go(base(), { type: 'transition', cardId: 'JC-1', to: 'IN PROGRESS', by: 'TECH-A', at: T0 } as ServiceAction);
@@ -105,7 +107,8 @@ describe('1. CRITICAL: an imported file is never proof that a STOP was resolved'
     const s = reimport(exported());
     const withPhrase = go(s, { type: 'recordHoldReassessment', cardId: 'JC-1', at: T2, by: 'TECH-B', reason: 'Inspected in person on site', confirmed: true } as ServiceAction);
     expect(complete(withPhrase)).toMatch(/still latched/);
-    expect(complete(withPhrase, `TEST ${READINGS_NOT_TAKEN_STOP}`)).toBeNull();
+    expect(complete(withPhrase, `TEST ${READINGS_NOT_TAKEN_STOP}`)).toMatch(/still latched/); // the phrase in the findings does nothing (F10-R3)
+    expect(complete(notTaken(withPhrase))).toBeNull();
     // A card with no STOPs from another device: a clean fresh record + reassessment.
     const j = JSON.parse(serialise(base()));
     let t = reimport(j);
@@ -257,7 +260,8 @@ describe('F10-REMAINING: a refused protective value is never safer than a typed 
     };
     let s = go(base(), { type: 'recordGuidedSafety', cardId: 'JC-1', at: T0, safety: add({ oilPressure: '200', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' }) } as ServiceAction);
     expect(complete(s)).toMatch(/still latched/);
-    expect(complete(s, `TEST ${READINGS_NOT_TAKEN_STOP}`)).toBeNull();
+    expect(complete(s, `TEST ${READINGS_NOT_TAKEN_STOP}`)).toMatch(/still latched/); // the phrase in the findings does nothing (F10-R3)
+    expect(complete(notTaken(s))).toBeNull();
     s = go(s, { type: 'recordGuidedSafety', cardId: 'JC-1', at: T1, safety: add({ oilPressure: '200', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' }) } as ServiceAction);
     expect(complete(s)).toBeNull();
     // A record for another family does not count as the correction.
@@ -300,7 +304,7 @@ describe('F10-R2: a committed refused protective value is held until a valid val
     await open(); limit150();
     set(/^Oil pressure measured/, '10'); blur(/^Oil pressure measured/);
     expect(latchedNow().map((l) => l.key)).toEqual(['low-oil-pressure|refused-value|oilPressure']);
-    expect(latchedNow()[0].message).toMatch(/value removed or refused — enter a valid value, record a clearance, or write "Readings not taken: STOP in force"/);
+    expect(latchedNow()[0].message).toMatch(/value removed or refused — enter a valid value, record a clearance, or record "readings not taken — STOP in force" on the job card/);
     set(/^Oil pressure measured/, ''); blur(/^Oil pressure measured/);
     expect(hold()).toBe(true);
     expect(screen.getByTestId('gd-latched-stop').textContent).toMatch(/value removed or refused/);
@@ -380,7 +384,7 @@ describe('automatic release of a refused-value hold: its own line, never a perso
     s = go(s, { type: 'recordGuidedSafety', cardId: 'JC-1', at: T1, safety: { stops: [], clearances: [auto], hold: null } } as ServiceAction);
     expect(complete(s)).toMatch(/still latched/);
     // Imported card: a hold in the file, released automatically on this device → still needs a person (or the phrase).
-    const hold = { key: 'low-oil-pressure|refused-value|oilPressure', from: 'Low oil pressure', since: T0, message: 'STOP — protective value refused (Oil pressure measured): value removed or refused — enter a valid value, record a clearance, or write "Readings not taken: STOP in force".' };
+    const hold = { key: 'low-oil-pressure|refused-value|oilPressure', from: 'Low oil pressure', since: T0, message: 'STOP — protective value refused (Oil pressure measured): value removed or refused — enter a valid value, record a clearance, or record "readings not taken — STOP in force" on the job card.' };
     const j = JSON.parse(serialise(go(base(), { type: 'recordGuidedSafety', cardId: 'JC-1', at: T0, safety: { stops: [hold], clearances: [], hold: null } } as ServiceAction)));
     const t = importState(JSON.stringify(j), T1); if (!t.ok) throw new Error(t.error);
     let st = go(t.state, { type: 'recordGuidedSafety', cardId: 'JC-1', at: T2, safety: { stops: [], clearances: [{ ...hold, clearedAt: T2, by: 'automatic', reason: '', automatic: true, field: 'f', entered: '1 kPa', canonical: '1 kPa' }], hold: null } } as ServiceAction);
