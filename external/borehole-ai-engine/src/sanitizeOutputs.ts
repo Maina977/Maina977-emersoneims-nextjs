@@ -866,6 +866,6 @@ function computeFinalConsensus(r: any): FinalConsensus {
       : assessmentGrade === 'ENGINEERING GRADE'
       ? 'This engineering-grade assessment is supported by field geophysical data. Suitable for preliminary design, subject to pump test verification.'
       : 'This bankable-grade assessment meets the requirements for investment decisions. Field data, pump test, and independent verification have been incorporated.',
-    methodology: `Central values = the GOVERNING reconciled result (ensemble → aquifer-physics reconciliation → regional tested-yield band). ${estimates.length} sub-model estimate(s) (${estimates.map(e => e.label).join(', ')}) inform the uncertainty ranges and agreement level only — they do not re-vote on the central value. Agreement: ${agreementLevel} (probability spread: ±${(probSpread * 50).toFixed(0)}%).`,
+    methodology: `Central values = the GOVERNING reconciled result (ensemble → aquifer-physics reconciliation → regional tested-yield band). ${estimates.length} sub-model estimate(s) (${estimates.map(e => e.label).join(', ')}) inform the uncertainty ranges and agreement level only — they do not re-vote on the central value. Agreement: ${agreementLevel} (success-score spread: ±${Math.round(probSpread * 50)} points, uncalibrated).`,
   };
 }

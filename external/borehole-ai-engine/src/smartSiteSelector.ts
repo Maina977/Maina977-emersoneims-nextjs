@@ -386,7 +386,7 @@ export async function selectTopDrillingSites(
       .map(([k]) => k);
     s.reasoning = [
       `Rank #${i + 1} of ${candidates.length} candidates evaluated`,
-      `Composite score: ${s.score}/100 (probability ${(s.probability * 100).toFixed(0)}%)`,
+      `Composite score: ${s.score}/100 (modelled success score ${Math.round(s.probability * 100)}/100, uncalibrated)`,
       `Top strengths: ${best.join(', ')}`,
       `Rock type: ${s.rockType} (${s.aquiferType} aquifer)`,
       s.expectedDepth_m === null ? 'Weathering depth and drilling depth: INSUFFICIENT EVIDENCE (no soil or geology data)' : `Weathering depth: ${s.weatheringDepth_m}m → expected drilling depth ${s.expectedDepth_m}m`,

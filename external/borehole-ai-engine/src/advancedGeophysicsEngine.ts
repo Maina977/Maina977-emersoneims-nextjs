@@ -1316,7 +1316,7 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
   // guarantee drilling success or sustainable yield (re-audit #13). Framed as a
   // projected information-confidence, conditional on the methods agreeing.
   const recommendation = successRateAnalysis.meetsTarget
-    ? `RECOMMENDED: "${optimalPackage.name}" reaches ${expectedSuccessRate}% projected siting/information confidence IF the surveys are carried out and their results are mutually consistent (planning target ≥90%). This is not a drilling-success guarantee — the governing site probability is unchanged until field data exists. ` +
+    ? `RECOMMENDED: "${optimalPackage.name}" reaches a projected siting score of ${expectedSuccessRate}/100 (hypothetical, uncalibrated) IF the surveys are carried out and their results are mutually consistent (planning target ≥90%). This is not a drilling-success guarantee — the governing site probability is unchanged until field data exists. ` +
       `Cost: $${optimalPackage.cost_usd.toLocaleString()} | Time: ${optimalPackage.time_hrs}h field work. ` +
       `${methodCount} independent geophysical methods with joint inversion provide comprehensive subsurface characterization.`
     : `RECOMMENDED: Upgrade to "${rankedPackages.find(p => aiOnlySuccess + p.successRateBoost_pct >= 90)?.name ?? 'Combined Geophysics'}" to reach the 90% projected-confidence planning target. ` +

@@ -47,7 +47,7 @@ export const TOPO_HYDROLOGY = [
 
 // ─── PART 1.4: HISTORICAL BOREHOLE DATA INTEGRATION (5) ───
 export const HISTORICAL_DATA = [
-  { name:'Regional Success Rate', data:'10,000+ borehole records', source:'National water ministries', output:'Probability by geology' },
+  { name:'Regional Success Rate', data:'10,000+ borehole records', source:'National water ministries', output:'Recorded success rate by geology' },
   { name:'Depth-to-Water Statistics', data:'Well logs from similar geology', source:'GROWA+, national databases', output:'Percentiles (10/50/90)' },
   { name:'Yield Distribution', data:'Pump test results', source:'IGRAC, national databases', output:'m³/hour by aquifer' },
   { name:'Water Quality Trends', data:'Historical water quality', source:'UNEP, national monitoring', output:'Parameter trends' },
@@ -70,7 +70,7 @@ export const DL_MODELS = [
 
 // ─── PART 2.2: ENSEMBLE METHODS (4) ───
 export const ENSEMBLE_METHODS = [
-  { method:'Stacking', purpose:'Final probability', models:'CNN + RF + XGBoost + LSTM', weighting:'Meta-learner', availability:'backend' as const, browserFallback:'Dempster-Shafer evidence fusion of 8 independent classifiers (advancedRockMapper)' },
+  { method:'Stacking', purpose:'Final success score (uncalibrated)', models:'CNN + RF + XGBoost + LSTM', weighting:'Meta-learner', availability:'backend' as const, browserFallback:'Dempster-Shafer evidence fusion of 8 independent classifiers (advancedRockMapper)' },
   { method:'Bayesian Averaging', purpose:'Uncertainty quantification', models:'All 5 models', weighting:'Posterior probability', availability:'backend' as const, browserFallback:'Confidence-weighted averaging of API data sources' },
   { method:'Dynamic Weighting', purpose:'Adaptive importance', models:'Geological/Climatic/Hydrological', weighting:'Site-specific', availability:'browser' as const, browserFallback:'Implemented — weights adjust based on data availability per source' },
   { method:'Monte Carlo Dropout', purpose:'Confidence intervals', models:'Neural networks', weighting:'100 forward passes', availability:'backend' as const, browserFallback:'Bootstrap confidence intervals from multiple API queries' },
@@ -135,7 +135,7 @@ export const SUCCESS_WEIGHTS = [
 
 // ─── PART 4.2: DEPTH PREDICTION COEFFICIENTS (5) ───
 export const DEPTH_COEFFICIENTS = [
-  { variable:'Probability', coefficient:'-35.2', pValue:'<0.001', significance:'Very High' },
+  { variable:'Success score', coefficient:'-35.2', pValue:'<0.001', significance:'Very High' },
   { variable:'Elevation (m)', coefficient:'+0.15', pValue:'<0.01', significance:'High' },
   { variable:'Geology (basement)', coefficient:'+25.0', pValue:'<0.001', significance:'Very High' },
   { variable:'TWI', coefficient:'-8.5', pValue:'<0.05', significance:'Medium' },
@@ -190,7 +190,7 @@ export const GEOLOGICAL_RISKS = [
 export const FINANCIAL_RISKS = [
   { risk:'Cost overrun', calculation:'Monte Carlo simulation', threshold:'>20% over budget = High risk' },
   { risk:'Yield shortfall', calculation:'Historical yield distribution', threshold:'<50% predicted = High risk' },
-  { risk:'Dry hole', calculation:'Success probability', threshold:'<40% = High risk' },
+  { risk:'Dry hole', calculation:'Modelled success score (uncalibrated)', threshold:'<40/100 = High risk' },
   { risk:'Water quality failure', calculation:'Treatment cost > $10,000', threshold:'High risk' },
   { risk:'ROI negative', calculation:'NPV < 0', threshold:'Unacceptable' },
 ];
@@ -206,7 +206,7 @@ export const OPERATIONAL_RISKS = [
 
 // ─── PART 6.1: REPORT SECTIONS (10) ───
 export const REPORT_SECTIONS = [
-  { section:'Executive Summary', content:'Key findings, probability, depth, yield, cost', sources:'All analyses', length:'1 page' },
+  { section:'Executive Summary', content:'Key findings, success score, depth, yield, cost', sources:'All analyses', length:'1 page' },
   { section:'Site Characterization', content:'Location, geology, topography, climate', sources:'Maps, satellites', length:'2–3 pages' },
   { section:'Hydrogeological Analysis', content:'Aquifer type, depth, thickness, properties', sources:'Geological + remote sensing', length:'3–4 pages' },
   { section:'Water Quality Assessment', content:'Predicted parameters, WHO comparison, treatment', sources:'ML models + regional data', length:'2 pages' },
@@ -223,7 +223,7 @@ export const MAP_TYPES = [
   { type:'Location map', data:'Site on satellite imagery', scale:'1:50,000', format:'GeoJSON' },
   { type:'Geological map', data:'Formations, faults, aquifers', scale:'1:250,000', format:'Shapefile' },
   { type:'Topographic map', data:'Contours, streams, catchments', scale:'1:50,000', format:'GeoJSON' },
-  { type:'Probability heatmap', data:'Success probability raster', scale:'1:50,000', format:'GeoTIFF' },
+  { type:'Success-score heatmap', data:'Relative success-score raster (uncalibrated)', scale:'1:50,000', format:'GeoTIFF' },
   { type:'Depth to water', data:'Contoured water levels', scale:'1:50,000', format:'GeoTIFF' },
   { type:'Contamination risk', data:'Risk zones', scale:'1:50,000', format:'GeoJSON' },
   { type:'Cross-sections', data:'Geology to depth', scale:'1:10,000', format:'SVG/PNG' },
@@ -232,7 +232,7 @@ export const MAP_TYPES = [
 
 // ─── PART 6.3: CHARTS & GRAPHS (8) ───
 export const CHART_TYPES = [
-  { chart:'Probability gauge', x:'N/A', y:'0-100%', purpose:'Success chance' },
+  { chart:'Success score gauge', x:'N/A', y:'0-100 (uncalibrated)', purpose:'Screening indicator' },
   { chart:'Depth histogram', x:'Depth (m)', y:'Frequency', purpose:'Depth distribution' },
   { chart:'Yield curve', x:'Depth (m)', y:'Yield (m³/h)', purpose:'Optimal depth' },
   { chart:'Cost breakdown', x:'Categories', y:'Amount ($)', purpose:'Budget allocation' },
@@ -283,7 +283,7 @@ export const CONFIDENCE_LEVELS = [
 // ─── KEY SCIENTIFIC FORMULAS ───
 export const FORMULAS = {
   successProb: 'P(success) = w₁×P(geology) + w₂×P(structure) + w₃×P(topography) + w₄×P(vegetation) + w₅×P(remote_sensing) + w₆×P(historical)',
-  depthRegression: 'Depth(m) = β₀ + β₁×Probability + β₂×Elevation + β₃×Geology_Code + β₄×TWI + β₅×Distance_to_Stream + ε',
+  depthRegression: 'Depth(m) = β₀ + β₁×SuccessScore + β₂×Elevation + β₃×Geology_Code + β₄×TWI + β₅×Distance_to_Stream + ε',
   yieldEmpirical: 'Yield(m³/h) = a × K × b × s × f',
   yieldML: 'Yield = XGBoost(Depth, Geology, TWI, SAR_backscatter, NDVI, Historical_yields)',
   costModel: 'Cost($) = (Depth × Rate_geology × Rate_remoteness) + Casing + Screen + Pump + Mobilization + Contingency',
@@ -329,7 +329,7 @@ export const SCIENCE_PARTS: SciencePart[] = [
   { id:'terrain',         part:'3.2', title:'Terrain Feature Extraction',              icon:'🗺️', color:'#607D8B', count:5,  description:'Valley bottoms, alluvial fans, karst features, spring lines, paleo-channels' },
   { id:'vegetation',      part:'3.3', title:'Vegetation as Groundwater Indicator',     icon:'🌿', color:'#8BC34A', count:6,  description:'Phreatophytes, riparian, halophytes, algal mats, evergreen patches' },
   { id:'geol-structures', part:'3.4', title:'Geological Structure from Images',        icon:'🧱', color:'#FF9800', count:5,  description:'Fault scarps, joint sets, bedding planes, fold axes, dikes/veins' },
-  { id:'predictions',     part:'4',   title:'Predictive Capabilities',                icon:'🎯', color:'#F44336', count:31, description:'Success probability, depth, yield, water quality, cost estimation' },
+  { id:'predictions',     part:'4',   title:'Predictive Capabilities',                icon:'🎯', color:'#F44336', count:31, description:'Modelled success score (uncalibrated), depth, yield, water quality, cost estimation' },
   { id:'risk-assess',     part:'5',   title:'Risk Assessment',                        icon:'⚠️', color:'#FF5722', count:21, description:'Contamination, geological, financial, operational risk' },
   { id:'reporting',       part:'6',   title:'Output & Reporting',                     icon:'📄', color:'#607D8B', count:34, description:'10 report sections, 8 map types, 8 charts, 8 export formats' },
   { id:'validation',      part:'7',   title:'Validation & Accuracy',                  icon:'✅', color:'#4CAF50', count:14, description:'Accuracy targets, validation methodology, confidence metrics' },

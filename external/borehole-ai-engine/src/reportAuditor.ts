@@ -358,7 +358,7 @@ function auditScoreConsistency(result: AnalysisResult): AuditCheck {
 function auditProbabilityRechargeCoherence(result: AnalysisResult): AuditCheck {
   const base = {
     id: 4,
-    name: 'Probability-Recharge Coherence',
+    name: 'Success Score-Recharge Coherence',
     category: 'LOGIC',
     description: 'High success score with zero recharge is contradictory — cannot find water where none enters the aquifer',
   };
@@ -369,9 +369,9 @@ function auditProbabilityRechargeCoherence(result: AnalysisResult): AuditCheck {
 
   if (recharge === undefined || recharge === null) {
     if (prob > 0.80) {
-      return { ...base, severity: 'WARN', details: `Probability is ${(prob*100).toFixed(0)}% but no recharge data available. High confidence without water budget verification is risky.` };
+      return { ...base, severity: 'WARN', details: `Modelled success score is ${Math.round(prob * 100)}/100 but no recharge data available. High confidence without water budget verification is risky.` };
     }
-    return { ...base, severity: 'PASS', details: 'No recharge data available. Probability not making recharge-dependent claims.' };
+    return { ...base, severity: 'PASS', details: 'No recharge data available. The success score is not making recharge-dependent claims.' };
   }
 
   // Critical: zero recharge + high probability
@@ -389,7 +389,7 @@ function auditProbabilityRechargeCoherence(result: AnalysisResult): AuditCheck {
     return {
       ...base,
       severity: 'WARN',
-      details: `Probability=${(prob*100).toFixed(0)}% with recharge fraction only ${(rechargeFrac*100).toFixed(1)}% of rainfall. Consider if this optimism is justified. Low recharge means limited aquifer replenishment.`,
+      details: `Modelled success score ${Math.round(prob * 100)}/100 with recharge fraction only ${(rechargeFrac*100).toFixed(1)}% of rainfall. Consider if this optimism is justified. Low recharge means limited aquifer replenishment.`,
     };
   }
 
@@ -398,11 +398,11 @@ function auditProbabilityRechargeCoherence(result: AnalysisResult): AuditCheck {
     return {
       ...base,
       severity: 'WARN',
-      details: `Probability only ${(prob*100).toFixed(0)}% despite good recharge (${(rechargeFrac*100).toFixed(1)}% of rainfall). Terrain/soil factors may be undervalued, or image quality is poor. Consider widening site evaluation.`,
+      details: `Modelled success score only ${Math.round(prob * 100)}/100 despite good recharge (${(rechargeFrac*100).toFixed(1)}% of rainfall). Terrain/soil factors may be undervalued, or image quality is poor. Consider widening site evaluation.`,
     };
   }
 
-  return { ...base, severity: 'PASS', details: `Probability ${(prob*100).toFixed(0)}% is coherent with recharge ${recharge} mm/yr (${rechargeFrac !== undefined ? (rechargeFrac*100).toFixed(1) : '?'}% of rainfall). No contradiction detected.` };
+  return { ...base, severity: 'PASS', details: `Modelled success score ${Math.round(prob * 100)}/100 is coherent with recharge ${recharge} mm/yr (${rechargeFrac !== undefined ? (rechargeFrac*100).toFixed(1) : '?'}% of rainfall). No contradiction detected.` };
 }
 
 
@@ -454,7 +454,7 @@ function auditUncertaintyPresent(result: AnalysisResult): AuditCheck {
     return {
       ...base,
       severity: 'FAIL',
-      details: `Report presents depth=${result.recommendedDepth}m, yield=${result.estimatedYield} m³/hr, probability=${(result.probability*100).toFixed(0)}% as point estimates with NO uncertainty ranges. This implies false precision from a desktop assessment.`,
+      details: `Report presents depth=${result.recommendedDepth}m, yield=${result.estimatedYield} m³/hr, probability=${Math.round(result.probability * 100)}/100 as point estimates with NO uncertainty ranges. This implies false precision from a desktop assessment.`,
       fix: 'Add uncertainty field: depthRange=[depth×0.6, depth×1.5], yieldRange=[yield×0.4, yield×1.8], probabilityRange=[p-0.20, p+0.15].',
     };
   }
@@ -487,9 +487,9 @@ function auditUncertaintyPresent(result: AnalysisResult): AuditCheck {
     ...base,
     severity: 'PASS',
     details: (result as any).siteEvidence?.depth && (result as any).siteEvidence?.yield
-      ? `Uncertainty ranges verified: Depth ${u.depthRange[0]}-${u.depthRange[1]}m (conf: ${(u.depthConfidence*100).toFixed(0)}%), Yield ${u.yieldRange[0]}-${u.yieldRange[1]} m³/hr, Probability ${(u.probabilityRange[0]*100).toFixed(0)}-${(u.probabilityRange[1]*100).toFixed(0)}%.`
+      ? `Uncertainty ranges verified: Depth ${u.depthRange[0]}-${u.depthRange[1]}m (conf: ${(u.depthConfidence*100).toFixed(0)}%), Yield ${u.yieldRange[0]}-${u.yieldRange[1]} m³/hr, Probability ${Math.round(u.probabilityRange[0] * 100)}-${Math.round(u.probabilityRange[1] * 100)}/100.`
       // Review of 126efdbc, B-2: modelled depth/yield ranges are not printed without field evidence.
-      : `Uncertainty ranges present and consistent. Depth and yield are not shown until a field survey and a pumping test are entered; probability ${(u.probabilityRange[0]*100).toFixed(0)}-${(u.probabilityRange[1]*100).toFixed(0)}%.`,
+      : `Uncertainty ranges present and consistent. Depth and yield are not shown until a field survey and a pumping test are entered; probability ${Math.round(u.probabilityRange[0] * 100)}-${Math.round(u.probabilityRange[1] * 100)}/100.`,
   };
 }
 
@@ -526,13 +526,13 @@ function auditCrossMetricContradictions(result: AnalysisResult): AuditCheck {
 
   // Probability vs risk coherence
   if (result.probability > 0.85 && result.risk.overallRisk > 0.65) {
-    contradictions.push(`Probability ${(result.probability*100).toFixed(0)}% (very high) but risk ${(result.risk.overallRisk*100).toFixed(0)}% (high) — if risk is high, probability should be lower`);
+    contradictions.push(`Probability ${Math.round(result.probability * 100)}/100 (very high) but risk ${(result.risk.overallRisk*100).toFixed(0)}% (high) — if risk is high, probability should be lower`);
   }
 
   // Historical depletion vs probability
   const depletion = result.historicalData?.groundwater?.depletionRisk;
   if (depletion === 'critical' && result.probability > 0.70) {
-    contradictions.push(`Historical groundwater depletion risk is "critical" but probability is ${(result.probability*100).toFixed(0)}% — overly optimistic for a critically depleting aquifer`);
+    contradictions.push(`Historical groundwater depletion risk is "critical" but probability is ${Math.round(result.probability * 100)}/100 — overly optimistic for a critically depleting aquifer`);
   }
 
   if (contradictions.length > 0) {
@@ -754,8 +754,8 @@ function auditDrillDecision(result: AnalysisResult): AuditCheck {
 
   const evOk = (result as any).siteEvidence?.depth && (result as any).siteEvidence?.yield;
   return { ...base, severity: 'PASS', details: evOk
-    ? `Primary point: ${dd.primaryPoint.lat.toFixed(4)}, ${dd.primaryPoint.lon.toFixed(4)}. Depth: ${dd.targetDepth_m}m. Yield: ${dd.expectedYield_m3hr} m3/hr. Success: ${dd.successProbability}%.`
-    : `Primary point: ${dd.primaryPoint.lat.toFixed(4)}, ${dd.primaryPoint.lon.toFixed(4)}. Depth and yield are shown only with a field survey and a pumping test. Success: ${dd.successProbability}%.` };
+    ? `Primary point: ${dd.primaryPoint.lat.toFixed(4)}, ${dd.primaryPoint.lon.toFixed(4)}. Depth: ${dd.targetDepth_m}m. Yield: ${dd.expectedYield_m3hr} m3/hr. Success: ${Math.round(Number(dd.successProbability) || 0)}/100.`
+    : `Primary point: ${dd.primaryPoint.lat.toFixed(4)}, ${dd.primaryPoint.lon.toFixed(4)}. Depth and yield are shown only with a field survey and a pumping test. Success: ${Math.round(Number(dd.successProbability) || 0)}/100.` };
 }
 
 function auditRiskRegister(result: AnalysisResult): AuditCheck {

@@ -776,7 +776,7 @@ function runMonteCarloAnalysis(r: any): UncertaintyAnalysis {
   const probSpread = hasERT ? 0.06 : (hasGeophysics && hasNearby) ? 0.08 : 0.10;
   const probSamples = generateBetaSamples(baseProb, probSpread, N);
   const successMC = computeMonteCarloStats('Success Score (uncalibrated)', '/100', probSamples.map(v => v * 100), [
-    { name: 'Base probability', distribution: 'Beta', params: `mean=${(baseProb * 100).toFixed(0)}%, spread=${(probSpread * 100).toFixed(0)}%` },
+    { name: 'Base success score', distribution: 'Beta', params: `mean=${Math.round(baseProb * 100)}/100, spread=${Math.round(probSpread * 100)} points` },
   ]);
 
   // ── Water Quality Monte Carlo ──

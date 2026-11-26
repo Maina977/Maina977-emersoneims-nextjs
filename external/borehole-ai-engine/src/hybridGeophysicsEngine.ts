@@ -908,7 +908,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
       `Expected depth: ${input.predictedDepth_m}m`,
       `Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr`,
       `Rock type: ${input.rockType}`,
-      `Desktop probability: ${(input.probability * 100).toFixed(0)}%`,
+      `Desktop modelled success score: ${Math.round(input.probability * 100)}/100 (uncalibrated, not a probability)`,
       isCrystalline ? `Fracture zone expected at ${Math.round(input.predictedDepth_m * 0.3)}-${Math.round(input.predictedDepth_m * 0.8)}m` : `Aquifer horizon at ${Math.round(input.predictedDepth_m * 0.4)}-${input.predictedDepth_m}m`,
     ],
     ertExpected: [
@@ -941,8 +941,8 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
       step: 1, title: 'Desktop Screening', subtitle: 'Entire Site',
       status: 'complete',
       icon: '\u{1F9E0}',
-      description: `${sourceConvergence} satellite, geological, and hydrological data sources analyzed across the entire site area. desktop scoring model computes groundwater probability, depth, yield, geology classification, and contamination risk.`,
-      keyOutput: `${(input.probability * 100).toFixed(0)}% groundwater probability | ${input.predictedDepth_m}m depth | ${input.predictedYield_m3hr.toFixed(1)} m³/hr | ${input.rockType}`,
+      description: `${sourceConvergence} satellite, geological, and hydrological data sources analyzed across the entire site area. desktop scoring model computes a modelled success score (uncalibrated, not a probability), depth, yield, geology classification, and contamination risk.`,
+      keyOutput: `${Math.round(input.probability * 100)}/100 modelled success score (uncalibrated) | ${input.predictedDepth_m}m depth | ${input.predictedYield_m3hr.toFixed(1)} m³/hr | ${input.rockType}`,
       details: [
         `Satellite data: SRTM elevation, GLDAS soil moisture, GRACE groundwater trends, NASA POWER climate`,
         `Geological: Multi-source rock classification (8 classifiers), lineament analysis, subsurface model`,

@@ -941,7 +941,7 @@ export class BoreholeAnalyzer {
       else if (trend === 'critically-depleting') probability = Math.max(0.10, probability - 0.15);
 
       probability = Math.round(probability * 100) / 100;
-      console.log(`[Pipeline] Probability recalibrated with water budget: recharge=${recharge}mm/yr, smClass=${smClass}, trend=${trend} → ${(probability*100).toFixed(1)}%`);
+      console.log(`[Pipeline] Probability recalibrated with water budget: recharge=${recharge}mm/yr, smClass=${smClass}, trend=${trend} → ${Math.round(probability * 100)}/100 (uncalibrated)`);
     }
 
     // Depth estimation with real data calibration
@@ -1332,7 +1332,7 @@ export class BoreholeAnalyzer {
     probability = ensembleResult.probability;
     calibratedDepth = ensembleResult.depth_m;
     calibratedYield = ensembleResult.yield_m3h;
-    console.log(`[Pipeline] Bayesian ensemble: ${ensembleResult.sourcesUsed} sources, agreement=${ensembleResult.sourceAgreement}, P=${(probability*100).toFixed(1)}%, depth=${calibratedDepth}m, yield=${calibratedYield}m³/h`);
+    console.log(`[Pipeline] Bayesian ensemble: ${ensembleResult.sourcesUsed} sources, agreement=${ensembleResult.sourceAgreement}, score=${Math.round(probability * 100)}/100, depth=${calibratedDepth}m, yield=${calibratedYield}m³/h`);
 
     let subsurfaceModel: any = undefined;
     let aquiferSimulation: any = undefined;

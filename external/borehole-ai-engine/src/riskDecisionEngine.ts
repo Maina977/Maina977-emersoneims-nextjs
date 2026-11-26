@@ -335,7 +335,7 @@ export function assessDrillingRisk(input: RiskDecisionInput): RiskDecisionResult
     scenarios,
     dataQualityWarning,
     confidenceGrade,
-    methodology: 'Multi-factor probabilistic risk model with Bayesian prior adjustment from regional data (ISO 31000 framework)',
+    methodology: 'Multi-factor risk-scoring model (uncalibrated scores) with Bayesian prior adjustment from regional data (ISO 31000 framework)',
   };
 }
 
@@ -420,7 +420,7 @@ function makeAlternatives(primaryAction: DecisionRecommendation['action'], riskS
       headline: 'Evaluate alternative drilling point within 500m',
       reasoning: [
         'Target fracture intersections or valley positions',
-        'Use probabilistic drilling map to find optimal point',
+        'Use the drilling screening map to compare candidate points',
         'Even 100m shift can significantly change success score',
       ],
     });

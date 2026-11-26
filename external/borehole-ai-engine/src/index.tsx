@@ -188,7 +188,7 @@ const SUBSYSTEMS: SubsystemDef[] = [
     models:['Groundwater flow, capture zones, drawdown, seasonal recharge cycles'],
     outputs:['Flow nets, capture zone maps, sustainable yield, climate projections'] },
   { id:'ml', number:6, title:'Estimate Model', icon:'\u{1F9E0}', status:88, color:'#9C27B0',
-    predicts:['Success likelihood, depth and yield ranges from the data above and nearby records'],
+    predicts:['A modelled success score (uncalibrated, not a probability), depth and yield ranges from the data above and nearby records'],
     classifies:['Soil type and water-quality risks to test for'],
     outputs:['Ranges, not certainties — confirmed only by a survey and a test-pumped borehole'] },
   { id:'risk', number:7, title:'Risk Assessment', icon:'\u26A0\uFE0F', status:85, color:'#F44336',
@@ -4118,7 +4118,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         <div className="result-item"><span className="rl">NDVI Min (dry season)</span><span className="rv">{(result.vegetationGWProxy as any).ndviMin.toFixed(3)}</span></div>
                         <div className="result-item"><span className="rl">Seasonal Range</span><span className="rv">{(result.vegetationGWProxy as any).ndviSeasonalRange.toFixed(3)}</span></div>
                         <div className="result-item"><span className="rl">GW Dependence</span><span className="rv" style={{fontWeight:700,textTransform:'uppercase',color:(result.vegetationGWProxy as any).groundwaterDependence==='very_high'||(result.vegetationGWProxy as any).groundwaterDependence==='high'?'#22c55e':(result.vegetationGWProxy as any).groundwaterDependence==='moderate'?'#fbbf24':'#94a3b8'}}>{String((result.vegetationGWProxy as any).groundwaterDependence).replace('_',' ')}</span></div>
-                        <div className="result-item"><span className="rl">Shallow Water Table</span><span className="rv" style={{fontWeight:700}}>{(result.vegetationGWProxy as any).shallowWaterTableLikelihood}%</span></div>
+                        <div className="result-item"><span className="rl">Shallow water-table indicator score (uncalibrated)</span><span className="rv" style={{fontWeight:700}}>{Math.round(Number((result.vegetationGWProxy as any).shallowWaterTableLikelihood) || 0)}/100</span></div>
                       </div>
                       <div style={{marginTop:8,fontSize:11,color:'var(--text-tertiary)'}}>{(result.vegetationGWProxy as any).methodology}</div>
                     </div>
@@ -5638,7 +5638,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                           <div className="result-item"><span className="rl">Casing Depth</span><span className="rv">{gated(evidenceGate(result).depth, `${integrated.drillSpec.casingDepth_m}m`, DEPTH_NEEDS)}</span></div>
                           <div className="result-item"><span className="rl">Screen</span><span className="rv">{gated(evidenceGate(result).depth, `${integrated.drillSpec.screenInterval_m[0]}–${integrated.drillSpec.screenInterval_m[1]}m`, DEPTH_NEEDS)}</span></div>
                           <div className="result-item"><span className="rl">Expected Yield</span><span className="rv">{gated(evidenceGate(result).yield, `${integrated.drillSpec.expectedYield_m3hr} m³/hr`, YIELD_NEEDS)}</span></div>
-                          <div className="result-item"><span className="rl">Siting confidence (after survey)</span><span className="rv">{integrated.drillSpec.successProbability_pct}%</span></div>
+                          <div className="result-item"><span className="rl">Projected siting score after survey (hypothetical, uncalibrated)</span><span className="rv">{Math.round(Number(integrated.drillSpec.successProbability_pct) || 0)}/100</span></div>
                           <div className="result-item"><span className="rl">Method</span><span className="rv">{integrated.drillSpec.drillingMethod}</span></div>
                           <div className="result-item"><span className="rl">Drill Cost Est.</span><span className="rv">${integrated.drillSpec.estimatedCost_usd.toLocaleString()}</span></div>
                           <div className="result-item"><span className="rl">Geophysics survey (optional)</span><span className="rv">${integrated.totalCost_usd.toLocaleString()}</span></div>
@@ -6035,7 +6035,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {activeResultTab==='risk-decision' && (
             <div>
               <h4 className="tab-title">{'\u{1F3AF}'} Risk-Based Decision Engine</h4>
-              <p className="tab-desc">Probabilistic success/failure breakdown with financial risk analysis and actionable recommendations.</p>
+              <p className="tab-desc">Modelled success and risk scores (uncalibrated; not probabilities) with financial risk analysis and actionable recommendations.</p>
               {result.riskDecision ? (
                 <div>
                   {/* Probability Breakdown */}
@@ -6073,7 +6073,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <h4 style={{marginTop:12,marginBottom:8}}>Risk Categories</h4>
                   {result.riskDecision.risks.map((r: any,i: number)=>(
                     <div key={i} style={{padding:10,borderRadius:8,background:'rgba(255,255,255,0.02)',marginBottom:8,borderLeft:`3px solid ${r.impact==='critical'?'#ef4444':r.impact==='high'?'#f97316':r.impact==='moderate'?'#f59e0b':'#22c55e'}`}}>
-                      <div style={{fontWeight:700,fontSize:13}}>{r.name} — {(r.probability*100).toFixed(0)}% ({r.impact})</div>
+                      <div style={{fontWeight:700,fontSize:13}}>{r.name} — modelled risk score {Math.round(r.probability * 100)}/100, uncalibrated ({r.impact})</div>
                       <div style={{fontSize:12,color:'var(--text-secondary)',marginTop:2}}>{r.description}</div>
                       <ul style={{margin:'4px 0 0',paddingLeft:18}}>{r.mitigation.map((m: string,mi: number)=><li key={mi} style={{fontSize:11}}>{m}</li>)}</ul>
                     </div>
@@ -6260,7 +6260,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         <div style={{flex:1,height:8,borderRadius:4,background:'rgba(255,255,255,0.06)'}}>
                           <div style={{height:'100%',borderRadius:4,width:`${(t.probability??0)*100}%`,background:'#38bdf8'}}/>
                         </div>
-                        <span style={{fontSize:12,width:40,textAlign:'right'}}>{((t.probability??0)*100).toFixed(0)}%</span>
+                        <span style={{fontSize:12,width:40,textAlign:'right'}}>{Math.round((t.probability??0) * 100)}/100</span>
                       </div>
                     ))}
                     </div>
@@ -6318,7 +6318,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {/* ═══ PROBABILISTIC DRILL MAP ═══ */}
           {activeResultTab==='drill-map' && (
             <div>
-              <h4 className="tab-title">{'\u{1F5FA}\uFE0F'} Probabilistic Drilling Map</h4>
+              <h4 className="tab-title">{'\u{1F5FA}\uFE0F'} Drilling Screening Map (relative scores, uncalibrated)</h4>
               <p className="tab-desc">Spatial screening-score heatmap (uncalibrated relative scores) with ranked drilling points and modifier analysis.</p>
               {result.drillMap ? (
                 <div>
@@ -6382,7 +6382,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:8,marginBottom:16}}>
                     <div className="result-item"><span className="rl">Corrected Depth</span><span className="rv">{result.calibrationCorrection.correctedDepth_m?.toFixed(1)}m</span></div>
                     <div className="result-item"><span className="rl">Corrected Yield</span><span className="rv">{result.calibrationCorrection.correctedYield_m3hr?.toFixed(2)} m³/hr</span></div>
-                    <div className="result-item"><span className="rl">Corrected Prob.</span><span className="rv">{((result.calibrationCorrection.correctedProbability ?? 0)*100).toFixed(1)}%</span></div>
+                    <div className="result-item"><span className="rl">Corrected score (uncalibrated)</span><span className="rv">{Math.round((result.calibrationCorrection.correctedProbability ?? 0) * 100)}/100</span></div>
                     <div className="result-item"><span className="rl">Model Confidence</span><span className="rv">{((result.calibrationCorrection.modelConfidence ?? 0)*100).toFixed(0)}%</span></div>
                     <div className="result-item"><span className="rl">Based On</span><span className="rv">{result.calibrationCorrection.basedOnEntries} entries</span></div>
                   </div>
@@ -6802,7 +6802,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                           <tr><td><strong>Aquifer Thickness</strong></td><td style={{fontWeight:'bold',color:'#0ea5e9'}}>{ert.features.targetThickness_m?.toFixed(1) ?? 'N/A'}m</td><td>Bottom - Top (verified against 1D model)</td></tr>
                           <tr><td><strong>Mean Resistivity</strong></td><td>{ert.features.lowResZones?.[0]?.avgResistivity?.toFixed(0) ?? ((ert.features.resistivityRange?.min ?? 0 + (ert.features.resistivityRange?.max ?? 0)) / 2).toFixed(0)} Ohm-m</td><td>Volume-weighted average within aquifer zone</td></tr>
                           <tr><td><strong>Continuity Score</strong></td><td style={{fontWeight:'bold',color:(ert.features.overallContinuity||0)>0.6?'#16a34a':'#f59e0b'}}>{((ert.features.overallContinuity||0)*100).toFixed(0)}%</td><td>Lateral extent / profile length (spatial persistence)</td></tr>
-                          <tr><td><strong>Fracture Probability</strong></td><td style={{fontWeight:'bold',color:'#a855f7'}}>{ert.features.fractureIndicators} indicator{ert.features.fractureIndicators !== 1 ? 's' : ''} ({ert.features.fractureIndicators >= 3 ? 'High' : ert.features.fractureIndicators >= 1 ? 'Moderate' : 'Low'})</td><td>Vertical anomaly detection (sharp resistivity gradient)</td></tr>
+                          <tr><td><strong>Fracture indicators</strong></td><td style={{fontWeight:'bold',color:'#a855f7'}}>{ert.features.fractureIndicators} indicator{ert.features.fractureIndicators !== 1 ? 's' : ''} ({ert.features.fractureIndicators >= 3 ? 'High' : ert.features.fractureIndicators >= 1 ? 'Moderate' : 'Low'})</td><td>Vertical anomaly detection (sharp resistivity gradient)</td></tr>
                         </tbody>
                       </table>
                       {/* Low-res zones detail */}
@@ -7260,7 +7260,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:16}}>
                     <div className="result-item"><span className="rl">Depth Δ</span><span className="rv" style={{color:Math.abs(dp.vsDesktopDelta.depth)>5?'#f59e0b':'#16a34a'}}>{dp.vsDesktopDelta.depth>0?'+':''}{dp.vsDesktopDelta.depth}m</span></div>
                     <div className="result-item"><span className="rl">Yield Δ</span><span className="rv" style={{color:Math.abs(dp.vsDesktopDelta.yield)>1?'#f59e0b':'#16a34a'}}>{dp.vsDesktopDelta.yield>0?'+':''}{dp.vsDesktopDelta.yield} m³/h</span></div>
-                    <div className="result-item"><span className="rl">Probability Δ</span><span className="rv" style={{color:Math.abs(dp.vsDesktopDelta.probability)>5?'#f59e0b':'#16a34a'}}>{dp.vsDesktopDelta.probability>0?'+':''}{dp.vsDesktopDelta.probability}%</span></div>
+                    <div className="result-item"><span className="rl">Success score Δ (points)</span><span className="rv" style={{color:Math.abs(dp.vsDesktopDelta.probability)>5?'#f59e0b':'#16a34a'}}>{dp.vsDesktopDelta.probability>0?'+':''}{dp.vsDesktopDelta.probability} points</span></div>
                   </div>
                   <div className="geo-note" style={{fontSize:11}}>{dp.methodology}</div>
                 </div>
@@ -7289,7 +7289,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:8,marginBottom:16}}>
                         <div className="result-item"><span className="rl">Sub-model depth</span><span className="rv" style={{fontWeight:700}}>{rm.correctedDepth_m}m (governing {Math.round(result.recommendedDepth)}m)</span></div>
                         <div className="result-item"><span className="rl">Corrected Yield</span><span className="rv" style={{fontWeight:700}}>{rm.correctedYield_m3h} m³/h</span></div>
-                        <div className="result-item"><span className="rl">Corrected Probability</span><span className="rv" style={{fontWeight:700}}>{rm.correctedProbability}%</span></div>
+                        <div className="result-item"><span className="rl">Corrected success score (uncalibrated)</span><span className="rv" style={{fontWeight:700}}>{Math.round(Number(rm.correctedProbability) || 0)}/100</span></div>
                         <div className="result-item"><span className="rl">Seasonal Factor</span><span className="rv" style={{color:rm.seasonalAdjustment<0.85?'#f59e0b':'#16a34a',fontWeight:700}}>×{rm.seasonalAdjustment}</span></div>
                         <div className="result-item"><span className="rl">Regional Confidence</span><span className="rv" style={{fontWeight:700}}>{rm.regionalConfidence}%</span></div>
                         <div className="result-item"><span className="rl">Model Accuracy</span><span className="rv">Not measured</span></div>
@@ -8150,7 +8150,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div style={{fontSize:10,color:'var(--text-muted)',marginBottom:6}}>MODELLED, uncalibrated: a score, not a probability. No drilled outcomes have been used to check it yet.</div>
                     <div style={{fontSize:11}}>Desktop: <strong>{probabilityBand(result.probability)}</strong></div>
                     {result.drillingPrediction && <div style={{fontSize:11}}>Desktop model: <strong>{Math.round(Number(result.drillingPrediction.successProbability) || 0)}/100 (uncalibrated)</strong></div>}
-                    {result.regionalModel?.correctedProbability && <div style={{fontSize:11}}>Regional: <strong>{result.regionalModel.correctedProbability}%</strong></div>}
+                    {result.regionalModel?.correctedProbability && <div style={{fontSize:11}}>Regional: <strong>{Math.round(Number(result.regionalModel.correctedProbability) || 0)}/100</strong></div>}
                   </div>
                 </div>
                 {/* Data quality integration */}
@@ -8504,7 +8504,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 </table>
               </div>
               <div className="geo-note" style={{marginTop:16}}>
-                <strong>This Site:</strong> Confidence level is <strong>{result.probability>=0.9?'High (90%+)':result.probability>=0.7?'Medium (70-90%)':result.probability>=0.5?'Low (50-70%)':'Very Low (<50%)'}</strong> — {result.probability>=0.9?'Proceed with standard design':result.probability>=0.7?'Conservative design recommended':result.probability>=0.5?'Test drilling recommended':'Site survey required'}.
+                <strong>This Site:</strong> Screening class is <strong>{result.probability>=0.9?'High (score 90/100+)':result.probability>=0.7?'Medium (score 70-90/100)':result.probability>=0.5?'Low (score 50-70/100)':'Very Low (score <50/100)'}</strong> (uncalibrated; not a probability) — {result.probability>=0.9?'Proceed with standard design':result.probability>=0.7?'Conservative design recommended':result.probability>=0.5?'Test drilling recommended':'Site survey required'}.
               </div>
 
               {/* ── Credibility Rating Table (for Validation tab) ── */}
@@ -8835,8 +8835,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
                           </div>
                         ))}
                         <div style={{marginTop:8,borderTop:'1px solid rgba(139,92,246,0.1)',paddingTop:6}}>
-                          <div style={{fontSize:10,color:'#94a3b8'}}>Avg Probability</div>
-                          <div style={{fontSize:14,fontWeight:700,color:stats.averageProbability >= 0.65 ? '#22c55e' : '#eab308'}}>{(stats.averageProbability * 100).toFixed(1)}%</div>
+                          <div style={{fontSize:10,color:'#94a3b8'}}>Avg success score (uncalibrated)</div>
+                          <div style={{fontSize:14,fontWeight:700,color:stats.averageProbability >= 0.65 ? '#22c55e' : '#eab308'}}>{Math.round(stats.averageProbability * 100)}/100</div>
                         </div>
                       </div>
 

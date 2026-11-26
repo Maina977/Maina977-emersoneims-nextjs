@@ -220,3 +220,49 @@ describe('S46: full PDF text, the results header and the tabs carry no probabili
     }
   });
 });
+
+// Review of 61a0d4d7, section 9: an exhaustive sweep instead of one remnant at a time.
+describe('S46 exhaustive: no AquaScan source string or export presents the uncalibrated score (or a modelled risk) as a probability', () => {
+  const SRC_DIR = path.resolve('external/borehole-ai-engine/src');
+  // Wording that presents the success score or a modelled risk as a probability, chance or likelihood percentage.
+  const WORDING = /\b[Cc]hance of (success|water|a productive|no water|yield|borehole)|[Ss]uccess probability|[Dd]esktop probability|groundwater probability|Probability Consensus|GPI vs Probability|Corrected Prob|Probability Δ|HIGHEST probability|Probabilistic Drill|Probabilistic Risk|USE THIS PROBABILITY|left out of the probability|Probability Breakdown|Fused Probability|Avg Probability|Siting confidence \(after survey\)/;
+  // A probability field printed as a percentage.
+  const AS_PERCENT = /[Pp]rob[A-Za-z]*\s?\*\s?100\)\.toFixed\(\d\)\}%|[Pp]robabilit[A-Za-z_]*\}%|[a-z]Probability[^`{}]*\)\.toFixed\(\d\)\}%/;
+  // Legitimate percentages and wording, each classified:
+  const ALLOW = [
+    /probability_pct|secondary_probability/,            // soil-class (WRB) share from SoilGrids
+    /primaryType\?\.probability/,                        // aquifer-type share (classification)
+    /label\.probability|label\.className/,               // image-classifier confidence (photo not used for the model)
+    /console\.(log|warn|error)/,                         // developer logs, not shown to customers
+    /not the chance of water/,                           // the location grade disclaimer
+  ];
+  // Comments are developer notes, not customer text: block comments (kept as blank lines so line
+  // numbers hold), whole-line comments and trailing " // ..." comments are dropped.
+  const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, '')).split(/\r?\n/).map((l) => l.replace(/^\s*\/\/.*$/, '').replace(/\s\/\/\s.*$/, '')).join('\n');
+  it('(a) static: every engine source file (strings, templates, JSX text) is clean, apart from the classified allow-list', () => {
+    const hits: string[] = [];
+    for (const f of fs.readdirSync(SRC_DIR).filter((x) => /\.(ts|tsx)$/.test(x))) {
+      const lines = stripComments(fs.readFileSync(path.join(SRC_DIR, f), 'utf8')).split('\n');
+      lines.forEach((l, i) => {
+        if (!(WORDING.test(l) || AS_PERCENT.test(l))) return;
+        if (ALLOW.some((a) => a.test(l))) return;
+        hits.push(`${f}:${i + 1}: ${l.trim().slice(0, 140)}`);
+      });
+    }
+    expect(hits).toEqual([]);
+  });
+  it('(b) dynamic: the full and screening JSON exports, the full PDF and the screening exports for no-evidence and survey+pumping-test runs', async () => {
+    const readable = (json: string) => { const s: string[] = []; JSON.parse(json, (_k, v) => { if (typeof v === 'string') s.push(v); return v; }); return s.join('\n'); };
+    // Within one line/value (JSON string values are joined by newlines; adjacency across them is not a claim).
+    const NUM_PROB = /\b\d+(\.\d+)?[ \t]?%[ \t]*(success|chance|probability)|(success|dry|risk)[^.\n|]{0,30}\bprobabilit|probabilit[^.\n|]{0,25}\d+(\.\d+)?\s?%/i;
+    for (const [r, isFull] of [[screening, false], [full, true]] as const) {
+      const ex = await exportsOf(r, isFull);
+      for (const [fmt, t0] of Object.entries(ex)) {
+        const t = fmt === 'JSON' ? readable(t0) : t0;
+        const cleaned = t.split(/\n/).filter((l) => !ALLOW.some((a) => a.test(l))).join('\n');
+        expect(cleaned.match(WORDING)?.[0] ?? null, `${isFull ? 'full' : 'screening'} ${fmt}`).toBeNull();
+        expect(cleaned.replace(/not a probability[^.\n]*/gi, '').match(NUM_PROB)?.[0] ?? null, `${isFull ? 'full' : 'screening'} ${fmt}`).toBeNull();
+      }
+    }
+  });
+});
