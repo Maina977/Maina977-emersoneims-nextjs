@@ -14,6 +14,9 @@ export default function OrdersPage() {
   const [customerOrders, setCustomerOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  // Order history needs an account; the history API was retired (security
+  // hotfix 2026-11-26) and answers 410, and the site has no sign-in for it.
+  const [historyRetired, setHistoryRetired] = useState(false);
 
   useEffect(() => {
     // In production, get customerId from auth context
@@ -28,8 +31,10 @@ export default function OrdersPage() {
 
   const fetchOrders = async (id: string) => {
     try {
-      const response = await fetch(`/api/customers/${id}/orders`);
-      if (response.ok) {
+      const response = await fetch(`/api/customers/${encodeURIComponent(id)}/orders`);
+      if (response.status === 410) {
+        setHistoryRetired(true);
+      } else if (response.ok) {
         const data = await response.json();
         setCustomerOrders(data.orders.sort((a: Order, b: Order) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -50,16 +55,19 @@ export default function OrdersPage() {
     );
   }
 
-  if (!customerId) {
+  if (!customerId || historyRetired) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md px-6">
           <p className="text-4xl mb-4">📦</p>
           <h1 className="text-2xl font-bold text-white mb-2">Order History</h1>
-          <p className="text-gray-400">Please log in to view your orders</p>
-          <button className="mt-6 px-6 py-2 bg-amber-500 text-black font-bold rounded-lg hover:bg-amber-400 transition">
-            Sign In
-          </button>
+          <p className="text-gray-400">
+            Order history needs an account, and online order tracking is not available yet. Keep the
+            order number from your confirmation and contact us to check an order&apos;s status.
+          </p>
+          <a href="/contact" className="inline-block mt-6 px-6 py-2 bg-amber-500 text-black font-bold rounded-lg hover:bg-amber-400 transition">
+            Contact Us
+          </a>
         </div>
       </div>
     );
