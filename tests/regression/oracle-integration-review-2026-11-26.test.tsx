@@ -45,7 +45,18 @@ afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); });
 const F = (id: string) => FAMILIES.find((f) => f.id === id)!;
 const tab = (c: HTMLElement, f: FaultFamily) => fireEvent.click([...c.querySelectorAll('[role="tab"]')].find((b) => b.textContent === f.title)!);
 const inputOf = (c: HTMLElement, id: string) => { const els = c.querySelectorAll(`[id="gd-${id.startsWith('screen.') ? 'screen' : 'all'}-${id.replace(/\./g, '-')}"]`); if (!els.length) throw new Error('no input ' + id); return els[els.length - 1]; };
-const setA = (c: HTMLElement, id: string, v: string) => fireEvent.change(inputOf(c, id), { target: { value: v } });
+// Safety review F10 (2026-11-26): every pressure and temperature needs its unit chosen (no default).
+const UNIT_OF: Record<string, string> = { oilPressure: 'kPa', oemMinOilPressure: 'kPa', oilTemp: '°C', oemMaxOilTemp: '°C', coolantTemp: '°C', oemAlarmCoolantTemp: '°C' };
+const pickUnit = (c: HTMLElement, id: string) => {
+  const u = UNIT_OF[id]; if (!u) return;
+  const q = FAMILIES.flatMap((f) => f.questions).find((x) => x.id === id)!;
+  const sels = c.querySelectorAll(`select[aria-label="Unit: ${q.text}"]`);
+  const sel = sels[sels.length - 1] as HTMLSelectElement | undefined;
+  if (sel && !sel.value) fireEvent.change(sel, { target: { value: u } });
+};
+/** The same session with the units the panel helper chose (pickUnit), for the expected result. */
+const withUnits = (session: Record<string, Record<string, string>>) => Object.fromEntries(Object.entries(session).map(([k, b]) => [k, { ...b, ...Object.fromEntries(Object.keys(b).filter((id) => UNIT_OF[id]).map((id) => [`${id}.unit`, UNIT_OF[id]])) }]));
+const setA = (c: HTMLElement, id: string, v: string) => { pickUnit(c, id); fireEvent.change(inputOf(c, id), { target: { value: v } }); };
 const stopHold = (c: HTMLElement) => !!c.querySelector('[data-testid="gd-stop-hold"]');
 const ALL_ACTIONS = FAMILIES.flatMap((f) => f.causes.flatMap((x) => x.actions));
 const RUNNING = FAMILIES.flatMap((f) => f.causes.flatMap((x) => x.runningChecks ?? []));
@@ -316,7 +327,7 @@ describe('reviewer I3: random sessions through the integrated panel (with the sa
       const { container: c } = render(<Panel />);
       for (const [k, v] of Object.entries(session[SCREEN_BUCKET])) setA(c, k, v);
       for (const f of fams) { tab(c, f); const ks = Object.keys(session[f.id]).sort((a, b) => (a.startsWith('oem') ? -1 : 0) - (b.startsWith('oem') ? -1 : 0)); for (const k of ks) setA(c, k, session[f.id][k]); }
-      const finalStop = FAMILIES.some((f) => sessionRecord(f, session).result.stopActive);
+      const finalStop = FAMILIES.some((f) => sessionRecord(f, withUnits(session)).result.stopActive);
       for (const f of FAMILIES) {
         tab(c, f);
         const t = c.textContent ?? '';
@@ -327,7 +338,7 @@ describe('reviewer I3: random sessions through the integrated panel (with the sa
           for (const a of RUNNING) expect(t, `${ctx} :: ${a}`).not.toContain(a);
           expect(c.querySelector('[data-testid="next-check"]'), ctx).toBeNull();
         } else {
-          const r = sessionRecord(f, session).result;
+          const r = sessionRecord(f, withUnits(session)).result;
           for (const cz of r.ranked.slice(0, 3).filter((x) => x.score > 0)) for (const a of cz.actions) expect(t, `${ctx} :: missing ${a}`).toContain(a);
           if (r.nextQuestion) expect(c.querySelector('[data-testid="next-check"]')!.textContent, ctx).toContain(r.nextQuestion.text);
         }
@@ -341,7 +352,7 @@ describe('reviewer I3: random sessions through the integrated panel (with the sa
 
 describe('R-INT-6: a STOP on a card always has a structured STOP; a pending value is flushed, not dropped', () => {
   it('the record\'s own STOP (nothing latched in the browser) goes into guidedSafety and blocks completion; a later clearance of that STOP resolves it', () => {
-    const session = { 'low-oil-pressure': { oemMinOilPressure: '150', oilPressure: '100' } };
+    const session = { 'low-oil-pressure': { oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa', oilPressure: '100', 'oilPressure.unit': 'kPa' } };
     const g = guardedSessionRecord(F('low-oil-pressure'), session, {}, { latched: [], cleared: [], hold: false });
     expect(g.record.findings.split('\n')[0]).toMatch(/^STOP/);
     const own = g.safety.stops.filter((s) => s.fromRecord);

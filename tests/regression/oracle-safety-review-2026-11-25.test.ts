@@ -50,7 +50,7 @@ describe('F1 (BLOCKING): no running, cranking or live step under a STOP — all 
     ['no-crank: seized + corroded terminals (B12)', NO_CRANK, { barOver: 'locked', terminals: 'corroded' }, /while cranking/],
     ['low oil: knocking + sender + low level', LOW_OIL_PRESSURE, { knock: 'yes', gauge: 'sender', oilLevel: 'low' }, /mechanical gauge|blue smoke/],
     ['no-voltage: insulation STOP + residual none + overload', NO_VOLTAGE, { insulation: '0.5', oemMinInsulation: '1', 'oemMinInsulation.class': 'shutdown', residual: 'none', loadPct: '120' }, /Flash the field|Reduce load; stage motor starts/],
-    ['overheating: coolant STOP + radiator blocked + overload', OVERHEATING, { coolantTemp: '105', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.class': 'shutdown', radiator: 'blocked', loadPct: '120' }, /temperature drop across the core|Reduce load/],
+    ['overheating: coolant STOP + radiator blocked + overload', OVERHEATING, { coolantTemp: '105', 'coolantTemp.unit': '°C', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.unit': '°C', 'oemAlarmCoolantTemp.class': 'shutdown', radiator: 'blocked', loadPct: '120' }, /temperature drop across the core|Reduce load/],
     ['exhaust smoke: milky oil + overload', EXHAUST_SMOKE, { oilCondition: 'milky', colour: 'black', loadPct: '120' }, /Reduce the load to within the rating/],
   ] as const)('%s', (name, f, raw, bad) => {
     const r = run(f as FaultFamily, raw as Record<string, string>);
@@ -101,14 +101,14 @@ describe('F1 (BLOCKING): no running, cranking or live step under a STOP — all 
 
 describe('F2 (BLOCKING): no CAUTION that implies continued running after a STOP', () => {
   it.each([
-    ['low oil: pressure STOP + oil-temp warning', LOW_OIL_PRESSURE, { oilPressure: '100', oemMinOilPressure: '150', 'oemMinOilPressure.class': 'shutdown', oilTemp: '130', oemMaxOilTemp: '130', 'oemMaxOilTemp.class': 'warning' }],
-    ['overheating: combustion gas + coolant warning (addendum example)', OVERHEATING, { gasBubbles: 'yes', coolantTemp: '100', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.class': 'warning' }],
+    ['low oil: pressure STOP + oil-temp warning', LOW_OIL_PRESSURE, { oilPressure: '100', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa', 'oemMinOilPressure.class': 'shutdown', oilTemp: '130', 'oilTemp.unit': '°C', oemMaxOilTemp: '130', 'oemMaxOilTemp.unit': '°C', 'oemMaxOilTemp.class': 'warning' }],
+    ['overheating: combustion gas + coolant warning (addendum example)', OVERHEATING, { gasBubbles: 'yes', coolantTemp: '100', 'coolantTemp.unit': '°C', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.unit': '°C', 'oemAlarmCoolantTemp.class': 'warning' }],
     ['no-voltage: insulation STOP + frequency warning', NO_VOLTAGE, { insulation: '0.5', oemMinInsulation: '1', 'oemMinInsulation.class': 'shutdown', frequency: '45', oemMinFrequency: '48', 'oemMinFrequency.class': 'warning' }],
     ['exhaust smoke: milky + overload', EXHAUST_SMOKE, { oilCondition: 'milky', loadPct: '120' }],
     ['hunting: linkage STOP + swing warning', FREQUENCY_HUNTING, { linkage: 'disconnected', freqSwing: '2', oemMaxSwing: '1', 'oemMaxSwing.class': 'warning' }],
-    ['low oil: knock + near tolerance', LOW_OIL_PRESSURE, { knock: 'yes', oilPressure: '155', oemMinOilPressure: '150', 'oemMinOilPressure.class': 'shutdown', 'oilPressure.tol': '10' }],
+    ['low oil: knock + near tolerance', LOW_OIL_PRESSURE, { knock: 'yes', oilPressure: '155', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa', 'oemMinOilPressure.class': 'shutdown', 'oilPressure.tol': '10' }],
     ['charging: hot battery + charge-max warning (B9)', CHARGING, { batteryCondition: 'hot-swollen', systemVoltage: '24', runVoltage: '30', oemChargeMin: '26', oemChargeMax: '29', 'oemChargeMax.class': 'warning' }],
-    ['low oil: knock + low level + metal + oil-temp warning (B8)', LOW_OIL_PRESSURE, { knock: 'yes', oilLevel: 'low', oilCondition: 'metal', oilTemp: '125', oemMaxOilTemp: '125', 'oemMaxOilTemp.class': 'warning' }],
+    ['low oil: knock + low level + metal + oil-temp warning (B8)', LOW_OIL_PRESSURE, { knock: 'yes', oilLevel: 'low', oilCondition: 'metal', oilTemp: '125', 'oilTemp.unit': '°C', oemMaxOilTemp: '125', 'oemMaxOilTemp.unit': '°C', 'oemMaxOilTemp.class': 'warning' }],
   ] as const)('%s', (name, f, raw) => {
     const r = run(f as FaultFamily, raw as Record<string, string>);
     assertStopFirstAndSafe(f as FaultFamily, r, name);
@@ -131,7 +131,7 @@ describe('F3 (BLOCKING): the most serious condition decides across families; sha
   });
   it('management example (B11): warning-level coolant on Overheating + knocking with metal on Knock → STOP on the Overheating tab and its job-card record', () => {
     const session: RawAnswers = {
-      overheating: { coolantTemp: '100', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.class': 'warning', loadPct: '110', coolantLevel: 'low' },
+      overheating: { coolantTemp: '100', 'coolantTemp.unit': '°C', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.unit': '°C', 'oemAlarmCoolantTemp.class': 'warning', loadPct: '110', coolantLevel: 'low' },
       'knock-seizure': { where: 'engine', metal: 'yes' },
     };
     const rec = sessionRecord(OVERHEATING, session);
@@ -141,11 +141,11 @@ describe('F3 (BLOCKING): the most serious condition decides across families; sha
     expect(rec.findings).not.toMatch(/Reduce the load and check the airflow/);
   });
   it('the same facts entered on the shared screen give the STOP without visiting the Knock tab', () => {
-    const session: RawAnswers = { [SCREEN_BUCKET]: { 'screen.knock': 'yes', 'screen.metal': 'yes' }, overheating: { coolantTemp: '100', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.class': 'warning' } };
+    const session: RawAnswers = { [SCREEN_BUCKET]: { 'screen.knock': 'yes', 'screen.metal': 'yes' }, overheating: { coolantTemp: '100', 'coolantTemp.unit': '°C', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.unit': '°C', 'oemAlarmCoolantTemp.class': 'warning' } };
     assertStopFirstAndSafe(OVERHEATING, sessionRecord(OVERHEATING, session).result, 'screen');
   });
   it('coolant low with the temperature at the limit (warning) → STOP, no running next check', () => {
-    const r = run(OVERHEATING, { coolantTemp: '100', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.class': 'warning', coolantLevel: 'low' });
+    const r = run(OVERHEATING, { coolantTemp: '100', 'coolantTemp.unit': '°C', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.unit': '°C', 'oemAlarmCoolantTemp.class': 'warning', coolantLevel: 'low' });
     assertStopFirstAndSafe(OVERHEATING, r, 'coolant low at limit');
     expect(r.nextQuestion?.id).not.toBe('gasBubbles');
   });
@@ -176,10 +176,10 @@ describe('F8 (BLOCKING): coolant loss + sweet exhaust smell → STOP whatever th
 
 describe('F4: within the tolerance of a verified SHUTDOWN limit → STOP', () => {
   it.each([
-    [LOW_OIL_PRESSURE, { oilPressure: '151', oemMinOilPressure: '150', 'oemMinOilPressure.class': 'shutdown', 'oilPressure.tol': '10' }],
-    [OVERHEATING, { coolantTemp: '99', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.class': 'shutdown', 'coolantTemp.tol': '2' }],
+    [LOW_OIL_PRESSURE, { oilPressure: '151', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa', 'oemMinOilPressure.class': 'shutdown', 'oilPressure.tol': '10' }],
+    [OVERHEATING, { coolantTemp: '99', 'coolantTemp.unit': '°C', oemAlarmCoolantTemp: '100', 'oemAlarmCoolantTemp.unit': '°C', 'oemAlarmCoolantTemp.class': 'shutdown', 'coolantTemp.tol': '2' }],
     [OVERSPEED, { peakRpm: '1949', oemTripRpm: '1950', 'oemTripRpm.class': 'shutdown', 'peakRpm.tol': '50' }],
-    [LOW_OIL_PRESSURE, { oilPressure: '152', oemMinOilPressure: '150', 'oilPressure.tol': '5' }], // unclassified protective
+    [LOW_OIL_PRESSURE, { oilPressure: '152', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa', 'oilPressure.tol': '5' }], // unclassified protective
   ] as const)('%#', (f, raw) => {
     const r = run(f as FaultFamily, raw as Record<string, string>);
     expect(r.limits.find((l) => l.status === 'near')!.level).toBe('STOP');
@@ -189,7 +189,7 @@ describe('F4: within the tolerance of a verified SHUTDOWN limit → STOP', () =>
 
 describe('F5 / F6: the job card states the STOP first, never "treated as CAUTION" for a protective limit', () => {
   it('unclassified protective limit: card, .txt readings and findings say STOP, and STOP comes before any limit text', () => {
-    const rec = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '140', oemMinOilPressure: '150' });
+    const rec = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '140', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' });
     expect(rec.findings).not.toMatch(/treated as CAUTION/);
     expect(rec.readings[0].limitSource).toMatch(/treated as STOP \(conservative software safeguard\)/);
     const txt = jobCardReport(card('Customer reports alarm.', rec), asset);
@@ -219,7 +219,7 @@ describe('F5 / F6: the job card states the STOP first, never "treated as CAUTION
     expect(norm.indexOf('STOP THE SET')).toBeLessThan(norm.indexOf('TEST READINGS'));
   }, 60000);
   it('the protective STOP wording and its label survive into the PDF', async () => {
-    const rec = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '140', oemMinOilPressure: '150' });
+    const rec = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '140', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' });
     const LIBS = path.resolve('node_modules');
     const pdfjs = await import(pathToFileURL(path.join(LIBS, 'pdfjs-dist/legacy/build/pdf.mjs')).href);
     pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(path.join(LIBS, 'pdfjs-dist/legacy/build/pdf.worker.mjs')).href;
@@ -236,7 +236,7 @@ describe('F5 / F6: the job card states the STOP first, never "treated as CAUTION
 describe('F7: a published model-specific limit is not applied once the model no longer matches', () => {
   it('Use published value for 1104D NK, then the engine selector is cleared: the limit is refused, NOT VERIFIED', () => {
     const pub = publishedLimitFor({ engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Perkins', model: '1104D (Mech) Industrial Engine NK' }, 'overheating', 'oemAlarmCoolantTemp')!;
-    const raw = { oemAlarmCoolantTemp: String(pub.value), 'oemAlarmCoolantTemp.class': pub.classification, 'oemAlarmCoolantTemp.source': pub.source, coolantTemp: '108' };
+    const raw = { oemAlarmCoolantTemp: String(pub.value), 'oemAlarmCoolantTemp.unit': '°C', 'oemAlarmCoolantTemp.class': pub.classification, 'oemAlarmCoolantTemp.source': pub.source, coolantTemp: '108', 'coolantTemp.unit': '°C' };
     const ok = diagnosisRecord(OVERHEATING, raw, { engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Perkins', model: '1104D (Mech) Industrial Engine NK' });
     expect(ok.result.limits[0].status).toBe('inside'); // still the right model
     for (const eq of [{}, { engine: '1104D (Mech) Industrial Engine NK', manufacturer: 'Cummins', model: '6BTA5.9' }]) {
@@ -256,12 +256,12 @@ describe('F7: a published model-specific limit is not applied once the model no 
 
 describe('F9: controller alarms and zero readings', () => {
   it('B1: a controller shutdown alarm with a normal gauge → STOP until verified', () => {
-    const r = run(LOW_OIL_PRESSURE, { 'screen.alarm': 'shutdown', oilPressure: '300', oemMinOilPressure: '150', 'oemMinOilPressure.class': 'shutdown', gauge: 'mechanical' });
+    const r = run(LOW_OIL_PRESSURE, { 'screen.alarm': 'shutdown', oilPressure: '300', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa', 'oemMinOilPressure.class': 'shutdown', gauge: 'mechanical' });
     assertStopFirstAndSafe(LOW_OIL_PRESSURE, r, 'B1');
     expect(r.stops[0].message).toMatch(/even if a gauge reads normal/);
   });
   it('zero oil pressure or zero insulation with no limit entered → safeguard STOP, labelled, no number', () => {
-    for (const [f, raw] of [[LOW_OIL_PRESSURE, { oilPressure: '0' }], [NO_VOLTAGE, { insulation: '0' }]] as const) {
+    for (const [f, raw] of [[LOW_OIL_PRESSURE, { oilPressure: '0', 'oilPressure.unit': 'kPa' }], [NO_VOLTAGE, { insulation: '0' }]] as const) {
       const r = run(f as FaultFamily, raw as Record<string, string>);
       assertStopFirstAndSafe(f as FaultFamily, r, f.id);
       expect(r.stops[0].message).toMatch(/reads zero/);
@@ -282,16 +282,18 @@ describe('F10: units and number input', () => {
     const amb = parseDecimal('1,500');
     expect(amb.ok).toBe(false);
     if (!amb.ok) expect(amb.why).toMatch(/ambiguous/);
-    const r = run(LOW_OIL_PRESSURE, { oilPressure: '0x64', oemMinOilPressure: '150', 'oemMinOilPressure.class': 'shutdown' });
+    // F10 (2026-11-26): pressures and temperatures are refused in the unit layer, before the engine.
+    const r = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '0x64', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa', 'oemMinOilPressure.class': 'shutdown' }).result;
     expect(r.invalid[0].reason).toMatch(/not a plain decimal number/);
     expect(run(NO_VOLTAGE, { insulation: '0,5', oemMinInsulation: '1,0', 'oemMinInsulation.class': 'shutdown' }).stopActive).toBe(true);
   });
 });
 
-describe('F11 (management decision): charging over-voltage stays non-protective', () => {
-  it('B10: 35 V on a 24 V system, unclassified → CAUTION, no STOP (recorded as a management decision)', () => {
+// Management decision 2026-11-26 (re-review F11, potentially HIGH): charging over-voltage is now PROTECTIVE.
+describe('F11 (management decision 2026-11-26): charging over-voltage is protective', () => {
+  it('B10: 35 V on a 24 V system, unclassified → conservative STOP + safeguard label', () => {
     const r = run(CHARGING, { systemVoltage: '24', runVoltage: '35', oemChargeMin: '26', oemChargeMax: '29' });
-    expect(r.stopActive).toBe(false);
-    expect(r.limits.find((l) => l.id === 'charge-max')!.level).toBe('CAUTION');
+    expect(r.stopActive).toBe(true);
+    expect(r.limits.find((l) => l.id === 'charge-max')!.level).toBe('STOP');
   });
 });

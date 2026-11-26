@@ -65,21 +65,21 @@ describe('APPLICABILITY: a limit for model A is never shown for model B', () => 
     expect(knownModels('engine')).not.toContain(ENGINE_B);
   });
   it('reference data never changes the diagnosis: same answers, any equipment → identical result', () => {
-    const raw = { coolantTemp: '108', oemAlarmCoolantTemp: '103' };
+    const raw = { coolantTemp: '108', 'coolantTemp.unit': '°C', oemAlarmCoolantTemp: '103', 'oemAlarmCoolantTemp.unit': '°C' };
     const base = diagnose(OVERHEATING, answersFromRaw(OVERHEATING, raw));
     expect(diagnosisRecord(OVERHEATING, raw, { engine: ENGINE_A }).result).toEqual(base);
     expect(diagnosisRecord(OVERHEATING, raw, { engine: ENGINE_B }).result).toEqual(base);
     // Without an entered figure no STOP is invented, even with a published maximum held for the model.
-    const noFigure = diagnosisRecord(OVERHEATING, { coolantTemp: '115' }, { engine: ENGINE_A });
+    const noFigure = diagnosisRecord(OVERHEATING, { coolantTemp: '115', 'coolantTemp.unit': '°C' }, { engine: ENGINE_A });
     expect(noFigure.result.stopActive).toBe(false);
     expect(noFigure.findings).toMatch(/110 °C/); // shown as context in the export…
     expect(noFigure.findings).toMatch(/Reference only — not entered as an answer/);
   });
   it('the job-card record shows NOT VERIFIED for model B and the cited figure for model A', () => {
-    const a = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '150' }, { engine: ENGINE_A }).findings;
+    const a = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '150', 'oilPressure.unit': 'kPa' }, { engine: ENGINE_A }).findings;
     expect(a).toMatch(/207–413 kPa/);
     expect(a).toMatch(/NOT a minimum/);
-    const b = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '150' }, { engine: ENGINE_B }).findings;
+    const b = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '150', 'oilPressure.unit': 'kPa' }, { engine: ENGINE_B }).findings;
     expect(b).not.toMatch(/207/);
     expect(b).toContain(`machine limits ${NOT_VERIFIED}`);
   });

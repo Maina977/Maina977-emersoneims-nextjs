@@ -10,6 +10,7 @@
  */
 import type { Answers, FaultFamily } from './types';
 import { classKey, limitReadings, sourceKey, tolKey } from './engine';
+import { convertUnits, unitKey, unitKindOf } from './units';
 import { knownModels, type Equipment } from './oemReferences';
 import { SCREEN_BUCKET, SCREEN_QUESTIONS, isScreenKey } from './safetyScreen';
 
@@ -19,7 +20,9 @@ export type RawAnswers = Record<string, Record<string, string>>;
 interface KeyValueStore { getItem(k: string): string | null; setItem(k: string, v: string): void }
 
 /** Typed strings → engine answers: numbers for number questions, option values otherwise; blanks dropped. */
-export function answersFromRaw(family: FaultFamily, raw: Record<string, string> | undefined): Answers {
+export function answersFromRaw(family: FaultFamily, raw0: Record<string, string> | undefined): Answers {
+  // Safety review F10: pressures and temperatures in the unit chosen, converted; no unit = not used.
+  const raw = convertUnits(family, raw0).raw;
   const a: Answers = {};
   for (const k of answerKeys(family)) {
     const v = raw?.[k.key];
@@ -41,6 +44,7 @@ export function answerKeys(family: FaultFamily): Array<{ key: string; kind: 'num
     out.push({ key: q.id, kind: q.kind === 'number' ? 'number' : 'text' });
     if (q.kind === 'number' && q.oemLimit) out.push({ key: classKey(q.id), kind: 'text' }, { key: sourceKey(q.id), kind: 'text' });
     if (q.kind === 'number' && readings.has(q.id)) out.push({ key: tolKey(q.id), kind: 'number' });
+    if (unitKindOf(q)) out.push({ key: unitKey(q.id), kind: 'text' });
   }
   return out;
 }

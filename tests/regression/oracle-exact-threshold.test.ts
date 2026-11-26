@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { diagnose } from '@/lib/generator-oracle/diagnostics/engine';
+import { diagnose, UNCLASSIFIED_PROTECTIVE } from '@/lib/generator-oracle/diagnostics/engine';
 import { FAMILIES, LOW_OIL_PRESSURE, OVERHEATING, CHARGING } from '@/lib/generator-oracle/diagnostics/families';
 import { diagnosisRecord } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
 import { REFERENCE_DATASETS, publishedLimitFor } from '@/lib/generator-oracle/diagnostics/oemReferences';
@@ -54,18 +54,17 @@ describe('exact-threshold rule: maximum limit (coolant, 103 °C)', () => {
     expect(r.stopActive).toBe(false);
     expect(r.stops.find((s) => /OEM warning value/.test(s.message))!.level).toBe('CAUTION');
   });
-  it('NON-protective unclassified (charging maximum): CAUTION that says so, never clears a STOP raised by another rule', () => {
+  // Management decision 2026-11-26 (safety review F11): the charging maximum is now PROTECTIVE.
+  it('PROTECTIVE unclassified (charging maximum, F11 2026-11-26): conservative STOP; it never clears a STOP raised by another rule', () => {
     const r = diagnose(CHARGING, { systemVoltage: '24', runVoltage: 30, oemChargeMax: 29, batteryCondition: 'gassing' });
     expect(r.stopActive).toBe(true); // the gassing STOP still stands
     expect(r.stops[0].level).toBe('STOP');
     // Under the STOP the caution is a record only — nothing that implies running (safety review F2).
-    const c = r.stops.find((s) => /^Also recorded for the investigation \(the STOP above applies\)/.test(s.message))!;
-    expect(c.level).toBe('CAUTION');
     expect(r.stops.some((s) => /LIMIT REACHED — NOT CLASSIFIED|Watch the battery/.test(s.message))).toBe(false);
-    // Without another STOP the non-protective unclassified limit is the CAUTION that says so.
+    // Without another STOP the protective unclassified limit is the conservative software STOP.
     const alone = diagnose(CHARGING, { systemVoltage: '24', runVoltage: 30, oemChargeMax: 29, batteryCondition: 'normal' });
-    expect(alone.stopActive).toBe(false);
-    expect(alone.stops.find((s) => /LIMIT REACHED — NOT CLASSIFIED/.test(s.message))!.message).toMatch(/not as a confirmed shutdown; this does not clear any STOP/);
+    expect(alone.stopActive).toBe(true);
+    expect(alone.stops.find((s) => s.level === 'STOP')!.message).toBe(UNCLASSIFIED_PROTECTIVE);
   });
   it('PROTECTIVE unclassified: oil pressure below the minimum → STOP first, then no running-engine step', () => {
     const r = oil(150, undefined, { knock: 'no', oilCondition: 'normal', recentWork: 'none' });
@@ -74,11 +73,12 @@ describe('exact-threshold rule: maximum limit (coolant, 103 °C)', () => {
     expect(r.nextQuestion?.id).toBe('oemMinOilPressure');
     expect(r.nextQuestion?.needsRunning).toBeFalsy();
   });
-  it('protective parameters are exactly: oil pressure, oil temperature, coolant temperature, overspeed, insulation', () => {
+  it('protective parameters are exactly: oil pressure, oil temperature, coolant temperature, overspeed, insulation, charging maximum', () => {
     const p = FAMILIES.flatMap((f) => (f.limits ?? []).filter((l) => l.protective).map((l) => l.id)).sort();
-    expect(p).toEqual(['coolant-temp-max', 'insulation-min', 'oil-pressure-min', 'oil-temp-max', 'overspeed-trip']);
+    // F11 (2026-11-26): the charging maximum joined the protective list.
+    expect(p).toEqual(['charge-max', 'coolant-temp-max', 'insulation-min', 'oil-pressure-min', 'oil-temp-max', 'overspeed-trip']);
     const non = FAMILIES.flatMap((f) => (f.limits ?? []).filter((l) => !l.protective).map((l) => l.id)).sort();
-    expect(non).toEqual(['charge-max', 'charge-min', 'frequency-min', 'swing-band']);
+    expect(non).toEqual(['charge-min', 'frequency-min', 'swing-band']);
   });
   it('a reading at the maximum is never described as inside, safe or normal', () => {
     for (const cls of ['shutdown', 'warning', 'not-stated', undefined]) {
@@ -132,7 +132,7 @@ describe('job-card export carries the same judgement', () => {
     expect(readingFlags([{ name: 'TEST', value: 102, unit: '°C', max: 103, limitSource: 'TEST' }])).toEqual([]);
   });
   it('the record states parameter, value, units, classification, source and the equipment it applies to', () => {
-    const rec = diagnosisRecord(OVERHEATING, { coolantTemp: '103', oemAlarmCoolantTemp: '103', 'oemAlarmCoolantTemp.class': 'warning', 'oemAlarmCoolantTemp.source': 'TEST-MAN-1 rev B, p. 7' },
+    const rec = diagnosisRecord(OVERHEATING, { coolantTemp: '103', 'coolantTemp.unit': '°C', oemAlarmCoolantTemp: '103', 'oemAlarmCoolantTemp.unit': '°C', 'oemAlarmCoolantTemp.class': 'warning', 'oemAlarmCoolantTemp.source': 'TEST-MAN-1 rev B, p. 7' },
       { manufacturer: 'TEST-MAKER', model: 'TEST-ENGINE-1', variant: 'TEST 50 Hz prime' });
     expect(rec.findings).toContain('- OEM high coolant temperature limit: 103 °C (maximum); WARNING value; source (manual ID, revision, page): TEST-MAN-1 rev B, p. 7; applies only to: manufacturer TEST-MAKER; model TEST-ENGINE-1; variant/configuration TEST 50 Hz prime.');
     expect(rec.findings).toMatch(/- REACHED \(CAUTION\): CAUTION: coolant has reached the OEM warning value/);

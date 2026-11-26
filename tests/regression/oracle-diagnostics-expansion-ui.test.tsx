@@ -50,6 +50,8 @@ describe('Guided Diagnosis UI: new families and the job-card hand-off', () => {
     expect((screen.getAllByLabelText('Classification: OEM high coolant temperature limit')[0] as HTMLSelectElement).value).toBe('shutdown');
     expect((screen.getAllByLabelText('Source: OEM high coolant temperature limit')[0] as HTMLInputElement).value).toMatch(/SEBU8325-01.*PDF p\. 22.*1104D \(Mech\) Industrial Engine NK/);
     // 110 °C reading = the published shutdown maximum → STOP (equality counts as reaching)
+    // F10 (2026-11-26): the unit is chosen for every temperature (no default).
+    fireEvent.change(screen.getAllByLabelText('Unit: Coolant temperature')[0], { target: { value: '°C' } });
     fireEvent.change(screen.getAllByLabelText(/^Coolant temperature/)[0], { target: { value: '110' } });
     expect(screen.getByRole('alert').textContent).toMatch(/^STOP · Take the load off and STOP the engine: coolant has reached the OEM limit/);
     fireEvent.change(screen.getByLabelText(/Engine model/), { target: { value: '' } });

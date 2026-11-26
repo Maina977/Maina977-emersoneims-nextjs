@@ -32,6 +32,9 @@ describe('Guided Diagnosis integration: 1.3.0 safety screen under the production
   it('an OEM-limit STOP stays latched after the limit is changed so it is no longer reached', () => {
     render(<GuidedDiagnosisPanel />);
     fireEvent.click(screen.getByRole('tab', { name: /oil pressure/i }));
+    // F10 (2026-11-26): the unit is chosen for every pressure (no default).
+    fireEvent.change(screen.getAllByLabelText(/^Unit: OEM minimum oil pressure/i)[0], { target: { value: 'kPa' } });
+    fireEvent.change(screen.getAllByLabelText(/^Unit: Oil pressure measured/i)[0], { target: { value: 'kPa' } });
     fireEvent.change(screen.getAllByLabelText(/OEM minimum oil pressure/i)[0], { target: { value: '150' } });
     fireEvent.change(screen.getAllByLabelText(/^Oil pressure/i)[0], { target: { value: '150' } });
     expect(hold()).not.toBeNull();

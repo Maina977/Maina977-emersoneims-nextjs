@@ -30,6 +30,9 @@ describe('Guided Diagnosis: no checks suggested while a STOP applies', () => {
   it('low oil pressure below the OEM minimum: mechanical-gauge check withheld', () => {
     render(<GuidedDiagnosisPanel />);
     choose(/oil pressure/i);
+    // F10 (2026-11-26): the unit is chosen for every pressure (no default).
+    answer(/^Unit: OEM minimum oil pressure/i, 'kPa');
+    answer(/^Unit: Oil pressure measured/i, 'kPa');
     answer(/OEM minimum oil pressure/i, '200');
     answer(/^Oil pressure/i, '100');
     answer(/Does a mechanical gauge show normal pressure/i, 'yes');

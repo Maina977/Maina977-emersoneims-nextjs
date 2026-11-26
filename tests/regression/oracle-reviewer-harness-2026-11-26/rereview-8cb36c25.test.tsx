@@ -5,7 +5,8 @@
  *
  * Copied from the reviewer's scratch/integration/mine2/fixes.test.tsx (2026-11-26). Changed only
  * where R-INT-6 and R-INT-7 are now fixed: the two tests that asserted those defects
- * ("second exit" and the nav-away "REMAINING") now assert the required behaviour.
+ * ("second exit" and the nav-away "REMAINING") now assert the required behaviour; and (F10,
+ * 2026-11-26) setA/typeOnly choose the unit (kPa / °C) before a pressure or temperature is typed.
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, fireEvent, cleanup, act } from '@testing-library/react';
@@ -24,8 +25,17 @@ const F = (id: string) => FAMILIES.find((f) => f.id === id)!;
 const tab = (c: HTMLElement, f: FaultFamily) => fireEvent.click([...c.querySelectorAll('[role="tab"]')].find((b) => b.textContent === f.title)!);
 const el = (c: HTMLElement, id: string) => { const els = c.querySelectorAll(`[id="gd-${id.startsWith('screen.') ? 'screen' : 'all'}-${id.replace(/\./g, '-')}"]`); if (!els.length) throw new Error('no input ' + id); return els[els.length - 1] as HTMLInputElement; };
 /** change + commit (blur) for typed inputs; a select commits by itself */
-const setA = (c: HTMLElement, id: string, v: string) => { const e = el(c, id); fireEvent.change(e, { target: { value: v } }); if (e.tagName === 'INPUT') fireEvent.blur(e); };
-const typeOnly = (c: HTMLElement, id: string, v: string) => fireEvent.change(el(c, id), { target: { value: v } });
+// Safety review F10 (2026-11-26): every pressure and temperature needs its unit chosen (no default).
+const UNIT_OF: Record<string, string> = { oilPressure: 'kPa', oemMinOilPressure: 'kPa', oilTemp: '°C', oemMaxOilTemp: '°C', coolantTemp: '°C', oemAlarmCoolantTemp: '°C' };
+const pickUnit = (c: HTMLElement, id: string) => {
+  const u = UNIT_OF[id]; if (!u) return;
+  const q = FAMILIES.flatMap((f) => f.questions).find((x) => x.id === id)!;
+  const sels = c.querySelectorAll(`select[aria-label="Unit: ${q.text}"]`);
+  const sel = sels[sels.length - 1] as HTMLSelectElement | undefined;
+  if (sel && !sel.value) fireEvent.change(sel, { target: { value: u } });
+};
+const setA = (c: HTMLElement, id: string, v: string) => { pickUnit(c, id); const e = el(c, id); fireEvent.change(e, { target: { value: v } }); if (e.tagName === 'INPUT') fireEvent.blur(e); };
+const typeOnly = (c: HTMLElement, id: string, v: string) => { pickUnit(c, id); fireEvent.change(el(c, id), { target: { value: v } }); };
 const stopHold = (c: HTMLElement) => !!c.querySelector('[data-testid="gd-stop-hold"]');
 const latchedCount = () => (JSON.parse(localStorage.getItem(GD_STORE) ?? '{"latched":[]}').latched as unknown[]).length;
 const RUNNING = FAMILIES.flatMap((f) => f.causes.flatMap((x) => x.runningChecks ?? []));

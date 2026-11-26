@@ -7,7 +7,7 @@
  * Errors are the engine's own messages, passed through unchanged.
  */
 import {
-  cardIntegrityProblems, dueList, mergeGuidedSafety, recordHoldReassessment, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
+  cardIntegrityProblems, dueList, markImported, mergeGuidedSafety, recordHoldReassessment, unresolvedGuidedSafety, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
   JOB_STATUSES, SIGNOFF, TYPED_SIGNOFF_NOTICE, V1_UNCHECKED_SIGNOFF_NOTE,
   type Asset, type DueItem, type GuidedSafetyAdd, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord,
 } from './maintenance';
@@ -180,12 +180,21 @@ export function reduce(s: ServiceState, a: ServiceAction): ServiceState {
       const c = findCard(s, a.cardId);
       if (!isEditable(c)) throw new Error(`A ${c.status} job card cannot be edited`);
       if (Number.isNaN(Date.parse(a.at))) throw new Error('When is required to record the guided safety state');
-      return replaceCard(s, { ...c, guidedSafety: mergeGuidedSafety(c.guidedSafety, a.safety, a.at) });
+      const merged: JobCard = { ...c, guidedSafety: mergeGuidedSafety(c.guidedSafety, a.safety, a.at) };
+      // Imported card: a Guided Diagnosis record added on this device after the import is the fresh
+      // record; it is "clean" only if it carries no unresolved STOP and no SAFETY HOLD.
+      if (c.imported && a.at >= c.imported.at) {
+        const add = a.safety;
+        const open = add.stops.filter((st) => !add.clearances.some((cl) => cl.key === st.key && (cl.since === st.since || cl.clearedAt >= st.since)));
+        merged.imported = { ...c.imported, freshRecordAt: a.at, freshRecordClean: !add.hold && open.length === 0 && unresolvedGuidedSafety(merged).stops.length === 0 };
+      }
+      return replaceCard(s, merged);
     }
     case 'recordHoldReassessment': {
       const c = findCard(s, a.cardId);
       if (!isEditable(c)) throw new Error(`A ${c.status} job card cannot be edited`);
-      return replaceCard(s, { ...c, guidedSafety: recordHoldReassessment(c.guidedSafety, a) });
+      const guidedSafety = recordHoldReassessment(c.guidedSafety, a, { imported: c.imported });
+      return replaceCard(s, { ...c, guidedSafety, ...(c.imported ? { imported: { ...c.imported, reassessedAt: a.at } } : {}) });
     }
     case 'reopen':
       return replaceCard(s, reopenJobCard(findCard(s, a.cardId), a.by, a.at, a.reason));
@@ -234,6 +243,9 @@ const isGuidedSafety = (v: unknown) => isObj(v) && Array.isArray(v.stops) && v.s
   && Array.isArray(v.clearances) && v.clearances.every((c) => isGStop(c) && isStr((c as Record<string, unknown>).clearedAt) && isStr((c as Record<string, unknown>).by) && isStr((c as Record<string, unknown>).reason))
   && Array.isArray(v.holds) && v.holds.every((h) => isObj(h) && isStr(h.since) && isStr(h.text) && isStr(h.why) && (h.resolvedAt === undefined || isStr(h.resolvedAt)))
   && (v.reassessments === undefined || (Array.isArray(v.reassessments) && v.reassessments.every((r) => isObj(r) && isStr(r.at) && isStr(r.by) && isStr(r.reason) && r.confirmed === true)));
+const isCardImport = (v: unknown) => isObj(v) && isStr(v.at) && ['stops', 'clearances', 'holds', 'reassessments'].every((k) => Number.isInteger(v[k]) && (v[k] as number) >= 0)
+  && typeof v.signedOff === 'boolean' && (v.freshRecordAt === undefined || isStr(v.freshRecordAt)) && (v.freshRecordClean === undefined || typeof v.freshRecordClean === 'boolean')
+  && (v.reassessedAt === undefined || isStr(v.reassessedAt));
 const isHash = (v: unknown) => isStr(v) && /^[0-9a-f]{64}$/.test(v);
 const isRev = (v: unknown) => Number.isInteger(v) && (v as number) >= 1;
 
@@ -304,6 +316,7 @@ function checkShape(d: Record<string, unknown>): string | null {
     const last = c.log.length ? (c.log[c.log.length - 1] as Record<string, unknown>).to : 'OPEN';
     if (last !== c.status) return `job card ${id}: its status does not match its history`;
     if (c.guidedSafety !== undefined && !isGuidedSafety(c.guidedSafety)) return `job card ${id} guided safety record is malformed`;
+    if (c.imported !== undefined && !isCardImport(c.imported)) return `job card ${id} import record is malformed`;
     if (c.status !== SIGNOFF && (c.signOffTypedName !== null || c.signOffRecordedOn !== null || c.signOffHash !== null)) return `job card ${id} carries sign-off details but is not at the sign-off step`;
   }
   return null;
@@ -380,6 +393,21 @@ export function deserialise(text: string, now: string = new Date().toISOString()
   if (v.version !== 1) return { ok: true, state, notice: null };
   const notice = `This data was saved by version 1 of this screen and has been upgraded to version ${STORE_VERSION}.${voided.message ? ` ${voided.message}` : ''}`;
   return { ok: true, state, notice, upgradedFrom: 1 };
+}
+
+/**
+ * Safety review (imported job cards, CRITICAL): reads an IMPORTED file. Same checks as deserialise,
+ * then every job card is marked IMPORTED — UNVERIFIED (markImported): nothing in a file is proof
+ * that a STOP was resolved. This device's own saved data is read with deserialise / loadState and
+ * keeps its marks; a file always gets fresh ones.
+ */
+export function importState(text: string, now: string = new Date().toISOString()): ReadResult {
+  const r = deserialise(text, now);
+  if (!r.ok) return r;
+  const state: ServiceState = { ...r.state, jobCards: r.state.jobCards.map((c) => markImported(c, now)) };
+  const n = state.jobCards.length;
+  const notice = `${n ? `All ${n} job card(s) are marked IMPORTED — UNVERIFIED: completion and sign-off need a fresh assessment on this device.` : ''}${r.notice ? ` ${r.notice}` : ''}`.trim() || null;
+  return { ...r, state, notice };
 }
 
 /** Minimal Storage interface so tests can pass a stub. */

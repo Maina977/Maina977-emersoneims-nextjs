@@ -20,6 +20,7 @@
  */
 import { classKey, diagnose, protectiveLimitIds, sourceKey, tolKey } from './engine';
 import { answersFromRaw, mergedRaw, type RawAnswers } from './session';
+import { convertUnits, unitKindOf, unitLine } from './units';
 import { externalStopsFor, type ExternalStop } from './sessionSafety';
 import { NOT_VERIFIED, publishedEntryOf, publishedLimitFor, referencesFor, type Equipment } from './oemReferences';
 import { isScreenKey } from './safetyScreen';
@@ -104,9 +105,27 @@ export interface DiagnosisRecord {
  */
 export function diagnosisRecord(family: FaultFamily, raw: Record<string, string> | undefined, equipment: Equipment = {}, session?: RawAnswers, extraStops: ExternalStop[] = []): DiagnosisRecord {
   const typed = answersFromRaw(family, raw);
+  const units = convertUnits(family, raw);
   const { answers, refused } = guardPublished(family, typed, equipment);
   const base = diagnose(family, answers, { externalStops: [...externalStopsFor(FAMILIES, session, family.id), ...extraStops] });
-  const result: DiagnosisResult = { ...base, invalid: [...refused, ...base.invalid] };
+  let result: DiagnosisResult = { ...base, invalid: [...units.refused, ...refused, ...base.invalid] };
+  // Safety review F10: a refused pressure or temperature (no unit, unknown unit, not a number, or out
+  // of the physical range after conversion) never clears or avoids a STOP: running checks are
+  // withheld and the refused question stays the next check until it is entered correctly.
+  const refusedUnitQs = family.questions.filter((q) => unitKindOf(q) && result.invalid.some((i) => i.q === q.id));
+  if (refusedUnitQs.length) {
+    result = {
+      ...result,
+      runningWithheld: true,
+      // Never a running-only question as the next check (R-INT-1): those stay withheld.
+      nextQuestion: refusedUnitQs.find((q) => !q.needsRunning) ?? (result.nextQuestion && !result.nextQuestion.needsRunning ? result.nextQuestion : null),
+      ranked: result.ranked.map((c) => {
+        const cause = family.causes.find((x) => x.id === c.id);
+        const running = cause?.runningChecks ?? [];
+        return { ...c, actions: c.actions.filter((a) => !running.includes(a)), withheld: [...new Set([...c.withheld, ...running])] };
+      }),
+    };
+  }
   const valid = new Map(Object.entries(answers).filter(([k]) => !result.invalid.some((i) => i.q === k)));
   const oemQs = refQuestions(family);
   const protective = protectiveLimitIds(family);
@@ -148,6 +167,10 @@ export function diagnosisRecord(family: FaultFamily, raw: Record<string, string>
     lines.push(`- ${q.text}: ${answerText(q, v)}${tol !== undefined && q.kind === 'number' ? ` (measurement tolerance ±${tol} ${q.unit})` : ''}`);
   }
   for (const i of result.invalid) lines.push(`- REFUSED: ${i.reason}`);
+  if (units.entered.length) {
+    lines.push('Units as entered (pressures and temperatures; the checks use kPa and °C):');
+    for (const e of units.entered) lines.push(`- ${unitLine(e)}`);
+  }
   lines.push('Likely causes, most supported first:');
   result.ranked.forEach((c, i) => {
     const why = [...c.for.map((x) => `+ ${x}`), ...c.against.map((x) => `− ${x}`)].join('; ');
@@ -168,7 +191,8 @@ export function diagnosisRecord(family: FaultFamily, raw: Record<string, string>
   for (const q of family.questions) {
     const v = valid.get(q.id);
     if (q.kind !== 'number' || v === undefined || oemQs.has(q.id) || q.ratingPlate || isScreenKey(q.id)) continue;
-    const r: Reading = { name: q.text, value: Number(v), unit: q.unit };
+    const ent = units.entered.find((e) => e.q === q.id);
+    const r: Reading = { name: ent && ent.unit !== ent.canonicalUnit ? `${q.text} (entered ${ent.entered} ${ent.unit})` : q.text, value: Number(v), unit: q.unit };
     const srcs: string[] = [];
     for (const l of (family.limits ?? []).filter((x) => x.reading === q.id)) {
       const L = valid.get(l.limit);

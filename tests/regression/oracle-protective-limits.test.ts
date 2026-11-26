@@ -93,16 +93,16 @@ describe('model-specific configuration: the Perkins 1104D NK coolant maximum', (
       expect(questionReferenceNote(eq, 'overheating', 'oemAlarmCoolantTemp')).toMatch(/^per OEM manual — NOT VERIFIED/);
     }
     // Not entered → nothing judged, whatever model is selected.
-    expect(diagnosisRecord(OVERHEATING, { coolantTemp: '115' }, { engine: '1104D (Mech) Industrial Engine NK' }).result.limits[0].status).toBe('not-verified');
+    expect(diagnosisRecord(OVERHEATING, { coolantTemp: '115', 'coolantTemp.unit': '°C' }, { engine: '1104D (Mech) Industrial Engine NK' }).result.limits[0].status).toBe('not-verified');
     // Entered by the technician for another model → judged on that entry, labelled as entered.
-    const other = diagnosisRecord(OVERHEATING, { coolantTemp: '115', oemAlarmCoolantTemp: '110' }, { engine: '1106D Industrial Engine' });
+    const other = diagnosisRecord(OVERHEATING, { coolantTemp: '115', 'coolantTemp.unit': '°C', oemAlarmCoolantTemp: '110', 'oemAlarmCoolantTemp.unit': '°C' }, { engine: '1106D Industrial Engine' });
     expect(other.result.stops[0].message).toBe(UNCLASSIFIED_PROTECTIVE);
   });
 });
 
 describe('same wording on screen, job-card findings, .txt and PDF content', () => {
   it('the STOP and its separate safeguard line reach the card report', () => {
-    const rec = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '150', oemMinOilPressure: '200', oilLevel: 'ok' });
+    const rec = diagnosisRecord(LOW_OIL_PRESSURE, { oilPressure: '150', 'oilPressure.unit': 'kPa', oemMinOilPressure: '200', 'oemMinOilPressure.unit': 'kPa', oilLevel: 'ok' });
     const i = rec.lines.indexOf(`STOP: ${UNCLASSIFIED_PROTECTIVE}`);
     expect(i).toBeGreaterThanOrEqual(0);
     expect(rec.lines[i + 1]).toBe(SAFEGUARD_LABEL); // its own line

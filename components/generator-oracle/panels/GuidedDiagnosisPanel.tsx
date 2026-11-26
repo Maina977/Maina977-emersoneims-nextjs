@@ -22,6 +22,8 @@ import { classKey, limitReadings, sourceKey, tolKey } from '@/lib/generator-orac
 import { mergedRaw, saveGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
 import { SCREEN_BUCKET, SCREEN_QUESTIONS, isScreenKey } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { LIMIT_CLASS_OPTIONS, type Question } from '@/lib/generator-oracle/diagnostics/types';
+import { DEVICE_ONLY_NOTICE } from '@/lib/generator-oracle/service/maintenance';
+import { CANONICAL, UNIT_OPTIONS, unitKey, unitKindOf } from '@/lib/generator-oracle/diagnostics/units';
 
 import {
   CLEARANCE_NOT_RESTART, GD_STORE, SAFETY_HOLD_ACK_LABEL, SAFETY_HOLD_SESSION_ONLY, SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY,
@@ -60,14 +62,24 @@ function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, pro
   const id = `gd-${scope}-${q.id.replace(/\./g, '-')}`;
   const value = values[q.id] ?? '';
   const limit = q.kind === 'number' ? q.oemLimit : undefined;
+  const kind = unitKindOf(q);
   return (
     <div className="block text-xs text-slate-300">
       <label htmlFor={id} className="block mb-1">
         {q.text}
-        {q.kind === 'number' ? <span className="text-slate-500"> ({q.unit})</span> : null}
+        {q.kind === 'number' ? <span className="text-slate-500"> ({kind ? 'choose the unit' : q.unit})</span> : null}
       </label>
       {q.kind === 'number' ? (
-        <input id={id} inputMode="decimal" value={value} {...typed(q.id)} className={field} />
+        kind ? (
+          // Safety review F10: the unit is chosen for every pressure and temperature; no default.
+          <div className="flex gap-2">
+            <input id={id} inputMode="decimal" value={value} {...typed(q.id)} className={field} />
+            <select aria-label={`Unit: ${q.text}`} value={values[unitKey(q.id)] ?? ''} onChange={chosen(unitKey(q.id))} className="rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white">
+              <option value="">Unit?</option>
+              {UNIT_OPTIONS[kind].map((u) => <option key={u} value={u}>{u}</option>)}
+            </select>
+          </div>
+        ) : <input id={id} inputMode="decimal" value={value} {...typed(q.id)} className={field} />
       ) : (
         <select id={id} value={value} onChange={chosen(q.id)} className={field}>
           <option value="">Not answered</option>
@@ -95,14 +107,14 @@ function QuestionInput({ q, values, set, scope, stopActive, note, tolerance, pro
           ) : null}
           {published ? (
             <button type="button" className="sm:col-span-2 rounded-md border border-cyan-600 px-2 py-1 text-left text-cyan-200"
-              onClick={() => { set(q.id, String(published.value)); set(classKey(q.id), published.classification); set(sourceKey(q.id), published.source); commit(); }}>
+              onClick={() => { set(q.id, String(published.value)); set(classKey(q.id), published.classification); set(sourceKey(q.id), published.source); if (kind) set(unitKey(q.id), CANONICAL[kind]); commit(); }}>
               Use published value for the selected model: {published.value} {q.kind === 'number' ? q.unit : ''} ({published.classification}) — check the variant matches this set
             </button>
           ) : null}
         </div>
       ) : null}
       {tolerance && q.kind === 'number' ? (
-        <label className="block mt-2">Measurement tolerance ± ({q.unit}; from the instrument or sensor data, optional)
+        <label className="block mt-2">Measurement tolerance ± ({kind ? 'in the unit chosen for the reading' : q.unit}; from the instrument or sensor data, optional)
           <input aria-label={`Tolerance: ${q.text}`} inputMode="decimal" value={values[tolKey(q.id)] ?? ''} {...typed(tolKey(q.id))} className={`mt-1 ${field}`} />
         </label>
       ) : null}
@@ -452,6 +464,8 @@ export default function GuidedDiagnosisPanel() {
         </div>
       </div>
 
+      {/* Safety review (cross-device): STOPs and clearances are kept in this browser only. */}
+      <p role="note" data-testid="gd-device-only-notice" className="rounded-lg border border-amber-500/60 bg-amber-950/40 p-3 text-xs text-amber-100">{DEVICE_ONLY_NOTICE}</p>
       <div data-testid="safety-screen" className="rounded-xl border border-red-700/60 bg-red-950/20 p-4 space-y-2">
         <div className="text-sm font-semibold text-red-200">Safety screen — answered once, applies to every fault family</div>
         <p className="text-xs text-slate-400">Any “Yes” is a STOP on every tab and on every job card made from this session.</p>

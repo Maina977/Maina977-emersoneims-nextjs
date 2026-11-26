@@ -67,7 +67,7 @@ describe('R1 (BLOCKING) / R2: no cranking, running or live question or step can 
 
 describe('R3: a leading "do not run" cause suppresses running-implying cautions, as a STOP does', () => {
   it.each([
-    ['N10a: recent overhaul + oil temperature at a warning maximum', LOW_OIL_PRESSURE, { recentWork: 'overhaul', oilTemp: '130', oemMaxOilTemp: '130', 'oemMaxOilTemp.class': 'warning' }],
+    ['N10a: recent overhaul + oil temperature at a warning maximum', LOW_OIL_PRESSURE, { recentWork: 'overhaul', oilTemp: '130', 'oilTemp.unit': '°C', oemMaxOilTemp: '130', 'oemMaxOilTemp.unit': '°C', 'oemMaxOilTemp.class': 'warning' }],
     ['N10b: white smoke at 120 % load', EXHAUST_SMOKE, { colour: 'white', loadPct: '120' }],
   ] as const)('%s', (_n, f, own) => {
     const r = one(f as FaultFamily, own as Record<string, string>).result;
@@ -76,7 +76,7 @@ describe('R3: a leading "do not run" cause suppresses running-implying cautions,
     for (const c of r.ranked) for (const a of c.actions) expect(a).not.toMatch(/\bOnly when no STOP is active/);
   });
   it('the record-only wording says why running is withheld', () => {
-    const r = one(LOW_OIL_PRESSURE, { recentWork: 'overhaul', oilTemp: '130', oemMaxOilTemp: '130', 'oemMaxOilTemp.class': 'warning' }).result;
+    const r = one(LOW_OIL_PRESSURE, { recentWork: 'overhaul', oilTemp: '130', 'oilTemp.unit': '°C', oemMaxOilTemp: '130', 'oemMaxOilTemp.unit': '°C', 'oemMaxOilTemp.class': 'warning' }).result;
     expect(r.stops.some((s) => /^Also recorded for the investigation \(running is withheld: a leading cause says do not run\)/.test(s.message))).toBe(true);
   });
 });
@@ -108,10 +108,10 @@ describe('R5: a "Not checked" safety screen is acknowledged', () => {
 
 describe('R6: near-zero readings — only when the technician confirms the instrument reads zero', () => {
   it('0.5 kPa alone is not judged (no invented threshold); confirmed "at or near zero" → labelled safeguard STOP', () => {
-    const alone = one(LOW_OIL_PRESSURE, { oilPressure: '0.5' }).result;
+    const alone = one(LOW_OIL_PRESSURE, { oilPressure: '0.5', 'oilPressure.unit': 'kPa' }).result;
     expect(alone.stopActive).toBe(false);
     expect(alone.nextQuestion?.id).toBe('oilPressureAtZero'); // the confirmation is asked next
-    const confirmed = one(LOW_OIL_PRESSURE, { oilPressure: '0.5', oilPressureAtZero: 'yes' }).result;
+    const confirmed = one(LOW_OIL_PRESSURE, { oilPressure: '0.5', 'oilPressure.unit': 'kPa', oilPressureAtZero: 'yes' }).result;
     expect(confirmed.stops[0]).toMatchObject({ level: 'STOP', label: 'This is a conservative software safeguard, not an OEM limit.' });
     expect(one(NO_VOLTAGE, { insulation: '0.01', insulationAtZero: 'yes' }).result.stopActive).toBe(true);
     expect(one(NO_VOLTAGE, { insulation: '0.01' }).result.stopActive).toBe(false);
@@ -120,7 +120,7 @@ describe('R6: near-zero readings — only when the technician confirms the instr
 
 describe('R7: the exact protective wording on other tabs', () => {
   it('N9: verbatim management text, label kept, the source family on its own line', () => {
-    const rec = sessionRecord(CHARGING, { 'low-oil-pressure': { oilPressure: '140', oemMinOilPressure: '150' } });
+    const rec = sessionRecord(CHARGING, { 'low-oil-pressure': { oilPressure: '140', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' } });
     const s = rec.result.stops.find((x) => x.origin === 'other-family')!;
     expect(s.message).toBe(UNCLASSIFIED_PROTECTIVE);
     expect(s.label).toBe(SAFEGUARD_LABEL);
@@ -132,7 +132,7 @@ describe('R7: the exact protective wording on other tabs', () => {
 
 describe('Final re-review MINOR: the SAFETY section at the top of the .txt and PDF carries the "(Raised in …)" line', () => {
   it('a STOP from another family is repeated at the top with its label and its source line, in the .txt and the PDF', async () => {
-    const rec = sessionRecord(CHARGING, { 'low-oil-pressure': { oilPressure: '140', oemMinOilPressure: '150' } });
+    const rec = sessionRecord(CHARGING, { 'low-oil-pressure': { oilPressure: '140', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' } });
     const card = { ...openJobCard({ id: 'J', assetId: 'A1', opened: '2026-11-25', reportedFault: 'x', technician: 'T' }), ...recordToCardUpdate({ findings: '', readings: [] }, rec) } as ReturnType<typeof openJobCard>;
     const raised = '(Raised in the "Low oil pressure / oil starvation" diagnosis of this session.)';
     const parts = jobCardReportParts(card, asset);

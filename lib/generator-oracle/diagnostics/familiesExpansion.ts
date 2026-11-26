@@ -269,7 +269,7 @@ export const CHARGING: FaultFamily = {
     `Belt, charging-alternator and wiring checks only after you ${LOCK_OFF}. The fan and belt can start without warning on an automatic-start set.`,
   ],
   questions: [
-    { id: 'batteryCondition', kind: 'choice', text: 'Battery condition (look and smell; do not touch a hot battery)', options: [{ value: 'normal', label: 'Normal' }, { value: 'hot-swollen', label: 'Hot or swollen case' }, { value: 'gassing', label: 'Strong gassing or rotten-egg smell' }, { value: 'electrolyte-low', label: 'Electrolyte low (vented cells)' }] },
+    { id: 'batteryCondition', kind: 'choice', text: 'Battery condition (look and smell; do not touch a hot battery)', options: [{ value: 'normal', label: 'Normal' }, { value: 'hot-swollen', label: 'Hot or swollen case' }, { value: 'gassing', label: 'Strong gassing or rotten-egg smell' }, { value: 'boiling', label: 'Electrolyte boiling or spewing from the vents' }, { value: 'electrolyte-low', label: 'Electrolyte low (vented cells)' }] },
     { id: 'belt', kind: 'choice', text: 'Charging-alternator belt (set stopped and isolated)', options: [{ value: 'ok', label: 'Correct tension' }, { value: 'slack', label: 'Slack or glazed' }, { value: 'broken', label: 'Broken or missing' }, { value: 'not-checked', label: 'Not checked' }] },
     { id: 'systemVoltage', kind: 'choice', text: 'Battery system voltage', options: [{ value: '12', label: '12 V' }, { value: '24', label: '24 V' }] },
     { id: 'source', kind: 'choice', text: 'Which charging source is in question?', options: [{ value: 'alternator', label: 'Engine charging alternator' }, { value: 'charger', label: 'Mains battery charger' }, { value: 'both', label: 'Both / not known' }] },
@@ -286,11 +286,16 @@ export const CHARGING: FaultFamily = {
   stopRules: [
     { when: is('batteryCondition', 'hot-swollen'), level: 'STOP', message: 'STOP: a hot or swollen battery can be in thermal runaway. Stop the engine and switch off and isolate the mains battery charger; keep sparks and flames away and ventilate. Do not disconnect or move it until it has cooled; then replace it.' },
     { when: is('batteryCondition', 'gassing'), level: 'STOP', message: 'STOP charging: strong gassing or a rotten-egg smell means overcharging or a failed cell. Stop the engine, switch off and isolate the charger and ventilate the room; no sparks or flames.' },
+    // Safety review F11 (2026-11-26): boiling electrolyte is an observation of overcharging; no threshold needed.
+    { when: is('batteryCondition', 'boiling'), level: 'STOP', message: 'STOP charging: boiling or spewing electrolyte means severe overcharging. Stop the engine, switch off and isolate the charger, ventilate the room; no sparks or flames; no running checks. Do not touch the battery until it has cooled.' },
     { when: is('belt', 'broken'), level: 'STOP', message: 'STOP: a broken or missing belt. On many engines the same belt drives the water pump and fan, so running on risks overheating. Do not run until it is replaced (set stopped and isolated).' },
     { when: is('source', ['charger', 'both']), level: 'CAUTION', message: 'The battery charger has mains voltage inside: isolate and lock off its supply before opening it. Only a competent electrician works inside the charger.' },
   ],
   limits: [
-    { id: 'charge-max', reading: 'runVoltage', limit: 'oemChargeMax', protective: false,
+    // Safety review F11 (2026-11-26): over-voltage boils the battery (hydrogen, thermal runaway), so the
+    // highest charging voltage the technician enters (from the alternator/regulator/engine manual) is a
+    // PROTECTIVE limit. No threshold is built in: none is published in the references held (see charging.references).
+    { id: 'charge-max', reading: 'runVoltage', limit: 'oemChargeMax', protective: true,
       shutdown: 'STOP the engine: the charging voltage has reached the highest value entered for this alternator (shutdown value). Overcharging boils the battery and can damage the controller and ECM. Do not run until the regulator fault is found.',
       warning: 'CAUTION: the charging voltage has reached the highest value entered (warning value). Watch the battery for heat or gassing; repair the regulator before the set returns to normal duty.' },
     { id: 'charge-min', reading: 'runVoltage', limit: 'oemChargeMin', protective: false,
@@ -322,6 +327,8 @@ export const CHARGING: FaultFamily = {
     },
     {
       id: 'alt-over', title: 'Regulator overcharging',
+      // Safety review F11: while over-voltage is suspected, no "continue running" check is offered.
+      doNotRun: true,
       evidence: [
         { when: { q: 'runVoltage', op: 'geRef', ref: 'oemChargeMax' }, effect: 'strongly', because: 'Running battery voltage at or above the highest charging voltage entered' },
         { when: is('batteryCondition', 'gassing'), effect: 'supports', because: 'Battery gassing' },

@@ -18,14 +18,14 @@ import {
   type Asset, type JobCard, type JobStatus,
 } from '@/lib/generator-oracle/service/maintenance';
 import {
-  apply, dueFor, deserialise, emptyState, isEditable, loadState, saveState, serialise,
+  apply, dueFor, importState, emptyState, isEditable, loadState, saveState, serialise,
   type CardUpdate, type ServiceAction, type ServiceState,
 } from '@/lib/generator-oracle/service/store';
 import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
 import { SCREEN_BUCKET } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { loadGuidedEquipment, loadGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
 import { guardedCardUpdate, guardedSessionRecord, latchRecordLines, readStore, safetyStateOf, type SafetyState } from '@/lib/generator-oracle/diagnostics/stopLatch';
-import { HOLD_REASSESSMENT_LABEL, HOLD_REASSESSMENT_NOTICE, LATCHED_STOP_PREFIX, unresolvedGuidedSafety, type GuidedSafetyAdd } from '@/lib/generator-oracle/service/maintenance';
+import { DEVICE_ONLY_NOTICE, HOLD_REASSESSMENT_LABEL, HOLD_REASSESSMENT_NOTICE, IMPORTED_NOTICE, LATCHED_STOP_PREFIX, SIGNED_OFF_ELSEWHERE, unresolvedGuidedSafety, type GuidedSafetyAdd } from '@/lib/generator-oracle/service/maintenance';
 
 const inp = 'w-full min-w-0 rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white focus:border-amber-500 outline-none';
 const lbl = 'block text-xs text-slate-300';
@@ -167,6 +167,7 @@ function DueSection({ state, asset }: { state: ServiceState; asset: Asset }) {
     const c = state.jobCards.find((x) => x.id === id);
     if (!c) return 'job card not found';
     const k = signOffCheck(c);
+    if (c.status === SIGNOFF && c.imported) return `${SIGNOFF} (${SIGNED_OFF_ELSEWHERE})`;
     if (c.status === SIGNOFF && k.kind === 'unchanged') return SIGNOFF;
     return c.status === SIGNOFF ? 'CHANGED AFTER SIGN-OFF / NOT VERIFIED' : `card now ${c.status}: that sign-off was cancelled (reopened or CHANGED AFTER SIGN-OFF), see the card history`;
   };
@@ -318,10 +319,13 @@ function HoldReassessment({ card, dispatch }: { card: JobCard; dispatch: Dispatc
   const [by, setBy] = useState('');
   const [reason, setReason] = useState('');
   const [confirmed, setConfirmed] = useState(false);
-  if (!unresolvedGuidedSafety(card).hold) return null;
+  const hold = !!unresolvedGuidedSafety(card).hold;
+  const importedNeeds = !!card.imported && !card.imported.reassessedAt;
+  if (!hold && !importedNeeds) return null;
   return (
     <div data-testid="card-hold-reassessment" className="space-y-1 rounded-lg border border-amber-500/60 bg-amber-950/40 p-2 text-xs text-amber-100">
-      <p className="font-semibold">SAFETY HOLD recorded on this card: the previous diagnostic safety status could not be verified.</p>
+      {hold ? <p className="font-semibold">SAFETY HOLD recorded on this card: the previous diagnostic safety status could not be verified.</p> : null}
+      {importedNeeds ? <p className="font-semibold">{IMPORTED_NOTICE} Record a fresh in-person reassessment on this device.</p> : null}
       <p>{HOLD_REASSESSMENT_NOTICE}</p>
       <label className="flex items-start gap-2"><input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} /><span>{HOLD_REASSESSMENT_LABEL}</span></label>
       <Field label="Name or initials of the qualified technician (reassessment)"><input className={inp} value={by} onChange={(e) => setBy(e.target.value)} /></Field>
@@ -369,6 +373,7 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
 
   return (
     <div className={box}>
+      {card.imported ? <p role="note" data-testid="card-imported-notice" className="rounded-md border border-red-500/60 bg-red-950/50 px-3 py-2 text-xs text-red-100 break-words"><strong>Safety.</strong> {IMPORTED_NOTICE}{card.imported.signedOff ? ` Sign-off: ${SIGNED_OFF_ELSEWHERE}.` : ''}</p> : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className={h3}>Job card {card.id} <span className="text-sm text-slate-400">(revision {card.revision})</span></h3>
         <Pill text={card.status} cls={STATUS_PILL[card.status]} />
@@ -550,7 +555,8 @@ export default function ServiceManagementPanel() {
     if (file.size > 10 * 1024 * 1024) { setError('That file is larger than an Oracle service export can be (10 MB); nothing was imported.'); setNotice(null); return; }
     let text = '';
     try { text = await file.text(); } catch { setError('Could not read that file'); return; }
-    const r = deserialise(text);
+    // Safety review: every card read from a file is marked IMPORTED — UNVERIFIED (importState).
+    const r = importState(text);
     if (!r.ok) { setError(r.error); setNotice(null); return; }
     if (!window.confirm('Replace everything saved in this browser with the imported file?')) return;
     dirty.current = true;
@@ -564,6 +570,9 @@ export default function ServiceManagementPanel() {
       {/* Safety withdrawal 2026-11-25 (review finding S9): wording only. */}
       <p role="note" data-testid="stop-not-carried-notice" className="rounded-md border border-red-500/60 bg-red-950/50 px-3 py-2 text-sm text-red-100 break-words">
         <strong>Safety.</strong> {STOP_NOT_CARRIED_NOTICE}
+      </p>
+      <p role="note" data-testid="device-only-notice" className="rounded-md border border-amber-500/60 bg-amber-950/40 px-3 py-2 text-sm text-amber-100 break-words">
+        <strong>Safety.</strong> {DEVICE_ONLY_NOTICE}
       </p>
       <div className={box}>
         <div className="flex flex-wrap items-start justify-between gap-2">
