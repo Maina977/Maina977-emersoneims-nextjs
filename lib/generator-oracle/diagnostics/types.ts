@@ -213,6 +213,8 @@ export interface DiagnosisResult {
      * panel does not latch it (type-then-choose-unit), and correcting the value clears it.
      */
     refusedInput?: true;
+    /** F10-R2: the protective field(s) whose refused value raised it (question ids). */
+    refusedFields?: string[];
   }>;
   /** True when running checks and running-only questions are withheld (any STOP, or a leading "do not run" cause). */
   runningWithheld: boolean;

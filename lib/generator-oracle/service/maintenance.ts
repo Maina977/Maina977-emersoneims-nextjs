@@ -90,6 +90,8 @@ export interface GuidedSafetyStop {
    * record on this card no longer shows it (the value was corrected) — `correctedAt` — or the phrase.
    */
   refusedInput?: true; correctedAt?: string;
+  /** F10-R2: the field(s) whose refused value raised it; it is corrected only when a later record holds them all valid. */
+  fields?: string[];
 }
 export interface GuidedSafetyClearance extends GuidedSafetyStop { clearedAt: string; by: string; reason: string }
 /** R-INT-3: the SAFETY HOLD (browser storage blocked) is its own record, never worded as a STOP. */
@@ -101,7 +103,11 @@ export interface GuidedSafetyHold { since: string; text: string; why: string; re
 export interface GuidedSafetyReassessment { at: string; by: string; reason: string; confirmed: true }
 export interface GuidedSafety { stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; holds: GuidedSafetyHold[]; reassessments?: GuidedSafetyReassessment[] }
 /** What one "Record a guided diagnosis" adds: the browser's latched STOPs, the record's own STOPs, its clearances, and the hold if storage was blocked. */
-export interface GuidedSafetyAdd { stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; hold: { text: string; why: string } | null; /** The fault family the record was made for. */ family?: string }
+export interface GuidedSafetyAdd {
+  stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; hold: { text: string; why: string } | null;
+  /** The fault family the record was made for. */ family?: string;
+  /** F10-R2: the protective fields of that family that hold a VALID value in this record. */ validFields?: string[];
+}
 export const HOLD_REASSESSMENT_LABEL = "A qualified technician has reassessed the machine's condition in person";
 export const HOLD_REASSESSMENT_NOTICE = 'Recorded on this card by typed name: UNVERIFIED (the person is not authenticated). It releases the SAFETY HOLD on this card only; it is NOT authorisation to restart the generator.';
 const sameGuidedStop = (a: GuidedSafetyStop, b: GuidedSafetyStop) => a.key === b.key && a.since === b.since;
@@ -122,7 +128,9 @@ export function mergeGuidedSafety(prev: GuidedSafety | undefined, add: GuidedSaf
   for (let i = 0; i < stops.length; i++) {
     const x = stops[i];
     // Only a later record for the same fault family can show the value was corrected.
-    if (x.refusedInput && !x.correctedAt && add.family && x.key.startsWith(`${add.family}|`) && !add.stops.some((s) => s.key === x.key)) stops[i] = { ...x, correctedAt: at };
+    // F10-R2: corrected only when the later record holds THAT field again with a valid value (a blank,
+    // missing or still-refused field never counts).
+    if (x.refusedInput && !x.correctedAt && add.family && x.key.startsWith(`${add.family}|`) && x.fields?.length && x.fields.every((f) => add.validFields?.includes(f)) && !add.stops.some((s) => s.key === x.key)) stops[i] = { ...x, correctedAt: at };
   }
   for (const s of add.stops) if (!stops.some((x) => sameGuidedStop(x, s) || (s.fromRecord && x.key === s.key && open(x) && !corrected(x)))) stops.push({ ...s });
   // A clearance always comes with its STOP, so a card never shows a clearance for a STOP it does not list.

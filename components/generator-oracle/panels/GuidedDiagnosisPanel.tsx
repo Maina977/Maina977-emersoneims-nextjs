@@ -17,8 +17,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FAMILIES, familyFor } from '@/lib/generator-oracle/diagnostics/families';
 import { diagnosisRecord, refQuestions } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
+import { refusedHoldKey, refusedHoldText, validProtectiveFields } from '@/lib/generator-oracle/diagnostics/refusedProtective';
 import { knownModels, publishedEntryOf, publishedLimitFor, questionReferenceNote, referencesFor, type Equipment } from '@/lib/generator-oracle/diagnostics/oemReferences';
-import { classKey, limitReadings, sourceKey, tolKey } from '@/lib/generator-oracle/diagnostics/engine';
+import { classKey, limitReadings, SAFEGUARD_LABEL, sourceKey, tolKey } from '@/lib/generator-oracle/diagnostics/engine';
 import { mergedRaw, saveGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
 import { SCREEN_BUCKET, SCREEN_QUESTIONS, isScreenKey } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { LIMIT_CLASS_OPTIONS, type Question } from '@/lib/generator-oracle/diagnostics/types';
@@ -258,7 +259,17 @@ export default function GuidedDiagnosisPanel() {
     const out: Array<{ key: string; message: string; from: string; label?: string }> = [];
     for (const f of FAMILIES) {
       for (const s of diagnosisRecord(f, mergedRaw(answers, f.id), equipment).result.stops) {
-        // A STOP from a refused protective value is shown, not latched (F10-REMAINING: type, then choose the unit).
+        // F10-R2: a STOP from a refused protective value is latched as a HOLD for that family and field
+        // (once committed: this runs on committed answers). Deleting the value, Clear answers, a reload
+        // or another tab never releases it; only a valid value in the same field or a recorded clearance.
+        if (s.level === 'STOP' && s.refusedInput && s.origin === 'family') {
+          for (const field of s.refusedFields ?? []) {
+            const text = f.questions.find((q) => q.id === field)?.text ?? field;
+            const hold = { key: refusedHoldKey(f.id, field), message: refusedHoldText(text), from: f.title, label: SAFEGUARD_LABEL };
+            if (!out.some((x) => x.key === hold.key)) out.push(hold);
+          }
+          continue;
+        }
         if (s.level !== 'STOP' || s.origin === 'other-family' || s.refusedInput) continue;
         // The safeguard label is latched with the STOP so the job card carries it (2026-11-26).
         const label = s.label ? { label: s.label } : {};
@@ -313,6 +324,29 @@ export default function GuidedDiagnosisPanel() {
     const add = liveStops.filter((s) => !latched.some((l) => l.key === s.key));
     if (add.length) setLatched((l) => [...l, ...add.map((s) => ({ ...s, since: new Date().toISOString() }))]);
   }, [liveStops, loaded, latched]);
+  // F10-R2: a refused-value hold is released ONLY when the same field holds a VALID committed value
+  // (entered, unit chosen, a number, in range). The release is kept in the clearance record (automatic,
+  // with the value), and the valid value is then judged normally (at or over the limit → the ordinary STOP).
+  useEffect(() => {
+    if (!loaded) return;
+    const now = new Date().toISOString();
+    const releases: Clearance[] = [];
+    for (const l of latched) {
+      const m = /^([^|]+)\|refused-value\|(.+)$/.exec(l.key);
+      if (!m) continue;
+      const f = FAMILIES.find((x) => x.id === m[1]);
+      if (!f) continue;
+      const merged = mergedRaw(committed, f.id);
+      const rec = diagnosisRecord(f, merged, equipment);
+      if (!validProtectiveFields(f, merged, rec.result.invalid).includes(m[2])) continue;
+      const unit = merged[`${m[2]}.unit`];
+      releases.push({ ...l, clearedAt: now, by: 'automatic: valid value entered', reason: `${f.questions.find((q) => q.id === m[2])?.text ?? m[2]} now holds a valid value: ${merged[m[2]]}${unit ? ` ${unit}` : ''}` });
+    }
+    if (!releases.length) return;
+    setCleared((c) => [...c, ...releases]);
+    setLatched((ls) => ls.filter((x) => !releases.some((r) => r.key === x.key && r.since === x.since)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [committed, loaded, latched, equipment]);
   useEffect(() => {
     if (!loaded) return;
     try {

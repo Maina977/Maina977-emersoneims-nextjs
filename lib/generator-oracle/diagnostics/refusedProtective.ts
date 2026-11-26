@@ -10,6 +10,24 @@ import type { Answers, DiagnosisResult, FaultFamily, NumberQuestion } from './ty
 /** F10-REMAINING (2026-11-26) wording. */
 export const REFUSED_UNIT_SOME = 'STOP — protective value entered without its unit: in at least one possible unit it reaches the limit. Choose the unit.';
 export const REFUSED_UNIT_ALL = 'STOP — protective value entered without its unit: in every possible unit it reaches the limit. Choose the unit.';
+/**
+ * F10-R2 (2026-11-26): once a refused-value STOP has been committed on the panel it is kept as a
+ * hold for that family and field. Deleting or blanking the value, Clear answers, a reload or another
+ * tab never releases it; only a valid value in the same field, a recorded clearance or the phrase does.
+ */
+export const refusedHoldKey = (familyId: string, field: string) => `${familyId}|refused-value|${field}`;
+export const refusedHoldText = (field: string) => `STOP — protective value refused (${field}): value removed or refused — enter a valid value, record a clearance, or write "Readings not taken: STOP in force".`;
+/** The protective fields of a family (readings and limits of its protective limits). */
+export function protectiveFields(family: FaultFamily): string[] {
+  return [...new Set((family.limits ?? []).filter((l) => l.protective).flatMap((l) => [l.reading, l.limit]))];
+}
+/** Protective fields that hold a VALID value: entered, unit chosen where needed, a number, in range, not refused. */
+export function validProtectiveFields(family: FaultFamily, raw: Record<string, string> | undefined, invalid: DiagnosisResult['invalid']): string[] {
+  return protectiveFields(family).filter((id) => {
+    const v = raw?.[id];
+    return v !== undefined && v.trim() !== '' && !invalid.some((i) => i.q === id);
+  });
+}
 export const refusedProtectiveText = (field: string) => `STOP — protective value refused (${field}): it cannot be checked against its limit, so it is treated as reaching it. Correct the value; no running checks until then.`;
 
 /**
@@ -55,7 +73,7 @@ export function refusedProtectiveStops(
     if (!msg) msg = refusedProtectiveText(refusedIds.map((id) => q(id)?.text ?? id).join('; '));
     if (done.has(msg)) continue;
     done.add(msg);
-    out.push({ level: 'STOP', message: msg, label: SAFEGUARD_LABEL, origin: 'family', ...(latch ? {} : { refusedInput: true as const }) });
+    out.push({ level: 'STOP', message: msg, label: SAFEGUARD_LABEL, origin: 'family', refusedFields: refusedIds, ...(latch ? {} : { refusedInput: true as const }) });
   }
   return out;
 }

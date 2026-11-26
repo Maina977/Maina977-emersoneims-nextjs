@@ -17,6 +17,7 @@ import { CHARGING, LOW_OIL_PRESSURE, OVERHEATING } from '@/lib/generator-oracle/
 import { diagnose, SAFEGUARD_LABEL, UNCLASSIFIED_PROTECTIVE } from '@/lib/generator-oracle/diagnostics/engine';
 import { diagnosisRecord, REFUSED_UNIT_ALL, REFUSED_UNIT_SOME } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
 import { convertUnits, PSI_TO_KPA } from '@/lib/generator-oracle/diagnostics/units';
+import { validProtectiveFields } from '@/lib/generator-oracle/diagnostics/refusedProtective';
 import {
   DEVICE_ONLY_NOTICE, IMPORTED_NOTICE, READINGS_NOT_TAKEN_STOP, SIGNED_OFF_ELSEWHERE, SIGNOFF, cardContentHash, jobCardReport, signOffSummary,
   type Asset, type GuidedSafetyAdd, type JobCard,
@@ -250,8 +251,8 @@ describe('F10-REMAINING: a refused protective value is never safer than a typed 
   it('the job card: a refused value blocks completion with test-run readings; recording again with the unit chosen (inside) clears it', () => {
     const add = (raw: Record<string, string>): GuidedSafetyAdd => {
       const rec = diagnosisRecord(LOW_OIL_PRESSURE, raw);
-      const stops = rec.result.stops.filter((s) => s.level === 'STOP').map((s) => ({ key: `low-oil-pressure|${s.message}`, from: LOW_OIL_PRESSURE.title, since: T0, message: s.message, fromRecord: true as const, ...(s.refusedInput ? { refusedInput: true as const } : {}) }));
-      return { stops, clearances: [], hold: null, family: 'low-oil-pressure' };
+      const stops = rec.result.stops.filter((s) => s.level === 'STOP').map((s) => ({ key: `low-oil-pressure|${s.message}`, from: LOW_OIL_PRESSURE.title, since: T0, message: s.message, fromRecord: true as const, ...(s.refusedInput ? { refusedInput: true as const } : {}), ...(s.refusedFields ? { fields: s.refusedFields } : {}) }));
+      return { stops, clearances: [], hold: null, family: 'low-oil-pressure', validFields: validProtectiveFields(LOW_OIL_PRESSURE, raw, rec.result.invalid) };
     };
     let s = go(base(), { type: 'recordGuidedSafety', cardId: 'JC-1', at: T0, safety: add({ oilPressure: '200', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' }) } as ServiceAction);
     expect(complete(s)).toMatch(/still latched/);
@@ -278,5 +279,65 @@ describe('F10-REMAINING: a refused protective value is never safer than a typed 
     set('Unit: Oil pressure measured', 'psi'); // 40 psi = 275.8 kPa: inside
     expect(screen.queryByTestId('gd-stop-hold')).toBeNull();
     expect(JSON.parse(localStorage.getItem('eims-oracle-guided-diagnosis-v1')!).latched).toEqual([]);
+  });
+});
+
+describe('F10-R2: a committed refused protective value is held until a valid value, a clearance or the phrase', () => {
+  const GD = 'eims-oracle-guided-diagnosis-v1';
+  const latchedNow = () => JSON.parse(localStorage.getItem(GD) ?? '{"latched":[]}').latched as Array<{ key: string; message: string }>;
+  const hold = () => !!screen.queryByTestId('gd-stop-hold');
+  const open = async () => {
+    render(<GuidedDiagnosisPanel />);
+    await act(async () => {});
+    act(() => { screen.getAllByRole('tab').find((x) => x.textContent === LOW_OIL_PRESSURE.title)!.click(); });
+  };
+  const set = (label: string | RegExp, v: string) => act(() => { fireEvent.change(screen.getAllByLabelText(label)[0], { target: { value: v } }); });
+  const blur = (label: RegExp) => act(() => { fireEvent.blur(screen.getAllByLabelText(label)[0]); });
+  const limit150 = () => { set('Unit: OEM minimum oil pressure at this speed (manual)', 'kPa'); set(/^OEM minimum oil pressure at this speed/, '150'); blur(/^OEM minimum oil pressure at this speed/); };
+
+  it('typed "10" with no unit, committed, then deleted: the STOP stays (hold), on every tab, after Clear answers and a reload', async () => {
+    await open(); limit150();
+    set(/^Oil pressure measured/, '10'); blur(/^Oil pressure measured/);
+    expect(latchedNow().map((l) => l.key)).toEqual(['low-oil-pressure|refused-value|oilPressure']);
+    expect(latchedNow()[0].message).toMatch(/value removed or refused — enter a valid value, record a clearance, or write "Readings not taken: STOP in force"/);
+    set(/^Oil pressure measured/, ''); blur(/^Oil pressure measured/);
+    expect(hold()).toBe(true);
+    expect(screen.getByTestId('gd-latched-stop').textContent).toMatch(/value removed or refused/);
+    act(() => { screen.getByRole('button', { name: 'Clear answers' }).click(); });
+    for (const t of screen.getAllByRole('tab')) { act(() => { t.click(); }); expect(hold(), t.textContent ?? '').toBe(true); }
+    cleanup();
+    await open();
+    expect(hold()).toBe(true);
+  });
+  it('a valid value inside releases it (kept in the clearance record); a valid value at the limit becomes the ordinary latched STOP', async () => {
+    await open(); limit150();
+    set(/^Oil pressure measured/, '10'); blur(/^Oil pressure measured/);
+    set('Unit: Oil pressure measured', 'bar'); // 10 bar = 1000 kPa: valid, inside
+    expect(latchedNow()).toEqual([]);
+    expect(hold()).toBe(false);
+    expect(JSON.parse(localStorage.getItem(GD)!).cleared[0].by).toBe('automatic: valid value entered');
+    set('Unit: Oil pressure measured', '');
+    blur(/^Oil pressure measured/);
+    expect(hold()).toBe(true);
+    set('Unit: Oil pressure measured', 'kPa'); set(/^Oil pressure measured/, '150'); blur(/^Oil pressure measured/); // at the limit
+    const keys = latchedNow().map((l) => l.key);
+    expect(keys.some((k) => k.startsWith('low-oil-pressure|STOP —'))).toBe(true);
+    expect(keys).not.toContain('low-oil-pressure|refused-value|oilPressure');
+  });
+  it('typing then choosing the unit before any commit latches nothing', async () => {
+    await open(); limit150();
+    set(/^Oil pressure measured/, '40');
+    expect(hold()).toBe(true); // shown while refused
+    set('Unit: Oil pressure measured', 'psi'); // 40 psi = 275.8 kPa: inside
+    expect(hold()).toBe(false);
+    expect(latchedNow()).toEqual([]);
+  });
+  it('the job card: a later record with the reading blank does not correct it; a later record with the field valid does', () => {
+    const fields = { key: 'low-oil-pressure|x', from: LOW_OIL_PRESSURE.title, since: T0, message: 'x', fromRecord: true as const, refusedInput: true as const, fields: ['oilPressure'] };
+    let s = go(base(), { type: 'recordGuidedSafety', cardId: 'JC-1', at: T0, safety: { stops: [fields], clearances: [], hold: null, family: 'low-oil-pressure', validFields: ['oemMinOilPressure'] } } as ServiceAction);
+    s = go(s, { type: 'recordGuidedSafety', cardId: 'JC-1', at: T1, safety: { stops: [], clearances: [], hold: null, family: 'low-oil-pressure', validFields: ['oemMinOilPressure'] } } as ServiceAction);
+    expect(complete(s)).toMatch(/still latched/);
+    s = go(s, { type: 'recordGuidedSafety', cardId: 'JC-1', at: T2, safety: { stops: [], clearances: [], hold: null, family: 'low-oil-pressure', validFields: ['oemMinOilPressure', 'oilPressure'] } } as ServiceAction);
+    expect(complete(s)).toBeNull();
   });
 });
