@@ -51,24 +51,39 @@ export function recordsStopInForce(card: Pick<JobCard, 'findings'>): boolean {
 export const LATCHED_STOP_PREFIX = 'STOP — still latched — no recorded clearance.';
 export const CLEARANCE_RECORD_PREFIX = 'STOP CLEARANCE RECORDED — UNVERIFIED';
 export interface LatchedStopRef { from: string; since: string; message: string }
-export interface ClearanceRef extends LatchedStopRef { clearedAt: string; by: string; reason: string }
+/**
+ * `automatic` (2026-11-26): a refused-value hold released because a valid value was entered. It is
+ * NOT a clearance by a person: it prints as its own line type and resolves only that hold.
+ */
+export interface AutoRelease { automatic?: true; field?: string; entered?: string; canonical?: string }
+export interface ClearanceRef extends LatchedStopRef, AutoRelease { clearedAt: string; by: string; reason: string }
+export const AUTO_RELEASE_PREFIX = 'Refused-value hold released automatically';
+/** The line for an automatic release (panel, job card, .txt, PDF). Never worded as a clearance. */
+export function autoReleaseLine(c: ClearanceRef): string {
+  return `${AUTO_RELEASE_PREFIX}: a valid value was entered (${oneLine(c.field ?? '')} = ${oneLine(c.entered ?? '')}, converted ${oneLine(c.canonical ?? '')}) at ${c.clearedAt}. No person recorded a clearance. Source: ${oneLine(c.from)} tab. Since: ${c.since} (UTC).`;
+}
 const oneLine = (s: string) => s.replace(/\s+/g, ' ').trim();
 export function latchedStopLine(l: LatchedStopRef): string {
   return `${LATCHED_STOP_PREFIX} Source: ${oneLine(l.from)} tab. Since: ${l.since} (UTC). ${oneLine(l.message)}`;
 }
 export function clearanceLine(c: ClearanceRef): string {
+  if (c.automatic) return autoReleaseLine(c);
   return `${CLEARANCE_RECORD_PREFIX} (typed name, not authenticated; NOT authorisation to restart the generator): Source: ${oneLine(c.from)} tab. Since: ${c.since} (UTC). Cleared: ${c.clearedAt} (UTC) by ${oneLine(c.by)}. Reason: ${oneLine(c.reason) || '(not recorded)'}. STOP was: ${oneLine(c.message)}`;
 }
 const LATCH_ID = /^STOP — still latched — no recorded clearance\. Source: (.+?) tab\. Since: (\S+) \(UTC\)\./;
 const CLEAR_ID = /^STOP CLEARANCE RECORDED — UNVERIFIED .*?: Source: (.+?) tab\. Since: (\S+) \(UTC\)\./;
+/** An automatic release resolves only a refused-value hold line (its own STOP text says so). */
+const AUTO_ID = /^Refused-value hold released automatically: .* Source: (.+?) tab\. Since: (\S+) \(UTC\)\.$/;
 /** Latched STOPs recorded in the findings with no clearance line for the same STOP (source + since). */
 export function unresolvedLatchedStops(card: Pick<JobCard, 'findings'>): string[] {
   const lines = (card.findings || '').split(/\r?\n/);
   const cleared = new Set(lines.map((l) => CLEAR_ID.exec(l)).filter(Boolean).map((m) => `${m![1]}|${m![2]}`));
+  const auto = new Set(lines.map((l) => AUTO_ID.exec(l)).filter(Boolean).map((m) => `${m![1]}|${m![2]}`));
   const out: string[] = [];
   for (const l of lines) {
     const m = LATCH_ID.exec(l);
-    if (m && !cleared.has(`${m[1]}|${m[2]}`) && !out.includes(l)) out.push(l);
+    const autoReleased = !!m && auto.has(`${m[1]}|${m[2]}`) && /protective value refused \(.*\): value removed or refused/.test(l);
+    if (m && !cleared.has(`${m[1]}|${m[2]}`) && !autoReleased && !out.includes(l)) out.push(l);
   }
   return out;
 }
@@ -93,7 +108,7 @@ export interface GuidedSafetyStop {
   /** F10-R2: the field(s) whose refused value raised it; it is corrected only when a later record holds them all valid. */
   fields?: string[];
 }
-export interface GuidedSafetyClearance extends GuidedSafetyStop { clearedAt: string; by: string; reason: string }
+export interface GuidedSafetyClearance extends GuidedSafetyStop, AutoRelease { clearedAt: string; by: string; reason: string }
 /** R-INT-3: the SAFETY HOLD (browser storage blocked) is its own record, never worded as a STOP. */
 export interface GuidedSafetyHold { since: string; text: string; why: string; resolvedAt?: string }
 /**
@@ -111,7 +126,11 @@ export interface GuidedSafetyAdd {
 export const HOLD_REASSESSMENT_LABEL = "A qualified technician has reassessed the machine's condition in person";
 export const HOLD_REASSESSMENT_NOTICE = 'Recorded on this card by typed name: UNVERIFIED (the person is not authenticated). It releases the SAFETY HOLD on this card only; it is NOT authorisation to restart the generator.';
 const sameGuidedStop = (a: GuidedSafetyStop, b: GuidedSafetyStop) => a.key === b.key && a.since === b.since;
-const clears = (c: GuidedSafetyClearance, s: GuidedSafetyStop) => sameGuidedStop(c, s) || (!!s.fromRecord && c.key === s.key && c.clearedAt >= s.since);
+/** An automatic release is not a person's clearance: it resolves only the refused-value hold it was made for. */
+const isRefusedHoldKey = (k: string) => k.includes('|refused-value|');
+const clears = (c: GuidedSafetyClearance, s: GuidedSafetyStop) => (c.automatic
+  ? isRefusedHoldKey(s.key) && sameGuidedStop(c, s)
+  : sameGuidedStop(c, s) || (!!s.fromRecord && c.key === s.key && c.clearedAt >= s.since));
 /** A refused-input STOP is resolved when a later record on the card no longer shows it (the value was corrected). */
 const corrected = (s: GuidedSafetyStop, since?: string) => !!s.refusedInput && !!s.correctedAt && (!since || s.correctedAt >= since);
 /**
@@ -166,7 +185,8 @@ export function unresolvedGuidedSafety(card: Pick<JobCard, 'guidedSafety'> & Par
   if (!g) return { stops: [], hold: null };
   const imp = opts.asRecorded ? undefined : card.imported;
   if (!imp) return { stops: g.stops.filter((s) => !corrected(s) && !g.clearances.some((c) => clears(c, s))), hold: g.holds.find((h) => !h.resolvedAt) ?? null };
-  const fresh = g.clearances.slice(imp.clearances);
+  // Only a PERSON's clearance recorded on this device after the import resolves an imported STOP.
+  const fresh = g.clearances.slice(imp.clearances).filter((c) => !c.automatic);
   const freshReassessed = (g.reassessments ?? []).slice(imp.reassessments).some((r) => r.at >= imp.at);
   const stops = g.stops.filter((s, i) => {
     if (i < imp.stops) return !corrected(s, imp.at) && !fresh.some((c) => c.key === s.key && c.clearedAt >= imp.at);
@@ -582,7 +602,8 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
     structured.push({ heading: 'SAFETY — GUIDED DIAGNOSIS STOP RECORD (held on this card)', lines: [
       ...g.stops.flatMap((s) => {
         const open = unresolved.stops.includes(s);
-        return [`  ${open ? latchedStopLine(s) : `STOP — cleared by a recorded clearance (UNVERIFIED). Source: ${oneLine(s.from)} tab. Since: ${s.since} (UTC). ${oneLine(s.message)}`}`, ...(s.fromRecord ? ['  (Shown by the recorded diagnosis itself when this card was made.)'] : []), ...(s.label ? [`  ${s.label}`] : [])];
+        const auto = !open && g.clearances.some((c) => c.automatic && clears(c, s)) && !g.clearances.some((c) => !c.automatic && clears(c, s));
+        return [`  ${open ? latchedStopLine(s) : auto ? `STOP — ${AUTO_RELEASE_PREFIX.toLowerCase()} (a valid value was entered; no person recorded a clearance). Source: ${oneLine(s.from)} tab. Since: ${s.since} (UTC). ${oneLine(s.message)}` : `STOP — cleared by a recorded clearance (UNVERIFIED). Source: ${oneLine(s.from)} tab. Since: ${s.since} (UTC). ${oneLine(s.message)}`}`, ...(s.fromRecord ? ['  (Shown by the recorded diagnosis itself when this card was made.)'] : []), ...(s.label ? [`  ${s.label}`] : [])];
       }),
       ...g.clearances.map((c) => `  ${clearanceLine(c)}`),
     ] });

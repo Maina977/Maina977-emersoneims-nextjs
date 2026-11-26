@@ -27,7 +27,7 @@ export const CLEARANCE_NOT_RESTART = 'Recording a clearance only removes this so
 
 /** `label`: the safeguard label shown under the STOP, when it has one (kept from 2026-11-26). */
 export type StoredLatched = { key: string; message: string; from: string; since: string; label?: string };
-export type StoredClearance = StoredLatched & { clearedAt: string; by: string; reason: string };
+export type StoredClearance = StoredLatched & { clearedAt: string; by: string; reason: string; automatic?: true; field?: string; entered?: string; canonical?: string };
 /**
  * Management decision (2026-11-25): when this browser blocks storage, the panel cannot read an
  * earlier unresolved STOP or keep a new one, so it shows a SAFETY HOLD. It is not a fault or
@@ -193,7 +193,7 @@ function guardCore(build: (extra: ExternalStop[]) => DiagnosisRecord, st: Safety
     // R-INT-6: the record's own STOPs (from the diagnosis the record is built from) go on the card too,
     // so a card never carries a STOP line without a structured STOP, even if the browser has not latched it.
     stops: [...st.latched.map(strip), ...recordStops(base, family).filter((r) => !st.latched.some((l) => l.key === r.key && !st.cleared.some((c) => sameStop(c, l))))],
-    clearances: st.cleared.map((c) => ({ ...strip(c), clearedAt: c.clearedAt, by: c.by, reason: c.reason })),
+    clearances: st.cleared.map((c) => ({ ...strip(c), clearedAt: c.clearedAt, by: c.by, reason: c.reason, ...(c.automatic ? { automatic: true as const, field: c.field, entered: c.entered, canonical: c.canonical } : {}) })),
     hold: st.hold ? { text: SAFETY_HOLD_TEXT, why: SAFETY_HOLD_WHY } : null,
     family: family.id,
     validFields: (() => { const inp = recordInputs(base); return validProtectiveFields(family, inp?.raw, base.result.invalid); })(),

@@ -361,7 +361,8 @@ describe('R-INT-6: a STOP on a card always has a structured STOP; a pending valu
     const base = openJobCard({ id: 'JC1', assetId: 'A1', opened: '2026-11-26', reportedFault: 'x', technician: 'T' });
     const card = { ...base, ...guardedCardUpdate({ findings: '', readings: [] }, g), guidedSafety: mergeGuidedSafety(undefined, g.safety, T) } as JobCard;
     expect(() => complete(card, { readings })).toThrow(/still latched/);
-    const later = '2026-11-26T09:00:00.000Z';
+    // After the record's own STOP (its `since` is the time the record was made).
+    const later = new Date(Date.parse(own[0].since) + 60_000).toISOString();
     const cleared = { ...card, guidedSafety: mergeGuidedSafety(card.guidedSafety, { stops: [], clearances: [{ ...own[0], since: later, clearedAt: later, by: 'JK', reason: 'TEST pressure restored' }], hold: null }, later) };
     expect(complete(cleared, { readings }).status).toBe('COMPLETED');
   });

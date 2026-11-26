@@ -23,6 +23,7 @@ import {
   type Asset, type GuidedSafetyAdd, type JobCard,
 } from '@/lib/generator-oracle/service/maintenance';
 import { jobCardToPdf } from '@/lib/generator-oracle/service/jobCardPdf';
+import { guardedCardUpdate, guardedSessionRecord, readStore, safetyStateOf } from '@/lib/generator-oracle/diagnostics/stopLatch';
 import { apply, deserialise, emptyState, importState, loadState, serialise, STORE_KEY, type ServiceAction, type ServiceState } from '@/lib/generator-oracle/service/store';
 
 type Pdfjs = typeof import('pdfjs-dist/legacy/build/pdf.mjs');
@@ -315,7 +316,7 @@ describe('F10-R2: a committed refused protective value is held until a valid val
     set('Unit: Oil pressure measured', 'bar'); // 10 bar = 1000 kPa: valid, inside
     expect(latchedNow()).toEqual([]);
     expect(hold()).toBe(false);
-    expect(JSON.parse(localStorage.getItem(GD)!).cleared[0].by).toBe('automatic: valid value entered');
+    expect(JSON.parse(localStorage.getItem(GD)!).cleared[0].automatic).toBe(true);
     set('Unit: Oil pressure measured', '');
     blur(/^Oil pressure measured/);
     expect(hold()).toBe(true);
@@ -339,5 +340,51 @@ describe('F10-R2: a committed refused protective value is held until a valid val
     expect(complete(s)).toMatch(/still latched/);
     s = go(s, { type: 'recordGuidedSafety', cardId: 'JC-1', at: T2, safety: { stops: [], clearances: [], hold: null, family: 'low-oil-pressure', validFields: ['oemMinOilPressure', 'oilPressure'] } } as ServiceAction);
     expect(complete(s)).toBeNull();
+  });
+});
+
+describe('automatic release of a refused-value hold: its own line, never a person\'s clearance', () => {
+  const AUTO_RE = /^Refused-value hold released automatically: a valid value was entered \(Oil pressure measured = 10 bar, converted 1000 kPa\) at \S+\. No person recorded a clearance\./;
+  it('panel, job card .txt and PDF print the automatic line; never "typed name, not authenticated"', async () => {
+    render(<GuidedDiagnosisPanel />);
+    await act(async () => {});
+    act(() => { screen.getAllByRole('tab').find((x) => x.textContent === LOW_OIL_PRESSURE.title)!.click(); });
+    const set = (label: string | RegExp, v: string) => act(() => { fireEvent.change(screen.getAllByLabelText(label)[0], { target: { value: v } }); });
+    set('Unit: OEM minimum oil pressure at this speed (manual)', 'kPa'); set(/^OEM minimum oil pressure at this speed/, '150');
+    set(/^Oil pressure measured/, '10'); act(() => { fireEvent.blur(screen.getAllByLabelText(/^Oil pressure measured/)[0]); });
+    set('Unit: Oil pressure measured', 'bar');
+    const li = screen.getByTestId('gd-auto-release').textContent ?? '';
+    expect(li).toMatch(AUTO_RE);
+    expect(li).not.toMatch(/typed name|not authenticated|UNVERIFIED ·/);
+    expect(screen.getByTestId('gd-clearance-record').textContent).toMatch(/STOP clearance record \(0\) \+ 1 automatic release\(s\) of refused-value holds \(not clearances\)/);
+    cleanup();
+    // The job card made from this browser.
+    const st = safetyStateOf(readStore());
+    const g = guardedSessionRecord(LOW_OIL_PRESSURE, { 'low-oil-pressure': { oilPressure: '10', 'oilPressure.unit': 'bar', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' } }, {}, st);
+    let s = go(base(), { type: 'recordGuidedSafety', cardId: 'JC-1', at: T1, safety: g.safety } as ServiceAction);
+    s = go(s, { type: 'updateCard', cardId: 'JC-1', update: guardedCardUpdate(s.jobCards[0], g) } as ServiceAction);
+    const c = s.jobCards[0];
+    expect(c.guidedSafety!.clearances[0].automatic).toBe(true);
+    const txt = jobCardReport(c, s.assets[0]);
+    const lines = txt.split('\n').filter((l) => /Refused-value hold released automatically/.test(l));
+    expect(lines.length).toBeGreaterThan(0);
+    for (const l of lines) expect(l).not.toMatch(/typed name|not authenticated|STOP CLEARANCE RECORDED/);
+    expect(txt).not.toMatch(/STOP CLEARANCE RECORDED/);
+    expect(await pdfText(c, s.assets[0])).toContain('No person recorded a clearance');
+    expect(complete(s)).toBeNull(); // the hold was released by a valid value (10 bar is inside)
+  }, 60_000);
+  it('an automatic release never counts as a person\'s clearance: not for an ordinary STOP, not for an imported STOP', () => {
+    const ord = { key: 'low-oil-pressure|STOP — x', from: 'Low oil pressure', since: T0, message: 'x' };
+    const auto = { ...ord, clearedAt: T1, by: 'automatic', reason: '', automatic: true as const, field: 'f', entered: '1 kPa', canonical: '1 kPa' };
+    let s = go(base(), { type: 'recordGuidedSafety', cardId: 'JC-1', at: T0, safety: { stops: [ord], clearances: [], hold: null } } as ServiceAction);
+    s = go(s, { type: 'recordGuidedSafety', cardId: 'JC-1', at: T1, safety: { stops: [], clearances: [auto], hold: null } } as ServiceAction);
+    expect(complete(s)).toMatch(/still latched/);
+    // Imported card: a hold in the file, released automatically on this device → still needs a person (or the phrase).
+    const hold = { key: 'low-oil-pressure|refused-value|oilPressure', from: 'Low oil pressure', since: T0, message: 'STOP — protective value refused (Oil pressure measured): value removed or refused — enter a valid value, record a clearance, or write "Readings not taken: STOP in force".' };
+    const j = JSON.parse(serialise(go(base(), { type: 'recordGuidedSafety', cardId: 'JC-1', at: T0, safety: { stops: [hold], clearances: [], hold: null } } as ServiceAction)));
+    const t = importState(JSON.stringify(j), T1); if (!t.ok) throw new Error(t.error);
+    let st = go(t.state, { type: 'recordGuidedSafety', cardId: 'JC-1', at: T2, safety: { stops: [], clearances: [{ ...hold, clearedAt: T2, by: 'automatic', reason: '', automatic: true, field: 'f', entered: '1 kPa', canonical: '1 kPa' }], hold: null } } as ServiceAction);
+    st = go(st, { type: 'recordHoldReassessment', cardId: 'JC-1', at: T2, by: 'JK', reason: 'Checked in person on site', confirmed: true } as ServiceAction);
+    expect(complete(st)).toMatch(/still latched/);
   });
 });

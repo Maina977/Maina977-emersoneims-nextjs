@@ -242,7 +242,8 @@ const isGStop = (v: unknown) => isObj(v) && isStr(v.key) && isStr(v.from) && isS
   && (v.refusedInput === undefined || v.refusedInput === true) && (v.correctedAt === undefined || isStr(v.correctedAt))
   && (v.fields === undefined || (Array.isArray(v.fields) && v.fields.every(isStr)));
 const isGuidedSafety = (v: unknown) => isObj(v) && Array.isArray(v.stops) && v.stops.every(isGStop)
-  && Array.isArray(v.clearances) && v.clearances.every((c) => isGStop(c) && isStr((c as Record<string, unknown>).clearedAt) && isStr((c as Record<string, unknown>).by) && isStr((c as Record<string, unknown>).reason))
+  && Array.isArray(v.clearances) && v.clearances.every((c) => isGStop(c) && isStr((c as Record<string, unknown>).clearedAt) && isStr((c as Record<string, unknown>).by) && isStr((c as Record<string, unknown>).reason)
+    && ((c as Record<string, unknown>).automatic === undefined || (c as Record<string, unknown>).automatic === true))
   && Array.isArray(v.holds) && v.holds.every((h) => isObj(h) && isStr(h.since) && isStr(h.text) && isStr(h.why) && (h.resolvedAt === undefined || isStr(h.resolvedAt)))
   && (v.reassessments === undefined || (Array.isArray(v.reassessments) && v.reassessments.every((r) => isObj(r) && isStr(r.at) && isStr(r.by) && isStr(r.reason) && r.confirmed === true)));
 const isCardImport = (v: unknown) => isObj(v) && isStr(v.at) && ['stops', 'clearances', 'holds', 'reassessments'].every((k) => Number.isInteger(v[k]) && (v[k] as number) >= 0)

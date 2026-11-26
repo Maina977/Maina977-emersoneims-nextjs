@@ -23,8 +23,8 @@ import { classKey, limitReadings, SAFEGUARD_LABEL, sourceKey, tolKey } from '@/l
 import { mergedRaw, saveGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
 import { SCREEN_BUCKET, SCREEN_QUESTIONS, isScreenKey } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { LIMIT_CLASS_OPTIONS, type Question } from '@/lib/generator-oracle/diagnostics/types';
-import { DEVICE_ONLY_NOTICE } from '@/lib/generator-oracle/service/maintenance';
-import { CANONICAL, UNIT_OPTIONS, unitKey, unitKindOf } from '@/lib/generator-oracle/diagnostics/units';
+import { autoReleaseLine, DEVICE_ONLY_NOTICE } from '@/lib/generator-oracle/service/maintenance';
+import { CANONICAL, convertUnits, UNIT_OPTIONS, unitKey, unitKindOf } from '@/lib/generator-oracle/diagnostics/units';
 
 import {
   CLEARANCE_NOT_RESTART, GD_STORE, SAFETY_HOLD_ACK_LABEL, SAFETY_HOLD_SESSION_ONLY, SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY,
@@ -156,7 +156,7 @@ export default function GuidedDiagnosisPanel() {
   // corrupted stored safety state is treated as a STOP, never as "cleared"; several open
   // windows are merged so a STOP is never dropped by another window's write.
   type Latched = { key: string; message: string; from: string; since: string; label?: string };
-  type Clearance = Latched & { clearedAt: string; by: string; reason: string };
+  type Clearance = Latched & { clearedAt: string; by: string; reason: string; automatic?: true; field?: string; entered?: string; canonical?: string };
   const [latched, setLatched] = useState<Latched[]>([]);
   const [cleared, setCleared] = useState<Clearance[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -340,7 +340,12 @@ export default function GuidedDiagnosisPanel() {
       const rec = diagnosisRecord(f, merged, equipment);
       if (!validProtectiveFields(f, merged, rec.result.invalid).includes(m[2])) continue;
       const unit = merged[`${m[2]}.unit`];
-      releases.push({ ...l, clearedAt: now, by: 'automatic: valid value entered', reason: `${f.questions.find((q) => q.id === m[2])?.text ?? m[2]} now holds a valid value: ${merged[m[2]]}${unit ? ` ${unit}` : ''}` });
+      const q = f.questions.find((x) => x.id === m[2]);
+      const entered = `${merged[m[2]]}${unit ? ` ${unit}` : q && q.kind === 'number' ? ` ${q.unit}` : ''}`;
+      const conv = convertUnits(f, merged).raw[m[2]];
+      const canonical = `${conv !== undefined ? Math.round(Number(conv) * 1000) / 1000 : merged[m[2]]}${q && q.kind === 'number' ? ` ${q.unit}` : ''}`;
+      // Not a person's clearance: its own line type everywhere, and it resolves only this hold.
+      releases.push({ ...l, clearedAt: now, by: 'automatic', reason: '', automatic: true, field: q?.text ?? m[2], entered, canonical });
     }
     if (!releases.length) return;
     setCleared((c) => [...c, ...releases]);
@@ -661,9 +666,11 @@ export default function GuidedDiagnosisPanel() {
       ) : null}
       {cleared.length > 0 && (
         <details data-testid="gd-clearance-record" className="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-xs text-slate-300">
-          <summary className="cursor-pointer">STOP clearance record ({cleared.length}), UNVERIFIED, kept in this browser only</summary>
+          <summary className="cursor-pointer">STOP clearance record ({cleared.filter((c) => !c.automatic).length}){cleared.some((c) => c.automatic) ? ` + ${cleared.filter((c) => c.automatic).length} automatic release(s) of refused-value holds (not clearances)` : ''}, UNVERIFIED, kept in this browser only</summary>
           <p className="mt-2 text-amber-200">{CLEARANCE_NOT_RESTART}</p>
-          <ul className="mt-2 space-y-1">{cleared.map((c, i) => <li key={i}>UNVERIFIED · {c.clearedAt.slice(0, 16).replace('T', ' ')} UTC · recorded by {c.by} (not authenticated) · fault: {c.from}: {c.message} · reason: {c.reason || '(not recorded)'}</li>)}</ul>
+          <ul className="mt-2 space-y-1">{cleared.map((c, i) => (c.automatic
+            ? <li key={i} data-testid="gd-auto-release">{autoReleaseLine(c)}</li>
+            : <li key={i}>UNVERIFIED · {c.clearedAt.slice(0, 16).replace('T', ' ')} UTC · recorded by {c.by} (not authenticated) · fault: {c.from}: {c.message} · reason: {c.reason || '(not recorded)'}</li>))}</ul>
         </details>
       )}
       <p className="text-[11px] text-slate-500">{result.disclaimer} Content status: {result.review}. {result.engineVersion}.</p>
