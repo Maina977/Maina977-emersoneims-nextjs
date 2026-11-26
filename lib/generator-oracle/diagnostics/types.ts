@@ -194,7 +194,7 @@ export interface RankedCause {
   /** Running/live checks withheld because a STOP is active (empty when none). */
   withheld: string[];
   reference: string;
-  /** CA-31 (P1-A section 4 quarantine): the reference is general service practice only, with no published source. Never ranked first over a supported sourced cause, and never a recommendation. */
+  /** CA-31 (P1-A section 4 quarantine): no verified published source (general practice, marked NOT VERIFIED, or no clause/page and edition). Never ranked first over a supported verified cause, and never a recommendation. */
   unverified: boolean;
 }
 

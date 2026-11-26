@@ -7,7 +7,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { FAMILIES, NO_CRANK } from '@/lib/generator-oracle/diagnostics/families';
-import { diagnose, isGeneralPracticeOnly, NO_VERIFIED_LEAD, UNVERIFIED_CAUSE_LABEL } from '@/lib/generator-oracle/diagnostics/engine';
+import { diagnose, isGeneralPracticeOnly, isUnverifiedReference, NO_VERIFIED_LEAD, UNVERIFIED_CAUSE_LABEL } from '@/lib/generator-oracle/diagnostics/engine';
+import { REF_ISO_8528_5 } from '@/lib/generator-oracle/diagnostics/familiesExpansion';
 import { SCREEN_QUESTIONS, SCREEN_RULES } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { diagnosisRecord } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
 
@@ -61,38 +62,43 @@ describe('P1-A section 5: crankcase pressure, reverse power, earth fault', () =>
 });
 
 describe('P1-A section 4 quarantine: general practice is UNVERIFIED and never outranks a supported sourced cause', () => {
-  it('the classifier: the two general-practice references are unverified; a published source is not', () => {
+  it('the classifier (management rule 2026-11-27): general practice, NOT VERIFIED and title-only references are all unverified', () => {
     expect(isGeneralPracticeOnly('General diesel generator service practice (EmersonEIMS); confirm limits and procedure in the OEM service manual for this engine.')).toBe(true);
-    expect(isGeneralPracticeOnly('General alternator service practice (EmersonEIMS); confirm limits and procedure in the alternator and AVR manuals.')).toBe(true);
-    const sourced = FAMILIES.flatMap((f) => f.causes).filter((c) => !isGeneralPracticeOnly(c.reference));
-    expect(sourced.length).toBeGreaterThanOrEqual(2);
+    expect(isUnverifiedReference('General alternator service practice (EmersonEIMS); confirm limits and procedure in the alternator and AVR manuals.')).toBe(true);
+    // the ISO 8528-5 cause: a standard cited by title, "clauses and values NOT VERIFIED"
+    expect(REF_ISO_8528_5).toMatch(/NOT VERIFIED/);
+    expect(isUnverifiedReference(REF_ISO_8528_5)).toBe(true);
+    // title only, no clause/page or edition (the BCI load-test guide)
+    expect(isUnverifiedReference('Battery Council International load-test guide: about 12.4 V at rest ≈ 75 % charge.')).toBe(true);
+    // clause or page without an edition, or an edition without a clause or page: still unverified
+    expect(isUnverifiedReference('Perkins 1100 Series Operation and Maintenance Manual, p. 54')).toBe(true);
+    expect(isUnverifiedReference('Perkins 1100 Series Operation and Maintenance Manual, edition 2019')).toBe(true);
+    // a specific page and edition, not marked unverified: a verified published source
+    expect(isUnverifiedReference('Perkins 1100 Series Operation and Maintenance Manual SEBU8311, edition 2019, p. 54')).toBe(false);
+    expect(isUnverifiedReference('Perkins 1100 Series Operation and Maintenance Manual SEBU8311, edition 2019, p. 54 (NOT VERIFIED against a held copy)')).toBe(true);
   });
 
-  it('every ranked cause carries the flag; across many answer sets an unverified cause is never above a supported sourced one', () => {
-    let checked = 0;
+  it('every ranked cause carries the flag; a supported verified cause would always be listed first', () => {
     for (const f of FAMILIES) {
       const variants: Array<Record<string, string | number>> = [screenNo];
       for (const q of f.questions) if (q.kind === 'choice' && !q.id.startsWith('screen.')) for (const o of q.options) variants.push({ ...screenNo, [q.id]: o.value });
       for (const v of variants) {
         const r = diagnose(f, v);
-        r.ranked.forEach((c) => expect(c.unverified).toBe(isGeneralPracticeOnly(c.reference)));
-        const firstSourced = r.ranked.findIndex((c) => !c.unverified && c.score > 0);
-        if (firstSourced >= 0) { expect(firstSourced).toBe(0); checked++; }
+        r.ranked.forEach((c) => expect(c.unverified).toBe(isUnverifiedReference(c.reference)));
+        const firstVerified = r.ranked.findIndex((c) => !c.unverified && c.score > 0);
+        if (firstVerified >= 0) expect(firstVerified).toBe(0);
       }
     }
-    expect(checked).toBeGreaterThan(0);
   });
 
-  it('NO_CRANK: the battery cause (BCI source) is listed first when supported, even when a general-practice cause has more evidence', () => {
-    // starter clicks (+1 battery, and supports starter/cable causes); a cable fault seen strongly
-    const base = { ...screenNo, systemVoltage: '12', starterSound: 'click' };
-    const r = diagnose(NO_CRANK, base);
-    const bat = r.ranked.find((c) => c.id === 'battery')!;
-    expect(bat.unverified).toBe(false);
-    if (bat.score > 0) expect(r.ranked[0].id).toBe('battery');
-    // the evidence order alone would put a higher-scored general-practice cause first
-    const higher = r.ranked.filter((c) => c.unverified && c.score > bat.score);
-    for (const h of higher) expect(r.ranked.indexOf(h)).toBeGreaterThan(r.ranked.indexOf(bat));
+  it('today no cause has a verified clause/page/edition source, so none is presented as confirmed: the ISO 8528-5 and BCI causes are UNVERIFIED', () => {
+    const all = FAMILIES.flatMap((f) => f.causes);
+    expect(all.filter((c) => !isUnverifiedReference(c.reference))).toEqual([]);
+    const iso = all.find((c) => c.reference === REF_ISO_8528_5)!;
+    expect(iso).toBeTruthy();
+    const nc = diagnose(NO_CRANK, { ...screenNo, systemVoltage: '12', starterSound: 'click' });
+    expect(nc.ranked.find((c) => c.id === 'battery')!.unverified).toBe(true);
+    expect(nc.ranked[0].unverified).toBe(true);
   });
 
   it('when no sourced cause is supported, the job-card record says so and labels each general-practice cause', () => {

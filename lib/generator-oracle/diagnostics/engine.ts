@@ -209,10 +209,26 @@ const withheldWhy = (stopActive: boolean) => (stopActive ? 'the STOP above appli
 /** A cause reference that is general service practice only (no published source, edition or page). */
 const GENERAL_PRACTICE = /^General (diesel generator|alternator) service practice\b/;
 export const isGeneralPracticeOnly = (reference: string) => GENERAL_PRACTICE.test(reference.trim());
+/** A reference that says it was not verified (e.g. a standard "cited by title only; clauses and values NOT VERIFIED"). */
+const MARKED_NOT_VERIFIED = /\bnot verified\b|\bunverified\b|\bcited by title only\b/i;
+/** A specific clause, section, table or page ... */
+const CLAUSE_OR_PAGE = /\b(clause|cl\.|section|sect\.|table|page|p\.|pp\.)\s*[A-Z]?\d/i;
+/** ... and the edition or year it applies to. */
+const EDITION = /\b(edition|ed\.|rev(ision)?\.?)\s*\S|\b(19|20)\d{2}\b/i;
+/**
+ * Management rule (2026-11-27): an unverified source is never presented as confirmed. A cause reference counts
+ * as a verified published source only when it names a specific clause/section/table/page AND an edition or
+ * year, and is not marked NOT VERIFIED. General practice, a source marked NOT VERIFIED, and a title-only
+ * citation without clause/page and edition are all UNVERIFIED.
+ */
+export const isUnverifiedReference = (reference: string) => {
+  const r = reference.trim();
+  return isGeneralPracticeOnly(r) || MARKED_NOT_VERIFIED.test(r) || !CLAUSE_OR_PAGE.test(r) || !EDITION.test(r);
+};
 /** Shown wherever an unverified cause is listed. */
-export const UNVERIFIED_CAUSE_LABEL = 'UNVERIFIED — cites general practice only; not a recommendation';
-/** Shown when no cause with a published source is supported by the answers. */
-export const NO_VERIFIED_LEAD = 'No cause with a published source is supported by these answers: the causes below cite general practice only (UNVERIFIED). They are listed by evidence for information, not recommended; confirm with the OEM manual.';
+export const UNVERIFIED_CAUSE_LABEL = 'UNVERIFIED — no verified source (general practice, or a source not verified to clause or page and edition); not a recommendation';
+/** Shown when no cause with a verified published source is supported by the answers. */
+export const NO_VERIFIED_LEAD = 'No cause with a verified published source (clause or page, and edition) is supported by these answers: the causes below are UNVERIFIED (general practice, or a standard or guide cited by title only and not verified). They are listed by evidence for information, not recommended; confirm with the OEM manual.';
 
 export function diagnose(family: FaultFamily, raw: Answers, opts: DiagnoseOptions = {}): DiagnosisResult {
   const { answers, invalid } = validateAnswers(family, raw);
@@ -248,10 +264,10 @@ export function diagnose(family: FaultFamily, raw: Answers, opts: DiagnoseOption
   // CAUTION is a record only, everywhere it is shown: nothing that implies running (F2).
   const why = withheldWhy(stopActive);
   const limits = runningWithheld ? raw0.map((l) => (l.level === 'CAUTION' ? { ...l, text: cautionUnderStop(l, why), alert: cautionUnderStop(l, why) } : l)) : raw0;
-  // CA-31 quarantine: a supported cause with a published source is listed before every cause that
-  // cites general practice only; otherwise the evidence order is kept (running checks and the next
+  // CA-31 quarantine: a supported cause with a verified published source is listed before every
+  // unverified cause (isUnverifiedReference); otherwise the evidence order is kept (running checks and the next
   // question above still use the evidence order, so the STOP-first behaviour is unchanged).
-  const sourcedLead = (s: (typeof scored)[number]) => (s.score > 0 && !isGeneralPracticeOnly(s.cause.reference) ? 1 : 0);
+  const sourcedLead = (s: (typeof scored)[number]) => (s.score > 0 && !isUnverifiedReference(s.cause.reference) ? 1 : 0);
   const listed = [...scored].sort((x, y) => sourcedLead(y) - sourcedLead(x));
   for (const { cause, score, pro, con } of listed) {
     const running = cause.runningChecks ?? [];
@@ -260,7 +276,7 @@ export function diagnose(family: FaultFamily, raw: Answers, opts: DiagnoseOption
       actions: runningWithheld ? [...cause.actions] : [...cause.actions, ...running],
       withheld: runningWithheld ? [...running] : [],
       reference: cause.reference,
-      unverified: isGeneralPracticeOnly(cause.reference),
+      unverified: isUnverifiedReference(cause.reference),
     });
   }
 
