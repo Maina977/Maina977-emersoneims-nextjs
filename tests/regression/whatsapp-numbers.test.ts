@@ -34,5 +34,5 @@ describe('WhatsApp links', () => {
     for (const d of ['app', 'components', 'lib']) walk(join(root, d));
     expect(files).toBeGreaterThan(1000); // the scan really covered the codebase
     expect([...found].sort()).toEqual(COMPANY_NUMBERS);
-  }, 30_000);
+  }, 60_000); // CA-41: walks the source tree; explicit 60 s (the 5 s default is too short when suites run in parallel)
 });

@@ -37,7 +37,7 @@ describe('article -> product/service links', () => {
       const src = readFileSync(join(root, 'app/blog', d, 'page.tsx'), 'utf8');
       expect(src, d).toMatch(/<ArticleServiceLinks keys=\{\[/);
     }
-  });
+  }, 60_000); // CA-41: walks the source tree; explicit 60 s (the 5 s default is too short when suites run in parallel)
 
   it('the article template no longer links related services to Nairobi location pages', () => {
     const tpl = readFileSync(join(root, 'app/blog/[slug]/page.tsx'), 'utf8');

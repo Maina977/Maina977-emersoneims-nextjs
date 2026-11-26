@@ -134,12 +134,12 @@ describe('Oracle safety withdrawal 2026-11-25: withdrawn modules are not in the 
     expect(names).toContain('components/generator-oracle/panels/GuidedDiagnosisPanel');
     expect(names).toContain('components/generator-oracle/panels/WiringDiagramsPanel');
     expect(names).toContain('components/generator-oracle/OracleSafetyWithdrawnNotice');
-  });
+  }, 60_000); // CA-41: walks the source tree; explicit 60 s (the 5 s default is too short when suites run in parallel)
   for (const w of WITHDRAWN) {
     it(`${w} is not reachable from any shipped entry point`, () => {
       const hit = [...graph.entries()].filter(([f]) => noExt(f) === w).map(([f, by]) => `${rel(f)} <- ${by}`);
       expect(hit).toEqual([]);
-    });
+    }, 60_000); // CA-41: walks the source tree; explicit 60 s (the 5 s default is too short when suites run in parallel)
   }
   it('no shipped (reachable) source file names a withdrawn module in an import', () => {
     const offenders: string[] = [];
@@ -150,7 +150,7 @@ describe('Oracle safety withdrawal 2026-11-25: withdrawn modules are not in the 
       }
     }
     expect(offenders).toEqual([]);
-  });
+  }, 60_000); // CA-41: walks the source tree; explicit 60 s (the 5 s default is too short when suites run in parallel)
 });
 
 const ROUTES = [

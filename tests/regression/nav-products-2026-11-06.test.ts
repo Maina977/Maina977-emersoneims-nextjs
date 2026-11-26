@@ -33,7 +33,7 @@ describe('navigation (audit P4)', () => {
     expect(hrefs.length).toBeGreaterThan(60);
     const missing = hrefs.filter((h) => !routeExists(h));
     expect(missing).toEqual([]);
-  });
+  }, 60_000); // CA-41: walks the source tree; explicit 60 s (the 5 s default is too short when suites run in parallel)
 
   it('the links from the retired GENERATORS and SOLAR menus are all still in the menu', () => {
     for (const h of ['/generators/used', '/generators/leasing', '/generators/rental', '/brands', '/generators/installation',

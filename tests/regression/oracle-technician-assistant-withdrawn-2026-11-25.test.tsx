@@ -20,7 +20,7 @@ describe('Technician Assistant withdrawn (P3)', () => {
       .filter((f) => !f.endsWith(path.join('panels', 'TechnicianAssistantPanel.tsx')))
       .filter((f) => /panels\/TechnicianAssistantPanel['"]/.test(fs.readFileSync(f, 'utf8')));
     expect(importers).toEqual([]);
-  });
+  }, 60_000); // CA-41: walks the source tree; explicit 60 s (the 5 s default is too short when suites run in parallel)
 
   it('the Assistant tab renders the management notice', async () => {
     const src = fs.readFileSync(path.resolve('components/generator-oracle/GeneratorOracleModule.tsx'), 'utf8');
