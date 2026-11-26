@@ -111,6 +111,34 @@ describe('CA-42 abuse protection: rejected submissions send no email', () => {
     await generic(await post(body({ customerEmail: email.toUpperCase() }), ipFor('30')));
     expect(mailer.calls).toHaveLength(3);
   });
+  it('one inbox, many spellings (review: +tags, Gmail dots, googlemail, case, NFKC): only 3 emails', async () => {
+    const id = uniq();
+    const variants = [
+      ...Array.from({ length: 6 }, (_, i) => `victim${id}+${i}@gmail.com`),
+      `v.ictim${id}@gmail.com`, `vi.ctim${id}@gmail.com`,
+      `Victim${id}@GoogleMail.com`, `victim${id}+x@ｇｍａｉｌ.com`, // full-width domain: NFKC on the server
+    ];
+    let ok = 0;
+    for (let i = 0; i < variants.length; i++) if ((await post(body({ customerEmail: variants[i] }), ipFor(`${100 + i}`))).status === 200) ok++;
+    expect(ok).toBe(3);
+    expect(mailer.calls).toHaveLength(3);
+  });
+  it('plus-tags count per inbox on other domains too; dots stay significant outside Gmail', async () => {
+    const id = uniq();
+    for (let i = 0; i < 3; i++) expect((await post(body({ customerEmail: `a.b${id}+${i}@test.example` }), ipFor(`${120 + i}`))).status).toBe(200);
+    expect((await post(body({ customerEmail: `a.b${id}+9@test.example` }), ipFor('130'))).status).toBe(429);
+    expect((await post(body({ customerEmail: `ab${id}@test.example` }), ipFor('131'))).status).toBe(200); // a different mailbox
+  });
+  it('IP key prefers x-real-ip: rotating the first x-forwarded-for entry does not reset the IP limit', async () => {
+    const real = '203.0.113.240';
+    const send = (i: number) => createOrder(new Request('https://site.test/api/orders/create', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-real-ip': real, 'x-forwarded-for': `198.18.0.${i}, 10.0.0.1` },
+      body: JSON.stringify(body()),
+    }));
+    for (let i = 0; i < 5; i++) expect((await send(i)).status).toBe(200);
+    expect((await send(99)).status).toBe(429);
+  });
   it('CONCURRENT: 20 parallel orders from one IP let exactly 5 through on this instance', async () => {
     const ip = ipFor('40');
     const results = await Promise.all(Array.from({ length: 20 }, () => post(body(), ip)));
@@ -170,6 +198,12 @@ describe('checkout page', () => {
     const serverTotal = ABR1 * 2 + Math.round(ABR1 * 2 * 0.16) + 500;
     expect(screen.getByText(`KES ${serverTotal.toLocaleString()}`)).toBeInTheDocument();
     expect(mailer.calls).toHaveLength(1);
+  });
+  it('the pre-order cart summary is labelled as an estimate (review A1)', async () => {
+    cart();
+    render(<CheckoutPage />);
+    expect(await screen.findByText('Estimate — the confirmed price is calculated by EmersonEIMS')).toBeInTheDocument();
+    expect(screen.getByText('Estimated total')).toBeInTheDocument();
   });
   it('shows "Price to be confirmed by EmersonEIMS" (no amount) when the server cannot price', async () => {
     cart();
