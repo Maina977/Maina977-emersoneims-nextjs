@@ -94,6 +94,9 @@ export interface VerifiedQuotation {
 
 export const ENTRY_LABEL = { verified: 'verified project quotation', indicative: 'indicative rate entered by the user' } as const;
 
+/** How a user-entered rate is labelled everywhere. */
+export const USER_ENTERED_LABEL = 'entered by the user, not verified by EmersonEIMS';
+
 export interface ProjectPricing {
   category: PricingCategory;
   quotations: VerifiedQuotation[];
@@ -117,15 +120,22 @@ export function validateQuotation(input: { item?: unknown; amountKES?: unknown; 
 }
 
 /** The pricing stored with this project's result; default: private project, no quotations. */
+/**
+ * MAJOR-3 (review of ef8f6b2e): the public page has no staff path, so anything
+ * stored with a result (set on the page, in a saved file or an import) is the
+ * visitor's own input. A stored "government_tender" category is read as a
+ * private project, and a stored "verified project quotation" as the user's own
+ * indicative rate. The tender and verified-quotation code stays in
+ * costSourcing for a future staff path; it is not reachable from a result.
+ */
 export function projectPricingOf(result: unknown): ProjectPricing {
   const p = (result as any)?.projectPricing;
-  const category: PricingCategory = p?.category === 'government_tender' ? 'government_tender' : 'private';
   const quotations: VerifiedQuotation[] = [];
   for (const q of Array.isArray(p?.quotations) ? p.quotations : []) {
-    const v = validateQuotation(q ?? {});
+    const v = validateQuotation({ ...(q ?? {}), label: ENTRY_LABEL.indicative });
     if (v.ok) quotations.push(v.value);
   }
-  return { category, quotations };
+  return { category: 'private', quotations };
 }
 
 /** The latest verified quotation entered for an item of THIS project, if any. */
@@ -138,7 +148,7 @@ export const fmtKES = (kes: number) => `KSh ${Math.round(kes).toLocaleString('en
 
 /** The basis text of a verified quotation line. */
 export const quotationBasis = (q: VerifiedQuotation) => q.label === ENTRY_LABEL.indicative
-  ? `${PRICE_STATE.INDICATIVE}: rate entered by the user (${q.reference}, dated ${q.date}). Applies to this project only`
+  ? `${PRICE_STATE.INDICATIVE}: ${USER_ENTERED_LABEL} (${q.reference}, dated ${q.date}). Applies to this project only`
   : `${PRICE_STATE.VERIFIED}: ${q.reference}, dated ${q.date}. Applies to this project only`;
 
 /**

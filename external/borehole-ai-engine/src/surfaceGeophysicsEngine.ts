@@ -532,7 +532,7 @@ function evaluate30Methods(ctx: SiteContext): GeophysicalMethod[] {
     const notes: string[] = [];
     notes.push('ONLY geophysical method that directly detects and quantifies mobile groundwater');
     if (ctx.targetDepth < 100) { score += 10; notes.push('Target within NMR depth range — will provide direct water content measurement'); }
-    if (ctx.successProb < 0.6) { score += 10; notes.push('Low success probability — direct water detection can confirm/deny aquifer presence before drilling'); }
+    if (ctx.successProb < 0.6) { score += 10; notes.push('Low success score — direct water detection can confirm/deny aquifer presence before drilling'); }
     if (ctx.clay > 50) { score -= 5; notes.push('High clay — NMR will still detect water but bound water in clay may complicate interpretation'); }
     score = Math.max(10, Math.min(95, score));
     methods.push({

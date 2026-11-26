@@ -342,13 +342,14 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
 
   // ── Success Probability ──
   items.push({
-    parameter: 'Drilling Success Probability',
+    // S46: an uncalibrated screening score, never "CALIBRATED", never a probability.
+    parameter: 'Modelled success score (uncalibrated screening indicator)',
     // DISPLAY FIX (2026-07-12): r.probability is a 0-1 fraction; the provenance
     // matrix renders `value + unit`, so it printed "1 %" for a 0.64 probability.
     // Express as a whole percentage to match the governing 64% everywhere else.
     value: Math.round((r.probability ?? 0) * 100),
-    unit: '%',
-    tier: hasNearby && hasERT ? 'CALIBRATED' : (hasEnsemble && hasNearby) ? 'CALIBRATED' : (hasEnsemble || satelliteSourceCount >= 4) ? 'CALIBRATED' : hasNearby ? 'ESTIMATED' : 'ESTIMATED',
+    unit: '/100',
+    tier: 'ESTIMATED',
     category: 'model_derived',
     source: 'Multi-source Bayesian ensemble',
     // Only the inputs this run had (2026-10-25 audit: ERT was listed on runs without it).
@@ -356,6 +357,7 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     accuracy_pct: hasERT ? 82 : hasNearby ? 68 : 52,
     reference: 'Shafer (1976) A Mathematical Theory of Evidence; MacDonald et al. (2012)',
     limitations: [
+      'Not a probability of success — not calibrated against drilled outcomes',
       'Assumes geological continuity between data points',
       hasERT ? '' : 'No direct subsurface confirmation',
       hasNearby ? '' : 'No local calibration data available',
@@ -773,7 +775,7 @@ function runMonteCarloAnalysis(r: any): UncertaintyAnalysis {
     : 0.5;
   const probSpread = hasERT ? 0.06 : (hasGeophysics && hasNearby) ? 0.08 : 0.10;
   const probSamples = generateBetaSamples(baseProb, probSpread, N);
-  const successMC = computeMonteCarloStats('Success Probability', '%', probSamples.map(v => v * 100), [
+  const successMC = computeMonteCarloStats('Success Score (uncalibrated)', '/100', probSamples.map(v => v * 100), [
     { name: 'Base probability', distribution: 'Beta', params: `mean=${(baseProb * 100).toFixed(0)}%, spread=${(probSpread * 100).toFixed(0)}%` },
   ]);
 
@@ -791,7 +793,7 @@ function runMonteCarloAnalysis(r: any): UncertaintyAnalysis {
     waterQualityIndex: wqMC,
     totalSimulations: N,
     convergenceAchieved: true,
-    methodology: `Monte Carlo simulation with ${N} iterations using seeded PRNG (deterministic, not from field measurements). Depth and yield use lognormal distributions. Success probability uses Beta distribution bounded [0,1]. Coefficient of variation reflects data quality: ${hasERT ? 'Field ERT CV=12-20%' : (hasGeophysics || hasEnsemble) ? 'Model-derived CV=15-28%' : hasNearby ? 'Regional CV=22-35%' : 'Satellite-only CV=35-50%'}. Note: all input parameters are model-estimated unless field ERT data was uploaded.`,
+    methodology: `Monte Carlo simulation with ${N} iterations using seeded PRNG (deterministic, not from field measurements). Depth and yield use lognormal distributions. Success score (uncalibrated) uses Beta distribution bounded [0,1]. Coefficient of variation reflects data quality: ${hasERT ? 'Field ERT CV=12-20%' : (hasGeophysics || hasEnsemble) ? 'Model-derived CV=15-28%' : hasNearby ? 'Regional CV=22-35%' : 'Satellite-only CV=35-50%'}. Note: all input parameters are model-estimated unless field ERT data was uploaded.`,
   };
 }
 
@@ -1018,11 +1020,11 @@ function generateMethodologyReport(r: any): MethodologyReport {
   steps.push({
     step: hasERT ? 8 : 7,
     name: 'Multi-Source Ensemble & Depth/Yield Prediction',
-    method: 'Bayesian multi-source fusion using Dempster-Shafer evidence theory. Weighted multi-source scoring for success probability. Monte Carlo uncertainty quantification (N=5000).',
+    method: 'Bayesian multi-source fusion using Dempster-Shafer evidence theory. Weighted multi-source scoring for success score. Monte Carlo uncertainty quantification (N=5000).',
     equation: 'P(success) = sigmoid(sum(w_i * f_i)); depth = fusion(ERT, desktop model, boreholes); yield = f(T, i, b)',
     reference: 'Shafer (1976); MacDonald et al. (2012)',
     inputs: ['All upstream outputs', 'Feature importance weights'],
-    outputs: ['Final depth recommendation', 'Yield estimate with CI', 'Success probability', 'Data quality score'],
+    outputs: ['Final depth recommendation', 'Yield estimate with CI', 'Success score (uncalibrated)', 'Data quality score'],
     assumptions: ['Source independence for Dempster-Shafer', 'Linear feature combination for logistic model'],
     limitations: ['Weights are set from the literature, not trained on local data — regional bias possible', 'Features may correlate (violated independence)'],
     dataTier: hasERT ? 'CALIBRATED' : 'ESTIMATED',
