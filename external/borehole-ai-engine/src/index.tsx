@@ -1,6 +1,7 @@
 ﻿import { inKenya } from './kenyaLand';
 import { evidenceGate, evidenceChecklist, gated, DEPTH_NEEDS, YIELD_NEEDS, COST_NEEDS } from './evidenceGate';
-import { costSourcing, QUOTATION_TEXT } from './costSources';
+import { costSourcing, costLineText } from './costSources';
+import { PRICE_STATE, PRICING_CATEGORY_LABEL, COST_ITEMS, COST_ITEM_LABEL, REFERENCE_QUOTATION_TEXT, projectPricingOf, validateQuotation, fmtKES } from './projectPricing';
 import { geocodeSearchUrl } from '../../../lib/data-sources/geocodeClient';
 import { finalVerdict, salinityEvidence, chemEvidence } from './verdict';
 import { governingSummary, last12Months, probabilityBand } from './governingSummary';
@@ -14,7 +15,7 @@ import * as SCI from './scienceData';
 import { generateVerificationResult, getOSINTChecklist } from './locationVerifier';
 import type { RemoteSensingResult } from './remoteSensing';
 import { runPrePublishAudit, AuditBlockError, VerificationBlockError, setCustomerDetails, computeCanonicalEconomics } from './reportShared';
-import { verificationDisplay, GRADE_NOT_ISSUED } from './preReportVerification';
+import { verificationDisplay, GRADE_NOT_ISSUED, trustScoreDisplay } from './preReportVerification';
 import type { AuditReport } from './reportAuditor';
 // The report generator (with jsPDF, ExcelJS and docx) is loaded only when a
 // report is downloaded, which keeps the page itself light (2026-10-29).
@@ -679,6 +680,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string|null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult|null>(null);
+  // Verified project quotation entry (pricing policy 2026-11-26).
+  const [quoteForm, setQuoteForm] = useState<{ item: string; amountKES: string; reference: string; date: string }>({ item: 'survey', amountKES: '', reference: '', date: '' });
+  const [quoteError, setQuoteError] = useState('');
   const [analyzer, setAnalyzer] = useState<BoreholeAnalyzer|null>(null);
   const [activeView, setActiveView] = useState<ViewId>('dashboard');
   const [activeResultTab, setActiveResultTab] = useState('overview');
@@ -1235,6 +1239,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
         if (photoFile) (analysisResult as any).photosNotUsedForModel = true; else (analysisResult as any).noPhoto = true;
         if (searchedPinName) (analysisResult as any).locationFromSearchedPin = searchedPinName;
         setWaterConfirmed(false);
+        // The pricing entered for this project stays with it when the same site is re-analysed.
+        if ((previous as any)?.projectPricing && previous?.site?.latitude === analysisResult.site?.latitude && previous?.site?.longitude === analysisResult.site?.longitude) (analysisResult as any).projectPricing = (previous as any).projectPricing;
         setResult(analysisResult);
         setActiveView('results');
         setActiveResultTab('overview');
@@ -5752,7 +5758,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <div className="treatment-box">
                 <div className="treatment-header">Treatment: <strong style={{color:waterQualityStatus(result).treatment==='YES'?'#F44336':waterQualityStatus(result).treatment==='NO'?'#4CAF50':'#fbbf24'}}>{waterQualityStatus(result).known ? waterQualityStatus(result).treatment : waterQualityStatus(result).potability}</strong></div>
                 {/* The same allowance as the Costs tab and the PDF (2026-10-25 audit: six sites, two figures each). */}
-                {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">If treatment is needed it is priced <strong>by quotation</strong> (no sourced rate on file){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day (sized on measured salinity)` : ''}. A laboratory test decides whether it is.</div>}
+                {eco && (eco.wqTreatmentCost + eco.defluoridationCost) > 0 && <div className="treatment-cost">If treatment is needed: <strong>{PRICE_STATE.REQUEST}</strong> (no sourced rate on file){eco.needsRO ? ` — reverse osmosis for about ${eco.roDailyM3} m³/day (sized on measured salinity)` : ''}. A laboratory test decides whether it is.</div>}
                 {eco?.salinityUnpriced && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Desalination not priced:</strong> {salinityEvidence(result).sentence}</div>}
                 {eco?.fluorideUnpriced && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Defluoridation not priced:</strong> {chemEvidence(result, 'fluoride').sentence}</div>}
                 {(result as any).coastalIntrusionNote && <div className="treatment-cost" style={{borderColor:"#f59e0b"}}><strong>Seawater intrusion risk:</strong> {(result as any).coastalIntrusionNote}</div>}
@@ -5766,23 +5772,54 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {activeResultTab==='costs' && evG.cost && (
             <div>
               <h4 className="tab-title">{'\u{1F4B5}'} Project Cost (same figures as the PDF report)</h4>
-              <p className="tab-desc">Priced on the field evidence entered: {[evG.citations.depth, evG.citations.yield].filter(Boolean).join('; ')}. Only items with a sourced rate carry a price; the others are priced by the supplier&apos;s quotation.</p>
+              <p className="tab-desc">Priced on the field evidence entered: {[evG.citations.depth, evG.citations.yield].filter(Boolean).join('; ')}. Each item shows its basis: a {PRICE_STATE.VERIFIED}, a {PRICE_STATE.TENDER} (government tender projects only), a figure that is {PRICE_STATE.INDICATIVE}, or &quot;{PRICE_STATE.REQUEST}&quot;.</p>
+              {/* Pricing policy 2026-11-26 (management decision C): category selector and verified project quotations, stored with this result. */}
+              <div data-testid="pricing-controls" style={{display:'flex',flexWrap:'wrap',gap:12,alignItems:'center',margin:'8px 0 12px'}}>
+                <label style={{fontSize:13}}>Pricing category:{' '}
+                  <select data-testid="pricing-category" value={projectPricingOf(result).category} onChange={(e)=>{ const category = e.target.value === 'government_tender' ? 'government_tender' : 'private'; setResult((r)=> r ? ({ ...r, projectPricing: { ...projectPricingOf(r), category } } as any) : r); }}>
+                    <option value="private">{PRICING_CATEGORY_LABEL.private}</option>
+                    <option value="government_tender">{PRICING_CATEGORY_LABEL.government_tender}</option>
+                  </select>
+                </label>
+              </div>
+              <details data-testid="quotation-entry" style={{margin:'0 0 12px',fontSize:13}}>
+                <summary style={{cursor:'pointer'}}>Enter a {PRICE_STATE.VERIFIED} for this project (EmersonEIMS)</summary>
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,alignItems:'flex-end',marginTop:8}}>
+                  <label>Item<br/><select value={quoteForm.item} onChange={(e)=>setQuoteForm((f)=>({...f,item:e.target.value}))}>{COST_ITEMS.map((k)=>(<option key={k} value={k}>{COST_ITEM_LABEL[k]}</option>))}</select></label>
+                  <label>Amount (KSh)<br/><input inputMode="numeric" value={quoteForm.amountKES} onChange={(e)=>setQuoteForm((f)=>({...f,amountKES:e.target.value}))} style={{width:120}} /></label>
+                  <label>Quotation reference<br/><input value={quoteForm.reference} onChange={(e)=>setQuoteForm((f)=>({...f,reference:e.target.value}))} style={{width:180}} /></label>
+                  <label>Date<br/><input type="date" value={quoteForm.date} onChange={(e)=>setQuoteForm((f)=>({...f,date:e.target.value}))} /></label>
+                  <button type="button" className="btn btn-secondary" style={{fontSize:12}} onClick={()=>{ const v = validateQuotation(quoteForm); if (!v.ok) { setQuoteError(v.error); return; } setQuoteError(''); setResult((r)=> r ? ({ ...r, projectPricing: { ...projectPricingOf(r), quotations: [...projectPricingOf(r).quotations, v.value] } } as any) : r); setQuoteForm((f)=>({...f,amountKES:'',reference:''})); }}>Add {PRICE_STATE.VERIFIED}</button>
+                </div>
+                {quoteError && <div role="alert" style={{color:'#ef4444',fontSize:12,marginTop:4}}>{quoteError}</div>}
+                {projectPricingOf(result).quotations.length > 0 && (
+                  <ul style={{fontSize:12,marginTop:8}}>
+                    {projectPricingOf(result).quotations.map((q,i)=>(
+                      <li key={i}>{COST_ITEM_LABEL[q.item]}: {fmtKES(q.amountKES)} ({q.label}: {q.reference}, {q.date}){' '}
+                        <button type="button" style={{fontSize:11}} onClick={()=>setResult((r)=> r ? ({ ...r, projectPricing: { ...projectPricingOf(r), quotations: projectPricingOf(r).quotations.filter((_x,j)=>j!==i) } } as any) : r)}>Withdraw</button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div style={{fontSize:11,color:'#94a3b8',marginTop:6}}>A verified project quotation applies to this project only. {REFERENCE_QUOTATION_TEXT}</div>
+              </details>
               <div className="cost-table">
                 <table>
-                  <thead><tr><th>Item</th><th>Cost (USD)</th><th>Cost (KSh)</th><th>Source</th></tr></thead>
+                  <thead><tr><th>Item</th><th>Cost (USD)</th><th>Cost (KSh)</th><th>Basis</th></tr></thead>
                   <tbody>
                     {eco && ecoSrc ? (<>
-                      {ecoSrc.lines.map((l) => (
-                        <tr key={l.item}><td>{l.item}</td><td>{l.source ? fmtUSD(l.usd) : QUOTATION_TEXT}</td><td>{l.source ? fmtKSH(l.usd) : '—'}</td><td style={{fontSize:11}}>{l.source ?? 'No sourced rate on file: the supplier’s quotation prices this item'}</td></tr>
-                      ))}
+                      {ecoSrc.lines.map((l) => { const t = costLineText(l); return (
+                        <tr key={l.key} data-price-state={l.state}><td>{l.item}</td><td>{t.usd}</td><td>{t.kes}</td><td style={{fontSize:11}}>{t.basis}</td></tr>
+                      ); })}
                       {eco.salinityUnpriced && <tr><td>Desalination (reverse osmosis): salinity not measured at this site; a laboratory test of the first water decides</td><td>not priced</td><td>—</td><td></td></tr>}
-                      <tr><td>Contingency ({Math.round(eco.contingencyRate * 100)}% of the sourced items)</td><td>{fmtUSD(ecoSrc.sourcedContingency)}</td><td>{fmtKSH(ecoSrc.sourcedContingency)}</td><td></td></tr>
-                      <tr className="cost-total"><td><strong>{ecoPriced ? 'TOTAL PROJECT' : 'TOTAL OF THE SOURCED ITEMS'}</strong></td><td><strong>{fmtUSD(ecoSrc.sourcedTotal)}</strong></td><td><strong>{fmtKSH(ecoSrc.sourcedTotal)}</strong></td><td style={{fontSize:11}}>{ecoPriced ? '' : `Not included, by quotation: ${ecoSrc.quotationItems.join(', ')}`}</td></tr>
+                      <tr><td>{ecoSrc.contingencyLabel}</td><td>{fmtUSD(ecoSrc.sourcedContingency)}</td><td>{fmtKES(ecoSrc.sourcedContingencyKES)}</td><td></td></tr>
+                      <tr className="cost-total"><td><strong>{ecoSrc.totalLabel}</strong></td><td><strong>{fmtUSD(ecoSrc.sourcedTotal)}</strong></td><td><strong>{fmtKES(ecoSrc.sourcedTotalKES)}</strong></td><td style={{fontSize:11}}>{ecoSrc.quotationItems.length ? `Not included (${PRICE_STATE.REQUEST}${ecoSrc.category === 'government_tender' ? ` / ${PRICE_STATE.TENDER_BOQ}` : ''}): ${ecoSrc.quotationItems.join(', ')}` : ''}</td></tr>
                     </>) : (
                       <tr className="cost-total"><td><strong>TOTAL (estimate)</strong></td><td><strong>{fmtUSD(ecoTotal)}</strong></td><td><strong>{fmtKSH(ecoTotal)}</strong></td></tr>
                     )}
                   </tbody>
                 </table>
+                {ecoSrc && <ul data-testid="cost-notes" style={{fontSize:11,color:'#94a3b8',marginTop:6}}>{ecoSrc.notes.map((n,i)=>(<li key={i}>{n}</li>))}</ul>}
               </div>
               {/* P50/P75/P90 Confidence Intervals */}
               <div style={{marginTop:20,background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.18)',borderRadius:12,padding:16}}>
@@ -7331,7 +7368,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <div><strong>Casing Depth:</strong> {gated(evidenceGate(result).depth, `${dd.casingDepth_m}m`, DEPTH_NEEDS)}</div>
                       <div><strong>Screen Interval:</strong> {gated(evG.depth, `${dd.screenInterval_m[0]}-${dd.screenInterval_m[1]}m`, DEPTH_NEEDS)}</div>
                       <div><strong>Pump Type:</strong> {dd.pumpType}</div>
-                      <div><strong>Estimated Cost:</strong> {evG.cost ? <>{fmtUSD(ecoTotal)} <span style={{opacity:0.7}}>({ecoPriced ? 'same basis as the summary' : 'sourced items only; the rest by quotation'})</span></> : COST_NEEDS}</div>
+                      <div><strong>Estimated Cost:</strong> {evG.cost ? <>{fmtUSD(ecoTotal)} <span style={{opacity:0.7}}>({ecoPriced ? 'same basis as the summary' : 'priced items only; the rest: Request a quotation'})</span></> : COST_NEEDS}</div>
                     </div>
                   </div>
                   {dd.alternativePoints?.length ? (
@@ -7708,14 +7745,16 @@ const AIBoreholeAnalyzer: React.FC = () => {
               <p className="tab-desc">Professional-grade confidence assessment. Shows data quality, physics rigor, validation status, and certification readiness.</p>
               {result.engineerConfidence ? (() => {
                 const ec = result.engineerConfidence!;
-                const gradeColor = ec.trustGrade <= 'A' ? '#16a34a' : ec.trustGrade === 'B' ? '#0ea5e9' : ec.trustGrade === 'C' ? '#d97706' : '#dc2626';
+                // 2026-11-26: no trust score or grade without full independent verification coverage.
+                const tsd = trustScoreDisplay(result);
+                const gradeColor = !tsd.issued ? '#94a3b8' : ec.trustGrade <= 'A' ? '#16a34a' : ec.trustGrade === 'B' ? '#0ea5e9' : ec.trustGrade === 'C' ? '#d97706' : '#dc2626';
                 return (
                 <div>
                   {/* Hero Score */}
                   <div style={{textAlign:'center',padding:24,marginBottom:20,borderRadius:16,background:`linear-gradient(135deg,${gradeColor}15,${gradeColor}05)`,border:`2px solid ${gradeColor}40`}}>
-                    <div style={{fontSize:56,fontWeight:800,color:gradeColor,lineHeight:1}}>{ec.engineerTrustScore}</div>
-                    <div style={{fontSize:14,color:'var(--text-secondary)',marginTop:4}}>out of 100</div>
-                    <div style={{fontSize:28,fontWeight:700,color:gradeColor,marginTop:6}}>Grade {ec.trustGrade}</div>
+                    <div data-testid="trust-score" style={{fontSize:tsd.issued ? 56 : 22,fontWeight:800,color:gradeColor,lineHeight:1}}>{tsd.issued ? ec.engineerTrustScore : tsd.text}</div>
+                    {tsd.issued && <div style={{fontSize:14,color:'var(--text-secondary)',marginTop:4}}>out of 100</div>}
+                    {tsd.issued && <div style={{fontSize:28,fontWeight:700,color:gradeColor,marginTop:6}}>Grade {ec.trustGrade}</div>}
                     <div style={{fontSize:13,color:'var(--text-muted)',marginTop:8,maxWidth:500,marginLeft:'auto',marginRight:'auto'}}>
                       {ec.provenance.reportGradeJustification}
                     </div>
@@ -8621,7 +8660,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <div style={{width:48,height:48,borderRadius:'50%',background:tone,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:vr.grade && vd.grade !== GRADE_NOT_ISSUED ? 24 : 14,color:'#fff'}}>{vd.grade !== GRADE_NOT_ISSUED && vr.grade ? vr.grade : '—'}</div>
                       <div>
                         <div data-testid="verification-headline" style={{fontSize:16,fontWeight:700,color:tone}}>{ok ? '✅ ' : bad ? '❌ ' : '⚠️ '}{vd.headline}</div>
-                        <div data-testid="verification-coverage" style={{fontSize:12,color:'#94a3b8'}}>{vd.coverage} | Accuracy grade: {vd.grade} | {vr.apiRequeriesPerformed ?? 0} of {vr.apiRequeriesAttempted ?? vr.apiRequeriesPerformed ?? 0} API re-queries ran with independent values</div>
+                        <div data-testid="verification-coverage" style={{fontSize:12,color:'#94a3b8'}}>{vd.coverage} | Accuracy grade: {vd.grade} | {vr.apiRequeriesRun ?? 0} of {vr.apiRequeriesAttempted ?? vr.apiRequeriesPerformed ?? 0} API re-queries ran with independent values</div>
                       </div>
                     </div>
                     <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:8}}>
@@ -8635,6 +8674,22 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         <div style={{fontSize:11,fontWeight:700,color:'#ef4444',marginBottom:4}}>FAILURES (must resolve before report):</div>
                         {checks.filter((c:any)=>c.severity==='FAIL').map((c:any,i:number)=>(
                           <div key={i} style={{fontSize:11,color:'#fca5a5',marginBottom:2}}>{'❌'} <strong>{c.name}</strong>: {c.message}</div>
+                        ))}
+                      </div>
+                    )}
+                    {vd.verified.length > 0 && (
+                      <div data-testid="verification-verified" style={{background:'rgba(22,163,74,0.08)',borderRadius:8,padding:8,marginBottom:8}}>
+                        <div style={{fontSize:11,fontWeight:700,color:'#16a34a',marginBottom:4}}>VERIFIED ({vd.verified.length}):</div>
+                        {vd.verified.map((x,i)=>(
+                          <div key={i} style={{fontSize:11,color:'#bbf7d0',marginBottom:2}}>{'\u2022'} {x}</div>
+                        ))}
+                      </div>
+                    )}
+                    {vd.cannotConclude.length > 0 && (
+                      <div data-testid="verification-cannot-conclude" style={{background:'rgba(148,163,184,0.08)',borderRadius:8,padding:8,marginBottom:8}}>
+                        <div style={{fontSize:11,fontWeight:700,color:'#94a3b8',marginBottom:4}}>CANNOT BE CONCLUDED (figures unverified):</div>
+                        {vd.cannotConclude.map((x,i)=>(
+                          <div key={i} style={{fontSize:11,color:'#cbd5e1',marginBottom:2}}>{'\u2022'} {x}</div>
                         ))}
                       </div>
                     )}
@@ -8654,7 +8709,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         ))}
                       </details>
                     )}
-                    <div style={{fontSize:10,color:'#64748b',marginTop:4}}>Checked: {vr.timestamp} | {vr.apiRequeriesMatched ?? 0} of {vr.apiRequeriesPerformed ?? 0} API re-queries that ran matched</div>
+                    <div style={{fontSize:10,color:'#64748b',marginTop:4}}>Checked: {vr.timestamp} | {vr.apiRequeriesMatched ?? 0} of {vr.apiRequeriesRun ?? 0} API re-queries that ran matched</div>
                   </div>
                 );
               })()}
