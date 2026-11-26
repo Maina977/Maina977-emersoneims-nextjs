@@ -19,14 +19,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Security sweep 2026-11-26: self-registration never chooses its own role,
+    // organisation or licence. These came from the request body, so anyone could
+    // register as `admin` of any existing organisation and then read its members
+    // or deactivate them (the team routes trust the stored role and
+    // organisation). New accounts are always a technician with no organisation
+    // and no licence; organisation membership must come from an admin.
     const result = await registerUser({
       email: body.email,
       password: body.password,
       name: body.name,
       phone: body.phone,
-      organizationId: body.organizationId,
-      licenseKey: body.licenseKey,
-      role: body.role,
     });
 
     if (!result.success) {

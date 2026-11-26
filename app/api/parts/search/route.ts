@@ -1,9 +1,38 @@
+/**
+ * Public parts search (security sweep 2026-11-26).
+ *
+ * This route is public (the spare-parts and marketplace pages call it). It
+ * used to return every row of the internal stock file with its cost price,
+ * margin %, reorder level and store location, with no cap on `limit`, so
+ * one request (?limit=100000) gave anyone the whole cost and margin sheet.
+ * It also invented a star rating and review count for every part with
+ * Math.random(). It now returns only what a customer sees: code, name,
+ * category, brand, unit, selling price, stock quantity and in-stock flag.
+ * No rating or review count is returned until real reviews exist.
+ * `limit` is clamped (the spare-parts page loads the catalogue in one call).
+ */
 import fs from 'fs';
 import path from 'path';
-import type { Part } from '@/lib/parts/partsInventoryParser';
+
+/** What the public may see of a part. Cost, margin, reorder level and location are internal. */
+interface PublicPart {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  subcategory: string;
+  brand?: string;
+  uom: string;
+  quantity: number;
+  sellingPrice: number;
+  inStock: boolean;
+  description?: string;
+}
+
+const MAX_LIMIT = 20_000;
 
 // Cache the parsed CSV in memory
-let partsCache: Part[] | null = null;
+let partsCache: PublicPart[] | null = null;
 
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
@@ -33,16 +62,15 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-function loadParts(): Part[] {
+function loadParts(): PublicPart[] {
   if (partsCache) return partsCache;
 
   const csvPath = path.join(process.cwd(), 'lib/parts/inventory-2026-07-22.csv');
   const csvContent = fs.readFileSync(csvPath, 'utf-8');
   const lines = csvContent.trim().split('\n');
 
-  const parts: Part[] = lines.slice(1).map((line, index) => {
+  const parts: PublicPart[] = lines.slice(1).map((line, index) => {
     const values = parseCSVLine(line);
-    const cost = parseInt(values[8] || '0');
     const price = parseInt(values[9] || '0');
     const qty = parseInt(values[6] || '0');
 
@@ -55,15 +83,9 @@ function loadParts(): Part[] {
       brand: values[4]?.trim() || 'Generic',
       uom: values[5]?.trim() || 'pcs',
       quantity: qty,
-      reorderLevel: parseInt(values[7] || '0'),
-      costPrice: cost,
       sellingPrice: price,
-      location: values[10]?.trim() || 'Main Store',
-      margin: price > 0 ? Math.round(((price - cost) / price) * 100) : 0,
       inStock: qty > 0,
       description: `${values[1]} - ${values[3]}`,
-      rating: 4.5 + Math.random() * 0.5,
-      reviews: Math.floor(Math.random() * 150) + 10
     };
   });
 
@@ -78,8 +100,10 @@ export async function GET(request: Request) {
     const category = searchParams.get('category');
     const minPrice = searchParams.get('minPrice') ? parseInt(searchParams.get('minPrice')!) : 0;
     const maxPrice = searchParams.get('maxPrice') ? parseInt(searchParams.get('maxPrice')!) : Infinity;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const rawPage = parseInt(searchParams.get('page') || '1');
+    const rawLimit = parseInt(searchParams.get('limit') || '20');
+    const page = Number.isFinite(rawPage) && rawPage >= 1 ? rawPage : 1;
+    const limit = Number.isFinite(rawLimit) && rawLimit >= 1 ? Math.min(rawLimit, MAX_LIMIT) : 20;
     const sort = searchParams.get('sort') || 'name';
 
     const parts = loadParts();
@@ -111,9 +135,7 @@ export async function GET(request: Request) {
       case 'price-high':
         filtered.sort((a, b) => b.sellingPrice - a.sellingPrice);
         break;
-      case 'rating':
-        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        break;
+      // 'rating' has no data (ratings were invented and are no longer returned): sorted by name.
       case 'newest':
         break; // Maintains insertion order
       default:

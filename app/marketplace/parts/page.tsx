@@ -160,7 +160,6 @@ export default function PartsMarketplace() {
                   <option value="name">Name (A-Z)</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Top Rated</option>
                 </select>
                 <div className="flex gap-2">
                   <button
@@ -209,15 +208,19 @@ export default function PartsMarketplace() {
                       <p className="text-xs text-gray-500 mb-1 uppercase font-semibold">{part.code}</p>
                       <h3 className="text-sm font-semibold text-white mb-2 line-clamp-2">{part.name}</h3>
 
-                      <div className="flex items-center gap-1 mb-3">
-                        <span className="text-yellow-400">★</span>
-                        <span className="text-sm text-gray-400">{part.rating?.toFixed(1) || 'N/A'}</span>
-                        <span className="text-xs text-gray-600">({part.reviews || 0})</span>
-                      </div>
+                      {/* Ratings were invented by the API (Math.random) and the internal
+                          margin was shown to customers; neither is returned any more
+                          (security sweep 2026-11-26). A rating shows only if real. */}
+                      {typeof part.rating === 'number' && typeof part.reviews === 'number' && part.reviews > 0 && (
+                        <div className="flex items-center gap-1 mb-3">
+                          <span className="text-yellow-400">★</span>
+                          <span className="text-sm text-gray-400">{part.rating.toFixed(1)}</span>
+                          <span className="text-xs text-gray-600">({part.reviews})</span>
+                        </div>
+                      )}
 
                       <div className="mb-3">
                         <p className="text-2xl font-bold text-amber-400">KES {part.sellingPrice.toLocaleString()}</p>
-                        <p className="text-xs text-gray-500">Margin: {part.margin}%</p>
                       </div>
 
                       <p className="text-xs text-gray-400 mb-3">{part.quantity} available</p>
