@@ -234,7 +234,7 @@ describe('marketplace pages handle the retired routes', () => {
   it('checkout still places an order through the real create route', async () => {
     localStorage.setItem('cart', JSON.stringify([{ part: { id: 'p1', code: 'TEST-P3', name: 'TEST injector', sellingPrice: 2500 }, quantity: 2 }]));
     const t0 = Date.now();
-    let nowSpy: { mockRestore: () => void } | null = null;
+    let nowSpy = null as { mockRestore: () => void } | null; // assigned inside the fetch stub
     fetchSpy.mockImplementation(async (url: unknown, initArg?: RequestInit) => {
       expect(String(url)).toBe('/api/orders/create');
       nowSpy = vi.spyOn(Date, 'now').mockReturnValue(t0 + 10_000); // the customer took 10 s (minimum fill time)
