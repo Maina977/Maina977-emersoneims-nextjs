@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { evaluate as safetyEvaluate, M3H_PER_CFM, type SafetyInput } from '@/components/hub/SafetyClient';
 import { compute as upsLabCompute } from '@/components/hub/UpsLabClient';
-import { sizeUps, controllerUndersized, bankRuntimeMin, supportMarginPct, sizeGenerator, DEFAULTS } from '@/components/hub/SimulatorClient';
+import { sizeUps, controllerUndersized, bankRuntimeMin, supportMarginPct, sizeGenerator, generatorOverloaded, sizeFuel, DEFAULTS } from '@/components/hub/SimulatorClient';
 import { PV_GEN } from '@/components/hub/SolarUpsClient';
 import { upsRuntimeMinutes, surgeWatts } from '@/lib/hub/upsMath';
 import { findOptimalSystem } from '@/components/solar/SolarEquipmentDatabase';
@@ -212,5 +212,50 @@ describe('Verified CORRECT (no change): hand-worked checks of the core engines',
     expect(o.acBreaker.recommendedStdA).toBe(100);
     // string fuse ≥ 1.56 × 13.9 = 21.7 A → 25 A gPV
     expect(o.stringFuse.recommendedStdA).toBe(25);
+  });
+});
+
+describe('Smart Sizing follow-up: generator overload alarm, kW limit, Runtime/day', () => {
+  const unity = { ...DEFAULTS, batteryBankKwh: 0, powerFactor: 1, supportMarginPct: 0, altitudeM: 1000, ambientC: 25, peakLoadKw: 160, startingKva: 90 };
+  it('the alarm compares kW with kW: site capacity = kVA × 0.8 × (1 − derate)', () => {
+    // 200 kVA × 0.8 = 160 kW; 90 % = 144 kW; a 160 kW peak FIRES.
+    // (Old rule: 160 kW > 0.9 × 200 "kVA" = 180 → silent, at 100 % of the set's kW rating.)
+    expect(generatorOverloaded(160, 200, 0)).toEqual({ siteKw: 160, overloaded: true });
+    // 250 kVA × 0.8 = 200 kW; 90 % = 180 kW; 160 kW does not fire.
+    expect(generatorOverloaded(160, 250, 0).overloaded).toBe(false);
+    // Derate counts: 250 kVA at 20 % derate = 160 kW site; 90 % = 144 → 150 kW FIRES.
+    expect(generatorOverloaded(150, 250, 20).overloaded).toBe(true);
+  });
+  it('no false alarm on the defaults: 164 kW vs 0.9 × 400 × 0.8 × 0.918 = 264.4 kW', () => {
+    const g = sizeGenerator({ ...DEFAULTS, batteryBankKwh: 20 });
+    // charge draw 20 kWh × 0.2 C = 4 kW
+    const r = generatorOverloaded(DEFAULTS.peakLoadKw + g.chargeDrawKw, g.ratedKva, g.derate);
+    expect(r.siteKw).toBeCloseTo(293.76, 2);
+    expect(r.overloaded).toBe(false);
+  });
+  it('sizing respects the kW rating: 160 kW at PF 1.0 needs 160 / 0.8 × 1.25 = 250 kVA (was 200), and that set does not alarm', () => {
+    const g = sizeGenerator(unity);
+    expect(g.requiredKva).toBeCloseTo(250, 6);
+    expect(g.ratedKva).toBe(250);
+    expect(generatorOverloaded(160, g.ratedKva, g.derate).overloaded).toBe(false);
+    // PF 0.8 or below is kVA-limited and unchanged: 160 / 0.7 × 1.25 = 285.7 kVA → 300.
+    expect(sizeGenerator({ ...unity, powerFactor: 0.7 }).ratedKva).toBe(300);
+  });
+  it('Runtime/day drives litres per day and days per tank', () => {
+    // 400 kVA × 0.8 × 0.75 = 240 kW × 0.27 L/kWh = 64.8 L/h; 500 L → 7.72 h;
+    // 8 h/day → 518.4 L/day and 0.96 days per tank.
+    const f = sizeFuel({ fuelTankL: 500, hoursPerDay: 8 }, 400);
+    expect(f.lph).toBeCloseTo(64.8, 6);
+    expect(f.runtimeH).toBeCloseTo(7.716, 3);
+    expect(f.litresPerDay).toBeCloseTo(518.4, 6);
+    expect(f.tankDays).toBeCloseTo(0.965, 3);
+    // 4 h/day on 100 kVA: 16.2 L/h × 4 = 64.8 L/day; 500 L → 30.86 h → 7.72 days.
+    const g = sizeFuel({ fuelTankL: 500, hoursPerDay: 4 }, 100);
+    expect(g.litresPerDay).toBeCloseTo(64.8, 6);
+    expect(g.tankDays).toBeCloseTo(7.716, 3);
+    expect(sizeFuel({ fuelTankL: 500, hoursPerDay: 0 }, 400).tankDays).toBe(Infinity);
+  });
+  it('the dead wire table is marked do-not-use', () => {
+    expect(read('components/solar/SolarBibleEngine.tsx')).toMatch(/DO NOT USE \(audit 2026-11-26\)[\s\S]*PHYSICALLY WRONG/);
   });
 });

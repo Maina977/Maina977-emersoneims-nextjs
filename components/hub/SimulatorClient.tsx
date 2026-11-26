@@ -109,24 +109,51 @@ export function deratePercent(altitudeM: number, ambientC: number) {
   return Math.min(35, altDerate + tempDerate);
 }
 
+/** Generator sets are rated in kVA at 0.8 power factor (ISO 8528-1): kW rating = kVA × 0.8. */
+export const GEN_RATED_PF = 0.8;
+/** The overload alarm trips above 90 % of the site kW capacity. */
+export const GEN_OVERLOAD_FRACTION = 0.9;
+
 export function sizeGenerator(i: Inputs) {
   const derate = deratePercent(i.altitudeM, i.ambientC);
   const chargeDrawKw = i.batteryBankKwh * Math.max(0, Math.min(0.5, i.chargeCRate));
   const effectivePeakKw = (i.peakLoadKw + chargeDrawKw) * (1 + i.supportMarginPct / 100);
   const peakKva = effectivePeakKw / Math.max(0.6, Math.min(1, i.powerFactor));
   const startingKva = i.startingKva;
-  const requiredKva = Math.max(peakKva * 1.25, startingKva * 1.6);
+  // Both limits of the set: kVA (current) and kW (engine), the kW one being
+  // kVA × 0.8. Audit 2026-11-26 follow-up: only kVA was checked, so a load at
+  // PF above 0.8 could get a set loaded to 100 % of its kW rating (160 kW at
+  // PF 1.0 got 200 kVA = 160 kW).
+  const requiredKva = Math.max(Math.max(peakKva, effectivePeakKw / GEN_RATED_PF) * 1.25, startingKva * 1.6);
   const ratedKva = requiredKva / (1 - derate / 100);
   const standards = [40, 60, 80, 100, 125, 150, 200, 250, 300, 400, 500, 625, 800, 1000];
   const rated = standards.find((s) => s >= ratedKva) ?? Math.ceil(ratedKva / 50) * 50;
   return { derate, peakKva, requiredKva, ratedKva: rated, chargeDrawKw, effectivePeakKw };
 }
 
-function sizeFuel(i: Inputs, ratedKva: number) {
-  const kwAt75 = ratedKva * 0.8 * 0.75;
+/**
+ * Peak kW (load + battery charging) against the set's kW capacity AT THIS
+ * SITE: kVA × 0.8 × (1 − derate). Audit 2026-11-26 follow-up: the alarm
+ * compared kW with 0.9 × kVA (unlike units, ignoring derate).
+ */
+export function generatorOverloaded(peakKw: number, ratedKva: number, deratePct: number) {
+  const siteKw = ratedKva * GEN_RATED_PF * (1 - deratePct / 100);
+  return { siteKw, overloaded: peakKw > siteKw * GEN_OVERLOAD_FRACTION };
+}
+
+/**
+ * Fuel at 75 % load (0.27 L/kWh, a typical specific consumption) and, from
+ * the "Runtime/day" input, litres per day and days per tank. Audit
+ * 2026-11-26 follow-up: Runtime/day was an input nothing read.
+ */
+export function sizeFuel(i: Pick<Inputs, 'fuelTankL' | 'hoursPerDay'>, ratedKva: number) {
+  const kwAt75 = ratedKva * GEN_RATED_PF * 0.75;
   const lph = kwAt75 * 0.27;
   const runtimeH = i.fuelTankL / Math.max(lph, 0.1);
-  return { lph, runtimeH };
+  const hours = Math.max(0, Math.min(24, i.hoursPerDay));
+  const litresPerDay = lph * hours;
+  const tankDays = hours > 0 ? runtimeH / hours : Infinity;
+  return { lph, runtimeH, litresPerDay, tankDays };
 }
 
 /** UPS loaded to at most 80 % of its rating (common sizing practice; the UPS Lab warns above 85 %). */
@@ -265,7 +292,8 @@ export default function SimulatorClient() {
     : comp.generators > 0
     ? 'generator'
     : 'battery';
-  const overload = effectiveInputs.peakLoadKw > gen.ratedKva * 0.9;
+  const genLoad = generatorOverloaded(effectiveInputs.peakLoadKw + gen.chargeDrawKw, gen.ratedKva, gen.derate);
+  const overload = genLoad.overloaded;
   const lowBattery = comp.batteries === 0 || syntheticBankKwh(comp) < ups.wh / 1000;
   const inverterMissing = comp.inverters === 0 && (comp.solarPanels > 0 || comp.batteries > 0);
   const upsMissing = comp.ups === 0 && inputs.criticalLoadKw > 0;
@@ -300,7 +328,7 @@ export default function SimulatorClient() {
       id: 'overload',
       severity: 'fault',
       label: 'Generator overload',
-      detail: `Peak load > 90 % of ${gen.ratedKva} kVA`,
+      detail: `Peak ${formatValue(effectiveInputs.peakLoadKw + gen.chargeDrawKw, { unit: 'kW', decimals: 0 })} > 90 % of ${formatValue(genLoad.siteKw, { unit: 'kW', decimals: 0 })} (${gen.ratedKva} kVA × 0.8 PF, site-derated)`,
     });
   if (lowBattery && comp.batteries > 0)
     alarms.push({
@@ -442,7 +470,7 @@ export default function SimulatorClient() {
                 <NumberField label="Altitude" value={inputs.altitudeM} unit="m" step={50} onChange={set('altitudeM')} />
                 <NumberField label="Ambient" value={inputs.ambientC} unit="°C" step={1} onChange={set('ambientC')} />
                 <NumberField label="Power factor" value={inputs.powerFactor} unit="" step={0.05} min={0.6} max={1} onChange={set('powerFactor')} />
-                <NumberField label="Runtime/day" value={inputs.hoursPerDay} unit="h" step={1} onChange={set('hoursPerDay')} />
+                <NumberField label="Generator runtime/day" value={inputs.hoursPerDay} unit="h" step={1} min={0} max={24} onChange={set('hoursPerDay')} />
               </FieldGroup>
               <FieldGroup title="Loads">
                 <NumberField label="Base load" value={inputs.baseLoadKw} unit="kW" step={5} onChange={set('baseLoadKw')} />
@@ -551,7 +579,8 @@ export default function SimulatorClient() {
             <div className="grid grid-cols-2 gap-3 mt-6">
               <DigitalReadout label="Required (pre-derate)" value={gen.requiredKva} unit="kVA" decimals={0} status="info" />
               <DigitalReadout label="Fuel burn @ 75 %" value={fuel.lph} unit="L/h" decimals={1} status="info" />
-              <DigitalReadout label="Tank runtime" value={fuel.runtimeH} unit="h" decimals={1} status={fuel.runtimeH < 12 ? 'warn' : 'ok'} />
+              <DigitalReadout label="Tank runtime" value={fuel.runtimeH} unit="h" decimals={1} status={fuel.runtimeH < 12 ? 'warn' : 'ok'}
+                caption={Number.isFinite(fuel.tankDays) ? `${formatValue(fuel.litresPerDay, { unit: 'L/day', decimals: 0 })} at ${inputs.hoursPerDay} h/day · ≈ ${fuel.tankDays.toFixed(1)} days per tank` : 'Set Runtime/day for litres per day'} />
               <DigitalReadout label="UPS rating" value={ups.kva} unit="kVA" decimals={1} status="info" caption={`Critical load ÷ PF at ${Math.round(UPS_MAX_LOADING * 100)} % loading`} />
               <DigitalReadout label="UPS battery" value={ups.wh / 1000} unit="kWh" decimals={2} status="info" caption={`${Math.round(CHEM_DOD[inputs.batteryChemistry] * 100)} % usable, ${Math.round(UPS_DISCHARGE_EFFICIENCY * 100)} % efficiency (assumed)`} />
               <DigitalReadout label="Support margin" value={Math.max(0, supportMargin)} unit="%" decimals={1} status={supportMargin < 10 ? 'fault' : supportMargin < 20 ? 'warn' : 'ok'} caption="Of the site-derated rating" />
