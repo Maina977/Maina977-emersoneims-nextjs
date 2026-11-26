@@ -9,7 +9,7 @@
 import {
   cardIntegrityProblems, dueList, markImported, mergeGuidedSafety, recordHoldReassessment, recordNotTaken, unresolvedGuidedSafety, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
   JOB_STATUSES, NOT_TAKEN_ACTION, recordsStopInForce, SIGNOFF, TYPED_SIGNOFF_NOTICE, V1_UNCHECKED_SIGNOFF_NOTE,
-  type Asset, type DueItem, type GuidedSafetyAdd, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord, checklistItem } from './maintenance';
+  type Asset, type DueItem, type GuidedSafetyAdd, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord, checklistItem, checklistRangeProblem } from './maintenance';
 
 /** Storage key is unchanged since version 1 so existing saved data is found and upgraded. */
 export const STORE_KEY = 'eims-oracle-service-v1';
@@ -111,6 +111,10 @@ function checkUpdate(u: CardUpdate): CardUpdate {
       if (r.checklistId !== undefined) {
         const item = checklistItem(r.checklistId);
         if (!item) throw new Error(`${name}: unknown test-run checklist item "${r.checklistId}"`);
+        if (item.units.some((u) => u.toLowerCase() === x.unit.toLowerCase())) {
+          const problem = checklistRangeProblem(item, x.value, x.unit);
+          if (problem) throw new Error(`Reading refused: ${problem}`);
+        }
         x.checklistId = item.id;
       }
       return x;

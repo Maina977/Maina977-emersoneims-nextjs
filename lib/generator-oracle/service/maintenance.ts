@@ -23,7 +23,7 @@
  *   it detects changes but proves nothing about who signed.
  */
 import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
-import { UNIT_OPTIONS, unitKindOf } from '@/lib/generator-oracle/diagnostics/units';
+import { toCanonical, UNIT_OPTIONS, unitKindOf } from '@/lib/generator-oracle/diagnostics/units';
 import type { Question } from '@/lib/generator-oracle/diagnostics/types';
 import { sha256Hex } from './sha256';
 
@@ -293,7 +293,8 @@ export const STOP_NOT_CARRIED_NOTICE = 'Generator Oracle cannot confirm a set is
  * Each needs a value and a unit of the right kind. No limit is invented: a reading without a limit is
  * printed "NOT VERIFIED, not a pass". The file-consistency check of saved cards is unchanged.
  */
-export interface RequiredReading { family: string; id: string; text: string; units: string[] }
+/** min/max/unit: the Guided Diagnosis question's own physically possible range, in its unit (kPa, °C or the question unit). */
+export interface RequiredReading { family: string; id: string; text: string; units: string[]; min: number; max: number; unit: string }
 /**
  * Review O-1 (2026-11-26): each required reading is entered against its OWN checklist item
  * (Reading.checklistId = the item id) and completion checks those structured items only.
@@ -308,8 +309,22 @@ const unitsOf = (q: Question): string[] => {
 };
 const required = (familyId: string, id: string): RequiredReading | null => {
   const q = FAMILIES.find((f) => f.id === familyId)?.questions.find((x) => x.id === id);
-  return q && q.kind === 'number' ? { family: familyId, id, text: q.text, units: unitsOf(q) } : null;
+  return q && q.kind === 'number' ? { family: familyId, id, text: q.text, units: unitsOf(q), min: q.min, max: q.max, unit: q.unit } : null;
 };
+/**
+ * Review MINOR (2026-11-27): a checklist value is checked against the question's own physically possible
+ * range, exactly as the Guided Diagnosis input is (converted to the question's unit first; refused, never
+ * clipped). Returns the refusal message, or null when the value is possible.
+ */
+export function checklistRangeProblem(item: RequiredReading, value: number, unit: string): string | null {
+  if (!Number.isFinite(value)) return `${item.text}: enter the measured value`;
+  const q = FAMILIES.find((f) => f.id === item.family)?.questions.find((x) => x.id === item.id);
+  const kind = q ? unitKindOf(q) : null;
+  const n = kind ? toCanonical(kind, unit.trim(), value) : value;
+  if (n === null) return `${item.text}: unit "${unit}" is not one of ${item.units.join(' / ')}`;
+  if (n < item.min || n > item.max) return `${item.text}: ${value} ${unit.trim()} is outside the possible range ${item.min}–${item.max} ${item.unit}; check the reading and the units`;
+  return null;
+}
 /** Fault families diagnosed on this card: its Guided Diagnosis records ("[family-id]") and its structured STOPs. */
 export function cardFamilies(card: Pick<JobCard, 'findings' | 'guidedSafety'>): string[] {
   const ids = new Set<string>();
@@ -336,8 +351,13 @@ export function checklistItem(id: string): RequiredReading | null {
 }
 /** A required item is satisfied only by a reading entered against it: same checklistId, a value and a unit of its kind. */
 export function missingTestRunReadings(card: Pick<JobCard, 'findings' | 'guidedSafety' | 'readings'>): string[] {
-  return requiredTestRunReadings(card).filter((q) => !card.readings.some((r) => r.checklistId === q.id && Number.isFinite(r.value) && q.units.some((u) => u.toLowerCase() === r.unit.trim().toLowerCase())))
-    .map((q) => `${q.text} (${q.units.join(' / ')})`);
+  return requiredTestRunReadings(card).flatMap((q) => {
+    const mine = card.readings.filter((r) => r.checklistId === q.id && q.units.some((u) => u.toLowerCase() === r.unit.trim().toLowerCase()));
+    if (mine.some((r) => checklistRangeProblem(q, r.value, r.unit) === null)) return [];
+    // A refused (impossible) value does not satisfy the item; the message says why.
+    const refused = mine.map((r) => checklistRangeProblem(q, r.value, r.unit)).find((m) => m);
+    return [refused ? `${q.text} (${q.units.join(' / ')}): value refused — ${refused}` : `${q.text} (${q.units.join(' / ')})`];
+  });
 }
 
 export interface ManualRef { document: string; edition: string; page: string }
