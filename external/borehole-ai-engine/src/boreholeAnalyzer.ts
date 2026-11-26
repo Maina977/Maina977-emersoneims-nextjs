@@ -97,6 +97,7 @@ async function fieldRecordsWithin(lat: number, lon: number, km: number): Promise
 }
 import { getKenyaHydroPrior } from './kenyaHydroPriors';
 import { nearestKenyaBaseline } from './kenyaBaseline';
+import { buildVerificationReport } from './preReportVerification';
 import { salinityFromWaterQuality, modelledSalinityLabel, salinityRisk, chemFromWaterQuality, chemMeasuredNearby, fluorideRisk, nitrateRisk, modelledChemLabel, type ChemRisk } from './verdict';
 
 /**
@@ -3940,15 +3941,15 @@ export class BoreholeAnalyzer {
         verificationTimeout,
       ]);
       const vr = (result as any).verificationReport;
-      console.log(`[Pipeline] Verification: ${vr?.verified ? '✅ PASSED' : '❌ FAILED'} — Grade ${vr?.grade}, ${vr?.score}%, ${vr?.apiRequeriesPerformed} API re-queries`);
+      console.log(`[Pipeline] Verification: ${vr?.status ?? (vr?.verified ? 'PASSED' : 'FAILED')} — ${vr?.coverage ? `${vr.coverage.run} of ${vr.coverage.total} checks run` : ''}, grade ${vr?.grade ?? 'not issued'}, ${vr?.apiRequeriesPerformed} of ${vr?.apiRequeriesAttempted ?? '?'} API re-queries ran`);
     } catch (e) {
       console.warn('[Pipeline] Pre-report verification engine failed:', e);
-      (result as any).verificationReport = {
-        verified: true, score: 0, grade: 'F', totalChecks: 0, passed: 0, warnings: 0,
-        failures: 0, skipped: 0, checks: [], apiRequeriesPerformed: 0, apiRequeriesMatched: 0,
-        timestamp: new Date().toISOString(), durationMs: 0,
-        summary: '⚠️ Verification engine failed — report generated without verification.',
-      };
+      // 2026-11-26 (D1): the engine did not complete, so nothing was checked:
+      // INCOMPLETE with no grade (was verified: true). It does not block the report.
+      (result as any).verificationReport = buildVerificationReport([{
+        id: 'VERIFY-ENGINE', category: 'INTERNAL_CONSISTENCY', name: 'Pre-report verification', severity: 'SKIP',
+        message: `Not checked: the verification engine did not complete (${e instanceof Error ? e.message : String(e)})`,
+      }], { attempted: 0, performed: 0, matched: 0 });
     }
 
     // ─── THREE-SCORE STATUS ARCHITECTURE (DDTR / FRR / MAG) ───
