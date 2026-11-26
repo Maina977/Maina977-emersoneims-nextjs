@@ -3,10 +3,19 @@
  * Receives payment confirmation from Safaricom
  *
  * @copyright 2026 Generator Oracle / EmersonEIMS
+ *
+ * Security sweep 2026-11-26: this URL is public and Safaricom's callback is
+ * not signed, so a forged "ResultCode 0" body for a known CheckoutRequestID
+ * (the payer gets their own id back from /payments/mpesa) used to mark the
+ * payment completed with a made-up receipt and activate the paid plan. A
+ * success is now acted on only when (1) the payment is still pending,
+ * (2) the callback amount equals the stored amount, and (3) Safaricom itself
+ * confirms the CheckoutRequestID as paid (STK Push Query). The full callback
+ * body (payer phone) is no longer logged.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { parseSTKCallback } from '@/lib/generator-oracle/mpesaService';
+import { parseSTKCallback, querySTKPushStatus } from '@/lib/generator-oracle/mpesaService';
 import {
   updatePaymentStatus,
   createSubscription,
@@ -20,8 +29,6 @@ import { getPostgresPool } from '@/lib/db';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-
-    console.log('M-Pesa Callback received:', JSON.stringify(body, null, 2));
 
     const callbackData = parseSTKCallback(body);
 
@@ -46,10 +53,22 @@ export async function POST(request: NextRequest) {
         const metadata = payment.metadata as Record<string, unknown>;
         const planId = metadata?.planId as string;
         const userId = payment.user_id as number;
+        const pending = payment.status === 'pending';
 
         if (resultCode === 0) {
-          // Payment successful
+          // Payment successful: only for a pending payment, the stored amount,
+          // and when Safaricom confirms it (a callback body alone proves nothing).
           const receiptNumber = callbackMetadata?.mpesaReceiptNumber;
+          const amountMatches = Number(callbackMetadata?.amount) === Number(payment.amount);
+          if (!pending || !amountMatches) {
+            console.warn('M-Pesa callback ignored: payment not pending or amount mismatch');
+            return NextResponse.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+          }
+          const confirmed = await querySTKPushStatus(checkoutRequestId);
+          if (!confirmed.success) {
+            console.warn('M-Pesa callback ignored: Safaricom did not confirm the payment');
+            return NextResponse.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+          }
 
           // Update payment status
           await updatePaymentStatus(
@@ -66,7 +85,7 @@ export async function POST(request: NextRequest) {
 
             console.log(`Subscription activated for user ${userId}: ${planId}`);
           }
-        } else {
+        } else if (pending) {
           // Payment failed
           await updatePaymentStatus(
             payment.transaction_id as string,

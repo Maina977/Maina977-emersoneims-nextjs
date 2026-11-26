@@ -80,6 +80,9 @@ export default function SparePartsPage() {
     filterAndSortParts();
   }, [parts, searchQuery, selectedService, sortBy, minPrice, maxPrice, minRating, inStockOnly]);
 
+  // No part has a real rating today (the invented ones were removed from the API).
+  const hasRatings = parts.some((p) => p.rating > 0);
+
   const getPrice = (part: Part): number => {
     return part.sellingPrice || part.price || 0;
   };
@@ -362,7 +365,7 @@ export default function SparePartsPage() {
                 <option value="name">Sort: A-Z</option>
                 <option value="price-low">Sort: Price (Low→High)</option>
                 <option value="price-high">Sort: Price (High→Low)</option>
-                <option value="rating">Sort: Best Rated</option>
+                {hasRatings && <option value="rating">Sort: Best Rated</option>}
                 <option value="stock">Sort: In Stock First</option>
               </select>
 
@@ -443,8 +446,8 @@ export default function SparePartsPage() {
                   />
                 </div>
 
-                {/* Min Rating */}
-                <div>
+                {/* Min Rating: only when real ratings exist */}
+                {hasRatings && <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">Minimum Rating</label>
                   <select
                     value={minRating}
@@ -457,7 +460,7 @@ export default function SparePartsPage() {
                     <option value="4">4+ Stars ⭐⭐⭐⭐</option>
                     <option value="5">5 Stars ⭐⭐⭐⭐⭐</option>
                   </select>
-                </div>
+                </div>}
 
                 {/* Stock Status */}
                 <div>
@@ -670,10 +673,14 @@ export default function SparePartsPage() {
                           KES {formatKES(part.price || 0)}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-yellow-400 text-lg">{'⭐'.repeat(Math.floor(Math.min(5, part.rating || 3)))}</p>
-                        <p className="text-xs text-gray-500">{part.rating || 3}/5</p>
-                      </div>
+                      {/* Shown only for a real rating: the API used to invent one
+                          (Math.random) and this fell back to 3 stars (sweep 2026-11-26). */}
+                      {part.rating > 0 && (
+                        <div className="text-right">
+                          <p className="text-yellow-400 text-lg">{'⭐'.repeat(Math.floor(Math.min(5, part.rating)))}</p>
+                          <p className="text-xs text-gray-500">{part.rating}/5</p>
+                        </div>
+                      )}
                     </div>
 
                     {/* CTA Button */}
