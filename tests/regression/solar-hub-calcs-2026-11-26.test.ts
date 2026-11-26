@@ -8,7 +8,9 @@ import { createRequire } from 'module';
 import fs from 'fs';
 import path from 'path';
 import { evaluate as safetyEvaluate, M3H_PER_CFM, type SafetyInput } from '@/components/hub/SafetyClient';
-import { compute as upsLabCompute } from '@/components/hub/UpsLabClient';
+import UpsLabClient, { compute as upsLabCompute, UPS_CLEAR_TEXT } from '@/components/hub/UpsLabClient';
+import { render, screen, cleanup } from '@testing-library/react';
+import * as React from 'react';
 import { sizeUps, controllerUndersized, bankRuntimeMin, supportMarginPct, sizeGenerator, generatorOverloaded, sizeFuel, DEFAULTS } from '@/components/hub/SimulatorClient';
 import { PV_GEN } from '@/components/hub/SolarUpsClient';
 import { upsRuntimeMinutes, surgeWatts } from '@/lib/hub/upsMath';
@@ -448,5 +450,44 @@ describe('R7: the generator fuel figure is one labelled assumption', () => {
     expect(src).not.toMatch(/kwAt75 \* 0\.27/);
     // 400 kVA: 400 × 0.8 × 0.75 = 240 kW × 0.27 = 64.8 L/h (unchanged arithmetic).
     expect(sizeFuel({ fuelTankL: 500, hoursPerDay: 8 }, 400).lph).toBeCloseTo(64.8, 6);
+  });
+});
+
+describe('Review of 4ccbd681: N1-N3 (UPS Lab)', () => {
+  const eaton = (loads: { kind: 'server' | 'fridge' | 'led-bulb'; qty: number }[]) => upsLabCompute({ ups: [{ modelId: 'eaton-9px-6', qty: 1 }], loads, mainsPresent: true });
+  it('N1: nothing tripping is "within the checked limits", not a green "All systems nominal"', () => {
+    // Default composition: 1,410 W, 1,484 VA, surge 1,770 W, all-at-once 1,791 W on 5,400 W / 6,000 VA → no signal.
+    const r = eaton([{ kind: 'server', qty: 2 }]);
+    expect(r.signals).toHaveLength(0);
+    render(React.createElement(UpsLabClient));
+    expect(screen.getAllByText(UPS_CLEAR_TEXT).length).toBeGreaterThan(0);
+    expect(screen.queryByText('All systems nominal')).toBeNull();
+    cleanup();
+    expect(UPS_CLEAR_TEXT).toBe('Within the checked limits (kW, kVA, surge); datasheet items not verified');
+    // The shared controller keeps its old default for the simulator; the Lab passes 'info'.
+    const ac = read('components/hub/cockpit/AlarmController.tsx');
+    expect(ac).toMatch(/clearState = 'ok'/);
+    expect(read('components/hub/UpsLabClient.tsx')).toMatch(/clearState="info" clearDescription=\{UPS_CLEAR_TEXT\}/);
+  });
+  it('N2: an all-at-once start above the 105 % allowance warns, even when the staggered surge passes', () => {
+    // 6 servers + 2 fridges: running 3,600 + 400 = 4,000 W; staggered surge 4,000 + max(1,080, 1,200) = 5,200 W ≤ 5,670 → no fault.
+    // All at once: 3,600 × 1.3 + 400 × 4 = 4,680 + 1,600 = 6,280 W > 5,670 → WARN.
+    const r = eaton([{ kind: 'server', qty: 6 }, { kind: 'fridge', qty: 2 }]);
+    expect(r.loadStartingW).toBe(5200);
+    expect(r.loadSimultaneousStartW).toBe(6280);
+    expect(r.isOverloaded).toBe(false);
+    expect(r.signals.map((x) => x.id)).toEqual(['simultaneous-start']);
+    expect(r.signals[0].severity).toBe('warn');
+    // 4 servers + 1 fridge: all at once 2,400 × 1.3 + 200 × 4 = 3,920 W ≤ 5,670 → no warning.
+    expect(eaton([{ kind: 'server', qty: 4 }, { kind: 'fridge', qty: 1 }]).signals.some((x) => x.id === 'simultaneous-start')).toBe(false);
+  });
+  it('N3: the 85 % high-load warning also checks kVA', () => {
+    // Vertiv APM 20 kVA, 1,750 LEDs: 15,750 W = 82.9 % of 19,000 W (under 85 %),
+    // 15,750 / 0.9 = 17,500 VA = 87.5 % of 20,000 VA (over 85 %) → WARN (kW-only rule was silent).
+    const r = upsLabCompute({ ups: [{ modelId: 'vertiv-apm-20', qty: 1 }], loads: [{ kind: 'led-bulb', qty: 1750 }], mainsPresent: true });
+    expect(r.isOverloaded).toBe(false);
+    expect(r.signals.map((x) => x.id)).toEqual(['high-load']);
+    // 1,500 LEDs: 13,500 W (71 %), 15,000 VA (75 %) → no warning.
+    expect(upsLabCompute({ ups: [{ modelId: 'vertiv-apm-20', qty: 1 }], loads: [{ kind: 'led-bulb', qty: 1500 }], mainsPresent: true }).signals).toHaveLength(0);
   });
 });

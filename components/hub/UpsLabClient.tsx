@@ -110,6 +110,13 @@ export const UPS_SURGE_ALLOWANCE = 1.05;
  * overload-versus-time curve, ambient and altitude derating are NOT checked
  * and must be confirmed on the model's datasheet. No compliance is assumed.
  */
+/**
+ * What the Lab may say when nothing trips (review 2026-11-26, N1): it checks
+ * kW, kVA and surge only, so a clear result is NOT a green "All systems
+ * nominal"; the datasheet items in UPS_LIMITS_NOTE are not verified.
+ */
+export const UPS_CLEAR_TEXT = 'Within the checked limits (kW, kVA, surge); datasheet items not verified';
+
 export const UPS_LIMITS_NOTE =
   'Checked: continuous load ≤ 100 % of rated kW and of rated kVA (exactly 100 % passes, above faults), and the starting surge ≤ 105 % of rated kW (an assumed short-term allowance). ' +
   'Not in this catalogue, so NOT checked: the manufacturer’s overload-versus-time curve, ambient-temperature and altitude derating. Confirm those on the model’s datasheet before relying on a pass.';
@@ -212,7 +219,11 @@ export function compute(c: Composition): LiveResult {
   const signals: AlarmSignal[] = [];
   if (hasNoUps && !hasNoLoad) signals.push({ id: 'no-ups',   severity: 'fault', label: 'No UPS in the system',          detail: 'Add a UPS to support the connected loads.' });
   if (isOverloaded)            signals.push({ id: 'overload', severity: 'fault', label: 'UPS overload', detail: `${overloadReasons.join('; ')}.` });
-  if (!isOverloaded && upsCapacityW > 0 && loadContinuousW > upsCapacityW * 0.85) signals.push({ id: 'high-load', severity: 'warn', label: 'Continuous load > 85 % UPS capacity', detail: 'Reduces battery life and runtime margin.' });
+  // High load on EITHER rating, kW or kVA (review 2026-11-26, N3: kW only).
+  if (!isOverloaded && ((upsCapacityW > 0 && loadContinuousW > upsCapacityW * 0.85) || (upsCapacityVa > 0 && loadVa > upsCapacityVa * 0.85))) signals.push({ id: 'high-load', severity: 'warn', label: 'Continuous load > 85 % of the UPS kW or kVA rating', detail: `${formatValue(loadContinuousW / 1000, { unit: 'kW', decimals: 2 })} of ${formatValue(upsCapacityW / 1000, { unit: 'kW', decimals: 2 })}; ${formatValue(loadVa / 1000, { unit: 'kVA', decimals: 2 })} of ${formatValue(upsCapacityVa / 1000, { unit: 'kVA', decimals: 2 })}. Reduces battery life and runtime margin.` });
+  // The surge model staggers starts; a cold start or a return from bypass can
+  // start everything at once (review 2026-11-26, N2: shown but not checked).
+  if (!isOverloaded && upsCapacityW > 0 && loadSimultaneousStartW > upsCapacityW * UPS_SURGE_ALLOWANCE) signals.push({ id: 'simultaneous-start', severity: 'warn', label: 'All-at-once start exceeds the surge allowance', detail: `If every load starts together (cold start, return from bypass) the surge is ${formatValue(loadSimultaneousStartW / 1000, { unit: 'kW', decimals: 2 })} > 105 % of ${formatValue(upsCapacityW / 1000, { unit: 'kW', decimals: 2 })}: stagger the starts or add capacity.` });
   if (motorOrHeatOnUps)        signals.push({ id: 'mismatch', severity: 'warn',  label: 'Motor / heating load on UPS',   detail: 'Motors and resistive heaters are not advised on UPS — move to mains/genset and keep UPS for IT/critical only.' });
   if (!hasNoUps && upsBatteryWh > 0 && loadContinuousW > 0 && runtimeMin < 5) signals.push({ id: 'short-runtime', severity: 'warn', label: 'Battery runtime < 5 min', detail: 'Increase UPS rating, add EBM modules or extend battery autonomy.' });
   if (!c.mainsPresent && upsBatteryWh === 0) signals.push({ id: 'no-power', severity: 'fault', label: 'Mains down and no battery available', detail: 'Output is zero — the system cannot support the load.' });
@@ -287,9 +298,10 @@ export default function UpsLabClient() {
     });
   }
 
-  const overallLamp: 'ok' | 'warn' | 'fault' =
+  // 'info', never a green 'ok': only kW, kVA and surge are checked (N1).
+  const overallLamp: 'info' | 'warn' | 'fault' =
     result.signals.some((s) => s.severity === 'fault') ? 'fault'
-    : result.signals.length > 0 ? 'warn' : 'ok';
+    : result.signals.length > 0 ? 'warn' : 'info';
 
   return (
     <div className="space-y-6">
@@ -406,11 +418,11 @@ export default function UpsLabClient() {
         {/* Alarms + status lights */}
         <div className="grid gap-3 md:grid-cols-[1.1fr_1fr]">
           <CockpitPanel eyebrow="Annunciator" title="Live alarms" right={<SampleBadge />}>
-            <AlarmController signals={result.signals} />
+            <AlarmController signals={result.signals} clearState="info" clearDescription={UPS_CLEAR_TEXT} />
             <ul className="mt-3 space-y-1.5">
               {result.signals.length === 0 && (
                 <li className="flex items-center gap-2 text-[12px]" style={{ color: 'var(--cockpit-ink-muted)' }}>
-                  <StatusLight state="ok" label="All systems nominal" />
+                  <StatusLight state="info" label={UPS_CLEAR_TEXT} />
                 </li>
               )}
               {result.signals.map((s) => (
