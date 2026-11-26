@@ -7,7 +7,7 @@ import type { AnalysisResult } from './types';
 import { finalVerdict, salinityEvidence, chemEvidence } from './verdict';
 import { auditReport, type AuditReport } from './reportAuditor';
 import type { VerificationReport } from './preReportVerification';
-import { drillRatePerM, mobilisationUSD, countyRateBand, costSoilType, KES_PER_USD, drillingCostKES, EIMS_RATES_KES } from './costModel';
+import { drillRatePerM, mobilisationUSD, countyRateBand, costSoilType, KES_PER_USD, drillingCostKES, EIMS_RATES_KES, rockClassForCost } from './costModel';
 
 export class AuditBlockError extends Error {
   public audit: AuditReport;
@@ -203,8 +203,14 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   const completionCost = Math.round(completionKES / KES_PER_USD);
   const completionNote = `Gravel pack ${gravelTons} t x KSh 6,500, development 12 h x KSh 12,500, 24 h test pumping x KSh 9,500, laboratory water test KSh 28,000, cap and site finishing KSh 85,000 (${EIMS_RATES_KES.source})`;
   const subtotalCost = surveyCost + permitCost + drillingCost + mobilisationCost + casingCost + screenCost + completionCost + pumpCost + installCost + solarCost + wqTreatmentCost + defluoridationCost;
-  const isHardRock = /gneiss|granite|basalt|quartzite|dolerite/i.test(soilType) || /rocky/i.test(soilType);
-  const contingencyRate = isHardRock ? 0.25 : 0.15;
+  // 2026-11-26 (real-project test D4): the contingency reads the SAME rock
+  // classification as the drilling rate above (it used to test the soil type,
+  // so a basalt hole priced at the hard-rock rate got the 15% soft contingency
+  // when the soil was "unknown"). No classified rock type: the conservative 25%.
+  const rockClass = rockClassForCost((result as any).rockClassification?.primaryRockType);
+  const isHardRock = rockClass === 'hard';
+  const rockTypeUnknown = rockClass === 'unknown';
+  const contingencyRate = isHardRock || rockTypeUnknown ? 0.25 : 0.15;
   const contingency = Math.round(subtotalCost * contingencyRate);
   const totalCost = subtotalCost + contingency;
   const annualMaintenance = Math.round(totalCost * 0.045);
@@ -287,7 +293,7 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
     depthVal, yieldVal, soilType, cpm, drillingCost, mobilisationCost, casingCost, casingNote, blindCasingLen,
     screenLength, screenCost, screenNote, pumpKW, pumpHead, pumpCost, pumpNote,
     installCost, solarKW, solarCost, isHandPump, wqTreatmentCost, needsRO, salinityUnpriced, fluorideUnpriced, roDailyM3, fluorideVal,
-    defluoridationCost, annualDefluoridation, subtotalCost, isHardRock,
+    defluoridationCost, annualDefluoridation, subtotalCost, isHardRock, rockTypeUnknown,
     contingencyRate, contingency, totalCost, annualMaintenance, annualOM,
     pumpHoursPerDay, operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,
     maxAnnualRevenue, yr1Utilization, yr2Utilization, yr3PlusUtilization,

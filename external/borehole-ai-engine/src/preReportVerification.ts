@@ -20,6 +20,7 @@
 import { fetchElevation, fetchSoilGrids } from './remoteSensing';
 import { fetchNASAPowerMoisture, fetchNearbyBoreholeData } from './advancedHydroEngine';
 import { fetchGLDASGroundwaterData } from './gldasGroundwater';
+import { SOILGRIDS_REST_ENABLED } from './soilSource';
 
 // ─── TYPES ───
 
@@ -37,18 +38,40 @@ export interface VerificationCheck {
   tolerance?: string;
 }
 
+/**
+ * The verdict (2026-11-26 real-project test D1). A verdict may only claim what
+ * was actually checked:
+ *  - PASSED: every check ran with an independent value and none failed.
+ *  - INCOMPLETE: no failure, but one or more checks could not be run (source
+ *    unavailable, timed out, or no independent value). No grade is given.
+ *  - FAILED: a check failed (the report is blocked, as before).
+ */
+export type VerificationStatus = 'PASSED' | 'INCOMPLETE' | 'FAILED';
+
 export interface VerificationReport {
-  verified: boolean;          // false = MUST NOT generate report
-  score: number;              // 0-100 verification score
-  grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  /** true only when status is PASSED (every check ran and none failed). */
+  verified: boolean;
+  /** true = MUST NOT generate report (a check FAILED). INCOMPLETE does not block. */
+  blocked?: boolean;
+  status?: VerificationStatus;
+  /** 0-100 over the checks that ran; null when coverage is incomplete. */
+  score: number | null;
+  /** Letter grade over the checks that ran; null when coverage is incomplete. */
+  grade: 'A' | 'B' | 'C' | 'D' | 'F' | null;
   totalChecks: number;
   passed: number;
   warnings: number;
   failures: number;
+  /** Checks NOT checked (source unavailable, not run, timeout, no independent value). */
   skipped: number;
+  /** Checks that ran / all checks, and the ones that could not be run. */
+  coverage?: { run: number; total: number; notChecked: { id: string; name: string; reason: string }[] };
   checks: VerificationCheck[];
+  /** API re-queries that ran with an independent (live) value. */
   apiRequeriesPerformed: number;
   apiRequeriesMatched: number;
+  /** API re-queries attempted (including those that could not run). */
+  apiRequeriesAttempted?: number;
   timestamp: string;
   durationMs: number;
   summary: string;
@@ -76,10 +99,31 @@ function pct(a: number, b: number): number {
   return Math.abs(a - b) / Math.abs(b) * 100;
 }
 
-function within(a: number | null | undefined, b: number | null | undefined, tol: number): boolean {
-  if (a == null || b == null) return true; // can't check if missing
-  return Math.abs(a - b) <= tol;
+/** A finite number, or null (null / undefined / '' / NaN / non-numeric). */
+function num(v: unknown): number | null {
+  if (v == null || v === '') return null;
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
 }
+
+// 2026-11-26 (D1): a missing value is NOT a match. Callers must report a
+// missing side as "not checked (no independent value)".
+function within(a: number | null | undefined, b: number | null | undefined, tol: number): boolean {
+  const x = num(a), y = num(b);
+  if (x == null || y == null) return false;
+  return Math.abs(x - y) <= tol;
+}
+
+/** A source label that says the value is an estimate / fallback / default, not a live answer. */
+export function isFallbackSource(source: unknown): boolean {
+  return /estimat|unavailable|fallback|default|no data|did not answer|assumed|placeholder/i.test(String(source ?? ''));
+}
+
+/**
+ * Nearby-wells sources that are files shipped with the site (or local
+ * registries), not live databases: re-reading them is not an independent check.
+ */
+const LOCAL_WELL_SOURCES = /field completion records|owner-provided|unesco ihp-wins|city groundwater survey/i;
 
 function pass(id: string, cat: VerificationCheck['category'], name: string, msg: string, src?: string): VerificationCheck {
   return { id, category: cat, name, severity: 'PASS', message: msg, source: src };
@@ -90,8 +134,13 @@ function warn(id: string, cat: VerificationCheck['category'], name: string, msg:
 function fail(id: string, cat: VerificationCheck['category'], name: string, msg: string, exp?: string, act?: string, src?: string): VerificationCheck {
   return { id, category: cat, name, severity: 'FAIL', message: msg, expected: exp, actual: act, source: src };
 }
+/** Not checked: the source did not answer, timed out, or the check could not run. */
 function skip(id: string, cat: VerificationCheck['category'], name: string, msg: string): VerificationCheck {
-  return { id, category: cat, name, severity: 'SKIP', message: msg };
+  return { id, category: cat, name, severity: 'SKIP', message: `Not checked: ${msg}` };
+}
+/** Not checked: one side is missing, or the "independent" value is the same fallback/source as the value checked. */
+function noIndependent(id: string, cat: VerificationCheck['category'], name: string, msg: string): VerificationCheck {
+  return { id, category: cat, name, severity: 'SKIP', message: `Not checked (no independent value): ${msg}` };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -101,7 +150,8 @@ function skip(id: string, cat: VerificationCheck['category'], name: string, msg:
 export async function runPreReportVerification(result: any): Promise<VerificationReport> {
   const startTime = Date.now();
   const checks: VerificationCheck[] = [];
-  let apiRequeriesPerformed = 0;
+  let apiRequeriesAttempted = 0;
+  let apiRequeriesPerformed = 0; // ran with an independent (live) value on both sides
   let apiRequeriesMatched = 0;
 
   const lat = result.clientLocation?.latitude
@@ -129,38 +179,59 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
 
       // 1A. RE-QUERY ELEVATION (SRTM via Open-Elevation)
       (async () => {
-        apiRequeriesPerformed++;
+        apiRequeriesAttempted++;
         const freshElev = await raceTimeout(fetchElevation(lat, lon), 20000);
-        const cachedElev = result.remoteSensing?.elevation?.elevation;
-        if (freshElev?.elevation != null && cachedElev != null) {
-          if (within(freshElev.elevation, cachedElev, TOL.elevation_m)) {
+        const freshVal = num(freshElev?.elevation);
+        const cachedElev = num(result.remoteSensing?.elevation?.elevation);
+        const cachedSrc = result.remoteSensing?.elevation?.source;
+        if (freshVal != null && isFallbackSource(freshElev?.source)) {
+          checks.push(noIndependent('API-ELEV', 'API_REQUERY', 'Elevation Re-query', `the re-query returned a fallback value (${freshElev?.source})`));
+        } else if (freshVal != null && cachedElev != null && isFallbackSource(cachedSrc)) {
+          checks.push(noIndependent('API-ELEV', 'API_REQUERY', 'Elevation Re-query', `the elevation being checked is a fallback value (${cachedSrc})`));
+        } else if (freshVal != null && cachedElev != null) {
+          apiRequeriesPerformed++;
+          if (within(freshVal, cachedElev, TOL.elevation_m)) {
             apiRequeriesMatched++;
             checks.push(pass('API-ELEV', 'API_REQUERY', 'Elevation Re-query',
-              `SRTM elevation verified: cached ${cachedElev}m, fresh query ${freshElev.elevation}m (±${TOL.elevation_m}m tolerance)`,
+              `SRTM elevation verified: cached ${cachedElev}m, fresh query ${freshVal}m (±${TOL.elevation_m}m tolerance)`,
               'Open-Elevation API (SRTM 30m)'));
           } else {
             checks.push(warn('API-ELEV', 'API_REQUERY', 'Elevation Re-query',
-              `Elevation drift: cached ${cachedElev}m vs fresh query ${freshElev.elevation}m — exceeds ±${TOL.elevation_m}m tolerance`,
-              `${cachedElev}m`, `${freshElev.elevation}m`, 'Open-Elevation API'));
+              `Elevation drift: cached ${cachedElev}m vs fresh query ${freshVal}m — exceeds ±${TOL.elevation_m}m tolerance`,
+              `${cachedElev}m`, `${freshVal}m`, 'Open-Elevation API'));
           }
-        } else if (freshElev?.elevation != null && cachedElev == null) {
-          checks.push(warn('API-ELEV', 'API_REQUERY', 'Elevation Re-query',
-            `Elevation not cached in result but API returned ${freshElev.elevation}m`));
+        } else if (freshVal != null && cachedElev == null) {
+          checks.push(noIndependent('API-ELEV', 'API_REQUERY', 'Elevation Re-query',
+            `elevation not cached in result (API returned ${freshVal}m), nothing to compare`));
         } else {
-          checks.push(skip('API-ELEV', 'API_REQUERY', 'Elevation Re-query', 'Elevation API unavailable during re-query'));
+          checks.push(skip('API-ELEV', 'API_REQUERY', 'Elevation Re-query', 'elevation API unavailable or timed out during re-query'));
         }
-      })().catch(() => { checks.push(skip('API-ELEV', 'API_REQUERY', 'Elevation Re-query', 'Elevation API error during re-query')); }),
+      })().catch(() => { checks.push(skip('API-ELEV', 'API_REQUERY', 'Elevation Re-query', 'elevation API error during re-query')); }),
 
       // 1B. RE-QUERY SOILGRIDS
       (async () => {
-        apiRequeriesPerformed++;
+        // SoilGrids REST is disabled (soilSource.ts): a "re-query" would read
+        // the same self-hosted dataset the cached value came from — the value
+        // compared with itself. There is no independent source to re-query,
+        // so this re-query is not run and is not claimed (neither pass nor
+        // part of the coverage). It returns when the REST source is enabled.
+        if (!SOILGRIDS_REST_ENABLED) return;
+        apiRequeriesAttempted++;
         const freshSoil = await raceTimeout(fetchSoilGrids(lat, lon), 20000);
         const cachedSoil = result.remoteSensing?.soilGrids ?? result.globalSoilAnalysis;
-        if (freshSoil && cachedSoil) {
-          const freshClay = freshSoil.clay;
-          const cachedClay = cachedSoil.clay ?? cachedSoil.texture?.clay;
-          const freshSand = freshSoil.sand;
-          const cachedSand = cachedSoil.sand ?? cachedSoil.texture?.sand;
+        if (freshSoil && cachedSoil && isFallbackSource(freshSoil.source)) {
+          checks.push(noIndependent('API-SOIL', 'API_REQUERY', 'SoilGrids Re-query', `the re-query returned a fallback value (${freshSoil.source})`));
+        } else if (freshSoil && cachedSoil) {
+          const freshClay = num(freshSoil.clay);
+          const cachedClay = num(cachedSoil.clay ?? cachedSoil.texture?.clay);
+          const freshSand = num(freshSoil.sand);
+          const cachedSand = num(cachedSoil.sand ?? cachedSoil.texture?.sand);
+          const comparable = (freshClay != null && cachedClay != null) || (freshSand != null && cachedSand != null);
+          if (!comparable) {
+            checks.push(noIndependent('API-SOIL', 'API_REQUERY', 'SoilGrids Re-query', 'no clay or sand value on both sides to compare'));
+            return;
+          }
+          apiRequeriesPerformed++;
 
           let soilMatch = true;
           const issues: string[] = [];
@@ -185,19 +256,22 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
               'ISRIC SoilGrids v2.0'));
           }
         } else {
-          checks.push(skip('API-SOIL', 'API_REQUERY', 'SoilGrids Re-query', 'SoilGrids data unavailable for comparison'));
+          checks.push(skip('API-SOIL', 'API_REQUERY', 'SoilGrids Re-query', 'SoilGrids data unavailable or timed out for comparison'));
         }
       })().catch(() => { checks.push(skip('API-SOIL', 'API_REQUERY', 'SoilGrids Re-query', 'SoilGrids API error during re-query')); }),
 
       // 1C. RE-QUERY NASA POWER MOISTURE
       (async () => {
-        apiRequeriesPerformed++;
+        apiRequeriesAttempted++;
         const freshMoisture = await raceTimeout(fetchNASAPowerMoisture(lat, lon), 20000);
         const cachedMoisture = result.nasaPowerMoisture;
-        if (freshMoisture && cachedMoisture) {
-          const freshVal = freshMoisture.gwetprofMean;
-          const cachedVal = cachedMoisture.gwetprofMean;
+        if (freshMoisture && cachedMoisture && (isFallbackSource(freshMoisture.dataSource) || isFallbackSource(cachedMoisture.dataSource))) {
+          checks.push(noIndependent('API-MOISTURE', 'API_REQUERY', 'NASA POWER Moisture Re-query', 'one side is a fallback value, not a NASA POWER answer'));
+        } else if (freshMoisture && cachedMoisture) {
+          const freshVal = num(freshMoisture.gwetprofMean);
+          const cachedVal = num(cachedMoisture.gwetprofMean);
           if (freshVal != null && cachedVal != null) {
+            apiRequeriesPerformed++;
             if (within(freshVal, cachedVal, TOL.moisture_pct / 100)) {
               apiRequeriesMatched++;
               checks.push(pass('API-MOISTURE', 'API_REQUERY', 'NASA POWER Moisture Re-query',
@@ -209,22 +283,30 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
                 `${(cachedVal * 100).toFixed(1)}%`, `${(freshVal * 100).toFixed(1)}%`, 'NASA POWER'));
             }
           } else {
-            apiRequeriesMatched++;
-            checks.push(skip('API-MOISTURE', 'API_REQUERY', 'NASA POWER Moisture Re-query', 'Moisture values null in one or both queries'));
+            // 2026-11-26 (D1): was counted as "matched".
+            checks.push(noIndependent('API-MOISTURE', 'API_REQUERY', 'NASA POWER Moisture Re-query', 'moisture value missing in one or both queries'));
           }
         } else {
-          checks.push(skip('API-MOISTURE', 'API_REQUERY', 'NASA POWER Moisture Re-query', 'NASA POWER data unavailable for comparison'));
+          checks.push(skip('API-MOISTURE', 'API_REQUERY', 'NASA POWER Moisture Re-query', 'NASA POWER data unavailable or timed out for comparison'));
         }
       })().catch(() => { checks.push(skip('API-MOISTURE', 'API_REQUERY', 'NASA POWER Moisture Re-query', 'NASA POWER API error during re-query')); }),
 
       // 1D. RE-QUERY NEARBY BOREHOLE DATA (capped at 30s — the function has ~15 sequential sub-fetches)
       (async () => {
-        apiRequeriesPerformed++;
+        apiRequeriesAttempted++;
         const freshWells = await raceTimeout(fetchNearbyBoreholeData(lat, lon), 30000);
         const cachedWells = result.nearbyWells;
-        if (freshWells && cachedWells) {
-          const freshCount = freshWells.sampleSize ?? (freshWells as any).totalFound ?? 0;
-          const cachedCount = cachedWells.sampleSize ?? 0;
+        const freshLive = (freshWells?.dataSources ?? []).filter((s: string) => !LOCAL_WELL_SOURCES.test(String(s)));
+        const freshCount = num(freshWells?.sampleSize ?? (freshWells as any)?.totalFound);
+        const cachedCount = num(cachedWells?.sampleSize);
+        if (freshWells && cachedWells && (!freshCount || !cachedCount)) {
+          // 2026-11-26 (D1): 0 vs 0 records used to "match".
+          checks.push(noIndependent('API-WELLS', 'API_REQUERY', 'Nearby Wells Re-query', 'no well records on one or both sides to compare'));
+        } else if (freshWells && cachedWells && freshLive.length === 0) {
+          checks.push(noIndependent('API-WELLS', 'API_REQUERY', 'Nearby Wells Re-query',
+            'the re-query answered only from the records shipped with the site (the same records as the value checked); no live database answered'));
+        } else if (freshWells && cachedWells && freshCount != null && cachedCount != null) {
+          apiRequeriesPerformed++;
           if (Math.abs(freshCount - cachedCount) <= Math.max(2, cachedCount * 0.3)) {
             apiRequeriesMatched++;
             checks.push(pass('API-WELLS', 'API_REQUERY', 'Nearby Wells Re-query',
@@ -243,21 +325,29 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
             }
           }
         } else {
-          checks.push(skip('API-WELLS', 'API_REQUERY', 'Nearby Wells Re-query', 'Nearby wells data unavailable for comparison'));
+          checks.push(skip('API-WELLS', 'API_REQUERY', 'Nearby Wells Re-query', 'nearby wells data unavailable or timed out for comparison'));
         }
       })().catch(() => { checks.push(skip('API-WELLS', 'API_REQUERY', 'Nearby Wells Re-query', 'Borehole database error during re-query')); }),
 
       // 1E. RE-QUERY GLDAS WATER BUDGET
       (async () => {
-        apiRequeriesPerformed++;
+        apiRequeriesAttempted++;
         const precip = result.remoteSensing?.climate?.annualPrecipitation;
         const temp = result.remoteSensing?.climate?.meanTemperature;
         const freshGLDAS = await raceTimeout(fetchGLDASGroundwaterData(lat, lon, precip, temp), 20000);
         const cachedGLDAS = result.gldasGroundwater;
-        if (freshGLDAS && cachedGLDAS) {
-          const freshRecharge = freshGLDAS.waterBudget?.estimatedRecharge ?? (freshGLDAS as any).estimatedRecharge_mm;
-          const cachedRecharge = cachedGLDAS.waterBudget?.estimatedRecharge ?? (cachedGLDAS as any).estimatedRecharge_mm;
+        const freshBudgetSrc = freshGLDAS?.waterBudget?.dataSource;
+        const cachedBudgetSrc = cachedGLDAS?.waterBudget?.dataSource;
+        if (freshGLDAS && cachedGLDAS && (isFallbackSource(freshBudgetSrc) || isFallbackSource(cachedBudgetSrc))) {
+          // 2026-11-26 (D1): with both APIs down the water budget is an estimate
+          // from the same rainfall input — it used to "match" itself (54 vs 54 mm/yr).
+          checks.push(noIndependent('API-GLDAS', 'API_REQUERY', 'GLDAS Water Budget Re-query',
+            `the water budget is an estimate, not a GLDAS/ERA5 answer (${isFallbackSource(freshBudgetSrc) ? freshBudgetSrc : cachedBudgetSrc})`));
+        } else if (freshGLDAS && cachedGLDAS) {
+          const freshRecharge = num(freshGLDAS.waterBudget?.estimatedRecharge ?? (freshGLDAS as any).estimatedRecharge_mm);
+          const cachedRecharge = num(cachedGLDAS.waterBudget?.estimatedRecharge ?? (cachedGLDAS as any).estimatedRecharge_mm);
           if (freshRecharge != null && cachedRecharge != null) {
+            apiRequeriesPerformed++;
             if (within(freshRecharge, cachedRecharge, TOL.recharge_mm)) {
               apiRequeriesMatched++;
               checks.push(pass('API-GLDAS', 'API_REQUERY', 'GLDAS Water Budget Re-query',
@@ -269,17 +359,17 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
                 `${cachedRecharge}mm/yr`, `${freshRecharge}mm/yr`, 'GLDAS / ERA5-Land'));
             }
           } else {
-            checks.push(skip('API-GLDAS', 'API_REQUERY', 'GLDAS Water Budget Re-query', 'Recharge values null'));
+            checks.push(noIndependent('API-GLDAS', 'API_REQUERY', 'GLDAS Water Budget Re-query', 'recharge value missing in one or both queries'));
           }
         } else {
-          checks.push(skip('API-GLDAS', 'API_REQUERY', 'GLDAS Water Budget Re-query', 'GLDAS data unavailable for comparison'));
+          checks.push(skip('API-GLDAS', 'API_REQUERY', 'GLDAS Water Budget Re-query', 'GLDAS data unavailable or timed out for comparison'));
         }
       })().catch(() => { checks.push(skip('API-GLDAS', 'API_REQUERY', 'GLDAS Water Budget Re-query', 'GLDAS API error during re-query')); }),
 
     ]); // end Promise.allSettled
 
   } else {
-    checks.push(skip('API-ALL', 'API_REQUERY', 'API Re-queries', 'No coordinates available — cannot re-query APIs'));
+    checks.push(skip('API-ALL', 'API_REQUERY', 'API Re-queries', 'no coordinates available — cannot re-query APIs'));
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -288,9 +378,9 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
 
   // 2A. DEPTH: Pipeline depth vs nearby wells avg depth
   {
-    const pipelineDepth = result.recommendedDepth;
-    const nearbyDepth = result.nearbyWells?.averageDepth;
-    const boreholeDbDepth = result.boreholeRecords?.averageDepth ?? result.boreholeRecords?.avgDepth;
+    const pipelineDepth = num(result.recommendedDepth);
+    const nearbyDepth = num(result.nearbyWells?.averageDepth);
+    const boreholeDbDepth = num(result.boreholeRecords?.averageDepth ?? result.boreholeRecords?.avgDepth);
     if (pipelineDepth != null && nearbyDepth != null) {
       const diff = Math.abs(pipelineDepth - nearbyDepth);
       if (diff <= 40) {
@@ -324,8 +414,8 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
 
   // 2B. YIELD: Pipeline yield vs nearby wells avg yield
   {
-    const pipelineYield = result.estimatedYield;
-    const nearbyYield = result.nearbyWells?.averageYield;
+    const pipelineYield = num(result.estimatedYield);
+    const nearbyYield = num(result.nearbyWells?.averageYield);
     if (pipelineYield != null && nearbyYield != null) {
       const diff = Math.abs(pipelineYield - nearbyYield);
       if (diff <= 3) {
@@ -569,7 +659,8 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
   // 4A. Water balance: ET < Precipitation (Budyko constraint)
   {
     const wb = result.gldasGroundwater?.waterBudget;
-    if (wb) {
+    // 2026-11-26 (D1): only with both figures; undefined <= undefined used to FAIL.
+    if (wb && num(wb.evapotranspiration) != null && num(wb.precipitation) != null) {
       if (wb.evapotranspiration <= wb.precipitation) {
         checks.push(pass('PHY-WATER-BAL', 'PHYSICS', 'Water Balance (Budyko)',
           `ET (${wb.evapotranspiration}mm/yr) ≤ P (${wb.precipitation}mm/yr) — Budyko constraint satisfied`));
@@ -844,51 +935,195 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
   // SCORING & VERDICT
   // ═══════════════════════════════════════════════════════════════
 
+  const report = buildVerificationReport(checks, {
+    attempted: apiRequeriesAttempted, performed: apiRequeriesPerformed, matched: apiRequeriesMatched,
+  }, Date.now() - startTime);
+
+  console.log(`[Verification] ${report.summary}`);
+
+  return report;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VERDICT — one wording for the screen and every export (2026-11-26, D1)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Exact headline when any check could not be run (management decision 2026-11-26). */
+export const VERIFICATION_INCOMPLETE_HEADLINE =
+  'VERIFICATION INCOMPLETE — Required data sources unavailable. No accuracy grade or publication clearance issued.';
+export const VERIFICATION_FAILED_HEADLINE = 'VERIFICATION FAILED — Report blocked';
+export const VERIFICATION_PASSED_HEADLINE = 'VERIFICATION PASSED';
+export const VERIFICATION_PASSED_WARN_HEADLINE = 'VERIFICATION PASSED WITH WARNINGS';
+
+/**
+ * Score and verdict from the recorded checks. Only checks that RAN are scored;
+ * a SKIP ("not checked") never counts as a pass. PASSED needs every check to
+ * have run; otherwise INCOMPLETE with no grade and no score. FAILED as before.
+ */
+export function buildVerificationReport(
+  checks: VerificationCheck[],
+  api: { attempted: number; performed: number; matched: number },
+  durationMs = 0,
+): VerificationReport {
   const failures = checks.filter(c => c.severity === 'FAIL').length;
   const warnings = checks.filter(c => c.severity === 'WARN').length;
   const passes = checks.filter(c => c.severity === 'PASS').length;
-  const skipped = checks.filter(c => c.severity === 'SKIP').length;
-  const scored = checks.length - skipped;
+  const notChecked = checks.filter(c => c.severity === 'SKIP');
+  const skipped = notChecked.length;
+  const total = checks.length;
+  const run = total - skipped;
 
-  const score = scored > 0
-    ? Math.round((passes * 100 + warnings * 50) / scored)
-    : 0;
+  const status: VerificationStatus =
+    failures > 0 ? 'FAILED' : (skipped > 0 || total === 0) ? 'INCOMPLETE' : 'PASSED';
+  const complete = skipped === 0 && total > 0;
 
-  const grade: VerificationReport['grade'] =
-    score >= 90 ? 'A' :
-    score >= 75 ? 'B' :
-    score >= 60 ? 'C' :
-    score >= 40 ? 'D' : 'F';
+  const rawScore = run > 0 ? Math.round((passes * 100 + warnings * 50) / run) : 0;
+  const rawGrade: 'A' | 'B' | 'C' | 'D' | 'F' =
+    rawScore >= 90 ? 'A' : rawScore >= 75 ? 'B' : rawScore >= 60 ? 'C' : rawScore >= 40 ? 'D' : 'F';
+  // No grade or percentage that implies cross-validation unless coverage is complete.
+  const score = complete ? rawScore : null;
+  const grade = complete ? rawGrade : null;
 
-  const verified = failures === 0;
-  const durationMs = Date.now() - startTime;
+  const coverageText = `Coverage: ${run} of ${total} checks run`;
+  const apiText = `API re-queries: ${api.performed} of ${api.attempted} ran with independent values, ${api.matched} matched`;
+  const notCheckedList = notChecked.map(c => `${c.name} (${c.message.replace(/^Not checked(?: \(no independent value\))?:\s*/, '')})`);
+  const comparisonWarnings = checks.filter(c => c.severity === 'WARN' && (c.category === 'API_REQUERY' || c.category === 'CROSS_VALIDATION')).length;
 
-  const summary = verified
-    ? `✅ VERIFIED (Grade ${grade}, ${score}%) — ${passes} passed, ${warnings} warnings, ${skipped} skipped. ` +
-      `${apiRequeriesPerformed} API re-queries performed, ${apiRequeriesMatched} matched. ` +
-      `All figures cross-validated against source data. Report is cleared for publication.`
-    : `❌ VERIFICATION FAILED (Grade ${grade}, ${score}%) — ${failures} FAILURE(s) detected: ` +
+  let summary: string;
+  if (status === 'FAILED') {
+    summary = `❌ ${VERIFICATION_FAILED_HEADLINE}. ${failures} FAILURE(s) detected: ` +
       checks.filter(c => c.severity === 'FAIL').map(c => `[${c.name}] ${c.message}`).join(' | ') +
-      `. Report BLOCKED until issues are resolved.`;
+      `. Report BLOCKED until issues are resolved. ${coverageText}` +
+      (complete ? ` (Grade ${rawGrade}, ${rawScore}%).` : `; ${skipped} could not be checked: ${notCheckedList.join('; ')}.`) +
+      ` ${apiText}.`;
+  } else if (status === 'INCOMPLETE') {
+    summary = `${VERIFICATION_INCOMPLETE_HEADLINE} ` +
+      (total === 0
+        ? 'No checks could be run.'
+        : `${skipped} of ${total} checks could not be run: ${notCheckedList.join('; ')}. ` +
+          `${coverageText}: ${passes} passed, ${warnings} warnings, 0 failures.`) +
+      ` ${apiText}.`;
+  } else if (comparisonWarnings > 0) {
+    summary = `✅ ${VERIFICATION_PASSED_WARN_HEADLINE} (Grade ${rawGrade}, ${rawScore}%). All ${total} checks ran with independent values: ` +
+      `${passes} passed, ${warnings} warnings. ${apiText}. ${comparisonWarnings} comparison(s) did not agree within tolerance — review the warnings before publication.`;
+  } else {
+    summary = `✅ ${VERIFICATION_PASSED_HEADLINE} (Grade ${rawGrade}, ${rawScore}%). All ${total} checks ran with independent values: ` +
+      `${passes} passed, ${warnings} warnings. ${apiText}. ` +
+      `All figures cross-validated against source data. Report is cleared for publication.`;
+  }
 
-  const report: VerificationReport = {
-    verified,
+  return {
+    verified: status === 'PASSED',
+    blocked: status === 'FAILED',
+    status,
     score,
     grade,
-    totalChecks: checks.length,
+    totalChecks: total,
     passed: passes,
     warnings,
     failures,
     skipped,
+    coverage: {
+      run, total,
+      notChecked: notChecked.map(c => ({ id: c.id, name: c.name, reason: c.message })),
+    },
     checks,
-    apiRequeriesPerformed,
-    apiRequeriesMatched,
+    apiRequeriesPerformed: api.performed,
+    apiRequeriesMatched: api.matched,
+    apiRequeriesAttempted: api.attempted,
     timestamp: new Date().toISOString(),
     durationMs,
     summary,
   };
+}
 
-  console.log(`[Verification] ${summary}`);
+/**
+ * The status of any stored report, including reports saved before
+ * 2026-11-26 (no `status`): skipped checks there mean INCOMPLETE, whatever
+ * the old `verified` flag said.
+ */
+export function verificationStatus(vr: Partial<VerificationReport> | null | undefined): VerificationStatus {
+  if (!vr) return 'INCOMPLETE';
+  if (vr.status) return vr.status;
+  if ((vr.failures ?? 0) > 0 || vr.verified === false) return 'FAILED';
+  if ((vr.skipped ?? 0) > 0 || !(vr.totalChecks ?? 0)) return 'INCOMPLETE';
+  return 'PASSED';
+}
 
-  return report;
+/** The headline shown on screen and in every export. */
+export function verificationHeadline(vr: Partial<VerificationReport> | null | undefined): string {
+  const s = verificationStatus(vr);
+  if (s === 'FAILED') return VERIFICATION_FAILED_HEADLINE;
+  if (s === 'INCOMPLETE') return VERIFICATION_INCOMPLETE_HEADLINE;
+  const cmpWarn = (vr?.checks ?? []).some(c => c.severity === 'WARN' && (c.category === 'API_REQUERY' || c.category === 'CROSS_VALIDATION'));
+  return cmpWarn ? VERIFICATION_PASSED_WARN_HEADLINE : VERIFICATION_PASSED_HEADLINE;
+}
+
+/** True when the report must be blocked (a check FAILED). INCOMPLETE does not block. */
+export function verificationBlocks(vr: Partial<VerificationReport> | null | undefined): boolean {
+  if (!vr) return false;
+  if (typeof vr.blocked === 'boolean') return vr.blocked;
+  return verificationStatus(vr) === 'FAILED';
+}
+
+/**
+ * A stored report brought to the current wording (status, grade, summary),
+ * so an export of a result computed before 2026-11-26 never repeats the old
+ * "cleared for publication" claim over skipped checks.
+ */
+export function normalizeVerificationReport<T extends Partial<VerificationReport> | null | undefined>(vr: T): T {
+  if (!vr || vr.status || !Array.isArray(vr.checks)) return vr;
+  const rebuilt = buildVerificationReport(vr.checks, {
+    attempted: vr.apiRequeriesPerformed ?? 0,
+    performed: vr.checks.filter(c => c.category === 'API_REQUERY' && c.severity !== 'SKIP').length,
+    matched: vr.checks.filter(c => c.category === 'API_REQUERY' && c.severity === 'PASS').length,
+  }, vr.durationMs ?? 0);
+  return { ...vr, ...rebuilt, timestamp: vr.timestamp ?? rebuilt.timestamp } as T;
+}
+
+/** One status block, the same on the screen and in every export. */
+export interface VerificationDisplay {
+  status: VerificationStatus;
+  headline: string;
+  coverage: string;
+  grade: string;
+  notChecked: string[];
+  summary: string;
+}
+
+export const GRADE_NOT_ISSUED = 'not issued (coverage incomplete)';
+
+export function verificationDisplay(vrIn: Partial<VerificationReport> | null | undefined): VerificationDisplay {
+  const vr = normalizeVerificationReport(vrIn);
+  if (!vr) {
+    return {
+      status: 'INCOMPLETE', headline: VERIFICATION_INCOMPLETE_HEADLINE,
+      coverage: 'Coverage: 0 of 0 checks run', grade: GRADE_NOT_ISSUED,
+      notChecked: ['Pre-report verification did not run'], summary: `${VERIFICATION_INCOMPLETE_HEADLINE} Pre-report verification did not run.`,
+    };
+  }
+  const status = verificationStatus(vr);
+  const total = vr.coverage?.total ?? vr.totalChecks ?? 0;
+  const run = vr.coverage?.run ?? (total - (vr.skipped ?? 0));
+  const notChecked = (vr.coverage?.notChecked ?? (vr.checks ?? []).filter(c => c.severity === 'SKIP').map(c => ({ id: c.id, name: c.name, reason: c.message })))
+    .map(n => `${n.name}: ${n.reason}`);
+  return {
+    status,
+    headline: verificationHeadline(vr),
+    coverage: `Coverage: ${run} of ${total} checks run`,
+    grade: vr.grade != null && vr.score != null ? `Grade ${vr.grade} (${vr.score}%), over all ${total} checks` : GRADE_NOT_ISSUED,
+    notChecked,
+    summary: vr.summary ?? '',
+  };
+}
+
+/** The status block as table rows (label, value) for the PDF, Word, Excel, CSV and JSON exports. */
+export function verificationRows(result: unknown): [string, string][] {
+  const d = verificationDisplay((result as any)?.verificationReport);
+  return [
+    ['Verification status', d.headline],
+    ['Verification coverage', d.coverage],
+    ['Accuracy grade', d.grade],
+    ...d.notChecked.map((x): [string, string] => ['Not checked', x]),
+  ];
 }
