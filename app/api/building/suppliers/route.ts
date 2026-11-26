@@ -12,8 +12,11 @@
 import { retired } from '@/lib/security/retiredRoute';
 
 const gone = () => retired('This suppliers API');
+// All seven methods, explicitly: without an OPTIONS export Next answers OPTIONS itself (204).
 export const GET = gone;
+export const HEAD = gone;
 export const POST = gone;
 export const PUT = gone;
 export const PATCH = gone;
 export const DELETE = gone;
+export const OPTIONS = gone;

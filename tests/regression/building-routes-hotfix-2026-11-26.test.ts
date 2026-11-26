@@ -13,6 +13,11 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { NextRequest } from 'next/server';
 
+/** Management's exact sentence (review of 9edba5ed), then the bathroom-zone note. */
+const ELECTRICAL_REASON = 'Electrical layouts, socket specifications, circuit protection and lighting loads require a project-specific design reviewed by a qualified electrical professional. Socket outlets near baths and showers are restricted by IEC 60364-7-701 / BS 7671 Section 701.';
+/** Every HTTP method a retired route must answer 410 for. */
+const SEVEN =['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT'];
+
 describe('floor-plan API: no quantities, cost, foundation or electrical sizing from a description', () => {
   beforeAll(() => { vi.stubGlobal('fetch', () => Promise.reject(new Error('TEST: no network'))); });
 
@@ -55,9 +60,10 @@ describe('floor-plan API: no quantities, cost, foundation or electrical sizing f
 });
 
 describe('quotations API is retired: every method answers 410 Gone', () => {
-  it('GET, POST, PUT, PATCH and DELETE', async () => {
+  it('exactly GET, HEAD, POST, PUT, PATCH, DELETE and OPTIONS, all 410', async () => {
     const q = await import('@/app/api/building/quotations/route');
-    for (const m of [q.GET, q.POST, q.PUT, q.PATCH, q.DELETE]) {
+    expect(Object.keys(q).sort()).toEqual(SEVEN);
+    for (const m of [q.GET, q.HEAD, q.POST, q.PUT, q.PATCH, q.DELETE, q.OPTIONS]) {
       const res = await m();
       expect(res.status).toBe(410);
       expect(res.headers.get('cache-control')).toBe('no-store');
@@ -82,7 +88,8 @@ describe('review 2026-11-26 R1c: no per-room electrical points, ratings or watts
     expect(rooms).toBeGreaterThan(0);
     expect(Object.keys(ratings), 'outlet ampere ratings returned').toEqual([]);
     expect(JSON.stringify(j.data)).not.toMatch(/"(15A|30A|13A)"|"watts":\d/);
-    expect(j.data.notAvailable.electrical).toMatch(/qualified person/);
+    expect(j.data.notAvailable.electrical).toBe(ELECTRICAL_REASON);
+    expect('confidence' in j.data).toBe(false);
   });
   it('the SVG draws no socket or light symbols (they were drawn in bathrooms)', async () => {
     const { POST } = await import('@/app/api/building/floor-plan/route');
@@ -118,11 +125,13 @@ describe('model-3d: the foundation box is illustrative, not a depth chosen from 
 });
 
 describe('suppliers API is retired: every method answers 410 Gone', () => {
-  it('GET, POST, PUT, PATCH and DELETE', async () => {
+  it('exactly GET, HEAD, POST, PUT, PATCH, DELETE and OPTIONS, all 410', async () => {
     const s = await import('@/app/api/building/suppliers/route');
-    for (const m of [s.GET, s.POST, s.PUT, s.PATCH, s.DELETE]) {
+    expect(Object.keys(s).sort()).toEqual(SEVEN);
+    for (const m of [s.GET, s.HEAD, s.POST, s.PUT, s.PATCH, s.DELETE, s.OPTIONS]) {
       const res = await m();
       expect(res.status).toBe(410);
+      expect(res.headers.get('cache-control')).toBe('no-store');
       expect(await res.json()).toEqual({ success: false, error: 'This suppliers API has been retired for security reasons.' });
     }
   });
