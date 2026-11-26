@@ -93,7 +93,7 @@ describe('CA-42 abuse protection: rejected submissions send no email', () => {
     expect(mailer.calls).toHaveLength(0);
   });
   it('validation failures -> 400, no email', async () => {
-    for (const over of [{ customerEmail: 'nope' }, { customerName: '<a href=x>y</a>' }, { items: [] }, { items: [{ partCode: 'ABR-1', quantity: 0 }] }]) {
+    for (const over of [{ customerEmail: 'nope' }, { customerName: '<a href=x>y</a>' }, { items: [] }, { items: [{ partCode: 'ABR-1', quantity: 0 }] }, { items: [{ partCode: 'ABR-1', quantity: 1, unitPrice: 'NaN' }] }, { items: [{ partCode: 'ABR-1', quantity: 1, unitPrice: -1 }] }]) {
       expect((await post(body(over))).status).toBe(400);
     }
     expect(mailer.calls).toHaveLength(0);

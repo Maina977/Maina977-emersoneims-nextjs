@@ -40,9 +40,11 @@ function validItems(raw: unknown): Array<{ partCode: string; quantity: number }>
   const out: Array<{ partCode: string; quantity: number }> = [];
   for (const it of raw) {
     if (!it || typeof it !== 'object') return null;
-    const { partCode, quantity } = it as Record<string, unknown>;
+    const { partCode, quantity, unitPrice } = it as Record<string, unknown>;
     if (!isStr(partCode, 1, 64)) return null;
     if (typeof quantity !== 'number' || !Number.isInteger(quantity) || quantity < 1 || quantity > 1000) return null;
+    // A client price is never used, but a malformed one still marks a malformed request.
+    if (unitPrice !== undefined && (typeof unitPrice !== 'number' || !Number.isFinite(unitPrice) || unitPrice < 0 || unitPrice > 1e9)) return null;
     out.push({ partCode: partCode.trim(), quantity });
   }
   return out;
