@@ -52,5 +52,5 @@ describe('/api/building/quotations is retired (410 Gone on every method)', () =>
     };
     roots.forEach(walk);
     expect(hits).toEqual([]);
-  });
+  }, 60_000); // walks app/, components/ and lib/: can exceed the 5 s default under load (2026-11-26)
 });

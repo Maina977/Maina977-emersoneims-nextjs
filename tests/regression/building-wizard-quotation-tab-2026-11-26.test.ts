@@ -67,3 +67,43 @@ describe('the Costing tab says so instead of "Error generating quotation"', () =
     expect(el.innerHTML).not.toMatch(/Unexpected token/);
   });
 });
+
+describe('review advisories A1-A3 on /api/report/*', () => {
+  const req = (seg: string, init: RequestInit & { duplex?: string }) => new NextRequest(`http://localhost/api/report/${seg}`, init as never);
+  const run = async (seg: string[], init: RequestInit & { duplex?: string }) => {
+    const { POST } = await route();
+    return POST(req(seg.join('/'), init), { params: Promise.resolve({ path: seg }) });
+  };
+  it('A1: only quotation, comprehensive and client-package are served; anything else is 404', async () => {
+    for (const seg of [['pdf'], ['quotation', 'x'], [], ['constructor'], ['QUOTATION']]) {
+      const res = await run(seg, { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } });
+      expect(res.status, seg.join('/')).toBe(404);
+      expect(res.headers.get('cache-control')).toBe('no-store');
+    }
+  });
+  it('A2: the 501 is never cached', async () => {
+    const res = await run(['quotation'], { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } });
+    expect(res.status).toBe(501);
+    expect(res.headers.get('cache-control')).toBe('no-store');
+  });
+  it('A3: a body over 1 MB is refused (413) by its streamed size even without a Content-Length', async () => {
+    const big = new TextEncoder().encode(JSON.stringify({ pad: 'x'.repeat(1_100_000) }));
+    let sent = false;
+    const stream = new ReadableStream<Uint8Array>({ pull(c) { if (sent) { c.close(); return; } sent = true; c.enqueue(big); } });
+    const r = req('quotation', { method: 'POST', body: stream, headers: { 'content-type': 'application/json' }, duplex: 'half' });
+    expect(r.headers.get('content-length')).toBeNull();
+    const { POST } = await route();
+    const res = await POST(r, { params: Promise.resolve({ path: ['quotation'] }) });
+    expect(res.status).toBe(413);
+  });
+  it('A3: the same limit holds on the shared dispatcher routes (a calculator under /api/qs)', async () => {
+    const { POST } = await import('@/app/api/qs/[...path]/route');
+    const big = new TextEncoder().encode(JSON.stringify({ length_m: 12, width_m: 8, thickness_m: 0.15, pad: 'x'.repeat(1_100_000) }));
+    const stream = new ReadableStream<Uint8Array>({ start(c) { c.enqueue(big); c.close(); } });
+    const res = await POST(new NextRequest('http://localhost/api/qs/takeoff/slab', { method: 'POST', body: stream, headers: { 'content-type': 'application/json' }, duplex: 'half' } as never), { params: Promise.resolve({ path: ['takeoff', 'slab'] }) });
+    expect(res.status).toBe(413);
+    // A normal body still computes: 12 × 8 × 0.15 = 14.4 m³.
+    const ok = await POST(new NextRequest('http://localhost/api/qs/takeoff/slab', { method: 'POST', body: JSON.stringify({ length_m: 12, width_m: 8, thickness_m: 0.15 }), headers: { 'content-type': 'application/json' } }), { params: Promise.resolve({ path: ['takeoff', 'slab'] }) });
+    expect((await ok.json()).data.net_volume_m3).toBe(14.4);
+  });
+});
