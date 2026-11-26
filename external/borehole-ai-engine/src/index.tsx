@@ -14,6 +14,7 @@ import * as SCI from './scienceData';
 import { generateVerificationResult, getOSINTChecklist } from './locationVerifier';
 import type { RemoteSensingResult } from './remoteSensing';
 import { runPrePublishAudit, AuditBlockError, VerificationBlockError, setCustomerDetails, computeCanonicalEconomics } from './reportShared';
+import { verificationDisplay, GRADE_NOT_ISSUED } from './preReportVerification';
 import type { AuditReport } from './reportAuditor';
 // The report generator (with jsPDF, ExcelJS and docx) is loaded only when a
 // report is downloaded, which keeps the page itself light (2026-10-29).
@@ -8602,41 +8603,58 @@ const AIBoreholeAnalyzer: React.FC = () => {
               </div>
 
               {/* ═══ VERIFICATION STATUS PANEL ═══ */}
+              {/* 2026-11-26 (D1): the panel shows verificationDisplay(), the same
+                  status, coverage and grade lines as every export. A skipped
+                  check is "not checked", never a pass; no grade unless every
+                  check ran. */}
               {result && (result as any).verificationReport && (() => {
                 const vr = (result as any).verificationReport;
-                const gradeColor = vr.grade === 'A' ? '#16a34a' : vr.grade === 'B' ? '#22c55e' : vr.grade === 'C' ? '#eab308' : vr.grade === 'D' ? '#f97316' : '#ef4444';
+                const vd = verificationDisplay(vr);
+                const ok = vd.status === 'PASSED', bad = vd.status === 'FAILED';
+                const tone = ok ? '#16a34a' : bad ? '#ef4444' : '#f59e0b';
+                const toneBg = ok ? 'rgba(22,163,74,0.08)' : bad ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)';
+                const toneBd = ok ? 'rgba(22,163,74,0.3)' : bad ? 'rgba(239,68,68,0.3)' : 'rgba(245,158,11,0.35)';
+                const checks: any[] = Array.isArray(vr.checks) ? vr.checks : [];
                 return (
-                  <div style={{background: vr.verified ? 'rgba(22,163,74,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${vr.verified ? 'rgba(22,163,74,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius:12, padding:16, marginTop:16}}>
+                  <div data-testid="verification-panel" data-status={vd.status} style={{background: toneBg, border: `1px solid ${toneBd}`, borderRadius:12, padding:16, marginTop:16}}>
                     <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:8}}>
-                      <div style={{width:48,height:48,borderRadius:'50%',background:gradeColor,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:24,color:'#fff'}}>{vr.grade}</div>
+                      <div style={{width:48,height:48,borderRadius:'50%',background:tone,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:vr.grade && vd.grade !== GRADE_NOT_ISSUED ? 24 : 14,color:'#fff'}}>{vd.grade !== GRADE_NOT_ISSUED && vr.grade ? vr.grade : '—'}</div>
                       <div>
-                        <div style={{fontSize:16,fontWeight:700,color:vr.verified ? '#16a34a' : '#ef4444'}}>{vr.verified ? '\u2705 VERIFICATION PASSED' : '\u274C VERIFICATION FAILED — Report Blocked'}</div>
-                        <div style={{fontSize:12,color:'#94a3b8'}}>Score: {vr.score}% | {vr.totalChecks} checks | {vr.apiRequeriesPerformed} API re-queries | {vr.durationMs}ms</div>
+                        <div data-testid="verification-headline" style={{fontSize:16,fontWeight:700,color:tone}}>{ok ? '✅ ' : bad ? '❌ ' : '⚠️ '}{vd.headline}</div>
+                        <div data-testid="verification-coverage" style={{fontSize:12,color:'#94a3b8'}}>{vd.coverage} | Accuracy grade: {vd.grade} | {vr.apiRequeriesPerformed ?? 0} of {vr.apiRequeriesAttempted ?? vr.apiRequeriesPerformed ?? 0} API re-queries ran with independent values</div>
                       </div>
                     </div>
                     <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:8}}>
                       <div style={{textAlign:'center',padding:8,borderRadius:8,background:'rgba(22,163,74,0.15)'}}><div style={{fontSize:20,fontWeight:700,color:'#16a34a'}}>{vr.passed}</div><div style={{fontSize:10,color:'#94a3b8'}}>PASSED</div></div>
                       <div style={{textAlign:'center',padding:8,borderRadius:8,background:'rgba(234,179,8,0.15)'}}><div style={{fontSize:20,fontWeight:700,color:'#eab308'}}>{vr.warnings}</div><div style={{fontSize:10,color:'#94a3b8'}}>WARNINGS</div></div>
                       <div style={{textAlign:'center',padding:8,borderRadius:8,background:'rgba(239,68,68,0.15)'}}><div style={{fontSize:20,fontWeight:700,color:'#ef4444'}}>{vr.failures}</div><div style={{fontSize:10,color:'#94a3b8'}}>FAILURES</div></div>
-                      <div style={{textAlign:'center',padding:8,borderRadius:8,background:'rgba(148,163,184,0.1)'}}><div style={{fontSize:20,fontWeight:700,color:'#94a3b8'}}>{vr.skipped}</div><div style={{fontSize:10,color:'#94a3b8'}}>SKIPPED</div></div>
+                      <div style={{textAlign:'center',padding:8,borderRadius:8,background:'rgba(148,163,184,0.1)'}}><div style={{fontSize:20,fontWeight:700,color:'#94a3b8'}}>{vr.skipped}</div><div style={{fontSize:10,color:'#94a3b8'}}>NOT CHECKED</div></div>
                     </div>
                     {vr.failures > 0 && (
                       <div style={{background:'rgba(239,68,68,0.1)',borderRadius:8,padding:8,marginBottom:8}}>
                         <div style={{fontSize:11,fontWeight:700,color:'#ef4444',marginBottom:4}}>FAILURES (must resolve before report):</div>
-                        {vr.checks.filter((c:any)=>c.severity==='FAIL').map((c:any,i:number)=>(
-                          <div key={i} style={{fontSize:11,color:'#fca5a5',marginBottom:2}}>{'\u274C'} <strong>{c.name}</strong>: {c.message}</div>
+                        {checks.filter((c:any)=>c.severity==='FAIL').map((c:any,i:number)=>(
+                          <div key={i} style={{fontSize:11,color:'#fca5a5',marginBottom:2}}>{'❌'} <strong>{c.name}</strong>: {c.message}</div>
+                        ))}
+                      </div>
+                    )}
+                    {vd.notChecked.length > 0 && (
+                      <div data-testid="verification-not-checked" style={{background:'rgba(245,158,11,0.08)',borderRadius:8,padding:8,marginBottom:8}}>
+                        <div style={{fontSize:11,fontWeight:700,color:'#f59e0b',marginBottom:4}}>NOT CHECKED ({vd.notChecked.length}):</div>
+                        {vd.notChecked.map((x,i)=>(
+                          <div key={i} style={{fontSize:11,color:'#fde68a',marginBottom:2}}>{'•'} {x}</div>
                         ))}
                       </div>
                     )}
                     {vr.warnings > 0 && (
                       <details style={{marginBottom:4}}>
                         <summary style={{fontSize:11,color:'#eab308',cursor:'pointer'}}>Show {vr.warnings} warning(s)</summary>
-                        {vr.checks.filter((c:any)=>c.severity==='WARN').map((c:any,i:number)=>(
-                          <div key={i} style={{fontSize:11,color:'#fde68a',marginBottom:2,paddingLeft:12}}>{'\u26A0\uFE0F'} <strong>{c.name}</strong>: {c.message}</div>
+                        {checks.filter((c:any)=>c.severity==='WARN').map((c:any,i:number)=>(
+                          <div key={i} style={{fontSize:11,color:'#fde68a',marginBottom:2,paddingLeft:12}}>{'⚠️'} <strong>{c.name}</strong>: {c.message}</div>
                         ))}
                       </details>
                     )}
-                    <div style={{fontSize:10,color:'#64748b',marginTop:4}}>Verified: {vr.timestamp} | {vr.apiRequeriesMatched}/{vr.apiRequeriesPerformed} API re-queries matched</div>
+                    <div style={{fontSize:10,color:'#64748b',marginTop:4}}>Checked: {vr.timestamp} | {vr.apiRequeriesMatched ?? 0} of {vr.apiRequeriesPerformed ?? 0} API re-queries that ran matched</div>
                   </div>
                 );
               })()}

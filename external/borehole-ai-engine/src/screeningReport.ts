@@ -18,6 +18,7 @@ import type { AnalysisResult } from './types';
 import { evidenceGate, provenanceText } from './evidenceGate';
 import { finalVerdict, labSourceLabel } from './verdict';
 import { locationStatusText, waterCheckStatusText, photoGpsConflictText } from './locationStatus';
+import { verificationRows } from './preReportVerification';
 
 export const SCREENING_REPORT_VERSION = 'aquascan-screening-report 1.0.0 (2026-11-20)';
 
@@ -36,6 +37,8 @@ export interface ScreeningContent {
   notEstablished: string[];
   nextSteps: string[];
   sources: string[];
+  /** 2026-11-26 (D1): the pre-report verification status, coverage and grade, as on the screen. */
+  verification: [string, string][];
 }
 
 export function screeningContent(result: AnalysisResult, when = new Date()): ScreeningContent {
@@ -73,6 +76,7 @@ export function screeningContent(result: AnalysisResult, when = new Date()): Scr
       'After drilling, test-pump the borehole and analyse a water sample; enter the results here to update the assessment.',
     ],
     sources,
+    verification: verificationRows(result),
   };
 }
 
@@ -81,6 +85,7 @@ export function screeningRows(result: AnalysisResult, when = new Date()): string
   const c = screeningContent(result, when);
   return [
     [c.title], ['DESKTOP SCREENING: NOT A SITE ASSESSMENT'], ['Location', c.location], ['Location source', c.locationStatus], ['Water-body check', c.waterCheck], ...(c.photoGpsNote ? [['Photo GPS', c.photoGpsNote]] : []), ['Verdict', c.verdict], ['Next step', c.next], ['Evidence', c.evidenceNote], [''],
+    ['Pre-report verification'], ...c.verification.map(([k, v]) => [k, v]), [''],
     ['What this desktop screen covers'], ...c.established.map((x) => ['', x]), [''],
     ['Not established by a desktop screen'], ...c.notEstablished.map((x) => ['', x]), [''],
     ['Next steps'], ...c.nextSteps.map((x, i) => ['', `${i + 1}. ${x}`]),
@@ -126,6 +131,7 @@ export async function generateScreeningDocx(result: AnalysisResult, save = true)
         p(c.verdict, { bold: true }),
         p(c.next),
         p(c.evidenceNote),
+        ...section('Pre-report verification', c.verification.map(([k, v]) => `${k}: ${v}`)),
         ...section('What this desktop screen covers', c.established),
         ...section('Not established by a desktop screen', c.notEstablished),
         ...section('Next steps', c.nextSteps, true),
@@ -173,7 +179,8 @@ export function generateScreeningPdf(result: AnalysisResult, save = true): Uint8
   doc.setFontSize(12); doc.text(doc.splitTextToSize(c.verdict, 180), 14, y0 + 4);
   doc.setFontSize(10); doc.text(doc.splitTextToSize(c.next, 180), 14, y0 + 11);
   doc.setFontSize(9); doc.text(doc.splitTextToSize(c.evidenceNote, 180), 14, y0 + 21);
-  autoTable(doc, { startY: y0 + 35, head: [['What this desktop screen covers']], body: c.established.map((x) => [x]), styles: { fontSize: 9 } });
+  autoTable(doc, { startY: y0 + 35, head: [['Pre-report verification', '']], body: c.verification.map(([k, v]) => [k, v]), styles: { fontSize: 8 } });
+  autoTable(doc, { head: [['What this desktop screen covers']], body: c.established.map((x) => [x]), styles: { fontSize: 9 } });
   autoTable(doc, { head: [['Not established by a desktop screen']], body: c.notEstablished.map((x) => [x]), styles: { fontSize: 9 } });
   autoTable(doc, { head: [['Next steps']], body: c.nextSteps.map((x, i) => [`${i + 1}. ${x}`]), styles: { fontSize: 9 } });
   if (c.sources.length) autoTable(doc, { head: [['Data used']], body: c.sources.map((x) => [x]), styles: { fontSize: 8 } });

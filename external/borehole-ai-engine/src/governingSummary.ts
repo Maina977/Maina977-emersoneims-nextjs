@@ -14,6 +14,7 @@ import { costSourcing, QUOTATION_TEXT } from './costSources';
 import { locationStatusText, waterCheckStatusText, photoGpsConflictText } from './locationStatus';
 import { displayDepth, displayYield } from './displayFigures';
 import { waterQualityStatus } from './waterQualityStatus';
+import { verificationRows } from './preReportVerification';
 
 export type Row = [string, string, string]; // label, value, basis
 export interface SummarySection { title: string; rows: Row[]; notes?: string[] }
@@ -178,6 +179,10 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   if (od?.bgsMaps) evRows.push(['Regional groundwater map (BGS)', `depth to water ${od.bgsMaps.depthToGroundwater ?? '—'}; yield ${od.bgsMaps.productivity ?? '—'}`, 'MacDonald et al. 2012, 5 km grid. Contains data supplied by permission of the Natural Environment Research Council [2023]']);
   if (od?.measured?.restWaterLevel) evRows.push(['Rest water level nearby (median)', `${f(od.measured.restWaterLevel.median, 1)} m`, `${od.measured.restWaterLevel.n} boreholes, measured`]);
   if (evRows.length) sections.push({ title: 'Evidence near the site', rows: evRows });
+
+  // 2026-11-26 (D1): the pre-report verification status, coverage and grade,
+  // the same lines as the screen panel, right after the verdict.
+  sections.splice(1, 0, { title: 'Pre-report verification', rows: verificationRows(result).map(([k, v]): Row => [k, v, '']) });
 
   // Guard: no "undefined" or "NaN" reaches a customer document.
   for (const s of sections) {

@@ -86,7 +86,7 @@ function makePdfSafe(doc: jsPDF): jsPDF {
 import { auditReport, type AuditReport } from './reportAuditor';
 import { recordReport, type ReportFormat } from './reportTracker';
 import { generateReportMaps, renderDrillHereMap, renderWaterTableDepthMap, type ReportMapImages } from './reportMapGenerator';
-import type { VerificationReport } from './preReportVerification';
+import { type VerificationReport, normalizeVerificationReport, verificationBlocks, verificationRows, verificationDisplay } from './preReportVerification';
 import { computeDrillReadiness } from './drillReadiness';
 import { computeDesktopDrillTargetReadiness } from './desktopDrillTargetReadiness';
 import { wellKind, displayOutcome, cleanWellsForDisplay } from './wellDisplay';
@@ -101,8 +101,10 @@ export { auditReport, type AuditReport };
 
 /** Enforce verification gate ? blocks report if verification found FAIL-level issues */
 function enforceVerificationGate(result: AnalysisResult): void {
-  const vr = (result as any).verificationReport as VerificationReport | undefined;
-  if (vr && !vr.verified) {
+  const vr = normalizeVerificationReport((result as any).verificationReport as VerificationReport | undefined);
+  // 2026-11-26 (D1): only a FAILED check blocks. INCOMPLETE (sources
+  // unavailable) does not block, and is stated as incomplete, never as passed.
+  if (vr && verificationBlocks(vr)) {
     throw new VerificationBlockError(vr);
   }
 }
@@ -969,7 +971,7 @@ export function sourcedCostRows(result: AnalysisResult): string[][] {
     : [l.item, QUOTATION_TEXT, '', 'No sourced rate on file: the supplier\'s quotation prices this item']);
   if (eco.salinityUnpriced) rows.push(['Desalination (RO)', 'not priced', '', 'Salinity has not been measured at this site (regional screening class only); a laboratory test of the first water decides']);
   if (eco.fluorideUnpriced) rows.push(['Defluoridation', 'not priced', '', 'Fluoride has not been measured at this site (regional screening class only); a laboratory test of the first water decides']);
-  rows.push([`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, usd(cs.sourcedContingency), eco.kes(cs.sourcedContingency), `${Math.round(eco.contingencyRate * 100)}% of the sourced items${eco.isHardRock ? ' (hard rock)' : ''}`]);
+  rows.push([`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, usd(cs.sourcedContingency), eco.kes(cs.sourcedContingency), `${Math.round(eco.contingencyRate * 100)}% of the sourced items${eco.isHardRock ? ' (hard rock)' : eco.rockTypeUnknown ? ' (rock type unknown: conservative rate)' : ''}`]);
   rows.push([cs.quotationItems.length ? 'TOTAL OF SOURCED ITEMS' : 'TOTAL CAPITAL', usd(cs.sourcedTotal), eco.kes(cs.sourcedTotal),
     `${cs.quotationItems.length ? `Not included, by quotation: ${cs.quotationItems.join(', ')}. ` : ''}Depth and yield from: ${[g.citations.depth, g.citations.yield].filter(Boolean).join('; ') || 'field evidence not cited'}`]);
   const priced = cs.quotationItems.length === 0;
@@ -1489,6 +1491,20 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     doc.text(`One economics model: ${(tier as string) === 'basic' ? 'same figures as the cost table in this report and on the web page' : 'same figures as Section 5.1 and the Investor Summary'}. KSh at ~${eco.kesPerUsd}/USD (July 2026). Kenya benchmark: a properly completed borehole runs KSh 1.5M-3.5M.`, margin, y); y += 4;
     doc.setFontSize(6.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 100, 0);
     doc.text('CAUTION: quotes below ~KSh 5,000/m usually exclude casing, gravel pack, development, test pumping, water analysis or VAT — compare scope, not price.', margin, y); y += 8;
+
+    // 2026-11-26 (D1): the pre-report verification status, coverage and grade,
+    // the same lines as the screen panel and the other exports.
+    autoTable(doc, {
+      startY: y,
+      head: [['Pre-report verification', '']],
+      body: verificationRows(result),
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7 },
+      columnStyles: { 0: { cellWidth: 40 } },
+      margin: { left: margin, right: margin },
+      theme: 'grid',
+    });
+    y = lastY(6);
 
     // Field-validation plan
     doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
@@ -10987,6 +11003,8 @@ export function jsonReportData(result: AnalysisResult): Record<string, unknown> 
     locationStatus: locationStatusText(result),
     waterCheck: waterCheckStatusText(result),
     photoGpsNote: photoGpsConflictText(result),
+    // 2026-11-26 (D1): the verification status, coverage and grade, as on the screen.
+    verification: (({ status, headline, coverage, grade, notChecked }) => ({ status, headline, coverage, grade, notChecked }))(verificationDisplay((result as any).verificationReport)),
   };
   const g = evidenceGate(result);
   if (screeningOnly(result)) {
@@ -11012,6 +11030,8 @@ export function jsonReportData(result: AnalysisResult): Record<string, unknown> 
       },
     },
     ...result,
+    // A stored report from before 2026-11-26 is restated in the current wording.
+    ...((result as any).verificationReport ? { verificationReport: normalizeVerificationReport((result as any).verificationReport) } : {}),
   });
 }
 
