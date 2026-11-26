@@ -111,11 +111,31 @@ export function draftAdjustments(adj: AdjustmentDraft): Adjustments {
     .filter(([k]) => isBlank(adj[k])).map(([, key]) => key);
   return { preliminaries: { kind: 'percent', pct: Number(adj.prelims || 'NaN') }, contingencyPct: Number(adj.contingency || 'NaN'), overheadsProfitPct: Number(adj.ohp || 'NaN'), vat: { pct: Number(adj.vat || 'NaN'), effectiveFrom: adj.vatFrom }, notEntered };
 }
+/**
+ * A trade item's quantity re-derived from its saved form and the CURRENT
+ * measurements. The quantity stored when the trade was added went stale when a
+ * measurement it used changed afterwards (an opening added to a roof or floor
+ * area, a measurement re-made): the bill kept the old quantity while items
+ * linked directly to the same measurement updated (audit 2026-11-26). The bill
+ * always uses this; when it cannot be re-derived, the item carries the reason
+ * and the bill has no total.
+ */
+export function liveTradeQuantity(trade: NonNullable<ItemDraft['trade']>, quantities: Map<string, Quantity>): { scheduled: { value: number; source: string }; error?: string } {
+  let lines;
+  try { lines = calculateTrade(trade.form, quantities); }
+  catch (e) { return { scheduled: trade.scheduled, error: `its trade quantity cannot be recomputed from the current measurements (${e instanceof TradeError ? e.message : String(e)}); recalculate the trade` }; }
+  const line = lines.find((l) => l.code === trade.lineCode);
+  if (!line) return { scheduled: trade.scheduled, error: `the trade form no longer produces line ${trade.lineCode}; recalculate the trade` };
+  return { scheduled: toBoqItems([line], 'x')[0].scheduledQuantity! };
+}
 export function draftBoqItems(items: ItemDraft[], quantities: Map<string, Quantity>): BoqItem[] {
   return items.map((d) => {
     const rate = rateFromInput({ value: d.rate, kind: d.rateKind, source: d.source, date: d.date, location: d.location, tier: d.rateTier ?? '' });
     const bu = d.buildUp ? { buildUp: buildUpFromDraft(d.buildUp) } : {};
-    if (d.trade) return { code: d.code, section: d.section || 'General', trade: d.trade.name, description: d.description, unit: d.trade.unit, links: [], scheduledQuantity: d.trade.scheduled, rate, ...bu };
+    if (d.trade) {
+      const live = liveTradeQuantity(d.trade, quantities);
+      return { code: d.code, section: d.section || 'General', trade: d.trade.name, description: d.description, unit: d.trade.unit, links: [], scheduledQuantity: live.scheduled, ...(live.error ? { quantityError: live.error } : {}), rate, ...bu };
+    }
     const q = quantities.get(d.measurementId);
     return { code: d.code, section: d.section || 'General', trade: '', description: d.description, unit: q ? UNIT[q.kind] : 'item', links: [{ measurementId: d.measurementId, factor: Number(d.factor || '1') }], rate, ...bu };
   });
@@ -182,7 +202,8 @@ export function buildProject(s: WorkbenchSnapshot, opts: { savedAt: string; embe
       quantity: { gross: q.gross, deductions: q.deductions, net: q.net },
     };
   });
-  const items: ItemDraft[] = s.items.map((d) => ({
+  // A trade quantity is saved as the bill uses it: re-derived from the current measurements.
+  const items: ItemDraft[] = s.items.map((d0) => ({ ...d0, ...(d0.trade ? { trade: { ...d0.trade, scheduled: liveTradeQuantity(d0.trade, quantities).scheduled } } : {}) })).map((d) => ({
     code: d.code, section: d.section, description: d.description, measurementId: d.measurementId, factor: d.factor,
     rate: d.rate, rateKind: d.rateKind, source: d.source, date: d.date, location: d.location,
     ...(d.trade ? { trade: { name: d.trade.name, unit: d.trade.unit, scheduled: { value: d.trade.scheduled.value, source: d.trade.scheduled.source }, lineCode: d.trade.lineCode, form: JSON.parse(JSON.stringify(d.trade.form)) as TradeForm } } : {}),

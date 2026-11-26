@@ -13,6 +13,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   floorPlanGenerator,
   floorPlanRenderer,
+  publicPlan,
+  NOT_FROM_A_DESCRIPTION,
   type GenerationInput
 } from '@/lib/building/building/floorPlanGenerator';
 
@@ -83,11 +85,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Quantities, cost, foundation design and electrical sizing are never
+    // returned from a description (audit 2026-11-26; see publicPlan).
+    const plan = publicPlan(buildingPlan);
+
     if (outputFormat === 'json') {
       // Return just the JSON data without SVGs
       return NextResponse.json({
         success: true,
-        data: buildingPlan,
+        data: plan,
       });
     }
 
@@ -95,22 +101,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        plan: buildingPlan,
+        plan,
         svgs: floorPlanSVGs,
         summary: {
-          projectName: buildingPlan.projectName,
-          totalArea: buildingPlan.building.totalArea,
-          floors: buildingPlan.building.floors,
-          rooms: buildingPlan.floorPlans.reduce((sum, fp) => sum + fp.rooms.length, 0),
-          estimatedCost: buildingPlan.estimatedCost,
-          currency: buildingPlan.currency,
-          style: buildingPlan.style,
+          projectName: plan.projectName,
+          totalArea: plan.building.totalArea,
+          floors: plan.building.floors,
+          rooms: plan.floorPlans.reduce((sum, fp) => sum + fp.rooms.length, 0),
+          estimatedCost: null,
+          currency: plan.currency,
+          style: plan.style,
         },
-        boq: buildingPlan.boqSummary,
-        electrical: buildingPlan.electrical,
-        plumbing: buildingPlan.plumbing,
-        foundation: buildingPlan.foundation,
-        roof: buildingPlan.roof,
+        boq: null,
+        electrical: null,
+        plumbing: plan.plumbing,
+        foundation: null,
+        roof: plan.roof,
+        notAvailable: NOT_FROM_A_DESCRIPTION,
       },
       dataSource: 'FREE AI - Groq Llama 3 + Custom Algorithms',
     });
@@ -144,8 +151,7 @@ export async function GET() {
         'Wall and opening placement',
         'Electrical layout generation',
         'Plumbing layout generation',
-        'BOQ calculation',
-        'Cost estimation',
+        // 'BOQ calculation' and 'Cost estimation' are not offered from a description (audit 2026-11-26).
         'SVG floor plan rendering',
         '3D model data export',
       ],

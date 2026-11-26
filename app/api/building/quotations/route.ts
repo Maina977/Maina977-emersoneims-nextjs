@@ -113,16 +113,40 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields
-    if (!projectId || !items || !total) {
+    if (!projectId || !items) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: projectId, items, total' },
+        { success: false, error: 'Missing required fields: projectId, items, subtotal' },
         { status: 400 }
       );
     }
 
+    // Totals (audit 2026-11-26). Before: VAT = vat || (subtotal || total) × 16 %
+    // and total = subtotal + VAT − discount. A VAT of 0 (exempt or zero-rated)
+    // was replaced by 16 %; with no subtotal, VAT was added to the client's
+    // total, so a VAT-inclusive total was taxed twice; and the discount came
+    // off after VAT, so VAT was charged on money not received.
+    // Now: subtotal is excl. VAT; VAT = vat if given (0 allowed), else 16 % of
+    // (subtotal − discount) (Kenya VAT Act 2013 s.5(2)(a), standard rate);
+    // total = subtotal − discount + VAT, charged once; a stated total must agree.
+    const money = (x: number) => Math.round(x * 100) / 100;
+    const isAmount = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= 0;
+    if (!isAmount(subtotal)) {
+      return NextResponse.json({ success: false, error: 'subtotal is required: the amount before VAT, a number of 0 or more' }, { status: 400 });
+    }
+    if (discount != null && !(isAmount(discount) && discount <= subtotal)) {
+      return NextResponse.json({ success: false, error: 'discount must be a number between 0 and the subtotal' }, { status: 400 });
+    }
+    if (vat != null && !isAmount(vat)) {
+      return NextResponse.json({ success: false, error: 'vat must be an amount of 0 or more (leave it out to apply 16 % of subtotal − discount)' }, { status: 400 });
+    }
+    const net = subtotal - (discount ?? 0);
+    const vatAmount = money(vat ?? net * 0.16);
+    const calculatedTotal = money(net + vatAmount);
+    if (total != null && !(typeof total === 'number' && Math.abs(total - calculatedTotal) <= 0.01)) {
+      return NextResponse.json({ success: false, error: `total ${total} does not equal subtotal − discount + VAT = ${calculatedTotal}` }, { status: 400 });
+    }
+
     const quotationNumber = generateQuotationNumber();
-    const vatAmount = vat || (subtotal || total) * 0.16; // Default 16% VAT
-    const calculatedTotal = (subtotal || total) + vatAmount - (discount || 0);
 
     // Try database first
     try {
@@ -134,7 +158,7 @@ export async function POST(request: NextRequest) {
           projectId,
           userId: userId || 'guest',
           items,
-          subtotal: subtotal || total,
+          subtotal,
           vat: vatAmount,
           discount: discount || 0,
           total: calculatedTotal,
@@ -161,7 +185,7 @@ export async function POST(request: NextRequest) {
         projectId,
         userId: userId || 'guest',
         items,
-        subtotal: subtotal || total,
+        subtotal,
         vat: vatAmount,
         discount: discount || 0,
         total: calculatedTotal,
